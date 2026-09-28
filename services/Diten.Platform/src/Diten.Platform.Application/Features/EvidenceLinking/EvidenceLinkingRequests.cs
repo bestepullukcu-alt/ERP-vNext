@@ -26,6 +26,13 @@ public sealed record GetEvidenceLinksByObjectQuery(
     bool IncludeRemoved,
     string? CorrelationId = null) : IRequest<Response<IReadOnlyList<EvidenceLinkDto>>>;
 
+/// <summary>WP-CL-BE-5 — bulk read: the links of up to <see cref="EvidenceLinkLimits.MaxQueryObjects"/> objects in one
+/// call, each with the computed document state. Same permission and tenant scope as the single-object read.</summary>
+public sealed record QueryEvidenceLinksByObjectsQuery(
+    IReadOnlyList<EvidenceObjectRefInput?>? Objects,
+    bool IncludeRemoved,
+    string? CorrelationId = null) : IRequest<Response<IReadOnlyList<EvidenceObjectLinksDto>>>;
+
 public sealed record GetEvidenceLinkByIdQuery(Guid LinkId, string? CorrelationId = null)
     : IRequest<Response<EvidenceLinkDto>>;
 

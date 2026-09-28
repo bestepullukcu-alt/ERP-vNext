@@ -48,6 +48,11 @@ public static class ClaimErrorCodes
     public const string WorkflowRequestRejected = "workflow_request_rejected";
     public const string NoOpenReview = "no_open_review";
     public const string WithdrawNotPossible = "withdraw_not_possible";
+
+    // WP-CL-BE-5 — evidence via MOD-0031.
+    public const string EvidenceLocked = "evidence_locked";
+    public const string EvidenceRequired = "evidence_required";
+    public const string EvidenceUnavailable = "evidence_unavailable";
 }
 
 /// <summary>WP-CL-BE-1 — the MOD-0048 reference sets the claims v2 rules read. Only the set CODES live here; the values

@@ -44,6 +44,7 @@ public sealed class EvidenceLinkingTests
         public List<ControlledDocumentVersion> Versions { get; } = [];
         public List<ExternalDocumentRegisterEntry> External { get; } = [];
         public List<EvidenceLink> Links { get; } = [];
+        public Diten.Platform.Application.Tests.DocumentManagement.FakeDocumentMasterRegisterRepository Register { get; } = new();
     }
 
     private sealed class Fixture
@@ -69,9 +70,25 @@ public sealed class EvidenceLinkingTests
             External(), Gate, ReferenceData, new ImmediateExecutor(), Events);
 
         public RemoveEvidenceLinkCommandHandler Remove() => new(Tenant, new User(), Links(), new ImmediateExecutor(), Events);
-        public GetEvidenceLinksByObjectQueryHandler ByObject() => new(Tenant, Links());
-        public GetEvidenceLinkByIdQueryHandler ById() => new(Tenant, Links());
-        public GetEvidenceLinksByDocumentQueryHandler ByDocument() => new(Tenant, Links(), Documents(), External(), Gate);
+        public GetEvidenceLinksByObjectQueryHandler ByObject() => new(Tenant, Links(), Resolver());
+        public GetEvidenceLinkByIdQueryHandler ById() => new(Tenant, Links(), Resolver());
+        public GetEvidenceLinksByDocumentQueryHandler ByDocument() => new(Tenant, Links(), Documents(), External(), Gate, Resolver());
+        public QueryEvidenceLinksByObjectsQueryHandler Query() => new(Tenant, Links(), Resolver());
+
+        public EvidenceDocumentStateResolver Resolver() => new(Documents(), Versions(), Store.Register, External(), Clock);
+        public FixedClock Clock { get; } = new(new DateTimeOffset(2026, 9, 28, 12, 0, 0, TimeSpan.Zero));
+
+        public DocumentMasterRegisterEntry SeedRegister(ControlledDocument doc, ControlledDocumentLifecycleStatus status,
+            DateTimeOffset? nextReview = null)
+        {
+            var row = new DocumentMasterRegisterEntry
+            {
+                TenantId = Tenant.TenantId, DocumentTitle = doc.Title, ControlledDocumentId = doc.Id,
+                LifecycleStatus = status, NextReviewDueDate = nextReview
+            };
+            Store.Register.Items.Add(row);
+            return row;
+        }
         public GetEvidenceDocumentOptionsQueryHandler Options() => new(Tenant, Documents(), External(), Gate);
 
         public (ControlledDocument Doc, ControlledDocumentVersion V1, ControlledDocumentVersion V2) SeedControlled(
@@ -470,6 +487,193 @@ public sealed class EvidenceLinkingTests
             new Diten.Platform.Application.Tests.DocumentManagement.FakeDocumentShareRecordRepository(),
             new Diten.Platform.Application.Tests.DocumentManagement.FakePrincipalAccessor(principal)));
 
+    // ============================================================ WP-CL-BE-5 — computed document state + bulk query
+
+    [Fact]
+    public async Task Controlled_link_pinned_to_an_older_version_of_an_effective_document_reads_superseded()
+    {
+        var fx = new Fixture(TenantA);
+        var (doc, v1, v2) = fx.SeedControlled();
+        var due = new DateTimeOffset(2027, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        fx.SeedRegister(doc, ControlledDocumentLifecycleStatus.Effective, due);
+        await fx.LinkControlled(doc.Id, v1.Id, objectId: "old");
+        await fx.LinkControlled(doc.Id, v2.Id, objectId: "current");
+
+        var old = Assert.Single((await fx.ByObject().Handle(
+            new GetEvidenceLinksByObjectQuery("crm", "claim", "old", null, false), default)).Data!);
+        Assert.True(old.IsSuperseded);
+        Assert.Equal(EvidenceDocumentStates.Effective, old.DocumentState);
+        Assert.Equal(v2.Id, old.CurrentVersionId);
+        Assert.Equal("v2", old.CurrentVersionLabel);
+        Assert.Equal(due, old.ReviewDueAt);
+
+        var current = Assert.Single((await fx.ByObject().Handle(
+            new GetEvidenceLinksByObjectQuery("crm", "claim", "current", null, false), default)).Data!);
+        Assert.False(current.IsSuperseded);
+    }
+
+    [Fact]
+    public async Task Version_stamped_superseded_by_docmgmt_reads_superseded_even_when_ids_match()
+    {
+        var fx = new Fixture(TenantA);
+        var (doc, v1, _) = fx.SeedControlled();
+        doc.CurrentVersionId = v1.Id; // current pointer not moved, but DocMgmt stamped v1 superseded
+        v1.VersionStatus = DocumentVersionStatus.Superseded;
+        fx.SeedRegister(doc, ControlledDocumentLifecycleStatus.Effective);
+        var link = (await fx.LinkControlled(doc.Id, v1.Id)).Data!;
+
+        var dto = (await fx.ById().Handle(new GetEvidenceLinkByIdQuery(link.LinkId), default)).Data!;
+        Assert.True(dto.IsSuperseded);
+    }
+
+    [Theory]
+    [InlineData(ControlledDocumentLifecycleStatus.Suspended, EvidenceDocumentStates.Suspended, false)]
+    [InlineData(ControlledDocumentLifecycleStatus.Retired, EvidenceDocumentStates.Retired, false)]
+    [InlineData(ControlledDocumentLifecycleStatus.ObsoleteCopy, EvidenceDocumentStates.Retired, false)]
+    [InlineData(ControlledDocumentLifecycleStatus.Superseded, EvidenceDocumentStates.Retired, true)]
+    [InlineData(ControlledDocumentLifecycleStatus.UnderRevision, EvidenceDocumentStates.Effective, false)]
+    [InlineData(ControlledDocumentLifecycleStatus.Draft, EvidenceDocumentStates.Unknown, false)]
+    public async Task Register_lifecycle_maps_to_document_state(
+        ControlledDocumentLifecycleStatus lifecycle, string expectedState, bool expectedSuperseded)
+    {
+        var fx = new Fixture(TenantA);
+        var (doc, v1, _) = fx.SeedControlled(); // v1 pinned, v2 current
+        fx.SeedRegister(doc, lifecycle);
+        await fx.LinkControlled(doc.Id, v1.Id);
+
+        var dto = Assert.Single((await fx.ByObject().Handle(
+            new GetEvidenceLinksByObjectQuery("crm", "claim", "claim-1", null, false), default)).Data!);
+        Assert.Equal(expectedState, dto.DocumentState);
+        Assert.Equal(expectedSuperseded, dto.IsSuperseded);
+    }
+
+    [Fact]
+    public async Task No_register_row_is_unknown_and_never_guessed_superseded()
+    {
+        var fx = new Fixture(TenantA);
+        var (doc, v1, v2) = fx.SeedControlled();
+        await fx.LinkControlled(doc.Id, v1.Id);
+
+        var dto = Assert.Single((await fx.ByObject().Handle(
+            new GetEvidenceLinksByObjectQuery("crm", "claim", "claim-1", null, false), default)).Data!);
+        Assert.Equal(EvidenceDocumentStates.Unknown, dto.DocumentState);
+        Assert.False(dto.IsSuperseded);
+        Assert.Equal(v2.Id, dto.CurrentVersionId);
+    }
+
+    [Fact]
+    public async Task External_source_superseded_date_withdrawal_and_monitoring_due_are_computed()
+    {
+        var fx = new Fixture(TenantA);
+        var superseded = fx.SeedExternal("Old guidance");
+        superseded.SourceStatus = ExternalSourceStatus.CurrentEffective;
+        superseded.SourceSupersededDate = fx.Clock.GetUtcNow().AddDays(-1);
+        var withdrawn = fx.SeedExternal("Withdrawn guidance");
+        withdrawn.SourceStatus = ExternalSourceStatus.Withdrawn;
+        var effective = fx.SeedExternal("Current guidance");
+        effective.SourceStatus = ExternalSourceStatus.CurrentEffective;
+        effective.SourceSupersededDate = fx.Clock.GetUtcNow().AddDays(10); // announced, not yet in force
+        effective.NextCheckDueDate = fx.Clock.GetUtcNow().AddDays(5);
+
+        foreach (var (e, id) in new[] { (superseded, "e1"), (withdrawn, "e2"), (effective, "e3") })
+        {
+            Assert.Equal(201, (await fx.Create().Handle(new CreateEvidenceLinkCommand(
+                new EvidenceObjectRefInput("crm", "claim", id, "1"), "external", e.Id, null, "regulatory-letter",
+                new EvidenceLocatorInput(Quote), null), default)).StatusCode);
+        }
+
+        var rows = (await fx.Query().Handle(new QueryEvidenceLinksByObjectsQuery(
+            [new("crm", "claim", "e1"), new("crm", "claim", "e2"), new("crm", "claim", "e3")], false), default)).Data!;
+        var e1 = Assert.Single(rows[0].Links);
+        Assert.True(e1.IsSuperseded);
+        var e2 = Assert.Single(rows[1].Links);
+        Assert.Equal(EvidenceDocumentStates.Withdrawn, e2.DocumentState);
+        var e3 = Assert.Single(rows[2].Links);
+        Assert.False(e3.IsSuperseded);
+        Assert.Equal(EvidenceDocumentStates.Effective, e3.DocumentState);
+        Assert.Equal("Rev. 2022", e3.CurrentVersionLabel);
+        Assert.Equal(effective.NextCheckDueDate, e3.ReviewDueAt);
+    }
+
+    [Fact]
+    public async Task Bulk_query_groups_per_object_keeps_empty_rows_and_honours_include_removed()
+    {
+        var fx = new Fixture(TenantA);
+        var (doc, v1, _) = fx.SeedControlled();
+        await fx.LinkControlled(doc.Id, v1.Id, objectId: "a");
+        var removed = (await fx.LinkControlled(doc.Id, v1.Id, objectId: "b")).Data!;
+        await fx.Remove().Handle(new RemoveEvidenceLinkCommand(removed.LinkId, "wrong page"), default);
+        fx.Store.Links.Single(x => x.Id == removed.LinkId).Status = EvidenceLinkStatuses.Removed;
+
+        var r = await fx.Query().Handle(new QueryEvidenceLinksByObjectsQuery(
+            [new("CRM", "claim", "a"), new("crm", "claim", "b"), new("crm", "claim", "none")], false), default);
+        Assert.Equal(200, r.StatusCode);
+        Assert.Equal(["a", "b", "none"], r.Data!.Select(x => x.ObjectRef.ObjectId));
+        Assert.Single(r.Data![0].Links);
+        Assert.Empty(r.Data![1].Links);
+        Assert.Empty(r.Data![2].Links);
+
+        var withRemoved = (await fx.Query().Handle(new QueryEvidenceLinksByObjectsQuery(
+            [new("crm", "claim", "b")], true), default)).Data!;
+        Assert.Single(withRemoved[0].Links);
+    }
+
+    [Fact]
+    public async Task Bulk_query_is_tenant_isolated()
+    {
+        var shared = new Store();
+        var a = new Fixture(TenantA, shared);
+        var (doc, v1, _) = a.SeedControlled();
+        await a.LinkControlled(doc.Id, v1.Id, objectId: "x");
+
+        var b = new Fixture(TenantB, shared);
+        var rows = (await b.Query().Handle(new QueryEvidenceLinksByObjectsQuery([new("crm", "claim", "x")], true), default)).Data!;
+        Assert.Empty(rows[0].Links);
+    }
+
+    [Fact]
+    public async Task Bulk_query_rejects_empty_over_limit_and_incomplete_objects()
+    {
+        var fx = new Fixture(TenantA);
+        Assert.Equal(400, (await fx.Query().Handle(new QueryEvidenceLinksByObjectsQuery([], false), default)).StatusCode);
+        Assert.Equal(400, (await fx.Query().Handle(new QueryEvidenceLinksByObjectsQuery(null, false), default)).StatusCode);
+        var tooMany = Enumerable.Range(0, EvidenceLinkLimits.MaxQueryObjects + 1)
+            .Select(i => (EvidenceObjectRefInput?)new EvidenceObjectRefInput("crm", "claim", $"c{i}")).ToList();
+        Assert.Equal(400, (await fx.Query().Handle(new QueryEvidenceLinksByObjectsQuery(tooMany, false), default)).StatusCode);
+        var exactly = tooMany.Take(EvidenceLinkLimits.MaxQueryObjects).ToList();
+        Assert.Equal(200, (await fx.Query().Handle(new QueryEvidenceLinksByObjectsQuery(exactly, false), default)).StatusCode);
+        Assert.Equal(400, (await fx.Query().Handle(new QueryEvidenceLinksByObjectsQuery(
+            [new("crm", "claim", " ")], false), default)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Same_document_version_and_quote_under_a_new_object_ref_is_not_a_duplicate()
+    {
+        // WP-CL-BE-5 stop-rule check: CRM copies a link onto a new claim version (new ObjectId + ObjectVersion). The
+        // MOD-0031 duplicate rule keys on the object too, so the copy is a new link, never a 409.
+        var fx = new Fixture(TenantA);
+        var (doc, v1, _) = fx.SeedControlled();
+        Assert.Equal(201, (await fx.LinkControlled(doc.Id, v1.Id, objectId: "claim-v1")).StatusCode);
+        Assert.Equal(201, (await fx.LinkControlled(doc.Id, v1.Id, objectId: "claim-v2")).StatusCode);
+        Assert.Equal(409, (await fx.LinkControlled(doc.Id, v1.Id, objectId: "claim-v2")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Resolver_reads_each_document_once_and_never_writes_docmgmt()
+    {
+        var fx = new Fixture(TenantA);
+        var (doc, v1, v2) = fx.SeedControlled();
+        fx.SeedRegister(doc, ControlledDocumentLifecycleStatus.Effective);
+        await fx.LinkControlled(doc.Id, v1.Id, objectId: "p");
+        await fx.LinkControlled(doc.Id, v2.Id, objectId: "q");
+
+        // Fake repositories throw on any DocMgmt write (UpdateAsync/Create…); a successful read proves read-only.
+        var rows = (await fx.Query().Handle(new QueryEvidenceLinksByObjectsQuery(
+            [new("crm", "claim", "p"), new("crm", "claim", "q")], false), default)).Data!;
+        Assert.True(rows[0].Links[0].IsSuperseded);
+        Assert.False(rows[1].Links[0].IsSuperseded);
+    }
+
     // ============================================================ surface + schema
 
     [Theory]
@@ -477,6 +681,7 @@ public sealed class EvidenceLinkingTests
     [InlineData(nameof(EvidenceLinksController.Remove), "POST", "links/{id:guid}/remove", EvidenceLinkPermissions.Manage)]
     [InlineData(nameof(EvidenceLinksController.ListByObject), "GET", "links", EvidenceLinkPermissions.Read)]
     [InlineData(nameof(EvidenceLinksController.Get), "GET", "links/{id:guid}", EvidenceLinkPermissions.Read)]
+    [InlineData(nameof(EvidenceLinksController.Query), "POST", "links/query", EvidenceLinkPermissions.Read)]
     [InlineData(nameof(EvidenceLinksController.ByDocument), "GET", "links/by-document/{documentId:guid}", EvidenceLinkPermissions.Read)]
     [InlineData(nameof(EvidenceLinksController.DocumentOptions), "GET", "document-options", EvidenceLinkPermissions.Read)]
     public void Endpoints_have_verb_route_and_permission(string action, string verb, string route, string permission)
@@ -555,6 +760,11 @@ public sealed class EvidenceLinkingTests
 
         public Task<BusinessReferenceDataActiveMembershipResult> EnsureSetHasActiveValuesAsync(string setCode, CancellationToken ct = default)
             => throw new NotSupportedException();
+    }
+
+    private sealed class FixedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
     }
 
     private sealed class Session : IPlatformTransactionSession

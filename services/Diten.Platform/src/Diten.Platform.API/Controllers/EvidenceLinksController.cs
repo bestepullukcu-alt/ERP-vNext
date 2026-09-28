@@ -67,6 +67,19 @@ public sealed class EvidenceLinksController : CustomBaseController
         CreateActionResultInstance(await _mediator.Send(new GetEvidenceLinksByObjectQuery(
             module, objectType, objectId, objectVersion, includeRemoved, CorrelationId), ct));
 
+    /// <summary>WP-CL-BE-5 — bulk read (≤100 objects) with the computed document state; a read, hence POST only for
+    /// the body size.</summary>
+    [HttpPost("links/query")]
+    [HasPermission(EvidenceLinkPermissions.Read)]
+    public async Task<IActionResult> Query([FromBody] QueryEvidenceLinksRequest? request, CancellationToken ct) =>
+        CreateActionResultInstance(await _mediator.Send(new QueryEvidenceLinksByObjectsQuery(
+            request?.Objects?.Select(o => o is null
+                    ? null
+                    : new EvidenceObjectRefInput(o.Module, o.ObjectType, o.ObjectId, o.ObjectVersion))
+                .ToList(),
+            request?.IncludeRemoved ?? false,
+            CorrelationId), ct));
+
     [HttpGet("links/{id:guid}")]
     [HasPermission(EvidenceLinkPermissions.Read)]
     public async Task<IActionResult> Get(Guid id, CancellationToken ct) =>

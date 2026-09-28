@@ -455,10 +455,14 @@ public sealed class GetEvidenceLinksByObjectQueryHandler
     private readonly ITenantContext _tenant;
     private readonly IEvidenceLinkRepository _links;
 
-    public GetEvidenceLinksByObjectQueryHandler(ITenantContext tenant, IEvidenceLinkRepository links)
+    private readonly IEvidenceDocumentStateResolver? _state;
+
+    public GetEvidenceLinksByObjectQueryHandler(ITenantContext tenant, IEvidenceLinkRepository links,
+        IEvidenceDocumentStateResolver? state = null)
     {
         _tenant = tenant;
         _links = links;
+        _state = state;
     }
 
     public async Task<Response<IReadOnlyList<EvidenceLinkDto>>> Handle(GetEvidenceLinksByObjectQuery request, CancellationToken ct)
@@ -479,19 +483,97 @@ public sealed class GetEvidenceLinksByObjectQueryHandler
 
         var rows = await _links.ListByObjectAsync(module, objectType, objectId,
             EvidenceLinkRules.Clean(request.ObjectVersion), request.IncludeRemoved, ct);
-        return Response<IReadOnlyList<EvidenceLinkDto>>.Success(rows.Select(EvidenceLinkMapper.ToDto).ToList(), 200, cid);
+        return Response<IReadOnlyList<EvidenceLinkDto>>.Success(await EvidenceLinkMapper.ToDtosAsync(rows, _state, ct), 200, cid);
     }
 }
 
-public sealed class GetEvidenceLinkByIdQueryHandler : IRequestHandler<GetEvidenceLinkByIdQuery, Response<EvidenceLinkDto>>
+/// <summary>WP-CL-BE-5 — the links of many objects in one read (tenant-scoped repository, one query), each with the
+/// computed document state. Every requested object gets a row, empty when it has no links.</summary>
+public sealed class QueryEvidenceLinksByObjectsQueryHandler
+    : IRequestHandler<QueryEvidenceLinksByObjectsQuery, Response<IReadOnlyList<EvidenceObjectLinksDto>>>
+{
+    private readonly ITenantContext _tenant;
+    private readonly IEvidenceLinkRepository _links;
+    private readonly IEvidenceDocumentStateResolver? _state;
+
+    public QueryEvidenceLinksByObjectsQueryHandler(ITenantContext tenant, IEvidenceLinkRepository links,
+        IEvidenceDocumentStateResolver? state = null)
+    {
+        _tenant = tenant;
+        _links = links;
+        _state = state;
+    }
+
+    public async Task<Response<IReadOnlyList<EvidenceObjectLinksDto>>> Handle(
+        QueryEvidenceLinksByObjectsQuery request, CancellationToken ct)
+    {
+        var cid = request.CorrelationId;
+        if (!_tenant.IsResolved || _tenant.TenantId == Guid.Empty)
+        {
+            return EvidenceLinkRules.NoTenant<IReadOnlyList<EvidenceObjectLinksDto>>(cid);
+        }
+
+        var inputs = request.Objects ?? [];
+        if (inputs.Count == 0)
+        {
+            return EvidenceLinkRules.Invalid<IReadOnlyList<EvidenceObjectLinksDto>>("objects must not be empty.", cid);
+        }
+
+        if (inputs.Count > EvidenceLinkLimits.MaxQueryObjects)
+        {
+            return EvidenceLinkRules.Invalid<IReadOnlyList<EvidenceObjectLinksDto>>(
+                $"At most {EvidenceLinkLimits.MaxQueryObjects} objects per query.", cid);
+        }
+
+        var objects = new List<EvidenceObjectRef>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var o in inputs)
+        {
+            var module = EvidenceLinkRules.Key(o?.Module);
+            var objectType = EvidenceLinkRules.Key(o?.ObjectType);
+            var objectId = (o?.ObjectId ?? string.Empty).Trim();
+            var objectVersion = EvidenceLinkRules.Clean(o?.ObjectVersion);
+            if (module.Length == 0 || objectType.Length == 0 || objectId.Length == 0)
+            {
+                return EvidenceLinkRules.Invalid<IReadOnlyList<EvidenceObjectLinksDto>>(
+                    "Each object needs module, objectType and objectId.", cid);
+            }
+
+            if (seen.Add(string.Join('\u001f', module, objectType, objectId, objectVersion ?? string.Empty)))
+            {
+                objects.Add(new EvidenceObjectRef
+                {
+                    Module = module, ObjectType = objectType, ObjectId = objectId, ObjectVersion = objectVersion
+                });
+            }
+        }
+
+        var rows = await _links.ListByObjectsAsync(objects, request.IncludeRemoved, ct);
+        var dtos = await EvidenceLinkMapper.ToDtosAsync(rows, _state, ct);
+        var result = objects.Select(o => new EvidenceObjectLinksDto(
+                new EvidenceObjectRefDto(o.Module, o.ObjectType, o.ObjectId, o.ObjectVersion),
+                dtos.Where(d => d.ObjectRef.Module == o.Module && d.ObjectRef.ObjectType == o.ObjectType
+                        && d.ObjectRef.ObjectId == o.ObjectId
+                        && (o.ObjectVersion is null || d.ObjectRef.ObjectVersion == o.ObjectVersion))
+                    .ToList()))
+            .ToList();
+        return Response<IReadOnlyList<EvidenceObjectLinksDto>>.Success(result, 200, cid);
+    }
+}
+
+public sealed class GetEvidenceLinkByIdQueryHandler :IRequestHandler<GetEvidenceLinkByIdQuery, Response<EvidenceLinkDto>>
 {
     private readonly ITenantContext _tenant;
     private readonly IEvidenceLinkRepository _links;
 
-    public GetEvidenceLinkByIdQueryHandler(ITenantContext tenant, IEvidenceLinkRepository links)
+    private readonly IEvidenceDocumentStateResolver? _state;
+
+    public GetEvidenceLinkByIdQueryHandler(ITenantContext tenant, IEvidenceLinkRepository links,
+        IEvidenceDocumentStateResolver? state = null)
     {
         _tenant = tenant;
         _links = links;
+        _state = state;
     }
 
     public async Task<Response<EvidenceLinkDto>> Handle(GetEvidenceLinkByIdQuery request, CancellationToken ct)
@@ -505,7 +587,8 @@ public sealed class GetEvidenceLinkByIdQueryHandler : IRequestHandler<GetEvidenc
         return link is null
             ? Response<EvidenceLinkDto>.Fail("Evidence link not found.", 404, EvidenceLinkReasonCodes.LinkNotFound,
                 request.CorrelationId)
-            : Response<EvidenceLinkDto>.Success(EvidenceLinkMapper.ToDto(link), 200, request.CorrelationId);
+            : Response<EvidenceLinkDto>.Success((await EvidenceLinkMapper.ToDtosAsync([link], _state, ct))[0], 200,
+                request.CorrelationId);
     }
 }
 
@@ -519,16 +602,19 @@ public sealed class GetEvidenceLinksByDocumentQueryHandler
     private readonly IControlledDocumentRepository _documents;
     private readonly IExternalDocumentRegisterRepository _externalDocuments;
     private readonly IEvidenceDocumentAccessGate _access;
+    private readonly IEvidenceDocumentStateResolver? _state;
 
     public GetEvidenceLinksByDocumentQueryHandler(
         ITenantContext tenant, IEvidenceLinkRepository links, IControlledDocumentRepository documents,
-        IExternalDocumentRegisterRepository externalDocuments, IEvidenceDocumentAccessGate access)
+        IExternalDocumentRegisterRepository externalDocuments, IEvidenceDocumentAccessGate access,
+        IEvidenceDocumentStateResolver? state = null)
     {
         _tenant = tenant;
         _links = links;
         _documents = documents;
         _externalDocuments = externalDocuments;
         _access = access;
+        _state = state;
     }
 
     public async Task<Response<IReadOnlyList<EvidenceLinkDto>>> Handle(GetEvidenceLinksByDocumentQuery request, CancellationToken ct)
@@ -557,7 +643,7 @@ public sealed class GetEvidenceLinksByDocumentQueryHandler
 
         var rows = await _links.ListActiveByDocumentAsync(request.DocumentId,
             request.VersionId is { } v && v != Guid.Empty ? v : null, ct);
-        return Response<IReadOnlyList<EvidenceLinkDto>>.Success(rows.Select(EvidenceLinkMapper.ToDto).ToList(), 200, cid);
+        return Response<IReadOnlyList<EvidenceLinkDto>>.Success(await EvidenceLinkMapper.ToDtosAsync(rows, _state, ct), 200, cid);
     }
 }
 

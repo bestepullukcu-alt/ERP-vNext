@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Features.EvidenceLinking.Services;
 using Diten.Platform.Domain.Entities.EvidenceLinking;
 
 namespace Diten.Platform.Application.Features.EvidenceLinking;
@@ -48,6 +49,7 @@ public static class EvidenceLinkLimits
     public const int RemovalReason = 500;
     public const int DefaultOptionTake = 20;
     public const int MaxOptionTake = 50;
+    public const int MaxQueryObjects = 100;
 }
 
 /// <summary>The Global BRD set of evidence types (values come from MOD-0048, never compiled in).</summary>
@@ -84,7 +86,17 @@ public sealed record EvidenceLinkDto(
     DateTimeOffset LinkedAt,
     string? RemovedBy,
     DateTimeOffset? RemovedAt,
-    string? RemovalReason);
+    string? RemovalReason,
+    // WP-CL-BE-5 — computed on read from DocMgmt (never stored). documentState ∈ effective|suspended|retired|withdrawn|
+    // unknown; null only on write responses, where the state is not resolved.
+    Guid? CurrentVersionId = null,
+    string? CurrentVersionLabel = null,
+    bool IsSuperseded = false,
+    string? DocumentState = null,
+    DateTimeOffset? ReviewDueAt = null);
+
+/// <summary>WP-CL-BE-5 — the bulk read of links for many objects (one call per page of the consumer).</summary>
+public sealed record EvidenceObjectLinksDto(EvidenceObjectRefDto ObjectRef, IReadOnlyList<EvidenceLinkDto> Links);
 
 /// <summary>A picker row. Controlled rows carry the current version; external rows the source provenance.</summary>
 public sealed record EvidenceDocumentOptionDto(
@@ -103,7 +115,9 @@ public sealed record EvidenceDocumentOptionDto(
 
 public static class EvidenceLinkMapper
 {
-    public static EvidenceLinkDto ToDto(EvidenceLink x) => new(
+    public static EvidenceLinkDto ToDto(EvidenceLink x) => ToDto(x, null);
+
+    public static EvidenceLinkDto ToDto(EvidenceLink x, EvidenceDocumentState? state) => new(
         x.Id,
         new EvidenceObjectRefDto(x.ObjectRef.Module, x.ObjectRef.ObjectType, x.ObjectRef.ObjectId, x.ObjectRef.ObjectVersion),
         x.DocumentKind,
@@ -119,5 +133,23 @@ public static class EvidenceLinkMapper
         x.LinkedAt,
         x.RemovedBy,
         x.RemovedAt,
-        x.RemovalReason);
+        x.RemovalReason,
+        state?.CurrentVersionId,
+        state?.CurrentVersionLabel,
+        state?.IsSuperseded ?? false,
+        state?.DocumentState,
+        state?.ReviewDueAt);
+
+    /// <summary>Maps with the computed document state (one DocMgmt read per distinct document).</summary>
+    public static async Task<IReadOnlyList<EvidenceLinkDto>> ToDtosAsync(
+        IReadOnlyList<EvidenceLink> links, IEvidenceDocumentStateResolver? resolver, CancellationToken ct)
+    {
+        if (resolver is null || links.Count == 0)
+        {
+            return links.Select(l => ToDto(l)).ToList();
+        }
+
+        var states = await resolver.ResolveAsync(links, ct);
+        return links.Select(l => ToDto(l, states.TryGetValue(l.Id, out var s) ? s : null)).ToList();
+    }
 }

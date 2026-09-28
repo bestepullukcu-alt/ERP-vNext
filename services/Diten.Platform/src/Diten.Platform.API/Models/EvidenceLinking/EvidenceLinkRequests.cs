@@ -18,3 +18,6 @@ public sealed record CreateEvidenceLinkRequest(
     IReadOnlyList<EvidenceSupportedSpanRequest>? SupportedSpans = null);
 
 public sealed record RemoveEvidenceLinkRequest(string? Reason);
+
+/// <summary>WP-CL-BE-5 — bulk read body: up to 100 objects.</summary>
+public sealed record QueryEvidenceLinksRequest(IReadOnlyList<EvidenceObjectRefRequest?>? Objects, bool IncludeRemoved = false);

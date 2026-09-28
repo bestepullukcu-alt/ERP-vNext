@@ -191,6 +191,9 @@ public static class DependencyInjection
         // MOD-0031 slice 1 — the evidence-linking read gate over the existing MOD-0029 access evaluator (read-only).
         services.AddScoped<Features.EvidenceLinking.Services.IEvidenceDocumentAccessGate,
             Features.EvidenceLinking.Services.EvidenceDocumentAccessGate>();
+        // WP-CL-BE-5 — computed current-document state of evidence links (read-only over existing DocMgmt reads).
+        services.AddScoped<Features.EvidenceLinking.Services.IEvidenceDocumentStateResolver,
+            Features.EvidenceLinking.Services.EvidenceDocumentStateResolver>();
         // MOD-0029-FU15 — retention schedule, litigation hold and disposition (no purge engine; evaluation is opt-in).
         services.AddScoped<Features.DocumentManagementRetention.Services.DocumentRetentionTriggerDateResolver>();
         services.AddScoped<Features.DocumentManagementRetention.Services.DocumentLegalHoldEvaluator>();

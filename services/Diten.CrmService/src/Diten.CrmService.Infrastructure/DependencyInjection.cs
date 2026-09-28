@@ -160,6 +160,13 @@ public static class DependencyInjection
         services.AddScoped<Application.Features.ContentComposition.Claims.ClaimReviewReconciler>();
         AddClaimWorkflowEventing(services, configuration);
 
+        // WP-CL-BE-5 — claim evidence via MOD-0031: the Gateway evidence client (caller's token + tenant, the BE-4
+        // pattern) and the read-time evidence reviewer (approved + changed document → review-required).
+        services.AddHttpClient<
+            Application.Features.ContentComposition.Claims.IClaimEvidenceClient,
+            Evidence.GatewayClaimEvidenceClient>(client => client.Timeout = TimeSpan.FromSeconds(15));
+        services.AddScoped<Application.Features.ContentComposition.Claims.ClaimEvidenceReviewer>();
+
         // WP-SEG-DETAILS6 — S2S display-name reader onto AuthService's internal/users/display-names endpoint. It resolves
         // the segment timeline's CreatedBy/ActivatedBy/UpdatedBy provenance ids to display names in ONE bulk call, using
         // the shared internal API key (a direct call: the internal endpoints are NOT behind the Gateway JWT surface).

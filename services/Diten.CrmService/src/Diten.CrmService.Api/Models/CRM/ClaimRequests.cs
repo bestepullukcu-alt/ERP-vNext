@@ -81,3 +81,19 @@ public sealed record UpdateClaimCountryVersionRequest(
     string? AdaptationReason = null,
     IReadOnlyList<Guid>? AudienceProfileIds = null,
     DateTimeOffset? ValidTo = null);
+
+// WP-CL-BE-5 — claim evidence (MOD-0031). There is deliberately NO objectRef in the body: CRM builds it from the
+// addressed claim / country version.
+public sealed record ClaimEvidenceLocatorRequest(string? Quote, string? Section = null, string? Page = null, string? Table = null);
+
+public sealed record ClaimEvidenceSpanRequest(string LanguageCode, string Text, int? Start = null, int? End = null);
+
+public sealed record LinkClaimEvidenceRequest(
+    string? DocumentKind,
+    Guid DocumentId,
+    Guid? DocumentVersionId,
+    string? EvidenceTypeCode,
+    ClaimEvidenceLocatorRequest? Locator,
+    IReadOnlyList<ClaimEvidenceSpanRequest>? SupportedSpans = null);
+
+public sealed record RemoveClaimEvidenceRequest(string? Reason);

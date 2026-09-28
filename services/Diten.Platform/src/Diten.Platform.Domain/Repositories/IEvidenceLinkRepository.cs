@@ -15,6 +15,20 @@ public interface IEvidenceLinkRepository
         string module, string objectType, string objectId, string? objectVersion, bool includeRemoved,
         CancellationToken ct = default);
 
+    /// <summary>WP-CL-BE-5 — bulk read for many objects. The default loops the single-object read (every implementer
+    /// keeps working); the Mongo repository overrides it with one <c>$or</c> query. Same filter either way.</summary>
+    async Task<IReadOnlyList<EvidenceLink>> ListByObjectsAsync(
+        IReadOnlyList<EvidenceObjectRef> objects, bool includeRemoved, CancellationToken ct = default)
+    {
+        var all = new List<EvidenceLink>();
+        foreach (var o in objects)
+        {
+            all.AddRange(await ListByObjectAsync(o.Module, o.ObjectType, o.ObjectId, o.ObjectVersion, includeRemoved, ct));
+        }
+
+        return all;
+    }
+
     /// <summary>Reverse lookup: ACTIVE links pointing at a document (optionally one version of it).</summary>
     Task<IReadOnlyList<EvidenceLink>> ListActiveByDocumentAsync(
         Guid documentId, Guid? documentVersionId, CancellationToken ct = default);

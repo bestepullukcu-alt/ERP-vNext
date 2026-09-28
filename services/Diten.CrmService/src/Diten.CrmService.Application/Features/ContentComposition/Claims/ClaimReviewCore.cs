@@ -247,7 +247,9 @@ public sealed class ClaimReviewOutcomeApplier
         var superseded = 0;
         foreach (var other in await _claims.ListByCodeAsync(tenantId, approved.ClaimCode, ct))
         {
-            if (other.Id == approved.Id || !other.IsApproved() || other.IsArchived())
+            // WP-CL-BE-5 — a record turned review-required by its evidence is replaced the same way as an approved one.
+            if (other.Id == approved.Id || other.IsArchived()
+                || !(other.IsApproved() || other.Status == ClaimStatuses.ReviewRequired))
             {
                 continue;
             }

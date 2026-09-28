@@ -202,6 +202,61 @@ public sealed class ClaimsController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveClaimCountryVersionCommand(countryVersionId), cancellationToken));
 
+    // ---- WP-CL-BE-5 — evidence via MOD-0031 (caller's token). The ObjectRef is built by CRM, never read from a body.
+
+    [HttpGet("api/crm/content-composition/claims/{claimId:guid}/evidence")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> Evidence(Guid claimId, [FromQuery] bool includeRemoved = false,
+        CancellationToken cancellationToken = default)
+        => CreateActionResultInstance(await _mediator.Send(
+            new GetClaimEvidenceQuery(claimId, includeRemoved), cancellationToken));
+
+    [HttpGet("api/crm/content-composition/claims/country-versions/{countryVersionId:guid}/evidence")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> CountryVersionEvidence(Guid countryVersionId, [FromQuery] bool includeRemoved = false,
+        CancellationToken cancellationToken = default)
+        => CreateActionResultInstance(await _mediator.Send(
+            new GetClaimCountryVersionEvidenceQuery(countryVersionId, includeRemoved), cancellationToken));
+
+    [HttpPost("api/crm/content-composition/claims/{claimId:guid}/evidence")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> LinkEvidence(
+        Guid claimId, [FromBody] LinkClaimEvidenceRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new LinkClaimEvidenceCommand(claimId, ToEvidenceInput(request)), cancellationToken));
+
+    [HttpPost("api/crm/content-composition/claims/country-versions/{countryVersionId:guid}/evidence")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> LinkCountryVersionEvidence(
+        Guid countryVersionId, [FromBody] LinkClaimEvidenceRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new LinkClaimCountryVersionEvidenceCommand(countryVersionId, ToEvidenceInput(request)), cancellationToken));
+
+    [HttpPost("api/crm/content-composition/claims/evidence/{linkId:guid}/remove")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> RemoveEvidence(
+        Guid linkId, [FromBody] RemoveClaimEvidenceRequest? request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new RemoveClaimEvidenceCommand(linkId, request?.Reason), cancellationToken));
+
+    [HttpGet("api/crm/content-composition/claims/evidence/document-options")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> EvidenceDocumentOptions(
+        [FromQuery] string? search, [FromQuery] string? kind, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new GetClaimEvidenceDocumentOptionsQuery(search, kind), cancellationToken));
+
+    private static ClaimEvidenceLinkInput ToEvidenceInput(LinkClaimEvidenceRequest request) => new(
+        request.DocumentKind,
+        request.DocumentId,
+        request.DocumentVersionId,
+        request.EvidenceTypeCode,
+        request.Locator is null
+            ? null
+            : new ClaimEvidenceLocator(request.Locator.Section, request.Locator.Page, request.Locator.Table,
+                request.Locator.Quote),
+        request.SupportedSpans?.Select(s => new ClaimEvidenceSpan(s.LanguageCode, s.Text, s.Start, s.End)).ToList());
+
     private static IReadOnlyList<ClaimLocalizedTextInput>? ToTexts(IReadOnlyList<ClaimLocalizedTextRequest>? texts)
         => texts?.Select(t => new ClaimLocalizedTextInput(t.LanguageCode, t.Text)).ToList();
 

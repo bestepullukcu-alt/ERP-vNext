@@ -13,11 +13,13 @@ public sealed class ListClaimsHandler : IRequestHandler<ListClaimsQuery, Respons
     private readonly IClaimRepository _claims;
     private readonly IClaimCountryVersionRepository? _countryVersions;
     private readonly ClaimReviewReconciler? _reconciler;
+    private readonly ClaimEvidenceReviewer? _evidence;
 
     public ListClaimsHandler(
         ITenantContext tenant, IClaimRepository claims, IClaimCountryVersionRepository? countryVersions = null,
-        ClaimReviewReconciler? reconciler = null)
+        ClaimReviewReconciler? reconciler = null, ClaimEvidenceReviewer? evidence = null)
     {
+        _evidence = evidence;
         _tenant = tenant;
         _claims = claims;
         _countryVersions = countryVersions;
@@ -38,6 +40,18 @@ public sealed class ListClaimsHandler : IRequestHandler<ListClaimsQuery, Respons
 
         // WP-CL-BE-4 — reconcile-on-read: overdue open rounds are re-checked against MOD-0023; reload when any closed.
         if (await ClaimReadReconcile.RunAsync(_reconciler, tenantId, allClaims, allVersions, cancellationToken))
+        {
+            allClaims = await _claims.ListAsync(tenantId, cancellationToken);
+            if (_countryVersions is not null)
+            {
+                allVersions = await _countryVersions.ListAsync(tenantId, cancellationToken);
+            }
+        }
+
+        // WP-CL-BE-5 - read-time evidence check at the same point (approved + changed document -> review-required).
+        var (evidenceChanged, evidence) =
+            await ClaimReadEvidence.RunAsync(_evidence, tenantId, allClaims, allVersions, cancellationToken);
+        if (evidenceChanged)
         {
             allClaims = await _claims.ListAsync(tenantId, cancellationToken);
             if (_countryVersions is not null)
@@ -78,7 +92,8 @@ public sealed class ListClaimsHandler : IRequestHandler<ListClaimsQuery, Respons
             .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
 
         var items = rows.Select(c => ClaimMapper.ToDto(c, ClaimLines.Summary(c,
-                versionsByCode.TryGetValue(c.ClaimCode, out var list) ? list : new List<ClaimCountryVersion>())))
+                    versionsByCode.TryGetValue(c.ClaimCode, out var list) ? list : new List<ClaimCountryVersion>()))
+                with { EvidenceExpiring = evidence?.IsExpiring(c) ?? false })
             .ToList();
         return Response<ClaimListDto>.Success(new ClaimListDto(items, items.Count));
     }
@@ -91,11 +106,13 @@ public sealed class GetClaimHandler : IRequestHandler<GetClaimQuery, Response<Cl
     private readonly IClaimCountryVersionRepository? _countryVersions;
 
     private readonly ClaimReviewReconciler? _reconciler;
+    private readonly ClaimEvidenceReviewer? _evidence;
 
     public GetClaimHandler(
         ITenantContext tenant, IClaimRepository claims, IClaimCountryVersionRepository? countryVersions = null,
-        ClaimReviewReconciler? reconciler = null)
+        ClaimReviewReconciler? reconciler = null, ClaimEvidenceReviewer? evidence = null)
     {
+        _evidence = evidence;
         _tenant = tenant;
         _claims = claims;
         _countryVersions = countryVersions;
@@ -129,7 +146,20 @@ public sealed class GetClaimHandler : IRequestHandler<GetClaimQuery, Response<Cl
             }
         }
 
-        return Response<ClaimDto>.Success(ClaimMapper.ToDto(entity, ClaimLines.Summary(entity, versions)));
+        // WP-CL-BE-5 - read-time evidence check (the claim and the country versions of its code).
+        var (evidenceChanged, evidence) =
+            await ClaimReadEvidence.RunAsync(_evidence, tenantId, [entity], versions, cancellationToken);
+        if (evidenceChanged)
+        {
+            entity = await _claims.GetByIdAsync(tenantId, request.ClaimId, cancellationToken) ?? entity;
+            if (_countryVersions is not null)
+            {
+                versions = await _countryVersions.ListByClaimCodeAsync(tenantId, entity.ClaimCode, cancellationToken);
+            }
+        }
+
+        return Response<ClaimDto>.Success(ClaimMapper.ToDto(entity, ClaimLines.Summary(entity, versions))
+            with { EvidenceExpiring = evidence?.IsExpiring(entity) ?? false });
     }
 }
 
@@ -144,11 +174,14 @@ public sealed class ListClaimCountryVersionsHandler
     private readonly IClaimCountryVersionRepository _countryVersions;
     private readonly IClaimCoverageSettings? _settings;
     private readonly ClaimReviewReconciler? _reconciler;
+    private readonly ClaimEvidenceReviewer? _evidence;
 
     public ListClaimCountryVersionsHandler(
         ITenantContext tenant, IClaimRepository claims, IClaimCountryVersionRepository countryVersions,
-        IClaimCoverageSettings? settings = null, ClaimReviewReconciler? reconciler = null)
+        IClaimCoverageSettings? settings = null, ClaimReviewReconciler? reconciler = null,
+        ClaimEvidenceReviewer? evidence = null)
     {
+        _evidence = evidence;
         _tenant = tenant;
         _claims = claims;
         _countryVersions = countryVersions;
@@ -176,6 +209,12 @@ public sealed class ListClaimCountryVersionsHandler
             loaded = await _countryVersions.ListByClaimCodeAsync(tenantId, claim.ClaimCode, cancellationToken);
         }
 
+        var (evidenceChanged, evidence) = await ClaimReadEvidence.RunAsync(_evidence, tenantId, [], loaded, cancellationToken);
+        if (evidenceChanged)
+        {
+            loaded = await _countryVersions.ListByClaimCodeAsync(tenantId, claim.ClaimCode, cancellationToken);
+        }
+
         IEnumerable<ClaimCountryVersion> rows = loaded;
         if (!string.IsNullOrWhiteSpace(request.CountryCode))
         {
@@ -191,7 +230,8 @@ public sealed class ListClaimCountryVersionsHandler
         var now = DateTimeOffset.UtcNow;
         var window = _settings?.ExpiringWindowDays ?? ClaimCoverageDefaults.ExpiringWindowDays;
         IReadOnlyList<ClaimCountryVersionDto> items = rows
-            .Select(v => ClaimMapper.ToDto(v, v.IsLive() && ClaimLines.IsExpiring(v, now, window)))
+            .Select(v => ClaimMapper.ToDto(v, v.IsLive() && ClaimLines.IsExpiring(v, now, window))
+                with { EvidenceExpiring = evidence?.IsExpiring(v) ?? false })
             .ToList();
         return Response<IReadOnlyList<ClaimCountryVersionDto>>.Success(items);
     }
@@ -205,11 +245,13 @@ public sealed class GetClaimCountryVersionHandler
     private readonly IClaimCoverageSettings? _settings;
 
     private readonly ClaimReviewReconciler? _reconciler;
+    private readonly ClaimEvidenceReviewer? _evidence;
 
     public GetClaimCountryVersionHandler(
         ITenantContext tenant, IClaimCountryVersionRepository countryVersions, IClaimCoverageSettings? settings = null,
-        ClaimReviewReconciler? reconciler = null)
+        ClaimReviewReconciler? reconciler = null, ClaimEvidenceReviewer? evidence = null)
     {
+        _evidence = evidence;
         _tenant = tenant;
         _countryVersions = countryVersions;
         _settings = settings;
@@ -235,9 +277,16 @@ public sealed class GetClaimCountryVersionHandler
             version = await _countryVersions.GetByIdAsync(tenantId, request.CountryVersionId, cancellationToken) ?? version;
         }
 
+        var (evidenceChanged, evidence) = await ClaimReadEvidence.RunAsync(_evidence, tenantId, [], [version], cancellationToken);
+        if (evidenceChanged)
+        {
+            version = await _countryVersions.GetByIdAsync(tenantId, request.CountryVersionId, cancellationToken) ?? version;
+        }
+
         var window = _settings?.ExpiringWindowDays ?? ClaimCoverageDefaults.ExpiringWindowDays;
         return Response<ClaimCountryVersionDto>.Success(ClaimMapper.ToDto(version,
-            version.IsLive() && ClaimLines.IsExpiring(version, DateTimeOffset.UtcNow, window)));
+                version.IsLive() && ClaimLines.IsExpiring(version, DateTimeOffset.UtcNow, window))
+            with { EvidenceExpiring = evidence?.IsExpiring(version) ?? false });
     }
 }
 
@@ -254,12 +303,14 @@ public sealed class GetClaimCoverageHandler : IRequestHandler<GetClaimCoverageQu
     private readonly IReferenceDataCatalogReader? _catalog;
     private readonly IClaimCoverageSettings? _settings;
     private readonly ClaimReviewReconciler? _reconciler;
+    private readonly ClaimEvidenceReviewer? _evidence;
 
     public GetClaimCoverageHandler(
         ITenantContext tenant, IClaimRepository claims, IClaimCountryVersionRepository countryVersions,
         IReferenceDataCatalogReader? catalog = null, IClaimCoverageSettings? settings = null,
-        ClaimReviewReconciler? reconciler = null)
+        ClaimReviewReconciler? reconciler = null, ClaimEvidenceReviewer? evidence = null)
     {
+        _evidence = evidence;
         _tenant = tenant;
         _claims = claims;
         _countryVersions = countryVersions;
@@ -279,6 +330,15 @@ public sealed class GetClaimCoverageHandler : IRequestHandler<GetClaimCoverageQu
         if (_reconciler is not null)
         {
             await ClaimReadReconcile.RunAsync(_reconciler, tenantId,
+                await _claims.ListAsync(tenantId, cancellationToken),
+                await _countryVersions.ListAsync(tenantId, cancellationToken), cancellationToken);
+        }
+
+        // WP-CL-BE-5 — read-time evidence check at the same point (the reads below see its result).
+        ClaimEvidenceSnapshot? evidence = null;
+        if (_evidence is not null)
+        {
+            (_, evidence) = await ClaimReadEvidence.RunAsync(_evidence, tenantId,
                 await _claims.ListAsync(tenantId, cancellationToken),
                 await _countryVersions.ListAsync(tenantId, cancellationToken), cancellationToken);
         }
@@ -333,8 +393,10 @@ public sealed class GetClaimCoverageHandler : IRequestHandler<GetClaimCoverageQu
                 return new ClaimCoverageRowDto(
                     c.Id, c.ClaimCode, c.ClaimName, KindOf(c), c.LocalCountryCode, c.ProductId, c.ProductDisplay,
                     c.AudienceProfileIds.Count, c.ClaimVersion, c.Status,
-                    countries.Select(country => ClaimLines.Cell(c, country.CountryCode, versions, now, window))
-                        .ToList());
+                    countries.Select(country => WithEvidence(
+                            ClaimLines.Cell(c, country.CountryCode, versions, now, window), versions, evidence))
+                        .ToList(),
+                    evidence?.IsExpiring(c) ?? false);
             })
             .ToList();
 
@@ -342,4 +404,10 @@ public sealed class GetClaimCoverageHandler : IRequestHandler<GetClaimCoverageQu
     }
 
     private static string KindOf(Claim c) => string.IsNullOrWhiteSpace(c.Kind) ? ClaimKinds.Core : c.Kind;
+
+    private static ClaimCoverageCellDto WithEvidence(ClaimCoverageCellDto cell, List<ClaimCountryVersion> versions,
+        ClaimEvidenceSnapshot? evidence)
+        => evidence is not null && cell.VersionId is { } id && versions.FirstOrDefault(v => v.Id == id) is { } version
+            ? cell with { EvidenceExpiring = evidence.IsExpiring(version) }
+            : cell;
 }

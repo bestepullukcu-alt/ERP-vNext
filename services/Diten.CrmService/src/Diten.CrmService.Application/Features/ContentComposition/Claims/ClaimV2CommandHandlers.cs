@@ -4,6 +4,7 @@ using Diten.CrmService.Application.Common.ReferenceValidation;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.CrmService.Application.Features.ContentComposition.Claims;
 
@@ -19,11 +20,16 @@ public sealed class CreateClaimNewVersionHandler : IRequestHandler<CreateClaimNe
     private readonly IActorContext _actor;
     private readonly IClaimRepository _claims;
     private readonly IContentCompositionAuditPublisher? _audit;
+    private readonly IClaimEvidenceClient? _evidence;
+    private readonly ILogger<CreateClaimNewVersionHandler>? _logger;
 
     public CreateClaimNewVersionHandler(
         ITenantContext tenant, IActorContext actor, IClaimRepository claims,
-        IContentCompositionAuditPublisher? audit = null)
+        IContentCompositionAuditPublisher? audit = null, IClaimEvidenceClient? evidence = null,
+        ILogger<CreateClaimNewVersionHandler>? logger = null)
     {
+        _evidence = evidence;
+        _logger = logger;
         _tenant = tenant;
         _actor = actor;
         _claims = claims;
@@ -48,10 +54,11 @@ public sealed class CreateClaimNewVersionHandler : IRequestHandler<CreateClaimNe
             return ClaimReviewRules.InReviewLocked<Guid>();
         }
 
-        if (!source.IsApproved() || source.IsArchived())
+        // WP-CL-BE-5 — a record turned review-required by a changed evidence document is fixed by a new version too.
+        if (source.IsArchived() || !(source.IsApproved() || source.Status == ClaimStatuses.ReviewRequired))
         {
             return new ClaimFailure(ClaimErrorCodes.InvalidState,
-                "A new version can only be opened from an approved claim.", 409).To<Guid>();
+                "A new version can only be opened from an approved or review-required claim.", 409).To<Guid>();
         }
 
         var records = await _claims.ListByCodeAsync(tenantId, source.ClaimCode, cancellationToken);
@@ -107,6 +114,12 @@ public sealed class CreateClaimNewVersionHandler : IRequestHandler<CreateClaimNe
                 ContentCompositionAuditEntities.Claim, entity.Id, entity.Version,
                 $"{entity.ClaimCode}|{entity.ClaimVersion}", cancellationToken);
         }
+
+        // WP-CL-BE-5 — the source record's OWN active evidence is linked again under the new ObjectRef; a failed copy
+        // never fails the new version (the submit rule catches a version left without evidence).
+        await ClaimEvidenceCopy.CopyAsync(_evidence, _audit, _logger, tenantId, ClaimEvidenceRules.For(source),
+            ClaimEvidenceRules.For(entity), ContentCompositionAuditEntities.Claim, entity.Id, entity.Version,
+            entity.ClaimCode, cancellationToken);
 
         return Response<Guid>.Success(entity.Id, 201);
     }
@@ -658,11 +671,16 @@ public sealed class CreateClaimCountryNewVersionHandler
     private readonly IClaimRepository _claims;
     private readonly IClaimCountryVersionRepository _countryVersions;
     private readonly IContentCompositionAuditPublisher? _audit;
+    private readonly IClaimEvidenceClient? _evidence;
+    private readonly ILogger<CreateClaimCountryNewVersionHandler>? _logger;
 
     public CreateClaimCountryNewVersionHandler(
         ITenantContext tenant, IActorContext actor, IClaimRepository claims,
-        IClaimCountryVersionRepository countryVersions, IContentCompositionAuditPublisher? audit = null)
+        IClaimCountryVersionRepository countryVersions, IContentCompositionAuditPublisher? audit = null,
+        IClaimEvidenceClient? evidence = null, ILogger<CreateClaimCountryNewVersionHandler>? logger = null)
     {
+        _evidence = evidence;
+        _logger = logger;
         _tenant = tenant;
         _actor = actor;
         _claims = claims;
@@ -734,6 +752,11 @@ public sealed class CreateClaimCountryNewVersionHandler
         await _countryVersions.InsertAsync(entity, cancellationToken);
         await ClaimCountryVersionAudit.PublishAsync(_audit, ClaimReasonCodes.CountryVersionCreated, tenantId, entity,
             cancellationToken);
+        // WP-CL-BE-5 — copy the source version's OWN active evidence (inherited core evidence is not copied: it is
+        // inherited again from the newly bound claim record).
+        await ClaimEvidenceCopy.CopyAsync(_evidence, _audit, _logger, tenantId, ClaimEvidenceRules.For(source),
+            ClaimEvidenceRules.For(entity), ContentCompositionAuditEntities.ClaimCountryVersion, entity.Id,
+            entity.Version, $"{entity.ClaimCode}|{entity.CountryCode}", cancellationToken);
         return Response<Guid>.Success(entity.Id, 201);
     }
 }

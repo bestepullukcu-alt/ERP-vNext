@@ -75,10 +75,13 @@ public sealed class ClaimsWorkflowApprovalTests
         public ClaimReviewReconciler Reconciler(int afterSeconds = 120) =>
             new(Workflow, Applier(), new Settings(afterSeconds), Clock);
 
-        public SubmitClaimReviewHandler Submit() => new(Ctx(), new Actor("alice"), Claims, Workflow, new Settings(), Audit);
+        public FakeClaimEvidenceClient Evidence { get; } = new() { AnyObjectHasEvidence = true };
+
+        public SubmitClaimReviewHandler Submit() =>
+            new(Ctx(), new Actor("alice"), Claims, Workflow, new Settings(), Audit, Evidence);
 
         public SubmitClaimCountryVersionReviewHandler SubmitVersion() =>
-            new(Ctx(), new Actor("alice"), Claims, Versions, Workflow, Refs, new Settings(), Audit);
+            new(Ctx(), new Actor("alice"), Claims, Versions, Workflow, Refs, new Settings(), Audit, Evidence);
 
         public WithdrawClaimReviewHandler Withdraw() => new(Ctx(), new Actor("alice"), Claims, Workflow, Applier(), Audit);
 

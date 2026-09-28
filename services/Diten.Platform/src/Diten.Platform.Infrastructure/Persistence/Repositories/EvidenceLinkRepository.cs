@@ -46,6 +46,31 @@ public sealed class EvidenceLinkRepository : TenantRepository<EvidenceLink>, IEv
         return await Collection.Find(F.And(conditions)).SortByDescending(x => x.LinkedAt).ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<EvidenceLink>> ListByObjectsAsync(
+        IReadOnlyList<EvidenceObjectRef> objects, bool includeRemoved, CancellationToken ct = default)
+    {
+        if (objects.Count == 0)
+        {
+            return [];
+        }
+
+        var perObject = objects.Select(o =>
+        {
+            var match = F.And(
+                F.Eq(x => x.ObjectRef.Module, o.Module),
+                F.Eq(x => x.ObjectRef.ObjectType, o.ObjectType),
+                F.Eq(x => x.ObjectRef.ObjectId, o.ObjectId));
+            return o.ObjectVersion is null ? match : match & F.Eq(x => x.ObjectRef.ObjectVersion, o.ObjectVersion);
+        });
+        var filter = F.And(ExecutionFilter, F.Or(perObject));
+        if (!includeRemoved)
+        {
+            filter &= F.Eq(x => x.Status, EvidenceLinkStatuses.Active);
+        }
+
+        return await Collection.Find(filter).SortByDescending(x => x.LinkedAt).ToListAsync(ct);
+    }
+
     public async Task<IReadOnlyList<EvidenceLink>> ListActiveByDocumentAsync(
         Guid documentId, Guid? documentVersionId, CancellationToken ct = default)
     {

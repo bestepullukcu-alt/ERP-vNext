@@ -43,7 +43,8 @@ public sealed record ClaimDto(
     string? TextLanguageCode = null,
     Guid? SupersedesClaimId = null,
     IReadOnlyList<ClaimCountryClosureDto>? CountryClosures = null,
-    IReadOnlyList<ClaimCountrySummaryDto>? CountrySummary = null);
+    IReadOnlyList<ClaimCountrySummaryDto>? CountrySummary = null,
+    bool EvidenceExpiring = false);
 
 public sealed record ClaimListDto(IReadOnlyList<ClaimDto> Items, int Total);
 
@@ -90,7 +91,8 @@ public sealed record ClaimCountryVersionDto(
     string? UpdatedBy,
     DateTimeOffset? ArchivedAt,
     string? ArchivedBy,
-    bool IsArchived);
+    bool IsArchived,
+    bool EvidenceExpiring = false);
 
 /// <summary>WP-CL-BE-1 — a matrix column (a <c>COUNTRY_CODES</c> value, BRD order).</summary>
 public sealed record ClaimCoverageCountryDto(string CountryCode, string? DisplayName);
@@ -104,7 +106,8 @@ public sealed record ClaimCoverageCellDto(
     string? Version,
     string? BoundCoreVersion,
     string? ClosureReasonCode,
-    bool IsExpiring);
+    bool IsExpiring,
+    bool EvidenceExpiring = false);
 
 /// <summary>WP-CL-BE-1 — a matrix row: the current record of one claim code.</summary>
 public sealed record ClaimCoverageRowDto(
@@ -118,7 +121,8 @@ public sealed record ClaimCoverageRowDto(
     int AudienceCount,
     string CoreVersion,
     string CoreStatus,
-    IReadOnlyList<ClaimCoverageCellDto> Cells);
+    IReadOnlyList<ClaimCoverageCellDto> Cells,
+    bool EvidenceExpiring = false);
 
 public sealed record ClaimCoverageDto(
     IReadOnlyList<ClaimCoverageCountryDto> Countries,

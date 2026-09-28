@@ -75,11 +75,13 @@ public sealed class SubmitClaimReviewHandler : IRequestHandler<SubmitClaimReview
     private readonly IClaimWorkflowClient _workflow;
     private readonly IClaimWorkflowSettings? _settings;
     private readonly IContentCompositionAuditPublisher? _audit;
+    private readonly IClaimEvidenceClient? _evidence;
 
     public SubmitClaimReviewHandler(ITenantContext tenant, IActorContext actor, IClaimRepository claims,
         IClaimWorkflowClient workflow, IClaimWorkflowSettings? settings = null,
-        IContentCompositionAuditPublisher? audit = null)
+        IContentCompositionAuditPublisher? audit = null, IClaimEvidenceClient? evidence = null)
     {
+        _evidence = evidence;
         _tenant = tenant;
         _actor = actor;
         _claims = claims;
@@ -116,6 +118,13 @@ public sealed class SubmitClaimReviewHandler : IRequestHandler<SubmitClaimReview
         {
             return ClaimReviewMapping.Fail<ClaimReviewRoundDto>(ClaimErrorCodes.ProductRequired,
                 "A claim needs its product before it is sent for review.", 400);
+        }
+
+        // WP-CL-BE-5 — at least one active evidence link (after the BE-4 rules, before MOD-0023 is called).
+        if (await ClaimEvidenceGate.RequireAsync<ClaimReviewRoundDto>(_evidence,
+                [ClaimEvidenceRules.ReadKey(ClaimEvidenceRules.ClaimObjectType, claim.Id)], ct) is { } noEvidence)
+        {
+            return noEvidence;
         }
 
         var templateCode = claim.IsLocal()
@@ -178,12 +187,14 @@ public sealed class SubmitClaimCountryVersionReviewHandler
     private readonly IReferenceMetadataReader? _metadata;
     private readonly IClaimWorkflowSettings? _settings;
     private readonly IContentCompositionAuditPublisher? _audit;
+    private readonly IClaimEvidenceClient? _evidence;
 
     public SubmitClaimCountryVersionReviewHandler(ITenantContext tenant, IActorContext actor, IClaimRepository claims,
         IClaimCountryVersionRepository countryVersions, IClaimWorkflowClient workflow,
         IReferenceMetadataReader? metadata = null, IClaimWorkflowSettings? settings = null,
-        IContentCompositionAuditPublisher? audit = null)
+        IContentCompositionAuditPublisher? audit = null, IClaimEvidenceClient? evidence = null)
     {
+        _evidence = evidence;
         _tenant = tenant;
         _actor = actor;
         _claims = claims;
@@ -245,6 +256,16 @@ public sealed class SubmitClaimCountryVersionReviewHandler
             return ClaimReviewMapping.Fail<ClaimReviewRoundDto>(ClaimErrorCodes.LanguagesIncomplete,
                 $"Every content language of '{version.CountryCode}' needs a text; missing: {string.Join(", ", missing)}.",
                 400);
+        }
+
+        // WP-CL-BE-5 — at least one active effective evidence link: inherited (bound claim record) + own.
+        if (await ClaimEvidenceGate.RequireAsync<ClaimReviewRoundDto>(_evidence,
+            [
+                ClaimEvidenceRules.ReadKey(ClaimEvidenceRules.CountryVersionObjectType, version.Id),
+                ClaimEvidenceRules.ReadKey(ClaimEvidenceRules.ClaimObjectType, version.ClaimId)
+            ], ct) is { } noEvidence)
+        {
+            return noEvidence;
         }
 
         var templateCode = string.Format(

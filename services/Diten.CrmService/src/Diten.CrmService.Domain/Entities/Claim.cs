@@ -203,4 +203,10 @@ public static class ClaimReasonCodes
     public const string ReviewSubmitted = "claim_review_submitted";
     public const string ReviewWithdrawn = "claim_review_withdrawn";
     public const string ReviewOutcomeApplied = "claim_review_outcome_applied";
+
+    // WP-CL-BE-5 — evidence (link / document ids and counts only; never a quote or wording).
+    public const string EvidenceLinked = "claim_evidence_linked";
+    public const string EvidenceRemoved = "claim_evidence_removed";
+    public const string EvidenceCopied = "claim_evidence_copied";
+    public const string ReviewRequiredEvidenceChanged = "claim_review_required_evidence_changed";
 }
