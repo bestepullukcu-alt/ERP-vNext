@@ -35,5 +35,8 @@ public enum SchemaProfile
 
     /// <summary>MOD-0357 Management Review &amp; Cadence: the meeting↔task bridge (S1). Meeting/minutes/attendee
     /// collections join this profile in later slices (S2+).</summary>
-    Meetings = 10
+    Meetings = 10,
+
+    /// <summary>MOD-0031 Evidence Linking (slice 1): evidence_links.</summary>
+    EvidenceLinking = 11
 }
