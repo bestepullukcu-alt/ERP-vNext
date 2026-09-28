@@ -102,3 +102,16 @@ KORU/YAPMA: belge içeriği/dosyası kopyalanmaz; DocMgmt varlık/API/erişim ku
 DOĞRULA (E2): cd C:\tmp\cl-be-2; dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests -c Release --nologo → 0 kırmızı; gateway+Platform build 0 hata; yeni testler WP Acceptance listesindeki gibi (sürüm-belge uyuşmazlığı, silinmiş sürüm, 403, harici snapshot, evidence-type 400/set yok 400, quote boş, 409, kaldır+includeRemoved, ters sorgu yalnız aktif, kiracı izolasyonu, tam 1 olay alıntısız, document-options okunabilir filtre); git diff yalnız services/Diten.Platform/** + ocelot (+1 route) + MOD-0031 pack + registry satırı. Commit ("feat(platform): WP-CL-BE-2 — MOD-0031 evidence linking slice 1 (links, pinned version, locator, supported spans, reverse lookup)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: yeniden kullanılabilir DocMgmt okuma-erişim değerlendiricisi yoksa fail-closed (403) + raporla — erişim kontrolünü ATLAMA; ocelot düzeni belirsizse document-management bloğunu örnek al + raporla.
 ```
+
+## §37 CT bağımsız doğrulama (2026-09-28) → **ACCEPTED (E2, koşullu) — canlı öncesi BLOKER: CL-BE-2a**
+```
+Commit: 28ba1df4 · Agent: PASS-with-note (Platform 4980/173 = taban 4954/173 + 26; gateway 83/1 önceden var) · CT: worktree C:\tmp\cl-be-2 → Platform 4980/173; EvidenceLinking 26/26
+```
+- ✅ **Kapsam:** 20 dosya, +2044/−1. Değişiklikler: `services/Diten.Platform/**` + `ocelot.json` (+1 route `/api/v1/evidence/{everything}` → 5057, document-management bloğuyla aynı biçim) + MOD-0031 pack + registry satırı. CRM, Auth ve Web diff YOK.
+- ✅ **173 kırmızı = ortam.** TRX analizi: 163'ü `*MongoTests` sınıfında. Mesajlar: "local mongod binary is required" ×116, BSON `Timestamp` serileştirme ×49. Kalan 10'u da gerçek-mongod ya da harness testi (Tasks, BRD, Subscription alanları). **EvidenceLinking kırmızısı YOK**, bu WP'nin dokunduğu alanda kırmızı yok. WP'deki "0 kırmızı" kriteri taban ortam sorunu nedeniyle "yeni kırmızı yok" olarak kabul edildi.
+- ✅ **Erişim:** kontrollü belgede mevcut `DocumentAccessEvaluator.CanReadControlledDocumentAsync` yeniden kullanılıyor (`EvidenceDocumentAccessGate`). Harici belgede `external-documents.view` izni ya da yönetici; aksi halde fail-closed.
+- ✅ **Tekrar:** ön kontrol + **kısmi tekil indeks** (yalnız aktif bağlar). 3 sabotaj kanıtı.
+- ⛔ **BLOKER (CT teyit): izin kapsamı.** `PlatformPermissionAutoRegistrationWorker.cs:31-52,78-80` — manifest atfı olmayan yeni `platform.*` anahtarı **Module="platform" + Scope=PlatformAdmin** ile kaydolur ve AuthService bunu **Tenant'a geri düşüremez**. `platform.evidence.links.*` anahtarlarının manifestte karşılığı yok. Bu kod **ilk kez canlı Platform'da çalışmadan ÖNCE** anahtarlar tenant kapsamlı bir manifest girdisiyle (WorkflowManifestProvider / TaskManifestProvider deseni) atfedilmeli → **WP-CL-BE-2a**. `feature/crm-claims-v2` fleet'te çalıştırılmadan önce yapılacak.
+- ℹ **Olay tanımları** `Platform.Application` içinde. CRM tüketecekse (CL-BE-5) `Platform.Contracts`'a taşınması değerlendirilecek.
+- ℹ **Okuma kuralı:** yönetici olmayan kullanıcı yalnız master register'a bağlı ve **Effective** belgeleri görebilir ve bağlayabilir (DocMgmt yaşam döngüsü kuralı). Canlı testte bu doğrultuda belge hazırlanmalı.
+- ℹ Gerçek Mongo'da kısmi indeks ve transaction davranışı canlı E4'te doğrulanacak.
