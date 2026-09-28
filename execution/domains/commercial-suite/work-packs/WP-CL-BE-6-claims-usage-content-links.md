@@ -110,3 +110,14 @@ KORU/YAPMA: 4 iddia dosyasına DOKUNMA (yalnız repository okuması); ContentSet
 DOĞRULA (E2): cd C:\tmp\cl-be-6; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban 1974/0/5 + yeni); dotnet test frontend/Diten.Web.Tests -c Release --nologo → 229/0; CRM API build 0 hata; yeni testler WP Acceptance listesindeki gibi + ≥3 sabotaj kanıtı; git diff yalnız services/Diten.CrmService/** ve 4 yasaklı dosyada diff YOK. Commit ("feat(crm): WP-CL-BE-6 — knowledge content claim refs, publish gate, claim usage read (content/content set/journey)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: publish akışı dağınıksa kapıyı en içteki ortak noktaya koy+raporla; ContentScope MarketRefs ülke koduna eşlenemiyorsa GLOBAL+raporla.
 ```
+
+## §37 CT bağımsız doğrulama (2026-09-28) → **ACCEPTED (E2)**
+```
+Commit: 72fdac60 · Agent: PASS (CRM 1998/0/5, Web 229/0, 5 sabotaj) · CT: worktree C:\tmp\cl-be-6 → CRM 1998/0/5; BE-4 ile birleşik 2040/0/5 (çakışmasız)
+```
+- ✅ **Kapsam:** 16 dosya, yalnız `services/Diten.CrmService/**`. **Yasaklı 4 iddia dosyasında diff YOK.**
+- ✅ `ClaimRefs` (≤20, stringGuid, indeks `{TenantId, ClaimRefs.ClaimCode}`). Kaydetme doğrulaması (`claim_product_mismatch`…). Yayın kapısı (`claim_not_approved`, `claim_language_mismatch`; review-required geçer + işaret). Kullanım ucu (içerik / set / yolculuk, `via`).
+- ➕ **DUR ×2, çözümleri kabul:**
+  - Ayrı yayın komutu yok, yayın = create/update'te `published`. Kapı iki handler'da. Update'te yalnız yayına girerken, bağ ya da dil değişince çalışıyor.
+  - MarketRefs serbest metin. Değer ülke sayılıyor: COUNTRY_CODES'ta ya da iddianın o ülkede sürümü varsa. Diğerleri (`eu` gibi) GLOBAL.
+- ℹ **FE sözleşmesi:** update'te `claimRefs` gönderilmezse bağlar korunur, `[]` gönderilirse temizlenir. Mevcut Knowledge UI bağları silmez.

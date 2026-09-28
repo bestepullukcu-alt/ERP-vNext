@@ -152,3 +152,22 @@ KORU/YAPMA: Platform/Auth/Web/gateway DOKUNMA; kanıt kuralı YOK; şablon/pozis
 DOĞRULA (E2): cd C:\tmp\cl-be-4; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban 1974/0/5 + yeni); dotnet test frontend/Diten.Web.Tests -c Release --nologo → 229/0; CRM API build 0 hata; yeni testler WP Acceptance listesindeki gibi + ≥3 sabotaj kanıtı; git diff yalnız services/Diten.CrmService/**. Commit ("feat(crm): WP-CL-BE-4 — claims approval via MOD-0023 workflow (submit/withdraw, outcome consumer, rounds, reconcile-on-read)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: EventTransportMessage + imza/güven doğrulaması CRM'e taşınamıyorsa DUR+raporla; instance detayı aktif görev id'si vermiyorsa geri çekmeyi yapma, DUR+raporla; RabbitMQ ayarı brokersız açılışı kırıyorsa UseRabbitMq=false'ta kayıt yapma+raporla.
 ```
+
+## §37 CT bağımsız doğrulama (2026-09-28) → **ACCEPTED (E2)** — canlı öncesi gerekli: **WP-CL-BE-3a** + CL-CFG-1 + grant
+```
+Commit: c3a62ef4 · Agent: PASS (CRM 2016/0/5, Web 229/0, 4 sabotaj/6 kırmızı) · CT: worktree C:\tmp\cl-be-4 → CRM 2016/0/5; BE-6 ile birleşik 2040/0/5, Web 229/0, API build 0 hata
+```
+- ✅ **Kapsam:** 26 dosya, yalnız `services/Diten.CrmService/**`. `TEMPORARY` işareti kalmadı. MassTransit.RabbitMQ 8.3.6 eklendi (AuthService ile aynı sürüm).
+- ✅ **Tasarım:**
+  - Onay yalnız `ApplyReviewOutcome` (tek yer) ile işliyor. Tüketici ve okumada uzlaştırma aynı yolu kullanıyor.
+  - Inbox (EventId `_id`) ile tekrar etkisiz.
+  - Olay, CRM'deki açık tur + nesne + tenant ile birebir eşleşmezse yok sayılıyor. İmza doğrulaması bugün yok, bu kontrol telafi ediyor.
+  - Doğrudan approve → 409 `approval_via_workflow_only`. in-review kilidi var.
+- ⛔ **Canlı engel (CT teyit):** Platform `StartWorkflowInstanceValidator.cs:26-28` boş `CandidatePrincipalIds`'i reddediyor. Oysa handler (`StartWorkflowInstanceHandler.cs:114-134`) şablon adaylarını zaten önceliklendiriyor. → **WP-CL-BE-3a** düzeltecek.
+- ⚠ **Eski İddialar UI "Onayla" düğmesi 409 alır.** CL-FE işi.
+- ⚠ **Geri çekme:** eskalasyona düşmüş adım geri çekilemez → 409 `withdraw_not_possible`.
+- ⚠ Dev'de RabbitMQ açık. Broker kapalıyken CRM açılışı denenmedi; canlı E4'te bakılacak.
+- ℹ **Önerilen Platform işleri:**
+  - (1) Boş aday → **BE-3a**.
+  - (2) Olay imzalama ve doğrulama → ayrı güvenlik işi.
+  - (3) Yorumlu geçmiş → **BE-3a**.
