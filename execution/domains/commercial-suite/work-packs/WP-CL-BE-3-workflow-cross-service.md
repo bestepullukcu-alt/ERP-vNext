@@ -188,3 +188,16 @@ KORU/YAPMA: MOD-0023 uçları/sözleşmeleri geriye uyumlu; Tasks/WorkCenterNext
 DOĞRULA (E2): cd C:\tmp\cl-be-3; dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests -c Release --nologo → 0 kırmızı; dotnet test services/Diten.Platform/tests/Diten.Platform.Eventing.Tests -c Release --nologo → 0 kırmızı; yeni testler: DisplayContext kalıcı+resolver, göreli olmayan link 400, Tasks önceliği, 4 terminal geçişte tam 1 olay, cancelled/frozen/closed aday değil + secondary/acting aday, toplu okuma sınır+izolasyon, SoD aynen; git diff yalnız services/Diten.Platform/** + WP dosyası. Commit ("feat(platform): WP-CL-BE-3 — workflow display context, completion event, candidate fix, batch read (MOD-0023)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: terminal geçiş + outbox aynı transaction'a alınamıyorsa mevcut SupportsTransactionsAsync+telafi desenine uy+raporla; olay adı sözleşmeye uymuyorsa en yakın uyumlu ad+raporla; pozisyon repo tenant filtresi vermiyorsa DUR.
 ```
+
+## §37 CT bağımsız doğrulama (2026-09-28) → **ACCEPTED (E2)**
+```
+Commit: b8681333 · Agent: PASS-with-note (App 4980/173 = taban 4954/173 + 26; Eventing 65/0/3; 4 sabotaj/8 kırmızı) · CT: worktree C:\tmp\cl-be-3 → App 4980/173, Eventing 65/0/3
+```
+- ✅ **Kapsam:** 28 dosya, +1803/−24. Değişiklikler: `services/Diten.Platform/**` + bu WP (§Tüketici rehberi). CRM, Auth, Web ve ocelot diff YOK. Yeni izin anahtarı YOK.
+- ✅ **Kırmızı küme = BE-2 koşusuyla birebir aynı** (TRX karşılaştırması: 173 = 173, fark 0). Hepsi ortam kaynaklı Mongo testi.
+- ✅ **Tamamlanma olayı:** onay-final / ret / iptal / zaman aşımı → görev + instance + geçiş kaydı + `platform.workflow.instance.completed.v1` **tek transaction** (`IPlatformTransactionExecutor`). EventId instance'tan deterministik, yani instance başına tek olay. Ara adımda ve eskalasyonda olay yok.
+- ✅ **Aday düzeltmesi:** pozisyon id ile dar sorgu; kanonik `TenantOrganizationMapper.IsActiveNow` (iptal, silinmiş, süresi dolmuş hariç); pozisyon `Active` + arşivsiz olmalı.
+- ✅ **DisplayContext:** göreli link zorunlu. Sahip resolver (Tasks) önceliği kayıt sırasından bağımsız.
+- ⚠ **Davranış değişikliği (kabul):** transaction desteklemeyen Mongo'da onay/ret/iptal artık **503** döner, yazmaz (eskiden olaysız yazıyordu). Dev `rs0` replika seti, sorun yok. **Canlı/üretim ortamının replika set olması şart** → go-live kontrol listesine.
+- ⚠ **EffectiveTo sınırı:** atamanın bitiş anı artık aktif sayılmıyor (org modülü kuralıyla hizalandı).
+- ℹ Olay tipi `Platform.Application` içinde. CRM tüketicisi (BE-4) JSON sözleşmesiyle okuyacak; `Platform.Contracts`'a taşıma ayrı karar. **CRM kullanıcı token'ını iletmeli**, yoksa SoD çalışmaz (rehberde yazıyor).
