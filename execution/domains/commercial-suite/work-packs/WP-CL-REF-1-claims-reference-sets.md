@@ -76,3 +76,17 @@ DOĞRULA (E2): cd C:\tmp\cl-ref-1; dotnet test services/Diten.Platform/tests/Dit
 Durma: global sette attribute_definitions desteklenmiyorsa DUR+raporla (attribute'u sessizce kaldırma); set kodu başka katalogda varsa DUR; FailOnBlockedConflicts açılışı durdurursa DUR+log.
 Not: canlı doğrulama için fleet ana checkout'tan çalışır; worktree'deki JSON'u canlıda denemek için CT'ye raporla — CT birleştirip restart sonrası doğrular (worktree'den fleet çalıştırma YOK).
 ```
+
+## §37 CT bağımsız doğrulama (2026-09-28) → **ACCEPTED (E2)** — canlı kontrol birleştirme + fleet restart sonrası
+```
+Commit: d8a9b4ac · Agent: PASS-with-note (App 4960/173 = taban 4954/173 + 6; 2 sabotaj/3 kırmızı) · CT: worktree C:\tmp\cl-ref-1 → katalog testi 6/6
+```
+- ✅ **Kapsam:** 3 dosya (yeni JSON, `appsettings.Development.json` `RequiredSetCodes` +4, 1 test). `COUNTRY_CODES`, mevcut katalog ve yükleyici diff YOK.
+- ✅ **JSON (CT okudu):**
+  - country-content-languages **global**: TR tr · BY ru,be · UZ uz,ru · TM tk,ru · GE ka · AZ az.
+  - claim-country-closure-reason **tenant** ×3.
+  - claim-adaptation-type **tenant** ×3.
+  - evidence-type **global** ×5.
+- ✅ Test, yükleyicinin kendi ayrıştırma ve öznitelik doğrulamasını kullanıyor; kod çakışmasını ve `RequiredSetCodes`'u da kontrol ediyor.
+- ⚠ **Dosya yolu:** yükleyici `Path.GetFullPath(CatalogPath)` ile **çalışma dizinine göre** çözüyor (`CatalogLoadWorker.cs:120-132`). Fleet Platform'u proje klasöründen çalıştırırsa kaynak `Seed/` okunur. csproj'da `document-management-qms.json` ve `legal-entity-reference.json` için `CopyToOutputDirectory` var, yeni dosya için yok. **Takip:** publish paketi için csproj'a `Content Update … crm-claims-reference.json CopyToOutputDirectory=PreserveNewest` satırı eklenmeli (tek satır, BE-4 ya da ayrı küçük iş). Canlı kontrolde açılış günlüğünde `file=crm-claims-reference.json` görülmezse sebep budur.
+- ⏳ **Canlı kontrol listesi** (agent raporundaki 4 adım): açılış günlüğü `sets_inserted=4`, Mongo Published + değer sayıları 6/3/3/5 + `Languages`, published-values ucu (global scope_key'siz / tenant scope_key'li 200 + ters 400'ler), `COUNTRY_CODES` değişmedi. **Birleştirme + fleet restart sonrası CT yapar.**
