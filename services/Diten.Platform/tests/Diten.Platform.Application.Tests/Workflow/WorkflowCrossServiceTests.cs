@@ -453,6 +453,167 @@ public sealed class WorkflowCrossServiceTests
         Assert.Equal(WorkflowPermissions.InstancesView, method.GetCustomAttribute<HasPermissionAttribute>()!.Permission);
     }
 
+    // ============================================================ WP-CL-BE-3a — empty request candidates
+
+    [Fact]
+    public void Validator_accepts_an_empty_candidate_list_but_still_rejects_a_blank_entry()
+    {
+        var template = Guid.NewGuid();
+        Assert.True(new StartWorkflowInstanceValidator().Validate(
+            new StartWorkflowInstanceCommand(StartRequest(template, []), Correlation)).IsValid);
+        Assert.False(new StartWorkflowInstanceValidator().Validate(
+            new StartWorkflowInstanceCommand(StartRequest(template, [" "]), Correlation)).IsValid);
+        Assert.False(new StartWorkflowInstanceValidator().Validate(
+            new StartWorkflowInstanceCommand(StartRequest(template, [new string('x', 257)]), Correlation)).IsValid);
+    }
+
+    [Fact]
+    public async Task Template_position_candidates_start_the_instance_when_the_request_list_is_empty()
+    {
+        var f = new Fx(TenantA);
+        var position = new Position
+        {
+            TenantId = TenantA, Code = "MLR", Name = "MLR", OrganizationUnitId = Guid.NewGuid(), Status = PositionStatus.Active
+        };
+        f.Store.Positions.Add(position);
+        var holder = Guid.NewGuid();
+        f.Store.Assignments.Add(new PositionAssignment
+        {
+            TenantId = TenantA, PositionId = position.Id, UserId = holder, EffectiveFrom = DateTimeOffset.UtcNow.AddDays(-1)
+        });
+        var template = f.SeedTemplateJson("T-POS",
+            "{\"stages\":[{\"code\":\"medical\",\"steps\":[{\"code\":\"review\",\"name\":\"Medical review\","
+            + "\"assignment\":{\"candidatePrincipalIds\":[\"position:" + position.Id + "\"]}}]}]}");
+
+        var command = new StartWorkflowInstanceCommand(StartRequest(template.Id, []), Correlation);
+        Assert.True(new StartWorkflowInstanceValidator().Validate(command).IsValid); // the pipeline lets it through
+        var r = await f.Start().Handle(command, default);
+
+        Assert.True(r.IsSuccessful, string.Join(",", r.Errors));
+        Assert.Equal("medical", r.Data!.CurrentStage);
+        var task = f.Store.Tasks.Single(t => t.WorkflowInstanceId == r.Data.WorkflowInstanceId);
+        Assert.Equal(holder.ToString(), task.AssigneeRef);
+    }
+
+    [Fact]
+    public async Task No_template_and_no_request_candidates_is_still_400_candidates_required()
+    {
+        var f = new Fx(TenantA);
+        var template = f.SeedTemplate("T-NONE");
+        var r = await f.Start().Handle(new StartWorkflowInstanceCommand(StartRequest(template.Id, []), Correlation), default);
+        Assert.Equal(400, r.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired, r.ReasonCode);
+        Assert.Empty(f.Store.Instances);
+        Assert.Empty(f.Store.Tasks);
+    }
+
+    [Fact]
+    public async Task Request_candidates_are_used_when_the_template_has_none()
+    {
+        var f = new Fx(TenantA);
+        var template = f.SeedTemplate("T-REQ");
+        var r = await f.Start().Handle(new StartWorkflowInstanceCommand(
+            StartRequest(template.Id, ["user:request-approver"]), Correlation), default);
+        Assert.True(r.IsSuccessful, string.Join(",", r.Errors));
+        Assert.Equal("request-approver", f.Store.Tasks.Single().AssigneeRef);
+    }
+
+    // ============================================================ WP-CL-BE-3a — instance history
+
+    [Fact]
+    public async Task History_lists_start_approve_reject_in_sequence_with_comments_and_step_names()
+    {
+        var f = new Fx(TenantA);
+        var run = f.SeedRuntime(twoSteps: true);
+        Assert.True((await f.Approve().Handle(ApproveCmd(run.Task.Id), default)).IsSuccessful);
+        var second = f.Store.Tasks.Single(t => t.StageCode == "stage-2");
+        var rejected = await f.Reject().Handle(new RejectWorkflowTaskCommand(second.Id,
+            new RejectWorkflowTaskRequest("second-approver", "NOT_SUBSTANTIATED", "reject-2", "Evidence is outdated", null),
+            Correlation), default);
+        Assert.True(rejected.IsSuccessful, string.Join(",", rejected.Errors));
+
+        var r = await f.History().Handle(new GetWorkflowInstanceHistoryQuery(run.Instance.Id, Correlation), default);
+
+        Assert.True(r.IsSuccessful);
+        var rows = r.Data!;
+        Assert.Equal([1L, 2L, 3L, 4L], rows.Select(x => x.SequenceNo));
+        Assert.Equal(["start", "approve", "start", "reject"], rows.Select(x => x.Action));
+
+        Assert.Equal(("stage-1", "step-1"), (rows[0].ToStageCode, rows[0].ToStepCode));
+        Assert.Null(rows[0].FromStageCode);
+
+        Assert.Equal(Approver, rows[1].ActorId);
+        Assert.Equal("SECRET-COMMENT", rows[1].Comment);
+        Assert.Equal("APPROVED", rows[1].ReasonCode);
+        Assert.Equal(("stage-1", "step-1", "stage-2", "step-2"),
+            (rows[1].FromStageCode, rows[1].FromStepCode, rows[1].ToStageCode, rows[1].ToStepCode));
+
+        Assert.Null(rows[2].Comment); // the engine's internal next-step marker is not user text
+
+        Assert.Equal("second-approver", rows[3].ActorId);
+        Assert.Equal("Evidence is outdated", rows[3].Comment);
+        Assert.Equal("NOT_SUBSTANTIATED", rows[3].ReasonCode);
+        Assert.Equal(("stage-2", "step-2"), (rows[3].FromStageCode, rows[3].FromStepCode));
+        Assert.Null(rows[3].ToStageCode); // terminal
+
+        // The template has no step names → StepName falls back to the step code (template-version resolution).
+        Assert.Equal("step-2", rows[3].StepName);
+        Assert.Null(rows[0].ActorDisplay); // no resolver wired → no name, never the id
+    }
+
+    [Fact]
+    public async Task History_resolves_step_name_from_the_template_version_and_actor_display_through_the_resolver()
+    {
+        var f = new Fx(TenantA);
+        var actor = Guid.NewGuid();
+        var template = f.SeedTemplateJson("T-NAMED",
+            "{\"stages\":[{\"code\":\"medical\",\"steps\":[{\"code\":\"review\",\"name\":\"Medical review\","
+            + "\"assignment\":{\"candidatePrincipalIds\":[\"user:" + actor + "\"]}}]}]}");
+        var start = await f.Start().Handle(new StartWorkflowInstanceCommand(StartRequest(template.Id, []), Correlation), default);
+        Assert.True(start.IsSuccessful, string.Join(",", start.Errors));
+
+        var names = new FakeNames(new Dictionary<Guid, string> { [Guid.Parse("5b000000-0000-0000-0000-000000000001")] = "Ayşe Yılmaz" });
+        var row = Assert.Single((await f.History(names).Handle(
+            new GetWorkflowInstanceHistoryQuery(start.Data!.WorkflowInstanceId, Correlation), default)).Data!);
+        Assert.Equal("Medical review", row.StepName);
+        Assert.Equal(("medical", "review"), (row.ToStageCode, row.ToStepCode));
+        Assert.Equal("Ayşe Yılmaz", row.ActorDisplay);
+
+        var down = new FakeNames(null); // resolver throws → rows still come back, name absent
+        Assert.Null(Assert.Single((await f.History(down).Handle(
+            new GetWorkflowInstanceHistoryQuery(start.Data.WorkflowInstanceId, Correlation), default)).Data!).ActorDisplay);
+    }
+
+    [Fact]
+    public async Task History_of_another_tenants_instance_is_a_non_leaking_404()
+    {
+        var a = new Fx(TenantA);
+        var run = a.SeedRuntime();
+        var b = new Fx(TenantB, a.Store);
+        var r = await b.History().Handle(new GetWorkflowInstanceHistoryQuery(run.Instance.Id, Correlation), default);
+        Assert.Equal(404, r.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.NotFoundNonLeakage, r.ReasonCode);
+        Assert.Null(r.Data);
+    }
+
+    [Fact]
+    public void History_endpoint_requires_the_existing_instances_view_permission()
+    {
+        var method = typeof(WorkflowDefinitionsController).GetMethod(nameof(WorkflowDefinitionsController.GetInstanceHistory))!;
+        Assert.Equal("instances/{id:guid}/history", method.GetCustomAttribute<HttpGetAttribute>()!.Template);
+        Assert.Equal(WorkflowPermissions.InstancesView, method.GetCustomAttribute<HasPermissionAttribute>()!.Permission);
+        Assert.NotNull(typeof(WorkflowDefinitionsController).GetCustomAttribute<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>());
+    }
+
+    private sealed class FakeNames(IReadOnlyDictionary<Guid, string>? names) : IUserDisplayNameResolver
+    {
+        public Task<IReadOnlyDictionary<Guid, string>> ResolveAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
+            => names is null
+                ? throw new HttpRequestException("auth unreachable")
+                : Task.FromResult<IReadOnlyDictionary<Guid, string>>(names.Where(kv => userIds.Contains(kv.Key))
+                    .ToDictionary(kv => kv.Key, kv => kv.Value));
+    }
+
     // ============================================================ helpers
 
     private static StartWorkflowInstanceRequest StartRequest(Guid templateId, IReadOnlyList<string> candidates,
@@ -536,6 +697,16 @@ public sealed class WorkflowCrossServiceTests
 
         public RunWorkflowEscalationsHandler Escalations() => new(TaskRepo, InstanceRepo, new RuleRepo(Store, Tenant), LogRepo,
             Clock, AssignmentRepo, SnapshotRepo, PositionRepo, Transactions, Events, TemplateRepo);
+
+        public GetWorkflowInstanceHistoryHandler History(IUserDisplayNameResolver? names = null)
+            => new(InstanceRepo, LogRepo, TaskRepo, VersionRepo, names);
+
+        public WorkflowTemplate SeedTemplateJson(string code, string definitionJson)
+        {
+            var template = SeedTemplate(code);
+            Store.Versions.Single(v => v.TemplateId == template.Id).DefinitionJson = definitionJson;
+            return template;
+        }
 
         public WorkflowTemplate SeedTemplate(string code, bool twoSteps = false)
         {

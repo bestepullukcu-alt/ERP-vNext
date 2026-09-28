@@ -23,10 +23,9 @@ public sealed class StartWorkflowInstanceValidator : AbstractValidator<StartWork
             .MaximumLength(512)
             .When(x => x.Request.ObjectRef is not null);
 
-        RuleFor(x => x.Request.CandidatePrincipalIds)
-            .NotEmpty()
-            .WithMessage("At least one candidate principal ID is required.");
-
+        // WP-CL-BE-3a — an EMPTY candidate list is valid: it means "use the template's candidates" (the handler prefers
+        // the first step's candidates anyway). With neither template nor request candidates the handler still answers
+        // 400 WorkflowAssignmentCandidatesRequired, so nothing starts without an assignee.
         RuleForEach(x => x.Request.CandidatePrincipalIds)
             .NotEmpty()
             .MaximumLength(256);

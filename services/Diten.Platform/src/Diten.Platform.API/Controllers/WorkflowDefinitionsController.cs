@@ -97,6 +97,15 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // WP-CL-BE-3a — transition history with comments / rejection reasons (existing view permission; other tenant → 404).
+    [HttpGet("instances/{id:guid}/history")]
+    [HasPermission(WorkflowPermissions.InstancesView)]
+    public async Task<IActionResult> GetInstanceHistory(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetWorkflowInstanceHistoryQuery(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("instances")]
     [HasPermission(WorkflowPermissions.InstancesView)]
     public async Task<IActionResult> GetInstances(CancellationToken ct)

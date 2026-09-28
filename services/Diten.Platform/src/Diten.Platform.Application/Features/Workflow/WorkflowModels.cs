@@ -301,6 +301,27 @@ public sealed record WorkflowTaskDto(
     string? ActionedBy,
     string? ActionReasonCode);
 
+/// <summary>
+/// WP-CL-BE-3a — one row of an instance's transition history (<c>GET instances/{id}/history</c>), in
+/// <see cref="SequenceNo"/> order. <see cref="Action"/> is the lower-case kebab transition (start / approve / reject /
+/// delegate / request-info / cancel / escalate / timeout). From/To stage+step come from the approval task the row
+/// acted on; <see cref="StepName"/> from the pinned template version. <see cref="Comment"/> is the actor's comment /
+/// rejection reason text — returned ONLY here, never on events or logs.
+/// </summary>
+public sealed record WorkflowInstanceHistoryEntryDto(
+    long SequenceNo,
+    string Action,
+    string? ActorId,
+    string? ActorDisplay,
+    string? FromStageCode,
+    string? FromStepCode,
+    string? ToStageCode,
+    string? ToStepCode,
+    string? StepName,
+    string? Comment,
+    string? ReasonCode,
+    DateTimeOffset OccurredAt);
+
 public sealed record ApproveWorkflowTaskRequest(
     string ActorId,
     string ReasonCode,

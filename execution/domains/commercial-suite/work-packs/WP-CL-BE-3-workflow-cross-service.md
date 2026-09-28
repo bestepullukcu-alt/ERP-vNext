@@ -121,6 +121,10 @@
   - Atama şu an aktif olmalı: iptal edilmemiş, silinmemiş ve geçerlilik penceresi içinde (`EffectiveTo` hariç).
   - Atama tipi Primary / Secondary / Acting / Delegated olabilir.
   - Hiç aday kalmazsa başlatma 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED` döner.
+- **Boş aday listesi = şablon adayları** (WP-CL-BE-3a): `candidatePrincipalIds: []` geçerlidir.
+  - Şablonun ilk adımında aday varsa **her zaman** onlar kullanılır; istek listesi yalnız şablon adaysızsa devreye girer.
+  - Onaylayıcıyı şablondan alan tüketici (CRM iddia onayı) listeyi **boş** gönderir.
+  - Şablon da istek de adaysızsa sonuç yine 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED`; hiçbir şey yazılmaz.
 
 ### 2. Tamamlanma olayı (Platform → CRM)
 - **Ad:** `platform.workflow.instance.completed.v1` (sürüm 1). Adlandırma kuralı sürüm ekini zorunlu kıldığı için ad `.v1` ile biter.
@@ -165,6 +169,24 @@
 ```
 - Kiracı izolasyonu uygulanır: başka kiracının instance'ı boş liste olarak görünür. 100'den fazla id → 400 `WORKFLOW_BATCH_LIMIT_EXCEEDED`.
 - **Önerilen kullanım:** CRM, `in-review` durumundaki kayıtları periyodik olarak bu uçla sorgular. Terminal `outcome` görüp olayı almamışsa aynı işlemi uygular.
+
+### 4. Instance geçmişi (yorumlar ve ret gerekçesi — WP-CL-BE-3a)
+- **Uç:** `GET /api/v1/workflow/instances/{id}/history`. İzin: `platform.workflow.instances.view` (yeni anahtar yok). Başka kiracının instance'ı → 404 `NOT_FOUND_NON_LEAKAGE` (sızdırmaz).
+- **Yanıt:** `SequenceNo` sırasıyla geçiş kayıtları:
+```json
+[{ "sequenceNo": 1, "action": "start", "actorId": "5b00…", "actorDisplay": "Ayşe Yılmaz",
+   "fromStageCode": null, "fromStepCode": null, "toStageCode": "medical", "toStepCode": "review",
+   "stepName": "Medical review", "comment": null, "reasonCode": "SUBMITTED", "occurredAt": "…" },
+ { "sequenceNo": 2, "action": "reject", "actorId": "…", "actorDisplay": null,
+   "fromStageCode": "medical", "fromStepCode": "review", "toStageCode": null, "toStepCode": null,
+   "stepName": "Medical review", "comment": "Kanıt güncel değil", "reasonCode": "NOT_SUBSTANTIATED", "occurredAt": "…" }]
+```
+- `action` değerleri: `start` · `approve` · `reject` · `delegate` · `request-info` · `cancel` · `escalate` · `timeout`.
+- **From/To:** `start` satırı açtığı adıma girer. Diğer satırlar işlem yapılan adımdan çıkar. Sonraki adım açıldıysa To o adımdır; instance aktif kaldıysa (devretme / bilgi isteme / eskalasyon) To aynı adımdır; terminal geçişte To boştur.
+- Bir onay sonraki adımı açtığında motorun eklediği `start` satırı da listede görünür. Bu satırın yorumu her zaman `null` (iç işaret, kullanıcı metni değil).
+- `stepName` instance'ın bağlı olduğu şablon sürümünden gelir; adımda ad yoksa adım kodu döner.
+- `actorDisplay` mevcut kullanıcı-ad çözümleyicisiyle (AuthService, toplu, en iyi çaba) doldurulur. Çözülemezse `null` kalır, id isim yerine gösterilmez.
+- **Yorum metni yalnız bu uçtan döner.** Tamamlanma olayında ve loglarda yoktur.
 
 ---
 
