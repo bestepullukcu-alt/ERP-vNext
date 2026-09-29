@@ -40,3 +40,33 @@
 
 ## 4. Sıralama
 İddialar v2 arayüzü (CL-FE-1…7) → **SB-1** (İçerik Kapsamı seçiciler) → **SB-2** (set yayını: A birleştirilmiş içerik + D yol üretimi) → **SB-3** (ziyaret yol adımlarını kullanır, teyit sonrası) → E2E canlı (TUTUKON / ALMIBA: set → içerik + yol → yolculuk → play → ziyaret).
+
+---
+
+## 5. Yeniden analiz (2026-09-29, CT: kod + canlı veri, 97c5)
+
+### 5.1 Kod — önceki tespitler geçerli, iki yeni ağır bulgu
+- **Set yayını hiçbir şey üretmiyor.** `ReleaseContentSetRevisionHandler` (`ContentSetRevisionCommandHandlers.cs:375-463`) yalnız `ReleaseState` yazıyor ve bir log denetim olayı atıyor. KnowledgeContent, KnowledgePath ya da domain olayı yok. `assembled-presentation` içerik tipi yok (`KnowledgeContent.cs:211-224`). SB-1/2/3 için kod da WP de yok.
+- **YENİ — ziyaret içerikleri aşamaya göre değişmiyor.** `VisitContentSequenceResolver`:
+  - aşamayı `önceki StageIndex + 1` ile seçiyor (`:106`), ama içerikleri **yolculuk bağlamından** (Subject / Topic / Audience / Language) topluyor (`:215-222`).
+  - Aşamanın yolunu ve yol adımlarını hiç okumuyor. Her aşamada aynı içerik havuzu çıkıyor; `Min/MaxVisitNumber` ve `Repeatable` okunmuyor.
+- **YENİ — çözücü içerik listesi değil, yalnız sayı döndürüyor.** Promo / non-promo sayısı (play ürün hattı ↔ `content.ProductId`) + CycleCapacity süresi (`:189-261`). Temsilcinin göreceği içerik kimlikleri çıkmıyor.
+- **Play'deki `knowledge-path` bağları ziyarette yok sayılıyor.** Yalnız ilk `content-engagement-journey` bağı kullanılıyor (`:67-73`).
+- **Zincir editörü "Çıktılar" paneli sabit "—"** (`template-form.js:521-525`).
+- **İçerik Kapsamı ref'leri serbest metin** (`tags: true`, doğrulayıcı yok).
+
+### 5.2 Canlı veri (97c5)
+| Kayıt | Durum |
+|---|---|
+| İçerik Seti | **0** |
+| İçerik Kapsamı | 1 ("test", ürün serbest metin "Almiba", pazar / kitle boş) |
+| Zincir şablonu | TPL-ALMIBA-01 **taslak**; TPL-TUTUKON-01 yayında (+ taslak sürüm) |
+| ALMIBA Bilgi Yolları | KP-2026-2138F2 "HD Karnitin Detay Yolu" yayında, **tr** ama 4 adım içeriğinin 4'ü de **en**. KP-114 / KP-201 / KP-888 ALMIBA konusu altında demo kalıntıları (Kardiyometabolik, Titrasyon, 2024 Kampanya). |
+| ALMIBA Yolculukları | CEJ-27 yayında ama API'de **0 aşama**; CEJ-40 taslak; CEJ-ALMIBA-HD taslak (tr, AUDP-001), **0 aşama** |
+| ALMIBA içerikleri | 4 eski (en, yayında) + KC-2026-6CD926 (tr, yayında, CLM-ALMIBA-02 TR bağlı) |
+| Play'ler | STR-TUTUKON-URO aktif, bağı **silinmiş bir yol** (KP-2026-49DE5D, durum null). "test" (taslak) KP-114/KP-201 yollarına bağlı. **Hiçbir play yolculuğa bağlı değil → her ziyaret `NoJourney`.** |
+
+### 5.3 Kullanıcıya sorulan kararlar
+- SB-3 kapsamı: ziyaret içeriği = aşamanın yol adımları; çıktı içerik listesi mi olacak?
+- Play'deki yol bağı ziyarette tek aşamalı yolculuk gibi mi sayılacak?
+- Sıra: SB-3 → SB-2 → SB-1 mi?
