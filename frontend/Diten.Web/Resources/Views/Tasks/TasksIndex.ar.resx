@@ -121,6 +121,8 @@
   <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>لا يمكن إغلاق هذه الخطوة حتى يتم نشر محضر اجتماع المراجعة المرتبط.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>لا يمكن إكمال هذه المهمة في حالتها الحالية. ابدأها أولاً.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>لا يمكن إلغاء هذه المهمة إلا من قِبل الشخص الذي طلبها. إذا كنت لا تريد العمل، فأعده بدلاً من ذلك.</value></data>
+  <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>لا يمكنك أن تكون المعتمِد لموافقة تطلبها بنفسك. اختر شخصًا آخر مسؤولًا عن الموافقة.</value></data>
+  <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>لا يمكنك مراجعة ما قدّمته بنفسك. اطلب من شخص آخر مراجعة هذه المهمة.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>اذكر ما تنتظره المهمة.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>العنوان مطلوب.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>لا يمكن أن يتجاوز العنوان 200 حرف.</value></data>

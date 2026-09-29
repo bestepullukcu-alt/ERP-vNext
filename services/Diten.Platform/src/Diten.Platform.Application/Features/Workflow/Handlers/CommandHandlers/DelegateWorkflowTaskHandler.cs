@@ -22,7 +22,7 @@ public sealed class DelegateWorkflowTaskHandler
     public Task<Response<WorkflowTaskTransitionResponse>> Handle(DelegateWorkflowTaskCommand request, CancellationToken ct) =>
         _support.DelegateAsync(
             request.TaskId,
-            request.Request.ActorId,
+            request.Request.ActorId!,
             request.Request.DelegatePrincipalId,
             request.Request.ReasonCode,
             request.Request.IdempotencyKey,

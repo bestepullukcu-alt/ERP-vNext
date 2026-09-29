@@ -103,7 +103,6 @@
   <data name="ActorId" xml:space="preserve"><value>Aktör Kimliği</value></data>
   <data name="DelegatePrincipalId" xml:space="preserve"><value>Devredilen Yetkili Kimliği</value></data>
   <data name="TargetPrincipalId" xml:space="preserve"><value>Hedef Yetkili Kimliği</value></data>
-  <data name="ActorIdRequired" xml:space="preserve"><value>Aktör Kimliği zorunludur.</value></data>
   <data name="ReasonCodeRequired" xml:space="preserve"><value>Gerekçe Kodu zorunludur.</value></data>
   <data name="IdempotencyKeyRequired" xml:space="preserve"><value>İdempotans Anahtarı zorunludur.</value></data>
   <data name="DelegatePrincipalRequired" xml:space="preserve"><value>Devredilen Yetkili Kimliği zorunludur.</value></data>

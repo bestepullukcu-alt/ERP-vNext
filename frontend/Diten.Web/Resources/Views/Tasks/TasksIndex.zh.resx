@@ -121,6 +121,8 @@
   <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>在关联的评审会议纪要发布之前，此步骤无法关闭。</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>该任务在当前状态下无法完成，请先启动它。</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>只有提出该任务的人才能取消它。如果您不想接手，请退回。</value></data>
+  <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>您不能审批自己发起的审批。请选择其他人作为审批负责人。</value></data>
+  <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>您不能审阅自己提交的工作。请让其他人审阅此任务。</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>请说明该任务在等待什么。</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>请填写标题。</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>标题最多 200 个字符。</value></data>

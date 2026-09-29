@@ -257,6 +257,14 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
                 TaskReasonCodes.ValidationFailed, command.CorrelationId);
         }
 
+        // B2 follow-up — the creator starts the approval, and MOD-0023 never lets a starter decide: routed to
+        // themselves, the task would wait forever. Refused here, with a code the form can point at.
+        if (request.ApprovalRequired && request.ApprovalManagerUserId == _currentUser.UserId)
+        {
+            return Fail("You cannot be the approver of an approval you request.",
+                TaskReasonCodes.ApprovalManagerIsSelf, command.CorrelationId);
+        }
+
         /*
          * The review's symmetric rule. Its own reason code rather than the generic VALIDATION_FAILED approval
          * uses, because this one names a field the form has to point at — and because "a review was requested

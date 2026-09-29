@@ -479,7 +479,8 @@ internal sealed class WorkflowTaskTransitionSupport
         string idempotencyKey,
         string? comment,
         string correlationId,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool allowEscalated = false)
     {
         actorId = actorId.Trim();
         reasonCode = reasonCode.Trim();
@@ -503,9 +504,10 @@ internal sealed class WorkflowTaskTransitionSupport
 
         var task = context.Task!;
         var instance = context.Instance!;
-        // B3 — an ESCALATED task is still open (nobody decided; it only moved to somebody else), so the owner of the
-        // object may still withdraw it. Approve/reject/delegate keep their own rule.
-        if (!IsOpen(task) && task.Status != ApprovalTaskStatus.Escalated)
+        // B3 — an ESCALATED task is still open (nobody decided; it only moved to somebody else), but only the OWNING
+        // module's in-process withdraw may call it off (allowEscalated). The public cancel endpoint never sets it, so
+        // an escalated approval cannot be cancelled by whoever holds the cancel permission.
+        if (!IsOpen(task) && !(allowEscalated && task.Status == ApprovalTaskStatus.Escalated))
         {
             return InvalidState(correlationId);
         }

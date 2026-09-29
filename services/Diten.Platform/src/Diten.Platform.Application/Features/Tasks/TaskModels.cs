@@ -284,6 +284,16 @@ public static class TaskReasonCodes
     public const string ReviewNotRequired = "REVIEW_NOT_REQUIRED";
 
     /// <summary>
+    /// WP-WORKFLOW-APPROVAL-STATUS-01 (B2 follow-up) — approval was routed to the person switching it on. MOD-0023 does
+    /// not let whoever started an approval decide it, so accepting this would leave the task waiting forever.
+    /// </summary>
+    public const string ApprovalManagerIsSelf = "TASK_APPROVAL_MANAGER_IS_SELF";
+
+    /// <summary>B2 follow-up — the review would be decided by the person submitting the work; nobody could ever close
+    /// it (the submitter starts the review, and a starter cannot approve).</summary>
+    public const string ReviewerIsSubmitter = "TASK_REVIEWER_IS_SUBMITTER";
+
+    /// <summary>
     /// MOD-0357 S9 (owner, 2026-09-13) — the task's TYPE requires a review meeting's minutes to publish before
     /// its DECISION (`complete`, `submitReview`) may proceed. `start` is never refused with it: holding the
     /// meeting is part of the work. A LOCAL MOD-0024 precondition, independent of

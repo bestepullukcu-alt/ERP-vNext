@@ -1538,6 +1538,9 @@
   <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
     <value>Falta la evidencia requerida.</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_SelfApproval" xml:space="preserve">
+    <value>Usted inició esta aprobación; otra persona debe decidirla.</value>
+  </data>
   <data name="NoAccessTitle" xml:space="preserve">
     <value>No tiene acceso al Centro de tareas</value>
   </data>

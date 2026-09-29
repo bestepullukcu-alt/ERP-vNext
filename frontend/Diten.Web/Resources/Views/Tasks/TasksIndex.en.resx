@@ -121,6 +121,8 @@
   <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>This step cannot close until the linked review meeting's minutes are published.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>This task cannot be completed while it is in this state. Start it first.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Only the person who requested this task can cancel it. If you do not want the work, return it instead.</value></data>
+  <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>You cannot be the approver of an approval you request. Choose someone else as the approval manager.</value></data>
+  <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>You cannot review your own submission. Ask someone else to review this task.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Say what the task is waiting for.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>A title is required.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>The title may be at most 200 characters.</value></data>

@@ -35,6 +35,10 @@ public static class WorkAggregationReasonCodes
     /// <c>TaskWorkItemProvider</c>'s own reviewMeetingPolicy gate) — a closed task or someone else's task never
     /// publishes the policy or the action in the first place, so no reason code is needed for either case.</summary>
     public const string ReviewMeetingAlreadyScheduled = "REVIEW_MEETING_ALREADY_SCHEDULED";
+
+    /// <summary>WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — the reader STARTED this approval; MOD-0023 refuses a starter's
+    /// approve, so the button is shown closed with its reason rather than offered and then refused.</summary>
+    public const string SelfApprovalNotAllowed = "SELF_APPROVAL_NOT_ALLOWED";
 }
 
 // WC-D3 (DCP-004 §2 D3) — WHY a source is missing from the board.

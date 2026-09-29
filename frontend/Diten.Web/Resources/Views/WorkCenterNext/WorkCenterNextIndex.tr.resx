@@ -1538,6 +1538,9 @@
   <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
     <value>Gerekli kanıt eksik.</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_SelfApproval" xml:space="preserve">
+    <value>Bu onayı siz başlattınız; kararı başka biri vermeli.</value>
+  </data>
   <data name="NoAccessTitle" xml:space="preserve">
     <value>Görev Merkezi'ne erişiminiz yok</value>
   </data>
