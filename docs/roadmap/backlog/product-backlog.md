@@ -6918,6 +6918,50 @@ günceller; bandın dışına çıkış bilinçliyse CLAUDE.md port satırı da 
 
 ---
 
+### BL-471
+
+**Takvimde uyarı işareti kalıcı değil: akış görev başına uyarı taşımıyor**
+
+DURUM: AÇIK · SAHİP: CT (Görev Merkezi / MOD-0024) · BULAN: takvim 2b ajanı, CT kabulü · KAYIT: 2026-09-29
+
+Plan yazımı `warnings[]` döndürüyor (toplantıyla çakışma, çalışma saati dışı); takvim bloğa işareti yalnız o oturumda koyuyor, sayfa yenilenince
+kayboluyor, çünkü `GET /api/v1/work/calendar` görev başına uyarı taşımıyor. İş: akışın görev satırına okuma anında hesaplanan uyarı kodları
+(motorun aynı kuralı), ekran `state.calendarNotes` yerine akıştan okur. Küçük motor + ekran işi. Gelecek regresyon riski: 🟢 ekleme.
+
+### BL-472
+
+**Eski toast yollarında başlık kaçışsız: Notyf `innerHTML` yazıyor**
+
+DURUM: AÇIK · SAHİP: CT (Görev Merkezi) · BULAN: takvim 2b bağımsız gözden geçirme · KAYIT: 2026-09-29
+
+`showToast` Notyf ile mesajı `innerHTML` olarak basıyor. Takvim 2b kendi yeni yollarını kaçışladı (CalPlanSaved, toplantı uyarısı, çakışma);
+Görev Merkezi'nin eski toast'ları (ör. `ToastClaimed` ve başlık geçiren diğerleri) hâlâ iş/toplantı başlığını ham koyuyor: başlığı
+`<img onerror=…>` olan bir iş, onu üstlenen kişinin tarayıcısında betik çalıştırır. İş: ya showToast metin modunu varsayılan yapmak (HTML
+isteyen çağrılar açıkça ister) ya da bütün başlık geçiren çağrıları kaçışlamak; başlığı `<img>` olan iş ile koruma testi. Gelecek regresyon
+riski: 🟡 merkezi değişiklik HTML bekleyen çağrıları bozabilir — önce çağıranları say.
+
+### BL-473
+
+**Kişinin yerel günü kiracının tek saat diliminden: TR + CH aynı kiracıda yanlış gün**
+
+DURUM: AÇIK · SAHİP: CT (Platform çalışma saatleri) · BULAN: MOD-0280-FU01 paket ajanı · KAYIT: 2026-09-29
+
+`WorkingHoursProvider.cs:62` saat dilimini kiracıdan alıyor (tatil ülkesi de, :75). Türkiye ve İsviçre tüzel kişilerini birlikte tutan bir
+kiracıda yerel gün ve gece yarısı tek bölgeden gelir (takvim motoru ve MOD-0280-FU01). Öneri: tüzel kişi halkası (sıra 40) bir bölge de
+döndürür; tüketiciler değişmez. Gelecek regresyon riski: 🟡 saklanan satırlar yakaladıkları `TimeZoneId`'yi korur, yeniden hesaplanmaz.
+
+### BL-474
+
+**Çalışma takvimi paketinin kimliği eski: dosya adı CAND-CAP-0008, kayıt CAND-CAP-0010**
+
+DURUM: AÇIK · SAHİP: CT · BULAN: MOD-0280-FU01 paket ajanı · KAYIT: 2026-09-29
+
+`execution/domains/platform-shared-services/module-packs/CAND-CAP-0008-working-calendar-public-holidays.md` (ve FU02) dosya adı ve ön
+bilgisi eski kimliği taşıyor; kayıt defteri CAND-CAP-0010 diyor, CAND-CAP-0008 artık MOD-0354'ün eski takma adı. İş: dosya adı + ön bilgi +
+içeriden bağlantılar tek committe; kimlik denetim betiği (`verify_module_id.py --check-all`) yeşil kalır. Gelecek regresyon riski: 🟢.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
