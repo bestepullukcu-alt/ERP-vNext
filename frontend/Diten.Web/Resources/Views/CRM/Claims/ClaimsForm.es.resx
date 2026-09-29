@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>Declaraciones</value></data>
+  <data name="NewCoreClaimTitle" xml:space="preserve"><value>Nueva declaración base</value></data>
+  <data name="NewLocalClaimTitle" xml:space="preserve"><value>Nueva declaración local</value></data>
+  <data name="EditClaimTitle" xml:space="preserve"><value>Editar declaración</value></data>
+  <data name="CancelAction" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Guardar borrador</value></data>
+  <data name="SubmitReview" xml:space="preserve"><value>Enviar a revisión</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>Retirar de revisión</value></data>
+  <data name="OpenNewVersion" xml:space="preserve"><value>Abrir nueva versión</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Identidad y texto</value></data>
+  <data name="ClaimCodeLabel" xml:space="preserve"><value>Código de la declaración</value></data>
+  <data name="ClaimCodeHint" xml:space="preserve"><value>Sugerido a partir del producto. Clave de negocio estable entre versiones y versiones por país.</value></data>
+  <data name="ClaimCodeLocked" xml:space="preserve"><value>El código queda fijo una vez creada la declaración.</value></data>
+  <data name="ClaimNameLabel" xml:space="preserve"><value>Nombre de la declaración</value></data>
+  <data name="VersionLabel" xml:space="preserve"><value>Versión</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Estado</value></data>
+  <data name="StatusHint" xml:space="preserve"><value>El estado solo cambia con Enviar a revisión, Aprobar y Archivar.</value></data>
+  <data name="DescriptionLabel" xml:space="preserve"><value>Descripción</value></data>
+  <data name="CoreTextLabel" xml:space="preserve"><value>Texto de la declaración base</value></data>
+  <data name="LocalTextLabel" xml:space="preserve"><value>Texto de la declaración local</value></data>
+  <data name="TextLanguageLabel" xml:space="preserve"><value>Idioma del texto</value></data>
+  <data name="CoreTextHint" xml:space="preserve"><value>Las versiones por país se adaptan de este texto sin ampliar su alcance. Se bloquea al aprobarse.</value></data>
+  <data name="LocalTextHint" xml:space="preserve"><value>Una declaración local solo vale en un país y no tiene texto base.</value></data>
+  <data name="CountryLabel" xml:space="preserve"><value>País</value></data>
+  <data name="CharCount" xml:space="preserve"><value>{0} caracteres</value></data>
+  <data name="SectionScope" xml:space="preserve"><value>Alcance</value></data>
+  <data name="ProductLabel" xml:space="preserve"><value>Producto</value></data>
+  <data name="AudienceLabel" xml:space="preserve"><value>Público objetivo</value></data>
+  <data name="OrgUnitLabel" xml:space="preserve"><value>Equipo responsable</value></data>
+  <data name="ScopeNote" xml:space="preserve"><value>El país, el idioma y las fechas de validez se definen en cada versión por país.</value></data>
+  <data name="ProductUnavailable" xml:space="preserve"><value>El catálogo de productos no está disponible ahora.</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Seleccionar</value></data>
+  <data name="SectionQualifiers" xml:space="preserve"><value>Calificadores</value></data>
+  <data name="QualifiersHint" xml:space="preserve"><value>Frases obligatorias que siempre acompañan a la oración.</value></data>
+  <data name="QualifierPlaceholder" xml:space="preserve"><value>Añadir un calificador</value></data>
+  <data name="AddAction" xml:space="preserve"><value>Añadir</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>Quitar</value></data>
+  <data name="SectionEvidence" xml:space="preserve"><value>Evidencias</value></data>
+  <data name="AddEvidence" xml:space="preserve"><value>Añadir evidencia</value></data>
+  <data name="EvidenceEmpty" xml:space="preserve"><value>Aún no hay evidencias vinculadas.</value></data>
+  <data name="EvidenceHint" xml:space="preserve"><value>Se requiere al menos una evidencia para enviar a revisión. Los documentos se eligen en Gestión documental.</value></data>
+  <data name="EvidenceSaveFirst" xml:space="preserve"><value>Guarde primero el borrador; la evidencia se vincula a una declaración guardada.</value></data>
+  <data name="EvidenceLockedNote" xml:space="preserve"><value>Las evidencias solo cambian en borrador; abra una nueva versión para cambiarlas.</value></data>
+  <data name="EvidencePreview" xml:space="preserve"><value>Vista previa</value></data>
+  <data name="EvidenceSupports" xml:space="preserve"><value>Respalda:</value></data>
+  <data name="EvidencePinned" xml:space="preserve"><value>{0} fijada</value></data>
+  <data name="EvidenceSuperseded" xml:space="preserve"><value>Hay una versión más reciente de este documento en vigor ({0}).</value></data>
+  <data name="EvidenceStateWarning" xml:space="preserve"><value>Estado del documento: {0}.</value></data>
+  <data name="EvidenceExpiring" xml:space="preserve"><value>La revisión del documento vence el {0}.</value></data>
+  <data name="DocState_suspended" xml:space="preserve"><value>suspendido</value></data>
+  <data name="DocState_retired" xml:space="preserve"><value>retirado</value></data>
+  <data name="DocState_withdrawn" xml:space="preserve"><value>revocado</value></data>
+  <data name="RemoveEvidenceTitle" xml:space="preserve"><value>Quitar evidencia</value></data>
+  <data name="RemoveEvidenceReason" xml:space="preserve"><value>Motivo de la eliminación</value></data>
+  <data name="RemoveEvidenceConfirm" xml:space="preserve"><value>Quitar</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>Preparado para revisión</value></data>
+  <data name="ReadyName" xml:space="preserve"><value>Nombre</value></data>
+  <data name="ReadyText" xml:space="preserve"><value>Texto</value></data>
+  <data name="ReadyProduct" xml:space="preserve"><value>Producto</value></data>
+  <data name="ReadyEvidence" xml:space="preserve"><value>Al menos 1 evidencia</value></data>
+  <data name="ReadySaved" xml:space="preserve"><value>Guardado</value></data>
+  <data name="ReadyMissing" xml:space="preserve"><value>falta</value></data>
+  <data name="FlowTitleCore" xml:space="preserve"><value>Flujo de aprobación global</value></data>
+  <data name="FlowTitleLocal" xml:space="preserve"><value>Flujo de aprobación local</value></data>
+  <data name="FlowSequentialNote" xml:space="preserve"><value>Secuencial · se configura en los ajustes de aprobación</value></data>
+  <data name="FlowNoCandidates" xml:space="preserve"><value>Sin puesto candidato</value></data>
+  <data name="FlowReason_WorkflowTemplateMissing" xml:space="preserve"><value>Aún no hay un flujo de aprobación definido. Consulte a su administrador.</value></data>
+  <data name="FlowReason_WorkflowTemplateNotPublished" xml:space="preserve"><value>El flujo existe pero aún no está publicado.</value></data>
+  <data name="FlowReason_WorkflowPermissionMissing" xml:space="preserve"><value>No puede ver los ajustes del flujo de aprobación.</value></data>
+  <data name="FlowReason_WorkflowUnavailable" xml:space="preserve"><value>El flujo de aprobación no se puede mostrar ahora.</value></data>
+  <data name="FlowPickCountry" xml:space="preserve"><value>Seleccione el país para ver su flujo de aprobación.</value></data>
+  <data name="StatusCardTitle" xml:space="preserve"><value>Tarjeta de estado</value></data>
+  <data name="LockInReview" xml:space="preserve"><value>En revisión: la declaración está bloqueada hasta que termine o se retire el flujo.</value></data>
+  <data name="LockApproved" xml:space="preserve"><value>Aprobada: el texto y las evidencias están bloqueados. Abra una nueva versión para cambiarlos.</value></data>
+  <data name="LockReviewRequired" xml:space="preserve"><value>Requiere revisión: cambió un documento vinculado. Abra una nueva versión para actualizarla.</value></data>
+  <data name="LockInactive" xml:space="preserve"><value>Este registro ya no está vigente (sustituido o archivado).</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>¿Enviar esta declaración a revisión? Quedará bloqueada hasta que termine el flujo.</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>¿Retirar esta declaración de revisión? Volverá a borrador.</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>¿Abrir una nueva versión en borrador de esta declaración?</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>Borrador guardado.</value></data>
+  <data name="ToastSubmitted" xml:space="preserve"><value>Enviada a revisión.</value></data>
+  <data name="ToastWithdrawn" xml:space="preserve"><value>Retirada de revisión.</value></data>
+  <data name="ToastEvidenceAdded" xml:space="preserve"><value>Evidencia añadida.</value></data>
+  <data name="ToastEvidenceRemoved" xml:space="preserve"><value>Evidencia quitada.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>No se pudo cargar la declaración.</value></data>
+  <data name="ErrorGeneric" xml:space="preserve"><value>Algo salió mal. Inténtelo de nuevo.</value></data>
+  <data name="Err_evidence_required" xml:space="preserve"><value>Añada al menos una evidencia antes de enviar a revisión.</value></data>
+  <data name="Err_evidence_locked" xml:space="preserve"><value>Las evidencias solo cambian en borrador. Abra una nueva versión.</value></data>
+  <data name="Err_evidence_unavailable" xml:space="preserve"><value>El servicio de evidencias no está disponible. No se cambió nada; inténtelo más tarde.</value></data>
+  <data name="Err_in_review_locked" xml:space="preserve"><value>La declaración está en revisión. Retírela para cambiarla.</value></data>
+  <data name="Err_invalid_status" xml:space="preserve"><value>Esta acción no es posible en el estado actual.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>No hay flujo de aprobación definido. Consulte a su administrador.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>No tiene permiso para iniciar el flujo de aprobación.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>El servicio de aprobación no está disponible. No se cambió nada; inténtelo más tarde.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>El flujo de aprobación rechazó la solicitud.</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>Ya no se puede retirar la revisión: un aprobador ya actuó.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>No hay revisión abierta que retirar.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>Las declaraciones solo se aprueban mediante su flujo.</value></data>
+  <data name="Err_product_required" xml:space="preserve"><value>Seleccione el producto.</value></data>
+  <data name="Err_product_not_found" xml:space="preserve"><value>El producto no se encontró en el catálogo.</value></data>
+  <data name="Err_claim_product_mismatch" xml:space="preserve"><value>La declaración no pertenece a este producto.</value></data>
+  <data name="Err_local_country_required" xml:space="preserve"><value>Seleccione el país de la declaración local.</value></data>
+  <data name="Err_language_not_allowed" xml:space="preserve"><value>Este idioma no es un idioma de contenido del país elegido.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>Una lista de referencia necesaria aún no está publicada. Consulte a su administrador.</value></data>
+  <data name="Err_audience_not_found" xml:space="preserve"><value>No se encontró un perfil de audiencia seleccionado.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Un servicio necesario no está disponible. No se cambió nada; inténtelo más tarde.</value></data>
+  <data name="Err_open_version_exists" xml:space="preserve"><value>Esta declaración ya tiene una versión en borrador o en revisión.</value></data>
+  <data name="Err_invalid_state" xml:space="preserve"><value>Acción no posible en el estado actual de la declaración.</value></data>
+  <data name="Err_duplicate_code" xml:space="preserve"><value>Otra declaración ya usa este código. Elija otro.</value></data>
+  <data name="Err_quote_required" xml:space="preserve"><value>Introduzca la frase citada.</value></data>
+  <data name="Err_duplicate_link" xml:space="preserve"><value>La misma evidencia ya está vinculada.</value></data>
+  <data name="Err_document_not_readable" xml:space="preserve"><value>No puede leer este documento.</value></data>
+  <data name="Err_document_not_found" xml:space="preserve"><value>No se encontró el documento.</value></data>
+  <data name="Err_version_required" xml:space="preserve"><value>Un documento controlado necesita una versión fijada.</value></data>
+  <data name="Err_invalid_evidence_type" xml:space="preserve"><value>Seleccione un tipo de evidencia válido.</value></data>
+  <data name="Err_removal_reason_required" xml:space="preserve"><value>Introduzca el motivo de la eliminación.</value></data>
+  <data name="Err_link_not_found" xml:space="preserve"><value>No se encontró el vínculo de evidencia.</value></data>
+  <data name="EvStep1" xml:space="preserve"><value>1 · Elegir un documento</value></data>
+  <data name="EvStep2" xml:space="preserve"><value>2 · Referencia y correspondencia</value></data>
+  <data name="EvSearchPlaceholder" xml:space="preserve"><value>Buscar por título o código</value></data>
+  <data name="EvKindControlled" xml:space="preserve"><value>Controlado</value></data>
+  <data name="EvKindExternal" xml:space="preserve"><value>Externo</value></data>
+  <data name="EvUploadNew" xml:space="preserve"><value>Subir un nuevo documento en Gestión documental</value></data>
+  <data name="EvNoDocuments" xml:space="preserve"><value>Ningún documento legible coincide.</value></data>
+  <data name="EvWillPin" xml:space="preserve"><value>Se fijará {0}</value></data>
+  <data name="EvTypeLabel" xml:space="preserve"><value>Tipo de evidencia</value></data>
+  <data name="EvSectionLabel" xml:space="preserve"><value>Sección</value></data>
+  <data name="EvPageLabel" xml:space="preserve"><value>Página</value></data>
+  <data name="EvTableLabel" xml:space="preserve"><value>Tabla</value></data>
+  <data name="EvQuoteLabel" xml:space="preserve"><value>Frase citada</value></data>
+  <data name="EvSupportsLabel" xml:space="preserve"><value>Frase respaldada · márquela en el texto</value></data>
+  <data name="EvSupportsHint" xml:space="preserve"><value>Seleccione parte del texto con el ratón o el teclado (Mayús + flechas) y elija Añadir texto seleccionado.</value></data>
+  <data name="EvAddSelection" xml:space="preserve"><value>Añadir texto seleccionado</value></data>
+  <data name="EvSpansEmpty" xml:space="preserve"><value>Aún no hay frases marcadas.</value></data>
+  <data name="EvSpansMax" xml:space="preserve"><value>Se pueden marcar como máximo 10 frases.</value></data>
+  <data name="EvSaveTextFirst" xml:space="preserve"><value>El texto está vacío; introdúzcalo y guárdelo primero.</value></data>
+  <data name="EvBack" xml:space="preserve"><value>Atrás</value></data>
+  <data name="EvNext" xml:space="preserve"><value>Siguiente</value></data>
+  <data name="EvAdd" xml:space="preserve"><value>Añadir evidencia</value></data>
+  <data name="EvRequiredMissing" xml:space="preserve"><value>Complete el tipo de evidencia, la frase citada y al menos una frase respaldada.</value></data>
+  <data name="EvPreviewExternalNote" xml:space="preserve"><value>Las fuentes externas no tienen vista previa aquí.</value></data>
+  <data name="KindCoreBadge" xml:space="preserve"><value>Base</value></data>
+  <data name="KindLocalBadge" xml:space="preserve"><value>Local</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>En revisión</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>Requiere revisión</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Inactiva</value></data>
+  <data name="State_archived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="RequiredCount" xml:space="preserve"><value>Obligatorios: {0}</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
+</root>

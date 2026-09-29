@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>声明</value></data>
+  <data name="NewCoreClaimTitle" xml:space="preserve"><value>新建核心声明</value></data>
+  <data name="NewLocalClaimTitle" xml:space="preserve"><value>新建本地声明</value></data>
+  <data name="EditClaimTitle" xml:space="preserve"><value>编辑声明</value></data>
+  <data name="CancelAction" xml:space="preserve"><value>取消</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>保存草稿</value></data>
+  <data name="SubmitReview" xml:space="preserve"><value>提交审核</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>撤回审核</value></data>
+  <data name="OpenNewVersion" xml:space="preserve"><value>开启新版本</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>标识与文本</value></data>
+  <data name="ClaimCodeLabel" xml:space="preserve"><value>声明代码</value></data>
+  <data name="ClaimCodeHint" xml:space="preserve"><value>根据产品建议。在各版本和国家版本之间保持不变的业务键。</value></data>
+  <data name="ClaimCodeLocked" xml:space="preserve"><value>声明创建后代码即固定。</value></data>
+  <data name="ClaimNameLabel" xml:space="preserve"><value>声明名称</value></data>
+  <data name="VersionLabel" xml:space="preserve"><value>版本</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>状态</value></data>
+  <data name="StatusHint" xml:space="preserve"><value>状态只能通过提交审核、批准和归档改变。</value></data>
+  <data name="DescriptionLabel" xml:space="preserve"><value>描述</value></data>
+  <data name="CoreTextLabel" xml:space="preserve"><value>核心声明文本</value></data>
+  <data name="LocalTextLabel" xml:space="preserve"><value>本地声明文本</value></data>
+  <data name="TextLanguageLabel" xml:space="preserve"><value>文本语言</value></data>
+  <data name="CoreTextHint" xml:space="preserve"><value>国家版本基于此文本改编，不能扩大其范围。批准后锁定。</value></data>
+  <data name="LocalTextHint" xml:space="preserve"><value>本地声明仅适用于一个国家，没有核心文本。</value></data>
+  <data name="CountryLabel" xml:space="preserve"><value>国家</value></data>
+  <data name="CharCount" xml:space="preserve"><value>{0} 个字符</value></data>
+  <data name="SectionScope" xml:space="preserve"><value>适用范围</value></data>
+  <data name="ProductLabel" xml:space="preserve"><value>产品</value></data>
+  <data name="AudienceLabel" xml:space="preserve"><value>目标受众</value></data>
+  <data name="OrgUnitLabel" xml:space="preserve"><value>负责团队</value></data>
+  <data name="ScopeNote" xml:space="preserve"><value>国家、语言和有效期在每个国家版本中分别设置。</value></data>
+  <data name="ProductUnavailable" xml:space="preserve"><value>暂时无法访问产品目录。</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>请选择</value></data>
+  <data name="SectionQualifiers" xml:space="preserve"><value>限定语</value></data>
+  <data name="QualifiersHint" xml:space="preserve"><value>始终伴随该句子的必要表述。</value></data>
+  <data name="QualifierPlaceholder" xml:space="preserve"><value>添加限定语</value></data>
+  <data name="AddAction" xml:space="preserve"><value>添加</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>移除</value></data>
+  <data name="SectionEvidence" xml:space="preserve"><value>证据</value></data>
+  <data name="AddEvidence" xml:space="preserve"><value>添加证据</value></data>
+  <data name="EvidenceEmpty" xml:space="preserve"><value>尚未关联证据。</value></data>
+  <data name="EvidenceHint" xml:space="preserve"><value>提交审核至少需要一条证据。文档从文档管理中选择。</value></data>
+  <data name="EvidenceSaveFirst" xml:space="preserve"><value>请先保存草稿；证据只能关联到已保存的声明。</value></data>
+  <data name="EvidenceLockedNote" xml:space="preserve"><value>证据只能在草稿中修改；请开启新版本进行修改。</value></data>
+  <data name="EvidencePreview" xml:space="preserve"><value>预览</value></data>
+  <data name="EvidenceSupports" xml:space="preserve"><value>支持的表述：</value></data>
+  <data name="EvidencePinned" xml:space="preserve"><value>已固定 {0}</value></data>
+  <data name="EvidenceSuperseded" xml:space="preserve"><value>该文档有更新的生效版本（{0}）。</value></data>
+  <data name="EvidenceStateWarning" xml:space="preserve"><value>文档状态：{0}。</value></data>
+  <data name="EvidenceExpiring" xml:space="preserve"><value>文档复审日期为 {0}。</value></data>
+  <data name="DocState_suspended" xml:space="preserve"><value>已暂停</value></data>
+  <data name="DocState_retired" xml:space="preserve"><value>已停用</value></data>
+  <data name="DocState_withdrawn" xml:space="preserve"><value>已撤回</value></data>
+  <data name="RemoveEvidenceTitle" xml:space="preserve"><value>移除证据</value></data>
+  <data name="RemoveEvidenceReason" xml:space="preserve"><value>移除原因</value></data>
+  <data name="RemoveEvidenceConfirm" xml:space="preserve"><value>移除</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>审核准备</value></data>
+  <data name="ReadyName" xml:space="preserve"><value>名称</value></data>
+  <data name="ReadyText" xml:space="preserve"><value>声明文本</value></data>
+  <data name="ReadyProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="ReadyEvidence" xml:space="preserve"><value>至少 1 条证据</value></data>
+  <data name="ReadySaved" xml:space="preserve"><value>已保存</value></data>
+  <data name="ReadyMissing" xml:space="preserve"><value>缺失</value></data>
+  <data name="FlowTitleCore" xml:space="preserve"><value>全球审批流程</value></data>
+  <data name="FlowTitleLocal" xml:space="preserve"><value>本地审批流程</value></data>
+  <data name="FlowSequentialNote" xml:space="preserve"><value>顺序 · 在审批设置中配置</value></data>
+  <data name="FlowNoCandidates" xml:space="preserve"><value>无候选职位</value></data>
+  <data name="FlowReason_WorkflowTemplateMissing" xml:space="preserve"><value>尚未为该声明定义审批流程，请联系管理员。</value></data>
+  <data name="FlowReason_WorkflowTemplateNotPublished" xml:space="preserve"><value>审批流程已存在但尚未发布。</value></data>
+  <data name="FlowReason_WorkflowPermissionMissing" xml:space="preserve"><value>您无权查看审批流程设置。</value></data>
+  <data name="FlowReason_WorkflowUnavailable" xml:space="preserve"><value>暂时无法显示审批流程。</value></data>
+  <data name="FlowPickCountry" xml:space="preserve"><value>选择国家以查看其审批流程。</value></data>
+  <data name="StatusCardTitle" xml:space="preserve"><value>状态卡</value></data>
+  <data name="LockInReview" xml:space="preserve"><value>审核中：在审批流程完成或撤回前声明已锁定。</value></data>
+  <data name="LockApproved" xml:space="preserve"><value>已批准：文本和证据已锁定。请开启新版本进行修改。</value></data>
+  <data name="LockReviewRequired" xml:space="preserve"><value>需复核：关联文档已变更。请开启新版本更新声明。</value></data>
+  <data name="LockInactive" xml:space="preserve"><value>此记录已不是当前版本（已被取代或归档）。</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>将此声明提交审核？审批流程完成前将被锁定。</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>撤回此声明的审核？它将恢复为草稿。</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>基于此声明开启新的草稿版本？</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>草稿已保存。</value></data>
+  <data name="ToastSubmitted" xml:space="preserve"><value>已提交审核。</value></data>
+  <data name="ToastWithdrawn" xml:space="preserve"><value>已撤回审核。</value></data>
+  <data name="ToastEvidenceAdded" xml:space="preserve"><value>证据已添加。</value></data>
+  <data name="ToastEvidenceRemoved" xml:space="preserve"><value>证据已移除。</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>无法加载声明。</value></data>
+  <data name="ErrorGeneric" xml:space="preserve"><value>出现问题，请重试。</value></data>
+  <data name="Err_evidence_required" xml:space="preserve"><value>提交审核前请至少添加一条证据。</value></data>
+  <data name="Err_evidence_locked" xml:space="preserve"><value>证据只能在草稿中修改。请开启新版本。</value></data>
+  <data name="Err_evidence_unavailable" xml:space="preserve"><value>无法访问证据服务。未做任何更改，请稍后重试。</value></data>
+  <data name="Err_in_review_locked" xml:space="preserve"><value>声明正在审核中。请撤回审核后再修改。</value></data>
+  <data name="Err_invalid_status" xml:space="preserve"><value>在声明的当前状态下无法执行此操作。</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>未定义审批流程，请联系管理员。</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>您无权启动审批流程。</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>无法访问审批服务。未做任何更改，请稍后重试。</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>审批流程拒绝了该请求。</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>审核已无法撤回：已有审批人处理。</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>没有可撤回的进行中审核。</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>声明只能通过审批流程批准。</value></data>
+  <data name="Err_product_required" xml:space="preserve"><value>请选择产品。</value></data>
+  <data name="Err_product_not_found" xml:space="preserve"><value>在产品目录中找不到该产品。</value></data>
+  <data name="Err_claim_product_mismatch" xml:space="preserve"><value>该声明不属于此产品。</value></data>
+  <data name="Err_local_country_required" xml:space="preserve"><value>请选择本地声明的国家。</value></data>
+  <data name="Err_language_not_allowed" xml:space="preserve"><value>该语言不是所选国家的内容语言。</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>所需的参考列表尚未发布，请联系管理员。</value></data>
+  <data name="Err_audience_not_found" xml:space="preserve"><value>找不到所选的受众画像。</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>无法访问所需服务。未做任何更改，请稍后重试。</value></data>
+  <data name="Err_open_version_exists" xml:space="preserve"><value>此声明已有草稿或审核中的版本。</value></data>
+  <data name="Err_invalid_state" xml:space="preserve"><value>在声明的当前状态下无法执行此操作。</value></data>
+  <data name="Err_duplicate_code" xml:space="preserve"><value>其他声明已使用此代码，请更换。</value></data>
+  <data name="Err_quote_required" xml:space="preserve"><value>请输入引用的句子。</value></data>
+  <data name="Err_duplicate_link" xml:space="preserve"><value>相同的证据已关联。</value></data>
+  <data name="Err_document_not_readable" xml:space="preserve"><value>您无权阅读此文档。</value></data>
+  <data name="Err_document_not_found" xml:space="preserve"><value>找不到该文档。</value></data>
+  <data name="Err_version_required" xml:space="preserve"><value>受控文档需要固定版本。</value></data>
+  <data name="Err_invalid_evidence_type" xml:space="preserve"><value>请选择有效的证据类型。</value></data>
+  <data name="Err_removal_reason_required" xml:space="preserve"><value>请输入移除原因。</value></data>
+  <data name="Err_link_not_found" xml:space="preserve"><value>找不到证据关联。</value></data>
+  <data name="EvStep1" xml:space="preserve"><value>1 · 选择文档</value></data>
+  <data name="EvStep2" xml:space="preserve"><value>2 · 引用与映射</value></data>
+  <data name="EvSearchPlaceholder" xml:space="preserve"><value>按标题或代码搜索</value></data>
+  <data name="EvKindControlled" xml:space="preserve"><value>受控</value></data>
+  <data name="EvKindExternal" xml:space="preserve"><value>外部</value></data>
+  <data name="EvUploadNew" xml:space="preserve"><value>在文档管理中上传新文档</value></data>
+  <data name="EvNoDocuments" xml:space="preserve"><value>没有匹配的可读文档。</value></data>
+  <data name="EvWillPin" xml:space="preserve"><value>将固定 {0}</value></data>
+  <data name="EvTypeLabel" xml:space="preserve"><value>证据类型</value></data>
+  <data name="EvSectionLabel" xml:space="preserve"><value>章节</value></data>
+  <data name="EvPageLabel" xml:space="preserve"><value>页码</value></data>
+  <data name="EvTableLabel" xml:space="preserve"><value>表格</value></data>
+  <data name="EvQuoteLabel" xml:space="preserve"><value>引用句子</value></data>
+  <data name="EvSupportsLabel" xml:space="preserve"><value>支持的表述 · 在声明文本上标记</value></data>
+  <data name="EvSupportsHint" xml:space="preserve"><value>用鼠标或键盘（Shift + 方向键）选择部分文本，然后选择“添加所选文本”。</value></data>
+  <data name="EvAddSelection" xml:space="preserve"><value>添加所选文本</value></data>
+  <data name="EvSpansEmpty" xml:space="preserve"><value>尚未标记任何表述。</value></data>
+  <data name="EvSpansMax" xml:space="preserve"><value>最多可标记 10 个表述。</value></data>
+  <data name="EvSaveTextFirst" xml:space="preserve"><value>声明文本为空，请先输入并保存。</value></data>
+  <data name="EvBack" xml:space="preserve"><value>上一步</value></data>
+  <data name="EvNext" xml:space="preserve"><value>下一步</value></data>
+  <data name="EvAdd" xml:space="preserve"><value>添加证据</value></data>
+  <data name="EvRequiredMissing" xml:space="preserve"><value>请填写证据类型、引用句子和至少一个支持的表述。</value></data>
+  <data name="EvPreviewExternalNote" xml:space="preserve"><value>此处无外部来源的文档预览。</value></data>
+  <data name="KindCoreBadge" xml:space="preserve"><value>核心</value></data>
+  <data name="KindLocalBadge" xml:space="preserve"><value>本地</value></data>
+  <data name="State_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>审核中</value></data>
+  <data name="State_approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>需复核</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>停用</value></data>
+  <data name="State_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="RequiredCount" xml:space="preserve"><value>必填：{0}</value></data>
+  <data name="Loading" xml:space="preserve"><value>加载中…</value></data>
+</root>

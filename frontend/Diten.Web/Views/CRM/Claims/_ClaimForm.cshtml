@@ -1,0 +1,288 @@
+@using Diten.Web.Views.CRM.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsForm> Localizer
+@{
+    // WP-CL-FE-3 — core / local claim page (mockup scenarios 3 / 5 / 6). Task Create 8/4 layout: left = identity & text,
+    // scope, qualifiers, evidence; right = readiness, approval flow preview, status card. Everything is loaded and saved
+    // by form.js over /CRM/Claims/api/v2 (FE-1 proxy layer); nothing is posted as an MVC form.
+    var claimId = ViewData["ClaimId"] as string ?? string.Empty;
+    var kind = ViewData["ClaimKind"] as string ?? string.Empty;
+    var isCreate = string.IsNullOrEmpty(claimId);
+    var title = isCreate
+        ? (kind == "local" ? Localizer["NewLocalClaimTitle"] : Localizer["NewCoreClaimTitle"])
+        : Localizer["EditClaimTitle"];
+}
+
+<div class="claims-form-scope" id="claimFormRoot" data-claim-id="@claimId" data-claim-kind="@kind">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <div>
+            <h5 class="mb-0" id="claimFormTitle">@title</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/Claims">@Localizer["ClaimsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary" id="claimFormCrumb">@title</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/CRM/Claims" class="btn btn-label-secondary">@Localizer["CancelAction"]</a>
+            <span id="claimRequiredTracker" class="badge bg-label-danger d-none"></span>
+            <button type="button" class="btn btn-label-primary js-save-draft" data-requires="draft">@Localizer["SaveDraft"]</button>
+            <button type="button" class="btn btn-primary js-submit-review" data-requires="draft">@Localizer["SubmitReview"]</button>
+        </div>
+    </div>
+
+    <div id="claimFormAlert" class="alert alert-danger d-none" role="alert"></div>
+    <div id="claimLockBand" class="alert d-none d-flex align-items-center gap-2" role="status"></div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            @* Identity and text *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionIdentity"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="clmCode" class="form-label fw-medium">@Localizer["ClaimCodeLabel"] <span class="text-danger">*</span></label>
+                            <input type="text" id="clmCode" class="form-control" maxlength="120" autocomplete="off" required />
+                            <div class="form-text" id="clmCodeHint">@Localizer["ClaimCodeHint"]</div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label fw-medium" for="clmVersion">@Localizer["VersionLabel"]</label>
+                            <input type="text" id="clmVersion" class="form-control" value="1.0" readonly />
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="form-label fw-medium d-block">@Localizer["StatusLabel"]</span>
+                            <span id="clmStatus" class="claim-state state-draft">-</span>
+                        </div>
+                        <div class="col-12"><div class="form-text mt-0">@Localizer["StatusHint"]</div></div>
+                        <div class="col-12">
+                            <label for="clmName" class="form-label fw-medium">@Localizer["ClaimNameLabel"] <span class="text-danger">*</span></label>
+                            <input type="text" id="clmName" class="form-control" maxlength="240" required />
+                        </div>
+                        <div class="col-12">
+                            <label for="clmDescription" class="form-label fw-medium">@Localizer["DescriptionLabel"]</label>
+                            <textarea id="clmDescription" class="form-control" rows="2" maxlength="2000"></textarea>
+                        </div>
+
+                        @* Local claim only: country (COUNTRY_CODES) + the text language from that country's languages. *@
+                        <div class="col-12 col-md-6 d-none js-local-only">
+                            <label for="clmCountry" class="form-label fw-medium">@Localizer["CountryLabel"] <span class="text-danger">*</span></label>
+                            <select id="clmCountry" class="form-select clm-select2" data-placeholder="@Localizer["SelectPlaceholder"]"></select>
+                        </div>
+                        <div class="col-12 col-md-6 d-none js-local-only">
+                            <label for="clmTextLanguage" class="form-label fw-medium">@Localizer["TextLanguageLabel"] <span class="text-danger">*</span></label>
+                            <select id="clmTextLanguage" class="form-select"></select>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-end">
+                                <label for="clmText" class="form-label fw-medium" id="clmTextLabel">@Localizer["CoreTextLabel"] <span class="text-danger">*</span></label>
+                                <small class="text-muted mb-1 js-core-only">@Localizer["TextLanguageLabel"]: <span class="fw-medium">en · English</span></small>
+                            </div>
+                            <textarea id="clmText" class="form-control" rows="4" maxlength="2000" required></textarea>
+                            <div class="d-flex justify-content-between">
+                                <div class="form-text" id="clmTextHint">@Localizer["CoreTextHint"]</div>
+                                <div class="form-text text-nowrap ms-2" id="clmTextCount"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* Scope *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionScope"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="clmProduct" class="form-label fw-medium">@Localizer["ProductLabel"] <span class="text-danger">*</span></label>
+                            <select id="clmProduct" class="form-select clm-select2" data-placeholder="@Localizer["SelectPlaceholder"]"></select>
+                            <div class="form-text text-warning d-none" id="clmProductUnavailable">@Localizer["ProductUnavailable"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="clmOrgUnit" class="form-label fw-medium">@Localizer["OrgUnitLabel"]</label>
+                            <select id="clmOrgUnit" class="form-select clm-select2" data-placeholder="@Localizer["SelectPlaceholder"]"></select>
+                        </div>
+                        <div class="col-12">
+                            <label for="clmAudience" class="form-label fw-medium">@Localizer["AudienceLabel"]</label>
+                            <select id="clmAudience" class="form-select clm-select2" multiple data-placeholder="@Localizer["SelectPlaceholder"]"></select>
+                        </div>
+                        <div class="col-12"><div class="form-text mt-0"><i class="bx bx-info-circle me-1"></i>@Localizer["ScopeNote"]</div></div>
+                    </div>
+                </div>
+            </section>
+
+            @* Qualifiers *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["SectionQualifiers"]</h6>
+                    <div class="form-text mb-3">@Localizer["QualifiersHint"]</div>
+                    <ul id="clmQualifiers" class="list-unstyled d-flex flex-column gap-2 mb-3"></ul>
+                    <div class="input-group js-editable">
+                        <input type="text" id="clmQualifierInput" class="form-control" maxlength="500" placeholder="@Localizer["QualifierPlaceholder"]" />
+                        <button type="button" class="btn btn-label-primary" id="btnAddQualifier"><i class="bx bx-plus me-1"></i>@Localizer["AddAction"]</button>
+                    </div>
+                </div>
+            </section>
+
+            @* Evidence *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["SectionEvidence"] <span class="text-danger">*</span></h6>
+                        <button type="button" class="btn btn-sm btn-label-primary d-none" id="btnAddEvidence"><i class="bx bx-plus me-1"></i>@Localizer["AddEvidence"]</button>
+                    </div>
+                    <div class="form-text mb-3">@Localizer["EvidenceHint"]</div>
+                    <div id="clmEvidenceSaveFirst" class="alert alert-secondary py-2 d-none">@Localizer["EvidenceSaveFirst"]</div>
+                    <div id="clmEvidenceLocked" class="text-muted small mb-2 d-none"><i class="bx bx-lock-alt me-1"></i>@Localizer["EvidenceLockedNote"]</div>
+                    <div id="clmEvidenceList" class="d-flex flex-column gap-3"></div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="claims-form-side">
+                @* Readiness for review (live) *@
+                <section class="card mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["ReadinessTitle"]</h6>
+                        <ul id="clmReadiness" class="list-unstyled mb-0 d-flex flex-column gap-2"></ul>
+                    </div>
+                </section>
+
+                @* Approval flow preview (MOD-0023 template of this claim) *@
+                <section class="card mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-1" id="clmFlowTitle">@Localizer["FlowTitleCore"]</h6>
+                        <div class="form-text mb-3">@Localizer["FlowSequentialNote"]</div>
+                        <div id="clmFlow" class="d-flex flex-column gap-2"><div class="text-muted small">@Localizer["Loading"]</div></div>
+                    </div>
+                </section>
+
+                @* Status card *@
+                <section class="card mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["StatusCardTitle"]</h6>
+                            <span id="clmStatusCardBadge" class="claim-state state-draft">-</span>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-label-primary js-save-draft" data-requires="draft">@Localizer["SaveDraft"]</button>
+                            <button type="button" class="btn btn-primary js-submit-review" data-requires="draft">@Localizer["SubmitReview"]</button>
+                            <button type="button" class="btn btn-label-warning d-none" id="btnWithdrawReview">@Localizer["WithdrawReview"]</button>
+                            <button type="button" class="btn btn-label-primary d-none" id="btnOpenNewVersion"><i class="bx bx-git-branch me-1"></i>@Localizer["OpenNewVersion"]</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    @* Evidence modal (mockup scenario 5): step 1 choose a document, step 2 reference + mapping. *@
+    <div class="modal fade" id="claimEvidenceModal" tabindex="-1" aria-labelledby="claimEvidenceModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="claimEvidenceModalTitle">@Localizer["AddEvidence"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["CancelAction"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex gap-3 mb-3 small fw-medium">
+                        <span class="ev-step active" data-step-label="1">@Localizer["EvStep1"]</span>
+                        <span class="ev-step" data-step-label="2">@Localizer["EvStep2"]</span>
+                    </div>
+                    <div id="evAlert" class="alert alert-danger d-none py-2" role="alert"></div>
+
+                    <div data-step="1">
+                        <div class="row g-2 mb-3">
+                            <div class="col-12 col-md-8">
+                                <input type="search" id="evSearch" class="form-control" placeholder="@Localizer["EvSearchPlaceholder"]" />
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <select id="evKind" class="form-select">
+                                    <option value="controlled">@Localizer["EvKindControlled"]</option>
+                                    <option value="external">@Localizer["EvKindExternal"]</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="evDocList" class="list-group ev-doc-list mb-3" role="listbox" aria-label="@Localizer["EvStep1"]"></div>
+                        <a href="/DocumentManagementControlledDocuments/Create" target="_blank" rel="noopener" class="small">
+                            <i class="bx bx-upload me-1"></i>@Localizer["EvUploadNew"]
+                        </a>
+                    </div>
+
+                    <div data-step="2" class="d-none">
+                        <div class="border rounded p-3 mb-3 ev-doc-summary">
+                            <div class="fw-medium" id="evDocTitle">-</div>
+                            <small class="text-muted d-block" id="evDocMeta">-</small>
+                            <small class="text-primary fw-medium d-block mt-1" id="evDocPin">-</small>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label for="evType" class="form-label fw-medium">@Localizer["EvTypeLabel"] <span class="text-danger">*</span></label>
+                                <select id="evType" class="form-select"></select>
+                            </div>
+                            <div class="col-4 col-md-2">
+                                <label for="evSection" class="form-label fw-medium">@Localizer["EvSectionLabel"]</label>
+                                <input type="text" id="evSection" class="form-control" maxlength="120" />
+                            </div>
+                            <div class="col-4 col-md-2">
+                                <label for="evPage" class="form-label fw-medium">@Localizer["EvPageLabel"]</label>
+                                <input type="text" id="evPage" class="form-control" maxlength="20" />
+                            </div>
+                            <div class="col-4 col-md-2">
+                                <label for="evTable" class="form-label fw-medium">@Localizer["EvTableLabel"]</label>
+                                <input type="text" id="evTable" class="form-control" maxlength="60" />
+                            </div>
+                            <div class="col-12">
+                                <label for="evQuote" class="form-label fw-medium">@Localizer["EvQuoteLabel"] <span class="text-danger">*</span></label>
+                                <textarea id="evQuote" class="form-control" rows="3" maxlength="1000"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label for="evSpanSource" class="form-label fw-medium">@Localizer["EvSupportsLabel"] <span class="text-danger">*</span></label>
+                                <div class="form-text mt-0 mb-2" id="evSpanHint">@Localizer["EvSupportsHint"]</div>
+                                @* A readonly textarea: mouse AND keyboard (Shift + arrows) selection both work, and
+                                   selectionStart / selectionEnd are the exact offsets into the claim text. *@
+                                <textarea id="evSpanSource" class="form-control ev-span-source" rows="3" readonly aria-describedby="evSpanHint"></textarea>
+                                <button type="button" class="btn btn-sm btn-label-primary mt-2" id="evAddSelection"><i class="bx bx-highlight me-1"></i>@Localizer["EvAddSelection"]</button>
+                                <div id="evSpans" class="d-flex flex-wrap gap-2 mt-2" aria-live="polite"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <div>
+                        <button type="button" class="btn btn-label-secondary d-none" id="evBack">@Localizer["EvBack"]</button>
+                        <a href="#" target="_blank" rel="noopener" class="btn btn-label-secondary d-none" id="evPreview"><i class="bx bx-show me-1"></i>@Localizer["EvidencePreview"]</a>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["CancelAction"]</button>
+                        <button type="button" class="btn btn-primary" id="evNext" disabled>@Localizer["EvNext"]</button>
+                        <button type="button" class="btn btn-primary d-none" id="evAdd">@Localizer["EvAdd"]</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Remove evidence (a reason is mandatory — MOD-0031 keeps the record with it). *@
+    <div class="modal fade" id="claimEvidenceRemoveModal" tabindex="-1" aria-labelledby="claimEvidenceRemoveTitle" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="claimEvidenceRemoveTitle">@Localizer["RemoveEvidenceTitle"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["CancelAction"]"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="evRemoveReason" class="form-label fw-medium">@Localizer["RemoveEvidenceReason"] <span class="text-danger">*</span></label>
+                    <textarea id="evRemoveReason" class="form-control" rows="3" maxlength="500"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["CancelAction"]</button>
+                    <button type="button" class="btn btn-danger" id="evRemoveConfirm">@Localizer["RemoveEvidenceConfirm"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

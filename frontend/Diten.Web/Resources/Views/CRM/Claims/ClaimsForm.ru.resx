@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>Заявления</value></data>
+  <data name="NewCoreClaimTitle" xml:space="preserve"><value>Новое базовое заявление</value></data>
+  <data name="NewLocalClaimTitle" xml:space="preserve"><value>Новое локальное заявление</value></data>
+  <data name="EditClaimTitle" xml:space="preserve"><value>Изменить заявление</value></data>
+  <data name="CancelAction" xml:space="preserve"><value>Отмена</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить черновик</value></data>
+  <data name="SubmitReview" xml:space="preserve"><value>Отправить на согласование</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>Отозвать с согласования</value></data>
+  <data name="OpenNewVersion" xml:space="preserve"><value>Открыть новую версию</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Идентификация и текст</value></data>
+  <data name="ClaimCodeLabel" xml:space="preserve"><value>Код заявления</value></data>
+  <data name="ClaimCodeHint" xml:space="preserve"><value>Предлагается по продукту. Постоянный бизнес-ключ для всех версий и страновых версий.</value></data>
+  <data name="ClaimCodeLocked" xml:space="preserve"><value>Код фиксируется после создания заявления.</value></data>
+  <data name="ClaimNameLabel" xml:space="preserve"><value>Название заявления</value></data>
+  <data name="VersionLabel" xml:space="preserve"><value>Версия</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Статус</value></data>
+  <data name="StatusHint" xml:space="preserve"><value>Статус меняется только через «Отправить на согласование», «Утвердить» и «Архивировать».</value></data>
+  <data name="DescriptionLabel" xml:space="preserve"><value>Описание</value></data>
+  <data name="CoreTextLabel" xml:space="preserve"><value>Текст базового заявления</value></data>
+  <data name="LocalTextLabel" xml:space="preserve"><value>Текст локального заявления</value></data>
+  <data name="TextLanguageLabel" xml:space="preserve"><value>Язык текста</value></data>
+  <data name="CoreTextHint" xml:space="preserve"><value>Страновые версии адаптируются из этого текста и не могут расширять его охват. После утверждения он блокируется.</value></data>
+  <data name="LocalTextHint" xml:space="preserve"><value>Локальное заявление действует только в одной стране и не имеет базового текста.</value></data>
+  <data name="CountryLabel" xml:space="preserve"><value>Страна</value></data>
+  <data name="CharCount" xml:space="preserve"><value>{0} символов</value></data>
+  <data name="SectionScope" xml:space="preserve"><value>Область действия</value></data>
+  <data name="ProductLabel" xml:space="preserve"><value>Продукт</value></data>
+  <data name="AudienceLabel" xml:space="preserve"><value>Целевая аудитория</value></data>
+  <data name="OrgUnitLabel" xml:space="preserve"><value>Ответственная команда</value></data>
+  <data name="ScopeNote" xml:space="preserve"><value>Страна, язык и сроки действия задаются в каждой страновой версии.</value></data>
+  <data name="ProductUnavailable" xml:space="preserve"><value>Каталог продуктов сейчас недоступен.</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Выберите</value></data>
+  <data name="SectionQualifiers" xml:space="preserve"><value>Уточнения</value></data>
+  <data name="QualifiersHint" xml:space="preserve"><value>Обязательные формулировки, всегда сопровождающие утверждение.</value></data>
+  <data name="QualifierPlaceholder" xml:space="preserve"><value>Добавьте уточнение</value></data>
+  <data name="AddAction" xml:space="preserve"><value>Добавить</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>Удалить</value></data>
+  <data name="SectionEvidence" xml:space="preserve"><value>Доказательства</value></data>
+  <data name="AddEvidence" xml:space="preserve"><value>Добавить доказательство</value></data>
+  <data name="EvidenceEmpty" xml:space="preserve"><value>Доказательства ещё не привязаны.</value></data>
+  <data name="EvidenceHint" xml:space="preserve"><value>Для отправки на согласование нужно хотя бы одно доказательство. Документы выбираются в системе управления документами.</value></data>
+  <data name="EvidenceSaveFirst" xml:space="preserve"><value>Сначала сохраните черновик: доказательство привязывается к сохранённому заявлению.</value></data>
+  <data name="EvidenceLockedNote" xml:space="preserve"><value>Доказательства меняются только в черновике; для изменения откройте новую версию.</value></data>
+  <data name="EvidencePreview" xml:space="preserve"><value>Предпросмотр</value></data>
+  <data name="EvidenceSupports" xml:space="preserve"><value>Подтверждает:</value></data>
+  <data name="EvidencePinned" xml:space="preserve"><value>Зафиксирована {0}</value></data>
+  <data name="EvidenceSuperseded" xml:space="preserve"><value>Действует более новая версия документа ({0}).</value></data>
+  <data name="EvidenceStateWarning" xml:space="preserve"><value>Статус документа: {0}.</value></data>
+  <data name="EvidenceExpiring" xml:space="preserve"><value>Пересмотр документа назначен на {0}.</value></data>
+  <data name="DocState_suspended" xml:space="preserve"><value>приостановлен</value></data>
+  <data name="DocState_retired" xml:space="preserve"><value>выведен из действия</value></data>
+  <data name="DocState_withdrawn" xml:space="preserve"><value>отозван</value></data>
+  <data name="RemoveEvidenceTitle" xml:space="preserve"><value>Удалить доказательство</value></data>
+  <data name="RemoveEvidenceReason" xml:space="preserve"><value>Причина удаления</value></data>
+  <data name="RemoveEvidenceConfirm" xml:space="preserve"><value>Удалить</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>Готовность к согласованию</value></data>
+  <data name="ReadyName" xml:space="preserve"><value>Название</value></data>
+  <data name="ReadyText" xml:space="preserve"><value>Текст заявления</value></data>
+  <data name="ReadyProduct" xml:space="preserve"><value>Продукт</value></data>
+  <data name="ReadyEvidence" xml:space="preserve"><value>Минимум 1 доказательство</value></data>
+  <data name="ReadySaved" xml:space="preserve"><value>Сохранено</value></data>
+  <data name="ReadyMissing" xml:space="preserve"><value>не хватает</value></data>
+  <data name="FlowTitleCore" xml:space="preserve"><value>Глобальный процесс согласования</value></data>
+  <data name="FlowTitleLocal" xml:space="preserve"><value>Локальный процесс согласования</value></data>
+  <data name="FlowSequentialNote" xml:space="preserve"><value>Последовательно · настраивается в параметрах согласования</value></data>
+  <data name="FlowNoCandidates" xml:space="preserve"><value>Нет кандидатских должностей</value></data>
+  <data name="FlowReason_WorkflowTemplateMissing" xml:space="preserve"><value>Процесс согласования для этого заявления ещё не задан. Обратитесь к администратору.</value></data>
+  <data name="FlowReason_WorkflowTemplateNotPublished" xml:space="preserve"><value>Процесс согласования существует, но ещё не опубликован.</value></data>
+  <data name="FlowReason_WorkflowPermissionMissing" xml:space="preserve"><value>У вас нет доступа к настройкам процесса согласования.</value></data>
+  <data name="FlowReason_WorkflowUnavailable" xml:space="preserve"><value>Процесс согласования сейчас нельзя показать.</value></data>
+  <data name="FlowPickCountry" xml:space="preserve"><value>Выберите страну, чтобы увидеть процесс согласования.</value></data>
+  <data name="StatusCardTitle" xml:space="preserve"><value>Карточка статуса</value></data>
+  <data name="LockInReview" xml:space="preserve"><value>На согласовании: заявление заблокировано до завершения или отзыва процесса.</value></data>
+  <data name="LockApproved" xml:space="preserve"><value>Утверждено: текст и доказательства заблокированы. Для изменения откройте новую версию.</value></data>
+  <data name="LockReviewRequired" xml:space="preserve"><value>Требует пересмотра: изменился связанный документ. Откройте новую версию, чтобы обновить заявление.</value></data>
+  <data name="LockInactive" xml:space="preserve"><value>Эта запись больше не актуальна (заменена или в архиве).</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Отправить заявление на согласование? Оно будет заблокировано до завершения процесса.</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Отозвать заявление с согласования? Оно вернётся в черновик.</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Открыть новую черновую версию этого заявления?</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>Черновик сохранён.</value></data>
+  <data name="ToastSubmitted" xml:space="preserve"><value>Отправлено на согласование.</value></data>
+  <data name="ToastWithdrawn" xml:space="preserve"><value>Отозвано с согласования.</value></data>
+  <data name="ToastEvidenceAdded" xml:space="preserve"><value>Доказательство добавлено.</value></data>
+  <data name="ToastEvidenceRemoved" xml:space="preserve"><value>Доказательство удалено.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить заявление.</value></data>
+  <data name="ErrorGeneric" xml:space="preserve"><value>Что-то пошло не так. Попробуйте ещё раз.</value></data>
+  <data name="Err_evidence_required" xml:space="preserve"><value>Перед отправкой добавьте хотя бы одно доказательство.</value></data>
+  <data name="Err_evidence_locked" xml:space="preserve"><value>Доказательства меняются только в черновике. Откройте новую версию.</value></data>
+  <data name="Err_evidence_unavailable" xml:space="preserve"><value>Сервис доказательств недоступен. Ничего не изменено; повторите позже.</value></data>
+  <data name="Err_in_review_locked" xml:space="preserve"><value>Заявление на согласовании. Отзовите его, чтобы изменить.</value></data>
+  <data name="Err_invalid_status" xml:space="preserve"><value>Это действие недоступно в текущем статусе заявления.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>Процесс согласования не задан. Обратитесь к администратору.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>У вас нет прав на запуск процесса согласования.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>Сервис согласования недоступен. Ничего не изменено; повторите позже.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>Процесс согласования отклонил запрос.</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>Согласование уже нельзя отозвать: утверждающий уже принял решение.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>Нет открытого согласования для отзыва.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>Заявления утверждаются только через процесс согласования.</value></data>
+  <data name="Err_product_required" xml:space="preserve"><value>Выберите продукт.</value></data>
+  <data name="Err_product_not_found" xml:space="preserve"><value>Продукт не найден в каталоге.</value></data>
+  <data name="Err_claim_product_mismatch" xml:space="preserve"><value>Заявление не относится к этому продукту.</value></data>
+  <data name="Err_local_country_required" xml:space="preserve"><value>Выберите страну локального заявления.</value></data>
+  <data name="Err_language_not_allowed" xml:space="preserve"><value>Этот язык не является языком контента выбранной страны.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>Нужный справочник ещё не опубликован. Обратитесь к администратору.</value></data>
+  <data name="Err_audience_not_found" xml:space="preserve"><value>Выбранный профиль аудитории не найден.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Нужный сервис недоступен. Ничего не изменено; повторите позже.</value></data>
+  <data name="Err_open_version_exists" xml:space="preserve"><value>У заявления уже есть черновая или согласуемая версия.</value></data>
+  <data name="Err_invalid_state" xml:space="preserve"><value>Действие невозможно в текущем состоянии заявления.</value></data>
+  <data name="Err_duplicate_code" xml:space="preserve"><value>Этот код уже используется другим заявлением. Выберите другой.</value></data>
+  <data name="Err_quote_required" xml:space="preserve"><value>Введите цитируемое предложение.</value></data>
+  <data name="Err_duplicate_link" xml:space="preserve"><value>Это доказательство уже привязано.</value></data>
+  <data name="Err_document_not_readable" xml:space="preserve"><value>У вас нет доступа к этому документу.</value></data>
+  <data name="Err_document_not_found" xml:space="preserve"><value>Документ не найден.</value></data>
+  <data name="Err_version_required" xml:space="preserve"><value>Для контролируемого документа нужна зафиксированная версия.</value></data>
+  <data name="Err_invalid_evidence_type" xml:space="preserve"><value>Выберите допустимый тип доказательства.</value></data>
+  <data name="Err_removal_reason_required" xml:space="preserve"><value>Укажите причину удаления.</value></data>
+  <data name="Err_link_not_found" xml:space="preserve"><value>Связь доказательства не найдена.</value></data>
+  <data name="EvStep1" xml:space="preserve"><value>1 · Выберите документ</value></data>
+  <data name="EvStep2" xml:space="preserve"><value>2 · Ссылка и сопоставление</value></data>
+  <data name="EvSearchPlaceholder" xml:space="preserve"><value>Поиск по названию или коду</value></data>
+  <data name="EvKindControlled" xml:space="preserve"><value>Контролируемый</value></data>
+  <data name="EvKindExternal" xml:space="preserve"><value>Внешний</value></data>
+  <data name="EvUploadNew" xml:space="preserve"><value>Загрузить новый документ в систему управления документами</value></data>
+  <data name="EvNoDocuments" xml:space="preserve"><value>Нет подходящих доступных документов.</value></data>
+  <data name="EvWillPin" xml:space="preserve"><value>Будет зафиксирована {0}</value></data>
+  <data name="EvTypeLabel" xml:space="preserve"><value>Тип доказательства</value></data>
+  <data name="EvSectionLabel" xml:space="preserve"><value>Раздел</value></data>
+  <data name="EvPageLabel" xml:space="preserve"><value>Страница</value></data>
+  <data name="EvTableLabel" xml:space="preserve"><value>Таблица</value></data>
+  <data name="EvQuoteLabel" xml:space="preserve"><value>Цитируемое предложение</value></data>
+  <data name="EvSupportsLabel" xml:space="preserve"><value>Подтверждаемая фраза · отметьте её в тексте заявления</value></data>
+  <data name="EvSupportsHint" xml:space="preserve"><value>Выделите часть текста мышью или клавиатурой (Shift + стрелки), затем нажмите «Добавить выделенный текст».</value></data>
+  <data name="EvAddSelection" xml:space="preserve"><value>Добавить выделенный текст</value></data>
+  <data name="EvSpansEmpty" xml:space="preserve"><value>Фразы ещё не отмечены.</value></data>
+  <data name="EvSpansMax" xml:space="preserve"><value>Можно отметить не более 10 фраз.</value></data>
+  <data name="EvSaveTextFirst" xml:space="preserve"><value>Текст заявления пуст; сначала введите и сохраните его.</value></data>
+  <data name="EvBack" xml:space="preserve"><value>Назад</value></data>
+  <data name="EvNext" xml:space="preserve"><value>Далее</value></data>
+  <data name="EvAdd" xml:space="preserve"><value>Добавить доказательство</value></data>
+  <data name="EvRequiredMissing" xml:space="preserve"><value>Заполните тип доказательства, цитату и хотя бы одну подтверждаемую фразу.</value></data>
+  <data name="EvPreviewExternalNote" xml:space="preserve"><value>Для внешних источников предпросмотр здесь недоступен.</value></data>
+  <data name="KindCoreBadge" xml:space="preserve"><value>Базовое</value></data>
+  <data name="KindLocalBadge" xml:space="preserve"><value>Локальное</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>На согласовании</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>Требует пересмотра</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="State_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="RequiredCount" xml:space="preserve"><value>Обязательно: {0}</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+</root>
