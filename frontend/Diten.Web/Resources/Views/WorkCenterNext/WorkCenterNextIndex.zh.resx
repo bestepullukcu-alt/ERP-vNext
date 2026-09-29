@@ -1520,6 +1520,9 @@
   <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
     <value>缺少必需的证明材料。</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_SelfApproval" xml:space="preserve">
+    <value>此审批由您发起，须由他人作出决定。</value>
+  </data>
   <data name="NoAccessTitle" xml:space="preserve">
     <value>您无权访问任务中心</value>
   </data>

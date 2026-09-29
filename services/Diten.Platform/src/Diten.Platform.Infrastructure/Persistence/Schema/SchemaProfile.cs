@@ -35,5 +35,9 @@ public enum SchemaProfile
 
     /// <summary>MOD-0357 Management Review &amp; Cadence: the meeting↔task bridge (S1). Meeting/minutes/attendee
     /// collections join this profile in later slices (S2+).</summary>
-    Meetings = 10
+    Meetings = 10,
+
+    /// <summary>MOD-0280-FU01 Time Entry &amp; Weekly Timesheet (ADR-004): weeks, entries, task totals, categories,
+    /// settings. T1b adds timer segments and meeting suggestions to this profile.</summary>
+    TimeEntry = 11
 }

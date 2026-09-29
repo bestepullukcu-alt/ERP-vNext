@@ -126,6 +126,14 @@ public static class PlatformCollections
     public const string MeetingMinutesVersions = "meeting_minutes_versions";
     // MOD-0357 S11 — one row per recurring cadence rule (see MeetingSeries.cs).
     public const string MeetingSeries = "meeting_series";
+    // MOD-0280-FU01 T1a (ADR-004) — the time-entry module's own collections; the `time_entry_` prefix is the
+    // extraction unit's boundary (pack §2.4). T1b adds time_entry_timer_segments and time_entry_suggestions.
+    public const string TimeEntryTimesheetWeeks = "time_entry_timesheet_weeks";
+    public const string TimeEntryEntries = "time_entry_entries";
+    public const string TimeEntryTaskTotals = "time_entry_task_totals";
+    public const string TimeEntryWorkCategories = "time_entry_work_categories";
+    public const string TimeEntrySettings = "time_entry_settings";
+    public const string TimeEntryLegalEntitySettings = "time_entry_legal_entity_settings";
     public const string ModuleCatalog = "platform_module_catalog";
     public const string ModuleDomains = "platform_module_domains";
     public const string ModulePageActionDescriptors = "platform_module_page_action_descriptors";

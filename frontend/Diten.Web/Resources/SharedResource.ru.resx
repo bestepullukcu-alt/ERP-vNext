@@ -536,6 +536,7 @@
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Настройки задач</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Рабочий процесс</value></data>
   <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>Совещания</value></data>
+  <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>Табель рабочего времени</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Пользователи</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Роли</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Разрешения ролей</value></data>

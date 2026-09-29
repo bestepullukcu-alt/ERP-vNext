@@ -121,6 +121,8 @@
   <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>Bağlı inceleme toplantısının tutanağı yayımlanmadan bu adım kapatılamaz.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>Bu görev bu durumdayken tamamlanamaz. Önce başlatın.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Bu görevi yalnızca talep eden kişi iptal edebilir. İşi istemiyorsanız iade edin.</value></data>
+  <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>Talep ettiğiniz bir onayın onaylayıcısı siz olamazsınız. Onay yöneticisi olarak başka birini seçin.</value></data>
+  <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>Kendi gönderdiğiniz işi inceleyemezsiniz. Bu görevi incelemesi için başka birini seçin.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Görevin neyi beklediğini yazın.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>Başlık girin.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>Başlık en fazla 200 karakter olabilir.</value></data>

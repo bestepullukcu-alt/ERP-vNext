@@ -597,6 +597,7 @@
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Görev Tanımları</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>İş Akışı</value></data>
   <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>Toplantılar</value></data>
+  <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>Zaman Çizelgesi</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Kullanıcılar</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roller</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Rol İzinleri</value></data>

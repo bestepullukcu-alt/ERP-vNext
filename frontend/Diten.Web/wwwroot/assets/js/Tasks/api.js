@@ -225,6 +225,10 @@
         // Cancelling is the requester's right: an assignee gets 403 with this code. failureMessage checks the
         // reason code BEFORE the status, so this replaces the generic "you are not allowed" with the reason.
         TASK_CANCEL_NOT_REQUESTER: 'errorCancelNotRequester',
+        // WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — MOD-0023 never lets whoever started an approval or review decide it, so
+        // routing one back to its own starter is refused up front (400 on create/edit, 409 on submit for review).
+        TASK_APPROVAL_MANAGER_IS_SELF: 'errorApprovalManagerIsSelf',
+        TASK_REVIEWER_IS_SUBMITTER: 'errorReviewerIsSubmitter',
         TASK_WAITING_REASON_REQUIRED: 'errorWaitingReasonRequired',
         /*
          * BL-439 — AnswerInquiryHandler's three refusals. NOT_ADDRESSEE is the one a real reader meets: the

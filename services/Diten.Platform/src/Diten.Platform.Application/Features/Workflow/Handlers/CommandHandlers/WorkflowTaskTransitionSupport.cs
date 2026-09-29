@@ -108,9 +108,7 @@ internal sealed class WorkflowTaskTransitionSupport
                 correlationId);
         }
 
-        if (action == WorkflowTransitionAction.Approve &&
-            !string.IsNullOrWhiteSpace(instance.StartedBy) &&
-            string.Equals(instance.StartedBy, actorId, StringComparison.Ordinal))
+        if (action == WorkflowTransitionAction.Approve && IsStarter(instance, actorId))
         {
             return Response<WorkflowTaskTransitionResponse>.Fail(
                 "Submitter cannot approve their own workflow.",
@@ -481,7 +479,8 @@ internal sealed class WorkflowTaskTransitionSupport
         string idempotencyKey,
         string? comment,
         string correlationId,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool allowEscalated = false)
     {
         actorId = actorId.Trim();
         reasonCode = reasonCode.Trim();
@@ -505,7 +504,10 @@ internal sealed class WorkflowTaskTransitionSupport
 
         var task = context.Task!;
         var instance = context.Instance!;
-        if (!IsOpen(task))
+        // B3 — an ESCALATED task is still open (nobody decided; it only moved to somebody else), but only the OWNING
+        // module's in-process withdraw may call it off (allowEscalated). The public cancel endpoint never sets it, so
+        // an escalated approval cannot be cancelled by whoever holds the cancel permission.
+        if (!IsOpen(task) && !(allowEscalated && task.Status == ApprovalTaskStatus.Escalated))
         {
             return InvalidState(correlationId);
         }
@@ -656,6 +658,21 @@ internal sealed class WorkflowTaskTransitionSupport
 
     private static bool IsOpen(ApprovalTask task) =>
         task.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence;
+
+    /// <summary>
+    /// B2 — did <paramref name="actorId"/> start this instance? Decided by the starter's USER ID when the instance has
+    /// one (every instance started from now on); an older instance has only the actor name and keeps the old comparison.
+    /// </summary>
+    internal static bool IsStarter(WorkflowInstance instance, string actorId)
+    {
+        if (instance.StartedByUserId is { } starter)
+        {
+            return Guid.TryParse(actorId, out var actor) && actor == starter;
+        }
+
+        return !string.IsNullOrWhiteSpace(instance.StartedBy)
+               && string.Equals(instance.StartedBy, actorId, StringComparison.Ordinal);
+    }
 
     private static Response<WorkflowTaskTransitionResponse> InvalidState(string correlationId) =>
         Response<WorkflowTaskTransitionResponse>.Fail(

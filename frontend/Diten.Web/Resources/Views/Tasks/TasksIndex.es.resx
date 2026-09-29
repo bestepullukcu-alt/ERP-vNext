@@ -121,6 +121,8 @@
   <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>Este paso no se puede cerrar hasta que se publique el acta de la reunión de revisión vinculada.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>Esta tarea no se puede completar en este estado. Iníciela primero.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Solo quien solicitó esta tarea puede cancelarla. Si no quiere el trabajo, devuélvalo.</value></data>
+  <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>No puede ser el aprobador de una aprobación que usted solicita. Elija a otra persona como responsable de la aprobación.</value></data>
+  <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>No puede revisar su propio envío. Pida a otra persona que revise esta tarea.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Indique qué está esperando la tarea.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>Se requiere un título.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>El título puede tener como máximo 200 caracteres.</value></data>

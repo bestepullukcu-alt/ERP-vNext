@@ -926,6 +926,18 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
         }
 
         /*
+         * B2 follow-up — the submitter starts the review, and MOD-0023 never lets whoever started an instance approve
+         * it. A review routed back to its own submitter could therefore never be closed. Refused BEFORE anything is
+         * opened in MOD-0023.
+         */
+        if (task.ReviewerCandidateUserId is { } reviewer && reviewer == _currentUser.UserId)
+        {
+            return Response<NoContent>.Fail(
+                "You cannot review your own submission.",
+                409, TaskReasonCodes.ReviewerIsSubmitter, command.CorrelationId);
+        }
+
+        /*
          * RESUBMISSION after a refusal. A task refused by its reviewer stays in PendingReview on the record while
          * the projection reports it as InProgress — the work is back with its holder — so the lifecycle matrix,
          * which has no PendingReview → PendingReview edge, would refuse the second round and leave the work with
