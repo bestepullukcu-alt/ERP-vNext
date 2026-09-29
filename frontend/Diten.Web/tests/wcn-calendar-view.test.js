@@ -864,6 +864,26 @@ describe("v2 F9 — the day goes into the URL only when the reader moves", () =>
     await settle();
     expect(new URL(global.location.href).searchParams.get("caldate")).toMatch(/^2026-11-/);
   });
+
+  it("CT live: FullCalendar re-announcing the SAME range is not the reader moving", async () => {
+    await boot({ items: [task(1)] });
+    const view = cal().view;
+
+    cal().trigger("datesSet", { start: view.activeStart, end: view.activeEnd, startStr: "", endStr: "", timeZone: "UTC", view });
+    await settle();
+
+    expect(new URL(global.location.href).searchParams.get("caldate"), "a repeat of the opening range wrote caldate").toBeNull();
+  });
+});
+
+describe("CT live: a read-only tab has no working-day facts, so it shades nothing", () => {
+  it("Gelen Kutusu's calendar draws no non-working shading and hands FullCalendar no business hours", async () => {
+    const inboxItem = Object.assign(task(9), { assignmentMode: "direct", admissionState: "pendingAcceptance", actions: [action("accept")], primaryActionCode: "accept" });
+    await boot({ items: [inboxItem], tab: "inbox" });
+
+    expect(cal().getOption("businessHours"), "an impossible entry here greys the whole month").toBe(false);
+    expect(host().querySelectorAll(".fc-non-business")).toHaveLength(0);
+  });
 });
 
 describe("v2 F10 — one zone, and a conversion that fails moves nothing", () => {

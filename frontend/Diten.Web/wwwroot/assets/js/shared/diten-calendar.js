@@ -116,6 +116,9 @@
      * as non-working. In the month view hours are not drawn at all.
      */
     const businessHoursFor = (days, zone) => {
+        // NO day facts at all (a read-only tab, or the feed not answered yet) is "nothing to draw", not "no hour is
+        // working": the impossible entry below would shade every day of the month grey (measured live, CT 2026-09-29).
+        if (!days || !days.length) { return false; }
         const Z = global.DitenZonedTime;
         const hours = [];
         (days || []).forEach((day) => {

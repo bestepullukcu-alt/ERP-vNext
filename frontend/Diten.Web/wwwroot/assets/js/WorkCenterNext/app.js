@@ -6762,6 +6762,7 @@
         // The first datesSet of a new calendar is its OWN opening, not the reader moving (v2 F9): it must not put
         // the view or the day into the URL.
         let opening = true;
+        let openedRange = null;   // the last range FullCalendar reported
         calendarController = global.DitenCalendar.create(host, {
             zone,
             view: state.calendarView,
@@ -6772,11 +6773,16 @@
             days: planning && feed ? feed.days : [],
             renderExtras: calendarEventExtras,
             onRangeChange: (range) => {
-                if (!opening) {
+                // A datesSet for the SAME range is FullCalendar re-announcing itself (a re-render, a size change —
+                // measured live: the opening range was reported twice and the second one wrote caldate), not the
+                // reader moving. Only a different range counts (v2 F9, CT live fix).
+                const rangeKey = `${range.view}|${range.from}|${range.to}`;
+                if (!opening && rangeKey !== openedRange) {
                     state.calendarView = range.view;
                     state.calendarDate = range.date;
                     syncUrl();
                 }
+                openedRange = rangeKey;
                 opening = false;
                 if (!planning) { return; }
                 const key = `${range.from}|${range.to}`;
