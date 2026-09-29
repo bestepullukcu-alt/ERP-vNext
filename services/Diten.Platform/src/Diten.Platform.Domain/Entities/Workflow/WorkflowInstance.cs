@@ -29,6 +29,12 @@ public sealed class WorkflowInstance : TenantScopedEntity
     public string? CorrelationId { get; set; }
     public string? IdempotencyKey { get; set; }
     public string? StartedBy { get; set; }
+
+    /// <summary>WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — the starter's USER ID. <see cref="StartedBy"/> holds the actor
+    /// NAME (an e-mail), while an approver is identified by user id, so the "the starter may not approve" check compared
+    /// two different things and never fired. Additive: instances started before this field existed keep null and keep
+    /// the old comparison — no migration.</summary>
+    public Guid? StartedByUserId { get; set; }
     public DateTimeOffset? StartedAt { get; set; }
     public DateTimeOffset? DueAt { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }

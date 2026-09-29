@@ -158,6 +158,7 @@ public sealed class StartWorkflowInstanceHandler
             CorrelationId = request.CorrelationId,
             IdempotencyKey = idempotencyKey,
             StartedBy = actor,
+            StartedByUserId = _currentUserContext.UserId == Guid.Empty ? null : _currentUserContext.UserId,
             StartedAt = now,
             DueAt = dueAt,
             LastTransitionAt = now
