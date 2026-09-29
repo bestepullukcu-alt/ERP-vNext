@@ -257,6 +257,25 @@ public sealed class TaskReviewerRequiredHttpTests
         Assert.False(harness.Tasks.Items.Single().ApprovalRequired);
     }
 
+    /// <summary>
+    /// CT acceptance (2026-09-29): re-pointing a RUNNING approval to the editor themselves was guarded in the handler but
+    /// by no test — removing the check passed the whole suite. Somebody else is still accepted (non-vacuity).
+    /// </summary>
+    [Fact]
+    public async Task Re_pointing_an_approval_to_MYSELF_is_400_and_the_manager_is_unchanged()
+    {
+        var harness = new Harness();
+        Assert.True((await harness.CreateAsync(reviewRequired: false, reviewer: null, approvalRequired: true, approvalManager: TaskTestData.Rival)).IsSuccessful);
+        var stored = harness.Tasks.Items.Single();
+
+        var response = await harness.UpdateAsync(stored.Id, stored.Version, reviewRequired: false, reviewer: null,
+            approvalRequired: true, approvalManager: TaskTestData.Me);
+
+        Assert.Equal(400, response.StatusCode);
+        Assert.Equal(TaskReasonCodes.ApprovalManagerIsSelf, response.ReasonCode);
+        Assert.Equal(TaskTestData.Rival, harness.Tasks.Items.Single().ApprovalManagerUserId);
+    }
+
     [Fact]
     public async Task Submitting_work_for_review_by_MYSELF_is_409_and_nothing_is_opened_in_MOD_0023()
     {
