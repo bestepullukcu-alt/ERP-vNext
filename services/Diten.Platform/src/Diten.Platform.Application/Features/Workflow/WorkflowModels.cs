@@ -67,6 +67,9 @@ public static class WorkflowReasonCodes
 
     /// <summary>BL-422 — an escalation run carried NowUtc; runs are evaluated against the server clock only.</summary>
     public const string WorkflowEscalationClockNotAccepted = "WORKFLOW_ESCALATION_CLOCK_NOT_ACCEPTED";
+
+    /// <summary>MOD-0280-FU01 R5 — the definition says a rejection must say why, and the reject carried no comment.</summary>
+    public const string WorkflowRejectCommentRequired = "WORKFLOW_REJECT_COMMENT_REQUIRED";
 }
 
 public enum WorkflowTransitionGateDecision

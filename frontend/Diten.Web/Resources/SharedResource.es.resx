@@ -536,6 +536,7 @@
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Configuración de tareas</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Flujo de trabajo</value></data>
   <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>Reuniones</value></data>
+  <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>Hojas de horas</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Usuarios</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roles</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Permisos de rol</value></data>

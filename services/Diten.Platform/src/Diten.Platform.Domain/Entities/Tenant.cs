@@ -57,6 +57,14 @@ public sealed class Tenant : GlobalEntity
     public TimeOnly DefaultWorkdayStart { get; set; } = new(9, 0);
     public TimeOnly DefaultWorkdayEnd { get; set; } = new(18, 0);
 
+    /*
+     * MOD-0280-FU01 D13 — the day's TARGET, distinct from the window above: 09:00–18:00 includes lunch, so a target
+     * derived from the window would make everyone look an hour short. Read only through IWorkingHoursProvider, like
+     * the two fields above. A record written before this field existed keeps the initializer value (480) without a
+     * migration, for the same reason.
+     */
+    public int DefaultDailyTargetMinutes { get; set; } = 480;
+
     // Provisioning & Lifecycle
     public string ProvisioningStatus { get; set; } = "Queued";
     public List<TenantProvisioningStep> ProvisioningSteps { get; set; } = [];

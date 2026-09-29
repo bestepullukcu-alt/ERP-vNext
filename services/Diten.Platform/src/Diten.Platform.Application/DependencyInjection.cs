@@ -24,6 +24,7 @@ using Diten.Platform.Common.Catalog;
 using Diten.Platform.Contracts.Events;
 using FluentValidation;
 using MediatR;
+using Diten.Platform.Application.Features.TimeEntry;
 using Microsoft.Extensions.DependencyInjection;
 using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions;
 
@@ -482,6 +483,11 @@ public static class DependencyInjection
         // MOD-0357 S2 — Meetings. See MeetingManifestProvider's own doc comment for a reported, unresolved
         // conflict this registration creates with NavManifestL10nGuardTests (frontend/**, protected this WP).
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Meetings.SelfRegistration.MeetingManifestProvider>();
+
+        // MOD-0280-FU01 T1a (ADR-004) — Time Entry & Weekly Timesheet, its own module inside Platform: ports, services,
+        // the approval source resolver, the decision sweep job and the manifest. One call, shared with the module's tests.
+        services.AddTimeEntryModule();
+
         // HR nav wiring (gap #4) — Human Capital (23 DitenHumanCapitalService pages) + the distinct MOD-0251 Employee
         // Master (DitenHcmService). Two ModuleCodes → two providers (one manifest document per provider). Entitlement +
         // RBAC grant (WP-C) and the seven-language Nav.Page.* labels (WP-D) land separately.

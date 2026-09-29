@@ -75,14 +75,18 @@ public sealed class WorkingHoursProvider : IWorkingHoursProvider
         // ── Which days: the working calendar, scoped to the person's home unit / legal entity ──────────────
         var scope = await ResolveCalendarScopeAsync(userId, tenant?.Country, ct);
 
+        // ── How much: the tenant's daily target (MOD-0280-FU01 D13), never derived from the window ────────────
+        var dailyTarget = tenant is null ? 0 : Math.Max(0, tenant.DefaultDailyTargetMinutes);
+
         var days = new List<WorkingDay>(to.DayNumber - from.DayNumber + 1);
         for (var date = from; date <= to; date = date.AddDays(1))
         {
-            var (kind, holidayName, unresolved) = await ResolveDayKindAsync(date, scope, ct);
+            var (kind, holidayName, unresolved, halfDay) = await ResolveDayKindAsync(date, scope, ct);
             var windows = kind == WorkingDayKinds.WorkingDay && schedule is not null
                 ? WindowFor(date, schedule, timeZone)
                 : [];
-            days.Add(new WorkingDay(date, kind, holidayName, windows, source, unresolved));
+            var target = kind != WorkingDayKinds.WorkingDay ? 0 : halfDay ? dailyTarget / 2 : dailyTarget;
+            days.Add(new WorkingDay(date, kind, holidayName, windows, source, unresolved, target, halfDay));
         }
 
         return new WorkingHoursResult(timeZone, days);
@@ -156,28 +160,31 @@ public sealed class WorkingHoursProvider : IWorkingHoursProvider
         }
     }
 
-    private async Task<(string Kind, string? HolidayName, bool Unresolved)> ResolveDayKindAsync(
+    private async Task<(string Kind, string? HolidayName, bool Unresolved, bool HalfDay)> ResolveDayKindAsync(
         DateOnly date, WorkingCalendarScope? scope, CancellationToken ct)
     {
         if (scope is null)
         {
-            return (WorkingDayKinds.WorkingDay, null, true);
+            return (WorkingDayKinds.WorkingDay, null, true, false);
         }
 
         var answer = await _calendar.IsWorkingDayAsync(date, scope, ct);
         if (answer.Resolution != WorkingCalendarResolution.Resolved || answer.IsWorkingDay is null)
         {
-            return (WorkingDayKinds.WorkingDay, null, true);
+            return (WorkingDayKinds.WorkingDay, null, true, false);
         }
 
         if (answer.IsWorkingDay.Value)
         {
-            return (WorkingDayKinds.WorkingDay, null, false);
+            // A half-day holiday is reported by the calendar as a WORKING day that still carries its holiday
+            // (half_day_treated_as_working). The window and the holiday name stay exactly as before — the calendar
+            // feed reads both — and only the target halves (D13).
+            return (WorkingDayKinds.WorkingDay, null, false, answer.Holiday is { IsHalfDay: true });
         }
 
         return answer.Holiday is { } holiday
-            ? (WorkingDayKinds.Holiday, holiday.DayName, false)
-            : (WorkingDayKinds.Weekend, null, false);
+            ? (WorkingDayKinds.Holiday, holiday.DayName, false, false)
+            : (WorkingDayKinds.Weekend, null, false, false);
     }
 
     private static IReadOnlyList<WorkingWindow> WindowFor(

@@ -83,6 +83,36 @@ internal static class WorkflowDefinitionRuntimePlan
         }
     }
 
+    /// <summary>
+    /// MOD-0280-FU01 R5 — the per-DEFINITION option "a rejection must carry a comment":
+    /// <c>{ "options": { "rejectCommentRequired": true } }</c> at the root of the definition JSON.
+    ///
+    /// <para>Distinct from a step's <c>requirements.commentRequired</c>, which asks for a comment on EVERY decision
+    /// (the Task Center then demands a reason for approve too). This one binds the reject path only. Absent, false,
+    /// unreadable or unparsable → <c>false</c>: every definition written before the option existed keeps rejecting
+    /// exactly as it did.</para>
+    /// </summary>
+    public static bool RejectCommentRequired(WorkflowTemplateVersion? version)
+    {
+        if (version is null || string.IsNullOrWhiteSpace(version.DefinitionJson))
+        {
+            return false;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(version.DefinitionJson);
+            return document.RootElement.ValueKind == JsonValueKind.Object
+                   && document.RootElement.TryGetProperty("options", out var options)
+                   && options.ValueKind == JsonValueKind.Object
+                   && ReadBool(document.RootElement, "options", "rejectCommentRequired");
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
     public static WorkflowRuntimeStep FallbackStep(IReadOnlyList<string> candidates, bool commentRequired, bool evidenceRequired) =>
         new(
             DefaultStageCode,

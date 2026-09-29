@@ -50,6 +50,12 @@ public sealed record WorkingWindow(DateTimeOffset StartAt, DateTimeOffset EndAt)
 /// One local day. <see cref="Windows"/> is empty on a weekend or holiday. <see cref="CalendarUnresolved"/> is true
 /// when the working calendar could not answer (no country, no calendar for the year…): the day is then COUNTED as a
 /// working day rather than guessed to be off, and says so.
+///
+/// <para><b>MOD-0280-FU01 D13 — the target is not the window.</b> <see cref="TargetMinutes"/> is how much work the
+/// day expects (the tenant's daily target on a working day, 0 on a weekend or holiday); <see cref="Windows"/> is
+/// when work may happen. A half-day holiday (<see cref="IsHalfDay"/>) stays a working day with its window unchanged
+/// — the calendar engine's own v1 rule — but expects HALF the target. Both are additive with defaults, so every
+/// existing construction of this record keeps compiling and meaning what it meant.</para>
 /// </summary>
 public sealed record WorkingDay(
     DateOnly Date,
@@ -57,7 +63,9 @@ public sealed record WorkingDay(
     string? HolidayName,
     IReadOnlyList<WorkingWindow> Windows,
     string ResolvedFrom,
-    bool CalendarUnresolved);
+    bool CalendarUnresolved,
+    int TargetMinutes = 0,
+    bool IsHalfDay = false);
 
 /// <summary>The provider's answer. <see cref="TimeZone"/> is what every local-day computation must use.</summary>
 public sealed record WorkingHoursResult(TimeZoneInfo TimeZone, IReadOnlyList<WorkingDay> Days)

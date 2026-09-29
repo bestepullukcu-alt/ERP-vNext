@@ -381,6 +381,13 @@ public static class DependencyInjection
         services.AddScoped<IMeetingMinutesVersionRepository, MeetingMinutesVersionRepository>();
         // MOD-0357 S11 — the recurring cadence rule's own storage.
         services.AddScoped<IMeetingSeriesRepository, MeetingSeriesRepository>();
+        // MOD-0280-FU01 T1a (ADR-004) — the time-entry module's own storage (time_entry_* collections).
+        services.AddScoped<ITimesheetWeekRepository, TimesheetWeekRepository>();
+        services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
+        services.AddScoped<IWorkCategoryRepository, WorkCategoryRepository>();
+        services.AddScoped<ITimeEntrySettingsRepository, TimeEntrySettingsRepository>();
+        services.AddScoped<ILegalEntityTimeSettingRepository, LegalEntityTimeSettingRepository>();
+        services.AddScoped<ITaskTimeTotalRepository, TaskTimeTotalRepository>();
         // MOD-0357 S5 — needs AuthServiceOptions.FrontendBaseUrl for the "Toplantıyı aç" deep link, which is
         // why the implementation lives here rather than beside ITaskNotificationService in Application.
         services.AddScoped<Diten.Platform.Application.Features.Meetings.Services.IMeetingInviteMailer,
