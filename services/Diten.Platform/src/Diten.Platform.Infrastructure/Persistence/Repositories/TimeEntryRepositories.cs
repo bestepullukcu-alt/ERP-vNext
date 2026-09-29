@@ -103,19 +103,29 @@ public sealed class TimesheetWeekRepository : TenantRepository<TimesheetWeek>, I
 
     public async Task<IReadOnlyList<TimesheetWeek>> ListNeedingFinalizationAsync(int limit, CancellationToken ct = default)
     {
-        var filter = Builders<TimesheetWeek>.Filter.And(
+        limit = Math.Max(1, limit);
+
+        // BL-479 — FIRST the approved weeks whose task totals never landed (F12; a missing field matches null too).
+        // Their own query and their own (partial) index, so no number of undecided weeks can push them past the limit.
+        var outstandingTotals = Builders<TimesheetWeek>.Filter.And(
             ExecutionFilter,
-            Builders<TimesheetWeek>.Filter.Or(
-                Builders<TimesheetWeek>.Filter.And(
-                    Builders<TimesheetWeek>.Filter.Eq(x => x.Status, TimesheetWeekStatus.Submitted),
-                    Builders<TimesheetWeek>.Filter.Ne(x => x.WorkflowInstanceId, null)),
-                // F12 — approved, but its task totals never landed (a missing field matches null too).
-                Builders<TimesheetWeek>.Filter.And(
-                    Builders<TimesheetWeek>.Filter.Eq(x => x.Status, TimesheetWeekStatus.Approved),
-                    Builders<TimesheetWeek>.Filter.Eq(x => x.TotalsAppliedAtUtc, null))));
+            Builders<TimesheetWeek>.Filter.Eq(x => x.Status, TimesheetWeekStatus.Approved),
+            Builders<TimesheetWeek>.Filter.Eq(x => x.TotalsAppliedAtUtc, null));
         // Ticks, not the DateTimeOffset itself: that is stored as a [ticks, offset] array, which Mongo does not order
         // by its first element (BL-030) — "oldest first" would silently be insertion order.
-        return await Collection.Find(filter).SortBy(x => x.SubmittedAtUtcTicks).Limit(Math.Max(1, limit)).ToListAsync(ct);
+        var weeks = await Collection.Find(outstandingTotals).SortBy(x => x.SubmittedAtUtcTicks).Limit(limit).ToListAsync(ct);
+        if (weeks.Count >= limit)
+        {
+            return weeks;
+        }
+
+        // THEN the submitted weeks waiting on a MOD-0023 decision, with what is left of the limit.
+        var pending = Builders<TimesheetWeek>.Filter.And(
+            ExecutionFilter,
+            Builders<TimesheetWeek>.Filter.Eq(x => x.Status, TimesheetWeekStatus.Submitted),
+            Builders<TimesheetWeek>.Filter.Ne(x => x.WorkflowInstanceId, null));
+        weeks.AddRange(await Collection.Find(pending).SortBy(x => x.SubmittedAtUtcTicks).Limit(limit - weeks.Count).ToListAsync(ct));
+        return weeks;
     }
 }
 
@@ -363,5 +373,186 @@ public sealed class TaskTimeTotalRepository : TenantRepository<TaskTimeTotal>, I
             .Set(x => x.Version, expectedVersion.Value + 1);
         var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
         return result.MatchedCount == 1;
+    }
+}
+
+/// <summary>Raw storage for <see cref="TimerSegment"/> (T1b).</summary>
+public sealed class TimerSegmentRepository : TenantRepository<TimerSegment>, ITimerSegmentRepository
+{
+    public TimerSegmentRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, PlatformCollections.TimeEntryTimerSegments)
+    {
+    }
+
+    public async Task<bool> TryStartAsync(TimerSegment segment, CancellationToken ct = default)
+    {
+        segment.IsRunning = true;
+        try
+        {
+            await CreateAsync(segment, ct);
+            return true;
+        }
+        catch (MongoWriteException exception) when (TimeEntryWrites.IsDuplicateKey(exception))
+        {
+            // The partial unique index (one running per person) or the start-transition index said no.
+            return false;
+        }
+    }
+
+    public Task<TimerSegment?> GetRunningAsync(Guid userId, CancellationToken ct = default)
+    {
+        var filter = Builders<TimerSegment>.Filter.And(
+            ExecutionFilter,
+            Builders<TimerSegment>.Filter.Eq(x => x.UserId, userId),
+            Builders<TimerSegment>.Filter.Eq(x => x.IsRunning, true));
+        return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
+    }
+
+    public async Task<IReadOnlyList<TimerSegment>> ListRunningByTaskAsync(Guid taskItemId, CancellationToken ct = default)
+    {
+        var filter = Builders<TimerSegment>.Filter.And(
+            ExecutionFilter,
+            Builders<TimerSegment>.Filter.Eq(x => x.TaskItemId, taskItemId),
+            Builders<TimerSegment>.Filter.Eq(x => x.IsRunning, true));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<TimerSegment>> ListRunningAsync(int limit, CancellationToken ct = default)
+    {
+        var filter = Builders<TimerSegment>.Filter.And(
+            ExecutionFilter,
+            Builders<TimerSegment>.Filter.Eq(x => x.IsRunning, true));
+        return await Collection.Find(filter).Limit(Math.Max(1, limit)).ToListAsync(ct);
+    }
+
+    public async Task<bool> ExistsForStartTransitionAsync(Guid transitionId, CancellationToken ct = default)
+    {
+        var filter = Builders<TimerSegment>.Filter.And(
+            ExecutionFilter,
+            Builders<TimerSegment>.Filter.Eq(x => x.StartTransitionId, transitionId));
+        return await Collection.Find(filter).AnyAsync(ct);
+    }
+
+    public async Task<bool> TryCloseAsync(
+        Guid segmentId, DateTimeOffset stoppedAtUtc, int durationSeconds, int outsideWorkingMinutes,
+        TimerStopReason reason, Guid? stopTransitionId, CancellationToken ct = default)
+    {
+        // Conditional on IsRunning: exactly one closer wins, and only the winner writes the draft.
+        var filter = Builders<TimerSegment>.Filter.And(
+            ExecutionFilter,
+            Builders<TimerSegment>.Filter.Eq(x => x.Id, segmentId),
+            Builders<TimerSegment>.Filter.Eq(x => x.IsRunning, true));
+        var update = Builders<TimerSegment>.Update
+            .Set(x => x.IsRunning, false)
+            .Set(x => x.StoppedAtUtc, stoppedAtUtc)
+            .Set(x => x.DurationSeconds, durationSeconds)
+            .Set(x => x.OutsideWorkingMinutes, outsideWorkingMinutes)
+            .Set(x => x.StopReason, reason)
+            .Set(x => x.StopTransitionId, stopTransitionId)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.ModifiedCount == 1;
+    }
+
+    public async Task<IReadOnlyList<TimerSegment>> ListClosedForDayAsync(Guid userId, DateOnly localDate, CancellationToken ct = default)
+    {
+        var filter = Builders<TimerSegment>.Filter.And(
+            ExecutionFilter,
+            Builders<TimerSegment>.Filter.Eq(x => x.UserId, userId),
+            Builders<TimerSegment>.Filter.Eq(x => x.LocalDate, localDate),
+            Builders<TimerSegment>.Filter.Eq(x => x.IsRunning, false));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<TimerSegment>> ListForWeekAsync(Guid userId, string weekKey, CancellationToken ct = default)
+    {
+        var filter = Builders<TimerSegment>.Filter.And(
+            ExecutionFilter,
+            Builders<TimerSegment>.Filter.Eq(x => x.UserId, userId),
+            Builders<TimerSegment>.Filter.Eq(x => x.WeekKey, weekKey));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<TimerSegment>> ListClosedAtMidnightAsync(Guid userId, DateOnly localDate, CancellationToken ct = default)
+    {
+        var filter = Builders<TimerSegment>.Filter.And(
+            ExecutionFilter,
+            Builders<TimerSegment>.Filter.Eq(x => x.UserId, userId),
+            Builders<TimerSegment>.Filter.Eq(x => x.LocalDate, localDate),
+            Builders<TimerSegment>.Filter.Eq(x => x.StopReason, TimerStopReason.LocalMidnight));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    public async Task<bool> TryClaimAutoCloseNotificationAsync(Guid segmentId, DateTimeOffset claimedAtUtc, CancellationToken ct = default)
+    {
+        var filter = Builders<TimerSegment>.Filter.And(
+            ExecutionFilter,
+            Builders<TimerSegment>.Filter.Eq(x => x.Id, segmentId),
+            Builders<TimerSegment>.Filter.Eq(x => x.AutoCloseNotifiedAtUtc, null));
+        var update = Builders<TimerSegment>.Update.Set(x => x.AutoCloseNotifiedAtUtc, claimedAtUtc);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.ModifiedCount == 1;
+    }
+
+    public Task<long> CountUnminimisedAsync(Guid userId, string weekKey, CancellationToken ct = default)
+        => Collection.CountDocumentsAsync(UnminimisedFilter(userId, weekKey), cancellationToken: ct);
+
+    public async Task<long> MinimiseWeekAsync(Guid userId, string weekKey, DateTimeOffset minimisedAtUtc, CancellationToken ct = default)
+    {
+        // D4 / R8 — an UPDATE: the instants go, the row, its duration, day, target and outside minutes stay.
+        var update = Builders<TimerSegment>.Update
+            .Set(x => x.StartedAtUtc, null)
+            .Set(x => x.StoppedAtUtc, null)
+            .Set(x => x.MinimisedAtUtc, minimisedAtUtc)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1);
+        var result = await Collection.UpdateManyAsync(UnminimisedFilter(userId, weekKey), update, cancellationToken: ct);
+        return result.ModifiedCount;
+    }
+
+    private FilterDefinition<TimerSegment> UnminimisedFilter(Guid userId, string weekKey)
+        => Builders<TimerSegment>.Filter.And(
+            ExecutionFilter,
+            Builders<TimerSegment>.Filter.Eq(x => x.UserId, userId),
+            Builders<TimerSegment>.Filter.Eq(x => x.WeekKey, weekKey),
+            Builders<TimerSegment>.Filter.Eq(x => x.IsRunning, false),
+            Builders<TimerSegment>.Filter.Eq(x => x.MinimisedAtUtc, null));
+}
+
+/// <summary>Raw storage for <see cref="TimeSuggestion"/> decisions (T1b).</summary>
+public sealed class TimeSuggestionRepository : TenantRepository<TimeSuggestion>, ITimeSuggestionRepository
+{
+    public TimeSuggestionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, PlatformCollections.TimeEntrySuggestions)
+    {
+    }
+
+    public async Task<IReadOnlyList<TimeSuggestion>> ListForMeetingsAsync(
+        Guid userId, IReadOnlyCollection<Guid> meetingIds, CancellationToken ct = default)
+    {
+        if (meetingIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<TimeSuggestion>.Filter.And(
+            ExecutionFilter,
+            Builders<TimeSuggestion>.Filter.Eq(x => x.UserId, userId),
+            Builders<TimeSuggestion>.Filter.In(x => x.MeetingId, meetingIds));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    public async Task<bool> TryCreateAsync(TimeSuggestion suggestion, CancellationToken ct = default)
+    {
+        try
+        {
+            await CreateAsync(suggestion, ct);
+            return true;
+        }
+        catch (MongoWriteException exception) when (TimeEntryWrites.IsDuplicateKey(exception))
+        {
+            return false;
+        }
     }
 }

@@ -38,6 +38,7 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             CreateTaskDueSoonSweepRegistration(),
             CreateMeetingSeriesSweepRegistration(),
             CreateTimesheetDecisionSweepRegistration(),
+            CreateTimerMidnightCloseRegistration(),
             CreateDeferred("Diten.Platform.MOD-0009.ProvisioningRetryJob", "ProvisioningRetryJob", "MOD-0009", "*/2 * * * *")
         };
 
@@ -220,6 +221,47 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             typeof(TimesheetDecisionSweepJob),
             typeof(TimesheetDecisionSweepJobArgs),
             new TimesheetDecisionSweepJobArgs(MaxWeeksPerTenant: 200),
+            new BackgroundJobContext(
+                TriggerType: BackgroundJobTriggerTypes.Recurring,
+                TriggeredBy: nameof(PlatformRecurringJobRegistrar),
+                Metadata: new Dictionary<string, string>
+                {
+                    ["owner"] = owner,
+                    ["execution"] = "sweep"
+                }));
+    }
+
+    private RecurringJobRegistration CreateTimerMidnightCloseRegistration()
+    {
+        // MOD-0280-FU01 D3 — a convenience plus the morning notification: the first read after midnight closes the same
+        // segment at the same instant, so a disabled job delays nothing a person looks at. Every 15 minutes because each
+        // tenant's midnight is its own. The id is the EnabledJobs configuration key.
+        const string id = "Diten.Platform.MOD-0280.TimerMidnightCloseJob";
+        const string jobName = "TimerMidnightCloseJob";
+        const string owner = "MOD-0280";
+        const string cron = "*/15 * * * *";
+
+        var enabled = _options.RegisterStandardJobs
+                      && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
+                      && configuredEnabled;
+
+        var descriptor = new BackgroundJobDescriptor(
+            Id: id,
+            ServiceName: ServiceName,
+            JobName: jobName,
+            Owner: owner,
+            CronExpression: cron,
+            TimeZoneId: "UTC",
+            IsEnabled: enabled,
+            Queue: "platform",
+            MaxRetryAttempts: _options.DefaultRetryAttempts,
+            TriggerType: BackgroundJobTriggerTypes.Recurring);
+
+        return new RecurringJobRegistration(
+            descriptor,
+            typeof(TimerMidnightCloseJob),
+            typeof(TimerMidnightCloseJobArgs),
+            new TimerMidnightCloseJobArgs(MaxSegmentsPerTenant: 500),
             new BackgroundJobContext(
                 TriggerType: BackgroundJobTriggerTypes.Recurring,
                 TriggeredBy: nameof(PlatformRecurringJobRegistrar),

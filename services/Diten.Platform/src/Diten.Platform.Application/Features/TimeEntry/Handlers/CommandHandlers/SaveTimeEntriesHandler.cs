@@ -19,6 +19,10 @@ namespace Diten.Platform.Application.Features.TimeEntry.Handlers.CommandHandlers
 ///
 /// <para>No reason is asked in a draft (D5). A draft of any size is fine; a day above 660 minutes is saved and flagged,
 /// a day above 960 is refused (A3).</para>
+///
+/// <para><b>T1b — the person's own rows are Manual AND Plan.</b> A row accepted from "fill from plan" (D9) arrives with
+/// <c>source: "Plan"</c> and is kept as such; both kinds make up the set this save replaces. Timer and meeting rows are
+/// written by their own paths and are only counted here.</para>
 /// </summary>
 public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesCommand, Response<TimesheetWeekMutationDto>>
 {
@@ -118,7 +122,7 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
         }
 
         // ── Day totals (A3): the new manual set plus every non-manual row the draft already holds ──────────────────
-        var otherSources = existing.Where(e => e.Source != TimeEntrySource.Manual).ToList();
+        var otherSources = existing.Where(e => !IsPersonTyped(e.Source)).ToList();
         var dayTotals = rows
             .Select(r => (r.LocalDate, Minutes: r.DurationMinutes))
             .Concat(otherSources.Select(e => (e.LocalDate, Minutes: e.DurationMinutes)))
@@ -162,8 +166,9 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
             }
         }
 
-        var manual = existing.Where(e => e.Source == TimeEntrySource.Manual)
-            .ToDictionary(e => (e.LocalDate, e.TaskItemId, e.CategoryCode));
+        var manual = existing.Where(e => IsPersonTyped(e.Source))
+            .GroupBy(e => (e.LocalDate, e.TaskItemId, e.CategoryCode))
+            .ToDictionary(g => g.Key, g => g.First());
         var kept = new HashSet<Guid>();
 
         foreach (var row in rows)
@@ -172,10 +177,12 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
             if (manual.TryGetValue(key, out var stored))
             {
                 kept.Add(stored.Id);
-                if (stored.DurationMinutes != row.DurationMinutes || stored.Note != row.Note)
+                var source = SourceOf(row);
+                if (stored.DurationMinutes != row.DurationMinutes || stored.Note != row.Note || stored.Source != source)
                 {
                     stored.DurationMinutes = row.DurationMinutes;
                     stored.Note = row.Note;
+                    stored.Source = source;
                     stored.UpdatedBy = userId.ToString();
                     await _entries.UpdateAsync(stored, ct);
                 }
@@ -193,7 +200,7 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
                 DurationMinutes = row.DurationMinutes,
                 TaskItemId = row.TaskItemId,
                 CategoryCode = row.CategoryCode,
-                Source = TimeEntrySource.Manual,
+                Source = SourceOf(row),
                 Note = row.Note,
                 CreatedBy = userId.ToString()
             }, ct);
@@ -203,6 +210,14 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
 
         return Response<TimesheetWeekMutationDto>.Success(TimesheetRules.ToMutation(week), correlationId: request.CorrelationId);
     }
+
+    /// <summary>The rows the person writes themselves — typed, or accepted from the plan (D9).</summary>
+    private static bool IsPersonTyped(TimeEntrySource source) => source is TimeEntrySource.Manual or TimeEntrySource.Plan;
+
+    private static TimeEntrySource SourceOf(TimeEntryRowRequest row)
+        => string.Equals(row.Source, nameof(TimeEntrySource.Plan), StringComparison.OrdinalIgnoreCase)
+            ? TimeEntrySource.Plan
+            : TimeEntrySource.Manual;
 
     private static Response<TimesheetWeekMutationDto> Fail(string message, int status, string code, SaveTimeEntriesCommand request)
         => Response<TimesheetWeekMutationDto>.Fail(message, status, code, request.CorrelationId);

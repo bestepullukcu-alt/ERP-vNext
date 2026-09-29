@@ -31,6 +31,14 @@ public sealed class SaveTimeEntriesValidator : AbstractValidator<SaveTimeEntries
                 .WithErrorCode(TimeEntryReasonCodes.StepInvalid)
                 .WithMessage("Durations are whole 15-minute steps between 15 and 960 minutes.");
 
+            // T1b (D9) — the person writes Manual rows and accepts Plan ones; the timer and meeting paths are their own.
+            row.RuleFor(r => r.Source)
+                .Must(source => source is null
+                                || string.Equals(source, "Manual", StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(source, "Plan", StringComparison.OrdinalIgnoreCase))
+                .WithErrorCode(TimeEntryReasonCodes.SourceInvalid)
+                .WithMessage("A saved row is Manual or Plan.");
+
             row.RuleFor(r => r.Note)
                 .MaximumLength(TimeEntryLimits.NoteMaxLength)
                 .WithErrorCode(TimeEntryReasonCodes.NoteTooLong)

@@ -12,27 +12,41 @@ namespace Diten.Platform.Application.Features.TimeEntry.Handlers.QueryHandlers;
 /// <summary>
 /// MOD-0280-FU01 — the caller's OWN week, and only theirs: the user id is the server's, never the request's (D11).
 ///
-/// <para><b>Reading writes nothing of its own (F4).</b> The one thing a read may cause is taking on board a decision
-/// MOD-0023 has ALREADY made (the pull finalizer, D7, an audited command) — so the person never sees "Submitted" for a
-/// week their manager decided. A week that was never written stays unwritten, inside the window or outside it; a time
-/// admin reopens an old one by (person, week), which creates its Draft (<c>ReopenTimesheetWeek</c>).</para>
+/// <para><b>Reading writes nothing of its own (F4).</b> The two things a read may cause are both audited system commands:
+/// taking on board a decision MOD-0023 has ALREADY made (the pull finalizer, D7) — so the person never sees "Submitted"
+/// for a week their manager decided — and closing the person's timer if its midnight passed or its task left them (D3,
+/// §13), so the week never shows time a forgotten timer kept counting. A week that was never written stays unwritten; a
+/// time admin reopens an old one by (person, week), which creates its Draft (<c>ReopenTimesheetWeek</c>).</para>
+///
+/// <para><b>T1b — what the timer and the meetings add.</b> Timer time too short to count (A2) and timer time that fell on
+/// a locked week (§13) are reported, not written; meeting suggestions are derived (D8) — no suggestion row is written by
+/// reading, the id is stable per (meeting, person).</para>
 /// </summary>
 public sealed class GetMyTimesheetWeekHandler : IRequestHandler<GetMyTimesheetWeekQuery, Response<TimesheetWeekDto>>
 {
     private readonly ITimesheetWeekReader _reader;
     private readonly ITimeEntryRepository _entries;
     private readonly ITimesheetDecisionPuller _puller;
+    private readonly ITimerReadModel _timer;
+    private readonly ITimerSegmentRepository _segments;
+    private readonly ITimeSuggestionReader _suggestions;
     private readonly ICurrentUserContext _currentUser;
 
     public GetMyTimesheetWeekHandler(
         ITimesheetWeekReader reader,
         ITimeEntryRepository entries,
         ITimesheetDecisionPuller puller,
+        ITimerReadModel timer,
+        ITimerSegmentRepository segments,
+        ITimeSuggestionReader suggestions,
         ICurrentUserContext currentUser)
     {
         _reader = reader;
         _entries = entries;
         _puller = puller;
+        _timer = timer;
+        _segments = segments;
+        _suggestions = suggestions;
         _currentUser = currentUser;
     }
 
@@ -47,6 +61,7 @@ public sealed class GetMyTimesheetWeekHandler : IRequestHandler<GetMyTimesheetWe
         }
 
         var userId = _currentUser.UserId;
+        await _timer.ReconcileAsync(userId, request.CorrelationId, ct);
         var context = await _reader.LoadAsync(userId, monday, ct);
 
         if (await _puller.PullAsync(context.Revisions, request.CorrelationId, ct))
@@ -59,6 +74,13 @@ public sealed class GetMyTimesheetWeekHandler : IRequestHandler<GetMyTimesheetWe
         var dayTotals = TimesheetRules.DayTotals(rows);
         var refusal = TimesheetRules.WriteRefusal(context);
         var inForce = context.InForce is { } approved && approved.Id != current?.Id ? approved : null;
+
+        var segments = (await _segments.ListForWeekAsync(userId, context.WeekKey, ct)).Where(x => !x.IsRunning).ToList();
+        var suggestions = await _suggestions.ListForWeekAsync(context, ct);
+        var conflictedRows = suggestions
+            .Where(x => x.MinutesStatus == TimeSuggestionMinutesStatus.Conflict && x.Decision?.AcceptedEntryId is not null)
+            .Select(x => x.Decision!.AcceptedEntryId!.Value)
+            .ToHashSet();
 
         return Response<TimesheetWeekDto>.Success(new TimesheetWeekDto(
             WeekKey: context.WeekKey,
@@ -87,6 +109,14 @@ public sealed class GetMyTimesheetWeekHandler : IRequestHandler<GetMyTimesheetWe
             FlaggedDates: TimesheetRules.FlaggedDates(dayTotals),
             TotalMinutes: dayTotals.Values.Sum(),
             Days: TimesheetRules.Days(context.Days, context.Monday, dayTotals, context.LocalToday),
-            Entries: rows.Select(TimesheetRules.ToDto).ToList()), correlationId: request.CorrelationId);
+            Entries: rows.Select(row => TimesheetRules.ToDto(row) with
+            {
+                OutsideWorkingMinutes = row.OutsideWorkingMinutes,
+                EditedFromTimer = row.EditedFromTimer,
+                MinutesConflict = conflictedRows.Contains(row.Id)
+            }).ToList(),
+            TooShortToCount: TimerWeekFacts.TooShort(segments),
+            TimerOutsideOpenWeek: refusal == TimeEntryReasonCodes.WeekNotOpen ? TimerWeekFacts.OutsideOpenWeek(segments, rows) : [],
+            Suggestions: suggestions.Where(x => x.Offered).Select(x => x.ToDto()).ToList()), correlationId: request.CorrelationId);
     }
 }

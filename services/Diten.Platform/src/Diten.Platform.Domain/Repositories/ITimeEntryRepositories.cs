@@ -1,4 +1,5 @@
 using Diten.Platform.Domain.Entities.TimeEntry;
+using Diten.Platform.Domain.Enums.TimeEntry;
 
 namespace Diten.Platform.Domain.Repositories;
 
@@ -30,8 +31,10 @@ public interface ITimesheetWeekRepository
     /// <summary>Submitted revisions MOD-0023 assigned to <paramref name="approverUserId"/>, oldest submission first.</summary>
     Task<IReadOnlyList<TimesheetWeek>> ListSubmittedForApproverAsync(Guid approverUserId, CancellationToken ct = default);
 
-    /// <summary>The sweep's work list, oldest submission first: submitted revisions that carry a MOD-0023 instance, and
-    /// approved revisions whose task totals were never applied (F12).</summary>
+    /// <summary>The sweep's work list (BL-479): FIRST the approved revisions whose task totals were never applied (F12),
+    /// then — with whatever is left of <paramref name="limit"/> — the submitted revisions that carry a MOD-0023 instance,
+    /// oldest submission first. Two queries, in that order, so a backlog of undecided weeks can never starve an approved
+    /// week of its totals.</summary>
     Task<IReadOnlyList<TimesheetWeek>> ListNeedingFinalizationAsync(int limit, CancellationToken ct = default);
 }
 
@@ -101,4 +104,64 @@ public interface ITaskTimeTotalRepository
     Task<bool> TrySetApprovedMinutesAsync(
         Guid taskItemId, int approvedMinutes, Guid lastFinalizedWeekId, DateTimeOffset recomputedAtUtc, int? expectedVersion,
         CancellationToken ct = default);
+}
+
+/// <summary>Raw storage for <see cref="TimerSegment"/> (MOD-0280-FU01 T1b, D2–D4).</summary>
+public interface ITimerSegmentRepository
+{
+    /// <summary>Inserts a RUNNING segment. <c>false</c> when a unique index refused it: the person already has a running
+    /// segment (a concurrent start won), or this transition already started one (a replay).</summary>
+    Task<bool> TryStartAsync(TimerSegment segment, CancellationToken ct = default);
+
+    /// <summary>The person's running segment, if any (at most one — the partial unique index says so).</summary>
+    Task<TimerSegment?> GetRunningAsync(Guid userId, CancellationToken ct = default);
+
+    Task<TimerSegment?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Every running segment on one task, whoever holds it.</summary>
+    Task<IReadOnlyList<TimerSegment>> ListRunningByTaskAsync(Guid taskItemId, CancellationToken ct = default);
+
+    /// <summary>Every running segment of the tenant — the midnight job's and the legal-entity switch's work list.</summary>
+    Task<IReadOnlyList<TimerSegment>> ListRunningAsync(int limit, CancellationToken ct = default);
+
+    /// <summary>Was a segment already started by this MOD-0024 transition?</summary>
+    Task<bool> ExistsForStartTransitionAsync(Guid transitionId, CancellationToken ct = default);
+
+    /// <summary>Closes a RUNNING segment: a conditional write on <c>IsRunning == true</c>. <c>false</c> when another
+    /// writer closed it first — only the winner goes on to write the draft (so a close is never counted twice).</summary>
+    Task<bool> TryCloseAsync(
+        Guid segmentId, DateTimeOffset stoppedAtUtc, int durationSeconds, int outsideWorkingMinutes,
+        TimerStopReason reason, Guid? stopTransitionId, CancellationToken ct = default);
+
+    /// <summary>Closed segments of one person on one tenant-local day.</summary>
+    Task<IReadOnlyList<TimerSegment>> ListClosedForDayAsync(Guid userId, DateOnly localDate, CancellationToken ct = default);
+
+    /// <summary>Every segment of one person in one ISO week, running or not.</summary>
+    Task<IReadOnlyList<TimerSegment>> ListForWeekAsync(Guid userId, string weekKey, CancellationToken ct = default);
+
+    /// <summary>Segments of one person's closed midnight closes on one day — the "your timer ran until midnight" banner.</summary>
+    Task<IReadOnlyList<TimerSegment>> ListClosedAtMidnightAsync(Guid userId, DateOnly localDate, CancellationToken ct = default);
+
+    /// <summary>Claims the one notification of a midnight close (null → now). <c>false</c> when it was already claimed.</summary>
+    Task<bool> TryClaimAutoCloseNotificationAsync(Guid segmentId, DateTimeOffset claimedAtUtc, CancellationToken ct = default);
+
+    /// <summary>How many closed segments of the person's week still carry their instants.</summary>
+    Task<long> CountUnminimisedAsync(Guid userId, string weekKey, CancellationToken ct = default);
+
+    /// <summary>D4 — clears <c>StartedAtUtc</c>/<c>StoppedAtUtc</c> and sets <c>MinimisedAtUtc</c> on the week's CLOSED
+    /// segments that still carry their instants. An update, never a delete; returns how many changed.</summary>
+    Task<long> MinimiseWeekAsync(Guid userId, string weekKey, DateTimeOffset minimisedAtUtc, CancellationToken ct = default);
+}
+
+/// <summary>Raw storage for <see cref="TimeSuggestion"/> decisions (MOD-0280-FU01 T1b, D8).</summary>
+public interface ITimeSuggestionRepository
+{
+    /// <summary>Every decided suggestion of one person for these meetings.</summary>
+    Task<IReadOnlyList<TimeSuggestion>> ListForMeetingsAsync(
+        Guid userId, IReadOnlyCollection<Guid> meetingIds, CancellationToken ct = default);
+
+    Task<TimeSuggestion?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Inserts the decision. <c>false</c> when the (meeting, user) unique index refused it — decided already.</summary>
+    Task<bool> TryCreateAsync(TimeSuggestion suggestion, CancellationToken ct = default);
 }

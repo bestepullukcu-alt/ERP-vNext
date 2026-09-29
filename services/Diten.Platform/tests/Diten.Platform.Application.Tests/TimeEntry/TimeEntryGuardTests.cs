@@ -30,8 +30,13 @@ public sealed class TimeEntryGuardTests
         "organization_units"
     ];
 
+    /// <summary>
+    /// T1b — the module's OWN source enum names one of its values <c>Meeting</c> (pack §4.2: a row accepted from a meeting
+    /// suggestion). <c>TimeEntrySource.Meeting</c> is this module's word, not MOD-0357's type, so exactly that qualified
+    /// spelling is exempt; a bare <c>Meeting</c> is still caught (see the theories below).
+    /// </summary>
     private static readonly Regex Foreign = new(
-        @"(?<!\w)(" + string.Join("|", ForeignModuleTokens.Select(Regex.Escape)) + @")(?![\w])",
+        @"(?<!\w)(?<!TimeEntrySource\.)(" + string.Join("|", ForeignModuleTokens.Select(Regex.Escape)) + @")(?![\w])",
         RegexOptions.Compiled);
 
     [Fact]
@@ -65,12 +70,16 @@ public sealed class TimeEntryGuardTests
     [InlineData("using Diten.Platform.Domain.Entities.Organization;")]
     [InlineData("IPositionRepository positions")]
     [InlineData("db.GetCollection<X>(\"task_items\")")]
+    [InlineData("var m = new Meeting();")]
+    [InlineData("IReadOnlyList<Meeting> meetings")]
+    [InlineData("Source.Meeting")]
     public void The_pattern_catches_each_shape_it_claims_to(string line) => Assert.Matches(Foreign, line);
 
     [Theory]
     [InlineData("TimesheetWeek week")]
     [InlineData("TimeEntryPosition position")]
     [InlineData("ITimeEntryTaskGateway tasks")]
+    [InlineData("r.Source == TimeEntrySource.Meeting")]
     public void The_pattern_leaves_the_modules_own_names_alone(string line) => Assert.DoesNotMatch(Foreign, line);
 
     // ── T-22 ────────────────────────────────────────────────────────────────────────────────────────────────────

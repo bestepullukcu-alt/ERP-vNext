@@ -75,6 +75,18 @@ public static class TimeEntryReasonCodes
     public const string SettingsConcurrencyConflict = "TIME_ENTRY_SETTINGS_CONCURRENCY_CONFLICT";
     public const string LegalEntityRequired = "TIME_ENTRY_LEGAL_ENTITY_REQUIRED";
     public const string TimerSwitchReasonRequired = "TIMER_SWITCH_REASON_REQUIRED";
+
+    // ── T1b — capture ───────────────────────────────────────────────────────────────────────────────────────────
+    public const string TimerDisabledForLegalEntity = "TIMER_DISABLED_FOR_LEGAL_ENTITY";
+    public const string TimerTaskNotHeld = "TIMER_TASK_NOT_HELD";
+    public const string TimerTaskNotInProgress = "TIMER_TASK_NOT_IN_PROGRESS";
+    public const string TimerNotRunning = "TIMER_NOT_RUNNING";
+    public const string TimerConcurrencyConflict = "TIMER_CONCURRENCY_CONFLICT";
+    public const string TimerUndoExpired = "TIMER_UNDO_EXPIRED";
+    public const string SuggestionNotFound = "TIME_SUGGESTION_NOT_FOUND";
+    public const string SuggestionAlreadyDecided = "TIME_SUGGESTION_ALREADY_DECIDED";
+    public const string SuggestionWithdrawn = "TIME_SUGGESTION_WITHDRAWN";
+    public const string SourceInvalid = "TIME_ENTRY_SOURCE_INVALID";
 }
 
 /// <summary>The fixed v1 limits (pack §4.7). A tenant setting may replace them later (§20); until then they are
@@ -144,7 +156,10 @@ public sealed record TimeEntryRowRequest(
     Guid? TaskItemId,
     string? CategoryCode,
     int DurationMinutes,
-    string? Note);
+    string? Note,
+    /// <summary>T1b (D9) — <c>Plan</c> for a row the person accepted from "fill from plan"; <c>Manual</c> (or absent)
+    /// otherwise. Timer and meeting rows are never sent here: they are written by their own paths.</summary>
+    string? Source = null);
 
 /// <summary>The complete set of the person's MANUAL rows for the week's open draft. Rows left out are removed
 /// (soft delete); <see cref="ExpectedVersion"/> is the week's version as last read (0 when no week exists yet).</summary>
@@ -180,6 +195,20 @@ public sealed record WorkCategoryStateRequest(int ExpectedVersion);
 
 public sealed record UpdateTimeEntrySettingsRequest(int ExpectedVersion, Guid? TimeAdminPoolPositionId);
 
+/// <summary>Start the caller's timer on a task they hold InProgress, or on an active category. Exactly one of the two.</summary>
+public sealed record StartTimerRequest(Guid? TaskItemId, string? CategoryCode);
+
+/// <summary>Undo the switch that started the caller's running segment, within the undo window.</summary>
+public sealed record UndoTimerSwitchRequest(Guid SwitchToken);
+
+/// <summary>Accept a meeting suggestion into the week's open draft. The row lands on the named task or category; with
+/// neither, on the <see cref="DefaultCategoryCode"/> category.</summary>
+public sealed record AcceptTimeSuggestionRequest(int ExpectedVersion, Guid? TaskItemId, string? CategoryCode)
+{
+    /// <summary>One of the recommended categories (<c>InstallRecommendedWorkCategories</c>).</summary>
+    public const string DefaultCategoryCode = "INTERNAL_MEETING";
+}
+
 /// <summary><see cref="ExpectedVersion"/> is the switch row's version as last read, 0 when the entity has no row (F11).</summary>
 public sealed record SetLegalEntityTimerSwitchRequest(int ExpectedVersion, bool TimerEnabled, string? Reason);
 
@@ -194,7 +223,12 @@ public sealed record TimeEntryDto(
     Guid? TaskItemId,
     string? CategoryCode,
     string Source,
-    string? Note);
+    string? Note,
+    /// <summary>D3 — minutes of the timer time behind this row that fell outside the day's working window.</summary>
+    int OutsideWorkingMinutes = 0,
+    bool EditedFromTimer = false,
+    /// <summary>D8 — an accepted meeting row whose minutes now say Absent/Excused. Shown to the person only.</summary>
+    bool MinutesConflict = false);
 
 public sealed record TimesheetDayDto(
     DateOnly Date,
@@ -235,7 +269,69 @@ public sealed record TimesheetWeekDto(
     IReadOnlyList<DateOnly> FlaggedDates,
     int TotalMinutes,
     IReadOnlyList<TimesheetDayDto> Days,
-    IReadOnlyList<TimeEntryDto> Entries);
+    IReadOnlyList<TimeEntryDto> Entries,
+    /// <summary>T1b (A2) — timer time per day and target that summed to under 8 minutes: kept, not counted.</summary>
+    IReadOnlyList<TimerTooShortDto>? TooShortToCount = null,
+    /// <summary>T1b (§13) — timer time on a day of this week while it was submitted or approved: kept, never added to a
+    /// locked revision; the person requests a correction for it.</summary>
+    IReadOnlyList<TimerOutsideOpenWeekDto>? TimerOutsideOpenWeek = null,
+    /// <summary>T1b (D8) — suggestions from the person's accepted meetings that ended this week.</summary>
+    IReadOnlyList<TimeSuggestionDto>? Suggestions = null);
+
+public sealed record TimerTooShortDto(DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int Seconds);
+
+public sealed record TimerOutsideOpenWeekDto(DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int Minutes);
+
+/// <summary>
+/// One meeting suggestion (D8). <see cref="Id"/> is stable per (meeting, person) — deterministic before the person
+/// decides, the stored row's id after. <see cref="MinutesStatus"/> is derived from the minutes as they stand NOW:
+/// <c>confirmed</c> (Present), <c>withdrawn</c> (Absent/Excused on a suggestion not accepted — it is not offered any more),
+/// <c>conflict</c> (Absent/Excused on an accepted one), or <c>none</c>.
+/// </summary>
+public sealed record TimeSuggestionDto(
+    Guid Id,
+    Guid MeetingId,
+    string Title,
+    DateOnly LocalDate,
+    int ProposedMinutes,
+    string State,
+    string MinutesStatus,
+    Guid? AcceptedEntryId);
+
+/// <summary>D9 — one ghost value: what the plan block says for (day, task). Never stored; accepting it is a save with
+/// <c>source: "Plan"</c>.</summary>
+public sealed record PlanFillInRowDto(DateOnly LocalDate, Guid TaskItemId, int DurationMinutes);
+
+public sealed record PlanFillInDto(string WeekKey, DateOnly LocalToday, IReadOnlyList<PlanFillInRowDto> Rows);
+
+/// <summary>The caller's running timer segment. The browser renders elapsed time from <see cref="StartedAtUtc"/> (the
+/// server's clock); it never sends an instant back.</summary>
+public sealed record TimerSegmentDto(
+    Guid SegmentId,
+    Guid? TaskItemId,
+    string? CategoryCode,
+    DateTimeOffset? StartedAtUtc,
+    DateOnly LocalDate,
+    string StartSource,
+    Guid? SwitchToken,
+    DateTimeOffset? UndoUntilUtc);
+
+/// <summary>A segment the person's local midnight closed yesterday (D3) — the morning banner.</summary>
+public sealed record TimerAutoClosedDto(Guid SegmentId, DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int DurationSeconds);
+
+/// <summary>The caller's timer. <see cref="TimerEnabled"/> is the legal-entity switch (D12): false with
+/// <see cref="DisabledReason"/> when off or unresolvable — manual entry is unaffected.</summary>
+public sealed record TimerDto(
+    bool TimerEnabled,
+    string? DisabledReason,
+    TimerSegmentDto? Running,
+    IReadOnlyList<TimerAutoClosedDto> ClosedAtMidnightYesterday);
+
+/// <summary>What a timer write answers: the timer after it, and the segment it stopped, if any.</summary>
+public sealed record TimerMutationDto(TimerDto Timer, Guid? StoppedSegmentId);
+
+/// <summary>What the person did with a suggestion.</summary>
+public sealed record TimeSuggestionMutationDto(Guid SuggestionId, string State, Guid? EntryId, int? WeekVersion);
 
 /// <summary>What a write answers: enough for the screen to carry on (the new version) without a second read.</summary>
 public sealed record TimesheetWeekMutationDto(

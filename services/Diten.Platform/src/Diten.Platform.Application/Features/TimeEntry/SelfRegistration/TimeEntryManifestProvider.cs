@@ -68,7 +68,20 @@ public sealed class TimeEntryManifestProvider : IModuleManifestProvider
                         new ModuleManifestAction("REQUEST_CORRECTION", "Request Correction", TimeEntryPermissions.TimesheetsUpdate,
                             "Toolbar", 40, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
                         new ModuleManifestAction("DISCARD_CORRECTION", "Discard Correction", TimeEntryPermissions.TimesheetsUpdate,
-                            "Toolbar", 50, IsDangerous: true, IsToolbarAction: true, IsRowAction: false)
+                            "Toolbar", 50, IsDangerous: true, IsToolbarAction: true, IsRowAction: false),
+                        // T1b — capture. No new key: the timer and the suggestions are the person's own sheet.
+                        new ModuleManifestAction("START_TIMER", "Start Timer", TimeEntryPermissions.TimesheetsUpdate,
+                            "Toolbar", 60, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("STOP_TIMER", "Stop Timer", TimeEntryPermissions.TimesheetsUpdate,
+                            "Toolbar", 70, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("UNDO_TIMER_SWITCH", "Undo Timer Switch", TimeEntryPermissions.TimesheetsUpdate,
+                            "Toolbar", 80, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("ACCEPT_SUGGESTION", "Accept Time Suggestion", TimeEntryPermissions.TimesheetsUpdate,
+                            "RowAction", 90, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("DISMISS_SUGGESTION", "Dismiss Time Suggestion", TimeEntryPermissions.TimesheetsUpdate,
+                            "RowAction", 100, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("FILL_FROM_PLAN", "Fill From Plan", TimeEntryPermissions.TimesheetsRead,
+                            "Toolbar", 110, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
                     ]),
 
                 new ModuleManifestPage(

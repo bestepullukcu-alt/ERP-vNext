@@ -123,6 +123,10 @@ public static class WorkItemContract
     // ownershipState / admissionState / taskLifecycle / executionState / timerState
     public const string NotApplicable = "notApplicable";
 
+    // timerState (MOD-0280-FU01 §19.2) — `paused` exists in the contract and is never emitted (BL-237).
+    public const string TimerRunning = "running";
+    public const string TimerInactive = "inactive";
+
     // normalizedStatus
     public const string StatusPending = "Pending";
     public const string StatusInProgress = "InProgress";
@@ -720,7 +724,21 @@ public sealed record WorkItemProjectionDto(
     /// due date.
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    int? RemainingMinutes = null);
+    int? RemainingMinutes = null,
+    /// <summary>
+    /// MOD-0280-FU01 §5.1 item 3 / §19.2 — the block WC-1 already declares for the <c>timeTracking</c> capability
+    /// (<c>fixture-contract.js</c> <c>DATA_CAPABILITIES.timeTracking</c>). Container ⇔ capability, both ways, like every
+    /// other Phase 2 container: omitted unless <c>timeTracking</c> is declared. The reader's OWN draft minutes plus the
+    /// task's submitted and approved totals — never another person's draft (D11).
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemTimeEntriesDto? TimeEntries = null);
+
+/// <summary>MOD-0280-FU01 §19.2 — the <c>timeEntries</c> block. Three durations side by side; no ratio (pack §8.7).</summary>
+/// <param name="DraftMinutes">The READER's own minutes on this task in their unsubmitted drafts.</param>
+/// <param name="SubmittedMinutes">Everyone's minutes on this task in submitted, undecided weeks — not spent time yet.</param>
+/// <param name="ApprovedMinutes">Everyone's approved minutes on this task — the task's spent time (D7).</param>
+public sealed record WorkItemTimeEntriesDto(int DraftMinutes, int SubmittedMinutes, int ApprovedMinutes);
 
 /// <summary>
 /// BL-439 — who answered a waiting task's question, when, and what they said. Derived from the transition log
