@@ -155,4 +155,39 @@
   <data name="ReorderProfiles" xml:space="preserve"><value>Hedef Kitle Profillerini Sırala</value></data>
   <data name="ReorderHelp" xml:space="preserve"><value>Sırayı değiştirmek için satırları sürükleyin, sonra kaydedin.</value></data>
   <data name="SaveOrder" xml:space="preserve"><value>Sırayı Kaydet</value></data>
+  <data name="ClaimsSection" xml:space="preserve"><value>İddialar</value></data>
+  <data name="ClaimRefsLabel" xml:space="preserve"><value>Bu içerikte kullanılan iddialar</value></data>
+  <data name="ClaimRefsPlaceholder" xml:space="preserve"><value>İddia ara…</value></data>
+  <data name="ClaimRefsHelp" xml:space="preserve"><value>Çekirdek, küresel iddiadır; ülke satırı o ülkenin onaylı metnidir. Yayın için iddialar onaylı olmalı, ülke satırında içerik dilinde metin bulunmalıdır.</value></data>
+  <data name="ClaimRefsProductFirst" xml:space="preserve"><value>Önce ürün seçin — iddialar içeriğin ürününe göre listelenir.</value></data>
+  <data name="ClaimRefsNone" xml:space="preserve"><value>Bu ürün için iddia yok.</value></data>
+  <data name="ClaimRefsLoading" xml:space="preserve"><value>İddialar yükleniyor…</value></data>
+  <data name="ClaimOptionsUnavailable" xml:space="preserve"><value>İddialar şu an yüklenemiyor. Seçili iddialar korunur.</value></data>
+  <data name="ClaimPermissionMissing" xml:space="preserve"><value>İddiaları okuma yetkiniz yok. Seçili iddialar korunur.</value></data>
+  <data name="ClaimEndpointMissing" xml:space="preserve"><value>İddia hizmetine ulaşılamıyor. Seçili iddialar korunur.</value></data>
+  <data name="ClaimCore" xml:space="preserve"><value>Çekirdek</value></data>
+  <data name="ClaimStatus_approved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="ClaimStatus_in-review" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="ClaimStatus_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="ClaimStatus_review-required" xml:space="preserve"><value>Gözden geçirilmeli</value></data>
+  <data name="ClaimStatus_inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="ClaimStatus_archived" xml:space="preserve"><value>Arşiv</value></data>
+  <data name="ClaimReason_not_approved" xml:space="preserve"><value>Onaylı değil — yayın reddedilir</value></data>
+  <data name="ClaimReason_language_mismatch" xml:space="preserve"><value>İçerik dilinde metin yok</value></data>
+  <data name="ClaimRefNotInList" xml:space="preserve"><value>Seçili ürün veya dil için sunulmuyor</value></data>
+  <data name="ClaimRefsUnusableWarning" xml:space="preserve"><value>Seçili iddialardan bazıları henüz yayınlanamaz. Kaydedebilirsiniz; onaylanıp içerik dilinde metin kazanana kadar yayın reddedilir.</value></data>
+  <data name="ClaimRefsStaleWarning" xml:space="preserve"><value>Seçili iddialardan bazıları güncel ürün veya dille uyuşmuyor. Silinmedi — artık geçerli değilse kaldırın.</value></data>
+  <data name="ClaimError_claim_refs_too_many" xml:space="preserve"><value>Bir içeriğe en fazla 20 iddia bağlanabilir.</value></data>
+  <data name="ClaimError_claim_ref_invalid" xml:space="preserve"><value>Bir iddia seçimi eksik veya geçersiz; yeniden seçin.</value></data>
+  <data name="ClaimError_claim_ref_duplicate" xml:space="preserve"><value>Aynı iddia bu ülke için birden fazla seçildi.</value></data>
+  <data name="ClaimError_claim_not_found" xml:space="preserve"><value>Seçilen iddia artık yok.</value></data>
+  <data name="ClaimError_claim_ref_mismatch" xml:space="preserve"><value>Seçim iddia kaydıyla artık uyuşmuyor; iddiaları yenileyip yeniden seçin.</value></data>
+  <data name="ClaimError_claim_country_version_not_found" xml:space="preserve"><value>İddianın ülke sürümü artık yok.</value></data>
+  <data name="ClaimError_claim_product_mismatch" xml:space="preserve"><value>İddia bu içeriğin ürününden farklı bir ürüne ait.</value></data>
+  <data name="ClaimError_claim_not_approved" xml:space="preserve"><value>İddia onaylı değil; içerik yayınlanamaz.</value></data>
+  <data name="ClaimError_claim_language_mismatch" xml:space="preserve"><value>İddianın ülke sürümünde içerik dilinde metin yok; içerik yayınlanamaz.</value></data>
+  <data name="ClaimError_dependency_unavailable" xml:space="preserve"><value>İddia hizmetine şu an ulaşılamıyor; daha sonra tekrar deneyin.</value></data>
+  <data name="LinkedClaims" xml:space="preserve"><value>Bağlı iddialar</value></data>
+  <data name="NoLinkedClaims" xml:space="preserve"><value>Bu içeriğe bağlı iddia yok.</value></data>
+  <data name="ClaimNeedsReview" xml:space="preserve"><value>Gözden geçirilmeli — iddia, bu bağlantı onaylandıktan sonra değişti.</value></data>
 </root>

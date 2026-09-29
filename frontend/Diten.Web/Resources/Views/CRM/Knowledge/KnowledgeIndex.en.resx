@@ -155,4 +155,39 @@
   <data name="ReorderProfiles" xml:space="preserve"><value>Reorder Audience Profiles</value></data>
   <data name="ReorderHelp" xml:space="preserve"><value>Drag the rows to change their order, then save.</value></data>
   <data name="SaveOrder" xml:space="preserve"><value>Save Order</value></data>
+  <data name="ClaimsSection" xml:space="preserve"><value>Claims</value></data>
+  <data name="ClaimRefsLabel" xml:space="preserve"><value>Claims stated in this content</value></data>
+  <data name="ClaimRefsPlaceholder" xml:space="preserve"><value>Search claims…</value></data>
+  <data name="ClaimRefsHelp" xml:space="preserve"><value>Core is the global claim; a country row is that country's approved text. Publishing needs approved claims and, for a country, a text in the content language.</value></data>
+  <data name="ClaimRefsProductFirst" xml:space="preserve"><value>Select a product first — claims are listed for the content's product.</value></data>
+  <data name="ClaimRefsNone" xml:space="preserve"><value>There are no claims for this product.</value></data>
+  <data name="ClaimRefsLoading" xml:space="preserve"><value>Loading claims…</value></data>
+  <data name="ClaimOptionsUnavailable" xml:space="preserve"><value>Claims cannot be loaded right now. Selected claims are kept.</value></data>
+  <data name="ClaimPermissionMissing" xml:space="preserve"><value>You do not have permission to read claims. Selected claims are kept.</value></data>
+  <data name="ClaimEndpointMissing" xml:space="preserve"><value>The claims service is not reachable. Selected claims are kept.</value></data>
+  <data name="ClaimCore" xml:space="preserve"><value>Core</value></data>
+  <data name="ClaimStatus_approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="ClaimStatus_in-review" xml:space="preserve"><value>In review</value></data>
+  <data name="ClaimStatus_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="ClaimStatus_review-required" xml:space="preserve"><value>Needs review</value></data>
+  <data name="ClaimStatus_inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="ClaimStatus_archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="ClaimReason_not_approved" xml:space="preserve"><value>Not approved — publishing will be refused</value></data>
+  <data name="ClaimReason_language_mismatch" xml:space="preserve"><value>No text in the content language</value></data>
+  <data name="ClaimRefNotInList" xml:space="preserve"><value>Not offered for the current product or language</value></data>
+  <data name="ClaimRefsUnusableWarning" xml:space="preserve"><value>Some selected claims cannot be published yet. You can save; publishing is refused until they are approved and have a text in the content language.</value></data>
+  <data name="ClaimRefsStaleWarning" xml:space="preserve"><value>Some selected claims do not match the current product or language. They were kept — remove them if they no longer apply.</value></data>
+  <data name="ClaimError_claim_refs_too_many" xml:space="preserve"><value>At most 20 claims can be linked to one content.</value></data>
+  <data name="ClaimError_claim_ref_invalid" xml:space="preserve"><value>A claim selection is incomplete or invalid; select it again.</value></data>
+  <data name="ClaimError_claim_ref_duplicate" xml:space="preserve"><value>The same claim is selected more than once for this country.</value></data>
+  <data name="ClaimError_claim_not_found" xml:space="preserve"><value>The selected claim no longer exists.</value></data>
+  <data name="ClaimError_claim_ref_mismatch" xml:space="preserve"><value>The selection no longer matches the claim record; reload the claims and select again.</value></data>
+  <data name="ClaimError_claim_country_version_not_found" xml:space="preserve"><value>The claim's country version no longer exists.</value></data>
+  <data name="ClaimError_claim_product_mismatch" xml:space="preserve"><value>The claim is about another product than this content.</value></data>
+  <data name="ClaimError_claim_not_approved" xml:space="preserve"><value>The claim is not approved; the content cannot be published.</value></data>
+  <data name="ClaimError_claim_language_mismatch" xml:space="preserve"><value>The claim's country version has no text in the content language; the content cannot be published.</value></data>
+  <data name="ClaimError_dependency_unavailable" xml:space="preserve"><value>The claims service is not reachable right now; try again later.</value></data>
+  <data name="LinkedClaims" xml:space="preserve"><value>Linked claims</value></data>
+  <data name="NoLinkedClaims" xml:space="preserve"><value>No claims are linked to this content.</value></data>
+  <data name="ClaimNeedsReview" xml:space="preserve"><value>Needs review — the claim changed after this link was approved.</value></data>
 </root>
