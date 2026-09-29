@@ -59,3 +59,16 @@ KORU/YAPMA: membership servisinin diğer davranışları DEĞİŞMEZ; EvidenceLi
 DOĞRULA (E2): cd C:\tmp\cl-be-2b; dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests -c Release --nologo → yeni kalıcı kırmızı yok (taban 173 ortam kırmızısı, TRX karşılaştır); yeni testler yeşil; sabotaj: ToUpperInvariant geri → regresyon testi kırmızı; Platform build 0 hata; git diff yalnız services/Diten.Platform/**. Commit ("fix(platform): WP-CL-BE-2b — BRD membership keeps set code case (evidence-type lookup)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: repository set kodunu zaten büyük/küçük harf duyarsız arıyorsa (kök neden başka yerde) DUR + gerçek nedeni raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-09-29) — **ACCEPTED (E2)**
+- **Commit:** `0ff66383` (`wp/cl-be-2b`). `test/crm-content-visit-e2e` dalına fast-forward edildi.
+- **Diff (K13 okuma):** 3 dosya, yalnız `services/Diten.Platform/**`.
+  - `NormalizeSetCode` yalnız `Trim` yapıyor; 77/116. satırlardaki çağrılar ve `Block()` sonucu bunu kullanıyor.
+  - Değer kodları `Normalize` (büyük harf) + `OrdinalIgnoreCase` ile karşılaştırılmaya devam ediyor.
+  - Servisin tek üretim tüketicisi `EvidenceLinkingHandlers` (grep: DI + EvidenceLinking).
+- **CT testleri:** `SetCodeCase|EvidenceLinking` → **49/49 yeşil**.
+- **CT sabotajı:** `NormalizeSetCode` içine `ToUpperInvariant` geri eklendi → **6 kırmızı**: 5 regresyon testi + `Link_succeeds_with_the_real_membership_service_over_an_exact_set_code_lookup`. Kod geri alındı, çalışma alanı temiz.
+- **Platform tam koşusu:** CT tekrar koşmadı. Ajan: 173 kırmızı, tabanla aynı küme. Değişiklik tek servis ve tek tüketiciyle sınırlı olduğu için yeterli kabul edildi.
+- **E4:** fleet restart sonrası CLM-ALMIBA-02 kanıt bağlama → 201 (CL-E4-1, CT).
