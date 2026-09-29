@@ -113,3 +113,14 @@ Durma: register ↔ belge eşlemesi tek anlamlı değilse ya da state resolver t
 - **Ajan DUR notu (kabul):** register ↔ belge bağı 1:1 zorunlu değil. Canlıda 720 satırın 4'ü bağlı ve hepsi farklı belgelerde. Kalıcı 1:1 koruması MOD-0029'da ayrı iş (kullanıcı kararı).
 - **F-5 kök nedeni:** temadaki `.nav-tabs .nav-link { text-transform: capitalize }` kuralı.
 - **CT E4 dikkat:** ALMIBA belgelerinin register satırında `DocumentCode` boşsa (FU07 atama motoru doldurur), kod yine ortak CanonicalId'ye düşer. E4'te canlıda bakılacak.
+
+## §37-E4 — CT canlı kontrol (2026-09-29, fleet restart sonrası, salt okuma) — **PASS (F-1 hariç: yeni gönderimde bakılacak)**
+- **F-2 → PASS.**
+  - document-options (ALMIBA): "Etki Mekanizması" → **`GMG-QMS-SOP-0014` · effective**; kanıt kartında "GMG-QMS-SOP-0014 · v1 sabitlendi" + "Yürürlükte" rozeti.
+  - **Veri eksiği (kod değil):** "ESA-dirençli anemide karnitin" ve "Klinik Kanıt Özeti" belgelerinin Master Register satırı yok → kod ortak `CAN-QMS-71626930FFC1-908994`'e düşüyor, durum `unknown` (rozet yok). Çözüm: iki belgeyi Belge Yönetimi'nde Master Register'a kaydetmek.
+- **F-3 → PASS.** Matris açıklaması `closed`="Kapatıldı", `not-opened`="Açılmadı".
+- **F-4 → PASS.** Edit sekme başlığı "Ülke sürümü · Türkiye".
+- **F-5 → PASS.** Dil sekmesi "Türkçe (tr)" (`<span class="text-lowercase">`).
+- **F-6 → PASS.** Hızlı görünüm "Türkiye v1.0" → `/CRM/Claims/CountryVersions/fd65bac0…/Edit`.
+- **F-1 → bekliyor.** Yalnız yeni başlatılan onaylar etkilenir; bir sonraki iddia gönderiminde WCN "Kaynak kaydını aç" kontrol edilecek.
+- **Yeni küçük not:** hızlı görünüm altındaki "Ayrıntıyı aç" bağlantısı `#` (detay sayfası FE-6'ya kadar yok). FE-6'da ya da Edit'e yönlendirerek kapatılmalı.
