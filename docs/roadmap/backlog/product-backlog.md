@@ -6972,6 +6972,106 @@ içeriden bağlantılar tek committe; kimlik denetim betiği (`verify_module_id.
 
 ---
 
+### BL-475
+
+**MOD-0023 tek atanan: çok adaylı onay, üstlenme ve vekâlet yok**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 onay motoru) · BULAN: MOD-0280-FU01 T1a kabulü, bağımsız gözden geçirme · KAYIT: 2026-09-29
+
+MOD-0023 bir adıma yalnız ilk adayı atıyor (`StartWorkflowInstanceHandler`, `normalizedCandidates[0]`); aynı koltuğun diğer sahipleri ve havuz üyeleri
+karar veremiyor. Zaman çizelgesi bu yüzden MOD-0023'ün gerçekten atadığı kişiyi saklıyor; yükseltme ya da devretmeden sonra bu kişi eskiyor ve yeni
+atanan onay listesinde haftayı görmüyor. İş: aday kümesi + üstlenme (claim), yokluk vekâleti, zaman çizelgesinde atanan kişinin MOD-0023'ten okunması.
+SAP/Oracle: onay kuyruğu gruba gider, biri üstlenir. Gelecek regresyon riski: 🟡 atama modeli değişir, mevcut örnekler tek atananla kalır.
+
+### BL-476
+
+**MOD-0023 iptal yalnız izne bakıyor: kim olduğuna değil**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 onay motoru) · BULAN: MOD-0280-FU01 T1a kabulü, bağımsız gözden geçirme · KAYIT: 2026-09-29
+
+`CancelAsync` `requireAssignment: false` ile yükleniyor (`WorkflowTaskTransitionSupport.cs` ~499): `platform.workflow.tasks.cancel` izni olan herkes kiracıdaki
+herhangi bir onayı iptal edebiliyor (başlatmamış, kendisine atanmamış olsa da). Zaman çizelgesinde bu, haftayı Draft'a düşürür; görev onayında görev
+sonsuza kadar kapılı kalır (Cancelled ne onay ne ret sayılıyor). İş: iptal = başlatan ya da nesnenin sahibi modül; yönetici iptali ayrı izin + sebep +
+denetim. Gelecek regresyon riski: 🟡 bugün iptal eden yönetici akışları varsa daralır — önce çağıranları say.
+
+### BL-477
+
+**MOD-0023 kişi kimliği serbest metin: büyük harf/küme parantezli GUID görevi karar verilemez bırakır**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 onay motoru) · BULAN: MOD-0280-FU01 T1a kabulü, bağımsız gözden geçirme · KAYIT: 2026-09-29
+
+B4'ten beri işlem yapan her zaman `Guid.ToString()` (küçük harf); `ResolvedPrincipalId` birebir metin karşılaştırmasıyla eşleniyor. Devretme hedefi ve API ile
+başlatılan örneklerin aday listesi yalnız uzunlukla doğrulanıyor: büyük harf ya da `Ellipsis` biçimli bir GUID, kimsenin karar veremediği bir görev bırakır;
+aynı yolla "kendine devretme" kontrolü de aşılır (`DelegateWorkflowTaskValidator.cs:17`). İş: girişte GUID ayrıştır ve kanonik biçime çevir, karşılaştırmayı
+Guid ile yap. Gelecek regresyon riski: 🟢.
+
+### BL-478
+
+**Yükseltilmiş (Escalated) görev onayı ve incelemesi kapatılamıyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 onay motoru) · BULAN: MOD-0280-FU01 T1a kabulü, bağımsız gözden geçirme · KAYIT: 2026-09-29
+
+Onayla/reddet/devret/bilgi iste Escalated görevi reddediyor, herkese açık iptal de (B3 geri alındı); görev onayı ve inceleme temizliği yalnız bekleyen
+görevleri iptal ediyor (`TaskApprovalService.cs:202`, `TaskReviewService.cs:231`). Görev Merkezi Escalated'i bekleyen sayıp Onayla'yı açık gösteriyor, tıklayınca
+409. Yalnız kiracı onay şablonuna SLA kuralı eklerse olur. İş: yükseltilen görevin yeni atananı karar verebilsin ya da sahip modül kapatabilsin (zaman
+çizelgesindeki `AllowEscalated` gibi). Gelecek regresyon riski: 🟢.
+
+### BL-479
+
+**Zaman çizelgesi taraması: 200 sınırında açlık, toplam işareti için indeks yok**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0280-FU01) · BULAN: T1a kabulü · KAYIT: 2026-09-29
+
+`ListNeedingFinalizationAsync` kiracı başına en eski 200 haftayı alıyor ve karar bekleyen bütün Submitted haftalar da bu listede: 200'den fazla eski bekleyen
+varsa onaylanmış ama toplamı düşmüş yeni hafta taranmıyor. `TotalsAppliedAtUtc` için indeks yok (onaylı dal her koşuda bütün onaylı haftaları okuyor); onay
+listesi toplamları yeniden denemiyor (yalnız tek hafta görünümü ve kişinin kendi okuması). Tarama varsayılan kapalı. İş (T1b'ye küçük madde): iki ayrı sorgu
+(önce onaylı-toplamsız), indeks. Gelecek regresyon riski: 🟢.
+
+### BL-480
+
+**Takvim 2c küçükleri**
+
+DURUM: AÇIK · SAHİP: CT (Görev Merkezi / Toplantılar) · BULAN: takvim 2c bağımsız gözden geçirme · KAYIT: 2026-09-29
+
+(1) Görünen aralıktan bir günden fazla önce başlayan çok günlü toplantı Toplantılar takviminde çizilmiyor (liste API'si StartAt ile süzüyor). (2) Düzenleyen
+değişince yeni düzenleyenin katılımcı satırı yok; toplantısı "diğer" görünüyor, daha önce reddetmişse hiç görünmüyor. (3) Görev Merkezi davet kartı ortak
+modüle geçince SLA çipi, sabitleme ve okunmadı/seçili görünümünü kaybetti; `inviteButtons` ve `calendarCardExtras` davet dalı ölü kod. (4) Kabul çakışma
+uyarısı yalnız kart modülünü yükleyen sayfalarda; Görev Merkezi ayrıntı sayfasından kabulde uyarı yok. Gelecek regresyon riski: 🟢.
+
+### BL-481
+
+**Sebepli yönetici müdahalesi (başkası adına onay işlemi)**
+
+DURUM: FİKİR (ihtiyaç doğarsa) · SAHİP: CT · KAYIT: 2026-09-29
+
+Platform › Workflow ekranındaki serbest "Actor Id" alanı B4 ile kaldırıldı; artık kimse başkası adına onay işlemi yapamaz. Gerçekten gerekirse ayrı izin +
+zorunlu sebep + denetim kaydı + etkilenen kişiye bildirim ile ayrı bir özellik olarak yapılır (SAP/Oracle'da "admin override" böyledir). Gelecek regresyon
+riski: 🟢.
+
+### BL-482
+
+**Platform testleri paylaşılan dev Mongo'ya (27017) bağlanıyor: BusinessReferenceData Mongo testleri**
+
+DURUM: AÇIK · SAHİP: CT · BULAN: T1a ve takvim 2c ajanları · KAYIT: 2026-09-29
+
+Platform Application paketinin tamamı koşulunca `BusinessReferenceData*` Mongo testleri paylaşılan 27017'de kendi `diten_platform_brd_itest_*` veritabanlarını
+açıp siliyor ve aralarında yarışıyor ("database is currently being dropped" → tabandaki ~49 kırmızının kaynağı). Yeni testler atılır mongod kullanıyor. İş: BRD
+testlerini `DisposableStandaloneMongo`'ya taşı; kırmızı taban listesi temizlenir. Gelecek regresyon riski: 🟢.
+
+### BL-483
+
+**T1a küçükleri**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0280-FU01 / MOD-0023) · BULAN: T1a kabulü · KAYIT: 2026-09-29
+
+(1) Geri çekmede MOD-0023 geçiş çakışması ya da kısmi iptal de 409 WITHDRAW_TOO_LATE ("onaylayan karar verdi") diyor, kimse karar vermemişken. (2) Karar
+çekici yutulan hatayı değişiklik sayıyor (tarama sayacı şişer). (3) Görev Merkezi başlatan kontrolü yalnız `StartedByUserId`'ye bakıyor; eski örneklerde Onayla
+açık görünüp 409 dönüyor. (4) İnceleyen = atanan kişiyle görev oluşturulabiliyor; o kişi incelemeye gönderemez (409) ta ki inceleyen değişene kadar.
+(5) MOD-0023'te idempotency tekrar kontrolü atama kontrolünden önce: atanmamış kişi başkasının anahtarıyla 200 idempotent alıyor (değişiklik yok).
+(6) Tüzel kişi sayaç anahtarı tüzel kişinin varlığını denetlemiyor (MDM başka serviste). Gelecek regresyon riski: 🟢.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
