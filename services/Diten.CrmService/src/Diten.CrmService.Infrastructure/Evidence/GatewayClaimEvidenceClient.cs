@@ -182,7 +182,8 @@ public sealed class GatewayClaimEvidenceClient : IClaimEvidenceClient
         string? CurrentVersionLabel,
         bool IsSuperseded,
         string? DocumentState,
-        DateTimeOffset? ReviewDueAt);
+        DateTimeOffset? ReviewDueAt,
+        string? DocumentCode = null);
 
     private static ClaimEvidenceLink? Parse(JsonElement element)
     {
@@ -224,7 +225,8 @@ public sealed class GatewayClaimEvidenceClient : IClaimEvidenceClient
             w.CurrentVersionLabel,
             w.IsSuperseded,
             w.DocumentState,
-            w.ReviewDueAt);
+            w.ReviewDueAt,
+            w.DocumentCode);
     }
 
     private sealed record Reply(int Status, JsonElement? Data, string? ReasonCode, string? Message, string? Transport);

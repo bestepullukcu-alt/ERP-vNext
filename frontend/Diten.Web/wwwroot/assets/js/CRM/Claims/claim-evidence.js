@@ -59,6 +59,12 @@
     const typeLabel = code => L['EvType_' + code] || (types && types[code] !== code ? types[code] : null) || code || '';
 
     // ─── cards ──────────────────────────────────────────────────────────────────
+    // WP-CL-FIX-1 — document lifecycle state label (resx DocStateLabel_{state}); unknown / absent → no card badge.
+    const stateLabel = s => s ? (L['DocStateLabel_' + s] || s) : '';
+    const STATE_TONES = { effective: 'success', suspended: 'warning', retired: 'secondary', withdrawn: 'danger' };
+    const stateBadge = s => s && s !== 'unknown'
+        ? ` <span class="badge bg-label-${STATE_TONES[s] || 'secondary'} mb-1">${esc(stateLabel(s))}</span>` : '';
+
     const previewUrl = item => {
         if (item.documentKind !== 'controlled' || !item.documentId || !item.documentVersionId) return null;
         const page = norm(item.locator?.page);
@@ -71,7 +77,9 @@
         const opts = options || {};
         const locator = item.locator || {};
         const reference = [locator.section, locator.page, locator.table].filter(Boolean).join(' · ');
-        const meta = [item.documentId ? String(item.documentId).slice(0, 8) : '', item.documentVersionLabel ? fmt(t('EvidencePinned'), item.documentVersionLabel) : '',
+        // WP-CL-FIX-1 — the document CODE (register code / canonical id / key), the id fragment only as a last resort.
+        const code = item.documentCode || (item.documentId ? String(item.documentId).slice(0, 8) : '');
+        const meta = [code, item.documentVersionLabel ? fmt(t('EvidencePinned'), item.documentVersionLabel) : '',
             item.documentKind === 'external' ? t('EvKindExternal') : t('EvKindControlled'), reference].filter(Boolean).join(' · ');
         const supports = (item.supportedSpans || []).map(s => s.text).join(' … ');
         const warnings = [];
@@ -86,7 +94,7 @@
             : '';
         return `<div class="claim-evidence-card${warnings.length ? ' needs-review' : ''}">`
             + `<div class="d-flex justify-content-between align-items-start gap-2"><div class="min-w-0">`
-            + `${origin}<span class="badge bg-label-secondary mb-1">${esc(typeLabel(item.evidenceTypeCode))}</span><div class="fw-medium">${esc(item.documentTitle)}</div>`
+            + `${origin}<span class="badge bg-label-secondary mb-1">${esc(typeLabel(item.evidenceTypeCode))}</span>${stateBadge(item.documentState)}<div class="fw-medium">${esc(item.documentTitle)}</div>`
             + `<small class="text-muted">${esc(meta)}</small></div><div class="d-flex gap-1 flex-shrink-0">`
             + (url ? `<a class="btn btn-sm btn-label-secondary" href="${esc(url)}" target="_blank" rel="noopener"><i class="bx bx-show me-1"></i>${esc(t('EvidencePreview'))}</a>` : '')
             + (opts.removable ? `<button type="button" class="btn btn-sm btn-icon btn-text-danger js-remove-evidence" data-link-id="${esc(item.linkId)}" aria-label="${esc(t('RemoveAction'))}" title="${esc(t('RemoveAction'))}"><i class="bx bx-trash"></i></button>` : '')
@@ -127,7 +135,8 @@
             if (!modal.docs.length) { host.innerHTML = `<div class="text-muted small p-2">${esc(t('EvNoDocuments'))}</div>`; return; }
             host.innerHTML = modal.docs.map((d, i) => {
                 const pinnable = d.kind !== 'controlled' || !!d.currentVersionId;
-                const meta = [d.code, d.documentType, pinLabel(d), d.countryCode, d.sourceStatus || d.status].filter(Boolean).join(' · ');
+                // WP-CL-FIX-1 — the lifecycle state (resx label), no longer the item status ("Active").
+                const meta = [d.code, d.documentType, pinLabel(d), d.countryCode, stateLabel(d.documentState)].filter(Boolean).join(' · ');
                 const active = modal.doc && modal.doc.documentId === d.documentId ? ' active' : '';
                 return `<button type="button" class="list-group-item list-group-item-action js-ev-doc${active}" data-index="${i}" role="option" aria-selected="${active ? 'true' : 'false'}"${pinnable ? '' : ' disabled'}>`
                     + `<div class="fw-medium">${esc(d.title)}</div><small class="text-muted">${esc(meta)}</small></button>`;

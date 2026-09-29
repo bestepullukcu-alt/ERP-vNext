@@ -41,7 +41,9 @@ public sealed record ClaimEvidenceLink(
     string? CurrentVersionLabel,
     bool IsSuperseded,
     string? DocumentState,
-    DateTimeOffset? ReviewDueAt)
+    DateTimeOffset? ReviewDueAt,
+    // WP-CL-FIX-1 — the document code people recognise (MOD-0031 read; null from an older Platform).
+    string? DocumentCode = null)
 {
     public bool IsActive => string.Equals(Status, "active", StringComparison.OrdinalIgnoreCase);
 }
@@ -67,7 +69,9 @@ public sealed record ClaimEvidenceDocumentOptionDto(
     DateTimeOffset? EffectiveDate,
     string? CountryCode,
     string? SourceVersion,
-    string? SourceStatus);
+    string? SourceStatus,
+    // WP-CL-FIX-1 — lifecycle state (effective | suspended | retired | withdrawn | unknown); null from an older Platform.
+    string? DocumentState = null);
 
 public enum ClaimEvidenceCallOutcome
 {

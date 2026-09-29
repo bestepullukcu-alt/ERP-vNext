@@ -162,4 +162,9 @@
   <data name="EvType_regulatory-letter" xml:space="preserve"><value>监管函件</value></data>
   <data name="EvOriginCore" xml:space="preserve"><value>来自核心</value></data>
   <data name="EvOriginLocal" xml:space="preserve"><value>本地</value></data>
+  <data name="DocStateLabel_effective" xml:space="preserve"><value>现行有效</value></data>
+  <data name="DocStateLabel_suspended" xml:space="preserve"><value>已暂停</value></data>
+  <data name="DocStateLabel_retired" xml:space="preserve"><value>已停用</value></data>
+  <data name="DocStateLabel_withdrawn" xml:space="preserve"><value>已撤回</value></data>
+  <data name="DocStateLabel_unknown" xml:space="preserve"><value>状态未知</value></data>
 </root>

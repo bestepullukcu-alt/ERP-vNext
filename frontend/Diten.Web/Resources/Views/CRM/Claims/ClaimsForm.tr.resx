@@ -162,4 +162,9 @@
   <data name="EvType_regulatory-letter" xml:space="preserve"><value>Ruhsat yazısı</value></data>
   <data name="EvOriginCore" xml:space="preserve"><value>Çekirdekten</value></data>
   <data name="EvOriginLocal" xml:space="preserve"><value>Yerel</value></data>
+  <data name="DocStateLabel_effective" xml:space="preserve"><value>Yürürlükte</value></data>
+  <data name="DocStateLabel_suspended" xml:space="preserve"><value>Askıda</value></data>
+  <data name="DocStateLabel_retired" xml:space="preserve"><value>Yürürlükten kaldırıldı</value></data>
+  <data name="DocStateLabel_withdrawn" xml:space="preserve"><value>Geri çekildi</value></data>
+  <data name="DocStateLabel_unknown" xml:space="preserve"><value>Durum bilinmiyor</value></data>
 </root>

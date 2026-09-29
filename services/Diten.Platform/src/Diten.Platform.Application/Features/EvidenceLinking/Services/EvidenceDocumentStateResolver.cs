@@ -12,7 +12,9 @@ public sealed record EvidenceDocumentState(
     string? CurrentVersionLabel,
     bool IsSuperseded,
     string DocumentState,
-    DateTimeOffset? ReviewDueAt)
+    DateTimeOffset? ReviewDueAt,
+    // WP-CL-FIX-1 — the document code shown to people (register DocumentCode ?? CanonicalId ?? DocumentKey).
+    string? DocumentCode = null)
 {
     public static readonly EvidenceDocumentState Unknown = new(null, null, false, EvidenceDocumentStates.Unknown, null);
 }
@@ -116,20 +118,11 @@ public sealed class EvidenceDocumentStateResolver : IEvidenceDocumentStateResolv
         // No register row ⇒ no reliable lifecycle read: unknown + not superseded (the WP's stop rule — never a guess).
         if (row is null || row.DeletedAt is not null || row.IsDeleted)
         {
-            return new EvidenceDocumentState(currentId, currentLabel, false, EvidenceDocumentStates.Unknown, null);
+            return new EvidenceDocumentState(currentId, currentLabel, false, EvidenceDocumentStates.Unknown, null,
+                ControlledDocumentCode(doc, null));
         }
 
-        var state = row.LifecycleStatus switch
-        {
-            ControlledDocumentLifecycleStatus.Effective => EvidenceDocumentStates.Effective,
-            // Operationally effective while revised (ControlledDocumentLifecyclePolicy.IsOperationallyEffective).
-            ControlledDocumentLifecycleStatus.UnderRevision => EvidenceDocumentStates.Effective,
-            ControlledDocumentLifecycleStatus.Suspended => EvidenceDocumentStates.Suspended,
-            ControlledDocumentLifecycleStatus.Superseded => EvidenceDocumentStates.Retired,
-            ControlledDocumentLifecycleStatus.Retired => EvidenceDocumentStates.Retired,
-            ControlledDocumentLifecycleStatus.ObsoleteCopy => EvidenceDocumentStates.Retired,
-            _ => EvidenceDocumentStates.Unknown // draft / in review / approved-pending: no effective version yet
-        };
+        var state = ControlledLifecycleState(row.LifecycleStatus);
 
         bool superseded;
         if (row.LifecycleStatus == ControlledDocumentLifecycleStatus.Superseded)
@@ -149,10 +142,31 @@ public sealed class EvidenceDocumentStateResolver : IEvidenceDocumentStateResolv
             superseded = false;
         }
 
-        return new EvidenceDocumentState(currentId, currentLabel, superseded, state, row.NextReviewDueDate);
+        return new EvidenceDocumentState(currentId, currentLabel, superseded, state, row.NextReviewDueDate,
+            ControlledDocumentCode(doc, row));
     }
 
-    private static EvidenceDocumentState External(ExternalDocumentRegisterEntry? entry, DateTimeOffset now)
+    /// <summary>The documentState of a controlled document from its register lifecycle (SOP §6.2).</summary>
+    public static string ControlledLifecycleState(ControlledDocumentLifecycleStatus lifecycle) => lifecycle switch
+    {
+        ControlledDocumentLifecycleStatus.Effective => EvidenceDocumentStates.Effective,
+        // Operationally effective while revised (ControlledDocumentLifecyclePolicy.IsOperationallyEffective).
+        ControlledDocumentLifecycleStatus.UnderRevision => EvidenceDocumentStates.Effective,
+        ControlledDocumentLifecycleStatus.Suspended => EvidenceDocumentStates.Suspended,
+        ControlledDocumentLifecycleStatus.Superseded => EvidenceDocumentStates.Retired,
+        ControlledDocumentLifecycleStatus.Retired => EvidenceDocumentStates.Retired,
+        ControlledDocumentLifecycleStatus.ObsoleteCopy => EvidenceDocumentStates.Retired,
+        _ => EvidenceDocumentStates.Unknown // draft / in review / approved-pending: no effective version yet
+    };
+
+    /// <summary>WP-CL-FIX-1 — the code people see: the Master Register DocumentCode, else the CanonicalId (NOT unique
+    /// across documents — it was shared by three live documents), else the DocumentKey.</summary>
+    public static string ControlledDocumentCode(ControlledDocument doc, DocumentMasterRegisterEntry? row) =>
+        !string.IsNullOrWhiteSpace(row?.DocumentCode) ? row.DocumentCode.Trim()
+        : !string.IsNullOrWhiteSpace(doc.CanonicalId) ? doc.CanonicalId.Trim()
+        : doc.DocumentKey;
+
+    public static EvidenceDocumentState External(ExternalDocumentRegisterEntry? entry, DateTimeOffset now)
     {
         if (entry is null || entry.DeletedAt is not null || entry.IsDeleted)
         {
@@ -170,6 +184,7 @@ public sealed class EvidenceDocumentStateResolver : IEvidenceDocumentStateResolv
             ExternalSourceStatus.CurrentEffective => EvidenceDocumentStates.Effective,
             _ => EvidenceDocumentStates.Unknown
         };
-        return new EvidenceDocumentState(null, entry.SourceVersion, superseded, state, entry.NextCheckDueDate);
+        return new EvidenceDocumentState(null, entry.SourceVersion, superseded, state, entry.NextCheckDueDate,
+            entry.ExternalDocumentCode);
     }
 }

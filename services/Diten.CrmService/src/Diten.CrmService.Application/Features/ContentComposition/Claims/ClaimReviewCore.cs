@@ -23,6 +23,13 @@ public static class ClaimReviewRules
         ? $"crm/claim/{id:D}"
         : $"crm/claim-country-version/{id:D}";
 
+    /// <summary>WP-CL-FIX-1 — the "open the source record" link of a review round (MOD-0023 DisplayContext). One place:
+    /// when the claim detail page arrives (FE-6) only these two lines change. A locked record opens read-only.</summary>
+    public static string ClaimSourceLink(Guid claimId) => $"/CRM/Claims/Edit/{claimId:D}";
+
+    public static string CountryVersionSourceLink(Guid countryVersionId) =>
+        $"/CRM/Claims/CountryVersions/{countryVersionId:D}/Edit";
+
     public static string IdempotencyKey(string objectType, Guid id, int roundNo) => $"crm:{objectType}:{id:D}:r{roundNo}";
 
     public static Response<T> InReviewLocked<T>() => Response<T>.Fail(

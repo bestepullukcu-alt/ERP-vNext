@@ -106,12 +106,12 @@
   <data name="State_draft" xml:space="preserve"><value>Taslak</value></data>
   <data name="State_review-required" xml:space="preserve"><value>Gözden geçirilmeli</value></data>
   <data name="State_expiring" xml:space="preserve"><value>Süresi doluyor</value></data>
-  <data name="State_closed" xml:space="preserve"><value>Açılmadı</value></data>
+  <data name="State_closed" xml:space="preserve"><value>Kapatıldı</value></data>
   <data name="State_not-opened" xml:space="preserve"><value>Açılmadı</value></data>
   <data name="State_not-applicable" xml:space="preserve"><value>Kapsam dışı</value></data>
   <data name="State_inactive" xml:space="preserve"><value>Pasif</value></data>
   <data name="State_archived" xml:space="preserve"><value>Arşiv</value></data>
-  <data name="ClosedTooltip" xml:space="preserve"><value>Açılmadı · {0}</value></data>
+  <data name="ClosedTooltip" xml:space="preserve"><value>Kapatıldı · {0}</value></data>
   <data name="NotOpenedTooltip" xml:space="preserve"><value>Açılmadı · henüz karar yok</value></data>
   <data name="FilterProduct" xml:space="preserve"><value>Ürün</value></data>
   <data name="FilterCountry" xml:space="preserve"><value>Ülke</value></data>

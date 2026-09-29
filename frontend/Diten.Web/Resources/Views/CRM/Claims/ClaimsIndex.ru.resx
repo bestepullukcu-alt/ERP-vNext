@@ -106,12 +106,12 @@
   <data name="State_draft" xml:space="preserve"><value>Черновик</value></data>
   <data name="State_review-required" xml:space="preserve"><value>Требует пересмотра</value></data>
   <data name="State_expiring" xml:space="preserve"><value>Истекает</value></data>
-  <data name="State_closed" xml:space="preserve"><value>Не открыто</value></data>
+  <data name="State_closed" xml:space="preserve"><value>Закрыто</value></data>
   <data name="State_not-opened" xml:space="preserve"><value>Не открыто</value></data>
   <data name="State_not-applicable" xml:space="preserve"><value>Вне охвата</value></data>
   <data name="State_inactive" xml:space="preserve"><value>Неактивно</value></data>
   <data name="State_archived" xml:space="preserve"><value>В архиве</value></data>
-  <data name="ClosedTooltip" xml:space="preserve"><value>Не открыто · {0}</value></data>
+  <data name="ClosedTooltip" xml:space="preserve"><value>Закрыто · {0}</value></data>
   <data name="NotOpenedTooltip" xml:space="preserve"><value>Не открыто · решение ещё не принято</value></data>
   <data name="FilterProduct" xml:space="preserve"><value>Продукт</value></data>
   <data name="FilterCountry" xml:space="preserve"><value>Страна</value></data>

@@ -162,4 +162,9 @@
   <data name="EvType_regulatory-letter" xml:space="preserve"><value>Регуляторное письмо</value></data>
   <data name="EvOriginCore" xml:space="preserve"><value>Из базового</value></data>
   <data name="EvOriginLocal" xml:space="preserve"><value>Локальное</value></data>
+  <data name="DocStateLabel_effective" xml:space="preserve"><value>Действует</value></data>
+  <data name="DocStateLabel_suspended" xml:space="preserve"><value>Приостановлен</value></data>
+  <data name="DocStateLabel_retired" xml:space="preserve"><value>Выведен из действия</value></data>
+  <data name="DocStateLabel_withdrawn" xml:space="preserve"><value>Отозван</value></data>
+  <data name="DocStateLabel_unknown" xml:space="preserve"><value>Статус неизвестен</value></data>
 </root>

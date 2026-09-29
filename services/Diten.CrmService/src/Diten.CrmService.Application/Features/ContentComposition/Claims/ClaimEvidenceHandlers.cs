@@ -35,7 +35,8 @@ public sealed record ClaimEvidenceItemDto(
     string? DocumentState,
     DateTimeOffset? ReviewDueAt,
     bool NeedsReview,
-    bool IsExpiring);
+    bool IsExpiring,
+    string? DocumentCode = null);
 
 public sealed record ClaimEvidenceListDto(
     IReadOnlyList<ClaimEvidenceItemDto> Items,
@@ -68,7 +69,7 @@ internal static class ClaimEvidenceMapping
         l.DocumentId, l.DocumentVersionId, l.DocumentVersionLabel, l.DocumentTitle, l.EvidenceTypeCode, l.Locator,
         l.SupportedSpans, l.Status, l.LinkedBy, l.LinkedAt, l.RemovedBy, l.RemovedAt, l.RemovalReason, l.CurrentVersionId,
         l.CurrentVersionLabel, l.IsSuperseded, l.DocumentState, l.ReviewDueAt, ClaimEvidenceRules.NeedsReview(l),
-        ClaimEvidenceRules.IsExpiring(l, now, windowDays));
+        ClaimEvidenceRules.IsExpiring(l, now, windowDays), l.DocumentCode);
 
     public static ClaimEvidenceListDto List(IEnumerable<ClaimEvidenceItemDto> items, bool locked)
     {

@@ -376,7 +376,8 @@
         const langs = (v.texts || []).map(t => t.languageCode).join(' · ');
         const note = v.adaptationReason ? `<small class="text-muted d-block mt-1">${esc(v.adaptationReason)}</small>` : '';
         return `<div class="claim-version-row"><div class="d-flex justify-content-between align-items-center gap-2 mb-1">`
-            + `<span class="fw-medium">${esc(country?.name || v.countryCode)} <span class="text-muted">v${esc(v.version)}</span></span>`
+            // WP-CL-FIX-1 — the country version opens its page (read-only for a reader or a locked version).
+            + `<a class="fw-medium" href="/CRM/Claims/CountryVersions/${encodeURIComponent(v.countryVersionId)}/Edit">${esc(country?.name || v.countryCode)} <span class="text-muted">v${esc(v.version)}</span></a>`
             + `<span class="claim-chip state-${esc(state)}"><i class="bx ${STATE_ICONS[state] || 'bx-circle'}"></i>${esc(stateLabel(state))}</span></div>`
             + `<small class="text-muted d-block mb-1">${esc(L.QvLanguages)}: ${esc(langs || '—')}</small>`
             + `<div class="claim-version-text">${esc(text)}</div>${note}</div>`;

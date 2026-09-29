@@ -94,7 +94,7 @@ public sealed class EvidenceLinkingTests
             Store.Register.Items.Add(row);
             return row;
         }
-        public GetEvidenceDocumentOptionsQueryHandler Options() => new(Tenant, Documents(), External(), Gate);
+        public GetEvidenceDocumentOptionsQueryHandler Options() => new(Tenant, Documents(), External(), Gate, Store.Register);
 
         public (ControlledDocument Doc, ControlledDocumentVersion V1, ControlledDocumentVersion V2) SeedControlled(
             string title = "SmPC Product X")
@@ -166,6 +166,90 @@ public sealed class EvidenceLinkingTests
             new EvidenceObjectRefInput("crm", "claim", "claim-2", "1.0"), "controlled", doc.Id, v1.Id, "retired-type",
             new EvidenceLocatorInput(Quote, "4.1", "4"), null), default);
         Assert.Equal(EvidenceLinkReasonCodes.InvalidEvidenceType, passive.ReasonCode);
+    }
+
+    // ============================================================ WP-CL-FIX-1 — document code + lifecycle state
+
+    [Fact]
+    public async Task Option_code_prefers_the_register_code_then_the_canonical_id_then_the_key()
+    {
+        var fx = new Fixture(TenantA);
+        // Three documents SHARE one CanonicalId (the live finding): only the register code tells them apart.
+        var (registered, _, _) = fx.SeedControlled("ALMIBA SmPC");
+        var (canonicalOnly, _, _) = fx.SeedControlled("ALMIBA PIL");
+        var (keyOnly, _, _) = fx.SeedControlled("ALMIBA Label");
+        registered.CanonicalId = canonicalOnly.CanonicalId = "CAN-QMS-SHARED";
+        var row = fx.SeedRegister(registered, ControlledDocumentLifecycleStatus.Effective);
+        row.DocumentCode = "GMG-ALM-SMPC-0001";
+
+        var options = (await fx.Options().Handle(new GetEvidenceDocumentOptionsQuery(null, "controlled", null), default)).Data!;
+
+        Assert.Equal("GMG-ALM-SMPC-0001", options.Single(o => o.DocumentId == registered.Id).Code);
+        Assert.Equal("CAN-QMS-SHARED", options.Single(o => o.DocumentId == canonicalOnly.Id).Code);
+        Assert.Equal(keyOnly.DocumentKey, options.Single(o => o.DocumentId == keyOnly.Id).Code);
+    }
+
+    [Theory]
+    [InlineData(ControlledDocumentLifecycleStatus.Effective, EvidenceDocumentStates.Effective)]
+    [InlineData(ControlledDocumentLifecycleStatus.Suspended, EvidenceDocumentStates.Suspended)]
+    [InlineData(ControlledDocumentLifecycleStatus.Retired, EvidenceDocumentStates.Retired)]
+    [InlineData(ControlledDocumentLifecycleStatus.Draft, EvidenceDocumentStates.Unknown)]
+    public async Task Option_state_is_the_register_lifecycle_not_the_item_status(
+        ControlledDocumentLifecycleStatus lifecycle, string expected)
+    {
+        var fx = new Fixture(TenantA);
+        var (doc, _, _) = fx.SeedControlled();
+        fx.SeedRegister(doc, lifecycle);
+
+        var option = Assert.Single((await fx.Options().Handle(new GetEvidenceDocumentOptionsQuery(null, "controlled", null), default)).Data!);
+
+        Assert.Equal(expected, option.DocumentState);
+        Assert.Equal("Active", option.Status); // the old item status stays for backward compatibility
+    }
+
+    [Fact]
+    public async Task Several_register_rows_for_one_document_are_not_guessed()
+    {
+        var fx = new Fixture(TenantA);
+        var (doc, _, _) = fx.SeedControlled();
+        doc.CanonicalId = "CAN-1";
+        fx.SeedRegister(doc, ControlledDocumentLifecycleStatus.Effective).DocumentCode = "CODE-A";
+        fx.SeedRegister(doc, ControlledDocumentLifecycleStatus.Suspended).DocumentCode = "CODE-B";
+
+        var option = Assert.Single((await fx.Options().Handle(new GetEvidenceDocumentOptionsQuery(null, "controlled", null), default)).Data!);
+
+        Assert.Equal("CAN-1", option.Code);
+        Assert.Equal(EvidenceDocumentStates.Unknown, option.DocumentState);
+    }
+
+    [Fact]
+    public async Task Options_search_matches_the_register_code_and_reads_the_register_once()
+    {
+        var fx = new Fixture(TenantA);
+        var (doc, _, _) = fx.SeedControlled("Some title");
+        fx.SeedRegister(doc, ControlledDocumentLifecycleStatus.Effective).DocumentCode = "GMG-XYZ-0007";
+        fx.SeedControlled("Another");
+
+        var options = (await fx.Options().Handle(new GetEvidenceDocumentOptionsQuery("xyz-0007", "controlled", null), default)).Data!;
+
+        Assert.Equal(doc.Id, Assert.Single(options).DocumentId);
+    }
+
+    [Fact]
+    public async Task Link_read_carries_the_document_code()
+    {
+        var fx = new Fixture(TenantA);
+        var (doc, v1, _) = fx.SeedControlled();
+        fx.SeedRegister(doc, ControlledDocumentLifecycleStatus.Effective).DocumentCode = "GMG-ALM-SMPC-0001";
+        await fx.LinkControlled(doc.Id, v1.Id);
+        var external = fx.SeedExternal();
+        await fx.Create().Handle(new CreateEvidenceLinkCommand(new EvidenceObjectRefInput("crm", "claim", "claim-1", "1.0"),
+            "external", external.Id, null, "literature", new EvidenceLocatorInput(Quote), null), default);
+
+        var links = (await fx.ByObject().Handle(new GetEvidenceLinksByObjectQuery("crm", "claim", "claim-1", null, false), default)).Data!;
+
+        Assert.Equal("GMG-ALM-SMPC-0001", links.Single(l => l.DocumentKind == "controlled").DocumentCode);
+        Assert.Equal("ANNEX-1", links.Single(l => l.DocumentKind == "external").DocumentCode);
     }
 
     [Fact]

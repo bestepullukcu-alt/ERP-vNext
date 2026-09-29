@@ -73,8 +73,8 @@
         const data = await tryGet(`${api}/lookups/countries`);
         const row = (Array.isArray(data) ? data : []).find(c => norm(c.code).toUpperCase() === state.countryCode);
         const details = Array.isArray(row?.languageDetails) && row.languageDetails.length
-            ? row.languageDetails.map(l => ({ code: l.code, label: `${l.nativeName || l.name || l.code} (${l.code})` }))
-            : (row?.languages || []).map(l => ({ code: l, label: l }));
+            ? row.languageDetails.map(l => ({ code: l.code, name: l.nativeName || l.name || l.code, label: `${l.nativeName || l.name || l.code} (${String(l.code).toLowerCase()})` }))
+            : (row?.languages || []).map(l => ({ code: l, name: l, label: l }));
         state.country = { code: state.countryCode, name: row?.name || state.countryCode, languages: details };
     };
 
@@ -85,6 +85,15 @@
         return Array.from(new Set(fromCountry.concat(stored)));
     };
     const langLabel = code => state.country?.languages.find(l => l.code === code)?.label || code;
+    // WP-CL-FIX-1 — tab text: the theme capitalises .nav-tabs .nav-link, which turned "(tr)" into "(Tr)"; the code part
+    // is kept lower-case explicitly (text-lowercase), the language name keeps its own casing.
+    const langTabHtml = code => {
+        const entry = state.country?.languages.find(l => l.code === code);
+        const name = entry?.name && entry.name !== code ? entry.name : null;
+        return name
+            ? `${esc(name)} <span class="text-lowercase">(${esc(String(code).toLowerCase())})</span>`
+            : `<span class="text-lowercase">${esc(String(code).toLowerCase())}</span>`;
+    };
     const missingLangs = () => languageCodes().filter(l => !norm(state.texts[l]?.text));
 
     const renderLanguages = () => {
@@ -96,7 +105,7 @@
         const editable = isEditable();
         const missing = new Set(missingLangs());
         tabs.innerHTML = langs.map(l => `<li class="nav-item" role="presentation"><button type="button" class="nav-link${l === state.activeLang ? ' active' : ''} js-cv-lang" data-lang="${esc(l)}" role="tab" aria-selected="${l === state.activeLang}">`
-            + `${esc(langLabel(l))}${missing.has(l) ? ` <span class="badge rounded-pill bg-label-danger ms-1" title="${esc(t('LanguageMissing'))}">!</span>` : ''}</button></li>`).join('');
+            + `${langTabHtml(l)}${missing.has(l) ? ` <span class="badge rounded-pill bg-label-danger ms-1" title="${esc(t('LanguageMissing'))}">!</span>` : ''}</button></li>`).join('');
         const core = state.claim || {};
         const l = state.activeLang;
         if (!l) { panes.innerHTML = ''; return; }
@@ -187,7 +196,13 @@
         byId('cvCountryName').textContent = `${state.country?.name || state.countryCode} (${state.countryCode})`;
         byId('cvCountryLanguages').textContent = (state.country?.languages || []).map(l => l.label).join(', ') || '—';
         const title = byId('cvTitle');
-        if (title) title.textContent = fmt(state.versionId ? t('PageTitleEdit') : t('PageTitleCreate'), state.country?.name || state.countryCode);
+        const heading = fmt(state.versionId ? t('PageTitleEdit') : t('PageTitleCreate'), state.country?.name || state.countryCode);
+        if (title) title.textContent = heading;
+        // WP-CL-FIX-1 — the browser tab title follows (the server only knew the code, and a first save turns Create into
+        // Edit without a reload). The layout suffix after the server title is kept.
+        const serverTitle = root.dataset.pageTitle || '';
+        document.title = serverTitle && document.title.includes(serverTitle) ? document.title.replace(serverTitle, heading) : heading;
+        root.dataset.pageTitle = heading;
     };
 
     // ─── evidence ───────────────────────────────────────────────────────────────

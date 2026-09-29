@@ -162,4 +162,9 @@
   <data name="EvType_regulatory-letter" xml:space="preserve"><value>Regulatory letter</value></data>
   <data name="EvOriginCore" xml:space="preserve"><value>From core</value></data>
   <data name="EvOriginLocal" xml:space="preserve"><value>Local</value></data>
+  <data name="DocStateLabel_effective" xml:space="preserve"><value>In force</value></data>
+  <data name="DocStateLabel_suspended" xml:space="preserve"><value>Suspended</value></data>
+  <data name="DocStateLabel_retired" xml:space="preserve"><value>Retired</value></data>
+  <data name="DocStateLabel_withdrawn" xml:space="preserve"><value>Withdrawn</value></data>
+  <data name="DocStateLabel_unknown" xml:space="preserve"><value>State unknown</value></data>
 </root>

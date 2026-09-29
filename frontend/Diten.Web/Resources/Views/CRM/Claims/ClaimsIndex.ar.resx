@@ -106,12 +106,12 @@
   <data name="State_draft" xml:space="preserve"><value>مسودة</value></data>
   <data name="State_review-required" xml:space="preserve"><value>تحتاج إلى مراجعة</value></data>
   <data name="State_expiring" xml:space="preserve"><value>على وشك الانتهاء</value></data>
-  <data name="State_closed" xml:space="preserve"><value>غير مفتوحة</value></data>
+  <data name="State_closed" xml:space="preserve"><value>مغلقة</value></data>
   <data name="State_not-opened" xml:space="preserve"><value>غير مفتوحة</value></data>
   <data name="State_not-applicable" xml:space="preserve"><value>خارج النطاق</value></data>
   <data name="State_inactive" xml:space="preserve"><value>غير نشط</value></data>
   <data name="State_archived" xml:space="preserve"><value>مؤرشف</value></data>
-  <data name="ClosedTooltip" xml:space="preserve"><value>غير مفتوحة · {0}</value></data>
+  <data name="ClosedTooltip" xml:space="preserve"><value>مغلقة · {0}</value></data>
   <data name="NotOpenedTooltip" xml:space="preserve"><value>غير مفتوحة · لا يوجد قرار بعد</value></data>
   <data name="FilterProduct" xml:space="preserve"><value>المنتج</value></data>
   <data name="FilterCountry" xml:space="preserve"><value>الدولة</value></data>

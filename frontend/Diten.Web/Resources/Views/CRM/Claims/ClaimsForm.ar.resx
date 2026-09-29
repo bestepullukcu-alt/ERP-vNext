@@ -162,4 +162,9 @@
   <data name="EvType_regulatory-letter" xml:space="preserve"><value>خطاب تنظيمي</value></data>
   <data name="EvOriginCore" xml:space="preserve"><value>من الأساس</value></data>
   <data name="EvOriginLocal" xml:space="preserve"><value>محلي</value></data>
+  <data name="DocStateLabel_effective" xml:space="preserve"><value>ساري المفعول</value></data>
+  <data name="DocStateLabel_suspended" xml:space="preserve"><value>معلق</value></data>
+  <data name="DocStateLabel_retired" xml:space="preserve"><value>مُلغى</value></data>
+  <data name="DocStateLabel_withdrawn" xml:space="preserve"><value>مسحوب</value></data>
+  <data name="DocStateLabel_unknown" xml:space="preserve"><value>الحالة غير معروفة</value></data>
 </root>

@@ -106,12 +106,12 @@
   <data name="State_draft" xml:space="preserve"><value>Brouillon</value></data>
   <data name="State_review-required" xml:space="preserve"><value>À revoir</value></data>
   <data name="State_expiring" xml:space="preserve"><value>Arrive à expiration</value></data>
-  <data name="State_closed" xml:space="preserve"><value>Non ouverte</value></data>
+  <data name="State_closed" xml:space="preserve"><value>Fermée</value></data>
   <data name="State_not-opened" xml:space="preserve"><value>Non ouverte</value></data>
   <data name="State_not-applicable" xml:space="preserve"><value>Hors périmètre</value></data>
   <data name="State_inactive" xml:space="preserve"><value>Inactive</value></data>
   <data name="State_archived" xml:space="preserve"><value>Archivée</value></data>
-  <data name="ClosedTooltip" xml:space="preserve"><value>Non ouverte · {0}</value></data>
+  <data name="ClosedTooltip" xml:space="preserve"><value>Fermée · {0}</value></data>
   <data name="NotOpenedTooltip" xml:space="preserve"><value>Non ouverte · pas encore de décision</value></data>
   <data name="FilterProduct" xml:space="preserve"><value>Produit</value></data>
   <data name="FilterCountry" xml:space="preserve"><value>Pays</value></data>

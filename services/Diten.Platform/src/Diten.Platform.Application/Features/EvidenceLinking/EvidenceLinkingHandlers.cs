@@ -656,15 +656,18 @@ public sealed class GetEvidenceDocumentOptionsQueryHandler
     private readonly IControlledDocumentRepository _documents;
     private readonly IExternalDocumentRegisterRepository _externalDocuments;
     private readonly IEvidenceDocumentAccessGate _access;
+    private readonly IDocumentMasterRegisterRepository? _register;
 
     public GetEvidenceDocumentOptionsQueryHandler(
         ITenantContext tenant, IControlledDocumentRepository documents,
-        IExternalDocumentRegisterRepository externalDocuments, IEvidenceDocumentAccessGate access)
+        IExternalDocumentRegisterRepository externalDocuments, IEvidenceDocumentAccessGate access,
+        IDocumentMasterRegisterRepository? register = null)
     {
         _tenant = tenant;
         _documents = documents;
         _externalDocuments = externalDocuments;
         _access = access;
+        _register = register;
     }
 
     public async Task<Response<IReadOnlyList<EvidenceDocumentOptionDto>>> Handle(
@@ -689,9 +692,22 @@ public sealed class GetEvidenceDocumentOptionsQueryHandler
 
         if (kind is null or EvidenceDocumentKinds.Controlled)
         {
+            // WP-CL-FIX-1 — the register is read ONCE for the page (no per-document call). A document linked by exactly
+            // one live register row takes that row's DocumentCode and lifecycle; zero or several rows (the link is not
+            // 1:1-enforced) are not guessed: the code falls back to CanonicalId / DocumentKey and the state stays unknown.
+            var registerByDocument = _register is null
+                ? new Dictionary<Guid, List<DocumentMasterRegisterEntry>>()
+                : (await _register.GetAllForTenantAsync(ct))
+                    .Where(r => r.ControlledDocumentId is not null && r.DeletedAt is null && !r.IsDeleted)
+                    .GroupBy(r => r.ControlledDocumentId!.Value)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+            DocumentMasterRegisterEntry? RegisterRow(Guid documentId) =>
+                registerByDocument.TryGetValue(documentId, out var rows) && rows.Count == 1 ? rows[0] : null;
+
             var candidates = (await _documents.GetAllForTenantAsync(ct))
                 .Where(d => d.DeletedAt is null && !d.IsDeleted)
                 .Where(d => term is null
+                    || (RegisterRow(d.Id)?.DocumentCode?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
                     || d.Title.Contains(term, StringComparison.OrdinalIgnoreCase)
                     || (d.CanonicalId?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
                     || d.DocumentKey.Contains(term, StringComparison.OrdinalIgnoreCase))
@@ -708,11 +724,15 @@ public sealed class GetEvidenceDocumentOptionsQueryHandler
                     continue;
                 }
 
+                var row = RegisterRow(d.Id);
                 result.Add(new EvidenceDocumentOptionDto(
-                    EvidenceDocumentKinds.Controlled, d.Id, d.Title, d.CanonicalId ?? d.DocumentKey,
+                    EvidenceDocumentKinds.Controlled, d.Id, d.Title, EvidenceDocumentStateResolver.ControlledDocumentCode(d, row),
                     d.DocumentType.ToString(), d.CurrentVersionId,
                     d.CurrentVersionId is null ? null : $"v{d.CurrentVersionNumber}",
-                    d.Status.ToString(), d.EffectiveDate, null, null, null));
+                    d.Status.ToString(), d.EffectiveDate, null, null, null,
+                    row is null
+                        ? EvidenceDocumentStates.Unknown
+                        : EvidenceDocumentStateResolver.ControlledLifecycleState(row.LifecycleStatus)));
             }
         }
 
@@ -739,7 +759,8 @@ public sealed class GetEvidenceDocumentOptionsQueryHandler
                 result.Add(new EvidenceDocumentOptionDto(
                     EvidenceDocumentKinds.External, e.Id, e.ExternalDocumentTitle, e.ExternalDocumentCode,
                     e.ExternalDocumentType.ToString(), null, null, e.ExternalDocumentStatus.ToString(),
-                    e.SourceEffectiveDate, e.CountryCode, e.SourceVersion, e.SourceStatus.ToString()));
+                    e.SourceEffectiveDate, e.CountryCode, e.SourceVersion, e.SourceStatus.ToString(),
+                    EvidenceDocumentStateResolver.External(e, DateTimeOffset.UtcNow).DocumentState));
             }
         }
 

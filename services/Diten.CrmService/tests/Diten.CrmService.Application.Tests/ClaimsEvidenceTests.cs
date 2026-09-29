@@ -679,6 +679,39 @@ public sealed class ClaimsEvidenceTests
         Assert.Equal("1.1", sent.GetProperty("objectVersion").GetString());
     }
 
+    // ============================================================ WP-CL-FIX-1 — document code / state
+
+    [Fact]
+    public async Task Evidence_items_carry_the_document_code()
+    {
+        var fx = new Fx(TenantA);
+        var claim = fx.SeedClaim();
+        var link = fx.LinkOf(claim);
+        var index = fx.Evidence.Links.FindIndex(l => l.LinkId == link.LinkId);
+        fx.Evidence.Links[index] = link with { DocumentCode = "GMG-ALM-SMPC-0001" };
+
+        var item = Assert.Single((await fx.ClaimEvidence().Handle(new GetClaimEvidenceQuery(claim.Id), default)).Data!.Items);
+
+        Assert.Equal("GMG-ALM-SMPC-0001", item.DocumentCode);
+    }
+
+    [Fact]
+    public async Task Gateway_client_reads_document_code_and_option_state()
+    {
+        var linkBody = "{\"data\":{\"linkId\":\"" + Guid.NewGuid() + "\",\"objectRef\":{\"module\":\"crm\",\"objectType\":\"claim\",\"objectId\":\"c1\"},"
+                       + "\"documentKind\":\"controlled\",\"documentId\":\"" + Guid.NewGuid() + "\",\"documentTitle\":\"SmPC\",\"evidenceTypeCode\":\"smpc-pil\","
+                       + "\"locator\":{\"quote\":\"q\"},\"status\":\"active\",\"linkedAt\":\"2026-09-29T00:00:00+00:00\",\"documentCode\":\"GMG-ALM-SMPC-0001\"}}";
+        var link = await GatewayClient(new StubHandler(HttpStatusCode.OK, linkBody)).GetAsync(Guid.NewGuid(), default);
+        Assert.Equal("GMG-ALM-SMPC-0001", link.Data!.DocumentCode);
+
+        var optionsBody = "{\"data\":[{\"kind\":\"controlled\",\"documentId\":\"" + Guid.NewGuid() + "\",\"title\":\"SmPC\",\"code\":\"GMG-ALM-SMPC-0001\","
+                          + "\"status\":\"Active\",\"documentState\":\"effective\"}]}";
+        var options = await GatewayClient(new StubHandler(HttpStatusCode.OK, optionsBody)).GetDocumentOptionsAsync(null, null, default);
+        var option = Assert.Single(options.Data!);
+        Assert.Equal("effective", option.DocumentState);
+        Assert.Equal("GMG-ALM-SMPC-0001", option.Code);
+    }
+
     // ============================================================ surface
 
     [Theory]

@@ -106,12 +106,12 @@
   <data name="State_draft" xml:space="preserve"><value>草稿</value></data>
   <data name="State_review-required" xml:space="preserve"><value>需复核</value></data>
   <data name="State_expiring" xml:space="preserve"><value>即将到期</value></data>
-  <data name="State_closed" xml:space="preserve"><value>未开放</value></data>
+  <data name="State_closed" xml:space="preserve"><value>已关闭</value></data>
   <data name="State_not-opened" xml:space="preserve"><value>未开放</value></data>
   <data name="State_not-applicable" xml:space="preserve"><value>不适用</value></data>
   <data name="State_inactive" xml:space="preserve"><value>停用</value></data>
   <data name="State_archived" xml:space="preserve"><value>已归档</value></data>
-  <data name="ClosedTooltip" xml:space="preserve"><value>未开放 · {0}</value></data>
+  <data name="ClosedTooltip" xml:space="preserve"><value>已关闭 · {0}</value></data>
   <data name="NotOpenedTooltip" xml:space="preserve"><value>未开放 · 尚无决定</value></data>
   <data name="FilterProduct" xml:space="preserve"><value>产品</value></data>
   <data name="FilterCountry" xml:space="preserve"><value>国家</value></data>

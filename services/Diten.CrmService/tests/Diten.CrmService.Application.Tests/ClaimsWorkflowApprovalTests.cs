@@ -159,7 +159,8 @@ public sealed class ClaimsWorkflowApprovalTests
         Assert.Equal("İddia onayı · CL-SUB v2.0", start.DisplayContext.Title);
         Assert.Equal("Name CL-SUB", start.DisplayContext.Subtitle);
         Assert.Equal("crm", start.DisplayContext.SourceModule);
-        Assert.Equal($"/CRM/Claims/Details/{claim.Id:D}", start.DisplayContext.DeepLinkUrl);
+        // WP-CL-FIX-1 — the source link opens the existing claim page (the detail page arrives with FE-6).
+        Assert.Equal($"/CRM/Claims/Edit/{claim.Id:D}", start.DisplayContext.DeepLinkUrl);
         Assert.Equal(["core", "v2.0"], start.DisplayContext.Chips);
 
         Assert.Equal(ClaimStatuses.InReview, claim.Status);
@@ -179,6 +180,17 @@ public sealed class ClaimsWorkflowApprovalTests
         var claim = fx.SeedClaim("CL-LOC", kind: ClaimKinds.Local, localCountry: "UZ");
         await fx.Submit().Handle(new SubmitClaimReviewCommand(claim.Id), default);
         Assert.Equal("CLAIM-LOCAL-MLR-UZ", fx.Workflow.Starts.Single().TemplateCode);
+        // WP-CL-FIX-1 — a local claim opens its own claim page too (no /Details page exists yet).
+        Assert.Equal($"/CRM/Claims/Edit/{claim.Id:D}", fx.Workflow.Starts.Single().DisplayContext.DeepLinkUrl);
+    }
+
+    [Fact]
+    public void Source_links_point_at_existing_pages()
+    {
+        var id = Guid.Parse("11112222-3333-4444-5555-666677778888");
+        Assert.Equal("/CRM/Claims/Edit/11112222-3333-4444-5555-666677778888", ClaimReviewRules.ClaimSourceLink(id));
+        Assert.Equal("/CRM/Claims/CountryVersions/11112222-3333-4444-5555-666677778888/Edit",
+            ClaimReviewRules.CountryVersionSourceLink(id));
     }
 
     [Theory]
@@ -246,7 +258,7 @@ public sealed class ClaimsWorkflowApprovalTests
         Assert.Equal("crm.claim-country-version", start.ObjectType);
         Assert.Equal($"crm/claim-country-version/{ok.Id:D}", start.ObjectRef);
         Assert.Equal("İddia ülke onayı · CL-C · BY v1.0", start.DisplayContext.Title);
-        Assert.Equal($"/CRM/Claims/Details/{core.Id:D}?country=BY", start.DisplayContext.DeepLinkUrl);
+        Assert.Equal($"/CRM/Claims/CountryVersions/{ok.Id:D}/Edit", start.DisplayContext.DeepLinkUrl);
         Assert.Equal(["BY", "v1.0"], start.DisplayContext.Chips);
         Assert.Equal(ClaimStatuses.InReview, ok.Status);
     }

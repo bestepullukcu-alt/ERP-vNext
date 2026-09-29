@@ -93,7 +93,10 @@ public sealed record EvidenceLinkDto(
     string? CurrentVersionLabel = null,
     bool IsSuperseded = false,
     string? DocumentState = null,
-    DateTimeOffset? ReviewDueAt = null);
+    DateTimeOffset? ReviewDueAt = null,
+    // WP-CL-FIX-1 — the document code people recognise (register DocumentCode ?? CanonicalId ?? DocumentKey; external:
+    // ExternalDocumentCode). Computed on read like the fields above.
+    string? DocumentCode = null);
 
 /// <summary>WP-CL-BE-5 — the bulk read of links for many objects (one call per page of the consumer).</summary>
 public sealed record EvidenceObjectLinksDto(EvidenceObjectRefDto ObjectRef, IReadOnlyList<EvidenceLinkDto> Links);
@@ -111,7 +114,9 @@ public sealed record EvidenceDocumentOptionDto(
     DateTimeOffset? EffectiveDate,
     string? CountryCode,
     string? SourceVersion,
-    string? SourceStatus);
+    string? SourceStatus,
+    // WP-CL-FIX-1 — the lifecycle state (EvidenceDocumentStates) from the same rules as the link read.
+    string? DocumentState = null);
 
 public static class EvidenceLinkMapper
 {
@@ -138,7 +143,8 @@ public static class EvidenceLinkMapper
         state?.CurrentVersionLabel,
         state?.IsSuperseded ?? false,
         state?.DocumentState,
-        state?.ReviewDueAt);
+        state?.ReviewDueAt,
+        state?.DocumentCode);
 
     /// <summary>Maps with the computed document state (one DocMgmt read per distinct document).</summary>
     public static async Task<IReadOnlyList<EvidenceLinkDto>> ToDtosAsync(

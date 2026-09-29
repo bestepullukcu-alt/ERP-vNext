@@ -143,7 +143,7 @@ public sealed class SubmitClaimReviewHandler : IRequestHandler<SubmitClaimReview
                 ClaimReviewRules.Truncate($"İddia onayı · {claim.ClaimCode} v{claim.ClaimVersion}", 200),
                 ClaimReviewRules.Truncate(claim.ClaimName, 300),
                 "crm",
-                $"/CRM/Claims/Details/{claim.Id:D}",
+                ClaimReviewRules.ClaimSourceLink(claim.Id),
                 [ClaimReviewRules.Truncate(kind, 32), ClaimReviewRules.Truncate($"v{claim.ClaimVersion}", 32)])), ct);
         if (start.Outcome != ClaimWorkflowCallOutcome.Ok || start.WorkflowInstanceId is not { } instanceId)
         {
@@ -282,7 +282,7 @@ public sealed class SubmitClaimCountryVersionReviewHandler
                     $"İddia ülke onayı · {version.ClaimCode} · {version.CountryCode} v{version.CountryVersion}", 200),
                 ClaimReviewRules.Truncate(claim.ClaimName, 300),
                 "crm",
-                $"/CRM/Claims/Details/{claim.Id:D}?country={version.CountryCode}",
+                ClaimReviewRules.CountryVersionSourceLink(version.Id),
                 [version.CountryCode, ClaimReviewRules.Truncate($"v{version.CountryVersion}", 32)])), ct);
         if (start.Outcome != ClaimWorkflowCallOutcome.Ok || start.WorkflowInstanceId is not { } instanceId)
         {
