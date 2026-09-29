@@ -148,3 +148,24 @@ Commit: 7e4e9cd6 · Agent: PASS (Web 270/0, 3 sabotaj) · CT: worktree C:\tmp\cl
   - (3) Yeni iddiada `EffectiveFrom` = kayıt anı.
   - (4) Yinelenen kodun CRM'de kodu yok; kodsuz 409 → "bu kod kullanılıyor".
 - ⏳ **E4 (tarayıcı):** CT, fleet restart sonrası yazmasız kontrol. Uçtan uca onay (yazmalı) → **CL-E4-1**, kullanıcı onayıyla.
+
+### §37-E4 Canlı kontrol — FE-1 + FE-3 (2026-09-29, fleet restart sonrası, CT tarayıcı, Admin User 97c5, YAZMASIZ) → **PASS (küçük bulgularla)**
+- ✅ **Liste** `/CRM/Claims`:
+  - Başlık, açıklama, "Yeni yerel / çekirdek iddia", 3 iş bayrağı.
+  - v2 liste (`includeCounts`) 200, **0 iddia** → "Kütüphanede henüz iddia yok" boş durumu doğru.
+  - Onayla düğmesi yok.
+  - Lookup'lar 200: countries 6 + diller, closure-reasons 3, evidence-types 5, products (MDM), workflow-template CLAIM-CORE-MLR (3 adım + pozisyon adları).
+- ✅ **Çekirdek form** `Create?kind=core`:
+  - 1440 px'te 8/4. Sürüm salt okunur, durum "Taslak", metin dili en · English, karakter sayacı.
+  - Ürün seçici aramada MDM sonuçları (GP-…063 TUTUKON…). Kitle 2 profil, sorumlu ekip org birimleri.
+  - "Önce taslağı kaydedin" notu. Hazırlık listesi 5 madde "eksik".
+  - **Global onay akışı** Medikal → Hukuk → Ruhsat + pozisyon adları. "Zorunlu: 4" sayacı.
+- ✅ **Yerel form** `Create?kind=local`: ülke seçici. UZ seçince metin dilleri **uz, ru**. "Yerel onay akışı" CLAIM-LOCAL-MLR-UZ adımları.
+- ⚠ **Bulgular (polish WP'ye):**
+  1. Boş durum ikonu `bx-library` kırık (Boxicons sürümünde yok).
+  2. Ülke adları kod olarak görünüyor ("TR (TR)"); ülke görünen adı gerekli (7 dil).
+  3. Dil adları kod ("uz", "ru"); dil görünen adı gerekli.
+  4. Lookup `name` alanı closure-reasons / evidence-types için kod. UI etiketi resx'ten geliyorsa sorun yok, kanıt modalında ve FE-2'de doğrulanacak.
+  5. Sorumlu ekip listesinde test birimleri (ewrferfer, zxzxzx). Veri temizliği, kod değil.
+- ℹ **Bu işle ilgisiz, önceden var:** WorkCenterNext "3 iş öğesi sözleşme hatası" (CAPABILITY_CONTAINER_REQUIRED fixture'ları) + `dev-reference` modül adı resx eksik; tema özelleştirici TR karaktersiz.
+- ⏳ **Doğrulanmadı:** koyu tema ve dil değişimi (kullanıcı tercihini değiştirir). Yazmalı akış (kaydet → kanıt → gönder → onay) → **CL-E4-1**.
