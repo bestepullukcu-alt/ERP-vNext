@@ -983,4 +983,31 @@
     <value>第 {0} 页，共 {1} 页</value>
     <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
   </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>今天</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>月</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>周</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>日</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>上一个</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>下一个</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>全天</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>另外 {0} 项</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>没有可显示的内容</value>
+  </data>
 </root>

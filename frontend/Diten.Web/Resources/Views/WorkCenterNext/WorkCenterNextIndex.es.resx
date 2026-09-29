@@ -605,9 +605,6 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · planificado para {1} (mock)</value>
   </data>
-  <data name="ToastPlanSaved" xml:space="preserve">
-    <value>Plan guardado para el {0}</value>
-  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · temporizador iniciado (mock)</value>
   </data>
@@ -1089,21 +1086,6 @@
   </data>
   <data name="KanbanDropHint" xml:space="preserve">
     <value>Soltar aquí: {0}</value>
-  </data>
-  <data name="CalPrevMonth" xml:space="preserve">
-    <value>Mes anterior</value>
-  </data>
-  <data name="CalNextMonth" xml:space="preserve">
-    <value>Mes siguiente</value>
-  </data>
-  <data name="CalToday" xml:space="preserve">
-    <value>Hoy</value>
-  </data>
-  <data name="CalOutside" xml:space="preserve">
-    <value>{0} elementos están en otros meses.</value>
-  </data>
-  <data name="CalOutsideAndUndated" xml:space="preserve">
-    <value>{0} elementos están en otros meses; {1} no tienen fecha y nunca aparecen en el calendario.</value>
   </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Vencim. origen</value>
@@ -2411,5 +2393,80 @@
   </data>
   <data name="AuditEventInquiryAnswered" xml:space="preserve">
     <value>Pregunta respondida</value>
+  </data>
+  <data name="CalPanelTitle" xml:space="preserve">
+    <value>Trabajo por planificar</value>
+  </data>
+  <data name="CalPanelUnplanned" xml:space="preserve">
+    <value>Sin planificar</value>
+  </data>
+  <data name="CalPanelPlanPassed" xml:space="preserve">
+    <value>Plan vencido</value>
+  </data>
+  <data name="CalPanelInvites" xml:space="preserve">
+    <value>Invitaciones</value>
+  </data>
+  <data name="CalPanelEmpty" xml:space="preserve">
+    <value>No hay nada aquí.</value>
+  </data>
+  <data name="CalPanelHint" xml:space="preserve">
+    <value>Arrastre una tarjeta al calendario: un día en la vista de mes, una hora en la vista de semana o día. Arrastre un bloque planificado de vuelta aquí para quitarlo.</value>
+  </data>
+  <data name="CalChipEstimate" xml:space="preserve">
+    <value>Estimación {0} h</value>
+  </data>
+  <data name="CalChipPlanPassed" xml:space="preserve">
+    <value>Planificado para {0}</value>
+  </data>
+  <data name="CalChipRemaining" xml:space="preserve">
+    <value>Quedan {0} min</value>
+  </data>
+  <data name="CalLegendTask" xml:space="preserve">
+    <value>Día planificado</value>
+  </data>
+  <data name="CalLegendBlock" xml:space="preserve">
+    <value>Bloque planificado</value>
+  </data>
+  <data name="CalLegendMeetingAccepted" xml:space="preserve">
+    <value>Reunión (aceptada)</value>
+  </data>
+  <data name="CalLegendMeetingPending" xml:space="preserve">
+    <value>Reunión (sin responder)</value>
+  </data>
+  <data name="CalLegendConflict" xml:space="preserve">
+    <value>Se solapa con otro bloque</value>
+  </data>
+  <data name="CalLegendOffHours" xml:space="preserve">
+    <value>Fuera del horario laboral</value>
+  </data>
+  <data name="CalLegendHoliday" xml:space="preserve">
+    <value>Festivo</value>
+  </data>
+  <data name="CalPlanSaved" xml:space="preserve">
+    <value>«{0}» planificado.</value>
+  </data>
+  <data name="CalTruncated" xml:space="preserve">
+    <value>Recortado al final de la jornada — quedan {0} min.</value>
+  </data>
+  <data name="CalConflictWith" xml:space="preserve">
+    <value>Se solapa con «{0}» {1}. Elija otra hora.</value>
+  </data>
+  <data name="CalZoneUnavailable" xml:space="preserve">
+    <value>No se pudo leer la zona horaria de la empresa; la hora no se guardó. Inténtelo de nuevo.</value>
+  </data>
+  <data name="PlanTimeLabel" xml:space="preserve">
+    <value>Hora de inicio</value>
+  </data>
+  <data name="PlanTimeNone" xml:space="preserve">
+    <value>Sin hora (todo el día)</value>
+  </data>
+  <data name="PlanDurationLabel" xml:space="preserve">
+    <value>Duración</value>
+  </data>
+  <data name="PlanDurationOption" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="PlanTimeHint" xml:space="preserve">
+    <value>Las horas están en la zona horaria de la empresa. Un bloque que supere el final de la jornada se recorta allí.</value>
   </data>
 </root>

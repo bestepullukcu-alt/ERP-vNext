@@ -984,4 +984,31 @@
     <value>Page {0} sur {1}</value>
     <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
   </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>Aujourd’hui</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>Mois</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>Semaine</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>Jour</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>Précédent</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>Suivant</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>Toute la journée</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>+{0} de plus</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>Rien à afficher</value>
+  </data>
 </root>

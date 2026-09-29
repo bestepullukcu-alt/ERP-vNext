@@ -983,4 +983,31 @@
     <value>صفحة {0} من {1}</value>
     <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
   </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>شهر</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>أسبوع</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>يوم</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>السابق</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>التالي</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>طوال اليوم</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>+{0} أخرى</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>لا يوجد ما يُعرض</value>
+  </data>
 </root>

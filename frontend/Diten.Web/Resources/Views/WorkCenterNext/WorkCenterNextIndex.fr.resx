@@ -605,9 +605,6 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · planifié pour {1} (mock)</value>
   </data>
-  <data name="ToastPlanSaved" xml:space="preserve">
-    <value>Plan enregistré pour le {0}</value>
-  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · minuteur démarré (mock)</value>
   </data>
@@ -1089,21 +1086,6 @@
   </data>
   <data name="KanbanDropHint" xml:space="preserve">
     <value>Déposer ici : {0}</value>
-  </data>
-  <data name="CalPrevMonth" xml:space="preserve">
-    <value>Mois précédent</value>
-  </data>
-  <data name="CalNextMonth" xml:space="preserve">
-    <value>Mois suivant</value>
-  </data>
-  <data name="CalToday" xml:space="preserve">
-    <value>Aujourd'hui</value>
-  </data>
-  <data name="CalOutside" xml:space="preserve">
-    <value>{0} éléments sont sur d’autres mois.</value>
-  </data>
-  <data name="CalOutsideAndUndated" xml:space="preserve">
-    <value>{0} éléments sont sur d’autres mois ; {1} sans date n’apparaissent jamais au calendrier.</value>
   </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Échéance source</value>
@@ -2411,5 +2393,80 @@
   </data>
   <data name="AuditEventInquiryAnswered" xml:space="preserve">
     <value>Question répondue</value>
+  </data>
+  <data name="CalPanelTitle" xml:space="preserve">
+    <value>Travail à planifier</value>
+  </data>
+  <data name="CalPanelUnplanned" xml:space="preserve">
+    <value>Non planifié</value>
+  </data>
+  <data name="CalPanelPlanPassed" xml:space="preserve">
+    <value>Plan dépassé</value>
+  </data>
+  <data name="CalPanelInvites" xml:space="preserve">
+    <value>Invitations</value>
+  </data>
+  <data name="CalPanelEmpty" xml:space="preserve">
+    <value>Rien ici.</value>
+  </data>
+  <data name="CalPanelHint" xml:space="preserve">
+    <value>Faites glisser une carte sur le calendrier : un jour en vue mois, une heure en vue semaine ou jour. Ramenez un créneau planifié ici pour le retirer.</value>
+  </data>
+  <data name="CalChipEstimate" xml:space="preserve">
+    <value>Estimation {0} h</value>
+  </data>
+  <data name="CalChipPlanPassed" xml:space="preserve">
+    <value>Prévu le {0}</value>
+  </data>
+  <data name="CalChipRemaining" xml:space="preserve">
+    <value>Reste {0} min</value>
+  </data>
+  <data name="CalLegendTask" xml:space="preserve">
+    <value>Jour planifié</value>
+  </data>
+  <data name="CalLegendBlock" xml:space="preserve">
+    <value>Créneau planifié</value>
+  </data>
+  <data name="CalLegendMeetingAccepted" xml:space="preserve">
+    <value>Réunion (acceptée)</value>
+  </data>
+  <data name="CalLegendMeetingPending" xml:space="preserve">
+    <value>Réunion (sans réponse)</value>
+  </data>
+  <data name="CalLegendConflict" xml:space="preserve">
+    <value>Chevauche un autre créneau</value>
+  </data>
+  <data name="CalLegendOffHours" xml:space="preserve">
+    <value>Hors heures de travail</value>
+  </data>
+  <data name="CalLegendHoliday" xml:space="preserve">
+    <value>Jour férié</value>
+  </data>
+  <data name="CalPlanSaved" xml:space="preserve">
+    <value>« {0} » planifié.</value>
+  </data>
+  <data name="CalTruncated" xml:space="preserve">
+    <value>Coupé à la fin de la journée de travail — reste {0} min.</value>
+  </data>
+  <data name="CalConflictWith" xml:space="preserve">
+    <value>Chevauche « {0} » {1}. Choisissez un autre créneau.</value>
+  </data>
+  <data name="CalZoneUnavailable" xml:space="preserve">
+    <value>Le fuseau horaire de l’entreprise n’a pas pu être lu ; l’heure n’a pas été enregistrée. Réessayez.</value>
+  </data>
+  <data name="PlanTimeLabel" xml:space="preserve">
+    <value>Heure de début</value>
+  </data>
+  <data name="PlanTimeNone" xml:space="preserve">
+    <value>Sans heure (journée entière)</value>
+  </data>
+  <data name="PlanDurationLabel" xml:space="preserve">
+    <value>Durée</value>
+  </data>
+  <data name="PlanDurationOption" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="PlanTimeHint" xml:space="preserve">
+    <value>Les heures sont dans le fuseau horaire de l’entreprise. Un créneau qui dépasse la fin de la journée de travail y est coupé.</value>
   </data>
 </root>

@@ -605,9 +605,6 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · запланировано на {1} (макет)</value>
   </data>
-  <data name="ToastPlanSaved" xml:space="preserve">
-    <value>План сохранён на {0}</value>
-  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · таймер запущен (макет)</value>
   </data>
@@ -1089,21 +1086,6 @@
   </data>
   <data name="KanbanDropHint" xml:space="preserve">
     <value>Перетащите сюда: {0}</value>
-  </data>
-  <data name="CalPrevMonth" xml:space="preserve">
-    <value>Предыдущий месяц</value>
-  </data>
-  <data name="CalNextMonth" xml:space="preserve">
-    <value>Следующий месяц</value>
-  </data>
-  <data name="CalToday" xml:space="preserve">
-    <value>Сегодня</value>
-  </data>
-  <data name="CalOutside" xml:space="preserve">
-    <value>Ещё {0} задач в других месяцах.</value>
-  </data>
-  <data name="CalOutsideAndUndated" xml:space="preserve">
-    <value>Ещё {0} задач в других месяцах; у {1} нет даты, и они никогда не появятся в календаре.</value>
   </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Срок источника</value>
@@ -2411,5 +2393,80 @@
   </data>
   <data name="AuditEventInquiryAnswered" xml:space="preserve">
     <value>Ответ на вопрос получен</value>
+  </data>
+  <data name="CalPanelTitle" xml:space="preserve">
+    <value>Работа для планирования</value>
+  </data>
+  <data name="CalPanelUnplanned" xml:space="preserve">
+    <value>Не запланировано</value>
+  </data>
+  <data name="CalPanelPlanPassed" xml:space="preserve">
+    <value>План просрочен</value>
+  </data>
+  <data name="CalPanelInvites" xml:space="preserve">
+    <value>Приглашения</value>
+  </data>
+  <data name="CalPanelEmpty" xml:space="preserve">
+    <value>Здесь ничего нет.</value>
+  </data>
+  <data name="CalPanelHint" xml:space="preserve">
+    <value>Перетащите карточку в календарь: на день в режиме месяца, на время в режиме недели или дня. Чтобы снять блок с плана, перетащите его обратно сюда.</value>
+  </data>
+  <data name="CalChipEstimate" xml:space="preserve">
+    <value>Оценка {0} ч</value>
+  </data>
+  <data name="CalChipPlanPassed" xml:space="preserve">
+    <value>План на {0}</value>
+  </data>
+  <data name="CalChipRemaining" xml:space="preserve">
+    <value>Осталось {0} мин</value>
+  </data>
+  <data name="CalLegendTask" xml:space="preserve">
+    <value>План на день</value>
+  </data>
+  <data name="CalLegendBlock" xml:space="preserve">
+    <value>Запланированный блок</value>
+  </data>
+  <data name="CalLegendMeetingAccepted" xml:space="preserve">
+    <value>Совещание (принято)</value>
+  </data>
+  <data name="CalLegendMeetingPending" xml:space="preserve">
+    <value>Совещание (без ответа)</value>
+  </data>
+  <data name="CalLegendConflict" xml:space="preserve">
+    <value>Пересекается с другим блоком</value>
+  </data>
+  <data name="CalLegendOffHours" xml:space="preserve">
+    <value>Нерабочее время</value>
+  </data>
+  <data name="CalLegendHoliday" xml:space="preserve">
+    <value>Праздник</value>
+  </data>
+  <data name="CalPlanSaved" xml:space="preserve">
+    <value>«{0}» запланировано.</value>
+  </data>
+  <data name="CalTruncated" xml:space="preserve">
+    <value>Обрезано в конце рабочего дня — осталось {0} мин.</value>
+  </data>
+  <data name="CalConflictWith" xml:space="preserve">
+    <value>Пересекается с «{0}» {1}. Выберите другое время.</value>
+  </data>
+  <data name="CalZoneUnavailable" xml:space="preserve">
+    <value>Не удалось прочитать часовой пояс компании, время не сохранено. Повторите попытку.</value>
+  </data>
+  <data name="PlanTimeLabel" xml:space="preserve">
+    <value>Время начала</value>
+  </data>
+  <data name="PlanTimeNone" xml:space="preserve">
+    <value>Без времени (весь день)</value>
+  </data>
+  <data name="PlanDurationLabel" xml:space="preserve">
+    <value>Длительность</value>
+  </data>
+  <data name="PlanDurationOption" xml:space="preserve">
+    <value>{0} мин</value>
+  </data>
+  <data name="PlanTimeHint" xml:space="preserve">
+    <value>Время указано в часовом поясе компании. Блок, выходящий за конец рабочего дня, обрезается.</value>
   </data>
 </root>

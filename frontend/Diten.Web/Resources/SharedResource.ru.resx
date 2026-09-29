@@ -983,4 +983,31 @@
     <value>Страница {0} из {1}</value>
     <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
   </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>Сегодня</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>Месяц</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>Неделя</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>День</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>Вперёд</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>Весь день</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>ещё {0}</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>Нечего показать</value>
+  </data>
 </root>

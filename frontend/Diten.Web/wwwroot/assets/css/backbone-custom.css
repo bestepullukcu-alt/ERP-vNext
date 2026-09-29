@@ -5908,7 +5908,7 @@ tags.diten-tags .tagify__input {
 /* The column a dragged card could NOT land in — dimmed and, on the dropzone shape, still dashed underneath. */
 .wcn-kcol.wcn-kcol-pale { opacity: .45; }
 .wcn-kcol.wcn-kcol-pale .wcn-kcol-body { pointer-events: none; }
-.wcn-kcard:focus-visible, .wcn-cal-item:focus-visible, .wcn-tr:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 1px; }
+.wcn-kcard:focus-visible, .wcn-tr:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 1px; }
 /* CT fix — this used to REPLACE box-shadow with only the ring, so a selected card lost its resting elevation
    entirely (read as a flat cut-out, not a raised card with a ring around it). Stacked on the base shadow now,
    the same fix as `:hover` above. `.selected:hover` gets its own rule right after so the two states' shadows
@@ -5940,28 +5940,79 @@ tags.diten-tags .tagify__input {
 .wcn-kcard-processing-note { margin-block-start: .5rem; display: flex; align-items: center; gap: .375rem;
     font-size: .75rem; color: var(--bs-secondary-color); }
 
-/* Calendar (read-only deadline clustering) --------------------------------- */
-.wcn-cal-head { display: flex; align-items: center; justify-content: space-between; margin-block-end: .625rem; flex-wrap: wrap; gap: .5rem; }
-.wcn-cal-month { font-size: 1rem; font-weight: 700; color: var(--bs-heading-color); text-transform: capitalize; }
-.wcn-cal-legend { font-size: .75rem; color: var(--bs-secondary-color); display: inline-flex; align-items: center; gap: .375rem; }
-.wcn-cal-lg { inline-size: .625rem; block-size: .625rem; border-radius: 50%; display: inline-block; margin-inline-end: .125rem; }
-.wcn-cal-due, .wcn-cal-item.wcn-cal-due .wcn-cal-dot { background: var(--bs-danger); }
-.wcn-cal-plan, .wcn-cal-item.wcn-cal-plan .wcn-cal-dot { background: var(--bs-primary); }
-.wcn-cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; margin-block-end: 1px; }
-.wcn-cal-weekdays span { font-size: .6875rem; font-weight: 600; text-transform: uppercase; color: var(--bs-secondary-color); text-align: center; padding: .25rem; }
-.wcn-calendar { max-inline-size: 100%; overflow-x: auto; }
-.wcn-cal-head, .wcn-cal-weekdays, .wcn-cal-grid { min-inline-size: 42rem; }
-.wcn-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--bs-border-color); border: 1px solid var(--bs-border-color); border-radius: .375rem; overflow: hidden; }
-.wcn-cal-cell { background: var(--bs-card-bg); min-block-size: 5.5rem; padding: .25rem; display: flex; flex-direction: column; gap: .1875rem; }
-.wcn-cal-empty { background: var(--bs-body-bg); }
-.wcn-cal-today { background: color-mix(in sRGB, var(--bs-primary) 8%, var(--bs-card-bg)); }
-.wcn-cal-day { font-size: .75rem; font-weight: 600; color: var(--bs-secondary-color); }
-.wcn-cal-today .wcn-cal-day { color: var(--bs-primary); }
-.wcn-cal-item { display: flex; align-items: center; gap: .25rem; font-size: .625rem; padding: .125rem .25rem; border-radius: .25rem;
-    background: var(--bs-body-bg); cursor: pointer; overflow: hidden; }
-.wcn-cal-item:hover { outline: 1px solid var(--bs-primary); }
-.wcn-cal-dot { inline-size: .375rem; block-size: .375rem; border-radius: 50%; flex: 0 0 auto; }
-.wcn-cal-item-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Calendar view (WP-UI-CALENDAR-VIEW-01) -------------------------------------
+   The Task Center's calendar on the shared DitenCalendar (FullCalendar 6.1.15, vendored). Every colour is a theme
+   token, so the same rules read in the light and the dark theme; the legend swatches use the SAME tokens as the
+   events they explain. İşlerim = planning board with a left panel; every other tab = read-only. */
+.wcn-calview { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.wcn-calview-planning { grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr); }
+@media (max-width: 991.98px) { .wcn-calview-planning { grid-template-columns: minmax(0, 1fr); } }
+.wcn-calview-main { padding: 1rem; min-inline-size: 0; }
+.wcn-calview-host { min-inline-size: 0; }
+.wcn-calview-note { display: flex; align-items: center; gap: .375rem; margin-block: 0 .75rem; font-size: .8125rem;
+    color: var(--bs-danger); }
+.wcn-calview-legend { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin-block-end: .75rem; font-size: .75rem;
+    color: var(--bs-secondary-color); }
+.wcn-calview-lg { display: inline-flex; align-items: center; gap: .375rem; }
+.wcn-calview-swatch { inline-size: .875rem; block-size: .625rem; border-radius: .125rem; display: inline-block;
+    border: 1px solid transparent; }
+.wcn-calview-swatch-task { background: color-mix(in sRGB, var(--bs-primary) 16%, var(--bs-card-bg)); border-color: var(--bs-primary); }
+.wcn-calview-swatch-task-block { background: var(--bs-primary); border-color: var(--bs-primary); }
+.wcn-calview-swatch-meeting-accepted { background: var(--bs-info); border-color: var(--bs-info); }
+.wcn-calview-swatch-meeting-pending { background: transparent; border: 1px dashed var(--bs-info); }
+.wcn-calview-swatch-conflict { background: var(--bs-card-bg); border: 2px solid var(--bs-danger); }
+.wcn-calview-swatch-offhours { background: color-mix(in sRGB, var(--bs-secondary-color) 18%, var(--bs-card-bg)); }
+.wcn-calview-swatch-holiday { background: color-mix(in sRGB, var(--bs-warning) 22%, var(--bs-card-bg)); }
+.wcn-calview-swatch-due { background: var(--bs-danger); }
+.wcn-calview-swatch-plan { background: var(--bs-primary); }
+
+/* The left panel: three tabs with the feed's counts, splitCard cards below. */
+.wcn-calpanel { padding: .75rem; display: flex; flex-direction: column; gap: .5rem; min-inline-size: 0; }
+.wcn-calpanel-tabs { display: flex; gap: .25rem; padding: .125rem; border-radius: .375rem; background: var(--bs-body-bg); }
+.wcn-calpanel-tab { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; gap: .375rem;
+    padding: .375rem .25rem; font-size: .75rem; font-weight: 600; color: var(--bs-secondary-color); background: none;
+    border: 0; border-radius: .25rem; }
+.wcn-calpanel-tab.active { color: var(--bs-primary); background: color-mix(in sRGB, var(--bs-primary) 12%, var(--bs-card-bg)); }
+.wcn-calpanel-count { min-inline-size: 1.25rem; padding: 0 .375rem; border-radius: 1rem; font-size: .6875rem;
+    background: var(--bs-body-bg); color: var(--bs-body-color); }
+.wcn-calpanel-hint, .wcn-calpanel-empty { margin: 0; font-size: .75rem; color: var(--bs-secondary-color); }
+.wcn-calpanel-list { display: flex; flex-direction: column; gap: .5rem; overflow-y: auto; max-block-size: 70vh; }
+.wcn-calpanel [data-wcn-plan-drag] { cursor: grab; }
+.wcn-calcard-extras { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; margin-block-start: .375rem; }
+.wcn-calcard-btn { display: inline-flex; align-items: center; gap: .25rem; }
+
+/* Events. FullCalendar draws them; these classes are set by the host. */
+.wcn-calview .fc { font-size: .8125rem; }
+.wcn-calview .fc .dc-task { background: color-mix(in sRGB, var(--bs-primary) 16%, var(--bs-card-bg));
+    border-color: var(--bs-primary); color: var(--bs-body-color); }
+.wcn-calview .fc .dc-task-block { background: var(--bs-primary); color: var(--bs-white); }
+.wcn-calview .fc .dc-meeting-accepted { background: var(--bs-info); border-color: var(--bs-info); color: var(--bs-white); }
+.wcn-calview .fc .dc-meeting-pending { background: color-mix(in sRGB, var(--bs-info) 10%, var(--bs-card-bg));
+    border: 1px dashed var(--bs-info); color: var(--bs-body-color); }
+.wcn-calview .fc .dc-conflict { border: 2px solid var(--bs-danger); }
+.wcn-calview .fc .dc-due { background: var(--bs-danger); border-color: var(--bs-danger); color: var(--bs-white); }
+.wcn-calview .fc .dc-plan { background: var(--bs-primary); border-color: var(--bs-primary); color: var(--bs-white); }
+.wcn-calview .fc .dc-event-body { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; overflow: hidden; }
+.wcn-calview .fc .dc-event-time { font-weight: 600; }
+.wcn-calview .fc .dc-event-title { overflow: hidden; text-overflow: ellipsis; }
+.wcn-calview .fc .dc-event-actions { display: inline-flex; flex-wrap: wrap; gap: .25rem; margin-inline-start: auto; }
+.wcn-calview .fc .dc-event-chip { font-size: .6875rem; padding: 0 .25rem; border-radius: .25rem;
+    background: color-mix(in sRGB, var(--bs-card-bg) 70%, transparent); color: var(--bs-body-color); }
+.wcn-calview .fc .dc-event-warning { color: var(--bs-warning); }
+.wcn-calview .fc .dc-warned { box-shadow: inset 0 0 0 2px var(--bs-warning); }
+.wcn-calview .fc .dc-event-plan { padding: 0 .25rem; line-height: 1.2; color: inherit; background: transparent; border: 0; }
+
+/* Non-working time: FullCalendar's own non-business shading, weekends and holidays by day, the holiday's name. */
+.wcn-calview .fc .fc-non-business { background: color-mix(in sRGB, var(--bs-secondary-color) 18%, transparent); }
+.wcn-calview .fc .dc-day-weekend { background: color-mix(in sRGB, var(--bs-secondary-color) 10%, transparent); }
+.wcn-calview .fc .dc-day-holiday { background: color-mix(in sRGB, var(--bs-warning) 14%, transparent); }
+.wcn-calview .fc .dc-holiday-band { background: color-mix(in sRGB, var(--bs-warning) 22%, transparent); opacity: 1; }
+.wcn-calview .fc .dc-holiday-band .dc-band-title { display: block; padding: .125rem .25rem; color: var(--bs-body-color);
+    font-size: .6875rem; font-weight: 600; }
+
+/* The plan dialog's time and length fields (a form dialog, dressed by dialogLook). */
+.wcn-plan-form { display: flex; flex-direction: column; gap: .375rem; text-align: start; }
+.wcn-plan-form-hint { margin: .25rem 0 0; font-size: .75rem; color: var(--bs-secondary-color); }
 /* Toolbar ------------------------------------------------------------------ */
 .wcn-toolbar {
     display: flex; flex-wrap: wrap; gap: .75rem; align-items: center;

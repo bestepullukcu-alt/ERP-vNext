@@ -4985,6 +4985,9 @@ DURUM: AÇIK · SAHİP: CT (WorkCenter) · KARAR: sahip, 2026-09-11 ("liste, kar
 dört test (`wcn-dialog-seven-defects`, `wcn-dialog-rhythm`, `wcn-dialog-one-language`, `wcn-detail-three-regions`) shared dosyayı okuyor, muhafızın istisna listesi
 yalnız `shared/diten-dialog.js`; ikinci gövde eklenince muhafız kırmızı (CT sabotajı). `.wcn-dialog-select` CSS kaldı (delegasyon sınıf adını option olarak taşıyor).
 Kalan: #4 aylık takvim → ortak takvim bileşeni (S3b, sahip: önce tasarım konuşulacak).
+**#4 KAPANIR (WP-UI-CALENDAR-VIEW-01, 2026-09-29, CT kabulü bekliyor):** eski `renderCalendar` kaldırıldı; ortak bileşen
+`shared/diten-calendar.js` (+ `shared/diten-zoned-time.js`, `Views/Shared/_CalendarAssets.cshtml`, yerel FullCalendar 6.1.15) Görev
+Merkezi'nin bütün sekmelerinde çiziyor (İşlerim planlama, diğerleri salt okunur). Toplantılar sayfası aynı bileşeni 2c'de kullanır.
 
 **Hemen değiştir (çıkarma gerekmez):** Meetings iptal modalı → `showConfirm` (textarea, zorunlu) · Meetings tarih-saat → `DitenDateField.enhance({enableTime:true})`.
 **Önce çıkar, sonra kullan (öncelik sırası):** 1 diyalog görünüm adaptörü (`app.js:7727-7787`) → S5/S6 gerekçe diyalogları + Meetings düzenleyen-değiştir ·

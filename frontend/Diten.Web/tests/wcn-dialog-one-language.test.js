@@ -121,7 +121,12 @@ describe("eight dialogs, four moved and four dressed", () => {
      * Plan date, meeting time, logged minutes, module choice. Each asks for ONE value, so each is a
      * confirmation, so each belongs to the component that owns what a confirmation looks like.
      */
-    ["const openDatePicker", "const openMeetingScheduler", "const openLogTime", "const openCreateInSource"]
+    /*
+     * ⚠ THREE NOW (WP-UI-CALENDAR-VIEW-01). The PLAN dialog stopped asking for one value: it asks for a day, a
+     * start time and a length (a day plan or a time block), so it is no longer a confirmation and moved to the
+     * dressed-form group below — asserted there, not dropped.
+     */
+    ["const openMeetingScheduler", "const openLogTime", "const openCreateInSource"]
       .forEach((name) => {
         const fn = APP.slice(APP.indexOf(name), APP.indexOf(name) + 2600);
         expect(fn.indexOf(name), `${name} vanished`).toBe(0);
@@ -165,11 +170,16 @@ describe("eight dialogs, four moved and four dressed", () => {
      * category as the other two survivors — a shape the shared wrapper cannot express — and it is DRESSED with
      * the declared package the same way, not given an appearance of its own.
      */
-    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(3);
-    expect(dressed, "a raw dialog is drawing itself again").toHaveLength(3);
+    /*
+     * ⚠ FOUR (WP-UI-CALENDAR-VIEW-01). The PLAN dialog joins the same category: it now asks for a day, a start
+     * time and a length (a day plan or a time block), and the shared wrapper carries one value (BL-146). It is
+     * dressed with the declared package like the other three — not a new kind of dialog.
+     */
+    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(4);
+    expect(dressed, "a raw dialog is drawing itself again").toHaveLength(4);
     // Each raw call is an `Object.assign(...)`, which is the only shape that can carry the package.
     expect((stripped.match(/Swal\.fire\(Object\.assign\(/g) || []),
-      "a raw dialog opened without the appearance").toHaveLength(3);
+      "a raw dialog opened without the appearance").toHaveLength(4);
   });
 
   it("reads the package instead of copying it", () => {
@@ -304,8 +314,10 @@ describe("a field gets a glyph only when the glyph says something", () => {
      */
     // MOD-0357 S4 — review meeting became a two-step flow (type, then date/time); both steps read the SAME
     // dictionary, which is why this grew from 3 to 4 rather than a dialog starting to name its own glyph.
+    // WP-UI-CALENDAR-VIEW-01 — 4 → 3: the PLAN dialog left the `icon:` seam for the raw form builder
+    // (`dialogIcon('info', inboxActionIcon(action))`), still the same dictionary value.
     expect((APP.match(/icon: inboxActionIcon\(action\)/g) || []).length,
-      "an action dialog started choosing its own picture").toBe(4);
+      "an action dialog started choosing its own picture").toBe(3);
     expect(APP, "the snooze moon is not action-driven and stays").toContain("icon: 'bx-moon'");
   });
 });
