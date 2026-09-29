@@ -81,4 +81,66 @@
   <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili kayıtlar silinsin mi?</value></data>
   <data name="QuickViewTitle" xml:space="preserve"><value>İddia önizleme</value></data>
   <data name="ApprovedBodyFrozenNote" xml:space="preserve"><value>Bu iddia onaylı: yönetişimli gövde dondurulmuş. Metni değiştirmek için yeni bir sürüm oluşturun.</value></data>
+  <data name="ListDescription" xml:space="preserve"><value>Şirket genelinde tek iddia kütüphanesi: çekirdek iddialar, ülke sürümleri ve dayandıkları kanıtlar.</value></data>
+  <data name="ApprovalViaWorkflowNote" xml:space="preserve"><value>İddialar yalnız onay akışıyla onaylanır (Onaya gönder).</value></data>
+  <data name="BreadcrumbCrm" xml:space="preserve"><value>CRM</value></data>
+  <data name="NewCoreClaim" xml:space="preserve"><value>Yeni çekirdek iddia</value></data>
+  <data name="NewLocalClaim" xml:space="preserve"><value>Yeni yerel iddia</value></data>
+  <data name="ReadOnlyNote" xml:space="preserve"><value>Salt okuma yetkisi: kayıtları görüntüleyebilir ve dışa aktarabilirsiniz.</value></data>
+  <data name="ColClaim" xml:space="preserve"><value>İddia</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="ColKind" xml:space="preserve"><value>Tür</value></data>
+  <data name="ColAudience" xml:space="preserve"><value>Kitle</value></data>
+  <data name="ColCountryStatus" xml:space="preserve"><value>Ülke durumu</value></data>
+  <data name="ColEvidence" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="ColApproved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>Kullanım</value></data>
+  <data name="KindCore" xml:space="preserve"><value>Çekirdek</value></data>
+  <data name="KindLocal" xml:space="preserve"><value>Yerel</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>eksik</value></data>
+  <data name="ApprovedOfCountries" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="CoreVersionLine" xml:space="preserve"><value>Çekirdek v{0}</value></data>
+  <data name="LocalLine" xml:space="preserve"><value>Yerel · {0}</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>Gözden geçirilmeli</value></data>
+  <data name="State_expiring" xml:space="preserve"><value>Süresi doluyor</value></data>
+  <data name="State_closed" xml:space="preserve"><value>Açılmadı</value></data>
+  <data name="State_not-opened" xml:space="preserve"><value>Açılmadı</value></data>
+  <data name="State_not-applicable" xml:space="preserve"><value>Kapsam dışı</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="State_archived" xml:space="preserve"><value>Arşiv</value></data>
+  <data name="ClosedTooltip" xml:space="preserve"><value>Açılmadı · {0}</value></data>
+  <data name="NotOpenedTooltip" xml:space="preserve"><value>Açılmadı · henüz karar yok</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>Ülke</value></data>
+  <data name="FilterLanguage" xml:space="preserve"><value>Dil</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="FilterAudience" xml:space="preserve"><value>Kitle</value></data>
+  <data name="FilterKind" xml:space="preserve"><value>Çekirdek / yerel</value></data>
+  <data name="FlagEvidenceMissing" xml:space="preserve"><value>Kanıtı eksik</value></data>
+  <data name="FlagReviewRequired" xml:space="preserve"><value>Gözden geçirilmeli</value></data>
+  <data name="FlagExpiring" xml:space="preserve"><value>Süresi doluyor</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Yeni sürüm</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Bu iddiadan yeni bir taslak sürüm açılacak.</value></data>
+  <data name="RecordNewVersion" xml:space="preserve"><value>Yeni sürüm açıldı.</value></data>
+  <data name="QvCoreText" xml:space="preserve"><value>Çekirdek metin</value></data>
+  <data name="QvLocalText" xml:space="preserve"><value>Yerel metin</value></data>
+  <data name="QvResponsibleTeam" xml:space="preserve"><value>Sorumlu ekip</value></data>
+  <data name="QvCountryVersions" xml:space="preserve"><value>Ülke sürümleri</value></data>
+  <data name="QvNoCountryVersions" xml:space="preserve"><value>Henüz ülke sürümü yok.</value></data>
+  <data name="QvLanguages" xml:space="preserve"><value>Diller</value></data>
+  <data name="QvAudienceCount" xml:space="preserve"><value>Kitle profilleri</value></data>
+  <data name="QvOpenDetails" xml:space="preserve"><value>Ayrıntıyı aç</value></data>
+  <data name="QvClose" xml:space="preserve"><value>Kapat</value></data>
+  <data name="QvLoadFailed" xml:space="preserve"><value>Ülke sürümleri yüklenemedi.</value></data>
+  <data name="EmptyLibraryTitle" xml:space="preserve"><value>Kütüphanede henüz iddia yok</value></data>
+  <data name="EmptyLibraryText" xml:space="preserve"><value>İddialar şirket genelinde tek kütüphanede tutulur. Önce global çekirdek iddiayı oluşturun; ülke sürümleri onun üzerinden açılır.</value></data>
+  <data name="NoMatchTitle" xml:space="preserve"><value>Filtrelerle eşleşen iddia yok</value></data>
+  <data name="NoMatchText" xml:space="preserve"><value>Arama metnini ya da filtreleri değiştirin.</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>Filtreleri temizle</value></data>
+  <data name="CounterUnavailable" xml:space="preserve"><value>Şu anda alınamıyor</value></data>
+  <data name="ShowInactive" xml:space="preserve"><value>Arşivlenmiş ve eskimiş sürümleri de göster</value></data>
+  <data name="LiveOnly" xml:space="preserve"><value>Yalnız güncel kayıtlar</value></data>
 </root>

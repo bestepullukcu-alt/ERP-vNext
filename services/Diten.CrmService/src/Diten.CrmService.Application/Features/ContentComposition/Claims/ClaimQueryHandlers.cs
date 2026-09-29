@@ -14,12 +14,25 @@ public sealed class ListClaimsHandler : IRequestHandler<ListClaimsQuery, Respons
     private readonly IClaimCountryVersionRepository? _countryVersions;
     private readonly ClaimReviewReconciler? _reconciler;
     private readonly ClaimEvidenceReviewer? _evidence;
+    private readonly IClaimCoverageSettings? _settings;
+    private readonly IKnowledgeContentRepository? _contents;
+    private readonly IContentSetRepository? _sets;
+    private readonly IKnowledgePathRepository? _paths;
+    private readonly IContentEngagementJourneyRepository? _journeys;
 
     public ListClaimsHandler(
         ITenantContext tenant, IClaimRepository claims, IClaimCountryVersionRepository? countryVersions = null,
-        ClaimReviewReconciler? reconciler = null, ClaimEvidenceReviewer? evidence = null)
+        ClaimReviewReconciler? reconciler = null, ClaimEvidenceReviewer? evidence = null,
+        IClaimCoverageSettings? settings = null, IKnowledgeContentRepository? contents = null,
+        IContentSetRepository? sets = null, IKnowledgePathRepository? paths = null,
+        IContentEngagementJourneyRepository? journeys = null)
     {
         _evidence = evidence;
+        _settings = settings;
+        _contents = contents;
+        _sets = sets;
+        _paths = paths;
+        _journeys = journeys;
         _tenant = tenant;
         _claims = claims;
         _countryVersions = countryVersions;
@@ -50,7 +63,8 @@ public sealed class ListClaimsHandler : IRequestHandler<ListClaimsQuery, Respons
 
         // WP-CL-BE-5 - read-time evidence check at the same point (approved + changed document -> review-required).
         var (evidenceChanged, evidence) =
-            await ClaimReadEvidence.RunAsync(_evidence, tenantId, allClaims, allVersions, cancellationToken);
+            await ClaimReadEvidence.RunAsync(_evidence, tenantId, allClaims, allVersions, cancellationToken,
+                allClaims: request.IncludeCounts);
         if (evidenceChanged)
         {
             allClaims = await _claims.ListAsync(tenantId, cancellationToken);
@@ -95,7 +109,45 @@ public sealed class ListClaimsHandler : IRequestHandler<ListClaimsQuery, Respons
                     versionsByCode.TryGetValue(c.ClaimCode, out var list) ? list : new List<ClaimCountryVersion>()))
                 with { EvidenceExpiring = evidence?.IsExpiring(c) ?? false })
             .ToList();
+
+        if (request.IncludeCounts)
+        {
+            items = await WithCountsAsync(tenantId, items, allClaims, allVersions, evidence, cancellationToken);
+        }
+
         return Response<ClaimListDto>.Success(new ClaimListDto(items, items.Count));
+    }
+
+    /// <summary>WP-CL-FE-1 — the page's counters, each source read once for the whole page (never per row). A counter
+    /// that cannot be computed stays null; the list never fails because of it.</summary>
+    private async Task<List<ClaimDto>> WithCountsAsync(Guid tenantId, List<ClaimDto> items,
+        IReadOnlyList<Claim> allClaims, IReadOnlyList<ClaimCountryVersion> allVersions, ClaimEvidenceSnapshot? evidence,
+        CancellationToken ct)
+    {
+        var approved = ClaimListCounts.ApprovedCountries(allVersions);
+        var expiring = ClaimListCounts.ExpiringCountries(allVersions, DateTimeOffset.UtcNow,
+            _settings?.ExpiringWindowDays ?? ClaimCoverageDefaults.ExpiringWindowDays);
+
+        IReadOnlyDictionary<string, int>? usage = null;
+        if (_contents is not null && _sets is not null && _paths is not null && _journeys is not null)
+        {
+            try
+            {
+                usage = await ClaimListCounts.UsageAsync(tenantId, allClaims, _contents, _sets, _paths, _journeys, ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                usage = null;
+            }
+        }
+
+        return items.Select(i => i with
+        {
+            EvidenceCount = evidence?.Own(ClaimEvidenceRules.ClaimObjectType, i.ClaimId).Count(l => l.IsActive),
+            ApprovedCountryCount = approved.TryGetValue(i.ClaimCode, out var n) ? n : 0,
+            UsageCount = usage is null ? null : usage.TryGetValue(i.ClaimCode, out var u) ? u : 0,
+            ExpiringCountryCodes = expiring.TryGetValue(i.ClaimCode, out var e) ? e : Array.Empty<string>()
+        }).ToList();
     }
 }
 

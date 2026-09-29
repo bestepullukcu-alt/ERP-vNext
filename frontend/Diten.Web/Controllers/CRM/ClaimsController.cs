@@ -21,11 +21,10 @@ namespace Diten.Web.Controllers.CRM;
 /// </summary>
 [Authorize]
 [Route("CRM/Claims")]
-public sealed class ClaimsController : Controller
+public sealed partial class ClaimsController : Controller
 {
     private const string ReadPermission = "crm.claim.read";
     private const string ManagePermission = "crm.claim.manage";
-    private const string ApprovePermission = "crm.claim.approve";
     private const string ViewRoot = "~/Views/CRM/Claims";
 
     // The claim HTTP surface (SCMM-12-API) + the component picker source (MOD-0162 FU02), both through the gateway.
@@ -57,7 +56,13 @@ public sealed class ClaimsController : Controller
     // ---------------- Pages (Compact list + route-based Create / Edit) ----------------
 
     [HttpGet("")]
-    public IActionResult Index() => RequirePage(ReadPermission) ?? View($"{ViewRoot}/Index.cshtml");
+    public IActionResult Index()
+    {
+        // UAS-001: without the read permission no page skeleton is drawn and nothing redirects — a plain 403.
+        if (RequirePage(ReadPermission) is { } denied) return denied;
+        ViewData["CanManageClaims"] = HasAnyPermission(ManagePermission);
+        return View($"{ViewRoot}/Index.cshtml");
+    }
 
     [HttpGet("Create")]
     public async Task<IActionResult> Create(CancellationToken ct)
@@ -138,18 +143,11 @@ public sealed class ClaimsController : Controller
 
     // ---------------- Same-origin browser proxy (claim + component-picker allowlist only) ----------------
 
-    // Claim list — the Index DataTable source. Forwards the query string (status / effectiveAt / search / includeArchived).
+    // WP-CL-FE-1 — the old list door now serves the v2 list (same CRM read; kept so older bookmarks / scripts still
+    // work). The old direct approve proxy is GONE: claims are approved only through their MOD-0023 workflow round
+    // (submit-review). Archive moved to the v2 layer (api/v2/claims/{id}/archive).
     [HttpGet("api/claims")]
-    public Task<IActionResult> ClaimList(CancellationToken ct) =>
-        ProxyGetAsync($"{ClaimsBase}{Request.QueryString}", ReadPermission, ct);
-
-    [HttpPost("api/claims/{claimId:guid}/approve")]
-    public Task<IActionResult> ApproveClaim(Guid claimId, CancellationToken ct) =>
-        ProxyJsonAsync(HttpMethod.Post, $"{ClaimsBase}/{claimId}/approve", null, ApprovePermission, ct);
-
-    [HttpPost("api/claims/{claimId:guid}/archive")]
-    public Task<IActionResult> ArchiveClaim(Guid claimId, CancellationToken ct) =>
-        ProxyJsonAsync(HttpMethod.Post, $"{ClaimsBase}/{claimId}/archive", null, ManagePermission, ct);
+    public Task<IActionResult> ClaimList(CancellationToken ct) => V2List(ct);
 
     // Component picker source — read-only MOD-0162 KnowledgeContent list. Only the list read is allowlisted (no
     // knowledge write path is exposed here); the picker maps rows to by-id ComponentRefs.
@@ -287,6 +285,10 @@ public sealed class ClaimsController : Controller
     {
         if (response is null)
             return new ObjectResult(new { errors = new[] { "Gateway unavailable." } }) { StatusCode = 502 };
+        // A bodiless status (204 / 304) must stay bodiless: writing even an empty ContentResult with a content type
+        // onto a 204 is what turned proxied 204s into 500s elsewhere (memory proxy-forward-204-content-length-crash).
+        if (IsBodilessStatus((int)response.StatusCode))
+            return new StatusCodeResult((int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync(ct);
         return new ContentResult
         {
@@ -295,6 +297,8 @@ public sealed class ClaimsController : Controller
             Content = content
         };
     }
+
+    internal static bool IsBodilessStatus(int status) => status is 204 or 205 or 304 || status < 200;
 
     private async Task<List<string>> ExtractErrorsAsync(HttpResponseMessage? response, CancellationToken ct)
     {

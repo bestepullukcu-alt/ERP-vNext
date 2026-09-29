@@ -28,9 +28,10 @@ public sealed class ClaimsController : CustomBaseController
         [FromQuery] DateTimeOffset? effectiveAt,
         [FromQuery] string? search,
         [FromQuery] bool includeArchived = true,
+        [FromQuery] bool includeCounts = false,
         CancellationToken cancellationToken = default)
         => CreateActionResultInstance(await _mediator.Send(
-            new ListClaimsQuery(status, effectiveAt, search, includeArchived), cancellationToken));
+            new ListClaimsQuery(status, effectiveAt, search, includeArchived, includeCounts), cancellationToken));
 
     [HttpGet("api/crm/content-composition/claims/{claimId:guid}")]
     [HasPermission(Perms.Read)]

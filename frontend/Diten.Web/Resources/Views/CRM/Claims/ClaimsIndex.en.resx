@@ -81,4 +81,66 @@
   <data name="BulkDeleteConfirm" xml:space="preserve"><value>Delete the selected records?</value></data>
   <data name="QuickViewTitle" xml:space="preserve"><value>Claim preview</value></data>
   <data name="ApprovedBodyFrozenNote" xml:space="preserve"><value>This claim is approved: the governed body is frozen. Create a new version to change the wording.</value></data>
+  <data name="ListDescription" xml:space="preserve"><value>One company-wide claim library: core claims, their country versions and the evidence behind them.</value></data>
+  <data name="ApprovalViaWorkflowNote" xml:space="preserve"><value>Claims are approved only through their approval workflow (Send for review).</value></data>
+  <data name="BreadcrumbCrm" xml:space="preserve"><value>CRM</value></data>
+  <data name="NewCoreClaim" xml:space="preserve"><value>New core claim</value></data>
+  <data name="NewLocalClaim" xml:space="preserve"><value>New local claim</value></data>
+  <data name="ReadOnlyNote" xml:space="preserve"><value>Read-only access: you can view and export records.</value></data>
+  <data name="ColClaim" xml:space="preserve"><value>Claim</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="ColKind" xml:space="preserve"><value>Type</value></data>
+  <data name="ColAudience" xml:space="preserve"><value>Audience</value></data>
+  <data name="ColCountryStatus" xml:space="preserve"><value>Country status</value></data>
+  <data name="ColEvidence" xml:space="preserve"><value>Evidence</value></data>
+  <data name="ColApproved" xml:space="preserve"><value>Approved</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>Usage</value></data>
+  <data name="KindCore" xml:space="preserve"><value>Core</value></data>
+  <data name="KindLocal" xml:space="preserve"><value>Local</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>missing</value></data>
+  <data name="ApprovedOfCountries" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="CoreVersionLine" xml:space="preserve"><value>Core v{0}</value></data>
+  <data name="LocalLine" xml:space="preserve"><value>Local · {0}</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>In review</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>Needs review</value></data>
+  <data name="State_expiring" xml:space="preserve"><value>Expiring</value></data>
+  <data name="State_closed" xml:space="preserve"><value>Not opened</value></data>
+  <data name="State_not-opened" xml:space="preserve"><value>Not opened</value></data>
+  <data name="State_not-applicable" xml:space="preserve"><value>Out of scope</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="State_archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="ClosedTooltip" xml:space="preserve"><value>Not opened · {0}</value></data>
+  <data name="NotOpenedTooltip" xml:space="preserve"><value>Not opened · no decision yet</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>Country</value></data>
+  <data name="FilterLanguage" xml:space="preserve"><value>Language</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="FilterAudience" xml:space="preserve"><value>Audience</value></data>
+  <data name="FilterKind" xml:space="preserve"><value>Core / local</value></data>
+  <data name="FlagEvidenceMissing" xml:space="preserve"><value>Evidence missing</value></data>
+  <data name="FlagReviewRequired" xml:space="preserve"><value>Needs review</value></data>
+  <data name="FlagExpiring" xml:space="preserve"><value>Expiring</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>New version</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>A new draft version will be opened from this claim.</value></data>
+  <data name="RecordNewVersion" xml:space="preserve"><value>New version opened.</value></data>
+  <data name="QvCoreText" xml:space="preserve"><value>Core text</value></data>
+  <data name="QvLocalText" xml:space="preserve"><value>Local text</value></data>
+  <data name="QvResponsibleTeam" xml:space="preserve"><value>Responsible team</value></data>
+  <data name="QvCountryVersions" xml:space="preserve"><value>Country versions</value></data>
+  <data name="QvNoCountryVersions" xml:space="preserve"><value>No country versions yet.</value></data>
+  <data name="QvLanguages" xml:space="preserve"><value>Languages</value></data>
+  <data name="QvAudienceCount" xml:space="preserve"><value>Audience profiles</value></data>
+  <data name="QvOpenDetails" xml:space="preserve"><value>Open details</value></data>
+  <data name="QvClose" xml:space="preserve"><value>Close</value></data>
+  <data name="QvLoadFailed" xml:space="preserve"><value>Country versions could not be loaded.</value></data>
+  <data name="EmptyLibraryTitle" xml:space="preserve"><value>No claims in the library yet</value></data>
+  <data name="EmptyLibraryText" xml:space="preserve"><value>Claims are kept in one company-wide library. Create the global core claim first; country versions are opened from it.</value></data>
+  <data name="NoMatchTitle" xml:space="preserve"><value>No claims match the filters</value></data>
+  <data name="NoMatchText" xml:space="preserve"><value>Change the search text or the filters.</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>Clear filters</value></data>
+  <data name="CounterUnavailable" xml:space="preserve"><value>Not available right now</value></data>
+  <data name="ShowInactive" xml:space="preserve"><value>Include archived and superseded</value></data>
+  <data name="LiveOnly" xml:space="preserve"><value>Current records only</value></data>
 </root>

@@ -448,6 +448,89 @@ public sealed class KnowledgeContentClaimLinkTests
         Assert.Equal(400, missing.StatusCode);
     }
 
+    // ============================================================ WP-CL-FE-1 — list counters (includeCounts)
+
+    private static ListClaimsHandler ListWithCounts(Fixture fx, FakeClaimEvidenceClient evidence) =>
+        new(Tenant(TenantA), fx.Claims, fx.Versions, null, new ClaimEvidenceReviewer(evidence, fx.Claims, fx.Versions),
+            null, fx.Contents, fx.Sets, fx.Paths, fx.Journeys);
+
+    [Fact]
+    public async Task List_counts_read_each_source_once_per_page()
+    {
+        var (fx, a) = await SeedUsageAsync();
+        var a2 = fx.Claims.Items.Single(c => c.ClaimCode == "CL-A" && c.Id != a.Id);
+        var b = fx.SeedClaim("CL-B", ClaimStatuses.Draft);
+        var evidence = new FakeClaimEvidenceClient();
+        evidence.Seed(ClaimEvidenceRules.For(a));
+        evidence.Seed(ClaimEvidenceRules.For(a));
+        evidence.Seed(ClaimEvidenceRules.For(a), status: "removed");
+        var de = fx.Versions.Items.Single(v => v.CountryCode == "DE");
+        de.ValidTo = DateTimeOffset.UtcNow.AddDays(10);
+        var before = (fx.Contents.ListCalls, fx.Sets.ListCalls, fx.Paths.ListCalls, fx.Journeys.ListCalls);
+
+        var r = await ListWithCounts(fx, evidence).Handle(new ListClaimsQuery(IncludeCounts: true), default);
+
+        Assert.Equal(200, r.StatusCode);
+        var rows = r.Data!.Items.ToDictionary(i => i.ClaimId);
+        Assert.Equal(2, rows[a.Id].EvidenceCount);
+        Assert.Equal(0, rows[a2.Id].EvidenceCount);
+        Assert.Equal(5, rows[a.Id].UsageCount); // KC-TR, KC-DE, KC-GL + SET-1 + J-1 (archived ones excluded)
+        Assert.Equal(5, rows[a2.Id].UsageCount); // usage is per claim code
+        Assert.Equal(0, rows[b.Id].UsageCount);
+        Assert.Equal(2, rows[a.Id].ApprovedCountryCount); // TR review-required + DE approved
+        Assert.Equal(0, rows[b.Id].ApprovedCountryCount);
+        Assert.Equal(new[] { "DE" }, rows[a.Id].ExpiringCountryCodes);
+        Assert.Equal(1, evidence.QueryCalls); // ONE bulk evidence read for the whole page
+        Assert.Equal((before.Item1 + 1, before.Item2 + 1, before.Item3 + 1, before.Item4 + 1),
+            (fx.Contents.ListCalls, fx.Sets.ListCalls, fx.Paths.ListCalls, fx.Journeys.ListCalls));
+    }
+
+    [Fact]
+    public async Task List_without_include_counts_leaves_counters_null_and_reads_no_usage_source()
+    {
+        var (fx, _) = await SeedUsageAsync();
+        var before = fx.Contents.ListCalls;
+
+        var r = await ListWithCounts(fx, new FakeClaimEvidenceClient()).Handle(new ListClaimsQuery(), default);
+
+        Assert.All(r.Data!.Items, i =>
+        {
+            Assert.Null(i.EvidenceCount);
+            Assert.Null(i.UsageCount);
+            Assert.Null(i.ApprovedCountryCount);
+        });
+        Assert.Equal(before, fx.Contents.ListCalls);
+    }
+
+    [Fact]
+    public async Task List_counts_evidence_is_null_when_the_evidence_service_is_down_and_the_list_still_works()
+    {
+        var (fx, a) = await SeedUsageAsync();
+        var evidence = new FakeClaimEvidenceClient { Unavailable = true };
+
+        var r = await ListWithCounts(fx, evidence).Handle(new ListClaimsQuery(IncludeCounts: true), default);
+
+        Assert.Equal(200, r.StatusCode);
+        var row = r.Data!.Items.Single(i => i.ClaimId == a.Id);
+        Assert.Null(row.EvidenceCount);
+        Assert.Equal(5, row.UsageCount);
+    }
+
+    [Fact]
+    public async Task List_counts_usage_is_null_when_a_usage_source_is_not_available()
+    {
+        var (fx, a) = await SeedUsageAsync();
+        var handler = new ListClaimsHandler(Tenant(TenantA), fx.Claims, fx.Versions, null, null, null, fx.Contents,
+            fx.Sets, null, fx.Journeys);
+
+        var row = (await handler.Handle(new ListClaimsQuery(IncludeCounts: true), default)).Data!.Items
+            .Single(i => i.ClaimId == a.Id);
+
+        Assert.Null(row.UsageCount);
+        Assert.Null(row.EvidenceCount);
+        Assert.Equal(2, row.ApprovedCountryCount);
+    }
+
     [Theory]
     [InlineData(new[] { "tr", "DE" }, new[] { "TR", "DE" })]
     [InlineData(new[] { "eu" }, new[] { "GLOBAL" })]
@@ -566,8 +649,10 @@ public sealed class KnowledgeContentClaimLinkTests
         public Task<KnowledgeContent?> GetByIdAsync(Guid t, Guid id, CancellationToken ct)
             => Task.FromResult(Items.FirstOrDefault(c => c.TenantId == t && c.Id == id));
 
+        public int ListCalls { get; private set; }
+
         public Task<IReadOnlyList<KnowledgeContent>> ListAsync(Guid t, CancellationToken ct)
-            => Task.FromResult((IReadOnlyList<KnowledgeContent>)Items.Where(c => c.TenantId == t).ToList());
+            { ListCalls++; return Task.FromResult((IReadOnlyList<KnowledgeContent>)Items.Where(c => c.TenantId == t).ToList()); }
 
         public Task<KnowledgeContent?> GetActiveByCodeAsync(Guid t, string code, CancellationToken ct)
             => Task.FromResult(Items.FirstOrDefault(c => c.TenantId == t && c.ContentCode == code && !c.IsArchived()));
@@ -686,8 +771,10 @@ public sealed class KnowledgeContentClaimLinkTests
 
         public Task<ContentSet?> GetByIdAsync(Guid t, Guid id, CancellationToken ct)
             => Task.FromResult(Items.FirstOrDefault(s => s.TenantId == t && s.Id == id));
+        public int ListCalls { get; private set; }
+
         public Task<IReadOnlyList<ContentSet>> ListAsync(Guid t, CancellationToken ct)
-            => Task.FromResult((IReadOnlyList<ContentSet>)Items.Where(s => s.TenantId == t).ToList());
+            { ListCalls++; return Task.FromResult((IReadOnlyList<ContentSet>)Items.Where(s => s.TenantId == t).ToList()); }
         public Task<ContentSet?> GetActiveByCodeAsync(Guid t, string code, CancellationToken ct)
             => Task.FromResult<ContentSet?>(null);
         public Task InsertAsync(ContentSet entity, CancellationToken ct) => Task.CompletedTask;
@@ -714,8 +801,10 @@ public sealed class KnowledgeContentClaimLinkTests
 
         public Task<KnowledgePath?> GetByIdAsync(Guid t, Guid id, CancellationToken ct)
             => Task.FromResult(Items.FirstOrDefault(p => p.TenantId == t && p.Id == id));
+        public int ListCalls { get; private set; }
+
         public Task<IReadOnlyList<KnowledgePath>> ListAsync(Guid t, CancellationToken ct)
-            => Task.FromResult((IReadOnlyList<KnowledgePath>)Items.Where(p => p.TenantId == t).ToList());
+            { ListCalls++; return Task.FromResult((IReadOnlyList<KnowledgePath>)Items.Where(p => p.TenantId == t).ToList()); }
         public Task<IReadOnlyList<KnowledgePath>> ListByCodeAsync(Guid t, string code, CancellationToken ct)
             => Task.FromResult((IReadOnlyList<KnowledgePath>)Items.Where(p => p.TenantId == t && p.PathCode == code).ToList());
         public Task InsertAsync(KnowledgePath entity, CancellationToken ct) => Task.CompletedTask;
@@ -728,8 +817,10 @@ public sealed class KnowledgeContentClaimLinkTests
 
         public Task<ContentEngagementJourney?> GetByIdAsync(Guid t, Guid id, CancellationToken ct)
             => Task.FromResult(Items.FirstOrDefault(j => j.TenantId == t && j.Id == id));
+        public int ListCalls { get; private set; }
+
         public Task<IReadOnlyList<ContentEngagementJourney>> ListAsync(Guid t, CancellationToken ct)
-            => Task.FromResult((IReadOnlyList<ContentEngagementJourney>)Items.Where(j => j.TenantId == t).ToList());
+            { ListCalls++; return Task.FromResult((IReadOnlyList<ContentEngagementJourney>)Items.Where(j => j.TenantId == t).ToList()); }
         public Task<IReadOnlyList<ContentEngagementJourney>> ListByCodeAsync(Guid t, string code, CancellationToken ct)
             => Task.FromResult((IReadOnlyList<ContentEngagementJourney>)Items.Where(j => j.TenantId == t && j.JourneyCode == code).ToList());
         public Task InsertAsync(ContentEngagementJourney entity, CancellationToken ct) => Task.CompletedTask;

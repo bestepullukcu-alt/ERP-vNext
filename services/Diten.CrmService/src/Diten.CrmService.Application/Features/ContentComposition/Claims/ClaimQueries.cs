@@ -9,7 +9,8 @@ public sealed record ListClaimsQuery(
     string? Status = null,
     DateTimeOffset? EffectiveAt = null,
     string? Search = null,
-    bool IncludeArchived = true) : IRequest<Response<ClaimListDto>>;
+    bool IncludeArchived = true,
+    bool IncludeCounts = false) : IRequest<Response<ClaimListDto>>;
 
 public sealed record GetClaimQuery(Guid ClaimId) : IRequest<Response<ClaimDto>>;
 

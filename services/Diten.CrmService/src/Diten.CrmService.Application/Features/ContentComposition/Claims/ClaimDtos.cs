@@ -44,7 +44,12 @@ public sealed record ClaimDto(
     Guid? SupersedesClaimId = null,
     IReadOnlyList<ClaimCountryClosureDto>? CountryClosures = null,
     IReadOnlyList<ClaimCountrySummaryDto>? CountrySummary = null,
-    bool EvidenceExpiring = false);
+    bool EvidenceExpiring = false,
+    // WP-CL-FE-1 — list counters (GET claims?includeCounts=true only; null = not requested or not computable).
+    int? EvidenceCount = null,
+    int? ApprovedCountryCount = null,
+    int? UsageCount = null,
+    IReadOnlyList<string>? ExpiringCountryCodes = null);
 
 public sealed record ClaimListDto(IReadOnlyList<ClaimDto> Items, int Total);
 

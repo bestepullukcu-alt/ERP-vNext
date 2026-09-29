@@ -244,15 +244,16 @@ public sealed class ClaimEvidenceReviewer
         _logger = logger ?? NullLogger<ClaimEvidenceReviewer>.Instance;
     }
 
-    /// <summary>One bulk read for the live (not archived, not inactive) records. Null when MOD-0031 is unavailable.</summary>
+    /// <summary>One bulk read for the live (not archived, not inactive) records — or, with <paramref name="allClaims"/>
+    /// (the WP-CL-FE-1 list counters), every listed claim record. Null when MOD-0031 is unavailable.</summary>
     public async Task<ClaimEvidenceSnapshot?> LoadAsync(
-        IEnumerable<Claim> claims, IEnumerable<ClaimCountryVersion> versions, CancellationToken ct)
+        IEnumerable<Claim> claims, IEnumerable<ClaimCountryVersion> versions, CancellationToken ct, bool allClaims = false)
     {
         var objects = new Dictionary<string, ClaimEvidenceObjectRef>();
         void Add(string type, Guid id) => objects.TryAdd(ClaimEvidenceRules.Key(type, id.ToString("D")),
             ClaimEvidenceRules.ReadKey(type, id));
 
-        foreach (var c in claims.Where(c => !c.IsArchived() && c.Status != ClaimStatuses.Inactive))
+        foreach (var c in claims.Where(c => allClaims || (!c.IsArchived() && c.Status != ClaimStatuses.Inactive)))
         {
             Add(ClaimEvidenceRules.ClaimObjectType, c.Id);
         }
@@ -335,7 +336,7 @@ internal static class ClaimReadEvidence
 {
     public static async Task<(bool Changed, ClaimEvidenceSnapshot? Snapshot)> RunAsync(ClaimEvidenceReviewer? reviewer,
         Guid tenantId, IReadOnlyCollection<Claim> claims, IReadOnlyCollection<ClaimCountryVersion> versions,
-        CancellationToken ct)
+        CancellationToken ct, bool allClaims = false)
     {
         if (reviewer is null)
         {
@@ -344,7 +345,7 @@ internal static class ClaimReadEvidence
 
         try
         {
-            var snapshot = await reviewer.LoadAsync(claims, versions, ct);
+            var snapshot = await reviewer.LoadAsync(claims, versions, ct, allClaims);
             if (snapshot is null)
             {
                 return (false, null);

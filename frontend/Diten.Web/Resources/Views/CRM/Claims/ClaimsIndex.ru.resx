@@ -81,4 +81,66 @@
   <data name="BulkDeleteConfirm" xml:space="preserve"><value>Удалить выбранные записи?</value></data>
   <data name="QuickViewTitle" xml:space="preserve"><value>Предпросмотр заявления</value></data>
   <data name="ApprovedBodyFrozenNote" xml:space="preserve"><value>Это заявление утверждено: регулируемое содержание заморожено. Создайте новую версию, чтобы изменить формулировку.</value></data>
+  <data name="ListDescription" xml:space="preserve"><value>Единая библиотека заявлений компании: базовые заявления, их страновые версии и подтверждающие доказательства.</value></data>
+  <data name="ApprovalViaWorkflowNote" xml:space="preserve"><value>Заявления утверждаются только через процесс согласования («Отправить на согласование»).</value></data>
+  <data name="BreadcrumbCrm" xml:space="preserve"><value>CRM</value></data>
+  <data name="NewCoreClaim" xml:space="preserve"><value>Новое базовое заявление</value></data>
+  <data name="NewLocalClaim" xml:space="preserve"><value>Новое локальное заявление</value></data>
+  <data name="ReadOnlyNote" xml:space="preserve"><value>Доступ только для чтения: вы можете просматривать и экспортировать записи.</value></data>
+  <data name="ColClaim" xml:space="preserve"><value>Заявление</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Продукт</value></data>
+  <data name="ColKind" xml:space="preserve"><value>Тип</value></data>
+  <data name="ColAudience" xml:space="preserve"><value>Аудитория</value></data>
+  <data name="ColCountryStatus" xml:space="preserve"><value>Статус по странам</value></data>
+  <data name="ColEvidence" xml:space="preserve"><value>Доказательства</value></data>
+  <data name="ColApproved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>Использование</value></data>
+  <data name="KindCore" xml:space="preserve"><value>Базовое</value></data>
+  <data name="KindLocal" xml:space="preserve"><value>Локальное</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>нет</value></data>
+  <data name="ApprovedOfCountries" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="CoreVersionLine" xml:space="preserve"><value>Базовое v{0}</value></data>
+  <data name="LocalLine" xml:space="preserve"><value>Локальное · {0}</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>На согласовании</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>Требует пересмотра</value></data>
+  <data name="State_expiring" xml:space="preserve"><value>Истекает</value></data>
+  <data name="State_closed" xml:space="preserve"><value>Не открыто</value></data>
+  <data name="State_not-opened" xml:space="preserve"><value>Не открыто</value></data>
+  <data name="State_not-applicable" xml:space="preserve"><value>Вне охвата</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="State_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="ClosedTooltip" xml:space="preserve"><value>Не открыто · {0}</value></data>
+  <data name="NotOpenedTooltip" xml:space="preserve"><value>Не открыто · решение ещё не принято</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Продукт</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>Страна</value></data>
+  <data name="FilterLanguage" xml:space="preserve"><value>Язык</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="FilterAudience" xml:space="preserve"><value>Аудитория</value></data>
+  <data name="FilterKind" xml:space="preserve"><value>Базовое / локальное</value></data>
+  <data name="FlagEvidenceMissing" xml:space="preserve"><value>Нет доказательств</value></data>
+  <data name="FlagReviewRequired" xml:space="preserve"><value>Требует пересмотра</value></data>
+  <data name="FlagExpiring" xml:space="preserve"><value>Истекает</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Новая версия</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>На основе этого заявления будет открыта новая черновая версия.</value></data>
+  <data name="RecordNewVersion" xml:space="preserve"><value>Новая версия открыта.</value></data>
+  <data name="QvCoreText" xml:space="preserve"><value>Базовый текст</value></data>
+  <data name="QvLocalText" xml:space="preserve"><value>Локальный текст</value></data>
+  <data name="QvResponsibleTeam" xml:space="preserve"><value>Ответственная команда</value></data>
+  <data name="QvCountryVersions" xml:space="preserve"><value>Страновые версии</value></data>
+  <data name="QvNoCountryVersions" xml:space="preserve"><value>Страновых версий пока нет.</value></data>
+  <data name="QvLanguages" xml:space="preserve"><value>Языки</value></data>
+  <data name="QvAudienceCount" xml:space="preserve"><value>Профили аудитории</value></data>
+  <data name="QvOpenDetails" xml:space="preserve"><value>Открыть подробности</value></data>
+  <data name="QvClose" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="QvLoadFailed" xml:space="preserve"><value>Не удалось загрузить страновые версии.</value></data>
+  <data name="EmptyLibraryTitle" xml:space="preserve"><value>В библиотеке пока нет заявлений</value></data>
+  <data name="EmptyLibraryText" xml:space="preserve"><value>Заявления хранятся в единой библиотеке компании. Сначала создайте глобальное базовое заявление; страновые версии открываются на его основе.</value></data>
+  <data name="NoMatchTitle" xml:space="preserve"><value>Нет заявлений, соответствующих фильтрам</value></data>
+  <data name="NoMatchText" xml:space="preserve"><value>Измените текст поиска или фильтры.</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>Сбросить фильтры</value></data>
+  <data name="CounterUnavailable" xml:space="preserve"><value>Сейчас недоступно</value></data>
+  <data name="ShowInactive" xml:space="preserve"><value>Включая архивные и заменённые</value></data>
+  <data name="LiveOnly" xml:space="preserve"><value>Только актуальные записи</value></data>
 </root>

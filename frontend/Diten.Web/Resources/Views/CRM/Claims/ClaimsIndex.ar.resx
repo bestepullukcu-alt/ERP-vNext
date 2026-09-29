@@ -81,4 +81,66 @@
   <data name="BulkDeleteConfirm" xml:space="preserve"><value>حذف السجلات المحددة؟</value></data>
   <data name="QuickViewTitle" xml:space="preserve"><value>معاينة الادعاء</value></data>
   <data name="ApprovedBodyFrozenNote" xml:space="preserve"><value>هذا الادعاء معتمد: المتن الخاضع للحوكمة مجمَّد. أنشئ إصدارًا جديدًا لتغيير النص.</value></data>
+  <data name="ListDescription" xml:space="preserve"><value>مكتبة ادعاءات واحدة على مستوى الشركة: الادعاءات الأساسية ونسخها القُطرية والأدلة التي تستند إليها.</value></data>
+  <data name="ApprovalViaWorkflowNote" xml:space="preserve"><value>لا تتم الموافقة على الادعاءات إلا عبر سير عمل الموافقة (إرسال للمراجعة).</value></data>
+  <data name="BreadcrumbCrm" xml:space="preserve"><value>CRM</value></data>
+  <data name="NewCoreClaim" xml:space="preserve"><value>ادعاء أساسي جديد</value></data>
+  <data name="NewLocalClaim" xml:space="preserve"><value>ادعاء محلي جديد</value></data>
+  <data name="ReadOnlyNote" xml:space="preserve"><value>صلاحية قراءة فقط: يمكنك عرض السجلات وتصديرها.</value></data>
+  <data name="ColClaim" xml:space="preserve"><value>الادعاء</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="ColKind" xml:space="preserve"><value>النوع</value></data>
+  <data name="ColAudience" xml:space="preserve"><value>الجمهور</value></data>
+  <data name="ColCountryStatus" xml:space="preserve"><value>حالة الدولة</value></data>
+  <data name="ColEvidence" xml:space="preserve"><value>الأدلة</value></data>
+  <data name="ColApproved" xml:space="preserve"><value>المعتمدة</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>الاستخدام</value></data>
+  <data name="KindCore" xml:space="preserve"><value>أساسي</value></data>
+  <data name="KindLocal" xml:space="preserve"><value>محلي</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>مفقود</value></data>
+  <data name="ApprovedOfCountries" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="CoreVersionLine" xml:space="preserve"><value>أساسي v{0}</value></data>
+  <data name="LocalLine" xml:space="preserve"><value>محلي · {0}</value></data>
+  <data name="State_approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="State_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>تحتاج إلى مراجعة</value></data>
+  <data name="State_expiring" xml:space="preserve"><value>على وشك الانتهاء</value></data>
+  <data name="State_closed" xml:space="preserve"><value>غير مفتوحة</value></data>
+  <data name="State_not-opened" xml:space="preserve"><value>غير مفتوحة</value></data>
+  <data name="State_not-applicable" xml:space="preserve"><value>خارج النطاق</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="State_archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="ClosedTooltip" xml:space="preserve"><value>غير مفتوحة · {0}</value></data>
+  <data name="NotOpenedTooltip" xml:space="preserve"><value>غير مفتوحة · لا يوجد قرار بعد</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>الدولة</value></data>
+  <data name="FilterLanguage" xml:space="preserve"><value>اللغة</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="FilterAudience" xml:space="preserve"><value>الجمهور</value></data>
+  <data name="FilterKind" xml:space="preserve"><value>أساسي / محلي</value></data>
+  <data name="FlagEvidenceMissing" xml:space="preserve"><value>دليل مفقود</value></data>
+  <data name="FlagReviewRequired" xml:space="preserve"><value>تحتاج إلى مراجعة</value></data>
+  <data name="FlagExpiring" xml:space="preserve"><value>على وشك الانتهاء</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>إصدار جديد</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>سيتم فتح إصدار مسودة جديد من هذا الادعاء.</value></data>
+  <data name="RecordNewVersion" xml:space="preserve"><value>تم فتح إصدار جديد.</value></data>
+  <data name="QvCoreText" xml:space="preserve"><value>النص الأساسي</value></data>
+  <data name="QvLocalText" xml:space="preserve"><value>النص المحلي</value></data>
+  <data name="QvResponsibleTeam" xml:space="preserve"><value>الفريق المسؤول</value></data>
+  <data name="QvCountryVersions" xml:space="preserve"><value>النسخ القُطرية</value></data>
+  <data name="QvNoCountryVersions" xml:space="preserve"><value>لا توجد نسخ قُطرية بعد.</value></data>
+  <data name="QvLanguages" xml:space="preserve"><value>اللغات</value></data>
+  <data name="QvAudienceCount" xml:space="preserve"><value>ملفات الجمهور</value></data>
+  <data name="QvOpenDetails" xml:space="preserve"><value>فتح التفاصيل</value></data>
+  <data name="QvClose" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="QvLoadFailed" xml:space="preserve"><value>تعذر تحميل النسخ القُطرية.</value></data>
+  <data name="EmptyLibraryTitle" xml:space="preserve"><value>لا توجد ادعاءات في المكتبة بعد</value></data>
+  <data name="EmptyLibraryText" xml:space="preserve"><value>تُحفظ الادعاءات في مكتبة واحدة على مستوى الشركة. أنشئ الادعاء الأساسي العالمي أولاً، ثم تُفتح النسخ القُطرية منه.</value></data>
+  <data name="NoMatchTitle" xml:space="preserve"><value>لا توجد ادعاءات مطابقة للمرشحات</value></data>
+  <data name="NoMatchText" xml:space="preserve"><value>غيّر نص البحث أو المرشحات.</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>مسح المرشحات</value></data>
+  <data name="CounterUnavailable" xml:space="preserve"><value>غير متاح حالياً</value></data>
+  <data name="ShowInactive" xml:space="preserve"><value>تضمين المؤرشفة والمستبدلة</value></data>
+  <data name="LiveOnly" xml:space="preserve"><value>السجلات الحالية فقط</value></data>
 </root>
