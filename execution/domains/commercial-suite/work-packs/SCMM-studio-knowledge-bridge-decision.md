@@ -70,3 +70,21 @@
 - SB-3 kapsamı: ziyaret içeriği = aşamanın yol adımları; çıktı içerik listesi mi olacak?
 - Play'deki yol bağı ziyarette tek aşamalı yolculuk gibi mi sayılacak?
 - Sıra: SB-3 → SB-2 → SB-1 mi?
+
+---
+
+## 6. İçerik Setleri — açık işler listesi (2026-09-30, kullanıcı: "unutma, not al")
+| # | Açık | Durum / paket |
+|---|---|---|
+| 1 | Set yayını sahaya inmiyor (içerik + yol üretimi) | **SB-2** sürüyor. Kararlar: dal-öncelikli sıra, karışık dil 409. |
+| 2 | Revizyon yaşam döngüsünün (gönder / karar / render / yayın / geri çek) **Web ekranı yok** | **SB-UI**, mockup sonrası (brief: `mockups/content-studio-v2/BRIEF-content-studio-v2.md`) |
+| 3 | `crm.content-set.release` / `withdraw` yetkileri rollere verilmedi | SB-UI ile birlikte grant script |
+| 4 | Set onayı tek kişilik; MLR (Medikal → Hukuk → Ruhsat) + Görev Merkezi olmalı | Stüdyo v2 fazı (iddialardaki MOD-0023 deseni) |
+| 5 | Render = özet PDF (döküm), sunum değil | **SB-4**: HTML saha sunumu + aynı kaynaktan arşiv PDF'i |
+| 6 | Sayfa tasarımcısı (sürükle-bırak), marka kiti (ürün), ülke yasal blokları, onaylı görsel kütüphanesi, kilitli iddia blokları, uyum kontrolü | Stüdyo v2 (mockup sonrası fazlara bölünecek) |
+| 7 | Sahadan sayfa gösterim takibi | Stüdyo v2 son faz + mobil |
+| 8 | Zincir editörü "Çıktılar" paneli boş | **SB-2b** (SB-2'nin geri izini okur) |
+| 9 | İçerik Kapsamı serbest metin | **SB-1** |
+| 10 | Uygunluk kontrolü fiilen hep "Belirsiz": iddialarda `Applicability.EligibilityPolicyId` İddialar v2 arayüzünde girilemiyor; kapsam değerleri serbest metin | SB-1 ile birlikte karar |
+| 11 | Karar bekleyen: play'deki doğrudan Bilgi Yolu bağı ziyarette tek aşamalı yolculuk sayılsın mı? | SB-3 öncesi kullanıcıdan |
+| 12 | Veri: ALMIBA zinciri taslak; ALMIBA yolu dil karışık; yolculuklar aşamasız; KP-114 / 201 / 888 demo kalıntısı | E2E sırasında |
