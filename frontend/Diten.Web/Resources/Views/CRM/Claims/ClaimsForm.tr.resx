@@ -155,4 +155,11 @@
   <data name="State_archived" xml:space="preserve"><value>Arşiv</value></data>
   <data name="RequiredCount" xml:space="preserve"><value>Zorunlu: {0}</value></data>
   <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="EvType_smpc-pil" xml:space="preserve"><value>KÜB / KT</value></data>
+  <data name="EvType_clinical-study" xml:space="preserve"><value>Klinik çalışma</value></data>
+  <data name="EvType_literature" xml:space="preserve"><value>Literatür</value></data>
+  <data name="EvType_internal-data" xml:space="preserve"><value>İç veri</value></data>
+  <data name="EvType_regulatory-letter" xml:space="preserve"><value>Ruhsat yazısı</value></data>
+  <data name="EvOriginCore" xml:space="preserve"><value>Çekirdekten</value></data>
+  <data name="EvOriginLocal" xml:space="preserve"><value>Yerel</value></data>
 </root>

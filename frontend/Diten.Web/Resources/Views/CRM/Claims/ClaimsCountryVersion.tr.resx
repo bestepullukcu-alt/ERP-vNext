@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>İddialar</value></data>
+  <data name="PageTitleCreate" xml:space="preserve"><value>Ülke Sürümü Aç · {0}</value></data>
+  <data name="PageTitleEdit" xml:space="preserve"><value>Ülke sürümü · {0}</value></data>
+  <data name="CancelAction" xml:space="preserve"><value>İptal</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Taslağı kaydet</value></data>
+  <data name="SubmitLocal" xml:space="preserve"><value>Yerel onaya gönder</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>Onaydan geri çek</value></data>
+  <data name="OpenNewVersion" xml:space="preserve"><value>Yeni sürüm aç</value></data>
+  <data name="ReadOnlyNote" xml:space="preserve"><value>Salt okuma yetkisi: bu ülke sürümünü görüntüleyebilirsiniz.</value></data>
+  <data name="CoreCardTitle" xml:space="preserve"><value>Çekirdek iddia · salt okunur</value></data>
+  <data name="CoreQualifierLabel" xml:space="preserve"><value>Niteleyici</value></data>
+  <data name="CoreAudienceLabel" xml:space="preserve"><value>Kitle</value></data>
+  <data name="CoreEvidenceCount" xml:space="preserve"><value>{0} kanıt</value></data>
+  <data name="VersionLabel" xml:space="preserve"><value>v{0}</value></data>
+  <data name="CountryCardTitle" xml:space="preserve"><value>Ülke</value></data>
+  <data name="CountryLanguages" xml:space="preserve"><value>Ülke dilleri</value></data>
+  <data name="FromCountryMaster" xml:space="preserve"><value>· ülke ana kaydından</value></data>
+  <data name="TextsTitle" xml:space="preserve"><value>Metin ve niteleyiciler · dil başına</value></data>
+  <data name="CoreReferenceText" xml:space="preserve"><value>Çekirdek (en)</value></data>
+  <data name="CoreReferenceQualifier" xml:space="preserve"><value>Çekirdek niteleyici</value></data>
+  <data name="LocalTextLabel" xml:space="preserve"><value>İddia metni · {0}</value></data>
+  <data name="LocalQualifiersLabel" xml:space="preserve"><value>Yerel niteleyiciler · {0}</value></data>
+  <data name="QualifierPlaceholder" xml:space="preserve"><value>Niteleyici ekleyin</value></data>
+  <data name="AddAction" xml:space="preserve"><value>Ekle</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="LanguageMissing" xml:space="preserve"><value>Metin eksik</value></data>
+  <data name="CharCount" xml:space="preserve"><value>{0} karakter</value></data>
+  <data name="AdaptationTitle" xml:space="preserve"><value>Uyarlama</value></data>
+  <data name="AdaptationHint" xml:space="preserve"><value>Ülke sürümü çekirdeğe göre daraltılabilir ya da yumuşatılabilir; kapsamı genişletilemez.</value></data>
+  <data name="AdaptationTypeLabel" xml:space="preserve"><value>Uyarlama tipi</value></data>
+  <data name="AdaptationReasonLabel" xml:space="preserve"><value>Uyarlama nedeni</value></data>
+  <data name="AdaptationReasonHint" xml:space="preserve"><value>Birebir çeviri dışında zorunludur.</value></data>
+  <data name="Adapt_verbatim" xml:space="preserve"><value>Birebir çeviri</value></data>
+  <data name="Adapt_narrowed" xml:space="preserve"><value>Daraltıldı</value></data>
+  <data name="Adapt_softened" xml:space="preserve"><value>Yumuşatıldı</value></data>
+  <data name="ValidityTitle" xml:space="preserve"><value>Geçerlilik</value></data>
+  <data name="ValidFromLabel" xml:space="preserve"><value>Geçerlilik başlangıcı</value></data>
+  <data name="ValidToLabel" xml:space="preserve"><value>Geçerlilik bitişi</value></data>
+  <data name="AudienceTitle" xml:space="preserve"><value>Hedef kitle</value></data>
+  <data name="AudienceHint" xml:space="preserve"><value>Yalnız çekirdeğin kitlelerinden daraltılabilir.</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Seçin</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>Kanıtlar</value></data>
+  <data name="AddLocalEvidence" xml:space="preserve"><value>Yerel kanıt ekle</value></data>
+  <data name="InheritedEvidenceTitle" xml:space="preserve"><value>Çekirdek iddiadan (salt okunur)</value></data>
+  <data name="LocalEvidenceTitle" xml:space="preserve"><value>Yerel kanıtlar</value></data>
+  <data name="LocalEvidenceEmpty" xml:space="preserve"><value>Yerel kanıt yok. {0} KÜB'ü gibi yerel belgeleri buraya bağlayın.</value></data>
+  <data name="InheritedEvidenceEmpty" xml:space="preserve"><value>Çekirdek iddianın henüz kanıtı yok.</value></data>
+  <data name="EvidenceSaveFirst" xml:space="preserve"><value>Önce taslağı kaydedin; kanıt kayıtlı ülke sürümüne bağlanır.</value></data>
+  <data name="EvidenceLockedNote" xml:space="preserve"><value>Kanıt yalnız taslakta değişir; değiştirmek için yeni sürüm açın.</value></data>
+  <data name="EvidenceTextFirst" xml:space="preserve"><value>Önce bu dilin metnini girip kaydedin; desteklenen ifadeler onun üzerinde işaretlenir.</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>Onaya hazırlık</value></data>
+  <data name="ReadyCoreApproved" xml:space="preserve"><value>Çekirdek onaylı</value></data>
+  <data name="ReadyAllLanguages" xml:space="preserve"><value>Tüm dillerde metin</value></data>
+  <data name="ReadyAdaptationReason" xml:space="preserve"><value>Uyarlama nedeni</value></data>
+  <data name="ReadyValidity" xml:space="preserve"><value>Geçerlilik başlangıcı</value></data>
+  <data name="ReadyEvidence" xml:space="preserve"><value>En az 1 kanıt</value></data>
+  <data name="ReadySaved" xml:space="preserve"><value>Kaydedildi</value></data>
+  <data name="ReadyMissing" xml:space="preserve"><value>eksik</value></data>
+  <data name="FlowTitle" xml:space="preserve"><value>Yerel onay akışı</value></data>
+  <data name="FlowSequentialNote" xml:space="preserve"><value>Sıralı · Onay ayarlarından yapılandırılır</value></data>
+  <data name="FlowNoCandidates" xml:space="preserve"><value>Aday pozisyon yok</value></data>
+  <data name="FlowReason_WorkflowTemplateMissing" xml:space="preserve"><value>Bu ülke için henüz yerel onay akışı tanımlı değil. Yöneticinize başvurun.</value></data>
+  <data name="FlowReason_WorkflowTemplateNotPublished" xml:space="preserve"><value>Yerel onay akışı var ama henüz yayınlanmadı.</value></data>
+  <data name="FlowReason_WorkflowPermissionMissing" xml:space="preserve"><value>Onay akışı ayarlarını görüntüleme yetkiniz yok.</value></data>
+  <data name="FlowReason_WorkflowUnavailable" xml:space="preserve"><value>Onay akışı şu anda gösterilemiyor.</value></data>
+  <data name="StatusCardTitle" xml:space="preserve"><value>Durum kartı</value></data>
+  <data name="LockInReview" xml:space="preserve"><value>İncelemede: yerel onay akışı tamamlanana ya da geri çekilene kadar ülke sürümü kilitli.</value></data>
+  <data name="LockApproved" xml:space="preserve"><value>Onaylı: metin ve kanıtlar kilitli. Değiştirmek için yeni sürüm açın.</value></data>
+  <data name="LockReviewRequired" xml:space="preserve"><value>Gözden geçirilmeli: çekirdek ya da bağlı bir belge değişti. Güncellemek için yeni sürüm açın.</value></data>
+  <data name="LockInactive" xml:space="preserve"><value>Bu kayıt artık güncel değil (yenisiyle değiştirildi ya da arşivlendi).</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Bu ülke sürümü yerel onaya gönderilsin mi? Akış tamamlanana kadar kilitlenecek.</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Bu ülke sürümü onaydan geri çekilsin mi? Taslağa döner.</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Bundan yeni bir taslak ülke sürümü açılsın mı?</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>Taslak kaydedildi.</value></data>
+  <data name="ToastSubmitted" xml:space="preserve"><value>Yerel onaya gönderildi.</value></data>
+  <data name="ToastWithdrawn" xml:space="preserve"><value>Onaydan geri çekildi.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Ülke sürümü yüklenemedi.</value></data>
+  <data name="ErrorGeneric" xml:space="preserve"><value>Bir sorun oluştu. Lütfen tekrar deneyin.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="KindCoreBadge" xml:space="preserve"><value>Çekirdek</value></data>
+  <data name="KindLocalBadge" xml:space="preserve"><value>Yerel</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>Gözden geçirilmeli</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="State_archived" xml:space="preserve"><value>Arşiv</value></data>
+  <data name="Err_core_not_approved" xml:space="preserve"><value>Ülke sürümünden önce çekirdek iddia onaylanmalı.</value></data>
+  <data name="Err_country_closed" xml:space="preserve"><value>Bu ülke bu iddia için açılmayacak olarak işaretli. Önce kapsama matrisinden yeniden açın.</value></data>
+  <data name="Err_country_version_exists" xml:space="preserve"><value>Bu ülkenin zaten güncel bir sürümü var. Kapsama matrisinden açın.</value></data>
+  <data name="Err_languages_incomplete" xml:space="preserve"><value>Ülkenin tüm içerik dillerinde metni girin.</value></data>
+  <data name="Err_audience_not_narrowing" xml:space="preserve"><value>Yalnız çekirdek iddianın kitleleri seçilebilir.</value></data>
+  <data name="Err_adaptation_reason_required" xml:space="preserve"><value>Uyarlama nedenini girin (birebir çeviri dışında zorunlu).</value></data>
+  <data name="Err_texts_required" xml:space="preserve"><value>En az bir metin girin.</value></data>
+  <data name="Err_language_not_allowed" xml:space="preserve"><value>Bu dil ülkenin içerik dili değil.</value></data>
+  <data name="Err_duplicate_language" xml:space="preserve"><value>Bir dil iki kez yer alıyor.</value></data>
+  <data name="Err_invalid_validity" xml:space="preserve"><value>Geçerlilik bitişi başlangıçtan sonra olmalı.</value></data>
+  <data name="Err_invalid_reference_value" xml:space="preserve"><value>Geçerli bir değer seçin.</value></data>
+  <data name="Err_open_version_exists" xml:space="preserve"><value>Bu ülkenin zaten açık bir taslak ya da incelemedeki sürümü var.</value></data>
+  <data name="Err_invalid_state" xml:space="preserve"><value>Bu işlem mevcut durumda yapılamaz.</value></data>
+  <data name="Err_invalid_status" xml:space="preserve"><value>Bu işlem mevcut durumda yapılamaz.</value></data>
+  <data name="Err_evidence_required" xml:space="preserve"><value>Onaya göndermeden önce en az 1 kanıt (miras ya da yerel) olmalı.</value></data>
+  <data name="Err_evidence_locked" xml:space="preserve"><value>Kanıt yalnız taslakta değişir. Yeni sürüm açın.</value></data>
+  <data name="Err_evidence_unavailable" xml:space="preserve"><value>Kanıt servisine ulaşılamıyor. Hiçbir şey değişmedi; daha sonra tekrar deneyin.</value></data>
+  <data name="Err_in_review_locked" xml:space="preserve"><value>Ülke sürümü incelemede. Değiştirmek için onaydan geri çekin.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>Bu ülke için yerel onay akışı tanımlı değil. Yöneticinize başvurun.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>Onay akışını başlatma yetkiniz yok.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>Onay servisine ulaşılamıyor. Hiçbir şey değişmedi; daha sonra tekrar deneyin.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>Onay akışı isteği reddetti.</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>İnceleme artık geri çekilemez: bir onaylayıcı işlem yaptı.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>Geri çekilecek açık bir inceleme yok.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>Gerekli bir referans listesi henüz yayınlanmadı. Yöneticinize başvurun.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Gerekli bir servise ulaşılamıyor. Hiçbir şey değişmedi; daha sonra tekrar deneyin.</value></data>
+  <data name="Err_not_applicable" xml:space="preserve"><value>Bu ülke bu iddianın kapsamı dışında.</value></data>
+  <data name="Err_required" xml:space="preserve"><value>Zorunlu alanları doldurun.</value></data>
+</root>

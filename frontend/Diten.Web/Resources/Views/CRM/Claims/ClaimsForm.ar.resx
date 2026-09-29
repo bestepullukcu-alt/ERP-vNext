@@ -155,4 +155,11 @@
   <data name="State_archived" xml:space="preserve"><value>مؤرشف</value></data>
   <data name="RequiredCount" xml:space="preserve"><value>إلزامي: {0}</value></data>
   <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="EvType_smpc-pil" xml:space="preserve"><value>ملخص خصائص المنتج / النشرة</value></data>
+  <data name="EvType_clinical-study" xml:space="preserve"><value>دراسة سريرية</value></data>
+  <data name="EvType_literature" xml:space="preserve"><value>الأدبيات العلمية</value></data>
+  <data name="EvType_internal-data" xml:space="preserve"><value>بيانات داخلية</value></data>
+  <data name="EvType_regulatory-letter" xml:space="preserve"><value>خطاب تنظيمي</value></data>
+  <data name="EvOriginCore" xml:space="preserve"><value>من الأساس</value></data>
+  <data name="EvOriginLocal" xml:space="preserve"><value>محلي</value></data>
 </root>

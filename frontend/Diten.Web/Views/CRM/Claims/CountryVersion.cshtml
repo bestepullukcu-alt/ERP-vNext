@@ -1,0 +1,190 @@
+@using Diten.Web.Views.CRM.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsCountryVersion> Localizer
+@{
+    Layout = "_LayoutTenantShell";
+    var claimId = ViewData["ClaimId"] as string ?? string.Empty;
+    var countryCode = ViewData["CountryCode"] as string ?? string.Empty;
+    var versionId = ViewData["CountryVersionId"] as string ?? string.Empty;
+    var canManage = ViewData["CanManageClaims"] is true;
+    ViewData["Title"] = string.IsNullOrEmpty(versionId)
+        ? string.Format(Localizer["PageTitleCreate"].Value, countryCode)
+        : string.Format(Localizer["PageTitleEdit"].Value, string.Empty).Trim(' ', '·');
+}
+
+@* WP-CL-FE-4 — claim country version (mockup scenarios 4 / 5): 8/4 layout, read-only core card, country card (no
+   licence card — D3), text + qualifiers per content language, adaptation, validity, audience narrowing, inherited +
+   local evidence (shared modal), readiness / local flow preview / status card. JS-driven over the v2 proxy. *@
+<div class="claims-form-scope" id="countryVersionRoot" data-claim-id="@claimId" data-country="@countryCode"
+     data-version-id="@versionId" data-can-manage="@(canManage ? "true" : "false")">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <div>
+            <h5 class="mb-0" id="cvTitle">@ViewData["Title"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/Claims">@Localizer["ClaimsTitle"]</a></li>
+                    <li class="breadcrumb-item"><a href="#" id="cvCrumbClaim">-</a></li>
+                    <li class="breadcrumb-item active text-primary" id="cvCrumbCountry">@countryCode</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/CRM/Claims" class="btn btn-label-secondary">@Localizer["CancelAction"]</a>
+            <span id="cvRequiredTracker" class="badge bg-label-danger d-none"></span>
+            <button type="button" class="btn btn-label-primary js-save-draft d-none" data-requires="draft">@Localizer["SaveDraft"]</button>
+            <button type="button" class="btn btn-primary js-submit-review d-none" data-requires="draft">@Localizer["SubmitLocal"]</button>
+        </div>
+    </div>
+
+    <div id="cvAlert" class="alert alert-danger d-none" role="alert"></div>
+    <div id="cvLockBand" class="alert d-none" role="status"></div>
+    @if (!canManage)
+    {
+        <div class="alert alert-info d-flex align-items-center gap-2 py-2" role="status">
+            <i class="bx bx-lock-alt"></i><span>@Localizer["ReadOnlyNote"]</span>
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            @* Core claim · read-only *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["CoreCardTitle"]</h6>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                        <span class="fw-medium" id="cvCoreCode">-</span>
+                        <span class="text-muted" id="cvCoreVersion"></span>
+                        <span id="cvCoreStatus" class="claim-state state-draft">-</span>
+                    </div>
+                    <p class="mb-2" id="cvCoreText">-</p>
+                    <small class="text-muted d-block" id="cvCoreMeta">-</small>
+                </div>
+            </section>
+
+            @* Country (no licence number / holder — decision D3) *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["CountryCardTitle"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <span class="form-label fw-medium d-block">@Localizer["CountryCardTitle"]</span>
+                            <span id="cvCountryName" class="fs-6">@countryCode</span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <span class="form-label fw-medium d-block">@Localizer["CountryLanguages"]</span>
+                            <span id="cvCountryLanguages">-</span> <small class="text-muted">@Localizer["FromCountryMaster"]</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* Text and qualifiers · per language *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["TextsTitle"] <span class="text-danger">*</span></h6>
+                    <ul class="nav nav-tabs mb-3" id="cvLangTabs" role="tablist"></ul>
+                    <div id="cvLangPanes"></div>
+                </div>
+            </section>
+
+            @* Adaptation + validity + audience *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["AdaptationTitle"]</h6>
+                    <div class="form-text mb-3">@Localizer["AdaptationHint"]</div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-5">
+                            <label for="cvAdaptType" class="form-label fw-medium">@Localizer["AdaptationTypeLabel"] <span class="text-danger">*</span></label>
+                            <select id="cvAdaptType" class="form-select"></select>
+                        </div>
+                        <div class="col-12 col-md-7">
+                            <label for="cvAdaptReason" class="form-label fw-medium">@Localizer["AdaptationReasonLabel"] <span class="text-danger d-none" id="cvAdaptReasonRequired">*</span></label>
+                            <textarea id="cvAdaptReason" class="form-control" rows="2" maxlength="1000"></textarea>
+                            <div class="form-text">@Localizer["AdaptationReasonHint"]</div>
+                        </div>
+                    </div>
+
+                    <h6 class="text-uppercase text-heading fw-semibold mt-4 mb-3">@Localizer["ValidityTitle"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="cvValidFrom" class="form-label fw-medium">@Localizer["ValidFromLabel"] <span class="text-danger">*</span></label>
+                            <input type="text" id="cvValidFrom" class="form-control" autocomplete="off" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="cvValidTo" class="form-label fw-medium">@Localizer["ValidToLabel"]</label>
+                            <input type="text" id="cvValidTo" class="form-control" autocomplete="off" />
+                        </div>
+                    </div>
+
+                    <h6 class="text-uppercase text-heading fw-semibold mt-4 mb-1">@Localizer["AudienceTitle"]</h6>
+                    <div class="form-text mb-2">@Localizer["AudienceHint"]</div>
+                    <select id="cvAudience" class="form-select cv-select2" multiple data-placeholder="@Localizer["SelectPlaceholder"]"></select>
+                </div>
+            </section>
+
+            @* Evidence: inherited from the core (read-only) + local (shared modal) *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["EvidenceTitle"] <span class="text-danger">*</span></h6>
+                        <button type="button" class="btn btn-sm btn-label-primary d-none" id="btnAddLocalEvidence"><i class="bx bx-plus me-1"></i>@Localizer["AddLocalEvidence"]</button>
+                    </div>
+                    <div id="cvEvidenceSaveFirst" class="alert alert-secondary py-2 d-none">@Localizer["EvidenceSaveFirst"]</div>
+                    <div id="cvEvidenceLocked" class="text-muted small mb-2 d-none"><i class="bx bx-lock-alt me-1"></i>@Localizer["EvidenceLockedNote"]</div>
+                    <div class="small text-muted fw-medium mb-2">@Localizer["InheritedEvidenceTitle"]</div>
+                    <div id="cvEvidenceInherited" class="d-flex flex-column gap-3 mb-4"></div>
+                    <div class="small text-muted fw-medium mb-2">@Localizer["LocalEvidenceTitle"]</div>
+                    <div id="cvEvidenceLocal" class="d-flex flex-column gap-3"></div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="claims-form-side">
+                <section class="card mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["ReadinessTitle"]</h6>
+                        <ul id="cvReadiness" class="list-unstyled mb-0 d-flex flex-column gap-2"></ul>
+                    </div>
+                </section>
+                <section class="card mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["FlowTitle"]</h6>
+                        <div class="form-text mb-3">@Localizer["FlowSequentialNote"]</div>
+                        <div id="cvFlow" class="d-flex flex-column gap-2"><div class="text-muted small">@Localizer["Loading"]</div></div>
+                    </div>
+                </section>
+                <section class="card mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["StatusCardTitle"]</h6>
+                            <span id="cvStatusBadge" class="claim-state state-draft">-</span>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-label-primary js-save-draft d-none" data-requires="draft">@Localizer["SaveDraft"]</button>
+                            <button type="button" class="btn btn-primary js-submit-review d-none" data-requires="draft">@Localizer["SubmitLocal"]</button>
+                            <button type="button" class="btn btn-label-warning d-none" id="btnCvWithdraw">@Localizer["WithdrawReview"]</button>
+                            <button type="button" class="btn btn-label-primary d-none" id="btnCvNewVersion"><i class="bx bx-git-branch me-1"></i>@Localizer["OpenNewVersion"]</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <partial name="~/Views/CRM/Claims/_ClaimEvidenceModal.cshtml" />
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+    <link rel="stylesheet" href="~/assets/css/claims-form.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    @* Contract marker: <partial name="_FormL10n" /> *@
+    <partial name="~/Views/CRM/Claims/_FormL10n.cshtml" />
+    <partial name="~/Views/CRM/Claims/_CountryVersionL10n.cshtml" />
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <script src="~/assets/js/CRM/Claims/claim-evidence.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Claims/country-version.js" asp-append-version="true"></script>
+}

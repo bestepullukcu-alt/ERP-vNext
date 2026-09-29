@@ -155,4 +155,11 @@
   <data name="State_archived" xml:space="preserve"><value>已归档</value></data>
   <data name="RequiredCount" xml:space="preserve"><value>必填：{0}</value></data>
   <data name="Loading" xml:space="preserve"><value>加载中…</value></data>
+  <data name="EvType_smpc-pil" xml:space="preserve"><value>说明书 / 患者须知</value></data>
+  <data name="EvType_clinical-study" xml:space="preserve"><value>临床研究</value></data>
+  <data name="EvType_literature" xml:space="preserve"><value>文献</value></data>
+  <data name="EvType_internal-data" xml:space="preserve"><value>内部数据</value></data>
+  <data name="EvType_regulatory-letter" xml:space="preserve"><value>监管函件</value></data>
+  <data name="EvOriginCore" xml:space="preserve"><value>来自核心</value></data>
+  <data name="EvOriginLocal" xml:space="preserve"><value>本地</value></data>
 </root>

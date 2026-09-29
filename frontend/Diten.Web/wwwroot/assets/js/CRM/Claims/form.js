@@ -17,8 +17,6 @@
     const $ = window.jQuery;
     const L = (() => { try { return JSON.parse(document.getElementById('claim-form-l10n')?.textContent || '{}'); } catch (e) { return {}; } })();
     const EMPTY_GUID = '00000000-0000-0000-0000-000000000000';
-    const MAX_SPANS = 10;
-    const REVIEW_DOC_STATES = ['suspended', 'retired', 'withdrawn'];
 
     const state = {
         claimId: root.dataset.claimId || '',
@@ -30,11 +28,7 @@
         qualifiers: [],
         evidence: null,          // ClaimEvidenceListDto or null (not loaded / unavailable)
         countries: [],
-        evidenceTypes: null,     // value_code → name
-        product: null,           // { id, text, code }
-        existingCodes: null,     // cached for the code suggestion
-        modal: { doc: null, spans: [], docs: [] },
-        removeLinkId: null
+        product: null            // { id, text, code, name }
     };
 
     // ─── helpers ────────────────────────────────────────────────────────────────
@@ -44,7 +38,6 @@
     const fmt = (template, ...args) => String(template ?? '').replace(/\{(\d+)\}/g, (_, i) => args[Number(i)] ?? '');
     const t = key => L[key] || key;
     const toast = (msg, type) => window.showToast?.(msg, type || 'success');
-    const date = v => v ? new Date(v).toLocaleDateString() : '';
 
     const isEditable = () => !state.claimId || (state.status === 'draft' && !state.claim?.isArchived);
 
@@ -82,13 +75,6 @@
     const loadCountries = async () => {
         const data = await tryGet(`${api}/lookups/countries`);
         state.countries = Array.isArray(data) ? data.map(c => ({ code: norm(c.code).toUpperCase(), name: c.name || c.code, languages: c.languages || [] })) : [];
-    };
-    const loadEvidenceTypes = async () => {
-        if (state.evidenceTypes) return state.evidenceTypes;
-        const data = await tryGet(`${api}/lookups/evidence-types`);
-        state.evidenceTypes = {};
-        (Array.isArray(data) ? data : []).forEach(v => { if (v?.code) state.evidenceTypes[v.code] = v.name || v.code; });
-        return state.evidenceTypes;
     };
     const fillOptions = (el, options, selected) => {
         if (!el) return;
@@ -143,32 +129,28 @@
                     byId('clmProductUnavailable')?.classList.toggle('d-none', !disabled);
                     const data = body?.data;
                     const items = disabled ? [] : (Array.isArray(data) ? data : (data?.items || []));
-                    return { results: items.filter(p => p?.id).map(p => ({ id: p.id, text: productLabel(p), code: norm(p.canonicalCode || p.code) })) };
+                    return { results: items.filter(p => p?.id).map(p => ({ id: p.id, text: productLabel(p), code: norm(p.canonicalCode || p.code), name: norm(p.globalProductName || p.name) })) };
                 }
             }
         });
         $(el).on('select2:select', e => {
             const d = e.params.data || {};
-            state.product = { id: d.id, text: d.text, code: d.code || '' };
+            state.product = { id: d.id, text: d.text, code: d.code || '', name: d.name || '' };
             void suggestCode();
         });
         $(el).on('select2:clear', () => { state.product = null; });
     };
 
-    // ─── code suggestion CLM-{PRODUCT}-{NN} (create only; never overrides a code the user typed) ─────────────────
+    // ─── code suggestion CLM-{PRODUCT NAME}-{NN} (create only; never overrides a code the user typed) ─────────
+    // WP-CL-FE-4: the prefix comes from the product NAME (not the MDM canonical code) and NN is the next number
+    // among the existing codes — computed server-side (api/v2/claims/code-suggestion, ClaimCodeSuggestion).
     const suggestCode = async () => {
         if (state.claimId || state.codeTouched || !state.product) return;
-        const productCode = norm(state.product.code || state.product.text.split('—')[0]).toUpperCase().replace(/[^A-Z0-9]+/g, '');
-        if (!productCode) return;
-        if (!state.existingCodes) {
-            const data = await tryGet(`${api}/claims?includeArchived=true`);
-            state.existingCodes = (data?.items || []).map(c => norm(c.claimCode).toUpperCase());
-        }
-        const prefix = `CLM-${productCode}-`;
-        const max = state.existingCodes.filter(c => c.startsWith(prefix))
-            .map(c => parseInt(c.slice(prefix.length), 10)).filter(n => Number.isFinite(n)).reduce((a, b) => Math.max(a, b), 0);
+        const name = norm(state.product.name) || norm(String(state.product.text).split('—').pop());
+        if (!name) return;
+        const data = await tryGet(`${api}/claims/code-suggestion?productName=${encodeURIComponent(name)}`);
         const code = byId('clmCode');
-        if (code) code.value = prefix + String(max + 1).padStart(2, '0');
+        if (data?.code && code && !state.codeTouched) code.value = data.code;
         refreshReadiness();
     };
 
@@ -359,38 +341,7 @@
         }).join('') || `<div class="text-muted small">${esc(t('FlowReason_WorkflowUnavailable'))}</div>`;
     };
 
-    // ─── evidence list ──────────────────────────────────────────────────────────
-    const previewUrl = item => {
-        if (item.documentKind !== 'controlled' || !item.documentId || !item.documentVersionId) return null;
-        const page = norm(item.locator?.page);
-        const anchor = /^\d+$/.test(page) ? `#page=${page}` : '';
-        return `/DocumentManagementControlledDocuments/preview/${encodeURIComponent(item.documentId)}/${encodeURIComponent(item.documentVersionId)}${anchor}`;
-    };
-    const evidenceCard = item => {
-        const editable = isEditable();
-        const type = state.evidenceTypes?.[item.evidenceTypeCode] || item.evidenceTypeCode;
-        const locator = item.locator || {};
-        const reference = [locator.section, locator.page, locator.table].filter(Boolean).join(' · ');
-        const meta = [item.documentId ? String(item.documentId).slice(0, 8) : '', item.documentVersionLabel ? fmt(t('EvidencePinned'), item.documentVersionLabel) : '',
-            item.documentKind === 'external' ? t('EvKindExternal') : t('EvKindControlled'), reference].filter(Boolean).join(' · ');
-        const supports = (item.supportedSpans || []).map(s => s.text).join(' … ');
-        const warnings = [];
-        if (item.isSuperseded) warnings.push(fmt(t('EvidenceSuperseded'), item.currentVersionLabel || ''));
-        if (REVIEW_DOC_STATES.includes(item.documentState)) warnings.push(fmt(t('EvidenceStateWarning'), t('DocState_' + item.documentState)));
-        if (item.isExpiring && item.reviewDueAt) warnings.push(fmt(t('EvidenceExpiring'), date(item.reviewDueAt)));
-        const url = previewUrl(item);
-        return `<div class="claim-evidence-card${warnings.length ? ' needs-review' : ''}">`
-            + `<div class="d-flex justify-content-between align-items-start gap-2"><div class="min-w-0">`
-            + `<span class="badge bg-label-primary mb-1">${esc(type)}</span><div class="fw-medium">${esc(item.documentTitle)}</div>`
-            + `<small class="text-muted">${esc(meta)}</small></div><div class="d-flex gap-1 flex-shrink-0">`
-            + (url ? `<a class="btn btn-sm btn-label-secondary" href="${esc(url)}" target="_blank" rel="noopener"><i class="bx bx-show me-1"></i>${esc(t('EvidencePreview'))}</a>` : '')
-            + (editable ? `<button type="button" class="btn btn-sm btn-icon btn-text-danger js-remove-evidence" data-link-id="${esc(item.linkId)}" aria-label="${esc(t('RemoveAction'))}" title="${esc(t('RemoveAction'))}"><i class="bx bx-trash"></i></button>` : '')
-            + '</div></div>'
-            + (locator.quote ? `<div class="claim-evidence-quote my-2">“${esc(locator.quote)}”</div>` : '')
-            + (supports ? `<small><span class="text-muted">${esc(t('EvidenceSupports'))}</span> ${esc(supports)}</small>` : '')
-            + warnings.map(w => `<div class="claim-evidence-warning mt-2"><i class="bx bx-error me-1"></i>${esc(w)}</div>`).join('')
-            + '</div>';
-    };
+    // ─── evidence list (cards from the shared module claim-evidence.js) ──────────
     const renderEvidence = () => {
         const saved = !!state.claimId;
         const editable = isEditable();
@@ -401,12 +352,12 @@
         if (!host) return;
         if (!saved) { host.innerHTML = ''; return; }
         const items = (state.evidence?.items || []).filter(i => String(i.status).toLowerCase() === 'active');
-        host.innerHTML = items.length ? items.map(evidenceCard).join('') : `<div class="text-muted small">${esc(t('EvidenceEmpty'))}</div>`;
+        host.innerHTML = items.length ? items.map(i => window.ClaimEvidence.card(i, { removable: isEditable() })).join('') : `<div class="text-muted small">${esc(t('EvidenceEmpty'))}</div>`;
     };
     const loadEvidence = async () => {
         if (!state.claimId) { state.evidence = null; renderEvidence(); return; }
         try {
-            await loadEvidenceTypes();
+            await window.ClaimEvidence.loadTypes();
             state.evidence = await request('GET', `${api}/claims/${encodeURIComponent(state.claimId)}/evidence`);
         } catch (error) {
             state.evidence = null;
@@ -509,151 +460,17 @@
         }, { type: 'info', confirmButtonText: t('OpenNewVersion') });
     };
 
-    // ─── evidence modal ─────────────────────────────────────────────────────────
-    const modalEl = byId('claimEvidenceModal');
-    const evAlert = message => { const el = byId('evAlert'); if (el) { el.textContent = message || ''; el.classList.toggle('d-none', !message); } };
-    const setStep = step => {
-        modalEl?.querySelectorAll('[data-step]').forEach(n => n.classList.toggle('d-none', n.dataset.step !== String(step)));
-        modalEl?.querySelectorAll('[data-step-label]').forEach(n => n.classList.toggle('active', n.dataset.stepLabel === String(step)));
-        byId('evBack')?.classList.toggle('d-none', step === 1);
-        byId('evNext')?.classList.toggle('d-none', step !== 1);
-        byId('evAdd')?.classList.toggle('d-none', step !== 2);
-        const preview = byId('evPreview');
-        const doc = state.modal.doc;
-        const url = step === 2 && doc && doc.kind === 'controlled' && doc.currentVersionId
-            ? `/DocumentManagementControlledDocuments/preview/${encodeURIComponent(doc.documentId)}/${encodeURIComponent(doc.currentVersionId)}` : null;
-        if (preview) { preview.classList.toggle('d-none', !url); preview.setAttribute('href', url || '#'); }
-        evAlert('');
-    };
-    const pinLabel = doc => doc.kind === 'controlled' ? doc.currentVersionLabel : doc.sourceVersion;
-    const renderDocs = () => {
-        const host = byId('evDocList');
-        if (!host) return;
-        const docs = state.modal.docs;
-        if (!docs.length) { host.innerHTML = `<div class="text-muted small p-2">${esc(t('EvNoDocuments'))}</div>`; return; }
-        host.innerHTML = docs.map((d, i) => {
-            const pinnable = d.kind !== 'controlled' || !!d.currentVersionId;
-            const meta = [d.code, d.documentType, pinLabel(d), d.countryCode, d.sourceStatus || d.status].filter(Boolean).join(' · ');
-            const active = state.modal.doc && state.modal.doc.documentId === d.documentId ? ' active' : '';
-            return `<button type="button" class="list-group-item list-group-item-action js-ev-doc${active}" data-index="${i}" role="option" aria-selected="${active ? 'true' : 'false'}"${pinnable ? '' : ' disabled'}>`
-                + `<div class="fw-medium">${esc(d.title)}</div><small class="text-muted">${esc(meta)}</small></button>`;
-        }).join('');
-    };
-    let searchTimer = null;
-    const loadDocs = async () => {
-        const search = encodeURIComponent(norm(byId('evSearch')?.value));
-        const kind = encodeURIComponent(byId('evKind')?.value || 'controlled');
-        try {
-            const data = await request('GET', `${api}/claims/evidence/document-options?search=${search}&kind=${kind}`);
-            state.modal.docs = Array.isArray(data) ? data : [];
-            evAlert('');
-        } catch (error) {
-            state.modal.docs = [];
-            evAlert(error.message);
-        }
-        renderDocs();
-    };
-    const renderSpans = () => {
-        const host = byId('evSpans');
-        if (!host) return;
-        host.innerHTML = state.modal.spans.length
-            ? state.modal.spans.map((s, i) => `<span class="ev-span-chip">${esc(s.text)}<button type="button" class="btn-close btn-close-sm js-ev-span-remove" data-index="${i}" aria-label="${esc(t('RemoveAction'))}"></button></span>`).join('')
-            : `<span class="text-muted small">${esc(t('EvSpansEmpty'))}</span>`;
-    };
-    const addSelection = () => {
-        const ta = byId('evSpanSource');
-        if (!ta) return;
-        let start = ta.selectionStart;
-        let end = ta.selectionEnd;
-        const value = ta.value;
-        while (start < end && /\s/.test(value[start])) start++;
-        while (end > start && /\s/.test(value[end - 1])) end--;
-        if (end <= start) return;
-        if (state.modal.spans.length >= MAX_SPANS) { evAlert(t('EvSpansMax')); return; }
-        if (!state.modal.spans.some(s => s.start === start && s.end === end)) {
-            state.modal.spans.push({ languageCode: state.claim?.textLanguageCode || 'en', text: value.slice(start, end), start, end });
-            state.modal.spans.sort((a, b) => a.start - b.start);
-        }
-        evAlert('');
-        renderSpans();
-    };
-    const openEvidenceModal = async () => {
-        if (!state.claimId || !isEditable()) return;
-        if (state.dirty && !(await save())) return;
-        if (!norm(state.claim?.claimText)) { toast(t('EvSaveTextFirst'), 'warning'); return; }
-        state.modal = { doc: null, spans: [], docs: [] };
-        ['evSearch', 'evSection', 'evPage', 'evTable', 'evQuote'].forEach(id => { const el = byId(id); if (el) el.value = ''; });
-        const source = byId('evSpanSource');
-        if (source) source.value = state.claim.claimText;
-        const types = await loadEvidenceTypes();
-        const typeEl = byId('evType');
-        if (typeEl) typeEl.innerHTML = '<option value=""></option>' + Object.entries(types).map(([code, name]) => `<option value="${esc(code)}">${esc(name)}</option>`).join('');
-        byId('evNext').disabled = true;
-        renderSpans();
-        setStep(1);
-        if (modalEl && window.bootstrap) window.bootstrap.Modal.getOrCreateInstance(modalEl).show();
-        await loadDocs();
-    };
-    const goStep2 = () => {
-        const doc = state.modal.doc;
-        if (!doc) return;
-        byId('evDocTitle').textContent = doc.title;
-        byId('evDocMeta').textContent = [doc.code, doc.documentType, doc.kind === 'external' ? t('EvKindExternal') : t('EvKindControlled')].filter(Boolean).join(' · ');
-        byId('evDocPin').textContent = pinLabel(doc) ? fmt(t('EvWillPin'), pinLabel(doc)) : (doc.kind === 'external' ? t('EvPreviewExternalNote') : '');
-        setStep(2);
-    };
-    const addEvidence = async () => {
-        const doc = state.modal.doc;
-        const type = byId('evType')?.value;
-        const quote = norm(byId('evQuote')?.value);
-        if (!doc || !type || !quote || state.modal.spans.length === 0) { evAlert(t('EvRequiredMissing')); return; }
-        const button = byId('evAdd');
-        if (button) button.disabled = true;
-        try {
-            await request('POST', `${api}/claims/${encodeURIComponent(state.claimId)}/evidence`, {
-                documentKind: doc.kind,
-                documentId: doc.documentId,
-                documentVersionId: doc.kind === 'controlled' ? doc.currentVersionId : null,
-                evidenceTypeCode: type,
-                locator: {
-                    quote,
-                    section: norm(byId('evSection')?.value) || null,
-                    page: norm(byId('evPage')?.value) || null,
-                    table: norm(byId('evTable')?.value) || null
-                },
-                supportedSpans: state.modal.spans
-            });
-            window.bootstrap?.Modal.getOrCreateInstance(modalEl).hide();
-            toast(t('ToastEvidenceAdded'));
-            await loadEvidence();
-        } catch (error) {
-            evAlert(error.message);
-        } finally {
-            if (button) button.disabled = false;
-        }
-    };
-
-    // ─── remove evidence (reason required) ──────────────────────────────────────
-    const removeModalEl = byId('claimEvidenceRemoveModal');
-    const openRemove = linkId => {
-        state.removeLinkId = linkId;
-        const reason = byId('evRemoveReason');
-        if (reason) { reason.value = ''; reason.classList.remove('is-invalid'); }
-        if (removeModalEl && window.bootstrap) window.bootstrap.Modal.getOrCreateInstance(removeModalEl).show();
-    };
-    const confirmRemove = async () => {
-        const reasonEl = byId('evRemoveReason');
-        const reason = norm(reasonEl?.value);
-        if (!reason) { reasonEl?.classList.add('is-invalid'); toast(t('Err_removal_reason_required'), 'warning'); return; }
-        try {
-            await request('POST', `${api}/claims/evidence/${encodeURIComponent(state.removeLinkId)}/remove`, { reason });
-            window.bootstrap?.Modal.getOrCreateInstance(removeModalEl).hide();
-            toast(t('ToastEvidenceRemoved'));
-            await loadEvidence();
-        } catch (error) {
-            toast(error.message, 'error');
-        }
-    };
+    // ─── evidence modals (shared module claim-evidence.js — WP-CL-FE-4) ────────
+    const evidenceUi = window.ClaimEvidence.create({
+        linkUrl: () => `${api}/claims/${encodeURIComponent(state.claimId)}/evidence`,
+        // The supported phrases are marked on the SAVED claim text in its text language.
+        source: () => ({ text: state.claim?.claimText || '', languageCode: state.claim?.textLanguageCode || 'en' }),
+        beforeOpen: async () => {
+            if (!state.claimId || !isEditable()) return false;
+            return !state.dirty || await save();
+        },
+        onChanged: () => loadEvidence()
+    });
 
     // ─── events ─────────────────────────────────────────────────────────────────
     const bind = () => {
@@ -662,33 +479,14 @@
         byId('clmTextLanguage')?.addEventListener('change', markDirty);
         byId('btnAddQualifier')?.addEventListener('click', addQualifier);
         byId('clmQualifierInput')?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addQualifier(); } });
-        byId('btnAddEvidence')?.addEventListener('click', () => void openEvidenceModal());
+        byId('btnAddEvidence')?.addEventListener('click', () => void evidenceUi.open());
         byId('btnWithdrawReview')?.addEventListener('click', withdrawReview);
         byId('btnOpenNewVersion')?.addEventListener('click', openNewVersion);
         root.querySelectorAll('.js-save-draft').forEach(b => b.addEventListener('click', async () => { if (await save()) toast(t('ToastSaved')); }));
         root.querySelectorAll('.js-submit-review').forEach(b => b.addEventListener('click', submitReview));
-        byId('evSearch')?.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => void loadDocs(), 300); });
-        byId('evKind')?.addEventListener('change', () => { state.modal.doc = null; byId('evNext').disabled = true; void loadDocs(); });
-        byId('evNext')?.addEventListener('click', goStep2);
-        byId('evBack')?.addEventListener('click', () => setStep(1));
-        byId('evAdd')?.addEventListener('click', () => void addEvidence());
-        byId('evAddSelection')?.addEventListener('click', addSelection);
-        byId('evRemoveConfirm')?.addEventListener('click', () => void confirmRemove());
-
         root.addEventListener('click', event => {
             const q = event.target.closest('.js-remove-qualifier');
-            if (q) { state.qualifiers.splice(Number(q.dataset.index), 1); renderQualifiers(); markDirty(); return; }
-            const removeEvidence = event.target.closest('.js-remove-evidence');
-            if (removeEvidence) { openRemove(removeEvidence.dataset.linkId); return; }
-            const doc = event.target.closest('.js-ev-doc');
-            if (doc && !doc.disabled) {
-                state.modal.doc = state.modal.docs[Number(doc.dataset.index)] || null;
-                byId('evNext').disabled = !state.modal.doc;
-                renderDocs();
-                return;
-            }
-            const span = event.target.closest('.js-ev-span-remove');
-            if (span) { state.modal.spans.splice(Number(span.dataset.index), 1); renderSpans(); }
+            if (q) { state.qualifiers.splice(Number(q.dataset.index), 1); renderQualifiers(); markDirty(); }
         });
 
         window.addEventListener('beforeunload', e => { if (state.dirty && isEditable()) { e.preventDefault(); e.returnValue = ''; } });

@@ -89,6 +89,60 @@ public sealed partial class ClaimsController : Controller
         return View($"{ViewRoot}/Edit.cshtml");
     }
 
+    // ---------------- WP-CL-FE-4 — country version pages + code suggestion ----------------
+
+    /// <summary>Open a country version of a claim (mockup scenario 4). Read opens the page read-only; the save / submit
+    /// controls render only for crm.claim.manage (CRM re-checks every write).</summary>
+    [HttpGet("{claimId:guid}/Countries/{countryCode}/Create")]
+    public IActionResult CountryVersionCreate(Guid claimId, string countryCode)
+    {
+        if (RequirePage(ReadPermission) is { } denied) return denied;
+        ViewData["CanManageClaims"] = HasAnyPermission(ManagePermission);
+        ViewData["ClaimId"] = claimId.ToString();
+        ViewData["CountryCode"] = (countryCode ?? string.Empty).Trim().ToUpperInvariant();
+        ViewData["CountryVersionId"] = string.Empty;
+        return View($"{ViewRoot}/CountryVersion.cshtml");
+    }
+
+    [HttpGet("CountryVersions/{versionId:guid}/Edit")]
+    public IActionResult CountryVersionEdit(Guid versionId)
+    {
+        if (RequirePage(ReadPermission) is { } denied) return denied;
+        ViewData["CanManageClaims"] = HasAnyPermission(ManagePermission);
+        ViewData["ClaimId"] = string.Empty; // read from the version
+        ViewData["CountryCode"] = string.Empty;
+        ViewData["CountryVersionId"] = versionId.ToString();
+        return View($"{ViewRoot}/CountryVersion.cshtml");
+    }
+
+    /// <summary>CLM-{PRODUCT NAME}-{NN} suggestion for a new claim (see <see cref="ClaimCodeSuggestion"/>); NN follows
+    /// the tenant's existing codes (one list read). A failed read still suggests NN = 01.</summary>
+    [HttpGet("api/v2/claims/code-suggestion")]
+    public async Task<IActionResult> CodeSuggestion([FromQuery] string? productName, CancellationToken ct)
+    {
+        if (RequireJson(ManagePermission) is { } denied) return denied;
+        var existing = new List<string>();
+        var response = await SendGatewayAsync(HttpMethod.Get, $"{ClaimsBase}?includeArchived=true", null, ct);
+        if (response is not null && response.IsSuccessStatusCode)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+                if (doc.RootElement.TryGetProperty("data", out var data)
+                    && data.TryGetProperty("items", out var items) && items.ValueKind == JsonValueKind.Array)
+                {
+                    existing.AddRange(items.EnumerateArray().Select(i => GetFirstString(i, "claimCode")).OfType<string>());
+                }
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Claim code suggestion: the claim list could not be parsed.");
+            }
+        }
+
+        return Ok(new { data = new { code = ClaimCodeSuggestion.Suggest(productName, existing) } });
+    }
+
     // ---------------- Same-origin browser proxy (claim + component-picker allowlist only) ----------------
 
     // WP-CL-FE-1 — the old list door now serves the v2 list (same CRM read; kept so older bookmarks / scripts still
