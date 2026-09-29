@@ -5987,34 +5987,85 @@ tags.diten-tags .tagify__input {
 .wcn-calcard-extras { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; margin-block-start: .375rem; }
 .wcn-calcard-btn { display: inline-flex; align-items: center; gap: .25rem; }
 
-/* Events. FullCalendar draws them; these classes are set by the host. */
-.wcn-calview .fc { font-size: .8125rem; }
-.wcn-calview .fc .dc-task { background: color-mix(in sRGB, var(--bs-primary) 16%, var(--bs-card-bg));
+/* Events. FullCalendar draws them; these classes are set by the host. Scoped on the COMPONENT's own root
+   (.dc-calendar.fc, one element) since WP-UI-MEETINGS-CALENDAR-01: the Meetings page draws the same events and must
+   read the same — a page-scoped rule (.wcn-calview .fc …) left its meetings unstyled. */
+.dc-calendar.fc { font-size: .8125rem; }
+.dc-calendar.fc .dc-task { background: color-mix(in sRGB, var(--bs-primary) 16%, var(--bs-card-bg));
     border-color: var(--bs-primary); color: var(--bs-body-color); }
-.wcn-calview .fc .dc-task-block { background: var(--bs-primary); color: var(--bs-white); }
-.wcn-calview .fc .dc-meeting-accepted { background: var(--bs-info); border-color: var(--bs-info); color: var(--bs-white); }
-.wcn-calview .fc .dc-meeting-pending { background: color-mix(in sRGB, var(--bs-info) 10%, var(--bs-card-bg));
+.dc-calendar.fc .dc-task-block { background: var(--bs-primary); color: var(--bs-white); }
+.dc-calendar.fc .dc-meeting-accepted { background: var(--bs-info); border-color: var(--bs-info); color: var(--bs-white); }
+.dc-calendar.fc .dc-meeting-pending { background: color-mix(in sRGB, var(--bs-info) 10%, var(--bs-card-bg));
     border: 1px dashed var(--bs-info); color: var(--bs-body-color); }
-.wcn-calview .fc .dc-conflict { border: 2px solid var(--bs-danger); }
-.wcn-calview .fc .dc-due { background: var(--bs-danger); border-color: var(--bs-danger); color: var(--bs-white); }
-.wcn-calview .fc .dc-plan { background: var(--bs-primary); border-color: var(--bs-primary); color: var(--bs-white); }
-.wcn-calview .fc .dc-event-body { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; overflow: hidden; }
-.wcn-calview .fc .dc-event-time { font-weight: 600; }
-.wcn-calview .fc .dc-event-title { overflow: hidden; text-overflow: ellipsis; }
-.wcn-calview .fc .dc-event-actions { display: inline-flex; flex-wrap: wrap; gap: .25rem; margin-inline-start: auto; }
-.wcn-calview .fc .dc-event-chip { font-size: .6875rem; padding: 0 .25rem; border-radius: .25rem;
+/* A meeting the reader can see but is not on (a read-all reader on the Meetings page): filled, but quieter. */
+.dc-calendar.fc .dc-meeting-other { background: color-mix(in sRGB, var(--bs-secondary-color) 16%, var(--bs-card-bg));
+    border-color: var(--bs-secondary-color); color: var(--bs-body-color); }
+.dc-calendar.fc .dc-conflict { border: 2px solid var(--bs-danger); }
+.dc-calendar.fc .dc-due { background: var(--bs-danger); border-color: var(--bs-danger); color: var(--bs-white); }
+.dc-calendar.fc .dc-plan { background: var(--bs-primary); border-color: var(--bs-primary); color: var(--bs-white); }
+.dc-calendar.fc .dc-event-body { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem; overflow: hidden; }
+.dc-calendar.fc .dc-event-time { font-weight: 600; }
+.dc-calendar.fc .dc-event-title { overflow: hidden; text-overflow: ellipsis; }
+.dc-calendar.fc .dc-event-actions { display: inline-flex; flex-wrap: wrap; gap: .25rem; margin-inline-start: auto; }
+.dc-calendar.fc .dc-event-chip { font-size: .6875rem; padding: 0 .25rem; border-radius: .25rem;
     background: color-mix(in sRGB, var(--bs-card-bg) 70%, transparent); color: var(--bs-body-color); }
-.wcn-calview .fc .dc-event-warning { color: var(--bs-warning); }
-.wcn-calview .fc .dc-warned { box-shadow: inset 0 0 0 2px var(--bs-warning); }
-.wcn-calview .fc .dc-event-plan { padding: 0 .25rem; line-height: 1.2; color: inherit; background: transparent; border: 0; }
+.dc-calendar.fc .dc-event-warning { color: var(--bs-warning); }
+.dc-calendar.fc .dc-warned { box-shadow: inset 0 0 0 2px var(--bs-warning); }
+.dc-calendar.fc .dc-event-plan { padding: 0 .25rem; line-height: 1.2; color: inherit; background: transparent; border: 0; }
 
 /* Non-working time: FullCalendar's own non-business shading, weekends and holidays by day, the holiday's name. */
-.wcn-calview .fc .fc-non-business { background: color-mix(in sRGB, var(--bs-secondary-color) 18%, transparent); }
-.wcn-calview .fc .dc-day-weekend { background: color-mix(in sRGB, var(--bs-secondary-color) 10%, transparent); }
-.wcn-calview .fc .dc-day-holiday { background: color-mix(in sRGB, var(--bs-warning) 14%, transparent); }
-.wcn-calview .fc .dc-holiday-band { background: color-mix(in sRGB, var(--bs-warning) 22%, transparent); opacity: 1; }
-.wcn-calview .fc .dc-holiday-band .dc-band-title { display: block; padding: .125rem .25rem; color: var(--bs-body-color);
+.dc-calendar.fc .fc-non-business { background: color-mix(in sRGB, var(--bs-secondary-color) 18%, transparent); }
+.dc-calendar.fc .dc-day-weekend { background: color-mix(in sRGB, var(--bs-secondary-color) 10%, transparent); }
+.dc-calendar.fc .dc-day-holiday { background: color-mix(in sRGB, var(--bs-warning) 14%, transparent); }
+.dc-calendar.fc .dc-holiday-band { background: color-mix(in sRGB, var(--bs-warning) 22%, transparent); opacity: 1; }
+.dc-calendar.fc .dc-holiday-band .dc-band-title { display: block; padding: .125rem .25rem; color: var(--bs-body-color);
     font-size: .6875rem; font-weight: 600; }
+
+/* The unresolved-calendar sentence over any calendar (DitenCalendar.unresolvedNotice, WP-UI-MEETINGS-CALENDAR-01 D1). */
+.dc-unresolved-note { display: flex; align-items: center; gap: .375rem; margin-block: 0 .75rem; font-size: .8125rem;
+    color: var(--bs-warning); }
+
+/* The ONE meeting-invitation card (shared/diten-invite-card.js): the Task Center's "Davetler" panel and the Meetings
+   page's "pending invitations" panel. Same rhythm as the Task Center's splitCard it replaces for invitations. */
+.dic-card { padding: .625rem .75rem; display: flex; flex-direction: column; gap: .375rem; box-shadow: none;
+    border: 1px solid var(--bs-border-color); }
+.dic-card-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.dic-card-type { display: inline-flex; align-items: center; gap: .25rem; font-size: .6875rem; font-weight: 600;
+    color: var(--bs-info); }
+.dic-card-kind { font-size: .6875rem; color: var(--bs-secondary-color); overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; }
+.dic-card-title { font-size: .8125rem; font-weight: 600; color: var(--bs-heading-color); overflow-wrap: anywhere; }
+.dic-card-meta { display: flex; flex-wrap: wrap; gap: .25rem .75rem; font-size: .75rem; color: var(--bs-secondary-color); }
+.dic-card-meta span { display: inline-flex; align-items: center; gap: .25rem; }
+.dic-card-actions { display: flex; flex-wrap: wrap; gap: .25rem; }
+.dic-card-btn { display: inline-flex; align-items: center; gap: .25rem; }
+
+/* Meetings page — list ⇄ calendar (MOD-0357 S3b 2c). The panel on the left, the calendar on the right, stacked on
+   a narrow screen; the same geometry as the Task Center's planning view. */
+.mc-view-switch .btn.active { color: var(--bs-primary); background: color-mix(in sRGB, var(--bs-primary) 12%, var(--bs-card-bg)); }
+.mc-calendar-layout { display: grid; grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr); gap: 1rem; }
+@media (max-width: 991.98px) { .mc-calendar-layout { grid-template-columns: minmax(0, 1fr); } }
+.mc-invites { padding: .75rem; display: flex; flex-direction: column; gap: .5rem; min-inline-size: 0; }
+.mc-invites-title { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin: 0;
+    font-size: .8125rem; font-weight: 600; }
+.mc-invites-count { min-inline-size: 1.25rem; padding: 0 .375rem; border-radius: 1rem; font-size: .6875rem;
+    text-align: center; background: var(--bs-body-bg); color: var(--bs-body-color); }
+.mc-invites-empty { margin: 0; font-size: .75rem; color: var(--bs-secondary-color); }
+.mc-invites-list { display: flex; flex-direction: column; gap: .5rem; overflow-y: auto; max-block-size: 70vh; }
+.mc-invites-list .dic-card { cursor: pointer; }
+.mc-calendar-main { padding: 1rem; min-inline-size: 0; }
+.mc-calendar-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem;
+    margin-block-end: .75rem; }
+.mc-calendar-legend { display: flex; flex-wrap: wrap; gap: .5rem 1rem; font-size: .75rem; color: var(--bs-secondary-color); }
+.mc-calendar-lg { display: inline-flex; align-items: center; gap: .375rem; }
+.mc-calendar-swatch { inline-size: .875rem; block-size: .625rem; border-radius: .125rem; display: inline-block;
+    border: 1px solid transparent; }
+.mc-calendar-swatch-accepted { background: var(--bs-info); border-color: var(--bs-info); }
+.mc-calendar-swatch-pending { background: transparent; border: 1px dashed var(--bs-info); }
+.mc-calendar-swatch-other { background: color-mix(in sRGB, var(--bs-secondary-color) 16%, var(--bs-card-bg));
+    border-color: var(--bs-secondary-color); }
+.mc-calendar-error { display: flex; align-items: center; gap: .375rem; margin-block: 0 .75rem; font-size: .8125rem;
+    color: var(--bs-danger); }
 
 /* The plan dialog's time and length fields (a form dialog, dressed by dialogLook). */
 .wcn-plan-form { display: flex; flex-direction: column; gap: .375rem; text-align: start; }

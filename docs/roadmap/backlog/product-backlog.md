@@ -4990,6 +4990,9 @@ Kalan: #4 aylık takvim → ortak takvim bileşeni (S3b, sahip: önce tasarım k
 **#4 KAPANIR (WP-UI-CALENDAR-VIEW-01, 2026-09-29, CT kabulü bekliyor):** eski `renderCalendar` kaldırıldı; ortak bileşen
 `shared/diten-calendar.js` (+ `shared/diten-zoned-time.js`, `Views/Shared/_CalendarAssets.cshtml`, yerel FullCalendar 6.1.15) Görev
 Merkezi'nin bütün sekmelerinde çiziyor (İşlerim planlama, diğerleri salt okunur). Toplantılar sayfası aynı bileşeni 2c'de kullanır.
+**2c (WP-UI-MEETINGS-CALENDAR-01, 2026-09-29, CT kabulü bekliyor):** Toplantılar sayfası aynı bileşeni kullanıyor (salt okunur); davet kartı
+tek modül `shared/diten-invite-card.js`'e çıkarıldı, Görev Merkezi Davetler paneli ve Toplantılar davet paneli onu çağırıyor (muhafız:
+`meetings-calendar-view.test.js` "the invitation card is drawn in ONE module").
 
 **Hemen değiştir (çıkarma gerekmez):** Meetings iptal modalı → `showConfirm` (textarea, zorunlu) · Meetings tarih-saat → `DitenDateField.enhance({enableTime:true})`.
 **Önce çıkar, sonra kullan (öncelik sırası):** 1 diyalog görünüm adaptörü (`app.js:7727-7787`) → S5/S6 gerekçe diyalogları + Meetings düzenleyen-değiştir ·
@@ -6922,7 +6925,14 @@ günceller; bandın dışına çıkış bilinçliyse CLAUDE.md port satırı da 
 
 **Takvimde uyarı işareti kalıcı değil: akış görev başına uyarı taşımıyor**
 
-DURUM: AÇIK · SAHİP: CT (Görev Merkezi / MOD-0024) · BULAN: takvim 2b ajanı, CT kabulü · KAYIT: 2026-09-29
+DURUM: KAPANDI (CT kabulü bekliyor) — WP-UI-MEETINGS-CALENDAR-01 (takvim 2c, P-2026-09-29-04) · SAHİP: CT (Görev Merkezi / MOD-0024) · BULAN: takvim 2b ajanı, CT kabulü · KAYIT: 2026-09-29
+
+**Kapanış notu (2026-09-29):** `GET /api/v1/work/calendar` her görev satırına `warnings[]` taşıyor — plan yazımıyla aynı şekil ve kodlar
+(`TASK_PLAN_OVERLAPS_MEETING` başlık+saatle, `TASK_PLAN_OUTSIDE_WORKING_HOURS`), okuma anında motorun kuralıyla hesaplanır
+(`GetMyWorkCalendarHandler.WarningsFor`: `TaskPlanBlockRules.Fit` + kişinin kendi toplantıları, yarı açık). Saklı blok artık penceresine
+sığmıyorsa (saatler değişti) da "çalışma saati dışında" — plan taşınmaz, işaretlenir (sahip kuralı 2026-09-29). Görev Merkezi `state.calendarNotes`
+kaldırıldı; işaret akıştan, sayfa yenilenince durur. Testler: Platform HTTP/Mongo `BL471_*` (4), vitest "BL-471 — a block's warning mark comes
+from the feed" (4); sabotaj: akış yok sayılınca kırmızı.
 
 Plan yazımı `warnings[]` döndürüyor (toplantıyla çakışma, çalışma saati dışı); takvim bloğa işareti yalnız o oturumda koyuyor, sayfa yenilenince
 kayboluyor, çünkü `GET /api/v1/work/calendar` görev başına uyarı taşımıyor. İş: akışın görev satırına okuma anında hesaplanan uyarı kodları

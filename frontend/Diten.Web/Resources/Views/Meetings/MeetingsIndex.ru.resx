@@ -114,4 +114,34 @@
   <data name="FormValidationError" xml:space="preserve"><value>Пожалуйста, заполните все обязательные поля.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Типы совещаний</value></data>
   <data name="ManageSeries" xml:space="preserve"><value>Серии совещаний</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve">
+    <value>Вид</value>
+  </data>
+  <data name="ViewList" xml:space="preserve">
+    <value>Список</value>
+  </data>
+  <data name="ViewCalendar" xml:space="preserve">
+    <value>Календарь</value>
+  </data>
+  <data name="CalendarInvitesTitle" xml:space="preserve">
+    <value>Мои приглашения без ответа</value>
+  </data>
+  <data name="CalendarInvitesEmpty" xml:space="preserve">
+    <value>Нет приглашений, ожидающих вашего ответа.</value>
+  </data>
+  <data name="CalendarLegendAccepted" xml:space="preserve">
+    <value>Принятые или организованные мной</value>
+  </data>
+  <data name="CalendarLegendPending" xml:space="preserve">
+    <value>Ожидают моего ответа</value>
+  </data>
+  <data name="CalendarLegendOther" xml:space="preserve">
+    <value>Другие встречи</value>
+  </data>
+  <data name="CalendarLoadFailed" xml:space="preserve">
+    <value>Не удалось загрузить календарь.</value>
+  </data>
+  <data name="InviteAccepted" xml:space="preserve">
+    <value>Приглашение принято.</value>
+  </data>
 </root>

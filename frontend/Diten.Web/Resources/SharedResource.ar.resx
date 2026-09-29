@@ -1010,4 +1010,25 @@
   <data name="CalendarNoEvents" xml:space="preserve">
     <value>لا يوجد ما يُعرض</value>
   </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>لم يتم تعريف تقويم العمل — لا يمكن عرض عطلات نهاية الأسبوع والعطلات الرسمية.</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>دعوة إلى اجتماع</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>قبول</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>رفض</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>هذا الاجتماع يتعارض مع خطتك</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>يتداخل مع الفترة المخططة «{0}» ({1}). هل تريد القبول على أي حال؟</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>القبول على أي حال</value>
+  </data>
 </root>

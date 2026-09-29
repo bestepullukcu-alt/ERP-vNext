@@ -1011,4 +1011,25 @@
   <data name="CalendarNoEvents" xml:space="preserve">
     <value>Nada que mostrar</value>
   </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>No hay un calendario laboral definido: no se pueden mostrar los fines de semana ni los festivos.</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>Invitación a reunión</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>Aceptar</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>Rechazar</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>Esta reunión se superpone con su plan</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>Se superpone con su bloque planificado «{0}» ({1}). ¿Aceptar de todos modos?</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>Aceptar De Todos Modos</value>
+  </data>
 </root>

@@ -422,9 +422,21 @@
         };
     };
 
+    /**
+     * WP-UI-MEETINGS-CALENDAR-01 (D1) — one sentence over the calendar when the feed could not resolve a working
+     * calendar for some day it shows (`calendarUnresolved`): weekends and holidays are then NOT drawn, and a reader
+     * who sees a plain grid must not take it for "every day is a working day". Written once, here, for every host;
+     * empty when every day resolved (or there are no day facts at all — a read-only tab).
+     */
+    const unresolvedNotice = (days, labels) => {
+        if (!(days || []).some((day) => day && day.calendarUnresolved)) { return ''; }
+        const text = label(Object.assign({}, readLabels(), labels || {}), 'CalendarUnresolved');
+        return `<p class="dc-unresolved-note" role="note"><i class="bx bx-info-circle"></i>${escapeHtml(text)}</p>`;
+    };
+
     const escapeHtml = (value) => String(value == null ? '' : value)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-    global.DitenCalendar = { create, DRAG_TYPE, STEP_MINUTES, TIMEGRID_HEIGHT, resolveDrop, businessHoursFor, buildLocale };
+    global.DitenCalendar = { create, DRAG_TYPE, STEP_MINUTES, TIMEGRID_HEIGHT, resolveDrop, businessHoursFor, buildLocale, unresolvedNotice };
 })(typeof window !== 'undefined' ? window : globalThis);

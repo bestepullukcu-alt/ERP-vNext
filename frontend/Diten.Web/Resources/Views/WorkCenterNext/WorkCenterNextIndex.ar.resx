@@ -2469,4 +2469,7 @@
   <data name="PlanTimeHint" xml:space="preserve">
     <value>الأوقات بتوقيت المنطقة الزمنية للشركة. تُقطع الكتلة التي تتجاوز نهاية يوم العمل عند تلك النقطة.</value>
   </data>
+  <data name="CalTruncatedNoEstimate" xml:space="preserve">
+    <value>تم قطعه عند نهاية اليوم.</value>
+  </data>
 </root>

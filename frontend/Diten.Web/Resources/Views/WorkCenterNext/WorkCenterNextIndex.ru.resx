@@ -2469,4 +2469,7 @@
   <data name="PlanTimeHint" xml:space="preserve">
     <value>Время указано в часовом поясе компании. Блок, выходящий за конец рабочего дня, обрезается.</value>
   </data>
+  <data name="CalTruncatedNoEstimate" xml:space="preserve">
+    <value>Обрезано в конце рабочего дня.</value>
+  </data>
 </root>

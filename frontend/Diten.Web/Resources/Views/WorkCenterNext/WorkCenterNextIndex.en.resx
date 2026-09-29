@@ -2469,4 +2469,7 @@
   <data name="PlanTimeHint" xml:space="preserve">
     <value>Times are in the company time zone. A block that runs past the end of the working day is cut there.</value>
   </data>
+  <data name="CalTruncatedNoEstimate" xml:space="preserve">
+    <value>Cut at the end of the day.</value>
+  </data>
 </root>

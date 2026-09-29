@@ -389,6 +389,10 @@
             // Fallback: Native browser confirm
             if (confirm(title + '\n\n' + subtext)) {
                 if (typeof callback === 'function') { callback(); }
+            } else if (typeof options.onCancel === 'function') {
+                // The Swal path above calls onCancel on No; the native one must too, or a caller that waits for an
+                // answer (an invitation's Accept) hangs forever (CT acceptance, calendar 2c review).
+                options.onCancel();
             }
         } catch (err) {
             console.error('[MOD-0013 showConfirm] CRITICAL ERROR:', err);

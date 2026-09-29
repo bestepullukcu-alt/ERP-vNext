@@ -1070,4 +1070,25 @@
   <data name="CalendarNoEvents" xml:space="preserve">
     <value>Nothing to show</value>
   </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>Working calendar is not defined — weekends and holidays cannot be shown.</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>Meeting invitation</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>Decline</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>This meeting overlaps your plan</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>It overlaps your planned block "{0}" ({1}). Accept anyway?</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>Accept Anyway</value>
+  </data>
 </root>

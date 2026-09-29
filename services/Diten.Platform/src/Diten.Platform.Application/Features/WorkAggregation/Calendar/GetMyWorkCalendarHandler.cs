@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Application.Features.WorkingHours;
 using Diten.Platform.Domain.Entities.Tasks;
@@ -69,14 +70,31 @@ public sealed class GetMyWorkCalendarHandler : IRequestHandler<GetMyWorkCalendar
 
         var blocks = held
             .Where(t => t.PlannedStartAt is not null && t.PlannedDurationMinutes is not null)
-            .Select(t => (t.Id, Start: t.PlannedStartAt!.Value, End: EndOf(t)!.Value))
+            .Select(t => (t.Id, t.Title, Start: t.PlannedStartAt!.Value.ToUniversalTime(), End: EndOf(t)!.Value.ToUniversalTime()))
+            .OrderBy(b => b.Start)
             .ToList();
 
-        var tasks = held
+        var planned = held
             .Where(t => t.PlannedDate is not null)
             .Select(t => (Task: t, Day: PlanDay(t)))
             .Where(x => x.Day >= from && x.Day <= to)
             .OrderBy(x => x.Day).ThenBy(x => x.Task.PlannedStartAt ?? DateTimeOffset.MaxValue)
+            .ToList();
+
+        // ── The caller's own meetings ────────────────────────────────────────────────────────────────────────
+        // Read ONCE, over the range AND the end of any block in it (a late block on the last day may run past its
+        // midnight): the same reader the plan write's meeting warning uses, so the two cannot disagree.
+        var rangeStart = LocalMidnightUtc(from, zone);
+        var rangeEnd = LocalMidnightUtc(to.AddDays(1), zone);
+        var readEnd = planned
+            .Select(x => EndOf(x.Task))
+            .Where(end => end is not null)
+            .Select(end => end!.Value.ToUniversalTime())
+            .DefaultIfEmpty(rangeEnd)
+            .Max();
+        var mine = await _meetings.ListMineAsync(me, rangeStart, readEnd > rangeEnd ? readEnd : rangeEnd, ct);
+
+        var tasks = planned
             .Select(x => new WorkCalendarTaskDto(
                 x.Task.Id.ToString(),
                 x.Task.Title,
@@ -90,19 +108,31 @@ public sealed class GetMyWorkCalendarHandler : IRequestHandler<GetMyWorkCalendar
                 x.Task.DueAt,
                 Conflict: x.Task.PlannedStartAt is { } start
                           && blocks.Any(b => b.Id != x.Task.Id
-                                             && TaskPlanBlockRules.Overlaps(start, EndOf(x.Task)!.Value, b.Start, b.End))))
+                                             && TaskPlanBlockRules.Overlaps(start, EndOf(x.Task)!.Value, b.Start, b.End)),
+                Warnings: WarningsFor(x.Task, hours, mine)))
             .ToList();
 
         var notStarted = held.Where(t => t.Lifecycle is TaskLifecycle.Open or TaskLifecycle.Planned).ToList();
         var unplannedCount = notStarted.Count(t => t.PlannedDate is null);
         var planPassedCount = notStarted.Count(t => t.PlannedDate is not null && PlanDay(t) < today);
 
-        // ── The caller's own meetings ────────────────────────────────────────────────────────────────────────
-        var meetings = (await _meetings.ListMineAsync(
-                me, LocalMidnightUtc(from, zone), LocalMidnightUtc(to.AddDays(1), zone), ct))
-            .Select(m => new WorkCalendarMeetingDto(
-                m.MeetingId.ToString(), m.Title, m.StartAt.ToUniversalTime(), m.EndAt.ToUniversalTime(),
-                m.Response == InvitationResponse.Accepted ? "accepted" : "pending"))
+        var meetings = mine
+            .Where(m => m.StartAt < rangeEnd && m.EndAt > rangeStart)
+            .Select(m =>
+            {
+                var startUtc = m.StartAt.ToUniversalTime();
+                var endUtc = m.EndAt.ToUniversalTime();
+                // Half-open, the engine's own rule: a block that ends when the meeting starts is not a collision.
+                var overlap = blocks
+                    .Where(b => TaskPlanBlockRules.Overlaps(startUtc, endUtc, b.Start, b.End))
+                    .Select(b => new WorkCalendarPlanOverlapDto(b.Id.ToString(), b.Title, b.Start, b.End))
+                    .FirstOrDefault();
+                return new WorkCalendarMeetingDto(
+                    m.MeetingId.ToString(), m.Title, startUtc, endUtc,
+                    m.Response == InvitationResponse.Accepted ? "accepted" : "pending",
+                    OverlapsPlan: overlap is not null,
+                    PlanOverlap: overlap);
+            })
             .ToList();
 
         var pendingInviteCount = await CountPendingInvitesAsync(me, ct);
@@ -140,6 +170,49 @@ public sealed class GetMyWorkCalendarHandler : IRequestHandler<GetMyWorkCalendar
         return pending.Count(a => meetings.TryGetValue(a.MeetingId, out var m)
                                   && m.Lifecycle == MeetingLifecycle.Scheduled
                                   && m.StartAt.UtcDateTime.Date >= today);
+    }
+
+    /// <summary>
+    /// BL-471 — the plan write's warnings, computed again at READ time with the same rules, so a block's mark is a fact
+    /// of the data and not of the session that wrote it:
+    /// <list type="bullet">
+    /// <item><see cref="TaskPlanWarningCodes.OutsideWorkingHours"/> — <see cref="TaskPlanBlockRules.Fit"/> on the stored
+    /// block says it starts outside every window, OR that it no longer fits its window as stored (the write would cut
+    /// it now). The second case is the owner's 2026-09-29 rule: when the hours change an existing plan is NOT moved,
+    /// it is flagged.</item>
+    /// <item><see cref="TaskPlanWarningCodes.OverlapsMeeting"/> — one per meeting of the caller's own (accepted or not
+    /// answered; the reader never returns a declined or cancelled one) the block overlaps, half-open.</item>
+    /// </list>
+    /// A day plan has no hours: no warning.
+    /// </summary>
+    private static IReadOnlyList<TaskPlanWarningDto> WarningsFor(
+        TaskItem task, WorkingHoursResult hours, IReadOnlyList<CalendarMeeting> mine)
+    {
+        if (task.PlannedStartAt is not { } plannedStart || task.PlannedDurationMinutes is not { } minutes)
+        {
+            return [];
+        }
+
+        var start = plannedStart.ToUniversalTime();
+        var end = start.AddMinutes(minutes);
+        var warnings = new List<TaskPlanWarningDto>();
+
+        var fit = TaskPlanBlockRules.Fit(start, minutes, hours.DayOf(hours.LocalDateOf(start)));
+        if (fit.OutsideWorkingHours || fit.Truncated)
+        {
+            warnings.Add(new TaskPlanWarningDto(TaskPlanWarningCodes.OutsideWorkingHours));
+        }
+
+        foreach (var meeting in mine)
+        {
+            if (TaskPlanBlockRules.Overlaps(start, end, meeting.StartAt.ToUniversalTime(), meeting.EndAt.ToUniversalTime()))
+            {
+                warnings.Add(new TaskPlanWarningDto(
+                    TaskPlanWarningCodes.OverlapsMeeting, meeting.Title, meeting.StartAt.ToUniversalTime(), meeting.EndAt.ToUniversalTime()));
+            }
+        }
+
+        return warnings;
     }
 
     /// <summary>

@@ -225,9 +225,6 @@
         calendarFeedKey: null,
         calendarFeedError: null,
         calendarRange: null,
-        // What the engine said about a plan it SAVED (warnings) — shown on the block until the next write. The feed
-        // does not carry warnings, so this lives for the session only.
-        calendarNotes: {},
         // The tenant zone when only the plan dialog needed it (the feed was never loaded on this view).
         calendarZoneOnly: null,
         tableColumnVisibility: [true, true, true, true, true, true, true, true],
@@ -6424,6 +6421,34 @@
         .map((action) => `<button type="button" class="btn btn-xs btn-label-${action.code === 'acceptInvite' ? 'success' : 'secondary'} wcn-calcard-btn" data-wcn-action="${esc(action.key)}" data-wcn-id="${esc(item.id)}"${action.disabled ? ' disabled' : ''}>${esc(actionLabel(action))}</button>`)
         .join('');
 
+    /*
+     * WP-UI-MEETINGS-CALENDAR-01 (B) — an INVITATION in the panel is drawn by the one shared card
+     * (shared/diten-invite-card.js), the same function the Meetings page's "pending invitations" panel calls. This
+     * page keeps only its wiring: the answer buttons carry `data-wcn-action` into the SAME performAction every other
+     * button goes through, and the card opens the item like any row. Never draggable — an invitation is answered.
+     */
+    const feedMeeting = (id) => (state.calendarFeed?.meetings || []).find((meeting) => meeting.meetingId === id) || null;
+
+    const inviteCard = (item) => global.DitenInviteCard.render({
+        id: item.id,
+        title: item.title,
+        typeName: item.sourceType,
+        // The feed's instant when the meeting is in the visible range (date AND time), else the item's own day.
+        when: feedMeeting(item.id)?.startAt || item.dueAt,
+        zone: feedZone(),
+        organizerName: item.requester,
+        attrs: { 'data-wcn-row': item.id, tabindex: '0', role: 'button', 'aria-label': tf('TableOpenRow', item.title) },
+        buttons: ['acceptInvite', 'declineInvite']
+            .map((code) => actionByKey(item, code))
+            .filter(Boolean)
+            .map((action) => ({
+                tone: action.code === 'acceptInvite' ? 'accept' : 'decline',
+                label: actionLabel(action),
+                attrs: { 'data-wcn-action': action.key, 'data-wcn-id': item.id },
+                disabled: !!action.disabled
+            }))
+    });
+
     /** What a panel card carries beyond splitCard itself: flags and its own buttons (the card is not rewritten). */
     const calendarCardExtras = (item, panel) => {
         const chips = [];
@@ -6454,7 +6479,9 @@
         }).join('');
         const items = calendarPanelItems(state.calendarPanel);
         const cards = items.length
-            ? items.map((item) => splitCard(item, calendarCardExtras(item, state.calendarPanel), state.calendarPanel !== 'invites' && planningReady())).join('')
+            ? items.map((item) => (state.calendarPanel === 'invites'
+                ? inviteCard(item)
+                : splitCard(item, calendarCardExtras(item, state.calendarPanel), state.calendarPanel !== 'invites' && planningReady()))).join('')
             : `<p class="wcn-calpanel-empty">${esc(t('CalPanelEmpty'))}</p>`;
         return `<aside class="card wcn-calpanel" data-wcn-calpanel-dropzone aria-label="${esc(t('CalPanelTitle'))}">
             <div class="wcn-calpanel-tabs" role="tablist">${tabs}</div>
@@ -6480,10 +6507,14 @@
         const note = planning && state.calendarFeedError
             ? `<p class="wcn-calview-note" role="alert"><i class="bx bx-error-circle"></i>${esc(state.calendarFeedError)}</p>`
             : '';
+        // D1 — the same sentence the Meetings calendar shows, from the one shared implementation.
+        const unresolved = planning && state.calendarFeed && global.DitenCalendar?.unresolvedNotice
+            ? global.DitenCalendar.unresolvedNotice(state.calendarFeed.days)
+            : '';
         return `<div class="wcn-calview ${planning ? 'wcn-calview-planning' : 'wcn-calview-readonly'}">
             ${planning ? renderCalendarPanel() : ''}
             <section class="card wcn-calview-main">
-                ${renderCalendarLegend()}${note}
+                ${renderCalendarLegend()}${note}${unresolved}
                 <div class="wcn-calview-host" data-wcn-calendar-host></div>
             </section>
         </div>`;
@@ -6496,11 +6527,10 @@
         if (!feed) { return []; }
         const tasks = (feed.tasks || []).map((task) => {
             const item = itemById(task.taskId);
-            const note = state.calendarNotes[task.taskId];
             const classNames = ['dc-task'];
             if (task.plannedStartAt) { classNames.push('dc-task-block'); }
             if (task.conflict) { classNames.push('dc-conflict'); }
-            if (note && note.warnings && note.warnings.length) { classNames.push('dc-warned'); }
+            if ((task.warnings || []).length) { classNames.push('dc-warned'); }
             const base = {
                 id: task.taskId,
                 title: task.title,
@@ -6553,9 +6583,15 @@
         const parts = [];
         const remaining = event.extendedProps.remainingMinutes;
         if (remaining > 0) { parts.push(`<span class="dc-event-chip">${esc(tf('CalChipRemaining', remaining))}</span>`); }
-        const note = state.calendarNotes[event.id];
-        if (note && note.warnings && note.warnings.length) {
-            parts.push(`<span class="dc-event-warning" title="${esc(note.messages.join(' · '))}"><i class="bx bx-error"></i></span>`);
+        /*
+         * BL-471 — the mark is a fact of the DATA, not of the session: the feed computes each block's warnings at
+         * read time with the engine's rule (GetMyWorkCalendarHandler.WarningsFor), so it survives a reload and
+         * appears for a meeting that arrived after the plan was written. The browser only says the sentence.
+         */
+        const warnings = (feedTask(event.id) || {}).warnings || [];
+        if (warnings.length) {
+            const messages = warnings.map((w) => global.TasksApi?.planWarningMessage?.(w) || w.code);
+            parts.push(`<span class="dc-event-warning" title="${esc(messages.join(' · '))}"><i class="bx bx-error"></i></span>`);
         }
         const item = itemById(event.id);
         const plan = item && usablePlanAction(item);
@@ -6617,16 +6653,21 @@
         if (result.ok) {
             const data = result.data || {};
             const warnings = data.warnings || [];
-            // The block's own tooltip gets the plain sentence (it is escaped where it is drawn)…
-            const messages = warnings.map((w) => global.TasksApi?.planWarningMessage?.(w) || w.code);
-            state.calendarNotes[item.id] = warnings.length ? { warnings, messages } : null;
+            // The block's mark comes back with the feed re-read below (BL-471); only the toasts are this answer's.
             await refreshCalendar();
             /*
              * …but a TOAST is markup: showToast (Notyf) writes its message as innerHTML. A task or meeting title is
              * text somebody typed, so every title that reaches a toast is escaped first (v2 F5).
              */
             toast(tf('CalPlanSaved', esc(item.title)));
-            if (data.truncated) { toast(tf('CalTruncated', data.remainingMinutes ?? 0), 'warning'); }
+            /*
+             * WP-UI-MEETINGS-CALENDAR-01 (D2) — a cut block with NO estimate has nothing "left": the engine answers
+             * `remainingMinutes: null`, and "0 min left" (measured live) said something false. Only an estimate
+             * gives a remainder; without one the sentence is just that the block was cut.
+             */
+            if (data.truncated) {
+                toast(data.remainingMinutes == null ? t('CalTruncatedNoEstimate') : tf('CalTruncated', data.remainingMinutes), 'warning');
+            }
             warnings
                 .map((w) => global.TasksApi?.planWarningMessage?.(Object.assign({}, w, { title: esc(w.title || '') })) || esc(w.code))
                 .forEach((message) => toast(message, 'info'));
@@ -10005,6 +10046,8 @@
     // the caller awaits: 'done' (applied), 'cancelled' (the reader dismissed a dialog, no request sent) or
     // 'refused' (the engine said no; reasonCode is its code when one exists). The button path is UNCHANGED —
     // it never reads the resolved value, so every dialog, toast and re-render below fires exactly as before.
+    const inviteChecksInFlight = new Set();
+
     const performAction = async (item, actionKey) => {
         const action = actionByKey(item, actionKey);
         if (!item || !action || action.disabled || state.submittingItemId === item.id) {
@@ -10012,6 +10055,28 @@
         }
         // The engine now stores the personal plan date (POST .../plan), so the picker opens for a real task too —
         // openDatePicker itself decides whether to write to the engine or, for a showcase item, only locally.
+        /*
+         * WP-UI-MEETINGS-CALENDAR-01 (B) — accepting an invitation that collides with one of MY plan blocks asks first,
+         * naming the block (owner 2026-09-17: a warning, never a refusal). The collision is the feed's `overlapsPlan`
+         * (the engine's half-open rule); the question is the shared card's, so both pages ask it the same way.
+         */
+        if (action.code === 'acceptInvite' && global.DitenInviteCard) {
+            // A second click while the question (or its feed read) is still open is dropped, not sent twice.
+            if (inviteChecksInFlight.has(item.id)) { return { outcome: 'cancelled' }; }
+            inviteChecksInFlight.add(item.id);
+            let go;
+            try {
+                go = await global.DitenInviteCard.confirmAcceptOverlap({
+                    meetingId: item.id,
+                    when: feedMeeting(item.id)?.startAt || item.dueAt,
+                    feed: feedMeeting(item.id) ? state.calendarFeed : null,
+                    fetchCalendar: global.WorkCenterNextApi?.fetchCalendar
+                });
+            } finally {
+                inviteChecksInFlight.delete(item.id);
+            }
+            if (!go) { return { outcome: 'cancelled' }; }
+        }
         if (action.input === 'date') { return openDatePicker(item, action); }
         if (action.input === 'meeting') { return openMeetingScheduler(item, action); }
         if (action.input === 'minutes') { return openLogTime(item, action); }
