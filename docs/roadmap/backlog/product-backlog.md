@@ -6898,6 +6898,19 @@ bozulan/geri alınan değişiklik oranı, ana daldan uzaklaşan dallar); "teslim
 tedarik zinciri testleri CI'a eklenir, sevkiyat için PR. Yönetici onaylarsa: SOP'a eklenecek maddelerin taslağı + haftalık otomatik akış
 raporu (`scripts/status_report.py` yanına).
 
+
+### BL-470
+
+**Ağ geçidi testi ana dalda kırmızı: Tedarik rotaları tanımsız 5065 portunda**
+
+DURUM: AÇIK · SAHİP: Tedarik (Procurement) ekibi; CT bilgi verir · BULAN: CT (takvim motoru kabulü) · KAYIT: 2026-09-29
+
+`OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet` origin/main'de kırmızı: `/api/suppliers`, `/api/sourcing`,
+`/api/requisitions` (ve `{everything}` eşleri) 5065'e gidiyor; test bilinen port kümesinde 5065'i tanımıyor. Kaynak: `de174eb97` "fix(procurement):
+resolve OD-5 port conflict — Procurement 5062 -> 5065" — rota değişti, testteki `KnownDownstreamPorts` ve port kaydı (CLAUDE.md port listesi
+5011–5060 bandını söylüyor, 5065 bandın dışında) güncellenmedi. İş: Tedarik ekibi port kararını port kaydına işler ve testteki kümeyi
+günceller; bandın dışına çıkış bilinçliyse CLAUDE.md port satırı da güncellenir. CI'da ağ geçidi testleri koşmadığı için görünmedi (BL-457).
+
 ---
 
 ### BL-393
