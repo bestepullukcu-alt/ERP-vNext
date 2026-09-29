@@ -149,3 +149,22 @@ Durma: kanıt modalını paylaşılır yapmak FE-3 testlerini bozuyorsa formun i
 8. **Sorumlu ekipte çöp org birimleri (ewrferfer, zxzxzx).** Veri temizliği.
 
 **Kalan (2. bölüm):** Admin TR ülke sürümü açar → yerel kanıt → onaya gönder (`CLAIM-LOCAL-MLR-TR`) → sema onaylar → matris hücresi "Onaylı".
+
+## §37-E4 — CL-E4-1 canlı E2E, 2. bölüm (2026-09-29, CT) — **CL-E4-1 PASS**
+- **Admin — TR ülke sürümü → PASS.**
+  - Matristen Create açıldı: çekirdek kartı salt okunur; "Türkiye (TR) · Türkçe (tr) · ülke ana kaydından".
+  - Türkçe metin + yerel niteleyici "Reçeteyle satılır." + uyarlama `verbatim`. Geçerlilik varsayılanı bugün; kitle çekirdekten dolu.
+  - Taslağı kaydet → Edit'e geçti (`fd65bac0…`).
+- **Admin — kanıtlar → PASS.**
+  - Çekirdek kanıtı "Çekirdekten" rozetiyle salt okunur.
+  - Yerel kanıt "ALMIBA — Klinik Kanıt Özeti" (`clinical-study`, s.2; ifade Türkçe metinden "mitokondriye taşıyarak") → "Yerel" rozeti.
+- **Admin — yerel onaya gönder → PASS.** `in-review`, kilit bandı; `CLAIM-LOCAL-MLR-TR`, medical bekliyor.
+- **sema — WorkCenterNext → PASS.**
+  - "İddia ülke onayı · CLM-ALMIBA-02 · TR v1.0"; Medikal → Hukuk → Ruhsat.
+  - Sonuç `approved` / kapalı; ülke sürümü `approved` v1.0.
+  - Matris TR = "Onaylı · v1.0 · Çekirdek v1.0", özet "1 onaylı · 0 açık iş".
+
+**Ek bulgular (1. bölüm listesine)**
+9. **Ülke onayında da kaynak bağlantısı 404.** `/CRM/Claims/Details/{id}?country=TR` → doğrusu `/CRM/Claims/CountryVersions/{versionId}/Edit`.
+10. **Tarayıcı sekme başlığı Edit'te de "Ülke Sürümü Aç · TR".** Sayfa başlığı doğru ("Ülke sürümü · Türkiye").
+11. **Dil sekmesi etiketi "Türkçe (Tr)".** Kod büyük harfle başlıyor, "(tr)" olmalı.
