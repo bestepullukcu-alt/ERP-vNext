@@ -85,7 +85,7 @@
      * Every meeting of the list API that STARTS in [fromUtc, toUtc), all pages, then the page's own filter rule.
      * Returns null when the range cannot be read in full (an error, or more pages than MAX_PAGES).
      */
-    const fetchListSet = async (fromUtc, toUtc) => {
+    const fetchListSet = async (fromUtc, toUtc, isStale = () => false) => {
         const filters = global.MeetingsList.getAppliedFilters();
         const params = { fromUtc, toUtc, pageSize: PAGE_SIZE };
         // What the API can narrow by itself, it does; the predicate below still decides (one rule, not two).
@@ -96,6 +96,9 @@
 
         const rows = [];
         for (let page = 1; page <= MAX_PAGES; page += 1) {
+            // A range the reader has already paged away from stops asking (CT acceptance: five quick months were
+            // five loops of up to 50 calls each).
+            if (isStale()) { return null; }
             const result = await global.MeetingsApi.listQuery(Object.assign({}, params, { page }));
             if (!result.ok || !result.data) { return null; }
             const items = result.data.items || [];
@@ -219,7 +222,7 @@
         // end of its last day; the list API's window is StartAt ∈ [FromUtc, ToUtc).
         const fromUtc = Z.toUtcIso(addDays(range.from, -1), state.zone);
         const toUtc = Z.toUtcIso(addDays(range.to, 1), state.zone);
-        const rows = await fetchListSet(fromUtc, toUtc);
+        const rows = await fetchListSet(fromUtc, toUtc, () => generation !== state.generation);
         if (generation !== state.generation) { return false; }
         state.feed = feedResult.data;
         if (rows === null) {

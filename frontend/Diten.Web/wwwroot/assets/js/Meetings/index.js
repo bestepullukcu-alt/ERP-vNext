@@ -199,7 +199,9 @@ const MeetingsList = (function () {
         dt = window.DitenDataTable.createCrudTable({
             tableEl: dtTableEl,
             ajax: {
-                url: '/Meetings/api/list?pageSize=1000',
+                // The proxy forwards ONE `query` parameter (MeetingsController.ApiList); a bare ?pageSize never
+                // reached Platform and the list stopped at its default 25 (CT acceptance, calendar 2c review).
+                url: '/Meetings/api/list?query=' + encodeURIComponent('pageSize=1000'),
                 type: 'GET',
                 xhrFields: { withCredentials: true }
             },

@@ -599,3 +599,67 @@ describe("every new sentence exists in seven languages and reaches its payload",
     });
   });
 });
+
+// ── CT acceptance (Control Tower, 2026-09-29): two behaviours the CT sabotage round found unguarded ──────────────
+
+describe("CT: names are text, and a cancelled meeting is never drawn", () => {
+  /*
+   * The invite card builds its markup as a string; the meeting title comes from whoever organised it. Dropping the
+   * escape on the title passed the whole suite before this test.
+   */
+  it("an invitation whose title is markup is drawn as text, no element is created from it", async () => {
+    const title = '<img src="x" data-xss="invite">';
+    const invite = INVITE();
+    invite.title = { kind: "display", text: title, locale: "und" };
+    await boot({ workItems: [invite] });
+
+    const card = document.querySelector(`[data-mc-invite-list] [data-dic-invite="${mid(2)}"]`);
+    expect(card, "the invitation card is on the panel").not.toBeNull();
+    expect(document.querySelector("[data-xss]"), "an invitation title became markup").toBeNull();
+    expect(card.querySelector(".dic-card-title").textContent).toBe(title);
+  });
+
+  /*
+   * The fixture's cancelled meeting (row 4) is one I am ON, so the "declined" rule already hides it and the
+   * cancelled filter was never exercised: removing it passed the suite. A cancelled meeting I am NOT on (a reader
+   * who sees every meeting) must not be drawn either.
+   */
+  it("a cancelled meeting I am not on is not drawn as somebody else's meeting", async () => {
+    const rows = ROWS().concat([row(7, "2026-10-09T10:00:00Z", { iAmAttendee: false, lifecycle: 1 })]);
+    await boot({ rows });
+
+    expect(drawnIds()).not.toContain(mid(7));
+    expect(drawnIds()).toContain(mid(5));
+  });
+});
+
+describe("CT: the list reads more than 25, and the page can say an answer failed", () => {
+  /*
+   * The proxy (MeetingsController.ApiList(string? query)) forwards ONE `query` parameter; `?pageSize=1000` never
+   * reached Platform, so the table stopped at the default 25 while the calendar (listQuery) read everything — two
+   * different sets on one page, and the organizer filter built from the table's rows missed the rest.
+   */
+  it("the table and the create form ask for their page size through the proxy's query parameter", () => {
+    const index = read("wwwroot", "assets", "js", "Meetings", "index.js");
+    const form = read("wwwroot", "assets", "js", "Meetings", "form.js");
+    expect(index).toContain("'/Meetings/api/list?query=' + encodeURIComponent('pageSize=1000')");
+    expect(index).not.toMatch(/\/Meetings\/api\/list\?pageSize=/);
+    expect(form).toContain("window.MeetingsApi.listQuery({ pageSize: 1000 })");
+    expect(form).not.toContain("MeetingsApi.list('pageSize=1000')");
+  });
+
+  /* calendar.js reports answer errors through DitenModal, which the tenant shell does not load. */
+  it("the Meetings page loads DitenModal before the calendar script", () => {
+    const view = read("Views", "Meetings", "Index.cshtml");
+    const modal = view.indexOf("~/assets/js/shared/premium-modal.js");
+    expect(modal, "premium-modal.js is not loaded on the Meetings page").toBeGreaterThan(-1);
+    expect(modal).toBeLessThan(view.indexOf("~/assets/js/Meetings/calendar.js"));
+  });
+
+  /* A range the reader has paged away from must stop asking page after page (up to 50 calls per range). */
+  it("the list loop checks whether its range is still wanted before every page", () => {
+    const calendar = read("wwwroot", "assets", "js", "Meetings", "calendar.js");
+    expect(calendar).toMatch(/for \(let page = 1; page <= MAX_PAGES; page \+= 1\) \{[\s\S]{0,300}if \(isStale\(\)\) \{ return null; \}/);
+    expect(calendar).toContain("fetchListSet(fromUtc, toUtc, () => generation !== state.generation)");
+  });
+});
