@@ -120,3 +120,32 @@ Durma: kanıt modalını paylaşılır yapmak FE-3 testlerini bozuyorsa formun i
   - FE-1 hızlı görünüm → ülke sürümü Düzenle bağlantısı yapılmadı (index.js). Küçük takip işi.
   - Kod önerisi, CRM liste yanıtındaki kodlardan NN hesaplıyor. Liste sayfalıysa NN eksik hesaplanabilir; bu yalnız bir öneri, CRM yinelenen kodu zaten reddediyor.
 - **E4:** CT, fleet restart sonrası (onaylı çekirdekten TR ülke sürümü → yerel kanıt → onaya gönder).
+
+## §37-E4 — CL-E4-1 canlı E2E, 1. bölüm (2026-09-29, CT, kullanıcı onayıyla canlı yazma)
+**Kapsam:** çekirdek onayı + matris kapatma / yeniden açma. Fleet restart sonrası, dal HEAD 78d841be.
+
+**Adımlar ve sonuçlar**
+- **Admin — kanıt bağlama → PASS.** CLM-ALMIBA-02 (34744e6a…) → "ALMIBA — Etki Mekanizması" v1 sabit, tip `internal-data` ("İç veri" etiketi), alıntı + ifade → 201 "Kanıt eklendi" (BE-2b düzeltmesi canlıda doğrulandı).
+- **Admin — onaya gönder → PASS.**
+  - Hazırlık listesi tam; durum "İncelemede"; kilit bandı; Sürüm alanı salt okunur.
+  - review-history: tur 1, `CLAIM-CORE-MLR`, `medical` onay bekliyor, son tarih +3 gün.
+- **sema — WorkCenterNext → PASS.**
+  - İş öğesi "İddia onayı · CLM-ALMIBA-02 v1.0". Medikal → Hukuk → Ruhsat sırayla Onayla.
+  - Her adımdan sonra history sıralı ilerledi.
+  - Son adımdan sonra tur `approved` / kapalı ve iddia `status=approved` (approvedBy = sema). Olay tüketicisi sonucu uyguladı.
+- **sema — kapsama matrisi → PASS.**
+  - Çekirdek onaylı olunca "Ülke sürümü aç" etkin.
+  - BY "Açılmayacak olarak işaretle" (select2: Ruhsat yok / Yerel mevzuat izin vermiyor / İş kararı) → "Açılmadı · İş kararı", özet "0 açık iş".
+  - "Yeniden aç" (notlu) → eski haline döndü.
+
+**Bulgular (düzeltme paketine)**
+1. **WCN "Kaynak kaydını aç" → `/CRM/Claims/Details/{id}` 404.** Detay sayfası FE-6'da; o gelene kadar Edit'e gitmeli. Bağlantıyı CRM DisplayContext'i veriyor (BE-4).
+2. **WCN iş öğesi başlığı adımı söylemiyor.** Üç adım da aynı "İddia onayı · CLM-ALMIBA-02 v1.0"; "· Medikal inceleme" gibi adım adı eklenmeli.
+3. **WCN Onayla penceresinde yorum alanı yok.** MLR onay notu toplanamıyor (history `actionReasonCode=WORKCENTER_APPROVE`).
+4. **WCN detayında "Atanan: Atanmamış".** Pozisyon adayı olduğu için; pozisyon adı gösterilmeli.
+5. **Detaydan onaylayınca sayfa "İstenen iş öğesi bulunamadı" gösteriyor.** Listeye dönmeli.
+6. **Matris açıklamasında iki farklı durum aynı "Açılmadı" adıyla.** Kapatılmış hücre "Kapatıldı" gibi ayrı bir ad almalı.
+7. **Kanıt kartında belge kodu yerine kimlik parçası ("ed418c5d").** Belge seçicide toplama kodu tekrarı ve "Active" (önceki #8) sürüyor.
+8. **Sorumlu ekipte çöp org birimleri (ewrferfer, zxzxzx).** Veri temizliği.
+
+**Kalan (2. bölüm):** Admin TR ülke sürümü açar → yerel kanıt → onaya gönder (`CLAIM-LOCAL-MLR-TR`) → sema onaylar → matris hücresi "Onaylı".
