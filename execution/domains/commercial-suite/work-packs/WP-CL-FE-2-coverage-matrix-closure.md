@@ -97,3 +97,20 @@ KORU/YAPMA: form.js/ClaimsForm resx/FE-4 dosyaları DOKUNMA; FE-1 proxy yolları
 DOĞRULA (E2): cd C:\tmp\cl-fe-2; dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 270); Web build 0 hata; node --check temiz; yeni testler: lookup görünen adları (kültüre göre), languages geriye uyum, Coverage izin kapısı, L10n 7 dil eşliği. Commit ("feat(crm): WP-CL-FE-2 — claims coverage matrix, country closure/reopen, country & language display names" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: RegionInfo/CultureInfo bir kodu (ör. XK) tanımıyorsa kodu göster + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-09-29) — **ACCEPTED (E2)**
+- **Commit:** ajan `5adde76e` → `test/crm-content-visit-e2e` üzerine rebase → **`9cced593`** (fast-forward).
+- **Diff (K13 okuma):** 18 dosya, yalnız `frontend/`.
+  - `ClaimsController.cs` → yalnız `Coverage` action: `RequirePage(ReadPermission)` + `CanManageClaims`.
+  - `lookups/countries` → `name` (ICU, UI kültürü), `nativeName`, `languageDetails`; `languages` kod dizisi korunuyor.
+  - `coverage.js` → kullanıcı verisinin tamamı `esc()`/`encodeURIComponent` ile basılıyor; FE-4 rotaları doğru.
+- **CT testleri:** Web **280/0** (taban 270 + 10).
+- **CT sabotajı:** `Coverage` action'ındaki `RequirePage` kaldırıldı → `Coverage_without_read_is_a_plain_403` kırmızı. Kod geri alındı.
+- **Ajan bulguları (kabul edildi):**
+  - `RegionInfo.DisplayName` yerelleşmiyor; ülke adı `CultureInfo("en-XX").DisplayName` içindeki bölge kısmından alınıyor.
+  - Boş durum ikonunun asıl nedeni tanımsız `bx-lg` sınıfıydı → `bx-book-open` + açık boyut.
+  - Özbekçe yerel adı ICU'da "O‘zbek" ("Oʻzbekcha" değil) — kabul edildi.
+  - Satır kodu hızlı görünüm yerine Düzenle'ye gidiyor (hızlı görünüm index.js'e bağlı) — kabul edildi.
+- **E4:** CT, fleet restart sonrası matris + kapatma / yeniden açma.
