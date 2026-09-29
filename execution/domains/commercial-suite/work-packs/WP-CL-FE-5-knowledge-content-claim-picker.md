@@ -92,3 +92,20 @@ KORU/YAPMA: CRM/Platform/Auth ve CRM/Claims/** DOKUNMA; içerik formunun diğer 
 DOĞRULA (E2): cd C:\tmp\cl-fe-5; dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 305); Web build 0 hata; node --check temiz; yeni testler: claim-options (satırlar, usable/reason, dil uyumsuzluğu, ürünsüz boş, CRM kapalı disabled), ToPayload ClaimRefs (dolu/[]), ToEditModel round-trip, hata kodu → alan hatası, L10n 7 dil. Sabotaj: ToPayload'dan ClaimRefs çıkar → kırmızı. Commit ("feat(crm): WP-CL-FE-5 — knowledge content claim picker, publish-gate errors, linked claims card" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: coverage ülke sürümü dillerini ülke dillerinden farklı tutabiliyorsa (sürüm başına CRM çağrısı gerekecekse) DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-09-29) — **ACCEPTED (E2)**
+- **Commit:** `a289ca2c` (`wp/cl-fe-5`) → `test/crm-content-visit-e2e` fast-forward. 14 dosya, yalnız `frontend/`.
+- **Diff (K13 okuma):**
+  - `ToPayload` Create/Edit ikisinde de `ClaimRefs` (her zaman liste; `[]` temizler).
+  - `ToEditModel` DTO'dan dolduruyor. CRM `KnowledgeMapper` `ClaimRefs`'i her zaman liste döndürüyor → null riski yok.
+  - `claim-options` knowledge okuma izniyle; iddia bağlantısı yalnız `crm.claim.read` ile.
+  - Gizli alanlar `esc()` ile basılıyor.
+  - CRM, Platform, Auth ve `CRM/Claims/**` dokunulmamış.
+- **CT testleri:** Web **333/0** (305 + 28). `form.js` `node --check` temiz.
+- **CT sabotajı:** Edit `ToPayload`'dan `ClaimRefs` çıkarıldı → `KnowledgeClaimRefs` 2 kırmızı. Kod geri alındı.
+- **Ajan notları (kabul):**
+  - Ürünü olmayan iddialar seçicide çıkmıyor (coverage `productId` filtresi). Ayrı iş.
+  - Onaydan sonra BRD ülke dilleri değişirse seçici uyarısı CRM kararından sapabilir; karar CRM'de.
+- **E4:** CT, fleet restart sonrası KC-2026-6CD926 üzerinde yayın kapısı senaryoları.
