@@ -159,11 +159,24 @@
      * Where a native drop landed: a DAY (month cell, or the all-day row of week/day) or a TIME (a timegrid column
      * plus the 15-minute slot row under the pointer). Null when it landed on neither.
      */
-    const resolveDrop = (root, target, clientY) => {
+    const resolveDrop = (root, target, clientX, clientY) => {
         const dayCell = target && target.closest ? target.closest('.fc-daygrid-day[data-date]') : null;
         if (dayCell) { return { allDay: true, date: dayCell.getAttribute('data-date') }; }
 
-        const column = target && target.closest ? target.closest('.fc-timegrid-col[data-date]') : null;
+        /*
+         * ⚠ In a real browser the element under the pointer in an EMPTY hour is the slot row of the background table
+         * (`td.fc-timegrid-slot-lane`), which sits ABOVE the day columns — measured live 2026-09-29 with
+         * elementsFromPoint. So `target.closest(column)` finds nothing there and every drop on the week view was
+         * silently ignored (jsdom tests dispatched the drop on the column itself and never saw it). The day is the
+         * column under clientX; the time is the slot row under clientY, whatever element is on top.
+         */
+        let column = target && target.closest ? target.closest('.fc-timegrid-col[data-date]') : null;
+        if (!column) {
+            column = Array.from(root.querySelectorAll('.fc-timegrid-col[data-date]')).find((candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                return rect.width > 0 && clientX >= rect.left && clientX < rect.right;
+            }) || null;
+        }
         if (!column) { return null; }
         const rows = Array.from(root.querySelectorAll('td.fc-timegrid-slot-lane[data-time]'));
         const row = rows.find((candidate) => {
@@ -366,7 +379,7 @@
             if (!editable || typeof opts.onExternalDrop !== 'function') { return; }
             const itemId = event.dataTransfer && event.dataTransfer.getData(DRAG_TYPE);
             if (!itemId) { return; }
-            const spot = resolveDrop(host, event.target, event.clientY);
+            const spot = resolveDrop(host, event.target, event.clientX, event.clientY);
             if (!spot) { return; }
             event.preventDefault();
             opts.onExternalDrop(spot.allDay

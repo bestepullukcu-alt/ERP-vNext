@@ -168,12 +168,13 @@ const toWeek = async () => {
 };
 
 /** A real `drop` DOM event on a real calendar element, carrying an item id the way a panel card does. */
-const dropOn = async (target, itemId, clientY = 0) => {
+const dropOn = async (target, itemId, clientY = 0, clientX = 0) => {
   const event = new Event("drop", { bubbles: true, cancelable: true });
   Object.defineProperty(event, "dataTransfer", {
     value: { types: [global.DitenCalendar.DRAG_TYPE], getData: (type) => (type === global.DitenCalendar.DRAG_TYPE ? itemId : "") }
   });
   Object.defineProperty(event, "clientY", { value: clientY });
+  Object.defineProperty(event, "clientX", { value: clientX });
   target.dispatchEvent(event);
   await settle();
 };
@@ -181,7 +182,12 @@ const dropOn = async (target, itemId, clientY = 0) => {
 /** jsdom has no layout: give the 15-minute slot rows a 10px-tall stack so a clientY means a time. */
 const stackSlotRows = () => {
   host().querySelectorAll("td.fc-timegrid-slot-lane[data-time]").forEach((row, i) => {
-    row.getBoundingClientRect = () => ({ top: i * 10, bottom: i * 10 + 10, left: 0, right: 100, width: 100, height: 10 });
+    row.getBoundingClientRect = () => ({ top: i * 10, bottom: i * 10 + 10, left: 0, right: 700, width: 700, height: 10 });
+  });
+  // …and the day columns side by side, 100px each, so a clientX means a day (CT live fix: the drop target in a real
+  // browser is the slot row, not the column).
+  host().querySelectorAll(".fc-timegrid-col[data-date]").forEach((col, i) => {
+    col.getBoundingClientRect = () => ({ top: 0, bottom: 960, left: i * 100, right: i * 100 + 100, width: 100, height: 960 });
   });
 };
 
@@ -1101,5 +1107,26 @@ describe("CT live: the week fits a screen", () => {
     // Compound on the .fc root: a descendant selector never matched (measured live — the slot stayed 52 px).
     expect(css).toMatch(/\.dc-calendar\.fc \.fc-timegrid-slot \{ block-size: [0-9.]+rem; \}/);
     expect(host().classList.contains("fc"), "the component class and FullCalendar's root are the same element").toBe(true);
+  });
+});
+
+describe("CT live: a drop on an EMPTY hour lands on the slot row, not the column", () => {
+  /*
+   * Measured live 2026-09-29 (elementsFromPoint): in an empty hour the top element is `td.fc-timegrid-slot-lane` of
+   * the background table, above the day columns, so the drop's target has no column ancestor. The day comes from the
+   * column under clientX. Before the fix this drop wrote nothing.
+   */
+  it("a drop whose target is the 10:00 slot row, over Wednesday's column, plans Wednesday 10:00", async () => {
+    await boot({ items: [task(1, { estimate: 1.5 })], feedData: feed({ days: weekDays() }) });
+    await toWeek();
+    stackSlotRows();
+    const lane = host().querySelector('td.fc-timegrid-slot-lane[data-time="10:00:00"]');
+    const cols = Array.from(host().querySelectorAll(".fc-timegrid-col[data-date]")).map((c) => c.getAttribute("data-date"));
+    const wednesdayX = cols.indexOf("2026-10-07") * 100 + 50;
+
+    await dropOn(lane, id(1), 405, wednesdayX); // row 40 = 10:00
+
+    expect(calls, "a drop on the slot row wrote nothing").toHaveLength(1);
+    expect(calls[0].payload).toEqual({ expectedVersion: 11, plannedStartAt: "2026-10-07T07:00:00.000Z", plannedDurationMinutes: 90 });
   });
 });
