@@ -121,3 +121,22 @@ KORU/YAPMA: ziyaret çözücüsü ve İçerik Kapsamı ref'leri DEĞİŞMEZ; idd
 DOĞRULA (E2): cd C:\tmp\sb-2; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (bilinen sıra flake'i hariç); dotnet test frontend/Diten.Web.Tests → 0 kırmızı (taban 333); build'ler 0 hata. Yeni testler: A+D üretimi (alanlar, ClaimRefs country/çekirdek, adım sırası omurga+dal+Position), idempotent, onaysız iddia 409 + hiçbir şey üretilmez, yayında olmayan bileşen 409, geri çekme inactive/path_in_use, yeni sürüm supersede, class-map round-trip. Sabotaj: adım sıralaması + iddia ön koşulu testleri kırmızıya dönmeli. Commit ("feat(crm): WP-SB-2 — content set release produces assembled-presentation content + chain-ordered knowledge path" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: bileşenler tek dilde değilse, Stüdyo dal↔omurga yerleşim anlamı tek anlamlı değilse, mevcut sürümleme yeni sürüm açmayı desteklemiyorsa DUR + raporla (kural uydurma).
 ```
+
+---
+
+## Kullanıcı kararları — DUR yanıtları (2026-09-29)
+Ajan DUR raporu:
+- v2 zincirde "omurga adımına bağlı dal" kavramı yok. Bileşenler dala yerleşiyor (`ContentSetArrangement.ValidateSlot`); omurga dallardan türetiliyor.
+- Set bileşenlerinde dil kısıtı yok.
+
+**Kararlar:**
+1. **Yol adım sırası = dal-öncelikli** (Stüdyo çalışma alanıyla birebir, `workspace.js:67-80`): dal `SortOrder` → dal içindeki adım sırası (`Steps` liste sırası) → `Position`. Dalsız eski şablonda: `OrderedConceptTypes` sırası → `Position`. Bu karar NE §1-D'deki "omurga → dal bağlı adımdan sonra" ifadesinin yerine geçer.
+2. **Karışık dil → yayın engellenir:** 409 `component_language_mixed` (hangi bileşenlerin hangi dilde olduğu mesajda). Hiçbir şey üretilmez; dil tahmin edilmez. Tek dilse A ve D o dili kullanır.
+3. **Sürümleme (ajan bulgusu, kabul):**
+   - Yol: `CreateKnowledgePathVersionHandler` ile yeni sürüm. Eski yayındaki sürüm, çakışma (409) olmaması için `inactive` yapılır ya da `EffectiveTo` ile kapatılır; hangisinin mevcut kurallara uygun olduğunu ajan seçer ve raporlar.
+   - İçerik: sürüm komutu yok → soneki olan yeni kodla yeni kayıt + eskisi Update ile `inactive`.
+
+**Devam prompt'u (aynı worktree, aynı dal):**
+```text
+WP-SB-2 devam — DUR yanıtları WP dosyasının sonunda ("Kullanıcı kararları"). 1) Yol sırası dal-öncelikli: dal SortOrder → dal Steps sırası → Position (dalsız eski şablon: OrderedConceptTypes → Position). 2) Karışık dil: 409 component_language_mixed, hiçbir şey üretilmez. 3) Sürümleme bulgularını uygula (yol: CreateKnowledgePathVersion + eskiyi inactive/EffectiveTo, seçimini raporla; içerik: sonekli yeni kod + eskisi inactive). Paketin geri kalanı aynen. Sabotaj testlerine dal-öncelikli sıra + karışık dil 409 eklensin. Aynı DOĞRULA/commit kuralları.
+```
