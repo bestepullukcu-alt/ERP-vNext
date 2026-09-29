@@ -143,4 +143,39 @@
   <data name="CounterUnavailable" xml:space="preserve"><value>Indisponible pour le moment</value></data>
   <data name="ShowInactive" xml:space="preserve"><value>Inclure les versions archivées et remplacées</value></data>
   <data name="LiveOnly" xml:space="preserve"><value>Enregistrements actuels uniquement</value></data>
+  <data name="TabList" xml:space="preserve"><value>Liste</value></data>
+  <data name="TabCoverage" xml:space="preserve"><value>Matrice de couverture</value></data>
+  <data name="CoverageDescription" xml:space="preserve"><value>Chaque allégation par pays : approuvée, en cours, non ouverte ou fermée avec un motif.</value></data>
+  <data name="ColumnSummary" xml:space="preserve"><value>{0} approuvées · {1} en cours</value></data>
+  <data name="RowSubline" xml:space="preserve"><value>{0} · {1} preuves · {2} utilisations</value></data>
+  <data name="CellExpiringNote" xml:space="preserve"><value>La validité expire bientôt</value></data>
+  <data name="CellCoreChangedNote" xml:space="preserve"><value>La base a changé</value></data>
+  <data name="CellEvidenceChangedNote" xml:space="preserve"><value>Une preuve a changé</value></data>
+  <data name="ActionOpenCountryVersion" xml:space="preserve"><value>Ouvrir la version pays</value></data>
+  <data name="ActionMarkNotOpened" xml:space="preserve"><value>Marquer comme non ouverte</value></data>
+  <data name="ActionReopen" xml:space="preserve"><value>Rouvrir</value></data>
+  <data name="ActionEditVersion" xml:space="preserve"><value>Modifier / consulter</value></data>
+  <data name="CoreNotApprovedTooltip" xml:space="preserve"><value>L'allégation de base doit d'abord être approuvée</value></data>
+  <data name="CellActionsLabel" xml:space="preserve"><value>Actions pour {0}</value></data>
+  <data name="CloseModalTitle" xml:space="preserve"><value>Marquer {0} comme non ouverte</value></data>
+  <data name="CloseReasonLabel" xml:space="preserve"><value>Motif</value></data>
+  <data name="CloseConfirm" xml:space="preserve"><value>Marquer</value></data>
+  <data name="ReopenModalTitle" xml:space="preserve"><value>Rouvrir {0}</value></data>
+  <data name="ReopenNoteLabel" xml:space="preserve"><value>Note (facultative)</value></data>
+  <data name="ToastClosed" xml:space="preserve"><value>Pays marqué comme non ouvert.</value></data>
+  <data name="ToastReopened" xml:space="preserve"><value>Pays rouvert.</value></data>
+  <data name="CoverageEmptyTitle" xml:space="preserve"><value>Aucune allégation pour l'instant</value></data>
+  <data name="CoverageEmptyText" xml:space="preserve"><value>Créez une allégation de base pour voir sa couverture par pays.</value></data>
+  <data name="LegendTitle" xml:space="preserve"><value>Légende</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Rechercher par code, nom ou texte</value></data>
+  <data name="Reason_no-license" xml:space="preserve"><value>Pas d'autorisation de mise sur le marché</value></data>
+  <data name="Reason_regulation-disallows" xml:space="preserve"><value>La réglementation locale ne le permet pas</value></data>
+  <data name="Reason_business-decision" xml:space="preserve"><value>Décision métier</value></data>
+  <data name="Err_country_has_version" xml:space="preserve"><value>Ce pays a déjà une version ; archivez-la avant de le marquer comme non ouvert.</value></data>
+  <data name="Err_not_applicable" xml:space="preserve"><value>Ce pays est hors du périmètre de cette allégation.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>Une liste de référence requise n'est pas encore publiée. Contactez votre administrateur.</value></data>
+  <data name="Err_country_already_closed" xml:space="preserve"><value>Ce pays est déjà marqué comme non ouvert.</value></data>
+  <data name="Err_country_not_closed" xml:space="preserve"><value>Ce pays n'est pas marqué comme non ouvert.</value></data>
+  <data name="Err_invalid_reference_value" xml:space="preserve"><value>Choisissez un motif valide.</value></data>
+  <data name="Err_required" xml:space="preserve"><value>Choisissez un motif.</value></data>
 </root>

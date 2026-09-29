@@ -59,6 +59,16 @@ public sealed partial class ClaimsController : Controller
         return View($"{ViewRoot}/Index.cshtml");
     }
 
+    /// <summary>WP-CL-FE-2 — claim × country coverage matrix (mockup scenario 2). Read gate like the list (UAS-001: a
+    /// plain 403 without a skeleton); cell actions render only for crm.claim.manage and CRM re-checks them anyway.</summary>
+    [HttpGet("Coverage")]
+    public IActionResult Coverage()
+    {
+        if (RequirePage(ReadPermission) is { } denied) return denied;
+        ViewData["CanManageClaims"] = HasAnyPermission(ManagePermission);
+        return View($"{ViewRoot}/Coverage.cshtml");
+    }
+
     /// <summary>New core (default) or local claim. Only the kind travels to the page; everything else is loaded and
     /// saved by claim-form.js through the v2 proxy.</summary>
     [HttpGet("Create")]

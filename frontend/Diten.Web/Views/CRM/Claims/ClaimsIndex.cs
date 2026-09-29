@@ -24,13 +24,28 @@ public static class ClaimsIndexL10nKeys
         "ShowInactive", "LiveOnly", "BreadcrumbCrm"
     ];
 
-    /// <summary>Everything the list bridge serializes (pre-existing shared keys + the WP-CL-FE-1 keys).</summary>
+    /// <summary>Keys added by WP-CL-FE-2 (coverage matrix, closure / reopen, reason labels by value_code, error codes);
+    /// no key echo allowed in any language.</summary>
+    public static readonly IReadOnlyList<string> CoverageKeys =
+    [
+        "TabList", "TabCoverage", "CoverageDescription", "ColumnSummary", "RowSubline", "CellExpiringNote",
+        "CellCoreChangedNote", "CellEvidenceChangedNote", "ActionOpenCountryVersion", "ActionMarkNotOpened",
+        "ActionReopen", "ActionEditVersion", "CoreNotApprovedTooltip", "CellActionsLabel", "CloseModalTitle",
+        "CloseReasonLabel", "CloseConfirm", "ReopenModalTitle", "ReopenNoteLabel", "ToastClosed", "ToastReopened",
+        "CoverageEmptyTitle", "CoverageEmptyText", "LegendTitle", "SearchPlaceholder",
+        "Reason_no-license", "Reason_regulation-disallows", "Reason_business-decision",
+        "Err_country_has_version", "Err_not_applicable", "Err_reference_set_missing", "Err_country_already_closed",
+        "Err_country_not_closed", "Err_invalid_reference_value", "Err_required"
+    ];
+
+    /// <summary>Everything the list / coverage bridge serializes (pre-existing shared keys + WP-CL-FE-1 + WP-CL-FE-2).</summary>
     public static readonly IReadOnlyList<string> Bridge =
     [
         "Actions", "Apply", "Cancel", "Status", "EditClaim", "ArchiveClaim", "ArchiveClaimConfirm", "RecordArchived",
         "ErrorState", "Filter", "Loading", "No", "Yes", "View", "ViewDetails", "Edit", "AreYouSure", "Search", "Export",
         "Reset", "ShowAll", "SaveView", "ColumnVisibility", "QuickView", "Active", "Passive", "Unknown", "BulkDelete",
         "BulkDeleteConfirm", "Qualifiers",
-        .. NewKeys
+        .. NewKeys,
+        .. CoverageKeys
     ];
 }

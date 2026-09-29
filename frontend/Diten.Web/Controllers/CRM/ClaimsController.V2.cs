@@ -156,14 +156,28 @@ public sealed partial class ClaimsController
 
         var languages = (await ReadReferenceValuesAsync("country-content-languages", tenantScoped: false, ct) ?? [])
             .ToDictionary(v => v.Code.ToUpperInvariant(), v => v, StringComparer.Ordinal);
-        var data = countries.Select(c => new
+        // WP-CL-FE-2 — display names from ICU in the request's UI culture (see ClaimDisplayNames). `languages` stays the
+        // plain code array (FE-3 reads it); the named form is the additional `languageDetails`. A code ICU does not know
+        // falls back to the BRD display name, then to the code itself.
+        var data = countries.Select(c =>
         {
-            code = c.Code.ToUpperInvariant(),
-            name = c.Name ?? c.Code,
-            languages = languages.TryGetValue(c.Code.ToUpperInvariant(), out var l)
-                && l.Attributes.TryGetValue("Languages", out var list)
+            var code = c.Code.ToUpperInvariant();
+            var codes = languages.TryGetValue(code, out var l) && l.Attributes.TryGetValue("Languages", out var list)
                 ? list.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                : Array.Empty<string>()
+                : Array.Empty<string>();
+            return new
+            {
+                code,
+                name = ClaimDisplayNames.CountryName(code) ?? c.Name ?? code,
+                nativeName = ClaimDisplayNames.CountryNativeName(code, codes.FirstOrDefault()) ?? c.Name ?? code,
+                languages = codes,
+                languageDetails = codes.Select(lang => new
+                {
+                    code = lang,
+                    name = ClaimDisplayNames.LanguageName(lang) ?? lang,
+                    nativeName = ClaimDisplayNames.LanguageNativeName(lang) ?? lang
+                }).ToList()
+            };
         }).ToList();
         return Ok(new { data });
     }

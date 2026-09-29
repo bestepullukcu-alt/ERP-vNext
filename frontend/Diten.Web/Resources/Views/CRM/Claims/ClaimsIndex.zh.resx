@@ -143,4 +143,39 @@
   <data name="CounterUnavailable" xml:space="preserve"><value>暂时无法获取</value></data>
   <data name="ShowInactive" xml:space="preserve"><value>包括已归档和已被取代的版本</value></data>
   <data name="LiveOnly" xml:space="preserve"><value>仅当前记录</value></data>
+  <data name="TabList" xml:space="preserve"><value>列表</value></data>
+  <data name="TabCoverage" xml:space="preserve"><value>覆盖矩阵</value></data>
+  <data name="CoverageDescription" xml:space="preserve"><value>各声明在各国的状态：已批准、进行中、未开放或已注明原因关闭。</value></data>
+  <data name="ColumnSummary" xml:space="preserve"><value>{0} 已批准 · {1} 待处理</value></data>
+  <data name="RowSubline" xml:space="preserve"><value>{0} · {1} 条证据 · {2} 处使用</value></data>
+  <data name="CellExpiringNote" xml:space="preserve"><value>有效期即将结束</value></data>
+  <data name="CellCoreChangedNote" xml:space="preserve"><value>核心已变更</value></data>
+  <data name="CellEvidenceChangedNote" xml:space="preserve"><value>证据已变更</value></data>
+  <data name="ActionOpenCountryVersion" xml:space="preserve"><value>开启国家版本</value></data>
+  <data name="ActionMarkNotOpened" xml:space="preserve"><value>标记为不开放</value></data>
+  <data name="ActionReopen" xml:space="preserve"><value>重新开放</value></data>
+  <data name="ActionEditVersion" xml:space="preserve"><value>编辑 / 查看</value></data>
+  <data name="CoreNotApprovedTooltip" xml:space="preserve"><value>须先批准核心声明</value></data>
+  <data name="CellActionsLabel" xml:space="preserve"><value>{0} 的操作</value></data>
+  <data name="CloseModalTitle" xml:space="preserve"><value>将 {0} 标记为不开放</value></data>
+  <data name="CloseReasonLabel" xml:space="preserve"><value>原因</value></data>
+  <data name="CloseConfirm" xml:space="preserve"><value>标记</value></data>
+  <data name="ReopenModalTitle" xml:space="preserve"><value>重新开放 {0}</value></data>
+  <data name="ReopenNoteLabel" xml:space="preserve"><value>备注（可选）</value></data>
+  <data name="ToastClosed" xml:space="preserve"><value>该国家已标记为不开放。</value></data>
+  <data name="ToastReopened" xml:space="preserve"><value>该国家已重新开放。</value></data>
+  <data name="CoverageEmptyTitle" xml:space="preserve"><value>暂无声明</value></data>
+  <data name="CoverageEmptyText" xml:space="preserve"><value>创建核心声明以查看其在各国的覆盖情况。</value></data>
+  <data name="LegendTitle" xml:space="preserve"><value>图例</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>按代码、名称或文本搜索</value></data>
+  <data name="Reason_no-license" xml:space="preserve"><value>无上市许可</value></data>
+  <data name="Reason_regulation-disallows" xml:space="preserve"><value>当地法规不允许</value></data>
+  <data name="Reason_business-decision" xml:space="preserve"><value>业务决定</value></data>
+  <data name="Err_country_has_version" xml:space="preserve"><value>该国家已有版本；请先归档再标记为不开放。</value></data>
+  <data name="Err_not_applicable" xml:space="preserve"><value>该国家不在此声明的范围内。</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>所需的参考列表尚未发布，请联系管理员。</value></data>
+  <data name="Err_country_already_closed" xml:space="preserve"><value>该国家已标记为不开放。</value></data>
+  <data name="Err_country_not_closed" xml:space="preserve"><value>该国家未标记为不开放。</value></data>
+  <data name="Err_invalid_reference_value" xml:space="preserve"><value>请选择有效的原因。</value></data>
+  <data name="Err_required" xml:space="preserve"><value>请选择原因。</value></data>
 </root>

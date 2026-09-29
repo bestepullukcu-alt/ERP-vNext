@@ -143,4 +143,39 @@
   <data name="CounterUnavailable" xml:space="preserve"><value>Şu anda alınamıyor</value></data>
   <data name="ShowInactive" xml:space="preserve"><value>Arşivlenmiş ve eskimiş sürümleri de göster</value></data>
   <data name="LiveOnly" xml:space="preserve"><value>Yalnız güncel kayıtlar</value></data>
+  <data name="TabList" xml:space="preserve"><value>Liste</value></data>
+  <data name="TabCoverage" xml:space="preserve"><value>Kapsama matrisi</value></data>
+  <data name="CoverageDescription" xml:space="preserve"><value>Her iddia ülkeler boyunca: onaylı, sürüyor, açılmadı ya da gerekçesiyle kapatıldı.</value></data>
+  <data name="ColumnSummary" xml:space="preserve"><value>{0} onaylı · {1} açık iş</value></data>
+  <data name="RowSubline" xml:space="preserve"><value>{0} · {1} kanıt · {2} kullanım</value></data>
+  <data name="CellExpiringNote" xml:space="preserve"><value>Geçerlilik yakında bitiyor</value></data>
+  <data name="CellCoreChangedNote" xml:space="preserve"><value>Çekirdek değişti</value></data>
+  <data name="CellEvidenceChangedNote" xml:space="preserve"><value>Kanıt değişti</value></data>
+  <data name="ActionOpenCountryVersion" xml:space="preserve"><value>Ülke sürümü aç</value></data>
+  <data name="ActionMarkNotOpened" xml:space="preserve"><value>Açılmayacak olarak işaretle</value></data>
+  <data name="ActionReopen" xml:space="preserve"><value>Yeniden aç</value></data>
+  <data name="ActionEditVersion" xml:space="preserve"><value>Düzenle / görüntüle</value></data>
+  <data name="CoreNotApprovedTooltip" xml:space="preserve"><value>Önce çekirdek onaylanmalı</value></data>
+  <data name="CellActionsLabel" xml:space="preserve"><value>{0} için işlemler</value></data>
+  <data name="CloseModalTitle" xml:space="preserve"><value>{0} açılmayacak olarak işaretle</value></data>
+  <data name="CloseReasonLabel" xml:space="preserve"><value>Neden</value></data>
+  <data name="CloseConfirm" xml:space="preserve"><value>İşaretle</value></data>
+  <data name="ReopenModalTitle" xml:space="preserve"><value>{0} yeniden aç</value></data>
+  <data name="ReopenNoteLabel" xml:space="preserve"><value>Not (isteğe bağlı)</value></data>
+  <data name="ToastClosed" xml:space="preserve"><value>Ülke açılmayacak olarak işaretlendi.</value></data>
+  <data name="ToastReopened" xml:space="preserve"><value>Ülke yeniden açıldı.</value></data>
+  <data name="CoverageEmptyTitle" xml:space="preserve"><value>Henüz iddia yok</value></data>
+  <data name="CoverageEmptyText" xml:space="preserve"><value>Ülkeler boyunca kapsamını görmek için bir çekirdek iddia oluşturun.</value></data>
+  <data name="LegendTitle" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Kod, ad ya da metinle arayın</value></data>
+  <data name="Reason_no-license" xml:space="preserve"><value>Ruhsat yok</value></data>
+  <data name="Reason_regulation-disallows" xml:space="preserve"><value>Yerel mevzuat izin vermiyor</value></data>
+  <data name="Reason_business-decision" xml:space="preserve"><value>İş kararı</value></data>
+  <data name="Err_country_has_version" xml:space="preserve"><value>Bu ülkenin zaten bir sürümü var; açılmayacak olarak işaretlemeden önce arşivleyin.</value></data>
+  <data name="Err_not_applicable" xml:space="preserve"><value>Bu ülke bu iddianın kapsamı dışında.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>Gerekli bir referans listesi henüz yayınlanmadı. Yöneticinize başvurun.</value></data>
+  <data name="Err_country_already_closed" xml:space="preserve"><value>Bu ülke zaten açılmayacak olarak işaretli.</value></data>
+  <data name="Err_country_not_closed" xml:space="preserve"><value>Bu ülke açılmayacak olarak işaretli değil.</value></data>
+  <data name="Err_invalid_reference_value" xml:space="preserve"><value>Geçerli bir neden seçin.</value></data>
+  <data name="Err_required" xml:space="preserve"><value>Bir neden seçin.</value></data>
 </root>

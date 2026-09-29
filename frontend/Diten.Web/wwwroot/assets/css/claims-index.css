@@ -130,3 +130,7 @@
 }
 
 .claim-empty-text { max-width: 36rem; }
+
+/* WP-CL-FE-2 — empty-state icon: the mask-based Boxicons glyph is 1em wide, so it needs an explicit size and must stay
+   inline-block to be centred (the former `bx-lg` modifier does not exist in this theme). */
+.claim-empty-icon { display: inline-block; font-size: 3rem; }

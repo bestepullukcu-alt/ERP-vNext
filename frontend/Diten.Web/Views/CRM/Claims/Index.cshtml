@@ -35,6 +35,9 @@
     }
 </div>
 
+@{ ViewData["ClaimsTab"] = "list"; }
+<partial name="~/Views/CRM/Claims/_ClaimsTabs.cshtml" />
+
 @if (!canManage)
 {
     <div class="alert alert-info d-flex align-items-center gap-2 py-2" role="status" id="claimReadOnlyNote">
@@ -45,7 +48,7 @@
 @* Empty library (scenario 12) — shown instead of the table when the tenant has no claim at all. *@
 <div id="claimEmptyLibrary" class="card d-none">
     <div class="card-body text-center py-5">
-        <i class="bx bx-library bx-lg text-primary mb-3 d-block"></i>
+        <i class="bx bx-book-open text-primary mb-3 claim-empty-icon" aria-hidden="true"></i>
         <h5 class="mb-2">@Localizer["EmptyLibraryTitle"]</h5>
         <p class="text-muted mb-4 mx-auto claim-empty-text">@Localizer["EmptyLibraryText"]</p>
         @if (canManage)
