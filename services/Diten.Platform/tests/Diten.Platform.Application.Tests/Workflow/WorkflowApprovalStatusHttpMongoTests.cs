@@ -12,6 +12,7 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Providers;
 using Diten.Platform.Application.Features.Tasks.Services;
+using Diten.Platform.Application.Features.WorkAggregation;
 using Diten.Platform.Application.Features.WorkAggregation.Providers;
 using Diten.Platform.Application.Features.WorkAggregation.Services;
 using Diten.Platform.Application.Features.Workflow;
@@ -213,10 +214,10 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
         Assert.Equal(HttpStatusCode.OK, (await DecideAsync(starter, instance.InstanceId, "approve")).Status);
     }
 
-    // ── B3 ──────────────────────────────────────────────────────────────────────────────────────────────────────
+    // ── B3 (v2 revert): the PUBLIC cancel never cancels an escalated task ─────────────────────────────────────
 
     [Fact]
-    public async Task An_escalated_approval_task_can_still_be_cancelled_through_MOD_0023s_own_route()
+    public async Task The_public_cancel_endpoint_refuses_an_escalated_approval_task()
     {
         var definitionId = await PlainDefinitionAsync(_requester);
         var instance = await StartInstanceAsync(definitionId, _requester, _manager, "task", Guid.NewGuid());
@@ -225,10 +226,80 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
 
         var cancelled = await _host.PostAsync($"/api/v1/workflow/tasks/{instance.ApprovalTaskId}/cancel",
             _host.Token(_requester, _tenant, WorkflowPermissions.TasksCancel),
-            new { actorId = _requester.ToString(), reasonCode = "WITHDRAWN", idempotencyKey = Guid.NewGuid().ToString("N"), comment = (string?)null });
+            new { reasonCode = "WITHDRAWN", idempotencyKey = Guid.NewGuid().ToString("N"), comment = (string?)null });
 
-        Assert.Equal(HttpStatusCode.OK, cancelled.Status);
-        Assert.Equal(WorkflowInstanceStatus.Cancelled, (await InstanceAsync(instance.InstanceId)).Status);
+        Assert.Equal(HttpStatusCode.Conflict, cancelled.Status);
+        Assert.Equal(WorkflowReasonCodes.WorkflowTaskInvalidState, cancelled.ReasonCode);
+        Assert.Equal(WorkflowInstanceStatus.Escalated, (await InstanceAsync(instance.InstanceId)).Status);
+    }
+
+    // ── B4: the actor is ALWAYS the signed-in user ─────────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("approve")]
+    [InlineData("reject")]
+    [InlineData("delegate")]
+    [InlineData("request-info")]
+    [InlineData("cancel")]
+    public async Task Naming_someone_else_as_the_actor_is_403_and_changes_nothing(string action)
+    {
+        // The approval is assigned to the manager; the requester holds every task permission but is not them.
+        var definitionId = await PlainDefinitionAsync(_requester);
+        var instance = await StartInstanceAsync(definitionId, _requester, _manager, "task", Guid.NewGuid());
+
+        var impersonated = await ActAsync(_requester, instance.ApprovalTaskId, action, claimedActor: _manager);
+
+        Assert.Equal(HttpStatusCode.Forbidden, impersonated.Status);
+        Assert.Equal(WorkflowReasonCodes.WorkflowActorMismatch, impersonated.ReasonCode);
+        Assert.Equal(WorkflowInstanceStatus.Active, (await InstanceAsync(instance.InstanceId)).Status);
+        var task = await _fixture.Database.GetCollection<ApprovalTask>(PlatformCollections.ApprovalTasks)
+            .Find(t => t.Id == instance.ApprovalTaskId).SingleAsync();
+        Assert.Equal(ApprovalTaskStatus.WaitingApproval, task.Status);
+        Assert.Equal(_manager.ToString(), task.AssigneeRef);
+    }
+
+    [Theory]
+    [InlineData("approve", WorkflowInstanceStatus.Completed)]
+    [InlineData("reject", WorkflowInstanceStatus.Rejected)]
+    public async Task The_assigned_person_acts_with_no_actor_in_the_body_or_with_their_own(string action, WorkflowInstanceStatus expected)
+    {
+        var definitionId = await PlainDefinitionAsync(_requester);
+        var withoutActor = await StartInstanceAsync(definitionId, _requester, _manager, "task", Guid.NewGuid());
+        var withOwnActor = await StartInstanceAsync(definitionId, _requester, _manager, "task", Guid.NewGuid());
+
+        Assert.Equal(HttpStatusCode.OK, (await ActAsync(_manager, withoutActor.ApprovalTaskId, action, claimedActor: null)).Status);
+        Assert.Equal(HttpStatusCode.OK, (await ActAsync(_manager, withOwnActor.ApprovalTaskId, action, claimedActor: _manager)).Status);
+        Assert.Equal(expected, (await InstanceAsync(withoutActor.InstanceId)).Status);
+        Assert.Equal(expected, (await InstanceAsync(withOwnActor.InstanceId)).Status);
+    }
+
+    // ── B2 follow-up: the Task Center shows the starter a CLOSED approve, with its reason ──────────────────────
+
+    [Fact]
+    public void The_starter_sees_approve_disabled_with_SELF_APPROVAL_NOT_ALLOWED_and_anyone_else_sees_it_enabled()
+    {
+        var starter = Guid.NewGuid();
+        var task = new ApprovalTask
+        {
+            TenantId = _tenant, WorkflowInstanceId = Guid.NewGuid(), StageCode = "stage-1", StepCode = "step-1",
+            Status = ApprovalTaskStatus.WaitingApproval, AssigneeRef = starter.ToString()
+        };
+        var instance = new WorkflowInstance
+        {
+            TenantId = _tenant, TemplateId = Guid.NewGuid(), WorkflowTemplateId = Guid.NewGuid(), ObjectType = "task",
+            ObjectId = Guid.NewGuid().ToString(), ObjectRef = "tasks|task|x", StartedByUserId = starter
+        };
+        var projection = new WorkItemProjectionService(SlaForTests.Real());
+
+        var mine = projection.Project(task, instance, new WorkItemActor(starter, true, new HashSet<string>()),
+            WorkItemContract.ProviderCodeWorkflow, "1.0")!.Actions.Single(a => a.Code == "approve");
+        var theirs = projection.Project(task, instance, new WorkItemActor(Guid.NewGuid(), true, new HashSet<string>()),
+            WorkItemContract.ProviderCodeWorkflow, "1.0")!.Actions.Single(a => a.Code == "approve");
+
+        Assert.False(mine.Enabled);
+        Assert.Equal(WorkAggregationReasonCodes.SelfApprovalNotAllowed, mine.DisabledReasonCode);
+        Assert.Equal("WorkAggregation_ActionDisabled_SelfApproval", mine.DisabledReason!.Key);
+        Assert.True(theirs.Enabled);
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -310,6 +381,26 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
         });
         Assert.True(started.Status is HttpStatusCode.OK or HttpStatusCode.Created, started.ToString());
         return (started.Data.GetProperty("workflowInstanceId").GetGuid(), started.Data.GetProperty("approvalTaskId").GetGuid());
+    }
+
+    /// <summary>Posts a task action as <paramref name="caller"/>, naming <paramref name="claimedActor"/> in the body (or no
+    /// actor at all when null).</summary>
+    private Task<ApiResult> ActAsync(Guid caller, Guid approvalTaskId, string action, Guid? claimedActor)
+    {
+        var token = _host.Token(caller, _tenant,
+            WorkflowPermissions.TasksApprove, WorkflowPermissions.TasksReject, WorkflowPermissions.TasksDelegate,
+            WorkflowPermissions.TasksRequestInfo, WorkflowPermissions.TasksCancel);
+        var body = new Dictionary<string, object?>
+        {
+            ["reasonCode"] = "OK", ["idempotencyKey"] = Guid.NewGuid().ToString("N"), ["comment"] = "c",
+            ["delegatePrincipalId"] = Guid.NewGuid().ToString(), ["targetPrincipalId"] = null, ["evidenceRef"] = null
+        };
+        if (claimedActor is { } actor)
+        {
+            body["actorId"] = actor.ToString();
+        }
+
+        return _host.PostAsync($"/api/v1/workflow/tasks/{approvalTaskId}/{action}", token, body);
     }
 
     private async Task<ApiResult> DecideAsync(Guid actor, Guid instanceId, string action)

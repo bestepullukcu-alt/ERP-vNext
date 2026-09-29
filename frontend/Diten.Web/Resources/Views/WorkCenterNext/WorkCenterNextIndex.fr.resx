@@ -1538,6 +1538,9 @@
   <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
     <value>Le justificatif requis est manquant.</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_SelfApproval" xml:space="preserve">
+    <value>Vous avez lancé cette approbation ; une autre personne doit la décider.</value>
+  </data>
   <data name="NoAccessTitle" xml:space="preserve">
     <value>Vous n'avez pas accès au Centre des tâches</value>
   </data>

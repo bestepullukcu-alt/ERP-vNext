@@ -1025,7 +1025,6 @@
         if (!meta) return;
         clearFormError('wf-taskaction-error');
         const payload = {
-            actorId: val('wf-taskaction-actorid'),
             reasonCode: val('wf-taskaction-reason'),
             idempotencyKey: val('wf-taskaction-idem'),
             comment: val('wf-taskaction-comment') || null
@@ -1033,7 +1032,6 @@
         if (meta.evidence) payload.evidenceRef = val('wf-taskaction-evidence') || null;
         if (meta.delegate) payload.delegatePrincipalId = val('wf-taskaction-delegate');
         if (meta.target) payload.targetPrincipalId = val('wf-taskaction-target') || null;
-        if (!payload.actorId) { setFormError('wf-taskaction-error', { message: t('ActorIdRequired', 'Actor Id is required.') }); return; }
         if (!payload.reasonCode) { setFormError('wf-taskaction-error', { message: t('ReasonCodeRequired', 'Reason Code is required.') }); return; }
         if (!payload.idempotencyKey) { setFormError('wf-taskaction-error', { message: t('IdempotencyKeyRequired', 'Idempotency Key is required.') }); return; }
         if (meta.delegate && !payload.delegatePrincipalId) { setFormError('wf-taskaction-error', { message: t('DelegatePrincipalRequired', 'Delegate Principal Id is required.') }); return; }

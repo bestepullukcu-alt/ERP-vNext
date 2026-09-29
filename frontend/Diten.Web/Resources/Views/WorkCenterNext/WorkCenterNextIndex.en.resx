@@ -1538,6 +1538,9 @@
   <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
     <value>Required evidence is missing.</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_SelfApproval" xml:space="preserve">
+    <value>You started this approval, so someone else must decide it.</value>
+  </data>
   <data name="NoAccessTitle" xml:space="preserve">
     <value>You do not have access to the Task Center</value>
   </data>
