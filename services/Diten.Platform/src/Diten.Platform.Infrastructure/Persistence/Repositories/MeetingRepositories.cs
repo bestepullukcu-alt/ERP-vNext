@@ -282,6 +282,15 @@ public sealed class MeetingAttendeeRepository : TenantRepository<MeetingAttendee
         return await Collection.Find(filter).ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<MeetingAttendee>> ListNotDeclinedByUserIdAsync(Guid userId, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingAttendee>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingAttendee>.Filter.Eq(x => x.UserId, userId),
+            Builders<MeetingAttendee>.Filter.Ne(x => x.InvitationResponse, InvitationResponse.Declined));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
     public async Task UpdateAttendanceStatusAsync(
         Guid meetingId, Guid userId, AttendanceStatus status, CancellationToken ct = default)
     {

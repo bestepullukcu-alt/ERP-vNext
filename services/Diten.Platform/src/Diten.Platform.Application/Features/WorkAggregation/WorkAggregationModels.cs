@@ -700,7 +700,23 @@ public sealed record WorkItemProjectionDto(
     /// says nothing, and the executable contract validates it only when present.
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemInquiryAnswerDto? InquiryAnswer = null);
+    WorkItemInquiryAnswerDto? InquiryAnswer = null,
+    /// <summary>
+    /// WP-TASK-CALENDAR-ENGINE-01 — the holder's personal TIME BLOCK, when the plan is one (week/day view): the UTC
+    /// start and the length. Absent for a day-only plan and for no plan. <see cref="PlannedDate"/> still carries
+    /// the day either way.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? PlannedStartAt = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    int? PlannedDurationMinutes = null,
+    /// <summary>
+    /// What is left of the ESTIMATE after the plan block (estimate − block, floored at 0) — DERIVED, never stored;
+    /// absent unless the item has both a block and an estimate. Not an SLA figure: nothing here counts toward the
+    /// due date.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    int? RemainingMinutes = null);
 
 /// <summary>
 /// BL-439 — who answered a waiting task's question, when, and what they said. Derived from the transition log

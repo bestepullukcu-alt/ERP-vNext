@@ -261,4 +261,25 @@
   <data name="ErrorInquiryNotAddressee" xml:space="preserve">
     <value>Этот вопрос больше не ждёт вашего ответа: на него уже ответили или его отозвали. Обновите список.</value>
   </data>
+  <data name="ErrorPlanNotHolder" xml:space="preserve">
+    <value>Планировать эту задачу может только её исполнитель. Как инициатор, укажите ожидаемый срок через дату выполнения.</value>
+  </data>
+  <data name="ErrorPlanConflict" xml:space="preserve">
+    <value>Это время пересекается с другой задачей, которую вы уже запланировали. Выберите другое время или перенесите другую задачу.</value>
+  </data>
+  <data name="ErrorPlanDurationInvalid" xml:space="preserve">
+    <value>Запланированная длительность должна быть не менее 15 минут и кратна 15 минутам.</value>
+  </data>
+  <data name="ErrorUnplanNotAllowed" xml:space="preserve">
+    <value>Убрать из календаря можно только запланированную задачу, работа над которой ещё не началась.</value>
+  </data>
+  <data name="ErrorCalendarRangeInvalid" xml:space="preserve">
+    <value>Календарь может показывать не более 42 дней за раз. Выберите более короткий период.</value>
+  </data>
+  <data name="WarningPlanOverlapsMeeting" xml:space="preserve">
+    <value>Сохранено, но это время пересекается с совещанием «{0}».</value>
+  </data>
+  <data name="WarningPlanOutsideWorkingHours" xml:space="preserve">
+    <value>Сохранено, но это время выходит за рамки вашего рабочего времени.</value>
+  </data>
 </root>

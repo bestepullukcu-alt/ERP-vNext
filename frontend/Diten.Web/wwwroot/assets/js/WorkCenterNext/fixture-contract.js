@@ -164,6 +164,8 @@
         'edited',
         // BL-439 — the person a waiting task was asking answered; the entry's reason is their answer.
         'inquiryAnswered',
+        // WP-TASK-CALENDAR-ENGINE-01 — the holder took the task off their calendar (POST {id}/unplan).
+        'unplanned',
         'unknown'
     ];
 

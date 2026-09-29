@@ -202,6 +202,15 @@
         // Naming an ineligible person when parking a task. This bridge does NOT auto-enumerate its resx.
         ErrorWaitingOnNotAssignable = Localizer["ErrorWaitingOnNotAssignable"].Value,
         ErrorPlanDateRequired = Localizer["ErrorPlanDateRequired"].Value,
+        // WP-TASK-CALENDAR-ENGINE-01 — the plan block's refusals and the two warnings on a saved plan. This bridge
+        // does NOT auto-enumerate its resx; plan-calendar-code-bridge.test.js pins each line here.
+        ErrorPlanNotHolder = Localizer["ErrorPlanNotHolder"].Value,
+        ErrorPlanConflict = Localizer["ErrorPlanConflict"].Value,
+        ErrorPlanDurationInvalid = Localizer["ErrorPlanDurationInvalid"].Value,
+        ErrorUnplanNotAllowed = Localizer["ErrorUnplanNotAllowed"].Value,
+        ErrorCalendarRangeInvalid = Localizer["ErrorCalendarRangeInvalid"].Value,
+        WarningPlanOverlapsMeeting = Localizer["WarningPlanOverlapsMeeting"].Value,
+        WarningPlanOutsideWorkingHours = Localizer["WarningPlanOutsideWorkingHours"].Value,
         // WC-1 — the personal overlay's three refusals. This bridge does NOT auto-enumerate its resx (unlike
         // _L10n.cshtml, which does), so a code mapped in api.js without a line here reaches the reader as the
         // generic "an error occurred" — twice already the missing half of exactly this pair.

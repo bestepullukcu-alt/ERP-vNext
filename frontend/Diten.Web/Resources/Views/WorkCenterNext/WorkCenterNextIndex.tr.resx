@@ -1902,6 +1902,9 @@
   <data name="AuditEventPlanned" xml:space="preserve">
     <value>Görev planlandı</value>
   </data>
+  <data name="AuditEventUnplanned" xml:space="preserve">
+    <value>Görev takvimden çıkarıldı</value>
+  </data>
   <data name="AuditEventStarted" xml:space="preserve">
     <value>Çalışmaya başlandı</value>
   </data>

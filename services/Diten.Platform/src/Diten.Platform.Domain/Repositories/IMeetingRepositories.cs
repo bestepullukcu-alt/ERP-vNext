@@ -137,6 +137,14 @@ public interface IMeetingAttendeeRepository
     /// actor's own Pending set stays small regardless of how large the tenant's meeting history grows.</summary>
     Task<IReadOnlyList<MeetingAttendee>> ListPendingByUserIdAsync(Guid userId, CancellationToken ct = default);
 
+    /// <summary>
+    /// WP-TASK-CALENDAR-ENGINE-01 — every invitation this user has NOT declined (Pending or Accepted), across every
+    /// meeting in the tenant: the calendar feed and the plan-overlap warning read "my meetings" from here. READ-ONLY
+    /// and filtered at the query like <see cref="ListPendingByUserIdAsync"/>; the date window is applied in memory by
+    /// the caller because <c>Meeting.StartAt</c> is stored as a BSON [ticks, offset] array (BL-030).
+    /// </summary>
+    Task<IReadOnlyList<MeetingAttendee>> ListNotDeclinedByUserIdAsync(Guid userId, CancellationToken ct = default);
+
     /// <summary>BL-406 — the one write for <see cref="MeetingAttendee.MailUndeliveredAt"/>. No <c>expectedVersion</c>,
     /// same reasoning as <see cref="UpdateAttendanceStatusAsync"/>: nothing else writes this field, and re-marking
     /// an already-undelivered row with the same fact is a no-op either way. A no-op (false) return means no row

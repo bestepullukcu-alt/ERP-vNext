@@ -261,4 +261,25 @@
   <data name="ErrorInquiryNotAddressee" xml:space="preserve">
     <value>Esta pregunta ya no le espera: fue respondida o retirada. Actualice la lista.</value>
   </data>
+  <data name="ErrorPlanNotHolder" xml:space="preserve">
+    <value>Solo la persona que tiene esta tarea puede planificarla. Como solicitante, indique su expectativa con la fecha de vencimiento.</value>
+  </data>
+  <data name="ErrorPlanConflict" xml:space="preserve">
+    <value>Este horario se solapa con otra tarea que ya ha planificado. Elija otro horario o mueva la otra tarea.</value>
+  </data>
+  <data name="ErrorPlanDurationInvalid" xml:space="preserve">
+    <value>La duración planificada debe ser de al menos 15 minutos, en intervalos de 15 minutos.</value>
+  </data>
+  <data name="ErrorUnplanNotAllowed" xml:space="preserve">
+    <value>Solo una tarea planificada que no se haya iniciado puede quitarse del calendario.</value>
+  </data>
+  <data name="ErrorCalendarRangeInvalid" xml:space="preserve">
+    <value>El calendario puede mostrar como máximo 42 días a la vez. Elija un intervalo de fechas más corto.</value>
+  </data>
+  <data name="WarningPlanOverlapsMeeting" xml:space="preserve">
+    <value>Guardado, pero este horario se solapa con la reunión «{0}».</value>
+  </data>
+  <data name="WarningPlanOutsideWorkingHours" xml:space="preserve">
+    <value>Guardado, pero este horario está fuera de su horario laboral.</value>
+  </data>
 </root>

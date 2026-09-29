@@ -261,4 +261,25 @@
   <data name="ErrorInquiryNotAddressee" xml:space="preserve">
     <value>Bu soru artık sizi beklemiyor; cevaplanmış ya da geri çekilmiş. Listeyi yenileyin.</value>
   </data>
+  <data name="ErrorPlanNotHolder" xml:space="preserve">
+    <value>Bu görevi yalnızca görevi yürüten kişi planlayabilir. Talep sahibi olarak beklentinizi son tarihle belirtin.</value>
+  </data>
+  <data name="ErrorPlanConflict" xml:space="preserve">
+    <value>Bu saat, daha önce planladığınız başka bir görevle çakışıyor. Başka bir saat seçin ya da diğer görevi taşıyın.</value>
+  </data>
+  <data name="ErrorPlanDurationInvalid" xml:space="preserve">
+    <value>Planlanan süre en az 15 dakika olmalı ve 15 dakikalık adımlarla girilmelidir.</value>
+  </data>
+  <data name="ErrorUnplanNotAllowed" xml:space="preserve">
+    <value>Yalnızca planlanmış ve henüz başlamamış bir görev takvimden çıkarılabilir.</value>
+  </data>
+  <data name="ErrorCalendarRangeInvalid" xml:space="preserve">
+    <value>Takvim bir seferde en fazla 42 gün gösterebilir. Daha kısa bir tarih aralığı seçin.</value>
+  </data>
+  <data name="WarningPlanOverlapsMeeting" xml:space="preserve">
+    <value>Kaydedildi, ancak bu saat “{0}” toplantısıyla çakışıyor.</value>
+  </data>
+  <data name="WarningPlanOutsideWorkingHours" xml:space="preserve">
+    <value>Kaydedildi, ancak bu saat çalışma saatlerinizin dışında.</value>
+  </data>
 </root>

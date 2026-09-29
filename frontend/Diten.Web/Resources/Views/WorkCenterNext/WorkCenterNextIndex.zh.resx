@@ -1902,6 +1902,9 @@
   <data name="AuditEventPlanned" xml:space="preserve">
     <value>任务已计划</value>
   </data>
+  <data name="AuditEventUnplanned" xml:space="preserve">
+    <value>任务已从日历中移除</value>
+  </data>
   <data name="AuditEventStarted" xml:space="preserve">
     <value>工作已开始</value>
   </data>
