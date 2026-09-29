@@ -5949,6 +5949,12 @@ tags.diten-tags .tagify__input {
 @media (max-width: 991.98px) { .wcn-calview-planning { grid-template-columns: minmax(0, 1fr); } }
 .wcn-calview-main { padding: 1rem; min-inline-size: 0; }
 .wcn-calview-host { min-inline-size: 0; }
+/* The shared component (DitenCalendar adds .dc-calendar to its host). The vendored Sneat CSS gives every time-grid
+   slot `block-size: 4em` (52 px), sized for 30-minute rows; our grid is 15 minutes, so a quarter hour is set back to
+   a compact row — 84 px an hour — and the week/day view scrolls inside its fixed height (CT live check 2026-09-29). */
+/* .dc-calendar sits on FullCalendar's own .fc root (same element), and the vendored rule is `.fc .fc-timegrid-slot`
+   loaded after this file — hence the compound selector, which outranks it. */
+.dc-calendar.fc .fc-timegrid-slot { block-size: 1.3125rem; }
 .wcn-calview-note { display: flex; align-items: center; gap: .375rem; margin-block: 0 .75rem; font-size: .8125rem;
     color: var(--bs-danger); }
 .wcn-calview-legend { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin-block-end: .75rem; font-size: .75rem;

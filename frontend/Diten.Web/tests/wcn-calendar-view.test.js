@@ -1078,3 +1078,28 @@ describe("v2 — the test seam is cleared with the calendar", () => {
     expect(global.__wcnCalendar).toBeNull();
   });
 });
+
+describe("CT live: the week fits a screen", () => {
+  /*
+   * Measured live 2026-09-29: height 'auto' + the vendored 52 px slot laid the whole 24 h out on the page (a 5 000 px
+   * week). The week and day views have a fixed height and scroll inside; the month view still grows with its rows;
+   * the quarter-hour slot size is set back under the component's own class.
+   */
+  it("week and day views have a fixed height, the month view grows, and the slot size is the component's own", async () => {
+    await boot({ items: [task(1)] });
+    expect(host().classList.contains("dc-calendar")).toBe(true);
+    expect(cal().getCurrentData().options.height).toBe("auto");
+
+    await toWeek();
+    expect(cal().getCurrentData().options.height).toBe(global.DitenCalendar.TIMEGRID_HEIGHT);
+
+    host().querySelector(".fc-timeGridDay-button").click();
+    await settle();
+    expect(cal().getCurrentData().options.height).toBe(global.DitenCalendar.TIMEGRID_HEIGHT);
+
+    const css = read("wwwroot", "assets", "css", "backbone-custom.css");
+    // Compound on the .fc root: a descendant selector never matched (measured live — the slot stayed 52 px).
+    expect(css).toMatch(/\.dc-calendar\.fc \.fc-timegrid-slot \{ block-size: [0-9.]+rem; \}/);
+    expect(host().classList.contains("fc"), "the component class and FullCalendar's root are the same element").toBe(true);
+  });
+});

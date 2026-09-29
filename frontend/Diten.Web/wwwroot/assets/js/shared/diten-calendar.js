@@ -34,6 +34,14 @@
     const VIEW_NAMES = { dayGridMonth: 'month', timeGridWeek: 'week', timeGridDay: 'day' };
     const RTL_LANGUAGES = ['ar', 'he', 'fa', 'ur'];
     const STEP_MINUTES = 15;
+    /*
+     * The week and day views get a FIXED height and scroll INSIDE (opening at 08:00), the month view grows with its
+     * rows. With height 'auto' the whole 24 h was laid out on the page — measured live 2026-09-29: 96 rows × 52 px
+     * (the vendored Sneat CSS gives every slot `block-size: 4em`, written for 30-minute rows) = a 5 000 px week, 10:00
+     * far below the fold, and a card could not be dragged from the panel to an afternoon hour without scrolling mid-drag.
+     * The slot height itself is set back to a quarter-hour size under `.dc-calendar` in backbone-custom.css.
+     */
+    const TIMEGRID_HEIGHT = 720;
 
     /** The chrome strings, from the page payload (SharedResource via _CalendarAssets.cshtml). */
     const readLabels = () => {
@@ -300,6 +308,9 @@
             dayHeaderClassNames: (arg) => dayClass(arg.date)
         };
 
+        // The component's own class: its CSS (slot height, event body) is scoped under it, never under a host page.
+        host.classList.add('dc-calendar');
+
         const calendar = new FC(host, {
             plugins: [global.dayGridPlugin, global.timegridPlugin, global.interactionPlugin].filter(Boolean),
             timeZone: 'UTC',
@@ -310,7 +321,11 @@
             initialView: VIEWS[opts.view] || VIEWS.month,
             initialDate: opts.date || undefined,
             headerToolbar: { start: 'prev,next today', center: 'title', end: 'dayGridMonth,timeGridWeek,timeGridDay' },
-            height: 'auto',
+            views: {
+                dayGridMonth: { height: 'auto' },
+                timeGridWeek: { height: TIMEGRID_HEIGHT },
+                timeGridDay: { height: TIMEGRID_HEIGHT }
+            },
             slotDuration: '00:15:00',
             snapDuration: '00:15:00',
             slotLabelInterval: '01:00',
@@ -398,5 +413,5 @@
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-    global.DitenCalendar = { create, DRAG_TYPE, STEP_MINUTES, resolveDrop, businessHoursFor, buildLocale };
+    global.DitenCalendar = { create, DRAG_TYPE, STEP_MINUTES, TIMEGRID_HEIGHT, resolveDrop, businessHoursFor, buildLocale };
 })(typeof window !== 'undefined' ? window : globalThis);
