@@ -32,7 +32,22 @@ public static class ContentSetRevisionMapper
         r.ArchivedAt,
         r.ArchivedBy,
         r.IsArchived(),
-        ToDto(r.ReleaseState));
+        ToDto(r.ReleaseState),
+        r.ProducedKnowledgeContentId,
+        r.ProducedKnowledgeContentCode,
+        r.ProducedKnowledgePathId,
+        r.ProducedKnowledgePathCode);
+
+    /// <summary>WP-SB-2 — the release / withdraw result: the state plus the produced outputs and the call's warnings.</summary>
+    public static ReleaseStateDto ToResultDto(ContentSetRevision r, IReadOnlyList<string>? warnings) =>
+        ToDto(r.ReleaseState)! with
+        {
+            ProducedKnowledgeContentId = r.ProducedKnowledgeContentId,
+            ProducedKnowledgeContentCode = r.ProducedKnowledgeContentCode,
+            ProducedKnowledgePathId = r.ProducedKnowledgePathId,
+            ProducedKnowledgePathCode = r.ProducedKnowledgePathCode,
+            Warnings = warnings is { Count: > 0 } ? warnings.ToList() : Array.Empty<string>()
+        };
 
     /// <summary>SCMM-17 — project the release lifecycle state (null until released).</summary>
     public static ReleaseStateDto? ToDto(ContentSetReleaseState? s) => s is null ? null : new(

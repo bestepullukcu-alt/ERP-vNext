@@ -371,6 +371,11 @@ public sealed class RenderContentSetRevisionHandler
 /// 409) and the releaser must differ from the reviewer (separation of duties, else 403 — author → reviewer → releaser are
 /// three distinct roles). Idempotent: an already-released revision returns its state (200); a withdrawn revision cannot be
 /// re-released (409). Audit is fail-soft.
+/// <para>WP-SB-2 — the release also produces the assembled-presentation content + the chain-ordered path
+/// (<see cref="IContentSetReleaseProducer"/>). Its preconditions (components published, one language, claims usable)
+/// are checked after the SCMM-17 ones; a refusal writes nothing and leaves the revision unreleased. The outputs are
+/// saved in the SAME revision write as the release state (released ⇔ produced); if that write fails, the outputs are
+/// compensated.</para>
 /// </summary>
 public sealed class ReleaseContentSetRevisionHandler
     : IRequestHandler<ReleaseContentSetRevisionCommand, Response<ReleaseStateDto>>
@@ -379,15 +384,17 @@ public sealed class ReleaseContentSetRevisionHandler
     private readonly IActorContext _actor;
     private readonly IContentSetRevisionRepository _revisions;
     private readonly IContentCompositionAuditPublisher _audit;
+    private readonly IContentSetReleaseProducer _producer;
 
     public ReleaseContentSetRevisionHandler(
         ITenantContext tenant, IActorContext actor, IContentSetRevisionRepository revisions,
-        IContentCompositionAuditPublisher audit)
+        IContentCompositionAuditPublisher audit, IContentSetReleaseProducer producer)
     {
         _tenant = tenant;
         _actor = actor;
         _revisions = revisions;
         _audit = audit;
+        _producer = producer;
     }
 
     public async Task<Response<ReleaseStateDto>> Handle(
@@ -409,7 +416,7 @@ public sealed class ReleaseContentSetRevisionHandler
         // Idempotent replay: already released → return the existing state. Withdrawn is terminal → a re-release is 409.
         if (revision.IsReleased())
         {
-            return Response<ReleaseStateDto>.Success(ContentSetRevisionMapper.ToDto(revision.ReleaseState)!, 200);
+            return Response<ReleaseStateDto>.Success(ContentSetRevisionMapper.ToResultDto(revision, null), 200);
         }
 
         if (revision.IsWithdrawn())
@@ -440,6 +447,13 @@ public sealed class ReleaseContentSetRevisionHandler
                 "The releaser must differ from the reviewer (separation of duties).", 403);
         }
 
+        // WP-SB-2 — produce the knowledge outputs (fail-closed: a refusal writes nothing and the revision stays unreleased).
+        var production = await _producer.ProduceAsync(tenantId, revision, artifact, cancellationToken);
+        if (!production.Succeeded)
+        {
+            return Response<ReleaseStateDto>.Fail(production.Errors!, production.StatusCode);
+        }
+
         var now = DateTimeOffset.UtcNow;
         revision.ReleaseState = new ContentSetReleaseState
         {
@@ -449,16 +463,35 @@ public sealed class ReleaseContentSetRevisionHandler
             ReleasedAtUtc = now,
             ReleasedBy = _actor.ActorName
         };
+        revision.ProducedKnowledgeContentId = production.ContentId;
+        revision.ProducedKnowledgeContentCode = production.ContentCode;
+        revision.ProducedKnowledgePathId = production.PathId;
+        revision.ProducedKnowledgePathCode = production.PathCode;
         revision.UpdatedAt = now;
         revision.UpdatedBy = _actor.ActorName;
 
-        await _revisions.UpdateAsync(revision, cancellationToken);
+        try
+        {
+            await _revisions.UpdateAsync(revision, cancellationToken);
+        }
+        catch (Exception)
+        {
+            // The release did not happen: undo the outputs and leave the revision as it was.
+            revision.ReleaseState = null;
+            revision.ProducedKnowledgeContentId = null;
+            revision.ProducedKnowledgeContentCode = null;
+            revision.ProducedKnowledgePathId = null;
+            revision.ProducedKnowledgePathCode = null;
+            await _producer.CompensateAsync(tenantId, production, CancellationToken.None);
+            throw;
+        }
 
         await ContentSetRevisionAudit.SafePublishAsync(
             _audit, tenantId, ContentSetRevisionReasonCodes.Released, revision,
-            $"revision={revision.RevisionCode};contentId={artifact.ContentId:D}", cancellationToken);
+            $"revision={revision.RevisionCode};contentId={artifact.ContentId:D};" +
+            $"knowledgeContentId={production.ContentId:D};knowledgePathId={production.PathId:D}", cancellationToken);
 
-        return Response<ReleaseStateDto>.Success(ContentSetRevisionMapper.ToDto(revision.ReleaseState)!, 200);
+        return Response<ReleaseStateDto>.Success(ContentSetRevisionMapper.ToResultDto(revision, production.Warnings), 200);
     }
 }
 
@@ -476,15 +509,21 @@ public sealed class WithdrawContentSetRevisionHandler
     private readonly IActorContext _actor;
     private readonly IContentSetRevisionRepository _revisions;
     private readonly IContentCompositionAuditPublisher _audit;
+    private readonly IContentSetReleaseProducer _producer;
 
+    /// <summary>WP-SB-2 — withdrawal also retires the release outputs through <paramref name="producer"/> (content →
+    /// inactive; path → inactive unless a published journey stage uses it: then untouched + <c>path_in_use</c>). It still
+    /// never touches the artifact store. The outputs are retired BEFORE the state write, so a retry after a failed write
+    /// converges (already-inactive outputs are skipped).</summary>
     public WithdrawContentSetRevisionHandler(
         ITenantContext tenant, IActorContext actor, IContentSetRevisionRepository revisions,
-        IContentCompositionAuditPublisher audit)
+        IContentCompositionAuditPublisher audit, IContentSetReleaseProducer producer)
     {
         _tenant = tenant;
         _actor = actor;
         _revisions = revisions;
         _audit = audit;
+        _producer = producer;
     }
 
     public async Task<Response<ReleaseStateDto>> Handle(
@@ -506,7 +545,7 @@ public sealed class WithdrawContentSetRevisionHandler
         // Idempotent replay: already withdrawn → return the existing state (a retry needs no fresh reason).
         if (revision.IsWithdrawn())
         {
-            return Response<ReleaseStateDto>.Success(ContentSetRevisionMapper.ToDto(revision.ReleaseState)!, 200);
+            return Response<ReleaseStateDto>.Success(ContentSetRevisionMapper.ToResultDto(revision, null), 200);
         }
 
         // Only a released revision can be withdrawn.
@@ -519,6 +558,13 @@ public sealed class WithdrawContentSetRevisionHandler
         if (string.IsNullOrWhiteSpace(request.Reason))
         {
             return Response<ReleaseStateDto>.Fail("A withdrawal reason is required.", 400);
+        }
+
+        // WP-SB-2 — retire the release outputs first (a failure leaves the revision released and is returned as is).
+        var retired = await _producer.RetireAsync(tenantId, revision, cancellationToken);
+        if (!retired.Succeeded)
+        {
+            return Response<ReleaseStateDto>.Fail(retired.Errors!, retired.StatusCode);
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -537,7 +583,7 @@ public sealed class WithdrawContentSetRevisionHandler
             _audit, tenantId, ContentSetRevisionReasonCodes.Withdrawn, revision,
             $"revision={revision.RevisionCode};contentId={state.ReleasedArtifactContentId:D}", cancellationToken);
 
-        return Response<ReleaseStateDto>.Success(ContentSetRevisionMapper.ToDto(state)!, 200);
+        return Response<ReleaseStateDto>.Success(ContentSetRevisionMapper.ToResultDto(revision, retired.Warnings), 200);
     }
 }
 

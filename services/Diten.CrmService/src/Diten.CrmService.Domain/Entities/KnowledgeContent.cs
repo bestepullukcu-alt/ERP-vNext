@@ -115,6 +115,10 @@ public sealed class KnowledgeContent : EntityBase
     /// old behaviour.</summary>
     public List<KnowledgeContentClaimRef> ClaimRefs { get; set; } = new();
 
+    /// <summary>WP-SB-2 — set only on the assembled presentation a Content Studio release produced (provenance). Null
+    /// on every other content, and on documents written before WP-SB-2.</summary>
+    public KnowledgeStudioOrigin? StudioOrigin { get; set; }
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTimeOffset? ArchivedAt { get; set; }
@@ -223,10 +227,14 @@ public static class KnowledgeContentTypes
     public const string MessageScript = "message-script";
     public const string KnowledgeArticle = "knowledge-article";
 
+    /// <summary>WP-SB-2 — the single presentation a Content Studio release assembles from a content set (the rendered
+    /// PDF is its asset).</summary>
+    public const string AssembledPresentation = "assembled-presentation";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
         Presentation, Brochure, Lesson, Faq, ClinicalSummary, ObjectionHandling, Quiz, Video, Pdf, HtmlDetail, Sop,
-        TrainingMaterial, MessageScript, KnowledgeArticle
+        TrainingMaterial, MessageScript, KnowledgeArticle, AssembledPresentation
     };
 
     public static bool IsValid(string? value)
@@ -287,9 +295,12 @@ public static class KnowledgeContentSources
     public const string External = "external";
     public const string Other = "other";
 
+    /// <summary>WP-SB-2 — produced by a Content Studio set release.</summary>
+    public const string ContentStudio = "content-studio";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
-        Manual, Campaign, LegacyImport, Training, External, Other
+        Manual, Campaign, LegacyImport, Training, External, Other, ContentStudio
     };
 
     public static bool IsValid(string? value)

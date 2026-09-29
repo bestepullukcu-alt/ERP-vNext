@@ -276,6 +276,7 @@ public sealed class CreateKnowledgeContentHandler : IRequestHandler<CreateKnowle
             Tags = KnowledgeMapper.CleanTags(request.Tags),
             ExternalReferences = KnowledgeMapper.ToEntities(request.ExternalReferences, now),
             ClaimRefs = claimRefs!,
+            StudioOrigin = request.StudioOrigin,
             CreatedAt = now,
             CreatedBy = _actor.ActorName
         };

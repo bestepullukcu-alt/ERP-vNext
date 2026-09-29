@@ -557,6 +557,14 @@ public static class DependencyInjection
             map.GetMemberMap(r => r.ClaimId).SetSerializer(stringGuid);
             map.GetMemberMap(r => r.CountryVersionId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
         });
+        // WP-SB-2 — Content Studio provenance embedded on KnowledgeContent / KnowledgePath. Every id is a string Guid
+        // (the new-field class-map trap); a pre-SB-2 document has no StudioOrigin element and reads back null.
+        Map<KnowledgeStudioOrigin>(map =>
+        {
+            map.GetMemberMap(o => o.ContentSetId).SetSerializer(stringGuid);
+            map.GetMemberMap(o => o.ContentSetRevisionId).SetSerializer(stringGuid);
+            map.GetMemberMap(o => o.ConceptChainTemplateId).SetSerializer(stringGuid);
+        });
         Map<Subject>(map => map.GetMemberMap(s => s.ParentSubjectId)
             .SetSerializer(new NullableSerializer<Guid>(stringGuid)));
         Map<Topic>(map =>
@@ -657,8 +665,13 @@ public static class DependencyInjection
         // SCMM-15 (CAND-CAP-0011) — ContentSetRevision (frozen manifest). ContentSetId takes the string-Guid convention
         // (the new-aggregate class-map trap); the snapshot value objects reuse the already-registered ContentSet* maps.
         // ContentSetReviewDecision carries no Guid member — registered so the driver maps it explicitly, not anonymously.
+        // WP-SB-2 — the produced content / path ids take the string-Guid convention too (the new-field class-map trap).
         Map<ContentSetRevision>(map =>
-            map.GetMemberMap(x => x.ContentSetId).SetSerializer(stringGuid));
+        {
+            map.GetMemberMap(x => x.ContentSetId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.ProducedKnowledgeContentId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(x => x.ProducedKnowledgePathId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
         Map<ContentSetReviewDecision>(_ => { });
         // SCMM-16B — the rendered-artifact pointer. ContentId is a FU01 content id and takes the same string-Guid
         // convention (the new-aggregate class-map trap) so it round-trips as a string rather than a binary sub type.

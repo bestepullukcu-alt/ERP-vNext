@@ -68,6 +68,9 @@ public sealed class KnowledgePath : EntityBase
     /// <summary>The published source a <c>new-version</c> was cloned from (D5). Provenance only, not a chain engine.</summary>
     public Guid? SupersedesPathId { get; set; }
 
+    /// <summary>WP-SB-2 — set only on a path a Content Studio release produced (provenance). Null otherwise.</summary>
+    public KnowledgeStudioOrigin? StudioOrigin { get; set; }
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTimeOffset? ArchivedAt { get; set; }
@@ -205,7 +208,13 @@ public static class KnowledgePathSources
     public const string External = "external";
     public const string Other = "other";
 
-    public static readonly IReadOnlyList<string> All = new[] { Manual, Campaign, Training, LegacyImport, External, Other };
+    /// <summary>WP-SB-2 — produced by a Content Studio set release.</summary>
+    public const string ContentStudio = "content-studio";
+
+    public static readonly IReadOnlyList<string> All = new[]
+    {
+        Manual, Campaign, Training, LegacyImport, External, Other, ContentStudio
+    };
 
     public static bool IsValid(string? value)
         => !string.IsNullOrWhiteSpace(value) && All.Contains(value.Trim().ToLowerInvariant());

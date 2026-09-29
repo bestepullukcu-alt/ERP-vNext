@@ -72,6 +72,20 @@ public sealed class ContentSetRevision : EntityBase
     /// not a deletion — the stored bytes are never removed (AD-6).</summary>
     public ContentSetReleaseState? ReleaseState { get; set; }
 
+    // ── release outputs (WP-SB-2; additive) ─────────────────────────────────────────────────────────────────────────
+    /// <summary>WP-SB-2 — the assembled-presentation <see cref="KnowledgeContent"/> this revision's release produced.
+    /// Written in the same save as <see cref="ReleaseState"/> (released ⇔ produced); null before release and on
+    /// revisions released before WP-SB-2.</summary>
+    public Guid? ProducedKnowledgeContentId { get; set; }
+
+    public string? ProducedKnowledgeContentCode { get; set; }
+
+    /// <summary>WP-SB-2 — the chain-ordered <see cref="KnowledgePath"/> this revision's release produced (or the new
+    /// version it opened).</summary>
+    public Guid? ProducedKnowledgePathId { get; set; }
+
+    public string? ProducedKnowledgePathCode { get; set; }
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTimeOffset? ArchivedAt { get; set; }
@@ -219,4 +233,29 @@ public static class ContentSetRevisionReasonCodes
 
     /// <summary>SCMM-17 — release refused because the releaser is the reviewer (separation of duties).</summary>
     public const string ReleaseSoD = "content_set_revision_release_sod";
+}
+
+/// <summary>WP-SB-2 — coded release refusals (rendered as the <c>[code, message]</c> error pair). The claim
+/// preconditions reuse the WP-CL-BE-6 <see cref="KnowledgeContentClaimErrors"/> codes unchanged.</summary>
+public static class ContentSetReleaseErrors
+{
+    /// <summary>The revision has no component, or a component is missing / archived / not published.</summary>
+    public const string ComponentNotPublished = "component_not_published";
+
+    /// <summary>The components are not all in one language (the decision of 2026-09-29: refuse, never guess).</summary>
+    public const string ComponentLanguageMixed = "component_language_mixed";
+
+    /// <summary>The source content set or its pinned composition template can no longer be read.</summary>
+    public const string SourceUnavailable = "release_source_unavailable";
+}
+
+/// <summary>WP-SB-2 — non-blocking notes a release / withdrawal returns.</summary>
+public static class ContentSetReleaseWarnings
+{
+    /// <summary>Withdrawal left the produced path active: a published journey stage uses it.</summary>
+    public const string PathInUse = "path_in_use";
+
+    /// <summary>A re-release superseded (inactivated) the previous produced path although a published journey stage
+    /// still uses it — that stage now points at an inactive version.</summary>
+    public const string PreviousPathInUse = "previous_path_in_use";
 }

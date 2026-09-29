@@ -33,7 +33,9 @@ public sealed record CreateKnowledgeContentCommand(
     string? Source = null,
     IReadOnlyList<string>? Tags = null,
     IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null,
-    IReadOnlyList<KnowledgeContentClaimRefInput>? ClaimRefs = null) : IRequest<Response<Guid>>;
+    IReadOnlyList<KnowledgeContentClaimRefInput>? ClaimRefs = null,
+    // WP-SB-2: set only by the Content Studio release (server-side provenance; never from an API payload).
+    Diten.CrmService.Domain.Entities.KnowledgeStudioOrigin? StudioOrigin = null) : IRequest<Response<Guid>>;
 
 /// <summary>Full replace of the mutable fields of content. <c>ContentCode</c> is immutable (rename goes through
 /// <c>ContentTitle</c>). Archived content cannot be updated.</summary>

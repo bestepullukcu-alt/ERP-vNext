@@ -53,6 +53,19 @@ public sealed class ContentSetRevisionReleaseTests
         public Task PublishAsync(string e, Guid t, string et, Guid id, int v, string? d, CancellationToken ct) => Task.CompletedTask;
     }
 
+    // WP-SB-2 — these tests pin the SCMM-17 release/withdraw lifecycle only; the knowledge outputs are covered by
+    // ContentSetReleaseKnowledgeTests. This producer always succeeds and produces nothing.
+    private sealed class PassThroughProducer : IContentSetReleaseProducer
+    {
+        public Task<ContentSetReleaseProduction> ProduceAsync(
+            Guid tenantId, ContentSetRevision revision, ContentSetRenderedArtifact artifact, CancellationToken ct)
+            => Task.FromResult(new ContentSetReleaseProduction());
+        public Task CompensateAsync(Guid tenantId, ContentSetReleaseProduction production, CancellationToken ct)
+            => Task.CompletedTask;
+        public Task<ContentSetReleaseProduction> RetireAsync(Guid tenantId, ContentSetRevision revision, CancellationToken ct)
+            => Task.FromResult(new ContentSetReleaseProduction());
+    }
+
     private static ContentSetRevision Seed(FakeRevisionRepo repo, Guid tenant, bool rendered = true, string reviewer = "reviewer")
     {
         var revision = new ContentSetRevision
@@ -80,10 +93,10 @@ public sealed class ContentSetRevisionReleaseTests
     }
 
     private static ReleaseContentSetRevisionHandler Release(FakeRevisionRepo repo, Guid tenant, string? actor)
-        => new(Tenant(tenant), new Actor(actor), repo, new NullAudit());
+        => new(Tenant(tenant), new Actor(actor), repo, new NullAudit(), new PassThroughProducer());
 
     private static WithdrawContentSetRevisionHandler Withdraw(FakeRevisionRepo repo, Guid tenant, string? actor)
-        => new(Tenant(tenant), new Actor(actor), repo, new NullAudit());
+        => new(Tenant(tenant), new Actor(actor), repo, new NullAudit(), new PassThroughProducer());
 
     // ── release ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
