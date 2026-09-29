@@ -128,3 +128,23 @@ KORU/YAPMA: FE-1 proxy'leri DEĞİŞMEZ (yalnız ekleme); CRM/Platform/Auth DOKU
 DOĞRULA (E2): Web testleri 0 kırmızı (taban FE-1 sonrası); Web build 0 hata; verifier varsa PASS; yeni testler L10n 7 dil eşliği + (varsa) proxy eklemeleri izin kapıları. E4 (fleet restart sonrası, ayrı sekme, yazma yalnız onayla): form + seçiciler, taslak kaydet, kanıt modalı (liste, sürüm sabitleme, işaretleme), hazırlık canlı, akış önizlemesi Medikal→Hukuk→Ruhsat, kanıtsız gönderim mesajı, kilit bantları, TR + bir dil, koyu tema. Commit ("feat(crm): WP-CL-FE-3 — core/local claim form, evidence modal, readiness, submit/withdraw review" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: DocMgmt'te sürüm parametreli önizleme ucu yoksa önizlemeyi "Belge Yönetimi'nde aç" bağlantısıyla sınırla + raporla; eski Create/Edit MVC post'unu kaldırmak başka sayfayı bozuyorsa DUR+raporla.
 ```
+
+## §37 CT bağımsız doğrulama (2026-09-29) → **ACCEPTED (E2)** — E4 birleştirme + fleet restart sonrası CT
+```
+Commit: 7e4e9cd6 · Agent: PASS (Web 270/0, 3 sabotaj) · CT: worktree C:\tmp\cl-fe-3 → Web 270/0, form.js sözdizimi temiz
+```
+- ✅ **Kapsam:** 19 dosya, yalnız `frontend/`.
+  - FE-1 dosyaları (V2 proxy, liste, `ClaimsIndex` resx, index.js) diff YOK.
+  - Silinen: `Models/CRM/ClaimViewModels.cs`, `Views/CRM/Claims/_Form.cshtml`. Yalnız eski MVC form kullanıyordu; build temiz.
+- ✅ **Sayfa:**
+  - Create / Edit JS + v2 proxy, 8/4 düzen.
+  - Kanıt modalı: fare + klavye ile ifade işaretleme, en çok 10 parça.
+  - Hazırlık listesi, akış önizlemesi, durum kartı.
+  - Hata kodları kullanıcı dilinde.
+  - `ClaimsForm` resx 7 dil × 151 anahtar; `form.js` anahtar-resx testi var.
+- ⚠ **Eksikler (kabul, takip):**
+  - (1) Harici belge önizlemesi yok (Web'de sayfa yok).
+  - (2) Belge seçicide süre uyarısı yok (`document-options` DTO'sunda tarih yok; küçük Platform/CRM eki).
+  - (3) Yeni iddiada `EffectiveFrom` = kayıt anı.
+  - (4) Yinelenen kodun CRM'de kodu yok; kodsuz 409 → "bu kod kullanılıyor".
+- ⏳ **E4 (tarayıcı):** CT, fleet restart sonrası yazmasız kontrol. Uçtan uca onay (yazmalı) → **CL-E4-1**, kullanıcı onayıyla.
