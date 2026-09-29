@@ -215,8 +215,21 @@
         sortDir: 'asc',
         pageLength: 10,
         listPage: 0,
-        // `YYYY-MM`, or null for "the month we are in" — see `calendarAnchor`.
-        calendarMonth: null,
+        // WP-UI-CALENDAR-VIEW-01 — the calendar's view and anchor day (null = today), mirrored into the URL.
+        calendarView: 'month',
+        calendarDate: null,
+        // The planning board's left panel, and the feed it counts from. `calendarFeedKey` is the range the feed
+        // answers ("from|to"): a re-render of the same range does not ask again.
+        calendarPanel: 'unplanned',
+        calendarFeed: null,
+        calendarFeedKey: null,
+        calendarFeedError: null,
+        calendarRange: null,
+        // What the engine said about a plan it SAVED (warnings) — shown on the block until the next write. The feed
+        // does not carry warnings, so this lives for the session only.
+        calendarNotes: {},
+        // The tenant zone when only the plan dialog needed it (the feed was never loaded on this view).
+        calendarZoneOnly: null,
         tableColumnVisibility: [true, true, true, true, true, true, true, true],
         loadState: 'loading',
         loadError: null,
@@ -298,9 +311,11 @@
         // link nobody would type. Anything unparseable stays on page 1 rather than blanking the list.
         const page = parseInt(params.get('page'), 10);
         state.listPage = Number.isFinite(page) && page > 0 ? page - 1 : 0;
-        // Shape-checked rather than whitelisted: any month is legitimate, but only `YYYY-MM` is a month.
-        const month = params.get('month');
-        state.calendarMonth = month && /^\d{4}-\d{2}$/.test(month) ? month : null;
+        // WP-UI-CALENDAR-VIEW-01 — the calendar's view is whitelisted; its day is shape-checked.
+        const calView = params.get('calview');
+        state.calendarView = calView && ['month', 'week', 'day'].indexOf(calView) >= 0 ? calView : 'month';
+        const calDate = params.get('caldate');
+        state.calendarDate = calDate && /^\d{4}-\d{2}-\d{2}$/.test(calDate) ? calDate : null;
         if (state.tab !== 'islerim') { state.segment = 'aktif'; }
     };
 
@@ -327,8 +342,9 @@
         put('sort', state.sortKey, 'sla');
         put('dir', state.sortDir, 'asc');
         put('page', state.listPage > 0 ? String(state.listPage + 1) : '', '');
-        // Only when the reader has moved off the current month — the default stays out of the URL.
-        put('month', state.calendarMonth || '', '');
+        // Only while the calendar is the view — its defaults (month, today) stay out of the URL.
+        put('calview', state.view === 'calendar' ? state.calendarView : '', 'month');
+        put('caldate', state.view === 'calendar' ? (state.calendarDate || '') : '', '');
         global.history.replaceState({ workCenterNext: true }, '', url.pathname + url.search + url.hash);
     };
 
@@ -2092,11 +2108,13 @@
     };
 
     // ── Split-detail view ─────────────────────────────────────────────────────
-    // Compact, self-contained card for the Split master list — and the future
-    // Calendar view's "unplanned work" rail (drag onto the calendar to schedule).
+    // Compact, self-contained card for the Split master list — and the Calendar view's left panel (drag onto the
+    // calendar to schedule, WP-UI-CALENDAR-VIEW-01).
     // Vertical layout so it never truncates like the wide list row did in a narrow
     // column: a priority accent stripe, type, 2-line title, SLA/blocked chips, source.
-    const splitCard = (item) => {
+    // `extras` (HTML) and `planDrag` are the calendar panel's only additions: its flags and buttons below the meta
+    // row, and the marker that lets the card be dropped on the calendar. The card itself is not rewritten.
+    const splitCard = (item, extras = '', planDrag = false) => {
         const selected = item.id === state.selectedId;
         const terminal = item.lifecycle === 'Done' || item.lifecycle === 'Cancelled';
         const typeKind = item.itemType === 'meetingInvite' ? 'meeting' : item.itemType;
@@ -2107,7 +2125,7 @@
             ? [item.sourceType, item.dueAt, item.requester].filter(Boolean).join(' · ')
             : [item.sourceModule, item.requester].filter(Boolean).join(' · ');
         const pinBtn = terminal ? '' : `<button type="button" class="wcn-splitcard-pin${item.pinned ? ' pinned' : ''}" data-wcn-pin="${item.id}" title="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-label="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-pressed="${item.pinned}"><i class="bx ${item.pinned ? 'bxs-pin' : 'bx-pin'}"></i></button>`;
-        return `<article class="card wcn-splitcard${hasPriority(item) ? ` wcn-splitcard-p-${PRIORITY_KIND[item.priority]}` : ''}${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}" tabindex="0" role="button" draggable="true" aria-label="${esc(tf('TableOpenRow', item.title))}">
+        return `<article class="card wcn-splitcard${hasPriority(item) ? ` wcn-splitcard-p-${PRIORITY_KIND[item.priority]}` : ''}${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}"${planDrag ? ` data-wcn-plan-drag="${esc(item.id)}"` : ''} tabindex="0" role="button" draggable="true" aria-label="${esc(tf('TableOpenRow', item.title))}">
             <div class="wcn-splitcard-head">
                 <span class="wcn-inbox-type wcn-inbox-type-${typeKind}">${esc(typeLabel(item))}</span>
                 <span class="wcn-splitcard-head-end">
@@ -2121,6 +2139,7 @@
                 ${isBlocked(item) ? `<span class="wcn-chip wcn-chip-danger"><i class="bx bx-lock-alt"></i>${esc(t('BlockedLabel'))}</span>` : ''}
                 ${item.delegator ? `<span class="wcn-chip wcn-chip-delegation"><i class="bx bx-user-voice"></i>${esc(tf('OnBehalfShort', item.delegator))}</span>` : ''}
             </div>
+            ${extras}
             <div class="wcn-splitcard-foot"><i class="bx bx-cube"></i><span>${esc(metaLine)}</span></div>
         </article>`;
     };
@@ -6312,106 +6331,503 @@
      */
 
     /*
-     * Which month the grid is showing. `state.calendarMonth` is a `YYYY-MM` string or null for "today's month",
-     * so the default costs no state and the URL stays clean until the reader actually moves.
+     * ══ THE CALENDAR VIEW (WP-UI-CALENDAR-VIEW-01, calendar 2b) ═════════════════════════════════════════════
+     *
+     * The hand-written month grid that lived here (renderCalendar, BL-256) is GONE: one month, due dates only, no
+     * hours. Every tab now draws the ONE shared component (shared/diten-calendar.js over the vendored FullCalendar).
+     *
+     * • İşlerim is the PLANNING board: the reader's planned work and meetings from the calendar feed
+     *   (GET /WorkCenterNext/api/calendar → api/v1/work/calendar), a left panel of what still needs a slot
+     *   (Planlanmamış · Planı geçmiş · Davetler, counts from the feed), and drag to plan: a day in the month view is
+     *   a day plan, a time in the week/day view is a block; moving is a re-plan, stretching changes the length,
+     *   dragging back to the panel is `unplan`.
+     * • Every other tab is READ-ONLY: the tab's own items by due date (and the reader's plan date where it differs)
+     *   — the job the old grid did, on the same component.
+     *
+     * ⚠ NO RULE LIVES HERE. Whether two blocks collide, where the working day ends, what is left of the estimate —
+     * all of it is the engine's answer (WP-TASK-CALENDAR-ENGINE-01). This file SHOWS it: a 409 is reverted and
+     * named, a warning is said and marked, a cut block says how much is left.
+     *
+     * ⚠ THE WRITES GO THROUGH THE ONE ACTION ADDRESS (WC-D2): `plan` / `unplan` on
+     * /WorkCenterNext/api/work-items/{id}/actions/…, the same seam every other button on this page uses.
      */
-    const calendarAnchor = () => {
-        const iso = state.calendarMonth && /^\d{4}-\d{2}$/.test(state.calendarMonth)
-            ? state.calendarMonth + '-01'
-            : data.todayIso.slice(0, 7) + '-01';
-        return new Date(iso + 'T00:00:00');
-    };
-    const shiftMonth = (delta) => {
-        const at = calendarAnchor();
-        const next = new Date(at.getFullYear(), at.getMonth() + delta, 1);
-        const key = `${next.getFullYear()}-${pad2(next.getMonth() + 1)}`;
-        // Back to the default rather than storing today's own month: same state, one less thing in the URL.
-        state.calendarMonth = key === data.todayIso.slice(0, 7) ? null : key;
+    // What an event on the planning board IS. Read through this map rather than spelled at each comparison.
+    const CAL_KIND = { task: 'task', meeting: 'meeting' };
+    const CALENDAR_PANELS = ['unplanned', 'planPassed', 'invites'];
+    const isPlanningCalendar = () => state.tab === 'islerim';
+
+    /** The item's plan action when the reader may press it (the engine projects `plan` to the HOLDER only, BL-449). */
+    const usablePlanAction = (item) => {
+        const action = actionByKey(item, 'plan');
+        return action && !action.disabled ? action : null;
     };
 
-    const renderCalendar = () => {
-        const items = activeItems();
-        /*
-         * ⚠ AN EMPTY MONTH IS NOT A CALENDAR. This drew the grid unconditionally, so a filter that matched
-         * nothing produced 31 blank boxes and no sentence — the reader could not tell "nothing is due" from
-         * "the page failed". Same empty-state language as every other view.
-         */
-        if (!items.length) { return emptyState(); }
-        state.visibleOrder = items.map((i) => i.id);
-        const lang = (document.documentElement.lang || 'tr').slice(0, 2);
-        const today = new Date(data.todayIso + 'T00:00:00');
-        const at = calendarAnchor();
-        const year = at.getFullYear();
-        const month = at.getMonth();
-        const first = new Date(year, month, 1);
-        const startDow = (first.getDay() + 6) % 7;               // Monday = 0
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        let monthTitle;
-        try { monthTitle = new Intl.DateTimeFormat(lang, { month: 'long', year: 'numeric' }).format(first); }
-        catch (e) { monthTitle = (month + 1) + '/' + year; }
-        const wd = [];
-        for (let i = 0; i < 7; i++) {
-            try { wd.push(new Intl.DateTimeFormat(lang, { weekday: 'short' }).format(new Date(2024, 0, 1 + i))); }
-            catch (e) { wd.push(''); }
+    /** A block's default length: the estimate rounded UP to a 15-minute step, else 60 — the engine's own rule. */
+    const defaultBlockMinutes = (item) => {
+        const hours = Number(item?.estimateHours ?? item?.effort?.estimate ?? 0);
+        if (!(hours > 0)) { return 60; }
+        return Math.ceil((hours * 60) / 15) * 15;
+    };
+
+    /** The feed's zone when the feed has answered with one the browser knows; null otherwise. */
+    const feedZone = () => {
+        const zone = state.calendarFeed?.timeZoneId;
+        return zone && global.DitenZonedTime && global.DitenZonedTime.isValidZone(zone) ? zone : null;
+    };
+
+    /*
+     * THE zone every conversion on this page uses (v2 F10). While a calendar is mounted it is the component's own
+     * (`calendarController.zone` — what the drawn times were converted with); otherwise the feed's. Two sources
+     * would let a drop drawn in one zone be written in another.
+     */
+    const calendarZone = () => (calendarController ? calendarController.zone : feedZone());
+
+    /*
+     * The planning board may WRITE only once it knows where it is (v2 F1): the feed has answered and its zone is
+     * one the browser can convert in. Before that — or after a 500 on the first read — a drop at "10:00" would be
+     * read as 10:00 UTC (13:00 in Istanbul). Nothing drags and nothing drops until then.
+     */
+    const planningReady = () => isPlanningCalendar() && !!feedZone();
+
+    /*
+     * THE one "today" on the calendar page (v2 F4): the tenant's calendar day right now, in the feed's zone — the
+     * same day the engine counts `planPassedCount` in and the calendar highlights. Only before the feed has
+     * answered does it fall back to the page's own today.
+     */
+    const calendarToday = () => {
+        const zone = feedZone();
+        return zone ? global.DitenZonedTime.localDate(Date.now(), zone) : data.todayIso;
+    };
+
+    /** The three left-panel lists. The COUNTS come from the feed; these are the cards the counts describe. */
+    const calendarPanelItems = (panel) => {
+        const today = calendarToday();
+        switch (panel) {
+            case 'planPassed':
+                return state.items.filter((i) => usablePlanAction(i) && i.plannedDate && i.plannedDate < today);
+            case 'invites':
+                return state.items.filter((i) => i.itemType === 'meetingInvite');
+            default:
+                return state.items.filter((i) => usablePlanAction(i) && !i.plannedDate);
         }
-        // Cluster items by day: source due + personal plan (distinct kinds).
-        const byDay = {};
-        items.forEach((i) => {
-            if (i.dueAt) { (byDay[i.dueAt] = byDay[i.dueAt] || []).push({ item: i, kind: 'due' }); }
-            if (i.plannedDate && i.plannedDate !== i.dueAt) { (byDay[i.plannedDate] = byDay[i.plannedDate] || []).push({ item: i, kind: 'plan' }); }
-        });
-        const cells = [];
-        for (let b = 0; b < startDow; b++) { cells.push('<div class="wcn-cal-cell wcn-cal-empty"></div>'); }
-        for (let d = 1; d <= daysInMonth; d++) {
-            const iso = `${year}-${pad2(month + 1)}-${pad2(d)}`;
-            const isToday = iso === data.todayIso;
-            const entries = (byDay[iso] || []).map((e) =>
-                `<div class="wcn-cal-item wcn-cal-${e.kind}" data-wcn-row="${e.item.id}" title="${esc(e.item.title)}" tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', e.item.title))}">
-                    <span class="wcn-cal-dot"></span><span class="wcn-cal-item-text">${esc(e.item.title)}</span>
-                </div>`).join('');
-            cells.push(`<div class="wcn-cal-cell${isToday ? ' wcn-cal-today' : ''}">
-                <span class="wcn-cal-day">${d}</span>${entries}
-            </div>`);
+    };
+
+    const PANEL_COUNT_FIELD = { unplanned: 'unplannedCount', planPassed: 'planPassedCount', invites: 'pendingInviteCount' };
+    const PANEL_LABEL_KEY = { unplanned: 'CalPanelUnplanned', planPassed: 'CalPanelPlanPassed', invites: 'CalPanelInvites' };
+
+    /** The feed task for an item id, when the feed carries it (remainingMinutes, conflict). */
+    const feedTask = (id) => (state.calendarFeed?.tasks || []).find((task) => task.taskId === id) || null;
+
+    const inviteButtons = (item) => ['acceptInvite', 'declineInvite']
+        .map((code) => actionByKey(item, code))
+        .filter(Boolean)
+        .map((action) => `<button type="button" class="btn btn-xs btn-label-${action.code === 'acceptInvite' ? 'success' : 'secondary'} wcn-calcard-btn" data-wcn-action="${esc(action.key)}" data-wcn-id="${esc(item.id)}"${action.disabled ? ' disabled' : ''}>${esc(actionLabel(action))}</button>`)
+        .join('');
+
+    /** What a panel card carries beyond splitCard itself: flags and its own buttons (the card is not rewritten). */
+    const calendarCardExtras = (item, panel) => {
+        const chips = [];
+        const estimate = Number(item.estimateHours ?? item.effort?.estimate ?? 0);
+        if (estimate > 0) {
+            chips.push(`<span class="wcn-chip wcn-chip-secondary wcn-calchip-estimate"><i class="bx bx-time"></i>${esc(tf('CalChipEstimate', estimate))}</span>`);
         }
-        /*
-         * ── WHAT IS NOT ON THIS SCREEN (2026-08-25, BL-256) ───────────────────────────────────────────────
-         *
-         * MEASURED before the month control existed: 30 items in the list, 6 in the grid — the other 24 sat in
-         * July and September with nothing on screen saying so. A month view that shows a fifth of the list and
-         * stays silent is the same lie this session removed from the chips and the columns.
-         *
-         * ⚠ THE SENTENCE STAYS EVEN THOUGH THE ARROWS EXIST. Navigation answers "let me look"; this answers
-         * "is there anything to look for" — and a reader should not have to click through months to find out.
-         *
-         * ⚠ DATELESS ITEMS ARE COUNTED SEPARATELY because no amount of navigating will ever reach them.
-         * Measured at ZERO on live data today (every task carries a `dueAt`), which is exactly why it is
-         * written as a condition rather than assumed away.
-         */
-        const monthKey = `${year}-${pad2(month + 1)}`;
-        const dateOf = (i) => i.dueAt || i.plannedDate || null;
-        const dateless = items.filter((i) => !dateOf(i)).length;
-        const elsewhere = items.filter((i) => { const d = dateOf(i); return d && String(d).slice(0, 7) !== monthKey; }).length;
-        const outside = elsewhere || dateless
-            ? `<p class="wcn-cal-outside" role="note"><i class="bx bx-info-circle" aria-hidden="true"></i>${
-                esc(dateless ? tf('CalOutsideAndUndated', elsewhere, dateless) : tf('CalOutside', elsewhere))}</p>`
+        if (panel === 'planPassed') {
+            chips.push(`<span class="wcn-chip wcn-chip-warning wcn-calchip-passed"><i class="bx bx-calendar-exclamation"></i>${esc(tf('CalChipPlanPassed', item.plannedDate))}</span>`);
+        }
+        const remaining = feedTask(item.id)?.remainingMinutes;
+        if (remaining > 0) {
+            chips.push(`<span class="wcn-chip wcn-chip-info wcn-calchip-remaining">${esc(tf('CalChipRemaining', remaining))}</span>`);
+        }
+        const plan = usablePlanAction(item);
+        const buttons = panel === 'invites'
+            ? inviteButtons(item)
+            : (plan ? `<button type="button" class="btn btn-xs btn-label-primary wcn-calcard-btn" data-wcn-action="${esc(plan.key)}" data-wcn-id="${esc(item.id)}"><i class="bx ${inboxActionIcon(plan)}"></i>${esc(actionLabel(plan))}</button>` : '');
+        return `<div class="wcn-calcard-extras">${chips.join('')}${buttons}</div>`;
+    };
+
+    const renderCalendarPanel = () => {
+        const feed = state.calendarFeed;
+        const tabs = CALENDAR_PANELS.map((panel) => {
+            const active = state.calendarPanel === panel;
+            const count = feed ? Number(feed[PANEL_COUNT_FIELD[panel]] ?? 0) : '–';
+            return `<button type="button" class="wcn-calpanel-tab${active ? ' active' : ''}" role="tab" aria-selected="${active}" data-wcn-calpanel="${panel}">${esc(t(PANEL_LABEL_KEY[panel]))}<span class="wcn-calpanel-count" data-wcn-calpanel-count="${panel}">${esc(count)}</span></button>`;
+        }).join('');
+        const items = calendarPanelItems(state.calendarPanel);
+        const cards = items.length
+            ? items.map((item) => splitCard(item, calendarCardExtras(item, state.calendarPanel), state.calendarPanel !== 'invites' && planningReady())).join('')
+            : `<p class="wcn-calpanel-empty">${esc(t('CalPanelEmpty'))}</p>`;
+        return `<aside class="card wcn-calpanel" data-wcn-calpanel-dropzone aria-label="${esc(t('CalPanelTitle'))}">
+            <div class="wcn-calpanel-tabs" role="tablist">${tabs}</div>
+            <p class="wcn-calpanel-hint">${esc(t('CalPanelHint'))}</p>
+            <div class="wcn-calpanel-list">${cards}</div>
+        </aside>`;
+    };
+
+    const renderCalendarLegend = () => {
+        const entries = isPlanningCalendar()
+            ? [['task', 'CalLegendTask'], ['task-block', 'CalLegendBlock'], ['meeting-accepted', 'CalLegendMeetingAccepted'],
+                ['meeting-pending', 'CalLegendMeetingPending'], ['conflict', 'CalLegendConflict'], ['offhours', 'CalLegendOffHours'],
+                ['holiday', 'CalLegendHoliday']]
+            : [['due', 'CalLegendDue'], ['plan', 'CalLegendPlan']];
+        return `<div class="wcn-calview-legend" role="note">${entries
+            .map(([kind, key]) => `<span class="wcn-calview-lg"><span class="wcn-calview-swatch wcn-calview-swatch-${kind}"></span>${esc(t(key))}</span>`)
+            .join('')}</div>`;
+    };
+
+    const renderCalendarView = () => {
+        const planning = isPlanningCalendar();
+        if (!planning && !activeItems().length) { return emptyState(); }
+        const note = planning && state.calendarFeedError
+            ? `<p class="wcn-calview-note" role="alert"><i class="bx bx-error-circle"></i>${esc(state.calendarFeedError)}</p>`
             : '';
-        const isCurrent = monthKey === data.todayIso.slice(0, 7);
-        const nav = `<span class="wcn-cal-nav btn-group btn-group-sm">
-            <button type="button" class="btn btn-label-secondary btn-icon" data-wcn-cal-month="prev" aria-label="${esc(t('CalPrevMonth'))}"><i class="bx bx-chevron-left"></i></button>
-            <button type="button" class="btn btn-label-secondary${isCurrent ? ' disabled' : ''}" data-wcn-cal-month="today"${isCurrent ? ' disabled' : ''}>${esc(t('CalToday'))}</button>
-            <button type="button" class="btn btn-label-secondary btn-icon" data-wcn-cal-month="next" aria-label="${esc(t('CalNextMonth'))}"><i class="bx bx-chevron-right"></i></button>
-        </span>`;
-        return `<div class="wcn-calendar">
-            <div class="wcn-cal-head">
-                <span class="wcn-cal-month">${esc(monthTitle)}</span>${nav}
-                <span class="wcn-cal-legend"><span class="wcn-cal-lg wcn-cal-due"></span>${esc(t('CalLegendDue'))} <span class="wcn-cal-lg wcn-cal-plan"></span>${esc(t('CalLegendPlan'))}</span>
-            </div>
-            <div class="wcn-cal-weekdays">${wd.map((w) => `<span>${esc(w)}</span>`).join('')}</div>
-            <div class="wcn-cal-grid">${cells.join('')}</div>
-            ${outside}
+        return `<div class="wcn-calview ${planning ? 'wcn-calview-planning' : 'wcn-calview-readonly'}">
+            ${planning ? renderCalendarPanel() : ''}
+            <section class="card wcn-calview-main">
+                ${renderCalendarLegend()}${note}
+                <div class="wcn-calview-host" data-wcn-calendar-host></div>
+            </section>
         </div>`;
     };
 
+    /* ── events handed to the component ─────────────────────────────────────────────────────────────────── */
+
+    const planningEvents = () => {
+        const feed = state.calendarFeed;
+        if (!feed) { return []; }
+        const tasks = (feed.tasks || []).map((task) => {
+            const item = itemById(task.taskId);
+            const note = state.calendarNotes[task.taskId];
+            const classNames = ['dc-task'];
+            if (task.plannedStartAt) { classNames.push('dc-task-block'); }
+            if (task.conflict) { classNames.push('dc-conflict'); }
+            if (note && note.warnings && note.warnings.length) { classNames.push('dc-warned'); }
+            const base = {
+                id: task.taskId,
+                title: task.title,
+                kind: CAL_KIND.task,
+                // Per-event `editable` overrides the calendar's own in FullCalendar, so readiness is asked here too.
+                editable: !!(item && usablePlanAction(item)) && planningReady(),
+                classNames,
+                extendedProps: { defaultMinutes: defaultBlockMinutes(item), remainingMinutes: task.remainingMinutes }
+            };
+            return task.plannedStartAt
+                ? Object.assign(base, { allDay: false, startUtc: task.plannedStartAt, endUtc: task.plannedEndAt })
+                : Object.assign(base, { allDay: true, date: task.plannedDate });
+        });
+        const meetings = (feed.meetings || []).map((meeting) => ({
+            id: 'meeting:' + meeting.meetingId,
+            title: meeting.title,
+            kind: CAL_KIND.meeting,
+            editable: false,
+            allDay: false,
+            startUtc: meeting.startAt,
+            endUtc: meeting.endAt,
+            classNames: ['dc-meeting', meeting.response === 'accepted' ? 'dc-meeting-accepted' : 'dc-meeting-pending'],
+            extendedProps: { meetingId: meeting.meetingId, response: meeting.response }
+        }));
+        return tasks.concat(meetings);
+    };
+
+    /** Read-only tabs: the tab's items by due date, and the reader's own plan date where it differs. */
+    const readOnlyEvents = () => {
+        const events = [];
+        activeItems().forEach((item) => {
+            if (item.dueAt) {
+                events.push({ id: 'due:' + item.id, title: item.title, kind: 'due', allDay: true, date: item.dueAt, classNames: ['dc-due'], extendedProps: { itemId: item.id } });
+            }
+            if (item.plannedDate && item.plannedDate !== item.dueAt) {
+                events.push({ id: 'plan:' + item.id, title: item.title, kind: 'plan', allDay: true, date: item.plannedDate, classNames: ['dc-plan'], extendedProps: { itemId: item.id } });
+            }
+        });
+        return events;
+    };
+
+    /** Buttons and chips inside a calendar event: the block's own "Planla", a cut block's remaining time, an invite's answers. */
+    const calendarEventExtras = (event) => {
+        const kind = event.extendedProps.kind;
+        if (kind === CAL_KIND.meeting) {
+            const invite = event.extendedProps.response === 'pending' ? itemById(event.extendedProps.meetingId) : null;
+            return invite ? `<span class="dc-event-actions">${inviteButtons(invite)}</span>` : '';
+        }
+        if (kind !== CAL_KIND.task) { return ''; }
+        const parts = [];
+        const remaining = event.extendedProps.remainingMinutes;
+        if (remaining > 0) { parts.push(`<span class="dc-event-chip">${esc(tf('CalChipRemaining', remaining))}</span>`); }
+        const note = state.calendarNotes[event.id];
+        if (note && note.warnings && note.warnings.length) {
+            parts.push(`<span class="dc-event-warning" title="${esc(note.messages.join(' · '))}"><i class="bx bx-error"></i></span>`);
+        }
+        const item = itemById(event.id);
+        const plan = item && usablePlanAction(item);
+        if (plan) {
+            parts.push(`<button type="button" class="btn btn-xs dc-event-plan" data-wcn-action="${esc(plan.key)}" data-wcn-id="${esc(item.id)}" aria-label="${esc(actionLabel(plan))}"><i class="bx ${inboxActionIcon(plan)}"></i></button>`);
+        }
+        return parts.length ? `<span class="dc-event-actions">${parts.join('')}</span>` : '';
+    };
+
+    /* ── the feed ───────────────────────────────────────────────────────────────────────────────────────── */
+
+    /*
+     * STALE ANSWERS ARE DROPPED (v2 F8), the same guard loadWorkItems has: a reader who pages week → week → week
+     * sends three reads, and the answers can arrive in any order. Only the LAST request may write; an earlier
+     * range answering late must not paint last week's plan over this week. Returns whether it wrote.
+     */
+    let calendarFeedGeneration = 0;
+    const loadCalendarFeed = async (from, to) => {
+        const key = `${from}|${to}`;
+        const generation = ++calendarFeedGeneration;
+        state.calendarRange = { from, to };
+        const result = await global.WorkCenterNextApi.fetchCalendar(from, to);
+        if (generation !== calendarFeedGeneration) { return false; }
+        if (result.ok && result.data) {
+            state.calendarFeed = result.data;
+            state.calendarFeedError = null;
+        } else {
+            state.calendarFeedError = global.TasksApi?.failureMessage ? global.TasksApi.failureMessage(result) : t('ErrorTitle');
+        }
+        state.calendarFeedKey = key;
+        return true;
+    };
+
+    /** After a write: re-read the projection AND the feed, then draw once. */
+    const refreshCalendar = async () => {
+        await loadWorkItems();
+        if (state.calendarRange) { await loadCalendarFeed(state.calendarRange.from, state.calendarRange.to); }
+        render();
+    };
+
+    /* ── the writes ─────────────────────────────────────────────────────────────────────────────────────── */
+
+    const conflictRange = (conflict) => {
+        const zone = calendarZone();
+        const lang = (document.documentElement.lang || 'tr').slice(0, 2);
+        try {
+            const format = new Intl.DateTimeFormat(lang, { timeZone: zone, hour: '2-digit', minute: '2-digit' });
+            return `${format.format(new Date(conflict.startAt))}–${format.format(new Date(conflict.endAt))}`;
+        } catch (_) {
+            return '';
+        }
+    };
+
+    /**
+     * One answer for every plan/unplan write the calendar (or the plan dialog) makes. Returns the stitch outcome
+     * the action path already speaks ({ outcome, reasonCode }).
+     */
+    const settlePlanWrite = async (item, result, revert) => {
+        if (result.ok) {
+            const data = result.data || {};
+            const warnings = data.warnings || [];
+            // The block's own tooltip gets the plain sentence (it is escaped where it is drawn)…
+            const messages = warnings.map((w) => global.TasksApi?.planWarningMessage?.(w) || w.code);
+            state.calendarNotes[item.id] = warnings.length ? { warnings, messages } : null;
+            await refreshCalendar();
+            /*
+             * …but a TOAST is markup: showToast (Notyf) writes its message as innerHTML. A task or meeting title is
+             * text somebody typed, so every title that reaches a toast is escaped first (v2 F5).
+             */
+            toast(tf('CalPlanSaved', esc(item.title)));
+            if (data.truncated) { toast(tf('CalTruncated', data.remainingMinutes ?? 0), 'warning'); }
+            warnings
+                .map((w) => global.TasksApi?.planWarningMessage?.(Object.assign({}, w, { title: esc(w.title || '') })) || esc(w.code))
+                .forEach((message) => toast(message, 'info'));
+            return { outcome: 'done' };
+        }
+
+        safeRevert(revert);
+        if (result.reasonCode === 'TASK_PLAN_CONFLICT' && result.data && result.data.conflict) {
+            toast(tf('CalConflictWith', esc(result.data.conflict.title), conflictRange(result.data.conflict)), 'error');
+            return { outcome: 'refused', reasonCode: result.reasonCode };
+        }
+        if (global.TasksApi.isConcurrencyConflict(result)) {
+            await refreshCalendar();
+            toast(t('ErrorConcurrencyRefreshed'), 'error');
+            return { outcome: 'refused', reasonCode: result.reasonCode };
+        }
+        toast(global.TasksApi.failureMessage(result), 'error');
+        return { outcome: 'refused', reasonCode: result.reasonCode };
+    };
+
+    const expectedVersion = (item) => Number(item.concurrency?.token ?? 0);
+
+    /**
+     * A day plan, dressed with the tenant offset so the day is the day the reader chose. A DAY needs no zone to
+     * mean something (v2 F6): when the zone is not known the bare "YYYY-MM-DD" goes, exactly as before the
+     * calendar existed. Only a TIME needs the zone.
+     */
+    const dayPlanBody = (item, date, zone = calendarZone()) => ({
+        expectedVersion: expectedVersion(item),
+        plannedDate: zone ? global.DitenZonedTime.toOffsetIso(date, zone) : date
+    });
+
+    /** FullCalendar's revert, which is a no-op — never a throw — once the calendar that offered it is gone (v2 F7). */
+    const safeRevert = (revert) => {
+        if (typeof revert !== 'function') { return; }
+        try { revert(); } catch (error) { console.warn('[WorkCenterNext] calendar revert skipped.', error); }
+    };
+
+    /*
+     * ONE WRITE PER ITEM AT A TIME (v2 F7). A second drag of the same card while the first plan is still on its way
+     * would post with the SAME expectedVersion and lose to itself (409) — or, worse, win in the wrong order. The
+     * second gesture is reverted and says nothing; the first one's answer redraws the board.
+     */
+    const planWritesInFlight = new Set();
+
+    const blockPlanBody = (item, startUtc, minutes) => ({
+        expectedVersion: expectedVersion(item),
+        plannedStartAt: startUtc,
+        plannedDurationMinutes: minutes
+    });
+
+    const guardedWrite = async (item, actionCode, buildBody, revert) => {
+        if (planWritesInFlight.has(item.id)) { safeRevert(revert); return { outcome: 'cancelled' }; }
+        let body;
+        try {
+            body = buildBody();
+        } catch (error) {
+            // A conversion that cannot be made (a zone or a date the browser refuses) moves NOTHING: the block goes
+            // back first, then the reader is told (v2 F10).
+            safeRevert(revert);
+            console.error('[WorkCenterNext] plan body could not be built.', error);
+            toast(t('CalZoneUnavailable'), 'error');
+            return { outcome: 'refused' };
+        }
+        planWritesInFlight.add(item.id);
+        try {
+            const result = await global.WorkCenterNextApi.dispatchAction(item.id, actionCode, item.source?.providerCode, body);
+            return await settlePlanWrite(item, result, revert);
+        } finally {
+            planWritesInFlight.delete(item.id);
+        }
+    };
+
+    const writePlan = (item, buildBody, revert) => guardedWrite(item, 'plan', buildBody, revert);
+
+    const writeUnplan = (item, revert) =>
+        guardedWrite(item, 'unplan', () => ({ expectedVersion: expectedVersion(item) }), revert);
+
+    /* ── mounting ───────────────────────────────────────────────────────────────────────────────────────── */
+
+    let calendarController = null;
+    // What the mounted calendar was built for; a different answer means a rebuild rather than a reuse.
+    let calendarMountKey = null;
+
+    const unmountCalendarView = () => {
+        if (calendarController) {
+            calendarController.destroy();
+            calendarController = null;
+        }
+        calendarMountKey = null;
+        global.__wcnCalendar = null;
+    };
+
+    /*
+     * ⚠ ONE FULLCALENDAR PER VISIT, NOT PER RENDER (v2 F12). `render()` rebuilds the page with innerHTML, which used
+     * to destroy the calendar and build a new one — after every plan the week view jumped back to 08:00. The host
+     * element is lifted out BEFORE the swap and put back into the new placeholder after it, so the same instance
+     * (view, date, scroll) survives and only its data is replaced (`setData`). It is rebuilt only when what it was
+     * built FOR changes: the tab's mode, or the zone its times were converted in.
+     */
+    const detachCalendarHost = () => {
+        if (!calendarController || !calendarController.host || !calendarController.host.parentNode) { return null; }
+        const host = calendarController.host;
+        const scrolls = Array.from(host.querySelectorAll('.fc-scroller')).map((el) => [el.scrollTop, el.scrollLeft]);
+        host.parentNode.removeChild(host);
+        return { host, scrolls };
+    };
+
+    const calendarKeyFor = () => `${isPlanningCalendar() ? 'plan' : 'read'}|${isPlanningCalendar() ? (feedZone() || '-') : 'UTC'}`;
+
+    const reattachCalendar = (root, kept) => {
+        const placeholder = root.querySelector('[data-wcn-calendar-host]');
+        if (!placeholder || !kept) { return false; }
+        placeholder.parentNode.replaceChild(kept.host, placeholder);
+        const planning = isPlanningCalendar();
+        calendarController.setEditable(planning && planningReady());
+        calendarController.setData(planning ? planningEvents() : readOnlyEvents(), planning && state.calendarFeed ? state.calendarFeed.days : []);
+        kept.host.querySelectorAll('.fc-scroller').forEach((el, i) => {
+            if (kept.scrolls[i]) { el.scrollTop = kept.scrolls[i][0]; el.scrollLeft = kept.scrolls[i][1]; }
+        });
+        calendarController.calendar.updateSize();
+        return true;
+    };
+
+    const mountCalendarView = (root, kept) => {
+        if (kept && calendarController && calendarMountKey === calendarKeyFor() && reattachCalendar(root, kept)) { return; }
+        unmountCalendarView();
+        const host = root.querySelector('[data-wcn-calendar-host]');
+        if (!host || !global.DitenCalendar) { return; }
+        const planning = isPlanningCalendar();
+        const feed = state.calendarFeed;
+        const zone = planning ? (feedZone() || 'UTC') : 'UTC';
+        // The first datesSet of a new calendar is its OWN opening, not the reader moving (v2 F9): it must not put
+        // the view or the day into the URL.
+        let opening = true;
+        calendarController = global.DitenCalendar.create(host, {
+            zone,
+            view: state.calendarView,
+            // The tenant's today (v2 F4) unless the reader navigated somewhere.
+            date: state.calendarDate || calendarToday(),
+            editable: planning && planningReady(),
+            events: planning ? planningEvents() : readOnlyEvents(),
+            days: planning && feed ? feed.days : [],
+            renderExtras: calendarEventExtras,
+            onRangeChange: (range) => {
+                if (!opening) {
+                    state.calendarView = range.view;
+                    state.calendarDate = range.date;
+                    syncUrl();
+                }
+                opening = false;
+                if (!planning) { return; }
+                const key = `${range.from}|${range.to}`;
+                if (state.calendarFeedKey === key) { return; }
+                state.calendarFeedKey = key;
+                loadCalendarFeed(range.from, range.to).then((wrote) => { if (wrote) { render(); } });
+            },
+            onEventClick: (id, kind) => {
+                const itemId = kind === CAL_KIND.meeting ? id.replace(/^meeting:/, '') : id.replace(/^(due|plan):/, '');
+                if (itemById(itemId)) { openDetailPage(itemId); }
+            },
+            onEventMove: ({ id, kind, allDay, date, startUtc, durationMinutes, revert }) => {
+                const item = itemById(id);
+                if (kind !== CAL_KIND.task || !item || !usablePlanAction(item) || !planningReady()) { safeRevert(revert); return; }
+                /*
+                 * A moved BLOCK keeps its STORED length (v2 F11). FullCalendar measures the dragged event in wall-clock
+                 * minutes, and a block that spans a DST jump is an hour longer or shorter on the wall than it really
+                 * is — moving it must not quietly change what the reader planned. A day plan dragged into the hours
+                 * has no stored length and takes the component's (the estimate, else 60).
+                 */
+                const stored = feedTask(id)?.plannedDurationMinutes;
+                writePlan(item, () => (allDay
+                    ? dayPlanBody(item, date)
+                    : blockPlanBody(item, startUtc, stored || durationMinutes)), revert);
+            },
+            onEventResize: ({ id, startUtc, durationMinutes, revert }) => {
+                const item = itemById(id);
+                if (!item || !usablePlanAction(item) || !planningReady()) { safeRevert(revert); return; }
+                writePlan(item, () => blockPlanBody(item, startUtc, durationMinutes), revert);
+            },
+            // A function: the panel is redrawn on every render while the calendar instance is kept (F12).
+            dropOutTarget: () => root.querySelector('[data-wcn-calpanel-dropzone]'),
+            onDragOut: ({ id, kind }) => {
+                const item = itemById(id);
+                if (kind !== CAL_KIND.task || !item || !usablePlanAction(item) || !planningReady()) { return; }
+                writeUnplan(item);
+            },
+            onExternalDrop: ({ itemId, allDay, date, startUtc }) => {
+                const item = itemById(itemId);
+                if (!item || !usablePlanAction(item) || !planningReady()) { return; }
+                writePlan(item, () => (allDay ? dayPlanBody(item, date) : blockPlanBody(item, startUtc, defaultBlockMinutes(item))));
+            }
+        });
+        calendarMountKey = calendarKeyFor();
+        /*
+         * TEST-ONLY observation seam, the same kind as `__wcnLastActionOutcome`: this module has no exports, and a
+         * FullCalendar interaction (move, resize, drag out) has no other handle a test can reach. Nothing reads it;
+         * it is cleared on unmount.
+         */
+        global.__wcnCalendar = calendarController;
+    };
 
     const renderKanban = () => {
         const items = activeItems();
@@ -7108,7 +7524,7 @@
             case 'focus': main = renderFocus(items); break;
             case 'split': main = renderSplit(items); break;
             case 'kanban': main = renderKanban(); break;
-            case 'calendar': main = renderCalendar(); break;
+            case 'calendar': main = renderCalendarView(); break;
             default: main = renderList(items);
         }
         /*
@@ -7129,12 +7545,15 @@
         const workspace = workspaceToolbar
             + `<div class="wcn-layout-wrap">${mainPanel}${sidePanel}</div>`;
 
+        // v2 F12 — the calendar's own DOM (and its FullCalendar instance) is lifted out before the page is rebuilt.
+        const keptCalendar = state.view === 'calendar' ? detachCalendarHost() : null;
         root.innerHTML = buildHeader() + buildPartialBoardBanner() + buildContractRejectedNote() + buildDelegationBanner()
             + buildTabs() + buildFilterRow() + workspace;
         setupTimerTick();
         mountPanelSelect2();
         if (state.view === 'table') { mountWorkCenterDataTable(renderedItems); }
         if (state.view === 'kanban') { bindKanbanDrag(root); }
+        if (state.view === 'calendar') { mountCalendarView(root, keptCalendar); } else { unmountCalendarView(); }
         restoreFocus(snap);
         syncUrl();
     };
@@ -8532,87 +8951,147 @@
     };
 
     /*
-     * Plan / re-plan for a REAL task — posts to the engine and applies NOTHING optimistically. The date is only
+     * Plan / re-plan for a REAL task — posts to the engine and applies NOTHING optimistically. The plan is only
      * ever shown once the server has actually stored it and the projection has been re-read; a request that fails
      * must leave the screen exactly as it was, or a rejected write would look identical to an accepted one.
+     *
+     * WP-UI-CALENDAR-VIEW-01 — the dialog now asks for a DAY, an optional START TIME and a LENGTH: no time is a
+     * day plan (`plannedDate`), a time is a block (`plannedStartAt` + `plannedDurationMinutes`). The answer is
+     * settled by the SAME function the calendar's drag uses (settlePlanWrite): a conflict names the other block,
+     * a warning is said, a cut block says what is left.
      */
-    const submitPlan = async (item, dateStr) => {
-        // Through the SAME single address as every other action (WC-D2). `plan` is a projected action code like
-        // the rest; its own client method existed only because /Tasks/api was the only door.
-        const result = await global.WorkCenterNextApi.dispatchAction(item.id, 'plan', item.source?.providerCode, {
-            expectedVersion: Number(item.concurrency?.token ?? 0),
-            plannedDate: dateStr
-        });
-        const ok = await afterPhase2Write(result, 'ToastPlanSaved', dateStr);
-        return ok ? { outcome: 'done' } : { outcome: 'refused', reasonCode: result.reasonCode };
+    const submitPlan = async (item, choice, knownZone) => {
+        const zone = knownZone === undefined ? await ensureCalendarZone() : knownZone;
+        /*
+         * Only a TIME needs the zone (v2 F6). A day plan goes whatever the feed says — dressed with the offset when
+         * the zone is known, bare "YYYY-MM-DD" when it is not — because the day means the same thing either way.
+         */
+        if (choice.time && !zone) {
+            toast(t('CalZoneUnavailable'), 'error');
+            return { outcome: 'refused' };
+        }
+        /*
+         * CT acceptance (v2 open point): without the zone the dialog cannot show an existing block's time, so a
+         * reader who only changes the day would send a DAY plan — and the engine clears the block by design. The
+         * block is not the reader's to lose silently: when one exists, a day plan is refused too until the zone
+         * can be read.
+         */
+        if (!choice.time && !zone && (feedTask(item.id)?.plannedStartAt || item.plannedStartAt)) {
+            toast(t('CalZoneUnavailable'), 'error');
+            return { outcome: 'refused' };
+        }
+        return writePlan(item, () => (choice.time
+            ? blockPlanBody(item, global.DitenZonedTime.toUtcIso(`${choice.day}T${choice.time}`, zone), choice.minutes)
+            : dayPlanBody(item, choice.day, zone)));
     };
 
-    const openDatePicker = (item, action) => {
+    /**
+     * The tenant zone a typed time is read in. From the calendar feed when it is loaded; otherwise one day of the
+     * feed is asked for its zone (the list and detail views never load it). Null when it cannot be learned —
+     * a time read in a guessed zone would plan the wrong hour.
+     */
+    const ensureCalendarZone = async () => {
+        if (calendarZone()) { return calendarZone(); }
+        if (state.calendarZoneOnly) { return state.calendarZoneOnly; }
+        if (!global.WorkCenterNextApi.fetchCalendar || !global.DitenZonedTime) { return null; }
+        const result = await global.WorkCenterNextApi.fetchCalendar(data.todayIso, data.todayIso);
+        const zone = result.ok && result.data ? result.data.timeZoneId : null;
+        if (zone && global.DitenZonedTime.isValidZone(zone)) { state.calendarZoneOnly = zone; return zone; }
+        return null;
+    };
+
+    const PLAN_DURATIONS = Array.from({ length: 32 }, (_, i) => (i + 1) * 15);   // 15 min … 8 h
+    const PLAN_TIMES = Array.from({ length: 96 }, (_, i) => `${pad2(Math.floor(i / 4))}:${pad2((i % 4) * 15)}`);
+
+    /**
+     * The existing plan (or the due date) the dialog opens with: day, wall-clock time in the tenant zone, length.
+     * It is given the zone that was LEARNED FIRST (v2 F2): seeded without one, an existing block opened as "no
+     * time", and confirming a changed day silently turned the block into a day plan.
+     */
+    const planSeed = (item, zone) => {
+        const task = feedTask(item.id);
+        const startUtc = task?.plannedStartAt || item.plannedStartAt || null;
+        const wall = startUtc && zone && global.DitenZonedTime ? global.DitenZonedTime.toWall(startUtc, zone) : null;
+        return {
+            day: wall ? wall.slice(0, 10) : (item.plannedDate || item.dueAt || ''),
+            time: wall ? wall.slice(11, 16) : '',
+            minutes: task?.plannedDurationMinutes || item.plannedDurationMinutes || defaultBlockMinutes(item)
+        };
+    };
+
+    const openDatePicker = async (item, action) => {
         const label = actionLabel(action);
         const real = isDispatchableItem(item);
+        // The zone first, the seed second (v2 F2) — see planSeed. A showcase fixture has no engine and no zone.
+        const zone = real ? await ensureCalendarZone() : null;
         if (!global.Swal) {
             if (real) {
-                return submitPlan(item, item.dueAt || data.todayIso)
+                return submitPlan(item, { day: item.dueAt || data.todayIso, time: '', minutes: defaultBlockMinutes(item) }, zone)
                     .catch((error) => { reportSwalFailure(error); return { outcome: 'refused' }; });
             }
             applyPlan(item, item.dueAt || data.todayIso, label);
             return Promise.resolve({ outcome: 'done' });
         }
         /*
-         * ── THROUGH THE SHARED COMPONENT (2026-08-24, A3) ────────────────────────────────────────────────
+         * ── A FORM, NOT A CONFIRMATION (WP-UI-CALENDAR-VIEW-01) ───────────────────────────────────────────
          *
-         * This was a raw `Swal.fire` with its own `<input class="form-control">` in a `html` string, which is
-         * why it rendered a 38px title, an 18px description and a RED dismiss button beside the snooze
-         * dialog's 18/13/neutral. It asks for ONE value, so it is a confirmation, so it goes through the
-         * component that owns what a confirmation looks like.
+         * This was a `sharedConfirm` with one text input — a date. It now asks three things (day, start time,
+         * length), and `showConfirm` carries exactly one value (BL-146), so it joins the three other dialogs this
+         * module cannot express as a confirmation: a raw `Swal.fire`, DRESSED with the declared package
+         * (`dialogLook()`), never an appearance of its own. It is not a new kind of dialog.
          *
-         * ⚠ NO NEW SEAM WAS OPENED. `inputType: 'text'` + `onOpen` + `validate` is exactly the path the snooze
-         * dialog already takes, flatpickr and all — see `openSnooze`.
+         * The day field is the shared DitenDateField (flatpickr, typed-text guard, the icon that opens it) — not a
+         * picker of its own. A showcase fixture only ever stored a day, and still does.
          */
-        const seed = item.plannedDate || item.dueAt;
-        // The stitch captures `resolve` rather than nesting the whole dialog inside `new Promise(...)` — the
-        // options object below keeps the SAME indentation sharedConfirm callers use everywhere else in this file.
-        let resolveOutcome;
-        const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
-        sharedConfirm({
-            title: label,
-            subtext: outcomeLead(action),
-            // The rail button's own glyph — one dictionary, so the button and the dialog it opens agree.
-            icon: inboxActionIcon(action),
-            confirmText: t('PlanConfirm'),
-            input: {
-                type: 'text',
-                label: t('PlanDateLabel'),
-                // A REAL EXAMPLE, not the field's own name repeated: the box says what a date looks like here.
-                placeholder: t('DatePlaceholder'),
-                onOpen: (input) => {
-                    if (!input) { return; }
-                    // ⚠ NO WRAPPER — the glyph is painted ON the box. See `.wcn-date-input` and the warning at
-                    // `openSnooze`: a wrapper makes `Swal.getInput()` null and takes the validator, the focus
-                    // and the Enter key with it.
-                    input.classList.add('wcn-date-input');
-                    if (global.flatpickr) {
-                        // Re-planning opens the picker seeded with the EXISTING plan, so moving a date is an
-                        // edit of it rather than starting blank; falling back to the source due date only when
-                        // there is no plan yet.
-                        global.flatpickr(input, { dateFormat: 'Y-m-d', defaultDate: seed || undefined, disableMobile: true });
-                    } else {
-                        input.type = 'date';
-                        if (seed) { input.value = seed; }
-                    }
-                },
-                validate: (value) => (value ? null : t('PlanDateLabel'))
+        const seed = planSeed(item, zone);
+        const timeOptions = [`<option value="">${esc(t('PlanTimeNone'))}</option>`]
+            .concat(PLAN_TIMES.map((time) => `<option value="${time}"${time === seed.time ? ' selected' : ''}>${time}</option>`))
+            .join('');
+        const durationOptions = PLAN_DURATIONS
+            .map((minutes) => `<option value="${minutes}"${minutes === seed.minutes ? ' selected' : ''}>${esc(tf('PlanDurationOption', minutes))}</option>`)
+            .join('');
+        const timeFields = real
+            ? `<label class="form-label d-block text-start" for="wcnPlanTime">${esc(t('PlanTimeLabel'))}</label>`
+                // Without the tenant zone a time cannot be read correctly, so it is not offered; a day still is (F6).
+                + `<select id="wcnPlanTime" class="form-select"${zone ? '' : ' disabled'}>${timeOptions}</select>`
+                + `<label class="form-label d-block text-start" for="wcnPlanDuration">${esc(t('PlanDurationLabel'))}</label>`
+                + `<select id="wcnPlanDuration" class="form-select"${seed.time ? '' : ' disabled'}>${durationOptions}</select>`
+                + `<p class="wcn-plan-form-hint">${esc(t('PlanTimeHint'))}</p>`
+            : '';
+        return global.Swal.fire(Object.assign({
+            title: dialogIcon('info', inboxActionIcon(action)) + '<span>' + esc(label) + '</span>',
+            html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
+                + `<div class="wcn-plan-form">`
+                + `<label class="form-label d-block text-start" for="wcnPlanDay">${esc(t('PlanDateLabel'))}</label>`
+                + `<div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>`
+                + `<input type="text" id="wcnPlanDay" class="form-control flatpickr-date" value="${esc(seed.day)}" placeholder="${esc(t('DatePlaceholder'))}"></div>`
+                + timeFields
+                + `</div>`,
+            showCancelButton: true,
+            confirmButtonText: t('PlanConfirm'),
+            cancelButtonText: t('DialogDismiss'),
+            didOpen: (popup) => {
+                if (global.DitenDateField) { global.DitenDateField.enhance(popup); }
+                const time = document.getElementById('wcnPlanTime');
+                const duration = document.getElementById('wcnPlanDuration');
+                // A length only means something for a block: it is offered once a start time is chosen.
+                if (time && duration) { time.addEventListener('change', () => { duration.disabled = !time.value; }); }
             },
-            onConfirm: (value) => {
-                if (!value) { resolveOutcome({ outcome: 'cancelled' }); return; }
-                const applied = real ? submitPlan(item, value) : Promise.resolve(applyPlan(item, value, label)).then(() => ({ outcome: 'done' }));
-                Promise.resolve(applied)
-                    .then(resolveOutcome)
-                    .catch((error) => { reportSwalFailure(error); resolveOutcome({ outcome: 'refused' }); });
-            },
-            onCancel: () => resolveOutcome({ outcome: 'cancelled' })
-        });
-        return outcome;
+            preConfirm: () => {
+                const day = String(document.getElementById('wcnPlanDay')?.value || '').trim();
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) {
+                    global.Swal.showValidationMessage(t('PlanDateLabel'));
+                    return false;
+                }
+                const time = String(document.getElementById('wcnPlanTime')?.value || '');
+                const minutes = Number(document.getElementById('wcnPlanDuration')?.value || defaultBlockMinutes(item));
+                return { day, time, minutes };
+            }
+        }, dialogLook())).then((res) => {
+            if (!res || !res.isConfirmed || !res.value) { return { outcome: 'cancelled' }; }
+            if (!real) { applyPlan(item, res.value.day, label); return { outcome: 'done' }; }
+            return submitPlan(item, res.value, zone);
+        }).catch((error) => { reportSwalFailure(error); return { outcome: 'refused' }; });
     };
 
     // Swal's own promise chain runs well after the click that opened it, outside onClick's try/catch — so a
@@ -10279,6 +10758,18 @@
     };
 
     // ── Event delegation ──────────────────────────────────────────────────────
+    /*
+     * WP-UI-CALENDAR-VIEW-01 — a panel card dragged onto the calendar. The card carries its id on the drag in the
+     * component's own type, and DitenCalendar resolves where it landed (see diten-calendar.js on why this is HTML5
+     * drag rather than FullCalendar's Draggable). An invitation is not plannable and carries nothing.
+     */
+    const onCalendarCardDragStart = (event) => {
+        const card = event.target && event.target.closest ? event.target.closest('[data-wcn-calpanel-dropzone] [data-wcn-plan-drag]') : null;
+        if (!card || !event.dataTransfer || !global.DitenCalendar) { return; }
+        event.dataTransfer.setData(global.DitenCalendar.DRAG_TYPE, card.getAttribute('data-wcn-plan-drag'));
+        event.dataTransfer.effectAllowed = 'move';
+    };
+
     const onClick = async (event) => {
         const root = event.target.closest('#wcnApp');
         if (!root && !event.target.closest('.wcn-bulkbar')) { /* still allow bulkbar inside app */ }
@@ -10357,10 +10848,10 @@
         }
         if (event.target.closest('[data-wcn-chip-clear]')) { state.typeFilter.clear(); state.signalFilter.clear(); render(); return; }
         if (event.target.closest('[data-wcn-search-clear]')) { state.search = ''; render(); return; }
-        const calMonthEl = event.target.closest('[data-wcn-cal-month]');
-        if (calMonthEl) {
-            const dir = calMonthEl.getAttribute('data-wcn-cal-month');
-            if (dir === 'today') { state.calendarMonth = null; } else { shiftMonth(dir === 'next' ? 1 : -1); }
+        // WP-UI-CALENDAR-VIEW-01 — the planning board's panel tabs.
+        const calPanelEl = event.target.closest('[data-wcn-calpanel]');
+        if (calPanelEl) {
+            state.calendarPanel = calPanelEl.getAttribute('data-wcn-calpanel');
             render();
             return;
         }
@@ -11159,8 +11650,11 @@
         document.addEventListener('input', onInput);
         // In-field commits only (Enter/@/Escape in a field, Enter/Space on a role=button) — not shortcuts.
         document.addEventListener('keydown', onFieldKeydown);
+        document.addEventListener('dragstart', onCalendarCardDragStart);
         registerShortcuts();
         global.__wcnTeardown = () => {
+            document.removeEventListener('dragstart', onCalendarCardDragStart);
+            unmountCalendarView();
             document.removeEventListener('click', onClickWrapped);
             document.removeEventListener('change', onChange);
             document.removeEventListener('input', onInput);

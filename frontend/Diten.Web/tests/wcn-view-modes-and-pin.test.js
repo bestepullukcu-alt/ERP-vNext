@@ -104,7 +104,13 @@ describe("① the three view modes are reachable again", () => {
     const split = app().querySelectorAll(".wcn-split-list > *").length;
     expect(kanban).toBe(3);
     expect(split).toBe(3);
-    ["renderKanban", "renderSplit", "renderCalendar"].forEach((fn) => {
+    /*
+     * WP-UI-CALENDAR-VIEW-01 — the month grid (`renderCalendar`) is gone. A READ-ONLY tab's calendar reads the
+     * filtered list through `readOnlyEvents`; İşlerim's PLANNING board deliberately does not — it draws the
+     * reader's plan from the calendar feed, whatever the chips say, because a filter must not hide a block the
+     * reader is about to collide with.
+     */
+    ["renderKanban", "renderSplit", "readOnlyEvents"].forEach((fn) => {
       const body = APP.split(`const ${fn} = `)[1].split("\n    const ")[0];
       expect(body, `${fn} stopped reading the filtered list`).toMatch(/activeItems\(\)|\(items\)/);
     });
@@ -116,8 +122,10 @@ describe("① the three view modes are reachable again", () => {
      * sentence — indistinguishable from a page that failed to load.
      */
     await boot([row(1)]);
-    const cal = APP.split("const renderCalendar = ")[1].split("\n    const ")[0];
-    expect(cal, "an empty month still draws a grid").toContain("if (!items.length) { return emptyState(); }");
+    // WP-UI-CALENDAR-VIEW-01 — the shared calendar keeps the rule on the read-only tabs; the planning board is
+    // never "empty" (it is where empty time is planned), so it draws its panel and grid regardless.
+    const cal = APP.split("const renderCalendarView = ")[1].split("\n    const ")[0];
+    expect(cal, "an empty read-only calendar still draws a grid").toContain("if (!planning && !activeItems().length) { return emptyState(); }");
   });
 });
 

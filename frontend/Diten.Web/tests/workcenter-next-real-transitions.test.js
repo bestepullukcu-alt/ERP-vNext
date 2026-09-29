@@ -219,8 +219,10 @@ describe("work item actions reach the engine", () => {
       // The real branch calls the engine and nothing else; applyPlan (the local mutation) is reserved for the
       // non-real branch only. WP-WCN-KANBAN-01 Dilim 1 wraps the non-real call so BOTH branches resolve the same
       // { outcome } shape — the real/non-real split itself, which this test guards, is untouched.
-      expect(fn).toContain(
-        "real ? submitPlan(item, value) : Promise.resolve(applyPlan(item, value, label)).then(() => ({ outcome: 'done' }))");
+      // WP-UI-CALENDAR-VIEW-01 — the dialog is a form now; the split is the same: a fixture mutates locally and
+      // returns, a real item goes to submitPlan and nowhere else.
+      expect(fn).toContain("if (!real) { applyPlan(item, res.value.day, label); return { outcome: 'done' }; }");
+      expect(fn).toContain("return submitPlan(item, res.value, zone);");
     });
   });
 

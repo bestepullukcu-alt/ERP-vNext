@@ -605,9 +605,6 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · 已计划于 {1}（模拟）</value>
   </data>
-  <data name="ToastPlanSaved" xml:space="preserve">
-    <value>已为 {0} 保存计划</value>
-  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · 计时已开始（模拟）</value>
   </data>
@@ -1089,21 +1086,6 @@
   </data>
   <data name="KanbanDropHint" xml:space="preserve">
     <value>拖放到此处：{0}</value>
-  </data>
-  <data name="CalPrevMonth" xml:space="preserve">
-    <value>上个月</value>
-  </data>
-  <data name="CalNextMonth" xml:space="preserve">
-    <value>下个月</value>
-  </data>
-  <data name="CalToday" xml:space="preserve">
-    <value>今天</value>
-  </data>
-  <data name="CalOutside" xml:space="preserve">
-    <value>另有 {0} 项在其他月份。</value>
-  </data>
-  <data name="CalOutsideAndUndated" xml:space="preserve">
-    <value>另有 {0} 项在其他月份；{1} 项没有日期，永远不会出现在日历中。</value>
   </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>来源截止</value>
@@ -2411,5 +2393,80 @@
   </data>
   <data name="AuditEventInquiryAnswered" xml:space="preserve">
     <value>问题已回答</value>
+  </data>
+  <data name="CalPanelTitle" xml:space="preserve">
+    <value>待计划的工作</value>
+  </data>
+  <data name="CalPanelUnplanned" xml:space="preserve">
+    <value>未计划</value>
+  </data>
+  <data name="CalPanelPlanPassed" xml:space="preserve">
+    <value>计划已过期</value>
+  </data>
+  <data name="CalPanelInvites" xml:space="preserve">
+    <value>邀请</value>
+  </data>
+  <data name="CalPanelEmpty" xml:space="preserve">
+    <value>这里没有内容。</value>
+  </data>
+  <data name="CalPanelHint" xml:space="preserve">
+    <value>将卡片拖到日历上：月视图中拖到某一天，周视图或日视图中拖到某个时间。将已计划的时间块拖回此处即可取消计划。</value>
+  </data>
+  <data name="CalChipEstimate" xml:space="preserve">
+    <value>预估 {0} 小时</value>
+  </data>
+  <data name="CalChipPlanPassed" xml:space="preserve">
+    <value>计划于 {0}</value>
+  </data>
+  <data name="CalChipRemaining" xml:space="preserve">
+    <value>剩余 {0} 分钟</value>
+  </data>
+  <data name="CalLegendTask" xml:space="preserve">
+    <value>计划日</value>
+  </data>
+  <data name="CalLegendBlock" xml:space="preserve">
+    <value>计划时间块</value>
+  </data>
+  <data name="CalLegendMeetingAccepted" xml:space="preserve">
+    <value>会议（已接受）</value>
+  </data>
+  <data name="CalLegendMeetingPending" xml:space="preserve">
+    <value>会议（未答复）</value>
+  </data>
+  <data name="CalLegendConflict" xml:space="preserve">
+    <value>与其他时间块重叠</value>
+  </data>
+  <data name="CalLegendOffHours" xml:space="preserve">
+    <value>非工作时间</value>
+  </data>
+  <data name="CalLegendHoliday" xml:space="preserve">
+    <value>节假日</value>
+  </data>
+  <data name="CalPlanSaved" xml:space="preserve">
+    <value>“{0}”已计划。</value>
+  </data>
+  <data name="CalTruncated" xml:space="preserve">
+    <value>已在工作日结束时截断——剩余 {0} 分钟。</value>
+  </data>
+  <data name="CalConflictWith" xml:space="preserve">
+    <value>与“{0}” {1} 重叠。请选择其他时间。</value>
+  </data>
+  <data name="CalZoneUnavailable" xml:space="preserve">
+    <value>无法读取公司时区，时间未保存。请重试。</value>
+  </data>
+  <data name="PlanTimeLabel" xml:space="preserve">
+    <value>开始时间</value>
+  </data>
+  <data name="PlanTimeNone" xml:space="preserve">
+    <value>不指定时间（全天）</value>
+  </data>
+  <data name="PlanDurationLabel" xml:space="preserve">
+    <value>时长</value>
+  </data>
+  <data name="PlanDurationOption" xml:space="preserve">
+    <value>{0} 分钟</value>
+  </data>
+  <data name="PlanTimeHint" xml:space="preserve">
+    <value>时间按公司时区显示。超出工作日结束时间的时间块将在该处截断。</value>
   </data>
 </root>

@@ -1043,4 +1043,31 @@
     <value>Sayfa {0} / {1}</value>
     <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
   </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>Bugün</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>Ay</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>Hafta</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>Gün</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>Önceki</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>Sonraki</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>Tüm gün</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>+{0} daha</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>Gösterilecek kayıt yok</value>
+  </data>
 </root>

@@ -605,9 +605,6 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · {1} tarihine planlandı (mock)</value>
   </data>
-  <data name="ToastPlanSaved" xml:space="preserve">
-    <value>{0} için plan kaydedildi</value>
-  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · zamanlayıcı başladı (mock)</value>
   </data>
@@ -1089,21 +1086,6 @@
   </data>
   <data name="KanbanDropHint" xml:space="preserve">
     <value>Buraya bırak: {0}</value>
-  </data>
-  <data name="CalPrevMonth" xml:space="preserve">
-    <value>Önceki ay</value>
-  </data>
-  <data name="CalNextMonth" xml:space="preserve">
-    <value>Sonraki ay</value>
-  </data>
-  <data name="CalToday" xml:space="preserve">
-    <value>Bugün</value>
-  </data>
-  <data name="CalOutside" xml:space="preserve">
-    <value>Başka aylarda {0} iş var.</value>
-  </data>
-  <data name="CalOutsideAndUndated" xml:space="preserve">
-    <value>Başka aylarda {0} iş var; {1} işin tarihi yok ve takvimde görünmüyor.</value>
   </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Kaynak son tarih</value>
@@ -2411,5 +2393,80 @@
   </data>
   <data name="AuditEventInquiryAnswered" xml:space="preserve">
     <value>Soru cevaplandı</value>
+  </data>
+  <data name="CalPanelTitle" xml:space="preserve">
+    <value>Planlanacak işler</value>
+  </data>
+  <data name="CalPanelUnplanned" xml:space="preserve">
+    <value>Planlanmamış</value>
+  </data>
+  <data name="CalPanelPlanPassed" xml:space="preserve">
+    <value>Planı geçmiş</value>
+  </data>
+  <data name="CalPanelInvites" xml:space="preserve">
+    <value>Davetler</value>
+  </data>
+  <data name="CalPanelEmpty" xml:space="preserve">
+    <value>Burada bir şey yok.</value>
+  </data>
+  <data name="CalPanelHint" xml:space="preserve">
+    <value>Kartı takvime sürükleyin: ay görünümünde bir güne, hafta ya da gün görünümünde bir saate. Planlı bir bloğu takvimden çıkarmak için buraya geri sürükleyin.</value>
+  </data>
+  <data name="CalChipEstimate" xml:space="preserve">
+    <value>Tahmin {0} sa</value>
+  </data>
+  <data name="CalChipPlanPassed" xml:space="preserve">
+    <value>Plan: {0}</value>
+  </data>
+  <data name="CalChipRemaining" xml:space="preserve">
+    <value>Kalan {0} dk</value>
+  </data>
+  <data name="CalLegendTask" xml:space="preserve">
+    <value>Günlük plan</value>
+  </data>
+  <data name="CalLegendBlock" xml:space="preserve">
+    <value>Saat bloğu</value>
+  </data>
+  <data name="CalLegendMeetingAccepted" xml:space="preserve">
+    <value>Toplantı (kabul edildi)</value>
+  </data>
+  <data name="CalLegendMeetingPending" xml:space="preserve">
+    <value>Toplantı (yanıt bekliyor)</value>
+  </data>
+  <data name="CalLegendConflict" xml:space="preserve">
+    <value>Başka blokla çakışıyor</value>
+  </data>
+  <data name="CalLegendOffHours" xml:space="preserve">
+    <value>Çalışma saati dışı</value>
+  </data>
+  <data name="CalLegendHoliday" xml:space="preserve">
+    <value>Tatil</value>
+  </data>
+  <data name="CalPlanSaved" xml:space="preserve">
+    <value>“{0}” planlandı.</value>
+  </data>
+  <data name="CalTruncated" xml:space="preserve">
+    <value>Gün sonunda kesildi — kalan {0} dk.</value>
+  </data>
+  <data name="CalConflictWith" xml:space="preserve">
+    <value>“{0}” {1} ile çakışıyor. Başka bir saat seçin.</value>
+  </data>
+  <data name="CalZoneUnavailable" xml:space="preserve">
+    <value>Şirket saat dilimi okunamadı, saat kaydedilmedi. Tekrar deneyin.</value>
+  </data>
+  <data name="PlanTimeLabel" xml:space="preserve">
+    <value>Başlangıç saati</value>
+  </data>
+  <data name="PlanTimeNone" xml:space="preserve">
+    <value>Saatsiz (tüm gün)</value>
+  </data>
+  <data name="PlanDurationLabel" xml:space="preserve">
+    <value>Süre</value>
+  </data>
+  <data name="PlanDurationOption" xml:space="preserve">
+    <value>{0} dk</value>
+  </data>
+  <data name="PlanTimeHint" xml:space="preserve">
+    <value>Saatler şirket saat diliminde. Çalışma gününün sonunu aşan blok orada kesilir.</value>
   </data>
 </root>

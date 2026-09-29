@@ -605,9 +605,6 @@
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · planned for {1} (mock)</value>
   </data>
-  <data name="ToastPlanSaved" xml:space="preserve">
-    <value>Plan saved for {0}</value>
-  </data>
   <data name="ToastTimerStarted" xml:space="preserve">
     <value>{0} · timer started (mock)</value>
   </data>
@@ -1089,21 +1086,6 @@
   </data>
   <data name="KanbanDropHint" xml:space="preserve">
     <value>Drop here: {0}</value>
-  </data>
-  <data name="CalPrevMonth" xml:space="preserve">
-    <value>Previous month</value>
-  </data>
-  <data name="CalNextMonth" xml:space="preserve">
-    <value>Next month</value>
-  </data>
-  <data name="CalToday" xml:space="preserve">
-    <value>Today</value>
-  </data>
-  <data name="CalOutside" xml:space="preserve">
-    <value>{0} items fall in other months.</value>
-  </data>
-  <data name="CalOutsideAndUndated" xml:space="preserve">
-    <value>{0} items fall in other months; {1} have no date and never appear on the calendar.</value>
   </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Source due</value>
@@ -2411,5 +2393,80 @@
   </data>
   <data name="AuditEventInquiryAnswered" xml:space="preserve">
     <value>Question answered</value>
+  </data>
+  <data name="CalPanelTitle" xml:space="preserve">
+    <value>Work to plan</value>
+  </data>
+  <data name="CalPanelUnplanned" xml:space="preserve">
+    <value>Unplanned</value>
+  </data>
+  <data name="CalPanelPlanPassed" xml:space="preserve">
+    <value>Plan passed</value>
+  </data>
+  <data name="CalPanelInvites" xml:space="preserve">
+    <value>Invitations</value>
+  </data>
+  <data name="CalPanelEmpty" xml:space="preserve">
+    <value>Nothing here.</value>
+  </data>
+  <data name="CalPanelHint" xml:space="preserve">
+    <value>Drag a card onto the calendar: a day in the month view, a time in the week or day view. Drag a planned block back here to take it off.</value>
+  </data>
+  <data name="CalChipEstimate" xml:space="preserve">
+    <value>Estimate {0} h</value>
+  </data>
+  <data name="CalChipPlanPassed" xml:space="preserve">
+    <value>Planned for {0}</value>
+  </data>
+  <data name="CalChipRemaining" xml:space="preserve">
+    <value>{0} min left</value>
+  </data>
+  <data name="CalLegendTask" xml:space="preserve">
+    <value>Planned day</value>
+  </data>
+  <data name="CalLegendBlock" xml:space="preserve">
+    <value>Planned block</value>
+  </data>
+  <data name="CalLegendMeetingAccepted" xml:space="preserve">
+    <value>Meeting (accepted)</value>
+  </data>
+  <data name="CalLegendMeetingPending" xml:space="preserve">
+    <value>Meeting (not answered)</value>
+  </data>
+  <data name="CalLegendConflict" xml:space="preserve">
+    <value>Overlaps another block</value>
+  </data>
+  <data name="CalLegendOffHours" xml:space="preserve">
+    <value>Outside working hours</value>
+  </data>
+  <data name="CalLegendHoliday" xml:space="preserve">
+    <value>Holiday</value>
+  </data>
+  <data name="CalPlanSaved" xml:space="preserve">
+    <value>“{0}” planned.</value>
+  </data>
+  <data name="CalTruncated" xml:space="preserve">
+    <value>Cut at the end of the working day — {0} min left.</value>
+  </data>
+  <data name="CalConflictWith" xml:space="preserve">
+    <value>Overlaps “{0}” {1}. Choose another time.</value>
+  </data>
+  <data name="CalZoneUnavailable" xml:space="preserve">
+    <value>The company time zone could not be read, so the time was not saved. Try again.</value>
+  </data>
+  <data name="PlanTimeLabel" xml:space="preserve">
+    <value>Start time</value>
+  </data>
+  <data name="PlanTimeNone" xml:space="preserve">
+    <value>No time (whole day)</value>
+  </data>
+  <data name="PlanDurationLabel" xml:space="preserve">
+    <value>Length</value>
+  </data>
+  <data name="PlanDurationOption" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="PlanTimeHint" xml:space="preserve">
+    <value>Times are in the company time zone. A block that runs past the end of the working day is cut there.</value>
   </data>
 </root>
