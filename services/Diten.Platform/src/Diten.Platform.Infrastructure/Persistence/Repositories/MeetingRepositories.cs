@@ -4,6 +4,7 @@ using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Meetings;
 using Diten.Platform.Domain.Enums.Meetings;
 using Diten.Platform.Domain.Repositories;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Diten.Platform.Infrastructure.Persistence.Repositories;
@@ -195,6 +196,41 @@ public sealed class MeetingRepository : TenantRepository<Meeting>, IMeetingRepos
         var filter = Builders<Meeting>.Filter.And(
             ExecutionFilter,
             Builders<Meeting>.Filter.In(x => x.Id, ids));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// MOD-0280-FU01 T1b v2 F9 — the date window in the DATABASE. <c>StartAt</c> is stored by the driver's default
+    /// DateTimeOffset serializer as <c>[localTicks, offsetMinutes]</c> (BL-030), so the UTC instant is
+    /// <c>localTicks − offsetMinutes × 60·10⁷</c>; the filter compares that, computed per document, against the window's
+    /// UTC ticks — correct whatever offset a meeting was saved with.
+    /// </summary>
+    public async Task<IReadOnlyList<Meeting>> ListByIdsStartingBetweenAsync(
+        IReadOnlyCollection<Guid> ids, DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct = default)
+    {
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        var utcTicks = new BsonDocument("$subtract", new BsonArray
+        {
+            new BsonDocument("$arrayElemAt", new BsonArray { "$StartAt", 0 }),
+            new BsonDocument("$multiply", new BsonArray
+            {
+                new BsonDocument("$arrayElemAt", new BsonArray { "$StartAt", 1 }), TimeSpan.TicksPerMinute
+            })
+        });
+        var window = new BsonDocument("$expr", new BsonDocument("$and", new BsonArray
+        {
+            new BsonDocument("$gte", new BsonArray { utcTicks, fromUtc.UtcTicks }),
+            new BsonDocument("$lt", new BsonArray { utcTicks, toUtc.UtcTicks })
+        }));
+
+        var filter = Builders<Meeting>.Filter.And(
+            ExecutionFilter,
+            Builders<Meeting>.Filter.In(x => x.Id, ids),
+            new BsonDocumentFilterDefinition<Meeting>(window));
         return await Collection.Find(filter).ToListAsync(ct);
     }
 

@@ -1,7 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.TimeEntry.Commands;
 using Diten.Platform.Application.Features.TimeEntry.Services;
-using Diten.Platform.Domain.Enums.TimeEntry;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 
@@ -17,11 +16,14 @@ public sealed class CloseTimersAtLocalMidnightHandler : IRequestHandler<CloseTim
     private readonly ITimerService _timer;
     private readonly ITimerSegmentRepository _segments;
     private readonly ITimerAutoCloseNotifier _notifier;
+    private readonly ITimerDraftWriter _drafts;
     private readonly TimeProvider _clock;
 
     public CloseTimersAtLocalMidnightHandler(
-        ITimerService timer, ITimerSegmentRepository segments, ITimerAutoCloseNotifier notifier, TimeProvider clock)
+        ITimerService timer, ITimerSegmentRepository segments, ITimerAutoCloseNotifier notifier, ITimerDraftWriter drafts,
+        TimeProvider clock)
     {
+        _drafts = drafts;
         _timer = timer;
         _segments = segments;
         _notifier = notifier;
@@ -38,13 +40,21 @@ public sealed class CloseTimersAtLocalMidnightHandler : IRequestHandler<CloseTim
             return Response<int>.Success(0, correlationId: request.CorrelationId);
         }
 
-        // StopPoint cuts at the midnight whatever "now" is — a close that runs at 03:00 still ends the segment at 00:00.
-        if (!await _timer.CloseAsync(running, now, TimerStopReason.LocalMidnight, null, ct))
+        // v2 F2 — midnight is only the LATEST the run can end. If its task left the person (or the switch went off)
+        // earlier, it ends there: the earliest reason wins, read through the same rule every read path uses.
+        var pending = await _timer.PendingCloseAsync(request.UserId, ct);
+        if (pending.Segment?.Id != running.Id || pending.Kind == TimerPendingClose.None
+            || !await _timer.CloseAsync(running, pending.StopAtUtc, TimerService.ReasonOf(pending.Kind), null, ct))
         {
             return Response<int>.Success(0, correlationId: request.CorrelationId);
         }
 
-        if (request.Notify && await _segments.TryClaimAutoCloseNotificationAsync(running.Id, now, ct))
+        // v2 F5 — the midnight run recomputes the week's drafts too, so one a failed close never wrote is written now.
+        await _drafts.ApplyWeekAsync(running.UserId, running.WeekKey, ct);
+
+        // The morning notification is about a timer the MIDNIGHT closed; one its task closed earlier was not forgotten.
+        if (pending.Kind == TimerPendingClose.LocalMidnight && request.Notify
+            && await _segments.TryClaimAutoCloseNotificationAsync(running.Id, now, ct))
         {
             await _notifier.NotifyAsync((await _segments.GetByIdAsync(running.Id, ct)) ?? running, ct);
         }

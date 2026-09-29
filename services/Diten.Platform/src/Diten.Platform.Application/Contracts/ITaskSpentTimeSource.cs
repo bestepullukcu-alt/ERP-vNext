@@ -2,7 +2,8 @@ namespace Diten.Platform.Application.Contracts;
 
 /// <summary>A task's recorded time, in minutes. The two figures are never added together (D7).</summary>
 /// <param name="ApprovedMinutes">Minutes in approved, in-force timesheet revisions — the task's spent time.</param>
-/// <param name="SubmittedMinutes">Minutes in revisions submitted and not yet decided. Shown separately, never counted as spent.</param>
+/// <param name="SubmittedMinutes">Minutes in revisions submitted and not yet decided. Shown separately, never counted as spent. A
+/// correction contributes only its CHANGE against the approved revision it corrects (v2 F7), so this may be negative.</param>
 public sealed record TaskSpentTime(int ApprovedMinutes, int SubmittedMinutes)
 {
     public static readonly TaskSpentTime None = new(0, 0);
@@ -13,7 +14,8 @@ public sealed record TaskSpentTime(int ApprovedMinutes, int SubmittedMinutes)
 
 /// <summary>What ONE reader has on these tasks: their running timer and their own unsubmitted draft minutes.</summary>
 /// <param name="RunningTaskItemId">The task the reader's running timer points at, if any.</param>
-/// <param name="DraftMinutes">The reader's own minutes per task in their Draft revisions — never anyone else's.</param>
+/// <param name="DraftMinutes">The reader's own minutes per task in their Draft revisions — never anyone else's; for a correction
+/// draft, its change against the approved revision (v2 F7).</param>
 public sealed record TaskReaderTime(Guid? RunningTaskItemId, IReadOnlyDictionary<Guid, int> DraftMinutes)
 {
     public static readonly TaskReaderTime None = new(null, new Dictionary<Guid, int>());

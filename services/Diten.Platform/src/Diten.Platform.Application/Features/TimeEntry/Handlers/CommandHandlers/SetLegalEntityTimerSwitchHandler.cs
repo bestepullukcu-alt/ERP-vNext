@@ -7,6 +7,7 @@ using Diten.Platform.Domain.Entities.TimeEntry;
 using Diten.Platform.Domain.Enums.TimeEntry;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.TimeEntry.Handlers.CommandHandlers;
 
@@ -32,6 +33,7 @@ public sealed class SetLegalEntityTimerSwitchHandler
     private readonly ITimerSegmentRepository _segments;
     private readonly ITimeEntryOrgGateway _org;
     private readonly ITimerService _timer;
+    private readonly ILogger<SetLegalEntityTimerSwitchHandler> _logger;
 
     public SetLegalEntityTimerSwitchHandler(
         ILegalEntityTimeSettingRepository settings,
@@ -40,8 +42,10 @@ public sealed class SetLegalEntityTimerSwitchHandler
         TimeProvider clock,
         ITimerSegmentRepository segments,
         ITimeEntryOrgGateway org,
-        ITimerService timer)
+        ITimerService timer,
+        ILogger<SetLegalEntityTimerSwitchHandler> logger)
     {
+        _logger = logger;
         _segments = segments;
         _org = org;
         _timer = timer;
@@ -99,11 +103,20 @@ public sealed class SetLegalEntityTimerSwitchHandler
 
     private async Task CloseRunningTimersAsync(Guid legalEntityId, DateTimeOffset switchedAt, CancellationToken ct)
     {
-        foreach (var segment in await _segments.ListRunningAsync(limit: 1000, ct))
+        // Best effort (v2 F9): the switch is already saved; a close that fails here is logged, never turned into a 500,
+        // and that person's next read closes the segment at this same switch time.
+        foreach (var segment in await _segments.ListRunningAsync(int.MaxValue, ct))
         {
-            if ((await _org.PrimarySeatAsync(segment.UserId, ct))?.LegalEntityId == legalEntityId)
+            try
             {
-                await _timer.CloseAsync(segment, switchedAt, TimerStopReason.SwitchedOff, null, ct);
+                if ((await _org.PrimarySeatAsync(segment.UserId, ct))?.LegalEntityId == legalEntityId)
+                {
+                    await _timer.CloseAsync(segment, switchedAt, TimerStopReason.SwitchedOff, null, ct);
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, "time-entry.timer.switch_off_close_failed SegmentId={SegmentId}; the next read closes it.", segment.Id);
             }
         }
     }

@@ -105,26 +105,35 @@ public sealed class TimesheetWeekRepository : TenantRepository<TimesheetWeek>, I
     {
         limit = Math.Max(1, limit);
 
-        // BL-479 — FIRST the approved weeks whose task totals never landed (F12; a missing field matches null too).
-        // Their own query and their own (partial) index, so no number of undecided weeks can push them past the limit.
+        // BL-479 — two queries, each with its OWN share of the limit (v2 F9): approved weeks whose task totals never
+        // landed (F12; a missing field matches null too) are listed first, but may take at most half the slots, so a
+        // pile of approved weeks that keep failing cannot starve the undecided ones either. A share the one side does
+        // not use goes to the other. Ticks, not the DateTimeOffset itself: that is stored as a [ticks, offset] array,
+        // which Mongo does not order by its first element (BL-030).
         var outstandingTotals = Builders<TimesheetWeek>.Filter.And(
             ExecutionFilter,
             Builders<TimesheetWeek>.Filter.Eq(x => x.Status, TimesheetWeekStatus.Approved),
             Builders<TimesheetWeek>.Filter.Eq(x => x.TotalsAppliedAtUtc, null));
-        // Ticks, not the DateTimeOffset itself: that is stored as a [ticks, offset] array, which Mongo does not order
-        // by its first element (BL-030) — "oldest first" would silently be insertion order.
-        var weeks = await Collection.Find(outstandingTotals).SortBy(x => x.SubmittedAtUtcTicks).Limit(limit).ToListAsync(ct);
-        if (weeks.Count >= limit)
-        {
-            return weeks;
-        }
-
-        // THEN the submitted weeks waiting on a MOD-0023 decision, with what is left of the limit.
         var pending = Builders<TimesheetWeek>.Filter.And(
             ExecutionFilter,
             Builders<TimesheetWeek>.Filter.Eq(x => x.Status, TimesheetWeekStatus.Submitted),
             Builders<TimesheetWeek>.Filter.Ne(x => x.WorkflowInstanceId, null));
-        weeks.AddRange(await Collection.Find(pending).SortBy(x => x.SubmittedAtUtcTicks).Limit(limit - weeks.Count).ToListAsync(ct));
+
+        var approvedShare = Math.Max(1, (limit + 1) / 2);
+        var weeks = await Collection.Find(outstandingTotals).SortBy(x => x.SubmittedAtUtcTicks).Limit(approvedShare).ToListAsync(ct);
+        List<TimesheetWeek> waiting = limit - weeks.Count <= 0
+            ? []
+            : await Collection.Find(pending).SortBy(x => x.SubmittedAtUtcTicks).Limit(limit - weeks.Count).ToListAsync(ct);
+
+        // The pending side left slots unused: give them back to approved weeks beyond the first share.
+        var unused = limit - weeks.Count - waiting.Count;
+        if (unused > 0 && weeks.Count == approvedShare)
+        {
+            weeks.AddRange(await Collection.Find(outstandingTotals).SortBy(x => x.SubmittedAtUtcTicks)
+                .Skip(approvedShare).Limit(unused).ToListAsync(ct));
+        }
+
+        weeks.AddRange(waiting);
         return weeks;
     }
 }
@@ -284,6 +293,14 @@ public sealed class LegalEntityTimeSettingRepository : TenantRepository<LegalEnt
             ExecutionFilter,
             Builders<LegalEntityTimeSetting>.Filter.Eq(x => x.LegalEntityId, legalEntityId));
         return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
+    }
+
+    public async Task<bool> AnyTimerEnabledAsync(CancellationToken ct = default)
+    {
+        var filter = Builders<LegalEntityTimeSetting>.Filter.And(
+            ExecutionFilter,
+            Builders<LegalEntityTimeSetting>.Filter.Eq(x => x.TimerEnabled, true));
+        return await Collection.Find(filter).AnyAsync(ct);
     }
 
     public async Task<bool> TryCreateAsync(LegalEntityTimeSetting setting, CancellationToken ct = default)
@@ -498,7 +515,8 @@ public sealed class TimerSegmentRepository : TenantRepository<TimerSegment>, ITi
     public Task<long> CountUnminimisedAsync(Guid userId, string weekKey, CancellationToken ct = default)
         => Collection.CountDocumentsAsync(UnminimisedFilter(userId, weekKey), cancellationToken: ct);
 
-    public async Task<long> MinimiseWeekAsync(Guid userId, string weekKey, DateTimeOffset minimisedAtUtc, CancellationToken ct = default)
+    public async Task<long> MinimiseWeekAsync(
+        Guid userId, string weekKey, DateTimeOffset minimisedAtUtc, CancellationToken ct = default, Guid? segmentId = null)
     {
         // D4 / R8 — an UPDATE: the instants go, the row, its duration, day, target and outside minutes stay.
         var update = Builders<TimerSegment>.Update
@@ -507,7 +525,10 @@ public sealed class TimerSegmentRepository : TenantRepository<TimerSegment>, ITi
             .Set(x => x.MinimisedAtUtc, minimisedAtUtc)
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
             .Inc(x => x.Version, 1);
-        var result = await Collection.UpdateManyAsync(UnminimisedFilter(userId, weekKey), update, cancellationToken: ct);
+        var filter = segmentId is { } one
+            ? Builders<TimerSegment>.Filter.And(UnminimisedFilter(userId, weekKey), Builders<TimerSegment>.Filter.Eq(x => x.Id, one))
+            : UnminimisedFilter(userId, weekKey);
+        var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
         return result.ModifiedCount;
     }
 

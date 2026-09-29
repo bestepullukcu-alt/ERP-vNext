@@ -100,8 +100,12 @@ public static partial class PlatformSchemaManifest
             PlatformCollections.TimeEntryEntries,
             () => new CreateIndexModel<TimeEntry>[]
             {
-                // One live row per (revision, day, task-or-category, source) — pack §4.2. Its prefix also serves
-                // "every row of this revision".
+                // One live row per (revision, day, task-or-category, source, source ref) — pack §4.2. SourceRef is the
+                // meeting id of a Meeting row (null for every other source, so those keep one row per cell): two
+                // meetings on one day are two rows, each with its own minutes-conflict flag (v2 F8). A NEW name on
+                // purpose — the T1a index (…_target_source, without SourceRef) is retired by PlatformSchemaMigrations
+                // before this is built; changing the keys under the old name would fail startup (IndexOptionsConflict).
+                // Its prefix also serves "every row of this revision".
                 new CreateIndexModel<TimeEntry>(
                     Builders<TimeEntry>.IndexKeys
                         .Ascending(x => x.TenantId)
@@ -109,11 +113,12 @@ public static partial class PlatformSchemaManifest
                         .Ascending(x => x.LocalDate)
                         .Ascending(x => x.TaskItemId)
                         .Ascending(x => x.CategoryCode)
-                        .Ascending(x => x.Source),
+                        .Ascending(x => x.Source)
+                        .Ascending(x => x.SourceRef),
                     new CreateIndexOptions<TimeEntry>
                     {
                         Unique = true,
-                        Name = "ux_time_entry_entries_tenant_week_date_target_source",
+                        Name = "ux_time_entry_entries_tenant_week_date_target_source_ref",
                         PartialFilterExpression = Builders<TimeEntry>.Filter.Eq(x => x.IsDeleted, false)
                     }),
                 // The finalizer's recomputation input: every row of one task.

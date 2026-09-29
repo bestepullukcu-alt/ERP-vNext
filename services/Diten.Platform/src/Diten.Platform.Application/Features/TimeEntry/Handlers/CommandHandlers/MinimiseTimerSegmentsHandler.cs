@@ -24,7 +24,7 @@ public sealed class MinimiseTimerSegmentsHandler : IRequestHandler<MinimiseTimer
     public async Task<Response<long>> Handle(MinimiseTimerSegmentsCommand request, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var changed = await _segments.MinimiseWeekAsync(request.UserId, request.WeekKey, _clock.GetUtcNow(), ct);
+        var changed = await _segments.MinimiseWeekAsync(request.UserId, request.WeekKey, _clock.GetUtcNow(), ct, request.SegmentId);
         return Response<long>.Success(changed, correlationId: request.CorrelationId);
     }
 }

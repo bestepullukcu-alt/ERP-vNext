@@ -33,6 +33,7 @@ public sealed class SubmitTimesheetWeekHandler : IRequestHandler<SubmitTimesheet
     private readonly ICurrentUserContext _currentUser;
     private readonly TimeProvider _clock;
     private readonly ITimesheetSubmissionProbe _probe;
+    private readonly ITimerDraftWriter _drafts;
 
     public SubmitTimesheetWeekHandler(
         ITimesheetWeekReader reader,
@@ -42,8 +43,10 @@ public sealed class SubmitTimesheetWeekHandler : IRequestHandler<SubmitTimesheet
         ITimesheetApprovalService approvals,
         ICurrentUserContext currentUser,
         TimeProvider clock,
-        ITimesheetSubmissionProbe probe)
+        ITimesheetSubmissionProbe probe,
+        ITimerDraftWriter drafts)
     {
+        _drafts = drafts;
         _reader = reader;
         _weeks = weeks;
         _entries = entries;
@@ -64,6 +67,11 @@ public sealed class SubmitTimesheetWeekHandler : IRequestHandler<SubmitTimesheet
         }
 
         var userId = _currentUser.UserId;
+
+        // v2 F5 — the week's timer drafts are recomputed from the segments BEFORE anything is submitted, so a draft a
+        // failed close never wrote cannot be left out of the submission. If that moved the week, the version the person
+        // read is stale and the check below answers 409.
+        await _drafts.ApplyWeekAsync(userId, WeekCalendar.KeyOf(monday), ct);
         var context = await _reader.LoadAsync(userId, monday, ct);
 
         if (context.Revisions.Count == 0)

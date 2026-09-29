@@ -19,9 +19,8 @@ namespace Diten.Platform.Application.Features.TimeEntry.Handlers.CommandHandlers
 /// <para><b>Order.</b> The week is claimed first (compare-and-set), then the decision (the (meeting, person) unique index
 /// refuses a second one), then the row. A loser at either step writes no time.</para>
 ///
-/// <para><b>One row per (day, target) for all meetings.</b> The entries' unique key is (revision, day, task-or-category,
-/// source) and does not include the meeting, so two accepted meetings on one day on the same category share a row, its
-/// minutes the sum; each decision points at that row. <see cref="TimeEntryRow.SourceRef"/> carries the first meeting's id.</para>
+/// <para><b>One row per meeting</b> (v2 F8): <see cref="TimeEntryRow.SourceRef"/> is the meeting id and part of the entries'
+/// unique key, so two meetings on one day are two rows, and a minutes conflict flags only the meeting it concerns.</para>
 /// </summary>
 public sealed class AcceptTimeSuggestionHandler : IRequestHandler<AcceptTimeSuggestionCommand, Response<TimeSuggestionMutationDto>>
 {
@@ -127,7 +126,16 @@ public sealed class AcceptTimeSuggestionHandler : IRequestHandler<AcceptTimeSugg
             return Fail("More than 16 hours in one day is not plausible.", 400, TimeEntryReasonCodes.DayImplausible, request);
         }
 
-        // ── Claim the week (compare-and-set) ─────────────────────────────────────────────────────────────────────
+        // ── Claim the week (compare-and-set, the T1a save pattern): a new week is created WITH its totals; an existing
+        //    one is replaced conditionally on the version the person read ─────────────────────────────────────────
+        var entryId = Guid.NewGuid();
+        var after = rows.Append(new TimeEntryRow
+        {
+            TenantId = _tenantContext.TenantId, TimesheetWeekId = week?.Id ?? Guid.Empty, UserId = userId,
+            WeekKey = context.WeekKey, LocalDate = suggestion.LocalDate, DurationMinutes = suggestion.ProposedMinutes
+        });
+        var dayTotals = TimesheetRules.DayTotals(after);
+
         if (week is null)
         {
             if (request.Request.ExpectedVersion != 0)
@@ -136,39 +144,30 @@ public sealed class AcceptTimeSuggestionHandler : IRequestHandler<AcceptTimeSugg
             }
 
             week = TimesheetRules.NewRevision(context, _tenantContext.TenantId, 1);
+            week.TotalMinutes = dayTotals.Values.Sum();
+            week.FlaggedDates = TimesheetRules.FlaggedDates(dayTotals);
             if (!await _weeks.TryCreateAsync(week, ct))
             {
                 return Conflict(request);
             }
         }
-        else if (request.Request.ExpectedVersion != week.Version)
+        else
         {
-            return Conflict(request);
+            if (request.Request.ExpectedVersion != week.Version)
+            {
+                return Conflict(request);
+            }
+
+            week.TotalMinutes = dayTotals.Values.Sum();
+            week.FlaggedDates = TimesheetRules.FlaggedDates(dayTotals);
+            if (!await _weeks.UpdateAsync(week, request.Request.ExpectedVersion, ct))
+            {
+                return Conflict(request);
+            }
         }
 
-        var shared = rows.FirstOrDefault(r => r.Source == TimeEntrySource.Meeting && r.LocalDate == suggestion.LocalDate
-                                              && r.TaskItemId == taskId && r.CategoryCode == category);
-        var entryId = shared?.Id ?? Guid.NewGuid();
-        var after = rows.Where(r => r.Id != shared?.Id).Append(new TimeEntryRow
-        {
-            TenantId = _tenantContext.TenantId, TimesheetWeekId = week.Id, UserId = userId, WeekKey = week.WeekKey,
-            LocalDate = suggestion.LocalDate,
-            DurationMinutes = (shared?.DurationMinutes ?? 0) + suggestion.ProposedMinutes
-        });
-        var dayTotals = TimesheetRules.DayTotals(after);
-        week.TotalMinutes = dayTotals.Values.Sum();
-        week.FlaggedDates = TimesheetRules.FlaggedDates(dayTotals);
-        if (context.Open is not null && !await _weeks.UpdateAsync(week, request.Request.ExpectedVersion, ct))
-        {
-            return Conflict(request);
-        }
-
-        if (context.Open is null && !await _weeks.UpdateAsync(week, week.Version, ct))
-        {
-            return Conflict(request);
-        }
-
-        // ── The decision (unique per meeting + person), then the row ─────────────────────────────────────────────
+        // ── The decision (unique per meeting + person), then the row — ONE row per meeting (v2 F8): its SourceRef is
+        //    the meeting id and is part of the entries' unique key, so each meeting keeps its own minutes and flag ──
         if (!await _decisions.TryCreateAsync(new TimeSuggestion
             {
                 Id = suggestion.Id,
@@ -186,30 +185,21 @@ public sealed class AcceptTimeSuggestionHandler : IRequestHandler<AcceptTimeSugg
             return Fail("This suggestion was already decided.", 409, TimeEntryReasonCodes.SuggestionAlreadyDecided, request);
         }
 
-        if (shared is null)
+        await _entries.CreateAsync(new TimeEntryRow
         {
-            await _entries.CreateAsync(new TimeEntryRow
-            {
-                Id = entryId,
-                TenantId = _tenantContext.TenantId,
-                TimesheetWeekId = week.Id,
-                UserId = userId,
-                WeekKey = week.WeekKey,
-                LocalDate = suggestion.LocalDate,
-                DurationMinutes = suggestion.ProposedMinutes,
-                TaskItemId = taskId,
-                CategoryCode = category,
-                Source = TimeEntrySource.Meeting,
-                SourceRef = suggestion.Invitation.MeetingId.ToString(),
-                CreatedBy = userId.ToString()
-            }, ct);
-        }
-        else
-        {
-            shared.DurationMinutes += suggestion.ProposedMinutes;
-            shared.UpdatedBy = userId.ToString();
-            await _entries.UpdateAsync(shared, ct);
-        }
+            Id = entryId,
+            TenantId = _tenantContext.TenantId,
+            TimesheetWeekId = week.Id,
+            UserId = userId,
+            WeekKey = week.WeekKey,
+            LocalDate = suggestion.LocalDate,
+            DurationMinutes = suggestion.ProposedMinutes,
+            TaskItemId = taskId,
+            CategoryCode = category,
+            Source = TimeEntrySource.Meeting,
+            SourceRef = suggestion.Invitation.MeetingId.ToString(),
+            CreatedBy = userId.ToString()
+        }, ct);
 
         return Response<TimeSuggestionMutationDto>.Success(
             new TimeSuggestionMutationDto(suggestion.Id, nameof(TimeSuggestionState.Accepted), entryId, week.Version),

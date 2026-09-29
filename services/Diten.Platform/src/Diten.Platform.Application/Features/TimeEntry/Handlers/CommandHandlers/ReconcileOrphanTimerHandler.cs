@@ -1,7 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.TimeEntry.Commands;
 using Diten.Platform.Application.Features.TimeEntry.Services;
-using Diten.Platform.Domain.Enums.TimeEntry;
 using MediatR;
 
 namespace Diten.Platform.Application.Features.TimeEntry.Handlers.CommandHandlers;
@@ -26,13 +25,12 @@ public sealed class ReconcileOrphanTimerHandler : IRequestHandler<ReconcileOrpha
             return Response<int>.Success(0, correlationId: request.CorrelationId);
         }
 
-        var reason = pending.Kind switch
+        if (pending.Kind == TimerPendingClose.None)
         {
-            TimerPendingClose.LocalMidnight => TimerStopReason.LocalMidnight,
-            TimerPendingClose.SwitchedOff => TimerStopReason.SwitchedOff,
-            _ => TimerStopReason.Reconcile
-        };
-        var closed = await _timer.CloseAsync(pending.Segment, pending.StopAtUtc, reason, null, ct);
+            return Response<int>.Success(0, correlationId: request.CorrelationId);
+        }
+
+        var closed = await _timer.CloseAsync(pending.Segment, pending.StopAtUtc, TimerService.ReasonOf(pending.Kind), null, ct);
         return Response<int>.Success(closed ? 1 : 0, correlationId: request.CorrelationId);
     }
 }

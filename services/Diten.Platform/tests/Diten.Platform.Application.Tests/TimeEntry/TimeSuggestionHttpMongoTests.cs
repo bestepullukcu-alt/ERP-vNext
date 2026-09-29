@@ -167,16 +167,21 @@ public sealed class TimeSuggestionHttpMongoTests : TimerScenario
     }
 
     [Fact]
-    public async Task Two_meetings_on_one_day_share_one_meeting_row_whose_minutes_are_their_sum()
+    public async Task Two_meetings_on_one_day_are_two_rows_and_a_minutes_conflict_flags_only_its_own()
     {
-        await SeedMeetingAsync(InvitationResponse.Accepted, startHour: 10, minutes: 30);
-        await SeedMeetingAsync(InvitationResponse.Accepted, startHour: 14, minutes: 60);
-        var ids = (await SuggestionsAsync()).Select(s => s.GetProperty("id").GetGuid()).ToList();
+        var first = await SeedMeetingAsync(InvitationResponse.Accepted, startHour: 10, minutes: 30);
+        var second = await SeedMeetingAsync(InvitationResponse.Accepted, startHour: 14, minutes: 60);
+        var ids = (await SuggestionsAsync()).ToDictionary(s => s.GetProperty("meetingId").GetGuid(), s => s.GetProperty("id").GetGuid());
 
-        Ok(await AcceptAsync(ids[0]));
-        Ok(await AcceptAsync(ids[1]));
+        Ok(await AcceptAsync(ids[first]));
+        Ok(await AcceptAsync(ids[second]));
+        await SetAttendanceAsync(second, AttendanceStatus.Absent);
 
-        var row = Assert.Single((await GetWeekAsync()).Data.GetProperty("entries").EnumerateArray());
-        Assert.Equal(90, row.GetProperty("durationMinutes").GetInt32());
+        var rows = (await GetWeekAsync()).Data.GetProperty("entries").EnumerateArray()
+            .ToDictionary(r => r.GetProperty("durationMinutes").GetInt32());
+        Assert.Equal(2, rows.Count);
+        Assert.False(rows[30].GetProperty("minutesConflict").GetBoolean());
+        Assert.True(rows[60].GetProperty("minutesConflict").GetBoolean());
+        Assert.Equal(first.ToString(), rows[30].GetProperty("sourceRef").GetString());
     }
 }

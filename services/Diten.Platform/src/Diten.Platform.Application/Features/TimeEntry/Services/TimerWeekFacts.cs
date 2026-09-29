@@ -18,6 +18,23 @@ public static class TimerWeekFacts
             .Select(x => new TimerTooShortDto(x.Key.LocalDate, x.Key.TaskItemId, x.Key.CategoryCode, x.Seconds))
             .ToList();
 
+    /// <summary>v2 F5 — on an open week: cells whose timer draft is not what the closed segments add up to (the draft of
+    /// a close that failed). A row the person corrected (<c>EditedFromTimer</c>) is theirs and never "pending".</summary>
+    public static IReadOnlyList<TimerDraftPendingDto> DraftPending(
+        IEnumerable<TimerSegment> closedSegments, IReadOnlyCollection<TimeEntryRow> draftRows)
+        => closedSegments
+            .GroupBy(s => (s.LocalDate, s.TaskItemId, s.CategoryCode))
+            .Select(g =>
+            {
+                var row = draftRows.FirstOrDefault(r => r.Source == TimeEntrySource.Timer && r.LocalDate == g.Key.LocalDate
+                                                        && r.TaskItemId == g.Key.TaskItemId && r.CategoryCode == g.Key.CategoryCode);
+                return (g.Key, Expected: TimerRules.DraftMinutes(g.Sum(s => (long)s.DurationSeconds)), Row: row);
+            })
+            .Where(x => x.Row is not { EditedFromTimer: true } && x.Expected != (x.Row?.DurationMinutes ?? 0))
+            .OrderBy(x => x.Key.LocalDate)
+            .Select(x => new TimerDraftPendingDto(x.Key.LocalDate, x.Key.TaskItemId, x.Key.CategoryCode, x.Expected, x.Row?.DurationMinutes ?? 0))
+            .ToList();
+
     /// <summary>§13 — on a submitted or approved week: timer minutes of a (day, target) beyond what the locked revision's
     /// timer row already carries. Kept, never added to the locked revision, never silently dropped.</summary>
     public static IReadOnlyList<TimerOutsideOpenWeekDto> OutsideOpenWeek(

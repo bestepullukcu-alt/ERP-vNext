@@ -66,10 +66,13 @@ public sealed class TimerMidnightCloseJob : IBackgroundJobHandler<TimerMidnightC
                 using (TenantScope.Begin(_tenantContext, tenant.Id))
                 {
                     var now = _clock.GetUtcNow();
-                    var due = (await _segments.ListRunningAsync(max, cancellationToken))
+                    // v2 F9 — the cap applies AFTER the "past its midnight" filter: running timers that are simply still
+                    // running (today's) must never crowd the forgotten ones out of a run.
+                    var due = (await _segments.ListRunningAsync(int.MaxValue, cancellationToken))
                         .Where(s => TimerRules.PastLocalMidnight(s.LocalDate, TimerService.Zone(s), now))
                         .Select(s => s.UserId)
                         .Distinct()
+                        .Take(max)
                         .ToList();
                     foreach (var userId in due)
                     {

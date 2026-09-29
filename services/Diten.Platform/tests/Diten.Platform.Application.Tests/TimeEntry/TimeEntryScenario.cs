@@ -202,8 +202,14 @@ public abstract class TimeEntryScenario : IAsyncLifetime
 
     // ── Operations ───────────────────────────────────────────────────────────────────────────────────────────────
 
-    protected static object Row(DateOnly date, int minutes, Guid? task = null, string? category = null, string? note = null)
-        => new { localDate = date.ToString("yyyy-MM-dd"), taskItemId = task, categoryCode = task is null ? category ?? Category : null, durationMinutes = minutes, note };
+    /// <summary>One row of a save. Every row names its source (v2 F1); a person-typed row by default.</summary>
+    protected static object Row(DateOnly date, int minutes, Guid? task = null, string? category = null, string? note = null,
+        string source = "Manual", string? sourceRef = null)
+        => new
+        {
+            localDate = date.ToString("yyyy-MM-dd"), taskItemId = task, categoryCode = task is null ? category ?? Category : null,
+            durationMinutes = minutes, note, source, sourceRef
+        };
 
     protected Task<ApiResult> GetWeekAsync(string weekKey = CurrentWeek, string? token = null)
         => Host.GetAsync($"/api/v1/time-entry/weeks/{weekKey}", token ?? PersonToken());

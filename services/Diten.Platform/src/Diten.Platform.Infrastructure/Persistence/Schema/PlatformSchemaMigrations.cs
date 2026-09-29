@@ -112,7 +112,17 @@ public static class PlatformSchemaMigrations
         await DropIndexIfExistsAsync(
             database.GetCollection<WorkingCalendar>(PlatformCollections.WorkingCalendars).Indexes,
             "ux_working_calendars_scope_country_year_code");
+
+        // MOD-0280-FU01 T1b v2 F8 — the entries' unique key gained SourceRef (a Meeting row per meeting) under a NEW
+        // name; the T1a index it replaces is retired here, before the manifest builds the new one. Without the drop
+        // the old, narrower key would keep refusing a second meeting row on the same day.
+        await DropIndexIfExistsAsync(
+            database.GetCollection<Domain.Entities.TimeEntry.TimeEntry>(PlatformCollections.TimeEntryEntries).Indexes,
+            RetiredTimeEntryEntriesIndex);
     }
+
+    /// <summary>The T1a entries index (no SourceRef) that v2 F8 retired — named so a test can pin the retirement.</summary>
+    public const string RetiredTimeEntryEntriesIndex = "ux_time_entry_entries_tenant_week_date_target_source";
 
     private static async Task DropIndexIfExistsAsync<TDocument>(
         IMongoIndexManager<TDocument> indexes,

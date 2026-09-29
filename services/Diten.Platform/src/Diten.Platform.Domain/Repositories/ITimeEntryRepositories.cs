@@ -88,6 +88,10 @@ public interface ILegalEntityTimeSettingRepository
 
     Task<LegalEntityTimeSetting?> GetByLegalEntityIdAsync(Guid legalEntityId, CancellationToken ct = default);
 
+    /// <summary>Is the timer switched on for ANY legal entity of the tenant? One cheap read — the transition hook's first
+    /// question, so a tenant with the timer off everywhere pays nothing on a task write (v2 F6).</summary>
+    Task<bool> AnyTimerEnabledAsync(CancellationToken ct = default);
+
     Task<bool> TryCreateAsync(LegalEntityTimeSetting setting, CancellationToken ct = default);
 
     Task<bool> UpdateAsync(LegalEntityTimeSetting setting, int expectedVersion, CancellationToken ct = default);
@@ -149,8 +153,10 @@ public interface ITimerSegmentRepository
     Task<long> CountUnminimisedAsync(Guid userId, string weekKey, CancellationToken ct = default);
 
     /// <summary>D4 — clears <c>StartedAtUtc</c>/<c>StoppedAtUtc</c> and sets <c>MinimisedAtUtc</c> on the week's CLOSED
-    /// segments that still carry their instants. An update, never a delete; returns how many changed.</summary>
-    Task<long> MinimiseWeekAsync(Guid userId, string weekKey, DateTimeOffset minimisedAtUtc, CancellationToken ct = default);
+    /// segments that still carry their instants — or only on <paramref name="segmentId"/> when one is named. An update,
+    /// never a delete; returns how many changed.</summary>
+    Task<long> MinimiseWeekAsync(
+        Guid userId, string weekKey, DateTimeOffset minimisedAtUtc, CancellationToken ct = default, Guid? segmentId = null);
 }
 
 /// <summary>Raw storage for <see cref="TimeSuggestion"/> decisions (MOD-0280-FU01 T1b, D8).</summary>

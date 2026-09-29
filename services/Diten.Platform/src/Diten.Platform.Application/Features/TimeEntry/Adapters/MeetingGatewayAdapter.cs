@@ -33,10 +33,8 @@ public sealed class MeetingGatewayAdapter : ITimeEntryMeetingGateway
             return [];
         }
 
-        // The date window in memory: Meeting.StartAt is stored as a [ticks, offset] array (BL-030), the same reason
-        // the calendar feed filters here.
-        return (await _meetings.ListByIdsAsync(accepted.Keys.ToList(), ct))
-            .Where(m => m.StartAt >= fromUtc && m.StartAt < toUtc)
+        // Only the requested window is read (v2 F9) — the repository filters the dates in the database.
+        return (await _meetings.ListByIdsStartingBetweenAsync(accepted.Keys.ToList(), fromUtc, toUtc, ct))
             .Select(m => new TimeEntryAcceptedMeeting(
                 m.Id,
                 m.Title,

@@ -87,6 +87,8 @@ public static class TimeEntryReasonCodes
     public const string SuggestionAlreadyDecided = "TIME_SUGGESTION_ALREADY_DECIDED";
     public const string SuggestionWithdrawn = "TIME_SUGGESTION_WITHDRAWN";
     public const string SourceInvalid = "TIME_ENTRY_SOURCE_INVALID";
+    public const string SourceRequired = "TIME_ENTRY_SOURCE_REQUIRED";
+    public const string CapturedRowNotFound = "TIME_ENTRY_CAPTURED_ROW_NOT_FOUND";
 }
 
 /// <summary>The fixed v1 limits (pack §4.7). A tenant setting may replace them later (§20); until then they are
@@ -157,9 +159,11 @@ public sealed record TimeEntryRowRequest(
     string? CategoryCode,
     int DurationMinutes,
     string? Note,
-    /// <summary>T1b (D9) — <c>Plan</c> for a row the person accepted from "fill from plan"; <c>Manual</c> (or absent)
-    /// otherwise. Timer and meeting rows are never sent here: they are written by their own paths.</summary>
-    string? Source = null);
+    /// <summary>REQUIRED (v2 F1): <c>Manual</c>, <c>Plan</c> (accepted from "fill from plan", D9), or <c>Timer</c> /
+    /// <c>Meeting</c> for a correction of a captured row the draft already holds. A row without it is refused.</summary>
+    string? Source = null,
+    /// <summary>The meeting id of a <c>Meeting</c> row (it tells two meetings of one day apart); null otherwise.</summary>
+    string? SourceRef = null);
 
 /// <summary>The complete set of the person's MANUAL rows for the week's open draft. Rows left out are removed
 /// (soft delete); <see cref="ExpectedVersion"/> is the week's version as last read (0 when no week exists yet).</summary>
@@ -228,7 +232,9 @@ public sealed record TimeEntryDto(
     int OutsideWorkingMinutes = 0,
     bool EditedFromTimer = false,
     /// <summary>D8 — an accepted meeting row whose minutes now say Absent/Excused. Shown to the person only.</summary>
-    bool MinutesConflict = false);
+    bool MinutesConflict = false,
+    /// <summary>The meeting id of a Meeting row — what a correction of that row sends back (v2 F1/F8).</summary>
+    string? SourceRef = null);
 
 public sealed record TimesheetDayDto(
     DateOnly Date,
@@ -275,12 +281,19 @@ public sealed record TimesheetWeekDto(
     /// <summary>T1b (§13) — timer time on a day of this week while it was submitted or approved: kept, never added to a
     /// locked revision; the person requests a correction for it.</summary>
     IReadOnlyList<TimerOutsideOpenWeekDto>? TimerOutsideOpenWeek = null,
+    /// <summary>v2 F5 — (day, target) cells whose timer draft differs from what the closed segments add up to (a close
+    /// whose draft could not be written). Computed on read, never written: the next save, submit or midnight run writes
+    /// it.</summary>
+    IReadOnlyList<TimerDraftPendingDto>? TimerDraftPending = null,
     /// <summary>T1b (D8) — suggestions from the person's accepted meetings that ended this week.</summary>
     IReadOnlyList<TimeSuggestionDto>? Suggestions = null);
 
 public sealed record TimerTooShortDto(DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int Seconds);
 
 public sealed record TimerOutsideOpenWeekDto(DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int Minutes);
+
+/// <summary>v2 F5 — what the segments say a cell's timer draft should be, and what the draft holds.</summary>
+public sealed record TimerDraftPendingDto(DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int SegmentMinutes, int DraftMinutes);
 
 /// <summary>
 /// One meeting suggestion (D8). <see cref="Id"/> is stable per (meeting, person) — deterministic before the person

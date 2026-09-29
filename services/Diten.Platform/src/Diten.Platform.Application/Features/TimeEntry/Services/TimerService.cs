@@ -2,7 +2,10 @@ using Diten.Platform.Application.Features.WorkingHours;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.TimeEntry;
 using Diten.Platform.Domain.Enums.TimeEntry;
+using Diten.Platform.Application.Features.TimeEntry.Commands;
 using Diten.Platform.Domain.Repositories;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.TimeEntry.Services;
 
@@ -75,6 +78,8 @@ public sealed class TimerService : ITimerService
     private readonly ITimerDraftWriter _drafts;
     private readonly ITenantContext _tenantContext;
     private readonly TimeProvider _clock;
+    private readonly IMediator _mediator;
+    private readonly ILogger<TimerService> _logger;
 
     public TimerService(
         ITimerSegmentRepository segments,
@@ -84,8 +89,12 @@ public sealed class TimerService : ITimerService
         IWorkingHoursProvider workingHours,
         ITimerDraftWriter drafts,
         ITenantContext tenantContext,
-        TimeProvider clock)
+        TimeProvider clock,
+        IMediator mediator,
+        ILogger<TimerService> logger)
     {
+        _mediator = mediator;
+        _logger = logger;
         _segments = segments;
         _switches = switches;
         _org = org;
@@ -125,17 +134,24 @@ public sealed class TimerService : ITimerService
             var running = await _segments.GetRunningAsync(userId, ct);
             if (running is not null)
             {
-                var pastMidnight = TimerRules.PastLocalMidnight(running.LocalDate, Zone(running), now);
-                if (target.Matches(running) && !pastMidnight)
+                var pending = await PendingCloseAsync(userId, ct);
+                if (pending.Segment?.Id == running.Id && pending.Kind != TimerPendingClose.None)
+                {
+                    // The run had already ended — at its midnight, when its task left the person, or when the switch
+                    // went off (v2 F2): it closes THERE, and is not a switch anyone could undo.
+                    if (await CloseAsync(running, pending.StopAtUtc, ReasonOf(pending.Kind), null, ct))
+                    {
+                        stopped ??= running.Id;
+                    }
+                }
+                else if (target.Matches(running))
                 {
                     return new TimerStartOutcome(running, stopped, null, false); // already running on it
                 }
-
-                if (await CloseAsync(running, now, TimerStopReason.Switch, null, ct))
+                else if (await CloseAsync(running, now, TimerStopReason.Switch, null, ct))
                 {
                     stopped ??= running.Id;
-                    // Only a real switch can be undone; a segment its midnight had already ended was not switched away.
-                    switchedFrom ??= pastMidnight ? null : running.Id;
+                    switchedFrom ??= running.Id; // only a real switch can be undone
                 }
             }
 
@@ -201,7 +217,26 @@ public sealed class TimerService : ITimerService
             return false;
         }
 
-        await _drafts.ApplyAsync(segment.UserId, segment.LocalDate, segment.TaskItemId, segment.CategoryCode, ct);
+        // The segment is closed and stays closed whatever happens next. Its draft is a RECOMPUTATION from the segments,
+        // so a draft that cannot be written now is not lost (v2 F5): the next save, submit or midnight run of this week
+        // writes it, and the week read shows the difference until then. A close therefore never fails on its draft.
+        try
+        {
+            var outcome = await _drafts.ApplyAsync(segment.UserId, segment.LocalDate, segment.TaskItemId, segment.CategoryCode, ct);
+            if (outcome == TimerDraftOutcome.WeekNotWritable)
+            {
+                // v2 F3 / D4 — the week is already submitted or approved (or out of reach): its approval will not come
+                // back for this segment, so its instants are cleared now, by the same audited command.
+                await _mediator.Send(
+                    new MinimiseTimerSegmentsCommand(segment.Id, segment.UserId, segment.WeekKey, segment.Id.ToString(), segment.Id), ct);
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex,
+                "time-entry.timer.draft_failed SegmentId={SegmentId}; the next save, submit or midnight run recomputes it.", segment.Id);
+        }
+
         return true;
     }
 
@@ -214,33 +249,56 @@ public sealed class TimerService : ITimerService
             return PendingTimerClose.Nothing(now);
         }
 
-        if (TimerRules.PastLocalMidnight(running.LocalDate, Zone(running), now))
-        {
-            return new PendingTimerClose(running, TimerPendingClose.LocalMidnight, now);
-        }
-
-        var @switch = await SwitchOfAsync(userId, ct);
-        if (@switch?.TimerEnabled != true)
-        {
-            // D12 — closed at the moment the switch went off (§13); with no row at all (or no legal entity), now.
-            var at = @switch is not null && @switch.ChangedAtUtc > startedAt && @switch.ChangedAtUtc < now ? @switch.ChangedAtUtc : now;
-            return new PendingTimerClose(running, TimerPendingClose.SwitchedOff, at);
-        }
+        // Every reason the run may already have ended, each with the instant it ended at; the EARLIEST wins (v2 F2). A
+        // task completed at 18:00 and read after midnight closes at 18:00 (Reconcile), not at 00:00.
+        var candidates = new List<(DateTimeOffset At, TimerPendingClose Kind)>();
 
         if (running.TaskItemId is { } taskId)
         {
             var facts = await _tasks.TaskFactsAsync([taskId], ct);
             if (!facts.TryGetValue(taskId, out var task) || !task.IsInProgress || task.HolderUserId != userId)
             {
-                // §13 — closed at the invalidating transition's time; a task that vanished (or a log that names nothing)
-                // closes now.
+                // §13 — the invalidating transition's time, read through the task port; a task that vanished (or a log
+                // that names nothing) ends now.
                 var at = await _tasks.InvalidatedAtAsync(taskId, userId, startedAt, ct);
-                return new PendingTimerClose(running, TimerPendingClose.Reconcile, at is { } when && when < now ? when : now);
+                candidates.Add((Clamp(at ?? now, startedAt, now), TimerPendingClose.Reconcile));
             }
         }
 
-        return PendingTimerClose.Nothing(now);
+        var @switch = await SwitchOfAsync(userId, ct);
+        if (@switch?.TimerEnabled != true)
+        {
+            // D12 — closed at the moment the switch went off (§13); with no row at all (or no legal entity), now.
+            var at = @switch is not null && @switch.ChangedAtUtc > startedAt ? @switch.ChangedAtUtc : now;
+            candidates.Add((Clamp(at, startedAt, now), TimerPendingClose.SwitchedOff));
+        }
+
+        var midnight = TimerRules.LocalMidnightAfter(running.LocalDate, Zone(running));
+        if (now >= midnight)
+        {
+            candidates.Add((midnight, TimerPendingClose.LocalMidnight));
+        }
+
+        if (candidates.Count == 0)
+        {
+            return PendingTimerClose.Nothing(now);
+        }
+
+        // Earliest first; on a tie the task or the switch is the truer reason than the clock.
+        var (stopAt, kind) = candidates.OrderBy(c => c.At.UtcTicks).ThenBy(c => c.Kind == TimerPendingClose.LocalMidnight).First();
+        return new PendingTimerClose(running, kind, stopAt);
     }
+
+    private static DateTimeOffset Clamp(DateTimeOffset value, DateTimeOffset min, DateTimeOffset max)
+        => value < min ? min : value > max ? max : value;
+
+    /// <summary>The stop reason a pending close is recorded with.</summary>
+    public static TimerStopReason ReasonOf(TimerPendingClose kind) => kind switch
+    {
+        TimerPendingClose.LocalMidnight => TimerStopReason.LocalMidnight,
+        TimerPendingClose.SwitchedOff => TimerStopReason.SwitchedOff,
+        _ => TimerStopReason.Reconcile
+    };
 
     /// <summary>The zone the segment was started in (R3: the tenant's); UTC if it can no longer be resolved.</summary>
     public static TimeZoneInfo Zone(TimerSegment segment)

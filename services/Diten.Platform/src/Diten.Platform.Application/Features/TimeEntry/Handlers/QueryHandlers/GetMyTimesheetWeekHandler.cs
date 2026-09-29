@@ -113,10 +113,14 @@ public sealed class GetMyTimesheetWeekHandler : IRequestHandler<GetMyTimesheetWe
             {
                 OutsideWorkingMinutes = row.OutsideWorkingMinutes,
                 EditedFromTimer = row.EditedFromTimer,
-                MinutesConflict = conflictedRows.Contains(row.Id)
+                MinutesConflict = conflictedRows.Contains(row.Id),
+                SourceRef = row.SourceRef
             }).ToList(),
             TooShortToCount: TimerWeekFacts.TooShort(segments),
-            TimerOutsideOpenWeek: refusal == TimeEntryReasonCodes.WeekNotOpen ? TimerWeekFacts.OutsideOpenWeek(segments, rows) : [],
+            // v2 F3 — any week the timer cannot write to: submitted, approved, or outside the edit window.
+            TimerOutsideOpenWeek: refusal is not null ? TimerWeekFacts.OutsideOpenWeek(segments, rows) : [],
+            // v2 F5 — computed, never written: where the draft does not (yet) say what the segments say.
+            TimerDraftPending: refusal is null ? TimerWeekFacts.DraftPending(segments, rows) : [],
             Suggestions: suggestions.Where(x => x.Offered).Select(x => x.ToDto()).ToList()), correlationId: request.CorrelationId);
     }
 }

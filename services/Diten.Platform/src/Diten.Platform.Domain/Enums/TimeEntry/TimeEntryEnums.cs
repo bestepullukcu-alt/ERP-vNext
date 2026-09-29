@@ -51,7 +51,11 @@ public enum TimerStartSource
     TimerControl = 2,
 
     /// <summary>The person undid a switch: the previous target starts again from now, never backdated.</summary>
-    UndoSwitch = 3
+    UndoSwitch = 3,
+
+    /// <summary>The holder accepted an Open task straight into InProgress (MOD-0024 <c>Accepted</c>) — the owner's rule
+    /// "starting the work starts the time record" holds for this door too (P-2026-09-29-05 v2 F4).</summary>
+    TaskAccepted = 4
 }
 
 /// <summary>Why a timer segment stopped (pack §4.1).</summary>

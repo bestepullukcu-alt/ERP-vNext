@@ -36,11 +36,19 @@ public sealed class TaskTransitionTimerObserver : ITaskTransitionObserver
     {
         try
         {
+            // v2 F6 — decide here whether the command would CHANGE anything, and send it only then: a task write with the
+            // timer off (or a replay, or a transition no timer cares about) writes nothing and audits nothing. The first
+            // question is the cheapest: is the timer on anywhere in this tenant at all?
             var segments = _services.GetRequiredService<ITimerSegmentRepository>();
-            var relevant = TaskTransitionTimerRules.StartsRun(observation)
-                           || (await segments.ListRunningByTaskAsync(observation.TaskItemId, ct))
-                               .Any(segment => TaskTransitionTimerRules.EndsRunFor(observation, segment.UserId));
-            if (!relevant)
+            var stops = (await segments.ListRunningByTaskAsync(observation.TaskItemId, ct))
+                .Any(segment => TaskTransitionTimerRules.EndsRunFor(observation, segment.UserId));
+            var starts = !stops
+                         && TaskTransitionTimerRules.StartsRun(observation)
+                         && observation.CurrentHolderUserId is { } holder
+                         && await _services.GetRequiredService<ILegalEntityTimeSettingRepository>().AnyTimerEnabledAsync(ct)
+                         && !await segments.ExistsForStartTransitionAsync(observation.TransitionId, ct)
+                         && await _services.GetRequiredService<ITimerService>().IsEnabledForAsync(holder, ct);
+            if (!stops && !starts)
             {
                 return;
             }

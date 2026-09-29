@@ -96,11 +96,20 @@ public sealed class PlanFillInHttpMongoTests : TimerScenario
         var entry = Assert.Single(await StoredEntriesAsync(saved.Data.GetProperty("weekId").GetGuid()));
         Assert.Equal(Domain.Enums.TimeEntry.TimeEntrySource.Plan, entry.Source);
 
-        var bad = await SaveAsync(await VersionAsync(), CurrentWeek, null, new
+        var version = await VersionAsync();
+        var unknown = await SaveAsync(version, CurrentWeek, null, new
         {
             localDate = "2026-10-05", taskItemId = TaskA, categoryCode = (string?)null, durationMinutes = 60, note = (string?)null,
-            source = "Timer"
+            source = "Clock"
         });
-        Assert.Equal(Application.Features.TimeEntry.TimeEntryReasonCodes.SourceInvalid, bad.ReasonCode);
+        Assert.Equal(Application.Features.TimeEntry.TimeEntryReasonCodes.SourceInvalid, unknown.ReasonCode);
+
+        // v2 F1 — no source at all is refused: a timer row sent back without one must not become a Manual copy.
+        var missing = await SaveAsync(version, CurrentWeek, null, new
+        {
+            localDate = "2026-10-05", taskItemId = TaskA, categoryCode = (string?)null, durationMinutes = 60, note = (string?)null
+        });
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, missing.Status);
+        Assert.Equal(Application.Features.TimeEntry.TimeEntryReasonCodes.SourceRequired, missing.ReasonCode);
     }
 }

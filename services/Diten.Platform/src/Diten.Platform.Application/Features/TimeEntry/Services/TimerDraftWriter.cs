@@ -6,10 +6,29 @@ using TimeEntryRow = Diten.Platform.Domain.Entities.TimeEntry.TimeEntry;
 
 namespace Diten.Platform.Application.Features.TimeEntry.Services;
 
+/// <summary>What one recomputation did.</summary>
+public enum TimerDraftOutcome
+{
+    /// <summary>The draft already said this — nothing written.</summary>
+    Unchanged = 0,
+
+    /// <summary>The draft row was created, changed or removed.</summary>
+    Written = 1,
+
+    /// <summary>The day's week is not an open Draft (submitted, approved, outside the window): nothing written — the
+    /// minutes are reported as timer time outside an open week (§13), and the segments are minimised at once (v2 F3).</summary>
+    WeekNotWritable = 2
+}
+
 public interface ITimerDraftWriter
 {
     /// <summary>Recomputes the person's timer draft row for one (local day, task-or-category) from its closed segments.</summary>
-    Task ApplyAsync(Guid userId, DateOnly localDate, Guid? taskItemId, string? categoryCode, CancellationToken ct = default);
+    Task<TimerDraftOutcome> ApplyAsync(Guid userId, DateOnly localDate, Guid? taskItemId, string? categoryCode, CancellationToken ct = default);
+
+    /// <summary>v2 F5 — recomputes EVERY timer draft row of one person's week from the segments: every (day, target) a closed
+    /// segment or a timer row names. Idempotent; run at every close, at the START of a save and a submit of that week, and
+    /// in the midnight job, so a draft a failed close never wrote is written by the next of them.</summary>
+    Task ApplyWeekAsync(Guid userId, string weekKey, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -48,7 +67,34 @@ public sealed class TimerDraftWriter : ITimerDraftWriter
         _tenantContext = tenantContext;
     }
 
-    public async Task ApplyAsync(Guid userId, DateOnly localDate, Guid? taskItemId, string? categoryCode, CancellationToken ct = default)
+    public async Task ApplyWeekAsync(Guid userId, string weekKey, CancellationToken ct = default)
+    {
+        if (!WeekCalendar.TryParse(weekKey, out var monday))
+        {
+            return;
+        }
+
+        var cells = (await _segments.ListForWeekAsync(userId, weekKey, ct))
+            .Where(s => !s.IsRunning)
+            .Select(s => (s.LocalDate, s.TaskItemId, s.CategoryCode))
+            .ToHashSet();
+        var open = (await _reader.LoadAsync(userId, monday, ct)).Open;
+        if (open is not null)
+        {
+            foreach (var row in (await _entries.ListByWeekAsync(open.Id, ct)).Where(r => r.Source == TimeEntrySource.Timer))
+            {
+                cells.Add((row.LocalDate, row.TaskItemId, row.CategoryCode));
+            }
+        }
+
+        foreach (var (date, task, category) in cells.OrderBy(c => c.LocalDate))
+        {
+            await ApplyAsync(userId, date, task, category, ct);
+        }
+    }
+
+    public async Task<TimerDraftOutcome> ApplyAsync(
+        Guid userId, DateOnly localDate, Guid? taskItemId, string? categoryCode, CancellationToken ct = default)
     {
         var closed = (await _segments.ListClosedForDayAsync(userId, localDate, ct))
             .Where(s => s.TaskItemId == taskItemId && s.CategoryCode == categoryCode)
@@ -62,7 +108,7 @@ public sealed class TimerDraftWriter : ITimerDraftWriter
             if (TimesheetRules.WriteRefusal(context) is not null)
             {
                 // Submitted / approved / outside the window: the segments stay and are reported, no row is written.
-                return;
+                return TimerDraftOutcome.WeekNotWritable;
             }
 
             var week = context.Open;
@@ -70,7 +116,7 @@ public sealed class TimerDraftWriter : ITimerDraftWriter
             {
                 if (minutes == 0)
                 {
-                    return; // nothing to count and no draft to touch — do not open a week for it
+                    return TimerDraftOutcome.Unchanged; // nothing to count and no draft to touch — do not open a week
                 }
 
                 week = TimesheetRules.NewRevision(context, _tenantContext.TenantId, 1);
@@ -85,12 +131,12 @@ public sealed class TimerDraftWriter : ITimerDraftWriter
                                                && r.TaskItemId == taskItemId && r.CategoryCode == categoryCode);
             if (row is { EditedFromTimer: true })
             {
-                return; // the person's own number now
+                return TimerDraftOutcome.Unchanged; // the person's own number now
             }
 
-            if (row is not null && row.DurationMinutes == minutes && row.OutsideWorkingMinutes == outside)
+            if ((row is null && minutes == 0) || (row is not null && row.DurationMinutes == minutes && row.OutsideWorkingMinutes == outside))
             {
-                return;
+                return TimerDraftOutcome.Unchanged;
             }
 
             // Claim the week first (compare-and-set on its version), the same order the manual save uses: a concurrent
@@ -145,7 +191,7 @@ public sealed class TimerDraftWriter : ITimerDraftWriter
                 await _entries.UpdateAsync(row, ct);
             }
 
-            return;
+            return TimerDraftOutcome.Written;
         }
 
         throw new InvalidOperationException($"The timer draft of {localDate} kept colliding with other writes to its week.");
