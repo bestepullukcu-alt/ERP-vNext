@@ -109,3 +109,19 @@ Durma: coverage ülke sürümü dillerini ülke dillerinden farklı tutabiliyors
   - Ürünü olmayan iddialar seçicide çıkmıyor (coverage `productId` filtresi). Ayrı iş.
   - Onaydan sonra BRD ülke dilleri değişirse seçici uyarısı CRM kararından sapabilir; karar CRM'de.
 - **E4:** CT, fleet restart sonrası KC-2026-6CD926 üzerinde yayın kapısı senaryoları.
+
+## §37-E4 — CT canlı kontrol (2026-09-29, fleet restart sonrası; kullanıcı onayıyla canlı yazma) — **PASS**
+- **Seçici:** KC-2026-6CD926 (ALMIBA, tr) Edit → `claim-options` iki satır: "CLM-ALMIBA-02 · Etki mekanizması — Çekirdek · Onaylı" ve "— Türkiye v1.0 · Onaylı · tr".
+- **Olumsuz senaryo → PASS.**
+  - TR v1.0 seçili, dil `ru`, durum `published` → rozet "İçerik dilinde metin yok" + uyarı metni.
+  - Kaydet → CRM reddetti (form geri geldi). İddialar bölümünde: "İddianın ülke sürümünde içerik dilinde metin yok; içerik yayınlanamaz. · CLM-ALMIBA-02 (TR)".
+- **Olumlu senaryo → PASS.**
+  - Dil `tr` → Kaydet → Details, `published` / `tr`.
+  - "Bağlı iddialar" kartı: CLM-ALMIBA-02 · Türkiye v1.0 · Onaylı, bağlantı `/CRM/Claims/CountryVersions/fd65bac0…/Edit`.
+- **Kullanım → PASS.** İddia listesi (`includeCounts`) `usageCount: 1`.
+- **`claim_not_approved`:** yeni bir taslak iddia gerektiği için sonraki gönderime bırakıldı.
+
+**Bulgular (küçük)**
+1. **Hata yalnız İddialar bölümünde görünüyor.** Sayfanın üstünde bant yok; kullanıcı kaydırmazsa reddi fark etmeyebilir. Üstte "Kaydedilemedi — İddialar bölümüne bakın" özeti olmalı.
+2. **İçerik detayında Ürün ham GUID** (`44e509b7…`). Ürün adı çözülmüyor.
+3. **İçerik formu ve detayında ham kodlar.** İçerik Türü / Durum / Kaynak / Dil seçenekleri çevrilmemiş (clinical-summary, draft, manual, tr). Önceden var olan Bilgi Bankası L10n eksiği.
