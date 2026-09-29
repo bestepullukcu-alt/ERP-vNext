@@ -2469,4 +2469,7 @@
   <data name="PlanTimeHint" xml:space="preserve">
     <value>Les heures sont dans le fuseau horaire de l’entreprise. Un créneau qui dépasse la fin de la journée de travail y est coupé.</value>
   </data>
+  <data name="CalTruncatedNoEstimate" xml:space="preserve">
+    <value>Coupé à la fin de la journée.</value>
+  </data>
 </root>

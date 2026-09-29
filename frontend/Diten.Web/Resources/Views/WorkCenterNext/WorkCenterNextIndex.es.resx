@@ -2469,4 +2469,7 @@
   <data name="PlanTimeHint" xml:space="preserve">
     <value>Las horas están en la zona horaria de la empresa. Un bloque que supere el final de la jornada se recorta allí.</value>
   </data>
+  <data name="CalTruncatedNoEstimate" xml:space="preserve">
+    <value>Recortado al final del día.</value>
+  </data>
 </root>

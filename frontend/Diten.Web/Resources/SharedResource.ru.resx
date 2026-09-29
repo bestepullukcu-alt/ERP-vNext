@@ -1010,4 +1010,25 @@
   <data name="CalendarNoEvents" xml:space="preserve">
     <value>Нечего показать</value>
   </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>Рабочий календарь не задан — выходные и праздники не могут быть показаны.</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>Приглашение на встречу</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>Принять</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>Отклонить</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>Эта встреча пересекается с вашим планом</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>Она пересекается с запланированным блоком «{0}» ({1}). Всё равно принять?</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>Всё Равно Принять</value>
+  </data>
 </root>

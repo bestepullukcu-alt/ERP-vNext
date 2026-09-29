@@ -1,4 +1,6 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.Tasks;
+using Diten.Platform.Application.Features.Tasks.Services;
 using MediatR;
 
 namespace Diten.Platform.Application.Features.WorkAggregation.Calendar;
@@ -43,6 +45,11 @@ public sealed record WorkCalendarDto(
 /// One planned task the caller holds. A DAY plan has only <see cref="PlannedDate"/>; a BLOCK also has the start, the
 /// length and the end. <see cref="Conflict"/> is true when the block overlaps another of the caller's blocks (the plan
 /// rule refuses that, so it marks data written around the rule, e.g. before it existed).
+///
+/// <para><see cref="Warnings"/> (BL-471, WP-UI-MEETINGS-CALENDAR-01) — the plan write's own non-blocking findings,
+/// COMPUTED AT READ TIME with the engine's rule, so a block's mark survives a page reload: the same
+/// <see cref="TaskPlanWarningDto"/> shape and codes (<see cref="TaskPlanWarningCodes"/>) the write answers with. A day
+/// plan has no hours and never warns.</para>
 /// </summary>
 public sealed record WorkCalendarTaskDto(
     string TaskId,
@@ -55,15 +62,28 @@ public sealed record WorkCalendarTaskDto(
     DateTimeOffset? PlannedEndAt,
     int? RemainingMinutes,
     DateTimeOffset? DueAt,
-    bool Conflict);
+    bool Conflict,
+    IReadOnlyList<TaskPlanWarningDto> Warnings);
 
-/// <summary>A meeting the caller accepted (<c>accepted</c>) or has not answered (<c>pending</c>). Declined never appear.</summary>
+/// <summary>
+/// A meeting the caller accepted (<c>accepted</c>) or has not answered (<c>pending</c>). Declined never appear.
+///
+/// <para><see cref="OverlapsPlan"/> (WP-UI-MEETINGS-CALENDAR-01) — the meeting's hours overlap one of the CALLER's
+/// OWN live plan blocks (half-open, <see cref="TaskPlanBlockRules.Overlaps"/>: a block ending when the meeting starts
+/// does not overlap). <see cref="PlanOverlap"/> names the first such block by start, so accepting an invitation can
+/// say which hour it collides with. Nobody else's block is ever consulted.</para>
+/// </summary>
 public sealed record WorkCalendarMeetingDto(
     string MeetingId,
     string Title,
     DateTimeOffset StartAt,
     DateTimeOffset EndAt,
-    string Response);
+    string Response,
+    bool OverlapsPlan,
+    WorkCalendarPlanOverlapDto? PlanOverlap);
+
+/// <summary>The caller's own planned block a meeting overlaps — their own task, so naming it leaks nothing.</summary>
+public sealed record WorkCalendarPlanOverlapDto(string TaskId, string Title, DateTimeOffset StartAt, DateTimeOffset EndAt);
 
 public sealed record WorkCalendarDayDto(
     DateOnly Date,

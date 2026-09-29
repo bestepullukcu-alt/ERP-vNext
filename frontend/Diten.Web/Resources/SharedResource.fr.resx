@@ -1011,4 +1011,25 @@
   <data name="CalendarNoEvents" xml:space="preserve">
     <value>Rien à afficher</value>
   </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>Aucun calendrier de travail n’est défini — les week-ends et les jours fériés ne peuvent pas être affichés.</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>Invitation à une réunion</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>Accepter</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>Refuser</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>Cette réunion chevauche votre planning</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>Elle chevauche votre bloc planifié « {0} » ({1}). Accepter quand même ?</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>Accepter Quand Même</value>
+  </data>
 </root>

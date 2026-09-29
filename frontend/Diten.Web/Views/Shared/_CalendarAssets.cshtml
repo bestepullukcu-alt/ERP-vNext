@@ -20,9 +20,19 @@
         ["CalendarNext"] = SharedLocalizer["CalendarNext"].Value,
         ["CalendarAllDay"] = SharedLocalizer["CalendarAllDay"].Value,
         ["CalendarMore"] = SharedLocalizer["CalendarMore"].Value,
-        ["CalendarNoEvents"] = SharedLocalizer["CalendarNoEvents"].Value
+        ["CalendarNoEvents"] = SharedLocalizer["CalendarNoEvents"].Value,
+        // WP-UI-MEETINGS-CALENDAR-01 — the unresolved-calendar sentence and the shared invitation card
+        // (shared/diten-invite-card.js): both pages that draw a calendar show them, so they are SharedResource too.
+        ["CalendarUnresolved"] = SharedLocalizer["CalendarUnresolved"].Value,
+        ["InviteCardType"] = SharedLocalizer["InviteCardType"].Value,
+        ["InviteAccept"] = SharedLocalizer["InviteAccept"].Value,
+        ["InviteDecline"] = SharedLocalizer["InviteDecline"].Value,
+        ["InviteOverlapTitle"] = SharedLocalizer["InviteOverlapTitle"].Value,
+        ["InviteOverlapText"] = SharedLocalizer["InviteOverlapText"].Value,
+        ["InviteAcceptAnyway"] = SharedLocalizer["InviteAcceptAnyway"].Value
     }))
 </script>
 <script src="~/assets/vendor/libs/fullcalendar/fullcalendar.js" asp-append-version="true"></script>
 <script src="~/assets/js/shared/diten-zoned-time.js" asp-append-version="true"></script>
 <script src="~/assets/js/shared/diten-calendar.js" asp-append-version="true"></script>
+<script src="~/assets/js/shared/diten-invite-card.js" asp-append-version="true"></script>

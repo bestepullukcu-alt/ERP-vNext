@@ -1070,4 +1070,25 @@
   <data name="CalendarNoEvents" xml:space="preserve">
     <value>Gösterilecek kayıt yok</value>
   </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>Çalışma takvimi tanımlı değil — hafta sonu ve tatiller gösterilemiyor.</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>Toplantı daveti</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>Kabul Et</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>Reddet</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>Bu toplantı planınızla çakışıyor</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>Planlı bloğunuz "{0}" ({1}) ile çakışıyor. Yine de kabul edilsin mi?</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>Yine De Kabul Et</value>
+  </data>
 </root>

@@ -1010,4 +1010,25 @@
   <data name="CalendarNoEvents" xml:space="preserve">
     <value>没有可显示的内容</value>
   </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>未定义工作日历——无法显示周末和节假日。</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>会议邀请</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>接受</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>拒绝</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>此会议与您的计划冲突</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>它与您已计划的时间块“{0}”（{1}）重叠。仍要接受吗？</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>仍然接受</value>
+  </data>
 </root>

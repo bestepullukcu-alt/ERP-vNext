@@ -675,6 +675,145 @@ public sealed class TaskPlanCalendarHttpMongoTests : IClassFixture<PlanCalendarM
         Assert.Equal(1, Data(body).GetProperty("planPassedCount").GetInt32());
     }
 
+    // ── WP-UI-MEETINGS-CALENDAR-01 (C) — read-time fields on the feed ─────────────────────────────────────────
+
+    [Fact]
+    public async Task A_meeting_over_my_own_block_is_overlapsPlan_and_names_the_block()
+    {
+        var block = await SeedAsync(Holder, title: "Rapor taslağı");
+        await PlanBlockAsync(block, Local(Monday, 10, 0), 60);
+        await SeedMeetingAsync("Kalite", Local(Monday, 10, 30), Local(Monday, 11, 30), Holder, InvitationResponse.Pending);
+
+        var meeting = await FeedMeetingAsync("Kalite");
+
+        Assert.True(meeting.GetProperty("overlapsPlan").GetBoolean());
+        var overlap = meeting.GetProperty("planOverlap");
+        Assert.Equal(block.Id.ToString(), overlap.GetProperty("taskId").GetString());
+        Assert.Equal("Rapor taslağı", overlap.GetProperty("title").GetString());
+        Assert.Equal(Local(Monday, 10, 0), overlap.GetProperty("startAt").GetDateTimeOffset());
+        Assert.Equal(Local(Monday, 11, 0), overlap.GetProperty("endAt").GetDateTimeOffset());
+    }
+
+    [Fact]
+    public async Task A_block_that_ENDS_when_the_meeting_starts_is_not_an_overlap_half_open()
+    {
+        var before = await SeedAsync(Holder, title: "Önce");
+        var after = await SeedAsync(Holder, title: "Sonra");
+        await PlanBlockAsync(before, Local(Monday, 9, 0), 60);   // 09:00–10:00
+        await PlanBlockAsync(after, Local(Monday, 11, 0), 60);   // 11:00–12:00
+        await SeedMeetingAsync("Bitişik", Local(Monday, 10, 0), Local(Monday, 11, 0), Holder, InvitationResponse.Accepted);
+
+        var meeting = await FeedMeetingAsync("Bitişik");
+
+        Assert.False(meeting.GetProperty("overlapsPlan").GetBoolean());
+        Assert.Equal(JsonValueKind.Null, meeting.GetProperty("planOverlap").ValueKind);
+        var tasks = Data((await _host.GetAsync("/api/v1/work/calendar?from=2026-10-05&to=2026-10-05", HolderToken())).Body)
+            .GetProperty("tasks").EnumerateArray().ToList();
+        Assert.All(tasks, t => Assert.Empty(t.GetProperty("warnings").EnumerateArray()));
+    }
+
+    [Fact]
+    public async Task ANOTHER_PERSONs_block_at_the_meetings_hour_is_not_my_overlap()
+    {
+        var theirs = await SeedAsync(Colleague, title: "Başkasının bloğu");
+        await PlanBlockAsync(theirs, Local(Monday, 10, 0), 60, ColleagueToken());
+        await SeedMeetingAsync("Ortak saat", Local(Monday, 10, 0), Local(Monday, 11, 0), Holder, InvitationResponse.Pending);
+
+        var meeting = await FeedMeetingAsync("Ortak saat");
+
+        Assert.False(meeting.GetProperty("overlapsPlan").GetBoolean());
+    }
+
+    [Fact]
+    public async Task My_block_in_ANOTHER_TENANT_is_not_an_overlap_here()
+    {
+        // The same person id holds a block in the other tenant at the same hour; the repository's tenant filter must
+        // keep it out of this tenant's answer.
+        await _fixture.Database.GetCollection<TaskItem>(PlatformCollections.TaskItems).InsertOneAsync(new TaskItem
+        {
+            TenantId = _otherTenant,
+            Title = "Öbür kiracının bloğu",
+            AssignmentTarget = TaskAssignmentTarget.SelfAssigned,
+            AssigneeUserId = Holder,
+            CreatedByUserId = Holder,
+            OrganizationUnitId = Guid.NewGuid(),
+            Lifecycle = TaskLifecycle.Planned,
+            PlannedDate = new DateTimeOffset(2026, 10, 5, 0, 0, 0, TimeSpan.FromHours(3)),
+            PlannedStartAt = Local(Monday, 10, 0),
+            PlannedDurationMinutes = 60,
+            Version = 1
+        });
+        await SeedMeetingAsync("Kiracı sınırı", Local(Monday, 10, 0), Local(Monday, 11, 0), Holder, InvitationResponse.Pending);
+
+        var meeting = await FeedMeetingAsync("Kiracı sınırı");
+
+        Assert.False(meeting.GetProperty("overlapsPlan").GetBoolean());
+        Assert.Empty(Data((await _host.GetAsync("/api/v1/work/calendar?from=2026-10-05&to=2026-10-05", HolderToken())).Body)
+            .GetProperty("tasks").EnumerateArray());
+    }
+
+    [Fact]
+    public async Task BL471_a_block_over_my_meeting_carries_the_OVERLAPS_MEETING_code_on_every_read()
+    {
+        var task = await SeedAsync(Holder, title: "Blok");
+        await PlanBlockAsync(task, Local(Monday, 14, 0), 60);
+        // The meeting arrives AFTER the plan was written: only a read-time rule can know about it.
+        await SeedMeetingAsync("Sonradan gelen", Local(Monday, 14, 30), Local(Monday, 15, 30), Holder, InvitationResponse.Accepted);
+
+        foreach (var _ in Enumerable.Range(0, 2))
+        {
+            var warning = Assert.Single(await FeedWarningsAsync(task.Id));
+            Assert.Equal(TaskPlanWarningCodes.OverlapsMeeting, warning.GetProperty("code").GetString());
+            Assert.Equal("Sonradan gelen", warning.GetProperty("title").GetString());
+            Assert.Equal(Local(Monday, 14, 30), warning.GetProperty("startAt").GetDateTimeOffset());
+        }
+    }
+
+    [Fact]
+    public async Task BL471_a_block_outside_the_working_window_carries_the_OUTSIDE_code()
+    {
+        var task = await SeedAsync(Holder);
+        await PlanBlockAsync(task, Local(Monday, 19, 0), 60);
+
+        var warning = Assert.Single(await FeedWarningsAsync(task.Id));
+        Assert.Equal(TaskPlanWarningCodes.OutsideWorkingHours, warning.GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task BL471_a_block_that_no_longer_fits_after_the_hours_changed_is_flagged_not_moved()
+    {
+        var task = await SeedAsync(Holder);
+        await PlanBlockAsync(task, Local(Monday, 16, 0), 120);   // 16:00–18:00 fits today
+        Assert.Empty(await FeedWarningsAsync(task.Id));
+
+        await _fixture.Database.GetCollection<Tenant>(PlatformCollections.Tenants).UpdateOneAsync(t => t.Id == _tenant,
+            Builders<Tenant>.Update.Set(t => t.DefaultWorkdayEnd, new TimeOnly(17, 0)));
+
+        var warning = Assert.Single(await FeedWarningsAsync(task.Id));
+        Assert.Equal(TaskPlanWarningCodes.OutsideWorkingHours, warning.GetProperty("code").GetString());
+        Assert.Equal(120, (await StoredAsync(task.Id)).PlannedDurationMinutes);
+    }
+
+    [Fact]
+    public async Task BL471_another_persons_or_a_declined_meeting_never_warns_my_block()
+    {
+        var task = await SeedAsync(Holder);
+        await PlanBlockAsync(task, Local(Monday, 10, 0), 60);
+        await SeedMeetingAsync("Başkasının", Local(Monday, 10, 0), Local(Monday, 11, 0), Colleague, InvitationResponse.Accepted);
+        await SeedMeetingAsync("Reddettiğim", Local(Monday, 10, 0), Local(Monday, 11, 0), Holder, InvitationResponse.Declined);
+
+        Assert.Empty(await FeedWarningsAsync(task.Id));
+    }
+
+    [Fact]
+    public async Task BL471_a_DAY_plan_never_warns()
+    {
+        var task = await SeedAsync(Holder);
+        await PlanDayAsync(task, new DateTimeOffset(2026, 10, 10, 0, 0, 0, TimeSpan.FromHours(3))); // a Saturday
+
+        Assert.Empty(await FeedWarningsAsync(task.Id, "2026-10-10"));
+    }
+
     // ── D — the tenant default hours persist (TimeOnly round trip) ──────────
 
     [Fact]
@@ -814,6 +953,22 @@ public sealed class TaskPlanCalendarHttpMongoTests : IClassFixture<PlanCalendarM
         return document.RootElement.GetProperty("data").GetProperty("items").EnumerateArray()
             .Single(item => item.GetProperty("id").GetString() == taskId.ToString())
             .Clone();
+    }
+
+    private async Task<JsonElement> FeedMeetingAsync(string title, string day = "2026-10-05")
+    {
+        var (status, body) = await _host.GetAsync($"/api/v1/work/calendar?from={day}&to={day}", HolderToken());
+        Assert.Equal(HttpStatusCode.OK, status);
+        return Data(body).GetProperty("meetings").EnumerateArray().Single(m => m.GetProperty("title").GetString() == title);
+    }
+
+    private async Task<IReadOnlyList<JsonElement>> FeedWarningsAsync(Guid taskId, string day = "2026-10-05")
+    {
+        var (status, body) = await _host.GetAsync($"/api/v1/work/calendar?from={day}&to={day}", HolderToken());
+        Assert.Equal(HttpStatusCode.OK, status);
+        return Data(body).GetProperty("tasks").EnumerateArray()
+            .Single(t => t.GetProperty("taskId").GetString() == taskId.ToString())
+            .GetProperty("warnings").EnumerateArray().ToList();
     }
 
     private static IReadOnlyList<string?> Actions(JsonElement item)

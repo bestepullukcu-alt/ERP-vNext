@@ -2469,4 +2469,7 @@
   <data name="PlanTimeHint" xml:space="preserve">
     <value>Saatler şirket saat diliminde. Çalışma gününün sonunu aşan blok orada kesilir.</value>
   </data>
+  <data name="CalTruncatedNoEstimate" xml:space="preserve">
+    <value>Gün sonunda kesildi.</value>
+  </data>
 </root>

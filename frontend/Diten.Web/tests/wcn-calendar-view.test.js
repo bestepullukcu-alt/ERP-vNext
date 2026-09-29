@@ -87,7 +87,10 @@ const weekDays = () => ["2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", 
 
 const CHROME = {
   CalendarToday: "BUGÜN-KÖPRÜ", CalendarMonth: "AY-KÖPRÜ", CalendarWeek: "HAFTA-KÖPRÜ", CalendarDay: "GÜN-KÖPRÜ",
-  CalendarPrevious: "ÖNCEKİ", CalendarNext: "SONRAKİ", CalendarAllDay: "TÜM-GÜN-KÖPRÜ", CalendarMore: "+{0} DAHA", CalendarNoEvents: "YOK"
+  CalendarPrevious: "ÖNCEKİ", CalendarNext: "SONRAKİ", CalendarAllDay: "TÜM-GÜN-KÖPRÜ", CalendarMore: "+{0} DAHA", CalendarNoEvents: "YOK",
+  // WP-UI-MEETINGS-CALENDAR-01 — the unresolved sentence and the shared invitation card read the same payload.
+  CalendarUnresolved: "CalendarUnresolved", InviteCardType: "DAVET-KÖPRÜ", InviteAccept: "KABUL-KÖPRÜ", InviteDecline: "RET-KÖPRÜ",
+  InviteOverlapTitle: "InviteOverlapTitle", InviteOverlapText: "ÇAKIŞMA {0} ({1})", InviteAcceptAnyway: "YİNE-DE-KÖPRÜ"
 };
 
 let calls;
@@ -98,6 +101,7 @@ let fetchedRanges;
 beforeAll(() => {
   loadScript("wwwroot/assets/vendor/libs/fullcalendar/fullcalendar.js");
   loadScript("wwwroot/assets/js/shared/diten-calendar.js");
+  loadScript("wwwroot/assets/js/shared/diten-invite-card.js");
 });
 
 afterEach(() => {
@@ -329,12 +333,22 @@ describe("what the engine answers is shown, not decided", () => {
     expect(said.message).toMatch(/^CalConflictWith:Rapor taslağı\|10.00–11.00$/);
   });
 
-  it("a saved plan's warnings are said, and the block is marked", async () => {
-    const dispatch = () => ({
-      ok: true, status: 200,
-      data: { warnings: [{ code: "TASK_PLAN_OVERLAPS_MEETING", title: "Haftalık kalite" }], truncated: false, remainingMinutes: null }
-    });
-    await boot({ items: [task(1, { planned: "2026-10-07" })], feedData: planned(), dispatch });
+  it("a saved plan's warnings are said, and the block is marked — the mark from the FEED's re-read (BL-471)", async () => {
+    let written = false;
+    const dispatch = () => {
+      written = true;
+      return {
+        ok: true, status: 200,
+        data: { warnings: [{ code: "TASK_PLAN_OVERLAPS_MEETING", title: "Haftalık kalite" }], truncated: false, remainingMinutes: null }
+      };
+    };
+    // After the write the engine's feed carries the block's warning (computed at read time); before it, nothing.
+    const feedData = () => {
+      const answer = planned();
+      if (written) { answer.tasks[0].warnings = [{ code: "TASK_PLAN_OVERLAPS_MEETING", title: "Haftalık kalite" }]; }
+      return { ok: true, status: 200, data: answer };
+    };
+    await boot({ items: [task(1, { planned: "2026-10-07" })], feedData, dispatch });
     await toWeek();
     const event = cal().getEventById(id(1));
 
@@ -583,10 +597,10 @@ describe("the calendar assets load only where a calendar is drawn", () => {
     expect(loaders, "a page loads FullCalendar outside the partial").toEqual([]);
   });
 
-  it("only the Task Center list page includes the partial", () => {
+  it("only the two pages that draw a calendar include the partial: the Task Center and the Meetings list (2c)", () => {
     const including = views().filter((file) => fs.readFileSync(file, "utf8").includes("_CalendarAssets"))
-      .map((file) => path.relative(web("Views"), file));
-    expect(including).toEqual([path.join("WorkCenterNext", "Index.cshtml")]);
+      .map((file) => path.relative(web("Views"), file)).sort();
+    expect(including).toEqual([path.join("Meetings", "Index.cshtml"), path.join("WorkCenterNext", "Index.cshtml")]);
   });
 
   it("the chrome strings exist in SharedResource in all seven languages and reach the payload", () => {
@@ -1128,5 +1142,188 @@ describe("CT live: a drop on an EMPTY hour lands on the slot row, not the column
 
     expect(calls, "a drop on the slot row wrote nothing").toHaveLength(1);
     expect(calls[0].payload).toEqual({ expectedVersion: 11, plannedStartAt: "2026-10-07T07:00:00.000Z", plannedDurationMinutes: 90 });
+  });
+});
+
+// ── WP-UI-MEETINGS-CALENDAR-01 (2c) — the Task Center's share of the Meetings calendar work ─────────────────
+
+const INVITE_FIXTURE = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "meeting-invite-provider-projection.json"), "utf8"));
+const INVITE_ID = INVITE_FIXTURE.invitee_read_none.id;
+const invite = () => Object.assign(JSON.parse(JSON.stringify(INVITE_FIXTURE.invitee_read_none)), { dueAt: "2026-10-07T11:00:00+00:00" });
+
+const blockTask = (n, extra = {}) => Object.assign({
+  taskId: id(n), title: `İş ${n}`, priority: "Medium", lifecycle: "Planned", plannedDate: "2026-10-07",
+  plannedStartAt: "2026-10-07T07:00:00Z", plannedDurationMinutes: 60, plannedEndAt: "2026-10-07T08:00:00Z",
+  remainingMinutes: null, dueAt: null, conflict: false, warnings: []
+}, extra);
+
+describe("BL-471 — a block's warning mark comes from the feed, not from the session", () => {
+  it("a block the FEED warns about is marked on first draw, with no write in this session", async () => {
+    const warned = feed({ tasks: [blockTask(1, { warnings: [{ code: "TASK_PLAN_OUTSIDE_WORKING_HOURS" }] })], days: weekDays() });
+    await boot({ items: [task(1, { planned: "2026-10-07" })], feedData: warned });
+    await toWeek();
+
+    const block = host().querySelector(".dc-task-block");
+    expect(block.classList.contains("dc-warned"), "the feed's warning did not mark the block").toBe(true);
+    expect(block.querySelector(".dc-event-warning").getAttribute("title")).toBe("WARN:TASK_PLAN_OUTSIDE_WORKING_HOURS:");
+    expect(calls, "the mark needed a write").toEqual([]);
+  });
+
+  it("the mark survives a page reload (a fresh boot on the same feed)", async () => {
+    const warned = () => feed({ tasks: [blockTask(1, { warnings: [{ code: "TASK_PLAN_OVERLAPS_MEETING", title: "Kalite" }] })] });
+    await boot({ items: [task(1, { planned: "2026-10-07" })], feedData: warned() });
+    await boot({ items: [task(1, { planned: "2026-10-07" })], feedData: warned() });
+    await toWeek();
+
+    expect(host().querySelector(".dc-task-block").classList.contains("dc-warned")).toBe(true);
+  });
+
+  it("a block the feed does not warn about carries no mark", async () => {
+    await boot({ items: [task(1, { planned: "2026-10-07" })], feedData: feed({ tasks: [blockTask(1)] }) });
+    await toWeek();
+
+    expect(host().querySelector(".dc-task-block").classList.contains("dc-warned")).toBe(false);
+    expect(host().querySelector(".dc-event-warning")).toBeNull();
+  });
+
+  it("the session-only note store is gone from the page", () => {
+    expect(APP).not.toContain("calendarNotes");
+  });
+});
+
+describe("D2 — the cut-at-day-end sentence", () => {
+  const cutFeed = () => feed({ tasks: [blockTask(1, { plannedStartAt: "2026-10-07T13:00:00Z", plannedEndAt: "2026-10-07T15:00:00Z", plannedDurationMinutes: 120 })] });
+
+  it("with NO estimate it says only that the block was cut — never '0 min left'", async () => {
+    const dispatch = () => ({ ok: true, status: 200, data: { warnings: [], truncated: true, remainingMinutes: null } });
+    await boot({ items: [task(1)], feedData: cutFeed(), dispatch });
+    await toWeek();
+    stackSlotRows();
+
+    await dropOn(host().querySelector('.fc-timegrid-col[data-date="2026-10-07"]'), id(1), 645);
+
+    const warning = toasts.find((t) => t.type === "warning");
+    expect(warning.message).toBe("CalTruncatedNoEstimate");
+  });
+
+  it("with an estimate it says how much is left", async () => {
+    const dispatch = () => ({ ok: true, status: 200, data: { warnings: [], truncated: true, remainingMinutes: 45 } });
+    await boot({ items: [task(1, { estimate: 3 })], feedData: cutFeed(), dispatch });
+    await toWeek();
+    stackSlotRows();
+
+    await dropOn(host().querySelector('.fc-timegrid-col[data-date="2026-10-07"]'), id(1), 645);
+
+    expect(toasts.find((t) => t.type === "warning").message).toBe("CalTruncated:45");
+  });
+});
+
+describe("D1 — an unresolved working calendar is said above the calendar", () => {
+  it("a day with calendarUnresolved puts the shared sentence over the calendar", async () => {
+    const days = weekDays().map((day, i) => (i === 0 ? Object.assign({}, day, { calendarUnresolved: true }) : day));
+    await boot({ items: [task(1)], feedData: feed({ days }) });
+
+    const note = app().querySelector(".wcn-calview-main .dc-unresolved-note");
+    expect(note, "no unresolved notice").not.toBeNull();
+    expect(note.textContent).toContain("CalendarUnresolved");
+  });
+
+  it("every day resolved: no notice", async () => {
+    await boot({ items: [task(1)], feedData: feed({ days: weekDays() }) });
+
+    expect(app().querySelector(".dc-unresolved-note")).toBeNull();
+  });
+});
+
+describe("B — the invitations panel draws the ONE shared card", () => {
+  const openInvites = async () => {
+    app().querySelector('[data-wcn-calpanel="invites"]').click();
+    await settle();
+  };
+
+  it("an invitation is a DitenInviteCard, not a splitCard, and it cannot be dragged", async () => {
+    await boot({ items: [task(1), invite()] });
+    await openInvites();
+
+    const card = app().querySelector(`.wcn-calpanel-list [data-dic-invite="${INVITE_ID}"]`);
+    expect(card, "the panel did not draw the shared card").not.toBeNull();
+    expect(card.classList.contains("dic-card")).toBe(true);
+    expect(app().querySelector(".wcn-calpanel-list .wcn-splitcard"), "a second card design is drawn").toBeNull();
+    expect(card.getAttribute("draggable")).toBe("false");
+    expect(card.hasAttribute("data-wcn-plan-drag")).toBe(false);
+    expect(card.querySelector('[data-wcn-action="acceptInvite"]')).not.toBeNull();
+    expect(card.querySelector('[data-wcn-action="declineInvite"]')).not.toBeNull();
+    expect(card.querySelector(".dic-card-title").textContent).toBe("Q4 Management Review");
+  });
+
+  const overlapFeed = (overlaps) => feed({
+    meetings: [{
+      meetingId: INVITE_ID, title: "Q4 Management Review", startAt: "2026-10-07T11:00:00Z", endAt: "2026-10-07T12:00:00Z",
+      response: "pending", overlapsPlan: overlaps,
+      planOverlap: overlaps ? { taskId: id(1), title: "Rapor <b>taslağı</b>", startAt: "2026-10-07T11:00:00Z", endAt: "2026-10-07T11:30:00Z" } : null
+    }]
+  });
+
+  const withConfirm = (answer) => {
+    const asked = [];
+    global.showConfirm = (title, onConfirm, options) => {
+      asked.push({ title, options });
+      if (answer) { onConfirm(); } else { options.onCancel(); }
+    };
+    return asked;
+  };
+
+  afterEach(() => { delete global.showConfirm; });
+
+  it("accepting over my own block WARNS, naming the block and its hours — and still writes when confirmed", async () => {
+    const asked = withConfirm(true);
+    await boot({ items: [task(1), invite()], feedData: overlapFeed(true) });
+    await openInvites();
+
+    app().querySelector(`[data-dic-invite="${INVITE_ID}"] [data-wcn-action="acceptInvite"]`).click();
+    await global.__wcnLastActionOutcome;
+    await settle();
+
+    expect(asked, "no warning before an overlapping accept").toHaveLength(1);
+    expect(asked[0].title).toBe("InviteOverlapTitle");
+    expect(asked[0].options.subtext).toContain("Rapor &lt;b&gt;taslağı&lt;/b&gt;");
+    expect(asked[0].options.subtext).toMatch(/14.00–14.30/);
+    expect(calls.map((c) => c.actionCode)).toContain("acceptInvite");
+  });
+
+  it("cancelling the warning writes nothing", async () => {
+    withConfirm(false);
+    await boot({ items: [task(1), invite()], feedData: overlapFeed(true) });
+    await openInvites();
+
+    app().querySelector(`[data-dic-invite="${INVITE_ID}"] [data-wcn-action="acceptInvite"]`).click();
+    await global.__wcnLastActionOutcome;
+
+    expect(calls).toEqual([]);
+  });
+
+  it("no overlap: accept asks nothing and writes", async () => {
+    const asked = withConfirm(true);
+    await boot({ items: [task(1), invite()], feedData: overlapFeed(false) });
+    await openInvites();
+
+    app().querySelector(`[data-dic-invite="${INVITE_ID}"] [data-wcn-action="acceptInvite"]`).click();
+    await global.__wcnLastActionOutcome;
+    await settle();
+
+    expect(asked).toEqual([]);
+    expect(calls.map((c) => c.actionCode)).toContain("acceptInvite");
+  });
+
+  it("declining asks nothing, even over my own block", async () => {
+    const asked = withConfirm(true);
+    await boot({ items: [task(1), invite()], feedData: overlapFeed(true) });
+    await openInvites();
+
+    app().querySelector(`[data-dic-invite="${INVITE_ID}"] [data-wcn-action="declineInvite"]`).click();
+    await global.__wcnLastActionOutcome;
+    await settle();
+
+    expect(asked).toEqual([]);
   });
 });
