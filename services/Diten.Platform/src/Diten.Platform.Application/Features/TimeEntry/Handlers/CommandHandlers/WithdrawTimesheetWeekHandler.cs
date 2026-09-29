@@ -21,6 +21,7 @@ public sealed class WithdrawTimesheetWeekHandler : IRequestHandler<WithdrawTimes
     private readonly ITimesheetDecisionPuller _puller;
     private readonly ICurrentUserContext _currentUser;
     private readonly TimeProvider _clock;
+    private readonly ITimesheetSubmissionProbe _probe;
 
     public WithdrawTimesheetWeekHandler(
         ITimesheetWeekReader reader,
@@ -28,7 +29,8 @@ public sealed class WithdrawTimesheetWeekHandler : IRequestHandler<WithdrawTimes
         ITimesheetApprovalService approvals,
         ITimesheetDecisionPuller puller,
         ICurrentUserContext currentUser,
-        TimeProvider clock)
+        TimeProvider clock,
+        ITimesheetSubmissionProbe probe)
     {
         _reader = reader;
         _weeks = weeks;
@@ -36,6 +38,7 @@ public sealed class WithdrawTimesheetWeekHandler : IRequestHandler<WithdrawTimes
         _puller = puller;
         _currentUser = currentUser;
         _clock = clock;
+        _probe = probe;
     }
 
     public async Task<Response<TimesheetWeekMutationDto>> Handle(WithdrawTimesheetWeekCommand request, CancellationToken ct)
@@ -72,9 +75,11 @@ public sealed class WithdrawTimesheetWeekHandler : IRequestHandler<WithdrawTimes
             return Fail("The approver has already decided.", 409, TimeEntryReasonCodes.WithdrawTooLate, request);
         }
 
+        await _probe.BeforeWithdrawCancelAsync(week.Id, ct);
+
         if (!await _approvals.CancelAsync(instanceId, userId, ct))
         {
-            // MOD-0023 refused the cancel: the decision landed between our read and our cancel.
+            // The decision landed between our read and our cancel (F13): too late — take the decision on board.
             await _puller.PullAsync([week], request.CorrelationId, ct);
             return Fail("The approver has already decided.", 409, TimeEntryReasonCodes.WithdrawTooLate, request);
         }

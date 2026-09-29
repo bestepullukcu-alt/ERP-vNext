@@ -96,6 +96,11 @@ public sealed class TimesheetWeek : TenantScopedEntity
 
     public DateTimeOffset? SupersededAtUtc { get; set; }
 
+    /// <summary>F12 — set once the approved revision's task totals were written. Approved with this still null means the
+    /// finalizer wrote the week and then failed on the totals: the next read, approvals page or sweep recomputes them.
+    /// Never read as "approved" — <see cref="Status"/> says that.</summary>
+    public DateTimeOffset? TotalsAppliedAtUtc { get; set; }
+
     /// <summary>Set when the finalizer refused a MOD-0023 outcome — today only a decision made by the person about
     /// their OWN week (pack §13). The week goes back to Draft and this code tells the person why.</summary>
     public string? FinalizationBlockedReason { get; set; }

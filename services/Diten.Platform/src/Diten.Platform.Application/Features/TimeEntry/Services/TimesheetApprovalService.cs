@@ -38,8 +38,8 @@ public interface ITimesheetApprovalService
         TimesheetWeek week, IReadOnlyList<Guid> candidateUserIds, int submissionNumber, CancellationToken ct = default);
 
     /// <summary>Cancels a not-yet-closed instance through MOD-0023's own cancel command — every approval task that is
-    /// still open, escalated ones included (F8). True when nothing is left open; false when MOD-0023 refused (the
-    /// decision got there first).</summary>
+    /// still open, escalated ones included (F8). True when nothing is left open and nothing was decided; FALSE when the
+    /// instance is already decided (F13) or MOD-0023 refused — the decision got there first.</summary>
     Task<bool> CancelAsync(Guid workflowInstanceId, Guid actorUserId, CancellationToken ct = default);
 
     /// <summary>F1 — an earlier submit that started its instance but never recorded it on the week leaves that instance
@@ -200,10 +200,17 @@ public sealed class TimesheetApprovalService : ITimesheetApprovalService
     public async Task<bool> CancelAsync(Guid workflowInstanceId, Guid actorUserId, CancellationToken ct = default)
     {
         var instance = await _instances.GetByIdAsync(workflowInstanceId, ct);
-        if (instance is null || IsClosed(instance.Status))
+        if (instance is null || instance.Status is WorkflowInstanceStatus.Cancelled or WorkflowInstanceStatus.TimedOut)
         {
-            // Nothing left open to cancel (a timed-out instance, for instance, is already closed).
+            // Nothing left open to cancel, and nothing was decided: a timed-out or already-cancelled instance.
             return true;
+        }
+
+        if (IsClosed(instance.Status))
+        {
+            // F13 — DECIDED (approved or rejected) between the caller's read and this cancel. That is not a successful
+            // cancel: the caller must not treat the approval as withdrawn, or the decision is lost.
+            return false;
         }
 
         // Every task still waiting on somebody, whatever MOD-0023 has done with it since: an ESCALATED approval is
@@ -223,7 +230,9 @@ public sealed class TimesheetApprovalService : ITimesheetApprovalService
                     ReasonCode: "TIMESHEET_WITHDRAWN",
                     IdempotencyKey: $"timesheet-withdraw:{approvalTask.Id}",
                     Comment: null),
-                CorrelationId()), ct);
+                CorrelationId(),
+                // B3 — the owner withdrawing its own object is the one path that may cancel an escalated approval.
+                AllowEscalated: true), ct);
 
             if (!result.IsSuccessful)
             {

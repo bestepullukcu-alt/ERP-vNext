@@ -129,8 +129,9 @@ public static class TimesheetRules
     }
 
     /// <summary>A fresh open Draft revision of the context's week.</summary>
-    public static TimesheetWeek NewRevision(TimesheetWeekContext context, Guid tenantId, int revisionNumber) => new()
+    public static TimesheetWeek NewRevision(TimesheetWeekContext context, Guid tenantId, int revisionNumber, Guid? id = null) => new()
     {
+        Id = id ?? Guid.NewGuid(),
         TenantId = tenantId,
         UserId = context.UserId,
         WeekKey = context.WeekKey,

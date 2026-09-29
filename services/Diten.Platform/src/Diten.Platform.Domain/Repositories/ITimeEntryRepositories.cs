@@ -30,8 +30,9 @@ public interface ITimesheetWeekRepository
     /// <summary>Submitted revisions MOD-0023 assigned to <paramref name="approverUserId"/>, oldest submission first.</summary>
     Task<IReadOnlyList<TimesheetWeek>> ListSubmittedForApproverAsync(Guid approverUserId, CancellationToken ct = default);
 
-    /// <summary>Submitted revisions that carry a MOD-0023 instance — the sweep's work list, oldest submission first.</summary>
-    Task<IReadOnlyList<TimesheetWeek>> ListSubmittedAsync(int limit, CancellationToken ct = default);
+    /// <summary>The sweep's work list, oldest submission first: submitted revisions that carry a MOD-0023 instance, and
+    /// approved revisions whose task totals were never applied (F12).</summary>
+    Task<IReadOnlyList<TimesheetWeek>> ListNeedingFinalizationAsync(int limit, CancellationToken ct = default);
 }
 
 /// <summary>Raw storage for <see cref="TimeEntry"/> rows.</summary>

@@ -30,7 +30,10 @@ public enum TimesheetFinalizationResult
     SelfDecisionReturned = 5,
 
     /// <summary>This outcome was already applied (a replay) — the week and the totals are left as they are.</summary>
-    AlreadyApplied = 6
+    AlreadyApplied = 6,
+
+    /// <summary>F12 — the week was already approved; its outstanding task totals were written now.</summary>
+    TotalsApplied = 7
 }
 
 /// <summary>The synthetic integration event the finalizer is keyed by (C-8). Never published; it exists so the
@@ -103,6 +106,12 @@ public sealed class TimesheetFinalizer : ITimesheetFinalizer
 
     public async Task<bool> HasPendingOutcomeAsync(TimesheetWeek week, CancellationToken ct = default)
     {
+        // F12 — approved, but its task totals never landed: that is outstanding work too.
+        if (NeedsTotals(week))
+        {
+            return true;
+        }
+
         if (week.Status != TimesheetWeekStatus.Submitted || week.WorkflowInstanceId is not { } instanceId)
         {
             return false;
@@ -114,6 +123,12 @@ public sealed class TimesheetFinalizer : ITimesheetFinalizer
     public async Task<TimesheetFinalizationResult> FinalizeAsync(Guid weekId, CancellationToken ct = default)
     {
         var week = await _weeks.GetByIdAsync(weekId, ct);
+        if (week is not null && NeedsTotals(week))
+        {
+            await ApplyTotalsAsync(week, _clock.GetUtcNow(), ct);
+            return TimesheetFinalizationResult.TotalsApplied;
+        }
+
         if (week is null || week.Status != TimesheetWeekStatus.Submitted || week.WorkflowInstanceId is not { } instanceId)
         {
             return TimesheetFinalizationResult.NotApplicable;
@@ -238,11 +253,30 @@ public sealed class TimesheetFinalizer : ITimesheetFinalizer
         week.FinalizationBlockedReason = null;
         EnsureWritten(await _weeks.UpdateAsync(week, week.Version, ct), week.Id);
 
-        // Every task the new revision OR the superseded one touched may have a new total.
+        await ApplyTotalsAsync(week, now, ct);
+        return TimesheetFinalizationResult.Approved;
+    }
+
+    /// <summary>F12 — an approved revision whose totals were never written (the week write landed, the totals did not).</summary>
+    public static bool NeedsTotals(TimesheetWeek week)
+        => week.Status == TimesheetWeekStatus.Approved && week.TotalsAppliedAtUtc is null;
+
+    /// <summary>
+    /// Recomputes every task the revision OR the revision it corrects touched, then marks the week. The mark is written
+    /// LAST: a failure anywhere before it leaves the week "approved, totals outstanding", which every retry path
+    /// (read, approvals page, sweep) picks up — the week is never left approved with totals that nobody will fix (F12).
+    /// </summary>
+    private async Task ApplyTotalsAsync(TimesheetWeek week, DateTimeOffset now, CancellationToken ct)
+    {
         var touched = (await _entries.ListByWeekAsync(week.Id, ct)).ToList();
-        if (previous is not null)
+        if (week.CorrectionOfRevision is { } corrected)
         {
-            touched.AddRange(await _entries.ListByWeekAsync(previous.Id, ct));
+            var previous = (await _weeks.ListRevisionsAsync(week.UserId, week.WeekKey, ct))
+                .FirstOrDefault(r => r.Id != week.Id && r.RevisionNumber == corrected);
+            if (previous is not null)
+            {
+                touched.AddRange(await _entries.ListByWeekAsync(previous.Id, ct));
+            }
         }
 
         var taskIds = touched
@@ -251,7 +285,8 @@ public sealed class TimesheetFinalizer : ITimesheetFinalizer
             .ToHashSet();
         await RecomputeTaskTotalsAsync(taskIds, week.Id, now, ct);
 
-        return TimesheetFinalizationResult.Approved;
+        week.TotalsAppliedAtUtc = now;
+        EnsureWritten(await _weeks.UpdateAsync(week, week.Version, ct), week.Id);
     }
 
     /// <summary>

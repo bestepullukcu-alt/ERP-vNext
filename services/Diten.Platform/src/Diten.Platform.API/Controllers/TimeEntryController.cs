@@ -89,7 +89,13 @@ public sealed class TimeEntryController : CustomBaseController
     [HttpPost("admin/weeks/reopen")]
     [HasPermission(TimeEntryPermissions.WeeksReopen)]
     public async Task<IActionResult> Reopen([FromBody] ReopenTimesheetWeekRequest request, CancellationToken ct)
-        => CreateActionResultInstance(await _mediator.Send(new ReopenTimesheetWeekCommand(request, CorrelationId), ct));
+    {
+        // F15 — the server names the revision BEFORE the audited command runs, so its audit entry carries the week id:
+        // the existing revision's, or the id the new one will be created with.
+        var target = await _mediator.Send(new ResolveReopenTargetQuery(request.UserId, request.WeekKey, CorrelationId), ct);
+        var weekId = target.Data ?? Guid.NewGuid();
+        return CreateActionResultInstance(await _mediator.Send(new ReopenTimesheetWeekCommand(request, weekId, CorrelationId), ct));
+    }
 
     // ── Categories ──────────────────────────────────────────────────────────────────────────────────────────────
 

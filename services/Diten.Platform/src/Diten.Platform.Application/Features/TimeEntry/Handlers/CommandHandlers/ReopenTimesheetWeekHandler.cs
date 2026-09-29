@@ -84,7 +84,7 @@ public sealed class ReopenTimesheetWeekHandler : IRequestHandler<ReopenTimesheet
                 return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
             }
 
-            var created = TimesheetRules.NewRevision(context, _tenantContext.TenantId, 1);
+            var created = TimesheetRules.NewRevision(context, _tenantContext.TenantId, 1, request.WeekId);
             created.ReopenActive = true;
             created.ReopenedAtUtc = now;
             created.ReopenedByUserId = admin;
@@ -100,7 +100,7 @@ public sealed class ReopenTimesheetWeekHandler : IRequestHandler<ReopenTimesheet
             return Fail("This week does not need a reopen.", 409, TimeEntryReasonCodes.ReopenNotNeeded, request);
         }
 
-        if (request.Request.ExpectedVersion != week.Version)
+        if (request.Request.ExpectedVersion != week.Version || week.Id != request.WeekId)
         {
             return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
         }

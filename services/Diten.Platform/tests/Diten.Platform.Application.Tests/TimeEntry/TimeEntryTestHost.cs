@@ -174,9 +174,13 @@ public sealed class TestProbes : ITimesheetSubmissionProbe, ITimesheetFinalizati
 {
     public Func<Guid, Task>? AfterApprovalStarted { get; set; }
     public Func<Guid, Task>? BeforeTaskTotalWrite { get; set; }
+    public Func<Guid, Task>? BeforeWithdrawCancel { get; set; }
 
     public Task AfterApprovalStartedAsync(Guid weekId, CancellationToken ct)
         => AfterApprovalStarted?.Invoke(weekId) ?? Task.CompletedTask;
+
+    public Task BeforeWithdrawCancelAsync(Guid weekId, CancellationToken ct)
+        => BeforeWithdrawCancel?.Invoke(weekId) ?? Task.CompletedTask;
 
     public Task BeforeTaskTotalWriteAsync(Guid taskItemId, CancellationToken ct)
         => BeforeTaskTotalWrite?.Invoke(taskItemId) ?? Task.CompletedTask;

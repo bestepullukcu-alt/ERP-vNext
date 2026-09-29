@@ -651,6 +651,99 @@ public sealed class TimesheetApprovalHttpMongoTests : TimeEntryScenario
         Assert.Equal(180, await ApprovedMinutesAsync(shared));
     }
 
+    // ── F12 — totals that failed after the week was approved are applied by the next read ──────────────────────
+
+    [Fact]
+    public async Task Totals_that_failed_after_approval_are_applied_by_the_next_read()
+    {
+        var weekId = await SubmittedWeekAsync(Row(Monday, 120, TaskA));
+        Assert.Equal(HttpStatusCode.OK, (await DecideAsync(Manager, weekId, approve: true)).Status);
+        Host.Probes.BeforeTaskTotalWrite = _ => throw new InvalidOperationException("store down while writing totals");
+
+        var first = await GetWeekAsync();
+
+        Assert.Equal(HttpStatusCode.OK, first.Status); // F14: the read survives the failed finalization
+        var approved = await StoredWeekAsync(weekId);
+        Assert.Equal(TimesheetWeekStatus.Approved, approved.Status);
+        Assert.Null(approved.TotalsAppliedAtUtc);
+        Assert.Null(await ApprovedMinutesAsync(TaskA));
+
+        Host.Probes.BeforeTaskTotalWrite = null;
+        await GetWeekAsync();
+
+        Assert.Equal(120, await ApprovedMinutesAsync(TaskA));
+        Assert.NotNull((await StoredWeekAsync(weekId)).TotalsAppliedAtUtc);
+    }
+
+    [Fact]
+    public async Task The_sweep_list_includes_an_approved_week_whose_totals_never_landed()
+    {
+        var weekId = await SubmittedWeekAsync(Row(Monday, 120, TaskA));
+        Assert.Equal(HttpStatusCode.OK, (await DecideAsync(Manager, weekId, approve: true)).Status);
+        Host.Probes.BeforeTaskTotalWrite = _ => throw new InvalidOperationException("store down");
+        await GetWeekAsync();
+        Host.Probes.BeforeTaskTotalWrite = null;
+
+        await using var scope = Host.Services.CreateAsyncScope();
+        using (TenantScope.Begin(scope.ServiceProvider.GetRequiredService<ITenantContext>(), Tenant))
+        {
+            var pending = await scope.ServiceProvider.GetRequiredService<Domain.Repositories.ITimesheetWeekRepository>()
+                .ListNeedingFinalizationAsync(10);
+            Assert.Contains(pending, w => w.Id == weekId);
+        }
+
+        Assert.Equal(TimesheetFinalizationResult.TotalsApplied, await FinalizeDirectlyAsync(weekId));
+        Assert.Equal(120, await ApprovedMinutesAsync(TaskA));
+    }
+
+    // ── F13 — a decision that lands between withdraw's read and its cancel is not lost ─────────────────────────
+
+    [Fact]
+    public async Task An_approval_that_lands_while_withdrawing_wins_and_the_withdraw_is_409()
+    {
+        var weekId = await SubmittedWeekAsync(Row(Monday, 120, TaskA));
+        Host.Probes.BeforeWithdrawCancel = async _ =>
+        {
+            Host.Probes.BeforeWithdrawCancel = null;
+            Assert.Equal(HttpStatusCode.OK, (await DecideAsync(Manager, weekId, approve: true)).Status);
+        };
+
+        var withdrawn = await WithdrawAsync();
+
+        Assert.Equal(HttpStatusCode.Conflict, withdrawn.Status);
+        Assert.Equal(TimeEntryReasonCodes.WithdrawTooLate, withdrawn.ReasonCode);
+        var week = await StoredWeekAsync(weekId);
+        Assert.Equal(TimesheetWeekStatus.Approved, week.Status);
+        Assert.True(week.InForce);
+        Assert.Equal(120, await ApprovedMinutesAsync(TaskA));
+    }
+
+    // ── F14 — one week's failed finalization never takes the approvals page down ──────────────────────────────
+
+    [Fact]
+    public async Task The_approvals_page_survives_one_weeks_failed_finalization_and_still_lists_the_others()
+    {
+        // Two people, both reporting to the manager; one week gets decided and then fails on its totals.
+        var secondSeat = Guid.NewGuid();
+        await SeedPositionAsync(secondSeat, reportsTo: ManagerSeat);
+        await SeatAsync(SecondPerson, secondSeat);
+        var theirTask = Guid.NewGuid();
+        await SeedTaskAsync(Tenant, theirTask, assignee: SecondPerson, creator: SecondPerson);
+
+        var mine = await SubmittedWeekAsync(Row(Monday, 120, TaskA));
+        Assert.Equal(HttpStatusCode.OK, (await SaveAsync(0, CurrentWeek, PersonToken(person: SecondPerson), Row(Monday, 60, theirTask))).Status);
+        Assert.Equal(HttpStatusCode.OK, (await SubmitAsync(CurrentWeek, PersonToken(person: SecondPerson))).Status);
+        Assert.Equal(HttpStatusCode.OK, (await DecideAsync(Manager, mine, approve: true)).Status);
+        Host.Probes.BeforeTaskTotalWrite = _ => throw new InvalidOperationException("finalization blew up");
+
+        var list = await Host.GetAsync("/api/v1/time-entry/approvals", ApproverToken(Manager));
+        Host.Probes.BeforeTaskTotalWrite = null;
+
+        Assert.Equal(HttpStatusCode.OK, list.Status);
+        var item = Assert.Single(list.Data.GetProperty("items").EnumerateArray());
+        Assert.Equal(SecondPerson, item.GetProperty("userId").GetGuid());
+    }
+
     // ── F10 — oldest submission first, by a sortable field ─────────────────────────────────────────────────────
 
     [Fact]
@@ -673,7 +766,7 @@ public sealed class TimesheetApprovalHttpMongoTests : TimeEntryScenario
         await using var scope = Host.Services.CreateAsyncScope();
         using (TenantScope.Begin(scope.ServiceProvider.GetRequiredService<ITenantContext>(), Tenant))
         {
-            var oldestTwo = await scope.ServiceProvider.GetRequiredService<Domain.Repositories.ITimesheetWeekRepository>().ListSubmittedAsync(2);
+            var oldestTwo = await scope.ServiceProvider.GetRequiredService<Domain.Repositories.ITimesheetWeekRepository>().ListNeedingFinalizationAsync(2);
 
             Assert.Equal(new[] { basis.UtcTicks, basis.AddHours(1).UtcTicks }, oldestTwo.Select(w => w.SubmittedAtUtcTicks!.Value));
         }

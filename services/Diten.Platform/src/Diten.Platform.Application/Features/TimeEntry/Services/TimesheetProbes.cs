@@ -9,6 +9,9 @@ public interface ITimesheetSubmissionProbe
 {
     /// <summary>F1 — between "MOD-0023 instance started" and "week written as Submitted".</summary>
     Task AfterApprovalStartedAsync(Guid weekId, CancellationToken ct);
+
+    /// <summary>F13 — between "withdraw read the decision as pending" and "withdraw cancels the instance".</summary>
+    Task BeforeWithdrawCancelAsync(Guid weekId, CancellationToken ct);
 }
 
 /// <summary>F9 — between "task total computed" and "task total written".</summary>
@@ -20,6 +23,8 @@ public interface ITimesheetFinalizationProbe
 public sealed class NoOpTimesheetProbe : ITimesheetSubmissionProbe, ITimesheetFinalizationProbe
 {
     public Task AfterApprovalStartedAsync(Guid weekId, CancellationToken ct) => Task.CompletedTask;
+
+    public Task BeforeWithdrawCancelAsync(Guid weekId, CancellationToken ct) => Task.CompletedTask;
 
     public Task BeforeTaskTotalWriteAsync(Guid taskItemId, CancellationToken ct) => Task.CompletedTask;
 }

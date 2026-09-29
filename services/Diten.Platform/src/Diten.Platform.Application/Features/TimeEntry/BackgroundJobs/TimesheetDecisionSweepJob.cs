@@ -61,7 +61,7 @@ public sealed class TimesheetDecisionSweepJob : IBackgroundJobHandler<TimesheetD
             {
                 using (TenantScope.Begin(_tenantContext, tenant.Id))
                 {
-                    var submitted = await _weeks.ListSubmittedAsync(maxWeeks, cancellationToken);
+                    var submitted = await _weeks.ListNeedingFinalizationAsync(maxWeeks, cancellationToken);
                     if (await _puller.PullAsync(submitted, correlationId, cancellationToken))
                     {
                         finalizedTenants++;

@@ -190,6 +190,29 @@ public sealed class TimesheetWeekHttpMongoTests : TimeEntryScenario
     }
 
     [Fact]
+    public async Task The_reopen_audit_entry_names_the_week_it_changed_created_or_existing()
+    {
+        // A week that has no revision yet: the reopen creates it, and the audit entry carries the created id.
+        var created = await ReopenAsync(Person, "2026-W36", 0, "late entry");
+        var createdId = created.Data.GetProperty("weekId").GetGuid();
+
+        // A week that already has an open Draft outside the window (staged directly — reading never creates one).
+        var existing = new Domain.Entities.TimeEntry.TimesheetWeek
+        {
+            TenantId = Tenant, UserId = Person, WeekKey = "2026-W35", WeekStartDate = new DateOnly(2026, 8, 24),
+            TimeZoneId = Zone, RevisionNumber = 1
+        };
+        await Collection<Domain.Entities.TimeEntry.TimesheetWeek>(
+            Infrastructure.Persistence.Schema.PlatformCollections.TimeEntryTimesheetWeeks).InsertOneAsync(existing);
+        Assert.Equal(HttpStatusCode.OK, (await ReopenAsync(Person, "2026-W35", existing.Version, "late entry")).Status);
+
+        var audited = Host.Audit.Requests.Where(r => r.RequestType == "ReopenTimesheetWeekCommand").ToList();
+        Assert.Equal(2, audited.Count);
+        Assert.Equal(createdId, audited[0].EntityId);
+        Assert.Equal(existing.Id, audited[1].EntityId);
+    }
+
+    [Fact]
     public async Task Reading_a_week_never_writes_not_even_an_old_one_outside_the_window()
     {
         var old = await GetWeekAsync("2026-W30");

@@ -101,12 +101,18 @@ public sealed class TimesheetWeekRepository : TenantRepository<TimesheetWeek>, I
         return await Collection.Find(filter).SortBy(x => x.SubmittedAtUtcTicks).ToListAsync(ct);
     }
 
-    public async Task<IReadOnlyList<TimesheetWeek>> ListSubmittedAsync(int limit, CancellationToken ct = default)
+    public async Task<IReadOnlyList<TimesheetWeek>> ListNeedingFinalizationAsync(int limit, CancellationToken ct = default)
     {
         var filter = Builders<TimesheetWeek>.Filter.And(
             ExecutionFilter,
-            Builders<TimesheetWeek>.Filter.Eq(x => x.Status, TimesheetWeekStatus.Submitted),
-            Builders<TimesheetWeek>.Filter.Ne(x => x.WorkflowInstanceId, null));
+            Builders<TimesheetWeek>.Filter.Or(
+                Builders<TimesheetWeek>.Filter.And(
+                    Builders<TimesheetWeek>.Filter.Eq(x => x.Status, TimesheetWeekStatus.Submitted),
+                    Builders<TimesheetWeek>.Filter.Ne(x => x.WorkflowInstanceId, null)),
+                // F12 — approved, but its task totals never landed (a missing field matches null too).
+                Builders<TimesheetWeek>.Filter.And(
+                    Builders<TimesheetWeek>.Filter.Eq(x => x.Status, TimesheetWeekStatus.Approved),
+                    Builders<TimesheetWeek>.Filter.Eq(x => x.TotalsAppliedAtUtc, null))));
         // Ticks, not the DateTimeOffset itself: that is stored as a [ticks, offset] array, which Mongo does not order
         // by its first element (BL-030) — "oldest first" would silently be insertion order.
         return await Collection.Find(filter).SortBy(x => x.SubmittedAtUtcTicks).Limit(Math.Max(1, limit)).ToListAsync(ct);
