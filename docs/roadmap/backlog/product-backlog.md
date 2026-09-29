@@ -1480,7 +1480,9 @@ yalnız formdaki soru. Bu madde, "neden yok?" sorusunun ve geri getirme şartın
 
 ## Açık kararlar
 
-### DEC-002 — Zaman kaydının sahibi (DCP-003 B2) · **teyit bekliyor, açık tercih değil**
+### DEC-002 — Zaman kaydının sahibi (DCP-003 B2) · ✅ **TEYİT EDİLDİ — sahip, 2026-09-17: zaman girişinin SoR'u MOD-0280**
+> **DURUM:** TEYİT EDİLDİ (2026-09-17) · **PAKET:** [`MOD-0280-FU01` Time Entry & Weekly Timesheet](../../../execution/domains/human-capital-management/module-packs/MOD-0280-FU01-time-entry-weekly-timesheet.md) (ready-for-dev, 2026-09-29; kararlar D1–D13, yerleşim ADR-004)
+
 `logTime` ("bu göreve 2 saat harcadım") kaydı **nereye** yazılacak? MOD-0024 bu kaydı asla kendi tutmaz; yalnız bir giriş noktasıdır, kaynağa yazar. Kaynağın kim olduğu bilinmeden buton bağlanamaz.
 
 - **Blueprint yönü ZATEN belli — İK tarafı (MOD-0280):** `execution/registries/module-id-registry.md:41` *"Time Entry SoR stays with Blueprint MOD-0280"* · `execution/domains/portfolio-delivery/domain-config.md:53` PPM, `Project Effort Log`'u **geçici** sahiplenir, MOD-0280 gelince kontrat kurulur ve **gerekirse sahiplik devri** yapılır · `portfolio-delivery/README.md:32` *"Time Entry / devamsızlık / izin SoR'u → MOD-0280"*. Üç kayıt aynı şeyi söylüyor.

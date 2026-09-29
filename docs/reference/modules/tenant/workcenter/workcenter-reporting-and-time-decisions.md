@@ -157,19 +157,30 @@ Ayrı yetki "bunu kim açtı" sorusunu da kayda geçirir.
 
 ## 6. Zaman takibi — bugünkü gerçek durum
 
+> **Düzeltme (2026-09-29, CT ölçümü).** Bu bölümün ilk sürümü `SpentHours`'un
+> elle girildiğini yazıyordu. Yanlıştı: alanın yazarı yok, hep 0. Aşağıdaki
+> tablo ölçülmüş hâlidir. Timesheet'in kendisi artık bir paket —
+> [`MOD-0280-FU01` Time Entry & Weekly Timesheet](../../../../../execution/domains/human-capital-management/module-packs/MOD-0280-FU01-time-entry-weekly-timesheet.md)
+> (ready-for-dev, 2026-09-29; yerleşim ADR-004). Z-1…Z-5 o pakette karar olarak işlendi (D2, D3, D7, D9).
+
 ```
 EstimateHours                    elle giriliyor            ✓ var
-SpentHours                       ELLE giriliyor            ⚠ sayaçtan gelmiyor
+SpentHours                       HİÇ YAZILMIYOR — hep 0    ⚠ yazarı yok
 Kalan                            türetiliyor, saklanmıyor  ✓
-TimeEntry / TimeSheet / WorkLog  ✗ HİÇ YOK
-sayaç/timesheet API ucu          ✗ HİÇ YOK
+TimeEntry / TimeSheet / WorkLog  ✗ HİÇ YOK  (tasarım: MOD-0280-FU01)
+sayaç/timesheet API ucu          ✗ HİÇ YOK  (tasarım: MOD-0280-FU01)
 ```
 
-⚠ **Ekrandaki sayaç bir vitrindir.** `foldTimer` (`app.js:690`) geçen süreyi
+`SpentHours`'un tek yazarı `CreateTaskItemHandler.cs:320` ve **0** yazar — istek
+bu alanı taşımaz. Düzenleme yolu alana dokunmaz (`TaskItemWriteHandlers.cs:162`).
+Formdaki alan `readonly disabled` (`Views/Tasks/_Form.cshtml:309`). Yani bugün
+her görevde değer 0'dır; elle girilmiş bir değer yoktur.
+
+⚠ **Ekrandaki sayaç bir vitrindir.** `foldTimer` (`app.js:694`) geçen süreyi
 tarayıcı belleğindeki `item.timesheet.loggedMinutes`'a ekler. Sunucuya hiç
 gitmez; sayfa yenilenince kaybolur.
 
-⚠ **Bugünkü "plan vs gerçekleşen" kartı bir tahmini başka bir tahminle
+⚠ **Bugünkü "plan vs gerçekleşen" kartı bir tahmini, yazarı olmayan bir sıfırla
 karşılaştırıyor.** Ölçüm değildir — ve ölçüm gibi göründüğü için ölçüm
 olmamasından daha kötüdür.
 
@@ -200,7 +211,10 @@ timesheet yapılırsa sonra baştan yapılır.
 
 ⚠ **Şimdi planlanması ucuz, sonra sökmesi pahalı:** timesheet gelince
 `SpentHours` **saklanan alan olmaktan çıkıp türetilen sayıya** dönmeli —
-onaylanmış zaman kayıtlarının toplamı. Bu bir göç işidir.
+onaylanmış zaman kayıtlarının toplamı. **Veri göçü gerekmez** (alan hep 0,
+ölçüldü); gereken, okuma yerlerinin toplamı ayrı koleksiyondan okumasıdır
+(MOD-0280-FU01 D7). Sıfırdan farklı eski değer sayımı pakette salt-okunur ön
+kontrol olarak duruyor.
 
 **Z-4 · Timesheet'in meşru kullanımları**
 
@@ -226,10 +240,12 @@ Kapasite ve maliyet **planlama** sayılarıdır, **yargılama** sayıları deği
 3. **Önce yalnız tür.** *Tür + birim* daha doğrudur ama geçmiş çabuk seyrelir;
    veri birikince eklenir.
 
-⚠ **Sırası budur ve önemlidir:** öneri `SpentHours`'a dayanır, o da bugün elle
-giriliyor. Timesheet'ten önce yapılırsa öneri *tahminlerden üretilmiş bir
-tahmin* olur — üstelik sistem söylediği için **ölçülmüş gibi görünür.** En kötü
-kombinasyon.
+⚠ **Sırası budur ve önemlidir:** öneri `SpentHours`'a dayanır, o da bugün hiç
+yazılmıyor (hep 0). Timesheet'ten önce yapılırsa öneri *sıfırlardan üretilmiş
+bir tahmin* olur — üstelik sistem söylediği için **ölçülmüş gibi görünür.** En
+kötü kombinasyon. Timesheet geldikten sonra da plandan kabul edilen satırlar
+`Source = Plan` taşır (MOD-0280-FU01 D9); öneri bunları ayıklayabilmelidir,
+yoksa *plandan üretilmiş bir tahmin* olur.
 
 ---
 
@@ -243,9 +259,9 @@ kombinasyon.
     + K-1 ve K-2 kararları
     + Görev Merkezi'ne kişi filtresi (canlı taraf, doğru yer orası)
 
-2 · Timesheet modülü
+2 · Timesheet modülü  (paket: MOD-0280-FU01, execution/domains/human-capital-management/module-packs/)
     sayaç → onay → SpentHours türetilir
-    SpentHours saklanan alandan türetilen sayıya göçer
+    SpentHours türetilen sayı olur — veri göçü gerekmez (alan hep 0, ölçüldü 2026-09-29)
 
 3 · Geçmişe dayalı tahmin önerisi (Z-5)
 ```
