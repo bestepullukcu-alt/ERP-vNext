@@ -43,6 +43,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         var brands = Assert.Single(Manifest.Pages, page => page.PageCode == "BRANDS");
         Assert.Equal("/MasterData/Brands", brands.RoutePath);
         Assert.Equal("mdm.brands.read", brands.RequiredPermission);
+        Assert.Equal("brand-product-master", brands.PermissionOwnerModuleCode);
         Assert.True(brands.IsNavigationVisible);
         var productScopes = Assert.Single(Manifest.Pages, page => page.PageCode == "PRODUCT_LEGAL_ENTITY_SCOPES");
         Assert.Equal("/MasterDataManagement/ProductLegalEntityScopes", productScopes.RoutePath);
@@ -51,7 +52,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     }
 
     [Fact]
-    public void Declares_only_permissions_enforced_by_both_product_item_sku_master_controllers()
+    public void Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement()
     {
         const string prefix = "Permission:";
         var policyProperty = typeof(HasPermissionAttribute).GetProperty("Policy");
@@ -74,6 +75,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.brands.read",
                 "mdm.finished-goods.create",
                 "mdm.finished-goods.read",
+                "mdm.finished-goods.retire",
+                "mdm.finished-goods.submit",
                 "mdm.global-products.create",
                 "mdm.global-products.read",
                 "mdm.global-products.request-correction",
@@ -104,6 +107,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-abbreviations.reject",
                 "mdm.product-abbreviations.request",
                 "mdm.product-abbreviations.retire",
+                "mdm.product-identity.lifecycle-operations.recover",
                 "mdm.product-legal-entity-scope-rollout.activate",
                 "mdm.product-legal-entity-scope-rollout.rollback",
                 "mdm.product-legal-entity-scopes.configure",
@@ -112,12 +116,22 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(39, declared.Count);
+        Assert.Equal(42, declared.Count);
+        Assert.All(declared, permission =>
+        {
+            Assert.Equal(permission.Trim(), permission);
+            Assert.Equal(permission.ToLowerInvariant(), permission);
+            Assert.StartsWith("mdm.", permission, StringComparison.Ordinal);
+            Assert.DoesNotContain("..", permission, StringComparison.Ordinal);
+        });
         var nonControllerPermissions = new HashSet<string>(StringComparer.Ordinal)
         {
             "mdm.brands.read",
+            "mdm.finished-goods.retire",
+            "mdm.finished-goods.submit",
             "mdm.product-legal-entity-scope-rollout.activate",
-            "mdm.product-legal-entity-scope-rollout.rollback"
+            "mdm.product-legal-entity-scope-rollout.rollback",
+            "mdm.product-identity.lifecycle-operations.recover"
         };
         Assert.True(declared.Where(permission => !nonControllerPermissions.Contains(permission)).ToHashSet(StringComparer.Ordinal).SetEquals(enforced));
     }
@@ -127,7 +141,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     {
         var page = Assert.Single(Manifest.Pages, item => item.PageCode == "GLOBAL_PRODUCTS");
         Assert.Equal(
-            ["ADD_NEW", "EDIT", "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE", "SUBMIT", "VIEW_DETAILS", "WITHDRAW_APPROVAL"],
+            ["ADD_NEW", "EDIT", "RECOVER_ORPHANED_LIFECYCLE_OPERATION", "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE", "SUBMIT", "VIEW_DETAILS", "WITHDRAW_APPROVAL"],
             page.Actions.Select(action => action.ActionCode).OrderBy(value => value, StringComparer.Ordinal));
         Assert.Equal(
             [
@@ -138,7 +152,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.global-products.retire",
                 "mdm.global-products.submit",
                 "mdm.global-products.update",
-                "mdm.global-products.withdraw"
+                "mdm.global-products.withdraw",
+                "mdm.product-identity.lifecycle-operations.recover"
             ],
             page.Actions.Select(action => action.PermissionKey).OrderBy(value => value, StringComparer.Ordinal));
         Assert.True(Assert.Single(page.Actions, action => action.ActionCode == "EDIT").IsRowAction);
@@ -159,6 +174,20 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     }
 
     [Fact]
+    public void Recovery_is_an_exact_non_interactive_system_descriptor()
+    {
+        var recovery = Assert.Single(
+            Manifest.Pages.SelectMany(page => page.Actions),
+            action => action.PermissionKey == "mdm.product-identity.lifecycle-operations.recover");
+
+        Assert.Equal("RECOVER_ORPHANED_LIFECYCLE_OPERATION", recovery.ActionCode);
+        Assert.Equal("System", recovery.ActionType);
+        Assert.True(recovery.IsDangerous);
+        Assert.False(recovery.IsToolbarAction);
+        Assert.False(recovery.IsRowAction);
+    }
+
+    [Fact]
     public void Gsku_has_exact_lifecycle_actions_and_hidden_system_retire()
     {
         var page = Assert.Single(Manifest.Pages, p => p.PageCode == "GSKUS");
@@ -171,16 +200,24 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     }
 
     [Fact]
-    public void Other_product_pages_keep_exact_create_and_quick_view_actions()
+    public void Finished_good_keeps_the_approved_four_key_contract_without_new_aliases()
     {
         var productPages = Manifest.Pages.Where(page => page.PageCode is "FINISHED_GOODS").ToList();
         Assert.Single(productPages);
         foreach (var page in productPages)
         {
-            Assert.Equal(2, page.Actions.Count);
+            Assert.Equal(4, page.Actions.Count);
             Assert.Equal(
-                ["ADD_NEW", "VIEW_DETAILS"],
+                ["ADD_NEW", "RETIRE", "SUBMIT", "VIEW_DETAILS"],
                 page.Actions.Select(action => action.ActionCode).OrderBy(value => value, StringComparer.Ordinal));
+            Assert.Equal(
+                [
+                    "mdm.finished-goods.create",
+                    "mdm.finished-goods.read",
+                    "mdm.finished-goods.retire",
+                    "mdm.finished-goods.submit"
+                ],
+                page.Actions.Select(action => action.PermissionKey).OrderBy(value => value, StringComparer.Ordinal));
         }
     }
 

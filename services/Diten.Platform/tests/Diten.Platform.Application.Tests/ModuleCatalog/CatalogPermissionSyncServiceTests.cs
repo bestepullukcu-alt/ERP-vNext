@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Settings;
@@ -87,6 +88,31 @@ public sealed class CatalogPermissionSyncServiceTests
         // İŞ3-FAZ1b — the request body carries the manifest ModuleCode and route-derived Scope.
         Assert.Contains("goldenslim", body);
         Assert.Contains("Tenant", body);
+    }
+
+    [Fact]
+    public async Task Explicit_cross_module_owner_is_preserved_in_the_generic_auth_payload()
+    {
+        string? body = null;
+        var (svc, _) = Build(request =>
+        {
+            body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+
+        var status = await svc.SyncPermissionAsync(
+            "mdm.brands.read",
+            "Read Brands",
+            "brand-product-master",
+            "Tenant",
+            CancellationToken.None);
+
+        Assert.Equal(CatalogPermissionSyncStatus.Synced, status);
+        using var payload = JsonDocument.Parse(body!);
+        var root = payload.RootElement;
+        Assert.Equal("mdm.brands.read", root.GetProperty("permissionKey").GetString());
+        Assert.Equal("brand-product-master", root.GetProperty("moduleCode").GetString());
+        Assert.Equal("Tenant", root.GetProperty("scope").GetString());
     }
 
     private static (CatalogPermissionSyncService svc, RecordingHandler handler) Build(Func<HttpRequestMessage, HttpResponseMessage> responder)

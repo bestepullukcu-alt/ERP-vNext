@@ -194,6 +194,45 @@ public sealed class EntitlementSyncConsumerTests
     }
 
     [Fact]
+    public async Task State_change_profile_reconciliation_failure_is_retryable_and_completes_only_after_exact_snapshot_succeeds()
+    {
+        var permissionKeys = new[]
+        {
+            "mdm.gskus.request-correction",
+            "mdm.gskus.update",
+            "mdm.gskus.withdraw",
+            "mdm.lskus.withdraw",
+            "mdm.gskus.request-retirement",
+            "mdm.lskus.request-retirement",
+            "mdm.product-identity.lifecycle-operations.recover"
+        };
+        var sync = new FakeSync { FailNextSync = true };
+        var inbox = new FakeInbox(firstDelivery: true);
+        var consumer = Build(
+            sync,
+            inbox,
+            new FakeEntitlementClient(["product-item-sku-master"], permissionKeys: permissionKeys));
+        var message = Message(
+            TenantEntitlementExpiryUpdatedV1.Name,
+            TenantA,
+            "product-item-sku-master");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => consumer.ConsumeAsync(message));
+
+        Assert.Equal(0, inbox.Attempts);
+        Assert.Null(sync.Synced);
+        Assert.Null(sync.SyncedModules);
+
+        await consumer.ConsumeAsync(message);
+
+        Assert.Equal(1, inbox.Attempts);
+        Assert.Equal(1, sync.SyncCount);
+        var module = Assert.Single(sync.SyncedModules!);
+        Assert.Equal("product-item-sku-master", module.ModuleCode);
+        Assert.Equal(permissionKeys, module.PermissionKeys);
+    }
+
+    [Fact]
     public async Task State_change_reconcile_uses_only_the_event_tenant()
     {
         var tenantB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
@@ -421,8 +460,10 @@ public sealed class EntitlementSyncConsumerTests
         public (Guid tenantId, string moduleCode)? Granted { get; private set; }
         public (Guid tenantId, string moduleCode)? Revoked { get; private set; }
         public (Guid tenantId, string[] codes)? Synced { get; private set; }
+        public IReadOnlyList<EntitledModulePermissionKeys>? SyncedModules { get; private set; }
         public int SyncCount { get; private set; }
         public bool FailNextGrant { get; set; }
+        public bool FailNextSync { get; set; }
         public TaskCompletionSource? GrantEntered { get; init; }
         public TaskCompletionSource? GrantContinue { get; init; }
 
@@ -464,13 +505,23 @@ public sealed class EntitlementSyncConsumerTests
 
         public Task SyncTenantModulesWithKeysAsync(Guid tenantId, IReadOnlyCollection<EntitledModulePermissionKeys> modules, string actor, CancellationToken ct = default)
         {
+            if (FailNextSync)
+            {
+                FailNextSync = false;
+                throw new InvalidOperationException("Injected authoritative profile reconciliation failure.");
+            }
+
             Synced = (tenantId, modules.Select(m => m.ModuleCode).ToArray());
+            SyncedModules = modules.ToList();
             SyncCount++;
             return Task.CompletedTask;
         }
     }
 
-    private sealed class FakeEntitlementClient(IReadOnlyList<string> codes, bool isAuthoritative = true) : ITenantEntitlementClient
+    private sealed class FakeEntitlementClient(
+        IReadOnlyList<string> codes,
+        bool isAuthoritative = true,
+        IReadOnlyList<string>? permissionKeys = null) : ITenantEntitlementClient
     {
         public int ReadAttempts { get; private set; }
 
@@ -486,7 +537,9 @@ public sealed class EntitlementSyncConsumerTests
             ReadAttempts++;
             return Task.FromResult(isAuthoritative
                 ? TenantEntitlementReadResult.Confirmed(
-                    codes.Select(c => new EntitledModulePermissionKeys(c, Array.Empty<string>())).ToList())
+                    codes.Select(c => new EntitledModulePermissionKeys(
+                        c,
+                        permissionKeys ?? Array.Empty<string>())).ToList())
                 : TenantEntitlementReadResult.Unavailable());
         }
     }

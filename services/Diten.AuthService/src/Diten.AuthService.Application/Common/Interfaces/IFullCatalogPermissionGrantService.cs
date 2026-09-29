@@ -1,3 +1,5 @@
+using Diten.AuthService.Domain.Entities;
+
 namespace Diten.AuthService.Application.Common.Interfaces;
 
 /// <summary>
@@ -9,5 +11,5 @@ namespace Diten.AuthService.Application.Common.Interfaces;
 /// </summary>
 public interface IFullCatalogPermissionGrantService
 {
-    Task GrantToFullCatalogRolesAsync(Guid permissionId, CancellationToken ct);
+    Task GrantToFullCatalogRolesAsync(Permission permission, CancellationToken ct);
 }

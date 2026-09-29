@@ -1,5 +1,6 @@
 using Diten.AuthService.Api.Controllers;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -138,6 +139,29 @@ public sealed class InternalPermissionsControllerTests
             "auth.users.read", "Read User", null, "ACCESS-GOVERNANCE", "Tenant"), CancellationToken.None);
 
         Assert.Equal("access-governance", Assert.Single(repo.Items).Module);
+    }
+
+    [Fact]
+    public async Task Brand_dependency_owner_payload_replay_converges_to_one_lowercase_auth_catalog_row()
+    {
+        var repo = new FakePermissionRepository();
+        var grant = new FakeFullCatalogPermissionGrantService();
+        var controller = Build(repo, authorized: true, grant);
+        var request = new InternalPermissionsController.SyncPermissionRequest(
+            "mdm.brands.read",
+            "Read Brands",
+            null,
+            "BRAND-PRODUCT-MASTER",
+            "Tenant");
+
+        await controller.Sync(request, CancellationToken.None);
+        await controller.Sync(request, CancellationToken.None);
+
+        var permission = Assert.Single(repo.Items);
+        Assert.Equal("mdm.brands.read", permission.Key);
+        Assert.Equal("brand-product-master", permission.Module);
+        Assert.Equal(PermissionScope.Tenant, permission.Scope);
+        Assert.Single(grant.GrantAttempts);
     }
 
     [Fact]
@@ -282,8 +306,9 @@ public sealed class InternalPermissionsControllerTests
         await controller.Sync(new InternalPermissionsController.SyncPermissionRequest("platform.workflow.definitions.view", "View", null), CancellationToken.None);
 
         var created = Assert.Single(repo.Items);
-        var grantedId = Assert.Single(grant.GrantedPermissionIds);
-        Assert.Equal(created.Id, grantedId);
+        var grantAttempt = Assert.Single(grant.GrantAttempts);
+        Assert.Same(created, grantAttempt);
+        Assert.Same(created, Assert.Single(grant.GrantedPermissions));
     }
 
     [Fact]
@@ -297,7 +322,83 @@ public sealed class InternalPermissionsControllerTests
         await controller.Sync(new InternalPermissionsController.SyncPermissionRequest("platform.workflow.definitions.view", "View again", null), CancellationToken.None);
 
         // Grant only fires on first-time creation; the second sync is an "updated" no-op for grants.
-        Assert.Single(grant.GrantedPermissionIds);
+        Assert.Single(grant.GrantAttempts);
+    }
+
+    [Fact]
+    public async Task Recovery_create_passes_the_full_entity_to_the_key_aware_grant_boundary_once()
+    {
+        var repo = new FakePermissionRepository();
+        var grant = new FakeFullCatalogPermissionGrantService();
+        var controller = Build(repo, authorized: true, grant);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "mdm.product-identity.lifecycle-operations.recover",
+            "Recover Product Identity Lifecycle Operation",
+            null,
+            "product-item-sku-master",
+            "Tenant"), CancellationToken.None);
+
+        var created = Assert.Single(repo.Items);
+        var grantAttempt = Assert.Single(grant.GrantAttempts);
+        Assert.Same(created, grantAttempt);
+        Assert.Equal("mdm.product-identity.lifecycle-operations.recover", grantAttempt.Key);
+        Assert.Empty(grant.GrantedPermissions);
+    }
+
+    [Fact]
+    public async Task Recovery_soft_delete_reactivation_reuses_one_row_and_reenters_the_key_aware_grant_boundary()
+    {
+        var repo = new FakePermissionRepository();
+        var recovery = new Permission(
+            "mdm",
+            "product-identity.lifecycle-operations",
+            "recover",
+            "Stale Recovery",
+            null,
+            moduleOverride: "product-item-sku-master",
+            scope: PermissionScope.Tenant);
+        recovery.MarkAsUserDefined();
+        recovery.IsDeleted = true;
+        repo.Items.Add(recovery);
+        var grant = new FakeFullCatalogPermissionGrantService();
+        var controller = Build(repo, authorized: true, grant);
+
+        var result = await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            recovery.Key,
+            "Recover Product Identity Lifecycle Operation",
+            null,
+            "product-item-sku-master",
+            "Tenant"), CancellationToken.None);
+
+        var body = Assert.IsType<InternalPermissionsController.SyncPermissionResponse>(
+            Assert.IsType<OkObjectResult>(result).Value);
+        Assert.Equal("reactivated", body.Status);
+        Assert.Single(repo.Items);
+        Assert.False(recovery.IsDeleted);
+        Assert.Same(recovery, Assert.Single(grant.GrantAttempts));
+        Assert.Empty(grant.GrantedPermissions);
+    }
+
+    [Fact]
+    public async Task Recovery_replay_updates_without_an_additional_grant_attempt()
+    {
+        var repo = new FakePermissionRepository();
+        var grant = new FakeFullCatalogPermissionGrantService();
+        var controller = Build(repo, authorized: true, grant);
+        var request = new InternalPermissionsController.SyncPermissionRequest(
+            "mdm.product-identity.lifecycle-operations.recover",
+            "Recover Product Identity Lifecycle Operation",
+            null,
+            "product-item-sku-master",
+            "Tenant");
+
+        await controller.Sync(request, CancellationToken.None);
+        await controller.Sync(request, CancellationToken.None);
+
+        Assert.Single(repo.Items);
+        Assert.Single(grant.GrantAttempts);
+        Assert.Empty(grant.GrantedPermissions);
     }
 
     [Fact]
@@ -389,7 +490,7 @@ public sealed class InternalPermissionsControllerTests
         // 1) create
         await controller.Sync(new InternalPermissionsController.SyncPermissionRequest("goldenslim.records.read", "Read", null), CancellationToken.None);
         Assert.Single(repo.Items);
-        Assert.Single(grant.GrantedPermissionIds);
+        Assert.Single(grant.GrantAttempts);
 
         // 2) delete (soft)
         Assert.IsType<NoContentResult>(await controller.Delete("goldenslim.records.read", CancellationToken.None));
@@ -404,7 +505,7 @@ public sealed class InternalPermissionsControllerTests
         Assert.False(permission.IsDeleted);               // revived
         Assert.False(permission.IsSystem);                // stays catalog-owned (user-defined)
         Assert.Equal("Read again", permission.DisplayName);
-        Assert.Equal(2, grant.GrantedPermissionIds.Count); // re-granted to the full-catalog role
+        Assert.Equal(2, grant.GrantAttempts.Count); // re-entered the key-aware full-catalog boundary
     }
 
     [Fact]
@@ -457,11 +558,16 @@ public sealed class InternalPermissionsControllerTests
 
     private sealed class FakeFullCatalogPermissionGrantService : IFullCatalogPermissionGrantService
     {
-        public List<Guid> GrantedPermissionIds { get; } = [];
+        public List<Permission> GrantAttempts { get; } = [];
+        public List<Permission> GrantedPermissions { get; } = [];
 
-        public Task GrantToFullCatalogRolesAsync(Guid permissionId, CancellationToken ct)
+        public Task GrantToFullCatalogRolesAsync(Permission permission, CancellationToken ct)
         {
-            GrantedPermissionIds.Add(permissionId);
+            GrantAttempts.Add(permission);
+            if (DefaultRolePermissionTemplate.CanBeGrantedToHumanRole(permission))
+            {
+                GrantedPermissions.Add(permission);
+            }
             return Task.CompletedTask;
         }
     }

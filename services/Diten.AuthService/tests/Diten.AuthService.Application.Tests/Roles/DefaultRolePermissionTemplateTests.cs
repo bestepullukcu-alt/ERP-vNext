@@ -8,6 +8,15 @@ namespace Diten.AuthService.Application.Tests.Roles;
 // selection so the two cannot drift, and assert the platform-escalation boundary for tenant roles.
 public sealed class DefaultRolePermissionTemplateTests
 {
+    private static Permission RecoveryPermission() => new(
+        "mdm",
+        "product-identity.lifecycle-operations",
+        "recover",
+        "Recover Product Identity Lifecycle Operation",
+        null,
+        moduleOverride: "product-item-sku-master",
+        scope: PermissionScope.Tenant);
+
     private static List<Permission> Catalog() =>
     [
         new("auth", "users", "read", "Read User", null, moduleOverride: "access-governance"),
@@ -41,6 +50,41 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.True(DefaultRolePermissionTemplate.IsTenantAssignable(permission));
         Assert.Empty(DefaultRolePermissionTemplate.SelectFor("Admin", [permission]));
         Assert.Empty(DefaultRolePermissionTemplate.SelectFor("Viewer", [permission]));
+    }
+
+    [Fact]
+    public void Recovery_is_catalogued_but_never_assignable_or_selected_for_any_default_human_role()
+    {
+        var recovery = RecoveryPermission();
+
+        Assert.Equal(
+            DefaultRolePermissionTemplate.ProductIdentityLifecycleRecoveryPermission,
+            recovery.Key);
+        Assert.False(DefaultRolePermissionTemplate.CanBeGrantedToHumanRole(recovery));
+        Assert.False(DefaultRolePermissionTemplate.IsTenantAssignable(recovery));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.SuperAdminRole, [recovery]));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.AdminRole, [recovery]));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.ViewerRole, [recovery]));
+    }
+
+    [Fact]
+    public void Human_assignability_policy_does_not_change_adjacent_product_permissions()
+    {
+        var ordinary = new Permission(
+            "mdm",
+            "gskus",
+            "update",
+            "Update GSKU",
+            null,
+            moduleOverride: "product-item-sku-master",
+            scope: PermissionScope.Tenant);
+
+        Assert.True(DefaultRolePermissionTemplate.CanBeGrantedToHumanRole(ordinary));
+        Assert.True(DefaultRolePermissionTemplate.IsTenantAssignable(ordinary));
+        Assert.Equal(
+            [ordinary.Id],
+            DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.SuperAdminRole, [ordinary])
+                .Select(permission => permission.Id));
     }
 
     [Fact]

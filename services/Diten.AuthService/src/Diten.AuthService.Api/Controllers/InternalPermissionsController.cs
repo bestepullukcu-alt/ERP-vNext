@@ -98,7 +98,7 @@ public sealed class InternalPermissionsController : ControllerBase
 
             // A1 — a first-time permission must land on the full-catalog role (default-tenant SuperAdmin) so it
             // becomes usable on re-login without a hand-edited seed. Idempotent + best-effort (never blocks sync).
-            await _fullCatalogGrantService.GrantToFullCatalogRolesAsync(permission.Id, ct);
+            await _fullCatalogGrantService.GrantToFullCatalogRolesAsync(permission, ct);
 
             _logger.LogInformation(
                 "Catalog permission synced (created). Key={Key} Module={Module}",
@@ -119,7 +119,7 @@ public sealed class InternalPermissionsController : ControllerBase
             // and re-grant it to the full-catalog role (like first creation). ReactivateAsync uses an Id-only filter —
             // the normal filtered UpdateAsync/ReplaceOne would match zero rows on a soft-deleted doc and never persist.
             await _permissionRepository.ReactivateAsync(existing.Id, newDisplayName, newDescription, ct);
-            await _fullCatalogGrantService.GrantToFullCatalogRolesAsync(existing.Id, ct);
+            await _fullCatalogGrantService.GrantToFullCatalogRolesAsync(existing, ct);
 
             _logger.LogInformation(
                 "Catalog permission synced (reactivated). Key={Key} Module={Module}",

@@ -17,14 +17,14 @@ public sealed class FullCatalogPermissionGrantServiceTests
         var roles = new FakeRoleRepository(superAdmin);
         var grants = new FakeRolePermissionRepository();
         var service = new FullCatalogPermissionGrantService(roles, grants, NullLogger<FullCatalogPermissionGrantService>.Instance);
-        var permissionId = Guid.NewGuid();
+        var permission = new Permission("platform", "workflow.definitions", "view", "View Workflow", null);
 
-        await service.GrantToFullCatalogRolesAsync(permissionId, CancellationToken.None);
-        await service.GrantToFullCatalogRolesAsync(permissionId, CancellationToken.None);
+        await service.GrantToFullCatalogRolesAsync(permission, CancellationToken.None);
+        await service.GrantToFullCatalogRolesAsync(permission, CancellationToken.None);
 
         var grant = Assert.Single(grants.Assigned);
         Assert.Equal(superAdmin.Id, grant.RoleId);
-        Assert.Equal(permissionId, grant.PermissionId);
+        Assert.Equal(permission.Id, grant.PermissionId);
         Assert.Equal(GrantSource.System, grant.GrantSource);
     }
 
@@ -35,7 +35,33 @@ public sealed class FullCatalogPermissionGrantServiceTests
         var grants = new FakeRolePermissionRepository();
         var service = new FullCatalogPermissionGrantService(roles, grants, NullLogger<FullCatalogPermissionGrantService>.Instance);
 
-        await service.GrantToFullCatalogRolesAsync(Guid.NewGuid(), CancellationToken.None);
+        await service.GrantToFullCatalogRolesAsync(
+            new Permission("platform", "workflow.definitions", "view", "View Workflow", null),
+            CancellationToken.None);
+
+        Assert.Empty(grants.Assigned);
+    }
+
+    [Fact]
+    public async Task Recovery_permission_is_never_granted_to_the_full_catalog_human_role()
+    {
+        var superAdmin = new Role("SuperAdmin", "Super Administrator", null, Guid.NewGuid());
+        var grants = new FakeRolePermissionRepository();
+        var service = new FullCatalogPermissionGrantService(
+            new FakeRoleRepository(superAdmin),
+            grants,
+            NullLogger<FullCatalogPermissionGrantService>.Instance);
+        var recovery = new Permission(
+            "mdm",
+            "product-identity.lifecycle-operations",
+            "recover",
+            "Recover Product Identity Lifecycle Operation",
+            null,
+            moduleOverride: "product-item-sku-master",
+            scope: PermissionScope.Tenant);
+
+        await service.GrantToFullCatalogRolesAsync(recovery, CancellationToken.None);
+        await service.GrantToFullCatalogRolesAsync(recovery, CancellationToken.None);
 
         Assert.Empty(grants.Assigned);
     }

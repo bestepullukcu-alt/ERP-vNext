@@ -3,8 +3,8 @@ using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
 namespace Diten.MdmService.Api.ModuleRegistration;
 
 /// <summary>
-/// Product / Item / SKU Master registration descriptor for the Global Product and Finished Good tenant surfaces.
-/// The manifest declares only the read and create permission candidates enforced by their API controllers.
+/// Product / Item / SKU Master registration descriptor for the tenant surfaces owned by this module.
+/// The manifest declares only permission candidates enforced by their API controllers.
 /// </summary>
 public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvider
 {
@@ -18,6 +18,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
     private const string RequestRetirement = "mdm.global-products.request-retirement";
     private const string FinishedGoodsRead = "mdm.finished-goods.read";
     private const string FinishedGoodsCreate = "mdm.finished-goods.create";
+    private const string FinishedGoodsSubmit = "mdm.finished-goods.submit";
+    private const string FinishedGoodsRetire = "mdm.finished-goods.retire";
     private const string GskusRead = "mdm.gskus.read";
     private const string GskusCreate = "mdm.gskus.create";
     private const string LskusRead = "mdm.lskus.read";
@@ -40,6 +42,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
     private const string ProductScopesEnd = "mdm.product-legal-entity-scopes.end";
     private const string ProductScopeRolloutActivate = "mdm.product-legal-entity-scope-rollout.activate";
     private const string ProductScopeRolloutRollback = "mdm.product-legal-entity-scope-rollout.rollback";
+    private const string ProductIdentityLifecycleOperationRecover =
+        "mdm.product-identity.lifecycle-operations.recover";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -71,7 +75,16 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         new ModuleManifestAction("WITHDRAW_APPROVAL", "Withdraw Approval", Withdraw, "RowAction", 35, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("REQUEST_CORRECTION", "Request Correction", RequestCorrection, "RowAction", 37, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("REQUEST_RETIREMENT", "Request Retirement", RequestRetirement, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
-                        new ModuleManifestAction("RETIRE", "Retire", Retire, "System", 41, IsDangerous: true, IsToolbarAction: false, IsRowAction: false)
+                        new ModuleManifestAction("RETIRE", "Retire", Retire, "System", 41, IsDangerous: true, IsToolbarAction: false, IsRowAction: false),
+                        new ModuleManifestAction(
+                            "RECOVER_ORPHANED_LIFECYCLE_OPERATION",
+                            "Recover Orphaned Lifecycle Operation",
+                            ProductIdentityLifecycleOperationRecover,
+                            "System",
+                            50,
+                            IsDangerous: true,
+                            IsToolbarAction: false,
+                            IsRowAction: false)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "FINISHED_GOODS",
@@ -85,7 +98,9 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                     Actions:
                     [
                         new ModuleManifestAction("ADD_NEW", "Add New", FinishedGoodsCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
-                        new ModuleManifestAction("VIEW_DETAILS", "View Details", FinishedGoodsRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("VIEW_DETAILS", "View Details", FinishedGoodsRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("SUBMIT", "Submit", FinishedGoodsSubmit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("RETIRE", "Retire", FinishedGoodsRetire, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "GSKUS",
@@ -158,7 +173,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                     IsNavigationVisible: true,
                     PageType: "List",
                     SortOrder: 5,
-                    Actions: []),
+                    Actions: [],
+                    PermissionOwnerModuleCode: "brand-product-master"),
                 new ModuleManifestPage(
                     PageCode: "PRODUCT_LEGAL_ENTITY_SCOPES",
                     DisplayName: "Product Legal Entity Scopes",

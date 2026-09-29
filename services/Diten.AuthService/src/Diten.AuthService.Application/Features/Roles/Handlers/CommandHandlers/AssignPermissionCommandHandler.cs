@@ -40,6 +40,13 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
         // Permissions are global, so we use ID directly.
         var permission = await _permissionRepository.GetByIdAsync(request.PermissionId, ct);
 
+        // Non-human execution permissions may remain in the catalog, but no tenant or platform-admin context may
+        // create a human-role grant for them. Revocation remains unguarded so existing grants can be removed safely.
+        if (permission is not null && !DefaultRolePermissionTemplate.CanBeGrantedToHumanRole(permission))
+        {
+            return Response<NoContent>.Fail("This permission cannot be assigned to a human role.", 403);
+        }
+
         // FEAT-ROLEPERMS-TENANT-SCOPE — manual assignment must honor the same platform-escalation boundary
         // that DefaultRolePermissionTemplate enforces during default provisioning. In a TENANT context
         // (not platform-admin), a tenant role may only receive tenant-assignable permissions; a platform-admin

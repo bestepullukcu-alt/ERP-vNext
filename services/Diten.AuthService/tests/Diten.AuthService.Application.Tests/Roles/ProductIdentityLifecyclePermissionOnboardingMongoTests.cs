@@ -73,8 +73,17 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
             var retainedManual = catalog.Single(permission => permission.Key == "manual.retained.read");
             var retainedOther = catalog.Single(permission => permission.Key == "other.retained.read");
             var brandRead = catalog.Single(permission => permission.Key == "mdm.brands.read");
-            var globalProductRetire = catalog.Single(permission =>
-                permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRetire);
+            var lskuRetire = catalog.Single(permission =>
+                permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.LskusRetire);
+            var recovery = catalog.Single(permission =>
+                permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.ProductIdentityLifecycleOperationRecover);
+            var historicalRecoveryGrant = RolePermission.ModuleGrant(
+                lifecycleApprover.Id,
+                recovery.Id,
+                tenantA,
+                "historical-reconciliation",
+                ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode);
+            await rolePermissions.AssignAsync(historicalRecoveryGrant, CancellationToken.None);
             await rolePermissions.AssignAsync(
                 RolePermission.ManualGrant(viewer.Id, retainedManual.Id, tenantA, "operator"),
                 CancellationToken.None);
@@ -106,29 +115,31 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
             await rolePermissions.AssignAsync(
                 RolePermission.ModuleGrant(
                     retirementSteward.Id,
-                    globalProductRetire.Id,
+                    lskuRetire.Id,
                     tenantA,
                     "legacy-reconciliation",
                     ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode),
                 CancellationToken.None);
             await rolePermissions.AssignAsync(
-                RolePermission.ManualGrant(viewer.Id, globalProductRetire.Id, tenantA, "operator"),
+                RolePermission.ManualGrant(viewer.Id, lskuRetire.Id, tenantA, "operator"),
                 CancellationToken.None);
             await rolePermissions.AssignAsync(
-                RolePermission.SystemGrant(lifecycleApprover.Id, globalProductRetire.Id, tenantA, "system"),
+                RolePermission.SystemGrant(lifecycleApprover.Id, lskuRetire.Id, tenantA, "system"),
                 CancellationToken.None);
 
             var declaredKeys = catalog
-                .Where(permission => permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode)
+                .Where(permission =>
+                    permission.Module == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode
+                    || ProductIdentityLifecycleEntitlementGrantProfile.IsDeclaredCrossModuleDependencyKey(permission.Key))
                 .Select(permission => permission.Key)
                 .ToArray();
-            Assert.Equal(40, declaredKeys.Length);
+            Assert.Equal(42, declaredKeys.Length);
             await service.GrantModuleWithKeysAsync(
                 tenantA,
                 ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
                 declaredKeys,
                 "fu23-mongo-test");
-            await AssertExactMatricesAsync(roles, rolePermissions, catalog, tenantA);
+            await AssertExactMatricesAsync(roles, rolePermissions, catalog, tenantA, lifecycleApprover.Id);
 
             // Live-upgrade shape: the amended Steward has eighteen grants after its workflow-start dependency is
             // removed, while the authoritative descriptor/global catalog still includes that dependency. Full-set
@@ -150,7 +161,7 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
                     ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode.ToUpperInvariant(),
                     declaredKeys)],
                 "tenant-provisioning");
-            await AssertExactMatricesAsync(roles, rolePermissions, catalog, tenantA);
+            await AssertExactMatricesAsync(roles, rolePermissions, catalog, tenantA, lifecycleApprover.Id);
             await rolePermissions.AssignAsync(
                 RolePermission.ModuleGrant(admin.Id, retainedOther.Id, tenantA, "other", "another-module"),
                 CancellationToken.None);
@@ -160,11 +171,19 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
             var firstRoleCount = await roleCollection.CountDocumentsAsync(role => role.TenantId == tenantA);
             var firstGrantCount = await grantCollection.CountDocumentsAsync(grant => grant.TenantId == tenantA);
             Assert.Equal(12, firstRoleCount);
-            Assert.Equal(81, firstGrantCount);
-            Assert.Equal(74, await grantCollection.CountDocumentsAsync(grant =>
+            Assert.Equal(82, firstGrantCount);
+            Assert.Equal(75, await grantCollection.CountDocumentsAsync(grant =>
                 grant.TenantId == tenantA
                 && grant.GrantSource == GrantSource.Module
                 && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));
+            var preservedRecovery = Assert.Single(await grantCollection.Find(grant =>
+                    grant.TenantId == tenantA
+                    && grant.PermissionId == recovery.Id)
+                .ToListAsync());
+            Assert.Equal(historicalRecoveryGrant.Id, preservedRecovery.Id);
+            Assert.Equal(lifecycleApprover.Id, preservedRecovery.RoleId);
+            Assert.Equal(GrantSource.Module, preservedRecovery.GrantSource);
+            Assert.Equal(ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, preservedRecovery.SourceModuleCode);
             Assert.Equal(0, await grantCollection.CountDocumentsAsync(grant =>
                 grant.TenantId == tenantA
                 && grant.PermissionId == brandRead.Id
@@ -184,16 +203,16 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
                 && grant.SourceModuleCode == "brand-product-master"));
             Assert.Equal(0, await grantCollection.CountDocumentsAsync(grant =>
                 grant.TenantId == tenantA
-                && grant.PermissionId == globalProductRetire.Id
+                && grant.PermissionId == lskuRetire.Id
                 && grant.GrantSource == GrantSource.Module
                 && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));
             Assert.Equal(1, await grantCollection.CountDocumentsAsync(grant =>
                 grant.TenantId == tenantA
-                && grant.PermissionId == globalProductRetire.Id
+                && grant.PermissionId == lskuRetire.Id
                 && grant.GrantSource == GrantSource.Manual));
             Assert.Equal(1, await grantCollection.CountDocumentsAsync(grant =>
                 grant.TenantId == tenantA
-                && grant.PermissionId == globalProductRetire.Id
+                && grant.PermissionId == lskuRetire.Id
                 && grant.GrantSource == GrantSource.System));
 
             await service.GrantModuleWithKeysAsync(
@@ -290,6 +309,7 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
     [
         .. ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys.Select(ProductPermission),
         .. ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Select(ProductPermission),
+        .. ProductIdentityLifecycleEntitlementGrantProfile.NonHumanPermissionKeys.Select(ProductPermission),
         .. ProductAbbreviationEntitlementGrantProfile.PermissionKeys.Select(ProductPermission),
         .. ProductLegalEntityScopeEntitlementGrantProfile.PermissionKeys.Select(ProductPermission),
         new("mdm", "brands", "read", "Read Brands", null,
@@ -323,7 +343,8 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
         RoleRepository roles,
         RolePermissionRepository rolePermissions,
         IReadOnlyList<Permission> catalog,
-        Guid tenantId)
+        Guid tenantId,
+        Guid? preservedRecoveryRoleId = null)
     {
         await AssertRoleAsync(roles, rolePermissions, catalog, tenantId, "Admin",
             ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys
@@ -353,6 +374,27 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
                 template.PermissionKeys,
                 allowAdditionalNonModuleGrants: true);
         }
+
+        var recoveryPermissionId = catalog.Single(permission =>
+            permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.ProductIdentityLifecycleOperationRecover).Id;
+        var recoveryGrants = new List<RolePermission>();
+        foreach (var role in await roles.GetAllByTenantAsync(tenantId, CancellationToken.None))
+        {
+            var grants = await rolePermissions.GetByRoleAsync(role.Id, tenantId, CancellationToken.None);
+            recoveryGrants.AddRange(grants.Where(grant => grant.PermissionId == recoveryPermissionId));
+        }
+
+        if (preservedRecoveryRoleId.HasValue)
+        {
+            var preserved = Assert.Single(recoveryGrants);
+            Assert.Equal(preservedRecoveryRoleId.Value, preserved.RoleId);
+            Assert.Equal(GrantSource.Module, preserved.GrantSource);
+            Assert.Equal(ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode, preserved.SourceModuleCode);
+        }
+        else
+        {
+            Assert.Empty(recoveryGrants);
+        }
     }
 
     private static async Task AssertRoleAsync(
@@ -368,12 +410,15 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
         Assert.NotNull(role);
         Assert.True(role.IsSystem);
         var grants = await rolePermissions.GetByRoleAsync(role.Id, tenantId, CancellationToken.None);
-        var moduleGrants = grants.Where(grant =>
+        var recoveryPermissionId = catalog.Single(permission =>
+            permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.ProductIdentityLifecycleOperationRecover).Id;
+        var matrixGrants = grants.Where(grant => grant.PermissionId != recoveryPermissionId).ToList();
+        var moduleGrants = matrixGrants.Where(grant =>
             grant.GrantSource == GrantSource.Module
             && grant.SourceModuleCode == ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode).ToList();
         if (!allowAdditionalNonModuleGrants)
         {
-            Assert.All(grants.Where(grant => !moduleGrants.Contains(grant)), grant =>
+            Assert.All(matrixGrants.Where(grant => !moduleGrants.Contains(grant)), grant =>
                 Assert.Equal("another-module", grant.SourceModuleCode));
         }
         Assert.Equal(

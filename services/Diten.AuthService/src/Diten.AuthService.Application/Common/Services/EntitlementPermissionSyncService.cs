@@ -160,6 +160,11 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             var authoritativeKeys = activeModuleCatalog
                 .Select(permission => permission.Key)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            if (isProductIdentityLifecycleProfile || lifecycleDeactivationSnapshot)
+            {
+                authoritativeKeys.UnionWith(
+                    ProductIdentityLifecycleEntitlementGrantProfile.DeclaredCrossModuleDependencyKeys);
+            }
             if (lifecycleDeactivationSnapshot)
             {
                 authoritativeKeys.RemoveWhere(key =>
@@ -508,10 +513,19 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
             .Where(permission => ProductIdentityLifecycleEntitlementGrantProfile.IsBasePermissionKey(permission.Key)
                                  || ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key))
             .ToDictionary(permission => permission.Key, StringComparer.Ordinal);
+        // Recovery is deliberately catalogued for a non-human execution path. This reconciliation must neither
+        // create a human-role grant for it nor silently turn the new-grant guard into historical-grant cleanup.
+        // Existing recovery grants remain an independently reviewed/remediated finding.
+        var protectedNonHumanPermissionIds = modulePermissions
+            .Where(permission => ProductIdentityLifecycleEntitlementGrantProfile.IsNonHumanPermissionKey(permission.Key))
+            .Select(permission => permission.Id)
+            .ToHashSet();
         var genericPermissions = modulePermissions
             .Where(permission => !ProductAbbreviationEntitlementGrantProfile.IsProductAbbreviationKey(permission.Key)
                                  && !ProductLegalEntityScopeEntitlementGrantProfile.IsProductLegalEntityScopeKey(permission.Key)
-                                 && !ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key))
+                                 && !ProductIdentityLifecycleEntitlementGrantProfile.IsOwnedPermissionKey(permission.Key)
+                                 && !ProductIdentityLifecycleEntitlementGrantProfile.IsNonHumanPermissionKey(permission.Key)
+                                 && !ProductIdentityLifecycleEntitlementGrantProfile.IsDeclaredCrossModuleDependencyKey(permission.Key))
             .ToList();
 
         if (includeProductAbbreviation)
@@ -628,7 +642,8 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                                     grant.SourceModuleCode,
                                     code,
                                     StringComparison.OrdinalIgnoreCase)
-                                && !desiredIds.Contains(grant.PermissionId))
+                                 && !desiredIds.Contains(grant.PermissionId)
+                                 && !protectedNonHumanPermissionIds.Contains(grant.PermissionId))
                 .ToList();
 
             foreach (var stale in staleModuleGrants)
@@ -665,7 +680,10 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
                                 && string.Equals(
                                     grant.SourceModuleCode,
                                     code,
-                                    StringComparison.OrdinalIgnoreCase))
+                                    StringComparison.OrdinalIgnoreCase)
+                                // Historical non-human grants are deliberately preserved for separate review.
+                                // They are outside both the desired human-role set and this convergence equation.
+                                && !protectedNonHumanPermissionIds.Contains(grant.PermissionId))
                 .Select(grant => grant.PermissionId)
                 .ToHashSet();
 

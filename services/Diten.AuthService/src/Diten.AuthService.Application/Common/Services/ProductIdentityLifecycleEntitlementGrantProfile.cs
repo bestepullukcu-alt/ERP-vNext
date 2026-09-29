@@ -1,3 +1,4 @@
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 
 namespace Diten.AuthService.Application.Common.Services;
@@ -36,7 +37,10 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public const string FinishedGoodsCreate = "mdm.finished-goods.create";
     public const string FinishedGoodsSubmit = "mdm.finished-goods.submit";
     public const string FinishedGoodsRetire = "mdm.finished-goods.retire";
+    public const string ProductIdentityLifecycleOperationRecover =
+        DefaultRolePermissionTemplate.ProductIdentityLifecycleRecoveryPermission;
 
+    public const string BrandsRead = "mdm.brands.read";
     public const string WorkCenterInboxView = "platform.work-aggregation.inbox.view";
     public const string WorkflowInstancesStart = "platform.workflow.instances.start";
     public const string WorkflowTasksApprove = "platform.workflow.tasks.approve";
@@ -85,10 +89,23 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public static readonly IReadOnlySet<string> SharedDependencyKeys =
         new HashSet<string>(StringComparer.Ordinal)
         {
+            BrandsRead,
             WorkCenterInboxView,
             WorkflowInstancesStart,
             WorkflowTasksApprove,
             WorkflowTasksReject
+        };
+
+    public static readonly IReadOnlySet<string> NonHumanPermissionKeys =
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            ProductIdentityLifecycleOperationRecover
+        };
+
+    public static readonly IReadOnlySet<string> DeclaredCrossModuleDependencyKeys =
+        new HashSet<string>(StringComparer.Ordinal)
+        {
+            BrandsRead
         };
 
     public static readonly IReadOnlyList<ProductIdentityLifecycleRoleGrantTemplate> DedicatedRoles =
@@ -157,20 +174,40 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public static bool IsBasePermissionKey(string? permissionKey)
         => !string.IsNullOrWhiteSpace(permissionKey) && BasePermissionKeys.Contains(permissionKey);
 
+    public static bool IsNonHumanPermissionKey(string? permissionKey)
+        => !string.IsNullOrWhiteSpace(permissionKey) && NonHumanPermissionKeys.Contains(permissionKey);
+
+    public static bool IsDeclaredCrossModuleDependencyKey(string? permissionKey)
+        => !string.IsNullOrWhiteSpace(permissionKey)
+           && DeclaredCrossModuleDependencyKeys.Contains(permissionKey);
+
     public static void ValidateExactDeclaredPermissionSet(IEnumerable<string> permissionKeys)
     {
         var supplied = permissionKeys.ToList();
         var lifecycle = supplied.Where(IsLifecycleCandidateKey).ToHashSet(StringComparer.Ordinal);
         var basePermissions = supplied.Where(IsBasePermissionKey).ToHashSet(StringComparer.Ordinal);
-        var relevantCount = supplied.Count(key => IsLifecycleCandidateKey(key) || IsBasePermissionKey(key));
+        var nonHumanPermissions = supplied.Where(IsNonHumanPermissionKey).ToHashSet(StringComparer.Ordinal);
+        var crossModuleDependencies = supplied
+            .Where(IsDeclaredCrossModuleDependencyKey)
+            .ToHashSet(StringComparer.Ordinal);
+        var relevantCount = supplied.Count(key =>
+            IsLifecycleCandidateKey(key)
+            || IsBasePermissionKey(key)
+            || IsNonHumanPermissionKey(key)
+            || IsDeclaredCrossModuleDependencyKey(key));
 
         if (!lifecycle.SetEquals(PermissionKeys)
             || !basePermissions.SetEquals(BasePermissionKeys)
-            || relevantCount != PermissionKeys.Count + BasePermissionKeys.Count
+            || !nonHumanPermissions.SetEquals(NonHumanPermissionKeys)
+            || !crossModuleDependencies.SetEquals(DeclaredCrossModuleDependencyKeys)
+            || relevantCount != PermissionKeys.Count
+                + BasePermissionKeys.Count
+                + NonHumanPermissionKeys.Count
+                + DeclaredCrossModuleDependencyKeys.Count
             || supplied.Any(key => key.StartsWith("mdm.product-definition-revisions.", StringComparison.OrdinalIgnoreCase)))
         {
             throw new InvalidOperationException(
-                "Product Identity lifecycle reconciliation requires the exact eight base and eighteen lifecycle keys, with no Revision or product approve/reject key.");
+                "Product Identity lifecycle reconciliation requires the exact eight base, eighteen lifecycle, one non-human recovery and one Brand dependency key, with no Revision or product approve/reject key.");
         }
     }
 
@@ -182,7 +219,9 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
         ValidateExactDeclaredPermissionSet(declared.Select(permission => permission.Key));
 
         foreach (var permission in declared.Where(permission =>
-                     IsBasePermissionKey(permission.Key) || IsOwnedPermissionKey(permission.Key)))
+                     IsBasePermissionKey(permission.Key)
+                     || IsOwnedPermissionKey(permission.Key)
+                     || IsNonHumanPermissionKey(permission.Key)))
         {
             var separator = permission.Key.LastIndexOf('.');
             var expectedResource = permission.Key["mdm.".Length..separator];
@@ -247,6 +286,9 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
 
         return permission.Key switch
         {
+            BrandsRead => string.Equals(permission.Module, "brand-product-master", StringComparison.Ordinal)
+                          && string.Equals(permission.Resource, "brands", StringComparison.Ordinal)
+                          && string.Equals(permission.Action, "read", StringComparison.Ordinal),
             WorkCenterInboxView => string.Equals(permission.Module, "work-aggregation", StringComparison.Ordinal)
                                    && string.Equals(permission.Resource, "work-aggregation.inbox", StringComparison.Ordinal)
                                    && string.Equals(permission.Action, "view", StringComparison.Ordinal),

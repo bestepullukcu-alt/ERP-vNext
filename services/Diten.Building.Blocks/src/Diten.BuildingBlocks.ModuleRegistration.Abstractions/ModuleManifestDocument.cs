@@ -39,7 +39,10 @@ public sealed record ModuleManifestPage(
     bool IsNavigationVisible,
     string PageType,
     int SortOrder,
-    IReadOnlyList<ModuleManifestAction> Actions);
+    IReadOnlyList<ModuleManifestAction> Actions,
+    // Optional cross-module dependency owner for RequiredPermission. Appended with a null default so existing
+    // callers and serialized manifests remain compatible. Null means the manifest module owns the permission.
+    string? PermissionOwnerModuleCode = null);
 
 public sealed record ModuleManifestAction(
     string ActionCode,
@@ -49,7 +52,10 @@ public sealed record ModuleManifestAction(
     int SortOrder,
     bool IsDangerous,
     bool IsToolbarAction,
-    bool IsRowAction);
+    bool IsRowAction,
+    // Optional cross-module dependency owner for PermissionKey. Ownership is explicit; consumers must not infer it
+    // from the permission-key prefix. Null means the manifest module owns the permission.
+    string? PermissionOwnerModuleCode = null);
 
 /// <summary>
 /// MOD-0027-FU03 — a producer module's declaration that it emits a notification event bound to a template slot.

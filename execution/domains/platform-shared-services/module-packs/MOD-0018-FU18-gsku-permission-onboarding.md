@@ -363,3 +363,136 @@ on the isolated test-owned single-node replica set (1/0/0, not additive). It ver
 replay, revoke/restore, four-key manual/other-module grant preservation, tenant collision isolation
 and zero user assignments. Existing stale Global Product catalog assertions were reconciled in the
 approved template test; no Global Product runtime grants changed. No live provisioning was performed.
+
+## Product-five entitlement contract fix amendment — approved 2026-09-29
+
+This amendment records only `PRODUCT-FIVE-ENTITLEMENT-CONTRACT-FIX-01`. It does not alter this pack's
+frontmatter, review status or historical evidence. For this narrow fix it supersedes any earlier statement that
+would prevent the three runtime files and five tests below from reconciling the already-approved manifest,
+catalog and entitlement-profile contract.
+
+### Bounded contract
+
+- The MDM descriptor, Auth catalog definition and lifecycle profile must agree on exact canonical keys and on
+  canonical `Module`, `Resource`, `Action` and tenant `Scope` metadata. Case drift, duplicate descriptors,
+  missing catalog definitions and adjacent-key substitution fail before role mutation.
+- `mdm.product-identity.lifecycle-operations.recover` remains an exact, catalogued non-human descriptor. It is
+  excluded from the generic Admin/Viewer bucket and from every Product Identity dedicated human-role plan.
+  This amendment authorizes zero recovery grants to human roles and does not introduce a recovery operator,
+  credential-management API or audit selector.
+- `mdm.brands.read` remains owned by the existing `brand-product-master` catalog contract and is resolved only
+  through the existing cross-module dependency path. Its owning module, Brand/Product behavior and existing
+  authorization are not redefined or widened by `product-item-sku-master`.
+- Existing approved Finished Good keys and role semantics are preserved. Descriptor reconciliation for those
+  keys is not new Finished Good lifecycle implementation, acceptance evidence or production enablement.
+- The exact grant-add delta jointly owned by FU18/FU19 is six tenant-scoped `Module` grants with
+  `SourceModuleCode = product-item-sku-master`. FU18 owns the four GSKU rows below; no other GSKU grant is added:
+
+| Human role | Exact GSKU grant-add delta |
+|---|---|
+| `ProductDataSteward` | `mdm.gskus.request-correction`, `mdm.gskus.update`, `mdm.gskus.withdraw` |
+| `ProductIdentityRetirementSteward` | `mdm.gskus.request-retirement` |
+
+- The existing GSKU direct-retire contract and grant are preserved; they are not part of the six-row add delta.
+  FU19 separately owns the two LSKU additions and the stale LSKU direct-retire removal.
+- Reconciliation remains idempotent and source-aware. Revocation may remove only a row with
+  `GrantSource = Module`, the exact tenant and `SourceModuleCode = product-item-sku-master`; Manual, System,
+  unrelated-permission, other-module and other-tenant rows survive.
+- Consumer completion remains conditional on successful reconciliation. A transient or validation failure is
+  retryable and must not mark the event complete or turn an unavailable result into a revoke.
+- No provisioning adapter, Manual-grant substitute, direct Mongo correction, live manifest POST, catalog/role
+  mutation, token refresh, service restart or production enablement is authorized.
+
+### Exact implementation and proof allow-list
+
+Runtime files:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/ProductIdentityLifecycleEntitlementGrantProfile.cs`
+- `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs`
+
+Test files:
+
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecycleEntitlementGrantProfileTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementPermissionSyncServiceTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecyclePermissionOnboardingMongoTests.cs`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementSyncConsumerTests.cs`
+
+Every runtime/test path outside this exact set remains out of scope for this amendment.
+
+### Evidence required before checkpoint
+
+- Manifest tests prove real descriptor/catalog alignment, exact canonical metadata, the non-human recovery
+  descriptor, existing Brand dependency ownership and unchanged Finished Good key contract.
+- Profile/sync tests prove the joint six-row target delta, zero recovery grant across Admin, Viewer and all
+  dedicated human roles, exact Module/source attribution, and separate stale LSKU direct-retire removal.
+- The test-owned Mongo regression proves replay idempotency, source-scoped revoke/restore, tenant isolation and
+  preservation of Manual, System, unrelated and other-module grants without touching application data.
+- Consumer regression proves failure/retry does not complete the event and a successful retry completes once.
+- Focused tests and the affected Auth/MDM Release builds must pass. Results are recorded as test evidence only;
+  they do not claim live reconciliation or Finished Good lifecycle acceptance.
+
+## Product-five entitlement end-to-end fix amendment — approved 2026-09-29
+
+This amendment records only `PRODUCT-FIVE-ENTITLEMENT-END-TO-END-FIX-02`. It preserves this pack's frontmatter,
+review status, prior dirty amendment and historical evidence. It supersedes only earlier scope text that would block
+the exact bounded checkpoint below.
+
+### Bounded contract
+
+- `mdm.product-identity.lifecycle-operations.recover` remains in the permission catalog, but no new human-role grant
+  may be created through default-role selection (including Admin, Viewer and SuperAdmin), tenant-assignability,
+  catalog create/reactivate full-catalog auto-grant, or manual assignment in tenant or platform-admin context.
+  Existing historical grants are not scanned or automatically deleted; any remediation/revocation is separate.
+- `mdm.brands.read` remains owned by `brand-product-master`. The `product-item-sku-master` manifest is only a
+  consumer and carries the owner via explicit `PermissionOwnerModuleCode`; prefix inference is forbidden.
+  Registration order and replay cannot change ownership.
+- The deny-new-grant rule is exact-key bounded and does not widen general authorization or change adjacent
+  permissions. Existing Finished Good behavior, the previously approved six-row GSKU/LSKU add delta, the existing
+  GSKU direct-retire grant and the provenance-bounded stale LSKU direct-retire removal remain unchanged.
+- No live catalog/role mutation, automatic historical-grant deletion, token refresh, service restart or Production
+  enablement is authorized.
+
+### Exact 24-path checkpoint allow-list
+
+1. `execution/domains/platform-shared-services/module-packs/MOD-0018-FU18-gsku-permission-onboarding.md`
+2. `execution/domains/platform-shared-services/module-packs/MOD-0018-FU19-lsku-permission-onboarding.md`
+3. `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs`
+4. `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/ProductIdentityLifecycleEntitlementGrantProfile.cs`
+5. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementPermissionSyncServiceTests.cs`
+6. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementSyncConsumerTests.cs`
+7. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecycleEntitlementGrantProfileTests.cs`
+8. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecyclePermissionOnboardingMongoTests.cs`
+9. `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs`
+10. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs`
+11. `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs`
+12. `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IFullCatalogPermissionGrantService.cs`
+13. `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/FullCatalogPermissionGrantService.cs`
+14. `services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/InternalPermissionsController.cs`
+15. `services/Diten.AuthService/src/Diten.AuthService.Application/Features/Roles/Handlers/CommandHandlers/AssignPermissionCommandHandler.cs`
+16. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/DefaultRolePermissionTemplateTests.cs`
+17. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Permissions/FullCatalogPermissionGrantServiceTests.cs`
+18. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Permissions/InternalPermissionsControllerTests.cs`
+19. `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/AssignPermissionCommandHandlerTests.cs`
+20. `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/ModuleManifestDocument.cs`
+21. `services/Diten.Platform/src/Diten.Platform.Application/Features/ModuleRegistration/RegisterModuleManifestCommandHandler.cs`
+22. `services/Diten.Platform/tests/Diten.Platform.Application.Tests/ModuleRegistration/RegisterModuleManifestCommandHandlerTests.cs`
+23. `services/Diten.Platform/tests/Diten.Platform.Application.Tests/ModuleCatalog/CatalogPermissionSyncServiceTests.cs`
+24. `execution/domains/master-data-management/module-packs/MOD-0290-FU01-brand-product-master-boundary.md`
+
+Every other tracked path is out of scope; `.local/**` and `.testoutput/**` remain non-checkpoint artifacts.
+
+### Test gates before checkpoint
+
+- MDM manifest tests prove exact unique canonical descriptors, recovery as non-interactive System-only metadata,
+  unchanged Finished Good contract, and explicit `brand-product-master` ownership for `mdm.brands.read`.
+- Platform registration/catalog tests prove page/action owner propagation, no prefix inference, descriptor-order
+  independence, replay convergence and the generic Auth payload retaining `brand-product-master`.
+- Auth tests prove recovery stays catalogued while every default/SuperAdmin/full-catalog/manual human grant-creation
+  path rejects it in tenant and platform-admin contexts; adjacent permission behavior and historical grants remain
+  unchanged.
+- Profile/sync/Mongo/consumer tests retain the six-row delta, zero recovery grants, provenance-bounded LSKU revoke,
+  replay idempotency, tenant/source isolation, Manual/System/other-source preservation and failure/retry semantics.
+- Focused affected suites plus Auth, MDM, Platform and Building Blocks Release builds must pass. Test evidence does
+  not claim live reconciliation, general authorization expansion, Finished Good acceptance or Production enablement.

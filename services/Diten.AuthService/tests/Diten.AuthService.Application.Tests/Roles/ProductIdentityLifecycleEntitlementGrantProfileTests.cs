@@ -6,7 +6,7 @@ namespace Diten.AuthService.Application.Tests.Roles;
 public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
 {
     [Fact]
-    public void Profile_owns_exact_eighteen_lifecycle_keys_and_zero_revision_or_decision_keys()
+    public void Profile_owns_exact_lifecycle_non_human_and_cross_module_descriptor_sets()
     {
         Assert.Equal(18, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Count);
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsUpdate,
@@ -24,7 +24,13 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
             Assert.DoesNotContain(".reject", key, StringComparison.Ordinal);
         });
         Assert.Equal(8, ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys.Count);
-        Assert.Equal(4, ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys.Count);
+        Assert.Equal(
+            [ProductIdentityLifecycleEntitlementGrantProfile.ProductIdentityLifecycleOperationRecover],
+            ProductIdentityLifecycleEntitlementGrantProfile.NonHumanPermissionKeys);
+        Assert.Equal(
+            [ProductIdentityLifecycleEntitlementGrantProfile.BrandsRead],
+            ProductIdentityLifecycleEntitlementGrantProfile.DeclaredCrossModuleDependencyKeys);
+        Assert.Equal(5, ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys.Count);
     }
 
     [Fact]
@@ -56,6 +62,12 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRequestRetirement, retirement);
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart, retirement);
         Assert.DoesNotContain(ProductIdentityLifecycleEntitlementGrantProfile.GlobalProductsRetire, retirement);
+        Assert.DoesNotContain(
+            ProductIdentityLifecycleEntitlementGrantProfile.ProductIdentityLifecycleOperationRecover,
+            ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles.SelectMany(role => role.PermissionKeys));
+        Assert.DoesNotContain(
+            ProductIdentityLifecycleEntitlementGrantProfile.BrandsRead,
+            ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles.SelectMany(role => role.PermissionKeys));
     }
 
     [Theory]
@@ -67,9 +79,7 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
     [InlineData("duplicate")]
     public void Declared_permission_set_fails_closed_on_drift(string drift)
     {
-        var keys = ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys
-            .Concat(ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys)
-            .ToList();
+        var keys = DeclaredKeys();
         switch (drift)
         {
             case "missing": keys.Remove(ProductIdentityLifecycleEntitlementGrantProfile.GskusSubmit); break;
@@ -126,6 +136,7 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
         var resolved = ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(declared, global);
 
         Assert.Equal(ProductIdentityLifecycleEntitlementGrantProfile.SharedDependencyKeys, resolved.Keys.ToHashSet(StringComparer.Ordinal));
+        Assert.Equal("brand-product-master", resolved[ProductIdentityLifecycleEntitlementGrantProfile.BrandsRead].Module);
         Assert.Equal("work-aggregation", resolved[ProductIdentityLifecycleEntitlementGrantProfile.WorkCenterInboxView].Module);
         Assert.Equal("workflow", resolved[ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart].Module);
         Assert.Equal("workflow", resolved[ProductIdentityLifecycleEntitlementGrantProfile.WorkflowTasksApprove].Module);
@@ -238,6 +249,74 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
     }
 
     [Theory]
+    [InlineData("missing")]
+    [InlineData("module")]
+    [InlineData("resource")]
+    [InlineData("action")]
+    [InlineData("scope")]
+    [InlineData("deleted")]
+    public void Brand_descriptor_uses_the_existing_exact_cross_module_dependency_contract(string drift)
+    {
+        var declared = ProductCatalog();
+        var brand = declared.Single(permission =>
+            permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.BrandsRead);
+        declared.Remove(brand);
+        if (drift != "missing")
+        {
+            declared.Add(new Permission(
+                "mdm",
+                drift == "resource" ? "brand" : "brands",
+                drift == "action" ? "view" : "read",
+                "Read Brands",
+                null,
+                moduleOverride: drift == "module" ? ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode : "brand-product-master",
+                scope: drift == "scope" ? PermissionScope.PlatformAdmin : PermissionScope.Tenant)
+            { IsDeleted = drift == "deleted" });
+        }
+
+        Assert.Throws<InvalidOperationException>(() =>
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(
+                declared,
+                declared.Concat(SharedDependencies())));
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("module")]
+    [InlineData("resource")]
+    [InlineData("action")]
+    [InlineData("scope")]
+    [InlineData("deleted")]
+    public void Recovery_descriptor_is_exact_and_remains_non_human(string drift)
+    {
+        var declared = ProductCatalog();
+        var recovery = declared.Single(permission =>
+            permission.Key == ProductIdentityLifecycleEntitlementGrantProfile.ProductIdentityLifecycleOperationRecover);
+        declared.Remove(recovery);
+        if (drift != "missing")
+        {
+            declared.Add(new Permission(
+                "mdm",
+                drift == "resource" ? "product-identity.lifecycle-operation" : "product-identity.lifecycle-operations",
+                drift == "action" ? "execute" : "recover",
+                "Recover Product Identity Lifecycle Operation",
+                null,
+                moduleOverride: drift == "module" ? "another-module" : ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+                scope: drift == "scope" ? PermissionScope.PlatformAdmin : PermissionScope.Tenant)
+            { IsDeleted = drift == "deleted" });
+        }
+
+        Assert.Throws<InvalidOperationException>(() =>
+            ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(
+                declared,
+                declared.Concat(SharedDependencies())));
+        Assert.DoesNotContain(
+            ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles,
+            role => role.PermissionKeys.Contains(
+                ProductIdentityLifecycleEntitlementGrantProfile.ProductIdentityLifecycleOperationRecover));
+    }
+
+    [Theory]
     [InlineData("mdm.gskus.update", "ProductDataSteward")]
     [InlineData("mdm.gskus.withdraw", "ProductDataSteward")]
     [InlineData("mdm.gskus.request-correction", "ProductDataSteward")]
@@ -247,8 +326,7 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
         Assert.Contains(key, ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys);
         Assert.Equal(role, Assert.Single(ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles,
             template => template.PermissionKeys.Contains(key)).RoleName);
-        var keys = ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys
-            .Concat(ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys).ToList();
+        var keys = DeclaredKeys();
         keys.Remove(key);
         Assert.Throws<InvalidOperationException>(() =>
             ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys));
@@ -281,8 +359,7 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
             x.RoleName == ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole);
         Assert.DoesNotContain("mdm.lskus.retire", retirement.PermissionKeys);
         Assert.Contains("mdm.gskus.retire", retirement.PermissionKeys);
-        var keys = ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys
-            .Concat(ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys).ToList();
+        var keys = DeclaredKeys();
         keys.Remove(key);
         Assert.Throws<InvalidOperationException>(() => ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys));
         keys.Add(key.ToUpperInvariant());
@@ -292,7 +369,23 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
     private static List<Permission> ProductCatalog()
         => ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys
             .Concat(ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys)
+            .Concat(ProductIdentityLifecycleEntitlementGrantProfile.NonHumanPermissionKeys)
             .Select(ProductPermission)
+            .Append(new Permission(
+                "mdm",
+                "brands",
+                "read",
+                "Read Brands",
+                null,
+                moduleOverride: "brand-product-master",
+                scope: PermissionScope.Tenant))
+            .ToList();
+
+    private static List<string> DeclaredKeys()
+        => ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys
+            .Concat(ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys)
+            .Concat(ProductIdentityLifecycleEntitlementGrantProfile.NonHumanPermissionKeys)
+            .Concat(ProductIdentityLifecycleEntitlementGrantProfile.DeclaredCrossModuleDependencyKeys)
             .ToList();
 
     private static Permission ProductPermission(string key)

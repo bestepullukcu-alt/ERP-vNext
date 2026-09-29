@@ -165,7 +165,15 @@ public sealed class RegisterModuleManifestCommandHandler
             pagesUpserted++;
 
             if (!string.IsNullOrWhiteSpace(page.RequiredPermission)
-                && await TrySyncPermissionAsync(page.RequiredPermission, page.DisplayName, moduleCode, page.RoutePath, ct))
+                && await TrySyncPermissionAsync(
+                    page.RequiredPermission,
+                    page.DisplayName,
+                    ResolvePermissionOwnerModuleCode(
+                        manifestPage.PermissionOwnerModuleCode,
+                        pageOwnerModuleCode: null,
+                        manifestModuleCode: moduleCode),
+                    page.RoutePath,
+                    ct))
             {
                 permissionsSynced++;
             }
@@ -200,7 +208,15 @@ public sealed class RegisterModuleManifestCommandHandler
                 actionsUpserted++;
                 // The action's scope follows its owning PAGE's route (actions have no route of their own).
                 if (!string.IsNullOrWhiteSpace(action.PermissionKey)
-                    && await TrySyncPermissionAsync(action.PermissionKey, action.DisplayName, moduleCode, page.RoutePath, ct))
+                    && await TrySyncPermissionAsync(
+                        action.PermissionKey,
+                        action.DisplayName,
+                        ResolvePermissionOwnerModuleCode(
+                            manifestAction.PermissionOwnerModuleCode,
+                            manifestPage.PermissionOwnerModuleCode,
+                            moduleCode),
+                        page.RoutePath,
+                        ct))
                 {
                     permissionsSynced++;
                 }
@@ -486,11 +502,36 @@ public sealed class RegisterModuleManifestCommandHandler
     }
 
     private async Task<bool> TrySyncPermissionAsync(
-        string? permissionKey, string displayName, string moduleCode, string? routePath, CancellationToken ct)
+        string? permissionKey,
+        string displayName,
+        string permissionOwnerModuleCode,
+        string? routePath,
+        CancellationToken ct)
     {
         var status = await _permissionSyncService.SyncPermissionAsync(
-            permissionKey, displayName, moduleCode, ModulePageDescriptorNormalizer.ScopeFromRoute(routePath), ct);
+            permissionKey,
+            displayName,
+            permissionOwnerModuleCode,
+            ModulePageDescriptorNormalizer.ScopeFromRoute(routePath),
+            ct);
         return status == CatalogPermissionSyncStatus.Synced;
+    }
+
+    private static string ResolvePermissionOwnerModuleCode(
+        string? explicitOwnerModuleCode,
+        string? pageOwnerModuleCode,
+        string manifestModuleCode)
+    {
+        var normalizedExplicitOwner = ModuleCatalogCodeNormalizer.Normalize(explicitOwnerModuleCode);
+        if (!string.IsNullOrWhiteSpace(normalizedExplicitOwner))
+        {
+            return normalizedExplicitOwner;
+        }
+
+        var normalizedPageOwner = ModuleCatalogCodeNormalizer.Normalize(pageOwnerModuleCode);
+        return string.IsNullOrWhiteSpace(normalizedPageOwner)
+            ? manifestModuleCode
+            : normalizedPageOwner;
     }
 
     private static bool IsDuplicateKey(MongoWriteException ex) =>

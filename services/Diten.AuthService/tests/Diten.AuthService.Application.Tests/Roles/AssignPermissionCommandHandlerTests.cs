@@ -18,6 +18,14 @@ public sealed class AssignPermissionCommandHandlerTests
 
     private static Permission TenantPermission() => new("auth", "users", "read", "Read User", null);
     private static Permission PlatformPermission() => new("platform", "tenants", "read", "Read Tenant", null);
+    private static Permission RecoveryPermission() => new(
+        "mdm",
+        "product-identity.lifecycle-operations",
+        "recover",
+        "Recover Product Identity Lifecycle Operation",
+        null,
+        moduleOverride: "product-item-sku-master",
+        scope: PermissionScope.Tenant);
 
     [Fact]
     public async Task Tenant_context_rejects_platform_permission_with_403_and_assigns_nothing()
@@ -61,6 +69,23 @@ public sealed class AssignPermissionCommandHandlerTests
         Assert.True(result.IsSuccessful);
         Assert.Equal(204, result.StatusCode);
         Assert.Equal((RoleId, PermissionId, TenantId), rolePerms.AssignedCall);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Recovery_permission_is_rejected_for_manual_human_role_assignment_in_every_context(bool platformContext)
+    {
+        var rolePerms = new FakeRolePermissionRepository();
+        var version = new FakeRoleAssignmentVersionService();
+        var handler = CreateHandler(Role(), RecoveryPermission(), rolePerms, version, platformContext);
+
+        var result = await handler.Handle(new AssignPermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(403, result.StatusCode);
+        Assert.Null(rolePerms.AssignedCall);
+        Assert.Equal(0, version.IncrementCount);
     }
 
     [Fact]
