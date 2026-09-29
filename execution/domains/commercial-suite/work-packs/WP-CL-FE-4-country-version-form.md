@@ -105,3 +105,18 @@ KORU/YAPMA: FE-2 dosyaları DOKUNMA; FE-1 proxy yolları DEĞİŞMEZ; CRM/Platfo
 DOĞRULA (E2): cd C:\tmp\cl-fe-4; dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 270); Web build 0 hata; node --check temiz; yeni testler: ClaimsCountryVersion L10n 7 dil + JS anahtar-resx eşliği, sayfa izin kapıları, kod önerisi (ad→önek, NN), kanıt tipi etiketleri resx. Commit ("feat(crm): WP-CL-FE-4 — claim country version form, shared evidence modal, label + code-suggestion fixes" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: kanıt modalını paylaşılır yapmak FE-3 testlerini bozuyorsa formun içinde bırakıp ülke sayfasında aynı partial'ı include et + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-09-29) — **ACCEPTED (E2)**
+- **Commit:** ajan `a06f6a1d` → FE-2 sonrası `test/crm-content-visit-e2e` üzerine çakışmasız rebase → **`045f5a84`** (fast-forward).
+- **Diff (K13 okuma):** 28 dosya, yalnız `frontend/`.
+  - `ClaimsController.cs` → ülke sürümü Create/Edit (`RequirePage(Read)`; yazma kontrolleri yalnız manage ile) + `api/v2/claims/code-suggestion` (`RequireJson(Manage)`).
+  - V2 proxy rotaları `{claimId:guid}` kısıtlı; `code-suggestion` ile çakışma yok.
+  - `ClaimCodeSuggestion`: ürün adı → ASCII'ye katlama (ı/İ özel) → `CLM-{AD}-{NN}`.
+- **CT testleri:** Web **302/0** (270 + FE-2 10 + FE-4 22; birleşik dal). `node --check` 5 dosya temiz.
+- **CT sabotajı:** `CountryVersionEdit` izin kapısı kaldırıldı → `Without_read_the_pages_are_a_plain_403` kırmızı. Kod geri alındı.
+- **Açık / küçük notlar:**
+  - FE-1 hızlı görünüm → ülke sürümü Düzenle bağlantısı yapılmadı (index.js). Küçük takip işi.
+  - Kod önerisi, CRM liste yanıtındaki kodlardan NN hesaplıyor. Liste sayfalıysa NN eksik hesaplanabilir; bu yalnız bir öneri, CRM yinelenen kodu zaten reddediyor.
+- **E4:** CT, fleet restart sonrası (onaylı çekirdekten TR ülke sürümü → yerel kanıt → onaya gönder).
