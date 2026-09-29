@@ -92,3 +92,24 @@ KORU/YAPMA: WorkCenterNext/WorkAggregation DOKUNMA; MOD-0023 + EvidenceLinking y
 DOĞRULA (E2): cd C:\tmp\cl-fix-1; Platform Application testleri → yeni kalıcı kırmızı yok (taban 173, TRX karşılaştır); dotnet test services/Diten.CrmService/tests/... → 0 kırmızı (bilinen sıra flake'i hariç); dotnet test frontend/Diten.Web.Tests → 0 kırmızı (taban 302); node --check temiz; build'ler 0 hata. Yeni testler: DisplayContext bağlantıları, kod önceliği + yaşam döngüsü durumu, DTO documentCode, "Kapatıldı" 7 dil ≠ not-opened, L10n eşliği. Sabotaj: bağlantı + kod önceliği testleri kırmızıya dönmeli. Commit ("fix(crm): WP-CL-FIX-1 — claims live E2E findings (source links, document code/state, closed label, titles, quick-view link)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: register ↔ belge eşlemesi tek anlamlı değilse ya da state resolver toplu okunamıyorsa (N+1) DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-09-29) — **ACCEPTED (E2)**
+- **Commit:** `3de5b538` (`wp/cl-fix-1`) → `test/crm-content-visit-e2e` fast-forward. 31 dosya.
+- **Diff (K13 okuma):**
+  - **F-1:** `ClaimReviewRules.ClaimSourceLink` / `CountryVersionSourceLink` tek yerde, iki çağrı yeri kullanıyor.
+  - **F-2:**
+    - `ControlledDocumentCode` (register kodu → CanonicalId → DocumentKey) ve `ControlledLifecycleState` BE-5 çözücüsünden statik parça olarak ayrıldı; eşleme aynı.
+    - document-options register'ı sayfa başına bir kez okuyor (N+1 yok). Bir belgeye birden çok register satırı bağlıysa tahmin yok: kod geri düşüyor, durum `unknown`.
+    - DTO eklemeleri isteğe bağlı parametre (geriye uyumlu).
+  - WCN / WorkAggregation / org birimi dosyalarına dokunulmadı.
+- **CT testleri:**
+  - Platform `EvidenceLinking|SetCodeCase` **57/0**;
+  - CRM **2092/0/5**;
+  - Web **305/0**.
+  - Platform tam koşusu ajan raporuna göre 173 taban kırmızı; CT tekrarlamadı.
+- **CT sabotajı:** kod önceliğinde CanonicalId register kodunun önüne alındı → `Option_code_prefers_the_register_code_then_the_canonical_id_then_the_key` kırmızı. Kod geri alındı.
+- **Ajan DUR notu (kabul):** register ↔ belge bağı 1:1 zorunlu değil. Canlıda 720 satırın 4'ü bağlı ve hepsi farklı belgelerde. Kalıcı 1:1 koruması MOD-0029'da ayrı iş (kullanıcı kararı).
+- **F-5 kök nedeni:** temadaki `.nav-tabs .nav-link { text-transform: capitalize }` kuralı.
+- **CT E4 dikkat:** ALMIBA belgelerinin register satırında `DocumentCode` boşsa (FU07 atama motoru doldurur), kod yine ortak CanonicalId'ye düşer. E4'te canlıda bakılacak.
