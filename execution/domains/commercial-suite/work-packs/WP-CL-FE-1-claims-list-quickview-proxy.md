@@ -149,3 +149,19 @@ KORU/YAPMA: Create/Edit + form.js DEĞİŞMEZ; CRM'de yalnız okuma eki (BE-1…
 DOĞRULA (E2): cd C:\tmp\cl-fe-1; dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 229); dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban 2085/0/5 + yeni); Web+CRM build 0 hata; verifier varsa PASS; yeni testler: proxy izin kapıları + 409 iletimi + 204, includeCounts tek çağrı + servis yokken null, L10n 7 dil eşliği/echo yok. E4 (fleet restart sonrası, yazmasız): boş durum, tablo/filtre/kolon/dışa aktar, veri varsa hızlı görünüm + 6 ülke çipi, TR + bir diğer dil, koyu tema. Commit ("feat(crm): WP-CL-FE-1 — claims v2 list, quick view, web proxy layer, list counts" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: includeCounts sayfa başına tek çağrıyla yapılamıyorsa sayaç null + raporla (N+1 YAPMA); org-units/şablon lookup'ı için Platform ucu yoksa o lookup'ı atla + raporla.
 ```
+
+## §37 CT bağımsız doğrulama (2026-09-29) → **ACCEPTED (E2)** — E4 birleştirme + fleet restart sonrası CT yapacak
+```
+Commit: d6d250df · Agent: PASS (Web 256/0, CRM 2089/0/5, 4 sabotaj) · CT: worktree C:\tmp\cl-fe-1 → Web 256/0, CRM 2089/0/5, index.js sözdizimi temiz
+```
+- ✅ **Kapsam:** 25 dosya. Web (controller, görünümler, JS, resx, testler) + CRM okuma eki (`includeCounts`, `ClaimListCounts`). Create / Edit / form.js, Platform, Auth, gateway diff YOK.
+- ✅ **Proxy güvenliği (CT okudu):**
+  - `ClaimsController.V2.cs` **açık liste**: 29 iddia ucu + 9 lookup, tek tek `[HttpGet/Post/Put]` ile. **Joker (`{**everything}`) YOK.**
+  - GET → `crm.claim.read`, yazma → `crm.claim.manage`.
+  - Gövdede `tenantId` → red. 204 gövdesiz. Eski approve proxy kaldırıldı.
+- ✅ `includeCounts`: sayfa başına toplu okuma (N+1 yok); servis yoksa `null`. Spec dışı ek `expiringCountryCodes` (kabul; ülke bazında süresi dolan çip ve filtre için).
+- ➕ **Notlar (kabul):**
+  - "Yeni çekirdek / yerel" düğmeleri `?kind=` ile mevcut Create'e gidiyor → FE-3.
+  - Liste kayıt başına satır (v1 onaylı + v2 taslak = 2 satır). FE-6'da gruplama değerlendirilecek.
+  - Eski fr / es echo değerleri gerçek kelime.
+- ⏳ **E4 (tarayıcı):** birleştirme + fleet restart sonrası CT canlıda yazmasız kontrol eder.
