@@ -6857,6 +6857,27 @@ Yöneticinin hızlanma belgeleri incelenirken aynı ölçüm bize uygulandı (20
 ana dalda karşılığı olan / gerçekten bekleyen / terk edilmiş; hiçbiri silinmez, terk edilenler etiketle arşivlenir, bekleyenler için
 sahibe liste; Codex/PPM hariç; (3) sabotaj koşu özetleri `docs/records/audits/<yyyy-ay>/` altına (REP-001).
 
+
+**Sınıflandırma sonucu (CT, 2026-09-29, salt okunur; hiçbir dala dokunulmadı):**
+- **A · içeriği ana dalda (4):** `feature/mg/mod-0354-decomposition-work-structuring-engine` (dosyaların hepsi main'de; 114 aynı, 7'si main'de
+  daha yeni), `feature/pss/mod-0018-fu13-effective-permissions`, `feature/pss/mod-0288-decision-authority-governance-reconcile`,
+  `integration/2026-09-13` (net fark yok). Arşivlenebilir.
+- **B · başka bir yerel dalın içinde (15):** kendi dalları kararlaştırılınca onlarla birlikte gider (örn. `feature/integration/control-tower-final`
+  → `feature/mg/mod-0355-process-performance-closure`, `feature/esbp/mod-0136-budgeting` → `...-fu16-http-context`).
+- **C · ana dalda olmayan gerçek iş, karar gerekiyor (5 tema, 27 uç dal):**
+  1. **FP&A / Kurumsal Strateji:** `Diten.FpaService` (bütçe MOD-0136, senaryo MOD-0138) ve `Diten.DecisionIntelligenceService` (karar
+     kayıtları MOD-0072) main'de HİÇ yok; ES eski eşlik + MOD-0352 dilim 3. Bu dallarda yerel entegrasyondan gelen PPM dosyaları da var
+     (Codex'in) — ayıklanmadan birleştirilemez.
+  2. **Yönetim-yönetişim MOD-0355** süreç performansı / yazma ekranı / auth-gateway uçtan uca / yerel test çalışma zamanı: dört iç içe uç dal,
+     her birinde main'de olmayan ~230–250 dosya.
+  3. **PSS Gate-I güvenlik temeli (Auth):** S2S imzalı kanıt, vekil aktör, açık rol verme, izin kataloğu manifest kaydı, yetki hakkı
+     işlemleri, denetim girişi — ~96 Auth dosyası main'de yok, adları başka yerde de yok. Main sonradan bazılarını farklı yoldan çözdü
+     (katalog→Auth izin eşitlemesi, yetki hakkı eşitlemesi); kısmen aşılmış olabilir, CT incelemesi gerekir.
+  4. **Entegrasyon altyapısı:** kanonik port kaydı (08-04), DCP-006 altın akış, MG yerel entegrasyon, port 5017.
+  5. **Yalnız belge:** `feature/bpm/dcp-005-business-process-management`, `future/platformcontrol` (Mayıs).
+Öneri: (i) önce yedek — sahip 46 dalı `archive/2026-08/<ad>` adıyla uzak depoya gönderir (silme yok); (ii) tema başına sahip kararı:
+sürdür (PR + yeniden plan) ya da arşivde bırak; (iii) tema 3'ü CT, bugünkü main ile karşılaştırıp "aşılmış / hâlâ gerekli" listesine çevirir.
+Ayrıntılı tablo: CT çalışma notu (dal · son tarih · tekil commit · main'de olmayan dosya · PPM dosyası).
 ---
 
 ### BL-469
