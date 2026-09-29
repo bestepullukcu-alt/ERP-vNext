@@ -6481,7 +6481,7 @@ Başlattıklarım satırında "Ayşe Korkmaz" çipi (tooltip Atanan), filtrede "
 
 **Talep sahibi başkasının tuttuğu görevde "Planla" görüyor — kural mı, kusur mu?**
 
-DURUM: AÇIK — KARAR BEKLİYOR (sahip sordu 2026-09-24) · SAHİP: CT · KAYIT: 2026-09-24
+DURUM: KARAR VERİLDİ (sahip, 2026-09-29): `plan` yalnız işi tutan kişide; talep sahibi beklentiyi son tarihle verir — 2a motor promptunda uygulanır · önceki: AÇIK — KARAR BEKLİYOR (sahip sordu 2026-09-24) · SAHİP: CT · KAYIT: 2026-09-24
 
 Ölçüldü (admin, Başlattıklarım, Ayşe'nin tuttuğu S10B-Planla Testi): eylemler `reassign` (birincil), `plan`, `cancel`,
 `scheduleReviewMeeting`; satır menüsünde "Planla" görünüyor. Bu, 2026-09-11 kural incelemesinde (BL-361) yazılan kuralın sonucu:
@@ -6510,7 +6510,7 @@ kodun karşılığı yok → toast İngilizce sunucu cümlesini basar. İş: kö
 
 **Takvim başlangıç kabulleri — sahip kararı bekliyor (kontrol turu sonrasına ertelendi)**
 
-DURUM: AÇIK — KARAR BEKLİYOR · SAHİP: sahip (karar), CT (prompt) · KAYIT: 2026-09-24
+DURUM: KARAR VERİLDİ (sahip, 2026-09-29: üç kabulün üçü de evet) — motor promptu (2a) yazıldı, worktree `task+calendar-engine` · önceki: AÇIK — KARAR BEKLİYOR · SAHİP: sahip (karar), CT (prompt) · KAYIT: 2026-09-24
 
 Ortak takvim (Görev Merkezi + Toplantılar, MOD-0357 S3b; tasarım kararları 2026-09-17 konuşmasında verildi: ay/hafta/gün, ay'a
 bırakma = gün, hafta/güne bırakma = saat bloğu, bırakma = Planla, çakışma = kendi işinde sert engel / davette uyarı, sol panel üç
@@ -6524,6 +6524,13 @@ Prompt yazılmadan önce üç kabul:
 BL-449 (talep sahibinde "Planla") ile birlikte karar. Sonra iki prompt: (2a) motor plan bloğu, (2b) bileşen + Görev Merkezi görünümü;
 (2c) Toplantılar sayfası + davet kartları. Timesheet (DEC-002, MOD-0280 zaman girişi dilimi) ayrı, takvimden sonra.
 
+
+**Karar notu (2026-09-29):** (1) çalışma saatleri v1 = kiracı varsayılanı 09:00–18:00 (öğle arası düşülmez) + çalışma takvimi günleri ve
+tatilleri; sahip "ileride düzeltmek regresyon çıkarır mı" diye sordu → tasarım kuralı: tek dikiş `IWorkingHoursProvider` ("kişi P, gün D
+için çalışma pencereleri"), Oracle HCM'deki gibi kişi → atama → birim → tüzel kişi → kiracı varsayılanı çözüm zinciri; v1 yalnız son
+halkayı doldurur. Başka hiçbir kod kiracı ayarını doğrudan okumaz (koruma testi). Planlar mutlak başlangıç + süre olarak saklanır; saat
+değişince var olan plan taşınmaz, "çalışma saati dışında" uyarısı çıkar. (2) önce motor, sonra bileşen. (3) ekstra özellik yok, gelirse
+backlog.
 ---
 
 ### BL-452
