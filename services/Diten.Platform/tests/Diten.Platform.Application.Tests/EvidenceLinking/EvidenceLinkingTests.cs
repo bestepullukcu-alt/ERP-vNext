@@ -69,6 +69,11 @@ public sealed class EvidenceLinkingTests
         public CreateEvidenceLinkCommandHandler Create() => new(Tenant, new User(), Links(), Documents(), Versions(),
             External(), Gate, ReferenceData, new ImmediateExecutor(), Events);
 
+        /// <summary>WP-CL-BE-2b — the handler with a given membership service (e.g. the REAL one).</summary>
+        public CreateEvidenceLinkCommandHandler CreateWith(IBusinessReferenceDataActiveMembershipService membership) =>
+            new(Tenant, new User(), Links(), Documents(), Versions(), External(), Gate, membership,
+                new ImmediateExecutor(), Events);
+
         public RemoveEvidenceLinkCommandHandler Remove() => new(Tenant, new User(), Links(), new ImmediateExecutor(), Events);
         public GetEvidenceLinksByObjectQueryHandler ByObject() => new(Tenant, Links(), Resolver());
         public GetEvidenceLinkByIdQueryHandler ById() => new(Tenant, Links(), Resolver());
@@ -139,6 +144,29 @@ public sealed class EvidenceLinkingTests
     }
 
     // ============================================================ controlled / external create
+
+    [Fact]
+    public async Task Link_succeeds_with_the_real_membership_service_over_an_exact_set_code_lookup()
+    {
+        // WP-CL-BE-2b — the live 400 reference_set_missing: the real membership service upper-cased "evidence-type" and
+        // the exact-match lookup found nothing. Here the real service runs over a consumer query that matches exactly.
+        var fx = new Fixture(TenantA);
+        var (doc, v1, _) = fx.SeedControlled();
+        var membership = new BusinessReferenceDataActiveMembershipService(
+            new Diten.Platform.Application.Tests.BusinessReferenceData.BusinessReferenceDataActiveMembershipSetCodeCaseTests.ExactConsumerQuery());
+
+        var r = await fx.CreateWith(membership).Handle(new CreateEvidenceLinkCommand(
+            new EvidenceObjectRefInput("crm", "claim", "claim-1", "1.0"), "controlled", doc.Id, v1.Id, "smpc-pil",
+            new EvidenceLocatorInput(Quote, "4.1", "4"), null), default);
+
+        Assert.Equal(201, r.StatusCode);
+        Assert.Equal("smpc-pil", r.Data!.EvidenceTypeCode);
+
+        var passive = await fx.CreateWith(membership).Handle(new CreateEvidenceLinkCommand(
+            new EvidenceObjectRefInput("crm", "claim", "claim-2", "1.0"), "controlled", doc.Id, v1.Id, "retired-type",
+            new EvidenceLocatorInput(Quote, "4.1", "4"), null), default);
+        Assert.Equal(EvidenceLinkReasonCodes.InvalidEvidenceType, passive.ReasonCode);
+    }
 
     [Fact]
     public async Task Controlled_link_pins_the_version_and_snapshots_title_and_label()
