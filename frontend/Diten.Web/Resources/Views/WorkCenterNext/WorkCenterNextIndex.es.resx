@@ -1902,6 +1902,9 @@
   <data name="AuditEventPlanned" xml:space="preserve">
     <value>Tarea planificada</value>
   </data>
+  <data name="AuditEventUnplanned" xml:space="preserve">
+    <value>Tarea retirada del calendario</value>
+  </data>
   <data name="AuditEventStarted" xml:space="preserve">
     <value>Trabajo iniciado</value>
   </data>

@@ -3,6 +3,8 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.DocumentManagementContract;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Services;
+using Diten.Platform.Application.Features.WorkAggregation.Calendar;
+using Diten.Platform.Application.Features.WorkingHours;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -165,6 +167,7 @@ public sealed class ReleaseTaskItemHandler : IRequestHandler<ReleaseTaskItemComm
         // BL-439 — rewinding out of Waiting drops the waiting story too, as every other way out does (ClearWaiting):
         // a question left on a task nobody is waiting with any more is a read grant waiting to be revived.
         task.ClearWaiting();
+        task.ClearPlan(); // the plan was the previous holder's time (CT acceptance, calendar engine)
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
         task.Declare(
@@ -1007,21 +1010,229 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
 }
 
 /// <summary>
-/// Set (or move) a personal plan date. The FIRST plan (Open → Planned) and a RE-plan (Planned → Planned) are the
-/// same write — both just record a date — so one handler covers both rather than the create/update split every
+/// Set (or move) a personal plan — a DAY, or a time BLOCK on that day. The FIRST plan (Open → Planned) and a RE-plan
+/// (Planned → Planned) are the same write, so one handler covers both rather than the create/update split every
 /// other transition has.
 ///
 /// <para>Deliberately NOT routed through <see cref="TransitionTaskItemCommand"/>: the date is required here and
 /// meaningless for the other nine transitions, and Planned→Planned is a self-loop no other caller of that
 /// command needs (see <see cref="TaskLifecycleService.CanTransition"/>).</para>
+///
+/// <para><b>WP-TASK-CALENDAR-ENGINE-01 — the block.</b> A block is an absolute UTC start + a length (a whole number
+/// of 15-minute steps; the estimate, else 60 minutes, when none is given). Its day is derived in the tenant's time
+/// zone. It is cut at the end of the day's working window, and what is left of the estimate is ANSWERED
+/// (<c>remainingMinutes</c>), never stored. Two blocks of the same holder may not overlap — a hard 409; a meeting
+/// or the edge of the working day only WARNS, and the plan is saved. The working window comes from
+/// <see cref="IWorkingHoursProvider"/> and nowhere else.</para>
 /// </summary>
-public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, Response<NoContent>>
+public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, Response<PlanTaskItemResultDto>>
+{
+    private readonly ITaskItemRepository _tasks;
+    private readonly ITaskLifecycleService _lifecycle;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly IWorkingHoursProvider _workingHours;
+    private readonly ICalendarMeetingReader _meetings;
+
+    public PlanTaskItemHandler(
+        ITaskItemRepository tasks,
+        ITaskLifecycleService lifecycle,
+        ICurrentUserContext currentUser,
+        IWorkingHoursProvider workingHours,
+        ICalendarMeetingReader meetings)
+    {
+        _tasks = tasks;
+        _lifecycle = lifecycle;
+        _currentUser = currentUser;
+        _workingHours = workingHours;
+        _meetings = meetings;
+    }
+
+    public async Task<Response<PlanTaskItemResultDto>> Handle(PlanTaskItemCommand command, CancellationToken ct)
+    {
+        var request = command.Request;
+
+        // A JSON body that omits both fields leaves them null (or, from an older client, the date at its zero
+        // value) — nobody types year 1, so both read as "not supplied" and get our own reason code instead of a
+        // framework-shaped validation error.
+        var plannedDate = request.PlannedDate is { } date && date != default ? date : (DateTimeOffset?)null;
+        var plannedStartAt = request.PlannedStartAt is { } start && start != default ? start : (DateTimeOffset?)null;
+        if (plannedDate is null && plannedStartAt is null)
+        {
+            return Response<PlanTaskItemResultDto>.Fail(
+                "A planned date is required.", 400, TaskReasonCodes.PlanDateRequired, command.CorrelationId);
+        }
+
+        // A length only means something for a block, and a block is whole 15-minute steps.
+        if (request.DurationMinutes is { } asked
+            && (plannedStartAt is null || !TaskPlanBlockRules.IsValidDuration(asked)))
+        {
+            return Response<PlanTaskItemResultDto>.Fail(
+                "A block length must be a whole number of 15-minute steps, at least 15 minutes, and needs a start.",
+                400, TaskReasonCodes.PlanDurationInvalid, command.CorrelationId);
+        }
+
+        var task = await _tasks.GetByIdAsync(command.Id, ct);
+        if (task is null)
+        {
+            return Response<PlanTaskItemResultDto>.Fail(
+                "Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        /*
+         * BL-449 (owner, 2026-09-29) — ONLY THE HOLDER PLANS. A plan is a block of the holder's own time, so it is
+         * theirs to place; the requester states their expectation with the due date. This replaces BL-361's
+         * "holder or requester" rule, and TaskWorkItemProvider stops offering `plan` on the requester's row in the
+         * same change so the button and the rule cannot disagree.
+         */
+        if (task.AssigneeUserId is null || task.AssigneeUserId != _currentUser.UserId)
+        {
+            return Response<PlanTaskItemResultDto>.Fail(
+                "Only the person holding this task may plan it.",
+                403, TaskReasonCodes.PlanNotHolder, command.CorrelationId);
+        }
+
+        if (!_lifecycle.CanTransition(task, TaskLifecycle.Planned, out var reasonCode))
+        {
+            return Response<PlanTaskItemResultDto>.Fail(
+                "This transition is not allowed in the task's current state.",
+                409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        /*
+         * Validation stays deliberately LOOSE about WHEN: nothing compares the plan against DueAt or against today.
+         * A plan after the source due date is a real situation — "I won't make it, planning for the 5th instead" —
+         * and refusing it would force the user to pick an earlier date just to get the write accepted. A date in
+         * the past is accepted for the same reason. The screen surfaces the mismatch (renderPlanDates /
+         * wcn-date-conflict). If a future reader is tempted to add a range check here, this is the comment telling
+         * them not to. What IS refused is about the holder's TIME, below: two blocks in the same hour.
+         */
+        var warnings = new List<TaskPlanWarningDto>();
+        int? remainingMinutes = null;
+        var truncated = false;
+
+        if (plannedStartAt is null)
+        {
+            // A DAY plan. Moving a block back to a day-only plan clears the block: one plan, one shape.
+            task.PlannedDate = plannedDate;
+            task.PlannedStartAt = null;
+            task.PlannedDurationMinutes = null;
+        }
+        else
+        {
+            var startUtc = plannedStartAt.Value.ToUniversalTime();
+            var utcDay = DateOnly.FromDateTime(startUtc.UtcDateTime);
+
+            // ±1 day around the UTC date covers every tenant offset; the provider's own zone picks the local day.
+            var hours = await _workingHours.GetWorkingWindowsAsync(
+                _currentUser.UserId, utcDay.AddDays(-1), utcDay.AddDays(1), ct);
+            var localDay = hours.LocalDateOf(startUtc);
+
+            var fit = TaskPlanBlockRules.Fit(
+                startUtc,
+                request.DurationMinutes ?? TaskPlanBlockRules.DefaultDuration(task.EstimateHours),
+                hours.DayOf(localDay));
+            var endUtc = startUtc.AddMinutes(fit.DurationMinutes);
+
+            var conflict = await FindConflictAsync(task, startUtc, endUtc, ct);
+            if (conflict is not null)
+            {
+                return Response<PlanTaskItemResultDto>.FailWithData(
+                    $"This block overlaps \"{conflict.Title}\", which you have planned for the same time.",
+                    409,
+                    TaskReasonCodes.PlanConflict,
+                    new PlanTaskItemResultDto(
+                        task.Id, task.PlannedDate, task.PlannedStartAt, task.PlannedDurationMinutes,
+                        RemainingMinutes: null, Truncated: false, Warnings: [], Conflict: conflict),
+                    command.CorrelationId);
+            }
+
+            if (fit.OutsideWorkingHours)
+            {
+                warnings.Add(new TaskPlanWarningDto(TaskPlanWarningCodes.OutsideWorkingHours));
+            }
+
+            foreach (var meeting in await _meetings.ListMineAsync(_currentUser.UserId, startUtc, endUtc, ct))
+            {
+                warnings.Add(new TaskPlanWarningDto(
+                    TaskPlanWarningCodes.OverlapsMeeting, meeting.Title, meeting.StartAt, meeting.EndAt));
+            }
+
+            task.PlannedStartAt = startUtc;
+            task.PlannedDurationMinutes = fit.DurationMinutes;
+            task.PlannedDate = LocalMidnight(localDay, hours.TimeZone);
+            remainingMinutes = TaskPlanBlockRules.RemainingMinutes(task.EstimateHours, fit.DurationMinutes);
+            truncated = fit.Truncated;
+        }
+
+        task.Lifecycle = TaskLifecycle.Planned;
+        task.UpdatedBy = _currentUser.ActorName;
+        /*
+         * Declared even for a RE-plan, where Planned → Planned moves nothing the diff can see. Moving a date IS a
+         * transition — "this slipped twice" is a fact the history has to be able to tell — so the intent is what
+         * makes the entry, and the repository writes it because something was declared rather than because
+         * something differed.
+         */
+        task.Declare(TaskTransitionKind.Planned, _currentUser.UserId);
+
+        if (!await _tasks.UpdateAsync(task, request.ExpectedVersion, ct))
+        {
+            return Response<PlanTaskItemResultDto>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        return Response<PlanTaskItemResultDto>.Success(
+            new PlanTaskItemResultDto(
+                task.Id, task.PlannedDate, task.PlannedStartAt, task.PlannedDurationMinutes,
+                remainingMinutes, truncated, warnings),
+            200,
+            command.CorrelationId);
+    }
+
+    /// <summary>
+    /// The first of the holder's OTHER live blocks this one would overlap. Scoped by the repository to the tenant and
+    /// by the query to the holder — somebody else's calendar is never consulted. Day-only plans have no hours and
+    /// never conflict; closed work no longer occupies its hour.
+    /// </summary>
+    private async Task<TaskPlanConflictDto?> FindConflictAsync(
+        TaskItem task, DateTimeOffset startUtc, DateTimeOffset endUtc, CancellationToken ct)
+    {
+        var other = (await _tasks.ListByAssigneeAsync(_currentUser.UserId, ct))
+            .Where(t => t.Id != task.Id
+                        && !_lifecycle.IsTerminal(t)
+                        && t.PlannedStartAt is not null
+                        && t.PlannedDurationMinutes is not null)
+            .Select(t => (Task: t, Start: t.PlannedStartAt!.Value, End: t.PlannedStartAt!.Value.AddMinutes(t.PlannedDurationMinutes!.Value)))
+            .Where(b => TaskPlanBlockRules.Overlaps(startUtc, endUtc, b.Start, b.End))
+            .OrderBy(b => b.Start)
+            .FirstOrDefault();
+
+        return other.Task is null ? null : new TaskPlanConflictDto(other.Task.Id, other.Task.Title, other.Start, other.End);
+    }
+
+    /// <summary>The start of a local day as an instant carrying that day's offset, so its date reads as the local day.</summary>
+    private static DateTimeOffset LocalMidnight(DateOnly localDay, TimeZoneInfo timeZone)
+    {
+        var midnight = localDay.ToDateTime(TimeOnly.MinValue, DateTimeKind.Unspecified);
+        return new DateTimeOffset(midnight, timeZone.GetUtcOffset(midnight));
+    }
+}
+
+/// <summary>
+/// WP-TASK-CALENDAR-ENGINE-01 — take a task off the holder's calendar. Clears the plan day and block and returns the
+/// lifecycle to before the plan (Planned → Open, a move the lifecycle matrix already allows).
+///
+/// <para>Holder only, like plan (BL-449). Only from <see cref="TaskLifecycle.Planned"/>: an Open task was never
+/// planned, and a started/waiting/closed task cannot go back to before its plan — both answer
+/// <c>TASK_UNPLAN_NOT_ALLOWED</c> rather than silently clearing a date.</para>
+/// </summary>
+public sealed class UnplanTaskItemHandler : IRequestHandler<UnplanTaskItemCommand, Response<NoContent>>
 {
     private readonly ITaskItemRepository _tasks;
     private readonly ITaskLifecycleService _lifecycle;
     private readonly ICurrentUserContext _currentUser;
 
-    public PlanTaskItemHandler(
+    public UnplanTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
         ICurrentUserContext currentUser)
@@ -1031,68 +1242,34 @@ public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, R
         _currentUser = currentUser;
     }
 
-    public async Task<Response<NoContent>> Handle(PlanTaskItemCommand command, CancellationToken ct)
+    public async Task<Response<NoContent>> Handle(UnplanTaskItemCommand command, CancellationToken ct)
     {
-        // A JSON body that omits `plannedDate` deserializes this to DateTimeOffset's zero value rather than
-        // throwing — nobody types year 1, so treating the zero value as "not supplied" is safe and gives the
-        // caller our own reason code instead of a framework-shaped validation error.
-        if (command.Request.PlannedDate == default)
-        {
-            return Response<NoContent>.Fail(
-                "A planned date is required.", 400, TaskReasonCodes.PlanDateRequired, command.CorrelationId);
-        }
-
         var task = await _tasks.GetByIdAsync(command.Id, ct);
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
         }
 
-        /*
-         * BL-361 — a plan date is a PERSONAL note about when the work will happen, so both the person doing the
-         * work and the person who asked for it may set one; a bystander with no stake in either direction may not.
-         * Wider than Start/Complete/SubmitReview on purpose — this is the one verb in the group the requester also
-         * legitimately touches (their own outbox row offers `plan`, see TaskWorkItemProvider), so the rule matches
-         * what the projection already shows rather than narrowing it.
-         */
-        if (task.AssigneeUserId != _currentUser.UserId
-            && (task.CreatedByUserId is null || task.CreatedByUserId != _currentUser.UserId))
+        if (task.AssigneeUserId is null || task.AssigneeUserId != _currentUser.UserId)
         {
             return Response<NoContent>.Fail(
-                "Only the assignee or the requester may perform this action.",
-                403, DocumentManagementReasonCodes.PermissionDenied, command.CorrelationId);
+                "Only the person holding this task may change its plan.",
+                403, TaskReasonCodes.PlanNotHolder, command.CorrelationId);
         }
 
-        if (!_lifecycle.CanTransition(task, TaskLifecycle.Planned, out var reasonCode))
+        if (task.Lifecycle != TaskLifecycle.Planned || !_lifecycle.CanTransition(task, TaskLifecycle.Open, out _))
         {
             return Response<NoContent>.Fail(
-                "This transition is not allowed in the task's current state.",
-                409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
+                "Only a planned task that has not started can be taken off the calendar.",
+                409, TaskReasonCodes.UnplanNotAllowed, command.CorrelationId);
         }
 
-        /*
-         * Validation here is deliberately LOOSE: nothing compares PlannedDate against DueAt or against today.
-         *
-         * A plan after the source due date is a real situation — "I won't make it, planning for the 5th instead"
-         * — and refusing it would force the user to pick an earlier date just to get the write accepted, which is
-         * a lie the system would be asking for. The screen already surfaces the mismatch as a visible warning
-         * (renderPlanDates / wcn-date-conflict); that is the right place for the judgement, not a blocked write.
-         *
-         * A date in the past is accepted for the same reason: PlannedDate is a personal note, not a commitment
-         * the system enforces. The ONLY thing refused is no date at all (checked above).
-         *
-         * If a future reader is tempted to add a range check here, that is this comment telling them not to.
-         */
-        task.Lifecycle = TaskLifecycle.Planned;
-        task.PlannedDate = command.Request.PlannedDate;
+        task.Lifecycle = TaskLifecycle.Open;
+        task.PlannedDate = null;
+        task.PlannedStartAt = null;
+        task.PlannedDurationMinutes = null;
         task.UpdatedBy = _currentUser.ActorName;
-        /*
-         * Declared even for a RE-plan, where Planned → Planned moves nothing the diff can see. Moving a date IS a
-         * transition — "this slipped twice" is a fact the history has to be able to tell — so the intent is what
-         * makes the entry, and the repository writes it because something was declared rather than because
-         * something differed.
-         */
-        task.Declare(TaskTransitionKind.Planned, _currentUser.UserId);
+        task.Declare(TaskTransitionKind.Unplanned, _currentUser.UserId, command.Request.Note, command.Request.ReasonCode);
 
         if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
         {
@@ -1494,6 +1671,7 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
         task.ReopenAcceptanceGate();
         // BL-439 — the lifecycle rewinds to Open, so any waiting story goes with it (see ReleaseTaskItemHandler).
         task.ClearWaiting();
+        task.ClearPlan(); // the plan was the previous holder's time (CT acceptance, calendar engine)
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
         /*
@@ -1663,6 +1841,7 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
         task.ReopenAcceptanceGate();
         // BL-439 — the lifecycle rewinds to Open, so any waiting story goes with it (see ReleaseTaskItemHandler).
         task.ClearWaiting();
+        task.ClearPlan(); // the plan was the previous holder's time (CT acceptance, calendar engine)
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
         task.Declare(TaskTransitionKind.Reassigned, _currentUser.UserId, reason);

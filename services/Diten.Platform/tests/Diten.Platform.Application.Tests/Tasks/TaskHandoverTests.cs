@@ -299,6 +299,49 @@ public sealed class TaskHandoverTests
         Assert.Equal(TaskReasonCodes.HandoverReasonRequired, response.ReasonCode);
     }
 
+    // ── CT acceptance (calendar engine, 2026-09-29): a plan is the HOLDER's time — it leaves with the holder ──────
+
+    [Fact]
+    public async Task Returning_clears_the_previous_holders_plan_day_start_and_length()
+    {
+        var task = PlannedAssignedTask();
+        var repository = new FakeTaskItemRepository(task);
+
+        var response = await Return(repository, new FakeTaskAssignmentRepository(), task, "Bu hafta yetişmez");
+
+        Assert.Equal(204, response.StatusCode);
+        AssertPlanCleared(repository.Items.Single());
+    }
+
+    [Fact]
+    public async Task Reassigning_clears_the_previous_holders_plan_day_start_and_length()
+    {
+        var task = PlannedAssignedTask();
+        var repository = new FakeTaskItemRepository(task);
+
+        var response = await Reassign(repository, new FakeTaskAssignmentRepository(), task, TaskTestData.Other, "İzne çıkıyorum");
+
+        Assert.Equal(204, response.StatusCode);
+        AssertPlanCleared(repository.Items.Single());
+    }
+
+    private static TaskItem PlannedAssignedTask()
+    {
+        var task = AssignedTask();
+        task.Lifecycle = TaskLifecycle.Planned;
+        task.PlannedDate = new DateTimeOffset(2026, 10, 5, 0, 0, 0, TimeSpan.FromHours(3));
+        task.PlannedStartAt = new DateTimeOffset(2026, 10, 5, 7, 0, 0, TimeSpan.Zero);
+        task.PlannedDurationMinutes = 60;
+        return task;
+    }
+
+    private static void AssertPlanCleared(TaskItem stored)
+    {
+        Assert.Null(stored.PlannedDate);
+        Assert.Null(stored.PlannedStartAt);
+        Assert.Null(stored.PlannedDurationMinutes);
+    }
+
     // ── harness ─────────────────────────────────────────────────────────────────────────────────────────────
 
     private static Task<Response<NoContent>> Return(

@@ -71,6 +71,13 @@ public sealed record ReleaseTaskItemCommand(Guid Id, TaskTransitionRequest Reque
 /// transition matrix would otherwise have to special-case for every other caller of <c>Target</c>.</para>
 /// </summary>
 public sealed record PlanTaskItemCommand(Guid Id, PlanTaskItemRequest Request, string CorrelationId)
+    : IRequest<Response<PlanTaskItemResultDto>>;
+
+/// <summary>
+/// WP-TASK-CALENDAR-ENGINE-01 — take a task off the holder's calendar: clear the plan day and block and return the
+/// lifecycle to before the plan (Planned → Open). Holder only (BL-449), and only from Planned.
+/// </summary>
+public sealed record UnplanTaskItemCommand(Guid Id, TaskTransitionRequest Request, string CorrelationId)
     : IRequest<Response<NoContent>>;
 
 /// <summary>

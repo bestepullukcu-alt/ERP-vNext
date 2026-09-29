@@ -126,6 +126,11 @@ internal sealed class FakeMeetingAttendeeRepository : IMeetingAttendeeRepository
             _items.Where(x => x.TenantId == Tenant && !x.IsDeleted
                               && x.UserId == userId && x.InvitationResponse == InvitationResponse.Pending).ToList());
 
+    public Task<IReadOnlyList<MeetingAttendee>> ListNotDeclinedByUserIdAsync(Guid userId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<MeetingAttendee>>(
+            _items.Where(x => x.TenantId == Tenant && !x.IsDeleted
+                              && x.UserId == userId && x.InvitationResponse != InvitationResponse.Declined).ToList());
+
     public Task UpdateAttendanceStatusAsync(Guid meetingId, Guid userId, AttendanceStatus status, CancellationToken ct = default)
     {
         var item = _items.FirstOrDefault(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingId == meetingId && x.UserId == userId);

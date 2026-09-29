@@ -1623,6 +1623,22 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/v1/work/calendar",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/work/calendar",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/v1/tasks",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

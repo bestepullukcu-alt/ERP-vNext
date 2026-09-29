@@ -1206,6 +1206,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * the answer for the record.
              */
             InquiryAnswer: terminal ? null : ToInquiryAnswer(task, transitions, actor, displayNames),
+            // WP-TASK-CALENDAR-ENGINE-01 — the plan block, straight through, and the estimate left after it
+            // (derived by the same rule the plan write answers with; never stored).
+            PlannedStartAt: task.PlannedStartAt,
+            PlannedDurationMinutes: task.PlannedDurationMinutes,
+            RemainingMinutes: TaskPlanBlockRules.RemainingMinutes(task.EstimateHours, task.PlannedDurationMinutes),
             /*
              * WHAT THE WORK IS. The form has collected these four since Phase 1 and none of them reached the
              * Task Center, so the detail page could say a task was fifteen days overdue without saying what it
@@ -2447,16 +2452,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             }
 
             /*
-             * BL-361 — `plan` belongs here too: a plan date is the requester's note as much as the holder's, and
-             * this branch IS the requester (see above). Same condition the holder's own row uses further down
-             * (`openOrPlanned && !unclaimed`) — read directly rather than falling through to it, since this
-             * branch returns before that code is reached. `outboxPrimary` is left alone: reassign still leads
-             * when it is offered, matching the row's existing primary before this change.
+             * BL-449 (owner, 2026-09-29) — `plan` is NOT offered here any more. BL-361 put it on this row ("a plan
+             * date is the requester's note as much as the holder's"); the calendar decision made a plan a block of
+             * the HOLDER's own time, and the requester's lever is the due date. PlanTaskItemHandler refuses a
+             * non-holder with TASK_PLAN_NOT_HOLDER, so offering the button here would be a control that exists to
+             * be refused.
              */
-            if (openOrPlanned && !unclaimed)
-            {
-                outbox.Add(Build("plan", ActionPlanKey, actor.Has(TaskPermissions.Update)));
-            }
 
             outbox.Add(CancelAction(actor));
             return (outbox, outboxPrimary, outbox.Select(a => a.Code).Where(c => c != outboxPrimary).ToList());
@@ -2656,15 +2657,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         }
 
         /*
-         * Planning a personal date is available while the work has not started (Open ⇄ Planned on the server).
+         * Planning is available while the work has not started (Open ⇄ Planned on the server).
          *
-         * BL-361 — WIDER than the holder-only zone above, deliberately: a plan date is a note about when the
-         * work will happen, and both the person doing it and the person who asked for it have a legitimate
-         * reason to set one (the requester's own outbox row offers `plan` too — see the `initiatorOnly` branch's
-         * sibling instance further up, which this condition must keep matching). A bystander with neither
-         * relationship may not.
+         * BL-449 (owner, 2026-09-29) — HOLDER ONLY, like start/complete. BL-361 had made this wider ("holder or
+         * requester"); a plan is now a block of the holder's own time on their calendar, so nobody else places it
+         * — not the requester (whose lever is the due date), not a manager viewing Ekibim. Same rule as
+         * PlanTaskItemHandler, and the outbox branch above no longer offers it either.
          */
-        if (openOrPlanned && !unclaimed && (isHolder || isRequester))
+        if (openOrPlanned && !unclaimed && isHolder)
         {
             actions.Add(Build("plan", ActionPlanKey, actor.Has(TaskPermissions.Update)));
         }

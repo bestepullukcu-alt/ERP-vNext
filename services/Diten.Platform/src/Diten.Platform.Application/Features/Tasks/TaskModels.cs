@@ -510,6 +510,34 @@ public static class TaskReasonCodes
     /// </summary>
     public const string PlanDateRequired = "TASK_PLAN_DATE_REQUIRED";
 
+    /*
+     * WP-TASK-CALENDAR-ENGINE-01 — the personal plan block. Each has its own sentence in the Task Center's error
+     * bridge (Tasks/api.js → TasksIndex.*.resx, seven languages); plan-calendar-code-bridge.test.js (vitest) / the
+     * plan-calendar-code-bridge vitest pin code ⇔ bridge ⇔ resx.
+     */
+
+    /// <summary>
+    /// BL-449 — plan / unplan by somebody who does not HOLD the task. A 403 of its own rather than the generic
+    /// permission refusal: the caller may hold every key; what they lack is being the one doing the work. The
+    /// requester's lever is the due date, not the holder's calendar.
+    /// </summary>
+    public const string PlanNotHolder = "TASK_PLAN_NOT_HOLDER";
+
+    /// <summary>
+    /// The block overlaps another block the same person holds. A HARD refusal (409): two things cannot be done in
+    /// the same hour by the same person, and the calendar is theirs to rearrange. Day-only plans never conflict.
+    /// </summary>
+    public const string PlanConflict = "TASK_PLAN_CONFLICT";
+
+    /// <summary>A block length that is not a whole number of 15-minute steps, or under 15 minutes.</summary>
+    public const string PlanDurationInvalid = "TASK_PLAN_DURATION_INVALID";
+
+    /// <summary>
+    /// Unplan on a task that is not in the Planned state — nothing to take back (never planned), or the work has
+    /// already moved on (started, waiting, closed) and the lifecycle cannot go back to before the plan.
+    /// </summary>
+    public const string UnplanNotAllowed = "TASK_UNPLAN_NOT_ALLOWED";
+
     /// <summary>Empty, whitespace-only, or longer than <see cref="TaskPersonalNoteLimits.MaxTextLength"/>.</summary>
     public const string PersonalNoteTextInvalid = "TASK_PERSONAL_NOTE_TEXT_INVALID";
 
@@ -858,8 +886,56 @@ public sealed record TaskTransitionRequest(
 /// Set (or move) a personal plan date. Its OWN request type rather than an optional field bolted onto
 /// <see cref="TaskTransitionRequest"/>: the date is REQUIRED for this one transition and meaningless for the
 /// other nine — same reasoning that gives <see cref="InquireTaskItemRequest"/> its own mandatory <c>Reason</c>.
+///
+/// <para><b>Two shapes (WP-TASK-CALENDAR-ENGINE-01).</b> A DAY plan sends <paramref name="PlannedDate"/> only — no
+/// time, the month view. A BLOCK sends <paramref name="PlannedStartAt"/> (+ optional
+/// <paramref name="DurationMinutes"/>) — the week/day view; the plan DAY is then derived from the start in the
+/// tenant's time zone and any <paramref name="PlannedDate"/> sent alongside is ignored, so the two can never
+/// disagree. Both optional and trailing-compatible: a body carrying only <c>plannedDate</c> behaves exactly as
+/// before.</para>
 /// </summary>
-public sealed record PlanTaskItemRequest(int ExpectedVersion, DateTimeOffset PlannedDate);
+public sealed record PlanTaskItemRequest(
+    int ExpectedVersion,
+    DateTimeOffset? PlannedDate = null,
+    DateTimeOffset? PlannedStartAt = null,
+    int? DurationMinutes = null);
+
+/// <summary>A non-blocking finding about a plan that WAS saved. <c>Code</c> is a stable wire code.</summary>
+public sealed record TaskPlanWarningDto(
+    string Code,
+    string? Title = null,
+    DateTimeOffset? StartAt = null,
+    DateTimeOffset? EndAt = null);
+
+/// <summary>The other block a conflicting plan would have overlapped — the caller's OWN task, so naming it leaks nothing.</summary>
+public sealed record TaskPlanConflictDto(Guid TaskId, string Title, DateTimeOffset StartAt, DateTimeOffset EndAt);
+
+/// <summary>
+/// What a plan write stored, and what the caller should know about it.
+///
+/// <para><paramref name="RemainingMinutes"/> is DERIVED (estimate − block, floored at 0) and never stored; null when
+/// there is no block or no estimate. <paramref name="Truncated"/> says the block was cut at the end of the day's
+/// working window. <paramref name="Conflict"/> is set only on the 409 refusal.</para>
+/// </summary>
+public sealed record PlanTaskItemResultDto(
+    Guid TaskId,
+    DateTimeOffset? PlannedDate,
+    DateTimeOffset? PlannedStartAt,
+    int? PlannedDurationMinutes,
+    int? RemainingMinutes,
+    bool Truncated,
+    IReadOnlyList<TaskPlanWarningDto> Warnings,
+    TaskPlanConflictDto? Conflict = null);
+
+/// <summary>Stable warning codes on a saved plan. Each has a sentence in the Task Center bridge (7 languages).</summary>
+public static class TaskPlanWarningCodes
+{
+    /// <summary>The block overlaps a meeting the holder accepted or has not answered yet. Saved anyway.</summary>
+    public const string OverlapsMeeting = "TASK_PLAN_OVERLAPS_MEETING";
+
+    /// <summary>The block (or part of it) falls outside the day's working window, or on a non-working day.</summary>
+    public const string OutsideWorkingHours = "TASK_PLAN_OUTSIDE_WORKING_HOURS";
+}
 
 /// <summary>
 /// Park a task in Waiting. <paramref name="Reason"/> is REQUIRED and is the user's own words, so it is stored as

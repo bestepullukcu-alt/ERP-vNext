@@ -188,9 +188,11 @@ public sealed class TaskOutboxTests
     {
         /*
          * Withholding the holder's acts must not leave a row with nothing on it — an outbox that can only be
-         * read is a report, not a work surface. Three acts survive, all already the requester's on the server:
-         * `reassign` ("this is with the wrong person"), `plan` (BL-361 — a personal note the requester may set
-         * too), and `cancel` (TransitionTaskItemHandler answers a non-requester with 403 CANCEL_NOT_REQUESTER).
+         * read is a report, not a work surface. Two acts survive, both the requester's on the server: `reassign`
+         * ("this is with the wrong person") and `cancel` (TransitionTaskItemHandler answers a non-requester with
+         * 403 CANCEL_NOT_REQUESTER). `plan` USED to be here (BL-361); BL-449 (owner, 2026-09-29) made a plan the
+         * holder's own time block, so the requester no longer places it — PlanTaskItemHandler refuses them with
+         * TASK_PLAN_NOT_HOLDER, and a button that exists to be refused is not drawn.
          *
          * `reassign` LEADS, and that is a rule rather than a preference: cancel is riskLevel destructive, and a
          * destructive act must never be a row's primary button.
@@ -200,30 +202,28 @@ public sealed class TaskOutboxTests
         var item = Assert.Single(await Project(task));
 
         // `scheduleReviewMeeting` (MOD-0357 S4) trails: the actor is this task's requester, and the bridge
-        // action is holder-OR-requester-shaped, same as `plan` above it.
-        Assert.Equal(["reassign", "plan", "cancel", "scheduleReviewMeeting"], item.Actions.Select(a => a.Code).ToArray());
+        // action is holder-OR-requester-shaped.
+        Assert.Equal(["reassign", "cancel", "scheduleReviewMeeting"], item.Actions.Select(a => a.Code).ToArray());
         Assert.Equal("reassign", item.PrimaryActionCode);
-        Assert.Equal(["plan", "cancel", "scheduleReviewMeeting"], item.OverflowActionCodes!.ToArray());
+        Assert.Equal(["cancel", "scheduleReviewMeeting"], item.OverflowActionCodes!.ToArray());
         Assert.DoesNotContain(item.Actions, a => a.Code == item.PrimaryActionCode && a.RiskLevel == "destructive");
     }
 
     /// <summary>
-    /// BL-361, isolated: `plan` is offered in the Outbox even on a POOLED task the creator opened, once it is
-    /// CLAIMED (an unclaimed one fails `plan`'s own `!unclaimed` condition — a fact this row must NOT trip) — the
-    /// ONE holder-shaped act that survives there, because it is not actually holder-shaped; it is
-    /// holder-OR-requester-shaped, and this row's actor is the requester. `reassign` is correctly absent (a pool
-    /// has no single holder to correct), which is what makes this the case that isolates `plan`'s own condition
-    /// from `reassign`'s.
+    /// BL-449, isolated — this test used to prove the OPPOSITE (BL-361: "the Outbox offers plan on a claimed pooled
+    /// task because plan is not holder-only"). A claimed pool task the actor opened and somebody else took is
+    /// exactly the row where `plan` would still leak through if only the direct-assignment branch were changed:
+    /// `reassign` is absent here, so nothing else on the row hides whether `plan` is.
     /// </summary>
     [Fact]
-    public async Task The_Outbox_offers_plan_on_a_CLAIMED_pooled_task_because_plan_is_not_holder_only()
+    public async Task The_Outbox_does_NOT_offer_plan_on_a_CLAIMED_pooled_task_because_plan_is_holder_only()
     {
         var task = PoolTaskFor(creator: TaskTestData.Me);
         task.AssigneeUserId = TaskTestData.Rival; // claimed by somebody else — no longer unclaimed
 
         var item = Assert.Single(await Project(task));
 
-        Assert.Contains(item.Actions, a => a.Code == "plan");
+        Assert.DoesNotContain(item.Actions, a => a.Code == "plan");
         Assert.DoesNotContain(item.Actions, a => a.Code == "reassign");
     }
 

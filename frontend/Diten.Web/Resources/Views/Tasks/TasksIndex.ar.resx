@@ -261,4 +261,25 @@
   <data name="ErrorInquiryNotAddressee" xml:space="preserve">
     <value>لم يعد هذا السؤال بانتظارك، فقد تمت الإجابة عنه أو سحبه. حدِّث القائمة.</value>
   </data>
+  <data name="ErrorPlanNotHolder" xml:space="preserve">
+    <value>لا يمكن تخطيط هذه المهمة إلا من قِبل الشخص المسؤول عنها. بصفتك مقدّم الطلب، عبّر عن توقعك من خلال تاريخ الاستحقاق.</value>
+  </data>
+  <data name="ErrorPlanConflict" xml:space="preserve">
+    <value>يتداخل هذا الوقت مع مهمة أخرى خططت لها بالفعل. اختر وقتًا آخر أو انقل المهمة الأخرى.</value>
+  </data>
+  <data name="ErrorPlanDurationInvalid" xml:space="preserve">
+    <value>يجب ألا تقل المدة المخططة عن 15 دقيقة، وأن تكون بخطوات من 15 دقيقة.</value>
+  </data>
+  <data name="ErrorUnplanNotAllowed" xml:space="preserve">
+    <value>لا يمكن إزالة مهمة من التقويم إلا إذا كانت مخططة ولم تبدأ بعد.</value>
+  </data>
+  <data name="ErrorCalendarRangeInvalid" xml:space="preserve">
+    <value>يمكن للتقويم عرض 42 يومًا كحد أقصى في المرة الواحدة. اختر نطاقًا زمنيًا أقصر.</value>
+  </data>
+  <data name="WarningPlanOverlapsMeeting" xml:space="preserve">
+    <value>تم الحفظ، لكن هذا الوقت يتداخل مع الاجتماع «{0}».</value>
+  </data>
+  <data name="WarningPlanOutsideWorkingHours" xml:space="preserve">
+    <value>تم الحفظ، لكن هذا الوقت خارج ساعات عملك.</value>
+  </data>
 </root>

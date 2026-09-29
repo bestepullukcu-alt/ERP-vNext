@@ -43,6 +43,20 @@ public sealed class Tenant : GlobalEntity
     public string DefaultLanguage { get; set; } = "en";
     public string DefaultCurrency { get; set; } = "USD";
 
+    /*
+     * WP-TASK-CALENDAR-ENGINE-01 (BL-451 decision note) — the tenant's DEFAULT working window, the last ring of the
+     * working-hours chain (person → assignment → unit → legal entity → tenant). No lunch break is subtracted.
+     *
+     * ⚠ READ ONLY THROUGH IWorkingHoursProvider. Nothing else — no task rule, no calendar feed — may read these
+     * two fields; TaskCalendarGuardTests fails the build on a second reader. When person/shift schedules
+     * arrive (MOD-0280) they fill an earlier ring of the same seam, and every consumer keeps working unchanged.
+     *
+     * A record written before these fields existed has neither key; the driver keeps the initializer values, so
+     * old tenants read 09:00–18:00 without a migration.
+     */
+    public TimeOnly DefaultWorkdayStart { get; set; } = new(9, 0);
+    public TimeOnly DefaultWorkdayEnd { get; set; } = new(18, 0);
+
     // Provisioning & Lifecycle
     public string ProvisioningStatus { get; set; } = "Queued";
     public List<TenantProvisioningStep> ProvisioningSteps { get; set; } = [];

@@ -261,4 +261,25 @@
   <data name="ErrorInquiryNotAddressee" xml:space="preserve">
     <value>This question is no longer waiting on you — it was answered or withdrawn. Refresh the list.</value>
   </data>
+  <data name="ErrorPlanNotHolder" xml:space="preserve">
+    <value>Only the person holding this task can plan it. As the requester, state your expectation with the due date.</value>
+  </data>
+  <data name="ErrorPlanConflict" xml:space="preserve">
+    <value>This time overlaps another task you have already planned. Choose a different time or move the other task.</value>
+  </data>
+  <data name="ErrorPlanDurationInvalid" xml:space="preserve">
+    <value>The planned duration must be at least 15 minutes, in 15-minute steps.</value>
+  </data>
+  <data name="ErrorUnplanNotAllowed" xml:space="preserve">
+    <value>Only a planned task that has not started can be taken off the calendar.</value>
+  </data>
+  <data name="ErrorCalendarRangeInvalid" xml:space="preserve">
+    <value>The calendar can show at most 42 days at a time. Choose a shorter date range.</value>
+  </data>
+  <data name="WarningPlanOverlapsMeeting" xml:space="preserve">
+    <value>Saved, but this time overlaps the meeting “{0}”.</value>
+  </data>
+  <data name="WarningPlanOutsideWorkingHours" xml:space="preserve">
+    <value>Saved, but this time is outside your working hours.</value>
+  </data>
 </root>

@@ -211,6 +211,7 @@ public sealed class OcelotConfigurationTests
         yield return new object[] { "/api/pv-case-intake-triage/{intakeDraftId}", "PUT" };
         yield return new object[] { "/api/pv-case-intake-triage/{intakeDraftId}/triage", "POST" };
         yield return new object[] { "/api/pv-case-intake-triage/{intakeDraftId}/route", "POST" };
+        yield return new object[] { "/api/v1/work/calendar", "GET" }; // WP-TASK-CALENDAR-ENGINE-01: Task Center calendar feed (Platform 5057)
     }
 
     [Theory]

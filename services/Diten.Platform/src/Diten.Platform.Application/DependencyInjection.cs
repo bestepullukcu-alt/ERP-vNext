@@ -90,6 +90,11 @@ public static class DependencyInjection
         services.AddScoped<IPlatformLookupProvider, PlatformLookupProvider>();
         // Working Calendar read-only working-day seam — the capability's actual product; consumers call THIS in-process.
         services.AddScoped<Features.WorkingCalendar.Provider.IWorkingCalendarProvider, Features.WorkingCalendar.Provider.WorkingCalendarProvider>();
+        // WP-TASK-CALENDAR-ENGINE-01 — the one working-hours seam (no IWorkingHoursRing is registered in v1: every
+        // person resolves to the tenant default) and the read-only "my meetings" reader the plan rule and the
+        // calendar feed share.
+        services.AddScoped<Features.WorkingHours.IWorkingHoursProvider, Features.WorkingHours.WorkingHoursProvider>();
+        services.AddScoped<Features.WorkAggregation.Calendar.ICalendarMeetingReader, Features.WorkAggregation.Calendar.CalendarMeetingReader>();
         services.AddScoped<Features.ModuleCatalog.Services.IModuleTaxonomyResolver, Features.ModuleCatalog.Services.ModuleTaxonomyResolver>();
         services.AddScoped<IBusinessReferenceDataValidationService, BusinessReferenceDataValidationService>();
         services.AddScoped<IBusinessReferenceDataPublicationEligibility, RuntimeBusinessReferenceDataPublicationEligibility>();

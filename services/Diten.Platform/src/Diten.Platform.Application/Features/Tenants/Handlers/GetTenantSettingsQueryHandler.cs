@@ -28,6 +28,8 @@ public sealed class GetTenantSettingsQueryHandler : IRequestHandler<GetTenantSet
             tenant.Settings.Language,
             tenant.Settings.Timezone,
             tenant.Settings.Currency,
-            tenant.Settings.Environment);
+            tenant.Settings.Environment,
+            tenant.DefaultWorkdayStart,
+            tenant.DefaultWorkdayEnd);
     }
 }
