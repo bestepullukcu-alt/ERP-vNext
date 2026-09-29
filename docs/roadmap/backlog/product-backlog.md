@@ -6830,6 +6830,46 @@ geri yüklememesi ve kaydetmenin atamayı silebilmesi — `_Form.cshtml` `data-s
 `internal/users/display-names` ile, pozisyon ve şablon adı Platform'dan) ya da liste/detayda aynı arama; "Kime" sütunu "Aliye Celikel"
 / "Havuz: Regulatory Affairs Officer" gösterir; detayda şablon adı. 7 dil etkisi yok (veri).
 
+
+### BL-468
+
+**Kendi dal disiplinimiz: büyük birikmiş dal, gönderilmemiş iş ve yalnız bu bilgisayardaki 46 eski dal**
+
+DURUM: AÇIK — KARAR BEKLİYOR (sahip) · SAHİP: CT (sınıflandırma), sahip (gönderim ve PR sıklığı) · BULAN: CT öz denetimi · KAYIT: 2026-09-29
+
+Yöneticinin hızlanma belgeleri incelenirken aynı ölçüm bize uygulandı (2026-09-28):
+- `chore/ct-round-2`: origin/main'in 31 commit önünde, 38 commit gerisinde; 157 dosya, +8.003 satır; 2026-09-24'ten beri uzak depoda
+  değil ("tek PR, en sonda" kuralının sonucu). Birleştirme o gün temizdi.
+- PR #122: 90 commit, 249 dosya, +23 bin satır. #124 ve #125: 3–4 commit (örnek alınacak boyut).
+- Uzak depoda olmayan ve çalışma dalına girmemiş 46 yerel dal, 336 tekil commit; 264'ünün ana dalda patch eşdeğeri yok (kesin kanıt
+  değil: içerik çakışma çözülmüş birleştirmelerle girmiş olabilir). Alanlar: ManagementGovernance, Web, Platform, Auth; bazı entegrasyon
+  dallarında PpmService dosyaları var (Codex'in, dokunulmaz). Çoğu 2026-08-04…08-30.
+- CI 27 test projesinin 3'ünü koşturuyor (BL-457); sabotaj koşu çıktıları geçici klasörde, commit mesajında özetleniyor (REP-001'e tam
+  uymuyor).
+İstenen: (1) sahip kararı — "tek PR sonda" yerine her gün uzak depoya gönderme ve modül başına küçük PR; (2) CT 46 dalı sınıflandırır:
+ana dalda karşılığı olan / gerçekten bekleyen / terk edilmiş; hiçbiri silinmez, terk edilenler etiketle arşivlenir, bekleyenler için
+sahibe liste; Codex/PPM hariç; (3) sabotaj koşu özetleri `docs/records/audits/<yyyy-ay>/` altına (REP-001).
+
+---
+
+### BL-469
+
+**Yöneticinin hızlanma önerileri (MVP6 önerileri + bireysel performans kuralları, Rev 2) — karar kaydı**
+
+DURUM: AÇIK — YÖNETİCİ CEVABI BEKLİYOR · SAHİP: CT (SOP taslağı), sahip + yönetici (karar) · KAYIT: 2026-09-29
+
+CT görüşü yöneticiye gönderilmek üzere hazırlandı: https://claude.ai/artifact/V8nfvuvT7pvuyfXGKDC16W (bağımsız ikinci değerlendirmeyle
+aynı sonuç). Özet: **alınacak** erken dikey akış, geliştirme öncesi tek kabul tablosu (HTTP/tarayıcı/veritabanı), "hazır" ile "karar
+bekliyor" ayrımı (karar başına sahip + tarih), aynı anda 2 ürün + 1 ortam işi (+ dal 50 commit geride ya da 5 gün gönderilmemişse yeni iş
+yok); **değiştirilerek** ortak yazar yalnız giriş/ağ geçidi/başlangıç/izinler için, kanıt devralma yalnız ilgili dosyalarda hiç değişiklik
+yoksa ve ana dal birleştirmesi olmadıysa, önceden verilmiş düzeltme yetkisi açık dosya listesi + PR incelemesiyle; **alınmayacak**
+tahmine dayalı bireysel kredi, bireysel pano, zaman aralığı defteri, oturum saatleri tablosu, ayrı terimler (VER, HELD, bounded, preimage),
+git dışı kaynak manifesti. Ölçüm: ekip düzeyinde git/CI'dan dört ölçü (ana dala birleşme sıklığı, işin başlangıcından ana dala giriş süresi,
+bozulan/geri alınan değişiklik oranı, ana daldan uzaklaşan dallar); "teslim" = ana dala girmiş iş. MVP6 için ilk adım: dal
+(`feature/mvp6-logistics`, 1 önde / 602 geride, birleştirme temiz) ana dalla birleştirilir, depo dışındaki modül kodu gönderilir,
+tedarik zinciri testleri CI'a eklenir, sevkiyat için PR. Yönetici onaylarsa: SOP'a eklenecek maddelerin taslağı + haftalık otomatik akış
+raporu (`scripts/status_report.py` yanına).
+
 ---
 
 ### BL-393
