@@ -53,7 +53,7 @@
   <data name="SettingsTitle" xml:space="preserve"><value>Paramètres de saisie des temps</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Qui approuve quand aucun responsable n’est trouvé, et où le chronomètre peut être utilisé.</value></data>
   <data name="PoolTitle" xml:space="preserve"><value>Pool d’administrateurs du temps</value></data>
-  <data name="PoolHelp" xml:space="preserve"><value>Approuve une semaine quand la ligne hiérarchique de la personne est vide (D6) et rouvre les anciennes semaines.</value></data>
+  <data name="PoolHelp" xml:space="preserve"><value>Approuve une semaine quand la ligne hiérarchique de la personne est vide et rouvre les anciennes semaines.</value></data>
   <data name="PoolPosition" xml:space="preserve"><value>Poste du pool</value></data>
   <data name="PoolNone" xml:space="preserve"><value>Aucun pool</value></data>
   <data name="SavePool" xml:space="preserve"><value>Enregistrer le pool</value></data>
@@ -74,7 +74,7 @@
   <data name="SwitchSavedOn" xml:space="preserve"><value>Chronomètre activé pour {0}.</value></data>
   <data name="SwitchSavedOff" xml:space="preserve"><value>Chronomètre désactivé pour {0}.</value></data>
   <data name="SwitchOffConfirm" xml:space="preserve"><value>Désactiver le chronomètre pour {0} ? Les chronomètres en cours y sont arrêtés.</value></data>
-  <data name="SwissWarning" xml:space="preserve"><value>Entités juridiques suisses : n’activez pas le chronomètre avant que le conseil juridique ait répondu aux questions OLT 1 art. 73, OLT 3 art. 26, consultation du personnel et AIPD (pack MOD-0280 §22). Cette feuille n’est pas l’enregistrement légal du temps de travail.</value></data>
+  <data name="SwissWarning" xml:space="preserve"><value>Entités juridiques suisses : n’activez pas le chronomètre avant que le conseil juridique ait répondu aux questions OLT 1 art. 73, OLT 3 art. 26, consultation du personnel et AIPD. Cette feuille n’est pas l’enregistrement légal du temps de travail.</value></data>
   <data name="NoLegalEntities" xml:space="preserve"><value>Aucune entité juridique trouvée.</value></data>
   <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Les entités juridiques n’ont pas pu être chargées. Réessayez plus tard.</value></data>
   <data name="PositionsUnavailable" xml:space="preserve"><value>Les postes n’ont pas pu être chargés. Réessayez plus tard.</value></data>

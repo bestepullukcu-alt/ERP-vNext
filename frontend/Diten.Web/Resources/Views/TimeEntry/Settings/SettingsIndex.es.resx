@@ -53,7 +53,7 @@
   <data name="SettingsTitle" xml:space="preserve"><value>Ajustes del registro de tiempo</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Quién aprueba cuando no hay responsable directo, y dónde se puede usar el temporizador.</value></data>
   <data name="PoolTitle" xml:space="preserve"><value>Grupo de administradores de tiempo</value></data>
-  <data name="PoolHelp" xml:space="preserve"><value>Aprueba una semana cuando la línea jerárquica de la persona está vacía (D6) y reabre semanas antiguas.</value></data>
+  <data name="PoolHelp" xml:space="preserve"><value>Aprueba una semana cuando la línea jerárquica de la persona está vacía y reabre semanas antiguas.</value></data>
   <data name="PoolPosition" xml:space="preserve"><value>Puesto del grupo</value></data>
   <data name="PoolNone" xml:space="preserve"><value>Sin grupo</value></data>
   <data name="SavePool" xml:space="preserve"><value>Guardar grupo</value></data>
@@ -74,7 +74,7 @@
   <data name="SwitchSavedOn" xml:space="preserve"><value>Temporizador activado para {0}.</value></data>
   <data name="SwitchSavedOff" xml:space="preserve"><value>Temporizador desactivado para {0}.</value></data>
   <data name="SwitchOffConfirm" xml:space="preserve"><value>¿Desactivar el temporizador para {0}? Los temporizadores en marcha allí se detienen.</value></data>
-  <data name="SwissWarning" xml:space="preserve"><value>Entidades jurídicas suizas: no active el temporizador hasta que la asesoría jurídica haya respondido las cuestiones de ArGV 1 art. 73, ArGV 3 art. 26, consulta al personal y EIPD (paquete MOD-0280 §22). Esta hoja no es el registro legal de la jornada.</value></data>
+  <data name="SwissWarning" xml:space="preserve"><value>Entidades jurídicas suizas: no active el temporizador hasta que la asesoría jurídica haya respondido las cuestiones de ArGV 1 art. 73, ArGV 3 art. 26, consulta al personal y EIPD. Esta hoja no es el registro legal de la jornada.</value></data>
   <data name="NoLegalEntities" xml:space="preserve"><value>No se encontró ninguna entidad jurídica.</value></data>
   <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>No se pudieron cargar las entidades jurídicas. Inténtelo más tarde.</value></data>
   <data name="PositionsUnavailable" xml:space="preserve"><value>No se pudieron cargar los puestos. Inténtelo más tarde.</value></data>

@@ -53,7 +53,7 @@
   <data name="SettingsTitle" xml:space="preserve"><value>Настройки учёта времени</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Кто утверждает, если непосредственный руководитель не найден, и где можно использовать таймер.</value></data>
   <data name="PoolTitle" xml:space="preserve"><value>Пул администраторов учёта времени</value></data>
-  <data name="PoolHelp" xml:space="preserve"><value>Утверждает неделю, если в линии подчинения сотрудника никого нет (D6), и открывает старые недели повторно.</value></data>
+  <data name="PoolHelp" xml:space="preserve"><value>Утверждает неделю, если в линии подчинения сотрудника никого нет, и открывает старые недели повторно.</value></data>
   <data name="PoolPosition" xml:space="preserve"><value>Должность пула</value></data>
   <data name="PoolNone" xml:space="preserve"><value>Без пула</value></data>
   <data name="SavePool" xml:space="preserve"><value>Сохранить пул</value></data>
@@ -74,7 +74,7 @@
   <data name="SwitchSavedOn" xml:space="preserve"><value>Таймер включён для {0}.</value></data>
   <data name="SwitchSavedOff" xml:space="preserve"><value>Таймер выключен для {0}.</value></data>
   <data name="SwitchOffConfirm" xml:space="preserve"><value>Выключить таймер для {0}? Работающие там таймеры будут остановлены.</value></data>
-  <data name="SwissWarning" xml:space="preserve"><value>Швейцарские юридические лица: не включайте таймер, пока юристы не ответят на вопросы ArGV 1 ст. 73, ArGV 3 ст. 26, консультации с персоналом и DPIA (пакет MOD-0280 §22). Этот табель не является установленным законом учётом рабочего времени.</value></data>
+  <data name="SwissWarning" xml:space="preserve"><value>Швейцарские юридические лица: не включайте таймер, пока юристы не ответят на вопросы ArGV 1 ст. 73, ArGV 3 ст. 26, консультации с персоналом и DPIA. Этот табель не является установленным законом учётом рабочего времени.</value></data>
   <data name="NoLegalEntities" xml:space="preserve"><value>Юридические лица не найдены.</value></data>
   <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Не удалось загрузить юридические лица. Повторите позже.</value></data>
   <data name="PositionsUnavailable" xml:space="preserve"><value>Не удалось загрузить должности. Повторите позже.</value></data>

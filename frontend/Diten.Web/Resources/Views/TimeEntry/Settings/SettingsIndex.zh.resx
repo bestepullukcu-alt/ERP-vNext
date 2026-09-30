@@ -53,7 +53,7 @@
   <data name="SettingsTitle" xml:space="preserve"><value>工时记录设置</value></data>
   <data name="PageDescription" xml:space="preserve"><value>找不到直属上级时由谁审批，以及计时器可在哪里使用。</value></data>
   <data name="PoolTitle" xml:space="preserve"><value>工时管理员池</value></data>
-  <data name="PoolHelp" xml:space="preserve"><value>当本人的汇报线无人时审批周记录（D6），并重新打开旧周。</value></data>
+  <data name="PoolHelp" xml:space="preserve"><value>当本人的汇报线无人时审批周记录，并重新打开旧周。</value></data>
   <data name="PoolPosition" xml:space="preserve"><value>池职位</value></data>
   <data name="PoolNone" xml:space="preserve"><value>无池</value></data>
   <data name="SavePool" xml:space="preserve"><value>保存池</value></data>
@@ -74,7 +74,7 @@
   <data name="SwitchSavedOn" xml:space="preserve"><value>已为 {0} 开启计时器。</value></data>
   <data name="SwitchSavedOff" xml:space="preserve"><value>已为 {0} 关闭计时器。</value></data>
   <data name="SwitchOffConfirm" xml:space="preserve"><value>要为 {0} 关闭计时器吗？该处正在运行的计时器将被停止。</value></data>
-  <data name="SwissWarning" xml:space="preserve"><value>瑞士法人实体：在法律顾问答复 ArGV 1 第 73 条、ArGV 3 第 26 条、员工咨询和数据保护影响评估问题之前，请勿开启计时器（MOD-0280 包 §22）。本表不是法定工作时间记录。</value></data>
+  <data name="SwissWarning" xml:space="preserve"><value>瑞士法人实体：在法律顾问答复 ArGV 1 第 73 条、ArGV 3 第 26 条、员工咨询和数据保护影响评估问题之前，请勿开启计时器。本表不是法定工作时间记录。</value></data>
   <data name="NoLegalEntities" xml:space="preserve"><value>未找到法人实体。</value></data>
   <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>无法加载法人实体。请稍后重试。</value></data>
   <data name="PositionsUnavailable" xml:space="preserve"><value>无法加载职位。请稍后重试。</value></data>

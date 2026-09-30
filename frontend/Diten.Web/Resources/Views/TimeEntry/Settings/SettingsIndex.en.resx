@@ -53,7 +53,7 @@
   <data name="SettingsTitle" xml:space="preserve"><value>Time entry settings</value></data>
   <data name="PageDescription" xml:space="preserve"><value>Who approves when no line manager is found, and where the timer may be used.</value></data>
   <data name="PoolTitle" xml:space="preserve"><value>Time administrator pool</value></data>
-  <data name="PoolHelp" xml:space="preserve"><value>Approves a week when the person's reporting line has nobody (D6), and reopens old weeks.</value></data>
+  <data name="PoolHelp" xml:space="preserve"><value>Approves a week when the person's reporting line has nobody, and reopens old weeks.</value></data>
   <data name="PoolPosition" xml:space="preserve"><value>Pool position</value></data>
   <data name="PoolNone" xml:space="preserve"><value>No pool</value></data>
   <data name="SavePool" xml:space="preserve"><value>Save pool</value></data>
@@ -74,7 +74,7 @@
   <data name="SwitchSavedOn" xml:space="preserve"><value>Timer switched on for {0}.</value></data>
   <data name="SwitchSavedOff" xml:space="preserve"><value>Timer switched off for {0}.</value></data>
   <data name="SwitchOffConfirm" xml:space="preserve"><value>Switch the timer off for {0}? Running timers there are stopped.</value></data>
-  <data name="SwissWarning" xml:space="preserve"><value>Swiss legal entities: do not switch the timer on until counsel has answered the ArGV 1 Art. 73, ArGV 3 Art. 26, staff consultation and DPIA questions (MOD-0280 pack §22). This sheet is not the statutory working-time record.</value></data>
+  <data name="SwissWarning" xml:space="preserve"><value>Swiss legal entities: do not switch the timer on until counsel has answered the ArGV 1 Art. 73, ArGV 3 Art. 26, staff consultation and DPIA questions. This sheet is not the statutory working-time record.</value></data>
   <data name="NoLegalEntities" xml:space="preserve"><value>No legal entity was found.</value></data>
   <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>The legal entities could not be loaded. Try again later.</value></data>
   <data name="PositionsUnavailable" xml:space="preserve"><value>The positions could not be loaded. Try again later.</value></data>

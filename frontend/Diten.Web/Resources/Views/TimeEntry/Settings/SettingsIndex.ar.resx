@@ -53,7 +53,7 @@
   <data name="SettingsTitle" xml:space="preserve"><value>إعدادات تسجيل الوقت</value></data>
   <data name="PageDescription" xml:space="preserve"><value>من يعتمد عند عدم العثور على مدير مباشر، وأين يمكن استخدام المؤقت.</value></data>
   <data name="PoolTitle" xml:space="preserve"><value>مجموعة مسؤولي الوقت</value></data>
-  <data name="PoolHelp" xml:space="preserve"><value>تعتمد الأسبوع عندما يكون خط الإبلاغ الخاص بالشخص فارغًا (D6)، وتعيد فتح الأسابيع القديمة.</value></data>
+  <data name="PoolHelp" xml:space="preserve"><value>تعتمد الأسبوع عندما يكون خط الإبلاغ الخاص بالشخص فارغًا، وتعيد فتح الأسابيع القديمة.</value></data>
   <data name="PoolPosition" xml:space="preserve"><value>منصب المجموعة</value></data>
   <data name="PoolNone" xml:space="preserve"><value>لا توجد مجموعة</value></data>
   <data name="SavePool" xml:space="preserve"><value>حفظ المجموعة</value></data>
@@ -74,7 +74,7 @@
   <data name="SwitchSavedOn" xml:space="preserve"><value>تم تشغيل المؤقت لـ {0}.</value></data>
   <data name="SwitchSavedOff" xml:space="preserve"><value>تم إيقاف المؤقت لـ {0}.</value></data>
   <data name="SwitchOffConfirm" xml:space="preserve"><value>هل تريد إيقاف المؤقت لـ {0}؟ ستتوقف المؤقتات العاملة هناك.</value></data>
-  <data name="SwissWarning" xml:space="preserve"><value>الكيانات القانونية السويسرية: لا تشغّل المؤقت حتى يجيب المستشار القانوني عن أسئلة ArGV 1 المادة 73 وArGV 3 المادة 26 واستشارة الموظفين وتقييم أثر حماية البيانات (حزمة MOD-0280 §22). هذا السجل ليس السجل القانوني لساعات العمل.</value></data>
+  <data name="SwissWarning" xml:space="preserve"><value>الكيانات القانونية السويسرية: لا تشغّل المؤقت حتى يجيب المستشار القانوني عن أسئلة ArGV 1 المادة 73 وArGV 3 المادة 26 واستشارة الموظفين وتقييم أثر حماية البيانات. هذا السجل ليس السجل القانوني لساعات العمل.</value></data>
   <data name="NoLegalEntities" xml:space="preserve"><value>لم يُعثر على أي كيان قانوني.</value></data>
   <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>تعذر تحميل الكيانات القانونية. حاول لاحقًا.</value></data>
   <data name="PositionsUnavailable" xml:space="preserve"><value>تعذر تحميل المناصب. حاول لاحقًا.</value></data>
