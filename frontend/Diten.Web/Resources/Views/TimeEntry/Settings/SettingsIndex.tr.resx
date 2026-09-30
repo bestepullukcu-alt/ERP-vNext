@@ -78,6 +78,7 @@
   <data name="NoLegalEntities" xml:space="preserve"><value>Tüzel kişi bulunamadı.</value></data>
   <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Tüzel kişiler yüklenemedi. Daha sonra yeniden deneyin.</value></data>
   <data name="PositionsUnavailable" xml:space="preserve"><value>Pozisyonlar yüklenemedi. Daha sonra yeniden deneyin.</value></data>
+  <data name="SettingsUnavailable" xml:space="preserve"><value>Ayarlar okunamadı. Sayfayı yenileyin; ayarlar yüklenene kadar bu sayfada hiçbir şey kaydedilemez.</value></data>
   <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
   <data name="NeverChanged" xml:space="preserve"><value>hiç</value></data>
   <data name="Cancel" xml:space="preserve"><value>Vazgeç</value></data>

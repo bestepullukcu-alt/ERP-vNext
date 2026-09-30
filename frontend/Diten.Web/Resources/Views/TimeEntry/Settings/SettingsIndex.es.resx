@@ -78,6 +78,7 @@
   <data name="NoLegalEntities" xml:space="preserve"><value>No se encontró ninguna entidad jurídica.</value></data>
   <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>No se pudieron cargar las entidades jurídicas. Inténtelo más tarde.</value></data>
   <data name="PositionsUnavailable" xml:space="preserve"><value>No se pudieron cargar los puestos. Inténtelo más tarde.</value></data>
+  <data name="SettingsUnavailable" xml:space="preserve"><value>No se pudo leer la configuración. Actualice la página; no se puede guardar nada aquí hasta que se cargue.</value></data>
   <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
   <data name="NeverChanged" xml:space="preserve"><value>nunca</value></data>
   <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>

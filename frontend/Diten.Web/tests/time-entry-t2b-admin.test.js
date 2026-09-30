@@ -296,6 +296,25 @@ describe("settings — the timer switch needs its reason to go ON", () => {
     expect(calls.find((c) => c.method === "PUT").body).toEqual({ expectedVersion: 2, timerEnabled: false, reason: null });
   });
 
+  // CT (BL-486 #2): an unreadable read is not an empty one — nothing is saved on top of a version the page never saw,
+  // and a switched-on entity is never shown as OFF because its row could not be read.
+  it("settings that could not be read lock the pool and the reminder — nothing is sent", async () => {
+    const calls = await bootSettings([["GET", /\/TimeEntry\/api\/settings$/, () => refused(503)]]);
+    expect(document.getElementById("tsPoolPosition").disabled).toBe(true);
+    expect(document.getElementById("tsSavePool").disabled).toBe(true);
+    expect(document.getElementById("tsNotice").textContent).toContain("SettingsUnavailable");
+    await window.TimeEntrySettings.savePool();
+    await window.TimeEntrySettings.saveReminder(true);
+    expect(calls.some((c) => c.method === "PUT")).toBe(false);
+  });
+
+  it("switch rows that could not be read show no OFF badge and no switch button", async () => {
+    await bootSettings([["GET", "/TimeEntry/api/settings/legal-entities", () => refused(503)]]);
+    expect(document.querySelectorAll("#tsSwitches tr.time-entry-switch-row")).toHaveLength(0);
+    expect(document.querySelectorAll("#tsSwitches button[data-switch]")).toHaveLength(0);
+    expect(document.getElementById("tsSwitches").textContent).toContain("SettingsUnavailable");
+  });
+
   it("the Swiss warning is on the page", () => {
     expect(readSource("Views/TimeEntry/Settings/Index.cshtml")).toContain('id="tsSwissWarning">@Localizer["SwissWarning"]');
   });

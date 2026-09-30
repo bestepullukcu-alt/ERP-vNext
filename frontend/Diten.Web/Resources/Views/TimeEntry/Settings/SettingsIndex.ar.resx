@@ -78,6 +78,7 @@
   <data name="NoLegalEntities" xml:space="preserve"><value>لم يُعثر على أي كيان قانوني.</value></data>
   <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>تعذر تحميل الكيانات القانونية. حاول لاحقًا.</value></data>
   <data name="PositionsUnavailable" xml:space="preserve"><value>تعذر تحميل المناصب. حاول لاحقًا.</value></data>
+  <data name="SettingsUnavailable" xml:space="preserve"><value>تعذّرت قراءة الإعدادات. حدّث الصفحة؛ لا يمكن حفظ أي شيء في هذه الصفحة حتى يتم تحميلها.</value></data>
   <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
   <data name="NeverChanged" xml:space="preserve"><value>أبدًا</value></data>
   <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>

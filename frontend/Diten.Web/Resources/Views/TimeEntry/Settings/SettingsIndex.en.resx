@@ -78,6 +78,7 @@
   <data name="NoLegalEntities" xml:space="preserve"><value>No legal entity was found.</value></data>
   <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>The legal entities could not be loaded. Try again later.</value></data>
   <data name="PositionsUnavailable" xml:space="preserve"><value>The positions could not be loaded. Try again later.</value></data>
+  <data name="SettingsUnavailable" xml:space="preserve"><value>The settings could not be read. Refresh the page; nothing on this page can be saved until they load.</value></data>
   <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
   <data name="NeverChanged" xml:space="preserve"><value>never</value></data>
   <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>

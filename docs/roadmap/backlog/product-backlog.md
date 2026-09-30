@@ -7105,7 +7105,7 @@ ve anahtarlarını (7 dil) kaldır ya da Zaman Çizelgem'e yönlendiren bir bağ
 DURUM: AÇIK · SAHİP: CT (MOD-0280-FU01 / Görev Merkezi) · BULAN: T2b bağımsız gözden geçirme · KAYIT: 2026-09-30
 
 (1) Başlat/Durdur hem kartta hem ··· menüsünde görünüyor (sağlayıcı `overflowActionCodes`'a da ekliyor). (2) Ayarlar sayfası ayar okuması başarısız olursa
-sürüm 0 ile devam ediyor; sunucu sürüm çakışmasını reddeder ama sayfa hatayı söylemeli. (3) `ITimeEntryTimerAvailability` `Contracts/` yerine
+sürüm 0 ile devam ediyor; sunucu sürüm çakışmasını reddeder ama sayfa hatayı söylemeli. **(2) KAPANDI 2026-10-01 (CT):** okunamayan ayar ya da sayaç satırı artık "okunamadı" diyor; havuz, hatırlatma ve sayaç düğmeleri kilitli, hiçbir şey gönderilmiyor (7 dil, 2 test + sabotaj). (3) `ITimeEntryTimerAvailability` `Contracts/` yerine
 `Features/TimeEntry/TimeEntryPorts.cs`'de (`ITaskSpentTimeSource` `Contracts/`'ta); Tasks dağıtıcısı TimeEntry komutlarını doğrudan tanıyor. (4) `taskContext`
 ile `effort` aynı koşulu iki yerde hesaplıyor (`ResolveCapabilities` ve `Effort:`); bugün tutarlı, ileride ayrışabilir — koşul tek yerden gelmeli.
 Gelecek regresyon riski: 🟢.

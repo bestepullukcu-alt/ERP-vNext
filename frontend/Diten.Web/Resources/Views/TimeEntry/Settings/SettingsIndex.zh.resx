@@ -78,6 +78,7 @@
   <data name="NoLegalEntities" xml:space="preserve"><value>未找到法人实体。</value></data>
   <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>无法加载法人实体。请稍后重试。</value></data>
   <data name="PositionsUnavailable" xml:space="preserve"><value>无法加载职位。请稍后重试。</value></data>
+  <data name="SettingsUnavailable" xml:space="preserve"><value>无法读取设置。请刷新页面；设置加载完成前，本页无法保存任何内容。</value></data>
   <data name="Loading" xml:space="preserve"><value>加载中…</value></data>
   <data name="NeverChanged" xml:space="preserve"><value>从未</value></data>
   <data name="Cancel" xml:space="preserve"><value>取消</value></data>

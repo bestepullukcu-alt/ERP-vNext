@@ -93,11 +93,15 @@
             select.appendChild(option);
         });
         select.value = state.settings && state.settings.timeAdminPoolPositionId ? state.settings.timeAdminPoolPositionId : '';
+        select.disabled = !!state.settingsUnreadable;
+        var saveButton = byId('tsSavePool');
+        if (saveButton) { saveButton.disabled = !!state.settingsUnreadable; }
         var $ = root.jQuery;
         if ($ && $.fn && $.fn.select2) { $(select).select2({ width: '100%' }); }
     }
 
     function savePool() {
+        if (state.settingsUnreadable) { return Promise.resolve(null); }
         var value = byId('tsPoolPosition').value || null;
         return request('PUT', '/TimeEntry/api/settings', {
             expectedVersion: state.settings ? state.settings.version : 0, timeAdminPoolPositionId: value
@@ -116,13 +120,14 @@
         var box = byId('tsWeeklyReminder');
         if (!box) { return; }
         box.checked = !!(state.settings && state.settings.weeklyReminderEnabled);
-        box.disabled = false;
+        box.disabled = !!state.settingsUnreadable;
         // M4 — the switch is on but this server's scheduler does not run the reminder job: say so, visibly.
         var warning = byId('tsReminderJobOff');
         if (warning) { warning.hidden = !(box.checked && state.settings && state.settings.reminderJobEnabled === false); }
     }
 
     function saveReminder(enabled) {
+        if (state.settingsUnreadable) { return Promise.resolve(null); }
         var box = byId('tsWeeklyReminder');
         if (box) { box.disabled = true; }
         return request('PUT', '/TimeEntry/api/settings', {
@@ -166,6 +171,10 @@
     function renderSwitches() {
         var host = clear(byId('tsSwitches'));
         byId('tsLoading').hidden = true;
+        if (state.switchesUnreadable) {
+            host.appendChild(el('p', 'text-muted', t('SettingsUnavailable')));
+            return;
+        }
         var rows = mergedRows();
         if (!rows.length) {
             host.appendChild(el('p', 'text-muted', t('NoLegalEntities')));
@@ -276,12 +285,17 @@
             request('GET', '/TimeEntry/api/settings/legal-entities'),
             request('GET', '/TimeEntry/Settings/lookup/legal-entities')
         ]).then(function (results) {
-            state.settings = results[0].ok ? results[0].data : { timeAdminPoolPositionId: null, version: 0, weeklyReminderEnabled: false, reminderJobEnabled: true };
+            // CT (BL-486 #2): a settings or switch read that failed is UNREADABLE, not "empty": a made-up version 0 would be
+            // refused at best, and a missing switch row would show a switched-on entity as OFF. Nothing on that part saves.
+            state.settingsUnreadable = !results[0].ok;
+            state.switchesUnreadable = !results[2].ok;
+            state.settings = results[0].ok ? results[0].data : null;
+            if (state.settingsUnreadable || state.switchesUnreadable) { announce(t('SettingsUnavailable'), 'warning'); }
             renderReminder();
-            if (!results[1].ok) { announce(t('PositionsUnavailable'), 'warning'); }
+            if (!results[1].ok && !state.settingsUnreadable) { announce(t('PositionsUnavailable'), 'warning'); }
             renderPool(results[1].ok ? unwrapList(results[1].body) : []);
             state.switches = results[2].ok ? unwrapList(results[2].body) : [];
-            if (!results[3].ok) { announce(t('LegalEntitiesUnavailable'), 'warning'); }
+            if (!results[3].ok && !state.switchesUnreadable) { announce(t('LegalEntitiesUnavailable'), 'warning'); }
             state.entities = results[3].ok ? unwrapList(results[3].body) : [];
             renderSwitches();
             return state;

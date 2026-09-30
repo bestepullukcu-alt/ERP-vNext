@@ -78,6 +78,7 @@
   <data name="NoLegalEntities" xml:space="preserve"><value>Юридические лица не найдены.</value></data>
   <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Не удалось загрузить юридические лица. Повторите позже.</value></data>
   <data name="PositionsUnavailable" xml:space="preserve"><value>Не удалось загрузить должности. Повторите позже.</value></data>
+  <data name="SettingsUnavailable" xml:space="preserve"><value>Не удалось прочитать настройки. Обновите страницу; пока они не загрузятся, на этой странице ничего нельзя сохранить.</value></data>
   <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
   <data name="NeverChanged" xml:space="preserve"><value>никогда</value></data>
   <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
