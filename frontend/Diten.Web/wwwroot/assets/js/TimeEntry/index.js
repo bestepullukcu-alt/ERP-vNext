@@ -246,9 +246,12 @@
             }
 
             var sameWeek = state.weekKey === (result.data.weekKey || weekKey);
-            var keep = sameWeek ? core.pendingRows(state.rows) : [];
+            // CT acceptance: only an EDITABLE week keeps its pending rows — a submitted or approved week cannot be filled,
+            // and rows it cannot take would keep the leave warnings firing with no way out.
+            var keep = sameWeek && result.data && result.data.editable ? core.pendingRows(state.rows) : [];
             state.weekKey = result.data.weekKey || weekKey;
             state.payload = result.data;
+            announce('');
             // v3 M4 — rows without time exist only on the page; a reload of the SAME week (after a save, an accept)
             // puts them back instead of dropping them without a word.
             state.rows = core.mergePending(core.buildRows(result.data), keep);
@@ -293,7 +296,9 @@
     /** Closing or leaving the page with something to lose: the browser's own leave warning (the only native one). */
     function onBeforeUnload(event) {
         if (root.TimeEntryPage !== exported) { return undefined; }
-        if (!state || !state.payload || !leaveQuestion()) { return undefined; }
+        // CT acceptance: the browser's own warning is for UNSAVED EDITS only. Rows without time are said by the in-page
+        // leave-week question; the native prompt on every sidebar link, logout or language switch was noise.
+        if (!state || !state.payload || !dirty()) { return undefined; }
         event.preventDefault();
         event.returnValue = '';
         return '';
@@ -311,6 +316,7 @@
         var entries = core.buildSaveEntries(state.rows);
         return api.saveEntries(state.weekKey, state.payload.version, entries).then(function (result) {
             if (!result.ok) { return fail(result); }
+            announce('');
             if (!opts.quiet) { toast(t('Saved'), 'success'); }
             return opts.noReload ? result : reload().then(function () { return result; });
         });
@@ -621,7 +627,11 @@
         } else if (identity.day) {
             target = doc.querySelector('#teDayView [data-day="' + identity.day + '"]');
         }
-        if (target && typeof target.focus === 'function') { target.focus(); }
+        if (target && typeof target.focus === 'function') {
+            target.focus();
+            // CT acceptance: select like focusCell does — typing after Tab REPLACES the value ("1:00" + "2" was "21:00").
+            if (typeof target.select === 'function') { target.select(); }
+        }
         return target;
     }
 

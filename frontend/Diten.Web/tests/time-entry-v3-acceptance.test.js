@@ -425,3 +425,61 @@ describe("L8 — the chip never leaves a ghost", () => {
     expect(window.showToast).not.toHaveBeenCalledWith("TimerStopFailed", "error");
   });
 });
+
+// ── CT acceptance of v3 (2026-09-30): three regressions the independent review found in M2/M4 + beforeunload ────────
+
+describe("CT: pending rows, the leave warning and the focus return", () => {
+  it("a submitted (no longer editable) week does not keep the page's pending rows", async () => {
+    const payload = oneRow();
+    installNetwork(routes(payload, [
+      ["POST", `${WEEK}/submit`, () => { payload.editable = false; payload.status = "Submitted"; return ok({ version: 5 }); }],
+      ["GET", "/TimeEntry/api/task-options", () => ok([])]
+    ]));
+    await bootPage({ week: "2026-W41" });
+    window.TimeEntryPage.addTaskRow({ taskItemId: TASK_C, title: "Line clearance" });
+    expect(window.TimeEntryPage.state().rows.some((r) => r.taskItemId === TASK_C)).toBe(true);
+    window.showConfirm = (_question, yes) => yes();
+
+    document.getElementById("teSubmit").click();
+    await flush();
+
+    expect(window.TimeEntryPage.state().rows.some((r) => r.taskItemId === TASK_C), "a locked week kept an unfillable pending row").toBe(false);
+  });
+
+  it("rows without time never raise the browser's own leave warning — only unsaved edits do", async () => {
+    installNetwork(routes(oneRow(), [["GET", "/TimeEntry/api/task-options", () => ok([])]]));
+    await bootPage({ week: "2026-W41" });
+    window.TimeEntryPage.addTaskRow({ taskItemId: TASK_C, title: "Line clearance" });
+
+    const pendingOnly = new Event("beforeunload", { cancelable: true });
+    window.dispatchEvent(pendingOnly);
+    expect(pendingOnly.defaultPrevented, "a pending row alone fired the native leave prompt").toBe(false);
+
+    type(input("2026-10-06"), "1:00");
+    await flush();
+    const unsaved = new Event("beforeunload", { cancelable: true });
+    window.dispatchEvent(unsaved);
+    expect(unsaved.defaultPrevented).toBe(true);
+  });
+
+  it("the focus return also SELECTS the cell, so typing after Tab replaces the value", async () => {
+    installNetwork(routes(weekPayload({
+      entries: [entry("2026-10-05", 60, { taskItemId: TASK_A, taskTitle: "A" }), entry("2026-10-05", 30, { taskItemId: TASK_B, taskTitle: "B" })]
+    })));
+    await bootPage({ week: "2026-W41" });
+    const pos = (p) => grid().querySelector(`[data-pos="${p}"]`);
+    const source = pos("0:0");
+    source.focus();
+    source.value = "2:00";
+    source.dispatchEvent(new Event("change"));
+    const target = pos("1:0");                       // B's Monday: a FILLED cell (0:30)
+    target.focus();
+    await flush();
+
+    const active = document.activeElement;
+    expect(active.getAttribute("data-pos")).toBe("1:0");
+    expect(active.value.length, "the target must hold a value for this to prove anything").toBeGreaterThan(0);
+    expect(active.selectionStart).toBe(0);
+    expect(active.selectionEnd).toBe(active.value.length);
+  });
+});

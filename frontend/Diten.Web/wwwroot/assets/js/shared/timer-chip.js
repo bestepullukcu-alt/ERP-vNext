@@ -192,8 +192,9 @@
     function apply(result) {
         if (!chip) { return result; }
         if (!result.ok || !result.data) {
-            // A passing failure: hidden, not removed — the tab's next visibility asks again.
-            hide();
+            // CT acceptance: a LASTING refusal (401/403/404) removes the chip — asking again on every tab switch only logs
+            // warnings; a passing failure (network, 5xx) hides it and the next visibility asks again.
+            if (result.status === 401 || result.status === 403 || result.status === 404) { remove(); } else { hide(); }
             return result;
         }
         if (!result.data.timerEnabled) {
@@ -258,7 +259,9 @@
         return refresh(false);
     }
 
-    root.DitenTimerChip = { init: init, refresh: refresh, stop: stop, formatElapsed: formatElapsed };
+    // CT acceptance: from outside, refresh() always ASKS AGAIN (a caller refreshing after a Start must not get the
+    // answer cached at page load); the page-load sharing stays internal.
+    root.DitenTimerChip = { init: init, refresh: function () { return refresh(true); }, stop: stop, formatElapsed: formatElapsed };
 
     if (doc.readyState === 'loading') {
         doc.addEventListener('DOMContentLoaded', init);
