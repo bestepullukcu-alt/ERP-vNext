@@ -7057,6 +7057,12 @@ DURUM: AÇIK · SAHİP: CT · BULAN: T1a ve takvim 2c ajanları · KAYIT: 2026-0
 Platform Application paketinin tamamı koşulunca `BusinessReferenceData*` Mongo testleri paylaşılan 27017'de kendi `diten_platform_brd_itest_*` veritabanlarını
 açıp siliyor ve aralarında yarışıyor ("database is currently being dropped" → tabandaki ~49 kırmızının kaynağı). Yeni testler atılır mongod kullanıyor. İş: BRD
 testlerini `DisposableStandaloneMongo`'ya taşı; kırmızı taban listesi temizlenir. Gelecek regresyon riski: 🟢.
+**KISMEN KAPANDI 2026-10-01 (CT, merge sonrası):** `MongoIntegrationHarness` yarışı ve yapışkan kalıntı giderildi — başlangıç temizliği
+her çağıranı bekletiyor, başarısız şema kurulumu "kuruldu" sayılmıyor, E11000 kalıntısı yalnız bu sürecin kendi damgaladığı test
+veritabanında, yalnız hatanın adını verdiği kiracı anahtarlı index'te ve bu sürecin canlı kiracısı olmayan gruplarda siliniyor; kilit testi
+alt süreci ortak veritabanına hiç girmiyor (08b34b980, 1c449df3d, 826ddc6c9). Ölçüm: Toplantı+Bildirim 653/653 iki kez. **Kalan:**
+BRD yarısı (GSKU harness'i: kişi başı sweeper + replika-set ping `<object>`), 49 kırmızı; sabit adlı eski
+`diten_platform_itest_eventing-outbox-idempotency` veritabanı tireli olduğu için süpürülmüyor (sahip elle düşürür).
 **Ek (2026-09-30, T3 kabulü):** aynı sınıftan ikinci belirti — `MongoIntegrationHarness` ortak `diten_platform_itest`
 veritabanını kullanıyor; `meeting_series`'te önceki koşulardan kalan çift kayıt ("Haftalık Kalite Toplantısı") benzersiz index kurulumunu
 E11000 ile düşürüyor ve o veritabanını açan her test (Toplantı benzersiz index testleri, `NotificationDispatchPermanentFailureMongoTests`)
