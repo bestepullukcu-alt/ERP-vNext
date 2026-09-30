@@ -72,6 +72,38 @@ public sealed class MongoSchemaResidueHealerMongoTests
         await Assert.ThrowsAsync<MongoWriteException>(() => series.InsertOneAsync(Series(deadTenant, isDeleted: false)));
     }
 
+    /// <summary>
+    /// CT acceptance (BL-482): most of the platform's unique indexes are PARTIAL (<c>IsDeleted == false</c>), and the heal
+    /// test above uses one whose key contains IsDeleted, so the partial filter was never measured. A soft-deleted row
+    /// with the same code sits OUTSIDE the index: it is no duplicate and must survive the heal.
+    /// </summary>
+    [Fact]
+    public async Task A_partial_unique_index_heals_only_the_rows_inside_its_filter()
+    {
+        const string index = "ux_platform_module_domains_code_key";
+        await using var harness = await MongoIntegrationHarness.CreateIsolatedAsync("bl482_partial_heal", SchemaProfile.Core);
+        var domains = harness.Database.GetCollection<BsonDocument>(PlatformCollections.ModuleDomains);
+        await domains.Indexes.DropOneAsync(index);
+
+        BsonDocument Domain(bool isDeleted) => new()
+        {
+            { "_id", new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard) },
+            { "CodeKey", "BL482-PARTIAL" },
+            { "IsDeleted", isDeleted }
+        };
+        await domains.InsertManyAsync(new[] { Domain(false), Domain(false), Domain(true), Domain(true) });
+
+        var report = await MongoIntegrationHarness.ApplyProfileHealingResidueAsync(harness.Database, SchemaProfile.Core);
+
+        Assert.NotNull(report);
+        Assert.Null(report!.Refusal);
+        var healed = Assert.Single(report.Healed);
+        Assert.Equal(index, healed.Index);
+        Assert.Equal(2, healed.RowsRemoved);                                                   // the two live duplicates
+        Assert.Equal(2, await domains.CountDocumentsAsync(Builders<BsonDocument>.Filter.Eq("IsDeleted", true))); // untouched
+        await UniqueIndexPrecondition.RequireAsync(domains, index);
+    }
+
     [Fact]
     public async Task A_database_this_run_did_not_stamp_is_never_healed_and_keeps_its_rows()
     {
