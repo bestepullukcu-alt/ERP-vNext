@@ -986,6 +986,22 @@ half-day holidays reduce planned time.
 
 ---
 
+### 21.2 T2 screen decisions (Control Tower, owner's delegation, 2026-09-30)
+
+Made after the clickable mock (https://claude.ai/artifact/VNbc7VR884XZ7jV8PXmbQr) and an independent benchmark (SAP CAT2 / My
+Timesheet V2–V4, SuccessFactors clock, Oracle Redwood time card + Web Clock + Team Time Cards, Workday, Tempo, ClickUp, Harvest).
+
+| # | Decision | Evidence |
+|---|---|---|
+| U1 | Start/stop the timer on the Task Center card (Start/Accept/Resume already start it). The top-bar chip appears **only while a timer runs**, links to the task, and has Stop. | ClickUp/Tempo pattern; SAP/Oracle offer a home-page quick action, not a permanent clock. Our people also work outside the Task Center (QMS, documents). |
+| U2 | Desktop: rows × Mon–Sun grid with a daily target row and totals. Phone (< 768 px): one-day list with a day switcher. | SAP CAT2 and Oracle time card are grids; SAP My Timesheet V4 and Workday use a day list on mobile. |
+| U3 | Suggestions (meeting, plan fill-in) sit **inside their day** as grey values; "Review suggestions" accepts several at once; copy previous week and fill from plan live in an Actions menu; the side panel is secondary (timer notices, "too short to count"). | Tempo inline suggestions + bulk log; Oracle "Copy Previous Time Card" / "Generate Entries Using Schedule"; Workday Auto-fill with review. |
+| U4 | Both approval surfaces: the Task Center approval card (one by one) and a team page (overview + multi-select **approve** for unflagged weeks only). Reject is one at a time with its reason. | Oracle worklist + Team Time Cards multi-approve; Workday inbox + Review Time mass approve. |
+| U5 | v1 must-haves: copy previous week (rows only, never overwrites), week navigation + Today + missing-days indicator, per-row note, keyboard entry (`1:30`, `1,5`, `1.5`, `90dk`, snap to 15), mobile day view, rejected state with reason → edit → resubmit, approval history strip, **approver sees what a correction revision changed** vs the in-force revision (T2b adds the backend field). | Benchmark §Q5. Reminders → T3; automatic substitution → BL-475. |
+
+Slices: T2a = My Timesheet page, top-bar chip, error-code bridge, nav entry. T2b = Task Center timer actions (DeclareTimeTracking on,
+mock timer removed), approvals page, categories, settings, correction diff field, 10-row platform-links table.
+
 ## 22. Legal — must confirm before go-live (not a start blocker)
 
 > **Operating instruction (R7):** the timer ships **off** for every legal entity. A tenant admin must **not** switch
