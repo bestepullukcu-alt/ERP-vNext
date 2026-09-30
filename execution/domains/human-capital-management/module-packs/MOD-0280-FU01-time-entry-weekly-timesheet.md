@@ -1005,6 +1005,24 @@ Timesheet V2–V4, SuccessFactors clock, Oracle Redwood time card + Web Clock + 
 Slices: T2a = My Timesheet page, top-bar chip, error-code bridge, nav entry. T2b = Task Center timer actions (DeclareTimeTracking on,
 mock timer removed), approvals page, categories, settings, correction diff field, 10-row platform-links table.
 
+### 21.3 T3 decisions — notifications and reminders (Control Tower, owner's delegation, 2026-09-30)
+
+Measured before deciding (lane `6648e7dcd`): the five manifest events are all `Status: "Draft"` with `RequiredVariables:
+[WeekKey]` for every event; **only `time-entry.timer.auto-closed` is dispatched** (`TimerAutoCloseNotifier`, and it sends
+`localDate`/`durationMinutes`, not `WeekKey`); `week.submitted/approved/rejected/withdrawn` are declared and **sent nowhere**;
+MOD-0023 sends no e-mail of its own; templates live in `NotificationTemplateSeed.cs` (`{{Variable}}` placeholders, one factory
+per key, seven languages for tenant events — MOD-0024 and MOD-0357 precedent).
+
+| # | Subject | Decision | SAP / Oracle |
+|---|---|---|---|
+| N1 | Who is reminded | A **participant**: a person with any `TimesheetWeek` (any status) or `TimerSegment` in the 4 ISO weeks before the target week. A person who never used the module gets nothing; a deactivated user never gets anything. | SAP CATS reminds employees with a CATS profile; Oracle OTL reminds workers with a time entry profile. We have no profile object — participation is the honest proxy; a profile is a follow-up. |
+| N2 | When and for what | **One reminder per person-week**, for the previous ISO week, on **Monday at or after 09:00 tenant local** (the job runs hourly; the mark makes it once). Reminded when the week is absent, `Draft`, `Rejected` or `Withdrawn`; not when `Submitted`, `Approved` or `Superseded`. A week whose days all resolve to weekend/holiday for the person is skipped; an unresolved calendar day counts as a working day (the grid's rule). No manager escalation in v1. | Both send a "missing / not submitted" notice after period end; Oracle can escalate to the manager — follow-up. |
+| N3 | Tenant switch | `TimeEntrySettings.WeeklyReminderEnabled`, **default off**, saved with the existing versioned settings command (audited) and shown on the Settings page. Nothing reaches employees until the time admin turns it on — same stance as the timer switch (D12). | Both configure reminders per profile / per admin setup, never on by default. |
+| N4 | Week events | `submitted` → the week's stored approver candidates (pool members included); `approved` / `rejected` → the person, **only when the pull finalizer actually changes the week's state**; `rejected` carries the approver's reason; `withdrawn` → the approver candidates. Best-effort: a failed send never fails the command (logged). Once per (event, week, revision). | Standard approval notifications in both. |
+| N5 | Minutes conflict (D8) | New contracts seam **`IMeetingAttendanceObserver`**, called by MOD-0357 after `SyncAsync` on minutes publish **and** correction (the `ITaskTransitionObserver` pattern: failures logged, never thrown into the meeting write). TimeEntry's implementation: for each attendee now `Absent`/`Excused` who has an **accepted `Meeting`-source row** for that meeting (any week state), notify **that person only**, once per (meeting, person, status). `Present` sends nothing. Never the approver or the manager (D11). The read-time flag stays the source of truth. | Neither links meeting minutes to timesheets natively; this is ours. |
+| N6 | At most once | `TimeEntryNotificationMark` (`time_entry_notification_marks`: `TenantId`, `Kind`, `Key`, `CreatedAtUtc`), unique `(TenantId, Kind, Key)`, claimed **before** the send: a crash after the claim loses one e-mail, never duplicates one. `timer.auto-closed` keeps its segment mark. | — |
+| N7 | Templates | 7 events × 7 languages = **49** templates, key = event code; manifest events go `Active`. Each event's `RequiredVariables` equals exactly what its dispatch supplies and what its template renders (auto-closed: `LocalDate`, `DurationMinutes`). Content is minimal: week and link; approver e-mails name the person; no per-day minutes, nothing about another person. Locale = the tenant's (existing resolver). | — |
+
 ## 22. Legal — must confirm before go-live (not a start blocker)
 
 > **Operating instruction (R7):** the timer ships **off** for every legal entity. A tenant admin must **not** switch
