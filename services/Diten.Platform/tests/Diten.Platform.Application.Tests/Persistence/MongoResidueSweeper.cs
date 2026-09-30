@@ -62,8 +62,16 @@ public static class MongoResidueSweeper
      * `x_diten_platform_itest`          → does NOT match: it must be the start
      * `diten_platform_itest_Task`       → does NOT match: uppercase is not this grammar
      */
+    // `\z`, not `$`: in .NET `$` also matches before a trailing newline, so `diten_platform_itest\n` would pass.
     private static readonly System.Text.RegularExpressions.Regex OwnedName =
-        new($"^{OwnedPrefix}(_[a-z0-9]+)*$", System.Text.RegularExpressions.RegexOptions.Compiled);
+        new($"^{OwnedPrefix}(_[a-z0-9]+)*\\z", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    /// <summary>
+    /// Condition 1 on its own: could this harness have produced this database name? Shared with
+    /// <see cref="MongoSchemaResidueHealer"/> (BL-482), the second delete path in this harness, so both answer
+    /// "is this ours?" with the SAME grammar — never a second, looser copy of it.
+    /// </summary>
+    public static bool IsOwnedName(string databaseName) => OwnedName.IsMatch(databaseName);
 
     /// <summary>
     /// The whole decision, as a pure function, so every rule below can be proved without a live server.
@@ -192,7 +200,7 @@ public static class MongoResidueSweeper
             new ReplaceOptions { IsUpsert = true },
             cancellationToken);
 
-    private static async Task<HarnessMarker?> ReadMarkerAsync(
+    internal static async Task<HarnessMarker?> ReadMarkerAsync(
         IMongoDatabase database,
         CancellationToken cancellationToken)
     {
