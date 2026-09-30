@@ -230,4 +230,9 @@
   <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>Hay cambios sin guardar y las filas sin tiempo no se guardan. ¿Salir de esta semana de todos modos?</value></data>
   <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>El tiempo capturado no se puede corregir a cero. Corríjalo a al menos {step} minutos y explíquelo en la nota.</value></data>
   <data name="SaveFailedKept" xml:space="preserve"><value>El borrador no se guardó. Sus cambios siguen en la página.</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>Tramos del temporizador de esta fila</value></data>
+  <data name="SegmentLine" xml:space="preserve"><value>{start}–{end} · {duration}</value></data>
+  <data name="SegmentCutAtMidnight" xml:space="preserve"><value>cortado a medianoche</value></data>
+  <data name="ErrApprovalsQueryInvalid" xml:space="preserve"><value>No se pudo leer la lista de aprobaciones con estos ajustes. Recargue la página.</value></data>
+  <data name="SubmitNeedsTime" xml:space="preserve"><value>Registre tiempo antes de enviar la semana.</value></data>
 </root>

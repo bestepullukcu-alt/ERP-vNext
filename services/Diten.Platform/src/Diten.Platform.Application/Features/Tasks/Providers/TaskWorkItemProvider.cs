@@ -66,6 +66,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// <summary>Hand work to a different person. Code and endpoint are both <c>reassign</c>.</summary>
     private const string ActionReassignKey = "WorkAggregation_Action_Reassign";
     private const string ActionScheduleReviewMeetingKey = "WorkAggregation_Action_ScheduleReviewMeeting";
+    // MOD-0280-FU01 T2b (pack §19.2) — the holder's own timer on an InProgress task.
+    private const string ActionStartTimerKey = "WorkAggregation_Action_StartTimer";
+    private const string ActionStopTimerKey = "WorkAggregation_Action_StopTimer";
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledApprovalKey = "WorkAggregation_ActionDisabled_ApprovalPending";
     private const string DisabledChecklistKey = "WorkAggregation_ActionDisabled_ChecklistIncomplete";
@@ -204,9 +207,15 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * the entity's field. The time-tracking switch (§5.1 item 3) rides with it; absent means off.
          */
         ITaskSpentTimeSource? spentTime = null,
-        TaskTimeTrackingOptions? timeTracking = null)
+        TaskTimeTrackingOptions? timeTracking = null,
+        /*
+         * MOD-0280-FU01 T2b — is the reader's timer switched on (D12, per legal entity)? OPTIONAL like every seam above:
+         * absent means "off", so startTimer/stopTimer are never offered — it can only narrow the projection.
+         */
+        TimeEntry.ITimeEntryTimerAvailability? timerAvailability = null)
     {
         _spentTime = spentTime;
+        _timerAvailability = timerAvailability;
         _timeTracking = timeTracking;
         _attachments = attachments;
         _recordLinks = recordLinks;
@@ -268,6 +277,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
     private bool DeclaresTimeTracking => _spentTime is not null && _timeTracking?.DeclareTimeTracking == true;
 
+    /// <summary>MOD-0280-FU01 T2b — the reader's timer switch. Null ⇒ off (no timer actions).</summary>
+    private readonly TimeEntry.ITimeEntryTimerAvailability? _timerAvailability;
+
     /// <summary>MOD-0357 S9 — the shared review-meeting gate (see the constructor parameter's own doc comment).
     /// Null ⇒ every task's gate resolves to "not unlocked" (fail-closed), which only bites a Required type.</summary>
     private readonly IReviewMeetingGateReader? _reviewMeetingGate;
@@ -296,7 +308,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         TaskPermissions.Cancel,     // cancel
         TaskPermissions.Delete,     // administrative authority to cancel someone else's task
         TaskPermissions.Assign,     // reassign — moving work onto another person IS assigning it
-        TaskPermissions.Read        // answer (BL-439) — the addressee needs no key beyond reading the task
+        TaskPermissions.Read,       // answer (BL-439) — the addressee needs no key beyond reading the task
+        TimeEntry.TimeEntryPermissions.TimesheetsUpdate  // startTimer / stopTimer (MOD-0280-FU01 T2b, §19.2)
     ];
 
     public async Task<IReadOnlyList<WorkItemProjectionDto>> GetWorkItemsAsync(
@@ -793,6 +806,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          */
         IReadOnlyDictionary<Guid, TaskSpentTime> spentByTask = new Dictionary<Guid, TaskSpentTime>();
         var readerTime = TaskReaderTime.None;
+        // T2b — one switch read per page, for the reader only (D12); absent seam or time tracking off ⇒ off.
+        var timerEnabled = DeclaresTimeTracking && _timerAvailability is not null
+                           && await _timerAvailability.IsTimerEnabledForAsync(actor.UserId, ct);
         if (_spentTime is not null)
         {
             if (DeclaresTimeTracking)
@@ -854,7 +870,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                         : ((RecordLink Link, Meeting? Meeting)?)null,
                     reviewMeetingUnlockedByTask.GetValueOrDefault(t.Id),
                     spentByTask.GetValueOrDefault(t.Id, TaskSpentTime.None),
-                    readerTime);
+                    readerTime,
+                    timerEnabled);
             })
             .ToList();
     }
@@ -906,7 +923,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // MOD-0280-FU01 D7 — this task's approved (and, with time tracking, submitted) minutes.
         TaskSpentTime? spent = null,
         // MOD-0280-FU01 §19.2 — THIS reader's running timer and own draft minutes (only read with time tracking on).
-        TaskReaderTime? readerTime = null)
+        TaskReaderTime? readerTime = null,
+        // MOD-0280-FU01 T2b — the reader's timer is switched on for their legal entity (read once per page).
+        bool timerEnabled = false)
     {
         spent ??= TaskSpentTime.None;
         var spentHours = spent.ApprovedHours;
@@ -1088,6 +1107,24 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             }
         }
 
+        /*
+         * MOD-0280-FU01 T2b (pack §19.2, U1) — the holder's own timer. Offered ONLY on the reader's own InProgress task,
+         * with time tracking declared and the timer switched on for the reader's legal entity (D12); never on another
+         * person's item (D11). startTimer while it is not this task's timer that runs, stopTimer while it is. Whether the
+         * timer may run is still decided by the TimeEntry handlers the dispatcher calls; this only decides what to offer.
+         */
+        if (timerEnabled && DeclaresTimeTracking && !terminal
+            && task.AssigneeUserId == actor.UserId && task.Lifecycle == TaskLifecycle.InProgress)
+        {
+            var running = readerTime?.RunningTaskItemId == task.Id;
+            var timerCode = running ? "stopTimer" : "startTimer";
+            actions = actions
+                .Append(Build(timerCode, running ? ActionStopTimerKey : ActionStartTimerKey,
+                    actor.Has(TimeEntry.TimeEntryPermissions.TimesheetsUpdate)))
+                .ToList();
+            overflowActionCodes = overflowActionCodes.Append(timerCode).ToList();
+        }
+
         return new WorkItemProjectionDto(
             FixtureKind: WorkItemContract.FixtureKindWorkItem,
             Id: task.Id.ToString(),
@@ -1260,6 +1297,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             TimeEntries: DeclaresTimeTracking
                 ? new WorkItemTimeEntriesDto(
                     readerTime?.DraftMinutes.GetValueOrDefault(task.Id) ?? 0, spent.SubmittedMinutes, spent.ApprovedMinutes)
+                : null,
+            // The effort container, under the SAME condition ResolveCapabilities declares `taskContext` — the contract
+            // requires the one with the other, and a task without its container is dropped from the board.
+            Effort: task.EstimateHours is not null || spentHours != 0
+                ? new WorkItemEffortDto(task.EstimateHours ?? 0m, spentHours)
                 : null,
             /*
              * WHAT THE WORK IS. The form has collected these four since Phase 1 and none of them reached the

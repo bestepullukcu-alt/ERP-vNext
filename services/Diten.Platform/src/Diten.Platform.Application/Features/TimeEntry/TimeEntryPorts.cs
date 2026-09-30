@@ -69,6 +69,16 @@ public interface ITimeEntryTaskGateway
     Task<IReadOnlyList<TimeEntryTaskSummary>> OwnOpenTasksAsync(Guid userId, CancellationToken ct = default);
 }
 
+/// <summary>
+/// MOD-0280-FU01 T2b (pack §19.2) — the one fact MOD-0024's Task Center projection needs from this module to decide
+/// whether to offer <c>startTimer</c>/<c>stopTimer</c> on a reader's own task: is the timer switched on for the reader's
+/// legal entity (D12). Implemented here over <c>ITimerService</c>; the switch itself is never re-derived in Tasks.
+/// </summary>
+public interface ITimeEntryTimerAvailability
+{
+    Task<bool> IsTimerEnabledForAsync(Guid userId, CancellationToken ct = default);
+}
+
 /// <summary>What the meeting's minutes say about one attendee, as they stand now.</summary>
 public enum TimeEntryMeetingAttendance
 {

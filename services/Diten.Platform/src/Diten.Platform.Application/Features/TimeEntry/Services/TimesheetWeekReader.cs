@@ -130,7 +130,8 @@ public static class TimesheetRules
                 day?.TargetMinutes ?? 0,
                 recorded,
                 recorded > TimeEntryLimits.FlagDayMinutes,
-                date > localToday);
+                date > localToday,
+                day?.CalendarUnresolved ?? false);
         }).ToList();
     }
 

@@ -120,8 +120,12 @@ public sealed class TimeEntryController : CustomBaseController
 
     [HttpGet("approvals")]
     [HasPermission(TimeEntryPermissions.ApprovalsRead)]
-    public async Task<IActionResult> GetApprovals([FromQuery] int page = 1, [FromQuery] int pageSize = 25, CancellationToken ct = default)
-        => CreateActionResultInstance(await _mediator.Send(new GetApprovalListQuery(page, pageSize, CorrelationId), ct));
+    public async Task<IActionResult> GetApprovals(
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 25,
+        [FromQuery] int? start = null, [FromQuery] int? length = null, [FromQuery] string? search = null,
+        [FromQuery] string? orderBy = null, [FromQuery] string? orderDir = null, CancellationToken ct = default)
+        => CreateActionResultInstance(await _mediator.Send(
+            new GetApprovalListQuery(page, pageSize, CorrelationId, start, length, search, orderBy, orderDir), ct));
 
     [HttpGet("approvals/{weekId:guid}")]
     [HasPermission(TimeEntryPermissions.ApprovalsRead)]

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SettingsTitle" xml:space="preserve"><value>Time entry settings</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Who approves when no line manager is found, and where the timer may be used.</value></data>
+  <data name="PoolTitle" xml:space="preserve"><value>Time administrator pool</value></data>
+  <data name="PoolHelp" xml:space="preserve"><value>Approves a week when the person's reporting line has nobody (D6), and reopens old weeks.</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>Pool position</value></data>
+  <data name="PoolNone" xml:space="preserve"><value>No pool</value></data>
+  <data name="SavePool" xml:space="preserve"><value>Save pool</value></data>
+  <data name="PoolSaved" xml:space="preserve"><value>Pool saved.</value></data>
+  <data name="SwitchTitle" xml:space="preserve"><value>Timer per legal entity</value></data>
+  <data name="SwitchHelp" xml:space="preserve"><value>The timer is OFF for every legal entity until switched on here. Manual entry always works.</value></data>
+  <data name="ColLegalEntity" xml:space="preserve"><value>Legal entity</value></data>
+  <data name="ColTimer" xml:space="preserve"><value>Timer</value></data>
+  <data name="ColChanged" xml:space="preserve"><value>Last change</value></data>
+  <data name="ColReason" xml:space="preserve"><value>Reason</value></data>
+  <data name="TimerOn" xml:space="preserve"><value>On</value></data>
+  <data name="TimerOff" xml:space="preserve"><value>Off</value></data>
+  <data name="SwitchOn" xml:space="preserve"><value>Switch on</value></data>
+  <data name="SwitchOff" xml:space="preserve"><value>Switch off</value></data>
+  <data name="SwitchReason" xml:space="preserve"><value>Legal basis / reason for switching the timer on (required)</value></data>
+  <data name="SwitchReasonRequired" xml:space="preserve"><value>Write the reason (legal basis) for switching the timer on.</value></data>
+  <data name="SwitchSave" xml:space="preserve"><value>Save</value></data>
+  <data name="SwitchSavedOn" xml:space="preserve"><value>Timer switched on for {0}.</value></data>
+  <data name="SwitchSavedOff" xml:space="preserve"><value>Timer switched off for {0}.</value></data>
+  <data name="SwitchOffConfirm" xml:space="preserve"><value>Switch the timer off for {0}? Running timers there are stopped.</value></data>
+  <data name="SwissWarning" xml:space="preserve"><value>Swiss legal entities: do not switch the timer on until counsel has answered the ArGV 1 Art. 73, ArGV 3 Art. 26, staff consultation and DPIA questions (MOD-0280 pack §22). This sheet is not the statutory working-time record.</value></data>
+  <data name="NoLegalEntities" xml:space="preserve"><value>No legal entity was found.</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>The legal entities could not be loaded. Try again later.</value></data>
+  <data name="PositionsUnavailable" xml:space="preserve"><value>The positions could not be loaded. Try again later.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="NeverChanged" xml:space="preserve"><value>never</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+</root>

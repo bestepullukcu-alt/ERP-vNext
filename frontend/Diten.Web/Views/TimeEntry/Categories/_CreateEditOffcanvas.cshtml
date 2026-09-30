@@ -1,0 +1,75 @@
+@model Diten.Web.Models.TimeEntry.WorkCategoryEditViewModel
+@using Diten.Web.Views.TimeEntry.Categories
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CategoriesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formWorkCategoryAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formWorkCategory" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="categoryId" name="Id" value="" />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="categoryCode" class="form-label fw-medium">
+                        @Localizer["Code"] <span class="text-danger">*</span>
+                    </label>
+                    <div class="diten-field">
+                        <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="categoryCode" name="Code" class="form-control" maxlength="32" placeholder="@Localizer["CodePlaceholder"]" required />
+                    </div>
+                    <div class="form-text" id="categoryCodeHint">@Localizer["CodeHint"]</div>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="categoryLabel" class="form-label fw-medium">
+                        @Localizer["Label"] <span class="text-danger">*</span>
+                    </label>
+                    <div class="diten-field">
+                        <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="categoryLabel" name="LabelText" class="form-control" maxlength="200" placeholder="@Localizer["LabelPlaceholder"]" required />
+                    </div>
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="categorySortOrder" class="form-label fw-medium">@Localizer["SortOrder"]</label>
+                    <div class="diten-field">
+                        <i class="bx bx-sort diten-field-icon" aria-hidden="true"></i>
+                        <input type="number" id="categorySortOrder" name="SortOrder" class="form-control" min="0" max="999" value="0" />
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label for="categoryDescription" class="form-label fw-medium">@SharedLocalizer["Description"]</label>
+                    <div class="diten-field">
+                        <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea id="categoryDescription" name="Description" class="form-control" rows="3" maxlength="500" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input type="hidden" name="CountsAsWork" value="false" />
+                        <input type="checkbox" id="categoryCountsAsWork" name="CountsAsWork" class="form-check-input" role="switch" value="true" checked />
+                        <label for="categoryCountsAsWork" class="form-check-label ms-2">@Localizer["CountsAsWork"]</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSaveCategory" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

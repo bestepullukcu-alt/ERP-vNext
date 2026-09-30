@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SettingsTitle" xml:space="preserve"><value>Paramètres de saisie des temps</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Qui approuve quand aucun responsable n’est trouvé, et où le chronomètre peut être utilisé.</value></data>
+  <data name="PoolTitle" xml:space="preserve"><value>Pool d’administrateurs du temps</value></data>
+  <data name="PoolHelp" xml:space="preserve"><value>Approuve une semaine quand la ligne hiérarchique de la personne est vide (D6) et rouvre les anciennes semaines.</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>Poste du pool</value></data>
+  <data name="PoolNone" xml:space="preserve"><value>Aucun pool</value></data>
+  <data name="SavePool" xml:space="preserve"><value>Enregistrer le pool</value></data>
+  <data name="PoolSaved" xml:space="preserve"><value>Pool enregistré.</value></data>
+  <data name="SwitchTitle" xml:space="preserve"><value>Chronomètre par entité juridique</value></data>
+  <data name="SwitchHelp" xml:space="preserve"><value>Le chronomètre est DÉSACTIVÉ pour chaque entité juridique tant qu’il n’est pas activé ici. La saisie manuelle fonctionne toujours.</value></data>
+  <data name="ColLegalEntity" xml:space="preserve"><value>Entité juridique</value></data>
+  <data name="ColTimer" xml:space="preserve"><value>Chronomètre</value></data>
+  <data name="ColChanged" xml:space="preserve"><value>Dernière modification</value></data>
+  <data name="ColReason" xml:space="preserve"><value>Motif</value></data>
+  <data name="TimerOn" xml:space="preserve"><value>Activé</value></data>
+  <data name="TimerOff" xml:space="preserve"><value>Désactivé</value></data>
+  <data name="SwitchOn" xml:space="preserve"><value>Activer</value></data>
+  <data name="SwitchOff" xml:space="preserve"><value>Désactiver</value></data>
+  <data name="SwitchReason" xml:space="preserve"><value>Base légale / motif d’activation du chronomètre (obligatoire)</value></data>
+  <data name="SwitchReasonRequired" xml:space="preserve"><value>Indiquez le motif (base légale) d’activation du chronomètre.</value></data>
+  <data name="SwitchSave" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="SwitchSavedOn" xml:space="preserve"><value>Chronomètre activé pour {0}.</value></data>
+  <data name="SwitchSavedOff" xml:space="preserve"><value>Chronomètre désactivé pour {0}.</value></data>
+  <data name="SwitchOffConfirm" xml:space="preserve"><value>Désactiver le chronomètre pour {0} ? Les chronomètres en cours y sont arrêtés.</value></data>
+  <data name="SwissWarning" xml:space="preserve"><value>Entités juridiques suisses : n’activez pas le chronomètre avant que le conseil juridique ait répondu aux questions OLT 1 art. 73, OLT 3 art. 26, consultation du personnel et AIPD (pack MOD-0280 §22). Cette feuille n’est pas l’enregistrement légal du temps de travail.</value></data>
+  <data name="NoLegalEntities" xml:space="preserve"><value>Aucune entité juridique trouvée.</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Les entités juridiques n’ont pas pu être chargées. Réessayez plus tard.</value></data>
+  <data name="PositionsUnavailable" xml:space="preserve"><value>Les postes n’ont pas pu être chargés. Réessayez plus tard.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement…</value></data>
+  <data name="NeverChanged" xml:space="preserve"><value>jamais</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Annuler</value></data>
+</root>

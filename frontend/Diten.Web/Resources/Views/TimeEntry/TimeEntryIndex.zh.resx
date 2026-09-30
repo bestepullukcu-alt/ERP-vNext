@@ -230,4 +230,9 @@
   <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>有未保存的更改，且没有时间的行不会被保存。仍要离开本周吗？</value></data>
   <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>采集的时间不能更正为零。请更正为至少 {step} 分钟，并在备注中说明。</value></data>
   <data name="SaveFailedKept" xml:space="preserve"><value>草稿未保存。您的更改仍保留在页面上。</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>此行背后的计时段</value></data>
+  <data name="SegmentLine" xml:space="preserve"><value>{start}–{end} · {duration}</value></data>
+  <data name="SegmentCutAtMidnight" xml:space="preserve"><value>午夜截断</value></data>
+  <data name="ErrApprovalsQueryInvalid" xml:space="preserve"><value>无法按这些设置读取审批列表。请刷新页面。</value></data>
+  <data name="SubmitNeedsTime" xml:space="preserve"><value>提交本周前请先填写时间。</value></data>
 </root>

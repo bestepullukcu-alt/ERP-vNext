@@ -182,7 +182,8 @@ describe("the timesheet card gained a control, not an authority", () => {
   });
 
   it("says what the timer is doing, in all seven languages", () => {
-    ["TimerStateRunning", "TimerStatePaused", "TimerFollowsStatusHint"].forEach((key) => {
+    // MOD-0280-FU01 T2b — the running line is the server's timer state; the paused line is the task's own state.
+    ["TimerRunningNow", "TimerStatePaused", "TimeDraftLabel", "TimeSubmittedLabel", "TimeApprovedLabel"].forEach((key) => {
       /*
        * ⚠ BY NAME, NOT BY CALL SHAPE. Two of the three are chosen through a computed `stateKey` and reach the
        * translator as `t(stateKey)`, so asserting on `t('TimerStateRunning')` would fail on working code —

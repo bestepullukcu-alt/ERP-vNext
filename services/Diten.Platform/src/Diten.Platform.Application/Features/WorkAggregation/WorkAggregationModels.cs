@@ -732,7 +732,19 @@ public sealed record WorkItemProjectionDto(
     /// task's submitted and approved totals — never another person's draft (D11).
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemTimeEntriesDto? TimeEntries = null);
+    WorkItemTimeEntriesDto? TimeEntries = null,
+    /// <summary>
+    /// The effort card's container — the one the WC-1 contract ties to <c>taskContext</c> (<c>DATA_CAPABILITIES.taskContext:
+    /// ['effort']</c>). Emitted exactly when <c>taskContext</c> is declared, so the pair is never half there: before this
+    /// field existed the capability went out without its container, and the browser's contract check DROPPED every task
+    /// that had an estimate or approved time from the board (live since 29c4b4a30; found by MOD-0280-FU01 T2b's guard).
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemEffortDto? Effort = null);
+
+/// <summary>The effort card's two figures, in hours: what was estimated and what was APPROVED (D7). Two durations side by
+/// side; no ratio is computed here (pack §8.7).</summary>
+public sealed record WorkItemEffortDto(decimal Estimate, decimal Spent);
 
 /// <summary>MOD-0280-FU01 §19.2 — the <c>timeEntries</c> block. Three durations side by side; no ratio (pack §8.7).</summary>
 /// <param name="DraftMinutes">The READER's own minutes on this task in their unsubmitted drafts. For a CORRECTION draft it is

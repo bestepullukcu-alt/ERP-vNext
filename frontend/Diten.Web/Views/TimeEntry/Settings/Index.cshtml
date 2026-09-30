@@ -1,0 +1,59 @@
+@using Diten.Web.Views.TimeEntry.Settings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SettingsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["SettingsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0280-FU01 T2b — Time Entry settings: the time-administrator pool (D6 fallback approver) and the timer switch per
+    legal entity (D12: OFF for every entity until switched on here, with a reason; audited). A plain form page, not a
+    list. UAS-001: without time-entry.settings.manage nothing below is drawn.
+*@
+@if (!Perms.Has("time-entry.settings.manage"))
+{
+    <partial name="_AccessDenied" model="@Localizer["SettingsTitle"].Value" />
+    return;
+}
+
+<div class="time-entry-settings" id="timeEntrySettings">
+    <div class="mb-3">
+        <h5 class="mb-0">@Localizer["SettingsTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+
+    <div class="time-entry-notice" id="tsNotice" role="status" aria-live="polite"></div>
+
+    <section class="card mb-4">
+        <div class="card-body">
+            <h6 class="mb-1">@Localizer["PoolTitle"]</h6>
+            <p class="text-muted small">@Localizer["PoolHelp"]</p>
+            <div class="time-entry-settings-pool">
+                <label for="tsPoolPosition" class="form-label">@Localizer["PoolPosition"]</label>
+                <select id="tsPoolPosition" class="form-select">
+                    <option value="">@Localizer["PoolNone"]</option>
+                </select>
+                <button type="button" class="btn btn-primary" id="tsSavePool">@Localizer["SavePool"]</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-body">
+            <h6 class="mb-1">@Localizer["SwitchTitle"]</h6>
+            <p class="text-muted small">@Localizer["SwitchHelp"]</p>
+            <div class="alert alert-warning time-entry-swiss-warning" role="note" id="tsSwissWarning">@Localizer["SwissWarning"]</div>
+            <p class="time-entry-loading" id="tsLoading">@Localizer["Loading"]</p>
+            <div id="tsSwitches"></div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TimeEntry/Settings/_IndexL10n.cshtml" />
+    <partial name="~/Views/TimeEntry/_ErrorL10n.cshtml" />
+    <script src="~/assets/js/TimeEntry/core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TimeEntry/Settings/index.js" asp-append-version="true"></script>
+}

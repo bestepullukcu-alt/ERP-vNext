@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SettingsTitle" xml:space="preserve"><value>Zaman kaydı ayarları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Hat yöneticisi bulunamadığında kim onaylar ve sayaç nerede kullanılabilir.</value></data>
+  <data name="PoolTitle" xml:space="preserve"><value>Zaman yöneticisi havuzu</value></data>
+  <data name="PoolHelp" xml:space="preserve"><value>Kişinin raporlama hattında kimse yoksa haftayı onaylar (D6) ve eski haftaları yeniden açar.</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>Havuz pozisyonu</value></data>
+  <data name="PoolNone" xml:space="preserve"><value>Havuz yok</value></data>
+  <data name="SavePool" xml:space="preserve"><value>Havuzu kaydet</value></data>
+  <data name="PoolSaved" xml:space="preserve"><value>Havuz kaydedildi.</value></data>
+  <data name="SwitchTitle" xml:space="preserve"><value>Tüzel kişi bazında sayaç</value></data>
+  <data name="SwitchHelp" xml:space="preserve"><value>Sayaç, burada açılana kadar her tüzel kişide KAPALIDIR. Elle giriş her zaman çalışır.</value></data>
+  <data name="ColLegalEntity" xml:space="preserve"><value>Tüzel kişi</value></data>
+  <data name="ColTimer" xml:space="preserve"><value>Sayaç</value></data>
+  <data name="ColChanged" xml:space="preserve"><value>Son değişiklik</value></data>
+  <data name="ColReason" xml:space="preserve"><value>Sebep</value></data>
+  <data name="TimerOn" xml:space="preserve"><value>Açık</value></data>
+  <data name="TimerOff" xml:space="preserve"><value>Kapalı</value></data>
+  <data name="SwitchOn" xml:space="preserve"><value>Aç</value></data>
+  <data name="SwitchOff" xml:space="preserve"><value>Kapat</value></data>
+  <data name="SwitchReason" xml:space="preserve"><value>Sayacı açmanın hukuki dayanağı / sebebi (zorunlu)</value></data>
+  <data name="SwitchReasonRequired" xml:space="preserve"><value>Sayacı açmanın sebebini (hukuki dayanağını) yazın.</value></data>
+  <data name="SwitchSave" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="SwitchSavedOn" xml:space="preserve"><value>{0} için sayaç açıldı.</value></data>
+  <data name="SwitchSavedOff" xml:space="preserve"><value>{0} için sayaç kapatıldı.</value></data>
+  <data name="SwitchOffConfirm" xml:space="preserve"><value>{0} için sayaç kapatılsın mı? Oradaki çalışan sayaçlar durdurulur.</value></data>
+  <data name="SwissWarning" xml:space="preserve"><value>İsviçre şirketleri: ArGV 1 Md. 73, ArGV 3 Md. 26, çalışan danışma ve DPIA soruları hukuk tarafından yanıtlanana kadar sayacı açmayın (MOD-0280 paketi §22). Bu çizelge yasal çalışma süresi kaydı değildir.</value></data>
+  <data name="NoLegalEntities" xml:space="preserve"><value>Tüzel kişi bulunamadı.</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>Tüzel kişiler yüklenemedi. Daha sonra yeniden deneyin.</value></data>
+  <data name="PositionsUnavailable" xml:space="preserve"><value>Pozisyonlar yüklenemedi. Daha sonra yeniden deneyin.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="NeverChanged" xml:space="preserve"><value>hiç</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Vazgeç</value></data>
+</root>

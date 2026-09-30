@@ -230,4 +230,9 @@
   <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>توجد تغييرات غير محفوظة، والصفوف التي بلا وقت لا تُحفظ. هل تريد مغادرة هذا الأسبوع على أي حال؟</value></data>
   <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>لا يمكن تصحيح الوقت الملتقَط إلى صفر. صحّحه إلى {step} دقيقة على الأقل واذكر السبب في الملاحظة.</value></data>
   <data name="SaveFailedKept" xml:space="preserve"><value>لم تُحفظ المسودة. لا تزال تغييراتك على الصفحة.</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>فترات المؤقت وراء هذا الصف</value></data>
+  <data name="SegmentLine" xml:space="preserve"><value>{start}–{end} · {duration}</value></data>
+  <data name="SegmentCutAtMidnight" xml:space="preserve"><value>قُطع عند منتصف الليل</value></data>
+  <data name="ErrApprovalsQueryInvalid" xml:space="preserve"><value>تعذرت قراءة قائمة الاعتمادات بهذه الإعدادات. أعد تحميل الصفحة.</value></data>
+  <data name="SubmitNeedsTime" xml:space="preserve"><value>أدخل وقتًا قبل إرسال الأسبوع.</value></data>
 </root>

@@ -494,6 +494,7 @@
         TIME_ENTRY_SOURCE_INVALID: 'ErrSourceInvalid',
         TIME_ENTRY_SOURCE_REQUIRED: 'ErrSourceRequired',
         TIME_ENTRY_CAPTURED_ROW_NOT_FOUND: 'ErrCapturedRowNotFound',
+        TIMESHEET_APPROVALS_QUERY_INVALID: 'ErrApprovalsQueryInvalid',
         WORKFLOW_REJECT_COMMENT_REQUIRED: 'ErrRejectCommentRequired'
     };
 

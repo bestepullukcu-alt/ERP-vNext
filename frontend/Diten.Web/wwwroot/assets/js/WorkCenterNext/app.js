@@ -703,23 +703,16 @@
         persistSeenIds(seenIds);
     };
 
-    // ── Timesheet helpers (task work loop, live browser clock) ────────────────
-    const foldTimer = (item) => {
-        const ts = item.timesheet;
-        if (ts && ts.running && ts.startedAt) {
-            ts.loggedMinutes += (Date.now() - ts.startedAt) / 60000;
-            ts.running = false; ts.startedAt = null;
-        }
-    };
+    // ── Time (MOD-0280-FU01 T2b) ──────────────────────────────────────────────
+    /*
+     * ⚠ THE BROWSER TIMER IS GONE (2026-09-30, T2b). `foldTimer` added browser time to an in-memory field that never
+     * reached a server, and the mapper invented a 37-minute start anchor on every load. The timer is now Platform's
+     * (MOD-0280-FU01 D2): the card shows the real `timeEntries` block and offers the provider's own startTimer /
+     * stopTimer actions; the top-bar chip shows the running one. Nothing here measures time.
+     */
     const formatMinutes = (mins) => {
         const total = Math.max(0, Math.floor(mins));
         return tf('TimeHM', Math.floor(total / 60), total % 60);
-    };
-    const formatSegment = (ms) => {
-        const s = Math.max(0, Math.floor(ms / 1000));
-        const mm = String(Math.floor(s / 60)).padStart(2, '0');
-        const ss = String(s % 60).padStart(2, '0');
-        return `${mm}:${ss}`;
     };
 
     // ── Filtering / ordering ──────────────────────────────────────────────────
@@ -1830,6 +1823,8 @@
          */
         // One movement, one glyph: resuming is starting again, and a reader who learned one knows the other.
         start: 'bx-play', resume: 'bx-play',
+        // MOD-0280-FU01 T2b — the holder's timer on the card.
+        startTimer: 'bx-play-circle', stopTimer: 'bx-stop-circle',
         // NOT `bx-check` — that is `accept`, which means "I take this on". Finishing is the second tick.
         complete: 'bx-check-double',
         // Taking work out of a pool, and putting it back. A pair, drawn as a pair.
@@ -4568,56 +4563,52 @@
         </div>`;
     };
 
-    // Lightweight timesheet (task only) — total logged + live segment when running.
+    /*
+     * MOD-0280-FU01 T2b (pack §19.2) — the task's time, from the provider's REAL `timeEntries` block: the reader's own
+     * draft, and the task's submitted and approved totals (D7). Numbers only; nothing is measured in the browser.
+     * The fixture showcase carries an ARRAY of entries (contract only requires the container) — its minutes read as
+     * draft, so the showcase still draws a card.
+     */
+    const timeEntriesOf = (item) => {
+        const te = item.timeEntries;
+        if (Array.isArray(te)) {
+            return { draft: te.reduce((sum, e) => sum + (Number(e && e.minutes) || 0), 0), submitted: 0, approved: 0 };
+        }
+        if (te && typeof te === 'object') {
+            return {
+                draft: Number(te.draftMinutes) || 0,
+                submitted: Number(te.submittedMinutes) || 0,
+                approved: Number(te.approvedMinutes) || 0
+            };
+        }
+        return null;
+    };
+
+    const TIMER_ACTION_KEYS = ['startTimer', 'stopTimer'];
+
+    // The time card (task only). Drawn only where the provider declares timeTracking — a confident zero on a task
+    // whose time is not tracked would read as "nobody worked on this".
     const renderTimesheet = (item) => {
-        // The capability gate came first, like every other block: without it this card rendered "0h 0m" for every
-        // real task, because `item.timesheet` is null when the provider does not declare timeTracking and the
-        // fallback below quietly supplied zeroes. A confident zero is worse than no card — it reads as "nobody has
-        // worked on this" rather than "this system does not track that".
         if (!hasCap(item, 'timeTracking')) { return ''; }
         if (item.itemType !== 'task' || item.lifecycle === 'PendingAcceptance') { return ''; }
-        const ts = item.timesheet || { loggedMinutes: 0, running: false };
+        const te = timeEntriesOf(item);
+        if (!te) { return ''; }
+        const figure = (value, labelKey, cls) => `<span class="wcn-ts-figure ${cls}">
+                <span class="wcn-ts-total">${esc(formatMinutes(value))}</span>
+                <span class="wcn-ts-sub">${esc(t(labelKey))}</span>
+            </span>`;
         /*
-         * ⚠ THE TICKING READOUT WAS REMOVED (2026-08-24, Tur C) — it was telling a lie.
-         *
-         * MEASURED: it showed 37:29, the page was refreshed, and it came back at 37:15 — not continuing, but
-         * STARTING OVER. The cause is two layers deep: the mapper invents an anchor
-         * (`startedAt: Date.now() - 37min`) on every load, and `TaskItem` has no timer-start field at all —
-         * the projection carries `TimerState` (running/paused) and nothing to count from.
-         *
-         * So the number could never be right, on a fixture or on a real task. A readout that ticks convincingly
-         * and resets on refresh is worse than no readout: a reader trusts it and reports the wrong hours.
-         *
-         * ⚠ WHAT STAYS, because it is real: the TOTAL (`loggedMinutes`, stored, survives refresh), the task's
-         * STATE, and "Süre gir" — the only path that writes anything durable. The hint below now says plainly
-         * that elapsed time is not recorded.
-         *
-         * ⚠ NO ENTITY FIELD, NO MIGRATION. The honest fix belongs to MOD-0280 (blueprint, EA-TBD). This round
-         * stops lying; it does not build the feature. See BL-234.
+         * The timer buttons are the provider's own actions (startTimer / stopTimer): offered only to the holder, on
+         * InProgress, with the timer switched on for their legal entity. They do not move the task's lifecycle — the
+         * timer is a measurement, the task's state stays where its own actions put it.
          */
-        const live = '';
-        /*
-         * ── WHAT THIS CARD MAY AND MAY NOT CARRY (2026-08-24, Tur B) ──────────────────────────────────────
-         *
-         * The owner's complaint was that the card states a total and then falls silent — pausing means going
-         * to another card. The obvious fix is a start/pause button here, and it is the WRONG one.
-         *
-         * MEASURED: the timer is not an independent control. It is a SIDE EFFECT of the task's state —
-         *     'start'    → the task becomes "Devam ediyor" AND the timer runs
-         *     'complete' → the task ends              AND the timer folds
-         * (`pause` was in this list until 2026-08-24 — it never existed on the server; see BL-237.)
-         *     'complete' → the task ends              AND the timer folds
-         * Putting start/pause here would open a SECOND way to change the task's lifecycle, from inside a card
-         * that reads as a readout. This session already refused exactly that for document approval — do not
-         * create a second authority.
-         *
-         * ⚠ WHAT DOES BELONG HERE IS "Süre gir". Logging minutes by hand does NOT change the task's state; it
-         * is a personal measurement, not a lifecycle move. It sits in the action rail today, beside Complete
-         * and Pause, which is company it does not keep.
-         *
-         * The card also SAYS what the timer is doing and why, so the reader stops looking for a button that is
-         * deliberately elsewhere.
-         */
+        const timerButtons = itemActions(item)
+            .filter((a) => TIMER_ACTION_KEYS.includes(a.key))
+            .map((a) => `<button type="button" class="btn btn-sm ${a.key === 'stopTimer' ? 'btn-label-danger' : 'btn-label-primary'} wcn-ts-timer"
+                       data-wcn-action="${esc(a.key)}" data-wcn-id="${esc(item.id)}"${a.disabled ? ' disabled' : ''}>
+                    <i class="bx ${inboxActionIcon(a)} me-1"></i>${esc(actionLabel(a))}
+               </button>`)
+            .join('');
         const logAction = itemActions(item).find((a) => a.key === 'logTime' && !a.disabled);
         const logButton = logAction
             ? `<button type="button" class="btn btn-sm btn-label-secondary wcn-ts-log"
@@ -4625,29 +4616,28 @@
                     <i class="bx ${inboxActionIcon(logAction)} me-1"></i>${esc(actionLabel(logAction))}
                </button>`
             : '';
-        /*
-         * ⚠ THE STATE LINE NAMES THE TASK, NOT A TIMER (2026-08-24, Tur C). It used to read "Devam ediyor —
-         * sayaç işliyor", which contradicted the hint below it the moment the ticking readout was removed:
-         * one line claimed a timer was running while the next said elapsed time is not recorded. Only the
-         * task's own state survives — that part is true and comes from the projection.
-         */
-        const stateKey = ts.running ? 'TimerStateRunning'
+        // The running line is the SERVER's timer state for this reader (D2, §19.2); a paused TASK (Waiting, PendingReview
+        // — ResolveExecutionState) still says so, because that state is real even though nothing pauses a timer.
+        const stateKey = item.timerState === 'running' ? 'TimerRunningNow'
             : item.executionState === 'paused' ? 'TimerStatePaused'
             : null;
-        const stateLine = stateKey
+        const runningLine = stateKey
             ? `<p class="wcn-ts-state">${esc(t(stateKey))}</p>`
             : '';
         return `<div class="wcn-detail-section">
             ${cardHead('bx-stopwatch', 'TimesheetLabel')}
             <div class="wcn-timesheet">
                 <span class="wcn-ts-icon"><i class="bx bx-time"></i></span>
-                <span class="wcn-ts-total">${esc(formatMinutes(ts.loggedMinutes))}</span>
-                <span class="wcn-ts-sub">${esc(t('TimeLoggedLabel'))}</span>
-                ${live}
+                ${figure(te.draft, 'TimeDraftLabel', 'wcn-ts-draft')}
+                ${figure(te.submitted, 'TimeSubmittedLabel', 'wcn-ts-submitted')}
+                ${figure(te.approved, 'TimeApprovedLabel', 'wcn-ts-approved')}
             </div>
-            ${stateLine}
-            <p class="wcn-block-hint"><i class="bx bx-info-circle"></i>${esc(t('TimerFollowsStatusHint'))}</p>
-            ${logButton}
+            ${runningLine}
+            <div class="wcn-ts-actions">
+                ${timerButtons}
+                ${logButton}
+                <a class="btn btn-sm btn-text-secondary wcn-ts-sheet" href="/TimeEntry">${esc(t('OpenMyTimesheet'))}</a>
+            </div>
         </div>`;
     };
 
@@ -7748,10 +7738,10 @@
                 item.waitingOn = null; item.snoozedUntil = null;
                 setProjectionState(item, 'InProgress', 'InProgress', 'Devam ediyor');
                 item.executionState = 'active';
-                item.timerState = 'running';
-                item.timesheet = item.timesheet || { running: false, startedAt: null, loggedMinutes: 0 };
-                item.timesheet.running = true; item.timesheet.startedAt = Date.now();
-                return 'timerStart';
+                // The showcase mirrors the server: Start runs the holder's timer only where time is tracked (WC-1
+                // refuses a running timer without the capability). No browser clock, no invented anchor.
+                item.timerState = hasCap(item, 'timeTracking') ? 'running' : 'notApplicable';
+                return 'updated';
             /*
              * ⚠ `pause` WAS REMOVED (2026-08-24, BL-237). MEASURED: `TasksController`'s transition list is
              * accept · claim · release · plan · start · inquire · submitReview · return · reassign · complete ·
@@ -7765,7 +7755,6 @@
              * wants "pause my own work" as its own thing.
              */
             case 'complete':
-                foldTimer(item);
                 item.waitingOn = null; item.snoozedUntil = null;
                 item.executionState = 'notStarted';
                 item.timerState = 'inactive';
@@ -7810,7 +7799,6 @@
             case 'moved': toast(tf('ToastMovedToWorkCenter', label)); break;
             case 'removed': toast(tf('ToastItemRemoved', label)); break;
             case 'toReview': toast(tf('ToastSentToReview', item.title)); break;
-            case 'timerStart': toast(tf('ToastTimerStarted', item.title)); break;
             case 'resolved': toast(tf('ToastAction', label)); break;
             default: toast(reason ? tf('ToastActionReason', label, reason) : tf('ToastAction', label));
         }
@@ -8048,6 +8036,74 @@
     const buildTransitionBody = (actionCode, parts) =>
         (TRANSITION_BODIES[actionCode] || TRANSITION_BODIES.__default)(parts);
 
+    /*
+     * ══ MOD-0280-FU01 T2b — THE CARD'S TIMER ═══════════════════════════════════════════════════════════════════
+     *
+     * startTimer / stopTimer travel the same dispatch address as every action; the TimeEntry handlers decide. What
+     * is added here is only what a timer needs AFTER the write: the top-bar chip is told to ask again (it owns the
+     * running display), and a start that SWITCHED the timer away from another task offers "Undo" until the server's
+     * own undo window closes (TimerSegmentDto.undoUntilUtc) — the undo itself is TimeEntry's endpoint.
+     */
+    const TIMER_REASON_KEYS = {
+        TIMER_DISABLED_FOR_LEGAL_ENTITY: 'TimerErrDisabled',
+        TIMER_TASK_NOT_HELD: 'TimerErrNotHeld',
+        TIMER_TASK_NOT_IN_PROGRESS: 'TimerErrNotInProgress',
+        TIMER_NOT_RUNNING: 'TimerErrNotRunning',
+        TIMER_CONCURRENCY_CONFLICT: 'TimerErrConflict',
+        TIMER_UNDO_EXPIRED: 'TimerErrUndoExpired'
+    };
+
+    let timerUndoTimeout = null;
+    const hideTimerUndo = () => {
+        if (timerUndoTimeout) { global.clearTimeout(timerUndoTimeout); timerUndoTimeout = null; }
+        const bar = global.document.getElementById('wcnTimerUndo');
+        if (bar) { bar.remove(); }
+    };
+
+    const undoTimerSwitch = async (switchToken) => {
+        hideTimerUndo();
+        let result = { ok: false, reasonCode: null };
+        try {
+            const response = await global.fetch('/TimeEntry/api/timer/undo-switch', {
+                method: 'POST', credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ switchToken })
+            });
+            const body = await response.json().catch(() => null);
+            result = { ok: response.ok, reasonCode: body && (body.reason_code || body.reasonCode) };
+        } catch (error) { /* network: said below */ }
+        global.DitenTimerChip?.refresh?.();
+        await loadWorkItems();
+        render();
+        toast(result.ok ? t('TimerUndone') : t(TIMER_REASON_KEYS[result.reasonCode] || 'TimerErrGeneric'), result.ok ? 'success' : 'error');
+    };
+
+    const showTimerUndo = (running) => {
+        hideTimerUndo();
+        const until = Date.parse(running.undoUntilUtc);
+        const left = until - Date.now();
+        if (!running.switchToken || !(left > 0)) { return; }
+        const bar = global.document.createElement('div');
+        bar.id = 'wcnTimerUndo';
+        bar.className = 'wcn-timer-undo';
+        bar.setAttribute('role', 'status');
+        bar.innerHTML = `<span>${esc(t('TimerSwitchedText'))}</span>
+            <button type="button" class="btn btn-sm btn-label-primary" data-wcn-timer-undo>${esc(t('TimerUndo'))}</button>`;
+        bar.querySelector('[data-wcn-timer-undo]').addEventListener('click', () => undoTimerSwitch(running.switchToken));
+        global.document.body.appendChild(bar);
+        timerUndoTimeout = global.setTimeout(hideTimerUndo, left);
+    };
+
+    const afterTimerAction = async (code) => {
+        // The chip re-reads (forced); the shared read then hands this page the same answer — one request.
+        const refreshed = global.DitenTimerChip?.refresh?.();
+        if (code !== 'startTimer' || !global.DitenTimerShared) { return; }
+        await refreshed;
+        const read = await global.DitenTimerShared.read(!refreshed);
+        const running = read && read.ok && read.data ? read.data.running : null;
+        if (running && running.switchToken) { showTimerUndo(running); }
+    };
+
     const submitRealTransition = async (
         item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         const label = actionLabel(action);
@@ -8082,7 +8138,18 @@
             render();
             // The task's TITLE, never its id — a GUID means nothing to the person reading the toast.
             toast(tf('ToastActionApplied', label, item.title));
+            if (TIMER_ACTION_KEYS.includes(action.code)) { await afterTimerAction(action.code); }
             return { outcome: 'done' };
+        }
+
+        // A timer refusal is the TimeEntry handler's (switched off, not held, not in progress…) — said in its own words;
+        // the chip re-reads too, since a refusal usually means the timer changed elsewhere.
+        if (TIMER_ACTION_KEYS.includes(action.code)) {
+            global.DitenTimerChip?.refresh?.();
+            await loadWorkItems();
+            render();
+            toast(t(TIMER_REASON_KEYS[result.reasonCode] || 'TimerErrGeneric'), 'error');
+            return { outcome: 'refused', reasonCode: result.reasonCode };
         }
 
         /*
@@ -9551,8 +9618,8 @@
             onConfirm: (value) => {
                 const mins = parseInt(value, 10);
                 if (mins > 0) {
-                    item.timesheet = item.timesheet || { running: false, startedAt: null, loggedMinutes: 0 };
-                    item.timesheet.loggedMinutes += mins;
+                    // Showcase only (fixture `logTime`): no local timesheet is kept any more — real time is recorded on
+                    // My Timesheet (MOD-0280-FU01). The dialog stays a showcase of the dialog, nothing more.
                     item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, atMs: data.referenceDate(item.provenance) });
                     render();
                     toast(tf('ToastTimeLogged', formatMinutes(mins)));

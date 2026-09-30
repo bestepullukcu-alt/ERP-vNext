@@ -12,9 +12,10 @@ namespace Diten.Platform.Application.Features.TimeEntry.SelfRegistration;
 /// to a tenant role. So the six T1a keys ride on the pages the pack names (§9) now — the MOD-0357 S2 / MOD-0024
 /// precedent.</para>
 ///
-/// <para><b>Navigation, slice by slice.</b> T2a built <c>/TimeEntry</c>, so <c>MY_TIMESHEET</c> is visible (with
-/// <c>Nav.Page.MY_TIMESHEET</c> in seven languages). Every other page stays hidden until its screen exists (T2b) — a nav
-/// entry before that would be a dead link; T2b flips <c>TIME_APPROVALS</c> (pack §9).</para>
+/// <para><b>Navigation, slice by slice.</b> T2a built <c>/TimeEntry</c> (<c>MY_TIMESHEET</c>); T2b built the approvals,
+/// categories and settings screens, so those three are visible too — each behind its OWN permission (the shell hides
+/// a page the reader lacks it for, UAS-001). The read-only approval detail is reached from its list, never from the
+/// menu. <c>Nav.Page.*</c> keys in seven languages.</para>
 ///
 /// <para><b>Known gap, reported (the same one MOD-0357 S2 reported).</b>
 /// <c>NavManifestL10nGuardTests</c> derives a required <c>Nav.Module.TIMEENTRY</c> key from this file's module code,
@@ -91,7 +92,7 @@ public sealed class TimeEntryManifestProvider : IModuleManifestProvider
                     RoutePath: "/TimeEntry/Approvals",
                     RequiredPermission: TimeEntryPermissions.ApprovalsRead,
                     ParentPageCode: null,
-                    IsNavigationVisible: false,
+                    IsNavigationVisible: true,
                     PageType: "List",
                     SortOrder: 20,
                     Actions:
@@ -117,7 +118,7 @@ public sealed class TimeEntryManifestProvider : IModuleManifestProvider
                     RoutePath: "/TimeEntry/Categories",
                     RequiredPermission: TimeEntryPermissions.CategoriesManage,
                     ParentPageCode: null,
-                    IsNavigationVisible: false,
+                    IsNavigationVisible: true,
                     PageType: "List",
                     SortOrder: 30,
                     Actions:
@@ -140,7 +141,7 @@ public sealed class TimeEntryManifestProvider : IModuleManifestProvider
                     RoutePath: "/TimeEntry/Settings",
                     RequiredPermission: TimeEntryPermissions.SettingsManage,
                     ParentPageCode: null,
-                    IsNavigationVisible: false,
+                    IsNavigationVisible: true,
                     PageType: "Form",
                     SortOrder: 40,
                     Actions:

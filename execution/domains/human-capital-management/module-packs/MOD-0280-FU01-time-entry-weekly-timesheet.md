@@ -823,22 +823,25 @@ field (R10).
 
 ### 19.3 Platform links table (filled with measured values at the end of T2)
 
-| # | Link | Planned value |
-|---|---|---|
-| 1 | Module catalog | `time-entry`, self-registered catalog module, `IsTenantAssignable: true`, `IsBaseline: false` (entitlement-gated, A4) |
-| 2 | Domain | `Human Capital` → `Nav.Domain.HUMANCAPITAL` (exists) |
-| 3 | Page actions | Categories: create/update/activate/deactivate; Settings: update; My Timesheet: submit/withdraw/correct; Approvals: reopen (time admin) |
-| 4 | Permission keys | §14 (6 in T1, 2 in T4) |
-| 5 | Audit | every §3.2 command incl. minimisation; T4 report reads via `IDataExportAuditWriter` |
-| 6 | Notifications | §14 events, templates ×7 |
-| 7 | Nav | `Nav.Module.TIMEENTRY`, `Nav.Page.MY_TIMESHEET/TIME_APPROVALS/TIME_CATEGORIES/TIME_SETTINGS` ×7 |
-| 8 | KVKK / DSG | §22; privacy notice text is the tenant's, the product shows the "not a statutory record" line |
-| 9 | Onboarding | recommended category install; time-admin pool position; per-entity switch review (all off by default) |
-| 10 | Self-registration | manifest + completeness test green |
+| # | Link | Planned value | Measured at the end of T2 (2026-09-30, WP-UI-TIME-ENTRY-ADMIN-01) |
+|---|---|---|---|
+| 1 | Module catalog | `time-entry`, self-registered catalog module, `IsTenantAssignable: true`, `IsBaseline: false` (entitlement-gated, A4) | Manifest: `ModuleCode: "time-entry"`, `IsTenantAssignable: true`, `IsBaseline: false`. Dev catalog: `platform_module_catalog` row `ModuleCode: "TIME-ENTRY"`, `Domain: "HUMANCAPITAL"`, `Status: 1`, `IsTenantAssignable: true` |
+| 2 | Domain | `Human Capital` → `Nav.Domain.HUMANCAPITAL` (exists) | `Domain: "Human Capital"` → `Nav.Domain.HUMANCAPITAL` present in all 7 `SharedResource` files (`NavManifestL10nGuardTests` green) |
+| 3 | Page actions | Categories: create/update/activate/deactivate; Settings: update; My Timesheet: submit/withdraw/correct; Approvals: reopen (time admin) | Manifest: MY_TIMESHEET 11 · TIME_APPROVALS 1 (REOPEN) · TIME_APPROVAL_DETAIL 0 · TIME_CATEGORIES 5 · TIME_SETTINGS 2 = **19**; dev `platform_module_page_action_descriptors` = 19 |
+| 4 | Permission keys | §14 (6 in T1, 2 in T4) | 6 `time-entry.*` keys in `diten_auth_v3.permissions`; T4 keys not minted. Task Center timer actions carry `time-entry.timesheets.update` (`TaskWorkItemProvider.RequiredActionPermissions`); decisions carry MOD-0023's own `platform.workflow.tasks.approve/.reject` |
+| 5 | Audit | every §3.2 command incl. minimisation; T4 report reads via `IDataExportAuditWriter` | 24 / 24 commands under `Features/TimeEntry/Commands` are `IAuditableCommand`; T2b adds no command (reads + existing commands only) |
+| 6 | Notifications | §14 events, templates ×7 | 5 events declared in the manifest (`week.submitted/approved/rejected/withdrawn`, `timer.auto-closed`); templates are T3 |
+| 7 | Nav | `Nav.Module.TIMEENTRY`, `Nav.Page.MY_TIMESHEET/TIME_APPROVALS/TIME_CATEGORIES/TIME_SETTINGS` ×7 | Keys (the bridge normalises codes): `Nav.Module.TIMEENTRY`, `Nav.Page.MYTIMESHEET`, `.TIMEAPPROVALS`, `.TIMECATEGORIES`, `.TIMESETTINGS` ×7. Visible: MY_TIMESHEET, TIME_APPROVALS, TIME_CATEGORIES, TIME_SETTINGS, each behind its own key; TIME_APPROVAL_DETAIL hidden. Dev DB still shows the pre-T2b visibility (only MY_TIMESHEET) until Platform is redeployed |
+| 8 | KVKK / DSG | §22; privacy notice text is the tenant's, the product shows the "not a statutory record" line | My Timesheet shows the "effort allocation, not a statutory working-time record" line; Settings shows the Swiss §22 warning above the switch list; no per-person export (approvals list declares none — T4 with `IDataExportAuditWriter`) |
+| 9 | Onboarding | recommended category install; time-admin pool position; per-entity switch review (all off by default) | Categories: "Install recommended" (5 codes, labels ×7); Settings: pool position picker + every legal entity listed OFF until switched on with a reason. Dev data: 0 categories, 0 switch rows on |
+| 10 | Self-registration | manifest + completeness test green | `TimeEntryManifestProviderTests` green (nav set asserted: 4 visible pages, each with a `time-entry.*` key) |
 
-Read-only Mongo queries for the table: `db.module_catalog_items.find({ModuleCode:"time-entry"})`,
-`db.permissions.find({Key:/^time-entry\./})`, `db.time_entry_timer_segments.countDocuments({IsRunning:true})`
-(exact collection names confirmed at measurement time).
+Read-only Mongo queries used (dev, 2026-09-30):
+`db.platform_module_catalog.find({ModuleCode:/time/i})` (→ `TIME-ENTRY`), `db.platform_module_page_descriptors.find({ModuleCode:"TIME-ENTRY"})`,
+`db.platform_module_page_action_descriptors.countDocuments({ModuleCode:"TIME-ENTRY"})` (→ 19) on `diten_personalization_dev`;
+`db.permissions.countDocuments({Key:/^time-entry\./})` (→ 6) on `diten_auth_v3`;
+`db.time_entry_timer_segments.countDocuments({IsRunning:true})`, `db.time_entry_timesheet_weeks.countDocuments({})`,
+`db.time_entry_work_categories.countDocuments({})`, `db.time_entry_legal_entity_settings.countDocuments({TimerEnabled:true})` (→ 0 each).
 
 ---
 

@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Providers;
 using Diten.Platform.Application.Features.TimeEntry;
 using Diten.Platform.Application.Features.Tasks.Services;
@@ -44,17 +45,17 @@ public sealed class TaskTimeProjectionTests
     }
 
     [Fact]
-    public void The_module_registers_time_tracking_off_until_T2_ships_its_card()
+    public void The_module_registers_time_tracking_ON_now_that_T2b_ships_its_card()
     {
         using var provider = new ServiceCollection().AddTimeEntryModule().BuildServiceProvider();
 
-        Assert.False(provider.GetRequiredService<TaskTimeTrackingOptions>().DeclareTimeTracking);
+        Assert.True(provider.GetRequiredService<TaskTimeTrackingOptions>().DeclareTimeTracking);
     }
 
     [Fact]
-    public async Task With_the_production_default_nothing_about_time_tracking_is_declared()
+    public async Task With_time_tracking_off_nothing_about_time_tracking_is_declared()
     {
-        Assert.False(new TaskTimeTrackingOptions().DeclareTimeTracking);
+        Assert.False(new TaskTimeTrackingOptions().DeclareTimeTracking); // the class default; the module turns it on
 
         var items = await ProjectAsync(TaskTestData.Me, trackTime: false, source: new StubSpentTime(),
             Work(Running, TaskLifecycle.InProgress), Work(AlsoInProgress, TaskLifecycle.InProgress));
@@ -99,6 +100,75 @@ public sealed class TaskTimeProjectionTests
         Assert.Equal(120, item.TimeEntries.ApprovedMinutes);                  // task totals are the task's
     }
 
+    // ── T2b — startTimer / stopTimer on the Task Center card (pack §19.2, U1) ─────────────────────────────────────
+
+    [Fact]
+    public async Task The_holder_gets_start_on_an_inactive_InProgress_task_and_stop_on_the_running_one()
+    {
+        var items = (await ProjectAsync(TaskTestData.Me, trackTime: true, source: new StubSpentTime(), timerOn: true,
+                Work(Running, TaskLifecycle.InProgress), Work(AlsoInProgress, TaskLifecycle.InProgress), Work(NotStarted, TaskLifecycle.Open)))
+            .ToDictionary(i => Guid.Parse(i.Id));
+
+        Assert.Equal(["stopTimer"], TimerCodes(items[Running]));
+        Assert.Equal(["startTimer"], TimerCodes(items[AlsoInProgress]));
+        Assert.Empty(TimerCodes(items[NotStarted]));                       // not InProgress
+        Assert.True(items[AlsoInProgress].Actions.Single(a => a.Code == "startTimer").Enabled);
+    }
+
+    [Fact]
+    public async Task Nobody_else_gets_a_timer_action_on_my_task()
+    {
+        var provider = Provider(trackTime: true, new StubSpentTime(), timerOn: true, Work(Running, TaskLifecycle.InProgress));
+        var manager = new WorkItemActor(TaskTestData.Rival, IsPlatformActor: true, new HashSet<string>());
+
+        var item = await provider.GetWorkItemAsync(Work(Running, TaskLifecycle.InProgress), manager);
+
+        Assert.Empty(TimerCodes(item));
+    }
+
+    [Fact]
+    public async Task With_the_timer_switched_off_for_the_legal_entity_there_is_no_timer_action()
+    {
+        var items = await ProjectAsync(TaskTestData.Me, trackTime: true, source: new StubSpentTime(), timerOn: false,
+            Work(Running, TaskLifecycle.InProgress), Work(AlsoInProgress, TaskLifecycle.InProgress));
+
+        Assert.All(items, item => Assert.Empty(TimerCodes(item)));
+        Assert.All(items, item => Assert.Contains("timeTracking", item.WorkItemCapabilities)); // the card still shows time
+    }
+
+    [Fact]
+    public async Task With_time_tracking_off_there_is_no_timer_action_even_with_the_switch_on()
+    {
+        var items = await ProjectAsync(TaskTestData.Me, trackTime: false, source: new StubSpentTime(), timerOn: true,
+            Work(AlsoInProgress, TaskLifecycle.InProgress));
+
+        Assert.Empty(TimerCodes(Assert.Single(items)));
+    }
+
+    [Fact]
+    public async Task Without_the_update_key_the_timer_action_is_offered_disabled_not_hidden()
+    {
+        var provider = Provider(trackTime: true, new StubSpentTime(), timerOn: true, Work(AlsoInProgress, TaskLifecycle.InProgress));
+        var holder = new WorkItemActor(TaskTestData.Me, IsPlatformActor: false, new HashSet<string> { TaskPermissions.Read });
+
+        var item = await provider.GetWorkItemAsync(Work(AlsoInProgress, TaskLifecycle.InProgress), holder);
+
+        var start = item.Actions.Single(a => a.Code == "startTimer");
+        Assert.False(start.Enabled);
+    }
+
+    [Fact]
+    public void The_provider_declares_the_key_its_timer_actions_check()
+        => Assert.Contains(TimeEntryPermissions.TimesheetsUpdate, Provider(true, new StubSpentTime()).RequiredActionPermissions);
+
+    private static List<string> TimerCodes(WorkItemProjectionDto item)
+        => item.Actions.Select(a => a.Code).Where(c => c is "startTimer" or "stopTimer").ToList();
+
+    private sealed class StubTimerAvailability(bool on) : ITimeEntryTimerAvailability
+    {
+        public Task<bool> IsTimerEnabledForAsync(Guid userId, CancellationToken ct = default) => Task.FromResult(on);
+    }
+
     private static TaskItem Work(Guid id, TaskLifecycle lifecycle, decimal? estimate = null, decimal decoy = 0m) => new()
     {
         Id = id,
@@ -114,12 +184,19 @@ public sealed class TaskTimeProjectionTests
         Version = 1
     };
 
-    private static async Task<IReadOnlyList<WorkItemProjectionDto>> ProjectAsync(
+    private static Task<IReadOnlyList<WorkItemProjectionDto>> ProjectAsync(
         Guid reader, bool trackTime, ITaskSpentTimeSource? source, params TaskItem[] tasks)
-        => await Provider(trackTime, source, tasks)
+        => ProjectAsync(reader, trackTime, source, timerOn: false, tasks);
+
+    private static async Task<IReadOnlyList<WorkItemProjectionDto>> ProjectAsync(
+        Guid reader, bool trackTime, ITaskSpentTimeSource? source, bool timerOn, params TaskItem[] tasks)
+        => await Provider(trackTime, source, timerOn, tasks)
             .GetWorkItemsAsync(new WorkItemActor(reader, IsPlatformActor: true, new HashSet<string>()), CancellationToken.None);
 
-    private static TaskWorkItemProvider Provider(bool trackTime, ITaskSpentTimeSource? source, params TaskItem[] tasks) => new(
+    private static TaskWorkItemProvider Provider(bool trackTime, ITaskSpentTimeSource? source, params TaskItem[] tasks)
+        => Provider(trackTime, source, timerOn: false, tasks);
+
+    private static TaskWorkItemProvider Provider(bool trackTime, ITaskSpentTimeSource? source, bool timerOn, params TaskItem[] tasks) => new(
         new FakeTaskItemRepository(tasks),
         new FakePositionAssignmentRepository(),
         new TaskLifecycleService(),
@@ -135,7 +212,8 @@ public sealed class TaskTimeProjectionTests
         SlaForTests.Real(),
         new FakeTaskFieldDefinitionRepository(), new FakeTaskTypeRepository(),
         spentTime: source,
-        timeTracking: new TaskTimeTrackingOptions { DeclareTimeTracking = trackTime });
+        timeTracking: new TaskTimeTrackingOptions { DeclareTimeTracking = trackTime },
+        timerAvailability: new StubTimerAvailability(timerOn));
 
     /// <summary>120 approved + 60 submitted on every task; the holder (<see cref="TaskTestData.Me"/>) runs a timer on
     /// <see cref="Running"/> and has 30 draft minutes there. Anybody else has neither.</summary>

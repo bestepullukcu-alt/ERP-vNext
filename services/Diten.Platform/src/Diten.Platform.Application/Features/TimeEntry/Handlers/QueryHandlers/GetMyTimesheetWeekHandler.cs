@@ -164,6 +164,15 @@ public sealed class GetMyTimesheetWeekHandler : IRequestHandler<GetMyTimesheetWe
             LastRejectedByUserId: current?.LastRejectedByUserId,
             LastRejectedByDisplayName: NameOf(current?.LastRejectedByUserId),
             AssignedApproverUserId: current?.AssignedApproverUserId,
-            AssignedApproverDisplayName: NameOf(current?.AssignedApproverUserId)), correlationId: request.CorrelationId);
+            AssignedApproverDisplayName: NameOf(current?.AssignedApproverUserId),
+            // T2b (E4) — the caller's OWN closed segments whose instants are still there (an approved week's were
+            // minimised, D4, and are not listed). `segments` is already the caller's own, read by the server's user id.
+            TimerSegments: segments
+                .Where(s => s.MinimisedAtUtc is null && s.StartedAtUtc is not null)
+                .OrderBy(s => s.StartedAtUtc)
+                .Select(s => new TimerSegmentBreakdownDto(
+                    s.Id, s.LocalDate, s.TaskItemId, s.CategoryCode, s.StartedAtUtc!.Value, s.StoppedAtUtc, s.DurationSeconds,
+                    s.OutsideWorkingMinutes, s.StartSource.ToString(), s.StopReason?.ToString()))
+                .ToList()), correlationId: request.CorrelationId);
     }
 }

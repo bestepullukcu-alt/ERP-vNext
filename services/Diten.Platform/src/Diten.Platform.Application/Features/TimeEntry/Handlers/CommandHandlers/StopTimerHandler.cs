@@ -34,6 +34,12 @@ public sealed class StopTimerHandler : IRequestHandler<StopTimerCommand, Respons
         var userId = _currentUser.UserId;
 
         var running = await _segments.GetRunningAsync(userId, ct);
+        if (request.TaskItemId is { } onlyTask && running is not null && running.TaskItemId != onlyTask)
+        {
+            return Response<TimerMutationDto>.Fail(
+                "The running timer is not on this task.", 409, TimeEntryReasonCodes.TimerNotRunning, request.CorrelationId);
+        }
+
         if (running is null || !await _timer.CloseAsync(running, _clock.GetUtcNow(), TimerStopReason.TimerControl, null, ct))
         {
             return Response<TimerMutationDto>.Fail(

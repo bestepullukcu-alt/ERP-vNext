@@ -258,7 +258,7 @@ public sealed class TimeEntryViewContractTests
     public void Every_localizer_key_of_the_view_exists_in_all_seven_languages(params string[] view)
     {
         var source = File.ReadAllText(SourcePath(view));
-        var keys = Regex.Matches(source, @"Localizer\[""([^""]+)""\]").Select(m => m.Groups[1].Value).Distinct().ToList();
+        var keys = Regex.Matches(source, @"(?<!Shared)Localizer\[""([^""]+)""\]").Select(m => m.Groups[1].Value).Distinct().ToList();
         Assert.NotEmpty(keys);
 
         foreach (var language in Languages)

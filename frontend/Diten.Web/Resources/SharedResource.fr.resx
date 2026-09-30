@@ -820,6 +820,9 @@
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Définitions de champs</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Réunions</value></data>
   <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>Ma feuille de temps</value></data>
+  <data name="Nav.Page.TIMEAPPROVALS" xml:space="preserve"><value>Approbations des feuilles de temps</value></data>
+  <data name="Nav.Page.TIMECATEGORIES" xml:space="preserve"><value>Catégories de travail</value></data>
+  <data name="Nav.Page.TIMESETTINGS" xml:space="preserve"><value>Paramètres de saisie des temps</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Types de réunion</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Séries de réunions</value></data>
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Rapport de réunion</value></data>

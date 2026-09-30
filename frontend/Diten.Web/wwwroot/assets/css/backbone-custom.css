@@ -9829,8 +9829,11 @@ body:has(.offcanvas.show) .flatpickr-calendar.open { z-index: 1095; }
 .time-entry-history-rejected .time-entry-history-text { color: var(--bs-danger); }
 .time-entry-history-approved .time-entry-history-text { color: var(--bs-success); }
 
+/* T2b (CT live finding E3) — below 992 px the notices panel goes UNDER the table, never beside it or above it. */
 .time-entry-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
-@media (min-width: 1200px) {
+.time-entry-layout > .time-entry-main { order: 1; }
+.time-entry-layout > .time-entry-side { order: 2; }
+@media (min-width: 992px) {
     .time-entry-layout { grid-template-columns: minmax(0, 1fr) 18rem; }
 }
 .time-entry-side-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
@@ -9933,3 +9936,39 @@ body:has(.offcanvas.show) .flatpickr-calendar.open { z-index: 1095; }
 @media (max-width: 575.98px) {
     .time-entry-timer-chip-title { display: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+   MOD-0280-FU01 T2b — Task Center time card, approvals, categories, settings. Theme tokens only; logical sides only.
+   ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════ */
+.wcn-ts-figure { display: inline-flex; flex-direction: column; align-items: flex-start; margin-inline-end: 1rem; }
+.wcn-ts-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-block-start: 0.5rem; }
+.wcn-timer-undo {
+    position: fixed; inset-block-end: 1.5rem; inset-inline-start: 50%; transform: translateX(-50%); z-index: 1090;
+    display: inline-flex; align-items: center; gap: 0.75rem; padding-block: 0.5rem; padding-inline: 1rem;
+    border-radius: var(--bs-border-radius-lg); background-color: var(--bs-paper-bg, var(--bs-body-bg));
+    color: var(--bs-body-color); box-shadow: var(--bs-box-shadow);
+}
+[dir="rtl"] .wcn-timer-undo { transform: translateX(50%); }
+
+.time-entry-approvals-hint { margin-block-start: 0.25rem; }
+.time-entry-mark-badge { font-weight: 500; }
+.time-entry-approval-marks { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-block-end: 0.75rem; }
+.time-entry-changes td, .time-entry-changes th { vertical-align: middle; }
+.time-entry-change-added .time-entry-change-after { color: var(--bs-success-text-emphasis); font-weight: 600; }
+.time-entry-change-removed .time-entry-change-before { color: var(--bs-danger-text-emphasis); text-decoration: line-through; }
+.time-entry-change-removed .time-entry-change-after { color: var(--bs-danger-text-emphasis); }
+
+.time-entry-code-locked { background-color: var(--bs-tertiary-bg); }
+
+.time-entry-settings-pool { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; max-inline-size: 36rem; }
+@media (min-width: 768px) {
+    .time-entry-settings-pool { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+    .time-entry-settings-pool .form-label { grid-column: 1 / -1; margin-block-end: 0; }
+}
+.time-entry-switches td { vertical-align: middle; }
+.time-entry-switch-reason { max-inline-size: 22rem; white-space: normal; }
+.time-entry-swiss-warning { font-size: 0.8125rem; }
+
+.time-entry-segments { margin-block: 0.25rem 0.75rem; }
+.time-entry-segment { font-variant-numeric: tabular-nums; }
+.time-entry-calendar-unresolved { margin-block-end: 0.5rem; }

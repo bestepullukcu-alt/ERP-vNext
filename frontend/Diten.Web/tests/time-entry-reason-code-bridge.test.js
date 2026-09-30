@@ -114,7 +114,14 @@ describe("the page's own words are complete in seven languages", () => {
       "SourceManual", "SourceTimer", "SourceMeeting", "SourcePlan", "ErrForbidden", "ErrGeneric"];
     const payload = fs.readFileSync(PAYLOAD, "utf8");
     const en = resxKeys("en");
+    // T2b — a key may come from SharedResource instead (the calendar screens' own "calendar not defined" sentence,
+    // CalendarUnresolved): then the payload names it through SharedLocalizer and the shared resx carries it.
+    const sharedEn = fs.readFileSync(path.join(webRoot, "Resources", "SharedResource.en.resx"), "utf8");
     [...new Set(literal.concat(dynamic))].forEach((key) => {
+      if (payload.includes(`["${key}"] = SharedLocalizer["${key}"].Value`)) {
+        expect(sharedEn, `SharedResource lacks ${key}`).toContain(`name="${key}"`);
+        return;
+      }
       expect(en.has(key), `resx lacks ${key}`).toBe(true);
       expect(payload, `payload lacks ${key}`).toContain(`["${key}"] = Localizer["${key}"].Value`);
     });

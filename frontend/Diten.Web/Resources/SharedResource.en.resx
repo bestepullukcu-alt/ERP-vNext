@@ -880,6 +880,9 @@
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Field Definitions</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Meetings</value></data>
   <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>My Timesheet</value></data>
+  <data name="Nav.Page.TIMEAPPROVALS" xml:space="preserve"><value>Timesheet Approvals</value></data>
+  <data name="Nav.Page.TIMECATEGORIES" xml:space="preserve"><value>Work Categories</value></data>
+  <data name="Nav.Page.TIMESETTINGS" xml:space="preserve"><value>Time Entry Settings</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Meeting Types</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Meeting Series</value></data>
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Meeting Report</value></data>

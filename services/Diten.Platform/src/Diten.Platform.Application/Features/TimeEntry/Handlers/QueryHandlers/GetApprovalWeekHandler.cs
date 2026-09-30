@@ -24,6 +24,8 @@ public sealed class GetApprovalWeekHandler : IRequestHandler<GetApprovalWeekQuer
     private readonly ITimesheetWeekReader _reader;
     private readonly ITimesheetDecisionPuller _puller;
     private readonly IUserDisplayNameResolver _displayNames;
+    private readonly IApprovalWeekFacts _facts;
+    private readonly ITimeEntryTaskGateway _tasks;
     private readonly ICurrentUserContext _currentUser;
 
     public GetApprovalWeekHandler(
@@ -32,6 +34,8 @@ public sealed class GetApprovalWeekHandler : IRequestHandler<GetApprovalWeekQuer
         ITimesheetWeekReader reader,
         ITimesheetDecisionPuller puller,
         IUserDisplayNameResolver displayNames,
+        IApprovalWeekFacts facts,
+        ITimeEntryTaskGateway tasks,
         ICurrentUserContext currentUser)
     {
         _weeks = weeks;
@@ -39,6 +43,8 @@ public sealed class GetApprovalWeekHandler : IRequestHandler<GetApprovalWeekQuer
         _reader = reader;
         _puller = puller;
         _displayNames = displayNames;
+        _facts = facts;
+        _tasks = tasks;
         _currentUser = currentUser;
     }
 
@@ -65,6 +71,20 @@ public sealed class GetApprovalWeekHandler : IRequestHandler<GetApprovalWeekQuer
         var dayTotals = TimesheetRules.DayTotals(rows);
         var context = await _reader.LoadAsync(week.UserId, week.WeekStartDate, ct);
         var names = await _displayNames.ResolveAsync([week.UserId], ct);
+        var marks = await _facts.MarksAsync(week, rows, context.Days, ct);
+
+        // U5 — a correction shows what it changes against the approved revision still in force.
+        var inForce = week.CorrectionOfRevision is not null ? context.InForce : null;
+        var changes = inForce is null
+            ? []
+            : ApprovalWeekFacts.Changes(await _entries.ListByWeekAsync(inForce.Id, ct), rows);
+
+        // Task titles as the APPROVER may read them (their own read rule, one batched read); null ⇒ neutral label.
+        var taskIds = rows.Select(r => r.TaskItemId).Concat(changes.Select(c => c.TaskItemId)).OfType<Guid>().Distinct().ToList();
+        var titles = taskIds.Count == 0
+            ? new Dictionary<Guid, TimeEntryTaskSummary>()
+            : await _tasks.ReadableTaskSummariesAsync(_currentUser.UserId, taskIds, ct);
+        string? TitleOf(Guid? id) => id is { } t && titles.TryGetValue(t, out var s) ? s.Title : null;
 
         return Response<ApprovalWeekDto>.Success(new ApprovalWeekDto(
             week.Id,
@@ -81,7 +101,21 @@ public sealed class GetApprovalWeekHandler : IRequestHandler<GetApprovalWeekQuer
             week.SubmittedAtUtc,
             week.WorkflowInstanceId,
             TimesheetRules.Days(context.Days, week.WeekStartDate, dayTotals, context.LocalToday),
-            rows.Select(TimesheetRules.ToDto).ToList()), correlationId: request.CorrelationId);
+            rows.Select(r => TimesheetRules.ToDto(r) with
+            {
+                OutsideWorkingMinutes = r.OutsideWorkingMinutes,
+                EditedFromTimer = r.EditedFromTimer,
+                SourceRef = r.SourceRef,
+                TaskTitle = TitleOf(r.TaskItemId)
+            }).ToList(),
+            ApprovalTaskId: marks.ApprovalTaskId,
+            ApprovalTaskVersion: marks.ApprovalTaskVersion,
+            AutoClosedDates: marks.AutoClosedDates,
+            OutsideWorkingMinutes: marks.OutsideWorkingMinutes,
+            HolidayDates: marks.HolidayDates,
+            InForceRevisionNumber: inForce?.RevisionNumber,
+            CorrectionChanges: changes.Select(c => c with { TaskTitle = TitleOf(c.TaskItemId) }).ToList()),
+            correlationId: request.CorrelationId);
     }
 
     private bool IsRoutedToCaller(TimesheetWeek? week)

@@ -55,15 +55,20 @@ public sealed class TimeEntryManifestProviderTests
     }
 
     [Fact]
-    public void Every_route_is_tenant_scoped_and_pages_are_unique_and_only_my_timesheet_is_in_the_nav()
+    public void Every_route_is_tenant_scoped_and_pages_are_unique_and_each_nav_page_has_its_own_key()
     {
         Assert.All(_manifest.Pages, p => Assert.StartsWith("/TimeEntry", p.RoutePath, StringComparison.Ordinal));
         Assert.DoesNotContain(_manifest.Pages, p => p.RoutePath.StartsWith("/Platform", StringComparison.OrdinalIgnoreCase));
         Assert.Equal(_manifest.Pages.Count, _manifest.Pages.Select(p => p.PageCode).Distinct().Count());
         Assert.Equal(_manifest.Pages.Count, _manifest.Pages.Select(p => p.RoutePath).Distinct().Count());
         // T2a — only the screen that exists is in the nav; the rest wait for T2b.
-        Assert.Equal([TimeEntryManifestProvider.PageMyTimesheet],
+        // T2b — every screen that exists is in the nav, each with its own key; the read-only detail is reached from its list.
+        Assert.Equal(
+            [TimeEntryManifestProvider.PageMyTimesheet, TimeEntryManifestProvider.PageApprovals,
+             TimeEntryManifestProvider.PageCategories, TimeEntryManifestProvider.PageSettings],
             _manifest.Pages.Where(p => p.IsNavigationVisible).Select(p => p.PageCode).ToList());
+        Assert.False(_manifest.Pages.Single(p => p.PageCode == TimeEntryManifestProvider.PageApprovalDetail).IsNavigationVisible);
+        Assert.All(_manifest.Pages.Where(p => p.IsNavigationVisible), p => Assert.StartsWith("time-entry.", p.RequiredPermission));
         Assert.All(_manifest.Pages, p => Assert.Equal(p.Actions.Count, p.Actions.Select(a => a.ActionCode).Distinct().Count()));
     }
 
