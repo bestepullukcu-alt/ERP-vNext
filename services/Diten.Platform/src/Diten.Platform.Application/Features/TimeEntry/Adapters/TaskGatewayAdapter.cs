@@ -26,8 +26,12 @@ public sealed class TaskGatewayAdapter : ITimeEntryTaskGateway
 
     public async Task<IReadOnlySet<Guid>> ReadableTaskIdsAsync(
         Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
+        => (await ReadableTaskSummariesAsync(userId, taskIds, ct)).Keys.ToHashSet();
+
+    public async Task<IReadOnlyDictionary<Guid, TimeEntryTaskSummary>> ReadableTaskSummariesAsync(
+        Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
     {
-        var readable = new HashSet<Guid>();
+        var readable = new Dictionary<Guid, TimeEntryTaskSummary>();
         if (taskIds.Count == 0)
         {
             return readable;
@@ -37,12 +41,36 @@ public sealed class TaskGatewayAdapter : ITimeEntryTaskGateway
         {
             if (await _readAccess.CanReadAsync(task, userId, ct))
             {
-                readable.Add(task.Id);
+                readable[task.Id] = Summary(task);
             }
         }
 
         return readable;
     }
+
+    /// <summary>The lifecycles a person can still put time on from the picker: work not yet closed. PendingReview is in
+    /// (CT v3): the work is done and waiting for its reviewer, and the week it was done in still needs its hours.</summary>
+    private static readonly HashSet<TaskLifecycle> OpenLifecycles =
+    [
+        TaskLifecycle.Open, TaskLifecycle.Planned, TaskLifecycle.InProgress, TaskLifecycle.Waiting, TaskLifecycle.PendingReview
+    ];
+
+    public async Task<IReadOnlyList<TimeEntryTaskSummary>> OwnOpenTasksAsync(Guid userId, CancellationToken ct = default)
+    {
+        var own = new List<TimeEntryTaskSummary>();
+        foreach (var task in (await _tasks.ListByAssigneeAsync(userId, ct)).Where(t => OpenLifecycles.Contains(t.Lifecycle)))
+        {
+            // The holder can normally read their own task; asked anyway, so the picker has exactly one read rule (F5).
+            if (await _readAccess.CanReadAsync(task, userId, ct))
+            {
+                own.Add(Summary(task));
+            }
+        }
+
+        return own;
+    }
+
+    private static TimeEntryTaskSummary Summary(TaskItem task) => new(task.Id, task.Title, task.Lifecycle.ToString());
 
     public async Task<IReadOnlyDictionary<Guid, TimeEntryTaskFacts>> TaskFactsAsync(
         IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)

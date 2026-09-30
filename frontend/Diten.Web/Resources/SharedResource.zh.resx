@@ -818,6 +818,7 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>例外</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>字段定义</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>会议</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>我的工时表</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>会议类型</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>会议系列</value></data>
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>会议报告</value></data>

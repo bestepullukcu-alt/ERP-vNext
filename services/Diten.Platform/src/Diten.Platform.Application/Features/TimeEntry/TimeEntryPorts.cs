@@ -30,8 +30,12 @@ public sealed record TimeEntryTaskFacts(Guid TaskItemId, bool IsInProgress, Guid
 /// <summary>A task's plan block (MOD-0024 create-runtime §22): when the holder planned to work on it, and for how long.</summary>
 public sealed record TimeEntryPlannedBlock(Guid TaskItemId, DateTimeOffset PlannedStartAt, int PlannedDurationMinutes);
 
+/// <summary>What a person may see of a task in their own time records (T2a): its title and its lifecycle, by name.
+/// Only ever built for a task the person can READ.</summary>
+public sealed record TimeEntryTaskSummary(Guid TaskItemId, string Title, string Status);
+
 /// <summary>MOD-0024, read only: readability (T1a), then lifecycle, holder, the transition that ended a run, and the
-/// plan block (T1b).</summary>
+/// plan block (T1b), then titles and the person's own open tasks (T2a).</summary>
 public interface ITimeEntryTaskGateway
 {
     /// <summary>Facts for these tasks. A task that does not exist in this tenant (or was deleted) is absent.</summary>
@@ -53,6 +57,16 @@ public interface ITimeEntryTaskGateway
     /// task that does not exist and a task the person cannot read are both simply absent — the caller cannot tell them
     /// apart, so a time row can never be used to probe for another team's task ids.</summary>
     Task<IReadOnlySet<Guid>> ReadableTaskIdsAsync(Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default);
+
+    /// <summary>T2a — title and lifecycle of the tasks among <paramref name="taskIds"/> that <paramref name="userId"/> may
+    /// READ, in ONE batched read (a week asks once, never once per task). The same rule as
+    /// <see cref="ReadableTaskIdsAsync"/>: a task the person cannot read is absent, so its title never leaves the server.</summary>
+    Task<IReadOnlyDictionary<Guid, TimeEntryTaskSummary>> ReadableTaskSummariesAsync(
+        Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default);
+
+    /// <summary>T2a — the open tasks (Open, Planned, InProgress, Waiting, PendingReview — CT v3) <paramref name="userId"/> holds, filtered by the
+    /// same read rule.</summary>
+    Task<IReadOnlyList<TimeEntryTaskSummary>> OwnOpenTasksAsync(Guid userId, CancellationToken ct = default);
 }
 
 /// <summary>What the meeting's minutes say about one attendee, as they stand now.</summary>

@@ -9790,3 +9790,146 @@ body:has(.offcanvas.show) .flatpickr-calendar.open { z-index: 1095; }
    own floor (220). Named here so a change to either is a change in two places a test can compare. */
 .wr-skeleton .wr-skel-chart { block-size: 260px; margin-block-start: .5rem; }
 .wr-skeleton .wr-skel-chart-sm { block-size: 220px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+   MOD-0280-FU01 T2a — My Timesheet (/TimeEntry) and the top-bar timer chip. `.time-entry-*` only (FG-003).
+   Colours come from the theme's own tokens (--bs-*), so light and dark follow the shell; sides are LOGICAL
+   (inline-start / inline-end), so the Arabic page mirrors without a second rule set.
+   Desktop shows the week grid; below 768 px the one-day list with its day switcher (pack §21.2 U2).
+   ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════ */
+.time-entry-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-block-end: 1rem;
+}
+.time-entry-title-block { flex: 1 1 16rem; min-inline-size: 0; }
+.time-entry-week-nav { display: inline-flex; gap: 0.25rem; }
+.time-entry-missing { color: var(--bs-warning); font-size: 0.8125rem; }
+.time-entry-status-draft { background-color: var(--bs-secondary-bg-subtle); color: var(--bs-secondary-text-emphasis); }
+.time-entry-status-submitted { background-color: var(--bs-info-bg-subtle); color: var(--bs-info-text-emphasis); }
+.time-entry-status-approved { background-color: var(--bs-success-bg-subtle); color: var(--bs-success-text-emphasis); }
+.time-entry-status-rejected { background-color: var(--bs-danger-bg-subtle); color: var(--bs-danger-text-emphasis); }
+.time-entry-status-correction { background-color: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); }
+.time-entry-loading { color: var(--bs-secondary-color); }
+
+.time-entry-banners { display: flex; flex-direction: column; gap: 0.5rem; margin-block-end: 0.75rem; }
+.time-entry-banner { margin-block-end: 0; padding-block: 0.625rem; }
+.time-entry-banner-rejected, .time-entry-banner-blocked { background-color: var(--bs-danger-bg-subtle); color: var(--bs-danger-text-emphasis); border-color: var(--bs-danger-border-subtle); }
+.time-entry-banner-submitted { background-color: var(--bs-info-bg-subtle); color: var(--bs-info-text-emphasis); border-color: var(--bs-info-border-subtle); }
+.time-entry-banner-approved { background-color: var(--bs-success-bg-subtle); color: var(--bs-success-text-emphasis); border-color: var(--bs-success-border-subtle); }
+.time-entry-banner-correction, .time-entry-banner-reopened { background-color: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); border-color: var(--bs-warning-border-subtle); }
+
+.time-entry-history { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; margin-block-end: 1rem; font-size: 0.8125rem; }
+.time-entry-history-title { font-weight: 600; color: var(--bs-heading-color); }
+.time-entry-history-list { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; margin: 0; padding: 0; list-style: none; }
+.time-entry-history-item { display: inline-flex; gap: 0.375rem; }
+.time-entry-history-when { color: var(--bs-secondary-color); }
+.time-entry-history-rejected .time-entry-history-text { color: var(--bs-danger); }
+.time-entry-history-approved .time-entry-history-text { color: var(--bs-success); }
+
+.time-entry-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+@media (min-width: 1200px) {
+    .time-entry-layout { grid-template-columns: minmax(0, 1fr) 18rem; }
+}
+.time-entry-side-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.time-entry-side-collapsed .time-entry-side-body { display: none; }
+.time-entry-side-section + .time-entry-side-section { margin-block-start: 1rem; }
+.time-entry-side-title { font-size: 0.8125rem; font-weight: 600; margin-block-end: 0.375rem; }
+.time-entry-side-item { font-size: 0.8125rem; margin-block-end: 0.25rem; }
+.time-entry-side-empty { color: var(--bs-secondary-color); font-size: 0.8125rem; margin: 0; }
+.time-entry-side-actions, .time-entry-review-actions, .time-entry-correction-actions {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; margin-block-start: 0.5rem;
+}
+
+.time-entry-row-add { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-block-end: 0.75rem; }
+.time-entry-picker { display: flex; align-items: center; gap: 0.5rem; flex: 1 1 20rem; min-inline-size: 0; }
+.time-entry-picker-select { min-inline-size: 14rem; }
+.time-entry-picker-empty { color: var(--bs-secondary-color); font-size: 0.8125rem; }
+.time-entry-review { border: 1px dashed var(--bs-border-color); border-radius: var(--bs-border-radius); padding: 0.75rem; margin-block-end: 0.75rem; }
+
+.time-entry-grid { margin-block-end: 0; font-size: 0.8125rem; }
+.time-entry-grid th, .time-entry-grid td { vertical-align: middle; text-align: center; white-space: nowrap; }
+.time-entry-grid .time-entry-row-label { text-align: start; white-space: normal; min-inline-size: 12rem; }
+.time-entry-row-title { display: inline-block; margin-inline-end: 0.375rem; }
+.time-entry-row-title-unreadable { color: var(--bs-secondary-color); font-style: italic; }
+.time-entry-day-name { display: block; font-weight: 600; }
+.time-entry-day-date, .time-entry-day-holiday-name { display: block; font-weight: 400; color: var(--bs-secondary-color); }
+.time-entry-day-weekend, .time-entry-day-holiday { background-color: var(--bs-tertiary-bg); }
+.time-entry-day-halfday { background-image: linear-gradient(to bottom, var(--bs-tertiary-bg) 50%, transparent 50%); }
+.time-entry-day-future { color: var(--bs-secondary-color); }
+.time-entry-day-today .time-entry-day-name { color: var(--bs-primary); }
+.time-entry-cell-input { inline-size: 4.5rem; margin-inline: auto; text-align: center; }
+.time-entry-cell-captured { min-inline-size: 3.5rem; border: 1px solid var(--bs-border-color); }
+.time-entry-cell-value { color: var(--bs-body-color); }
+.time-entry-total-col { font-weight: 600; }
+.time-entry-totals th, .time-entry-totals td { border-block-start: 2px solid var(--bs-border-color); font-weight: 600; }
+.time-entry-targets th, .time-entry-targets td { color: var(--bs-secondary-color); }
+.time-entry-day-flagged { color: var(--bs-warning-text-emphasis); background-color: var(--bs-warning-bg-subtle); }
+.time-entry-empty-cell { color: var(--bs-secondary-color); text-align: center; }
+
+.time-entry-source { margin-inline-end: 0.25rem; font-weight: 500; }
+.time-entry-source-manual { background-color: var(--bs-secondary-bg-subtle); color: var(--bs-secondary-text-emphasis); }
+.time-entry-source-timer { background-color: var(--bs-primary-bg-subtle); color: var(--bs-primary-text-emphasis); }
+.time-entry-source-meeting { background-color: var(--bs-info-bg-subtle); color: var(--bs-info-text-emphasis); }
+.time-entry-source-plan { background-color: var(--bs-success-bg-subtle); color: var(--bs-success-text-emphasis); }
+
+.time-entry-mark { display: block; font-size: 0.6875rem; line-height: 1.2; color: var(--bs-secondary-color); white-space: normal; }
+.time-entry-mark-conflict, .time-entry-mark-flag { color: var(--bs-warning-text-emphasis); }
+.time-entry-mark-confirmed { color: var(--bs-success-text-emphasis); background-color: var(--bs-success-bg-subtle); }
+.time-entry-note-toggle { color: var(--bs-secondary-color); }
+.time-entry-note-present { color: var(--bs-primary); }
+
+/* Suggestions and plan values are GREY until the person takes them (U3). */
+.time-entry-ghost, .time-entry-ghost-value { color: var(--bs-secondary-color); font-style: italic; }
+.time-entry-ghost { border: 1px dashed var(--bs-border-color); background-color: transparent; }
+.time-entry-row-ghost th, .time-entry-row-suggestion th { color: var(--bs-secondary-color); }
+.time-entry-suggestion { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.25rem; }
+
+.time-entry-footer-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.5rem; margin-block-start: 1rem; }
+.time-entry-correction-form { flex: 1 1 100%; }
+.time-entry-inline-error:not([hidden]) { display: block; }
+
+.time-entry-day-switcher { display: flex; gap: 0.25rem; overflow-x: auto; margin-block-end: 0.75rem; }
+.time-entry-day-tab { flex: 0 0 auto; border: 1px solid var(--bs-border-color); }
+.time-entry-day-tab.active { background-color: var(--bs-primary); border-color: var(--bs-primary); color: var(--bs-white); }
+.time-entry-day-item { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.time-entry-day-item-label { min-inline-size: 0; }
+.time-entry-day-summary { margin-block: 0.75rem 0; font-weight: 600; }
+
+.time-entry-notice {
+    margin-block-end: 0.75rem; padding-block: 0.5rem; padding-inline: 0.75rem;
+    border-radius: var(--bs-border-radius); font-size: 0.8125rem;
+    background-color: var(--bs-info-bg-subtle); color: var(--bs-info-text-emphasis);
+}
+.time-entry-notice-warning { background-color: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); }
+/* An empty status line takes no room, but stays in the page as a live region. */
+.time-entry-notice:empty { margin: 0; padding: 0; }
+.time-entry-pending { background-color: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); margin-inline-end: 0.25rem; }
+.time-entry-row-pending th { font-style: italic; }
+
+.time-entry-disclaimer { margin-block: 1rem 0; font-size: 0.75rem; color: var(--bs-secondary-color); }
+
+.time-entry-day-view { display: none; }
+@media (max-width: 767.98px) {
+    .time-entry-grid-host { display: none; }
+    .time-entry-day-view { display: block; }
+}
+
+/* The top-bar chip: only drawn while a timer runs (the script removes the `hidden` attribute). */
+.time-entry-timer-chip { display: flex; align-items: center; }
+.time-entry-timer-chip[hidden] { display: none; }
+.time-entry-timer-chip-body {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    padding-block: 0.125rem; padding-inline: 0.5rem 0.25rem;
+    border: 1px solid var(--bs-primary-border-subtle); border-radius: 50rem;
+    background-color: var(--bs-primary-bg-subtle);
+}
+.time-entry-timer-chip-link { display: inline-flex; align-items: center; gap: 0.375rem; color: var(--bs-primary-text-emphasis); min-inline-size: 0; }
+.time-entry-timer-chip-title { max-inline-size: 12rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.time-entry-timer-chip-elapsed { font-variant-numeric: tabular-nums; font-weight: 600; }
+.time-entry-timer-chip-stop { padding-block: 0; }
+@media (max-width: 575.98px) {
+    .time-entry-timer-chip-title { display: none; }
+}

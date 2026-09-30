@@ -879,6 +879,7 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>İstisna</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Alan Tanımları</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Toplantılar</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>Zaman Çizelgem</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Toplantı Türleri</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Toplantı Serileri</value></data>
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Toplantı Raporu</value></data>

@@ -879,6 +879,7 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>Override</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Field Definitions</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Meetings</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>My Timesheet</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Meeting Types</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Meeting Series</value></data>
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Meeting Report</value></data>
