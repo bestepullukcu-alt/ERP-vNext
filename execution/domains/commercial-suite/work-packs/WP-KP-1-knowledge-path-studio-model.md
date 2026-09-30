@@ -142,3 +142,23 @@ KORU/YAPMA: publish ucu, new-version (kimlik kopyası hariç), archive, yolculuk
 DOĞRULA (E2): cd C:\tmp\kp-1; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban 2118/0/5; bilinen sıra flake'i hariç); build 0 hata. Yeni testler: zincirli oluşturma + doğrulama kodları, bind-chain (taslak/bir kez/konu), kimlik kilidi, new-version kopyası, chain_slot_invalid/full/move_forbidden, dil uyuşmazlığı (zincirli) + eski yolda eski davranış, dal-öncelikli StepOrder, iddia ekle/sırala/çıkar, claim_product_mismatch/duplicate/chain_template_required, iddia okuması (ülke sürümü + yol dilindeki metin), uyum özeti, IsLegacyUnapproved, class-map round-trip, İçerik Seti testleri ortak yardımcıyla yeşil. Sabotaj: dal-öncelikli sıra + kimlik kilidi + slot doğrulaması testleri kırmızıya dönmeli. Commit ("feat(crm): WP-KP-1 — knowledge path studio model (chain, identity, arrangement, claims)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: dalsız eski düz zincir şablonunda slot tanımı tek anlamlı değilse ya da adımların tip/kavram düğümü alanlarının zincir adımıyla çelişen kullanımı varsa DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-09-30) — **ACCEPTED (E2)**
+- **Commit:** `95c2444d` (`wp/kp-1`) → `test/crm-content-visit-e2e` fast-forward. 23 dosya (+2453 / −232; silmeler ortak yere taşınan set kodu).
+- **Diff (K13 okuma):**
+  - `KnowledgePath`: `ChainTemplate`, `CountryCode`, `Claims[]`; `IsLegacyUnapproved()` türetiliyor.
+  - Adım `Arrangement`. Class-map: `ConceptChainTemplateId` / `ChainStepId` / `ClaimId` string-Guid. Eski doküman "eski yol" olarak okunuyor.
+  - Kimlik kilidi Update'te (409 `path_identity_locked`) ve ikinci `bind-chain`'de.
+  - Ortak yardımcılar `Features/Knowledge/Chain/` (`ChainArrangementOrder`, `ChainContext`). `ContentSetContext` / `ContentSetPathOrder` onlara delege ediyor.
+  - Yayın / arşiv / yolculuk / ziyaret dokunulmamış.
+- **CT testleri:** CRM **2143/0/5** (2118 + 25).
+- **CT sabotajı:** kimlik kilidi koşulu devre dışı → `KnowledgePathStudio` 1 kırmızı. Kod geri alındı.
+- **Ajan sabotajları:** dal-öncelikli sıra (set yayın testi dahil kırmızı), slot doğrulaması.
+- **Ajan DUR → kullanıcı "B":** yalnız dallı (v2) zincir şablonu bağlanabilir; dalsız eski düz şablon → 400 `chain_template_invalid`.
+- **Ajan ek kuralları (CT kabul):**
+  - zincirli adımda seçilen kavram düğümünün türü, slotun kavram tipine eşit;
+  - zincirli yolda kitle zincirden gelir, güncelleme ile değişmez (ForWhom tek değilse boş);
+  - `bind-chain`'de mevcut adımların içeriği seçilen dilde değilse 409 `component_language_mismatch`.
+- **E4:** CT API ile yapacak (TPL-ALMIBA-01 yayınlandıktan sonra).
