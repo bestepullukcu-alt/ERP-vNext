@@ -49,6 +49,7 @@ public sealed class UpdateTimeEntrySettingsHandler : IRequestHandler<UpdateTimeE
             {
                 TenantId = _tenantContext.TenantId,
                 TimeAdminPoolPositionId = request.Request.TimeAdminPoolPositionId,
+                WeeklyReminderEnabled = request.Request.WeeklyReminderEnabled ?? false,
                 CreatedBy = _currentUser.UserId.ToString()
             };
             written = request.Request.ExpectedVersion == 0 && await _settings.TryCreateAsync(current, ct);
@@ -56,13 +57,14 @@ public sealed class UpdateTimeEntrySettingsHandler : IRequestHandler<UpdateTimeE
         else
         {
             current.TimeAdminPoolPositionId = request.Request.TimeAdminPoolPositionId;
+            current.WeeklyReminderEnabled = request.Request.WeeklyReminderEnabled ?? current.WeeklyReminderEnabled;
             current.UpdatedBy = _currentUser.UserId.ToString();
             written = await _settings.UpdateAsync(current, request.Request.ExpectedVersion, ct);
         }
 
         return written
             ? Response<TimeEntrySettingsDto>.Success(
-                new TimeEntrySettingsDto(current.TimeAdminPoolPositionId, current.Version), correlationId: request.CorrelationId)
+                new TimeEntrySettingsDto(current.TimeAdminPoolPositionId, current.Version, current.WeeklyReminderEnabled), correlationId: request.CorrelationId)
             : Response<TimeEntrySettingsDto>.Fail(
                 "The settings changed meanwhile; reload and retry.", 409,
                 TimeEntryReasonCodes.SettingsConcurrencyConflict, request.CorrelationId);

@@ -12,6 +12,9 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Contracts.Behaviors;
 using Diten.Platform.Application.Contracts.Eventing;
+using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.Notifications;
+using Diten.Platform.Application.Features.Notifications.Services;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Application.Features.TimeEntry;
 using Diten.Platform.Application.Features.TimeEntry.Services;
@@ -27,6 +30,7 @@ using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Infrastructure.Services;
+using Diten.Platform.Infrastructure.Settings;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -34,6 +38,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using Xunit;
@@ -68,7 +73,7 @@ public sealed class TimeEntryMongoFixture : IAsyncLifetime
         await PlatformSchemaManifest.ApplyAsync(Database,
         [
             SchemaProfile.TimeEntry, SchemaProfile.WorkflowWorkCenter, SchemaProfile.Eventing, SchemaProfile.Organization,
-            SchemaProfile.Meetings
+            SchemaProfile.Meetings, SchemaProfile.Notification
         ]);
     }
 
@@ -233,6 +238,69 @@ public sealed class CountingAutoCloseNotifier : ITimerAutoCloseNotifier
     }
 }
 
+/// <summary>
+/// T3 — AuthService's address book, as a double: everyone gets <c>{id}@people.test</c> except the people in
+/// <see cref="Omitted"/>, who are left out of the answer exactly the way the real contacts endpoint leaves out a
+/// deactivated user (Auth 0151b27fd) or one without an address.
+/// </summary>
+public sealed class TestRecipients : ITaskNotificationRecipientResolver
+{
+    public HashSet<Guid> Omitted { get; } = [];
+
+    public Task<IReadOnlyList<TaskNotificationRecipient>> ResolveAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskNotificationRecipient>>(userIds
+            .Where(id => id != Guid.Empty && !Omitted.Contains(id))
+            .Distinct()
+            .Select(id => new TaskNotificationRecipient(id, Address(id), "Person " + id.ToString("N")[..4]))
+            .ToList());
+
+    public static string Address(Guid userId) => $"{userId:N}@people.test";
+}
+
+/// <summary>
+/// T3 — records every dispatch the module hands over, with its REAL payload (T3-06 compares the manifest with these, not
+/// with a copied list). <see cref="Refuse"/> answers like a failed provider; <see cref="Throw"/> like a broken one — the
+/// command that triggered it must stand either way.
+/// </summary>
+public sealed class CapturingDispatch : INotificationEventDispatchAdapter
+{
+    private readonly List<NotificationEventDispatchRequest> _requests = [];
+
+    public bool Refuse { get; set; }
+    public bool Throw { get; set; }
+
+    public IReadOnlyList<NotificationEventDispatchRequest> Requests
+    {
+        get { lock (_requests) { return _requests.ToList(); } }
+    }
+
+    public IReadOnlyList<NotificationEventDispatchRequest> For(string eventCode)
+        => Requests.Where(r => r.EventCode == eventCode).ToList();
+
+    public void Clear()
+    {
+        lock (_requests) { _requests.Clear(); }
+    }
+
+    public Task<Response<NotificationDispatchDto>> DispatchByEventCodeAsync(
+        NotificationEventDispatchRequest request, CancellationToken ct = default)
+    {
+        lock (_requests) { _requests.Add(request); }
+
+        if (Throw)
+        {
+            throw new InvalidOperationException("test: the notification pipeline is down");
+        }
+
+        return Task.FromResult(Refuse
+            ? Response<NotificationDispatchDto>.Fail("test: provider refused", 400, "PROVIDER_REJECTED")
+            : Response<NotificationDispatchDto>.Success(new NotificationDispatchDto(
+                Guid.NewGuid(), request.TenantId, request.EventCode, null, "en", "Email", "Smtp", "m-1", "Sent",
+                request.To, 0, 0, "subject", null, null, "{}", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, null, 0,
+                null, null, request.CorrelationId), 201));
+    }
+}
+
 /// <summary>The caller as the audit behaviour reads it: an authenticated tenant user, straight from the token.</summary>
 internal sealed class HttpPrincipal(IHttpContextAccessor accessor) : ITenantAuthorizationContext
 {
@@ -328,7 +396,9 @@ public sealed class TimeEntryHost : IDisposable
                 services.AddScoped<ITaskTimeTotalRepository, TaskTimeTotalRepository>();
                 services.AddScoped<ITimerSegmentRepository, TimerSegmentRepository>();
                 services.AddScoped<ITimeSuggestionRepository, TimeSuggestionRepository>();
+                services.AddScoped<ITimeEntryNotificationMarkRepository, TimeEntryNotificationMarkRepository>();
                 services.AddScoped<IMeetingRepository, MeetingRepository>();
+                services.AddScoped<IMeetingMinutesVersionRepository, MeetingMinutesVersionRepository>();
                 services.AddScoped<IMeetingAttendeeRepository, MeetingAttendeeRepository>();
                 services.AddScoped<IWorkflowTemplateRepository, WorkflowTemplateRepository>();
                 services.AddScoped<IWorkflowTemplateVersionRepository, WorkflowTemplateVersionRepository>();
@@ -383,6 +453,13 @@ public sealed class TimeEntryHost : IDisposable
                 services.AddSingleton<ITimerAutoCloseNotifier>(Notifier);
                 services.AddSingleton(TimeTracking);
 
+                // ── T3: the dispatch is captured (its real payload), AuthService's address book is a double, the marks
+                //    and the deep links are the production classes ──────────────────────────────────────────────────
+                services.AddSingleton<INotificationEventDispatchAdapter>(Dispatch);
+                services.AddSingleton<ITaskNotificationRecipientResolver>(Recipients);
+                services.AddSingleton<ITimeEntryLinks>(new TimeEntryLinks(
+                    Options.Create(new AuthServiceOptions { FrontendBaseUrl = WebOrigin })));
+
                 // ── The module's own registration, the one production calls ─────────────────────────────────────
                 services.AddTimeEntryModule();
                 configure?.Invoke(services);
@@ -416,6 +493,9 @@ public sealed class TimeEntryHost : IDisposable
     public StubWorkingCalendar Calendar { get; } = new();
     public TestProbes Probes { get; } = new();
     public CountingAutoCloseNotifier Notifier { get; } = new();
+    public CapturingDispatch Dispatch { get; } = new();
+    public TestRecipients Recipients { get; } = new();
+    public const string WebOrigin = "https://web.test";
 
     /// <summary>The §5.1 item 3 switch as production registers it (off); a test turns it on to measure T2's data path.</summary>
     public TaskTimeTrackingOptions TimeTracking { get; } = new() { DeclareTimeTracking = false };

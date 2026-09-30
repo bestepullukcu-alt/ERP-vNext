@@ -81,4 +81,10 @@
   <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
   <data name="NeverChanged" xml:space="preserve"><value>never</value></data>
   <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="ReminderTitle" xml:space="preserve"><value>Weekly reminder</value></data>
+  <data name="ReminderHelp" xml:space="preserve"><value>Every Monday from 09:00, people who have used time entry in the last few weeks get one e-mail if last week's timesheet is missing or not yet submitted. Nobody is reminded until you turn this on.</value></data>
+  <data name="ReminderLabel" xml:space="preserve"><value>Send the weekly reminder</value></data>
+  <data name="ReminderSavedOn" xml:space="preserve"><value>Weekly reminder turned on.</value></data>
+  <data name="ReminderSavedOff" xml:space="preserve"><value>Weekly reminder turned off.</value></data>
+  <data name="ReminderSaveFailed" xml:space="preserve"><value>The weekly reminder could not be saved. Try again.</value></data>
 </root>

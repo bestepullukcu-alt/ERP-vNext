@@ -36,6 +36,9 @@ public interface ITimesheetWeekRepository
     /// oldest submission first. Two queries, in that order, so a backlog of undecided weeks can never starve an approved
     /// week of its totals.</summary>
     Task<IReadOnlyList<TimesheetWeek>> ListNeedingFinalizationAsync(int limit, CancellationToken ct = default);
+
+    /// <summary>T3 (pack §21.3 N1) — the people with any revision, in any state, of any of these ISO weeks.</summary>
+    Task<IReadOnlyList<Guid>> ListUserIdsWithWeeksAsync(IReadOnlyCollection<string> weekKeys, CancellationToken ct = default);
 }
 
 /// <summary>Raw storage for <see cref="TimeEntry"/> rows.</summary>
@@ -44,6 +47,9 @@ public interface ITimeEntryRepository
     Task<TimeEntry> CreateAsync(TimeEntry entry, CancellationToken ct = default);
 
     Task<IReadOnlyList<TimeEntry>> ListByWeekAsync(Guid timesheetWeekId, CancellationToken ct = default);
+
+    /// <summary>One live row, or null when it does not exist in this tenant or was removed.</summary>
+    Task<TimeEntry?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>Every live row that points at one of these tasks, across all people and revisions — the finalizer's
     /// input for recomputing <see cref="TaskTimeTotal"/>.</summary>
@@ -157,6 +163,9 @@ public interface ITimerSegmentRepository
     /// never a delete; returns how many changed.</summary>
     Task<long> MinimiseWeekAsync(
         Guid userId, string weekKey, DateTimeOffset minimisedAtUtc, CancellationToken ct = default, Guid? segmentId = null);
+
+    /// <summary>T3 (pack §21.3 N1) — the people with any segment, running or not, in any of these ISO weeks.</summary>
+    Task<IReadOnlyList<Guid>> ListUserIdsWithSegmentsAsync(IReadOnlyCollection<string> weekKeys, CancellationToken ct = default);
 }
 
 /// <summary>Raw storage for <see cref="TimeSuggestion"/> decisions (MOD-0280-FU01 T1b, D8).</summary>
@@ -170,4 +179,12 @@ public interface ITimeSuggestionRepository
 
     /// <summary>Inserts the decision. <c>false</c> when the (meeting, user) unique index refused it — decided already.</summary>
     Task<bool> TryCreateAsync(TimeSuggestion suggestion, CancellationToken ct = default);
+}
+
+/// <summary>Raw storage for <see cref="TimeEntryNotificationMark"/> (MOD-0280-FU01 T3, pack §21.3 N6).</summary>
+public interface ITimeEntryNotificationMarkRepository
+{
+    /// <summary>Claims (kind, key) for this tenant. <c>false</c> when the unique index says it was claimed before — the
+    /// caller then sends nothing. Called BEFORE the send.</summary>
+    Task<bool> TryClaimAsync(string kind, string key, DateTimeOffset claimedAtUtc, CancellationToken ct = default);
 }

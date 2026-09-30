@@ -35,6 +35,7 @@ public sealed class SubmitTimesheetWeekHandler : IRequestHandler<SubmitTimesheet
     private readonly TimeProvider _clock;
     private readonly ITimesheetSubmissionProbe _probe;
     private readonly ITimerDraftWriter _drafts;
+    private readonly ITimeEntryNotifier _notifier;
     private readonly ILogger<SubmitTimesheetWeekHandler> _logger;
 
     public SubmitTimesheetWeekHandler(
@@ -47,9 +48,11 @@ public sealed class SubmitTimesheetWeekHandler : IRequestHandler<SubmitTimesheet
         TimeProvider clock,
         ITimesheetSubmissionProbe probe,
         ITimerDraftWriter drafts,
+        ITimeEntryNotifier notifier,
         ILogger<SubmitTimesheetWeekHandler> logger)
     {
         _drafts = drafts;
+        _notifier = notifier;
         _logger = logger;
         _reader = reader;
         _weeks = weeks;
@@ -183,6 +186,9 @@ public sealed class SubmitTimesheetWeekHandler : IRequestHandler<SubmitTimesheet
             // The instance is open and unrecorded; the next submit retires it (step 2).
             return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
         }
+
+        // T3 (N4) — the stored candidates hear of it, once per submission. Best-effort: never fails the submit.
+        await _notifier.WeekSubmittedAsync(week, ct);
 
         return Response<TimesheetWeekMutationDto>.Success(TimesheetRules.ToMutation(week), correlationId: request.CorrelationId);
     }

@@ -166,10 +166,18 @@ public sealed class TimeEntryManifestProvider : IModuleManifestProvider
                     TimeEntryPermissions.ApprovalsRead),
                 Event(TimeEntryNotificationEvents.TimerAutoClosed, "Timer closed at midnight",
                     "Sent to the person the morning after their timer was closed at local midnight.", PageMyTimesheet,
-                    TimeEntryPermissions.TimesheetsRead)
+                    TimeEntryPermissions.TimesheetsRead),
+                Event(TimeEntryNotificationEvents.WeekReminder, "Timesheet reminder",
+                    "Sent to the person on Monday when last week is not yet submitted (tenant switch, off by default).",
+                    PageMyTimesheet, TimeEntryPermissions.TimesheetsRead),
+                Event(TimeEntryNotificationEvents.MinutesConflict, "Minutes attendance to check",
+                    "Sent to the person only, when the minutes record them absent or excused from a meeting they booked time to.",
+                    PageMyTimesheet, TimeEntryPermissions.TimesheetsRead)
             ]);
 
-    // Declared, not yet dispatched: templates (7 languages) are T3, so every event stays Draft until then.
+    // T3 (pack §21.3 N7) — Active, with seven templates each (NotificationTemplateSeed). The required variables are the
+    // ones the dispatch sends and the template renders; all three come from TimeEntryNotificationVariables, and T3-06
+    // measures the manifest against the payloads actually dispatched.
     private static ModuleManifestNotificationEvent Event(
         string code, string fallbackName, string description, string pageCode, string permission) =>
         new(
@@ -179,11 +187,14 @@ public sealed class TimeEntryManifestProvider : IModuleManifestProvider
             DisplayNameKey: null,
             FallbackDisplayName: fallbackName,
             Description: description,
-            RequiredVariables: [new ModuleManifestNotificationVariable("WeekKey")],
+            RequiredVariables: TimeEntryNotificationVariables.RequiredFor(code)
+                .Select(name => new ModuleManifestNotificationVariable(name))
+                .ToList(),
             OptionalVariables: null,
             TargetPageCode: pageCode,
             RequiredPermissionKey: permission,
             CanTenantOverride: false,
             UsageType: "SystemEvent",
-            Status: "Draft");
+            LinkPolicy: "TargetPage",
+            Status: "Active");
 }

@@ -9,8 +9,9 @@
 
 @*
     MOD-0280-FU01 T2b — Time Entry settings: the time-administrator pool (D6 fallback approver) and the timer switch per
-    legal entity (D12: OFF for every entity until switched on here, with a reason; audited). A plain form page, not a
-    list. UAS-001: without time-entry.settings.manage nothing below is drawn.
+    legal entity (D12: OFF for every entity until switched on here, with a reason; audited). T3 (pack §21.3 N3) — the
+    weekly reminder switch, OFF until turned on here; saved with the same versioned, audited settings command. A plain
+    form page, not a list. UAS-001: without time-entry.settings.manage nothing below is drawn.
 *@
 @if (!Perms.Has("time-entry.settings.manage"))
 {
@@ -36,6 +37,17 @@
                     <option value="">@Localizer["PoolNone"]</option>
                 </select>
                 <button type="button" class="btn btn-primary" id="tsSavePool">@Localizer["SavePool"]</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="card mb-4">
+        <div class="card-body">
+            <h6 class="mb-1">@Localizer["ReminderTitle"]</h6>
+            <p class="text-muted small">@Localizer["ReminderHelp"]</p>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="tsWeeklyReminder" disabled />
+                <label class="form-check-label" for="tsWeeklyReminder">@Localizer["ReminderLabel"]</label>
             </div>
         </div>
     </section>

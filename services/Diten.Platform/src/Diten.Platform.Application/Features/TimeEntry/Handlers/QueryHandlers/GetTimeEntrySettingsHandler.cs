@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Diten.Platform.Application.Features.TimeEntry.Handlers.QueryHandlers;
 
-/// <summary>The tenant's settings; a tenant that never saved any reads "no pool, version 0".</summary>
+/// <summary>The tenant's settings; a tenant that never saved any reads "no pool, reminder off, version 0".</summary>
 public sealed class GetTimeEntrySettingsHandler : IRequestHandler<GetTimeEntrySettingsQuery, Response<TimeEntrySettingsDto>>
 {
     private readonly ITimeEntrySettingsRepository _settings;
@@ -17,7 +17,7 @@ public sealed class GetTimeEntrySettingsHandler : IRequestHandler<GetTimeEntrySe
         ArgumentNullException.ThrowIfNull(request);
         var settings = await _settings.GetAsync(ct);
         return Response<TimeEntrySettingsDto>.Success(
-            new TimeEntrySettingsDto(settings?.TimeAdminPoolPositionId, settings?.Version ?? 0),
+            new TimeEntrySettingsDto(settings?.TimeAdminPoolPositionId, settings?.Version ?? 0, settings?.WeeklyReminderEnabled ?? false),
             correlationId: request.CorrelationId);
     }
 }

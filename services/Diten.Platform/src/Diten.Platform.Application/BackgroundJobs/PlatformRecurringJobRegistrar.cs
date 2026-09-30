@@ -39,6 +39,7 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             CreateMeetingSeriesSweepRegistration(),
             CreateTimesheetDecisionSweepRegistration(),
             CreateTimerMidnightCloseRegistration(),
+            CreateTimesheetReminderRegistration(),
             CreateDeferred("Diten.Platform.MOD-0009.ProvisioningRetryJob", "ProvisioningRetryJob", "MOD-0009", "*/2 * * * *")
         };
 
@@ -262,6 +263,47 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             typeof(TimerMidnightCloseJob),
             typeof(TimerMidnightCloseJobArgs),
             new TimerMidnightCloseJobArgs(MaxSegmentsPerTenant: 500),
+            new BackgroundJobContext(
+                TriggerType: BackgroundJobTriggerTypes.Recurring,
+                TriggeredBy: nameof(PlatformRecurringJobRegistrar),
+                Metadata: new Dictionary<string, string>
+                {
+                    ["owner"] = owner,
+                    ["execution"] = "sweep"
+                }));
+    }
+
+    private RecurringJobRegistration CreateTimesheetReminderRegistration()
+    {
+        // MOD-0280-FU01 T3 (pack §21.3 N2) — the Monday reminder. Hourly because each tenant's Monday 09:00 is its own; the
+        // (person, week) mark makes it once however often it runs. Two more gates below this one: the tenant switch
+        // (WeeklyReminderEnabled, off by default) and the tenant-local clock. The id is the EnabledJobs configuration key.
+        const string id = "Diten.Platform.MOD-0280.TimesheetReminderJob";
+        const string jobName = "TimesheetReminderJob";
+        const string owner = "MOD-0280";
+        const string cron = "0 * * * *";
+
+        var enabled = _options.RegisterStandardJobs
+                      && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
+                      && configuredEnabled;
+
+        var descriptor = new BackgroundJobDescriptor(
+            Id: id,
+            ServiceName: ServiceName,
+            JobName: jobName,
+            Owner: owner,
+            CronExpression: cron,
+            TimeZoneId: "UTC",
+            IsEnabled: enabled,
+            Queue: "platform",
+            MaxRetryAttempts: _options.DefaultRetryAttempts,
+            TriggerType: BackgroundJobTriggerTypes.Recurring);
+
+        return new RecurringJobRegistration(
+            descriptor,
+            typeof(TimesheetReminderJob),
+            typeof(TimesheetReminderJobArgs),
+            new TimesheetReminderJobArgs(MaxPeoplePerTenant: 2000),
             new BackgroundJobContext(
                 TriggerType: BackgroundJobTriggerTypes.Recurring,
                 TriggeredBy: nameof(PlatformRecurringJobRegistrar),

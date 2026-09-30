@@ -136,6 +136,19 @@ public sealed class TimesheetWeekRepository : TenantRepository<TimesheetWeek>, I
         weeks.AddRange(waiting);
         return weeks;
     }
+
+    public async Task<IReadOnlyList<Guid>> ListUserIdsWithWeeksAsync(IReadOnlyCollection<string> weekKeys, CancellationToken ct = default)
+    {
+        if (weekKeys.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<TimesheetWeek>.Filter.And(
+            ExecutionFilter,
+            Builders<TimesheetWeek>.Filter.In(x => x.WeekKey, weekKeys));
+        return await (await Collection.DistinctAsync(x => x.UserId, filter, cancellationToken: ct)).ToListAsync(ct);
+    }
 }
 
 /// <summary>Raw storage for <see cref="TimeEntry"/>.</summary>
@@ -153,6 +166,8 @@ public sealed class TimeEntryRepository : TenantRepository<TimeEntry>, ITimeEntr
             Builders<TimeEntry>.Filter.Eq(x => x.TimesheetWeekId, timesheetWeekId));
         return await Collection.Find(filter).SortBy(x => x.LocalDate).ToListAsync(ct);
     }
+
+    // GetByIdAsync(id) comes from the base: tenant + IsDeleted=false + id.
 
     public async Task<IReadOnlyList<TimeEntry>> ListByTaskIdsAsync(IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
     {
@@ -539,6 +554,19 @@ public sealed class TimerSegmentRepository : TenantRepository<TimerSegment>, ITi
             Builders<TimerSegment>.Filter.Eq(x => x.WeekKey, weekKey),
             Builders<TimerSegment>.Filter.Eq(x => x.IsRunning, false),
             Builders<TimerSegment>.Filter.Eq(x => x.MinimisedAtUtc, null));
+
+    public async Task<IReadOnlyList<Guid>> ListUserIdsWithSegmentsAsync(IReadOnlyCollection<string> weekKeys, CancellationToken ct = default)
+    {
+        if (weekKeys.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<TimerSegment>.Filter.And(
+            ExecutionFilter,
+            Builders<TimerSegment>.Filter.In(x => x.WeekKey, weekKeys));
+        return await (await Collection.DistinctAsync(x => x.UserId, filter, cancellationToken: ct)).ToListAsync(ct);
+    }
 }
 
 /// <summary>Raw storage for <see cref="TimeSuggestion"/> decisions (T1b).</summary>
@@ -569,6 +597,36 @@ public sealed class TimeSuggestionRepository : TenantRepository<TimeSuggestion>,
         try
         {
             await CreateAsync(suggestion, ct);
+            return true;
+        }
+        catch (MongoWriteException exception) when (TimeEntryWrites.IsDuplicateKey(exception))
+        {
+            return false;
+        }
+    }
+}
+
+/// <summary>Raw storage for <see cref="TimeEntryNotificationMark"/> (T3, pack §21.3 N6). The unique (tenant, kind, key)
+/// index is the whole rule: the first insert wins, every later one is a duplicate key and answers false.</summary>
+public sealed class TimeEntryNotificationMarkRepository : TenantRepository<TimeEntryNotificationMark>, ITimeEntryNotificationMarkRepository
+{
+    public TimeEntryNotificationMarkRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, PlatformCollections.TimeEntryNotificationMarks)
+    {
+    }
+
+    public async Task<bool> TryClaimAsync(string kind, string key, DateTimeOffset claimedAtUtc, CancellationToken ct = default)
+    {
+        try
+        {
+            await CreateAsync(new TimeEntryNotificationMark
+            {
+                TenantId = TenantContext.TenantId,
+                Kind = kind,
+                Key = key,
+                CreatedAtUtc = claimedAtUtc,
+                CreatedBy = "system"
+            }, ct);
             return true;
         }
         catch (MongoWriteException exception) when (TimeEntryWrites.IsDuplicateKey(exception))

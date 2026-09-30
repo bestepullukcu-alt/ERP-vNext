@@ -10,6 +10,10 @@ namespace Diten.Platform.Domain.Entities.TimeEntry;
 public sealed class TimeEntrySettings : TenantScopedEntity
 {
     public Guid? TimeAdminPoolPositionId { get; set; }
+
+    /// <summary>T3 (pack §21.3 N3) — the Monday reminder for last week's missing timesheet. OFF until the time admin
+    /// turns it on; a row written before T3 has no such field and reads as off.</summary>
+    public bool WeeklyReminderEnabled { get; set; }
 }
 
 /// <summary>

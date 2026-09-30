@@ -137,6 +137,8 @@ public static class PlatformCollections
     // MOD-0280-FU01 T1b — capture: the timer's raw segments and the person's meeting-suggestion decisions.
     public const string TimeEntryTimerSegments = "time_entry_timer_segments";
     public const string TimeEntrySuggestions = "time_entry_suggestions";
+    // MOD-0280-FU01 T3 — "this notification was handed over once" (pack §21.3 N6).
+    public const string TimeEntryNotificationMarks = "time_entry_notification_marks";
     public const string ModuleCatalog = "platform_module_catalog";
     public const string ModuleDomains = "platform_module_domains";
     public const string ModulePageActionDescriptors = "platform_module_page_action_descriptors";

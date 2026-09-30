@@ -22,6 +22,7 @@ public sealed class WithdrawTimesheetWeekHandler : IRequestHandler<WithdrawTimes
     private readonly ICurrentUserContext _currentUser;
     private readonly TimeProvider _clock;
     private readonly ITimesheetSubmissionProbe _probe;
+    private readonly ITimeEntryNotifier _notifier;
 
     public WithdrawTimesheetWeekHandler(
         ITimesheetWeekReader reader,
@@ -30,8 +31,10 @@ public sealed class WithdrawTimesheetWeekHandler : IRequestHandler<WithdrawTimes
         ITimesheetDecisionPuller puller,
         ICurrentUserContext currentUser,
         TimeProvider clock,
-        ITimesheetSubmissionProbe probe)
+        ITimesheetSubmissionProbe probe,
+        ITimeEntryNotifier notifier)
     {
+        _notifier = notifier;
         _reader = reader;
         _weeks = weeks;
         _approvals = approvals;
@@ -93,6 +96,9 @@ public sealed class WithdrawTimesheetWeekHandler : IRequestHandler<WithdrawTimes
             // The instance is cancelled; the next read returns the week to Draft through the finalizer.
             return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
         }
+
+        // T3 (N4) — the same candidates the submission went to. Best-effort: never fails the withdraw.
+        await _notifier.WeekWithdrawnAsync(week, ct);
 
         return Response<TimesheetWeekMutationDto>.Success(TimesheetRules.ToMutation(week), correlationId: request.CorrelationId);
     }

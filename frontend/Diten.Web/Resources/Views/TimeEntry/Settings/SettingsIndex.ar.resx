@@ -81,4 +81,10 @@
   <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
   <data name="NeverChanged" xml:space="preserve"><value>أبدًا</value></data>
   <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="ReminderTitle" xml:space="preserve"><value>التذكير الأسبوعي</value></data>
+  <data name="ReminderHelp" xml:space="preserve"><value>كل يوم اثنين ابتداءً من الساعة 09:00، يتلقى من استخدموا تسجيل الوقت في الأسابيع الأخيرة رسالة بريد إلكتروني واحدة إذا كان الجدول الزمني للأسبوع الماضي مفقودًا أو لم يُرسَل بعد. لن يتلقى أحد أي تذكير حتى تقوم بتفعيله.</value></data>
+  <data name="ReminderLabel" xml:space="preserve"><value>إرسال التذكير الأسبوعي</value></data>
+  <data name="ReminderSavedOn" xml:space="preserve"><value>تم تفعيل التذكير الأسبوعي.</value></data>
+  <data name="ReminderSavedOff" xml:space="preserve"><value>تم إيقاف التذكير الأسبوعي.</value></data>
+  <data name="ReminderSaveFailed" xml:space="preserve"><value>تعذّر حفظ التذكير الأسبوعي. حاول مرة أخرى.</value></data>
 </root>

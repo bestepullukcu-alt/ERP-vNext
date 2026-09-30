@@ -155,14 +155,71 @@ public static class TimeEntryModule
     public static Guid? Correlation(string? correlationId) => Guid.TryParse(correlationId, out var c) ? c : null;
 }
 
-/// <summary>Manifest-declared notification events (pack §14). Templates are T3; T1a only declares them.</summary>
+/// <summary>
+/// Manifest-declared notification events (pack §14, §21.3 N7) — the event code is also the template key.
+///
+/// <para><b>No hyphen.</b> The pack wrote them as <c>time-entry.week.submitted</c>, but the platform's event and template
+/// key rule is <c>^[a-z0-9]+(\.[a-z0-9]+)*$</c> (<c>NotificationParsing.IsValidTemplateKey</c>): a hyphenated code is
+/// kept Draft by the manifest sync with a validation issue and refused by the dispatch adapter as
+/// <c>INVALID_EVENT_CODE</c> — nothing would ever be sent. The module's own synthetic event already reads
+/// <c>timeentry.…</c> (<c>TimesheetDecisionObserved</c>); the notification codes follow it. The permission keys keep
+/// <c>time-entry.*</c> — they have their own rule.</para>
+/// </summary>
 public static class TimeEntryNotificationEvents
 {
-    public const string WeekSubmitted = "time-entry.week.submitted";
-    public const string WeekApproved = "time-entry.week.approved";
-    public const string WeekRejected = "time-entry.week.rejected";
-    public const string WeekWithdrawn = "time-entry.week.withdrawn";
-    public const string TimerAutoClosed = "time-entry.timer.auto-closed";
+    public const string WeekSubmitted = "timeentry.week.submitted";
+    public const string WeekApproved = "timeentry.week.approved";
+    public const string WeekRejected = "timeentry.week.rejected";
+    public const string WeekWithdrawn = "timeentry.week.withdrawn";
+    public const string TimerAutoClosed = "timeentry.timer.autoclosed";
+
+    /// <summary>T3 (N2) — last week's timesheet is still missing or not submitted.</summary>
+    public const string WeekReminder = "timeentry.week.reminder";
+
+    /// <summary>T3 (N5) — the minutes record the person absent or excused from a meeting they booked time to.</summary>
+    public const string MinutesConflict = "timeentry.meeting.minutesconflict";
+
+    public static readonly IReadOnlyList<string> All =
+        [WeekSubmitted, WeekApproved, WeekRejected, WeekWithdrawn, TimerAutoClosed, WeekReminder, MinutesConflict];
+}
+
+/// <summary>
+/// T3 (N7) — the variable names the dispatches send. The manifest declares each event's list from here and the
+/// templates render exactly these placeholders; T3-06 compares the manifest with the payloads the dispatches ACTUALLY
+/// sent, so a name that drifts in any one of the three is a red test, not a blank in an e-mail. Case matters: the
+/// dispatch adapter looks required variables up case-sensitively.
+/// </summary>
+public static class TimeEntryNotificationVariables
+{
+    /// <summary>The ISO week and its first and last day, e.g. <c>2026-W40 (2026-09-28 – 2026-10-04)</c>.</summary>
+    public const string WeekLabel = "WeekLabel";
+
+    /// <summary>The page the e-mail points at: the person's own week, or the approver's read-only week.</summary>
+    public const string TimesheetUrl = "TimesheetUrl";
+
+    /// <summary>Approver e-mails only (N7): who submitted or withdrew.</summary>
+    public const string PersonName = "PersonName";
+
+    /// <summary>The approver's reason on a rejection.</summary>
+    public const string Reason = "Reason";
+
+    public const string LocalDate = "LocalDate";
+    public const string DurationMinutes = "DurationMinutes";
+    public const string MeetingTitle = "MeetingTitle";
+    public const string MeetingDate = "MeetingDate";
+
+    public static IReadOnlyList<string> RequiredFor(string eventCode) => eventCode switch
+    {
+        TimeEntryNotificationEvents.WeekSubmitted => [PersonName, WeekLabel, TimesheetUrl],
+        // No link: once withdrawn, the week is no longer the approver's to open.
+        TimeEntryNotificationEvents.WeekWithdrawn => [PersonName, WeekLabel],
+        TimeEntryNotificationEvents.WeekApproved => [WeekLabel, TimesheetUrl],
+        TimeEntryNotificationEvents.WeekRejected => [WeekLabel, Reason, TimesheetUrl],
+        TimeEntryNotificationEvents.WeekReminder => [WeekLabel, TimesheetUrl],
+        TimeEntryNotificationEvents.TimerAutoClosed => [LocalDate, DurationMinutes, TimesheetUrl],
+        TimeEntryNotificationEvents.MinutesConflict => [MeetingTitle, MeetingDate, TimesheetUrl],
+        _ => throw new ArgumentOutOfRangeException(nameof(eventCode), eventCode, "Not a time-entry notification event.")
+    };
 }
 
 // ── Requests ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -212,7 +269,9 @@ public sealed record UpdateWorkCategoryRequest(
 
 public sealed record WorkCategoryStateRequest(int ExpectedVersion);
 
-public sealed record UpdateTimeEntrySettingsRequest(int ExpectedVersion, Guid? TimeAdminPoolPositionId);
+/// <summary><see cref="WeeklyReminderEnabled"/> null leaves the stored value as it is (T3): a caller that only sets the pool
+/// never turns the reminder off by leaving it out.</summary>
+public sealed record UpdateTimeEntrySettingsRequest(int ExpectedVersion, Guid? TimeAdminPoolPositionId, bool? WeeklyReminderEnabled = null);
 
 /// <summary>Start the caller's timer on a task they hold InProgress, or on an active category. Exactly one of the two.</summary>
 public sealed record StartTimerRequest(Guid? TaskItemId, string? CategoryCode);
@@ -498,7 +557,7 @@ public sealed record WorkCategoryDto(
 
 public sealed record InstallRecommendedWorkCategoriesResultDto(IReadOnlyList<string> Installed, IReadOnlyList<string> AlreadyPresent);
 
-public sealed record TimeEntrySettingsDto(Guid? TimeAdminPoolPositionId, int Version);
+public sealed record TimeEntrySettingsDto(Guid? TimeAdminPoolPositionId, int Version, bool WeeklyReminderEnabled = false);
 
 public sealed record LegalEntityTimeSettingDto(
     Guid LegalEntityId,

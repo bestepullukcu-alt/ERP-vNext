@@ -242,6 +242,22 @@ public static partial class PlatformSchemaManifest
                     })
             }),
 
+        // T3 (pack §21.3 N6) — at most one notification per (kind, key): the claim IS the unique index, so twenty parallel
+        // claims of one key land exactly one row. Not partial on IsDeleted: a mark is never deleted, and a deleted one must
+        // still block a second send.
+        Collection<TimeEntryNotificationMark>(
+            SchemaProfile.TimeEntry,
+            PlatformCollections.TimeEntryNotificationMarks,
+            () => new CreateIndexModel<TimeEntryNotificationMark>[]
+            {
+                new CreateIndexModel<TimeEntryNotificationMark>(
+                    Builders<TimeEntryNotificationMark>.IndexKeys
+                        .Ascending(x => x.TenantId)
+                        .Ascending(x => x.Kind)
+                        .Ascending(x => x.Key),
+                    new CreateIndexOptions { Unique = true, Name = "ux_time_entry_notification_marks_tenant_kind_key" })
+            }),
+
         // D12 — one switch row per legal entity; no row = off.
         Collection<LegalEntityTimeSetting>(
             SchemaProfile.TimeEntry,
