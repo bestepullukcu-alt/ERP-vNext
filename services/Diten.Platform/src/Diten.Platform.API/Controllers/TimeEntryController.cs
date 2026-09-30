@@ -118,6 +118,9 @@ public sealed class TimeEntryController : CustomBaseController
 
     // ── Approvals (read only — the decision is MOD-0023's) ──────────────────────────────────────────────────────
 
+    /// <remarks>BL-484 — <c>weekIds</c> (comma-separated and/or repeated) is read from the raw query, not bound: "absent",
+    /// "present but empty" and "repeated" must stay three different things, and model binding blurs them (a string takes
+    /// only the first value; an array binds absent and empty alike). The handler validates what arrived.</remarks>
     [HttpGet("approvals")]
     [HasPermission(TimeEntryPermissions.ApprovalsRead)]
     public async Task<IActionResult> GetApprovals(
@@ -125,7 +128,8 @@ public sealed class TimeEntryController : CustomBaseController
         [FromQuery] int? start = null, [FromQuery] int? length = null, [FromQuery] string? search = null,
         [FromQuery] string? orderBy = null, [FromQuery] string? orderDir = null, CancellationToken ct = default)
         => CreateActionResultInstance(await _mediator.Send(
-            new GetApprovalListQuery(page, pageSize, CorrelationId, start, length, search, orderBy, orderDir), ct));
+            new GetApprovalListQuery(page, pageSize, CorrelationId, start, length, search, orderBy, orderDir,
+                Request.Query.TryGetValue("weekIds", out var weekIds) ? weekIds.ToArray() : null), ct));
 
     [HttpGet("approvals/{weekId:guid}")]
     [HasPermission(TimeEntryPermissions.ApprovalsRead)]

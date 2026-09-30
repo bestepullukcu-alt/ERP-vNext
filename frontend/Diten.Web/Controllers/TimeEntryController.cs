@@ -137,17 +137,21 @@ public sealed class TimeEntryController : Controller
     /// <see cref="Decide"/>. The web tier re-reads the caller's own approvals list first and approves ONLY a week that is
     /// in it, still open, and carries no mark (11-hour day, timer cut at midnight, outside hours, holiday): what the page
     /// sent is a request, not the authority. Reject is never bulk (it needs its own reason).
+    ///
+    /// <para>BL-484 — the re-read names EXACTLY the selected weeks (<c>weekIds=</c>), so a queue longer than any page window
+    /// can never turn a valid selection into "not found"; Platform answers only those of them that are in the caller's
+    /// queue, with their marks. The URL is built here whole — the bulk request's own query string never reaches it.</para>
     /// </summary>
     [HttpPost("/TimeEntry/Approvals/api/bulk")]
     public async Task<IActionResult> BulkApprove([FromBody] BulkApprovalRequest? body)
     {
         var requested = (body?.WeekIds ?? []).Distinct().ToList();
-        if (requested.Count == 0 || requested.Count > 100)
+        if (requested.Count == 0 || requested.Count > MaxBulkWeeks)
         {
             return BadRequest(new { message = "1 to 100 weeks." });
         }
 
-        var list = await SendAsync(HttpMethod.Get, UpstreamUrl("approvals")! + "?start=0&length=500", null);
+        var list = await SendAsync(HttpMethod.Get, SelectedApprovalsUrl(requested), null);
         if (list is null)
         {
             return StatusCode(StatusCodes.Status503ServiceUnavailable, new { message = "Time Entry dependency unavailable." });
@@ -208,6 +212,13 @@ public sealed class TimeEntryController : Controller
 
     private string WorkItemActionUrl(Guid approvalTaskId, string code)
         => $"{_gatewayUrl}/api/v1/work-items/{approvalTaskId:D}/actions/{code}";
+
+    /// <summary>The most weeks one bulk approval carries — Platform's <c>weekIds</c> bound is the same number.</summary>
+    private const int MaxBulkWeeks = 100;
+
+    /// <summary>BL-484 — the caller's approvals, narrowed to the selected weeks: one page that holds all of them.</summary>
+    private string SelectedApprovalsUrl(IReadOnlyCollection<Guid> weekIds)
+        => $"{_gatewayUrl}/api/v1/time-entry/approvals?start=0&length={weekIds.Count}&weekIds={string.Join(',', weekIds.Select(id => id.ToString("D")))}";
 
     private static string DecisionPayload(int? expectedVersion, string? comment)
         => System.Text.Json.JsonSerializer.Serialize(new

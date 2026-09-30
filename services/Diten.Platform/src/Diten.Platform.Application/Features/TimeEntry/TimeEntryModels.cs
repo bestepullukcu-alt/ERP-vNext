@@ -124,6 +124,10 @@ public static class TimeEntryLimits
     /// <summary>T2b — the server-mode list's largest `length` (Golden Reference protocol: 1…500).</summary>
     public const int ApprovalsMaxServerLength = 500;
 
+    /// <summary>BL-484 — the most weeks one approvals read may name by id (<c>weekIds</c>): what one bulk approval may carry
+    /// (the web tier's bulk route takes 1…100 weeks).</summary>
+    public const int ApprovalsMaxWeekIds = 100;
+
     /// <summary>T2a — the task picker answers at most this many tasks.</summary>
     public const int TaskOptionsMax = 50;
 

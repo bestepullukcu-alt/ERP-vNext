@@ -12,6 +12,11 @@ namespace Diten.Platform.Application.Features.TimeEntry.Handlers.QueryHandlers;
 /// assignee, not the whole candidate list). A draft is never listed (it is not Submitted), and neither is a week
 /// assigned to somebody else. Decisions already made in MOD-0023 are
 /// taken on board first, so a week the approver just decided in the Task Center drops off the list (D7).
+///
+/// <para><b>BL-484 — by id.</b> <c>weekIds</c> narrows the SAME queue to the listed weeks (bulk approval reads back exactly
+/// what was selected, however long the queue is): a listed week that is not in the caller's queue is simply absent, and
+/// only the listed weeks are read and taken on board. Search, order and paging apply to what is left, as they do to the
+/// whole queue.</para>
 /// </summary>
 public sealed class GetApprovalListHandler : IRequestHandler<GetApprovalListQuery, Response<ApprovalWeekListDto>>
 {
@@ -19,7 +24,6 @@ public sealed class GetApprovalListHandler : IRequestHandler<GetApprovalListQuer
     private readonly ITimesheetDecisionPuller _puller;
     private readonly IUserDisplayNameResolver _displayNames;
     private readonly IApprovalWeekFacts _facts;
-    private readonly ITimeEntryRepository _entries;
     private readonly ICurrentUserContext _currentUser;
 
     public GetApprovalListHandler(
@@ -27,14 +31,12 @@ public sealed class GetApprovalListHandler : IRequestHandler<GetApprovalListQuer
         ITimesheetDecisionPuller puller,
         IUserDisplayNameResolver displayNames,
         IApprovalWeekFacts facts,
-        ITimeEntryRepository entries,
         ICurrentUserContext currentUser)
     {
         _weeks = weeks;
         _puller = puller;
         _displayNames = displayNames;
         _facts = facts;
-        _entries = entries;
         _currentUser = currentUser;
     }
 
@@ -48,14 +50,8 @@ public sealed class GetApprovalListHandler : IRequestHandler<GetApprovalListQuer
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var approverId = _currentUser.UserId;
-        var weeks = await _weeks.ListSubmittedForApproverAsync(approverId, ct);
-        if (await _puller.PullAsync(weeks, request.CorrelationId, ct))
-        {
-            weeks = await _weeks.ListSubmittedForApproverAsync(approverId, ct);
-        }
-
-        // T2b — the server-mode protocol: a whitelisted order, a length within bounds; anything else is refused.
+        // T2b — the server-mode protocol: a whitelisted order, a length within bounds; anything else is refused — before
+        // anything is read or taken on board (BL-484).
         var orderKey = string.IsNullOrWhiteSpace(request.OrderBy) ? "submittedAtUtc" : request.OrderBy.Trim();
         if (!OrderKeys.Contains(orderKey)
             || request.Length is < 1 or > TimeEntryLimits.ApprovalsMaxServerLength
@@ -64,6 +60,21 @@ public sealed class GetApprovalListHandler : IRequestHandler<GetApprovalListQuer
             return Response<ApprovalWeekListDto>.Fail(
                 "The approvals query is not valid (orderBy, length or start).", 400,
                 TimeEntryReasonCodes.ApprovalsQueryInvalid, request.CorrelationId);
+        }
+
+        IReadOnlyList<Guid>? weekIds = null;
+        if (request.WeekIds is not null && !TryParseWeekIds(request.WeekIds, out weekIds))
+        {
+            return Response<ApprovalWeekListDto>.Fail(
+                $"The approvals query is not valid (weekIds: 1 to {TimeEntryLimits.ApprovalsMaxWeekIds} week ids).", 400,
+                TimeEntryReasonCodes.ApprovalsQueryInvalid, request.CorrelationId);
+        }
+
+        var approverId = _currentUser.UserId;
+        var weeks = await ReadQueueAsync(approverId, weekIds, ct);
+        if (await _puller.PullAsync(weeks, request.CorrelationId, ct))
+        {
+            weeks = await ReadQueueAsync(approverId, weekIds, ct);
         }
 
         // Names for the whole queue (one batched read): the search matches them, and the order may sort by them.
@@ -102,13 +113,9 @@ public sealed class GetApprovalListHandler : IRequestHandler<GetApprovalListQuer
 
         var slice = ordered.Skip(skip).Take(pageSize).ToList();
 
-        // T2b — the marks and the Task Center work-item id, for the page's rows only (one set of reads per row; the
-        // approver's page is at most ApprovalsMaxPageSize rows — a batched read is a T4 backlog item).
-        var marks = new Dictionary<Guid, ApprovalWeekMarks>();
-        foreach (var w in slice)
-        {
-            marks[w.Id] = await _facts.MarksAsync(w, await _entries.ListByWeekAsync(w.Id, ct), null, ct);
-        }
+        // T2b — the marks and the Task Center work-item id, for the page's rows only. BL-484: read for the PAGE — rows,
+        // approval tasks and timer segments one read each, the working calendar once per (person, week).
+        var marks = await _facts.MarksForWeeksAsync(slice, ct);
 
         var items = slice.Select(w => new ApprovalWeekListItemDto(
             w.Id,
@@ -129,5 +136,40 @@ public sealed class GetApprovalListHandler : IRequestHandler<GetApprovalListQuer
 
         return Response<ApprovalWeekListDto>.Success(
             new ApprovalWeekListDto(items, weeks.Count, page, pageSize, filtered.Count), correlationId: request.CorrelationId);
+    }
+
+    private Task<IReadOnlyList<Domain.Entities.TimeEntry.TimesheetWeek>> ReadQueueAsync(
+        Guid approverId, IReadOnlyList<Guid>? weekIds, CancellationToken ct)
+        => weekIds is null
+            ? _weeks.ListSubmittedForApproverAsync(approverId, ct)
+            : _weeks.ListSubmittedForApproverByIdsAsync(approverId, weekIds, ct);
+
+    /// <summary>
+    /// BL-484 — <c>weekIds</c>, given once as a comma-separated list or repeated (each value may itself be a list): every
+    /// token a week id (<c>D</c> format), 1 to <see cref="TimeEntryLimits.ApprovalsMaxWeekIds"/> of them. An empty token, a
+    /// malformed id or too many is refused — never trimmed to what fits, never guessed.
+    /// </summary>
+    private static bool TryParseWeekIds(IReadOnlyList<string?> values, out IReadOnlyList<Guid>? weekIds)
+    {
+        weekIds = null;
+        var tokens = values.SelectMany(v => (v ?? string.Empty).Split(',')).ToList();
+        if (tokens.Count is 0 or > TimeEntryLimits.ApprovalsMaxWeekIds)
+        {
+            return false;
+        }
+
+        var ids = new List<Guid>(tokens.Count);
+        foreach (var token in tokens)
+        {
+            if (!Guid.TryParseExact(token.Trim(), "D", out var id))
+            {
+                return false;
+            }
+
+            ids.Add(id);
+        }
+
+        weekIds = ids.Distinct().ToList();
+        return true;
     }
 }

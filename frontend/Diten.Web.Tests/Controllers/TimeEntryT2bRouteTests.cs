@@ -117,7 +117,10 @@ public sealed class TimeEntryT2bRouteTests : IClassFixture<WebApplicationFactory
         var result = Assert.IsType<OkObjectResult>(await ControllerWith(gateway).BulkApprove(
             new TimeEntryController.BulkApprovalRequest([clean, flagged, holiday, outside, notMine])));
 
-        Assert.StartsWith($"{Gateway}/api/v1/time-entry/approvals?start=0&length=500", gateway.Calls[0].Uri);
+        // BL-484 — the re-read names exactly the selected weeks (no page window a long queue could overflow).
+        Assert.Equal(
+            $"{Gateway}/api/v1/time-entry/approvals?start=0&length=5&weekIds={clean:D},{flagged:D},{holiday:D},{outside:D},{notMine:D}",
+            gateway.Calls[0].Uri);
         var decisions = gateway.Calls.Skip(1).ToList();
         var only = Assert.Single(decisions);                                         // ONE approve: the clean week
         Assert.Equal($"{Gateway}/api/v1/work-items/{cleanTask:D}/actions/approve", only.Uri);
@@ -125,6 +128,47 @@ public sealed class TimeEntryT2bRouteTests : IClassFixture<WebApplicationFactory
         Assert.Contains(clean.ToString(), json);
         Assert.Contains("TIMESHEET_BULK_MARKED", json);
         Assert.Contains("TIMESHEET_APPROVAL_NOT_FOUND", json);                        // not in the caller's queue
+    }
+
+    [Fact]
+    public async Task Bulk_approve_reads_back_exactly_the_selected_weeks_so_a_queue_longer_than_500_refuses_nothing_valid()
+    {
+        // BL-484 — a caller's queue of 600 weeks, answered the way Platform answers: weekIds narrows the queue, then the
+        // page window applies. The selection sits beyond the first 500.
+        var queue = Enumerable.Range(0, 600).Select(i => new QueueWeek(Guid.NewGuid(), Guid.NewGuid(), Flagged: i == 560)).ToList();
+        var beyond = queue[550];
+        var markedBeyond = queue[560];
+        var notMine = Guid.NewGuid();
+        var gateway = new RoutingGateway { Answer = PlatformOver(queue) };
+
+        var result = Assert.IsType<OkObjectResult>(await ControllerWith(gateway).BulkApprove(
+            new TimeEntryController.BulkApprovalRequest([beyond.WeekId, markedBeyond.WeekId, notMine])));
+
+        using var outcome = JsonDocument.Parse(JsonSerializer.Serialize(result.Value));
+        var data = outcome.RootElement.GetProperty("data");
+        Assert.Equal([beyond.WeekId], data.GetProperty("approved").EnumerateArray().Select(e => e.GetGuid()).ToList());
+        var skipped = data.GetProperty("skipped").EnumerateArray()
+            .ToDictionary(e => e.GetProperty("weekId").GetGuid(), e => e.GetProperty("reasonCode").GetString());
+        Assert.Equal("TIMESHEET_BULK_MARKED", skipped[markedBeyond.WeekId]);            // a marked week is still refused
+        Assert.Equal("TIMESHEET_APPROVAL_NOT_FOUND", skipped[notMine]);                  // not in the caller's queue
+        Assert.Equal(2, skipped.Count);
+        var decision = Assert.Single(gateway.Calls.Where(c => c.Method == HttpMethod.Post));
+        Assert.Equal($"{Gateway}/api/v1/work-items/{beyond.TaskId:D}/actions/approve", decision.Uri);
+        Assert.Equal(
+            $"{Gateway}/api/v1/time-entry/approvals?start=0&length=3&weekIds={beyond.WeekId:D},{markedBeyond.WeekId:D},{notMine:D}",
+            Assert.Single(gateway.Calls.Where(c => c.Method == HttpMethod.Get)).Uri);
+    }
+
+    [Fact]
+    public async Task The_bulk_re_read_carries_nothing_of_the_bulk_requests_own_query_string()
+    {
+        var week = Guid.NewGuid();
+        var gateway = new RoutingGateway { Answer = (_, _) => (HttpStatusCode.OK, """{"data":{"items":[],"total":0,"filteredTotal":0}}""") };
+
+        await ControllerWith(gateway, query: $"?weekIds={Guid.NewGuid():D}&length=500").BulkApprove(
+            new TimeEntryController.BulkApprovalRequest([week]));
+
+        Assert.Equal($"{Gateway}/api/v1/time-entry/approvals?start=0&length=1&weekIds={week:D}", Assert.Single(gateway.Calls).Uri);
     }
 
     [Fact]
@@ -203,6 +247,38 @@ public sealed class TimeEntryT2bRouteTests : IClassFixture<WebApplicationFactory
     }
 
     private sealed record Call(HttpMethod Method, string Uri, string? Body);
+
+    private sealed record QueueWeek(Guid WeekId, Guid TaskId, bool Flagged);
+
+    /// <summary>Platform's approvals read over <paramref name="queue"/> (in queue order), as its contract says: <c>weekIds</c>
+    /// narrows the caller's queue to the listed weeks, then <c>start</c>/<c>length</c> page what is left. Any POST (the
+    /// work-item action) succeeds.</summary>
+    private static Func<HttpMethod, string, (HttpStatusCode, string)> PlatformOver(IReadOnlyList<QueueWeek> queue) => (method, uri) =>
+    {
+        if (method != HttpMethod.Get)
+        {
+            return (HttpStatusCode.OK, "{}");
+        }
+
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(new Uri(uri).Query);
+        IEnumerable<QueueWeek> rows = queue;
+        if (query.TryGetValue("weekIds", out var ids))
+        {
+            var listed = ids.SelectMany(v => v!.Split(',')).Select(Guid.Parse).ToHashSet();
+            rows = rows.Where(w => listed.Contains(w.WeekId));
+        }
+
+        var page = rows.Skip(int.Parse(query["start"]!, System.Globalization.CultureInfo.InvariantCulture))
+            .Take(int.Parse(query["length"]!, System.Globalization.CultureInfo.InvariantCulture))
+            .Select(w => new
+            {
+                weekId = w.WeekId, approvalTaskId = w.TaskId, approvalTaskVersion = 1,
+                flaggedDates = w.Flagged ? new[] { "2026-10-05" } : Array.Empty<string>(),
+                autoClosedDates = Array.Empty<string>(), holidayDates = Array.Empty<string>(), outsideWorkingMinutes = 0
+            })
+            .ToList();
+        return (HttpStatusCode.OK, JsonSerializer.Serialize(new { data = new { items = page, total = queue.Count, filteredTotal = page.Count } }));
+    };
 
     private sealed class RoutingGateway : HttpMessageHandler
     {
