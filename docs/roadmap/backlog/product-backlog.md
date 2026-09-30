@@ -7132,6 +7132,19 @@ DURUM: AÇIK · SAHİP: CT (MOD-0280-FU01 / Platform bildirimleri) · BULAN: T3 
 sır olup olmadığına daha iyi bakmalı. (3) E-postalar istek içinde sırayla gönderiliyor (gönderimde aday başına bir SMTP); büyük havuz + yavaş
 SMTP gönderimi yavaşlatır — kuyruk (`EmailDispatchJob`) üzerinden gönderim. Gelecek regresyon riski: 🟢.
 
+
+### BL-489
+
+**Bildirim olay adları hiçbir modülde çevrilmemiş**
+
+DURUM: AÇIK · SAHİP: CT (Platform bildirimleri) · BULAN: T3 v3 raporu (L1) · KAYIT: 2026-09-30
+
+Görevler (MOD-0024), Toplantılar (MOD-0357) ve Zaman Çizelgesi (MOD-0280-FU01) manifestleri olaylara `DisplayNameKey: NotificationEvent_*` veriyor,
+ama bu anahtarların hiçbir dalda çevirisi yok ve anahtarı okuyan bir ekran da yok (bildirim yönetim ekranı olay kodunu gösteriyor). Anahtarlar
+ilk dağıtımdan önce yerinde (senkron alanı yalnız oluşturmada yazıyor) — önemli olan buydu. İş: olay adını kiracı kullanıcısına gösteren ilk ekran
+(ör. bildirim tercihleri) geldiğinde üç modülün anahtarları `SharedResource` içinde 7 dilde birlikte çevrilir; Platform yönetim ekranı en,tr.
+Gelecek regresyon riski: 🟢 (anahtarlar sabit).
+
 ---
 
 ### BL-393

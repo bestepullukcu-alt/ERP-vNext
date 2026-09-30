@@ -1040,8 +1040,10 @@ per key, seven languages for tenant events — MOD-0024 and MOD-0357 precedent).
   week is exactly who N2 reminds).
 - **Not Monday-only (CT change):** the previous week is reminded on the first run from Monday 09:00 until the week ends;
   a run missed on Monday or a switch turned on mid-week still reminds once — the person-week mark keeps it to one.
-- Submission key = (event, week, revision, submission number) — accepted: a week returned and submitted again must reach
-  the approver again.
+- ~~Submission key = (event, week, revision, submission number)~~ — **replaced in round 2 (M3):** submitted / withdrawn go
+  at most once per (week, revision, recipient, tenant-local day). A submit/withdraw loop can no longer flood the approvers;
+  a week returned and submitted again on the SAME day produces no second e-mail (the Task Center item is there), the next
+  day it does. approved / rejected are unchanged (the approver triggers them).
 - `TimesheetUrl` on auto-closed — accepted (N7 "week and link"); no link on withdrawn — accepted (the week no longer
   opens for the approver).
 - Locale = the tenant's; per-person language is not in T3.
