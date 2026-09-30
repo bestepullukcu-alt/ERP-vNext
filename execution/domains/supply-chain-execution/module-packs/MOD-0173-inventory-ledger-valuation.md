@@ -148,6 +148,9 @@ The development slice may write only:
   Infrastructure) + `tests/`, scaffolded after the pattern of `services/Diten.ProcurementService` on `main`
   (reference only — never edited). Port **5066** in `launchSettings.json` / `appsettings*.json`.
 - `docs/records/audits/2026-10/mod-0173-*` (evidence) and this module pack (Implementation Notes only).
+- `docs/reference/architecture/api/mod-0173-*` (API reference, `/add-module` Phase 6).
+- `execution/registries/module-implementation-status.md` is **not** written by the dev slice (shared registry); the
+  dev report proposes the row and CT records it at acceptance.
 
 ## 6. Protected Paths
 
