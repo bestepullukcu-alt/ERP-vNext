@@ -180,6 +180,60 @@
             </div>
         </section>
 
+        @*
+            WP-CL-FE-5 — the claims this content states (CRM ClaimRefs). The picker has NO name: form.js mirrors the
+            selection into the named hidden inputs of #claimRefsHost (ClaimRefs[i].*). The server renders those inputs for
+            the stored refs too, so a save without JS (or with CRM claims unreachable) keeps the refs unchanged. The
+            publish gate is CRM's — an unusable option is selectable with a warning badge, never blocked here.
+        *@
+        @{
+            var claimL10nKeys = new[]
+            {
+                "ClaimRefsProductFirst", "ClaimRefsNone", "ClaimRefsLoading", "ClaimOptionsUnavailable",
+                "ClaimPermissionMissing", "ClaimEndpointMissing", "ClaimCore", "ClaimStatus_approved", "ClaimStatus_in-review",
+                "ClaimStatus_draft", "ClaimStatus_review-required", "ClaimStatus_inactive", "ClaimStatus_archived",
+                "ClaimReason_not_approved", "ClaimReason_language_mismatch", "ClaimRefNotInList",
+                "ClaimRefsUnusableWarning", "ClaimRefsStaleWarning", "ClaimRefsPlaceholder"
+            };
+            var claimL10n = claimL10nKeys.ToDictionary(k => k, k => Localizer[k].Value);
+        }
+        <section class="card mb-4" id="knowledgeClaimsSection" data-options-url="/CRM/Knowledge/api/claim-options">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClaimsSection"]</h6>
+                <label for="ClaimRefPicker" class="form-label fw-medium">@Localizer["ClaimRefsLabel"]</label>
+                <select id="ClaimRefPicker" class="form-select @(Model.ClaimRefErrors.Count > 0 ? "is-invalid" : "")" multiple
+                        data-placeholder="@Localizer["ClaimRefsPlaceholder"].Value" aria-describedby="claimRefHelp">
+                    @foreach (var r in Model.ClaimRefs)
+                    {
+                        <option value="@r.ClaimId|@r.CountryVersionId" selected
+                                data-claim-id="@r.ClaimId" data-claim-code="@r.ClaimCode"
+                                data-version-id="@r.CountryVersionId" data-country-code="@r.CountryCode">@r.ClaimCode@(string.IsNullOrWhiteSpace(r.CountryCode) ? "" : $" ({r.CountryCode})")</option>
+                    }
+                </select>
+                <small id="claimRefHelp" class="form-text text-muted d-block mt-1">@Localizer["ClaimRefsHelp"]</small>
+                <div id="claimRefNotice" class="small mt-2" role="status" aria-live="polite"></div>
+                @if (Model.ClaimRefErrors.Count > 0)
+                {
+                    <div class="invalid-feedback d-block" data-claim-ref-errors>
+                        @foreach (var e in Model.ClaimRefErrors)
+                        {
+                            <div data-code="@e.Code">@Localizer["ClaimError_" + e.Code]@(string.IsNullOrWhiteSpace(e.Subject) ? "" : $" · {e.Subject}")</div>
+                        }
+                    </div>
+                }
+                <div id="claimRefsHost" class="d-none">
+                    @for (var i = 0; i < Model.ClaimRefs.Count; i++)
+                    {
+                        <input type="hidden" name="ClaimRefs[@i].ClaimId" value="@Model.ClaimRefs[i].ClaimId" />
+                        <input type="hidden" name="ClaimRefs[@i].ClaimCode" value="@Model.ClaimRefs[i].ClaimCode" />
+                        <input type="hidden" name="ClaimRefs[@i].CountryVersionId" value="@Model.ClaimRefs[i].CountryVersionId" />
+                        <input type="hidden" name="ClaimRefs[@i].CountryCode" value="@Model.ClaimRefs[i].CountryCode" />
+                    }
+                </div>
+                <script type="application/json" id="knowledge-claim-l10n">@Html.Raw(JsonSerializer.Serialize(claimL10n))</script>
+            </div>
+        </section>
+
         <section class="card mb-4">
             <div class="card-body p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ContentPointersSection"]</h6>

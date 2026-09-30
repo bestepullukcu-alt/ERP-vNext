@@ -29,6 +29,25 @@
 
 ### Current MVP execution status
 - Current MVP mode: service + embeddable UI component with policy/template-driven completeness logic.
+- **Backend slice 1 — BUILT (WP-CL-BE-2, 2026-09-28, İddialar v2 Faz 1; UI yok).** Durum: **Kısmi**.
+  - **Entity:** `EvidenceLink` (`TenantScopedEntity`, koleksiyon `evidence_links`, şema profili `EvidenceLinking`).
+    - ObjectRef `{Module, ObjectType, ObjectId, ObjectVersion?}` — Platform için opak; ilk tüketici CRM iddia / iddia ülke sürümü.
+    - Belge: `controlled` (MOD-0029 kontrollü belge + **sabitlenmiş** `ControlledDocumentVersion` id) ya da `external` (MOD-0029-FU14 harici kayıt; sürüm id yok, `SourceVersion` snapshot).
+    - Başlık ve sürüm etiketi snapshot. Belge içeriği/dosyası **kopyalanmaz**.
+    - `EvidenceTypeCode` (Global BRD `evidence-type`), Locator `{Section, Page, Table, Quote zorunlu}`, `SupportedSpans` (≤10).
+    - Durum `active | removed`. Güncelleme yok; düzeltme = kaldır + yeni bağ. Kaldırılan kayıt gerekçesiyle kalır.
+    - İndeksler: `{TenantId, ObjectRef.Module, ObjectType, ObjectId}`, `{TenantId, DocumentId}`, `{TenantId, DocumentVersionId}` + kısmi tekil `{TenantId, ActiveDedupKey}` (Status = active) — aynı nesne/belge/sürüm/sayfa/alıntı ile ikinci aktif bağ depolama düzeyinde engellenir.
+  - **API** `api/v1/evidence` (gateway `/api/v1/evidence/{everything}` → 5057, GET+POST):
+    - `POST links` · `POST links/{id}/remove {reason}` · `GET links?module&objectType&objectId&objectVersion&includeRemoved` · `GET links/{id}` · `GET links/by-document/{documentId}?versionId` (ters sorgu, yalnız aktif) · `GET document-options?search&kind&take` (yalnız okunabilir belgeler).
+    - İzinler `platform.evidence.links.read / .manage` (permission auto-registration; grant yok).
+    - Erişim: kontrollü belge için mevcut `DocumentAccessEvaluator.CanReadControlledDocumentAsync` (yaşam döngüsü + matris/şirket/klasör/paylaşım); harici kayıt için `platform.document-management.external-documents.view` ya da yönetici. DocMgmt varlık/API/kuralları değişmedi.
+  - **Olaylar** (transactional outbox, bağla aynı işlemde): `platform.evidence.link.created.v1`, `platform.evidence.link.removed.v1`. Payload yalnız kimlik/kod; alıntı, desteklenen ifade ve kaldırma gerekçesi **olaya girmez**.
+  - **Açık kalanlar:**
+    - Kanıt Paneli (gömülü UI) — CL-FE-5.
+    - Tamlık kuralları ("onay için ≥1 kanıt") — tüketicide (CRM, CL-BE-5); bu servis kural koymaz.
+    - Evidence Register (çapraz nesne arama ekranı).
+    - Belgenin yeni sürümü yürürlüğe girince / askıya alınınca bağlı nesneyi `review-required` yapma (olay tüketimi) — sonraki dilim.
+    - İzinlerin kapsam ataması: sayfa manifest'i olmadığı için yeni `platform.*` anahtarları auto-registration'da `Module=platform` + PlatformAdmin kapsamıyla doğar; tenant rolüne grant (Faz 4) öncesi manifest/kapsam uzlaştırması gerekir.
 
 ## 3. Dependencies and Interfaces
 ### Consumed dependencies

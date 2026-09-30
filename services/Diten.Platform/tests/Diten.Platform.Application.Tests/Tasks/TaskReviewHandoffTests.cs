@@ -39,7 +39,8 @@ public sealed class TaskReviewHandoffTests
         var instanceId = await harness.Service.TryStartReviewAsync(ReviewTask(reviewer: null), CancellationToken.None);
 
         Assert.Null(instanceId);
-        // Refused by MOD-0023's validator, so no instance was ever opened.
+        // Refused by MOD-0023 (no template or request candidate → 400 WorkflowAssignmentCandidatesRequired), so no
+        // instance was ever opened.
         Assert.Empty(harness.Mediator.Starts);
     }
 

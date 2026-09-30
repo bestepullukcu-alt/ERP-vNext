@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>Заявления</value></data>
+  <data name="PageTitleCreate" xml:space="preserve"><value>Открыть страновую версию · {0}</value></data>
+  <data name="PageTitleEdit" xml:space="preserve"><value>Страновая версия · {0}</value></data>
+  <data name="CancelAction" xml:space="preserve"><value>Отмена</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить черновик</value></data>
+  <data name="SubmitLocal" xml:space="preserve"><value>Отправить на локальное согласование</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>Отозвать с согласования</value></data>
+  <data name="OpenNewVersion" xml:space="preserve"><value>Открыть новую версию</value></data>
+  <data name="ReadOnlyNote" xml:space="preserve"><value>Доступ только для чтения: вы можете просматривать эту страновую версию.</value></data>
+  <data name="CoreCardTitle" xml:space="preserve"><value>Базовое заявление · только чтение</value></data>
+  <data name="CoreQualifierLabel" xml:space="preserve"><value>Уточнение</value></data>
+  <data name="CoreAudienceLabel" xml:space="preserve"><value>Аудитория</value></data>
+  <data name="CoreEvidenceCount" xml:space="preserve"><value>Доказательств: {0}</value></data>
+  <data name="VersionLabel" xml:space="preserve"><value>v{0}</value></data>
+  <data name="CountryCardTitle" xml:space="preserve"><value>Страна</value></data>
+  <data name="CountryLanguages" xml:space="preserve"><value>Языки страны</value></data>
+  <data name="FromCountryMaster" xml:space="preserve"><value>· из справочника стран</value></data>
+  <data name="TextsTitle" xml:space="preserve"><value>Текст и уточнения · по языкам</value></data>
+  <data name="CoreReferenceText" xml:space="preserve"><value>Базовое (en)</value></data>
+  <data name="CoreReferenceQualifier" xml:space="preserve"><value>Базовое уточнение</value></data>
+  <data name="LocalTextLabel" xml:space="preserve"><value>Текст заявления · {0}</value></data>
+  <data name="LocalQualifiersLabel" xml:space="preserve"><value>Локальные уточнения · {0}</value></data>
+  <data name="QualifierPlaceholder" xml:space="preserve"><value>Добавьте уточнение</value></data>
+  <data name="AddAction" xml:space="preserve"><value>Добавить</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>Удалить</value></data>
+  <data name="LanguageMissing" xml:space="preserve"><value>Нет текста</value></data>
+  <data name="CharCount" xml:space="preserve"><value>{0} символов</value></data>
+  <data name="AdaptationTitle" xml:space="preserve"><value>Адаптация</value></data>
+  <data name="AdaptationHint" xml:space="preserve"><value>Страновая версия может быть сужена или смягчена относительно базовой, но не может расширять охват.</value></data>
+  <data name="AdaptationTypeLabel" xml:space="preserve"><value>Тип адаптации</value></data>
+  <data name="AdaptationReasonLabel" xml:space="preserve"><value>Причина адаптации</value></data>
+  <data name="AdaptationReasonHint" xml:space="preserve"><value>Обязательно, если это не дословный перевод.</value></data>
+  <data name="Adapt_verbatim" xml:space="preserve"><value>Дословный перевод</value></data>
+  <data name="Adapt_narrowed" xml:space="preserve"><value>Сужено</value></data>
+  <data name="Adapt_softened" xml:space="preserve"><value>Смягчено</value></data>
+  <data name="ValidityTitle" xml:space="preserve"><value>Срок действия</value></data>
+  <data name="ValidFromLabel" xml:space="preserve"><value>Действует с</value></data>
+  <data name="ValidToLabel" xml:space="preserve"><value>Действует до</value></data>
+  <data name="AudienceTitle" xml:space="preserve"><value>Целевая аудитория</value></data>
+  <data name="AudienceHint" xml:space="preserve"><value>Можно выбрать только аудитории базового заявления (сужение).</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Выберите</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>Доказательства</value></data>
+  <data name="AddLocalEvidence" xml:space="preserve"><value>Добавить локальное доказательство</value></data>
+  <data name="InheritedEvidenceTitle" xml:space="preserve"><value>Из базового заявления (только чтение)</value></data>
+  <data name="LocalEvidenceTitle" xml:space="preserve"><value>Локальные доказательства</value></data>
+  <data name="LocalEvidenceEmpty" xml:space="preserve"><value>Локальных доказательств нет. Привяжите сюда локальные документы, например ОХЛП ({0}).</value></data>
+  <data name="InheritedEvidenceEmpty" xml:space="preserve"><value>У базового заявления пока нет доказательств.</value></data>
+  <data name="EvidenceSaveFirst" xml:space="preserve"><value>Сначала сохраните черновик: доказательство привязывается к сохранённой версии.</value></data>
+  <data name="EvidenceLockedNote" xml:space="preserve"><value>Доказательства меняются только в черновике; откройте новую версию.</value></data>
+  <data name="EvidenceTextFirst" xml:space="preserve"><value>Сначала введите и сохраните текст на этом языке: подтверждаемые фразы отмечаются на нём.</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>Готовность к согласованию</value></data>
+  <data name="ReadyCoreApproved" xml:space="preserve"><value>Базовое заявление утверждено</value></data>
+  <data name="ReadyAllLanguages" xml:space="preserve"><value>Текст на всех языках</value></data>
+  <data name="ReadyAdaptationReason" xml:space="preserve"><value>Причина адаптации</value></data>
+  <data name="ReadyValidity" xml:space="preserve"><value>Начало действия</value></data>
+  <data name="ReadyEvidence" xml:space="preserve"><value>Минимум 1 доказательство</value></data>
+  <data name="ReadySaved" xml:space="preserve"><value>Сохранено</value></data>
+  <data name="ReadyMissing" xml:space="preserve"><value>не хватает</value></data>
+  <data name="FlowTitle" xml:space="preserve"><value>Локальный процесс согласования</value></data>
+  <data name="FlowSequentialNote" xml:space="preserve"><value>Последовательно · настраивается в параметрах согласования</value></data>
+  <data name="FlowNoCandidates" xml:space="preserve"><value>Нет кандидатских должностей</value></data>
+  <data name="FlowReason_WorkflowTemplateMissing" xml:space="preserve"><value>Локальный процесс для этой страны ещё не задан. Обратитесь к администратору.</value></data>
+  <data name="FlowReason_WorkflowTemplateNotPublished" xml:space="preserve"><value>Локальный процесс существует, но ещё не опубликован.</value></data>
+  <data name="FlowReason_WorkflowPermissionMissing" xml:space="preserve"><value>У вас нет доступа к настройкам процесса.</value></data>
+  <data name="FlowReason_WorkflowUnavailable" xml:space="preserve"><value>Процесс согласования сейчас нельзя показать.</value></data>
+  <data name="StatusCardTitle" xml:space="preserve"><value>Карточка статуса</value></data>
+  <data name="LockInReview" xml:space="preserve"><value>На согласовании: версия заблокирована до завершения или отзыва локального процесса.</value></data>
+  <data name="LockApproved" xml:space="preserve"><value>Утверждено: текст и доказательства заблокированы. Для изменения откройте новую версию.</value></data>
+  <data name="LockReviewRequired" xml:space="preserve"><value>Требует пересмотра: изменилось базовое заявление или документ. Откройте новую версию.</value></data>
+  <data name="LockInactive" xml:space="preserve"><value>Эта запись больше не актуальна (заменена или в архиве).</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Отправить версию на локальное согласование? Она будет заблокирована до завершения процесса.</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Отозвать версию с согласования? Она вернётся в черновик.</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Открыть новую черновую страновую версию на основе этой?</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>Черновик сохранён.</value></data>
+  <data name="ToastSubmitted" xml:space="preserve"><value>Отправлено на локальное согласование.</value></data>
+  <data name="ToastWithdrawn" xml:space="preserve"><value>Отозвано с согласования.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить страновую версию.</value></data>
+  <data name="ErrorGeneric" xml:space="preserve"><value>Что-то пошло не так. Попробуйте ещё раз.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="KindCoreBadge" xml:space="preserve"><value>Базовое</value></data>
+  <data name="KindLocalBadge" xml:space="preserve"><value>Локальное</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>На согласовании</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>Требует пересмотра</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="State_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="Err_core_not_approved" xml:space="preserve"><value>Базовое заявление нужно утвердить до страновой версии.</value></data>
+  <data name="Err_country_closed" xml:space="preserve"><value>Эта страна отмечена как не открываемая. Сначала откройте её в матрице охвата.</value></data>
+  <data name="Err_country_version_exists" xml:space="preserve"><value>У страны уже есть актуальная версия. Откройте её из матрицы.</value></data>
+  <data name="Err_languages_incomplete" xml:space="preserve"><value>Введите текст на всех языках контента страны.</value></data>
+  <data name="Err_audience_not_narrowing" xml:space="preserve"><value>Можно выбрать только аудитории базового заявления.</value></data>
+  <data name="Err_adaptation_reason_required" xml:space="preserve"><value>Укажите причину адаптации (обязательно, кроме дословного перевода).</value></data>
+  <data name="Err_texts_required" xml:space="preserve"><value>Введите хотя бы один текст.</value></data>
+  <data name="Err_language_not_allowed" xml:space="preserve"><value>Этот язык не является языком контента страны.</value></data>
+  <data name="Err_duplicate_language" xml:space="preserve"><value>Язык указан дважды.</value></data>
+  <data name="Err_invalid_validity" xml:space="preserve"><value>Окончание действия должно быть позже начала.</value></data>
+  <data name="Err_invalid_reference_value" xml:space="preserve"><value>Выберите допустимое значение.</value></data>
+  <data name="Err_open_version_exists" xml:space="preserve"><value>У страны уже есть черновая или согласуемая версия.</value></data>
+  <data name="Err_invalid_state" xml:space="preserve"><value>Действие невозможно в текущем состоянии.</value></data>
+  <data name="Err_invalid_status" xml:space="preserve"><value>Действие недоступно в текущем статусе.</value></data>
+  <data name="Err_evidence_required" xml:space="preserve"><value>Перед отправкой нужно хотя бы одно доказательство (унаследованное или локальное).</value></data>
+  <data name="Err_evidence_locked" xml:space="preserve"><value>Доказательства меняются только в черновике. Откройте новую версию.</value></data>
+  <data name="Err_evidence_unavailable" xml:space="preserve"><value>Сервис доказательств недоступен. Ничего не изменено; повторите позже.</value></data>
+  <data name="Err_in_review_locked" xml:space="preserve"><value>Версия на согласовании. Отзовите её, чтобы изменить.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>Локальный процесс для этой страны не задан. Обратитесь к администратору.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>У вас нет прав на запуск процесса согласования.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>Сервис согласования недоступен. Ничего не изменено; повторите позже.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>Процесс согласования отклонил запрос.</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>Согласование уже нельзя отозвать: утверждающий уже принял решение.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>Нет открытого согласования для отзыва.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>Нужный справочник ещё не опубликован. Обратитесь к администратору.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Нужный сервис недоступен. Ничего не изменено; повторите позже.</value></data>
+  <data name="Err_not_applicable" xml:space="preserve"><value>Эта страна вне охвата данного заявления.</value></data>
+  <data name="Err_required" xml:space="preserve"><value>Заполните обязательные поля.</value></data>
+</root>

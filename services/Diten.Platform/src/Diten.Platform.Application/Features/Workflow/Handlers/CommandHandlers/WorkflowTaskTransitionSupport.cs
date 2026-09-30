@@ -13,6 +13,8 @@ internal sealed class WorkflowTaskTransitionSupport
     private readonly IWorkflowTransitionLogRepository _logRepository;
     private readonly IWorkflowTemplateVersionRepository? _versionRepository;
     private readonly IPositionAssignmentRepository? _positionAssignmentRepository;
+    private readonly IPositionRepository? _positionRepository;
+    private readonly WorkflowTerminalTransitionWriter _terminal;
 
     public WorkflowTaskTransitionSupport(
         IApprovalTaskRepository taskRepository,
@@ -20,7 +22,8 @@ internal sealed class WorkflowTaskTransitionSupport
         IRuntimeAssignmentSnapshotRepository snapshotRepository,
         IWorkflowTransitionLogRepository logRepository,
         IWorkflowTemplateVersionRepository? versionRepository = null,
-        IPositionAssignmentRepository? positionAssignmentRepository = null)
+        IPositionAssignmentRepository? positionAssignmentRepository = null,
+        WorkflowTransitionSeams? seams = null)
     {
         _taskRepository = taskRepository;
         _instanceRepository = instanceRepository;
@@ -28,6 +31,10 @@ internal sealed class WorkflowTaskTransitionSupport
         _logRepository = logRepository;
         _versionRepository = versionRepository;
         _positionAssignmentRepository = positionAssignmentRepository;
+        _positionRepository = seams?.Positions;
+        _terminal = new WorkflowTerminalTransitionWriter(
+            taskRepository, instanceRepository, logRepository,
+            seams?.Transactions, seams?.Events, seams?.Templates);
     }
 
     public async Task<Response<WorkflowTaskTransitionResponse>> TransitionAsync(
@@ -136,6 +143,7 @@ internal sealed class WorkflowTaskTransitionSupport
             nextCandidates = await WorkflowCandidateResolver.ResolveAsync(
                 nextStep.CandidatePrincipalIds,
                 _positionAssignmentRepository,
+                _positionRepository,
                 ct);
             if (nextCandidates.Count == 0)
             {
@@ -192,6 +200,19 @@ internal sealed class WorkflowTaskTransitionSupport
                     : "lexicographic_first_principal_after_runtime_resolution"
             };
             nextTask.AssignmentSnapshotId = nextSnapshot.Id;
+        }
+
+        if (nextStep is null)
+        {
+            // WP-CL-BE-3 — final approval or rejection makes the instance TERMINAL: task, instance, log and the
+            // completion event commit in one Platform transaction.
+            var terminalLog = NewLog(task, instance, action, previousTaskStatus, previousInstanceStatus, actorId,
+                reasonCode, idempotencyKey, comment, evidenceRef, correlationId,
+                await _logRepository.GetLatestSequenceNoAsync(instance.Id, ct) + 1);
+            var terminal = await _terminal.CommitAsync(task, task.Version, instance, instance.Version, terminalLog,
+                escalationWrite: false, actorId, reasonCode, correlationId, ct);
+            return TerminalResponse(terminal, task, instance, previousTaskStatus, previousInstanceStatus, action,
+                correlationId);
         }
 
         var taskVersion = task.Version;
@@ -554,6 +575,18 @@ internal sealed class WorkflowTaskTransitionSupport
         string correlationId,
         CancellationToken ct)
     {
+        if (WorkflowOutcomes.For(instance.Status) is not null)
+        {
+            // WP-CL-BE-3 — cancel makes the instance TERMINAL: one transaction with the completion event.
+            var terminalLog = NewLog(task, instance, action, previousTaskStatus, previousInstanceStatus, actorId,
+                reasonCode, idempotencyKey, comment, evidenceRef, correlationId,
+                await _logRepository.GetLatestSequenceNoAsync(instance.Id, ct) + 1);
+            var terminal = await _terminal.CommitAsync(task, task.Version, instance, instance.Version, terminalLog,
+                escalationWrite: false, actorId, reasonCode, correlationId, ct);
+            return TerminalResponse(terminal, task, instance, previousTaskStatus, previousInstanceStatus, action,
+                correlationId);
+        }
+
         var taskVersion = task.Version;
         var instanceVersion = instance.Version;
         if (!await _taskRepository.UpdateAsync(task, taskVersion, ct) ||
@@ -655,6 +688,72 @@ internal sealed class WorkflowTaskTransitionSupport
 
         return TransitionContext.Success(task, instance, snapshot);
     }
+
+    private static WorkflowTransitionLog NewLog(
+        ApprovalTask task,
+        WorkflowInstance instance,
+        WorkflowTransitionAction action,
+        ApprovalTaskStatus previousTaskStatus,
+        WorkflowInstanceStatus previousInstanceStatus,
+        string actorId,
+        string reasonCode,
+        string idempotencyKey,
+        string? comment,
+        string? evidenceRef,
+        string correlationId,
+        long sequenceNo) => new()
+    {
+        TenantId = task.TenantId,
+        WorkflowInstanceId = instance.Id,
+        ApprovalTaskId = task.Id,
+        Action = action,
+        FromState = previousTaskStatus.ToString(),
+        ToState = task.Status.ToString(),
+        FromStatus = previousInstanceStatus.ToString(),
+        ToStatus = instance.Status.ToString(),
+        ActorId = actorId,
+        ActorRef = actorId,
+        ReasonCode = reasonCode,
+        IdempotencyKey = idempotencyKey,
+        Comment = comment,
+        EvidenceRef = evidenceRef,
+        CorrelationId = correlationId,
+        SequenceNo = sequenceNo
+    };
+
+    private static Response<WorkflowTaskTransitionResponse> TerminalResponse(
+        WorkflowTerminalWriteResult result,
+        ApprovalTask task,
+        WorkflowInstance instance,
+        ApprovalTaskStatus previousTaskStatus,
+        WorkflowInstanceStatus previousInstanceStatus,
+        WorkflowTransitionAction action,
+        string correlationId) => result.Outcome switch
+    {
+        WorkflowTerminalWriteOutcome.Committed => Response<WorkflowTaskTransitionResponse>.Success(
+            new WorkflowTaskTransitionResponse(
+                instance.Id,
+                task.Id,
+                previousTaskStatus.ToString(),
+                task.Status.ToString(),
+                previousInstanceStatus.ToString(),
+                instance.Status.ToString(),
+                action.ToString(),
+                false,
+                result.Log!.Id,
+                correlationId),
+            correlationId: correlationId),
+        WorkflowTerminalWriteOutcome.TransactionUnavailable => Response<WorkflowTaskTransitionResponse>.Fail(
+            "The workflow transition could not be committed. Nothing was written.",
+            503,
+            WorkflowReasonCodes.WorkflowTransactionUnavailable,
+            correlationId),
+        _ => Response<WorkflowTaskTransitionResponse>.Fail(
+            "Workflow transition conflict.",
+            409,
+            WorkflowReasonCodes.WorkflowTransitionConflict,
+            correlationId)
+    };
 
     private static bool IsOpen(ApprovalTask task) =>
         task.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence;

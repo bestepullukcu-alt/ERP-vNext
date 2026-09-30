@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>İddialar</value></data>
+  <data name="NewCoreClaimTitle" xml:space="preserve"><value>Yeni çekirdek iddia</value></data>
+  <data name="NewLocalClaimTitle" xml:space="preserve"><value>Yeni yerel iddia</value></data>
+  <data name="EditClaimTitle" xml:space="preserve"><value>İddiayı düzenle</value></data>
+  <data name="CancelAction" xml:space="preserve"><value>İptal</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Taslağı kaydet</value></data>
+  <data name="SubmitReview" xml:space="preserve"><value>Onaya gönder</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>Onaydan geri çek</value></data>
+  <data name="OpenNewVersion" xml:space="preserve"><value>Yeni sürüm aç</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Kimlik ve metin</value></data>
+  <data name="ClaimCodeLabel" xml:space="preserve"><value>İddia kodu</value></data>
+  <data name="ClaimCodeHint" xml:space="preserve"><value>Ürüne göre önerilir. Sürümler ve ülke sürümleri arasında sabit iş anahtarıdır.</value></data>
+  <data name="ClaimCodeLocked" xml:space="preserve"><value>Kod, iddia oluşturulduktan sonra değişmez.</value></data>
+  <data name="ClaimNameLabel" xml:space="preserve"><value>İddia adı</value></data>
+  <data name="VersionLabel" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Durum</value></data>
+  <data name="StatusHint" xml:space="preserve"><value>Durum yalnız Onaya gönder, Onayla ve Arşivle işlemleriyle değişir.</value></data>
+  <data name="DescriptionLabel" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="CoreTextLabel" xml:space="preserve"><value>Çekirdek iddia metni</value></data>
+  <data name="LocalTextLabel" xml:space="preserve"><value>Yerel iddia metni</value></data>
+  <data name="TextLanguageLabel" xml:space="preserve"><value>Metin dili</value></data>
+  <data name="CoreTextHint" xml:space="preserve"><value>Ülke sürümleri bu metinden uyarlanır; kapsamı genişletemez. Onaylanınca kilitlenir.</value></data>
+  <data name="LocalTextHint" xml:space="preserve"><value>Yerel iddia yalnız bir ülkede geçerlidir ve çekirdek metni yoktur.</value></data>
+  <data name="CountryLabel" xml:space="preserve"><value>Ülke</value></data>
+  <data name="CharCount" xml:space="preserve"><value>{0} karakter</value></data>
+  <data name="SectionScope" xml:space="preserve"><value>Geçerlilik alanı</value></data>
+  <data name="ProductLabel" xml:space="preserve"><value>Ürün</value></data>
+  <data name="AudienceLabel" xml:space="preserve"><value>Hedef kitle</value></data>
+  <data name="OrgUnitLabel" xml:space="preserve"><value>Sorumlu ekip</value></data>
+  <data name="ScopeNote" xml:space="preserve"><value>Ülke, dil ve geçerlilik tarihleri her ülke sürümünde ayrıca belirlenir.</value></data>
+  <data name="ProductUnavailable" xml:space="preserve"><value>Ürün kataloğuna şu anda ulaşılamıyor.</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Seçin</value></data>
+  <data name="SectionQualifiers" xml:space="preserve"><value>Niteleyiciler</value></data>
+  <data name="QualifiersHint" xml:space="preserve"><value>Cümleye her zaman eşlik eden zorunlu ifadeler.</value></data>
+  <data name="QualifierPlaceholder" xml:space="preserve"><value>Niteleyici ekleyin</value></data>
+  <data name="AddAction" xml:space="preserve"><value>Ekle</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="SectionEvidence" xml:space="preserve"><value>Kanıtlar</value></data>
+  <data name="AddEvidence" xml:space="preserve"><value>Kanıt ekle</value></data>
+  <data name="EvidenceEmpty" xml:space="preserve"><value>Henüz kanıt bağlanmadı.</value></data>
+  <data name="EvidenceHint" xml:space="preserve"><value>Onaya göndermek için en az 1 kanıt zorunludur. Belgeler Belge Yönetimi'ndeki kayıtlardan seçilir.</value></data>
+  <data name="EvidenceSaveFirst" xml:space="preserve"><value>Önce taslağı kaydedin; kanıt kayıtlı iddiaya bağlanır.</value></data>
+  <data name="EvidenceLockedNote" xml:space="preserve"><value>Kanıt yalnız taslakta değişir; değiştirmek için yeni sürüm açın.</value></data>
+  <data name="EvidencePreview" xml:space="preserve"><value>Önizle</value></data>
+  <data name="EvidenceSupports" xml:space="preserve"><value>Desteklediği ifade:</value></data>
+  <data name="EvidencePinned" xml:space="preserve"><value>{0} sabitlendi</value></data>
+  <data name="EvidenceSuperseded" xml:space="preserve"><value>Bu belgenin daha yeni bir sürümü yürürlükte ({0}).</value></data>
+  <data name="EvidenceStateWarning" xml:space="preserve"><value>Belge durumu: {0}.</value></data>
+  <data name="EvidenceExpiring" xml:space="preserve"><value>Belgenin gözden geçirme tarihi {0}.</value></data>
+  <data name="DocState_suspended" xml:space="preserve"><value>askıya alınmış</value></data>
+  <data name="DocState_retired" xml:space="preserve"><value>yürürlükten kaldırılmış</value></data>
+  <data name="DocState_withdrawn" xml:space="preserve"><value>geri çekilmiş</value></data>
+  <data name="RemoveEvidenceTitle" xml:space="preserve"><value>Kanıtı kaldır</value></data>
+  <data name="RemoveEvidenceReason" xml:space="preserve"><value>Kaldırma gerekçesi</value></data>
+  <data name="RemoveEvidenceConfirm" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>Onaya hazırlık</value></data>
+  <data name="ReadyName" xml:space="preserve"><value>Ad</value></data>
+  <data name="ReadyText" xml:space="preserve"><value>İddia metni</value></data>
+  <data name="ReadyProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="ReadyEvidence" xml:space="preserve"><value>En az 1 kanıt</value></data>
+  <data name="ReadySaved" xml:space="preserve"><value>Kaydedildi</value></data>
+  <data name="ReadyMissing" xml:space="preserve"><value>eksik</value></data>
+  <data name="FlowTitleCore" xml:space="preserve"><value>Global onay akışı</value></data>
+  <data name="FlowTitleLocal" xml:space="preserve"><value>Yerel onay akışı</value></data>
+  <data name="FlowSequentialNote" xml:space="preserve"><value>Sıralı · Onay ayarlarından yapılandırılır</value></data>
+  <data name="FlowNoCandidates" xml:space="preserve"><value>Aday pozisyon yok</value></data>
+  <data name="FlowReason_WorkflowTemplateMissing" xml:space="preserve"><value>Bu iddia için henüz onay akışı tanımlı değil. Yöneticinize başvurun.</value></data>
+  <data name="FlowReason_WorkflowTemplateNotPublished" xml:space="preserve"><value>Onay akışı var ama henüz yayınlanmadı.</value></data>
+  <data name="FlowReason_WorkflowPermissionMissing" xml:space="preserve"><value>Onay akışı ayarlarını görüntüleme yetkiniz yok.</value></data>
+  <data name="FlowReason_WorkflowUnavailable" xml:space="preserve"><value>Onay akışı şu anda gösterilemiyor.</value></data>
+  <data name="FlowPickCountry" xml:space="preserve"><value>Onay akışını görmek için ülke seçin.</value></data>
+  <data name="StatusCardTitle" xml:space="preserve"><value>Durum kartı</value></data>
+  <data name="LockInReview" xml:space="preserve"><value>İncelemede: onay akışı tamamlanana ya da geri çekilene kadar iddia kilitli.</value></data>
+  <data name="LockApproved" xml:space="preserve"><value>Onaylı: metin ve kanıtlar kilitli. Değiştirmek için yeni sürüm açın.</value></data>
+  <data name="LockReviewRequired" xml:space="preserve"><value>Gözden geçirilmeli: bağlı bir belge değişti. İddiayı güncellemek için yeni sürüm açın.</value></data>
+  <data name="LockInactive" xml:space="preserve"><value>Bu kayıt artık güncel değil (yenisiyle değiştirildi ya da arşivlendi).</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Bu iddia onaya gönderilsin mi? Onay akışı tamamlanana kadar kilitlenecek.</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Bu iddia onaydan geri çekilsin mi? Taslağa döner.</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Bu iddiadan yeni bir taslak sürüm açılsın mı?</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>Taslak kaydedildi.</value></data>
+  <data name="ToastSubmitted" xml:space="preserve"><value>Onaya gönderildi.</value></data>
+  <data name="ToastWithdrawn" xml:space="preserve"><value>Onaydan geri çekildi.</value></data>
+  <data name="ToastEvidenceAdded" xml:space="preserve"><value>Kanıt eklendi.</value></data>
+  <data name="ToastEvidenceRemoved" xml:space="preserve"><value>Kanıt kaldırıldı.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>İddia yüklenemedi.</value></data>
+  <data name="ErrorGeneric" xml:space="preserve"><value>Bir sorun oluştu. Lütfen tekrar deneyin.</value></data>
+  <data name="Err_evidence_required" xml:space="preserve"><value>Onaya göndermeden önce en az 1 kanıt ekleyin.</value></data>
+  <data name="Err_evidence_locked" xml:space="preserve"><value>Kanıt yalnız taslakta değişir. Yeni sürüm açın.</value></data>
+  <data name="Err_evidence_unavailable" xml:space="preserve"><value>Kanıt servisine ulaşılamıyor. Hiçbir şey değişmedi; daha sonra tekrar deneyin.</value></data>
+  <data name="Err_in_review_locked" xml:space="preserve"><value>İddia incelemede. Değiştirmek için onaydan geri çekin.</value></data>
+  <data name="Err_invalid_status" xml:space="preserve"><value>Bu işlem iddianın mevcut durumunda yapılamaz.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>Onay akışı tanımlı değil. Yöneticinize başvurun.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>Onay akışını başlatma yetkiniz yok.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>Onay servisine ulaşılamıyor. Hiçbir şey değişmedi; daha sonra tekrar deneyin.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>Onay akışı isteği reddetti.</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>İnceleme artık geri çekilemez: bir onaylayıcı işlem yaptı.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>Geri çekilecek açık bir inceleme yok.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>İddialar yalnız onay akışıyla onaylanır.</value></data>
+  <data name="Err_product_required" xml:space="preserve"><value>Ürünü seçin.</value></data>
+  <data name="Err_product_not_found" xml:space="preserve"><value>Ürün, ürün kataloğunda bulunamadı.</value></data>
+  <data name="Err_claim_product_mismatch" xml:space="preserve"><value>İddia bu ürüne ait değil.</value></data>
+  <data name="Err_local_country_required" xml:space="preserve"><value>Yerel iddianın ülkesini seçin.</value></data>
+  <data name="Err_language_not_allowed" xml:space="preserve"><value>Bu dil, seçilen ülkenin içerik dili değil.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>Gerekli bir referans listesi henüz yayınlanmadı. Yöneticinize başvurun.</value></data>
+  <data name="Err_audience_not_found" xml:space="preserve"><value>Seçilen bir kitle profili bulunamadı.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Gerekli bir servise ulaşılamıyor. Hiçbir şey değişmedi; daha sonra tekrar deneyin.</value></data>
+  <data name="Err_open_version_exists" xml:space="preserve"><value>Bu iddianın zaten açık bir taslak ya da incelemedeki sürümü var.</value></data>
+  <data name="Err_invalid_state" xml:space="preserve"><value>Bu işlem iddianın mevcut durumunda yapılamaz.</value></data>
+  <data name="Err_duplicate_code" xml:space="preserve"><value>Bu kodu başka bir iddia kullanıyor. Farklı bir kod seçin.</value></data>
+  <data name="Err_quote_required" xml:space="preserve"><value>Alıntılanan cümleyi girin.</value></data>
+  <data name="Err_duplicate_link" xml:space="preserve"><value>Aynı kanıt zaten bağlı.</value></data>
+  <data name="Err_document_not_readable" xml:space="preserve"><value>Bu belgeyi okuma yetkiniz yok.</value></data>
+  <data name="Err_document_not_found" xml:space="preserve"><value>Belge bulunamadı.</value></data>
+  <data name="Err_version_required" xml:space="preserve"><value>Kontrollü belge için sabit sürüm gerekir.</value></data>
+  <data name="Err_invalid_evidence_type" xml:space="preserve"><value>Geçerli bir kanıt tipi seçin.</value></data>
+  <data name="Err_removal_reason_required" xml:space="preserve"><value>Kaldırma gerekçesini girin.</value></data>
+  <data name="Err_link_not_found" xml:space="preserve"><value>Kanıt bağı bulunamadı.</value></data>
+  <data name="EvStep1" xml:space="preserve"><value>1 · Belge seçin</value></data>
+  <data name="EvStep2" xml:space="preserve"><value>2 · Referans ve eşleme</value></data>
+  <data name="EvSearchPlaceholder" xml:space="preserve"><value>Başlık ya da koda göre arayın</value></data>
+  <data name="EvKindControlled" xml:space="preserve"><value>Kontrollü</value></data>
+  <data name="EvKindExternal" xml:space="preserve"><value>Harici</value></data>
+  <data name="EvUploadNew" xml:space="preserve"><value>Belge Yönetimi'ne yeni belge yükle</value></data>
+  <data name="EvNoDocuments" xml:space="preserve"><value>Eşleşen okunabilir belge yok.</value></data>
+  <data name="EvWillPin" xml:space="preserve"><value>{0} sabitlenecek</value></data>
+  <data name="EvTypeLabel" xml:space="preserve"><value>Kanıt tipi</value></data>
+  <data name="EvSectionLabel" xml:space="preserve"><value>Bölüm</value></data>
+  <data name="EvPageLabel" xml:space="preserve"><value>Sayfa</value></data>
+  <data name="EvTableLabel" xml:space="preserve"><value>Tablo</value></data>
+  <data name="EvQuoteLabel" xml:space="preserve"><value>Alıntılanan cümle</value></data>
+  <data name="EvSupportsLabel" xml:space="preserve"><value>Desteklediği ifade · iddia metni üzerinde işaretleyin</value></data>
+  <data name="EvSupportsHint" xml:space="preserve"><value>Metnin bir kısmını fareyle ya da klavyeyle (Shift + ok tuşları) seçin, sonra Seçili metni ekle'ye basın.</value></data>
+  <data name="EvAddSelection" xml:space="preserve"><value>Seçili metni ekle</value></data>
+  <data name="EvSpansEmpty" xml:space="preserve"><value>Henüz ifade işaretlenmedi.</value></data>
+  <data name="EvSpansMax" xml:space="preserve"><value>En fazla 10 ifade işaretlenebilir.</value></data>
+  <data name="EvSaveTextFirst" xml:space="preserve"><value>İddia metni boş; önce metni girip kaydedin.</value></data>
+  <data name="EvBack" xml:space="preserve"><value>Geri</value></data>
+  <data name="EvNext" xml:space="preserve"><value>İleri</value></data>
+  <data name="EvAdd" xml:space="preserve"><value>Kanıtı ekle</value></data>
+  <data name="EvRequiredMissing" xml:space="preserve"><value>Kanıt tipini, alıntılanan cümleyi ve en az bir desteklenen ifadeyi doldurun.</value></data>
+  <data name="EvPreviewExternalNote" xml:space="preserve"><value>Harici kaynaklar için burada belge önizlemesi yok.</value></data>
+  <data name="KindCoreBadge" xml:space="preserve"><value>Çekirdek</value></data>
+  <data name="KindLocalBadge" xml:space="preserve"><value>Yerel</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>Gözden geçirilmeli</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="State_archived" xml:space="preserve"><value>Arşiv</value></data>
+  <data name="RequiredCount" xml:space="preserve"><value>Zorunlu: {0}</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="EvType_smpc-pil" xml:space="preserve"><value>KÜB / KT</value></data>
+  <data name="EvType_clinical-study" xml:space="preserve"><value>Klinik çalışma</value></data>
+  <data name="EvType_literature" xml:space="preserve"><value>Literatür</value></data>
+  <data name="EvType_internal-data" xml:space="preserve"><value>İç veri</value></data>
+  <data name="EvType_regulatory-letter" xml:space="preserve"><value>Ruhsat yazısı</value></data>
+  <data name="EvOriginCore" xml:space="preserve"><value>Çekirdekten</value></data>
+  <data name="EvOriginLocal" xml:space="preserve"><value>Yerel</value></data>
+  <data name="DocStateLabel_effective" xml:space="preserve"><value>Yürürlükte</value></data>
+  <data name="DocStateLabel_suspended" xml:space="preserve"><value>Askıda</value></data>
+  <data name="DocStateLabel_retired" xml:space="preserve"><value>Yürürlükten kaldırıldı</value></data>
+  <data name="DocStateLabel_withdrawn" xml:space="preserve"><value>Geri çekildi</value></data>
+  <data name="DocStateLabel_unknown" xml:space="preserve"><value>Durum bilinmiyor</value></data>
+</root>

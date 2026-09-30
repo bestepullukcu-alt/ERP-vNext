@@ -155,7 +155,13 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             SlaState: _sla.Resolve(task.DueAt, (isTerminal ? task.CompletedAt : null) ?? DateTimeOffset.UtcNow),
             ClosedAt: isTerminal ? task.CompletedAt : null,
             Requester: sourceContext?.Requester,
-            ArrivalReason: ArrivalReasonFor(sourceContext));
+            ArrivalReason: ArrivalReasonFor(sourceContext),
+            // WP-CL-BE-3 — the source's second line and chips (the starter's display context). Omitted when absent, so
+            // an approval whose owner says nothing more (MOD-0024 today) serializes exactly as before.
+            Summary: string.IsNullOrWhiteSpace(sourceContext?.Subtitle)
+                ? null
+                : WorkItemLabelDto.Display(sourceContext.Subtitle.Trim()),
+            Tags: sourceContext?.Chips is { Count: > 0 } chips ? chips.ToList() : null);
     }
 
     /*

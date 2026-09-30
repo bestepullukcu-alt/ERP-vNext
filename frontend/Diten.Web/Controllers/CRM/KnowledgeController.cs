@@ -17,7 +17,7 @@ namespace Diten.Web.Controllers.CRM;
 /// </summary>
 [Authorize]
 [Route("CRM/Knowledge")]
-public sealed class KnowledgeController : Controller
+public sealed partial class KnowledgeController : Controller
 {
     private const string ReadPermission = "crm.knowledge.read";
     private const string ManagePermission = "crm.knowledge.manage";
@@ -86,7 +86,7 @@ public sealed class KnowledgeController : Controller
                 : RedirectToAction(nameof(Index));
         }
 
-        AddGatewayErrors(await ExtractErrorsAsync(response, cancellationToken));
+        AddGatewayErrors(model, await ExtractErrorsAsync(response, cancellationToken));
         await PopulateContractOptionsAsync(model, cancellationToken);
         return View($"{ViewRoot}/Create.cshtml", model);
     }
@@ -128,7 +128,7 @@ public sealed class KnowledgeController : Controller
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        AddGatewayErrors(await ExtractErrorsAsync(response, cancellationToken));
+        AddGatewayErrors(model, await ExtractErrorsAsync(response, cancellationToken));
         await PopulateContractOptionsAsync(model, cancellationToken);
         return View($"{ViewRoot}/Edit.cshtml", model);
     }
@@ -152,7 +152,8 @@ public sealed class KnowledgeController : Controller
             AudienceProfileName = content.AudienceProfileId is { } audienceId && audienceId != Guid.Empty
                 ? await ResolveReferenceLabelAsync($"/api/crm/knowledge/audience-profiles/{audienceId}", cancellationToken) : null,
             ProductName = content.ProductId is { } productId && productId != Guid.Empty
-                ? await ResolveGlobalProductLabelAsync(productId.ToString(), cancellationToken) : null
+                ? await ResolveGlobalProductLabelAsync(productId.ToString(), cancellationToken) : null,
+            LinkedClaims = await LoadLinkedClaimsAsync(content, cancellationToken)
         };
         return View($"{ViewRoot}/Details.cshtml", model);
     }
@@ -760,9 +761,15 @@ public sealed class KnowledgeController : Controller
         return [string.IsNullOrWhiteSpace(raw) ? _sharedLocalizer["GatewayError"].Value : raw];
     }
 
-    private void AddGatewayErrors(IEnumerable<string> errors)
+    // WP-CL-FE-5 — a coded CRM claim-link failure ([code, message]) becomes a field error of the Claims section in the
+    // user's language; the English message is not shown. Anything else stays a summary error as before.
+    private void AddGatewayErrors(KnowledgeContentEditViewModel model, IReadOnlyList<string> errors)
     {
-        foreach (var error in errors) ModelState.AddModelError(string.Empty, error);
+        var (claimErrors, rest) = SplitClaimErrors(errors, model.ClaimRefs);
+        model.ClaimRefErrors = claimErrors;
+        foreach (var error in rest) ModelState.AddModelError(string.Empty, error);
+        if (claimErrors.Count > 0)
+            ModelState.AddModelError(nameof(KnowledgeContentEditViewModel.ClaimRefs), claimErrors[0].Code);
     }
 
     private static object ToPayload(KnowledgeContentEditViewModel m, bool includeCode)
@@ -770,6 +777,9 @@ public sealed class KnowledgeController : Controller
         var tags = string.IsNullOrWhiteSpace(m.Tags)
             ? new List<string>()
             : m.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+        // WP-CL-FE-5 — always a list: the form owns the whole ref set, so [] (nothing selected) clears it on CRM. A null
+        // would mean "keep" and silently resurrect a ref the user removed.
+        var claimRefs = ToClaimRefPayload(m.ClaimRefs);
 
         return includeCode
             ? new
@@ -777,14 +787,15 @@ public sealed class KnowledgeController : Controller
                 m.ContentCode, m.ContentTitle, m.ContentType, m.ContentStatus, m.SubjectId, m.TopicId,
                 m.AudienceProfileId, m.ConceptNodeId, m.BrandId, m.ProductId, m.CampaignId, m.SegmentId,
                 m.LanguageCode, m.Summary, m.ContentBodyRef, m.ContentAssetRef, m.FileRef, m.Url, m.ContentVersion,
-                m.EffectiveFrom, m.EffectiveTo, m.Source, Tags = tags, ExternalReferences = m.ExternalReferences
+                m.EffectiveFrom, m.EffectiveTo, m.Source, Tags = tags, ExternalReferences = m.ExternalReferences,
+                ClaimRefs = claimRefs
             }
             : new
             {
                 m.ContentTitle, m.ContentType, m.ContentStatus, m.SubjectId, m.TopicId, m.AudienceProfileId,
                 m.ConceptNodeId, m.BrandId, m.ProductId, m.CampaignId, m.SegmentId, m.LanguageCode, m.Summary,
                 m.ContentBodyRef, m.ContentAssetRef, m.FileRef, m.Url, m.ContentVersion, m.EffectiveFrom,
-                m.EffectiveTo, m.Source, Tags = tags, ExternalReferences = m.ExternalReferences
+                m.EffectiveTo, m.Source, Tags = tags, ExternalReferences = m.ExternalReferences, ClaimRefs = claimRefs
             };
     }
 
@@ -797,6 +808,11 @@ public sealed class KnowledgeController : Controller
         Summary = c.Summary, ContentBodyRef = c.ContentBodyRef, ContentAssetRef = c.ContentAssetRef, FileRef = c.FileRef,
         Url = c.Url, ContentVersion = c.ContentVersion, EffectiveFrom = c.EffectiveFrom, EffectiveTo = c.EffectiveTo,
         Source = c.Source, Tags = string.Join(", ", c.Tags), ExternalReferences = c.ExternalReferences,
+        ClaimRefs = c.ClaimRefs.Select(r => new KnowledgeContentClaimRefViewModel
+        {
+            ClaimId = r.ClaimId, ClaimCode = r.ClaimCode, CountryVersionId = r.CountryVersionId, CountryCode = r.CountryCode,
+            ClaimStatus = r.ClaimStatus, CountryVersionStatus = r.CountryVersionStatus, ClaimNeedsReview = r.ClaimNeedsReview
+        }).ToList(),
         IsArchived = c.IsArchived
     };
 

@@ -81,4 +81,101 @@
   <data name="BulkDeleteConfirm" xml:space="preserve"><value>Supprimer les enregistrements sélectionnés ?</value></data>
   <data name="QuickViewTitle" xml:space="preserve"><value>Aperçu de l'allégation</value></data>
   <data name="ApprovedBodyFrozenNote" xml:space="preserve"><value>Cette allégation est approuvée : le corps encadré est gelé. Créez une nouvelle version pour modifier le libellé.</value></data>
+  <data name="ListDescription" xml:space="preserve"><value>Une bibliothèque d'allégations unique pour toute l'entreprise : allégations de base, versions par pays et preuves associées.</value></data>
+  <data name="ApprovalViaWorkflowNote" xml:space="preserve"><value>Les allégations ne sont approuvées que via leur circuit d'approbation (Envoyer en revue).</value></data>
+  <data name="BreadcrumbCrm" xml:space="preserve"><value>CRM</value></data>
+  <data name="NewCoreClaim" xml:space="preserve"><value>Nouvelle allégation de base</value></data>
+  <data name="NewLocalClaim" xml:space="preserve"><value>Nouvelle allégation locale</value></data>
+  <data name="ReadOnlyNote" xml:space="preserve"><value>Accès en lecture seule : vous pouvez consulter et exporter les enregistrements.</value></data>
+  <data name="ColClaim" xml:space="preserve"><value>Allégation</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="ColKind" xml:space="preserve"><value>Type</value></data>
+  <data name="ColAudience" xml:space="preserve"><value>Audience</value></data>
+  <data name="ColCountryStatus" xml:space="preserve"><value>Statut par pays</value></data>
+  <data name="ColEvidence" xml:space="preserve"><value>Preuves</value></data>
+  <data name="ColApproved" xml:space="preserve"><value>Approuvées</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>Utilisation</value></data>
+  <data name="KindCore" xml:space="preserve"><value>Base</value></data>
+  <data name="KindLocal" xml:space="preserve"><value>Locale</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>manquante</value></data>
+  <data name="ApprovedOfCountries" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="CoreVersionLine" xml:space="preserve"><value>Base v{0}</value></data>
+  <data name="LocalLine" xml:space="preserve"><value>Locale · {0}</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Approuvée</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>En revue</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>À revoir</value></data>
+  <data name="State_expiring" xml:space="preserve"><value>Arrive à expiration</value></data>
+  <data name="State_closed" xml:space="preserve"><value>Fermée</value></data>
+  <data name="State_not-opened" xml:space="preserve"><value>Non ouverte</value></data>
+  <data name="State_not-applicable" xml:space="preserve"><value>Hors périmètre</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="State_archived" xml:space="preserve"><value>Archivée</value></data>
+  <data name="ClosedTooltip" xml:space="preserve"><value>Fermée · {0}</value></data>
+  <data name="NotOpenedTooltip" xml:space="preserve"><value>Non ouverte · pas encore de décision</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>Pays</value></data>
+  <data name="FilterLanguage" xml:space="preserve"><value>Langue</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="FilterAudience" xml:space="preserve"><value>Audience</value></data>
+  <data name="FilterKind" xml:space="preserve"><value>Base / locale</value></data>
+  <data name="FlagEvidenceMissing" xml:space="preserve"><value>Preuve manquante</value></data>
+  <data name="FlagReviewRequired" xml:space="preserve"><value>À revoir</value></data>
+  <data name="FlagExpiring" xml:space="preserve"><value>Arrive à expiration</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Nouvelle version</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Une nouvelle version brouillon sera ouverte à partir de cette allégation.</value></data>
+  <data name="RecordNewVersion" xml:space="preserve"><value>Nouvelle version ouverte.</value></data>
+  <data name="QvCoreText" xml:space="preserve"><value>Texte de base</value></data>
+  <data name="QvLocalText" xml:space="preserve"><value>Texte local</value></data>
+  <data name="QvResponsibleTeam" xml:space="preserve"><value>Équipe responsable</value></data>
+  <data name="QvCountryVersions" xml:space="preserve"><value>Versions par pays</value></data>
+  <data name="QvNoCountryVersions" xml:space="preserve"><value>Aucune version par pays pour l'instant.</value></data>
+  <data name="QvLanguages" xml:space="preserve"><value>Langues</value></data>
+  <data name="QvAudienceCount" xml:space="preserve"><value>Profils d'audience</value></data>
+  <data name="QvOpenDetails" xml:space="preserve"><value>Ouvrir le détail</value></data>
+  <data name="QvClose" xml:space="preserve"><value>Fermer</value></data>
+  <data name="QvLoadFailed" xml:space="preserve"><value>Impossible de charger les versions par pays.</value></data>
+  <data name="EmptyLibraryTitle" xml:space="preserve"><value>Aucune allégation dans la bibliothèque</value></data>
+  <data name="EmptyLibraryText" xml:space="preserve"><value>Les allégations sont conservées dans une bibliothèque unique. Créez d'abord l'allégation de base globale ; les versions par pays en découlent.</value></data>
+  <data name="NoMatchTitle" xml:space="preserve"><value>Aucune allégation ne correspond aux filtres</value></data>
+  <data name="NoMatchText" xml:space="preserve"><value>Modifiez le texte de recherche ou les filtres.</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>Effacer les filtres</value></data>
+  <data name="CounterUnavailable" xml:space="preserve"><value>Indisponible pour le moment</value></data>
+  <data name="ShowInactive" xml:space="preserve"><value>Inclure les versions archivées et remplacées</value></data>
+  <data name="LiveOnly" xml:space="preserve"><value>Enregistrements actuels uniquement</value></data>
+  <data name="TabList" xml:space="preserve"><value>Liste</value></data>
+  <data name="TabCoverage" xml:space="preserve"><value>Matrice de couverture</value></data>
+  <data name="CoverageDescription" xml:space="preserve"><value>Chaque allégation par pays : approuvée, en cours, non ouverte ou fermée avec un motif.</value></data>
+  <data name="ColumnSummary" xml:space="preserve"><value>{0} approuvées · {1} en cours</value></data>
+  <data name="RowSubline" xml:space="preserve"><value>{0} · {1} preuves · {2} utilisations</value></data>
+  <data name="CellExpiringNote" xml:space="preserve"><value>La validité expire bientôt</value></data>
+  <data name="CellCoreChangedNote" xml:space="preserve"><value>La base a changé</value></data>
+  <data name="CellEvidenceChangedNote" xml:space="preserve"><value>Une preuve a changé</value></data>
+  <data name="ActionOpenCountryVersion" xml:space="preserve"><value>Ouvrir la version pays</value></data>
+  <data name="ActionMarkNotOpened" xml:space="preserve"><value>Marquer comme non ouverte</value></data>
+  <data name="ActionReopen" xml:space="preserve"><value>Rouvrir</value></data>
+  <data name="ActionEditVersion" xml:space="preserve"><value>Modifier / consulter</value></data>
+  <data name="CoreNotApprovedTooltip" xml:space="preserve"><value>L'allégation de base doit d'abord être approuvée</value></data>
+  <data name="CellActionsLabel" xml:space="preserve"><value>Actions pour {0}</value></data>
+  <data name="CloseModalTitle" xml:space="preserve"><value>Marquer {0} comme non ouverte</value></data>
+  <data name="CloseReasonLabel" xml:space="preserve"><value>Motif</value></data>
+  <data name="CloseConfirm" xml:space="preserve"><value>Marquer</value></data>
+  <data name="ReopenModalTitle" xml:space="preserve"><value>Rouvrir {0}</value></data>
+  <data name="ReopenNoteLabel" xml:space="preserve"><value>Note (facultative)</value></data>
+  <data name="ToastClosed" xml:space="preserve"><value>Pays marqué comme non ouvert.</value></data>
+  <data name="ToastReopened" xml:space="preserve"><value>Pays rouvert.</value></data>
+  <data name="CoverageEmptyTitle" xml:space="preserve"><value>Aucune allégation pour l'instant</value></data>
+  <data name="CoverageEmptyText" xml:space="preserve"><value>Créez une allégation de base pour voir sa couverture par pays.</value></data>
+  <data name="LegendTitle" xml:space="preserve"><value>Légende</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Rechercher par code, nom ou texte</value></data>
+  <data name="Reason_no-license" xml:space="preserve"><value>Pas d'autorisation de mise sur le marché</value></data>
+  <data name="Reason_regulation-disallows" xml:space="preserve"><value>La réglementation locale ne le permet pas</value></data>
+  <data name="Reason_business-decision" xml:space="preserve"><value>Décision métier</value></data>
+  <data name="Err_country_has_version" xml:space="preserve"><value>Ce pays a déjà une version ; archivez-la avant de le marquer comme non ouvert.</value></data>
+  <data name="Err_not_applicable" xml:space="preserve"><value>Ce pays est hors du périmètre de cette allégation.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>Une liste de référence requise n'est pas encore publiée. Contactez votre administrateur.</value></data>
+  <data name="Err_country_already_closed" xml:space="preserve"><value>Ce pays est déjà marqué comme non ouvert.</value></data>
+  <data name="Err_country_not_closed" xml:space="preserve"><value>Ce pays n'est pas marqué comme non ouvert.</value></data>
+  <data name="Err_invalid_reference_value" xml:space="preserve"><value>Choisissez un motif valide.</value></data>
+  <data name="Err_required" xml:space="preserve"><value>Choisissez un motif.</value></data>
 </root>

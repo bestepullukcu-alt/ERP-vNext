@@ -155,4 +155,39 @@
   <data name="ReorderProfiles" xml:space="preserve"><value>إعادة ترتيب ملفات الجمهور</value></data>
   <data name="ReorderHelp" xml:space="preserve"><value>اسحب الصفوف لتغيير ترتيبها ثم احفظ.</value></data>
   <data name="SaveOrder" xml:space="preserve"><value>حفظ الترتيب</value></data>
+  <data name="ClaimsSection" xml:space="preserve"><value>الادعاءات</value></data>
+  <data name="ClaimRefsLabel" xml:space="preserve"><value>الادعاءات المستخدمة في هذا المحتوى</value></data>
+  <data name="ClaimRefsPlaceholder" xml:space="preserve"><value>ابحث عن ادعاء…</value></data>
+  <data name="ClaimRefsHelp" xml:space="preserve"><value>الأساسي هو الادعاء العام؛ وصف الدولة هو النص المعتمد لتلك الدولة. يتطلب النشر ادعاءات معتمدة، ولصف الدولة نصًا بلغة المحتوى.</value></data>
+  <data name="ClaimRefsProductFirst" xml:space="preserve"><value>اختر منتجًا أولاً — تُعرض الادعاءات حسب منتج المحتوى.</value></data>
+  <data name="ClaimRefsNone" xml:space="preserve"><value>لا توجد ادعاءات لهذا المنتج.</value></data>
+  <data name="ClaimRefsLoading" xml:space="preserve"><value>جارٍ تحميل الادعاءات…</value></data>
+  <data name="ClaimOptionsUnavailable" xml:space="preserve"><value>تعذر تحميل الادعاءات الآن. يتم الاحتفاظ بالادعاءات المحددة.</value></data>
+  <data name="ClaimPermissionMissing" xml:space="preserve"><value>ليس لديك إذن لقراءة الادعاءات. يتم الاحتفاظ بالادعاءات المحددة.</value></data>
+  <data name="ClaimEndpointMissing" xml:space="preserve"><value>خدمة الادعاءات غير متاحة. يتم الاحتفاظ بالادعاءات المحددة.</value></data>
+  <data name="ClaimCore" xml:space="preserve"><value>أساسي</value></data>
+  <data name="ClaimStatus_approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="ClaimStatus_in-review" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="ClaimStatus_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="ClaimStatus_review-required" xml:space="preserve"><value>تحتاج إلى مراجعة</value></data>
+  <data name="ClaimStatus_inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="ClaimStatus_archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="ClaimReason_not_approved" xml:space="preserve"><value>غير معتمد — سيُرفض النشر</value></data>
+  <data name="ClaimReason_language_mismatch" xml:space="preserve"><value>لا يوجد نص بلغة المحتوى</value></data>
+  <data name="ClaimRefNotInList" xml:space="preserve"><value>غير متاح للمنتج أو اللغة الحاليين</value></data>
+  <data name="ClaimRefsUnusableWarning" xml:space="preserve"><value>بعض الادعاءات المحددة لا يمكن نشرها بعد. يمكنك الحفظ؛ يُرفض النشر حتى تُعتمد ويكون لها نص بلغة المحتوى.</value></data>
+  <data name="ClaimRefsStaleWarning" xml:space="preserve"><value>بعض الادعاءات المحددة لا تطابق المنتج أو اللغة الحاليين. تم الاحتفاظ بها — أزلها إن لم تعد تنطبق.</value></data>
+  <data name="ClaimError_claim_refs_too_many" xml:space="preserve"><value>يمكن ربط 20 ادعاءً كحد أقصى بمحتوى واحد.</value></data>
+  <data name="ClaimError_claim_ref_invalid" xml:space="preserve"><value>اختيار أحد الادعاءات غير مكتمل أو غير صالح؛ اختره مرة أخرى.</value></data>
+  <data name="ClaimError_claim_ref_duplicate" xml:space="preserve"><value>تم اختيار الادعاء نفسه أكثر من مرة لهذه الدولة.</value></data>
+  <data name="ClaimError_claim_not_found" xml:space="preserve"><value>الادعاء المحدد لم يعد موجودًا.</value></data>
+  <data name="ClaimError_claim_ref_mismatch" xml:space="preserve"><value>لم يعد الاختيار يطابق سجل الادعاء؛ أعد تحميل الادعاءات واختر مجددًا.</value></data>
+  <data name="ClaimError_claim_country_version_not_found" xml:space="preserve"><value>نسخة الدولة للادعاء لم تعد موجودة.</value></data>
+  <data name="ClaimError_claim_product_mismatch" xml:space="preserve"><value>الادعاء يخص منتجًا غير منتج هذا المحتوى.</value></data>
+  <data name="ClaimError_claim_not_approved" xml:space="preserve"><value>الادعاء غير معتمد؛ لا يمكن نشر المحتوى.</value></data>
+  <data name="ClaimError_claim_language_mismatch" xml:space="preserve"><value>لا يوجد نص بلغة المحتوى في نسخة الدولة للادعاء؛ لا يمكن نشر المحتوى.</value></data>
+  <data name="ClaimError_dependency_unavailable" xml:space="preserve"><value>خدمة الادعاءات غير متاحة حاليًا؛ حاول لاحقًا.</value></data>
+  <data name="LinkedClaims" xml:space="preserve"><value>الادعاءات المرتبطة</value></data>
+  <data name="NoLinkedClaims" xml:space="preserve"><value>لا توجد ادعاءات مرتبطة بهذا المحتوى.</value></data>
+  <data name="ClaimNeedsReview" xml:space="preserve"><value>تحتاج إلى مراجعة — تغيّر الادعاء بعد اعتماد هذا الربط.</value></data>
 </root>

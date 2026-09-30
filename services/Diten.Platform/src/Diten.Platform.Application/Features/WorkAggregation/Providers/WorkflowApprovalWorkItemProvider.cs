@@ -127,9 +127,16 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
             return contexts;
         }
 
-        foreach (var resolver in _sourceResolvers)
+        // WP-CL-BE-3 — owners first; a fallback (the starter's display-context snapshot) only ever answers for an object
+        // type NO owner claims, whatever the DI registration order is.
+        var owners = _sourceResolvers.Where(r => r is not IFallbackApprovalSourceResolver).ToList();
+        foreach (var resolver in owners.Concat(_sourceResolvers.OfType<IFallbackApprovalSourceResolver>()))
         {
-            var owned = instances.Where(i => resolver.Handles(i.ObjectType) && !contexts.ContainsKey(i.Id)).ToList();
+            var isFallback = resolver is IFallbackApprovalSourceResolver;
+            var owned = instances
+                .Where(i => resolver.Handles(i.ObjectType) && !contexts.ContainsKey(i.Id))
+                .Where(i => !isFallback || !owners.Any(o => o.Handles(i.ObjectType)))
+                .ToList();
             if (owned.Count == 0)
             {
                 continue;

@@ -34,7 +34,12 @@ public sealed record ContentSetRevisionDto(
     DateTimeOffset? ArchivedAt,
     string? ArchivedBy,
     bool IsArchived,
-    ReleaseStateDto? ReleaseState = null);
+    ReleaseStateDto? ReleaseState = null,
+    // WP-SB-2 — what the release produced (null before release).
+    Guid? ProducedKnowledgeContentId = null,
+    string? ProducedKnowledgeContentCode = null,
+    Guid? ProducedKnowledgePathId = null,
+    string? ProducedKnowledgePathCode = null);
 
 public sealed record ContentSetRevisionListDto(IReadOnlyList<ContentSetRevisionDto> Items, int Total);
 
@@ -60,4 +65,11 @@ public sealed record ReleaseStateDto(
     string? ReleasedBy,
     DateTimeOffset? WithdrawnAtUtc,
     string? WithdrawnBy,
-    string? WithdrawalReason);
+    string? WithdrawalReason,
+    // WP-SB-2 — the release / withdraw call result also names the produced outputs and its non-blocking warnings
+    // (ContentSetReleaseWarnings: path_in_use, previous_path_in_use). Empty on the revision read.
+    Guid? ProducedKnowledgeContentId = null,
+    string? ProducedKnowledgeContentCode = null,
+    Guid? ProducedKnowledgePathId = null,
+    string? ProducedKnowledgePathCode = null,
+    IReadOnlyList<string>? Warnings = null);

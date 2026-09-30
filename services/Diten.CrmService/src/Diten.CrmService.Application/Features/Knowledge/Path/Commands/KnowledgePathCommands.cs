@@ -20,7 +20,9 @@ public sealed record CreateKnowledgePathCommand(
     string? LanguageCode = null,
     string? PathStatus = null,
     DateTimeOffset? EffectiveTo = null,
-    string? Source = null) : IRequest<Response<Guid>>;
+    string? Source = null,
+    // WP-SB-2: set only by the Content Studio release (server-side provenance; never from an API payload).
+    Diten.CrmService.Domain.Entities.KnowledgeStudioOrigin? StudioOrigin = null) : IRequest<Response<Guid>>;
 
 /// <summary>Full replace of the path's mutable fields. <c>PathCode</c> is immutable. A <c>steps</c> array is rejected
 /// (V-P16). A published version is frozen: only EffectiveTo and PathStatus (inactive/archived) may change (V-P13);
@@ -48,7 +50,8 @@ public sealed record PublishKnowledgePathCommand(Guid PathId, int? ExpectedVersi
 /// <summary>D5 — clones a published version into a new draft: PathVersion bumped, steps copied with NEW StepIds,
 /// SupersedesPathId set, no auto-publish, source version unchanged.</summary>
 public sealed record CreateKnowledgePathVersionCommand(
-    Guid PathId, string? NewPathVersion = null) : IRequest<Response<Guid>>;
+    Guid PathId, string? NewPathVersion = null,
+    Diten.CrmService.Domain.Entities.KnowledgeStudioOrigin? StudioOrigin = null) : IRequest<Response<Guid>>;
 
 public sealed record ArchiveKnowledgePathCommand(Guid PathId, int? ExpectedVersion = null) : IRequest<Response<bool>>;
 

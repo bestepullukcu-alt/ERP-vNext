@@ -155,4 +155,39 @@
   <data name="ReorderProfiles" xml:space="preserve"><value>Réorganiser les profils d'audience</value></data>
   <data name="ReorderHelp" xml:space="preserve"><value>Faites glisser les lignes pour changer leur ordre, puis enregistrez.</value></data>
   <data name="SaveOrder" xml:space="preserve"><value>Enregistrer l'ordre</value></data>
+  <data name="ClaimsSection" xml:space="preserve"><value>Allégations</value></data>
+  <data name="ClaimRefsLabel" xml:space="preserve"><value>Allégations utilisées dans ce contenu</value></data>
+  <data name="ClaimRefsPlaceholder" xml:space="preserve"><value>Rechercher une allégation…</value></data>
+  <data name="ClaimRefsHelp" xml:space="preserve"><value>Le noyau est l'allégation globale ; une ligne pays est le texte approuvé de ce pays. La publication exige des allégations approuvées et, pour un pays, un texte dans la langue du contenu.</value></data>
+  <data name="ClaimRefsProductFirst" xml:space="preserve"><value>Sélectionnez d'abord un produit — les allégations sont listées pour le produit du contenu.</value></data>
+  <data name="ClaimRefsNone" xml:space="preserve"><value>Aucune allégation pour ce produit.</value></data>
+  <data name="ClaimRefsLoading" xml:space="preserve"><value>Chargement des allégations…</value></data>
+  <data name="ClaimOptionsUnavailable" xml:space="preserve"><value>Les allégations ne peuvent pas être chargées pour le moment. Les allégations sélectionnées sont conservées.</value></data>
+  <data name="ClaimPermissionMissing" xml:space="preserve"><value>Vous n'avez pas l'autorisation de lire les allégations. Les allégations sélectionnées sont conservées.</value></data>
+  <data name="ClaimEndpointMissing" xml:space="preserve"><value>Le service des allégations est injoignable. Les allégations sélectionnées sont conservées.</value></data>
+  <data name="ClaimCore" xml:space="preserve"><value>Noyau</value></data>
+  <data name="ClaimStatus_approved" xml:space="preserve"><value>Approuvée</value></data>
+  <data name="ClaimStatus_in-review" xml:space="preserve"><value>En revue</value></data>
+  <data name="ClaimStatus_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="ClaimStatus_review-required" xml:space="preserve"><value>À revoir</value></data>
+  <data name="ClaimStatus_inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="ClaimStatus_archived" xml:space="preserve"><value>Archivée</value></data>
+  <data name="ClaimReason_not_approved" xml:space="preserve"><value>Non approuvée — la publication sera refusée</value></data>
+  <data name="ClaimReason_language_mismatch" xml:space="preserve"><value>Aucun texte dans la langue du contenu</value></data>
+  <data name="ClaimRefNotInList" xml:space="preserve"><value>Non proposée pour le produit ou la langue actuels</value></data>
+  <data name="ClaimRefsUnusableWarning" xml:space="preserve"><value>Certaines allégations sélectionnées ne peuvent pas encore être publiées. Vous pouvez enregistrer ; la publication est refusée tant qu'elles ne sont pas approuvées et sans texte dans la langue du contenu.</value></data>
+  <data name="ClaimRefsStaleWarning" xml:space="preserve"><value>Certaines allégations sélectionnées ne correspondent pas au produit ou à la langue actuels. Elles sont conservées — retirez-les si elles ne s'appliquent plus.</value></data>
+  <data name="ClaimError_claim_refs_too_many" xml:space="preserve"><value>Au plus 20 allégations peuvent être liées à un contenu.</value></data>
+  <data name="ClaimError_claim_ref_invalid" xml:space="preserve"><value>Une sélection d'allégation est incomplète ou invalide ; sélectionnez-la à nouveau.</value></data>
+  <data name="ClaimError_claim_ref_duplicate" xml:space="preserve"><value>La même allégation est sélectionnée plusieurs fois pour ce pays.</value></data>
+  <data name="ClaimError_claim_not_found" xml:space="preserve"><value>L'allégation sélectionnée n'existe plus.</value></data>
+  <data name="ClaimError_claim_ref_mismatch" xml:space="preserve"><value>La sélection ne correspond plus à l'allégation ; rechargez les allégations et sélectionnez à nouveau.</value></data>
+  <data name="ClaimError_claim_country_version_not_found" xml:space="preserve"><value>La version pays de l'allégation n'existe plus.</value></data>
+  <data name="ClaimError_claim_product_mismatch" xml:space="preserve"><value>L'allégation porte sur un autre produit que ce contenu.</value></data>
+  <data name="ClaimError_claim_not_approved" xml:space="preserve"><value>L'allégation n'est pas approuvée ; le contenu ne peut pas être publié.</value></data>
+  <data name="ClaimError_claim_language_mismatch" xml:space="preserve"><value>La version pays de l'allégation n'a pas de texte dans la langue du contenu ; le contenu ne peut pas être publié.</value></data>
+  <data name="ClaimError_dependency_unavailable" xml:space="preserve"><value>Le service des allégations est injoignable ; réessayez plus tard.</value></data>
+  <data name="LinkedClaims" xml:space="preserve"><value>Allégations liées</value></data>
+  <data name="NoLinkedClaims" xml:space="preserve"><value>Aucune allégation n'est liée à ce contenu.</value></data>
+  <data name="ClaimNeedsReview" xml:space="preserve"><value>À revoir — l'allégation a changé après l'approbation de ce lien.</value></data>
 </root>

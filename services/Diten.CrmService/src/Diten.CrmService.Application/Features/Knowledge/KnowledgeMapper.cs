@@ -45,7 +45,9 @@ public static class KnowledgeMapper
         // SCMM-13: the repository read boundary already applied EnsureVariantDefaults, so these project as migrated.
         c.ContentSetId,
         c.IsSourceLanguage,
-        c.TranslationStatus);
+        c.TranslationStatus,
+        c.ClaimRefs.Select(r => new KnowledgeContentClaimRefDto(r.ClaimCode, r.ClaimId, r.CountryVersionId, r.CountryCode))
+            .ToList());
 
     public static SubjectDto ToDto(SubjectEntity s) => new(
         s.Id,

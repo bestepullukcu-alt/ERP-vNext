@@ -306,7 +306,173 @@
         window.addEventListener('focus', refresh);
     };
 
-    const boot = () => { initWidgets(); setupCascade(); setupConceptCascade(); setupContentSource(); setupDocumentRefresh(); };
+    // WP-CL-FE-5 — Claims picker. Options come from /CRM/Knowledge/api/claim-options (one row per core claim + one per
+    // country version) for the chosen product and content language; they are reloaded when either changes. The picker
+    // has no name — the selection is mirrored into ClaimRefs[i].* hidden inputs, so the full set (also []) is posted.
+    // A selected ref that is not offered any more is KEPT and flagged (never silently dropped); an unusable option is
+    // selectable with a warning badge — the publish gate itself is CRM's.
+    const setupClaims = () => {
+        const section = document.getElementById('knowledgeClaimsSection');
+        const picker = document.getElementById('ClaimRefPicker');
+        const host = document.getElementById('claimRefsHost');
+        const notice = document.getElementById('claimRefNotice');
+        if (!section || !picker || !host) return;
+
+        let CL = {};
+        try { CL = JSON.parse(document.getElementById('knowledge-claim-l10n')?.textContent || '{}') || {}; } catch { CL = {}; }
+        const t = (key, fallback) => CL[key] || fallback || '';
+        const esc = v => String(v ?? '').replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
+        const keyOf = o => `${String(o.claimId || '').toLowerCase()}|${String(o.countryVersionId || '').toLowerCase()}`;
+        const optionLabel = o => {
+            const scope = o.countryVersionId
+                ? `${o.countryName || o.countryCode || ''}${o.version ? ' v' + o.version : ''}`
+                : t('ClaimCore', 'Core');
+            const status = o.status ? t('ClaimStatus_' + o.status, o.status) : '';
+            const languages = o.countryVersionId && Array.isArray(o.languages) && o.languages.length ? ' · ' + o.languages.join(', ') : '';
+            return `${o.claimCode} · ${o.claimName || o.claimCode} — ${scope}${status ? ' · ' + status : ''}${languages}`;
+        };
+        const reasonText = reason => reason === 'not_approved' ? t('ClaimReason_not_approved', 'Not approved')
+            : reason === 'language_mismatch' ? t('ClaimReason_language_mismatch', 'No text in the content language')
+            : reason === 'stale' ? t('ClaimRefNotInList', 'Not offered for the current product or language')
+            : '';
+
+        // Seed: the stored refs rendered by the server as selected options.
+        const selected = new Map();
+        Array.from(picker.options).filter(o => o.selected).forEach(o => {
+            const ref = {
+                claimId: o.dataset.claimId || '', claimCode: o.dataset.claimCode || '',
+                countryVersionId: o.dataset.versionId || '', countryCode: o.dataset.countryCode || '',
+                label: o.textContent, reason: '', stale: false
+            };
+            selected.set(keyOf(ref), ref);
+        });
+
+        let options = [];
+        let state = {};
+        let sequence = 0;
+
+        const rebuildHidden = () => {
+            host.innerHTML = Array.from(selected.values()).map((r, i) => `
+                <input type="hidden" name="ClaimRefs[${i}].ClaimId" value="${esc(r.claimId)}" />
+                <input type="hidden" name="ClaimRefs[${i}].ClaimCode" value="${esc(r.claimCode)}" />
+                <input type="hidden" name="ClaimRefs[${i}].CountryVersionId" value="${esc(r.countryVersionId || '')}" />
+                <input type="hidden" name="ClaimRefs[${i}].CountryCode" value="${esc(r.countryVersionId ? (r.countryCode || '') : '')}" />`).join('');
+        };
+
+        const updateNotice = () => {
+            if (!notice) return;
+            const lines = [];
+            if (state.loading) lines.push(['text-body-secondary', t('ClaimRefsLoading', 'Loading…')]);
+            else if (state.disabled) lines.push(['text-warning-emphasis', t(state.disabled, state.disabled)]);
+            else if (state.requiresProduct) lines.push(['text-body-secondary', t('ClaimRefsProductFirst', 'Select a product first.')]);
+            else if (state.empty) lines.push(['text-body-secondary', t('ClaimRefsNone', 'No claims for this product.')]);
+            const refs = Array.from(selected.values());
+            if (refs.some(r => r.reason)) lines.push(['text-warning-emphasis', t('ClaimRefsUnusableWarning')]);
+            if (refs.some(r => r.stale)) lines.push(['text-warning-emphasis', t('ClaimRefsStaleWarning')]);
+            notice.innerHTML = lines.map(([cls, text]) => `<div class="${cls}">${esc(text)}</div>`).join('');
+        };
+
+        const template = data => {
+            if (!data.id || !jq) return data.text;
+            const reason = data.element?.dataset?.reason || '';
+            const span = document.createElement('span');
+            span.textContent = data.text;
+            if (reason) {
+                const badge = document.createElement('span');
+                badge.className = 'badge bg-label-warning ms-2';
+                badge.textContent = reasonText(reason);
+                span.appendChild(badge);
+            }
+            return jq(span);
+        };
+        const initPicker = () => {
+            if (!(jq && jq.fn && jq.fn.select2)) return;
+            const $p = jq(picker);
+            if ($p.data('select2')) $p.select2('destroy');
+            if (!$p.parent().hasClass('position-relative')) $p.wrap('<div class="position-relative"></div>');
+            $p.select2({
+                dropdownParent: $p.parent(), width: '100%', closeOnSelect: false,
+                placeholder: picker.dataset.placeholder || '', templateResult: template, templateSelection: template
+            });
+        };
+
+        const render = () => {
+            const loaded = new Set(options.map(keyOf));
+            picker.innerHTML = '';
+            options.forEach(o => {
+                const op = new Option(optionLabel(o), keyOf(o), false, selected.has(keyOf(o)));
+                op.dataset.reason = o.usable ? '' : (o.reason || '');
+                picker.appendChild(op);
+            });
+            selected.forEach((r, key) => {
+                if (loaded.has(key)) return;
+                const op = new Option(r.label || r.claimCode, key, true, true);
+                op.dataset.reason = r.stale ? 'stale' : (r.reason || '');
+                picker.appendChild(op);
+            });
+            initPicker();
+            rebuildHidden();
+            updateNotice();
+        };
+
+        const onPickerChange = () => {
+            const keys = new Set(Array.from(picker.selectedOptions).map(o => o.value));
+            Array.from(selected.keys()).forEach(k => { if (!keys.has(k)) selected.delete(k); });
+            keys.forEach(k => {
+                if (selected.has(k)) return;
+                const o = options.find(x => keyOf(x) === k);
+                if (!o) return;
+                selected.set(k, {
+                    claimId: o.claimId, claimCode: o.claimCode, countryVersionId: o.countryVersionId || '',
+                    countryCode: o.countryCode || '', label: optionLabel(o), reason: o.usable ? '' : (o.reason || ''), stale: false
+                });
+            });
+            rebuildHidden();
+            updateNotice();
+        };
+
+        const load = async () => {
+            const current = ++sequence;
+            const productId = document.getElementById('ProductId')?.value || '';
+            const languageCode = document.getElementById('LanguageCode')?.value || '';
+            state = { loading: true };
+            updateNotice();
+            let next;
+            try {
+                const url = `${section.dataset.optionsUrl}?productId=${encodeURIComponent(productId)}&languageCode=${encodeURIComponent(languageCode)}`;
+                const res = await fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+                next = res.ok ? await res.json() : { disabled: true, reason: 'ClaimOptionsUnavailable' };
+            } catch { next = { disabled: true, reason: 'ClaimOptionsUnavailable' }; }
+            if (current !== sequence) return; // a newer product/language change owns the picker
+
+            if (next.disabled) {
+                // Claims unreachable: keep every selected ref as it is (not flagged stale — nothing was compared).
+                options = [];
+                state = { disabled: next.reason || 'ClaimOptionsUnavailable' };
+            } else {
+                options = Array.isArray(next.options) ? next.options : [];
+                state = { requiresProduct: !!next.requiresProduct, empty: !next.requiresProduct && options.length === 0 };
+                selected.forEach((r, key) => {
+                    const o = options.find(x => keyOf(x) === key);
+                    if (o) Object.assign(r, { label: optionLabel(o), reason: o.usable ? '' : (o.reason || ''), stale: false });
+                    else Object.assign(r, { reason: '', stale: true });
+                });
+            }
+            render();
+        };
+
+        if (jq) {
+            jq(picker).on('change', onPickerChange);
+            jq('#ProductId, #LanguageCode').on('change', load);
+        } else {
+            picker.addEventListener('change', onPickerChange);
+            ['ProductId', 'LanguageCode'].forEach(id => document.getElementById(id)?.addEventListener('change', load));
+        }
+        render();
+        load();
+    };
+
+    const boot = () => { initWidgets(); setupCascade(); setupConceptCascade(); setupContentSource(); setupDocumentRefresh(); setupClaims(); };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
     else boot();
 })(window, document);

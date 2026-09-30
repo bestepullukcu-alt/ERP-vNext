@@ -29,7 +29,8 @@ public sealed record CreateKnowledgeContentRequest(
     DateTimeOffset? EffectiveTo = null,
     string? Source = null,
     IReadOnlyList<string>? Tags = null,
-    IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null);
+    IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null,
+    IReadOnlyList<KnowledgeContentClaimRefInput>? ClaimRefs = null);
 
 public sealed record UpdateKnowledgeContentRequest(
     string ContentTitle,
@@ -54,7 +55,8 @@ public sealed record UpdateKnowledgeContentRequest(
     DateTimeOffset? EffectiveTo = null,
     string? Source = null,
     IReadOnlyList<string>? Tags = null,
-    IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null);
+    IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null,
+    IReadOnlyList<KnowledgeContentClaimRefInput>? ClaimRefs = null);
 
 public sealed record CreateSubjectRequest(
     string SubjectCode,

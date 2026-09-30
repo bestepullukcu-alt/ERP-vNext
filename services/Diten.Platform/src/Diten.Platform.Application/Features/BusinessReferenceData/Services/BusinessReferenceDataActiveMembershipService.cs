@@ -54,7 +54,7 @@ public sealed class BusinessReferenceDataActiveMembershipService : IBusinessRefe
         IEnumerable<string> valueCodes,
         CancellationToken ct = default)
     {
-        var normalizedSet = Normalize(setCode);
+        var normalizedSet = NormalizeSetCode(setCode);
         var requested = valueCodes
             .Select(Normalize)
             .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -116,7 +116,7 @@ public sealed class BusinessReferenceDataActiveMembershipService : IBusinessRefe
         string setCode,
         CancellationToken ct = default)
     {
-        var normalizedSet = Normalize(setCode);
+        var normalizedSet = NormalizeSetCode(setCode);
         if (string.IsNullOrWhiteSpace(normalizedSet))
         {
             return Block(normalizedSet, string.Empty, "reference_set_required");
@@ -146,10 +146,15 @@ public sealed class BusinessReferenceDataActiveMembershipService : IBusinessRefe
     private static BusinessReferenceDataActiveMembershipResult Block(string setCode, string valueCode, string reasonCode)
         => new(
             false,
-            Normalize(setCode),
+            NormalizeSetCode(setCode),
             Normalize(valueCode),
             Normalize(reasonCode).ToLowerInvariant(),
-            $"BusinessReferenceData active membership failed: set_code={Normalize(setCode)}; value_code={Normalize(valueCode)}; reason={Normalize(reasonCode).ToLowerInvariant()}");
+            $"BusinessReferenceData active membership failed: set_code={NormalizeSetCode(setCode)}; value_code={Normalize(valueCode)}; reason={Normalize(reasonCode).ToLowerInvariant()}");
+
+    // WP-CL-BE-2b — a BRD set code is an exact key: the repository matches it as stored (Filter.Eq, trimmed only), so
+    // upper-casing it made every lower-case set (e.g. "evidence-type") unfindable. Set codes are trimmed only; value codes
+    // keep the case-insensitive comparison below.
+    private static string NormalizeSetCode(string? value) => string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
 
     private static string Normalize(string? value) => string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToUpperInvariant();
 }

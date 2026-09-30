@@ -1,3 +1,4 @@
+using MassTransit;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.ReferenceValidation;
 using Diten.CrmService.Application.Features.Account;
@@ -141,6 +142,31 @@ public static class DependencyInjection
             Application.Features.RouteOptimization.IRouteOptimizationDefaultsProvider,
             RouteOptimization.ConfigurationRouteOptimizationDefaultsProvider>();
 
+        // WP-CL-BE-1 (claims v2) — the coverage matrix "expiring" window (Crm:Claims:ExpiringWindowDays, default 60).
+        services.AddSingleton<
+            Application.Features.ContentComposition.Claims.IClaimCoverageSettings,
+            ContentComposition.ConfigurationClaimCoverageSettings>();
+
+        // WP-CL-BE-4 — claims approval via MOD-0023: template codes / reconcile window (Crm:Claims:Workflow), the
+        // Gateway workflow client (caller's token + tenant forwarded, never a service token), the single outcome
+        // applier and reconcile-on-read, and the completion-event consumer (only when Eventing:Transport=RabbitMQ).
+        services.AddSingleton<
+            Application.Features.ContentComposition.Claims.IClaimWorkflowSettings,
+            ContentComposition.ConfigurationClaimWorkflowSettings>();
+        services.AddHttpClient<
+            Application.Features.ContentComposition.Claims.IClaimWorkflowClient,
+            Workflow.GatewayClaimWorkflowClient>(client => client.Timeout = TimeSpan.FromSeconds(15));
+        services.AddScoped<Application.Features.ContentComposition.Claims.ClaimReviewOutcomeApplier>();
+        services.AddScoped<Application.Features.ContentComposition.Claims.ClaimReviewReconciler>();
+        AddClaimWorkflowEventing(services, configuration);
+
+        // WP-CL-BE-5 — claim evidence via MOD-0031: the Gateway evidence client (caller's token + tenant, the BE-4
+        // pattern) and the read-time evidence reviewer (approved + changed document → review-required).
+        services.AddHttpClient<
+            Application.Features.ContentComposition.Claims.IClaimEvidenceClient,
+            Evidence.GatewayClaimEvidenceClient>(client => client.Timeout = TimeSpan.FromSeconds(15));
+        services.AddScoped<Application.Features.ContentComposition.Claims.ClaimEvidenceReviewer>();
+
         // WP-SEG-DETAILS6 — S2S display-name reader onto AuthService's internal/users/display-names endpoint. It resolves
         // the segment timeline's CreatedBy/ActivatedBy/UpdatedBy provenance ids to display names in ONE bulk call, using
         // the shared internal API key (a direct call: the internal endpoints are NOT behind the Gateway JWT surface).
@@ -160,6 +186,44 @@ public static class DependencyInjection
             sp => (Application.Common.ReferenceValidation.IReferenceDataCatalogReader)sp.GetRequiredService<IReferenceDataValidator>());
 
         return services;
+    }
+
+    // WP-CL-BE-4 — the AuthService AddEntitlementEventing pattern. Transport=InMemory (default) ⇒ MassTransit is NOT
+    // registered at all, so a host without a broker starts exactly as before. RabbitMQ (same broker as Platform) ⇒ the
+    // claim-outcome consumer binds to Platform's EventTransportMessage exchange.
+    private static void AddClaimWorkflowEventing(IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<Eventing.CrmEventingOptions>(configuration.GetSection(Eventing.CrmEventingOptions.SectionName));
+        var options = configuration.GetSection(Eventing.CrmEventingOptions.SectionName).Get<Eventing.CrmEventingOptions>()
+                      ?? new Eventing.CrmEventingOptions();
+        if (!options.UseRabbitMq)
+        {
+            return;
+        }
+
+        services.AddMassTransit(x =>
+        {
+            x.AddConsumer<Eventing.ClaimWorkflowOutcomeConsumer>();
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host(options.Host, options.Port, options.VirtualHost, h =>
+                {
+                    h.Username(options.Username);
+                    h.Password(options.Password);
+                    if (options.UseTls)
+                    {
+                        h.UseSsl(s => s.Protocol = System.Security.Authentication.SslProtocols.Tls12);
+                    }
+                });
+
+                cfg.UseMessageRetry(r => r.Exponential(
+                    options.RetryCount,
+                    TimeSpan.FromSeconds(options.InitialRetryDelaySeconds),
+                    TimeSpan.FromSeconds(options.MaxRetryDelaySeconds),
+                    TimeSpan.FromSeconds(options.InitialRetryDelaySeconds)));
+                cfg.ConfigureEndpoints(context);
+            });
+        });
     }
 
     public static IApplicationBuilder UseTenantResolution(this IApplicationBuilder app)

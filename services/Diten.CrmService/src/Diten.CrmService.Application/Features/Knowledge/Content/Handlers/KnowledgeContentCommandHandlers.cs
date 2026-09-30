@@ -157,6 +157,9 @@ public sealed class CreateKnowledgeContentHandler : IRequestHandler<CreateKnowle
     private readonly ITopicRepository _topics;
     private readonly IAudienceProfileRepository _profiles;
     private readonly IConceptNodeRepository _conceptNodes;
+    private readonly IClaimRepository? _claims;
+    private readonly IClaimCountryVersionRepository? _claimVersions;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public CreateKnowledgeContentHandler(
         ITenantContext tenant,
@@ -165,7 +168,10 @@ public sealed class CreateKnowledgeContentHandler : IRequestHandler<CreateKnowle
         ISubjectRepository subjects,
         ITopicRepository topics,
         IAudienceProfileRepository profiles,
-        IConceptNodeRepository conceptNodes)
+        IConceptNodeRepository conceptNodes,
+        IClaimRepository? claims = null,
+        IClaimCountryVersionRepository? claimVersions = null,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
@@ -174,6 +180,9 @@ public sealed class CreateKnowledgeContentHandler : IRequestHandler<CreateKnowle
         _topics = topics;
         _profiles = profiles;
         _conceptNodes = conceptNodes;
+        _claims = claims;
+        _claimVersions = claimVersions;
+        _audit = audit;
     }
 
     public async Task<Response<Guid>> Handle(CreateKnowledgeContentCommand request, CancellationToken cancellationToken)
@@ -222,6 +231,22 @@ public sealed class CreateKnowledgeContentHandler : IRequestHandler<CreateKnowle
             return Response<Guid>.Fail(nodeError, nodeStatus);
         }
 
+        // WP-CL-BE-6 — claim refs (optional): validated on save; a create straight into "published" passes the gate.
+        var (claimRefs, claimFailure) = await KnowledgeContentClaimLinks.ResolveAsync(
+            request.ClaimRefs ?? Array.Empty<KnowledgeContentClaimRefInput>(), tenantId, request.ProductId, _claims,
+            _claimVersions, cancellationToken);
+        if (claimFailure is not null)
+        {
+            return claimFailure.To<Guid>();
+        }
+
+        if (KnowledgeContentStatuses.Normalize(request.ContentStatus) == KnowledgeContentStatuses.Published
+            && await KnowledgeContentClaimLinks.CheckPublishAsync(
+                claimRefs!, request.LanguageCode, tenantId, _claims, _claimVersions, cancellationToken) is { } gate)
+        {
+            return gate.To<Guid>();
+        }
+
         var now = DateTimeOffset.UtcNow;
         var content = new KnowledgeContent
         {
@@ -250,6 +275,8 @@ public sealed class CreateKnowledgeContentHandler : IRequestHandler<CreateKnowle
             Source = KnowledgeContentSources.Normalize(request.Source),
             Tags = KnowledgeMapper.CleanTags(request.Tags),
             ExternalReferences = KnowledgeMapper.ToEntities(request.ExternalReferences, now),
+            ClaimRefs = claimRefs!,
+            StudioOrigin = request.StudioOrigin,
             CreatedAt = now,
             CreatedBy = _actor.ActorName
         };
@@ -261,6 +288,16 @@ public sealed class CreateKnowledgeContentHandler : IRequestHandler<CreateKnowle
         content.TranslationStatus = ContentTranslationStatuses.Current;
 
         await _repository.InsertAsync(content, cancellationToken);
+
+        if (content.ClaimRefs.Count > 0 && _audit is not null)
+        {
+            await _audit.PublishAsync(KnowledgeReasonCodes.ContentClaimRefsChanged, tenantId,
+                KnowledgeConceptAuditEntities.KnowledgeContent, content.Id, content.Version,
+                KnowledgeContentClaimLinks.AuditDetail(content.ContentCode, Array.Empty<KnowledgeContentClaimRef>(),
+                    content.ClaimRefs),
+                cancellationToken);
+        }
+
         return Response<Guid>.Success(content.Id, 201);
     }
 }
@@ -275,6 +312,8 @@ public sealed class UpdateKnowledgeContentHandler : IRequestHandler<UpdateKnowle
     private readonly IAudienceProfileRepository _profiles;
     private readonly IConceptNodeRepository _conceptNodes;
     private readonly IKnowledgeConceptAuditPublisher? _audit;
+    private readonly IClaimRepository? _claims;
+    private readonly IClaimCountryVersionRepository? _claimVersions;
 
     public UpdateKnowledgeContentHandler(
         ITenantContext tenant,
@@ -284,7 +323,9 @@ public sealed class UpdateKnowledgeContentHandler : IRequestHandler<UpdateKnowle
         ITopicRepository topics,
         IAudienceProfileRepository profiles,
         IConceptNodeRepository conceptNodes,
-        IKnowledgeConceptAuditPublisher? audit = null)
+        IKnowledgeConceptAuditPublisher? audit = null,
+        IClaimRepository? claims = null,
+        IClaimCountryVersionRepository? claimVersions = null)
     {
         _tenant = tenant;
         _actor = actor;
@@ -294,6 +335,8 @@ public sealed class UpdateKnowledgeContentHandler : IRequestHandler<UpdateKnowle
         _profiles = profiles;
         _conceptNodes = conceptNodes;
         _audit = audit;
+        _claims = claims;
+        _claimVersions = claimVersions;
     }
 
     public async Task<Response<bool>> Handle(UpdateKnowledgeContentCommand request, CancellationToken cancellationToken)
@@ -353,6 +396,39 @@ public sealed class UpdateKnowledgeContentHandler : IRequestHandler<UpdateKnowle
             }
         }
 
+        // WP-CL-BE-6 — claim refs. A null ClaimRefs keeps the stored refs (older clients never send them); the effective
+        // list is re-validated whenever it is non-empty, because a ProductId change can break an existing ref. The
+        // publish gate runs when the content ENTERS "published" or its refs change while published — an edit of an
+        // already-published content with untouched refs is not re-gated.
+        var previousRefs = content.ClaimRefs.ToList();
+        (List<KnowledgeContentClaimRef>? Refs, ContentClaimFailure? Failure) resolved =
+            request.ClaimRefs is null && previousRefs.Count == 0
+            ? (previousRefs, null)
+            : await KnowledgeContentClaimLinks.ResolveAsync(
+                request.ClaimRefs ?? previousRefs.Select(r =>
+                    new KnowledgeContentClaimRefInput(r.ClaimCode, r.ClaimId, r.CountryVersionId, r.CountryCode)).ToList(),
+                tenantId, request.ProductId, _claims, _claimVersions, cancellationToken);
+        if (resolved.Failure is { } claimFailure)
+        {
+            return claimFailure.To<bool>();
+        }
+
+        var claimRefs = resolved.Refs!;
+
+        var refsChanged = !KnowledgeContentClaimLinks.SameRefs(previousRefs, claimRefs);
+        var wasPublished = string.Equals(
+            content.ContentStatus, KnowledgeContentStatuses.Published, StringComparison.OrdinalIgnoreCase);
+        var willBePublished = KnowledgeContentStatuses.Normalize(request.ContentStatus ?? content.ContentStatus)
+            == KnowledgeContentStatuses.Published;
+        var languageChanged = !string.Equals(
+            content.LanguageCode, request.LanguageCode.Trim(), StringComparison.OrdinalIgnoreCase);
+        if (willBePublished && (!wasPublished || refsChanged || languageChanged)
+            && await KnowledgeContentClaimLinks.CheckPublishAsync(
+                claimRefs, request.LanguageCode, tenantId, _claims, _claimVersions, cancellationToken) is { } gate)
+        {
+            return gate.To<bool>();
+        }
+
         // SCMM-13: decide BEFORE mutation whether the source's governed BODY changed. Content-affecting = the wording /
         // body / references (Summary, ContentBodyRef, ContentAssetRef, FileRef, Url). A metadata-only edit — title
         // rename, tags, classification, effective window, status, version — deliberately does NOT open translation
@@ -384,10 +460,19 @@ public sealed class UpdateKnowledgeContentHandler : IRequestHandler<UpdateKnowle
         content.Source = KnowledgeContentSources.Normalize(request.Source ?? content.Source);
         content.Tags = KnowledgeMapper.CleanTags(request.Tags);
         content.ExternalReferences = KnowledgeMapper.ToEntities(request.ExternalReferences, now);
+        content.ClaimRefs = claimRefs;
         content.UpdatedAt = now;
         content.UpdatedBy = _actor.ActorName;
 
         await _repository.UpdateAsync(content, cancellationToken);
+
+        if (refsChanged && _audit is not null)
+        {
+            await _audit.PublishAsync(KnowledgeReasonCodes.ContentClaimRefsChanged, tenantId,
+                KnowledgeConceptAuditEntities.KnowledgeContent, content.Id, content.Version,
+                KnowledgeContentClaimLinks.AuditDetail(content.ContentCode, previousRefs, content.ClaimRefs),
+                cancellationToken);
+        }
 
         // SCMM-13 source-edit trigger: a content-affecting edit to the SOURCE variant opens translation assessment on
         // every non-archived target of the same logical component. Fires only when the edited row is the source and the

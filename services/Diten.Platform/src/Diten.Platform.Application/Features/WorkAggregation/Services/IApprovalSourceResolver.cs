@@ -39,7 +39,18 @@ public interface IApprovalSourceResolver
 /// generic fallback title.</param>
 /// <param name="Requester">Who sent the object for this decision. Null when the owner cannot say.</param>
 /// <param name="DeepLink">The owner's address for the object — an app-relative path, never a service port.</param>
+/// <param name="Subtitle">WP-CL-BE-3 — a second line (projected as the item's summary). Null → omitted.</param>
+/// <param name="Chips">WP-CL-BE-3 — short labels (projected as the item's tags). Null/empty → omitted.</param>
 public sealed record ApprovalSourceContext(
     string? Title,
     WorkItemPersonDto? Requester,
-    string? DeepLink);
+    string? DeepLink,
+    string? Subtitle = null,
+    IReadOnlyList<string>? Chips = null);
+
+/// <summary>
+/// WP-CL-BE-3 — marks a resolver that answers only when NO owner resolver claims the object type (the snapshot the
+/// starter wrote). The provider asks every owner first and never lets a fallback answer for an owned type, so an
+/// owner — MOD-0024 Tasks today — keeps its exact behaviour even when its object carries a display context too.
+/// </summary>
+public interface IFallbackApprovalSourceResolver : IApprovalSourceResolver;

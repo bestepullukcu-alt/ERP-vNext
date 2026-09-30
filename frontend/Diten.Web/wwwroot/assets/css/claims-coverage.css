@@ -1,0 +1,63 @@
+/**
+ * WP-CL-FE-2 — claim × country coverage matrix. Horizontal scroll with a sticky header row and a sticky first (claim)
+ * column; cell pills reuse the list's `.claim-chip.state-*` colours (claims-index.css, theme variables — light + dark).
+ * Scoped under `.claims-coverage-scope`, linked only from Views/CRM/Claims/Coverage.cshtml.
+ */
+
+.claims-coverage-scope .cov-filter { width: auto; min-width: 10rem; }
+.claims-coverage-scope .cov-filter-search { width: auto; min-width: 16rem; }
+
+.claims-coverage-scope .cov-matrix-wrap {
+    overflow: auto;
+    max-height: calc(100vh - 18rem);
+}
+
+.claims-coverage-scope .cov-matrix {
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 100%;
+}
+
+.claims-coverage-scope .cov-matrix th,
+.claims-coverage-scope .cov-matrix td {
+    vertical-align: top;
+    border-bottom: 1px solid var(--bs-border-color);
+    background: var(--bs-card-bg);
+    padding: .65rem .75rem;
+}
+
+.claims-coverage-scope .cov-matrix thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--bs-tertiary-bg);
+    min-width: 11rem;
+    font-weight: 500;
+    text-transform: none;
+}
+
+.claims-coverage-scope .cov-matrix .cov-claim-col {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 18rem;
+    max-width: 22rem;
+    border-inline-end: 1px solid var(--bs-border-color);
+}
+
+.claims-coverage-scope .cov-matrix thead .cov-claim-col { z-index: 3; }
+
+[dir="rtl"] .claims-coverage-scope .cov-matrix .cov-claim-col { left: auto; right: 0; }
+
+.claims-coverage-scope .cov-col-langs,
+.claims-coverage-scope .cov-col-summary { display: block; color: var(--bs-secondary-color); font-size: .8rem; }
+
+.claims-coverage-scope .cov-row-sub { display: block; color: var(--bs-secondary-color); font-size: .8rem; }
+
+.claims-coverage-scope .cov-cell { display: flex; flex-direction: column; gap: .25rem; align-items: flex-start; }
+.claims-coverage-scope .cov-cell-version { font-size: .8rem; color: var(--bs-secondary-color); }
+.claims-coverage-scope .cov-cell-note { font-size: .78rem; color: var(--bs-secondary-color); }
+.claims-coverage-scope .cov-cell-note.is-warning { color: var(--bs-warning-text-emphasis); }
+.claims-coverage-scope .cov-cell-note.is-danger { color: var(--bs-danger-text-emphasis); }
+
+.claims-coverage-scope .cov-cell-menu .dropdown-item.disabled { pointer-events: auto; cursor: not-allowed; }

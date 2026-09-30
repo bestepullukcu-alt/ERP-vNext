@@ -1,0 +1,12 @@
+@using System.Text.Json
+@using Diten.Web.Views.CRM.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsCountryVersion> Localizer
+@{
+    // WP-CL-FE-4 — the country version page bridge: every string of the ClaimsCountryVersion family (current culture,
+    // English fallback). Errors are Err_{code}, states State_{value_code}, adaptation types Adapt_{value_code}.
+    var values = Localizer.GetAllStrings(includeParentCultures: true)
+        .GroupBy(s => s.Name)
+        .ToDictionary(g => g.Key, g => g.First().Value);
+}
+<script id="claim-country-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

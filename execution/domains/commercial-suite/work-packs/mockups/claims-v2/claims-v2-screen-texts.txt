@@ -1,0 +1,419 @@
+Prototip
+Rol
+{{ o.l }}
+Senaryo
+{{ o.l }}
+Bu sayfaya erişim yetkiniz yok
+İddialar ekranı için gerekli rol hesabınıza atanmamış. Erişim için sistem yöneticinize başvurun.
+Hata kodu 403
+Ana sayfaya dön
+İddialar
+CRM
+/
+İddialar
+Yeni yerel iddia
+Yeni çekirdek iddia
+Liste
+Kapsama matrisi
+{{ fl.l }}
+{{ fl.n }}
+{{ localNote }}
+Salt okuma yetkisi: kayıtları görüntüleyebilir ve dışa aktarabilirsiniz.
+{{ rowsN }}
+Kolonlar
+{{ co.l }}
+Dışa aktar
+{{ eo.l }}
+{{ d.label }}:
+{{ d.valueL }}
+{{ o.l }}
+Sonuç yok
+Seçimi temizle
+İddia
+Ürün
+Tür
+Kitle
+Ülke durumu
+Kanıt
+Onaylı
+Kullanım
+İşlemler
+{{ r.code }}
+{{ r.name }}
+{{ r.sub }}
+{{ r.product }}
+{{ r.typeL }}
+{{ r.aud }}
+{{ ch.cc }}
+{{ ch.l }}
+{{ r.ev }}
+0 · eksik
+{{ r.ap }}
+{{ r.usage }}
+Satıra tıklayınca hızlı görüntüleme paneli açılır.
+{{ rowsN }}
+İddia
+{{ mc.cn }}
+· {{ mc.langs }}
+{{ mc.ok }} · {{ mc.warn }}
+{{ r.code }}
+{{ r.typeL }}
+{{ r.name }}
+{{ r.product }} · {{ r.ev }} kanıt · {{ r.usage }} kullanım
+{{ c.l }}
+{{ c.ver }}
+{{ c.sub }}
+Ülke sürümü aç
+{{ c.sub }}
+{{ c.l }}
+{{ c.sub }}
+Açıklama
+{{ lg.l }}
+Kütüphanede henüz iddia yok
+İddialar şirket genelinde tek kütüphanede tutulur. Önce global çekirdek iddiayı oluşturun; ülke sürümleri onun üzerinden açılır.
+Yeni çekirdek iddia
+Örnek veriye dön
+Filtrelerle eşleşen iddia yok
+Arama metnini ya da filtreleri değiştirin.
+Filtreleri temizle
+Yeni Çekirdek İddia
+İddialar
+/
+Yeni çekirdek iddia
+Zorunlu: {{ cfReqN }}
+İptal
+Taslağı kaydet
+Onaya gönder
+Kimlik ve metin
+İddia kodu
+{{ cfCode }}
+Ürüne göre önerilir. Sürümler ve ülke sürümleri arasında sabit iş anahtarıdır.
+İddia adı
+*
+Sürüm
+1.0
+Durum
+Taslak
+Durum yalnız Onaya gönder, Onayla ve Arşivle işlemleriyle değişir.
+Açıklama
+Çekirdek iddia metni
+*
+Metin dili:
+en · English
+Ülke sürümleri bu metinden uyarlanır; kapsamı genişletemez. Onaylanınca kilitlenir.
+{{ cfTextLen }}
+Geçerlilik alanı
+{{ d.label }}
+{{ d.valueL }}
+{{ o.l }}
+Sonuç yok
+{{ d.hint }}
+Ülke, dil ve geçerlilik tarihleri her ülke sürümünde ayrıca belirlenir.
+Niteleyiciler
+Cümleye her zaman eşlik eden zorunlu ifadeler.
+{{ qq.x }}
+Ekle
+Kanıtlar
+Kanıt ekle
+Henüz kanıt bağlanmadı.
+Onaya göndermek için en az 1 kanıt zorunludur. Belgeler Belge Yönetimi'ndeki kontrollü kayıtlardan seçilir.
+{{ e.type }}
+{{ e.title }}
+Önizle
+{{ e.id }} · {{ e.pin }} · {{ e.scope }} · {{ e.ref }}
+“{{ e.quote }}”
+Desteklediği ifade:
+{{ e.sup }}
+İleri
+{{ d.label }}
+{{ d.valueL }}
+{{ o.l }}
+{{ d.hint }}
+Onaya hazırlık
+{{ x.l }}
+eksik
+Global onay akışı
+Sıralı · Onay ayarlarından yapılandırılır
+1
+Global Medikal
+Elif Aydın
+2
+Global Hukuk
+Can Demir
+3
+Global Ruhsat
+Selin Arslan
+Ülke sürümleri
+Çekirdek onaylandıktan sonra ülke sürümleri açılabilir. Ürün ana kaydına göre ALMIBA ruhsat durumu:
+Türkiye · ruhsatlı
+Özbekistan · ruhsatlı
+Azerbaycan · ruhsatlı
+Ülke Sürümü Aç · Özbekistan
+İddialar
+/
+CLM-ALMIBA-02
+/
+Özbekistan
+Zorunlu: {{ vReqN }}
+İptal
+Taslağı kaydet
+Yerel onaya gönder
+Çekirdek iddia · salt okunur
+CLM-ALMIBA-02 · v1.0
+Onaylı
+Levocarnitine supports energy metabolism by transporting long-chain fatty acids into mitochondria.
+Niteleyici: Prescription-only medicine. · Kitle: Nefroloji · 2 kanıt
+Ülke
+Ülke
+Özbekistan
+Ülke dilleri
+uz, ru
+· ülke ana kaydından
+Ruhsat sahibi (bilgi)
+Grand Medical Uzbekistan MChJ
+Ürün ana kaydı · Ruhsat DV/X 04512/03/24
+Metin ve niteleyiciler · dil başına
+{{ l.l }} · {{ l.ln }}
+Çekirdek (en)
+Levocarnitine supports energy metabolism by transporting long-chain fatty acids into mitochondria.
+Çekirdek niteleyici
+Prescription-only medicine.
+İddia metni · {{ vLangL }}
+*
+{{ vLen }}
+Yerel niteleyiciler · {{ vLangL }}
+Uyarlama
+Ülke sürümü çekirdeğe göre daraltılabilir ya da yumuşatılabilir; kapsamı genişletilemez.
+{{ a.l }}
+{{ a.d }}
+{{ reasonL }}
+Geçerlilik
+Geçerlilik başlangıcı
+*
+Geçerlilik bitişi
+Hedef kitle
+Nefroloji
+Yalnız çekirdeğin kitlelerinden daraltılabilir.
+Kanıtlar
+Yerel kanıt ekle
+{{ e.oL }}
+{{ e.type }}
+{{ e.title }}
+Önizle
+{{ e.id }} · {{ e.pin }} · {{ e.scope }} · {{ e.ref }}
+Desteklediği ifade:
+{{ e.sup }}
+Yerel kanıt yok. Özbekistan KÜB'ü gibi yerel belgeleri buraya bağlayın.
+{{ e.oL }}
+{{ e.type }}
+{{ e.title }}
+Önizle
+{{ e.id }} · {{ e.pin }} · {{ e.scope }} · {{ e.ref }}
+“{{ e.quote }}”
+Desteklediği ifade:
+{{ e.sup }}
+Onaya hazırlık
+{{ x.l }}
+eksik
+Yerel onay akışı
+Özbekistan · Paralel · Onay ayarlarından yapılandırılır
+Yerel Medikal
+Dilnoza Karimova
+Yerel Hukuk
+Aziz Rakhimov
+Yerel Ruhsat
+Bekzod Tursunov
+Diğer ülkeler
+{{ o.cn }}
+{{ o.l }}
+{{ o.note }}
+İddialar
+/
+{{ D.code }}
+/
+{{ D.cn }}
+{{ D.code }}
+· {{ D.cn }}
+{{ D.l }}
+{{ D.ver }}
+Kilitli
+· {{ D.name }} · {{ D.coreRef }}
+{{ D.bn.t }}
+{{ D.bn.x }}
+{{ a.l }}
+{{ t.l }}
+{{ t.n }}
+Çekirdek metin · en · {{ D.coreV }} · salt okunur
+{{ D.coreText }}
+{{ D.coreQ }}
+{{ t.lang }}
+{{ t.ln }}
+{{ t.len }}
+{{ t.text }}
+{{ t.text }}
+Niteleyiciler
+{{ qq.l }}
+{{ qq.x }}
+Uyarlama
+{{ D.adapt }}
+Uyarlama nedeni
+{{ D.reason }}
+Yerel kanıt ekle
+Kanıt bağlanmadı. Onaya göndermek için en az 1 kanıt zorunludur.
+{{ e.oL }}
+{{ e.type }}
+{{ e.title }}
+Önizle
+{{ e.id }} · {{ e.pin }} · {{ e.scope }} · {{ e.ref }} · {{ e.valid }}
+Belge güncellendi: {{ e.newerL }}
+{{ e.expL }}
+“{{ e.quote }}”
+Desteklediği ifade:
+{{ e.sup }}
+Yerel onay akışı:
+{{ D.ap.flow }}
+Henüz yerel onaya gönderilmedi.
+{{ rd.t }}
+{{ a.area }}
+{{ a.who }} · {{ a.date }}
+{{ a.l }}
+{{ a.c }}
+Onayla
+Reddet
+{{ D.ap.global.t }}
+{{ a.area }} · {{ a.who }}
+{{ a.date }}
+{{ a.l }}
+Bu iddia henüz hiçbir içerikte, içerik setinde ya da etkileşim yolculuğunda kullanılmıyor.
+{{ g.cn }}
+{{ g.l }} {{ g.ver }}
+{{ g.count }}
+{{ g.warn }}
+Tür
+Ad
+Dil
+Sürüm
+Durum
+{{ it.ty }}
+{{ it.n }}
+{{ it.lg }}
+{{ it.vr }}
+{{ it.st }}
+Diğer ülkelerdeki kullanım yetki alanınız dışında.
+Çekirdek değişikliği · v1.0 → v2.0
+silindi:
+{{ dt.t }}
+eklendi:
+{{ dt.t }}
+{{ dt.t }}
+Niteleyici:
++ For use under physician supervision.
+abc
+silinen
+abc
+eklenen
+Yan yana karşılaştırma
+{{ l.l }}
+Bağlı çekirdek · en · {{ D.cmpCoreV }}
+{{ D.cmpCore }}
+{{ D.cmpCoreQ }}
+{{ D.cn }} · {{ D.cmpL }} · {{ D.ver }}
+{{ D.cmpText }}
+{{ D.cmpQ }}
+Ülke sürüm geçmişi
+{{ vv.v }}
+{{ vv.l }}
+{{ vv.n }}
+{{ vv.d }}
+Çekirdek sürüm geçmişi
+{{ vv.v }}
+{{ vv.l }}
+{{ vv.n }}
+{{ vv.d }}
+Geçerlilik alanı
+{{ fa.k }}
+{{ fa.x }}
+Diğer ülke sürümleri
+{{ o.cn }} {{ o.ver }}
+{{ o.cn }}
+{{ o.l }}
+{{ o.note }}
+{{ it.l }}
+{{ pv.code }}
+{{ pv.typeL }}
+{{ pv.name }}
+{{ pv.product }}
+{{ pv.coreL }}
+{{ pv.text }}
+{{ pv.quals }}
+{{ pv.ev }}
+kanıt
+{{ pv.usage }}
+kullanım
+{{ pv.aud }}
+kitle
+Ülke sürümleri
+{{ v.cn }}
+{{ v.ver }} {{ v.langs }}
+{{ v.l }}
+{{ v.text }}
+{{ v.note }}
+{{ v.goL }} →
+Sorumlu ekip: {{ pv.team }}
+Kapat
+Ayrıntıyı aç
+{{ EM.title }}
+Kaynak: Belge Yönetimi · {{ EM.ctx }}
+1 · Belge seçin
+{{ d.t }}
+{{ d.bL }}
+{{ d.id }} · {{ d.type }} · {{ d.ver }}
+{{ d.scope }}
+{{ d.valid }} · süresi doluyor
+Eşleşen belge yok.
+Belge Yönetimi'ne yeni belge yükle
+2 · Referans ve eşleme
+Soldan bir belge seçin.
+{{ EM.dT }}
+{{ EM.dId }} · {{ EM.dScope }} ·
+{{ EM.dVer }} sabitlenecek
+Önizle
+Kanıt tipi
+{{ t.ty }}
+Bölüm
+Sayfa
+Tablo
+Alıntılanan cümle *
+Desteklediği ifade *
+· {{ EM.segL }} üzerinde işaretleyin
+{{ sg.tx }}
+İptal
+Kanıtı ekle
+Belge önizleme · {{ PV.id }}
+{{ PV.title }}
+{{ v.l }}
+Belge Yönetimi'nde aç
+{{ PV.id }} · {{ PV.ver }}
+{{ PV.page }}
+{{ PV.sec }}
+{{ p.t }}
+{{ p.t }}
+Alıntılanan cümle
+{{ p.t }}
+v5'te değişti
+Kanıt tipi
+{{ PV.type }}
+Geçerli ülke ve dil
+{{ PV.scope }}
+Görüntülenen sürüm
+{{ PV.ver }}
+Belge durumu
+{{ PV.status }}
+Geçerlilik bitişi
+{{ PV.valid }}
+{{ M.title }}
+{{ M.desc }}
+{{ M.label }}
+Vazgeç
+{{ M.ok }}
+{{ toast }}

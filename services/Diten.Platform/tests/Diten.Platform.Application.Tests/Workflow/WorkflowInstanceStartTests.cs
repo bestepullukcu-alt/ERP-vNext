@@ -142,8 +142,10 @@ public sealed class WorkflowInstanceStartTests
     }
 
     [Fact]
-    public async Task Empty_candidate_principals_are_validation_failed()
+    public async Task Empty_candidate_principals_without_template_candidates_are_refused_by_the_handler()
     {
+        // WP-CL-BE-3a — an empty list is now VALID (it means "use the template's candidates"); with none in the
+        // template either, the handler still refuses with 400 WorkflowAssignmentCandidatesRequired.
         var fixture = Fixture(TenantA);
         var (template, _) = await fixture.AddPublishedTemplateAsync("WF-NO-CANDIDATE");
 
@@ -156,7 +158,7 @@ public sealed class WorkflowInstanceStartTests
         Assert.False(response.IsSuccessful);
         Assert.Equal(400, response.StatusCode);
         Assert.Equal(WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired, response.ReasonCode);
-        Assert.False(validation.IsValid);
+        Assert.True(validation.IsValid);
     }
 
     [Fact]

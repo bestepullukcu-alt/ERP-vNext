@@ -1,0 +1,100 @@
+/**
+ * WP-CL-FE-3 — claim Create / Edit page: status pills, evidence cards, readiness list, flow steps and the evidence modal.
+ * Colours come only from the theme's Bootstrap 5.3 subtle / emphasis variables (light AND dark theme); everything is
+ * scoped under `.claims-form-scope` and linked only from Views/CRM/Claims/{Create,Edit}.cshtml.
+ */
+
+.claims-form-scope .claim-state {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    padding: .15rem .5rem;
+    border: 1px solid transparent;
+    border-radius: .375rem;
+    font-size: .8rem;
+    font-weight: 500;
+}
+
+.claims-form-scope .claim-state.state-draft { background: var(--bs-secondary-bg-subtle); color: var(--bs-secondary-text-emphasis); border-color: var(--bs-secondary-border-subtle); }
+.claims-form-scope .claim-state.state-in-review { background: var(--bs-info-bg-subtle); color: var(--bs-info-text-emphasis); border-color: var(--bs-info-border-subtle); }
+.claims-form-scope .claim-state.state-approved { background: var(--bs-success-bg-subtle); color: var(--bs-success-text-emphasis); border-color: var(--bs-success-border-subtle); }
+.claims-form-scope .claim-state.state-review-required { background: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); border-color: var(--bs-warning-border-subtle); }
+.claims-form-scope .claim-state.state-inactive,
+.claims-form-scope .claim-state.state-archived { background: var(--bs-tertiary-bg); color: var(--bs-secondary-color); border-color: var(--bs-border-color); }
+
+@media (min-width: 992px) {
+    .claims-form-scope .claims-form-side { position: sticky; top: 5.5rem; }
+}
+
+.claims-form-scope .claim-qualifier {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: .45rem .75rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: .375rem;
+    background: var(--bs-tertiary-bg);
+}
+
+.claims-form-scope .claim-evidence-card {
+    border: 1px solid var(--bs-border-color);
+    border-radius: .5rem;
+    padding: .85rem 1rem;
+    background: var(--bs-card-bg);
+}
+
+.claims-form-scope .claim-evidence-card.needs-review { border-color: var(--bs-warning-border-subtle); }
+
+.claims-form-scope .claim-evidence-quote {
+    border-inline-start: 3px solid var(--bs-primary-border-subtle);
+    padding-inline-start: .6rem;
+    font-style: italic;
+    color: var(--bs-body-color);
+}
+
+.claims-form-scope .claim-evidence-warning {
+    background: var(--bs-warning-bg-subtle);
+    color: var(--bs-warning-text-emphasis);
+    border-radius: .375rem;
+    padding: .3rem .6rem;
+    font-size: .8rem;
+}
+
+.claims-form-scope .readiness-item { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.claims-form-scope .readiness-item .ok { color: var(--bs-success-text-emphasis); }
+.claims-form-scope .readiness-item .missing { background: var(--bs-danger-bg-subtle); color: var(--bs-danger-text-emphasis); }
+
+.claims-form-scope .flow-step { display: flex; gap: .6rem; align-items: flex-start; }
+.claims-form-scope .flow-step-no {
+    flex: 0 0 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bs-primary-bg-subtle);
+    color: var(--bs-primary-text-emphasis);
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.claims-form-scope .ev-step { color: var(--bs-secondary-color); }
+.claims-form-scope .ev-step.active { color: var(--bs-primary); }
+.claims-form-scope .ev-doc-list { max-height: 22rem; overflow-y: auto; }
+.claims-form-scope .ev-doc-list .list-group-item.active { background: var(--bs-primary-bg-subtle); color: var(--bs-primary-text-emphasis); border-color: var(--bs-primary-border-subtle); }
+.claims-form-scope .ev-doc-summary { background: var(--bs-tertiary-bg); }
+.claims-form-scope .ev-span-source { background: var(--bs-body-bg); cursor: text; }
+.claims-form-scope .ev-span-source::selection { background: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); }
+
+.claims-form-scope .ev-span-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .2rem .5rem;
+    border: 1px solid var(--bs-warning-border-subtle);
+    border-radius: .375rem;
+    background: var(--bs-warning-bg-subtle);
+    color: var(--bs-warning-text-emphasis);
+    font-size: .85rem;
+}

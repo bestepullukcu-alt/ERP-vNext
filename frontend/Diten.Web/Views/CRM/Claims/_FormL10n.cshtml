@@ -1,0 +1,12 @@
+@using System.Text.Json
+@using Diten.Web.Views.CRM.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsForm> Localizer
+@{
+    // WP-CL-FE-3 — the form bridge: every string of the ClaimsForm family (current culture, English fallback), keyed by
+    // resx name. Error texts are keyed Err_{code} after CRM's [code, message] codes; states State_{value_code}.
+    var values = Localizer.GetAllStrings(includeParentCultures: true)
+        .GroupBy(s => s.Name)
+        .ToDictionary(g => g.Key, g => g.First().Value);
+}
+<script id="claim-form-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

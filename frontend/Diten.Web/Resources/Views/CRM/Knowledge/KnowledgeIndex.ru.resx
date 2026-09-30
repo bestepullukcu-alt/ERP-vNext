@@ -155,4 +155,39 @@
   <data name="ReorderProfiles" xml:space="preserve"><value>Изменить порядок профилей аудитории</value></data>
   <data name="ReorderHelp" xml:space="preserve"><value>Перетащите строки, чтобы изменить порядок, затем сохраните.</value></data>
   <data name="SaveOrder" xml:space="preserve"><value>Сохранить порядок</value></data>
+  <data name="ClaimsSection" xml:space="preserve"><value>Утверждения</value></data>
+  <data name="ClaimRefsLabel" xml:space="preserve"><value>Утверждения, используемые в этом материале</value></data>
+  <data name="ClaimRefsPlaceholder" xml:space="preserve"><value>Поиск утверждений…</value></data>
+  <data name="ClaimRefsHelp" xml:space="preserve"><value>Базовое — глобальное утверждение; строка страны — утверждённый текст этой страны. Для публикации утверждения должны быть утверждены, а для страны — иметь текст на языке материала.</value></data>
+  <data name="ClaimRefsProductFirst" xml:space="preserve"><value>Сначала выберите продукт — утверждения показываются по продукту материала.</value></data>
+  <data name="ClaimRefsNone" xml:space="preserve"><value>Для этого продукта нет утверждений.</value></data>
+  <data name="ClaimRefsLoading" xml:space="preserve"><value>Загрузка утверждений…</value></data>
+  <data name="ClaimOptionsUnavailable" xml:space="preserve"><value>Сейчас не удаётся загрузить утверждения. Выбранные утверждения сохраняются.</value></data>
+  <data name="ClaimPermissionMissing" xml:space="preserve"><value>У вас нет права просматривать утверждения. Выбранные утверждения сохраняются.</value></data>
+  <data name="ClaimEndpointMissing" xml:space="preserve"><value>Сервис утверждений недоступен. Выбранные утверждения сохраняются.</value></data>
+  <data name="ClaimCore" xml:space="preserve"><value>Базовое</value></data>
+  <data name="ClaimStatus_approved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="ClaimStatus_in-review" xml:space="preserve"><value>На согласовании</value></data>
+  <data name="ClaimStatus_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="ClaimStatus_review-required" xml:space="preserve"><value>Требует пересмотра</value></data>
+  <data name="ClaimStatus_inactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="ClaimStatus_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="ClaimReason_not_approved" xml:space="preserve"><value>Не утверждено — публикация будет отклонена</value></data>
+  <data name="ClaimReason_language_mismatch" xml:space="preserve"><value>Нет текста на языке материала</value></data>
+  <data name="ClaimRefNotInList" xml:space="preserve"><value>Недоступно для текущего продукта или языка</value></data>
+  <data name="ClaimRefsUnusableWarning" xml:space="preserve"><value>Некоторые выбранные утверждения пока нельзя опубликовать. Сохранить можно; публикация будет отклонена, пока они не утверждены и не имеют текста на языке материала.</value></data>
+  <data name="ClaimRefsStaleWarning" xml:space="preserve"><value>Некоторые выбранные утверждения не соответствуют текущему продукту или языку. Они сохранены — удалите их, если они больше не применимы.</value></data>
+  <data name="ClaimError_claim_refs_too_many" xml:space="preserve"><value>К одному материалу можно привязать не более 20 утверждений.</value></data>
+  <data name="ClaimError_claim_ref_invalid" xml:space="preserve"><value>Выбор утверждения неполный или недопустимый; выберите его снова.</value></data>
+  <data name="ClaimError_claim_ref_duplicate" xml:space="preserve"><value>Одно и то же утверждение выбрано для этой страны несколько раз.</value></data>
+  <data name="ClaimError_claim_not_found" xml:space="preserve"><value>Выбранное утверждение больше не существует.</value></data>
+  <data name="ClaimError_claim_ref_mismatch" xml:space="preserve"><value>Выбор больше не соответствует записи утверждения; обновите список и выберите снова.</value></data>
+  <data name="ClaimError_claim_country_version_not_found" xml:space="preserve"><value>Страновая версия утверждения больше не существует.</value></data>
+  <data name="ClaimError_claim_product_mismatch" xml:space="preserve"><value>Утверждение относится к другому продукту, чем этот материал.</value></data>
+  <data name="ClaimError_claim_not_approved" xml:space="preserve"><value>Утверждение не утверждено; материал нельзя опубликовать.</value></data>
+  <data name="ClaimError_claim_language_mismatch" xml:space="preserve"><value>В страновой версии утверждения нет текста на языке материала; материал нельзя опубликовать.</value></data>
+  <data name="ClaimError_dependency_unavailable" xml:space="preserve"><value>Сервис утверждений сейчас недоступен; повторите попытку позже.</value></data>
+  <data name="LinkedClaims" xml:space="preserve"><value>Связанные утверждения</value></data>
+  <data name="NoLinkedClaims" xml:space="preserve"><value>К этому материалу не привязаны утверждения.</value></data>
+  <data name="ClaimNeedsReview" xml:space="preserve"><value>Требует пересмотра — утверждение изменилось после утверждения этой связи.</value></data>
 </root>

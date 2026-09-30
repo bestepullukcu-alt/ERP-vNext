@@ -548,6 +548,16 @@ internal sealed class FakeWorkflowMediator(FakeWorkflowTemplateStore templates, 
 
     private object Start(StartWorkflowInstanceCommand command)
     {
+        // WP-CL-BE-3a — an empty candidate list passes MOD-0023's validator ("use the template's candidates") and is
+        // refused by its HANDLER when the template has none, before anything is written. The MOD-0024 task-approval
+        // and task-review templates carry no step candidates, so an empty list is refused exactly like live.
+        if (!command.Request.CandidatePrincipalIds.Any(c => !string.IsNullOrWhiteSpace(c)))
+        {
+            return Response<StartWorkflowInstanceResponse>.Fail(
+                "At least one assignment candidate is required.", 400,
+                WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired, command.CorrelationId);
+        }
+
         Starts.Add(command.Request);
 
         if (StartFailureReasonCode is not null)
