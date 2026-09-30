@@ -603,9 +603,10 @@ Decisions:  MOD-0023's own platform.workflow.tasks.approve / .reject (unchanged)
 - Visibility (D11): the person sees all of their own; the approver sees **submitted** weeks routed to them, never
   drafts, never another team's; nobody sees who is running a timer.
 
-Notification events (manifest-declared): `time-entry.week.submitted`, `time-entry.week.approved`,
-`time-entry.week.rejected`, `time-entry.week.withdrawn`, `time-entry.timer.auto-closed`; T3:
-`time-entry.week.reminder`, `time-entry.meeting.minutes-conflict`.
+Notification events (manifest-declared, codes renamed in T3 — the platform's event/template key rule
+`^[a-z0-9]+(\.[a-z0-9]+)*$` refuses a hyphen; permission keys stay `time-entry.*`): `timeentry.week.submitted`,
+`timeentry.week.approved`, `timeentry.week.rejected`, `timeentry.week.withdrawn`, `timeentry.timer.autoclosed`,
+`timeentry.week.reminder`, `timeentry.meeting.minutesconflict`.
 
 ---
 
@@ -1030,6 +1031,20 @@ per key, seven languages for tenant events — MOD-0024 and MOD-0357 precedent).
 | N5 | Minutes conflict (D8) | New contracts seam **`IMeetingAttendanceObserver`**, called by MOD-0357 after `SyncAsync` on minutes publish **and** correction (the `ITaskTransitionObserver` pattern: failures logged, never thrown into the meeting write). TimeEntry's implementation: for each attendee now `Absent`/`Excused` who has an **accepted `Meeting`-source row** for that meeting (any week state), notify **that person only**, once per (meeting, person, status). `Present` sends nothing. Never the approver or the manager (D11). The read-time flag stays the source of truth. | Neither links meeting minutes to timesheets natively; this is ours. |
 | N6 | At most once | `TimeEntryNotificationMark` (`time_entry_notification_marks`: `TenantId`, `Kind`, `Key`, `CreatedAtUtc`), unique `(TenantId, Kind, Key)`, claimed **before** the send: a crash after the claim loses one e-mail, never duplicates one. `timer.auto-closed` keeps its segment mark. | — |
 | N7 | Templates | 7 events × 7 languages = **49** templates, key = event code; manifest events go `Active`. Each event's `RequiredVariables` equals exactly what its dispatch supplies and what its template renders (auto-closed: `LocalDate`, `DurationMinutes`). Content is minimal: week and link; approver e-mails name the person; no per-day minutes, nothing about another person. Locale = the tenant's (existing resolver). | — |
+
+**T3 acceptance — CT answers to the agent's readings (2026-09-30):**
+- Event codes `timeentry.*` (no hyphen) — accepted; the key rule is the platform's and is not loosened. The five
+  `time-entry.*` Draft definitions left in the dev database were never dispatched; they are harmless and are archived
+  from the notification admin screen when someone is next there (no data write by CT).
+- Participation window = the target week **and** the 4 before it — accepted (a person with only a Draft in the target
+  week is exactly who N2 reminds).
+- **Not Monday-only (CT change):** the previous week is reminded on the first run from Monday 09:00 until the week ends;
+  a run missed on Monday or a switch turned on mid-week still reminds once — the person-week mark keeps it to one.
+- Submission key = (event, week, revision, submission number) — accepted: a week returned and submitted again must reach
+  the approver again.
+- `TimesheetUrl` on auto-closed — accepted (N7 "week and link"); no link on withdrawn — accepted (the week no longer
+  opens for the approver).
+- Locale = the tenant's; per-person language is not in T3.
 
 ## 22. Legal — must confirm before go-live (not a start blocker)
 

@@ -155,17 +155,20 @@ public sealed class TimesheetReminderJob : IBackgroundJobHandler<TimesheetRemind
         return sent;
     }
 
-    /// <summary>N2 — the Monday of the week to remind about, or null when it is not yet (or no longer) Monday 09:00+ in
-    /// the tenant's zone. A DST change is the zone's business: 09:00 is 09:00 local on either side of it.</summary>
+    /// <summary>N2 — the Monday of the week to remind about: the PREVIOUS ISO week, from Monday 09:00 in the tenant's zone
+    /// until the week ends; null only on Monday before 09:00. CT acceptance (T3): not Monday-only — a run missed on
+    /// Monday (deploy, outage) or a switch turned on mid-week still reminds once for last week; the per-person-week mark
+    /// keeps it to one. A DST change is the zone's business: 09:00 is 09:00 local on either side of it.</summary>
     public static DateOnly? TargetMonday(DateTimeOffset nowUtc, TimeZoneInfo zone)
     {
         var local = TimeZoneInfo.ConvertTime(nowUtc, zone);
-        if (local.DayOfWeek != DayOfWeek.Monday || local.TimeOfDay < ReminderTimeOfDay)
+        var daysSinceMonday = ((int)local.DayOfWeek + 6) % 7;
+        if (daysSinceMonday == 0 && local.TimeOfDay < ReminderTimeOfDay)
         {
             return null;
         }
 
-        return DateOnly.FromDateTime(local.DateTime).AddDays(-7);
+        return DateOnly.FromDateTime(local.DateTime).AddDays(-daysSinceMonday - 7);
     }
 
     /// <summary>N2 — absent or Draft (a rejected or withdrawn revision is a Draft again), and at least one working day.</summary>

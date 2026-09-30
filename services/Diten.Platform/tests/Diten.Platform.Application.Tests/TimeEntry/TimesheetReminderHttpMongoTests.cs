@@ -163,7 +163,23 @@ public sealed class TimesheetReminderHttpMongoTests : TimerScenario
         await RunAtAsync(new DateTimeOffset(2026, 10, 26, 9, 0, 0, TimeSpan.Zero)); // and the next one
         Assert.Single(Reminders());
 
-        await RunAtAsync(new DateTimeOffset(2026, 10, 27, 8, 0, 0, TimeSpan.Zero)); // Tuesday: not a reminder day
+        await RunAtAsync(new DateTimeOffset(2026, 10, 27, 8, 0, 0, TimeSpan.Zero)); // Tuesday: the catch-up finds the mark
+        Assert.Single(Reminders());
+    }
+
+    /// <summary>CT acceptance (T3): the job did not run on Monday (deploy, outage) — the first run of the week still
+    /// reminds once for last week; the next runs find the mark.</summary>
+    [Fact]
+    public async Task T3_02_a_Monday_the_job_missed_is_caught_up_once_on_the_first_run_later_that_week()
+    {
+        await SetTenantZoneAsync("Europe/Zurich");
+        await SeedWeekAsync(Person, TimesheetWeekStatus.Draft, weekKey: "2026-W43", monday: new DateOnly(2026, 10, 19));
+        await SwitchReminderAsync(true);
+
+        await RunAtAsync(new DateTimeOffset(2026, 10, 28, 13, 0, 0, TimeSpan.Zero)); // Wednesday 14:00 local, first run
+        Assert.Equal("2026-W43 (2026-10-19 – 2026-10-25)", Assert.Single(Reminders()).Variables[TimeEntryNotificationVariables.WeekLabel]);
+
+        await RunAtAsync(new DateTimeOffset(2026, 11, 1, 22, 0, 0, TimeSpan.Zero)); // Sunday 23:00 local
         Assert.Single(Reminders());
     }
 
@@ -173,6 +189,9 @@ public sealed class TimesheetReminderHttpMongoTests : TimerScenario
     [InlineData("2026-10-19T06:59:00Z", null)]           // the Monday BEFORE the change: 08:59 at UTC+2
     [InlineData("2026-10-19T07:00:00Z", "2026-10-12")]   // 09:00 at UTC+2
     [InlineData("2026-10-25T23:30:00Z", null)]           // 00:30 Monday local — before 09:00
+    [InlineData("2026-10-27T08:00:00Z", "2026-10-19")]   // Tuesday 09:00 local — catch-up, still last week
+    [InlineData("2026-11-01T22:59:00Z", "2026-10-19")]   // Sunday 23:59 local — the week's last minute
+    [InlineData("2026-10-25T22:00:00Z", "2026-10-12")]   // Sunday 23:00 of W43 (after the change) — last week is W42
     public void T3_02_the_target_week_is_decided_in_the_zone_not_in_UTC(string nowUtc, string? expectedMonday)
     {
         var zone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Zurich");
