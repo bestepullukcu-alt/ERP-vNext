@@ -84,7 +84,36 @@
 | 6 | Sayfa tasarımcısı (sürükle-bırak), marka kiti (ürün), ülke yasal blokları, onaylı görsel kütüphanesi, kilitli iddia blokları, uyum kontrolü | Stüdyo v2 (mockup sonrası fazlara bölünecek) |
 | 7 | Sahadan sayfa gösterim takibi | Stüdyo v2 son faz + mobil |
 | 8 | Zincir editörü "Çıktılar" paneli boş | **SB-2b** (SB-2'nin geri izini okur) |
-| 9 | İçerik Kapsamı serbest metin | **SB-1** |
-| 10 | Uygunluk kontrolü fiilen hep "Belirsiz": iddialarda `Applicability.EligibilityPolicyId` İddialar v2 arayüzünde girilemiyor; kapsam değerleri serbest metin | SB-1 ile birlikte karar |
+| 9 | İçerik Kapsamı serbest metin | **SB-1R: kapsam KALDIRILIYOR, bağlam setten türetilir (§7)** |
+| 10 | Uygunluk kontrolü fiilen hep "Belirsiz": iddialarda `Applicability.EligibilityPolicyId` İddialar v2 arayüzünde girilemiyor; kapsam değerleri serbest metin | SB-1R ile birlikte; Uygunluk Politikaları ayrıca gözden geçirilecek |
 | 11 | Karar bekleyen: play'deki doğrudan Bilgi Yolu bağı ziyarette tek aşamalı yolculuk sayılsın mı? | SB-3 öncesi kullanıcıdan |
 | 12 | Veri: ALMIBA zinciri taslak; ALMIBA yolu dil karışık; yolculuklar aşamasız; KP-114 / 201 / 888 demo kalıntısı | E2E sırasında |
+
+---
+
+## 7. KARAR — İçerik Kapsamı kaldırılıyor; set bağlamı türetilir (kullanıcı, 2026-09-30)
+**Gerekçe:**
+- Ürün, kitle ve dil zaten yapılandırılmış olarak Bilgi Bankası'nda (konu → MDM ürünü, hedef kitle profili, dil), zincir şablonunda ("Kimin için") ve iddialarda var. İçerik Kapsamı aynı bilgiyi serbest metinle tekrar ediyordu.
+- "Bir kez tanımla, çok yerde kullan" faydası küçük. Değişmezliği revizyon dondurması zaten sağlıyor.
+- Göç maliyeti yok: canlıda 1 "test" kapsamı, 0 set.
+- **SCMM-14 tasarımından (D14-a, kapsam = ayrı kayıt) bilinçli sapma.**
+
+**Yeni model — set bağlamı:**
+| Alan | Kaynak |
+|---|---|
+| Ürün | zincir şablonunun konusu → MDM Global Product (salt okunur, otomatik) |
+| Kitle | zincir şablonunun "Kimin için" hedef kitle profili; bileşen kitleleri uyumlu olmalı |
+| Dil | bileşenlerin dili (set tek dil; SB-2 kuralı `component_language_mixed`) |
+| **Ülke** | **setin üstünde tek seçimli alan (COUNTRY_CODES).** Dil o ülkenin `country-content-languages` dillerinden biri olmalı. İddia ülke sürümü, yasal altbilgi (Stüdyo v2) ve kullanım raporu buradan okur. |
+| Kanal / dönem | şimdilik yok (gerekirse setin üstünde) |
+
+**Paket: SB-1R** (eski "SB-1 seçiciler" yerine), **SB-2 birleştikten sonra**:
+- `ContentSet.Scope` → `CountryCode` (+ türetilmiş bağlam okuması);
+- uygunluk kontrolü bağlamı setten kurar;
+- iddia kullanım raporu ülkeyi setten okur;
+- SB-2'nin "kapsam MarketRefs" okuması tek noktada setin ülkesine döner;
+- İçerik Kapsamları sayfası, menüsü ve Web proxy'si kaldırılır; CRM tarafı önce salt okunur, sonra silinir;
+- 7 dil L10n temizliği;
+- canlıdaki "test" kapsamı arşivlenir.
+
+**Açık:** Uygunluk Politikaları sayfası ayrıca gözden geçirilecek (iddialara politika girilemediği için kontrol fiilen hep "Belirsiz").
