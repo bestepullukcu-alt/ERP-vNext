@@ -1711,6 +1711,46 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/v1/time-entry",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/time-entry",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/time-entry/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5057
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/time-entry/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/v1/notifications",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

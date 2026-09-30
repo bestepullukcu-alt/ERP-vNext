@@ -212,6 +212,8 @@ public sealed class OcelotConfigurationTests
         yield return new object[] { "/api/pv-case-intake-triage/{intakeDraftId}/triage", "POST" };
         yield return new object[] { "/api/pv-case-intake-triage/{intakeDraftId}/route", "POST" };
         yield return new object[] { "/api/v1/work/calendar", "GET" }; // WP-TASK-CALENDAR-ENGINE-01: Task Center calendar feed (Platform 5057)
+        yield return new object[] { "/api/v1/time-entry", "GET" }; // MOD-0280-FU01 (pack §15): timesheet (Platform 5057, ADR-004)
+        yield return new object[] { "/api/v1/time-entry/{everything}", "POST" }; // MOD-0280-FU01: weeks, timer, approvals, categories
     }
 
     [Theory]
