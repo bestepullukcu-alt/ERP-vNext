@@ -2491,7 +2491,7 @@
     <value>计时器只能用于进行中的任务。</value>
   </data>
   <data name="TimerErrNotRunning" xml:space="preserve">
-    <value>已没有正在运行的计时器。</value>
+    <value>此任务的计时器已不再运行。</value>
   </data>
   <data name="TimerErrConflict" xml:space="preserve">
     <value>计时器在此期间已被修改。页面已刷新。</value>

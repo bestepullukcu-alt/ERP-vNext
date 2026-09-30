@@ -2491,7 +2491,7 @@
     <value>El temporizador solo funciona en una tarea en curso.</value>
   </data>
   <data name="TimerErrNotRunning" xml:space="preserve">
-    <value>Ya no hay ningún temporizador en marcha.</value>
+    <value>El temporizador de esta tarea ya no está en marcha.</value>
   </data>
   <data name="TimerErrConflict" xml:space="preserve">
     <value>El temporizador cambió mientras tanto. La página se actualizó.</value>

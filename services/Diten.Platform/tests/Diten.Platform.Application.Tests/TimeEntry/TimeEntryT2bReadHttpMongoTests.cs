@@ -103,14 +103,16 @@ public sealed class TimeEntryT2bReadHttpMongoTests : TimerScenario
     [Fact]
     public async Task A_correction_shows_row_by_row_what_it_changes_against_the_revision_in_force()
     {
-        var originalId = await SubmittedWeekAsync(Row(Monday, 120, TaskA), Row(Monday.AddDays(1), 60));
+        // CT acceptance (T2b): Tuesday's task-B row is the SAME on both sides — without it, listing unchanged rows went
+        // unmeasured (the clock is Wednesday, so no later day can hold time).
+        var originalId = await SubmittedWeekAsync(Row(Monday, 120, TaskA), Row(Monday.AddDays(1), 60), Row(Monday.AddDays(1), 45, TaskB));
         Assert.Equal(HttpStatusCode.OK, (await DecideAsync(Manager, originalId, approve: true)).Status);
         await GetWeekAsync();
         var opened = await Host.PostAsync($"/api/v1/time-entry/weeks/{CurrentWeek}/corrections", PersonToken(),
             new { reason = "Monday was three hours; Wednesday was on task B" });
         var correctionId = opened.Data.GetProperty("weekId").GetGuid();
         Assert.Equal(HttpStatusCode.OK, (await SaveFreshAsync(CurrentWeek,
-            Row(Monday, 180, TaskA), Row(Monday.AddDays(2), 30, TaskB))).Status);
+            Row(Monday, 180, TaskA), Row(Monday.AddDays(2), 30, TaskB), Row(Monday.AddDays(1), 45, TaskB))).Status);
         Assert.Equal(HttpStatusCode.OK, (await SubmitAsync()).Status);
 
         var week = await ApprovalWeekAsync(correctionId);
@@ -128,6 +130,7 @@ public sealed class TimeEntryT2bReadHttpMongoTests : TimerScenario
         Assert.Contains(("2026-10-05", TaskA.ToString(), (int?)120, (int?)180), changes);   // changed
         Assert.Contains(("2026-10-06", Category, (int?)60, (int?)null), changes);           // removed
         Assert.Contains(("2026-10-07", TaskB.ToString(), (int?)null, (int?)30), changes);   // added
+        Assert.DoesNotContain(changes, c => c.Date == "2026-10-06" && c.Target == TaskB.ToString()); // unchanged ⇒ not listed
     }
 
     [Fact]

@@ -314,7 +314,6 @@ public sealed class TaskWorkItemContractGuardTests
         return items.Single(x => x.Id == task.Id.ToString());
     }
 
-    /// <summary>A task with none of the optional data — the vacuous case, kept to prove it IS vacuous.</summary>
     /// <summary>
     /// MOD-0280-FU01 T2b — the switch is ON in production now (<c>DeclareTimeTracking = true</c>). The item that carries
     /// the whole time block — <c>timeTracking</c>, the <c>timeEntries</c> container, a RUNNING timer and the startTimer /
@@ -423,6 +422,7 @@ public sealed class TaskWorkItemContractGuardTests
             => Task.FromResult(new TaskReaderTime(runningTask, taskIds.ToDictionary(id => id, _ => 15)));
     }
 
+    /// <summary>A task with none of the optional data — the vacuous case, kept to prove it IS vacuous.</summary>
     private static async Task<WorkItemProjectionDto> ProjectBareItemAsync()
     {
         var task = SelfTask("Yalın görev");

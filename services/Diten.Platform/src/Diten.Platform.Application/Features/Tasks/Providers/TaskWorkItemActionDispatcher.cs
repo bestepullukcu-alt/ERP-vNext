@@ -215,7 +215,8 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
 
             case "stopTimer":
                 return Map(await _mediator.Send(
-                    new TimeEntry.Commands.StopTimerCommand(request.CorrelationId), ct), request);
+                    // The card's own task: a stale card must not stop a timer that has moved to another task.
+                    new TimeEntry.Commands.StopTimerCommand(request.CorrelationId, request.ItemId), ct), request);
 
             default:
                 return WorkItemActionDispatchResults.ActionUnknown(request);

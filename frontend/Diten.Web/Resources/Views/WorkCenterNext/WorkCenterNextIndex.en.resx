@@ -2491,7 +2491,7 @@
     <value>The timer runs only on a task in progress.</value>
   </data>
   <data name="TimerErrNotRunning" xml:space="preserve">
-    <value>No timer is running any more.</value>
+    <value>The timer on this task is no longer running.</value>
   </data>
   <data name="TimerErrConflict" xml:space="preserve">
     <value>The timer changed meanwhile. The page was refreshed.</value>

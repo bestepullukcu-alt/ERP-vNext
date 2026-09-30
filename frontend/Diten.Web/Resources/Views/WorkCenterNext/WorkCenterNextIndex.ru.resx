@@ -2491,7 +2491,7 @@
     <value>Таймер работает только на задаче в работе.</value>
   </data>
   <data name="TimerErrNotRunning" xml:space="preserve">
-    <value>Таймер уже не запущен.</value>
+    <value>Таймер этой задачи больше не работает.</value>
   </data>
   <data name="TimerErrConflict" xml:space="preserve">
     <value>Таймер за это время изменился. Страница обновлена.</value>

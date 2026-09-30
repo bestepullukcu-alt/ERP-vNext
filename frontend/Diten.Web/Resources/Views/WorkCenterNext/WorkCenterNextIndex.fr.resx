@@ -2491,7 +2491,7 @@
     <value>Le chronomètre ne fonctionne que sur une tâche en cours.</value>
   </data>
   <data name="TimerErrNotRunning" xml:space="preserve">
-    <value>Aucun chronomètre ne tourne plus.</value>
+    <value>Le minuteur de cette tâche ne tourne plus.</value>
   </data>
   <data name="TimerErrConflict" xml:space="preserve">
     <value>Le chronomètre a changé entre-temps. La page a été actualisée.</value>

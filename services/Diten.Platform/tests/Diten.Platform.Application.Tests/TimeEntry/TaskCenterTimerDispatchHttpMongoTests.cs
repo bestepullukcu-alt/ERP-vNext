@@ -45,6 +45,23 @@ public sealed class TaskCenterTimerDispatchHttpMongoTests : TimerScenario
         Assert.Equal(0, await RunningCountAsync());
     }
 
+    /// <summary>
+    /// CT acceptance (T2b review): the card can be stale — the timer moved to task B from the chip or another tab while
+    /// task A's card still shows Stop. Stop on A must not stop B.
+    /// </summary>
+    [Fact]
+    public async Task Stop_on_a_stale_card_does_not_stop_the_timer_running_on_another_task()
+    {
+        await EnableTimerAsync();
+        Assert.Equal(HttpStatusCode.OK, (await DispatchAsync(TaskB, "startTimer")).Status);
+
+        var refused = await DispatchAsync(TaskA, "stopTimer");
+
+        Assert.Equal(HttpStatusCode.Conflict, refused.Status);
+        Assert.Equal(TimeEntryReasonCodes.TimerNotRunning, refused.ReasonCode);
+        Assert.Equal(TaskB, Assert.Single(await SegmentsAsync(), s => s.IsRunning).TaskItemId);
+    }
+
     [Fact]
     public async Task A_person_who_does_not_hold_the_task_is_refused_through_the_dispatcher()
     {

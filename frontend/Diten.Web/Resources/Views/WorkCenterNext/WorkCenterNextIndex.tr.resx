@@ -2491,7 +2491,7 @@
     <value>Sayaç yalnız devam eden bir görevde çalışır.</value>
   </data>
   <data name="TimerErrNotRunning" xml:space="preserve">
-    <value>Artık çalışan bir sayaç yok.</value>
+    <value>Bu görevin sayacı artık çalışmıyor.</value>
   </data>
   <data name="TimerErrConflict" xml:space="preserve">
     <value>Sayaç bu arada değişti. Sayfa yenilendi.</value>

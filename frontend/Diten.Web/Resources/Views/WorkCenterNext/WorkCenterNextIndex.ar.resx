@@ -2491,7 +2491,7 @@
     <value>يعمل المؤقت فقط على مهمة قيد التنفيذ.</value>
   </data>
   <data name="TimerErrNotRunning" xml:space="preserve">
-    <value>لم يعد هناك مؤقت قيد التشغيل.</value>
+    <value>لم يعد مؤقت هذه المهمة يعمل.</value>
   </data>
   <data name="TimerErrConflict" xml:space="preserve">
     <value>تغيّر المؤقت في هذه الأثناء. تم تحديث الصفحة.</value>

@@ -7070,6 +7070,50 @@ açık görünüp 409 dönüyor. (4) İnceleyen = atanan kişiyle görev oluştu
 (5) MOD-0023'te idempotency tekrar kontrolü atama kontrolünden önce: atanmamış kişi başkasının anahtarıyla 200 idempotent alıyor (değişiklik yok).
 (6) Tüzel kişi sayaç anahtarı tüzel kişinin varlığını denetlemiyor (MDM başka serviste). Gelecek regresyon riski: 🟢.
 
+### BL-484
+
+**Zaman çizelgesi okuma yolları satır başına okuyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0280-FU01, T4 ile) · BULAN: T2a/T2b kabulleri · KAYIT: 2026-09-30
+
+(1) Onay listesi işaretleri (otomatik kapanan gün, mesai dışı dakika, tatil) ve Görev Merkezi iş öğesi kimliğini sayfadaki her satır için ayrı okuyor
+(`GetApprovalListHandler`, satır başına ~4 okuma). (2) Toplu onay listeyi `length=500` ile yeniden okuyor: bir tıklama ~2 000 okuma. Kuyruk 500 haftadan
+uzunsa fazlası sessizce `TIMESHEET_APPROVAL_NOT_FOUND` alıyor. (3) Hafta GET'i okuma kuralını her görev için ayrı soruyor. (4) Görev seçici her tuş
+vuruşunda yeniden hesaplıyor. İş: toplu okuma (haftalar → girişler / onay görevleri / sayaç parçaları tek sorgu), toplu onayda seçili kimliklerle okuma.
+Gelecek regresyon riski: 🟢 (yalnız performans; sonuç aynı).
+
+### BL-485
+
+**Görev Merkezi'nde kalan sahte "süre kaydet" iletişim kutusu**
+
+DURUM: AÇIK · SAHİP: CT (Görev Merkezi) · BULAN: T2b bağımsız gözden geçirme · KAYIT: 2026-09-30
+
+T2b tarayıcı sayacını kaldırdı, ama `logTime` iletişim kutusu hâlâ duruyor: yalnız `action.input === 'minutes'` ile açılıyor (fixture denetimi yok), bellekte
+etkinlik yazıp "(mock)" bildirimi gösteriyor; `LogTimeSubtext` "kaydedilmiş süreye ekler" diyor ama kart artık değişmiyor. Gösterim fixture'ında ölü
+`loggedMinutes: 225` ve eski yorum var (`islerim-showcase-fixtures.js`). Bugün gerçek sağlayıcı bu eylemi göndermediği için canlıda görünmüyor. İş: kutuyu
+ve anahtarlarını (7 dil) kaldır ya da Zaman Çizelgem'e yönlendiren bir bağlantıya çevir. Gelecek regresyon riski: 🟢.
+
+### BL-486
+
+**T2b küçükleri**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0280-FU01 / Görev Merkezi) · BULAN: T2b bağımsız gözden geçirme · KAYIT: 2026-09-30
+
+(1) Başlat/Durdur hem kartta hem ··· menüsünde görünüyor (sağlayıcı `overflowActionCodes`'a da ekliyor). (2) Ayarlar sayfası ayar okuması başarısız olursa
+sürüm 0 ile devam ediyor; sunucu sürüm çakışmasını reddeder ama sayfa hatayı söylemeli. (3) `ITimeEntryTimerAvailability` `Contracts/` yerine
+`Features/TimeEntry/TimeEntryPorts.cs`'de (`ITaskSpentTimeSource` `Contracts/`'ta); Tasks dağıtıcısı TimeEntry komutlarını doğrudan tanıyor. (4) `taskContext`
+ile `effort` aynı koşulu iki yerde hesaplıyor (`ResolveCapabilities` ve `Effort:`); bugün tutarlı, ileride ayrışabilir — koşul tek yerden gelmeli.
+Gelecek regresyon riski: 🟢.
+
+### BL-487
+
+**`wcn-calendar-view` "boş saate bırakma" testi tam vitest koşusunda ara sıra kırmızı**
+
+DURUM: AÇIK · SAHİP: CT (Görev Merkezi takvimi) · BULAN: T2b kabulü · KAYIT: 2026-09-30
+
+"a drop on an EMPTY hour lands on the slot row" testi tam koşuda (3 772 test) bir kez kırmızı, tek başına 3/3 yeşil. Yük altında zamanlamaya bağlı; bilinen
+24 kırmızının dışında görünürse bu kayıt. İş: testin beklediği çizim/zamanlayıcıyı açıkça bekle. Gelecek regresyon riski: 🟢.
+
 ---
 
 ### BL-393
