@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using Diten.MdmService.Api.Configuration;
+using Diten.MdmService.Api.Services.Audit;
 using Diten.MdmService.Api.ModuleRegistration;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Tests.Audit;
@@ -27,6 +28,24 @@ namespace Diten.MdmService.Application.Tests;
 
 public sealed class ApiStartupExecutionModeTests
 {
+    [Theory]
+    [InlineData("--SELECTED-AUDIT-INTENT-DELIVERY")]
+    [InlineData("--selected-audit-intent-delivery=true")]
+    [InlineData("--selected-audit-unknown")]
+    public void Selected_audit_command_rejects_aliases_before_host_composition(string argument)
+        => Assert.Throws<InvalidOperationException>(() => SelectedAuditIntentDeliveryCommandLine.IsRequested([argument]));
+
+    [Fact]
+    public void Selected_audit_dispatch_is_exact_default_disabled_and_exclusive()
+    {
+        Assert.False(SelectedAuditIntentDeliveryCommandLine.IsRequested([]));
+        Assert.False(SelectedAuditIntentDeliveryCommandLine.IsRequested(["--serve-api-without-startup-maintenance"]));
+        Assert.True(SelectedAuditIntentDeliveryCommandLine.IsRequested([SelectedAuditIntentDeliveryCommandLine.ExactArgument]));
+        Assert.Throws<InvalidOperationException>(() => SelectedAuditIntentDeliveryCommandLine.IsRequested(
+            [SelectedAuditIntentDeliveryCommandLine.ExactArgument, SelectedAuditIntentDeliveryCommandLine.ExactArgument]));
+        Assert.Throws<InvalidOperationException>(() => SelectedAuditIntentDeliveryCommandLine.IsRequested(
+            [SelectedAuditIntentDeliveryCommandLine.ExactArgument, "--serve-api-without-startup-maintenance"]));
+    }
     private const string RequiredPermission = "mdm.startup-mode.test";
     private const string TestAuthenticationScheme = "StartupModePipelineTest";
     private const string AuthenticateHeader = "X-Test-Authenticate";

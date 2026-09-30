@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Collections.Concurrent;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
@@ -32,6 +33,39 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
     private readonly IAuditIntentTemporalMigrationRepository _temporalMigrationRepository;
     private readonly Guid _tenantId;
     private readonly TimeProvider _timeProvider;
+    private readonly IMongoDatabase _database;
+    private readonly SelectedAuditIntentDeliveryRequest? _selection;
+    private readonly Dictionary<AuditIntentLocator, BsonDocument> _selectedSources = [];
+    private readonly Dictionary<AuditIntentLocator, BsonDocument> _selectedOwners = [];
+    private readonly ConcurrentDictionary<AuditIntentLocator, AuditIntentClaim> _selectedClaims = new();
+    private readonly ConcurrentDictionary<AuditIntentLocator, BsonDocument> _selectedReceipts = new();
+    private readonly SemaphoreSlim _selectionPreparation = new(1, 1);
+    private bool _selectionPrepared;
+
+    public static AuditIntentDeliveryRepository CreateSelected(IMongoDatabase database,
+        SelectedAuditIntentDeliveryRequest request, TimeProvider timeProvider)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        BsonSerializer.TryRegisterSerializer(new MongoDB.Bson.Serialization.Serializers.GuidSerializer(GuidRepresentation.Standard));
+        if (BsonSerializer.LookupSerializer<Guid>() is not MongoDB.Bson.Serialization.Serializers.GuidSerializer serializer
+            || serializer.GuidRepresentation != GuidRepresentation.Standard)
+            throw new InvalidOperationException("SELECTED_AUDIT_INTENT_GUID_STORAGE_INVALID");
+        return new(database, new SelectedTenantContext(request.TenantId), timeProvider,
+            new AuditIntentTemporalMigrationRepository(database, timeProvider), request);
+    }
+
+    public static AuditIntentDeliveryRepository CreateSelected(string connectionString, string databaseName,
+        SelectedAuditIntentDeliveryRequest request, TimeProvider timeProvider)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
+        ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
+        var settings = MongoClientSettings.FromConnectionString(connectionString);
+        settings.GuidRepresentation = GuidRepresentation.Standard;
+        settings.ServerSelectionTimeout = TimeSpan.FromSeconds(2);
+        settings.ConnectTimeout = TimeSpan.FromSeconds(2);
+        settings.SocketTimeout = TimeSpan.FromSeconds(2);
+        return CreateSelected(new MongoClient(settings).GetDatabase(databaseName), request, timeProvider);
+    }
 
     public AuditIntentDeliveryRepository(
         IMongoDatabase database,
@@ -50,7 +84,16 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         ITenantContext tenantContext,
         TimeProvider timeProvider,
         IAuditIntentTemporalMigrationRepository temporalMigrationRepository)
+        : this(database, tenantContext, timeProvider, temporalMigrationRepository, null)
     {
+    }
+
+    private AuditIntentDeliveryRepository(IMongoDatabase database, ITenantContext tenantContext,
+        TimeProvider timeProvider, IAuditIntentTemporalMigrationRepository temporalMigrationRepository,
+        SelectedAuditIntentDeliveryRequest? selection)
+    {
+        _database = database;
+        _selection = selection;
         _codeReservations = database.GetCollection<CodeReservation>(CodeReservationCollectionName);
         _globalProducts = database.GetCollection<GlobalProduct>(GlobalProductCollectionName);
         _productDefinitionRevisions = database.GetCollection<ProductDefinitionRevision>(ProductDefinitionRevisionCollectionName);
@@ -67,13 +110,15 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
             ?? throw new ArgumentNullException(nameof(temporalMigrationRepository));
         _tenantId = tenantContext.TenantId;
         _timeProvider = timeProvider;
-        EnsureIndexes();
+        if (selection is null) EnsureIndexes();
     }
 
     public async Task<IReadOnlyList<AuditIntentWorkItem>> DiscoverEligibleAsync(
         int limit,
         CancellationToken cancellationToken = default)
     {
+        if (_selection is not null)
+            throw new InvalidOperationException("SELECTED_AUDIT_INTENT_DISCOVERY_FORBIDDEN");
         if (limit <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(limit));
@@ -193,6 +238,14 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         TimeSpan leaseDuration,
         CancellationToken cancellationToken = default)
     {
+        if (_selection is not null)
+        {
+            RequireSelectedItem(locator);
+            if (!_selectionPrepared || RequireSelectedItem(locator).ExpectedClaimGeneration != expectedClaimGeneration
+                || _selectedClaims.ContainsKey(locator)) return null;
+            await ValidateSelectedPrerequisitesAsync(cancellationToken);
+            if (!await ValidateSelectedSourceAsync(locator, cancellationToken)) return null;
+        }
         if (!IsCurrentTenant(locator) || expectedClaimGeneration < 0)
         {
             return null;
@@ -210,7 +263,7 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
 
         var now = _timeProvider.GetUtcNow();
         var scalarCutover = await IsScalarCutoverActiveAsync(cancellationToken);
-        return await (locator.AggregateType switch
+        var claim = await (locator.AggregateType switch
         {
             AuditAggregateType.CodeReservation => TryClaimInCollectionAsync(
                 _codeReservations,
@@ -261,6 +314,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 scalarCutover, cancellationToken),
             _ => Task.FromResult<AuditIntentClaim?>(null)
         });
+        if (_selection is not null && claim is not null) _selectedClaims.TryAdd(locator, claim);
+        return claim;
     }
 
     public async Task<AuditIntentClaimedPayload?> ReadClaimedPayloadAsync(
@@ -268,6 +323,7 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(claim);
+        if (!await ValidateSelectedClaimAsync(claim, cancellationToken)) return null;
         if (!IsCurrentTenant(claim.Locator) || !await IsScalarCutoverActiveAsync(cancellationToken)) return null;
         var now = _timeProvider.GetUtcNow();
         return await (claim.Locator.AggregateType switch
@@ -344,6 +400,7 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         AuditIntentAcknowledgement acknowledgement,
         CancellationToken cancellationToken = default)
     {
+        ValidateSelectedAcknowledgement(claim, acknowledgement, acknowledgement.CentralAcknowledgement);
         var now = _timeProvider.GetUtcNow();
         ValidateAcknowledgement(claim, acknowledgement);
         var update = Builders<CodeReservation>.Update
@@ -372,6 +429,7 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         string compactReceiptReference,
         CancellationToken cancellationToken = default)
     {
+        ValidateSelectedAcknowledgement(claim, acknowledgement, compactReceiptReference);
         if (!IsCurrentTenant(claim.Locator) || string.IsNullOrWhiteSpace(compactReceiptReference))
         {
             return Task.FromResult(false);
@@ -533,7 +591,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
             eligible &= Builders<LocalAuditIntent>.Filter.Exists(intent => intent.TemporalStorageVersion, false);
         }
 
-        filter &= CompleteDocumentFitsAfterIntentUpdateFilter(update, locator.IntentId);
+        filter &= CompleteDocumentFitsAfterIntentUpdateFilter(update, locator.IntentId)
+            & SelectedSourceFilter<TEntity>(locator);
 
         var updated = await collection.FindOneAndUpdateAsync(
             filter,
@@ -559,7 +618,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         IMongoCollection<TEntity> collection, AuditIntentClaim claim, DateTimeOffset now, CancellationToken cancellationToken)
         where TEntity : EntityBase, IAuditIntentAggregate
     {
-        var aggregate = await collection.Find(TenantAggregateFilter<TEntity>(claim.Locator)).FirstOrDefaultAsync(cancellationToken);
+        var aggregate = await collection.Find(TenantAggregateFilter<TEntity>(claim.Locator)
+            & SelectedSourceFilter<TEntity>(claim.Locator)).FirstOrDefaultAsync(cancellationToken);
         var matches = aggregate?.AuditIntents.Where(intent =>
             IsIntentBoundToParent(intent, claim.Locator.AggregateType, claim.Locator.AggregateId, claim.Locator.TenantId)
             && intent.IntentId == claim.Locator.IntentId && intent.DeliveryState == AuditIntentDeliveryState.Processing
@@ -567,6 +627,12 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
             && intent.ClaimGeneration == claim.ClaimGeneration && intent.LeaseUntil > now).Take(2).ToArray() ?? [];
         if (matches.Length != 1) return null;
         var intent = matches[0];
+        if (_selection is not null)
+        {
+            ValidateSelectedIntent(RequireSelectedItem(claim.Locator), intent.ToBsonDocument());
+            if (!_selectedSources[claim.Locator].Equals(ImmutableSource(intent.ToBsonDocument())))
+                throw new InvalidOperationException("SELECTED_AUDIT_INTENT_SOURCE_DRIFT");
+        }
         if (AuditIntentTemporalStorage.Validate(intent) != AuditIntentTemporalStorageKind.Current
             || await ReadRawStorageKindAsync(collection, claim.Locator, cancellationToken) != AuditIntentTemporalStorageKind.Current)
             throw new InvalidOperationException("AUDIT_INTENT_TEMPORAL_CUTOVER_PAYLOAD_INVALID");
@@ -669,6 +735,7 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         CancellationToken cancellationToken)
         where TEntity : EntityBase, IAuditIntentAggregate
     {
+        if (!await ValidateSelectedClaimAsync(claim, cancellationToken)) return false;
         var aggregate = await collection.Find(TenantAggregateFilter<TEntity>(claim.Locator))
             .FirstOrDefaultAsync(cancellationToken);
         var matches = aggregate?.AuditIntents.Where(intent =>
@@ -697,7 +764,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         var intentFilter = ClaimedIntentFilter(claim, now, storageKind, matches[0]);
         var filter = TenantAggregateFilter<TEntity>(claim.Locator)
             & Builders<TEntity>.Filter.ElemMatch(aggregate => aggregate.AuditIntents, intentFilter);
-        filter &= CompleteDocumentFitsAfterIntentUpdateFilter(update, claim.Locator.IntentId);
+        filter &= CompleteDocumentFitsAfterIntentUpdateFilter(update, claim.Locator.IntentId)
+            & SelectedSourceFilter<TEntity>(claim.Locator);
         var result = await collection.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
         return result.ModifiedCount == 1;
     }
@@ -710,6 +778,7 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         CancellationToken cancellationToken)
         where TEntity : EntityBase, IAuditIntentAggregate
     {
+        if (!await ValidateSelectedClaimAsync(claim, cancellationToken)) return false;
         var existingReplay = await GetCompactionReplayResultAsync(
             collection,
             claim,
@@ -740,6 +809,10 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
             return false;
         }
 
+        if (_selection is not null)
+            ValidateSelectedAcknowledgement(claim, new AuditIntentAcknowledgement(intent.CentralAcknowledgement,
+                intent.CentralIdempotencyKey, intent.AcknowledgedContractVersion, intent.AcknowledgedAt.Value), compactReceiptReference);
+
         var receipt = new LocalAuditIntentReceipt
         {
             SourceService = intent.SourceService,
@@ -758,7 +831,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         var update = Builders<TEntity>.Update
             .PullFilter(aggregateItem => aggregateItem.AuditIntents, deliveredIntentFilter)
             .Push(aggregateItem => aggregateItem.AuditIntentReceipts, receipt);
-        aggregateFilter &= CompleteDocumentFitsAfterCompactionFilter<TEntity>(claim.Locator.IntentId, receipt);
+        aggregateFilter &= CompleteDocumentFitsAfterCompactionFilter<TEntity>(claim.Locator.IntentId, receipt)
+            & SelectedSourceFilter<TEntity>(claim.Locator);
         var result = await collection.UpdateOneAsync(aggregateFilter, update, cancellationToken: cancellationToken);
         if (result.ModifiedCount == 1)
         {
@@ -781,6 +855,7 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         CancellationToken cancellationToken)
         where TEntity : EntityBase, IAuditIntentAggregate
     {
+        if (!await ValidateSelectedClaimAsync(claim, cancellationToken)) return false;
         var normalizedReceiptReference = compactReceiptReference.Trim();
         var replay = await GetAcknowledgementCompactionReplayResultAsync(
             collection,
@@ -856,7 +931,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
             CompactReceiptReference = normalizedReceiptReference,
             EvidenceHash = intent.EvidenceHash
         };
-        aggregateFilter &= CompleteDocumentFitsAfterCompactionFilter<TEntity>(claim.Locator.IntentId, receipt);
+        aggregateFilter &= CompleteDocumentFitsAfterCompactionFilter<TEntity>(claim.Locator.IntentId, receipt)
+            & SelectedSourceFilter<TEntity>(claim.Locator);
         var update = Builders<TEntity>.Update
             .PullFilter(aggregateItem => aggregateItem.AuditIntents, claimedIntentFilter)
             .Push(aggregateItem => aggregateItem.AuditIntentReceipts, receipt);
@@ -1137,7 +1213,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
         where TEntity : EntityBase, IAuditIntentAggregate
     {
         var raw = collection.Database.GetCollection<BsonDocument>(collection.CollectionNamespace.CollectionName);
-        var document = await raw.Find(Builders<BsonDocument>.Filter.Eq("_id", locator.AggregateId))
+        var document = await raw.Find(Builders<BsonDocument>.Filter.Eq("TenantId", locator.TenantId)
+                & Builders<BsonDocument>.Filter.Eq("_id", locator.AggregateId))
             .FirstOrDefaultAsync(cancellationToken)
             ?? throw new InvalidOperationException("AUDIT_INTENT_TEMPORAL_AGGREGATE_NOT_FOUND");
         var matches = ReadRawIntents(document)
@@ -1296,7 +1373,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
            && string.Equals(intent.SourceService, AuditIntentContract.SourceService, StringComparison.Ordinal);
 
     private bool IsCurrentTenant(AuditIntentLocator locator)
-        => locator.TenantId != Guid.Empty && locator.TenantId == _tenantId;
+        => locator.TenantId != Guid.Empty && locator.TenantId == _tenantId
+           && (_selection is null || _selection.Items.Any(item => item.Locator == locator));
 
     private static void ValidateReason(string reason)
     {
@@ -1332,6 +1410,378 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 "Central idempotency must use SourceService + TenantId + IntentId + ContractVersion.",
                 nameof(acknowledgement));
         }
+    }
+
+    public async Task PrepareSelectedAsync(SelectedAuditIntentDeliveryRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (_selection is null || request.ExecutionId != _selection.ExecutionId
+            || request.TenantId != _selection.TenantId || !request.Items.SequenceEqual(_selection.Items))
+            throw new InvalidOperationException("SELECTED_AUDIT_INTENT_PERMIT_MISMATCH");
+        await _selectionPreparation.WaitAsync(cancellationToken);
+        try
+        {
+            await ValidateSelectedPrerequisitesAsync(cancellationToken);
+            if (_selectionPrepared) return;
+            foreach (var item in _selection.Items)
+            {
+                var document = await ReadSelectedDocumentAsync(item.Locator, cancellationToken);
+                _selectedOwners[item.Locator] = ValidateSelectedOwner(item.Locator, document);
+                await ValidateReservationIdentityEvidenceAsync(item, document, cancellationToken);
+                var intents = ReadRawIntents(document).Where(intent =>
+                    intent.GetValue("IntentId", BsonNull.Value) == new BsonBinaryData(item.Locator.IntentId, GuidRepresentation.Standard))
+                    .Take(2).ToArray();
+                var receipt = ValidateSelectedReceipt(item, document);
+                if (receipt is not null)
+                {
+                    _selectedReceipts.TryAdd(item.Locator, receipt.ToBsonDocument());
+                    continue;
+                }
+                if (intents.Length != 1 || intents[0].GetValue("ClaimGeneration", -1).ToInt64() != item.ExpectedClaimGeneration)
+                    throw new InvalidOperationException("SELECTED_AUDIT_INTENT_GENERATION_MISMATCH");
+                ValidateSelectedIntent(item, intents[0]);
+                _selectedSources[item.Locator] = ImmutableSource(intents[0]);
+            }
+            _selectionPrepared = true;
+        }
+        finally { _selectionPreparation.Release(); }
+    }
+
+    public async Task<LocalAuditIntentReceipt?> ReadSelectedReceiptAsync(AuditIntentLocator locator,
+        CancellationToken cancellationToken = default)
+    {
+        var item = RequireSelectedItem(locator);
+        if (!_selectionPrepared) throw new InvalidOperationException("SELECTED_AUDIT_INTENT_PREFLIGHT_REQUIRED");
+        var document = await ReadSelectedDocumentAsync(locator, cancellationToken);
+        RequireUnchangedOwner(locator, document);
+        await ValidateReservationIdentityEvidenceAsync(item, document, cancellationToken);
+        var receipt = ValidateSelectedReceipt(item, document);
+        if (receipt is null)
+        {
+            if (_selectedReceipts.ContainsKey(locator))
+                throw new InvalidOperationException("SELECTED_AUDIT_INTENT_RECEIPT_DRIFT");
+            return null;
+        }
+        var snapshot = receipt.ToBsonDocument();
+        var original = _selectedReceipts.GetOrAdd(locator, snapshot);
+        if (!original.Equals(snapshot)) throw new InvalidOperationException("SELECTED_AUDIT_INTENT_RECEIPT_DRIFT");
+        return receipt;
+    }
+
+    private SelectedAuditIntentDeliveryItem RequireSelectedItem(AuditIntentLocator locator)
+        => _selection?.Items.SingleOrDefault(item => item.Locator == locator)
+           ?? throw new InvalidOperationException("SELECTED_AUDIT_INTENT_LOCATOR_DENIED");
+
+    private async Task<bool> ValidateSelectedClaimAsync(AuditIntentClaim claim, CancellationToken cancellationToken)
+    {
+        if (_selection is null) return true;
+        RequireSelectedItem(claim.Locator);
+        if (!_selectionPrepared || !_selectedClaims.TryGetValue(claim.Locator, out var actual) || actual != claim)
+            return false;
+        await ValidateSelectedPrerequisitesAsync(cancellationToken);
+        return await ValidateSelectedSourceAsync(claim.Locator, cancellationToken);
+    }
+
+    private async Task<bool> ValidateSelectedSourceAsync(AuditIntentLocator locator, CancellationToken cancellationToken)
+    {
+        var item = RequireSelectedItem(locator);
+        var document = await ReadSelectedDocumentAsync(locator, cancellationToken);
+        RequireUnchangedOwner(locator, document);
+        await ValidateReservationIdentityEvidenceAsync(item, document, cancellationToken);
+        if (ValidateSelectedReceipt(item, document) is not null)
+        {
+            _ = await ReadSelectedReceiptAsync(locator, cancellationToken);
+            return false; // A receipt is read-back evidence, never a new mutation permit.
+        }
+        var intents = ReadRawIntents(document).Where(intent =>
+            intent.GetValue("IntentId", BsonNull.Value) == new BsonBinaryData(locator.IntentId, GuidRepresentation.Standard))
+            .Take(2).ToArray();
+        if (intents.Length != 1) return false;
+        ValidateSelectedIntent(item, intents[0]);
+        if (!_selectedSources.TryGetValue(locator, out var source) || !source.Equals(ImmutableSource(intents[0])))
+            throw new InvalidOperationException("SELECTED_AUDIT_INTENT_SOURCE_DRIFT");
+        return true;
+    }
+
+    private async Task<BsonDocument> ReadSelectedDocumentAsync(AuditIntentLocator locator, CancellationToken cancellationToken)
+    {
+        RequireSelectedItem(locator);
+        return await _database.GetCollection<BsonDocument>(SelectedCollectionName(locator.AggregateType))
+            .Find(new BsonDocument
+            {
+                { "TenantId", new BsonBinaryData(_tenantId, GuidRepresentation.Standard) },
+                { "_id", new BsonBinaryData(locator.AggregateId, GuidRepresentation.Standard) }
+            }).FirstOrDefaultAsync(cancellationToken)
+            ?? throw new InvalidOperationException("SELECTED_AUDIT_INTENT_SOURCE_NOT_FOUND");
+    }
+
+    private static BsonDocument ValidateSelectedOwner(AuditIntentLocator locator, BsonDocument document)
+    {
+        if (locator.AggregateType != AuditAggregateType.CodeReservation) return new BsonDocument();
+        var reservation = BsonSerializer.Deserialize<CodeReservation>(document);
+        var prefix = reservation.EntityType switch
+        {
+            CodeBearingEntityType.GlobalProduct => "GP-",
+            CodeBearingEntityType.Gsku => "GS-",
+            CodeBearingEntityType.Lsku => "LS-",
+            _ => throw new InvalidOperationException("SELECTED_AUDIT_INTENT_RESERVATION_OWNER_DENIED")
+        };
+        if (reservation.TenantId != locator.TenantId || reservation.Id != locator.AggregateId
+            || reservation.ReservedCode.Length != 15 || !reservation.ReservedCode.StartsWith(prefix, StringComparison.Ordinal)
+            || reservation.ReservedCode[3..].Any(character => character is < '0' or > '9')
+            || string.IsNullOrWhiteSpace(reservation.ReservationCommandId)
+            || string.IsNullOrWhiteSpace(reservation.ReservedByActorId)
+            || reservation.ConsumedEntityId == Guid.Empty)
+            throw new InvalidOperationException("SELECTED_AUDIT_INTENT_RESERVATION_OWNER_UNPROVEN");
+        return new BsonDocument(document.Elements.Where(element => element.Name is
+            "EntityType" or "ReservedCode" or "ReservationCommandId" or "ReservedByActorId" or "ConsumedEntityId"));
+    }
+
+    private void RequireUnchangedOwner(AuditIntentLocator locator, BsonDocument document)
+    {
+        if (!_selectedOwners.TryGetValue(locator, out var expected)
+            || !expected.Equals(ValidateSelectedOwner(locator, document)))
+            throw new InvalidOperationException("SELECTED_AUDIT_INTENT_OWNER_DRIFT");
+    }
+
+    private async Task ValidateReservationIdentityEvidenceAsync(SelectedAuditIntentDeliveryItem item,
+        BsonDocument document, CancellationToken cancellationToken)
+    {
+        if (item.Locator.AggregateType != AuditAggregateType.CodeReservation) return;
+        var reservation = BsonSerializer.Deserialize<CodeReservation>(document);
+        var reservedEvidence = $"{_tenantId:N}|{reservation.Id:N}|{reservation.ReservedCode}|{reservation.EntityType}|RESERVED";
+        var reservedHash = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(reservedEvidence)));
+        var intent = reservation.AuditIntents.SingleOrDefault(candidate => candidate.IntentId == item.Locator.IntentId);
+        var reservedIdempotencyKey = $"{_tenantId:N}:{AuditAggregateType.CodeReservation}:{reservation.Id:N}:{reservation.ReservationCommandId}";
+        if (intent is null && item.EvidenceFingerprint == reservedHash)
+        {
+            // Compaction removes the operation, not the original reservation's ownership evidence.
+            // Require the exact durable receipt and producer command binding; a hash alone is not a replay permit.
+            var receipt = ValidateSelectedReceipt(item, document);
+            if (receipt is null || receipt.IdempotencyKey != reservedIdempotencyKey)
+                throw new InvalidOperationException("SELECTED_AUDIT_INTENT_RESERVATION_EVIDENCE_INVALID");
+            return;
+        }
+        if (intent?.Operation == ProductAuditOperation.CodeReserved || reservation.ConsumedEntityId is null)
+        {
+            if (item.EvidenceFingerprint != reservedHash
+                || intent is not null && (intent.Operation != ProductAuditOperation.CodeReserved
+                    || intent.ActorId != reservation.ReservedByActorId || intent.CommandId != reservation.ReservationCommandId
+                    || intent.IdempotencyKey != reservedIdempotencyKey))
+                throw new InvalidOperationException("SELECTED_AUDIT_INTENT_RESERVATION_EVIDENCE_INVALID");
+            return;
+        }
+        var collectionName = reservation.EntityType switch
+        {
+            CodeBearingEntityType.GlobalProduct => GlobalProductCollectionName,
+            CodeBearingEntityType.Gsku => GskuCollectionName,
+            CodeBearingEntityType.Lsku => LskuCollectionName,
+            _ => throw new InvalidOperationException("SELECTED_AUDIT_INTENT_RESERVATION_OWNER_DENIED")
+        };
+        var identity = await _database.GetCollection<BsonDocument>(collectionName).Find(new BsonDocument
+        {
+            { "TenantId", new BsonBinaryData(_tenantId, GuidRepresentation.Standard) },
+            { "_id", new BsonBinaryData(reservation.ConsumedEntityId.Value, GuidRepresentation.Standard) },
+            { "CodeReservationId", new BsonBinaryData(reservation.Id, GuidRepresentation.Standard) },
+            { "CanonicalCode", reservation.ReservedCode }
+        }).Project(new BsonDocument("_id", 1)).FirstOrDefaultAsync(cancellationToken);
+        if (identity is null) throw new InvalidOperationException("SELECTED_AUDIT_INTENT_RESERVATION_OWNER_UNPROVEN");
+    }
+
+    private static void ValidateSelectedIntent(SelectedAuditIntentDeliveryItem item, BsonDocument raw)
+    {
+        var intent = BsonSerializer.Deserialize<LocalAuditIntent>(raw);
+        if (!IsIntentBoundToParent(intent, item.Locator.AggregateType, item.Locator.AggregateId, item.Locator.TenantId)
+            || intent.IntentId != item.Locator.IntentId || intent.ContractVersion != "mod-0290.audit-intent.v1"
+            || intent.EvidenceHash != item.EvidenceFingerprint
+            || !IsSelectedOperationAllowed(intent.AggregateType, intent.Operation)
+            || AuditIntentTemporalMigrationRepository.ValidateRawIntent(raw) != AuditIntentTemporalStorageKind.Current
+            || AuditIntentTemporalStorage.Validate(intent) != AuditIntentTemporalStorageKind.Current)
+            throw new InvalidOperationException("SELECTED_AUDIT_INTENT_SOURCE_INVALID");
+    }
+
+    // The current central contract's exact pairs, intersected with this selected first-five permit.
+    // Do not infer support from an enum value or a name prefix: unknown/mismatched pairs fail before claim.
+    private static bool IsSelectedOperationAllowed(AuditAggregateType aggregateType, ProductAuditOperation operation)
+        => aggregateType switch
+        {
+            AuditAggregateType.CodeReservation => operation is
+                ProductAuditOperation.CodeReserved or ProductAuditOperation.CodeConsumed
+                or ProductAuditOperation.CodeBindingConfirmed or ProductAuditOperation.CodeBurned,
+            AuditAggregateType.GlobalProduct => operation is
+                ProductAuditOperation.GlobalProductDraftCreated or ProductAuditOperation.GlobalProductDraftUpdated
+                or ProductAuditOperation.GlobalProductIdentitySubmitted or ProductAuditOperation.GlobalProductIdentityApproved
+                or ProductAuditOperation.GlobalProductIdentityRejected or ProductAuditOperation.GlobalProductIdentityApprovalWithdrawn
+                or ProductAuditOperation.GlobalProductIdentityRetired
+                or ProductAuditOperation.GlobalProductCorrectionRequested or ProductAuditOperation.GlobalProductCorrectionApplied
+                or ProductAuditOperation.GlobalProductCorrectionRejected or ProductAuditOperation.GlobalProductCorrectionManualReconciliationRequired
+                or ProductAuditOperation.GlobalProductRetirementRequested or ProductAuditOperation.GlobalProductRetirementRejected
+                or ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired,
+            AuditAggregateType.ProductDefinitionRevision => operation is
+                ProductAuditOperation.ProductDefinitionRevisionDraftCreated
+                or ProductAuditOperation.ProductDefinitionRevisionIdentitySubmitted
+                or ProductAuditOperation.ProductDefinitionRevisionIdentityApproved
+                or ProductAuditOperation.ProductDefinitionRevisionIdentityRejected
+                or ProductAuditOperation.ProductDefinitionRevisionIdentityApprovalWithdrawn
+                or ProductAuditOperation.ProductDefinitionRevisionIdentityRetired,
+            AuditAggregateType.Gsku => operation is
+                ProductAuditOperation.GskuDraftCreated or ProductAuditOperation.GskuDraftUpdated
+                or ProductAuditOperation.GskuIdentitySubmitted or ProductAuditOperation.GskuIdentityApproved
+                or ProductAuditOperation.GskuIdentityRejected or ProductAuditOperation.GskuIdentityApprovalWithdrawn
+                or ProductAuditOperation.GskuCorrectionRequested or ProductAuditOperation.GskuCorrectionApplied
+                or ProductAuditOperation.GskuCorrectionRejected or ProductAuditOperation.GskuCorrectionManualReconciliationRequired
+                or ProductAuditOperation.GskuRetirementRequested or ProductAuditOperation.GskuRetirementRejected
+                or ProductAuditOperation.GskuRetirementManualReconciliationRequired or ProductAuditOperation.GskuIdentityRetired,
+            AuditAggregateType.Lsku => operation is
+                ProductAuditOperation.LskuDraftCreated or ProductAuditOperation.LskuIdentitySubmitted
+                or ProductAuditOperation.LskuIdentityApproved or ProductAuditOperation.LskuIdentityRejected
+                or ProductAuditOperation.LskuIdentityRetired or ProductAuditOperation.LskuIdentityApprovalWithdrawn
+                or ProductAuditOperation.LskuRetirementRequested or ProductAuditOperation.LskuRetirementRejected,
+            AuditAggregateType.ProductAbbreviation => operation is
+                ProductAuditOperation.ProductAbbreviationAllocationRequested
+                or ProductAuditOperation.ProductAbbreviationAllocationApproved
+                or ProductAuditOperation.ProductAbbreviationAllocationRejected
+                or ProductAuditOperation.ProductAbbreviationAllocationCancelled
+                or ProductAuditOperation.ProductAbbreviationCorrectionRequested
+                or ProductAuditOperation.ProductAbbreviationCorrectionApproved
+                or ProductAuditOperation.ProductAbbreviationCorrectionRejected
+                or ProductAuditOperation.ProductAbbreviationCorrectionCancelled
+                or ProductAuditOperation.ProductAbbreviationRetirementRequested
+                or ProductAuditOperation.ProductAbbreviationRetirementApproved
+                or ProductAuditOperation.ProductAbbreviationRetirementRejected,
+            AuditAggregateType.ProductLegalEntityScopePolicy => operation is
+                ProductAuditOperation.ProductLegalEntityScopePolicyCreated
+                or ProductAuditOperation.ProductLegalEntityScopePolicyReplaced
+                or ProductAuditOperation.ProductLegalEntityScopePolicyEnded,
+            _ => false
+        };
+
+    private static LocalAuditIntentReceipt? ValidateSelectedReceipt(SelectedAuditIntentDeliveryItem item, BsonDocument document)
+    {
+        var matches = document.GetValue("AuditIntentReceipts", new BsonArray()).AsBsonArray
+            .Select(value => value.AsBsonDocument)
+            .Where(value => value.GetValue("IntentId", BsonNull.Value)
+                == new BsonBinaryData(item.Locator.IntentId, GuidRepresentation.Standard)).Take(2).ToArray();
+        if (matches.Length == 0) return null;
+        if (matches.Length != 1 || ReadRawIntents(document).Any(intent => intent.GetValue("IntentId", BsonNull.Value)
+                == new BsonBinaryData(item.Locator.IntentId, GuidRepresentation.Standard)))
+            throw new InvalidOperationException("SELECTED_AUDIT_INTENT_RECEIPT_DRIFT");
+        var receipt = BsonSerializer.Deserialize<LocalAuditIntentReceipt>(matches[0]);
+        if (receipt.TenantId != item.Locator.TenantId || receipt.SourceService != AuditIntentContract.SourceService
+            || receipt.ContractVersion != "mod-0290.audit-intent.v1" || receipt.EvidenceHash != item.EvidenceFingerprint
+            || receipt.CentralIdempotencyKey != AuditIntentContract.BuildCentralIdempotencyKey(
+                item.Locator.TenantId, item.Locator.IntentId, receipt.ContractVersion)
+            || string.IsNullOrWhiteSpace(receipt.IdempotencyKey)
+            || string.IsNullOrWhiteSpace(receipt.CentralAcknowledgement) || receipt.CentralAcknowledgement.Length > 512
+            || receipt.CentralAcknowledgement.Trim() != receipt.CentralAcknowledgement
+            || receipt.CentralAcknowledgement.Any(char.IsControl)
+            || receipt.CompactReceiptReference != receipt.CentralAcknowledgement
+            || receipt.AcknowledgedAt == default || receipt.DeliveredAt == default || receipt.CompactedAt == default
+            || receipt.AcknowledgedAt.Offset != TimeSpan.Zero || receipt.DeliveredAt.Offset != TimeSpan.Zero
+            || receipt.CompactedAt.Offset != TimeSpan.Zero)
+            throw new InvalidOperationException("SELECTED_AUDIT_INTENT_RECEIPT_DRIFT");
+        return receipt;
+    }
+
+    private void ValidateSelectedAcknowledgement(AuditIntentClaim claim,
+        AuditIntentAcknowledgement acknowledgement, string compactReceiptReference)
+    {
+        if (_selection is null) return;
+        RequireSelectedItem(claim.Locator);
+        if (acknowledgement.ContractVersion != "mod-0290.audit-intent.v1"
+            || string.IsNullOrWhiteSpace(acknowledgement.CentralAcknowledgement)
+            || acknowledgement.CentralAcknowledgement.Length > 512
+            || acknowledgement.CentralAcknowledgement.Trim() != acknowledgement.CentralAcknowledgement
+            || acknowledgement.CentralAcknowledgement.Any(char.IsControl)
+            || compactReceiptReference != acknowledgement.CentralAcknowledgement
+            || acknowledgement.AcceptedAt == default || acknowledgement.AcceptedAt.Offset != TimeSpan.Zero)
+            throw new InvalidOperationException("SELECTED_AUDIT_INTENT_RECEIPT_INVALID");
+    }
+
+    private static BsonDocument ImmutableSource(BsonDocument intent)
+        => new(intent.Elements.Where(element => element.Name is
+            "SourceService" or "SchemaVersion" or "ContractVersion" or "IntentId" or "TenantId" or "AggregateType"
+            or "AggregateId" or "PreVersion" or "PostVersion" or "Operation" or "ActorId" or "CorrelationId"
+            or "CausationId" or "CommandId" or "Sequence" or "TimestampUtc" or "TimestampUtcTicksV1"
+            or "EvidenceHash" or "SnapshotReference" or "IdempotencyKey" or "TemporalStorageVersion")
+            .OrderBy(element => element.Name, StringComparer.Ordinal));
+
+    private FilterDefinition<TEntity> SelectedSourceFilter<TEntity>(AuditIntentLocator locator)
+        where TEntity : EntityBase, IAuditIntentAggregate
+    {
+        if (_selection is null) return Builders<TEntity>.Filter.Empty;
+        RequireSelectedItem(locator);
+        if (!_selectionPrepared || !_selectedSources.TryGetValue(locator, out var source))
+            throw new InvalidOperationException("SELECTED_AUDIT_INTENT_PREFLIGHT_REQUIRED");
+        var clauses = new BsonArray
+        {
+            new BsonDocument("AuditIntents", new BsonDocument("$elemMatch", source)),
+            _selectedOwners[locator]
+        };
+        return new BsonDocumentFilterDefinition<TEntity>(new BsonDocument("$and", clauses))
+            & ExactlyOneIntentIdentityFilter<TEntity>(locator.IntentId)
+            & Builders<TEntity>.Filter.Not(Builders<TEntity>.Filter.ElemMatch(
+                aggregate => aggregate.AuditIntentReceipts, receipt => receipt.IntentId == locator.IntentId));
+    }
+
+    private async Task ValidateSelectedPrerequisitesAsync(CancellationToken cancellationToken)
+    {
+        var hello = await _database.RunCommandAsync<BsonDocument>(new BsonDocument("hello", 1), cancellationToken: cancellationToken);
+        if (!hello.GetValue("isWritablePrimary", false).ToBoolean()
+            || !hello.TryGetValue("setName", out var setName) || !setName.IsString || string.IsNullOrWhiteSpace(setName.AsString))
+            throw new InvalidOperationException("SELECTED_AUDIT_INTENT_WRITABLE_REPLICA_REQUIRED");
+        using var collectionCursor = await _database.ListCollectionsAsync(cancellationToken: cancellationToken);
+        var collections = await collectionCursor.ToListAsync(cancellationToken);
+        var required = _selection!.Items.Select(item => SelectedCollectionName(item.Locator.AggregateType))
+            .Append(AuditIntentTemporalMigrationRepository.StateCollectionName).Distinct(StringComparer.Ordinal);
+        foreach (var name in required)
+        {
+            var specs = collections.Where(spec => spec.GetValue("name", "") == name).ToArray();
+            if (specs.Length != 1 || specs[0].GetValue("type", "") != "collection"
+                || specs[0].GetValue("options", new BsonDocument()).AsBsonDocument.GetValue("capped", false).ToBoolean())
+                throw new InvalidOperationException("SELECTED_AUDIT_INTENT_COLLECTION_INVALID");
+            if (name == AuditIntentTemporalMigrationRepository.StateCollectionName) continue;
+            var abbreviation = name == ProductAbbreviationCollectionName;
+            var expectedKeys = abbreviation
+                ? new BsonDocument { { "TenantId", 1 }, { "NormalizedAbbreviation", 1 }, { "LifecycleStatus", 1 } }
+                : new BsonDocument
+                {
+                    { "TenantId", 1 }, { "AuditIntents.TemporalStorageVersion", 1 }, { "AuditIntents.DeliveryState", 1 },
+                    { "AuditIntents.NextRetryAtUtcTicksV1", 1 }, { "AuditIntents.LeaseUntilUtcTicksV1", 1 },
+                    { "AuditIntents.TimestampUtcTicksV1", 1 }, { "AuditIntents.IntentId", 1 }
+                };
+            var expectedName = abbreviation ? "ix_mdm_product_abbreviation_register_tenant_resolution"
+                : $"ix_{name}_{AuditIntentTemporalMigrationState.ExactIndexSuffix}";
+            using var indexCursor = await _database.GetCollection<BsonDocument>(name).Indexes.ListAsync(cancellationToken);
+            var indexes = (await indexCursor.ToListAsync(cancellationToken))
+                .Where(index => index.GetValue("name", "") == expectedName).ToArray();
+            if (indexes.Length != 1 || !indexes[0].GetValue("key", new BsonDocument()).Equals(expectedKeys)
+                || indexes[0].GetValue("unique", false).ToBoolean() || indexes[0].GetValue("sparse", false).ToBoolean()
+                || indexes[0].GetValue("hidden", false).ToBoolean() || indexes[0].Contains("partialFilterExpression")
+                || indexes[0].Contains("expireAfterSeconds") || indexes[0].Contains("collation"))
+                throw new InvalidOperationException("SELECTED_AUDIT_INTENT_INDEX_INVALID");
+        }
+        if (!await IsScalarCutoverActiveAsync(cancellationToken))
+            throw new InvalidOperationException("SELECTED_AUDIT_INTENT_CUTOVER_REQUIRED");
+    }
+
+    private static string SelectedCollectionName(AuditAggregateType type) => type switch
+    {
+        AuditAggregateType.CodeReservation => CodeReservationCollectionName,
+        AuditAggregateType.GlobalProduct => GlobalProductCollectionName,
+        AuditAggregateType.ProductDefinitionRevision => ProductDefinitionRevisionCollectionName,
+        AuditAggregateType.Gsku => GskuCollectionName,
+        AuditAggregateType.Lsku => LskuCollectionName,
+        AuditAggregateType.ProductLegalEntityScopePolicy => ProductLegalEntityScopePolicyCollectionName,
+        AuditAggregateType.ProductAbbreviation => ProductAbbreviationCollectionName,
+        _ => throw new InvalidOperationException("SELECTED_AUDIT_INTENT_AGGREGATE_DENIED")
+    };
+
+    private sealed class SelectedTenantContext(Guid tenantId) : ITenantContext
+    {
+        public Guid TenantId => tenantId;
+        public bool IsResolved => true;
+        public void SetTenant(Guid tenantId) => throw new InvalidOperationException("SELECTED_AUDIT_INTENT_TENANT_IMMUTABLE");
     }
 
     private void EnsureIndexes()

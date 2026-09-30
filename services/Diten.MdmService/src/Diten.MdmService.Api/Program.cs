@@ -15,6 +15,12 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Options;
 
+// The selected one-shot path never constructs the API host or its schema/worker registrations.
+if (SelectedAuditIntentDeliveryCommandLine.IsRequested(args))
+{
+    await SelectedAuditIntentDeliveryRunner.RunFromProcessAsync(CancellationToken.None);
+    return;
+}
 var apiStartupExecutionMode = ApiStartupExecutionMode.Parse(args);
 var runProductLegalEntityScopeOperational =
     ProductLegalEntityScopeOperationalCommandLine.IsRequested(args);

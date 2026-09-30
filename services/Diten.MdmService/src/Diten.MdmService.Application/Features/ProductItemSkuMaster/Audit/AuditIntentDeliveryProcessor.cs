@@ -62,6 +62,39 @@ public sealed class AuditIntentDeliveryProcessor
         return result;
     }
 
+    public async Task<SelectedAuditIntentDeliveryResult> ProcessSelectedAsync(
+        SelectedAuditIntentDeliveryRequest request, string leaseOwner, TimeSpan leaseDuration,
+        TimeSpan retryDelay, int maximumAttempts, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ValidateArguments(request.TenantId, request.Items.Count, leaseOwner, leaseDuration, retryDelay, maximumAttempts);
+        await _repository.PrepareSelectedAsync(request, cancellationToken);
+        var batch = new AuditIntentDeliveryBatchResult { Discovered = request.Items.Count };
+        var receipts = new List<LocalAuditIntentReceipt>();
+        foreach (var item in request.Items)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var receipt = await _repository.ReadSelectedReceiptAsync(item.Locator, cancellationToken);
+            if (receipt is not null)
+            {
+                receipts.Add(receipt);
+                continue;
+            }
+            var claim = await _repository.TryClaimAsync(item.Locator, item.ExpectedClaimGeneration,
+                leaseOwner, leaseDuration, cancellationToken);
+            if (claim is null)
+            {
+                batch.ClaimConflicts++;
+                continue;
+            }
+            batch.Claimed++;
+            await DeliverClaimAsync(claim, retryDelay, maximumAttempts, batch, cancellationToken);
+            receipt = await _repository.ReadSelectedReceiptAsync(item.Locator, cancellationToken);
+            if (receipt is not null) receipts.Add(receipt);
+        }
+        return new SelectedAuditIntentDeliveryResult(batch, receipts.AsReadOnly());
+    }
+
     private async Task DeliverClaimAsync(
         AuditIntentClaim claim,
         TimeSpan retryDelay,
@@ -292,3 +325,6 @@ public sealed class AuditIntentDeliveryBatchResult
     public int DeadLettered { get; internal set; }
     public int ClaimConflicts { get; internal set; }
 }
+
+public sealed record SelectedAuditIntentDeliveryResult(
+    AuditIntentDeliveryBatchResult Batch, IReadOnlyList<LocalAuditIntentReceipt> Receipts);
