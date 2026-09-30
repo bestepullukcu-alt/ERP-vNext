@@ -118,3 +118,43 @@
 - canlıdaki "test" kapsamı arşivlenir.
 
 **Açık:** Uygunluk Politikaları sayfası ayrıca gözden geçirilecek (iddialara politika girilemediği için kontrol fiilen hep "Belirsiz").
+
+> **Durum (2026-09-30):** SB-1R yapıldı (`9df79043`). §8 kararıyla setin kendisi de emekliye ayrılıyor; SB-1R'nin bağlam mantığı yola taşınır.
+
+---
+
+## 8. KARAR — İçerik Seti kaldırılıyor; kurgu + iddia + MLR onayı Bilgi Yolu'na taşınıyor (kullanıcı, 2026-09-30)
+**Bağlam:**
+- Kullanıcı "set ile yol arasındaki fark"ı sordu. İkisinde de sıralama var; setten üretilen yol, setin sırasının kopyası. İki yerde düzenlenebilir sıra → kopma riski.
+- CT üç seçenek sundu: (1) setten gelen yol kilitli, (2) birleştir, (3) olduğu gibi. CT (1)'i önerdi. **Kullanıcı (2)'yi seçti.**
+
+**Kararlar:**
+1. **İçerik Seti kavramı kalkar.** Bilgi Yolu tek kayıt olur: zincir şablonu + adımlara yerleşen içerikler + **iddialar** + bağlam (ülke, dil; ürün ve kitle zincirden) + revizyon + çıktı (PDF; sonra HTML) + yayın / geri çekme.
+2. **Tüm yollar MLR'li (yol türü AYRIMI YOK).** Her yol bir zincir şablonuna bağlanır ve Medikal → Hukuk → Ruhsat onayından geçer (MOD-0023 + Görev Merkezi, iddialardaki desen). Eğitim yolları dahil.
+3. **SB-2 emekliye ayrılır; mantığı yolun yayınına taşınır:**
+   - dal-öncelikli sıra;
+   - tek dil (`component_language_mixed` / `component_language_mismatch`);
+   - bileşenler yayında;
+   - iddia kullanılabilir (BE-6 kodları);
+   - ülke sürümü seçimi;
+   - "birleştirilmiş sunum" içeriği → yolun çıktısı.
+   - Setten üretim kodu kaldırılır.
+4. **SB-1R'nin bağlam mantığı** (ülke / dil sette, ürün / kitle zincirden, `ContentSetContextResolver`, `context_locked`) yola taşınır.
+5. **SCMM-15/16/17 (set revizyonu, render, yayın)** yol revizyonuna bağlanır. Tek kişilik inceleme MLR iş akışıyla değişir (açık işler #4 kapanır).
+6. **İçerik Setleri sayfası, menüsü ve yazma uçları kalkar** (kapsamdaki gibi: önce salt okunur, sonra silinir). Canlıda 0 set, göç yok.
+7. **Mockup brief'i** (`mockups/content-studio-v2/BRIEF-content-studio-v2.md`) "Bilgi Yolu" sayfası için güncellenir.
+
+**Sonuçlar:**
+- **Ziyaret sadeleşir (SB-3):** aşama → onaylı yol → adımlar. Ara üretim adımı yok.
+- **Mevcut yollar** (KP-114, KP-201, KP-2026-2138F2 yayında; KP-888 taslak) zincirsiz ve MLR'siz. Göç kuralı paketlemede kullanıcıya sorulacak. Öneri: okunur kalsın, "onaysız eski yol" işareti taşısın, ziyarette kullanılmadan önce MLR'den geçsin.
+- **Journey stage** yayındaki (= MLR onaylı) yolu gösterir. 11b (sürüm sabitleme riski) SB-3'te aynen değerlendirilecek.
+
+**Sıradaki adım:** Tasarım brief'i `DESIGN-KP-STUDIO` (DESIGN-SCMM-14 formatında):
+- model;
+- revizyon ve onay;
+- yayın kuralları;
+- göç;
+- emeklilik sırası;
+- paket bölünmesi.
+
+Kullanıcı onayıyla paketlere dönüşecek.
