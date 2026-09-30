@@ -7085,7 +7085,7 @@ açık görünüp 409 dönüyor. (4) İnceleyen = atanan kişiyle görev oluştu
 
 **Zaman çizelgesi okuma yolları satır başına okuyor**
 
-DURUM: AÇIK · SAHİP: CT (MOD-0280-FU01, T4 ile) · BULAN: T2a/T2b kabulleri · KAYIT: 2026-09-30
+DURUM: KISMEN KAPANDI 2026-10-01 (CT, 30ce6048d + b1b47deb3): (1) onay listesi işaretleri sayfa başına bir kez okunuyor (6 satır 49 → 34 okuma), (2) toplu onay yalnız seçili haftaları `weekIds` ile yeniden okuyor — 500'ü aşan kuyrukta geçerli seçim artık reddedilmiyor, (3) hafta GET görev okuma kuralını bir kez soruyor (6 görev 16 → 11). **Dağıtım sırası: önce Platform, sonra Web** (eski Platform `weekIds`'i yok sayar, seçimler güvenli yönde NOT_FOUND döner). Kalan: çalışma takvimi hâlâ (kişi, hafta) başına 4 okuma, karar çekici kuyruk haftası başına bir okuma, görev seçici her tuşta hesaplıyor (4). Önceki durum: AÇIK · SAHİP: CT (MOD-0280-FU01, T4 ile) · BULAN: T2a/T2b kabulleri · KAYIT: 2026-09-30
 
 (1) Onay listesi işaretleri (otomatik kapanan gün, mesai dışı dakika, tatil) ve Görev Merkezi iş öğesi kimliğini sayfadaki her satır için ayrı okuyor
 (`GetApprovalListHandler`, satır başına ~4 okuma). (2) Toplu onay listeyi `length=500` ile yeniden okuyor: bir tıklama ~2 000 okuma. Kuyruk 500 haftadan
