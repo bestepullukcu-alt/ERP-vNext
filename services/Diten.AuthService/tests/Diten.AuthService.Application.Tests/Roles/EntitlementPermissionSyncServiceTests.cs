@@ -4,6 +4,7 @@ using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
+using Diten.AuthService.Application.Common.Entitlements;
 
 namespace Diten.AuthService.Application.Tests.Roles;
 
@@ -11,6 +12,61 @@ namespace Diten.AuthService.Application.Tests.Roles;
 // the S1 grant-source fields. Hand-written fakes (codebase convention).
 public sealed class EntitlementPermissionSyncServiceTests
 {
+    [Fact]
+    public void OperationalPlanner_WhenApprovedShapeMatches_ProducesOnlyExactSixPlusOneWithoutMutatingSnapshot()
+    {
+        var (local, authority) = OperationalSnapshot();
+        var before = local.Grants.Select(g => g.Id).ToArray();
+        var operation = Guid.NewGuid(); var now = DateTimeOffset.UtcNow;
+        var plan = EntitlementReconciliationPlanner.Build(local, authority, operation, new string('A', 64), new string('B', 64), new string('c', 40), now);
+        Assert.Equal(6, plan.Rows.Count(r => r.Action == "add"));
+        Assert.Equal(EntitlementReconciliationPlan.RemovedGrant, Assert.Single(plan.Rows, r => r.Action == "remove").GrantId);
+        Assert.Equal(before, local.Grants.Select(g => g.Id));
+        Assert.Equal(plan.Sha256(), EntitlementReconciliationPlanner.Build(local, authority, operation, new string('A', 64), new string('B', 64), new string('c', 40), now).Sha256());
+        Assert.DoesNotContain(plan.Rows, row => row.PermissionKey == "mdm.gskus.retire" || row.PermissionKey.EndsWith(".recover", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("tenant")]
+    [InlineData("operator")]
+    [InlineData("keys")]
+    [InlineData("existing-add")]
+    [InlineData("missing-protected")]
+    public void OperationalPlanner_WhenAuthorityOrAdditionalDriftChanges_RejectsRatherThanWidening(string drift)
+    {
+        var (local, authority) = OperationalSnapshot();
+        if (drift == "tenant") authority = authority with { TenantActive = false };
+        if (drift == "operator") authority = authority with { OperatorActive = false };
+        if (drift == "keys") authority = new(authority.RequestedTenantId, authority.ModuleCode, "uri", "uri", "uri", authority.NormalizedOperatorEmail,
+            true, true, authority.PermissionKeys.Skip(1).ToArray(), authority.Fingerprint);
+        if (drift is "existing-add" or "missing-protected")
+        {
+            var grants = local.Grants.ToList();
+            if (drift == "existing-add") grants.Add(RolePermission.ModuleGrant(local.Roles.Single(r => r.Name == "ProductDataSteward").Id,
+                local.Permissions.Single(p => p.Key == "mdm.gskus.update").Id, local.TenantId, "test", EntitlementReconciliationPlan.Module));
+            else grants.RemoveAt(0);
+            local = new(local.TenantId, local.RoleAssignmentVersion, local.Permissions, local.Roles, grants, [], [], local.Operator, local.Fingerprint, local.QuiescenceFingerprint);
+        }
+        Assert.Throws<InvalidOperationException>(() => EntitlementReconciliationPlanner.Build(local, authority, Guid.NewGuid(), "a", "b", "c", DateTimeOffset.UtcNow));
+    }
+
+    internal static (EntitlementLocalSnapshot Local, EntitlementAuthoritySnapshot Authority) OperationalSnapshot()
+    {
+        var tenant = EntitlementReconciliationPlan.TargetTenant; var catalog = ProductIdentityLifecyclePermissionOnboardingMongoTests.Catalog();
+        var roles = ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles.Select(d => { var role = new Role(d.RoleName, d.RoleName, null, tenant); role.MarkAsSystem(); return role; }).ToArray();
+        var added = new[] { "mdm.gskus.request-correction", "mdm.gskus.update", "mdm.gskus.withdraw", "mdm.lskus.withdraw", "mdm.gskus.request-retirement", "mdm.lskus.request-retirement" };
+        var grants = new List<RolePermission>();
+        foreach (var definition in ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles)
+            foreach (var key in definition.PermissionKeys.Where(key => !added.Contains(key)))
+                grants.Add(RolePermission.ModuleGrant(roles.Single(r => r.Name == definition.RoleName).Id,
+                    catalog.Single(p => p.Key == key).Id, tenant, "test", EntitlementReconciliationPlan.Module));
+        grants.Add(new(roles.Single(r => r.Name == "ProductIdentityRetirementSteward").Id, catalog.Single(p => p.Key == "mdm.lskus.retire").Id,
+            tenant, "test", GrantSource.Module, EntitlementReconciliationPlan.Module) { Id = EntitlementReconciliationPlan.RemovedGrant });
+        var actor = new EntitlementOperatorSnapshot(Guid.NewGuid(), EntitlementReconciliationPlan.AdminTenant, "operator@example.test", true, "operator");
+        var local = new EntitlementLocalSnapshot(tenant, 7, catalog, roles, grants, [], [], actor, "local", "quiet");
+        var keys = catalog.Where(p => p.Module == EntitlementReconciliationPlan.Module || ProductIdentityLifecycleEntitlementGrantProfile.IsDeclaredCrossModuleDependencyKey(p.Key)).Select(p => p.Key).ToArray();
+        return (local, new(tenant, EntitlementReconciliationPlan.Module, "uri", "uri", "uri", actor.NormalizedEmail, true, true, keys, "authority"));
+    }
     private static readonly Guid TenantA = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid TenantB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
     private const string Actor = "entitlement-sync";

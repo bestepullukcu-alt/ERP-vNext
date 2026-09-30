@@ -12,6 +12,12 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 
+if (Diten.AuthService.Api.Operational.EntitlementReconciliationOperationalMode.IsRequested(args))
+{
+    Environment.ExitCode = await Diten.AuthService.Api.Operational.EntitlementReconciliationOperationalMode.RunAsync(args);
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 /*

@@ -141,6 +141,71 @@ public sealed class PlatformTenantEntitlementClient : ITenantEntitlementClient
         }
     }
 
+    public async Task<Diten.AuthService.Application.Common.Entitlements.EntitlementAuthoritySnapshot> ReadReconciliationAuthorityAsync(
+        Guid tenantId, string normalizedOperatorEmail, CancellationToken ct)
+    {
+        if (tenantId == Guid.Empty || normalizedOperatorEmail != normalizedOperatorEmail.Trim().ToLowerInvariant()
+            || string.IsNullOrWhiteSpace(normalizedOperatorEmail) || string.IsNullOrWhiteSpace(_options.InternalApiKey))
+            throw new InvalidOperationException("AUTHORITATIVE_INPUT_INVALID");
+        var modulesPath = $"/api/internal/tenants/{tenantId:D}/entitled-modules-with-permissions";
+        var adminPath = $"/api/internal/platform-administrators/status?email={Uri.EscapeDataString(normalizedOperatorEmail)}";
+        var tenantPath = $"/api/internal/tenants/{tenantId:D}/status";
+        var modules = await ReadEntitledModulesWithPermissionKeysAsync(tenantId, ct);
+        if (!modules.IsAuthoritative) throw new InvalidOperationException("AUTHORITATIVE_SOURCE_UNAVAILABLE");
+        var exact = modules.Modules.Where(m => m.ModuleCode == "product-item-sku-master").ToArray();
+        if (exact.Length > 1 || modules.Modules.GroupBy(m => m.ModuleCode, StringComparer.OrdinalIgnoreCase).Any(g => g.Count() != 1)
+            || modules.Modules.Any(m => string.Equals(m.ModuleCode, "product-item-sku-master", StringComparison.OrdinalIgnoreCase)
+                && m.ModuleCode != "product-item-sku-master"))
+            throw new InvalidOperationException("AUTHORITATIVE_MODULE_INVALID");
+        var admin = await ReadOperationalDataAsync(adminPath, ct);
+        var tenant = await ReadOperationalDataAsync(tenantPath, ct);
+        static bool RequiredBoolean(JsonElement value, string name)
+        {
+            if (!value.TryGetProperty(name, out var flag) || flag.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
+                throw new InvalidOperationException("AUTHORITATIVE_STATUS_INVALID");
+            return flag.GetBoolean();
+        }
+        var adminActive = RequiredBoolean(admin, "isActive");
+        var tenantExists = RequiredBoolean(tenant, "exists");
+        var tenantActive = RequiredBoolean(tenant, "isActive");
+        if (!tenantExists && tenantActive)
+            throw new InvalidOperationException("AUTHORITATIVE_STATUS_CONTRADICTORY");
+        if (admin.TryGetProperty("isDeleted", out var deleted))
+        {
+            if (deleted.ValueKind is not (JsonValueKind.True or JsonValueKind.False)
+                || deleted.GetBoolean() && adminActive) throw new InvalidOperationException("AUTHORITATIVE_STATUS_CONTRADICTORY");
+            adminActive &= !deleted.GetBoolean();
+        }
+        tenantActive &= tenantExists;
+        // A successfully read revocation is an authoritative negative fact, not a transport failure.
+        // Empty descriptors fail the pre-commit exact-key gate and identify entitlement drift after commit.
+        var keys = exact.Length == 0 ? Array.Empty<string>() : exact[0].PermissionKeys.OrderBy(x => x, StringComparer.Ordinal).ToArray();
+        if (keys.Any(string.IsNullOrWhiteSpace) || keys.Distinct(StringComparer.OrdinalIgnoreCase).Count() != keys.Length)
+            throw new InvalidOperationException("AUTHORITATIVE_KEYS_INVALID");
+        var baseUri = _httpClient.BaseAddress ?? throw new InvalidOperationException("PLATFORM_ENDPOINT_REQUIRED");
+        var uri = new Uri(baseUri, modulesPath).AbsoluteUri;
+        var adminUri = new Uri(baseUri, adminPath).AbsoluteUri;
+        var tenantUri = new Uri(baseUri, tenantPath).AbsoluteUri;
+        var fingerprint = Diten.AuthService.Application.Common.Entitlements.EntitlementReconciliationPlan.Hash(
+            JsonSerializer.Serialize(new { uri, adminUri, tenantUri, normalizedOperatorEmail, adminActive, tenantActive, keys }));
+        return new(tenantId, "product-item-sku-master", uri, adminUri, tenantUri, normalizedOperatorEmail,
+            adminActive, tenantActive, Array.AsReadOnly(keys), fingerprint);
+    }
+
+    private async Task<JsonElement> ReadOperationalDataAsync(string path, CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, path);
+        request.Headers.TryAddWithoutValidation(InternalApiKeyHeader, _options.InternalApiKey);
+        using var response = await _httpClient.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode) throw new InvalidOperationException("AUTHORITATIVE_STATUS_UNAVAILABLE");
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+        var root = document.RootElement;
+        if (!root.TryGetProperty("isSuccessful", out var success) || success.ValueKind != JsonValueKind.True
+            || !root.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object)
+            throw new InvalidOperationException("AUTHORITATIVE_STATUS_INVALID");
+        return data.Clone();
+    }
+
     private string ResolveCorrelationId()
     {
         var context = _httpContextAccessor.HttpContext;

@@ -18,6 +18,29 @@ namespace Diten.AuthService.Persistence;
 
 public static class DependencyInjection
 {
+    public static IServiceCollection AddEntitlementReconciliationPersistence(this IServiceCollection services, IConfiguration configuration)
+    {
+        var settings = configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>()
+            ?? throw new InvalidOperationException("MONGO_SETTINGS_REQUIRED");
+        if (string.IsNullOrWhiteSpace(settings.ConnectionString) || string.IsNullOrWhiteSpace(settings.DatabaseName))
+            throw new InvalidOperationException("MONGO_SETTINGS_REQUIRED");
+        BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+        var conventions = new ConventionPack { new IgnoreExtraElementsConvention(true) };
+        ConventionRegistry.Register("EntitlementOperationalIgnoreExtraElements", conventions,
+            type => type.Namespace?.StartsWith("Diten.AuthService.Domain", StringComparison.Ordinal) == true);
+        var clientSettings = MongoClientSettings.FromConnectionString(settings.ConnectionString);
+        clientSettings.GuidRepresentation = GuidRepresentation.Standard;
+        clientSettings.ApplicationName = "Diten.AuthService.EntitlementReconciliation";
+        clientSettings.RetryWrites = false;
+        clientSettings.ReadPreference = ReadPreference.Primary;
+        clientSettings.ReadConcern = ReadConcern.Majority;
+        clientSettings.WriteConcern = WriteConcern.WMajority;
+        var client = new MongoClient(clientSettings);
+        services.AddSingleton<IMongoDatabase>(client.GetDatabase(settings.DatabaseName));
+        services.AddSingleton<IEntitlementReconciliationOperationStore, EntitlementReconciliationOperationStore>();
+        return services;
+    }
+
     public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         services.ValidateRequiredSecrets(configuration, environment, "AuthService.Persistence", [

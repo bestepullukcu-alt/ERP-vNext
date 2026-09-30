@@ -7,6 +7,7 @@ using Diten.AuthService.Persistence.Repositories;
 using Microsoft.Extensions.Logging.Abstractions;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Diten.AuthService.Application.Tests.Persistence;
 
 namespace Diten.AuthService.Application.Tests.Roles;
 
@@ -16,25 +17,18 @@ public sealed class AuthPermissionOnboardingMongoCollectionDefinition
     public const string Name = "Auth permission onboarding Mongo";
 }
 
-[Collection(AuthPermissionOnboardingMongoCollectionDefinition.Name)]
-public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
+[Collection(AuthReconciliationMongoCollection.Name)]
+public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests(DisposableAuthMongoReplicaSet ownedMongo)
 {
-    private const string DatabaseName = "diten_auth_permission_onboarding_itest";
 
     [Fact]
     public async Task Real_mongo_reconciles_exact_composite_lifecycle_profile_with_replay_revoke_and_isolation()
     {
-        var settings = MongoClientSettings.FromConnectionString(
-            Environment.GetEnvironmentVariable("MONGO_TEST_URI")
-            ?? throw new InvalidOperationException("An explicit owned-test Mongo URI is required."));
-        settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
-        settings.ConnectTimeout = TimeSpan.FromSeconds(5);
-        var client = new MongoClient(settings);
-        await client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
+        await ownedMongo.ResetAsync();
 
         var tenantA = Guid.NewGuid();
         var tenantB = Guid.NewGuid();
-        var database = client.GetDatabase(DatabaseName);
+        var database = ownedMongo.Database;
         var catalog = Catalog();
         try
         {
@@ -305,7 +299,7 @@ public sealed class ProductIdentityLifecyclePermissionOnboardingMongoTests
         }
     }
 
-    private static List<Permission> Catalog() =>
+    internal static List<Permission> Catalog() =>
     [
         .. ProductIdentityLifecycleEntitlementGrantProfile.BasePermissionKeys.Select(ProductPermission),
         .. ProductIdentityLifecycleEntitlementGrantProfile.PermissionKeys.Select(ProductPermission),

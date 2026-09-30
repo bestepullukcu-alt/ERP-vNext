@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Infrastructure.Settings;
@@ -182,6 +183,48 @@ public sealed class TokenService : ITokenService
             throw new SecurityTokenException("Invalid token");
         }
 
+        return principal;
+    }
+
+    public ClaimsPrincipal GetPrincipalFromCurrentToken(string token, DateTimeOffset requiredValidThrough)
+    {
+        var handler = new JwtSecurityTokenHandler { MapInboundClaims = false };
+        var segments = token.Split('.');
+        if (segments.Length != 3) throw new SecurityTokenException("TOKEN_FORMAT_INVALID");
+        using var rawPayload = JsonDocument.Parse(Base64UrlEncoder.DecodeBytes(segments[1]));
+        if (rawPayload.RootElement.ValueKind != JsonValueKind.Object
+            || rawPayload.RootElement.EnumerateObject().GroupBy(p => p.Name, StringComparer.OrdinalIgnoreCase).Any(g => g.Count() != 1))
+            throw new SecurityTokenException("TOKEN_DUPLICATE_JSON_CLAIM");
+        var untrusted = handler.ReadJwtToken(token);
+        foreach (var key in new[] { "exp", "iat", "nbf" })
+        {
+            var count = untrusted.Claims.Count(c => c.Type == key);
+            if (count > 1 || key == "exp" && count != 1)
+                throw new SecurityTokenException("TOKEN_TEMPORAL_CLAIM_AMBIGUOUS");
+        }
+        var principal = handler.ValidateToken(token, new TokenValidationParameters
+        {
+            ValidateIssuer = true, ValidateAudience = true, ValidateIssuerSigningKey = true,
+            ValidateLifetime = true, RequireExpirationTime = true, RequireSignedTokens = true,
+            ValidIssuer = _jwtSettings.Issuer, ValidAudience = _jwtSettings.Audience,
+            IssuerSigningKeys = _rotationResolver.GetValidationKeys(),
+            ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha256 },
+            ClockSkew = JwtValidationDefaults.ClockSkew
+        }, out var validated);
+        if (validated is not JwtSecurityToken jwt || jwt.ValidTo <= requiredValidThrough.UtcDateTime)
+            throw new SecurityTokenException("OPERATOR_TOKEN_DEADLINE_NOT_COVERED");
+        // Both existing platform login and platform refresh issue a fixed 15-minute token.
+        // Legacy tokens omit iat/nbf; in that case only the remaining validity bound is observable.
+        if (jwt.ValidTo > DateTime.UtcNow.AddMinutes(15).Add(JwtValidationDefaults.ClockSkew))
+            throw new SecurityTokenException("OPERATOR_TOKEN_NOT_SHORT_LIVED");
+        foreach (var key in new[] { "iat", "nbf" })
+        {
+            var value = jwt.Claims.SingleOrDefault(c => c.Type == key)?.Value;
+            if (value is not null && (!long.TryParse(value, out var seconds)
+                || DateTimeOffset.FromUnixTimeSeconds(seconds) > DateTimeOffset.UtcNow.Add(JwtValidationDefaults.ClockSkew)
+                || jwt.ValidTo - DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime > TimeSpan.FromMinutes(15)))
+                throw new SecurityTokenException("OPERATOR_TOKEN_TEMPORAL_RANGE_INVALID");
+        }
         return principal;
     }
 }

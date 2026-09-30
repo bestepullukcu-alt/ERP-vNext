@@ -3,8 +3,81 @@ using Diten.AuthService.Application.Common.Authorization;
 using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Diten.AuthService.Application.Common.Entitlements;
 
 namespace Diten.AuthService.Application.Common.Services;
+
+/// <summary>Pure, exact-delta planner. Never calls the general entitlement reconciler.</summary>
+public static class EntitlementReconciliationPlanner
+{
+    public static EntitlementReconciliationPlan Build(EntitlementLocalSnapshot local,
+        EntitlementAuthoritySnapshot authority, Guid operationId, string provenanceSha256,
+        string binarySha256, string sourceHead, DateTimeOffset now)
+    {
+        if (operationId == Guid.Empty || local.TenantId != EntitlementReconciliationPlan.TargetTenant
+            || authority.RequestedTenantId != local.TenantId || authority.ModuleCode != EntitlementReconciliationPlan.Module
+            || !authority.TenantActive || !authority.OperatorActive || !local.Operator.IsAuthorized
+            || local.Operator.TenantId != EntitlementReconciliationPlan.AdminTenant
+            || authority.NormalizedOperatorEmail != local.Operator.NormalizedEmail)
+            throw new InvalidOperationException("RECONCILIATION_AUTHORITY_DENIED");
+        ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(authority.PermissionKeys);
+        var declared = local.Permissions.Where(p => authority.PermissionKeys.Contains(p.Key, StringComparer.Ordinal)).ToArray();
+        ProductIdentityLifecycleEntitlementGrantProfile.ValidateAndResolveDefinitions(declared, local.Permissions);
+        var recoveryIds = local.Permissions.Where(p => ProductIdentityLifecycleEntitlementGrantProfile.IsNonHumanPermissionKey(p.Key))
+            .Select(p => p.Id).ToHashSet();
+        if (local.Grants.Any(g => !g.IsDeleted && recoveryIds.Contains(g.PermissionId)
+            && local.Roles.Single(r => r.Id == g.RoleId).Name != "ProductIdentityRecoveryOperator"))
+            throw new InvalidOperationException("HUMAN_RECOVERY_GRANT_FORBIDDEN");
+        var expected = new (string Role, string Key)[]
+        {
+            ("ProductDataSteward", "mdm.gskus.request-correction"), ("ProductDataSteward", "mdm.gskus.update"),
+            ("ProductDataSteward", "mdm.gskus.withdraw"), ("ProductDataSteward", "mdm.lskus.withdraw"),
+            ("ProductIdentityRetirementSteward", "mdm.gskus.request-retirement"),
+            ("ProductIdentityRetirementSteward", "mdm.lskus.request-retirement")
+        };
+        var rows = new List<EntitlementReconciliationRow>();
+        foreach (var item in expected)
+        {
+            var role = local.Roles.Single(r => r.Name == item.Role && r.TenantId == local.TenantId && !r.IsDeleted);
+            var permission = local.Permissions.Single(p => p.Key == item.Key && !p.IsDeleted);
+            if (local.Grants.Any(g => g.RoleId == role.Id && g.PermissionId == permission.Id))
+                throw new InvalidOperationException("EXPECTED_ADD_ALREADY_PRESENT_OR_TOMBSTONED");
+            rows.Add(new("add", EntitlementReconciliationPlan.DeterministicId(operationId, "grant:" + item.Role + ":" + item.Key),
+                role.Id, role.Name, permission.Id, permission.Key, permission.Module, permission.Scope,
+                GrantSource.Module, EntitlementReconciliationPlan.Module));
+        }
+        var stale = local.Grants.Single(g => g.Id == EntitlementReconciliationPlan.RemovedGrant);
+        var staleRole = local.Roles.Single(r => r.Id == stale.RoleId && !r.IsDeleted);
+        var stalePermission = local.Permissions.Single(p => p.Id == stale.PermissionId && !p.IsDeleted);
+        if (stale.IsDeleted || stale.TenantId != local.TenantId || stale.GrantSource != GrantSource.Module
+            || stale.SourceModuleCode != EntitlementReconciliationPlan.Module
+            || staleRole.Name != "ProductIdentityRetirementSteward" || stalePermission.Key != "mdm.lskus.retire")
+            throw new InvalidOperationException("EXACT_REMOVAL_PRECONDITION_FAILED");
+        rows.Add(new("remove", stale.Id, staleRole.Id, staleRole.Name, stalePermission.Id, stalePermission.Key,
+            stalePermission.Module, stalePermission.Scope, stale.GrantSource, stale.SourceModuleCode));
+        // Any additional dedicated-role drift is outside the +6/-1 authorization.
+        foreach (var definition in ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles)
+        {
+            var role = local.Roles.Single(r => r.TenantId == local.TenantId && r.Name == definition.RoleName && !r.IsDeleted);
+            foreach (var key in definition.PermissionKeys)
+            {
+                var permission = local.Permissions.Single(p => p.Key == key && !p.IsDeleted);
+                var matches = local.Grants.Where(g => g.RoleId == role.Id && g.PermissionId == permission.Id && !g.IsDeleted).ToArray();
+                var isAdd = expected.Contains((role.Name, key));
+                if (matches.Length != (isAdd ? 0 : 1)) throw new InvalidOperationException("UNEXPECTED_ROLE_GRANT_DRIFT");
+            }
+            var extra = local.Grants.Where(g => g.RoleId == role.Id && !g.IsDeleted && g.GrantSource == GrantSource.Module
+                && g.SourceModuleCode == EntitlementReconciliationPlan.Module)
+                .Where(g => !definition.PermissionKeys.Contains(local.Permissions.Single(p => p.Id == g.PermissionId).Key, StringComparer.Ordinal));
+            if (extra.Any(g => g.Id != stale.Id)) throw new InvalidOperationException("UNEXPECTED_MODULE_GRANT_DRIFT");
+        }
+        return new(1, operationId, local.TenantId, EntitlementReconciliationPlan.Module, local.Operator.UserId,
+            "PlatformAdministrator", local.Operator.Fingerprint, authority.Fingerprint, local.Fingerprint,
+            local.QuiescenceFingerprint, local.RoleAssignmentVersion,
+            Array.AsReadOnly(local.AffectedHolderIds.Order().ToArray()), Array.AsReadOnly(local.ActiveRefreshTokenIds.Order().ToArray()),
+            rows.AsReadOnly(), provenanceSha256, binarySha256, sourceHead, now);
+    }
+}
 
 /// <summary>
 /// Applies the locked entitlement → role-permission revoke semantics

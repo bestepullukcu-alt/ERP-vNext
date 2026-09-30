@@ -7,6 +7,11 @@ namespace Diten.AuthService.Application.Common.Interfaces;
 /// </summary>
 public interface IEntitlementPermissionSyncService
 {
+    Diten.AuthService.Application.Common.Entitlements.EntitlementReconciliationPlan BuildReconciliationPlan(
+        Diten.AuthService.Application.Common.Entitlements.EntitlementLocalSnapshot local,
+        Diten.AuthService.Application.Common.Entitlements.EntitlementAuthoritySnapshot authority,
+        Guid operationId, string provenanceSha256, string binarySha256, string sourceHead, DateTimeOffset now)
+        => Diten.AuthService.Application.Common.Services.EntitlementReconciliationPlanner.Build(local, authority, operationId, provenanceSha256, binarySha256, sourceHead, now);
     /// <summary>Module entitlement added/enabled: grant the module's permissions to the tenant roles.</summary>
     Task GrantModuleAsync(Guid tenantId, string moduleCode, string actor, CancellationToken ct = default);
 
