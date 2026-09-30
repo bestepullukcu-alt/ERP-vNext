@@ -341,6 +341,34 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
 - **ASSUMPTION-0173-10:** `GET /transactions` `from`/`to` filter `PostingDate` by UTC day, inclusive.
 - **ASSUMPTION-0173-11:** the target date `2026-10-31` is a schema-required planning default, not a commitment.
 
+- **S2 reservation design (CT decision 2026-09-30, autonomous mode; binding for WP-0173-S2).** The frozen
+  `ReservationRequest` carries only item/SKU/quantity — no warehouse, location, lot or status. Therefore:
+  - **ASSUMPTION-0173-12 (scope):** a reservation holds quantity at **Tenant + LE + ItemId + SkuId + SkuLevel**
+    level against `AVAILABLE` stock. Row-level `Reserved` on `inventory_balances` stays 0 in S2; row allocation
+    (which bin/lot) belongs to MOD-0176 FEFO / MOD-0178 WMS. `/balance` rows therefore show `reserved 0`;
+    `/availability` shows the SKU-level reserved total and `available = Σ onHand(AVAILABLE) − Σ active reserved`.
+  - **ASSUMPTION-0173-13 (atomic position):** a per-SKU projection document `inventory_sku_positions`
+    (`AvailableOnHand`, `Reserved`, `Version`) is maintained **inside the same Mongo transaction** as every ledger leg
+    that touches an `AVAILABLE` row and every reservation create/release/expiry/consumption. It is a projection of
+    the ledger + reservations (not a second stock truth) and must be rebuildable; an invariant test proves
+    `Σ AVAILABLE rows onHand == AvailableOnHand` and `Σ ACTIVE reservations == Reserved`.
+  - **ASSUMPTION-0173-14 (guard both ways):** create reservation succeeds only if
+    `AvailableOnHand − Reserved ≥ q` (else 422 `INSUFFICIENT_AVAILABLE`, contract). A decrease leg on an `AVAILABLE`
+    row must also keep `AvailableOnHand − Reserved ≥ 0` at SKU level (else 422 `INSUFFICIENT_STOCK`) — reserved stock
+    cannot be issued to someone else.
+  - **ASSUMPTION-0173-15 (consumption):** a movement whose `(sourceModule, sourceDocumentId, sourceLineId)` equals an
+    ACTIVE reservation's consumes it: the reserved quantity it covers is released in the same transaction (partial →
+    reservation stays ACTIVE with the remainder; full → `RELEASED`). The frozen status enum has no CONSUMED value.
+  - **ASSUMPTION-0173-16 (expiry):** `expiresAt ≤ now` ⇒ `EXPIRED`. Due reservations of a SKU are expired inside the
+    transaction of any create/release/decrease on that SKU, plus a periodic hosted sweeper. Expired quantity no longer
+    counts as reserved.
+  - **ASSUMPTION-0173-17 (release):** `If-Match` required (contract); ETag = `W/"<version>"`; mismatch or already
+    released/expired → 409 `RESERVATION_CONFLICT`; missing `If-Match` → 400. Unknown/cross-scope id → 404.
+  - **ASSUMPTION-0173-18 (FU-S1-01):** `/availability` with no ledger rows asks PRODUCT-MASTER: exists → 200 zeros;
+    not found → 404 `UNKNOWN_ITEM`; unreachable → 503 `PRODUCT_MASTER_UNAVAILABLE` (extra status, as ASSUMPTION-S1-05).
+  - **ASSUMPTION-0173-19 (FU-S1-02):** the `SuperAdmin` role bypass is removed from this service; every endpoint needs
+    its explicit permission.
+
 - **WP-0173-S1 CT-ACCEPTED (2026-09-30)** — commits 47029756..950e82c2; audit
   `docs/records/audits/2026-10/mod-0173-inventory-ledger-s1-audit-2026-09-30.md`. CT re-measured independently:
   clean build 0/0; 218/218 tests (0 skipped) on the replica-set Mongo; repo architecture guards 18/18; own sabotage of
