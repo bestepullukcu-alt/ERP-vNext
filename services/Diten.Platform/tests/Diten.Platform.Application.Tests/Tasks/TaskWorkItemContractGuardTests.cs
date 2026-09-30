@@ -312,6 +312,50 @@ public sealed class TaskWorkItemContractGuardTests
         return items.Single(x => x.Id == task.Id.ToString());
     }
 
+    /// <summary>
+    /// LIVE DEFECT (since 29c4b4a30) — <c>taskContext</c> went out without the <c>effort</c> container the contract ties
+    /// to it, so the browser's contract check dropped the task from the board. Two ways a task declares taskContext: it
+    /// was ESTIMATED, or it has spent hours and no estimate. Both must pass the shipped contract.
+    /// </summary>
+    [Fact]
+    public async Task An_estimated_task_carries_its_effort_container_and_passes_the_real_contract()
+    {
+        var task = SelfTask("Tahminli görev");
+        task.EstimateHours = 6m;
+
+        var item = Assert.Single(await Provider(new FakeTaskItemRepository(task)).GetWorkItemsAsync(
+            new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()), CancellationToken.None));
+
+        Assert.Contains("taskContext", item.WorkItemCapabilities);
+        Assert.Equal(new WorkItemEffortDto(6m, 0m), item.Effort);
+        var verdict = ValidateWithRealContract(item);
+        Assert.True(verdict.Valid, verdict.Report);
+    }
+
+    [Fact]
+    public async Task A_task_with_spent_hours_and_no_estimate_carries_its_effort_container_and_passes_the_real_contract()
+    {
+        var task = SelfTask("Süre harcanmış görev");
+        task.SpentHours = 1.5m;
+
+        var item = Assert.Single(await Provider(new FakeTaskItemRepository(task)).GetWorkItemsAsync(
+            new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()), CancellationToken.None));
+
+        Assert.Contains("taskContext", item.WorkItemCapabilities);
+        Assert.Equal(new WorkItemEffortDto(0m, 1.5m), item.Effort);
+        var verdict = ValidateWithRealContract(item);
+        Assert.True(verdict.Valid, verdict.Report);
+    }
+
+    [Fact]
+    public async Task A_task_with_neither_carries_neither_the_capability_nor_the_container()
+    {
+        var item = await ProjectBareItemAsync();
+
+        Assert.DoesNotContain("taskContext", item.WorkItemCapabilities);
+        Assert.Null(item.Effort);
+    }
+
     /// <summary>A task with none of the optional data — the vacuous case, kept to prove it IS vacuous.</summary>
     private static async Task<WorkItemProjectionDto> ProjectBareItemAsync()
     {

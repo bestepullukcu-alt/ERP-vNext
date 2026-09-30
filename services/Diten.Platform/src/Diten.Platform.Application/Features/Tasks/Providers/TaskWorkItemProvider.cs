@@ -1224,6 +1224,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * "this is not being tracked".
              */
             SpentHours: task.EstimateHours is null && task.SpentHours == 0 ? null : task.SpentHours,
+            // The effort container, under the SAME condition ResolveCapabilities declares `taskContext` — the contract
+            // requires the one with the other, and a task without its container is dropped from the board.
+            Effort: task.EstimateHours is not null || task.SpentHours != 0
+                ? new WorkItemEffortDto(task.EstimateHours ?? 0m, task.SpentHours)
+                : null,
             Tags: task.Tags is { Count: > 0 } ? task.Tags.ToList() : null,
             /*
              * WC-1 — the reader's own layer, or nothing at all.

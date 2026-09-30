@@ -355,6 +355,31 @@ public sealed class WorkItemActionDispatchTests
         Assert.Empty(mediator.Sent);
     }
 
+    /// <summary>
+    /// 2026-09-30 (found in MOD-0280-FU01 T2b acceptance): the Task Center's reason dialog sends the approver's text as
+    /// `note`; it must reach MOD-0023 as the decision comment, for reject and for approve.
+    /// </summary>
+    [Theory]
+    [InlineData("reject")]
+    [InlineData("approve")]
+    public async Task The_reason_the_Task_Center_sends_as_a_note_reaches_MOD_0023_as_the_comment(string actionCode)
+    {
+        var mediator = new RecordingMediator();
+        var dispatcher = new WorkflowApprovalWorkItemActionDispatcher(mediator);
+
+        await dispatcher.DispatchAsync(new WorkItemActionDispatchRequest(
+            Guid.NewGuid(), actionCode, new WorkItemActionPayloadDto(Note: "Bütçe kalemi eksik"), PlatformActor(), "corr"));
+
+        var sent = Assert.Single(mediator.Sent);
+        var comment = sent switch
+        {
+            RejectWorkflowTaskCommand reject => reject.Request.Comment,
+            ApproveWorkflowTaskCommand approve => approve.Request.Comment,
+            _ => throw new InvalidOperationException(sent.GetType().Name)
+        };
+        Assert.Equal("Bütçe kalemi eksik", comment);
+    }
+
     // ── MOD-0024 keeps reaching its OWN commands, unchanged ───────────────────
 
     [Theory]

@@ -704,7 +704,19 @@ public sealed record WorkItemProjectionDto(
     /// says nothing, and the executable contract validates it only when present.
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemInquiryAnswerDto? InquiryAnswer = null);
+    WorkItemInquiryAnswerDto? InquiryAnswer = null,
+    /// <summary>
+    /// The effort card's container — the one the WC-1 contract ties to <c>taskContext</c> (<c>DATA_CAPABILITIES.taskContext:
+    /// ['effort']</c>). Emitted exactly when <c>taskContext</c> is declared, so the pair is never half there: before this
+    /// field existed the capability went out without its container, and the browser's contract check DROPPED every task
+    /// that had an estimate or spent hours from the board (live since 29c4b4a30; found by MOD-0280-FU01 T2b's guard).
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemEffortDto? Effort = null);
+
+/// <summary>The effort card's two figures, in hours: what was estimated and what was spent. Two durations side by
+/// side; no ratio is computed here.</summary>
+public sealed record WorkItemEffortDto(decimal Estimate, decimal Spent);
 
 /// <summary>
 /// BL-439 — who answered a waiting task's question, when, and what they said. Derived from the transition log
