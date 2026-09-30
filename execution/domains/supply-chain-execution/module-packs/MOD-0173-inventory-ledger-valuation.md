@@ -341,7 +341,21 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
 - **ASSUMPTION-0173-10:** `GET /transactions` `from`/`to` filter `PostingDate` by UTC day, inclusive.
 - **ASSUMPTION-0173-11:** the target date `2026-10-31` is a schema-required planning default, not a commitment.
 
+- **WP-0173-S1 CT-ACCEPTED (2026-09-30)** — commits 47029756..950e82c2; audit
+  `docs/records/audits/2026-10/mod-0173-inventory-ledger-s1-audit-2026-09-30.md`. CT re-measured independently:
+  clean build 0/0; 218/218 tests (0 skipped) on the replica-set Mongo; repo architecture guards 18/18; own sabotage of
+  the coverage guard → 5 red, restored → green, empty diff; own runtime probe run (separate DB) 33/33 + 4/4 after a
+  real restart (different PIDs); no token in logs. Agent assumptions S1-01…S1-20 accepted as recorded in the audit,
+  with two follow-ups below (FU-S1-01, FU-S1-02).
+
 ## 20. Follow-up Items
+
+- **FU-S1-01 (before G1 freeze):** `GET /availability` for a *known* item/SKU with no ledger rows returns
+  404 `UNKNOWN_ITEM` (ASSUMPTION-S1-04). Consumers (0172 ATP, 0189 MRP) must see 200 with zeros; 404 only when
+  PRODUCT-MASTER says the item/SKU does not exist (fail-closed 503 when it is unreachable).
+- **FU-S1-02 (before G1 freeze):** the template's `SuperAdmin` role bypass lets that role post stock movements
+  without `supplychain.inventory.movements.post`. For a GxP stock SoR, mutations require the explicit permission;
+  review with security-agent.
 
 - S2 Reservations; S3 Valuation (requires additive `INVENTORY-BUNDLE` v1.1 for any valuation read surface).
 - INT-1: gateway route + permission seed (integration-agent).
