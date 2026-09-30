@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Features.Tasks.Services;
+using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
 
@@ -12,13 +13,6 @@ namespace Diten.Platform.Application.Features.TimeEntry.Adapters;
 /// </summary>
 public sealed class TaskGatewayAdapter : ITimeEntryTaskGateway
 {
-    /// <summary>The kinds that move a task away from its holder without necessarily leaving InProgress.</summary>
-    private static readonly HashSet<TaskTransitionKind> HolderMoves =
-    [
-        TaskTransitionKind.Reassigned, TaskTransitionKind.Released, TaskTransitionKind.Returned,
-        TaskTransitionKind.Claimed, TaskTransitionKind.Unknown
-    ];
-
     private readonly ITaskItemRepository _tasks;
     private readonly ITaskTransitionRepository _transitions;
     private readonly ITaskReadAccessPolicy _readAccess;
@@ -67,13 +61,23 @@ public sealed class TaskGatewayAdapter : ITimeEntryTaskGateway
     public async Task<DateTimeOffset?> InvalidatedAtAsync(
         Guid taskItemId, Guid holderUserId, DateTimeOffset since, CancellationToken ct = default)
     {
+        var holder = holderUserId.ToString();
         var first = (await _transitions.ListByTaskIdAsync(taskItemId, ct))
             .Where(t => t.CreatedAt >= since)
-            .Where(t => t.ToLifecycle != TaskLifecycle.InProgress || HolderMoves.Contains(t.Kind))
+            .Where(t => t.ToLifecycle != TaskLifecycle.InProgress || MovedAwayFrom(t, holder))
             .OrderBy(t => t.CreatedAt.UtcTicks)
             .FirstOrDefault();
         return first?.CreatedAt;
     }
+
+    /// <summary>
+    /// v3 G6 — did this transition take the task AWAY from the person? Only a recorded assignee change whose new holder is
+    /// someone else (or nobody) says so. A Reassigned/Claimed/Unknown entry that left the person holding the task — a
+    /// re-save, a claim by themselves — ends nothing.
+    /// </summary>
+    private static bool MovedAwayFrom(TaskTransition transition, string holder)
+        => transition.FieldChanges.Any(c => c.Field == TaskFieldChangeCodes.Assignee
+                                            && !string.Equals(c.To, holder, StringComparison.OrdinalIgnoreCase));
 
     public async Task<IReadOnlyList<TimeEntryPlannedBlock>> PlannedBlocksAsync(
         Guid userId, DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct = default)

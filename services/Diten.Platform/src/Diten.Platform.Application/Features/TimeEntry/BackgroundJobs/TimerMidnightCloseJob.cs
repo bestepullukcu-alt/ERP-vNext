@@ -76,9 +76,19 @@ public sealed class TimerMidnightCloseJob : IBackgroundJobHandler<TimerMidnightC
                         .ToList();
                     foreach (var userId in due)
                     {
-                        var response = await _mediator.Send(
-                            new CloseTimersAtLocalMidnightCommand(userId, Notify: true, correlationId), cancellationToken);
-                        closed += response.IsSuccessful ? response.Data : 0;
+                        // v3 G4 — one person's failure never costs the rest of the tenant their close or notification.
+                        try
+                        {
+                            var response = await _mediator.Send(
+                                new CloseTimersAtLocalMidnightCommand(userId, Notify: true, correlationId), cancellationToken);
+                            closed += response.IsSuccessful ? response.Data : 0;
+                        }
+                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        {
+                            _logger.LogWarning(ex,
+                                "time-entry.timer.midnight.person_failed TenantId={TenantId} UserId={UserId} CorrelationId={CorrelationId}",
+                                tenant.Id, userId, correlationId);
+                        }
                     }
                 }
             }

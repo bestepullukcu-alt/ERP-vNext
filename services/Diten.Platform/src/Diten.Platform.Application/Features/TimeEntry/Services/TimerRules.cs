@@ -32,6 +32,35 @@ public static class TimerRules
         return (int)Math.Max(1, steps) * TimeEntryLimits.StepMinutes;
     }
 
+    /// <summary>Nearest 15 minutes, ties up, no floor (0 stays 0).</summary>
+    public static int RoundToStep(long seconds)
+        => seconds <= 0 ? 0 : (int)((seconds + StepSeconds / 2) / StepSeconds) * TimeEntryLimits.StepMinutes;
+
+    /// <summary>
+    /// What a timer draft row should say, given the day's closed timer seconds for its target (v3 G1).
+    /// <list type="bullet">
+    /// <item>Untouched row (or none): the segments, rounded with the 8-minute floor (A2).</item>
+    /// <item>Row the person corrected: THEIR value plus the timer time that arrived after the correction
+    /// (<c>segments now − baseline</c>), rounded to 15 — never below one step. A correction is the person's statement about
+    /// the time up to that moment; it does not swallow the afternoon's timer.</item>
+    /// <item>A row corrected before the baseline existed: the person's number as it stands.</item>
+    /// </list>
+    /// </summary>
+    public static int ExpectedTimerMinutes(Diten.Platform.Domain.Entities.TimeEntry.TimeEntry? row, long segmentSeconds)
+    {
+        if (row is not { EditedFromTimer: true })
+        {
+            return DraftMinutes(segmentSeconds);
+        }
+
+        if (row.CorrectedMinutes is not { } corrected || row.CorrectionBaselineSeconds is not { } baseline)
+        {
+            return row.DurationMinutes;
+        }
+
+        return Math.Max(TimeEntryLimits.StepMinutes, RoundToStep(corrected * 60L + (segmentSeconds - baseline)));
+    }
+
     /// <summary>A meeting's scheduled duration as a suggestion: the same rounding, the same floor.</summary>
     public static int SuggestedMinutes(DateTimeOffset startAt, DateTimeOffset endAt)
         => Math.Min(TimeEntryLimits.MaxRowMinutes, DraftMinutes((long)Math.Max(0, (endAt - startAt).TotalSeconds)));

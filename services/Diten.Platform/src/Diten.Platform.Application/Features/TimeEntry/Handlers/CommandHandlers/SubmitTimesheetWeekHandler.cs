@@ -5,6 +5,7 @@ using Diten.Platform.Application.Features.TimeEntry.Services;
 using Diten.Platform.Domain.Enums.TimeEntry;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.TimeEntry.Handlers.CommandHandlers;
 
@@ -34,6 +35,7 @@ public sealed class SubmitTimesheetWeekHandler : IRequestHandler<SubmitTimesheet
     private readonly TimeProvider _clock;
     private readonly ITimesheetSubmissionProbe _probe;
     private readonly ITimerDraftWriter _drafts;
+    private readonly ILogger<SubmitTimesheetWeekHandler> _logger;
 
     public SubmitTimesheetWeekHandler(
         ITimesheetWeekReader reader,
@@ -44,9 +46,11 @@ public sealed class SubmitTimesheetWeekHandler : IRequestHandler<SubmitTimesheet
         ICurrentUserContext currentUser,
         TimeProvider clock,
         ITimesheetSubmissionProbe probe,
-        ITimerDraftWriter drafts)
+        ITimerDraftWriter drafts,
+        ILogger<SubmitTimesheetWeekHandler> logger)
     {
         _drafts = drafts;
+        _logger = logger;
         _reader = reader;
         _weeks = weeks;
         _entries = entries;
@@ -68,11 +72,26 @@ public sealed class SubmitTimesheetWeekHandler : IRequestHandler<SubmitTimesheet
 
         var userId = _currentUser.UserId;
 
-        // v2 F5 — the week's timer drafts are recomputed from the segments BEFORE anything is submitted, so a draft a
-        // failed close never wrote cannot be left out of the submission. If that moved the week, the version the person
-        // read is stale and the check below answers 409.
-        await _drafts.ApplyWeekAsync(userId, WeekCalendar.KeyOf(monday), ct);
         var context = await _reader.LoadAsync(userId, monday, ct);
+        if (TimesheetRules.WriteRefusal(context) is { } closed)
+        {
+            return Fail("This week is not open for submission.", 409, closed, request);
+        }
+
+        // v2 F5 / v3 G4 — once the week is known to be open, its timer drafts are recomputed from the segments BEFORE
+        // anything is submitted, so a draft a failed close never wrote is not left out. A failure here is logged and the
+        // submit goes on (the next save, submit or midnight run writes it). If it moved the week, the version the person
+        // read is stale and the check below answers 409.
+        try
+        {
+            await _drafts.ApplyWeekAsync(userId, context.WeekKey, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "time-entry.submit.draft_recompute_failed WeekKey={WeekKey}; the submit goes on.", context.WeekKey);
+        }
+
+        context = await _reader.LoadAsync(userId, monday, ct);
 
         if (context.Revisions.Count == 0)
         {

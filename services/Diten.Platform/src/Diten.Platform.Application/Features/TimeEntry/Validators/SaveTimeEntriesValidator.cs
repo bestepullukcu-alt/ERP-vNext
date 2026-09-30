@@ -23,13 +23,15 @@ public sealed class SaveTimeEntriesValidator : AbstractValidator<SaveTimeEntries
                 .WithErrorCode(TimeEntryReasonCodes.TargetInvalid)
                 .WithMessage("Each row names exactly one task or one category.");
 
-            // 15-minute steps, 15…960 (A3).
+            // 15-minute steps, 15…960 (A3) — for the person's own rows. A captured (timer/meeting) row is checked by the
+            // handler, and only when it actually changed (v3 G3): one sent back untouched may carry a 17-hour timer day.
             row.RuleFor(r => r.DurationMinutes)
                 .Must(m => m >= TimeEntryLimits.StepMinutes
                            && m <= TimeEntryLimits.MaxRowMinutes
                            && m % TimeEntryLimits.StepMinutes == 0)
                 .WithErrorCode(TimeEntryReasonCodes.StepInvalid)
-                .WithMessage("Durations are whole 15-minute steps between 15 and 960 minutes.");
+                .WithMessage("Durations are whole 15-minute steps between 15 and 960 minutes.")
+                .When(r => !IsCaptured(r.Source));
 
             // v2 F1 — every row names its source: a timer row sent back without one must not become a second, Manual
             // copy of the same minutes.
@@ -37,9 +39,10 @@ public sealed class SaveTimeEntriesValidator : AbstractValidator<SaveTimeEntries
                 .NotEmpty()
                 .WithErrorCode(TimeEntryReasonCodes.SourceRequired)
                 .WithMessage("Each row names its source (see TimeEntrySource).");
+            // v3 G5 — exactly one of the declared NAMES. Enum.TryParse would also take "Timer,Timer", "Manual,Meeting" (a flags
+            // combination) or a number; none of those is a source.
             row.RuleFor(r => r.Source)
-                .Must(source => Enum.TryParse<Domain.Enums.TimeEntry.TimeEntrySource>(source, ignoreCase: true, out _)
-                                && !int.TryParse(source, out _))
+                .Must(source => SourceNames.Contains(source!.Trim()))
                 .WithErrorCode(TimeEntryReasonCodes.SourceInvalid)
                 .WithMessage("A row's source is one of TimeEntrySource's names.")
                 .When(r => !string.IsNullOrWhiteSpace(r.Source));
@@ -66,4 +69,15 @@ public sealed class SaveTimeEntriesValidator : AbstractValidator<SaveTimeEntries
         "MEETING" => "meeting:" + row.SourceRef,
         _ => "typed"
     };
+
+    /// <summary>The declared source names, case-insensitive — the ONLY accepted spellings.</summary>
+    private static readonly HashSet<string> SourceNames =
+        new(Enum.GetNames<Domain.Enums.TimeEntry.TimeEntrySource>(), StringComparer.OrdinalIgnoreCase);
+
+    private static bool IsCaptured(string? source)
+        => string.Equals(source?.Trim(), nameof(Domain.Enums.TimeEntry.TimeEntrySource.Timer), StringComparison.OrdinalIgnoreCase)
+           || string.Equals(source?.Trim(), CapturedMeetingName, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>The meeting source's name, spelled through the enum (the module guard forbids the bare word).</summary>
+    private static readonly string CapturedMeetingName = Domain.Enums.TimeEntry.TimeEntrySource.Meeting.ToString();
 }

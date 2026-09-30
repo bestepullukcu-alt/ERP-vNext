@@ -198,8 +198,16 @@ public sealed class CountingAutoCloseNotifier : ITimerAutoCloseNotifier
         get { lock (_segments) { return _segments.ToList(); } }
     }
 
+    /// <summary>People whose notification throws — a stand-in for "something failed for this one person" (v3 G4).</summary>
+    public HashSet<Guid> ThrowFor { get; } = [];
+
     public Task NotifyAsync(Diten.Platform.Domain.Entities.TimeEntry.TimerSegment segment, CancellationToken ct = default)
     {
+        if (ThrowFor.Contains(segment.UserId))
+        {
+            throw new InvalidOperationException("test: this person's notification fails");
+        }
+
         lock (_segments)
         {
             _segments.Add(segment.Id);

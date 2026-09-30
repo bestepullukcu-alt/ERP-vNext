@@ -19,7 +19,8 @@ public static class TimerWeekFacts
             .ToList();
 
     /// <summary>v2 F5 — on an open week: cells whose timer draft is not what the closed segments add up to (the draft of
-    /// a close that failed). A row the person corrected (<c>EditedFromTimer</c>) is theirs and never "pending".</summary>
+    /// a close that failed). A row the person corrected counts too (v3 G1): its expected value is their number plus the
+    /// timer time that arrived after the correction.</summary>
     public static IReadOnlyList<TimerDraftPendingDto> DraftPending(
         IEnumerable<TimerSegment> closedSegments, IReadOnlyCollection<TimeEntryRow> draftRows)
         => closedSegments
@@ -28,9 +29,9 @@ public static class TimerWeekFacts
             {
                 var row = draftRows.FirstOrDefault(r => r.Source == TimeEntrySource.Timer && r.LocalDate == g.Key.LocalDate
                                                         && r.TaskItemId == g.Key.TaskItemId && r.CategoryCode == g.Key.CategoryCode);
-                return (g.Key, Expected: TimerRules.DraftMinutes(g.Sum(s => (long)s.DurationSeconds)), Row: row);
+                return (g.Key, Expected: TimerRules.ExpectedTimerMinutes(row, g.Sum(s => (long)s.DurationSeconds)), Row: row);
             })
-            .Where(x => x.Row is not { EditedFromTimer: true } && x.Expected != (x.Row?.DurationMinutes ?? 0))
+            .Where(x => x.Expected != (x.Row?.DurationMinutes ?? 0))
             .OrderBy(x => x.Key.LocalDate)
             .Select(x => new TimerDraftPendingDto(x.Key.LocalDate, x.Key.TaskItemId, x.Key.CategoryCode, x.Expected, x.Row?.DurationMinutes ?? 0))
             .ToList();

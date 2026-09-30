@@ -6,6 +6,7 @@ using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Enums.TimeEntry;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using TimeEntryRow = Diten.Platform.Domain.Entities.TimeEntry.TimeEntry;
 
 namespace Diten.Platform.Application.Features.TimeEntry.Handlers.CommandHandlers;
@@ -25,9 +26,10 @@ namespace Diten.Platform.Application.Features.TimeEntry.Handlers.CommandHandlers
 /// here, and one left out stays as it is.</item>
 /// </list>
 ///
-/// <para><b>Order matters.</b> First the week's timer drafts are recomputed from the segments (v2 F5 — a draft a failed
-/// close never wrote is written now, never lost). Then every check runs before anything is written, and the week row is
-/// claimed with a compare-and-set on its version: two saves of one week cannot both pass (§13 "Concurrency").</para>
+/// <para><b>Order matters.</b> The week and the rows are checked first; then the week's timer drafts are recomputed from
+/// the segments (v2 F5 — a draft a failed close never wrote is written now; v3 G4 — a failure there is logged, never a
+/// 500); then the captured rows are matched against the fresh draft, and the week row is claimed with a compare-and-set
+/// on its version: two saves of one week cannot both pass (§13 "Concurrency"). Nothing is written before the claim.</para>
 ///
 /// <para><b>Day limits (A3), on the days this save CHANGES</b> (v2 F1): above 960 minutes is refused, above 660 flagged. A
 /// day the save does not touch is never the reason a save fails — a forgotten 17-hour timer day blocks the SUBMIT (which
@@ -43,6 +45,8 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
     private readonly ITimerDraftWriter _drafts;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
+    private readonly IMediator _mediator;
+    private readonly ILogger<SaveTimeEntriesHandler> _logger;
 
     public SaveTimeEntriesHandler(
         ITimesheetWeekReader reader,
@@ -52,8 +56,12 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
         ITimeEntryTaskGateway tasks,
         ITimerDraftWriter drafts,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IMediator mediator,
+        ILogger<SaveTimeEntriesHandler> logger)
     {
+        _mediator = mediator;
+        _logger = logger;
         _reader = reader;
         _weeks = weeks;
         _entries = entries;
@@ -74,10 +82,6 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
         }
 
         var userId = _currentUser.UserId;
-
-        // v2 F5 — the timer drafts first, recomputed from the segments. If that moved the week, the version the person
-        // read is stale and the claim below answers 409: they reload and see the timer rows they were missing.
-        await _drafts.ApplyWeekAsync(userId, WeekCalendar.KeyOf(monday), ct);
         var context = await _reader.LoadAsync(userId, monday, ct);
 
         // ── The week must be open to writes (§12 "any write to a week") ──────────────────────────────────────────
@@ -88,7 +92,7 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
         }
 
         var rows = (request.Request.Entries ?? [])
-            .Select(r => r with { CategoryCode = r.CategoryCode?.Trim().ToUpperInvariant(), Note = r.Note?.Trim() })
+            .Select(r => r with { CategoryCode = r.CategoryCode?.Trim().ToUpperInvariant(), Note = NormalizeNote(r.Note) })
             .ToList();
 
         // ── Dates: inside the week, never after the person's local today (D5) ────────────────────────────────────
@@ -107,23 +111,6 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
 
         var typed = rows.Where(r => IsPersonTyped(SourceOf(r))).ToList();
         var captured = rows.Where(r => !IsPersonTyped(SourceOf(r))).ToList();
-
-        // ── Captured rows (Timer, Meeting): only ever a correction of a row the draft already holds ─────────────────
-        var capturedMatches = new List<(TimeEntryRowRequest Row, TimeEntryRow Stored)>();
-        foreach (var row in captured)
-        {
-            var source = SourceOf(row);
-            var stored = existing.FirstOrDefault(e => e.Source == source && e.LocalDate == row.LocalDate
-                                                      && e.TaskItemId == row.TaskItemId && e.CategoryCode == row.CategoryCode
-                                                      && (source != TimeEntrySource.Meeting || e.SourceRef == row.SourceRef));
-            if (stored is null)
-            {
-                return Fail("A timer or meeting row can only be corrected, not created.", 400,
-                    TimeEntryReasonCodes.CapturedRowNotFound, request);
-            }
-
-            capturedMatches.Add((row, stored));
-        }
 
         // ── Targets of the person's own rows: the category exists and is active — a row the draft ALREADY holds (same
         //    day, same category) may keep a since-retired category, but it cannot spread to a new day; the task is one
@@ -158,6 +145,59 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
             }
         }
 
+        // ── v2 F5 / v3 G4 — the timer drafts, recomputed from the segments AFTER the week and the rows passed their
+        //    checks. A failure here is logged and the save goes on: the recomputation is idempotent, and the next save,
+        //    submit or midnight run writes what this one could not. If it moved the week, the version the person read is
+        //    stale and the claim below answers 409 — they reload and see the timer rows they were missing ──────────
+        try
+        {
+            await _drafts.ApplyWeekAsync(userId, context.WeekKey, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "time-entry.save.draft_recompute_failed WeekKey={WeekKey}; the save goes on.", context.WeekKey);
+        }
+
+        context = await _reader.LoadAsync(userId, monday, ct);
+        refusal = TimesheetRules.WriteRefusal(context);
+        if (refusal is not null)
+        {
+            return Fail("This week is not open for changes.", 409, refusal, request);
+        }
+
+        open = context.Open;
+        existing = open is null ? [] : (await _entries.ListByWeekAsync(open.Id, ct)).ToList();
+
+        // ── Captured rows (Timer, Meeting): only ever a correction of a row the draft already holds. One sent back
+        //    exactly as stored (minutes and note) is not a change and is left out entirely (v3 G3) — a 17-hour timer
+        //    row the person did not touch never fails the save ─────────────────────────────────────────────────────
+        var capturedMatches = new List<(TimeEntryRowRequest Row, TimeEntryRow Stored)>();
+        foreach (var row in captured)
+        {
+            var source = SourceOf(row);
+            var stored = existing.FirstOrDefault(e => e.Source == source && e.LocalDate == row.LocalDate
+                                                      && e.TaskItemId == row.TaskItemId && e.CategoryCode == row.CategoryCode
+                                                      && (source != TimeEntrySource.Meeting || e.SourceRef == row.SourceRef));
+            if (stored is null)
+            {
+                return Fail("A timer or meeting row can only be corrected, not created.", 400,
+                    TimeEntryReasonCodes.CapturedRowNotFound, request);
+            }
+
+            if (stored.DurationMinutes == row.DurationMinutes && NormalizeNote(stored.Note) == row.Note)
+            {
+                continue; // untouched
+            }
+
+            if (!IsValidStep(row.DurationMinutes))
+            {
+                return Fail("Durations are whole 15-minute steps between 15 and 960 minutes.", 400,
+                    TimeEntryReasonCodes.StepInvalid, request);
+            }
+
+            capturedMatches.Add((row, stored));
+        }
+
         // ── The week as it will be, and the days this save changes ───────────────────────────────────────────────
         var personTyped = existing.Where(e => IsPersonTyped(e.Source))
             .GroupBy(e => (e.LocalDate, e.TaskItemId, e.CategoryCode))
@@ -182,10 +222,7 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
             if (capturedEdits.TryGetValue(stored.Id, out var edit))
             {
                 after.Add((stored.LocalDate, edit.DurationMinutes));
-                if (edit.DurationMinutes != stored.DurationMinutes || edit.Note != stored.Note)
-                {
-                    changedDays.Add(stored.LocalDate);
-                }
+                changedDays.Add(stored.LocalDate); // only real changes are in capturedEdits (G3)
             }
             else
             {
@@ -197,7 +234,8 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
         {
             after.Add((row.LocalDate, row.DurationMinutes));
             if (!personTyped.TryGetValue((row.LocalDate, row.TaskItemId, row.CategoryCode), out var stored)
-                || stored.DurationMinutes != row.DurationMinutes || stored.Note != row.Note || stored.Source != SourceOf(row))
+                || stored.DurationMinutes != row.DurationMinutes || NormalizeNote(stored.Note) != row.Note
+                || stored.Source != SourceOf(row))
             {
                 changedDays.Add(row.LocalDate);
             }
@@ -241,19 +279,17 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
             }
         }
 
-        // Captured rows: the person's correction. The source stays; a changed duration marks the row as theirs.
+        // Captured rows: the person's correction, one audited command each (v3 G2 — before/after on the week's trail).
+        // The source stays; a changed duration marks the row as theirs and records the timer baseline (v3 G1).
         foreach (var (row, stored) in capturedMatches)
         {
-            if (stored.DurationMinutes == row.DurationMinutes && stored.Note == row.Note)
+            var corrected = await _mediator.Send(new CorrectCapturedTimeEntryCommand(
+                week.Id, stored.Id, stored.Source.ToString(), stored.DurationMinutes, row.DurationMinutes,
+                NormalizeNote(stored.Note) != row.Note, row.Note, request.CorrelationId), ct);
+            if (!corrected.IsSuccessful)
             {
-                continue;
+                return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
             }
-
-            stored.EditedFromTimer |= stored.DurationMinutes != row.DurationMinutes;
-            stored.DurationMinutes = row.DurationMinutes;
-            stored.Note = row.Note;
-            stored.UpdatedBy = userId.ToString();
-            await _entries.UpdateAsync(stored, ct);
         }
 
         // The person's own rows: the whole set.
@@ -298,12 +334,19 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
         return Response<TimesheetWeekMutationDto>.Success(TimesheetRules.ToMutation(week), correlationId: request.CorrelationId);
     }
 
+    /// <summary>A note as stored and compared: trimmed, and blank is no note (v3 G3: <c>""</c> = null).</summary>
+    private static string? NormalizeNote(string? note) => string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+
+    private static bool IsValidStep(int minutes)
+        => minutes >= TimeEntryLimits.StepMinutes && minutes <= TimeEntryLimits.MaxRowMinutes
+           && minutes % TimeEntryLimits.StepMinutes == 0;
+
     /// <summary>The rows the person writes themselves — typed, or accepted from the plan (D9).</summary>
     private static bool IsPersonTyped(TimeEntrySource source) => source is TimeEntrySource.Manual or TimeEntrySource.Plan;
 
     /// <summary>The row's declared source. The validator guarantees one of the four names is present.</summary>
     private static TimeEntrySource SourceOf(TimeEntryRowRequest row)
-        => Enum.Parse<TimeEntrySource>(row.Source!, ignoreCase: true);
+        => Enum.Parse<TimeEntrySource>(row.Source!.Trim(), ignoreCase: true);
 
     private static Response<TimesheetWeekMutationDto> Fail(string message, int status, string code, SaveTimeEntriesCommand request)
         => Response<TimesheetWeekMutationDto>.Fail(message, status, code, request.CorrelationId);

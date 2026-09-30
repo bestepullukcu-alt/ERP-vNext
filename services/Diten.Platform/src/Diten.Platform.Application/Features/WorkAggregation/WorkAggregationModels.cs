@@ -735,8 +735,11 @@ public sealed record WorkItemProjectionDto(
     WorkItemTimeEntriesDto? TimeEntries = null);
 
 /// <summary>MOD-0280-FU01 §19.2 — the <c>timeEntries</c> block. Three durations side by side; no ratio (pack §8.7).</summary>
-/// <param name="DraftMinutes">The READER's own minutes on this task in their unsubmitted drafts.</param>
-/// <param name="SubmittedMinutes">Everyone's minutes on this task in submitted, undecided weeks — not spent time yet.</param>
+/// <param name="DraftMinutes">The READER's own minutes on this task in their unsubmitted drafts. For a CORRECTION draft it is
+/// only the change against the approved revision it corrects — so it can be NEGATIVE (the correction takes time away).</param>
+/// <param name="SubmittedMinutes">Everyone's minutes on this task in submitted, undecided weeks — not spent time yet. A
+/// submitted correction contributes only its change against the approved revision (never the approved minutes again), so
+/// this can be NEGATIVE too. <see cref="ApprovedMinutes"/> is never negative.</param>
 /// <param name="ApprovedMinutes">Everyone's approved minutes on this task — the task's spent time (D7).</param>
 public sealed record WorkItemTimeEntriesDto(int DraftMinutes, int SubmittedMinutes, int ApprovedMinutes);
 

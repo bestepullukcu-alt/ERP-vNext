@@ -3,6 +3,7 @@ using Diten.Platform.Application.Features.TimeEntry.Commands;
 using Diten.Platform.Application.Features.TimeEntry.Services;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.TimeEntry.Handlers.CommandHandlers;
 
@@ -17,12 +18,15 @@ public sealed class CloseTimersAtLocalMidnightHandler : IRequestHandler<CloseTim
     private readonly ITimerSegmentRepository _segments;
     private readonly ITimerAutoCloseNotifier _notifier;
     private readonly ITimerDraftWriter _drafts;
+    private readonly ILogger<CloseTimersAtLocalMidnightHandler> _logger;
     private readonly TimeProvider _clock;
 
     public CloseTimersAtLocalMidnightHandler(
         ITimerService timer, ITimerSegmentRepository segments, ITimerAutoCloseNotifier notifier, ITimerDraftWriter drafts,
-        TimeProvider clock)
+        TimeProvider clock,
+        ILogger<CloseTimersAtLocalMidnightHandler> logger)
     {
+        _logger = logger;
         _drafts = drafts;
         _timer = timer;
         _segments = segments;
@@ -50,7 +54,17 @@ public sealed class CloseTimersAtLocalMidnightHandler : IRequestHandler<CloseTim
         }
 
         // v2 F5 — the midnight run recomputes the week's drafts too, so one a failed close never wrote is written now.
-        await _drafts.ApplyWeekAsync(running.UserId, running.WeekKey, ct);
+        // v3 G4 — guarded: a recompute that fails does not cost the person their morning notification.
+        try
+        {
+            await _drafts.ApplyWeekAsync(running.UserId, running.WeekKey, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "time-entry.timer.midnight.draft_recompute_failed UserId={UserId}; the next save or run writes it.", running.UserId);
+        }
+
+        request.ClosedReason = TimerService.ReasonOf(pending.Kind).ToString(); // v3 G7 — on the audit entry
 
         // The morning notification is about a timer the MIDNIGHT closed; one its task closed earlier was not forgotten.
         if (pending.Kind == TimerPendingClose.LocalMidnight && request.Notify

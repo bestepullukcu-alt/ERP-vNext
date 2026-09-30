@@ -234,7 +234,10 @@ public sealed record TimeEntryDto(
     /// <summary>D8 — an accepted meeting row whose minutes now say Absent/Excused. Shown to the person only.</summary>
     bool MinutesConflict = false,
     /// <summary>The meeting id of a Meeting row — what a correction of that row sends back (v2 F1/F8).</summary>
-    string? SourceRef = null);
+    string? SourceRef = null,
+    /// <summary>v3 G2 — the captured (timer or meeting) value before the person's first correction; null while untouched.
+    /// The approver sees it next to the corrected figure.</summary>
+    int? CapturedMinutes = null);
 
 public sealed record TimesheetDayDto(
     DateOnly Date,

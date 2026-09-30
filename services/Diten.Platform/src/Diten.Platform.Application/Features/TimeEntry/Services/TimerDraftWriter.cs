@@ -37,11 +37,13 @@ public interface ITimerDraftWriter
 /// submitted by itself, and the person still has to submit the week (Z-2).
 ///
 /// <para><b>A recomputation, never an increment.</b> The row's minutes are the day's closed segments for that target,
-/// summed and rounded to 15 (ties up); under 8 minutes there is no row (A2). Running it twice writes the same row.</para>
+/// summed and rounded to 15 (ties up); under 8 minutes there is no row (A2). A row the person corrected is their value plus
+/// the timer time after the correction (v3 G1, <see cref="TimerRules.ExpectedTimerMinutes"/>). Running it twice writes
+/// the same row.</para>
 ///
 /// <para><b>Only into an open Draft.</b> A day of a submitted or approved week gets no row — the segments stay, and the
 /// week read reports them as "time outside an open week" (pack §13); a locked revision is never changed behind the
-/// person's back. A row the person edited (<see cref="TimeEntryRow.EditedFromTimer"/>) is theirs and is left alone.</para>
+/// person's back.</para>
 /// </summary>
 public sealed class TimerDraftWriter : ITimerDraftWriter
 {
@@ -99,7 +101,7 @@ public sealed class TimerDraftWriter : ITimerDraftWriter
         var closed = (await _segments.ListClosedForDayAsync(userId, localDate, ct))
             .Where(s => s.TaskItemId == taskItemId && s.CategoryCode == categoryCode)
             .ToList();
-        var minutes = TimerRules.DraftMinutes(closed.Sum(s => (long)s.DurationSeconds));
+        var seconds = closed.Sum(s => (long)s.DurationSeconds);
         var outside = closed.Sum(s => s.OutsideWorkingMinutes);
 
         for (var attempt = 0; attempt < MaxAttempts; attempt++)
@@ -114,7 +116,7 @@ public sealed class TimerDraftWriter : ITimerDraftWriter
             var week = context.Open;
             if (week is null)
             {
-                if (minutes == 0)
+                if (TimerRules.DraftMinutes(seconds) == 0)
                 {
                     return TimerDraftOutcome.Unchanged; // nothing to count and no draft to touch — do not open a week
                 }
@@ -129,10 +131,9 @@ public sealed class TimerDraftWriter : ITimerDraftWriter
             var rows = (await _entries.ListByWeekAsync(week.Id, ct)).ToList();
             var row = rows.FirstOrDefault(r => r.Source == TimeEntrySource.Timer && r.LocalDate == localDate
                                                && r.TaskItemId == taskItemId && r.CategoryCode == categoryCode);
-            if (row is { EditedFromTimer: true })
-            {
-                return TimerDraftOutcome.Unchanged; // the person's own number now
-            }
+
+            // v3 G1 — a corrected row keeps the person's value AND gains the timer time that came after the correction.
+            var minutes = TimerRules.ExpectedTimerMinutes(row, seconds);
 
             if ((row is null && minutes == 0) || (row is not null && row.DurationMinutes == minutes && row.OutsideWorkingMinutes == outside))
             {
