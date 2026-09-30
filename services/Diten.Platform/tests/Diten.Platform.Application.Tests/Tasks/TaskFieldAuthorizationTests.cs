@@ -101,9 +101,9 @@ public sealed class TaskFieldAuthorizationTests
         };
 
         var hidden = TaskItemMapper.ToDetail(
-            task, new TaskLifecycleService(), false, false, [], [], TaskActors.None(), definitions);
+            task, new TaskLifecycleService(), false, false, [], [], TaskActors.None(), definitions, 0m);
         var shown = TaskItemMapper.ToDetail(
-            task, new TaskLifecycleService(), false, false, [], [], TaskActors.Holding(SalaryView), definitions);
+            task, new TaskLifecycleService(), false, false, [], [], TaskActors.Holding(SalaryView), definitions, 0m);
 
         Assert.Null(Assert.Single(hidden.FieldValues!).Value);
         Assert.True(Assert.Single(hidden.FieldValues!).Redacted);

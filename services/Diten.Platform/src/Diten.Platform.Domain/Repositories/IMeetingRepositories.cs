@@ -90,6 +90,15 @@ public interface IMeetingRepository
     /// already follows for the "tasks" side of the same registry).</summary>
     Task<IReadOnlyList<Meeting>> ListByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default);
 
+    /// <summary>
+    /// MOD-0280-FU01 T1b v2 F9 — the meetings among <paramref name="ids"/> whose start lies in [<paramref name="fromUtc"/>,
+    /// <paramref name="toUtc"/>), filtered IN THE DATABASE by the real implementation (time entry reads one week, not a
+    /// person's whole meeting history). The default filters in memory so every existing double keeps compiling.
+    /// </summary>
+    async Task<IReadOnlyList<Meeting>> ListByIdsStartingBetweenAsync(
+        IReadOnlyCollection<Guid> ids, DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct = default)
+        => (await ListByIdsAsync(ids, ct)).Where(m => m.StartAt >= fromUtc && m.StartAt < toUtc).ToList();
+
     /// <summary>Whether ANY live meeting still references this type — the "in use" check
     /// <c>DeleteMeetingTypeCommand</c> refuses on (pack §13, <c>MEETING_TYPE_IN_USE</c>), without loading every
     /// meeting in the tenant just to answer one boolean.</summary>

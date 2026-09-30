@@ -1,4 +1,6 @@
 using Diten.Platform.Domain.Entities.TimeEntry;
+using Diten.Platform.Domain.Enums.TimeEntry;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Diten.Platform.Infrastructure.Persistence.Schema;
@@ -77,7 +79,20 @@ public static partial class PlatformSchemaManifest
                         .Ascending(x => x.TenantId)
                         .Ascending(x => x.Status)
                         .Ascending(x => x.SubmittedAtUtcTicks),
-                    new CreateIndexOptions { Name = "ix_time_entry_weeks_tenant_status_submitted" })
+                    new CreateIndexOptions { Name = "ix_time_entry_weeks_tenant_status_submitted" }),
+                // BL-479 — the sweep's FIRST query: approved revisions whose task totals never landed (F12). Partial, so
+                // it holds only the handful waiting for totals, never every approved week there ever was.
+                new CreateIndexModel<TimesheetWeek>(
+                    Builders<TimesheetWeek>.IndexKeys
+                        .Ascending(x => x.TenantId)
+                        .Ascending(x => x.SubmittedAtUtcTicks),
+                    new CreateIndexOptions<TimesheetWeek>
+                    {
+                        Name = "ix_time_entry_weeks_tenant_totals_outstanding",
+                        PartialFilterExpression = Builders<TimesheetWeek>.Filter.And(
+                            Builders<TimesheetWeek>.Filter.Eq(x => x.Status, TimesheetWeekStatus.Approved),
+                            Builders<TimesheetWeek>.Filter.Eq(x => x.TotalsAppliedAtUtc, null))
+                    })
             }),
 
         Collection<TimeEntry>(
@@ -85,8 +100,12 @@ public static partial class PlatformSchemaManifest
             PlatformCollections.TimeEntryEntries,
             () => new CreateIndexModel<TimeEntry>[]
             {
-                // One live row per (revision, day, task-or-category, source) — pack §4.2. Its prefix also serves
-                // "every row of this revision".
+                // One live row per (revision, day, task-or-category, source, source ref) — pack §4.2. SourceRef is the
+                // meeting id of a Meeting row (null for every other source, so those keep one row per cell): two
+                // meetings on one day are two rows, each with its own minutes-conflict flag (v2 F8). A NEW name on
+                // purpose — the T1a index (…_target_source, without SourceRef) is retired by PlatformSchemaMigrations
+                // before this is built; changing the keys under the old name would fail startup (IndexOptionsConflict).
+                // Its prefix also serves "every row of this revision".
                 new CreateIndexModel<TimeEntry>(
                     Builders<TimeEntry>.IndexKeys
                         .Ascending(x => x.TenantId)
@@ -94,11 +113,12 @@ public static partial class PlatformSchemaManifest
                         .Ascending(x => x.LocalDate)
                         .Ascending(x => x.TaskItemId)
                         .Ascending(x => x.CategoryCode)
-                        .Ascending(x => x.Source),
+                        .Ascending(x => x.Source)
+                        .Ascending(x => x.SourceRef),
                     new CreateIndexOptions<TimeEntry>
                     {
                         Unique = true,
-                        Name = "ux_time_entry_entries_tenant_week_date_target_source",
+                        Name = "ux_time_entry_entries_tenant_week_date_target_source_ref",
                         PartialFilterExpression = Builders<TimeEntry>.Filter.Eq(x => x.IsDeleted, false)
                     }),
                 // The finalizer's recomputation input: every row of one task.
@@ -107,6 +127,74 @@ public static partial class PlatformSchemaManifest
                         .Ascending(x => x.TenantId)
                         .Ascending(x => x.TaskItemId),
                     new CreateIndexOptions { Name = "ix_time_entry_entries_tenant_task" })
+            }),
+
+        // T1b (D2, D3, D4) — the timer's raw segments.
+        Collection<TimerSegment>(
+            SchemaProfile.TimeEntry,
+            PlatformCollections.TimeEntryTimerSegments,
+            () => new CreateIndexModel<TimerSegment>[]
+            {
+                // D2 — ONE running timer per person: two concurrent starts cannot both land (pack §13, T-03).
+                new CreateIndexModel<TimerSegment>(
+                    Builders<TimerSegment>.IndexKeys
+                        .Ascending(x => x.TenantId)
+                        .Ascending(x => x.UserId),
+                    new CreateIndexOptions<TimerSegment>
+                    {
+                        Unique = true,
+                        Name = "ux_time_entry_timer_segments_tenant_user_running",
+                        PartialFilterExpression = Builders<TimerSegment>.Filter.And(
+                            Builders<TimerSegment>.Filter.Eq(x => x.IsRunning, true),
+                            Builders<TimerSegment>.Filter.Eq(x => x.IsDeleted, false))
+                    }),
+                // D2 — the same MOD-0024 transition starts ONE segment (T-02). "Sparse" as a partial filter on the
+                // field's type: a null StartTransitionId is stored as BSON null, which a sparse index WOULD index —
+                // and every timer-control start would then collide on it.
+                new CreateIndexModel<TimerSegment>(
+                    Builders<TimerSegment>.IndexKeys
+                        .Ascending(x => x.TenantId)
+                        .Ascending(x => x.StartTransitionId),
+                    new CreateIndexOptions<TimerSegment>
+                    {
+                        Unique = true,
+                        Name = "ux_time_entry_timer_segments_tenant_start_transition",
+                        PartialFilterExpression = Builders<TimerSegment>.Filter.Type(x => x.StartTransitionId, BsonType.Binary)
+                    }),
+                // A person's segments by day and by week (drafts, the week read, minimisation).
+                new CreateIndexModel<TimerSegment>(
+                    Builders<TimerSegment>.IndexKeys
+                        .Ascending(x => x.TenantId)
+                        .Ascending(x => x.UserId)
+                        .Ascending(x => x.WeekKey)
+                        .Ascending(x => x.LocalDate),
+                    new CreateIndexOptions { Name = "ix_time_entry_timer_segments_tenant_user_week_date" }),
+                // The hook's stop question: which running segments point at this task.
+                new CreateIndexModel<TimerSegment>(
+                    Builders<TimerSegment>.IndexKeys
+                        .Ascending(x => x.TenantId)
+                        .Ascending(x => x.TaskItemId)
+                        .Ascending(x => x.IsRunning),
+                    new CreateIndexOptions { Name = "ix_time_entry_timer_segments_tenant_task_running" })
+            }),
+
+        // T1b (D8) — the person's decision on a meeting suggestion; open suggestions are derived, not stored.
+        Collection<TimeSuggestion>(
+            SchemaProfile.TimeEntry,
+            PlatformCollections.TimeEntrySuggestions,
+            () => new CreateIndexModel<TimeSuggestion>[]
+            {
+                new CreateIndexModel<TimeSuggestion>(
+                    Builders<TimeSuggestion>.IndexKeys
+                        .Ascending(x => x.TenantId)
+                        .Ascending(x => x.MeetingId)
+                        .Ascending(x => x.UserId),
+                    new CreateIndexOptions<TimeSuggestion>
+                    {
+                        Unique = true,
+                        Name = "ux_time_entry_suggestions_tenant_meeting_user",
+                        PartialFilterExpression = Builders<TimeSuggestion>.Filter.Eq(x => x.IsDeleted, false)
+                    })
             }),
 
         // D7 — the single source of a task's spent time; one row per task.

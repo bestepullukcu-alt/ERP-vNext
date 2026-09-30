@@ -16,7 +16,7 @@ namespace Diten.Platform.API.Controllers;
 /// routes are a Control Tower prerequisite of T2 (§15); T1a is reachable on the service port only.
 ///
 /// <para>The person is ALWAYS the caller — no endpoint takes a user id (D11). Approve and reject are MOD-0023's own
-/// actions; there is deliberately no approve endpoint here (D6). T1b adds the timer, suggestion and plan fill-in
+/// actions; there is deliberately no approve endpoint here (D6). T1b added the timer, suggestion and plan fill-in
 /// routes.</para>
 /// </summary>
 [ApiController]
@@ -70,6 +70,44 @@ public sealed class TimeEntryController : CustomBaseController
     [HasPermission(TimeEntryPermissions.TimesheetsUpdate)]
     public async Task<IActionResult> DiscardCorrectionDraft(string weekKey, CancellationToken ct)
         => CreateActionResultInstance(await _mediator.Send(new DiscardCorrectionDraftCommand(weekKey, CorrelationId), ct));
+
+    [HttpGet("weeks/{weekKey}/plan-fill-in")]
+    [HasPermission(TimeEntryPermissions.TimesheetsRead)]
+    public async Task<IActionResult> GetPlanFillIn(string weekKey, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new GetPlanFillInQuery(weekKey, CorrelationId), ct));
+
+    [HttpPost("weeks/{weekKey}/suggestions/{id:guid}/accept")]
+    [HasPermission(TimeEntryPermissions.TimesheetsUpdate)]
+    public async Task<IActionResult> AcceptSuggestion(
+        string weekKey, Guid id, [FromBody] AcceptTimeSuggestionRequest request, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new AcceptTimeSuggestionCommand(weekKey, id, request, CorrelationId), ct));
+
+    [HttpPost("weeks/{weekKey}/suggestions/{id:guid}/dismiss")]
+    [HasPermission(TimeEntryPermissions.TimesheetsUpdate)]
+    public async Task<IActionResult> DismissSuggestion(string weekKey, Guid id, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new DismissTimeSuggestionCommand(weekKey, id, CorrelationId), ct));
+
+    // ── My timer (T1b) — always the caller's own; no endpoint shows anyone else's (D11) ────────────────────────
+
+    [HttpGet("timer")]
+    [HasPermission(TimeEntryPermissions.TimesheetsRead)]
+    public async Task<IActionResult> GetTimer(CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new GetMyTimerQuery(CorrelationId), ct));
+
+    [HttpPost("timer/start")]
+    [HasPermission(TimeEntryPermissions.TimesheetsUpdate)]
+    public async Task<IActionResult> StartTimer([FromBody] StartTimerRequest request, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new StartTimerCommand(request, CorrelationId), ct));
+
+    [HttpPost("timer/stop")]
+    [HasPermission(TimeEntryPermissions.TimesheetsUpdate)]
+    public async Task<IActionResult> StopTimer(CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new StopTimerCommand(CorrelationId), ct));
+
+    [HttpPost("timer/undo-switch")]
+    [HasPermission(TimeEntryPermissions.TimesheetsUpdate)]
+    public async Task<IActionResult> UndoTimerSwitch([FromBody] UndoTimerSwitchRequest request, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new UndoTimerSwitchCommand(request, CorrelationId), ct));
 
     // ── Approvals (read only — the decision is MOD-0023's) ──────────────────────────────────────────────────────
 

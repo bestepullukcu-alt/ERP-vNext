@@ -116,4 +116,19 @@ public sealed class TimeEntryManifestProviderTests
         SchemaVersion = "1.0",
         ExpressionVersion = "1.0"
     };
+
+    [Fact]
+    public void T1b_capture_actions_ride_on_my_timesheet_with_no_new_key()
+    {
+        var page = _manifest.Pages.Single(p => p.PageCode == TimeEntryManifestProvider.PageMyTimesheet);
+        var actions = page.Actions.ToDictionary(a => a.ActionCode, a => a.PermissionKey);
+
+        Assert.Equal(TimeEntryPermissions.TimesheetsUpdate, actions["START_TIMER"]);
+        Assert.Equal(TimeEntryPermissions.TimesheetsUpdate, actions["STOP_TIMER"]);
+        Assert.Equal(TimeEntryPermissions.TimesheetsUpdate, actions["UNDO_TIMER_SWITCH"]);
+        Assert.Equal(TimeEntryPermissions.TimesheetsUpdate, actions["ACCEPT_SUGGESTION"]);
+        Assert.Equal(TimeEntryPermissions.TimesheetsUpdate, actions["DISMISS_SUGGESTION"]);
+        Assert.Equal(TimeEntryPermissions.TimesheetsRead, actions["FILL_FROM_PLAN"]);
+        Assert.False(page.IsNavigationVisible); // still hidden until T2
+    }
 }

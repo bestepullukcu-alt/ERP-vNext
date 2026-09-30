@@ -136,7 +136,9 @@ public abstract class TimeEntryScenario : IAsyncLifetime
             TenantId = tenant, Code = code, LabelText = code, CountsAsWork = true, SortOrder = 10, IsActive = active
         });
 
-    protected Task SeedTaskAsync(Guid tenant, Guid id, Guid? assignee = null, Guid? creator = null)
+    protected Task SeedTaskAsync(
+        Guid tenant, Guid id, Guid? assignee = null, Guid? creator = null, TaskLifecycle lifecycle = TaskLifecycle.InProgress,
+        decimal spentHoursDecoy = 0m)
         => Collection<TaskItem>(PlatformCollections.TaskItems).InsertOneAsync(new TaskItem
         {
             Id = id,
@@ -146,8 +148,11 @@ public abstract class TimeEntryScenario : IAsyncLifetime
             AssigneeUserId = assignee ?? Person,
             CreatedByUserId = creator ?? Person,
             OrganizationUnitId = Unit,
-            Lifecycle = TaskLifecycle.InProgress,
+            Lifecycle = lifecycle,
             DueAt = Wednesday.AddDays(30),
+            // A DECOY for the D7 read-site tests: nothing writes this field in production, so any read site that still
+            // reads it shows this number instead of the approved total.
+            SpentHours = spentHoursDecoy,
             Version = 1
         });
 
@@ -197,8 +202,14 @@ public abstract class TimeEntryScenario : IAsyncLifetime
 
     // ── Operations ───────────────────────────────────────────────────────────────────────────────────────────────
 
-    protected static object Row(DateOnly date, int minutes, Guid? task = null, string? category = null, string? note = null)
-        => new { localDate = date.ToString("yyyy-MM-dd"), taskItemId = task, categoryCode = task is null ? category ?? Category : null, durationMinutes = minutes, note };
+    /// <summary>One row of a save. Every row names its source (v2 F1); a person-typed row by default.</summary>
+    protected static object Row(DateOnly date, int minutes, Guid? task = null, string? category = null, string? note = null,
+        string source = "Manual", string? sourceRef = null)
+        => new
+        {
+            localDate = date.ToString("yyyy-MM-dd"), taskItemId = task, categoryCode = task is null ? category ?? Category : null,
+            durationMinutes = minutes, note, source, sourceRef
+        };
 
     protected Task<ApiResult> GetWeekAsync(string weekKey = CurrentWeek, string? token = null)
         => Host.GetAsync($"/api/v1/time-entry/weeks/{weekKey}", token ?? PersonToken());

@@ -17,6 +17,7 @@ using Diten.Platform.Application.Features.TimeEntry;
 using Diten.Platform.Application.Features.TimeEntry.Services;
 using Diten.Platform.Application.Features.WorkingCalendar.Provider;
 using Diten.Platform.Application.Features.WorkingHours;
+using Diten.Platform.Application.Services;
 using Diten.Platform.Application.Services.Eventing;
 using Diten.Platform.Application.Tests.Persistence;
 using Diten.Platform.Common.Authorization;
@@ -66,7 +67,8 @@ public sealed class TimeEntryMongoFixture : IAsyncLifetime
 
         await PlatformSchemaManifest.ApplyAsync(Database,
         [
-            SchemaProfile.TimeEntry, SchemaProfile.WorkflowWorkCenter, SchemaProfile.Eventing, SchemaProfile.Organization
+            SchemaProfile.TimeEntry, SchemaProfile.WorkflowWorkCenter, SchemaProfile.Eventing, SchemaProfile.Organization,
+            SchemaProfile.Meetings
         ]);
     }
 
@@ -182,8 +184,43 @@ public sealed class TestProbes : ITimesheetSubmissionProbe, ITimesheetFinalizati
     public Task BeforeWithdrawCancelAsync(Guid weekId, CancellationToken ct)
         => BeforeWithdrawCancel?.Invoke(weekId) ?? Task.CompletedTask;
 
+    /// <summary>CT acceptance (T1b v3): throw here to make the save/submit timer-draft recompute fail.</summary>
+    public Func<Guid, string, Task>? BeforeWeekDraftRecompute { get; set; }
+
+    public Task BeforeWeekDraftRecomputeAsync(Guid userId, string weekKey, CancellationToken ct)
+        => BeforeWeekDraftRecompute?.Invoke(userId, weekKey) ?? Task.CompletedTask;
+
     public Task BeforeTaskTotalWriteAsync(Guid taskItemId, CancellationToken ct)
         => BeforeTaskTotalWrite?.Invoke(taskItemId) ?? Task.CompletedTask;
+}
+
+/// <summary>Counts the morning notifications instead of sending them (the real one needs AuthService and a template).</summary>
+public sealed class CountingAutoCloseNotifier : ITimerAutoCloseNotifier
+{
+    private readonly List<Guid> _segments = [];
+
+    public IReadOnlyList<Guid> Segments
+    {
+        get { lock (_segments) { return _segments.ToList(); } }
+    }
+
+    /// <summary>People whose notification throws — a stand-in for "something failed for this one person" (v3 G4).</summary>
+    public HashSet<Guid> ThrowFor { get; } = [];
+
+    public Task NotifyAsync(Diten.Platform.Domain.Entities.TimeEntry.TimerSegment segment, CancellationToken ct = default)
+    {
+        if (ThrowFor.Contains(segment.UserId))
+        {
+            throw new InvalidOperationException("test: this person's notification fails");
+        }
+
+        lock (_segments)
+        {
+            _segments.Add(segment.Id);
+        }
+
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>The caller as the audit behaviour reads it: an authenticated tenant user, straight from the token.</summary>
@@ -277,6 +314,10 @@ public sealed class TimeEntryHost : IDisposable
                 services.AddScoped<ITimeEntrySettingsRepository, TimeEntrySettingsRepository>();
                 services.AddScoped<ILegalEntityTimeSettingRepository, LegalEntityTimeSettingRepository>();
                 services.AddScoped<ITaskTimeTotalRepository, TaskTimeTotalRepository>();
+                services.AddScoped<ITimerSegmentRepository, TimerSegmentRepository>();
+                services.AddScoped<ITimeSuggestionRepository, TimeSuggestionRepository>();
+                services.AddScoped<IMeetingRepository, MeetingRepository>();
+                services.AddScoped<IMeetingAttendeeRepository, MeetingAttendeeRepository>();
                 services.AddScoped<IWorkflowTemplateRepository, WorkflowTemplateRepository>();
                 services.AddScoped<IWorkflowTemplateVersionRepository, WorkflowTemplateVersionRepository>();
                 services.AddScoped<IWorkflowInstanceRepository, WorkflowInstanceRepository>();
@@ -306,9 +347,29 @@ public sealed class TimeEntryHost : IDisposable
                 services.AddScoped<ITaskTeamResolver, TaskTeamResolver>();
                 services.AddScoped<ITaskReadAccessPolicy, TaskReadAccessPolicy>();
 
+                // ── T1b: MOD-0024's REAL transition path (TasksController → TransitionTaskItemHandler → the repository
+                //    choke point → the observer), so "start the task" is measured on the wire, not simulated ─────────
+                services.AddScoped<ITaskLifecycleService, TaskLifecycleService>();
+                services.AddScoped<IChecklistRunRepository, ChecklistRunRepository>();
+                services.AddScoped<ITaskChecklistService, TaskChecklistService>();
+                services.AddScoped<IWorkflowTransitionGate, WorkflowTransitionGate>();
+                services.AddScoped<ITaskDependencyRepository, TaskDependencyRepository>();
+                services.AddScoped<ITaskTypeRepository, TaskTypeRepository>();
+                services.AddScoped<ITaskFieldDefinitionRepository, TaskFieldDefinitionRepository>();
+                services.AddScoped<ITaskRecordSourceRegistry>(_ => new TaskRecordSourceRegistry([]));
+                services.AddScoped<ITaskFieldDefinitionService, TaskFieldDefinitionService>();
+                services.AddScoped<ITaskAttachmentRepository, TaskAttachmentRepository>();
+                // The task detail read (GET /api/v1/tasks/{id}) — one of the D7 read sites.
+                services.AddOptions<TaskApprovalOptions>();
+                services.AddScoped<ITaskApprovalService, TaskApprovalService>();
+
                 // ── The two crash seams, registered before the module so its no-op defaults do not apply ────────────
                 services.AddSingleton<ITimesheetSubmissionProbe>(Probes);
                 services.AddSingleton<ITimesheetFinalizationProbe>(Probes);
+
+                // ── T1b: the morning notification is counted, not sent; the time-tracking switch is the test's ────────
+                services.AddSingleton<ITimerAutoCloseNotifier>(Notifier);
+                services.AddSingleton(TimeTracking);
 
                 // ── The module's own registration, the one production calls ─────────────────────────────────────
                 services.AddTimeEntryModule();
@@ -341,6 +402,10 @@ public sealed class TimeEntryHost : IDisposable
     public TestDisplayNames Names { get; } = new();
     public StubWorkingCalendar Calendar { get; } = new();
     public TestProbes Probes { get; } = new();
+    public CountingAutoCloseNotifier Notifier { get; } = new();
+
+    /// <summary>The §5.1 item 3 switch as production registers it (off); a test turns it on to measure T2's data path.</summary>
+    public TaskTimeTrackingOptions TimeTracking { get; } = new() { DeclareTimeTracking = false };
 
     public IServiceProvider Services => _server.Services;
 

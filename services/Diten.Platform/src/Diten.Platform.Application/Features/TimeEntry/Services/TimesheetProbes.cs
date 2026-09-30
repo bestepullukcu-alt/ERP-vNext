@@ -12,6 +12,9 @@ public interface ITimesheetSubmissionProbe
 
     /// <summary>F13 — between "withdraw read the decision as pending" and "withdraw cancels the instance".</summary>
     Task BeforeWithdrawCancelAsync(Guid weekId, CancellationToken ct);
+
+    /// <summary>CT acceptance (T1b v3) — just before a save/submit recomputes the week's timer drafts.</summary>
+    Task BeforeWeekDraftRecomputeAsync(Guid userId, string weekKey, CancellationToken ct);
 }
 
 /// <summary>F9 — between "task total computed" and "task total written".</summary>
@@ -25,6 +28,8 @@ public sealed class NoOpTimesheetProbe : ITimesheetSubmissionProbe, ITimesheetFi
     public Task AfterApprovalStartedAsync(Guid weekId, CancellationToken ct) => Task.CompletedTask;
 
     public Task BeforeWithdrawCancelAsync(Guid weekId, CancellationToken ct) => Task.CompletedTask;
+
+    public Task BeforeWeekDraftRecomputeAsync(Guid userId, string weekKey, CancellationToken ct) => Task.CompletedTask;
 
     public Task BeforeTaskTotalWriteAsync(Guid taskItemId, CancellationToken ct) => Task.CompletedTask;
 }

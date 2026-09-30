@@ -104,9 +104,15 @@ public static class TimesheetRules
     public static List<DateOnly> FlaggedDates(IReadOnlyDictionary<DateOnly, int> dayTotals)
         => dayTotals.Where(d => d.Value > TimeEntryLimits.FlagDayMinutes).Select(d => d.Key).OrderBy(d => d).ToList();
 
+    /// <summary>One row as both the person and the approver read it — including whether it was corrected from its captured
+    /// value, and what that value was (v3 G2).</summary>
     public static TimeEntryDto ToDto(TimeEntryRow entry) => new(
         entry.Id, entry.LocalDate, entry.DurationMinutes, entry.TaskItemId, entry.CategoryCode,
-        entry.Source.ToString(), entry.Note);
+        entry.Source.ToString(), entry.Note,
+        OutsideWorkingMinutes: entry.OutsideWorkingMinutes,
+        EditedFromTimer: entry.EditedFromTimer,
+        SourceRef: entry.SourceRef,
+        CapturedMinutes: entry.CapturedMinutes);
 
     public static IReadOnlyList<TimesheetDayDto> Days(
         IReadOnlyList<WorkingDay> days, DateOnly monday, IReadOnlyDictionary<DateOnly, int> dayTotals, DateOnly localToday)

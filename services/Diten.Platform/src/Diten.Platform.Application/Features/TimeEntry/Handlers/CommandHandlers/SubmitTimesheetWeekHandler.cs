@@ -5,6 +5,7 @@ using Diten.Platform.Application.Features.TimeEntry.Services;
 using Diten.Platform.Domain.Enums.TimeEntry;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.TimeEntry.Handlers.CommandHandlers;
 
@@ -33,6 +34,8 @@ public sealed class SubmitTimesheetWeekHandler : IRequestHandler<SubmitTimesheet
     private readonly ICurrentUserContext _currentUser;
     private readonly TimeProvider _clock;
     private readonly ITimesheetSubmissionProbe _probe;
+    private readonly ITimerDraftWriter _drafts;
+    private readonly ILogger<SubmitTimesheetWeekHandler> _logger;
 
     public SubmitTimesheetWeekHandler(
         ITimesheetWeekReader reader,
@@ -42,8 +45,12 @@ public sealed class SubmitTimesheetWeekHandler : IRequestHandler<SubmitTimesheet
         ITimesheetApprovalService approvals,
         ICurrentUserContext currentUser,
         TimeProvider clock,
-        ITimesheetSubmissionProbe probe)
+        ITimesheetSubmissionProbe probe,
+        ITimerDraftWriter drafts,
+        ILogger<SubmitTimesheetWeekHandler> logger)
     {
+        _drafts = drafts;
+        _logger = logger;
         _reader = reader;
         _weeks = weeks;
         _entries = entries;
@@ -64,7 +71,34 @@ public sealed class SubmitTimesheetWeekHandler : IRequestHandler<SubmitTimesheet
         }
 
         var userId = _currentUser.UserId;
+
         var context = await _reader.LoadAsync(userId, monday, ct);
+        if (TimesheetRules.WriteRefusal(context) is { } closed)
+        {
+            return Fail("This week is not open for submission.", 409, closed, request);
+        }
+
+        // v2 F5 / v3 G4 — once the week is known to be open, its timer drafts are recomputed from the segments BEFORE
+        // anything is submitted, so a draft a failed close never wrote is not left out. A failure here is logged and the
+        // submit goes on (the next save, submit or midnight run writes it). If it moved the week, the version the person
+        // read is stale and the check below answers 409.
+        //
+        // ⚠ CT acceptance (T1b v3): on a SUBMIT a failed recompute is refused (retryable 409), not logged past — a week
+        // submitted and approved with timer time missing from its draft is a short legal record, and approval then
+        // minimises the segments. A save may go on (the record is not final); a submit may not.
+        try
+        {
+            await _probe.BeforeWeekDraftRecomputeAsync(userId, context.WeekKey, ct);
+            await _drafts.ApplyWeekAsync(userId, context.WeekKey, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(ex, "time-entry.submit.draft_recompute_failed WeekKey={WeekKey}; the submit is refused (retryable).", context.WeekKey);
+            return Fail("The week's timer time could not be brought up to date just now. Try again.", 409,
+                TimeEntryReasonCodes.TimerDraftsUnavailable, request);
+        }
+
+        context = await _reader.LoadAsync(userId, monday, ct);
 
         if (context.Revisions.Count == 0)
         {

@@ -37,6 +37,17 @@ public sealed class TimeEntry : TenantScopedEntity
 
     public bool EditedFromTimer { get; set; }
 
+    /// <summary>v3 G2 — the captured value (timer or meeting) before the person's FIRST correction; null while untouched.
+    /// Shown to the approver next to the corrected figure.</summary>
+    public int? CapturedMinutes { get; set; }
+
+    /// <summary>v3 G1 — the minutes the person set on a timer row at their LAST correction.</summary>
+    public int? CorrectedMinutes { get; set; }
+
+    /// <summary>v3 G1 — the day's closed timer seconds for this target at that correction (the baseline). Timer time that
+    /// arrives later is added on top of the person's value: row = corrected + (segments now − baseline).</summary>
+    public long? CorrectionBaselineSeconds { get; set; }
+
     public int OutsideWorkingMinutes { get; set; }
 
     /// <summary>Trim, max 500.</summary>

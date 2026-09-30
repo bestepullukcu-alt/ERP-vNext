@@ -388,6 +388,9 @@ public static class DependencyInjection
         services.AddScoped<ITimeEntrySettingsRepository, TimeEntrySettingsRepository>();
         services.AddScoped<ILegalEntityTimeSettingRepository, LegalEntityTimeSettingRepository>();
         services.AddScoped<ITaskTimeTotalRepository, TaskTimeTotalRepository>();
+        // MOD-0280-FU01 T1b — the timer's segments and the meeting-suggestion decisions.
+        services.AddScoped<ITimerSegmentRepository, TimerSegmentRepository>();
+        services.AddScoped<ITimeSuggestionRepository, TimeSuggestionRepository>();
         // MOD-0357 S5 — needs AuthServiceOptions.FrontendBaseUrl for the "Toplantıyı aç" deep link, which is
         // why the implementation lives here rather than beside ITaskNotificationService in Application.
         services.AddScoped<Diten.Platform.Application.Features.Meetings.Services.IMeetingInviteMailer,

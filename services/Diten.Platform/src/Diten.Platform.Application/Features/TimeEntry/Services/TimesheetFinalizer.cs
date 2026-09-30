@@ -1,11 +1,13 @@
 using System.Security.Cryptography;
 using System.Text;
 using Diten.BuildingBlocks.Eventing;
+using Diten.Platform.Application.Features.TimeEntry.Commands;
 using Diten.Platform.Application.Services.Eventing;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.TimeEntry;
 using Diten.Platform.Domain.Enums.TimeEntry;
 using Diten.Platform.Domain.Repositories;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.TimeEntry.Services;
@@ -80,6 +82,8 @@ public sealed class TimesheetFinalizer : ITimesheetFinalizer
     private readonly ITenantContext _tenantContext;
     private readonly TimeProvider _clock;
     private readonly ITimesheetFinalizationProbe _probe;
+    private readonly ITimerSegmentRepository _segments;
+    private readonly IMediator _mediator;
     private readonly ILogger<TimesheetFinalizer> _logger;
 
     public TimesheetFinalizer(
@@ -91,8 +95,12 @@ public sealed class TimesheetFinalizer : ITimesheetFinalizer
         ITenantContext tenantContext,
         TimeProvider clock,
         ITimesheetFinalizationProbe probe,
+        ITimerSegmentRepository segments,
+        IMediator mediator,
         ILogger<TimesheetFinalizer> logger)
     {
+        _segments = segments;
+        _mediator = mediator;
         _weeks = weeks;
         _entries = entries;
         _totals = totals;
@@ -262,7 +270,8 @@ public sealed class TimesheetFinalizer : ITimesheetFinalizer
         => week.Status == TimesheetWeekStatus.Approved && week.TotalsAppliedAtUtc is null;
 
     /// <summary>
-    /// Recomputes every task the revision OR the revision it corrects touched, then marks the week. The mark is written
+    /// Recomputes every task the revision OR the revision it corrects touched, minimises the week's timer segments (D4),
+    /// then marks the week. The mark is written
     /// LAST: a failure anywhere before it leaves the week "approved, totals outstanding", which every retry path
     /// (read, approvals page, sweep) picks up — the week is never left approved with totals that nobody will fix (F12).
     /// </summary>
@@ -284,6 +293,19 @@ public sealed class TimesheetFinalizer : ITimesheetFinalizer
             .Select(e => e.TaskItemId!.Value)
             .ToHashSet();
         await RecomputeTaskTotalsAsync(taskIds, week.Id, now, ct);
+
+        // D4 (T1b) — the approved week's timer segments lose their start/stop instants: an audited update, never a delete.
+        // BEFORE the mark, so a crash in between is retried by the same F12 path; replay-safe, because only segments
+        // still carrying their instants are touched — and nothing is sent (or audited) when there are none.
+        if (await _segments.CountUnminimisedAsync(week.UserId, week.WeekKey, ct) > 0)
+        {
+            var minimised = await _mediator.Send(
+                new MinimiseTimerSegmentsCommand(week.Id, week.UserId, week.WeekKey, week.Id.ToString()), ct);
+            if (!minimised.IsSuccessful)
+            {
+                throw new InvalidOperationException($"The timer segments of week {week.Id} could not be minimised; finalization will retry.");
+            }
+        }
 
         week.TotalsAppliedAtUtc = now;
         EnsureWritten(await _weeks.UpdateAsync(week, week.Version, ct), week.Id);

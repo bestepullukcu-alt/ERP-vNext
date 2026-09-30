@@ -4,15 +4,21 @@ using Diten.Platform.Application.Features.TimeEntry.Commands;
 using Diten.Platform.Application.Features.TimeEntry.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.TimeEntry;
+using Diten.Platform.Domain.Enums.TimeEntry;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.TimeEntry.Handlers.CommandHandlers;
 
 /// <summary>
 /// MOD-0280-FU01 D12 / R7 — one legal entity's timer switch. The first write creates its row (no row = off); switching
 /// on records who and why; every write carries the version the admin read (F11), so two admins cannot silently undo each
-/// other. T1a only stores the switch — the timer that reads it is T1b.
+/// other.
+///
+/// <para><b>T1b — off means off now.</b> Switching an entity off closes the running timers of the people whose primary
+/// seat is in it, at the switch time, <c>SwitchedOff</c> (pack §13). A timer the loop here misses (a seat moved in
+/// between) is closed by that person's next read, at the same switch time.</para>
 ///
 /// <para>The legal entity id is not looked up: legal entities are MDM's (another service), and a switch row for an
 /// unknown entity is inert — nobody's primary seat resolves to it.</para>
@@ -24,13 +30,25 @@ public sealed class SetLegalEntityTimerSwitchHandler
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
     private readonly TimeProvider _clock;
+    private readonly ITimerSegmentRepository _segments;
+    private readonly ITimeEntryOrgGateway _org;
+    private readonly ITimerService _timer;
+    private readonly ILogger<SetLegalEntityTimerSwitchHandler> _logger;
 
     public SetLegalEntityTimerSwitchHandler(
         ILegalEntityTimeSettingRepository settings,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext,
-        TimeProvider clock)
+        TimeProvider clock,
+        ITimerSegmentRepository segments,
+        ITimeEntryOrgGateway org,
+        ITimerService timer,
+        ILogger<SetLegalEntityTimerSwitchHandler> logger)
     {
+        _logger = logger;
+        _segments = segments;
+        _org = org;
+        _timer = timer;
         _settings = settings;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
@@ -71,10 +89,35 @@ public sealed class SetLegalEntityTimerSwitchHandler
             written = await _settings.UpdateAsync(row, request.Request.ExpectedVersion, ct);
         }
 
+        if (written && !row.TimerEnabled)
+        {
+            await CloseRunningTimersAsync(request.LegalEntityId, now, ct);
+        }
+
         return written
             ? Response<LegalEntityTimeSettingDto>.Success(WorkCategoryMapping.ToDto(row), correlationId: request.CorrelationId)
             : Response<LegalEntityTimeSettingDto>.Fail(
                 "The switch changed meanwhile; reload and retry.", 409,
                 TimeEntryReasonCodes.TimerSwitchConcurrencyConflict, request.CorrelationId);
+    }
+
+    private async Task CloseRunningTimersAsync(Guid legalEntityId, DateTimeOffset switchedAt, CancellationToken ct)
+    {
+        // Best effort (v2 F9): the switch is already saved; a close that fails here is logged, never turned into a 500,
+        // and that person's next read closes the segment at this same switch time.
+        foreach (var segment in await _segments.ListRunningAsync(int.MaxValue, ct))
+        {
+            try
+            {
+                if ((await _org.PrimarySeatAsync(segment.UserId, ct))?.LegalEntityId == legalEntityId)
+                {
+                    await _timer.CloseAsync(segment, switchedAt, TimerStopReason.SwitchedOff, null, ct);
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, "time-entry.timer.switch_off_close_failed SegmentId={SegmentId}; the next read closes it.", segment.Id);
+            }
+        }
     }
 }
