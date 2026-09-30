@@ -1,0 +1,8 @@
+### D4-1b idempotency — handler pre-check SABOTAGED (unique index layer left in place)
+warning: in the working copy of 'services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/Inventory/Handlers/CommandHandlers/PostMovementHandler.cs', LF will be replaced by CRLF the next time Git touches it
+-        if (committed is not null)
++        if (false && committed is not null) // SABOTAGE D4-1b
+  Başarısız Diten.InventoryService.Tests.Api.FailClosedTests.An_idempotent_replay_does_not_need_the_upstream_masters [1 s]
+  Hata İletisi:
+   expected 200, got 503: {"error":{"code":"PRODUCT_MASTER_UNAVAILABLE","message":"PRODUCT-MASTER could not be reached; the movement was not posted.","correlationId":"d30648e3-25a3-408e-859a-334c91bed614"},"contractVersion":"v1"}
+Başarısız! - Başarısız:     1, Başarılı:    11, Atlanan:     0, Toplam:    12, Süre: 1 s - Diten.InventoryService.Tests.dll (net8.0)

@@ -159,5 +159,11 @@ try {
 }
 finally {
     foreach ($p in $started) { Stop-Tracked $p }
+    # Prism debug logs echo the forwarded bearer; evidence never keeps a token, even a throwaway one.
+    Get-ChildItem -Path $EvidenceDir -Filter 'prism-*.log' -ErrorAction SilentlyContinue | ForEach-Object {
+        $text = [System.IO.File]::ReadAllText($_.FullName)
+        $masked = [regex]::Replace($text, 'eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+', '***(masked-jwt)')
+        [System.IO.File]::WriteAllText($_.FullName, $masked)
+    }
     foreach ($name in @('JwtSettings__Secret', 'PROBE_JWT_SECRET')) { Remove-Item "Env:$name" -ErrorAction SilentlyContinue }
 }
