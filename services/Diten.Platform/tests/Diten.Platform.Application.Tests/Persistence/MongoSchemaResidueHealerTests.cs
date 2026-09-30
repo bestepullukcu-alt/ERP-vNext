@@ -1,4 +1,6 @@
 using System.Net;
+using System.Reflection;
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Clusters;
@@ -28,7 +30,7 @@ public class MongoSchemaResidueHealerTests
         new(MongoResidueSweeper.MarkerHarness, runId ?? CurrentRun, new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc));
 
     private static HealDecision MayHeal(string name, HarnessMarker? marker)
-        => MongoSchemaResidueHealer.MayHeal(name, marker, CurrentRun);
+        => MongoSchemaResidueHealer.MayHeal(name, marker, CurrentRun, holdsRealLock: true);
 
     // ── 1. THE ONE CASE THAT IS SUPPOSED TO BE HEALED ─────────────────────────────────────────────────────────
 
@@ -107,6 +109,19 @@ public class MongoSchemaResidueHealerTests
         Assert.Contains("another run", decision.Reason);
     }
 
+    // ── 3b. ROUND 2 (M1): NOTHING WITHOUT THE REAL MACHINE-WIDE LOCK ───────────────────────────────────────────
+
+    [Fact]
+    public void A_process_without_the_real_lock_never_heals_even_an_owned_database_it_stamped()
+    {
+        // A lock-proof child holds a PROOF lock while its parent's live run holds the real one. Everything else here
+        // is perfect — owned name, our marker, this run — and it must still refuse.
+        var decision = MongoSchemaResidueHealer.MayHeal("diten_platform_itest", Ours(), CurrentRun, holdsRealLock: false);
+
+        Assert.False(decision.Allowed);
+        Assert.Contains("does not hold the real machine-wide test lock", decision.Reason);
+    }
+
     // ── 4. ONLY A DUPLICATE-KEY FAILURE IS RESIDUE ─────────────────────────────────────────────────────────────
 
     [Fact]
@@ -129,6 +144,95 @@ public class MongoSchemaResidueHealerTests
 
         Assert.False(MongoSchemaResidueHealer.IsDuplicateKeyFailure(failure));
         Assert.False(MongoSchemaResidueHealer.IsDuplicateKeyFailure(new InvalidOperationException("no Mongo cause at all")));
+    }
+
+    // ── 4b. ROUND 2 (M2): ONLY THE INDEX THE FAILURE NAMES ─────────────────────────────────────────────────────
+
+    [Fact]
+    public void The_failing_index_is_read_from_the_E11000_message_the_index_build_throws()
+    {
+        // The text measured on 2026-10-01 (MeetingTwoUserFlowMongoTests, the sticky run), wrapped as the manifest wraps it.
+        var failure = new InvalidOperationException(
+            "[PlatformSchemaManifest] failed to build indexes on 'meeting_minutes_versions'",
+            Command(11000,
+                "Index build failed: fafa374f: Collection diten_platform_itest.meeting_minutes_versions ( be504036 ) :: caused by :: "
+                + "E11000 duplicate key error collection: diten_platform_itest.meeting_minutes_versions index: "
+                + "ux_meeting_minutes_versions_tenant_meeting_version dup key: { TenantId: UUID(\"ceb0c84e-25f9-4cab-87b4-e98a2cc68559\"), "
+                + "MeetingId: UUID(\"e178283d-a541-4382-9b56-59c723ca7fce\"), VersionNumber: 1, IsDeleted: false }"));
+
+        var target = MongoSchemaResidueHealer.ParseDuplicateKeyTarget(failure);
+
+        Assert.Equal(new DuplicateKeyTarget("meeting_minutes_versions", "ux_meeting_minutes_versions_tenant_meeting_version"), target);
+        Assert.Null(MongoSchemaResidueHealer.ParseDuplicateKeyTarget(new InvalidOperationException("E11000 without a namespace")));
+    }
+
+    [Fact]
+    public void Only_the_named_index_is_a_heal_candidate_never_every_unique_index_of_the_profile()
+    {
+        var candidates = MongoSchemaResidueHealer.IndexesNamedBy(
+            SchemaProfile.Meetings, new DuplicateKeyTarget("meeting_series", "ux_meeting_series_tenant_name"));
+
+        var only = Assert.Single(candidates);
+        Assert.Equal("meeting_series", only.Collection);
+        Assert.Equal("ux_meeting_series_tenant_name", only.Index.Name);
+
+        // The profile has more unique indexes than that one — the first version would have scanned them all.
+        Assert.True(PlatformSchemaManifest.For(SchemaProfile.Meetings).Sum(c => c.Indexes.Count(i => i.Unique)) > 1);
+    }
+
+    // ── 4c. ROUND 2 (L2): THE MANIFEST HAS NO UNIQUE INDEX THE FINDER CANNOT MODEL ─────────────────────────────
+
+    [Fact]
+    public void No_unique_index_in_the_manifest_is_sparse_or_collated()
+    {
+        /*
+         * The finder groups on key values inside the partial filter. A SPARSE unique index would make every document
+         * missing the field look like one duplicate group — and the heal would delete them all; a COLLATED one groups
+         * differently from the index. Read from the manifest's own CreateIndexModel options (the same models
+         * production builds), by reflection because SchemaIndex does not carry them and src/ is not changed for tests.
+         */
+        var declared = DeclaredIndexOptions().ToArray();
+
+        Assert.True(declared.Count(d => d.Options?.Unique == true) > 100,
+            $"the manifest scan collapsed — it saw {declared.Count(d => d.Options?.Unique == true)} unique indexes");
+        Assert.Empty(MongoSchemaResidueHealer.UnmodelledUniqueIndexes(declared));
+    }
+
+    [Fact]
+    public void A_unique_sparse_or_collated_index_is_reported_and_a_sparse_non_unique_one_is_not()
+    {
+        var offenders = MongoSchemaResidueHealer.UnmodelledUniqueIndexes(new (string, string, CreateIndexOptions?)[]
+        {
+            ("c", "ux_sparse", new CreateIndexOptions { Unique = true, Sparse = true }),
+            ("c", "ux_collated", new CreateIndexOptions { Unique = true, Collation = new Collation("tr", strength: CollationStrength.Secondary) }),
+            ("c", "ix_sparse", new CreateIndexOptions { Sparse = true }),
+            ("c", "ux_plain", new CreateIndexOptions { Unique = true }),
+            ("c", "ix_no_options", null)
+        });
+
+        Assert.Equal(new[] { "c.ux_sparse", "c.ux_collated" }, offenders);
+    }
+
+    // ── 4d. ROUND 2 (L6): A SCOPED DATABASE IS ALWAYS INSIDE THE OWNED GRAMMAR ─────────────────────────────────
+
+    [Theory]
+    [InlineData("eventing-outbox-idempotency")]   // the scope that was in use until round 2
+    [InlineData("Upper_Case")]
+    [InlineData("dotted.scope")]
+    public void A_scope_outside_the_owned_grammar_is_refused_before_Mongo_is_touched(string scope)
+    {
+        var refused = Assert.Throws<ArgumentException>(() => MongoIntegrationHarness.IsolatedDatabaseName(scope));
+
+        Assert.Contains("outside the owned grammar", refused.Message);
+    }
+
+    [Fact]
+    public void An_underscored_scope_gives_an_owned_database_name()
+    {
+        var name = MongoIntegrationHarness.IsolatedDatabaseName("eventing_outbox_idempotency");
+
+        Assert.Equal("diten_platform_itest_eventing_outbox_idempotency", name);
+        Assert.True(MongoResidueSweeper.IsOwnedName(name));
     }
 
     // ── 5. THE PRECONDITION: NO DUPLICATE IS WRITTEN WITHOUT A UNIQUE INDEX TO REFUSE IT ───────────────────────
@@ -195,6 +299,27 @@ public class MongoSchemaResidueHealerTests
         await Task.WhenAll(first, second);
 
         Assert.Equal(1, runs);
+    }
+
+    private static IEnumerable<(string Collection, string Index, CreateIndexOptions? Options)> DeclaredIndexOptions()
+    {
+        foreach (var collection in PlatformSchemaManifest.All)
+        {
+            var field = collection.GetType().GetField("_models", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.True(field is not null,
+                $"{collection.GetType().Name} no longer has a '_models' field — update this scan, do not delete it");
+
+            var models = (Array)((Delegate)field!.GetValue(collection)!).DynamicInvoke()!;
+            var names = collection.Indexes;
+            Assert.Equal(names.Count, models.Length);
+
+            for (var i = 0; i < models.Length; i++)
+            {
+                var model = models.GetValue(i)!;
+                var options = (CreateIndexOptions?)model.GetType().GetProperty("Options")!.GetValue(model);
+                yield return (collection.Name, names[i].Name, options);
+            }
+        }
     }
 
     private static BsonDocument Index(string name, bool unique)

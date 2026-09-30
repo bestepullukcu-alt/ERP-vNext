@@ -74,6 +74,19 @@ public static class PlatformMongoTestLock
     public static Task EnsureHeldAsync() => Acquisition.Value;
 
     /// <summary>
+    /// True only when THIS process holds the REAL machine-wide lock: acquired, on the real path, not redirected, and
+    /// not the lock-proof child. BL-482: the harness's two delete paths — the start-of-run sweep and the duplicate-key
+    /// heal — run only when this is true. A lock-proof child holds a PROOF lock while the parent's live run holds the
+    /// real one, so a child that swept or healed would be deleting under a run it does not exclude.
+    /// </summary>
+    internal static bool HoldsRealLock =>
+        _redirect is null
+        && !LockProofChild.IsThisProcess
+        && Acquisition.IsValueCreated
+        && Acquisition.Value.IsCompletedSuccessfully
+        && string.Equals(Acquisition.Value.Result.LockPath, LockPath, StringComparison.Ordinal);
+
+    /// <summary>
     /// Points this process at a proof lock instead of the real one. Only a process started as the lock-proof
     /// child can do this, so a normal test run has no way to move the path or shorten the wait.
     /// </summary>

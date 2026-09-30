@@ -56,6 +56,9 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
     /// <summary>What the start-of-run sweep did. Null until it has run.</summary>
     public static SweepReport? LastSweep => _sweepReport;
 
+    /// <summary>The run id this process stamps into every database it opens (read by the healer's live tests).</summary>
+    internal static Guid CurrentRunId => RunId;
+
     private readonly IMongoClient _client;
     private readonly string? _databaseToDropOnDispose;
 
@@ -76,9 +79,27 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
 
     public IMongoDatabase Database { get; }
     public string DatabaseName { get; }
-    public Guid TenantId { get; } = Guid.NewGuid();
+    public Guid TenantId { get; } = IssueTenant();
     public TenantContext TenantContext { get; }
     public IPlatformDbContext DbContext { get; }
+
+    /*
+     * ⚠ BL-482: EVERY TENANT A HARNESS OF THIS PROCESS HANDS OUT IS REMEMBERED FOR THE LIFE OF THE PROCESS. Those are
+     * LIVE tests' tenants — some class may be writing under one right now, through handlers, into a collection whose
+     * profile it never asked for — so the duplicate-key heal never touches a group that belongs to one of them.
+     * Only tenants of processes that have exited are residue.
+     */
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, byte> IssuedTenants = new();
+
+    private static Guid IssueTenant()
+    {
+        var tenant = Guid.NewGuid();
+        IssuedTenants.TryAdd(tenant, 0);
+        return tenant;
+    }
+
+    /// <summary>True when a harness of THIS process handed <paramref name="tenantId"/> out.</summary>
+    internal static bool IsLiveTenant(Guid tenantId) => IssuedTenants.ContainsKey(tenantId);
 
     /// <summary>
     /// The default: ONE shared database, a fresh <see cref="TenantId"/> per harness, and only the schema
@@ -99,13 +120,31 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
     /// moved. Deleting the documents leaves the collections and indexes in place: measured at a handful.
     /// </summary>
     public static Task<MongoIntegrationHarness> CreateIsolatedAsync(string scope, params SchemaProfile[] profiles)
+        => CreateCoreAsync(IsolatedDatabaseName(scope), profiles, emptyFirst: true, dropOnDispose: false);
+
+    /// <summary>
+    /// The scoped database's name — refused unless it is inside the owned grammar. BL-482 (L6): a scope with a hyphen
+    /// (`eventing-outbox-idempotency`) produced a database the sweeper can never sweep and the heal can never heal,
+    /// because neither will act outside the grammar; it would simply pile up. Refused here, before Mongo is touched.
+    /// </summary>
+    internal static string IsolatedDatabaseName(string scope)
     {
         if (string.IsNullOrWhiteSpace(scope))
         {
             throw new ArgumentException("An isolated harness needs a stable scope name.", nameof(scope));
         }
 
-        return CreateCoreAsync($"{SharedDatabaseName}_{scope}", profiles, emptyFirst: true, dropOnDispose: false);
+        var name = $"{SharedDatabaseName}_{scope}";
+        if (!MongoResidueSweeper.IsOwnedName(name))
+        {
+            throw new ArgumentException(
+                $"Scope '{scope}' gives '{name}', which is outside the owned grammar ({MongoResidueSweeper.OwnedPrefix} "
+                + "followed by _lowercase_tokens): the sweep and the heal could never act on it. Use lowercase letters, "
+                + "digits and underscores.",
+                nameof(scope));
+        }
+
+        return name;
     }
 
     private static async Task<MongoIntegrationHarness> CreateCoreAsync(
@@ -196,57 +235,102 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
     }
 
     /// <summary>
-    /// Builds one profile into a harness-owned database. If the build fails on DUPLICATE KEYS, the offending rows
-    /// are test residue by construction (see <see cref="MongoSchemaResidueHealer"/>): they are removed, what was
-    /// removed is written to stderr, and the build is retried ONCE. Returns the heal report, or null when the
-    /// first build succeeded. Any other failure, a refusal to heal, or a failed retry is thrown, loudly.
+    /// Builds one profile into a harness-owned database. If the build fails on DUPLICATE KEYS, the ONE index the
+    /// failure names is healed under the rules in <see cref="MongoSchemaResidueHealer"/> (tenant-keyed index only,
+    /// no live tenant of this process, real lock held, our marker), the removal is logged at once, and the build is
+    /// retried. A retry that fails on ANOTHER named index heals that one too; the same index is never healed twice,
+    /// so the loop ends. Returns the heal report, or null when the first build succeeded. A refusal, a heal that
+    /// throws, or any other failure is thrown loudly — naming what was already removed (BL-482, L3).
     ///
     /// Internal so the heal can be proved directly (MongoSchemaResidueHealerMongoTests); the harness calls it
-    /// under <see cref="SchemaGate"/>.
+    /// under <see cref="SchemaGate"/>. <paramref name="log"/> defaults to stderr; tests pass their own.
     /// </summary>
-    internal static async Task<SchemaHealReport?> ApplyProfileHealingResidueAsync(IMongoDatabase database, SchemaProfile profile)
+    internal static async Task<SchemaHealReport?> ApplyProfileHealingResidueAsync(
+        IMongoDatabase database,
+        SchemaProfile profile,
+        TextWriter? log = null)
     {
-        try
-        {
-            await PlatformSchemaManifest.ApplyAsync(database, new[] { profile });
-            return null;
-        }
-        catch (Exception firstFailure) when (MongoSchemaResidueHealer.IsDuplicateKeyFailure(firstFailure))
-        {
-            var report = await MongoSchemaResidueHealer.RemoveDuplicateKeyResidueAsync(database, profile, RunId);
-            if (report.Refusal is not null)
-            {
-                throw new InvalidOperationException(
-                    $"{firstFailure.Message} [BL-482: not healed — {report.Refusal}]", firstFailure);
-            }
+        log ??= Console.Error;
+        var databaseName = database.DatabaseNamespace.DatabaseName;
+        var healed = new List<HealedIndex>();
 
-            foreach (var healed in report.Healed)
-            {
-                Console.Error.WriteLine(
-                    $"[MongoIntegrationHarness] BL-482 removed {healed.RowsRemoved} residue row(s) "
-                    + $"({healed.DuplicateKeys} duplicated key(s)) blocking unique index '{healed.Index}' on "
-                    + $"'{report.DatabaseName}.{healed.Collection}'; sample keys: {string.Join(" | ", healed.SampleKeys)}");
-            }
-
+        while (true)
+        {
             try
             {
                 await PlatformSchemaManifest.ApplyAsync(database, new[] { profile });
+                if (healed.Count == 0)
+                {
+                    return null;
+                }
+
+                var report = new SchemaHealReport(databaseName, profile, healed, null);
+                log.WriteLine(
+                    $"[MongoIntegrationHarness] BL-482 healed '{databaseName}' ({profile}): {report.RowsRemoved} "
+                    + $"residue row(s) removed from {healed.Count} index(es); the schema build then succeeded.");
+                return report;
             }
-            catch (Exception retryFailure)
+            catch (Exception failure) when (MongoSchemaResidueHealer.IsDuplicateKeyFailure(failure))
+            {
+                var target = MongoSchemaResidueHealer.ParseDuplicateKeyTarget(failure);
+                SchemaHealReport step;
+                if (target is null)
+                {
+                    step = new SchemaHealReport(databaseName, profile, Array.Empty<HealedIndex>(),
+                        "the failure does not name the index it failed on");
+                }
+                else if (healed.Any(h => h.Collection == target.Collection && h.Index == target.Index))
+                {
+                    step = new SchemaHealReport(databaseName, profile, Array.Empty<HealedIndex>(),
+                        $"'{target.Collection}.{target.Index}' was already healed once in this build and still fails");
+                }
+                else
+                {
+                    try
+                    {
+                        step = await MongoSchemaResidueHealer.HealAsync(
+                            database, profile, target, RunId, PlatformMongoTestLock.HoldsRealLock, IsLiveTenant);
+                    }
+                    catch (Exception healFailure)
+                    {
+                        throw new InvalidOperationException(
+                            $"[MongoIntegrationHarness] BL-482: healing '{target.Collection}.{target.Index}' in "
+                            + $"'{databaseName}' threw{AlreadyRemoved(healed)}: {healFailure.Message}",
+                            healFailure);
+                    }
+                }
+
+                if (step.Refusal is not null)
+                {
+                    throw new InvalidOperationException(
+                        $"{failure.Message} [BL-482: not healed — {step.Refusal}]{AlreadyRemoved(healed)}", failure);
+                }
+
+                foreach (var index in step.Healed)
+                {
+                    healed.Add(index);
+                    // Logged the moment it happens, not after the whole heal: if a later step fails, the log already
+                    // says what this one removed.
+                    log.WriteLine(
+                        $"[MongoIntegrationHarness] BL-482 removed {index.RowsRemoved} residue row(s) "
+                        + $"({index.DuplicateKeys} duplicated key(s)) blocking unique index '{index.Index}' on "
+                        + $"'{databaseName}.{index.Collection}'; sample keys: {string.Join(" | ", index.SampleKeys)}");
+                }
+            }
+            catch (Exception failure) when (healed.Count > 0)
             {
                 throw new InvalidOperationException(
-                    $"[MongoIntegrationHarness] BL-482: the {profile} schema build still failed after removing "
-                    + $"{report.RowsRemoved} duplicate-key residue row(s) from '{report.DatabaseName}' "
-                    + $"(first failure: {firstFailure.Message}): {retryFailure.Message}",
-                    retryFailure);
+                    $"[MongoIntegrationHarness] BL-482: the {profile} schema build of '{databaseName}' failed"
+                    + $"{AlreadyRemoved(healed)}: {failure.Message}",
+                    failure);
             }
-
-            Console.Error.WriteLine(
-                $"[MongoIntegrationHarness] BL-482 healed '{report.DatabaseName}' ({profile}): "
-                + $"{report.RowsRemoved} residue row(s) removed, schema build retried once and succeeded.");
-            return report;
         }
     }
+
+    private static string AlreadyRemoved(IReadOnlyCollection<HealedIndex> healed)
+        => healed.Count == 0
+            ? string.Empty
+            : $" (BL-482 had already removed {string.Join("; ", healed.Select(h => h.Describe()))})";
 
     /*
      * Runs at most once per process, and never throws into a test.
@@ -265,8 +349,23 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
     private static Task SweepResidueOnceAsync(IMongoClient client)
         => SweepGate.RunAsync(() => SweepResidueAndReportAsync(client));
 
+    /// <summary>What the sweep reports, and writes to stderr, when this process does not hold the real lock.</summary>
+    internal const string SweepSkippedWithoutRealLock =
+        "residue sweep skipped: this process does not hold the real machine-wide test lock (lock-proof child)";
+
     private static async Task SweepResidueAndReportAsync(IMongoClient client)
     {
+        /*
+         * ⚠ BL-482 (M1): NO SWEEP WITHOUT THE REAL LOCK. A lock-proof child holds a PROOF lock while its parent's live
+         * run holds the real one; a sweep there would decide on and drop databases under a run it does not exclude.
+         */
+        if (!PlatformMongoTestLock.HoldsRealLock)
+        {
+            _sweepReport = new SweepReport(Array.Empty<string>(), new[] { SweepSkippedWithoutRealLock });
+            Console.Error.WriteLine($"[MongoIntegrationHarness] {SweepSkippedWithoutRealLock}");
+            return;
+        }
+
         SweepReport report;
         try
         {

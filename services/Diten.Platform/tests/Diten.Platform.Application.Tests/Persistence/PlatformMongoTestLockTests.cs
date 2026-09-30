@@ -50,7 +50,8 @@ public sealed class PlatformMongoTestLockTests
     [Fact]
     public async Task A_second_process_waits_gives_up_while_the_lock_is_held_and_opens_once_the_holder_dies()
     {
-        // The children below reach the shared mongod when they get their proof lock, so this process takes the real one.
+        // The children below reach the shared mongod when they get their proof lock — their OWN scoped database, never
+        // the shared one (BL-482, M1) — so this process takes the real one.
         await PlatformMongoTestLock.EnsureHeldAsync();
         var lockPath = ProofLockPath();
         try
@@ -85,7 +86,43 @@ public sealed class PlatformMongoTestLockTests
             Assert.True(await waiter.WaitForExitAsync(ChildDeadline) == LockProofChild.Succeeded, waiter.Output);
             var acquired = waiter.Entries.Single(entry => entry.Text.Contains($"acquired {lockPath} after waiting", StringComparison.Ordinal));
             Assert.True(acquired.At >= killedAt, $"acquired at {acquired.At:O}, before the holder was killed at {killedAt:O}");
-            Assert.Contains(waiter.Lines, line => line.StartsWith($"HARNESS_OPENED database={MongoIntegrationHarness.SharedDatabaseName} ", StringComparison.Ordinal));
+            // BL-482 (M1): the child opened its OWN scoped database — never the shared one the parent's run is using —
+            // and, holding only a proof lock, it neither swept nor may heal.
+            var childDatabase = MongoIntegrationHarness.IsolatedDatabaseName(LockProofChild.ChildScope);
+            Assert.Contains(waiter.Lines, line => line.StartsWith($"HARNESS_OPENED database={childDatabase} ", StringComparison.Ordinal));
+            Assert.DoesNotContain($"HARNESS_OPENED database={MongoIntegrationHarness.SharedDatabaseName} ", waiter.Output);
+            Assert.Contains(MongoIntegrationHarness.SweepSkippedWithoutRealLock, waiter.Output);
+            Assert.Contains("HOLDS_REAL_LOCK=False", waiter.Lines);
+        }
+        finally
+        {
+            DeleteProofFiles(lockPath);
+        }
+    }
+
+    /*
+     * BL-482 (M1) — DEFENCE IN DEPTH. Even inside its own scoped database, a lock-proof child must not run the harness's
+     * delete paths: it holds a proof lock, not the real one. The child builds the heal's exact residue and asks the
+     * real heal to repair it; the heal must refuse, for the lock reason, and leave both rows. This process, which holds
+     * the real lock, is the control: it may heal.
+     */
+    [Fact]
+    public async Task A_lock_proof_child_neither_sweeps_nor_heals()
+    {
+        await PlatformMongoTestLock.EnsureHeldAsync();
+        Assert.True(PlatformMongoTestLock.HoldsRealLock, "the parent test process must hold the real lock");
+
+        var lockPath = ProofLockPath();
+        try
+        {
+            await using var child = LockProofProcess.Start(null, "heal-refusal", lockPath);
+
+            Assert.True(await child.WaitForExitAsync(ChildDeadline) == LockProofChild.Succeeded, child.Output);
+            Assert.Contains(MongoIntegrationHarness.SweepSkippedWithoutRealLock, child.Output);
+            Assert.DoesNotContain("HEAL_SUCCEEDED_IN_CHILD", child.Output);
+            var refused = Assert.Single(child.Lines, line => line.StartsWith("HEAL_REFUSED ", StringComparison.Ordinal));
+            Assert.StartsWith("HEAL_REFUSED rows=2 ", refused);
+            Assert.Contains("does not hold the real machine-wide test lock", refused);
         }
         finally
         {
