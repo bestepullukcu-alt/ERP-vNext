@@ -818,6 +818,7 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>Исключение</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Определения полей</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Совещания</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>Мой табель</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Типы совещаний</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Серии совещаний</value></data>
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Отчёт по совещаниям</value></data>

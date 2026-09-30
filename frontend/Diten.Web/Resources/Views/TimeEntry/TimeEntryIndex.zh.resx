@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve"><value>我的工时表</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>本周工作时间的去向，逐日记录。</value></data>
+  <data name="Disclaimer" xml:space="preserve"><value>本工时表是工作量分配记录，并非法定工作时间（加班）记录。</value></data>
+  <data name="Loading" xml:space="preserve"><value>加载中…</value></data>
+  <data name="PrevWeek" xml:space="preserve"><value>上一周</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>下一周</value></data>
+  <data name="Today" xml:space="preserve"><value>今天</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="CopyPreviousWeek" xml:space="preserve"><value>复制上一周</value></data>
+  <data name="FillFromPlan" xml:space="preserve"><value>按计划填充</value></data>
+  <data name="ReviewSuggestions" xml:space="preserve"><value>查看建议</value></data>
+  <data name="SidePanel" xml:space="preserve"><value>提示</value></data>
+  <data name="SideToggle" xml:space="preserve"><value>显示或隐藏提示</value></data>
+  <data name="WeekLabel" xml:space="preserve"><value>{week} · {from} – {to}</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="StatusSubmitted" xml:space="preserve"><value>已提交</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>已退回</value></data>
+  <data name="StatusCorrection" xml:space="preserve"><value>更正草稿</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>已被取代</value></data>
+  <data name="MissingDays" xml:space="preserve"><value>截至今天有 {count} 天低于目标</value></data>
+  <data name="SourceManual" xml:space="preserve"><value>手动</value></data>
+  <data name="SourceTimer" xml:space="preserve"><value>计时器</value></data>
+  <data name="SourceMeeting" xml:space="preserve"><value>会议</value></data>
+  <data name="SourcePlan" xml:space="preserve"><value>来自计划</value></data>
+  <data name="UnreadableTask" xml:space="preserve"><value>无法访问的任务</value></data>
+  <data name="UnknownPerson" xml:space="preserve"><value>某人</value></data>
+  <data name="ColumnWork" xml:space="preserve"><value>工作</value></data>
+  <data name="ColumnTotal" xml:space="preserve"><value>合计</value></data>
+  <data name="RowTotal" xml:space="preserve"><value>合计</value></data>
+  <data name="RowTarget" xml:space="preserve"><value>目标</value></data>
+  <data name="CellAria" xml:space="preserve"><value>{row}，{day}</value></data>
+  <data name="EmptyWeek" xml:space="preserve"><value>本周尚无记录。请添加任务行或类别行开始。</value></data>
+  <data name="EmptyDay" xml:space="preserve"><value>这一天没有记录。</value></data>
+  <data name="DaySummary" xml:space="preserve"><value>已记录 {recorded} · 目标 {target}</value></data>
+  <data name="MarkEdited" xml:space="preserve"><value>已更正</value></data>
+  <data name="MarkOutsideHours" xml:space="preserve"><value>{value} 在工作时间之外</value></data>
+  <data name="MarkMinutesConflict" xml:space="preserve"><value>会议纪要显示您未出席</value></data>
+  <data name="MarkFlaggedDay" xml:space="preserve"><value>工作时间较长——审批人会看到</value></data>
+  <data name="ConfirmedByMinutes" xml:space="preserve"><value>已由会议纪要确认</value></data>
+  <data name="AcceptPlanValue" xml:space="preserve"><value>添加此计划时间</value></data>
+  <data name="Attended" xml:space="preserve"><value>已出席</value></data>
+  <data name="DidNotAttend" xml:space="preserve"><value>未出席</value></data>
+  <data name="RowNote" xml:space="preserve"><value>备注</value></data>
+  <data name="RowNoteTitle" xml:space="preserve"><value>备注 · {row}</value></data>
+  <data name="NoteNeedsTime" xml:space="preserve"><value>请先在某一天填写时间；备注属于当天的记录。</value></data>
+  <data name="Note" xml:space="preserve"><value>备注</value></data>
+  <data name="AddTaskRow" xml:space="preserve"><value>+ 任务行</value></data>
+  <data name="AddCategoryRow" xml:space="preserve"><value>+ 类别行</value></data>
+  <data name="PickTask" xml:space="preserve"><value>选择任务…</value></data>
+  <data name="PickCategory" xml:space="preserve"><value>选择类别…</value></data>
+  <data name="NoTaskOptions" xml:space="preserve"><value>未找到您可以记录时间的任务。</value></data>
+  <data name="NoCategoryOptions" xml:space="preserve"><value>没有启用的类别。请联系您的工时管理员。</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Apply" xml:space="preserve"><value>应用</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>保存草稿</value></data>
+  <data name="Saved" xml:space="preserve"><value>草稿已保存。</value></data>
+  <data name="SubmitWeek" xml:space="preserve"><value>提交审批</value></data>
+  <data name="Resubmit" xml:space="preserve"><value>重新提交</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>要提交本周进行审批吗？</value></data>
+  <data name="Submitted" xml:space="preserve"><value>本周已提交审批。</value></data>
+  <data name="Withdraw" xml:space="preserve"><value>撤回</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>要从审批中撤回本周吗？它将重新成为草稿。</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>本周已撤回，重新成为草稿。</value></data>
+  <data name="RequestCorrection" xml:space="preserve"><value>申请更正</value></data>
+  <data name="CorrectionReason" xml:space="preserve"><value>为什么需要更正这一已批准的周？</value></data>
+  <data name="StartCorrection" xml:space="preserve"><value>开始更正</value></data>
+  <data name="CorrectionStarted" xml:space="preserve"><value>已打开更正草稿。在更正获批之前，已批准的周保持有效。</value></data>
+  <data name="DiscardCorrection" xml:space="preserve"><value>放弃更正</value></data>
+  <data name="DiscardCorrectionConfirm" xml:space="preserve"><value>要放弃此更正草稿吗？已批准的周保持不变。</value></data>
+  <data name="DiscardChangesConfirm" xml:space="preserve"><value>本周有未保存的更改。不保存就离开吗？</value></data>
+  <data name="RejectedBand" xml:space="preserve"><value>{name} 于 {when} 退回：“{reason}”。请更正本周后重新提交。</value></data>
+  <data name="WaitingApprovalOf" xml:space="preserve"><value>等待 {name} 审批。</value></data>
+  <data name="WaitingApprovalUnnamed" xml:space="preserve"><value>等待审批。</value></data>
+  <data name="ApprovedBand" xml:space="preserve"><value>已批准。今后的更改需通过更正申请。</value></data>
+  <data name="CorrectionBand" xml:space="preserve"><value>对已批准修订版 {revision} 的更正：“{reason}”。在本更正获批之前，已批准的修订版保持有效。</value></data>
+  <data name="ReopenedBand" xml:space="preserve"><value>工时管理员已重新打开：“{reason}”。</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>审批记录</value></data>
+  <data name="HistorySubmitted" xml:space="preserve"><value>提交人：{name}</value></data>
+  <data name="HistoryRejected" xml:space="preserve"><value>退回人：{name}</value></data>
+  <data name="HistoryApproved" xml:space="preserve"><value>批准人：{name}</value></data>
+  <data name="CopiedRows" xml:space="preserve"><value>已从上一周复制 {count} 行，不含时间。</value></data>
+  <data name="NothingToCopy" xml:space="preserve"><value>上一周没有可复制的新行。</value></data>
+  <data name="PlanValuesShown" xml:space="preserve"><value>计划时间以灰色显示；可逐格添加，或通过“查看建议”添加。</value></data>
+  <data name="NoPlanValues" xml:space="preserve"><value>您的计划中本周没有可添加的时间。</value></data>
+  <data name="ReviewMeetingItem" xml:space="preserve"><value>{day} · {title} · {value}</value></data>
+  <data name="ReviewPlanItem" xml:space="preserve"><value>{day} · {title} · {value}（计划）</value></data>
+  <data name="NoSuggestions" xml:space="preserve"><value>本周没有建议。</value></data>
+  <data name="AddSelected" xml:space="preserve"><value>添加所选项</value></data>
+  <data name="InvalidDuration" xml:space="preserve"><value>不是有效的时长。请使用 1:30、1,5、1.5 或 90m。</value></data>
+  <data name="RoundedTo" xml:space="preserve"><value>已四舍五入到最接近的一刻钟：{value}。</value></data>
+  <data name="NoticeMidnightTitle" xml:space="preserve"><value>计时器已在午夜关闭</value></data>
+  <data name="NoticeOutsideOpenWeekTitle" xml:space="preserve"><value>计时时间落在已锁定的周——请申请更正</value></data>
+  <data name="NoticeDraftPendingTitle" xml:space="preserve"><value>尚未写入草稿的计时时间</value></data>
+  <data name="TooShortTitle" xml:space="preserve"><value>时间过短，不计入</value></data>
+  <data name="Seconds" xml:space="preserve"><value>{value} 秒</value></data>
+  <data name="SideEmpty" xml:space="preserve"><value>没有提示。</value></data>
+  <data name="CorrectCapturedTitle" xml:space="preserve"><value>更正采集的时间</value></data>
+  <data name="MeasuredValue" xml:space="preserve"><value>测得：{value}</value></data>
+  <data name="CorrectedValue" xml:space="preserve"><value>更正后的时间</value></data>
+  <data name="AccessDeniedTitle" xml:space="preserve"><value>您无权访问“我的工时表”</value></data>
+  <data name="AccessDeniedMessage" xml:space="preserve"><value>请向管理员申请此模块的访问权限。</value></data>
+  <data name="TimerChipLabel" xml:space="preserve"><value>正在运行的计时器</value></data>
+  <data name="TimerChipStop" xml:space="preserve"><value>停止</value></data>
+  <data name="OpenTask" xml:space="preserve"><value>打开任务</value></data>
+  <data name="TimerStopped" xml:space="preserve"><value>计时器已停止。</value></data>
+  <data name="TimerStopFailed" xml:space="preserve"><value>无法停止计时器。请重试。</value></data>
+  <data name="MidnightNotice" xml:space="preserve"><value>您的计时器一直运行到午夜并已关闭。请在“我的工时表”中检查昨天的记录。</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>出现问题。请重试。</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="ErrStepInvalid" xml:space="preserve"><value>时间须以一刻钟（15 分钟）为单位，每条记录最多 16 小时。</value></data>
+  <data name="ErrTimerDraftsUnavailable" xml:space="preserve"><value>暂时无法将计时时间写入草稿。请稍后重试。</value></data>
+  <data name="ErrFutureDate" xml:space="preserve"><value>不能为将来的日期记录时间。</value></data>
+  <data name="ErrDateOutsideWeek" xml:space="preserve"><value>该日期不属于本周。</value></data>
+  <data name="ErrTargetInvalid" xml:space="preserve"><value>无法使用该任务——它不存在或您无法打开。</value></data>
+  <data name="ErrDuplicateRow" xml:space="preserve"><value>同一任务或类别在同一天出现了两次。</value></data>
+  <data name="ErrNoteTooLong" xml:space="preserve"><value>备注最多 500 个字符。</value></data>
+  <data name="ErrCategoryInactive" xml:space="preserve"><value>该类别已停用。</value></data>
+  <data name="ErrDayImplausible" xml:space="preserve"><value>一天的记录不能超过 16 小时。</value></data>
+  <data name="ErrWeekKeyInvalid" xml:space="preserve"><value>无法读取该周。</value></data>
+  <data name="ErrWeekNotFound" xml:space="preserve"><value>未找到该周。</value></data>
+  <data name="ErrWeekNotOpen" xml:space="preserve"><value>本周不允许修改。</value></data>
+  <data name="ErrWeekOutsideEditWindow" xml:space="preserve"><value>本周早于可编辑期限。请联系工时管理员重新打开。</value></data>
+  <data name="ErrEmptyWeek" xml:space="preserve"><value>不能提交空白的周。</value></data>
+  <data name="ErrNoApprover" xml:space="preserve"><value>未找到您的审批人。请联系您的工时管理员。</value></data>
+  <data name="ErrApprovalStartFailed" xml:space="preserve"><value>无法启动审批。请重试。</value></data>
+  <data name="ErrWithdrawTooLate" xml:space="preserve"><value>审批人已作出决定；本周已无法撤回。</value></data>
+  <data name="ErrCorrectionReasonRequired" xml:space="preserve"><value>请填写需要更正的原因。</value></data>
+  <data name="ErrCorrectionAlreadyOpen" xml:space="preserve"><value>本周已有一个未完成的更正。</value></data>
+  <data name="ErrCorrectionNotAllowed" xml:space="preserve"><value>只有已批准的周才能更正。</value></data>
+  <data name="ErrCorrectionDraftNotFound" xml:space="preserve"><value>没有可放弃的更正草稿。</value></data>
+  <data name="ErrReopenReasonRequired" xml:space="preserve"><value>重新打开一周需要填写原因。</value></data>
+  <data name="ErrReopenNotNeeded" xml:space="preserve"><value>本周无需重新打开。</value></data>
+  <data name="ErrConcurrencyConflict" xml:space="preserve"><value>本周在此期间已被修改。请刷新后重试。</value></data>
+  <data name="ErrSelfDecisionRefused" xml:space="preserve"><value>对您本人周记录的决定未被接受；请重新提交。</value></data>
+  <data name="ErrApprovalInstanceClosed" xml:space="preserve"><value>该审批已关闭。</value></data>
+  <data name="ErrReopenOwnWeek" xml:space="preserve"><value>您不能重新打开自己的周。</value></data>
+  <data name="ErrPersonNotFound" xml:space="preserve"><value>未找到此人。</value></data>
+  <data name="ErrTimerSwitchConcurrencyConflict" xml:space="preserve"><value>计时器设置在此期间已被修改。请刷新后重试。</value></data>
+  <data name="ErrApprovalNotFound" xml:space="preserve"><value>未找到该审批。</value></data>
+  <data name="ErrCategoryNotFound" xml:space="preserve"><value>未找到该类别。</value></data>
+  <data name="ErrCategoryCodeInvalid" xml:space="preserve"><value>类别代码无效。</value></data>
+  <data name="ErrCategoryCodeReserved" xml:space="preserve"><value>该类别代码为保留代码。</value></data>
+  <data name="ErrCategoryCodeDuplicate" xml:space="preserve"><value>已存在使用该代码的类别。</value></data>
+  <data name="ErrCategoryCodeImmutable" xml:space="preserve"><value>类别代码不能更改。</value></data>
+  <data name="ErrCategoryLabelRequired" xml:space="preserve"><value>类别需要一个名称。</value></data>
+  <data name="ErrCategoryDescriptionTooLong" xml:space="preserve"><value>描述过长。</value></data>
+  <data name="ErrCategorySortOrderInvalid" xml:space="preserve"><value>排序值必须在 0 到 999 之间。</value></data>
+  <data name="ErrCategoryConcurrencyConflict" xml:space="preserve"><value>该类别在此期间已被修改。请刷新后重试。</value></data>
+  <data name="ErrSettingsPositionNotFound" xml:space="preserve"><value>未找到该职位。</value></data>
+  <data name="ErrSettingsConcurrencyConflict" xml:space="preserve"><value>设置在此期间已被修改。请刷新后重试。</value></data>
+  <data name="ErrLegalEntityRequired" xml:space="preserve"><value>需要指定法人实体。</value></data>
+  <data name="ErrTimerSwitchReasonRequired" xml:space="preserve"><value>开启计时器需要填写原因。</value></data>
+  <data name="ErrTimerDisabledForLegalEntity" xml:space="preserve"><value>您所在的法人实体未开启计时器。您仍可手动填写时间。</value></data>
+  <data name="ErrTimerTaskNotHeld" xml:space="preserve"><value>计时器只能用于您负责的任务。</value></data>
+  <data name="ErrTimerTaskNotInProgress" xml:space="preserve"><value>计时器只能用于进行中的任务。</value></data>
+  <data name="ErrTimerNotRunning" xml:space="preserve"><value>没有正在运行的计时器。</value></data>
+  <data name="ErrTimerConcurrencyConflict" xml:space="preserve"><value>计时器在此期间已被修改。请刷新后重试。</value></data>
+  <data name="ErrTimerUndoExpired" xml:space="preserve"><value>已来不及撤销该切换。</value></data>
+  <data name="ErrSuggestionNotFound" xml:space="preserve"><value>未找到该建议。</value></data>
+  <data name="ErrSuggestionAlreadyDecided" xml:space="preserve"><value>该建议已处理。</value></data>
+  <data name="ErrSuggestionWithdrawn" xml:space="preserve"><value>该建议已不再提供——会议纪要显示您未出席。</value></data>
+  <data name="ErrSourceInvalid" xml:space="preserve"><value>该行的来源无效。</value></data>
+  <data name="ErrSourceRequired" xml:space="preserve"><value>每一行都必须注明时间来源。</value></data>
+  <data name="ErrCapturedRowNotFound" xml:space="preserve"><value>该计时器或会议行已不在草稿中。请刷新本周。</value></data>
+  <data name="ErrRejectCommentRequired" xml:space="preserve"><value>退回工时表时必须填写原因。</value></data>
+  <data name="TimeEntry.Category.ADMINISTRATION" xml:space="preserve"><value>行政事务</value></data>
+  <data name="TimeEntry.Category.INTERNAL_MEETING" xml:space="preserve"><value>内部会议</value></data>
+  <data name="TimeEntry.Category.TRAINING" xml:space="preserve"><value>培训</value></data>
+  <data name="TimeEntry.Category.SUPPORT" xml:space="preserve"><value>支持</value></data>
+  <data name="TimeEntry.Category.TRAVEL" xml:space="preserve"><value>出差</value></data>
+</root>

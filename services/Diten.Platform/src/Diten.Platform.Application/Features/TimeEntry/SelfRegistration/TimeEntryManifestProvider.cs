@@ -12,10 +12,9 @@ namespace Diten.Platform.Application.Features.TimeEntry.SelfRegistration;
 /// to a tenant role. So the six T1a keys ride on the pages the pack names (§9) now — the MOD-0357 S2 / MOD-0024
 /// precedent.</para>
 ///
-/// <para><b><c>IsNavigationVisible: false</c> on every page until T2.</b> The screens (<c>/TimeEntry</c>,
-/// <c>/TimeEntry/Approvals</c>, …) are T2's; a nav entry today would be a dead link. T2 flips
-/// <c>MY_TIMESHEET</c> and <c>TIME_APPROVALS</c> to visible (pack §9) together with their <c>Nav.Page.*</c> keys in seven
-/// languages.</para>
+/// <para><b>Navigation, slice by slice.</b> T2a built <c>/TimeEntry</c>, so <c>MY_TIMESHEET</c> is visible (with
+/// <c>Nav.Page.MY_TIMESHEET</c> in seven languages). Every other page stays hidden until its screen exists (T2b) — a nav
+/// entry before that would be a dead link; T2b flips <c>TIME_APPROVALS</c> (pack §9).</para>
 ///
 /// <para><b>Known gap, reported (the same one MOD-0357 S2 reported).</b>
 /// <c>NavManifestL10nGuardTests</c> derives a required <c>Nav.Module.TIMEENTRY</c> key from this file's module code,
@@ -48,13 +47,15 @@ public sealed class TimeEntryManifestProvider : IModuleManifestProvider
             IsBaseline: false,
             Pages:
             [
+                // T2a — the screen exists, so this page is in the nav; the other pages stay hidden until T2b. (No comment on the
+                // flag's own line: NavManifestL10nGuardTests reads the value from this file's text.)
                 new ModuleManifestPage(
                     PageCode: PageMyTimesheet,
                     DisplayName: "My Timesheet",
                     RoutePath: "/TimeEntry",
                     RequiredPermission: TimeEntryPermissions.TimesheetsRead,
                     ParentPageCode: null,
-                    IsNavigationVisible: false,
+                    IsNavigationVisible: true,
                     PageType: "Detail",
                     SortOrder: 10,
                     Actions:

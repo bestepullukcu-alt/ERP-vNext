@@ -55,13 +55,15 @@ public sealed class TimeEntryManifestProviderTests
     }
 
     [Fact]
-    public void Every_route_is_tenant_scoped_and_pages_are_unique_and_hidden_until_T2()
+    public void Every_route_is_tenant_scoped_and_pages_are_unique_and_only_my_timesheet_is_in_the_nav()
     {
         Assert.All(_manifest.Pages, p => Assert.StartsWith("/TimeEntry", p.RoutePath, StringComparison.Ordinal));
         Assert.DoesNotContain(_manifest.Pages, p => p.RoutePath.StartsWith("/Platform", StringComparison.OrdinalIgnoreCase));
         Assert.Equal(_manifest.Pages.Count, _manifest.Pages.Select(p => p.PageCode).Distinct().Count());
         Assert.Equal(_manifest.Pages.Count, _manifest.Pages.Select(p => p.RoutePath).Distinct().Count());
-        Assert.All(_manifest.Pages, p => Assert.False(p.IsNavigationVisible));
+        // T2a — only the screen that exists is in the nav; the rest wait for T2b.
+        Assert.Equal([TimeEntryManifestProvider.PageMyTimesheet],
+            _manifest.Pages.Where(p => p.IsNavigationVisible).Select(p => p.PageCode).ToList());
         Assert.All(_manifest.Pages, p => Assert.Equal(p.Actions.Count, p.Actions.Select(a => a.ActionCode).Distinct().Count()));
     }
 
@@ -129,6 +131,6 @@ public sealed class TimeEntryManifestProviderTests
         Assert.Equal(TimeEntryPermissions.TimesheetsUpdate, actions["ACCEPT_SUGGESTION"]);
         Assert.Equal(TimeEntryPermissions.TimesheetsUpdate, actions["DISMISS_SUGGESTION"]);
         Assert.Equal(TimeEntryPermissions.TimesheetsRead, actions["FILL_FROM_PLAN"]);
-        Assert.False(page.IsNavigationVisible); // still hidden until T2
+        Assert.True(page.IsNavigationVisible); // T2a — the page exists
     }
 }

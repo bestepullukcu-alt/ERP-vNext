@@ -117,6 +117,12 @@ public static class TimeEntryLimits
     public const int CategoryDescriptionMaxLength = 500;
     public const int CategoryLabelMaxLength = 200;
     public const int ApprovalsMaxPageSize = 100;
+
+    /// <summary>T2a — the task picker answers at most this many tasks.</summary>
+    public const int TaskOptionsMax = 50;
+
+    /// <summary>T2a — a longer search text is cut to this length (it is matched as a plain substring, never a pattern).</summary>
+    public const int TaskOptionsSearchMaxLength = 100;
 }
 
 /// <summary>The module's names in MOD-0023, the manifest and the audit trail.</summary>
@@ -240,7 +246,10 @@ public sealed record TimeEntryDto(
     string? SourceRef = null,
     /// <summary>v3 G2 — the captured (timer or meeting) value before the person's first correction; null while untouched.
     /// The approver sees it next to the corrected figure.</summary>
-    int? CapturedMinutes = null);
+    int? CapturedMinutes = null,
+    /// <summary>T2a — the task's title, read in one batch per week through the task port; null for a category row AND for
+    /// a task the person can no longer read (the screen shows a neutral label, never the id or a stale title).</summary>
+    string? TaskTitle = null);
 
 public sealed record TimesheetDayDto(
     DateOnly Date,
@@ -292,14 +301,26 @@ public sealed record TimesheetWeekDto(
     /// it.</summary>
     IReadOnlyList<TimerDraftPendingDto>? TimerDraftPending = null,
     /// <summary>T1b (D8) — suggestions from the person's accepted meetings that ended this week.</summary>
-    IReadOnlyList<TimeSuggestionDto>? Suggestions = null);
+    IReadOnlyList<TimeSuggestionDto>? Suggestions = null,
+    /// <summary>T2a — the approval history strip: who submitted, approved and last rejected THIS revision, and the ONE
+    /// person MOD-0023 actually assigned the approval to (never the candidate list). Each name comes from the same
+    /// <c>IUserDisplayNameResolver</c> the approvals list uses; null when it cannot be resolved (never the id instead).</summary>
+    Guid? SubmittedByUserId = null,
+    string? SubmittedByDisplayName = null,
+    Guid? ApprovedByUserId = null,
+    string? ApprovedByDisplayName = null,
+    Guid? LastRejectedByUserId = null,
+    string? LastRejectedByDisplayName = null,
+    Guid? AssignedApproverUserId = null,
+    string? AssignedApproverDisplayName = null);
 
-public sealed record TimerTooShortDto(DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int Seconds);
+public sealed record TimerTooShortDto(DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int Seconds, string? TaskTitle = null);
 
-public sealed record TimerOutsideOpenWeekDto(DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int Minutes);
+public sealed record TimerOutsideOpenWeekDto(DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int Minutes, string? TaskTitle = null);
 
 /// <summary>v2 F5 — what the segments say a cell's timer draft should be, and what the draft holds.</summary>
-public sealed record TimerDraftPendingDto(DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int SegmentMinutes, int DraftMinutes);
+public sealed record TimerDraftPendingDto(
+    DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int SegmentMinutes, int DraftMinutes, string? TaskTitle = null);
 
 /// <summary>
 /// One meeting suggestion (D8). <see cref="Id"/> is stable per (meeting, person) — deterministic before the person
@@ -319,7 +340,7 @@ public sealed record TimeSuggestionDto(
 
 /// <summary>D9 — one ghost value: what the plan block says for (day, task). Never stored; accepting it is a save with
 /// <c>source: "Plan"</c>.</summary>
-public sealed record PlanFillInRowDto(DateOnly LocalDate, Guid TaskItemId, int DurationMinutes);
+public sealed record PlanFillInRowDto(DateOnly LocalDate, Guid TaskItemId, int DurationMinutes, string? TaskTitle = null);
 
 public sealed record PlanFillInDto(string WeekKey, DateOnly LocalToday, IReadOnlyList<PlanFillInRowDto> Rows);
 
@@ -333,10 +354,13 @@ public sealed record TimerSegmentDto(
     DateOnly LocalDate,
     string StartSource,
     Guid? SwitchToken,
-    DateTimeOffset? UndoUntilUtc);
+    DateTimeOffset? UndoUntilUtc,
+    /// <summary>T2a — what the top-bar chip names; null for a category or a task the person can no longer read.</summary>
+    string? TaskTitle = null);
 
 /// <summary>A segment the person's local midnight closed yesterday (D3) — the morning banner.</summary>
-public sealed record TimerAutoClosedDto(Guid SegmentId, DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int DurationSeconds);
+public sealed record TimerAutoClosedDto(
+    Guid SegmentId, DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int DurationSeconds, string? TaskTitle = null);
 
 /// <summary>The caller's timer. <see cref="TimerEnabled"/> is the legal-entity switch (D12): false with
 /// <see cref="DisabledReason"/> when off or unresolvable — manual entry is unaffected.</summary>
@@ -361,6 +385,10 @@ public sealed record TimesheetWeekMutationDto(
     int Version,
     IReadOnlyList<DateOnly> FlaggedDates,
     int TotalMinutes);
+
+/// <summary>T2a — one task the person can put time on: one they hold that is still open, or one they recorded time on in
+/// the edit window and can still read. Nothing else — a task they cannot read is never offered.</summary>
+public sealed record TimeEntryTaskOptionDto(Guid TaskItemId, string Title, string Status);
 
 public sealed record ApprovalWeekListItemDto(
     Guid WeekId,

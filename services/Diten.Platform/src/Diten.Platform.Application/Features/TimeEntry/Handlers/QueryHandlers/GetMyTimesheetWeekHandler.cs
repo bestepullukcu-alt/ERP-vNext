@@ -21,6 +21,11 @@ namespace Diten.Platform.Application.Features.TimeEntry.Handlers.QueryHandlers;
 /// <para><b>T1b — what the timer and the meetings add.</b> Timer time too short to count (A2) and timer time that fell on
 /// a locked week (§13) are reported, not written; meeting suggestions are derived (D8) — no suggestion row is written by
 /// reading, the id is stable per (meeting, person).</para>
+///
+/// <para><b>T2a — what the screen names.</b> Task titles come from the task port in ONE batched read per week, under the
+/// person's own read rule: a task they can no longer read has no title here. The approval history names the people on
+/// the revision — who submitted, approved, last rejected, and the one person MOD-0023 assigned — through the same display
+/// name resolver the approvals list uses.</para>
 /// </summary>
 public sealed class GetMyTimesheetWeekHandler : IRequestHandler<GetMyTimesheetWeekQuery, Response<TimesheetWeekDto>>
 {
@@ -30,6 +35,8 @@ public sealed class GetMyTimesheetWeekHandler : IRequestHandler<GetMyTimesheetWe
     private readonly ITimerReadModel _timer;
     private readonly ITimerSegmentRepository _segments;
     private readonly ITimeSuggestionReader _suggestions;
+    private readonly ITimeEntryTaskGateway _tasks;
+    private readonly IUserDisplayNameResolver _displayNames;
     private readonly ICurrentUserContext _currentUser;
 
     public GetMyTimesheetWeekHandler(
@@ -39,6 +46,8 @@ public sealed class GetMyTimesheetWeekHandler : IRequestHandler<GetMyTimesheetWe
         ITimerReadModel timer,
         ITimerSegmentRepository segments,
         ITimeSuggestionReader suggestions,
+        ITimeEntryTaskGateway tasks,
+        IUserDisplayNameResolver displayNames,
         ICurrentUserContext currentUser)
     {
         _reader = reader;
@@ -47,6 +56,8 @@ public sealed class GetMyTimesheetWeekHandler : IRequestHandler<GetMyTimesheetWe
         _timer = timer;
         _segments = segments;
         _suggestions = suggestions;
+        _tasks = tasks;
+        _displayNames = displayNames;
         _currentUser = currentUser;
     }
 
@@ -82,6 +93,31 @@ public sealed class GetMyTimesheetWeekHandler : IRequestHandler<GetMyTimesheetWe
             .Select(x => x.Decision!.AcceptedEntryId!.Value)
             .ToHashSet();
 
+        var tooShort = TimerWeekFacts.TooShort(segments);
+        // v2 F3 — any week the timer cannot write to: submitted, approved, or outside the edit window.
+        var outsideOpenWeek = refusal is not null ? TimerWeekFacts.OutsideOpenWeek(segments, rows) : [];
+        // v2 F5 — computed, never written: where the draft does not (yet) say what the segments say.
+        var draftPending = refusal is null ? TimerWeekFacts.DraftPending(segments, rows) : [];
+
+        var taskIds = rows.Select(r => r.TaskItemId)
+            .Concat(tooShort.Select(x => x.TaskItemId))
+            .Concat(outsideOpenWeek.Select(x => x.TaskItemId))
+            .Concat(draftPending.Select(x => x.TaskItemId))
+            .OfType<Guid>()
+            .Distinct()
+            .ToList();
+        var titles = taskIds.Count == 0
+            ? new Dictionary<Guid, TimeEntryTaskSummary>()
+            : await _tasks.ReadableTaskSummariesAsync(userId, taskIds, ct);
+        string? TitleOf(Guid? taskId) => taskId is { } id && titles.TryGetValue(id, out var task) ? task.Title : null;
+
+        var people = new[] { current?.SubmittedByUserId, current?.ApprovedByUserId, current?.LastRejectedByUserId, current?.AssignedApproverUserId }
+            .OfType<Guid>()
+            .Distinct()
+            .ToList();
+        var names = people.Count == 0 ? new Dictionary<Guid, string>() : await _displayNames.ResolveAsync(people, ct);
+        string? NameOf(Guid? user) => user is { } id && names.TryGetValue(id, out var name) && !string.IsNullOrWhiteSpace(name) ? name : null;
+
         return Response<TimesheetWeekDto>.Success(new TimesheetWeekDto(
             WeekKey: context.WeekKey,
             WeekStartDate: context.Monday,
@@ -114,13 +150,20 @@ public sealed class GetMyTimesheetWeekHandler : IRequestHandler<GetMyTimesheetWe
                 OutsideWorkingMinutes = row.OutsideWorkingMinutes,
                 EditedFromTimer = row.EditedFromTimer,
                 MinutesConflict = conflictedRows.Contains(row.Id),
-                SourceRef = row.SourceRef
+                SourceRef = row.SourceRef,
+                TaskTitle = TitleOf(row.TaskItemId)
             }).ToList(),
-            TooShortToCount: TimerWeekFacts.TooShort(segments),
-            // v2 F3 — any week the timer cannot write to: submitted, approved, or outside the edit window.
-            TimerOutsideOpenWeek: refusal is not null ? TimerWeekFacts.OutsideOpenWeek(segments, rows) : [],
-            // v2 F5 — computed, never written: where the draft does not (yet) say what the segments say.
-            TimerDraftPending: refusal is null ? TimerWeekFacts.DraftPending(segments, rows) : [],
-            Suggestions: suggestions.Where(x => x.Offered).Select(x => x.ToDto()).ToList()), correlationId: request.CorrelationId);
+            TooShortToCount: tooShort.Select(x => x with { TaskTitle = TitleOf(x.TaskItemId) }).ToList(),
+            TimerOutsideOpenWeek: outsideOpenWeek.Select(x => x with { TaskTitle = TitleOf(x.TaskItemId) }).ToList(),
+            TimerDraftPending: draftPending.Select(x => x with { TaskTitle = TitleOf(x.TaskItemId) }).ToList(),
+            Suggestions: suggestions.Where(x => x.Offered).Select(x => x.ToDto()).ToList(),
+            SubmittedByUserId: current?.SubmittedByUserId,
+            SubmittedByDisplayName: NameOf(current?.SubmittedByUserId),
+            ApprovedByUserId: current?.ApprovedByUserId,
+            ApprovedByDisplayName: NameOf(current?.ApprovedByUserId),
+            LastRejectedByUserId: current?.LastRejectedByUserId,
+            LastRejectedByDisplayName: NameOf(current?.LastRejectedByUserId),
+            AssignedApproverUserId: current?.AssignedApproverUserId,
+            AssignedApproverDisplayName: NameOf(current?.AssignedApproverUserId)), correlationId: request.CorrelationId);
     }
 }

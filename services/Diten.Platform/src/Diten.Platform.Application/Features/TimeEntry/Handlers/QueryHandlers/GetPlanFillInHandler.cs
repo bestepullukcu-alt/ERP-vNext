@@ -58,6 +58,13 @@ public sealed class GetPlanFillInHandler : IRequestHandler<GetPlanFillInQuery, R
             .OrderBy(r => r.LocalDate)
             .ToList();
 
+        // T2a — a ghost row for a task not yet on the sheet needs its name: one batched read, the person's read rule.
+        if (rows.Count > 0)
+        {
+            var titles = await _tasks.ReadableTaskSummariesAsync(userId, rows.Select(r => r.TaskItemId).Distinct().ToList(), ct);
+            rows = rows.Select(r => r with { TaskTitle = titles.TryGetValue(r.TaskItemId, out var task) ? task.Title : null }).ToList();
+        }
+
         return Response<PlanFillInDto>.Success(
             new PlanFillInDto(context.WeekKey, context.LocalToday, rows), correlationId: request.CorrelationId);
     }

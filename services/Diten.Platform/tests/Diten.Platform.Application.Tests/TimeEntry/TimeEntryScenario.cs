@@ -58,7 +58,7 @@ public abstract class TimeEntryScenario : IAsyncLifetime
 
     public virtual async Task InitializeAsync()
     {
-        Host = new TimeEntryHost(Fixture.DbContext);
+        Host = new TimeEntryHost(Fixture.DbContext, ConfigureHost);
         Host.Clock.UtcNow = Wednesday;
         Host.Names.Names[Person] = "Ayşe Yılmaz";
         Host.Names.Names[Manager] = "Mehmet Kaya";
@@ -71,6 +71,11 @@ public abstract class TimeEntryScenario : IAsyncLifetime
         await SeedCategoryAsync(Tenant, Category);
         await SeedTaskAsync(Tenant, TaskA);
         await SeedTaskAsync(Tenant, TaskB);
+    }
+
+    /// <summary>T2a — a test's extra wiring, applied after the module's own registration.</summary>
+    protected virtual void ConfigureHost(Microsoft.Extensions.DependencyInjection.IServiceCollection services)
+    {
     }
 
     public Task DisposeAsync()

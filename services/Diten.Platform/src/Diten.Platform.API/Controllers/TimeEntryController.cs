@@ -87,6 +87,13 @@ public sealed class TimeEntryController : CustomBaseController
     public async Task<IActionResult> DismissSuggestion(string weekKey, Guid id, CancellationToken ct)
         => CreateActionResultInstance(await _mediator.Send(new DismissTimeSuggestionCommand(weekKey, id, CorrelationId), ct));
 
+    /// <summary>T2a — the "+ Task row" picker: open tasks the caller holds and tasks they recorded time on in the edit
+    /// window, only those they can read; at most 50, filtered by title.</summary>
+    [HttpGet("task-options")]
+    [HasPermission(TimeEntryPermissions.TimesheetsUpdate)]
+    public async Task<IActionResult> GetTaskOptions([FromQuery] string? search, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new GetTimeEntryTaskOptionsQuery(search, CorrelationId), ct));
+
     // ── My timer (T1b) — always the caller's own; no endpoint shows anyone else's (D11) ────────────────────────
 
     [HttpGet("timer")]

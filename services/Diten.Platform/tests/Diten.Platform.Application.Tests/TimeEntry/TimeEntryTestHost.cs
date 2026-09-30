@@ -258,7 +258,9 @@ public sealed class TimeEntryHost : IDisposable
 
     private readonly TestServer _server;
 
-    public TimeEntryHost(IPlatformDbContext db)
+    /// <param name="configure">T2a — runs after the module's own registration, so a test can wrap a port (e.g. count
+    /// the task-port reads) without touching production wiring.</param>
+    public TimeEntryHost(IPlatformDbContext db, Action<IServiceCollection>? configure = null)
     {
         var builder = new WebHostBuilder()
             .UseEnvironment("Test")
@@ -373,6 +375,7 @@ public sealed class TimeEntryHost : IDisposable
 
                 // ── The module's own registration, the one production calls ─────────────────────────────────────
                 services.AddTimeEntryModule();
+                configure?.Invoke(services);
 
                 var application = typeof(TimeEntryPermissions).Assembly;
                 services.AddMediatR(cfg =>

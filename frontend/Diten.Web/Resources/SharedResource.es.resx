@@ -819,6 +819,7 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>Excepción</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Definiciones de campos</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Reuniones</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>Mi hoja de horas</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Tipos de reunión</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Series de reuniones</value></data>
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Informe de reuniones</value></data>

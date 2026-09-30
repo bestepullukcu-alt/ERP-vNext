@@ -28,6 +28,7 @@ public sealed class TimerReadModel : ITimerReadModel
     private readonly ITimerService _timer;
     private readonly ITimerSegmentRepository _segments;
     private readonly IWorkingHoursProvider _workingHours;
+    private readonly ITimeEntryTaskGateway _tasks;
     private readonly IMediator _mediator;
     private readonly TimeProvider _clock;
     private readonly ILogger<TimerReadModel> _logger;
@@ -36,6 +37,7 @@ public sealed class TimerReadModel : ITimerReadModel
         ITimerService timer,
         ITimerSegmentRepository segments,
         IWorkingHoursProvider workingHours,
+        ITimeEntryTaskGateway tasks,
         IMediator mediator,
         TimeProvider clock,
         ILogger<TimerReadModel> logger)
@@ -43,6 +45,7 @@ public sealed class TimerReadModel : ITimerReadModel
         _timer = timer;
         _segments = segments;
         _workingHours = workingHours;
+        _tasks = tasks;
         _mediator = mediator;
         _clock = clock;
         _logger = logger;
@@ -81,12 +84,20 @@ public sealed class TimerReadModel : ITimerReadModel
         var yesterday = hours.LocalDateOf(now).AddDays(-1);
         var closedAtMidnight = await _segments.ListClosedAtMidnightAsync(userId, yesterday, ct);
 
+        // T2a — the chip and the morning notice name the task: one batched read under the person's own read rule; a task
+        // they can no longer read keeps a null title.
+        var taskIds = closedAtMidnight.Select(s => s.TaskItemId).Append(running?.TaskItemId).OfType<Guid>().Distinct().ToList();
+        var titles = taskIds.Count == 0
+            ? new Dictionary<Guid, TimeEntryTaskSummary>()
+            : await _tasks.ReadableTaskSummariesAsync(userId, taskIds, ct);
+        string? TitleOf(Guid? taskId) => taskId is { } id && titles.TryGetValue(id, out var task) ? task.Title : null;
+
         return new TimerDto(
             enabled,
             enabled ? null : TimeEntryReasonCodes.TimerDisabledForLegalEntity,
-            running is null ? null : ToDto(running),
+            running is null ? null : ToDto(running) with { TaskTitle = TitleOf(running.TaskItemId) },
             closedAtMidnight
-                .Select(s => new TimerAutoClosedDto(s.Id, s.LocalDate, s.TaskItemId, s.CategoryCode, s.DurationSeconds))
+                .Select(s => new TimerAutoClosedDto(s.Id, s.LocalDate, s.TaskItemId, s.CategoryCode, s.DurationSeconds, TitleOf(s.TaskItemId)))
                 .ToList());
     }
 

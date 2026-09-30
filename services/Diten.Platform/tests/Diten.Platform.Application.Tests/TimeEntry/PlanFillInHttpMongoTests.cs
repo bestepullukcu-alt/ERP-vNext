@@ -63,6 +63,7 @@ public sealed class PlanFillInHttpMongoTests : TimerScenario
         Assert.Equal(TaskA, row.GetProperty("taskItemId").GetGuid());
         Assert.Equal("2026-10-05", row.GetProperty("localDate").GetString());
         Assert.Equal(105, row.GetProperty("durationMinutes").GetInt32());
+        Assert.Equal("Task " + TaskA.ToString("N")[..4], row.GetProperty("taskTitle").GetString()); // T2a — named for a new row
         Assert.Equal(documents, await DocumentCountAsync());
         Assert.Equal(audits, Host.Audit.Requests.Count);
     }
