@@ -63,8 +63,9 @@ public interface IApprovalTaskRepository
 
     /// <summary>
     /// BL-484 — <see cref="GetActiveByInstanceIdAsync"/> for several instances in ONE read: every open task of these
-    /// instances, NEWEST FIRST, so the first one listed for an instance is the one <see cref="GetActiveByInstanceIdAsync"/>
-    /// answers. The default asks one instance at a time (what an in-memory double needs); the store overrides it.
+    /// instances, NEWEST FIRST (ties by id, the same order the single read uses), so the first one listed for an instance
+    /// is the one <see cref="GetActiveByInstanceIdAsync"/> answers. The default asks one instance at a time (what an
+    /// in-memory double needs); the store overrides it.
     /// </summary>
     async Task<IReadOnlyList<ApprovalTask>> ListActiveByInstanceIdsAsync(
         IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)

@@ -172,6 +172,37 @@ public sealed class TimeEntryT2bRouteTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
+    public void The_bulk_limit_is_the_same_number_as_Platforms_weekIds_limit()
+    {
+        // BL-484 (CT review L5) — the web tier re-reads a bulk selection with weekIds=; Platform refuses more ids than its
+        // limit. Two constants in two services: if they drift, a full bulk selection is refused as a whole.
+        var platform = File.ReadAllText(RepoPath(
+            "services", "Diten.Platform", "src", "Diten.Platform.Application", "Features", "TimeEntry", "TimeEntryModels.cs"));
+        var declared = Regex.Match(platform, @"public const int ApprovalsMaxWeekIds = (\d+);");
+        Assert.True(declared.Success, "TimeEntryLimits.ApprovalsMaxWeekIds is no longer declared where this test reads it");
+
+        var web = typeof(TimeEntryController).GetField("MaxBulkWeeks", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        Assert.NotNull(web);
+
+        Assert.Equal(int.Parse(declared.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture), (int)web!.GetRawConstantValue()!);
+    }
+
+    /// <summary>A file by its path from the repository root (found by walking up from the test binaries).</summary>
+    private static string RepoPath(params string[] relativeParts)
+    {
+        for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent)
+        {
+            var candidate = Path.Combine(new[] { dir.FullName }.Concat(relativeParts).ToArray());
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        throw new FileNotFoundException(string.Join('/', relativeParts));
+    }
+
+    [Fact]
     public async Task The_approvals_list_proxy_forwards_the_server_mode_query_whole()
     {
         var gateway = new RoutingGateway { Answer = (_, _) => (HttpStatusCode.OK, """{"data":{"items":[],"total":0,"filteredTotal":0}}""") };

@@ -57,6 +57,8 @@ public interface ITaskReadAccessPolicy
     /// reading — the watchers and the parents of all the tasks in one read each, and the caller's scope, team and
     /// ReadAll resolved once instead of once per task. A consumer that shows many tasks (a timesheet week) asks this,
     /// never <see cref="CanReadAsync"/> in a loop.
+    /// <para><b>Duplicate ids.</b> Callers pass distinct rows (the time-entry adapter does). Should two rows carry the same
+    /// id, the rule judges the FIRST one and ignores the rest.</para>
     /// <para>The default asks <see cref="CanReadAsync"/> task by task — what a test double needs; the rule overrides it.</para>
     /// </summary>
     async Task<IReadOnlySet<Guid>> ReadableTaskIdsAsync(IReadOnlyCollection<TaskItem> tasks, Guid actorUserId, CancellationToken ct)
@@ -147,7 +149,7 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
         ArgumentNullException.ThrowIfNull(tasks);
 
         var readable = new HashSet<Guid>();
-        var distinct = tasks.DistinctBy(t => t.Id).ToList();
+        var distinct = tasks.DistinctBy(t => t.Id).ToList();          // a repeated id: the first row is the one judged
         if (distinct.Count == 0)
         {
             return readable;
