@@ -27,8 +27,19 @@ public sealed class ContentSet : EntityBase
     /// <summary>Pinned reference to the composition template (③ arrangement skeleton — SCMM-10).</summary>
     public ContentSetTemplateRef Template { get; set; } = new();
 
-    /// <summary>Optional pinned reference to a reusable content scope (④ — D14-a). Null = no scope bound.</summary>
-    public ContentSetScopeRef? Scope { get; set; }
+    /// <summary>WP-SB-1R (bridge-decision §7) — the set's country: one <c>COUNTRY_CODES</c> value (upper case), chosen
+    /// by the author. Claim country versions, the usage report and the release read it. Null only on a pre-SB-1R set.</summary>
+    public string? CountryCode { get; set; }
+
+    /// <summary>WP-SB-1R — the set's single language: one of the country's <c>country-content-languages</c> (lower
+    /// case). Every component must be in it (409 <c>component_language_mismatch</c>). Null only on a pre-SB-1R set.</summary>
+    public string? LanguageCode { get; set; }
+
+    /// <summary>WP-SB-1R — the retired SCMM-14 ContentScope binding, kept ONLY so a pre-SB-1R document (element
+    /// <c>Scope</c>) still reads (the CRM class map rejects unknown elements). Never read by any consumer; new sets never
+    /// set it. Product / audience now derive from the template (<c>ContentSetContextResolver</c>).</summary>
+    [Obsolete("WP-SB-1R: ContentScope is retired; read CountryCode / LanguageCode and the derived context instead.")]
+    public ContentSetScopeRef? LegacyScope { get; set; }
 
     /// <summary>Selected content components (⑥ — SCMM-13 variants), each pinned + arranged into a template slot.</summary>
     public List<ContentSetComponent> SelectedComponents { get; set; } = new();
@@ -61,11 +72,46 @@ public sealed class ContentSetTemplateRef
     public string ChainVersion { get; set; } = string.Empty;
 }
 
-/// <summary>SCMM-14 — pinned reference to a reusable content scope version (id + business version snapshot). Embedded VO.</summary>
+/// <summary>SCMM-14 — pinned reference to a reusable content scope version (id + business version snapshot). Embedded VO.
+/// WP-SB-1R: legacy only (read-compatibility of pre-SB-1R set / revision documents).</summary>
 public sealed class ContentSetScopeRef
 {
     public Guid ContentScopeId { get; set; }
     public string ScopeVersion { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// WP-SB-1R — a content set's context frozen into a revision at submit: the set's own country + language and what the
+/// composition template derives (product = the template subject's primary MDM Global Product; audience = the template's
+/// "for whom" profiles). Embedded VO; immutable once written.
+/// </summary>
+public sealed class ContentSetContextSnapshot
+{
+    public string? CountryCode { get; set; }
+    public string? LanguageCode { get; set; }
+    public Guid? ProductId { get; set; }
+    public string? ProductCode { get; set; }
+    public string? ProductName { get; set; }
+    public List<Guid> AudienceProfileIds { get; set; } = new();
+}
+
+/// <summary>WP-SB-1R — coded content-set context failures (rendered as the <c>[code, message]</c> error pair).</summary>
+public static class ContentSetContextErrors
+{
+    /// <summary>400 — the country is missing or not an active <c>COUNTRY_CODES</c> value.</summary>
+    public const string CountryInvalid = "country_invalid";
+
+    /// <summary>400 — the language is missing or not one of the country's <c>country-content-languages</c>.</summary>
+    public const string LanguageNotInCountry = "language_not_in_country";
+
+    /// <summary>503 — COUNTRY_CODES / country-content-languages cannot be read (never validated against a local list).</summary>
+    public const string ReferenceSetUnavailable = "reference_set_unavailable";
+
+    /// <summary>409 — a component is not in the set language (on add, or when the set language is changed).</summary>
+    public const string ComponentLanguageMismatch = "component_language_mismatch";
+
+    /// <summary>409 — the country / language of a set that is no longer a draft cannot change.</summary>
+    public const string ContextLocked = "context_locked";
 }
 
 /// <summary>

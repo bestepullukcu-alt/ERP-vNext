@@ -71,7 +71,7 @@ public sealed class KnowledgeContentClaimLinkTests
         public GetKnowledgeContentHandler Get() => new(Tenant(TenantA), Contents, Claims, Versions);
 
         public GetClaimUsageHandler Usage(Guid? tenant = null)
-            => new(Tenant(tenant ?? TenantA), Claims, Versions, Contents, Sets, Scopes, Paths, Journeys);
+            => new(Tenant(tenant ?? TenantA), Claims, Versions, Contents, Sets, Paths, Journeys);
 
         public Claim SeedClaim(string code, string status, Guid? product = null, Guid? tenant = null)
         {
@@ -366,11 +366,9 @@ public sealed class KnowledgeContentClaimLinkTests
         fx.Contents.Items.Single(c => c.Id == archived).ArchivedAt = Jan1;
         await fx.Create().Handle(fx.ContentCmd("KC-NONE"), default);
 
-        var scope = new ContentScope { TenantId = TenantA, ScopeCode = "SC-1", MarketRefs = { "tr", "eu" } };
-        fx.Scopes.Items.Add(scope);
         fx.Sets.Items.Add(new ContentSet
         {
-            TenantId = TenantA, SetCode = "SET-1", SetName = "Set 1", Scope = new ContentSetScopeRef { ContentScopeId = scope.Id },
+            TenantId = TenantA, SetCode = "SET-1", SetName = "Set 1", CountryCode = "TR",
             SelectedClaims = { new ContentSetClaim { ClaimId = a2.Id, ClaimVersion = "2.0" } }
         });
         fx.Sets.Items.Add(new ContentSet
@@ -415,9 +413,8 @@ public sealed class KnowledgeContentClaimLinkTests
 
         Assert.Equal(new[] { "KC-DE" }, groups["DE"].Items.Select(i => i.Code));
         Assert.False(groups["DE"].Items[0].ClaimNeedsReview);
-        // GLOBAL = the core-bound content + the set (its "eu" market ref is not a country code).
-        Assert.Equal(new[] { ("content", "KC-GL"), ("content-set", "SET-1") },
-            groups["GLOBAL"].Items.Select(i => (i.Type, i.Code)));
+        // GLOBAL = the core-bound content only; WP-SB-1R: the set groups under its own country (TR), nowhere else.
+        Assert.Equal(new[] { ("content", "KC-GL") }, groups["GLOBAL"].Items.Select(i => (i.Type, i.Code)));
 
         var all = r.Data.Groups.SelectMany(g => g.Items).Select(i => i.Code).ToList();
         Assert.DoesNotContain("KC-ARCH", all);
@@ -531,30 +528,26 @@ public sealed class KnowledgeContentClaimLinkTests
         Assert.Equal(2, row.ApprovedCountryCount);
     }
 
+    // WP-SB-1R — a content set groups under its own CountryCode (validated against COUNTRY_CODES on write); the retired
+    // ContentScope MarketRefs are no longer read. A pre-SB-1R set without a country groups under GLOBAL.
     [Theory]
-    [InlineData(new[] { "tr", "DE" }, new[] { "TR", "DE" })]
-    [InlineData(new[] { "eu" }, new[] { "GLOBAL" })]
-    [InlineData(new string[0], new[] { "GLOBAL" })]
-    [InlineData(new[] { "tr", "eu", "TR" }, new[] { "TR", "GLOBAL" })]
-    public void Market_refs_map_to_country_groups_or_global(string[] marketRefs, string[] expected)
-        => Assert.Equal(expected,
-            GetClaimUsageHandler.MarketGroups(marketRefs, new HashSet<string>(StringComparer.Ordinal) { "TR", "DE" }));
+    [InlineData("tr", "TR")]
+    [InlineData(" DE ", "DE")]
+    [InlineData(null, "GLOBAL")]
+    [InlineData("", "GLOBAL")]
+    public void A_content_set_groups_under_its_own_country(string? country, string expected)
+        => Assert.Equal(expected, GetClaimUsageHandler.SetGroup(new ContentSet { CountryCode = country }));
 
     [Fact]
-    public async Task Usage_reads_the_country_axis_from_the_published_country_codes_set()
+    public async Task Usage_reads_the_set_country_from_the_set()
     {
         var (fx, _) = await SeedUsageAsync();
-        fx.Scopes.Items[0].MarketRefs = new List<string> { "fr" }; // no FR version of the claim exists
-        var withoutCatalog = await fx.Usage().Handle(new GetClaimUsageQuery("CL-A", "FR"), default);
-        Assert.Empty(withoutCatalog.Data!.Groups);
+        fx.Sets.Items.Single(s => s.SetCode == "SET-1").CountryCode = "FR"; // no FR version of the claim exists
 
-        var catalog = new FakeCatalog("TR", "DE", "FR");
-        var handler = new GetClaimUsageHandler(Tenant(TenantA), fx.Claims, fx.Versions, fx.Contents, fx.Sets, fx.Scopes,
-            fx.Paths, fx.Journeys, catalog);
-        var group = Assert.Single((await handler.Handle(new GetClaimUsageQuery("CL-A", "fr"), default)).Data!.Groups);
+        var group = Assert.Single((await fx.Usage().Handle(new GetClaimUsageQuery("CL-A", "fr"), default)).Data!.Groups);
+
         Assert.Equal("FR", group.CountryCode);
         Assert.Equal(new[] { "SET-1" }, group.Items.Select(i => i.Code));
-        Assert.Equal(ClaimReferenceSets.CountryCodes, catalog.RequestedSet);
     }
 
     [Fact]

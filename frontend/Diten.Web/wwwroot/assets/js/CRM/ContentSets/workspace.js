@@ -21,13 +21,20 @@
 
     let set = null;
     let template = null;
+    let countries = [];          // WP-SB-1R — [{ code, name, nativeName, languages: [{ code, name, nativeName }] }]
     const conceptTypeMap = {};   // conceptTypeId -> "code — name"
     const contentMap = {};       // contentId -> { label, translationStatus }
     const claimMap = {};         // claimId -> "code — name"
 
+    // WP-SB-1R — a coded CRM failure ([code, message]) is shown in the user's language (ContextError_{code}).
+    const errorText = errors => {
+        const list = Array.isArray(errors) && errors.length ? errors : [L.ErrorState];
+        const key = `ContextError_${list[0]}`;
+        return L[key] ? L[key] : list.join(' · ');
+    };
     const envelope = async res => {
         const body = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error((body.errors || [L.ErrorState]).join(' · '));
+        if (!res.ok) throw new Error(errorText(body.errors));
         return body.data;
     };
     const getJson = async path => envelope(await fetch(`${api}${path}`, { credentials: 'same-origin', headers }));
@@ -92,6 +99,45 @@
         return `<span class="badge bg-label-${tone} ms-2"${title}>${esc(label)}</span>`;
     };
 
+    // ─── set context (WP-SB-1R) ─────────────────────────────────────────────────
+    // Country + language are the set's own fields (editable while it is a draft); product + audience derive from the
+    // template (set.context, server-resolved) and are read-only. Names: ICU via /api/countries (never the raw code alone).
+    const countryName = code => {
+        const c = countries.find(x => x.code === code);
+        return c ? (c.name && c.name !== c.code ? `${c.name} (${c.code})` : c.code) : (code || '—');
+    };
+    const languageName = (countryCode, code) => {
+        const l = (countries.find(x => x.code === countryCode)?.languages || []).find(x => x.code === code);
+        return l ? (l.nativeName && l.nativeName !== l.name ? `${l.nativeName} — ${l.name}` : (l.name || l.code)) : (code || '—');
+    };
+    const fillSelect = (el, rows, selected) => {
+        el.innerHTML = rows.map(r => `<option value="${esc(r.value)}"${r.value === selected ? ' selected' : ''}>${esc(r.text)}</option>`).join('');
+    };
+    const fillLanguages = (countryCode, selected) => {
+        const langs = countries.find(x => x.code === countryCode)?.languages || [];
+        const value = langs.some(l => l.code === selected) ? selected : (langs[0]?.code || '');
+        fillSelect(document.getElementById('wsLanguage'), langs.map(l => ({ value: l.code, text: languageName(countryCode, l.code) })), value);
+    };
+    const renderContext = () => {
+        const ctx = set.context || {};
+        const product = [ctx.productCode, ctx.productName].filter(Boolean).join(' — ');
+        document.getElementById('wsProduct').textContent = product || '—';
+        document.getElementById('wsAudience').textContent =
+            (ctx.audiences || []).map(a => a.profileName || a.profileCode).filter(Boolean).join(', ') || '—';
+
+        const editable = !set.isArchived && set.status === 'draft' && countries.length > 0;
+        const countryEl = document.getElementById('wsCountry');
+        const languageEl = document.getElementById('wsLanguage');
+        document.getElementById('wsCountryText').textContent = countryName(set.countryCode);
+        document.getElementById('wsLanguageText').textContent = languageName(set.countryCode, set.languageCode);
+        [countryEl, languageEl, document.getElementById('btnSaveContext')].forEach(el => el?.classList.toggle('d-none', !editable));
+        ['wsCountryText', 'wsLanguageText'].forEach(id => document.getElementById(id)?.classList.toggle('d-none', editable));
+        if (editable) {
+            fillSelect(countryEl, countries.map(c => ({ value: c.code, text: countryName(c.code) })), set.countryCode);
+            fillLanguages(countryEl.value, set.languageCode);
+        }
+    };
+
     // ─── render ─────────────────────────────────────────────────────────────────
     const renderHeader = () => {
         document.getElementById('wsSetName').textContent = set.setName || set.setCode || '';
@@ -101,7 +147,7 @@
         document.getElementById('wsTemplate').textContent = template
             ? `${[template.chainCode, template.chainName].filter(Boolean).join(' — ')} (v${set.template?.chainVersion || template.chainVersion})`
             : (set.template?.chainVersion ? `v${set.template.chainVersion}` : '—');
-        document.getElementById('wsScope').textContent = set.scope ? `v${set.scope.scopeVersion}` : L.NoScope;
+        renderContext();
         document.getElementById('wsArchivedBanner').classList.toggle('d-none', !set.isArchived);
 
         const summary = document.getElementById('wsEligibilitySummary');
@@ -271,6 +317,20 @@
             .then(() => { window.location.href = '/CRM/ContentSets'; });
         window.showConfirm ? window.showConfirm(L.ArchiveSetConfirm, run, { type: 'warning' }) : (window.confirm(L.ArchiveSetConfirm) && run());
     });
+    // WP-SB-1R — country / language change (draft only). CRM re-validates against BRD and refuses a language the
+    // selected components are not in (component_language_mismatch) — shown in the user's language.
+    document.getElementById('wsCountry')?.addEventListener('change', event => fillLanguages(event.target.value, null));
+    document.getElementById('btnSaveContext')?.addEventListener('click', () => guard(async () => {
+        const res = await fetch(`${api}/content-sets/${setId}`, {
+            method: 'PUT', credentials: 'same-origin', headers: jsonHeaders,
+            body: JSON.stringify({
+                setName: set.setName, description: set.description, status: set.status,
+                countryCode: document.getElementById('wsCountry').value,
+                languageCode: document.getElementById('wsLanguage').value
+            })
+        });
+        await envelope(res);
+    }, L.ContextSaved));
     document.getElementById('btnApplyEligibility')?.addEventListener('click', () =>
         guard(() => post(`/content-sets/${setId}/apply-eligibility`, null), L.EligibilityApplied));
     document.getElementById('btnCloneSet')?.addEventListener('click', async () => {
@@ -287,6 +347,7 @@
     const init = async () => {
         try {
             set = await getJson(`/content-sets/${setId}`);
+            try { countries = (await getJson('/countries')) || []; } catch (e) { countries = []; }
             if (set.template?.conceptChainTemplateId) {
                 try { template = await getJson(`/templates/${set.template.conceptChainTemplateId}`); } catch (e) { template = null; }
             }

@@ -9,10 +9,10 @@ using Perms = Diten.CrmService.Application.Features.ContentComposition.ContentSc
 namespace Diten.CrmService.Api.Controllers.CRM;
 
 /// <summary>
-/// SCMM-14 (CAND-CAP-0011) — reusable content-scope authoring HTTP surface. Canonical under
-/// <c>/api/crm/content-composition/content-scopes</c> (the SCMM-12-API-GW ocelot route already covers
-/// content-composition/*). A thin adapter over the ContentScope CQRS — no business logic here. There is <b>no delete</b>
-/// endpoint: closing a scope is Archive.
+/// SCMM-14 (CAND-CAP-0011) — content-scope READ surface. WP-SB-1R (bridge-decision §7) retired the ContentScope: the
+/// create / update / archive endpoints are gone and the set context now lives on the ContentSet (country + language) and
+/// derives from the composition template (product + audience). These reads remain (read-only) until the separate
+/// clean-up job. Canonical under <c>/api/crm/content-composition/content-scopes</c>.
 /// </summary>
 [Authorize]
 public sealed class ContentScopesController : CustomBaseController
@@ -35,32 +35,4 @@ public sealed class ContentScopesController : CustomBaseController
     [HasPermission(Perms.Read)]
     public async Task<IActionResult> Get(Guid contentScopeId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetContentScopeQuery(contentScopeId), cancellationToken));
-
-    [HttpPost("api/crm/content-composition/content-scopes")]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> Create(
-        [FromBody] CreateContentScopeRequest request, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
-            new CreateContentScopeCommand(
-                request.ScopeCode, request.ScopeName, request.Description, request.ProductRefs, request.MarketRefs,
-                request.AudienceRefs, request.Channel, request.LanguageCode, request.PeriodFrom, request.PeriodTo,
-                request.ScopeVersion, request.Status),
-            cancellationToken));
-
-    [HttpPut("api/crm/content-composition/content-scopes/{contentScopeId:guid}")]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> Update(
-        Guid contentScopeId, [FromBody] UpdateContentScopeRequest request, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
-            new UpdateContentScopeCommand(
-                contentScopeId, request.ScopeName, request.Description, request.ProductRefs, request.MarketRefs,
-                request.AudienceRefs, request.Channel, request.LanguageCode, request.PeriodFrom, request.PeriodTo,
-                request.ScopeVersion, request.Status),
-            cancellationToken));
-
-    [HttpPost("api/crm/content-composition/content-scopes/{contentScopeId:guid}/archive")]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> Archive(Guid contentScopeId, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
-            new ArchiveContentScopeCommand(contentScopeId), cancellationToken));
 }

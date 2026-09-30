@@ -42,7 +42,6 @@
   <data name="StatusInactive" xml:space="preserve"><value>Inactive</value></data>
   <data name="StatusArchived" xml:space="preserve"><value>Archivée</value></data>
   <data name="Template" xml:space="preserve"><value>Modèle</value></data>
-  <data name="Scope" xml:space="preserve"><value>Portée</value></data>
   <data name="Components" xml:space="preserve"><value>Composants</value></data>
   <data name="Claims" xml:space="preserve"><value>Allégations</value></data>
   <data name="ProductRefs" xml:space="preserve"><value>Références produit</value></data>
@@ -71,10 +70,7 @@
   <data name="CompositionSection" xml:space="preserve"><value>Composition</value></data>
   <data name="TemplatePickerPlaceholder" xml:space="preserve"><value>Rechercher un modèle de composition...</value></data>
   <data name="TemplatePinNote" xml:space="preserve"><value>La version du modèle est figée à la création de l'ensemble.</value></data>
-  <data name="ScopePickerPlaceholder" xml:space="preserve"><value>Rechercher une portée de contenu (facultatif)...</value></data>
-  <data name="ScopeOptionalNote" xml:space="preserve"><value>Facultatif. Sa version est figée à la sélection.</value></data>
   <data name="PinnedNote" xml:space="preserve"><value>Le modèle et la portée sont figés par version au moment de la sélection — ils ne sont pas modifiés ici.</value></data>
-  <data name="NoScope" xml:space="preserve"><value>Aucune portée</value></data>
   <data name="ApplyEligibility" xml:space="preserve"><value>Appliquer l'éligibilité</value></data>
   <data name="EligibilityApplied" xml:space="preserve"><value>Instantané d'éligibilité mis à jour.</value></data>
   <data name="EligibilitySummary" xml:space="preserve"><value>Éligibilité (dernière exécution) :</value></data>
@@ -98,4 +94,19 @@
   <data name="NoClaims" xml:space="preserve"><value>Aucune allégation dans cet emplacement.</value></data>
   <data name="AddedOn" xml:space="preserve"><value>Ajouté</value></data>
   <data name="NeedsAssessmentWarn" xml:space="preserve"><value>La source de ce composant a changé — la traduction doit être évaluée.</value></data>
+  <data name="Country" xml:space="preserve"><value>Pays</value></data>
+  <data name="Language" xml:space="preserve"><value>Langue</value></data>
+  <data name="Product" xml:space="preserve"><value>Produit</value></data>
+  <data name="Audience" xml:space="preserve"><value>Public cible</value></data>
+  <data name="CountryPickerPlaceholder" xml:space="preserve"><value>Sélectionnez un pays…</value></data>
+  <data name="LanguagePickerPlaceholder" xml:space="preserve"><value>Sélectionnez une langue du pays…</value></data>
+  <data name="ContextDerivedNote" xml:space="preserve"><value>Le produit et le public cible viennent du modèle de composition (le produit de son sujet et ses profils « pour qui »).</value></data>
+  <data name="SaveContext" xml:space="preserve"><value>Enregistrer le pays et la langue</value></data>
+  <data name="ContextSaved" xml:space="preserve"><value>Pays et langue enregistrés.</value></data>
+  <data name="ContextError_country_invalid" xml:space="preserve"><value>Sélectionnez un pays valide.</value></data>
+  <data name="ContextError_language_not_in_country" xml:space="preserve"><value>La langue doit être l'une des langues de contenu du pays.</value></data>
+  <data name="ContextError_reference_set_unavailable" xml:space="preserve"><value>Les listes des pays et des langues ne peuvent pas être chargées pour le moment ; réessayez plus tard.</value></data>
+  <data name="ContextError_component_language_mismatch" xml:space="preserve"><value>Ce contenu n'est pas dans la langue de l'ensemble. Un ensemble a une seule langue ; retirez d'abord les composants d'une autre langue.</value></data>
+  <data name="ContextError_context_locked" xml:space="preserve"><value>Le pays et la langue ne peuvent changer que tant que l'ensemble est un brouillon.</value></data>
+  <data name="ContextError_component_language_mixed" xml:space="preserve"><value>Les composants ne sont pas tous dans la langue de l'ensemble ; l'ensemble ne peut pas être publié.</value></data>
 </root>

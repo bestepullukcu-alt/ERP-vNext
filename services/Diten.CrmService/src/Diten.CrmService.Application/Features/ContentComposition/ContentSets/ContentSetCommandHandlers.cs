@@ -1,5 +1,6 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
+using Diten.CrmService.Application.Common.ReferenceValidation;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using MediatR;
@@ -144,19 +145,21 @@ public sealed class CreateContentSetDraftHandler : IRequestHandler<CreateContent
     private readonly IActorContext _actor;
     private readonly IContentSetRepository _sets;
     private readonly IConceptChainTemplateRepository _templates;
-    private readonly IContentScopeRepository _scopes;
+    private readonly IReferenceDataCatalogReader? _catalog;
     private readonly IContentCompositionAuditPublisher? _audit;
 
+    /// <summary>WP-SB-1R — the ContentScope binding is gone; the country / language are validated against BRD through
+    /// <paramref name="catalog"/> (null or unreadable ⇒ 503, never a local list).</summary>
     public CreateContentSetDraftHandler(
         ITenantContext tenant, IActorContext actor, IContentSetRepository sets,
-        IConceptChainTemplateRepository templates, IContentScopeRepository scopes,
+        IConceptChainTemplateRepository templates, IReferenceDataCatalogReader? catalog = null,
         IContentCompositionAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _sets = sets;
         _templates = templates;
-        _scopes = scopes;
+        _catalog = catalog;
         _audit = audit;
     }
 
@@ -197,21 +200,11 @@ public sealed class CreateContentSetDraftHandler : IRequestHandler<CreateContent
             return Response<Guid>.Fail("Cannot build a set on an archived composition template.", 409);
         }
 
-        ContentSetScopeRef? scopeRef = null;
-        if (request.ContentScopeId is { } scopeId && scopeId != Guid.Empty)
+        var context = await ContentSetContextValidation.ValidateAsync(
+            _catalog, request.CountryCode, request.LanguageCode, cancellationToken);
+        if (!context.IsValid)
         {
-            var scope = await _scopes.GetByIdAsync(tenantId, scopeId, cancellationToken);
-            if (scope is null)
-            {
-                return Response<Guid>.Fail("ContentScopeId does not reference a scope in this tenant.", 400);
-            }
-
-            if (scope.IsArchived())
-            {
-                return Response<Guid>.Fail("Cannot bind an archived content scope.", 409);
-            }
-
-            scopeRef = new ContentSetScopeRef { ContentScopeId = scope.Id, ScopeVersion = scope.ScopeVersion };
+            return Response<Guid>.Fail(context.Errors!, context.StatusCode);
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -227,7 +220,8 @@ public sealed class CreateContentSetDraftHandler : IRequestHandler<CreateContent
                 ConceptChainTemplateId = template.Id,
                 ChainVersion = template.ChainVersion
             },
-            Scope = scopeRef,
+            CountryCode = context.Country,
+            LanguageCode = context.Language,
             DraftSchemaVersion = 1,
             Status = ContentSetStatuses.Draft,
             CreatedAt = now,
@@ -293,11 +287,9 @@ public sealed class CloneContentSetToDraftHandler : ContentSetWriteHandlerBase,
                 ConceptChainTemplateId = source.Template.ConceptChainTemplateId,
                 ChainVersion = source.Template.ChainVersion
             },
-            Scope = source.Scope is null ? null : new ContentSetScopeRef
-            {
-                ContentScopeId = source.Scope.ContentScopeId,
-                ScopeVersion = source.Scope.ScopeVersion
-            },
+            // WP-SB-1R — the context travels with the clone (country + language; product / audience derive).
+            CountryCode = source.CountryCode,
+            LanguageCode = source.LanguageCode,
             SelectedComponents = source.SelectedComponents.Select(c => new ContentSetComponent
             {
                 SelectionId = Guid.NewGuid(),   // fresh selection identity on the clone
@@ -341,10 +333,15 @@ public sealed class CloneContentSetToDraftHandler : ContentSetWriteHandlerBase,
 public sealed class UpdateContentSetHandler : ContentSetWriteHandlerBase,
     IRequestHandler<UpdateContentSetCommand, Response<bool>>
 {
+    private readonly IReferenceDataCatalogReader? _catalog;
+
     public UpdateContentSetHandler(
         ITenantContext tenant, IActorContext actor, IContentSetRepository sets,
-        IContentCompositionAuditPublisher? audit = null)
-        : base(tenant, actor, sets, audit) { }
+        IContentCompositionAuditPublisher? audit = null, IReferenceDataCatalogReader? catalog = null)
+        : base(tenant, actor, sets, audit)
+    {
+        _catalog = catalog;
+    }
 
     public async Task<Response<bool>> Handle(UpdateContentSetCommand request, CancellationToken cancellationToken)
     {
@@ -368,6 +365,38 @@ public sealed class UpdateContentSetHandler : ContentSetWriteHandlerBase,
             return Response<bool>.Fail(
                 $"Status must be one of: {ContentSetStatuses.Draft}, {ContentSetStatuses.Inactive} "
                 + "(use the archive endpoint to archive).", 400);
+        }
+
+        // WP-SB-1R — country / language: null keeps; a change is a draft-only, BRD-validated, single-language move.
+        var country = string.IsNullOrWhiteSpace(request.CountryCode) ? set.CountryCode : request.CountryCode;
+        var language = string.IsNullOrWhiteSpace(request.LanguageCode) ? set.LanguageCode : request.LanguageCode;
+        var contextChanged =
+            !string.Equals(country?.Trim(), set.CountryCode, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(language?.Trim(), set.LanguageCode, StringComparison.OrdinalIgnoreCase);
+        if (contextChanged)
+        {
+            if (!string.Equals(set.Status, ContentSetStatuses.Draft, StringComparison.OrdinalIgnoreCase))
+            {
+                return Response<bool>.Fail(new[] { ContentSetContextErrors.ContextLocked,
+                    "Country and language can only change while the set is a draft." }, 409);
+            }
+
+            var context = await ContentSetContextValidation.ValidateAsync(_catalog, country, language, cancellationToken);
+            if (!context.IsValid)
+            {
+                return Response<bool>.Fail(context.Errors!, context.StatusCode);
+            }
+
+            var mismatched = ContentSetContextValidation.ComponentsNotIn(set.SelectedComponents, context.Language!);
+            if (mismatched.Count > 0)
+            {
+                return Response<bool>.Fail(new[] { ContentSetContextErrors.ComponentLanguageMismatch,
+                    $"{mismatched.Count} component(s) are not in '{context.Language}'; remove them before changing the "
+                    + "set language." }, 409);
+            }
+
+            set.CountryCode = context.Country;
+            set.LanguageCode = context.Language;
         }
 
         set.SetName = request.SetName.Trim();

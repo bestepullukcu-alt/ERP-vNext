@@ -32,8 +32,14 @@ public sealed class ContentSetRevision : EntityBase
     /// <summary>Frozen pinned composition-template reference (copied from the source draft).</summary>
     public ContentSetTemplateRef Template { get; set; } = new();
 
-    /// <summary>Frozen pinned content-scope reference, or null when the draft bound no scope.</summary>
-    public ContentSetScopeRef? Scope { get; set; }
+    /// <summary>WP-SB-1R — the set context frozen at submit (country + language of the set, product + audience derived
+    /// from the template). Null on revisions submitted before WP-SB-1R.</summary>
+    public ContentSetContextSnapshot? Context { get; set; }
+
+    /// <summary>WP-SB-1R — the retired frozen ContentScope binding of a pre-SB-1R revision (element <c>Scope</c>).
+    /// Read so such a document still deserializes (and survives a re-save), never used by any consumer.</summary>
+    [Obsolete("WP-SB-1R: ContentScope is retired; read Context instead.")]
+    public ContentSetScopeRef? LegacyScope { get; set; }
 
     /// <summary>Frozen selected components (deep copy of the draft's selections; SelectionIds preserved).</summary>
     public List<ContentSetComponent> SelectedComponents { get; set; } = new();

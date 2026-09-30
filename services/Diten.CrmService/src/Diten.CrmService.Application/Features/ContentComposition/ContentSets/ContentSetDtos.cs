@@ -4,8 +4,6 @@ namespace Diten.CrmService.Application.Features.ContentComposition.ContentSets;
 /// its pinned version.</summary>
 public sealed record ContentSetTemplateRefDto(Guid ConceptChainTemplateId, string ChainVersion);
 
-public sealed record ContentSetScopeRefDto(Guid ContentScopeId, string ScopeVersion);
-
 public sealed record ContentArrangementDto(Guid TemplateStepId, string? BranchId, int Position);
 
 public sealed record ContentSetComponentDto(
@@ -42,7 +40,8 @@ public sealed record ContentSetDto(
     string SetName,
     string? Description,
     ContentSetTemplateRefDto Template,
-    ContentSetScopeRefDto? Scope,
+    string? CountryCode,
+    string? LanguageCode,
     IReadOnlyList<ContentSetComponentDto> SelectedComponents,
     IReadOnlyList<ContentSetClaimDto> SelectedClaims,
     int DraftSchemaVersion,
@@ -55,6 +54,9 @@ public sealed record ContentSetDto(
     string? UpdatedBy,
     DateTimeOffset? ArchivedAt,
     string? ArchivedBy,
-    bool IsArchived);
+    bool IsArchived,
+    // WP-SB-1R — the resolved context (country + language of the set, product + audience from the template). Null
+    // when the caller did not resolve it.
+    ContentSetContextDto? Context = null);
 
 public sealed record ContentSetListDto(IReadOnlyList<ContentSetDto> Items, int Total);

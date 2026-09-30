@@ -1,6 +1,6 @@
 using System.Globalization;
-using Diten.CrmService.Application.Common.ReferenceValidation;
 using Diten.CrmService.Application.Features.ContentComposition.Claims;
+using Diten.CrmService.Application.Features.ContentComposition.ContentSets;
 using Diten.CrmService.Application.Features.Knowledge;
 using Diten.CrmService.Application.Features.Knowledge.Content;
 using Diten.CrmService.Application.Features.Knowledge.Content.Commands;
@@ -74,21 +74,16 @@ public sealed class ContentSetReleaseProduction
 /// </summary>
 public sealed class ContentSetReleaseProducer : IContentSetReleaseProducer
 {
-    /// <summary>The Subject ExternalReference SourceSystem of an MDM Global Product link (taxonomy.js subject picker).</summary>
-    internal const string GlobalProductSourceSystem = "global-product";
-
     private readonly ISender _sender;
     private readonly IContentSetRepository _sets;
     private readonly IContentSetRevisionRepository _revisions;
     private readonly IConceptChainTemplateRepository _templates;
     private readonly ISubjectRepository _subjects;
-    private readonly IContentScopeRepository _scopes;
     private readonly IKnowledgeContentRepository _contents;
     private readonly IKnowledgePathRepository _paths;
     private readonly IContentEngagementJourneyRepository _journeys;
     private readonly IClaimRepository _claims;
     private readonly IClaimCountryVersionRepository _claimVersions;
-    private readonly IReferenceDataCatalogReader? _catalog;
 
     public ContentSetReleaseProducer(
         ISender sender,
@@ -96,26 +91,33 @@ public sealed class ContentSetReleaseProducer : IContentSetReleaseProducer
         IContentSetRevisionRepository revisions,
         IConceptChainTemplateRepository templates,
         ISubjectRepository subjects,
-        IContentScopeRepository scopes,
         IKnowledgeContentRepository contents,
         IKnowledgePathRepository paths,
         IContentEngagementJourneyRepository journeys,
         IClaimRepository claims,
-        IClaimCountryVersionRepository claimVersions,
-        IReferenceDataCatalogReader? catalog = null)
+        IClaimCountryVersionRepository claimVersions)
     {
         _sender = sender;
         _sets = sets;
         _revisions = revisions;
         _templates = templates;
         _subjects = subjects;
-        _scopes = scopes;
         _contents = contents;
         _paths = paths;
         _journeys = journeys;
         _claims = claims;
         _claimVersions = claimVersions;
-        _catalog = catalog;
+    }
+
+    /// <summary>WP-SB-1R — the ONE place the release reads its country and language: the set context frozen into the
+    /// revision at submit; a pre-SB-1R revision (no frozen context) falls back to the set's current fields. Null country ⇒
+    /// core claim refs; null language ⇒ the components' single language decides.</summary>
+    internal static (string? Country, string? Language) ReleaseContext(ContentSetRevision revision, ContentSet set)
+    {
+        var country = revision.Context is { } frozen ? frozen.CountryCode : set.CountryCode;
+        var language = revision.Context is { } frozenLanguage ? frozenLanguage.LanguageCode : set.LanguageCode;
+        return (string.IsNullOrWhiteSpace(country) ? null : country.Trim().ToUpperInvariant(),
+            string.IsNullOrWhiteSpace(language) ? null : language.Trim().ToLowerInvariant());
     }
 
     // ================================================================ produce
@@ -171,16 +173,20 @@ public sealed class ContentSetReleaseProducer : IContentSetReleaseProducer
                 409);
         }
 
-        // The pinned (frozen) component language is authoritative; one language only — never guessed.
+        // WP-SB-1R — country + language from the set context (one point). The set language is written-time enforced
+        // (component_language_mismatch); this check stays as the backstop: the pinned component languages plus the set
+        // language must be ONE language — never guessed.
+        var (country, setLanguage) = ReleaseContext(revision, set);
         var languages = revision.SelectedComponents
             .Select(c => c.LanguageCode?.Trim() ?? string.Empty)
+            .Append(setLanguage ?? revision.SelectedComponents[0].LanguageCode?.Trim() ?? string.Empty)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
         if (languages.Count != 1)
         {
             var detail = string.Join(", ", revision.SelectedComponents
                 .Select(c => $"{contents[c.SelectionId].ContentCode}={(string.IsNullOrWhiteSpace(c.LanguageCode) ? "?" : c.LanguageCode.Trim())}")
-                .Distinct());
+                .Distinct()) + (setLanguage is null ? string.Empty : $"; set={setLanguage}");
             return production.Fail(ContentSetReleaseErrors.ComponentLanguageMixed,
                 $"The components are not in one language ({detail}); release needs a single-language set.", 409);
         }
@@ -195,10 +201,10 @@ public sealed class ContentSetReleaseProducer : IContentSetReleaseProducer
         }
 
         var subject = await _subjects.GetByIdAsync(tenantId, template.SubjectId, cancellationToken);
-        var productId = PrimaryGlobalProduct(subject);
+        var productId = ContentSetContextResolver.PrimaryGlobalProduct(subject)?.Id;
         Guid? audienceId = template.ForWhomAudienceProfileIds.Count == 1 ? template.ForWhomAudienceProfileIds[0] : null;
 
-        var (claimInputs, claimError) = await BuildClaimRefsAsync(tenantId, revision, cancellationToken);
+        var (claimInputs, claimError) = await BuildClaimRefsAsync(tenantId, revision, country, cancellationToken);
         if (claimError is not null)
         {
             return production.Fail(claimError.Value.Errors, claimError.Value.Status);
@@ -523,23 +529,18 @@ public sealed class ContentSetReleaseProducer : IContentSetReleaseProducer
         return (previous?.ProducedKnowledgeContentId, previous?.ProducedKnowledgePathId);
     }
 
-    /// <summary>Claim refs from the frozen SelectedClaims (one per claim record). A scope whose MarketRefs name exactly
-    /// ONE COUNTRY_CODES country binds that country's version; otherwise the core claim. The country version is the one
-    /// the coverage cell shows (approved › review-required › in-review › draft); none ⇒ 409 claim_not_approved.</summary>
+    /// <summary>Claim refs from the frozen SelectedClaims (one per claim record). WP-SB-1R: a set with a country binds
+    /// that country's version (<see cref="ReleaseContext"/>); a pre-SB-1R set without one binds the core claim. The country
+    /// version is the one the coverage cell shows (approved › review-required › in-review › draft); none ⇒ 409
+    /// claim_not_approved.</summary>
     private async Task<(List<KnowledgeContentClaimRefInput> Refs, (IReadOnlyList<string> Errors, int Status)? Error)>
-        BuildClaimRefsAsync(Guid tenantId, ContentSetRevision revision, CancellationToken ct)
+        BuildClaimRefsAsync(Guid tenantId, ContentSetRevision revision, string? country, CancellationToken ct)
     {
         var refs = new List<KnowledgeContentClaimRefInput>();
         var claimIds = revision.SelectedClaims.Select(c => c.ClaimId).Distinct().ToList();
         if (claimIds.Count == 0)
         {
             return (refs, null);
-        }
-
-        var (country, countryError) = await ScopeCountryAsync(tenantId, revision, ct);
-        if (countryError is not null)
-        {
-            return (refs, countryError);
         }
 
         foreach (var claimId in claimIds)
@@ -571,57 +572,6 @@ public sealed class ContentSetReleaseProducer : IContentSetReleaseProducer
 
         return (refs, null);
     }
-
-    /// <summary>The single COUNTRY_CODES country among the scope's MarketRefs, or null (no scope / no or several countries
-    /// ⇒ core refs). The catalog is needed only when there are MarketRefs to classify; unreadable ⇒ 503 (fail-closed).</summary>
-    private async Task<(string? Country, (IReadOnlyList<string> Errors, int Status)? Error)> ScopeCountryAsync(
-        Guid tenantId, ContentSetRevision revision, CancellationToken ct)
-    {
-        if (revision.Scope is not { } scopeRef)
-        {
-            return (null, null);
-        }
-
-        var scope = await _scopes.GetByIdAsync(tenantId, scopeRef.ContentScopeId, ct);
-        var markets = scope?.MarketRefs
-            .Select(m => m?.Trim().ToUpperInvariant() ?? string.Empty)
-            .Where(m => m.Length > 0)
-            .Distinct()
-            .ToList() ?? new List<string>();
-        if (markets.Count == 0)
-        {
-            return (null, null);
-        }
-
-        ReferenceSetSnapshot? set = null;
-        try
-        {
-            set = _catalog is null ? null : await _catalog.GetPublishedValuesAsync(ClaimReferenceSets.CountryCodes, ct);
-        }
-        catch (Exception) when (!ct.IsCancellationRequested)
-        {
-            set = null;
-        }
-
-        if (set is null || !set.IsPublished)
-        {
-            return (null, (new[] { KnowledgeContentClaimErrors.DependencyUnavailable,
-                $"Reference set '{ClaimReferenceSets.CountryCodes}' is unavailable; the scope market cannot be resolved." }, 503));
-        }
-
-        var known = set.Values.Where(v => v.IsActive && !v.IsDeprecated)
-            .Select(v => v.ValueCode.Trim().ToUpperInvariant())
-            .ToHashSet(StringComparer.Ordinal);
-        var countries = markets.Where(known.Contains).ToList();
-        return (countries.Count == 1 ? countries[0] : null, null);
-    }
-
-    private static Guid? PrimaryGlobalProduct(Subject? subject)
-        => subject?.ExternalReferences
-            .Where(r => r.IsPrimary
-                && string.Equals(r.SourceSystem?.Trim(), GlobalProductSourceSystem, StringComparison.OrdinalIgnoreCase))
-            .Select(r => Guid.TryParse(r.ExternalId, out var id) && id != Guid.Empty ? id : (Guid?)null)
-            .FirstOrDefault(id => id is not null);
 
     /// <summary>Path step type from the component content type (the step vocabulary has no "presentation"; the core
     /// message is the neutral default).</summary>

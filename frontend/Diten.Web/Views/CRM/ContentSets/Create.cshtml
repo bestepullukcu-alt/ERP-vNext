@@ -67,14 +67,27 @@
                             <span asp-validation-for="ConceptChainTemplateId" class="text-danger small mt-1"></span>
                             <small class="text-muted">@Localizer["TemplatePinNote"]</small>
                         </div>
-                        @* Scope picker — optional, searchable select2. *@
+                        @*
+                            WP-SB-1R — the set context: country (COUNTRY_CODES, ICU name) + language (that country's
+                            content languages, native name). Product and audience are not chosen here: they come from the
+                            composition template (subject → MDM product, "for whom" profiles).
+                        *@
                         <div class="col-12">
-                            <label asp-for="ContentScopeId" class="form-label fw-medium">@Localizer["Scope"]</label>
-                            <select asp-for="ContentScopeId" id="setScopePicker" class="form-select"
-                                    data-url="/CRM/ContentSets/api/scopes"
-                                    data-placeholder="@Localizer["ScopePickerPlaceholder"]">
+                            <label asp-for="CountryCode" class="form-label fw-medium">@Localizer["Country"] <span class="text-danger">*</span></label>
+                            <select asp-for="CountryCode" id="setCountryPicker" class="form-select"
+                                    data-url="/CRM/ContentSets/api/countries" data-selected="@Model.CountryCode"
+                                    data-placeholder="@Localizer["CountryPickerPlaceholder"]" required>
                             </select>
-                            <small class="text-muted">@Localizer["ScopeOptionalNote"]</small>
+                            <span asp-validation-for="CountryCode" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="LanguageCode" class="form-label fw-medium">@Localizer["Language"] <span class="text-danger">*</span></label>
+                            <select asp-for="LanguageCode" id="setLanguagePicker" class="form-select" data-selected="@Model.LanguageCode"
+                                    data-placeholder="@Localizer["LanguagePickerPlaceholder"]" required disabled>
+                            </select>
+                            <span asp-validation-for="LanguageCode" class="text-danger small mt-1"></span>
+                            <small class="text-muted d-block">@Localizer["ContextDerivedNote"]</small>
+                            <div id="setCountryError" class="text-danger small mt-1 d-none" role="alert">@Localizer["ContextError_reference_set_unavailable"]</div>
                         </div>
                     </div>
                 </div>

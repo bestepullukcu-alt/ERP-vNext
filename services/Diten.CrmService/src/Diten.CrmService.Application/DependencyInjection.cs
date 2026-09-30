@@ -56,6 +56,11 @@ public static class DependencyInjection
         services.AddScoped<Features.ContentComposition.ContentSetRevisions.IContentSetReleaseProducer,
             Features.ContentComposition.ContentSetRevisions.ContentSetReleaseProducer>();
 
+        // WP-SB-1R — the single content-set context resolver (country + language of the set; product + audience derived
+        // from the template). Read-only; used by the set reads, eligibility, the revision freeze.
+        services.AddScoped<Features.ContentComposition.ContentSets.IContentSetContextResolver,
+            Features.ContentComposition.ContentSets.ContentSetContextResolver>();
+
         // MOD-0155 FU01 — the four read-only PlannedVisit provenance probes. Each is a thin in-process wrapper over an
         // already-registered seam (frequency resolver, consent evaluator, journey reader, contact-availability repo):
         // it never re-implements an engine and never makes an HTTP self-call (§19.3/5). Scoped like every write-path

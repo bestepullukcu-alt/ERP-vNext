@@ -1,7 +1,6 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.ContentComposition;
-using Diten.CrmService.Application.Features.ContentComposition.ContentScopes;
 using Diten.CrmService.Application.Features.ContentComposition.ContentSets;
 using Diten.CrmService.Application.Features.ContentComposition.Eligibility;
 using Diten.CrmService.Domain.Entities;
@@ -11,8 +10,8 @@ using Xunit;
 namespace Diten.CrmService.Application.Tests;
 
 /// <summary>
-/// SCMM-14 (CAND-CAP-0011) — ContentScope + ContentSet (assembly draft). Pins down: scope CRUD + duplicate-code + status
-/// guard + audit; content-set create-from-template with version PIN; clone-to-draft (new id, draft, no inherited
+/// SCMM-14 (CAND-CAP-0011) — ContentSet (assembly draft; WP-SB-1R: the ContentScope is retired, the set carries its
+/// country + language). Pins down: content-set create-from-template with version PIN; clone-to-draft (new id, draft, no inherited
 /// eligibility snapshot, remapped selection ids); component/claim arrange against the pinned template
 /// (branch/cardinality → 400/409); version-pin holds when the source changes later; apply-eligibility writes a per-claim
 /// snapshot, is non-blocking on Blocked/Unresolved, and PROPAGATES an infrastructure failure of the port (fail-closed);
@@ -32,7 +31,6 @@ public sealed class ContentSetAssemblyTests
 
     private sealed class Fixture
     {
-        public FakeScopeRepo Scopes { get; } = new();
         public FakeSetRepo Sets { get; } = new();
         public FakeTemplateRepo Templates { get; } = new();
         public FakeContentRepo Contents { get; } = new();
@@ -40,23 +38,23 @@ public sealed class ContentSetAssemblyTests
         public FakePort Port { get; } = new();
         public CapturingAudit Audit { get; } = new();
 
-        // ContentScope
-        public CreateContentScopeHandler CreateScope() => new(Tenant(TenantA), new NullActorContext(), Scopes, Audit);
-        public UpdateContentScopeHandler UpdateScope() => new(Tenant(TenantA), new NullActorContext(), Scopes, Audit);
-        public ArchiveContentScopeHandler ArchiveScope() => new(Tenant(TenantA), new NullActorContext(), Scopes, Audit);
-        public GetContentScopeHandler GetScope() => new(Tenant(TenantA), Scopes);
+        // WP-SB-1R — BRD country / language reference data (GB speaks en) and the context resolver's sources.
+        public ContentSetTestCatalog Catalog { get; } = new();
+        public ContentSetTestSubjects Subjects { get; } = new();
+        public ContentSetTestProfiles Profiles { get; } = new();
 
         // ContentSet
-        public CreateContentSetDraftHandler CreateSet() => new(Tenant(TenantA), new NullActorContext(), Sets, Templates, Scopes, Audit);
+        public CreateContentSetDraftHandler CreateSet() => new(Tenant(TenantA), new NullActorContext(), Sets, Templates, Catalog, Audit);
         public CloneContentSetToDraftHandler CloneSet() => new(Tenant(TenantA), new NullActorContext(), Sets, Audit);
-        public UpdateContentSetHandler UpdateSet() => new(Tenant(TenantA), new NullActorContext(), Sets, Audit);
+        public UpdateContentSetHandler UpdateSet() => new(Tenant(TenantA), new NullActorContext(), Sets, Audit, Catalog);
         public ArchiveContentSetHandler ArchiveSet() => new(Tenant(TenantA), new NullActorContext(), Sets, Audit);
         public GetContentSetHandler GetSet() => new(Tenant(TenantA), Sets);
         public AddContentSetComponentHandler AddComponent() => new(Tenant(TenantA), new NullActorContext(), Sets, Templates, Contents, Audit);
         public RemoveContentSetComponentHandler RemoveComponent() => new(Tenant(TenantA), new NullActorContext(), Sets, Audit);
         public ArrangeContentSetComponentHandler ArrangeComponent() => new(Tenant(TenantA), new NullActorContext(), Sets, Templates, Audit);
         public AddContentSetClaimHandler AddClaim() => new(Tenant(TenantA), new NullActorContext(), Sets, Templates, Claims, Audit);
-        public ApplyContentSetEligibilityHandler ApplyEligibility() => new(Tenant(TenantA), new NullActorContext(), Sets, Scopes, Claims, Port, Audit);
+        public ApplyContentSetEligibilityHandler ApplyEligibility() => new(Tenant(TenantA), new NullActorContext(), Sets,
+            new ContentSetContextResolver(Templates, Subjects, Profiles), Claims, Port, Audit);
     }
 
     // Seeds a branch-mode template: branch "B1" with one step (ConceptType T1) capped at MaxSelection=1.
@@ -105,57 +103,6 @@ public sealed class ContentSetAssemblyTests
         return c;
     }
 
-    // ---------------- ContentScope ----------------
-
-    [Fact]
-    public async Task Create_scope_returns_201_and_round_trips()
-    {
-        var fx = new Fixture();
-        var r = await fx.CreateScope().Handle(new CreateContentScopeCommand(
-            "SC-1", "Cardiology EU", ProductRefs: new[] { "p1" }, MarketRefs: new[] { "eu" }, Status: ContentScopeStatuses.Active), default);
-        Assert.Equal(201, r.StatusCode);
-        var dto = (await fx.GetScope().Handle(new GetContentScopeQuery(r.Data), default)).Data!;
-        Assert.Equal("SC-1", dto.ScopeCode);
-        Assert.Equal(new[] { "p1" }, dto.ProductRefs.ToArray());
-        Assert.Equal("1.0", dto.ScopeVersion);
-    }
-
-    [Fact]
-    public async Task Duplicate_scope_code_returns_409()
-    {
-        var fx = new Fixture();
-        Assert.Equal(201, (await fx.CreateScope().Handle(new CreateContentScopeCommand("SC-DUP", "A"), default)).StatusCode);
-        Assert.Equal(409, (await fx.CreateScope().Handle(new CreateContentScopeCommand("SC-DUP", "B"), default)).StatusCode);
-    }
-
-    [Fact]
-    public async Task Create_scope_with_archived_status_returns_400()
-    {
-        var fx = new Fixture();
-        var r = await fx.CreateScope().Handle(new CreateContentScopeCommand("SC-X", "X", Status: "archived"), default);
-        Assert.Equal(400, r.StatusCode);
-    }
-
-    [Fact]
-    public async Task Archived_scope_update_returns_409_and_archive_is_idempotent()
-    {
-        var fx = new Fixture();
-        var id = (await fx.CreateScope().Handle(new CreateContentScopeCommand("SC-A", "A"), default)).Data;
-        Assert.Equal(200, (await fx.ArchiveScope().Handle(new ArchiveContentScopeCommand(id), default)).StatusCode);
-        Assert.Equal(200, (await fx.ArchiveScope().Handle(new ArchiveContentScopeCommand(id), default)).StatusCode);
-        var upd = await fx.UpdateScope().Handle(new UpdateContentScopeCommand(id, "A2"), default);
-        Assert.Equal(409, upd.StatusCode);
-    }
-
-    [Fact]
-    public async Task Scope_create_emits_audit()
-    {
-        var fx = new Fixture();
-        var r = await fx.CreateScope().Handle(new CreateContentScopeCommand("SC-AUD", "A"), default);
-        Assert.Contains(fx.Audit.Events, e => e.Event == ContentScopeReasonCodes.Created
-            && e.EntityType == ContentCompositionAuditEntities.ContentScope && e.EntityId == r.Data);
-    }
-
     // ---------------- ContentSet create / pin / clone ----------------
 
     [Fact]
@@ -165,7 +112,7 @@ public sealed class ContentSetAssemblyTests
         var step = Guid.NewGuid();
         var template = SeedBranchTemplate(fx.Templates, step, version: "3.2");
 
-        var r = await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id), default);
+        var r = await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id, CountryCode: "GB", LanguageCode: "en"), default);
         Assert.Equal(201, r.StatusCode);
 
         // The source template's version changes AFTER selection — the set keeps the pinned version (D14-d).
@@ -174,21 +121,6 @@ public sealed class ContentSetAssemblyTests
         Assert.Equal(template.Id, dto.Template.ConceptChainTemplateId);
         Assert.Equal("3.2", dto.Template.ChainVersion);
         Assert.Equal(ContentSetStatuses.Draft, dto.Status);
-    }
-
-    [Fact]
-    public async Task Create_set_with_scope_pins_scope_version()
-    {
-        var fx = new Fixture();
-        var step = Guid.NewGuid();
-        var template = SeedBranchTemplate(fx.Templates, step);
-        var scopeId = (await fx.CreateScope().Handle(new CreateContentScopeCommand("SC-1", "S", ScopeVersion: "2.0"), default)).Data;
-
-        var r = await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-S", "Set", template.Id, ContentScopeId: scopeId), default);
-        var dto = (await fx.GetSet().Handle(new GetContentSetQuery(r.Data), default)).Data!;
-        Assert.NotNull(dto.Scope);
-        Assert.Equal(scopeId, dto.Scope!.ContentScopeId);
-        Assert.Equal("2.0", dto.Scope.ScopeVersion);
     }
 
     [Fact]
@@ -204,8 +136,8 @@ public sealed class ContentSetAssemblyTests
     {
         var fx = new Fixture();
         var template = SeedBranchTemplate(fx.Templates, Guid.NewGuid());
-        Assert.Equal(201, (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-DUP", "A", template.Id), default)).StatusCode);
-        Assert.Equal(409, (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-DUP", "B", template.Id), default)).StatusCode);
+        Assert.Equal(201, (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-DUP", "A", template.Id, CountryCode: "GB", LanguageCode: "en"), default)).StatusCode);
+        Assert.Equal(409, (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-DUP", "B", template.Id, CountryCode: "GB", LanguageCode: "en"), default)).StatusCode);
     }
 
     [Fact]
@@ -215,7 +147,7 @@ public sealed class ContentSetAssemblyTests
         var step = Guid.NewGuid();
         var template = SeedBranchTemplate(fx.Templates, step);
         var content = SeedContent(fx.Contents);
-        var srcId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-SRC", "Src", template.Id), default)).Data;
+        var srcId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-SRC", "Src", template.Id, CountryCode: "GB", LanguageCode: "en"), default)).Data;
         Assert.Equal(201, (await fx.AddComponent().Handle(new AddContentSetComponentCommand(srcId, content.Id, step, 0, "B1"), default)).StatusCode);
         Assert.Equal(200, (await fx.ApplyEligibility().Handle(new ApplyContentSetEligibilityCommand(srcId), default)).StatusCode);
 
@@ -244,7 +176,7 @@ public sealed class ContentSetAssemblyTests
         var step = Guid.NewGuid();
         var template = SeedBranchTemplate(fx.Templates, step);
         var content = SeedContent(fx.Contents, version: "1.0", lang: "en");
-        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id), default)).Data;
+        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id, CountryCode: "GB", LanguageCode: "en"), default)).Data;
 
         var add = await fx.AddComponent().Handle(new AddContentSetComponentCommand(setId, content.Id, step, 0, "B1", "hero"), default);
         Assert.Equal(201, add.StatusCode);
@@ -266,7 +198,7 @@ public sealed class ContentSetAssemblyTests
         var step = Guid.NewGuid();
         var template = SeedBranchTemplate(fx.Templates, step);
         var content = SeedContent(fx.Contents);
-        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id), default)).Data;
+        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id, CountryCode: "GB", LanguageCode: "en"), default)).Data;
 
         var add = await fx.AddComponent().Handle(new AddContentSetComponentCommand(setId, content.Id, step, 0, "NOPE"), default);
         Assert.Equal(400, add.StatusCode);
@@ -279,7 +211,7 @@ public sealed class ContentSetAssemblyTests
         var step = Guid.NewGuid();
         var template = SeedBranchTemplate(fx.Templates, step);
         var content = SeedContent(fx.Contents);
-        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id), default)).Data;
+        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id, CountryCode: "GB", LanguageCode: "en"), default)).Data;
 
         var add = await fx.AddComponent().Handle(new AddContentSetComponentCommand(setId, content.Id, Guid.NewGuid(), 0, "B1"), default);
         Assert.Equal(400, add.StatusCode);
@@ -293,7 +225,7 @@ public sealed class ContentSetAssemblyTests
         var template = SeedBranchTemplate(fx.Templates, step);   // MaxSelection = 1
         var c1 = SeedContent(fx.Contents, "KC-1");
         var c2 = SeedContent(fx.Contents, "KC-2");
-        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id), default)).Data;
+        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id, CountryCode: "GB", LanguageCode: "en"), default)).Data;
 
         Assert.Equal(201, (await fx.AddComponent().Handle(new AddContentSetComponentCommand(setId, c1.Id, step, 0, "B1"), default)).StatusCode);
         var second = await fx.AddComponent().Handle(new AddContentSetComponentCommand(setId, c2.Id, step, 1, "B1"), default);
@@ -305,7 +237,7 @@ public sealed class ContentSetAssemblyTests
     {
         var fx = new Fixture();
         var template = SeedBranchTemplate(fx.Templates, Guid.NewGuid());
-        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id), default)).Data;
+        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id, CountryCode: "GB", LanguageCode: "en"), default)).Data;
         var r = await fx.RemoveComponent().Handle(new RemoveContentSetComponentCommand(setId, Guid.NewGuid()), default);
         Assert.Equal(404, r.StatusCode);
     }
@@ -317,7 +249,7 @@ public sealed class ContentSetAssemblyTests
         var step = Guid.NewGuid();
         var template = SeedBranchTemplate(fx.Templates, step);
         var claim = SeedClaim(fx.Claims, version: "2.1");
-        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id), default)).Data;
+        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id, CountryCode: "GB", LanguageCode: "en"), default)).Data;
 
         var add = await fx.AddClaim().Handle(new AddContentSetClaimCommand(setId, claim.Id, step, 0, "B1"), default);
         Assert.Equal(201, add.StatusCode);
@@ -339,7 +271,7 @@ public sealed class ContentSetAssemblyTests
         fx.Port.Result = new EligibilityResult(EligibilityState.Blocked, "policy", "blocked-reason", policyId, "1.0",
             Array.Empty<EligibilityConditionOutcome>(), Jan1);
 
-        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id), default)).Data;
+        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id, CountryCode: "GB", LanguageCode: "en"), default)).Data;
         Assert.Equal(201, (await fx.AddClaim().Handle(new AddContentSetClaimCommand(setId, claim.Id, step, 0, "B1"), default)).StatusCode);
 
         var apply = await fx.ApplyEligibility().Handle(new ApplyContentSetEligibilityCommand(setId), default);
@@ -359,7 +291,7 @@ public sealed class ContentSetAssemblyTests
         var step = Guid.NewGuid();
         var template = SeedBranchTemplate(fx.Templates, step);
         var claim = SeedClaim(fx.Claims, policyId: null);   // no policy anchor
-        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id), default)).Data;
+        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id, CountryCode: "GB", LanguageCode: "en"), default)).Data;
         await fx.AddClaim().Handle(new AddContentSetClaimCommand(setId, claim.Id, step, 0, "B1"), default);
 
         Assert.Equal(200, (await fx.ApplyEligibility().Handle(new ApplyContentSetEligibilityCommand(setId), default)).StatusCode);
@@ -376,7 +308,7 @@ public sealed class ContentSetAssemblyTests
         var template = SeedBranchTemplate(fx.Templates, step);
         var claim = SeedClaim(fx.Claims, policyId: Guid.NewGuid());
         fx.Port.Throw = true;   // fail-closed: an infra failure throws
-        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id), default)).Data;
+        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id, CountryCode: "GB", LanguageCode: "en"), default)).Data;
         await fx.AddClaim().Handle(new AddContentSetClaimCommand(setId, claim.Id, step, 0, "B1"), default);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -390,7 +322,7 @@ public sealed class ContentSetAssemblyTests
         var step = Guid.NewGuid();
         var template = SeedBranchTemplate(fx.Templates, step);
         var content = SeedContent(fx.Contents);
-        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id), default)).Data;
+        var setId = (await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-1", "Set", template.Id, CountryCode: "GB", LanguageCode: "en"), default)).Data;
         Assert.Equal(200, (await fx.ArchiveSet().Handle(new ArchiveContentSetCommand(setId), default)).StatusCode);
 
         var add = await fx.AddComponent().Handle(new AddContentSetComponentCommand(setId, content.Id, step, 0, "B1"), default);
@@ -402,7 +334,7 @@ public sealed class ContentSetAssemblyTests
     {
         var fx = new Fixture();
         var template = SeedBranchTemplate(fx.Templates, Guid.NewGuid());
-        var r = await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-AUD", "A", template.Id), default);
+        var r = await fx.CreateSet().Handle(new CreateContentSetDraftCommand("SET-AUD", "A", template.Id, CountryCode: "GB", LanguageCode: "en"), default);
         Assert.Contains(fx.Audit.Events, e => e.Event == ContentSetReasonCodes.Created
             && e.EntityType == ContentCompositionAuditEntities.ContentSet && e.EntityId == r.Data);
     }
@@ -435,19 +367,6 @@ public sealed class ContentSetAssemblyTests
                 Array.Empty<EligibilityConditionOutcome>(), DateTimeOffset.UtcNow);
             return Task.FromResult(Response<EligibilityResult>.Success(result));
         }
-    }
-
-    private sealed class FakeScopeRepo : IContentScopeRepository
-    {
-        public List<ContentScope> Items { get; } = new();
-        public Task<ContentScope?> GetByIdAsync(Guid t, Guid id, CancellationToken ct)
-            => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == t && x.Id == id && !x.IsDeleted));
-        public Task<IReadOnlyList<ContentScope>> ListAsync(Guid t, CancellationToken ct)
-            => Task.FromResult((IReadOnlyList<ContentScope>)Items.Where(x => x.TenantId == t && !x.IsDeleted).ToList());
-        public Task<ContentScope?> GetActiveByCodeAsync(Guid t, string code, CancellationToken ct)
-            => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == t && !x.IsDeleted && x.ScopeCode == code && !x.IsArchived()));
-        public Task InsertAsync(ContentScope e, CancellationToken ct) { Items.Add(e); return Task.CompletedTask; }
-        public Task UpdateAsync(ContentScope e, CancellationToken ct) => Task.CompletedTask;
     }
 
     private sealed class FakeSetRepo : IContentSetRepository

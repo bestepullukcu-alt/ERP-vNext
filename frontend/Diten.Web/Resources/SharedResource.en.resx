@@ -753,9 +753,6 @@
   <data name="Nav.Page.CLAIMS" xml:space="preserve">
     <value>Claims</value>
   </data>
-  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
-    <value>Content Scopes</value>
-  </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>Content Sets</value>
   </data>

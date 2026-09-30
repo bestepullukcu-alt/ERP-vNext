@@ -8,8 +8,9 @@ using MediatR;
 namespace Diten.CrmService.Application.Features.ContentComposition.ContentSets;
 
 /// <summary>
-/// SCMM-14 (D14-c) apply-eligibility. Builds one <see cref="EligibilityContext"/> from the set's pinned scope + the
-/// languages of its selected components, then evaluates the eligibility policy referenced by EACH selected claim
+/// SCMM-14 (D14-c) apply-eligibility. Builds one <see cref="EligibilityContext"/> from the set context (WP-SB-1R:
+/// product = the template subject's MDM product code, market = the set country, audience = the template's for-whom
+/// profile codes, language = the set language + component languages; no channel), then evaluates the eligibility policy referenced by EACH selected claim
 /// (<c>Claim.Applicability.EligibilityPolicyId</c> — the only policy anchor in the model) through the in-process
 /// <see cref="IEligibilityEvaluationPort"/>, and writes a per-claim snapshot. NON-BLOCKING: a Blocked / Unresolved
 /// outcome never fails the draft (a hard gate is SCMM-15/17). FAIL-CLOSED: an infrastructure failure of the port
@@ -19,17 +20,17 @@ namespace Diten.CrmService.Application.Features.ContentComposition.ContentSets;
 public sealed class ApplyContentSetEligibilityHandler : ContentSetWriteHandlerBase,
     IRequestHandler<ApplyContentSetEligibilityCommand, Response<bool>>
 {
-    private readonly IContentScopeRepository _scopes;
+    private readonly IContentSetContextResolver _context;
     private readonly IClaimRepository _claims;
     private readonly IEligibilityEvaluationPort _port;
 
     public ApplyContentSetEligibilityHandler(
         ITenantContext tenant, IActorContext actor, IContentSetRepository sets,
-        IContentScopeRepository scopes, IClaimRepository claims, IEligibilityEvaluationPort port,
+        IContentSetContextResolver context, IClaimRepository claims, IEligibilityEvaluationPort port,
         IContentCompositionAuditPublisher? audit = null)
         : base(tenant, actor, sets, audit)
     {
-        _scopes = scopes;
+        _context = context;
         _claims = claims;
         _port = port;
     }
@@ -115,20 +116,15 @@ public sealed class ApplyContentSetEligibilityHandler : ContentSetWriteHandlerBa
         var dimensions = new List<EligibilityContextDimension>();
         var languages = new List<string>();
 
-        if (set.Scope is { } scopeRef)
-        {
-            var scope = await _scopes.GetByIdAsync(tenantId, scopeRef.ContentScopeId, ct);
-            if (scope is not null)
-            {
-                AddDimension(dimensions, "product", scope.ProductRefs);
-                AddDimension(dimensions, "market", scope.MarketRefs);
-                AddDimension(dimensions, "audience", scope.AudienceRefs);
-                if (!string.IsNullOrWhiteSpace(scope.Channel)) { AddDimension(dimensions, "channel", new[] { scope.Channel }); }
-                if (!string.IsNullOrWhiteSpace(scope.LanguageCode)) { languages.Add(scope.LanguageCode); }
-            }
-        }
+        // WP-SB-1R — the context comes from the set (country + language) and its template (product + audience). The
+        // retired ContentScope carried a free-text channel; there is no channel dimension any more.
+        var context = await _context.ResolveAsync(tenantId, set, ct);
+        AddDimension(dimensions, "product", context.ProductCode is { } productCode ? new[] { productCode } : Array.Empty<string>());
+        AddDimension(dimensions, "market", context.CountryCode is { } country ? new[] { country } : Array.Empty<string>());
+        AddDimension(dimensions, "audience", context.Audiences.Select(a => a.ProfileCode ?? string.Empty));
+        if (!string.IsNullOrWhiteSpace(context.LanguageCode)) { languages.Add(context.LanguageCode); }
 
-        // The selected components' languages fold into the language dimension (scope + components).
+        // The selected components' languages fold into the language dimension (set + components).
         languages.AddRange(set.SelectedComponents.Select(c => c.LanguageCode).Where(l => !string.IsNullOrWhiteSpace(l)));
         AddDimension(dimensions, "language", languages);
 

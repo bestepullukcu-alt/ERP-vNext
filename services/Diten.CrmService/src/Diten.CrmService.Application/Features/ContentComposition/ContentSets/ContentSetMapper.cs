@@ -5,13 +5,17 @@ namespace Diten.CrmService.Application.Features.ContentComposition.ContentSets;
 /// <summary>SCMM-14 (CAND-CAP-0011) aggregate ↔ DTO projection. Reads never echo TenantId (server-resolved).</summary>
 public static class ContentSetMapper
 {
-    public static ContentSetDto ToDto(ContentSet s) => new(
+    public static ContentSetDto ToDto(ContentSet s) => ToDto(s, null);
+
+    /// <summary>WP-SB-1R — the set with its resolved context (see <see cref="IContentSetContextResolver"/>).</summary>
+    public static ContentSetDto ToDto(ContentSet s, ContentSetContextDto? context) => new(
         s.Id,
         s.SetCode,
         s.SetName,
         s.Description,
         new ContentSetTemplateRefDto(s.Template.ConceptChainTemplateId, s.Template.ChainVersion),
-        s.Scope is null ? null : new ContentSetScopeRefDto(s.Scope.ContentScopeId, s.Scope.ScopeVersion),
+        s.CountryCode,
+        s.LanguageCode,
         s.SelectedComponents.Select(ToDto).ToList(),
         s.SelectedClaims.Select(ToDto).ToList(),
         s.DraftSchemaVersion,
@@ -24,7 +28,8 @@ public static class ContentSetMapper
         s.UpdatedBy,
         s.ArchivedAt,
         s.ArchivedBy,
-        s.IsArchived());
+        s.IsArchived(),
+        context);
 
     private static ContentSetComponentDto ToDto(ContentSetComponent c) => new(
         c.SelectionId, c.KnowledgeContentId, c.ContentVersion, c.LanguageCode, c.Role, ToDto(c.Arrangement));

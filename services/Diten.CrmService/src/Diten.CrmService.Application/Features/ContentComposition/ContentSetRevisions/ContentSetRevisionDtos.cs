@@ -17,7 +17,7 @@ public sealed record ContentSetRevisionDto(
     Guid ContentSetId,
     int ContentSetVersion,
     ContentSetTemplateRefDto Template,
-    ContentSetScopeRefDto? Scope,
+    ContentSetContextSnapshotDto? Context,
     IReadOnlyList<ContentSetComponentDto> SelectedComponents,
     IReadOnlyList<ContentSetClaimDto> SelectedClaims,
     ContentSetEligibilitySnapshotDto? EligibilitySnapshot,
@@ -40,6 +40,15 @@ public sealed record ContentSetRevisionDto(
     string? ProducedKnowledgeContentCode = null,
     Guid? ProducedKnowledgePathId = null,
     string? ProducedKnowledgePathCode = null);
+
+/// <summary>WP-SB-1R — the set context frozen into a revision at submit (null on a pre-SB-1R revision).</summary>
+public sealed record ContentSetContextSnapshotDto(
+    string? CountryCode,
+    string? LanguageCode,
+    Guid? ProductId,
+    string? ProductCode,
+    string? ProductName,
+    IReadOnlyList<Guid> AudienceProfileIds);
 
 public sealed record ContentSetRevisionListDto(IReadOnlyList<ContentSetRevisionDto> Items, int Total);
 

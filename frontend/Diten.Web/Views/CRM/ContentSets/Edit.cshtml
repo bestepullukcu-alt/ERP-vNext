@@ -37,20 +37,43 @@
 <div id="wsError" class="alert alert-danger d-none" role="alert"></div>
 <div id="wsArchivedBanner" class="alert alert-secondary d-none" role="alert"><i class="bx bx-archive me-1"></i>@Localizer["ArchivedSetReadOnly"]</div>
 
-@* Pinned composition (template + scope) — read-only provenance. *@
+@*
+    Pinned composition (template) + the set context (WP-SB-1R). Country + language belong to the set and are editable
+    while it is a draft; product + audience derive from the template and are read-only here.
+*@
 <div class="card mb-4">
     <div class="card-body p-4">
         <div class="row g-3">
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 col-xl-4">
                 <small class="text-muted d-block">@Localizer["Template"]</small>
                 <span id="wsTemplate" class="fw-medium">-</span>
             </div>
-            <div class="col-12 col-md-6">
-                <small class="text-muted d-block">@Localizer["Scope"]</small>
-                <span id="wsScope" class="fw-medium">-</span>
+            <div class="col-12 col-md-6 col-xl-4">
+                <small class="text-muted d-block">@Localizer["Product"]</small>
+                <span id="wsProduct" class="fw-medium">-</span>
+            </div>
+            <div class="col-12 col-md-6 col-xl-4">
+                <small class="text-muted d-block">@Localizer["Audience"]</small>
+                <span id="wsAudience" class="fw-medium">-</span>
+            </div>
+            <div class="col-12 col-md-6 col-xl-4">
+                <label class="form-label text-muted small mb-0" for="wsCountry">@Localizer["Country"]</label>
+                <span id="wsCountryText" class="fw-medium d-block">-</span>
+                <select id="wsCountry" class="form-select form-select-sm d-none" aria-label="@Localizer["Country"]"></select>
+            </div>
+            <div class="col-12 col-md-6 col-xl-4">
+                <label class="form-label text-muted small mb-0" for="wsLanguage">@Localizer["Language"]</label>
+                <span id="wsLanguageText" class="fw-medium d-block">-</span>
+                <select id="wsLanguage" class="form-select form-select-sm d-none" aria-label="@Localizer["Language"]"></select>
+            </div>
+            <div class="col-12 col-md-6 col-xl-4 d-flex align-items-end">
+                <button type="button" id="btnSaveContext" class="btn btn-sm btn-label-primary d-none">
+                    <i class="bx bx-save me-1"></i>@Localizer["SaveContext"]
+                </button>
             </div>
         </div>
         <small class="text-muted d-block mt-2"><i class="bx bx-lock-alt me-1"></i>@Localizer["PinnedNote"]</small>
+        <small class="text-muted d-block"><i class="bx bx-info-circle me-1"></i>@Localizer["ContextDerivedNote"]</small>
     </div>
 </div>
 

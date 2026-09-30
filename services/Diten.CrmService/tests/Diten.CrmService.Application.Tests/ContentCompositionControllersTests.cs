@@ -39,12 +39,20 @@ public sealed class ContentCompositionControllersTests
         }
     }
 
+    // WP-SB-1R — the ContentScope is retired: its create / update / archive endpoints are gone, only the reads remain.
+    [Fact]
+    public void Content_scope_controller_is_read_only()
+    {
+        var writes = typeof(ContentScopesController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(m => m.GetCustomAttributes<HttpPostAttribute>().Any() || m.GetCustomAttributes<HttpPutAttribute>().Any())
+            .Select(m => m.Name)
+            .ToList();
+        Assert.Empty(writes);
+    }
+
     [Theory]
     [InlineData(typeof(ContentScopesController), nameof(ContentScopesController.List), "GET", ScopeBase, ContentScopePermissions.Read)]
     [InlineData(typeof(ContentScopesController), nameof(ContentScopesController.Get), "GET", ScopeBase + "/{contentScopeId:guid}", ContentScopePermissions.Read)]
-    [InlineData(typeof(ContentScopesController), nameof(ContentScopesController.Create), "POST", ScopeBase, ContentScopePermissions.Manage)]
-    [InlineData(typeof(ContentScopesController), nameof(ContentScopesController.Update), "PUT", ScopeBase + "/{contentScopeId:guid}", ContentScopePermissions.Manage)]
-    [InlineData(typeof(ContentScopesController), nameof(ContentScopesController.Archive), "POST", ScopeBase + "/{contentScopeId:guid}/archive", ContentScopePermissions.Manage)]
     [InlineData(typeof(ContentSetsController), nameof(ContentSetsController.List), "GET", SetBase, ContentSetPermissions.Read)]
     [InlineData(typeof(ContentSetsController), nameof(ContentSetsController.Get), "GET", SetBase + "/{contentSetId:guid}", ContentSetPermissions.Read)]
     [InlineData(typeof(ContentSetsController), nameof(ContentSetsController.Create), "POST", SetBase, ContentSetPermissions.Manage)]

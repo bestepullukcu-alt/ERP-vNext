@@ -60,6 +60,16 @@ public sealed class AddContentSetComponentHandler : ContentSetWriteHandlerBase,
             return Response<Guid>.Fail("An archived content component cannot be selected.", 409);
         }
 
+        // WP-SB-1R — a set is single-language: a component in another language is refused at write time (the SB-2
+        // release check component_language_mixed stays as a backstop). A pre-SB-1R set without a language is not gated.
+        if (!string.IsNullOrWhiteSpace(set.LanguageCode)
+            && ContentSetContextValidation.ComponentsNotIn(
+                new[] { new ContentSetComponent { LanguageCode = content.LanguageCode } }, set.LanguageCode).Count > 0)
+        {
+            return Response<Guid>.Fail(new[] { ContentSetContextErrors.ComponentLanguageMismatch,
+                $"Content '{content.ContentCode}' is in '{content.LanguageCode}', the set is in '{set.LanguageCode}'." }, 409);
+        }
+
         // Cardinality: a per-position MaxSelection caps components in the same branch slot.
         var max = ContentSetArrangement.MaxSelectionFor(template, request.TemplateStepId, request.BranchId);
         if (max is { } cap)

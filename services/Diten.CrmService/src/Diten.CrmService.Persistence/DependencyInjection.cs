@@ -637,11 +637,23 @@ public static class DependencyInjection
         // SCMM-14 (CAND-CAP-0011) — ContentSet. Its Guid FKs live in embedded value objects; each takes the string-Guid
         // convention (the new-aggregate class-map trap) so a stored ref round-trips as a string subtype and any future
         // by-ref filter compares string vs string, not string vs binary.
-        Map<ContentSet>(_ => { });
+        // WP-SB-1R — the retired ContentScope binding keeps its old element name "Scope" on the LegacyScope member, so a
+        // pre-SB-1R document still reads (this class map rejects unknown elements) and a re-save keeps it; nothing reads
+        // it. CountryCode / LanguageCode are plain strings (AutoMap).
+#pragma warning disable CS0618 // LegacyScope is obsolete on purpose (read-compatibility only)
+        Map<ContentSet>(map => map.GetMemberMap(x => x.LegacyScope).SetElementName("Scope").SetIgnoreIfNull(true));
+#pragma warning restore CS0618
         Map<ContentSetTemplateRef>(map =>
             map.GetMemberMap(x => x.ConceptChainTemplateId).SetSerializer(stringGuid));
         Map<ContentSetScopeRef>(map =>
             map.GetMemberMap(x => x.ContentScopeId).SetSerializer(stringGuid));
+        // WP-SB-1R — the frozen set context of a revision; ids follow the string-Guid convention.
+        Map<ContentSetContextSnapshot>(map =>
+        {
+            map.GetMemberMap(x => x.ProductId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(x => x.AudienceProfileIds).SetSerializer(
+                new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+        });
         Map<ContentArrangement>(map =>
             map.GetMemberMap(x => x.TemplateStepId).SetSerializer(stringGuid));
         Map<ContentSetComponent>(map =>
@@ -671,6 +683,10 @@ public static class DependencyInjection
             map.GetMemberMap(x => x.ContentSetId).SetSerializer(stringGuid);
             map.GetMemberMap(x => x.ProducedKnowledgeContentId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             map.GetMemberMap(x => x.ProducedKnowledgePathId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            // WP-SB-1R — a pre-SB-1R revision's frozen "Scope" element reads into LegacyScope (never used).
+#pragma warning disable CS0618 // LegacyScope is obsolete on purpose (read-compatibility only)
+            map.GetMemberMap(x => x.LegacyScope).SetElementName("Scope").SetIgnoreIfNull(true);
+#pragma warning restore CS0618
         });
         Map<ContentSetReviewDecision>(_ => { });
         // SCMM-16B — the rendered-artifact pointer. ContentId is a FU01 content id and takes the same string-Guid

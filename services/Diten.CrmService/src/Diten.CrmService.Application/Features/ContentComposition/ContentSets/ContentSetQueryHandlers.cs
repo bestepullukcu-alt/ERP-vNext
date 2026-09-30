@@ -10,11 +10,14 @@ public sealed class ListContentSetsHandler : IRequestHandler<ListContentSetsQuer
 {
     private readonly ITenantContext _tenant;
     private readonly IContentSetRepository _sets;
+    private readonly IContentSetContextResolver? _context;
 
-    public ListContentSetsHandler(ITenantContext tenant, IContentSetRepository sets)
+    public ListContentSetsHandler(
+        ITenantContext tenant, IContentSetRepository sets, IContentSetContextResolver? context = null)
     {
         _tenant = tenant;
         _sets = sets;
+        _context = context;
     }
 
     public async Task<Response<ContentSetListDto>> Handle(ListContentSetsQuery request, CancellationToken cancellationToken)
@@ -45,7 +48,14 @@ public sealed class ListContentSetsHandler : IRequestHandler<ListContentSetsQuer
             rows = rows.Where(x => !x.IsArchived());
         }
 
-        var items = rows.Select(ContentSetMapper.ToDto).ToList();
+        // WP-SB-1R — every row carries its resolved context (country + language + template-derived product / audience).
+        var items = new List<ContentSetDto>();
+        foreach (var row in rows)
+        {
+            items.Add(ContentSetMapper.ToDto(row,
+                _context is null ? null : await _context.ResolveAsync(tenantId, row, cancellationToken)));
+        }
+
         return Response<ContentSetListDto>.Success(new ContentSetListDto(items, items.Count));
     }
 }
@@ -54,11 +64,14 @@ public sealed class GetContentSetHandler : IRequestHandler<GetContentSetQuery, R
 {
     private readonly ITenantContext _tenant;
     private readonly IContentSetRepository _sets;
+    private readonly IContentSetContextResolver? _context;
 
-    public GetContentSetHandler(ITenantContext tenant, IContentSetRepository sets)
+    public GetContentSetHandler(
+        ITenantContext tenant, IContentSetRepository sets, IContentSetContextResolver? context = null)
     {
         _tenant = tenant;
         _sets = sets;
+        _context = context;
     }
 
     public async Task<Response<ContentSetDto>> Handle(GetContentSetQuery request, CancellationToken cancellationToken)
@@ -69,8 +82,12 @@ public sealed class GetContentSetHandler : IRequestHandler<GetContentSetQuery, R
         }
 
         var entity = await _sets.GetByIdAsync(tenantId, request.ContentSetId, cancellationToken);
-        return entity is null
-            ? Response<ContentSetDto>.Fail("Content set not found.", 404)
-            : Response<ContentSetDto>.Success(ContentSetMapper.ToDto(entity));
+        if (entity is null)
+        {
+            return Response<ContentSetDto>.Fail("Content set not found.", 404);
+        }
+
+        var context = _context is null ? null : await _context.ResolveAsync(tenantId, entity, cancellationToken);
+        return Response<ContentSetDto>.Success(ContentSetMapper.ToDto(entity, context));
     }
 }

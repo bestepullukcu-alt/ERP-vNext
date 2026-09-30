@@ -42,7 +42,6 @@
   <data name="StatusInactive" xml:space="preserve"><value>Неактивно</value></data>
   <data name="StatusArchived" xml:space="preserve"><value>В архиве</value></data>
   <data name="Template" xml:space="preserve"><value>Шаблон</value></data>
-  <data name="Scope" xml:space="preserve"><value>Область</value></data>
   <data name="Components" xml:space="preserve"><value>Компоненты</value></data>
   <data name="Claims" xml:space="preserve"><value>Заявления</value></data>
   <data name="ProductRefs" xml:space="preserve"><value>Ссылки на продукты</value></data>
@@ -71,10 +70,7 @@
   <data name="CompositionSection" xml:space="preserve"><value>Композиция</value></data>
   <data name="TemplatePickerPlaceholder" xml:space="preserve"><value>Найдите шаблон композиции...</value></data>
   <data name="TemplatePinNote" xml:space="preserve"><value>Версия шаблона закрепляется при создании набора.</value></data>
-  <data name="ScopePickerPlaceholder" xml:space="preserve"><value>Найдите область контента (необязательно)...</value></data>
-  <data name="ScopeOptionalNote" xml:space="preserve"><value>Необязательно. Его версия закрепляется при выборе.</value></data>
   <data name="PinnedNote" xml:space="preserve"><value>Шаблон и область закрепляются по версии при выборе — здесь они не меняются.</value></data>
-  <data name="NoScope" xml:space="preserve"><value>Без области</value></data>
   <data name="ApplyEligibility" xml:space="preserve"><value>Проверить допустимость</value></data>
   <data name="EligibilityApplied" xml:space="preserve"><value>Снимок допустимости обновлён.</value></data>
   <data name="EligibilitySummary" xml:space="preserve"><value>Допустимость (последний запуск):</value></data>
@@ -98,4 +94,19 @@
   <data name="NoClaims" xml:space="preserve"><value>В этом слоте пока нет заявлений.</value></data>
   <data name="AddedOn" xml:space="preserve"><value>Добавлено</value></data>
   <data name="NeedsAssessmentWarn" xml:space="preserve"><value>Источник этого компонента изменился — перевод требует оценки.</value></data>
+  <data name="Country" xml:space="preserve"><value>Страна</value></data>
+  <data name="Language" xml:space="preserve"><value>Язык</value></data>
+  <data name="Product" xml:space="preserve"><value>Продукт</value></data>
+  <data name="Audience" xml:space="preserve"><value>Целевая аудитория</value></data>
+  <data name="CountryPickerPlaceholder" xml:space="preserve"><value>Выберите страну…</value></data>
+  <data name="LanguagePickerPlaceholder" xml:space="preserve"><value>Выберите язык страны…</value></data>
+  <data name="ContextDerivedNote" xml:space="preserve"><value>Продукт и целевая аудитория берутся из шаблона композиции (продукт его темы и профили «для кого»).</value></data>
+  <data name="SaveContext" xml:space="preserve"><value>Сохранить страну и язык</value></data>
+  <data name="ContextSaved" xml:space="preserve"><value>Страна и язык сохранены.</value></data>
+  <data name="ContextError_country_invalid" xml:space="preserve"><value>Выберите допустимую страну.</value></data>
+  <data name="ContextError_language_not_in_country" xml:space="preserve"><value>Язык должен быть одним из языков контента страны.</value></data>
+  <data name="ContextError_reference_set_unavailable" xml:space="preserve"><value>Сейчас не удаётся загрузить списки стран и языков; повторите попытку позже.</value></data>
+  <data name="ContextError_component_language_mismatch" xml:space="preserve"><value>Этот материал не на языке набора. У набора один язык; сначала удалите компоненты на другом языке.</value></data>
+  <data name="ContextError_context_locked" xml:space="preserve"><value>Страну и язык можно менять только пока набор является черновиком.</value></data>
+  <data name="ContextError_component_language_mixed" xml:space="preserve"><value>Не все компоненты на языке набора; набор нельзя опубликовать.</value></data>
 </root>

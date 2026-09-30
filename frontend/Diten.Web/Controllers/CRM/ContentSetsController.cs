@@ -13,22 +13,21 @@ namespace Diten.Web.Controllers.CRM;
 /// <summary>
 /// SCMM-14-UI (CAND-CAP-0011) Content Studio workspace for ContentSet (assembly draft) authoring. Proxy-only, mirroring
 /// the Claims console: all business traffic is proxied server-side through Gateway 5000 to the ready ContentSet surface
-/// (<c>/api/crm/content-composition/content-sets</c>) and the read-only picker sources (composition templates, content
-/// scopes, knowledge contents, claims, concept types). The browser never sees a service URL or bearer token; no business
+/// (<c>/api/crm/content-composition/content-sets</c>) and the read-only picker sources (composition templates, knowledge
+/// contents, claims, concept types; WP-SB-1R: the BRD country / content-language lookup replaces the retired scopes). The browser never sees a service URL or bearer token; no business
 /// rule, arrangement-cardinality or version-pin logic lives here (the CrmService CQRS is authoritative). Every selection
 /// is a searchable select2 — no raw id entry (D14-e). No delete surface — closing a set is Archive. No freeze / render /
 /// release here (SCMM-15/16/17). RBAC keys (<c>crm.content-set.*</c>) are seeded + granted (SCMM-14) — no dev-fallback.
 /// </summary>
 [Authorize]
 [Route("CRM/ContentSets")]
-public sealed class ContentSetsController : Controller
+public sealed partial class ContentSetsController : Controller
 {
     private const string ReadPermission = "crm.content-set.read";
     private const string ManagePermission = "crm.content-set.manage";
     private const string ViewRoot = "~/Views/CRM/ContentSets";
 
     private const string SetsBase = "/api/crm/content-composition/content-sets";
-    private const string ScopesBase = "/api/crm/content-composition/content-scopes";
     private const string ClaimsBase = "/api/crm/content-composition/claims";
     private const string TemplatesBase = "/api/crm/knowledge/concept-chain-templates";
     private const string ContentsBase = "/api/crm/knowledge/contents";
@@ -37,6 +36,7 @@ public sealed class ContentSetsController : Controller
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
+    private readonly IStringLocalizer<Diten.Web.Views.CRM.ContentSets.ContentSetsIndex> _localizer;
     private readonly ILogger<ContentSetsController> _logger;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true };
 
@@ -44,12 +44,14 @@ public sealed class ContentSetsController : Controller
         HttpClient httpClient,
         IConfiguration configuration,
         IStringLocalizer<SharedResource> sharedLocalizer,
+        IStringLocalizer<Diten.Web.Views.CRM.ContentSets.ContentSetsIndex> localizer,
         ILogger<ContentSetsController> logger)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"]
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _sharedLocalizer = sharedLocalizer;
+        _localizer = localizer;
         _logger = logger;
     }
 
@@ -78,7 +80,9 @@ public sealed class ContentSetsController : Controller
             model.SetName,
             model.Description,
             model.ConceptChainTemplateId,
-            contentScopeId = model.ContentScopeId is { } s && s != Guid.Empty ? s : (Guid?)null
+            // WP-SB-1R — the set context: country + language (validated by CRM against BRD); no ContentScope.
+            model.CountryCode,
+            model.LanguageCode
         };
         var response = await SendGatewayAsync(HttpMethod.Post, SetsBase, payload, ct);
         if (response is not null && response.IsSuccessStatusCode)
@@ -162,10 +166,6 @@ public sealed class ContentSetsController : Controller
     [HttpGet("api/templates/{templateId:guid}")]
     public Task<IActionResult> TemplateGet(Guid templateId, CancellationToken ct) =>
         ProxyGetAsync($"{TemplatesBase}/{templateId}", ReadPermission, ct);
-
-    [HttpGet("api/scopes")]
-    public Task<IActionResult> ScopeList(CancellationToken ct) =>
-        ProxyGetAsync($"{ScopesBase}{Request.QueryString}", ReadPermission, ct);
 
     [HttpGet("api/contents")]
     public Task<IActionResult> ContentList(CancellationToken ct) =>
@@ -253,9 +253,11 @@ public sealed class ContentSetsController : Controller
         return [string.IsNullOrWhiteSpace(raw) ? _sharedLocalizer["GatewayError"].Value : raw];
     }
 
+    // WP-SB-1R — a coded CRM failure ([code, message]) is shown in the user's language (ContextError_{code}); the English
+    // message is dropped. Anything else is shown as before.
     private void AddGatewayErrors(IEnumerable<string> errors)
     {
-        foreach (var error in errors) ModelState.AddModelError(string.Empty, error);
+        foreach (var error in LocalizeErrors(errors.ToList())) ModelState.AddModelError(string.Empty, error);
     }
 
     private static bool ContainsTenantId(JsonElement element) => element.ValueKind == JsonValueKind.Object &&

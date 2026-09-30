@@ -45,7 +45,7 @@ public sealed class ContentSetsController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new CreateContentSetDraftCommand(
                 request.SetCode, request.SetName, request.ConceptChainTemplateId, request.Description,
-                request.ContentScopeId),
+                request.CountryCode, request.LanguageCode),
             cancellationToken));
 
     [HttpPost(Base + "/{contentSetId:guid}/clone")]
@@ -60,7 +60,9 @@ public sealed class ContentSetsController : CustomBaseController
     public async Task<IActionResult> Update(
         Guid contentSetId, [FromBody] UpdateContentSetRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
-            new UpdateContentSetCommand(contentSetId, request.SetName, request.Description, request.Status),
+            new UpdateContentSetCommand(
+                contentSetId, request.SetName, request.Description, request.Status, request.CountryCode,
+                request.LanguageCode),
             cancellationToken));
 
     [HttpPost(Base + "/{contentSetId:guid}/archive")]

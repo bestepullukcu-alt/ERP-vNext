@@ -1,6 +1,5 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
-using Diten.CrmService.Application.Common.ReferenceValidation;
 using Diten.CrmService.Application.Features.ContentComposition;
 using Diten.CrmService.Application.Features.ContentComposition.ContentSetRevisions;
 using Diten.CrmService.Application.Features.Knowledge.Content.Commands;
@@ -57,7 +56,7 @@ public sealed class ContentSetReleaseKnowledgeTests
         Assert.Equal("1", content.ContentVersion);
         var claimRef = Assert.Single(content.ClaimRefs);
         Assert.Equal("CLM-A", claimRef.ClaimCode);
-        Assert.Equal(fx.VersionTr!.Id, claimRef.CountryVersionId);  // scope MarketRefs [TR, eu] → one country
+        Assert.Equal(fx.VersionTr!.Id, claimRef.CountryVersionId);  // the set country (frozen in the revision)
         Assert.Equal("TR", claimRef.CountryCode);
         Assert.NotNull(content.StudioOrigin);
         Assert.Equal(revision.ContentSetId, content.StudioOrigin!.ContentSetId);
@@ -123,13 +122,12 @@ public sealed class ContentSetReleaseKnowledgeTests
         Assert.Equal(new[] { c, b, a }, ordered);
     }
 
-    [Theory]
-    [InlineData("TR,DE")]  // two countries → no single market
-    [InlineData("eu")]       // no country at all
-    public async Task A_scope_without_exactly_one_country_binds_the_core_claim(string markets)
+    // WP-SB-1R — the release reads the country from the set context (ONE point: ContentSetReleaseProducer.ReleaseContext).
+    [Fact]
+    public async Task A_set_without_a_country_binds_the_core_claim()
     {
         var fx = new Fixture();
-        var revision = fx.SeedBranchedRevision(markets: markets.Split(','));
+        var revision = fx.SeedBranchedRevision(country: null);
 
         var r = await fx.Release().Handle(new ReleaseContentSetRevisionCommand(revision.Id), default);
 
@@ -138,6 +136,47 @@ public sealed class ContentSetReleaseKnowledgeTests
         Assert.Equal(fx.ClaimA.Id, claimRef.ClaimId);
         Assert.Null(claimRef.CountryVersionId);
         Assert.Null(claimRef.CountryCode);
+    }
+
+    [Fact]
+    public async Task The_country_frozen_in_the_revision_wins_over_a_later_change_of_the_set()
+    {
+        var fx = new Fixture();
+        var revision = fx.SeedBranchedRevision(country: "TR");
+        fx.Set.CountryCode = "UZ";                                   // the draft moves on after submit
+
+        var r = await fx.Release().Handle(new ReleaseContentSetRevisionCommand(revision.Id), default);
+
+        Assert.Equal(200, r.StatusCode);
+        var claimRef = Assert.Single(fx.Produced().ClaimRefs);
+        Assert.Equal(fx.VersionTr!.Id, claimRef.CountryVersionId);
+        Assert.Equal("TR", claimRef.CountryCode);
+    }
+
+    [Fact]
+    public async Task A_pre_sb1r_revision_without_a_frozen_context_reads_the_set_country()
+    {
+        var fx = new Fixture();
+        var revision = fx.SeedBranchedRevision(country: "TR", frozenContext: false);
+
+        var r = await fx.Release().Handle(new ReleaseContentSetRevisionCommand(revision.Id), default);
+
+        Assert.Equal(200, r.StatusCode);
+        Assert.Equal("TR", Assert.Single(fx.Produced().ClaimRefs).CountryCode);
+    }
+
+    [Fact]
+    public async Task A_set_language_other_than_the_components_is_409_component_language_mixed()
+    {
+        var fx = new Fixture();
+        var revision = fx.SeedBranchedRevision(setLanguage: "uz");   // components are all "tr"
+
+        var r = await fx.Release().Handle(new ReleaseContentSetRevisionCommand(revision.Id), default);
+
+        Assert.Equal(409, r.StatusCode);
+        Assert.Equal(ContentSetReleaseErrors.ComponentLanguageMixed, r.Errors![0]);
+        Assert.Contains("set=uz", r.Errors[1]);
+        fx.AssertNothingProduced(revision);
     }
 
     [Fact]
@@ -229,19 +268,6 @@ public sealed class ContentSetReleaseKnowledgeTests
         Assert.Equal(ContentSetReleaseErrors.ComponentLanguageMixed, r.Errors![0]);
         Assert.Contains("=en", r.Errors[1]);
         Assert.Contains("=tr", r.Errors[1]);
-        fx.AssertNothingProduced(revision);
-    }
-
-    [Fact]
-    public async Task An_unreadable_country_catalog_with_market_refs_is_503_and_nothing_is_produced()
-    {
-        var fx = new Fixture(catalogPublished: false);
-        var revision = fx.SeedBranchedRevision();
-
-        var r = await fx.Release().Handle(new ReleaseContentSetRevisionCommand(revision.Id), default);
-
-        Assert.Equal(503, r.StatusCode);
-        Assert.Equal(KnowledgeContentClaimErrors.DependencyUnavailable, r.Errors![0]);
         fx.AssertNothingProduced(revision);
     }
 
@@ -396,7 +422,6 @@ public sealed class ContentSetReleaseKnowledgeTests
         public FakePaths Paths { get; } = new();
         public FakeRevisions Revisions { get; } = new();
         public FakeSets Sets { get; } = new();
-        public FakeScopes Scopes { get; } = new();
         public FakeTemplates Templates { get; } = new();
         public FakeSubjects Subjects { get; } = new();
         public FakeProfiles Profiles { get; } = new();
@@ -404,7 +429,6 @@ public sealed class ContentSetReleaseKnowledgeTests
         public FakeClaims Claims { get; } = new();
         public FakeVersions Versions { get; } = new();
         public FakeJourneys Journeys { get; } = new();
-        public FakeCatalog Catalog { get; }
         public RoutingSender Sender { get; }
 
         public Guid SubjectId { get; }
@@ -422,9 +446,8 @@ public sealed class ContentSetReleaseKnowledgeTests
 
         private readonly List<ContentSetComponent> _components = new();
 
-        public Fixture(bool catalogPublished = true)
+        public Fixture()
         {
-            Catalog = new FakeCatalog(catalogPublished, "TR", "DE");
             var subject = new Subject
             {
                 TenantId = TenantA, SubjectCode = "ALM", SubjectName = "Almiba", Status = TaxonomyStatuses.Active,
@@ -504,8 +527,8 @@ public sealed class ContentSetReleaseKnowledgeTests
         }
 
         public ContentSetRevision SeedBranchedRevision(
-            string[]? markets = null, string trStatus = ClaimStatuses.Approved, string[]? trLanguages = null,
-            int revisionNumber = 1, bool reuseComponents = false)
+            string? country = "TR", string trStatus = ClaimStatuses.Approved, string[]? trLanguages = null,
+            int revisionNumber = 1, bool reuseComponents = false, bool frozenContext = true, string? setLanguage = "tr")
         {
             if (VersionTr is null)
             {
@@ -522,9 +545,10 @@ public sealed class ContentSetReleaseKnowledgeTests
                 Versions.Items.Add(VersionTr);
             }
 
-            var scope = new ContentScope { TenantId = TenantA, ScopeCode = "SC-" + revisionNumber, ScopeVersion = "1" };
-            scope.MarketRefs.AddRange(markets ?? new[] { "TR", "eu" });
-            Scopes.Items.Add(scope);
+            // WP-SB-1R — the set carries its country + language; the revision freezes them at submit (a pre-SB-1R
+            // revision has no frozen context and the release falls back to the set's fields).
+            Set.CountryCode = country;
+            Set.LanguageCode = setLanguage;
 
             var revision = new ContentSetRevision
             {
@@ -536,7 +560,9 @@ public sealed class ContentSetReleaseKnowledgeTests
                 SubmittedBy = "author",
                 SubmittedAt = Jan1,
                 Template = new ContentSetTemplateRef { ConceptChainTemplateId = Template.Id, ChainVersion = "2.0" },
-                Scope = new ContentSetScopeRef { ContentScopeId = scope.Id, ScopeVersion = "1" },
+                Context = frozenContext
+                    ? new ContentSetContextSnapshot { CountryCode = country, LanguageCode = setLanguage }
+                    : null,
                 SelectedComponents = _components.Select(c => new ContentSetComponent
                 {
                     SelectionId = reuseComponents ? Guid.NewGuid() : c.SelectionId,
@@ -596,7 +622,7 @@ public sealed class ContentSetReleaseKnowledgeTests
         }
 
         public ContentSetReleaseProducer Producer() => new(
-            Sender, Sets, Revisions, Templates, Subjects, Scopes, Contents, Paths, Journeys, Claims, Versions, Catalog);
+            Sender, Sets, Revisions, Templates, Subjects, Contents, Paths, Journeys, Claims, Versions);
 
         public ReleaseContentSetRevisionHandler Release()
             => new(Tenant(), new Actor("releaser"), Revisions, new NullAudit(), Producer());
@@ -661,18 +687,6 @@ public sealed class ContentSetReleaseKnowledgeTests
         public Task PublishAsync(string e, Guid t, string et, Guid id, int v, string? d, CancellationToken ct) => Task.CompletedTask;
     }
 
-    private sealed class FakeCatalog : IReferenceDataCatalogReader
-    {
-        private readonly bool _published;
-        private readonly string[] _codes;
-        public FakeCatalog(bool published, params string[] codes) { _published = published; _codes = codes; }
-
-        public Task<ReferenceSetSnapshot> GetPublishedValuesAsync(string setCode, CancellationToken cancellationToken)
-            => Task.FromResult(_published
-                ? new ReferenceSetSnapshot(setCode, true, _codes.Select(c => new ReferenceValueSnapshot(c, c, null, true, false, null)).ToList())
-                : ReferenceSetSnapshot.NotPublished(setCode));
-    }
-
     private sealed class FakeContents : IKnowledgeContentRepository
     {
         public List<KnowledgeContent> Items { get; } = new();
@@ -723,19 +737,6 @@ public sealed class ContentSetReleaseKnowledgeTests
             => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == t && x.SetCode == code));
         public Task InsertAsync(ContentSet entity, CancellationToken ct) { Items.Add(entity); return Task.CompletedTask; }
         public Task UpdateAsync(ContentSet entity, CancellationToken ct) => Task.CompletedTask;
-    }
-
-    private sealed class FakeScopes : IContentScopeRepository
-    {
-        public List<ContentScope> Items { get; } = new();
-        public Task<ContentScope?> GetByIdAsync(Guid t, Guid id, CancellationToken ct)
-            => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == t && x.Id == id));
-        public Task<IReadOnlyList<ContentScope>> ListAsync(Guid t, CancellationToken ct)
-            => Task.FromResult((IReadOnlyList<ContentScope>)Items.Where(x => x.TenantId == t).ToList());
-        public Task<ContentScope?> GetActiveByCodeAsync(Guid t, string code, CancellationToken ct)
-            => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == t && x.ScopeCode == code));
-        public Task InsertAsync(ContentScope entity, CancellationToken ct) { Items.Add(entity); return Task.CompletedTask; }
-        public Task UpdateAsync(ContentScope entity, CancellationToken ct) => Task.CompletedTask;
     }
 
     private sealed class FakeTemplates : IConceptChainTemplateRepository

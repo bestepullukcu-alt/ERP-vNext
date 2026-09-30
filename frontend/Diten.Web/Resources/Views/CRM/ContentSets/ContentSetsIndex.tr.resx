@@ -42,7 +42,6 @@
   <data name="StatusInactive" xml:space="preserve"><value>Pasif</value></data>
   <data name="StatusArchived" xml:space="preserve"><value>Arşivli</value></data>
   <data name="Template" xml:space="preserve"><value>Şablon</value></data>
-  <data name="Scope" xml:space="preserve"><value>Kapsam</value></data>
   <data name="Components" xml:space="preserve"><value>Bileşenler</value></data>
   <data name="Claims" xml:space="preserve"><value>İddialar</value></data>
   <data name="ProductRefs" xml:space="preserve"><value>Ürün Referansları</value></data>
@@ -71,10 +70,7 @@
   <data name="CompositionSection" xml:space="preserve"><value>Kompozisyon</value></data>
   <data name="TemplatePickerPlaceholder" xml:space="preserve"><value>Kompozisyon şablonu ara...</value></data>
   <data name="TemplatePinNote" xml:space="preserve"><value>Set oluşturulduğunda şablon sürümü sabitlenir.</value></data>
-  <data name="ScopePickerPlaceholder" xml:space="preserve"><value>İçerik kapsamı ara (opsiyonel)...</value></data>
-  <data name="ScopeOptionalNote" xml:space="preserve"><value>Opsiyonel. Seçilince sürümü sabitlenir.</value></data>
   <data name="PinnedNote" xml:space="preserve"><value>Şablon ve kapsam seçim anında sürüme sabitlenir — burada değiştirilmez.</value></data>
-  <data name="NoScope" xml:space="preserve"><value>Kapsam yok</value></data>
   <data name="ApplyEligibility" xml:space="preserve"><value>Uygunluğu değerlendir</value></data>
   <data name="EligibilityApplied" xml:space="preserve"><value>Uygunluk anlık görüntüsü güncellendi.</value></data>
   <data name="EligibilitySummary" xml:space="preserve"><value>Uygunluk (son çalıştırma):</value></data>
@@ -98,4 +94,19 @@
   <data name="NoClaims" xml:space="preserve"><value>Bu yuvada henüz iddia yok.</value></data>
   <data name="AddedOn" xml:space="preserve"><value>Eklendi</value></data>
   <data name="NeedsAssessmentWarn" xml:space="preserve"><value>Bu bileşenin kaynağı değişti — çeviri değerlendirmesi gerekiyor.</value></data>
+  <data name="Country" xml:space="preserve"><value>Ülke</value></data>
+  <data name="Language" xml:space="preserve"><value>Dil</value></data>
+  <data name="Product" xml:space="preserve"><value>Ürün</value></data>
+  <data name="Audience" xml:space="preserve"><value>Hedef kitle</value></data>
+  <data name="CountryPickerPlaceholder" xml:space="preserve"><value>Ülke seçin…</value></data>
+  <data name="LanguagePickerPlaceholder" xml:space="preserve"><value>Ülkenin dillerinden birini seçin…</value></data>
+  <data name="ContextDerivedNote" xml:space="preserve"><value>Ürün ve hedef kitle zincir şablonundan gelir (konusunun ürünü ve "kimin için" profilleri).</value></data>
+  <data name="SaveContext" xml:space="preserve"><value>Ülke ve dili kaydet</value></data>
+  <data name="ContextSaved" xml:space="preserve"><value>Ülke ve dil kaydedildi.</value></data>
+  <data name="ContextError_country_invalid" xml:space="preserve"><value>Geçerli bir ülke seçin.</value></data>
+  <data name="ContextError_language_not_in_country" xml:space="preserve"><value>Dil, ülkenin içerik dillerinden biri olmalı.</value></data>
+  <data name="ContextError_reference_set_unavailable" xml:space="preserve"><value>Ülke ve dil listeleri şu an yüklenemiyor; daha sonra tekrar deneyin.</value></data>
+  <data name="ContextError_component_language_mismatch" xml:space="preserve"><value>Bu içerik set dilinde değil. Setin tek dili vardır; önce diğer dildeki bileşenleri kaldırın.</value></data>
+  <data name="ContextError_context_locked" xml:space="preserve"><value>Ülke ve dil yalnız set taslakken değiştirilebilir.</value></data>
+  <data name="ContextError_component_language_mixed" xml:space="preserve"><value>Bileşenlerin hepsi set dilinde değil; set yayınlanamaz.</value></data>
 </root>

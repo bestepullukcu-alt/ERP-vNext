@@ -42,7 +42,6 @@
   <data name="StatusInactive" xml:space="preserve"><value>غير نشط</value></data>
   <data name="StatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
   <data name="Template" xml:space="preserve"><value>القالب</value></data>
-  <data name="Scope" xml:space="preserve"><value>النطاق</value></data>
   <data name="Components" xml:space="preserve"><value>المكونات</value></data>
   <data name="Claims" xml:space="preserve"><value>الادعاءات</value></data>
   <data name="ProductRefs" xml:space="preserve"><value>مراجع المنتج</value></data>
@@ -71,10 +70,7 @@
   <data name="CompositionSection" xml:space="preserve"><value>التكوين</value></data>
   <data name="TemplatePickerPlaceholder" xml:space="preserve"><value>ابحث عن قالب تكوين...</value></data>
   <data name="TemplatePinNote" xml:space="preserve"><value>يُثبَّت إصدار القالب عند إنشاء المجموعة.</value></data>
-  <data name="ScopePickerPlaceholder" xml:space="preserve"><value>ابحث عن نطاق محتوى (اختياري)...</value></data>
-  <data name="ScopeOptionalNote" xml:space="preserve"><value>اختياري. يُثبَّت إصداره عند الاختيار.</value></data>
   <data name="PinnedNote" xml:space="preserve"><value>القالب والنطاق مثبَّتان بالإصدار وقت الاختيار — لا يتم تغييرهما هنا.</value></data>
-  <data name="NoScope" xml:space="preserve"><value>بلا نطاق</value></data>
   <data name="ApplyEligibility" xml:space="preserve"><value>تطبيق الأهلية</value></data>
   <data name="EligibilityApplied" xml:space="preserve"><value>تم تحديث لقطة الأهلية.</value></data>
   <data name="EligibilitySummary" xml:space="preserve"><value>الأهلية (آخر تشغيل):</value></data>
@@ -98,4 +94,19 @@
   <data name="NoClaims" xml:space="preserve"><value>لا توجد ادعاءات في هذه الفتحة بعد.</value></data>
   <data name="AddedOn" xml:space="preserve"><value>أُضيف</value></data>
   <data name="NeedsAssessmentWarn" xml:space="preserve"><value>تغيَّر مصدر هذا المكوّن — تحتاج الترجمة إلى تقييم.</value></data>
+  <data name="Country" xml:space="preserve"><value>الدولة</value></data>
+  <data name="Language" xml:space="preserve"><value>اللغة</value></data>
+  <data name="Product" xml:space="preserve"><value>المنتج</value></data>
+  <data name="Audience" xml:space="preserve"><value>الجمهور المستهدف</value></data>
+  <data name="CountryPickerPlaceholder" xml:space="preserve"><value>اختر دولة…</value></data>
+  <data name="LanguagePickerPlaceholder" xml:space="preserve"><value>اختر إحدى لغات الدولة…</value></data>
+  <data name="ContextDerivedNote" xml:space="preserve"><value>يأتي المنتج والجمهور المستهدف من قالب التركيب (منتج موضوعه وملفات "لمن").</value></data>
+  <data name="SaveContext" xml:space="preserve"><value>حفظ الدولة واللغة</value></data>
+  <data name="ContextSaved" xml:space="preserve"><value>تم حفظ الدولة واللغة.</value></data>
+  <data name="ContextError_country_invalid" xml:space="preserve"><value>اختر دولة صالحة.</value></data>
+  <data name="ContextError_language_not_in_country" xml:space="preserve"><value>يجب أن تكون اللغة إحدى لغات المحتوى في الدولة.</value></data>
+  <data name="ContextError_reference_set_unavailable" xml:space="preserve"><value>تعذر تحميل قوائم الدول واللغات الآن؛ حاول لاحقًا.</value></data>
+  <data name="ContextError_component_language_mismatch" xml:space="preserve"><value>هذا المحتوى ليس بلغة المجموعة. للمجموعة لغة واحدة؛ أزل أولاً المكونات بلغة أخرى.</value></data>
+  <data name="ContextError_context_locked" xml:space="preserve"><value>لا يمكن تغيير الدولة واللغة إلا عندما تكون المجموعة مسودة.</value></data>
+  <data name="ContextError_component_language_mixed" xml:space="preserve"><value>ليست كل المكونات بلغة المجموعة؛ لا يمكن نشر المجموعة.</value></data>
 </root>

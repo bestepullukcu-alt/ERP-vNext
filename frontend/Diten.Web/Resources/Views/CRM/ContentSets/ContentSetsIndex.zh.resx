@@ -42,7 +42,6 @@
   <data name="StatusInactive" xml:space="preserve"><value>停用</value></data>
   <data name="StatusArchived" xml:space="preserve"><value>已归档</value></data>
   <data name="Template" xml:space="preserve"><value>模板</value></data>
-  <data name="Scope" xml:space="preserve"><value>范围</value></data>
   <data name="Components" xml:space="preserve"><value>组件</value></data>
   <data name="Claims" xml:space="preserve"><value>声明</value></data>
   <data name="ProductRefs" xml:space="preserve"><value>产品引用</value></data>
@@ -71,10 +70,7 @@
   <data name="CompositionSection" xml:space="preserve"><value>组合</value></data>
   <data name="TemplatePickerPlaceholder" xml:space="preserve"><value>搜索组合模板...</value></data>
   <data name="TemplatePinNote" xml:space="preserve"><value>创建内容集时固定模板版本。</value></data>
-  <data name="ScopePickerPlaceholder" xml:space="preserve"><value>搜索内容范围（可选）...</value></data>
-  <data name="ScopeOptionalNote" xml:space="preserve"><value>可选。选择时固定其版本。</value></data>
   <data name="PinnedNote" xml:space="preserve"><value>模板与范围在选择时按版本固定——此处不作更改。</value></data>
-  <data name="NoScope" xml:space="preserve"><value>无范围</value></data>
   <data name="ApplyEligibility" xml:space="preserve"><value>应用资格</value></data>
   <data name="EligibilityApplied" xml:space="preserve"><value>资格快照已更新。</value></data>
   <data name="EligibilitySummary" xml:space="preserve"><value>资格（最近一次）：</value></data>
@@ -98,4 +94,19 @@
   <data name="NoClaims" xml:space="preserve"><value>此槽位暂无声明。</value></data>
   <data name="AddedOn" xml:space="preserve"><value>已添加</value></data>
   <data name="NeedsAssessmentWarn" xml:space="preserve"><value>此组件的源已更改——翻译需要评估。</value></data>
+  <data name="Country" xml:space="preserve"><value>国家</value></data>
+  <data name="Language" xml:space="preserve"><value>语言</value></data>
+  <data name="Product" xml:space="preserve"><value>产品</value></data>
+  <data name="Audience" xml:space="preserve"><value>目标受众</value></data>
+  <data name="CountryPickerPlaceholder" xml:space="preserve"><value>选择国家…</value></data>
+  <data name="LanguagePickerPlaceholder" xml:space="preserve"><value>选择该国家的语言…</value></data>
+  <data name="ContextDerivedNote" xml:space="preserve"><value>产品和目标受众来自组合模板（其主题的产品及其“面向对象”档案）。</value></data>
+  <data name="SaveContext" xml:space="preserve"><value>保存国家和语言</value></data>
+  <data name="ContextSaved" xml:space="preserve"><value>国家和语言已保存。</value></data>
+  <data name="ContextError_country_invalid" xml:space="preserve"><value>请选择有效的国家。</value></data>
+  <data name="ContextError_language_not_in_country" xml:space="preserve"><value>语言必须是该国家的内容语言之一。</value></data>
+  <data name="ContextError_reference_set_unavailable" xml:space="preserve"><value>当前无法加载国家和语言列表，请稍后重试。</value></data>
+  <data name="ContextError_component_language_mismatch" xml:space="preserve"><value>该内容不是集合的语言。集合只有一种语言；请先移除其他语言的组件。</value></data>
+  <data name="ContextError_context_locked" xml:space="preserve"><value>只有在集合为草稿时才能更改国家和语言。</value></data>
+  <data name="ContextError_component_language_mixed" xml:space="preserve"><value>并非所有组件都是集合的语言；无法发布该集合。</value></data>
 </root>

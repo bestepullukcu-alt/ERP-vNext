@@ -42,7 +42,6 @@
   <data name="StatusInactive" xml:space="preserve"><value>Inactive</value></data>
   <data name="StatusArchived" xml:space="preserve"><value>Archived</value></data>
   <data name="Template" xml:space="preserve"><value>Template</value></data>
-  <data name="Scope" xml:space="preserve"><value>Scope</value></data>
   <data name="Components" xml:space="preserve"><value>Components</value></data>
   <data name="Claims" xml:space="preserve"><value>Claims</value></data>
   <data name="ProductRefs" xml:space="preserve"><value>Product References</value></data>
@@ -71,10 +70,7 @@
   <data name="CompositionSection" xml:space="preserve"><value>Composition</value></data>
   <data name="TemplatePickerPlaceholder" xml:space="preserve"><value>Search a composition template...</value></data>
   <data name="TemplatePinNote" xml:space="preserve"><value>The template version is pinned when the set is created.</value></data>
-  <data name="ScopePickerPlaceholder" xml:space="preserve"><value>Search a content scope (optional)...</value></data>
-  <data name="ScopeOptionalNote" xml:space="preserve"><value>Optional. Its version is pinned when selected.</value></data>
   <data name="PinnedNote" xml:space="preserve"><value>Template and scope are pinned by version at selection time — they are not changed here.</value></data>
-  <data name="NoScope" xml:space="preserve"><value>No scope</value></data>
   <data name="ApplyEligibility" xml:space="preserve"><value>Apply eligibility</value></data>
   <data name="EligibilityApplied" xml:space="preserve"><value>Eligibility snapshot updated.</value></data>
   <data name="EligibilitySummary" xml:space="preserve"><value>Eligibility (last run):</value></data>
@@ -98,4 +94,19 @@
   <data name="NoClaims" xml:space="preserve"><value>No claims in this slot yet.</value></data>
   <data name="AddedOn" xml:space="preserve"><value>Added</value></data>
   <data name="NeedsAssessmentWarn" xml:space="preserve"><value>The source of this component changed — the translation needs assessment.</value></data>
+  <data name="Country" xml:space="preserve"><value>Country</value></data>
+  <data name="Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Product" xml:space="preserve"><value>Product</value></data>
+  <data name="Audience" xml:space="preserve"><value>Audience</value></data>
+  <data name="CountryPickerPlaceholder" xml:space="preserve"><value>Select a country…</value></data>
+  <data name="LanguagePickerPlaceholder" xml:space="preserve"><value>Select a language of the country…</value></data>
+  <data name="ContextDerivedNote" xml:space="preserve"><value>Product and audience come from the composition template (its subject's product and its "for whom" profiles).</value></data>
+  <data name="SaveContext" xml:space="preserve"><value>Save country and language</value></data>
+  <data name="ContextSaved" xml:space="preserve"><value>Country and language saved.</value></data>
+  <data name="ContextError_country_invalid" xml:space="preserve"><value>Select a valid country.</value></data>
+  <data name="ContextError_language_not_in_country" xml:space="preserve"><value>The language must be one of the country's content languages.</value></data>
+  <data name="ContextError_reference_set_unavailable" xml:space="preserve"><value>The country and language lists cannot be loaded right now; try again later.</value></data>
+  <data name="ContextError_component_language_mismatch" xml:space="preserve"><value>This content is not in the set language. A set has one language; remove the other-language components first.</value></data>
+  <data name="ContextError_context_locked" xml:space="preserve"><value>Country and language can only change while the set is a draft.</value></data>
+  <data name="ContextError_component_language_mixed" xml:space="preserve"><value>The components are not all in the set language; the set cannot be released.</value></data>
 </root>

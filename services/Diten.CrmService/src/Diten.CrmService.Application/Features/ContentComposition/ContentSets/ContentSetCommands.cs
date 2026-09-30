@@ -7,14 +7,16 @@ namespace Diten.CrmService.Application.Features.ContentComposition.ContentSets;
 // server-resolved and never in the payload. Every reference is pinned at selection time (D14-d). No delete — closing a
 // set is ArchiveContentSetCommand. No freeze / approve / release here (SCMM-15/16/17).
 
-/// <summary>Create an empty draft from a composition template (+ optional reusable scope). The template's ChainVersion
-/// and the scope's ScopeVersion are pinned at creation.</summary>
+/// <summary>Create an empty draft from a composition template. The template's ChainVersion is pinned at creation.
+/// WP-SB-1R: the set's country (COUNTRY_CODES) and language (one of the country's content languages) are required;
+/// product + audience derive from the template (no ContentScope).</summary>
 public sealed record CreateContentSetDraftCommand(
     string SetCode,
     string SetName,
     Guid ConceptChainTemplateId,
     string? Description = null,
-    Guid? ContentScopeId = null) : IRequest<Response<Guid>>;
+    string? CountryCode = null,
+    string? LanguageCode = null) : IRequest<Response<Guid>>;
 
 /// <summary>Clone an existing set into a NEW draft (new id, new code, refs + selections remapped, Status=draft). No
 /// inherited approval / validation: the clone carries no eligibility snapshot and starts fresh (docx no-inherited-approval).</summary>
@@ -24,12 +26,17 @@ public sealed record CloneContentSetToDraftCommand(
     string? NewSetName = null) : IRequest<Response<Guid>>;
 
 /// <summary>Edit the draft's mutable metadata (name / description / status draft|inactive). Refs and selections change
-/// through the add / remove / arrange commands. Archived set cannot be updated; update never sets status=archived.</summary>
+/// through the add / remove / arrange commands. Archived set cannot be updated; update never sets status=archived.
+/// WP-SB-1R: <see cref="CountryCode"/> / <see cref="LanguageCode"/> null = keep; a change is validated like create,
+/// allowed only on a draft (409 context_locked) and only when every component is in the resulting language (409
+/// component_language_mismatch).</summary>
 public sealed record UpdateContentSetCommand(
     Guid ContentSetId,
     string SetName,
     string? Description = null,
-    string? Status = null) : IRequest<Response<bool>>;
+    string? Status = null,
+    string? CountryCode = null,
+    string? LanguageCode = null) : IRequest<Response<bool>>;
 
 public sealed record ArchiveContentSetCommand(Guid ContentSetId) : IRequest<Response<bool>>;
 

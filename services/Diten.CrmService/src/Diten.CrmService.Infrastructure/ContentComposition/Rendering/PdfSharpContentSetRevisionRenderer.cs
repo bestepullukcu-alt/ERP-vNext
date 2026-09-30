@@ -71,15 +71,24 @@ public sealed class PdfSharpContentSetRevisionRenderer : IContentSetRevisionRend
         AddField(section, "Concept chain template", r.Template.ConceptChainTemplateId.ToString("D"));
         AddField(section, "Chain version", DisplayText(r.Template.ChainVersion));
 
-        // ── scope ───────────────────────────────────────────────────────────────────────────────────────────────────
-        AddHeading(section, "Scope");
-        if (r.Scope is { } scope)
+        // ── context (WP-SB-1R) ──────────────────────────────────────────────────────────────────────────────────────
+        // The set context frozen at submit: the set's own country + language, product + audience derived from the
+        // template. A pre-SB-1R revision has none (its retired ContentScope binding is not rendered).
+        AddHeading(section, "Context");
+        if (r.Context is { } context)
         {
-            AddField(section, "Content scope", $"{scope.ContentScopeId:D} (version {DisplayText(scope.ScopeVersion)})");
+            AddField(section, "Country", DisplayText(context.CountryCode));
+            AddField(section, "Language", DisplayText(context.LanguageCode));
+            AddField(section, "Product", context.ProductId is { } productId
+                ? $"{DisplayText(context.ProductCode)} — {DisplayText(context.ProductName)} ({productId:D})"
+                : DisplayText(null));
+            AddField(section, "Audience", context.AudienceProfileIds.Count == 0
+                ? DisplayText(null)
+                : string.Join(", ", context.AudienceProfileIds.Select(id => id.ToString("D"))));
         }
         else
         {
-            section.AddParagraph("No scope bound.");
+            section.AddParagraph("No context recorded (revision submitted before the set context existed).");
         }
 
         // ── components ──────────────────────────────────────────────────────────────────────────────────────────────

@@ -498,8 +498,8 @@ public static class DataSeeder
 
             // SCMM-14 (CAND-CAP-0011) — ContentScope + ContentSet (assembly) HTTP surface. Tenant-scoped keys (same
             // module code "crm-content-composition" ∉ PlatformAdminModules → Scope=Tenant).
-            new("crm", "content-scope", "read", "CRM Content Scope Read", "Permission to view SCMM content scopes", moduleOverride: "crm-content-composition"),
-            new("crm", "content-scope", "manage", "CRM Content Scope Manage", "Permission to create/update/archive SCMM content scopes", moduleOverride: "crm-content-composition"),
+            new("crm", "content-scope", "read", "CRM Content Scope Read (deprecated)", "Deprecated (WP-SB-1R): the ContentScope is retired; kept so existing role grants stay intact. Read-only scope API only.", moduleOverride: "crm-content-composition"),
+            new("crm", "content-scope", "manage", "CRM Content Scope Manage (deprecated)", "Deprecated (WP-SB-1R): the ContentScope is retired and has no write endpoint any more; kept so existing role grants stay intact.", moduleOverride: "crm-content-composition"),
             new("crm", "content-set", "read", "CRM Content Set Read", "Permission to view SCMM content-set assembly drafts", moduleOverride: "crm-content-composition"),
             new("crm", "content-set", "manage", "CRM Content Set Manage", "Permission to author SCMM content-set drafts (create/clone/arrange/apply-eligibility/archive)", moduleOverride: "crm-content-composition"),
 

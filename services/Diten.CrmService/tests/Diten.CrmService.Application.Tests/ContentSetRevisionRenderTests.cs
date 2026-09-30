@@ -231,7 +231,11 @@ public sealed class ContentSetRevisionRenderTests
     {
         var repo = new FakeRevisionRepo();
         var revision = SeedRevision(repo, TenantA, ContentSetReviewStatuses.Approved);
-        revision.Scope = new ContentSetScopeRef { ContentScopeId = Guid.NewGuid(), ScopeVersion = "1.0" };
+        revision.Context = new ContentSetContextSnapshot
+        {
+            CountryCode = "TR", LanguageCode = "tr", ProductId = Guid.NewGuid(), ProductCode = "ALMIBA", ProductName = "Almiba",
+            AudienceProfileIds = { Guid.NewGuid() }
+        };
         revision.SelectedClaims.Add(new ContentSetClaim { ClaimId = Guid.NewGuid(), ClaimVersion = "1.0" });
 
         var content = new PdfSharpContentSetRevisionRenderer().Render(revision);

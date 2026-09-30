@@ -692,9 +692,6 @@
   <data name="Nav.Page.CLAIMS" xml:space="preserve">
     <value>الادعاءات</value>
   </data>
-  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
-    <value>نطاقات المحتوى</value>
-  </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>مجموعات المحتوى</value>
   </data>

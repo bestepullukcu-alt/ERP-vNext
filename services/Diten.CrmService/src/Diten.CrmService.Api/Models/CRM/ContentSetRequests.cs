@@ -8,11 +8,14 @@ public sealed record CreateContentSetDraftRequest(
     string SetName,
     Guid ConceptChainTemplateId,
     string? Description = null,
-    Guid? ContentScopeId = null);
+    string? CountryCode = null,
+    string? LanguageCode = null);
 
 public sealed record CloneContentSetRequest(string NewSetCode, string? NewSetName = null);
 
-public sealed record UpdateContentSetRequest(string SetName, string? Description = null, string? Status = null);
+public sealed record UpdateContentSetRequest(
+    string SetName, string? Description = null, string? Status = null, string? CountryCode = null,
+    string? LanguageCode = null);
 
 public sealed record AddContentSetComponentRequest(
     Guid KnowledgeContentId,

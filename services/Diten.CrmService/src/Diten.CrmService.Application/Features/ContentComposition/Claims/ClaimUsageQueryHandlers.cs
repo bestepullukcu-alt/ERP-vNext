@@ -1,6 +1,5 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
-using Diten.CrmService.Application.Common.ReferenceValidation;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using MediatR;
@@ -13,10 +12,8 @@ namespace Diten.CrmService.Application.Features.ContentComposition.Claims;
 /// <item><b>content</b>: non-archived knowledge contents with a <see cref="KnowledgeContent.ClaimRefs"/> entry for the
 /// code; grouped by the ref's CountryCode, GLOBAL for a core ref.</item>
 /// <item><b>content-set</b>: non-archived sets whose <see cref="ContentSet.SelectedClaims"/> hold any record id of the
-/// code; grouped by the set's ContentScope MarketRefs (one group each). MarketRefs are opaque strings: a ref counts as a
-/// country only when it is a published <c>COUNTRY_CODES</c> value or a country this claim already has a version in;
-/// anything else (e.g. a region like <c>eu</c>) — or a set without scope / market — lands in GLOBAL. Country lists are
-/// never hardcoded here.</item>
+/// code; grouped by the set's own <see cref="ContentSet.CountryCode"/> (WP-SB-1R — validated against COUNTRY_CODES on
+/// write); a pre-SB-1R set without a country lands in GLOBAL.</item>
 /// <item><b>journey</b>: non-archived journeys with an active stage whose recommended knowledge path (the pinned path
 /// id, or — for a <c>latest-published</c> stage — any path of that code) has an active step pointing at one of the
 /// matched contents (by id, or by code for a <c>latest-published</c> step). <c>via</c> = that content's code; the group
@@ -30,10 +27,8 @@ public sealed class GetClaimUsageHandler : IRequestHandler<GetClaimUsageQuery, R
     private readonly IClaimCountryVersionRepository _versions;
     private readonly IKnowledgeContentRepository _contents;
     private readonly IContentSetRepository _sets;
-    private readonly IContentScopeRepository _scopes;
     private readonly IKnowledgePathRepository _paths;
     private readonly IContentEngagementJourneyRepository _journeys;
-    private readonly IReferenceDataCatalogReader? _catalog;
 
     public GetClaimUsageHandler(
         ITenantContext tenant,
@@ -41,20 +36,16 @@ public sealed class GetClaimUsageHandler : IRequestHandler<GetClaimUsageQuery, R
         IClaimCountryVersionRepository versions,
         IKnowledgeContentRepository contents,
         IContentSetRepository sets,
-        IContentScopeRepository scopes,
         IKnowledgePathRepository paths,
-        IContentEngagementJourneyRepository journeys,
-        IReferenceDataCatalogReader? catalog = null)
+        IContentEngagementJourneyRepository journeys)
     {
         _tenant = tenant;
         _claims = claims;
         _versions = versions;
         _contents = contents;
         _sets = sets;
-        _scopes = scopes;
         _paths = paths;
         _journeys = journeys;
-        _catalog = catalog;
     }
 
     public async Task<Response<ClaimUsageDto>> Handle(GetClaimUsageQuery request, CancellationToken cancellationToken)
@@ -129,7 +120,6 @@ public sealed class GetClaimUsageHandler : IRequestHandler<GetClaimUsageQuery, R
         // ---- content sets --------------------------------------------------------------------------------------
         if (recordsById.Count > 0)
         {
-            HashSet<string>? knownCountries = null;
             foreach (var set in (await _sets.ListAsync(tenantId, cancellationToken)).Where(s => !s.IsArchived()))
             {
                 var selections = set.SelectedClaims.Where(sc => recordsById.ContainsKey(sc.ClaimId)).ToList();
@@ -140,11 +130,7 @@ public sealed class GetClaimUsageHandler : IRequestHandler<GetClaimUsageQuery, R
 
                 var selected = selections.Select(sc => recordsById[sc.ClaimId]).ToList();
 
-                var scope = set.Scope is { } scopeRef && scopeRef.ContentScopeId != Guid.Empty
-                    ? await _scopes.GetByIdAsync(tenantId, scopeRef.ContentScopeId, cancellationToken)
-                    : null;
-                knownCountries ??= await KnownCountriesAsync(versions.Values, cancellationToken);
-                var setGroups = MarketGroups(scope?.MarketRefs, knownCountries);
+                var setGroups = new[] { SetGroup(set) };
                 var selectedNeedsReview = selected.Any(c => IsReviewRequired(c.Status));
                 // The claim version the set pinned at selection time (falls back to the record's own version).
                 var version = selections
@@ -246,59 +232,10 @@ public sealed class GetClaimUsageHandler : IRequestHandler<GetClaimUsageQuery, R
         _ => 2
     };
 
-    /// <summary>The country axis for market-ref mapping: the published <c>COUNTRY_CODES</c> values (when the catalog is
-    /// reachable) plus the countries this claim already has versions in (validated against the same set on write).</summary>
-    private async Task<HashSet<string>> KnownCountriesAsync(
-        IEnumerable<ClaimCountryVersion> versions, CancellationToken cancellationToken)
-    {
-        var known = new HashSet<string>(
-            versions.Select(v => v.CountryCode.Trim().ToUpperInvariant()), StringComparer.Ordinal);
-        if (_catalog is null)
-        {
-            return known;
-        }
-
-        try
-        {
-            var set = await _catalog.GetPublishedValuesAsync(ClaimReferenceSets.CountryCodes, cancellationToken);
-            if (set.IsPublished)
-            {
-                foreach (var value in set.Values.Where(v => v.IsActive))
-                {
-                    known.Add(value.ValueCode.Trim().ToUpperInvariant());
-                }
-            }
-        }
-        catch (Exception) when (!cancellationToken.IsCancellationRequested)
-        {
-            // Read-only grouping hint: an unreachable catalog degrades to the claim's own countries (unmapped → GLOBAL).
-        }
-
-        return known;
-    }
-
-    /// <summary>ContentScope MarketRefs are opaque config strings. A ref that is a known country code (see
-    /// <see cref="KnownCountriesAsync"/>) becomes that country's group (upper-cased); anything else (e.g. a region like
-    /// <c>eu</c>) cannot be mapped and counts as GLOBAL, as does an empty list.</summary>
-    public static IReadOnlyList<string> MarketGroups(
-        IReadOnlyList<string>? marketRefs, IReadOnlySet<string> knownCountries)
-    {
-        var result = new List<string>();
-        foreach (var raw in marketRefs ?? Array.Empty<string>())
-        {
-            var value = raw?.Trim().ToUpperInvariant() ?? string.Empty;
-            var group = knownCountries.Contains(value) ? value : ClaimUsageGroups.Global;
-            if (!result.Contains(group))
-            {
-                result.Add(group);
-            }
-        }
-
-        if (result.Count == 0)
-        {
-            result.Add(ClaimUsageGroups.Global);
-        }
-
-        return result;
-    }
+    /// <summary>WP-SB-1R — a content set groups under its own country (a COUNTRY_CODES value, validated on write); a
+    /// pre-SB-1R set without a country groups under GLOBAL. The retired ContentScope MarketRefs are no longer read.</summary>
+    public static string SetGroup(ContentSet set)
+        => string.IsNullOrWhiteSpace(set.CountryCode)
+            ? ClaimUsageGroups.Global
+            : set.CountryCode.Trim().ToUpperInvariant();
 }

@@ -692,9 +692,6 @@
   <data name="Nav.Page.CLAIMS" xml:space="preserve">
     <value>Заявления</value>
   </data>
-  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
-    <value>Области контента</value>
-  </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>Наборы контента</value>
   </data>

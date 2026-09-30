@@ -14,7 +14,9 @@ public static class ContentSetRevisionMapper
         r.ContentSetId,
         r.ContentSetVersion,
         new ContentSetTemplateRefDto(r.Template.ConceptChainTemplateId, r.Template.ChainVersion),
-        r.Scope is null ? null : new ContentSetScopeRefDto(r.Scope.ContentScopeId, r.Scope.ScopeVersion),
+        r.Context is null ? null : new ContentSetContextSnapshotDto(
+            r.Context.CountryCode, r.Context.LanguageCode, r.Context.ProductId, r.Context.ProductCode,
+            r.Context.ProductName, r.Context.AudienceProfileIds.ToList()),
         r.SelectedComponents.Select(ToDto).ToList(),
         r.SelectedClaims.Select(ToDto).ToList(),
         r.EligibilitySnapshot is null ? null : ToDto(r.EligibilitySnapshot),

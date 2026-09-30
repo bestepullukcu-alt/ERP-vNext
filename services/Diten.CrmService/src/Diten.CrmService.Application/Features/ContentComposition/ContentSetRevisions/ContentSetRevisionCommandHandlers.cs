@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
+using Diten.CrmService.Application.Features.ContentComposition.ContentSets;
 using Diten.CrmService.Application.Features.ContentComposition.ContentSetRevisions.Rendering;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
@@ -23,14 +24,19 @@ public sealed class SubmitContentSetForReviewHandler
     private readonly IActorContext _actor;
     private readonly IContentSetRepository _sets;
     private readonly IContentSetRevisionRepository _revisions;
+    private readonly IContentSetContextResolver? _context;
 
+    /// <summary>WP-SB-1R — <paramref name="context"/> freezes the set context into the revision (without it only the set's
+    /// own country + language are frozen).</summary>
     public SubmitContentSetForReviewHandler(
-        ITenantContext tenant, IActorContext actor, IContentSetRepository sets, IContentSetRevisionRepository revisions)
+        ITenantContext tenant, IActorContext actor, IContentSetRepository sets, IContentSetRevisionRepository revisions,
+        IContentSetContextResolver? context = null)
     {
         _tenant = tenant;
         _actor = actor;
         _sets = sets;
         _revisions = revisions;
+        _context = context;
     }
 
     public async Task<Response<Guid>> Handle(SubmitContentSetForReviewCommand request, CancellationToken cancellationToken)
@@ -98,11 +104,10 @@ public sealed class SubmitContentSetForReviewHandler
                 ConceptChainTemplateId = set.Template.ConceptChainTemplateId,
                 ChainVersion = set.Template.ChainVersion
             },
-            Scope = set.Scope is null ? null : new ContentSetScopeRef
-            {
-                ContentScopeId = set.Scope.ContentScopeId,
-                ScopeVersion = set.Scope.ScopeVersion
-            },
+            // WP-SB-1R — the set context (country + language + template-derived product / audience), frozen.
+            Context = _context is null
+                ? new ContentSetContextSnapshot { CountryCode = set.CountryCode, LanguageCode = set.LanguageCode }
+                : ContentSetContextResolver.ToSnapshot(await _context.ResolveAsync(tenantId, set, cancellationToken)),
             SelectedComponents = set.SelectedComponents.Select(CloneComponent).ToList(),
             SelectedClaims = set.SelectedClaims.Select(CloneClaim).ToList(),
             EligibilitySnapshot = CloneSnapshot(set.EligibilitySnapshot),
