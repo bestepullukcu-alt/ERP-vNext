@@ -9898,6 +9898,17 @@ body:has(.offcanvas.show) .flatpickr-calendar.open { z-index: 1095; }
 .time-entry-day-item-label { min-inline-size: 0; }
 .time-entry-day-summary { margin-block: 0.75rem 0; font-weight: 600; }
 
+.time-entry-notice {
+    margin-block-end: 0.75rem; padding-block: 0.5rem; padding-inline: 0.75rem;
+    border-radius: var(--bs-border-radius); font-size: 0.8125rem;
+    background-color: var(--bs-info-bg-subtle); color: var(--bs-info-text-emphasis);
+}
+.time-entry-notice-warning { background-color: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); }
+/* An empty status line takes no room, but stays in the page as a live region. */
+.time-entry-notice:empty { margin: 0; padding: 0; }
+.time-entry-pending { background-color: var(--bs-warning-bg-subtle); color: var(--bs-warning-text-emphasis); margin-inline-end: 0.25rem; }
+.time-entry-row-pending th { font-style: italic; }
+
 .time-entry-disclaimer { margin-block: 1rem 0; font-size: 0.75rem; color: var(--bs-secondary-color); }
 
 .time-entry-day-view { display: none; }

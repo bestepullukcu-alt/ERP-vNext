@@ -58,7 +58,8 @@
     <div id="teContent" hidden>
         <div id="teBanner" class="time-entry-banners"></div>
         <div id="teHistory" class="time-entry-history" hidden></div>
-        <div class="visually-hidden" id="teNotice" role="status" aria-live="polite"></div>
+        @* v3 M1 — the page's status line is VISIBLE and live: a rounding, a refusal or a copy result is seen and read out. *@
+        <div class="time-entry-notice" id="teNotice" role="status" aria-live="polite"></div>
 
         <div class="time-entry-layout">
             <section class="card time-entry-main">

@@ -141,7 +141,7 @@
   <data name="NoSuggestions" xml:space="preserve"><value>There are no suggestions for this week.</value></data>
   <data name="AddSelected" xml:space="preserve"><value>Add selected</value></data>
   <data name="InvalidDuration" xml:space="preserve"><value>Not a duration. Use 1:30, 1,5, 1.5 or 90m.</value></data>
-  <data name="RoundedTo" xml:space="preserve"><value>Rounded to the nearest quarter hour: {value}.</value></data>
+  <data name="RoundedTo" xml:space="preserve"><value>Rounded to the nearest {step} minutes: {value}.</value></data>
   <data name="NoticeMidnightTitle" xml:space="preserve"><value>Timer closed at midnight</value></data>
   <data name="NoticeOutsideOpenWeekTitle" xml:space="preserve"><value>Timer time on a locked week — request a correction</value></data>
   <data name="NoticeDraftPendingTitle" xml:space="preserve"><value>Timer time not yet in the draft</value></data>
@@ -161,15 +161,15 @@
   <data name="MidnightNotice" xml:space="preserve"><value>Your timer ran until midnight and was closed. Check yesterday on My Timesheet.</value></data>
   <data name="ErrGeneric" xml:space="preserve"><value>Something went wrong. Try again.</value></data>
   <data name="ErrForbidden" xml:space="preserve"><value>You do not have permission for this action.</value></data>
-  <data name="ErrStepInvalid" xml:space="preserve"><value>Time must be in quarter hours (15 minutes) and at most 16 hours per entry.</value></data>
+  <data name="ErrStepInvalid" xml:space="preserve"><value>Time is entered in {step}-minute steps, at most {maxRowHours} hours per entry.</value></data>
   <data name="ErrTimerDraftsUnavailable" xml:space="preserve"><value>Timer time could not be brought into the draft just now. Try again in a moment.</value></data>
   <data name="ErrFutureDate" xml:space="preserve"><value>Time cannot be recorded for a future day.</value></data>
   <data name="ErrDateOutsideWeek" xml:space="preserve"><value>That day does not belong to this week.</value></data>
   <data name="ErrTargetInvalid" xml:space="preserve"><value>That task cannot be used — it does not exist or you cannot open it.</value></data>
   <data name="ErrDuplicateRow" xml:space="preserve"><value>The same task or category appears twice on one day.</value></data>
-  <data name="ErrNoteTooLong" xml:space="preserve"><value>A note can be at most 500 characters.</value></data>
+  <data name="ErrNoteTooLong" xml:space="preserve"><value>A note can be at most {noteMax} characters.</value></data>
   <data name="ErrCategoryInactive" xml:space="preserve"><value>That category is no longer active.</value></data>
-  <data name="ErrDayImplausible" xml:space="preserve"><value>A day cannot hold more than 16 hours.</value></data>
+  <data name="ErrDayImplausible" xml:space="preserve"><value>A day cannot hold more than {maxDayHours} hours.</value></data>
   <data name="ErrWeekKeyInvalid" xml:space="preserve"><value>That week could not be read.</value></data>
   <data name="ErrWeekNotFound" xml:space="preserve"><value>That week was not found.</value></data>
   <data name="ErrWeekNotOpen" xml:space="preserve"><value>This week is not open for changes.</value></data>
@@ -222,4 +222,12 @@
   <data name="TimeEntry.Category.TRAINING" xml:space="preserve"><value>Training</value></data>
   <data name="TimeEntry.Category.SUPPORT" xml:space="preserve"><value>Support</value></data>
   <data name="TimeEntry.Category.TRAVEL" xml:space="preserve"><value>Travel</value></data>
+  <data name="NoticeTooSmall" xml:space="preserve"><value>“{typed}” minutes would round to zero, so the cell kept its value. Type 0 or clear the cell to remove the time.</value></data>
+  <data name="BareHoursRead" xml:space="preserve"><value>{typed} → {value} (read as hours). For minutes, type e.g. 15m.</value></data>
+  <data name="PendingRow" xml:space="preserve"><value>not saved yet</value></data>
+  <data name="PendingRowHint" xml:space="preserve"><value>A row without time is not saved. Enter time on a day to keep it.</value></data>
+  <data name="PendingRowsLeaveConfirm" xml:space="preserve"><value>Rows without time are not saved and will be lost. Leave this week anyway?</value></data>
+  <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>You have unsaved changes, and rows without time are not saved. Leave this week anyway?</value></data>
+  <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>Captured time cannot be corrected to zero. Correct it to at least {step} minutes and explain in the note.</value></data>
+  <data name="SaveFailedKept" xml:space="preserve"><value>The draft was not saved. Your changes are still on the page.</value></data>
 </root>

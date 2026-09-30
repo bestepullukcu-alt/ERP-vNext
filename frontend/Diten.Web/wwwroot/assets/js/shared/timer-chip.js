@@ -2,22 +2,32 @@
  * MOD-0280-FU01 T2a (pack §21.2 U1) — the top-bar timer chip.
  *
  * It exists ONLY WHILE A TIMER RUNS: the task (or category) and the elapsed time, a link to the task in the Task
- * Center, and Stop. No timer running, the timer switched off for the person's legal entity, or any failure → the chip
- * is not drawn at all (the element is removed, not left empty).
+ * Center, and Stop. The timer switched off for the person's legal entity → the chip is not drawn at all (the element is
+ * removed). A failed read (network, a restarting service) only HIDES it: the next time the tab becomes visible it asks
+ * again, so a passing error never takes the chip away for the rest of the page.
  *
  * Elapsed time is drawn from the SERVER's start instant (the browser never sends an instant — pack §8.2); the one-second
  * tick only redraws the number. The server is asked once when the page opens and again when the tab becomes visible —
  * no polling.
  *
- * The morning notice ("your timer ran until midnight") is shown at most once a day per person in this browser; the
- * remembering is best-effort (try/catch: private mode or blocked storage only means the notice may show again).
+ * WHAT IT COSTS (v3 M5). Every tenant page carries this chip, and for most people the timer is off. So:
+ *   · "the timer is off" is remembered for ten minutes in this tab's sessionStorage, per person — the pages opened in
+ *     that time send no request at all;
+ *   · the timer read is SHARED (window.DitenTimerShared): My Timesheet asks for the same answer, and one page load sends
+ *     ONE request for both. That is why this file is loaded without `defer` — it must define the shared read before the
+ *     page's own scripts run.
+ * Storage is best-effort (try/catch): blocked storage only means the request is sent.
+ *
+ * The morning notice ("your timer ran until midnight") is shown at most once a day per person in this browser.
  */
 (function (root) {
     'use strict';
 
     var doc = root.document;
     var API = '/TimeEntry/api/';
-    var STORAGE_PREFIX = 'diten.timeEntry.midnightNotice.';
+    var NOTICE_PREFIX = 'diten.timeEntry.midnightNotice.';
+    var OFF_PREFIX = 'diten.timeEntry.timerOff.';
+    var OFF_REMEMBER_MS = 10 * 60 * 1000;
 
     var chip = null;
     var l10n = {};
@@ -43,10 +53,66 @@
             return response.text().then(function (text) {
                 var parsed = null;
                 try { parsed = text ? JSON.parse(text) : null; } catch (error) { parsed = null; }
-                return { ok: response.ok, status: response.status, data: parsed && parsed.data !== undefined ? parsed.data : parsed };
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    data: parsed && parsed.data !== undefined ? parsed.data : parsed,
+                    reasonCode: parsed && (parsed.reason_code || parsed.reasonCode) || null
+                };
             });
-        }, function () { return { ok: false, status: 0, data: null }; });
+        }, function () { return { ok: false, status: 0, data: null, reasonCode: null }; });
     }
+
+    // ── the shared read ────────────────────────────────────────────────────────────────────────────────────────
+
+    function userId() {
+        var node = doc.getElementById('timeEntryTimerChip');
+        return node && node.getAttribute('data-user') || 'anonymous';
+    }
+
+    function rememberedOff() {
+        try {
+            var until = Number(root.sessionStorage.getItem(OFF_PREFIX + userId()));
+            return until > Date.now();
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function rememberOff(off) {
+        try {
+            if (off) { root.sessionStorage.setItem(OFF_PREFIX + userId(), String(Date.now() + OFF_REMEMBER_MS)); }
+            else { root.sessionStorage.removeItem(OFF_PREFIX + userId()); }
+        } catch (error) { /* the next page simply asks again */ }
+    }
+
+    var pending = null;
+
+    /**
+     * The person's timer, asked once per page load. `force` asks again (the tab came back, a Stop needs the truth).
+     * A remembered "off" answers without a request.
+     */
+    function readTimer(force) {
+        if (!force && pending) {
+            return pending;
+        }
+        if (!force && rememberedOff()) {
+            pending = Promise.resolve({
+                ok: true, status: 200, remembered: true,
+                data: { timerEnabled: false, disabledReason: null, running: null, closedAtMidnightYesterday: [] }
+            });
+            return pending;
+        }
+        pending = request('GET', 'timer').then(function (result) {
+            if (result.ok && result.data) { rememberOff(!result.data.timerEnabled); }
+            return result;
+        });
+        return pending;
+    }
+
+    root.DitenTimerShared = { read: readTimer, stop: function () { return request('POST', 'timer/stop', {}); } };
+
+    // ── the chip ───────────────────────────────────────────────────────────────────────────────────────────────
 
     /** 3725 s → "1:02:05"; under an hour → "2:05". */
     function formatElapsed(seconds) {
@@ -58,14 +124,14 @@
         return hours > 0 ? hours + ':' + pad(minutes) + ':' + pad(secs) : minutes + ':' + pad(secs);
     }
 
+    function stopTicker() {
+        if (ticker) { root.clearInterval(ticker); ticker = null; }
+    }
+
     function remove() {
         stopTicker();
         if (chip && chip.parentNode) { chip.parentNode.removeChild(chip); }
         chip = null;
-    }
-
-    function stopTicker() {
-        if (ticker) { root.clearInterval(ticker); ticker = null; }
     }
 
     function hide() {
@@ -108,64 +174,72 @@
         ticker = root.setInterval(draw, 1000);
     }
 
-    function userKey() {
-        return STORAGE_PREFIX + (chip && chip.getAttribute('data-user') || 'anonymous');
-    }
-
     /** At most once a day per person: remembers the latest closed day it has told the person about. */
     function midnightNotice(closed) {
         if (!closed || !closed.length) { return false; }
         var day = closed.map(function (s) { return s.localDate; }).sort().pop();
+        var key = NOTICE_PREFIX + userId();
         var seen = null;
-        try { seen = root.localStorage.getItem(userKey()); } catch (error) { seen = null; }
+        try { seen = root.localStorage.getItem(key); } catch (error) { seen = null; }
         if (seen === day) { return false; }
-        try { root.localStorage.setItem(userKey(), day); } catch (error) { /* shown again tomorrow at worst */ }
+        try { root.localStorage.setItem(key, day); } catch (error) { /* shown again tomorrow at worst */ }
         if (typeof root.showToast === 'function') {
             root.showToast(t('MidnightNotice', { count: closed.length }), 'warning');
         }
         return true;
     }
 
-    function refresh() {
+    function apply(result) {
+        if (!chip) { return result; }
+        if (!result.ok || !result.data) {
+            // A passing failure: hidden, not removed — the tab's next visibility asks again.
+            hide();
+            return result;
+        }
+        if (!result.data.timerEnabled) {
+            // Off for the person's legal entity: the chip is not drawn — not even hidden.
+            remove();
+            return result;
+        }
+        midnightNotice(result.data.closedAtMidnightYesterday);
+        var segment = result.data.running;
+        if (!segment) {
+            hide();
+            return result;
+        }
+        if (!segment.taskItemId && categories === null) {
+            return request('GET', 'categories').then(function (list) {
+                categories = list.ok && Array.isArray(list.data) ? list.data : [];
+                if (chip) { show(segment); }
+                return result;
+            });
+        }
+        show(segment);
+        return result;
+    }
+
+    function refresh(force) {
         // A chip no longer in the page (the page replaced it) asks nothing.
         if (!chip || !doc.documentElement.contains(chip)) { return Promise.resolve(null); }
-        return request('GET', 'timer').then(function (result) {
-            if (!chip) { return result; }
-            if (!result.ok || !result.data || !result.data.timerEnabled) {
-                // Off for the person's legal entity (or no answer at all): the chip is not drawn — not even hidden.
-                remove();
-                return result;
-            }
-            midnightNotice(result.data.closedAtMidnightYesterday);
-            var segment = result.data.running;
-            if (!segment) {
-                hide();
-                return result;
-            }
-            if (!segment.taskItemId && categories === null) {
-                return request('GET', 'categories').then(function (list) {
-                    categories = list.ok && Array.isArray(list.data) ? list.data : [];
-                    if (chip) { show(segment); }
-                    return result;
-                });
-            }
-            show(segment);
-            return result;
-        });
+        return readTimer(force).then(apply);
     }
 
     function stop() {
         var stopButton = chip && chip.querySelector('[data-timer-stop]');
         if (stopButton) { stopButton.disabled = true; }
-        return request('POST', 'timer/stop', {}).then(function (result) {
+        return root.DitenTimerShared.stop().then(function (result) {
             if (stopButton) { stopButton.disabled = false; }
             if (result.ok) {
                 hide();
                 if (typeof root.showToast === 'function') { root.showToast(t('TimerStopped'), 'success'); }
-            } else if (typeof root.showToast === 'function') {
+                return result;
+            }
+            // Refused — most often because the timer already stopped elsewhere (another tab, a task transition). Ask
+            // for the truth instead of leaving a ghost chip: a stopped timer hides it, a running one keeps it.
+            if (result.reasonCode !== 'TIMER_NOT_RUNNING' && typeof root.showToast === 'function') {
                 root.showToast(t('TimerStopFailed'), 'error');
             }
-            return result;
+            return refresh(true).then(function () { return result; });
         });
     }
 
@@ -179,9 +253,9 @@
         }
         chip.querySelector('[data-timer-stop]').addEventListener('click', stop);
         doc.addEventListener('visibilitychange', function () {
-            if (doc.visibilityState === 'visible') { refresh(); }
+            if (doc.visibilityState === 'visible') { refresh(true); }
         });
-        return refresh();
+        return refresh(false);
     }
 
     root.DitenTimerChip = { init: init, refresh: refresh, stop: stop, formatElapsed: formatElapsed };

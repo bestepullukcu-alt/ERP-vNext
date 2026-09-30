@@ -141,7 +141,7 @@
   <data name="NoSuggestions" xml:space="preserve"><value>Для этой недели нет предложений.</value></data>
   <data name="AddSelected" xml:space="preserve"><value>Добавить выбранное</value></data>
   <data name="InvalidDuration" xml:space="preserve"><value>Это не продолжительность. Используйте 1:30, 1,5, 1.5 или 90m.</value></data>
-  <data name="RoundedTo" xml:space="preserve"><value>Округлено до ближайшей четверти часа: {value}.</value></data>
+  <data name="RoundedTo" xml:space="preserve"><value>Округлено до ближайших {step} минут: {value}.</value></data>
   <data name="NoticeMidnightTitle" xml:space="preserve"><value>Таймер остановлен в полночь</value></data>
   <data name="NoticeOutsideOpenWeekTitle" xml:space="preserve"><value>Время таймера на закрытой неделе — запросите исправление</value></data>
   <data name="NoticeDraftPendingTitle" xml:space="preserve"><value>Время таймера ещё не внесено в черновик</value></data>
@@ -161,15 +161,15 @@
   <data name="MidnightNotice" xml:space="preserve"><value>Ваш таймер работал до полуночи и был остановлен. Проверьте вчерашний день в «Моём табеле».</value></data>
   <data name="ErrGeneric" xml:space="preserve"><value>Что-то пошло не так. Попробуйте ещё раз.</value></data>
   <data name="ErrForbidden" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>
-  <data name="ErrStepInvalid" xml:space="preserve"><value>Время указывается четвертями часа (15 минут), не более 16 часов на запись.</value></data>
+  <data name="ErrStepInvalid" xml:space="preserve"><value>Время вводится шагами по {step} минут, не более {maxRowHours} ч на запись.</value></data>
   <data name="ErrTimerDraftsUnavailable" xml:space="preserve"><value>Сейчас не удалось перенести время таймера в черновик. Повторите чуть позже.</value></data>
   <data name="ErrFutureDate" xml:space="preserve"><value>Нельзя записать время на будущий день.</value></data>
   <data name="ErrDateOutsideWeek" xml:space="preserve"><value>Этот день не относится к этой неделе.</value></data>
   <data name="ErrTargetInvalid" xml:space="preserve"><value>Эту задачу нельзя использовать — её нет или вы не можете её открыть.</value></data>
   <data name="ErrDuplicateRow" xml:space="preserve"><value>Одна и та же задача или категория встречается дважды в один день.</value></data>
-  <data name="ErrNoteTooLong" xml:space="preserve"><value>Примечание — не более 500 символов.</value></data>
+  <data name="ErrNoteTooLong" xml:space="preserve"><value>Примечание — не более {noteMax} символов.</value></data>
   <data name="ErrCategoryInactive" xml:space="preserve"><value>Эта категория больше не активна.</value></data>
-  <data name="ErrDayImplausible" xml:space="preserve"><value>За день нельзя записать больше 16 часов.</value></data>
+  <data name="ErrDayImplausible" xml:space="preserve"><value>За день нельзя записать больше {maxDayHours} ч.</value></data>
   <data name="ErrWeekKeyInvalid" xml:space="preserve"><value>Не удалось прочитать эту неделю.</value></data>
   <data name="ErrWeekNotFound" xml:space="preserve"><value>Неделя не найдена.</value></data>
   <data name="ErrWeekNotOpen" xml:space="preserve"><value>Эта неделя закрыта для изменений.</value></data>
@@ -222,4 +222,12 @@
   <data name="TimeEntry.Category.TRAINING" xml:space="preserve"><value>Обучение</value></data>
   <data name="TimeEntry.Category.SUPPORT" xml:space="preserve"><value>Поддержка</value></data>
   <data name="TimeEntry.Category.TRAVEL" xml:space="preserve"><value>Командировка</value></data>
+  <data name="NoticeTooSmall" xml:space="preserve"><value>«{typed}» мин округлились бы до нуля, поэтому ячейка сохранила значение. Чтобы удалить время, введите 0 или очистите ячейку.</value></data>
+  <data name="BareHoursRead" xml:space="preserve"><value>{typed} → {value} (прочитано как часы). Для минут введите, например, 15m.</value></data>
+  <data name="PendingRow" xml:space="preserve"><value>ещё не сохранено</value></data>
+  <data name="PendingRowHint" xml:space="preserve"><value>Строка без времени не сохраняется. Укажите время в какой-либо день, чтобы сохранить её.</value></data>
+  <data name="PendingRowsLeaveConfirm" xml:space="preserve"><value>Строки без времени не сохраняются и будут потеряны. Всё равно уйти с этой недели?</value></data>
+  <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>Есть несохранённые изменения, а строки без времени не сохраняются. Всё равно уйти с этой недели?</value></data>
+  <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>Зафиксированное время нельзя исправить на ноль. Исправьте его минимум на {step} минут и поясните в примечании.</value></data>
+  <data name="SaveFailedKept" xml:space="preserve"><value>Черновик не сохранён. Ваши изменения остаются на странице.</value></data>
 </root>

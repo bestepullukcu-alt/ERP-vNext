@@ -29,6 +29,10 @@
      *   ""              clears the cell
      * The result is snapped to the nearest quarter hour (a tie goes up) and says whether it was, so the page can tell
      * the person — never silently.
+     *
+     * Only an explicit "" / "0" clears a cell. A typed value that would snap to ZERO ("7dk", "0:05") is refused
+     * (`tooSmall`), so a cell is never emptied by a rounding the person did not see. A bare number is hours; from 10 up
+     * the page says how it was read (`bareHours`: "15" → 15:00), because it may have been meant as minutes.
      */
     function parseDuration(input) {
         var text = String(input === null || input === undefined ? '' : input).trim().toLowerCase().replace(/\s+/g, '');
@@ -37,6 +41,7 @@
         }
 
         var typed = null;
+        var bare = false;
         var match;
         if ((match = /^(\d{1,2}):([0-5]\d)$/.exec(text))) {
             typed = Number(match[1]) * 60 + Number(match[2]);
@@ -44,6 +49,7 @@
             typed = Number(match[1]);
         } else if ((match = /^(\d{1,2})(?:[.,](\d{1,2}))?(h|sa|s)?$/.exec(text))) {
             typed = Math.round(Number(match[1] + '.' + (match[2] || '0')) * 60);
+            bare = !match[3];
         }
 
         if (typed === null || !isFinite(typed)) {
@@ -51,7 +57,13 @@
         }
 
         var minutes = Math.round(typed / STEP_MINUTES) * STEP_MINUTES;
-        return { ok: true, minutes: minutes, typed: typed, rounded: minutes !== typed, empty: minutes === 0 };
+        if (typed > 0 && minutes === 0) {
+            return { ok: false, tooSmall: true, typed: typed };
+        }
+        return {
+            ok: true, minutes: minutes, typed: typed, rounded: minutes !== typed, empty: minutes === 0,
+            bareHours: bare && typed >= 600
+        };
     }
 
     /** 90 → "1:30"; 0 → "". Durations are shown as h:mm everywhere on the page, never as a decimal. */
@@ -333,15 +345,60 @@
         return ghosts;
     }
 
-    /** Accepting a plan ghost: its minutes go into the task's Plan row (created when missing). */
+    /**
+     * Accepting a plan ghost. Manual and Plan rows of one task share a cell on the server (one typed row per task and
+     * day), so the minutes go into the task's EXISTING typed row — Manual first, then Plan — and a Plan row is created only
+     * when the task has neither. Never a second row for the same task and day.
+     */
     function acceptPlanGhost(rows, ghost) {
-        var row = rows.filter(function (r) { return r.source === 'Plan' && r.taskItemId === ghost.taskItemId; })[0];
+        var typed = function (source) {
+            return rows.filter(function (r) { return r.source === source && r.taskItemId === ghost.taskItemId; })[0];
+        };
+        var row = typed('Manual') || typed('Plan');
         if (!row) {
             row = newRow('Plan', ghost.taskItemId, null, ghost.taskTitle);
             rows.push(row);
         }
         setCell(row, ghost.date, ghost.minutes);
         return row;
+    }
+
+    /** A person-typed row with no minutes on any day: it lives only on the page until it holds time (the server keeps
+     * no empty rows). The page marks it, keeps it across a reload of the same week, and warns before it is left. */
+    function isPendingRow(row) {
+        return isPersonTyped(row.source) && !Object.keys(row.cells).some(function (date) {
+            var cell = row.cells[date];
+            return (Number(cell.minutes) || 0) > 0 || cell.entryId;
+        });
+    }
+
+    function pendingRows(rows) {
+        return rows.filter(isPendingRow);
+    }
+
+    /** Puts the page's pending rows back after a reload: each one whose target has no typed row in the fresh list. */
+    function mergePending(freshRows, pending) {
+        (pending || []).forEach(function (row) {
+            var covered = freshRows.some(function (r) { return isPersonTyped(r.source) && sameTarget(r, row); });
+            if (!covered) {
+                freshRows.push(newRow(row.source, row.taskItemId, row.taskItemId ? null : row.categoryCode, row.taskTitle));
+            }
+        });
+        return freshRows;
+    }
+
+    /**
+     * Is the week showing a rejection RIGHT NOW? Only when the last rejection is newer than the last submission (or there
+     * was no submission since). Rejected → resubmitted → withdrawn is a plain draft again, not "rejected".
+     */
+    function isRejectedNow(payload) {
+        if (!payload || payload.status !== 'Draft' || !payload.lastRejectedAtUtc) {
+            return false;
+        }
+        if (!payload.submittedAtUtc) {
+            return true;
+        }
+        return Date.parse(payload.lastRejectedAtUtc) > Date.parse(payload.submittedAtUtc);
     }
 
     /** Meeting suggestions still waiting for the person, grouped by day (they are drawn INSIDE their day, U3). */
@@ -479,6 +536,10 @@
         copyRowsFromWeek: copyRowsFromWeek,
         planGhosts: planGhosts,
         acceptPlanGhost: acceptPlanGhost,
+        isPendingRow: isPendingRow,
+        pendingRows: pendingRows,
+        mergePending: mergePending,
+        isRejectedNow: isRejectedNow,
         openSuggestionsByDay: openSuggestionsByDay,
         nextCell: nextCell,
         REASON_CODE_MESSAGE_KEYS: REASON_CODE_MESSAGE_KEYS,

@@ -30,6 +30,9 @@ public sealed class TaskPortCallLog
         }
     }
 
+    /// <summary>Tasks the read rule refuses for everyone in this test.</summary>
+    public HashSet<Guid> Denied { get; } = [];
+
     public void Clear()
     {
         lock (_calls)
@@ -39,7 +42,9 @@ public sealed class TaskPortCallLog
     }
 }
 
-/// <summary>The REAL task port, counted: every call goes through to <see cref="TaskGatewayAdapter"/> unchanged.</summary>
+/// <summary>The REAL task port, counted: every call goes through to <see cref="TaskGatewayAdapter"/> unchanged — except the
+/// ids in <see cref="TaskPortCallLog.Denied"/>, which the read rule is made to refuse (a state the real org chart can only
+/// reach through a data-scope change; staged here at the port, the one door the module has).</summary>
 public sealed class CountingTaskGateway(TaskGatewayAdapter inner, TaskPortCallLog log) : ITimeEntryTaskGateway
 {
     public Task<IReadOnlyDictionary<Guid, TimeEntryTaskFacts>> TaskFactsAsync(IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
@@ -54,11 +59,12 @@ public sealed class CountingTaskGateway(TaskGatewayAdapter inner, TaskPortCallLo
     public Task<IReadOnlySet<Guid>> ReadableTaskIdsAsync(Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
         => inner.ReadableTaskIdsAsync(userId, taskIds, ct);
 
-    public Task<IReadOnlyDictionary<Guid, TimeEntryTaskSummary>> ReadableTaskSummariesAsync(
+    public async Task<IReadOnlyDictionary<Guid, TimeEntryTaskSummary>> ReadableTaskSummariesAsync(
         Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
     {
         log.Add(nameof(ReadableTaskSummariesAsync), taskIds.Count);
-        return inner.ReadableTaskSummariesAsync(userId, taskIds, ct);
+        var readable = await inner.ReadableTaskSummariesAsync(userId, taskIds, ct);
+        return readable.Where(p => !log.Denied.Contains(p.Key)).ToDictionary(p => p.Key, p => p.Value);
     }
 
     public Task<IReadOnlyList<TimeEntryTaskSummary>> OwnOpenTasksAsync(Guid userId, CancellationToken ct = default)
@@ -221,6 +227,7 @@ public sealed class TimeEntryT2aReadHttpMongoTests : TimerScenario
     {
         var planned = Guid.NewGuid();
         var waiting = Guid.NewGuid();
+        var inReview = Guid.NewGuid();
         var ownDone = Guid.NewGuid();
         var someoneElses = Guid.NewGuid();
         var otherTenant = Guid.NewGuid();
@@ -228,6 +235,7 @@ public sealed class TimeEntryT2aReadHttpMongoTests : TimerScenario
         var recentHidden = Guid.NewGuid();
         await SeedTaskAsync(Tenant, planned, lifecycle: TaskLifecycle.Planned);
         await SeedTaskAsync(Tenant, waiting, lifecycle: TaskLifecycle.Waiting);
+        await SeedTaskAsync(Tenant, inReview, lifecycle: TaskLifecycle.PendingReview); // CT v3: past work still gets its hours
         await SeedTaskAsync(Tenant, ownDone, lifecycle: TaskLifecycle.Done);
         await SeedTaskAsync(Tenant, someoneElses, assignee: Stranger, creator: Stranger);
         await SeedTaskAsync(OtherTenant, otherTenant);
@@ -250,6 +258,7 @@ public sealed class TimeEntryT2aReadHttpMongoTests : TimerScenario
         Assert.Contains(TaskB, ids);
         Assert.Contains(planned, ids);
         Assert.Contains(waiting, ids);
+        Assert.Contains(inReview, ids);
         Assert.Contains(recentReadable, ids);
         Assert.DoesNotContain(ownDone, ids);
         Assert.DoesNotContain(someoneElses, ids);
@@ -303,6 +312,26 @@ public sealed class TimeEntryT2aReadHttpMongoTests : TimerScenario
         Assert.Equal(HttpStatusCode.Forbidden, readOnly.Status);
     }
 
+    // ── v3 L10 · plan fill-in offers only tasks the person can read ────────────────────────────────────────────
+
+    [Fact]
+    public async Task Plan_fill_in_never_offers_a_task_the_person_can_no_longer_read()
+    {
+        await PlanAsync(TaskA, IstanbulLocal(2026, 10, 5, 10, 0), 60);
+        await PlanAsync(TaskB, IstanbulLocal(2026, 10, 6, 10, 0), 45);
+        await TitleAsync(TaskB, "Hidden restructuring task");
+        _portCalls.Denied.Add(TaskB);
+
+        var result = await Host.GetAsync($"/api/v1/time-entry/weeks/{CurrentWeek}/plan-fill-in", PersonToken());
+
+        Assert.Equal(HttpStatusCode.OK, result.Status);
+        var rows = result.Data.GetProperty("rows").EnumerateArray().ToList();
+        var row = Assert.Single(rows);
+        Assert.Equal(TaskA, row.GetProperty("taskItemId").GetGuid());
+        Assert.DoesNotContain(TaskB.ToString(), result.Body);
+        Assert.DoesNotContain("Hidden restructuring task", result.Body);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────────────────────────────────────────
 
     private Task<ApiResult> TaskOptionsAsync(string? search = null, string? token = null)
@@ -315,6 +344,11 @@ public sealed class TimeEntryT2aReadHttpMongoTests : TimerScenario
 
     private static IEnumerable<JsonElement> Entries(ApiResult week)
         => week.Data.GetProperty("entries").EnumerateArray();
+
+    private Task PlanAsync(Guid task, DateTimeOffset startUtc, int minutes)
+        => Collection<TaskItem>(PlatformCollections.TaskItems).UpdateOneAsync(
+            t => t.Id == task,
+            Builders<TaskItem>.Update.Set(t => t.PlannedStartAt, startUtc).Set(t => t.PlannedDurationMinutes, minutes));
 
     private Task TitleAsync(Guid taskId, string title)
         => Collection<TaskItem>(PlatformCollections.TaskItems).UpdateOneAsync(

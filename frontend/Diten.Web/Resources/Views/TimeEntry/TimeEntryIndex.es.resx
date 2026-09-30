@@ -141,7 +141,7 @@
   <data name="NoSuggestions" xml:space="preserve"><value>No hay sugerencias para esta semana.</value></data>
   <data name="AddSelected" xml:space="preserve"><value>Añadir seleccionadas</value></data>
   <data name="InvalidDuration" xml:space="preserve"><value>No es una duración. Use 1:30, 1,5, 1.5 o 90m.</value></data>
-  <data name="RoundedTo" xml:space="preserve"><value>Redondeado al cuarto de hora más cercano: {value}.</value></data>
+  <data name="RoundedTo" xml:space="preserve"><value>Redondeado a los {step} minutos más cercanos: {value}.</value></data>
   <data name="NoticeMidnightTitle" xml:space="preserve"><value>Temporizador cerrado a medianoche</value></data>
   <data name="NoticeOutsideOpenWeekTitle" xml:space="preserve"><value>Tiempo del temporizador en una semana bloqueada: solicite una corrección</value></data>
   <data name="NoticeDraftPendingTitle" xml:space="preserve"><value>Tiempo del temporizador aún no incluido en el borrador</value></data>
@@ -161,15 +161,15 @@
   <data name="MidnightNotice" xml:space="preserve"><value>Su temporizador siguió hasta medianoche y se cerró. Revise el día de ayer en Mi hoja de horas.</value></data>
   <data name="ErrGeneric" xml:space="preserve"><value>Algo salió mal. Inténtelo de nuevo.</value></data>
   <data name="ErrForbidden" xml:space="preserve"><value>No tiene permiso para esta acción.</value></data>
-  <data name="ErrStepInvalid" xml:space="preserve"><value>El tiempo debe ir en cuartos de hora (15 minutos) y como máximo 16 horas por registro.</value></data>
+  <data name="ErrStepInvalid" xml:space="preserve"><value>El tiempo se introduce en pasos de {step} minutos, como máximo {maxRowHours} horas por registro.</value></data>
   <data name="ErrTimerDraftsUnavailable" xml:space="preserve"><value>No se pudo pasar ahora el tiempo del temporizador al borrador. Inténtelo de nuevo en un momento.</value></data>
   <data name="ErrFutureDate" xml:space="preserve"><value>No se puede registrar tiempo para un día futuro.</value></data>
   <data name="ErrDateOutsideWeek" xml:space="preserve"><value>Ese día no pertenece a esta semana.</value></data>
   <data name="ErrTargetInvalid" xml:space="preserve"><value>Esa tarea no se puede usar: no existe o no puede abrirla.</value></data>
   <data name="ErrDuplicateRow" xml:space="preserve"><value>La misma tarea o categoría aparece dos veces en un mismo día.</value></data>
-  <data name="ErrNoteTooLong" xml:space="preserve"><value>Una nota puede tener como máximo 500 caracteres.</value></data>
+  <data name="ErrNoteTooLong" xml:space="preserve"><value>Una nota puede tener como máximo {noteMax} caracteres.</value></data>
   <data name="ErrCategoryInactive" xml:space="preserve"><value>Esa categoría ya no está activa.</value></data>
-  <data name="ErrDayImplausible" xml:space="preserve"><value>Un día no puede superar las 16 horas.</value></data>
+  <data name="ErrDayImplausible" xml:space="preserve"><value>Un día no puede superar las {maxDayHours} horas.</value></data>
   <data name="ErrWeekKeyInvalid" xml:space="preserve"><value>No se pudo leer esa semana.</value></data>
   <data name="ErrWeekNotFound" xml:space="preserve"><value>No se encontró esa semana.</value></data>
   <data name="ErrWeekNotOpen" xml:space="preserve"><value>Esta semana no está abierta a cambios.</value></data>
@@ -222,4 +222,12 @@
   <data name="TimeEntry.Category.TRAINING" xml:space="preserve"><value>Formación</value></data>
   <data name="TimeEntry.Category.SUPPORT" xml:space="preserve"><value>Soporte</value></data>
   <data name="TimeEntry.Category.TRAVEL" xml:space="preserve"><value>Viaje</value></data>
+  <data name="NoticeTooSmall" xml:space="preserve"><value>«{typed}» minutos se redondearían a cero; la celda conservó su valor. Escriba 0 o vacíe la celda para quitar el tiempo.</value></data>
+  <data name="BareHoursRead" xml:space="preserve"><value>{typed} → {value} (leído como horas). Para minutos, escriba p. ej. 15m.</value></data>
+  <data name="PendingRow" xml:space="preserve"><value>aún sin guardar</value></data>
+  <data name="PendingRowHint" xml:space="preserve"><value>Una fila sin tiempo no se guarda. Introduzca tiempo en un día para conservarla.</value></data>
+  <data name="PendingRowsLeaveConfirm" xml:space="preserve"><value>Las filas sin tiempo no se guardan y se perderán. ¿Salir de esta semana de todos modos?</value></data>
+  <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>Hay cambios sin guardar y las filas sin tiempo no se guardan. ¿Salir de esta semana de todos modos?</value></data>
+  <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>El tiempo capturado no se puede corregir a cero. Corríjalo a al menos {step} minutos y explíquelo en la nota.</value></data>
+  <data name="SaveFailedKept" xml:space="preserve"><value>El borrador no se guardó. Sus cambios siguen en la página.</value></data>
 </root>

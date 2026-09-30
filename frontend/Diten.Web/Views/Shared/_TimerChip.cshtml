@@ -38,6 +38,8 @@
             </a>
             <button type="button" class="btn btn-sm btn-label-danger time-entry-timer-chip-stop" data-timer-stop>@Localizer["TimerChipStop"]</button>
         </span>
-        <script src="~/assets/js/shared/timer-chip.js" asp-append-version="true" defer></script>
+        @* NOT deferred: it defines the shared timer read (window.DitenTimerShared) before My Timesheet's own scripts run,
+           so one page load sends one timer request (v3 M5). It touches no DOM until DOMContentLoaded. *@
+        <script src="~/assets/js/shared/timer-chip.js" asp-append-version="true"></script>
     </li>
 }

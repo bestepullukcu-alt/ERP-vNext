@@ -141,7 +141,7 @@
   <data name="NoSuggestions" xml:space="preserve"><value>本周没有建议。</value></data>
   <data name="AddSelected" xml:space="preserve"><value>添加所选项</value></data>
   <data name="InvalidDuration" xml:space="preserve"><value>不是有效的时长。请使用 1:30、1,5、1.5 或 90m。</value></data>
-  <data name="RoundedTo" xml:space="preserve"><value>已四舍五入到最接近的一刻钟：{value}。</value></data>
+  <data name="RoundedTo" xml:space="preserve"><value>已四舍五入到最接近的 {step} 分钟：{value}。</value></data>
   <data name="NoticeMidnightTitle" xml:space="preserve"><value>计时器已在午夜关闭</value></data>
   <data name="NoticeOutsideOpenWeekTitle" xml:space="preserve"><value>计时时间落在已锁定的周——请申请更正</value></data>
   <data name="NoticeDraftPendingTitle" xml:space="preserve"><value>尚未写入草稿的计时时间</value></data>
@@ -161,15 +161,15 @@
   <data name="MidnightNotice" xml:space="preserve"><value>您的计时器一直运行到午夜并已关闭。请在“我的工时表”中检查昨天的记录。</value></data>
   <data name="ErrGeneric" xml:space="preserve"><value>出现问题。请重试。</value></data>
   <data name="ErrForbidden" xml:space="preserve"><value>您无权执行此操作。</value></data>
-  <data name="ErrStepInvalid" xml:space="preserve"><value>时间须以一刻钟（15 分钟）为单位，每条记录最多 16 小时。</value></data>
+  <data name="ErrStepInvalid" xml:space="preserve"><value>时间以 {step} 分钟为单位填写，每条记录最多 {maxRowHours} 小时。</value></data>
   <data name="ErrTimerDraftsUnavailable" xml:space="preserve"><value>暂时无法将计时时间写入草稿。请稍后重试。</value></data>
   <data name="ErrFutureDate" xml:space="preserve"><value>不能为将来的日期记录时间。</value></data>
   <data name="ErrDateOutsideWeek" xml:space="preserve"><value>该日期不属于本周。</value></data>
   <data name="ErrTargetInvalid" xml:space="preserve"><value>无法使用该任务——它不存在或您无法打开。</value></data>
   <data name="ErrDuplicateRow" xml:space="preserve"><value>同一任务或类别在同一天出现了两次。</value></data>
-  <data name="ErrNoteTooLong" xml:space="preserve"><value>备注最多 500 个字符。</value></data>
+  <data name="ErrNoteTooLong" xml:space="preserve"><value>备注最多 {noteMax} 个字符。</value></data>
   <data name="ErrCategoryInactive" xml:space="preserve"><value>该类别已停用。</value></data>
-  <data name="ErrDayImplausible" xml:space="preserve"><value>一天的记录不能超过 16 小时。</value></data>
+  <data name="ErrDayImplausible" xml:space="preserve"><value>一天的记录不能超过 {maxDayHours} 小时。</value></data>
   <data name="ErrWeekKeyInvalid" xml:space="preserve"><value>无法读取该周。</value></data>
   <data name="ErrWeekNotFound" xml:space="preserve"><value>未找到该周。</value></data>
   <data name="ErrWeekNotOpen" xml:space="preserve"><value>本周不允许修改。</value></data>
@@ -222,4 +222,12 @@
   <data name="TimeEntry.Category.TRAINING" xml:space="preserve"><value>培训</value></data>
   <data name="TimeEntry.Category.SUPPORT" xml:space="preserve"><value>支持</value></data>
   <data name="TimeEntry.Category.TRAVEL" xml:space="preserve"><value>出差</value></data>
+  <data name="NoticeTooSmall" xml:space="preserve"><value>“{typed}”分钟会被舍入为零，单元格保持原值。要删除时间，请输入 0 或清空单元格。</value></data>
+  <data name="BareHoursRead" xml:space="preserve"><value>{typed} → {value}（按小时理解）。如需分钟，请输入例如 15m。</value></data>
+  <data name="PendingRow" xml:space="preserve"><value>尚未保存</value></data>
+  <data name="PendingRowHint" xml:space="preserve"><value>没有时间的行不会被保存。请在某一天填写时间以保留该行。</value></data>
+  <data name="PendingRowsLeaveConfirm" xml:space="preserve"><value>没有时间的行不会被保存并将丢失。仍要离开本周吗？</value></data>
+  <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>有未保存的更改，且没有时间的行不会被保存。仍要离开本周吗？</value></data>
+  <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>采集的时间不能更正为零。请更正为至少 {step} 分钟，并在备注中说明。</value></data>
+  <data name="SaveFailedKept" xml:space="preserve"><value>草稿未保存。您的更改仍保留在页面上。</value></data>
 </root>

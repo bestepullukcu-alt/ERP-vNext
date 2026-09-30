@@ -11,7 +11,7 @@ namespace Diten.Platform.Application.Features.TimeEntry.Handlers.QueryHandlers;
 /// <summary>
 /// MOD-0280-FU01 T2a — the "+ Task row" picker. Two sources, one read rule:
 /// <list type="number">
-/// <item>open tasks (Open, Planned, InProgress, Waiting) the caller holds;</item>
+/// <item>open tasks (Open, Planned, InProgress, Waiting, PendingReview — CT v3) the caller holds;</item>
 /// <item>tasks the caller recorded time on in the current week and the <see cref="TimeEntryLimits.EditWindowPreviousWeeks"/>
 /// weeks before it — offered only while the caller can still READ them.</item>
 /// </list>

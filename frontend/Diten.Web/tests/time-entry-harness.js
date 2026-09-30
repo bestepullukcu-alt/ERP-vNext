@@ -57,8 +57,11 @@ function pageHtml({ canUpdate = true, week = "" } = {}) {
 }
 
 /** The l10n payload: every key maps to itself, so assertions read the key the page chose. */
-function l10nScript() {
-  const payload = { CategoryLabels: { "TimeEntry.Category.ADMINISTRATION": "Administration" } };
+function l10nScript(extra = {}) {
+  const payload = Object.assign({
+    CategoryLabels: { "TimeEntry.Category.ADMINISTRATION": "Administration" },
+    Limits: { StepMinutes: 15, MaxRowMinutes: 960, ImplausibleDayMinutes: 960, NoteMaxLength: 500 }
+  }, extra);
   return `<script id="time-entry-l10n" type="application/json">${JSON.stringify(payload)}</script>`;
 }
 
@@ -172,10 +175,33 @@ const flush = async (times = 6) => {
 };
 
 /** Boots the page's real scripts on the fixture DOM. */
-async function bootPage({ canUpdate = true, week = "", dir = "ltr", lang = "en" } = {}) {
+const CHIP_HTML = `<ul><li id="timeEntryTimerChip" hidden data-user="user-1" data-l10n='{}'>
+  <a data-timer-link href="/TimeEntry"><span data-timer-title></span><span data-timer-elapsed></span></a>
+  <button type="button" data-timer-stop>Stop</button></li></ul>`;
+
+function freshStorage() {
+  const make = () => {
+    const data = new Map();
+    return { getItem: (k) => (data.has(k) ? data.get(k) : null), setItem: (k, v) => data.set(k, String(v)), removeItem: (k) => data.delete(k), clear: () => data.clear() };
+  };
+  Object.defineProperty(window, "localStorage", { value: make(), configurable: true, writable: true });
+  Object.defineProperty(window, "sessionStorage", { value: make(), configurable: true, writable: true });
+}
+
+/** Boots the page's real scripts on the fixture DOM. `withChip` puts the shell's timer chip in front, loaded FIRST,
+ * as the layout does (it is not deferred). */
+async function bootPage({ canUpdate = true, week = "", dir = "ltr", lang = "en", withChip = false, l10n = {} } = {}) {
   document.documentElement.setAttribute("dir", dir);
   document.documentElement.setAttribute("lang", lang);
-  document.body.innerHTML = l10nScript() + pageHtml({ canUpdate, week });
+  freshStorage();
+  document.body.innerHTML = (withChip ? CHIP_HTML : "") + l10nScript(l10n) + pageHtml({ canUpdate, week });
+  delete window.DitenTimerShared;
+  delete window.DitenTimerChip;
+  if (withChip) {
+    window.__timerChipNoAutoInit = true;
+    loadScript("wwwroot/assets/js/shared/timer-chip.js");
+    window.DitenTimerChip.init();
+  }
   window.showToast = vi.fn();
   window.showConfirm = vi.fn((_title, onYes) => onYes());
   window.__timeEntryNoAutoInit = true;

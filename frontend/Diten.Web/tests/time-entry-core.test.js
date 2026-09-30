@@ -26,7 +26,7 @@ describe("typed durations (U5: 1:30, 1,5, 1.5, 90dk)", () => {
   });
 
   it.each([
-    ["1:20", 75], ["1:23", 90], ["7dk", 0], ["8m", 15], ["1:07", 60], ["1:08", 75]
+    ["1:20", 75], ["1:23", 90], ["8m", 15], ["1:07", 60], ["1:08", 75]
   ])("snaps %s to the nearest quarter hour (%i) and SAYS it did", (text, minutes) => {
     const parsed = core.parseDuration(text);
     expect(parsed.minutes).toBe(minutes);
@@ -39,6 +39,15 @@ describe("typed durations (U5: 1:30, 1,5, 1.5, 90dk)", () => {
     ["abc", "1:75", "1..5", "-1", "1:3", "12:00:00"].forEach((text) => {
       expect(core.parseDuration(text).ok, text).toBe(false);
     });
+  });
+
+  // CT acceptance (2026-09-30): a bare number is HOURS, so a three-digit one ("130", "480") is almost always a person
+  // typing minutes without a unit. It must be refused, not read as 130 hours — widening the hours pattern passed the suite.
+  it("refuses a three-digit bare number instead of reading it as hours", () => {
+    ["130", "480", "100"].forEach((text) => {
+      expect(core.parseDuration(text).ok, text).toBe(false);
+    });
+    expect(core.parseDuration("130dk")).toMatchObject({ ok: true, minutes: 135 });
   });
 
   it("formats minutes as h:mm, never as a decimal", () => {

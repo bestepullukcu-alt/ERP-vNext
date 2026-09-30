@@ -98,6 +98,16 @@ public sealed class TimeEntryController : Controller
         {
             throw;
         }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            // v3 M5 — the service is down or slow (a restart, a closed port). Every tenant page asks for the timer chip, so
+            // this is an expected, recoverable state: a Warning, not an Error flooding the log. The page shows its own
+            // "try again" state from the 503.
+            _logger.LogWarning(ex, "Time Entry proxy could not reach {Method} {TargetUrl}.", method, target);
+            return StatusCode(
+                StatusCodes.Status503ServiceUnavailable,
+                new { message = "Time Entry dependency unavailable." });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Time Entry proxy failed for {Method} {TargetUrl}.", method, target);

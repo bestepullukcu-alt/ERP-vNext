@@ -27,8 +27,22 @@
         try { return node ? JSON.parse(node.textContent || '{}') : {}; } catch (error) { return {}; }
     }
 
+    /** The limits a sentence may name ({step}, {maxRowHours}, {maxDayHours}, {noteMax}) — from the payload's Limits, never typed
+     * into a translation (v3 L10). */
+    function limitValues() {
+        var limits = L.Limits || {};
+        var hours = function (minutes) { return minutes ? String(Math.round(minutes / 6) / 10) : ''; };
+        return {
+            step: limits.StepMinutes || '',
+            maxRowHours: hours(limits.MaxRowMinutes),
+            maxDayHours: hours(limits.ImplausibleDayMinutes),
+            noteMax: limits.NoteMaxLength || ''
+        };
+    }
+
     function t(key, values) {
         var text = Object.prototype.hasOwnProperty.call(L, key) && L[key] ? String(L[key]) : key;
+        values = Object.assign(limitValues(), values || {});
         if (values) {
             Object.keys(values).forEach(function (name) {
                 text = text.split('{' + name + '}').join(values[name] === null || values[name] === undefined ? '' : String(values[name]));
@@ -109,9 +123,17 @@
         }
     }
 
-    function announce(message) {
-        var live = byId('teNotice');
-        if (live) { live.textContent = message || ''; }
+    /**
+     * The page's status line: VISIBLE (v3 M1) and aria-live, so a rounding, a refusal or a copy result is both seen and
+     * read out. `kind` is info (default) or warning.
+     */
+    function announce(message, kind) {
+        var line = byId('teNotice');
+        if (!line) { return; }
+        // The region itself always stays in the page (a live region that appears together with its text is often not
+        // read out); an empty one takes no room (CSS :empty).
+        line.textContent = message || '';
+        line.className = 'time-entry-notice time-entry-notice-' + (kind || 'info');
     }
 
     // ── labels ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -136,6 +158,13 @@
 
     function rowLabel(row) {
         return targetLabel(row.taskItemId, row.categoryCode, row.taskTitle);
+    }
+
+    /** v3 M4 — a row without time is not saved; it says so on itself. */
+    function pendingBadge() {
+        var badge = el('span', 'badge time-entry-pending', t('PendingRow'));
+        badge.setAttribute('title', t('PendingRowHint'));
+        return badge;
     }
 
     function sourceBadge(source) {
@@ -163,6 +192,20 @@
 
     function dirty() {
         return core.isDirty(state.rows);
+    }
+
+    function pending() {
+        return core.pendingRows(state.rows);
+    }
+
+    /** What leaving the week would lose, as the one sentence to ask about — or null when nothing is lost (v3 M3/M4). */
+    function leaveQuestion() {
+        var unsaved = dirty();
+        var empty = pending().length > 0;
+        if (unsaved && empty) { return t('LeaveDirtyAndPendingConfirm'); }
+        if (unsaved) { return t('DiscardChangesConfirm'); }
+        if (empty) { return t('PendingRowsLeaveConfirm'); }
+        return null;
     }
 
     function rowByKey(key) {
@@ -202,9 +245,13 @@
                 }
             }
 
+            var sameWeek = state.weekKey === (result.data.weekKey || weekKey);
+            var keep = sameWeek ? core.pendingRows(state.rows) : [];
             state.weekKey = result.data.weekKey || weekKey;
             state.payload = result.data;
-            state.rows = core.buildRows(result.data);
+            // v3 M4 — rows without time exist only on the page; a reload of the SAME week (after a save, an accept)
+            // puts them back instead of dropping them without a word.
+            state.rows = core.mergePending(core.buildRows(result.data), keep);
             state.ghosts = {};
             state.panel = null;
             state.review = false;
@@ -224,7 +271,32 @@
 
     function goToWeek(weekKey) {
         var go = function () { load(weekKey, { pushUrl: true }); };
-        if (dirty()) { confirmThen(t('DiscardChangesConfirm'), go); } else { go(); }
+        var question = leaveQuestion();
+        if (question) { confirmThen(question, go); } else { go(); }
+    }
+
+    /** Back/forward to another week. With something to lose, the address is put back first and the page asks; only a
+     * "yes" moves on (the in-page confirmation — never a browser prompt). */
+    function onPopState(event) {
+        if (root.TimeEntryPage !== exported) { return; }
+        var week = event.state && event.state.week;
+        if (!week || !core.isWeekKey(week) || week === state.weekKey) { return; }
+        var question = leaveQuestion();
+        if (!question) {
+            load(week);
+            return;
+        }
+        setUrlWeek(state.weekKey, true);
+        confirmThen(question, function () { load(week, { pushUrl: true }); });
+    }
+
+    /** Closing or leaving the page with something to lose: the browser's own leave warning (the only native one). */
+    function onBeforeUnload(event) {
+        if (root.TimeEntryPage !== exported) { return undefined; }
+        if (!state || !state.payload || !leaveQuestion()) { return undefined; }
+        event.preventDefault();
+        event.returnValue = '';
+        return '';
     }
 
     // ── writes ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -384,8 +456,14 @@
             }
         });
 
+        var saveFailed = false;
         var chain = dirty() ? save({ quiet: true, noReload: true }).then(function (r) {
-            if (!r.ok) { return r; }
+            if (!r.ok) {
+                // v3 M3 — the save was refused: NO reload. The person's edits (and the plan values just taken) stay on
+                // the page, and the page says so; the server's own reason was already shown.
+                saveFailed = true;
+                return r;
+            }
             return reload();
         }) : Promise.resolve({ ok: true });
 
@@ -402,6 +480,11 @@
 
         return chain.then(function () {
             state.review = false;
+            if (saveFailed) {
+                render();
+                announce(t('SaveFailedKept'), 'warning');
+                return { ok: false };
+            }
             return reload();
         });
     }
@@ -460,22 +543,29 @@
         var date = input.getAttribute('data-date');
         if (!row || !date) { return false; }
         var parsed = core.parseDuration(input.value);
-        var message = byId('teNotice');
+        var current = row.cells[date] ? Number(row.cells[date].minutes) || 0 : 0;
         if (!parsed.ok) {
             input.classList.add('is-invalid');
             input.setAttribute('aria-invalid', 'true');
-            announce(t('InvalidDuration'));
+            if (parsed.tooSmall) {
+                // v3 M1 — a value that rounds to nothing never empties the cell: it keeps its value, and the page says why.
+                input.value = core.formatMinutes(current);
+                announce(t('NoticeTooSmall', { typed: String(parsed.typed) }), 'warning');
+            } else {
+                announce(t('InvalidDuration'), 'warning');
+            }
             return false;
         }
         input.classList.remove('is-invalid');
         input.removeAttribute('aria-invalid');
-        var current = row.cells[date] ? Number(row.cells[date].minutes) || 0 : 0;
         if (parsed.minutes !== current) {
             core.setCell(row, date, parsed.minutes);
         }
-        if (parsed.rounded) {
+        if (parsed.bareHours) {
+            announce(t('BareHoursRead', { typed: input.value.trim(), value: core.formatMinutes(parsed.minutes) }));
+        } else if (parsed.rounded) {
             announce(t('RoundedTo', { value: core.formatMinutes(parsed.minutes) || '0:00' }));
-        } else if (message) {
+        } else {
             announce('');
         }
         return true;
@@ -506,6 +596,51 @@
         rerenderKeepingFocus(next);
     }
 
+    /** Which cell or control holds the focus, as something that survives a rebuild of the grid. */
+    function focusIdentity(node) {
+        if (!node || !node.getAttribute) { return null; }
+        var host = node.closest && node.closest('#teGrid') ? 'grid' : node.closest && node.closest('#teDayView') ? 'day' : null;
+        if (node.hasAttribute('data-row-key') && node.hasAttribute('data-date')) {
+            return { host: host, rowKey: node.getAttribute('data-row-key'), date: node.getAttribute('data-date') };
+        }
+        if (node.hasAttribute('data-day')) { return { host: host, day: node.getAttribute('data-day') }; }
+        if (node.id) { return { id: node.id }; }
+        return null;
+    }
+
+    function refocus(identity) {
+        if (!identity) { return null; }
+        var target = null;
+        if (identity.id) {
+            target = byId(identity.id);
+        } else if (identity.rowKey) {
+            var scope = identity.host === 'day' ? '#teDayView' : '#teGrid';
+            target = Array.prototype.slice.call(doc.querySelectorAll(scope + ' [data-row-key][data-date]')).filter(function (n) {
+                return n.getAttribute('data-row-key') === identity.rowKey && n.getAttribute('data-date') === identity.date;
+            })[0] || null;
+        } else if (identity.day) {
+            target = doc.querySelector('#teDayView [data-day="' + identity.day + '"]');
+        }
+        if (target && typeof target.focus === 'function') { target.focus(); }
+        return target;
+    }
+
+    /**
+     * v3 M2 — after a cell's value is taken, the grid is rebuilt; the rebuild waits until the browser has moved the focus
+     * (Tab, Shift+Tab, a click) and then puts it back on the SAME cell or control in the new DOM. Without this the person's
+     * next cell vanishes under them.
+     */
+    var renderTimer = null;
+    function renderKeepingFocus() {
+        if (renderTimer) { root.clearTimeout(renderTimer); }
+        renderTimer = root.setTimeout(function () {
+            renderTimer = null;
+            var identity = focusIdentity(doc.activeElement);
+            render();
+            refocus(identity);
+        }, 0);
+    }
+
     function rerenderKeepingFocus(position) {
         render();
         if (position) { focusCell(position); }
@@ -515,7 +650,7 @@
 
     function statusKey(payload) {
         if (payload.status === 'Draft' && payload.correctionOfRevision) { return 'StatusCorrection'; }
-        if (payload.status === 'Draft' && payload.lastRejectedAtUtc) { return 'StatusRejected'; }
+        if (core.isRejectedNow(payload)) { return 'StatusRejected'; }
         return 'Status' + payload.status;
     }
 
@@ -564,7 +699,7 @@
             return node;
         };
 
-        if (payload.status === 'Draft' && payload.lastRejectedAtUtc && payload.lastRejectionReason) {
+        if (core.isRejectedNow(payload) && payload.lastRejectionReason) {
             add('rejected', t('RejectedBand', {
                 name: payload.lastRejectedByDisplayName || t('UnknownPerson'),
                 when: formatInstant(payload.lastRejectedAtUtc),
@@ -648,7 +783,7 @@
             input.setAttribute('data-date', date);
             input.setAttribute('data-pos', rowIndex + ':' + colIndex);
             input.setAttribute('aria-label', t('CellAria', { row: rowLabel(row), day: formatDate(date, { weekday: 'long', day: 'numeric', month: 'long' }) }));
-            input.addEventListener('change', function () { if (commitInput(input)) { render(); } });
+            input.addEventListener('change', function () { if (commitInput(input)) { renderKeepingFocus(); } });
             td.appendChild(input);
         } else if (core.isCaptured(row.source) && cell) {
             var value = button('btn btn-sm time-entry-cell-captured', core.formatMinutes(minutes) || '0:00', function () {
@@ -690,6 +825,7 @@
         var label = el('span', row.taskItemId && !row.taskTitle ? 'time-entry-row-title time-entry-row-title-unreadable' : 'time-entry-row-title', rowLabel(row));
         th.appendChild(label);
         th.appendChild(sourceBadge(row.source));
+        if (core.isPendingRow(row)) { th.appendChild(pendingBadge()); }
         var hasNote = Object.keys(row.cells).some(function (d) { return (row.cells[d].note || '').trim() !== ''; });
         var note = button('btn btn-sm btn-icon time-entry-note-toggle' + (hasNote ? ' time-entry-note-present' : ''), null, function () {
             state.panel = { kind: 'note', rowKey: row.key };
@@ -724,7 +860,7 @@
         var body = el('tbody');
         var rowIndex = 0;
         state.rows.forEach(function (row) {
-            var tr = el('tr', 'time-entry-row');
+            var tr = el('tr', 'time-entry-row' + (core.isPendingRow(row) ? ' time-entry-row-pending' : ''));
             tr.setAttribute('data-row-key', row.key);
             tr.appendChild(rowHeader(row));
             days.forEach(function (day, colIndex) {
@@ -860,6 +996,7 @@
             var label = el('div', 'time-entry-day-item-label');
             label.appendChild(el('span', 'time-entry-row-title', rowLabel(row)));
             label.appendChild(sourceBadge(row.source));
+            if (core.isPendingRow(row)) { label.appendChild(pendingBadge()); }
             item.appendChild(label);
             var cell = row.cells[date];
             if (cellEditable(row, date)) {
@@ -870,7 +1007,7 @@
                 input.setAttribute('data-row-key', row.key);
                 input.setAttribute('data-date', date);
                 input.setAttribute('aria-label', t('CellAria', { row: rowLabel(row), day: formatDate(date, { weekday: 'long', day: 'numeric', month: 'long' }) }));
-                input.addEventListener('change', function () { if (commitInput(input)) { render(); } });
+                input.addEventListener('change', function () { if (commitInput(input)) { renderKeepingFocus(); } });
                 item.appendChild(input);
             } else if (core.isCaptured(row.source) && cell) {
                 var value = button('btn btn-sm time-entry-cell-captured', core.formatMinutes(cell.minutes) || '0:00', function () {
@@ -1043,7 +1180,7 @@
             host.appendChild(saveButton);
         }
         if (payload.status === 'Draft' && payload.editable) {
-            host.appendChild(button('btn btn-primary', payload.lastRejectedAtUtc ? t('Resubmit') : t('SubmitWeek'), submitWeek, { id: 'teSubmit' }));
+            host.appendChild(button('btn btn-primary', core.isRejectedNow(payload) ? t('Resubmit') : t('SubmitWeek'), submitWeek, { id: 'teSubmit' }));
         }
         if (payload.status === 'Draft' && payload.correctionOfRevision) {
             host.appendChild(button('btn btn-label-danger', t('DiscardCorrection'), discardCorrection, { id: 'teDiscardCorrection' }));
@@ -1172,9 +1309,11 @@
         var actions = el('div', 'time-entry-side-actions');
         var apply = button('btn btn-sm btn-primary', t('Apply'), function () {
             var parsed = core.parseDuration(input.value);
-            if (!parsed.ok) {
+            if (!parsed.ok || parsed.minutes === 0) {
+                // A captured row cannot be corrected to nothing (the server keeps it; zero is not a step) — said as such,
+                // not as a generic "quarter hours" refusal (v3 L10).
                 input.classList.add('is-invalid');
-                announce(t('InvalidDuration'));
+                announce(!parsed.ok && !parsed.tooSmall ? t('InvalidDuration') : t('CapturedZeroNotAllowed'), 'warning');
                 return;
             }
             core.setCell(row, date, parsed.minutes, note.value);
@@ -1284,10 +1423,8 @@
             });
         }
         byId('teGrid').addEventListener('keydown', onGridKeydown);
-        root.addEventListener('popstate', function (event) {
-            var week = event.state && event.state.week;
-            if (week && core.isWeekKey(week)) { load(week); }
-        });
+        root.addEventListener('popstate', onPopState);
+        root.addEventListener('beforeunload', onBeforeUnload);
     }
 
     function init() {
@@ -1328,7 +1465,7 @@
         });
     }
 
-    root.TimeEntryPage = {
+    var exported = {
         init: init,
         // Seams the tests drive; the page itself never calls these from outside.
         state: function () { return state; },
@@ -1338,8 +1475,10 @@
         addSelectedSuggestions: addSelectedSuggestions,
         addTaskRow: addTaskRow,
         addCategoryRow: addCategoryRow,
-        requestCorrection: requestCorrection
+        requestCorrection: requestCorrection,
+        goToWeek: goToWeek
     };
+    root.TimeEntryPage = exported;
 
     if (doc && doc.readyState === 'loading') {
         doc.addEventListener('DOMContentLoaded', init);

@@ -74,7 +74,10 @@
         taskOptions: function (search) {
             return request('GET', 'task-options' + (search ? '?search=' + enc(search) : ''));
         },
-        timer: function () { return request('GET', 'timer'); },
+        /** The chip's shared read when the chip is on the page (one request per page load, v3 M5); else our own. */
+        timer: function () {
+            return root.DitenTimerShared ? root.DitenTimerShared.read(false) : request('GET', 'timer');
+        },
         stopTimer: function () { return request('POST', 'timer/stop', {}); }
     };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -59,10 +59,15 @@ public sealed class GetPlanFillInHandler : IRequestHandler<GetPlanFillInQuery, R
             .ToList();
 
         // T2a — a ghost row for a task not yet on the sheet needs its name: one batched read, the person's read rule.
+        // v3 L10 — and that read is also the FILTER: a plan block on a task the person can no longer read is not offered at
+        // all (accepting it would be refused as TIME_ENTRY_TARGET_INVALID, and its title must not leave the server).
         if (rows.Count > 0)
         {
             var titles = await _tasks.ReadableTaskSummariesAsync(userId, rows.Select(r => r.TaskItemId).Distinct().ToList(), ct);
-            rows = rows.Select(r => r with { TaskTitle = titles.TryGetValue(r.TaskItemId, out var task) ? task.Title : null }).ToList();
+            rows = rows
+                .Where(r => titles.ContainsKey(r.TaskItemId))
+                .Select(r => r with { TaskTitle = titles[r.TaskItemId].Title })
+                .ToList();
         }
 
         return Response<PlanFillInDto>.Success(

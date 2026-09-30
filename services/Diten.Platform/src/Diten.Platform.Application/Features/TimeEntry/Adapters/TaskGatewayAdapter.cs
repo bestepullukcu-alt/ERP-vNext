@@ -48,9 +48,12 @@ public sealed class TaskGatewayAdapter : ITimeEntryTaskGateway
         return readable;
     }
 
-    /// <summary>The lifecycles a person can still put time on from the picker: work not yet finished.</summary>
+    /// <summary>The lifecycles a person can still put time on from the picker: work not yet closed. PendingReview is in
+    /// (CT v3): the work is done and waiting for its reviewer, and the week it was done in still needs its hours.</summary>
     private static readonly HashSet<TaskLifecycle> OpenLifecycles =
-        [TaskLifecycle.Open, TaskLifecycle.Planned, TaskLifecycle.InProgress, TaskLifecycle.Waiting];
+    [
+        TaskLifecycle.Open, TaskLifecycle.Planned, TaskLifecycle.InProgress, TaskLifecycle.Waiting, TaskLifecycle.PendingReview
+    ];
 
     public async Task<IReadOnlyList<TimeEntryTaskSummary>> OwnOpenTasksAsync(Guid userId, CancellationToken ct = default)
     {

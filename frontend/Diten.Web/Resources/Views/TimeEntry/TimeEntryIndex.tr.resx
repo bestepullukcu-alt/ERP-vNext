@@ -141,7 +141,7 @@
   <data name="NoSuggestions" xml:space="preserve"><value>Bu hafta için öneri yok.</value></data>
   <data name="AddSelected" xml:space="preserve"><value>Seçilenleri ekle</value></data>
   <data name="InvalidDuration" xml:space="preserve"><value>Geçerli bir süre değil. 1:30, 1,5, 1.5 veya 90dk kullanın.</value></data>
-  <data name="RoundedTo" xml:space="preserve"><value>En yakın çeyrek saate yuvarlandı: {value}.</value></data>
+  <data name="RoundedTo" xml:space="preserve"><value>En yakın {step} dakikaya yuvarlandı: {value}.</value></data>
   <data name="NoticeMidnightTitle" xml:space="preserve"><value>Sayaç gece yarısı kapandı</value></data>
   <data name="NoticeOutsideOpenWeekTitle" xml:space="preserve"><value>Kilitli haftaya düşen sayaç süresi — düzeltme isteyin</value></data>
   <data name="NoticeDraftPendingTitle" xml:space="preserve"><value>Taslağa henüz yazılmamış sayaç süresi</value></data>
@@ -161,15 +161,15 @@
   <data name="MidnightNotice" xml:space="preserve"><value>Sayacınız gece yarısına kadar çalıştı ve kapatıldı. Dünü Zaman Çizelgem'de kontrol edin.</value></data>
   <data name="ErrGeneric" xml:space="preserve"><value>Bir sorun oluştu. Yeniden deneyin.</value></data>
   <data name="ErrForbidden" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
-  <data name="ErrStepInvalid" xml:space="preserve"><value>Süre çeyrek saatlik (15 dakika) adımlarla ve kayıt başına en çok 16 saat olmalı.</value></data>
+  <data name="ErrStepInvalid" xml:space="preserve"><value>Süre {step} dakikalık adımlarla girilir; kayıt başına en çok {maxRowHours} saat.</value></data>
   <data name="ErrTimerDraftsUnavailable" xml:space="preserve"><value>Sayaç süresi şu anda taslağa aktarılamadı. Biraz sonra yeniden deneyin.</value></data>
   <data name="ErrFutureDate" xml:space="preserve"><value>Gelecek bir gün için süre kaydedilemez.</value></data>
   <data name="ErrDateOutsideWeek" xml:space="preserve"><value>Bu gün bu haftaya ait değil.</value></data>
   <data name="ErrTargetInvalid" xml:space="preserve"><value>Bu görev kullanılamaz — yok ya da açamıyorsunuz.</value></data>
   <data name="ErrDuplicateRow" xml:space="preserve"><value>Aynı görev veya kategori bir günde iki kez yer alıyor.</value></data>
-  <data name="ErrNoteTooLong" xml:space="preserve"><value>Not en çok 500 karakter olabilir.</value></data>
+  <data name="ErrNoteTooLong" xml:space="preserve"><value>Not en çok {noteMax} karakter olabilir.</value></data>
   <data name="ErrCategoryInactive" xml:space="preserve"><value>Bu kategori artık etkin değil.</value></data>
-  <data name="ErrDayImplausible" xml:space="preserve"><value>Bir güne 16 saatten fazlası yazılamaz.</value></data>
+  <data name="ErrDayImplausible" xml:space="preserve"><value>Bir güne {maxDayHours} saatten fazlası yazılamaz.</value></data>
   <data name="ErrWeekKeyInvalid" xml:space="preserve"><value>Bu hafta okunamadı.</value></data>
   <data name="ErrWeekNotFound" xml:space="preserve"><value>Bu hafta bulunamadı.</value></data>
   <data name="ErrWeekNotOpen" xml:space="preserve"><value>Bu hafta değişikliğe açık değil.</value></data>
@@ -222,4 +222,12 @@
   <data name="TimeEntry.Category.TRAINING" xml:space="preserve"><value>Eğitim</value></data>
   <data name="TimeEntry.Category.SUPPORT" xml:space="preserve"><value>Destek</value></data>
   <data name="TimeEntry.Category.TRAVEL" xml:space="preserve"><value>Seyahat</value></data>
+  <data name="NoticeTooSmall" xml:space="preserve"><value>“{typed}” dakika sıfıra yuvarlanırdı; hücre eski değerinde kaldı. Süreyi silmek için 0 yazın ya da hücreyi boşaltın.</value></data>
+  <data name="BareHoursRead" xml:space="preserve"><value>{typed} → {value} (saat olarak okundu). Dakika için örneğin 15dk yazın.</value></data>
+  <data name="PendingRow" xml:space="preserve"><value>henüz kaydedilmedi</value></data>
+  <data name="PendingRowHint" xml:space="preserve"><value>Süresi olmayan satır kaydedilmez. Korumak için bir güne süre girin.</value></data>
+  <data name="PendingRowsLeaveConfirm" xml:space="preserve"><value>Süresiz satırlar kaydedilmez ve kaybolur. Yine de bu haftadan çıkılsın mı?</value></data>
+  <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>Kaydedilmemiş değişiklikler var ve süresiz satırlar kaydedilmez. Yine de bu haftadan çıkılsın mı?</value></data>
+  <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>Yakalanan süre sıfıra düzeltilemez. En az {step} dakikaya düzeltin ve nedenini nota yazın.</value></data>
+  <data name="SaveFailedKept" xml:space="preserve"><value>Taslak kaydedilmedi. Değişiklikleriniz sayfada duruyor.</value></data>
 </root>

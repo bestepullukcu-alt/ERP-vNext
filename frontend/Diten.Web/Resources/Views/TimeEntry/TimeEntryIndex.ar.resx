@@ -141,7 +141,7 @@
   <data name="NoSuggestions" xml:space="preserve"><value>لا توجد اقتراحات لهذا الأسبوع.</value></data>
   <data name="AddSelected" xml:space="preserve"><value>إضافة المحدد</value></data>
   <data name="InvalidDuration" xml:space="preserve"><value>ليست مدة صحيحة. استخدم 1:30 أو 1,5 أو 1.5 أو 90m.</value></data>
-  <data name="RoundedTo" xml:space="preserve"><value>تم التقريب إلى أقرب ربع ساعة: {value}.</value></data>
+  <data name="RoundedTo" xml:space="preserve"><value>تم التقريب إلى أقرب {step} دقيقة: {value}.</value></data>
   <data name="NoticeMidnightTitle" xml:space="preserve"><value>أُغلق المؤقت عند منتصف الليل</value></data>
   <data name="NoticeOutsideOpenWeekTitle" xml:space="preserve"><value>وقت المؤقت في أسبوع مقفل — اطلب تصحيحًا</value></data>
   <data name="NoticeDraftPendingTitle" xml:space="preserve"><value>وقت المؤقت لم يُكتب في المسودة بعد</value></data>
@@ -161,15 +161,15 @@
   <data name="MidnightNotice" xml:space="preserve"><value>استمر مؤقتك حتى منتصف الليل وأُغلق. راجع يوم أمس في سجل ساعاتي.</value></data>
   <data name="ErrGeneric" xml:space="preserve"><value>حدث خطأ ما. حاول مرة أخرى.</value></data>
   <data name="ErrForbidden" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء.</value></data>
-  <data name="ErrStepInvalid" xml:space="preserve"><value>يجب أن يكون الوقت بأرباع الساعة (15 دقيقة) وبحد أقصى 16 ساعة لكل قيد.</value></data>
+  <data name="ErrStepInvalid" xml:space="preserve"><value>يُدخل الوقت بخطوات من {step} دقيقة، وبحد أقصى {maxRowHours} ساعة لكل قيد.</value></data>
   <data name="ErrTimerDraftsUnavailable" xml:space="preserve"><value>تعذر نقل وقت المؤقت إلى المسودة الآن. حاول مرة أخرى بعد قليل.</value></data>
   <data name="ErrFutureDate" xml:space="preserve"><value>لا يمكن تسجيل وقت ليوم في المستقبل.</value></data>
   <data name="ErrDateOutsideWeek" xml:space="preserve"><value>هذا اليوم لا ينتمي إلى هذا الأسبوع.</value></data>
   <data name="ErrTargetInvalid" xml:space="preserve"><value>لا يمكن استخدام هذه المهمة — فهي غير موجودة أو لا يمكنك فتحها.</value></data>
   <data name="ErrDuplicateRow" xml:space="preserve"><value>تظهر المهمة أو الفئة نفسها مرتين في يوم واحد.</value></data>
-  <data name="ErrNoteTooLong" xml:space="preserve"><value>يمكن أن تحتوي الملاحظة على 500 حرف كحد أقصى.</value></data>
+  <data name="ErrNoteTooLong" xml:space="preserve"><value>يمكن أن تحتوي الملاحظة على {noteMax} حرف كحد أقصى.</value></data>
   <data name="ErrCategoryInactive" xml:space="preserve"><value>هذه الفئة لم تعد نشطة.</value></data>
-  <data name="ErrDayImplausible" xml:space="preserve"><value>لا يمكن أن يتجاوز اليوم 16 ساعة.</value></data>
+  <data name="ErrDayImplausible" xml:space="preserve"><value>لا يمكن أن يتجاوز اليوم {maxDayHours} ساعة.</value></data>
   <data name="ErrWeekKeyInvalid" xml:space="preserve"><value>تعذرت قراءة هذا الأسبوع.</value></data>
   <data name="ErrWeekNotFound" xml:space="preserve"><value>لم يُعثر على هذا الأسبوع.</value></data>
   <data name="ErrWeekNotOpen" xml:space="preserve"><value>هذا الأسبوع غير مفتوح للتغيير.</value></data>
@@ -222,4 +222,12 @@
   <data name="TimeEntry.Category.TRAINING" xml:space="preserve"><value>تدريب</value></data>
   <data name="TimeEntry.Category.SUPPORT" xml:space="preserve"><value>دعم</value></data>
   <data name="TimeEntry.Category.TRAVEL" xml:space="preserve"><value>سفر</value></data>
+  <data name="NoticeTooSmall" xml:space="preserve"><value>«{typed}» دقيقة ستُقرَّب إلى صفر، فاحتفظت الخلية بقيمتها. اكتب 0 أو أفرغ الخلية لحذف الوقت.</value></data>
+  <data name="BareHoursRead" xml:space="preserve"><value>{typed} ← {value} (قُرئت ساعات). للدقائق اكتب مثلًا 15m.</value></data>
+  <data name="PendingRow" xml:space="preserve"><value>لم يُحفظ بعد</value></data>
+  <data name="PendingRowHint" xml:space="preserve"><value>الصف الذي بلا وقت لا يُحفظ. أدخل وقتًا في يوم ما للاحتفاظ به.</value></data>
+  <data name="PendingRowsLeaveConfirm" xml:space="preserve"><value>الصفوف التي بلا وقت لا تُحفظ وستضيع. هل تريد مغادرة هذا الأسبوع على أي حال؟</value></data>
+  <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>توجد تغييرات غير محفوظة، والصفوف التي بلا وقت لا تُحفظ. هل تريد مغادرة هذا الأسبوع على أي حال؟</value></data>
+  <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>لا يمكن تصحيح الوقت الملتقَط إلى صفر. صحّحه إلى {step} دقيقة على الأقل واذكر السبب في الملاحظة.</value></data>
+  <data name="SaveFailedKept" xml:space="preserve"><value>لم تُحفظ المسودة. لا تزال تغييراتك على الصفحة.</value></data>
 </root>

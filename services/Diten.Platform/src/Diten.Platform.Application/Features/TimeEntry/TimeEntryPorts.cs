@@ -64,7 +64,7 @@ public interface ITimeEntryTaskGateway
     Task<IReadOnlyDictionary<Guid, TimeEntryTaskSummary>> ReadableTaskSummariesAsync(
         Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default);
 
-    /// <summary>T2a — the open tasks (Open, Planned, InProgress, Waiting) <paramref name="userId"/> holds, filtered by the
+    /// <summary>T2a — the open tasks (Open, Planned, InProgress, Waiting, PendingReview — CT v3) <paramref name="userId"/> holds, filtered by the
     /// same read rule.</summary>
     Task<IReadOnlyList<TimeEntryTaskSummary>> OwnOpenTasksAsync(Guid userId, CancellationToken ct = default);
 }

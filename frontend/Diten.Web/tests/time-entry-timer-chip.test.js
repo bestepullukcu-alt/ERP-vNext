@@ -40,16 +40,24 @@ async function bootChip(routes, { user = "user-1" } = {}) {
 const chip = () => document.getElementById("timeEntryTimerChip");
 
 /** This jsdom has no localStorage; the browser's is replaced by an in-memory one the test can also make throw. */
-function installStorage({ throwing = false } = {}) {
+function makeStorage(throwing) {
   const data = new Map();
-  const storage = {
+  return {
+    data,
     getItem: (k) => { if (throwing) { throw new Error("blocked"); } return data.has(k) ? data.get(k) : null; },
     setItem: (k, v) => { if (throwing) { throw new Error("blocked"); } data.set(k, String(v)); },
-    removeItem: (k) => data.delete(k),
+    removeItem: (k) => { if (throwing) { throw new Error("blocked"); } data.delete(k); },
     clear: () => data.clear()
   };
-  Object.defineProperty(window, "localStorage", { value: storage, configurable: true, writable: true });
-  return storage;
+}
+
+/** Fresh local AND session storage per test (this Node keeps a real sessionStorage between tests otherwise). */
+function installStorage({ throwing = false } = {}) {
+  const local = makeStorage(throwing);
+  const session = makeStorage(throwing);
+  Object.defineProperty(window, "localStorage", { value: local, configurable: true, writable: true });
+  Object.defineProperty(window, "sessionStorage", { value: session, configurable: true, writable: true });
+  return { local, session };
 }
 
 beforeEach(() => installStorage());
@@ -102,9 +110,18 @@ describe("the chip exists only while a timer runs", () => {
     expect(chip()).toBeNull();
   });
 
-  it("a failed read draws nothing either", async () => {
-    await bootChip([["GET", "/TimeEntry/api/timer", () => ({ status: 403, body: {} })]]);
-    expect(chip()).toBeNull();
+  it("a failed read hides the chip but does not take it away: the next visible tab asks again (v3 L8)", async () => {
+    let fail = true;
+    await bootChip([["GET", "/TimeEntry/api/timer", () => (fail ? { status: 503, body: {} } : ok(timer({ running: runningOn() })))]]);
+    expect(chip()).not.toBeNull();
+    expect(chip().hidden).toBe(true);
+
+    fail = false;
+    Object.defineProperty(document, "visibilityState", { value: "visible", configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    await flush();
+    expect(chip().hidden).toBe(false);
+    expect(chip().querySelector("[data-timer-title]").textContent).toBe("Deviation DEV-17");
   });
 
   it("asks the server again when the tab becomes visible — and never polls", async () => {

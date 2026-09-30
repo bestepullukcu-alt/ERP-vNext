@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -127,6 +128,18 @@ public sealed class TimeEntryProxyTests : IClassFixture<WebApplicationFactory<Pr
         Assert.Null(gateway.LastUri);
     }
 
+    [Fact]
+    public async Task An_unreachable_service_answers_503_and_is_logged_as_a_Warning_not_an_Error()
+    {
+        var logger = new CapturingLogger();
+        var controller = ControllerWith(new UnreachableGateway(), "GET", logger: logger);
+
+        var result = Assert.IsType<ObjectResult>(await controller.Api("timer"));
+
+        Assert.Equal(503, result.StatusCode);
+        Assert.Equal([LogLevel.Warning], logger.Levels);
+    }
+
     [Theory]
     [InlineData("/TimeEntry")]
     [InlineData("/TimeEntry/api/weeks/2026-W41")]
@@ -144,13 +157,14 @@ public sealed class TimeEntryProxyTests : IClassFixture<WebApplicationFactory<Pr
     }
 
     private static TimeEntryController ControllerWith(
-        CapturingGateway gateway, string method, string? body = null, string? query = null, bool withToken = true)
+        HttpMessageHandler gateway, string method, string? body = null, string? query = null, bool withToken = true,
+        ILogger<TimeEntryController>? logger = null)
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?> { ["GatewayUrl"] = Gateway })
             .Build();
         var controller = new TimeEntryController(
-            new SingleClientFactory(gateway), configuration, NullLogger<TimeEntryController>.Instance);
+            new SingleClientFactory(gateway), configuration, logger ?? NullLogger<TimeEntryController>.Instance);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Method = method;
@@ -208,6 +222,25 @@ public sealed class TimeEntryProxyTests : IClassFixture<WebApplicationFactory<Pr
     {
         public HttpClient CreateClient(string name) => new(handler, disposeHandler: false);
     }
+
+    /// <summary>Platform is down: the connection is refused.</summary>
+    private sealed class UnreachableGateway : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => throw new HttpRequestException("Connection refused (gateway.test:80)");
+    }
+
+    private sealed class CapturingLogger : ILogger<TimeEntryController>
+    {
+        public List<LogLevel> Levels { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            => Levels.Add(logLevel);
+    }
 }
 
 /// <summary>
@@ -258,6 +291,37 @@ public sealed class TimeEntryViewContractTests
         Assert.True(chip > 0 && bell > chip && bell - chip < 200, "the chip is not right before the notification bell");
     }
 
+    /// <summary>v3 L10 — the limits the page's sentences name are Platform's; the web tier repeats them once
+    /// (<c>TimeEntryIndex.Limits</c>) and this reads Platform's own source so the two cannot drift.</summary>
+    [Fact]
+    public void The_limits_the_page_names_are_Platforms_own()
+    {
+        var models = File.ReadAllText(RepoPath("services", "Diten.Platform", "src", "Diten.Platform.Application", "Features", "TimeEntry", "TimeEntryModels.cs"));
+        int Constant(string name) => int.Parse(Regex.Match(models, $@"public const int {name} = (\d+);").Groups[1].Value);
+
+        Assert.Equal(Constant("StepMinutes"), Diten.Web.Views.TimeEntry.TimeEntryIndex.Limits["StepMinutes"]);
+        Assert.Equal(Constant("MaxRowMinutes"), Diten.Web.Views.TimeEntry.TimeEntryIndex.Limits["MaxRowMinutes"]);
+        Assert.Equal(Constant("ImplausibleDayMinutes"), Diten.Web.Views.TimeEntry.TimeEntryIndex.Limits["ImplausibleDayMinutes"]);
+        Assert.Equal(Constant("NoteMaxLength"), Diten.Web.Views.TimeEntry.TimeEntryIndex.Limits["NoteMaxLength"]);
+        Assert.Contains("[\"Limits\"] = TimeEntryIndex.Limits", File.ReadAllText(SourcePath("Views", "TimeEntry", "_IndexL10n.cshtml")));
+    }
+
+    [Fact]
+    public void The_status_line_is_visible_and_live()
+    {
+        var index = File.ReadAllText(SourcePath("Views", "TimeEntry", "Index.cshtml"));
+        Assert.Contains("<div class=\"time-entry-notice\" id=\"teNotice\" role=\"status\" aria-live=\"polite\"></div>", index);
+    }
+
+    [Fact]
+    public void The_chip_script_is_not_deferred_so_the_shared_timer_read_exists_before_the_page_scripts()
+    {
+        var chip = File.ReadAllText(SourcePath("Views", "Shared", "_TimerChip.cshtml"));
+        var tag = Regex.Match(chip, @"<script src=""~/assets/js/shared/timer-chip\.js""[^>]*>").Value;
+        Assert.NotEmpty(tag);
+        Assert.DoesNotContain("defer", tag);
+    }
+
     [Fact]
     public void My_timesheet_has_its_nav_name_in_all_seven_languages()
     {
@@ -267,6 +331,23 @@ public sealed class TimeEntryViewContractTests
             Assert.Contains("<data name=\"Nav.Page.MYTIMESHEET\"", shared);
             Assert.Contains("<data name=\"Nav.Module.TIMEENTRY\"", shared);
         }
+    }
+
+    private static string RepoPath(params string[] relativeParts)
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null)
+        {
+            var candidate = Path.Combine(new[] { dir.FullName }.Concat(relativeParts).ToArray());
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            dir = dir.Parent;
+        }
+
+        throw new FileNotFoundException(string.Join('/', relativeParts));
     }
 
     private static string SourcePath(params string[] relativeParts)

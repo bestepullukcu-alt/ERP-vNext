@@ -141,7 +141,7 @@
   <data name="NoSuggestions" xml:space="preserve"><value>Aucune suggestion pour cette semaine.</value></data>
   <data name="AddSelected" xml:space="preserve"><value>Ajouter la sélection</value></data>
   <data name="InvalidDuration" xml:space="preserve"><value>Ce n’est pas une durée. Utilisez 1:30, 1,5, 1.5 ou 90m.</value></data>
-  <data name="RoundedTo" xml:space="preserve"><value>Arrondi au quart d’heure le plus proche : {value}.</value></data>
+  <data name="RoundedTo" xml:space="preserve"><value>Arrondi aux {step} minutes les plus proches : {value}.</value></data>
   <data name="NoticeMidnightTitle" xml:space="preserve"><value>Chronomètre arrêté à minuit</value></data>
   <data name="NoticeOutsideOpenWeekTitle" xml:space="preserve"><value>Temps du chronomètre sur une semaine verrouillée — demandez une correction</value></data>
   <data name="NoticeDraftPendingTitle" xml:space="preserve"><value>Temps du chronomètre pas encore dans le brouillon</value></data>
@@ -161,15 +161,15 @@
   <data name="MidnightNotice" xml:space="preserve"><value>Votre chronomètre a tourné jusqu’à minuit et a été arrêté. Vérifiez la journée d’hier dans Ma feuille de temps.</value></data>
   <data name="ErrGeneric" xml:space="preserve"><value>Une erreur s’est produite. Réessayez.</value></data>
   <data name="ErrForbidden" xml:space="preserve"><value>Vous n’avez pas l’autorisation pour cette action.</value></data>
-  <data name="ErrStepInvalid" xml:space="preserve"><value>Le temps doit être en quarts d’heure (15 minutes) et au plus 16 heures par saisie.</value></data>
+  <data name="ErrStepInvalid" xml:space="preserve"><value>Le temps se saisit par pas de {step} minutes, au plus {maxRowHours} heures par saisie.</value></data>
   <data name="ErrTimerDraftsUnavailable" xml:space="preserve"><value>Le temps du chronomètre n’a pas pu être repris dans le brouillon pour l’instant. Réessayez dans un moment.</value></data>
   <data name="ErrFutureDate" xml:space="preserve"><value>Impossible de saisir du temps pour un jour futur.</value></data>
   <data name="ErrDateOutsideWeek" xml:space="preserve"><value>Ce jour n’appartient pas à cette semaine.</value></data>
   <data name="ErrTargetInvalid" xml:space="preserve"><value>Cette tâche ne peut pas être utilisée — elle n’existe pas ou vous ne pouvez pas l’ouvrir.</value></data>
   <data name="ErrDuplicateRow" xml:space="preserve"><value>La même tâche ou catégorie apparaît deux fois le même jour.</value></data>
-  <data name="ErrNoteTooLong" xml:space="preserve"><value>Une note peut contenir au plus 500 caractères.</value></data>
+  <data name="ErrNoteTooLong" xml:space="preserve"><value>Une note peut contenir au plus {noteMax} caractères.</value></data>
   <data name="ErrCategoryInactive" xml:space="preserve"><value>Cette catégorie n’est plus active.</value></data>
-  <data name="ErrDayImplausible" xml:space="preserve"><value>Une journée ne peut pas dépasser 16 heures.</value></data>
+  <data name="ErrDayImplausible" xml:space="preserve"><value>Une journée ne peut pas dépasser {maxDayHours} heures.</value></data>
   <data name="ErrWeekKeyInvalid" xml:space="preserve"><value>Cette semaine n’a pas pu être lue.</value></data>
   <data name="ErrWeekNotFound" xml:space="preserve"><value>Cette semaine est introuvable.</value></data>
   <data name="ErrWeekNotOpen" xml:space="preserve"><value>Cette semaine n’est pas ouverte aux modifications.</value></data>
@@ -222,4 +222,12 @@
   <data name="TimeEntry.Category.TRAINING" xml:space="preserve"><value>Formation</value></data>
   <data name="TimeEntry.Category.SUPPORT" xml:space="preserve"><value>Support</value></data>
   <data name="TimeEntry.Category.TRAVEL" xml:space="preserve"><value>Déplacement</value></data>
+  <data name="NoticeTooSmall" xml:space="preserve"><value>« {typed} » minutes seraient arrondies à zéro ; la cellule a gardé sa valeur. Tapez 0 ou videz la cellule pour supprimer le temps.</value></data>
+  <data name="BareHoursRead" xml:space="preserve"><value>{typed} → {value} (lu en heures). Pour des minutes, tapez par ex. 15m.</value></data>
+  <data name="PendingRow" xml:space="preserve"><value>pas encore enregistrée</value></data>
+  <data name="PendingRowHint" xml:space="preserve"><value>Une ligne sans temps n’est pas enregistrée. Saisissez du temps sur un jour pour la garder.</value></data>
+  <data name="PendingRowsLeaveConfirm" xml:space="preserve"><value>Les lignes sans temps ne sont pas enregistrées et seront perdues. Quitter cette semaine quand même ?</value></data>
+  <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>Vous avez des modifications non enregistrées, et les lignes sans temps ne sont pas enregistrées. Quitter cette semaine quand même ?</value></data>
+  <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>Le temps capturé ne peut pas être corrigé à zéro. Corrigez-le à au moins {step} minutes et expliquez-le dans la note.</value></data>
+  <data name="SaveFailedKept" xml:space="preserve"><value>Le brouillon n’a pas été enregistré. Vos modifications sont toujours sur la page.</value></data>
 </root>
