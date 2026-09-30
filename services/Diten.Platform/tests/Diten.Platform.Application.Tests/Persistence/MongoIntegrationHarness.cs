@@ -50,7 +50,7 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
      * anything — the database must carry a marker THIS harness wrote.
      */
     private static readonly Guid RunId = Guid.NewGuid();
-    private static int _sweepStarted;
+    private static readonly RunOnceGate SweepGate = new();
     private static SweepReport? _sweepReport;
 
     /// <summary>What the start-of-run sweep did. Null until it has run.</summary>
@@ -170,12 +170,23 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
         {
             foreach (var profile in profiles.Distinct())
             {
-                if (!AppliedSchemas.Add($"{databaseName}:{profile}"))
+                var key = $"{databaseName}:{profile}";
+                if (AppliedSchemas.Contains(key))
                 {
                     continue;
                 }
 
-                await PlatformSchemaManifest.ApplyAsync(database, new[] { profile });
+                await ApplyProfileHealingResidueAsync(database, profile);
+
+                /*
+                 * ⚠ BL-482: REMEMBERED ONLY AFTER IT SUCCEEDED. This used to be recorded BEFORE the build, so one
+                 * failed build (a duplicate-key residue, a database dropped underneath it) marked the profile as
+                 * applied and every later class in the run silently got collections with NO unique indexes —
+                 * which is exactly how "the real unique index refuses a duplicate" tests came to insert
+                 * duplicates that were accepted and stayed. A failed build now fails the next class that asks
+                 * too, loudly, instead of handing it a database without its guarantees.
+                 */
+                AppliedSchemas.Add(key);
             }
         }
         finally
@@ -184,8 +195,66 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Builds one profile into a harness-owned database. If the build fails on DUPLICATE KEYS, the offending rows
+    /// are test residue by construction (see <see cref="MongoSchemaResidueHealer"/>): they are removed, what was
+    /// removed is written to stderr, and the build is retried ONCE. Returns the heal report, or null when the
+    /// first build succeeded. Any other failure, a refusal to heal, or a failed retry is thrown, loudly.
+    ///
+    /// Internal so the heal can be proved directly (MongoSchemaResidueHealerMongoTests); the harness calls it
+    /// under <see cref="SchemaGate"/>.
+    /// </summary>
+    internal static async Task<SchemaHealReport?> ApplyProfileHealingResidueAsync(IMongoDatabase database, SchemaProfile profile)
+    {
+        try
+        {
+            await PlatformSchemaManifest.ApplyAsync(database, new[] { profile });
+            return null;
+        }
+        catch (Exception firstFailure) when (MongoSchemaResidueHealer.IsDuplicateKeyFailure(firstFailure))
+        {
+            var report = await MongoSchemaResidueHealer.RemoveDuplicateKeyResidueAsync(database, profile, RunId);
+            if (report.Refusal is not null)
+            {
+                throw new InvalidOperationException(
+                    $"{firstFailure.Message} [BL-482: not healed — {report.Refusal}]", firstFailure);
+            }
+
+            foreach (var healed in report.Healed)
+            {
+                Console.Error.WriteLine(
+                    $"[MongoIntegrationHarness] BL-482 removed {healed.RowsRemoved} residue row(s) "
+                    + $"({healed.DuplicateKeys} duplicated key(s)) blocking unique index '{healed.Index}' on "
+                    + $"'{report.DatabaseName}.{healed.Collection}'; sample keys: {string.Join(" | ", healed.SampleKeys)}");
+            }
+
+            try
+            {
+                await PlatformSchemaManifest.ApplyAsync(database, new[] { profile });
+            }
+            catch (Exception retryFailure)
+            {
+                throw new InvalidOperationException(
+                    $"[MongoIntegrationHarness] BL-482: the {profile} schema build still failed after removing "
+                    + $"{report.RowsRemoved} duplicate-key residue row(s) from '{report.DatabaseName}' "
+                    + $"(first failure: {firstFailure.Message}): {retryFailure.Message}",
+                    retryFailure);
+            }
+
+            Console.Error.WriteLine(
+                $"[MongoIntegrationHarness] BL-482 healed '{report.DatabaseName}' ({profile}): "
+                + $"{report.RowsRemoved} residue row(s) removed, schema build retried once and succeeded.");
+            return report;
+        }
+    }
+
     /*
      * Runs at most once per process, and never throws into a test.
+     *
+     * ⚠ BL-482: EVERY CALLER WAITS FOR IT TO FINISH. The sweep can drop the SHARED database (when its marker is
+     * older than the residue window, i.e. the first run after an idle hour). A caller that went on to stamp and
+     * build that database while the sweep was still running had its indexes dropped underneath it — see
+     * RunOnceGate for the measured failure.
      *
      * ⚠ A CLEANUP FAILURE MUST NOT BE REPORTED AS A TEST FAILURE. If this threw, the first test to construct
      * a harness would go red for a reason that has nothing to do with it, and the real defect underneath
@@ -193,14 +262,23 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
      * MongoResidueSweeperTests asserts that a failing drop is reported rather than swallowed AND rather than
      * propagated.
      */
-    private static async Task SweepResidueOnceAsync(IMongoClient client)
+    private static Task SweepResidueOnceAsync(IMongoClient client)
+        => SweepGate.RunAsync(() => SweepResidueAndReportAsync(client));
+
+    private static async Task SweepResidueAndReportAsync(IMongoClient client)
     {
-        if (Interlocked.Exchange(ref _sweepStarted, 1) == 1)
+        SweepReport report;
+        try
         {
-            return;
+            report = await MongoResidueSweeper.SweepAsync(client, RunId, DateTime.UtcNow);
+        }
+        catch (Exception ex)
+        {
+            // SweepAsync already returns its problems instead of throwing; this is the belt to that brace, because
+            // a faulted sweep task would now be awaited by EVERY harness in the run.
+            report = new SweepReport(Array.Empty<string>(), new[] { $"sweep threw: {ex.Message}" });
         }
 
-        var report = await MongoResidueSweeper.SweepAsync(client, RunId, DateTime.UtcNow);
         _sweepReport = report;
 
         if (report.Dropped.Count > 0)

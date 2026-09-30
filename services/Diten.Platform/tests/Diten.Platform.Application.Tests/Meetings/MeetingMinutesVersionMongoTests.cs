@@ -46,16 +46,30 @@ public sealed class MeetingMinutesVersionMongoTests : IAsyncLifetime
     /// <summary>AC6 proof (c) — drop <c>ux_meeting_minutes_versions_tenant_meeting_version</c> from
     /// <c>PlatformSchemaManifest.Meetings.cs</c> and this test goes red: the second insert would succeed
     /// instead of being refused, and <see cref="MeetingMinutesVersionRepository.TryCreateAsync"/> would return
-    /// the SAME (non-null) row it returns for the first.</summary>
+    /// the SAME (non-null) row it returns for the first.
+    ///
+    /// ⚠ BL-482: it proves the index EXISTS before it writes the duplicate, and it removes its own tenant's rows
+    /// whatever happens — measured 2026-10-01: with the index missing, the second v1 was accepted and stayed in the
+    /// shared database, and the next run's schema build failed with E11000 on this collection.</summary>
     [Fact]
     public async Task A_second_v1_for_the_same_meeting_is_refused_by_the_real_unique_index()
     {
-        var first = await _repository.TryCreateAsync(Row(1));
-        Assert.NotNull(first);
+        var raw = _harness.Database.GetCollection<MeetingMinutesVersion>(PlatformCollections.MeetingMinutesVersions);
+        await UniqueIndexPrecondition.RequireAsync(raw, "ux_meeting_minutes_versions_tenant_meeting_version");
 
-        var second = await _repository.TryCreateAsync(Row(1));
+        try
+        {
+            var first = await _repository.TryCreateAsync(Row(1));
+            Assert.NotNull(first);
 
-        Assert.Null(second);
+            var second = await _repository.TryCreateAsync(Row(1));
+
+            Assert.Null(second);
+        }
+        finally
+        {
+            await raw.DeleteManyAsync(Builders<MeetingMinutesVersion>.Filter.Eq(x => x.TenantId, _harness.TenantId));
+        }
     }
 
     [Fact]

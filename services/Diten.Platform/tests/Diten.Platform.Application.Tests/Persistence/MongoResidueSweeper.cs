@@ -66,6 +66,13 @@ public static class MongoResidueSweeper
         new($"^{OwnedPrefix}(_[a-z0-9]+)*$", System.Text.RegularExpressions.RegexOptions.Compiled);
 
     /// <summary>
+    /// Condition 1 on its own: could this harness have produced this database name? Shared with
+    /// <see cref="MongoSchemaResidueHealer"/> (BL-482), the second delete path in this harness, so both answer
+    /// "is this ours?" with the SAME grammar — never a second, looser copy of it.
+    /// </summary>
+    public static bool IsOwnedName(string databaseName) => OwnedName.IsMatch(databaseName);
+
+    /// <summary>
     /// The whole decision, as a pure function, so every rule below can be proved without a live server.
     /// ALL FOUR conditions must hold. Any one of them missing means keep.
     /// </summary>
@@ -192,7 +199,7 @@ public static class MongoResidueSweeper
             new ReplaceOptions { IsUpsert = true },
             cancellationToken);
 
-    private static async Task<HarnessMarker?> ReadMarkerAsync(
+    internal static async Task<HarnessMarker?> ReadMarkerAsync(
         IMongoDatabase database,
         CancellationToken cancellationToken)
     {
