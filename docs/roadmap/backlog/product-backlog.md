@@ -7123,7 +7123,7 @@ Gelecek regresyon riski: 🟢.
 DURUM: AÇIK · SAHİP: CT (Görev Merkezi takvimi) · BULAN: T2b kabulü · KAYIT: 2026-09-30
 
 "a drop on an EMPTY hour lands on the slot row" testi tam koşuda (3 772 test) bir kez kırmızı, tek başına 3/3 yeşil. Yük altında zamanlamaya bağlı; bilinen
-24 kırmızının dışında görünürse bu kayıt. İş: testin beklediği çizim/zamanlayıcıyı açıkça bekle. Gelecek regresyon riski: 🟢.
+24 kırmızının dışında görünürse bu kayıt. İş: testin beklediği çizim/zamanlayıcıyı açıkça bekle. Gelecek regresyon riski: 🟢. **Ölçüm 2026-10-01 (CT):** dosya 6 paralel süreçle 3 tur (18 koşu) → 18/18 yeşil; T3 ve BL-482 tam koşularında da çıkmadı. Tekrar görülürse tam çıktı saklanıp buraya eklenir.
 
 
 ### BL-488
