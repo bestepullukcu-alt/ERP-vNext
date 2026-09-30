@@ -62,12 +62,8 @@ public sealed class TimeEntryMongoFixture : IAsyncLifetime
         PlatformTestSerializers.Register();
         _mongo = await DisposableStandaloneMongo.StartAsync();
 
-        var settings = MongoClientSettings.FromConnectionString($"mongodb://127.0.0.1:{_mongo.Port}/?directConnection=true");
-#pragma warning disable CS0618
-        settings.GuidRepresentation = MongoDB.Bson.GuidRepresentation.Standard;
-#pragma warning restore CS0618
-        var client = new MongoClient(settings);
-        Database = client.GetDatabase("diten_platform_standalone_time_entry");
+        var client = new MongoClient(ClientSettings());
+        Database = client.GetDatabase(DatabaseName);
         DbContext = new PlatformDbContext(client, Database);
 
         await PlatformSchemaManifest.ApplyAsync(Database,
@@ -75,6 +71,30 @@ public sealed class TimeEntryMongoFixture : IAsyncLifetime
             SchemaProfile.TimeEntry, SchemaProfile.WorkflowWorkCenter, SchemaProfile.Eventing, SchemaProfile.Organization,
             SchemaProfile.Meetings, SchemaProfile.Notification
         ]);
+    }
+
+    private const string DatabaseName = "diten_platform_standalone_time_entry";
+
+    private MongoClientSettings ClientSettings()
+    {
+        var settings = MongoClientSettings.FromConnectionString($"mongodb://127.0.0.1:{_mongo!.Port}/?directConnection=true");
+#pragma warning disable CS0618
+        settings.GuidRepresentation = MongoDB.Bson.GuidRepresentation.Standard;
+#pragma warning restore CS0618
+        return settings;
+    }
+
+    /// <summary>
+    /// BL-484 — the SAME disposable database through a client that reports every command it sends to
+    /// <paramref name="onCommand"/>: how a test counts the reads a request really makes on the wire (a repository
+    /// decorator would only count calls, not round trips).
+    /// </summary>
+    public IPlatformDbContext ObservedDbContext(Action<MongoDB.Driver.Core.Events.CommandStartedEvent> onCommand)
+    {
+        var settings = ClientSettings();
+        settings.ClusterConfigurator = cluster => cluster.Subscribe(onCommand);
+        var client = new MongoClient(settings);
+        return new PlatformDbContext(client, client.GetDatabase(DatabaseName));
     }
 
     public async Task DisposeAsync()

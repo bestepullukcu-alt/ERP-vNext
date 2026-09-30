@@ -230,11 +230,34 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
         var filter = Builders<ApprovalTask>.Filter.And(
             ExecutionFilter,
             Builders<ApprovalTask>.Filter.Eq(x => x.WorkflowInstanceId, workflowInstanceId),
-            Builders<ApprovalTask>.Filter.In(
-                x => x.Status,
-                [ApprovalTaskStatus.WaitingApproval, ApprovalTaskStatus.WaitingEvidence]));
-        return Collection.Find(filter).SortByDescending(x => x.CreatedAt).FirstOrDefaultAsync(ct)!;
+            ActiveStatuses);
+        // Newest first; two open tasks created in the same instant are told apart by id (BL-484 L2) — the batched read
+        // below uses the same order, so both name the same task.
+        return Collection.Find(filter).SortByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id).FirstOrDefaultAsync(ct)!;
     }
+
+    public async Task<IReadOnlyList<ApprovalTask>> ListActiveByInstanceIdsAsync(
+        IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)
+    {
+        if (workflowInstanceIds.Count == 0)
+        {
+            return [];
+        }
+
+        // The same filter and the same order as GetActiveByInstanceIdAsync (newest first, then by id), over all the
+        // instances at once: the first task listed for an instance is the one the single read answers.
+        var filter = Builders<ApprovalTask>.Filter.And(
+            ExecutionFilter,
+            Builders<ApprovalTask>.Filter.In(x => x.WorkflowInstanceId, workflowInstanceIds),
+            ActiveStatuses);
+        return await Collection.Find(filter).SortByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id).ToListAsync(ct);
+    }
+
+    /// <summary>An approval task still waiting on someone — what "active" means for a single and a batched read.</summary>
+    private static FilterDefinition<ApprovalTask> ActiveStatuses
+        => Builders<ApprovalTask>.Filter.In(
+            x => x.Status,
+            [ApprovalTaskStatus.WaitingApproval, ApprovalTaskStatus.WaitingEvidence]);
 
     public async Task<IReadOnlyList<ApprovalTask>> ListByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default)
     {

@@ -93,13 +93,29 @@ public sealed class TimesheetWeekRepository : TenantRepository<TimesheetWeek>, I
     }
 
     public async Task<IReadOnlyList<TimesheetWeek>> ListSubmittedForApproverAsync(Guid approverUserId, CancellationToken ct = default)
+        => await Collection.Find(SubmittedForApprover(approverUserId)).SortBy(x => x.SubmittedAtUtcTicks).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<TimesheetWeek>> ListSubmittedForApproverByIdsAsync(
+        Guid approverUserId, IReadOnlyCollection<Guid> weekIds, CancellationToken ct = default)
     {
+        if (weekIds.Count == 0)
+        {
+            return [];
+        }
+
         var filter = Builders<TimesheetWeek>.Filter.And(
+            SubmittedForApprover(approverUserId),
+            Builders<TimesheetWeek>.Filter.In(x => x.Id, weekIds));
+        return await Collection.Find(filter).SortBy(x => x.SubmittedAtUtcTicks).ToListAsync(ct);
+    }
+
+    /// <summary>The approver's queue — ONE rule for the whole list and for the by-id read (BL-484): submitted, and
+    /// assigned to this person by MOD-0023.</summary>
+    private FilterDefinition<TimesheetWeek> SubmittedForApprover(Guid approverUserId)
+        => Builders<TimesheetWeek>.Filter.And(
             ExecutionFilter,
             Builders<TimesheetWeek>.Filter.Eq(x => x.Status, TimesheetWeekStatus.Submitted),
             Builders<TimesheetWeek>.Filter.Eq(x => x.AssignedApproverUserId, approverUserId));
-        return await Collection.Find(filter).SortBy(x => x.SubmittedAtUtcTicks).ToListAsync(ct);
-    }
 
     public async Task<IReadOnlyList<TimesheetWeek>> ListNeedingFinalizationAsync(int limit, CancellationToken ct = default)
     {
@@ -164,6 +180,19 @@ public sealed class TimeEntryRepository : TenantRepository<TimeEntry>, ITimeEntr
         var filter = Builders<TimeEntry>.Filter.And(
             ExecutionFilter,
             Builders<TimeEntry>.Filter.Eq(x => x.TimesheetWeekId, timesheetWeekId));
+        return await Collection.Find(filter).SortBy(x => x.LocalDate).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<TimeEntry>> ListByWeekIdsAsync(IReadOnlyCollection<Guid> timesheetWeekIds, CancellationToken ct = default)
+    {
+        if (timesheetWeekIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<TimeEntry>.Filter.And(
+            ExecutionFilter,
+            Builders<TimeEntry>.Filter.In(x => x.TimesheetWeekId, timesheetWeekIds));
         return await Collection.Find(filter).SortBy(x => x.LocalDate).ToListAsync(ct);
     }
 
@@ -513,6 +542,26 @@ public sealed class TimerSegmentRepository : TenantRepository<TimerSegment>, ITi
             Builders<TimerSegment>.Filter.Eq(x => x.UserId, userId),
             Builders<TimerSegment>.Filter.Eq(x => x.LocalDate, localDate),
             Builders<TimerSegment>.Filter.Eq(x => x.StopReason, TimerStopReason.LocalMidnight));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<TimerSegment>> ListClosedAtMidnightForWeeksAsync(
+        IReadOnlyCollection<(Guid UserId, string WeekKey)> weeks, CancellationToken ct = default)
+    {
+        if (weeks.Count == 0)
+        {
+            return [];
+        }
+
+        // One clause per (person, week) — exact pairs, each served by the tenant/user/week index; never the cross product
+        // of the people and the weeks, which would hand one person's other week to the page.
+        var pairs = Builders<TimerSegment>.Filter.Or(weeks.Distinct().Select(week => Builders<TimerSegment>.Filter.And(
+            Builders<TimerSegment>.Filter.Eq(x => x.UserId, week.UserId),
+            Builders<TimerSegment>.Filter.Eq(x => x.WeekKey, week.WeekKey))));
+        var filter = Builders<TimerSegment>.Filter.And(
+            ExecutionFilter,
+            Builders<TimerSegment>.Filter.Eq(x => x.StopReason, TimerStopReason.LocalMidnight),
+            pairs);
         return await Collection.Find(filter).ToListAsync(ct);
     }
 

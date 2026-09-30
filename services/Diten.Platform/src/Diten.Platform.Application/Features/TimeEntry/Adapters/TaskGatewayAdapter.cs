@@ -37,12 +37,13 @@ public sealed class TaskGatewayAdapter : ITimeEntryTaskGateway
             return readable;
         }
 
-        foreach (var task in await _tasks.ListByIdsAsync(taskIds.Distinct().ToList(), ct))
+        // BL-484 — the rule asked ONCE for all of them (its batched form: the same legs, the reads shared), never once per
+        // task.
+        var tasks = await _tasks.ListByIdsAsync(taskIds.Distinct().ToList(), ct);
+        var admitted = await _readAccess.ReadableTaskIdsAsync(tasks, userId, ct);
+        foreach (var task in tasks.Where(t => admitted.Contains(t.Id)))
         {
-            if (await _readAccess.CanReadAsync(task, userId, ct))
-            {
-                readable[task.Id] = Summary(task);
-            }
+            readable[task.Id] = Summary(task);
         }
 
         return readable;

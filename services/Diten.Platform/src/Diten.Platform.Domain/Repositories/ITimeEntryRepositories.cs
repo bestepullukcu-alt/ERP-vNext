@@ -31,6 +31,12 @@ public interface ITimesheetWeekRepository
     /// <summary>Submitted revisions MOD-0023 assigned to <paramref name="approverUserId"/>, oldest submission first.</summary>
     Task<IReadOnlyList<TimesheetWeek>> ListSubmittedForApproverAsync(Guid approverUserId, CancellationToken ct = default);
 
+    /// <summary>BL-484 — the same rule as <see cref="ListSubmittedForApproverAsync"/>, narrowed to <paramref name="weekIds"/>:
+    /// an id that is not a submitted revision assigned to <paramref name="approverUserId"/> is simply absent. One read,
+    /// however long the approver's queue is.</summary>
+    Task<IReadOnlyList<TimesheetWeek>> ListSubmittedForApproverByIdsAsync(
+        Guid approverUserId, IReadOnlyCollection<Guid> weekIds, CancellationToken ct = default);
+
     /// <summary>The sweep's work list (BL-479): FIRST the approved revisions whose task totals were never applied (F12),
     /// then — with whatever is left of <paramref name="limit"/> — the submitted revisions that carry a MOD-0023 instance,
     /// oldest submission first. Two queries, in that order, so a backlog of undecided weeks can never starve an approved
@@ -47,6 +53,9 @@ public interface ITimeEntryRepository
     Task<TimeEntry> CreateAsync(TimeEntry entry, CancellationToken ct = default);
 
     Task<IReadOnlyList<TimeEntry>> ListByWeekAsync(Guid timesheetWeekId, CancellationToken ct = default);
+
+    /// <summary>BL-484 — <see cref="ListByWeekAsync"/> for several revisions in ONE read (the approvals page).</summary>
+    Task<IReadOnlyList<TimeEntry>> ListByWeekIdsAsync(IReadOnlyCollection<Guid> timesheetWeekIds, CancellationToken ct = default);
 
     /// <summary>One live row, or null when it does not exist in this tenant or was removed.</summary>
     Task<TimeEntry?> GetByIdAsync(Guid id, CancellationToken ct = default);
@@ -151,6 +160,11 @@ public interface ITimerSegmentRepository
 
     /// <summary>Segments of one person's closed midnight closes on one day — the "your timer ran until midnight" banner.</summary>
     Task<IReadOnlyList<TimerSegment>> ListClosedAtMidnightAsync(Guid userId, DateOnly localDate, CancellationToken ct = default);
+
+    /// <summary>BL-484 — the segments a midnight close ended (D3), for several (person, ISO week) pairs in ONE read: the
+    /// approvals page's "cut at midnight" mark. Exactly the pairs named — never another week of the same person.</summary>
+    Task<IReadOnlyList<TimerSegment>> ListClosedAtMidnightForWeeksAsync(
+        IReadOnlyCollection<(Guid UserId, string WeekKey)> weeks, CancellationToken ct = default);
 
     /// <summary>Claims the one notification of a midnight close (null → now). <c>false</c> when it was already claimed.</summary>
     Task<bool> TryClaimAutoCloseNotificationAsync(Guid segmentId, DateTimeOffset claimedAtUtc, CancellationToken ct = default);
