@@ -879,3 +879,190 @@ amendment; gateway changes; live acceptance; and any runtime/test/build/Mongo/Gi
 A1a implementation/evidence is complete, subject to the stated parent-referenceability limitation. A1b has no
 code-start until its producer/transport, durable outcome/audit and startup-migration writer decisions are explicitly
 approved. No `ready-for-dev`, all-writer-fence, Production or live-acceptance claim is granted.
+
+### 21.8 FG-A1B-A2-EXECUTION-CONTRACT-03 v1 — A1b Phase 1.5 recommendation
+
+This is a planning-only, owner-approval candidate. It supersedes §21.4/§21.5 only where those paragraphs left the
+A1b transport, durable outcome and migration disposition undecided. It does not reopen the completed A1a ordinary
+`PUT`/25-field CAS slice, change its evidence, enlarge A0 Replace authority, or authorize runtime/test work.
+
+#### Three owner decisions
+
+1. **Transport (recommended): retain the three bodyless routes and use strong request headers.** `PATCH
+   /api/legal-entities/{id}/suspend`, `PATCH /api/legal-entities/{id}/archive`, and `DELETE
+   /api/legal-entities/{id}` keep their method/route and carry no request DTO. Each has exactly one `If-Match` header
+   containing a quoted, strong, canonical non-negative decimal version (for example `"17"`), and exactly one
+   `Idempotency-Key` containing a canonical non-empty GUID `D` value. `Idempotency-Key` is the stable `CommandId`:
+   the screen creates it once for a confirmed human intent, retains it for every transport or ambiguous-outcome retry,
+   and creates a new value only after a terminal exact outcome or a new user intent. Wildcard, weak, list, whitespace,
+   missing, malformed or duplicate `If-Match`; missing, malformed or duplicate `Idempotency-Key`; and any non-empty
+   request body are `400` before MediatR, authority, lease, repository or audit work. A stale visible version and any
+   `CommandId` drift are `409`; foreign/missing/soft-deleted targets retain the existing non-disclosing `404`; existing
+   authentication and outer permission remain unchanged. An exact committed replay returns the original `204` with no
+   new mutation; an unresolved commit returns `202` with a stable reconciliation-required error, never a new command.
+   This recommendation is intentionally not a runtime approval.
+2. **Outcome (recommended, explicit storage gate): use a separate tenant-owned immutable contraction-operation
+   journal, not a bounded array in `LegalEntity` and not best-effort audit.** It must have one unique replay identity
+   `(TenantId, CommandId)` and bind `LegalEntityId`, operation, expected version, canonical actor/permission,
+   mutation/proof fingerprints, pre/post semantic facts and terminal result. The one Mongo transaction performs the
+   qualified rollout token/generation write, lifecycle CAS or soft delete, immutable journal insert and any separate
+   audit intent; audit forwarding or compaction cannot be proof of, delete or rewrite the journal. Exact replay and
+   ambiguous recovery use an authorized tenant-scoped journal read plus an including-deleted Legal Entity read-back.
+   This avoids losing Delete replay behind normal soft-delete filters and avoids unbounded aggregate BSON growth.
+   The journal document itself has bounded proof/result fields and a 1 MiB fail-closed pre-write check; there is no
+   TTL, automatic purge or audit-compaction substitution before the retention owner approves one. The new
+   collection, its single unique index, owner and retention policy require an explicit data/persistence amendment;
+   they are not assumed by this pack.
+3. **Migration (recommended): retire/default-disable startup execution and move any conversion to one separately
+   approved, operator-owned maintenance boundary.** `LegalEntityOperationalStatusMigration` is not an A1b writer and
+   must not run concurrently with normal writers. A future one-shot run may map only legacy-only records
+   (`LifecycleStatus` present and `OperationalStatus` absent) with exact predicates and run evidence. If both fields
+   agree, whether to remove the legacy field is a separate disposition; if they conflict, or the legacy value is
+   unknown, it must make no silent operational-status change (including no silent Draft fallback) and must be
+   quarantined/manual. This says nothing about whether any such records exist. Re-run safety needs exact predicates
+   and exclusive operational scheduling; it does not claim Mongo transaction atomicity with an external writer.
+
+#### Frozen transport and application shapes if decision 1 is approved
+
+The current controller routes and MVC/JS callers are bodyless. The screen must capture the displayed `Version` with
+the selected row/detail record before confirmation; absence means no lifecycle request. MVC may forward only the two
+validated header names and their one canonical values to the Gateway. It must continue to create outbound auth and
+tenant context itself, and must not pass through inbound `Authorization`, `X-Tenant-Id`, `Host`, cookies or arbitrary
+headers. The recommended API/application shapes are:
+
+```csharp
+// Existing three routes; no [FromBody] parameter.
+Suspend(Guid legalEntityId, [FromHeader(Name = "If-Match")] string ifMatch,
+        [FromHeader(Name = "Idempotency-Key")] string commandId, CancellationToken cancellationToken)
+Archive(Guid legalEntityId, [FromHeader(Name = "If-Match")] string ifMatch,
+        [FromHeader(Name = "Idempotency-Key")] string commandId, CancellationToken cancellationToken)
+Delete(Guid legalEntityId, [FromHeader(Name = "If-Match")] string ifMatch,
+       [FromHeader(Name = "Idempotency-Key")] string commandId, CancellationToken cancellationToken)
+
+public sealed record SuspendLegalEntityCommand(Guid LegalEntityId, Guid CommandId, int ExpectedVersion);
+public sealed record ArchiveLegalEntityCommand(Guid LegalEntityId, Guid CommandId, int ExpectedVersion);
+public sealed record DeleteLegalEntityCommand(Guid LegalEntityId, Guid CommandId, int ExpectedVersion);
+public sealed record LegalEntityContractionWriteOutcome(
+    LegalEntityContractionOutcomeKind Kind, Guid CommandId, int? CommittedVersion = null);
+public sealed record LegalEntityContractionReconciliationResponse(
+    Guid CommandId, string ErrorCode);
+```
+
+The controller canonicalizes the two headers before constructing a command; the handler never treats header text,
+tenant, actor, permission, operation or fingerprint as caller-trusted. The separately named foreground provider and
+guarded session remain A1b-only:
+
+```csharp
+Task<LegalEntityVerifiedWriterAuthority?> ResolveForegroundContractionAsync(
+    LegalEntityMutationIdentity mutation, CancellationToken cancellationToken = default);
+Task<LegalEntityContractionWriteOutcome> ApplyAsync(
+    LegalEntityVerifiedWriterAuthority authority, ProductLegalEntityScopeWriterLease lease,
+    CancellationToken cancellationToken = default);
+```
+
+`LegalEntityMutationIdentity` binds route ID, one operation, `CommandId`, expected version and canonical mutation
+fingerprint. The provider derives tenant, human actor and exact existing permission (`update` for Suspend/Archive;
+`delete` for Delete); a lease, workflow claim or service identity is not this authority. The guarded transaction
+rechecks tenant, token, generation, Mongo-server-time expiry and all bound facts before its physical write. Qualified
+release occurs only after verified committed or verified zero-mutation read-back. Stale/expired/generation-mismatched
+qualification and ambiguous/contradictory read-back retain the lease; there is no `finally` release, takeover, blind
+unlock, lease extension or second lease.
+
+The controller maps `Committed` and `ExactReplay` outcomes to `204 No Content`; it maps only
+`ReconciliationRequired` to `202 Accepted` with the normal `Response<LegalEntityContractionReconciliationResponse>`
+envelope, the stable error code `legal_entity_contraction_reconciliation_required`, and the same `CommandId`.
+`202` never represents a successful business mutation and is not replay proof; the client keeps the same key while
+reconciliation reads the immutable outcome. Validation, authorization, target-not-found and drift retain the statuses
+stated above and never synthesize this result.
+
+#### Runtime/test allow-list and sequence (proposal only)
+
+The first cohesive future slice is **A1b foreground lifecycle**, after all three decisions above are expressly
+approved: the three commands/validators/handlers; Legal Entity authority, identity, guarded session and outcome;
+`ILegalEntityRepository`/implementation; the gated operation-journal interface/implementation/index; Application,
+Persistence and Infrastructure DI; API lifecycle controller; MVC proxy; `index.js`, `details.js` and their lifecycle
+tests. It excludes Update/Create/Activate, `RepositoryBase`, A0 type changes, Gateway, central-audit mapping and A2.
+The proposed test allow-list is `LegalEntityCommandTests`, `InMemoryLegalEntityRepository`,
+`LegalEntityWriterAuthorityTests`, `LegalEntityScopeWriteFenceMongoTests`, controller-permission/DI tests,
+`ProductLegalEntityScopeWriteAdmissionContractTests` (inventory only),
+`services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/AuditForwardingBehaviorTests.cs`, and frontend
+`legal-entities.test.js`.
+
+Required RED/GREEN cases are: each operation's tenant CAS/outcome transaction; header cardinality/body rejection;
+screen-version and stable-command retry; current permission/tenant denial; stale token, generation and server-time
+expiry with zero business mutation and retained lease; rollback; exact replay versus actor/operation/version/fingerprint
+drift; ambiguous commit exact read-back; Delete replay/read-back after soft delete; one-winner concurrency; direct
+bypass denial; qualified release only; and a stale A1a edit unable to restore lifecycle/delete state. These are planned
+assertions, not observed results. Frontend/MVC producer work may proceed in parallel with backend implementation only
+after decision 1 is frozen; persistence/session/journal/DI share a single backend writer. Migration DI work conflicts
+with that backend writer and stays separate until decision 3.
+
+**Agent Verdict:** `A1b CONDITIONAL / BLOCKED — PLANNING ONLY`. The recommended route-preserving header and immutable
+journal choices give a bounded implementation seam, but the journal storage/index/retention and migration maintenance
+authority remain explicit approval gates; this section grants neither code-start nor runtime authority.
+
+### 21.9 FG-A1B-A2-EXECUTION-CONTRACT-03 v1.1 — A1b journal and exact path completion
+
+This completes only the previously open journal physical contract and A1b path inventory. Every item remains a
+proposal pending the same explicit data/persistence and Legal Entity owner approval; no collection, index, runtime
+file, test or retention process is authorized by documenting it.
+
+#### Proposed immutable journal physical contract
+
+The proposed new collection is **`mdm_legal_entity_contraction_operations`**. It is a tenant-owned, insert-only
+technical operation store, not `LegalEntity`, not the FU03 rollout document and not an audit aggregate. The proposed
+`LegalEntityContractionOperation : EntityBase` stores exactly these fields in addition to EntityBase technical fields:
+
+| Field | Type / bound | Purpose |
+|---|---|---|
+| `CommandId` | non-empty `Guid` | Stable idempotency/replay identity. |
+| `LegalEntityId` | non-empty `Guid` | Bound target; never a lookup substitute. |
+| `Operation` | closed enum: `Suspend`, `Archive`, `Delete` | Exact lifecycle intent. |
+| `ExpectedVersion`, `PreVersion`, `PostVersion` | non-negative `int` | CAS and exact resulting-version evidence. |
+| `PreOperationalStatus`, `PostOperationalStatus` | `LegalEntityOperationalStatus` | Semantic transition evidence. |
+| `PreIsDeleted`, `PostIsDeleted` | `bool` | Makes soft-delete replay explicit. |
+| `ActorId` | non-empty `Guid` | Canonical human actor, derived server-side. |
+| `PermissionKey` | exact current key; maximum 128 characters | `mdm.legal-entities.update` or `mdm.legal-entities.delete`. |
+| `MutationFingerprint`, `AuthorityProofFingerprint`, `OutcomeFingerprint` | uppercase/lowercase canonical SHA-256 hex, exactly 64 characters each | Bind request facts, authority evidence and terminal result without storing credentials, headers or raw lease token. |
+| `LeaseGeneration` | positive `long` | Ordering evidence only; no lease token/blob is persisted. |
+| `Outcome` | closed enum: `Committed` | An inserted row is the immutable committed proof; unresolved outcomes create no invented terminal row. |
+| `CommittedAtUtc`, `ReplayUntilUtc`, `RetentionReviewNotBeforeUtc` | UTC `DateTimeOffset` | Server-derived terminal and policy timestamps. |
+
+The one and only bootstrap index is `{ TenantId: 1, CommandId: 1 }` with
+`new CreateIndexOptions { Unique = true, Name = "ux_mdm_legal_entity_contraction_operations_tenant_command" }`.
+It has **no** partial filter, TTL option or `IsDeleted` predicate: a soft-deleted/tombstoned technical row must not
+free a replay key. No secondary index is proposed; an authorized query that proves one is needed must amend the index
+budget separately. The journal uses `IsDeleted = false` for its entire approved lifetime and admits no replacement,
+adoption or mutation of the outcome fields.
+
+The complete BSON document, measured from the final serialized candidate inside the same transaction before insert,
+must be at most **1,048,576 bytes**. The three hashes are fixed at 64 characters; `PermissionKey` is at most 128;
+no raw JSON, body, header, JWT, credential, lease token, stack trace, audit payload or unbounded collection is stored.
+Oversize, malformed or incomplete evidence is a zero-business-write failure, not a truncated outcome. This is a
+document bound, not a claim about the MongoDB 16 MiB hard limit.
+
+**Replay and retention recommendation:** exact replay is available for **30 calendar days** after `CommittedAtUtc`
+(`ReplayUntilUtc` inclusive). A same-key request after that time is a no-mutation `409` expired-command conflict, not
+a new intent; a user must refresh and create a different `CommandId`. The immutable record is retained for at least
+**365 calendar days** (`RetentionReviewNotBeforeUtc`) to preserve the non-reusable key and post-delete evidence.
+There is no TTL index, automatic purge or audit-compaction action. After that date the default remains retain; any
+manual/legal purge needs a separate retention/compliance amendment that preserves non-reuse proof (for example a
+durable tombstone), states legal-hold/redaction behavior and does not turn best-effort audit into replay evidence.
+The data/persistence owner owns collection/serializer/index/transaction/read-back; the Legal Entity owner owns
+semantic fields and including-deleted replay; retention/compliance owns the 30/365 policy and any later purge; the
+audit owner participates only if a separately approved central mapping is chosen.
+
+#### Complete A1b runtime/test candidate allow-list
+
+Only the following files are in the proposed A1b implementation slice; **existing** and **new** are intentional
+classifications, not current write authority.
+
+| Classification | Exact paths |
+|---|---|
+| Existing runtime | `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/LegalEntitiesController.cs`; `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/LegalEntityModels.cs`; `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Commands/SuspendLegalEntityCommand.cs`; `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Commands/ArchiveLegalEntityCommand.cs`; `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Commands/DeleteLegalEntityCommand.cs`; `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Handlers/CommandHandlers/SuspendLegalEntityHandler.cs`; `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Handlers/CommandHandlers/ArchiveLegalEntityHandler.cs`; `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Handlers/CommandHandlers/DeleteLegalEntityHandler.cs`; `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Validators/LegalEntityCommandValidators.cs`; `services/Diten.MdmService/src/Diten.MdmService.Application/Behaviors/AuditForwardingBehavior.cs`; `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/ILegalEntityRepository.cs`; `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/LegalEntityRepository.cs`; `services/Diten.MdmService/src/Diten.MdmService.Application/DependencyInjection.cs`; `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs`; `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`; `frontend/Diten.Web/Controllers/LegalEntitiesController.cs`; `frontend/Diten.Web/wwwroot/assets/js/MasterData/LegalEntities/index.js`; `frontend/Diten.Web/wwwroot/assets/js/MasterData/LegalEntities/details.js`. |
+| New runtime | `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/LegalEntityContractionOperation.cs`; `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/LegalEntityContractionOperationKind.cs`; `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/LegalEntityContractionOutcomeKind.cs`; `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/ILegalEntityContractionOperationRepository.cs`; `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/ILegalEntityGuardedWriteSession.cs`; `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/LegalEntityContractionWriteOutcome.cs`; `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/LegalEntityVerifiedWriterAuthority.cs`; `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Authorization/ILegalEntityWriterAuthorityProvider.cs`; `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/LegalEntityMutationIdentity.cs`; `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/LegalEntityWriteFenceCoordinator.cs`; `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/LegalEntityContractionOperationRepository.cs`; `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/LegalEntityGuardedWriteSession.cs`; `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Security/LegalEntityWriterAuthorityProvider.cs`. |
+| Existing tests | `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LegalEntityCommandTests.cs`; `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/InMemoryLegalEntityRepository.cs`; `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductLegalEntityScopeWriteAdmissionContractTests.cs`; `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Authorization/LegalEntitiesControllerPermissionTests.cs`; `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/DependencyInjectionSmokeTests.cs`; `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/AuditForwardingBehaviorTests.cs`; `frontend/Diten.Web/tests/legal-entities.test.js`. |
+| New tests | `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LegalEntityWriterAuthorityTests.cs`; `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LegalEntityScopeWriteFenceMongoTests.cs`. |
+
+`RepositoryBase.cs`, Update/Create/Activate paths, Gateway, FU03 authority types, migration runtime and every path not
+listed above remain excluded. The new journal paths are enabled only by the explicit journal gate in this section.

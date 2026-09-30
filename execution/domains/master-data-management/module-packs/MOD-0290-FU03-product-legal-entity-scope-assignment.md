@@ -1488,3 +1488,18 @@ remains `BLOCKED` pending the owner decisions recorded in MOD-0220 §21.5, inclu
 producer/transport contract. This link grants no Update/Create/Activate enrollment, A2/Finished Good,
 background/recovery, schema/index/collection, migration, code-start, `ready-for-dev`, Production or live-acceptance
 authority.
+
+## 23. FG-A1B-A2-EXECUTION-CONTRACT-03 v1 — non-expansion dependency link
+
+The canonical Phase 1.5 recommendation is [MOD-0220 §21.8](MOD-0220-legal-entity-foundation.md#218-fg-a1b-a2-execution-contract-03-v1--a1b-phase-15-recommendation)
+for Legal Entity A1b and [MOD-0290 §21.15.8](MOD-0290-product-item-sku-master.md#21158-fg-a1b-a2-execution-contract-03-v1--a2-phase-15-recommendation)
+for A2. This link changes no A0 implementation/evidence, authority type, rollout document, collection, index or
+lease behavior.
+
+If an approved A1b guarded session reuses the existing FU03 rollout lease, it reuses only its exact
+tenant/token/generation, Mongo-server-time expiry and qualified-write predicate as an ordering dependency. A0
+`IProductLegalEntityScopeWriterAuthorityProvider.ResolveForegroundReplaceAsync` remains foreground-human
+Replace-only; it is not renamed, widened or called to authorize Legal Entity contraction or A2 background/recovery.
+No automatic takeover, blind unlock, second lease, new credential or new audience follows from this cross-link.
+
+**Agent Verdict:** `A0 unchanged; A1b/A2 CONDITIONAL / BLOCKED — PLANNING ONLY`.
