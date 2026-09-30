@@ -87,4 +87,5 @@
   <data name="ReminderSavedOn" xml:space="preserve"><value>每周提醒已开启。</value></data>
   <data name="ReminderSavedOff" xml:space="preserve"><value>每周提醒已关闭。</value></data>
   <data name="ReminderSaveFailed" xml:space="preserve"><value>无法保存每周提醒，请重试。</value></data>
+  <data name="ReminderJobOff" xml:space="preserve"><value>提醒已开启，但此服务器上的提醒任务未运行，因此不会发送电子邮件。请通知您的系统管理员。</value></data>
 </root>

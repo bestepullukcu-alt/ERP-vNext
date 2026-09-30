@@ -35,6 +35,18 @@ public sealed class TimesheetReminderJob : IBackgroundJobHandler<TimesheetRemind
     /// <summary>N1 — how many ISO weeks before the target week still make someone a participant.</summary>
     public const int ParticipationWeeks = 4;
 
+    /// <summary>The job's EnabledJobs configuration key — also what the settings page reports on (M4).</summary>
+    public const string JobId = "Diten.Platform.MOD-0280.TimesheetReminderJob";
+
+    /// <summary>M4 — does THIS server run the reminder at all? The scheduler is on, the standard jobs are registered and
+    /// the job's own EnabledJobs flag is on — the same three gates <c>PlatformRecurringJobRegistrar</c> and the scheduler
+    /// apply. The settings page warns when the tenant switch is on and this is false.</summary>
+    public static bool IsScheduled(BackgroundJobSchedulerOptions options)
+        => options.Enabled
+           && options.RegisterStandardJobs
+           && options.EnabledJobs.TryGetValue(JobId, out var enabled)
+           && enabled;
+
     /// <summary>N2 — tenant-local hour on Monday from which last week is reminded.</summary>
     public static readonly TimeSpan ReminderTimeOfDay = TimeSpan.FromHours(9);
 
@@ -45,6 +57,8 @@ public sealed class TimesheetReminderJob : IBackgroundJobHandler<TimesheetRemind
     private readonly ITimerSegmentRepository _segments;
     private readonly IWorkingHoursProvider _workingHours;
     private readonly ITimeEntryNotifier _notifier;
+    private readonly ITimeEntryNotificationMarkRepository _marks;
+    private readonly ITimesheetDecisionPuller _puller;
     private readonly TimeProvider _clock;
     private readonly ILogger<TimesheetReminderJob> _logger;
 
@@ -56,9 +70,13 @@ public sealed class TimesheetReminderJob : IBackgroundJobHandler<TimesheetRemind
         ITimerSegmentRepository segments,
         IWorkingHoursProvider workingHours,
         ITimeEntryNotifier notifier,
+        ITimeEntryNotificationMarkRepository marks,
+        ITimesheetDecisionPuller puller,
         TimeProvider clock,
         ILogger<TimesheetReminderJob> logger)
     {
+        _marks = marks;
+        _puller = puller;
         _tenantRegistry = tenantRegistry;
         _tenantContext = tenantContext;
         _settings = settings;
@@ -131,15 +149,27 @@ public sealed class TimesheetReminderJob : IBackgroundJobHandler<TimesheetRemind
             .Concat(await _segments.ListUserIdsWithSegmentsAsync(window, ct))
             .Distinct()
             .OrderBy(id => id)
-            .Take(max)
             .ToList();
 
+        // CT acceptance round 1 (M1): the limit is on SENDS, never on the participant list. Cutting the list first took
+        // the same first N people every hour and left the rest un-reminded for ever. People already reminded for this
+        // week are skipped by a read of their mark (the key the send claimed), so they never use up a run's budget.
         var sent = 0;
-        foreach (var userId in participants)
+        var alreadyReminded = 0;
+        var index = 0;
+        for (; index < participants.Count && sent < max; index++)
         {
+            var userId = participants[index];
             try
             {
-                if (await IsDueAsync(userId, monday, weekKey, ct) && await _notifier.WeekReminderAsync(userId, monday, ct))
+                if (await _marks.ExistsAsync(TimeEntryNotificationEvents.WeekReminder,
+                        TimeEntryNotifier.MarkKey(TimeEntryNotifier.ReminderKey(userId, weekKey), userId), ct))
+                {
+                    alreadyReminded++;
+                    continue;
+                }
+
+                if (await IsDueAsync(userId, monday, weekKey, correlationId, ct) && await _notifier.WeekReminderAsync(userId, monday, ct))
                 {
                     sent++;
                 }
@@ -150,6 +180,14 @@ public sealed class TimesheetReminderJob : IBackgroundJobHandler<TimesheetRemind
                     "time-entry.reminder.person_failed UserId={UserId} WeekKey={WeekKey} CorrelationId={CorrelationId}",
                     userId, weekKey, correlationId);
             }
+        }
+
+        if (index < participants.Count)
+        {
+            _logger.LogInformation(
+                "time-entry.reminder.limit_reached WeekKey={WeekKey} Limit={Limit} Participants={Participants} Checked={Checked} "
+                + "AlreadyReminded={AlreadyReminded} Left={Left} CorrelationId={CorrelationId}; the next run continues.",
+                weekKey, max, participants.Count, index, alreadyReminded, participants.Count - index, correlationId);
         }
 
         return sent;
@@ -171,10 +209,18 @@ public sealed class TimesheetReminderJob : IBackgroundJobHandler<TimesheetRemind
         return DateOnly.FromDateTime(local.DateTime).AddDays(-daysSinceMonday - 7);
     }
 
-    /// <summary>N2 — absent or Draft (a rejected or withdrawn revision is a Draft again), and at least one working day.</summary>
-    private async Task<bool> IsDueAsync(Guid userId, DateOnly monday, string weekKey, CancellationToken ct)
+    /// <summary>N2 — absent or Draft (a rejected or withdrawn revision is a Draft again), and at least one working day.
+    /// CT acceptance round 1 (L6): a revision that still reads Submitted may carry a MOD-0023 decision nobody has pulled
+    /// yet — the pull finalizer runs FIRST, so an approved week is not reminded and a rejected one is.</summary>
+    private async Task<bool> IsDueAsync(Guid userId, DateOnly monday, string weekKey, string correlationId, CancellationToken ct)
     {
         var revisions = await _weeks.ListRevisionsAsync(userId, weekKey, ct);
+        if (revisions.Any(r => r.Status == TimesheetWeekStatus.Submitted)
+            && await _puller.PullAsync(revisions, correlationId, ct))
+        {
+            revisions = await _weeks.ListRevisionsAsync(userId, weekKey, ct);
+        }
+
         if (revisions.Any(r => r.Status is TimesheetWeekStatus.Submitted or TimesheetWeekStatus.Approved or TimesheetWeekStatus.Superseded))
         {
             return false;

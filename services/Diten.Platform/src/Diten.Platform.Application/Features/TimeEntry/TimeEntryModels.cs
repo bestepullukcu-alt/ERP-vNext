@@ -557,7 +557,10 @@ public sealed record WorkCategoryDto(
 
 public sealed record InstallRecommendedWorkCategoriesResultDto(IReadOnlyList<string> Installed, IReadOnlyList<string> AlreadyPresent);
 
-public sealed record TimeEntrySettingsDto(Guid? TimeAdminPoolPositionId, int Version, bool WeeklyReminderEnabled = false);
+/// <summary><see cref="ReminderJobEnabled"/> (M4) is not a setting: it says whether this server's scheduler runs the reminder
+/// job, so the page can warn that a switched-on reminder will send nothing.</summary>
+public sealed record TimeEntrySettingsDto(
+    Guid? TimeAdminPoolPositionId, int Version, bool WeeklyReminderEnabled = false, bool ReminderJobEnabled = false);
 
 public sealed record LegalEntityTimeSettingDto(
     Guid LegalEntityId,

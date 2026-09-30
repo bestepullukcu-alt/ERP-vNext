@@ -16,7 +16,7 @@ async function bootSettings(settings, extra = []) {
   loadScript("wwwroot/assets/js/TimeEntry/core.js");
   document.body.innerHTML = `<div id="timeEntrySettings"><div id="tsNotice"></div>
     <select id="tsPoolPosition"><option value="">none</option></select><button id="tsSavePool"></button>
-    <input type="checkbox" id="tsWeeklyReminder" disabled />
+    <input type="checkbox" id="tsWeeklyReminder" disabled /><div id="tsReminderJobOff" hidden>job off</div>
     <p id="tsLoading"></p><div id="tsSwitches"></div></div>
     <script id="timesettings-l10n" type="application/json">{"ReminderSavedOn":"on!","ReminderSavedOff":"off!","ReminderSaveFailed":"failed!"}</script>`;
   window.showToast = vi.fn();
@@ -62,6 +62,29 @@ describe("settings — the weekly reminder switch", () => {
     expect(box.checked).toBe(true);
   });
 
+  it("M4 — warns only while the switch is on and this server does not run the reminder job", async () => {
+    const warning = () => document.getElementById("tsReminderJobOff").hidden;
+    await bootSettings({ timeAdminPoolPositionId: null, version: 3, weeklyReminderEnabled: true, reminderJobEnabled: false });
+    expect(warning()).toBe(false);
+
+    await bootSettings({ timeAdminPoolPositionId: null, version: 3, weeklyReminderEnabled: true, reminderJobEnabled: true });
+    expect(warning()).toBe(true);
+
+    await bootSettings({ timeAdminPoolPositionId: null, version: 3, weeklyReminderEnabled: false, reminderJobEnabled: false });
+    expect(warning()).toBe(true);
+  });
+
+  it("M4 — turning the switch on where the job does not run shows the warning at once", async () => {
+    await bootSettings({ timeAdminPoolPositionId: null, version: 3, weeklyReminderEnabled: false, reminderJobEnabled: false },
+      [["PUT", "/TimeEntry/api/settings", (body) => ok({ timeAdminPoolPositionId: null, version: 4, weeklyReminderEnabled: body.weeklyReminderEnabled, reminderJobEnabled: false })]]);
+    const box = document.getElementById("tsWeeklyReminder");
+    box.checked = true;
+    box.dispatchEvent(new Event("change"));
+    await flush();
+    expect(document.getElementById("tsReminderJobOff").hidden).toBe(false);
+    expect(readSource("Views/TimeEntry/Settings/Index.cshtml")).toMatch(/id="tsReminderJobOff" hidden>@Localizer\["ReminderJobOff"\]/);
+  });
+
   it("a refused save puts the switch back where the server has it", async () => {
     await bootSettings({ timeAdminPoolPositionId: null, version: 2, weeklyReminderEnabled: false },
       [["PUT", "/TimeEntry/api/settings", () => refused(409, "TIME_ENTRY_SETTINGS_CONCURRENCY_CONFLICT")]]);
@@ -99,7 +122,7 @@ describe("settings — the weekly reminder switch", () => {
       const match = text.match(new RegExp(`<data name="${key}"[^>]*>\\s*<value>([\\s\\S]*?)</value>`));
       return match ? match[1] : null;
     };
-    const keys = ["ReminderTitle", "ReminderHelp", "ReminderLabel", "ReminderSavedOn", "ReminderSavedOff", "ReminderSaveFailed"];
+    const keys = ["ReminderTitle", "ReminderHelp", "ReminderLabel", "ReminderSavedOn", "ReminderSavedOff", "ReminderSaveFailed", "ReminderJobOff"];
     ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) => keys.forEach((key) => {
       expect(value(lang, key), `${lang} ${key}`).toBeTruthy();
       if (lang !== "en") { expect(value(lang, key), `${lang} ${key} is the English text`).not.toBe(value("en", key)); }

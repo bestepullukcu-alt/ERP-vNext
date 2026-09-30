@@ -80,7 +80,9 @@ public sealed class TimeEntryManifestProviderTests
 
         // T3 (N7) — the five T1a events plus the reminder and the minutes conflict, all Active.
         Assert.Equal(TimeEntryNotificationEvents.All.OrderBy(c => c), events.Select(e => e.EventCode).OrderBy(c => c));
-        Assert.All(events, e => Assert.Contains(e.TargetPageCode!, pages));
+        // L7 — withdrawn is linkless (no page); every other event points at a real page.
+        Assert.All(events.Where(e => e.TargetPageCode is not null), e => Assert.Contains(e.TargetPageCode!, pages));
+        Assert.Single(events, e => e.TargetPageCode is null);
         Assert.All(events, e => Assert.Contains(e.RequiredPermissionKey!, RealKeys));
         Assert.All(events, e => Assert.Equal("Active", e.Status));
         Assert.All(events, e => Assert.Equal(e.EventCode, e.DefaultTemplateKey));

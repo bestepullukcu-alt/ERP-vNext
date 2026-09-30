@@ -100,7 +100,8 @@ public sealed class TimesheetNotificationHttpMongoTests : TimerScenario
         Assert.Equal(TestRecipients.Address(Person), rejected.To.Single().Email);
         Assert.Equal("Tuesday is missing the client call.", rejected.Variables[TimeEntryNotificationVariables.Reason]);
 
-        // Submitted again after the fix: the approvers hear of THIS submission too.
+        // Submitted again after the fix, the NEXT day: the approvers hear of it again (M3: once per revision and day).
+        Host.Clock.UtcNow = Wednesday.AddDays(1);
         var again = await SubmitAsync();
         Ok(again);
         Assert.Equal(4, Sent(TimeEntryNotificationEvents.WeekSubmitted).Count);
@@ -131,6 +132,88 @@ public sealed class TimesheetNotificationHttpMongoTests : TimerScenario
         Ok(await WithdrawAsync());
         Assert.Equal(TimesheetWeekStatus.Draft, (await StoredWeekAsync(weekId)).Status);
         Assert.NotEmpty(Sent(TimeEntryNotificationEvents.WeekSubmitted));
+    }
+
+    // ── CT acceptance round 1 ────────────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task M3_a_submit_withdraw_loop_on_one_day_sends_each_approver_one_of_each_and_the_next_day_one_more()
+    {
+        var weekId = await SubmittedWeekAsync();
+        Ok(await WithdrawAsync());
+        Ok(await SubmitAsync());
+        Ok(await WithdrawAsync());
+
+        var candidates = (await StoredWeekAsync(weekId)).ApproverCandidateUserIds;
+        Assert.Equal(2, candidates.Count);
+        foreach (var candidate in candidates.Select(TestRecipients.Address))
+        {
+            Assert.Single(Sent(TimeEntryNotificationEvents.WeekSubmitted), r => r.To.Single().Email == candidate);
+            Assert.Single(Sent(TimeEntryNotificationEvents.WeekWithdrawn), r => r.To.Single().Email == candidate);
+        }
+
+        Host.Clock.UtcNow = Wednesday.AddDays(1); // Thursday in Istanbul
+        Ok(await SubmitAsync());
+        foreach (var candidate in candidates.Select(TestRecipients.Address))
+        {
+            Assert.Equal(2, Sent(TimeEntryNotificationEvents.WeekSubmitted).Count(r => r.To.Single().Email == candidate));
+        }
+    }
+
+    [Fact]
+    public async Task M3_the_day_is_the_weeks_zone_not_UTC()
+    {
+        // 23:30 Istanbul on Wednesday is still Wednesday there; 00:30 Thursday Istanbul is 21:30Z Wednesday — a new day
+        // locally although the UTC date did not change.
+        Host.Clock.UtcNow = IstanbulLocal(2026, 10, 7, 23, 30);
+        await SubmittedWeekAsync();
+        Ok(await WithdrawAsync());
+        Host.Clock.UtcNow = IstanbulLocal(2026, 10, 8, 0, 30);
+        Ok(await SubmitAsync());
+
+        Assert.Equal(4, Sent(TimeEntryNotificationEvents.WeekSubmitted).Count);
+    }
+
+    [Fact]
+    public async Task L4_the_submit_and_withdraw_e_mails_are_not_tied_to_the_requests_token()
+    {
+        await SubmittedWeekAsync();
+        Ok(await WithdrawAsync());
+
+        var tokens = Host.Dispatch.Tokens
+            .Where(t => t.EventCode is TimeEntryNotificationEvents.WeekSubmitted or TimeEntryNotificationEvents.WeekWithdrawn)
+            .ToList();
+        Assert.Equal(4, tokens.Count);
+        Assert.All(tokens, t => Assert.False(t.Cancellable, $"{t.EventCode} was handed the request's token"));
+    }
+
+    [Fact]
+    public void L1_L7_every_event_carries_its_display_name_key_and_withdrawn_is_linkless()
+    {
+        var events = new TimeEntryManifestProvider().GetManifest().NotificationEvents!;
+        Assert.All(events, e => Assert.Matches("^NotificationEvent_TimeEntry[A-Za-z]+$", e.DisplayNameKey!));
+        Assert.Equal(7, events.Select(e => e.DisplayNameKey).Distinct().Count());
+        Assert.Equal(TimeEntryManifestProvider.DisplayNameKeys.OrderBy(k => k), events.Select(e => e.DisplayNameKey!).OrderBy(k => k));
+
+        var withdrawn = events.Single(e => e.EventCode == TimeEntryNotificationEvents.WeekWithdrawn);
+        Assert.Equal("None", withdrawn.LinkPolicy);
+        Assert.Null(withdrawn.TargetPageCode);
+        Assert.All(events.Where(e => e != withdrawn), e => Assert.Equal("TargetPage", e.LinkPolicy));
+    }
+
+    [Fact]
+    public async Task L8_a_version_that_cannot_be_observed_never_reaches_the_minutes_caller()
+    {
+        var observer = new RecordingObserver();
+        var meeting = new Meeting
+        {
+            TenantId = Tenant, Title = "Weekly sync", MeetingTypeId = Guid.NewGuid(), StartAt = Wednesday, EndAt = Wednesday.AddHours(1),
+            OrganizerUserId = Manager, IdempotencyKey = "k-l8"
+        };
+        var broken = new MeetingMinutesVersion { TenantId = Tenant, MeetingId = meeting.Id, VersionNumber = 1, Attendance = null! };
+
+        await observer.NotifySafelyAsync(meeting, broken, NullLogger.Instance); // must not throw
+        Assert.Equal(0, observer.Calls);
     }
 
     // ── T3-05 — the minutes conflict ─────────────────────────────────────────────────────────────────────────────
@@ -407,6 +490,17 @@ public sealed class TimesheetNotificationHttpMongoTests : TimerScenario
         var factory = typeof(Diten.Platform.Infrastructure.Persistence.Configurations.NotificationTemplateSeed)
             .GetMethod("CreatePlatformDefaults", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
         return (IReadOnlyList<Diten.Platform.Domain.Entities.Notifications.NotificationTemplate>)factory.Invoke(null, null)!;
+    }
+
+    private sealed class RecordingObserver : IMeetingAttendanceObserver
+    {
+        public int Calls;
+
+        public Task OnMinutesAttendanceRecordedAsync(MeetingAttendanceObservation observation, CancellationToken ct = default)
+        {
+            Calls++;
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class ThrowingObserver : IMeetingAttendanceObserver

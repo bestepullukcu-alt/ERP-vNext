@@ -35,10 +35,11 @@ public interface ITimeEntryLinks
 /// </summary>
 public interface ITimeEntryNotifier
 {
-    /// <summary>N4 — to the week's STORED approver candidates (D6), one e-mail each, once per submission.</summary>
+    /// <summary>N4 — to the week's STORED approver candidates (D6), one e-mail each, at most once per (week, revision,
+    /// recipient, tenant-local day).</summary>
     Task WeekSubmittedAsync(TimesheetWeek week, CancellationToken ct = default);
 
-    /// <summary>N4 — to the same candidates, once per submission the person took back.</summary>
+    /// <summary>N4 — to the same candidates, at most once per (week, revision, recipient, tenant-local day).</summary>
     Task WeekWithdrawnAsync(TimesheetWeek week, CancellationToken ct = default);
 
     /// <summary>N4 — to the person, once per revision; called only where the finalizer changed the week's state.</summary>
@@ -91,7 +92,7 @@ public sealed class TimeEntryNotifier : ITimeEntryNotifier
     {
         var person = await PersonNameAsync(week.UserId, ct);
         await SendAsync(
-            TimeEntryNotificationEvents.WeekSubmitted, SubmissionKey(week), week.ApproverCandidateUserIds,
+            TimeEntryNotificationEvents.WeekSubmitted, ApproverDayKey(week), week.ApproverCandidateUserIds,
             new Dictionary<string, object?>
             {
                 [Vars.PersonName] = person,
@@ -105,7 +106,7 @@ public sealed class TimeEntryNotifier : ITimeEntryNotifier
     {
         var person = await PersonNameAsync(week.UserId, ct);
         await SendAsync(
-            TimeEntryNotificationEvents.WeekWithdrawn, SubmissionKey(week), week.ApproverCandidateUserIds,
+            TimeEntryNotificationEvents.WeekWithdrawn, ApproverDayKey(week), week.ApproverCandidateUserIds,
             new Dictionary<string, object?>
             {
                 [Vars.PersonName] = person,
@@ -141,7 +142,7 @@ public sealed class TimeEntryNotifier : ITimeEntryNotifier
     {
         var weekKey = WeekCalendar.KeyOf(monday);
         return await SendAsync(
-            TimeEntryNotificationEvents.WeekReminder, $"{userId:N}:{weekKey}", [userId],
+            TimeEntryNotificationEvents.WeekReminder, ReminderKey(userId, weekKey), [userId],
             new Dictionary<string, object?>
             {
                 [Vars.WeekLabel] = WeekLabel(weekKey, monday),
@@ -167,8 +168,27 @@ public sealed class TimeEntryNotifier : ITimeEntryNotifier
     public static string WeekLabel(string weekKey, DateOnly monday)
         => string.Create(CultureInfo.InvariantCulture, $"{weekKey} ({monday:yyyy-MM-dd} – {monday.AddDays(6):yyyy-MM-dd})");
 
-    /// <summary>One submission of one revision: a withdrawn or rejected week submitted again is a new submission.</summary>
+    /// <summary>One submission of one revision: a rejected week submitted again is a new submission (the rejection key).</summary>
     private static string SubmissionKey(TimesheetWeek week) => $"{week.Id:N}:r{week.RevisionNumber}:s{week.SubmissionCount}";
+
+    /// <summary>
+    /// CT acceptance round 1 (M3): submitted and withdrawn go to an approver at most once per (week, revision, recipient,
+    /// tenant-local day). A submit/withdraw loop must not fill the approvers' inbox; the approval item stays visible in
+    /// the Task Center whatever the e-mails say. The day is the week's own zone (R3) — the one it was written in.
+    /// </summary>
+    private string ApproverDayKey(TimesheetWeek week)
+        => string.Create(CultureInfo.InvariantCulture,
+            $"{week.Id:N}:r{week.RevisionNumber}:d{WeekCalendar.LocalDateOf(_clock.GetUtcNow(), Zone(week.TimeZoneId)):yyyyMMdd}");
+
+    private static TimeZoneInfo Zone(string? id)
+        => !string.IsNullOrWhiteSpace(id) && TimeZoneInfo.TryFindSystemTimeZoneById(id, out var zone) ? zone : TimeZoneInfo.Utc;
+
+    /// <summary>The (person, week) part of a reminder's mark key.</summary>
+    public static string ReminderKey(Guid userId, string weekKey) => $"{userId:N}:{weekKey}";
+
+    /// <summary>The mark key a send claims for one recipient — the ONLY place its shape is written, so a reader that asks
+    /// "was this already sent?" (the reminder job, M1) asks with exactly the key the send claimed.</summary>
+    public static string MarkKey(string key, Guid recipientUserId) => $"{key}:{recipientUserId:N}";
 
     private async Task<string> PersonNameAsync(Guid userId, CancellationToken ct)
     {
@@ -207,7 +227,7 @@ public sealed class TimeEntryNotifier : ITimeEntryNotifier
             var recipients = await _recipients.ResolveAsync(wanted, ct);
             foreach (var recipient in recipients)
             {
-                if (!await _marks.TryClaimAsync(eventCode, $"{key}:{recipient.UserId:N}", _clock.GetUtcNow(), ct))
+                if (!await _marks.TryClaimAsync(eventCode, MarkKey(key, recipient.UserId), _clock.GetUtcNow(), ct))
                 {
                     continue;
                 }

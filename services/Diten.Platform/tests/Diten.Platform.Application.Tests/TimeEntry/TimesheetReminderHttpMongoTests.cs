@@ -293,6 +293,140 @@ public sealed class TimesheetReminderHttpMongoTests : TimerScenario
         Assert.Equal(HttpStatusCode.Forbidden, person.Status);
     }
 
+    // ── CT acceptance round 1 ────────────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task M1_the_limit_is_on_sends_so_the_people_past_it_are_reached_by_the_next_run()
+    {
+        var people = new[] { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
+        foreach (var person in people)
+        {
+            await SeedWeekAsync(person, TimesheetWeekStatus.Draft);
+        }
+
+        await SwitchReminderAsync(true);
+
+        await RunAtAsync(MondayNine, maxPeople: 2);
+        Assert.Equal(2, Reminders().Count);
+
+        var lookupsBefore = Host.Recipients.Lookups;
+        await RunAtAsync(MondayNine.AddHours(1), maxPeople: 2);
+        // The two already reminded are skipped on their mark — AuthService is asked about the third person only.
+        Assert.Equal(1, Host.Recipients.Lookups - lookupsBefore);
+        Assert.Equal(
+            people.Select(TestRecipients.Address).OrderBy(a => a),
+            Reminders().Select(r => r.To.Single().Email).OrderBy(a => a));
+
+        await RunAtAsync(MondayNine.AddHours(2), maxPeople: 2);
+        Assert.Equal(3, Reminders().Count);
+    }
+
+    [Fact]
+    public async Task L6_a_decision_nobody_pulled_yet_is_applied_first_an_approved_week_is_not_reminded()
+    {
+        var weekId = await SubmittedWeekAsync();
+        var approver = (await StoredWeekAsync(weekId)).AssignedApproverUserId!.Value;
+        Ok(await DecideAsync(approver, weekId, approve: true)); // decided in MOD-0023; the week still reads Submitted
+        Assert.Equal(TimesheetWeekStatus.Submitted, (await StoredWeekAsync(weekId)).Status);
+        await SwitchReminderAsync(true);
+
+        await RunAtAsync(MondayNine);
+
+        Assert.Equal(TimesheetWeekStatus.Approved, (await StoredWeekAsync(weekId)).Status);
+        Assert.Empty(Reminders());
+    }
+
+    [Fact]
+    public async Task L6_a_rejection_nobody_pulled_yet_is_applied_first_and_the_week_is_reminded()
+    {
+        var weekId = await SubmittedWeekAsync();
+        var approver = (await StoredWeekAsync(weekId)).AssignedApproverUserId!.Value;
+        Ok(await DecideAsync(approver, weekId, approve: false, comment: "Monday is missing."));
+        Assert.Equal(TimesheetWeekStatus.Submitted, (await StoredWeekAsync(weekId)).Status);
+        await SwitchReminderAsync(true);
+
+        await RunAtAsync(MondayNine);
+
+        Assert.Equal(TimesheetWeekStatus.Draft, (await StoredWeekAsync(weekId)).Status);
+        Assert.Equal(TestRecipients.Address(Person), Assert.Single(Reminders()).To.Single().Email);
+    }
+
+    [Fact]
+    public async Task M4_settings_report_whether_this_server_runs_the_reminder_job()
+    {
+        // The test host configures no scheduler: the job does not run here, and the settings say so.
+        Assert.False((await Host.GetAsync("/api/v1/time-entry/settings", AdminToken())).Data.GetProperty("reminderJobEnabled").GetBoolean());
+
+        using var scheduled = new TimeEntryHost(Fixture.DbContext, services =>
+            services.Configure<BackgroundJobSchedulerOptions>(o =>
+            {
+                o.Enabled = true;
+                o.RegisterStandardJobs = true;
+                o.EnabledJobs[TimesheetReminderJob.JobId] = true;
+            }));
+        var token = scheduled.Token(PoolAdmin, Tenant, TimeEntryPermissions.SettingsManage);
+        var read = await scheduled.GetAsync("/api/v1/time-entry/settings", token);
+        Assert.True(read.Data.GetProperty("reminderJobEnabled").GetBoolean());
+        var saved = await scheduled.PutAsync("/api/v1/time-entry/settings", token, new
+        {
+            expectedVersion = read.Data.GetProperty("version").GetInt32(), timeAdminPoolPositionId = (Guid?)null, weeklyReminderEnabled = true
+        });
+        Assert.True(saved.Data.GetProperty("reminderJobEnabled").GetBoolean());
+
+        // Each of the three gates alone turns it off.
+        var gates = new Action<BackgroundJobSchedulerOptions>[]
+        {
+            o => o.Enabled = false, o => o.RegisterStandardJobs = false, o => o.EnabledJobs[TimesheetReminderJob.JobId] = false
+        };
+        foreach (var close in gates)
+        {
+            var options = new BackgroundJobSchedulerOptions { Enabled = true, RegisterStandardJobs = true };
+            options.EnabledJobs[TimesheetReminderJob.JobId] = true;
+            close(options);
+            Assert.False(TimesheetReminderJob.IsScheduled(options));
+        }
+    }
+
+    [Fact]
+    public async Task M4_development_turns_the_three_time_entry_jobs_on_and_the_base_file_does_not()
+    {
+        var api = Path.Combine(RepoPaths.Root(), "services", "Diten.Platform", "src", "Diten.Platform.API");
+        string[] ids =
+        [
+            "Diten.Platform.MOD-0280.TimerMidnightCloseJob", "Diten.Platform.MOD-0280.TimesheetDecisionSweepJob",
+            TimesheetReminderJob.JobId
+        ];
+        using var development = System.Text.Json.JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(api, "appsettings.Development.json")),
+            new System.Text.Json.JsonDocumentOptions { CommentHandling = System.Text.Json.JsonCommentHandling.Skip, AllowTrailingCommas = true });
+        var jobs = development.RootElement.GetProperty("BackgroundJobs").GetProperty("EnabledJobs");
+        Assert.All(ids, id => Assert.True(jobs.TryGetProperty(id, out var on) && on.GetBoolean(), id));
+
+        var baseFile = await File.ReadAllTextAsync(Path.Combine(api, "appsettings.json"));
+        Assert.All(ids, id => Assert.DoesNotContain(id, baseFile));
+    }
+
+    [Fact]
+    public async Task L5_an_archived_pool_blocks_only_a_change_of_pool_never_the_reminder_switch()
+    {
+        await SetPoolAsync(PoolSeat);
+        await RawSetAsync(PlatformCollections.Positions, PoolSeat, ("IsArchived", true));
+
+        var version = (await Host.GetAsync("/api/v1/time-entry/settings", AdminToken())).Data.GetProperty("version").GetInt32();
+        var toggle = await Host.PutAsync("/api/v1/time-entry/settings", AdminToken(),
+            new { expectedVersion = version, timeAdminPoolPositionId = PoolSeat, weeklyReminderEnabled = true });
+        Assert.Equal(HttpStatusCode.OK, toggle.Status);
+        Assert.True(toggle.Data.GetProperty("weeklyReminderEnabled").GetBoolean());
+
+        // Choosing an archived seat as a NEW pool is still refused.
+        var archivedOther = Guid.NewGuid();
+        await SeedPositionAsync(archivedOther, reportsTo: null);
+        await RawSetAsync(PlatformCollections.Positions, archivedOther, ("IsArchived", true));
+        var change = await Host.PutAsync("/api/v1/time-entry/settings", AdminToken(),
+            new { expectedVersion = version + 1, timeAdminPoolPositionId = archivedOther });
+        Assert.Equal(HttpStatusCode.BadRequest, change.Status);
+        Assert.Equal(TimeEntryReasonCodes.SettingsPositionNotFound, change.ReasonCode);
+    }
+
     // ── helpers ───────────────────────────────────────────────────────────────────────────────────────────────────
 
     private const string TimesheetWeekLabel = "2026-W41 (2026-10-05 – 2026-10-11)";
@@ -308,12 +442,12 @@ public sealed class TimesheetReminderHttpMongoTests : TimerScenario
         Assert.Equal(HttpStatusCode.OK, result.Status);
     }
 
-    private async Task RunAtAsync(DateTimeOffset nowUtc)
+    private async Task RunAtAsync(DateTimeOffset nowUtc, int maxPeople = 2000)
     {
         Host.Clock.UtcNow = nowUtc;
         using var scope = Host.Services.CreateScope();
         await scope.ServiceProvider.GetRequiredService<TimesheetReminderJob>().HandleAsync(
-            new TimesheetReminderJobArgs(2000), new BackgroundJobContext(TriggerType: BackgroundJobTriggerTypes.Recurring));
+            new TimesheetReminderJobArgs(maxPeople), new BackgroundJobContext(TriggerType: BackgroundJobTriggerTypes.Recurring));
     }
 
     private Task SeedWeekAsync(Guid user, TimesheetWeekStatus status, Action<TimesheetWeek>? tweak = null,

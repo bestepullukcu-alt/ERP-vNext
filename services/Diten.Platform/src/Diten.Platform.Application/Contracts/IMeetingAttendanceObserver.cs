@@ -47,17 +47,19 @@ public static class MeetingAttendanceObserverCall
             return;
         }
 
-        var observation = new MeetingAttendanceObservation(
-            meeting.TenantId,
-            meeting.Id,
-            meeting.Title,
-            meeting.StartAt,
-            version.VersionNumber,
-            version.CorrectionOfVersionNumber is not null,
-            version.Attendance.Select(a => new MeetingAttendanceRecordObservation(a.AttendeeUserId, a.Status)).ToList());
-
         try
         {
+            // L8 — built INSIDE the try: a malformed version (a null attendance list) is the observer's failure, never
+            // the minutes'.
+            var observation = new MeetingAttendanceObservation(
+                meeting.TenantId,
+                meeting.Id,
+                meeting.Title,
+                meeting.StartAt,
+                version.VersionNumber,
+                version.CorrectionOfVersionNumber is not null,
+                version.Attendance.Select(a => new MeetingAttendanceRecordObservation(a.AttendeeUserId, a.Status)).ToList());
+
             // Not the request's token: the minutes have committed, and a client that went away must not cancel the rest.
             await observer.OnMinutesAttendanceRecordedAsync(observation, CancellationToken.None);
         }
@@ -65,7 +67,7 @@ public static class MeetingAttendanceObserverCall
         {
             logger?.LogWarning(ex,
                 "meeting.attendance.observer_failed MeetingId={MeetingId} MinutesVersion={Version}; the minutes stand.",
-                observation.MeetingId, observation.MinutesVersionNumber);
+                meeting?.Id, version?.VersionNumber);
         }
     }
 }

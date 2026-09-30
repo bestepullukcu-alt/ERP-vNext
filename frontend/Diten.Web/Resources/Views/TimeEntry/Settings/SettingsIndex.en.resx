@@ -87,4 +87,5 @@
   <data name="ReminderSavedOn" xml:space="preserve"><value>Weekly reminder turned on.</value></data>
   <data name="ReminderSavedOff" xml:space="preserve"><value>Weekly reminder turned off.</value></data>
   <data name="ReminderSaveFailed" xml:space="preserve"><value>The weekly reminder could not be saved. Try again.</value></data>
+  <data name="ReminderJobOff" xml:space="preserve"><value>The reminder is on, but the reminder job is not running on this server, so no e-mail will be sent. Tell your system administrator.</value></data>
 </root>

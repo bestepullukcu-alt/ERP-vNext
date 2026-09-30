@@ -187,4 +187,8 @@ public interface ITimeEntryNotificationMarkRepository
     /// <summary>Claims (kind, key) for this tenant. <c>false</c> when the unique index says it was claimed before — the
     /// caller then sends nothing. Called BEFORE the send.</summary>
     Task<bool> TryClaimAsync(string kind, string key, DateTimeOffset claimedAtUtc, CancellationToken ct = default);
+
+    /// <summary>Was (kind, key) already claimed in this tenant? A read only — the reminder job's cheap first question, so
+    /// people already reminded never use up a run's limit (CT acceptance round 1, M1).</summary>
+    Task<bool> ExistsAsync(string kind, string key, CancellationToken ct = default);
 }

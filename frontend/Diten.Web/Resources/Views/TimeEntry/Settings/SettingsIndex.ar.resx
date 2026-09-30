@@ -87,4 +87,5 @@
   <data name="ReminderSavedOn" xml:space="preserve"><value>تم تفعيل التذكير الأسبوعي.</value></data>
   <data name="ReminderSavedOff" xml:space="preserve"><value>تم إيقاف التذكير الأسبوعي.</value></data>
   <data name="ReminderSaveFailed" xml:space="preserve"><value>تعذّر حفظ التذكير الأسبوعي. حاول مرة أخرى.</value></data>
+  <data name="ReminderJobOff" xml:space="preserve"><value>التذكير مفعّل، لكن مهمة التذكير لا تعمل على هذا الخادم، لذلك لن تُرسَل أي رسالة بريد إلكتروني. يُرجى إبلاغ مسؤول النظام.</value></data>
 </root>

@@ -87,4 +87,5 @@
   <data name="ReminderSavedOn" xml:space="preserve"><value>Haftalık hatırlatma açıldı.</value></data>
   <data name="ReminderSavedOff" xml:space="preserve"><value>Haftalık hatırlatma kapatıldı.</value></data>
   <data name="ReminderSaveFailed" xml:space="preserve"><value>Haftalık hatırlatma kaydedilemedi. Yeniden deneyin.</value></data>
+  <data name="ReminderJobOff" xml:space="preserve"><value>Hatırlatma açık, ama bu sunucuda hatırlatma işi çalışmıyor; e-posta gitmeyecek. Sistem yöneticinize bildirin.</value></data>
 </root>

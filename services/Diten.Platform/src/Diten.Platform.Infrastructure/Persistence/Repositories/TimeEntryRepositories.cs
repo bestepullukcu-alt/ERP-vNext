@@ -634,4 +634,11 @@ public sealed class TimeEntryNotificationMarkRepository : TenantRepository<TimeE
             return false;
         }
     }
+
+    public Task<bool> ExistsAsync(string kind, string key, CancellationToken ct = default)
+        => Collection.Find(Builders<TimeEntryNotificationMark>.Filter.And(
+                Builders<TimeEntryNotificationMark>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+                Builders<TimeEntryNotificationMark>.Filter.Eq(x => x.Kind, kind),
+                Builders<TimeEntryNotificationMark>.Filter.Eq(x => x.Key, key)))
+            .AnyAsync(ct);
 }

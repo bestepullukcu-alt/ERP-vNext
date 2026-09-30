@@ -187,8 +187,10 @@ public sealed class SubmitTimesheetWeekHandler : IRequestHandler<SubmitTimesheet
             return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
         }
 
-        // T3 (N4) — the stored candidates hear of it, once per submission. Best-effort: never fails the submit.
-        await _notifier.WeekSubmittedAsync(week, ct);
+        // T3 (N4) — the stored candidates hear of it (M3: once per revision and day). Best-effort: never fails the submit.
+        // L4 — not the request's token: the week is written; a client that went away must neither turn this into a 5xx nor
+        // cost the approvers the e-mail.
+        await _notifier.WeekSubmittedAsync(week, CancellationToken.None);
 
         return Response<TimesheetWeekMutationDto>.Success(TimesheetRules.ToMutation(week), correlationId: request.CorrelationId);
     }

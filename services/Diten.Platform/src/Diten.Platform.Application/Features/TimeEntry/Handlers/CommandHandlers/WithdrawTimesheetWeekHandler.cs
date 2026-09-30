@@ -98,7 +98,8 @@ public sealed class WithdrawTimesheetWeekHandler : IRequestHandler<WithdrawTimes
         }
 
         // T3 (N4) — the same candidates the submission went to. Best-effort: never fails the withdraw.
-        await _notifier.WeekWithdrawnAsync(week, ct);
+        // L4 — not the request's token: the withdrawal is written (see the submit handler).
+        await _notifier.WeekWithdrawnAsync(week, CancellationToken.None);
 
         return Response<TimesheetWeekMutationDto>.Success(TimesheetRules.ToMutation(week), correlationId: request.CorrelationId);
     }

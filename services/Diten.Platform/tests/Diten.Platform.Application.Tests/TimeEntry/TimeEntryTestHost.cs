@@ -247,7 +247,18 @@ public sealed class TestRecipients : ITaskNotificationRecipientResolver
 {
     public HashSet<Guid> Omitted { get; } = [];
 
+    private int _lookups;
+
+    /// <summary>How many people AuthService was asked about — the cost of a run (M1).</summary>
+    public int Lookups => Volatile.Read(ref _lookups);
+
     public Task<IReadOnlyList<TaskNotificationRecipient>> ResolveAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
+    {
+        Interlocked.Add(ref _lookups, userIds.Count);
+        return Resolve(userIds);
+    }
+
+    private Task<IReadOnlyList<TaskNotificationRecipient>> Resolve(IReadOnlyCollection<Guid> userIds)
         => Task.FromResult<IReadOnlyList<TaskNotificationRecipient>>(userIds
             .Where(id => id != Guid.Empty && !Omitted.Contains(id))
             .Distinct()
@@ -265,8 +276,15 @@ public sealed class TestRecipients : ITaskNotificationRecipientResolver
 public sealed class CapturingDispatch : INotificationEventDispatchAdapter
 {
     private readonly List<NotificationEventDispatchRequest> _requests = [];
+    private readonly List<(string EventCode, bool Cancellable)> _tokens = [];
 
     public bool Refuse { get; set; }
+
+    /// <summary>L4 — whether each dispatch was handed a token the request could cancel.</summary>
+    public IReadOnlyList<(string EventCode, bool Cancellable)> Tokens
+    {
+        get { lock (_requests) { return _tokens.ToList(); } }
+    }
     public bool Throw { get; set; }
 
     public IReadOnlyList<NotificationEventDispatchRequest> Requests
@@ -285,7 +303,11 @@ public sealed class CapturingDispatch : INotificationEventDispatchAdapter
     public Task<Response<NotificationDispatchDto>> DispatchByEventCodeAsync(
         NotificationEventDispatchRequest request, CancellationToken ct = default)
     {
-        lock (_requests) { _requests.Add(request); }
+        lock (_requests)
+        {
+            _requests.Add(request);
+            _tokens.Add((request.EventCode, ct.CanBeCanceled));
+        }
 
         if (Throw)
         {

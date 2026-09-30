@@ -117,6 +117,9 @@
         if (!box) { return; }
         box.checked = !!(state.settings && state.settings.weeklyReminderEnabled);
         box.disabled = false;
+        // M4 — the switch is on but this server's scheduler does not run the reminder job: say so, visibly.
+        var warning = byId('tsReminderJobOff');
+        if (warning) { warning.hidden = !(box.checked && state.settings && state.settings.reminderJobEnabled === false); }
     }
 
     function saveReminder(enabled) {
@@ -273,7 +276,7 @@
             request('GET', '/TimeEntry/api/settings/legal-entities'),
             request('GET', '/TimeEntry/Settings/lookup/legal-entities')
         ]).then(function (results) {
-            state.settings = results[0].ok ? results[0].data : { timeAdminPoolPositionId: null, version: 0, weeklyReminderEnabled: false };
+            state.settings = results[0].ok ? results[0].data : { timeAdminPoolPositionId: null, version: 0, weeklyReminderEnabled: false, reminderJobEnabled: true };
             renderReminder();
             if (!results[1].ok) { announce(t('PositionsUnavailable'), 'warning'); }
             renderPool(results[1].ok ? unwrapList(results[1].body) : []);

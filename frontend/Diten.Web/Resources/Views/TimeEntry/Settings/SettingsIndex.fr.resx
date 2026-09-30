@@ -87,4 +87,5 @@
   <data name="ReminderSavedOn" xml:space="preserve"><value>Rappel hebdomadaire activé.</value></data>
   <data name="ReminderSavedOff" xml:space="preserve"><value>Rappel hebdomadaire désactivé.</value></data>
   <data name="ReminderSaveFailed" xml:space="preserve"><value>Le rappel hebdomadaire n'a pas pu être enregistré. Réessayez.</value></data>
+  <data name="ReminderJobOff" xml:space="preserve"><value>Le rappel est activé, mais la tâche de rappel ne s'exécute pas sur ce serveur ; aucun e-mail ne sera envoyé. Prévenez votre administrateur système.</value></data>
 </root>

@@ -64,6 +64,15 @@ So "the reminder never arrived" / "recurrence does nothing" is a configuration q
 }
 ```
 
+The time-entry jobs (MOD-0280-FU01) are ON in `appsettings.Development.json`; production turns each one on in its own
+configuration — the base `appsettings.json` keeps them off:
+
+| Job id (`EnabledJobs` key) | Cadence | What stops without it |
+|---|---|---|
+| `Diten.Platform.MOD-0280.TimerMidnightCloseJob` | every 15 min | the "your timer ran until midnight" e-mail (the close itself also happens on the next read) |
+| `Diten.Platform.MOD-0280.TimesheetDecisionSweepJob` | every 15 min | approvals are applied only when someone opens the week or the approvals page |
+| `Diten.Platform.MOD-0280.TimesheetReminderJob` | hourly | the Monday reminder — the Settings page warns when the tenant switch is on and this job is off |
+
 Trigger a run without waiting for the hour: the Hangfire dashboard at `/hangfire` → Recurring Jobs → **Trigger
 now**.
 

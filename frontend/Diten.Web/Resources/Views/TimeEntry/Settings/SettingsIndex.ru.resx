@@ -87,4 +87,5 @@
   <data name="ReminderSavedOn" xml:space="preserve"><value>Еженедельное напоминание включено.</value></data>
   <data name="ReminderSavedOff" xml:space="preserve"><value>Еженедельное напоминание выключено.</value></data>
   <data name="ReminderSaveFailed" xml:space="preserve"><value>Не удалось сохранить еженедельное напоминание. Повторите попытку.</value></data>
+  <data name="ReminderJobOff" xml:space="preserve"><value>Напоминание включено, но задача напоминаний на этом сервере не запущена, поэтому письма отправляться не будут. Сообщите системному администратору.</value></data>
 </root>

@@ -278,7 +278,7 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
         // MOD-0280-FU01 T3 (pack §21.3 N2) — the Monday reminder. Hourly because each tenant's Monday 09:00 is its own; the
         // (person, week) mark makes it once however often it runs. Two more gates below this one: the tenant switch
         // (WeeklyReminderEnabled, off by default) and the tenant-local clock. The id is the EnabledJobs configuration key.
-        const string id = "Diten.Platform.MOD-0280.TimesheetReminderJob";
+        const string id = TimesheetReminderJob.JobId;
         const string jobName = "TimesheetReminderJob";
         const string owner = "MOD-0280";
         const string cron = "0 * * * *";

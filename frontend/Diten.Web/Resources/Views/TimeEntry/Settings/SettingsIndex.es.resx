@@ -87,4 +87,5 @@
   <data name="ReminderSavedOn" xml:space="preserve"><value>Recordatorio semanal activado.</value></data>
   <data name="ReminderSavedOff" xml:space="preserve"><value>Recordatorio semanal desactivado.</value></data>
   <data name="ReminderSaveFailed" xml:space="preserve"><value>No se pudo guardar el recordatorio semanal. Inténtelo de nuevo.</value></data>
+  <data name="ReminderJobOff" xml:space="preserve"><value>El recordatorio está activado, pero la tarea de recordatorio no se ejecuta en este servidor; no se enviará ningún correo. Avise a su administrador del sistema.</value></data>
 </root>
