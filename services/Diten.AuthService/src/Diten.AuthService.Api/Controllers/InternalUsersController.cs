@@ -157,6 +157,12 @@ public sealed class InternalUsersController : ControllerBase
     /// <para>Same tenant-first sweep, so a foreign id is never in the set and cross-tenant resolution is
     /// impossible rather than merely filtered. A user with no address is OMITTED — the caller learns it cannot
     /// reach them, instead of receiving a blank to send to.</para>
+    ///
+    /// <para><b>A DEACTIVATED user is omitted too</b> (2026-09-30, MOD-0280-FU01 T3 stop report): deactivation is
+    /// <see cref="User.Deactivate"/> — <c>IsActive = false</c>, not a delete — so the tenant sweep still returned them and
+    /// every Platform mailer (tasks, meetings, timesheets) kept e-mailing a person who can no longer sign in. Nothing is
+    /// delivered to a switched-off account. An INVITED account is active (its pending state is derived, not a flag) and
+    /// still resolves. Labels are not affected: display-names keeps naming a deactivated user in history.</para>
     /// </summary>
     [HttpGet("contacts")]
     public async Task<IActionResult> GetContacts(
@@ -197,7 +203,7 @@ public sealed class InternalUsersController : ControllerBase
                 break;
             }
 
-            foreach (var user in batch.Where(u => requested.Contains(u.Id) && !string.IsNullOrWhiteSpace(u.Email)))
+            foreach (var user in batch.Where(u => requested.Contains(u.Id) && u.IsActive && !string.IsNullOrWhiteSpace(u.Email)))
             {
                 resolved.Add(new InternalUserContactDto(
                     user.Id,
