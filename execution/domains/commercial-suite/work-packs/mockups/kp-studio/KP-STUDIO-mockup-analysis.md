@@ -87,3 +87,34 @@ Ek modallar: onaya gönder kontrol listesi, eski yol sihirbazı, ülkeye uyarla,
 ## Sadeleştirme
 - Sekme + ana düğme + ⋮ + "sıradaki adım" bandı + tanıtım metni aynı anda çok yoğun. Tanıtım metni ilk kullanımda gösterilsin, sonra gizlenebilsin.
 - Başlıktaki üç durum (Taslak / Rev 3 / Sahada v1.0) tek bir durum çizgisinde birleşsin.
+
+---
+
+## v2 kontrolü (2026-09-30) — `kp-studio-prototype-v2.html`
+Sayfa bileşeni değişmedi; ekran ve mantık şablonu +3,9 KB. CT, v1 ↔ v2 farkını çıkardı.
+
+**Karşılananlar ✅**
+- **K1 tek kanal:** İnceleyici görünümünde "Tek kanal: kararınız Görev Merkezi'ndeki onay iş akışına (MOD-0023) yazılır…" notu var. Gönderen için karar alanı kapalı. Açık bir tur varken yeni revizyon gönderilemiyor (`openRound` engeli).
+- **K2 güvenlilik:** Artık iddia değil. Ayrı `SAFETY` kaydı ("Onaylı güvenlilik metni · ALMIBA × Türkiye × Türkçe", `GBM-ALMIBA-TR-TR v1.1`), kilitli blok. Uyarlama tablosunda ülke bazında ayrı satır.
+- **K3 ülke / dil kimlik:** Bağlam şeridindeki düzenleme kalemi kilit ikonu oldu ("oluşturulurken seçilir, sürümler arasında değişmez. Başka ülke için Uyarla."). Ülke / dil seçimi ve dil çatışma bandı kaldırıldı. "Ülkeye uyarla" artık **yeni kodlu ayrı yol** üretiyor.
+- **K4 sihirbaz:** Otomatik bağlama kaldırıldı. Her iddia önerisi için Kabul / Reddet var. Karar verilmeden "İleri" pasif ("Her iddia önerisi için karar verin").
+- **#2 zincir iskeleti:** Adım sürükleme, adım çıkarma ve en az / en çok değiştirme kaldırıldı ("Dal ve adımlar zincirden gelir; eklenip çıkarılamaz, taşınamaz"). Öğeler yalnız **kendi adımı içinde** sürüklenerek sıralanıyor.
+- **#3 ülke değişimi:** K3 ile gereksizleşti (ülke değişmiyor).
+- **Ek:**
+  - Geri çekmede `path_in_use` hatası, kullanan aşamaların adlarıyla.
+  - Uyum satırlarına CRM hata kodu eklendi.
+
+**Karşılanmayanlar → uygulamada yapılacak (yeni mockup turu gerekmez)**
+| # | Kalan | Nerede ele alınır |
+|---|---|---|
+| 1 | Yetkisiz rol listeyi görüyor (UAS-001) | KP-UI-1 (sayfa izin kapısı, mevcut desen) |
+| 4 | Ham kodlar ("TR", "GE v1.0", "VRL-…") | KP-UI-1 / 2 (FE-2 ülke / dil adları, resx etiketleri) |
+| 5 | Yol kodu öneki `BY-` | KP-1 (kod `KP-`) |
+| 6 | SoD role göre (`isSubmitter = role==='editor'`) | KP-2 (kişi bazında; MOD-0023 SoD + CRM kontrolü) |
+| 7 | Logo / yazı tipi kuralı yok | KP-5 marka kiti + KP-UI-3 |
+| 8 | Kurgu kartında iddia metni yok | KP-UI-1 |
+| — | Filtrelerde TM / tk / be eksik; RTL / tema / aria | KP-UI-1 (ürün L10n / tema altyapısı) |
+
+**Yeni not:** Uyum satırlarında `component_not_published` gibi **ham hata kodu** görünüyor. Kural: kullanıcıya kendi dilinde metin; kod yalnız ikincil bilgi (tooltip ya da destek ayrıntısı) olarak gösterilebilir. KP-UI-2'de uygulanır.
+
+**Sonuç:** v2 **kabul**. Kararlar (K1–K4) ve iskelet kilidi mockup'a işlendi. Kalan maddeler uygulama paketlerinde.
