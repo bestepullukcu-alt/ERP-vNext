@@ -1,0 +1,27 @@
+@using Diten.Web.Views.TimeEntry.Categories
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CategoriesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // MOD-0280-FU01 T2b — the catalogue (pack screens: Categories → client, at most 50 rows). No selection: nothing here
+    // is done in bulk, and nothing is ever deleted (D10) — a category is deactivated.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-timecategories",
+        DataMode = "client",
+        Slug = "timecategories",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Code"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Label"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["CountsAsWork"].Value },
+            new DataTableColumnViewModel { Header = Localizer["SortOrder"].Value },
+            new DataTableColumnViewModel { Header = SharedLocalizer["Status"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

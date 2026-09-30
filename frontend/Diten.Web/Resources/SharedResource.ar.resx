@@ -819,6 +819,9 @@
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>تعريفات الحقول</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>الاجتماعات</value></data>
   <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>سجل ساعاتي</value></data>
+  <data name="Nav.Page.TIMEAPPROVALS" xml:space="preserve"><value>اعتماد سجلات الساعات</value></data>
+  <data name="Nav.Page.TIMECATEGORIES" xml:space="preserve"><value>فئات العمل</value></data>
+  <data name="Nav.Page.TIMESETTINGS" xml:space="preserve"><value>إعدادات تسجيل الوقت</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>أنواع الاجتماعات</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>سلاسل الاجتماعات</value></data>
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>تقرير الاجتماعات</value></data>

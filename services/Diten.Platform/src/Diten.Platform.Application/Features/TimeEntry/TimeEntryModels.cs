@@ -92,6 +92,9 @@ public static class TimeEntryReasonCodes
     public const string SourceInvalid = "TIME_ENTRY_SOURCE_INVALID";
     public const string SourceRequired = "TIME_ENTRY_SOURCE_REQUIRED";
     public const string CapturedRowNotFound = "TIME_ENTRY_CAPTURED_ROW_NOT_FOUND";
+
+    // ── T2b — the approvals list's server-mode query ─────────────────────────────────────────────────────────────
+    public const string ApprovalsQueryInvalid = "TIMESHEET_APPROVALS_QUERY_INVALID";
 }
 
 /// <summary>The fixed v1 limits (pack §4.7). A tenant setting may replace them later (§20); until then they are
@@ -117,6 +120,9 @@ public static class TimeEntryLimits
     public const int CategoryDescriptionMaxLength = 500;
     public const int CategoryLabelMaxLength = 200;
     public const int ApprovalsMaxPageSize = 100;
+
+    /// <summary>T2b — the server-mode list's largest `length` (Golden Reference protocol: 1…500).</summary>
+    public const int ApprovalsMaxServerLength = 500;
 
     /// <summary>T2a — the task picker answers at most this many tasks.</summary>
     public const int TaskOptionsMax = 50;
@@ -259,7 +265,10 @@ public sealed record TimesheetDayDto(
     int TargetMinutes,
     int RecordedMinutes,
     bool IsFlagged,
-    bool IsFuture);
+    bool IsFuture,
+    /// <summary>T2b (CT live finding E1) — the working calendar could not say what this day is (country unknown, calendar
+    /// missing); the day was counted as a working day. The page shows the same notice the calendar screens show.</summary>
+    bool CalendarUnresolved = false);
 
 public sealed record InForceRevisionDto(Guid WeekId, int RevisionNumber, DateTimeOffset? ApprovedAtUtc, int TotalMinutes);
 
@@ -312,7 +321,23 @@ public sealed record TimesheetWeekDto(
     Guid? LastRejectedByUserId = null,
     string? LastRejectedByDisplayName = null,
     Guid? AssignedApproverUserId = null,
-    string? AssignedApproverDisplayName = null);
+    string? AssignedApproverDisplayName = null,
+    /// <summary>T2b (CT live finding E4) — the caller's OWN closed timer segments of this week whose instants have not
+    /// been cleared yet (D4: an approved week's are minimised and therefore never listed). Read only.</summary>
+    IReadOnlyList<TimerSegmentBreakdownDto>? TimerSegments = null);
+
+/// <summary>T2b — one closed timer run behind a captured row: the side panel lists these under the row's (day, target).</summary>
+public sealed record TimerSegmentBreakdownDto(
+    Guid SegmentId,
+    DateOnly LocalDate,
+    Guid? TaskItemId,
+    string? CategoryCode,
+    DateTimeOffset StartedAtUtc,
+    DateTimeOffset? StoppedAtUtc,
+    int DurationSeconds,
+    int OutsideWorkingMinutes,
+    string StartSource,
+    string? StopReason);
 
 public sealed record TimerTooShortDto(DateOnly LocalDate, Guid? TaskItemId, string? CategoryCode, int Seconds, string? TaskTitle = null);
 
@@ -400,13 +425,25 @@ public sealed record ApprovalWeekListItemDto(
     int TotalMinutes,
     IReadOnlyList<DateOnly> FlaggedDates,
     DateTimeOffset? SubmittedAtUtc,
-    string? ApproverResolution);
+    string? ApproverResolution,
+    /// <summary>T2b (U4) — the MOD-0023 approval task this week waits on: the Task Center's work-item id for the SAME
+    /// approve/reject action path (POST work-items/{id}/actions/approve|reject). Null when no open task is found.</summary>
+    Guid? ApprovalTaskId = null,
+    /// <summary>T2b — the approval task's concurrency token, what the work-item action's expectedVersion carries.</summary>
+    int? ApprovalTaskVersion = null,
+    /// <summary>T2b (U4) — the other marks a bulk approval must not skip over: days a forgotten timer was cut at midnight,
+    /// time outside working hours, time on a holiday. <see cref="FlaggedDates"/> stays the 11-hour mark.</summary>
+    IReadOnlyList<DateOnly>? AutoClosedDates = null,
+    int OutsideWorkingMinutes = 0,
+    IReadOnlyList<DateOnly>? HolidayDates = null);
 
 public sealed record ApprovalWeekListDto(
     IReadOnlyList<ApprovalWeekListItemDto> Items,
     int Total,
     int Page,
-    int PageSize);
+    int PageSize,
+    /// <summary>T2b — rows matching <c>search</c> (the server-mode list's "filtered" count); equals Total without one.</summary>
+    int? FilteredTotal = null);
 
 /// <summary>The approver's read-only view of a submitted week. There is no edit control and no edit endpoint (D6).</summary>
 public sealed record ApprovalWeekDto(
@@ -424,7 +461,29 @@ public sealed record ApprovalWeekDto(
     DateTimeOffset? SubmittedAtUtc,
     Guid? WorkflowInstanceId,
     IReadOnlyList<TimesheetDayDto> Days,
-    IReadOnlyList<TimeEntryDto> Entries);
+    IReadOnlyList<TimeEntryDto> Entries,
+    /// <summary>T2b (U4) — see <see cref="ApprovalWeekListItemDto.ApprovalTaskId"/>.</summary>
+    Guid? ApprovalTaskId = null,
+    int? ApprovalTaskVersion = null,
+    IReadOnlyList<DateOnly>? AutoClosedDates = null,
+    int OutsideWorkingMinutes = 0,
+    IReadOnlyList<DateOnly>? HolidayDates = null,
+    /// <summary>T2b (U5) — for a CORRECTION revision: the in-force approved revision it would replace, and what changed
+    /// row by row against it (added, removed, changed minutes). Empty for a first submission.</summary>
+    int? InForceRevisionNumber = null,
+    IReadOnlyList<CorrectionChangeDto>? CorrectionChanges = null);
+
+/// <summary>T2b — one row of a correction's difference from the in-force revision. <see cref="PreviousMinutes"/> null =
+/// added by the correction; <see cref="CurrentMinutes"/> null = removed by it.</summary>
+public sealed record CorrectionChangeDto(
+    DateOnly LocalDate,
+    Guid? TaskItemId,
+    string? CategoryCode,
+    string Source,
+    string? SourceRef,
+    int? PreviousMinutes,
+    int? CurrentMinutes,
+    string? TaskTitle = null);
 
 public sealed record WorkCategoryDto(
     Guid Id,

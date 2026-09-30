@@ -575,12 +575,6 @@
   <data name="TimesheetLabel" xml:space="preserve">
     <value>Time</value>
   </data>
-  <data name="TimeLoggedLabel" xml:space="preserve">
-    <value>logged</value>
-  </data>
-  <data name="TimerRunning" xml:space="preserve">
-    <value>running</value>
-  </data>
   <data name="AwaitingReview" xml:space="preserve">
     <value>Awaiting review</value>
   </data>
@@ -604,9 +598,6 @@
   </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · planned for {1} (mock)</value>
-  </data>
-  <data name="ToastTimerStarted" xml:space="preserve">
-    <value>{0} · timer started (mock)</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>{0} logged (mock)</value>
@@ -927,15 +918,6 @@
   </data>
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>All fields</value>
-  </data>
-  <data name="TimerStateRunning" xml:space="preserve">
-    <value>In progress</value>
-  </data>
-  <data name="TimerStatePaused" xml:space="preserve">
-    <value>Paused</value>
-  </data>
-  <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>Elapsed time is not recorded — log the time you spent by hand.</value>
   </data>
   <data name="SubtaskStartedNotCompleted" xml:space="preserve">
     <value>The subtask was started but could not be completed: {0}</value>
@@ -2474,5 +2456,59 @@
   </data>
   <data name="CalTruncatedNoEstimate" xml:space="preserve">
     <value>Cut at the end of the day.</value>
+  </data>
+  <data name="TimeDraftLabel" xml:space="preserve">
+    <value>my draft</value>
+  </data>
+  <data name="TimeSubmittedLabel" xml:space="preserve">
+    <value>submitted</value>
+  </data>
+  <data name="TimeApprovedLabel" xml:space="preserve">
+    <value>approved</value>
+  </data>
+  <data name="TimerRunningNow" xml:space="preserve">
+    <value>Your timer is running on this task.</value>
+  </data>
+  <data name="OpenMyTimesheet" xml:space="preserve">
+    <value>Open My Timesheet</value>
+  </data>
+  <data name="TimerSwitchedText" xml:space="preserve">
+    <value>Your timer moved to this task.</value>
+  </data>
+  <data name="TimerUndo" xml:space="preserve">
+    <value>Undo</value>
+  </data>
+  <data name="TimerUndone" xml:space="preserve">
+    <value>The timer went back to the previous task.</value>
+  </data>
+  <data name="TimerErrDisabled" xml:space="preserve">
+    <value>The timer is not switched on for your legal entity. Enter the time on My Timesheet.</value>
+  </data>
+  <data name="TimerErrNotHeld" xml:space="preserve">
+    <value>The timer runs only on a task you hold.</value>
+  </data>
+  <data name="TimerErrNotInProgress" xml:space="preserve">
+    <value>The timer runs only on a task in progress.</value>
+  </data>
+  <data name="TimerErrNotRunning" xml:space="preserve">
+    <value>No timer is running any more.</value>
+  </data>
+  <data name="TimerErrConflict" xml:space="preserve">
+    <value>The timer changed meanwhile. The page was refreshed.</value>
+  </data>
+  <data name="TimerErrUndoExpired" xml:space="preserve">
+    <value>It is too late to undo that switch.</value>
+  </data>
+  <data name="TimerErrGeneric" xml:space="preserve">
+    <value>The timer could not be changed. Try again.</value>
+  </data>
+  <data name="WorkAggregation_Action_StartTimer" xml:space="preserve">
+    <value>Start timer</value>
+  </data>
+  <data name="WorkAggregation_Action_StopTimer" xml:space="preserve">
+    <value>Stop timer</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>Paused</value>
   </data>
 </root>

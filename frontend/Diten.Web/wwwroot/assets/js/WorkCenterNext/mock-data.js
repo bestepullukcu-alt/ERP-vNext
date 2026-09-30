@@ -589,15 +589,7 @@
             return { ...entry, atMs: stamp(entry.at), editedAtMs: stamp(entry.editedAt) };
         });
         item.stages = item.processStages || null;
-        item.timesheet = item.workItemCapabilities.includes('timeTracking')
-            // A running timer needs a real start anchor, else the live tick renders
-            // `Date.now() - null` (epoch millis) as a nonsense elapsed value.
-            ? {
-                running: item.timerState === 'running',
-                startedAt: item.timerState === 'running' ? Date.now() - (37 * 60000) : null,
-                loggedMinutes: item.loggedMinutes || 0
-            }
-            : null;
+        // MOD-0280-FU01 T2b — no invented timesheet: the card reads the wire's own `timeEntries` block (see app.js).
         item._fixture = fixture;
         return item;
     };

@@ -575,12 +575,6 @@
   <data name="TimesheetLabel" xml:space="preserve">
     <value>Tiempo</value>
   </data>
-  <data name="TimeLoggedLabel" xml:space="preserve">
-    <value>registrado</value>
-  </data>
-  <data name="TimerRunning" xml:space="preserve">
-    <value>en marcha</value>
-  </data>
   <data name="AwaitingReview" xml:space="preserve">
     <value>Esperando revisión</value>
   </data>
@@ -604,9 +598,6 @@
   </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · planificado para {1} (mock)</value>
-  </data>
-  <data name="ToastTimerStarted" xml:space="preserve">
-    <value>{0} · temporizador iniciado (mock)</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>{0} registrado (mock)</value>
@@ -927,15 +918,6 @@
   </data>
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>Todos los campos</value>
-  </data>
-  <data name="TimerStateRunning" xml:space="preserve">
-    <value>En curso</value>
-  </data>
-  <data name="TimerStatePaused" xml:space="preserve">
-    <value>En pausa</value>
-  </data>
-  <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>El tiempo transcurrido no se registra: introduce manualmente el tiempo dedicado.</value>
   </data>
   <data name="SubtaskStartedNotCompleted" xml:space="preserve">
     <value>La subtarea se inició pero no se pudo completar: {0}</value>
@@ -2474,5 +2456,59 @@
   </data>
   <data name="CalTruncatedNoEstimate" xml:space="preserve">
     <value>Recortado al final del día.</value>
+  </data>
+  <data name="TimeDraftLabel" xml:space="preserve">
+    <value>mi borrador</value>
+  </data>
+  <data name="TimeSubmittedLabel" xml:space="preserve">
+    <value>enviado</value>
+  </data>
+  <data name="TimeApprovedLabel" xml:space="preserve">
+    <value>aprobado</value>
+  </data>
+  <data name="TimerRunningNow" xml:space="preserve">
+    <value>Su temporizador está en marcha en esta tarea.</value>
+  </data>
+  <data name="OpenMyTimesheet" xml:space="preserve">
+    <value>Abrir Mi hoja de horas</value>
+  </data>
+  <data name="TimerSwitchedText" xml:space="preserve">
+    <value>Su temporizador pasó a esta tarea.</value>
+  </data>
+  <data name="TimerUndo" xml:space="preserve">
+    <value>Deshacer</value>
+  </data>
+  <data name="TimerUndone" xml:space="preserve">
+    <value>El temporizador volvió a la tarea anterior.</value>
+  </data>
+  <data name="TimerErrDisabled" xml:space="preserve">
+    <value>El temporizador no está activado para su entidad jurídica. Registre el tiempo en Mi hoja de horas.</value>
+  </data>
+  <data name="TimerErrNotHeld" xml:space="preserve">
+    <value>El temporizador solo funciona en una tarea que usted tiene asignada.</value>
+  </data>
+  <data name="TimerErrNotInProgress" xml:space="preserve">
+    <value>El temporizador solo funciona en una tarea en curso.</value>
+  </data>
+  <data name="TimerErrNotRunning" xml:space="preserve">
+    <value>Ya no hay ningún temporizador en marcha.</value>
+  </data>
+  <data name="TimerErrConflict" xml:space="preserve">
+    <value>El temporizador cambió mientras tanto. La página se actualizó.</value>
+  </data>
+  <data name="TimerErrUndoExpired" xml:space="preserve">
+    <value>Es demasiado tarde para deshacer ese cambio.</value>
+  </data>
+  <data name="TimerErrGeneric" xml:space="preserve">
+    <value>No se pudo cambiar el temporizador. Inténtelo de nuevo.</value>
+  </data>
+  <data name="WorkAggregation_Action_StartTimer" xml:space="preserve">
+    <value>Iniciar temporizador</value>
+  </data>
+  <data name="WorkAggregation_Action_StopTimer" xml:space="preserve">
+    <value>Detener temporizador</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>En pausa</value>
   </data>
 </root>

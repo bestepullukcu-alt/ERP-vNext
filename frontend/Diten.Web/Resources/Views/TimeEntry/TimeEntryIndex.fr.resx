@@ -230,4 +230,9 @@
   <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>Vous avez des modifications non enregistrées, et les lignes sans temps ne sont pas enregistrées. Quitter cette semaine quand même ?</value></data>
   <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>Le temps capturé ne peut pas être corrigé à zéro. Corrigez-le à au moins {step} minutes et expliquez-le dans la note.</value></data>
   <data name="SaveFailedKept" xml:space="preserve"><value>Le brouillon n’a pas été enregistré. Vos modifications sont toujours sur la page.</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>Passages du chronomètre derrière cette ligne</value></data>
+  <data name="SegmentLine" xml:space="preserve"><value>{start}–{end} · {duration}</value></data>
+  <data name="SegmentCutAtMidnight" xml:space="preserve"><value>coupé à minuit</value></data>
+  <data name="ErrApprovalsQueryInvalid" xml:space="preserve"><value>La liste des approbations n’a pas pu être lue avec ces paramètres. Rechargez la page.</value></data>
+  <data name="SubmitNeedsTime" xml:space="preserve"><value>Saisissez du temps avant de soumettre la semaine.</value></data>
 </root>

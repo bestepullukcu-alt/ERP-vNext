@@ -55,7 +55,10 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
             ["cancel"] = TaskPermissions.Cancel,
             // BL-439 — the addressee's answer. READ, the key TasksController's `answer` endpoint carries: the rule
             // that matters is "this task is asking you", which AnswerInquiryHandler enforces, not a key.
-            ["answer"] = TaskPermissions.Read
+            ["answer"] = TaskPermissions.Read,
+            // MOD-0280-FU01 T2b — the holder's timer; TimeEntryController's timer/start and timer/stop carry this key.
+            ["startTimer"] = TimeEntry.TimeEntryPermissions.TimesheetsUpdate,
+            ["stopTimer"] = TimeEntry.TimeEntryPermissions.TimesheetsUpdate
         };
 
     public IReadOnlyCollection<string> SupportedActionCodes { get; } = Permissions.Keys.ToArray();
@@ -202,6 +205,17 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
                         transition,
                         request.CorrelationId,
                         request.Actor.Has(TaskPermissions.Delete)), ct), request);
+
+            // MOD-0280-FU01 T2b — the SAME commands TimeEntryController sends; every timer rule (held, InProgress,
+            // switched on for the legal entity) stays in their handlers and comes back as their own reason code.
+            case "startTimer":
+                return Map(await _mediator.Send(
+                    new TimeEntry.Commands.StartTimerCommand(
+                        new TimeEntry.StartTimerRequest(request.ItemId, null), request.CorrelationId), ct), request);
+
+            case "stopTimer":
+                return Map(await _mediator.Send(
+                    new TimeEntry.Commands.StopTimerCommand(request.CorrelationId), ct), request);
 
             default:
                 return WorkItemActionDispatchResults.ActionUnknown(request);

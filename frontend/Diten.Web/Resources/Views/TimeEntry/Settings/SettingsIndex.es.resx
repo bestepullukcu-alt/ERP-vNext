@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SettingsTitle" xml:space="preserve"><value>Ajustes del registro de tiempo</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Quién aprueba cuando no hay responsable directo, y dónde se puede usar el temporizador.</value></data>
+  <data name="PoolTitle" xml:space="preserve"><value>Grupo de administradores de tiempo</value></data>
+  <data name="PoolHelp" xml:space="preserve"><value>Aprueba una semana cuando la línea jerárquica de la persona está vacía (D6) y reabre semanas antiguas.</value></data>
+  <data name="PoolPosition" xml:space="preserve"><value>Puesto del grupo</value></data>
+  <data name="PoolNone" xml:space="preserve"><value>Sin grupo</value></data>
+  <data name="SavePool" xml:space="preserve"><value>Guardar grupo</value></data>
+  <data name="PoolSaved" xml:space="preserve"><value>Grupo guardado.</value></data>
+  <data name="SwitchTitle" xml:space="preserve"><value>Temporizador por entidad jurídica</value></data>
+  <data name="SwitchHelp" xml:space="preserve"><value>El temporizador está DESACTIVADO en todas las entidades jurídicas hasta que se active aquí. El registro manual siempre funciona.</value></data>
+  <data name="ColLegalEntity" xml:space="preserve"><value>Entidad jurídica</value></data>
+  <data name="ColTimer" xml:space="preserve"><value>Temporizador</value></data>
+  <data name="ColChanged" xml:space="preserve"><value>Último cambio</value></data>
+  <data name="ColReason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="TimerOn" xml:space="preserve"><value>Activado</value></data>
+  <data name="TimerOff" xml:space="preserve"><value>Desactivado</value></data>
+  <data name="SwitchOn" xml:space="preserve"><value>Activar</value></data>
+  <data name="SwitchOff" xml:space="preserve"><value>Desactivar</value></data>
+  <data name="SwitchReason" xml:space="preserve"><value>Base legal / motivo para activar el temporizador (obligatorio)</value></data>
+  <data name="SwitchReasonRequired" xml:space="preserve"><value>Escriba el motivo (base legal) para activar el temporizador.</value></data>
+  <data name="SwitchSave" xml:space="preserve"><value>Guardar</value></data>
+  <data name="SwitchSavedOn" xml:space="preserve"><value>Temporizador activado para {0}.</value></data>
+  <data name="SwitchSavedOff" xml:space="preserve"><value>Temporizador desactivado para {0}.</value></data>
+  <data name="SwitchOffConfirm" xml:space="preserve"><value>¿Desactivar el temporizador para {0}? Los temporizadores en marcha allí se detienen.</value></data>
+  <data name="SwissWarning" xml:space="preserve"><value>Entidades jurídicas suizas: no active el temporizador hasta que la asesoría jurídica haya respondido las cuestiones de ArGV 1 art. 73, ArGV 3 art. 26, consulta al personal y EIPD (paquete MOD-0280 §22). Esta hoja no es el registro legal de la jornada.</value></data>
+  <data name="NoLegalEntities" xml:space="preserve"><value>No se encontró ninguna entidad jurídica.</value></data>
+  <data name="LegalEntitiesUnavailable" xml:space="preserve"><value>No se pudieron cargar las entidades jurídicas. Inténtelo más tarde.</value></data>
+  <data name="PositionsUnavailable" xml:space="preserve"><value>No se pudieron cargar los puestos. Inténtelo más tarde.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="NeverChanged" xml:space="preserve"><value>nunca</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+</root>

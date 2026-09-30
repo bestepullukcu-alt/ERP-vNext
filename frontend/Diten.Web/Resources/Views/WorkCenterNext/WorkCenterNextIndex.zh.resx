@@ -575,12 +575,6 @@
   <data name="TimesheetLabel" xml:space="preserve">
     <value>工时</value>
   </data>
-  <data name="TimeLoggedLabel" xml:space="preserve">
-    <value>已记录</value>
-  </data>
-  <data name="TimerRunning" xml:space="preserve">
-    <value>计时中</value>
-  </data>
   <data name="AwaitingReview" xml:space="preserve">
     <value>等待审核</value>
   </data>
@@ -604,9 +598,6 @@
   </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · 已计划于 {1}（模拟）</value>
-  </data>
-  <data name="ToastTimerStarted" xml:space="preserve">
-    <value>{0} · 计时已开始（模拟）</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>已记录 {0}（模拟）</value>
@@ -927,15 +918,6 @@
   </data>
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>全部字段</value>
-  </data>
-  <data name="TimerStateRunning" xml:space="preserve">
-    <value>进行中</value>
-  </data>
-  <data name="TimerStatePaused" xml:space="preserve">
-    <value>已暂停</value>
-  </data>
-  <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>系统不记录经过的时间 — 请手动填写您花费的时间。</value>
   </data>
   <data name="SubtaskStartedNotCompleted" xml:space="preserve">
     <value>子任务已启动但无法完成：{0}</value>
@@ -2474,5 +2456,59 @@
   </data>
   <data name="CalTruncatedNoEstimate" xml:space="preserve">
     <value>已在当天结束时截断。</value>
+  </data>
+  <data name="TimeDraftLabel" xml:space="preserve">
+    <value>我的草稿</value>
+  </data>
+  <data name="TimeSubmittedLabel" xml:space="preserve">
+    <value>已提交</value>
+  </data>
+  <data name="TimeApprovedLabel" xml:space="preserve">
+    <value>已批准</value>
+  </data>
+  <data name="TimerRunningNow" xml:space="preserve">
+    <value>您的计时器正在此任务上运行。</value>
+  </data>
+  <data name="OpenMyTimesheet" xml:space="preserve">
+    <value>打开我的工时表</value>
+  </data>
+  <data name="TimerSwitchedText" xml:space="preserve">
+    <value>您的计时器已切换到此任务。</value>
+  </data>
+  <data name="TimerUndo" xml:space="preserve">
+    <value>撤销</value>
+  </data>
+  <data name="TimerUndone" xml:space="preserve">
+    <value>计时器已回到上一个任务。</value>
+  </data>
+  <data name="TimerErrDisabled" xml:space="preserve">
+    <value>您所在的法人实体未开启计时器。请在“我的工时表”中填写时间。</value>
+  </data>
+  <data name="TimerErrNotHeld" xml:space="preserve">
+    <value>计时器只能用于您负责的任务。</value>
+  </data>
+  <data name="TimerErrNotInProgress" xml:space="preserve">
+    <value>计时器只能用于进行中的任务。</value>
+  </data>
+  <data name="TimerErrNotRunning" xml:space="preserve">
+    <value>已没有正在运行的计时器。</value>
+  </data>
+  <data name="TimerErrConflict" xml:space="preserve">
+    <value>计时器在此期间已被修改。页面已刷新。</value>
+  </data>
+  <data name="TimerErrUndoExpired" xml:space="preserve">
+    <value>已来不及撤销该切换。</value>
+  </data>
+  <data name="TimerErrGeneric" xml:space="preserve">
+    <value>无法更改计时器。请重试。</value>
+  </data>
+  <data name="WorkAggregation_Action_StartTimer" xml:space="preserve">
+    <value>开始计时</value>
+  </data>
+  <data name="WorkAggregation_Action_StopTimer" xml:space="preserve">
+    <value>停止计时</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>已暂停</value>
   </data>
 </root>

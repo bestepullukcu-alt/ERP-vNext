@@ -1,6 +1,7 @@
 @using Diten.Web.Views.TimeEntry
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<TimeEntryIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @*
     MOD-0280-FU01 T2a — the l10n payload My Timesheet reads (window: #time-entry-l10n, read by TimeEntry/index.js).
     Every key the page and the reason-code bridge use is listed here BY NAME — a guard test checks that each message key
@@ -186,6 +187,13 @@
         ["CapturedZeroNotAllowed"] = Localizer["CapturedZeroNotAllowed"].Value,
         ["SaveFailedKept"] = Localizer["SaveFailedKept"].Value,
         ["Limits"] = TimeEntryIndex.Limits,
+        ["SegmentsTitle"] = Localizer["SegmentsTitle"].Value,
+        ["SegmentLine"] = Localizer["SegmentLine"].Value,
+        ["SegmentCutAtMidnight"] = Localizer["SegmentCutAtMidnight"].Value,
+        ["ErrApprovalsQueryInvalid"] = Localizer["ErrApprovalsQueryInvalid"].Value,
+        ["SubmitNeedsTime"] = Localizer["SubmitNeedsTime"].Value,
+        // T2b (E1) - the calendar screens' own shared sentence: one text for the same fact everywhere.
+        ["CalendarUnresolved"] = SharedLocalizer["CalendarUnresolved"].Value,
         ["CategoryLabels"] = new Dictionary<string, string>
         {
             ["TimeEntry.Category.ADMINISTRATION"] = Localizer["TimeEntry.Category.ADMINISTRATION"].Value,

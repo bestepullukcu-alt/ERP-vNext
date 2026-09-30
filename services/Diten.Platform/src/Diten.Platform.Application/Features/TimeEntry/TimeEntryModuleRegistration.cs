@@ -44,9 +44,14 @@ public static class TimeEntryModuleRegistration
         // The two doors other modules use (pack §3.3): MOD-0024 tells us a task moved, and reads its spent time from us.
         services.AddScoped<ITaskTransitionObserver, TaskTransitionTimerObserver>();
         services.AddScoped<ITaskSpentTimeSource, TaskSpentTimeSource>();
+        // T2b — whether the reader's timer is switched on, so the Task Center offers startTimer/stopTimer only then.
+        services.AddScoped<ITimeEntryTimerAvailability, TimerAvailability>();
+        // T2b — the approver's marks and the Task Center work-item id of a submitted week (read only).
+        services.AddScoped<IApprovalWeekFacts, ApprovalWeekFacts>();
 
-        // §5.1 item 3 stop rule — the Task Center does not declare timeTracking until T2 ships its card.
-        services.TryAddSingleton(new TaskTimeTrackingOptions { DeclareTimeTracking = false });
+        // §5.1 item 3 — T2b shipped the card (real timeEntries block, start/stop actions): timeTracking is DECLARED.
+        // TryAdd, so a host that must stay off (a test pinning the old projection) still wins with its own instance.
+        services.TryAddSingleton(new TaskTimeTrackingOptions { DeclareTimeTracking = true });
 
         // The Task Center's approval card asks the owner what a "timesheet-week" approval is about (BL-437).
         services.AddScoped<IApprovalSourceResolver, TimesheetApprovalSourceResolver>();

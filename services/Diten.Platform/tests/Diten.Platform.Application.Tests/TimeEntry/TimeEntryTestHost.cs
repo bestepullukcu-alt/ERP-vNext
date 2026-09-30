@@ -135,6 +135,10 @@ public sealed class StubWorkingCalendar : IWorkingCalendarProvider
     public HashSet<DateOnly> Holidays { get; } = [];
     public HashSet<DateOnly> HalfDays { get; } = [];
 
+    /// <summary>T2b — dates the calendar cannot answer for (no calendar for the country): reported unresolved, as the real
+    /// engine does, so the week shows the "calendar not defined" notice.</summary>
+    public HashSet<DateOnly> Unresolved { get; } = [];
+
     public Task<WorkingDayResult> IsWorkingDayAsync(DateOnly date, WorkingCalendarScope scope, CancellationToken ct = default)
     {
         HolidayInfo? holiday = null;
@@ -152,6 +156,12 @@ public sealed class StubWorkingCalendar : IWorkingCalendarProvider
         else
         {
             working = date.DayOfWeek is not (DayOfWeek.Saturday or DayOfWeek.Sunday);
+        }
+
+        if (Unresolved.Contains(date))
+        {
+            return Task.FromResult(new WorkingDayResult(
+                WorkingCalendarResolution.CalendarMissing, null, date, scope.CountryCode, null, null, null, "stub", []));
         }
 
         return Task.FromResult(new WorkingDayResult(

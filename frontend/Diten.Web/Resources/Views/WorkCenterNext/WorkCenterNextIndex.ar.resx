@@ -575,12 +575,6 @@
   <data name="TimesheetLabel" xml:space="preserve">
     <value>الوقت</value>
   </data>
-  <data name="TimeLoggedLabel" xml:space="preserve">
-    <value>مسجّل</value>
-  </data>
-  <data name="TimerRunning" xml:space="preserve">
-    <value>قيد التشغيل</value>
-  </data>
   <data name="AwaitingReview" xml:space="preserve">
     <value>بانتظار المراجعة</value>
   </data>
@@ -604,9 +598,6 @@
   </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · مجدول ليوم {1} (تجريبي)</value>
-  </data>
-  <data name="ToastTimerStarted" xml:space="preserve">
-    <value>{0} · بدأ المؤقّت (تجريبي)</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>تم تسجيل {0} (تجريبي)</value>
@@ -927,15 +918,6 @@
   </data>
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>كل الحقول</value>
-  </data>
-  <data name="TimerStateRunning" xml:space="preserve">
-    <value>قيد التنفيذ</value>
-  </data>
-  <data name="TimerStatePaused" xml:space="preserve">
-    <value>موقوف مؤقتًا</value>
-  </data>
-  <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>لا يُسجَّل الوقت المنقضي — أدخل الوقت الذي قضيته يدويًا.</value>
   </data>
   <data name="SubtaskStartedNotCompleted" xml:space="preserve">
     <value>بدأت المهمة الفرعية لكن تعذّر إكمالها: {0}</value>
@@ -2474,5 +2456,59 @@
   </data>
   <data name="CalTruncatedNoEstimate" xml:space="preserve">
     <value>تم قطعه عند نهاية اليوم.</value>
+  </data>
+  <data name="TimeDraftLabel" xml:space="preserve">
+    <value>مسودتي</value>
+  </data>
+  <data name="TimeSubmittedLabel" xml:space="preserve">
+    <value>مُرسَل</value>
+  </data>
+  <data name="TimeApprovedLabel" xml:space="preserve">
+    <value>معتمد</value>
+  </data>
+  <data name="TimerRunningNow" xml:space="preserve">
+    <value>مؤقتك يعمل على هذه المهمة.</value>
+  </data>
+  <data name="OpenMyTimesheet" xml:space="preserve">
+    <value>فتح سجل ساعاتي</value>
+  </data>
+  <data name="TimerSwitchedText" xml:space="preserve">
+    <value>انتقل مؤقتك إلى هذه المهمة.</value>
+  </data>
+  <data name="TimerUndo" xml:space="preserve">
+    <value>تراجع</value>
+  </data>
+  <data name="TimerUndone" xml:space="preserve">
+    <value>عاد المؤقت إلى المهمة السابقة.</value>
+  </data>
+  <data name="TimerErrDisabled" xml:space="preserve">
+    <value>المؤقت غير مفعّل لكيانك القانوني. أدخل الوقت في سجل ساعاتي.</value>
+  </data>
+  <data name="TimerErrNotHeld" xml:space="preserve">
+    <value>يعمل المؤقت فقط على مهمة مسندة إليك.</value>
+  </data>
+  <data name="TimerErrNotInProgress" xml:space="preserve">
+    <value>يعمل المؤقت فقط على مهمة قيد التنفيذ.</value>
+  </data>
+  <data name="TimerErrNotRunning" xml:space="preserve">
+    <value>لم يعد هناك مؤقت قيد التشغيل.</value>
+  </data>
+  <data name="TimerErrConflict" xml:space="preserve">
+    <value>تغيّر المؤقت في هذه الأثناء. تم تحديث الصفحة.</value>
+  </data>
+  <data name="TimerErrUndoExpired" xml:space="preserve">
+    <value>فات أوان التراجع عن هذا التبديل.</value>
+  </data>
+  <data name="TimerErrGeneric" xml:space="preserve">
+    <value>تعذر تغيير المؤقت. حاول مرة أخرى.</value>
+  </data>
+  <data name="WorkAggregation_Action_StartTimer" xml:space="preserve">
+    <value>تشغيل المؤقت</value>
+  </data>
+  <data name="WorkAggregation_Action_StopTimer" xml:space="preserve">
+    <value>إيقاف المؤقت</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>موقوف مؤقتًا</value>
   </data>
 </root>

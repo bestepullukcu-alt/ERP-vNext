@@ -230,4 +230,9 @@
   <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>Есть несохранённые изменения, а строки без времени не сохраняются. Всё равно уйти с этой недели?</value></data>
   <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>Зафиксированное время нельзя исправить на ноль. Исправьте его минимум на {step} минут и поясните в примечании.</value></data>
   <data name="SaveFailedKept" xml:space="preserve"><value>Черновик не сохранён. Ваши изменения остаются на странице.</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>Отрезки таймера за этой строкой</value></data>
+  <data name="SegmentLine" xml:space="preserve"><value>{start}–{end} · {duration}</value></data>
+  <data name="SegmentCutAtMidnight" xml:space="preserve"><value>остановлен в полночь</value></data>
+  <data name="ErrApprovalsQueryInvalid" xml:space="preserve"><value>Не удалось прочитать список утверждений с этими параметрами. Обновите страницу.</value></data>
+  <data name="SubmitNeedsTime" xml:space="preserve"><value>Введите время, прежде чем отправлять неделю.</value></data>
 </root>

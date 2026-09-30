@@ -230,4 +230,9 @@
   <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>You have unsaved changes, and rows without time are not saved. Leave this week anyway?</value></data>
   <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>Captured time cannot be corrected to zero. Correct it to at least {step} minutes and explain in the note.</value></data>
   <data name="SaveFailedKept" xml:space="preserve"><value>The draft was not saved. Your changes are still on the page.</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>Timer runs behind this row</value></data>
+  <data name="SegmentLine" xml:space="preserve"><value>{start}–{end} · {duration}</value></data>
+  <data name="SegmentCutAtMidnight" xml:space="preserve"><value>cut at midnight</value></data>
+  <data name="ErrApprovalsQueryInvalid" xml:space="preserve"><value>The approvals list could not be read with these settings. Reload the page.</value></data>
+  <data name="SubmitNeedsTime" xml:space="preserve"><value>Enter time before submitting the week.</value></data>
 </root>

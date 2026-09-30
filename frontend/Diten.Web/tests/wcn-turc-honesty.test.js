@@ -35,22 +35,25 @@ describe("the timer readout no longer claims what it cannot know", () => {
     expect(stripped, "the one-second interval came back").not.toContain("setInterval(paint");
   });
 
-  it("keeps everything that IS recorded", () => {
-    // The total survives a refresh because it comes from stored `loggedMinutes`; the state comes from the
-    // projection; "Süre gir" is the only path that writes anything durable.
+  it("shows what the SERVER recorded (MOD-0280-FU01 T2b), and nothing the browser measured", () => {
+    // The total now comes from the provider's `timeEntries` block (draft / submitted / approved) — Platform's timer
+    // and the person's own sheet, which survive a refresh because they are stored. No local total exists any more.
     const card = APP.slice(APP.indexOf("const renderTimesheet"), APP.indexOf("const renderTimesheet") + 5200);
-    expect(card).toContain("formatMinutes(ts.loggedMinutes)");
-    expect(card).toContain("TimerStateRunning");
+    expect(card).toContain("timeEntriesOf(item)");
+    expect(card).toContain("TimeDraftLabel");
+    expect(card).toContain("TimeApprovedLabel");
     expect(card).toContain("wcn-ts-log");
+    expect(code(APP), "the local total came back").not.toMatch(/loggedMinutes|item\.timesheet\b/);
   });
 
-  it("says plainly that elapsed time is not recorded, in all seven languages", () => {
+  it("no longer tells the reader that elapsed time is not recorded — it is, now (all seven languages)", () => {
+    // MOD-0280-FU01 T2b: the timer is Platform's. The old hint ("elapsed time is not recorded — log it by hand")
+    // would now be false, so it is gone from the page and from every language.
+    expect(code(APP)).not.toContain("TimerFollowsStatusHint");
     LANGS.forEach((lang) => {
-      const v = String(value(resx(lang), "TimerFollowsStatusHint") || "").trim();
-      expect(v, `${lang} has no hint`).not.toBe("");
-      // The old sentence pointed at start/pause controls; the new one states the limitation.
-      expect(v.toLowerCase(), `${lang} still points at controls that record nothing`)
-        .not.toMatch(/duraklatma aksiyonlar|pause it from the actions/);
+      expect(resx(lang), `${lang} still carries the old hint`).not.toContain('name="TimerFollowsStatusHint"');
+      const v = String(value(resx(lang), "TimerRunningNow") || "").trim();
+      expect(v, `${lang} has no running line`).not.toBe("");
     });
   });
 

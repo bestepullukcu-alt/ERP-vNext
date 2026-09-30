@@ -575,12 +575,6 @@
   <data name="TimesheetLabel" xml:space="preserve">
     <value>Время</value>
   </data>
-  <data name="TimeLoggedLabel" xml:space="preserve">
-    <value>учтено</value>
-  </data>
-  <data name="TimerRunning" xml:space="preserve">
-    <value>идёт</value>
-  </data>
   <data name="AwaitingReview" xml:space="preserve">
     <value>Ожидает проверки</value>
   </data>
@@ -604,9 +598,6 @@
   </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · запланировано на {1} (макет)</value>
-  </data>
-  <data name="ToastTimerStarted" xml:space="preserve">
-    <value>{0} · таймер запущен (макет)</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>учтено {0} (макет)</value>
@@ -927,15 +918,6 @@
   </data>
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>Все поля</value>
-  </data>
-  <data name="TimerStateRunning" xml:space="preserve">
-    <value>В работе</value>
-  </data>
-  <data name="TimerStatePaused" xml:space="preserve">
-    <value>Приостановлено</value>
-  </data>
-  <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>Затраченное время не записывается — вводите его вручную.</value>
   </data>
   <data name="SubtaskStartedNotCompleted" xml:space="preserve">
     <value>Подзадача запущена, но завершить её не удалось: {0}</value>
@@ -2474,5 +2456,59 @@
   </data>
   <data name="CalTruncatedNoEstimate" xml:space="preserve">
     <value>Обрезано в конце рабочего дня.</value>
+  </data>
+  <data name="TimeDraftLabel" xml:space="preserve">
+    <value>мой черновик</value>
+  </data>
+  <data name="TimeSubmittedLabel" xml:space="preserve">
+    <value>отправлено</value>
+  </data>
+  <data name="TimeApprovedLabel" xml:space="preserve">
+    <value>утверждено</value>
+  </data>
+  <data name="TimerRunningNow" xml:space="preserve">
+    <value>Ваш таймер работает по этой задаче.</value>
+  </data>
+  <data name="OpenMyTimesheet" xml:space="preserve">
+    <value>Открыть «Мой табель»</value>
+  </data>
+  <data name="TimerSwitchedText" xml:space="preserve">
+    <value>Ваш таймер переключился на эту задачу.</value>
+  </data>
+  <data name="TimerUndo" xml:space="preserve">
+    <value>Отменить</value>
+  </data>
+  <data name="TimerUndone" xml:space="preserve">
+    <value>Таймер вернулся к предыдущей задаче.</value>
+  </data>
+  <data name="TimerErrDisabled" xml:space="preserve">
+    <value>Таймер не включён для вашего юридического лица. Внесите время в «Мой табель».</value>
+  </data>
+  <data name="TimerErrNotHeld" xml:space="preserve">
+    <value>Таймер работает только на задаче, закреплённой за вами.</value>
+  </data>
+  <data name="TimerErrNotInProgress" xml:space="preserve">
+    <value>Таймер работает только на задаче в работе.</value>
+  </data>
+  <data name="TimerErrNotRunning" xml:space="preserve">
+    <value>Таймер уже не запущен.</value>
+  </data>
+  <data name="TimerErrConflict" xml:space="preserve">
+    <value>Таймер за это время изменился. Страница обновлена.</value>
+  </data>
+  <data name="TimerErrUndoExpired" xml:space="preserve">
+    <value>Отменить это переключение уже поздно.</value>
+  </data>
+  <data name="TimerErrGeneric" xml:space="preserve">
+    <value>Не удалось изменить таймер. Попробуйте ещё раз.</value>
+  </data>
+  <data name="WorkAggregation_Action_StartTimer" xml:space="preserve">
+    <value>Запустить таймер</value>
+  </data>
+  <data name="WorkAggregation_Action_StopTimer" xml:space="preserve">
+    <value>Остановить таймер</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>Приостановлено</value>
   </data>
 </root>

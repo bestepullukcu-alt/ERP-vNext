@@ -709,6 +709,17 @@
             return node;
         };
 
+        // T2b (CT live finding E1) — the SAME notice the calendar screens show (DitenCalendar.unresolvedNotice: its class,
+        // its shared sentence) when the working calendar could not say what a day of this week is.
+        if ((payload.days || []).some(function (d) { return d.calendarUnresolved; })) {
+            var note = el('p', 'dc-unresolved-note time-entry-calendar-unresolved');
+            note.setAttribute('role', 'note');
+            note.id = 'teCalendarUnresolved';
+            note.appendChild(el('i', 'bx bx-info-circle'));
+            note.appendChild(doc.createTextNode(t('CalendarUnresolved')));
+            host.appendChild(note);
+        }
+
         if (core.isRejectedNow(payload) && payload.lastRejectionReason) {
             add('rejected', t('RejectedBand', {
                 name: payload.lastRejectedByDisplayName || t('UnknownPerson'),
@@ -1190,7 +1201,13 @@
             host.appendChild(saveButton);
         }
         if (payload.status === 'Draft' && payload.editable) {
-            host.appendChild(button('btn btn-primary', core.isRejectedNow(payload) ? t('Resubmit') : t('SubmitWeek'), submitWeek, { id: 'teSubmit' }));
+            // T2b (CT live finding E2) — an empty week cannot be submitted (the server refuses TIMESHEET_EMPTY_WEEK): the
+            // button says so instead of offering a click that can only fail.
+            var submit = button('btn btn-primary', core.isRejectedNow(payload) ? t('Resubmit') : t('SubmitWeek'), submitWeek, { id: 'teSubmit' });
+            var hasTime = state.rows.some(function (row) { return core.rowTotal(row) > 0; });
+            submit.disabled = !hasTime;
+            if (!hasTime) { submit.setAttribute('title', t('SubmitNeedsTime')); }
+            host.appendChild(submit);
         }
         if (payload.status === 'Draft' && payload.correctionOfRevision) {
             host.appendChild(button('btn btn-label-danger', t('DiscardCorrection'), discardCorrection, { id: 'teDiscardCorrection' }));
@@ -1285,6 +1302,24 @@
 
     /** The correction of a captured (timer / meeting) cell: what was measured, what stands now, what it becomes. The
      * change stays on the page until the draft is saved; `source` goes with it (core.buildSaveEntries). */
+    /** The caller's own timer segments behind a captured Timer row: same day, same task or category. */
+    function segmentsOf(row, date) {
+        if (!row || row.source !== 'Timer') { return []; }
+        return (state.payload.timerSegments || []).filter(function (s) {
+            return s.localDate === date && (s.taskItemId || null) === (row.taskItemId || null)
+                && (s.taskItemId ? true : (s.categoryCode || null) === (row.categoryCode || null));
+        });
+    }
+
+    /** An instant as the tenant's wall-clock time (the week's own zone). */
+    function clockOf(iso) {
+        try {
+            return new Intl.DateTimeFormat(lang(), { hour: '2-digit', minute: '2-digit', timeZone: state.payload.timeZoneId || undefined }).format(new Date(iso));
+        } catch (error) {
+            return String(iso || '');
+        }
+    }
+
     function correctionPanel() {
         var row = rowByKey(state.panel.rowKey);
         var date = state.panel.date;
@@ -1298,6 +1333,23 @@
         section.appendChild(el('p', 'time-entry-side-item', t('MeasuredValue', { value: core.formatMinutes(measured) || '0:00' })));
         if (cell.outsideWorkingMinutes > 0) {
             section.appendChild(el('p', 'time-entry-side-item', t('MarkOutsideHours', { value: core.formatMinutes(cell.outsideWorkingMinutes) })));
+        }
+        // T2b (CT live finding E4) — the timer runs behind this captured row: the person's own segments of this (day,
+        // target) whose instants are still there (Platform lists none of an approved week, D4). Read only.
+        var segments = segmentsOf(row, date);
+        if (segments.length) {
+            var list = el('ul', 'list-unstyled time-entry-segments');
+            list.id = 'teSegments';
+            segments.forEach(function (s) {
+                var text = t('SegmentLine', {
+                    start: clockOf(s.startedAtUtc), end: s.stoppedAtUtc ? clockOf(s.stoppedAtUtc) : '…',
+                    duration: core.formatMinutes(Math.round(s.durationSeconds / 60)) || '0:00'
+                });
+                if (s.stopReason === 'LocalMidnight') { text += ' · ' + t('SegmentCutAtMidnight'); }
+                list.appendChild(el('li', 'time-entry-side-item time-entry-segment', text));
+            });
+            section.appendChild(el('h6', 'time-entry-side-title', t('SegmentsTitle')));
+            section.appendChild(list);
         }
         var label = el('label', 'form-label', t('CorrectedValue'));
         label.setAttribute('for', 'teCorrectValue');

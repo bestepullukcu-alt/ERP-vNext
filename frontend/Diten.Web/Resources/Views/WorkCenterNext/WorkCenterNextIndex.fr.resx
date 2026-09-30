@@ -575,12 +575,6 @@
   <data name="TimesheetLabel" xml:space="preserve">
     <value>Temps</value>
   </data>
-  <data name="TimeLoggedLabel" xml:space="preserve">
-    <value>enregistré</value>
-  </data>
-  <data name="TimerRunning" xml:space="preserve">
-    <value>en marche</value>
-  </data>
   <data name="AwaitingReview" xml:space="preserve">
     <value>En attente de revue</value>
   </data>
@@ -604,9 +598,6 @@
   </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · planifié pour {1} (mock)</value>
-  </data>
-  <data name="ToastTimerStarted" xml:space="preserve">
-    <value>{0} · minuteur démarré (mock)</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>{0} enregistré (mock)</value>
@@ -927,15 +918,6 @@
   </data>
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>Tous les champs</value>
-  </data>
-  <data name="TimerStateRunning" xml:space="preserve">
-    <value>En cours</value>
-  </data>
-  <data name="TimerStatePaused" xml:space="preserve">
-    <value>En pause</value>
-  </data>
-  <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>Le temps écoulé n'est pas enregistré — saisissez manuellement le temps passé.</value>
   </data>
   <data name="SubtaskStartedNotCompleted" xml:space="preserve">
     <value>La sous-tâche a démarré mais n'a pas pu être terminée : {0}</value>
@@ -2474,5 +2456,59 @@
   </data>
   <data name="CalTruncatedNoEstimate" xml:space="preserve">
     <value>Coupé à la fin de la journée.</value>
+  </data>
+  <data name="TimeDraftLabel" xml:space="preserve">
+    <value>mon brouillon</value>
+  </data>
+  <data name="TimeSubmittedLabel" xml:space="preserve">
+    <value>soumis</value>
+  </data>
+  <data name="TimeApprovedLabel" xml:space="preserve">
+    <value>approuvé</value>
+  </data>
+  <data name="TimerRunningNow" xml:space="preserve">
+    <value>Votre chronomètre tourne sur cette tâche.</value>
+  </data>
+  <data name="OpenMyTimesheet" xml:space="preserve">
+    <value>Ouvrir Ma feuille de temps</value>
+  </data>
+  <data name="TimerSwitchedText" xml:space="preserve">
+    <value>Votre chronomètre est passé sur cette tâche.</value>
+  </data>
+  <data name="TimerUndo" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="TimerUndone" xml:space="preserve">
+    <value>Le chronomètre est revenu sur la tâche précédente.</value>
+  </data>
+  <data name="TimerErrDisabled" xml:space="preserve">
+    <value>Le chronomètre n’est pas activé pour votre entité juridique. Saisissez le temps dans Ma feuille de temps.</value>
+  </data>
+  <data name="TimerErrNotHeld" xml:space="preserve">
+    <value>Le chronomètre ne fonctionne que sur une tâche que vous détenez.</value>
+  </data>
+  <data name="TimerErrNotInProgress" xml:space="preserve">
+    <value>Le chronomètre ne fonctionne que sur une tâche en cours.</value>
+  </data>
+  <data name="TimerErrNotRunning" xml:space="preserve">
+    <value>Aucun chronomètre ne tourne plus.</value>
+  </data>
+  <data name="TimerErrConflict" xml:space="preserve">
+    <value>Le chronomètre a changé entre-temps. La page a été actualisée.</value>
+  </data>
+  <data name="TimerErrUndoExpired" xml:space="preserve">
+    <value>Il est trop tard pour annuler ce basculement.</value>
+  </data>
+  <data name="TimerErrGeneric" xml:space="preserve">
+    <value>Le chronomètre n’a pas pu être modifié. Réessayez.</value>
+  </data>
+  <data name="WorkAggregation_Action_StartTimer" xml:space="preserve">
+    <value>Démarrer le chronomètre</value>
+  </data>
+  <data name="WorkAggregation_Action_StopTimer" xml:space="preserve">
+    <value>Arrêter le chronomètre</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>En pause</value>
   </data>
 </root>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ApprovalsTitle" xml:space="preserve"><value>Утверждение табелей</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Отправленные недели, ожидающие вашего решения. Вместе можно утвердить только недели без отметок.</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>Сотрудник</value></data>
+  <data name="ColWeek" xml:space="preserve"><value>Неделя</value></data>
+  <data name="ColTotal" xml:space="preserve"><value>Итого</value></data>
+  <data name="ColMarks" xml:space="preserve"><value>Отметки</value></data>
+  <data name="ColSubmitted" xml:space="preserve"><value>Отправлено</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Открыть</value></data>
+  <data name="MarkFlagged" xml:space="preserve"><value>День более 11 ч</value></data>
+  <data name="MarkAutoClosed" xml:space="preserve"><value>Таймер остановлен в полночь</value></data>
+  <data name="MarkOutsideHours" xml:space="preserve"><value>Вне рабочего времени</value></data>
+  <data name="MarkHoliday" xml:space="preserve"><value>Работа в праздник</value></data>
+  <data name="CorrectionBadge" xml:space="preserve"><value>Исправление редакции {0}</value></data>
+  <data name="NoMarks" xml:space="preserve"><value>Без отметок</value></data>
+  <data name="BulkApprove" xml:space="preserve"><value>Утвердить выбранные</value></data>
+  <data name="BulkApproveConfirm" xml:space="preserve"><value>Утвердить выбранные недели ({0})? Недели с отметками никогда не утверждаются пакетом.</value></data>
+  <data name="BulkApproveDone" xml:space="preserve"><value>Утверждено: {0}, пропущено: {1}.</value></data>
+  <data name="BulkMarkedHint" xml:space="preserve"><value>Недели с отметками выбрать нельзя: откройте их и решите по одной.</value></data>
+  <data name="BulkNothingSelected" xml:space="preserve"><value>Выберите хотя бы одну неделю без отметок.</value></data>
+  <data name="DetailTitle" xml:space="preserve"><value>Неделя табеля</value></data>
+  <data name="Revision" xml:space="preserve"><value>Редакция {0}</value></data>
+  <data name="SubmittedAt" xml:space="preserve"><value>Отправлено {0}</value></data>
+  <data name="Approve" xml:space="preserve"><value>Утвердить</value></data>
+  <data name="Reject" xml:space="preserve"><value>Вернуть</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>Утвердить эту неделю?</value></data>
+  <data name="RejectReason" xml:space="preserve"><value>Почему неделя возвращается? (обязательно)</value></data>
+  <data name="RejectReasonRequired" xml:space="preserve"><value>Укажите, почему неделя возвращается.</value></data>
+  <data name="ApprovedToast" xml:space="preserve"><value>Неделя утверждена.</value></data>
+  <data name="RejectedToast" xml:space="preserve"><value>Неделя возвращена сотруднику.</value></data>
+  <data name="CorrectionChangesTitle" xml:space="preserve"><value>Что меняет это исправление</value></data>
+  <data name="ColDay" xml:space="preserve"><value>День</value></data>
+  <data name="ColWork" xml:space="preserve"><value>Работа</value></data>
+  <data name="ColBefore" xml:space="preserve"><value>Было</value></data>
+  <data name="ColAfter" xml:space="preserve"><value>Стало</value></data>
+  <data name="Added" xml:space="preserve"><value>добавлено</value></data>
+  <data name="Removed" xml:space="preserve"><value>удалено</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>Это исправление ничего не меняет относительно утверждённой недели.</value></data>
+  <data name="CapturedValue" xml:space="preserve"><value>измерено {0}</value></data>
+  <data name="Corrected" xml:space="preserve"><value>исправлено</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Назад к утверждениям</value></data>
+  <data name="UnreadableTask" xml:space="preserve"><value>Недоступная задача</value></data>
+  <data name="SourceManual" xml:space="preserve"><value>Вручную</value></data>
+  <data name="SourceTimer" xml:space="preserve"><value>Таймер</value></data>
+  <data name="SourceMeeting" xml:space="preserve"><value>Совещание</value></data>
+  <data name="SourcePlan" xml:space="preserve"><value>Из плана</value></data>
+  <data name="ApproverCannotEdit" xml:space="preserve"><value>Утверждающий не редактирует неделю. Чтобы что-то изменить, верните её с причиной.</value></data>
+  <data name="WeekNotAvailable" xml:space="preserve"><value>Эта неделя не ожидает вашего утверждения.</value></data>
+  <data name="DecisionNotAllowed" xml:space="preserve"><value>Вы не можете принять решение по этой неделе.</value></data>
+  <data name="RowTotal" xml:space="preserve"><value>Итого</value></data>
+  <data name="RowTarget" xml:space="preserve"><value>Норма</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="NoApprovals" xml:space="preserve"><value>Нет недель, ожидающих вашего утверждения.</value></data>
+  <data name="ColumnWork" xml:space="preserve"><value>Работа</value></data>
+  <data name="ColumnTotal" xml:space="preserve"><value>Итого</value></data>
+  <data name="InForceNote" xml:space="preserve"><value>Утверждённая редакция {0} действует, пока это исправление не утверждено.</value></data>
+  <data name="MarksTitle" xml:space="preserve"><value>Отметки</value></data>
+</root>

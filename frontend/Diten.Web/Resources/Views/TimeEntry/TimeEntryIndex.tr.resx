@@ -230,4 +230,9 @@
   <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>Kaydedilmemiş değişiklikler var ve süresiz satırlar kaydedilmez. Yine de bu haftadan çıkılsın mı?</value></data>
   <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>Yakalanan süre sıfıra düzeltilemez. En az {step} dakikaya düzeltin ve nedenini nota yazın.</value></data>
   <data name="SaveFailedKept" xml:space="preserve"><value>Taslak kaydedilmedi. Değişiklikleriniz sayfada duruyor.</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>Bu satırın sayaç parçaları</value></data>
+  <data name="SegmentLine" xml:space="preserve"><value>{start}–{end} · {duration}</value></data>
+  <data name="SegmentCutAtMidnight" xml:space="preserve"><value>gece yarısı kesildi</value></data>
+  <data name="ErrApprovalsQueryInvalid" xml:space="preserve"><value>Onay listesi bu ayarlarla okunamadı. Sayfayı yenileyin.</value></data>
+  <data name="SubmitNeedsTime" xml:space="preserve"><value>Haftayı göndermeden önce süre girin.</value></data>
 </root>
