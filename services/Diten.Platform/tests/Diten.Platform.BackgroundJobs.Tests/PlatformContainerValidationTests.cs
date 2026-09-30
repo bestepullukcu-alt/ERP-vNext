@@ -6,6 +6,8 @@ using Diten.Platform.API.Security;
 using Diten.Platform.Application;
 using Diten.Platform.Application.Authorization;
 using Diten.Platform.Application.Features.Workflow.Services;
+using Diten.BuildingBlocks.BackgroundJobs;
+using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 using Diten.Platform.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
@@ -88,11 +90,19 @@ public sealed class PlatformContainerValidationTests
 {
     [Fact]
     public async Task Platform_container_builds_under_the_validation_the_app_boots_with()
+        => await ValidateContainerAsync(runStartupMaintenance: true, schedulerEnabled: true);
+
+    [Fact]
+    public async Task Api_serving_container_builds_with_scheduler_and_dashboard_disabled()
+        => await ValidateContainerAsync(runStartupMaintenance: false, schedulerEnabled: false);
+
+    private static async Task ValidateContainerAsync(bool runStartupMaintenance, bool schedulerEnabled)
     {
         await using var mongo = await OwnedMongoProcess.StartAsync();
         var configuration = TestConfiguration(
             mongo.ConnectionString,
-            "diten_platform_itest_container_validation");
+            "diten_platform_itest_container_validation",
+            schedulerEnabled);
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddSingleton(configuration);
@@ -100,7 +110,7 @@ public sealed class PlatformContainerValidationTests
         services.AddInfrastructure(
             configuration,
             new ContainerValidationHostEnvironment(),
-            runStartupMaintenance: true);
+            runStartupMaintenance: runStartupMaintenance);
         services.AddSingleton<EndpointDataSource>(new DefaultEndpointDataSource());
         services.AddScoped<Diten.Platform.Application.Contracts.IActorPermissionContext,
             Diten.Platform.API.Security.ClaimsActorPermissionContext>();
@@ -140,6 +150,16 @@ public sealed class PlatformContainerValidationTests
             failure is null,
             "The Platform DI container does not build. This is the same validation the service performs at "
             + "startup, so the service will not start either.\n\n" + failure);
+
+        Assert.Equal(schedulerEnabled, services.Any(descriptor =>
+            descriptor.ServiceType == typeof(IBackgroundJobScheduler)));
+        Assert.Equal(schedulerEnabled, services.Any(descriptor =>
+            descriptor.ServiceType == typeof(EmailDispatchSweepJob)));
+        if (schedulerEnabled)
+        {
+            Assert.Equal(ServiceLifetime.Scoped, services.Single(descriptor =>
+                descriptor.ServiceType == typeof(EmailDispatchSweepJob)).Lifetime);
+        }
     }
 
     [Fact]
@@ -165,7 +185,8 @@ public sealed class PlatformContainerValidationTests
     /// configuration reason having nothing to do with lifetimes — noise that teaches people to ignore it.
     /// Reading the shipped files means this test sees the same configuration surface the service does.
     /// </summary>
-    private static IConfiguration TestConfiguration(string mongoConnectionString, string databaseName) =>
+    private static IConfiguration TestConfiguration(
+        string mongoConnectionString, string databaseName, bool schedulerEnabled) =>
         new ConfigurationBuilder()
             .AddJsonFile(ApiSettingsPath("appsettings.json"), optional: false)
             .AddJsonFile(ApiSettingsPath("appsettings.Development.json"), optional: true)
@@ -188,10 +209,8 @@ public sealed class PlatformContainerValidationTests
                 ["ModuleRegistrationCredentials:Mdm:ActiveSecret"] =
                     "container-validation-only-module-registration-secret",
 
-                // ⚠ BackgroundJobs IS NOT OVERRIDDEN. appsettings.Development.json enables it, and that is
-                // load-bearing: Hangfire is what registers IBackgroundJobScheduler, which EmailDispatchSweepJob
-                // needs. Switching it off here would make the guard red for a reason the running service does
-                // not have.
+                ["BackgroundJobs:Enabled"] = schedulerEnabled.ToString(),
+                ["BackgroundJobs:DashboardEnabled"] = "false",
                 ["Smtp:Enabled"] = "false"
             })
             .Build();

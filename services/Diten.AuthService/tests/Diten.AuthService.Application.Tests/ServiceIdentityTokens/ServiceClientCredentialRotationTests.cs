@@ -7,6 +7,21 @@ namespace Diten.AuthService.Application.Tests.ServiceIdentityTokens;
 public sealed class ServiceClientCredentialRotationTests
 {
     [Fact]
+    public void Rotation_overlap_retains_sub_millisecond_boundary_precision()
+    {
+        var verifier = new ServiceClientCredentialVerifier();
+        var boundary = DateTimeOffset.FromUnixTimeSeconds(1800000000).AddTicks(1234567);
+        var identity = new ServiceClientIdentity
+        {
+            ActiveCredentialHash = verifier.Hash("new-fixture-credential"), ActiveCredentialVersion = "v2",
+            PreviousCredentialHash = verifier.Hash("old-fixture-credential"), PreviousCredentialVersion = "v1",
+            PreviousValidUntilUtc = boundary
+        };
+        Assert.True(verifier.Verify(identity, "old-fixture-credential", boundary.AddTicks(-1)));
+        Assert.False(verifier.Verify(identity, "old-fixture-credential", boundary));
+        Assert.True(verifier.Verify(identity, "new-fixture-credential", boundary));
+    }
+    [Fact]
     public void Active_and_previous_credentials_obey_strict_overlap_and_revocation()
     {
         var verifier = new ServiceClientCredentialVerifier();

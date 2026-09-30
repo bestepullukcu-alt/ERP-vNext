@@ -9,6 +9,7 @@ using Diten.Platform.Application.Features.Audit;
 using Diten.Platform.Application.Features.Lookups.Services;
 using Diten.Platform.Application.Features.EntitlementAttestations;
 using Diten.Platform.Application.Features.Notifications.Services;
+using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 using Diten.Platform.Application.Features.WorkingCalendar.Services;
 using Diten.Platform.Application.Features.WorkingCalendarImport;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
@@ -758,6 +759,7 @@ public static class DependencyInjection
                     });
         });
         services.AddSingleton<IBackgroundJobScheduler, HangfireBackgroundJobScheduler>();
+        services.AddScoped<EmailDispatchSweepJob>();
 
         if (schedulerOptions.Enabled && runStartupMaintenance)
         {

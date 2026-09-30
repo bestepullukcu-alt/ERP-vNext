@@ -285,7 +285,6 @@ public static class DependencyInjection
         services.AddScoped<SchedulerSmokeTestJob>();
         services.AddScoped<DeferredPlatformJobHandler>();
         services.AddScoped<EmailDispatchJob>();
-        services.AddScoped<EmailDispatchSweepJob>();
         services.AddScoped<Features.Workflow.BackgroundJobs.WorkflowEscalationSweepJob>();
         // WC-4 — the ONE place a task notification is sent from (opt-out, actor skip, real addresses,
         // never fails the write).

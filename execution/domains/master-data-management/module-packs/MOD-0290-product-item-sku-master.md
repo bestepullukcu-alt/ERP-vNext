@@ -5695,3 +5695,252 @@ Platform MOD-0021-FU01 amendment, `ready-for-dev`, Production and live acceptanc
 
 **module-pack-author verdict:** `A1a PASS; A1b CONDITIONAL / BLOCKED — PLANNING ONLY`; no A1b code-start is authorized
 by this link.
+
+## 22. P5-03 — Selected first-five audit delivery named step (2026-09-29, APPROVED CODE/TEST START)
+
+**Superseding approval record (2026-09-29):** the user explicitly answered `onaylıyorum` to the consolidated three-step
+code/test approval. This named step's Phase 1.5 design and exact **8 runtime + 4 test** paths are approved for bounded
+implementation and test-owned verification. The proposed exact Windows SID/account + process-only immutable manifest +
+bounded stdin one-shot marker operator policy is accepted; `AUDIT-OPERATOR-AUTHORITY-UNFROZEN` is closed for this design.
+Frontmatter, Section 21 and other approvals remain unchanged. This is not blanket first-five authority, FG completion,
+generic worker activation, live DB/credential operation, service start, commit, push or merge approval. Target is
+`C:/dev/ERP-vNext/.worktrees/product-pv-delivery-integration-20260907`,
+`codex/product-pv-delivery-integration-20260907`, baseline `d5f811ad7d10426498c7d0460af65ae573df4382`.
+
+### 22.1 Reuse and exact selection contract
+
+Reuse the existing `AuditIntentDeliveryProcessor` claim, identity acquisition, bounded authentication refresh,
+transport, receipt validation and acknowledgement/compaction pipeline. This is not a second audit system.
+`ProcessTenantAsync` and the generic worker retain their current behavior; the new one-shot path must not invoke their
+all-aggregate/all-tenant discovery or activate those workers.
+
+The proposed exact CLI is `--selected-audit-intent-delivery`, Development-only and default-disabled, dispatched before
+normal host construction. Both process environment names must resolve exactly to Development; duplicate, case-variant,
+unknown or conflicting operational modes fail before side effects. No-argument and maintenance-disabled API serving
+remain unchanged. All optional execution values are captured once from process-only configuration into an immutable
+manifest; no appsettings, user secrets, file, argv secret or fallback environment source is introduced.
+
+The manifest binds an execution ID, schema version, exact tenant, approved process identity/SID, one-shot marker digest,
+exact Mongo/Auth/Platform local endpoints, and **1..100 unique locators**. Each locator binds tenant, aggregate type,
+aggregate ID, intent ID, expected claim generation and immutable payload/evidence fingerprint; empty/malformed/duplicate
+or mixed-tenant selections fail. Delivery budgets remain bounded by the existing processor contract. Never expand a
+selection to all rows of a type or fill it from unbounded discovery.
+
+Allowed aggregate types are `GlobalProduct`, `ProductDefinitionRevision`, `Gsku`, `Lsku`, `ProductAbbreviation` and
+`ProductLegalEntityScopePolicy`. `CodeReservation` is allowed only when the exact persisted reservation's entity type
+and identity evidence prove first-five ownership. `FinishedGood`, `ProductLegalEntityScopeRolloutState`, their reservations,
+unknown types and unproven reservation ownership are rejected before claim. Scope `ActivateEnforced` remains excluded.
+Soft-deleted source aggregates remain eligible for existing audit recovery semantics, but exact tenant/locator/payload
+validation is mandatory; do not invent an IsDeleted=false rule that loses retained audit evidence.
+
+### 22.2 Three distinct authorities — owner policy approved 2026-09-29
+
+| Authority | Proposed contract | Must not imply |
+| --- | --- | --- |
+| Operator may run the tool | **Approved code contract:** exact Windows operator SID plus resolved account identity, process-only immutable manifest and bounded stdin one-shot marker matching its digest. Wrong/missing/changed operator or marker fails closed before repository mutation and HTTP. | Windows login is not an application user token, business actor, generic source-write authority or permission to choose arbitrary targets. |
+| Source delivery permit | The approved exact execution/tenant/locator/generation/fingerprint set becomes an immutable repository-instance boundary; every mutation revalidates its locator and CAS. | A valid service credential does not permit all MDM rows, tenants, FG or rollout changes. |
+| Transport identity | Existing `ITrustedSourceAuditServiceIdentityProvider` supplies only `TRUSTED_AUDIT_SOURCE_INGEST` credentials for the exact tenant; existing client validates central receipt. | Platform ingestion authorization does not authorize local claim, retry, dead-letter or compaction. |
+
+No application actor is impersonated or manufactured; the original immutable source `ActorId`, operation and evidence
+remain unchanged. Record execution/operator diagnostics separately and secret-free. The operator policy was explicitly
+accepted for code/test on 2026-09-29; a local OS account's existence alone is still insufficient authority. A future
+JWT/current-permission alternative requires revised design/allow-list approval, not a silent authorizer or bypass.
+Code/test approval and live operator/target/credential/process approval remain separate gates.
+
+### 22.3 No-DDL composition and persistence invariants
+
+- Existing repository construction calls `EnsureIndexes`; therefore selecting fewer rows alone is not safe. Add a named
+  selected-mode factory/private construction path **inside the existing repository file**, bypassing all index creation.
+  Preserve the normal constructor's behavior. No broad Persistence/Infrastructure DI edits or generic schema initializer.
+- Preflight reads exact collection/index specifications, writable-primary replica topology and temporal state.
+  Reuse `AuditIntentTemporalMigrationRepository(IMongoDatabase, TimeProvider, failureInjector?)` only for
+  `GetValidatedStateAsync`; **never `RunAsync`**. A validated `CutoverActive` with correct index fingerprint is mandatory
+  before any claim. Missing state/index/collection, stale fingerprint or legacy temporal storage blocks without repair,
+  migration, DDL or implicit collection creation. This operational prerequisite is not fabricated by tests or code.
+- Keep tenant and selected locators immutable on the selected repository instance. `TryClaimAsync`, payload reads,
+  `MarkRetryableFailureAsync`, `MarkDeadLetterAsync`, `MarkDeliveredAsync`, `AcknowledgeAndCompactAsync` and
+  `CompactDeliveredAsync` all reject an out-of-selection locator, tenant, generation or source-evidence mismatch.
+  Validation only at the runner/discovery boundary is insufficient; all mutation entry points remain guarded.
+- Isolated runner composes only existing required clients/repository/processor. Do not call `AddInfrastructure` or
+  normal host registrations. Reuse `AuthTrustedSourceAuditServiceIdentityProvider(IHttpClientFactory, options, TimeProvider)`
+  and `PlatformTrustedSourceAuditIntentClient(IHttpClientFactory, options, TimeProvider)` with their existing option
+  sections, no redirects, infinite HttpClient timeout plus the existing own two-second budgets, and sensitive-header
+  redaction. Credential values are process-only and never written to logs/artefacts; overlap credentials remain distinct.
+- Reuse validated receipt and bounded retry semantics. A response-loss retry can accept the central duplicate receipt
+  only with exact tenant/intent/idempotency/contract/evidence match. Completed compacted selection returns exact persisted
+  receipt read-back, without a new claim or delivery. Receipt drift fails closed; no synthetic acknowledgement.
+- Nonselected same-tenant rows, foreign tenant rows, FG/rollout, source actor and aggregate business `Version` stay
+  unchanged. Only selected delivery-owned claim/status/retry/acknowledgement/compaction fields may change. Central
+  ingestion's existing durable acceptance is not proof of final `audit_events` delivery; that worker remains separately gated.
+
+### 22.4 Exact approved bounded writer allow-list
+
+All paths are relative to the exact target above, verified against the baseline. Runtime: **8 (4 Existing / 4 New)**;
+tests: **4 (2 Existing / 2 New)**. No new module ID, permission, collection, index or Platform/Auth change is proposed.
+
+| State | Exact runtime path |
+| --- | --- |
+| New | `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/SelectedAuditIntentDeliveryRequest.cs` |
+| Existing | `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IAuditIntentDeliveryRepository.cs` |
+| Existing | `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentDeliveryRepository.cs` |
+| Existing | `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Audit/AuditIntentDeliveryProcessor.cs` |
+| New | `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/SelectedAuditIntentDeliveryOptions.cs` |
+| New | `services/Diten.MdmService/src/Diten.MdmService.Api/Services/Audit/SelectedAuditIntentDeliveryCommandLine.cs` |
+| New | `services/Diten.MdmService/src/Diten.MdmService.Api/Services/Audit/SelectedAuditIntentDeliveryRunner.cs` |
+| Existing | `services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs` |
+
+| State | Exact test path |
+| --- | --- |
+| Existing | `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/AuditIntentDeliveryProcessorTests.cs` |
+| New | `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/SelectedAuditIntentDeliveryContractTests.cs` |
+| New | `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/SelectedAuditIntentDeliveryMongoTests.cs` |
+| Existing | `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ApiStartupExecutionModeTests.cs` |
+
+All other paths are protected: temporal migration implementation, normal DI/worker/options, appsettings, Auth/Platform,
+frontend/Gateway, FU18/FU19/FU02 amendments, FG/rollout implementation and fixture/architecture guard sources. No private
+reflection-based mutation, generic worker enablement, service restart, live DB write or direct Mongo patch is authorized.
+
+### 22.5 Phase 1.5 — nine-point design approved 2026-09-29
+
+| # | Check | Plan |
+| --- | --- | --- |
+| 1 | Fields and sources | New immutable selection request only: manifest execution/schema/tenant/operator identity, locators/generation/evidence fingerprint; persisted intent/receipt supplies authoritative source content. No business entity/schema fields added. |
+| 2 | Global naming | Existing TenantId, aggregate/intent IDs, ClaimGeneration and evidence hash names; execution metadata separate from source ActorId/Version. |
+| 3 | Tenant / soft-delete | Instance-bound exact tenant/selection enforced on every repository entry point; retained soft-deleted audit sources follow existing recovery contract. No cross-tenant payload or claim. |
+| 4 | Entity base | No new persisted entity. Existing tenant-owned aggregate bases remain unchanged; request is a non-persistent immutable value contract. |
+| 5 | CQRS / composition | Existing operational CLI runner + application processor + domain repository pattern; exact 8/4 files above. No new API command/controller, host or generic worker. |
+| 6 | Golden / fields | N/A for this named step: backend CLI, zero UI fields; existing module UI/Golden decisions unchanged. |
+| 7 | Compact sections | N/A: no Razor/Create/Edit/Details changes. |
+| 8 | Required parity | Parser/options/request validate same exact execution, operator, one-shot marker, tenant and 1..100 locator facts before side effects. Web ViewModel/Razor/progress tracker N/A. |
+| 9 | Lookup ownership | None: no lookup endpoint/key/UI or MDM/reference-data ownership change. |
+
+### 22.6 Required evidence and remaining gates
+
+- Wrong operator with valid service credentials: **zero HTTP, zero claim and zero mutation**. Wrong/missing marker,
+  non-Development/ambiguous environment, invalid CLI, empty/duplicate/mixed-tenant selection or manifest drift also fails
+  before HTTP/claim. Direct repository calls outside the immutable selection fail independently of the runner.
+- Missing/wrong CutoverActive, topology, collection or index/fingerprint: zero claim and zero DDL. Correct preflight plus
+  selected eligible intent permits only its expected generation; two contenders yield one owner, stale owner rejected.
+- Explicit negative cases: FG/rollout, FG CodeReservation, unproven reservation, foreign tenant and nonselected same-tenant
+  rows. Compare pre/post source ActorId, business Version and all outside-scope projections unchanged.
+- Actual receipt round-trip/response loss, bounded authentication refresh, central duplicate, acknowledgement/compaction,
+  compacted replay and receipt drift tests. No fake local receipt is presented as live transport acceptance.
+- Real test-owned dynamic loopback replica via existing `AuditIntentTemporalMongoFixture`; fixed test DB, acknowledged
+  tenant-owned cleanup and remaining=0. Reject 27017/application/env fallback; no shared DB drop or guard exception.
+  Record and verify shutdown of both standalone and replica child processes. Fixture schema/CutoverActive setup is
+  test-owned only, not a Local Development migration authorization.
+- Source hash -> Release build -> binary hash -> focused tests -> final hash provenance. Rerun existing processor/worker
+  regressions and startup-mode/default exclusions. Security and writer-independent review must verify all mutation paths,
+  no-DDL construction and unchanged default behavior, not merely a passing selection-parser test.
+
+Fresh assessment baseline: **15 discovered/executed/passed, 0 failed/skipped**, Release build 0 errors/8 warnings;
+787 source and 70 binary/PDB/JSON hashes unchanged. Evidence:
+`.testoutput/product-five-agent-execution-20260929/testing/audit-baseline-01/assessment-and-verification.md`.
+Those tests exercised the existing processor/worker with doubles; they are **not** new selector, Mongo, transport or
+product-acceptance evidence. No test/build was run by this documentation-only writer.
+
+`AUDIT-OPERATOR-AUTHORITY-UNFROZEN` and this named step's Phase 1.5/code-start gate are closed by the explicit approval
+record above. P5-03 is **APPROVED FOR BOUNDED CODE/TEST START**, not implemented or accepted yet. Implementation/security/
+independent verification remain open. Live target manifest, operator, service credentials, prerequisite state and mutation
+scope require separate approval; no first-five completion or merge-ready result is inferred.
+
+### 22.7 GP13 — Global Product produced-operation audit alignment (2026-09-30, APPROVED CODE/TEST START)
+
+**Approval record:** the user explicitly answered `onaylıyorum` on 2026-09-30 to the exact code/test and two-pack
+alignment. This is a narrow prerequisite correction inside the already approved selected-delivery boundary, not an
+additional P5-03 runner, transport or live-operation approval. The cross-owner scope is exactly **2 runtime + 2 test +
+2 pack paths = 6 paths total**; this pack's frontmatter/status and Sections 1–21 and 22.1–22.6 remain unchanged.
+
+Measured source truth confirms aggregate `AuditAggregateType.GlobalProduct` and exact ordinal producers in
+`UpdateGlobalProductDraftHandler`, `ProductIdentityLifecycleAuditIntentFactory`,
+`GlobalProductCorrectionAuditIntentFactory`, `GlobalProductRetirementRequestAuditIntentFactory` and their existing
+workflow/repository callers. Existing `GlobalProductDraftCreated` ordinal 5 remains mapped to `Create`. The selected
+delivery seam and central provider map must align on these 13 additional produced operations:
+
+| Exact source operation | Ordinal | Central operation |
+| --- | ---: | --- |
+| `GlobalProductDraftUpdated` | 38 | `Update` |
+| `GlobalProductIdentitySubmitted` | 16 | `LifecycleTransition` |
+| `GlobalProductIdentityApproved` | 17 | `LifecycleTransition` |
+| `GlobalProductIdentityRejected` | 18 | `LifecycleTransition` |
+| `GlobalProductIdentityApprovalWithdrawn` | 39 | `LifecycleTransition` |
+| `GlobalProductIdentityRetired` | 19 | `Deactivate` |
+| `GlobalProductCorrectionRequested` | 40 | `LifecycleTransition` |
+| `GlobalProductCorrectionApplied` | 41 | `LifecycleTransition` |
+| `GlobalProductCorrectionRejected` | 42 | `LifecycleTransition` |
+| `GlobalProductCorrectionManualReconciliationRequired` | 44 | `LifecycleTransition` |
+| `GlobalProductRetirementRequested` | 45 | `LifecycleTransition` |
+| `GlobalProductRetirementRejected` | 46 | `LifecycleTransition` |
+| `GlobalProductRetirementManualReconciliationRequired` | 48 | `LifecycleTransition` |
+
+`GlobalProductCorrectionCancelled` ordinal 43 and `GlobalProductRetirementCancelled` ordinal 47 remain fail-closed:
+they exist only in the enum on this baseline, are rejected by the measured strict factories and have no production
+producer. No enum-only value becomes selectable or centrally accepted merely because it has an ordinal.
+
+Exact GP13 code/test scope is limited to:
+
+- `services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/TrustedSourceAuditIntentOperationMap.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/TrustedSourceAuditIntentContractTests.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentDeliveryRepository.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/SelectedAuditIntentDeliveryContractTests.cs`
+
+The MDM repository change is restricted to the already approved selected-delivery path: recognize these exact produced
+Global Product operations while preserving its immutable tenant/locator/generation/fingerprint fence and leaving normal
+discovery, processor and worker behavior unchanged. Tests must prove every exact operation/ordinal, ordinal case,
+numeric/case/alias/wrong-aggregate rejection, denial of ordinals 43/47, preserved ordinal 5 and unchanged mappings for
+all other aggregates. No source producer/factory is edited by GP13.
+
+DCP-004 G4 ownership and the no-DDL composition remain authoritative. GP13 adds no collection/index, credential,
+configuration, service identity, worker or operational command; it authorizes no live run, service/process/data
+mutation, commit or push. P5-03 implementation/security/independent review and its live prerequisites remain open.
+The separately denied audit-runner source-authority question is not answered or closed by this alignment.
+
+#### 22.7.1 GP13 + P5-03 bounded implementation/test evidence — audit-lane PASS (2026-09-30)
+
+Implementation and independent review completed in the external audit lane
+`C:/Users/AliT/.codex/worktrees/p5-selected-audit/ERP-vNext`, not in this integration worktree. The result is **PASS for
+the exact bounded source/test scope only**: P5-03 Section 22.4 plus GP13 totals **9 runtime + 5 test paths**. The user
+authorized runner source/test work, but did not authorize live operator/credential/configuration/data execution. This
+record does not claim integration port, live Platform receipt persistence, first-five acceptance, deployment or merge
+readiness.
+
+Final evidence is **163/163 MDM + 138/138 Platform = 301/301 passed, 0 failed, 0 skipped**. MDM Release built with
+0 errors/9 warnings and Platform Release with 0 errors/120 warnings. Before/after manifests were unchanged: 3,233
+source entries and 206 binary entries; source hash
+`479140A1236B7EF02D6E77A2CF729E843075F48DD4DA29BA56D382055FF7CBD7`, binary hash
+`1EAB70B1F90B9A20590194B34934A1175F73973C627C3DB90E6EF736F0C9F674`. Final TRX hashes are
+`3C0AC1C0CD3BC7A3C5DDB29A8DFBD03D40EE48A7DA49175D145F768C60976D40` (MDM) and
+`BB151DFE11D3D6A4AB6F9106AE16F5F6B102587BF7F2A43BC951F8FFCD33DD2C` (Platform).
+
+The selected proof covered 55 contract cases, 48 test-owned real-Mongo cases, the existing processor/worker,
+identity-provider, HTTP-client, envelope and startup/default/auth-pipeline regressions, all 13 produced GP13 mappings,
+preserved ordinal 5, explicit denial of enum-only ordinals 43/47, and numeric/case/wrong-aggregate negatives. The real
+production HTTP client ran against loopback, but its central store was a **simulation**, not live Platform. It proved a
+simulated central commit, lost 503 response, exact duplicate 200 receipt, single compaction and replay without a new
+identity/HTTP call.
+
+The unchanged safe fixture owned both Mongo child processes; final PIDs `12928` and `38004` were closed. Its fixed
+`diten_mdm_product_scope_itest` database used tenant-bounded cleanup across nine collections and no database drop. The
+unsafe per-run host-Mongo `ApiStartupExecutionModeMongoTests` path was intentionally excluded. Historical RED was
+0/2 passed with two failures and hash `46FE7D437B05430802575DF52EDEA8F96D7ACB3C26AFBF01FC782C5C12A3975E`;
+because that preliminary fixture used a random noncanonical reservation key, it is retained only as diagnostic
+evidence. The corrected producer-derived canonical metadata cases and corrupt-key negative are green.
+
+Raw evidence and reproduction authority:
+
+- `.testoutput/p5-selected-audit-tests/verification-summary-final2.md`
+- `.testoutput/p5-selected-audit-tests/final2/verification.json`
+- `.testoutput/p5-selected-audit-tests/final2/mdm-final.trx`
+- `.testoutput/p5-selected-audit-tests/final2/platform-final.trx`
+- `.testoutput/p5-selected-audit-tests/red/reservation-red.trx`
+
+Reproduce with Release builds followed by bounded `dotnet test --no-build` filters for MDM
+`AuditIntentDeliveryProcessorTests`, `AuditIntentDeliveryWorkerTests`,
+`AuthTrustedSourceAuditServiceIdentityProviderTests`, `PlatformTrustedSourceAuditIntentClientTests`,
+`SelectedAuditIntentDeliveryContractTests`, `SelectedAuditIntentDeliveryMongoTests`,
+`TrustedSourceAuditIntentTwoServiceContractTests`, `ApiStartupExecutionModeTests`, and Platform
+`TrustedSourceAuditIntentContractTests`; retain raw TRX, source/binary manifests and owned-process closure evidence.
+
+No runtime/test/configuration/credential/process/data/Git mutation was performed by this pack writer. Porting these
+changes into the integration worktree, rerunning the same bounded proof there, and any live or first-five acceptance
+remain open gates.

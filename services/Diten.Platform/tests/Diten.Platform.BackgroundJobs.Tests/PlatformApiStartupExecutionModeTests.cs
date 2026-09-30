@@ -216,6 +216,86 @@ public sealed class PlatformApiStartupExecutionModeTests
     }
 
     [Fact]
+    public async Task Actual_api_host_serves_health_with_scheduler_and_dashboard_disabled()
+    {
+        await using var mongo = await OwnedMongoProcess.StartAsync();
+        var databaseName = "diten_platform_itest_disabled_jobs_host";
+        var database = mongo.Client.GetDatabase(databaseName);
+        Assert.Empty(await ReadDatabaseManifestAsync(database));
+        var apiDirectory = RepoFile("services", "Diten.Platform", "src", "Diten.Platform.API");
+        var assembly = Environment.GetEnvironmentVariable("DITEN_PLATFORM_TEST_API_DLL")
+            ?? Path.Combine(apiDirectory, "bin", "Release", "net8.0", "Diten.Platform.API.dll");
+        Assert.True(File.Exists(assembly), "Build the Platform Release API before running its child-host test.");
+        var port = ReservePort();
+        var start = new ProcessStartInfo("dotnet")
+        {
+            WorkingDirectory = apiDirectory,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        start.ArgumentList.Add(assembly);
+        start.ArgumentList.Add(ApiStartupExecutionMode.ServeWithoutStartupMaintenanceArgument);
+        start.Environment["DOTNET_ENVIRONMENT"] = Environments.Development;
+        start.Environment["ASPNETCORE_ENVIRONMENT"] = Environments.Development;
+        start.Environment["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}";
+        foreach (var entry in StartupModeConfiguration(mongo.ConnectionString, databaseName).AsEnumerable())
+        {
+            if (entry.Value is not null)
+                start.Environment[entry.Key.Replace(":", "__", StringComparison.Ordinal)] = entry.Value;
+        }
+        start.Environment["BackgroundJobs__Enabled"] = "false";
+        start.Environment["BackgroundJobs__DashboardEnabled"] = "false";
+        start.Environment["BusinessReferenceData__Provider__ReferenceTenantId"] =
+            "00000000-0000-0000-0000-000000000001";
+        using var process = new Process { StartInfo = start };
+        Assert.True(process.Start());
+        var stdout = process.StandardOutput.ReadToEndAsync();
+        var stderr = process.StandardError.ReadToEndAsync();
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(1) };
+            var ready = false;
+            var lastHealth = "No HTTP response";
+            var deadline = DateTimeOffset.UtcNow.AddSeconds(30);
+            while (!process.HasExited && DateTimeOffset.UtcNow < deadline)
+            {
+                try
+                {
+                    using var response = await client.GetAsync($"http://127.0.0.1:{port}/health/ready");
+                    var body = await response.Content.ReadAsStringAsync();
+                    lastHealth = $"HTTP {(int)response.StatusCode}: {body}";
+                    using var document = System.Text.Json.JsonDocument.Parse(body);
+                    ready = response.StatusCode == HttpStatusCode.OK
+                        && document.RootElement
+                            .GetProperty("status").GetString() == "Healthy";
+                    if (ready) break;
+                }
+                catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException)
+                {
+                    // Bounded readiness poll; no fallback port or external service.
+                }
+                await Task.Delay(100);
+            }
+            if (!ready)
+            {
+                if (!process.HasExited) process.Kill(entireProcessTree: true);
+                await process.WaitForExitAsync();
+                Assert.Fail($"Child host was not Healthy: {lastHealth}\n{await stderr}\n{await stdout}");
+            }
+            Assert.False(process.HasExited);
+            Assert.Empty(await ReadDatabaseManifestAsync(database));
+        }
+        finally
+        {
+            if (!process.HasExited) process.Kill(entireProcessTree: true);
+            await process.WaitForExitAsync();
+            await Task.WhenAll(stdout, stderr);
+        }
+    }
+
+    [Fact]
     public async Task Real_pipeline_returns_403_for_same_tenant_authenticated_request_without_permission()
     {
         var tenant = Guid.NewGuid();

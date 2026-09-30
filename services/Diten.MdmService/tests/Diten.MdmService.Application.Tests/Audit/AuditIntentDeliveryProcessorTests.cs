@@ -157,6 +157,29 @@ public sealed class AuditIntentDeliveryProcessorTests
         Assert.Equal(1, repository.AcknowledgementCount);
     }
 
+    [Fact]
+    public async Task Selected_delivery_never_discovers_and_compacted_replay_never_claims_or_calls_transport()
+    {
+        var repository = new Repository();
+        var identity = new IdentityProvider();
+        var client = new Client((envelope, _) => new(TrustedSourceAuditIntentDeliveryOutcome.Accepted,
+            new("receipt", AuditIntentContract.BuildCentralIdempotencyKey(envelope.TenantId, envelope.IntentId, envelope.ContractVersion),
+                envelope.ContractVersion, DateTimeOffset.UtcNow, false), ""));
+        var locator = new AuditIntentLocator(repository.TenantId, AuditAggregateType.GlobalProduct, Guid.NewGuid(), Guid.NewGuid());
+        var request = new SelectedAuditIntentDeliveryRequest(Guid.NewGuid(), repository.TenantId, [new(locator, 0, new string('a', 64))]);
+        var processor = Processor(repository, identity, client);
+        var first = await processor.ProcessSelectedAsync(request, "selected", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1), 3);
+        Assert.Single(first.Receipts);
+        Assert.Equal(1, first.Batch.Accepted);
+        var replay = await processor.ProcessSelectedAsync(request, "selected", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1), 3);
+        Assert.Single(replay.Receipts);
+        Assert.Equal(0, replay.Batch.Claimed);
+        Assert.Equal(0, repository.DiscoveryCount);
+        Assert.Equal(1, repository.AcknowledgementCount);
+        Assert.Single(identity.ForceRefreshCalls);
+        Assert.Single(client.Envelopes);
+    }
+
     private static AuditIntentDeliveryProcessor Processor(
         IAuditIntentDeliveryRepository repository,
         ITrustedSourceAuditServiceIdentityProvider identity,
@@ -194,11 +217,25 @@ public sealed class AuditIntentDeliveryProcessorTests
         public bool ThrowDuringPayloadRead { get; init; }
         public bool ReturnWrongContract { get; init; }
         public string? LastDeadLetterReason { get; private set; }
+        public int DiscoveryCount { get; private set; }
+        private bool _selected;
+        private LocalAuditIntentReceipt? _selectedReceipt;
+        public Task PrepareSelectedAsync(SelectedAuditIntentDeliveryRequest request, CancellationToken cancellationToken = default)
+        {
+            _selected = true;
+            Assert.Equal(TenantId, request.TenantId);
+            return Task.CompletedTask;
+        }
+        public Task<LocalAuditIntentReceipt?> ReadSelectedReceiptAsync(AuditIntentLocator locator, CancellationToken cancellationToken = default)
+            => Task.FromResult(_selectedReceipt);
         private Guid EffectiveTenant => ReturnedTenantId == Guid.Empty ? TenantId : ReturnedTenantId;
         private AuditIntentLocator Locator => new(EffectiveTenant, AuditAggregateType.GlobalProduct, Guid.NewGuid(), Guid.NewGuid());
 
-        public Task<IReadOnlyList<AuditIntentWorkItem>> DiscoverEligibleAsync(int limit, CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<AuditIntentWorkItem>>([new(Locator, AuditIntentDeliveryState.Pending, 0, 0, DateTimeOffset.UtcNow, null, null, false)]);
+        public Task<IReadOnlyList<AuditIntentWorkItem>> DiscoverEligibleAsync(int limit, CancellationToken cancellationToken = default)
+        {
+            DiscoveryCount++;
+            return Task.FromResult<IReadOnlyList<AuditIntentWorkItem>>([new(Locator, AuditIntentDeliveryState.Pending, 0, 0, DateTimeOffset.UtcNow, null, null, false)]);
+        }
         public Task<AuditIntentClaim?> TryClaimAsync(AuditIntentLocator locator, long expectedClaimGeneration, string leaseOwner, TimeSpan leaseDuration, CancellationToken cancellationToken = default)
         {
             ClaimAttempted = true;
@@ -224,6 +261,7 @@ public sealed class AuditIntentDeliveryProcessorTests
         {
             Acknowledged = true;
             AcknowledgementCount++;
+            if (_selected) _selectedReceipt = new LocalAuditIntentReceipt { IntentId = claim.Locator.IntentId, TenantId = claim.Locator.TenantId };
             return Task.FromResult(true);
         }
         public Task<bool> CompactDeliveredAsync(AuditIntentClaim claim, string compactReceiptReference, CancellationToken cancellationToken = default) => Task.FromResult(true);

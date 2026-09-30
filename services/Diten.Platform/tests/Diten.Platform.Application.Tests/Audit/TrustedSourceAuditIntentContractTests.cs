@@ -28,6 +28,8 @@ public sealed class TrustedSourceAuditIntentContractTests
         yield return ["CodeReservation", "CodeBindingConfirmed", "CodeReservation", AuditOperation.Update];
         yield return ["CodeReservation", "CodeBurned", "CodeReservation", AuditOperation.Deactivate];
         yield return ["GlobalProduct", "GlobalProductDraftCreated", "GlobalProduct", AuditOperation.Create];
+        foreach (var row in GlobalProductLifecycleMappings())
+            yield return ["GlobalProduct", row[0], "GlobalProduct", row[2]];
         yield return ["ProductDefinitionRevision", "ProductDefinitionRevisionDraftCreated", "ProductDefinitionRevision", AuditOperation.Create];
         yield return ["ProductDefinitionRevision", "ProductDefinitionRevisionIdentitySubmitted", "ProductDefinitionRevision", AuditOperation.LifecycleTransition];
         yield return ["ProductDefinitionRevision", "ProductDefinitionRevisionIdentityApproved", "ProductDefinitionRevision", AuditOperation.LifecycleTransition];
@@ -85,6 +87,45 @@ public sealed class TrustedSourceAuditIntentContractTests
         Assert.Equal(entityType, actualType);
         Assert.Equal(mappedOperation, actualOperation);
     }
+
+    public static IEnumerable<object[]> GlobalProductLifecycleMappings()
+    {
+        yield return ["GlobalProductDraftUpdated", "38", AuditOperation.Update];
+        yield return ["GlobalProductIdentitySubmitted", "16", AuditOperation.LifecycleTransition];
+        yield return ["GlobalProductIdentityApproved", "17", AuditOperation.LifecycleTransition];
+        yield return ["GlobalProductIdentityRejected", "18", AuditOperation.LifecycleTransition];
+        yield return ["GlobalProductIdentityApprovalWithdrawn", "39", AuditOperation.LifecycleTransition];
+        yield return ["GlobalProductIdentityRetired", "19", AuditOperation.Deactivate];
+        yield return ["GlobalProductCorrectionRequested", "40", AuditOperation.LifecycleTransition];
+        yield return ["GlobalProductCorrectionApplied", "41", AuditOperation.LifecycleTransition];
+        yield return ["GlobalProductCorrectionRejected", "42", AuditOperation.LifecycleTransition];
+        yield return ["GlobalProductCorrectionManualReconciliationRequired", "44", AuditOperation.LifecycleTransition];
+        yield return ["GlobalProductRetirementRequested", "45", AuditOperation.LifecycleTransition];
+        yield return ["GlobalProductRetirementRejected", "46", AuditOperation.LifecycleTransition];
+        yield return ["GlobalProductRetirementManualReconciliationRequired", "48", AuditOperation.LifecycleTransition];
+    }
+
+    [Theory]
+    [MemberData(nameof(GlobalProductLifecycleMappings))]
+    public void Global_product_thirteen_pairs_reject_numeric_case_alias_and_wrong_aggregate(
+        string operation, string ordinal, AuditOperation expected)
+    {
+        Assert.True(TrustedSourceAuditIntentOperationMap.TryMap("GlobalProduct", operation, out var entity, out var actual));
+        Assert.Equal("GlobalProduct", entity);
+        Assert.Equal(expected, actual);
+        foreach (var invalid in new[] { ordinal, operation.ToLowerInvariant(), operation + " ", operation + ".extra", "*" })
+            Assert.False(TrustedSourceAuditIntentOperationMap.TryMap("GlobalProduct", invalid, out _, out _));
+        foreach (var aggregate in new[] { "Gsku", "Lsku", "FinishedGood", "ProductDefinitionRevision", "globalproduct", "GlobalProduct " })
+            Assert.False(TrustedSourceAuditIntentOperationMap.TryMap(aggregate, operation, out _, out _));
+    }
+
+    [Theory]
+    [InlineData("GlobalProductCorrectionCancelled")]
+    [InlineData("GlobalProductRetirementCancelled")]
+    [InlineData("43")]
+    [InlineData("47")]
+    public void Global_product_enum_only_cancel_operations_are_not_accepted(string operation)
+        => Assert.False(TrustedSourceAuditIntentOperationMap.TryMap("GlobalProduct", operation, out _, out _));
 
     [Fact]
     public void Finished_good_map_contains_existing_draft_and_exactly_nine_non_draft_lifecycle_rows()

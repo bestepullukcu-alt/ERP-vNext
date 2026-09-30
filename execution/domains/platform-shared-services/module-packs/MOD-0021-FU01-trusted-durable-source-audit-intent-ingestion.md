@@ -593,3 +593,124 @@ initial Platform 136-test run was **135 passed / 1 failed** because its newly wr
 incorrectly rejected the pre-existing `mdm.finished-goods.read` pair; the retained final assertion preserves that
 read pair while checking the five P0A scope pairs exactly and rejecting direct-retire, wildcard and case drift. The
 intermediate test-source diff is unavailable, so this amendment makes no additional source-level claim.
+
+### GP13 — Global Product produced-operation strict audit alignment (2026-09-30, APPROVED CODE/TEST START)
+
+**Approval record:** on 2026-09-30 the user explicitly answered `onaylıyorum` to the exact code/test and two-pack
+alignment proposal. This approval changes only the strict provider map, its contract test, the already approved P5-03
+selected repository seam, its new contract test, and this pack plus MOD-0290 Section 22: **2 runtime + 2 test + 2 pack
+paths = 6 paths total**. General status/frontmatter and every earlier approval remain unchanged.
+
+Code truth was checked against `ProductAuditOperation`, `AuditAggregateType.GlobalProduct`,
+`UpdateGlobalProductDraftHandler`, `ProductIdentityLifecycleAuditIntentFactory`,
+`GlobalProductCorrectionAuditIntentFactory`, `GlobalProductRetirementRequestAuditIntentFactory` and the corresponding
+workflow/repository producers. `GlobalProductDraftCreated` ordinal 5 already maps to central `Create` and is preserved
+unchanged. Exactly these **13 produced but currently missing** pairs are approved:
+
+| Exact source aggregate | Exact source operation | MDM ordinal | Central operation |
+| --- | --- | ---: | --- |
+| `GlobalProduct` | `GlobalProductDraftUpdated` | 38 | `Update` |
+| `GlobalProduct` | `GlobalProductIdentitySubmitted` | 16 | `LifecycleTransition` |
+| `GlobalProduct` | `GlobalProductIdentityApproved` | 17 | `LifecycleTransition` |
+| `GlobalProduct` | `GlobalProductIdentityRejected` | 18 | `LifecycleTransition` |
+| `GlobalProduct` | `GlobalProductIdentityApprovalWithdrawn` | 39 | `LifecycleTransition` |
+| `GlobalProduct` | `GlobalProductIdentityRetired` | 19 | `Deactivate` |
+| `GlobalProduct` | `GlobalProductCorrectionRequested` | 40 | `LifecycleTransition` |
+| `GlobalProduct` | `GlobalProductCorrectionApplied` | 41 | `LifecycleTransition` |
+| `GlobalProduct` | `GlobalProductCorrectionRejected` | 42 | `LifecycleTransition` |
+| `GlobalProduct` | `GlobalProductCorrectionManualReconciliationRequired` | 44 | `LifecycleTransition` |
+| `GlobalProduct` | `GlobalProductRetirementRequested` | 45 | `LifecycleTransition` |
+| `GlobalProduct` | `GlobalProductRetirementRejected` | 46 | `LifecycleTransition` |
+| `GlobalProduct` | `GlobalProductRetirementManualReconciliationRequired` | 48 | `LifecycleTransition` |
+
+`GlobalProductCorrectionCancelled` ordinal 43 and `GlobalProductRetirementCancelled` ordinal 47 are enum-only in the
+measured source: the strict correction/retirement factories do not admit them and no production producer was found.
+They therefore remain denied. Their enum presence is not approval to map them, infer a producer or broaden selection.
+
+Exact runtime/test writer scope:
+
+- Platform runtime: `services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/TrustedSourceAuditIntentOperationMap.cs`.
+- Platform test: `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/TrustedSourceAuditIntentContractTests.cs`.
+- MDM runtime: `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentDeliveryRepository.cs`
+  — only the existing approved selected-delivery admission seam; normal discovery/worker behavior remains unchanged.
+- MDM test: `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/SelectedAuditIntentDeliveryContractTests.cs`
+  — new, bounded selected-delivery contract coverage only.
+
+Required proof is exact ordinal string mapping for all 13 rows; ordinal case sensitivity; rejection of numeric strings,
+case drift, wrong aggregate, suffix/prefix aliases and the two enum-only cancellations; preservation of ordinal 5 and
+every non-GlobalProduct mapping byte-for-behavior; and selected-delivery acceptance of only the exact produced Global
+Product operations without broadening tenant, locator, generation or evidence fences. No wildcard, enum cast or
+case-insensitive fallback is permitted.
+
+DCP-004 G4 ownership remains unchanged: MOD-0021 owns central strict mapping and acceptance; MOD-0290 owns source
+production and selected delivery. This amendment authorizes no collection/index/schema DDL, credential/configuration,
+new worker, generic worker enablement, live run, service/process mutation, commit or push. It does not answer or close
+the separately denied audit-runner source-authority question; that decision remains outside GP13.
+
+#### GP13 + P5-03 bounded implementation/test evidence — audit-lane PASS (2026-09-30)
+
+The approved source/test work was implemented and independently reviewed in the external audit lane
+`C:/Users/AliT/.codex/worktrees/p5-selected-audit/ERP-vNext`; it has **not** yet been ported into this integration
+worktree. The independent verdict is **PASS for the bounded code/test scope only**. It is not live Platform audit
+acceptance, first-five product acceptance, deployment, integration-port or merge-readiness evidence.
+
+The reviewed boundary is the P5-03 Section 22.4 eight runtime/four test paths plus the GP13 Platform map/runtime and
+contract-test paths: **9 runtime + 5 test paths** in total. The runner source/test authorization was explicit; live
+operator/target/credential/configuration/data mutation remains unauthorized. No collection/index/schema DDL, new
+worker, generic worker enablement or existing default-path broadening was admitted.
+
+Final Release evidence:
+
+- MDM selected matrix: **163/163 passed, 0 failed, 0 skipped**.
+- Platform strict-map matrix: **138/138 passed, 0 failed, 0 skipped**.
+- Combined: **301/301 passed, 0 failed, 0 skipped**.
+- MDM Release build: **0 errors / 9 warnings**; Platform Release build: **0 errors / 120 warnings**.
+- Source manifest: **3,233 entries**, zero before/after differences; binary manifest: **206 entries**, zero
+  before/after differences.
+- Source-manifest SHA-256: `479140A1236B7EF02D6E77A2CF729E843075F48DD4DA29BA56D382055FF7CBD7`;
+  binary-manifest SHA-256: `1EAB70B1F90B9A20590194B34934A1175F73973C627C3DB90E6EF736F0C9F674`.
+- Final MDM TRX SHA-256: `3C0AC1C0CD3BC7A3C5DDB29A8DFBD03D40EE48A7DA49175D145F768C60976D40`;
+  final Platform TRX SHA-256: `BB151DFE11D3D6A4AB6F9106AE16F5F6B102587BF7F2A43BC951F8FFCD33DD2C`.
+- Test DLL SHA-256 values were `2348DDEC75EE74DA779CB187E5CA797D09AD636EE1C5C81FB7915A28C0894214`
+  (MDM) and `664A96736A4513BC9D34DCEE03FAD08956BC9D59435B39133E8E616D80244C3A`
+  (Platform).
+
+The final run covered 55 selected contract cases, 48 test-owned real-Mongo cases and unchanged processor (11), worker
+(5), identity-provider (12), HTTP-client (10), envelope (1) and non-Mongo startup/default/auth-pipeline (21)
+regressions. The Platform matrix proved `GlobalProductDraftCreated` plus all 13 GP13 rows, exact denial of ordinals
+43/47, numeric/case/wrong-aggregate negatives and preservation of other aggregate maps.
+
+The transport recovery proof used the production HTTP client against loopback and real test-owned Mongo, while the
+central store was deliberately **simulated**. It proved simulated central commit, a lost 503 response, exact duplicate
+200 receipt, one compaction and replay without a new identity/HTTP call. It is not live Auth/Platform receipt
+persistence. The unchanged `AuditIntentTemporalMongoFixture` owned both standalone and replica child processes; final
+owned PIDs `12928` and `38004` and all recorded historical fixture PIDs were absent at close. The fixed
+`diten_mdm_product_scope_itest` database used exact tenant cleanup across nine collections and no database drop. The
+unsafe per-run host-Mongo `ApiStartupExecutionModeMongoTests` path was intentionally excluded; the selected
+`ApiStartupExecutionModeTests` filter excluded it explicitly.
+
+The retained preliminary RED TRX is historical diagnostic evidence: **0/2 passed, 2 failed**, SHA-256
+`46FE7D437B05430802575DF52EDEA8F96D7ACB3C26AFBF01FC782C5C12A3975E`. Its fixture used a random, noncanonical
+reservation idempotency key, so it is not claimed as a genuine producer RED. The corrected fixture derives actual
+producer pre/post/causation/snapshot/canonical-key metadata; current GP/GSKU canonical cases and corrupt-key negative
+cases are green.
+
+Authoritative evidence and raw result references:
+
+- `.testoutput/p5-selected-audit-tests/verification-summary-final2.md`
+- `.testoutput/p5-selected-audit-tests/final2/verification.json`
+- `.testoutput/p5-selected-audit-tests/final2/mdm-final.trx`
+- `.testoutput/p5-selected-audit-tests/final2/platform-final.trx`
+- `.testoutput/p5-selected-audit-tests/red/reservation-red.trx`
+
+Reproduction uses Release build of the MDM and Platform application-test projects, then bounded `dotnet test
+--no-build` filters over these exact classes: MDM
+`AuditIntentDeliveryProcessorTests`, `AuditIntentDeliveryWorkerTests`,
+`AuthTrustedSourceAuditServiceIdentityProviderTests`, `PlatformTrustedSourceAuditIntentClientTests`,
+`SelectedAuditIntentDeliveryContractTests`, `SelectedAuditIntentDeliveryMongoTests`,
+`TrustedSourceAuditIntentTwoServiceContractTests` and `ApiStartupExecutionModeTests`; Platform
+`TrustedSourceAuditIntentContractTests`. Evidence must be regenerated with before/after source and binary manifests,
+raw TRX retention and owned-process closure; a summary-only rerun is insufficient.
+
+This documentation writer changed no runtime, test, configuration, credential, process, data or Git state. Integration
+port, its own verification, any live run and first-five acceptance remain separate gates.

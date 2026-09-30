@@ -240,3 +240,243 @@ Evidence: Auth focused service-token tests 73 passed / 0 failed / 0 skipped. The
 `diten_auth_service_identity_itest` Mongo grant/identity test independently passed 1/0/0; it overlaps the 73,
 not an additional success. Auth and Platform Release builds passed. No operational identity, grant, key or config
 was provisioned. This records code integration, not live resolver acceptance or independent review completion.
+
+### Section E — P5-01 bounded operational reuse amendment (2026-09-29, APPROVED CODE/TEST START)
+
+**Superseding approval record (2026-09-29):** the user explicitly answered `onaylıyorum` to the consolidated three-step
+code/test approval. Only this Section E Phase 1.5 design and exact **19 runtime + 6 test** paths are approved for bounded
+implementation and test-owned verification. Foundation frontmatter/status and Sections A/B/D remain unchanged.
+This grants no live credential/DB operation, collection/index creation, configuration, service-start, commit, push or
+merge authority. Live operation requires a separate exact target, actor, process and full consumer-impact approval.
+
+**Reuse, not redevelopment:** source commits `886a1ae61edac062835fccd7959c87671bc0bc5e` and
+`48154c4f18c2070d0b912bd86a5a62cbb6805158` already implement operational provisioning in the older integration lineage.
+The target baseline is `d5f811ad7d10426498c7d0460af65ae573df4382` in
+`C:/dev/ERP-vNext/.worktrees/product-pv-delivery-integration-20260907`. Historical source test results are not target
+verification. Reuse the source JWT/persisted-permission checks, secret hashing/output pipe and operation-journal seams;
+do not wholesale-port its normal-startup dispatch, seed, index DDL or broader mutation commands.
+
+#### E.1 Frozen boundary and design decision
+
+- Only exact `read-identity`, `read-grant` and `rotate-credential` operations are candidates. Create/revoke identity,
+  enable/disable grant, membership, role, permission/catalog sync and business-data mutation are excluded.
+- Exact `--service-client-operational-run` dispatch must occur before `WebApplication.CreateBuilder`, normal Auth
+  `AddPersistence` or normal host construction. Duplicate, case-variant, unknown and conflicting operational commands
+  fail closed before side effects. No-argument Auth startup keeps its existing behavior.
+- Use isolated minimal composition, default-disabled and Development-only, with immutable, process-environment-derived
+  eligibility facts. No normal seed/index ensure, MassTransit, hosted workers, login host or generic provisioning runs.
+  Reuse the existing source options contract; no new configuration model or appsettings change is authorized.
+- Authority is a fresh validated `platform_admin` JWT in the Platform system tenant, matching active persisted actor
+  and current persisted `auth.service-clients.provision` permission, plus an exact one-shot operational marker. The
+  permission constant already exists in the target; no permission/role/grant is created to make authorization pass.
+  An OS account or caller-supplied actor GUID is not application authority. Missing/duplicate/contradictory actor facts,
+  disabled/deleted actor or permission, expired token or invalid marker fail before mutation.
+- The marker enables one exact command envelope in one isolated invocation; it is not a generic reusable grant or a
+  claimed global revocation fence. Durable command identity/fingerprint and CAS remain necessary across processes.
+- The existing journal `serviceClientOperationalProvisioningOperations`, identity/grant collections and required index
+  specifications must already exist and be verified read-only before reservation. No `EnsureIndexes`, DDL, upsert-created
+  collection, alternate journal or fallback storage is allowed. Source journal specifications are
+  `ux_service_client_operational_command_active` (CommandId ascending, unique, partial IsDeleted=false) and
+  `ix_service_client_operational_state_updated` (State then UpdatedAt ascending); absence or key/order/unique/partial/TTL
+  mismatch blocks operation. Reuse does not authorize creating these indexes or purging/reusing journal command IDs.
+- Reuse current `IServiceClientCredentialVerifier.Hash()` and the source-generated 32-byte random secret. Accept no
+  caller-supplied secret. Deliver only through the existing inherited anonymous-pipe sink, once, after exact persisted
+  outcome read-back. Standard streams, paths, argv, logs, files and report artefacts cannot carry the raw secret.
+  Preserve handle/type validation, bounded payload, disposal and buffer-clearing behavior; test the actual OS pipe.
+- `ServiceClientIdentity` is global, not tenant-owned. Rotation affects **every tenant and consumer using that identity**.
+  Live approval must name exact identity/client/service/audience, active and overlap credentials, every affected
+  tenant/audience grant and consumer deployment. A tenant-scoped `read-grant` does not make rotation tenant-local.
+
+**Trade-off:** a bounded source adaptation preserves the existing credential model while excluding known broad writes;
+it may remain operationally blocked when journal/index/actor permission prerequisites are absent. Neither a whole-branch
+cherry-pick nor direct Mongo patch is an acceptable shortcut. No new permission, collection, index or config model is
+invented by this amendment. The workflow-definition bridge is a separate P5-01 dependency, not part of this allow-list.
+
+#### E.2 State, concurrency, replay and failure contract
+
+1. Freeze the command fingerprint over exact command/operation/target identity, ClientCode, ServiceName, AllowedAudience,
+   expected credential and operational version, actor and authorized rotation parameters. Persisted purpose must match
+   the process-authorized purpose, including ClientCode; pre-read validation alone is insufficient.
+2. The identity mutation CAS includes exact ID/code/service/purpose, non-deleted/non-revoked state and expected credential
+   version/hash plus operational version. No blind replacement, force mode or unconditional retry is permitted.
+   Existing documents without `OperationalVersion` use an explicit absent-or-zero predicate only for expected zero,
+   additionally bound to the exact current credential version/hash. No migration/backfill is introduced.
+3. Journal states/checkpoints reuse the source pending/recovery/completed model and bounded evidence; persisted operation
+   identity and recorded outcome are immutable. Two commands racing on the same expected identity version yield at most
+   one rotation winner. A same-key changed fingerprint/purpose/actor is rejected without another rotation.
+4. Completed replay returns the **recorded outcome**, not a later current identity state masquerading as that outcome.
+   Current-state observations are separately identified; a later rotation cannot rewrite the earlier command's result.
+   Replay never generates or re-delivers a raw secret. Pending/ambiguous/partial state cannot be promoted to success
+   solely because the current identity happens to look compatible.
+5. Lost acknowledgement, crash or pipe delivery failure after mutation is a bounded recovery/manual-reconciliation
+   result, not authorization to rotate again. Distinguish credential mutation/read-back from consumer receipt; a flushed
+   pipe proves the sink write, not downstream installation. No plaintext recovery storage or automatic restore exists.
+6. `read-identity`/`read-grant` are sanitized, zero-mutation reads. Wrong target/purpose, absent identity, disabled/revoked
+   state and inconsistent prerequisites fail closed. Grant reads retain exact tenant/identity/audience and soft-delete
+   filters; global identity reads require platform authority and never expose hashes or secrets.
+
+#### E.3 Exact candidate implementation allow-list
+
+Paths are repository-relative to the exact target above; `Existing`/`New` is verified against the target baseline.
+This is the approved bounded writer scope. Runtime: **19 paths (4 Existing / 15 New)**.
+
+| State | Exact runtime path |
+| --- | --- |
+| Existing | `services/Diten.AuthService/src/Diten.AuthService.Api/Program.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Api/Configuration/ServiceClientOperationalProvisioningOptions.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Api/Services/ServiceIdentityTokens/DevelopmentServiceClientOperationalProvisioningEligibility.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Api/Services/ServiceIdentityTokens/ServiceClientOperationalActorAuthorizer.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Api/Services/ServiceIdentityTokens/ServiceClientOperationalProvisioningRunner.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Api/Services/ServiceIdentityTokens/ServiceClientSecretOutputSink.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Api/Services/ServiceIdentityTokens/ServiceClientOperationalBootstrap.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IServiceClientOperationalProvisioningEligibility.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IServiceClientOperationalActorAuthorizer.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/IServiceClientSecretOutputSink.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/Operational/ServiceClientOperationalProvisioningModels.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/Operational/ServiceClientOperationalProvisioningService.cs` |
+| Existing | `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/ServiceClientIdentity.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/ServiceClientOperationalProvisioningOperation.cs` |
+| Existing | `services/Diten.AuthService/src/Diten.AuthService.Domain/Repositories/IServiceClientIdentityRepository.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Domain/Repositories/IServiceClientOperationalProvisioningOperationRepository.cs` |
+| Existing | `services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/ServiceClientIdentityRepository.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/ServiceClientOperationalProvisioningOperationRepository.cs` |
+| New | `services/Diten.AuthService/src/Diten.AuthService.Persistence/ServiceClientOperationalPersistenceRegistration.cs` |
+
+Tests: **6 paths (1 Existing / 5 New)**.
+
+| State | Exact test path |
+| --- | --- |
+| New | `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceClientOperationalProvisioningEligibilityTests.cs` |
+| New | `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceClientOperationalProvisioningRunnerTests.cs` |
+| New | `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceClientOperationalActorAuthorizationTests.cs` |
+| New | `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceClientOperationalProvisioningMongoTests.cs` |
+| New | `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceClientOperationalBootstrapTests.cs` |
+| Existing | `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceClientCredentialRotationTests.cs` |
+
+Protected in this slice: normal Application/Infrastructure/Persistence `DependencyInjection.cs`, `DataSeeder.cs`,
+`MongoDbIndexConfigurations.cs`, `DefaultRolePermissionTemplate.cs`, grant entity/repositories, issuance/parser, human
+token implementation, appsettings, Platform/MDM/Gateway/frontend and all other paths. Existing FU18/FU19 dirty amendments
+belong to a different writer and remain untouched. Minimal bootstrap/persistence registration must not silently invoke
+the protected normal startup path. The existing options/model names are reused as an explicit operational CLI exception
+to UI/CQRS scaffolding; no public endpoint, browser surface or new Gateway route is created.
+
+#### E.4 Phase 1.5 owner review — nine-point design approved 2026-09-29
+
+| # | Check | Plan |
+| --- | --- | --- |
+| 1 | All fields mapped | Reuse identity credential/overlap/revocation fields; add source OperationalVersion; journal command/fingerprint/target/purpose/actor, checkpoints and recorded outcome. JWT+persisted records supply actor; exact process envelope supplies authorized inputs; repository supplies current state. Raw secret is transient only. |
+| 2 | Global ERP naming | Preserve canonical ClientCode, ServiceName, AllowedAudience, OperationalVersion and CommandId; no local naming or business `Version` shadowing. |
+| 3 | Isolation / soft delete | Global identity/journal require platform authorization and exact command/target filters; identity CAS includes IsDeleted=false and IsRevoked=false. Existing grant repository supplies tenant/identity/audience filtering. |
+| 4 | Entity base | Existing `ServiceClientIdentity : GlobalEntityBase`; reused operational journal also global because a rotation is identity-wide. `ServiceClientTenantGrant` remains unchanged and tenant-owned. |
+| 5 | CQRS / composition | Existing operational CLI runner/service/interface/repository pattern; E.3 exact files. Pre-builder isolated bootstrap, no web command/controller or normal DI registration changes. |
+| 6 | Golden / form count | N/A: backend CLI, zero UI fields, shell:none, golden_reference:none. |
+| 7 | Compact section map | N/A: no Razor/Create/Edit/Details surface. |
+| 8 | Required-field parity | CLI parser/eligibility/service enforce identical exact operation, target/purpose, actor, marker, command/version and rotation pipe contract; conditional grant TenantId applies only to read-grant. Web ViewModel/Razor/tracker N/A. |
+| 9 | Lookup dependencies | None: no lookup UI/key/endpoint, no hardcoded fallback list and no MDM/reference ownership change. |
+
+#### E.5 Measurable verification gates and handoff
+
+- Source hash -> Release build -> DLL/PDB hash -> focused test -> final source hash chain; original no-argument Auth
+  startup and existing token issuance/rotation behavior remain regression-tested without running normal local startup.
+- Real Release child CLI with **test-owned dynamic 127.0.0.1 Mongo replica**, port not 27017, fixed test DB and
+  tenant-owned grant and exact fixture-owned global identity/journal cleanup with zero read-back. No application DB,
+  fallback URI or drop of a shared fixed database.
+- Mutation/command-monitor evidence: no normal seed, index DDL, bus, hosted-worker, grant/catalog/role/UserRole mutation;
+  only the approved target credential and exact journal writes occur on a successful test rotation. Read operations,
+  invalid environment/JWT/marker/operation/sink and absent/mismatched journal/index preflight produce zero mutation.
+- Actual anonymous-pipe successful one-shot delivery and standard-stream/path/closed-pipe rejection; no raw secret in
+  stdout/stderr, logs, TRX or captured artefacts. Pipe failure after credential mutation reports uncertainty distinctly.
+- Concurrent rotation: one winner, no lost update; purpose/ClientCode/service/revoked/credential drift fails CAS. Missing
+  legacy OperationalVersion, explicit zero and nonzero cases are separate tests, without a data migration.
+- Same-key exact replay produces no second rotation/secret/journal; changed fingerprint fails; replay after a later
+  rotation preserves immutable old outcome and labels current state separately. Crash/ambiguous-write paths remain
+  recovery/manual until exact evidence resolves them, never optimistic completion.
+- Security review checks global blast radius, fresh persisted authority, secret channel and unchanged grant permissions;
+  writer-independent verification checks exact path set and test provenance. Historical source tests are not counted
+  as new runs. E.5 lists required future tests, not tests executed during this planning amendment.
+
+**Approval gate closed:** explicit Phase 1.5 + E.3 code/test start. **Open gates:** implementation/security/independent
+verification, followed by live prerequisite existence and exact full-impact operational approval. Missing journal/index/
+permission blocks live operation without broadening this scope. Foundation `review` and this bounded code-start do not
+mark P5-01 implemented, first-five acceptance complete, merge-ready or Production/Staging authorized.
+
+#### E.6 Bounded implementation and test evidence (2026-09-30)
+
+**Scope verdict:** P5-01's approved **19 runtime + 6 test** path implementation is complete and the bounded code/test
+verification verdict is **PASS**. The independent read-only review also returned **PASS for this code/test boundary**
+after the three final evidence gaps were closed. This is not a live-operation, checkpoint, first-five acceptance,
+merge-readiness or Production/Staging verdict. Foundation frontmatter/status and the earlier Sections A/B/D remain
+unchanged.
+
+The implementation preserves the E.1/E.2 design: pre-builder exact CLI dispatch, immutable Development-only eligibility,
+fresh signed-and-persisted Platform-system-tenant actor authority, pre-existing journal/index read-only preflight,
+identity CAS plus durable command journal, immutable replay outcome and anonymous-pipe-only one-shot secret delivery.
+It creates no identity, grant, permission, role, collection or index. It performs no normal seed/index ensure, hosted
+worker, bus, login-host, application-DB fallback or startup auto-provisioning. The only source change after the first
+green run was within the already approved Mongo test path to close the three evidence gaps below; runtime was unchanged.
+
+**Authoritative raw evidence (repository-relative):**
+
+- `.testoutput/p5-credential-reuse-implementation-01/testing/verification-summary-final2.md`
+- `.testoutput/p5-credential-reuse-implementation-01/testing/final2/focused-final2.trx`
+  (`SHA-256 E0016B93E76785EFCA6097F810EB13049C51CD5A97A24029A2BCEF603630EC58`)
+- `.testoutput/p5-credential-reuse-implementation-01/testing/final2/gap-closure-initial.trx`
+  (`SHA-256 D78A83368B598D7CB0888686A691C17F45325EDA51A5B1A62227D57733980909`)
+- `.testoutput/p5-credential-reuse-implementation-01/testing/final2-verification.json`
+- `.testoutput/p5-credential-reuse-implementation-01/testing/source-before-final2.json` and
+  `source-after-final2.json`
+- `.testoutput/p5-credential-reuse-implementation-01/testing/binary-before-final2.json` and
+  `binary-after-final2.json`
+
+Raw final2 evidence reports **201 discovered / 201 executed / 201 passed / 0 failed / 0 skipped**. The approved six test
+classes contribute 133 cases; the selected existing issuance/parser/handler/DI regressions contribute 68. The separate
+12/12 gap-closure run is a targeted precursor and is not added again to the 201 total. The isolated Release build passed
+with zero errors and one test-fixture `MongoClientSettings.GuidRepresentation` obsolescence warning. It is explicitly
+not classified as pre-existing.
+
+The source-before/source-after manifests contain **321/321** entries with zero hash mismatch and identical manifest-file
+SHA-256 `6272CEDD5F786C8F0647E670754F72D9607405AE422FA890310D55990F4DF54E`. The matching isolated
+binary-before/binary-after manifests contain **104/104** entries with zero mismatch and identical manifest-file SHA-256
+`14E543E0DDA0641C6579AADB3C19C18ABA93B8CDC40B9AE5BC4D5762C6F075F0`. All 11 recorded owned PIDs (two
+test-owned replica processes across targeted/full runs and nine Release CLI children) were absent after the run; the
+owned temporary-directory inventory was empty. No application process, application database or fixed shared database
+was stopped, dropped or cleaned.
+
+The three independently required gap proofs are now present:
+
+1. Two server-injected ambiguous-write cases use one-shot `failCommand` write-concern errors with retryable writes off.
+   Journal reservation ambiguity remains durable `Pending/Reserved`; credential `findAndModify` ambiguity leaves the
+   changed target and `RecoveryRequired`. Both yield zero secret delivery, one original write attempt and fail-closed
+   replay without a second mutation.
+2. Nine real existing-index metadata mismatches cover wrong key, key order, unique flag, missing/changed partial filter,
+   TTL, hidden, sparse and collation. Every mismatch fails before insert/update/delete/findAndModify/DDL and the fixture
+   does not let production preflight repair it.
+3. A genuinely completed command is tombstoned and replayed. Replay fails closed with no secret, no extra journal and no
+   identity mutation.
+
+**Preserved RED and initial-harness provenance:** `testing/red/broken-peer-red.trx` remains the actual one-test RED
+(`1/1 executed, 0 passed, 1 failed`; SHA-256
+`655DA472005D602CD1A5FD9ACF4F40122146C1EB87613CF0A151CA4732099C11`) that proved the original pipe preflight
+accepted a broken peer. The unchanged expectation is green in final2. The initial Mongo-child TRX remains
+`34 executed / 16 passed / 18 failed`: 17 actual cases included one parent-writer-handle EOF failure plus 17 cleanup
+failure records caused by the same harness defect. Initial non-Mongo and selected regression runs remained 92/92 and
+68/68. The owned replica PID was confirmed absent before its exact disposable temporary directory was removed; no
+application data was touched.
+
+**Corrected metadata disclosure:** the original `final1-verification.json` serialized counters as `[]` and was manually
+corrected before the preserve instruction arrived; it is not represented as untouched original evidence. The separate
+`final1-counters-correction-20260930.json` records namespace-independent raw-TRX counters and the raw TRX/manifests were
+not rewritten. Final2 was created with the corrected parser, so its 201/201/0/0 counters and hashes are the current
+authoritative chain.
+
+Bounded reproduction (code/test only; no live operational invocation):
+
+```text
+dotnet build services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Diten.AuthService.Application.Tests.csproj -c Release --no-restore -v minimal -p:OutputPath=<absolute-isolated-output>
+
+dotnet test services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Diten.AuthService.Application.Tests.csproj -c Release --no-build --no-restore -p:OutputPath=<absolute-isolated-output> --filter "FullyQualifiedName~ServiceClientOperational|FullyQualifiedName~ServiceClientCredentialRotationTests|FullyQualifiedName~ServiceIdentityTokenIssueTests|FullyQualifiedName~ServiceIdentityTokenHandlerTests|FullyQualifiedName~ServiceIdentityTokenSecurityContractTests|FullyQualifiedName~ServiceIdentityTokenDependencyInjectionTests" --logger "trx;LogFileName=focused-final2.trx"
+```
+
+No live credential, identity, tenant grant, configuration, service or provisioning mutation was performed. No commit or
+push was authorized or executed. Live prerequisite/readback, full affected-consumer inventory, installation/rollback
+and first-five acceptance remain separately gated; this evidence must not be used to claim those gates closed.

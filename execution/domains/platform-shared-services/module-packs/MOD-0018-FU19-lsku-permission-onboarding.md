@@ -383,3 +383,46 @@ Every other tracked path is out of scope; `.local/**` and `.testoutput/**` remai
   replay idempotency, tenant/source isolation, Manual/System/other-source preservation and failure/retry semantics.
 - Focused affected suites plus Auth, MDM, Platform and Building Blocks Release builds must pass. Test evidence does
   not claim live reconciliation, general authorization expansion, Finished Good acceptance or Production enablement.
+
+## Product-five entitlement reconciliation command participation — approved code/test start 2026-09-29
+
+**Superseding approval record (2026-09-29):** the user's explicit `onaylıyorum` to the consolidated three-step code/test
+approval includes FU19's bounded participation in the shared **14 runtime + 7 test** FU18 allow-list; no second runtime
+allow-list or runner is created. The operator permission `auth.roles.assign-permission` and documented observed-quiescence
+residual, including independent/versionless writers, are accepted. General frontmatter/status and previous work remain
+unchanged. This amendment records FU19's bounded participation in
+`PRODUCT-FIVE-ENTITLEMENT-RECONCILIATION-COMMAND-CONTRACT-01`. The complete command, authority, concurrency,
+provenance, allow-list and test contract is the same-dated section in
+`MOD-0018-FU18-gsku-permission-onboarding.md`; FU19 does not define a second runner, API, event or rule copy.
+
+For tenant `74355e70-4c7d-410c-8cf6-db5fe3b9547f` and module `product-item-sku-master`, FU19 contributes exactly:
+
+- add `mdm.lskus.withdraw` to ProductDataSteward with `GrantSource=Module` and
+  `SourceModuleCode=product-item-sku-master`;
+- add `mdm.lskus.request-retirement` to ProductIdentityRetirementSteward with the same provenance; and
+- remove only grant `dc241b94-3a12-4825-bcb0-b66a7189124f` after re-proving its tenant, retirement-steward role,
+  `mdm.lskus.retire`, Module source and `product-item-sku-master` source module.
+
+Every Manual/System/other-module grant, User/UserRole/membership row and unrelated LSKU permission remains outside
+the write set. Plan and apply must use the shared authoritative entitlement profile and the single transaction,
+role-assignment-version, affected-holder refresh-token revocation, audit receipt, replay and ambiguous-outcome
+contract recorded in FU18. That transaction is not represented as a fence against sessionless UserRole,
+RolePermission or refresh-token writers. FU18's observed-quiescence maintenance window and its residual-risk decision
+apply equally to these LSKU rows. A local-commit/pending or manual receipt can never become success merely because
+the LSKU post-state matches on replay; fresh operator/Platform/local verification and the immutable manual-state rules
+remain mandatory. Only bounded implementation, build and test-owned verification are authorized. Live DB writes,
+service start, stage, checkpoint, push and merge remain unauthorized; live plan/apply requires its separate approval.
+
+### Shared writer-inventory correction participation — 2026-09-30
+
+FU18's same-date closed-writer inventory correction is authoritative for this shared command. It adds no FU19
+runtime/test path, permission, grant mutation, shutdown guarantee or live authority. The newly enumerated baseline
+Auth handlers remain covered only by stopping the normal Auth writer host; reachable Platform administrator and
+Tenant writers remain outside that stop boundary and are limited only by the existing source fingerprints and
+durable manual-outcome behavior. In particular, Platform Tenant persistence uses whole-document replacement, so
+tenant admin/settings and query-shaped writers cannot be classified as harmless metadata updates.
+
+The operational entitlement reads themselves remain read-only and do not invoke the two query-shaped Tenant writers.
+The 21-path shared allow-list, observed-quiescence residual, direct-client residual and stop-on-new-writer guard remain
+unchanged. This factual inventory correction does not authorize implementation restart by itself, live plan/apply,
+service/process/configuration/data mutation, stage, commit, push or merge.

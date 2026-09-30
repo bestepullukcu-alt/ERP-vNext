@@ -6,6 +6,14 @@ namespace Diten.MdmService.Domain.Repositories;
 /// </summary>
 public interface IAuditIntentDeliveryRepository
 {
+    Task PrepareSelectedAsync(SelectedAuditIntentDeliveryRequest request,
+        CancellationToken cancellationToken = default)
+        => throw new InvalidOperationException("SELECTED_AUDIT_INTENT_REPOSITORY_REQUIRED");
+
+    Task<Diten.MdmService.Domain.Entities.LocalAuditIntentReceipt?> ReadSelectedReceiptAsync(
+        AuditIntentLocator locator, CancellationToken cancellationToken = default)
+        => throw new InvalidOperationException("SELECTED_AUDIT_INTENT_REPOSITORY_REQUIRED");
+
     Task<IReadOnlyList<AuditIntentWorkItem>> DiscoverEligibleAsync(
         int limit,
         CancellationToken cancellationToken = default);

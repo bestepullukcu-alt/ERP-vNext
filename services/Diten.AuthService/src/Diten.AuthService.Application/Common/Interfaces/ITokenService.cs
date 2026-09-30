@@ -12,4 +12,6 @@ public interface ITokenService
     string GeneratePlatformAccessToken(Guid userId, string email, string? firstName, string? lastName, Guid tenantId, string actorType, IEnumerable<string> roles, IEnumerable<string> permissions, int expiresInMinutes, bool requiresPasswordChange);
     string GenerateRefreshToken();
     ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
+    ClaimsPrincipal GetPrincipalFromCurrentToken(string token, DateTimeOffset requiredValidThrough)
+        => throw new NotSupportedException("CURRENT_TOKEN_VALIDATION_REQUIRED");
 }

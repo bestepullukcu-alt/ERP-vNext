@@ -1,4 +1,5 @@
 using Diten.AuthService.Api;
+using Diten.AuthService.Api.Services.ServiceIdentityTokens;
 using Diten.AuthService.Application;
 using Diten.AuthService.Infrastructure;
 using Diten.AuthService.Persistence;
@@ -11,6 +12,18 @@ using Prometheus;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
+
+if (ServiceClientOperationalProvisioningRunner.IsProcessInvocationRequested(args))
+{
+    Environment.ExitCode = await ServiceClientOperationalBootstrap.RunAsync(args, Console.In, Console.Out);
+    return;
+}
+
+if (Diten.AuthService.Api.Operational.EntitlementReconciliationOperationalMode.IsRequested(args))
+{
+    Environment.ExitCode = await Diten.AuthService.Api.Operational.EntitlementReconciliationOperationalMode.RunAsync(args);
+    return;
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
