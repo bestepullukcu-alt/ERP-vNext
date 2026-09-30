@@ -128,3 +128,21 @@ KORU/YAPMA: Ziyaret (SB-3), İddialar ekranları, Bilgi İçeriği/Yol/Yolculuk 
 DOĞRULA (E2): cd C:\tmp\sb-1r; CRM testleri 0 kırmızı (taban 2109/0/5; bilinen sıra flake'i hariç); Web testleri 0 kırmızı (taban 333); Platform + Auth ilgili testler yeşil; build'ler 0 hata; node --check temiz. Yeni testler: ülke/dil doğrulaması (geçersiz ülke, ülkede olmayan dil, BRD kapalı 503), bileşen dil uyumsuzluğu 409, eski Scope elemanlı doküman okunur, bağlam çözümü, uygunluk bağlamı setten, kullanım raporu ülkesi setten, SB-2 ülke sürümü setten, menüde kapsam sayfası yok, L10n 7 dil. Sabotaj: dil uyumsuzluğu + SB-2 ülke kaynağı testleri kırmızıya dönmeli. Commit ("refactor(crm): WP-SB-1R — remove ContentScope, derive content set context (country + language on the set)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: bir tüketici kapsamın Channel/PeriodFrom-To alanlarına gerçekten dayanıyorsa ya da uygunluk politikalarında kapsam değerleriyle eşleşen canlı kural varsa DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-09-30) — **ACCEPTED (E2)**
+- **Commit:** `9df79043` (`wp/sb-1r`) → `test/crm-content-visit-e2e` fast-forward. 75 dosya (+1860 / −2427).
+- **Diff (K13 okuma):**
+  - `ContentSet.CountryCode` + `LanguageCode`. Eski `Scope` → `[Obsolete] LegacyScope`, element adı "Scope", `SetIgnoreIfNull`: eski doküman okunur, çökme yok. Revizyonda da aynı.
+  - `ContentSetContextSnapshot`: `ProductId` / `AudienceProfileIds` string-Guid.
+  - Bileşen ekleme dil kapısı `ContentSetSelectionHandlers` (409 `component_language_mismatch`). Dili olmayan eski set kapıdan geçmez.
+  - Web'de kapsam sayfası, JS ve proxy kalmadı (yalnız iki yorum satırı "mirrors ContentScopes" diyor, zararsız). Manifest `CONTENT_SCOPES` kaldırıldı + test. Auth anahtarları "deprecated".
+- **CT testleri:** CRM **2118/0/5**, Web **343/0**. Ajan: Platform 174/0, Auth 1019/0.
+- **CT sabotajı:** bileşen dil kapısı devre dışı (`if (false && …)`) → `ContentSetContext` 1 kırmızı. Kod geri alındı.
+- **DUR yok (ajan canlı salt okuma):** 0 uygunluk politikası, 0 politikalı iddia; Channel yalnız boyut; Period okuyan yok.
+- **Ek karar (ajan, kabul):** ülke / dil yalnız taslakta değişir (409 `context_locked`). SB-2 ülkeyi revizyonun donmuş bağlamından okur (eski revizyonda set).
+- **Açık:**
+  - canlı "test" kapsamı arşivlenmedi (UI kalktı; okuma ucu var; zararsız);
+  - CRM kapsam okuma uçları + repository ayrı temizlik işi.
+- **E4:** CT, fleet restart sonrası (TPL-ALMIBA-01 + Türkiye + Türkçe, başlıkta ALMIBA / Nefroloji, İngilizce içerik reddi, menüde İçerik Kapsamları yok).
