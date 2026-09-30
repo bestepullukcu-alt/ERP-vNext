@@ -140,3 +140,27 @@ Ajan DUR raporu:
 ```text
 WP-SB-2 devam — DUR yanıtları WP dosyasının sonunda ("Kullanıcı kararları"). 1) Yol sırası dal-öncelikli: dal SortOrder → dal Steps sırası → Position (dalsız eski şablon: OrderedConceptTypes → Position). 2) Karışık dil: 409 component_language_mixed, hiçbir şey üretilmez. 3) Sürümleme bulgularını uygula (yol: CreateKnowledgePathVersion + eskiyi inactive/EffectiveTo, seçimini raporla; içerik: sonekli yeni kod + eskisi inactive). Paketin geri kalanı aynen. Sabotaj testlerine dal-öncelikli sıra + karışık dil 409 eklensin. Aynı DOĞRULA/commit kuralları.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-09-30) — **ACCEPTED (E2)**
+- **Commit:** ajan `696dd99e` → `test/crm-content-visit-e2e` üzerine rebase → **`289fcf83`** (fast-forward). 17 dosya, yalnız CrmService.
+- **Diff (K13 okuma):**
+  - **`ContentSetPathOrder`:** dal SortOrder (eşitlikte liste sırası) → dal Steps → Position; dalsız → OrderedConceptTypes. Şablonda olmayan slot sona gidiyor, düşürülmüyor.
+  - **Yayın akışı:** SCMM-17 koşullarından sonra `producer.ProduceAsync` çalışıyor. Ret → hiçbir şey yazılmıyor. Üretilenler yayın durumuyla aynı revizyon yazımında. Yazım hata verirse `CompensateAsync` + throw.
+  - **Geri çekme:** çıktılar durum yazımından önce emekliye ayrılıyor (tekrar yakınsar).
+  - **Class-map:** `KnowledgeStudioOrigin` + `ProducedKnowledge*Id` string-Guid.
+  - Üretim `ISender` ile mevcut içerik ve yol komutlarından geçiyor (ham yazma yok).
+  - Ziyaret, İçerik Kapsamı, Platform ve Web dokunulmamış.
+- **CT testleri:** CRM **2109/0/5** (2092 + 17).
+- **CT sabotajı:** dal sırası tersine çevrildi (`OrderByDescending(SortOrder)`) → 1 kırmızı. Kod geri alındı.
+- **Ajan kararları (kabul):**
+  - yol yeni sürümde eskisi `inactive`, `EffectiveTo` kullanılmadı;
+  - içerik `KC-…-R2`;
+  - ülke sürümü seçimi kapsama matrisi önceliğiyle; ülkede sürüm yoksa 409 `claim_not_approved`;
+  - COUNTRY_CODES okunamazsa 503;
+  - adım tipi içerik tipinden;
+  - yol kaynağı da `content-studio`.
+- **Açık risk (kullanıcıya bildirildi):** yeniden yayında, sürüme sabitlenmiş yolculuk aşamaları inactive olan eski yola bakabilir. Yanıt `previous_path_in_use` uyarısı taşıyor.
+- **Not:** SB-1R (kapsamın kaldırılması) ülke okumasını tek noktada setin ülkesine çevirecek. Bugün ülke kapsamın `MarketRefs`'inden okunuyor.
+- **E4:** Web'de revizyon ekranı yok (SB-UI). Canlı akış API ile ya da SB-UI sonrası.
