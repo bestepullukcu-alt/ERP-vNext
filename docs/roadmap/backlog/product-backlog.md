@@ -7057,6 +7057,11 @@ DURUM: AÇIK · SAHİP: CT · BULAN: T1a ve takvim 2c ajanları · KAYIT: 2026-0
 Platform Application paketinin tamamı koşulunca `BusinessReferenceData*` Mongo testleri paylaşılan 27017'de kendi `diten_platform_brd_itest_*` veritabanlarını
 açıp siliyor ve aralarında yarışıyor ("database is currently being dropped" → tabandaki ~49 kırmızının kaynağı). Yeni testler atılır mongod kullanıyor. İş: BRD
 testlerini `DisposableStandaloneMongo`'ya taşı; kırmızı taban listesi temizlenir. Gelecek regresyon riski: 🟢.
+**Ek (2026-09-30, T3 kabulü):** aynı sınıftan ikinci belirti — `MongoIntegrationHarness` ortak `diten_platform_itest`
+veritabanını kullanıyor; `meeting_series`'te önceki koşulardan kalan çift kayıt ("Haftalık Kalite Toplantısı") benzersiz index kurulumunu
+E11000 ile düşürüyor ve o veritabanını açan her test (Toplantı benzersiz index testleri, `NotificationDispatchPermanentFailureMongoTests`)
+zincirleme kırmızı oluyor; T3'lü ve T3'süz dalda aynı. Kalıntıyı "benzersiz index çifti reddeder" testleri, index yokken çift yazarak
+bırakıyor. İş aynı: bu testler de `DisposableStandaloneMongo`'ya (ya da `emptyFirst`'e) taşınır.
 
 ### BL-483
 
@@ -7113,6 +7118,32 @@ DURUM: AÇIK · SAHİP: CT (Görev Merkezi takvimi) · BULAN: T2b kabulü · KAY
 
 "a drop on an EMPTY hour lands on the slot row" testi tam koşuda (3 772 test) bir kez kırmızı, tek başına 3/3 yeşil. Yük altında zamanlamaya bağlı; bilinen
 24 kırmızının dışında görünürse bu kayıt. İş: testin beklediği çizim/zamanlayıcıyı açıkça bekle. Gelecek regresyon riski: 🟢.
+
+
+### BL-488
+
+**T3 bildirimlerinin ertelenen küçükleri**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0280-FU01 / Platform bildirimleri) · BULAN: T3 bağımsız gözden geçirme · KAYIT: 2026-09-30
+
+(1) Hatırlatma işi alıcıları kişi başına AuthService'ten çözüyor (her çağrı kiracının kullanıcı sayfalarını tarıyor); 100'lük gruplarla toplu çözüm.
+(2) Yeniden denenen e-posta, `QueueEmailNotificationHandler`'ın gizleme kuralı boşluk ve `=` içeren değerleri sakladığı için (`WeekLabel`,
+`TimesheetUrl`) şablonu yeniden işleyemiyor ve kısa önizlemeyi gönderiyor — platform davranışı, bu kısa e-postalarda zararsız; kural değerin
+sır olup olmadığına daha iyi bakmalı. (3) E-postalar istek içinde sırayla gönderiliyor (gönderimde aday başına bir SMTP); büyük havuz + yavaş
+SMTP gönderimi yavaşlatır — kuyruk (`EmailDispatchJob`) üzerinden gönderim. Gelecek regresyon riski: 🟢.
+
+
+### BL-489
+
+**Bildirim olay adları hiçbir modülde çevrilmemiş**
+
+DURUM: AÇIK · SAHİP: CT (Platform bildirimleri) · BULAN: T3 v3 raporu (L1) · KAYIT: 2026-09-30
+
+Görevler (MOD-0024), Toplantılar (MOD-0357) ve Zaman Çizelgesi (MOD-0280-FU01) manifestleri olaylara `DisplayNameKey: NotificationEvent_*` veriyor,
+ama bu anahtarların hiçbir dalda çevirisi yok ve anahtarı okuyan bir ekran da yok (bildirim yönetim ekranı olay kodunu gösteriyor). Anahtarlar
+ilk dağıtımdan önce yerinde (senkron alanı yalnız oluşturmada yazıyor) — önemli olan buydu. İş: olay adını kiracı kullanıcısına gösteren ilk ekran
+(ör. bildirim tercihleri) geldiğinde üç modülün anahtarları `SharedResource` içinde 7 dilde birlikte çevrilir; Platform yönetim ekranı en,tr.
+Gelecek regresyon riski: 🟢 (anahtarlar sabit).
 
 ---
 

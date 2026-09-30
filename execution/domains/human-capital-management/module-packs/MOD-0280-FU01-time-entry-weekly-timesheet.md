@@ -603,9 +603,10 @@ Decisions:  MOD-0023's own platform.workflow.tasks.approve / .reject (unchanged)
 - Visibility (D11): the person sees all of their own; the approver sees **submitted** weeks routed to them, never
   drafts, never another team's; nobody sees who is running a timer.
 
-Notification events (manifest-declared): `time-entry.week.submitted`, `time-entry.week.approved`,
-`time-entry.week.rejected`, `time-entry.week.withdrawn`, `time-entry.timer.auto-closed`; T3:
-`time-entry.week.reminder`, `time-entry.meeting.minutes-conflict`.
+Notification events (manifest-declared, codes renamed in T3 — the platform's event/template key rule
+`^[a-z0-9]+(\.[a-z0-9]+)*$` refuses a hyphen; permission keys stay `time-entry.*`): `timeentry.week.submitted`,
+`timeentry.week.approved`, `timeentry.week.rejected`, `timeentry.week.withdrawn`, `timeentry.timer.autoclosed`,
+`timeentry.week.reminder`, `timeentry.meeting.minutesconflict`.
 
 ---
 
@@ -829,11 +830,11 @@ field (R10).
 | 2 | Domain | `Human Capital` → `Nav.Domain.HUMANCAPITAL` (exists) | `Domain: "Human Capital"` → `Nav.Domain.HUMANCAPITAL` present in all 7 `SharedResource` files (`NavManifestL10nGuardTests` green) |
 | 3 | Page actions | Categories: create/update/activate/deactivate; Settings: update; My Timesheet: submit/withdraw/correct; Approvals: reopen (time admin) | Manifest: MY_TIMESHEET 11 · TIME_APPROVALS 1 (REOPEN) · TIME_APPROVAL_DETAIL 0 · TIME_CATEGORIES 5 · TIME_SETTINGS 2 = **19**; dev `platform_module_page_action_descriptors` = 19 |
 | 4 | Permission keys | §14 (6 in T1, 2 in T4) | 6 `time-entry.*` keys in `diten_auth_v3.permissions`; T4 keys not minted. Task Center timer actions carry `time-entry.timesheets.update` (`TaskWorkItemProvider.RequiredActionPermissions`); decisions carry MOD-0023's own `platform.workflow.tasks.approve/.reject` |
-| 5 | Audit | every §3.2 command incl. minimisation; T4 report reads via `IDataExportAuditWriter` | 24 / 24 commands under `Features/TimeEntry/Commands` are `IAuditableCommand`; T2b adds no command (reads + existing commands only) |
-| 6 | Notifications | §14 events, templates ×7 | 5 events declared in the manifest (`week.submitted/approved/rejected/withdrawn`, `timer.auto-closed`); templates are T3 |
+| 5 | Audit | every §3.2 command incl. minimisation; T4 report reads via `IDataExportAuditWriter` | 24 / 24 commands under `Features/TimeEntry/Commands` are `IAuditableCommand`; T2b adds no command. **T3 (2026-09-30, WP-TIME-ENTRY-REMINDERS-01):** still 24 / 24 — T3 adds no command; the reminder switch rides `UpdateTimeEntrySettingsCommand`, whose audit metadata now carries `weeklyReminderEnabled` (T3-08). E-mails are system events, not commands: their trail is `time_entry_notification_marks` + `notification_dispatches` |
+| 6 | Notifications | §14 events, templates ×7 | **T3 (2026-09-30):** 7 events in the manifest, all `Active`, codes `timeentry.week.submitted/approved/rejected/withdrawn/reminder`, `timeentry.timer.autoclosed`, `timeentry.meeting.minutesconflict` (hyphen removed: the platform key rule `^[a-z0-9]+(\.[a-z0-9]+)*$` kept the `time-entry.*` codes Draft and refused them at dispatch); **49** templates (7 × 7) in `NotificationTemplateSeed.cs`; measured in a disposable mongod (T3-07): the production sync makes the 7 `Active`, and the real line sends 7 e-mails, `Status: Sent`, locale `tr`, no `{{` left. Dev before deploy (read-only): 5 `time-entry.*` definitions, all `Status: 0` (Draft), 0 `timeentry.*` templates, 0 dispatches — the 5 old rows stay as orphaned Draft after deploy (never dispatched) |
 | 7 | Nav | `Nav.Module.TIMEENTRY`, `Nav.Page.MY_TIMESHEET/TIME_APPROVALS/TIME_CATEGORIES/TIME_SETTINGS` ×7 | Keys (the bridge normalises codes): `Nav.Module.TIMEENTRY`, `Nav.Page.MYTIMESHEET`, `.TIMEAPPROVALS`, `.TIMECATEGORIES`, `.TIMESETTINGS` ×7. Visible: MY_TIMESHEET, TIME_APPROVALS, TIME_CATEGORIES, TIME_SETTINGS, each behind its own key; TIME_APPROVAL_DETAIL hidden. CT re-measured after the lane redeploy (2026-09-30, `0df2c057c`): `platform_module_page_descriptors` `IsNavigationVisible` true for MY_TIMESHEET, TIME_APPROVALS, TIME_CATEGORIES, TIME_SETTINGS, false for TIME_APPROVAL_DETAIL; the sidebar shows the four under Human Capital › Zaman Çizelgesi |
 | 8 | KVKK / DSG | §22; privacy notice text is the tenant's, the product shows the "not a statutory record" line | My Timesheet shows the "effort allocation, not a statutory working-time record" line; Settings shows the Swiss §22 warning above the switch list; no per-person export (approvals list declares none — T4 with `IDataExportAuditWriter`) |
-| 9 | Onboarding | recommended category install; time-admin pool position; per-entity switch review (all off by default) | Categories: "Install recommended" (5 codes, labels ×7); Settings: pool position picker + every legal entity listed OFF until switched on with a reason. Dev data: 0 categories, 0 switch rows on |
+| 9 | Onboarding | recommended category install; time-admin pool position; per-entity switch review (all off by default) | Categories: "Install recommended" (5 codes, labels ×7); Settings: pool position picker + every legal entity listed OFF until switched on with a reason. **T3:** Settings shows the weekly reminder switch, OFF by default (no row or no field = off), saved with the versioned settings command; the job additionally needs `EnabledJobs["Diten.Platform.MOD-0280.TimesheetReminderJob"]`. Dev data (read-only, before deploy): 0 settings rows, 0 with `WeeklyReminderEnabled: true`, no `time_entry_notification_marks` collection yet |
 | 10 | Self-registration | manifest + completeness test green | `TimeEntryManifestProviderTests` green (nav set asserted: 4 visible pages, each with a `time-entry.*` key) |
 
 Read-only Mongo queries used (dev, 2026-09-30):
@@ -842,6 +843,14 @@ Read-only Mongo queries used (dev, 2026-09-30):
 `db.permissions.countDocuments({Key:/^time-entry\./})` (→ 6) on `diten_auth_v3`;
 `db.time_entry_timer_segments.countDocuments({IsRunning:true})`, `db.time_entry_timesheet_weeks.countDocuments({})`,
 `db.time_entry_work_categories.countDocuments({})`, `db.time_entry_legal_entity_settings.countDocuments({TimerEnabled:true})` (→ 0 each).
+
+Read-only Mongo queries for rows 5, 6, 9 (T3, dev `diten_personalization_dev`, 2026-09-30, before deploy):
+`db.notification_event_definitions.find({EventCode:/^time-?entry\./},{EventCode:1,Status:1})` (→ 5 × `time-entry.*`, `Status: 0`),
+`db.notification_templates.countDocuments({TemplateKey:/^time-?entry\./})` (→ 0), `db.notification_dispatches.countDocuments({TemplateKey:/^time-?entry\./})` (→ 0),
+`db.time_entry_settings.countDocuments({WeeklyReminderEnabled:true})` (→ 0), `db.getCollectionNames().includes("time_entry_notification_marks")` (→ false).
+After deploy CT re-measures: `db.notification_event_definitions.countDocuments({EventCode:/^timeentry\./, Status:1})` (expected 7),
+`db.notification_templates.countDocuments({TemplateKey:/^timeentry\./, IsPlatformDefault:true})` (expected 49),
+`db.time_entry_notification_marks.getIndexes()` (expected `ux_time_entry_notification_marks_tenant_kind_key`, unique).
 
 ---
 
@@ -1004,6 +1013,48 @@ Timesheet V2–V4, SuccessFactors clock, Oracle Redwood time card + Web Clock + 
 
 Slices: T2a = My Timesheet page, top-bar chip, error-code bridge, nav entry. T2b = Task Center timer actions (DeclareTimeTracking on,
 mock timer removed), approvals page, categories, settings, correction diff field, 10-row platform-links table.
+
+### 21.3 T3 decisions — notifications and reminders (Control Tower, owner's delegation, 2026-09-30)
+
+Measured before deciding (lane `6648e7dcd`): the five manifest events are all `Status: "Draft"` with `RequiredVariables:
+[WeekKey]` for every event; **only `time-entry.timer.auto-closed` is dispatched** (`TimerAutoCloseNotifier`, and it sends
+`localDate`/`durationMinutes`, not `WeekKey`); `week.submitted/approved/rejected/withdrawn` are declared and **sent nowhere**;
+MOD-0023 sends no e-mail of its own; templates live in `NotificationTemplateSeed.cs` (`{{Variable}}` placeholders, one factory
+per key, seven languages for tenant events — MOD-0024 and MOD-0357 precedent).
+
+| # | Subject | Decision | SAP / Oracle |
+|---|---|---|---|
+| N1 | Who is reminded | A **participant**: a person with any `TimesheetWeek` (any status) or `TimerSegment` in the 4 ISO weeks before the target week. A person who never used the module gets nothing; a deactivated user never gets anything. | SAP CATS reminds employees with a CATS profile; Oracle OTL reminds workers with a time entry profile. We have no profile object — participation is the honest proxy; a profile is a follow-up. |
+| N2 | When and for what | **One reminder per person-week**, for the previous ISO week, on **Monday at or after 09:00 tenant local** (the job runs hourly; the mark makes it once). Reminded when the week is absent, `Draft`, `Rejected` or `Withdrawn`; not when `Submitted`, `Approved` or `Superseded`. A week whose days all resolve to weekend/holiday for the person is skipped; an unresolved calendar day counts as a working day (the grid's rule). No manager escalation in v1. | Both send a "missing / not submitted" notice after period end; Oracle can escalate to the manager — follow-up. |
+| N3 | Tenant switch | `TimeEntrySettings.WeeklyReminderEnabled`, **default off**, saved with the existing versioned settings command (audited) and shown on the Settings page. Nothing reaches employees until the time admin turns it on — same stance as the timer switch (D12). | Both configure reminders per profile / per admin setup, never on by default. |
+| N4 | Week events | `submitted` → the week's stored approver candidates (pool members included); `approved` / `rejected` → the person, **only when the pull finalizer actually changes the week's state**; `rejected` carries the approver's reason; `withdrawn` → the approver candidates. Best-effort: a failed send never fails the command (logged). **CT acceptance round 1 (M3):** `submitted` and `withdrawn` reach an approver at most once per (week, revision, recipient, tenant-local day) — a submit/withdraw loop on one day sends one of each; the next day's resubmission sends again; the approval item stays visible in the Task Center regardless. `approved` once per revision, `rejected` once per submission (the approver triggers those). | Standard approval notifications in both. |
+| N5 | Minutes conflict (D8) | New contracts seam **`IMeetingAttendanceObserver`**, called by MOD-0357 after `SyncAsync` on minutes publish **and** correction (the `ITaskTransitionObserver` pattern: failures logged, never thrown into the meeting write). TimeEntry's implementation: for each attendee now `Absent`/`Excused` who has an **accepted `Meeting`-source row** for that meeting (any week state), notify **that person only**, once per (meeting, person, status). `Present` sends nothing. Never the approver or the manager (D11). The read-time flag stays the source of truth. | Neither links meeting minutes to timesheets natively; this is ours. |
+| N6 | At most once | `TimeEntryNotificationMark` (`time_entry_notification_marks`: `TenantId`, `Kind`, `Key`, `CreatedAtUtc`), unique `(TenantId, Kind, Key)`, claimed **before** the send: a crash after the claim loses one e-mail, never duplicates one. `timer.auto-closed` keeps its segment mark. | — |
+| N7 | Templates | 7 events × 7 languages = **49** templates, key = event code; manifest events go `Active`. Each event's `RequiredVariables` equals exactly what its dispatch supplies and what its template renders (auto-closed: `LocalDate`, `DurationMinutes`, `TimesheetUrl`). Content is minimal: week and link; approver e-mails name the person; no per-day minutes, nothing about another person. Locale = the tenant's (existing resolver). | — |
+
+**T3 acceptance — CT answers to the agent's readings (2026-09-30):**
+- Event codes `timeentry.*` (no hyphen) — accepted; the key rule is the platform's and is not loosened. The five
+  `time-entry.*` Draft definitions left in the dev database were never dispatched; they are harmless and are archived
+  from the notification admin screen when someone is next there (no data write by CT).
+- Participation window = the target week **and** the 4 before it — accepted (a person with only a Draft in the target
+  week is exactly who N2 reminds).
+- **Not Monday-only (CT change):** the previous week is reminded on the first run from Monday 09:00 until the week ends;
+  a run missed on Monday or a switch turned on mid-week still reminds once — the person-week mark keeps it to one.
+- ~~Submission key = (event, week, revision, submission number)~~ — **replaced in round 2 (M3):** submitted / withdrawn go
+  at most once per (week, revision, recipient, tenant-local day). A submit/withdraw loop can no longer flood the approvers;
+  a week returned and submitted again on the SAME day produces no second e-mail (the Task Center item is there), the next
+  day it does. approved / rejected are unchanged (the approver triggers them).
+- `TimesheetUrl` on auto-closed — accepted (N7 "week and link"); no link on withdrawn — accepted (the week no longer
+  opens for the approver).
+- Locale = the tenant's; per-person language is not in T3.
+
+**Go-live: three job flags must be on (CT acceptance round 1, M4).** Nothing below is sent — and approvals are applied
+only when someone opens a week — unless each environment turns on, in `BackgroundJobs:EnabledJobs` (with
+`BackgroundJobs:Enabled` and `RegisterStandardJobs` true): `Diten.Platform.MOD-0280.TimerMidnightCloseJob`,
+`Diten.Platform.MOD-0280.TimesheetDecisionSweepJob`, `Diten.Platform.MOD-0280.TimesheetReminderJob`. Development has
+them on (`appsettings.Development.json`); the base `appsettings.json` keeps them off. `GET settings` reports
+`reminderJobEnabled`, and the Settings page warns when the tenant's reminder switch is on but this server does not run
+the job (`docs/guides/operations/dev-environment.md`, job table).
 
 ## 22. Legal — must confirm before go-live (not a start blocker)
 

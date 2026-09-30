@@ -154,36 +154,63 @@ public sealed class TimeEntryManifestProvider : IModuleManifestProvider
             ],
             NotificationEvents:
             [
-                Event(TimeEntryNotificationEvents.WeekSubmitted, "Timesheet submitted",
+                Event(TimeEntryNotificationEvents.WeekSubmitted, "NotificationEvent_TimeEntryWeekSubmitted", "Timesheet submitted",
                     "Sent to the approver when a week is submitted.", PageApprovals, TimeEntryPermissions.ApprovalsRead),
-                Event(TimeEntryNotificationEvents.WeekApproved, "Timesheet approved",
+                Event(TimeEntryNotificationEvents.WeekApproved, "NotificationEvent_TimeEntryWeekApproved", "Timesheet approved",
                     "Sent to the person when their week is approved.", PageMyTimesheet, TimeEntryPermissions.TimesheetsRead),
-                Event(TimeEntryNotificationEvents.WeekRejected, "Timesheet returned",
+                Event(TimeEntryNotificationEvents.WeekRejected, "NotificationEvent_TimeEntryWeekRejected", "Timesheet returned",
                     "Sent to the person when their week is rejected, with the approver's reason.", PageMyTimesheet,
                     TimeEntryPermissions.TimesheetsRead),
-                Event(TimeEntryNotificationEvents.WeekWithdrawn, "Timesheet withdrawn",
-                    "Sent to the approver when the person withdraws a submitted week.", PageApprovals,
-                    TimeEntryPermissions.ApprovalsRead),
-                Event(TimeEntryNotificationEvents.TimerAutoClosed, "Timer closed at midnight",
+                // L7 — linkless, the MOD-0357 "removed" pattern: once withdrawn, the week no longer opens for the approver, so
+                // there is no page to point at (LinkPolicy None, no TargetPageCode) and the template carries no link.
+                Event(TimeEntryNotificationEvents.WeekWithdrawn, "NotificationEvent_TimeEntryWeekWithdrawn", "Timesheet withdrawn",
+                    "Sent to the approver when the person withdraws a submitted week.", pageCode: null,
+                    TimeEntryPermissions.ApprovalsRead, linkPolicy: "None"),
+                Event(TimeEntryNotificationEvents.TimerAutoClosed, "NotificationEvent_TimeEntryTimerAutoClosed", "Timer closed at midnight",
                     "Sent to the person the morning after their timer was closed at local midnight.", PageMyTimesheet,
-                    TimeEntryPermissions.TimesheetsRead)
+                    TimeEntryPermissions.TimesheetsRead),
+                Event(TimeEntryNotificationEvents.WeekReminder, "NotificationEvent_TimeEntryWeekReminder", "Timesheet reminder",
+                    "Sent to the person on Monday when last week is not yet submitted (tenant switch, off by default).",
+                    PageMyTimesheet, TimeEntryPermissions.TimesheetsRead),
+                Event(TimeEntryNotificationEvents.MinutesConflict, "NotificationEvent_TimeEntryMinutesConflict", "Minutes attendance to check",
+                    "Sent to the person only, when the minutes record them absent or excused from a meeting they booked time to.",
+                    PageMyTimesheet, TimeEntryPermissions.TimesheetsRead)
             ]);
 
-    // Declared, not yet dispatched: templates (7 languages) are T3, so every event stays Draft until then.
+    /// <summary>
+    /// The display-name keys (L1) follow the MOD-0024 / MOD-0357 <c>NotificationEvent_*</c> pattern. The manifest sync
+    /// writes <c>DisplayNameKey</c> only when it first CREATES an event (a SOFT, operator-owned field), so the keys must
+    /// be here before the first deploy; the English fallback name stays for a reader that resolves no key.
+    /// </summary>
+    public static readonly IReadOnlyList<string> DisplayNameKeys =
+    [
+        "NotificationEvent_TimeEntryWeekSubmitted", "NotificationEvent_TimeEntryWeekApproved",
+        "NotificationEvent_TimeEntryWeekRejected", "NotificationEvent_TimeEntryWeekWithdrawn",
+        "NotificationEvent_TimeEntryTimerAutoClosed", "NotificationEvent_TimeEntryWeekReminder",
+        "NotificationEvent_TimeEntryMinutesConflict"
+    ];
+
+    // T3 (pack §21.3 N7) — Active, with seven templates each (NotificationTemplateSeed). The required variables are the
+    // ones the dispatch sends and the template renders; all three come from TimeEntryNotificationVariables, and T3-06
+    // measures the manifest against the payloads actually dispatched.
     private static ModuleManifestNotificationEvent Event(
-        string code, string fallbackName, string description, string pageCode, string permission) =>
+        string code, string displayNameKey, string fallbackName, string description, string? pageCode, string permission,
+        string linkPolicy = "TargetPage") =>
         new(
             EventCode: code,
             Channel: "Email",
             DefaultTemplateKey: code,
-            DisplayNameKey: null,
+            DisplayNameKey: displayNameKey,
             FallbackDisplayName: fallbackName,
             Description: description,
-            RequiredVariables: [new ModuleManifestNotificationVariable("WeekKey")],
+            RequiredVariables: TimeEntryNotificationVariables.RequiredFor(code)
+                .Select(name => new ModuleManifestNotificationVariable(name))
+                .ToList(),
             OptionalVariables: null,
             TargetPageCode: pageCode,
             RequiredPermissionKey: permission,
             CanTenantOverride: false,
             UsageType: "SystemEvent",
-            Status: "Draft");
+            LinkPolicy: linkPolicy,
+            Status: "Active");
 }

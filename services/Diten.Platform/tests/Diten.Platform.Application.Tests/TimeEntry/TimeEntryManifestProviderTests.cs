@@ -73,22 +73,19 @@ public sealed class TimeEntryManifestProviderTests
     }
 
     [Fact]
-    public void The_notification_events_are_declared_on_real_pages_and_keys_as_Draft()
+    public void The_notification_events_are_declared_on_real_pages_and_keys_as_Active()
     {
         var events = _manifest.NotificationEvents!;
         var pages = _manifest.Pages.Select(p => p.PageCode).ToHashSet();
 
-        Assert.Equal(
-            new[]
-            {
-                TimeEntryNotificationEvents.WeekSubmitted, TimeEntryNotificationEvents.WeekApproved,
-                TimeEntryNotificationEvents.WeekRejected, TimeEntryNotificationEvents.WeekWithdrawn,
-                TimeEntryNotificationEvents.TimerAutoClosed
-            }.OrderBy(c => c),
-            events.Select(e => e.EventCode).OrderBy(c => c));
-        Assert.All(events, e => Assert.Contains(e.TargetPageCode!, pages));
+        // T3 (N7) — the five T1a events plus the reminder and the minutes conflict, all Active.
+        Assert.Equal(TimeEntryNotificationEvents.All.OrderBy(c => c), events.Select(e => e.EventCode).OrderBy(c => c));
+        // L7 — withdrawn is linkless (no page); every other event points at a real page.
+        Assert.All(events.Where(e => e.TargetPageCode is not null), e => Assert.Contains(e.TargetPageCode!, pages));
+        Assert.Single(events, e => e.TargetPageCode is null);
         Assert.All(events, e => Assert.Contains(e.RequiredPermissionKey!, RealKeys));
-        Assert.All(events, e => Assert.Equal("Draft", e.Status));
+        Assert.All(events, e => Assert.Equal("Active", e.Status));
+        Assert.All(events, e => Assert.Equal(e.EventCode, e.DefaultTemplateKey));
     }
 
     // ── R5 — the per-definition option, parsed ──────────────────────────────────────────────────────────────────

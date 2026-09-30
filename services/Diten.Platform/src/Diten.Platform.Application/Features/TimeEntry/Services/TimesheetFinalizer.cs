@@ -84,6 +84,7 @@ public sealed class TimesheetFinalizer : ITimesheetFinalizer
     private readonly ITimesheetFinalizationProbe _probe;
     private readonly ITimerSegmentRepository _segments;
     private readonly IMediator _mediator;
+    private readonly ITimeEntryNotifier _notifier;
     private readonly ILogger<TimesheetFinalizer> _logger;
 
     public TimesheetFinalizer(
@@ -97,8 +98,10 @@ public sealed class TimesheetFinalizer : ITimesheetFinalizer
         ITimesheetFinalizationProbe probe,
         ITimerSegmentRepository segments,
         IMediator mediator,
+        ITimeEntryNotifier notifier,
         ILogger<TimesheetFinalizer> logger)
     {
+        _notifier = notifier;
         _segments = segments;
         _mediator = mediator;
         _weeks = weeks;
@@ -218,6 +221,8 @@ public sealed class TimesheetFinalizer : ITimesheetFinalizer
                 week.LastRejectionReason = decision.Comment;
                 week.FinalizationBlockedReason = null;
                 EnsureWritten(await _weeks.UpdateAsync(week, week.Version, ct), week.Id);
+                // T3 (N4) — only here, where THIS run moved the week from Submitted: a replay never reaches this line.
+                await _notifier.WeekRejectedAsync(week, ct);
                 return TimesheetFinalizationResult.Rejected;
 
             default:
@@ -260,6 +265,10 @@ public sealed class TimesheetFinalizer : ITimesheetFinalizer
         week.ReopenActive = false; // a reopen lasts until approval (F7)
         week.FinalizationBlockedReason = null;
         EnsureWritten(await _weeks.UpdateAsync(week, week.Version, ct), week.Id);
+
+        // T3 (N4) — the state change happened here and only here; told BEFORE the totals, so a totals failure (retried by
+        // F12, which never re-enters this method) cannot cost the person the e-mail.
+        await _notifier.WeekApprovedAsync(week, ct);
 
         await ApplyTotalsAsync(week, now, ct);
         return TimesheetFinalizationResult.Approved;

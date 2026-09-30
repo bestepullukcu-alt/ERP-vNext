@@ -147,6 +147,53 @@ public sealed class InternalUsersControllerTests
         Assert.NotEqual(nameless.Id.ToString(), row.DisplayName);
     }
 
+    // ── contacts: only an account that can still be reached ───────────────────
+
+    /// <summary>
+    /// 2026-09-30 (MOD-0280-FU01 T3 stop report): deactivation sets IsActive = false and deletes nothing, so the sweep
+    /// used to hand a switched-off person's address to every Platform mailer. They are omitted now; an invited account
+    /// (active, pending state derived) still resolves; and display-names still names the deactivated person in history.
+    /// </summary>
+    [Fact]
+    public async Task Contacts_omit_a_deactivated_user_but_keep_an_active_one()
+    {
+        var alice = NewUser("alice@a.test", "Alice", "Adams", TenantA);
+        var gone = NewUser("gone@a.test", "Gina", "Gone", TenantA);
+        gone.Deactivate();
+        var controller = Build(authorized: true, alice, gone);
+
+        var result = await controller.GetContacts(TenantA, $"{alice.Id},{gone.Id}", CancellationToken.None);
+
+        var rows = Assert.IsType<List<InternalUserContactDto>>(Assert.IsType<OkObjectResult>(result).Value);
+        Assert.Equal([alice.Id], rows.Select(r => r.Id));
+    }
+
+    [Fact]
+    public async Task Contacts_still_resolve_an_invited_account_that_has_not_signed_in_yet()
+    {
+        var invited = NewUser("new@a.test", "Nur", "New", TenantA);
+        invited.RequirePasswordChange(DateTime.UtcNow.AddDays(7));
+        Assert.True(invited.IsInvitationPending());
+        var controller = Build(authorized: true, invited);
+
+        var result = await controller.GetContacts(TenantA, invited.Id.ToString(), CancellationToken.None);
+
+        var row = Assert.Single(Assert.IsType<List<InternalUserContactDto>>(Assert.IsType<OkObjectResult>(result).Value));
+        Assert.Equal("new@a.test", row.Email);
+    }
+
+    [Fact]
+    public async Task Display_names_still_name_a_deactivated_user_so_history_keeps_its_labels()
+    {
+        var gone = NewUser("gone@a.test", "Gina", "Gone", TenantA);
+        gone.Deactivate();
+        var controller = Build(authorized: true, gone);
+
+        var rows = Rows(await controller.GetDisplayNames(TenantA, gone.Id.ToString(), CancellationToken.None));
+
+        Assert.Equal(gone.Id, Assert.Single(rows).Id);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static List<InternalUserDisplayNameDto> Rows(IActionResult result)

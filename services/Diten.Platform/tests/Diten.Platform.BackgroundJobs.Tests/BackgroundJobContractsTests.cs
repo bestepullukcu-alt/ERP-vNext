@@ -55,6 +55,7 @@ public sealed class BackgroundJobContractsTests
                 "Diten.Platform.MOD-0034.WebhookRetryJob",
                 "Diten.Platform.MOD-0280.TimerMidnightCloseJob",
                 "Diten.Platform.MOD-0280.TimesheetDecisionSweepJob",
+                "Diten.Platform.MOD-0280.TimesheetReminderJob",
                 "Diten.Platform.MOD-0297.SubscriptionRenewalJob",
                 "Diten.Platform.MOD-0297.TrialExpiryScanJob",
                 "Diten.Platform.MOD-0357.MeetingSeriesSweepJob",

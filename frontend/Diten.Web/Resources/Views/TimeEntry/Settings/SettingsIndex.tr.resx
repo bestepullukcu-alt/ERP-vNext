@@ -81,4 +81,11 @@
   <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
   <data name="NeverChanged" xml:space="preserve"><value>hiç</value></data>
   <data name="Cancel" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="ReminderTitle" xml:space="preserve"><value>Haftalık hatırlatma</value></data>
+  <data name="ReminderHelp" xml:space="preserve"><value>Her pazartesi 09:00'dan itibaren, son haftalarda zaman girişi kullanan kişilere, geçen haftanın zaman çizelgesi eksikse ya da henüz gönderilmediyse tek bir e-posta gider. Siz açana kadar kimseye hatırlatma gitmez.</value></data>
+  <data name="ReminderLabel" xml:space="preserve"><value>Haftalık hatırlatmayı gönder</value></data>
+  <data name="ReminderSavedOn" xml:space="preserve"><value>Haftalık hatırlatma açıldı.</value></data>
+  <data name="ReminderSavedOff" xml:space="preserve"><value>Haftalık hatırlatma kapatıldı.</value></data>
+  <data name="ReminderSaveFailed" xml:space="preserve"><value>Haftalık hatırlatma kaydedilemedi. Yeniden deneyin.</value></data>
+  <data name="ReminderJobOff" xml:space="preserve"><value>Hatırlatma açık, ama bu sunucuda hatırlatma işi çalışmıyor; e-posta gitmeyecek. Sistem yöneticinize bildirin.</value></data>
 </root>

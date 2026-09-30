@@ -41,6 +41,10 @@ public static class TimeEntryModuleRegistration
         services.AddScoped<ITimeSuggestionReader, TimeSuggestionReader>();
         services.TryAddScoped<ITimerAutoCloseNotifier, TimerAutoCloseNotifier>();
 
+        // T3 — the week e-mails, the Monday reminder and the minutes conflict (pack §21.3 N2–N6).
+        services.AddScoped<ITimeEntryNotifier, TimeEntryNotifier>();
+        services.AddScoped<IMeetingAttendanceObserver, MinutesConflictObserver>();
+
         // The two doors other modules use (pack §3.3): MOD-0024 tells us a task moved, and reads its spent time from us.
         services.AddScoped<ITaskTransitionObserver, TaskTransitionTimerObserver>();
         services.AddScoped<ITaskSpentTimeSource, TaskSpentTimeSource>();
@@ -59,6 +63,7 @@ public static class TimeEntryModuleRegistration
         // Registered so Hangfire can resolve it; whether it RUNS is BackgroundJobs:RegisterStandardJobs + EnabledJobs.
         services.AddScoped<TimesheetDecisionSweepJob>();
         services.AddScoped<TimerMidnightCloseJob>();
+        services.AddScoped<TimesheetReminderJob>();
 
         services.AddSingleton<IModuleManifestProvider, TimeEntryManifestProvider>();
         return services;

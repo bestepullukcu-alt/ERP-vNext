@@ -6,6 +6,10 @@
  * (MDM lookup) merged with the stored switch rows. Switching ON needs a reason — the legal basis — written on the page
  * (never a browser prompt): an empty reason is stopped here and refused by Platform too (TIMER_SWITCH_REASON_REQUIRED).
  * Every write carries the row's expectedVersion (0 when there is no row). No inline style (FG-003).
+ *
+ * T3 (pack §21.3 N3) — the weekly reminder switch rides the SAME settings PUT as the pool (one versioned, audited
+ * command): it sends the pool as it stands, so turning the reminder on or off never clears the pool, and the pool save
+ * leaves the reminder out (the server keeps it). A refused save puts the switch back where the server has it.
  */
 (function (root) {
     'use strict';
@@ -102,6 +106,40 @@
             state.settings = result.data;
             announce(t('PoolSaved'));
             if (typeof root.showToast === 'function') { root.showToast(t('PoolSaved'), 'success'); }
+            return result;
+        });
+    }
+
+    // ── weekly reminder ─────────────────────────────────────────────────────────────────────────────────────────
+
+    function renderReminder() {
+        var box = byId('tsWeeklyReminder');
+        if (!box) { return; }
+        box.checked = !!(state.settings && state.settings.weeklyReminderEnabled);
+        box.disabled = false;
+        // M4 — the switch is on but this server's scheduler does not run the reminder job: say so, visibly.
+        var warning = byId('tsReminderJobOff');
+        if (warning) { warning.hidden = !(box.checked && state.settings && state.settings.reminderJobEnabled === false); }
+    }
+
+    function saveReminder(enabled) {
+        var box = byId('tsWeeklyReminder');
+        if (box) { box.disabled = true; }
+        return request('PUT', '/TimeEntry/api/settings', {
+            expectedVersion: state.settings ? state.settings.version : 0,
+            timeAdminPoolPositionId: state.settings ? state.settings.timeAdminPoolPositionId || null : null,
+            weeklyReminderEnabled: !!enabled
+        }).then(function (result) {
+            if (!result.ok) {
+                announce(result.reasonCode ? failure(result) : t('ReminderSaveFailed'), 'warning');
+                renderReminder();
+                return result;
+            }
+            state.settings = result.data;
+            renderReminder();
+            var message = state.settings.weeklyReminderEnabled ? t('ReminderSavedOn') : t('ReminderSavedOff');
+            announce(message);
+            if (typeof root.showToast === 'function') { root.showToast(message, 'success'); }
             return result;
         });
     }
@@ -230,13 +268,16 @@
         if (!byId('timeEntrySettings')) { return Promise.resolve(null); }
         L = readL10n();
         byId('tsSavePool').addEventListener('click', savePool);
+        var reminder = byId('tsWeeklyReminder');
+        if (reminder) { reminder.addEventListener('change', function () { saveReminder(reminder.checked); }); }
         return Promise.all([
             request('GET', '/TimeEntry/api/settings'),
             request('GET', '/TimeEntry/Settings/lookup/positions'),
             request('GET', '/TimeEntry/api/settings/legal-entities'),
             request('GET', '/TimeEntry/Settings/lookup/legal-entities')
         ]).then(function (results) {
-            state.settings = results[0].ok ? results[0].data : { timeAdminPoolPositionId: null, version: 0 };
+            state.settings = results[0].ok ? results[0].data : { timeAdminPoolPositionId: null, version: 0, weeklyReminderEnabled: false, reminderJobEnabled: true };
+            renderReminder();
             if (!results[1].ok) { announce(t('PositionsUnavailable'), 'warning'); }
             renderPool(results[1].ok ? unwrapList(results[1].body) : []);
             state.switches = results[2].ok ? unwrapList(results[2].body) : [];
@@ -247,7 +288,7 @@
         });
     }
 
-    root.TimeEntrySettings = { init: init, switchOn: switchOn, switchOff: switchOff, savePool: savePool, rows: mergedRows, state: function () { return state; } };
+    root.TimeEntrySettings = { init: init, switchOn: switchOn, switchOff: switchOff, savePool: savePool, saveReminder: saveReminder, rows: mergedRows, state: function () { return state; } };
 
     if (doc.readyState === 'loading') { doc.addEventListener('DOMContentLoaded', init); }
     else if (!root.__timeSettingsNoAutoInit) { init(); }

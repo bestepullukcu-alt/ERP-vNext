@@ -81,4 +81,11 @@
   <data name="Loading" xml:space="preserve"><value>加载中…</value></data>
   <data name="NeverChanged" xml:space="preserve"><value>从未</value></data>
   <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="ReminderTitle" xml:space="preserve"><value>每周提醒</value></data>
+  <data name="ReminderHelp" xml:space="preserve"><value>每周一 09:00 起，最近几周使用过工时录入的人员，如果上周的工时表缺失或尚未提交，将收到一封电子邮件。在您开启之前，不会向任何人发送提醒。</value></data>
+  <data name="ReminderLabel" xml:space="preserve"><value>发送每周提醒</value></data>
+  <data name="ReminderSavedOn" xml:space="preserve"><value>每周提醒已开启。</value></data>
+  <data name="ReminderSavedOff" xml:space="preserve"><value>每周提醒已关闭。</value></data>
+  <data name="ReminderSaveFailed" xml:space="preserve"><value>无法保存每周提醒，请重试。</value></data>
+  <data name="ReminderJobOff" xml:space="preserve"><value>提醒已开启，但此服务器上的提醒任务未运行，因此不会发送电子邮件。请通知您的系统管理员。</value></data>
 </root>

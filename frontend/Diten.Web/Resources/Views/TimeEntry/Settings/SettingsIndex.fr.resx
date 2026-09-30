@@ -81,4 +81,11 @@
   <data name="Loading" xml:space="preserve"><value>Chargement…</value></data>
   <data name="NeverChanged" xml:space="preserve"><value>jamais</value></data>
   <data name="Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="ReminderTitle" xml:space="preserve"><value>Rappel hebdomadaire</value></data>
+  <data name="ReminderHelp" xml:space="preserve"><value>Chaque lundi à partir de 09:00, les personnes qui ont utilisé la saisie des temps ces dernières semaines reçoivent un e-mail si leur feuille de temps de la semaine précédente manque ou n'est pas encore soumise. Personne ne reçoit de rappel tant que vous ne l'activez pas.</value></data>
+  <data name="ReminderLabel" xml:space="preserve"><value>Envoyer le rappel hebdomadaire</value></data>
+  <data name="ReminderSavedOn" xml:space="preserve"><value>Rappel hebdomadaire activé.</value></data>
+  <data name="ReminderSavedOff" xml:space="preserve"><value>Rappel hebdomadaire désactivé.</value></data>
+  <data name="ReminderSaveFailed" xml:space="preserve"><value>Le rappel hebdomadaire n'a pas pu être enregistré. Réessayez.</value></data>
+  <data name="ReminderJobOff" xml:space="preserve"><value>Le rappel est activé, mais la tâche de rappel ne s'exécute pas sur ce serveur ; aucun e-mail ne sera envoyé. Prévenez votre administrateur système.</value></data>
 </root>

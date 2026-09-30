@@ -81,4 +81,11 @@
   <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
   <data name="NeverChanged" xml:space="preserve"><value>nunca</value></data>
   <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="ReminderTitle" xml:space="preserve"><value>Recordatorio semanal</value></data>
+  <data name="ReminderHelp" xml:space="preserve"><value>Cada lunes a partir de las 09:00, las personas que han usado el registro de horas en las últimas semanas reciben un correo si el parte de horas de la semana anterior falta o aún no se ha enviado. Nadie recibe recordatorios hasta que lo active.</value></data>
+  <data name="ReminderLabel" xml:space="preserve"><value>Enviar el recordatorio semanal</value></data>
+  <data name="ReminderSavedOn" xml:space="preserve"><value>Recordatorio semanal activado.</value></data>
+  <data name="ReminderSavedOff" xml:space="preserve"><value>Recordatorio semanal desactivado.</value></data>
+  <data name="ReminderSaveFailed" xml:space="preserve"><value>No se pudo guardar el recordatorio semanal. Inténtelo de nuevo.</value></data>
+  <data name="ReminderJobOff" xml:space="preserve"><value>El recordatorio está activado, pero la tarea de recordatorio no se ejecuta en este servidor; no se enviará ningún correo. Avise a su administrador del sistema.</value></data>
 </root>
