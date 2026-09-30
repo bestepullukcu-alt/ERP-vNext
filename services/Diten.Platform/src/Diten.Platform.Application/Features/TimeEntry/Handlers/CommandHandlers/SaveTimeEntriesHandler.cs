@@ -47,6 +47,7 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
     private readonly ITenantContext _tenantContext;
     private readonly IMediator _mediator;
     private readonly ILogger<SaveTimeEntriesHandler> _logger;
+    private readonly ITimesheetSubmissionProbe _probe;
 
     public SaveTimeEntriesHandler(
         ITimesheetWeekReader reader,
@@ -58,10 +59,12 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
         ICurrentUserContext currentUser,
         ITenantContext tenantContext,
         IMediator mediator,
-        ILogger<SaveTimeEntriesHandler> logger)
+        ILogger<SaveTimeEntriesHandler> logger,
+        ITimesheetSubmissionProbe? probe = null)
     {
         _mediator = mediator;
         _logger = logger;
+        _probe = probe ?? new NoOpTimesheetProbe();
         _reader = reader;
         _weeks = weeks;
         _entries = entries;
@@ -149,12 +152,15 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
         //    checks. A failure here is logged and the save goes on: the recomputation is idempotent, and the next save,
         //    submit or midnight run writes what this one could not. If it moved the week, the version the person read is
         //    stale and the claim below answers 409 — they reload and see the timer rows they were missing ──────────
+        var recomputeFailed = false;
         try
         {
+            await _probe.BeforeWeekDraftRecomputeAsync(userId, context.WeekKey, ct);
             await _drafts.ApplyWeekAsync(userId, context.WeekKey, ct);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
+            recomputeFailed = true;
             _logger.LogWarning(ex, "time-entry.save.draft_recompute_failed WeekKey={WeekKey}; the save goes on.", context.WeekKey);
         }
 
@@ -196,6 +202,15 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
             }
 
             capturedMatches.Add((row, stored));
+        }
+
+        // ⚠ CT acceptance (T1b v3): a correction of a captured row sets its baseline to the segments' total NOW; with the
+        // drafts not brought up to date, time the row never showed would be swallowed by that correction. Typed rows
+        // may still be saved; a captured-row correction waits for a working recompute (retryable 409).
+        if (recomputeFailed && capturedMatches.Count > 0)
+        {
+            return Fail("The week's timer time could not be brought up to date just now, so a timer or meeting row cannot be"
+                + " corrected yet. Try again.", 409, TimeEntryReasonCodes.TimerDraftsUnavailable, request);
         }
 
         // ── The week as it will be, and the days this save changes ───────────────────────────────────────────────

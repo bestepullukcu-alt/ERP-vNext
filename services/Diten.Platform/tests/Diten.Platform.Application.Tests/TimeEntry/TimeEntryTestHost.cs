@@ -184,6 +184,12 @@ public sealed class TestProbes : ITimesheetSubmissionProbe, ITimesheetFinalizati
     public Task BeforeWithdrawCancelAsync(Guid weekId, CancellationToken ct)
         => BeforeWithdrawCancel?.Invoke(weekId) ?? Task.CompletedTask;
 
+    /// <summary>CT acceptance (T1b v3): throw here to make the save/submit timer-draft recompute fail.</summary>
+    public Func<Guid, string, Task>? BeforeWeekDraftRecompute { get; set; }
+
+    public Task BeforeWeekDraftRecomputeAsync(Guid userId, string weekKey, CancellationToken ct)
+        => BeforeWeekDraftRecompute?.Invoke(userId, weekKey) ?? Task.CompletedTask;
+
     public Task BeforeTaskTotalWriteAsync(Guid taskItemId, CancellationToken ct)
         => BeforeTaskTotalWrite?.Invoke(taskItemId) ?? Task.CompletedTask;
 }

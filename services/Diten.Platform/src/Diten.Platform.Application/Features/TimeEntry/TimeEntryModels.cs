@@ -34,6 +34,9 @@ public static class TimeEntryPermissions
 public static class TimeEntryReasonCodes
 {
     public const string StepInvalid = "TIME_ENTRY_STEP_INVALID";
+    /// <summary>CT acceptance (T1b v3): the week's timer drafts could not be recomputed just now, so a submit (or a
+    /// correction of a captured row) would risk leaving timer time out of the record. Retryable.</summary>
+    public const string TimerDraftsUnavailable = "TIMESHEET_TIMER_DRAFTS_UNAVAILABLE";
     public const string FutureDate = "TIME_ENTRY_FUTURE_DATE";
     public const string DateOutsideWeek = "TIME_ENTRY_DATE_OUTSIDE_WEEK";
     public const string TargetInvalid = "TIME_ENTRY_TARGET_INVALID";

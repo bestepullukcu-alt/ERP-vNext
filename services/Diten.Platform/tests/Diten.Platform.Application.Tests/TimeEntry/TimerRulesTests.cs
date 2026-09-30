@@ -19,6 +19,25 @@ public sealed class TimerRulesTests
     public void Draft_minutes_round_to_the_nearest_15_ties_up_with_an_8_minute_floor(long seconds, int minutes)
         => Assert.Equal(minutes, TimerRules.DraftMinutes(seconds));
 
+    /// <summary>
+    /// CT acceptance (2026-09-30): a corrected Timer row never falls below one 15-minute step, even when the segment total
+    /// is below the correction's baseline — removing the floor passed the whole suite before this test.
+    /// </summary>
+    [Fact]
+    public void A_corrected_timer_row_never_falls_below_one_step()
+    {
+        var row = new Diten.Platform.Domain.Entities.TimeEntry.TimeEntry
+        {
+            TenantId = Guid.NewGuid(), TimesheetWeekId = Guid.NewGuid(), UserId = Guid.NewGuid(), WeekKey = "2026-W41", LocalDate = new DateOnly(2026, 10, 7),
+            DurationMinutes = 15, Source = Diten.Platform.Domain.Enums.TimeEntry.TimeEntrySource.Timer,
+            EditedFromTimer = true, CorrectedMinutes = 15, CorrectionBaselineSeconds = 7200
+        };
+
+        Assert.Equal(15, TimerRules.ExpectedTimerMinutes(row, segmentSeconds: 0));
+        Assert.Equal(15, TimerRules.ExpectedTimerMinutes(row, segmentSeconds: 7200));      // nothing new since the correction
+        Assert.Equal(75, TimerRules.ExpectedTimerMinutes(row, segmentSeconds: 7200 + 3600)); // an hour after it
+    }
+
     [Fact]
     public void Local_midnight_follows_the_zone_rules_on_a_dst_night()
     {

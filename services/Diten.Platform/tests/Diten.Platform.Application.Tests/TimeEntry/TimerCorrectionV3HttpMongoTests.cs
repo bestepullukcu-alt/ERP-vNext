@@ -85,6 +85,88 @@ public sealed class TimerCorrectionV3HttpMongoTests : TimerScenario
 
     // ── G2 ──────────────────────────────────────────────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// CT acceptance (2026-09-30): a person who only adds a NOTE to a timer row (minutes unchanged) is saved and audited —
+    /// treating "same minutes" as "untouched" passed the whole suite before this test.
+    /// </summary>
+    [Fact]
+    public async Task A_note_added_to_a_timer_row_with_the_same_minutes_is_saved_and_audited()
+    {
+        await EnableTimerAsync();
+        Host.Clock.UtcNow = IstanbulLocal(2026, 10, 7, 10, 0);
+        Ok(await StartTimerAsync(TaskA));
+        Host.Clock.UtcNow = IstanbulLocal(2026, 10, 7, 11, 0);
+        Ok(await StopTimerAsync());
+
+        Ok(await SaveFreshAsync(CurrentWeek, Row(Today, 60, TaskA, note: "Müşteri hazırlığı", source: "Timer")));
+
+        var row = await RowOfAsync(TaskA);
+        Assert.Equal(60, row.GetProperty("durationMinutes").GetInt32());
+        Assert.Equal("Müşteri hazırlığı", row.GetProperty("note").GetString());
+        var audit = Assert.Single(Host.Audit.Requests, r => r.Metadata?.GetValueOrDefault("transition") as string == "correct-captured-row");
+        Assert.Equal(true, audit.Metadata!["noteChanged"]);
+    }
+
+    // ── CT acceptance (2026-09-30): a failed recompute never lets timer time fall out of the record ─────────────────
+
+    [Fact]
+    public async Task A_submit_is_refused_while_the_timer_drafts_cannot_be_recomputed_and_goes_through_once_they_can()
+    {
+        await RunAnHourThenCorrectTo90Async();
+        Host.Probes.BeforeWeekDraftRecompute = (_, _) => throw new InvalidOperationException("recompute down");
+
+        var refused = await SubmitAsync();
+        Assert.Equal(HttpStatusCode.Conflict, refused.Status);
+        Assert.Equal(TimeEntryReasonCodes.TimerDraftsUnavailable, refused.ReasonCode);
+
+        Host.Probes.BeforeWeekDraftRecompute = null;
+        Ok(await SubmitAsync());
+    }
+
+    [Fact]
+    public async Task With_the_recompute_down_a_captured_row_correction_waits_but_a_typed_row_is_saved()
+    {
+        await EnableTimerAsync();
+        Host.Clock.UtcNow = IstanbulLocal(2026, 10, 7, 10, 0);
+        Ok(await StartTimerAsync(TaskA));
+        Host.Clock.UtcNow = IstanbulLocal(2026, 10, 7, 11, 0);
+        Ok(await StopTimerAsync());
+        Host.Probes.BeforeWeekDraftRecompute = (_, _) => throw new InvalidOperationException("recompute down");
+
+        var correction = await SaveFreshAsync(CurrentWeek, Row(Today, 90, TaskA, source: "Timer"));
+        Assert.Equal(HttpStatusCode.Conflict, correction.Status);
+        Assert.Equal(TimeEntryReasonCodes.TimerDraftsUnavailable, correction.ReasonCode);
+        Assert.Equal(60, (await RowOfAsync(TaskA)).GetProperty("durationMinutes").GetInt32());
+
+        Ok(await SaveFreshAsync(CurrentWeek, Row(Monday, 30, TaskA)));
+    }
+
+    /// <summary>CT acceptance (2026-09-30): a correction revision copies the captured/corrected/baseline fields, so its
+    /// approver sees the captured value and late timer time is still added to a corrected row.</summary>
+    [Fact]
+    public async Task A_correction_revision_keeps_the_captured_value_the_correction_and_its_baseline()
+    {
+        await RunAnHourThenCorrectTo90Async();
+        var submitted = await SubmitAsync();
+        Ok(submitted);
+        var approvedWeekId = submitted.Data.GetProperty("weekId").GetGuid();
+        Ok(await DecideAsync(Manager, approvedWeekId, approve: true));
+        Ok(await GetWeekAsync());                                // the pull finalizer applies the decision on read
+        var approvedRow = Assert.Single(await StoredEntriesAsync(approvedWeekId));
+
+        var opened = await Host.PostAsync($"/api/v1/time-entry/weeks/{CurrentWeek}/corrections", PersonToken(), new { reason = "Toplantı notu eksik" });
+        Assert.Equal(HttpStatusCode.Created, opened.Status);
+        var correctionId = (await StoredWeeksAsync()).Single(w => w.Id != approvedWeekId).Id;
+        var copied = Assert.Single(await StoredEntriesAsync(correctionId));
+
+        Assert.True(copied.EditedFromTimer);
+        Assert.Equal(approvedRow.CapturedMinutes, copied.CapturedMinutes);
+        Assert.Equal(60, copied.CapturedMinutes);
+        Assert.Equal(approvedRow.CorrectedMinutes, copied.CorrectedMinutes);
+        Assert.Equal(approvedRow.CorrectionBaselineSeconds, copied.CorrectionBaselineSeconds);
+        Assert.NotNull(copied.CorrectionBaselineSeconds);
+    }
+
     [Fact]
     public async Task A_correction_is_audited_with_before_and_after_on_the_week_and_the_approver_sees_the_captured_value()
     {

@@ -88,6 +88,11 @@ public sealed class RequestTimesheetCorrectionHandler
                 Source = row.Source,
                 SourceRef = row.SourceRef,
                 EditedFromTimer = row.EditedFromTimer,
+                // CT acceptance (T1b v3): the correction copy keeps what G1/G2 need — without these the approver of the
+                // correction saw no captured value and late timer time was not added to a corrected row.
+                CapturedMinutes = row.CapturedMinutes,
+                CorrectedMinutes = row.CorrectedMinutes,
+                CorrectionBaselineSeconds = row.CorrectionBaselineSeconds,
                 OutsideWorkingMinutes = row.OutsideWorkingMinutes,
                 Note = row.Note,
                 CreatedBy = userId.ToString()
