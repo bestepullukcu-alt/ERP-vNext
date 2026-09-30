@@ -56,6 +56,13 @@ public sealed class KnowledgeContentEditViewModel : IValidatableObject
     [StringLength(1000)] public string? Tags { get; set; }
     public List<KnowledgeExternalReferenceViewModel> ExternalReferences { get; set; } = [];
 
+    // WP-CL-FE-5 — the claims this content is built on (CRM ClaimRefs). Always posted as a list (an empty list clears the
+    // stored refs); the publish gate is CRM's — the form only warns.
+    public List<KnowledgeContentClaimRefViewModel> ClaimRefs { get; set; } = [];
+
+    // Coded CRM claim-link failures of the last save, shown as field errors of the "Claims" section (never the summary).
+    public List<KnowledgeClaimRefErrorViewModel> ClaimRefErrors { get; set; } = [];
+
     public IReadOnlyList<string> ContentTypes { get; set; } = [];
     public IReadOnlyList<string> ContentStatuses { get; set; } = [];
     public IReadOnlyList<string> ContentSources { get; set; } = [];
@@ -120,6 +127,38 @@ public sealed class KnowledgeExternalReferenceViewModel
     public bool IsPrimary { get; set; }
 }
 
+/// <summary>WP-CL-FE-5 — one content ↔ claim reference. <see cref="CountryVersionId"/> set ⇒ a country version (its
+/// CountryCode); empty ⇒ the core claim. The statuses are read-only (CRM fills them on the detail read).</summary>
+public sealed class KnowledgeContentClaimRefViewModel
+{
+    public Guid ClaimId { get; set; }
+    [StringLength(100)] public string ClaimCode { get; set; } = string.Empty;
+    public Guid? CountryVersionId { get; set; }
+    [StringLength(10)] public string? CountryCode { get; set; }
+    public string? ClaimStatus { get; set; }
+    public string? CountryVersionStatus { get; set; }
+    public bool ClaimNeedsReview { get; set; }
+}
+
+/// <summary>WP-CL-FE-5 — a coded CRM claim-link failure (<c>claim_not_approved</c> …) and, when the message names it,
+/// the claim it is about ("CLM-… (TR)").</summary>
+public sealed class KnowledgeClaimRefErrorViewModel
+{
+    public string Code { get; set; } = string.Empty;
+    public string? Subject { get; set; }
+}
+
+/// <summary>WP-CL-FE-5 — a "Linked claims" row of the detail page: the ref plus the display data read from coverage.</summary>
+public sealed class KnowledgeLinkedClaimViewModel
+{
+    public KnowledgeContentClaimRefViewModel Ref { get; set; } = new();
+    public string? ClaimName { get; set; }
+    public string? Version { get; set; }
+    public string? CountryName { get; set; }
+    public string? Status { get; set; }
+    public string? Href { get; set; }
+}
+
 public sealed class KnowledgeContentDetailViewModel
 {
     public Guid ContentId { get; set; }
@@ -147,6 +186,7 @@ public sealed class KnowledgeContentDetailViewModel
     public string Source { get; set; } = string.Empty;
     public List<string> Tags { get; set; } = [];
     public List<KnowledgeExternalReferenceViewModel> ExternalReferences { get; set; } = [];
+    public List<KnowledgeContentClaimRefViewModel> ClaimRefs { get; set; } = [];
     public DateTimeOffset CreatedAt { get; set; }
     public string? CreatedBy { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
@@ -172,6 +212,9 @@ public sealed class KnowledgeContentPageViewModel
     public string? TopicName { get; set; }
     public string? AudienceProfileName { get; set; }
     public string? ProductName { get; set; }
+
+    // WP-CL-FE-5 — the "Linked claims" card. Links only when the viewer holds crm.claim.read (else plain text).
+    public List<KnowledgeLinkedClaimViewModel> LinkedClaims { get; set; } = [];
 }
 
 public sealed class KnowledgeDocumentRefViewModel

@@ -51,6 +51,11 @@ public static class DependencyInjection
         // IKnowledgePathReader seam is never widened and no FU04 aggregate is ever mutated.
         services.AddScoped<Features.Knowledge.ContentEngagementJourney.ContentEngagementJourneyPathResolver>();
 
+        // WP-SB-2 — the content set release → knowledge bridge (assembled-presentation content + chain-ordered path).
+        // Writes only through the existing Knowledge commands (ISender); scoped so it shares the request's tenant/actor.
+        services.AddScoped<Features.ContentComposition.ContentSetRevisions.IContentSetReleaseProducer,
+            Features.ContentComposition.ContentSetRevisions.ContentSetReleaseProducer>();
+
         // MOD-0155 FU01 — the four read-only PlannedVisit provenance probes. Each is a thin in-process wrapper over an
         // already-registered seam (frequency resolver, consent evaluator, journey reader, contact-availability repo):
         // it never re-implements an engine and never makes an HTTP self-call (§19.3/5). Scoped like every write-path

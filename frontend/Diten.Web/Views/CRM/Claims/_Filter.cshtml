@@ -3,21 +3,36 @@
 @inject IHtmlLocalizer<ClaimsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-<div id="inlineFilterHost" class="dt-inline-filter-host">
+@* WP-CL-FE-1 — inline filter (mockup scenario 1): product, country, language, status, audience, core / local, the three
+   work flags (evidence missing / needs review / expiring) and the archived toggle. Options are filled by index.js from
+   the loaded rows and the lookups (never a compiled list). *@
+<div id="inlineFilterHost" class="dt-inline-filter-host claims-v2-scope">
     <div class="collapse" id="inlineFilterCollapse">
         <div class="pt-0 pb-3">
             <form class="m-0" id="claimFilterForm" data-no-tracker>
                 <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
-
-                    @* Status (multi-select) *@
                     <div class="filter-chip">
-                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Status"]"></select>
+                        <select id="filterProduct" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["FilterProduct"]"></select>
                     </div>
-                    @* Include archived (single-select) *@
                     <div class="filter-chip">
-                        <select id="filterIncludeArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["IncludeArchived"]">
-                            <option value="true">@Localizer["IncludeArchived"]</option>
-                            <option value="false">@Localizer["Active"]</option>
+                        <select id="filterCountry" class="form-select form-select-sm select2" data-placeholder="@Localizer["FilterCountry"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterLanguage" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["FilterLanguage"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["FilterStatus"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterAudience" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["FilterAudience"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterKind" class="form-select form-select-sm select2" data-placeholder="@Localizer["FilterKind"]"></select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterIncludeArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["LiveOnly"]">
+                            <option value="false">@Localizer["LiveOnly"]</option>
+                            <option value="true">@Localizer["ShowInactive"]</option>
                         </select>
                     </div>
 
@@ -29,4 +44,11 @@
             </form>
         </div>
     </div>
+</div>
+
+@* The three work flags stay visible above the table (mockup): one click toggles, the badge counts the matching rows. *@
+<div class="d-flex flex-wrap gap-2 mb-3 claims-v2-scope" id="claimFlagBar" role="group">
+    <button type="button" class="btn btn-sm btn-outline-secondary claim-flag" data-flag="evidence" aria-pressed="false"><i class="bx bx-error-circle me-1"></i>@Localizer["FlagEvidenceMissing"] <span class="badge rounded-pill bg-label-secondary ms-1" data-flag-count>0</span></button>
+    <button type="button" class="btn btn-sm btn-outline-secondary claim-flag" data-flag="review" aria-pressed="false"><i class="bx bx-revision me-1"></i>@Localizer["FlagReviewRequired"] <span class="badge rounded-pill bg-label-secondary ms-1" data-flag-count>0</span></button>
+    <button type="button" class="btn btn-sm btn-outline-secondary claim-flag" data-flag="expiring" aria-pressed="false"><i class="bx bx-alarm-exclamation me-1"></i>@Localizer["FlagExpiring"] <span class="badge rounded-pill bg-label-secondary ms-1" data-flag-count>0</span></button>
 </div>

@@ -97,11 +97,33 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // WP-CL-BE-3a — transition history with comments / rejection reasons (existing view permission; other tenant → 404).
+    [HttpGet("instances/{id:guid}/history")]
+    [HasPermission(WorkflowPermissions.InstancesView)]
+    public async Task<IActionResult> GetInstanceHistory(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetWorkflowInstanceHistoryQuery(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("instances")]
     [HasPermission(WorkflowPermissions.InstancesView)]
     public async Task<IActionResult> GetInstances(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetWorkflowInstanceListQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    // WP-CL-BE-3 — batch status read for cross-service reconciliation (≤100 ids; comma-separated or repeated).
+    [HttpGet("instances/by-objects")]
+    [HasPermission(WorkflowPermissions.InstancesView)]
+    public async Task<IActionResult> GetInstancesByObjects(
+        [FromQuery] string? objectType,
+        [FromQuery] string[]? objectIds,
+        CancellationToken ct)
+    {
+        var response = await _mediator.Send(
+            new GetWorkflowInstancesByObjectsQuery(objectType, objectIds, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 

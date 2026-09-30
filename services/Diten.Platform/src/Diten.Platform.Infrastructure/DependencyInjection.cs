@@ -468,6 +468,8 @@ public static class DependencyInjection
         services.AddScoped<IDocumentObsoleteCopyFindingRepository, DocumentObsoleteCopyFindingRepository>();
         // MOD-0029-FU14 — external document register / monitoring check / impact assessment / internal link repositories.
         services.AddScoped<IExternalDocumentRegisterRepository, ExternalDocumentRegisterRepository>();
+        // MOD-0031 slice 1 — evidence links (object ↔ controlled document version / external document).
+        services.AddScoped<IEvidenceLinkRepository, EvidenceLinkRepository>();
         services.AddScoped<IExternalDocumentMonitoringCheckRepository, ExternalDocumentMonitoringCheckRepository>();
         services.AddScoped<IExternalDocumentImpactAssessmentRepository, ExternalDocumentImpactAssessmentRepository>();
         services.AddScoped<IExternalDocumentInternalLinkRepository, ExternalDocumentInternalLinkRepository>();

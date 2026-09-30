@@ -81,4 +81,101 @@
   <data name="BulkDeleteConfirm" xml:space="preserve"><value>删除所选记录？</value></data>
   <data name="QuickViewTitle" xml:space="preserve"><value>声明预览</value></data>
   <data name="ApprovedBodyFrozenNote" xml:space="preserve"><value>此声明已批准：受管控主体已冻结。如需更改文本请创建新版本。</value></data>
+  <data name="ListDescription" xml:space="preserve"><value>全公司统一的声明库：核心声明、各国版本及其依据的证据。</value></data>
+  <data name="ApprovalViaWorkflowNote" xml:space="preserve"><value>声明只能通过其审批流程（提交审核）获得批准。</value></data>
+  <data name="BreadcrumbCrm" xml:space="preserve"><value>CRM</value></data>
+  <data name="NewCoreClaim" xml:space="preserve"><value>新建核心声明</value></data>
+  <data name="NewLocalClaim" xml:space="preserve"><value>新建本地声明</value></data>
+  <data name="ReadOnlyNote" xml:space="preserve"><value>只读权限：您可以查看和导出记录。</value></data>
+  <data name="ColClaim" xml:space="preserve"><value>声明</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="ColKind" xml:space="preserve"><value>类型</value></data>
+  <data name="ColAudience" xml:space="preserve"><value>受众</value></data>
+  <data name="ColCountryStatus" xml:space="preserve"><value>国家状态</value></data>
+  <data name="ColEvidence" xml:space="preserve"><value>证据</value></data>
+  <data name="ColApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>使用情况</value></data>
+  <data name="KindCore" xml:space="preserve"><value>核心</value></data>
+  <data name="KindLocal" xml:space="preserve"><value>本地</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>缺失</value></data>
+  <data name="ApprovedOfCountries" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="CoreVersionLine" xml:space="preserve"><value>核心 v{0}</value></data>
+  <data name="LocalLine" xml:space="preserve"><value>本地 · {0}</value></data>
+  <data name="State_approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>审核中</value></data>
+  <data name="State_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>需复核</value></data>
+  <data name="State_expiring" xml:space="preserve"><value>即将到期</value></data>
+  <data name="State_closed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="State_not-opened" xml:space="preserve"><value>未开放</value></data>
+  <data name="State_not-applicable" xml:space="preserve"><value>不适用</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>停用</value></data>
+  <data name="State_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="ClosedTooltip" xml:space="preserve"><value>已关闭 · {0}</value></data>
+  <data name="NotOpenedTooltip" xml:space="preserve"><value>未开放 · 尚无决定</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>国家</value></data>
+  <data name="FilterLanguage" xml:space="preserve"><value>语言</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="FilterAudience" xml:space="preserve"><value>受众</value></data>
+  <data name="FilterKind" xml:space="preserve"><value>核心 / 本地</value></data>
+  <data name="FlagEvidenceMissing" xml:space="preserve"><value>缺少证据</value></data>
+  <data name="FlagReviewRequired" xml:space="preserve"><value>需复核</value></data>
+  <data name="FlagExpiring" xml:space="preserve"><value>即将到期</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>新版本</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>将基于此声明创建新的草稿版本。</value></data>
+  <data name="RecordNewVersion" xml:space="preserve"><value>已创建新版本。</value></data>
+  <data name="QvCoreText" xml:space="preserve"><value>核心文本</value></data>
+  <data name="QvLocalText" xml:space="preserve"><value>本地文本</value></data>
+  <data name="QvResponsibleTeam" xml:space="preserve"><value>负责团队</value></data>
+  <data name="QvCountryVersions" xml:space="preserve"><value>国家版本</value></data>
+  <data name="QvNoCountryVersions" xml:space="preserve"><value>尚无国家版本。</value></data>
+  <data name="QvLanguages" xml:space="preserve"><value>语言</value></data>
+  <data name="QvAudienceCount" xml:space="preserve"><value>受众画像</value></data>
+  <data name="QvOpenDetails" xml:space="preserve"><value>打开详情</value></data>
+  <data name="QvClose" xml:space="preserve"><value>关闭</value></data>
+  <data name="QvLoadFailed" xml:space="preserve"><value>无法加载国家版本。</value></data>
+  <data name="EmptyLibraryTitle" xml:space="preserve"><value>库中暂无声明</value></data>
+  <data name="EmptyLibraryText" xml:space="preserve"><value>声明保存在全公司统一的库中。请先创建全球核心声明，再由其创建各国版本。</value></data>
+  <data name="NoMatchTitle" xml:space="preserve"><value>没有符合筛选条件的声明</value></data>
+  <data name="NoMatchText" xml:space="preserve"><value>请修改搜索文本或筛选条件。</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>清除筛选</value></data>
+  <data name="CounterUnavailable" xml:space="preserve"><value>暂时无法获取</value></data>
+  <data name="ShowInactive" xml:space="preserve"><value>包括已归档和已被取代的版本</value></data>
+  <data name="LiveOnly" xml:space="preserve"><value>仅当前记录</value></data>
+  <data name="TabList" xml:space="preserve"><value>列表</value></data>
+  <data name="TabCoverage" xml:space="preserve"><value>覆盖矩阵</value></data>
+  <data name="CoverageDescription" xml:space="preserve"><value>各声明在各国的状态：已批准、进行中、未开放或已注明原因关闭。</value></data>
+  <data name="ColumnSummary" xml:space="preserve"><value>{0} 已批准 · {1} 待处理</value></data>
+  <data name="RowSubline" xml:space="preserve"><value>{0} · {1} 条证据 · {2} 处使用</value></data>
+  <data name="CellExpiringNote" xml:space="preserve"><value>有效期即将结束</value></data>
+  <data name="CellCoreChangedNote" xml:space="preserve"><value>核心已变更</value></data>
+  <data name="CellEvidenceChangedNote" xml:space="preserve"><value>证据已变更</value></data>
+  <data name="ActionOpenCountryVersion" xml:space="preserve"><value>开启国家版本</value></data>
+  <data name="ActionMarkNotOpened" xml:space="preserve"><value>标记为不开放</value></data>
+  <data name="ActionReopen" xml:space="preserve"><value>重新开放</value></data>
+  <data name="ActionEditVersion" xml:space="preserve"><value>编辑 / 查看</value></data>
+  <data name="CoreNotApprovedTooltip" xml:space="preserve"><value>须先批准核心声明</value></data>
+  <data name="CellActionsLabel" xml:space="preserve"><value>{0} 的操作</value></data>
+  <data name="CloseModalTitle" xml:space="preserve"><value>将 {0} 标记为不开放</value></data>
+  <data name="CloseReasonLabel" xml:space="preserve"><value>原因</value></data>
+  <data name="CloseConfirm" xml:space="preserve"><value>标记</value></data>
+  <data name="ReopenModalTitle" xml:space="preserve"><value>重新开放 {0}</value></data>
+  <data name="ReopenNoteLabel" xml:space="preserve"><value>备注（可选）</value></data>
+  <data name="ToastClosed" xml:space="preserve"><value>该国家已标记为不开放。</value></data>
+  <data name="ToastReopened" xml:space="preserve"><value>该国家已重新开放。</value></data>
+  <data name="CoverageEmptyTitle" xml:space="preserve"><value>暂无声明</value></data>
+  <data name="CoverageEmptyText" xml:space="preserve"><value>创建核心声明以查看其在各国的覆盖情况。</value></data>
+  <data name="LegendTitle" xml:space="preserve"><value>图例</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>按代码、名称或文本搜索</value></data>
+  <data name="Reason_no-license" xml:space="preserve"><value>无上市许可</value></data>
+  <data name="Reason_regulation-disallows" xml:space="preserve"><value>当地法规不允许</value></data>
+  <data name="Reason_business-decision" xml:space="preserve"><value>业务决定</value></data>
+  <data name="Err_country_has_version" xml:space="preserve"><value>该国家已有版本；请先归档再标记为不开放。</value></data>
+  <data name="Err_not_applicable" xml:space="preserve"><value>该国家不在此声明的范围内。</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>所需的参考列表尚未发布，请联系管理员。</value></data>
+  <data name="Err_country_already_closed" xml:space="preserve"><value>该国家已标记为不开放。</value></data>
+  <data name="Err_country_not_closed" xml:space="preserve"><value>该国家未标记为不开放。</value></data>
+  <data name="Err_invalid_reference_value" xml:space="preserve"><value>请选择有效的原因。</value></data>
+  <data name="Err_required" xml:space="preserve"><value>请选择原因。</value></data>
 </root>

@@ -251,6 +251,64 @@
                 </div>
             </section>
 
+            @* WP-CL-FE-5 — linked claims. Links only with crm.claim.read (Href is null otherwise → plain text). *@
+            <section class="card backbone-preview-section p-4" id="knowledgeLinkedClaims">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LinkedClaims"]</h6>
+                @if (Model.LinkedClaims.Count == 0)
+                {
+                    <div class="text-muted">@Localizer["NoLinkedClaims"]</div>
+                }
+                else
+                {
+                    <ul class="list-unstyled mb-0 d-flex flex-column gap-3">
+                        @foreach (var lc in Model.LinkedClaims)
+                        {
+                            var isCountry = lc.Ref.CountryVersionId.HasValue && lc.Ref.CountryVersionId != Guid.Empty;
+                            var scope = isCountry
+                                ? $"{lc.CountryName ?? lc.Ref.CountryCode}{(string.IsNullOrWhiteSpace(lc.Version) ? "" : " v" + lc.Version)}"
+                                : $"{Localizer["ClaimCore"].Value}{(string.IsNullOrWhiteSpace(lc.Version) ? "" : " v" + lc.Version)}";
+                            var badge = lc.Status switch
+                            {
+                                "approved" => "bg-label-success",
+                                "review-required" => "bg-label-warning",
+                                "in-review" => "bg-label-info",
+                                _ => "bg-label-secondary"
+                            };
+                            <li class="d-flex align-items-start gap-2" data-claim-id="@lc.Ref.ClaimId" data-version-id="@lc.Ref.CountryVersionId">
+                                <i class="bx bx-badge-check text-primary mt-1"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-medium text-break">
+                                        @if (lc.Href is { } href)
+                                        {
+                                            <a href="@href">@lc.Ref.ClaimCode</a>
+                                        }
+                                        else
+                                        {
+                                            <span>@lc.Ref.ClaimCode</span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(lc.ClaimName))
+                                        {
+                                            <span class="text-body-secondary"> · @lc.ClaimName</span>
+                                        }
+                                    </div>
+                                    <div class="small d-flex align-items-center flex-wrap gap-2 mt-1">
+                                        <span class="text-body-secondary">@scope</span>
+                                        @if (!string.IsNullOrWhiteSpace(lc.Status))
+                                        {
+                                            <span class="badge @badge">@Localizer["ClaimStatus_" + lc.Status]</span>
+                                        }
+                                    </div>
+                                    @if (lc.Ref.ClaimNeedsReview)
+                                    {
+                                        <div class="small text-warning-emphasis mt-1"><i class="bx bx-error-circle me-1"></i>@Localizer["ClaimNeedsReview"]</div>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+
             <section class="card backbone-preview-section p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ExternalReferencesSection"]</h6>
                 @if (c.ExternalReferences.Count == 0)

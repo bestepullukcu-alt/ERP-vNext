@@ -1,0 +1,19 @@
+@using Diten.Web.Views.CRM.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsIndex> Localizer
+@{
+    // WP-CL-FE-2 — "List | Coverage matrix" navigation shared by both pages (ViewData["ClaimsTab"] = list | coverage).
+    var active = ViewData["ClaimsTab"] as string ?? "list";
+}
+<ul class="nav nav-pills mb-3" role="tablist" id="claimsTabs">
+    <li class="nav-item">
+        <a class="nav-link@(active == "list" ? " active" : "")" href="/CRM/Claims" @(active == "list" ? "aria-current=page" : "")>
+            <i class="bx bx-list-ul me-1"></i>@Localizer["TabList"]
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link@(active == "coverage" ? " active" : "")" href="/CRM/Claims/Coverage" @(active == "coverage" ? "aria-current=page" : "")>
+            <i class="bx bx-grid-alt me-1"></i>@Localizer["TabCoverage"]
+        </a>
+    </li>
+</ul>

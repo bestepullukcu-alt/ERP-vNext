@@ -81,4 +81,101 @@
   <data name="BulkDeleteConfirm" xml:space="preserve"><value>¿Eliminar los registros seleccionados?</value></data>
   <data name="QuickViewTitle" xml:space="preserve"><value>Vista previa de la alegación</value></data>
   <data name="ApprovedBodyFrozenNote" xml:space="preserve"><value>Esta alegación está aprobada: el cuerpo regulado está congelado. Cree una nueva versión para cambiar el texto.</value></data>
+  <data name="ListDescription" xml:space="preserve"><value>Una única biblioteca de declaraciones para toda la empresa: declaraciones base, sus versiones por país y la evidencia que las respalda.</value></data>
+  <data name="ApprovalViaWorkflowNote" xml:space="preserve"><value>Las declaraciones solo se aprueban mediante su flujo de aprobación (Enviar a revisión).</value></data>
+  <data name="BreadcrumbCrm" xml:space="preserve"><value>CRM</value></data>
+  <data name="NewCoreClaim" xml:space="preserve"><value>Nueva declaración base</value></data>
+  <data name="NewLocalClaim" xml:space="preserve"><value>Nueva declaración local</value></data>
+  <data name="ReadOnlyNote" xml:space="preserve"><value>Acceso de solo lectura: puede ver y exportar los registros.</value></data>
+  <data name="ColClaim" xml:space="preserve"><value>Declaración</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Producto</value></data>
+  <data name="ColKind" xml:space="preserve"><value>Tipo</value></data>
+  <data name="ColAudience" xml:space="preserve"><value>Audiencia</value></data>
+  <data name="ColCountryStatus" xml:space="preserve"><value>Estado por país</value></data>
+  <data name="ColEvidence" xml:space="preserve"><value>Evidencia</value></data>
+  <data name="ColApproved" xml:space="preserve"><value>Aprobadas</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>Uso</value></data>
+  <data name="KindCore" xml:space="preserve"><value>Base</value></data>
+  <data name="KindLocal" xml:space="preserve"><value>Local</value></data>
+  <data name="EvidenceMissing" xml:space="preserve"><value>falta</value></data>
+  <data name="ApprovedOfCountries" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="CoreVersionLine" xml:space="preserve"><value>Base v{0}</value></data>
+  <data name="LocalLine" xml:space="preserve"><value>Local · {0}</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>En revisión</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>Requiere revisión</value></data>
+  <data name="State_expiring" xml:space="preserve"><value>Por vencer</value></data>
+  <data name="State_closed" xml:space="preserve"><value>Cerrada</value></data>
+  <data name="State_not-opened" xml:space="preserve"><value>No abierta</value></data>
+  <data name="State_not-applicable" xml:space="preserve"><value>Fuera de alcance</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Inactiva</value></data>
+  <data name="State_archived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="ClosedTooltip" xml:space="preserve"><value>Cerrada · {0}</value></data>
+  <data name="NotOpenedTooltip" xml:space="preserve"><value>No abierta · sin decisión aún</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Producto</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>País</value></data>
+  <data name="FilterLanguage" xml:space="preserve"><value>Idioma</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Estado</value></data>
+  <data name="FilterAudience" xml:space="preserve"><value>Audiencia</value></data>
+  <data name="FilterKind" xml:space="preserve"><value>Base / local</value></data>
+  <data name="FlagEvidenceMissing" xml:space="preserve"><value>Falta evidencia</value></data>
+  <data name="FlagReviewRequired" xml:space="preserve"><value>Requiere revisión</value></data>
+  <data name="FlagExpiring" xml:space="preserve"><value>Por vencer</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Nueva versión</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Se abrirá una nueva versión en borrador a partir de esta declaración.</value></data>
+  <data name="RecordNewVersion" xml:space="preserve"><value>Nueva versión abierta.</value></data>
+  <data name="QvCoreText" xml:space="preserve"><value>Texto base</value></data>
+  <data name="QvLocalText" xml:space="preserve"><value>Texto local</value></data>
+  <data name="QvResponsibleTeam" xml:space="preserve"><value>Equipo responsable</value></data>
+  <data name="QvCountryVersions" xml:space="preserve"><value>Versiones por país</value></data>
+  <data name="QvNoCountryVersions" xml:space="preserve"><value>Aún no hay versiones por país.</value></data>
+  <data name="QvLanguages" xml:space="preserve"><value>Idiomas</value></data>
+  <data name="QvAudienceCount" xml:space="preserve"><value>Perfiles de audiencia</value></data>
+  <data name="QvOpenDetails" xml:space="preserve"><value>Abrir detalle</value></data>
+  <data name="QvClose" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="QvLoadFailed" xml:space="preserve"><value>No se pudieron cargar las versiones por país.</value></data>
+  <data name="EmptyLibraryTitle" xml:space="preserve"><value>Aún no hay declaraciones en la biblioteca</value></data>
+  <data name="EmptyLibraryText" xml:space="preserve"><value>Las declaraciones se guardan en una única biblioteca. Cree primero la declaración base global; las versiones por país se abren a partir de ella.</value></data>
+  <data name="NoMatchTitle" xml:space="preserve"><value>Ninguna declaración coincide con los filtros</value></data>
+  <data name="NoMatchText" xml:space="preserve"><value>Cambie el texto de búsqueda o los filtros.</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>Borrar filtros</value></data>
+  <data name="CounterUnavailable" xml:space="preserve"><value>No disponible en este momento</value></data>
+  <data name="ShowInactive" xml:space="preserve"><value>Incluir archivadas y sustituidas</value></data>
+  <data name="LiveOnly" xml:space="preserve"><value>Solo registros vigentes</value></data>
+  <data name="TabList" xml:space="preserve"><value>Lista</value></data>
+  <data name="TabCoverage" xml:space="preserve"><value>Matriz de cobertura</value></data>
+  <data name="CoverageDescription" xml:space="preserve"><value>Cada declaración por país: aprobada, en curso, no abierta o cerrada con motivo.</value></data>
+  <data name="ColumnSummary" xml:space="preserve"><value>{0} aprobadas · {1} pendientes</value></data>
+  <data name="RowSubline" xml:space="preserve"><value>{0} · {1} evidencias · {2} usos</value></data>
+  <data name="CellExpiringNote" xml:space="preserve"><value>La validez vence pronto</value></data>
+  <data name="CellCoreChangedNote" xml:space="preserve"><value>La base cambió</value></data>
+  <data name="CellEvidenceChangedNote" xml:space="preserve"><value>La evidencia cambió</value></data>
+  <data name="ActionOpenCountryVersion" xml:space="preserve"><value>Abrir versión por país</value></data>
+  <data name="ActionMarkNotOpened" xml:space="preserve"><value>Marcar como no abierta</value></data>
+  <data name="ActionReopen" xml:space="preserve"><value>Reabrir</value></data>
+  <data name="ActionEditVersion" xml:space="preserve"><value>Editar / ver</value></data>
+  <data name="CoreNotApprovedTooltip" xml:space="preserve"><value>Primero debe aprobarse la declaración base</value></data>
+  <data name="CellActionsLabel" xml:space="preserve"><value>Acciones para {0}</value></data>
+  <data name="CloseModalTitle" xml:space="preserve"><value>Marcar {0} como no abierta</value></data>
+  <data name="CloseReasonLabel" xml:space="preserve"><value>Motivo</value></data>
+  <data name="CloseConfirm" xml:space="preserve"><value>Marcar</value></data>
+  <data name="ReopenModalTitle" xml:space="preserve"><value>Reabrir {0}</value></data>
+  <data name="ReopenNoteLabel" xml:space="preserve"><value>Nota (opcional)</value></data>
+  <data name="ToastClosed" xml:space="preserve"><value>País marcado como no abierto.</value></data>
+  <data name="ToastReopened" xml:space="preserve"><value>País reabierto.</value></data>
+  <data name="CoverageEmptyTitle" xml:space="preserve"><value>Aún no hay declaraciones</value></data>
+  <data name="CoverageEmptyText" xml:space="preserve"><value>Cree una declaración base para ver su cobertura por país.</value></data>
+  <data name="LegendTitle" xml:space="preserve"><value>Leyenda</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Buscar por código, nombre o texto</value></data>
+  <data name="Reason_no-license" xml:space="preserve"><value>Sin autorización de comercialización</value></data>
+  <data name="Reason_regulation-disallows" xml:space="preserve"><value>La normativa local no lo permite</value></data>
+  <data name="Reason_business-decision" xml:space="preserve"><value>Decisión de negocio</value></data>
+  <data name="Err_country_has_version" xml:space="preserve"><value>Este país ya tiene una versión; archívela antes de marcarlo como no abierto.</value></data>
+  <data name="Err_not_applicable" xml:space="preserve"><value>Este país está fuera del alcance de esta declaración.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>Una lista de referencia necesaria aún no está publicada. Consulte a su administrador.</value></data>
+  <data name="Err_country_already_closed" xml:space="preserve"><value>Este país ya está marcado como no abierto.</value></data>
+  <data name="Err_country_not_closed" xml:space="preserve"><value>Este país no está marcado como no abierto.</value></data>
+  <data name="Err_invalid_reference_value" xml:space="preserve"><value>Seleccione un motivo válido.</value></data>
+  <data name="Err_required" xml:space="preserve"><value>Seleccione un motivo.</value></data>
 </root>

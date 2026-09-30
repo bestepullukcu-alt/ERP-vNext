@@ -1,8 +1,6 @@
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using Diten.Web.Models.CRM;
 using Diten.Web.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,29 +9,25 @@ using Microsoft.Extensions.Localization;
 namespace Diten.Web.Controllers.CRM;
 
 /// <summary>
-/// SCMM-12-UI (CAND-CAP-0011) Claim authoring console. Proxy-only, mirroring the MOD-0162-FU03 KnowledgeConcepts
-/// console: all business traffic is proxied server-side through Gateway 5000, the browser never sees a service URL or
-/// bearer token, and no business rule lives here (the CrmService Claim CQRS is the authoritative validation + permission
-/// layer). No delete surface — closing a claim is Archive. Approval (draft → approved) is a dedicated action and freezes
-/// the governed body. The component picker is fed read-only from the ready MOD-0162 KnowledgeContent list
-/// (<c>/api/crm/knowledge/contents</c>); no new API is invented. RBAC keys (<c>crm.claim.*</c>) are seeded and granted
-/// (SCMM-12-API), so there is no dev-fallback permission.
+/// Claims console (CAND-CAP-0011 / claims v2). Proxy-only: all business traffic is proxied server-side through Gateway
+/// 5000, the browser never sees a service URL or bearer token, and no business rule lives here (CrmService is the
+/// authoritative validation + permission layer). No delete surface — closing a claim is Archive.
+/// <para>WP-CL-FE-3 — Create / Edit are JS-driven pages over the v2 proxy layer (<see cref="ClaimsController"/> V2 part):
+/// the controller renders only the page shell (kind / id), claims are saved through <c>api/v2/claims</c>, evidence is
+/// linked through MOD-0031 via CRM, and approval runs only through the MOD-0023 round (submit-review). The former MVC
+/// form post is gone.</para>
 /// </summary>
 [Authorize]
 [Route("CRM/Claims")]
-public sealed class ClaimsController : Controller
+public sealed partial class ClaimsController : Controller
 {
     private const string ReadPermission = "crm.claim.read";
     private const string ManagePermission = "crm.claim.manage";
-    private const string ApprovePermission = "crm.claim.approve";
     private const string ViewRoot = "~/Views/CRM/Claims";
 
     // The claim HTTP surface (SCMM-12-API) + the component picker source (MOD-0162 FU02), both through the gateway.
     private const string ClaimsBase = "/api/crm/content-composition/claims";
     private const string ContentsBase = "/api/crm/knowledge/contents";
-
-    // Create / update carry only these editable states; approved / archived are the dedicated approve / archive actions.
-    private static readonly string[] EditableStatuses = ["draft", "inactive"];
 
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
@@ -54,191 +48,116 @@ public sealed class ClaimsController : Controller
         _logger = logger;
     }
 
-    // ---------------- Pages (Compact list + route-based Create / Edit) ----------------
+    // ---------------- Pages (list + JS-driven Create / Edit) ----------------
 
     [HttpGet("")]
-    public IActionResult Index() => RequirePage(ReadPermission) ?? View($"{ViewRoot}/Index.cshtml");
-
-    [HttpGet("Create")]
-    public async Task<IActionResult> Create(CancellationToken ct)
+    public IActionResult Index()
     {
-        if (RequirePage(ManagePermission) is { } denied) return denied;
-        var model = new ClaimEditViewModel
-        {
-            EffectiveFrom = DateTimeOffset.Now,
-            ClaimCode = SuggestClaimCode(),
-            ClaimVersion = "1.0",
-            Status = "draft"
-        };
-        await PopulateFormOptionsAsync(model, ct);
-        return View($"{ViewRoot}/Create.cshtml", model);
+        // UAS-001: without the read permission no page skeleton is drawn and nothing redirects — a plain 403.
+        if (RequirePage(ReadPermission) is { } denied) return denied;
+        ViewData["CanManageClaims"] = HasAnyPermission(ManagePermission);
+        return View($"{ViewRoot}/Index.cshtml");
     }
 
-    [HttpPost("Create")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(ClaimEditViewModel model, CancellationToken ct)
+    /// <summary>WP-CL-FE-2 — claim × country coverage matrix (mockup scenario 2). Read gate like the list (UAS-001: a
+    /// plain 403 without a skeleton); cell actions render only for crm.claim.manage and CRM re-checks them anyway.</summary>
+    [HttpGet("Coverage")]
+    public IActionResult Coverage()
+    {
+        if (RequirePage(ReadPermission) is { } denied) return denied;
+        ViewData["CanManageClaims"] = HasAnyPermission(ManagePermission);
+        return View($"{ViewRoot}/Coverage.cshtml");
+    }
+
+    /// <summary>New core (default) or local claim. Only the kind travels to the page; everything else is loaded and
+    /// saved by claim-form.js through the v2 proxy.</summary>
+    [HttpGet("Create")]
+    public IActionResult Create([FromQuery] string? kind)
     {
         if (RequirePage(ManagePermission) is { } denied) return denied;
-        if (!ModelState.IsValid)
-        {
-            await PopulateFormOptionsAsync(model, ct);
-            return View($"{ViewRoot}/Create.cshtml", model);
-        }
-
-        var response = await SendGatewayAsync(HttpMethod.Post, ClaimsBase, ToPayload(model, forUpdate: false), ct);
-        if (response is not null && response.IsSuccessStatusCode)
-        {
-            var envelope = await response.Content.ReadFromJsonAsync<ClaimGatewayResponse<Guid>>(_json, ct);
-            TempData["SuccessMessage"] = _sharedLocalizer["RecordCreated"].Value;
-            return envelope?.Data is { } id && id != Guid.Empty
-                ? RedirectToAction(nameof(Edit), new { id })
-                : RedirectToAction(nameof(Index));
-        }
-
-        AddGatewayErrors(await ExtractErrorsAsync(response, ct));
-        await PopulateFormOptionsAsync(model, ct);
-        return View($"{ViewRoot}/Create.cshtml", model);
+        ViewData["ClaimKind"] = string.Equals(kind, "local", StringComparison.OrdinalIgnoreCase) ? "local" : "core";
+        ViewData["ClaimId"] = string.Empty;
+        return View($"{ViewRoot}/Create.cshtml");
     }
 
     [HttpGet("Edit/{id:guid}")]
-    public async Task<IActionResult> Edit(Guid id, CancellationToken ct)
+    public IActionResult Edit(Guid id)
     {
         if (RequirePage(ManagePermission) is { } denied) return denied;
-        var claim = await LoadClaimAsync(id, ct);
-        if (claim is null) return NotFound();
-
-        var model = ToEditModel(claim);
-        await PopulateFormOptionsAsync(model, ct);
-        return View($"{ViewRoot}/Edit.cshtml", model);
+        ViewData["ClaimKind"] = string.Empty; // read from the record
+        ViewData["ClaimId"] = id.ToString();
+        return View($"{ViewRoot}/Edit.cshtml");
     }
 
-    [HttpPost("Edit/{id:guid}")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(Guid id, ClaimEditViewModel model, CancellationToken ct)
-    {
-        if (RequirePage(ManagePermission) is { } denied) return denied;
-        model.ClaimId = id;
-        if (!ModelState.IsValid)
-        {
-            await PopulateFormOptionsAsync(model, ct);
-            return View($"{ViewRoot}/Edit.cshtml", model);
-        }
+    // ---------------- WP-CL-FE-4 — country version pages + code suggestion ----------------
 
-        var response = await SendGatewayAsync(HttpMethod.Put, $"{ClaimsBase}/{id}", ToPayload(model, forUpdate: true), ct);
+    /// <summary>Open a country version of a claim (mockup scenario 4). Read opens the page read-only; the save / submit
+    /// controls render only for crm.claim.manage (CRM re-checks every write).</summary>
+    [HttpGet("{claimId:guid}/Countries/{countryCode}/Create")]
+    public IActionResult CountryVersionCreate(Guid claimId, string countryCode)
+    {
+        if (RequirePage(ReadPermission) is { } denied) return denied;
+        ViewData["CanManageClaims"] = HasAnyPermission(ManagePermission);
+        ViewData["ClaimId"] = claimId.ToString();
+        ViewData["CountryCode"] = (countryCode ?? string.Empty).Trim().ToUpperInvariant();
+        ViewData["CountryVersionId"] = string.Empty;
+        return View($"{ViewRoot}/CountryVersion.cshtml");
+    }
+
+    [HttpGet("CountryVersions/{versionId:guid}/Edit")]
+    public IActionResult CountryVersionEdit(Guid versionId)
+    {
+        if (RequirePage(ReadPermission) is { } denied) return denied;
+        ViewData["CanManageClaims"] = HasAnyPermission(ManagePermission);
+        ViewData["ClaimId"] = string.Empty; // read from the version
+        ViewData["CountryCode"] = string.Empty;
+        ViewData["CountryVersionId"] = versionId.ToString();
+        return View($"{ViewRoot}/CountryVersion.cshtml");
+    }
+
+    /// <summary>CLM-{PRODUCT NAME}-{NN} suggestion for a new claim (see <see cref="ClaimCodeSuggestion"/>); NN follows
+    /// the tenant's existing codes (one list read). A failed read still suggests NN = 01.</summary>
+    [HttpGet("api/v2/claims/code-suggestion")]
+    public async Task<IActionResult> CodeSuggestion([FromQuery] string? productName, CancellationToken ct)
+    {
+        if (RequireJson(ManagePermission) is { } denied) return denied;
+        var existing = new List<string>();
+        var response = await SendGatewayAsync(HttpMethod.Get, $"{ClaimsBase}?includeArchived=true", null, ct);
         if (response is not null && response.IsSuccessStatusCode)
         {
-            TempData["SuccessMessage"] = _sharedLocalizer["RecordUpdated"].Value;
-            return RedirectToAction(nameof(Edit), new { id });
+            try
+            {
+                using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+                if (doc.RootElement.TryGetProperty("data", out var data)
+                    && data.TryGetProperty("items", out var items) && items.ValueKind == JsonValueKind.Array)
+                {
+                    existing.AddRange(items.EnumerateArray().Select(i => GetFirstString(i, "claimCode")).OfType<string>());
+                }
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Claim code suggestion: the claim list could not be parsed.");
+            }
         }
 
-        AddGatewayErrors(await ExtractErrorsAsync(response, ct));
-        await PopulateFormOptionsAsync(model, ct);
-        return View($"{ViewRoot}/Edit.cshtml", model);
+        return Ok(new { data = new { code = ClaimCodeSuggestion.Suggest(productName, existing) } });
     }
 
     // ---------------- Same-origin browser proxy (claim + component-picker allowlist only) ----------------
 
-    // Claim list — the Index DataTable source. Forwards the query string (status / effectiveAt / search / includeArchived).
+    // WP-CL-FE-1 — the old list door now serves the v2 list (same CRM read; kept so older bookmarks / scripts still
+    // work). The old direct approve proxy is GONE: claims are approved only through their MOD-0023 workflow round
+    // (submit-review). Archive moved to the v2 layer (api/v2/claims/{id}/archive).
     [HttpGet("api/claims")]
-    public Task<IActionResult> ClaimList(CancellationToken ct) =>
-        ProxyGetAsync($"{ClaimsBase}{Request.QueryString}", ReadPermission, ct);
-
-    [HttpPost("api/claims/{claimId:guid}/approve")]
-    public Task<IActionResult> ApproveClaim(Guid claimId, CancellationToken ct) =>
-        ProxyJsonAsync(HttpMethod.Post, $"{ClaimsBase}/{claimId}/approve", null, ApprovePermission, ct);
-
-    [HttpPost("api/claims/{claimId:guid}/archive")]
-    public Task<IActionResult> ArchiveClaim(Guid claimId, CancellationToken ct) =>
-        ProxyJsonAsync(HttpMethod.Post, $"{ClaimsBase}/{claimId}/archive", null, ManagePermission, ct);
+    public Task<IActionResult> ClaimList(CancellationToken ct) => V2List(ct);
 
     // Component picker source — read-only MOD-0162 KnowledgeContent list. Only the list read is allowlisted (no
-    // knowledge write path is exposed here); the picker maps rows to by-id ComponentRefs.
+    // knowledge write path is exposed here).
     [HttpGet("api/contents")]
     public Task<IActionResult> ContentList(CancellationToken ct) =>
         ProxyGetAsync($"{ContentsBase}{Request.QueryString}", ReadPermission, ct);
 
     // ---------------- helpers ----------------
-
-    private static string SuggestClaimCode() =>
-        $"CLM-{DateTime.UtcNow:yyyy}-{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}";
-
-    private async Task PopulateFormOptionsAsync(ClaimEditViewModel model, CancellationToken ct)
-    {
-        model.Statuses = EditableStatuses;
-        model.ComponentOptions = await LoadComponentOptionsAsync(ct);
-        await EnsureSelectedComponentsAsync(model.ComponentOptions, model.ComponentRefs, ct);
-    }
-
-    // Component picker options — the ready KnowledgeContent list, labelled "code — title". Read-only reference; a failed
-    // load yields an empty list (the form still posts any stored refs, kept by EnsureSelected).
-    private async Task<List<ClaimOptionViewModel>> LoadComponentOptionsAsync(CancellationToken ct)
-    {
-        var options = new List<ClaimOptionViewModel>();
-        var response = await SendGatewayAsync(HttpMethod.Get, $"{ContentsBase}?includeArchived=false", null, ct);
-        if (response is null || !response.IsSuccessStatusCode) return options;
-        try
-        {
-            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
-            if (!doc.RootElement.TryGetProperty("data", out var data)) return options;
-            JsonElement items;
-            if (data.ValueKind == JsonValueKind.Array) items = data;
-            else if (data.ValueKind == JsonValueKind.Object && data.TryGetProperty("items", out var it)) items = it;
-            else return options;
-
-            foreach (var el in items.EnumerateArray())
-            {
-                if (el.ValueKind != JsonValueKind.Object) continue;
-                var id = GetFirstString(el, "contentId", "id");
-                if (string.IsNullOrWhiteSpace(id)) continue;
-                var code = GetFirstString(el, "contentCode", "code");
-                var title = GetFirstString(el, "contentTitle", "title", "name");
-                var label = !string.IsNullOrWhiteSpace(code) && !string.IsNullOrWhiteSpace(title) ? $"{code} — {title}"
-                    : title ?? code ?? id!;
-                options.Add(new ClaimOptionViewModel { Value = id!, Label = label });
-            }
-        }
-        catch (Exception ex) { _logger.LogWarning(ex, "Claim component option load failed."); }
-        return options.OrderBy(o => o.Label, StringComparer.OrdinalIgnoreCase).ToList();
-    }
-
-    // A stored component ref that is not in the active list (archived / unresolved) is kept as an inactive option so it
-    // survives the round-trip — the reference is provenance and must never be silently dropped by the picker.
-    private async Task EnsureSelectedComponentsAsync(
-        List<ClaimOptionViewModel> options, IReadOnlyList<Guid> current, CancellationToken ct)
-    {
-        foreach (var id in current.Where(g => g != Guid.Empty).Distinct())
-        {
-            var idStr = id.ToString();
-            if (options.Any(o => string.Equals(o.Value, idStr, StringComparison.OrdinalIgnoreCase))) continue;
-
-            var option = new ClaimOptionViewModel { Value = idStr, Label = idStr, IsInactive = true };
-            var response = await SendGatewayAsync(HttpMethod.Get, $"{ContentsBase}/{idStr}", null, ct);
-            if (response is not null && response.IsSuccessStatusCode)
-            {
-                try
-                {
-                    using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
-                    if (doc.RootElement.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Object)
-                    {
-                        var code = GetFirstString(data, "contentCode", "code");
-                        var title = GetFirstString(data, "contentTitle", "title", "name");
-                        if (!string.IsNullOrWhiteSpace(code) && !string.IsNullOrWhiteSpace(title)) option.Label = $"{code} — {title}";
-                        else if (!string.IsNullOrWhiteSpace(title)) option.Label = title!;
-                        else if (!string.IsNullOrWhiteSpace(code)) option.Label = code!;
-                    }
-                }
-                catch (Exception ex) { _logger.LogWarning(ex, "Claim component ensure-selected parse failed: {ContentId}", idStr); }
-            }
-            options.Add(option);
-        }
-    }
-
-    private async Task<ClaimDetailViewModel?> LoadClaimAsync(Guid id, CancellationToken ct)
-    {
-        var response = await SendGatewayAsync(HttpMethod.Get, $"{ClaimsBase}/{id}", null, ct);
-        if (response is null || !response.IsSuccessStatusCode) return null;
-        return (await response.Content.ReadFromJsonAsync<ClaimGatewayResponse<ClaimDetailViewModel>>(_json, ct))?.Data;
-    }
 
     private async Task<IActionResult> ProxyGetAsync(string path, string permission, CancellationToken ct)
     {
@@ -287,6 +206,10 @@ public sealed class ClaimsController : Controller
     {
         if (response is null)
             return new ObjectResult(new { errors = new[] { "Gateway unavailable." } }) { StatusCode = 502 };
+        // A bodiless status (204 / 304) must stay bodiless: writing even an empty ContentResult with a content type
+        // onto a 204 is what turned proxied 204s into 500s elsewhere (memory proxy-forward-204-content-length-crash).
+        if (IsBodilessStatus((int)response.StatusCode))
+            return new StatusCodeResult((int)response.StatusCode);
         var content = await response.Content.ReadAsStringAsync(ct);
         return new ContentResult
         {
@@ -296,78 +219,7 @@ public sealed class ClaimsController : Controller
         };
     }
 
-    private async Task<List<string>> ExtractErrorsAsync(HttpResponseMessage? response, CancellationToken ct)
-    {
-        if (response is null) return [_sharedLocalizer["GatewayError"].Value];
-        try
-        {
-            var envelope = await response.Content.ReadFromJsonAsync<ClaimGatewayResponse<object>>(_json, ct);
-            if (envelope?.Errors.Count > 0) return envelope.Errors;
-        }
-        catch { }
-        var raw = await response.Content.ReadAsStringAsync(ct);
-        return [string.IsNullOrWhiteSpace(raw) ? _sharedLocalizer["GatewayError"].Value : raw];
-    }
-
-    private void AddGatewayErrors(IEnumerable<string> errors)
-    {
-        foreach (var error in errors) ModelState.AddModelError(string.Empty, error);
-    }
-
-    // Builds the request payload. Create carries ClaimCode; update omits it (the code is immutable). On an approved
-    // claim, Status is left out so the backend preserves the approved status (approved/archived are dedicated actions).
-    private static object ToPayload(ClaimEditViewModel m, bool forUpdate)
-    {
-        var applicability = new
-        {
-            productRefs = Clean(m.ProductRefs),
-            marketRefs = Clean(m.MarketRefs),
-            audienceRefs = Clean(m.AudienceRefs),
-            eligibilityPolicyId = m.EligibilityPolicyId is { } id && id != Guid.Empty ? id : (Guid?)null
-        };
-        var status = m.IsApproved ? null : m.Status;
-
-        return forUpdate
-            ? new
-            {
-                m.ClaimName, m.ClaimText, m.EffectiveFrom, m.Description,
-                qualifiers = Clean(m.Qualifiers), applicability, evidenceRefs = Clean(m.EvidenceRefs),
-                componentRefs = m.ComponentRefs.Where(g => g != Guid.Empty).Distinct().ToList(),
-                m.ClaimVersion, status, m.EffectiveTo
-            }
-            : new
-            {
-                m.ClaimCode, m.ClaimName, m.ClaimText, m.EffectiveFrom, m.Description,
-                qualifiers = Clean(m.Qualifiers), applicability, evidenceRefs = Clean(m.EvidenceRefs),
-                componentRefs = m.ComponentRefs.Where(g => g != Guid.Empty).Distinct().ToList(),
-                m.ClaimVersion, status, m.EffectiveTo
-            };
-    }
-
-    private static List<string> Clean(IEnumerable<string>? values) =>
-        (values ?? []).Select(v => v?.Trim() ?? string.Empty).Where(v => v.Length > 0).Distinct().ToList();
-
-    private static ClaimEditViewModel ToEditModel(ClaimDetailViewModel c) => new()
-    {
-        ClaimId = c.ClaimId,
-        ClaimCode = c.ClaimCode,
-        ClaimName = c.ClaimName,
-        Description = c.Description,
-        ClaimText = c.ClaimText,
-        Qualifiers = [.. c.Qualifiers],
-        ProductRefs = [.. c.ProductRefs],
-        MarketRefs = [.. c.MarketRefs],
-        AudienceRefs = [.. c.AudienceRefs],
-        EligibilityPolicyId = c.EligibilityPolicyId,
-        EvidenceRefs = [.. c.EvidenceRefs],
-        ComponentRefs = [.. c.ComponentRefs],
-        ClaimVersion = c.ClaimVersion,
-        Status = c.Status,
-        EffectiveFrom = c.EffectiveFrom,
-        EffectiveTo = c.EffectiveTo,
-        IsApproved = string.Equals(c.Status, "approved", StringComparison.OrdinalIgnoreCase),
-        IsArchived = c.IsArchived
-    };
+    internal static bool IsBodilessStatus(int status) => status is 204 or 205 or 304 || status < 200;
 
     private static bool ContainsTenantId(JsonElement element) => element.ValueKind == JsonValueKind.Object &&
         element.EnumerateObject().Any(x => string.Equals(x.Name, "tenantId", StringComparison.OrdinalIgnoreCase));

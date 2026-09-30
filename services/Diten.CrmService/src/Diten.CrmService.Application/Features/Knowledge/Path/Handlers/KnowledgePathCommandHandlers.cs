@@ -216,6 +216,7 @@ public sealed class CreateKnowledgePathHandler : IRequestHandler<CreateKnowledge
             EffectiveFrom = request.EffectiveFrom,
             EffectiveTo = request.EffectiveTo,
             Source = KnowledgePathSources.Normalize(request.Source),
+            StudioOrigin = request.StudioOrigin,
             CreatedAt = now,
             CreatedBy = _actor.ActorName
         };
@@ -554,6 +555,7 @@ public sealed class CreateKnowledgePathVersionHandler
             Source = source.Source,
             Steps = copiedSteps,
             SupersedesPathId = source.Id,
+            StudioOrigin = request.StudioOrigin,
             StepSetFrozenAt = null,
             PublishedAt = null,
             PublishedBy = null,
