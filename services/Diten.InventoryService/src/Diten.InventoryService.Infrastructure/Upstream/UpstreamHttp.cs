@@ -74,6 +74,11 @@ internal static class UpstreamHttp
             ? value.GetString()
             : null;
 
+    public static bool RequiredBool(JsonElement element, string property)
+        => element.TryGetProperty(property, out var value) && value.ValueKind is JsonValueKind.True or JsonValueKind.False
+            ? value.GetBoolean()
+            : throw new FormatException($"'{property}' is missing or not a boolean.");
+
     public static bool OptionalBool(JsonElement element, string property, bool fallback = false)
         => element.TryGetProperty(property, out var value) && value.ValueKind is JsonValueKind.True or JsonValueKind.False
             ? value.GetBoolean()

@@ -35,11 +35,7 @@ public sealed class ProductMasterHttpClient : IProductMasterClient
             () => new HttpRequestMessage(HttpMethod.Post, "validate") { Content = JsonContent.Create(body) },
             notFoundIsAbsent: false,
             root => UpstreamHttp.RequiredArray(root, "results").EnumerateArray()
-                .Select(r => new ProductRefValidation(
-                    UpstreamHttp.OptionalString(r, "itemId"),
-                    UpstreamHttp.OptionalString(r, "skuId"),
-                    UpstreamHttp.OptionalString(r, "skuLevel"),
-                    UpstreamHttp.OptionalBool(r, "exists")))
+                .Select(ParseValidation)
                 .ToList(),
             Unavailable,
             cancellationToken);
@@ -88,6 +84,22 @@ public sealed class ProductMasterHttpClient : IProductMasterClient
                     : []),
             Unavailable,
             cancellationToken);
+
+    /// <summary>
+    /// A <c>ValidateResponse</c> entry must name an item or a sku and state <c>exists</c> as a boolean. Anything else
+    /// is an answer outside the contract — not "unknown", but "cannot trust the master" (fail-closed).
+    /// </summary>
+    private static ProductRefValidation ParseValidation(JsonElement r)
+    {
+        var itemId = UpstreamHttp.OptionalString(r, "itemId");
+        var skuId = UpstreamHttp.OptionalString(r, "skuId");
+        if (itemId is null && skuId is null)
+        {
+            throw new FormatException("A validateRefs result names neither itemId nor skuId.");
+        }
+
+        return new ProductRefValidation(itemId, skuId, UpstreamHttp.OptionalString(r, "skuLevel"), UpstreamHttp.RequiredBool(r, "exists"));
+    }
 
     /// <summary>A conversion with an unreadable factor is dropped (never guessed); a missing path then yields 422.</summary>
     private static UomConversionRule? ParseConversion(JsonElement c)

@@ -30,13 +30,15 @@ public static class UomConverter
             .Where(c => c.Denominator != 0m && c.Numerator > 0m && c.Denominator > 0m && c.IsEffectiveAt(asOf))
             .ToList();
 
-        var frontier = new List<(string Uom, decimal Factor)> { (uomId, 1m) };
+        // Numerators and denominators are multiplied separately and divided ONCE at the end: 3 PACK at 1/3 is
+        // exactly 1, whereas 3 × (1/3) through a rounded intermediate factor would be 0.999….
+        var frontier = new List<(string Uom, decimal Numerator, decimal Denominator)> { (uomId, 1m, 1m) };
         var visited = new HashSet<string>(StringComparer.Ordinal) { uomId };
 
         for (var hop = 0; hop < MaxHops && frontier.Count > 0; hop++)
         {
-            var next = new List<(string Uom, decimal Factor)>();
-            foreach (var (uom, factor) in frontier)
+            var next = new List<(string Uom, decimal Numerator, decimal Denominator)>();
+            foreach (var (uom, numerator, denominator) in frontier)
             {
                 foreach (var edge in edges.Where(e => string.Equals(e.FromUom, uom, StringComparison.Ordinal)))
                 {
@@ -45,31 +47,23 @@ public static class UomConverter
                         continue;
                     }
 
-                    decimal stepFactor;
                     try
                     {
-                        stepFactor = factor * edge.Numerator / edge.Denominator;
+                        var stepNumerator = numerator * edge.Numerator;
+                        var stepDenominator = denominator * edge.Denominator;
+
+                        if (string.Equals(edge.ToUom, baseUomId, StringComparison.Ordinal))
+                        {
+                            baseQuantity = quantity * stepNumerator / stepDenominator;
+                            return InventoryQuantity.Scale(baseQuantity) <= InventoryQuantity.MaxFractionDigits;
+                        }
+
+                        next.Add((edge.ToUom, stepNumerator, stepDenominator));
                     }
                     catch (OverflowException)
                     {
-                        continue;
+                        return false;
                     }
-
-                    if (string.Equals(edge.ToUom, baseUomId, StringComparison.Ordinal))
-                    {
-                        try
-                        {
-                            baseQuantity = quantity * stepFactor;
-                        }
-                        catch (OverflowException)
-                        {
-                            return false;
-                        }
-
-                        return InventoryQuantity.Scale(baseQuantity) <= InventoryQuantity.MaxFractionDigits;
-                    }
-
-                    next.Add((edge.ToUom, stepFactor));
                 }
             }
 

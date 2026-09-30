@@ -22,7 +22,7 @@ public sealed class LocationMasterHttpClient : ILocationMasterClient
             root => UpstreamHttp.RequiredArray(root, "results").EnumerateArray()
                 .Select(r => new LocationValidation(
                     UpstreamHttp.RequiredString(r, "locationId"),
-                    UpstreamHttp.OptionalBool(r, "exists"),
+                    UpstreamHttp.RequiredBool(r, "exists"),
                     UpstreamHttp.NullableBool(r, "isStockable")))
                 .ToList(),
             Unavailable,
