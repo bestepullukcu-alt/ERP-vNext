@@ -16,15 +16,17 @@ public sealed class ListKnowledgePathsHandler : IRequestHandler<ListKnowledgePat
     private readonly IKnowledgePathRepository _paths;
     private readonly IKnowledgeContentRepository _contents;
     private readonly IConceptNodeRepository _nodes;
+    private readonly IConceptChainTemplateRepository? _templates;
 
     public ListKnowledgePathsHandler(
         ITenantContext tenant, IKnowledgePathRepository paths, IKnowledgeContentRepository contents,
-        IConceptNodeRepository nodes)
+        IConceptNodeRepository nodes, IConceptChainTemplateRepository? templates = null)
     {
         _tenant = tenant;
         _paths = paths;
         _contents = contents;
         _nodes = nodes;
+        _templates = templates;
     }
 
     public async Task<Response<KnowledgePathListDto>> Handle(
@@ -90,7 +92,11 @@ public sealed class ListKnowledgePathsHandler : IRequestHandler<ListKnowledgePat
             await _contents.ListAsync(tenantId, cancellationToken),
             await _nodes.ListAsync(tenantId, cancellationToken));
 
-        var items = list.Select(p => KnowledgePathMapper.ToListItem(p, ctx, effectiveAt)).ToList();
+        // WP-KP-1 — the chain code of each chain-bound row (one tenant read, only when a row is chain-bound).
+        var templates = _templates is not null && list.Any(p => p.ChainTemplate is not null)
+            ? (await _templates.ListAsync(tenantId, cancellationToken)).GroupBy(t => t.Id).ToDictionary(g => g.Key, g => g.First())
+            : null;
+        var items = list.Select(p => KnowledgePathMapper.ToListItem(p, ctx, effectiveAt, templates)).ToList();
         return Response<KnowledgePathListDto>.Success(new KnowledgePathListDto(items, items.Count));
     }
 }
@@ -101,15 +107,17 @@ public sealed class GetKnowledgePathHandler : IRequestHandler<GetKnowledgePathQu
     private readonly IKnowledgePathRepository _paths;
     private readonly IKnowledgeContentRepository _contents;
     private readonly IConceptNodeRepository _nodes;
+    private readonly KnowledgePathStudioReader? _studio;
 
     public GetKnowledgePathHandler(
         ITenantContext tenant, IKnowledgePathRepository paths, IKnowledgeContentRepository contents,
-        IConceptNodeRepository nodes)
+        IConceptNodeRepository nodes, KnowledgePathStudioReader? studio = null)
     {
         _tenant = tenant;
         _paths = paths;
         _contents = contents;
         _nodes = nodes;
+        _studio = studio;
     }
 
     public async Task<Response<KnowledgePathDto>> Handle(
@@ -131,7 +139,8 @@ public sealed class GetKnowledgePathHandler : IRequestHandler<GetKnowledgePathQu
             await _contents.ListAsync(tenantId, cancellationToken),
             await _nodes.ListAsync(tenantId, cancellationToken));
 
-        return Response<KnowledgePathDto>.Success(KnowledgePathMapper.ToDto(path, ctx, effectiveAt));
+        var studio = _studio is null ? null : await _studio.ReadAsync(tenantId, path, cancellationToken);
+        return Response<KnowledgePathDto>.Success(KnowledgePathMapper.ToDto(path, ctx, effectiveAt, studio));
     }
 }
 

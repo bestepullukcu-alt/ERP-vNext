@@ -771,6 +771,12 @@ public static class DependencyInjection
         // members serialize a string while the stored value is binary, and lookups silently return NOTHING (the
         // AccountTerritoryAssignment lesson). The embedded types MUST have their own class map registered or their Guid
         // members fall through to the global Standard serializer (binary sub-type 4).
+        // WP-KP-1 — the studio model embedded on a path (chain ref, step / claim arrangement, claims). Every id takes the
+        // string-Guid convention (the new-field class-map trap); a pre-KP-1 document has none of these elements and
+        // reads back as a legacy path (ChainTemplate / CountryCode / Arrangement null, Claims empty).
+        Map<KnowledgePathChainRef>(map => map.GetMemberMap(x => x.ConceptChainTemplateId).SetSerializer(stringGuid));
+        Map<KnowledgePathArrangement>(map => map.GetMemberMap(x => x.ChainStepId).SetSerializer(stringGuid));
+        Map<KnowledgePathClaim>(map => map.GetMemberMap(x => x.ClaimId).SetSerializer(stringGuid));
         Map<KnowledgePath>(map =>
         {
             map.GetMemberMap(p => p.SubjectId).SetSerializer(stringGuid);

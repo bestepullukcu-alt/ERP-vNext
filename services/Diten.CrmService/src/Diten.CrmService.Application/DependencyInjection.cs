@@ -56,6 +56,13 @@ public static class DependencyInjection
         services.AddScoped<Features.ContentComposition.ContentSetRevisions.IContentSetReleaseProducer,
             Features.ContentComposition.ContentSetRevisions.ContentSetReleaseProducer>();
 
+        // WP-KP-1 — the single chain context resolver (product + audience a chain template derives). Shared by the
+        // knowledge path (studio model) and the content-set adapter below; read-only.
+        services.AddScoped<Features.Knowledge.Chain.IChainContextResolver, Features.Knowledge.Chain.ChainContextResolver>();
+
+        // WP-KP-1 — the studio part of a knowledge path detail read (chain, derived context, claims, conformance).
+        services.AddScoped<Features.Knowledge.Path.KnowledgePathStudioReader>();
+
         // WP-SB-1R — the single content-set context resolver (country + language of the set; product + audience derived
         // from the template). Read-only; used by the set reads, eligibility, the revision freeze.
         services.AddScoped<Features.ContentComposition.ContentSets.IContentSetContextResolver,

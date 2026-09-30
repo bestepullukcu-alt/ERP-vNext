@@ -1,3 +1,4 @@
+using Diten.CrmService.Application.Features.Knowledge.Chain;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Common.ReferenceValidation;
@@ -200,7 +201,7 @@ public sealed class CreateContentSetDraftHandler : IRequestHandler<CreateContent
             return Response<Guid>.Fail("Cannot build a set on an archived composition template.", 409);
         }
 
-        var context = await ContentSetContextValidation.ValidateAsync(
+        var context = await ChainContextValidation.ValidateAsync(
             _catalog, request.CountryCode, request.LanguageCode, cancellationToken);
         if (!context.IsValid)
         {
@@ -381,7 +382,7 @@ public sealed class UpdateContentSetHandler : ContentSetWriteHandlerBase,
                     "Country and language can only change while the set is a draft." }, 409);
             }
 
-            var context = await ContentSetContextValidation.ValidateAsync(_catalog, country, language, cancellationToken);
+            var context = await ChainContextValidation.ValidateAsync(_catalog, country, language, cancellationToken);
             if (!context.IsValid)
             {
                 return Response<bool>.Fail(context.Errors!, context.StatusCode);

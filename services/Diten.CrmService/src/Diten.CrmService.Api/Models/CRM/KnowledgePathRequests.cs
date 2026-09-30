@@ -17,7 +17,10 @@ public sealed record CreateKnowledgePathRequest(
     string? LanguageCode = null,
     string? PathStatus = null,
     DateTimeOffset? EffectiveTo = null,
-    string? Source = null);
+    string? Source = null,
+    // WP-KP-1 — chain + country + language together; SubjectId then comes from the chain and PathCode may be empty.
+    Guid? ChainTemplateId = null,
+    string? CountryCode = null);
 
 public sealed record UpdateKnowledgePathRequest(
     string PathName,
@@ -33,9 +36,21 @@ public sealed record UpdateKnowledgePathRequest(
     DateTimeOffset? EffectiveTo = null,
     string? Source = null,
     int? ExpectedVersion = null,
-    object? Steps = null);
+    object? Steps = null,
+    string? CountryCode = null);
 
 public sealed record CreateKnowledgePathVersionRequest(string? NewPathVersion = null);
+
+// WP-KP-1 — studio sub-routes.
+public sealed record BindKnowledgePathChainRequest(
+    Guid ChainTemplateId, string? CountryCode, string? LanguageCode, int? ExpectedVersion = null);
+
+public sealed record KnowledgePathArrangementRequest(Guid ChainStepId, string? BranchCode, int Position = 0);
+
+public sealed record AddKnowledgePathClaimRequest(
+    Guid ClaimId, KnowledgePathArrangementRequest? Arrangement, int? ExpectedVersion = null);
+
+public sealed record ArrangeKnowledgePathClaimRequest(int Position, int? ExpectedVersion = null);
 
 public sealed record KnowledgePathBranchConditionRequest(
     string ConditionCode,
@@ -56,7 +71,8 @@ public sealed record AddKnowledgePathStepRequest(
     int? EstimatedDurationMinutes = null,
     string? Notes = null,
     IReadOnlyList<KnowledgePathBranchConditionRequest>? BranchConditions = null,
-    int? ExpectedVersion = null);
+    int? ExpectedVersion = null,
+    KnowledgePathArrangementRequest? Arrangement = null);
 
 public sealed record UpdateKnowledgePathStepRequest(
     int StepOrder,
@@ -72,4 +88,5 @@ public sealed record UpdateKnowledgePathStepRequest(
     int? EstimatedDurationMinutes = null,
     string? Notes = null,
     IReadOnlyList<KnowledgePathBranchConditionRequest>? BranchConditions = null,
-    int? ExpectedVersion = null);
+    int? ExpectedVersion = null,
+    KnowledgePathArrangementRequest? Arrangement = null);

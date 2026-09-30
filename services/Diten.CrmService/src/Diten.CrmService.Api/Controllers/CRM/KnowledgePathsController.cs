@@ -60,7 +60,8 @@ public sealed class KnowledgePathsController : CustomBaseController
             new CreateKnowledgePathCommand(
                 request.PathCode, request.PathName, request.SubjectId, request.Objective, request.PathVersion,
                 request.EffectiveFrom, request.Description, request.TopicId, request.AudienceProfileId,
-                request.LanguageCode, request.PathStatus, request.EffectiveTo, request.Source),
+                request.LanguageCode, request.PathStatus, request.EffectiveTo, request.Source,
+                ChainTemplateId: request.ChainTemplateId, CountryCode: request.CountryCode),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/paths/{pathId:guid}")]
@@ -72,7 +73,7 @@ public sealed class KnowledgePathsController : CustomBaseController
                 pathId, request.PathName, request.SubjectId, request.Objective, request.PathVersion,
                 request.EffectiveFrom, request.Description, request.TopicId, request.AudienceProfileId,
                 request.LanguageCode, request.PathStatus, request.EffectiveTo, request.Source,
-                StepsProvided: request.Steps is not null, request.ExpectedVersion),
+                StepsProvided: request.Steps is not null, request.ExpectedVersion, request.CountryCode),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/paths/{pathId:guid}/publish")]
@@ -117,7 +118,7 @@ public sealed class KnowledgePathsController : CustomBaseController
                 pathId, request.StepOrder, request.StepCode, request.StepTitle, request.StepType, request.ContentId,
                 request.IsRequired, request.VersionPinPolicy, request.CompletionRule, request.PrerequisiteStepId,
                 request.ConceptNodeId, request.EstimatedDurationMinutes, request.Notes,
-                MapBranch(request.BranchConditions), request.ExpectedVersion),
+                MapBranch(request.BranchConditions), request.ExpectedVersion, MapArrangement(request.Arrangement)),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/paths/{pathId:guid}/steps/{stepId:guid}")]
@@ -129,7 +130,7 @@ public sealed class KnowledgePathsController : CustomBaseController
                 pathId, stepId, request.StepOrder, request.StepCode, request.StepTitle, request.StepType,
                 request.ContentId, request.IsRequired, request.VersionPinPolicy, request.CompletionRule,
                 request.PrerequisiteStepId, request.ConceptNodeId, request.EstimatedDurationMinutes, request.Notes,
-                MapBranch(request.BranchConditions), request.ExpectedVersion),
+                MapBranch(request.BranchConditions), request.ExpectedVersion, MapArrangement(request.Arrangement)),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/paths/{pathId:guid}/steps/{stepId:guid}/archive")]
@@ -138,6 +139,47 @@ public sealed class KnowledgePathsController : CustomBaseController
         Guid pathId, Guid stepId, [FromQuery] int? expectedVersion, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveKnowledgePathStepCommand(pathId, stepId, expectedVersion), cancellationToken));
+
+    // ---------------- WP-KP-1 studio: chain binding + claims (sub-resources of a path) ----------------
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/bind-chain")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> BindChain(
+        Guid pathId, [FromBody] BindKnowledgePathChainRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new BindKnowledgePathChainCommand(
+                pathId, request.ChainTemplateId, request.CountryCode, request.LanguageCode, request.ExpectedVersion),
+            cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/claims")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> AddClaim(
+        Guid pathId, [FromBody] AddKnowledgePathClaimRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new AddKnowledgePathClaimCommand(
+                pathId, request.ClaimId, MapArrangement(request.Arrangement), request.ExpectedVersion),
+            cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/claims/{claimId:guid}/arrange")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> ArrangeClaim(
+        Guid pathId, Guid claimId, [FromBody] ArrangeKnowledgePathClaimRequest request,
+        CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new ArrangeKnowledgePathClaimCommand(pathId, claimId, request.Position, request.ExpectedVersion),
+            cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/claims/{claimId:guid}/remove")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> RemoveClaim(
+        Guid pathId, Guid claimId, [FromQuery] int? expectedVersion, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new RemoveKnowledgePathClaimCommand(pathId, claimId, expectedVersion), cancellationToken));
+
+    private static KnowledgePathArrangementInput? MapArrangement(KnowledgePathArrangementRequest? arrangement)
+        => arrangement is null
+            ? null
+            : new KnowledgePathArrangementInput(arrangement.ChainStepId, arrangement.BranchCode, arrangement.Position);
 
     private static IReadOnlyList<KnowledgePathBranchConditionInput>? MapBranch(
         IReadOnlyList<KnowledgePathBranchConditionRequest>? conditions)

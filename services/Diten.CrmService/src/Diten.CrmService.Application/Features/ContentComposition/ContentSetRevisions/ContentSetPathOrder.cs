@@ -1,3 +1,4 @@
+using Diten.CrmService.Application.Features.Knowledge.Chain;
 using Diten.CrmService.Domain.Entities;
 
 namespace Diten.CrmService.Application.Features.ContentComposition.ContentSetRevisions;
@@ -17,49 +18,10 @@ namespace Diten.CrmService.Application.Features.ContentComposition.ContentSetRev
 /// </summary>
 public static class ContentSetPathOrder
 {
+    /// <summary>WP-KP-1 — the rule itself lives in <see cref="ChainArrangementOrder"/> (shared with the knowledge path);
+    /// this is only the content-set slot adapter, removed with the set in KP-4.</summary>
     public static IReadOnlyList<ContentSetComponent> Order(
         ConceptChainTemplate template, IReadOnlyList<ContentSetComponent> components)
-    {
-        ArgumentNullException.ThrowIfNull(template);
-        ArgumentNullException.ThrowIfNull(components);
-
-        var slotRank = new Dictionary<(string Branch, Guid Step), int>();
-        if (template.Branches is { Count: > 0 })
-        {
-            var rank = 0;
-            foreach (var branch in template.Branches
-                         .Select((b, i) => (Branch: b, Index: i))
-                         .OrderBy(x => x.Branch.SortOrder)
-                         .ThenBy(x => x.Index)
-                         .Select(x => x.Branch))
-            {
-                var branchKey = Key(branch.BranchCode);
-                foreach (var step in branch.Steps)
-                {
-                    slotRank.TryAdd((branchKey, step.ConceptTypeId), rank++);
-                }
-            }
-        }
-        else
-        {
-            var rank = 0;
-            foreach (var type in template.OrderedConceptTypes)
-            {
-                slotRank.TryAdd((string.Empty, type), rank++);
-            }
-        }
-
-        return components
-            .Select((c, i) => (Component: c, Index: i,
-                Rank: slotRank.TryGetValue((Key(c.Arrangement.BranchId), c.Arrangement.TemplateStepId), out var r)
-                    ? r
-                    : int.MaxValue))
-            .OrderBy(x => x.Rank)
-            .ThenBy(x => x.Rank == int.MaxValue ? 0 : x.Component.Arrangement.Position)
-            .ThenBy(x => x.Index)
-            .Select(x => x.Component)
-            .ToList();
-    }
-
-    private static string Key(string? branchCode) => branchCode?.Trim().ToUpperInvariant() ?? string.Empty;
+        => ChainArrangementOrder.Order(template, components, c => new ChainArrangementOrder.Slot(
+            c.Arrangement.BranchId, c.Arrangement.TemplateStepId, c.Arrangement.Position));
 }

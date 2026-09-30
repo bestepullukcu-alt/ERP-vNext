@@ -95,8 +95,9 @@ public sealed class ContentSetContextSnapshot
     public List<Guid> AudienceProfileIds { get; set; } = new();
 }
 
-/// <summary>WP-SB-1R — coded content-set context failures (rendered as the <c>[code, message]</c> error pair).</summary>
-public static class ContentSetContextErrors
+/// <summary>WP-KP-1 — the chain context failures shared by the knowledge path and the content set (moved out of
+/// <see cref="ContentSetContextErrors"/>, which keeps its names as aliases until KP-4). Rendered as <c>[code, message]</c>.</summary>
+public static class ChainContextErrors
 {
     /// <summary>400 — the country is missing or not an active <c>COUNTRY_CODES</c> value.</summary>
     public const string CountryInvalid = "country_invalid";
@@ -107,8 +108,18 @@ public static class ContentSetContextErrors
     /// <summary>503 — COUNTRY_CODES / country-content-languages cannot be read (never validated against a local list).</summary>
     public const string ReferenceSetUnavailable = "reference_set_unavailable";
 
-    /// <summary>409 — a component is not in the set language (on add, or when the set language is changed).</summary>
+    /// <summary>409 — a component is not in the single language of the set / chain-bound path.</summary>
     public const string ComponentLanguageMismatch = "component_language_mismatch";
+}
+
+/// <summary>WP-SB-1R — coded content-set context failures (rendered as the <c>[code, message]</c> error pair). The shared
+/// codes live in <see cref="ChainContextErrors"/> (WP-KP-1).</summary>
+public static class ContentSetContextErrors
+{
+    public const string CountryInvalid = ChainContextErrors.CountryInvalid;
+    public const string LanguageNotInCountry = ChainContextErrors.LanguageNotInCountry;
+    public const string ReferenceSetUnavailable = ChainContextErrors.ReferenceSetUnavailable;
+    public const string ComponentLanguageMismatch = ChainContextErrors.ComponentLanguageMismatch;
 
     /// <summary>409 — the country / language of a set that is no longer a draft cannot change.</summary>
     public const string ContextLocked = "context_locked";

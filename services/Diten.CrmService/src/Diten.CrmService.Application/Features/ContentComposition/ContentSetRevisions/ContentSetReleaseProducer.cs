@@ -2,6 +2,7 @@ using System.Globalization;
 using Diten.CrmService.Application.Features.ContentComposition.Claims;
 using Diten.CrmService.Application.Features.ContentComposition.ContentSets;
 using Diten.CrmService.Application.Features.Knowledge;
+using Diten.CrmService.Application.Features.Knowledge.Chain;
 using Diten.CrmService.Application.Features.Knowledge.Content;
 using Diten.CrmService.Application.Features.Knowledge.Content.Commands;
 using Diten.CrmService.Application.Features.Knowledge.Path.Commands;
@@ -201,7 +202,7 @@ public sealed class ContentSetReleaseProducer : IContentSetReleaseProducer
         }
 
         var subject = await _subjects.GetByIdAsync(tenantId, template.SubjectId, cancellationToken);
-        var productId = ContentSetContextResolver.PrimaryGlobalProduct(subject)?.Id;
+        var productId = ChainContextResolver.PrimaryGlobalProduct(subject)?.Id;
         Guid? audienceId = template.ForWhomAudienceProfileIds.Count == 1 ? template.ForWhomAudienceProfileIds[0] : null;
 
         var (claimInputs, claimError) = await BuildClaimRefsAsync(tenantId, revision, country, cancellationToken);
