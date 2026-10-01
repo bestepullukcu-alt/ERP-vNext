@@ -200,7 +200,13 @@ public sealed class ContentSetContextWebTests
         var source = File.ReadAllText(Path.Combine(RepoRoot(), "services", "Diten.CrmService", "src",
             "Diten.CrmService.Domain", "Entities", "ContentSet.cs"));
         var crm = Regex.Match(source, @"class ContentSetContextErrors\s*\{(?<body>.*?)\n\}", RegexOptions.Singleline).Groups["body"].Value;
-        var codes = Regex.Matches(crm, "=\\s*\"(?<code>[^\"]+)\"").Select(m => m.Groups["code"].Value).ToList();
+        // WP-KP-1 moved the shared codes to ChainContextErrors; ContentSetContextErrors keeps them as aliases.
+        var shared = Regex.Match(source, @"class ChainContextErrors\s*\{(?<body>.*?)\n\}", RegexOptions.Singleline).Groups["body"].Value;
+        var sharedCodes = Regex.Matches(shared, "const string (?<name>\\w+)\\s*=\\s*\"(?<code>[^\"]+)\"")
+            .ToDictionary(m => m.Groups["name"].Value, m => m.Groups["code"].Value);
+        var codes = Regex.Matches(crm, "=\\s*(?:\"(?<code>[^\"]+)\"|ChainContextErrors\\.(?<alias>\\w+))")
+            .Select(m => m.Groups["code"].Success ? m.Groups["code"].Value : sharedCodes[m.Groups["alias"].Value])
+            .ToList();
         Assert.Equal(5, codes.Count);
         codes.Add("component_language_mixed");   // the SB-2 release backstop (ContentSetReleaseErrors)
         return codes;

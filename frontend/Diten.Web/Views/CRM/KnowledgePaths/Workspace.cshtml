@@ -1,0 +1,138 @@
+@using Diten.Web.Views.CRM.KnowledgePaths
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgePathStudio> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["StudioTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var pathId = ViewData["PathId"] as string ?? string.Empty;
+    var canManage = ViewData["CanManage"] is true;
+}
+
+@* WP-KP-UI-1 — the Knowledge Path Studio workspace (mockup v2): header + ONE status line, identity strip (chain /
+   country / language locked, product / audience read-only), only the "Kurgu" tab (the other tabs arrive with
+   KP-UI-2/3 — no empty tab is drawn), a dismissible first-use intro, and the composition board: one column per chain
+   branch, the chain's steps as cards (the skeleton is never edited here), contents + claims per step, reordered only
+   inside their step (separate list, never a DataTable tbody). Everything is loaded from api/studio/paths/{id}. *@
+<div class="kp-studio" id="kpStudioRoot" data-path-id="@pathId" data-can-manage="@(canManage ? "true" : "false")">
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+        <div class="d-flex align-items-start gap-3">
+            <a href="/CRM/KnowledgePaths" class="btn btn-icon btn-label-secondary" title="@Localizer["BackToList"]" aria-label="@Localizer["BackToList"]">
+                <i class="bx bx-arrow-back" aria-hidden="true"></i>
+            </a>
+            <div>
+                <h5 class="mb-0" id="wsTitle">…</h5>
+                <small class="text-muted" id="wsSub"></small>
+                <div class="d-flex flex-wrap align-items-center gap-2 mt-1" id="wsStatusLine" role="status"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="wsAlert" class="alert alert-danger d-none" role="alert"></div>
+    <div id="wsLegacyBand" class="alert alert-warning d-none d-flex flex-wrap align-items-center gap-2" role="status">
+        <i class="bx bx-error" aria-hidden="true"></i>
+        <span class="fw-medium">@Localizer["LegacyBand"]</span>
+        <button type="button" class="btn btn-sm btn-warning ms-auto d-none" id="wsBindButton">@Localizer["BindChain"]</button>
+        <a class="btn btn-sm btn-label-secondary d-none" id="wsLegacyEditor">@Localizer["LegacyEditor"]</a>
+    </div>
+
+    <section class="card mb-4 d-none" id="wsContext" aria-label="@Localizer["ContextLabel"]">
+        <div class="card-body py-3">
+            <div class="row g-3 kp-context" id="wsContextItems"></div>
+        </div>
+    </section>
+
+    <section class="card mb-4 d-none" id="wsTabs">
+        <div class="card-header p-3">
+            <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap wc-tab-compact" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button type="button" class="nav-link active" role="tab" aria-selected="true" aria-controls="wsComposition">
+                        <i class="bx bx-git-branch me-1" aria-hidden="true"></i><span class="d-none d-sm-inline">@Localizer["TabComposition"]</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body pt-0" id="wsComposition" role="tabpanel">
+            <div id="wsIntro" class="alert alert-primary d-none d-flex flex-wrap align-items-center gap-3 mb-4" role="note">
+                <i class="bx bx-bulb fs-4" aria-hidden="true"></i>
+                <span class="flex-grow-1">@Localizer["IntroComposition"]</span>
+                <span class="fw-medium" id="wsNextStep"></span>
+                <button type="button" class="btn btn-sm btn-label-primary" id="wsIntroDismiss">@Localizer["DismissIntro"]</button>
+            </div>
+
+            <div class="row g-3 mb-3 d-none" id="wsHelp">
+                <div class="col-12 col-md-4 d-flex gap-2">
+                    <span class="avatar avatar-sm flex-shrink-0"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-git-branch" aria-hidden="true"></i></span></span>
+                    <div><div class="fw-medium">@Localizer["HelpBranch"]</div><small class="text-muted">@Localizer["HelpBranchText"]</small></div>
+                </div>
+                <div class="col-12 col-md-4 d-flex gap-2">
+                    <span class="avatar avatar-sm flex-shrink-0"><span class="avatar-initial rounded bg-label-info"><i class="bx bx-list-ol" aria-hidden="true"></i></span></span>
+                    <div><div class="fw-medium">@Localizer["HelpStep"]</div><small class="text-muted">@Localizer["HelpStepText"]</small></div>
+                </div>
+                <div class="col-12 col-md-4 d-flex gap-2">
+                    <span class="avatar avatar-sm flex-shrink-0"><span class="avatar-initial rounded bg-label-success"><i class="bx bx-plus-circle" aria-hidden="true"></i></span></span>
+                    <div><div class="fw-medium">@Localizer["HelpItems"]</div><small class="text-muted">@Localizer["HelpItemsText"]</small></div>
+                </div>
+            </div>
+
+            <div id="wsReadOnly" class="alert alert-secondary d-none py-2" role="status">
+                <i class="bx bx-lock-alt me-1" aria-hidden="true"></i><span id="wsReadOnlyText"></span>
+            </div>
+
+            <div class="d-flex flex-wrap align-items-center gap-2 border-top pt-3 mb-3" id="wsSequence" aria-label="@Localizer["FieldOrder"]"></div>
+            <p class="small text-muted mb-3" id="wsSkeletonNote"><i class="bx bx-lock-alt me-1" aria-hidden="true"></i>@Localizer["SkeletonNote"]</p>
+
+            <div class="d-flex flex-wrap gap-4 align-items-start" id="wsBranches"></div>
+            <div id="wsLegacySteps" class="d-none"></div>
+        </div>
+    </section>
+</div>
+
+@* "Adıma ekle" — İçerik / Onaylı iddia, with the reasoned "cannot add". *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="kpAddPanel" aria-labelledby="kpAddTitle">
+    <div class="offcanvas-header border-bottom">
+        <div>
+            <h5 class="offcanvas-title" id="kpAddTitle">@Localizer["AddTitle"]</h5>
+            <small class="text-muted" id="kpAddTarget"></small>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <ul class="nav nav-pills gap-2 mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button type="button" class="nav-link active" role="tab" id="kpAddTabContent" data-kind="content" aria-selected="true">@Localizer["AddTabContent"]</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button type="button" class="nav-link" role="tab" id="kpAddTabClaim" data-kind="claim" aria-selected="false">@Localizer["AddTabClaim"]</button>
+            </li>
+        </ul>
+        <input type="search" class="form-control mb-2" id="kpAddSearch" aria-label="@Localizer["AddSearch"]" placeholder="@Localizer["AddSearch"]" />
+        <small class="text-muted d-block mb-3" id="kpAddNote"></small>
+        <div id="kpAddAlert" class="alert alert-danger d-none" role="alert"></div>
+        <ul class="list-group" id="kpAddList" aria-live="polite"></ul>
+    </div>
+</div>
+
+<partial name="~/Views/CRM/KnowledgePaths/_BindChainModal.cshtml" />
+
+@section Styles {
+    @* Page-only layout of the composition board; colours come from the theme variables (light / dark), spacing uses
+       logical properties so the board mirrors under RTL (ar). *@
+    <style>
+        .kp-studio .kp-branch { flex: 1 1 360px; min-inline-size: 0; }
+        .kp-studio .kp-branch-body { background: var(--bs-body-bg); padding: 1rem; display: flex; flex-direction: column; gap: .75rem; min-block-size: 5rem; }
+        .kp-studio .kp-item { display: flex; gap: .5rem; align-items: flex-start; padding: .5rem .75rem; border-block-end: 1px solid var(--bs-border-color); background: var(--bs-paper-bg, var(--bs-card-bg)); }
+        .kp-studio .kp-item:last-child { border-block-end: 0; }
+        .kp-studio .kp-handle { cursor: grab; color: var(--bs-secondary-color); }
+        .kp-studio .kp-claim-text { color: var(--bs-body-color); }
+        .kp-studio .kp-reason { color: var(--bs-danger); }
+        .kp-studio .kp-context .kp-context-value { color: var(--bs-heading-color); }
+    </style>
+}
+
+@section Scripts {
+    <partial name="~/Views/CRM/KnowledgePaths/_StudioL10n.cshtml" />
+    <script src="~/assets/vendor/libs/sortablejs/sortable.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/KnowledgePaths/studio-common.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/KnowledgePaths/workspace.js" asp-append-version="true"></script>
+}

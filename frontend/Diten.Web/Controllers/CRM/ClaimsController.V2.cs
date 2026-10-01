@@ -154,30 +154,18 @@ public sealed partial class ClaimsController
             return StatusCode(StatusCodes.Status503ServiceUnavailable,
                 new { errors = new[] { "reference_set_missing", "COUNTRY_CODES is not available." } });
 
-        var languages = (await ReadReferenceValuesAsync("country-content-languages", tenantScoped: false, ct) ?? [])
-            .ToDictionary(v => v.Code.ToUpperInvariant(), v => v, StringComparer.Ordinal);
-        // WP-CL-FE-2 — display names from ICU in the request's UI culture (see ClaimDisplayNames). `languages` stays the
-        // plain code array (FE-3 reads it); the named form is the additional `languageDetails`. A code ICU does not know
-        // falls back to the BRD display name, then to the code itself.
-        var data = countries.Select(c =>
+        // WP-CL-FE-2 — display names from ICU in the request's UI culture (see ClaimDisplayNames; built by the shared
+        // ReferenceValueSet, WP-KP-UI-1). `languages` stays the plain code array (FE-3 reads it); the named form is the
+        // additional `languageDetails`. A code ICU does not know falls back to the BRD display name, then to the code.
+        var languages = await ReadReferenceValuesAsync("country-content-languages", tenantScoped: false, ct);
+        var data = ReferenceValueSet.Countries(countries, languages).Select(c => new
         {
-            var code = c.Code.ToUpperInvariant();
-            var codes = languages.TryGetValue(code, out var l) && l.Attributes.TryGetValue("Languages", out var list)
-                ? list.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                : Array.Empty<string>();
-            return new
-            {
-                code,
-                name = ClaimDisplayNames.CountryName(code) ?? c.Name ?? code,
-                nativeName = ClaimDisplayNames.CountryNativeName(code, codes.FirstOrDefault()) ?? c.Name ?? code,
-                languages = codes,
-                languageDetails = codes.Select(lang => new
-                {
-                    code = lang,
-                    name = ClaimDisplayNames.LanguageName(lang) ?? lang,
-                    nativeName = ClaimDisplayNames.LanguageNativeName(lang) ?? lang
-                }).ToList()
-            };
+            code = c.Code,
+            name = c.Name,
+            nativeName = c.NativeName,
+            languages = c.Languages,
+            languageDetails = c.LanguageDetails.Select(l => new { code = l.Code, name = l.Name, nativeName = l.NativeName })
+                .ToList()
         }).ToList();
         return Ok(new { data });
     }
@@ -319,11 +307,9 @@ public sealed partial class ClaimsController
         return Ok(new { data = values.Select(v => new { code = v.Code, name = v.Name ?? v.Code }).ToList() });
     }
 
-    private sealed record ReferenceValue(string Code, string? Name, IReadOnlyDictionary<string, string> Attributes);
-
     /// <summary>Published values of a BRD set, active only, in BRD order. A GLOBAL set is read WITHOUT scope_key, a
     /// tenant set WITH the JWT tenant (never the client's) — the platform refuses the other shape. Null = unavailable.</summary>
-    private async Task<IReadOnlyList<ReferenceValue>?> ReadReferenceValuesAsync(string setCode, bool tenantScoped,
+    private async Task<IReadOnlyList<ReferenceValueSet.Value>?> ReadReferenceValuesAsync(string setCode, bool tenantScoped,
         CancellationToken ct)
     {
         var path = $"{ReferenceDataBase}/{Uri.EscapeDataString(setCode)}/published-values";
@@ -332,36 +318,7 @@ public sealed partial class ClaimsController
             path += $"?scope_key={Uri.EscapeDataString(GetTenantId() ?? string.Empty)}";
         }
 
-        var reply = await ReadDataAsync(path, ct);
-        JsonElement items;
-        if (reply.Data is { ValueKind: JsonValueKind.Object } data && data.TryGetProperty("items", out var it)
-            && it.ValueKind == JsonValueKind.Array) items = it;
-        else if (reply.Data is { ValueKind: JsonValueKind.Array } arr) items = arr;
-        else return null;
-
-        var values = new List<(ReferenceValue Value, int Order, int Index)>();
-        var index = 0;
-        foreach (var item in items.EnumerateArray())
-        {
-            index++;
-            if (item.ValueKind != JsonValueKind.Object) continue;
-            if ((item.TryGetProperty("isActive", out var active) && active.ValueKind == JsonValueKind.False)
-                || (item.TryGetProperty("isDeprecated", out var dep) && dep.ValueKind == JsonValueKind.True)) continue;
-            if (GetFirstString(item, "valueCode", "value_code", "code") is not { } code) continue;
-
-            var attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (item.TryGetProperty("attributes", out var attrs) && attrs.ValueKind == JsonValueKind.Object)
-            {
-                foreach (var p in attrs.EnumerateObject())
-                    attributes[p.Name] = p.Value.ValueKind == JsonValueKind.String ? p.Value.GetString() ?? "" : p.Value.ToString();
-            }
-
-            var order = item.TryGetProperty("sortOrder", out var so) && so.TryGetInt32(out var n) ? n : int.MaxValue;
-            values.Add((new ReferenceValue(code, GetFirstString(item, "displayName", "display_name", "name"), attributes),
-                order, index));
-        }
-
-        return values.OrderBy(v => v.Order).ThenBy(v => v.Index).Select(v => v.Value).ToList();
+        return ReferenceValueSet.Parse((await ReadDataAsync(path, ct)).Data);
     }
 
     private sealed record GatewayData(int Status, JsonElement? Data);

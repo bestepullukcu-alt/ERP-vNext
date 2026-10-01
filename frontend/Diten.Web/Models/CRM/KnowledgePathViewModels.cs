@@ -50,14 +50,6 @@ public sealed class KnowledgePathOptionViewModel
     public bool IsInactive { get; set; }
 }
 
-/// <summary>Details page view model — the resolved path (with embedded steps) + capability flags.</summary>
-public sealed class KnowledgePathPageViewModel
-{
-    public KnowledgePathDetailViewModel Path { get; set; } = new();
-    public bool CanManage { get; set; }
-    public bool CanPublish { get; set; }
-}
-
 /// <summary>Read model bound from the gateway path detail response.</summary>
 public sealed class KnowledgePathDetailViewModel
 {
@@ -92,6 +84,8 @@ public sealed class KnowledgePathDetailViewModel
     public int Version { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
     public bool IsArchived { get; set; }
+    /// <summary>WP-KP-1 — no chain bound (a legacy path). Missing on the wire = legacy (pre-KP-1 CRM).</summary>
+    public bool IsLegacyUnapproved { get; set; } = true;
 }
 
 public sealed class KnowledgePathStepViewModel

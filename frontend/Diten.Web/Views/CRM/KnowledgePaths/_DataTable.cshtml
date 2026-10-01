@@ -1,6 +1,7 @@
 @using Diten.Web.Views.CRM.KnowledgePaths
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<KnowledgePathsIndex> Localizer
+@inject IHtmlLocalizer<KnowledgePathStudio> StudioLocalizer
 
 <div class="card">
     <div id="knowledgePathContractError" class="alert alert-danger rounded-0 d-none mb-0" role="alert"></div>
@@ -11,21 +12,16 @@
         <div class="shimmer skeleton-row"></div>
     </div>
     <div class="card-datatable table-responsive">
+        @* WP-KP-UI-1 — studio columns (mockup v2 list): names only, never a raw country / language code. *@
         <table id="dt-knowledge-paths" data-dt-standard="v2" class="datatables-knowledge-paths table border-top w-100">
             <thead><tr>
                 <th></th>
-                <th>@Localizer["PathCode"]</th>
-                <th class="all">@Localizer["PathName"]</th>
-                <th>@Localizer["PathVersion"]</th>
-                <th>@Localizer["PathStatus"]</th>
-                <th>@Localizer["SubjectId"]</th>
-                <th>@Localizer["LanguageCode"]</th>
-                <th>@Localizer["ActiveStepCount"]</th>
-                <th>@Localizer["RequiredStepCount"]</th>
-                <th>@Localizer["ContentResolution"]</th>
-                <th>@Localizer["EffectiveFrom"]</th>
-                <th>@Localizer["EffectiveTo"]</th>
-                <th>@Localizer["Archived"]</th>
+                <th class="all">@StudioLocalizer["ColPath"]</th>
+                <th>@StudioLocalizer["ColProduct"]</th>
+                <th>@StudioLocalizer["ColCountryLanguage"]</th>
+                <th>@StudioLocalizer["ColChain"]</th>
+                <th>@StudioLocalizer["ColVersion"]</th>
+                <th>@StudioLocalizer["ColStatus"]</th>
                 <th>@Localizer["UpdatedAt"]</th>
                 <th class="all text-end">@Localizer["Actions"]</th>
             </tr></thead>
