@@ -19,12 +19,6 @@ namespace Diten.AuthService.Api.Controllers;
 public sealed class InternalPermissionsController : ControllerBase
 {
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
-    private static readonly HashSet<string> SeedOwnedTenantScopeKeys = new(StringComparer.Ordinal)
-    {
-        "platform.workflow.instances.start",
-        "platform.workflow.tasks.approve",
-        "platform.workflow.tasks.reject"
-    };
 
     private readonly IInternalEventAuthService _internalEventAuthService;
     private readonly IPermissionRepository _permissionRepository;
@@ -153,15 +147,13 @@ public sealed class InternalPermissionsController : ControllerBase
             // routes. If ANY of them is platform-scoped the key stays PlatformAdmin — never downgrade to Tenant.
             // This is the ONLY thing standing between a manifest and the escalation boundary — do not relax it.
             //
-            // ONE explicit, Auth-owned exception (MOD-0018-FU24/FU25, carried over in the product takeover merge of
-            // 2026-10-01 — ⚠ DECISION PENDING: CT security review + owner sign-off before this branch reaches main):
-            // the three seeded Workflow EXECUTION keys (start / approve / reject). After startup has reconciled their
-            // SYSTEM rows to Tenant, a catalog replay may refresh their metadata/module but may not promote them back
-            // to PlatformAdmin. Catalog-created/user-defined rows and every other key keep the generic rule.
-            var seedOwnedTenantScope = existing.IsSystem
-                && existing.Scope == PermissionScope.Tenant
-                && SeedOwnedTenantScopeKeys.Contains(existing.Key);
-            var effectiveScope = seedOwnedTenantScope
+            // ONE explicit exception, owned by the Domain (SeedOwnedTenantScopeKeys — MOD-0018-FU24/FU25; decided by
+            // the owner + Control Tower on 2026-10-01): the three seeded Workflow EXECUTION keys (start / approve /
+            // reject). After startup has reconciled their SYSTEM rows to Tenant, a catalog replay may refresh their
+            // metadata/module but may not promote them back to PlatformAdmin. Catalog-created/user-defined rows, a
+            // row that is PlatformAdmin, and every other key keep the generic rule. The list and its reasons live
+            // there, not here.
+            var effectiveScope = SeedOwnedTenantScopeKeys.KeepsTenantScope(existing)
                 ? PermissionScope.Tenant
                 : existing.Scope == PermissionScope.PlatformAdmin || incomingScope.Value == PermissionScope.PlatformAdmin
                     ? PermissionScope.PlatformAdmin

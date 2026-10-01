@@ -26,12 +26,12 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     // (F318BCF7… -> 447B2703…), for three changes that are all main's: GuidSerializerRegistration.EnsureStandard(),
     // the IUserListReader registration, and the mock-user seed becoming opt-in. Nothing in it is from this branch.
     // The DataSeeder `col.UpdateOneAsync` row is BL-411's scope-correction write (TenantRouteScopeCorrections).
-    // TWO ROWS ARE DELIBERATELY NOT ADDED and keep this test red until somebody decides them:
-    //   LocalTenantAdminPasswordResetController|IUserRepository|_users.UpdateForTenantAsync — Codex's Development-only
-    //     reset endpoint, itself still "to be removed or decided" (merge commit aec10604a);
-    //   DataSeeder|UNCLASSIFIED|marks.ReplaceOneAsync — main's PermissionReconciliationMark bookkeeping write; the
-    //     collection name is a constant, not a literal, so the scanner cannot bind it. Whether that collection is an
-    //     authority collection is the owner's classification, not a regeneration.
+    // The two rows that were left undecided in that round are decided (owner, 2026-10-01; WP-AUTH-TAKEOVER-DECISIONS-01):
+    //   the Development-only local tenant-admin reset endpoint is REMOVED (the ordinary "Reset password" action does
+    //     the same job), so its writer row no longer exists — nothing was added for it;
+    //   DataSeeder|marks.ReplaceOneAsync is classified as a BOOKKEEPING write — see ApprovedBookkeepingWriterCalls.
+    //     The scanner now binds a typed collection opened with the type's OWN CollectionName constant
+    //     (GetCollection<T>(T.CollectionName)); any other non-literal collection name stays UNCLASSIFIED and fails closed.
     // This is a conservative lexical regression guard, not C# compiler/semantic proof or a writer fence.
     // It deliberately has no git-history dependency: shallow checkouts compare against frozen call rows.
     [Fact]
@@ -44,7 +44,7 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
             .SelectMany(path => AuthorityCalls(Path.GetRelativePath(root.FullName, path).Replace('\\', '/'), File.ReadAllText(path)))
             .GroupBy(row => row, StringComparer.Ordinal).Select(group => group.Key + "|" + group.Count())
             .Order(StringComparer.Ordinal).ToArray();
-        var expected = (FrozenWriterCalls + "\n" + ApprovedOperationalWriterCalls).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        var expected = (FrozenWriterCalls + "\n" + ApprovedOperationalWriterCalls + "\n" + ApprovedBookkeepingWriterCalls).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Order(StringComparer.Ordinal).ToArray();
         Assert.DoesNotContain(actual, row => row.Contains("|UNCLASSIFIED|", StringComparison.Ordinal));
         Assert.True(expected.SequenceEqual(actual, StringComparer.Ordinal),
@@ -64,6 +64,10 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     [InlineData("database.RunCommand<BsonDocument>(new BsonDocument(\"drop\", \"users\"));", "UNCLASSIFIED|database.RunCommand[drop:users]")]
     [InlineData("await database.GetCollection<User>(\"users\").InsertOneAsync(user);", "User|inlineCollection0.InsertOneAsync")]
     [InlineData("await InsertExistingAsync(\"rolePermissions\", rows, session, ct);", "rolePermissions|this.InsertExistingAsync")]
+    [InlineData("var marks = database.GetCollection<PermissionReconciliationMark>(PermissionReconciliationMark.CollectionName); await marks.ReplaceOneAsync(filter, mark);", "PermissionReconciliationMark|marks.ReplaceOneAsync")]
+    [InlineData("var rows = database.GetCollection<Role>(PermissionReconciliationMark.CollectionName); await rows.ReplaceOneAsync(filter, role);", "UNCLASSIFIED|rows.ReplaceOneAsync")]
+    [InlineData("var rows = database.GetCollection<Role>(collectionName); await rows.ReplaceOneAsync(filter, role);", "UNCLASSIFIED|rows.ReplaceOneAsync")]
+    [InlineData("var rows = database.GetCollection<BsonDocument>(BsonDocument.CollectionName); await rows.ReplaceOneAsync(filter, row);", "UNCLASSIFIED|rows.ReplaceOneAsync")]
     public void ClosedWriterInventory_WhenSyntheticWriterAdded_DetectsExactCall(string source, string signature)
     {
         Assert.Equal(["new-writer.cs|" + signature], AuthorityCalls("new-writer.cs", source));
@@ -139,6 +143,10 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
         }
         foreach (Match collection in Regex.Matches(source, "(?<name>\\w+)\\s*=\\s*\\w+\\.GetCollection<(?<type>\\w+)>\\(\\s*\"(?<collection>[^\"]+)\""))
             Bind(collection.Groups["name"].Value, collection.Groups["type"].Value == "BsonDocument" ? collection.Groups["collection"].Value : collection.Groups["type"].Value);
+        // A typed collection opened with the type's OWN name constant — GetCollection<T>(T.CollectionName) — binds to T.
+        // Nothing wider: another type's constant, a variable, or a BsonDocument collection stays unbound (UNCLASSIFIED).
+        foreach (Match collection in Regex.Matches(source, @"(?<name>\w+)\s*=\s*\w+\.GetCollection<(?<type>\w+)>\(\s*\k<type>\.CollectionName\s*\)"))
+            if (collection.Groups["type"].Value != "BsonDocument") Bind(collection.Groups["name"].Value, collection.Groups["type"].Value);
         foreach (Match constructed in Regex.Matches(source, @"\bvar\s+(?<name>\w+)\s*=\s*new\s+(?<type>\w+(?:Repository|Service|Writer))\s*\("))
             Bind(constructed.Groups["name"].Value, constructed.Groups["type"].Value);
         var inherited = Regex.Match(source, @":\s*(?:Global)?RepositoryBase<(?<type>\w+)>");
@@ -411,6 +419,18 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/EntitlementReconciliationOperationStore.cs|refreshTokens|Raw.UpdateManyAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/EntitlementReconciliationOperationStore.cs|rolePermissions|Raw.DeleteOneAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/EntitlementReconciliationOperationStore.cs|rolePermissions|this.InsertExistingAsync|1
+    """;
+    // Approved BOOKKEEPING writes — owner classification, 2026-10-01 (WP-AUTH-TAKEOVER-DECISIONS-01). A row belongs here
+    // only when the document it writes is a record that a seed step RAN, and is not itself authority.
+    //   DataSeeder | PermissionReconciliationMark | marks.ReplaceOneAsync (BackfillUsersExportAsync, BL-452 package 3):
+    //     writes "this tenant has been through the one-way backfill of this key" into permissionReconciliations
+    //     (TenantId, Key, ReconciledAtUtc). It is not a user, role, permission, userRole or rolePermission row and
+    //     confers no access; no API reads or writes it. The grants the same method makes are the separate
+    //     rpCol.InsertOneAsync rows in the frozen list above.
+    // Kept as a counted row (not a NonAuthorityBindings entry) on purpose: a SECOND write to that collection, from
+    // anywhere in the writer roots, changes this inventory and needs its own classification.
+    private const string ApprovedBookkeepingWriterCalls = """
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|PermissionReconciliationMark|marks.ReplaceOneAsync|1
     """;
     [Fact]
     public void Bootstrap_WhenOperationalPathExists_LeavesNormalPersistenceRegistrationUnchangedAndAvoidsNormalHost()
