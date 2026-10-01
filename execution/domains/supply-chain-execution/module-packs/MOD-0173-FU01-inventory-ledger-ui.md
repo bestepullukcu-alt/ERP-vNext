@@ -501,10 +501,10 @@ correlation id shown in a "details" disclosure for support.
 - [x] Gateway decision explicit (INT-1).
 - [x] Lookup & reference data decision (§19) — no hardcoded lists.
 - [ ] **DCP-002** `verify_module_id.py --check-id MOD-0173-FU01 --parent MOD-0173` exit 0 (waiver W-0173-01 until MVP-1 PR).
-- [ ] **Owner decision OD-UI-1** (BG-01 product/SKU picker source) taken.
-- [ ] **Owner decision OD-UI-2** (lot picker until MOD-0174 exists) taken.
-- [ ] **Owner decision OD-UI-3** (InventoryGovernance relation / retirement) taken.
-- [ ] KD-1 / KD-2 accepted by the owner.
+- [x] **Owner decision OD-UI-1** taken (2026-10-01) — temporary MDM Model A selectors under waiver W-UI-01 (§19).
+- [x] **Owner decision OD-UI-2** taken (2026-10-01) — temporary typed lot under waiver W-UI-02 (§19).
+- [x] **Owner decision OD-UI-3** taken (2026-10-01) — untouched until FU01 ships, then retired in a separate WP; never shown beside FU01 under an "Inventory" label.
+- [ ] KD-1 / KD-2 — owner **did not accept** the deviations (2026-10-01); resolution pending (see §19 "Owner decisions").
 - [ ] INT-1 CT-accepted (gateway route + permission seed).
 - [ ] Registry FU row recorded by CT.
 - [ ] **Owner approval → `ready-for-dev`** (Ali).
@@ -565,7 +565,34 @@ label in the tenant nav. Nothing in this pack depends on it.
    `movementType` filter) under a single-writer Phase A, and decide the product/SKU search source with MOD-0290.
 4. §21 open note "Sevkiyat çıkışı/teslimi" labels: keep open until MVP-6.
 
+### Owner decisions (Ali, 2026-10-01) — recorded by MVP-1 CT
+
+- **W-UI-01 (OD-UI-1, waiver — K19).** Product/SKU pickers use the existing **MDM Model A** selector APIs through
+  Gateway 5000, read-only: `/api/global-products/selector`, `/api/gskus`, `/api/lskus`,
+  `/api/finished-goods/gsku-selector` (routes measured in `ocelot.json`). **Never** `/api/mdm/products` or any Model B
+  surface (DEC-INV-17). Compensating controls: the source sits behind one swappable MVC lookup class
+  (`ProductPickerSource`) and is the only non-contract call in FU01; every posted id is still checked by
+  MOD-0173 against PRODUCT-MASTER (fail-closed). Owner: Ali. Expiry: when PRODUCT-MASTER-BUNDLE gains an additive
+  search operation (v1.1, MOD-0290 owner = single writer), and in any case **before G1 sign-off**. Request to the
+  MDM owner is a follow-up (§20).
+- **W-UI-02 (OD-UI-2, waiver — K19).** Until MOD-0174 exposes lots, a lot-controlled inbound movement takes a
+  **typed lot number**. This supersedes, for lots only, the MOD-0173 pack §21 rule "lots selected from masters,
+  never typed". Compensating controls: trim + upper-case normalisation; format 1–40 chars `[A-Z0-9./-]`; the
+  field and every list/receipt show the lot as **"unregistered lot (pre-MOD-0174)"**; existing lots of the same
+  SKU found in `/balance` are offered first so a known lot is chosen instead of retyped. **Cost (measured risk):**
+  the ledger stores the typed text as `LotId`, while DEC-INV-14 makes the surrogate `LotId` canonical — MOD-0174
+  must register every typed lot (business key Tenant+Item+LotNumber) and map ledger rows before its own freeze;
+  typos create separate lots that only a REVERSAL + re-post can fix. Owner: Ali. Expiry: MOD-0174 lots API live
+  → picker becomes mandatory and typing is removed.
+- **OD-UI-3.** As proposed above: InventoryGovernance untouched until FU01 ships, then retired (separate WP).
+- **KD-1 / KD-2 — not accepted by the owner.** An editable movement contradicts DEC-INV-02/07/15 and the frozen
+  contract (no update operation). Resolution is pending a second owner answer (compliant mapping vs. accepting
+  the deviations); the pack stays `draft` until then.
+
 ## 20. Follow-up Items
+
+- Request to MOD-0290 owner (MDM): additive product/SKU search in PRODUCT-MASTER-BUNDLE v1.1 — retires W-UI-01.
+- MOD-0174: register typed lots + map ledger rows before TRACE freeze — retires W-UI-02.
 
 - **Shipment panel** — read-only SHIPMENT-BUNDLE v1 consumer view (MOD-0183), shown after MVP-6 integration; fields
   limited to the contract (`shipmentNumber`, `status`, `carrierId`→carrier name via `/carriers`, planned/actual
