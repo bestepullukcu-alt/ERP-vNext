@@ -420,13 +420,15 @@ correlation id shown in a "details" disclosure for support.
 | `STOCKMOVEMENTS` | `/StockMovements` | `inventory.stock.read` | false | `STOCKLEDGER` |
 | `STOCKMOVEMENTCREATE` | `/StockMovements/Create` | `inventory.movements.create` | false | `STOCKMOVEMENTS` |
 | `STOCKMOVEMENTDETAILS` | `/StockMovements/Details` | `inventory.movements.create` | false | `STOCKMOVEMENTS` |
+| `STOCKMOVEMENTEDIT` | `/StockMovements/Edit` ("Correct", KD-1 mapping §19) | `inventory.movements.create` | false | `STOCKMOVEMENTS` |
+| `STOCKLEDGERCREATE` | `/StockLedger/Create` (inbound entry, KD-2 mapping §19) | `inventory.movements.create` | false | `STOCKLEDGER` |
 
 | ActionCode | Placement | PermissionKey | IsDangerous |
 |---|---|---|---|
-| `NEWMOVEMENT` | Toolbar (S-1, S-2) | `…movements.post` | false |
-| `ROWMOVEMENT` | RowAction (S-1) | `…movements.post` | false |
+| `NEWMOVEMENT` | Toolbar (S-1, S-2) | `…movements.create` | false |
+| `ROWMOVEMENT` | RowAction (S-1) | `…movements.create` | false |
 | `ROWHISTORY` | RowAction (S-1) | `…read` | false |
-| `REVERSAL` | RowAction (S-2) | `…movements.post` | **true** |
+| `REVERSAL` | RowAction (S-2) | `…movements.create` | **true** |
 
 - Nav keys in all 7 `SharedResource.{lang}.resx`, normalized by `NavNameLocalizer.Normalize`:
   `Nav.Domain.SUPPLYCHAINEXECUTION`, `Nav.Module.INVENTORYLEDGER`, `Nav.Page.STOCKLEDGER` (exact key spelling is
