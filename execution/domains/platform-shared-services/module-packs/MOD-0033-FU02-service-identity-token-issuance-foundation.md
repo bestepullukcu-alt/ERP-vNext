@@ -480,3 +480,67 @@ dotnet test services/Diten.AuthService/tests/Diten.AuthService.Application.Tests
 No live credential, identity, tenant grant, configuration, service or provisioning mutation was performed. No commit or
 push was authorized or executed. Live prerequisite/readback, full affected-consumer inventory, installation/rollback
 and first-five acceptance remain separately gated; this evidence must not be used to claim those gates closed.
+
+
+### Section F — Declarative registration of first-party service clients (2026-10-01, CONTROL TOWER decision — owner sign-off recorded on dispatch of WP-GP-1A-TRUST-CHAIN-01 v2)
+
+**Why this section exists.** §19 says a service client "must never be direct Mongo insertion" and §20.2 left "supported
+service-client/grant provisioning" as a follow-up that was never written. Section E deliberately excludes creation
+(read and rotate only), and E's tool cannot run against a real database today: `auth.service-clients.provision` is a
+constant that no seed writes and no role holds, the operation journal and its indexes are created only by test
+fixtures, the runner is Development-only, and its secret sink is a Windows pipe. Measured 2026-10-01 (takeover branch):
+there is no supported way for the first service client to come into existence on any environment. This section closes
+exactly that gap, and nothing else in Section E changes.
+
+**The decision.** A first-party service client — one of OUR OWN services calling another (today: `Diten.MDM`) — is
+deployment configuration, like the JWT signing key or a database credential. It is DECLARED in Auth's configuration
+and Auth creates it at startup if it is missing. Auth is given the credential HASH only; the raw secret never reaches
+Auth except inside a token request, exactly as before.
+
+*Compared:* SAP (communication user / arrangement) and Oracle (confidential application) register an integration client
+through an administrator screen that shows the secret once — the right model for a CUSTOMER's integration, and still a
+follow-up here (an administration surface for external API consumers). For services deployed together, a static client
+in the issuer's configuration is the usual model (IdentityServer static clients, Keycloak realm import); it adds no
+HTTP surface and no secret output to Auth.
+
+#### F.1 Contract
+
+- Configuration section `ServiceClientRegistry:Clients[]`, each entry: `ClientCode`, `ServiceName`, `AllowedAudience`,
+  `CredentialHash` (the existing `pbkdf2-sha256$…` format), `CredentialVersion`, `Tenants[]` (tenant ids to grant).
+- At normal Auth startup, in every environment, for each entry:
+  - identity absent → created with that hash and version (a SYSTEM actor, audited);
+  - identity present → **never modified**. A differing hash, version, service name or audience is reported at startup
+    by client code (no values) and changes nothing. Rotation stays Section E's operation; it is not done from
+    configuration, so a restart can never silently replace a credential.
+  - for each listed tenant: the `(tenant, identity, audience)` grant is created if absent, enabled if it exists
+    disabled **by this registry's own earlier run only**; a grant disabled by an operator is not re-enabled.
+  - nothing is ever deleted, revoked or disabled by the registry. Removing an entry from configuration changes nothing.
+- Validation is fail-closed and happens before any write: an entry with a blank field, a malformed hash, a duplicate
+  `ClientCode`, or a `ServiceName`/`AllowedAudience` outside the closed list the issuer accepts stops Auth's startup
+  with a configuration error that names the entry index and the field — never a value.
+- An empty or absent section is valid and does nothing (every environment that does not use service tokens).
+- The writes are authority writes: they enter the closed writer inventory with this section as their reason, and each
+  create is recorded in the Auth audit log (client code, service name, audience, tenant — no hash, no secret).
+
+#### F.2 The credential generator
+
+A separate offline utility produces a credential pair for an operator. It generates the secret itself (it accepts none),
+writes the RAW secret once to a file the operator names — refused if the file exists, created owner-only — and prints
+only the HASH and the version. It has no database and no network access. Section E's rule "files cannot carry the raw
+secret" continues to bind E's provisioning command; the generator is the one sanctioned exception because the raw secret
+has to reach the CONSUMER's secret store somehow, and a file the operator moves into that store is the least exposed
+way to hand it over. Nothing writes the raw secret to a standard stream, an argument list, a log or a report.
+
+#### F.3 Development
+
+Development secrets stop entering tracked files. Auth, Platform and MDM load an optional, git-ignored
+`appsettings.Development.local.json` in Development only; a bootstrap script generates disposable keys and the
+credential pair and writes them there (owner-only), prints nothing secret, and is safe to run twice. Secrets that are
+already in tracked Development files are not moved by this section (separate clean-up).
+
+#### F.4 Out of scope, recorded
+
+Rotation or revocation from configuration; a grant that follows a tenant's module entitlement (the per-tenant list in
+F.1 is the first step — onboarding a tenant today means adding its id and restarting Auth); an administration surface;
+making Section E's tool runnable (its permission seed, journal and cross-platform sink). Production key custody and
+rotation remain the separate gates of §20.5.
