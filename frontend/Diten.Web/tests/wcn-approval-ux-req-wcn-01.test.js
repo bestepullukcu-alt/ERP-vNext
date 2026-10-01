@@ -158,6 +158,35 @@ describe("W-1 — the approval step is a badge, on the row and on the detail pag
     expect(app().querySelector("[data-wcn-step-badge]")).toBeNull();
   });
 
+  /*
+   * CT acceptance (2026-10-01). A step name is typed by whoever designs the tenant's workflow template, and a position
+   * name by whoever maintains the organisation — both are other people's text on this reader's screen. They are drawn
+   * as TEXT on the row, on the detail heading and in the "waiting for" line; markup in a name is shown, never run.
+   */
+  it("draws a step name that contains markup as text, on the row and on the detail page", async () => {
+    const hostile = '<img src=x onerror="window.__wcnStepXss=1">Onay';
+    await bootSurface({ items: [approval({ stepName: position(hostile) })], wcn: translator });
+    const rowBadge = app().querySelector(`[data-wcn-row="${ID}"] [data-wcn-step-badge]`);
+    expect(rowBadge.textContent).toBe(hostile);
+    expect(rowBadge.querySelector("img")).toBeNull();
+
+    await bootSurface({ rootAttrs: DETAIL, items: [approval({ stepName: position(hostile) })], wcn: translator });
+    const detailBadge = app().querySelector("[data-wcn-step-badge]");
+    expect(detailBadge.textContent).toBe(hostile);
+    expect(app().querySelector("img[src='x']")).toBeNull();
+  });
+
+  it("draws a position name that contains markup as text", async () => {
+    const hostile = '<img src=x onerror="window.__wcnPosXss=1">Müdür';
+    await bootSurface({
+      rootAttrs: DETAIL,
+      items: [approval({ candidatePositions: [position(hostile)] })],
+      wcn: translator
+    });
+    expect(app().textContent).toContain(hostile);
+    expect(app().querySelector("img[src='x']")).toBeNull();
+  });
+
   it("carries no inline style (FG-003)", async () => {
     await bootSurface({ items: [approval({ stepName: position("Finans Onayı") })], wcn: translator });
     expect(app().querySelector("[data-wcn-step-badge]").hasAttribute("style")).toBe(false);

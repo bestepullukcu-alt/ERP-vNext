@@ -167,6 +167,50 @@ public sealed class ApprovalStepContextTests
         Assert.Null(item.CandidatePositions);
     }
 
+    // ── CT acceptance (2026-10-01) — two rules the delivery stated but did not pin ───────────────────────────────────
+
+    /// <summary>
+    /// The task's OWN step, not the definition's first one: three steps in a row (CRM's Medical → Legal → Regulatory)
+    /// must each say which they are, or the badge is a constant and the request it answers (W-1) is not met.
+    /// </summary>
+    [Fact]
+    public async Task A_task_on_a_later_step_carries_that_steps_name_and_that_steps_positions()
+    {
+        var medical = Position(Tenant, "Medikal Direktör");
+        var legal = Position(Tenant, "Hukuk Müşaviri");
+        var version = Version(
+            Step("step-1", "Medikal inceleme", $"position:{medical.Id}"),
+            Step("step-2", "Hukuk incelemesi", $"position:{legal.Id}"));
+        var instance = Instance(version.Id);
+
+        var item = Assert.Single(await Provider(version, [medical, legal], Approval(instance, "step-2"))
+            .With(instance).GetWorkItemsAsync(Actor()));
+
+        Assert.Equal("Hukuk incelemesi", item.StepName!.Text);
+        Assert.Equal(["Hukuk Müşaviri"], item.CandidatePositions!.Select(p => p.Text));
+    }
+
+    /// <summary>
+    /// An ESCALATED task has left the step's own candidates for the escalation principals. Naming the step's positions
+    /// there would tell the reader the decision waits on people who can no longer take it. The step name stays — the
+    /// task is still that step.
+    /// </summary>
+    [Fact]
+    public async Task An_escalated_task_keeps_its_step_name_and_names_no_candidate_positions()
+    {
+        var finance = Position(Tenant, "Finans Müdürü");
+        var version = Version(Step("step-1", "Finans Onayı", $"position:{finance.Id}"));
+        var instance = Instance(version.Id);
+        var escalated = Approval(instance);
+        escalated.Status = ApprovalTaskStatus.Escalated;
+
+        var item = Assert.Single(
+            await Provider(version, [finance], escalated).With(instance).GetWorkItemsAsync(Actor()));
+
+        Assert.Equal("Finans Onayı", item.StepName!.Text);
+        Assert.Null(item.CandidatePositions);
+    }
+
     [Fact]
     public async Task A_page_of_approvals_reads_positions_exactly_once()
     {
