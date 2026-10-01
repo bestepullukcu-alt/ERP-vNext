@@ -316,11 +316,10 @@ Rules carried from the templates (all binding):
 - Row actions via `DitenDataTable.renderActions` / `bindActionDispatcher`: S-1 "Movement" (→ `/StockMovements/Create?…`
   prefilled source) and "History" (→ `/StockMovements?itemId=…&lotId=…`); S-2 "Reversal" (confirm modal). A
   `key: 'quickView'` action is **not** provided (no QuickView in Compact).
-- **No `Edit.cshtml`:** transactions are append-only (parent §8, AC17). This is a declared deviation from the Compact
-  file set (verifier check "Compact reference has Create/Edit/Details/_Form.cshtml") → known deviation **KD-1**,
-  to be accepted by the owner at ready-for-dev, never "fixed" by adding an edit page.
-- **No `#offcanvasDetailsPreview` / `_DetailsQuickView` / `_CreateEditOffcanvas`.** S-1 has no create page at all
-  (it is a projection) → **KD-2**: S-1 is verified without `--reference` and its Compact-file check is N/A.
+- **`StockMovements/Edit.cshtml` = "Correct" (KD-1 compliant mapping, §19):** never edits a transaction
+  (append-only, parent §8, AC17); posts REVERSAL + corrected new movement, with an explicit partial-correction state.
+- **No `#offcanvasDetailsPreview` / `_DetailsQuickView` / `_CreateEditOffcanvas`.** `StockLedger/Create.cshtml`
+  (KD-2 compliant mapping, §19) hosts the shared movement `_Form` for inbound manual types; no balance is written.
 - Skeletons: `_TableSkeleton` (lists), card skeletons for KPI and form lookups; no `spinner-border`, no "Loading" text.
 - No import button anywhere (BL-441). No CSV export button until the export gate (§20).
 
@@ -450,9 +449,9 @@ correlation id shown in a "details" disclosure for support.
 - [ ] Every `.cshtml` page under `Views/Inventory/StockLedger/` and `Views/Inventory/StockMovements/` that is a page
       (Index, Create, Details) contains `Layout = "_LayoutTenantShell";` explicitly (grep = 4 hits); no `Areas/`.
 - [ ] `python3 .antigravity/scripts/verify_datatable_page.py . --area Inventory --module StockMovements --reference compact --data-mode server --api-profile proxy --format gaps`
-      → PASS except **KD-1** (no Edit page), recorded and owner-accepted.
-- [ ] `python3 .antigravity/scripts/verify_datatable_page.py . --area Inventory --module StockLedger --data-mode server --api-profile proxy --format gaps`
-      → PASS except **KD-2** (no create/QuickView surface), owner-accepted; `quality-gate-datatable` run for both.
+      → PASS (full Compact set; Edit = Correct, §19).
+- [ ] `python3 .antigravity/scripts/verify_datatable_page.py . --area Inventory --module StockLedger --reference compact --data-mode server --api-profile proxy --format gaps`
+      → PASS (Create = inbound movement form, §19); `quality-gate-datatable` run for both.
 - [ ] Pack `screens[].data_mode` = `<table data-dt-data-mode="server">` = `createList({ dataMode: 'server' })` on both lists.
 - [ ] Both lists render `HasSelection = false`; no bulk bar, no import button, no export button.
 - [ ] S-1 list request goes to `/StockLedger/api` and results in exactly **one** Gateway `GET /api/inventory/balance`
@@ -494,7 +493,7 @@ correlation id shown in a "details" disclosure for support.
 - [x] Frontmatter complete (id, name, domain, service, shell, golden_reference, data_mode, screens, entity_base, status, owner, branch, started, target, form_field_count).
 - [x] Layout & Shell Contract names `_LayoutTenantShell` explicitly and is an AC.
 - [x] Backend File Convention: no backend feature (consumer UI); manifest only.
-- [x] Frontend File Contract lists both screens' file sets; KD-1 / KD-2 declared.
+- [x] Frontend File Contract lists both screens' file sets; Edit/Create compliant mapping (§19) declared.
 - [x] Validation Rules for all 15 fields + conditional matrix.
 - [x] Failure Path ≥ 4 (13 listed).
 - [x] Authorization: permissions, actor, policy, manifest pages/actions.
