@@ -491,6 +491,26 @@ Plus:
 | **INT-2** | Gateway `/api/locations/**` → 5066 (integration-agent), header pass-through, E2E probe | CT accept |
 | **LOC2** | L-1…L-4 (Slim + tree component), company selector reuse, 7 languages, manifest pages/actions + Nav key, FU01 S-1/S-2 `locationId` deep link, UAS-001, runtime E4 (real login) | CT accept → pack done |
 
+**LOC1 implementation notes (WP-0173-LOC1, 2026-10-01 — agent PASS ≠ CT ACCEPTED).** Commits `2c48726b4` (contract
+v1.1), `2e8ff898e` (service + tests), docs/evidence commit after it. Evidence:
+`docs/records/audits/2026-10/mod-0173-fu02-loc1-evidence/`. API narrative: `docs/reference/architecture/api/mod-0173-location.md`.
+
+| ID | Assumption / decision taken in LOC1 |
+|---|---|
+| LOC1-01 | The ledger route guards (`No_controller_route_can_put_patch_or_delete`, exact six `api/inventory` routes) scanned EVERY controller, so §15's binding PATCH could not exist. They now pin the ledger controller (unchanged assertions) and are joined by stricter guards: only `InventoryController` serves `api/inventory`; no controller has PUT or DELETE; `LocationsController` has exactly the 11 contract routes with read / manage permissions; history is only read or inserted; no source deletes a location or history row. |
+| LOC1-02 | K-13 is enforced inside the posting transaction for EVERY posting, REVERSAL included (a reversal is not pre-validated against the master). |
+| LOC1-03 | A location / warehouse id is the canonical lower-case UUID string the API returns (the exact string the ledger stores, so stock presence matches it). Any other spelling — the old Prism ids `loc-A-12-3`, upper case — is not a location (LOC-07). |
+| LOC1-04 | Only a Bin or a StorageLocation may be stockable (K-08 "StorageLocation may be true" read as the only exception); others → 400. |
+| LOC1-05 | A Site / Warehouse created without `operatingMode` gets `internal` (DEC-INV-19 default); below Warehouse it is absent. |
+| LOC1-06 | Bulk idempotency lives on the created bins (key + fingerprint); a replay recomputes `skipped` as the requested codes the batch did not create. A dry run does not consume the key; a run that created nothing leaves no key. |
+| LOC1-07 | `contractVersion` stays `"v1"` on every LOCATION body: 1.1.0 is additive to the v1 major. |
+| LOC1-08 | Org unit: Platform 404 / 400 → 422 `ORG_UNIT_INVALID`; 401 / 403 / 5xx / timeout / out-of-shape → 503 `ORG_UNIT_DIRECTORY_UNAVAILABLE` (could not be confirmed ≠ invalid). Checked only when the value changes. |
+| LOC1-09 | `Location.StructureSeq` (internal, not on the wire) is bumped on a parent when a child is created, moved under it or re-activated, so those writes conflict with a concurrent deactivation of the parent (K-05 / K-06 serialised like `StockTouchSeq`). |
+| LOC1-10 | Ledger test scenarios write their location tree as real `inventory_locations` documents (`LocationSeed`, same BSON mapping, fresh UUIDs); the owner API is exercised by the 50 location tests and by the runtime probe. The one "location master unreachable" test keeps the pre-FU02 stub (`StubLocationMasterApiFactory`) — the in-process directory has no remote to switch off. |
+| LOC1-11 | `searchLocations?orderBy=type` sorts by the type's wire name (Bin < Site < StorageLocation < Warehouse < Zone), not by level. |
+| LOC1-12 | `getLocation` also returns `ETag` (a response header; the frozen v1 block is unchanged) so an edit can start from a v1 read. |
+| LOC1-13 | Balances gained `ix_tenant_le_location` / `ix_tenant_le_warehouse` (stock presence); `validateLocations` takes at most 1000 ids. |
+
 **Recommendations (not applied — those files are protected):**
 1. LOCATION contract: `x-owner: Location Master (MOD-? candidate)` → `MOD-0173-FU02`; add the v1.1 operations of §15
    (LOC1). Consider documenting that `locationId` is an opaque UUID in production (examples use readable ids).

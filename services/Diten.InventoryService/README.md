@@ -8,11 +8,12 @@ edited directly. Scope is Tenant + Legal Entity, taken from the signed JWT only.
 |---|---|
 | Module pack | `execution/domains/supply-chain-execution/module-packs/MOD-0173-inventory-ledger-valuation.md` (`ready-for-dev`) |
 | Owned contract | `INVENTORY-BUNDLE` v1.0.0, `x-status: FROZEN` (`inventory-bundle.openapi.yaml`) |
-| Consumed contracts | `PRODUCT-MASTER-BUNDLE` v1 (MOD-0290, Model A), `LOCATION` v1 — HTTP only |
+| Owned contract (FU02) | `LOCATION` v1.1.0 (`location.openapi.yaml`, `x-owner: MOD-0173-FU02`) — v1 reads frozen, owner operations added in 1.1.0 |
+| Consumed contracts | `PRODUCT-MASTER-BUNDLE` v1 (MOD-0290, Model A) — HTTP only. LOCATION is served by this service and read by the ledger in-process (FU02 LOC1) |
 | Port | **5066** |
-| Base path | `/api/inventory` |
-| Slices implemented | **S1 — Ledger core** + **S2 — Reservations** (+ FU-S1-01, FU-S1-02); valuation = S3 |
-| API narrative | `docs/reference/architecture/api/mod-0173-inventory-bundle.md` |
+| Base paths | `/api/inventory` (ledger) · `/api/locations` (location master, MOD-0173-FU02) |
+| Slices implemented | **S1 — Ledger core** + **S2 — Reservations** (+ FU-S1-01, FU-S1-02) + **FU02 LOC1 — Location master API**; valuation = S3 |
+| API narrative | `docs/reference/architecture/api/mod-0173-inventory-bundle.md` · `docs/reference/architecture/api/mod-0173-location.md` |
 
 ## Layout
 
@@ -26,7 +27,7 @@ src/
 tests/
   Diten.InventoryService.Tests           domain, API (real host + real Mongo), architecture, contract schema, Prism smoke
   Diten.InventoryService.RuntimeProbe    runtime E4 probe console (used by runtime-probe/run-runtime-probe.ps1)
-  runtime-probe/run-runtime-probe.ps1    real process on 5066 + Prism mocks + restart
+  runtime-probe/run-runtime-probe.ps1    real process on 5066 + Prism PRODUCT-MASTER mock + restart (locations via the owner API)
 ```
 
 ## Operations (S1 + S2)
@@ -41,7 +42,15 @@ tests/
 | GET | `/api/inventory/transactions` | `inventory.stock.read` | immutable history, newest posting first |
 | GET | `/health` | anonymous | `{ "status": "Healthy", "module": "MOD-0173" }` |
 
-There is no PUT / PATCH / DELETE. A correction is a `REVERSAL` movement.
+There is no PUT / PATCH / DELETE on the ledger. A correction is a `REVERSAL` movement.
+
+## Location master (MOD-0173-FU02, LOC1)
+
+Eleven routes under `/api/locations`: the frozen v1 reads (`GET /{id}`, `GET /`, `GET /{id}/path`, `POST /validate`) and the
+v1.1 owner operations (`POST /`, `PATCH /{id}`, `POST /{id}/status`, `POST /{id}/bins/bulk`, `GET /search`,
+`GET /{id}/history`, `GET /{id}/stock-presence`). Reads need `inventory.locations.read`, writes
+`inventory.locations.manage`. No DELETE — a location is archived. Every ledger posting re-checks its locations inside
+the posting transaction (Active, stockable, under the warehouse) — details in `mod-0173-location.md`.
 
 ## Run locally
 
@@ -62,7 +71,9 @@ Configuration (all overridable by environment variables, `__` as separator):
 |---|---|
 | `Mongo:ConnectionString` / `Mongo:DatabaseName` | secret-validated at startup (`ValidateRequiredSecrets`) |
 | `JwtSettings:Secret` / `PreviousSecrets` / `Issuer` / `Audience` | same validation as every service (`JwtSecretRotationResolver`, `JwtValidationDefaults.ClockSkew`) |
-| `Inventory:Upstream:ProductMasterBaseUrl` / `LocationMasterBaseUrl` / `TimeoutSeconds` | consumed masters; unreachable → 503, never a silent pass |
+| `Inventory:Upstream:ProductMasterBaseUrl` / `TimeoutSeconds` | consumed PRODUCT-MASTER; unreachable → 503, never a silent pass |
+| `Inventory:Upstream:LocationMasterBaseUrl` | only for the LOCATION HTTP client's Prism contract smoke; the ledger reads locations in-process (FU02) |
+| `Inventory:Upstream:OrgUnitDirectoryBaseUrl` | Platform organization units through the Gateway (`…/api/platform/organization-units/`), FU02: checks a location `orgUnitRef` on write; unreachable → 503 `ORG_UNIT_DIRECTORY_UNAVAILABLE` |
 | `Inventory:Upstream:LegalEntityMasterBaseUrl` | MDM legal-entity master through the Gateway (`…/api/legal-entities/`), W-0173-02: verifies the `X-Legal-Entity-Id` of a token without a `legal_entity_id` claim; unreachable → 503 `LEGAL_ENTITY_MASTER_UNAVAILABLE` |
 | `Inventory:Policy:EnforceLocationLegalEntityMatch` | default `true`; the host refuses to start with `false` outside the `Mock` environment |
 | `Inventory:Reservations:SweeperEnabled` / `SweepIntervalSeconds` | periodic expiry sweeper (default on, 60 s); expiry also runs inside every create / release / decrease of the SKU |

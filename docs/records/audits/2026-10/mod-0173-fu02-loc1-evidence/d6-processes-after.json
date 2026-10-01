@@ -1,0 +1,37 @@
+﻿[
+    {
+        "port":  5000,
+        "listening":  true,
+        "pid":  29116
+    },
+    {
+        "port":  5056,
+        "listening":  true,
+        "pid":  26108
+    },
+    {
+        "port":  5057,
+        "listening":  true,
+        "pid":  28696
+    },
+    {
+        "port":  5059,
+        "listening":  true,
+        "pid":  36224
+    },
+    {
+        "port":  5066,
+        "listening":  false,
+        "pid":  null
+    },
+    {
+        "port":  4010,
+        "listening":  false,
+        "pid":  null
+    },
+    {
+        "port":  4011,
+        "listening":  false,
+        "pid":  null
+    }
+]
