@@ -1,0 +1,143 @@
+### D4(a) — sabotage: remove the Reversal visibility condition (manual + not a reversal) in InventoryListAdapter.IsReversible
+sha256 before: 28173dae313381bcae576adb98221b38edc8561663e25ce0e7b19d0b387dc26a
+## green baseline
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Search_and_sort_are_refused_because_the_contract_has_neither(key: "search", value: "abc", code: "LIST_SEARCH_NOT_SUPPORTED") [14 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Search_and_sort_are_refused_because_the_contract_has_neither(key: "orderDir", value: "asc", code: "LIST_ORDER_NOT_SUPPORTED") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Search_and_sort_are_refused_because_the_contract_has_neither(key: "orderBy", value: "onHand", code: "LIST_ORDER_NOT_SUPPORTED") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.A_start_that_is_not_a_page_boundary_is_refused [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Reversal_is_offered_only_on_a_manual_non_reversal_movement_not_reversed_on_the_page [7 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Invalid_balance_filters_never_reach_the_gateway(key: "itemId", value: "not-a-guid") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Invalid_balance_filters_never_reach_the_gateway(key: "sku", value: "Bogus:3fa85f64-5717-4562-b3fc-2c963f66afa6") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Invalid_balance_filters_never_reach_the_gateway(key: "sku", value: "Lsku:nope") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Invalid_balance_filters_never_reach_the_gateway(key: "stockStatus", value: "LOST") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Summary_sums_the_blocked_bucket_in_decimal_and_keeps_the_contract_strings [4 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Balance_filters_map_to_contract_parameters_and_the_sku_carries_its_level [1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Transactions_take_item_lot_location_and_a_date_range_only [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Paging_is_start_over_length_plus_one(start: 200, length: 100, page: 3, pageSize: 100) [5 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Paging_is_start_over_length_plus_one(start: 50, length: 50, page: 2, pageSize: 50) [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Paging_is_start_over_length_plus_one(start: 0, length: 500, page: 1, pageSize: 200) [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Paging_is_start_over_length_plus_one(start: 0, length: 50, page: 1, pageSize: 50) [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Page_2_of_50_reaches_the_contract_as_page_2_pageSize_50 [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.The_kpi_query_exists_only_with_a_product_or_sku_filter [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Unresolved_labels_leave_the_raw_ids_for_the_screen [3 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.An_unreachable_master_leaves_raw_ids_and_says_so_but_the_list_still_answers [86 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.A_service_refusal_keeps_its_status_and_becomes_a_localized_sentence [7 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Reversal_without_the_create_permission_or_with_a_malformed_row_never_reaches_the_gateway [4 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Already_reversed_comes_back_as_422_with_the_localized_reason [3 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Without_the_read_permission_nothing_reaches_the_gateway [3 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.The_same_dialog_submitted_twice_sends_the_same_key_so_the_service_replays [5 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Stock_list_page_2_is_one_balance_call_with_page_2_pageSize_50 [4 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.A_picker_whose_source_is_down_is_empty_and_says_why_with_no_invented_options [5 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.With_a_product_filter_the_kpi_comes_from_availability_in_the_same_response [2 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Reversal_posts_a_REVERSAL_of_the_original_with_one_idempotency_key [2 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Product_and_sku_pickers_call_only_the_Model_A_selector_routes [4 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.History_list_marks_automatic_and_reversible_rows [7 ms]
+Toplam test sayısı: 31
+     Geçti: 31
+## sabotaged line:
+220:        !string.IsNullOrWhiteSpace(t.TransactionId); // SABOTAGE
+## red
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Search_and_sort_are_refused_because_the_contract_has_neither(key: "search", value: "abc", code: "LIST_SEARCH_NOT_SUPPORTED") [15 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Search_and_sort_are_refused_because_the_contract_has_neither(key: "orderDir", value: "asc", code: "LIST_ORDER_NOT_SUPPORTED") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Search_and_sort_are_refused_because_the_contract_has_neither(key: "orderBy", value: "onHand", code: "LIST_ORDER_NOT_SUPPORTED") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.A_start_that_is_not_a_page_boundary_is_refused [< 1 ms]
+  Başarısız Diten.Web.Tests.Inventory.InventoryListAdapterTests.Reversal_is_offered_only_on_a_manual_non_reversal_movement_not_reversed_on_the_page [8 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Invalid_balance_filters_never_reach_the_gateway(key: "itemId", value: "not-a-guid") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Invalid_balance_filters_never_reach_the_gateway(key: "sku", value: "Bogus:3fa85f64-5717-4562-b3fc-2c963f66afa6") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Invalid_balance_filters_never_reach_the_gateway(key: "sku", value: "Lsku:nope") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Invalid_balance_filters_never_reach_the_gateway(key: "stockStatus", value: "LOST") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Summary_sums_the_blocked_bucket_in_decimal_and_keeps_the_contract_strings [6 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Balance_filters_map_to_contract_parameters_and_the_sku_carries_its_level [1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Transactions_take_item_lot_location_and_a_date_range_only [1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Paging_is_start_over_length_plus_one(start: 200, length: 100, page: 3, pageSize: 100) [3 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Paging_is_start_over_length_plus_one(start: 50, length: 50, page: 2, pageSize: 50) [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Paging_is_start_over_length_plus_one(start: 0, length: 500, page: 1, pageSize: 200) [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Paging_is_start_over_length_plus_one(start: 0, length: 50, page: 1, pageSize: 50) [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Page_2_of_50_reaches_the_contract_as_page_2_pageSize_50 [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.The_kpi_query_exists_only_with_a_product_or_sku_filter [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Unresolved_labels_leave_the_raw_ids_for_the_screen [4 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.An_unreachable_master_leaves_raw_ids_and_says_so_but_the_list_still_answers [99 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.A_service_refusal_keeps_its_status_and_becomes_a_localized_sentence [10 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Reversal_without_the_create_permission_or_with_a_malformed_row_never_reaches_the_gateway [4 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Already_reversed_comes_back_as_422_with_the_localized_reason [4 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Without_the_read_permission_nothing_reaches_the_gateway [4 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.The_same_dialog_submitted_twice_sends_the_same_key_so_the_service_replays [6 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Stock_list_page_2_is_one_balance_call_with_page_2_pageSize_50 [4 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.A_picker_whose_source_is_down_is_empty_and_says_why_with_no_invented_options [5 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.With_a_product_filter_the_kpi_comes_from_availability_in_the_same_response [3 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Reversal_posts_a_REVERSAL_of_the_original_with_one_idempotency_key [1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Product_and_sku_pickers_call_only_the_Model_A_selector_routes [8 ms]
+  Başarısız Diten.Web.Tests.Inventory.InventoryProxyControllerTests.History_list_marks_automatic_and_reversible_rows [10 ms]
+Toplam test sayısı: 31
+     Geçti: 29
+     Başarısız: 2
+sha256 after restore: 28173dae313381bcae576adb98221b38edc8561663e25ce0e7b19d0b387dc26a
+identical: YES
+(diff empty)
+## green again
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Search_and_sort_are_refused_because_the_contract_has_neither(key: "search", value: "abc", code: "LIST_SEARCH_NOT_SUPPORTED") [14 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Search_and_sort_are_refused_because_the_contract_has_neither(key: "orderDir", value: "asc", code: "LIST_ORDER_NOT_SUPPORTED") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Search_and_sort_are_refused_because_the_contract_has_neither(key: "orderBy", value: "onHand", code: "LIST_ORDER_NOT_SUPPORTED") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.A_start_that_is_not_a_page_boundary_is_refused [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Reversal_is_offered_only_on_a_manual_non_reversal_movement_not_reversed_on_the_page [7 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Invalid_balance_filters_never_reach_the_gateway(key: "itemId", value: "not-a-guid") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Invalid_balance_filters_never_reach_the_gateway(key: "sku", value: "Bogus:3fa85f64-5717-4562-b3fc-2c963f66afa6") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Invalid_balance_filters_never_reach_the_gateway(key: "sku", value: "Lsku:nope") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Invalid_balance_filters_never_reach_the_gateway(key: "stockStatus", value: "LOST") [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Summary_sums_the_blocked_bucket_in_decimal_and_keeps_the_contract_strings [4 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Balance_filters_map_to_contract_parameters_and_the_sku_carries_its_level [1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Transactions_take_item_lot_location_and_a_date_range_only [1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Paging_is_start_over_length_plus_one(start: 200, length: 100, page: 3, pageSize: 100) [6 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Paging_is_start_over_length_plus_one(start: 50, length: 50, page: 2, pageSize: 50) [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Paging_is_start_over_length_plus_one(start: 0, length: 500, page: 1, pageSize: 200) [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Paging_is_start_over_length_plus_one(start: 0, length: 50, page: 1, pageSize: 50) [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Page_2_of_50_reaches_the_contract_as_page_2_pageSize_50 [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.The_kpi_query_exists_only_with_a_product_or_sku_filter [< 1 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryListAdapterTests.Unresolved_labels_leave_the_raw_ids_for_the_screen [3 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.An_unreachable_master_leaves_raw_ids_and_says_so_but_the_list_still_answers [89 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.A_service_refusal_keeps_its_status_and_becomes_a_localized_sentence [9 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Reversal_without_the_create_permission_or_with_a_malformed_row_never_reaches_the_gateway [4 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Already_reversed_comes_back_as_422_with_the_localized_reason [3 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Without_the_read_permission_nothing_reaches_the_gateway [3 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.The_same_dialog_submitted_twice_sends_the_same_key_so_the_service_replays [5 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Stock_list_page_2_is_one_balance_call_with_page_2_pageSize_50 [4 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.A_picker_whose_source_is_down_is_empty_and_says_why_with_no_invented_options [6 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.With_a_product_filter_the_kpi_comes_from_availability_in_the_same_response [3 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Reversal_posts_a_REVERSAL_of_the_original_with_one_idempotency_key [2 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.Product_and_sku_pickers_call_only_the_Model_A_selector_routes [5 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryProxyControllerTests.History_list_marks_automatic_and_reversible_rows [8 ms]
+Toplam test sayısı: 31
+     Geçti: 31
+
+### D4(b) — sabotage: remove the UAS-001 permission gate from Views/Inventory/StockLedger/Index.cshtml
+sha256 before: f1d629df6979ea605a8dcdfb2f3fb21dc7e26b1e74f239ba375eeb6422f5537d
+## green baseline
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.Without_read_only_the_access_explanation_is_drawn(view: "/Views/Inventory/StockMovements/Index.cshtml", tableId: "dt-stockmovements") [2 s]
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.Without_read_only_the_access_explanation_is_drawn(view: "/Views/Inventory/StockLedger/Index.cshtml", tableId: "dt-stockledger") [25 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.With_read_the_server_mode_list_is_drawn_without_selection(view: "/Views/Inventory/StockMovements/Index.cshtml", tableId: "dt-stockmovements") [102 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.With_read_the_server_mode_list_is_drawn_without_selection(view: "/Views/Inventory/StockLedger/Index.cshtml", tableId: "dt-stockledger") [119 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.The_reversal_token_is_issued_only_to_a_user_who_may_reverse [84 ms]
+Toplam test sayısı: 5
+     Geçti: 5
+## sabotaged:
+17:@* SABOTAGE: UAS-001 gate removed *@
+## red
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.Without_read_only_the_access_explanation_is_drawn(view: "/Views/Inventory/StockMovements/Index.cshtml", tableId: "dt-stockmovements") [2 s]
+  Başarısız Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.Without_read_only_the_access_explanation_is_drawn(view: "/Views/Inventory/StockLedger/Index.cshtml", tableId: "dt-stockledger") [71 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.With_read_the_server_mode_list_is_drawn_without_selection(view: "/Views/Inventory/StockMovements/Index.cshtml", tableId: "dt-stockmovements") [45 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.With_read_the_server_mode_list_is_drawn_without_selection(view: "/Views/Inventory/StockLedger/Index.cshtml", tableId: "dt-stockledger") [18 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.The_reversal_token_is_issued_only_to_a_user_who_may_reverse [32 ms]
+Toplam test sayısı: 5
+     Geçti: 4
+     Başarısız: 1
+sha256 after restore: f1d629df6979ea605a8dcdfb2f3fb21dc7e26b1e74f239ba375eeb6422f5537d
+identical: YES
+(diff empty)
+## green again
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.Without_read_only_the_access_explanation_is_drawn(view: "/Views/Inventory/StockMovements/Index.cshtml", tableId: "dt-stockmovements") [2 s]
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.Without_read_only_the_access_explanation_is_drawn(view: "/Views/Inventory/StockLedger/Index.cshtml", tableId: "dt-stockledger") [50 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.With_read_the_server_mode_list_is_drawn_without_selection(view: "/Views/Inventory/StockMovements/Index.cshtml", tableId: "dt-stockmovements") [70 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.With_read_the_server_mode_list_is_drawn_without_selection(view: "/Views/Inventory/StockLedger/Index.cshtml", tableId: "dt-stockledger") [146 ms]
+  Başarılı Diten.Web.Tests.Inventory.InventoryAccessSurfaceTests.The_reversal_token_is_issued_only_to_a_user_who_may_reverse [70 ms]
+Toplam test sayısı: 5
+     Geçti: 5

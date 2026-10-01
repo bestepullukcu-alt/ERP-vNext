@@ -602,6 +602,38 @@ label in the tenant nav. Nothing in this pack depends on it.
     types (Opening balance, Count gain) and posts `POST /movements`; the balance changes only as a projection.
     Edit/Details of a balance row stay N/A by nature (projection) and link to the movement history filtered to that row.
 
+### WP-0173-UI1 implementation notes (2026-10-01, agent PASS pending CT)
+
+UI-1 = S-1 `/StockLedger` + S-2 `/StockMovements` (+ Reversal) only; S-3 form, Correct (Edit), Details and
+StockLedger/Create are UI-2. Evidence `docs/records/audits/2026-10/mod-0173-fu01-ui1-evidence/`.
+
+- **UI1-01** Proxy profile kept (routes `/StockLedger/api`, `/StockMovements/api`); the verifier could not be run (no
+  Python) to test the UI-01 alternative — the manual checklist (D5) stands in for it.
+- **UI1-02** Shared MVC helpers (list adapter, Gateway client, `ProductPickerSource`, `LocationPickerSource`, label
+  resolver, error map) live in `Models/Inventory/` (pack §5 allows only that folder besides the two controllers).
+- **UI1-03** Reversal idempotency key = one per opened dialog (minted in the browser, validated as a UUID by MVC, sent
+  as `reversal-{key}`): a double submit of the same dialog replays; a NEW dialog on an already reversed row gets
+  422 ALREADY_REVERSED. "Already reversed" is shown only when the REVERSAL is on the same page (BG-05).
+- **UI1-04** The Reversal dialog is the shared `window.showConfirm` (product rule: one dialog implementation); a refusal
+  keeps it open through its `didOpen` seam (no raw SweetAlert).
+- **UI1-05** Automatic movements show a PASSIVE Reversal button with "reversed in the source module" (WP-0173-UI1 text),
+  for users who hold `movements.create`; a view-only user sees no Reversal at all (UAS-001 "no unclickable button").
+- **UI1-06** S-1 History opens S-2 filtered by item + lot (URL → applied filters through the factory's Apply).
+- **UI1-07** The factory's client-side Action/Export menu is removed on both lists (pack §2/§20: no export until the
+  export gate) — a page-level deviation from `frontend-js-standard` §3, recorded here.
+- **UI1-08** Product / SKU filters: Model A selectors searched on the server (GSKU + LSKU; FinishedGood not offered —
+  its selector needs `mdm.finished-goods.create`). Warehouse / location: LOCATION via Gateway — no route (BG-10), so
+  the pickers say "unavailable"; lot: typed text; dates: from/to.
+- **UI1-09** Labels: one probe per master per page; an unanswered master leaves raw ids + the localized banner.
+- **UI1-10** Manifest: `InventoryLedgerManifestProvider` (2 pages, 2 actions — only what UI-1 renders); wiring needs a
+  `ProjectReference` to `Diten.BuildingBlocks.ModuleRegistration.Abstractions` in the InventoryService Api csproj
+  (ProcurementService pattern); `PlatformRegistration` is NOT added to appsettings (outside the allowed paths) — the
+  push is skipped with a warning until configured (smoke supplied it by environment).
+- **FINDING (CT):** AuthService access tokens carry no `legal_entity_id` claim, while InventoryService (S1, JWT-only
+  scope) requires one — every real user is 403 on every inventory endpoint. Needs an owner decision (Auth emits the
+  LE claim, or InventoryService resolves a default LE). Not changed by UI-1 (both are protected paths).
+- Translations of the 7 languages are model translations — native-speaker review pending (FU).
+
 ## 20. Follow-up Items
 
 - Request to MOD-0290 owner (MDM): additive product/SKU search in PRODUCT-MASTER-BUNDLE v1.1 — retires W-UI-01.
