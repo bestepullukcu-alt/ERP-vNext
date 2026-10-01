@@ -159,5 +159,14 @@ Durma: mevcut api/* proxy'lerinden biri başka ekranda kullanılıyor ve değiş
   - Adım ayarları (zorunlu / süre / ön koşul) içerik (yol adımı) düzeyinde; zincir adımı kartında özet.
   - **Eski yolların yayın düğmesi arayüzde kalktı** (Details kaldırıldı). Eski yollar zaten sahada kullanılmayacak; yayın arayüzü KP-UI-2.
   - Yol iddia lookup'ı ürünün her iddiası için bir detay okuması yapıyor (iddia sayısı küçük; kabul).
-- **Açık (kullanıcı kararı):** liste ekranının altın şablondan **12 önceden var olan sapması** (veri modu bildirimi, `_TableSkeleton`, hızlı görünüm paneli, toplu işlem altyapısı vb.). CT önerisi: "bilinen sapma" olarak kaydet; toplu işlem gerekmiyor.
+- **BİLİNEN SAPMA (kullanıcı onayı, 2026-10-01):** Bilgi Yolu liste ekranının altın şablondan **12 sapması**. Hepsi bu paketten önce vardı (ajanın eklediği 3 sapma kapatıldı).
+  1. veri modu (sunucu / istemci) bildirilmemiş;
+  2. `_TableSkeleton` yerine eski yükleme iskeleti;
+  3. `#offcanvasDetailsPreview` hızlı görünüm paneli yok;
+  4. Save View tenant başlığı (ortak `personalization-client.js`);
+  5. doğrudan gateway profili işaretlemesi (liste proxy profili kullanıyor);
+  6. tümünü seç onay kutusu yok;
+  7–12. toplu işlem altyapısı yok (yapılandırma, seçim, toplu uç, toplu sil, yeniden yükleme / bildirim, seçimi temizleme).
+
+  Gerekçe: Bilgi Yolu'nda toplu işlem / silme yok (yalnız arşiv); ekran asıl iş akışının dışında. Gerekirse ayrı küçük iş.
 - **E4:** CT, fleet restart sonrası (TPL-ALMIBA-01 yayınlandıktan sonra).
