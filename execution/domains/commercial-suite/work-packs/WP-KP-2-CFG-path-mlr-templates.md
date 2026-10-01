@@ -155,3 +155,11 @@ Eksik yok; `grant_knowledge_path_rbac_97c5.py` yazılmadı, RBAC'a hiçbir şey 
 
 ### 4. Hata / sapma
 Konsol hatası yok. Ağda 4xx / 5xx yok. Kod değişikliği yok.
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-01) — **ACCEPTED (E4 kısmi: şablonlar + yetki)**
+- **Commit:** ajan `39abf7a3` (yalnız rapor; kod değişikliği yok) → `test/crm-content-visit-e2e` üzerine cherry-pick.
+- **CT canlı kontrol (salt okuma, Mongo `diten_personalization_dev.workflow_templates`):** `KP-MLR-{TR,BY,UZ,TM,GE,AZ}` 6/6 mevcut; `Status`, `TenantId` (97c5) ve `ActivePublishedVersionId` varlığı `CLAIM-LOCAL-MLR-TR` ile aynı. Hiçbir şey yazılmadı.
+- **Ajan bulguları (kabul):** şablon kodu `KP-MLR-{0}` (override yok); Platform `requestedObjectType`'ı doğrulamıyor (serbest veri) → DUR yok; 97c5 Admin'de path + workflow yetkileri tam, grant script gerekmedi; `CLAIM-*` parmak izleri değişmedi.
+- **Kalan E4 (CT, canlı uçtan uca):** bir Bilgi Yolu revizyonunu gönder → örnek `KP-MLR-TR` ile başlar → 3 adım onay / ret yorumu → yayın.
