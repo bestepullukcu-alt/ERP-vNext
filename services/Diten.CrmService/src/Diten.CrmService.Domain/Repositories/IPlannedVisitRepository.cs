@@ -28,6 +28,12 @@ public interface IPlannedVisitRepository
     Task<IReadOnlyList<PlannedVisit>> ListByTargetAndDateAsync(
         Guid tenantId, Guid targetId, DateOnly plannedDate, CancellationToken cancellationToken);
 
+    /// <summary>WP-KP-CH-1 — the plans on or after <paramref name="fromDate"/> whose content items tell one of
+    /// <paramref name="pathIds"/> (SB-3b <c>ContentItems[].PathId</c>). A NARROWING read only: whether a plan counts
+    /// (not cancelled / archived) is decided by the caller's rule, so the rule is one place and testable.</summary>
+    Task<IReadOnlyList<PlannedVisit>> ListFromDateByContentPathsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> pathIds, DateOnly fromDate, CancellationToken cancellationToken);
+
     Task InsertAsync(PlannedVisit entity, CancellationToken cancellationToken);
 
     /// <summary>Optimistic replace: matches on (Id, TenantId, Version == expectedVersion) and bumps the token. Returns

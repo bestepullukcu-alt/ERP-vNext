@@ -675,6 +675,13 @@ public sealed class VisitPlanningTests
             Guid tenantId, Guid targetId, DateOnly plannedDate, CancellationToken ct)
             => Task.FromResult<IReadOnlyList<PlannedVisitEntity>>(Array.Empty<PlannedVisitEntity>());
 
+        public Task<IReadOnlyList<PlannedVisitEntity>> ListFromDateByContentPathsAsync(
+            Guid tenantId, IReadOnlyCollection<Guid> pathIds, DateOnly fromDate, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<PlannedVisitEntity>>(Seeded
+                .Where(x => x.TenantId == tenantId && x.PlannedDate >= fromDate
+                            && x.ContentItems.Any(item => pathIds.Contains(item.PathId)))
+                .ToList());
+
         public Task InsertAsync(PlannedVisitEntity entity, CancellationToken ct)
         {
             Inserted.Add(entity);
