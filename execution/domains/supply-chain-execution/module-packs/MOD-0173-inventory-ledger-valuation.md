@@ -369,6 +369,11 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
   - **ASSUMPTION-0173-19 (FU-S1-02):** the `SuperAdmin` role bypass is removed from this service; every endpoint needs
     its explicit permission.
 
+- **WP-0173-K1 CT-ACCEPTED (2026-10-01)** — commits fe855440..a27ce77f. CT re-measured: clean build 0/0; 278/278
+  (0 skipped); old-name grep 0 (deliberate split literals only in `PermissionNamespaceTests`); all 6 `[HasPermission]` use
+  constants; own sabotage (Read constant → old name) → 62 red, restored → 278 green, empty diff. FU-S2-01 closed
+  (test-DB rule: a `_`-segment `test`/`tests`/`itest`; anything else fails closed on unscoped groups).
+
 - **WP-0173-INT1 CT-ACCEPTED (2026-10-01)** — commits 5f97a4b5..6b9660b4: `ocelot.json` +2 routes (`/api/inventory`,
   `/api/inventory/{everything}` → localhost:5066, GET/POST/OPTIONS, no AuthenticationOptions), +34/−0. CT re-measured:
   gateway build 0/0; gateway tests 83/84 — the one red `EveryRoute_DownstreamPortIsInKnownServiceSet` is **pre-existing**
