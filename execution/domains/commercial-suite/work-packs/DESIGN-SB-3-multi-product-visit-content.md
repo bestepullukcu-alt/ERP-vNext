@@ -125,3 +125,7 @@ Yolculuk sonu   → başa döner
 2. **Ürün "anlatıldı" işareti:** varsayılan "hepsi anlatıldı" mı, yoksa temsilci tek tek işaretlesin mi?
 3. **Kitle eşleşmesi:** yolculuğun kitlesi (ör. Nefroloji / Doktor) ile doktorun uzmanlığı tutmuyorsa ürün düşsün mü, uyarı mı?
 4. **Non-promo ürünlerin kaynağı:** şablonun non-promo satırları yeterli mi, yoksa tüm portföyden mi gelmeli?
+
+> **Kullanıcı cevapları (2026-10-01):**
+> - **§5.4 non-promo:** şablondaki **non-promo satırlarından** (tüm portföyden değil).
+> - **§5.1 başlatma penceresi, §5.2 "anlatıldı" varsayılanı, §5.3 kitle uyuşmazlığı:** **sonra**, ilgili kısım (SB-3b / SB-3c) düzenlenirken konuşulacak.
