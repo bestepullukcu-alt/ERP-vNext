@@ -355,17 +355,24 @@ public sealed class BusinessReferenceDataGskuCatalogLoadMongoTests : IAsyncLifet
  * So one run was red on the Timestamp (45 of 50) and the next on the drop (52 of 53), in turn.
  *
  * WHAT IT DOES NOW. It is a thin layer over MongoIntegrationHarness.CreateIsolatedAsync: a FIXED-name database per
- * scope, emptied (documents deleted, collections and indexes kept) before each test, never dropped. It pings with
+ * scope, emptied (documents deleted, collections and indexes kept) before each test, and never dropped BY BRD CODE.
+ * (The shared harness underneath still sweeps, once per process, any owned database whose marker belongs to another
+ * run and is over an hour old — scope databases included; they are rebuilt on the next open. That sweep is the
+ * harness's, it is lock-guarded, and it is why a retired scope's database does not stay forever.) It pings with
  * a BsonDocument reply, takes the machine-wide lock, and stamps the marker — all in the one place that already
  * does those correctly.
  *
- * ⚠ WHY A SCOPED DATABASE AND NOT THE SHARED ONE + A FRESH TENANT. These tests assert on the WHOLE collection:
+ * ⚠ WHY A SCOPED DATABASE AND NOT THE SHARED ONE + A FRESH TENANT — FOR THE CLASSES THAT NEED IT. Four classes
+ * (GovernanceMode, GskuCatalogLoad, VerifiedMarketCatalogLoad, VerifiedMarketOperational) assert on the WHOLE collection:
  * "the loader wrote nothing at all" (CountDocuments(Empty) == 0), "exactly one operation exists" (Single over an
  * empty filter), "no OTHER tenant got a market set". In the shared database those are false the moment a parallel
  * class writes, and narrowing them to one tenant would stop them proving what they are there to prove. Their
  * subject is database-global, which is the stated exception in MongoIntegrationHarness.CreateIsolatedAsync.
- * Every BRD unique index IS tenant-keyed (measured), so the tests that only need tenant isolation —
- * TenantAssignment, PublishOperation — did move to the shared database.
+ * Every BRD unique index IS tenant-keyed (measured), so the tests that only need tenant isolation moved to the
+ * shared database: TenantAssignment and PublishOperation directly, and — CT acceptance, 2026-10-01, after the
+ * independent review showed every one of their assertions is tenant- or operation-scoped, and two full runs on the
+ * shared database stayed green — VerifiedMarketPublish, VerifiedMarketResolve and VerifiedPublish through
+ * CreateSharedAsync below. A scope is the exception, not the default.
  *
  * ⚠ ONE SCOPE, ONE OWNER AT A TIME. Opening a scope EMPTIES it. xUnit runs test classes in parallel, so two classes
  * on the same scope would empty each other mid-assertion and fail at random. A scope that is already open in this
@@ -377,13 +384,32 @@ internal sealed class BusinessReferenceDataTestHarness : IAsyncDisposable
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> OpenScopes =
         new(StringComparer.Ordinal);
 
+    /*
+     * CT acceptance (2026-10-01). EVERY SCOPE IS ON THIS LIST. Each one is a permanent database on the shared mongod,
+     * so the set is closed: a scope that is not registered is refused before Mongo is touched. The grammar alone
+     * could not hold the line — `$"run_{Guid.NewGuid():N}"` is lowercase letters and digits, passed every guard, and
+     * would have brought back the database-per-run residue this harness exists to end. A new scope is one line
+     * here, in a diff a reviewer sees.
+     */
+    internal static readonly IReadOnlySet<string> RegisteredScopes = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "governance_mode",
+        "gsku_catalog",
+        "gsku_catalog_legacy",
+        "gsku_catalog_noprovider",
+        "harness_blank_proof",
+        "harness_scope_proof",
+        "market_catalog",
+        "market_operational"
+    };
+
     private readonly Persistence.MongoIntegrationHarness _mongo;
-    private readonly string _scope;
+    private readonly string? _scope; // null: the shared database, where the tenant is the isolation
     private int _disposed;
 
     private BusinessReferenceDataTestHarness(
         Persistence.MongoIntegrationHarness mongo,
-        string scope,
+        string? scope,
         bool configureProvider)
     {
         _mongo = mongo;
@@ -417,6 +443,15 @@ internal sealed class BusinessReferenceDataTestHarness : IAsyncDisposable
     public static async Task<BusinessReferenceDataTestHarness> CreateAsync(string scope, bool configureProvider = true)
     {
         var databaseName = DatabaseNameFor(scope); // refuses a scope outside the owned grammar before Mongo is touched
+        if (!RegisteredScopes.Contains(scope))
+        {
+            throw new ArgumentException(
+                $"BRD test scope '{scope}' is not registered. Every scope is a permanent database on the shared mongod "
+                + "(a name made per run would pile up), so the set is closed: add the scope to "
+                + "BusinessReferenceDataTestHarness.RegisteredScopes, or reuse the scope your test class already owns.",
+                nameof(scope));
+        }
+
         if (!OpenScopes.TryAdd(scope, 0))
         {
             throw new InvalidOperationException(
@@ -438,6 +473,17 @@ internal sealed class BusinessReferenceDataTestHarness : IAsyncDisposable
             throw;
         }
     }
+
+    /// <summary>
+    /// For a BRD test whose every assertion is TENANT-scoped: the ONE shared database and a fresh reference tenant,
+    /// like every other Platform Mongo test. No scope, no database of its own, nothing emptied. A test that asserts
+    /// on a whole collection ("nothing at all was written") cannot use this — that is what a scope is for.
+    /// </summary>
+    public static async Task<BusinessReferenceDataTestHarness> CreateSharedAsync(bool configureProvider = true)
+        => new(
+            await Persistence.MongoIntegrationHarness.CreateAsync(SchemaProfile.BusinessReferenceData),
+            scope: null,
+            configureProvider);
 
     public BusinessReferenceDataCatalogLoaderService CreateLoader(
         IBusinessReferenceDataPublishCheckpointObserver? observer = null,
@@ -517,7 +563,10 @@ internal sealed class BusinessReferenceDataTestHarness : IAsyncDisposable
         }
         finally
         {
-            OpenScopes.TryRemove(_scope, out _);
+            if (_scope is not null)
+            {
+                OpenScopes.TryRemove(_scope, out _);
+            }
         }
     }
 }

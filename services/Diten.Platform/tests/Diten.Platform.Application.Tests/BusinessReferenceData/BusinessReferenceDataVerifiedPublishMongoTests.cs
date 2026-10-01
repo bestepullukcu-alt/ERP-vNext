@@ -11,7 +11,7 @@ public sealed class BusinessReferenceDataVerifiedPublishMongoTests : IAsyncLifet
 
     public async Task InitializeAsync()
     {
-        _harness = await BusinessReferenceDataTestHarness.CreateAsync("verified_publish");
+        _harness = await BusinessReferenceDataTestHarness.CreateSharedAsync();
     }
 
     public Task DisposeAsync() => _harness.DisposeAsync().AsTask();

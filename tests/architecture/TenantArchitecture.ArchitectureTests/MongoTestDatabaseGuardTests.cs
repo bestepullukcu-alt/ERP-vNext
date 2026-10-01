@@ -63,11 +63,11 @@ public class MongoTestDatabaseGuardTests
      * Every file named here had the shape BEFORE this guard existed. They are listed so the guard can be true
      * today. Each line is a debt with an owner, not a blessing.
      *
-     * ⚠ THE TWO SHARED HARNESSES ARE DELIBERATELY UNTOUCHED IN THIS ROUND (owner + CONTROL TOWER,
-     * 2026-08-26): `BusinessReferenceData/BusinessReferenceDataGskuCatalogLoadMongoTests.cs` (which declares
-     * `BusinessReferenceDataTestHarness`, used by 7 test classes) and `Persistence/MongoIntegrationHarness.cs`
-     * (used by 7 more). Changing either moves 14 classes at once. That is Part B, and it is joint work with
-     * the GSKU team.
+     * ⚠ HISTORY. In the first round (owner + CONTROL TOWER, 2026-08-26) the two shared harnesses were deliberately
+     * left alone: `BusinessReferenceDataTestHarness` (7 test classes) and `Persistence/MongoIntegrationHarness.cs`
+     * (7 more). Part B is done (BL-482 second half, 2026-10-01): the BRD harness now sits on
+     * MongoIntegrationHarness — five BRD classes on the shared database with a fresh tenant, four on a fixed-name
+     * scope database (their assertions are over the whole collection), none on a database per run.
      *
      * TO REMOVE A LINE: make that test share a database and isolate by TenantId, then delete its entry.
      * Never add a line to make a red test green — that is the failure this file was written to stop.
@@ -191,6 +191,32 @@ public class MongoTestDatabaseGuardTests
         Assert.True(stale.Length == 0,
             "these files no longer build the platform schema (or no longer exist) — remove them from "
             + "KnownTestSideIndexBuild:\n" + string.Join("\n", stale));
+    }
+
+    /*
+     * BL-482 (second half). A Mongo command reply read as `object` works on a standalone mongod and throws on a
+     * replica set: the reply carries $clusterTime / operationTime (BSON Timestamps) and ObjectSerializer cannot
+     * materialise one. In the BRD harness that throw came AFTER the per-run database existed, xUnit skipped the
+     * dispose, and every test left a database behind — about fifty red tests that changed from run to run.
+     *
+     * MUTATION GUARD: write `await database.RunCommandAsync<object>("{ ping: 1 }");` in any test file → this names it.
+     */
+    private static readonly Regex CommandReplyAsObject = new(
+        @"RunCommand(?:Async)?\s*<\s*(?:(?:System\s*\.\s*)?[Oo]bject\??|dynamic)\s*>",
+        RegexOptions.Compiled);
+
+    [Fact]
+    public void NoTestReadsAMongoCommandReplyAsObject()
+    {
+        var offenders = TestSources()
+            .Where(f => CommandReplyAsObject.IsMatch(f.Body))
+            .Select(f => f.RelativePath)
+            .OrderBy(p => p, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.True(offenders.Length == 0,
+            "these test files read a Mongo command reply as `object`/`dynamic`; on a replica set the reply carries BSON "
+            + "Timestamps and the read throws. Use RunCommandAsync<BsonDocument>:\n" + string.Join("\n", offenders));
     }
 
     [Fact]

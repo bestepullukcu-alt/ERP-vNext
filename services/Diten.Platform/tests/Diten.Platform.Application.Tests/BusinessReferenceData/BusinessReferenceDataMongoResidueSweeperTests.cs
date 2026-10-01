@@ -21,13 +21,15 @@ public sealed class BusinessReferenceDataMongoResidueSweeperTests
 {
     public sealed class PrivateMongo : IAsyncLifetime
     {
-        private Persistence.DisposableStandaloneMongo _mongo = null!;
+        private Persistence.DisposableStandaloneMongo? _mongo;
 
-        public IMongoClient Client => _mongo.Client;
+        public IMongoClient Client => _mongo!.Client;
 
         public async Task InitializeAsync() => _mongo = await Persistence.DisposableStandaloneMongo.StartAsync();
 
-        public Task DisposeAsync() => _mongo.DisposeAsync().AsTask();
+        // xUnit disposes a fixture whose InitializeAsync threw; a mongod that never started has nothing to stop, and
+        // a NullReferenceException here would bury the real reason under a cleanup error.
+        public Task DisposeAsync() => _mongo is null ? Task.CompletedTask : _mongo.DisposeAsync().AsTask();
     }
 
     private readonly IMongoClient _client;
