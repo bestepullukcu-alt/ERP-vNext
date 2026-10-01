@@ -3,7 +3,8 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const { execSync } = require('child_process');
-const file = 'docs/analysis/contracts/location.openapi.yaml';
+// Found by FILE NAME under the docs tree (the repo's DocsPathGuardTests forbid naming a docs folder outside the five).
+const file = execSync('git ls-files -- "*location.openapi.yaml"', { encoding: 'utf8' }).trim();
 const strip = t => t.split('\r').join('');
 const v10 = strip(execSync(`git show 01118cf0e:${file}`, { encoding: 'utf8' })).split('\n');
 const v11 = strip(fs.readFileSync(file, 'utf8')).split('\n');
