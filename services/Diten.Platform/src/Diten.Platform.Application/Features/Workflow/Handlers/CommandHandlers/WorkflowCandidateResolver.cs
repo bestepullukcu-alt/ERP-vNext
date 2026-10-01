@@ -88,7 +88,8 @@ internal static class WorkflowCandidateResolver
             .ToList();
     }
 
-    private static bool IsLivePosition(Position position) =>
+    // internal: REQ-WCN-01 names a step's candidate positions by this same rule (WorkflowApprovalWorkItemProvider).
+    internal static bool IsLivePosition(Position position) =>
         position.Status == PositionStatus.Active
         && !position.IsArchived
         && !position.IsDeleted

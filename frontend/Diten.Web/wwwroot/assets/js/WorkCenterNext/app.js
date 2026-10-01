@@ -170,6 +170,8 @@
         // The row just added, so the reader can see WHERE it landed. Cleared after one paint — a permanent
         // highlight would become another status colour nobody declared.
         flashSubtaskId: null,
+        // REQ-WCN-01 (W-4) — the item whose successful decision is being re-read (see renderUnsafe's detail branch).
+        settlingDecisionId: null,
         /*
          * WHICH CAPPED LISTS THE READER HAS OPENED, by list key ('subtasks' | 'activity').
          *
@@ -1613,6 +1615,26 @@
     const sourceTitle = (item) => [item.sourceModuleId, item.sourceModuleName, item.sourceObjectType]
         .filter(Boolean).join(' · ');
 
+    /*
+     * REQ-WCN-01 (W-1) — WHICH STEP of the approval this is, as a BADGE beside the title on the row and on the detail
+     * page. Never part of the title itself: the title is what is being decided, the step is where the decision
+     * stands. An item whose provider names no step draws nothing.
+     */
+    const stepBadge = (item) => (item && item.stepNameText
+        ? `<span class="wcn-badge wcn-badge-secondary" data-wcn-step-badge title="${esc(t('ApprovalStepBadgeTitle'))}">${esc(item.stepNameText)}</span>`
+        : '');
+
+    /*
+     * REQ-WCN-01 (W-3) — WHO an approval is waiting on when nobody is named directly: the step's candidate positions,
+     * by NAME. One whole sentence from the resource table ("Onay bekleyen: {0}"); the names are a plain list — no
+     * "and"/"or" is composed here, because which of the two it is belongs to MOD-0023, not to this sentence. Empty
+     * when the projection carries none — the caller then keeps today's "unassigned" word.
+     */
+    const awaitingPositionsText = (item) => {
+        const names = (item && item.candidatePositionNames) || [];
+        return names.length ? tf('ApprovalAwaitingPositions', names.join(', ')) : '';
+    };
+
     const rowChips = (item) => [
         chip('module', 'bx-cube', item.sourceModule, sourceTitle(item)),
         chip('type', item.typeIcon, typeLabel(item)),
@@ -1771,6 +1793,7 @@
                 <div class="wcn-row-top">
                     ${item.isUnread ? '<span class="wcn-row-unread-dot" aria-hidden="true"></span>' : ''}
                     <span class="wcn-row-title">${esc(item.title)}</span>
+                    ${stepBadge(item)}
                     ${onBehalfBadge}
                     ${inbox ? '' : `<span class="wcn-badge wcn-badge-${STATUS_KIND[displayStatus(item)]}">${esc(statusLabel(item))}</span>`}
                 </div>
@@ -3121,7 +3144,10 @@
          * until somebody notices. It says so in a word rather than with a dash, because "—" reads as "not
          * recorded" and this is recorded: it is recorded as nobody.
          */
-        const assignee = field('bx-user', 'DetailAssignee', item.assignee || t('SummaryUnassigned'),
+        // REQ-WCN-01 (W-3) — an approval nobody is named on says WHICH POSITIONS it waits for, when the projection
+        // knows. Without them the word stays "unassigned", exactly as before.
+        const assignee = field('bx-user', 'DetailAssignee',
+            item.assignee || awaitingPositionsText(item) || t('SummaryUnassigned'),
             item.assignee ? '' : 'backbone-preview-field-muted');
 
         /*
@@ -5558,9 +5584,15 @@
          *    and the breadcrumb's Task Center link additionally restores the list AS THE USER LEFT IT (tab,
          *    segment, filters). Two controls, one destination, one of them worse — so only the breadcrumb stays.
          */
+        // REQ-WCN-01 (W-1) — the step badge sits BESIDE the heading, never inside it: the heading stays the task's
+        // name and nothing else. Without a step the heading is drawn exactly as before.
+        const heading = `<h5 class="mb-0">${esc(item.title)}</h5>`;
+        const headingWithStep = stepBadge(item)
+            ? `<div class="d-flex align-items-center flex-wrap gap-2">${heading}${stepBadge(item)}</div>`
+            : heading;
         const pageHeader = `<div class="d-flex align-items-center justify-content-between mb-3">
             <div>
-                <h5 class="mb-0">${esc(item.title)}</h5>
+                ${headingWithStep}
                 <nav aria-label="${esc(t('BreadcrumbLabel'))}">
                     <ol class="breadcrumb mb-0">
                         <li class="breadcrumb-item"><a href="${esc(listReturnUrl())}">${esc(t('Title'))}</a></li>
@@ -7534,6 +7566,13 @@
             const wasRejectedByContract = !item && Array.isArray(state.contractRejectedErrors)
                 && state.contractRejectedErrors.some((error) => error.fixtureId === requestedId);
             const notFoundKey = wasRejectedByContract ? 'DetailItemRejectedByContract' : 'DetailItemNotFound';
+            /*
+             * REQ-WCN-01 (W-4) — a decision on THIS item is being settled and its re-read came back without it.
+             * The page is about to be left for the list; answering a successful decision with "not found" in the
+             * meantime is the defect. The page stays as it is — submitRealTransition decides what happens next and
+             * clears the mark if the reader is staying after all.
+             */
+            if (!item && !wasRejectedByContract && state.settlingDecisionId === requestedId) { return; }
             root.innerHTML = item
                 ? detailHtml(item)
                 : `<section class="card backbone-preview-section"><div class="wcn-detail-empty"><i class="bx bx-error-circle"></i><p>${esc(t(notFoundKey))}</p><a class="btn btn-label-secondary" href="${esc(listReturnUrl())}">${esc(t('DetailBackToList'))}</a></div></section>`;
@@ -8134,7 +8173,24 @@
         state.submittingActionCode = null;
 
         if (result.ok) {
+            // W-4 — while the re-read is in flight, a detail page whose item disappears must not draw "not found".
+            state.settlingDecisionId = item.id;
             await loadWorkItems();
+            /*
+             * REQ-WCN-01 (W-4) — THE DECISION TOOK THE ITEM OFF THE BOARD. On the detail page a decided approval is
+             * no longer projected, and re-rendering would answer a successful decision with "not found". The reader
+             * goes back to the list they came from, and the success is said THERE.
+             *
+             * Only when the re-read genuinely answered without the item: a failed read, or an item the contract
+             * refused, stays on this page with its own message. An item that is still projected (a MOD-0024 task)
+             * stays exactly as before.
+             */
+            if (leftTheBoardOnDetail(item)) {
+                rememberFlashToast(tf('ToastActionApplied', label, item.title));
+                global.location.assign(listReturnUrl());
+                return { outcome: 'done' };
+            }
+            state.settlingDecisionId = null;
             render();
             // The task's TITLE, never its id — a GUID means nothing to the person reading the toast.
             toast(tf('ToastActionApplied', label, item.title));
@@ -10557,9 +10613,19 @@
             const requiredWarning = stillOpen.length
                 ? `<div class="wcn-confirm-warning">${esc(tf('ConfirmRequiredOpen', stillOpen.length))}</div>`
                 : '';
+            /*
+             * REQ-WCN-01 (W-2) — an OPTIONAL note, in this same confirm. Offered only when the SERVER flagged the
+             * action (`acceptsNote` → `action.note`); an action that REQUIRES a reason never reaches this branch —
+             * its mandatory window above is untouched. The shared confirm's own textarea, no validator: empty is a
+             * real answer, and an empty note sends exactly the body this confirm always sent.
+             */
+            const offersNote = !!action.note && !action.reason;
             let resolveOutcome;
             const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
             sharedConfirm({
+                input: offersNote
+                    ? { label: t('ApprovalNoteLabel'), placeholder: t('ApprovalNotePlaceholder') }
+                    : undefined,
                 title: actionLabel(action),
                 /*
                  * The action's OUTCOME sentence leads the confirm — this is where `OutcomeCancel` ("cancels the
@@ -10581,7 +10647,10 @@
                  * title, the rail button and this button all read the same string.
                  */
                 confirmText: tf('ConfirmProceedNamed', actionLabel(action).toLocaleLowerCase('tr')),
-                onConfirm: () => { resolveOutcome(applyAction(item, action)); },
+                onConfirm: (value) => {
+                    const note = offersNote ? String(value || '').trim() : '';
+                    resolveOutcome(note ? applyAction(item, action, note) : applyAction(item, action));
+                },
                 onCancel: () => resolveOutcome({ outcome: 'cancelled' })
             });
             return outcome;
@@ -10675,6 +10744,35 @@
             if (stored && stored.startsWith('/WorkCenterNext')) { return stored; }
         } catch (error) { /* fall through */ }
         return '/WorkCenterNext';
+    };
+
+    /*
+     * REQ-WCN-01 (W-4) — a success said on the NEXT page. The detail page stores the sentence, the list shows it once
+     * on boot and forgets it. Session-scoped and same-tab; when storage is unavailable the redirect still happens
+     * and only the sentence is lost.
+     */
+    const FLASH_TOAST_KEY = 'wcn:flash-toast';
+
+    const rememberFlashToast = (message) => {
+        try { global.sessionStorage?.setItem(FLASH_TOAST_KEY, String(message || '')); } catch (error) { /* see above */ }
+    };
+
+    const showFlashToast = () => {
+        let message = '';
+        try {
+            message = global.sessionStorage?.getItem(FLASH_TOAST_KEY) || '';
+            global.sessionStorage?.removeItem(FLASH_TOAST_KEY);
+        } catch (error) { /* storage disabled — nothing to show */ }
+        if (message) { toast(message); }
+    };
+
+    /** The detail page's own item is gone from a re-read that ANSWERED (not failed, not refused by the contract). */
+    const leftTheBoardOnDetail = (item) => {
+        const root = document.getElementById('wcnApp');
+        if (!root || root.dataset.wcnPage !== 'detail' || !item || root.dataset.wcnItemId !== item.id) { return false; }
+        if (state.loadState !== 'ready' || itemById(item.id)) { return false; }
+        return !(Array.isArray(state.contractRejectedErrors)
+            && state.contractRejectedErrors.some((error) => error.fixtureId === item.id));
     };
 
     const openDetailPage = (id) => {
@@ -11739,6 +11837,8 @@
         if (root.dataset.wcnPage !== 'detail') {
             hydrateStateFromUrl();
             state.viewsByTab[state.tab] = state.view;
+            // REQ-WCN-01 (W-4) — a decision taken on the detail page reports its success here.
+            showFlashToast();
         }
         // The detail page used to declare itself 'ready' here, before loadWorkItems had fetched anything — so the
         // first paint had no items and announced the task did not exist. It stays 'loading' until the projection

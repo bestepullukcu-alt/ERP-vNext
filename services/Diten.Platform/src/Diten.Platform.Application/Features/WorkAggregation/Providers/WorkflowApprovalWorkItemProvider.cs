@@ -1,5 +1,7 @@
 using Diten.Platform.Application.Features.WorkAggregation.Services;
 using Diten.Platform.Application.Features.Workflow;
+using Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
+using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
@@ -32,6 +34,8 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
     private readonly IWorkItemProjectionService _projection;
     private readonly IReadOnlyList<IApprovalSourceResolver> _sourceResolvers;
     private readonly ILogger<WorkflowApprovalWorkItemProvider> _logger;
+    private readonly IWorkflowTemplateVersionRepository? _versions;
+    private readonly IPositionRepository? _positions;
 
     public WorkflowApprovalWorkItemProvider(
         IApprovalTaskRepository tasks,
@@ -41,7 +45,11 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
         // BL-437 — the source owners that can say what an approval is about. Optional so a caller that wires none
         // (the existing tests) gets exactly the old projection.
         IEnumerable<IApprovalSourceResolver>? sourceResolvers = null,
-        ILogger<WorkflowApprovalWorkItemProvider>? logger = null)
+        ILogger<WorkflowApprovalWorkItemProvider>? logger = null,
+        // REQ-WCN-01 — the pinned template version (step name, candidate references) and the tenant's positions
+        // (their names). Optional and trailing: a caller that wires neither gets exactly the old projection.
+        IWorkflowTemplateVersionRepository? versions = null,
+        IPositionRepository? positions = null)
     {
         _tasks = tasks;
         _snapshots = snapshots;
@@ -49,6 +57,8 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
         _projection = projection;
         _sourceResolvers = sourceResolvers?.ToList() ?? [];
         _logger = logger ?? NullLogger<WorkflowApprovalWorkItemProvider>.Instance;
+        _versions = versions;
+        _positions = positions;
     }
 
     public string ProviderCode => WorkItemContract.ProviderCodeWorkflow;
@@ -95,13 +105,17 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
         var contexts = await ResolveSourceContextsAsync(
             instanceCache.Values.OfType<WorkflowInstance>().ToList(), actor, ct);
 
+        var steps = await ResolveStepContextsAsync(candidates, instanceCache, ct);
+
         var items = new List<WorkItemProjectionDto>();
         foreach (var task in candidates)
         {
             var instance = instanceCache[task.WorkflowInstanceId];
             var context = instance is not null && contexts.TryGetValue(instance.Id, out var found) ? found : null;
+            var step = steps.TryGetValue(task.Id, out var foundStep) ? foundStep : null;
 
-            var projected = _projection.Project(task, instance, actor, ProviderCode, ProviderContractVersion, context);
+            var projected = _projection.Project(
+                task, instance, actor, ProviderCode, ProviderContractVersion, context, step);
             if (projected is not null)
             {
                 items.Add(projected);
@@ -162,6 +176,144 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
         }
 
         return contexts;
+    }
+
+    private const string PositionPrefix = "position:";
+
+    /*
+     * REQ-WCN-01 (W-1, W-3) — what the PINNED template version says about each task's step: its name, and — when the
+     * step names no person directly — the names of its candidate positions.
+     *
+     * Read-only and batched: each distinct version is read once, and position names come from ONE tenant-scoped read
+     * for the whole page (never one per item). A failing read costs the badge and the names, never the approval: the
+     * rows keep today's shape and the decision is still there to take.
+     */
+    private async Task<IReadOnlyDictionary<Guid, ApprovalStepContext>> ResolveStepContextsAsync(
+        IReadOnlyList<ApprovalTask> tasks,
+        IReadOnlyDictionary<Guid, WorkflowInstance?> instances,
+        CancellationToken ct)
+    {
+        var result = new Dictionary<Guid, ApprovalStepContext>();
+        if (_versions is null || tasks.Count == 0)
+        {
+            return result;
+        }
+
+        try
+        {
+            var plans = new Dictionary<Guid, IReadOnlyList<WorkflowRuntimeStep>>();
+            var stepByTask = new Dictionary<Guid, WorkflowRuntimeStep>();
+            foreach (var task in tasks)
+            {
+                if (instances.GetValueOrDefault(task.WorkflowInstanceId)?.TemplateVersionId is not { } versionId)
+                {
+                    continue;
+                }
+
+                if (!plans.TryGetValue(versionId, out var plan))
+                {
+                    plan = WorkflowDefinitionRuntimePlan.FromVersion(await _versions.GetByIdAsync(versionId, ct));
+                    plans[versionId] = plan;
+                }
+
+                var index = WorkflowDefinitionRuntimePlan.IndexOf(plan, task.StageCode, task.StepCode);
+                if (index >= 0)
+                {
+                    stepByTask[task.Id] = plan[index];
+                }
+            }
+
+            // Whose candidate positions are worth naming: the step names NO person directly, and the task still sits
+            // with the step's own candidates (an escalated task has moved on to the escalation principals).
+            var positionIdsByTask = tasks
+                .Where(task => task.Status != ApprovalTaskStatus.Escalated && stepByTask.ContainsKey(task.Id))
+                .Select(task => (task.Id, Ids: CandidatePositionIds(stepByTask[task.Id])))
+                .Where(x => x.Ids.Count > 0)
+                .ToDictionary(x => x.Id, x => x.Ids);
+
+            var positionNames = await ReadPositionNamesAsync(
+                positionIdsByTask.Values.SelectMany(ids => ids).ToHashSet(),
+                tasks.Select(task => task.TenantId).ToHashSet(),
+                ct);
+
+            foreach (var task in tasks)
+            {
+                if (!stepByTask.TryGetValue(task.Id, out var step))
+                {
+                    continue;
+                }
+
+                // The plan falls back to the step CODE when the definition gives no name; a code is not a name.
+                var stepName = string.Equals(step.StepName, step.StepCode, StringComparison.Ordinal)
+                    ? null
+                    : step.StepName;
+                var names = positionIdsByTask.TryGetValue(task.Id, out var ids)
+                    ? ids.Where(positionNames.ContainsKey).Select(id => positionNames[id]).ToList()
+                    : [];
+
+                if (stepName is not null || names.Count > 0)
+                {
+                    result[task.Id] = new ApprovalStepContext(stepName, names);
+                }
+            }
+
+            return result;
+        }
+        catch (Exception ex) when (!ct.IsCancellationRequested)
+        {
+            _logger.LogWarning(ex,
+                "Approval step context could not be read for {Count} task(s); those approvals carry no step name and "
+                + "no candidate positions.", tasks.Count);
+            return new Dictionary<Guid, ApprovalStepContext>();
+        }
+    }
+
+    // The step's position candidates, in definition order — empty when the step names any person directly.
+    private static IReadOnlyList<Guid> CandidatePositionIds(WorkflowRuntimeStep step)
+    {
+        var ids = new List<Guid>();
+        foreach (var candidate in step.CandidatePrincipalIds)
+        {
+            if (candidate.StartsWith(PositionPrefix, StringComparison.OrdinalIgnoreCase)
+                && Guid.TryParse(candidate[PositionPrefix.Length..].Trim(), out var positionId))
+            {
+                if (!ids.Contains(positionId))
+                {
+                    ids.Add(positionId);
+                }
+
+                continue;
+            }
+
+            // `user:{id}` or a bare principal id — a person named directly.
+            return [];
+        }
+
+        return ids;
+    }
+
+    /*
+     * ONE read for the page. The repository is tenant-scoped; the tenant comparison below is the second lock — a
+     * position of another tenant is never named, whatever the repository returns. Only a live seat is named (the same
+     * rule MOD-0023 uses to hand out approvals): a closed or archived position is waiting on nobody.
+     */
+    private async Task<IReadOnlyDictionary<Guid, string>> ReadPositionNamesAsync(
+        IReadOnlyCollection<Guid> positionIds,
+        IReadOnlyCollection<Guid> tenantIds,
+        CancellationToken ct)
+    {
+        if (_positions is null || positionIds.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        return (await _positions.GetByIdsAsync(positionIds, ct))
+            .Where(position => positionIds.Contains(position.Id))
+            .Where(position => tenantIds.Contains(position.TenantId))
+            .Where(WorkflowCandidateResolver.IsLivePosition)
+            .Where(position => !string.IsNullOrWhiteSpace(position.Name))
+            .GroupBy(position => position.Id)
+            .ToDictionary(group => group.Key, group => group.First().Name.Trim());
     }
 
     // Candidate resolution mirrors GetMyWorkflowTasks: the directly resolved assignee always sees the task;

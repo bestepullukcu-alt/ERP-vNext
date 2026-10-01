@@ -2511,4 +2511,16 @@
   <data name="TimerStatePaused" xml:space="preserve">
     <value>已暂停</value>
   </data>
+  <data name="ApprovalAwaitingPositions" xml:space="preserve">
+    <value>待审批：{0}</value>
+  </data>
+  <data name="ApprovalNoteLabel" xml:space="preserve">
+    <value>备注（可选）</value>
+  </data>
+  <data name="ApprovalNotePlaceholder" xml:space="preserve">
+    <value>添加一条备注…</value>
+  </data>
+  <data name="ApprovalStepBadgeTitle" xml:space="preserve">
+    <value>审批步骤</value>
+  </data>
 </root>
