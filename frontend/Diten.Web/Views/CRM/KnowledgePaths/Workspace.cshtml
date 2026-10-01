@@ -7,6 +7,7 @@
     Layout = "_LayoutTenantShell";
     var pathId = ViewData["PathId"] as string ?? string.Empty;
     var canManage = ViewData["CanManage"] is true;
+    var canPublish = ViewData["CanPublish"] is true;
 }
 
 @* WP-KP-UI-1 — the Knowledge Path Studio workspace (mockup v2): header + ONE status line, identity strip (chain /
@@ -14,7 +15,7 @@
    KP-UI-2/3 — no empty tab is drawn), a dismissible first-use intro, and the composition board: one column per chain
    branch, the chain's steps as cards (the skeleton is never edited here), contents + claims per step, reordered only
    inside their step (separate list, never a DataTable tbody). Everything is loaded from api/studio/paths/{id}. *@
-<div class="kp-studio" id="kpStudioRoot" data-path-id="@pathId" data-can-manage="@(canManage ? "true" : "false")">
+<div class="kp-studio" id="kpStudioRoot" data-path-id="@pathId" data-can-manage="@(canManage ? "true" : "false")" data-can-publish="@(canPublish ? "true" : "false")">
     <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
         <div class="d-flex align-items-start gap-3">
             <a href="/CRM/KnowledgePaths" class="btn btn-icon btn-label-secondary" title="@Localizer["BackToList"]" aria-label="@Localizer["BackToList"]">
@@ -25,6 +26,15 @@
                 <small class="text-muted" id="wsSub"></small>
                 <div class="d-flex flex-wrap align-items-center gap-2 mt-1" id="wsStatusLine" role="status"></div>
             </div>
+        </div>
+        @* WP-KP-UI-2 — the main actions; shown by review.js only when they apply. *@
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-label-secondary d-none" id="wsWithdrawReview">
+                <i class="bx bx-undo me-1" aria-hidden="true"></i>@Localizer["WithdrawReview"]
+            </button>
+            <button type="button" class="btn btn-primary d-none" id="wsSubmitButton">
+                <i class="bx bx-send me-1" aria-hidden="true"></i>@Localizer["SubmitOpen"]
+            </button>
         </div>
     </div>
 
@@ -42,17 +52,57 @@
         </div>
     </section>
 
+    @* WP-KP-UI-2 — "next step" band: fix → submit → wait → render → release (one line, one action). *@
+    <div id="wsNextBand" class="alert alert-primary d-none d-flex flex-wrap align-items-center gap-2" role="status">
+        <i class="bx bx-right-arrow-circle fs-4" aria-hidden="true"></i>
+        <span class="flex-grow-1 fw-medium" id="wsNextText"></span>
+        <button type="button" class="btn btn-sm btn-primary d-none" id="wsNextAction"></button>
+    </div>
+
     <section class="card mb-4 d-none" id="wsTabs">
         <div class="card-header p-3">
-            <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap wc-tab-compact" role="tablist">
+            @* A tab is drawn only when it has something to show (permission + state); no empty tab. *@
+            <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap wc-tab-compact" role="tablist" id="wsTabList">
                 <li class="nav-item" role="presentation">
-                    <button type="button" class="nav-link active" role="tab" aria-selected="true" aria-controls="wsComposition">
+                    <button type="button" class="nav-link active" role="tab" aria-selected="true" aria-controls="wsComposition" id="wsTab-composition" data-ws-tab="composition">
                         <i class="bx bx-git-branch me-1" aria-hidden="true"></i><span class="d-none d-sm-inline">@Localizer["TabComposition"]</span>
+                    </button>
+                </li>
+                <li class="nav-item d-none" role="presentation">
+                    <button type="button" class="nav-link" role="tab" aria-selected="false" aria-controls="wsPanel-compliance" id="wsTab-compliance" data-ws-tab="compliance" title="@Localizer["TabCompliance"]">
+                        <i class="bx bx-check-shield me-1" aria-hidden="true"></i><span class="d-none d-sm-inline">@Localizer["TabCompliance"]</span>
+                        <span class="badge rounded-pill bg-danger ms-1 d-none" id="wsComplianceBadge"></span>
+                    </button>
+                </li>
+                <li class="nav-item d-none" role="presentation">
+                    <button type="button" class="nav-link" role="tab" aria-selected="false" aria-controls="wsPanel-mlr" id="wsTab-mlr" data-ws-tab="mlr" title="@Localizer["TabMlr"]">
+                        <i class="bx bx-user-check me-1" aria-hidden="true"></i><span class="d-none d-sm-inline">@Localizer["TabMlr"]</span>
+                    </button>
+                </li>
+                <li class="nav-item d-none" role="presentation">
+                    <button type="button" class="nav-link" role="tab" aria-selected="false" aria-controls="wsPanel-output" id="wsTab-output" data-ws-tab="output" title="@Localizer["TabOutput"]">
+                        <i class="bx bx-rocket me-1" aria-hidden="true"></i><span class="d-none d-sm-inline">@Localizer["TabOutput"]</span>
+                    </button>
+                </li>
+                <li class="nav-item d-none" role="presentation">
+                    <button type="button" class="nav-link" role="tab" aria-selected="false" aria-controls="wsPanel-revisions" id="wsTab-revisions" data-ws-tab="revisions" title="@Localizer["TabRevisions"]">
+                        <i class="bx bx-history me-1" aria-hidden="true"></i><span class="d-none d-sm-inline">@Localizer["TabRevisions"]</span>
+                    </button>
+                </li>
+                <li class="nav-item d-none" role="presentation">
+                    <button type="button" class="nav-link" role="tab" aria-selected="false" aria-controls="wsPanel-preview" id="wsTab-preview" data-ws-tab="preview" title="@Localizer["TabPreview"]">
+                        <i class="bx bx-tab me-1" aria-hidden="true"></i><span class="d-none d-sm-inline">@Localizer["TabPreview"]</span>
+                    </button>
+                </li>
+                <li class="nav-item d-none" role="presentation">
+                    <button type="button" class="nav-link" role="tab" aria-selected="false" aria-controls="wsPanel-usage" id="wsTab-usage" data-ws-tab="usage" title="@Localizer["TabUsage"]">
+                        <i class="bx bx-link me-1" aria-hidden="true"></i><span class="d-none d-sm-inline">@Localizer["TabUsage"]</span>
                     </button>
                 </li>
             </ul>
         </div>
-        <div class="card-body pt-0" id="wsComposition" role="tabpanel">
+        <partial name="~/Views/CRM/KnowledgePaths/_ReviewTabs.cshtml" />
+        <div class="card-body pt-0" id="wsComposition" role="tabpanel" aria-labelledby="wsTab-composition" data-ws-panel="composition">
             <div id="wsIntro" class="alert alert-primary d-none d-flex flex-wrap align-items-center gap-3 mb-4" role="note">
                 <i class="bx bx-bulb fs-4" aria-hidden="true"></i>
                 <span class="flex-grow-1">@Localizer["IntroComposition"]</span>
@@ -113,7 +163,8 @@
     </div>
 </div>
 
-<partial name="~/Views/CRM/KnowledgePaths/_BindChainModal.cshtml" />
+<partial name="~/Views/CRM/KnowledgePaths/_LegacyWizard.cshtml" />
+<partial name="~/Views/CRM/KnowledgePaths/_SubmitModal.cshtml" />
 
 @section Styles {
     @* Page-only layout of the composition board; colours come from the theme variables (light / dark), spacing uses
@@ -127,6 +178,17 @@
         .kp-studio .kp-claim-text { color: var(--bs-body-color); }
         .kp-studio .kp-reason { color: var(--bs-danger); }
         .kp-studio .kp-context .kp-context-value { color: var(--bs-heading-color); }
+        .kp-studio .kp-flash { outline: 2px solid var(--bs-primary); outline-offset: 2px; transition: outline-color .6s; }
+        .kp-studio .kp-timeline { list-style: none; margin: 0; padding: 0; }
+        .kp-studio .kp-timeline > li { position: relative; padding-inline-start: 1.75rem; padding-block-end: 1rem; border-inline-start: 2px solid var(--bs-border-color); margin-inline-start: .5rem; }
+        .kp-studio .kp-timeline > li:last-child { border-inline-start-color: transparent; }
+        .kp-studio .kp-timeline .kp-dot { position: absolute; inset-inline-start: -.55rem; inset-block-start: 0; inline-size: 1rem; block-size: 1rem; border-radius: 50%; background: var(--bs-body-bg); border: 2px solid var(--bs-secondary-color); }
+        .kp-studio .kp-timeline .kp-dot.is-approved { border-color: var(--bs-success); background: var(--bs-success); }
+        .kp-studio .kp-timeline .kp-dot.is-rejected { border-color: var(--bs-danger); background: var(--bs-danger); }
+        .kp-studio .kp-timeline .kp-dot.is-pending { border-color: var(--bs-warning); }
+        .kp-studio .kp-quote { border-inline-start: 3px solid var(--bs-primary-border-subtle); padding-inline-start: .6rem; font-style: italic; color: var(--bs-body-color); }
+        .kp-studio .kp-preview-frame { inline-size: 100%; block-size: 75vh; border: 1px solid var(--bs-border-color); border-radius: .375rem; background: var(--bs-body-bg); }
+        .kp-studio .kp-fingerprint { font-family: var(--bs-font-monospace); word-break: break-all; }
     </style>
 }
 
@@ -134,5 +196,7 @@
     <partial name="~/Views/CRM/KnowledgePaths/_StudioL10n.cshtml" />
     <script src="~/assets/vendor/libs/sortablejs/sortable.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/KnowledgePaths/studio-common.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/KnowledgePaths/legacy-wizard.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/KnowledgePaths/workspace.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/KnowledgePaths/workspace-review.js" asp-append-version="true"></script>
 }

@@ -35,11 +35,7 @@
   <data name="LegacyEditor" xml:space="preserve"><value>فتح المحرر القديم</value></data>
   <data name="LegacyStepsTitle" xml:space="preserve"><value>خطوات المسار القديم</value></data>
   <data name="BindChain" xml:space="preserve"><value>ربط بسلسلة</value></data>
-  <data name="BindTitle" xml:space="preserve"><value>ربط بسلسلة</value></data>
-  <data name="BindIntro" xml:space="preserve"><value>اربط هذا المسار بقالب سلسلة. تُوضع خطواته على خطوات السلسلة؛ سيأتي المعالج الموجّه في إصدار لاحق.</value></data>
   <data name="BindNoChain" xml:space="preserve"><value>لا توجد سلسلة منشورة ومتفرعة لموضوع هذا المسار.</value></data>
-  <data name="BindSubmit" xml:space="preserve"><value>ربط</value></data>
-  <data name="BindDone" xml:space="preserve"><value>تم ربط المسار بالسلسلة.</value></data>
   <data name="IdentityNote" xml:space="preserve"><value>البلد واللغة هما هوية المسار ولا يتغيران لاحقًا؛ لبلد آخر يُكيَّف المسار في مسار جديد.</value></data>
   <data name="SelectPlaceholder" xml:space="preserve"><value>اختر…</value></data>
   <data name="VersionShort" xml:space="preserve"><value>الإصدار {0}</value></data>
@@ -196,4 +192,297 @@
   <data name="Err_claim_ref_duplicate" xml:space="preserve"><value>هذا الادعاء موجود في المسار بالفعل.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>تعذّر إكمال الإجراء.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>الخدمة لا تستجيب حاليًا؛ حاول لاحقًا.</value></data>
+  <data name="TabCompliance" xml:space="preserve"><value>الامتثال</value></data>
+  <data name="TabMlr" xml:space="preserve"><value>موافقة MLR</value></data>
+  <data name="TabOutput" xml:space="preserve"><value>المخرجات والنشر</value></data>
+  <data name="TabRevisions" xml:space="preserve"><value>المراجعات</value></data>
+  <data name="TabPreview" xml:space="preserve"><value>معاينة ميدانية</value></data>
+  <data name="TabUsage" xml:space="preserve"><value>الاستخدام</value></data>
+  <data name="SubmitOpen" xml:space="preserve"><value>إرسال للموافقة</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>سحب من المراجعة</value></data>
+  <data name="WithdrawReviewConfirm" xml:space="preserve"><value>هل تريد سحب جولة المراجعة المفتوحة؟ يعود المسار إلى مسودة.</value></data>
+  <data name="WithdrawReviewDone" xml:space="preserve"><value>تم سحب جولة المراجعة.</value></data>
+  <data name="StatusInReviewStep" xml:space="preserve"><value>قيد المراجعة · {0}</value></data>
+  <data name="NextFix" xml:space="preserve"><value>الخطوة التالية: أصلح {0} من العوائق ثم أرسل للموافقة</value></data>
+  <data name="NextSubmit" xml:space="preserve"><value>المسودة جاهزة: يمكنك إرسالها للموافقة</value></data>
+  <data name="NextWaiting" xml:space="preserve"><value>بانتظار الموافقة: {0}</value></data>
+  <data name="NextRender" xml:space="preserve"><value>الخطوة التالية: أنشئ مخرجات المراجعة المعتمدة</value></data>
+  <data name="NextRelease" xml:space="preserve"><value>الخطوة التالية: انشر المراجعة المعتمدة</value></data>
+  <data name="NextPublisher" xml:space="preserve"><value>تمت الموافقة: يتولى مسؤول النشر إنشاء المخرجات والنشر</value></data>
+  <data name="NextLive" xml:space="preserve"><value>هذا الإصدار مستخدم ميدانيًا</value></data>
+  <data name="ShowBlockers" xml:space="preserve"><value>عرض العوائق</value></data>
+  <data name="WizardOpen" xml:space="preserve"><value>ربط بسلسلة</value></data>
+  <data name="BlockerCount" xml:space="preserve"><value>{0} من العوائق</value></data>
+  <data name="ComplianceIntro" xml:space="preserve"><value>تعمل القواعد أثناء التحرير ثم كقائمة تحقق مانعة عند الإرسال للموافقة. يجب إصلاح العوائق قبل الإرسال؛ التحذيرات لا تمنعه. زر الصف ينقلك إلى العنصر.</value></data>
+  <data name="ComplianceClean" xml:space="preserve"><value>فحص الامتثال سليم.</value></data>
+  <data name="ColSeverity" xml:space="preserve"><value>الأهمية</value></data>
+  <data name="ColRule" xml:space="preserve"><value>القاعدة</value></data>
+  <data name="ColWhere" xml:space="preserve"><value>الفرع › الخطوة › العنصر</value></data>
+  <data name="ColIssue" xml:space="preserve"><value>المشكلة والإصلاح</value></data>
+  <data name="GoToComposition" xml:space="preserve"><value>الانتقال إلى التركيب</value></data>
+  <data name="MapSteps" xml:space="preserve"><value>ربط الخطوات</value></data>
+  <data name="FixPrefix" xml:space="preserve"><value>الإصلاح: {0}</value></data>
+  <data name="Sev_blocker" xml:space="preserve"><value>مانع</value></data>
+  <data name="Sev_warning" xml:space="preserve"><value>تحذير</value></data>
+  <data name="Rule_chain" xml:space="preserve"><value>مطابقة السلسلة</value></data>
+  <data name="Rule_published" xml:space="preserve"><value>المحتوى منشور</value></data>
+  <data name="Rule_language" xml:space="preserve"><value>لغة واحدة</value></data>
+  <data name="Rule_claim" xml:space="preserve"><value>صلاحية الادعاء</value></data>
+  <data name="Rule_placement" xml:space="preserve"><value>موضع الخطوة</value></data>
+  <data name="Comp_UnderMsg" xml:space="preserve"><value>{0}: يُتوقع {1} عنصر على الأقل، والموجود {2}.</value></data>
+  <data name="Comp_UnderFix" xml:space="preserve"><value>أضف محتوى أو ادعاءً إلى هذه الخطوة في التركيب.</value></data>
+  <data name="Comp_OverMsg" xml:space="preserve"><value>{0}: يقبل {1} عنصر كحد أقصى، والموجود {2}.</value></data>
+  <data name="Comp_OverFix" xml:space="preserve"><value>أزل العنصر الزائد من الخطوة.</value></data>
+  <data name="Comp_NotPublishedMsg" xml:space="preserve"><value>«{0}» حالته {1} في قاعدة المعرفة.</value></data>
+  <data name="Comp_NotPublishedFix" xml:space="preserve"><value>انشر المحتوى أو أزله من الخطوة.</value></data>
+  <data name="Comp_LanguageMsg" xml:space="preserve"><value>«{0}» باللغة {1}؛ ولغة المسار {2}.</value></data>
+  <data name="Comp_LanguageFix" xml:space="preserve"><value>استخدم نسخة المحتوى باللغة {0}.</value></data>
+  <data name="Comp_ClaimNotApprovedMsg" xml:space="preserve"><value>{0} غير معتمد في بلد المسار ({1}).</value></data>
+  <data name="Comp_ClaimNotApprovedFix" xml:space="preserve"><value>انتظر اعتماد الادعاء أو أزله من الخطوة.</value></data>
+  <data name="Comp_ClaimNoVersionMsg" xml:space="preserve"><value>لا توجد نسخة من {0} لـ {1}.</value></data>
+  <data name="Comp_ClaimNoVersionFix" xml:space="preserve"><value>اطلب نسخة {0} من إدارة الادعاءات أو أزل الادعاء من الخطوة.</value></data>
+  <data name="Comp_ClaimLanguageMsg" xml:space="preserve"><value>لا يوجد نص لـ {0} بلغة المسار ({1}).</value></data>
+  <data name="Comp_ClaimLanguageFix" xml:space="preserve"><value>اطلب إضافة النص باللغة {0} إلى نسخة البلد أو أزل الادعاء من الخطوة.</value></data>
+  <data name="Comp_UnplacedMsg" xml:space="preserve"><value>«{0}» غير موضوع في أي خطوة من السلسلة.</value></data>
+  <data name="Comp_UnplacedFix" xml:space="preserve"><value>اربطه بخطوة في السلسلة عبر معالج المسارات القديمة أو أزله.</value></data>
+  <data name="SubmitTitle" xml:space="preserve"><value>إرسال للموافقة</value></data>
+  <data name="SubmitIntro" xml:space="preserve"><value>يجمّد الإرسال المسودة الحالية كمراجعة {0} ويبدأ مسار طبي ← قانوني ← تنظيمي. تبقى المسودة قابلة للتحرير.</value></data>
+  <data name="SubmitChecklist" xml:space="preserve"><value>قائمة التحقق</value></data>
+  <data name="SubmitNoBlockers" xml:space="preserve"><value>لا توجد قاعدة مانعة.</value></data>
+  <data name="SubmitOpenRound" xml:space="preserve"><value>المراجعة {0} قيد المراجعة ({1}). يمكن إرسال مراجعة جديدة بعد إغلاق هذه الجولة.</value></data>
+  <data name="SubmitChangesTitle" xml:space="preserve"><value>ملخص التغييرات (المراجعة {0} ← المراجعة {1})</value></data>
+  <data name="SubmitFirstTitle" xml:space="preserve"><value>ملخص التغييرات</value></data>
+  <data name="SubmitFirstText" xml:space="preserve"><value>هذه أول مراجعة لهذا المسار؛ لا يوجد ما يُقارن بعد.</value></data>
+  <data name="SubmitSend" xml:space="preserve"><value>إرسال المراجعة {0}</value></data>
+  <data name="SubmitBlocked" xml:space="preserve"><value>يجب إصلاح {0} من العوائق قبل الإرسال.</value></data>
+  <data name="SubmitBlockedOpen" xml:space="preserve"><value>توجد جولة مراجعة مفتوحة بالفعل.</value></data>
+  <data name="SubmitDone" xml:space="preserve"><value>أُرسل للموافقة؛ عنصر العمل في مركز المهام.</value></data>
+  <data name="MlrTitle" xml:space="preserve"><value>مسار الموافقة · المراجعة {0} · الإصدار {1}</value></data>
+  <data name="MlrHistoryUnavailable" xml:space="preserve"><value>تعذّرت قراءة سجل الموافقة حاليًا؛ ستظهر القرارات عند توفره.</value></data>
+  <data name="MlrSubmitted" xml:space="preserve"><value>الإرسال</value></data>
+  <data name="MlrState_submitted" xml:space="preserve"><value>أُرسل</value></data>
+  <data name="MlrState_approved" xml:space="preserve"><value>وافق</value></data>
+  <data name="MlrState_rejected" xml:space="preserve"><value>رفض</value></data>
+  <data name="MlrState_pending" xml:space="preserve"><value>بانتظار</value></data>
+  <data name="MlrState_queued" xml:space="preserve"><value>في الانتظار</value></data>
+  <data name="MlrState_cancelled" xml:space="preserve"><value>أُلغي</value></data>
+  <data name="MlrState_not-reached" xml:space="preserve"><value>لم يُبلغ</value></data>
+  <data name="MlrQueuedNote" xml:space="preserve"><value>تُفتح بعد الموافقة على الخطوة السابقة.</value></data>
+  <data name="MlrPendingNote" xml:space="preserve"><value>عنصر العمل في مركز المهام؛ تُفتح الخطوة التالية عند اتخاذ القرار.</value></data>
+  <data name="MlrCandidates" xml:space="preserve"><value>المرشحون: {0}</value></data>
+  <data name="MlrStepN" xml:space="preserve"><value>الخطوة {0}</value></data>
+  <data name="MlrUnnamedStep" xml:space="preserve"><value>خطوة بلا اسم</value></data>
+  <data name="MlrSummary" xml:space="preserve"><value>الملخص</value></data>
+  <data name="MlrSumRevision" xml:space="preserve"><value>المراجعة</value></data>
+  <data name="MlrSumSubmitter" xml:space="preserve"><value>المُرسِل</value></data>
+  <data name="MlrSumSubmitted" xml:space="preserve"><value>تاريخ الإرسال</value></data>
+  <data name="MlrSumPending" xml:space="preserve"><value>المنتظر حاليًا</value></data>
+  <data name="MlrSumNone" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="MlrSumDone" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="MlrSumDoneValue" xml:space="preserve"><value>{0} / {1} خطوات</value></data>
+  <data name="MlrRulesTitle" xml:space="preserve"><value>القواعد</value></data>
+  <data name="MlrRules" xml:space="preserve"><value>الترتيب: طبي ← قانوني ← تنظيمي. تُفتح كل خطوة بعد الموافقة السابقة وتصل إلى مركز المهام كعنصر عمل. لا يمكن للمُرسِل الموافقة على مساره؛ الرفض يتطلب سببًا.</value></data>
+  <data name="SingleChannelNote" xml:space="preserve"><value>قناة واحدة: يُسجَّل قرارك في مسار الموافقة في مركز المهام (MOD-0023)؛ والقرار المتخذ هناك يظهر هنا أيضًا.</value></data>
+  <data name="ReviewerView" xml:space="preserve"><value>عرض المراجِع</value></data>
+  <data name="OutputTitle" xml:space="preserve"><value>المخرجات</value></data>
+  <data name="OutputNone" xml:space="preserve"><value>المراجعة {0} · لا توجد مخرجات</value></data>
+  <data name="OutputNoneText" xml:space="preserve"><value>يُنشأ ملف PDF الأرشيفي من المراجعة المعتمدة؛ أما عرض HTML الميداني فيأتي في مرحلة لاحقة.</value></data>
+  <data name="OutputNothing" xml:space="preserve"><value>لا توجد مخرجات بعد.</value></data>
+  <data name="RenderButton" xml:space="preserve"><value>إنشاء المخرجات</value></data>
+  <data name="RenderDone" xml:space="preserve"><value>تم إنشاء ملف PDF الأرشيفي.</value></data>
+  <data name="ArtifactView" xml:space="preserve"><value>عرض</value></data>
+  <data name="ArtifactDownload" xml:space="preserve"><value>تنزيل</value></data>
+  <data name="ArtifactFrom" xml:space="preserve"><value>من المراجعة المعتمدة {0}</value></data>
+  <data name="FingerprintLabel" xml:space="preserve"><value>البصمة</value></data>
+  <data name="SizeKb" xml:space="preserve"><value>{0} ك.ب</value></data>
+  <data name="SizeMb" xml:space="preserve"><value>{0} م.ب</value></data>
+  <data name="ReleaseTitle" xml:space="preserve"><value>النشر</value></data>
+  <data name="ReleaseTitleRev" xml:space="preserve"><value>النشر · المراجعة {0}</value></data>
+  <data name="PreconditionsTitle" xml:space="preserve"><value>شروط النشر</value></data>
+  <data name="ReleaseButton" xml:space="preserve"><value>نشر</value></data>
+  <data name="ReleaseBlocked" xml:space="preserve"><value>لا يمكن النشر بعد: {0}</value></data>
+  <data name="ReleaseNoCandidate" xml:space="preserve"><value>لا توجد مراجعة معتمدة بانتظار النشر.</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>هل تريد نشر الإصدار {0}؟ سيصبح الإصدار المستخدم ميدانيًا.</value></data>
+  <data name="ReleaseConfirmReplace" xml:space="preserve"><value>هل تريد نشر الإصدار {0}؟ سيحل محل الإصدار {1} ميدانيًا.</value></data>
+  <data name="ReleaseDone" xml:space="preserve"><value>تم النشر؛ المسار مستخدم ميدانيًا.</value></data>
+  <data name="PreOk" xml:space="preserve"><value>مستوفى</value></data>
+  <data name="PreMissing" xml:space="preserve"><value>غير مستوفى</value></data>
+  <data name="Pre_approved" xml:space="preserve"><value>المراجعة معتمدة من MLR</value></data>
+  <data name="Pre_approvedNo" xml:space="preserve"><value>المراجعة {0} غير معتمدة بعد.</value></data>
+  <data name="Pre_artifact" xml:space="preserve"><value>المخرجات جاهزة</value></data>
+  <data name="Pre_artifactNo" xml:space="preserve"><value>لا توجد مخرجات: أنشئ أولًا ملف PDF الأرشيفي للمراجعة المعتمدة.</value></data>
+  <data name="Pre_published" xml:space="preserve"><value>جميع المحتويات منشورة</value></data>
+  <data name="Pre_publishedNo" xml:space="preserve"><value>أحد محتويات المسار غير منشور.</value></data>
+  <data name="Pre_language" xml:space="preserve"><value>لغة واحدة</value></data>
+  <data name="Pre_languageNo" xml:space="preserve"><value>أحد المحتويات بلغة مختلفة عن لغة المسار.</value></data>
+  <data name="Pre_claims" xml:space="preserve"><value>جميع الادعاءات صالحة</value></data>
+  <data name="Pre_claimsNo" xml:space="preserve"><value>أحد الادعاءات غير صالح في بلد المسار أو لغته.</value></data>
+  <data name="Pre_conformance" xml:space="preserve"><value>مطابقة السلسلة سليمة</value></data>
+  <data name="Pre_conformanceNo" xml:space="preserve"><value>إحدى خطوات السلسلة ناقصة العناصر أو زائدتها، أو توجد خطوة غير موضوعة.</value></data>
+  <data name="Pre_sod" xml:space="preserve"><value>الناشر ليس المُرسِل</value></data>
+  <data name="Pre_sodNo" xml:space="preserve"><value>أنت من أرسل هذه المراجعة؛ يجب أن ينشرها شخص آخر.</value></data>
+  <data name="LiveTitle" xml:space="preserve"><value>الإصدار الميداني · {0} (المراجعة {1})</value></data>
+  <data name="LiveSub" xml:space="preserve"><value>منشور · {0} · {1}</value></data>
+  <data name="WithdrawReasonLabel" xml:space="preserve"><value>سبب السحب</value></data>
+  <data name="WithdrawReasonPlaceholder" xml:space="preserve"><value>لماذا يُسحب هذا الإصدار؟ (إلزامي)</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>سحب</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>هل تريد سحب الإصدار {0} من الميدان؟</value></data>
+  <data name="WithdrawDone" xml:space="preserve"><value>تم سحب الإصدار.</value></data>
+  <data name="WithdrawNote" xml:space="preserve"><value>لا يمكن اختيار إصدار مسحوب في مراحل الرحلات.</value></data>
+  <data name="WithdrawStagesTitle" xml:space="preserve"><value>اربط أولًا هذه المراحل بإصدار آخر:</value></data>
+  <data name="CardField" xml:space="preserve"><value>المستخدم ميدانيًا</value></data>
+  <data name="CardApproval" xml:space="preserve"><value>قيد الموافقة</value></data>
+  <data name="CardWorking" xml:space="preserve"><value>قيد العمل</value></data>
+  <data name="CardNone" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="CardRev" xml:space="preserve"><value>الإصدار {0} · المراجعة {1}</value></data>
+  <data name="CardRevShort" xml:space="preserve"><value>المراجعة {0}</value></data>
+  <data name="CardVersion" xml:space="preserve"><value>الإصدار {0}</value></data>
+  <data name="CardDraft" xml:space="preserve"><value>الإصدار {0} · مسودة</value></data>
+  <data name="RevExplainVersion" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="RevExplainVersionText" xml:space="preserve"><value>(1.0، 2.0) هو الشكل المنشور للمسار.</value></data>
+  <data name="RevExplainRevision" xml:space="preserve"><value>المراجعة</value></data>
+  <data name="RevExplainRevisionText" xml:space="preserve"><value>(المراجعة 1، 2، 3) نسخة مجمّدة من إصدار أُرسل للموافقة. تُصحح المراجعة المرفوضة وتُعاد، لذا قد يكون للإصدار عدة مراجعات.</value></data>
+  <data name="RevHistoryTitle" xml:space="preserve"><value>سجل المراجعات</value></data>
+  <data name="RevHistoryNewest" xml:space="preserve"><value>الأحدث أولًا</value></data>
+  <data name="RevChanges" xml:space="preserve"><value>{0} من التغييرات</value></data>
+  <data name="RevOpenNotes" xml:space="preserve"><value>{0} من الملاحظات المفتوحة</value></data>
+  <data name="OnFieldBadge" xml:space="preserve"><value>ميداني</value></data>
+  <data name="DiffFrom" xml:space="preserve"><value>من</value></data>
+  <data name="DiffTo" xml:space="preserve"><value>إلى</value></data>
+  <data name="DiffShow" xml:space="preserve"><value>عرض الفرق</value></data>
+  <data name="DiffDraft" xml:space="preserve"><value>المسودة الحالية</value></data>
+  <data name="DiffTitle" xml:space="preserve"><value>{0} ← {1}</value></data>
+  <data name="DiffNone" xml:space="preserve"><value>لا تغيير.</value></data>
+  <data name="DiffPickTwo" xml:space="preserve"><value>اختر مراجعتين مختلفتين.</value></data>
+  <data name="DiffWith" xml:space="preserve"><value>الفرق مع المراجعة {0}</value></data>
+  <data name="Change_step-added" xml:space="preserve"><value>أُضيفت خطوة</value></data>
+  <data name="Change_step-removed" xml:space="preserve"><value>أُزيلت خطوة</value></data>
+  <data name="Change_step-moved" xml:space="preserve"><value>نُقلت خطوة</value></data>
+  <data name="Change_content-changed" xml:space="preserve"><value>تغيّر المحتوى</value></data>
+  <data name="Change_content-version-changed" xml:space="preserve"><value>تغيّرت نسخة المحتوى</value></data>
+  <data name="Change_claim-added" xml:space="preserve"><value>أُضيف ادعاء</value></data>
+  <data name="Change_claim-removed" xml:space="preserve"><value>أُزيل ادعاء</value></data>
+  <data name="Change_claim-moved" xml:space="preserve"><value>نُقل ادعاء</value></data>
+  <data name="Change_claim-version-changed" xml:space="preserve"><value>تغيّرت نسخة الادعاء</value></data>
+  <data name="RevStatus_in-review" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="RevStatus_approved" xml:space="preserve"><value>معتمدة</value></data>
+  <data name="RevStatus_rejected" xml:space="preserve"><value>مرفوضة</value></data>
+  <data name="RevStatus_withdrawn" xml:space="preserve"><value>مسحوبة</value></data>
+  <data name="RevStatus_timed-out" xml:space="preserve"><value>انتهت المهلة</value></data>
+  <data name="RevStatus_other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="Release_released" xml:space="preserve"><value>منشورة</value></data>
+  <data name="Release_withdrawn" xml:space="preserve"><value>مسحوبة من الميدان</value></data>
+  <data name="Release_other" xml:space="preserve"><value>أخرى</value></data>
+  <data name="PreviewDraft" xml:space="preserve"><value>مسودة — تُنشأ المخرجات بعد الموافقة.</value></data>
+  <data name="PreviewNoOutput" xml:space="preserve"><value>معتمدة — تظهر المعاينة بعد إنشاء المخرجات.</value></data>
+  <data name="PreviewCaption" xml:space="preserve"><value>المراجعة {0} · الإصدار {1} · البصمة {2}</value></data>
+  <data name="PreviewPdfNote" xml:space="preserve"><value>ملف PDF الأرشيفي للمراجعة المعتمدة؛ يأتي عرض HTML التفاعلي في مرحلة لاحقة.</value></data>
+  <data name="UsageJourneys" xml:space="preserve"><value>مراحل الرحلات</value></data>
+  <data name="UsageTemplates" xml:space="preserve"><value>قوالب الاستراتيجية</value></data>
+  <data name="UsageNoJourneys" xml:space="preserve"><value>لا توجد مرحلة رحلة تستخدم هذا المسار.</value></data>
+  <data name="UsageNoTemplates" xml:space="preserve"><value>لا يوجد قالب استراتيجية مرتبط بهذا المسار.</value></data>
+  <data name="UsageViewsLater" xml:space="preserve"><value>تأتي بيانات مشاهدات الصفحات ومدتها من الميدان في مرحلة لاحقة.</value></data>
+  <data name="PinLatest" xml:space="preserve"><value>يتبع أحدث إصدار منشور</value></data>
+  <data name="PinVersion" xml:space="preserve"><value>مثبّت على الإصدار {0}</value></data>
+  <data name="Status_active" xml:space="preserve"><value>نشط</value></data>
+  <data name="PersonYou" xml:space="preserve"><value>أنت</value></data>
+  <data name="PersonOther" xml:space="preserve"><value>مستخدم مسجّل</value></data>
+  <data name="CandidateOther" xml:space="preserve"><value>مستخدم مُعيَّن</value></data>
+  <data name="ReviewerTitle" xml:space="preserve"><value>عرض المراجِع</value></data>
+  <data name="BackToWorkspace" xml:space="preserve"><value>العودة إلى مساحة العمل</value></data>
+  <data name="ReviewerHeader" xml:space="preserve"><value>عرض المراجِع · المراجعة {0} · الإصدار {1}</value></data>
+  <data name="ReviewerFrozen" xml:space="preserve"><value>مراجعة مجمّدة · أرسلها {0} · {1}</value></data>
+  <data name="ReviewerWaiting" xml:space="preserve"><value>خطوة {0}: بانتظار</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>انقر على كتلة ادعاء: يُفتح مستند الدليل في اللوحة الجانبية.</value></data>
+  <data name="ReviewerComposition" xml:space="preserve"><value>التركيب</value></data>
+  <data name="ReviewerItems" xml:space="preserve"><value>{0} عنصر</value></data>
+  <data name="ReviewerOpenNotes" xml:space="preserve"><value>{0} من الملاحظات المفتوحة</value></data>
+  <data name="ReviewerNoText" xml:space="preserve"><value>لا يوجد نص بلغة المسار.</value></data>
+  <data name="ContentVersionLabel" xml:space="preserve"><value>النسخة {0}</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>الدليل</value></data>
+  <data name="EvidenceTitleFor" xml:space="preserve"><value>الدليل · {0}</value></data>
+  <data name="EvidencePick" xml:space="preserve"><value>اختر كتلة ادعاء لرؤية دليلها.</value></data>
+  <data name="EvidenceOpen" xml:space="preserve"><value>فتح دليل {0}</value></data>
+  <data name="EvidenceNone" xml:space="preserve"><value>لا يوجد دليل مرتبط بهذا الادعاء.</value></data>
+  <data name="EvidenceNoPermission" xml:space="preserve"><value>ليست لديك صلاحية قراءة أدلة الادعاءات.</value></data>
+  <data name="EvidenceUnavailable" xml:space="preserve"><value>تعذّرت قراءة الدليل حاليًا.</value></data>
+  <data name="NotesTitle" xml:space="preserve"><value>الملاحظات</value></data>
+  <data name="NotesIntro" xml:space="preserve"><value>تُحفظ الملاحظات مع المراجعة؛ وتنتقل الملاحظات غير المحلولة إلى المراجعة التالية.</value></data>
+  <data name="NotesNone" xml:space="preserve"><value>لا توجد ملاحظات على هذه الخطوة.</value></data>
+  <data name="NoteTarget" xml:space="preserve"><value>الملاحظة على</value></data>
+  <data name="NoteOnStep" xml:space="preserve"><value>الخطوة: {0}</value></data>
+  <data name="NoteOnBlock" xml:space="preserve"><value>الكتلة: {0}</value></data>
+  <data name="NotePlaceholder" xml:space="preserve"><value>ملاحظة للتثبيت</value></data>
+  <data name="NoteAdd" xml:space="preserve"><value>تثبيت</value></data>
+  <data name="NoteAdded" xml:space="preserve"><value>تم تثبيت الملاحظة.</value></data>
+  <data name="NoteResolve" xml:space="preserve"><value>وضع علامة محلولة</value></data>
+  <data name="NoteResolved" xml:space="preserve"><value>محلولة</value></data>
+  <data name="NoteResolvedBy" xml:space="preserve"><value>حلّها {0}</value></data>
+  <data name="NoteCarried" xml:space="preserve"><value>منقولة من المراجعة {0}</value></data>
+  <data name="DecisionTitle" xml:space="preserve"><value>القرار</value></data>
+  <data name="DecisionTitleStep" xml:space="preserve"><value>القرار · {0}</value></data>
+  <data name="DecisionCommentLabel" xml:space="preserve"><value>ملاحظة / سبب</value></data>
+  <data name="DecisionCommentPlaceholder" xml:space="preserve"><value>اختياري عند الموافقة؛ إلزامي عند الرفض</value></data>
+  <data name="DecisionApprove" xml:space="preserve"><value>موافقة</value></data>
+  <data name="DecisionReject" xml:space="preserve"><value>رفض</value></data>
+  <data name="DecisionRejectNeedsComment" xml:space="preserve"><value>الرفض يتطلب سببًا. اكتب أي خطوة أو كتلة يجب تغييرها وكيف.</value></data>
+  <data name="DecisionApproved" xml:space="preserve"><value>سُجّلت الموافقة ({0}). تُفتح الخطوة التالية في مركز المهام.</value></data>
+  <data name="DecisionRejected" xml:space="preserve"><value>سُجّل الرفض. سيصحح المُرسِل ويرسل مراجعة جديدة.</value></data>
+  <data name="DecisionOwnRevision" xml:space="preserve"><value>أنت من أرسل هذه المراجعة. لا يمكن للمُرسِل البت في مساره.</value></data>
+  <data name="DecisionClosed" xml:space="preserve"><value>لا توجد خطوة مراجعة مفتوحة لهذه المراجعة.</value></data>
+  <data name="WizardTitle" xml:space="preserve"><value>الربط بسلسلة والإرسال للموافقة</value></data>
+  <data name="WizardStepChain" xml:space="preserve"><value>اختيار سلسلة</value></data>
+  <data name="WizardStepMap" xml:space="preserve"><value>ربط الخطوات</value></data>
+  <data name="WizardStepClaims" xml:space="preserve"><value>اقتراحات الادعاءات</value></data>
+  <data name="WizardStepSummary" xml:space="preserve"><value>الملخص</value></data>
+  <data name="WizardChainIntro" xml:space="preserve"><value>السلسلة التي يرتبط بها المسار. يأتي المنتج والجمهور من السلسلة؛ ويصبح البلد واللغة هوية المسار.</value></data>
+  <data name="WizardBindNote" xml:space="preserve"><value>بعد الربط تُثبَّت السلسلة والبلد واللغة لهذا المسار.</value></data>
+  <data name="WizardBindNext" xml:space="preserve"><value>ربط ومتابعة</value></data>
+  <data name="WizardMapIntro" xml:space="preserve"><value>اربط كل خطوة قديمة بخطوة في السلسلة. الخطوة بلا مقابل لا توضع وتمنع الموافقة حتى تُربط أو تُزال.</value></data>
+  <data name="WizardNoMatch" xml:space="preserve"><value>لا مقابل في السلسلة</value></data>
+  <data name="WizardUnmapped" xml:space="preserve"><value>{0} من الخطوات بلا خطوة في السلسلة: تبقى غير موضوعة وتمنع الموافقة.</value></data>
+  <data name="WizardMapNext" xml:space="preserve"><value>حفظ الربط والمتابعة</value></data>
+  <data name="WizardClaimsIntro" xml:space="preserve"><value>الادعاءات التي تشير إليها محتويات الخطوات. اقبل أو ارفض كل اقتراح.</value></data>
+  <data name="WizardClaimsNote" xml:space="preserve"><value>لا يُربط شيء تلقائيًا: تُضاف فقط الادعاءات التي تقبلها، إلى خطوة المحتوى الذي يشير إليها.</value></data>
+  <data name="WizardAccept" xml:space="preserve"><value>قبول</value></data>
+  <data name="WizardReject" xml:space="preserve"><value>رفض</value></data>
+  <data name="WizardOnPath" xml:space="preserve"><value>موجود في المسار بالفعل</value></data>
+  <data name="WizardFromStep" xml:space="preserve"><value>مشار إليه من: {0}</value></data>
+  <data name="WizardNeedsMapping" xml:space="preserve"><value>خطوتها غير مربوطة فلا يمكن وضعها؛ اربط الخطوة أولًا أو ارفض.</value></data>
+  <data name="WizardNoSuggestions" xml:space="preserve"><value>لا تشير محتويات الخطوات إلى أي ادعاء.</value></data>
+  <data name="WizardUndecided" xml:space="preserve"><value>قرّر بشأن كل اقتراح: بقي {0}.</value></data>
+  <data name="WizardClaimsNext" xml:space="preserve"><value>تطبيق القرارات والمتابعة</value></data>
+  <data name="WizardFinish" xml:space="preserve"><value>تم</value></data>
+  <data name="WizardSummaryContext" xml:space="preserve"><value>البلد · اللغة</value></data>
+  <data name="WizardSummaryMapped" xml:space="preserve"><value>الخطوات المربوطة</value></data>
+  <data name="WizardSummaryClaims" xml:space="preserve"><value>الادعاءات</value></data>
+  <data name="WizardMappedCount" xml:space="preserve"><value>{0} من {1}</value></data>
+  <data name="WizardClaimsCount" xml:space="preserve"><value>{0} مقبول · {1} مرفوض</value></data>
+  <data name="WizardChainKept" xml:space="preserve"><value>رُبط سابقًا</value></data>
+  <data name="WizardSummaryNote" xml:space="preserve"><value>يبقى المسار غير معتمد حتى تُعتمد مراجعته ولا يمكن استخدامه ميدانيًا قبل ذلك. يمكنك إرساله للموافقة الآن أو لاحقًا من مساحة العمل.</value></data>
+  <data name="Err_review_round_open" xml:space="preserve"><value>توجد جولة مراجعة مفتوحة لهذا المسار بالفعل.</value></data>
+  <data name="Err_chain_conformance_failed" xml:space="preserve"><value>المسار لا يطابق سلسلته (خطوة ناقصة العناصر أو زائدتها).</value></data>
+  <data name="Err_component_not_published" xml:space="preserve"><value>أحد محتويات المسار غير منشور.</value></data>
+  <data name="Err_claim_no_country_version" xml:space="preserve"><value>أحد الادعاءات ليس له نسخة في بلد المسار.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>قالب الموافقة لبلد المسار غير مُعد. راجع مسؤول النظام.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>مسار الموافقة لا يستجيب حاليًا؛ حاول لاحقًا.</value></data>
+  <data name="Err_comment_required" xml:space="preserve"><value>الرفض يتطلب سببًا (2000 حرف كحد أقصى).</value></data>
+  <data name="Err_sod_submitter_cannot_decide" xml:space="preserve"><value>أنت من أرسل هذه المراجعة؛ لا يمكن للمُرسِل البت فيها.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>يُعتمد مسار المعرفة فقط عبر مسار MLR وليس مباشرة.</value></data>
+  <data name="Err_revision_not_approved" xml:space="preserve"><value>المراجعة غير معتمدة.</value></data>
+  <data name="Err_artifact_missing" xml:space="preserve"><value>لا توجد مخرجات لهذه المراجعة بعد.</value></data>
+  <data name="Err_revision_superseded" xml:space="preserve"><value>حلت مراجعة أحدث محل هذه؛ أعد تحميل الصفحة.</value></data>
+  <data name="Err_revision_not_released" xml:space="preserve"><value>لا يمكن سحب إلا مراجعة منشورة.</value></data>
+  <data name="Err_sod_submitter_cannot_release" xml:space="preserve"><value>أنت من أرسل هذه المراجعة؛ يجب أن ينشرها شخص آخر.</value></data>
+  <data name="Err_reason_required" xml:space="preserve"><value>سبب السحب إلزامي.</value></data>
+  <data name="Err_path_in_use" xml:space="preserve"><value>تستخدم مرحلة رحلة منشورة هذا المسار؛ لم يُسحب شيء.</value></data>
+  <data name="Err_previous_path_in_use" xml:space="preserve"><value>الإصدار المستبدل ما زال مثبتًا في مراحل الرحلات هذه:</value></data>
+  <data name="Err_artifact_store_unavailable" xml:space="preserve"><value>مخزن المستندات لا يستجيب؛ لم تُنشأ المخرجات. حاول لاحقًا.</value></data>
+  <data name="Err_claim_not_approved" xml:space="preserve"><value>أحد الادعاءات غير معتمد في بلد المسار.</value></data>
+  <data name="Err_claim_language_mismatch" xml:space="preserve"><value>أحد الادعاءات ليس له نص بلغة المسار.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>لست مراجِعًا لهذه الخطوة؛ القرار للمنصب المعيّن في مركز المهام.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>لا توجد خطوة مراجعة منتظرة لهذه المراجعة (ربما انتهت للتو).</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>اختر الموافقة أو الرفض.</value></data>
+  <data name="Err_note_text_required" xml:space="preserve"><value>اكتب نص الملاحظة.</value></data>
+  <data name="Err_note_not_found" xml:space="preserve"><value>لم تُعثر على الملاحظة؛ أعد تحميل الصفحة.</value></data>
 </root>

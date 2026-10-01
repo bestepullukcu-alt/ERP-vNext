@@ -35,11 +35,7 @@
   <data name="LegacyEditor" xml:space="preserve"><value>Открыть старый редактор</value></data>
   <data name="LegacyStepsTitle" xml:space="preserve"><value>Шаги старого маршрута</value></data>
   <data name="BindChain" xml:space="preserve"><value>Привязать к цепочке</value></data>
-  <data name="BindTitle" xml:space="preserve"><value>Привязать к цепочке</value></data>
-  <data name="BindIntro" xml:space="preserve"><value>Привяжите маршрут к шаблону цепочки. Его шаги разместятся на шагах цепочки; пошаговый мастер появится в следующей версии.</value></data>
   <data name="BindNoChain" xml:space="preserve"><value>Для темы этого маршрута нет опубликованной цепочки с ветвями.</value></data>
-  <data name="BindSubmit" xml:space="preserve"><value>Привязать</value></data>
-  <data name="BindDone" xml:space="preserve"><value>Маршрут привязан к цепочке.</value></data>
   <data name="IdentityNote" xml:space="preserve"><value>Страна и язык — идентичность маршрута и потом не меняются; для другой страны маршрут адаптируется в новый.</value></data>
   <data name="SelectPlaceholder" xml:space="preserve"><value>Выберите…</value></data>
   <data name="VersionShort" xml:space="preserve"><value>в. {0}</value></data>
@@ -196,4 +192,297 @@
   <data name="Err_claim_ref_duplicate" xml:space="preserve"><value>Это утверждение уже в маршруте.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>Не удалось выполнить действие.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>Сервис сейчас не отвечает; повторите позже.</value></data>
+  <data name="TabCompliance" xml:space="preserve"><value>Соответствие</value></data>
+  <data name="TabMlr" xml:space="preserve"><value>Согласование MLR</value></data>
+  <data name="TabOutput" xml:space="preserve"><value>Выпуск и публикация</value></data>
+  <data name="TabRevisions" xml:space="preserve"><value>Ревизии</value></data>
+  <data name="TabPreview" xml:space="preserve"><value>Предпросмотр для поля</value></data>
+  <data name="TabUsage" xml:space="preserve"><value>Использование</value></data>
+  <data name="SubmitOpen" xml:space="preserve"><value>Отправить на согласование</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>Отозвать с согласования</value></data>
+  <data name="WithdrawReviewConfirm" xml:space="preserve"><value>Отозвать открытый раунд согласования? Путь вернётся в черновик.</value></data>
+  <data name="WithdrawReviewDone" xml:space="preserve"><value>Раунд согласования отозван.</value></data>
+  <data name="StatusInReviewStep" xml:space="preserve"><value>На согласовании · {0}</value></data>
+  <data name="NextFix" xml:space="preserve"><value>Следующий шаг: устраните блокировки ({0}) и отправьте на согласование</value></data>
+  <data name="NextSubmit" xml:space="preserve"><value>Черновик готов: его можно отправить на согласование</value></data>
+  <data name="NextWaiting" xml:space="preserve"><value>Ожидает согласования: {0}</value></data>
+  <data name="NextRender" xml:space="preserve"><value>Следующий шаг: сформируйте выпуск согласованной ревизии</value></data>
+  <data name="NextRelease" xml:space="preserve"><value>Следующий шаг: опубликуйте согласованную ревизию</value></data>
+  <data name="NextPublisher" xml:space="preserve"><value>Согласовано: выпуск и публикацию выполняет ответственный за публикацию</value></data>
+  <data name="NextLive" xml:space="preserve"><value>Эта версия используется в поле</value></data>
+  <data name="ShowBlockers" xml:space="preserve"><value>Показать блокировки</value></data>
+  <data name="WizardOpen" xml:space="preserve"><value>Привязать к цепочке</value></data>
+  <data name="BlockerCount" xml:space="preserve"><value>Блокировок: {0}</value></data>
+  <data name="ComplianceIntro" xml:space="preserve"><value>Правила работают при редактировании и повторно — как блокирующий чек-лист при отправке на согласование. Блокировки нужно устранить до отправки; предупреждения её не останавливают. Кнопка в строке ведёт к элементу.</value></data>
+  <data name="ComplianceClean" xml:space="preserve"><value>Проверка соответствия пройдена.</value></data>
+  <data name="ColSeverity" xml:space="preserve"><value>Важность</value></data>
+  <data name="ColRule" xml:space="preserve"><value>Правило</value></data>
+  <data name="ColWhere" xml:space="preserve"><value>Ветка › шаг › элемент</value></data>
+  <data name="ColIssue" xml:space="preserve"><value>Нарушение и исправление</value></data>
+  <data name="GoToComposition" xml:space="preserve"><value>Перейти к сценарию</value></data>
+  <data name="MapSteps" xml:space="preserve"><value>Сопоставить шаги</value></data>
+  <data name="FixPrefix" xml:space="preserve"><value>Исправление: {0}</value></data>
+  <data name="Sev_blocker" xml:space="preserve"><value>Блокирующее</value></data>
+  <data name="Sev_warning" xml:space="preserve"><value>Предупреждение</value></data>
+  <data name="Rule_chain" xml:space="preserve"><value>Соответствие цепочке</value></data>
+  <data name="Rule_published" xml:space="preserve"><value>Контент опубликован</value></data>
+  <data name="Rule_language" xml:space="preserve"><value>Один язык</value></data>
+  <data name="Rule_claim" xml:space="preserve"><value>Пригодность утверждений</value></data>
+  <data name="Rule_placement" xml:space="preserve"><value>Размещение шагов</value></data>
+  <data name="Comp_UnderMsg" xml:space="preserve"><value>{0}: ожидается не менее {1} элем., сейчас {2}.</value></data>
+  <data name="Comp_UnderFix" xml:space="preserve"><value>Добавьте в сценарии контент или утверждение к этому шагу.</value></data>
+  <data name="Comp_OverMsg" xml:space="preserve"><value>{0}: не более {1} элем., сейчас {2}.</value></data>
+  <data name="Comp_OverFix" xml:space="preserve"><value>Уберите лишний элемент из шага.</value></data>
+  <data name="Comp_NotPublishedMsg" xml:space="preserve"><value>«{0}» в базе знаний в статусе «{1}».</value></data>
+  <data name="Comp_NotPublishedFix" xml:space="preserve"><value>Опубликуйте контент или уберите его из шага.</value></data>
+  <data name="Comp_LanguageMsg" xml:space="preserve"><value>«{0}» на языке «{1}»; язык пути — «{2}».</value></data>
+  <data name="Comp_LanguageFix" xml:space="preserve"><value>Используйте версию контента на языке «{0}».</value></data>
+  <data name="Comp_ClaimNotApprovedMsg" xml:space="preserve"><value>{0} не согласовано в стране пути ({1}).</value></data>
+  <data name="Comp_ClaimNotApprovedFix" xml:space="preserve"><value>Дождитесь согласования утверждения или уберите его из шага.</value></data>
+  <data name="Comp_ClaimNoVersionMsg" xml:space="preserve"><value>У {0} нет версии для страны «{1}».</value></data>
+  <data name="Comp_ClaimNoVersionFix" xml:space="preserve"><value>Запросите версию для страны «{0}» в управлении утверждениями или уберите его из шага.</value></data>
+  <data name="Comp_ClaimLanguageMsg" xml:space="preserve"><value>У {0} нет текста на языке пути ({1}).</value></data>
+  <data name="Comp_ClaimLanguageFix" xml:space="preserve"><value>Запросите текст на языке «{0}» в версии страны или уберите утверждение из шага.</value></data>
+  <data name="Comp_UnplacedMsg" xml:space="preserve"><value>«{0}» не размещён ни на одном шаге цепочки.</value></data>
+  <data name="Comp_UnplacedFix" xml:space="preserve"><value>Сопоставьте его с шагом цепочки в мастере старых путей или удалите.</value></data>
+  <data name="SubmitTitle" xml:space="preserve"><value>Отправка на согласование</value></data>
+  <data name="SubmitIntro" xml:space="preserve"><value>Отправка фиксирует текущий черновик как ревизию {0} и запускает маршрут Медицина → Юристы → Регуляторный отдел. Черновик остаётся редактируемым.</value></data>
+  <data name="SubmitChecklist" xml:space="preserve"><value>Чек-лист</value></data>
+  <data name="SubmitNoBlockers" xml:space="preserve"><value>Блокирующих правил нет.</value></data>
+  <data name="SubmitOpenRound" xml:space="preserve"><value>Ревизия {0} на согласовании ({1}). Новую ревизию можно отправить после закрытия этого раунда.</value></data>
+  <data name="SubmitChangesTitle" xml:space="preserve"><value>Сводка изменений (ревизия {0} → ревизия {1})</value></data>
+  <data name="SubmitFirstTitle" xml:space="preserve"><value>Сводка изменений</value></data>
+  <data name="SubmitFirstText" xml:space="preserve"><value>Это первая ревизия пути; сравнивать пока не с чем.</value></data>
+  <data name="SubmitSend" xml:space="preserve"><value>Отправить ревизию {0}</value></data>
+  <data name="SubmitBlocked" xml:space="preserve"><value>До отправки нужно устранить блокировки: {0}.</value></data>
+  <data name="SubmitBlockedOpen" xml:space="preserve"><value>Раунд согласования уже открыт.</value></data>
+  <data name="SubmitDone" xml:space="preserve"><value>Отправлено на согласование; задача в Центре задач.</value></data>
+  <data name="MlrTitle" xml:space="preserve"><value>Маршрут согласования · ревизия {0} · v{1}</value></data>
+  <data name="MlrHistoryUnavailable" xml:space="preserve"><value>История согласования сейчас недоступна; решения появятся, когда она станет доступна.</value></data>
+  <data name="MlrSubmitted" xml:space="preserve"><value>Отправка</value></data>
+  <data name="MlrState_submitted" xml:space="preserve"><value>Отправлено</value></data>
+  <data name="MlrState_approved" xml:space="preserve"><value>Согласовано</value></data>
+  <data name="MlrState_rejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="MlrState_pending" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="MlrState_queued" xml:space="preserve"><value>В очереди</value></data>
+  <data name="MlrState_cancelled" xml:space="preserve"><value>Отменено</value></data>
+  <data name="MlrState_not-reached" xml:space="preserve"><value>Не достигнуто</value></data>
+  <data name="MlrQueuedNote" xml:space="preserve"><value>Откроется после согласования предыдущего шага.</value></data>
+  <data name="MlrPendingNote" xml:space="preserve"><value>Задача в Центре задач; после решения откроется следующий шаг.</value></data>
+  <data name="MlrCandidates" xml:space="preserve"><value>Кандидаты: {0}</value></data>
+  <data name="MlrStepN" xml:space="preserve"><value>Шаг {0}</value></data>
+  <data name="MlrUnnamedStep" xml:space="preserve"><value>Шаг без названия</value></data>
+  <data name="MlrSummary" xml:space="preserve"><value>Сводка</value></data>
+  <data name="MlrSumRevision" xml:space="preserve"><value>Ревизия</value></data>
+  <data name="MlrSumSubmitter" xml:space="preserve"><value>Отправитель</value></data>
+  <data name="MlrSumSubmitted" xml:space="preserve"><value>Отправлено</value></data>
+  <data name="MlrSumPending" xml:space="preserve"><value>Сейчас ожидает</value></data>
+  <data name="MlrSumNone" xml:space="preserve"><value>Нет</value></data>
+  <data name="MlrSumDone" xml:space="preserve"><value>Завершено</value></data>
+  <data name="MlrSumDoneValue" xml:space="preserve"><value>{0} / {1} шагов</value></data>
+  <data name="MlrRulesTitle" xml:space="preserve"><value>Правила</value></data>
+  <data name="MlrRules" xml:space="preserve"><value>Порядок: Медицина → Юристы → Регуляторный отдел. Каждый шаг открывается после предыдущего согласования и попадает в Центр задач. Отправитель не может согласовать свой путь; отклонение требует причины.</value></data>
+  <data name="SingleChannelNote" xml:space="preserve"><value>Единый канал: ваше решение записывается в маршрут согласования в Центре задач (MOD-0023); решение, принятое там, тоже отображается здесь.</value></data>
+  <data name="ReviewerView" xml:space="preserve"><value>Режим рецензента</value></data>
+  <data name="OutputTitle" xml:space="preserve"><value>Выпуски</value></data>
+  <data name="OutputNone" xml:space="preserve"><value>Ревизия {0} · выпуска нет</value></data>
+  <data name="OutputNoneText" xml:space="preserve"><value>Архивный PDF создаётся из согласованной ревизии; HTML-презентация для поля появится на следующем этапе.</value></data>
+  <data name="OutputNothing" xml:space="preserve"><value>Выпусков пока нет.</value></data>
+  <data name="RenderButton" xml:space="preserve"><value>Сформировать выпуск</value></data>
+  <data name="RenderDone" xml:space="preserve"><value>Архивный PDF создан.</value></data>
+  <data name="ArtifactView" xml:space="preserve"><value>Открыть</value></data>
+  <data name="ArtifactDownload" xml:space="preserve"><value>Скачать</value></data>
+  <data name="ArtifactFrom" xml:space="preserve"><value>Из согласованной ревизии {0}</value></data>
+  <data name="FingerprintLabel" xml:space="preserve"><value>Отпечаток</value></data>
+  <data name="SizeKb" xml:space="preserve"><value>{0} КБ</value></data>
+  <data name="SizeMb" xml:space="preserve"><value>{0} МБ</value></data>
+  <data name="ReleaseTitle" xml:space="preserve"><value>Публикация</value></data>
+  <data name="ReleaseTitleRev" xml:space="preserve"><value>Публикация · ревизия {0}</value></data>
+  <data name="PreconditionsTitle" xml:space="preserve"><value>Условия публикации</value></data>
+  <data name="ReleaseButton" xml:space="preserve"><value>Опубликовать</value></data>
+  <data name="ReleaseBlocked" xml:space="preserve"><value>Публикация пока невозможна: {0}</value></data>
+  <data name="ReleaseNoCandidate" xml:space="preserve"><value>Нет согласованной ревизии, ожидающей публикации.</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>Опубликовать v{0}? Она станет версией, используемой в поле.</value></data>
+  <data name="ReleaseConfirmReplace" xml:space="preserve"><value>Опубликовать v{0}? Она заменит v{1} в поле.</value></data>
+  <data name="ReleaseDone" xml:space="preserve"><value>Опубликовано; путь используется в поле.</value></data>
+  <data name="PreOk" xml:space="preserve"><value>Выполнено</value></data>
+  <data name="PreMissing" xml:space="preserve"><value>Не выполнено</value></data>
+  <data name="Pre_approved" xml:space="preserve"><value>Ревизия согласована MLR</value></data>
+  <data name="Pre_approvedNo" xml:space="preserve"><value>Ревизия {0} ещё не согласована.</value></data>
+  <data name="Pre_artifact" xml:space="preserve"><value>Выпуск готов</value></data>
+  <data name="Pre_artifactNo" xml:space="preserve"><value>Нет выпуска: сначала сформируйте архивный PDF согласованной ревизии.</value></data>
+  <data name="Pre_published" xml:space="preserve"><value>Весь контент опубликован</value></data>
+  <data name="Pre_publishedNo" xml:space="preserve"><value>Один из материалов пути не опубликован.</value></data>
+  <data name="Pre_language" xml:space="preserve"><value>Один язык</value></data>
+  <data name="Pre_languageNo" xml:space="preserve"><value>Один из материалов не на языке пути.</value></data>
+  <data name="Pre_claims" xml:space="preserve"><value>Все утверждения пригодны</value></data>
+  <data name="Pre_claimsNo" xml:space="preserve"><value>Одно из утверждений непригодно для страны/языка пути.</value></data>
+  <data name="Pre_conformance" xml:space="preserve"><value>Соответствие цепочке соблюдено</value></data>
+  <data name="Pre_conformanceNo" xml:space="preserve"><value>В шаге цепочки не хватает или слишком много элементов, либо шаг не размещён.</value></data>
+  <data name="Pre_sod" xml:space="preserve"><value>Публикующий не является отправителем</value></data>
+  <data name="Pre_sodNo" xml:space="preserve"><value>Эту ревизию отправили вы; опубликовать её должен другой человек.</value></data>
+  <data name="LiveTitle" xml:space="preserve"><value>Версия в поле · v{0} (ревизия {1})</value></data>
+  <data name="LiveSub" xml:space="preserve"><value>Опубликовано · {0} · {1}</value></data>
+  <data name="WithdrawReasonLabel" xml:space="preserve"><value>Причина отзыва</value></data>
+  <data name="WithdrawReasonPlaceholder" xml:space="preserve"><value>Почему версия отзывается? (обязательно)</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>Отозвать</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Отозвать v{0} из поля?</value></data>
+  <data name="WithdrawDone" xml:space="preserve"><value>Версия отозвана.</value></data>
+  <data name="WithdrawNote" xml:space="preserve"><value>Отозванную версию нельзя выбрать в этапах маршрутов.</value></data>
+  <data name="WithdrawStagesTitle" xml:space="preserve"><value>Сначала привяжите эти этапы к другой версии:</value></data>
+  <data name="CardField" xml:space="preserve"><value>Используется в поле</value></data>
+  <data name="CardApproval" xml:space="preserve"><value>На согласовании</value></data>
+  <data name="CardWorking" xml:space="preserve"><value>В работе</value></data>
+  <data name="CardNone" xml:space="preserve"><value>Нет</value></data>
+  <data name="CardRev" xml:space="preserve"><value>v{0} · ревизия {1}</value></data>
+  <data name="CardRevShort" xml:space="preserve"><value>Ревизия {0}</value></data>
+  <data name="CardVersion" xml:space="preserve"><value>v{0}</value></data>
+  <data name="CardDraft" xml:space="preserve"><value>v{0} · черновик</value></data>
+  <data name="RevExplainVersion" xml:space="preserve"><value>Версия</value></data>
+  <data name="RevExplainVersionText" xml:space="preserve"><value>(v1.0, v2.0) — опубликованное состояние пути.</value></data>
+  <data name="RevExplainRevision" xml:space="preserve"><value>Ревизия</value></data>
+  <data name="RevExplainRevisionText" xml:space="preserve"><value>(Ревизии 1, 2, 3) — зафиксированные копии версии, отправленные на согласование. Отклонённая ревизия исправляется и отправляется снова, поэтому у версии может быть несколько ревизий.</value></data>
+  <data name="RevHistoryTitle" xml:space="preserve"><value>История ревизий</value></data>
+  <data name="RevHistoryNewest" xml:space="preserve"><value>сначала новые</value></data>
+  <data name="RevChanges" xml:space="preserve"><value>Изменений: {0}</value></data>
+  <data name="RevOpenNotes" xml:space="preserve"><value>Открытых заметок: {0}</value></data>
+  <data name="OnFieldBadge" xml:space="preserve"><value>В ПОЛЕ</value></data>
+  <data name="DiffFrom" xml:space="preserve"><value>С</value></data>
+  <data name="DiffTo" xml:space="preserve"><value>По</value></data>
+  <data name="DiffShow" xml:space="preserve"><value>Показать разницу</value></data>
+  <data name="DiffDraft" xml:space="preserve"><value>Текущий черновик</value></data>
+  <data name="DiffTitle" xml:space="preserve"><value>{0} → {1}</value></data>
+  <data name="DiffNone" xml:space="preserve"><value>Изменений нет.</value></data>
+  <data name="DiffPickTwo" xml:space="preserve"><value>Выберите две разные ревизии.</value></data>
+  <data name="DiffWith" xml:space="preserve"><value>Разница с ревизией {0}</value></data>
+  <data name="Change_step-added" xml:space="preserve"><value>Шаг добавлен</value></data>
+  <data name="Change_step-removed" xml:space="preserve"><value>Шаг удалён</value></data>
+  <data name="Change_step-moved" xml:space="preserve"><value>Шаг перемещён</value></data>
+  <data name="Change_content-changed" xml:space="preserve"><value>Контент заменён</value></data>
+  <data name="Change_content-version-changed" xml:space="preserve"><value>Версия контента изменена</value></data>
+  <data name="Change_claim-added" xml:space="preserve"><value>Утверждение добавлено</value></data>
+  <data name="Change_claim-removed" xml:space="preserve"><value>Утверждение удалено</value></data>
+  <data name="Change_claim-moved" xml:space="preserve"><value>Утверждение перемещено</value></data>
+  <data name="Change_claim-version-changed" xml:space="preserve"><value>Версия утверждения изменена</value></data>
+  <data name="RevStatus_in-review" xml:space="preserve"><value>На согласовании</value></data>
+  <data name="RevStatus_approved" xml:space="preserve"><value>Согласована</value></data>
+  <data name="RevStatus_rejected" xml:space="preserve"><value>Отклонена</value></data>
+  <data name="RevStatus_withdrawn" xml:space="preserve"><value>Отозвана</value></data>
+  <data name="RevStatus_timed-out" xml:space="preserve"><value>Истёк срок</value></data>
+  <data name="RevStatus_other" xml:space="preserve"><value>Другое</value></data>
+  <data name="Release_released" xml:space="preserve"><value>Опубликована</value></data>
+  <data name="Release_withdrawn" xml:space="preserve"><value>Отозвана из поля</value></data>
+  <data name="Release_other" xml:space="preserve"><value>Другое</value></data>
+  <data name="PreviewDraft" xml:space="preserve"><value>Черновик — выпуск формируется после согласования.</value></data>
+  <data name="PreviewNoOutput" xml:space="preserve"><value>Согласовано — предпросмотр появится после формирования выпуска.</value></data>
+  <data name="PreviewCaption" xml:space="preserve"><value>Ревизия {0} · v{1} · отпечаток {2}</value></data>
+  <data name="PreviewPdfNote" xml:space="preserve"><value>Архивный PDF согласованной ревизии; интерактивная HTML-презентация появится позже.</value></data>
+  <data name="UsageJourneys" xml:space="preserve"><value>Этапы маршрутов</value></data>
+  <data name="UsageTemplates" xml:space="preserve"><value>Шаблоны стратегий</value></data>
+  <data name="UsageNoJourneys" xml:space="preserve"><value>Ни один этап маршрута не использует этот путь.</value></data>
+  <data name="UsageNoTemplates" xml:space="preserve"><value>К этому пути не привязан ни один шаблон стратегии.</value></data>
+  <data name="UsageViewsLater" xml:space="preserve"><value>Данные о просмотрах и времени на страницу из поля появятся на следующем этапе.</value></data>
+  <data name="PinLatest" xml:space="preserve"><value>Следует последней опубликованной версии</value></data>
+  <data name="PinVersion" xml:space="preserve"><value>Закреплено на v{0}</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Активен</value></data>
+  <data name="PersonYou" xml:space="preserve"><value>Вы</value></data>
+  <data name="PersonOther" xml:space="preserve"><value>Зарегистрированный пользователь</value></data>
+  <data name="CandidateOther" xml:space="preserve"><value>Назначенный пользователь</value></data>
+  <data name="ReviewerTitle" xml:space="preserve"><value>Режим рецензента</value></data>
+  <data name="BackToWorkspace" xml:space="preserve"><value>Назад в рабочую область</value></data>
+  <data name="ReviewerHeader" xml:space="preserve"><value>Режим рецензента · ревизия {0} · v{1}</value></data>
+  <data name="ReviewerFrozen" xml:space="preserve"><value>Зафиксированная ревизия · отправил(а) {0} · {1}</value></data>
+  <data name="ReviewerWaiting" xml:space="preserve"><value>Шаг «{0}»: ожидает</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>Нажмите на утверждение: документ-доказательство откроется на боковой панели.</value></data>
+  <data name="ReviewerComposition" xml:space="preserve"><value>Сценарий</value></data>
+  <data name="ReviewerItems" xml:space="preserve"><value>Элементов: {0}</value></data>
+  <data name="ReviewerOpenNotes" xml:space="preserve"><value>Открытых заметок: {0}</value></data>
+  <data name="ReviewerNoText" xml:space="preserve"><value>Нет текста на языке пути.</value></data>
+  <data name="ContentVersionLabel" xml:space="preserve"><value>Версия {0}</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>Доказательства</value></data>
+  <data name="EvidenceTitleFor" xml:space="preserve"><value>Доказательства · {0}</value></data>
+  <data name="EvidencePick" xml:space="preserve"><value>Выберите утверждение, чтобы увидеть доказательства.</value></data>
+  <data name="EvidenceOpen" xml:space="preserve"><value>Открыть доказательства {0}</value></data>
+  <data name="EvidenceNone" xml:space="preserve"><value>К утверждению не привязаны доказательства.</value></data>
+  <data name="EvidenceNoPermission" xml:space="preserve"><value>У вас нет прав на просмотр доказательств утверждений.</value></data>
+  <data name="EvidenceUnavailable" xml:space="preserve"><value>Доказательства сейчас недоступны.</value></data>
+  <data name="NotesTitle" xml:space="preserve"><value>Заметки</value></data>
+  <data name="NotesIntro" xml:space="preserve"><value>Заметки хранятся с ревизией; нерешённые переносятся в следующую ревизию.</value></data>
+  <data name="NotesNone" xml:space="preserve"><value>К этому шагу заметок нет.</value></data>
+  <data name="NoteTarget" xml:space="preserve"><value>Заметка к</value></data>
+  <data name="NoteOnStep" xml:space="preserve"><value>Шаг: {0}</value></data>
+  <data name="NoteOnBlock" xml:space="preserve"><value>Блок: {0}</value></data>
+  <data name="NotePlaceholder" xml:space="preserve"><value>Заметка для закрепления</value></data>
+  <data name="NoteAdd" xml:space="preserve"><value>Закрепить</value></data>
+  <data name="NoteAdded" xml:space="preserve"><value>Заметка закреплена.</value></data>
+  <data name="NoteResolve" xml:space="preserve"><value>Отметить как решённую</value></data>
+  <data name="NoteResolved" xml:space="preserve"><value>Решена</value></data>
+  <data name="NoteResolvedBy" xml:space="preserve"><value>Решил(а): {0}</value></data>
+  <data name="NoteCarried" xml:space="preserve"><value>Перенесена из ревизии {0}</value></data>
+  <data name="DecisionTitle" xml:space="preserve"><value>Решение</value></data>
+  <data name="DecisionTitleStep" xml:space="preserve"><value>Решение · {0}</value></data>
+  <data name="DecisionCommentLabel" xml:space="preserve"><value>Комментарий / причина</value></data>
+  <data name="DecisionCommentPlaceholder" xml:space="preserve"><value>Необязательно при согласовании; обязательно при отклонении</value></data>
+  <data name="DecisionApprove" xml:space="preserve"><value>Согласовать</value></data>
+  <data name="DecisionReject" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="DecisionRejectNeedsComment" xml:space="preserve"><value>Для отклонения нужна причина. Укажите, какой шаг или блок и как нужно изменить.</value></data>
+  <data name="DecisionApproved" xml:space="preserve"><value>Согласование записано ({0}). Следующий шаг откроется в Центре задач.</value></data>
+  <data name="DecisionRejected" xml:space="preserve"><value>Отклонение записано. Отправитель исправит и пришлёт новую ревизию.</value></data>
+  <data name="DecisionOwnRevision" xml:space="preserve"><value>Эту ревизию отправили вы. Отправитель не может принимать решение по своему пути.</value></data>
+  <data name="DecisionClosed" xml:space="preserve"><value>У этой ревизии нет открытого шага согласования.</value></data>
+  <data name="WizardTitle" xml:space="preserve"><value>Привязать к цепочке и отправить на согласование</value></data>
+  <data name="WizardStepChain" xml:space="preserve"><value>Выбор цепочки</value></data>
+  <data name="WizardStepMap" xml:space="preserve"><value>Сопоставление шагов</value></data>
+  <data name="WizardStepClaims" xml:space="preserve"><value>Предложения утверждений</value></data>
+  <data name="WizardStepSummary" xml:space="preserve"><value>Итог</value></data>
+  <data name="WizardChainIntro" xml:space="preserve"><value>Цепочка, к которой привязывается путь. Продукт и аудитория берутся из цепочки; страна и язык становятся идентичностью пути.</value></data>
+  <data name="WizardBindNote" xml:space="preserve"><value>После привязки цепочка, страна и язык этого пути фиксируются.</value></data>
+  <data name="WizardBindNext" xml:space="preserve"><value>Привязать и продолжить</value></data>
+  <data name="WizardMapIntro" xml:space="preserve"><value>Сопоставьте каждый старый шаг с шагом цепочки. Шаг без соответствия не размещается и блокирует согласование, пока его не сопоставят или не удалят.</value></data>
+  <data name="WizardNoMatch" xml:space="preserve"><value>Нет соответствия в цепочке</value></data>
+  <data name="WizardUnmapped" xml:space="preserve"><value>Шагов без соответствия: {0}. Они не размещаются и блокируют согласование.</value></data>
+  <data name="WizardMapNext" xml:space="preserve"><value>Сохранить сопоставление и продолжить</value></data>
+  <data name="WizardClaimsIntro" xml:space="preserve"><value>Утверждения, на которые ссылается контент шагов. Примите или отклоните каждое предложение.</value></data>
+  <data name="WizardClaimsNote" xml:space="preserve"><value>Ничего не привязывается автоматически: добавляются только принятые утверждения — на шаг контента, который на них ссылается.</value></data>
+  <data name="WizardAccept" xml:space="preserve"><value>Принять</value></data>
+  <data name="WizardReject" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="WizardOnPath" xml:space="preserve"><value>уже в пути</value></data>
+  <data name="WizardFromStep" xml:space="preserve"><value>Ссылается шаг: {0}</value></data>
+  <data name="WizardNeedsMapping" xml:space="preserve"><value>Её шаг не сопоставлен, разместить нельзя; сначала сопоставьте шаг или отклоните.</value></data>
+  <data name="WizardNoSuggestions" xml:space="preserve"><value>Контент шагов не ссылается ни на одно утверждение.</value></data>
+  <data name="WizardUndecided" xml:space="preserve"><value>Примите решение по каждому предложению: осталось {0}.</value></data>
+  <data name="WizardClaimsNext" xml:space="preserve"><value>Применить решения и продолжить</value></data>
+  <data name="WizardFinish" xml:space="preserve"><value>Готово</value></data>
+  <data name="WizardSummaryContext" xml:space="preserve"><value>Страна · язык</value></data>
+  <data name="WizardSummaryMapped" xml:space="preserve"><value>Сопоставленные шаги</value></data>
+  <data name="WizardSummaryClaims" xml:space="preserve"><value>Утверждения</value></data>
+  <data name="WizardMappedCount" xml:space="preserve"><value>{0} из {1}</value></data>
+  <data name="WizardClaimsCount" xml:space="preserve"><value>Принято: {0} · отклонено: {1}</value></data>
+  <data name="WizardChainKept" xml:space="preserve"><value>Привязано ранее</value></data>
+  <data name="WizardSummaryNote" xml:space="preserve"><value>Путь не согласован, пока не согласована его ревизия, и до этого не используется в поле. Отправить на согласование можно сейчас или позже из рабочей области.</value></data>
+  <data name="Err_review_round_open" xml:space="preserve"><value>Для этого пути уже открыт раунд согласования.</value></data>
+  <data name="Err_chain_conformance_failed" xml:space="preserve"><value>Путь не соответствует цепочке (в шаге не хватает или слишком много элементов).</value></data>
+  <data name="Err_component_not_published" xml:space="preserve"><value>Один из материалов пути не опубликован.</value></data>
+  <data name="Err_claim_no_country_version" xml:space="preserve"><value>У одного из утверждений нет версии для страны пути.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>Шаблон согласования для страны пути не настроен. Обратитесь к администратору.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>Маршрут согласования сейчас не отвечает; повторите позже.</value></data>
+  <data name="Err_comment_required" xml:space="preserve"><value>Для отклонения нужна причина (не более 2000 символов).</value></data>
+  <data name="Err_sod_submitter_cannot_decide" xml:space="preserve"><value>Эту ревизию отправили вы; отправитель не может по ней решать.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>Путь знаний согласуется только через маршрут MLR, а не напрямую.</value></data>
+  <data name="Err_revision_not_approved" xml:space="preserve"><value>Ревизия не согласована.</value></data>
+  <data name="Err_artifact_missing" xml:space="preserve"><value>У этой ревизии ещё нет выпуска.</value></data>
+  <data name="Err_revision_superseded" xml:space="preserve"><value>Её заменила более новая ревизия; обновите страницу.</value></data>
+  <data name="Err_revision_not_released" xml:space="preserve"><value>Отозвать можно только опубликованную ревизию.</value></data>
+  <data name="Err_sod_submitter_cannot_release" xml:space="preserve"><value>Эту ревизию отправили вы; опубликовать её должен другой человек.</value></data>
+  <data name="Err_reason_required" xml:space="preserve"><value>Нужно указать причину отзыва.</value></data>
+  <data name="Err_path_in_use" xml:space="preserve"><value>Опубликованный этап маршрута использует этот путь; ничего не отозвано.</value></data>
+  <data name="Err_previous_path_in_use" xml:space="preserve"><value>Заменённая версия всё ещё закреплена в этих этапах маршрутов:</value></data>
+  <data name="Err_artifact_store_unavailable" xml:space="preserve"><value>Хранилище документов не отвечает; выпуск не сформирован. Повторите позже.</value></data>
+  <data name="Err_claim_not_approved" xml:space="preserve"><value>Одно из утверждений не согласовано в стране пути.</value></data>
+  <data name="Err_claim_language_mismatch" xml:space="preserve"><value>У одного из утверждений нет текста на языке пути.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>Вы не рецензент этого шага; решение принимает должность, назначенная в Центре задач.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>У ревизии нет ожидающего шага согласования (возможно, он только что завершился).</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>Выберите «согласовать» или «отклонить».</value></data>
+  <data name="Err_note_text_required" xml:space="preserve"><value>Введите текст заметки.</value></data>
+  <data name="Err_note_not_found" xml:space="preserve"><value>Заметка не найдена; обновите страницу.</value></data>
 </root>

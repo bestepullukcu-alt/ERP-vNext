@@ -412,10 +412,25 @@ public sealed partial class KnowledgePathsController
                 .FirstOrDefault();
         }
 
+        // WP-KP-UI-2 — the Compliance tab + the submit checklist (kurgu rules until KP-UI-3), labelled rows only.
+        var compliance = legacy ? [] : await ComplianceForAsync(p, ct);
+
         var model = new
         {
             pathId = Str(p, "pathId"),
             liveVersion,
+            canPublish = HasAnyPermission(PublishPermission),
+            compliance = new
+            {
+                blockers = compliance.Count(r => r.Severity == KnowledgePathStudioReview.Blocker),
+                warnings = compliance.Count(r => r.Severity == KnowledgePathStudioReview.Warning),
+                rows = compliance.Select(r => new
+                {
+                    rule = r.Rule, severity = r.Severity, ruleLabel = r.RuleLabel, severityLabel = r.SeverityLabel, where = r.Where,
+                    message = r.Message, fix = r.Fix, branchCode = r.BranchCode, chainStepId = r.ChainStepId, itemKind = r.ItemKind,
+                    itemId = r.ItemId
+                }).ToList()
+            },
             pathCode = Str(p, "pathCode"),
             pathName = Str(p, "pathName"),
             pathVersion = Str(p, "pathVersion"),

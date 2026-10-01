@@ -35,11 +35,7 @@
   <data name="LegacyEditor" xml:space="preserve"><value>Open the legacy editor</value></data>
   <data name="LegacyStepsTitle" xml:space="preserve"><value>Steps of the legacy path</value></data>
   <data name="BindChain" xml:space="preserve"><value>Bind to a chain</value></data>
-  <data name="BindTitle" xml:space="preserve"><value>Bind to a chain</value></data>
-  <data name="BindIntro" xml:space="preserve"><value>Bind this path to a chain template. Its steps then sit on the chain's steps; the guided legacy wizard comes in a later release.</value></data>
   <data name="BindNoChain" xml:space="preserve"><value>No published, branched chain exists for this path's subject.</value></data>
-  <data name="BindSubmit" xml:space="preserve"><value>Bind</value></data>
-  <data name="BindDone" xml:space="preserve"><value>The path is bound to the chain.</value></data>
   <data name="IdentityNote" xml:space="preserve"><value>Country and language are the path's identity and never change afterwards; for another country, adapt the path into a new one.</value></data>
   <data name="SelectPlaceholder" xml:space="preserve"><value>Select…</value></data>
   <data name="VersionShort" xml:space="preserve"><value>v{0}</value></data>
@@ -196,4 +192,297 @@
   <data name="Err_claim_ref_duplicate" xml:space="preserve"><value>This claim is already on the path.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>The action could not be completed.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>The service is not responding right now; try again later.</value></data>
+  <data name="TabCompliance" xml:space="preserve"><value>Compliance</value></data>
+  <data name="TabMlr" xml:space="preserve"><value>MLR approval</value></data>
+  <data name="TabOutput" xml:space="preserve"><value>Output &amp; release</value></data>
+  <data name="TabRevisions" xml:space="preserve"><value>Revisions</value></data>
+  <data name="TabPreview" xml:space="preserve"><value>Field preview</value></data>
+  <data name="TabUsage" xml:space="preserve"><value>Usage</value></data>
+  <data name="SubmitOpen" xml:space="preserve"><value>Send for approval</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>Withdraw from review</value></data>
+  <data name="WithdrawReviewConfirm" xml:space="preserve"><value>Withdraw the open review round? The path goes back to draft.</value></data>
+  <data name="WithdrawReviewDone" xml:space="preserve"><value>The review round was withdrawn.</value></data>
+  <data name="StatusInReviewStep" xml:space="preserve"><value>In review · {0}</value></data>
+  <data name="NextFix" xml:space="preserve"><value>Next step: fix {0} blocking issue(s), then send for approval</value></data>
+  <data name="NextSubmit" xml:space="preserve"><value>The draft is ready: you can send it for approval</value></data>
+  <data name="NextWaiting" xml:space="preserve"><value>Waiting for approval: {0}</value></data>
+  <data name="NextRender" xml:space="preserve"><value>Next step: create the output of the approved revision</value></data>
+  <data name="NextRelease" xml:space="preserve"><value>Next step: release the approved revision</value></data>
+  <data name="NextPublisher" xml:space="preserve"><value>Approved: a release manager creates the output and releases it</value></data>
+  <data name="NextLive" xml:space="preserve"><value>This version is on the field</value></data>
+  <data name="ShowBlockers" xml:space="preserve"><value>Show blockers</value></data>
+  <data name="WizardOpen" xml:space="preserve"><value>Bind to a chain</value></data>
+  <data name="BlockerCount" xml:space="preserve"><value>{0} blocking issue(s)</value></data>
+  <data name="ComplianceIntro" xml:space="preserve"><value>The rules run while you edit and again as a blocking checklist when you send for approval. Blockers must be fixed before sending; warnings do not stop it. The row button takes you to the item.</value></data>
+  <data name="ComplianceClean" xml:space="preserve"><value>Compliance check is clean.</value></data>
+  <data name="ColSeverity" xml:space="preserve"><value>Severity</value></data>
+  <data name="ColRule" xml:space="preserve"><value>Rule</value></data>
+  <data name="ColWhere" xml:space="preserve"><value>Branch › step › item</value></data>
+  <data name="ColIssue" xml:space="preserve"><value>Issue and fix</value></data>
+  <data name="GoToComposition" xml:space="preserve"><value>Go to composition</value></data>
+  <data name="MapSteps" xml:space="preserve"><value>Map steps</value></data>
+  <data name="FixPrefix" xml:space="preserve"><value>Fix: {0}</value></data>
+  <data name="Sev_blocker" xml:space="preserve"><value>Blocking</value></data>
+  <data name="Sev_warning" xml:space="preserve"><value>Warning</value></data>
+  <data name="Rule_chain" xml:space="preserve"><value>Chain conformance</value></data>
+  <data name="Rule_published" xml:space="preserve"><value>Content published</value></data>
+  <data name="Rule_language" xml:space="preserve"><value>Single language</value></data>
+  <data name="Rule_claim" xml:space="preserve"><value>Claim usability</value></data>
+  <data name="Rule_placement" xml:space="preserve"><value>Step placement</value></data>
+  <data name="Comp_UnderMsg" xml:space="preserve"><value>{0}: at least {1} item(s) expected, {2} present.</value></data>
+  <data name="Comp_UnderFix" xml:space="preserve"><value>Add a content or claim to this step in the composition.</value></data>
+  <data name="Comp_OverMsg" xml:space="preserve"><value>{0}: takes at most {1} item(s), {2} present.</value></data>
+  <data name="Comp_OverFix" xml:space="preserve"><value>Remove the extra item from the step.</value></data>
+  <data name="Comp_NotPublishedMsg" xml:space="preserve"><value>“{0}” is {1} in the knowledge base.</value></data>
+  <data name="Comp_NotPublishedFix" xml:space="preserve"><value>Have the content published or remove it from the step.</value></data>
+  <data name="Comp_LanguageMsg" xml:space="preserve"><value>“{0}” is in {1}; the path language is {2}.</value></data>
+  <data name="Comp_LanguageFix" xml:space="preserve"><value>Use the {0} version of the content.</value></data>
+  <data name="Comp_ClaimNotApprovedMsg" xml:space="preserve"><value>{0} is not approved in the path country ({1}).</value></data>
+  <data name="Comp_ClaimNotApprovedFix" xml:space="preserve"><value>Wait for the claim to be approved or remove it from the step.</value></data>
+  <data name="Comp_ClaimNoVersionMsg" xml:space="preserve"><value>{0} has no version for {1}.</value></data>
+  <data name="Comp_ClaimNoVersionFix" xml:space="preserve"><value>Request the {0} version in claim management or remove the claim from the step.</value></data>
+  <data name="Comp_ClaimLanguageMsg" xml:space="preserve"><value>{0} has no text in the path language ({1}).</value></data>
+  <data name="Comp_ClaimLanguageFix" xml:space="preserve"><value>Ask for the {0} text in the country version or remove the claim from the step.</value></data>
+  <data name="Comp_UnplacedMsg" xml:space="preserve"><value>“{0}” is not placed on a chain step.</value></data>
+  <data name="Comp_UnplacedFix" xml:space="preserve"><value>Map it to a chain step with the legacy-path wizard, or remove it.</value></data>
+  <data name="SubmitTitle" xml:space="preserve"><value>Send for approval</value></data>
+  <data name="SubmitIntro" xml:space="preserve"><value>Sending freezes the current draft as Rev {0} and starts the Medical → Legal → Regulatory flow. The draft stays editable.</value></data>
+  <data name="SubmitChecklist" xml:space="preserve"><value>Checklist</value></data>
+  <data name="SubmitNoBlockers" xml:space="preserve"><value>No blocking rule.</value></data>
+  <data name="SubmitOpenRound" xml:space="preserve"><value>Rev {0} is in review ({1}). A new revision can be sent when that round closes.</value></data>
+  <data name="SubmitChangesTitle" xml:space="preserve"><value>Change summary (Rev {0} → Rev {1})</value></data>
+  <data name="SubmitFirstTitle" xml:space="preserve"><value>Change summary</value></data>
+  <data name="SubmitFirstText" xml:space="preserve"><value>This is the first revision of this path; there is nothing to compare yet.</value></data>
+  <data name="SubmitSend" xml:space="preserve"><value>Send Rev {0}</value></data>
+  <data name="SubmitBlocked" xml:space="preserve"><value>{0} blocking issue(s) must be fixed before sending.</value></data>
+  <data name="SubmitBlockedOpen" xml:space="preserve"><value>A review round is already open.</value></data>
+  <data name="SubmitDone" xml:space="preserve"><value>Sent for approval; the work item is in the Work Center.</value></data>
+  <data name="MlrTitle" xml:space="preserve"><value>Approval flow · Rev {0} · v{1}</value></data>
+  <data name="MlrHistoryUnavailable" xml:space="preserve"><value>The approval history cannot be read right now; decisions are not shown until it is available.</value></data>
+  <data name="MlrSubmitted" xml:space="preserve"><value>Submission</value></data>
+  <data name="MlrState_submitted" xml:space="preserve"><value>Sent</value></data>
+  <data name="MlrState_approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="MlrState_rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="MlrState_pending" xml:space="preserve"><value>Waiting</value></data>
+  <data name="MlrState_queued" xml:space="preserve"><value>Queued</value></data>
+  <data name="MlrState_cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="MlrState_not-reached" xml:space="preserve"><value>Not reached</value></data>
+  <data name="MlrQueuedNote" xml:space="preserve"><value>Opens when the previous step is approved.</value></data>
+  <data name="MlrPendingNote" xml:space="preserve"><value>The work item is in the Work Center; the next step opens on a decision.</value></data>
+  <data name="MlrCandidates" xml:space="preserve"><value>Candidates: {0}</value></data>
+  <data name="MlrStepN" xml:space="preserve"><value>Step {0}</value></data>
+  <data name="MlrUnnamedStep" xml:space="preserve"><value>Unnamed step</value></data>
+  <data name="MlrSummary" xml:space="preserve"><value>Summary</value></data>
+  <data name="MlrSumRevision" xml:space="preserve"><value>Revision</value></data>
+  <data name="MlrSumSubmitter" xml:space="preserve"><value>Submitted by</value></data>
+  <data name="MlrSumSubmitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="MlrSumPending" xml:space="preserve"><value>Waiting now</value></data>
+  <data name="MlrSumNone" xml:space="preserve"><value>None</value></data>
+  <data name="MlrSumDone" xml:space="preserve"><value>Completed</value></data>
+  <data name="MlrSumDoneValue" xml:space="preserve"><value>{0} / {1} steps</value></data>
+  <data name="MlrRulesTitle" xml:space="preserve"><value>Rules</value></data>
+  <data name="MlrRules" xml:space="preserve"><value>The order is Medical → Legal → Regulatory. Each step opens after the previous approval and lands in the Work Center as a work item. The submitter cannot approve their own path; a rejection needs a reason.</value></data>
+  <data name="SingleChannelNote" xml:space="preserve"><value>One channel: your decision is written to the approval workflow in the Work Center (MOD-0023); a decision given in the Work Center shows here too.</value></data>
+  <data name="ReviewerView" xml:space="preserve"><value>Reviewer view</value></data>
+  <data name="OutputTitle" xml:space="preserve"><value>Outputs</value></data>
+  <data name="OutputNone" xml:space="preserve"><value>Rev {0} · no output yet</value></data>
+  <data name="OutputNoneText" xml:space="preserve"><value>The archive PDF is created from the approved revision; HTML field presentation follows in a later phase.</value></data>
+  <data name="OutputNothing" xml:space="preserve"><value>No output yet.</value></data>
+  <data name="RenderButton" xml:space="preserve"><value>Create output</value></data>
+  <data name="RenderDone" xml:space="preserve"><value>The archive PDF was created.</value></data>
+  <data name="ArtifactView" xml:space="preserve"><value>View</value></data>
+  <data name="ArtifactDownload" xml:space="preserve"><value>Download</value></data>
+  <data name="ArtifactFrom" xml:space="preserve"><value>From approved Rev {0}</value></data>
+  <data name="FingerprintLabel" xml:space="preserve"><value>Fingerprint</value></data>
+  <data name="SizeKb" xml:space="preserve"><value>{0} KB</value></data>
+  <data name="SizeMb" xml:space="preserve"><value>{0} MB</value></data>
+  <data name="ReleaseTitle" xml:space="preserve"><value>Release</value></data>
+  <data name="ReleaseTitleRev" xml:space="preserve"><value>Release · Rev {0}</value></data>
+  <data name="PreconditionsTitle" xml:space="preserve"><value>Release preconditions</value></data>
+  <data name="ReleaseButton" xml:space="preserve"><value>Release</value></data>
+  <data name="ReleaseBlocked" xml:space="preserve"><value>Cannot release yet: {0}</value></data>
+  <data name="ReleaseNoCandidate" xml:space="preserve"><value>There is no approved revision waiting for release.</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>Release v{0}? It becomes the version used on the field.</value></data>
+  <data name="ReleaseConfirmReplace" xml:space="preserve"><value>Release v{0}? It replaces v{1} on the field.</value></data>
+  <data name="ReleaseDone" xml:space="preserve"><value>Released; the path is on the field.</value></data>
+  <data name="PreOk" xml:space="preserve"><value>Met</value></data>
+  <data name="PreMissing" xml:space="preserve"><value>Missing</value></data>
+  <data name="Pre_approved" xml:space="preserve"><value>Revision MLR-approved</value></data>
+  <data name="Pre_approvedNo" xml:space="preserve"><value>Rev {0} is not approved yet.</value></data>
+  <data name="Pre_artifact" xml:space="preserve"><value>Output ready</value></data>
+  <data name="Pre_artifactNo" xml:space="preserve"><value>No output: create the archive PDF of the approved revision first.</value></data>
+  <data name="Pre_published" xml:space="preserve"><value>All contents published</value></data>
+  <data name="Pre_publishedNo" xml:space="preserve"><value>A content of the path is not published.</value></data>
+  <data name="Pre_language" xml:space="preserve"><value>Single language</value></data>
+  <data name="Pre_languageNo" xml:space="preserve"><value>A content is in another language than the path.</value></data>
+  <data name="Pre_claims" xml:space="preserve"><value>All claims usable</value></data>
+  <data name="Pre_claimsNo" xml:space="preserve"><value>A claim is not usable in the path country / language.</value></data>
+  <data name="Pre_conformance" xml:space="preserve"><value>Chain conformance clean</value></data>
+  <data name="Pre_conformanceNo" xml:space="preserve"><value>A chain step is short of / over its items, or a step is not placed.</value></data>
+  <data name="Pre_sod" xml:space="preserve"><value>Publisher is not the submitter</value></data>
+  <data name="Pre_sodNo" xml:space="preserve"><value>You sent this revision; another person must release it.</value></data>
+  <data name="LiveTitle" xml:space="preserve"><value>Version on the field · v{0} (Rev {1})</value></data>
+  <data name="LiveSub" xml:space="preserve"><value>Released · {0} · {1}</value></data>
+  <data name="WithdrawReasonLabel" xml:space="preserve"><value>Reason for withdrawal</value></data>
+  <data name="WithdrawReasonPlaceholder" xml:space="preserve"><value>Why is this version withdrawn? (required)</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>Withdraw</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Withdraw v{0} from the field?</value></data>
+  <data name="WithdrawDone" xml:space="preserve"><value>The version was withdrawn.</value></data>
+  <data name="WithdrawNote" xml:space="preserve"><value>A withdrawn version cannot be chosen in journey stages.</value></data>
+  <data name="WithdrawStagesTitle" xml:space="preserve"><value>First bind these stages to another version:</value></data>
+  <data name="CardField" xml:space="preserve"><value>Used on the field</value></data>
+  <data name="CardApproval" xml:space="preserve"><value>In approval</value></data>
+  <data name="CardWorking" xml:space="preserve"><value>Being worked on</value></data>
+  <data name="CardNone" xml:space="preserve"><value>None</value></data>
+  <data name="CardRev" xml:space="preserve"><value>v{0} · Rev {1}</value></data>
+  <data name="CardRevShort" xml:space="preserve"><value>Rev {0}</value></data>
+  <data name="CardVersion" xml:space="preserve"><value>v{0}</value></data>
+  <data name="CardDraft" xml:space="preserve"><value>v{0} · Draft</value></data>
+  <data name="RevExplainVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="RevExplainVersionText" xml:space="preserve"><value>(v1.0, v2.0) is the released form of the path.</value></data>
+  <data name="RevExplainRevision" xml:space="preserve"><value>Revision</value></data>
+  <data name="RevExplainRevisionText" xml:space="preserve"><value>(Rev 1, 2, 3) is a frozen copy of a version sent for approval. A rejected revision is fixed and sent again, so one version can have several revisions.</value></data>
+  <data name="RevHistoryTitle" xml:space="preserve"><value>Revision history</value></data>
+  <data name="RevHistoryNewest" xml:space="preserve"><value>newest first</value></data>
+  <data name="RevChanges" xml:space="preserve"><value>{0} change(s)</value></data>
+  <data name="RevOpenNotes" xml:space="preserve"><value>{0} open note(s)</value></data>
+  <data name="OnFieldBadge" xml:space="preserve"><value>ON THE FIELD</value></data>
+  <data name="DiffFrom" xml:space="preserve"><value>From</value></data>
+  <data name="DiffTo" xml:space="preserve"><value>To</value></data>
+  <data name="DiffShow" xml:space="preserve"><value>Show difference</value></data>
+  <data name="DiffDraft" xml:space="preserve"><value>Current draft</value></data>
+  <data name="DiffTitle" xml:space="preserve"><value>{0} → {1}</value></data>
+  <data name="DiffNone" xml:space="preserve"><value>No change.</value></data>
+  <data name="DiffPickTwo" xml:space="preserve"><value>Pick two different revisions.</value></data>
+  <data name="DiffWith" xml:space="preserve"><value>Difference to Rev {0}</value></data>
+  <data name="Change_step-added" xml:space="preserve"><value>Step added</value></data>
+  <data name="Change_step-removed" xml:space="preserve"><value>Step removed</value></data>
+  <data name="Change_step-moved" xml:space="preserve"><value>Step moved</value></data>
+  <data name="Change_content-changed" xml:space="preserve"><value>Content changed</value></data>
+  <data name="Change_content-version-changed" xml:space="preserve"><value>Content version changed</value></data>
+  <data name="Change_claim-added" xml:space="preserve"><value>Claim added</value></data>
+  <data name="Change_claim-removed" xml:space="preserve"><value>Claim removed</value></data>
+  <data name="Change_claim-moved" xml:space="preserve"><value>Claim moved</value></data>
+  <data name="Change_claim-version-changed" xml:space="preserve"><value>Claim version changed</value></data>
+  <data name="RevStatus_in-review" xml:space="preserve"><value>In review</value></data>
+  <data name="RevStatus_approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="RevStatus_rejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="RevStatus_withdrawn" xml:space="preserve"><value>Withdrawn</value></data>
+  <data name="RevStatus_timed-out" xml:space="preserve"><value>Timed out</value></data>
+  <data name="RevStatus_other" xml:space="preserve"><value>Other</value></data>
+  <data name="Release_released" xml:space="preserve"><value>Released</value></data>
+  <data name="Release_withdrawn" xml:space="preserve"><value>Withdrawn from the field</value></data>
+  <data name="Release_other" xml:space="preserve"><value>Other</value></data>
+  <data name="PreviewDraft" xml:space="preserve"><value>Draft — the output is created after approval.</value></data>
+  <data name="PreviewNoOutput" xml:space="preserve"><value>Approved — the preview appears once the output is created.</value></data>
+  <data name="PreviewCaption" xml:space="preserve"><value>Rev {0} · v{1} · fingerprint {2}</value></data>
+  <data name="PreviewPdfNote" xml:space="preserve"><value>The archive PDF of the approved revision; the interactive HTML presentation follows in a later phase.</value></data>
+  <data name="UsageJourneys" xml:space="preserve"><value>Journey stages</value></data>
+  <data name="UsageTemplates" xml:space="preserve"><value>Strategy templates</value></data>
+  <data name="UsageNoJourneys" xml:space="preserve"><value>No journey stage uses this path.</value></data>
+  <data name="UsageNoTemplates" xml:space="preserve"><value>No strategy template is bound to this path.</value></data>
+  <data name="UsageViewsLater" xml:space="preserve"><value>Page views and time per page from the field come in a later phase.</value></data>
+  <data name="PinLatest" xml:space="preserve"><value>Follows the latest released version</value></data>
+  <data name="PinVersion" xml:space="preserve"><value>Pinned to v{0}</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Active</value></data>
+  <data name="PersonYou" xml:space="preserve"><value>You</value></data>
+  <data name="PersonOther" xml:space="preserve"><value>Registered user</value></data>
+  <data name="CandidateOther" xml:space="preserve"><value>Assigned user</value></data>
+  <data name="ReviewerTitle" xml:space="preserve"><value>Reviewer view</value></data>
+  <data name="BackToWorkspace" xml:space="preserve"><value>Back to the workspace</value></data>
+  <data name="ReviewerHeader" xml:space="preserve"><value>Reviewer view · Rev {0} · v{1}</value></data>
+  <data name="ReviewerFrozen" xml:space="preserve"><value>Frozen revision · sent by {0} · {1}</value></data>
+  <data name="ReviewerWaiting" xml:space="preserve"><value>{0} step: waiting</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>Click a claim block: its evidence document opens in the side panel.</value></data>
+  <data name="ReviewerComposition" xml:space="preserve"><value>Composition</value></data>
+  <data name="ReviewerItems" xml:space="preserve"><value>{0} item(s)</value></data>
+  <data name="ReviewerOpenNotes" xml:space="preserve"><value>{0} open note(s)</value></data>
+  <data name="ReviewerNoText" xml:space="preserve"><value>No text in the path language.</value></data>
+  <data name="ContentVersionLabel" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>Evidence</value></data>
+  <data name="EvidenceTitleFor" xml:space="preserve"><value>Evidence · {0}</value></data>
+  <data name="EvidencePick" xml:space="preserve"><value>Select a claim block to see its evidence.</value></data>
+  <data name="EvidenceOpen" xml:space="preserve"><value>Open the evidence of {0}</value></data>
+  <data name="EvidenceNone" xml:space="preserve"><value>No evidence is linked to this claim.</value></data>
+  <data name="EvidenceNoPermission" xml:space="preserve"><value>You do not have permission to read claim evidence.</value></data>
+  <data name="EvidenceUnavailable" xml:space="preserve"><value>The evidence cannot be read right now.</value></data>
+  <data name="NotesTitle" xml:space="preserve"><value>Notes</value></data>
+  <data name="NotesIntro" xml:space="preserve"><value>Notes are kept with the revision; unresolved notes carry over to the next revision.</value></data>
+  <data name="NotesNone" xml:space="preserve"><value>No note on this step.</value></data>
+  <data name="NoteTarget" xml:space="preserve"><value>Note on</value></data>
+  <data name="NoteOnStep" xml:space="preserve"><value>Step: {0}</value></data>
+  <data name="NoteOnBlock" xml:space="preserve"><value>Block: {0}</value></data>
+  <data name="NotePlaceholder" xml:space="preserve"><value>Note to pin</value></data>
+  <data name="NoteAdd" xml:space="preserve"><value>Pin</value></data>
+  <data name="NoteAdded" xml:space="preserve"><value>Note pinned.</value></data>
+  <data name="NoteResolve" xml:space="preserve"><value>Mark resolved</value></data>
+  <data name="NoteResolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="NoteResolvedBy" xml:space="preserve"><value>Resolved by {0}</value></data>
+  <data name="NoteCarried" xml:space="preserve"><value>From Rev {0}</value></data>
+  <data name="DecisionTitle" xml:space="preserve"><value>Decision</value></data>
+  <data name="DecisionTitleStep" xml:space="preserve"><value>Decision · {0}</value></data>
+  <data name="DecisionCommentLabel" xml:space="preserve"><value>Note / reason</value></data>
+  <data name="DecisionCommentPlaceholder" xml:space="preserve"><value>Optional when approving; required when rejecting</value></data>
+  <data name="DecisionApprove" xml:space="preserve"><value>Approve</value></data>
+  <data name="DecisionReject" xml:space="preserve"><value>Reject</value></data>
+  <data name="DecisionRejectNeedsComment" xml:space="preserve"><value>A rejection needs a reason. Write which step or block must change and how.</value></data>
+  <data name="DecisionApproved" xml:space="preserve"><value>Approval recorded ({0}). The next step opens in the Work Center.</value></data>
+  <data name="DecisionRejected" xml:space="preserve"><value>Rejection recorded. The submitter fixes it and sends a new revision.</value></data>
+  <data name="DecisionOwnRevision" xml:space="preserve"><value>You sent this revision. The submitter cannot decide on their own path.</value></data>
+  <data name="DecisionClosed" xml:space="preserve"><value>This revision has no open review step.</value></data>
+  <data name="WizardTitle" xml:space="preserve"><value>Bind to a chain and send for approval</value></data>
+  <data name="WizardStepChain" xml:space="preserve"><value>Choose a chain</value></data>
+  <data name="WizardStepMap" xml:space="preserve"><value>Map the steps</value></data>
+  <data name="WizardStepClaims" xml:space="preserve"><value>Claim suggestions</value></data>
+  <data name="WizardStepSummary" xml:space="preserve"><value>Summary</value></data>
+  <data name="WizardChainIntro" xml:space="preserve"><value>The chain the path is bound to. Product and audience come from the chain; country and language become the path’s identity.</value></data>
+  <data name="WizardBindNote" xml:space="preserve"><value>Once bound, the chain, country and language are fixed for this path.</value></data>
+  <data name="WizardBindNext" xml:space="preserve"><value>Bind and continue</value></data>
+  <data name="WizardMapIntro" xml:space="preserve"><value>Map each old step onto a chain step. A step without a match is not placed and blocks the approval until it is mapped or removed.</value></data>
+  <data name="WizardNoMatch" xml:space="preserve"><value>No match in the chain</value></data>
+  <data name="WizardUnmapped" xml:space="preserve"><value>{0} step(s) without a chain step: they stay unplaced and block the approval.</value></data>
+  <data name="WizardMapNext" xml:space="preserve"><value>Save mapping and continue</value></data>
+  <data name="WizardClaimsIntro" xml:space="preserve"><value>Claims referenced by the contents of the steps. Accept or reject each suggestion.</value></data>
+  <data name="WizardClaimsNote" xml:space="preserve"><value>Nothing is bound automatically: only the claims you accept are added, on the step of the content that referenced them.</value></data>
+  <data name="WizardAccept" xml:space="preserve"><value>Accept</value></data>
+  <data name="WizardReject" xml:space="preserve"><value>Reject</value></data>
+  <data name="WizardOnPath" xml:space="preserve"><value>already on the path</value></data>
+  <data name="WizardFromStep" xml:space="preserve"><value>Referenced by: {0}</value></data>
+  <data name="WizardNeedsMapping" xml:space="preserve"><value>Its step is not mapped, so it cannot be placed; map the step first or reject.</value></data>
+  <data name="WizardNoSuggestions" xml:space="preserve"><value>The step contents reference no claim.</value></data>
+  <data name="WizardUndecided" xml:space="preserve"><value>Decide on every suggestion: {0} left.</value></data>
+  <data name="WizardClaimsNext" xml:space="preserve"><value>Apply decisions and continue</value></data>
+  <data name="WizardFinish" xml:space="preserve"><value>Done</value></data>
+  <data name="WizardSummaryContext" xml:space="preserve"><value>Country · language</value></data>
+  <data name="WizardSummaryMapped" xml:space="preserve"><value>Mapped steps</value></data>
+  <data name="WizardSummaryClaims" xml:space="preserve"><value>Claims</value></data>
+  <data name="WizardMappedCount" xml:space="preserve"><value>{0} of {1}</value></data>
+  <data name="WizardClaimsCount" xml:space="preserve"><value>{0} accepted · {1} rejected</value></data>
+  <data name="WizardChainKept" xml:space="preserve"><value>Bound earlier</value></data>
+  <data name="WizardSummaryNote" xml:space="preserve"><value>The path is unapproved until its revision is approved: it cannot be used on the field until then. You can send it for approval now or later from the workspace.</value></data>
+  <data name="Err_review_round_open" xml:space="preserve"><value>A review round is already open for this path.</value></data>
+  <data name="Err_chain_conformance_failed" xml:space="preserve"><value>The path does not conform to its chain (a step is short of or over its items).</value></data>
+  <data name="Err_component_not_published" xml:space="preserve"><value>A content of the path is not published.</value></data>
+  <data name="Err_claim_no_country_version" xml:space="preserve"><value>A claim has no version in the path country.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>The approval template of the path country is not set up. Ask the system administrator.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>The approval workflow is not responding right now; try again later.</value></data>
+  <data name="Err_comment_required" xml:space="preserve"><value>A rejection needs a reason (at most 2000 characters).</value></data>
+  <data name="Err_sod_submitter_cannot_decide" xml:space="preserve"><value>You sent this revision; the submitter cannot decide on it.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>A knowledge path is approved only through its MLR flow, not directly.</value></data>
+  <data name="Err_revision_not_approved" xml:space="preserve"><value>The revision is not approved.</value></data>
+  <data name="Err_artifact_missing" xml:space="preserve"><value>There is no output for this revision yet.</value></data>
+  <data name="Err_revision_superseded" xml:space="preserve"><value>A newer revision replaced this one; reload the page.</value></data>
+  <data name="Err_revision_not_released" xml:space="preserve"><value>Only a released revision can be withdrawn.</value></data>
+  <data name="Err_sod_submitter_cannot_release" xml:space="preserve"><value>You sent this revision; another person must release it.</value></data>
+  <data name="Err_reason_required" xml:space="preserve"><value>A reason for the withdrawal is required.</value></data>
+  <data name="Err_path_in_use" xml:space="preserve"><value>A published journey stage uses this path; nothing was withdrawn.</value></data>
+  <data name="Err_previous_path_in_use" xml:space="preserve"><value>The replaced version is still pinned in these journey stages:</value></data>
+  <data name="Err_artifact_store_unavailable" xml:space="preserve"><value>The document store is not responding; the output was not created. Try again later.</value></data>
+  <data name="Err_claim_not_approved" xml:space="preserve"><value>A claim is not approved in the path country.</value></data>
+  <data name="Err_claim_language_mismatch" xml:space="preserve"><value>A claim has no text in the path language.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>You are not a reviewer of this step; the decision belongs to the position assigned in the Work Center.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>This revision has no waiting review step (it may have just finished).</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>Choose approve or reject.</value></data>
+  <data name="Err_note_text_required" xml:space="preserve"><value>Write the note text.</value></data>
+  <data name="Err_note_not_found" xml:space="preserve"><value>The note was not found; reload the page.</value></data>
 </root>

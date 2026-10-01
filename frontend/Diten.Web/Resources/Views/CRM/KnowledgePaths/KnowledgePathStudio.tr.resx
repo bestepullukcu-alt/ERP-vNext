@@ -35,11 +35,7 @@
   <data name="LegacyEditor" xml:space="preserve"><value>Eski düzenleyiciyle aç</value></data>
   <data name="LegacyStepsTitle" xml:space="preserve"><value>Eski yolun adımları</value></data>
   <data name="BindChain" xml:space="preserve"><value>Zincire bağla</value></data>
-  <data name="BindTitle" xml:space="preserve"><value>Zincire bağla</value></data>
-  <data name="BindIntro" xml:space="preserve"><value>Bu yolu bir zincir şablonuna bağlayın. Adımlar zincirin adımlarına yerleşir; rehberli eski yol sihirbazı sonraki sürümde gelecek.</value></data>
   <data name="BindNoChain" xml:space="preserve"><value>Bu yolun konusu için yayında ve dallı bir zincir yok.</value></data>
-  <data name="BindSubmit" xml:space="preserve"><value>Bağla</value></data>
-  <data name="BindDone" xml:space="preserve"><value>Yol zincire bağlandı.</value></data>
   <data name="IdentityNote" xml:space="preserve"><value>Ülke ve dil yolun kimliğidir, sonradan değişmez; başka ülke için yol uyarlanarak yeni bir yol oluşturulur.</value></data>
   <data name="SelectPlaceholder" xml:space="preserve"><value>Seçin…</value></data>
   <data name="VersionShort" xml:space="preserve"><value>v{0}</value></data>
@@ -196,4 +192,297 @@
   <data name="Err_claim_ref_duplicate" xml:space="preserve"><value>Bu iddia zaten yolda.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>İşlem tamamlanamadı.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>Servis şu an yanıt vermiyor; daha sonra yeniden deneyin.</value></data>
+  <data name="TabCompliance" xml:space="preserve"><value>Uyum kontrolü</value></data>
+  <data name="TabMlr" xml:space="preserve"><value>MLR onayı</value></data>
+  <data name="TabOutput" xml:space="preserve"><value>Çıktı ve yayın</value></data>
+  <data name="TabRevisions" xml:space="preserve"><value>Revizyonlar</value></data>
+  <data name="TabPreview" xml:space="preserve"><value>Saha önizleme</value></data>
+  <data name="TabUsage" xml:space="preserve"><value>Kullanım</value></data>
+  <data name="SubmitOpen" xml:space="preserve"><value>Onaya gönder</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>Onaydan geri al</value></data>
+  <data name="WithdrawReviewConfirm" xml:space="preserve"><value>Açık onay turu geri alınsın mı? Yol taslağa döner.</value></data>
+  <data name="WithdrawReviewDone" xml:space="preserve"><value>Onay turu geri alındı.</value></data>
+  <data name="StatusInReviewStep" xml:space="preserve"><value>İncelemede · {0}</value></data>
+  <data name="NextFix" xml:space="preserve"><value>Sıradaki adım: {0} engeli düzeltip onaya gönderin</value></data>
+  <data name="NextSubmit" xml:space="preserve"><value>Taslak hazır: onaya gönderebilirsiniz</value></data>
+  <data name="NextWaiting" xml:space="preserve"><value>Onay bekleniyor: {0}</value></data>
+  <data name="NextRender" xml:space="preserve"><value>Sıradaki adım: onaylı revizyonun çıktısını oluşturun</value></data>
+  <data name="NextRelease" xml:space="preserve"><value>Sıradaki adım: onaylı revizyonu yayınlayın</value></data>
+  <data name="NextPublisher" xml:space="preserve"><value>Onaylandı: çıktıyı ve yayını yayın sorumlusu yapar</value></data>
+  <data name="NextLive" xml:space="preserve"><value>Bu sürüm sahada</value></data>
+  <data name="ShowBlockers" xml:space="preserve"><value>Engelleri göster</value></data>
+  <data name="WizardOpen" xml:space="preserve"><value>Zincire bağla</value></data>
+  <data name="BlockerCount" xml:space="preserve"><value>{0} engelleyici</value></data>
+  <data name="ComplianceIntro" xml:space="preserve"><value>Kurallar düzenlerken anında, onaya gönderirken engelleyici kontrol listesi olarak çalışır. Engelleyiciler çözülmeden onaya gönderilemez; uyarılar gönderimi durdurmaz. Satırdaki düğme ilgili öğeye götürür.</value></data>
+  <data name="ComplianceClean" xml:space="preserve"><value>Uyum kontrolü temiz.</value></data>
+  <data name="ColSeverity" xml:space="preserve"><value>Önem</value></data>
+  <data name="ColRule" xml:space="preserve"><value>Kural</value></data>
+  <data name="ColWhere" xml:space="preserve"><value>Dal › adım › öğe</value></data>
+  <data name="ColIssue" xml:space="preserve"><value>İhlal ve düzeltme</value></data>
+  <data name="GoToComposition" xml:space="preserve"><value>Kurguya git</value></data>
+  <data name="MapSteps" xml:space="preserve"><value>Adımları eşle</value></data>
+  <data name="FixPrefix" xml:space="preserve"><value>Düzeltme: {0}</value></data>
+  <data name="Sev_blocker" xml:space="preserve"><value>Engelleyici</value></data>
+  <data name="Sev_warning" xml:space="preserve"><value>Uyarı</value></data>
+  <data name="Rule_chain" xml:space="preserve"><value>Zincir uyumu</value></data>
+  <data name="Rule_published" xml:space="preserve"><value>İçerik yayında</value></data>
+  <data name="Rule_language" xml:space="preserve"><value>Tek dil</value></data>
+  <data name="Rule_claim" xml:space="preserve"><value>İddia kullanılabilirliği</value></data>
+  <data name="Rule_placement" xml:space="preserve"><value>Adım yerleşimi</value></data>
+  <data name="Comp_UnderMsg" xml:space="preserve"><value>{0}: en az {1} öğe bekleniyor, {2} var.</value></data>
+  <data name="Comp_UnderFix" xml:space="preserve"><value>Kurguda bu adıma içerik ya da iddia ekleyin.</value></data>
+  <data name="Comp_OverMsg" xml:space="preserve"><value>{0}: en çok {1} öğe alır, {2} var.</value></data>
+  <data name="Comp_OverFix" xml:space="preserve"><value>Fazla öğeyi adımdan çıkarın.</value></data>
+  <data name="Comp_NotPublishedMsg" xml:space="preserve"><value>“{0}” Bilgi Bankası’nda {1} durumda.</value></data>
+  <data name="Comp_NotPublishedFix" xml:space="preserve"><value>İçeriği yayınlatın ya da adımdan çıkarın.</value></data>
+  <data name="Comp_LanguageMsg" xml:space="preserve"><value>“{0}” {1}; yolun dili {2}.</value></data>
+  <data name="Comp_LanguageFix" xml:space="preserve"><value>İçeriğin {0} sürümünü kullanın.</value></data>
+  <data name="Comp_ClaimNotApprovedMsg" xml:space="preserve"><value>{0} yolun ülkesinde ({1}) onaylı değil.</value></data>
+  <data name="Comp_ClaimNotApprovedFix" xml:space="preserve"><value>İddianın onaylanmasını bekleyin ya da adımdan çıkarın.</value></data>
+  <data name="Comp_ClaimNoVersionMsg" xml:space="preserve"><value>{0} için {1} sürümü yok.</value></data>
+  <data name="Comp_ClaimNoVersionFix" xml:space="preserve"><value>İddia yönetiminden {0} sürümünü talep edin ya da adımdan çıkarın.</value></data>
+  <data name="Comp_ClaimLanguageMsg" xml:space="preserve"><value>{0} için yolun dilinde ({1}) metin yok.</value></data>
+  <data name="Comp_ClaimLanguageFix" xml:space="preserve"><value>Ülke sürümüne {0} metni eklenmesini isteyin ya da adımdan çıkarın.</value></data>
+  <data name="Comp_UnplacedMsg" xml:space="preserve"><value>“{0}” zincirde bir adıma yerleşmemiş.</value></data>
+  <data name="Comp_UnplacedFix" xml:space="preserve"><value>Eski yol sihirbazıyla bir zincir adımına eşleyin ya da çıkarın.</value></data>
+  <data name="SubmitTitle" xml:space="preserve"><value>Onaya gönder</value></data>
+  <data name="SubmitIntro" xml:space="preserve"><value>Gönderim, taslağın şu anki hâlinden dondurulmuş Rev {0}’ı oluşturur ve Medikal → Hukuk → Ruhsat akışını başlatır. Taslak düzenlenmeye devam eder.</value></data>
+  <data name="SubmitChecklist" xml:space="preserve"><value>Kontrol listesi</value></data>
+  <data name="SubmitNoBlockers" xml:space="preserve"><value>Engelleyici kural yok.</value></data>
+  <data name="SubmitOpenRound" xml:space="preserve"><value>Rev {0} incelemede ({1}). Bu tur kapanınca yeni revizyon gönderilebilir.</value></data>
+  <data name="SubmitChangesTitle" xml:space="preserve"><value>Değişiklik özeti (Rev {0} → Rev {1})</value></data>
+  <data name="SubmitFirstTitle" xml:space="preserve"><value>Değişiklik özeti</value></data>
+  <data name="SubmitFirstText" xml:space="preserve"><value>Bu, yolun ilk revizyonu; karşılaştırılacak önceki revizyon yok.</value></data>
+  <data name="SubmitSend" xml:space="preserve"><value>Rev {0}’ı gönder</value></data>
+  <data name="SubmitBlocked" xml:space="preserve"><value>{0} engel çözülmeden gönderilemez.</value></data>
+  <data name="SubmitBlockedOpen" xml:space="preserve"><value>Açık bir onay turu var.</value></data>
+  <data name="SubmitDone" xml:space="preserve"><value>Onaya gönderildi; iş öğesi Görev Merkezi’nde.</value></data>
+  <data name="MlrTitle" xml:space="preserve"><value>Onay akışı · Rev {0} · v{1}</value></data>
+  <data name="MlrHistoryUnavailable" xml:space="preserve"><value>Onay geçmişi şu an okunamıyor; kararlar okunabildiğinde gösterilir.</value></data>
+  <data name="MlrSubmitted" xml:space="preserve"><value>Gönderim</value></data>
+  <data name="MlrState_submitted" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="MlrState_approved" xml:space="preserve"><value>Onayladı</value></data>
+  <data name="MlrState_rejected" xml:space="preserve"><value>Reddetti</value></data>
+  <data name="MlrState_pending" xml:space="preserve"><value>Bekliyor</value></data>
+  <data name="MlrState_queued" xml:space="preserve"><value>Sırada</value></data>
+  <data name="MlrState_cancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="MlrState_not-reached" xml:space="preserve"><value>Ulaşılmadı</value></data>
+  <data name="MlrQueuedNote" xml:space="preserve"><value>Önceki adım onaylanınca açılır.</value></data>
+  <data name="MlrPendingNote" xml:space="preserve"><value>İş öğesi Görev Merkezi’nde; karar verilince sıradaki adım açılır.</value></data>
+  <data name="MlrCandidates" xml:space="preserve"><value>Adaylar: {0}</value></data>
+  <data name="MlrStepN" xml:space="preserve"><value>Adım {0}</value></data>
+  <data name="MlrUnnamedStep" xml:space="preserve"><value>Adsız adım</value></data>
+  <data name="MlrSummary" xml:space="preserve"><value>Özet</value></data>
+  <data name="MlrSumRevision" xml:space="preserve"><value>Revizyon</value></data>
+  <data name="MlrSumSubmitter" xml:space="preserve"><value>Gönderen</value></data>
+  <data name="MlrSumSubmitted" xml:space="preserve"><value>Gönderim</value></data>
+  <data name="MlrSumPending" xml:space="preserve"><value>Şu an bekleyen</value></data>
+  <data name="MlrSumNone" xml:space="preserve"><value>Yok</value></data>
+  <data name="MlrSumDone" xml:space="preserve"><value>Tamamlandı</value></data>
+  <data name="MlrSumDoneValue" xml:space="preserve"><value>{0} / {1} adım</value></data>
+  <data name="MlrRulesTitle" xml:space="preserve"><value>Kurallar</value></data>
+  <data name="MlrRules" xml:space="preserve"><value>Sıra Medikal → Hukuk → Ruhsat. Her adım bir öncekinin onayından sonra açılır ve Görev Merkezi’ne iş öğesi olarak düşer. Gönderen kendi yolunu onaylayamaz; ret için gerekçe zorunludur.</value></data>
+  <data name="SingleChannelNote" xml:space="preserve"><value>Tek kanal: kararınız Görev Merkezi’ndeki onay iş akışına (MOD-0023) yazılır; Görev Merkezi’nden verilen karar da buraya yansır.</value></data>
+  <data name="ReviewerView" xml:space="preserve"><value>İnceleyici görünümü</value></data>
+  <data name="OutputTitle" xml:space="preserve"><value>Çıktılar</value></data>
+  <data name="OutputNone" xml:space="preserve"><value>Rev {0} · çıktı yok</value></data>
+  <data name="OutputNoneText" xml:space="preserve"><value>Arşiv PDF’i onaylı revizyondan oluşturulur; HTML saha sunumu sonraki fazda gelir.</value></data>
+  <data name="OutputNothing" xml:space="preserve"><value>Henüz çıktı yok.</value></data>
+  <data name="RenderButton" xml:space="preserve"><value>Çıktı oluştur</value></data>
+  <data name="RenderDone" xml:space="preserve"><value>Arşiv PDF’i oluşturuldu.</value></data>
+  <data name="ArtifactView" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="ArtifactDownload" xml:space="preserve"><value>İndir</value></data>
+  <data name="ArtifactFrom" xml:space="preserve"><value>Onaylı Rev {0}’dan</value></data>
+  <data name="FingerprintLabel" xml:space="preserve"><value>Parmak izi</value></data>
+  <data name="SizeKb" xml:space="preserve"><value>{0} KB</value></data>
+  <data name="SizeMb" xml:space="preserve"><value>{0} MB</value></data>
+  <data name="ReleaseTitle" xml:space="preserve"><value>Yayınla</value></data>
+  <data name="ReleaseTitleRev" xml:space="preserve"><value>Yayınla · Rev {0}</value></data>
+  <data name="PreconditionsTitle" xml:space="preserve"><value>Yayın ön koşulları</value></data>
+  <data name="ReleaseButton" xml:space="preserve"><value>Yayınla</value></data>
+  <data name="ReleaseBlocked" xml:space="preserve"><value>Henüz yayınlanamaz: {0}</value></data>
+  <data name="ReleaseNoCandidate" xml:space="preserve"><value>Yayın bekleyen onaylı revizyon yok.</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>v{0} yayınlansın mı? Sahada kullanılan sürüm olur.</value></data>
+  <data name="ReleaseConfirmReplace" xml:space="preserve"><value>v{0} yayınlansın mı? Yayınlanınca sahadaki v{1} yerini alır.</value></data>
+  <data name="ReleaseDone" xml:space="preserve"><value>Yayınlandı; yol sahada.</value></data>
+  <data name="PreOk" xml:space="preserve"><value>Karşılandı</value></data>
+  <data name="PreMissing" xml:space="preserve"><value>Eksik</value></data>
+  <data name="Pre_approved" xml:space="preserve"><value>Revizyon MLR onaylı</value></data>
+  <data name="Pre_approvedNo" xml:space="preserve"><value>Rev {0} henüz onaylanmadı.</value></data>
+  <data name="Pre_artifact" xml:space="preserve"><value>Çıktı hazır</value></data>
+  <data name="Pre_artifactNo" xml:space="preserve"><value>Çıktı yok: önce onaylı revizyonun arşiv PDF’ini oluşturun.</value></data>
+  <data name="Pre_published" xml:space="preserve"><value>Tüm içerikler yayında</value></data>
+  <data name="Pre_publishedNo" xml:space="preserve"><value>Yoldaki bir içerik yayında değil.</value></data>
+  <data name="Pre_language" xml:space="preserve"><value>Tek dil</value></data>
+  <data name="Pre_languageNo" xml:space="preserve"><value>Bir içerik yolun dilinden farklı.</value></data>
+  <data name="Pre_claims" xml:space="preserve"><value>Tüm iddialar kullanılabilir</value></data>
+  <data name="Pre_claimsNo" xml:space="preserve"><value>Bir iddia yolun ülkesinde / dilinde kullanılamıyor.</value></data>
+  <data name="Pre_conformance" xml:space="preserve"><value>Zincir uyumu temiz</value></data>
+  <data name="Pre_conformanceNo" xml:space="preserve"><value>Bir zincir adımında öğe eksik / fazla ya da yerleşmemiş adım var.</value></data>
+  <data name="Pre_sod" xml:space="preserve"><value>Yayınlayan ≠ gönderen</value></data>
+  <data name="Pre_sodNo" xml:space="preserve"><value>Bu revizyonu siz gönderdiniz; yayını başka bir kişi yapmalı.</value></data>
+  <data name="LiveTitle" xml:space="preserve"><value>Yayındaki sürüm · v{0} (Rev {1})</value></data>
+  <data name="LiveSub" xml:space="preserve"><value>Yayında · {0} · {1}</value></data>
+  <data name="WithdrawReasonLabel" xml:space="preserve"><value>Geri çekme gerekçesi</value></data>
+  <data name="WithdrawReasonPlaceholder" xml:space="preserve"><value>Bu sürüm neden geri çekiliyor? (zorunlu)</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>Geri çek</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>v{0} sahadan geri çekilsin mi?</value></data>
+  <data name="WithdrawDone" xml:space="preserve"><value>Sürüm geri çekildi.</value></data>
+  <data name="WithdrawNote" xml:space="preserve"><value>Geri çekilen sürüm yolculuk aşamalarında seçilemez.</value></data>
+  <data name="WithdrawStagesTitle" xml:space="preserve"><value>Önce bu aşamaları başka sürüme bağlayın:</value></data>
+  <data name="CardField" xml:space="preserve"><value>Sahada kullanılan</value></data>
+  <data name="CardApproval" xml:space="preserve"><value>Onayda</value></data>
+  <data name="CardWorking" xml:space="preserve"><value>Üzerinde çalışılan</value></data>
+  <data name="CardNone" xml:space="preserve"><value>Yok</value></data>
+  <data name="CardRev" xml:space="preserve"><value>v{0} · Rev {1}</value></data>
+  <data name="CardRevShort" xml:space="preserve"><value>Rev {0}</value></data>
+  <data name="CardVersion" xml:space="preserve"><value>v{0}</value></data>
+  <data name="CardDraft" xml:space="preserve"><value>v{0} · Taslak</value></data>
+  <data name="RevExplainVersion" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="RevExplainVersionText" xml:space="preserve"><value>(v1.0, v2.0) yolun yayınlanan hâlidir.</value></data>
+  <data name="RevExplainRevision" xml:space="preserve"><value>Revizyon</value></data>
+  <data name="RevExplainRevisionText" xml:space="preserve"><value>(Rev 1, 2, 3) bir sürümün onaya gönderilen, dondurulmuş kopyasıdır. Reddedilen revizyon düzeltilip yeniden gönderilir; bu yüzden bir sürümün birden çok revizyonu olabilir.</value></data>
+  <data name="RevHistoryTitle" xml:space="preserve"><value>Revizyon geçmişi</value></data>
+  <data name="RevHistoryNewest" xml:space="preserve"><value>en yeni üstte</value></data>
+  <data name="RevChanges" xml:space="preserve"><value>{0} değişiklik</value></data>
+  <data name="RevOpenNotes" xml:space="preserve"><value>{0} açık not</value></data>
+  <data name="OnFieldBadge" xml:space="preserve"><value>SAHADA</value></data>
+  <data name="DiffFrom" xml:space="preserve"><value>Önce</value></data>
+  <data name="DiffTo" xml:space="preserve"><value>Sonra</value></data>
+  <data name="DiffShow" xml:space="preserve"><value>Farkı gör</value></data>
+  <data name="DiffDraft" xml:space="preserve"><value>Güncel taslak</value></data>
+  <data name="DiffTitle" xml:space="preserve"><value>{0} → {1}</value></data>
+  <data name="DiffNone" xml:space="preserve"><value>Değişiklik yok.</value></data>
+  <data name="DiffPickTwo" xml:space="preserve"><value>İki farklı revizyon seçin.</value></data>
+  <data name="DiffWith" xml:space="preserve"><value>Rev {0} ile farkı gör</value></data>
+  <data name="Change_step-added" xml:space="preserve"><value>Adım eklendi</value></data>
+  <data name="Change_step-removed" xml:space="preserve"><value>Adım çıkarıldı</value></data>
+  <data name="Change_step-moved" xml:space="preserve"><value>Adım taşındı</value></data>
+  <data name="Change_content-changed" xml:space="preserve"><value>İçerik değişti</value></data>
+  <data name="Change_content-version-changed" xml:space="preserve"><value>İçerik sürümü değişti</value></data>
+  <data name="Change_claim-added" xml:space="preserve"><value>İddia eklendi</value></data>
+  <data name="Change_claim-removed" xml:space="preserve"><value>İddia çıkarıldı</value></data>
+  <data name="Change_claim-moved" xml:space="preserve"><value>İddia taşındı</value></data>
+  <data name="Change_claim-version-changed" xml:space="preserve"><value>İddia sürümü değişti</value></data>
+  <data name="RevStatus_in-review" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="RevStatus_approved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="RevStatus_rejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="RevStatus_withdrawn" xml:space="preserve"><value>Geri alındı</value></data>
+  <data name="RevStatus_timed-out" xml:space="preserve"><value>Süre doldu</value></data>
+  <data name="RevStatus_other" xml:space="preserve"><value>Diğer</value></data>
+  <data name="Release_released" xml:space="preserve"><value>Yayında</value></data>
+  <data name="Release_withdrawn" xml:space="preserve"><value>Geri çekildi</value></data>
+  <data name="Release_other" xml:space="preserve"><value>Diğer</value></data>
+  <data name="PreviewDraft" xml:space="preserve"><value>Taslak — onaydan sonra çıktı oluşur.</value></data>
+  <data name="PreviewNoOutput" xml:space="preserve"><value>Onaylandı — çıktı oluşturulunca önizleme görünür.</value></data>
+  <data name="PreviewCaption" xml:space="preserve"><value>Rev {0} · v{1} · parmak izi {2}</value></data>
+  <data name="PreviewPdfNote" xml:space="preserve"><value>Onaylı revizyonun arşiv PDF’i; etkileşimli HTML sunum sonraki fazda gelir.</value></data>
+  <data name="UsageJourneys" xml:space="preserve"><value>Yolculuk aşamaları</value></data>
+  <data name="UsageTemplates" xml:space="preserve"><value>Strateji şablonları</value></data>
+  <data name="UsageNoJourneys" xml:space="preserve"><value>Bu yolu kullanan yolculuk aşaması yok.</value></data>
+  <data name="UsageNoTemplates" xml:space="preserve"><value>Bu yola bağlı strateji şablonu yok.</value></data>
+  <data name="UsageViewsLater" xml:space="preserve"><value>Sahadan sayfa gösterim ve süre verisi sonraki fazda gelir.</value></data>
+  <data name="PinLatest" xml:space="preserve"><value>Son yayındaki sürümü izler</value></data>
+  <data name="PinVersion" xml:space="preserve"><value>v{0} sürümüne sabit</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="PersonYou" xml:space="preserve"><value>Siz</value></data>
+  <data name="PersonOther" xml:space="preserve"><value>Kayıtlı kullanıcı</value></data>
+  <data name="CandidateOther" xml:space="preserve"><value>Atanmış kullanıcı</value></data>
+  <data name="ReviewerTitle" xml:space="preserve"><value>İnceleyici görünümü</value></data>
+  <data name="BackToWorkspace" xml:space="preserve"><value>Çalışma alanına dön</value></data>
+  <data name="ReviewerHeader" xml:space="preserve"><value>İnceleyici görünümü · Rev {0} · v{1}</value></data>
+  <data name="ReviewerFrozen" xml:space="preserve"><value>Dondurulmuş revizyon · gönderen {0} · {1}</value></data>
+  <data name="ReviewerWaiting" xml:space="preserve"><value>{0} adımı: bekliyor</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>İddia bloğuna tıklayın: kanıt belgesi yan panelde açılır.</value></data>
+  <data name="ReviewerComposition" xml:space="preserve"><value>Kurgu</value></data>
+  <data name="ReviewerItems" xml:space="preserve"><value>{0} öğe</value></data>
+  <data name="ReviewerOpenNotes" xml:space="preserve"><value>{0} açık not</value></data>
+  <data name="ReviewerNoText" xml:space="preserve"><value>Yolun dilinde metin yok.</value></data>
+  <data name="ContentVersionLabel" xml:space="preserve"><value>Sürüm {0}</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="EvidenceTitleFor" xml:space="preserve"><value>Kanıt · {0}</value></data>
+  <data name="EvidencePick" xml:space="preserve"><value>Kanıtını görmek için bir iddia bloğu seçin.</value></data>
+  <data name="EvidenceOpen" xml:space="preserve"><value>{0} kanıtını aç</value></data>
+  <data name="EvidenceNone" xml:space="preserve"><value>Bu iddiaya bağlı kanıt yok.</value></data>
+  <data name="EvidenceNoPermission" xml:space="preserve"><value>İddia kanıtlarını görüntüleme yetkiniz yok.</value></data>
+  <data name="EvidenceUnavailable" xml:space="preserve"><value>Kanıt şu an okunamıyor.</value></data>
+  <data name="NotesTitle" xml:space="preserve"><value>Notlar</value></data>
+  <data name="NotesIntro" xml:space="preserve"><value>Notlar revizyonla birlikte saklanır; çözülmemiş notlar sonraki revizyona taşınır.</value></data>
+  <data name="NotesNone" xml:space="preserve"><value>Bu adımda not yok.</value></data>
+  <data name="NoteTarget" xml:space="preserve"><value>Not yeri</value></data>
+  <data name="NoteOnStep" xml:space="preserve"><value>Adım: {0}</value></data>
+  <data name="NoteOnBlock" xml:space="preserve"><value>Blok: {0}</value></data>
+  <data name="NotePlaceholder" xml:space="preserve"><value>İğnelenecek not</value></data>
+  <data name="NoteAdd" xml:space="preserve"><value>İğnele</value></data>
+  <data name="NoteAdded" xml:space="preserve"><value>Not iğnelendi.</value></data>
+  <data name="NoteResolve" xml:space="preserve"><value>Çözüldü işaretle</value></data>
+  <data name="NoteResolved" xml:space="preserve"><value>Çözüldü</value></data>
+  <data name="NoteResolvedBy" xml:space="preserve"><value>Çözen: {0}</value></data>
+  <data name="NoteCarried" xml:space="preserve"><value>Rev {0}’dan taşındı</value></data>
+  <data name="DecisionTitle" xml:space="preserve"><value>Karar</value></data>
+  <data name="DecisionTitleStep" xml:space="preserve"><value>Karar · {0}</value></data>
+  <data name="DecisionCommentLabel" xml:space="preserve"><value>Not / gerekçe</value></data>
+  <data name="DecisionCommentPlaceholder" xml:space="preserve"><value>Onayda isteğe bağlı; ret için zorunlu</value></data>
+  <data name="DecisionApprove" xml:space="preserve"><value>Onayla</value></data>
+  <data name="DecisionReject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="DecisionRejectNeedsComment" xml:space="preserve"><value>Ret için gerekçe zorunludur. Hangi adımda veya blokta neyin değişmesi gerektiğini yazın.</value></data>
+  <data name="DecisionApproved" xml:space="preserve"><value>Onay kaydedildi ({0}). Sıradaki adım Görev Merkezi’nde açılır.</value></data>
+  <data name="DecisionRejected" xml:space="preserve"><value>Ret kaydedildi. Gönderen düzeltip yeni revizyonla gönderecek.</value></data>
+  <data name="DecisionOwnRevision" xml:space="preserve"><value>Bu revizyonu siz gönderdiniz. Gönderen kendi yolunu onaylayamaz.</value></data>
+  <data name="DecisionClosed" xml:space="preserve"><value>Bu revizyonun açık bir onay adımı yok.</value></data>
+  <data name="WizardTitle" xml:space="preserve"><value>Zincire bağla ve onaya gönder</value></data>
+  <data name="WizardStepChain" xml:space="preserve"><value>Zincir seç</value></data>
+  <data name="WizardStepMap" xml:space="preserve"><value>Adımları eşle</value></data>
+  <data name="WizardStepClaims" xml:space="preserve"><value>İddia önerileri</value></data>
+  <data name="WizardStepSummary" xml:space="preserve"><value>Özet</value></data>
+  <data name="WizardChainIntro" xml:space="preserve"><value>Yolun bağlanacağı zincir şablonu. Ürün ve kitle zincirden gelir; ülke ve dil yolun kimliği olur.</value></data>
+  <data name="WizardBindNote" xml:space="preserve"><value>Bağlandıktan sonra zincir, ülke ve dil bu yol için sabitlenir.</value></data>
+  <data name="WizardBindNext" xml:space="preserve"><value>Bağla ve devam et</value></data>
+  <data name="WizardMapIntro" xml:space="preserve"><value>Eski yolun her adımını bir zincir adımına eşleyin. Karşılığı olmayan adım yerleşmez ve eşlenene ya da çıkarılana kadar onayı engeller.</value></data>
+  <data name="WizardNoMatch" xml:space="preserve"><value>Zincirde karşılığı yok</value></data>
+  <data name="WizardUnmapped" xml:space="preserve"><value>{0} adımın zincirde karşılığı yok: yerleşmez ve onayı engeller.</value></data>
+  <data name="WizardMapNext" xml:space="preserve"><value>Eşlemeyi kaydet ve devam et</value></data>
+  <data name="WizardClaimsIntro" xml:space="preserve"><value>Adım içeriklerinin işaret ettiği iddialar. Her öneriyi kabul edin ya da reddedin.</value></data>
+  <data name="WizardClaimsNote" xml:space="preserve"><value>Hiçbir şey otomatik bağlanmaz: yalnız kabul ettiğiniz iddialar, onları işaret eden içeriğin adımına eklenir.</value></data>
+  <data name="WizardAccept" xml:space="preserve"><value>Kabul</value></data>
+  <data name="WizardReject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="WizardOnPath" xml:space="preserve"><value>zaten yolda</value></data>
+  <data name="WizardFromStep" xml:space="preserve"><value>İşaret eden adım: {0}</value></data>
+  <data name="WizardNeedsMapping" xml:space="preserve"><value>Adımı eşlenmediği için yerleştirilemez; önce adımı eşleyin ya da reddedin.</value></data>
+  <data name="WizardNoSuggestions" xml:space="preserve"><value>Adım içerikleri hiçbir iddiaya işaret etmiyor.</value></data>
+  <data name="WizardUndecided" xml:space="preserve"><value>Her iddia önerisi için karar verin: {0} kaldı.</value></data>
+  <data name="WizardClaimsNext" xml:space="preserve"><value>Kararları uygula ve devam et</value></data>
+  <data name="WizardFinish" xml:space="preserve"><value>Bitti</value></data>
+  <data name="WizardSummaryContext" xml:space="preserve"><value>Ülke · dil</value></data>
+  <data name="WizardSummaryMapped" xml:space="preserve"><value>Eşlenen adımlar</value></data>
+  <data name="WizardSummaryClaims" xml:space="preserve"><value>İddialar</value></data>
+  <data name="WizardMappedCount" xml:space="preserve"><value>{0} / {1}</value></data>
+  <data name="WizardClaimsCount" xml:space="preserve"><value>{0} kabul · {1} ret</value></data>
+  <data name="WizardChainKept" xml:space="preserve"><value>Önceden bağlandı</value></data>
+  <data name="WizardSummaryNote" xml:space="preserve"><value>Yol, revizyonu onaylanana kadar onaysızdır ve sahada kullanılamaz. Şimdi ya da daha sonra çalışma alanından onaya gönderebilirsiniz.</value></data>
+  <data name="Err_review_round_open" xml:space="preserve"><value>Bu yol için açık bir onay turu var.</value></data>
+  <data name="Err_chain_conformance_failed" xml:space="preserve"><value>Yol zincirine uymuyor (bir adımda öğe eksik ya da fazla).</value></data>
+  <data name="Err_component_not_published" xml:space="preserve"><value>Yoldaki bir içerik yayında değil.</value></data>
+  <data name="Err_claim_no_country_version" xml:space="preserve"><value>Bir iddianın yolun ülkesinde sürümü yok.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>Yolun ülkesi için onay şablonu kurulmamış. Sistem yöneticinize başvurun.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>Onay iş akışı şu an yanıt vermiyor; daha sonra yeniden deneyin.</value></data>
+  <data name="Err_comment_required" xml:space="preserve"><value>Ret için gerekçe zorunludur (en çok 2000 karakter).</value></data>
+  <data name="Err_sod_submitter_cannot_decide" xml:space="preserve"><value>Bu revizyonu siz gönderdiniz; gönderen karar veremez.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>Bilgi yolu doğrudan değil, yalnız MLR akışıyla onaylanır.</value></data>
+  <data name="Err_revision_not_approved" xml:space="preserve"><value>Revizyon onaylı değil.</value></data>
+  <data name="Err_artifact_missing" xml:space="preserve"><value>Bu revizyonun henüz çıktısı yok.</value></data>
+  <data name="Err_revision_superseded" xml:space="preserve"><value>Daha yeni bir revizyon bunun yerini aldı; sayfayı yenileyin.</value></data>
+  <data name="Err_revision_not_released" xml:space="preserve"><value>Yalnız yayındaki revizyon geri çekilebilir.</value></data>
+  <data name="Err_sod_submitter_cannot_release" xml:space="preserve"><value>Bu revizyonu siz gönderdiniz; yayını başka bir kişi yapmalı.</value></data>
+  <data name="Err_reason_required" xml:space="preserve"><value>Geri çekme için gerekçe zorunludur.</value></data>
+  <data name="Err_path_in_use" xml:space="preserve"><value>Yayındaki bir yolculuk aşaması bu yolu kullanıyor; hiçbir şey geri çekilmedi.</value></data>
+  <data name="Err_previous_path_in_use" xml:space="preserve"><value>Yerini alan önceki sürüm hâlâ şu yolculuk aşamalarında sabit:</value></data>
+  <data name="Err_artifact_store_unavailable" xml:space="preserve"><value>Belge deposu yanıt vermiyor; çıktı oluşturulamadı. Daha sonra yeniden deneyin.</value></data>
+  <data name="Err_claim_not_approved" xml:space="preserve"><value>Bir iddia yolun ülkesinde onaylı değil.</value></data>
+  <data name="Err_claim_language_mismatch" xml:space="preserve"><value>Bir iddianın yolun dilinde metni yok.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>Bu adımın inceleyicisi değilsiniz; karar yetkisi Görev Merkezi’nde bu adıma atanmış pozisyondadır.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>Bu revizyonun bekleyen onay adımı yok (az önce tamamlanmış olabilir).</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>Onayla ya da reddet seçin.</value></data>
+  <data name="Err_note_text_required" xml:space="preserve"><value>Not metnini yazın.</value></data>
+  <data name="Err_note_not_found" xml:space="preserve"><value>Not bulunamadı; sayfayı yenileyin.</value></data>
 </root>

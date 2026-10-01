@@ -58,7 +58,7 @@
 @* The primary "New path" action is rendered inside the DataTable toolbar (.add-new) by index.js — Golden pattern. *@
 @* Contract markers rendered by _DataTable: skeleton-loader + data-dt-standard=v2 *@
 <partial name="~/Views/CRM/KnowledgePaths/_DataTable.cshtml" />
-<partial name="~/Views/CRM/KnowledgePaths/_BindChainModal.cshtml" />
+<partial name="~/Views/CRM/KnowledgePaths/_LegacyWizard.cshtml" />
 
 @section Scripts {
     @* Contract marker: <partial name="_IndexL10n" /> *@
@@ -66,5 +66,6 @@
     <script src="~/assets/js/CRM/KnowledgePaths/index.l10n.js" asp-append-version="true"></script>
     <partial name="~/Views/CRM/KnowledgePaths/_StudioL10n.cshtml" />
     <script src="~/assets/js/CRM/KnowledgePaths/studio-common.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/KnowledgePaths/legacy-wizard.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/KnowledgePaths/index.js" asp-append-version="true"></script>
 }

@@ -302,7 +302,21 @@ public sealed class KnowledgePathStudioWebTests
             "POST api/paths/{pathId:guid}/claims", "POST api/paths/{pathId:guid}/claims/{claimId:guid}/arrange",
             "POST api/paths/{pathId:guid}/claims/{claimId:guid}/remove", "POST api/paths/{pathId:guid}/new-version",
             "POST api/paths/{pathId:guid}/publish", "POST api/paths/{pathId:guid}/steps",
-            "POST api/paths/{pathId:guid}/steps/{stepId:guid}/archive", "PUT api/paths/{pathId:guid}/steps/{stepId:guid}"
+            "POST api/paths/{pathId:guid}/steps/{stepId:guid}/archive", "PUT api/paths/{pathId:guid}/steps/{stepId:guid}",
+            // WP-KP-UI-2 — KP-2 / KP-3 proxies + the studio review reads.
+            "GET api/paths/{pathId:guid}/revisions", "GET api/paths/{pathId:guid}/revisions/{revisionId:guid}",
+            "GET api/paths/{pathId:guid}/revisions/{revisionId:guid}/artifact", "GET api/paths/{pathId:guid}/review-history",
+            "GET api/paths/{pathId:guid}/usage", "GET api/studio/paths/{pathId:guid}/claim-suggestions",
+            "GET api/studio/paths/{pathId:guid}/diff", "GET api/studio/paths/{pathId:guid}/mapping",
+            "GET api/studio/paths/{pathId:guid}/review", "GET api/studio/paths/{pathId:guid}/revisions/{revisionId:guid}/view",
+            "GET api/studio/paths/{pathId:guid}/usage",
+            "POST api/paths/{pathId:guid}/revisions/{revisionId:guid}/decision",
+            "POST api/paths/{pathId:guid}/revisions/{revisionId:guid}/notes",
+            "POST api/paths/{pathId:guid}/revisions/{revisionId:guid}/notes/{noteId:guid}/resolve",
+            "POST api/paths/{pathId:guid}/revisions/{revisionId:guid}/release",
+            "POST api/paths/{pathId:guid}/revisions/{revisionId:guid}/render",
+            "POST api/paths/{pathId:guid}/revisions/{revisionId:guid}/withdraw",
+            "POST api/paths/{pathId:guid}/submit-review", "POST api/paths/{pathId:guid}/withdraw-review"
         ];
         Assert.Equal(expected.OrderBy(r => r, StringComparer.Ordinal), routes);
     }
@@ -420,7 +434,9 @@ public sealed class KnowledgePathStudioWebTests
     public void Every_view_key_exists_in_the_family()
     {
         var keys = Values("en");
-        foreach (var view in new[] { "Create.cshtml", "Workspace.cshtml", "_BindChainModal.cshtml", "Index.cshtml", "_DataTable.cshtml", "_Filter.cshtml" })
+        // WP-KP-UI-2 — the bind modal became the legacy wizard; the review tabs / modals / reviewer page are studio views too.
+        foreach (var view in new[] { "Create.cshtml", "Workspace.cshtml", "_LegacyWizard.cshtml", "_ReviewTabs.cshtml", "_SubmitModal.cshtml",
+                     "Review.cshtml", "Index.cshtml", "_DataTable.cshtml", "_Filter.cshtml" })
         {
             var text = File.ReadAllText(Path.Combine(RepoRoot(), "frontend", "Diten.Web", "Views", "CRM", "KnowledgePaths", view));
             var localizer = text.Contains("IHtmlLocalizer<KnowledgePathStudio> StudioLocalizer") ? "StudioLocalizer" : "Localizer";

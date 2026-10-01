@@ -75,6 +75,7 @@ public sealed partial class KnowledgePathsController : Controller
         if (RequirePage(ReadPermission, ReadFallback) is { } denied) return denied;
         ViewData["PathId"] = id.ToString();
         ViewData["CanManage"] = HasAnyPermission(ManagePermission, ManageFallback);
+        ViewData["CanPublish"] = HasAnyPermission(PublishPermission);
         return View($"{ViewRoot}/Workspace.cshtml");
     }
 

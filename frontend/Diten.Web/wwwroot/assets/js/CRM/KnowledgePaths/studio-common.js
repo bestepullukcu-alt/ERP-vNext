@@ -2,8 +2,8 @@
  * WP-KP-UI-1 — Knowledge Path Studio shared client (list, new path, workspace).
  *  - L10n: the KnowledgePathStudio resx bridge (#kp-studio-l10n) merged into window.L10n (camelCase + PascalCase).
  *  - api: same-origin MVC proxy /CRM/KnowledgePaths/api only (never a Gateway URL or a bearer token).
- *  - errors: the 13 CRM (KP-1) codes are shown as user text; a code is never printed raw.
- *  - bind-chain modal: chain (bindable, the path's subject) + country + language → POST bind-chain.
+ *  - errors: the KP-1 / KP-2 / KP-3 CRM codes are shown as user text; a code is never printed raw.
+ *  - the legacy-path wizard is legacy-wizard.js (WP-KP-UI-2; it replaced the KP-UI-1 bind modal).
  */
 (function (window, document) {
     'use strict';
@@ -42,7 +42,33 @@
         chain_slot_move_forbidden: () => t('Err_chain_slot_move_forbidden'),
         component_language_mismatch: () => t('Err_component_language_mismatch'),
         claim_product_mismatch: () => t('Err_claim_product_mismatch'),
-        claim_ref_duplicate: () => t('Err_claim_ref_duplicate')
+        claim_ref_duplicate: () => t('Err_claim_ref_duplicate'),
+        // WP-KP-UI-2 — review (KP-2) and release (KP-3) answers.
+        review_round_open: () => t('Err_review_round_open'),
+        chain_conformance_failed: () => t('Err_chain_conformance_failed'),
+        component_not_published: () => t('Err_component_not_published'),
+        claim_no_country_version: () => t('Err_claim_no_country_version'),
+        approval_template_missing: () => t('Err_approval_template_missing'),
+        workflow_unavailable: () => t('Err_workflow_unavailable'),
+        comment_required: () => t('Err_comment_required'),
+        sod_submitter_cannot_decide: () => t('Err_sod_submitter_cannot_decide'),
+        approval_via_workflow_only: () => t('Err_approval_via_workflow_only'),
+        revision_not_approved: () => t('Err_revision_not_approved'),
+        artifact_missing: () => t('Err_artifact_missing'),
+        revision_superseded: () => t('Err_revision_superseded'),
+        revision_not_released: () => t('Err_revision_not_released'),
+        sod_submitter_cannot_release: () => t('Err_sod_submitter_cannot_release'),
+        reason_required: () => t('Err_reason_required'),
+        path_in_use: () => t('Err_path_in_use'),
+        previous_path_in_use: () => t('Err_previous_path_in_use'),
+        artifact_store_unavailable: () => t('Err_artifact_store_unavailable'),
+        claim_not_approved: () => t('Err_claim_not_approved'),
+        claim_language_mismatch: () => t('Err_claim_language_mismatch'),
+        approval_forbidden: () => t('Err_approval_forbidden'),
+        no_open_review: () => t('Err_no_open_review'),
+        decision_invalid: () => t('Err_decision_invalid'),
+        note_text_required: () => t('Err_note_text_required'),
+        note_not_found: () => t('Err_note_not_found')
     };
 
     /** The user text of a failed response body ({ errors: [code, message, …] }). The CRM message is never shown for a
@@ -50,8 +76,9 @@
     const errorText = body => {
         const errors = Array.isArray(body?.errors) ? body.errors : [];
         const known = errors.find(e => typeof e === 'string' && Object.prototype.hasOwnProperty.call(ERRORS, e));
-        if (known) return { text: ERRORS[known](), code: known };
-        return { text: t('Err_generic'), code: errors.find(e => typeof e === 'string') || '' };
+        // [code, message, ...details]: the details (e.g. the journey stage names of path_in_use) are names, not codes.
+        if (known) return { text: ERRORS[known](), code: known, details: errors.slice(errors.indexOf(known) + 2).filter(e => typeof e === 'string') };
+        return { text: t('Err_generic'), code: errors.find(e => typeof e === 'string') || '', details: [] };
     };
 
     const request = async (method, path, body) => {
@@ -62,10 +89,13 @@
         });
         const json = await response.json().catch(() => ({}));
         if (!response.ok) {
-            const failure = response.status === 502 || response.status === 503
-                ? { text: (json?.errors || []).includes('reference_set_unavailable') ? t('Err_reference_set_unavailable') : t('Err_unavailable'), code: String(response.status) }
-                : errorText(json);
-            throw Object.assign(new Error(failure.text), { status: response.status, code: failure.code });
+            // A coded answer (reference_set_unavailable, workflow_unavailable, …) keeps its own text; a bare 502 / 503 is
+            // "service unavailable".
+            const coded = errorText(json);
+            const failure = (response.status === 502 || response.status === 503) && !Object.prototype.hasOwnProperty.call(ERRORS, coded.code)
+                ? { text: t('Err_unavailable'), code: String(response.status), details: [] }
+                : coded;
+            throw Object.assign(new Error(failure.text), { status: response.status, code: failure.code, details: failure.details });
         }
         return json;
     };
@@ -111,56 +141,10 @@
         sync();
     };
 
-    /** The simple bind-chain modal (the legacy-path wizard is KP-UI-2). */
-    const openBindModal = async (path, onDone) => {
-        const modalEl = document.getElementById('kpBindModal');
-        if (!modalEl || !window.bootstrap) return;
-        const chainSelect = document.getElementById('kpBindChain');
-        const countrySelect = document.getElementById('kpBindCountry');
-        const languageSelect = document.getElementById('kpBindLanguage');
-        const submit = document.getElementById('kpBindSubmit');
-        const alert = document.getElementById('kpBindAlert');
-        const noChain = document.getElementById('kpBindNoChain');
-        document.getElementById('kpBindPathName').textContent = path.name || '';
-        hideAlert(alert);
-        const modal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
-        modal.show();
-
-        const ready = () => { submit.disabled = !(chainSelect.value && countrySelect.value && languageSelect.value); };
-        try {
-            const [chainList, countryList] = await Promise.all([chains(path.subjectId), countries()]);
-            fillOptions(chainSelect, chainList.map(c => ({ value: c.id, text: `${c.name} · ${t('VersionShort', c.version)}` })));
-            noChain.classList.toggle('d-none', chainList.length > 0);
-            chainSelect.onchange = ready;
-            const freshCountry = countrySelect.cloneNode(false); countrySelect.replaceWith(freshCountry);
-            const freshLanguage = languageSelect.cloneNode(false); languageSelect.replaceWith(freshLanguage);
-            wireCountryLanguage(freshCountry, freshLanguage, countryList, () => {
-                submit.disabled = !(chainSelect.value && freshCountry.value && freshLanguage.value);
-            });
-            submit.onclick = async () => {
-                submit.disabled = true;
-                hideAlert(alert);
-                try {
-                    await api.post(`/paths/${path.pathId}/bind-chain`, {
-                        chainTemplateId: chainSelect.value, countryCode: freshCountry.value, languageCode: freshLanguage.value
-                    });
-                    modal.hide();
-                    window.showToast?.(t('BindDone'), 'success');
-                    onDone?.();
-                } catch (error) {
-                    showAlert(alert, error);
-                    submit.disabled = false;
-                }
-            };
-        } catch (error) {
-            showAlert(alert, error);
-        }
-    };
-
     const storage = {
         get: key => { try { return window.localStorage.getItem(key); } catch (e) { return null; } },
         set: (key, value) => { try { window.localStorage.setItem(key, value); } catch (e) { /* storage blocked */ } }
     };
 
-    window.KpStudio = Object.freeze({ t, esc, api, errorText, showAlert, hideAlert, countries, chains, fillOptions, wireCountryLanguage, openBindModal, storage, ERRORS });
+    window.KpStudio = Object.freeze({ t, esc, api, errorText, showAlert, hideAlert, countries, chains, fillOptions, wireCountryLanguage, storage, ERRORS });
 })(window, document);

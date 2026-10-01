@@ -370,7 +370,7 @@
         if (bind) {
             event.preventDefault();
             const row = allRows.find(r => r.pathId === bind.dataset.id);
-            if (row && S) S.openBindModal({ pathId: row.pathId, subjectId: row.subjectId, name: row.pathName }, reloadRows);
+            if (row && window.KpLegacyWizard) window.KpLegacyWizard.open({ pathId: row.pathId, subjectId: row.subjectId, name: row.pathName, code: row.pathCode }, reloadRows);
             return;
         }
         const summary = event.target.closest('.js-summary');

@@ -35,11 +35,7 @@
   <data name="LegacyEditor" xml:space="preserve"><value>Abrir el editor antiguo</value></data>
   <data name="LegacyStepsTitle" xml:space="preserve"><value>Pasos de la ruta antigua</value></data>
   <data name="BindChain" xml:space="preserve"><value>Vincular a una cadena</value></data>
-  <data name="BindTitle" xml:space="preserve"><value>Vincular a una cadena</value></data>
-  <data name="BindIntro" xml:space="preserve"><value>Vincule esta ruta a una plantilla de cadena. Sus pasos se ubican en los de la cadena; el asistente guiado llegará en una próxima versión.</value></data>
   <data name="BindNoChain" xml:space="preserve"><value>No hay ninguna cadena publicada y ramificada para el tema de esta ruta.</value></data>
-  <data name="BindSubmit" xml:space="preserve"><value>Vincular</value></data>
-  <data name="BindDone" xml:space="preserve"><value>La ruta se ha vinculado a la cadena.</value></data>
   <data name="IdentityNote" xml:space="preserve"><value>El país y el idioma son la identidad de la ruta y no cambian después; para otro país, adáptela en una nueva ruta.</value></data>
   <data name="SelectPlaceholder" xml:space="preserve"><value>Seleccione…</value></data>
   <data name="VersionShort" xml:space="preserve"><value>v{0}</value></data>
@@ -196,4 +192,297 @@
   <data name="Err_claim_ref_duplicate" xml:space="preserve"><value>Esta declaración ya está en la ruta.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>No se pudo completar la acción.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>El servicio no responde en este momento; inténtelo más tarde.</value></data>
+  <data name="TabCompliance" xml:space="preserve"><value>Cumplimiento</value></data>
+  <data name="TabMlr" xml:space="preserve"><value>Aprobación MLR</value></data>
+  <data name="TabOutput" xml:space="preserve"><value>Salida y publicación</value></data>
+  <data name="TabRevisions" xml:space="preserve"><value>Revisiones</value></data>
+  <data name="TabPreview" xml:space="preserve"><value>Vista previa de campo</value></data>
+  <data name="TabUsage" xml:space="preserve"><value>Uso</value></data>
+  <data name="SubmitOpen" xml:space="preserve"><value>Enviar a aprobación</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>Retirar de la revisión</value></data>
+  <data name="WithdrawReviewConfirm" xml:space="preserve"><value>¿Retirar la ronda de revisión abierta? La ruta vuelve a borrador.</value></data>
+  <data name="WithdrawReviewDone" xml:space="preserve"><value>La ronda de revisión se retiró.</value></data>
+  <data name="StatusInReviewStep" xml:space="preserve"><value>En revisión · {0}</value></data>
+  <data name="NextFix" xml:space="preserve"><value>Siguiente paso: corrija {0} bloqueo(s) y envíe a aprobación</value></data>
+  <data name="NextSubmit" xml:space="preserve"><value>El borrador está listo: puede enviarlo a aprobación</value></data>
+  <data name="NextWaiting" xml:space="preserve"><value>Esperando aprobación: {0}</value></data>
+  <data name="NextRender" xml:space="preserve"><value>Siguiente paso: genere la salida de la revisión aprobada</value></data>
+  <data name="NextRelease" xml:space="preserve"><value>Siguiente paso: publique la revisión aprobada</value></data>
+  <data name="NextPublisher" xml:space="preserve"><value>Aprobado: un responsable de publicación genera la salida y publica</value></data>
+  <data name="NextLive" xml:space="preserve"><value>Esta versión está en campo</value></data>
+  <data name="ShowBlockers" xml:space="preserve"><value>Mostrar bloqueos</value></data>
+  <data name="WizardOpen" xml:space="preserve"><value>Vincular a una cadena</value></data>
+  <data name="BlockerCount" xml:space="preserve"><value>{0} bloqueo(s)</value></data>
+  <data name="ComplianceIntro" xml:space="preserve"><value>Las reglas se aplican al editar y de nuevo como lista bloqueante al enviar a aprobación. Los bloqueos deben corregirse antes de enviar; las advertencias no lo impiden. El botón de la fila lleva al elemento.</value></data>
+  <data name="ComplianceClean" xml:space="preserve"><value>El control de cumplimiento está limpio.</value></data>
+  <data name="ColSeverity" xml:space="preserve"><value>Gravedad</value></data>
+  <data name="ColRule" xml:space="preserve"><value>Regla</value></data>
+  <data name="ColWhere" xml:space="preserve"><value>Rama › paso › elemento</value></data>
+  <data name="ColIssue" xml:space="preserve"><value>Problema y corrección</value></data>
+  <data name="GoToComposition" xml:space="preserve"><value>Ir a la composición</value></data>
+  <data name="MapSteps" xml:space="preserve"><value>Asignar pasos</value></data>
+  <data name="FixPrefix" xml:space="preserve"><value>Corrección: {0}</value></data>
+  <data name="Sev_blocker" xml:space="preserve"><value>Bloqueante</value></data>
+  <data name="Sev_warning" xml:space="preserve"><value>Advertencia</value></data>
+  <data name="Rule_chain" xml:space="preserve"><value>Conformidad con la cadena</value></data>
+  <data name="Rule_published" xml:space="preserve"><value>Contenido publicado</value></data>
+  <data name="Rule_language" xml:space="preserve"><value>Idioma único</value></data>
+  <data name="Rule_claim" xml:space="preserve"><value>Usabilidad de las afirmaciones</value></data>
+  <data name="Rule_placement" xml:space="preserve"><value>Ubicación de pasos</value></data>
+  <data name="Comp_UnderMsg" xml:space="preserve"><value>{0}: se esperan al menos {1} elemento(s), hay {2}.</value></data>
+  <data name="Comp_UnderFix" xml:space="preserve"><value>Añada un contenido o una afirmación a este paso en la composición.</value></data>
+  <data name="Comp_OverMsg" xml:space="preserve"><value>{0}: admite como máximo {1} elemento(s), hay {2}.</value></data>
+  <data name="Comp_OverFix" xml:space="preserve"><value>Quite el elemento sobrante del paso.</value></data>
+  <data name="Comp_NotPublishedMsg" xml:space="preserve"><value>«{0}» está en estado {1} en la base de conocimiento.</value></data>
+  <data name="Comp_NotPublishedFix" xml:space="preserve"><value>Publique el contenido o quítelo del paso.</value></data>
+  <data name="Comp_LanguageMsg" xml:space="preserve"><value>«{0}» está en {1}; el idioma de la ruta es {2}.</value></data>
+  <data name="Comp_LanguageFix" xml:space="preserve"><value>Use la versión en {0} del contenido.</value></data>
+  <data name="Comp_ClaimNotApprovedMsg" xml:space="preserve"><value>{0} no está aprobada en el país de la ruta ({1}).</value></data>
+  <data name="Comp_ClaimNotApprovedFix" xml:space="preserve"><value>Espere la aprobación de la afirmación o quítela del paso.</value></data>
+  <data name="Comp_ClaimNoVersionMsg" xml:space="preserve"><value>{0} no tiene versión para {1}.</value></data>
+  <data name="Comp_ClaimNoVersionFix" xml:space="preserve"><value>Solicite la versión de {0} en la gestión de afirmaciones o quítela del paso.</value></data>
+  <data name="Comp_ClaimLanguageMsg" xml:space="preserve"><value>{0} no tiene texto en el idioma de la ruta ({1}).</value></data>
+  <data name="Comp_ClaimLanguageFix" xml:space="preserve"><value>Pida el texto en {0} en la versión del país o quite la afirmación del paso.</value></data>
+  <data name="Comp_UnplacedMsg" xml:space="preserve"><value>«{0}» no está ubicado en ningún paso de la cadena.</value></data>
+  <data name="Comp_UnplacedFix" xml:space="preserve"><value>Asígnelo a un paso con el asistente de rutas antiguas, o quítelo.</value></data>
+  <data name="SubmitTitle" xml:space="preserve"><value>Enviar a aprobación</value></data>
+  <data name="SubmitIntro" xml:space="preserve"><value>El envío congela el borrador actual como Rev. {0} e inicia el flujo Médico → Legal → Regulatorio. El borrador sigue editable.</value></data>
+  <data name="SubmitChecklist" xml:space="preserve"><value>Lista de comprobación</value></data>
+  <data name="SubmitNoBlockers" xml:space="preserve"><value>Ninguna regla bloqueante.</value></data>
+  <data name="SubmitOpenRound" xml:space="preserve"><value>La Rev. {0} está en revisión ({1}). Podrá enviar una nueva revisión cuando se cierre esa ronda.</value></data>
+  <data name="SubmitChangesTitle" xml:space="preserve"><value>Resumen de cambios (Rev. {0} → Rev. {1})</value></data>
+  <data name="SubmitFirstTitle" xml:space="preserve"><value>Resumen de cambios</value></data>
+  <data name="SubmitFirstText" xml:space="preserve"><value>Es la primera revisión de esta ruta; aún no hay nada que comparar.</value></data>
+  <data name="SubmitSend" xml:space="preserve"><value>Enviar Rev. {0}</value></data>
+  <data name="SubmitBlocked" xml:space="preserve"><value>Debe corregir {0} bloqueo(s) antes de enviar.</value></data>
+  <data name="SubmitBlockedOpen" xml:space="preserve"><value>Ya hay una ronda de revisión abierta.</value></data>
+  <data name="SubmitDone" xml:space="preserve"><value>Enviado a aprobación; la tarea está en el Centro de trabajo.</value></data>
+  <data name="MlrTitle" xml:space="preserve"><value>Flujo de aprobación · Rev. {0} · v{1}</value></data>
+  <data name="MlrHistoryUnavailable" xml:space="preserve"><value>El historial de aprobación no se puede leer ahora; las decisiones se mostrarán cuando esté disponible.</value></data>
+  <data name="MlrSubmitted" xml:space="preserve"><value>Envío</value></data>
+  <data name="MlrState_submitted" xml:space="preserve"><value>Enviado</value></data>
+  <data name="MlrState_approved" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="MlrState_rejected" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="MlrState_pending" xml:space="preserve"><value>En espera</value></data>
+  <data name="MlrState_queued" xml:space="preserve"><value>En cola</value></data>
+  <data name="MlrState_cancelled" xml:space="preserve"><value>Cancelado</value></data>
+  <data name="MlrState_not-reached" xml:space="preserve"><value>No alcanzado</value></data>
+  <data name="MlrQueuedNote" xml:space="preserve"><value>Se abre cuando se aprueba el paso anterior.</value></data>
+  <data name="MlrPendingNote" xml:space="preserve"><value>La tarea está en el Centro de trabajo; el siguiente paso se abre tras la decisión.</value></data>
+  <data name="MlrCandidates" xml:space="preserve"><value>Candidatos: {0}</value></data>
+  <data name="MlrStepN" xml:space="preserve"><value>Paso {0}</value></data>
+  <data name="MlrUnnamedStep" xml:space="preserve"><value>Paso sin nombre</value></data>
+  <data name="MlrSummary" xml:space="preserve"><value>Resumen</value></data>
+  <data name="MlrSumRevision" xml:space="preserve"><value>Revisión</value></data>
+  <data name="MlrSumSubmitter" xml:space="preserve"><value>Enviado por</value></data>
+  <data name="MlrSumSubmitted" xml:space="preserve"><value>Enviado el</value></data>
+  <data name="MlrSumPending" xml:space="preserve"><value>En espera ahora</value></data>
+  <data name="MlrSumNone" xml:space="preserve"><value>Ninguno</value></data>
+  <data name="MlrSumDone" xml:space="preserve"><value>Completado</value></data>
+  <data name="MlrSumDoneValue" xml:space="preserve"><value>{0} / {1} pasos</value></data>
+  <data name="MlrRulesTitle" xml:space="preserve"><value>Reglas</value></data>
+  <data name="MlrRules" xml:space="preserve"><value>El orden es Médico → Legal → Regulatorio. Cada paso se abre tras la aprobación anterior y llega al Centro de trabajo como tarea. Quien envía no puede aprobar su ruta; un rechazo requiere motivo.</value></data>
+  <data name="SingleChannelNote" xml:space="preserve"><value>Canal único: su decisión se registra en el flujo de aprobación del Centro de trabajo (MOD-0023); una decisión tomada allí también se muestra aquí.</value></data>
+  <data name="ReviewerView" xml:space="preserve"><value>Vista del revisor</value></data>
+  <data name="OutputTitle" xml:space="preserve"><value>Salidas</value></data>
+  <data name="OutputNone" xml:space="preserve"><value>Rev. {0} · sin salida</value></data>
+  <data name="OutputNoneText" xml:space="preserve"><value>El PDF de archivo se genera a partir de la revisión aprobada; la presentación HTML de campo llegará en una fase posterior.</value></data>
+  <data name="OutputNothing" xml:space="preserve"><value>Aún no hay salida.</value></data>
+  <data name="RenderButton" xml:space="preserve"><value>Generar salida</value></data>
+  <data name="RenderDone" xml:space="preserve"><value>Se generó el PDF de archivo.</value></data>
+  <data name="ArtifactView" xml:space="preserve"><value>Ver</value></data>
+  <data name="ArtifactDownload" xml:space="preserve"><value>Descargar</value></data>
+  <data name="ArtifactFrom" xml:space="preserve"><value>De la Rev. {0} aprobada</value></data>
+  <data name="FingerprintLabel" xml:space="preserve"><value>Huella</value></data>
+  <data name="SizeKb" xml:space="preserve"><value>{0} KB</value></data>
+  <data name="SizeMb" xml:space="preserve"><value>{0} MB</value></data>
+  <data name="ReleaseTitle" xml:space="preserve"><value>Publicación</value></data>
+  <data name="ReleaseTitleRev" xml:space="preserve"><value>Publicación · Rev. {0}</value></data>
+  <data name="PreconditionsTitle" xml:space="preserve"><value>Condiciones de publicación</value></data>
+  <data name="ReleaseButton" xml:space="preserve"><value>Publicar</value></data>
+  <data name="ReleaseBlocked" xml:space="preserve"><value>Aún no se puede publicar: {0}</value></data>
+  <data name="ReleaseNoCandidate" xml:space="preserve"><value>No hay ninguna revisión aprobada pendiente de publicación.</value></data>
+  <data name="ReleaseConfirm" xml:space="preserve"><value>¿Publicar la v{0}? Pasa a ser la versión usada en campo.</value></data>
+  <data name="ReleaseConfirmReplace" xml:space="preserve"><value>¿Publicar la v{0}? Sustituye a la v{1} en campo.</value></data>
+  <data name="ReleaseDone" xml:space="preserve"><value>Publicado; la ruta está en campo.</value></data>
+  <data name="PreOk" xml:space="preserve"><value>Cumplida</value></data>
+  <data name="PreMissing" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="Pre_approved" xml:space="preserve"><value>Revisión aprobada por MLR</value></data>
+  <data name="Pre_approvedNo" xml:space="preserve"><value>La Rev. {0} aún no está aprobada.</value></data>
+  <data name="Pre_artifact" xml:space="preserve"><value>Salida lista</value></data>
+  <data name="Pre_artifactNo" xml:space="preserve"><value>Sin salida: genere primero el PDF de archivo de la revisión aprobada.</value></data>
+  <data name="Pre_published" xml:space="preserve"><value>Todos los contenidos publicados</value></data>
+  <data name="Pre_publishedNo" xml:space="preserve"><value>Un contenido de la ruta no está publicado.</value></data>
+  <data name="Pre_language" xml:space="preserve"><value>Idioma único</value></data>
+  <data name="Pre_languageNo" xml:space="preserve"><value>Un contenido está en otro idioma distinto al de la ruta.</value></data>
+  <data name="Pre_claims" xml:space="preserve"><value>Todas las afirmaciones utilizables</value></data>
+  <data name="Pre_claimsNo" xml:space="preserve"><value>Una afirmación no es utilizable en el país / idioma de la ruta.</value></data>
+  <data name="Pre_conformance" xml:space="preserve"><value>Conformidad con la cadena correcta</value></data>
+  <data name="Pre_conformanceNo" xml:space="preserve"><value>Un paso de la cadena tiene elementos de menos o de más, o hay un paso sin ubicar.</value></data>
+  <data name="Pre_sod" xml:space="preserve"><value>Quien publica no es quien envió</value></data>
+  <data name="Pre_sodNo" xml:space="preserve"><value>Usted envió esta revisión; otra persona debe publicarla.</value></data>
+  <data name="LiveTitle" xml:space="preserve"><value>Versión en campo · v{0} (Rev. {1})</value></data>
+  <data name="LiveSub" xml:space="preserve"><value>Publicado · {0} · {1}</value></data>
+  <data name="WithdrawReasonLabel" xml:space="preserve"><value>Motivo de la retirada</value></data>
+  <data name="WithdrawReasonPlaceholder" xml:space="preserve"><value>¿Por qué se retira esta versión? (obligatorio)</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>Retirar</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>¿Retirar la v{0} del campo?</value></data>
+  <data name="WithdrawDone" xml:space="preserve"><value>La versión se retiró.</value></data>
+  <data name="WithdrawNote" xml:space="preserve"><value>Una versión retirada no puede elegirse en las etapas de los recorridos.</value></data>
+  <data name="WithdrawStagesTitle" xml:space="preserve"><value>Primero vincule estas etapas a otra versión:</value></data>
+  <data name="CardField" xml:space="preserve"><value>Usada en campo</value></data>
+  <data name="CardApproval" xml:space="preserve"><value>En aprobación</value></data>
+  <data name="CardWorking" xml:space="preserve"><value>En elaboración</value></data>
+  <data name="CardNone" xml:space="preserve"><value>Ninguna</value></data>
+  <data name="CardRev" xml:space="preserve"><value>v{0} · Rev. {1}</value></data>
+  <data name="CardRevShort" xml:space="preserve"><value>Rev. {0}</value></data>
+  <data name="CardVersion" xml:space="preserve"><value>v{0}</value></data>
+  <data name="CardDraft" xml:space="preserve"><value>v{0} · Borrador</value></data>
+  <data name="RevExplainVersion" xml:space="preserve"><value>Versión</value></data>
+  <data name="RevExplainVersionText" xml:space="preserve"><value>(v1.0, v2.0) es la forma publicada de la ruta.</value></data>
+  <data name="RevExplainRevision" xml:space="preserve"><value>Revisión</value></data>
+  <data name="RevExplainRevisionText" xml:space="preserve"><value>(Rev. 1, 2, 3) es una copia congelada de una versión enviada a aprobación. Una revisión rechazada se corrige y se reenvía, por eso una versión puede tener varias revisiones.</value></data>
+  <data name="RevHistoryTitle" xml:space="preserve"><value>Historial de revisiones</value></data>
+  <data name="RevHistoryNewest" xml:space="preserve"><value>la más reciente primero</value></data>
+  <data name="RevChanges" xml:space="preserve"><value>{0} cambio(s)</value></data>
+  <data name="RevOpenNotes" xml:space="preserve"><value>{0} nota(s) abierta(s)</value></data>
+  <data name="OnFieldBadge" xml:space="preserve"><value>EN CAMPO</value></data>
+  <data name="DiffFrom" xml:space="preserve"><value>Desde</value></data>
+  <data name="DiffTo" xml:space="preserve"><value>Hasta</value></data>
+  <data name="DiffShow" xml:space="preserve"><value>Ver diferencia</value></data>
+  <data name="DiffDraft" xml:space="preserve"><value>Borrador actual</value></data>
+  <data name="DiffTitle" xml:space="preserve"><value>{0} → {1}</value></data>
+  <data name="DiffNone" xml:space="preserve"><value>Sin cambios.</value></data>
+  <data name="DiffPickTwo" xml:space="preserve"><value>Elija dos revisiones distintas.</value></data>
+  <data name="DiffWith" xml:space="preserve"><value>Diferencia con la Rev. {0}</value></data>
+  <data name="Change_step-added" xml:space="preserve"><value>Paso añadido</value></data>
+  <data name="Change_step-removed" xml:space="preserve"><value>Paso eliminado</value></data>
+  <data name="Change_step-moved" xml:space="preserve"><value>Paso movido</value></data>
+  <data name="Change_content-changed" xml:space="preserve"><value>Contenido cambiado</value></data>
+  <data name="Change_content-version-changed" xml:space="preserve"><value>Versión del contenido cambiada</value></data>
+  <data name="Change_claim-added" xml:space="preserve"><value>Afirmación añadida</value></data>
+  <data name="Change_claim-removed" xml:space="preserve"><value>Afirmación eliminada</value></data>
+  <data name="Change_claim-moved" xml:space="preserve"><value>Afirmación movida</value></data>
+  <data name="Change_claim-version-changed" xml:space="preserve"><value>Versión de la afirmación cambiada</value></data>
+  <data name="RevStatus_in-review" xml:space="preserve"><value>En revisión</value></data>
+  <data name="RevStatus_approved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="RevStatus_rejected" xml:space="preserve"><value>Rechazada</value></data>
+  <data name="RevStatus_withdrawn" xml:space="preserve"><value>Retirada</value></data>
+  <data name="RevStatus_timed-out" xml:space="preserve"><value>Vencida</value></data>
+  <data name="RevStatus_other" xml:space="preserve"><value>Otro</value></data>
+  <data name="Release_released" xml:space="preserve"><value>Publicada</value></data>
+  <data name="Release_withdrawn" xml:space="preserve"><value>Retirada del campo</value></data>
+  <data name="Release_other" xml:space="preserve"><value>Otro</value></data>
+  <data name="PreviewDraft" xml:space="preserve"><value>Borrador: la salida se genera tras la aprobación.</value></data>
+  <data name="PreviewNoOutput" xml:space="preserve"><value>Aprobada: la vista previa aparece cuando se genera la salida.</value></data>
+  <data name="PreviewCaption" xml:space="preserve"><value>Rev. {0} · v{1} · huella {2}</value></data>
+  <data name="PreviewPdfNote" xml:space="preserve"><value>El PDF de archivo de la revisión aprobada; la presentación HTML interactiva llegará más adelante.</value></data>
+  <data name="UsageJourneys" xml:space="preserve"><value>Etapas de recorridos</value></data>
+  <data name="UsageTemplates" xml:space="preserve"><value>Plantillas de estrategia</value></data>
+  <data name="UsageNoJourneys" xml:space="preserve"><value>Ninguna etapa de recorrido usa esta ruta.</value></data>
+  <data name="UsageNoTemplates" xml:space="preserve"><value>Ninguna plantilla de estrategia está vinculada a esta ruta.</value></data>
+  <data name="UsageViewsLater" xml:space="preserve"><value>Las visualizaciones y el tiempo por página desde el campo llegarán en una fase posterior.</value></data>
+  <data name="PinLatest" xml:space="preserve"><value>Sigue la última versión publicada</value></data>
+  <data name="PinVersion" xml:space="preserve"><value>Fijada a la v{0}</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Activo</value></data>
+  <data name="PersonYou" xml:space="preserve"><value>Usted</value></data>
+  <data name="PersonOther" xml:space="preserve"><value>Usuario registrado</value></data>
+  <data name="CandidateOther" xml:space="preserve"><value>Usuario asignado</value></data>
+  <data name="ReviewerTitle" xml:space="preserve"><value>Vista del revisor</value></data>
+  <data name="BackToWorkspace" xml:space="preserve"><value>Volver al espacio de trabajo</value></data>
+  <data name="ReviewerHeader" xml:space="preserve"><value>Vista del revisor · Rev. {0} · v{1}</value></data>
+  <data name="ReviewerFrozen" xml:space="preserve"><value>Revisión congelada · enviada por {0} · {1}</value></data>
+  <data name="ReviewerWaiting" xml:space="preserve"><value>Paso {0}: en espera</value></data>
+  <data name="ReviewerHint" xml:space="preserve"><value>Haga clic en una afirmación: su documento de evidencia se abre en el panel lateral.</value></data>
+  <data name="ReviewerComposition" xml:space="preserve"><value>Composición</value></data>
+  <data name="ReviewerItems" xml:space="preserve"><value>{0} elemento(s)</value></data>
+  <data name="ReviewerOpenNotes" xml:space="preserve"><value>{0} nota(s) abierta(s)</value></data>
+  <data name="ReviewerNoText" xml:space="preserve"><value>Sin texto en el idioma de la ruta.</value></data>
+  <data name="ContentVersionLabel" xml:space="preserve"><value>Versión {0}</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>Evidencia</value></data>
+  <data name="EvidenceTitleFor" xml:space="preserve"><value>Evidencia · {0}</value></data>
+  <data name="EvidencePick" xml:space="preserve"><value>Seleccione una afirmación para ver su evidencia.</value></data>
+  <data name="EvidenceOpen" xml:space="preserve"><value>Abrir la evidencia de {0}</value></data>
+  <data name="EvidenceNone" xml:space="preserve"><value>No hay evidencia vinculada a esta afirmación.</value></data>
+  <data name="EvidenceNoPermission" xml:space="preserve"><value>No tiene permiso para leer la evidencia de las afirmaciones.</value></data>
+  <data name="EvidenceUnavailable" xml:space="preserve"><value>La evidencia no se puede leer ahora.</value></data>
+  <data name="NotesTitle" xml:space="preserve"><value>Notas</value></data>
+  <data name="NotesIntro" xml:space="preserve"><value>Las notas se guardan con la revisión; las no resueltas pasan a la siguiente revisión.</value></data>
+  <data name="NotesNone" xml:space="preserve"><value>No hay notas en este paso.</value></data>
+  <data name="NoteTarget" xml:space="preserve"><value>Nota sobre</value></data>
+  <data name="NoteOnStep" xml:space="preserve"><value>Paso: {0}</value></data>
+  <data name="NoteOnBlock" xml:space="preserve"><value>Bloque: {0}</value></data>
+  <data name="NotePlaceholder" xml:space="preserve"><value>Nota para fijar</value></data>
+  <data name="NoteAdd" xml:space="preserve"><value>Fijar</value></data>
+  <data name="NoteAdded" xml:space="preserve"><value>Nota fijada.</value></data>
+  <data name="NoteResolve" xml:space="preserve"><value>Marcar como resuelta</value></data>
+  <data name="NoteResolved" xml:space="preserve"><value>Resuelta</value></data>
+  <data name="NoteResolvedBy" xml:space="preserve"><value>Resuelta por {0}</value></data>
+  <data name="NoteCarried" xml:space="preserve"><value>Traída de la Rev. {0}</value></data>
+  <data name="DecisionTitle" xml:space="preserve"><value>Decisión</value></data>
+  <data name="DecisionTitleStep" xml:space="preserve"><value>Decisión · {0}</value></data>
+  <data name="DecisionCommentLabel" xml:space="preserve"><value>Nota / motivo</value></data>
+  <data name="DecisionCommentPlaceholder" xml:space="preserve"><value>Opcional al aprobar; obligatorio al rechazar</value></data>
+  <data name="DecisionApprove" xml:space="preserve"><value>Aprobar</value></data>
+  <data name="DecisionReject" xml:space="preserve"><value>Rechazar</value></data>
+  <data name="DecisionRejectNeedsComment" xml:space="preserve"><value>Un rechazo requiere motivo. Indique qué paso o bloque debe cambiar y cómo.</value></data>
+  <data name="DecisionApproved" xml:space="preserve"><value>Aprobación registrada ({0}). El siguiente paso se abre en el Centro de trabajo.</value></data>
+  <data name="DecisionRejected" xml:space="preserve"><value>Rechazo registrado. Quien envió lo corrige y manda una nueva revisión.</value></data>
+  <data name="DecisionOwnRevision" xml:space="preserve"><value>Usted envió esta revisión. Quien envía no puede decidir sobre su propia ruta.</value></data>
+  <data name="DecisionClosed" xml:space="preserve"><value>Esta revisión no tiene ningún paso de revisión abierto.</value></data>
+  <data name="WizardTitle" xml:space="preserve"><value>Vincular a una cadena y enviar a aprobación</value></data>
+  <data name="WizardStepChain" xml:space="preserve"><value>Elegir una cadena</value></data>
+  <data name="WizardStepMap" xml:space="preserve"><value>Asignar los pasos</value></data>
+  <data name="WizardStepClaims" xml:space="preserve"><value>Sugerencias de afirmaciones</value></data>
+  <data name="WizardStepSummary" xml:space="preserve"><value>Resumen</value></data>
+  <data name="WizardChainIntro" xml:space="preserve"><value>La cadena a la que se vincula la ruta. Producto y público vienen de la cadena; país e idioma pasan a ser la identidad de la ruta.</value></data>
+  <data name="WizardBindNote" xml:space="preserve"><value>Una vez vinculada, la cadena, el país y el idioma quedan fijados para esta ruta.</value></data>
+  <data name="WizardBindNext" xml:space="preserve"><value>Vincular y continuar</value></data>
+  <data name="WizardMapIntro" xml:space="preserve"><value>Asigne cada paso antiguo a un paso de la cadena. Un paso sin correspondencia no se ubica y bloquea la aprobación hasta asignarlo o quitarlo.</value></data>
+  <data name="WizardNoMatch" xml:space="preserve"><value>Sin correspondencia en la cadena</value></data>
+  <data name="WizardUnmapped" xml:space="preserve"><value>{0} paso(s) sin paso de cadena: quedan sin ubicar y bloquean la aprobación.</value></data>
+  <data name="WizardMapNext" xml:space="preserve"><value>Guardar la asignación y continuar</value></data>
+  <data name="WizardClaimsIntro" xml:space="preserve"><value>Afirmaciones referenciadas por los contenidos de los pasos. Acepte o rechace cada sugerencia.</value></data>
+  <data name="WizardClaimsNote" xml:space="preserve"><value>Nada se vincula automáticamente: solo se añaden las afirmaciones aceptadas, en el paso del contenido que las referencia.</value></data>
+  <data name="WizardAccept" xml:space="preserve"><value>Aceptar</value></data>
+  <data name="WizardReject" xml:space="preserve"><value>Rechazar</value></data>
+  <data name="WizardOnPath" xml:space="preserve"><value>ya está en la ruta</value></data>
+  <data name="WizardFromStep" xml:space="preserve"><value>Referenciada por: {0}</value></data>
+  <data name="WizardNeedsMapping" xml:space="preserve"><value>Su paso no está asignado, así que no puede ubicarse; asigne primero el paso o rechace.</value></data>
+  <data name="WizardNoSuggestions" xml:space="preserve"><value>Los contenidos de los pasos no referencian ninguna afirmación.</value></data>
+  <data name="WizardUndecided" xml:space="preserve"><value>Decida sobre cada sugerencia: quedan {0}.</value></data>
+  <data name="WizardClaimsNext" xml:space="preserve"><value>Aplicar decisiones y continuar</value></data>
+  <data name="WizardFinish" xml:space="preserve"><value>Listo</value></data>
+  <data name="WizardSummaryContext" xml:space="preserve"><value>País · idioma</value></data>
+  <data name="WizardSummaryMapped" xml:space="preserve"><value>Pasos asignados</value></data>
+  <data name="WizardSummaryClaims" xml:space="preserve"><value>Afirmaciones</value></data>
+  <data name="WizardMappedCount" xml:space="preserve"><value>{0} de {1}</value></data>
+  <data name="WizardClaimsCount" xml:space="preserve"><value>{0} aceptada(s) · {1} rechazada(s)</value></data>
+  <data name="WizardChainKept" xml:space="preserve"><value>Vinculado antes</value></data>
+  <data name="WizardSummaryNote" xml:space="preserve"><value>La ruta no está aprobada hasta que se apruebe su revisión: no puede usarse en campo hasta entonces. Puede enviarla a aprobación ahora o más tarde desde el espacio de trabajo.</value></data>
+  <data name="Err_review_round_open" xml:space="preserve"><value>Ya hay una ronda de revisión abierta para esta ruta.</value></data>
+  <data name="Err_chain_conformance_failed" xml:space="preserve"><value>La ruta no se ajusta a su cadena (un paso tiene elementos de menos o de más).</value></data>
+  <data name="Err_component_not_published" xml:space="preserve"><value>Un contenido de la ruta no está publicado.</value></data>
+  <data name="Err_claim_no_country_version" xml:space="preserve"><value>Una afirmación no tiene versión en el país de la ruta.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>La plantilla de aprobación del país de la ruta no está configurada. Consulte al administrador.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>El flujo de aprobación no responde ahora; inténtelo más tarde.</value></data>
+  <data name="Err_comment_required" xml:space="preserve"><value>Un rechazo requiere motivo (máximo 2000 caracteres).</value></data>
+  <data name="Err_sod_submitter_cannot_decide" xml:space="preserve"><value>Usted envió esta revisión; quien envía no puede decidir sobre ella.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>Una ruta de conocimiento solo se aprueba mediante su flujo MLR, no directamente.</value></data>
+  <data name="Err_revision_not_approved" xml:space="preserve"><value>La revisión no está aprobada.</value></data>
+  <data name="Err_artifact_missing" xml:space="preserve"><value>Esta revisión aún no tiene salida.</value></data>
+  <data name="Err_revision_superseded" xml:space="preserve"><value>Una revisión más reciente la sustituyó; recargue la página.</value></data>
+  <data name="Err_revision_not_released" xml:space="preserve"><value>Solo se puede retirar una revisión publicada.</value></data>
+  <data name="Err_sod_submitter_cannot_release" xml:space="preserve"><value>Usted envió esta revisión; otra persona debe publicarla.</value></data>
+  <data name="Err_reason_required" xml:space="preserve"><value>Se requiere un motivo para la retirada.</value></data>
+  <data name="Err_path_in_use" xml:space="preserve"><value>Una etapa de recorrido publicada usa esta ruta; no se retiró nada.</value></data>
+  <data name="Err_previous_path_in_use" xml:space="preserve"><value>La versión sustituida sigue fijada en estas etapas de recorrido:</value></data>
+  <data name="Err_artifact_store_unavailable" xml:space="preserve"><value>El almacén de documentos no responde; no se generó la salida. Inténtelo más tarde.</value></data>
+  <data name="Err_claim_not_approved" xml:space="preserve"><value>Una afirmación no está aprobada en el país de la ruta.</value></data>
+  <data name="Err_claim_language_mismatch" xml:space="preserve"><value>Una afirmación no tiene texto en el idioma de la ruta.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>No es revisor de este paso; la decisión corresponde al puesto asignado en el Centro de trabajo.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>Esta revisión no tiene ningún paso pendiente (puede que acabe de terminar).</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>Elija aprobar o rechazar.</value></data>
+  <data name="Err_note_text_required" xml:space="preserve"><value>Escriba el texto de la nota.</value></data>
+  <data name="Err_note_not_found" xml:space="preserve"><value>No se encontró la nota; recargue la página.</value></data>
 </root>

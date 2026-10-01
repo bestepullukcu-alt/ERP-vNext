@@ -224,7 +224,24 @@
         renderSequence();
         renderBranches();
         renderLegacy();
+        // WP-KP-UI-2 — the review tabs (workspace-review.js) follow the same model.
+        document.dispatchEvent(new CustomEvent('kp:workspace', { detail: model }));
     };
+
+    /** WP-KP-UI-2 "Kurguya git": scroll to a chain step / item of the composition and highlight it. */
+    const focusItem = (branchCode, chainStepId, kind, id) => {
+        const host = $('wsBranches');
+        const item = kind && id ? host.querySelector(`.kp-item[data-kind="${CSS.escape(kind)}"][data-id="${CSS.escape(id)}"]`) : null;
+        const target = item || (branchCode && chainStepId ? host.querySelector(`.card[data-branch="${CSS.escape(branchCode)}"][data-step="${CSS.escape(chainStepId)}"]`) : null);
+        if (!target) return false;
+        target.setAttribute('tabindex', '-1');
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.focus({ preventScroll: true });
+        target.classList.add('kp-flash');
+        window.setTimeout(() => target.classList.remove('kp-flash'), 2400);
+        return true;
+    };
+    window.KpWorkspace = Object.freeze({ reload: () => load(), focusItem });
 
     // ---------------- writes ----------------
 
@@ -472,7 +489,7 @@
         addTimer = window.setTimeout(refreshAddList, 300);
     });
     $('wsIntroDismiss').addEventListener('click', () => { S.storage.set(INTRO_KEY, '1'); renderIntro(); });
-    $('wsBindButton').addEventListener('click', () => S.openBindModal({ pathId, subjectId: model.subjectId, name: model.pathName }, load));
+    $('wsBindButton').addEventListener('click', () => window.KpLegacyWizard?.open({ pathId, subjectId: model.subjectId, name: model.pathName, code: model.pathCode }, load));
 
     load();
 })(window, document);
