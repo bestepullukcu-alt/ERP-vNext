@@ -11,12 +11,12 @@
 
 | Operation | Method + path | Permission | Success |
 |---|---|---|---|
-| `postMovement` | `POST /api/inventory/movements` | `supplychain.inventory.movements.post` | 201 new · 200 idempotent replay |
-| `getAvailability` | `GET /api/inventory/availability` | `supplychain.inventory.read` | 200 `AvailabilityView` |
-| `getBalance` | `GET /api/inventory/balance` | `supplychain.inventory.read` | 200 `{ rows, total, contractVersion }` |
-| `getTransactions` | `GET /api/inventory/transactions` | `supplychain.inventory.read` | 200 `{ items, page, pageSize, total, contractVersion }` |
-| `createReservation` | `POST /api/inventory/reservations` | `supplychain.inventory.reservations.manage` | 201 `ReservationResponse` · 200 idempotent replay |
-| `releaseReservation` | `POST /api/inventory/reservations/{id}/release` | `supplychain.inventory.reservations.manage` | 200 `{ reservationId, status, availableAfter, contractVersion }` |
+| `postMovement` | `POST /api/inventory/movements` | `inventory.movements.create` | 201 new · 200 idempotent replay |
+| `getAvailability` | `GET /api/inventory/availability` | `inventory.stock.read` | 200 `AvailabilityView` |
+| `getBalance` | `GET /api/inventory/balance` | `inventory.stock.read` | 200 `{ rows, total, contractVersion }` |
+| `getTransactions` | `GET /api/inventory/transactions` | `inventory.stock.read` | 200 `{ items, page, pageSize, total, contractVersion }` |
+| `createReservation` | `POST /api/inventory/reservations` | `inventory.reservations.manage` | 201 `ReservationResponse` · 200 idempotent replay |
+| `releaseReservation` | `POST /api/inventory/reservations/{id}/release` | `inventory.reservations.manage` | 200 `{ reservationId, status, availableAfter, contractVersion }` |
 
 - **Wire format** — the unwrapped contract schemas (pack §8 exception to `Response<T>`). Every body carries
   `contractVersion: "v1"`. Decimals are strings with at least three fraction digits (`"100.000"`); timestamps are UTC

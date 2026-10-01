@@ -8,9 +8,9 @@ namespace Diten.InventoryService.Tests.TestInfrastructure;
 /// <summary>Mints HS256 access tokens the service under test accepts (same issuer / audience / key it is configured with).</summary>
 public static class TestTokens
 {
-    public const string ReadPermission = "supplychain.inventory.read";
-    public const string PostPermission = "supplychain.inventory.movements.post";
-    public const string ReservationsPermission = "supplychain.inventory.reservations.manage";
+    public const string ReadPermission = "inventory.stock.read";
+    public const string PostPermission = "inventory.movements.create";
+    public const string ReservationsPermission = "inventory.reservations.manage";
 
     public static readonly string[] AllPermissions = [ReadPermission, PostPermission, ReservationsPermission];
 

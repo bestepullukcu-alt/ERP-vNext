@@ -405,9 +405,9 @@ string Token(Tenant t)
         new("sub", t.UserId.ToString()),
         new("tenant_id", t.TenantId.ToString()),
         new("legal_entity_id", t.LegalEntityId.ToString()),
-        new("permission", "supplychain.inventory.read"),
-        new("permission", "supplychain.inventory.movements.post"),
-        new("permission", "supplychain.inventory.reservations.manage")
+        new("permission", "inventory.stock.read"),
+        new("permission", "inventory.movements.create"),
+        new("permission", "inventory.reservations.manage")
     };
     var token = new JwtSecurityToken("diten-auth-service", "diten-erp", claims, DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow.AddMinutes(15),
         new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)), SecurityAlgorithms.HmacSha256));

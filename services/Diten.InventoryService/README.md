@@ -33,12 +33,12 @@ tests/
 
 | Method | Path | Permission | Notes |
 |---|---|---|---|
-| POST | `/api/inventory/movements` | `supplychain.inventory.movements.post` | the ONLY way to change stock; `Idempotency-Key` header = body `idempotencyKey` |
-| POST | `/api/inventory/reservations` | `supplychain.inventory.reservations.manage` | SKU-level hold of AVAILABLE stock; `Idempotency-Key` = body key; 422 `INSUFFICIENT_AVAILABLE` |
-| POST | `/api/inventory/reservations/{id}/release` | `supplychain.inventory.reservations.manage` | `If-Match: W/"<version>"` required; stale / not ACTIVE → 409 `RESERVATION_CONFLICT` |
-| GET | `/api/inventory/availability` | `supplychain.inventory.read` | `itemId` or `skuId` required; `reserved` = SKU-level ACTIVE holds; no stock → PRODUCT-MASTER decides (200 zeros / 404 / 503) |
-| GET | `/api/inventory/balance` | `supplychain.inventory.read` | paged projection rows |
-| GET | `/api/inventory/transactions` | `supplychain.inventory.read` | immutable history, newest posting first |
+| POST | `/api/inventory/movements` | `inventory.movements.create` | the ONLY way to change stock; `Idempotency-Key` header = body `idempotencyKey` |
+| POST | `/api/inventory/reservations` | `inventory.reservations.manage` | SKU-level hold of AVAILABLE stock; `Idempotency-Key` = body key; 422 `INSUFFICIENT_AVAILABLE` |
+| POST | `/api/inventory/reservations/{id}/release` | `inventory.reservations.manage` | `If-Match: W/"<version>"` required; stale / not ACTIVE → 409 `RESERVATION_CONFLICT` |
+| GET | `/api/inventory/availability` | `inventory.stock.read` | `itemId` or `skuId` required; `reserved` = SKU-level ACTIVE holds; no stock → PRODUCT-MASTER decides (200 zeros / 404 / 503) |
+| GET | `/api/inventory/balance` | `inventory.stock.read` | paged projection rows |
+| GET | `/api/inventory/transactions` | `inventory.stock.read` | immutable history, newest posting first |
 | GET | `/health` | anonymous | `{ "status": "Healthy", "module": "MOD-0173" }` |
 
 There is no PUT / PATCH / DELETE. A correction is a `REVERSAL` movement.
@@ -69,15 +69,20 @@ Configuration (all overridable by environment variables, `__` as separator):
 ⚠ Startup creates the MOD-0173 indexes and rebuilds the S2 `inventory_sku_positions` projection from the ledger +
 reservations (idempotent, per-SKU transaction, nothing deleted), and **refuses to start** if either fails: the
 unique indexes carry idempotency / single reversal / one row per dimension, and the reservation guards rely on
-correct positions.
+correct positions. Groups the rebuild cannot attribute (no complete tenant / LE / item / SKU / level scope) are logged
+as a WARNING with their count — never guessed, never deleted; on a database that is not a DB-010 test database (name
+without a `test` / `tests` / `itest` segment) any such group also **stops the start** (FU-S2-01).
+
+Permissions are in the `inventory.*` namespace owned by this service (PKS-001 §4; owner decision 2026-10-01). The
+former `supplychain.*` names have no alias.
 
 Reservations (S2) hold quantity at **Tenant + LE + item + SKU + level** against AVAILABLE stock (pack
 ASSUMPTION-0173-12..17): balance rows keep `reserved 0`; `/availability` shows the SKU-level total. A movement whose
 `(sourceModule, sourceDocumentId, sourceLineId)` equals an ACTIVE reservation consumes it; reserved stock cannot be
 issued to anyone else. There is no SuperAdmin shortcut: every endpoint needs its explicit permission (FU-S1-02).
 
-⚠ Gateway route `/api/inventory/**` → 5066 and the permission seed are **not** part of this service (INT-1,
-integration-agent). Until INT-1 lands, callers reach the service directly on 5066.
+Gateway route `/api/inventory/**` → 5066 is in `gateway/Diten.ApiGateway/ocelot.json` (INT-1). Registering the
+permissions (module manifest) is **not** part of this service — it belongs to the UI follow-up (FU01).
 
 ## Tests
 

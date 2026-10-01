@@ -25,7 +25,7 @@ public sealed class InventoryController : CustomBaseController
     public InventoryController(IMediator mediator) => _mediator = mediator;
 
     [HttpPost("movements")]
-    [HasPermission(InventoryPermissions.PostMovements)]
+    [HasPermission(InventoryPermissions.CreateMovements)]
     public async Task<IActionResult> PostMovement(CancellationToken cancellationToken)
     {
         var (command, error) = await MovementRequestReader.ReadAsync(
