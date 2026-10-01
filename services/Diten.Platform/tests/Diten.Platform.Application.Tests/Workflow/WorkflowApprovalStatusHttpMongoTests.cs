@@ -390,11 +390,27 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
         var token = _host.Token(caller, _tenant,
             WorkflowPermissions.TasksApprove, WorkflowPermissions.TasksReject, WorkflowPermissions.TasksDelegate,
             WorkflowPermissions.TasksRequestInfo, WorkflowPermissions.TasksCancel);
+        // Each action gets the body its own client sends: the approve/reject transport refuses a field it does not
+        // know, so the delegate's and the request-info's fields travel only with those actions.
         var body = new Dictionary<string, object?>
         {
-            ["reasonCode"] = "OK", ["idempotencyKey"] = Guid.NewGuid().ToString("N"), ["comment"] = "c",
-            ["delegatePrincipalId"] = Guid.NewGuid().ToString(), ["targetPrincipalId"] = null, ["evidenceRef"] = null
+            ["reasonCode"] = "OK", ["idempotencyKey"] = Guid.NewGuid().ToString("N"), ["comment"] = "c"
         };
+        if (action is "approve" or "reject" or "request-info")
+        {
+            body["evidenceRef"] = null;
+        }
+
+        if (action == "delegate")
+        {
+            body["delegatePrincipalId"] = Guid.NewGuid().ToString();
+        }
+
+        if (action == "request-info")
+        {
+            body["targetPrincipalId"] = null;
+        }
+
         if (claimedActor is { } actor)
         {
             body["actorId"] = actor.ToString();

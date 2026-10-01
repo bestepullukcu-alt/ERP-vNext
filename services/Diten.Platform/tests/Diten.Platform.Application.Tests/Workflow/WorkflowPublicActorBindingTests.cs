@@ -19,16 +19,64 @@ public sealed class WorkflowPublicActorBindingTests
     private static readonly Guid ActorId = Guid.Parse("31000000-0000-0000-0000-000000000031");
 
     [Theory]
-    [InlineData("{\"actorId\":\"31000000-0000-0000-0000-000000000031\",\"reasonCode\":\"OK\",\"idempotencyKey\":\"key\"}")]
     [InlineData("{\"ActorId\":\"31000000-0000-0000-0000-000000000031\",\"reasonCode\":\"OK\",\"idempotencyKey\":\"key\"}")]
+    [InlineData("{\"actorId\":\"a\",\"actorId\":\"b\",\"reasonCode\":\"OK\",\"idempotencyKey\":\"key\"}")]
+    [InlineData("{\"actorId\":31,\"reasonCode\":\"OK\",\"idempotencyKey\":\"key\"}")]
+    [InlineData("{\"delegatePrincipalId\":\"x\",\"reasonCode\":\"OK\",\"idempotencyKey\":\"key\"}")]
     [InlineData("{\"reasonCode\":\"OK\",\"reasonCode\":\"OTHER\",\"idempotencyKey\":\"key\"}")]
     [InlineData("{\"ReasonCode\":\"OK\",\"idempotencyKey\":\"key\"}")]
-    public void External_transport_rejects_actor_unknown_duplicate_and_case_drift(string json)
+    [InlineData("{\"reasonCode\":\" OK\",\"idempotencyKey\":\"key\"}")]
+    [InlineData("{\"reasonCode\":\"OK\",\"idempotencyKey\":\"key\",\"comment\":\"bell\\u0007\"}")]
+    public void External_transport_rejects_unknown_duplicate_malformed_and_case_drift(string json)
     {
         Assert.Throws<JsonException>(() =>
             JsonSerializer.Deserialize<ApproveWorkflowTaskTransportRequest>(json));
         Assert.Throws<JsonException>(() =>
             JsonSerializer.Deserialize<RejectWorkflowTaskTransportRequest>(json));
+    }
+
+    /*
+     * CT (product takeover). `actorId` is CARRIED so the controller can refuse a body that names somebody else with
+     * 403 WORKFLOW_ACTOR_MISMATCH — it is never the actor (that is the token's subject, see the binding tests below).
+     * Refusing the field outright answered 400 to CRM's review client, which repeats the caller's own id.
+     */
+    [Fact]
+    public void External_transport_carries_a_claimed_actor_for_the_controller_to_judge()
+    {
+        const string json = "{\"actorId\":\"31000000-0000-0000-0000-000000000031\",\"reasonCode\":\"OK\",\"idempotencyKey\":\"key\"}";
+
+        Assert.Equal(ActorId.ToString("D"), JsonSerializer.Deserialize<ApproveWorkflowTaskTransportRequest>(json)!.ActorId);
+        Assert.Equal(ActorId.ToString("D"), JsonSerializer.Deserialize<RejectWorkflowTaskTransportRequest>(json)!.ActorId);
+    }
+
+    // A person's comment: more than one line, and a blank one is MOD-0023's refusal to make, with its own reason code.
+    [Theory]
+    [InlineData("line one\\nline two\\r\\n\\tindented")]
+    [InlineData("   ")]
+    [InlineData(" kept as typed ")]
+    public void External_transport_carries_a_comment_as_the_person_typed_it(string escapedComment)
+    {
+        var json = "{\"reasonCode\":\"OK\",\"idempotencyKey\":\"key\",\"comment\":\"" + escapedComment + "\"}";
+        var expected = JsonSerializer.Deserialize<string>("\"" + escapedComment + "\"");
+
+        Assert.Equal(expected, JsonSerializer.Deserialize<ApproveWorkflowTaskTransportRequest>(json)!.Comment);
+        Assert.Equal(expected, JsonSerializer.Deserialize<RejectWorkflowTaskTransportRequest>(json)!.Comment);
+    }
+
+    [Fact]
+    public async Task A_body_naming_somebody_else_is_403_before_mediator()
+    {
+        var mediator = new Mock<IMediator>(MockBehavior.Strict);
+        var controller = Controller(mediator.Object, Principal(ActorId));
+
+        var approve = await controller.ApproveTask(
+            Guid.NewGuid(), new("APPROVE", "key", null, null, Guid.NewGuid().ToString("D")), CancellationToken.None);
+        var reject = await controller.RejectTask(
+            Guid.NewGuid(), new("REJECT", "key", null, null, "not-a-guid"), CancellationToken.None);
+
+        Assert.Equal(403, Assert.IsAssignableFrom<ObjectResult>(approve).StatusCode);
+        Assert.Equal(403, Assert.IsAssignableFrom<ObjectResult>(reject).StatusCode);
+        mediator.VerifyNoOtherCalls();
     }
 
     [Fact]

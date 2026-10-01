@@ -50,7 +50,7 @@ internal static class WorkflowTaskTransitionTransportJson
 
         if (!TryRequired(values, "reasonCode", 128, out var reasonCode)
             || !TryRequired(values, "idempotencyKey", 128, out var idempotencyKey)
-            || !TryOptional(values, "comment", 2000, out var comment)
+            || !TryFreeText(values, "comment", 2000, out var comment)
             || !TryOptional(values, "evidenceRef", 512, out var evidenceRef)
             || !TryOptional(values, "actorId", 64, out var actorId))
         {
@@ -117,6 +117,42 @@ internal static class WorkflowTaskTransitionTransportJson
 
         return element.ValueKind == JsonValueKind.String
             && IsBounded(element.GetString(), maximumLength, required: false, out value);
+    }
+
+    /// <summary>
+    /// The comment is the one field a PERSON writes: a rejection reason is often more than one line, and people leave
+    /// a space at either end. Line breaks and tabs are text here, and surrounding whitespace is carried through
+    /// untouched — whether a comment is REQUIRED, and whether a blank one counts, is MOD-0023's answer
+    /// (WORKFLOW_REJECT_COMMENT_REQUIRED), not the transport's. Every other control character is still refused, and
+    /// the bound is unchanged. Codes and keys keep the exact, trimmed, no-control-character rule.
+    /// </summary>
+    private static bool TryFreeText(
+        IReadOnlyDictionary<string, JsonElement> values,
+        string name,
+        int maximumLength,
+        out string? value)
+    {
+        value = null;
+        if (!values.TryGetValue(name, out var element) || element.ValueKind == JsonValueKind.Null)
+        {
+            return true;
+        }
+
+        if (element.ValueKind != JsonValueKind.String)
+        {
+            return false;
+        }
+
+        var candidate = element.GetString();
+        if (candidate is null
+            || candidate.Length > maximumLength
+            || candidate.Any(c => char.IsControl(c) && c is not ('\n' or '\r' or '\t')))
+        {
+            return false;
+        }
+
+        value = candidate;
+        return true;
     }
 
     private static bool IsBounded(
