@@ -109,3 +109,21 @@ KORU/YAPMA: ziyaret çözücüsü/planlama motoru/PlannedVisit/VisitReport DEĞ�
 DOĞRULA (E2): cd C:\tmp\sb-3a; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (tabanı önce ölç; bilinen sıra flake'i hariç); dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 399); build 0 hata. Yeni testler: rol/yolculuk zorunluluğu, journey_not_published, journey_product_mismatch, dil uyarısı, eski satır okuması (rol yok → promo, yolculuk yok → journeyMissing), knowledge-path + şablon düzeyi yolculuk bağı yeni yazımda 409 + mevcut bağ okunur retired, aktif şablon değişmez, CycleCapacity max promo/non-promo (varsayılan/aralık/eski kayıt), class-map round-trip, mevcut ziyaret çözücüsü testleri yeşil. Sabotaj: journey_product_mismatch + yolculuk zorunluluğu testleri kırmızıya dönmeli. Commit ("feat(crm): WP-SB-3a — strategy template product line role + journey, cycle capacity max promo/non-promo" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: mevcut planlama/kampanya kodu şablon düzeyi content-engagement-journey bağını YAZIYORSA ya da yolculuk ürün çözümü tek anlamlı değilse DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-01) — **ACCEPTED (E2)**
+- **Commit:** ajan `a318fd82` (taban KP-4 §37 `55d7d0c2`) → `test/crm-content-visit-e2e` fast-forward. 36 dosya (+1233 / −124). Yalnız CrmService.
+- **DUR yok:** şablon düzeyi bağları yalnız strateji şablonunun Create / Update / CreateVersion yolu yazıyor; ziyaret çözücüsü yalnız okuyor. Yolculuğun ürünü tek anlamlı: `ChainContextResolver.PrimaryGlobalProduct` (KP-1 ortak tanım, kopya yok).
+- **Diff (K13 okuma):**
+  - Satıra `Role` / `JourneyId` / `JourneyCodeDisplay`; `JourneyId` class-map'te nullable string-Guid. Rol yazımda küçük harfe normalize; boş rol `null` kalır (sessizce promo sayılmaz).
+  - Rol + yolculuk zorunluluğu Create'te ve ürün satırları **değiştiğinde** uygulanır; yalnız meta veri güncellemesi eski şablonda çalışır (kabul).
+  - Rol + yolculuk dondurma imzasında (`ProductLinesSignature`): aktif şablonda değişmez.
+  - Bağ doğrulayıcısı: yolculuk tenant + arşivsiz + yayında (409 `journey_not_published`), konunun birincil ürünü = satır ürünü (409 `journey_product_mismatch`). `ISubjectRepository` DI'da kayıtlı (opsiyonel parametre üretimde dolu; yoksa fail-closed).
+  - Okuyucu `StrategyTemplateLineJourneyReader`: tenant'lı `GetByIdAsync` + ülke-dil BRD okuması; uyarılar yalnız okuma, okunamayan set → uyarı yok.
+  - Yeni şablon düzeyi yol / yolculuk bağı 409 `content_binding_type_retired`; mevcut bağ korunabilir / silinebilir.
+  - CycleCapacity `MaxPromoProducts` / `MaxNonPromoProducts` nullable + `Effective…()` = 3; güncellemede gönderilmezse kayıttaki korunur (bugünkü Web formu göndermiyor — kabul). `MinutesPerVisit` değişmedi.
+- **CT testleri:** CRM **2123/0/5** (+20), Web **396/0**.
+- **CT sabotajı:** `ProductLinesSignature`'dan rol + yolculuk çıkarıldı → StrategyTemplate testlerinde 2 kırmızı. Kod geri alındı. Ajan: ürün eşleşmesi (1) + yolculuk zorunluluğu (2).
+- **Bilinen geçiş açığı (SB-3-UI'ye kadar):** bugünkü Web strateji şablonu formu rol / yolculuk göndermiyor → Web'den yeni şablon ya da taslakta ürün satırı değişikliği 400; rol / yolculuk taşıyan aktif şablona rolsüz satır göndermek 409. Yalnız meta veri düzenlemesi çalışır. Canlıda yeni şablon yazan yok (STR-TUTUKON-URO aktif + "test" taslak). Kullanıcıya soruldu.
+- **E4:** SB-3-UI sonrası.
