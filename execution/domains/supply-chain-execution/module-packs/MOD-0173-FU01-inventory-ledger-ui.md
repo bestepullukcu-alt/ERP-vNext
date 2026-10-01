@@ -649,6 +649,16 @@ StockLedger/Create are UI-2. Evidence `docs/records/audits/2026-10/mod-0173-fu01
   only when the token has no `legal_entity_id` claim. No selection → localized "select a company" state, no list call.
   Changing company reloads the page data. One isolated component so FU-LE-01 can replace it. 7 languages.
 
+- **WP-0173-LE1 (agent result, pending CT, 2026-10-01) — company selector implemented.** One component:
+  `Models/Inventory/CompanySelection.cs` + `Views/Inventory/Shared/_CompanySelector.cshtml` + `js/Inventory/company-selector.js`.
+  The list is read SERVER-SIDE at page render (MDM lookup via Gateway) — no controller change; the choice is a
+  same-origin cookie named per user (SHA-256 of `sub`), value = LE id only. `InventoryGatewayClient` adds
+  `X-Legal-Entity-Id` to inventory calls only for a claim-less token; with no company it does not call the Gateway at all
+  (synthetic `COMPANY_NOT_SELECTED` → "select a company"). Without a ready company the data part of both pages is not
+  rendered. A token with the claim hides the selector. Also: a failed first list load now removes the export menu too
+  (it is removed in `initComplete`, which a failed load never reaches); the shared processing indicator stays visible
+  in that case (shared CSS — FU).
+
 ## 20. Follow-up Items
 
 - Request to MOD-0290 owner (MDM): additive product/SKU search in PRODUCT-MASTER-BUNDLE v1.1 — retires W-UI-01.

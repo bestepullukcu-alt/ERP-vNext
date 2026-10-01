@@ -30,11 +30,13 @@
 | Input | Rule | Refusal |
 |---|---|---|
 | Bearer JWT | issuer / audience / signature / lifetime from configuration | 401 (no token, bad signature, expired) |
-| `tenant_id`, `legal_entity_id`, `sub` claims | exactly one UUID each; they ARE the scope | 403 |
+| `tenant_id`, `sub` claims | exactly one UUID each; they ARE the tenant and user scope | 403 |
+| `legal_entity_id` claim | at most one UUID; when present it IS the legal-entity scope (audit `LeSource = token`) | 403 (malformed) |
 | `X-Tenant-Id` header | optional; must equal `tenant_id` | 403 |
-| `X-Legal-Entity-Id` header (`LegalEntityOverride`) | optional; must equal `legal_entity_id` — multi-LE override not granted in S1 | 403 `CROSS_LE_FORBIDDEN` |
+| `X-Legal-Entity-Id` header (`LegalEntityOverride`), token **with** the claim | optional; must equal `legal_entity_id` | 403 `CROSS_LE_FORBIDDEN` |
+| `X-Legal-Entity-Id` header, token **without** the claim (W-0173-02 company selector) | **required**, one UUID; verified with MDM `GET /api/legal-entities/{id}/lookup-validation` through the Gateway with the caller's token = an ACTIVE legal entity of the caller's tenant (positive answer cached ≤ 60 s per tenant + LE + token); audit `LeSource = header-unverified-membership` (user↔LE membership is not checked — accepted risk) | absent/invalid → 403 "select a company" · unknown / inactive / other tenant / MDM refuses the caller → 403 `CROSS_LE_FORBIDDEN` · MDM unreachable / 5xx / timeout → 503 `LEGAL_ENTITY_MASTER_UNAVAILABLE` (nothing read or written) |
 | `tenantId` / `legalEntityId` in query or body | never accepted | 400 `INVALID_REQUEST` |
-| permission claim | `.read` for GET, `.movements.post` for POST /movements, `.reservations.manage` for both reservation operations — no role shortcut (FU-S1-02: a `SuperAdmin` role without the permission is 403) | 403 |
+| permission claim | `inventory.stock.read` for GET, `inventory.movements.create` for POST /movements, `inventory.reservations.manage` for both reservation operations — no role shortcut (FU-S1-02: a `SuperAdmin` role without the permission is 403) | 403 |
 | `X-Correlation-Id` | optional; if sent must be one UUID, else minted by the server | 400 `INVALID_REQUEST` |
 
 The correlation id is echoed in the `X-Correlation-Id` response header of every response and in

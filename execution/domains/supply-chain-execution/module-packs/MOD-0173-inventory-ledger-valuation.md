@@ -418,6 +418,15 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
   real restart (different PIDs); no token in logs. Agent assumptions S1-01…S1-20 accepted as recorded in the audit,
   with two follow-ups below (FU-S1-01, FU-S1-02).
 
+- **WP-0173-LE1 (agent result, pending CT, 2026-10-01) — W-0173-02 implemented.** `InventoryScopeResolutionMiddleware`:
+  claim → unchanged (header must equal it); no claim → `X-Legal-Entity-Id` required and verified by the new
+  `LegalEntityMasterHttpClient` (MDM `lookup-validation` via Gateway, caller token; 404 → 403 `CROSS_LE_FORBIDDEN`, 401/403
+  → 403 `CROSS_LE_FORBIDDEN` + log, unreachable/5xx/timeout → 503 `LEGAL_ENTITY_MASTER_UNAVAILABLE`). Positive answers
+  cached ≤ 60 s keyed tenant + LE + SHA-256(bearer); refusals never cached. `LeSource` (`token` |
+  `header-unverified-membership`) on posting and reservation audit rows (null for the expiry sweeper). New config
+  `Inventory:Upstream:LegalEntityMasterBaseUrl`; new code `LEGAL_ENTITY_MASTER_UNAVAILABLE` (named by W-0173-02); the
+  "select a company" 403 carries no code. Real-login E2E measured; evidence `docs/records/audits/2026-10/mod-0173-le1-evidence/`.
+
 ## 20. Follow-up Items
 
 - **FU-LE-01 (central / PSS — blocks G1):** user↔legal-entity assignment + AuthService issuing `legal_entity_id` (active company; switching = token re-issue). Same gap affects MVP-2 (ProcurementService header fallback) and MVP-6 (MOD-0183 "held"). Retires W-0173-02.

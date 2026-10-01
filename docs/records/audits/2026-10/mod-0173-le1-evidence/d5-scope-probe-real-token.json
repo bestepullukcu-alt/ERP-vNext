@@ -1,0 +1,37 @@
+[
+  {
+    "label": "L2 real token, no company header",
+    "status": 403,
+    "code": null,
+    "message": "Select a company: the access token carries no legal entity, so X-Legal-Entity-Id (one UUID) is required.",
+    "total": null
+  },
+  {
+    "label": "L2 real token, malformed company header",
+    "status": 403,
+    "code": null,
+    "message": "Select a company: the access token carries no legal entity, so X-Legal-Entity-Id (one UUID) is required.",
+    "total": null
+  },
+  {
+    "label": "L3 real token, active company of the tenant",
+    "status": 200,
+    "code": null,
+    "message": null,
+    "total": 0
+  },
+  {
+    "label": "L4 real token, unknown company",
+    "status": 403,
+    "code": "CROSS_LE_FORBIDDEN",
+    "message": "The selected company is not an active legal entity of your tenant.",
+    "total": null
+  },
+  {
+    "label": "L4 real token, another tenant's active company",
+    "status": 403,
+    "code": "CROSS_LE_FORBIDDEN",
+    "message": "The selected company is not an active legal entity of your tenant.",
+    "total": null
+  }
+]
