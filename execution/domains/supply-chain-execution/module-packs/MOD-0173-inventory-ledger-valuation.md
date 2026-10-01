@@ -370,6 +370,12 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
   - **ASSUMPTION-0173-19 (FU-S1-02):** the `SuperAdmin` role bypass is removed from this service; every endpoint needs
     its explicit permission.
 
+- **WP-0173-LE1 CT-ACCEPTED (2026-10-01)** — commits 98b3b05f1..c9111e7b7. CT re-measured: Web 391/391, service
+  295/295, architecture 18/18 (0 skipped); middleware read (claim wins; claim-less → header required + MDM active-LE
+  check with the caller's token; 503 fail-closed; only positive results cached, key includes the bearer hash); own
+  sabotage of the membership check → 5 red, restored → green, empty diff. Real-login E2E (AuthService token) evidenced
+  by the agent against Prism product/location mocks.
+
 - **W-0173-02 — LE from a company selector (waiver, K19; owner Ali 2026-10-01).** Measured: AuthService tokens carry
   **no** `legal_entity_id` claim and the repo has **no** user↔legal-entity assignment (same gap in ProcurementService,
   which falls back to an unsigned header + dev bypass, and in MOD-0183, "held"). The owner has several legal entities
@@ -428,6 +434,11 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
   "select a company" 403 carries no code. Real-login E2E measured; evidence `docs/records/audits/2026-10/mod-0173-le1-evidence/`.
 
 ## 20. Follow-up Items
+
+- **FU-LE1-01 (shared UI owner):** after a failed first list load the DataTables processing indicator stays visible (shared CSS, protected).
+- **FU-LE1-02 (platform):** a real seed token is ~34.6 KB (695 permission claims). Every hop that forwards it needs ≥ 64 KB header limits (Prism/Node default 16 KB failed); token size itself is a platform concern.
+- **FU-LOC-01 (blocks real use + G1):** the shared Location master (DEC-INV-03) does not exist anywhere — no code, no gateway route, no registry ID. Without it every real posting fails closed (503 `LOCATION_MASTER_UNAVAILABLE`) and the form has no warehouse/location picker; today only the Prism mock answers.
+- **FU-PM-01 (MDM — blocks real use + G1):** no gateway route `/api/product-master` — MDM (MOD-0290) does not yet expose PRODUCT-MASTER-BUNDLE v1; real postings fail closed (503 `PRODUCT_MASTER_UNAVAILABLE`).
 
 - **FU-LE-01 (central / PSS — blocks G1):** user↔legal-entity assignment + AuthService issuing `legal_entity_id` (active company; switching = token re-issue). Same gap affects MVP-2 (ProcurementService header fallback) and MVP-6 (MOD-0183 "held"). Retires W-0173-02.
 
