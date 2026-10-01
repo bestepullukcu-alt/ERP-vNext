@@ -2511,4 +2511,16 @@
   <data name="TimerStatePaused" xml:space="preserve">
     <value>Paused</value>
   </data>
+  <data name="ApprovalAwaitingPositions" xml:space="preserve">
+    <value>Awaiting approval from: {0}</value>
+  </data>
+  <data name="ApprovalNoteLabel" xml:space="preserve">
+    <value>Note (optional)</value>
+  </data>
+  <data name="ApprovalNotePlaceholder" xml:space="preserve">
+    <value>Add a note for the record…</value>
+  </data>
+  <data name="ApprovalStepBadgeTitle" xml:space="preserve">
+    <value>Approval step</value>
+  </data>
 </root>

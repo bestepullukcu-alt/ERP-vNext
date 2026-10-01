@@ -270,7 +270,15 @@ public sealed record WorkItemActionDto(
     bool RequiresEvidence,
     bool SupportsBulk,
     string RiskLevel,
-    string? TargetStatus = null);
+    string? TargetStatus = null,
+    /// <summary>
+    /// REQ-WCN-01 (W-2) — this action ACCEPTS an optional note in its confirmation window. The server says so; the
+    /// browser never derives it from the action code. Never set together with <c>RequiresReason</c>: a required
+    /// reason already has its own mandatory window. Omitted when null, so every provider that says nothing
+    /// serializes exactly as before.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    bool? AcceptsNote = null);
 
 /// <summary>
 /// waitingContext { type, waitingOn?, reason?, since?, expectedUntil? } — present iff normalizedStatus == Waiting.
@@ -740,7 +748,21 @@ public sealed record WorkItemProjectionDto(
     /// that had an estimate or approved time from the board (live since 29c4b4a30; found by MOD-0280-FU01 T2b's guard).
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemEffortDto? Effort = null);
+    WorkItemEffortDto? Effort = null,
+    /// <summary>
+    /// REQ-WCN-01 (W-1) — the approval STEP's own name, read from the pinned template version (the source
+    /// <c>GetWorkflowInstanceHistoryHandler</c> reads). A DISPLAY label: a tenant administrator typed it. A badge on
+    /// the row and the detail page, never part of the title. Omitted when the step has no name of its own.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? StepName = null,
+    /// <summary>
+    /// REQ-WCN-01 (W-3) — the NAMES of the positions the step is waiting on, when the step names no person directly.
+    /// DISPLAY labels, read tenant-scoped in one read per page. A position that cannot be read is left out; when none
+    /// can, the field is omitted and the surface keeps today's wording. Never an id.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemLabelDto>? CandidatePositions = null);
 
 /// <summary>The effort card's two figures, in hours: what was estimated and what was APPROVED (D7). Two durations side by
 /// side; no ratio is computed here (pack §8.7).</summary>

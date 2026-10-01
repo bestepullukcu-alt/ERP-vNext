@@ -86,7 +86,11 @@ public sealed class WorkflowProductIdentityWorkItemContractTests
         nameof(WorkItemProjectionDto.ReviewMeetingPolicy),
         nameof(WorkItemProjectionDto.SecondaryActionCodes),
         nameof(WorkItemProjectionDto.TimeEntries),
-        nameof(WorkItemProjectionDto.ViewerRelation)
+        nameof(WorkItemProjectionDto.ViewerRelation),
+        // REQ-WCN-01 — carried only when the PROVIDER hands the projection a step context (the pinned version's step
+        // name and its candidate positions; ApprovalStepContextTests). Projected without one, as here, both are absent.
+        nameof(WorkItemProjectionDto.StepName),
+        nameof(WorkItemProjectionDto.CandidatePositions)
     };
 
     [Fact]

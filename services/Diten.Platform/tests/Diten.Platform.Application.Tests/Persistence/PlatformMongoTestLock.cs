@@ -10,7 +10,8 @@ namespace Diten.Platform.Application.Tests.Persistence;
  * just by every class in one run, and several paths begin by clearing what they find:
  *   • MongoIntegrationHarness.CreateIsolatedAsync empties every collection of its scoped database on open;
  *   • PlatformSchemaContractMongoTests and WorkflowTransitionGateMongoRepositoryTests drop theirs on open;
- *   • BusinessReferenceDataMongoResidueSweeper drops another run's BRD database once it is ONE MINUTE old.
+ *   • BusinessReferenceDataMongoResidueSweeper dropped another run's BRD database once it was ONE MINUTE old
+ *     (until BL-482's second half: its tests now run on a private mongod and nothing calls it on the shared one).
  * Two worktrees running this project at the same time therefore wipe each other mid-assertion. The victim goes
  * red with rows or collections that "vanished", and green on rerun — which is why it read as flakiness.
  *
