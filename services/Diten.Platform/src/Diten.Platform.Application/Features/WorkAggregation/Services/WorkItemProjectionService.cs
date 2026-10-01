@@ -43,7 +43,8 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         WorkItemActor actor,
         string providerCode,
         string providerContractVersion,
-        ApprovalSourceContext? sourceContext = null)
+        ApprovalSourceContext? sourceContext = null,
+        ApprovalStepContext? stepContext = null)
     {
         // Delegated → hidden from this actor (a disposition, not active work).
         if (task.Status == ApprovalTaskStatus.Delegated)
@@ -161,7 +162,21 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             Summary: string.IsNullOrWhiteSpace(sourceContext?.Subtitle)
                 ? null
                 : WorkItemLabelDto.Display(sourceContext.Subtitle.Trim()),
-            Tags: sourceContext?.Chips is { Count: > 0 } chips ? chips.ToList() : null);
+            Tags: sourceContext?.Chips is { Count: > 0 } chips ? chips.ToList() : null,
+            // REQ-WCN-01 — both omitted when the step says nothing, so every other approval serializes as before.
+            StepName: string.IsNullOrWhiteSpace(stepContext?.StepName)
+                ? null
+                : WorkItemLabelDto.Display(stepContext.StepName.Trim()),
+            CandidatePositions: CandidatePositionsFor(stepContext));
+    }
+
+    private static IReadOnlyList<WorkItemLabelDto>? CandidatePositionsFor(ApprovalStepContext? stepContext)
+    {
+        var names = (stepContext?.CandidatePositionNames ?? [])
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Select(name => WorkItemLabelDto.Display(name.Trim()))
+            .ToList();
+        return names.Count > 0 ? names : null;
     }
 
     /*
@@ -213,6 +228,9 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             BuildDecision("requestInfo", ActionRequestInfoKey, WorkflowPermissions.TasksRequestInfo, actor,
                 requiresConfirmation: false, requiresReason: true, supportsBulk: false, riskLevel: "normal"),
             BuildDecision("delegate", ActionDelegateKey, WorkflowPermissions.TasksDelegate, actor,
+                // No note flag: from the Task Center a delegation cannot name its person yet, so it is always refused
+                // (the dispatcher requires a target). A note box there would invite text that can never be sent; the
+                // person picker and the note arrive together (follow-up work package).
                 requiresConfirmation: true, requiresReason: false, supportsBulk: false, riskLevel: "normal")
         ];
     }
@@ -258,12 +276,18 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             RequiresReason: task.CommentRequired,
             RequiresEvidence: task.EvidenceRequired,
             SupportsBulk: true,
-            RiskLevel: "normal");
+            RiskLevel: "normal",
+            // REQ-WCN-01 (W-2) — an approver may add a note when none is demanded. A required comment keeps its own
+            // mandatory window, so the two flags are never set together.
+            AcceptsNote: AcceptsNoteWhen(requiresReason: task.CommentRequired));
     }
+
+    private static bool? AcceptsNoteWhen(bool requiresReason) => requiresReason ? null : true;
 
     private static WorkItemActionDto BuildDecision(
         string code, string labelKey, string permissionKey, WorkItemActor actor,
-        bool requiresConfirmation, bool requiresReason, bool supportsBulk, string riskLevel)
+        bool requiresConfirmation, bool requiresReason, bool supportsBulk, string riskLevel,
+        bool acceptsNote = false)
     {
         if (!actor.Has(permissionKey))
         {
@@ -283,7 +307,8 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             RequiresReason: requiresReason,
             RequiresEvidence: false,
             SupportsBulk: supportsBulk,
-            RiskLevel: riskLevel);
+            RiskLevel: riskLevel,
+            AcceptsNote: acceptsNote ? AcceptsNoteWhen(requiresReason) : null);
     }
 
     private static WorkItemActionDto Disabled(

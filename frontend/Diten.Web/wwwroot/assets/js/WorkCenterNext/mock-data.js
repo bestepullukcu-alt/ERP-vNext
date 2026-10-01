@@ -274,6 +274,8 @@
         disabledReason: resolveLabel(action.disabledReason),
         confirm: action.requiresConfirmation,
         reason: action.requiresReason,
+        // REQ-WCN-01 (W-2) — the SERVER says an action accepts an optional note; never derived from the code here.
+        note: action.acceptsNote === true,
         evidence: action.requiresEvidence,
         bulk: action.supportsBulk,
         // WP-WCN-KANBAN-01 — the Kanban drag target, a normalizedStatus string or null (the action does not
@@ -440,6 +442,13 @@
         // BL-437 — WHY this reached the reader ("Ayşe bu görevi onayına gönderdi"). A third question beside the
         // two above, with its own field: an approval that has just arrived is Pending, not Waiting.
         item.arrivalReasonText = resolveLabel(item.arrivalReason) || null;
+        // REQ-WCN-01 — the approval STEP's name (a badge, never part of the title) and the names of the positions
+        // the step waits on. Flattened here so render never reads the raw projection object. Absent on every item
+        // whose provider says nothing: null and an empty list, and both surfaces draw nothing for them.
+        item.stepNameText = resolveLabel(item.stepName) || null;
+        item.candidatePositionNames = (Array.isArray(item.candidatePositions) ? item.candidatePositions : [])
+            .map((label) => resolveLabel(label))
+            .filter(Boolean);
         /*
          * WC-1 — the personal NOTES, a list now and stored on the server. `personal.notes` is what the projection
          * emits (id · text · createdAt), and the array is normalised here so every reader downstream can map over
