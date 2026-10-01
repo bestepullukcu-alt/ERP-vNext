@@ -369,6 +369,12 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
   - **ASSUMPTION-0173-19 (FU-S1-02):** the `SuperAdmin` role bypass is removed from this service; every endpoint needs
     its explicit permission.
 
+- **WP-0173-S2 CT-ACCEPTED (2026-10-01)** — commits 6441bf25..b91bbba7; audit
+  `docs/records/audits/2026-10/mod-0173-inventory-ledger-s2-audit-2026-10-01.md`. CT re-measured independently:
+  clean build 0/0; 262/262 (0 skipped); repo architecture guards 18/18; own sabotage of the SKU-level reserve guard
+  (`ApplyAvailableDeltaAsync` `$expr`) → 5 red, restored → green, empty diff; own runtime probe (separate DB) 48/48 +
+  6/6 after restart; no token in logs. FU-S1-01 and FU-S1-02 closed. Agent assumptions S2-01…S2-15 accepted.
+
 - **WP-0173-S1 CT-ACCEPTED (2026-09-30)** — commits 47029756..950e82c2; audit
   `docs/records/audits/2026-10/mod-0173-inventory-ledger-s1-audit-2026-09-30.md`. CT re-measured independently:
   clean build 0/0; 218/218 tests (0 skipped) on the replica-set Mongo; repo architecture guards 18/18; own sabotage of
@@ -377,6 +383,8 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
   with two follow-ups below (FU-S1-01, FU-S1-02).
 
 ## 20. Follow-up Items
+
+- **FU-S2-01 (low, before G1):** the startup SKU-position rebuild counts scope-incomplete groups (`LastSkippedUnscoped`) but nothing logs it — a skipped group would be silent. Log a warning with the count (and fail the startup gate if > 0 outside test databases).
 
 - **FU-S1-01 (before G1 freeze):** `GET /availability` for a *known* item/SKU with no ledger rows returns
   404 `UNKNOWN_ITEM` (ASSUMPTION-S1-04). Consumers (0172 ATP, 0189 MRP) must see 200 with zeros; 404 only when
