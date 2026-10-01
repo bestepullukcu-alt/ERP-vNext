@@ -6942,7 +6942,7 @@ kayboluyor, çünkü `GET /api/v1/work/calendar` görev başına uyarı taşım�
 
 **Eski toast yollarında başlık kaçışsız: Notyf `innerHTML` yazıyor**
 
-DURUM: AÇIK · SAHİP: CT (Görev Merkezi) · BULAN: takvim 2b bağımsız gözden geçirme · KAYIT: 2026-09-29
+DURUM: KAPANDI — `b649e88c3` (2026-10-01; main'de PR #130): mesaj tek kapıda (showToast → DitenToastText) metne çevriliyor; gerçek Notyf ile test, dev'de canlı kanıt · SAHİP: CT (Görev Merkezi) · BULAN: takvim 2b bağımsız gözden geçirme · KAYIT: 2026-09-29
 
 `showToast` Notyf ile mesajı `innerHTML` olarak basıyor. Takvim 2b kendi yeni yollarını kaçışladı (CalPlanSaved, toplantı uyarısı, çakışma);
 Görev Merkezi'nin eski toast'ları (ör. `ToastClaimed` ve başlık geçiren diğerleri) hâlâ iş/toplantı başlığını ham koyuyor: başlığı
@@ -7223,7 +7223,7 @@ Gelecek regresyon riski: 🟡 (karar yoluna dokunur; varsayılan kapalı olduğu
 
 **Ortak bildirim (toast) mesajı HTML olarak basıyor — kullanıcının yazdığı metni alıntılayan her bildirim bir enjeksiyon kapısı**
 
-DURUM: AÇIK · SAHİP: CT (ortak ön yüz) · BULAN: WP-WCN-APPROVAL-UX-01 bağımsız gözden geçirme, CT kodda doğruladı · KAYIT: 2026-10-01
+DURUM: KAPANDI — `b649e88c3` (2026-10-01; main'de PR #130): mesaj tek kapıda (showToast → DitenToastText) metne çevriliyor; gerçek Notyf ile test, dev'de canlı kanıt · SAHİP: CT (ortak ön yüz) · BULAN: WP-WCN-APPROVAL-UX-01 bağımsız gözden geçirme, CT kodda doğruladı · KAYIT: 2026-10-01
 
 `window.showToast` (Views/Shared/_GlobalNotification.cshtml) mesajı Notyf'e olduğu gibi veriyor; Notyf `message.innerHTML = options.message`
 yazıyor. Görev Merkezi "X uygulandı: {görev başlığı}" gibi bildirimlerde başkasının yazdığı başlığı alıntılıyor; başlığa işaretleme yazan
