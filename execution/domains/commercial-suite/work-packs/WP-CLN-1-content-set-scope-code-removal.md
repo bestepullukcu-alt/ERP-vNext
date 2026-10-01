@@ -62,3 +62,18 @@ KORU/YAPMA: KnowledgeContent.ContentSetId (dil varyantı), KnowledgeStudioOrigin
 DOĞRULA (E2): cd C:\tmp\cln-1; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban 2153/0/5, düşen testleri listele); dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 422); build 0 hata, yeni uyarı yok. grep kanıtı (üretim kodu 0): ContentSetRepository|ContentScopeRepository|ContentSetRevisionRepository|LegacyScope|ContentSetsController|ContentSetRevisionsController. Testler: KnowledgeStudioOrigin + ContentSetId round-trip; iddia kullanımı + KP-3 render/yayın yeşil. Sabotaj: KnowledgeStudioOrigin class-map'inden bir alan kaldır → round-trip kırmızı. Commit ("refactor(crm): WP-CLN-1 — remove content set / set revision / content scope code (read-only remnants of KP-4)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: set/revizyon verisi >0 ya da kaldırılacak tiplerin canlı bir okuyucusu varsa → DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-01) — **ACCEPTED (E2)**
+- **Commit:** ajan `525d88ae` (taban `9bbca6a4`) → `test/crm-content-visit-e2e` fast-forward. 32 dosya (+109 / −1711); 22 dosya silindi (2 controller, 2 feature klasörü, 3 entity, 3 repository + 3 arayüz).
+- **Veri (ajan, salt okuma, `DitenERP_Dev`):** `content_sets` 0, `content_set_revisions` yok, `content_scopes` 1 (97c5 "test", `SCOPE-2026-395306`) → DUR yok; kapsam belgesi CLN-2'ye.
+- **Diff (K13 okuma):**
+  - DI kayıtları, class-map'ler (`LegacyScope` dahil) ve index oluşturma kaldırıldı; koleksiyon / index / veri dokunulmadı.
+  - Paylaşılan `ChainContextErrors` silinen `ContentSet.cs`'den `Entities/ChainContextErrors.cs`'e taşındı, kodlar aynı.
+  - `KnowledgeStudioOrigin` yalnız XML notu değişti (alanlar zaten Guid; BSON şekli aynı).
+  - `KnowledgeContent.ContentSetId` + `KnowledgeStudioOrigin` round-trip testleri eklendi.
+- **CT testleri:** CRM **2147/0/5** (−11 set testi, +5 yeni; ilk koşuda bilinen sıra flake'i 1 kez kırmızı, ikinci koşu temiz), Web **422/0**.
+- **CT sabotajı:** taşınan `ChainContextErrors.LanguageNotInCountry` değeri değiştirildi → Web 1 + CRM 2 kırmızı. Kod geri alındı. Ajan: `KnowledgeStudioOrigin` class-map alanı → round-trip kırmızı.
+- **Sapma (kabul):** "Web DOKUNMA"ya rağmen `KnowledgePathStudioWebTests` içinde CRM kaynak dosya yolu `ContentSet.cs` → `ChainContextErrors.cs` (yalnız test; Web çalışma kodu aynı). Yanıltıcı adla dosya bırakmaktan doğru.
+- **E4 (CT, Faz 0):** fleet sonrası CRM ayağa kalkar; Bilgi Yolları + İddialar sayfaları açılır.
