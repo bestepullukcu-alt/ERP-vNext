@@ -144,3 +144,22 @@ KORU/YAPMA: Web/Platform/Auth kodu DOKUNMA (Platform uçları olduğu gibi); idd
 DOĞRULA (E2): cd C:\tmp\kp-2; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban 2143/0/5; bilinen sıra flake'i hariç); build 0 hata. Yeni testler: gönder ön koşulları (her kod), anlık görüntü + numara, açık turda 409, başlatma isteği (şablon/idempotency/DisplayContext/token), geri çek, karar onay/ret + ret yorumu + SoD kişi 403 + görev yok/aday değil, sonuç yönlendirmesi, uygulama + not taşıma, uzlaşma, notlar, değişiklik özeti, doğrudan yayın 409 + eski yol korunur, class-map round-trip, iddia onay testleri yeşil. Sabotaj: SoD kişi + ret yorumu + yönlendirme testleri kırmızıya dönmeli. Commit ("feat(crm): WP-KP-2 — knowledge path revision + MLR approval (single channel, comments, notes, person SoD)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: Platform'da kullanıcı token'ıyla "örnekte bana atanabilir açık görev" bulunacak uç yoksa ya da approve/reject yorum kabul etmiyorsa DUR + mevcut uçları raporla (uydurma).
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-01) — **ACCEPTED (E2)**
+- **Commit:** `ccf3d8fe` (`wp/kp-2`) → `test/crm-content-visit-e2e` fast-forward. 19 dosya, yalnız CrmService.
+- **Diff (K13 okuma):**
+  - `KnowledgePathRevision` ayrı koleksiyon; yol + revizyon numarası tekil.
+  - Tüketici `ObjectType`'a göre yönlendiriyor (`crm.knowledge-path-revision` → `KnowledgePathRevisionOutcomeApplier`, DI kayıtlı). İddia yolu değişmedi.
+  - Gateway istemcisi: Platform `GET api/v1/workflow/tasks/mine` + approve / reject (yorumlu) + cancel.
+- **CT testleri:** CRM **2167/0/5** (2143 + 24), Web **368/0**.
+- **CT sabotajı:** ret yorumu kuralı devre dışı (`if (false && …)`) → `KnowledgePath` 1 kırmızı. Kod geri alındı. Ajan: SoD kişi + yönlendirme sabotajları.
+- **Ajan kararları (kabul):**
+  - ObjectType yazımı `crm.knowledge-path-revision` (iddia tipleriyle tutarlı).
+  - İki KP-1 testi zincirli yolu doğrudan yayınlıyordu → yayınlanmış durum test içinde kuruldu (gerçek yayın KP-3).
+  - Onaylanmış yolda değişiklik yeniden gönderilemez; yeni sürüm gerekir.
+  - Karar ve not uçları read ile; kimin karar vereceğini MOD-0023 adayları + SoD belirler.
+  - Ret / iptal / zaman aşımı → yol taslağa döner.
+- **DUR yok:** `tasks/mine` örnek kimliği döndürüyor; approve / reject `Comment` alıyor.
+- **E4:** KP-2-CFG (6 şablon + grant) + KP-UI-2 (inceleyici ekranı) sonrası; arada API.
