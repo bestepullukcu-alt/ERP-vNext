@@ -504,7 +504,7 @@ correlation id shown in a "details" disclosure for support.
 - [x] **Owner decision OD-UI-1** taken (2026-10-01) — temporary MDM Model A selectors under waiver W-UI-01 (§19).
 - [x] **Owner decision OD-UI-2** taken (2026-10-01) — temporary typed lot under waiver W-UI-02 (§19).
 - [x] **Owner decision OD-UI-3** taken (2026-10-01) — untouched until FU01 ships, then retired in a separate WP; never shown beside FU01 under an "Inventory" label.
-- [ ] KD-1 / KD-2 — owner **did not accept** the deviations (2026-10-01); resolution pending (see §19 "Owner decisions").
+- [x] KD-1 / KD-2 resolved (owner, 2026-10-01): deviations not accepted → **compliant mapping** (§19 "Owner decisions"); full Compact file set, ledger immutability kept.
 - [ ] INT-1 CT-accepted (gateway route + permission seed).
 - [ ] Registry FU row recorded by CT.
 - [ ] **Owner approval → `ready-for-dev`** (Ali).
@@ -585,9 +585,21 @@ label in the tenant nav. Nothing in this pack depends on it.
   typos create separate lots that only a REVERSAL + re-post can fix. Owner: Ali. Expiry: MOD-0174 lots API live
   → picker becomes mandatory and typing is removed.
 - **OD-UI-3.** As proposed above: InventoryGovernance untouched until FU01 ships, then retired (separate WP).
-- **KD-1 / KD-2 — not accepted by the owner.** An editable movement contradicts DEC-INV-02/07/15 and the frozen
-  contract (no update operation). Resolution is pending a second owner answer (compliant mapping vs. accepting
-  the deviations); the pack stays `draft` until then.
+- **KD-1 / KD-2 — deviations not accepted; compliant mapping chosen (owner, 2026-10-01).** This supersedes the
+  KD-1/KD-2 deviation text in §11/§16: the full Compact file set is delivered and the verifier runs with
+  `--reference compact` on both screens, with no known deviation.
+  - **KD-1 → `StockMovements/Edit.cshtml` = "Düzelt / Correct".** Never edits a movement. It posts (1) a REVERSAL
+    of the original (server-derived legs, `sourceDocumentId` = original transactionId, MOD-0173 ASSUMPTION-0173-05)
+    and then (2) the corrected movement as a new manual movement — two immutable records, two idempotency keys.
+    Offered only for manual movements (`sourceModule MOD-0173`) that are not reversed and are not a reversal;
+    automatic movements keep "reversed in the source module". If (2) fails after (1) succeeded, the page shows an
+    explicit **partial-correction** state (reversal number + the error + "post corrected movement" retry with the
+    same idempotency key) — never a silent half-correction. Prefill uses the history row; fields the contract
+    row does not carry (source side, BG-05) are entered by the user. Permission: `supplychain.inventory.movements.post`.
+  - **KD-2 → `StockLedger/Create.cshtml` = "New stock entry".** No balance is written: the page hosts the same
+    shared movement `_Form` partial (single source of truth, no duplicated form) restricted to the inbound manual
+    types (Opening balance, Count gain) and posts `POST /movements`; the balance changes only as a projection.
+    Edit/Details of a balance row stay N/A by nature (projection) and link to the movement history filtered to that row.
 
 ## 20. Follow-up Items
 
