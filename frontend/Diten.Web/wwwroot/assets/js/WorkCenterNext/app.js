@@ -10788,16 +10788,23 @@
     };
 
     /**
-     * The detail page's own item is gone from a re-read that ANSWERED IN FULL. Not when the read failed, not when the
-     * contract refused the item, not when the board came back PARTIAL (the item's own provider may be the one that
-     * did not answer), and not when the single-item read failed for any reason other than a 404 — in every one of
-     * those the item may still exist, and a "success, back to the list" would be a claim nobody checked.
+     * The detail page's own item is gone from a re-read in which ITS OWN PROVIDER ANSWERED. Not when the read failed,
+     * not when the contract refused the item, not when the board came back partial and the provider that did not
+     * answer is the item's own, and not when the single-item read failed for any reason other than a 404 — in every
+     * one of those the item may still exist, and a "success, back to the list" would be a claim nobody checked.
+     *
+     * ANOTHER provider being down says nothing about this item (measured live, 2026-10-01: with one unrelated
+     * provider unavailable the first version of this rule never returned anybody to the list).
      */
     const leftTheBoardOnDetail = (item) => {
         const root = document.getElementById('wcnApp');
         if (!root || root.dataset.wcnPage !== 'detail' || !item || root.dataset.wcnItemId !== item.id) { return false; }
         if (state.loadState !== 'ready' || itemById(item.id)) { return false; }
-        if (Array.isArray(state.unavailableSources) && state.unavailableSources.length) { return false; }
+        const ownProvider = item.source && item.source.providerCode;
+        if (Array.isArray(state.unavailableSources)
+            && state.unavailableSources.some((source) => !ownProvider || source.providerCode === ownProvider)) {
+            return false;
+        }
         if (lastDetailReadHttpStatus !== null && lastDetailReadHttpStatus !== 404) { return false; }
         return !(Array.isArray(state.contractRejectedErrors)
             && state.contractRejectedErrors.some((error) => error.fixtureId === item.id));

@@ -393,11 +393,21 @@ describe("W-4 — after a decision on the detail page", () => {
    * A board that came back partial may be missing the item's own provider, and a single-item read that failed for
    * any reason other than a 404 says nothing about the item — in both the reader stays, and no success is handed on.
    */
-  it("does not redirect when the board came back PARTIAL — the item's own provider may be the missing one", async () => {
-    await decideOnDetail({ stillThere: false, unavailableSources: ["workflow"] });
+  it("does not redirect when the item's OWN provider is the one that did not answer", async () => {
+    await decideOnDetail({
+      stillThere: false, unavailableSources: [{ providerCode: "workflow", reasonCode: "PROVIDER_TIMEOUT" }] });
 
     expect(dispatched).toHaveLength(1);
     expect(global.sessionStorage.getItem(FLASH)).toBeNull();
+  });
+
+  // Measured live on dev (2026-10-01): one unrelated provider was down, and nobody was ever returned to the list.
+  it("still goes back to the list when ANOTHER provider is the one that did not answer", async () => {
+    await decideOnDetail({
+      stillThere: false, unavailableSources: [{ providerCode: "dev-reference", reasonCode: "PROVIDER_ERROR" }] });
+
+    expect(dispatched).toHaveLength(1);
+    expect(flashMessage()).toBe("Onayla uygulandı: İddia CLM-42 ödemesi");
   });
 
   it.each([
