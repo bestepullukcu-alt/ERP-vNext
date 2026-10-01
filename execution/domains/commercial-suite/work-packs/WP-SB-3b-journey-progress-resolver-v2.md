@@ -129,3 +129,29 @@ KORU/YAPMA: başlat/tamamla, JourneyProgress yazan uç, VisitReport.ContentActua
 DOĞRULA (E2): cd C:\tmp\sb-3b; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban 2123/0/5; bilinen sıra flake'i hariç); dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 396); build 0 hata. Yeni testler WP Acceptance listesindeki her madde. D-END-OF-JOURNEY "durur" testlerini S3-7'ye göre güncelle, raporda listele. Sabotaj: (1) rotasyon açık hesabı → sabit sıra: rotasyon testi kırmızı; (2) Advance başa dönüşü kaldır: test kırmızı. Commit ("feat(crm): WP-SB-3b — journey progress + visit content resolver v2 (multi-product, weighted rotation, per-product stage)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: KP-3'te güncel yayın/kullanımda tanımı tek değilse; mobil DTO'da mevcut alan şekli değişmek zorundaysa → DUR + raporla. Motor bir doktora aynı çalışmada tek ziyaret üretiyorsa projeksiyonu sade tut ve raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-01) — **ACCEPTED (E2)**
+- **Commit:** ajan `253dc4e5` (taban `377cea16`) → `test/crm-content-visit-e2e` fast-forward. 23 dosya (+1994 / −535). Yalnız CrmService.
+- **DUR yok:**
+  - "güncel yayın" tek tanım: KP-3 kural dosyasına `IsCurrentRelease` / `CurrentReleaseOf` olarak eklendi (yayında + arşivsiz; PathCode + ülke + dil kimliği);
+  - mobil DTO'da yalnız sona `ContentItems` eklendi (testle sabit);
+  - motor aynı doktora aynı çalışmada birden çok ziyaret üretiyor (sıklık) → projeksiyon tam uygulandı.
+- **Diff (K13 okuma):**
+  - `JourneyProgress`: tenant'lı filtreler, benzersiz kısmi index (`IsDeleted == false`, `$ne` yok), sürüm kontrollü upsert, class-map string-Guid. `Advance` başa dönüş + `Cycle`; yazan uç yok.
+  - Rotasyon saf ve deterministik (`VisitContentRotation`).
+  - `VisitContentSourceReader` tüm okumaları tenant ile sınırlıyor. Kitle: yalnız `specialty` ekseni, tek anahtar `VisitContentAudiencePolicy.DropOnMismatch = false`.
+  - `PlannedVisit.ContentItems[]` + 3 gömülü tip class-map'te; plan anında dondurulur.
+  - Yeni aşama varsayılanı `latest-published` (yalnız yeni aşama).
+- **CT testleri:** CRM **2153/0/5** (+30), Web **396/0**.
+- **CT sabotajı:** aynı çalışmadaki önceki ziyaretler projeksiyondan çıkarıldı → VisitPlanning / VisitContent testlerinde 1 kırmızı. Kod geri alındı. Ajan: rotasyon açığı (3) + başa dönüş (1).
+- **Ajan yorumları (kabul):**
+  - bir roldeki satırlardan biri ağırlıksızsa o rolün tümü eşit ağırlık;
+  - pinned + etkin dışı yol → ürün düşer (`stage_path_unpublished`), KP-3'ün `previous_path_in_use` uyarısı bunu haber veriyor;
+  - projeksiyonla yeniden çözülen ziyaretin slot süresi ilk çözümden kalır;
+  - SB-3b öncesi planlar (`ContentItems` yok) projeksiyonda sayılmaz.
+- **CT notları (takip):**
+  - **Yeniden planlama (replan):** yalnız slotları taşıyor, `ContentItems` aynı kalıyor; önizlemedeki projeksiyon değiştirilecek mevcut planları da "önceki" sayabilir. Ziyaret başlatılırken (SB-3c) içerik gerçek ilerlemeyle tazelenecek; SB-3c'de ele al.
+  - Çözücü her doktor / yeniden çözümde tenant'ın tüm yollarını okuyor (`ListPathsAsync`); yol sayısı az, şimdilik kabul. Büyürse istek başı önbellek.
+- **E4:** SB-3-UIb sonrası (önizlemede ürün başına içerik).
