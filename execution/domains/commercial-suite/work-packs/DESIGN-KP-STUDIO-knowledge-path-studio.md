@@ -222,3 +222,5 @@ Yayındaki yol, yolculuk aşamasından **ziyarete** gider.
 2. **Yayın SoD'si:** yayınlayanın MLR onaycılarından biri olamaması canlı ekip yapısında (tek kişide üç pozisyon: sema) sorun yaratır mı? Gerekirse "yayınlayan ≠ gönderen" ile sınırlanır.
 3. **Zincir sürüm yükseltmesi** (yeni sürümde): eşleşmeyen adımlar ne olur?
 4. **Eğitim yolları:** hepsi MLR'li olunca eğitim ekibinin onay yükü artar. Canlıda şu an yok; gerekirse sonra değerlendirilir.
+
+> **Kullanıcı cevabı (2026-10-01) — §9.1:** güvenlilik metnini **yalnız Regülasyon (Ruhsat)** onaylar; tam MLR (Medikal → Hukuk → Ruhsat) değil. Kayıt yeri ve onay akışı (tek adımlı MOD-0023 şablonu mu, KP-5 içinde tek onaycı mı) KP-5 paketlenirken CT önerisiyle netleşir.
