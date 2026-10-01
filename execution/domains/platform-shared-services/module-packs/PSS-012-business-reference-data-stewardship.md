@@ -25,6 +25,11 @@ approved_on: 2026-05-25
 
 # PSS-012 - Business Reference Data Stewardship
 
+> **Canonicalization decision:** PSS-012 is a deprecated runtime/provider implementation alias of Blueprint
+> **MOD-0048 — Reference Data Management**. It remains distinct from the PSS-011 Platform system-lookup surface;
+> this decision does not merge their routes, entities or ownership boundaries. Provider hardening for governed
+> enterprise business-reference contracts is delivered through the canonical MOD-0048 follow-up path.
+
 > **Bu pack bir refactor/standartlaştırma paketidir, greenfield değildir.** Kod `feature/erp-project-integration` dalında zaten yazılmış durumda (untracked). Geliştirici bu durumu **bilerek** ele almalı ve mevcut kodu standarda çekmelidir. Bu pack, `/docs/audits/` altındaki "BusinessReferenceData Standart Audit ve Düzeltme Planı" denetiminin module-pack karşılığıdır.
 
 > **Frontend kapsam dışıdır.** Bu pack yalnız Domain/Application/Infrastructure/API katmanlarını kapsar. Razor view, JS, DataTable, layout, frontend localization ve frontend proxy değişikliği yapılmayacaktır. Frontend gerekiyorsa ayrı module pack/plan hazırlanır.

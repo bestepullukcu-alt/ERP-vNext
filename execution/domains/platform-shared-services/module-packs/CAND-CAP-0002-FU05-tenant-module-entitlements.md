@@ -13,13 +13,53 @@ golden_reference: slim
 # CAND-CAP-0002-FU05 — Tenant Module Entitlements
 
 > **Canonicalization (DCP-002):** Governance identity is now **CAND-CAP-0002-FU05**, a child of **CAND-CAP-0002 (SaaS Subscription, Plan & Entitlement Management)**. Prior repo ID **MOD-0298** is a deprecated alias. Temporary candidate identity pending EA MOD-xxxx; never written into runtime literals. Ref: `execution/portfolio/delivery-capability-packs/DCP-002-module-identity-canonicalization.md`.
-Bu module pack, tenant bazlı modül yetkilendirme (Module Entitlement) yönetiminin tasarım, kural ve entegrasyon sınırlarını belirler. Amacı, tenant'ların sistemdeki modüllere (ör: MDM, İK, CRM) erişim haklarını tutmak, plan kaynaklı haklarla manuel eklentileri (override/addon) birleştirerek gerçek zamanlı bir "Effective Access" (Geçerli Erişim) kararı üretmek ve bu kararı arka uç (backend) yetkilendirme altyapısı ile arayüz görünümlerine entegre etmektir. 
+Bu module pack, tenant bazlı modül yetkilendirme (Module Entitlement) yönetiminin tasarım, kural ve entegrasyon sınırlarını belirler. Amacı, tenant'ların sistemdeki modüllere (ör: MDM, İK, CRM) erişim haklarını tutmak, plan kaynaklı haklarla manuel eklentileri (override/addon) birleştirerek gerçek zamanlı bir "Effective Access" (Geçerli Erişim) kararı üretmek ve bu kararı arka uç (backend) yetkilendirme altyapısı ile arayüz görünümlerine entegre etmektir.
+
+## Approved Named Step: Platform System Tenant Effective-Access Policy
+
+Bu dar follow-up icin kullanici code-start onayi verilmistir; pack status degeri `approved` olarak kalir.
+
+### Effective-access contract
+
+1. `TenantModuleAccessService`, normalize edilmis module code ile katalog kaydini repository'den okur.
+2. `PlatformSystemTenantId = 00000000-0000-0000-0000-000000000001` icin istisna uygulanmadan once katalog kaydinin mevcut/non-deleted, `Active` ve `IsTenantAssignable=true` oldugu dogrulanir.
+3. Bu kosullarin tamami saglanirsa fiziksel entitlement veya plan satiri aranmadan `EffectiveAccess=Active`, `HasAccess=true`, `Source=PlatformSystemTenant` ve `Reason=PlatformSystemTenant` doner.
+4. Unknown, deleted, inactive veya non-assignable katalog kaydi sistem tenant icin fail-closed `NoAccess` doner ve entitlement/plan fallback'i calismaz.
+5. Bu politika `IsBaseline` degildir. Normal tenant'larin baseline ve mevcut plan/physical entitlement evaluator davranisi degismez.
+6. Bu politika RBAC permission, domain SoD, maker-checker, lifecycle, actor veya Reference Data assignment kontrollerini baypas etmez; mutation/domain audit davranisini degistirmez ve navigation/menu cozumlemesinde kalici audit uretmez.
+
+### Exact implementation allow-list
+
+- `services/Diten.Platform/src/Diten.Platform.Application/Services/TenantModuleAccessService.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/AccessGovernance/PlatformSystemTenantModuleAccessTests.cs`
+- `execution/domains/platform-shared-services/module-packs/CAND-CAP-0002-FU05-tenant-module-entitlements.md`
+
+Yalnizca derleme zorunlulugu dogarsa ilgili `ITenantModuleAccessService`/effective-access DTO dosyasi ayrica kullanilabilir. AuthService, `FullCatalogPermissionGrantService`, `DataSeeder`, BRD/Reference Data, MDM, Gateway, Frontend, navigation manifest gorunurlukleri ve customer entitlement entity/mutation davranisi protected/out of scope'tur.
+
+### Named-step acceptance and evidence
+
+- [x] Platform system tenant + active assignable module + entitlement yok -> allow; source/reason `PlatformSystemTenant`.
+- [x] Ayni modul normal tenant + entitlement yok -> deny.
+- [x] Normal tenant + entitlement var -> mevcut evaluator davranisi.
+- [x] Platform system tenant + unknown/inactive/non-assignable/deleted module -> deny.
+- [x] Baseline ve customer override/expiry davranisi regresyonsuz.
+- [x] Focused access ve navigation/entitlement regression testleri, Platform build, `git diff --check`, conflict marker, trailing whitespace ve final-newline kontrolleri raporlandi.
+
+Evidence (2026-08-07):
+
+- Implementation: `TenantModuleAccessService.cs`; focused tests: `PlatformSystemTenantModuleAccessTests.cs` (8/8 passed).
+- Baseline/navigation/entitlement-query regression: 32/32 passed.
+- Authorization/entitlement regression: 39/39 passed.
+- Platform API build: passed with 0 errors and 7 pre-existing warnings, using an isolated temporary `OutDir` because the running API process locked the normal Debug output.
+- Hygiene: `git diff --check` passed; conflict markers and trailing whitespace none; all three task files have a final LF newline.
+- Boundary: only the exact allow-list files are task-owned changes. No AuthService, seed, repository, BRD/Reference Data, MDM, Gateway, Frontend or navigation production file was changed by this step.
+- Git: active branch remained `feature/mdm/mod-0290-product-item-sku-master`; staged files none; no branch switch, stage, commit, push, reset, stash or restore was performed.
 
 # 2. Business Objective
-Tenant Details ekranında `Commercial` tabı altında mevcut `Plan / Subscription` tabının yanına `Module Entitlements` adında yeni bir alt sekme eklenmesi planlanmaktadır. Bu sekme, yalnızca görsel bir liste olmaktan öte, tenant-modül ilişkisinin "RBAC öncesi ilk güvenlik kapısı" (tenant-level gate) olarak işlev gören bir erişim yönetimi (access management) ekranı olacaktır. 
+Tenant Details ekranında `Commercial` tabı altında mevcut `Plan / Subscription` tabının yanına `Module Entitlements` adında yeni bir alt sekme eklenmesi planlanmaktadır. Bu sekme, yalnızca görsel bir liste olmaktan öte, tenant-modül ilişkisinin "RBAC öncesi ilk güvenlik kapısı" (tenant-level gate) olarak işlev gören bir erişim yönetimi (access management) ekranı olacaktır.
 
 # 3. Current Context
-Mevcut sistemde bir tenant subscription ve subscription plan yapısı bulunmaktadır. 
+Mevcut sistemde bir tenant subscription ve subscription plan yapısı bulunmaktadır.
 **Karar:**
 - `SubscriptionPlan`, default module haklarının ana kaynağıdır.
 - Plan kaynaklı module hakları `Module Entitlements` tabında projection/read-model (sanal kayıtlar) olarak gösterilir.
@@ -68,7 +108,7 @@ UI tablosuna dönülecek birleştirilmiş (projection + physical) liste verisi i
 
 # 6. Effective Access Rules
 Aynı tenant ve module kombinasyonu için birden fazla source (kaynak) olabilir (örn. Plandan gelebilir ve üzerine ManualOverride eklenebilir). Ancak **aynı source ve aynı active period içinde çakışan iki fiziksel tenant entitlement kaydı olamaz.**
-Effective decision tek olmalıdır. 
+Effective decision tek olmalıdır.
 
 **Effective decision precedence:**
 1. **System lock / non-disableable core rule:** (System source core modüller asla disable edilemez kuralı)
@@ -91,13 +131,13 @@ Effective decision tek olmalıdır.
 - **Default Plan:** Tenant'ın aktif bir planı varsa, bu plandan gelen haklar listeye projection/read-model olarak (`DisplaySource = Plan`) yansıtılır. UI tablosunda Source=Plan görünebilir ama bu satırın fiziksel TenantModuleEntitlement Id değeri olmak zorunda değildir. Bu satırlar `TenantId + ModuleCode + Source=Plan` action key ile temsil edilir.
 - **Priority:** `ManualOverride`, plan kaynaklı kurallar üzerinde mutlak önceliğe sahiptir.
 - **Delete Constraint:** Plan kaynaklı haklar (`Source = Plan`) doğrudan silinmez (DELETE edilmez). Plandan gelen modül kapatılacaksa, tenant için o modülü `IsEnabled = false` yapan bir fiziksel `ManualOverride` kaydı oluşturulur.
-- **Plan Değişikliği (Upgrade/Downgrade):** 
+- **Plan Değişikliği (Upgrade/Downgrade):**
   - **Karar:** Default davranış query-time projection’dır. Plan değiştiğinde effective access query yeni planı anlık yansıtır.
   - Eğer projection cache veya read-model kullanılıyorsa plan değişikliği event’i cache invalidation veya refresh tetikler.
   - Bu işlem destructive değildir. Plan değişikliği hiçbir fiziksel tenant entitlement kaydını silent delete yapmaz.
   - `ManualOverride`, `Addon` ve `Trial` fiziksel kayıtları korunur.
   - Plan downgrade sonrası `Addon` veya `ManualOverride` enabled varsa, ilgili modül açık kalabilir.
-  - Bu davranış auditlenmelidir. 
+  - Bu davranış auditlenmelidir.
   - Süresi dolmuş (expired) kayıtlar access vermez ama audit/history takibi için saklanır.
 
 # 8. UI Requirements
@@ -276,7 +316,7 @@ Bu özellik geliştirilirken dokunulacak ve dokunulmaması gereken öncelikli he
 
 # 19. Open Questions
 **Karara Bağlanan (Eski) Sorular:**
-- *Projection satırın Id'si yoksa ne olacak?* 
+- *Projection satırın Id'si yoksa ne olacak?*
   **Karar:** Projection rows, action key olarak `TenantId + ModuleCode + Source=Plan` kullanır. UI'dan projection satırı üzerinde Disable action'ı çalıştırıldığında `DisableTenantModuleEntitlementCommand`, `TenantId + ModuleCode` alarak çalışır ve backend'de `ManualOverride` disabled kaydı yaratır.
 - *Plan değişikliklerindeki sync işlemi nasıl olacak?*
   **Karar:** Default davranış query-time projection’dır. Plan kaynaklı haklar DB'ye yazılmaz.
