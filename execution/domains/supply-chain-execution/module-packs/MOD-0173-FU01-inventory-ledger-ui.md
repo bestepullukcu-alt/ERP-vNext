@@ -634,6 +634,21 @@ StockLedger/Create are UI-2. Evidence `docs/records/audits/2026-10/mod-0173-fu01
   LE claim, or InventoryService resolves a default LE). Not changed by UI-1 (both are protected paths).
 - Translations of the 7 languages are model translations — native-speaker review pending (FU).
 
+### Company selector (W-0173-02, owner 2026-10-01) and UI-1 acceptance
+
+- **WP-0173-UI1 CT-ACCEPTED (2026-10-01)** — commits 119427544..d0b837902. CT re-measured: Diten.Web.Tests 377/377,
+  InventoryService 282/282, architecture 18/18 (0 skipped); 0 deleted lines; SharedResource only 3 `Nav.*` keys; no
+  browser call to 5066 or `/api/inventory`; no raw `Swal.fire`; `_LayoutTenantShell` explicit on both pages. Out-of-scope
+  file accepted: `Diten.InventoryService.Api.csproj` +1 ProjectReference (ModuleRegistration.Abstractions, Procurement
+  pattern). Carried as BLOCKED-ENV, not PASS: `verify_datatable_page.py` / `quality-gate-datatable` (no Python) and the
+  vitest suite (no `node_modules`); manual checklist accepted as interim evidence. Real-login use blocked by the LE gap.
+- **Company selector:** every inventory page shows a company (legal entity) selector in the page header (not in
+  `_LayoutTenantShell`, which stays protected). Source: MDM `/api/legal-entities/lookup` through the Gateway (needs
+  `mdm.legal-entities.read`; without it the page shows a localized "company list unavailable" state, no data). The
+  choice is kept per user (same-origin cookie, no PII) and sent by `InventoryGatewayClient` as `X-Legal-Entity-Id`
+  only when the token has no `legal_entity_id` claim. No selection → localized "select a company" state, no list call.
+  Changing company reloads the page data. One isolated component so FU-LE-01 can replace it. 7 languages.
+
 ## 20. Follow-up Items
 
 - Request to MOD-0290 owner (MDM): additive product/SKU search in PRODUCT-MASTER-BUNDLE v1.1 — retires W-UI-01.

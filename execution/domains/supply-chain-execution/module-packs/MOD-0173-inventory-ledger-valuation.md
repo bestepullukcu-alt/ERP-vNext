@@ -323,6 +323,7 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
 - **ASSUMPTION-0173-01:** superseded by OD-5 (own service); no shared composition root with MOD-0183.
 - **ASSUMPTION-0173-02:** wire `legalEntityId` = the token LE UUID as string. Mock examples (`le-tr`) are illustrative.
 - **ASSUMPTION-0173-03:** `X-Legal-Entity-Id` override for multi-LE operators is not granted in S1; a mismatch is 403.
+  **Superseded in part by W-0173-02 (owner, 2026-10-01)** for tokens that carry no `legal_entity_id` claim — see §19.
 - **ASSUMPTION-0173-04:** new error codes `IDEMPOTENCY_KEY_REUSED`, `SKU_ITEM_MISMATCH`, `UOM_CONVERSION_MISSING`,
   `LOT_REQUIRED`, `ALREADY_REVERSED`, `LOCATION_MASTER_UNAVAILABLE` are values of the frozen `error.code` string —
   within schema, not a contract change; they use only declared HTTP statuses (400/422/503).
@@ -369,6 +370,20 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
   - **ASSUMPTION-0173-19 (FU-S1-02):** the `SuperAdmin` role bypass is removed from this service; every endpoint needs
     its explicit permission.
 
+- **W-0173-02 — LE from a company selector (waiver, K19; owner Ali 2026-10-01).** Measured: AuthService tokens carry
+  **no** `legal_entity_id` claim and the repo has **no** user↔legal-entity assignment (same gap in ProcurementService,
+  which falls back to an unsigned header + dev bypass, and in MOD-0183, "held"). The owner has several legal entities
+  and chose a company selector. Rules:
+  - Token **has** `legal_entity_id` → unchanged (header, if present, must equal it, else 403 `CROSS_LE_FORBIDDEN`).
+  - Token has **no** claim → `X-Legal-Entity-Id` (UUID) is **required** (absent/invalid → 403 with a "select a company"
+    message, no data). The id must be an **active legal entity of the caller's tenant**, checked server-side against MDM
+    (`/api/legal-entities/{id}/lookup-validation` through the Gateway with the caller's token); unknown/inactive/other
+    tenant → 403 `CROSS_LE_FORBIDDEN`; MDM unreachable → 503 `LEGAL_ENTITY_MASTER_UNAVAILABLE` (fail-closed, no write).
+  - Every posting/reservation audit record stores the LE **and its source** (`token` | `header-unverified-membership`).
+  - **Accepted risk:** without membership data any user of the tenant can select any of its legal entities.
+    Therefore the G1 item "cross-LE leak blocked" **cannot close** under this waiver.
+  - Owner: Ali. **Expiry: before G1 sign-off.** Retired by the permanent fix (central/PSS request FU-LE-01).
+
 - **WP-0173-K1 CT-ACCEPTED (2026-10-01)** — commits fe855440..a27ce77f. CT re-measured: clean build 0/0; 278/278
   (0 skipped); old-name grep 0 (deliberate split literals only in `PermissionNamespaceTests`); all 6 `[HasPermission]` use
   constants; own sabotage (Read constant → old name) → 62 red, restored → 278 green, empty diff. FU-S2-01 closed
@@ -405,6 +420,8 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
 
 ## 20. Follow-up Items
 
+- **FU-LE-01 (central / PSS — blocks G1):** user↔legal-entity assignment + AuthService issuing `legal_entity_id` (active company; switching = token re-issue). Same gap affects MVP-2 (ProcurementService header fallback) and MVP-6 (MOD-0183 "held"). Retires W-0173-02.
+
 - **FU-INT1-01 (central/gateway owner):** `gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs` `KnownDownstreamPorts` lacks 5063/5064/5065/5066 (AGENTS.md §3) — the guard is red on `main`-derived code since before MVP-1; update belongs to the gateway test owner.
 - **FU-INT1-02 (before G1):** a caller sending a non-UUID `X-Correlation-Id` (e.g. `req-1`) gets 400 from this service; decide with consumers (MOD-0142 GRN, WMS) whether to accept-and-replace instead.
 
@@ -421,7 +438,7 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
 - INT-1: gateway route + permission seed (integration-agent).
 - MovementReason validation against MOD-0048; posting-period master (`POSTING_PERIOD_CLOSED`); negative-stock
   policy exceptions per company/warehouse/item (DEC-INV-12).
-- Multi-LE operator override (`X-Legal-Entity-Id`).
+- Multi-LE operator override (`X-Legal-Entity-Id`) — interim W-0173-02 (§19).
 - Tenant-shell UI (stock inquiry / transaction history), 7 languages, Slim/Compact decision — required for G1 E4.
 - Progressive integration: swap mocks for real MOD-0290 (MDM, Model A) and Location master; Location-LE data quality.
 - Generic external-integration adapter (DEC-INV-19).
