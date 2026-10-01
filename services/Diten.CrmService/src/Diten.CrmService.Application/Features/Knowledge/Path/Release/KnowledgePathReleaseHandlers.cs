@@ -2,7 +2,7 @@ using System.Globalization;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.ContentComposition.Claims;
-using Diten.CrmService.Application.Features.ContentComposition.ContentSetRevisions.Rendering;
+using Diten.CrmService.Application.Common.Artifacts;
 using Diten.CrmService.Application.Features.Knowledge.Chain;
 using Diten.CrmService.Application.Features.Knowledge.Content;
 using Diten.CrmService.Application.Features.Knowledge.Path.Review;

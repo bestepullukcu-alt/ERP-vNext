@@ -178,4 +178,13 @@
   <data name="Err_country_not_closed" xml:space="preserve"><value>Bu ülke açılmayacak olarak işaretli değil.</value></data>
   <data name="Err_invalid_reference_value" xml:space="preserve"><value>Geçerli bir neden seçin.</value></data>
   <data name="Err_required" xml:space="preserve"><value>Bir neden seçin.</value></data>
+  <data name="QvUsage" xml:space="preserve"><value>Nerede kullanılıyor</value></data>
+  <data name="QvUsageNone" xml:space="preserve"><value>Bu iddiayı kullanan içerik, bilgi yolu ya da yolculuk yok.</value></data>
+  <data name="QvUsageFailed" xml:space="preserve"><value>Kullanım bilgisi yüklenemedi.</value></data>
+  <data name="UsageGlobal" xml:space="preserve"><value>Global (çekirdek iddia)</value></data>
+  <data name="UsageVia" xml:space="preserve"><value>{0} üzerinden</value></data>
+  <data name="UsageNeedsReview" xml:space="preserve"><value>Burada kullanılan iddia sürümü gözden geçirilmeli.</value></data>
+  <data name="UsageType_content" xml:space="preserve"><value>İçerik</value></data>
+  <data name="UsageType_knowledge-path" xml:space="preserve"><value>Bilgi yolu</value></data>
+  <data name="UsageType_journey" xml:space="preserve"><value>Yolculuk</value></data>
 </root>

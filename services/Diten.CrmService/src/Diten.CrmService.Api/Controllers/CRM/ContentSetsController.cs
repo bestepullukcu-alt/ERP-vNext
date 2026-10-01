@@ -1,4 +1,3 @@
-using Diten.CrmService.Api.Models.CRM;
 using Diten.CrmService.Application.Features.ContentComposition.ContentSets;
 using Diten.CrmService.Infrastructure.Authorization;
 using MediatR;
@@ -9,20 +8,24 @@ using Perms = Diten.CrmService.Application.Features.ContentComposition.ContentSe
 namespace Diten.CrmService.Api.Controllers.CRM;
 
 /// <summary>
-/// SCMM-14 (CAND-CAP-0011) — content-set (assembly draft) authoring HTTP surface. Canonical under
-/// <c>/api/crm/content-composition/content-sets</c>. A thin adapter over the ContentSet CQRS — no business logic here.
-/// Mutable DRAFT authoring only: create / clone / edit / arrange components + claims / apply a non-blocking eligibility
-/// snapshot. There is <b>no delete</b> (Archive), and <b>no freeze / approve / render / release</b> (SCMM-15/16/17).
+/// SCMM-14 (CAND-CAP-0011) — content-set READ surface. WP-KP-4 (DESIGN-KP-STUDIO §7, bridge-decision §8) retired the
+/// content set: the Knowledge Path Studio took its job (composition + claims + MLR + output + release), so the authoring
+/// endpoints (create / clone / edit / components + claims / apply-eligibility / archive) are gone. These two reads stay
+/// as the audit trail of old data (pre-SB-1R documents included — the retired scope binding still parses as
+/// <c>LegacyScope</c>) until the separate repository / class-map clean-up. Canonical under
+/// <c>/api/crm/content-composition/content-sets</c>.
 /// </summary>
 [Authorize]
 public sealed class ContentSetsController : CustomBaseController
 {
+    private const string Base = "api/crm/content-composition/content-sets";
+    private const string Retired = "WP-KP-4 — content sets are retired (read-only audit trail); use the knowledge path studio.";
+
     private readonly IMediator _mediator;
 
     public ContentSetsController(IMediator mediator) => _mediator = mediator;
 
-    private const string Base = "api/crm/content-composition/content-sets";
-
+    [Obsolete(Retired)]
     [HttpGet(Base)]
     [HasPermission(Perms.Read)]
     public async Task<IActionResult> List(
@@ -33,105 +36,9 @@ public sealed class ContentSetsController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new ListContentSetsQuery(status, search, includeArchived), cancellationToken));
 
+    [Obsolete(Retired)]
     [HttpGet(Base + "/{contentSetId:guid}")]
     [HasPermission(Perms.Read)]
     public async Task<IActionResult> Get(Guid contentSetId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetContentSetQuery(contentSetId), cancellationToken));
-
-    [HttpPost(Base)]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> Create(
-        [FromBody] CreateContentSetDraftRequest request, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
-            new CreateContentSetDraftCommand(
-                request.SetCode, request.SetName, request.ConceptChainTemplateId, request.Description,
-                request.CountryCode, request.LanguageCode),
-            cancellationToken));
-
-    [HttpPost(Base + "/{contentSetId:guid}/clone")]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> Clone(
-        Guid contentSetId, [FromBody] CloneContentSetRequest request, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
-            new CloneContentSetToDraftCommand(contentSetId, request.NewSetCode, request.NewSetName), cancellationToken));
-
-    [HttpPut(Base + "/{contentSetId:guid}")]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> Update(
-        Guid contentSetId, [FromBody] UpdateContentSetRequest request, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
-            new UpdateContentSetCommand(
-                contentSetId, request.SetName, request.Description, request.Status, request.CountryCode,
-                request.LanguageCode),
-            cancellationToken));
-
-    [HttpPost(Base + "/{contentSetId:guid}/archive")]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> Archive(Guid contentSetId, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(new ArchiveContentSetCommand(contentSetId), cancellationToken));
-
-    // ---- component selection ----
-
-    [HttpPost(Base + "/{contentSetId:guid}/components")]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> AddComponent(
-        Guid contentSetId, [FromBody] AddContentSetComponentRequest request, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
-            new AddContentSetComponentCommand(
-                contentSetId, request.KnowledgeContentId, request.TemplateStepId, request.Position, request.BranchId,
-                request.Role),
-            cancellationToken));
-
-    [HttpPost(Base + "/{contentSetId:guid}/components/{selectionId:guid}/arrange")]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> ArrangeComponent(
-        Guid contentSetId, Guid selectionId, [FromBody] ArrangeContentSetComponentRequest request,
-        CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
-            new ArrangeContentSetComponentCommand(
-                contentSetId, selectionId, request.TemplateStepId, request.Position, request.BranchId),
-            cancellationToken));
-
-    [HttpPost(Base + "/{contentSetId:guid}/components/{selectionId:guid}/remove")]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> RemoveComponent(
-        Guid contentSetId, Guid selectionId, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
-            new RemoveContentSetComponentCommand(contentSetId, selectionId), cancellationToken));
-
-    // ---- claim selection ----
-
-    [HttpPost(Base + "/{contentSetId:guid}/claims")]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> AddClaim(
-        Guid contentSetId, [FromBody] AddContentSetClaimRequest request, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
-            new AddContentSetClaimCommand(
-                contentSetId, request.ClaimId, request.TemplateStepId, request.Position, request.BranchId),
-            cancellationToken));
-
-    [HttpPost(Base + "/{contentSetId:guid}/claims/{selectionId:guid}/arrange")]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> ArrangeClaim(
-        Guid contentSetId, Guid selectionId, [FromBody] ArrangeContentSetClaimRequest request,
-        CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
-            new ArrangeContentSetClaimCommand(
-                contentSetId, selectionId, request.TemplateStepId, request.Position, request.BranchId),
-            cancellationToken));
-
-    [HttpPost(Base + "/{contentSetId:guid}/claims/{selectionId:guid}/remove")]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> RemoveClaim(
-        Guid contentSetId, Guid selectionId, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
-            new RemoveContentSetClaimCommand(contentSetId, selectionId), cancellationToken));
-
-    // ---- eligibility (non-blocking validation snapshot) ----
-
-    [HttpPost(Base + "/{contentSetId:guid}/apply-eligibility")]
-    [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> ApplyEligibility(Guid contentSetId, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
-            new ApplyContentSetEligibilityCommand(contentSetId), cancellationToken));
 }

@@ -51,13 +51,8 @@ public static class DependencyInjection
         // IKnowledgePathReader seam is never widened and no FU04 aggregate is ever mutated.
         services.AddScoped<Features.Knowledge.ContentEngagementJourney.ContentEngagementJourneyPathResolver>();
 
-        // WP-SB-2 — the content set release → knowledge bridge (assembled-presentation content + chain-ordered path).
-        // Writes only through the existing Knowledge commands (ISender); scoped so it shares the request's tenant/actor.
-        services.AddScoped<Features.ContentComposition.ContentSetRevisions.IContentSetReleaseProducer,
-            Features.ContentComposition.ContentSetRevisions.ContentSetReleaseProducer>();
-
         // WP-KP-1 — the single chain context resolver (product + audience a chain template derives). Shared by the
-        // knowledge path (studio model) and the content-set adapter below; read-only.
+        // knowledge path (studio model) and the read-only content-set adapter below.
         services.AddScoped<Features.Knowledge.Chain.IChainContextResolver, Features.Knowledge.Chain.ChainContextResolver>();
 
         // WP-KP-1 — the studio part of a knowledge path detail read (chain, derived context, claims, conformance).
@@ -66,8 +61,8 @@ public static class DependencyInjection
         services.AddScoped<Features.Knowledge.Path.Review.KnowledgePathRevisionOutcomeApplier>();
         services.AddScoped<Features.Knowledge.Path.Review.KnowledgePathReviewReconciler>();
 
-        // WP-SB-1R — the single content-set context resolver (country + language of the set; product + audience derived
-        // from the template). Read-only; used by the set reads, eligibility, the revision freeze.
+        // WP-SB-1R — the content-set context resolver (country + language of the set; product + audience derived from
+        // the template). WP-KP-4: the set is retired and read-only, so only the obsolete set reads use it.
         services.AddScoped<Features.ContentComposition.ContentSets.IContentSetContextResolver,
             Features.ContentComposition.ContentSets.ContentSetContextResolver>();
 

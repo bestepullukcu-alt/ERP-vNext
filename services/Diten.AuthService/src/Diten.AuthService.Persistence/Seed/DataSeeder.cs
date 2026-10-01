@@ -500,8 +500,8 @@ public static class DataSeeder
             // module code "crm-content-composition" ∉ PlatformAdminModules → Scope=Tenant).
             new("crm", "content-scope", "read", "CRM Content Scope Read (deprecated)", "Deprecated (WP-SB-1R): the ContentScope is retired; kept so existing role grants stay intact. Read-only scope API only.", moduleOverride: "crm-content-composition"),
             new("crm", "content-scope", "manage", "CRM Content Scope Manage (deprecated)", "Deprecated (WP-SB-1R): the ContentScope is retired and has no write endpoint any more; kept so existing role grants stay intact.", moduleOverride: "crm-content-composition"),
-            new("crm", "content-set", "read", "CRM Content Set Read", "Permission to view SCMM content-set assembly drafts", moduleOverride: "crm-content-composition"),
-            new("crm", "content-set", "manage", "CRM Content Set Manage", "Permission to author SCMM content-set drafts (create/clone/arrange/apply-eligibility/archive)", moduleOverride: "crm-content-composition"),
+            new("crm", "content-set", "read", "CRM Content Set Read (deprecated)", "Deprecated (WP-KP-4): the content set is retired (the Knowledge Path Studio took its job); kept so existing role grants stay intact. Read-only access to old content sets and revisions only.", moduleOverride: "crm-content-composition"),
+            new("crm", "content-set", "manage", "CRM Content Set Manage (deprecated)", "Deprecated (WP-KP-4): the content set is retired and has no write endpoint any more; kept so existing role grants stay intact.", moduleOverride: "crm-content-composition"),
 
             // SCMM-11-follow-API (CAND-CAP-0011) — eligibility policy authoring + evaluate HTTP surface. evaluate is a
             // SEPARATE key from manage (author-vs-evaluator SoD).

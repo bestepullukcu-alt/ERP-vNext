@@ -71,19 +71,13 @@ public static class DependencyInjection
         services.AddScoped<Application.Features.ConsentPreference.IContactConsentPreferenceReader,
             ConsentPreference.NullContactConsentPreferenceReader>();
 
-        // SCMM-16B (CAND-CAP-0011) — ContentSetRevision render pipeline. The PDF renderer is stateless (singleton). The
-        // artifact store is a typed Gateway client that forwards the caller's token to the MOD-0262-FU01 document
-        // repository (fail-closed: a store failure fails the render). Platform/FU01 is consumed as-is, never modified.
-        services.AddSingleton<
-            Application.Features.ContentComposition.ContentSetRevisions.Rendering.IContentSetRevisionRenderer,
-            ContentComposition.Rendering.PdfSharpContentSetRevisionRenderer>();
-        // WP-KP-3 — the knowledge path revision archive PDF (same engine + MigraDoc helpers; stateless).
+        // WP-KP-3 — the knowledge path revision archive PDF (PDFsharp/MigraDoc; stateless). WP-KP-4 retired the content
+        // set renderer. The artifact store is a typed Gateway client that forwards the caller's token to the
+        // MOD-0262-FU01 document repository (fail-closed: a store failure fails the render). FU01 is consumed as-is.
         services.AddSingleton<
             Application.Features.Knowledge.Path.Release.IKnowledgePathRevisionRenderer,
             ContentComposition.Rendering.PdfSharpKnowledgePathRevisionRenderer>();
-        services.AddHttpClient<
-            Application.Features.ContentComposition.ContentSetRevisions.Rendering.IContentArtifactStore,
-            ContentComposition.Rendering.HttpContentArtifactStore>();
+        services.AddHttpClient<Application.Common.Artifacts.IContentArtifactStore, Artifacts.HttpContentArtifactStore>();
 
         // MOD-0167 FU02 - class-X criterion VALUE proof (MDM global product / product / brand) over the Gateway.
         // Deliberately cacheless, 3s budget, one transient retry; 404 makes the rule un-authorable (400) and an

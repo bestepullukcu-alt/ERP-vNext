@@ -4,11 +4,11 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
 using Diten.CrmService.Application.Common;
-using Diten.CrmService.Application.Features.ContentComposition.ContentSetRevisions.Rendering;
+using Diten.CrmService.Application.Common.Artifacts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
-namespace Diten.CrmService.Infrastructure.ContentComposition.Rendering;
+namespace Diten.CrmService.Infrastructure.Artifacts;
 
 /// <summary>
 /// SCMM-16B (CAND-CAP-0011, SCMM-16) — stores/reads a rendered artifact through the MOD-0262-FU01 document repository

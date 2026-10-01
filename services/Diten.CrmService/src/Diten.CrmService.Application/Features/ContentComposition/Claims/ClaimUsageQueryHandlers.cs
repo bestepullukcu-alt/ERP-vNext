@@ -11,9 +11,9 @@ namespace Diten.CrmService.Application.Features.ContentComposition.Claims;
 /// <list type="bullet">
 /// <item><b>content</b>: non-archived knowledge contents with a <see cref="KnowledgeContent.ClaimRefs"/> entry for the
 /// code; grouped by the ref's CountryCode, GLOBAL for a core ref.</item>
-/// <item><b>content-set</b>: non-archived sets whose <see cref="ContentSet.SelectedClaims"/> hold any record id of the
-/// code; grouped by the set's own <see cref="ContentSet.CountryCode"/> (WP-SB-1R — validated against COUNTRY_CODES on
-/// write); a pre-SB-1R set without a country lands in GLOBAL.</item>
+/// <item><b>knowledge-path</b> (WP-KP-4, replacing the retired content set): non-archived knowledge paths whose
+/// <see cref="KnowledgePath.Claims"/> hold any record id of the code; grouped by the path's own
+/// <see cref="KnowledgePath.CountryCode"/> (its identity, KP-1); a path without a country lands in GLOBAL.</item>
 /// <item><b>journey</b>: non-archived journeys with an active stage whose recommended knowledge path (the pinned path
 /// id, or — for a <c>latest-published</c> stage — any path of that code) has an active step pointing at one of the
 /// matched contents (by id, or by code for a <c>latest-published</c> step). <c>via</c> = that content's code; the group
@@ -26,7 +26,6 @@ public sealed class GetClaimUsageHandler : IRequestHandler<GetClaimUsageQuery, R
     private readonly IClaimRepository _claims;
     private readonly IClaimCountryVersionRepository _versions;
     private readonly IKnowledgeContentRepository _contents;
-    private readonly IContentSetRepository _sets;
     private readonly IKnowledgePathRepository _paths;
     private readonly IContentEngagementJourneyRepository _journeys;
 
@@ -35,7 +34,6 @@ public sealed class GetClaimUsageHandler : IRequestHandler<GetClaimUsageQuery, R
         IClaimRepository claims,
         IClaimCountryVersionRepository versions,
         IKnowledgeContentRepository contents,
-        IContentSetRepository sets,
         IKnowledgePathRepository paths,
         IContentEngagementJourneyRepository journeys)
     {
@@ -43,7 +41,6 @@ public sealed class GetClaimUsageHandler : IRequestHandler<GetClaimUsageQuery, R
         _claims = claims;
         _versions = versions;
         _contents = contents;
-        _sets = sets;
         _paths = paths;
         _journeys = journeys;
     }
@@ -117,35 +114,28 @@ public sealed class GetClaimUsageHandler : IRequestHandler<GetClaimUsageQuery, R
             }
         }
 
-        // ---- content sets --------------------------------------------------------------------------------------
+        // ---- knowledge paths (WP-KP-4: the claims placed on a path; replaces the retired content set) -----------
+        var allPaths = (await _paths.ListAsync(tenantId, cancellationToken)).Where(p => !p.IsArchived()).ToList();
         if (recordsById.Count > 0)
         {
-            foreach (var set in (await _sets.ListAsync(tenantId, cancellationToken)).Where(s => !s.IsArchived()))
+            foreach (var path in allPaths)
             {
-                var selections = set.SelectedClaims.Where(sc => recordsById.ContainsKey(sc.ClaimId)).ToList();
-                if (selections.Count == 0)
+                var placed = path.Claims.Where(pc => recordsById.ContainsKey(pc.ClaimId)).ToList();
+                if (placed.Count == 0)
                 {
                     continue;
                 }
 
-                var selected = selections.Select(sc => recordsById[sc.ClaimId]).ToList();
-
-                var setGroups = new[] { SetGroup(set) };
-                var selectedNeedsReview = selected.Any(c => IsReviewRequired(c.Status));
-                // The claim version the set pinned at selection time (falls back to the record's own version).
-                var version = selections
-                    .Select(sc => string.IsNullOrWhiteSpace(sc.ClaimVersion) ? recordsById[sc.ClaimId].ClaimVersion : sc.ClaimVersion)
-                    .FirstOrDefault();
-                foreach (var group in setGroups)
-                {
-                    var needsReview = group == ClaimUsageGroups.Global
-                        ? selectedNeedsReview
-                        : selectedNeedsReview || versions.Values.Any(v =>
-                            string.Equals(v.CountryCode, group, StringComparison.OrdinalIgnoreCase)
-                            && !v.IsArchived() && IsReviewRequired(v.Status));
-                    Add(group, new ClaimUsageItemDto(ClaimUsageItemTypes.ContentSet, set.Id, set.SetCode, set.SetName,
-                        null, version, set.Status, null, needsReview));
-                }
+                // The path uses the claim's version in its OWN country (KP-1 resolves it at read): a review-required
+                // live version of that country, or a review-required record, flags the row.
+                var country = PathGroup(path);
+                var needsReview = placed.Any(pc => IsReviewRequired(recordsById[pc.ClaimId].Status)
+                    || versions.Values.Any(v => v.ClaimId == pc.ClaimId && !v.IsArchived()
+                        && string.Equals(v.CountryCode, country, StringComparison.OrdinalIgnoreCase)
+                        && IsReviewRequired(v.Status)));
+                Add(country, new ClaimUsageItemDto(ClaimUsageItemTypes.KnowledgePath, path.Id, path.PathCode,
+                    path.PathName, path.LanguageCode, path.PathVersion, path.PathStatus, null, needsReview,
+                    string.IsNullOrWhiteSpace(path.CountryCode) ? null : path.CountryCode.Trim().ToUpperInvariant()));
             }
         }
 
@@ -158,7 +148,7 @@ public sealed class GetClaimUsageHandler : IRequestHandler<GetClaimUsageQuery, R
 
             // path id → matched content ids it steps through
             var pathHits = new Dictionary<Guid, (KnowledgePath Path, List<Guid> ContentIds)>();
-            foreach (var path in (await _paths.ListAsync(tenantId, cancellationToken)).Where(p => !p.IsArchived()))
+            foreach (var path in allPaths)
             {
                 var hits = new List<Guid>();
                 foreach (var step in path.ActiveSteps())
@@ -228,14 +218,14 @@ public sealed class GetClaimUsageHandler : IRequestHandler<GetClaimUsageQuery, R
     private static int TypeOrder(string type) => type switch
     {
         ClaimUsageItemTypes.Content => 0,
-        ClaimUsageItemTypes.ContentSet => 1,
+        ClaimUsageItemTypes.KnowledgePath => 1,
         _ => 2
     };
 
-    /// <summary>WP-SB-1R — a content set groups under its own country (a COUNTRY_CODES value, validated on write); a
-    /// pre-SB-1R set without a country groups under GLOBAL. The retired ContentScope MarketRefs are no longer read.</summary>
-    public static string SetGroup(ContentSet set)
-        => string.IsNullOrWhiteSpace(set.CountryCode)
+    /// <summary>WP-KP-4 — a knowledge path groups under its own country (its identity, a COUNTRY_CODES value since KP-1);
+    /// a path without a country (a legacy path) groups under GLOBAL.</summary>
+    public static string PathGroup(KnowledgePath path)
+        => string.IsNullOrWhiteSpace(path.CountryCode)
             ? ClaimUsageGroups.Global
-            : set.CountryCode.Trim().ToUpperInvariant();
+            : path.CountryCode.Trim().ToUpperInvariant();
 }

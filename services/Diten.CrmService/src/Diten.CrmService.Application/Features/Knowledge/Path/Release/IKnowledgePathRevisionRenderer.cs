@@ -1,4 +1,4 @@
-using Diten.CrmService.Application.Features.ContentComposition.ContentSetRevisions.Rendering;
+using Diten.CrmService.Application.Common.Artifacts;
 
 namespace Diten.CrmService.Application.Features.Knowledge.Path.Release;
 

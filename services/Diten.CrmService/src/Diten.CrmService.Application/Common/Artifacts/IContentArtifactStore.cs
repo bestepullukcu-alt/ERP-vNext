@@ -1,4 +1,4 @@
-namespace Diten.CrmService.Application.Features.ContentComposition.ContentSetRevisions.Rendering;
+namespace Diten.CrmService.Application.Common.Artifacts;
 
 /// <summary>
 /// SCMM-16B (CAND-CAP-0011, SCMM-16) — stores and reads a rendered content artifact through the MOD-0262-FU01 document
@@ -45,6 +45,9 @@ public sealed record ContentArtifactReadResult(
     string MediaType,
     string FileName,
     long ByteSize);
+
+/// <summary>A rendered output: the bytes plus the file name and media type to store them under.</summary>
+public sealed record RenderedContent(byte[] Bytes, string FileName, string MediaType);
 
 /// <summary>Thrown when the artifact store cannot complete a store (non-2xx from FU01, an auth rejection, or a transport
 /// failure). <see cref="StatusCode"/> carries the upstream/derived status so the failure is not swallowed.</summary>

@@ -22,15 +22,14 @@ public sealed record ContentSetContextDto(
     IReadOnlyList<Guid> AudienceProfileIds,
     IReadOnlyList<ContentSetAudienceDto> Audiences);
 
-/// <summary>WP-SB-1R — the ONE place a content set's context is resolved (set DTO, eligibility, revision freeze, the
-/// SB-2 release producer). Read-only.</summary>
+/// <summary>WP-SB-1R — where a content set's context is resolved. WP-KP-4: only the obsolete set reads use it now.</summary>
 public interface IContentSetContextResolver
 {
     Task<ContentSetContextDto> ResolveAsync(Guid tenantId, ContentSet set, CancellationToken cancellationToken);
 }
 
 /// <summary>WP-KP-1 — the set adapter over the shared <see cref="ChainContextResolver"/>: country + language are the set's
-/// own, product + audience come from the one chain resolver (removed with the set in KP-4).</summary>
+/// own, product + audience come from the one chain resolver (kept for the read-only set reads, WP-KP-4).</summary>
 public sealed class ContentSetContextResolver : IContentSetContextResolver
 {
     private readonly IChainContextResolver _chain;
@@ -54,25 +53,4 @@ public sealed class ContentSetContextResolver : IContentSetContextResolver
             derived.Audiences.Select(a => new ContentSetAudienceDto(a.AudienceProfileId, a.ProfileCode, a.ProfileName))
                 .ToList());
     }
-
-    public static ContentSetContextSnapshot ToSnapshot(ContentSetContextDto context) => new()
-    {
-        CountryCode = context.CountryCode,
-        LanguageCode = context.LanguageCode,
-        ProductId = context.ProductId,
-        ProductCode = context.ProductCode,
-        ProductName = context.ProductName,
-        AudienceProfileIds = context.AudienceProfileIds.ToList()
-    };
-}
-
-/// <summary>
-/// WP-SB-1R — the set-only language rule. Country / language validation itself is the shared
-/// <see cref="ChainContextValidation"/> (WP-KP-1).
-/// </summary>
-public static class ContentSetContextValidation
-{
-    /// <summary>Components not in <paramref name="language"/> (their pinned language), or empty.</summary>
-    public static IReadOnlyList<ContentSetComponent> ComponentsNotIn(IEnumerable<ContentSetComponent> components, string language)
-        => components.Where(c => !ChainContextValidation.SameLanguage(c.LanguageCode, language)).ToList();
 }

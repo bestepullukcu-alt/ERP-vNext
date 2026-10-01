@@ -8,6 +8,11 @@ namespace Diten.CrmService.Domain.Entities;
 /// everything authored outside the Studio. Embedded value object (no TenantId / Version / repository).
 /// <para>Not to be confused with <see cref="KnowledgeContent.ContentSetId"/>, which is the SCMM-13 language-variant
 /// group, not a Content Studio set.</para>
+/// <para><b>Obsolete (WP-KP-4).</b> The content set and its SB-2 release producer are retired; nothing writes this any
+/// more. It stays only so a stored document carrying it still reads (the class map rejects unknown elements). Remove it
+/// with the content-set repository / class-map clean-up once the data is confirmed empty. (Documented rather than
+/// <c>[Obsolete]</c>-attributed: the attribute would raise CS0618 on the knowledge entities / commands that only carry
+/// the field.)</para>
 /// </summary>
 public sealed class KnowledgeStudioOrigin
 {

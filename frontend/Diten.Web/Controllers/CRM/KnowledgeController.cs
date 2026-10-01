@@ -391,6 +391,17 @@ public sealed partial class KnowledgeController : Controller
 
     // ---------------- helpers ----------------
 
+    /// <summary>WP-KP-4 — the SB-2 "assembled presentation" content type and the "content-studio" source were produced
+    /// only by the retired content-set release; the form no longer offers them.</summary>
+    public const string RetiredContentType = "assembled-presentation";
+
+    public const string RetiredContentSource = "content-studio";
+
+    public static IReadOnlyList<string> WithoutRetired(IReadOnlyList<string> values, string retired, string? current)
+        => values.Where(v => !string.Equals(v, retired, StringComparison.OrdinalIgnoreCase)
+                             || string.Equals(v, current, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
     private async Task PopulateContractOptionsAsync(KnowledgeContentEditViewModel model, CancellationToken ct)
     {
         var contract = await LoadContractAsync(ct);
@@ -400,9 +411,11 @@ public sealed partial class KnowledgeController : Controller
             return;
         }
 
-        model.ContentTypes = contract.Vocabularies.ContentTypes;
+        // WP-KP-4 — the content-set (SB-2) release vocabulary stays valid in CRM for old data but is never OFFERED for a
+        // new choice; a record already carrying it still shows its own value.
+        model.ContentTypes = WithoutRetired(contract.Vocabularies.ContentTypes, RetiredContentType, model.ContentType);
         model.ContentStatuses = contract.Vocabularies.ContentStatuses;
-        model.ContentSources = contract.Vocabularies.ContentSources;
+        model.ContentSources = WithoutRetired(contract.Vocabularies.ContentSources, RetiredContentSource, model.Source);
 
         await PopulateReferenceOptionsAsync(model, ct);
     }

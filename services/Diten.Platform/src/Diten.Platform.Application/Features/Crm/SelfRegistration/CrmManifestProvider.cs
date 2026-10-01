@@ -39,7 +39,6 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string KnowledgePathRead = "crm.knowledge.path.read";
     private const string ContentEngagementJourneyRead = "crm.knowledge.content-engagement-journey.read";
     private const string ClaimRead = "crm.claim.read";
-    private const string ContentSetRead = "crm.content-set.read";
     private const string EligibilityRead = "crm.eligibility.read";
 
     // MOD-0165-FU03 (WP-FREQ-A). The canonical crm.visit-frequency-policy.* keys are not seeded yet, so — exactly like
@@ -147,12 +146,9 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("MANAGE", "New Claim", "crm.claim.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("APPROVE", "Approve", "crm.claim.approve", "RowAction", 20, false, false, true)
                 ]),
-                // SCMM-14 (CAND-CAP-0011) Content Studio — ContentSet (assembly draft) console. WP-SB-1R retired the
-                // ContentScope page (CONTENT_SCOPES): the set carries its country + language, product / audience derive.
-                new ModuleManifestPage("CONTENT_SETS", "Content Sets", "/CRM/ContentSets", ContentSetRead, null, true, "List", 160,
-                [
-                    new ModuleManifestAction("MANAGE", "New Content Set", "crm.content-set.manage", "Toolbar", 10, false, true, false)
-                ]),
+                // WP-SB-1R retired the Content Scopes page (CONTENT_SCOPES) and WP-KP-4 the Content Sets page
+                // (CONTENT_SETS): the Knowledge Path Studio (KNOWLEDGE_PATHS) took the content set's job. A re-registration
+                // of this manifest prunes both pages from the live menu.
                 // SCMM-11-UI (CAND-CAP-0011) eligibility policy authoring + evaluate. evaluate is a SEPARATE key from
                 // manage (author-vs-evaluator SoD); no delete surface (Archive).
                 new ModuleManifestPage("ELIGIBILITY_POLICIES", "Eligibility Policies", "/CRM/EligibilityPolicies", EligibilityRead, null, true, "List", 170,
