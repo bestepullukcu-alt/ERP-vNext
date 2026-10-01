@@ -140,3 +140,21 @@ KORU/YAPMA: Web/Platform/Auth DOKUNMA; HTML render YOK; İçerik Seti/SB-2 davra
 DOĞRULA (E2): cd C:\tmp\kp-3; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban 2167/0/5; bilinen sıra flake'i hariç); dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 368); build 0 hata. Yeni testler: render (onaysız 409, idempotent, onay kodu, içerik: dal-öncelikli + iddia metni + MLR turu, %PDF), artifact okuma (revizyondan, başka tenant 404), yayın ön koşulları (her kod), SoD yayınlayan=gönderen 403, yayın etkisi (published, donma, önceki inactive, previous_path_in_use + aşama adları), idempotent yayın, geri çekme (reason_required, path_in_use 409 + adlar, inactive), kullanım okuması, eski yol publish korunur, SB-2 testleri yeşil. Sabotaj: SoD yayın + iddia kullanılabilirlik ön koşulu + path_in_use testleri kırmızıya dönmeli. Commit ("feat(crm): WP-KP-3 — knowledge path render, release, withdrawal, usage" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: eski sürümü inactive yapmak V-P10/sürüm kurallarıyla çelişiyorsa ya da FU01 ContentMessagingArtifacts Bilgi Yolu revizyonunu sahip öğe olarak kabul etmiyorsa DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-01) — **ACCEPTED (E2)**
+- **Commit:** ajan `ca7bfb12` → `test/crm-content-visit-e2e` üzerine rebase (REQ-WCN-01 doküman commit'inden sonra) → fast-forward. 14 dosya, yalnız CrmService.
+- **Diff (K13 okuma):**
+  - **Yeni `Path/Release/`:** kurallar, handler'lar, sözleşmeler, renderer arayüzü.
+  - **`KnowledgePathReleaseRules.CanRelease`:** yayınlayan ≠ gönderen (`CreatedBy` ve `ReviewRound.SubmittedBy`, kişi bazında) — tek nokta.
+  - **`MigraDocPdf` ortak yardımcı:** set renderer'ı ona geçti, set çıktısı değişmedi.
+  - **SB-2 üreticisi** ortak kuralları çağırıyor (+22 satır).
+  - **Class-map'ler** KP-2'den mevcut.
+- **CT testleri:** CRM **2186/0/5** (2167 + 19), Web **368/0**.
+- **CT sabotajı:** `CanRelease` her zaman true → `KnowledgePathRelease` 1 kırmızı. Kod geri alındı. Ajan: SoD + iddia kapısı (2) + `path_in_use`.
+- **DUR yok:**
+  - FU01 sahip tipini doğrulamıyor (revizyon id kabul);
+  - eski sürümü `inactive` yapmak V-P10 ile çelişmiyor.
+- **Ajanın bulup düzelttiği hata:** `previous_path_in_use` yalnız **sürüme sabitlenmiş** aşamaları saymalı. "En son yayın" politikalı aşamalar da uyarı üretiyordu; düzeltildi. Geri çekme ve SB-2 davranışı aynı.
+- **E4:** KP-2-CFG + KP-UI-2 sonrası CT.
