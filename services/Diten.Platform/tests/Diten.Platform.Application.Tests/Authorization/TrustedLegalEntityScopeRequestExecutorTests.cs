@@ -77,7 +77,8 @@ public sealed class TrustedLegalEntityScopeRequestExecutorTests
     }
 
     [Fact]
-    public async Task Duplicate_or_missing_credential_headers_are_401_before_JWT()
+    // The MISSING header (and each of the three, not only the id) is in TrustedLegalEntityScopeRequestExecutorRefusalTests.
+    public async Task A_duplicated_credential_id_header_is_401_before_JWT()
     {
         var order = new List<string>(); var context = Context(ValidJson()); context.Request.Headers[TrustedLegalEntityScopeRequestExecutor.CredentialIdHeader] = new[] { "a", "b" };
         var result = await new TrustedLegalEntityScopeRequestExecutor(Credential(order).Object, Jwt(order, ["mdm.gskus.read"]).Object, new TenantContext())

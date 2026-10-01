@@ -41,6 +41,10 @@ public sealed class WorkflowProductIdentityWorkItemContractTests
         // BL-437 (main) — WorkItemProjectionService.ArrivalReasonFor maps it from the approval source context;
         // null only when the owner sent no context. Mapped, not absent.
         nameof(WorkItemProjectionDto.ArrivalReason),
+        // Same rule (WP-CL-BE-3, main): the source's second line and chips come from the approval source context —
+        // null only when the owner sent none. Mapped, not absent.
+        nameof(WorkItemProjectionDto.Summary),
+        nameof(WorkItemProjectionDto.Tags),
         nameof(WorkItemProjectionDto.SlaState),
         nameof(WorkItemProjectionDto.ClosedAt)
     };
@@ -61,11 +65,9 @@ public sealed class WorkflowProductIdentityWorkItemContractTests
         nameof(WorkItemProjectionDto.TaskType),
         nameof(WorkItemProjectionDto.Pool),
         nameof(WorkItemProjectionDto.BusinessContext),
-        nameof(WorkItemProjectionDto.Summary),
         nameof(WorkItemProjectionDto.StartAt),
         nameof(WorkItemProjectionDto.EstimateHours),
         nameof(WorkItemProjectionDto.SpentHours),
-        nameof(WorkItemProjectionDto.Tags),
         nameof(WorkItemProjectionDto.Personal),
         nameof(WorkItemProjectionDto.Watchers),
         nameof(WorkItemProjectionDto.DelegationAllowed),

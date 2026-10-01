@@ -24,7 +24,7 @@ namespace Diten.Platform.Application.Tests;
 public sealed class BackgroundJobHandlerRegistrationTests
 {
     [Fact]
-    public void Every_background_job_handler_in_the_application_assembly_is_registered_by_AddApplication()
+    public void Every_background_job_handler_in_the_application_assembly_is_registered_exactly_where_it_belongs()
     {
         var application = new ServiceCollection();
         application.AddApplication();

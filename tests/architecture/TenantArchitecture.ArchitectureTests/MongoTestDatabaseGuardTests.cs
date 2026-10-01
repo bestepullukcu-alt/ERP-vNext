@@ -99,9 +99,13 @@ public class MongoTestDatabaseGuardTests
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs",
         // Same category, product-five takeover (2026-10-01): both name a database per run ONLY inside a mongod the
         // fixture itself starts on a free loopback port and stops on dispose (AuditIntentTemporalMongoFixture /
-        // AuditOutboxTemporalReplicaSetFixture: OwnedMongoProcess, own --dbpath under the temp directory). They
-        // need a private server because the subject is the server's own shape — a standalone that must refuse
-        // transactions, a replica set that must accept them — which the shared instance cannot be both of.
+        // AuditOutboxTemporalReplicaSetFixture: OwnedMongoProcess, own --dbpath under the temp directory).
+        // The Platform file needs a private server because its subject is the server's own shape — a standalone
+        // that must refuse transactions, a replica set that must accept them — which the shared instance cannot be
+        // both of. The MDM file's subject is NOT the server (it starts the API host without startup maintenance); it
+        // borrows the same owned standalone, so its per-run names live and die inside that process and never reach
+        // the shared mongod. CONTROL TOWER accepted both entries on those terms (2026-10-01): the rule this list
+        // guards is "no database per run on the SHARED instance", and neither file puts one there.
         // ⚠ One caveat, recorded rather than hidden: the Platform fixture uses DITEN_FU02_REPLICA_MONGO instead of
         // its own replica set when that variable is set. Pointing it at the shared mongod would put the per-run
         // databases there; nothing in this repository sets it.

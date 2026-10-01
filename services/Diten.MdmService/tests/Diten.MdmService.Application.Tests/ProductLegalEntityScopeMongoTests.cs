@@ -217,7 +217,12 @@ public sealed class ProductLegalEntityScopeMongoTests
         Assert.False(ambiguous.Succeeded);
         Assert.True(ambiguous.WriteOutcomeAmbiguous);
         Assert.Equal(0, unchanged!.Version);
-        Assert.Single(unchanged.ScopePeriods);
+        // An End adds no period, so the count alone cannot tell a mutated policy from an untouched one: the period
+        // must still be OPEN.
+        var untouched = Assert.Single(unchanged.ScopePeriods);
+        Assert.Null(untouched.EndCommandId);
+        Assert.Null(untouched.EffectiveToUtc);
+        Assert.Null(untouched.EndedAtUtc);
 
         var afterRepository = scope.PolicyRepositoryWithExecutors(
             operation => operation(),

@@ -22,6 +22,10 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     //   SetAccountKindCommandHandler UpdateForTenantAsync                                        (account kind, 7e22cb103)
     //   DataSeeder  BulkWriteAsync 3->6, rpCol.InsertOneAsync 11->17, IncrementAsync 3->4, + col.UpdateOneAsync
     //               (catalog/export-grant/scope seeds added on main)
+    // The AddPersistence fingerprint pinned in Bootstrap_WhenOperationalPathExists_… moved in the same round
+    // (F318BCF7… -> 447B2703…), for three changes that are all main's: GuidSerializerRegistration.EnsureStandard(),
+    // the IUserListReader registration, and the mock-user seed becoming opt-in. Nothing in it is from this branch.
+    // The DataSeeder `col.UpdateOneAsync` row is BL-411's scope-correction write (TenantRouteScopeCorrections).
     // TWO ROWS ARE DELIBERATELY NOT ADDED and keep this test red until somebody decides them:
     //   LocalTenantAdminPasswordResetController|IUserRepository|_users.UpdateForTenantAsync — Codex's Development-only
     //     reset endpoint, itself still "to be removed or decided" (merge commit aec10604a);

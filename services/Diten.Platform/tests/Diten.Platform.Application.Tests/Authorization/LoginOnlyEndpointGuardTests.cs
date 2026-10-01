@@ -69,7 +69,10 @@ public sealed class LoginOnlyEndpointGuardTests
             "Test-only probe for [RequiresModule]+[RequiresFeature]; answers 404 outside Development/Test."
     };
 
-    /// <summary>Anonymous controllers. Each must sit under /api/internal (bypass path, API key checked inside).</summary>
+    /// <summary>
+    /// Anonymous controllers. Each must sit under /api/internal (bypass path) and check its caller INSIDE: an internal API
+    /// key, or — the two trusted-source executors, see the note in the list — a service credential and a token.
+    /// </summary>
     private static readonly HashSet<string> AnonymousInternalControllers = new(StringComparer.Ordinal)
     {
         "InternalAuditController",
@@ -85,17 +88,26 @@ public sealed class LoginOnlyEndpointGuardTests
         "InternalTenantResolveController",
         "InternalTenantStatusController",
         /*
-         * ⚠ DELIBERATELY NOT LISTED (2026-10-01, product-five takeover) — and Every_anonymous_action_is_an_allow_listed_…
-         * stays RED for them until the proof below exists:
-         *   InternalLegalEntityScopeResolutionController.Resolve   (TrustedLegalEntityScopeRequestExecutor)
-         *   InternalTrustedSourceAuditIntentController.Accept      (TrustedSourceAuditIntentRequestExecutor)
-         * Both HAVE a gate in code (credential headers + user JWT + exact pair; a named-scheme service token). What
-         * is missing is the test that the EXECUTOR refuses when that gate says no. Measured by sabotage: with
-         * `if (!credential.Authenticated)` disabled, and separately with the IsAuthenticated/IsAuthorized refusals
-         * removed, not one test in the executor, controller, authenticator or security classes went red (0/38 and
-         * 0/187). Every executor test mocks the authenticator as "authenticated". A controller enters this list
-         * only when removing its refusal turns a NAMED test red.
+         * Product-five takeover (2026-10-01). These two are anonymous to the FRAMEWORK and gated by their executor,
+         * not by an API key. They were kept OFF this list — and the test below red — until removing each refusal
+         * turned a NAMED test red; before that, with `if (!credential.Authenticated)` disabled and with the
+         * IsAuthenticated / IsAuthorized refusals removed, not one test went red (0/38 and 0/187).
+         *
+         *   InternalLegalEntityScopeResolutionController.Resolve — caller: MDM. Gate: three credential headers exactly
+         *     once → the service credential authenticates → a valid USER token, authorized, with tenant and subject →
+         *     the exact module/permission pair. Proof: TrustedLegalEntityScopeRequestExecutorRefusalTests (missing and
+         *     duplicated header, unauthenticated / forbidden credential, no user token, unauthorized user, no tenant,
+         *     no subject) + TrustedLegalEntityScopeRequestExecutorTests (pair mismatch).
+         *   InternalTrustedSourceAuditIntentController.Accept — caller: MDM. Gate: exactly one Authorization, no legacy
+         *     authority header → a token valid under the named trusted-service scheme → authorized, with a tenant →
+         *     the body's tenant equals the token's. Proof: TrustedSourceAuditIntentExecutorRefusalTests (not a valid
+         *     service token, not authorized, no tenant) + TrustedSourceAuditIntentSecurityTests (header shape, tenant
+         *     mismatch, unavailable validator).
+         * CT sabotage, each refusal removed in turn: Q1–Q5, all red on a named test.
+         * A controller enters this list only on those terms.
          */
+        "InternalLegalEntityScopeResolutionController",
+        "InternalTrustedSourceAuditIntentController",
         "InternalVerifiedMarketReferenceDataController"
     };
 
