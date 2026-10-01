@@ -28,7 +28,7 @@ public sealed class InventoryReservationRepository : IInventoryReservationReposi
         _reservations = database.GetCollection<InventoryReservation>(InventoryCollections.Reservations);
         _tenantId = tenantContext.TenantId;
         _legalEntityId = tenantContext.LegalEntityId;
-        _operations = new ReservationPositionOperations(database, _tenantId, _legalEntityId);
+        _operations = new ReservationPositionOperations(database, _tenantId, _legalEntityId, tenantContext.LegalEntitySource);
     }
 
     public async Task<InventoryReservation?> FindByIdempotencyKeyAsync(string idempotencyKey, CancellationToken cancellationToken = default)

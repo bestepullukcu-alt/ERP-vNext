@@ -47,7 +47,7 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         _sequences = database.GetCollection<BsonDocument>(InventoryCollections.Sequences);
         _tenantId = tenantContext.TenantId;
         _legalEntityId = tenantContext.LegalEntityId;
-        _reservations = new ReservationPositionOperations(database, _tenantId, _legalEntityId);
+        _reservations = new ReservationPositionOperations(database, _tenantId, _legalEntityId, tenantContext.LegalEntitySource);
     }
 
     // ── reads ─────────────────────────────────────────────────────────────────────────────────────────────

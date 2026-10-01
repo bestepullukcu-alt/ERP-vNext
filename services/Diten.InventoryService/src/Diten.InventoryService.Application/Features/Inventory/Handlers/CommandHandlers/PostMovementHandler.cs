@@ -101,7 +101,7 @@ public sealed class PostMovementHandler : IRequestHandler<PostMovementCommand, R
         var posting = new LedgerPosting(
             transaction,
             LedgerLegs.For(transaction),
-            NewAudit(transaction),
+            NewAudit(transaction, _tenantContext.LegalEntitySource),
             NewOutbox(transaction));
 
         var result = await _ledger.PostAsync(posting, cancellationToken);
@@ -233,7 +233,7 @@ public sealed class PostMovementHandler : IRequestHandler<PostMovementCommand, R
         CreatedBy = _tenantContext.UserId
     };
 
-    private static InventoryAuditRecord NewAudit(InventoryTransaction transaction) => new()
+    private static InventoryAuditRecord NewAudit(InventoryTransaction transaction, string leSource) => new()
     {
         Id = Guid.NewGuid(),
         CreatedAt = transaction.CreatedAt,
@@ -250,6 +250,7 @@ public sealed class PostMovementHandler : IRequestHandler<PostMovementCommand, R
         SourceModule = transaction.SourceModule,
         SourceDocumentId = transaction.SourceDocumentId,
         SourceSystem = transaction.SourceSystem,
+        LeSource = leSource,
         OccurredAt = transaction.CreatedAt
     };
 

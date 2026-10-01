@@ -25,6 +25,8 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
 
     public StubLocationMaster Locations { get; } = new();
 
+    public StubLegalEntityMaster LegalEntities { get; } = new();
+
     /// <summary>Host environment; "Testing" unless a test needs another one.</summary>
     public string HostEnvironment { get; init; } = "Testing";
 
@@ -45,6 +47,11 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
         {
             services.AddSingleton<IProductMasterClient>(Products);
             services.AddSingleton<ILocationMasterClient>(Locations);
+            services.AddSingleton<ILegalEntityMasterClient>(sp =>
+            {
+                LegalEntities.HttpContextAccessor = sp.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>();
+                return LegalEntities;
+            });
         });
     }
 

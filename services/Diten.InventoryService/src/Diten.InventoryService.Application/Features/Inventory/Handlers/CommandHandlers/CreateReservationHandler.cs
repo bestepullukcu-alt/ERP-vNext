@@ -88,6 +88,7 @@ public sealed class CreateReservationHandler : IRequestHandler<CreateReservation
                 Status = ReservationStatus.Active,
                 ActorUserId = reservation.CreatedBy,
                 CorrelationId = reservation.CorrelationId,
+                LeSource = _tenantContext.LegalEntitySource,
                 OccurredAt = now
             },
             new InventoryReservationOutboxMessage

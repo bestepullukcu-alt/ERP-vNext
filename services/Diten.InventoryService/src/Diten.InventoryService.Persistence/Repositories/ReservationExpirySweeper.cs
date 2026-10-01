@@ -55,7 +55,7 @@ public sealed class ReservationExpirySweeper : IReservationExpirySweeper
                 Guid.Parse(id["item"].AsString),
                 Guid.Parse(id["sku"].AsString),
                 Enum.Parse<SkuLevel>(id["level"].AsString));
-            var operations = new ReservationPositionOperations(_database, tenant, legalEntity);
+            var operations = new ReservationPositionOperations(_database, tenant, legalEntity, leSource: null); // system actor: no request, no LE source
 
             using var session = await _client.StartSessionAsync(cancellationToken: cancellationToken);
             expired += await session.WithTransactionAsync(

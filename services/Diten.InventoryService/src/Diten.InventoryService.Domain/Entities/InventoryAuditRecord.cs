@@ -36,5 +36,11 @@ public sealed class InventoryAuditRecord : EntityBase
 
     public string? SourceSystem { get; set; }
 
+    /// <summary>
+    /// Where the legal entity of this row came from (W-0173-02): <c>token</c> or <c>header-unverified-membership</c>;
+    /// null for a system actor (expiry sweeper) and for rows written before W-0173-02.
+    /// </summary>
+    public string? LeSource { get; set; }
+
     public DateTimeOffset OccurredAt { get; set; }
 }

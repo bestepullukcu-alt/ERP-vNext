@@ -9,6 +9,7 @@ public sealed class TenantContext : ITenantContext
     private Guid _tenantId;
     private Guid _legalEntityId;
     private Guid _userId;
+    private string _legalEntitySource = LegalEntitySources.Token;
 
     public Guid TenantId => IsResolved ? _tenantId : throw Unresolved();
 
@@ -16,18 +17,26 @@ public sealed class TenantContext : ITenantContext
 
     public Guid UserId => IsResolved ? _userId : throw Unresolved();
 
+    public string LegalEntitySource => IsResolved ? _legalEntitySource : throw Unresolved();
+
     public bool IsResolved { get; private set; }
 
-    public void SetScope(Guid tenantId, Guid legalEntityId, Guid userId)
+    public void SetScope(Guid tenantId, Guid legalEntityId, Guid userId, string legalEntitySource = LegalEntitySources.Token)
     {
         if (tenantId == Guid.Empty || legalEntityId == Guid.Empty || userId == Guid.Empty)
         {
             throw new ArgumentException("Tenant, legal entity and user must be non-empty.");
         }
 
+        if (legalEntitySource is not (LegalEntitySources.Token or LegalEntitySources.HeaderUnverifiedMembership))
+        {
+            throw new ArgumentException($"Unknown legal-entity source '{legalEntitySource}'.", nameof(legalEntitySource));
+        }
+
         _tenantId = tenantId;
         _legalEntityId = legalEntityId;
         _userId = userId;
+        _legalEntitySource = legalEntitySource;
         IsResolved = true;
     }
 

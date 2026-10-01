@@ -43,6 +43,7 @@ public static class DependencyInjection
         var upstream = configuration.GetSection(UpstreamServicesOptions.SectionName).Get<UpstreamServicesOptions>() ?? new UpstreamServicesOptions();
         var productMaster = RequireAbsolute(upstream.ProductMasterBaseUrl, "ProductMasterBaseUrl");
         var locationMaster = RequireAbsolute(upstream.LocationMasterBaseUrl, "LocationMasterBaseUrl");
+        var legalEntityMaster = RequireAbsolute(upstream.LegalEntityMasterBaseUrl, "LegalEntityMasterBaseUrl");
         var timeout = TimeSpan.FromSeconds(upstream.TimeoutSeconds > 0 ? upstream.TimeoutSeconds : 5);
 
         services.AddTransient<ForwardCallerHeadersHandler>();
@@ -58,6 +59,14 @@ public static class DependencyInjection
                 http.Timeout = timeout;
             })
             .AddHttpMessageHandler<ForwardCallerHeadersHandler>();
+        // W-0173-02: MDM legal-entity master through the Gateway, caller token forwarded; membership answers cached <= 60 s.
+        services.AddHttpClient<ILegalEntityMasterClient, LegalEntityMasterHttpClient>(http =>
+            {
+                http.BaseAddress = legalEntityMaster;
+                http.Timeout = timeout;
+            })
+            .AddHttpMessageHandler<ForwardCallerHeadersHandler>();
+        services.AddMemoryCache();
 
         return services;
     }

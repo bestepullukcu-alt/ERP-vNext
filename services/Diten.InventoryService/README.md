@@ -63,6 +63,7 @@ Configuration (all overridable by environment variables, `__` as separator):
 | `Mongo:ConnectionString` / `Mongo:DatabaseName` | secret-validated at startup (`ValidateRequiredSecrets`) |
 | `JwtSettings:Secret` / `PreviousSecrets` / `Issuer` / `Audience` | same validation as every service (`JwtSecretRotationResolver`, `JwtValidationDefaults.ClockSkew`) |
 | `Inventory:Upstream:ProductMasterBaseUrl` / `LocationMasterBaseUrl` / `TimeoutSeconds` | consumed masters; unreachable → 503, never a silent pass |
+| `Inventory:Upstream:LegalEntityMasterBaseUrl` | MDM legal-entity master through the Gateway (`…/api/legal-entities/`), W-0173-02: verifies the `X-Legal-Entity-Id` of a token without a `legal_entity_id` claim; unreachable → 503 `LEGAL_ENTITY_MASTER_UNAVAILABLE` |
 | `Inventory:Policy:EnforceLocationLegalEntityMatch` | default `true`; the host refuses to start with `false` outside the `Mock` environment |
 | `Inventory:Reservations:SweeperEnabled` / `SweepIntervalSeconds` | periodic expiry sweeper (default on, 60 s); expiry also runs inside every create / release / decrease of the SKU |
 

@@ -14,6 +14,9 @@ public sealed class UpstreamServicesOptions
     /// <summary>LOCATION v1 root, e.g. <c>http://127.0.0.1:4011/</c>.</summary>
     public string LocationMasterBaseUrl { get; set; } = string.Empty;
 
+    /// <summary>MDM legal-entity master root through the Gateway, e.g. <c>http://localhost:5000/api/legal-entities/</c> (W-0173-02).</summary>
+    public string LegalEntityMasterBaseUrl { get; set; } = string.Empty;
+
     /// <summary>Per-call timeout; an upstream slower than this is treated as unavailable (fail-closed).</summary>
     public int TimeoutSeconds { get; set; } = 5;
 }

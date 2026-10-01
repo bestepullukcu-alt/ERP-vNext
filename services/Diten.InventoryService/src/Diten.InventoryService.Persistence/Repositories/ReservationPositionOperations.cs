@@ -30,8 +30,9 @@ internal sealed class ReservationPositionOperations
     private readonly IMongoCollection<InventoryReservationOutboxMessage> _outbox;
     private readonly Guid _tenantId;
     private readonly Guid _legalEntityId;
+    private readonly string? _leSource;
 
-    public ReservationPositionOperations(IMongoDatabase database, Guid tenantId, Guid legalEntityId)
+    public ReservationPositionOperations(IMongoDatabase database, Guid tenantId, Guid legalEntityId, string? leSource)
     {
         if (tenantId == Guid.Empty || legalEntityId == Guid.Empty)
         {
@@ -44,6 +45,7 @@ internal sealed class ReservationPositionOperations
         _outbox = database.GetCollection<InventoryReservationOutboxMessage>(InventoryCollections.Outbox);
         _tenantId = tenantId;
         _legalEntityId = legalEntityId;
+        _leSource = leSource;
     }
 
     // ── position ──────────────────────────────────────────────────────────────────────────────────────────
@@ -294,6 +296,7 @@ internal sealed class ReservationPositionOperations
             ActorUserId = actor,
             CorrelationId = correlationId,
             TransactionId = transactionId,
+            LeSource = _leSource,
             OccurredAt = now
         };
         var outbox = new InventoryReservationOutboxMessage
