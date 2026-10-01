@@ -159,7 +159,9 @@ if (phase == "flows")
         var av = await Get(b, $"/api/inventory/availability?itemId={Item}", steps, "tenant B GET /availability for tenant A's item");
         var bal = await Get(b, $"/api/inventory/balance?itemId={Item}", steps, "tenant B GET /balance");
         var txs = await Get(b, "/api/inventory/transactions", steps, "tenant B GET /transactions");
-        Check("AC10 tenant B availability → 404", av.Status == 404);
+        // S2 / FU-S1-01: an item PRODUCT-MASTER knows but tenant B has no stock of → 200 with zeros (was 404 in S1).
+        Check("AC10 tenant B availability → 200 zeros (FU-S1-01), never A's 100",
+            av.Status == 200 && av.Body?["onHand"]?.GetValue<string>() == "0.000" && av.Body?["available"]?.GetValue<string>() == "0.000");
         Check("AC10 tenant B balance rows empty", bal.Status == 200 && bal.Body?["rows"]?.AsArray().Count == 0);
         Check("AC10 tenant B transactions empty", txs.Status == 200 && txs.Body?["items"]?.AsArray().Count == 0);
         var crossLe = await Get(a, $"/api/inventory/balance?itemId={Item}", steps, "tenant A with a foreign X-Legal-Entity-Id",
@@ -172,6 +174,86 @@ if (phase == "flows")
         Check("AC10 tenantId in query → 400", query.Status == 400);
         Check("AC10 tenant A still has exactly its 1 transaction", Counts(a)["inventory_transactions"]!.GetValue<int>() == 1);
         Write("r-ac10-isolation.json", new JsonObject { ["tenantA"] = a.ToJson(), ["tenantB"] = b.ToJson(), ["steps"] = steps, ["tenantBPersisted"] = Persisted(b) });
+    }
+
+    // ── S2 reservations (WP-0173-S2 §R) ───────────────────────────────────────────────────────────────────
+    {
+        var t = NewTenant("s2");
+        tenants["s2"] = t.ToJson();
+        var steps = new JsonArray();
+        await Post(t, Movement("OPENING_BALANCE", "100", $"probe-{run}-s2-open", to: true, lot: "lot-777"), steps, "S2 opening +100");
+
+        var reserve = await Reserve(t, Reservation($"probe-{run}-s2-rsv-a", "30", "SO-900", "1"), steps, "AC-R1 reserve 30 (MOD-0172 SO-900/1)");
+        var reservationA = reserve.Body?["reservationId"]?.GetValue<string>();
+        Check("AC-R1 reserve → 201 availableAfter 70.000 etag W/\"1\"",
+            reserve.Status == 201 && reserve.Body?["availableAfter"]?.GetValue<string>() == "70.000" && reserve.Body?["etag"]?.GetValue<string>() == "W/\"1\"");
+        var av1 = await Get(t, $"/api/inventory/availability?skuId={Sku}", steps, "AC-R1 GET /availability");
+        Check("AC-R1 availability reserved 30.000 / available 70.000",
+            av1.Body?["reserved"]?.GetValue<string>() == "30.000" && av1.Body?["available"]?.GetValue<string>() == "70.000");
+
+        var countsBefore = Counts(t);
+        var over = await Reserve(t, Reservation($"probe-{run}-s2-rsv-over", "80", "SO-901", "1"), steps, "AC-R2 reserve 80 > 70");
+        Check("AC-R2 over-reserve → 422 INSUFFICIENT_AVAILABLE (available 70.000 / requested 80.000)",
+            over.Status == 422 && over.Body?["error"]?["code"]?.GetValue<string>() == "INSUFFICIENT_AVAILABLE"
+            && over.Body?["error"]?["details"]?["available"]?.GetValue<string>() == "70.000"
+            && over.Body?["error"]?["details"]?["requested"]?.GetValue<string>() == "80.000");
+
+        var guarded = await Post(t, Movement("GOODS_ISSUE_SALES", "75", $"probe-{run}-s2-issue-other", from: true, lot: "lot-777"), steps,
+            "AC-R4 issue 75 from another source while 30 reserved");
+        Check("AC-R4 reserved stock protected → 422 INSUFFICIENT_STOCK", guarded.Status == 422
+            && guarded.Body?["error"]?["code"]?.GetValue<string>() == "INSUFFICIENT_STOCK");
+        Check("AC-R2/R4 refusals wrote nothing", countsBefore.ToJsonString() == Counts(t).ToJsonString());
+
+        var consume = Movement("GOODS_ISSUE_SALES", "20", $"probe-{run}-s2-consume", from: true, lot: "lot-777");
+        consume["sourceModule"] = "MOD-0172";
+        consume["sourceDocumentId"] = "SO-900";
+        consume["sourceLineId"] = "1";
+        var consumed = await Post(t, consume, steps, "AC-R5 issue 20 with the reservation's source (consumption)");
+        var docA = ReservationDoc(reservationA!);
+        Check("AC-R5 consumption → 201, reservation ACTIVE with 10 remaining",
+            consumed.Status == 201 && docA["Status"].AsString == "Active" && docA["RemainingQuantity"].ToDecimal() == 10m);
+
+        var stale = await Release(t, reservationA!, "W/\"1\"", steps, "AC-R6 release with stale ETag W/\"1\"");
+        Check("AC-R6 stale ETag → 409 RESERVATION_CONFLICT", stale.Status == 409
+            && stale.Body?["error"]?["code"]?.GetValue<string>() == "RESERVATION_CONFLICT");
+        var released = await Release(t, reservationA!, "W/\"2\"", steps, "AC-R6 release with current ETag W/\"2\"");
+        Check("AC-R6 current ETag → 200 RELEASED availableAfter 80.000", released.Status == 200
+            && released.Body?["status"]?.GetValue<string>() == "RELEASED" && released.Body?["availableAfter"]?.GetValue<string>() == "80.000");
+
+        var keep = await Reserve(t, Reservation($"probe-{run}-s2-rsv-b", "25", "SO-902", "1"), steps, "reserve 25 kept ACTIVE across the restart");
+        Check("reserve B → 201 availableAfter 55.000", keep.Status == 201 && keep.Body?["availableAfter"]?.GetValue<string>() == "55.000");
+        var replay = await Reserve(t, Reservation($"probe-{run}-s2-rsv-b", "25", "SO-902", "1"), steps, "AC-R8 replay of reserve B");
+        Check("AC-R8 replay → 200 same reservationId", replay.Status == 200
+            && replay.Body?["reservationId"]?.GetValue<string>() == keep.Body?["reservationId"]?.GetValue<string>());
+
+        var position = PositionDoc(t);
+        Check("AC-R9 position AvailableOnHand 80 / Reserved 25",
+            position["AvailableOnHand"].ToDecimal() == 80m && position["Reserved"].ToDecimal() == 25m);
+        var audit = mongo.GetCollection<BsonDocument>("inventory_audit")
+            .Find(new BsonDocument { { "TenantId", t.TenantId.ToString() }, { "ReservationId", new BsonDocument("$exists", true) } }).ToList();
+        Check("AC-R14 audit Created×2 + PartiallyConsumed + Released",
+            audit.Count(a => a["Action"].AsString == "InventoryReservationCreated") == 2
+            && audit.Any(a => a["Action"].AsString == "InventoryReservationPartiallyConsumed")
+            && audit.Any(a => a["Action"].AsString == "InventoryReservationReleased"));
+        Check("AC-R14 consumption audit carries the movement's correlation id",
+            audit.Any(a => a["Action"].AsString == "InventoryReservationPartiallyConsumed" && a["CorrelationId"].AsString == consumed.CorrelationId));
+        Check("AC-R14 reservation outbox events Pending",
+            mongo.GetCollection<BsonDocument>("inventory_outbox")
+                .Find(new BsonDocument { { "TenantId", t.TenantId.ToString() }, { "EventName", "InventoryReservationChanged" } }).ToList()
+                .All(o => o["Status"].AsString == "Pending"));
+
+        Write("r-s2-reservations.json", new JsonObject { ["tenant"] = t.ToJson(), ["steps"] = steps, ["persisted"] = Persisted(t) });
+    }
+
+    // ── FU-S1-01 at runtime: a known SKU without stock → 200 zeros (Prism PRODUCT-MASTER) ─────────────────
+    {
+        var t = NewTenant("fu");
+        tenants["fu"] = t.ToJson();
+        var steps = new JsonArray();
+        var av = await Get(t, $"/api/inventory/availability?itemId={Item}&skuId={Sku}&skuLevel=Lsku", steps, "FU-S1-01 known SKU, no stock");
+        Check("AC-R11 known SKU without stock → 200 zeros", av.Status == 200
+            && av.Body?["onHand"]?.GetValue<string>() == "0.000" && av.Body?["available"]?.GetValue<string>() == "0.000");
+        Write("r-s2-fu-s1-01.json", new JsonObject { ["tenant"] = t.ToJson(), ["steps"] = steps });
     }
 
     File.WriteAllText(statePath, tenants.ToJsonString(json));
@@ -191,7 +273,15 @@ else if (phase == "after-restart")
         av.Body?["onHand"]?.GetValue<string>() == "100.000" && av.Body?["available"]?.GetValue<string>() == "100.000");
     Check("AC3 after restart availability 80.000", av3.Body?["available"]?.GetValue<string>() == "80.000");
     Check("AC3 after restart 2 immutable transactions", tx3.Body?["total"]?.GetValue<int>() == 2);
-    Write("r-restart-read.json", new JsonObject { ["steps"] = steps, ["ac2Persisted"] = Persisted(a2) });
+    var s2 = Tenant.FromJson(tenants["s2"]!.AsObject());
+    var avS2 = await Get(s2, $"/api/inventory/availability?skuId={Sku}", steps, "S2 after restart GET /availability");
+    Check("S2 after restart reserved 25.000 / available 55.000 / onHand 80.000",
+        avS2.Body?["reserved"]?.GetValue<string>() == "25.000" && avS2.Body?["available"]?.GetValue<string>() == "55.000"
+        && avS2.Body?["onHand"]?.GetValue<string>() == "80.000");
+    var position = PositionDoc(s2);
+    Check("S2 after restart position (rebuilt at startup) AvailableOnHand 80 / Reserved 25",
+        position["AvailableOnHand"].ToDecimal() == 80m && position["Reserved"].ToDecimal() == 25m);
+    Write("r-restart-read.json", new JsonObject { ["steps"] = steps, ["ac2Persisted"] = Persisted(a2), ["s2Persisted"] = Persisted(s2) });
 }
 else
 {
@@ -239,6 +329,40 @@ async Task<Exchange> Post(Tenant t, JsonObject body, JsonArray steps, string lab
     return await Send(t, request, steps, label, body, headers);
 }
 
+JsonObject Reservation(string key, string quantity, string sourceDocumentId, string sourceLineId) => new()
+{
+    ["idempotencyKey"] = key,
+    ["itemId"] = Item,
+    ["skuId"] = Sku,
+    ["skuLevel"] = "Lsku",
+    ["quantity"] = quantity,
+    ["reservationType"] = "SALES_ORDER",
+    ["sourceModule"] = "MOD-0172",
+    ["sourceDocumentId"] = sourceDocumentId,
+    ["sourceLineId"] = sourceLineId,
+    ["priority"] = 10
+};
+
+async Task<Exchange> Reserve(Tenant t, JsonObject body, JsonArray steps, string label)
+{
+    using var request = new HttpRequestMessage(HttpMethod.Post, "/api/inventory/reservations") { Content = JsonContent.Create(body) };
+    request.Headers.Add("Idempotency-Key", body["idempotencyKey"]!.GetValue<string>());
+    return await Send(t, request, steps, label, body, []);
+}
+
+async Task<Exchange> Release(Tenant t, string reservationId, string ifMatch, JsonArray steps, string label)
+{
+    using var request = new HttpRequestMessage(HttpMethod.Post, $"/api/inventory/reservations/{reservationId}/release");
+    request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
+    return await Send(t, request, steps, label, null, []);
+}
+
+BsonDocument ReservationDoc(string id)
+    => mongo.GetCollection<BsonDocument>("inventory_reservations").Find(new BsonDocument("_id", id)).Single();
+
+BsonDocument PositionDoc(Tenant t)
+    => mongo.GetCollection<BsonDocument>("inventory_sku_positions").Find(new BsonDocument("TenantId", t.TenantId.ToString())).Single();
+
 async Task<Exchange> Get(Tenant t, string url, JsonArray steps, string label, params (string Name, string Value)[] headers)
 {
     using var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -282,7 +406,8 @@ string Token(Tenant t)
         new("tenant_id", t.TenantId.ToString()),
         new("legal_entity_id", t.LegalEntityId.ToString()),
         new("permission", "supplychain.inventory.read"),
-        new("permission", "supplychain.inventory.movements.post")
+        new("permission", "supplychain.inventory.movements.post"),
+        new("permission", "supplychain.inventory.reservations.manage")
     };
     var token = new JwtSecurityToken("diten-auth-service", "diten-erp", claims, DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow.AddMinutes(15),
         new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)), SecurityAlgorithms.HmacSha256));
@@ -299,7 +424,7 @@ JsonNode Doc(BsonDocument doc) => JsonNode.Parse(doc.ToJson(new JsonWriterSettin
 JsonObject Persisted(Tenant t)
 {
     var result = new JsonObject();
-    foreach (var name in new[] { "inventory_transactions", "inventory_balances", "inventory_audit", "inventory_outbox" })
+    foreach (var name in new[] { "inventory_transactions", "inventory_balances", "inventory_audit", "inventory_outbox", "inventory_reservations", "inventory_sku_positions" })
     {
         var docs = mongo.GetCollection<BsonDocument>(name).Find(new BsonDocument("TenantId", t.TenantId.ToString())).ToList();
         result[name] = new JsonArray(docs.Select(d => (JsonNode?)Doc(d)).ToArray());
