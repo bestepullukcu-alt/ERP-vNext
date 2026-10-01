@@ -181,3 +181,26 @@ KORU/YAPMA: CRM/Platform/Auth DOKUNMA; İddialar ekranları + kanıt modalı dav
 DOĞRULA (E2): cd C:\tmp\kp-ui-2; dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 368); Web build 0 hata; node --check temiz. Yeni testler: proxy allowlist (yeni uçlar + artifact bodiless guard), inceleyici görünümü route + düz 403, kişi bazlı karar gizleme (gönderen↔aday), ret yorumu istemci doğrulaması, KP-2+KP-3 hata kodları → metin, sihirbaz adım kapısı, L10n 7 dil + JS↔resx, ham kod görünmemesi. Sabotaj: inceleyici izin kapısı + gönderen karar gizlemesi testleri kırmızıya dönmeli. Commit ("feat(crm): WP-KP-UI-2 — knowledge path studio compliance, MLR + reviewer view, revisions, output & release, preview, usage, legacy wizard" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: oturumdaki kullanıcı kimliği Web'de güvenilir okunamıyorsa ya da KP-2/KP-3 DTO'larında ekran için gerekli alan yoksa (CRM'e dokunmadan) DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-01) — **ACCEPTED (E2)**
+- **Commit:** `01168702` (`wp/kp-ui-2`) → `test/crm-content-visit-e2e` fast-forward. 26 dosya, yalnız `frontend/`. Ana checkout temiz: ajanın önizleme denemesi iz bırakmamış.
+- **Diff (K13 okuma):**
+  - **Yeni dosyalar:** `KnowledgePathsController.Review.cs` + `KnowledgePathStudioReview.cs` (saf kurallar);
+  - **İnceleyici rotası:** `/CRM/KnowledgePaths/{pathId}/Review/{revisionId}`, `RequirePage(Read)`;
+  - **Ekran parçaları:** `_ReviewTabs`, `_SubmitModal`, `_LegacyWizard`;
+  - **Betikler:** `workspace-review.js`, `review.js`, `legacy-wizard.js` (HTML üretimi `esc()` ile);
+  - `_BindChainModal` kaldırıldı (sihirbaz yerini aldı).
+- **CT testleri:** Web **399/0** (368 + 31). `node --check` 6 dosya temiz.
+- **CT sabotajı:** inceleyici görünümü izin kapısı kaldırıldı → `KnowledgePathReview` 1 kırmızı. Kod geri alındı. Ajan: gönderen karar gizlemesi (2 kırmızı).
+- **DUR yok:**
+  - kişi kimliği Web'de CRM ile aynı sırayla okunuyor (`sub` → NameIdentifier → e-posta → ad);
+  - bekleyen adım / adaylar Platform şablonundan okunuyor (İddialar V2 deseni);
+  - kişi adları geçmişin görünen adından geliyor, kimlik numarası gösterilmiyor.
+- **Ajan notları (kabul):**
+  - canlı tarayıcı doğrulaması yapılamadı (önizleme aracı yalnız ana checkout'u çalıştırıyor) → E4 CT;
+  - kanıt paneli `crm.claim.read` ister (yoksa "yetkiniz yok");
+  - sihirbazın 1. adımı zinciri hemen bağlar, ülke / dil o anda kilitlenir;
+  - liste ekranı yeni sapma eklemedi (12 bilinen sapma aynen).
+- **E4:** fleet restart + KP-2-CFG şablonları + TPL-ALMIBA-01 yayında → uçtan uca (kurgu → gönder → sema yorumla onaylar → çıktı → sema yayınlar).
