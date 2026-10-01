@@ -108,3 +108,50 @@ KORU/YAPMA: kod değişikliği YOK; CLAIM-* şablonlarına DOKUNMA; RBAC'a yazma
 DOĞRULA (E4): 6 şablon yayında + tanımlar doğru + yetki durumu raporu + CLAIM-* değişmedi. Rapor: şablon kodu → definition id + sürüm tablosu. Commit ("chore(crm): WP-KP-2-CFG — knowledge path MLR workflow templates (6 countries) + rbac check" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: KP-2 şablon kodu ayarı KP-MLR-{CC} değilse ya da Platform requestedObjectType'ı kayıtlı listeden doğruluyor ve crm.knowledge-path-revision kayıtlı değilse DUR + raporla.
 ```
+
+---
+
+## §36.2 Uygulama raporu (owner, 2026-10-01) — canlı 97c5
+
+**Ön koşul ve DUR kontrolü:**
+- **Şablon kodu:** KP-2'de `KnowledgePathReviewDefaults.TemplateCodeFormat = "KP-MLR-{0}"`; `appsettings*.json` içinde `Crm:KnowledgePaths:Workflow` override'ı yok. Nesne tipi `crm.knowledge-path-revision`.
+- **Nesne tipi doğrulaması:** Platform kodu `requestedObjectType`'ı hiçbir yerde okumuyor ya da doğrulamıyor; tanım JSON'unda serbest veri. Kayıtlı bir nesne tipi listesi yok.
+- İki DUR koşulu da tetiklenmedi.
+- **Oturum:** kullanıcı yerleşik tarayıcıda giriş yaptı; işlemler ayrı sekmede, aynı kaynaktaki `/Platform/Workflow/api/…` proxy'si üzerinden yapıldı. Sayfaya mock / harness eklenmedi, örnek başlatılmadı.
+- **Başlangıç durumu:** `KP-MLR-*` yoktu. `CLAIM-*` (7) şablonlarının parmak izi alındı (şablon + sürüm dokümanlarının SHA-256'sı).
+
+### 1. Şablonlar — 6/6 Published
+- Kaynak: canlı `CLAIM-LOCAL-MLR-TR` v1 tanımı. Değişenler yalnız kod, ad ve `requestedObjectType`.
+- İşlem: `POST definitions` (201) → `POST definitions/{id}/publish` (200), hepsi ilk denemede.
+
+| Kod | Ad | Template id | Aktif sürüm (v1) | Durum |
+|---|---|---|---|---|
+| `KP-MLR-TR` | Bilgi Yolu — Türkiye MLR onayı | `b8ecd4c2-5384-4209-8e35-5b25304fd896` | `43e2d5d0-365d-459a-82a3-c6cb8318ed16` | Published, değişmez |
+| `KP-MLR-BY` | Bilgi Yolu — Belarus MLR onayı | `4e194186-f220-4915-8204-562e667f181b` | `282fb5c9-f6a4-4562-8bd8-131a89dd98cf` | Published, değişmez |
+| `KP-MLR-UZ` | Bilgi Yolu — Özbekistan MLR onayı | `4b7d4a23-824a-4c88-a538-50815240a60e` | `70067af0-ae2d-423a-9527-eb726f89a6c8` | Published, değişmez |
+| `KP-MLR-TM` | Bilgi Yolu — Türkmenistan MLR onayı | `f27b9cf1-312b-435f-abe3-3fbd61547f8e` | `067edaeb-134e-444b-823f-0f23068b2d0e` | Published, değişmez |
+| `KP-MLR-GE` | Bilgi Yolu — Gürcistan MLR onayı | `a9390574-51a9-4189-8750-8f54b0a217ac` | `9d552c94-5830-44e2-8960-9a2634606d87` | Published, değişmez |
+| `KP-MLR-AZ` | Bilgi Yolu — Azerbaycan MLR onayı | `967ed5cc-cddc-44fc-a2ac-0fe2d8b839d5` | `01f220d5-a277-4093-a694-01b9d1022c5b` | Published, değişmez |
+
+Yayınlayan: oturumdaki kullanıcı (`bestepullukcu@gmail.com`). `publishReason` = WP-KP-2-CFG.
+
+### 2. Duman (salt okuma)
+- `GET definitions`: 6 `KP-MLR-*` kodu `Published`. Her detayda `activePublishedVersionId` = yayınlı v1.
+- Yayınlı JSON (6 şablonda aynı): `requestedObjectType: crm.knowledge-path-revision`, tek aşama `mlr` ("MLR İnceleme"), sıralı adımlar:
+  - `medical` [MED-DIR, MED-SPC], 4320 / 2880 → MED-DIR;
+  - `legal` [LEG-CNS, LEG-SPC], 4320 / 2880 → LEG-CNS;
+  - `regulatory` [REG-MGR, REG-SPC], 4320 / 2880 → REG-MGR.
+  - `commentRequired: false` (ret yorumu zorunluluğu CRM karar ucunda, KP-2).
+- `requestedObjectType` dışında `CLAIM-LOCAL-MLR-TR` tanımıyla birebir aynı (JSON karşılaştırması).
+- **`CLAIM-*` değişmedi:** 7 şablonun parmak izi önce ve sonra aynı.
+- Örnek başlatılmadı (E4'te CT).
+
+### 3. Yetki — tam, script gerekmedi
+97c5 `Admin` rolünde (`6a315467-7d80-4ad8-bd76-78f8f762fe8a`) salt okuma kontrolü:
+- `crm.knowledge.path.read / manage / publish`: **var**;
+- `platform.workflow.instances.start / view`, `tasks.approve / reject / cancel / delegate / request-info`, `definitions.view / manage / publish`, `transitions.evaluate`, `escalations.*`: **var**.
+
+Eksik yok; `grant_knowledge_path_rbac_97c5.py` yazılmadı, RBAC'a hiçbir şey yazılmadı.
+
+### 4. Hata / sapma
+Konsol hatası yok. Ağda 4xx / 5xx yok. Kod değişikliği yok.
