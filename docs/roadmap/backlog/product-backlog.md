@@ -7153,6 +7153,74 @@ Gelecek regresyon riski: 🟢 (anahtarlar sabit).
 
 ---
 
+### BL-490
+
+**Görev Merkezi onay öğeleri: adım adı, aday pozisyonlar, isteğe bağlı onay notu, karar sonrası listeye dönüş (REQ-WCN-01)**
+
+DURUM: KAPANDI (kod) — `5bb8dae82` (WP-WCN-APPROVAL-UX-01; teslim `67b2e0b5c`, CT testleri `7f53db6fa`, CT düzeltmeleri `3ee1442e8`) · CANLI DOĞRULAMA: BEKLİYOR · SAHİP: CT · İSTEYEN: CRM İddialar ekibi (2026-09-29) · KAYIT: 2026-10-01
+
+MOD-0023 onay öğesi artık adımın görünen adını rozet olarak taşıyor (W-1), `commentRequired` değilken Onayla penceresinde isteğe bağlı not
+soruyor (W-2), kişi adlandırılmamış adımda aday pozisyon adlarını gösteriyor ("Onay bekleyen: …", W-3) ve detaydan verilen karardan sonra
+"bulunamadı" yerine listeye dönüyor (W-4). Alanların üçü de telde isteğe bağlı; başka sağlayıcıların çıktısı değişmedi. 7 dil.
+Bağımsız gözden geçirme dört kusur buldu, hepsi düzeltildi: devredilmiş (ve yükseltildikten sonra devredilmiş) görev artık pozisyon adı
+yazmıyor (kural görevin güncel atama anlık görüntüsünden okunuyor, bilinmeyen kaynak = kimse adlandırılmaz); yarım gelen listede ve tek öğe
+okuması 404 dışında başarısızken listeye dönülmüyor; başarı bildirimi 20 sn'de eskiyor ve dönüş adresi başka bir detay sayfası olamıyor.
+CT sabotajı: 16/16 adı yazılı testte kırmızı. Testler: WorkAggregation 229/229, tarayıcı dosyası 43/43.
+
+Canlı doğrulama neden bekliyor: geliştirme verisinde adım adı ve pozisyon adayı taşıyan şablon yok (tek açık onay `task-review`, adsız adım).
+W-1 ve W-3 canlıda CRM'in MLR şablonlarıyla (`CLAIM-CORE-MLR`) doğrulanacak; W-2 ve W-4 geliştirme ortamında.
+Kapsam dışı bırakılanlar: onay öğelerinde Etkinlik akışı (CRM kendi onay geçmişinde history ucundan gösterir).
+Ürün devralma dalına not: oradaki `trusted_runtime_candidates` kaynağı birleşince sınıflandırma testi kırmızı verir; "adımın kendi adayı"
+kümesine eklenecek.
+Gelecek regresyon riski: 🟢 (eklemeli, isteğe bağlı alanlar).
+
+---
+
+### BL-491
+
+**Görev Merkezi'nden "Devret" hiç çalışmıyor — kişi seçici yok**
+
+DURUM: AÇIK · SAHİP: CT (Görev Merkezi) · BULAN: WP-WCN-APPROVAL-UX-01 ajan ölçümü + bağımsız gözden geçirme · KAYIT: 2026-10-01
+
+MOD-0023 onay öğesinde Devret penceresi düz bir onay; kimi seçeceğini sormuyor, `targetPrincipalId` gönderilmiyor ve dağıtıcı isteği
+`PayloadInvalid` ile reddediyor (WorkflowApprovalWorkItemActionDispatcher). Yani eylem sunuluyor ama her seferinde hata veriyor; bu iş
+paketinden önce de böyleydi. İş: Devret penceresine kişi seçici (MOD-0023'ün kabul edeceği adaylar; sunucunun doğruladığı listeyle aynı
+olmalı) ve isteğe bağlı not; not bayrağı (`acceptsNote`) o zaman Devret'e geri verilir. O zamana kadar bayrak bilerek kapalı.
+Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-492
+
+**MOD-0023: "aynı kişi aynı kayıtta birden fazla adımı onaylayamaz" — şablon bazında seçenek, varsayılan kapalı**
+
+DURUM: AÇIK (acil değil) · SAHİP: CT (iş akışı motoru) · İSTEYEN: CRM İddialar ekibi (2026-10-01) · KAYIT: 2026-10-01
+
+Canlıda tek kullanıcı üç MLR pozisyonunu tutup Medikal, Hukuk ve Ruhsat adımlarının üçünü de onayladı. Motor yalnız "başlatan kendi kaydını
+onaylayamaz" kuralını uyguluyor. CRM kuralı istiyor ama şablon bazında açılabilir ve varsayılanı KAPALI olarak: bugün organizasyonlarında bir
+kişinin birden fazla MLR işlevi üstlenmesi kabul edilmiş, MLR şablonlarında (`CLAIM-*`, `KP-MLR-*`) şimdilik kapalı kalacak; işlevler ayrı
+kişilere geçince açacaklar. Karşılaştırma: Veeva Vault'ta bir katılımcı sonraki adımlardan dışlanabiliyor; SAP ve Oracle'da "aynı onaylayan
+ardışık adımlarda atlanır / engellenir" kuralı adım bazında ayarlanıyor. Tasarımda dikkat: kural karar anında uygulanır (aday listesinden
+düşürmek yetmez; devir ve yükseltme yolları da aynı kişiye varabilir) ve reddedilen karar kendi neden koduyla döner.
+Gelecek regresyon riski: 🟡 (karar yoluna dokunur; varsayılan kapalı olduğu sürece mevcut akışlar değişmez).
+
+---
+
+### BL-493
+
+**Ortak bildirim (toast) mesajı HTML olarak basıyor — kullanıcının yazdığı metni alıntılayan her bildirim bir enjeksiyon kapısı**
+
+DURUM: AÇIK · SAHİP: CT (ortak ön yüz) · BULAN: WP-WCN-APPROVAL-UX-01 bağımsız gözden geçirme, CT kodda doğruladı · KAYIT: 2026-10-01
+
+`window.showToast` (Views/Shared/_GlobalNotification.cshtml) mesajı Notyf'e olduğu gibi veriyor; Notyf `message.innerHTML = options.message`
+yazıyor. Görev Merkezi "X uygulandı: {görev başlığı}" gibi bildirimlerde başkasının yazdığı başlığı alıntılıyor; başlığa işaretleme yazan
+biri, o görevde işlem yapan kişinin tarayıcısında betik çalıştırabilir. Platform genelinde ve bu iş paketinden eski. Ölçüm: çağıranların
+hiçbiri mesajda bilerek HTML göndermiyor (52 doğrudan çağrı tarandı); Content-Security-Policy başlığı yok. Düzeltme kaynağında: `showToast`
+mesajı Notyf'e vermeden önce metne çevirir; koruma testi + canlı sayfada kanıt.
+Gelecek regresyon riski: 🟢 (HTML'e yaslanan çağıran yok).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
