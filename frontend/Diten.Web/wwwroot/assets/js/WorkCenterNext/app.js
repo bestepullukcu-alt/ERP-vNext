@@ -6678,10 +6678,11 @@
             // The block's mark comes back with the feed re-read below (BL-471); only the toasts are this answer's.
             await refreshCalendar();
             /*
-             * …but a TOAST is markup: showToast (Notyf) writes its message as innerHTML. A task or meeting title is
-             * text somebody typed, so every title that reaches a toast is escaped first (v2 F5).
+             * A task or meeting title is text somebody typed. The shared toast turns its whole message into text at
+             * its own door (BL-493, _GlobalNotification.cshtml), so the titles go in AS TYPED — escaping here too
+             * would put `&lt;` and `&amp;` on the reader's screen. (v2 F5 used to escape at each call site.)
              */
-            toast(tf('CalPlanSaved', esc(item.title)));
+            toast(tf('CalPlanSaved', item.title));
             /*
              * WP-UI-MEETINGS-CALENDAR-01 (D2) — a cut block with NO estimate has nothing "left": the engine answers
              * `remainingMinutes: null`, and "0 min left" (measured live) said something false. Only an estimate
@@ -6691,14 +6692,14 @@
                 toast(data.remainingMinutes == null ? t('CalTruncatedNoEstimate') : tf('CalTruncated', data.remainingMinutes), 'warning');
             }
             warnings
-                .map((w) => global.TasksApi?.planWarningMessage?.(Object.assign({}, w, { title: esc(w.title || '') })) || esc(w.code))
+                .map((w) => global.TasksApi?.planWarningMessage?.(w) || w.code)
                 .forEach((message) => toast(message, 'info'));
             return { outcome: 'done' };
         }
 
         safeRevert(revert);
         if (result.reasonCode === 'TASK_PLAN_CONFLICT' && result.data && result.data.conflict) {
-            toast(tf('CalConflictWith', esc(result.data.conflict.title), conflictRange(result.data.conflict)), 'error');
+            toast(tf('CalConflictWith', result.data.conflict.title, conflictRange(result.data.conflict)), 'error');
             return { outcome: 'refused', reasonCode: result.reasonCode };
         }
         if (global.TasksApi.isConcurrencyConflict(result)) {
