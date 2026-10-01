@@ -119,3 +119,25 @@ KORU/YAPMA: Bilgi Yolu (KP-1/2/3), iddia onayı, BE-6 yayın kapısı, yolculuk/
 DOĞRULA (E2): cd C:\tmp\kp-4; CRM testleri 0 kırmızı (taban 2186/0/5; bilinen sıra flake'i hariç); dotnet test frontend/Diten.Web.Tests → 0 kırmızı (taban 399); Platform ilgili + Auth testleri yeşil; build'ler 0 hata; node --check temiz. Yeni/güncel testler: set yazma uçları yok, set okuma uçları (eski doküman + LegacyScope), iddia kullanımında knowledge-path öğesi (arşivli yol görünmez) + ContentSet öğesi yok, ClaimListCounts yol sayar, KP-3 render/yayın testleri yeşil (store taşındı), manifest'te CONTENT_SETS yok, /CRM/ContentSets yönlendirmesi, L10n 7 dil. Sabotaj: kullanımda yol kaynağı + CONTENT_SETS manifest testi kırmızıya dönmeli. Commit ("refactor(crm): WP-KP-4 — retire content sets + scopes (SB-2 producer), claim usage counts knowledge paths" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: IContentArtifactStore dışında Bilgi Yolu'nun set koduna bağımlı başka parçası çıkarsa (taşı, belirsizse DUR) ya da set anahtarlarını Platform/Auth'ta başka bir modül kullanıyorsa DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-01) — **ACCEPTED (E2)**
+- **Commit:** ajan `f51ddcce` → `test/crm-content-visit-e2e` üzerine rebase (SB-3 tasarım / doküman commit'lerinden sonra) → fast-forward. 89 dosya (+794 / −8469; 48 dosya silindi).
+- **Diff (K13 okuma):**
+  - Artifact deposu ortak yere taşındı (`Application.Common.Artifacts`, `Infrastructure.Artifacts`). Bilgi Yolu render / yayın (KP-3) testleri yeşil.
+  - Set ve revizyon okuma uçları `[Obsolete]` + yalnız okuma izni.
+  - Kapsam okuma uçları kalktı; repository / class-map (LegacyScope) duruyor.
+  - İddia kullanımı + `ClaimListCounts` set yerine `KnowledgePath.Claims` sayıyor.
+  - `KnowledgeContent.ContentSetId` (dil varyantı) dokunulmamış.
+  - `CONTENT_SETS` manifest'ten çıktı (MC-6 budama). Auth set anahtarları "deprecated".
+  - `/CRM/ContentSets*` → 301 `/CRM/KnowledgePaths`.
+  - İddialar hızlı bakışına "Nerede kullanılıyor" listesi (`esc()` ile, 7 dil).
+- **CT testleri:** CRM **2103/0/5** (set testleri kaldırılan yüzeyle düştü), Web **396/0** (10 eski set testi − / 7 yeni +). Ajan: Auth 1019/0, Platform manifest 3/3.
+- **CT sabotajı:** `ClaimListCounts` yol kaynağı kapatıldı → 2 kırmızı. Kod geri alındı. Ajan: kullanım okuması (2) + manifest (1).
+- **Ajan notları (kabul):**
+  - `KnowledgeStudioOrigin` için `[Obsolete]` niteliği yerine XML notu (6 CS0618 uyarısı önlendi);
+  - Web'de içerik detay sayfası olmadığı için kullanım listesindeki içerik öğesi bağlantısız;
+  - yeni içerik formu `assembled-presentation` / `content-studio` önermiyor.
+- **Açık (kullanıcı kararı):** İddialar liste ekranının altın şablondan **15 sapması** (veri modu, `_TableSkeleton`, `PageDescription`, personalization başlığı, Sıfırla durumu, `getAuthHeaders`, `window.API`, toplu seçim / işlem / silme). Ajan önceden var olduğunu düşünüyor, tabanda koşmadı. CT önerisi: "bilinen sapma".
+- **E4:** CT, fleet restart sonrası (menüde İçerik Setleri / Kapsamları yok; `/CRM/ContentSets` yönlendirme; iddia kullanımında Bilgi Yolu).
