@@ -185,6 +185,22 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
         return await Collection.Find(filter).ToListAsync(ct);
     }
 
+    // BL-484 — the same rule as GetByIdAsync (tenant + IsDeleted=false + id), for several ids in one read.
+    public async Task<IReadOnlyList<WorkflowInstance>> ListByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken ct = default)
+    {
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.In(x => x.Id, ids));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
     public Task<WorkflowInstance?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
     {
         var filter = Builders<WorkflowInstance>.Filter.And(

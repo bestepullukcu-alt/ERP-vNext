@@ -272,9 +272,24 @@ public sealed class TestRecipients : ITaskNotificationRecipientResolver
     /// <summary>How many people AuthService was asked about — the cost of a run (M1).</summary>
     public int Lookups => Volatile.Read(ref _lookups);
 
+    private int _calls;
+    private int _largestCall;
+
+    /// <summary>BL-488 — how many QUESTIONS AuthService was asked (each one walks the tenant's users there), and the
+    /// largest number of people in one of them.</summary>
+    public int Calls => Volatile.Read(ref _calls);
+    public int LargestCall => Volatile.Read(ref _largestCall);
+
     public Task<IReadOnlyList<TaskNotificationRecipient>> ResolveAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
     {
         Interlocked.Add(ref _lookups, userIds.Count);
+        Interlocked.Increment(ref _calls);
+        int seen;
+        while (userIds.Count > (seen = Volatile.Read(ref _largestCall))
+               && Interlocked.CompareExchange(ref _largestCall, userIds.Count, seen) != seen)
+        {
+        }
+
         return Resolve(userIds);
     }
 
@@ -307,6 +322,9 @@ public sealed class CapturingDispatch : INotificationEventDispatchAdapter
     }
     public bool Throw { get; set; }
 
+    /// <summary>BL-488 — addresses whose dispatch throws: "the send failed for this ONE person".</summary>
+    public HashSet<string> ThrowFor { get; } = [];
+
     public IReadOnlyList<NotificationEventDispatchRequest> Requests
     {
         get { lock (_requests) { return _requests.ToList(); } }
@@ -329,7 +347,7 @@ public sealed class CapturingDispatch : INotificationEventDispatchAdapter
             _tokens.Add((request.EventCode, ct.CanBeCanceled));
         }
 
-        if (Throw)
+        if (Throw || request.To.Any(to => ThrowFor.Contains(to.Email)))
         {
             throw new InvalidOperationException("test: the notification pipeline is down");
         }
@@ -453,7 +471,10 @@ public sealed class TimeEntryHost : IDisposable
                 services.AddScoped<ITaskItemRepository, TaskItemRepository>();
                 services.AddScoped<IPositionRepository, PositionRepository>();
                 services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
-                services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
+                // As production registers it: ONE repository behind both the unit and the reporting-graph interface.
+                services.AddScoped<OrganizationUnitRepository>();
+                services.AddScoped<IOrganizationUnitRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
+                services.AddScoped<IOrganizationReportingGraphRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
                 services.AddScoped<ITenantRegistryRepository, TenantRegistryRepository>();
                 services.AddScoped<IConsumedEventRepository, ConsumedEventRepository>();
                 services.AddScoped<ConsumedEventStore>();
