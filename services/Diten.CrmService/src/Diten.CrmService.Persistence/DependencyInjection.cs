@@ -197,6 +197,8 @@ public static class DependencyInjection
         // reports bindings only: no MicroTarget, no VisitFrequencyPolicy, no CampaignTarget is ever produced here.
         services.AddScoped<IStrategyTemplateRepository, StrategyTemplateRepository>();
         services.AddScoped<Application.Features.StrategyTemplate.Binding.StrategyTemplateBindingValidator>();
+        // WP-SB-3a — the read side of a product line's journey (name / status / hints); read-only.
+        services.AddScoped<Application.Features.StrategyTemplate.Binding.StrategyTemplateLineJourneyReader>();
         // WP-ST-SCOPE - the play scope write gate. Scoped like every other write-path component; it holds the shared
         // read-only reference/MDM seams (reused from the campaign/cycle-period path) and no repository. The scope-options
         // handler is a MediatR handler, auto-registered by assembly scan; its seams are already registered above/in
@@ -933,6 +935,8 @@ public static class DependencyInjection
                 map.AutoMap();
                 map.GetMemberMap(l => l.LineId).SetSerializer(stringGuid);
                 map.GetMemberMap(l => l.GlobalProductId).SetSerializer(stringGuid);
+                // WP-SB-3a — the line's journey: string-Guid like its siblings, or a by-journey filter matches nothing.
+                map.GetMemberMap(l => l.JourneyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             });
         }
         if (!BsonClassMap.IsClassMapRegistered(typeof(StrategyTemplateSkuAllocation)))

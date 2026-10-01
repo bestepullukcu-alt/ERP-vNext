@@ -73,7 +73,17 @@ public sealed class UpdateCycleCapacityHandler : IRequestHandler<UpdateCycleCapa
             return Response<bool>.Fail(CycleCapacityValidation.ToErrors(resolved), resolved.StatusCode);
         }
 
+        // WP-SB-3a — an omitted ceiling keeps the stored one (3 on a pre-SB-3a row); an authored one is range-checked.
+        var maxPromo = request.MaxPromoProducts ?? entity.EffectiveMaxPromoProducts();
+        var maxNonPromo = request.MaxNonPromoProducts ?? entity.EffectiveMaxNonPromoProducts();
+        if (CycleCapacityValidation.ValidateMaxProducts(maxPromo, maxNonPromo) is { } maxFailure)
+        {
+            return Response<bool>.Fail(CycleCapacityValidation.ToErrors(maxFailure), maxFailure.StatusCode);
+        }
+
         entity.CalendarCountryCode = validation.CalendarCountryCode;
+        entity.MaxPromoProducts = maxPromo;
+        entity.MaxNonPromoProducts = maxNonPromo;
         entity.DailyWorkMinutes = request.DailyWorkMinutes;
         entity.PromoProductTime = request.PromoProductTime;
         entity.NonPromoProductTime = request.NonPromoProductTime;

@@ -83,6 +83,18 @@ public sealed class CycleCapacity : EntityBase
     /// </summary>
     public int? BetweenVisitTimeMinutes { get; set; }
 
+    /// <summary>
+    /// WP-SB-3a (DESIGN-SB-3 §3.5) — at most how many PROMO products one visit tells (1..10). Nullable on purpose: a row
+    /// written before SB-3a has none and reads as <see cref="CycleCapacityLimits.DefaultMaxProductsPerVisit"/> (3) through
+    /// <see cref="EffectiveMaxPromoProducts"/>; nothing is backfilled. Not part of <see cref="MinutesPerVisit"/> yet
+    /// (SB-3b ties the visit minutes to the product count).
+    /// </summary>
+    public int? MaxPromoProducts { get; set; }
+
+    /// <summary>WP-SB-3a — at most how many NON-PROMO products one visit tells (1..10); they come from the strategy
+    /// template's non-promo lines. Absent on an old row = 3 (<see cref="EffectiveMaxNonPromoProducts"/>).</summary>
+    public int? MaxNonPromoProducts { get; set; }
+
     public string? Description { get; set; }
 
     /// <summary>
@@ -116,6 +128,12 @@ public sealed class CycleCapacity : EntityBase
 
     /// <summary>Minutes one visit consumes. The write path guarantees this is greater than zero.</summary>
     public int MinutesPerVisit() => PromoProductTime + NonPromoProductTime;
+
+    /// <summary>WP-SB-3a — the promo ceiling a reader applies (3 on a pre-SB-3a row).</summary>
+    public int EffectiveMaxPromoProducts() => MaxPromoProducts ?? CycleCapacityLimits.DefaultMaxProductsPerVisit;
+
+    /// <summary>WP-SB-3a — the non-promo ceiling a reader applies (3 on a pre-SB-3a row).</summary>
+    public int EffectiveMaxNonPromoProducts() => MaxNonPromoProducts ?? CycleCapacityLimits.DefaultMaxProductsPerVisit;
 
     /// <summary>Month rows in calendar order — over integers only, never over a DateTimeOffset (the parallel-array
     /// trap), and never over list position.</summary>
@@ -314,6 +332,9 @@ public static class CycleCapacityReasonCodes
     /// <summary>MOD-0155 FU06B — the between-visit buffer is outside its published range.</summary>
     public const string BetweenVisitTimeInvalid = "cycle_capacity_between_visit_time_invalid";
 
+    /// <summary>WP-SB-3a — a max promo / non-promo products per visit outside 1..10.</summary>
+    public const string MaxProductsOutOfRange = "max_products_out_of_range";
+
     public const string ConcurrencyConflict = "cycle_capacity_concurrency_conflict";
     public const string NotFound = "cycle_capacity_not_found";
 
@@ -323,7 +344,7 @@ public static class CycleCapacityReasonCodes
         VisitMinutesZero, PeriodClosed, PeriodNotFound, PinImmutable, CountryRequired, CountryUnknown,
         ReferenceSetUnpublished, DailyWorkMinutesInvalid, ActivityMinutesInvalid, DailySpendExceedsDay, MonthsRequired,
         MonthInvalid, MonthDuplicate, DeductionInvalid, MonthFteInvalid, DescriptionInvalid, BetweenVisitTimeInvalid,
-        ConcurrencyConflict, NotFound
+        MaxProductsOutOfRange, ConcurrencyConflict, NotFound
     };
 }
 
@@ -339,6 +360,13 @@ public static class CycleCapacityLimits
     /// <summary>MOD-0155 FU06B — the between-visit buffer. A four-hour gap between two visits is a scheduling error,
     /// not a buffer, so the ceiling is four hours.</summary>
     public const int MaxBufferMinutes = 240;
+
+    /// <summary>WP-SB-3a (DESIGN-SB-3 §3.5) — products told in ONE visit, per role: default 3 promo + 3 non-promo.</summary>
+    public const int DefaultMaxProductsPerVisit = 3;
+
+    public const int MinProductsPerVisit = 1;
+
+    public const int MaxProductsPerVisit = 10;
 
     public const int MinDailyWorkMinutes = 1;
     public const int MaxDailyWorkMinutes = 1440;

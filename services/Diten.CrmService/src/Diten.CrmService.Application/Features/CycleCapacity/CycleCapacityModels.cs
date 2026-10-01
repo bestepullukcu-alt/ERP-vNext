@@ -64,7 +64,10 @@ public sealed record CycleCapacityListItemDto(
     bool IsEditable,
     int Version,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    // WP-SB-3a — products per visit by role (3 / 3 on a pre-SB-3a row).
+    int MaxPromoProducts = CycleCapacityDefaultsView.MaxProducts,
+    int MaxNonPromoProducts = CycleCapacityDefaultsView.MaxProducts);
 
 public sealed record CycleCapacityListDto(IReadOnlyList<CycleCapacityListItemDto> Items, int TotalCount);
 
@@ -101,7 +104,16 @@ public sealed record CycleCapacityDetailDto(
     DateTimeOffset CreatedAt,
     string? CreatedBy,
     DateTimeOffset? UpdatedAt,
-    string? UpdatedBy);
+    string? UpdatedBy,
+    // WP-SB-3a — products per visit by role (3 / 3 on a pre-SB-3a row).
+    int MaxPromoProducts = CycleCapacityDefaultsView.MaxProducts,
+    int MaxNonPromoProducts = CycleCapacityDefaultsView.MaxProducts);
+
+/// <summary>WP-SB-3a — the default products-per-visit ceiling, usable as a DTO default value.</summary>
+public static class CycleCapacityDefaultsView
+{
+    public const int MaxProducts = Diten.CrmService.Domain.Entities.CycleCapacityLimits.DefaultMaxProductsPerVisit;
+}
 
 /// <summary>
 /// The pinned period, projected for display. A consumer may SHOW this and must never STORE it: copying a period's code

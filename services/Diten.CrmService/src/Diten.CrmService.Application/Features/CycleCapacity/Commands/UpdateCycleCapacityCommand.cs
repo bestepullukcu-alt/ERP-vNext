@@ -23,4 +23,8 @@ public sealed record UpdateCycleCapacityCommand(
     int? ExpectedVersion,
     // MOD-0155 FU06B — the between-visit buffer. Nullable and trailing: an omitting caller takes the configured
     // default, so existing positional callers compile unchanged.
-    int? BetweenVisitTimeMinutes = null) : IRequest<Response<bool>>;
+    int? BetweenVisitTimeMinutes = null,
+    // WP-SB-3a — products per visit by role; omitted = keep the stored value (a caller that does not know the fields,
+    // e.g. today's form, never resets them).
+    int? MaxPromoProducts = null,
+    int? MaxNonPromoProducts = null) : IRequest<Response<bool>>;

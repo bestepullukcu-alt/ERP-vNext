@@ -70,6 +70,8 @@ public sealed class CycleCapacityRuntimeTests
                     ReportDuration = source.ReportDuration,
                     QuizDuration = source.QuizDuration,
                     BetweenVisitTimeMinutes = source.BetweenVisitTimeMinutes,
+                    MaxPromoProducts = source.MaxPromoProducts,
+                    MaxNonPromoProducts = source.MaxNonPromoProducts,
                     Description = source.Description,
                     IsArchived = source.IsArchived,
                     Version = source.Version,
@@ -1720,5 +1722,74 @@ public sealed class CycleCapacityRuntimeTests
             CancellationToken.None);
         Assert.True(edited.IsSuccessful);
         Assert.Equal(30, h.Repo.Items[0].BetweenVisitTimeMinutes);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+    // WP-SB-3a — products per visit by role (DESIGN-SB-3 §3.5): default 3 + 3, 1..10, an old row reads 3 / 3, the visit
+    // minutes formula is untouched.
+    // ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task T72_Max_Products_Default_To_3_3_Round_Trip_And_Survive_An_Update_That_Omits_Them()
+    {
+        var h = Build(TenantA);
+        var periodId = Guid.NewGuid();
+        h.Periods.Periods.Add(Period(periodId));
+
+        var created = await h.Create.Handle(CreateCommand(periodId), CancellationToken.None);
+        Assert.True(created.IsSuccessful);
+        Assert.Equal((3, 3), (h.Repo.Items[0].MaxPromoProducts, h.Repo.Items[0].MaxNonPromoProducts));
+
+        var authored = await h.Update.Handle(
+            new UpdateCycleCapacityCommand(created.Data, "TR", 480, 15, 10, 60, 30, 10, null, TwoMonths(), 0, null, 4, 2),
+            CancellationToken.None);
+        Assert.True(authored.IsSuccessful);
+        var detail = (await h.GetById.Handle(new GetCycleCapacityByIdQuery(created.Data), CancellationToken.None)).Data!;
+        Assert.Equal((4, 2), (detail.MaxPromoProducts, detail.MaxNonPromoProducts));
+        Assert.Equal(25, detail.MinutesPerVisit);                // the visit minutes formula is unchanged
+
+        // A caller that does not know the fields (today's form) never resets them.
+        var omitted = await h.Update.Handle(
+            new UpdateCycleCapacityCommand(created.Data, "TR", 480, 15, 10, 60, 30, 10, null, TwoMonths(), 1, null),
+            CancellationToken.None);
+        Assert.True(omitted.IsSuccessful);
+        Assert.Equal((4, 2), (h.Repo.Items[0].MaxPromoProducts, h.Repo.Items[0].MaxNonPromoProducts));
+        var list = (await h.List.Handle(new GetCycleCapacityListQuery(null, null, false, null), CancellationToken.None)).Data!;
+        Assert.Equal((4, 2), (list.Items[0].MaxPromoProducts, list.Items[0].MaxNonPromoProducts));
+    }
+
+    [Theory]
+    [InlineData(0, 3)]
+    [InlineData(11, 3)]
+    [InlineData(3, 0)]
+    [InlineData(3, 11)]
+    public async Task T73_Max_Products_Outside_1_To_10_Are_400(int promo, int nonPromo)
+    {
+        var h = Build(TenantA);
+        var periodId = Guid.NewGuid();
+        h.Periods.Periods.Add(Period(periodId));
+
+        var response = await h.Create.Handle(
+            CreateCommand(periodId) with { MaxPromoProducts = promo, MaxNonPromoProducts = nonPromo }, CancellationToken.None);
+
+        Assert.Equal(400, response.StatusCode);
+        Assert.Contains(CycleCapacityReasonCodes.MaxProductsOutOfRange, response.Errors!);
+        Assert.Empty(h.Repo.Items);
+    }
+
+    [Fact]
+    public void T74_An_Old_Row_Without_The_Fields_Reads_3_3_And_Round_Trips()
+    {
+        Diten.CrmService.Persistence.DependencyInjection.EnsureClassMapsForTests();
+        var legacy = new CapacityEntity { MaxPromoProducts = null, MaxNonPromoProducts = null };
+        Assert.Equal((3, 3), (legacy.EffectiveMaxPromoProducts(), legacy.EffectiveMaxNonPromoProducts()));
+
+        var doc = MongoDB.Bson.BsonExtensionMethods.ToBsonDocument(new CapacityEntity { CalendarCountryCode = "TR", MaxPromoProducts = 5, MaxNonPromoProducts = 1 });
+        var back = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<CapacityEntity>(doc);
+        Assert.Equal((5, 1), (back.EffectiveMaxPromoProducts(), back.EffectiveMaxNonPromoProducts()));
+        doc.Remove(nameof(CapacityEntity.MaxPromoProducts));
+        doc.Remove(nameof(CapacityEntity.MaxNonPromoProducts));
+        var old = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<CapacityEntity>(doc);
+        Assert.Equal((3, 3), (old.EffectiveMaxPromoProducts(), old.EffectiveMaxNonPromoProducts()));
     }
 }

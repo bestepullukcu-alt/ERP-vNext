@@ -70,6 +70,14 @@ public sealed class CreateCycleCapacityHandler : IRequestHandler<CreateCycleCapa
             return Response<Guid>.Fail(CycleCapacityValidation.ToErrors(resolved), resolved.StatusCode);
         }
 
+        // WP-SB-3a — products per visit by role (default 3 / 3, 1..10).
+        var maxPromo = request.MaxPromoProducts ?? CycleCapacityLimits.DefaultMaxProductsPerVisit;
+        var maxNonPromo = request.MaxNonPromoProducts ?? CycleCapacityLimits.DefaultMaxProductsPerVisit;
+        if (CycleCapacityValidation.ValidateMaxProducts(maxPromo, maxNonPromo) is { } maxFailure)
+        {
+            return Response<Guid>.Fail(CycleCapacityValidation.ToErrors(maxFailure), maxFailure.StatusCode);
+        }
+
         // 1:1. Decided in the handler AND backed by a partial unique index: the index is the guarantee, the handler is
         // the readable error. A concurrent second create loses at the index rather than producing a second row.
         var existing = await _capacities.GetByCyclePeriodAsync(tenantId, request.CyclePeriodId, cancellationToken);
@@ -101,6 +109,8 @@ public sealed class CreateCycleCapacityHandler : IRequestHandler<CreateCycleCapa
             // FU06B — the between-visit buffer, resolved (payload or configured default) and range-checked by the write
             // validator. It is stored but never enters the capacity arithmetic.
             BetweenVisitTimeMinutes = validation.BetweenVisitTimeMinutes,
+            MaxPromoProducts = maxPromo,
+            MaxNonPromoProducts = maxNonPromo,
 
             // FU07 — the FTE now lives on each month and is stamped by the write validator, from the same configured
             // average. Nothing capacity-wide is written here any more.

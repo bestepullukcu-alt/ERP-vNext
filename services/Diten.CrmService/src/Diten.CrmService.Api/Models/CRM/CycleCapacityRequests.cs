@@ -42,6 +42,11 @@ public sealed class CreateCycleCapacityRequest
     /// the server's configured default rather than posting a silent 0; not part of a single visit's duration.</summary>
     public int? BetweenVisitTimeMinutes { get; set; }
 
+    /// <summary>WP-SB-3a — max promo / non-promo products per visit (1..10); omitted = 3.</summary>
+    public int? MaxPromoProducts { get; set; }
+
+    public int? MaxNonPromoProducts { get; set; }
+
     public string? Description { get; set; }
 
     /// <summary>One row per calendar month the period touches, each addressed by (Year, MonthNumber). There is no
@@ -64,6 +69,11 @@ public sealed class UpdateCycleCapacityRequest
     /// <summary>MOD-0155 FU06B — buffer minutes between two consecutive visits. Nullable: an omitted field takes the
     /// configured default.</summary>
     public int? BetweenVisitTimeMinutes { get; set; }
+
+    /// <summary>WP-SB-3a — max promo / non-promo products per visit (1..10); omitted = keep the stored value.</summary>
+    public int? MaxPromoProducts { get; set; }
+
+    public int? MaxNonPromoProducts { get; set; }
 
     public string? Description { get; set; }
     public List<CycleCapacityMonthRequest> Months { get; set; } = new();

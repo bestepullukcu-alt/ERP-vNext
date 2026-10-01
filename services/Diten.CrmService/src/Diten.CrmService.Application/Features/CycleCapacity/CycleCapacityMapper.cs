@@ -35,7 +35,9 @@ public static class CycleCapacityMapper
         IsEditable(period),
         c.Version,
         c.CreatedAt,
-        c.UpdatedAt);
+        c.UpdatedAt,
+        c.EffectiveMaxPromoProducts(),
+        c.EffectiveMaxNonPromoProducts());
 
     public static CycleCapacityDetailDto ToDetail(
         CapacityEntity c, CyclePeriodSnapshot? period, bool calendarCountryIsDerived) => new(
@@ -67,7 +69,9 @@ public static class CycleCapacityMapper
         c.CreatedAt,
         c.CreatedBy,
         c.UpdatedAt,
-        c.UpdatedBy);
+        c.UpdatedBy,
+        c.EffectiveMaxPromoProducts(),
+        c.EffectiveMaxNonPromoProducts());
 
     public static CycleCapacityMonthDto ToMonth(CycleCapacityMonth m) => new(
         m.Year, m.MonthNumber, m.MeetingDays, m.TrainingDays, m.VacationDays,

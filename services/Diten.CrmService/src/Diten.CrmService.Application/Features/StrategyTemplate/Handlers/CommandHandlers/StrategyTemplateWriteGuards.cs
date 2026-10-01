@@ -155,20 +155,29 @@ internal static class StrategyTemplateWriteGuards
             frequency.IntentNote ?? string.Empty
         });
 
-        var productPart = string.Join("|", products
-            .OrderBy(l => l.SortOrder).ThenBy(l => l.GlobalProductId)
-            .Select(l =>
-                $"{l.GlobalProductId:D}:{l.SkuAllocationMode}:"
-                + $"{l.LineWeightPercentage?.ToString("0.##", culture) ?? string.Empty}:{l.SortOrder}:{l.Notes}:"
-                + string.Join(",", l.SkuAllocations
-                    .OrderBy(a => a.SortOrder).ThenBy(a => a.GskuId)
-                    .Select(a => $"{a.GskuId:D}={a.Percentage.ToString("0.##", culture)}@{a.SortOrder}"))));
+        var productPart = ProductLinesSignature(products);
 
         var contentPart = string.Join("|", contents
             .OrderBy(c => c.SortOrder).ThenBy(c => c.ContentRefId)
             .Select(c => $"{c.ContentRefType}:{c.ContentRefId:D}:{c.SortOrder}:{c.Notes}"));
 
         return $"S[{segmentPart}] F[{frequencyPart}] P[{productPart}] C[{contentPart}]";
+    }
+
+    /// <summary>The product-line part of the signature. WP-SB-3a adds role + journey: changing either is a binding change
+    /// (refused on a frozen play, re-validated on a draft).</summary>
+    public static string ProductLinesSignature(IReadOnlyList<StrategyTemplateProductLine> products)
+    {
+        var culture = CultureInfo.InvariantCulture;
+        return string.Join("|", products
+            .OrderBy(l => l.SortOrder).ThenBy(l => l.GlobalProductId)
+            .Select(l =>
+                $"{l.GlobalProductId:D}:{l.SkuAllocationMode}:"
+                + $"{l.LineWeightPercentage?.ToString("0.##", culture) ?? string.Empty}:{l.SortOrder}:{l.Notes}:"
+                + $"{l.Role}:{l.JourneyId?.ToString("D")}:"
+                + string.Join(",", l.SkuAllocations
+                    .OrderBy(a => a.SortOrder).ThenBy(a => a.GskuId)
+                    .Select(a => $"{a.GskuId:D}={a.Percentage.ToString("0.##", culture)}@{a.SortOrder}"))));
     }
 
     public static string BindingSignature(TemplateEntity template)

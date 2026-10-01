@@ -102,6 +102,23 @@ public static class CycleCapacityValidation
                 $"BetweenVisitTimeMinutes must be between 0 and {CycleCapacityLimits.MaxBufferMinutes} minutes.",
                 CycleCapacityReasonCodes.BetweenVisitTimeInvalid);
 
+    /// <summary>WP-SB-3a — both per-visit product ceilings are within 1..10 (400 <c>max_products_out_of_range</c>).</summary>
+    public static Failure? ValidateMaxProducts(int maxPromoProducts, int maxNonPromoProducts)
+    {
+        foreach (var (field, value) in new[] { ("MaxPromoProducts", maxPromoProducts), ("MaxNonPromoProducts", maxNonPromoProducts) })
+        {
+            if (value < CycleCapacityLimits.MinProductsPerVisit || value > CycleCapacityLimits.MaxProductsPerVisit)
+            {
+                return new Failure(
+                    $"{field} must be between {CycleCapacityLimits.MinProductsPerVisit} and "
+                    + $"{CycleCapacityLimits.MaxProductsPerVisit}.",
+                    CycleCapacityReasonCodes.MaxProductsOutOfRange);
+            }
+        }
+
+        return null;
+    }
+
     public static Failure? ValidateDescription(string? description)
     {
         var value = Trim(description);
