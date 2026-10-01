@@ -377,6 +377,13 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
 - **Permission namespace (owner decision 2026-10-01):** `supplychain.inventory.*` → `inventory.*`
   (`inventory.stock.read`, `inventory.movements.create`, `inventory.reservations.manage`). Nothing was seeded, so no
   alias is needed; code/tests/docs rename = WP-0173-K1.
+- **WP-0173-K1 (agent PASS, pending CT, 2026-10-01)** — rename done in `services/Diten.InventoryService/**` (constants
+  `InventoryPermissions.Read` / `CreateMovements` / `ManageReservations`; every `[HasPermission]` uses them), tests,
+  runtime probe, README and the API reference; no alias. A token carrying only the old names is 403 on all 6 endpoints.
+  FU-S2-01: the startup gate logs the SKU-position groups the rebuild skipped for an incomplete scope (WARNING, with the
+  count, "never guessed, never deleted"); on a database whose name has no `test` / `tests` / `itest` segment (DB-010
+  test naming as practised in the repo) a count > 0 fails the gate (LogCritical, the host does not start). Unscoped
+  documents are never fixed or deleted. Evidence `docs/records/audits/2026-10/mod-0173-k1-evidence/`.
 
 - **WP-0173-S2 CT-ACCEPTED (2026-10-01)** — commits 6441bf25..b91bbba7; audit
   `docs/records/audits/2026-10/mod-0173-inventory-ledger-s2-audit-2026-10-01.md`. CT re-measured independently:
