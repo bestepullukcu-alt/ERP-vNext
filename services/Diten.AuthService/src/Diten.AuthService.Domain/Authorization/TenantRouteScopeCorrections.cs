@@ -6,11 +6,12 @@ namespace Diten.AuthService.Domain.Authorization;
 /// BL-411 (CT benchmark D3, 2026-09-15) — the ONLY sanctioned ROUTE-sourced PlatformAdmin → Tenant scope correction
 /// in AuthService.
 ///
-/// <para><b>The two paths, and no third (owner + CT, 2026-10-01).</b> This class is the only correction that LOWERS a
-/// row, and it is route-sourced: synced-only keys whose registered route is a tenant route. The only other way a
-/// platform key is Tenant is seed-sourced: <see cref="SeedOwnedTenantScopeKeys"/> — three Workflow execution keys the
-/// seed itself declares Tenant, which the catalog sync may not promote back. It lowers nothing. Outside these two
-/// there is no PlatformAdmin → Tenant path, and the list below (the two BL-411 keys) is unchanged by that decision.</para>
+/// <para><b>Where this sits (owner + CT, 2026-10-01).</b> This class is the only ROUTE-sourced lowering, and it exists
+/// for SYNCED-ONLY keys: rows the seed has no literal for, which the seed reconcile therefore cannot reach. A SEEDED
+/// key's scope is its seed literal, and the startup seed reconcile lowers (or raises) an existing row to it — the gate
+/// on that is <c>permission-scope-baseline.csv</c>. <see cref="SeedOwnedTenantScopeKeys"/> is a third, different thing:
+/// it lowers nothing; it is the one exception to the catalog sync's tie-break, so that three Workflow execution keys
+/// the seed declares Tenant are not promoted back. The list below (the two BL-411 keys) is unchanged by that decision.</para>
 ///
 /// <para><b>Why it exists.</b> <c>platform.tasks.checklist-templates.manage</c> and <c>platform.tasks.templates.manage</c>
 /// are tenant configuration (Blueprint MOD-0024 system of record "Task templates, checklist templates"; tenant-scoped

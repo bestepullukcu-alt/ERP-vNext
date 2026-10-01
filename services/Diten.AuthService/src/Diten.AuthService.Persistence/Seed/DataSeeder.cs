@@ -215,6 +215,16 @@ public static class DataSeeder
         await ReconcilePermissionScopesAsync(col, permissions);
         // BL-411 — allowlisted PlatformAdmin → Tenant correction for synced-only keys the seed-list reconcile cannot reach.
         await ApplyTenantRouteScopeCorrectionsAsync(col);
+        // Read-only: a listed key on a NON-system row can never keep Tenant against the catalog sync — say so at startup
+        // instead of letting its scope flap silently (SeedOwnedTenantScopeKeys, "the precondition on an existing database").
+        var seedOwnedRows = await col.Find(Builders<Permission>.Filter.In(x => x.Key, SeedOwnedTenantScopeKeys.Keys)).ToListAsync();
+        foreach (var key in SeedOwnedTenantScopeKeys.RowsTheExceptionCannotHold(seedOwnedRows))
+        {
+            Console.WriteLine(
+                $"WARNING: permission '{key}' is decided tenant-scoped (SeedOwnedTenantScopeKeys) but its row is not a system row; "
+                + "the catalog sync will promote it back to PlatformAdmin. Needs an operator decision — nothing was changed.");
+        }
+
         await ReconcilePermissionModuleCasingAsync(col);
         await ReconcileServiceNamespaceModuleAttributionAsync(col);
         await ReconcilePermissionSegmentSpellingAsync(col);

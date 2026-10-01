@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using Diten.AuthService.Domain.Entities;
 
 namespace Diten.AuthService.Domain.Authorization;
@@ -23,12 +24,32 @@ namespace Diten.AuthService.Domain.Authorization;
 /// Every other <c>platform.workflow.*</c> key (definitions.*, instances.view, tasks.delegate, tasks.request-info,
 /// tasks.cancel, transitions.*, escalations.*) stays PlatformAdmin under the generic tie-break.</para>
 ///
-/// <para><b>What the permission alone does not give.</b> Holding the key is necessary, not sufficient: MOD-0023 also
-/// requires the person to be a candidate of that approval step.</para>
+/// <para><b>What each key gives, and what it does not (CT security review, 2026-10-01).</b>
+/// <list type="bullet">
+/// <item><c>tasks.approve</c> / <c>tasks.reject</c> — necessary, not sufficient. MOD-0023 also requires the caller to be
+/// the task's RESOLVED PRINCIPAL (the one person the step was handed to, not merely one of its candidates), always
+/// acts as the signed-in user, and refuses an approval by the person who started the workflow. The key does not let
+/// anybody decide a task that is not theirs.</item>
+/// <item><c>instances.start</c> — the widest of the three, accepted knowingly: its holder may start any PUBLISHED
+/// definition of their own tenant against any object reference, and may name the candidates when the definition's
+/// first step names none. Nothing crosses tenants, the starter cannot approve their own instance, and a source module
+/// must honour only the instance IT started (CRM, the Task engine, the timesheet and the trusted MDM consumer all bind
+/// to their own instance id) — so a stray instance decides nothing; it can only put an approval in somebody's inbox.
+/// Requiring definition-fixed candidates on the human start path is recorded as follow-up work, not assumed.</item>
+/// </list></para>
 ///
-/// <para><b>The two paths, and no third.</b> <see cref="TenantRouteScopeCorrections"/> is the only ROUTE-sourced
-/// PlatformAdmin → Tenant correction (synced-only keys); this class is the only SEED-sourced exception. Outside these
-/// two there is no way for a platform key to be, or to stay, Tenant.</para>
+/// <para><b>What this is the only one of.</b> It is the only exception to the SYNC's tie-break. It is not the only
+/// reason a <c>platform.*</c> key is Tenant: a seed literal may declare Tenant (the organisation, tenant-security and
+/// tenant-navigation keys do), and the startup seed reconcile lowers an existing row to its literal — that is what
+/// lowers these three. The gate on any NEW lowering is <c>permission-scope-baseline.csv</c>
+/// (<c>PermissionScopePreservationTests</c>), which fails when a seeded key's scope moves.
+/// <see cref="TenantRouteScopeCorrections"/> is the separate, route-sourced correction for SYNCED-ONLY keys the seed
+/// cannot reach.</para>
+///
+/// <para><b>The precondition on an existing database.</b> The exception holds only for a SYSTEM row. A catalog-created
+/// row for one of these keys (a database where the sync created the row before the seed carried it) would be lowered by
+/// every startup and promoted again by the next sync. <see cref="RowsTheExceptionCannotHold"/> names such rows and the
+/// seeder reports them at startup. Measured on the dev catalog 2026-10-01: all three are system rows.</para>
 ///
 /// <para>Adding a key here is an owner + Control Tower decision (escalation boundary), not a code convenience.
 /// <c>SeedOwnedTenantScopeKeysTests</c> pins the list to exactly these three keys and checks each one against the
@@ -36,12 +57,13 @@ namespace Diten.AuthService.Domain.Authorization;
 /// </summary>
 public static class SeedOwnedTenantScopeKeys
 {
-    public static readonly IReadOnlySet<string> Keys = new HashSet<string>(StringComparer.Ordinal)
+    // Frozen: a public HashSet behind IReadOnlySet can be downcast and added to by any code in the process.
+    public static readonly IReadOnlySet<string> Keys = new[]
     {
         "platform.workflow.instances.start",
         "platform.workflow.tasks.approve",
         "platform.workflow.tasks.reject"
-    };
+    }.ToFrozenSet(StringComparer.Ordinal);
 
     /// <summary>
     /// True when a catalog sync must leave this row Tenant whatever scope it sends: a listed key, on a seeded SYSTEM
@@ -51,4 +73,17 @@ public static class SeedOwnedTenantScopeKeys
         existing.IsSystem
         && existing.Scope == PermissionScope.Tenant
         && Keys.Contains(existing.Key);
+
+    /// <summary>
+    /// The listed keys whose live row is NOT a system row — for them <see cref="KeepsTenantScope"/> can never be
+    /// true, so the scope would flap between a startup (lowered) and the next catalog sync (promoted). Read-only;
+    /// the seeder reports what this returns and changes nothing.
+    /// </summary>
+    public static IReadOnlyList<string> RowsTheExceptionCannotHold(IEnumerable<Permission> catalog) =>
+        (catalog ?? Enumerable.Empty<Permission>())
+            .Where(permission => !permission.IsDeleted && !permission.IsSystem && Keys.Contains(permission.Key))
+            .Select(permission => permission.Key)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(key => key, StringComparer.Ordinal)
+            .ToList();
 }

@@ -90,6 +90,41 @@ public sealed class SeedOwnedTenantScopeKeysTests
         Assert.False(SeedOwnedTenantScopeKeys.KeepsTenantScope(Row(key, PermissionScope.Tenant)));
     }
 
+    // ── CT acceptance (2026-10-01, from the independent security review) ────────────────────────────────────────────
+
+    /// <summary>The list cannot be widened at run time: a public HashSet behind IReadOnlySet could be downcast and added to.</summary>
+    [Fact]
+    public void The_list_cannot_be_added_to_by_code_that_holds_a_reference_to_it()
+    {
+        Assert.False(SeedOwnedTenantScopeKeys.Keys is HashSet<string>);
+        Assert.Throws<NotSupportedException>(
+            () => ((ICollection<string>)SeedOwnedTenantScopeKeys.Keys).Add("platform.workflow.tasks.delegate"));
+        Assert.Equal(3, SeedOwnedTenantScopeKeys.Keys.Count);
+    }
+
+    /// <summary>
+    /// The exception holds only for a SYSTEM row. A listed key on a catalog-created row is the one state in which the
+    /// decision silently does not hold; it is named, so the seeder can report it. Deleted rows and unlisted keys are not.
+    /// </summary>
+    [Fact]
+    public void A_listed_key_on_a_row_that_is_not_a_system_row_is_named_and_nothing_else_is()
+    {
+        var systemApprove = Row("platform.workflow.tasks.approve", PermissionScope.Tenant);
+        var catalogCreatedReject = Row("platform.workflow.tasks.reject", PermissionScope.Tenant);
+        catalogCreatedReject.MarkAsUserDefined();
+        var catalogCreatedUnlisted = Row("platform.workflow.tasks.delegate", PermissionScope.PlatformAdmin);
+        catalogCreatedUnlisted.MarkAsUserDefined();
+        var deletedCatalogCreatedStart = Row("platform.workflow.instances.start", PermissionScope.Tenant);
+        deletedCatalogCreatedStart.MarkAsUserDefined();
+        deletedCatalogCreatedStart.IsDeleted = true;
+
+        var named = SeedOwnedTenantScopeKeys.RowsTheExceptionCannotHold(
+            [systemApprove, catalogCreatedReject, catalogCreatedUnlisted, deletedCatalogCreatedStart]);
+
+        Assert.Equal(["platform.workflow.tasks.reject"], named);
+        Assert.Empty(SeedOwnedTenantScopeKeys.RowsTheExceptionCannotHold([systemApprove]));
+    }
+
     [Fact]
     public void The_seed_sourced_list_and_the_route_sourced_allowlist_do_not_overlap()
     {
