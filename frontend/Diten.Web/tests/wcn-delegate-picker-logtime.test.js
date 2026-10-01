@@ -30,6 +30,7 @@ const code = (src) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/
 const resx = (lang) => read(`Resources/Views/WorkCenterNext/WorkCenterNextIndex.${lang}.resx`);
 
 const STRINGS = {
+  ActionDisabledWithName: "{0}: {1}",
   ApprovalNoteLabel: "Not (isteğe bağlı)",
   ApprovalNotePlaceholder: "Kayda geçecek bir not ekleyin…",
   DelegateNoEligiblePeople: "Bu onayın devredilebileceği kimse yok.",
@@ -105,6 +106,7 @@ let fired;
 let toasts;
 let dispatched;
 let peopleCalls;
+let assignmentListCalls;
 
 const installDialogs = () => {
   confirms = [];
@@ -126,11 +128,21 @@ const stubDispatch = (answer) => {
   };
 };
 
-const stubPeople = (people) => {
+/*
+ * CT acceptance — TWO lists, as TasksApi has them: `decisionMakers` (who may DECIDE — not limited to the reader's
+ * company) and `assignablePeople` (who may RECEIVE a task). Both answer the bare array (TasksApi opens the envelope,
+ * nobody else does). The doubles answer DIFFERENT people, so a caller that reads the wrong list is seen.
+ */
+const stubPeople = (people, failure) => {
   peopleCalls = 0;
-  global.TasksApi.assignablePeople = () => {
+  assignmentListCalls = 0;
+  global.TasksApi.decisionMakers = () => {
     peopleCalls += 1;
-    return Promise.resolve({ ok: true, status: 200, data: people });
+    return Promise.resolve(failure || { ok: true, status: 200, data: people });
+  };
+  global.TasksApi.assignablePeople = () => {
+    assignmentListCalls += 1;
+    return Promise.resolve({ ok: true, status: 200, data: [person(MEHMET, "Mehmet Öz")] });
   };
 };
 
@@ -250,8 +262,40 @@ describe("A — Devret asks who, and sends the person", () => {
     await boot(approval());
     await press("delegate");
 
-    expect(peopleCalls, "the list is not the Task Center's own assignable-people list").toBe(1);
+    expect(peopleCalls, "the decision-makers list was not read exactly once").toBe(1);
     expect(offeredIds(mountWindow())).toEqual([AYSE, MEHMET]);
+  });
+
+  // CT acceptance — approval authority belongs to the process, not to the reader's company (BL-057).
+  it("offers the people who may DECIDE, never the task-assignment list", async () => {
+    await boot(approval());
+    await press("delegate");
+
+    expect(assignmentListCalls, "the delegation read the company-scoped assignment list").toBe(0);
+    // The assignment double offers Mehmet alone; Ayşe is on the page only if the decision list was read.
+    expect(offeredIds(mountWindow())).toContain(AYSE);
+  });
+
+  // CT acceptance — a read that failed is not an empty list.
+  it.each([
+    [403, "errorNoAccess"],
+    [0, "errorUnavailable"],
+    [500, "errorOccurred"]
+  ])("a people read that failed (%i) says what failed — not that there is nobody — and opens nothing", async (status, key) => {
+    await bootSurface({ rootAttrs: "", items: [approval()], wcn: translator });
+    stubDispatch();
+    stubPeople([], { ok: false, status, reasonCode: null, data: null });
+    // TasksApi's own rule for a failed call (Tasks/api.js failureMessage), so the sentence asserted is the product's.
+    global.TasksApi.failureMessage = (result) =>
+      (result?.status === 403 ? "errorNoAccess" : result?.status === 0 ? "errorUnavailable" : "errorOccurred");
+    await press("delegate");
+
+    expect(fired, "a window with an empty picker was opened over a failed read").toHaveLength(0);
+    expect(dispatched).toHaveLength(0);
+    expect(toasts).toHaveLength(1);
+    expect(toasts[0].type).toBe("error");
+    expect(toasts[0].message).not.toBe("Bu onayın devredilebileceği kimse yok.");
+    expect(toasts[0].message).toBe(key);
   });
 
   it("matches the excluded ids whatever their letter case", async () => {
@@ -512,6 +556,39 @@ describe("C — Start / Stop is drawn once on the detail page", () => {
     expect(buttons, "the timer is drawn more than once (card + rail / ··· menu)").toHaveLength(1);
     expect(buttons[0].closest(".wcn-ts-actions"), "the one button is not the time card's").toBeTruthy();
     expect(app().querySelector(`.wcn-actionbar-more [data-wcn-action="${timerCode}"]`)).toBeNull();
+  });
+
+  // CT acceptance — the rail printed why a dimmed action is dimmed; the card that took the timer over owes the same.
+  it("a timer the reader may not use says why, on the card", async () => {
+    const refused = action("startTimer", {
+      requiresConfirmation: false, label: { kind: "display", text: "Sayacı başlat", locale: "und" },
+      enabled: false, disabledReasonCode: "PermissionDenied",
+      disabledReason: { kind: "display", text: "Zaman çizelgesi yetkiniz yok.", locale: "und" }
+    });
+    await bootSurface({
+      rootAttrs: TASK_DETAIL,
+      items: [task({ actions: [plain("complete"), plain("pause"), refused] })],
+      wcn: translator
+    });
+    await settle();
+
+    const buttons = timerButtons("startTimer");
+    expect(buttons).toHaveLength(1);
+    expect(buttons[0].disabled).toBe(true);
+    const card = buttons[0].closest(".wcn-detail-section");
+    expect(card.textContent, "the card dims the timer and says nothing").toContain("Zaman çizelgesi yetkiniz yok.");
+    const described = buttons[0].getAttribute("aria-describedby");
+    expect(described, "the dimmed button points at no reason").toBeTruthy();
+    expect(card.querySelector(`#${described}`), "aria-describedby points at an element that was never drawn").toBeTruthy();
+  });
+
+  it("an enabled timer draws no reason line and points at none", async () => {
+    await bootSurface({ rootAttrs: TASK_DETAIL, items: [task()], wcn: translator });
+    await settle();
+
+    const [button] = timerButtons("startTimer");
+    expect(button.hasAttribute("aria-describedby")).toBe(false);
+    expect(button.closest(".wcn-detail-section").querySelector(".wcn-act-reason")).toBeNull();
   });
 
   it("the other actions are still on the rail — only the repeat went", async () => {

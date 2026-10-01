@@ -237,9 +237,10 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
     }
 
     /*
-     * BL-491 — who a delegation must not be offered: the delegator (MOD-0023 refuses a delegation to oneself) and
-     * the person who STARTED the workflow (a starter cannot approve their own record, so the approval would lock
-     * with them). This narrows what the window offers; MOD-0023 still decides every delegation that is sent.
+     * BL-491 — who a delegation must not be offered: the delegator and the person who STARTED the workflow (a
+     * starter can never approve their own record). MOD-0023 refuses both when a delegation is sent; this only keeps
+     * the window from offering a choice that would be refused. It does NOT say who else is a valid delegate — that a
+     * target is a live person of this tenant is not checked anywhere yet (BL-494).
      */
     private static IReadOnlyList<string> DelegationExcludedTargets(WorkflowInstance instance, WorkItemActor actor)
     {

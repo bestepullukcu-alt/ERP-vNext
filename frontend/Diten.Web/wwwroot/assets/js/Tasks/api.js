@@ -481,7 +481,17 @@
                 data: Array.isArray(res.data?.people) ? res.data.people : []
             });
         },
-        decisionMakers: () => request('GET', '/decision-makers'),
+        /*
+         * The SAME rule for the second list (BL-491). It answered the raw `{ people, excluded }` object while it
+         * had one caller that opened it by hand; a second caller (the Task Center's delegate window) is exactly
+         * how the envelope gets opened wrongly somewhere. `data` is the array here too.
+         */
+        decisionMakers: async () => {
+            const res = await request('GET', '/decision-makers');
+            return Object.assign({}, res, {
+                data: Array.isArray(res.data?.people) ? res.data.people : []
+            });
+        },
         /** MOD-0357 S4 — the "link an existing task" dialog's own search box. `data` is already the plain
          * array (`TaskLinkCandidateDto[]`), never wrapped — unlike {@link assignablePeople} above. */
         linkCandidates: (term, limit) => {

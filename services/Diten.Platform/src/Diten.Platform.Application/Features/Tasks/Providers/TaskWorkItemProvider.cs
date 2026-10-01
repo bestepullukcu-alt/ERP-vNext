@@ -1122,7 +1122,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 .Append(Build(timerCode, running ? ActionStopTimerKey : ActionStartTimerKey,
                     actor.Has(TimeEntry.TimeEntryPermissions.TimesheetsUpdate)))
                 .ToList();
-            // BL-486 — NOT in overflowActionCodes: the time card draws the timer, so the ··· menu must not repeat it.
+            // BL-486 — the PLACEMENT stays what it was. A surface that draws a time card leaves the timer to the card
+            // (the Task Center does, in its own action filter); a consumer that renders by placement and has no card
+            // would otherwise lose the timer altogether.
+            overflowActionCodes = overflowActionCodes.Append(timerCode).ToList();
         }
 
         return new WorkItemProjectionDto(

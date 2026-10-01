@@ -2538,6 +2538,10 @@
              * ··· menu repeated the same button. Only where the card is actually drawn: a surface without the card
              * keeps the action, or it would have no home at all.
              *
+             * KNOWN AND ACCEPTED: the card lives on the "Genel" tab, so on "Etkinlik" the timer is one tab away.
+             * Manual time entry has been on the card alone since Tur B for the same reason — time is a measurement,
+             * not a gate. (A tab switch does not re-render, so the rail cannot take the button back per tab.)
+             *
              * The action itself is untouched: same projection entry, same key, same dispatch.
              */
             if (TIMER_ACTION_KEYS.includes(a.key) && timeCardDrawn(item)) { return false; }
@@ -4634,9 +4638,19 @@
         const timerButtons = itemActions(item)
             .filter((a) => TIMER_ACTION_KEYS.includes(a.key))
             .map((a) => `<button type="button" class="btn btn-sm ${a.key === 'stopTimer' ? 'btn-label-danger' : 'btn-label-primary'} wcn-ts-timer"
-                       data-wcn-action="${esc(a.key)}" data-wcn-id="${esc(item.id)}"${a.disabled ? ' disabled' : ''}>
+                       data-wcn-action="${esc(a.key)}" data-wcn-id="${esc(item.id)}"${a.disabled ? ' disabled' : ''}${
+                           actionReasonId(item, a) ? ` aria-describedby="${esc(actionReasonId(item, a))}"` : ''}>
                     <i class="bx ${inboxActionIcon(a)} me-1"></i>${esc(actionLabel(a))}
                </button>`)
+            .join('');
+        /*
+         * BL-486 — the rail leaves the timer to this card, so the card owes what the rail said: WHY a dimmed
+         * button is dimmed. The shared sentence (`actionReasonNote`), not a second one — a button that sits
+         * disabled and says nothing is the defect BL-208 closed on the narrow bar.
+         */
+        const timerReasons = itemActions(item)
+            .filter((a) => TIMER_ACTION_KEYS.includes(a.key))
+            .map((a) => actionReasonNote(item, a))
             .join('');
         // The running line is the SERVER's timer state for this reader (D2, §19.2); a paused TASK (Waiting, PendingReview
         // — ResolveExecutionState) still says so, because that state is real even though nothing pauses a timer.
@@ -4659,6 +4673,7 @@
                 ${timerButtons}
                 <a class="btn btn-sm btn-text-secondary wcn-ts-sheet" href="/TimeEntry">${esc(t('OpenMyTimesheet'))}</a>
             </div>
+            ${timerReasons}
         </div>`;
     };
 
@@ -10186,9 +10201,26 @@
             const offersWaitingOn = WAITING_ON_ACTIONS.includes(action.code);
             let people = [];
             if (needsAssignee || offersWaitingOn) {
-                const res = await global.TasksApi.assignablePeople();
-                // `data` IS the array — unwrapped once in TasksApi (BL-113). This line was wrong for three
-                // rounds while each caller unwrapped the envelope in its own hand-written expression.
+                /*
+                 * BL-491 — WHICH LIST. Handing a task to somebody is an ASSIGNMENT and is limited to the reader's
+                 * company scope. Handing over an APPROVAL is not: approval authority belongs to the process, not
+                 * to the requester (BL-057 — a record produced in one legal entity is properly approved in
+                 * another). So a person-naming approval action reads the decision-makers list; the assignment
+                 * list would silently leave out every approver outside the reader's own company.
+                 */
+                const res = asksTarget
+                    ? await global.TasksApi.decisionMakers()
+                    : await global.TasksApi.assignablePeople();
+                /*
+                 * A read that FAILED is not an empty list. "Nobody this can be delegated to" printed over a 403 or
+                 * a dropped connection is a false sentence; the failure says what it was, and no window opens.
+                 */
+                if (!res.ok && asksTarget) {
+                    toast(global.TasksApi.failureMessage(res), 'error');
+                    return { outcome: 'refused' };
+                }
+                // `data` IS the array for both lists — unwrapped once in TasksApi (BL-113). This line was wrong for
+                // three rounds while each caller unwrapped the envelope in its own hand-written expression.
                 people = res.ok ? res.data : [];
                 // BL-491 — the people the server says this action cannot be handed to (the reader, and whoever
                 // started the workflow) are never offered.
