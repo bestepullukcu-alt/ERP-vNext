@@ -93,3 +93,20 @@ KORU/YAPMA: CRM/Platform/Auth DOKUNMA, yeni CRM ucu yok; SKU/ağırlık/segment/
 DOĞRULA (E2): cd C:\tmp\sb-3-ui-a; dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 396); dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban 2123/0/5); build 0 hata. Yeni testler WP Acceptance listesindeki her madde. Sabotaj: (1) ProductLinesJson'dan journeyId çıkar → round-trip testi kırmızı; (2) line-journeys ürün filtresini kaldır → filtre testi kırmızı. Commit ("feat(web): WP-SB-3-UIa — strategy template form product line role + journey, retired bindings read-only, cycle capacity max products" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: Web konu DTO'su birincil global-product'ı taşımıyorsa uydurma → DUR + raporla (geçici: filtresiz yayındaki yolculuklar + CRM 409 satırda).
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-01) — **ACCEPTED (E2)**
+- **Commit:** ajan `113382f2` → SB-3b §37 (`1401325f`) üzerine rebase (çakışmasız) → `3aac91d7` → `test/crm-content-visit-e2e` fast-forward. 27 dosya (+1585 / −97). Yalnız `frontend/Diten.Web`.
+- **DUR yok:** Web konu DTO'su `externalReferences[]` + `isPrimary` taşıyor; `api/line-journeys` filtresi CRM `PrimaryGlobalProduct` kuralıyla aynı (SourceSystem `global-product`, IsPrimary, Guid). CRM konu listesi sayfalanmıyor (eksik konu riski yok).
+- **Diff (K13 okuma):**
+  - `api/line-journeys`: iki mevcut CRM okuması (yayındaki yolculuklar + konular), tenant JWT'den; yalnız seçenek filtresi, karar CRM'de. Konu okunamazsa filtresiz + `productFilterApplied: false` → satırda "kayıtta denetlenir" notu (kabul).
+  - Hata eşleme: SB-3a kodları satıra / bağ bölümüne / form başına, yerelleştirilmiş; ham kod ekrana düşmez; bilinmeyen kod özet kutusunda.
+  - Düzenleme modeli artık `role` / `journeyId` taşıyor (önceden sessizce düşerdi).
+  - Yeni satır / seçenek HTML'i `esc()` ile.
+  - Rol listesi Web modelinde sabit (CRM sözleşmesi yayınlamıyor) — kabul; CRM'e rol listesi eklenirse buradan beslenir.
+  - Kapasite: boş alan gönderilmez (kayıttaki korunur), aralık hatası alan altında.
+  - L10n: 39 anahtar × 7 dil.
+- **CT testleri (SB-3b ile birleşik hal):** Web **422/0** (+26), CRM **2153/0/5**.
+- **CT sabotajı:** `api/line-journeys` "yalnız yayında + arşivsiz" filtresi kaldırıldı → 2 kırmızı. Kod geri alındı. Ajan: `journeyId` round-trip (1) + ürün filtresi (2).
+- **E4 (CT, fleet sonrası):** tarayıcıda denenmedi (ajan). ALMIBA ürünü + yayındaki yolculukla taslak şablon oluştur; "test" taslağında eski bağlar; kapasitede 3 / 3.
