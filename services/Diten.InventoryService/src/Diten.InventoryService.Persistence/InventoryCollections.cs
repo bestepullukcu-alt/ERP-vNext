@@ -1,7 +1,8 @@
 namespace Diten.InventoryService.Persistence;
 
 /// <summary>
-/// Every collection MOD-0173 owns. Exactly two hold quantities: the append-only ledger and its projection
+/// Every collection MOD-0173 owns. Stock quantities live only in the append-only ledger and its projections
+/// (balance rows; S2 SKU positions); reservations hold quantities of that same stock, they are not stock
 /// (single stock SoR — pack §2, AC14). An architecture test pins this list.
 /// </summary>
 public static class InventoryCollections
@@ -19,5 +20,11 @@ public static class InventoryCollections
     /// <summary>Atomic per Tenant + LE + year counter behind <c>INV-{yyyy}-{0000000}</c>; holds no quantity.</summary>
     public const string Sequences = "inventory_sequences";
 
-    public static readonly IReadOnlyList<string> All = [Transactions, Balances, Audit, Outbox, Sequences];
+    /// <summary>Reservations (S2): stateful physical holds at SKU level (pack ASSUMPTION-0173-12); quantities are holds, not stock.</summary>
+    public const string Reservations = "inventory_reservations";
+
+    /// <summary>Per-SKU projection of the ledger + reservations (pack ASSUMPTION-0173-13); rebuildable, not a second truth.</summary>
+    public const string SkuPositions = "inventory_sku_positions";
+
+    public static readonly IReadOnlyList<string> All = [Transactions, Balances, Audit, Outbox, Sequences, Reservations, SkuPositions];
 }

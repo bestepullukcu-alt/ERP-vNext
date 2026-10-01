@@ -99,6 +99,20 @@ public sealed class TransactionItemDto
     public string PostingDate { get; init; } = string.Empty;
 }
 
+/// <summary>
+/// Contract <c>ReservationResponse</c>. createReservation fills every member; releaseReservation answers the contract
+/// example shape (<c>reservationId, status, availableAfter, contractVersion</c>) — the other members are null and omitted.
+/// </summary>
+public sealed class ReservationResponseDto
+{
+    public string ReservationId { get; init; } = string.Empty;
+    public string Status { get; init; } = string.Empty;
+    public string? ReservedQuantity { get; init; }
+    public string AvailableAfter { get; init; } = string.Empty;
+    public string? Etag { get; init; }
+    public string ContractVersion { get; init; } = InventoryContract.Version;
+}
+
 /// <summary>Contract <c>getTransactions</c> 200 body.</summary>
 public sealed class TransactionPageDto
 {

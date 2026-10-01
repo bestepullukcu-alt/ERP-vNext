@@ -16,7 +16,7 @@ namespace Diten.InventoryService.Persistence.Repositories;
 /// no overload without it (tenant-audit: no unfiltered query).
 ///
 /// <para><b>Posting</b> runs in ONE multi-document transaction (pack §8): per-year counter → balance legs
-/// (decreases first, each under a coverage condition) → transaction insert → audit insert → outbox insert. A leg
+/// (decreases first, each under a coverage condition) → SKU position (S2) → transaction insert → audit insert → outbox insert. A leg
 /// that is not covered aborts the whole transaction; nothing is partially written. Two concurrent decreases of the
 /// same row conflict inside Mongo (WriteConflict → the driver retries the loser), and the retry re-evaluates the
 /// coverage condition against the committed winner — so balance 100 with two parallel issues of 60 ends at 40,
@@ -33,6 +33,7 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
     private readonly IMongoCollection<InventoryAuditRecord> _audit;
     private readonly IMongoCollection<InventoryOutboxMessage> _outbox;
     private readonly IMongoCollection<BsonDocument> _sequences;
+    private readonly ReservationPositionOperations _reservations;
     private readonly Guid _tenantId;
     private readonly Guid _legalEntityId;
 
@@ -46,6 +47,7 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         _sequences = database.GetCollection<BsonDocument>(InventoryCollections.Sequences);
         _tenantId = tenantContext.TenantId;
         _legalEntityId = tenantContext.LegalEntityId;
+        _reservations = new ReservationPositionOperations(database, _tenantId, _legalEntityId);
     }
 
     // ── reads ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -143,6 +145,8 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
 
                 transaction.ResultSnapshot = (snapshotRow ?? throw new InvalidOperationException("Snapshot leg was not applied.")).ToSnapshot();
 
+                await ApplySkuPositionAsync(s, posting, ct);
+
                 await _transactions.InsertOneAsync(s, transaction, cancellationToken: ct);
                 await _audit.InsertOneAsync(s, posting.Audit, cancellationToken: ct);
                 await _outbox.InsertOneAsync(s, posting.Outbox, cancellationToken: ct);
@@ -152,7 +156,7 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
             new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority),
             cancellationToken);
         }
-        catch (UncoveredLegException uncovered)
+        catch (UncoveredQuantityException uncovered)
         {
             return LedgerPostingResult.Insufficient(uncovered.Available, uncovered.Requested);
         }
@@ -164,6 +168,36 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         {
             return LedgerPostingResult.Reversed();
         }
+    }
+
+    /// <summary>
+    /// The S2 half of a posting (pack ASSUMPTION-0173-13..16), in the same transaction as the legs: the SKU position
+    /// moves by the posting's NET AVAILABLE delta (a transfer between two AVAILABLE rows nets 0 and touches nothing —
+    /// reservations are SKU-level, not bin-level). On a net decrease the SKU's due reservations are expired, a matching
+    /// reservation is consumed, and only then is <c>AvailableOnHand − Reserved ≥ 0</c> enforced, so a holder can issue
+    /// its own reserved stock while nobody else can.
+    /// </summary>
+    private async Task ApplySkuPositionAsync(IClientSessionHandle session, LedgerPosting posting, CancellationToken ct)
+    {
+        var transaction = posting.Transaction;
+        var netAvailable = posting.Legs
+            .Where(l => l.Dimension.StockStatus == StockStatus.Available)
+            .Sum(l => l.Delta);
+        if (netAvailable == 0m)
+        {
+            return;
+        }
+
+        var sku = new SkuKey(transaction.ItemId, transaction.SkuId, transaction.SkuLevel);
+        var now = transaction.CreatedAt;
+        if (netAvailable < 0m)
+        {
+            await _reservations.ExpireDueAsync(session, sku, transaction.CorrelationId, transaction.CreatedBy, now, ct);
+            await _reservations.ConsumeAsync(session, sku, transaction.SourceModule, transaction.SourceDocumentId,
+                transaction.SourceLineId, -netAvailable, transaction.Id, transaction.CorrelationId, transaction.CreatedBy, now, ct);
+        }
+
+        await _reservations.ApplyAvailableDeltaAsync(session, sku, netAvailable, transaction.BaseUomId, now, ct);
     }
 
     private async Task<string> NextTransactionNumberAsync(IClientSessionHandle session, int year, CancellationToken ct)
@@ -213,7 +247,7 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         var available = current is null
             ? 0m
             : BalanceBuckets.Coverage(current.StockStatus, current.OnHand, current.Reserved);
-        throw new UncoveredLegException(available, requested);
+        throw new UncoveredQuantityException(available, requested);
     }
 
     private async Task<InventoryBalance> IncreaseAsync(IClientSessionHandle session, LedgerLeg leg, InventoryTransaction transaction, CancellationToken ct)
@@ -315,19 +349,4 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
     private static bool IsDuplicateOn(MongoWriteException ex, string indexName)
         => ex.WriteError?.Category == ServerErrorCategory.DuplicateKey
            && ex.WriteError.Message.Contains(indexName, StringComparison.Ordinal);
-
-    /// <summary>Aborts the posting transaction when a decrease leg is not covered.</summary>
-    private sealed class UncoveredLegException : Exception
-    {
-        public UncoveredLegException(decimal available, decimal requested)
-            : base("A decrease leg is not covered by its balance row.")
-        {
-            Available = available;
-            Requested = requested;
-        }
-
-        public decimal Available { get; }
-
-        public decimal Requested { get; }
-    }
 }

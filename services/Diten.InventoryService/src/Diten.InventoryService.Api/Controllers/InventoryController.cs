@@ -1,5 +1,6 @@
 using Diten.InventoryService.Api.Contract;
 using Diten.InventoryService.Application.Common;
+using Diten.InventoryService.Application.Features.Inventory.Commands;
 using Diten.InventoryService.Application.Features.Inventory.Queries;
 using Diten.InventoryService.Infrastructure.Authorization;
 using MediatR;
@@ -9,8 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Diten.InventoryService.Api.Controllers;
 
 /// <summary>
-/// INVENTORY-BUNDLE v1 — Slice S1 operations only (pack §1): <c>postMovement</c>, <c>getAvailability</c>,
-/// <c>getBalance</c>, <c>getTransactions</c>. Reservations are S2 and not routed here. There is deliberately no
+/// INVENTORY-BUNDLE v1 — Slice S1 + S2 operations (pack §1): <c>postMovement</c>, <c>createReservation</c>,
+/// <c>releaseReservation</c>, <c>getAvailability</c>,
+/// <c>getBalance</c>, <c>getTransactions</c> — exactly the six operations of the frozen contract. There is deliberately no
 /// PUT / PATCH / DELETE: stock changes only through POST /movements, and a transaction is never edited (AC17).
 /// No business rule lives here — every action is read → send → render.
 /// </summary>
@@ -37,6 +39,28 @@ public sealed class InventoryController : CustomBaseController
 
         return CreateActionResultInstance(await _mediator.Send(command, cancellationToken));
     }
+
+    [HttpPost("reservations")]
+    [HasPermission(InventoryPermissions.ManageReservations)]
+    public async Task<IActionResult> CreateReservation(CancellationToken cancellationToken)
+    {
+        var (command, error) = await ReservationRequestReader.ReadAsync(
+            Request.Body,
+            Request.Headers[InventoryContract.IdempotencyKeyHeader].ToString(),
+            cancellationToken);
+        if (command is null)
+        {
+            return ContractFailure(StatusCodes.Status400BadRequest, InventoryErrorCodes.InvalidRequest, error!);
+        }
+
+        return CreateActionResultInstance(await _mediator.Send(command, cancellationToken));
+    }
+
+    [HttpPost("reservations/{id}/release")]
+    [HasPermission(InventoryPermissions.ManageReservations)]
+    public async Task<IActionResult> ReleaseReservation(string id, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new ReleaseReservationCommand(id, Request.Headers[InventoryContract.IfMatchHeader].ToString()), cancellationToken));
 
     [HttpGet("availability")]
     [HasPermission(InventoryPermissions.Read)]

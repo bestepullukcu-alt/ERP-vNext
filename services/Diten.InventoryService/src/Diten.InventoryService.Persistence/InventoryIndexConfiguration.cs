@@ -19,6 +19,8 @@ public static class InventoryIndexConfiguration
     public const string TransactionNumberIndex = "ux_tenant_le_transactionnumber";
     public const string ReversalIndex = "ux_tenant_le_reversestransactionid";
     public const string BalanceDimensionIndex = "ux_balance_dimension";
+    public const string ReservationIdempotencyIndex = "ux_tenant_le_reservation_idempotencykey";
+    public const string SkuPositionIndex = "ux_sku_position";
 
     public static IReadOnlyList<CreateIndexModel<InventoryTransaction>> BuildTransactions()
     {
@@ -88,9 +90,47 @@ public static class InventoryIndexConfiguration
         ];
     }
 
-    /// <summary>Creates the MOD-0173 indexes (idempotent). Nothing outside these five collections is touched.</summary>
+    public static IReadOnlyList<CreateIndexModel<InventoryReservation>> BuildReservations()
+    {
+        var b = Builders<InventoryReservation>.IndexKeys;
+        return
+        [
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions { Name = ReservationIdempotencyIndex, Unique = true }),
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ItemId).Ascending(x => x.SkuId)
+                    .Ascending(x => x.SkuLevel).Ascending(x => x.Status).Ascending(x => x.ExpiresAt),
+                new CreateIndexOptions { Name = "ix_tenant_le_sku_status_expires" }),
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.SourceModule)
+                    .Ascending(x => x.SourceDocumentId).Ascending(x => x.SourceLineId).Ascending(x => x.Status),
+                new CreateIndexOptions { Name = "ix_tenant_le_source_status" }),
+            // System index for the cross-tenant expiry sweeper (it only DISCOVERS due groups here; every write is then
+            // scoped to one Tenant + LE). Deliberately not tenant-first — a tenant-first index cannot serve that scan.
+            new(b.Ascending(x => x.Status).Ascending(x => x.ExpiresAt),
+                new CreateIndexOptions { Name = "ix_system_status_expires" })
+        ];
+    }
+
+    public static IReadOnlyList<CreateIndexModel<InventorySkuPosition>> BuildSkuPositions()
+    {
+        var b = Builders<InventorySkuPosition>.IndexKeys;
+        return
+        [
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ItemId).Ascending(x => x.SkuId)
+                    .Ascending(x => x.SkuLevel),
+                new CreateIndexOptions { Name = SkuPositionIndex, Unique = true })
+        ];
+    }
+
+    /// <summary>Creates the MOD-0173 indexes (idempotent). Nothing outside the MOD-0173 collections is touched.</summary>
     public static async Task ApplyAsync(IMongoDatabase database, CancellationToken ct = default)
     {
+        await database.GetCollection<InventoryReservation>(InventoryCollections.Reservations).Indexes.CreateManyAsync(BuildReservations(), ct);
+        await database.GetCollection<InventorySkuPosition>(InventoryCollections.SkuPositions).Indexes.CreateManyAsync(BuildSkuPositions(), ct);
+        await database.GetCollection<InventoryReservationAuditRecord>(InventoryCollections.Audit).Indexes.CreateOneAsync(
+            new CreateIndexModel<InventoryReservationAuditRecord>(
+                Builders<InventoryReservationAuditRecord>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ReservationId),
+                new CreateIndexOptions { Name = "ix_tenant_le_reservation" }),
+            cancellationToken: ct);
         await database.GetCollection<InventoryTransaction>(InventoryCollections.Transactions).Indexes.CreateManyAsync(BuildTransactions(), ct);
         await database.GetCollection<InventoryBalance>(InventoryCollections.Balances).Indexes.CreateManyAsync(BuildBalances(), ct);
         await database.GetCollection<InventoryAuditRecord>(InventoryCollections.Audit).Indexes.CreateManyAsync(BuildAudit(), ct);

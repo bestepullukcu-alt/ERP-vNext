@@ -31,9 +31,14 @@ public static class DependencyInjection
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));
 
         services.AddScoped<IInventoryLedgerRepository, InventoryLedgerRepository>();
+        services.AddScoped<IInventoryReservationRepository, InventoryReservationRepository>();
+        services.AddScoped<IReservationExpirySweeper, ReservationExpirySweeper>();
+        services.AddScoped<ISkuPositionRebuilder, SkuPositionRebuilder>();
+        services.Configure<ReservationSweeperOptions>(configuration.GetSection(ReservationSweeperOptions.SectionName));
 
-        // Indexes are created before the host serves traffic; failure stops the host (see the hosted service).
+        // Indexes + SKU-position rebuild happen before the host serves traffic; failure stops the host.
         services.AddHostedService<InventoryIndexInitializerHostedService>();
+        services.AddHostedService<ReservationExpirySweeperHostedService>();
 
         return services;
     }

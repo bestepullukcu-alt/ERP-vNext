@@ -62,6 +62,14 @@ public static class WireNames
 
     public static string ToWire(SkuLevel value) => SkuLevels[value];
 
+    public static string ToWire(ReservationStatus value) => value switch
+    {
+        ReservationStatus.Active => "ACTIVE",
+        ReservationStatus.Released => "RELEASED",
+        ReservationStatus.Expired => "EXPIRED",
+        _ => throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown reservation status.")
+    };
+
     public static bool TryParseMovementType(string? wire, out MovementType value)
         => TryParse(MovementTypesByWire, wire, out value);
 

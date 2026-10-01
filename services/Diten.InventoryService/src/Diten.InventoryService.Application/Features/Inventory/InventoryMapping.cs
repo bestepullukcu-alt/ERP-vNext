@@ -1,5 +1,6 @@
 using System.Globalization;
 using Diten.InventoryService.Domain.Entities;
+using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Rules;
 
 namespace Diten.InventoryService.Application.Features.Inventory;
@@ -47,6 +48,28 @@ public static class InventoryMapping
 
     public static BalanceViewDto ToBalanceView(InventoryBalance row, Guid legalEntityId)
         => ToBalanceView(row.ToSnapshot(), legalEntityId);
+
+    /// <summary>ETag of a reservation version (pack ASSUMPTION-0173-17).</summary>
+    public static string ETag(int version) => $"W/\"{version.ToString(CultureInfo.InvariantCulture)}\"";
+
+    /// <summary>The ORIGINAL create result — what the first call returned, replayed verbatim on an idempotent retry.</summary>
+    public static ReservationResponseDto ToCreatedReservation(InventoryReservation reservation)
+        => new()
+        {
+            ReservationId = reservation.Id.ToString(),
+            Status = WireNames.ToWire(ReservationStatus.Active),
+            ReservedQuantity = InventoryQuantity.ToWire(reservation.Quantity),
+            AvailableAfter = InventoryQuantity.ToWire(reservation.CreatedAvailableAfter),
+            Etag = ETag(1)
+        };
+
+    public static ReservationResponseDto ToReleasedReservation(InventoryReservation reservation, decimal availableAfter)
+        => new()
+        {
+            ReservationId = reservation.Id.ToString(),
+            Status = WireNames.ToWire(reservation.Status),
+            AvailableAfter = InventoryQuantity.ToWire(availableAfter)
+        };
 
     public static TransactionItemDto ToTransactionItem(InventoryTransaction transaction)
         => new()

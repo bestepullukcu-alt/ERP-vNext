@@ -28,10 +28,15 @@ public static class InventoryErrorCodes
     public const string AlreadyReversed = "ALREADY_REVERSED";
     public const string LocationMasterUnavailable = "LOCATION_MASTER_UNAVAILABLE";
 
+    // Declared by inventory-bundle.openapi.yaml for the S2 reservation operations.
+    public const string InsufficientAvailable = "INSUFFICIENT_AVAILABLE";
+    public const string ReservationConflict = "RESERVATION_CONFLICT";
+
     public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
     {
         InvalidMovementType, CrossLeForbidden, InsufficientStock, SerialCountMismatch, UnknownLocation,
         ProductMasterUnavailable, UnknownItem, InvalidRequest, IdempotencyKeyReused, SkuItemMismatch,
-        UomConversionMissing, LotRequired, AlreadyReversed, LocationMasterUnavailable
+        UomConversionMissing, LotRequired, AlreadyReversed, LocationMasterUnavailable, InsufficientAvailable,
+        ReservationConflict
     };
 }

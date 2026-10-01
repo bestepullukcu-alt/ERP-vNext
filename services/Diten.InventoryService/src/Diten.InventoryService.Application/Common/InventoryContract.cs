@@ -12,6 +12,9 @@ public static class InventoryContract
 
     public const string IdempotencyKeyHeader = "Idempotency-Key";
 
+    /// <summary>Required by releaseReservation; value <c>W/"&lt;version&gt;"</c> (pack ASSUMPTION-0173-17).</summary>
+    public const string IfMatchHeader = "If-Match";
+
     public const string LegalEntityOverrideHeader = "X-Legal-Entity-Id";
 
     public const string TenantHeader = "X-Tenant-Id";

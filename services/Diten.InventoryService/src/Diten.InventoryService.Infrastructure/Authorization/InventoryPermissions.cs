@@ -9,4 +9,7 @@ public static class InventoryPermissions
     public const string Read = "supplychain.inventory.read";
 
     public const string PostMovements = "supplychain.inventory.movements.post";
+
+    /// <summary>S2: create and release reservations (pack §3 / §14).</summary>
+    public const string ManageReservations = "supplychain.inventory.reservations.manage";
 }
