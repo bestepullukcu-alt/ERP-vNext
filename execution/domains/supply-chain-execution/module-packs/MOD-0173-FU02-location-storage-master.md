@@ -12,8 +12,8 @@ screens:
   - module: Locations
     data_mode: server
 entity_base: EntityBase
-status: draft
-status_note: "draft — WP-0173-LOC0 (2026-10-01). Ready-for-dev needs owner approval (Ali); the LOCATION v1.1 additive owner API is designed here and written into the contract by LOC1 (single writer). DCP-002 re-run pending (waiver W-0173-01, no Python)."
+status: ready-for-dev
+status_note: "ready-for-dev — owner approval (Ali) 2026-10-01; mockup v2 approved by CT (zone optional, bulk bins in scope, code always editable — ledger keys on immutable Id). Order: LOC1 → INT-2 → LOC2 → (FU01) UI-2. DCP-002 re-run pending (waiver W-0173-01)."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0173-inventory-ledger-valuation
 started: 2026-10-01
@@ -462,7 +462,7 @@ Plus:
 - [ ] Registry FU row (`Type = Follow-up`, Replacement ID = `MOD-0173`) — CT.
 - [ ] Owner approval of: the v1.1 owner API, `inventory.locations.manage` as one Tier-3 action, same-module manifest,
   bin code pattern `{AISLE}-{RACK:00}-{LEVEL:00}-{POS:00}`, ASSUMPTION-LOC-01…12.
-- [ ] **Owner approval → `ready-for-dev`** (Ali).
+- [x] **Owner approval → `ready-for-dev`** (Ali, 2026-10-01).
 
 ## 19. Implementation Notes
 
