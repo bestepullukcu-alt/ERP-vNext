@@ -8,4 +8,10 @@ public interface ISkuPositionRebuilder
 {
     /// <summary>Returns the number of SKU positions recomputed.</summary>
     Task<int> RebuildAllAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Groups the last <see cref="RebuildAllAsync"/> skipped because their scope (tenant, LE, item, sku, level) was
+    /// incomplete — never guessed, never deleted (FU-S2-01: the startup gate reports it).
+    /// </summary>
+    int LastSkippedUnscoped { get; }
 }
