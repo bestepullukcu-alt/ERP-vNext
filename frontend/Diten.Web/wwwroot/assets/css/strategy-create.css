@@ -684,3 +684,24 @@
 .st-editor-scope .st-prod-head-sku { flex: 0 0 auto; width: 160px; }
 .st-editor-scope .st-prod-head-weight { flex: 0 0 auto; width: 116px; text-align: right; }
 .st-editor-scope .st-prod-head-spacer { flex: 0 0 auto; width: 30px; }
+
+/* ── WP-SB-3-UIa — a product line is a box holding its main row (product · SKU · weight · remove) and, under it, the
+   ROLE + JOURNEY sub-row with its notes (journey missing, warnings, refusals). The border moves from the row to the box. */
+.st-editor-scope .st-prod-line {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    background: var(--bs-card-bg);
+}
+.st-editor-scope .st-prod-line > .st-prod-row { border: 0; background: transparent; }
+.st-editor-scope .st-prod-sub {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    padding: 0 11px 9px;
+}
+.st-editor-scope .st-prod-role { flex: 0 0 150px; }
+.st-editor-scope .st-prod-journey { flex: 1 1 260px; min-width: 0; }
+.st-editor-scope .st-prod-msg { flex: 1 0 100%; font-size: 0.75rem; }
+/* WP-SB-3-UIa — a retired template-level binding is a read-only row (no checkbox, no pointer). */
+.st-editor-scope .st-content-choice.is-retired { cursor: default; background: var(--bs-body-bg); }

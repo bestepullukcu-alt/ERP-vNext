@@ -75,7 +75,19 @@
         "FrequencyModeSub_policy-reference", "FrequencyModeSub_declared-intent", "FrequencyModeSub_none",
         "FrequencyType_weekly", "FrequencyType_biweekly", "FrequencyType_monthly", "FrequencyType_cycle-based",
         "FrequencyType_custom", "PeriodType_day", "PeriodType_week", "PeriodType_month", "PeriodType_quarter",
-        "PeriodType_cycle", "PeriodType_campaign-period", "PeriodType_custom"
+        "PeriodType_cycle", "PeriodType_campaign-period", "PeriodType_custom",
+        // WP-SB-3-UIa — product line role + journey, read-time journey hints, SB-3a refusals (Err_{code}), retired
+        // template-level bindings and the recipe role split (form.js / details.js read them from this bridge).
+        "ProductColRole", "ProductColJourney", "LineRole_promo", "LineRole_non-promo", "LineJourneySelect",
+        "LineJourneyLoading", "LineJourneyNotOffered", "LineNoPublishedJourney", "LineOpenJourneys",
+        "LineJourneyFilterUnavailable", "LineJourneyMissing", "LineJourneyMissingBadge",
+        "JourneyWarning_journey_language_not_in_country", "JourneyWarning_journey_not_published",
+        "JourneyWarning_journey_not_found", "JourneyStatus_draft", "JourneyStatus_review", "JourneyStatus_approved",
+        "JourneyStatus_published", "JourneyStatus_inactive", "JourneyStatus_archived",
+        "Err_product_line_role_required", "Err_product_line_role_invalid", "Err_product_line_journey_required",
+        "Err_journey_not_published", "Err_journey_product_mismatch", "Err_content_binding_type_retired",
+        "Err_bindings_frozen", "RetiredBindingsHelp", "RetiredBindingBadge", "NoRetiredBindings", "RoleSplitTpl",
+        "RecipeJourneysTpl", "RetiredBindingsCountTpl", "LinesWithoutJourneyTpl"
     };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
     // Verifier-compatible property markers for the dictionary-backed JSON bridge (each token below is `Key =`):

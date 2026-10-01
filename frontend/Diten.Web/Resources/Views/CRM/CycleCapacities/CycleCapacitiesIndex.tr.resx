@@ -78,4 +78,8 @@
   <data name="FieldDays" xml:space="preserve"><value>Saha günü</value></data>
   <data name="VisitMinutes" xml:space="preserve"><value>Ziyaret dakikası</value></data>
   <data name="NoFieldDays" xml:space="preserve"><value>Saha günü yok</value></data>
+  <data name="MaxPromoProducts" xml:space="preserve"><value>Ziyaret başına en fazla promo ürün</value></data>
+  <data name="MaxNonPromoProducts" xml:space="preserve"><value>Ziyaret başına en fazla non-promo ürün</value></data>
+  <data name="MaxProductsHint" xml:space="preserve"><value>1–10. Boş bırakılırsa kayıttaki değer korunur (yeni kayıtta 3).</value></data>
+  <data name="Err_max_products_out_of_range" xml:space="preserve"><value>Ziyaret başına ürün sayısı 1 ile 10 arasında olmalı.</value></data>
 </root>

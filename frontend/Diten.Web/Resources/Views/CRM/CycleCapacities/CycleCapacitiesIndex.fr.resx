@@ -78,4 +78,8 @@
   <data name="FieldDays" xml:space="preserve"><value>Jours de terrain</value></data>
   <data name="VisitMinutes" xml:space="preserve"><value>Minutes de visite</value></data>
   <data name="NoFieldDays" xml:space="preserve"><value>Aucun jour de terrain</value></data>
+  <data name="MaxPromoProducts" xml:space="preserve"><value>Produits promo max. par visite</value></data>
+  <data name="MaxNonPromoProducts" xml:space="preserve"><value>Produits non-promo max. par visite</value></data>
+  <data name="MaxProductsHint" xml:space="preserve"><value>1–10. Laissé vide, la valeur enregistrée est conservée (3 pour un nouvel enregistrement).</value></data>
+  <data name="Err_max_products_out_of_range" xml:space="preserve"><value>Le nombre de produits par visite doit être compris entre 1 et 10.</value></data>
 </root>

@@ -78,4 +78,8 @@
   <data name="FieldDays" xml:space="preserve"><value>现场天数</value></data>
   <data name="VisitMinutes" xml:space="preserve"><value>拜访分钟数</value></data>
   <data name="NoFieldDays" xml:space="preserve"><value>无现场天数</value></data>
+  <data name="MaxPromoProducts" xml:space="preserve"><value>每次拜访最多推广产品数</value></data>
+  <data name="MaxNonPromoProducts" xml:space="preserve"><value>每次拜访最多非推广产品数</value></data>
+  <data name="MaxProductsHint" xml:space="preserve"><value>1–10。留空则保留已存值（新记录为 3）。</value></data>
+  <data name="Err_max_products_out_of_range" xml:space="preserve"><value>每次拜访的产品数必须在 1 到 10 之间。</value></data>
 </root>

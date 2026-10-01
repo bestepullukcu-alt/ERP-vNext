@@ -72,6 +72,22 @@ public sealed class CycleCapacityEditViewModel
     [Required]
     public int? BetweenVisitTimeMinutes { get; set; }
 
+    /// <summary>WP-SB-3a default of both per-visit product ceilings.</summary>
+    public const int DefaultMaxProductsPerVisit = 3;
+
+    /// <summary>
+    /// WP-SB-3-UIa — the most promo products a single visit tells (SB-3a, 1..10; a new record starts at 3).
+    /// <para>Optional on purpose: an EMPTY field is not posted, and the runtime then keeps the stored value — so it is
+    /// nullable and carries no [Required].</para>
+    /// </summary>
+    [Range(1, 10)]
+    public int? MaxPromoProducts { get; set; }
+
+    /// <summary>WP-SB-3-UIa — the most non-promo products a single visit tells (same rule as
+    /// <see cref="MaxPromoProducts"/>).</summary>
+    [Range(1, 10)]
+    public int? MaxNonPromoProducts { get; set; }
+
     public string? Description { get; set; }
 
     /// <summary>

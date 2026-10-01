@@ -72,6 +72,11 @@ public sealed class CycleCapacityDetailApiModel
     /// <summary>MOD-0155 FU06B — the between-visit buffer, server-defaulted and range-checked.</summary>
     public int BetweenVisitTimeMinutes { get; set; }
 
+    /// <summary>WP-SB-3a — per-visit product ceilings (3 / 3 on a pre-SB-3a record, CRM fills the effective value).</summary>
+    public int? MaxPromoProducts { get; set; }
+
+    public int? MaxNonPromoProducts { get; set; }
+
     public string? Description { get; set; }
     public List<CycleCapacityMonthApiModel> Months { get; set; } = [];
     public bool IsArchived { get; set; }

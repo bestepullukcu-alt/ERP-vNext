@@ -78,4 +78,8 @@
   <data name="FieldDays" xml:space="preserve"><value>Field days</value></data>
   <data name="VisitMinutes" xml:space="preserve"><value>Visit minutes</value></data>
   <data name="NoFieldDays" xml:space="preserve"><value>No field days</value></data>
+  <data name="MaxPromoProducts" xml:space="preserve"><value>Max promo products per visit</value></data>
+  <data name="MaxNonPromoProducts" xml:space="preserve"><value>Max non-promo products per visit</value></data>
+  <data name="MaxProductsHint" xml:space="preserve"><value>1–10. Left empty, the stored value is kept (3 on a new record).</value></data>
+  <data name="Err_max_products_out_of_range" xml:space="preserve"><value>The number of products per visit must be between 1 and 10.</value></data>
 </root>

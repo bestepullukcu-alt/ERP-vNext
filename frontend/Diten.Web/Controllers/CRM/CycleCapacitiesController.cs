@@ -3,10 +3,13 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using Diten.Web.Views.CRM.CycleCapacities;
 
 namespace Diten.Web.Controllers.CRM;
 
@@ -37,17 +40,20 @@ public sealed class CycleCapacitiesController : Controller
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly ILogger<CycleCapacitiesController> _logger;
+    private readonly IStringLocalizer<CycleCapacitiesIndex> _localizer;
 
     private readonly JsonSerializerOptions _json =
         new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true };
 
     public CycleCapacitiesController(
-        HttpClient httpClient, IConfiguration configuration, ILogger<CycleCapacitiesController> logger)
+        HttpClient httpClient, IConfiguration configuration, ILogger<CycleCapacitiesController> logger,
+        IStringLocalizer<CycleCapacitiesIndex> localizer)
     {
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"]
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _logger = logger;
+        _localizer = localizer;
     }
 
     // ---------------- pages ----------------
@@ -120,7 +126,10 @@ public sealed class CycleCapacitiesController : Controller
             QuizDuration = 0,
             // FU06B — the configured buffer, shown as the SAME number the server will write (falls back to 5 only when
             // the contract could not be loaded).
-            BetweenVisitTimeMinutes = defaults?.BetweenVisitTimeMinutes ?? 5
+            BetweenVisitTimeMinutes = defaults?.BetweenVisitTimeMinutes ?? 5,
+            // WP-SB-3a — the per-visit product ceilings start at the runtime default (3 / 3).
+            MaxPromoProducts = CycleCapacityEditViewModel.DefaultMaxProductsPerVisit,
+            MaxNonPromoProducts = CycleCapacityEditViewModel.DefaultMaxProductsPerVisit
         };
 
         await PopulateOptionsAsync(model, ct);
@@ -330,8 +339,18 @@ public sealed class CycleCapacitiesController : Controller
     /// stamped server-side, so this form has nothing to send even though it renders the number.
     /// <para><c>cyclePeriodId</c> is sent on CREATE only. The update endpoint does not accept one — the pin is set
     /// once, and leaving it out of the payload is stronger than rejecting a value.</para>
+    /// <para>WP-SB-3-UIa — <c>maxPromoProducts</c> / <c>maxNonPromoProducts</c> (SB-3a, 1..10) are sent only when the
+    /// author filled them: an omitted ceiling keeps the stored value (3 on a new record), never a silent 0.</para>
     /// </summary>
-    private static object ToPayload(CycleCapacityEditViewModel model, bool includeExpectedVersion)
+    internal static JsonObject ToPayload(CycleCapacityEditViewModel model, bool includeExpectedVersion)
+    {
+        var payload = JsonSerializer.SerializeToNode(ToBasePayload(model, includeExpectedVersion))!.AsObject();
+        if (model.MaxPromoProducts is { } maxPromo) payload["maxPromoProducts"] = maxPromo;
+        if (model.MaxNonPromoProducts is { } maxNonPromo) payload["maxNonPromoProducts"] = maxNonPromo;
+        return payload;
+    }
+
+    private static object ToBasePayload(CycleCapacityEditViewModel model, bool includeExpectedVersion)
     {
         var months = (model.Months ?? [])
             .Where(m => m.Year is > 0 && m.MonthNumber is >= 1 and <= 12)
@@ -396,6 +415,8 @@ public sealed class CycleCapacitiesController : Controller
         ReportDuration = detail.ReportDuration,
         QuizDuration = detail.QuizDuration,
         BetweenVisitTimeMinutes = detail.BetweenVisitTimeMinutes,
+        MaxPromoProducts = detail.MaxPromoProducts,
+        MaxNonPromoProducts = detail.MaxNonPromoProducts,
         Description = detail.Description,
         ExpectedVersion = detail.Version,
         IsArchived = detail.IsArchived,
@@ -674,6 +695,33 @@ public sealed class CycleCapacitiesController : Controller
             .Deserialize<CycleCapacityGatewayResponse<CycleCapacityContractApiModel>>(body, _json)?.Data?.Defaults;
     }
 
+    private const string MaxProductsOutOfRange = "max_products_out_of_range";
+    private const string MaxProductsOutOfRangeKey = "Err_" + MaxProductsOutOfRange;
+
+    /// <summary>WP-SB-3-UIa — the runtime's refusals as (field, text) pairs. SB-3a's <c>max_products_out_of_range</c>
+    /// (CRM: <c>[message, code]</c>, the message naming <c>MaxPromoProducts</c> / <c>MaxNonPromoProducts</c>) is shown
+    /// under the field it names, as <paramref name="outOfRangeText"/> — never as the raw code. Every other refusal stays
+    /// in the summary verbatim.</summary>
+    internal static List<(string Field, string Error)> MapGatewayErrors(IReadOnlyList<string> errors, string outOfRangeText)
+    {
+        var mapped = new List<(string, string)>();
+        if (!errors.Any(e => string.Equals(e?.Trim(), MaxProductsOutOfRange, StringComparison.Ordinal)))
+        {
+            mapped.AddRange(errors.Select(e => (string.Empty, e)));
+            return mapped;
+        }
+
+        var message = errors.FirstOrDefault(e => !string.Equals(e?.Trim(), MaxProductsOutOfRange, StringComparison.Ordinal)) ?? "";
+        // "MaxNonPromoProducts" contains "PromoProducts" too, so the non-promo field is tested first.
+        var field = message.Contains(nameof(CycleCapacityEditViewModel.MaxNonPromoProducts), StringComparison.OrdinalIgnoreCase)
+            ? nameof(CycleCapacityEditViewModel.MaxNonPromoProducts)
+            : message.Contains(nameof(CycleCapacityEditViewModel.MaxPromoProducts), StringComparison.OrdinalIgnoreCase)
+                ? nameof(CycleCapacityEditViewModel.MaxPromoProducts)
+                : string.Empty;
+        mapped.Add((field, outOfRangeText));
+        return mapped;
+    }
+
     /// <summary>Surfaces the runtime's own refusal verbatim. The month-window and duplicate messages name the offending
     /// month or period, and flattening them into "save failed" would take away the only thing an author can act on.
     /// </summary>
@@ -691,9 +739,9 @@ public sealed class CycleCapacitiesController : Controller
             var envelope = JsonSerializer.Deserialize<CycleCapacityGatewayResponse<object>>(body, _json);
             if (envelope?.Errors is { Count: > 0 })
             {
-                foreach (var error in envelope.Errors)
+                foreach (var (field, error) in MapGatewayErrors(envelope.Errors, _localizer[MaxProductsOutOfRangeKey].Value))
                 {
-                    ModelState.AddModelError(string.Empty, error);
+                    ModelState.AddModelError(field, error);
                 }
 
                 return;

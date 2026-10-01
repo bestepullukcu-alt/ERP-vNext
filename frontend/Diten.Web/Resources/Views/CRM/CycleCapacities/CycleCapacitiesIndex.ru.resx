@@ -78,4 +78,8 @@
   <data name="FieldDays" xml:space="preserve"><value>Полевые дни</value></data>
   <data name="VisitMinutes" xml:space="preserve"><value>Минуты визитов</value></data>
   <data name="NoFieldDays" xml:space="preserve"><value>Нет полевых дней</value></data>
+  <data name="MaxPromoProducts" xml:space="preserve"><value>Макс. промо-продуктов за визит</value></data>
+  <data name="MaxNonPromoProducts" xml:space="preserve"><value>Макс. непромо-продуктов за визит</value></data>
+  <data name="MaxProductsHint" xml:space="preserve"><value>1–10. Если оставить пустым, сохраняется текущее значение (3 для новой записи).</value></data>
+  <data name="Err_max_products_out_of_range" xml:space="preserve"><value>Количество продуктов за визит должно быть от 1 до 10.</value></data>
 </root>

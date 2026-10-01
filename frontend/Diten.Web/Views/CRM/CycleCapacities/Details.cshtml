@@ -74,6 +74,9 @@
                         (Localizer["DailyWorkMinutes"].Value, Model.DailyWorkMinutes?.ToString() ?? "-"),
                         (Localizer["PromoProductTime"].Value, Model.PromoProductTime?.ToString() ?? "-"),
                         (Localizer["NonPromoProductTime"].Value, Model.NonPromoProductTime?.ToString() ?? "-"),
+                        // WP-SB-3-UIa — SB-3a per-visit product ceilings (CRM reads 3 / 3 on a pre-SB-3a record).
+                        (Localizer["MaxPromoProducts"].Value, Model.MaxPromoProducts?.ToString() ?? "-"),
+                        (Localizer["MaxNonPromoProducts"].Value, Model.MaxNonPromoProducts?.ToString() ?? "-"),
                         (Localizer["TravelingTime"].Value, Model.TravelingTime?.ToString() ?? "-"),
                         (Localizer["ReportDuration"].Value, Model.ReportDuration?.ToString() ?? "-"),
                         (Localizer["QuizDuration"].Value, Model.QuizDuration?.ToString() ?? "-"),

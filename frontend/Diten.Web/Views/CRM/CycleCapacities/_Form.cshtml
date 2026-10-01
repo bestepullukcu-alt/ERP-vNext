@@ -99,6 +99,20 @@
                             <div class="form-text">@Localizer["PerVisitHint"]</div>
                             <span asp-validation-for="NonPromoProductTime" class="text-danger small mt-1"></span>
                         </div>
+                        @* WP-SB-3-UIa (SB-3a) — how many promo / non-promo products one visit tells (1..10, default 3). Optional:
+                           left empty it is not posted and the stored value stays. A runtime refusal shows under the field. *@
+                        <div class="col-12 col-md-6">
+                            <label asp-for="MaxPromoProducts" class="form-label fw-medium">@Localizer["MaxPromoProducts"]</label>
+                            <input asp-for="MaxPromoProducts" type="number" class="form-control" min="1" max="10" step="1" />
+                            <div class="form-text">@Localizer["MaxProductsHint"]</div>
+                            <span asp-validation-for="MaxPromoProducts" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="MaxNonPromoProducts" class="form-label fw-medium">@Localizer["MaxNonPromoProducts"]</label>
+                            <input asp-for="MaxNonPromoProducts" type="number" class="form-control" min="1" max="10" step="1" />
+                            <div class="form-text">@Localizer["MaxProductsHint"]</div>
+                            <span asp-validation-for="MaxNonPromoProducts" class="text-danger small mt-1"></span>
+                        </div>
                         <div class="col-12 col-md-6">
                             <label asp-for="TravelingTime" class="form-label fw-medium">
                                 @Localizer["TravelingTime"] <span class="text-danger">*</span>
