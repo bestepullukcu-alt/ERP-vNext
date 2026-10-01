@@ -1,0 +1,57 @@
+@using Diten.Web.Views.Inventory.StockMovements
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockMovementsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="stockmovements-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        Reversal = Localizer["Reversal"].Value,
+        ReversalConfirmTitle = Localizer["ReversalConfirmTitle"].Value,
+        ReversalConfirmText = Localizer["ReversalConfirmText"].Value,
+        ReversalConfirmButton = Localizer["ReversalConfirmButton"].Value,
+        ReversedBadge = Localizer["ReversedBadge"].Value,
+        ReversedInSource = Localizer["ReversedInSource"].Value,
+        Automatic = Localizer["Automatic"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Searching = Localizer["Searching"].Value,
+        NoResults = Localizer["NoResults"].Value,
+        PickerUnavailable = Localizer["PickerUnavailable"].Value,
+        ErrServiceUnavailable = Localizer["ErrServiceUnavailable"].Value,
+        MovementOPENING_BALANCE = Localizer["MovementOPENING_BALANCE"].Value,
+        MovementGOODS_RECEIPT_PO = Localizer["MovementGOODS_RECEIPT_PO"].Value,
+        MovementGOODS_RECEIPT_PROD = Localizer["MovementGOODS_RECEIPT_PROD"].Value,
+        MovementGOODS_ISSUE_SALES = Localizer["MovementGOODS_ISSUE_SALES"].Value,
+        MovementGOODS_ISSUE_PROD = Localizer["MovementGOODS_ISSUE_PROD"].Value,
+        MovementWAREHOUSE_TRANSFER = Localizer["MovementWAREHOUSE_TRANSFER"].Value,
+        MovementLOCATION_TRANSFER = Localizer["MovementLOCATION_TRANSFER"].Value,
+        MovementSTATUS_TRANSFER = Localizer["MovementSTATUS_TRANSFER"].Value,
+        MovementCUSTOMER_RETURN = Localizer["MovementCUSTOMER_RETURN"].Value,
+        MovementSUPPLIER_RETURN = Localizer["MovementSUPPLIER_RETURN"].Value,
+        MovementCOUNT_GAIN = Localizer["MovementCOUNT_GAIN"].Value,
+        MovementCOUNT_LOSS = Localizer["MovementCOUNT_LOSS"].Value,
+        MovementSCRAP = Localizer["MovementSCRAP"].Value,
+        MovementWRITE_OFF = Localizer["MovementWRITE_OFF"].Value,
+        MovementREVERSAL = Localizer["MovementREVERSAL"].Value,
+        StatusAVAILABLE = Localizer["StatusAVAILABLE"].Value,
+        StatusQUALITY_INSPECTION = Localizer["StatusQUALITY_INSPECTION"].Value,
+        StatusQUARANTINE = Localizer["StatusQUARANTINE"].Value,
+        StatusBLOCKED = Localizer["StatusBLOCKED"].Value,
+        StatusIN_TRANSIT = Localizer["StatusIN_TRANSIT"].Value,
+        StatusDAMAGED = Localizer["StatusDAMAGED"].Value,
+        StatusEXPIRED = Localizer["StatusEXPIRED"].Value,
+        SkuLevelGsku = Localizer["SkuLevelGsku"].Value,
+        SkuLevelLsku = Localizer["SkuLevelLsku"].Value,
+        SkuLevelFinishedGood = Localizer["SkuLevelFinishedGood"].Value
+    })
+</script>

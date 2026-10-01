@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="StockLedgerTitle" xml:space="preserve"><value>Stok Defteri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Ürün, depo, lokasyon, parti ve duruma göre güncel stok. Stok yalnızca hareketlerle değişir.</value></data>
+  <data name="KpiOnHand" xml:space="preserve"><value>Toplam eldeki stok</value></data>
+  <data name="KpiAvailable" xml:space="preserve"><value>Kullanılabilir</value></data>
+  <data name="KpiQualityInspection" xml:space="preserve"><value>Kalite kontrolde</value></data>
+  <data name="KpiQuarantineBlocked" xml:space="preserve"><value>Karantina / bloke</value></data>
+  <data name="KpiSelectProduct" xml:space="preserve"><value>Toplamları görmek için filtrede bir ürün veya SKU seçin.</value></data>
+  <data name="ColWarehouseLocation" xml:space="preserve"><value>Depo / Lokasyon</value></data>
+  <data name="ColStockStatus" xml:space="preserve"><value>Stok durumu</value></data>
+  <data name="ColOnHand" xml:space="preserve"><value>Eldeki</value></data>
+  <data name="ColReserved" xml:space="preserve"><value>Rezerve</value></data>
+  <data name="ColAvailable" xml:space="preserve"><value>Kullanılabilir</value></data>
+  <data name="ColQualityInspection" xml:space="preserve"><value>Kalite kont.</value></data>
+  <data name="ColBlocked" xml:space="preserve"><value>Bloke</value></data>
+  <data name="ColInTransit" xml:space="preserve"><value>Yolda</value></data>
+  <data name="ColUnit" xml:space="preserve"><value>Birim</value></data>
+  <data name="History" xml:space="preserve"><value>Geçmiş</value></data>
+  <data name="FilterSku" xml:space="preserve"><value>SKU (stok kodu)</value></data>
+  <data name="FilterStockStatus" xml:space="preserve"><value>Stok durumu</value></data>
+  <data name="TabStock" xml:space="preserve"><value>Stok listesi</value></data>
+  <data name="TabMovements" xml:space="preserve"><value>Hareket geçmişi</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>Ürün ve lokasyon adları şu anda yüklenemedi, bu yüzden kodlar gösteriliyor. Stok rakamları doğrudur.</value></data>
+  <data name="ColProductSku" xml:space="preserve"><value>Ürün / SKU</value></data>
+  <data name="ColLot" xml:space="preserve"><value>Parti</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="FilterLot" xml:space="preserve"><value>Parti numarası</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="FilterLocation" xml:space="preserve"><value>Lokasyon</value></data>
+  <data name="Searching" xml:space="preserve"><value>Aranıyor…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Eşleşme yok</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>Bu liste şu anda kullanılamıyor (ana veri servisine ulaşılamıyor). Diğer alanlarla filtrelemeye devam edebilirsiniz.</value></data>
+  <data name="StatusAVAILABLE" xml:space="preserve"><value>Kullanılabilir</value></data>
+  <data name="StatusQUALITY_INSPECTION" xml:space="preserve"><value>Kalite kontrol</value></data>
+  <data name="StatusQUARANTINE" xml:space="preserve"><value>Karantina</value></data>
+  <data name="StatusBLOCKED" xml:space="preserve"><value>Bloke</value></data>
+  <data name="StatusIN_TRANSIT" xml:space="preserve"><value>Yolda</value></data>
+  <data name="StatusDAMAGED" xml:space="preserve"><value>Hasarlı</value></data>
+  <data name="StatusEXPIRED" xml:space="preserve"><value>Süresi dolmuş</value></data>
+  <data name="SkuLevelGsku" xml:space="preserve"><value>Küresel SKU</value></data>
+  <data name="SkuLevelLsku" xml:space="preserve"><value>Yerel SKU</value></data>
+  <data name="SkuLevelFinishedGood" xml:space="preserve"><value>Mamul</value></data>
+  <data name="ErrInsufficientStock" xml:space="preserve"><value>Bu hareket için kaynakta yeterli stok yok. Hiçbir değişiklik yapılmadı; kullanılabilir miktarı kontrol edip tekrar deneyin.</value></data>
+  <data name="ErrAlreadyReversed" xml:space="preserve"><value>Bu hareketin ters kaydı zaten yapılmış. Hiçbir değişiklik yapılmadı; ters kaydı görmek için listeyi yenileyin.</value></data>
+  <data name="ErrMasterUnavailable" xml:space="preserve"><value>Ürün veya lokasyon verisi şu anda doğrulanamıyor, bu yüzden değişiklik yapılmadı. Bağlantı geri geldiğinde tekrar deneyin.</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>Bu kayıt başka bir şirkete ait. O şirkete geçin veya yöneticinizden erişim isteyin.</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>Bu işlem başka değerlerle zaten gönderilmiş. Pencereyi kapatıp yeniden başlayın.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Bir değer geçerli olmadığı için istek işlenemedi. Sayfayı yenileyip tekrar deneyin.</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>Ürün veya SKU ürün ana verisinde tanınmıyor. Hiçbir değişiklik yapılmadı; ürünü kontrol edin.</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>Depo veya lokasyon tanınmıyor. Hiçbir değişiklik yapılmadı; lokasyonu kontrol edin.</value></data>
+  <data name="ErrUomMissing" xml:space="preserve"><value>Bu birim SKU'nun temel birimine çevrilemiyor. Hiçbir değişiklik yapılmadı; başka bir birim seçin.</value></data>
+  <data name="ErrLotRequired" xml:space="preserve"><value>Bu ürün parti takipli: parti zorunludur. Hiçbir değişiklik yapılmadı; partiyi girip tekrar deneyin.</value></data>
+  <data name="ErrSerialMismatch" xml:space="preserve"><value>Seri numarası sayısı miktarla eşleşmiyor. Hiçbir değişiklik yapılmadı; seri numaralarını düzeltin.</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>Siz çalışırken veri değişti. Listeyi yenileyip tekrar deneyin.</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>Bu işleme erişiminiz yok. İhtiyacınız olan stok yetkilerini yöneticinizden isteyin.</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>Oturumunuz sona erdi. Devam etmek için yeniden giriş yapın.</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>Stok servisine şu anda ulaşılamıyor. Hiçbir değişiklik yapılmadı; biraz sonra tekrar deneyin.</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>Bir sorun oluştu ve değişiklik yapılmadı. Tekrar deneyin; devam ederse destek ekibine başvurun.</value></data>
+</root>

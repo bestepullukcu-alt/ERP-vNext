@@ -1,0 +1,68 @@
+@using Diten.Web.Views.Inventory.StockMovements
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockMovementsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["StockMovementsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    UAS-001 — nothing below is drawn without inventory.stock.read: no heading, no tabs, no empty table, no
+    action. No redirect: the address stays.
+
+    ⚠ Display only. InventoryService's [HasPermission] remains the authority (UAS-001 §4): the Reversal button's
+    absence for a read-only user is a display decision; the movement operation refuses it regardless.
+*@
+@if (!Perms.Has("inventory.stock.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["StockMovementsTitle"].Value" />
+    return;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Inventory/StockMovements/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["StockMovementsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* Two real routes styled as pills (pack §9) — not client tabs. *@
+<div class="nav-align-top mb-4">
+    <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap">
+        <li class="nav-item">
+            <a class="nav-link small border shadow-none wc-tab-compact" href="/StockLedger">
+                <i class="bx bx-package me-1 wc-tab-icon"></i>@Localizer["TabStock"]
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active small border shadow-none wc-tab-compact" href="/StockMovements" aria-current="page">
+                <i class="bx bx-transfer-alt me-1 wc-tab-icon"></i>@Localizer["TabMovements"]
+            </a>
+        </li>
+    </ul>
+</div>
+
+@* Read-path notices written by index.js: names unavailable (BG-10) and a list that could not be loaded. *@
+<div id="stockmovements-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["NamesUnavailable"]</div>
+<div id="stockmovements-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+@* No bulk action bar: the history is immutable and has no selection column (pack §11). *@
+@* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-stockmovements" data-dt-standard="v2"> *@
+<partial name="~/Views/Inventory/StockMovements/_DataTable.cshtml" />
+
+@if (Perms.Has("inventory.movements.create"))
+{
+    @* The Reversal POST is [ValidateAntiForgeryToken]; the token is only issued to a user who may reverse. *@
+    <form id="stockmovements-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Inventory/StockMovements/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Inventory/StockMovements/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Inventory/StockMovements/index.js" asp-append-version="true"></script>
+}

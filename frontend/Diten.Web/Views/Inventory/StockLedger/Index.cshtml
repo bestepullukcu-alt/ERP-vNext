@@ -1,0 +1,63 @@
+@using Diten.Web.Views.Inventory.StockLedger
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockLedgerIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["StockLedgerTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    UAS-001 — nothing below is drawn without inventory.stock.read: no heading, no tabs, no KPI cards, no empty
+    table. No redirect: the address stays, and the page works the moment the permission is granted.
+
+    ⚠ Display only. InventoryService's [HasPermission] on every inventory operation remains the authority (UAS-001 §4).
+*@
+@if (!Perms.Has("inventory.stock.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["StockLedgerTitle"].Value" />
+    return;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Inventory/StockLedger/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["StockLedgerTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* Two real routes styled as pills (pack §9) — not client tabs. *@
+<div class="nav-align-top mb-4">
+    <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap">
+        <li class="nav-item">
+            <a class="nav-link active small border shadow-none wc-tab-compact" href="/StockLedger" aria-current="page">
+                <i class="bx bx-package me-1 wc-tab-icon"></i>@Localizer["TabStock"]
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link small border shadow-none wc-tab-compact" href="/StockMovements">
+                <i class="bx bx-transfer-alt me-1 wc-tab-icon"></i>@Localizer["TabMovements"]
+            </a>
+        </li>
+    </ul>
+</div>
+
+<partial name="~/Views/Inventory/StockLedger/_KpiStrip.cshtml" />
+
+@* Read-path notices written by index.js: names unavailable (BG-10) and a list that could not be loaded. *@
+<div id="stockledger-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["NamesUnavailable"]</div>
+<div id="stockledger-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+@* No bulk action bar: the list has no selection column (read-only projection, pack §11). *@
+@* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-stockledger" data-dt-standard="v2"> *@
+<partial name="~/Views/Inventory/StockLedger/_DataTable.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Inventory/StockLedger/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Inventory/StockLedger/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Inventory/StockLedger/index.js" asp-append-version="true"></script>
+}

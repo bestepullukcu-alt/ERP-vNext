@@ -922,4 +922,7 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>التنقل بين علامات التبويب (عند التركيز على علامة تبويب)</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>تعديل المهمة</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>العودة إلى قائمة المهام</value></data>
+  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>تنفيذ سلسلة الإمداد</value></data>
+  <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>إدارة المخزون</value></data>
+  <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>دفتر المخزون</value></data>
 </root>

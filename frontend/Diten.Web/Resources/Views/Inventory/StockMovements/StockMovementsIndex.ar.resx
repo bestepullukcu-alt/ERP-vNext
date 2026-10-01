@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="StockMovementsTitle" xml:space="preserve"><value>حركات المخزون</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>جميع حركات المخزون، الأحدث أولًا. لا تُعدَّل الحركات أبدًا: يُصحَّح الخطأ بقيد عكسي.</value></data>
+  <data name="ColTransactionNo" xml:space="preserve"><value>رقم الحركة</value></data>
+  <data name="ColMovementType" xml:space="preserve"><value>نوع الحركة</value></data>
+  <data name="ColReason" xml:space="preserve"><value>السبب</value></data>
+  <data name="ColQuantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="ColBaseQuantity" xml:space="preserve"><value>الكمية الأساسية</value></data>
+  <data name="ColTo" xml:space="preserve"><value>إلى</value></data>
+  <data name="ColStatusChange" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ColSource" xml:space="preserve"><value>المصدر</value></data>
+  <data name="ColTransactionDate" xml:space="preserve"><value>تاريخ الحركة</value></data>
+  <data name="ColPostingDate" xml:space="preserve"><value>تاريخ الترحيل</value></data>
+  <data name="Reversal" xml:space="preserve"><value>عكس الحركة</value></data>
+  <data name="ReversalConfirmTitle" xml:space="preserve"><value>هل تريد عكس هذه الحركة؟</value></data>
+  <data name="ReversalConfirmText" xml:space="preserve"><value>تبقى الحركة {0} في السجل؛ وتُلغي حركة عكسية جديدة أثرها على المخزون. لا يمكن التراجع عن ذلك.</value></data>
+  <data name="ReversalConfirmButton" xml:space="preserve"><value>اعكس الحركة</value></data>
+  <data name="ReversalPosted" xml:space="preserve"><value>تم ترحيل القيد العكسي {0}.</value></data>
+  <data name="ReversedBadge" xml:space="preserve"><value>معكوسة</value></data>
+  <data name="ReversedInSource" xml:space="preserve"><value>سجّلته وحدة أخرى: يُعكس من الوحدة المصدر.</value></data>
+  <data name="Automatic" xml:space="preserve"><value>تلقائي</value></data>
+  <data name="FilterFrom" xml:space="preserve"><value>من تاريخ</value></data>
+  <data name="FilterTo" xml:space="preserve"><value>إلى تاريخ</value></data>
+  <data name="MovementOPENING_BALANCE" xml:space="preserve"><value>رصيد افتتاحي</value></data>
+  <data name="MovementGOODS_RECEIPT_PO" xml:space="preserve"><value>استلام بضاعة (شراء)</value></data>
+  <data name="MovementGOODS_RECEIPT_PROD" xml:space="preserve"><value>استلام بضاعة (إنتاج)</value></data>
+  <data name="MovementGOODS_ISSUE_SALES" xml:space="preserve"><value>صرف بضاعة (مبيعات)</value></data>
+  <data name="MovementGOODS_ISSUE_PROD" xml:space="preserve"><value>صرف بضاعة (إنتاج)</value></data>
+  <data name="MovementWAREHOUSE_TRANSFER" xml:space="preserve"><value>نقل بين المستودعات</value></data>
+  <data name="MovementLOCATION_TRANSFER" xml:space="preserve"><value>نقل بين المواقع</value></data>
+  <data name="MovementSTATUS_TRANSFER" xml:space="preserve"><value>تغيير الحالة</value></data>
+  <data name="MovementCUSTOMER_RETURN" xml:space="preserve"><value>مرتجع عميل</value></data>
+  <data name="MovementSUPPLIER_RETURN" xml:space="preserve"><value>مرتجع إلى المورّد</value></data>
+  <data name="MovementCOUNT_GAIN" xml:space="preserve"><value>زيادة جرد</value></data>
+  <data name="MovementCOUNT_LOSS" xml:space="preserve"><value>نقص جرد</value></data>
+  <data name="MovementSCRAP" xml:space="preserve"><value>إتلاف</value></data>
+  <data name="MovementWRITE_OFF" xml:space="preserve"><value>شطب</value></data>
+  <data name="MovementREVERSAL" xml:space="preserve"><value>قيد عكسي</value></data>
+  <data name="TabStock" xml:space="preserve"><value>قائمة المخزون</value></data>
+  <data name="TabMovements" xml:space="preserve"><value>سجل الحركات</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>تعذّر تحميل أسماء المنتجات والمواقع حاليًا، لذلك تُعرض الرموز بدلًا منها. أرقام المخزون صحيحة.</value></data>
+  <data name="ColProductSku" xml:space="preserve"><value>المنتج / SKU</value></data>
+  <data name="ColLot" xml:space="preserve"><value>الدفعة</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="FilterLot" xml:space="preserve"><value>رقم الدفعة</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>المستودع</value></data>
+  <data name="FilterLocation" xml:space="preserve"><value>الموقع</value></data>
+  <data name="Searching" xml:space="preserve"><value>جارٍ البحث…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>لا توجد نتائج مطابقة</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>هذه القائمة غير متاحة حاليًا (تعذّر الوصول إلى خدمة البيانات الرئيسية). يمكنك التصفية باستخدام الحقول الأخرى.</value></data>
+  <data name="StatusAVAILABLE" xml:space="preserve"><value>متاح</value></data>
+  <data name="StatusQUALITY_INSPECTION" xml:space="preserve"><value>فحص الجودة</value></data>
+  <data name="StatusQUARANTINE" xml:space="preserve"><value>الحجر</value></data>
+  <data name="StatusBLOCKED" xml:space="preserve"><value>موقوف</value></data>
+  <data name="StatusIN_TRANSIT" xml:space="preserve"><value>قيد النقل</value></data>
+  <data name="StatusDAMAGED" xml:space="preserve"><value>تالف</value></data>
+  <data name="StatusEXPIRED" xml:space="preserve"><value>منتهي الصلاحية</value></data>
+  <data name="SkuLevelGsku" xml:space="preserve"><value>SKU عالمي</value></data>
+  <data name="SkuLevelLsku" xml:space="preserve"><value>SKU محلي</value></data>
+  <data name="SkuLevelFinishedGood" xml:space="preserve"><value>منتج نهائي</value></data>
+  <data name="ErrInsufficientStock" xml:space="preserve"><value>لا يوجد مخزون كافٍ في المصدر لهذه الحركة. لم يتم تغيير أي شيء؛ تحقّق من الكمية المتاحة ثم حاول مرة أخرى.</value></data>
+  <data name="ErrAlreadyReversed" xml:space="preserve"><value>تم عكس هذه الحركة مسبقًا. لم يتم تغيير أي شيء؛ أعد تحميل القائمة لرؤية القيد العكسي.</value></data>
+  <data name="ErrMasterUnavailable" xml:space="preserve"><value>تعذّر التحقق من بيانات المنتج أو الموقع حاليًا، لذلك لم يتم أي تغيير. حاول مرة أخرى عند عودة الاتصال.</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>هذا السجل يخص شركة أخرى. انتقل إلى تلك الشركة أو اطلب الوصول من المسؤول.</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>سبق إرسال هذا الإجراء بقيم أخرى. أغلق النافذة وابدأ من جديد.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>تعذّرت معالجة الطلب لأن إحدى القيم غير صالحة. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>لا يتعرّف سجل المنتجات الرئيسي على المنتج أو SKU. لم يتم تغيير أي شيء؛ تحقّق من المنتج.</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>لم يتم التعرّف على المستودع أو الموقع. لم يتم تغيير أي شيء؛ تحقّق من الموقع.</value></data>
+  <data name="ErrUomMissing" xml:space="preserve"><value>لا يمكن تحويل هذه الوحدة إلى الوحدة الأساسية لـ SKU. لم يتم تغيير أي شيء؛ اختر وحدة أخرى.</value></data>
+  <data name="ErrLotRequired" xml:space="preserve"><value>هذا المنتج يُدار بالدفعات: الدفعة مطلوبة. لم يتم تغيير أي شيء؛ أدخل الدفعة وحاول مرة أخرى.</value></data>
+  <data name="ErrSerialMismatch" xml:space="preserve"><value>عدد الأرقام التسلسلية لا يطابق الكمية. لم يتم تغيير أي شيء؛ صحّح الأرقام التسلسلية.</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>تغيّرت البيانات أثناء عملك. أعد تحميل القائمة وحاول مرة أخرى.</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>ليس لديك صلاحية لهذا الإجراء. اطلب من المسؤول صلاحيات المخزون التي تحتاجها.</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>انتهت جلستك. سجّل الدخول مرة أخرى للمتابعة.</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>تعذّر الوصول إلى خدمة المخزون حاليًا. لم يتم أي تغيير؛ حاول مرة أخرى بعد قليل.</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>حدث خطأ ولم يتم أي تغيير. حاول مرة أخرى؛ وإذا تكرر ذلك فتواصل مع الدعم.</value></data>
+</root>

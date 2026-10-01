@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="StockLedgerTitle" xml:space="preserve"><value>Libro de existencias</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Existencias actuales por producto, almacén, ubicación, lote y estado. Las existencias solo cambian mediante movimientos.</value></data>
+  <data name="KpiOnHand" xml:space="preserve"><value>Total en existencia</value></data>
+  <data name="KpiAvailable" xml:space="preserve"><value>Disponible</value></data>
+  <data name="KpiQualityInspection" xml:space="preserve"><value>En inspección de calidad</value></data>
+  <data name="KpiQuarantineBlocked" xml:space="preserve"><value>Cuarentena / bloqueado</value></data>
+  <data name="KpiSelectProduct" xml:space="preserve"><value>Seleccione un producto o SKU en el filtro para ver sus totales.</value></data>
+  <data name="ColWarehouseLocation" xml:space="preserve"><value>Almacén / Ubicación</value></data>
+  <data name="ColStockStatus" xml:space="preserve"><value>Estado del stock</value></data>
+  <data name="ColOnHand" xml:space="preserve"><value>En existencia</value></data>
+  <data name="ColReserved" xml:space="preserve"><value>Reservado</value></data>
+  <data name="ColAvailable" xml:space="preserve"><value>Disponible</value></data>
+  <data name="ColQualityInspection" xml:space="preserve"><value>Insp. calidad</value></data>
+  <data name="ColBlocked" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="ColInTransit" xml:space="preserve"><value>En tránsito</value></data>
+  <data name="ColUnit" xml:space="preserve"><value>Unidad</value></data>
+  <data name="History" xml:space="preserve"><value>Historial</value></data>
+  <data name="FilterSku" xml:space="preserve"><value>SKU (referencia)</value></data>
+  <data name="FilterStockStatus" xml:space="preserve"><value>Estado del stock</value></data>
+  <data name="TabStock" xml:space="preserve"><value>Lista de existencias</value></data>
+  <data name="TabMovements" xml:space="preserve"><value>Historial de movimientos</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>No se han podido cargar ahora los nombres de productos y ubicaciones; se muestran los códigos. Las cifras de existencias son correctas.</value></data>
+  <data name="ColProductSku" xml:space="preserve"><value>Producto / SKU</value></data>
+  <data name="ColLot" xml:space="preserve"><value>Lote</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Producto</value></data>
+  <data name="FilterLot" xml:space="preserve"><value>Número de lote</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="FilterLocation" xml:space="preserve"><value>Ubicación</value></data>
+  <data name="Searching" xml:space="preserve"><value>Buscando…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Sin resultados</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>Esta lista no está disponible ahora (no se puede acceder al servicio de datos maestros). Puede filtrar con los demás campos.</value></data>
+  <data name="StatusAVAILABLE" xml:space="preserve"><value>Disponible</value></data>
+  <data name="StatusQUALITY_INSPECTION" xml:space="preserve"><value>Inspección de calidad</value></data>
+  <data name="StatusQUARANTINE" xml:space="preserve"><value>Cuarentena</value></data>
+  <data name="StatusBLOCKED" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="StatusIN_TRANSIT" xml:space="preserve"><value>En tránsito</value></data>
+  <data name="StatusDAMAGED" xml:space="preserve"><value>Dañado</value></data>
+  <data name="StatusEXPIRED" xml:space="preserve"><value>Caducado</value></data>
+  <data name="SkuLevelGsku" xml:space="preserve"><value>SKU global</value></data>
+  <data name="SkuLevelLsku" xml:space="preserve"><value>SKU local</value></data>
+  <data name="SkuLevelFinishedGood" xml:space="preserve"><value>Producto terminado</value></data>
+  <data name="ErrInsufficientStock" xml:space="preserve"><value>No hay existencias suficientes en el origen para este movimiento. No se ha cambiado nada; compruebe la cantidad disponible e inténtelo de nuevo.</value></data>
+  <data name="ErrAlreadyReversed" xml:space="preserve"><value>Este movimiento ya se ha revertido. No se ha cambiado nada; recargue la lista para ver la reversión.</value></data>
+  <data name="ErrMasterUnavailable" xml:space="preserve"><value>Ahora no se pueden comprobar los datos de producto o ubicación, por lo que no se ha realizado ningún cambio. Inténtelo de nuevo cuando vuelva la conexión.</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>Este registro pertenece a otra empresa. Cambie a esa empresa o solicite acceso a su administrador.</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>Esta acción ya se envió con otros valores. Cierre el cuadro de diálogo y empiece de nuevo.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>No se pudo procesar la solicitud porque un valor no es válido. Recargue la página e inténtelo de nuevo.</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>El maestro de productos no reconoce el producto o el SKU. No se ha cambiado nada; revise el producto.</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>No se reconoce el almacén o la ubicación. No se ha cambiado nada; revise la ubicación.</value></data>
+  <data name="ErrUomMissing" xml:space="preserve"><value>Esta unidad no se puede convertir a la unidad base del SKU. No se ha cambiado nada; elija otra unidad.</value></data>
+  <data name="ErrLotRequired" xml:space="preserve"><value>Este producto se controla por lotes: el lote es obligatorio. No se ha cambiado nada; indique el lote e inténtelo de nuevo.</value></data>
+  <data name="ErrSerialMismatch" xml:space="preserve"><value>La cantidad de números de serie no coincide con la cantidad. No se ha cambiado nada; corrija los números de serie.</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>Los datos cambiaron mientras trabajaba. Recargue la lista e inténtelo de nuevo.</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>No tiene acceso a esta acción. Solicite a su administrador los permisos de existencias que necesita.</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>Su sesión ha finalizado. Vuelva a iniciar sesión para continuar.</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>Ahora no se puede acceder al servicio de existencias. No se ha realizado ningún cambio; inténtelo de nuevo en un momento.</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>Se produjo un problema y no se realizó ningún cambio. Inténtelo de nuevo; si persiste, contacte con soporte.</value></data>
+</root>

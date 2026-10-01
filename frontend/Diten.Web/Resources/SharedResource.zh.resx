@@ -922,4 +922,7 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>在选项卡之间切换（焦点位于选项卡上时）</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>编辑任务</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>返回任务列表</value></data>
+  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>供应链执行</value></data>
+  <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>库存管理</value></data>
+  <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>库存台账</value></data>
 </root>

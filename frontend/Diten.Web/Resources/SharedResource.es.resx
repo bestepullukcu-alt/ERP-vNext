@@ -923,4 +923,7 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Moverse entre pestañas (con una pestaña enfocada)</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Editar la tarea</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Volver a la lista de tareas</value></data>
+  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Ejecución de la cadena de suministro</value></data>
+  <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Inventario</value></data>
+  <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Libro de existencias</value></data>
 </root>

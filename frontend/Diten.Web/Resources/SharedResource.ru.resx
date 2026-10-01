@@ -922,4 +922,7 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Переход между вкладками (когда вкладка в фокусе)</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Изменить задачу</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Вернуться к списку задач</value></data>
+  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Исполнение цепочки поставок</value></data>
+  <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Запасы</value></data>
+  <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Складской учёт</value></data>
 </root>

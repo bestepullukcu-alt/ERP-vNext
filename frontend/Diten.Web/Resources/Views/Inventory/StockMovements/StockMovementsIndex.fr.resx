@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="StockMovementsTitle" xml:space="preserve"><value>Mouvements de stock</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Tous les mouvements de stock, du plus récent au plus ancien. Un mouvement n'est jamais modifié : une erreur se corrige par une contre-passation.</value></data>
+  <data name="ColTransactionNo" xml:space="preserve"><value>N° de transaction</value></data>
+  <data name="ColMovementType" xml:space="preserve"><value>Type de mouvement</value></data>
+  <data name="ColReason" xml:space="preserve"><value>Motif</value></data>
+  <data name="ColQuantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="ColBaseQuantity" xml:space="preserve"><value>Quantité de base</value></data>
+  <data name="ColTo" xml:space="preserve"><value>Vers</value></data>
+  <data name="ColStatusChange" xml:space="preserve"><value>Statut</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Origine</value></data>
+  <data name="ColTransactionDate" xml:space="preserve"><value>Date de transaction</value></data>
+  <data name="ColPostingDate" xml:space="preserve"><value>Date de comptabilisation</value></data>
+  <data name="Reversal" xml:space="preserve"><value>Contre-passer</value></data>
+  <data name="ReversalConfirmTitle" xml:space="preserve"><value>Contre-passer ce mouvement ?</value></data>
+  <data name="ReversalConfirmText" xml:space="preserve"><value>Le mouvement {0} reste dans l'historique ; un nouveau mouvement de contre-passation annule son effet sur le stock. Cette action est irréversible.</value></data>
+  <data name="ReversalConfirmButton" xml:space="preserve"><value>Contre-passer le mouvement</value></data>
+  <data name="ReversalPosted" xml:space="preserve"><value>Contre-passation {0} enregistrée.</value></data>
+  <data name="ReversedBadge" xml:space="preserve"><value>Contre-passé</value></data>
+  <data name="ReversedInSource" xml:space="preserve"><value>Enregistré par un autre module : il se contre-passe dans ce module.</value></data>
+  <data name="Automatic" xml:space="preserve"><value>Automatique</value></data>
+  <data name="FilterFrom" xml:space="preserve"><value>Date de début</value></data>
+  <data name="FilterTo" xml:space="preserve"><value>Date de fin</value></data>
+  <data name="MovementOPENING_BALANCE" xml:space="preserve"><value>Solde d'ouverture</value></data>
+  <data name="MovementGOODS_RECEIPT_PO" xml:space="preserve"><value>Réception (achat)</value></data>
+  <data name="MovementGOODS_RECEIPT_PROD" xml:space="preserve"><value>Réception (production)</value></data>
+  <data name="MovementGOODS_ISSUE_SALES" xml:space="preserve"><value>Sortie (vente)</value></data>
+  <data name="MovementGOODS_ISSUE_PROD" xml:space="preserve"><value>Sortie (production)</value></data>
+  <data name="MovementWAREHOUSE_TRANSFER" xml:space="preserve"><value>Transfert entre entrepôts</value></data>
+  <data name="MovementLOCATION_TRANSFER" xml:space="preserve"><value>Transfert d'emplacement</value></data>
+  <data name="MovementSTATUS_TRANSFER" xml:space="preserve"><value>Changement de statut</value></data>
+  <data name="MovementCUSTOMER_RETURN" xml:space="preserve"><value>Retour client</value></data>
+  <data name="MovementSUPPLIER_RETURN" xml:space="preserve"><value>Retour fournisseur</value></data>
+  <data name="MovementCOUNT_GAIN" xml:space="preserve"><value>Excédent d'inventaire</value></data>
+  <data name="MovementCOUNT_LOSS" xml:space="preserve"><value>Manquant d'inventaire</value></data>
+  <data name="MovementSCRAP" xml:space="preserve"><value>Mise au rebut</value></data>
+  <data name="MovementWRITE_OFF" xml:space="preserve"><value>Dépréciation</value></data>
+  <data name="MovementREVERSAL" xml:space="preserve"><value>Contre-passation</value></data>
+  <data name="TabStock" xml:space="preserve"><value>Liste des stocks</value></data>
+  <data name="TabMovements" xml:space="preserve"><value>Historique des mouvements</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>Les noms des produits et des emplacements n'ont pas pu être chargés pour le moment ; les codes sont affichés à la place. Les quantités en stock sont exactes.</value></data>
+  <data name="ColProductSku" xml:space="preserve"><value>Produit / SKU</value></data>
+  <data name="ColLot" xml:space="preserve"><value>N° de lot</value></data>
+  <data name="Actions" xml:space="preserve"><value>Opérations</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="FilterLot" xml:space="preserve"><value>Numéro de lot</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Entrepôt</value></data>
+  <data name="FilterLocation" xml:space="preserve"><value>Emplacement</value></data>
+  <data name="Searching" xml:space="preserve"><value>Recherche…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Aucun résultat</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>Cette liste n'est pas disponible pour le moment (le service de données de référence est injoignable). Vous pouvez filtrer avec les autres champs.</value></data>
+  <data name="StatusAVAILABLE" xml:space="preserve"><value>Disponible</value></data>
+  <data name="StatusQUALITY_INSPECTION" xml:space="preserve"><value>Contrôle qualité</value></data>
+  <data name="StatusQUARANTINE" xml:space="preserve"><value>Quarantaine</value></data>
+  <data name="StatusBLOCKED" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="StatusIN_TRANSIT" xml:space="preserve"><value>En transit</value></data>
+  <data name="StatusDAMAGED" xml:space="preserve"><value>Endommagé</value></data>
+  <data name="StatusEXPIRED" xml:space="preserve"><value>Périmé</value></data>
+  <data name="SkuLevelGsku" xml:space="preserve"><value>SKU global</value></data>
+  <data name="SkuLevelLsku" xml:space="preserve"><value>SKU local</value></data>
+  <data name="SkuLevelFinishedGood" xml:space="preserve"><value>Produit fini</value></data>
+  <data name="ErrInsufficientStock" xml:space="preserve"><value>Le stock à la source est insuffisant pour ce mouvement. Rien n'a été modifié ; vérifiez la quantité disponible et réessayez.</value></data>
+  <data name="ErrAlreadyReversed" xml:space="preserve"><value>Ce mouvement a déjà été contre-passé. Rien n'a été modifié ; rechargez la liste pour voir la contre-passation.</value></data>
+  <data name="ErrMasterUnavailable" xml:space="preserve"><value>Les données produit ou emplacement ne peuvent pas être vérifiées pour le moment ; aucune modification n'a été faite. Réessayez lorsque la connexion sera rétablie.</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>Cet enregistrement appartient à une autre société. Passez à cette société ou demandez l'accès à votre administrateur.</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>Cette action a déjà été envoyée avec d'autres valeurs. Fermez la fenêtre et recommencez.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>La demande n'a pas pu être traitée car une valeur n'est pas valide. Rechargez la page et réessayez.</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>Le produit ou le SKU n'est pas reconnu par le référentiel produit. Rien n'a été modifié ; vérifiez le produit.</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>L'entrepôt ou l'emplacement n'est pas reconnu. Rien n'a été modifié ; vérifiez l'emplacement.</value></data>
+  <data name="ErrUomMissing" xml:space="preserve"><value>Cette unité ne peut pas être convertie dans l'unité de base du SKU. Rien n'a été modifié ; choisissez une autre unité.</value></data>
+  <data name="ErrLotRequired" xml:space="preserve"><value>Ce produit est géré par lot : un lot est obligatoire. Rien n'a été modifié ; saisissez le lot et réessayez.</value></data>
+  <data name="ErrSerialMismatch" xml:space="preserve"><value>Le nombre de numéros de série ne correspond pas à la quantité. Rien n'a été modifié ; corrigez les numéros de série.</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>Les données ont changé pendant votre travail. Rechargez la liste et réessayez.</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>Vous n'avez pas accès à cette action. Demandez à votre administrateur les droits de stock nécessaires.</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>Votre session a expiré. Reconnectez-vous pour continuer.</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>Le service de stock est injoignable pour le moment. Aucune modification n'a été faite ; réessayez dans un instant.</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>Un problème est survenu et aucune modification n'a été faite. Réessayez ; si cela persiste, contactez le support.</value></data>
+</root>
