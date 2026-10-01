@@ -1,0 +1,33 @@
+﻿{
+    "headCommit":  "ac62fa9da7f3e745499112712670a7273080222a",
+    "binary":  {
+                   "path":  "\u003crepo\u003e\\services\\Diten.InventoryService\\src\\Diten.InventoryService.Api\\bin\\Debug\\net8.0\\Diten.InventoryService.Api.dll",
+                   "lastWriteTime":  "2026-10-01T11:17:38.4502186+03:00",
+                   "sha256":  "306B94C3026FD68E9A209BEAFDF4A716C3DCAE5EE59D65E126F4141065FE7FFC"
+               },
+    "environment":  "Mock (EnforceLocationLegalEntityMatch=false - Prism static locations carry le-tr; ASSUMPTION-0173-07)",
+    "mongo":  "mongodb://localhost:27017 / diten_inventory_mock",
+    "prism":  {
+                  "productMaster":  "127.0.0.1:4010",
+                  "location":  "127.0.0.1:4011",
+                  "entryPoint":  "@stoplight/prism-cli 4.10.5"
+              },
+    "run1":  {
+                 "label":  "run1",
+                 "pid":  1120,
+                 "processStartTime":  "2026-10-01T11:25:42.0243262+03:00",
+                 "healthStatus":  200,
+                 "healthBody":  "{\"status\":\"Healthy\",\"module\":\"MOD-0173\"}"
+             },
+    "run1StoppedAt":  "2026-10-01T11:25:53.2736709+03:00",
+    "run2":  {
+                 "label":  "run2-after-restart",
+                 "pid":  23720,
+                 "processStartTime":  "2026-10-01T11:25:53.2882492+03:00",
+                 "healthStatus":  200,
+                 "healthBody":  "{\"status\":\"Healthy\",\"module\":\"MOD-0173\"}"
+             },
+    "restartedWithSameBinary":  true,
+    "probeFlowsExitCode":  0,
+    "probeAfterRestartExitCode":  0
+}

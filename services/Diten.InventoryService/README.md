@@ -11,7 +11,7 @@ edited directly. Scope is Tenant + Legal Entity, taken from the signed JWT only.
 | Consumed contracts | `PRODUCT-MASTER-BUNDLE` v1 (MOD-0290, Model A), `LOCATION` v1 — HTTP only |
 | Port | **5066** |
 | Base path | `/api/inventory` |
-| Slice implemented | **S1 — Ledger core** (reservations = S2, valuation = S3) |
+| Slices implemented | **S1 — Ledger core** + **S2 — Reservations** (+ FU-S1-01, FU-S1-02); valuation = S3 |
 | API narrative | `docs/reference/architecture/api/mod-0173-inventory-bundle.md` |
 
 ## Layout
@@ -21,7 +21,7 @@ src/
   Diten.InventoryService.Api             Program.cs, InventoryController, CustomBaseController, request reader
   Diten.InventoryService.Application     CQRS (MediatR), 4 pipeline behaviors, validators, upstream client contracts
   Diten.InventoryService.Domain          entities, enums, direction matrix, bucket rule, UoM conversion (no Mongo/framework)
-  Diten.InventoryService.Persistence     Mongo mappings, indexes, InventoryLedgerRepository (atomic posting)
+  Diten.InventoryService.Persistence     Mongo mappings, indexes, ledger + reservation repositories (atomic), SKU positions, expiry sweeper
   Diten.InventoryService.Infrastructure  JWT scope + correlation middleware, permissions, PRODUCT-MASTER / LOCATION HTTP clients
 tests/
   Diten.InventoryService.Tests           domain, API (real host + real Mongo), architecture, contract schema, Prism smoke
@@ -29,12 +29,14 @@ tests/
   runtime-probe/run-runtime-probe.ps1    real process on 5066 + Prism mocks + restart
 ```
 
-## Operations (S1)
+## Operations (S1 + S2)
 
 | Method | Path | Permission | Notes |
 |---|---|---|---|
 | POST | `/api/inventory/movements` | `supplychain.inventory.movements.post` | the ONLY way to change stock; `Idempotency-Key` header = body `idempotencyKey` |
-| GET | `/api/inventory/availability` | `supplychain.inventory.read` | `itemId` or `skuId` required |
+| POST | `/api/inventory/reservations` | `supplychain.inventory.reservations.manage` | SKU-level hold of AVAILABLE stock; `Idempotency-Key` = body key; 422 `INSUFFICIENT_AVAILABLE` |
+| POST | `/api/inventory/reservations/{id}/release` | `supplychain.inventory.reservations.manage` | `If-Match: W/"<version>"` required; stale / not ACTIVE → 409 `RESERVATION_CONFLICT` |
+| GET | `/api/inventory/availability` | `supplychain.inventory.read` | `itemId` or `skuId` required; `reserved` = SKU-level ACTIVE holds; no stock → PRODUCT-MASTER decides (200 zeros / 404 / 503) |
 | GET | `/api/inventory/balance` | `supplychain.inventory.read` | paged projection rows |
 | GET | `/api/inventory/transactions` | `supplychain.inventory.read` | immutable history, newest posting first |
 | GET | `/health` | anonymous | `{ "status": "Healthy", "module": "MOD-0173" }` |
@@ -62,9 +64,17 @@ Configuration (all overridable by environment variables, `__` as separator):
 | `JwtSettings:Secret` / `PreviousSecrets` / `Issuer` / `Audience` | same validation as every service (`JwtSecretRotationResolver`, `JwtValidationDefaults.ClockSkew`) |
 | `Inventory:Upstream:ProductMasterBaseUrl` / `LocationMasterBaseUrl` / `TimeoutSeconds` | consumed masters; unreachable → 503, never a silent pass |
 | `Inventory:Policy:EnforceLocationLegalEntityMatch` | default `true`; the host refuses to start with `false` outside the `Mock` environment |
+| `Inventory:Reservations:SweeperEnabled` / `SweepIntervalSeconds` | periodic expiry sweeper (default on, 60 s); expiry also runs inside every create / release / decrease of the SKU |
 
-⚠ Startup creates the MOD-0173 indexes and **refuses to start** if it cannot: the unique indexes carry idempotency,
-single reversal and one-row-per-dimension, so the ledger must not accept postings without them.
+⚠ Startup creates the MOD-0173 indexes and rebuilds the S2 `inventory_sku_positions` projection from the ledger +
+reservations (idempotent, per-SKU transaction, nothing deleted), and **refuses to start** if either fails: the
+unique indexes carry idempotency / single reversal / one row per dimension, and the reservation guards rely on
+correct positions.
+
+Reservations (S2) hold quantity at **Tenant + LE + item + SKU + level** against AVAILABLE stock (pack
+ASSUMPTION-0173-12..17): balance rows keep `reserved 0`; `/availability` shows the SKU-level total. A movement whose
+`(sourceModule, sourceDocumentId, sourceLineId)` equals an ACTIVE reservation consumes it; reserved stock cannot be
+issued to anyone else. There is no SuperAdmin shortcut: every endpoint needs its explicit permission (FU-S1-02).
 
 ⚠ Gateway route `/api/inventory/**` → 5066 and the permission seed are **not** part of this service (INT-1,
 integration-agent). Until INT-1 lands, callers reach the service directly on 5066.

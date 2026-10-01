@@ -1,0 +1,22 @@
+### D4-b SKU-level reserved-stock guard on decreases — SABOTAGED
+-            PositionKey(sku) & UnreservedAtLeast(requested),
++            PositionKey(sku), // SABOTAGE D4-b: SKU-level reserved-stock guard removed
+  Başarısız Diten.InventoryService.Tests.Api.ReservationTests.AC_R4_reserved_stock_cannot_be_issued_to_someone_else [77 ms]
+  Hata İletisi:
+   expected 422, got 201: {"transactionId":"a65e7475-db95-475d-ad32-1ecfd53c1a7e","transactionNumber":"INV-2026-0000002","postedAt":"2026-10-01T08:21:36.579Z","idempotentReplay":false,"balanceSnapshot":{"itemId":"160962c
+  Başarısız Diten.InventoryService.Tests.Api.ReservationTests.Moving_reserved_stock_out_of_AVAILABLE_status_is_refused [68 ms]
+  Hata İletisi:
+   expected 422, got 201: {"transactionId":"9730f8d8-c1a7-4343-8b8a-107879a3e339","transactionNumber":"INV-2026-0000002","postedAt":"2026-10-01T08:21:37.221Z","idempotentReplay":false,"balanceSnapshot":{"itemId":"71f18f9
+  Başarısız Diten.InventoryService.Tests.Api.ReservationTests.A_holder_can_issue_its_own_reservation_even_when_everything_is_reserved [121 ms]
+  Hata İletisi:
+   expected 422, got 201: {"transactionId":"28d81629-618b-449f-a9db-56b59d8e9d9d","transactionNumber":"INV-2026-0000003","postedAt":"2026-10-01T08:21:37.439Z","idempotentReplay":false,"balanceSnapshot":{"itemId":"7e81c1e
+  Başarısız Diten.InventoryService.Tests.Api.ReservationExpiryTests.In_transaction_path_a_decrease_expires_due_reservations_of_the_sku_first [85 ms]
+  Hata İletisi:
+   expected 422, got 201: {"transactionId":"225fd9a7-f6f8-41b5-9e5f-4bd314fe5896","transactionNumber":"INV-2026-0000002","postedAt":"2026-10-01T08:21:41.171Z","idempotentReplay":false,"balanceSnapshot":{"itemId":"04812a5
+  Başarısız Diten.InventoryService.Tests.Api.ReservationInvariantTests.Random_postings_and_reservations_keep_the_position_equal_to_its_sources_and_rebuild_agrees(seed: 90210) [1 s]
+  Hata İletisi:
+   reserved exceeds available on hand
+  Başarısız Diten.InventoryService.Tests.Api.ReservationInvariantTests.Random_postings_and_reservations_keep_the_position_equal_to_its_sources_and_rebuild_agrees(seed: 4242) [765 ms]
+  Hata İletisi:
+   reserved exceeds available on hand
+Başarısız! - Başarısız:     6, Başarılı:    38, Atlanan:     0, Toplam:    44, Süre: 14 s - Diten.InventoryService.Tests.dll (net8.0)
