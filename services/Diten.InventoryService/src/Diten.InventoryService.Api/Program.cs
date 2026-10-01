@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Diten.BuildingBlocks.Security.Secrets;
+using Diten.InventoryService.Api.ModuleRegistration;
 using Diten.InventoryService.Application;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Common.Models;
@@ -30,6 +31,13 @@ builder.Services.ValidateRequiredSecrets(builder.Configuration, builder.Environm
 ]);
 builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddPersistence(builder.Configuration, builder.Environment);
+
+// ── Module self-registration (MOD-0173-FU01, module-self-registration-standard §4): HTTP push of the UI manifest to
+// Platform at startup — best-effort, never blocks startup; skipped (warning) when PlatformRegistration is unset.
+builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<IModuleManifestProvider, InventoryLedgerManifestProvider>();
+builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 
 // ── JWT (issuer / audience / keys from configuration; shared clock skew — BL-296) ─────────────────────────
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];

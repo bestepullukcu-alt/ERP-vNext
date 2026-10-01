@@ -20,6 +20,8 @@
         <ProjectReference Include="..\Diten.InventoryService.Persistence\Diten.InventoryService.Persistence.csproj" />
         <ProjectReference
             Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+        <ProjectReference
+            Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>
