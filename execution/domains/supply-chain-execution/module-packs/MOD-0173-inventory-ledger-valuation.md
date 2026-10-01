@@ -94,7 +94,7 @@ MOD-0189 MRP, MOD-0176 FEFO — all through `INVENTORY-BUNDLE`, never a second b
 | Commands | S1 | `PostMovementCommand` (covers all 15 types incl. REVERSAL) |
 | Queries | S1 | `GetAvailabilityQuery`, `GetBalanceQuery`, `GetTransactionsQuery` |
 | API | S1 | `/api/inventory/movements` POST · `/availability` GET · `/balance` GET · `/transactions` GET |
-| Permissions | S1 | `supplychain.inventory.read`, `supplychain.inventory.movements.post` · S2: `supplychain.inventory.reservations.manage` |
+| Permissions | S1 | `inventory.stock.read`, `inventory.movements.create` · S2: `inventory.reservations.manage` |
 
 ## 4. Entity Fields
 
@@ -252,7 +252,7 @@ Not applicable (S1/S2). See §20 UI follow-up.
 1. **Duplicate:** same idempotency key posted twice → 1 transaction, balance changed once, 1 outbox event; 2nd = 200 `idempotentReplay: true`.
 2. **Key reuse with different payload** → 400 `IDEMPOTENCY_KEY_REUSED`, no write.
 3. **Missing/invalid:** unknown movementType, zero/negative/float-exponent quantity, missing to-location on receipt → 400/422, no write.
-4. **Unauthorized:** no token → 401; token without `supplychain.inventory.movements.post` → 403; read without `.read` → 403.
+4. **Unauthorized:** no token → 401; token without `inventory.movements.create` → 403; read without `.read` → 403.
 5. **Cross-tenant / cross-LE:** tenant A data invisible to tenant B (GET returns empty/404, never A's rows); `X-Legal-Entity-Id` ≠ token LE → 403 `CROSS_LE_FORBIDDEN`.
 6. **Concurrency:** two parallel issues of 60 against balance 100 → exactly one succeeds, the other 422 `INSUFFICIENT_STOCK`; balance 40, never −20.
 7. **Negative stock:** issue > balance → 422, no transaction persisted.
@@ -263,8 +263,8 @@ Not applicable (S1/S2). See §20 UI follow-up.
 ## 14. Authorization Convention
 
 Actor: tenant user or service actor (e.g. MOD-0142 GRN). Server-side `[HasPermission]` on every endpoint:
-`supplychain.inventory.read` (GET), `supplychain.inventory.movements.post` (POST /movements), S2
-`supplychain.inventory.reservations.manage`. Names follow the service's existing `supplychain.*` convention.
+`inventory.stock.read` (GET), `inventory.movements.create` (POST /movements), S2
+`inventory.reservations.manage`. Namespace `inventory.*` is owned by `Diten.InventoryService` (owner decision 2026-10-01, PKS-001 §4 one owner per namespace — `supplychain.*` stays with `Diten.SupplyChainService` / MVP-6). `create` and `read` are Tier-1 actions; `manage` is a documented Tier-3 action of this module.
 Permission **definition/seed** is a shared seam → INT-1 WP, not the dev slice.
 
 ## 15. Gateway / API Routing Decision
@@ -369,6 +369,15 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
   - **ASSUMPTION-0173-19 (FU-S1-02):** the `SuperAdmin` role bypass is removed from this service; every endpoint needs
     its explicit permission.
 
+- **WP-0173-INT1 CT-ACCEPTED (2026-10-01)** — commits 5f97a4b5..6b9660b4: `ocelot.json` +2 routes (`/api/inventory`,
+  `/api/inventory/{everything}` → localhost:5066, GET/POST/OPTIONS, no AuthenticationOptions), +34/−0. CT re-measured:
+  gateway build 0/0; gateway tests 83/84 — the one red `EveryRoute_DownstreamPortIsInKnownServiceSet` is **pre-existing**
+  (measured at dc2b6dd0: 5063×46, 5064×62, 5065×14; INT-1 adds 5066×2); own E2E run through a probe gateway 12/12
+  (Idempotency-Key and If-Match pass the gateway, correlation preserved, 401 passthrough, PUT 404), ports released, no token.
+- **Permission namespace (owner decision 2026-10-01):** `supplychain.inventory.*` → `inventory.*`
+  (`inventory.stock.read`, `inventory.movements.create`, `inventory.reservations.manage`). Nothing was seeded, so no
+  alias is needed; code/tests/docs rename = WP-0173-K1.
+
 - **WP-0173-S2 CT-ACCEPTED (2026-10-01)** — commits 6441bf25..b91bbba7; audit
   `docs/records/audits/2026-10/mod-0173-inventory-ledger-s2-audit-2026-10-01.md`. CT re-measured independently:
   clean build 0/0; 262/262 (0 skipped); repo architecture guards 18/18; own sabotage of the SKU-level reserve guard
@@ -384,13 +393,16 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
 
 ## 20. Follow-up Items
 
+- **FU-INT1-01 (central/gateway owner):** `gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs` `KnownDownstreamPorts` lacks 5063/5064/5065/5066 (AGENTS.md §3) — the guard is red on `main`-derived code since before MVP-1; update belongs to the gateway test owner.
+- **FU-INT1-02 (before G1):** a caller sending a non-UUID `X-Correlation-Id` (e.g. `req-1`) gets 400 from this service; decide with consumers (MOD-0142 GRN, WMS) whether to accept-and-replace instead.
+
 - **FU-S2-01 (low, before G1):** the startup SKU-position rebuild counts scope-incomplete groups (`LastSkippedUnscoped`) but nothing logs it — a skipped group would be silent. Log a warning with the count (and fail the startup gate if > 0 outside test databases).
 
 - **FU-S1-01 (before G1 freeze):** `GET /availability` for a *known* item/SKU with no ledger rows returns
   404 `UNKNOWN_ITEM` (ASSUMPTION-S1-04). Consumers (0172 ATP, 0189 MRP) must see 200 with zeros; 404 only when
   PRODUCT-MASTER says the item/SKU does not exist (fail-closed 503 when it is unreachable).
 - **FU-S1-02 (before G1 freeze):** the template's `SuperAdmin` role bypass lets that role post stock movements
-  without `supplychain.inventory.movements.post`. For a GxP stock SoR, mutations require the explicit permission;
+  without `inventory.movements.create`. For a GxP stock SoR, mutations require the explicit permission;
   review with security-agent.
 
 - S2 Reservations; S3 Valuation (requires additive `INVENTORY-BUNDLE` v1.1 for any valuation read surface).

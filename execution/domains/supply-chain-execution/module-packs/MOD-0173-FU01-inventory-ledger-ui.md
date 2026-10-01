@@ -91,7 +91,7 @@ record + audit birlikte") together with the MOD-0173 backend; it owns **no data*
 | Self-registration | `InventoryLedgerManifestProvider` (in `Diten.InventoryService.Api/ModuleRegistration/`) | ModuleCode `INVENTORY-LEDGER` (§14) |
 | Consumed API | `GET /api/inventory/balance`, `GET /api/inventory/availability`, `GET /api/inventory/transactions`, `POST /api/inventory/movements` | through Gateway 5000 (INT-1) only |
 | Consumed masters (pickers/labels) | PRODUCT-MASTER-BUNDLE v1, LOCATION v1, TRACE v1 (lots), MOD-0048 reference data | see §7 / §20 gaps |
-| Permissions used | `supplychain.inventory.read`, `supplychain.inventory.movements.post` | defined by MOD-0173; `supplychain.inventory.reservations.manage` is **not** used by any FU01 action |
+| Permissions used | `inventory.stock.read`, `inventory.movements.create` | defined by MOD-0173; `inventory.reservations.manage` is **not** used by any FU01 action |
 
 ## 4. Entity Fields
 
@@ -405,9 +405,9 @@ correlation id shown in a "details" disclosure for support.
 
 | Key | Gate |
 |---|---|
-| `supplychain.inventory.read` | S-1, S-2 Index (UAS-001 `_AccessDenied` when absent); list adapters; picker proxies |
-| `supplychain.inventory.movements.post` | "New movement" toolbar button, S-1 row "Movement", S-2 row "Reversal", `/StockMovements/Create` (GET + POST), `POST reverse/{id}` |
-| `supplychain.inventory.reservations.manage` | not used by FU01 |
+| `inventory.stock.read` | S-1, S-2 Index (UAS-001 `_AccessDenied` when absent); list adapters; picker proxies |
+| `inventory.movements.create` | "New movement" toolbar button, S-1 row "Movement", S-2 row "Reversal", `/StockMovements/Create` (GET + POST), `POST reverse/{id}` |
+| `inventory.reservations.manage` | not used by FU01 |
 
 - Actor: `tenant_user`. The parent's FU-S1-02 / ASSUMPTION-0173-19 removes the `SuperAdmin` bypass — the UI must not
   add any role shortcut either.
@@ -416,10 +416,10 @@ correlation id shown in a "details" disclosure for support.
 
 | PageCode | RoutePath | RequiredPermission | Nav-visible | Parent |
 |---|---|---|---|---|
-| `STOCKLEDGER` | `/StockLedger` | `supplychain.inventory.read` | **true** | — |
-| `STOCKMOVEMENTS` | `/StockMovements` | `supplychain.inventory.read` | false | `STOCKLEDGER` |
-| `STOCKMOVEMENTCREATE` | `/StockMovements/Create` | `supplychain.inventory.movements.post` | false | `STOCKMOVEMENTS` |
-| `STOCKMOVEMENTDETAILS` | `/StockMovements/Details` | `supplychain.inventory.movements.post` | false | `STOCKMOVEMENTS` |
+| `STOCKLEDGER` | `/StockLedger` | `inventory.stock.read` | **true** | — |
+| `STOCKMOVEMENTS` | `/StockMovements` | `inventory.stock.read` | false | `STOCKLEDGER` |
+| `STOCKMOVEMENTCREATE` | `/StockMovements/Create` | `inventory.movements.create` | false | `STOCKMOVEMENTS` |
+| `STOCKMOVEMENTDETAILS` | `/StockMovements/Details` | `inventory.movements.create` | false | `STOCKMOVEMENTS` |
 
 | ActionCode | Placement | PermissionKey | IsDangerous |
 |---|---|---|---|
@@ -439,7 +439,7 @@ correlation id shown in a "details" disclosure for support.
 - INT-1 must add (Strategy A): `/api/inventory` and `/api/inventory/{everything}` → `localhost:5066`,
   `UpstreamHttpMethod` incl. GET, POST, PATCH, OPTIONS; propagate `Authorization`, `X-Tenant-Id`,
   `X-Legal-Entity-Id`, `X-Correlation-Id`, `Idempotency-Key`, `If-Match` (parent §15); plus the
-  `supplychain.inventory.*` permission seed.
+  `inventory.*` permission seed.
 - Picker masters need their own routes when real services exist (`/api/locations/**`, `/api/product-master/**`,
   `/api/trace/**`) — BG-10, owners MOD-0290 / Location master / MOD-0174 via integration-agent.
 - **UI development is BLOCKED until INT-1 is CT-accepted.** This pack does not touch `gateway/**`.
@@ -463,7 +463,7 @@ correlation id shown in a "details" disclosure for support.
       persisted record — **E4: UI + API + persisted + audit** for: opening balance, count loss, location transfer,
       reversal, insufficient stock, double submit.
 - [ ] Double submit produces one transaction and the replay banner.
-- [ ] UAS-001: user without `supplychain.inventory.read` sees `_AccessDenied` in-shell on both routes, no redirect,
+- [ ] UAS-001: user without `inventory.stock.read` sees `_AccessDenied` in-shell on both routes, no redirect,
       no skeleton; user with read only sees no post actions; live-tried (rule §8).
 - [ ] `grep -rn "Permission denied\|Forbidden"` over the new Views/JS = 0.
 - [ ] RESX parity: `StockLedgerIndex` and `StockMovementsIndex` have identical key sets in all 7 languages, no value
@@ -594,7 +594,7 @@ label in the tenant nav. Nothing in this pack depends on it.
     automatic movements keep "reversed in the source module". If (2) fails after (1) succeeded, the page shows an
     explicit **partial-correction** state (reversal number + the error + "post corrected movement" retry with the
     same idempotency key) — never a silent half-correction. Prefill uses the history row; fields the contract
-    row does not carry (source side, BG-05) are entered by the user. Permission: `supplychain.inventory.movements.post`.
+    row does not carry (source side, BG-05) are entered by the user. Permission: `inventory.movements.create`.
   - **KD-2 → `StockLedger/Create.cshtml` = "New stock entry".** No balance is written: the page hosts the same
     shared movement `_Form` partial (single source of truth, no duplicated form) restricted to the inbound manual
     types (Opening balance, Count gain) and posts `POST /movements`; the balance changes only as a projection.
