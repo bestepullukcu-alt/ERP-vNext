@@ -14,8 +14,8 @@ screens:
   - module: StockMovements
     data_mode: server
 entity_base: EntityBase
-status: draft
-status_note: "draft — WP-0173-UI0 (module-pack-author, autonomous). No code may start until Ali sets ready-for-dev AND the blocking backend gaps of §7 / §20 are decided. DCP-002 re-run pending (waiver W-0173-01 scope)."
+status: ready-for-dev
+status_note: "ready-for-dev — owner approval (Ali) 2026-10-01 with decisions W-UI-01, W-UI-02 (kept: order UI-1 → UI-2 → MOD-0174), OD-UI-3, KD compliant mapping. INT-1 CT-accepted (5f97a4b5); permission namespace inventory.* (K1, CT-accepted). DCP-002 re-run pending (waiver W-0173-01)."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0173-fu01-inventory-ui
 started: 2026-10-01
@@ -504,9 +504,9 @@ correlation id shown in a "details" disclosure for support.
 - [x] **Owner decision OD-UI-2** taken (2026-10-01) — temporary typed lot under waiver W-UI-02 (§19).
 - [x] **Owner decision OD-UI-3** taken (2026-10-01) — untouched until FU01 ships, then retired in a separate WP; never shown beside FU01 under an "Inventory" label.
 - [x] KD-1 / KD-2 resolved (owner, 2026-10-01): deviations not accepted → **compliant mapping** (§19 "Owner decisions"); full Compact file set, ledger immutability kept.
-- [ ] INT-1 CT-accepted (gateway route + permission seed).
-- [ ] Registry FU row recorded by CT.
-- [ ] **Owner approval → `ready-for-dev`** (Ali).
+- [x] INT-1 CT-accepted (gateway route 5f97a4b5); permission registration is part of this pack (manifest).
+- [x] Registry FU row recorded by CT (2026-10-01).
+- [x] **Owner approval → `ready-for-dev`** (Ali, 2026-10-01). Lot order decision: keep UI-1 → UI-2 (typed lot, W-UI-02) → MOD-0174.
 
 ## 19. Implementation Notes
 
