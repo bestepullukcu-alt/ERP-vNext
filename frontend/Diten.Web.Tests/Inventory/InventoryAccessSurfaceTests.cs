@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Security.Claims;
+using Diten.Web.Models.Inventory;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -68,14 +69,76 @@ public sealed class InventoryAccessSurfaceTests : IClassFixture<WebApplicationFa
         Assert.Contains("__RequestVerificationToken", reverser, StringComparison.Ordinal);
     }
 
-    private async Task<string> RenderAsync(string viewPath, params string[] permissions)
+    // ── W-0173-02 company selector, rendered by the REAL partial with each state ─────────────────────────────
+
+    [Fact]
+    public async Task The_selector_lists_the_tenants_companies_and_marks_the_chosen_one()
+    {
+        var html = await RenderPartialAsync(new CompanySelectorViewModel
+        {
+            State = CompanySelectorState.Selected,
+            Companies = [new CompanyOption("11111111-1111-1111-1111-111111111111", "ACME-TR · Acme Türkiye"), new CompanyOption("22222222-2222-2222-2222-222222222222", "ACME-DE · Acme GmbH")],
+            SelectedId = "22222222-2222-2222-2222-222222222222",
+            CookieName = "diten-inv-company-abc",
+            Label = "Şirket", Placeholder = "Şirket seçin", SelectHint = "hint", UnavailableText = "unavailable"
+        });
+
+        Assert.Contains("data-company-state=\"selected\"", html, StringComparison.Ordinal);
+        Assert.Contains("data-company-cookie=\"diten-inv-company-abc\"", html, StringComparison.Ordinal);
+        Assert.Contains("""<option value="22222222-2222-2222-2222-222222222222" selected>ACME-DE · Acme GmbH</option>""", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("Şirket seçin", html, StringComparison.Ordinal);
+        Assert.Contains("company-selector.js", html, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Without_a_choice_the_selector_asks_for_one()
+    {
+        var html = await RenderPartialAsync(new CompanySelectorViewModel
+        {
+            State = CompanySelectorState.NotSelected,
+            Companies = [new CompanyOption("11111111-1111-1111-1111-111111111111", "ACME-TR")],
+            CookieName = "c", Label = "Şirket", Placeholder = "Şirket seçin", SelectHint = "Stokunu görmek istediğiniz şirketi seçin.", UnavailableText = "u"
+        });
+
+        Assert.Contains("""<option value="" selected>Şirket seçin</option>""", html, StringComparison.Ordinal);
+        Assert.Contains("Stokunu görmek istediğiniz şirketi seçin.", html, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task An_unreadable_company_list_says_so_and_offers_no_choice()
+    {
+        var html = await RenderPartialAsync(new CompanySelectorViewModel
+        {
+            State = CompanySelectorState.Unavailable, Label = "Şirket", UnavailableText = "Şirket listesi alınamadı"
+        });
+
+        Assert.Contains("Şirket listesi alınamadı", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("<select", html, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task A_token_company_draws_no_selector_at_all()
+    {
+        var html = await RenderPartialAsync(new CompanySelectorViewModel { State = CompanySelectorState.FromToken });
+
+        Assert.Equal(string.Empty, html.Trim());
+    }
+
+    // Razor encodes non-ASCII text (ş, ·) as entities; the assertions read what the browser shows.
+    private async Task<string> RenderPartialAsync(CompanySelectorViewModel model) =>
+        System.Net.WebUtility.HtmlDecode(await RenderAsync("/Views/Inventory/Shared/_CompanySelector.cshtml", model, []));
+
+    private Task<string> RenderAsync(string viewPath, params string[] permissions) => RenderAsync(viewPath, null, permissions);
+
+    private async Task<string> RenderAsync(string viewPath, object? model, string[] permissions)
     {
         CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en");
         CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en");
 
         using var scope = _factory.Services.CreateScope();
         var services = scope.ServiceProvider;
-        var claims = new List<Claim> { new("tenantId", Guid.NewGuid().ToString()), new("actor_type", "tenant_user") };
+        // The token names its company, so the page needs no selector and makes no MDM call while rendering (W-0173-02).
+        var claims = new List<Claim> { new("tenantId", Guid.NewGuid().ToString()), new("actor_type", "tenant_user"), new("legal_entity_id", Guid.NewGuid().ToString()) };
         claims.AddRange(permissions.Select(p => new Claim("permission", p)));
         var httpContext = new DefaultHttpContext
         {
@@ -90,7 +153,10 @@ public sealed class InventoryAccessSurfaceTests : IClassFixture<WebApplicationFa
             throw new InvalidOperationException($"Could not load {viewPath}. Searched: {string.Join(", ", found.SearchedLocations ?? [])}");
 
         var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor(), new ModelStateDictionary());
-        var viewData = new ViewDataDictionary(services.GetRequiredService<Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider>(), actionContext.ModelState);
+        var metadata = services.GetRequiredService<Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider>();
+        var viewData = model is null
+            ? new ViewDataDictionary(metadata, actionContext.ModelState)
+            : new ViewDataDictionary<CompanySelectorViewModel>(metadata, actionContext.ModelState) { Model = (CompanySelectorViewModel)model };
         var tempData = new TempDataDictionary(httpContext, services.GetRequiredService<ITempDataProvider>());
 
         await using var writer = new StringWriter();

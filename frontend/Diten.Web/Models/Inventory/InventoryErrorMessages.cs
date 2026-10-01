@@ -25,6 +25,9 @@ public static class InventoryErrorMessages
         ["LOT_REQUIRED"] = "ErrLotRequired",
         ["SERIAL_COUNT_MISMATCH"] = "ErrSerialMismatch",
         ["RESERVATION_CONFLICT"] = "ErrConflict",
+        // W-0173-02 company selector
+        ["LEGAL_ENTITY_MASTER_UNAVAILABLE"] = "ErrCompanyCheckUnavailable",
+        [InventoryGatewayClient.CompanyNotSelected] = "ErrSelectCompany",
         // the MVC adapter's own refusals (never produced by the shipped JS)
         [InventoryListAdapter.SearchNotSupported] = "ErrInvalidRequest",
         [InventoryListAdapter.OrderNotSupported] = "ErrInvalidRequest",

@@ -62,4 +62,10 @@
   <data name="ErrSessionExpired" xml:space="preserve"><value>Your session has ended. Sign in again to continue.</value></data>
   <data name="ErrServiceUnavailable" xml:space="preserve"><value>The stock service cannot be reached right now. No change was made; try again in a moment.</value></data>
   <data name="ErrGeneric" xml:space="preserve"><value>Something went wrong and no change was made. Try again; if it keeps happening, contact support.</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Company</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Select a company</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Select the company whose stock you want to see. Nothing is shown until a company is selected.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>The company list could not be loaded, so no stock data is shown. Ask your administrator for permission to view companies, or try again later.</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>Select a company first. Nothing was read or changed.</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>The selected company cannot be confirmed right now, so no change was made. Try again in a moment.</value></data>
 </root>

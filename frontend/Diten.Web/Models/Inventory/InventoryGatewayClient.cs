@@ -8,8 +8,9 @@ namespace Diten.Web.Models.Inventory;
 /// The one door from the FU01 MVC proxies to Gateway 5000 (pack §8): cookie bearer + <c>X-Tenant-Id</c>, exactly
 /// what <c>AddAuthHeaders</c> sends on the sibling controllers — but per REQUEST, never on the shared client's
 /// default headers (a concurrent request could otherwise leave with another request's Idempotency-Key).
-/// <c>X-Legal-Entity-Id</c> is never sent (parent ASSUMPTION-0173-03); <c>tenantId</c> / <c>legalEntityId</c> never
-/// travel in a body (parent §8: 400).
+/// <c>tenantId</c> / <c>legalEntityId</c> never travel in a query or a body (parent §8: 400). <c>X-Legal-Entity-Id</c>
+/// (W-0173-02) is added to inventory calls ONLY for a token without a <c>legal_entity_id</c> claim, carrying the user's
+/// selected company; with no company selected an inventory call is not sent at all (<see cref="CompanyNotSelected"/>).
 /// </summary>
 public sealed class InventoryGatewayClient
 {
@@ -19,9 +20,16 @@ public sealed class InventoryGatewayClient
     private readonly string _gatewayUrl;
     private readonly string? _accessToken;
     private readonly string _tenantId;
+    private readonly Guid? _company;
+    private readonly bool _companyRequired;
 
-    public InventoryGatewayClient(HttpClient http, string gatewayUrl, string? accessToken, string tenantId)
+    /// <summary>The synthetic refusal code for an inventory call made without a company (never reaches the Gateway).</summary>
+    public const string CompanyNotSelected = "COMPANY_NOT_SELECTED";
+
+    public InventoryGatewayClient(HttpClient http, string gatewayUrl, string? accessToken, string tenantId, Guid? company = null, bool companyRequired = false)
     {
+        _company = company;
+        _companyRequired = companyRequired;
         _http = http;
         _gatewayUrl = gatewayUrl.TrimEnd('/');
         _accessToken = accessToken;
@@ -36,7 +44,16 @@ public sealed class InventoryGatewayClient
 
     private async Task<GatewayReply> SendAsync(HttpMethod method, string pathAndQuery, object? body, string? idempotencyKey, CancellationToken cancellationToken)
     {
+        var isInventory = pathAndQuery.StartsWith("/api/inventory", StringComparison.Ordinal);
+        if (isInventory && _companyRequired && _company is null)
+        {
+            // W-0173-02: no company, no inventory call — not even one the service would refuse.
+            return new GatewayReply(403, JsonSerializer.Serialize(new { error = new { code = CompanyNotSelected, message = "Select a company." } }), null);
+        }
+
         using var request = new HttpRequestMessage(method, _gatewayUrl + pathAndQuery);
+        if (isInventory && _company is not null)
+            request.Headers.Add(CompanySelection.LegalEntityHeader, _company.Value.ToString("D"));
         if (!string.IsNullOrWhiteSpace(_accessToken))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _accessToken);
         request.Headers.Add("X-Tenant-Id", _tenantId);

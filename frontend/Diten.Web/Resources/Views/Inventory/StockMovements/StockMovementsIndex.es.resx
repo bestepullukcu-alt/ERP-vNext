@@ -80,4 +80,10 @@
   <data name="ErrSessionExpired" xml:space="preserve"><value>Su sesión ha finalizado. Vuelva a iniciar sesión para continuar.</value></data>
   <data name="ErrServiceUnavailable" xml:space="preserve"><value>Ahora no se puede acceder al servicio de existencias. No se ha realizado ningún cambio; inténtelo de nuevo en un momento.</value></data>
   <data name="ErrGeneric" xml:space="preserve"><value>Se produjo un problema y no se realizó ningún cambio. Inténtelo de nuevo; si persiste, contacte con soporte.</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Empresa</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Seleccione una empresa</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Seleccione la empresa cuyas existencias desea ver. No se muestra nada hasta que se seleccione una empresa.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>No se pudo cargar la lista de empresas, por lo que no se muestran datos de existencias. Solicite a su administrador permiso para ver las empresas o inténtelo más tarde.</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>Seleccione primero una empresa. No se ha leído ni cambiado nada.</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>Ahora no se puede confirmar la empresa seleccionada, por lo que no se ha realizado ningún cambio. Inténtelo de nuevo en un momento.</value></data>
 </root>

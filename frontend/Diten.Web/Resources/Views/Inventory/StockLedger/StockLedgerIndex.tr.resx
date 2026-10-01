@@ -62,4 +62,10 @@
   <data name="ErrSessionExpired" xml:space="preserve"><value>Oturumunuz sona erdi. Devam etmek için yeniden giriş yapın.</value></data>
   <data name="ErrServiceUnavailable" xml:space="preserve"><value>Stok servisine şu anda ulaşılamıyor. Hiçbir değişiklik yapılmadı; biraz sonra tekrar deneyin.</value></data>
   <data name="ErrGeneric" xml:space="preserve"><value>Bir sorun oluştu ve değişiklik yapılmadı. Tekrar deneyin; devam ederse destek ekibine başvurun.</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Şirket</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Şirket seçin</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Stokunu görmek istediğiniz şirketi seçin. Şirket seçilene kadar hiçbir veri gösterilmez.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Şirket listesi alınamadı, bu yüzden stok verisi gösterilmiyor. Yöneticinizden şirketleri görüntüleme yetkisi isteyin veya daha sonra tekrar deneyin.</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>Önce bir şirket seçin. Hiçbir veri okunmadı veya değiştirilmedi.</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>Seçilen şirket şu anda doğrulanamıyor, bu yüzden değişiklik yapılmadı. Biraz sonra tekrar deneyin.</value></data>
 </root>

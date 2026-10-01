@@ -80,4 +80,10 @@
   <data name="ErrSessionExpired" xml:space="preserve"><value>您的会话已结束。请重新登录以继续。</value></data>
   <data name="ErrServiceUnavailable" xml:space="preserve"><value>暂时无法连接库存服务。未做任何更改；请稍后重试。</value></data>
   <data name="ErrGeneric" xml:space="preserve"><value>出现问题，未做任何更改。请重试；如问题持续，请联系支持人员。</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>公司</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>请选择公司</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>请选择要查看库存的公司。选择公司之前不会显示任何数据。</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>无法加载公司列表，因此不显示库存数据。请向管理员申请查看公司的权限，或稍后重试。</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>请先选择公司。未读取或更改任何数据。</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>暂时无法确认所选公司，因此未做任何更改。请稍后重试。</value></data>
 </root>

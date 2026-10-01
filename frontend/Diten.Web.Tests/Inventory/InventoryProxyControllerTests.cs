@@ -249,6 +249,69 @@ public sealed class InventoryProxyControllerTests
         }
     }
 
+    // ── W-0173-02 company selector (WP-0173-LE1) ─────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_token_with_a_company_sends_no_company_header_even_with_a_selector_cookie()
+    {
+        var gateway = new FakeGateway();
+        gateway.On("/api/inventory/balance", 200, """{"rows":[],"total":0}""");
+
+        await LedgerAs(new Caller(TokenCompanyId, Guid.NewGuid()), gateway, ReadAndCreate, ("start", "0"), ("length", "10")).List(CancellationToken.None);
+
+        var call = Assert.Single(gateway.Requests);
+        Assert.Null(call.LegalEntity);
+    }
+
+    [Fact]
+    public async Task A_claim_less_user_with_a_selected_company_sends_it_on_lists_and_on_the_reversal()
+    {
+        var gateway = new FakeGateway();
+        var company = Guid.NewGuid();
+        gateway.On("/api/inventory/balance", 200, """{"rows":[],"total":0}""");
+        gateway.On("/api/inventory/movements", 201, """{"transactionId":"t","transactionNumber":"INV-9","idempotentReplay":false}""");
+        var caller = new Caller(null, company);
+
+        await LedgerAs(caller, gateway, ReadAndCreate, ("start", "0"), ("length", "10")).List(CancellationToken.None);
+        await MovementsAs(caller, gateway, ReadAndCreate).Reverse(Guid.NewGuid().ToString(), Reversal(Guid.NewGuid()), CancellationToken.None);
+
+        Assert.Equal(2, gateway.Requests.Count);
+        Assert.All(gateway.Requests, r => Assert.Equal(company.ToString("D"), r.LegalEntity));
+        // the company travels in the header only — never in a query or a body
+        Assert.All(gateway.Requests, r => Assert.DoesNotContain("legalEntity", r.PathAndQuery, StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain("legalEntity", gateway.Requests[1].Body, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task A_claim_less_user_without_a_company_makes_no_inventory_call_and_is_told_to_select_one()
+    {
+        var gateway = new FakeGateway();
+        var caller = new Caller(null, null);
+
+        var list = Assert.IsType<JsonResult>(await LedgerAs(caller, gateway, ReadAndCreate, ("start", "0"), ("length", "10"), ("itemId", Item)).List(CancellationToken.None));
+        var history = Assert.IsType<JsonResult>(await MovementsAs(caller, gateway, ReadAndCreate, ("start", "0"), ("length", "10")).List(CancellationToken.None));
+        var reverse = Assert.IsType<JsonResult>(await MovementsAs(caller, gateway, ReadAndCreate).Reverse(Guid.NewGuid().ToString(), Reversal(Guid.NewGuid()), CancellationToken.None));
+
+        Assert.Empty(gateway.Requests);
+        foreach (var result in new[] { list, history, reverse })
+        {
+            Assert.Equal(403, result.StatusCode);
+            Assert.Equal("ErrSelectCompany", Body(result).GetProperty("error").GetProperty("message").GetString());
+        }
+    }
+
+    [Fact]
+    public async Task The_company_check_being_unavailable_is_a_localized_503()
+    {
+        var gateway = new FakeGateway();
+        gateway.On("/api/inventory/transactions", 503, """{"error":{"code":"LEGAL_ENTITY_MASTER_UNAVAILABLE","message":"x","correlationId":"c"}}""");
+
+        var result = Assert.IsType<JsonResult>(await MovementsAs(new Caller(null, Guid.NewGuid()), gateway, ReadAndCreate, ("start", "0"), ("length", "10")).List(CancellationToken.None));
+
+        Assert.Equal(503, result.StatusCode);
+        Assert.Equal("ErrCompanyCheckUnavailable", Body(result).GetProperty("error").GetProperty("message").GetString());
+    }
+
     // ── harness ──────────────────────────────────────────────────────────────────────────────────────────────
 
     private static ReversalRequestViewModel Reversal(Guid key) => new()
@@ -264,31 +327,44 @@ public sealed class InventoryProxyControllerTests
     private static JsonElement Body(IActionResult result) =>
         JsonDocument.Parse(JsonSerializer.Serialize(Assert.IsType<JsonResult>(result).Value, new JsonSerializerOptions(JsonSerializerDefaults.Web))).RootElement;
 
+    /// <summary>Who calls: the token's company (claim) and/or the company in the selector cookie (W-0173-02).</summary>
+    private sealed record Caller(Guid? TokenCompany, Guid? CookieCompany);
+
+    private static readonly Guid TokenCompanyId = Guid.Parse("77777777-7777-7777-7777-777777777777");
+    private static readonly Caller WithTokenCompany = new(TokenCompanyId, null);
+
     private static StockLedgerController Ledger(FakeGateway gateway, string[] permissions, params (string Key, string Value)[] query)
+        => LedgerAs(WithTokenCompany, gateway, permissions, query);
+
+    private static StockMovementsController Movements(FakeGateway gateway, string[] permissions, params (string Key, string Value)[] query)
+        => MovementsAs(WithTokenCompany, gateway, permissions, query);
+
+    private static StockLedgerController LedgerAs(Caller caller, FakeGateway gateway, string[] permissions, params (string Key, string Value)[] query)
     {
         var controller = new StockLedgerController(new HttpClient(gateway), Configuration(), new Permissions(permissions),
             new KeyLocalizer<StockLedgerIndex>(), NullLogger<StockLedgerController>.Instance);
-        controller.ControllerContext = Context(query);
+        controller.ControllerContext = Context(caller, query);
         return controller;
     }
 
-    private static StockMovementsController Movements(FakeGateway gateway, string[] permissions, params (string Key, string Value)[] query)
+    private static StockMovementsController MovementsAs(Caller caller, FakeGateway gateway, string[] permissions, params (string Key, string Value)[] query)
     {
         var controller = new StockMovementsController(new HttpClient(gateway), Configuration(), new Permissions(permissions),
             new KeyLocalizer<StockMovementsIndex>(), NullLogger<StockMovementsController>.Instance);
-        controller.ControllerContext = Context(query);
+        controller.ControllerContext = Context(caller, query);
         return controller;
     }
 
     private static IConfiguration Configuration() =>
         new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["GatewayUrl"] = Gateway }).Build();
 
-    private static ControllerContext Context((string Key, string Value)[] query)
+    private static ControllerContext Context(Caller caller, (string Key, string Value)[] query)
     {
-        var http = new DefaultHttpContext
-        {
-            User = new ClaimsPrincipal(new ClaimsIdentity([new Claim("tenantId", TenantId.ToString())], "test"))
-        };
+        var claims = new List<Claim> { new("tenantId", TenantId.ToString()), new("sub", "55555555-0000-0000-0000-000000000001") };
+        if (caller.TokenCompany is not null) claims.Add(new Claim("legal_entity_id", caller.TokenCompany.Value.ToString()));
+        var http = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(claims, "test")) };
+        if (caller.CookieCompany is not null)
+            http.Request.Headers.Cookie = $"{CompanySelection.CookieName(http.User)}={caller.CookieCompany.Value}";
         http.Request.Query = new QueryCollection(query.GroupBy(p => p.Key).ToDictionary(g => g.Key, g => new StringValues(g.Select(p => p.Value).ToArray())));
         return new ControllerContext { HttpContext = http };
     }
@@ -311,7 +387,7 @@ public sealed class InventoryProxyControllerTests
     {
         private readonly List<(string Prefix, int Status, string Body)> _routes = [];
 
-        public List<(string Method, string PathAndQuery, string? TenantHeader, string? IdempotencyKey, string Body)> Requests { get; } = [];
+        public List<(string Method, string PathAndQuery, string? TenantHeader, string? IdempotencyKey, string Body, string? LegalEntity)> Requests { get; } = [];
 
         public void On(string prefix, int status, string body) => _routes.Add((prefix, status, body));
 
@@ -324,7 +400,8 @@ public sealed class InventoryProxyControllerTests
                 Requests.Add((request.Method.Method, pathAndQuery,
                     request.Headers.TryGetValues("X-Tenant-Id", out var tenant) ? tenant.Single() : null,
                     request.Headers.TryGetValues("Idempotency-Key", out var key) ? key.Single() : null,
-                    body));
+                    body,
+                    request.Headers.TryGetValues("X-Legal-Entity-Id", out var le) ? le.Single() : null));
             }
 
             var route = _routes.FirstOrDefault(r => pathAndQuery.StartsWith(r.Prefix, StringComparison.Ordinal));

@@ -26,7 +26,10 @@ public static class InventoryProxy
         if (string.IsNullOrWhiteSpace(tenantId)) return null;
 
         var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(request);
-        return new InventoryGatewayClient(http, gatewayUrl, token, tenantId);
+        // W-0173-02: the token's company wins; without one, the user's selected company travels as X-Legal-Entity-Id.
+        var tokenHasCompany = CompanySelection.TokenLegalEntity(user) is not null;
+        var company = tokenHasCompany ? null : CompanySelection.SelectedCompany(request, user);
+        return new InventoryGatewayClient(http, gatewayUrl, token, tenantId, company, companyRequired: !tokenHasCompany);
     }
 
     /// <summary>

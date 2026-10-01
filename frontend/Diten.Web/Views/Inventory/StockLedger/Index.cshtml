@@ -3,6 +3,8 @@
 @inject IHtmlLocalizer<StockLedgerIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = Localizer["StockLedgerTitle"].Value;
     Layout = "_LayoutTenantShell";
@@ -20,8 +22,22 @@
     return;
 }
 
+@{
+    // W-0173-02 company selector: the token's company, or the user's choice among the tenant's active companies.
+    // Without one, the data part of the page is not drawn and no list / KPI call is made.
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+}
+
 @* Contract marker: <partial name="_Filter" /> *@
-<partial name="~/Views/Inventory/StockLedger/_Filter.cshtml" />
+@if (company.Ready)
+{
+    <partial name="~/Views/Inventory/StockLedger/_Filter.cshtml" />
+}
 
 <div class="mb-3">
     <h5 class="mb-0">@Localizer["StockLedgerTitle"]</h5>
@@ -44,15 +60,21 @@
     </ul>
 </div>
 
-<partial name="~/Views/Inventory/StockLedger/_KpiStrip.cshtml" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
 
-@* Read-path notices written by index.js: names unavailable (BG-10) and a list that could not be loaded. *@
-<div id="stockledger-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["NamesUnavailable"]</div>
-<div id="stockledger-list-error" class="alert alert-danger d-none" role="alert"></div>
+@if (company.Ready)
+{
+    <partial name="~/Views/Inventory/StockLedger/_KpiStrip.cshtml" />
 
-@* No bulk action bar: the list has no selection column (read-only projection, pack §11). *@
-@* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-stockledger" data-dt-standard="v2"> *@
-<partial name="~/Views/Inventory/StockLedger/_DataTable.cshtml" />
+    @* Read-path notices written by index.js: names unavailable (BG-10) and a list that could not be loaded. *@
+    <div id="stockledger-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["NamesUnavailable"]</div>
+    <div id="stockledger-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @* No bulk action bar: the list has no selection column (read-only projection, pack §11). *@
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-stockledger" data-dt-standard="v2"> *@
+    <partial name="~/Views/Inventory/StockLedger/_DataTable.cshtml" />
+}
+
 
 @section Scripts {
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />

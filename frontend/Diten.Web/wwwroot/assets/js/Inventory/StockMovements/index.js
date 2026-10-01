@@ -153,6 +153,11 @@ const StockMovementsList = (function () {
             box.textContent = message || L().ErrServiceUnavailable || '';
             box.classList.remove('d-none');
         }
+        // A failed FIRST load never reaches initComplete, where the export menu is removed: remove it here too.
+        try {
+            const api = window.jQuery(tableEl).DataTable();
+            api.buttons('.dt-export-collection-btn').remove();
+        } catch (error) { /* table not built yet */ }
     };
 
     const newKey = () => (window.crypto?.randomUUID

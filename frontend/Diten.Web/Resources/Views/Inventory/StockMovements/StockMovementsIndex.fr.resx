@@ -80,4 +80,10 @@
   <data name="ErrSessionExpired" xml:space="preserve"><value>Votre session a expiré. Reconnectez-vous pour continuer.</value></data>
   <data name="ErrServiceUnavailable" xml:space="preserve"><value>Le service de stock est injoignable pour le moment. Aucune modification n'a été faite ; réessayez dans un instant.</value></data>
   <data name="ErrGeneric" xml:space="preserve"><value>Un problème est survenu et aucune modification n'a été faite. Réessayez ; si cela persiste, contactez le support.</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Société</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Sélectionnez une société</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Sélectionnez la société dont vous voulez voir le stock. Rien n'est affiché tant qu'aucune société n'est sélectionnée.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>La liste des sociétés n'a pas pu être chargée ; aucune donnée de stock n'est affichée. Demandez à votre administrateur l'accès aux sociétés ou réessayez plus tard.</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>Sélectionnez d'abord une société. Rien n'a été lu ni modifié.</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>La société sélectionnée ne peut pas être confirmée pour le moment ; aucune modification n'a été faite. Réessayez dans un instant.</value></data>
 </root>
