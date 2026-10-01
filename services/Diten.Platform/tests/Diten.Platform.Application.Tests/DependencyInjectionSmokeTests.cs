@@ -111,8 +111,21 @@ public sealed class DependencyInjectionSmokeTests
 
         Assert.Contains("AddScoped<Diten.Platform.Application.Features.BusinessReferenceData.Services.IBusinessReferenceDataVerifiedMarketOperationalEligibility", program, StringComparison.Ordinal);
         Assert.Contains("DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility", program, StringComparison.Ordinal);
-        Assert.Contains("AddScoped<VerifiedMarketOperationalProvisioningRunner>()", program, StringComparison.Ordinal);
-        Assert.DoesNotContain("AddHostedService<VerifiedMarketOperationalProvisioningRunner", program, StringComparison.Ordinal);
+        // The runner is composed by the one-shot operational mode (its own container, built before the web host
+        // exists) — Program.cs only asks that mode whether it was requested. The serving host must not register
+        // the runner at all: "explicit scoped service ONLY" is exactly that it exists nowhere else.
+        var operationalMode = File.ReadAllText(Path.Combine(
+            root,
+            "services", "Diten.Platform", "src", "Diten.Platform.API", "Services", "BusinessReferenceData",
+            "VerifiedMarketOperationalMode.cs"));
+        Assert.Contains("services.AddScoped<VerifiedMarketOperationalProvisioningRunner>()", operationalMode, StringComparison.Ordinal);
+        Assert.DoesNotContain("AddHostedService", operationalMode, StringComparison.Ordinal);
+        Assert.Contains("VerifiedMarketOperationalMode.TryRunAsync(args)", program, StringComparison.Ordinal);
+        Assert.True(
+            program.IndexOf("VerifiedMarketOperationalMode.TryRunAsync(args)", StringComparison.Ordinal)
+            < program.IndexOf("WebApplication.CreateBuilder", StringComparison.Ordinal),
+            "The operational mode must be decided before the web host is built.");
+        Assert.DoesNotContain("VerifiedMarketOperationalProvisioningRunner", program, StringComparison.Ordinal);
         Assert.False(typeof(IHostedService).IsAssignableFrom(typeof(VerifiedMarketOperationalProvisioningRunner)));
     }
 

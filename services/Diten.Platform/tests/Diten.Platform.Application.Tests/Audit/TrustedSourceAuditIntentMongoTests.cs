@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Audit;
+using Diten.Platform.Application.Tests.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Audit;
 using Diten.Platform.Infrastructure.Persistence;
@@ -16,34 +17,31 @@ namespace Diten.Platform.Application.Tests.Audit;
 
 public sealed class TrustedSourceAuditIntentMongoTests : IAsyncLifetime
 {
-    private readonly string _databaseName = $"fu01_{Guid.NewGuid():N}";
-    private IMongoClient _client = null!;
+    /*
+     * DB-010 / BL-395 — a FIXED-name scoped database on the shared mongod, taken through the harness: it holds the
+     * machine-wide lock and empties the scope on open. The scope is database-global on purpose: the outbox worker
+     * under test drains the WHOLE outbox, so a tenant id cannot isolate it, and several assertions below count
+     * every row. Until 2026-10-01 this class named a database per run (fu01_<guid>) and dropped it on dispose,
+     * without the lock — both guards (MongoTestDatabaseGuardTests, PlatformMongoTestLockTests) were red for it.
+     */
+    private MongoIntegrationHarness _harness = null!;
     private IMongoDatabase _database = null!;
     private AuditOutboxRepository _repository = null!;
     private TrustedSourceAuditIntentAcceptanceService _service = null!;
 
     public async Task InitializeAsync()
     {
-        var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017");
-        settings.GuidRepresentation = GuidRepresentation.Standard;
-        settings.ServerSelectionTimeout = TimeSpan.FromSeconds(10);
-        _client = new MongoClient(settings);
-        await _client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
-        _database = _client.GetDatabase(_databaseName);
-        await PlatformSchemaManifest.ApplyAsync(_database, new[] { SchemaProfile.AccessGovernance });
+        _harness = await MongoIntegrationHarness.CreateIsolatedAsync(
+            "trusted_source_audit_intent",
+            SchemaProfile.AccessGovernance);
+        _database = _harness.Database;
         _repository = new AuditOutboxRepository(
             _database,
             new AuditOutboxTemporalMigrationRepository(_database));
         _service = new(_repository, new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now));
     }
 
-    public async Task DisposeAsync()
-    {
-        if (_client is not null)
-        {
-            await _client.DropDatabaseAsync(_databaseName);
-        }
-    }
+    public async Task DisposeAsync() => await _harness.DisposeAsync();
 
     [Fact]
     public async Task NewAndSequentialReplay_PersistOneRowAndOriginalReceipt()

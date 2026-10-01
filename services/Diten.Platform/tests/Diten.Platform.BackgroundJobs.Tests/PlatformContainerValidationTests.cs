@@ -76,10 +76,13 @@ namespace Diten.Platform.BackgroundJobs.Tests;
 /// PROCESS-GLOBAL registry and THROWS if the type is already registered. Diten.Platform.Application.Tests
 /// registers those same serializers from a <c>[ModuleInitializer]</c> before its first test runs, so
 /// composing there fails with "There is already a serializer registered for type Guid" — red, but about the
-/// wrong thing. This project registers none, and hosted-service lifetime is its subject anyway. The same
-/// global registry is why the composition below is built ONCE per process behind a <c>Lazy</c>: a second
-/// <c>AddInfrastructure</c> call in one process would hit that registry again, so any further test added
-/// here must share this composition rather than compose its own.
+/// wrong thing. This project registers none, and hosted-service lifetime is its subject anyway.
+///
+/// ⚠ TWO COMPOSITIONS IN ONE PROCESS (2026-10-01). The default and the scheduler-off case each call
+/// <c>AddInfrastructure</c>, and the second call used to die on that same global registry — "There is already a
+/// serializer registered for type Guid" — whichever of the two ran second. <c>AddInfrastructure</c> now registers
+/// through <c>PlatformBsonSerializers.EnsureRegistered</c>: a repeat of the SAME serializers is accepted, a
+/// different one already in place is still refused (<c>PlatformBsonSerializersTests</c>).
 ///
 /// ⚠ THIS TEST WAS PROVED TO FAIL, not merely observed to pass. With the constructor parameter put back, it
 /// reports the production message verbatim — "Cannot consume scoped service 'MongoDB.Driver.IMongoDatabase'

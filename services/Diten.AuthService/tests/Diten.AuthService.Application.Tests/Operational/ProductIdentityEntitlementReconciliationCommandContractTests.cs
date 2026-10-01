@@ -16,6 +16,18 @@ public sealed class EntitlementProcessEnvironmentCollection { }
 public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
 {
     // FU18/FU19 closed source inventory, including the 2026-09-30 factual correction.
+    // 2026-10-01 (WP-MDM-TAKEOVER-STABILIZE-01) — rows re-measured after the merge onto main; every changed row below
+    // is a writer that already exists on main (c5d8f8e9f), attributed call by call:
+    //   UpdateUserCommandHandler   UpdateAsync -> UpdateForTenantAsync, + RevokeAllByUserAsync   (users module, main)
+    //   SetAccountKindCommandHandler UpdateForTenantAsync                                        (account kind, 7e22cb103)
+    //   DataSeeder  BulkWriteAsync 3->6, rpCol.InsertOneAsync 11->17, IncrementAsync 3->4, + col.UpdateOneAsync
+    //               (catalog/export-grant/scope seeds added on main)
+    // TWO ROWS ARE DELIBERATELY NOT ADDED and keep this test red until somebody decides them:
+    //   LocalTenantAdminPasswordResetController|IUserRepository|_users.UpdateForTenantAsync — Codex's Development-only
+    //     reset endpoint, itself still "to be removed or decided" (merge commit aec10604a);
+    //   DataSeeder|UNCLASSIFIED|marks.ReplaceOneAsync — main's PermissionReconciliationMark bookkeeping write; the
+    //     collection name is a constant, not a literal, so the scanner cannot bind it. Whether that collection is an
+    //     authority collection is the owner's classification, not a regeneration.
     // This is a conservative lexical regression guard, not C# compiler/semantic proof or a writer fence.
     // It deliberately has no git-history dependency: shallow checkouts compare against frozen call rows.
     [Fact]
@@ -257,7 +269,9 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/SetTenantPasswordCommandHandler.cs|IUserRepository|_userRepository.UpdateForTenantAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/SetUserActiveStatusCommandHandler.cs|IRefreshTokenRepository|_refreshTokenRepository.RevokeAllByUserAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/SetUserActiveStatusCommandHandler.cs|IUserRepository|_userRepository.UpdateAsync|1
-    services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/UpdateUserCommandHandler.cs|IUserRepository|_userRepository.UpdateAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/SetAccountKindCommandHandler.cs|IUserRepository|_userRepository.UpdateForTenantAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/UpdateUserCommandHandler.cs|IRefreshTokenRepository|_refreshTokens.RevokeAllByUserAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/UpdateUserCommandHandler.cs|IUserRepository|_userRepository.UpdateForTenantAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/GlobalRepositoryBase.cs|TEntity|Collection.InsertOneAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/GlobalRepositoryBase.cs|TEntity|Collection.ReplaceOneAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PermissionRepository.cs|Permission|Collection.UpdateOneAsync|2
@@ -273,11 +287,12 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRepository.cs|User|Collection.ReplaceOneAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRepository.cs|User|Collection.UpdateOneAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRoleRepository.cs|UserRole|Collection.DeleteOneAsync|1
-    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Permission+Role|col.BulkWriteAsync|3
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Permission+Role|col.BulkWriteAsync|6
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Permission+Role|col.InsertOneAsync|2
-    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|RolePermission|rpCol.InsertOneAsync|11
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Permission+Role|col.UpdateOneAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|RolePermission|rpCol.InsertOneAsync|17
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Role|roleCol.InsertOneAsync|2
-    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|RoleAssignmentVersionRepository|versionService.IncrementAsync|3
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|RoleAssignmentVersionRepository|versionService.IncrementAsync|4
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|UserRole|urCol.DeleteManyAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|UserRole|urCol.InsertOneAsync|3
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|User|userCol.DeleteOneAsync|1
@@ -400,7 +415,7 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
         while (!File.Exists(Path.Combine(root.FullName, "AGENTS.md"))) root = root.Parent ?? throw new InvalidOperationException("Checkout required");
         var persistence = File.ReadAllText(Path.Combine(root.FullName, "services/Diten.AuthService/src/Diten.AuthService.Persistence/DependencyInjection.cs"));
         var normal = persistence[persistence.IndexOf("    public static IServiceCollection AddPersistence(", StringComparison.Ordinal)..].Replace("\r", "").Trim();
-        Assert.Equal("F318BCF7B220BB127BBAE2F07532C7A79686579458705C913720D8D098B9BF8F", EntitlementReconciliationPlan.Hash(normal));
+        Assert.Equal("447B2703C1FA80C5A9CA43423A30F1335B6E86698F3741600065D65EB28D1D7A", EntitlementReconciliationPlan.Hash(normal));
         var operational = File.ReadAllText(Path.Combine(root.FullName, "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/EntitlementReconciliationOperationalMode.cs"));
         Assert.Contains("AddEntitlementReconciliationPersistence(configuration)", operational);
         foreach (var forbidden in new[] { "AddPersistence(", "EnsureIndexes", "DataSeeder", "AddHostedService", "AddMassTransit", "GrantModule", "UpsertSystemRole", "WebApplication.CreateBuilder" })

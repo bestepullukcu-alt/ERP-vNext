@@ -45,8 +45,12 @@ public sealed class ProductLegalEntityScopeMongoTests
     }
 
     [Fact]
-    public async Task Concurrent_compare_and_swap_has_one_winner_and_preserves_one_current_period()
+    public async Task Concurrent_compare_and_swap_has_one_winner_and_applies_exactly_one_end()
     {
+        // UpdateAsync carries only the End transition since d553497ed: a Replace goes through the guarded write
+        // session (ReplaceAsync) and is refused here with zero mutation — that refusal is pinned by
+        // ProductLegalEntityScopeWriteAdmissionMongoTests.GuardedWrite_DirectRepositoryBypass_…, and the two-contender
+        // replace by GuardedWrite_TwoContenders_…. This test keeps the compare-and-swap of the path that is left.
         await using var scope = await ProductScopeMongoScope.CreateAsync();
         var repository = scope.PolicyRepository();
         var productId = Guid.NewGuid();
@@ -55,21 +59,24 @@ public sealed class ProductLegalEntityScopeMongoTests
         var first = await repository.GetByGlobalProductIdAsync(productId);
         var second = await repository.GetByGlobalProductIdAsync(productId);
         var now = DateTimeOffset.UtcNow.AddMilliseconds(-1);
-        first!.ReplaceCurrent(0, Guid.NewGuid(), ProductLegalEntityScopeMode.Scoped, [Guid.NewGuid()], Guid.NewGuid(), now);
-        AddPolicyUpdateAuditIntent(first, ProductAuditOperation.ProductLegalEntityScopePolicyReplaced, 0);
-        second!.ReplaceCurrent(0, Guid.NewGuid(), ProductLegalEntityScopeMode.Scoped, [Guid.NewGuid()], Guid.NewGuid(), now);
-        AddPolicyUpdateAuditIntent(second, ProductAuditOperation.ProductLegalEntityScopePolicyReplaced, 0);
+        first!.EndCurrent(0, Guid.NewGuid(), Guid.NewGuid(), now);
+        AddPolicyUpdateAuditIntent(first, ProductAuditOperation.ProductLegalEntityScopePolicyEnded, 0);
+        second!.EndCurrent(0, Guid.NewGuid(), Guid.NewGuid(), now);
+        AddPolicyUpdateAuditIntent(second, ProductAuditOperation.ProductLegalEntityScopePolicyEnded, 0);
 
         var results = await Task.WhenAll(
             repository.UpdateAsync(first, 0),
             repository.UpdateAsync(second, 0));
-        var stored = await repository.GetByGlobalProductIdAsync(productId);
+        var stored = await scope.PolicyCollection
+            .Find(item => item.TenantId == scope.TenantId && item.GlobalProductId == productId)
+            .SingleAsync();
 
         Assert.Equal(1, results.Count(result => result.Succeeded));
         Assert.Equal(1, results.Count(result => result.VersionConflict));
-        Assert.Equal(1, stored!.Version);
-        Assert.Equal(2, stored.ScopePeriods.Count);
-        Assert.Single(stored.ScopePeriods, period => period.EffectiveToUtc is null);
+        Assert.Equal(1, stored.Version);
+        var period = Assert.Single(stored.ScopePeriods);
+        Assert.Contains(period.EndCommandId, new[] { first.ScopePeriods[0].EndCommandId, second.ScopePeriods[0].EndCommandId });
+        Assert.Single(stored.AuditIntents, intent => intent.Operation == ProductAuditOperation.ProductLegalEntityScopePolicyEnded);
     }
 
     [Fact]
@@ -190,16 +197,15 @@ public sealed class ProductLegalEntityScopeMongoTests
         Assert.True((await scope.PolicyRepository().CreateAsync(
             CreatePolicy(scope.TenantId, productId, Guid.NewGuid()))).Succeeded);
         var requested = await scope.PolicyRepository().GetByGlobalProductIdAsync(productId);
-        requested!.ReplaceCurrent(
+        // End, not Replace: UpdateAsync refuses a Replace with zero mutation since d553497ed (guarded write session).
+        requested!.EndCurrent(
             0,
             Guid.NewGuid(),
-            ProductLegalEntityScopeMode.Scoped,
-            [Guid.NewGuid()],
             Guid.NewGuid(),
             DateTimeOffset.UtcNow.AddMilliseconds(-1));
         AddPolicyUpdateAuditIntent(
             requested,
-            ProductAuditOperation.ProductLegalEntityScopePolicyReplaced,
+            ProductAuditOperation.ProductLegalEntityScopePolicyEnded,
             0);
         var beforeRepository = scope.PolicyRepositoryWithExecutors(
             operation => operation(),
@@ -489,16 +495,16 @@ internal sealed class ProductScopeMongoScope : IAsyncDisposable
         Func<Func<Task>, Task> insertExecutor,
         Func<Func<Task<ProductLegalEntityScopePolicy?>>, Task<ProductLegalEntityScopePolicy?>> updateExecutor)
     {
-        var constructor = typeof(ProductLegalEntityScopePolicyRepository)
-            .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
-            .Single(candidate => candidate.GetParameters().Length == 4);
-        return (ProductLegalEntityScopePolicyRepository)constructor.Invoke(
-        [
+        // The internal constructor is visible to this assembly (InternalsVisibleTo), so it is called, not reflected:
+        // d553497ed added the guarded write session as its third parameter and a reflected arity of 4 kept compiling
+        // while six cases failed at run time with "Sequence contains no matching element".
+        var tenantContext = new TenantContext(TenantId);
+        return new ProductLegalEntityScopePolicyRepository(
             Database,
-            new TenantContext(TenantId),
+            tenantContext,
+            new ProductLegalEntityScopeGuardedWriteSession(Database, tenantContext),
             insertExecutor,
-            updateExecutor
-        ]);
+            updateExecutor);
     }
 
     public ProductLegalEntityScopeRolloutStateRepository RolloutRepository(Guid? tenantId = null) =>

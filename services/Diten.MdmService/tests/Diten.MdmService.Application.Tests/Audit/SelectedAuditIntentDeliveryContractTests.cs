@@ -248,6 +248,10 @@ public sealed class SelectedAuditIntentDeliveryContractTests
     internal static Dictionary<string, string?> EnvironmentValues()
     {
         var tenant = Guid.NewGuid();
+        // Hoisted out of the manifest expression: MongoTestDatabaseGuardTests reads a database name and a
+        // Guid.NewGuid() in ONE statement as a per-run database. The name below is fixed; only the ids are fresh.
+        var aggregateId = Guid.NewGuid();
+        var intentId = Guid.NewGuid();
         return new(StringComparer.Ordinal)
         {
             ["ASPNETCORE_ENVIRONMENT"] = "Development",
@@ -260,8 +264,8 @@ public sealed class SelectedAuditIntentDeliveryContractTests
                 mongoConnectionString = "mongodb://127.0.0.1:45003/?replicaSet=testowned&directConnection=true",
                 databaseName = "diten_mdm_product_scope_itest", authBaseUrl = "http://127.0.0.1:45001/",
                 platformBaseUrl = "http://127.0.0.1:45002/",
-                items = new[] { new { tenantId = tenant, aggregateType = "GlobalProduct", aggregateId = Guid.NewGuid(),
-                    intentId = Guid.NewGuid(), expectedClaimGeneration = 0L, evidenceFingerprint = new string('A', 64) } }
+                items = new[] { new { tenantId = tenant, aggregateType = "GlobalProduct", aggregateId,
+                    intentId, expectedClaimGeneration = 0L, evidenceFingerprint = new string('A', 64) } }
             }),
             ["AuthTrustedSourceAuditServiceIdentityProvider__AuthBaseUrl"] = "http://127.0.0.1:45001/",
             ["AuthTrustedSourceAuditServiceIdentityProvider__ExpectedIssuer"] = "test-owned-issuer",

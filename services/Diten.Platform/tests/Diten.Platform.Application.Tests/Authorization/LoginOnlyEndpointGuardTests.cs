@@ -20,8 +20,10 @@ namespace Diten.Platform.Application.Tests.Authorization;
 /// <para><b>The rule.</b> Every action in the Platform API assembly is exactly one of: key-gated
 /// (<see cref="HasPermissionAttribute"/> / <see cref="RequiresExplicitPermissionAttribute"/>), platform-policy gated
 /// (<c>[Authorize(Policy = PlatformActor | PlatformAdminOnly)]</c>), an allow-listed anonymous <c>/api/internal</c>
-/// route (API key checked in the controller), <see cref="LoginOnlyAttribute"/> with a reason, or one of the named
-/// exceptions below with its own reason. The login-only list is PINNED, so adding one is a reviewed change.</para>
+/// route (API key checked in the controller), an allow-listed <c>/api/internal</c> controller
+/// behind a named trusted-service authentication scheme, <see cref="LoginOnlyAttribute"/> with a reason, or one of
+/// the named exceptions below with its own reason. The login-only list is PINNED, so adding one is a reviewed
+/// change.</para>
 ///
 /// <para>Measured on the production assembly by reflection — not on a copy of the attribute list.</para>
 /// </summary>
@@ -82,7 +84,41 @@ public sealed class LoginOnlyEndpointGuardTests
         "InternalTenantLoginSettingsController",
         "InternalTenantResolveController",
         "InternalTenantStatusController",
+        /*
+         * ⚠ DELIBERATELY NOT LISTED (2026-10-01, product-five takeover) — and Every_anonymous_action_is_an_allow_listed_…
+         * stays RED for them until the proof below exists:
+         *   InternalLegalEntityScopeResolutionController.Resolve   (TrustedLegalEntityScopeRequestExecutor)
+         *   InternalTrustedSourceAuditIntentController.Accept      (TrustedSourceAuditIntentRequestExecutor)
+         * Both HAVE a gate in code (credential headers + user JWT + exact pair; a named-scheme service token). What
+         * is missing is the test that the EXECUTOR refuses when that gate says no. Measured by sabotage: with
+         * `if (!credential.Authenticated)` disabled, and separately with the IsAuthenticated/IsAuthorized refusals
+         * removed, not one test in the executor, controller, authenticator or security classes went red (0/38 and
+         * 0/187). Every executor test mocks the authenticator as "authenticated". A controller enters this list
+         * only when removing its refusal turns a NAMED test red.
+         */
         "InternalVerifiedMarketReferenceDataController"
+    };
+
+    /// <summary>
+    /// Controllers whose gate is a named trusted-SERVICE authentication scheme rather than a permission key: no user
+    /// permission can be the gate, because the caller is another service. Controller → the exact scheme its
+    /// class-level <c>[Authorize]</c> must name. Each must sit under /api/internal.
+    ///
+    /// <para><b>InternalTrustedWorkflowConsumerController</b> (Start, GetStartResult, GetTerminalDecisionEvidence,
+    /// GetCancellationPreflight, Cancel; caller: MDM's product-identity workflow client). The scheme validates an
+    /// RS256 service token with exact claims and the TRUSTED_WORKFLOW_CONSUMER audience
+    /// (TrustedServiceTokenValidationTests.Workflow_scheme_accepts_only_workflow_audience_without_weakening_audit_
+    /// scheme, Hs256_algorithm_confusion_is_rejected, Unsigned_none_token_is_rejected). Inside, the executor binds the
+    /// service identity's tenant and — for Start and Cancel — a delegated human token of the SAME tenant that holds
+    /// the workflow permission (TrustedWorkflowConsumerSecurityTests: Start_rejects_tenant_mismatch_and_never_
+    /// dispatches, Start_rejects_delegated_user_without_workflow_start_permission, Evidence_uses_service_tenant_only_
+    /// and_rejects_delegated_header, Start_result_rejects_delegated_header_and_unknown_body_field,
+    /// Cancellation_preflight_is_service_only_and_rejects_delegated_or_tenant_headers,
+    /// Cancellation_dual_auth_binds_service_and_delegated_requester_without_generic_permission).</para>
+    /// </summary>
+    private static readonly Dictionary<string, string> TrustedServiceSchemeControllers = new(StringComparer.Ordinal)
+    {
+        ["InternalTrustedWorkflowConsumerController"] = TrustedServiceTokenValidationExtensions.WorkflowAuthenticationScheme
     };
 
     [Fact]
@@ -94,6 +130,7 @@ public sealed class LoginOnlyEndpointGuardTests
 
         var uncovered = actions
             .Where(a => !IsKeyGated(a) && !IsPlatformPolicyGated(a) && !IsAnonymous(a)
+                        && !IsTrustedServiceSchemeGated(a)
                         && !a.IsDefined(typeof(LoginOnlyAttribute), false) && !NamedExceptions.ContainsKey(Name(a)))
             .Select(Name)
             .OrderBy(n => n, StringComparer.Ordinal)
@@ -153,6 +190,40 @@ public sealed class LoginOnlyEndpointGuardTests
     }
 
     [Fact]
+    public void Every_authentication_scheme_gate_is_a_reviewed_internal_trusted_service_controller()
+    {
+        // Naming an authentication scheme changes WHO can be the caller. Wherever one appears it must be the reviewed
+        // controller, the exact reviewed scheme, on the class (so no action can be added outside it), under
+        // /api/internal, and never together with [AllowAnonymous].
+        foreach (var action in Actions())
+        {
+            var controller = action.DeclaringType!;
+            var actionSchemes = action.GetCustomAttributes<AuthorizeAttribute>(true)
+                .Where(a => !string.IsNullOrWhiteSpace(a.AuthenticationSchemes)).ToList();
+            var controllerSchemes = controller.GetCustomAttributes<AuthorizeAttribute>(true)
+                .Where(a => !string.IsNullOrWhiteSpace(a.AuthenticationSchemes)).ToList();
+            var listed = TrustedServiceSchemeControllers.TryGetValue(controller.Name, out var expectedScheme);
+
+            Assert.True(actionSchemes.Count == 0,
+                $"{Name(action)} names an authentication scheme on the action; the gate belongs on the controller.");
+            if (!listed)
+            {
+                Assert.True(controllerSchemes.Count == 0,
+                    $"{Name(action)}: controller names authentication scheme "
+                    + $"'{controllerSchemes.FirstOrDefault()?.AuthenticationSchemes}' but is not on the reviewed list.");
+                continue;
+            }
+
+            var gate = Assert.Single(controllerSchemes);
+            Assert.Equal(expectedScheme, gate.AuthenticationSchemes);
+            Assert.False(IsAnonymous(action), $"{Name(action)}: a scheme gate and [AllowAnonymous] contradict each other.");
+            var route = controller.GetCustomAttribute<RouteAttribute>()?.Template ?? string.Empty;
+            Assert.True(route.StartsWith("api/internal", StringComparison.OrdinalIgnoreCase),
+                $"{Name(action)} is trusted-service gated outside /api/internal (route '{route}').");
+        }
+    }
+
+    [Fact]
     public void Every_platform_policy_is_a_known_platform_actor_policy()
     {
         // The named exceptions carry their own gates ([RequiresModule]/[RequiresFeature] are [Authorize] subclasses
@@ -175,6 +246,7 @@ public sealed class LoginOnlyEndpointGuardTests
 
         var controllers = Actions().Select(a => a.DeclaringType!.Name).ToHashSet(StringComparer.Ordinal);
         Assert.All(AnonymousInternalControllers, key => Assert.Contains(key, controllers));
+        Assert.All(TrustedServiceSchemeControllers.Keys, key => Assert.Contains(key, controllers));
 
         // The exceptions are exceptions, not hidden login-only endpoints: none of them may carry the marker.
         Assert.All(Actions().Where(a => NamedExceptions.ContainsKey(Name(a))),
@@ -199,6 +271,11 @@ public sealed class LoginOnlyEndpointGuardTests
 
     private static bool IsPlatformPolicyGated(MethodInfo action)
         => Authorizes(action).Any(a => a.Policy is { } policy && PlatformPolicies.Contains(policy));
+
+    private static bool IsTrustedServiceSchemeGated(MethodInfo action)
+        => TrustedServiceSchemeControllers.TryGetValue(action.DeclaringType!.Name, out var scheme)
+           && action.DeclaringType!.GetCustomAttributes<AuthorizeAttribute>(true)
+               .Any(a => string.Equals(a.AuthenticationSchemes, scheme, StringComparison.Ordinal));
 
     private static bool IsAnonymous(MethodInfo action)
         => action.IsDefined(typeof(AllowAnonymousAttribute), true)

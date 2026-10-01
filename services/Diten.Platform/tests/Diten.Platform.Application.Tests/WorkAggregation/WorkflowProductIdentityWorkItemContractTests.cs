@@ -38,6 +38,9 @@ public sealed class WorkflowProductIdentityWorkItemContractTests
         nameof(WorkItemProjectionDto.DueAt),
         nameof(WorkItemProjectionDto.Assignee),
         nameof(WorkItemProjectionDto.Requester),
+        // BL-437 (main) — WorkItemProjectionService.ArrivalReasonFor maps it from the approval source context;
+        // null only when the owner sent no context. Mapped, not absent.
+        nameof(WorkItemProjectionDto.ArrivalReason),
         nameof(WorkItemProjectionDto.SlaState),
         nameof(WorkItemProjectionDto.ClosedAt)
     };
@@ -67,7 +70,23 @@ public sealed class WorkflowProductIdentityWorkItemContractTests
         nameof(WorkItemProjectionDto.Watchers),
         nameof(WorkItemProjectionDto.DelegationAllowed),
         nameof(WorkItemProjectionDto.Notifications),
-        nameof(WorkItemProjectionDto.ReminderLeadDays)
+        nameof(WorkItemProjectionDto.ReminderLeadDays),
+        // Added on main after this list was written (merged 2026-10-01). All thirteen are task-engine facts the
+        // workflow approval projection never sets — WorkItemProjectionService leaves them at their null default, and
+        // the theory below asserts exactly that for every name in this set.
+        nameof(WorkItemProjectionDto.Attachments),
+        nameof(WorkItemProjectionDto.Closure),
+        nameof(WorkItemProjectionDto.Effort),
+        nameof(WorkItemProjectionDto.InquiryAnswer),
+        nameof(WorkItemProjectionDto.PlannedDurationMinutes),
+        nameof(WorkItemProjectionDto.PlannedStartAt),
+        nameof(WorkItemProjectionDto.RelatedRecords),
+        nameof(WorkItemProjectionDto.RemainingMinutes),
+        nameof(WorkItemProjectionDto.Returned),
+        nameof(WorkItemProjectionDto.ReviewMeetingPolicy),
+        nameof(WorkItemProjectionDto.SecondaryActionCodes),
+        nameof(WorkItemProjectionDto.TimeEntries),
+        nameof(WorkItemProjectionDto.ViewerRelation)
     };
 
     [Fact]

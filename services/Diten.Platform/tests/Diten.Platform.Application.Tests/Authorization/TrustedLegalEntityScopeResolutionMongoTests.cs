@@ -2,6 +2,7 @@ using Diten.Platform.Application.Authorization;
 using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.AccessGovernance.LegalEntityScopeResolution.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.AccessGovernance.LegalEntityScopeResolution.Queries;
+using Diten.Platform.Application.Tests.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Infrastructure.Persistence;
@@ -19,7 +20,12 @@ public sealed class TrustedLegalEntityScopeResolutionMongoTests : IAsyncLifetime
     private IMongoDatabase _database = null!;
     private static readonly DateTimeOffset Now = new(2026, 8, 26, 12, 0, 0, TimeSpan.Zero);
 
-    public Task InitializeAsync() { _database = _client.GetDatabase(DatabaseName); return Task.CompletedTask; }
+    public async Task InitializeAsync()
+    {
+        // BL-395 — this class addresses the shared mongod directly, so it takes the machine-wide lock first.
+        await PlatformMongoTestLock.EnsureHeldAsync();
+        _database = _client.GetDatabase(DatabaseName);
+    }
     public async Task DisposeAsync()
     {
         if (_tenantIds.Count == 0)

@@ -280,8 +280,9 @@ public static class DependencyInjection
         // wrote. Conventions bind when a class map is first built, so this stays the first BSON registration.
         PlatformBsonConventions.Register();
 
-        BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
-        BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
+        // Guid = Standard, decimal = Decimal128. Repeatable in one process, and refused when the serializer already
+        // in place is a different one — see PlatformBsonSerializers.
+        PlatformBsonSerializers.EnsureRegistered();
 
         var connectionString = configuration["MongoDbSettings:ConnectionString"]
             ?? throw new InvalidOperationException("Configuration error: 'MongoDbSettings:ConnectionString' is missing in appsettings.json.");
@@ -849,7 +850,7 @@ public static class DependencyInjection
                     });
         });
         services.AddSingleton<IBackgroundJobScheduler, HangfireBackgroundJobScheduler>();
-        services.AddScoped<EmailDispatchSweepJob>();
+        services.AddSchedulerBoundBackgroundJobHandlers();
 
         if (schedulerOptions.Enabled && runStartupMaintenance)
         {
