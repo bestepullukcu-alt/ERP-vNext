@@ -158,3 +158,27 @@
 - paket bölünmesi.
 
 Kullanıcı onayıyla paketlere dönüşecek.
+
+---
+
+## 9. KARAR — Ziyaret içeriği (SB-3 ön kararları; kullanıcı, 2026-10-01)
+1. **Q2 / 11b — sürüm politikası:** yolculuk aşamaları varsayılan olarak **"yolun en son yayındaki sürümünü izle"**. Yeni sürüm yayınlanınca saha otomatik güncellenir. Belirli sürüme sabitleme istisnai seçenek olarak kalır.
+2. **Q1 — doğrudan yol bağı: HAYIR.** Akış şöyle:
+   - zincir şablonu konuları sıralar ("önce ihtiyaç, sonra etki / fayda…");
+   - Bilgi Yolu bu zincire içerik + iddia + sayfa tasarımı ile kurgulanır (ürün × kitle × ülke / dil);
+   - bu yollar **İçerik Etkileşim Yolculukları**'nda (her ürün ve kitle için) ziyaret sırasına dizilir;
+   - ziyarete **yolculuk sırasıyla** gelir.
+   - **Strateji şablonu içeriği yolculuk üzerinden bağlar.** Şablonda doğrudan Bilgi Yolu bağı ziyarette kullanılmaz; yeni bağ olarak önerilmemeli / kaldırılmalı.
+3. **YENİ — çok ürünlü ziyaret:** bir ziyaret tek ürün üzerinden gitmez.
+   - **En fazla 3 promo + en fazla 3 non-promo ürün** planlanır ve anlatılır.
+   - Her ürün için o ürünün (ve doktorun kitlesinin) yolculuğundaki **sıradaki aşama** → yolu → içerikler.
+   - **Aşama ilerlemesi doktor × ürün (yolculuk) bazında tutulmalı.** Bugün doktor başına tek `StageIndex` var.
+
+**Sonuç:**
+- SB-3 bugünkü tek yolculuk / tek aşama çözücüsünden büyük.
+- Paketlemeden önce **DESIGN-SB-3** analizi gerekiyor:
+  - ziyaretin promo / non-promo ürünleri nereden geliyor (strateji şablonu ürün hatları / SKU %, CycleCapacity, kampanya, mikro hedef);
+  - ürün → yolculuk eşlemesi (konu ↔ ürün + kitle);
+  - doktor × yolculuk aşama takibi (PlannedVisit / VisitReport);
+  - 3 + 3 sınırının yeri;
+  - eski sistemdeki (DitenCRM) karşılığı.
