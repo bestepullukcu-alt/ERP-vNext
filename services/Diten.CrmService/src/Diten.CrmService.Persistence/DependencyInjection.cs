@@ -147,6 +147,8 @@ public static class DependencyInjection
         // MOD-0162 FU04 — KnowledgePath master (steps embedded, D2 → one collection, one repository). No delete method
         // (soft archive). The read-only consumption seam a future MOD-0155/MOD-0309 consumer reads makes no decision.
         services.AddScoped<IKnowledgePathRepository, KnowledgePathRepository>();
+        // WP-KP-2 — frozen MLR review revisions of a knowledge path (own collection, no delete).
+        services.AddScoped<IKnowledgePathRevisionRepository, KnowledgePathRevisionRepository>();
         services.AddScoped<
             Application.Features.Knowledge.Path.IKnowledgePathReader,
             Application.Features.Knowledge.Path.KnowledgePathReader>();
@@ -775,6 +777,34 @@ public static class DependencyInjection
         // string-Guid convention (the new-field class-map trap); a pre-KP-1 document has none of these elements and
         // reads back as a legacy path (ChainTemplate / CountryCode / Arrangement null, Claims empty).
         Map<KnowledgePathChainRef>(map => map.GetMemberMap(x => x.ConceptChainTemplateId).SetSerializer(stringGuid));
+        // WP-KP-2 — the revision aggregate and every embedded type: all ids take the string-Guid convention (the
+        // new-aggregate class-map trap — a missing map stores binary Guids and every PathId query returns nothing).
+        Map<KnowledgePathRevision>(map => map.GetMemberMap(x => x.PathId).SetSerializer(stringGuid));
+        Map<KnowledgePathRevisionSnapshot>(map =>
+        {
+            map.GetMemberMap(x => x.ConceptChainTemplateId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.ProductId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(x => x.AudienceProfileIds).SetSerializer(
+                new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+        });
+        Map<KnowledgePathRevisionStep>(map =>
+        {
+            map.GetMemberMap(x => x.StepId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.ContentId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.PrerequisiteStepId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
+        Map<KnowledgePathRevisionClaim>(map =>
+        {
+            map.GetMemberMap(x => x.ClaimId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.CountryVersionId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
+        Map<KnowledgePathRevisionConformance>(map => map.GetMemberMap(x => x.ChainStepId).SetSerializer(stringGuid));
+        Map<KnowledgePathRevisionPage>(map => map.GetMemberMap(x => x.PageId).SetSerializer(stringGuid));
+        Map<KnowledgePathRevisionNote>(map => map.GetMemberMap(x => x.NoteId).SetSerializer(stringGuid));
+        Map<KnowledgePathChangeSummary>(_ => { });
+        Map<KnowledgePathChange>(_ => { });
+        Map<KnowledgePathRenderedArtifact>(map => map.GetMemberMap(x => x.ContentId).SetSerializer(stringGuid));
+        Map<KnowledgePathReleaseState>(_ => { });
         Map<KnowledgePathArrangement>(map => map.GetMemberMap(x => x.ChainStepId).SetSerializer(stringGuid));
         Map<KnowledgePathClaim>(map => map.GetMemberMap(x => x.ClaimId).SetSerializer(stringGuid));
         Map<KnowledgePath>(map =>
@@ -1708,6 +1738,14 @@ public static class DependencyInjection
             // (parallel-array trap); in-array StepOrder/StepCode uniqueness cannot be an index (the handler is the
             // defence) and (PathCode, PathVersion) uniqueness is enforced in the create handler (an archived code is
             // reusable), so no partial $ne filter that would crash-loop the service.
+            // WP-KP-2 — knowledge_path_revisions: one revision number per (tenant, path) — the store refuses a second
+            // submission racing for the same number.
+            var pathRevisions = database.GetCollection<KnowledgePathRevision>(KnowledgePathRevisionRepository.CollectionName);
+            pathRevisions.Indexes.CreateOne(new CreateIndexModel<KnowledgePathRevision>(
+                Builders<KnowledgePathRevision>.IndexKeys
+                    .Ascending(r => r.TenantId).Ascending(r => r.PathId).Ascending(r => r.RevisionNumber),
+                new CreateIndexOptions { Unique = true, Name = "ux_knowledge_path_revisions_tenant_path_number" }));
+
             var knowledgePaths = database.GetCollection<KnowledgePath>(KnowledgePathRepository.CollectionName);
             knowledgePaths.Indexes.CreateOne(new CreateIndexModel<KnowledgePath>(
                 Builders<KnowledgePath>.IndexKeys

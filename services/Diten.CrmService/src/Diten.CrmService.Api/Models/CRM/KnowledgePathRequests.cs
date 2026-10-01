@@ -52,6 +52,12 @@ public sealed record AddKnowledgePathClaimRequest(
 
 public sealed record ArrangeKnowledgePathClaimRequest(int Position, int? ExpectedVersion = null);
 
+// WP-KP-2 — review sub-routes.
+public sealed record KnowledgePathDecisionRequest(string? Decision, string? Comment = null);
+
+public sealed record KnowledgePathNoteRequest(
+    string? Text, string? PageRef = null, string? BlockRef = null, string? StepRef = null, double? X = null, double? Y = null);
+
 public sealed record KnowledgePathBranchConditionRequest(
     string ConditionCode,
     string? Description = null,

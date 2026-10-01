@@ -108,16 +108,21 @@ public sealed class GetKnowledgePathHandler : IRequestHandler<GetKnowledgePathQu
     private readonly IKnowledgeContentRepository _contents;
     private readonly IConceptNodeRepository _nodes;
     private readonly KnowledgePathStudioReader? _studio;
+    private readonly IKnowledgePathRevisionRepository? _revisions;
+    private readonly Review.KnowledgePathReviewReconciler? _reconciler;
 
     public GetKnowledgePathHandler(
         ITenantContext tenant, IKnowledgePathRepository paths, IKnowledgeContentRepository contents,
-        IConceptNodeRepository nodes, KnowledgePathStudioReader? studio = null)
+        IConceptNodeRepository nodes, KnowledgePathStudioReader? studio = null,
+        IKnowledgePathRevisionRepository? revisions = null, Review.KnowledgePathReviewReconciler? reconciler = null)
     {
         _tenant = tenant;
         _paths = paths;
         _contents = contents;
         _nodes = nodes;
         _studio = studio;
+        _revisions = revisions;
+        _reconciler = reconciler;
     }
 
     public async Task<Response<KnowledgePathDto>> Handle(
@@ -132,6 +137,14 @@ public sealed class GetKnowledgePathHandler : IRequestHandler<GetKnowledgePathQu
         if (path is null)
         {
             return Response<KnowledgePathDto>.Fail("Knowledge path not found.", 404);
+        }
+
+        // WP-KP-2 — a path in review follows its MLR round: a stale open round is reconciled on read (120 s window).
+        if (path.PathStatus == KnowledgePathStatuses.Review && _revisions is not null && _reconciler is not null
+            && await _reconciler.ReconcileAsync(tenantId, await _revisions.ListByPathAsync(tenantId, path.Id, cancellationToken),
+                cancellationToken) > 0)
+        {
+            path = await _paths.GetByIdAsync(tenantId, path.Id, cancellationToken) ?? path;
         }
 
         var effectiveAt = request.EffectiveAt ?? DateTimeOffset.UtcNow;

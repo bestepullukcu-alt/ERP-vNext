@@ -62,6 +62,9 @@ public static class DependencyInjection
 
         // WP-KP-1 — the studio part of a knowledge path detail read (chain, derived context, claims, conformance).
         services.AddScoped<Features.Knowledge.Path.KnowledgePathStudioReader>();
+        // WP-KP-2 — the path review: the single outcome applier (event consumer, reconcile, withdraw) + reconcile-on-read.
+        services.AddScoped<Features.Knowledge.Path.Review.KnowledgePathRevisionOutcomeApplier>();
+        services.AddScoped<Features.Knowledge.Path.Review.KnowledgePathReviewReconciler>();
 
         // WP-SB-1R — the single content-set context resolver (country + language of the set; product + audience derived
         // from the template). Read-only; used by the set reads, eligibility, the revision freeze.

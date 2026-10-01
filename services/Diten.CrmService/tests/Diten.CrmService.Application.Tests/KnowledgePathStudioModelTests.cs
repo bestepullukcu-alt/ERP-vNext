@@ -180,7 +180,7 @@ public sealed class KnowledgePathStudioModelTests
         Assert.Equal(201, (await fx.AddStep(id, fx.ContentTr.Id, "BR1", fx.T1)).StatusCode);
         var claim = fx.SeedClaim("CLM-1");
         Assert.True((await fx.AddClaim().Handle(new AddKnowledgePathClaimCommand(id, claim.Id, Slot("BR1", fx.T2)), default)).IsSuccessful);
-        Assert.True((await fx.Publish().Handle(new PublishKnowledgePathCommand(id), default)).IsSuccessful);
+        fx.ReleaseForTest(id); // WP-KP-2: a chain-bound path is released only from an approved revision (KP-3)
 
         var r = await fx.NewVersion().Handle(new CreateKnowledgePathVersionCommand(id), default);
         Assert.Equal(201, r.StatusCode);
@@ -367,7 +367,7 @@ public sealed class KnowledgePathStudioModelTests
         Assert.Equal((409, KnowledgePathStudioErrors.ChainTemplateRequired), (noChain.StatusCode, noChain.Errors![0]));
 
         await fx.AddStep(id, fx.ContentTr.Id, "BR1", fx.T1);
-        Assert.True((await fx.Publish().Handle(new PublishKnowledgePathCommand(id), default)).IsSuccessful);
+        fx.ReleaseForTest(id); // WP-KP-2: a chain-bound path is released only from an approved revision (KP-3)
         Assert.Equal(409, (await fx.RemoveClaim().Handle(new RemoveKnowledgePathClaimCommand(id, mine.Id), default)).StatusCode);
     }
 
@@ -682,6 +682,15 @@ public sealed class KnowledgePathStudioModelTests
             => AddStepHandler().Handle(new AddKnowledgePathStepCommand(
                 pathId, order, code ?? ("S" + Guid.NewGuid().ToString("N")[..4]), "Step", "core-message", contentId, true,
                 PrerequisiteStepId: prereq, ConceptNodeId: node, Arrangement: arrangement), default);
+
+        /// <summary>TEST-ONLY — puts a chain-bound path in the published + frozen state a KP-3 release will produce.
+        /// Direct publish of a chain-bound path is refused since WP-KP-2 (approval_via_workflow_only).</summary>
+        public void ReleaseForTest(Guid pathId)
+        {
+            var path = Paths.Items.Single(p => p.Id == pathId);
+            path.PathStatus = KnowledgePathStatuses.Published;
+            path.StepSetFrozenAt = path.PublishedAt = DateTimeOffset.UtcNow;
+        }
 
         public Task<Response<Guid>> AddLegacyStep(Guid pathId, int order, Guid contentId)
             => AddStepHandler().Handle(new AddKnowledgePathStepCommand(

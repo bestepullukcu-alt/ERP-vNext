@@ -2,6 +2,7 @@ using Diten.CrmService.Api.Models.CRM;
 using Diten.CrmService.Application.Features.Knowledge.Path;
 using Diten.CrmService.Application.Features.Knowledge.Path.Commands;
 using Diten.CrmService.Application.Features.Knowledge.Path.Queries;
+using Diten.CrmService.Application.Features.Knowledge.Path.Review;
 using Diten.CrmService.Infrastructure.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -175,6 +176,57 @@ public sealed class KnowledgePathsController : CustomBaseController
         Guid pathId, Guid claimId, [FromQuery] int? expectedVersion, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new RemoveKnowledgePathClaimCommand(pathId, claimId, expectedVersion), cancellationToken));
+
+    // ---------------- WP-KP-2 review: revision + MLR round (one channel), notes, history ----------------
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/submit-review")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> SubmitReview(Guid pathId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new SubmitKnowledgePathReviewCommand(pathId), cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/withdraw-review")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> WithdrawReview(Guid pathId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new WithdrawKnowledgePathReviewCommand(pathId), cancellationToken));
+
+    // A reviewer needs only read here: MOD-0023 decides who may act on the task (its candidates + SoD).
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/decision")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> Decide(
+        Guid pathId, Guid revisionId, [FromBody] KnowledgePathDecisionRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new DecideKnowledgePathRevisionCommand(pathId, revisionId, request.Decision, request.Comment), cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/notes")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> AddNote(
+        Guid pathId, Guid revisionId, [FromBody] KnowledgePathNoteRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new AddKnowledgePathRevisionNoteCommand(pathId, revisionId, request.PageRef, request.BlockRef, request.StepRef,
+                request.X, request.Y, request.Text), cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/notes/{noteId:guid}/resolve")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> ResolveNote(Guid pathId, Guid revisionId, Guid noteId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new ResolveKnowledgePathRevisionNoteCommand(pathId, revisionId, noteId,
+                PermissionClaims.HasPermission(User, Perms.Manage) || PermissionClaims.HasPermission(User, Perms.ManageFallback)),
+            cancellationToken));
+
+    [HttpGet("api/crm/knowledge/paths/{pathId:guid}/revisions")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> ListRevisions(Guid pathId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new ListKnowledgePathRevisionsQuery(pathId), cancellationToken));
+
+    [HttpGet("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> GetRevision(Guid pathId, Guid revisionId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetKnowledgePathRevisionQuery(pathId, revisionId), cancellationToken));
+
+    [HttpGet("api/crm/knowledge/paths/{pathId:guid}/review-history")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> ReviewHistory(Guid pathId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetKnowledgePathReviewHistoryQuery(pathId), cancellationToken));
 
     private static KnowledgePathArrangementInput? MapArrangement(KnowledgePathArrangementRequest? arrangement)
         => arrangement is null

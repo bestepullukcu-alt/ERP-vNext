@@ -232,6 +232,12 @@ public sealed class CreateKnowledgePathHandler : IRequestHandler<CreateKnowledge
             return Response<Guid>.Fail("A path cannot be created as published; use the publish endpoint (D4).", 400);
         }
 
+        // WP-KP-2 — approved (and, on a chain-bound path, review) belong to the MLR workflow, never to a payload.
+        if (status == KnowledgePathStatuses.Approved || (chained && status == KnowledgePathStatuses.Review))
+        {
+            return Review.KnowledgePathReviewRules.ApprovalViaWorkflowOnly<Guid>();
+        }
+
         var referenceError = await KnowledgePathWrite.ValidateReferencesAsync(
             _subjects, _topics, _profiles, tenantId, subjectId, request.TopicId,
             audienceProfileId, cancellationToken);
@@ -368,6 +374,16 @@ public sealed class UpdateKnowledgePathHandler : IRequestHandler<UpdateKnowledge
             return Response<bool>.Fail("Use the publish endpoint to publish a path (V-P12 / D4).", 400);
         }
 
+        // WP-KP-2 — the V-P12 pattern for approval: nothing becomes approved through Update, and a chain-bound path's
+        // review / approved / draft status follows its MLR round only (a lifecycle close — inactive / archived — stays).
+        if (newStatus != path.PathStatus
+            && (newStatus == KnowledgePathStatuses.Approved
+                || (path.ChainTemplate is not null
+                    && newStatus is not (KnowledgePathStatuses.Inactive or KnowledgePathStatuses.Archived))))
+        {
+            return Review.KnowledgePathReviewRules.ApprovalViaWorkflowOnly<bool>();
+        }
+
         var scalarError = KnowledgePathValidation.ValidatePathName(request.PathName)
             ?? KnowledgePathValidation.ValidateObjective(request.Objective)
             ?? KnowledgePathValidation.ValidateDescription(request.Description)
@@ -484,6 +500,13 @@ public sealed class PublishKnowledgePathHandler : IRequestHandler<PublishKnowled
         if (path.IsPublished())
         {
             return Response<bool>.Success(true); // idempotent — already published + frozen
+        }
+
+        // WP-KP-2 — a chain-bound path is never published directly: approval is the MLR workflow, the release is KP-3
+        // (from the approved revision). A legacy (chain-less) path keeps today's behaviour until KP-3 / KP-4.
+        if (path.ChainTemplate is not null)
+        {
+            return Review.KnowledgePathReviewRules.ApprovalViaWorkflowOnly<bool>();
         }
 
         // V-P11 — a published path must carry at least one active, required step.

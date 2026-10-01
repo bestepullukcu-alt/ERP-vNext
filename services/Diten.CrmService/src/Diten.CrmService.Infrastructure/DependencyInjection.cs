@@ -157,6 +157,14 @@ public static class DependencyInjection
             Application.Features.ContentComposition.Claims.IClaimWorkflowClient,
             Workflow.GatewayClaimWorkflowClient>(client => client.Timeout = TimeSpan.FromSeconds(15));
         services.AddScoped<Application.Features.ContentComposition.Claims.ClaimReviewOutcomeApplier>();
+        // WP-KP-2 — knowledge path MLR review: its template / reconcile configuration (Crm:KnowledgePaths:Workflow) and the
+        // decision calls (tasks/mine, approve / reject with comment, history) on the SAME Gateway client (caller's token).
+        services.AddSingleton<
+            Application.Features.Knowledge.Path.Review.IKnowledgePathReviewSettings,
+            Workflow.ConfigurationKnowledgePathReviewSettings>();
+        services.AddScoped<Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient>(sp =>
+            (Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient)
+            sp.GetRequiredService<Application.Features.ContentComposition.Claims.IClaimWorkflowClient>());
         services.AddScoped<Application.Features.ContentComposition.Claims.ClaimReviewReconciler>();
         AddClaimWorkflowEventing(services, configuration);
 
