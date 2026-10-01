@@ -6,6 +6,7 @@ using Diten.CrmService.Application.Features.Knowledge.Chain;
 using Diten.CrmService.Application.Features.Knowledge.Content;
 using Diten.CrmService.Application.Features.Knowledge.Content.Commands;
 using Diten.CrmService.Application.Features.Knowledge.Path.Commands;
+using Diten.CrmService.Application.Features.Knowledge.Path.Release;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using MediatR;
@@ -157,14 +158,13 @@ public sealed class ContentSetReleaseProducer : IContentSetReleaseProducer
         foreach (var component in revision.SelectedComponents)
         {
             var content = await _contents.GetByIdAsync(tenantId, component.KnowledgeContentId, cancellationToken);
-            if (content is null || content.IsArchived()
-                || !string.Equals(content.ContentStatus, KnowledgeContentStatuses.Published, StringComparison.OrdinalIgnoreCase))
+            if (!KnowledgePathReleaseRules.IsReleasableContent(content))
             {
                 notPublished.Add(content?.ContentCode ?? component.KnowledgeContentId.ToString("D"));
                 continue;
             }
 
-            contents[component.SelectionId] = content;
+            contents[component.SelectionId] = content!;
         }
 
         if (notPublished.Count > 0)
@@ -178,11 +178,9 @@ public sealed class ContentSetReleaseProducer : IContentSetReleaseProducer
         // (component_language_mismatch); this check stays as the backstop: the pinned component languages plus the set
         // language must be ONE language — never guessed.
         var (country, setLanguage) = ReleaseContext(revision, set);
-        var languages = revision.SelectedComponents
-            .Select(c => c.LanguageCode?.Trim() ?? string.Empty)
-            .Append(setLanguage ?? revision.SelectedComponents[0].LanguageCode?.Trim() ?? string.Empty)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        var languages = KnowledgePathReleaseRules.DistinctLanguages(revision.SelectedComponents
+            .Select(c => c.LanguageCode)
+            .Append(setLanguage ?? revision.SelectedComponents[0].LanguageCode));
         if (languages.Count != 1)
         {
             var detail = string.Join(", ", revision.SelectedComponents
@@ -512,12 +510,8 @@ public sealed class ContentSetReleaseProducer : IContentSetReleaseProducer
     /// <summary>A published, non-archived journey with an active stage on this path: pinned to this version, or
     /// following the path code (<c>latest-published</c>, counted conservatively).</summary>
     private async Task<bool> IsPathUsedByPublishedJourneyAsync(Guid tenantId, KnowledgePath path, CancellationToken ct)
-        => (await _journeys.ListAsync(tenantId, ct)).Any(j =>
-            j.IsPublished() && !j.IsArchived()
-            && j.ActiveStages().Any(s =>
-                s.RecommendedKnowledgePathId == path.Id
-                || (string.Equals(s.PathVersionPinPolicy, ContentEngagementJourneyPathPin.LatestPublished, StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(s.PathCode, path.PathCode, StringComparison.OrdinalIgnoreCase))));
+        => KnowledgePathReleaseRules.PublishedJourneyUses(
+            await _journeys.ListAsync(tenantId, ct), path, includeLatestPublished: true).Count > 0;
 
     /// <summary>The newest OTHER revision of the same set that produced outputs (the lineage a re-release supersedes).</summary>
     private async Task<(Guid? ContentId, Guid? PathId)> PreviousOutputsAsync(

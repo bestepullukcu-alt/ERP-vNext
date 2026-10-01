@@ -95,7 +95,10 @@ public sealed record KnowledgePathRevisionDto(
     KnowledgePathRevisionSnapshot Snapshot,
     IReadOnlyList<KnowledgePathRevisionNoteDto> Notes,
     KnowledgePathChangeSummaryDto ChangeSummary,
-    int Version);
+    int Version,
+    // WP-KP-3 — the rendered outputs and the release state (null until released).
+    IReadOnlyList<Release.KnowledgePathArtifactDto>? Artifacts = null,
+    KnowledgePathReleaseState? Release = null);
 
 public sealed record KnowledgePathDecisionDto(Guid RevisionId, Guid TaskId, string Decision);
 
@@ -128,5 +131,8 @@ public static class KnowledgePathReviewMapper
         ToDto(r.ReviewRound), r.Snapshot, r.Notes.Select(ToDto).ToList(),
         new KnowledgePathChangeSummaryDto(r.ChangeSummary.ComparedToRevision,
             r.ChangeSummary.Items.Select(i => new KnowledgePathChangeDto(i.Kind, i.Ref, i.Label, i.From, i.To)).ToList()),
-        r.Version);
+        r.Version,
+        r.RenderedArtifacts.Select(a => new Release.KnowledgePathArtifactDto(a.Kind, a.ContentId, a.Checksum, a.ByteSize,
+            a.MediaType, a.FileName, a.RenderedAt, a.RenderedBy)).ToList(),
+        r.ReleaseState);
 }

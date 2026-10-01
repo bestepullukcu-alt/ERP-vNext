@@ -1,7 +1,6 @@
 using Diten.CrmService.Application.Features.ContentComposition.ContentSetRevisions.Rendering;
 using Diten.CrmService.Domain.Entities;
 using MigraDoc.DocumentObjectModel;
-using MigraDoc.Rendering;
 
 namespace Diten.CrmService.Infrastructure.ContentComposition.Rendering;
 
@@ -19,42 +18,23 @@ namespace Diten.CrmService.Infrastructure.ContentComposition.Rendering;
 /// </summary>
 public sealed class PdfSharpContentSetRevisionRenderer : IContentSetRevisionRenderer
 {
-    private const string BodyFont = "Arial";
-
     public RenderedContent Render(ContentSetRevision revision)
     {
         ArgumentNullException.ThrowIfNull(revision);
 
-        var document = BuildDocument(revision);
-
-        var renderer = new PdfDocumentRenderer { Document = document };
-        renderer.RenderDocument();
-
-        using var stream = new MemoryStream();
-        renderer.PdfDocument.Save(stream, closeStream: false);
-
         var fileName = $"{Sanitize(revision.RevisionCode)}.pdf";
-        return new RenderedContent(stream.ToArray(), fileName, "application/pdf");
+        return new RenderedContent(MigraDocPdf.ToBytes(BuildDocument(revision)), fileName, "application/pdf");
     }
 
     private static Document BuildDocument(ContentSetRevision r)
     {
-        var document = new Document();
-        document.Info.Title = string.IsNullOrWhiteSpace(r.RevisionCode) ? "Content Set Revision" : r.RevisionCode;
-        document.Info.Subject = "Content Set Revision (rendered artifact)";
-
-        var normal = document.Styles["Normal"]!;
-        normal.Font.Name = BodyFont;
-        normal.Font.Size = 10;
-
-        var section = document.AddSection();
-        section.PageSetup.PageFormat = PageFormat.A4;
+        // WP-KP-3 — the document style / heading / field helpers are shared with the knowledge path renderer.
+        var (document, section) = MigraDocPdf.Create(
+            string.IsNullOrWhiteSpace(r.RevisionCode) ? "Content Set Revision" : r.RevisionCode,
+            "Content Set Revision (rendered artifact)");
 
         // ── header / identity ───────────────────────────────────────────────────────────────────────────────────────
-        var title = section.AddParagraph($"Content Set Revision {DisplayText(r.RevisionCode)}");
-        title.Format.Font.Size = 18;
-        title.Format.Font.Bold = true;
-        title.Format.SpaceAfter = "6pt";
+        MigraDocPdf.AddTitle(section, $"Content Set Revision {DisplayText(r.RevisionCode)}");
 
         AddField(section, "Revision number", r.RevisionNumber.ToString());
         AddField(section, "Content set", $"{r.ContentSetId:D} (version {r.ContentSetVersion})");
@@ -144,29 +124,11 @@ public sealed class PdfSharpContentSetRevisionRenderer : IContentSetRevisionRend
         return document;
     }
 
-    private static void AddHeading(Section section, string text)
-    {
-        var p = section.AddParagraph(text);
-        p.Format.Font.Size = 13;
-        p.Format.Font.Bold = true;
-        p.Format.SpaceBefore = "10pt";
-        p.Format.SpaceAfter = "4pt";
-    }
+    private static void AddHeading(Section section, string text) => MigraDocPdf.AddHeading(section, text);
 
-    private static void AddField(Section section, string label, string value)
-    {
-        var p = section.AddParagraph();
-        var l = p.AddFormattedText($"{label}: ", TextFormat.Bold);
-        _ = l;
-        p.AddText(DisplayText(value));
-    }
+    private static void AddField(Section section, string label, string value) => MigraDocPdf.AddField(section, label, value);
 
-    private static string DisplayText(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value.Trim();
+    private static string DisplayText(string? value) => MigraDocPdf.DisplayText(value);
 
-    private static string Sanitize(string? name)
-    {
-        var trimmed = string.IsNullOrWhiteSpace(name) ? "content-set-revision" : name.Trim();
-        var invalid = Path.GetInvalidFileNameChars();
-        return new string(trimmed.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray());
-    }
+    private static string Sanitize(string? name) => MigraDocPdf.Sanitize(name, "content-set-revision");
 }

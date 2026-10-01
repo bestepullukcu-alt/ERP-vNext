@@ -2,6 +2,7 @@ using Diten.CrmService.Api.Models.CRM;
 using Diten.CrmService.Application.Features.Knowledge.Path;
 using Diten.CrmService.Application.Features.Knowledge.Path.Commands;
 using Diten.CrmService.Application.Features.Knowledge.Path.Queries;
+using Diten.CrmService.Application.Features.Knowledge.Path.Release;
 using Diten.CrmService.Application.Features.Knowledge.Path.Review;
 using Diten.CrmService.Infrastructure.Authorization;
 using MediatR;
@@ -227,6 +228,43 @@ public sealed class KnowledgePathsController : CustomBaseController
     [HasPermission(Perms.Read)]
     public async Task<IActionResult> ReviewHistory(Guid pathId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetKnowledgePathReviewHistoryQuery(pathId), cancellationToken));
+
+    // ---------------- WP-KP-3 render / release / withdrawal / usage ----------------
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/render")]
+    [HasPermission(Perms.Publish)]
+    public async Task<IActionResult> RenderRevision(Guid pathId, Guid revisionId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new RenderKnowledgePathRevisionCommand(pathId, revisionId), cancellationToken));
+
+    // The content id is resolved from the revision (never a client input — FU01 non-leakage); another tenant's or an
+    // unrendered revision is 404.
+    [HttpGet("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/artifact")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> RevisionArtifact(
+        Guid pathId, Guid revisionId, [FromQuery] string? kind, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetKnowledgePathRevisionArtifactQuery(pathId, revisionId, kind), cancellationToken);
+        return !response.IsSuccessful || response.Data is null
+            ? CreateActionResultInstance(response)
+            : File(response.Data.Content, response.Data.MediaType, response.Data.FileName);
+    }
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/release")]
+    [HasPermission(Perms.Publish)]
+    public async Task<IActionResult> ReleaseRevision(Guid pathId, Guid revisionId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new ReleaseKnowledgePathRevisionCommand(pathId, revisionId), cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/withdraw")]
+    [HasPermission(Perms.Publish)]
+    public async Task<IActionResult> WithdrawRelease(
+        Guid pathId, Guid revisionId, [FromBody] KnowledgePathWithdrawRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new WithdrawKnowledgePathReleaseCommand(pathId, revisionId, request.Reason), cancellationToken));
+
+    [HttpGet("api/crm/knowledge/paths/{pathId:guid}/usage")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> Usage(Guid pathId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetKnowledgePathUsageQuery(pathId), cancellationToken));
 
     private static KnowledgePathArrangementInput? MapArrangement(KnowledgePathArrangementRequest? arrangement)
         => arrangement is null

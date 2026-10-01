@@ -77,6 +77,10 @@ public static class DependencyInjection
         services.AddSingleton<
             Application.Features.ContentComposition.ContentSetRevisions.Rendering.IContentSetRevisionRenderer,
             ContentComposition.Rendering.PdfSharpContentSetRevisionRenderer>();
+        // WP-KP-3 — the knowledge path revision archive PDF (same engine + MigraDoc helpers; stateless).
+        services.AddSingleton<
+            Application.Features.Knowledge.Path.Release.IKnowledgePathRevisionRenderer,
+            ContentComposition.Rendering.PdfSharpKnowledgePathRevisionRenderer>();
         services.AddHttpClient<
             Application.Features.ContentComposition.ContentSetRevisions.Rendering.IContentArtifactStore,
             ContentComposition.Rendering.HttpContentArtifactStore>();

@@ -55,6 +55,9 @@ public sealed record ArrangeKnowledgePathClaimRequest(int Position, int? Expecte
 // WP-KP-2 — review sub-routes.
 public sealed record KnowledgePathDecisionRequest(string? Decision, string? Comment = null);
 
+// WP-KP-3 — withdrawal of a released revision (reason required).
+public sealed record KnowledgePathWithdrawRequest(string? Reason);
+
 public sealed record KnowledgePathNoteRequest(
     string? Text, string? PageRef = null, string? BlockRef = null, string? StepRef = null, double? X = null, double? Y = null);
 

@@ -165,23 +165,58 @@ public static class KnowledgePathChangeKinds
     public const string ClaimVersionChanged = "claim-version-changed";
 }
 
-/// <summary>KP-3 placeholder — a rendered output of an approved revision. Never written by KP-2.</summary>
+/// <summary>WP-KP-3 — a rendered output of an APPROVED revision, stored in the MOD-0262-FU01 repository
+/// (ContentMessagingArtifacts; owner = the revision). One per <see cref="Kind"/> (pdf now; html with SB-4).</summary>
 public sealed class KnowledgePathRenderedArtifact
 {
     public string Kind { get; set; } = string.Empty;
     public Guid ContentId { get; set; }
     public string? Checksum { get; set; }
     public long ByteSize { get; set; }
+    public string? MediaType { get; set; }
+    public string? FileName { get; set; }
     public DateTimeOffset RenderedAt { get; set; }
+    public string? RenderedBy { get; set; }
 }
 
-/// <summary>KP-3 placeholder — the release state of a revision. Never written by KP-2.</summary>
+/// <summary>WP-KP-3 — the release state of a revision: <see cref="KnowledgePathReleaseStates"/>; when, who and (on a
+/// withdrawal) why.</summary>
 public sealed class KnowledgePathReleaseState
 {
     public string State { get; set; } = string.Empty;
     public DateTimeOffset At { get; set; }
     public string? By { get; set; }
     public string? Reason { get; set; }
+}
+
+public static class KnowledgePathReleaseStates
+{
+    public const string Released = "released";
+    public const string Withdrawn = "withdrawn";
+}
+
+public static class KnowledgePathArtifactKinds
+{
+    public const string Pdf = "pdf";
+    public const string Html = "html";
+}
+
+/// <summary>WP-KP-3 — coded render / release / withdrawal failures and warnings. The content / claim codes are the SB-2
+/// and WP-CL-BE-6 ones (<see cref="KnowledgePathReviewErrors"/>, <see cref="ChainContextErrors"/>,
+/// <see cref="KnowledgeContentClaimErrors"/>).</summary>
+public static class KnowledgePathReleaseErrors
+{
+    public const string RevisionNotApproved = "revision_not_approved";
+    public const string ArtifactMissing = "artifact_missing";
+    public const string RevisionSuperseded = "revision_superseded";
+    public const string RevisionNotReleased = "revision_not_released";
+    public const string SodSubmitterCannotRelease = "sod_submitter_cannot_release";
+    public const string ReasonRequired = "reason_required";
+    public const string PathInUse = "path_in_use";
+    public const string ArtifactStoreUnavailable = "artifact_store_unavailable";
+
+    /// <summary>Warning (not a failure): the superseded version is still pinned by a published journey stage.</summary>
+    public const string PreviousPathInUse = "previous_path_in_use";
 }
 
 /// <summary>WP-KP-2 — revision lifecycle (the round outcome).</summary>
