@@ -512,8 +512,8 @@ HTTP surface and no secret output to Auth.
   - identity present → **never modified**. A differing hash, version, service name or audience is reported at startup
     by client code (no values) and changes nothing. Rotation stays Section E's operation; it is not done from
     configuration, so a restart can never silently replace a credential.
-  - for each listed tenant: the `(tenant, identity, audience)` grant is created if absent, enabled if it exists
-    disabled **by this registry's own earlier run only**; a grant disabled by an operator is not re-enabled.
+  - for each listed tenant: the `(tenant, identity, audience)` grant is created (enabled) if absent. An existing
+    grant is never modified: one that somebody disabled stays disabled and is reported at startup.
   - nothing is ever deleted, revoked or disabled by the registry. Removing an entry from configuration changes nothing.
 - Validation is fail-closed and happens before any write: an entry with a blank field, a malformed hash, a duplicate
   `ClientCode`, or a `ServiceName`/`AllowedAudience` outside the closed list the issuer accepts stops Auth's startup
