@@ -53,6 +53,23 @@ public sealed class KnowledgeContentRepository : IKnowledgeContentRepository
                 & Builders<KnowledgeContent>.Filter.Eq(c => c.ArchivedAt, null))
             .FirstOrDefaultAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<KnowledgeContent>> ListByClaimCodeAsync(
+        Guid tenantId, string claimCode, CancellationToken cancellationToken)
+    {
+        // A ref stores the claim record's own ClaimCode (canonical, exact — like IClaimRepository.ListByCodeAsync), so
+        // an exact match rides the {TenantId, ClaimRefs.ClaimCode} index.
+        var rows = await _collection
+            .Find(Tenant(tenantId) & Builders<KnowledgeContent>.Filter.ElemMatch(
+                c => c.ClaimRefs, r => r.ClaimCode == claimCode))
+            .ToListAsync(cancellationToken);
+        foreach (var row in rows)
+        {
+            row.EnsureVariantDefaults();
+        }
+
+        return rows.OrderByDescending(c => c.CreatedAt).ToList();
+    }
+
     public async Task InsertAsync(KnowledgeContent content, CancellationToken cancellationToken)
         => await _collection.InsertOneAsync(content, cancellationToken: cancellationToken);
 

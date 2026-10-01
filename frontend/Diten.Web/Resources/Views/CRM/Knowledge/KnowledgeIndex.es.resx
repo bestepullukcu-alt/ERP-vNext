@@ -155,4 +155,39 @@
   <data name="ReorderProfiles" xml:space="preserve"><value>Reordenar perfiles de audiencia</value></data>
   <data name="ReorderHelp" xml:space="preserve"><value>Arrastra las filas para cambiar su orden y luego guarda.</value></data>
   <data name="SaveOrder" xml:space="preserve"><value>Guardar orden</value></data>
+  <data name="ClaimsSection" xml:space="preserve"><value>Declaraciones</value></data>
+  <data name="ClaimRefsLabel" xml:space="preserve"><value>Declaraciones usadas en este contenido</value></data>
+  <data name="ClaimRefsPlaceholder" xml:space="preserve"><value>Buscar declaraciones…</value></data>
+  <data name="ClaimRefsHelp" xml:space="preserve"><value>El núcleo es la declaración global; una fila de país es el texto aprobado de ese país. Para publicar, las declaraciones deben estar aprobadas y, para un país, tener texto en el idioma del contenido.</value></data>
+  <data name="ClaimRefsProductFirst" xml:space="preserve"><value>Seleccione primero un producto: las declaraciones se listan por el producto del contenido.</value></data>
+  <data name="ClaimRefsNone" xml:space="preserve"><value>No hay declaraciones para este producto.</value></data>
+  <data name="ClaimRefsLoading" xml:space="preserve"><value>Cargando declaraciones…</value></data>
+  <data name="ClaimOptionsUnavailable" xml:space="preserve"><value>No se pueden cargar las declaraciones ahora. Se conservan las seleccionadas.</value></data>
+  <data name="ClaimPermissionMissing" xml:space="preserve"><value>No tiene permiso para leer declaraciones. Se conservan las seleccionadas.</value></data>
+  <data name="ClaimEndpointMissing" xml:space="preserve"><value>El servicio de declaraciones no está disponible. Se conservan las seleccionadas.</value></data>
+  <data name="ClaimCore" xml:space="preserve"><value>Núcleo</value></data>
+  <data name="ClaimStatus_approved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="ClaimStatus_in-review" xml:space="preserve"><value>En revisión</value></data>
+  <data name="ClaimStatus_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="ClaimStatus_review-required" xml:space="preserve"><value>Requiere revisión</value></data>
+  <data name="ClaimStatus_inactive" xml:space="preserve"><value>Inactiva</value></data>
+  <data name="ClaimStatus_archived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="ClaimReason_not_approved" xml:space="preserve"><value>No aprobada: se rechazará la publicación</value></data>
+  <data name="ClaimReason_language_mismatch" xml:space="preserve"><value>Sin texto en el idioma del contenido</value></data>
+  <data name="ClaimRefNotInList" xml:space="preserve"><value>No disponible para el producto o idioma actual</value></data>
+  <data name="ClaimRefsUnusableWarning" xml:space="preserve"><value>Algunas declaraciones seleccionadas aún no se pueden publicar. Puede guardar; la publicación se rechaza hasta que estén aprobadas y tengan texto en el idioma del contenido.</value></data>
+  <data name="ClaimRefsStaleWarning" xml:space="preserve"><value>Algunas declaraciones seleccionadas no coinciden con el producto o idioma actual. Se conservaron: quítelas si ya no aplican.</value></data>
+  <data name="ClaimError_claim_refs_too_many" xml:space="preserve"><value>Se pueden vincular como máximo 20 declaraciones a un contenido.</value></data>
+  <data name="ClaimError_claim_ref_invalid" xml:space="preserve"><value>Una selección de declaración está incompleta o no es válida; selecciónela de nuevo.</value></data>
+  <data name="ClaimError_claim_ref_duplicate" xml:space="preserve"><value>La misma declaración está seleccionada más de una vez para este país.</value></data>
+  <data name="ClaimError_claim_not_found" xml:space="preserve"><value>La declaración seleccionada ya no existe.</value></data>
+  <data name="ClaimError_claim_ref_mismatch" xml:space="preserve"><value>La selección ya no coincide con la declaración; recargue las declaraciones y seleccione de nuevo.</value></data>
+  <data name="ClaimError_claim_country_version_not_found" xml:space="preserve"><value>La versión de país de la declaración ya no existe.</value></data>
+  <data name="ClaimError_claim_product_mismatch" xml:space="preserve"><value>La declaración corresponde a otro producto distinto del contenido.</value></data>
+  <data name="ClaimError_claim_not_approved" xml:space="preserve"><value>La declaración no está aprobada; el contenido no se puede publicar.</value></data>
+  <data name="ClaimError_claim_language_mismatch" xml:space="preserve"><value>La versión de país de la declaración no tiene texto en el idioma del contenido; el contenido no se puede publicar.</value></data>
+  <data name="ClaimError_dependency_unavailable" xml:space="preserve"><value>El servicio de declaraciones no está disponible; inténtelo más tarde.</value></data>
+  <data name="LinkedClaims" xml:space="preserve"><value>Declaraciones vinculadas</value></data>
+  <data name="NoLinkedClaims" xml:space="preserve"><value>No hay declaraciones vinculadas a este contenido.</value></data>
+  <data name="ClaimNeedsReview" xml:space="preserve"><value>Requiere revisión: la declaración cambió después de aprobarse este vínculo.</value></data>
 </root>

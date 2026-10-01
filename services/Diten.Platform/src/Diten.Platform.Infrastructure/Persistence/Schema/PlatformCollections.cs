@@ -109,6 +109,8 @@ public static class PlatformCollections
     public const string DocumentManagementVariantReviewEvidence = "document_management_variant_review_evidence";
     public const string DocumentReferenceEntries = "document_reference_entries";
     public const string DocumentReferenceListVersions = "document_reference_list_versions";
+    /// <summary>MOD-0031 Evidence Linking (slice 1) — object ↔ document/version evidence links.</summary>
+    public const string EvidenceLinks = "evidence_links";
     public const string FeatureCategories = "platform_feature_categories";
     public const string InterfaceActiveSnapshots = "platform_interface_active_snapshots";
     public const string InterfaceDefinitions = "platform_interface_definitions";

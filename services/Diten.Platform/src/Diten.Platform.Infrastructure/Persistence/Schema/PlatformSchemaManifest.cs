@@ -46,6 +46,7 @@ public static partial class PlatformSchemaManifest
             .Concat(DocumentRepositoryCollections)
             .Concat(WorkingCalendarCollections)
             .Concat(MeetingsCollections)
+            .Concat(EvidenceLinkingCollections)
             .Concat(TimeEntryCollections)
             .ToArray());
 

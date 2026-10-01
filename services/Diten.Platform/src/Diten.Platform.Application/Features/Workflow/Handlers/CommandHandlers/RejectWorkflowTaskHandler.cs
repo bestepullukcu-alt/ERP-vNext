@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Workflow.Commands;
 using Diten.Platform.Domain.Enums.Workflow;
@@ -20,9 +21,15 @@ public sealed class RejectWorkflowTaskHandler
         IWorkflowInstanceRepository instanceRepository,
         IRuntimeAssignmentSnapshotRepository snapshotRepository,
         IWorkflowTransitionLogRepository logRepository,
+        IPlatformTransactionExecutor? transactions = null,
+        ITransactionalIntegrationEventWriter? events = null,
+        IWorkflowTemplateRepository? templates = null,
         IWorkflowTemplateVersionRepository? versionRepository = null)
     {
-        _support = new WorkflowTaskTransitionSupport(taskRepository, instanceRepository, snapshotRepository, logRepository);
+        // WP-CL-BE-3 — terminal transitions commit with the completion event (seams from DI).
+        _support = new WorkflowTaskTransitionSupport(taskRepository, instanceRepository, snapshotRepository, logRepository,
+            seams: new WorkflowTransitionSeams(null, transactions, events, templates));
+        // MOD-0280-FU01 R5 — the definition's "comment required on reject" option is read from the template version.
         _taskRepository = taskRepository;
         _instanceRepository = instanceRepository;
         _logRepository = logRepository;

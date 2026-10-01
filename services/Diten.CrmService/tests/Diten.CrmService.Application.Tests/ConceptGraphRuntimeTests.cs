@@ -72,9 +72,9 @@ public sealed class ConceptGraphRuntimeTests
         public ListConceptRelationshipsHandler ListRels() => new(Tenant(TenantId), Relationships);
 
         public CreateConceptChainTemplateHandler CreateTemplate()
-            => new(Tenant(TenantId), new NullActorContext(), Templates, Types, Profiles);
+            => new(Tenant(TenantId), new NullActorContext(), Templates, Types, Profiles, Relationships);
         public UpdateConceptChainTemplateHandler UpdateTemplate()
-            => new(Tenant(TenantId), new NullActorContext(), Templates, Types, Profiles);
+            => new(Tenant(TenantId), new NullActorContext(), Templates, Types, Profiles, Relationships);
         public GetConceptChainTemplateHandler GetTemplate() => new(Tenant(TenantId), Templates);
 
         public CreateKnowledgeContentConceptLinkHandler CreateLink()
@@ -498,10 +498,12 @@ public sealed class ConceptGraphRuntimeTests
         var t1 = await fx.SeedType(subjectId, "T1");
         var t2 = await fx.SeedType(subjectId, "T2");
         var first = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
-            subjectId, "CH", "V1", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published), default);
+            subjectId, "CH", "V1", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published,
+            ForWhomAudienceProfileIds: new[] { fx.SeedAudienceProfile() }), default);
         Assert.Equal(201, first.StatusCode);
         var second = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
-            subjectId, "CH", "V2", new[] { t1, t2 }, Jun1, Status: ConceptChainStatuses.Published), default);
+            subjectId, "CH", "V2", new[] { t1, t2 }, Jun1, Status: ConceptChainStatuses.Published,
+            ForWhomAudienceProfileIds: new[] { fx.SeedAudienceProfile() }), default);
         Assert.Equal(409, second.StatusCode);
     }
 
@@ -957,7 +959,8 @@ public sealed class ConceptGraphRuntimeTests
         var branches = new[] { new ConceptChainBranchInput("BR1", new[]
             { new ConceptChainStepInput(t1), new ConceptChainStepInput(t2) }) };
         var created = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
-            s, "CHN-3", "Chain 3", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published, Branches: branches), default);
+            s, "CHN-3", "Chain 3", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published, Branches: branches,
+            ForWhomAudienceProfileIds: new[] { fx.SeedAudienceProfile() }), default);
         Assert.Equal(201, created.StatusCode);
 
         var changed = new[] { new ConceptChainBranchInput("BR1", new[] { new ConceptChainStepInput(t1, 2, 3) }) };
@@ -1004,7 +1007,7 @@ public sealed class ConceptGraphRuntimeTests
         var t2 = await fx.SeedType(s, "T2");
         var audit = new CapturingConceptAudit();
         var handler = new CreateConceptChainTemplateHandler(
-            Tenant(TenantA), new NullActorContext(), fx.Templates, fx.Types, fx.Profiles, audit);
+            Tenant(TenantA), new NullActorContext(), fx.Templates, fx.Types, fx.Profiles, fx.Relationships, audit);
 
         var draft = await handler.Handle(new CreateConceptChainTemplateCommand(
             s, "CHN-A", "A", new[] { t1, t2 }, Jan1), default);
@@ -1015,9 +1018,441 @@ public sealed class ConceptGraphRuntimeTests
         Assert.Equal(draft.Data, e1.EntityId);
 
         var published = await handler.Handle(new CreateConceptChainTemplateCommand(
-            s, "CHN-B", "B", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published), default);
+            s, "CHN-B", "B", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published,
+            ForWhomAudienceProfileIds: new[] { fx.SeedAudienceProfile() }), default);
         Assert.Equal(201, published.StatusCode);
         Assert.Equal(ConceptGraphReasonCodes.ChainTemplatePublished, audit.Events[^1].Event);
+    }
+
+    // ---------------- WP-CT-BE-A conformance engine (D2 reversal) + supplied-spine diagnostics ----------------
+
+    private static readonly Guid SpA = Guid.Parse("00000000-0000-0000-0000-00000000000a");
+    private static readonly Guid SpB = Guid.Parse("00000000-0000-0000-0000-00000000000b");
+    private static readonly Guid SpC = Guid.Parse("00000000-0000-0000-0000-00000000000c");
+    private static readonly Guid SpX = Guid.Parse("00000000-0000-0000-0000-0000000000ff");
+
+    [Theory]
+    [InlineData(ConceptRelationshipTypes.LeadsTo)]
+    [InlineData(ConceptRelationshipTypes.Requires)]
+    [InlineData(ConceptRelationshipTypes.BelongsTo)]
+    [InlineData(ConceptRelationshipTypes.Custom)]
+    public void Classify_literal_types_read_from_to_in_chain_direction(string relationshipType)
+    {
+        var spine = new[] { SpA, SpB, SpC };
+        var forward = ConceptChainConformance.Classify(spine, SpA, SpB, relationshipType);
+        var backward = ConceptChainConformance.Classify(spine, SpB, SpA, relationshipType);
+
+        Assert.Equal(ConceptChainConformanceResults.Conforming, forward.Result);
+        Assert.False(forward.IsReversed);
+        Assert.Equal(ConceptChainConformanceResults.Order, backward.Result);
+        Assert.Empty(backward.MissingTypeIds);
+    }
+
+    [Theory]
+    [InlineData(ConceptRelationshipTypes.Addresses)]
+    [InlineData(ConceptRelationshipTypes.Evidences)]
+    [InlineData("  ADDRESSES ")] // normalised like every other relationship-type read
+    public void Classify_addresses_evidences_swap_before_adjacency(string relationshipType)
+    {
+        var spine = new[] { SpA, SpB, SpC };
+        // "B addresses A" narrates against the chain A → B: the back-pair conforms, the literal pair does not.
+        var backPair = ConceptChainConformance.Classify(spine, SpB, SpA, relationshipType);
+        var literalPair = ConceptChainConformance.Classify(spine, SpA, SpB, relationshipType);
+
+        Assert.Equal(ConceptChainConformanceResults.Conforming, backPair.Result);
+        Assert.True(backPair.IsReversed);
+        Assert.Equal(ConceptChainConformanceResults.Order, literalPair.Result);
+    }
+
+    [Fact]
+    public void Classify_out_returns_missing_types_and_forward_skip_conforms()
+    {
+        var spine = new[] { SpA, SpB, SpC };
+
+        var oneMissing = ConceptChainConformance.Classify(spine, SpA, SpX, ConceptRelationshipTypes.LeadsTo);
+        Assert.Equal(ConceptChainConformanceResults.Out, oneMissing.Result);
+        Assert.Equal(new[] { SpX }, oneMissing.MissingTypeIds);
+
+        var bothMissing = ConceptChainConformance.Classify(Array.Empty<Guid>(), SpA, SpB, ConceptRelationshipTypes.Addresses);
+        Assert.Equal(ConceptChainConformanceResults.Out, bothMissing.Result);
+        Assert.Equal(new[] { SpA, SpB }, bothMissing.MissingTypeIds);
+
+        // WP-CT-BE-B (D2 relaxed) — forward order, not adjacency: skipping ahead (A → C) conforms; backward (C → A) is
+        // order. Reversal still applies first: "A addresses C" reads C → A → order; "C addresses A" reads A → C.
+        var skip = ConceptChainConformance.Classify(spine, SpA, SpC, ConceptRelationshipTypes.LeadsTo);
+        Assert.Equal(ConceptChainConformanceResults.Conforming, skip.Result);
+        Assert.Empty(skip.MissingTypeIds);
+        Assert.Equal(ConceptChainConformanceResults.Order,
+            ConceptChainConformance.Classify(spine, SpC, SpA, ConceptRelationshipTypes.LeadsTo).Result);
+        Assert.Equal(ConceptChainConformanceResults.Order,
+            ConceptChainConformance.Classify(spine, SpA, SpC, ConceptRelationshipTypes.Addresses).Result);
+        Assert.Equal(ConceptChainConformanceResults.Conforming,
+            ConceptChainConformance.Classify(spine, SpC, SpA, ConceptRelationshipTypes.Evidences).Result);
+    }
+
+    [Fact]
+    public async Task Addresses_back_pair_is_stored_conforming_and_leads_to_stays_literal()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var need = await fx.SeedType(subjectId, "NEED");
+        var component = await fx.SeedType(subjectId, "COMP");
+        await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            subjectId, "CH", "Chain", new[] { need, component }, Jan1), default);
+        var n = await fx.SeedNode(subjectId, need, "N");
+        var c1 = await fx.SeedNode(subjectId, component, "C1");
+        var c2 = await fx.SeedNode(subjectId, component, "C2");
+
+        // component "addresses" need: From = component, To = need → reversed read need → component → conforming.
+        var addresses = await fx.CreateRel().Handle(new CreateConceptRelationshipCommand(
+            subjectId, c1, n, ConceptRelationshipTypes.Addresses, "RA", "RA", Jan1, Status: ConceptStatuses.Active),
+            default);
+        Assert.Equal(201, addresses.StatusCode);
+        // Same back-pair as leads-to is read literally (component → need) → NOT conforming (and still accepted — D8).
+        var leadsTo = await fx.CreateRel().Handle(new CreateConceptRelationshipCommand(
+            subjectId, c2, n, ConceptRelationshipTypes.LeadsTo, "RL", "RL", Jan1, Status: ConceptStatuses.Active),
+            default);
+        Assert.Equal(201, leadsTo.StatusCode);
+
+        var ra = fx.Relationships.Items.Single(x => x.RelationshipCode == "RA");
+        var rl = fx.Relationships.Items.Single(x => x.RelationshipCode == "RL");
+        Assert.True(ra.IsTemplateConforming);
+        Assert.False(rl.IsTemplateConforming);
+
+        // Update re-derive uses the same classifier (flag survives a re-derive; literal stays non-conforming).
+        ra.IsTemplateConforming = false;
+        var upd = await fx.UpdateRel().Handle(new UpdateConceptRelationshipCommand(
+            ra.Id, "RA", Jan1, Status: ConceptStatuses.Active), default);
+        Assert.True(upd.StatusCode == 200, string.Join("; ", upd.Errors ?? new List<string>()));
+        Assert.True(ra.IsTemplateConforming);
+        var updL = await fx.UpdateRel().Handle(new UpdateConceptRelationshipCommand(
+            rl.Id, "RL", Jan1, Status: ConceptStatuses.Active), default);
+        Assert.Equal(200, updL.StatusCode);
+        Assert.False(rl.IsTemplateConforming);
+    }
+
+    [Fact]
+    public async Task Combined_node_write_evidences_back_pair_is_conforming()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var claim = await fx.SeedType(subjectId, "CLAIM");
+        var study = await fx.SeedType(subjectId, "STUDY");
+        await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            subjectId, "CH", "Chain", new[] { claim, study }, Jan1), default);
+        var claimNode = await fx.SeedNode(subjectId, claim, "CL");
+
+        // New study node "evidences" the existing claim: From = study, To = claim → reversed read claim → study.
+        var r = await fx.CreateNodeWithRel().Handle(new CreateConceptNodeWithRelationshipCommand(
+            subjectId, study, "ST", "Study", Jan1,
+            claimNode, ConceptRelationshipTypes.Evidences, "RE", "RE", Jan1,
+            NodeStatus: ConceptStatuses.Active, RelationshipStatus: ConceptStatuses.Active), default);
+
+        Assert.Equal(201, r.StatusCode);
+        Assert.True(fx.Relationships.Items.Single(x => x.RelationshipCode == "RE").IsTemplateConforming);
+    }
+
+    [Fact]
+    public async Task Diagnostics_classify_active_edges_against_supplied_spine_without_writing()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var tA = await fx.SeedType(subjectId, "TA");
+        var tB = await fx.SeedType(subjectId, "TB");
+        var tC = await fx.SeedType(subjectId, "TC");
+        // Saved template says A → B; the supplied (unsaved) spine B → A → C must win.
+        await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            subjectId, "CH", "Chain", new[] { tA, tB }, Jan1), default);
+        var a = await fx.SeedNode(subjectId, tA, "A");
+        var b = await fx.SeedNode(subjectId, tB, "B");
+        var c = await fx.SeedNode(subjectId, tC, "C");
+        var a2 = await fx.SeedNode(subjectId, tA, "A2");
+        var a3 = await fx.SeedNode(subjectId, tA, "A3");
+        var b2 = await fx.SeedNode(subjectId, tB, "B2"); // separate endpoints keep the active graph acyclic (V10)
+
+        async Task Rel(Guid f, Guid t, string type, string code, string status = ConceptStatuses.Active)
+            => Assert.Equal(201, (await fx.CreateRel().Handle(new CreateConceptRelationshipCommand(
+                subjectId, f, t, type, code, code, Jan1, Status: status), default)).StatusCode);
+
+        await Rel(b, a, ConceptRelationshipTypes.LeadsTo, "R1");    // B → A literal on B,A,C → conforming
+        await Rel(c, a2, ConceptRelationshipTypes.Addresses, "R2"); // C addresses A2 → read A → C → conforming
+        await Rel(a3, b2, ConceptRelationshipTypes.LeadsTo, "R3");  // A → B vs spine B,A → order
+        await Rel(b2, c, ConceptRelationshipTypes.Requires, "R4");  // B → C skips A → conforming (forward, WP-CT-BE-B)
+        await Rel(a2, b, ConceptRelationshipTypes.LeadsTo, "R5", ConceptStatuses.Draft); // not active → excluded
+
+        var flagsBefore = fx.Relationships.Items.ToDictionary(x => x.Id, x => x.IsTemplateConforming);
+        var handler = new GetChainTemplateConformanceDiagnosticsHandler(Tenant(TenantA), fx.Relationships, fx.Nodes);
+        var r = await handler.Handle(new GetChainTemplateConformanceDiagnosticsQuery(
+            subjectId, new[] { tB, tA, tC }), default);
+
+        Assert.Equal(200, r.StatusCode);
+        var items = r.Data!.Items.ToDictionary(x => x.RelationshipCode);
+        Assert.Equal(new[] { "R1", "R2", "R3", "R4" }, items.Keys.OrderBy(k => k));
+        Assert.Equal(ConceptChainConformanceResults.Conforming, items["R1"].Result);
+        Assert.Equal(ConceptChainConformanceResults.Conforming, items["R2"].Result);
+        Assert.True(items["R2"].IsReversed);
+        Assert.Equal("Node C", items["R2"].FromConceptNodeName);
+        Assert.Equal(tC, items["R2"].FromConceptTypeId);
+        Assert.Equal(tA, items["R2"].ToConceptTypeId);
+        Assert.Equal(ConceptChainConformanceResults.Order, items["R3"].Result);
+        Assert.Equal(ConceptChainConformanceResults.Conforming, items["R4"].Result);
+        Assert.Equal((3, 1, 0), (r.Data.ConformingCount, r.Data.OrderCount, r.Data.OutCount));
+
+        // Spine without C → the edges touching C are out with C reported missing.
+        var r2 = await handler.Handle(new GetChainTemplateConformanceDiagnosticsQuery(subjectId, new[] { tA, tB }), default);
+        var items2 = r2.Data!.Items.ToDictionary(x => x.RelationshipCode);
+        Assert.Equal(ConceptChainConformanceResults.Out, items2["R2"].Result);
+        Assert.Equal(new[] { tC }, items2["R2"].MissingTypeIds);
+        Assert.Equal(ConceptChainConformanceResults.Out, items2["R4"].Result);
+        Assert.Equal(ConceptChainConformanceResults.Conforming, items2["R3"].Result);
+
+        // Read-only: stored flags untouched.
+        Assert.All(fx.Relationships.Items, x => Assert.Equal(flagsBefore[x.Id], x.IsTemplateConforming));
+    }
+
+    [Fact]
+    public async Task Diagnostics_guard_input_and_tenant_isolation()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var tA = await fx.SeedType(subjectId, "TA");
+        var tB = await fx.SeedType(subjectId, "TB");
+        var a = await fx.SeedNode(subjectId, tA, "A");
+        var b = await fx.SeedNode(subjectId, tB, "B");
+        await fx.CreateRel().Handle(new CreateConceptRelationshipCommand(
+            subjectId, a, b, ConceptRelationshipTypes.LeadsTo, "R1", "R1", Jan1, Status: ConceptStatuses.Active), default);
+
+        var handler = new GetChainTemplateConformanceDiagnosticsHandler(Tenant(TenantA), fx.Relationships, fx.Nodes);
+        Assert.Equal(400, (await handler.Handle(
+            new GetChainTemplateConformanceDiagnosticsQuery(Guid.Empty, new[] { tA }), default)).StatusCode);
+        Assert.Equal(400, (await handler.Handle(
+            new GetChainTemplateConformanceDiagnosticsQuery(subjectId, new[] { tA, Guid.Empty }), default)).StatusCode);
+
+        // Null / empty spine is a valid draft state: everything is out.
+        var empty = await handler.Handle(new GetChainTemplateConformanceDiagnosticsQuery(subjectId, null), default);
+        Assert.Equal(200, empty.StatusCode);
+        Assert.Equal(ConceptChainConformanceResults.Out, empty.Data!.Items.Single().Result);
+
+        var other = new GetChainTemplateConformanceDiagnosticsHandler(Tenant(TenantB), fx.Relationships, fx.Nodes);
+        var isolated = await other.Handle(new GetChainTemplateConformanceDiagnosticsQuery(subjectId, new[] { tA, tB }), default);
+        Assert.Equal(200, isolated.StatusCode);
+        Assert.Empty(isolated.Data!.Items);
+    }
+
+    // ---------------- WP-CT-BE-B resolutions / publish readiness / min-max bounds ----------------
+
+    private async Task<(Guid Subject, Guid T1, Guid T2, Guid Rel1, Guid Rel2)> SeedResolutionGraph(Fixture fx)
+    {
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var a = await fx.SeedNode(s, t1, "A");
+        var b = await fx.SeedNode(s, t2, "B");
+        var b2 = await fx.SeedNode(s, t2, "B2");
+        var r1 = await fx.CreateRel().Handle(new CreateConceptRelationshipCommand(
+            s, b, a, ConceptRelationshipTypes.LeadsTo, "R1", "R1", Jan1, Status: ConceptStatuses.Active), default);
+        var r2 = await fx.CreateRel().Handle(new CreateConceptRelationshipCommand(
+            s, b2, a, ConceptRelationshipTypes.LeadsTo, "R2", "R2", Jan1, Status: ConceptStatuses.Active), default);
+        return (s, t1, t2, r1.Data, r2.Data);
+    }
+
+    private static SetConceptChainTemplateConformanceResolutionsHandler Resolve(Fixture fx)
+        => new(Tenant(fx.TenantId), new NullActorContext(), fx.Templates, fx.Relationships);
+
+    [Fact]
+    public async Task Resolutions_persist_copy_into_new_version_and_freeze_on_publish()
+    {
+        var fx = new Fixture(TenantA);
+        var (s, t1, t2, r1, r2) = await SeedResolutionGraph(fx);
+        var audience = fx.SeedAudienceProfile();
+
+        var v1 = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CH", "V1", new[] { t1, t2 }, Jan1, IgnoredNonConformingRelationshipIds: new[] { r1, r1, Guid.Empty }),
+            default);
+        Assert.Equal(201, v1.StatusCode);
+        var dto1 = (await fx.GetTemplate().Handle(new GetConceptChainTemplateQuery(v1.Data), default)).Data!;
+        Assert.Equal(new[] { r1 }, dto1.IgnoredNonConformingRelationshipIds); // distinct, empty dropped
+
+        // Update without the field keeps the set (a save that does not carry resolutions never wipes them).
+        var keep = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            v1.Data, "V1 renamed", new[] { t1, t2 }, Jan1), default);
+        Assert.Equal(200, keep.StatusCode);
+        Assert.Equal(new[] { r1 }, fx.Templates.Items.Single(x => x.Id == v1.Data).IgnoredNonConformingRelationshipIds);
+
+        // New version: the caller carries the previous set into Create.
+        var v2 = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CH", "V2", new[] { t1, t2 }, Jun1, ChainVersion: "2.0",
+            IgnoredNonConformingRelationshipIds: dto1.IgnoredNonConformingRelationshipIds), default);
+        Assert.Equal(201, v2.StatusCode);
+        Assert.Equal(new[] { r1 }, fx.Templates.Items.Single(x => x.Id == v2.Data).IgnoredNonConformingRelationshipIds);
+
+        // Publish v2 (same set) → then any change to the set is frozen (409); re-sending the same set is fine.
+        var publish = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            v2.Data, "V2", new[] { t1, t2 }, Jun1, Status: ConceptChainStatuses.Published,
+            ForWhomAudienceProfileIds: new[] { audience }), default);
+        Assert.Equal(200, publish.StatusCode);
+        var change = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            v2.Data, "V2", new[] { t1, t2 }, Jun1, Status: ConceptChainStatuses.Published,
+            ForWhomAudienceProfileIds: new[] { audience }, IgnoredNonConformingRelationshipIds: new[] { r1, r2 }),
+            default);
+        Assert.Equal(409, change.StatusCode);
+        var same = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            v2.Data, "V2 renamed", new[] { t1, t2 }, Jun1, Status: ConceptChainStatuses.Published,
+            ForWhomAudienceProfileIds: new[] { audience }, IgnoredNonConformingRelationshipIds: new[] { r1 }), default);
+        Assert.Equal(200, same.StatusCode);
+    }
+
+    [Fact]
+    public async Task Resolutions_reject_relationships_outside_the_subject()
+    {
+        var fx = new Fixture(TenantA);
+        var (s, t1, t2, _, _) = await SeedResolutionGraph(fx);
+        var (_, _, _, foreignRel, _) = await SeedResolutionGraph(fx); // another subject's edge
+
+        var create = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CH", "V1", new[] { t1, t2 }, Jan1, IgnoredNonConformingRelationshipIds: new[] { foreignRel }), default);
+        Assert.Equal(400, create.StatusCode);
+        var unknown = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CH", "V1", new[] { t1, t2 }, Jan1, IgnoredNonConformingRelationshipIds: new[] { Guid.NewGuid() }),
+            default);
+        Assert.Equal(400, unknown.StatusCode);
+    }
+
+    [Fact]
+    public async Task Resolve_endpoint_writes_draft_and_409s_published_without_touching_relationships()
+    {
+        var fx = new Fixture(TenantA);
+        var (s, t1, t2, r1, r2) = await SeedResolutionGraph(fx);
+        var draft = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CH", "Draft", new[] { t1, t2 }, Jan1), default);
+        var relSnapshot = fx.Relationships.Items
+            .Select(x => (x.Id, x.Status, x.IsTemplateConforming, x.ArchivedAt)).ToList();
+
+        var write = await Resolve(fx).Handle(
+            new SetConceptChainTemplateConformanceResolutionsCommand(draft.Data, new[] { r1, r2 }), default);
+        Assert.Equal(200, write.StatusCode);
+        Assert.Equal(new[] { r1, r2 }, fx.Templates.Items.Single(x => x.Id == draft.Data).IgnoredNonConformingRelationshipIds);
+
+        var again = await Resolve(fx).Handle(
+            new SetConceptChainTemplateConformanceResolutionsCommand(draft.Data, new[] { r2, r1 }), default);
+        Assert.Equal(200, again.StatusCode); // idempotent (set semantics)
+
+        var clear = await Resolve(fx).Handle(
+            new SetConceptChainTemplateConformanceResolutionsCommand(draft.Data, null), default);
+        Assert.Equal(200, clear.StatusCode);
+        Assert.Empty(fx.Templates.Items.Single(x => x.Id == draft.Data).IgnoredNonConformingRelationshipIds);
+
+        Assert.Equal(400, (await Resolve(fx).Handle(
+            new SetConceptChainTemplateConformanceResolutionsCommand(draft.Data, new[] { Guid.NewGuid() }), default)).StatusCode);
+        Assert.Equal(404, (await Resolve(fx).Handle(
+            new SetConceptChainTemplateConformanceResolutionsCommand(Guid.NewGuid(), new[] { r1 }), default)).StatusCode);
+
+        var published = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHP", "Published", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published,
+            ForWhomAudienceProfileIds: new[] { fx.SeedAudienceProfile() }), default);
+        Assert.Equal(201, published.StatusCode);
+        Assert.Equal(409, (await Resolve(fx).Handle(
+            new SetConceptChainTemplateConformanceResolutionsCommand(published.Data, new[] { r1 }), default)).StatusCode);
+
+        // D8 — a resolution is a record only: no relationship changed, archived or re-derived.
+        Assert.Equal(relSnapshot, fx.Relationships.Items
+            .Select(x => (x.Id, x.Status, x.IsTemplateConforming, x.ArchivedAt)).ToList());
+
+        var otherTenant = new SetConceptChainTemplateConformanceResolutionsHandler(
+            Tenant(TenantB), new NullActorContext(), fx.Templates, fx.Relationships);
+        Assert.Equal(404, (await otherTenant.Handle(
+            new SetConceptChainTemplateConformanceResolutionsCommand(draft.Data, new[] { r1 }), default)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Publish_needs_two_steps_per_branch_and_an_audience_while_draft_stays_free()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var audience = fx.SeedAudienceProfile();
+        var twoStep = new ConceptChainBranchInput("BR1", new[] { new ConceptChainStepInput(t1), new ConceptChainStepInput(t2) });
+        var oneStep = new ConceptChainBranchInput("BR2", new[] { new ConceptChainStepInput(t1) });
+
+        // Draft: one-step branch and no audience are fine.
+        var draft = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CH-D", "Draft", new[] { t1, t2 }, Jan1, Branches: new[] { twoStep, oneStep }), default);
+        Assert.Equal(201, draft.StatusCode);
+
+        // Publish on create: short branch → 400 naming the branch; no audience → 400.
+        var shortBranch = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CH-P1", "P1", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published,
+            Branches: new[] { twoStep, oneStep }, ForWhomAudienceProfileIds: new[] { audience }), default);
+        Assert.Equal(400, shortBranch.StatusCode);
+        Assert.Contains("BR2", string.Join(";", shortBranch.Errors ?? new List<string>()));
+        var noAudience = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CH-P2", "P2", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published,
+            Branches: new[] { twoStep }), default);
+        Assert.Equal(400, noAudience.StatusCode);
+        Assert.Contains("audience", string.Join(";", noAudience.Errors ?? new List<string>()));
+
+        // Publish on update (draft → published): same rules; fixed draft publishes.
+        var promoteShort = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            draft.Data, "Draft", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published,
+            Branches: new[] { twoStep, oneStep }, ForWhomAudienceProfileIds: new[] { audience }), default);
+        Assert.Equal(400, promoteShort.StatusCode);
+        var promoteNoAudience = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            draft.Data, "Draft", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published,
+            Branches: new[] { twoStep }), default);
+        Assert.Equal(400, promoteNoAudience.StatusCode);
+        var promote = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            draft.Data, "Draft", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published,
+            Branches: new[] { twoStep }, ForWhomAudienceProfileIds: new[] { audience }), default);
+        Assert.Equal(200, promote.StatusCode);
+
+        // A legacy published template (no audience, out-of-range min) stays updatable: readiness is judged on the
+        // transition only and bounds only when the (frozen) structure changes.
+        var legacy = new ConceptChainTemplate
+        {
+            TenantId = TenantA, SubjectId = s, ChainCode = "LEGACY", ChainName = "Legacy",
+            OrderedConceptTypes = new List<Guid> { t1, t2 },
+            Branches = new List<ConceptChainBranch>
+            {
+                new() { BranchCode = "BR1", Steps = new List<ConceptChainStep> { new() { ConceptTypeId = t1, MinSelection = 12 } } }
+            },
+            Status = ConceptChainStatuses.Published, ChainVersion = "1.0", EffectiveFrom = Jan1, CreatedAt = Jan1
+        };
+        fx.Templates.Items.Add(legacy);
+        var rename = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            legacy.Id, "Legacy renamed", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published,
+            Branches: new[] { new ConceptChainBranchInput("BR1", new[] { new ConceptChainStepInput(t1, 12) }) }), default);
+        Assert.Equal(200, rename.StatusCode);
+    }
+
+    [Theory]
+    [InlineData(-1, null, 400)]
+    [InlineData(10, null, 400)]
+    [InlineData(1, 0, 400)]
+    [InlineData(1, 10, 400)]
+    [InlineData(5, 4, 400)] // existing Max ≥ Min rule
+    [InlineData(0, 9, 201)]
+    [InlineData(9, null, 201)]
+    [InlineData(9, 9, 201)]
+    public async Task Step_min_max_bounds(int min, int? max, int expected)
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var branch = new ConceptChainBranchInput("BR1", new[]
+            { new ConceptChainStepInput(t1, min, max), new ConceptChainStepInput(t2) });
+
+        var created = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CH", "Chain", new[] { t1, t2 }, Jan1, Branches: new[] { branch }), default);
+        Assert.Equal(expected, created.StatusCode);
+
+        // The same bounds apply when a draft's structure is changed on update.
+        var baseline = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CH2", "Chain 2", new[] { t1, t2 }, Jan1), default);
+        var updated = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            baseline.Data, "Chain 2", new[] { t1, t2 }, Jan1, Branches: new[] { branch }), default);
+        Assert.Equal(expected == 201 ? 200 : 400, updated.StatusCode);
     }
 
     // ---------------- SCMM-10 (WP-A) template-level Moderator / ForWhom ----------------

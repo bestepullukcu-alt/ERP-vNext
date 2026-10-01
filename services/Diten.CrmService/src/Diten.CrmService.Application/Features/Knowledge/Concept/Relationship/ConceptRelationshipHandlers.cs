@@ -64,29 +64,16 @@ internal static class ConceptRelationshipGraph
         return false;
     }
 
-    /// <summary>Is (fromType → toType) an adjacent ordered pair in any non-archived chain template of the subject?</summary>
+    /// <summary>Is (fromType → toType), read in chain direction for the relationship type (addresses / evidences are
+    /// reversed — WP-CT-BE-A D2), a forward-ordered pair in any non-archived chain template of the subject? Wraps the
+    /// single classifier <see cref="ConceptChainConformance.Classify"/>.</summary>
     public static bool IsConforming(
-        IReadOnlyList<ConceptChainTemplate> subjectTemplates, Guid fromTypeId, Guid toTypeId)
-    {
-        foreach (var template in subjectTemplates)
-        {
-            if (template.IsArchived())
-            {
-                continue;
-            }
-
-            var ordered = template.OrderedConceptTypes;
-            for (var i = 0; i + 1 < ordered.Count; i++)
-            {
-                if (ordered[i] == fromTypeId && ordered[i + 1] == toTypeId)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
+        IReadOnlyList<ConceptChainTemplate> subjectTemplates, Guid fromTypeId, Guid toTypeId, string? relationshipType)
+        => subjectTemplates.Any(template =>
+            !template.IsArchived()
+            && ConceptChainConformance.Classify(
+                   template.OrderedConceptTypes, fromTypeId, toTypeId, relationshipType).Result
+               == ConceptChainConformanceResults.Conforming);
 }
 
 public sealed class CreateConceptRelationshipHandler
@@ -194,7 +181,7 @@ public sealed class CreateConceptRelationshipHandler
         // V16 — template conformance (derived, never rejects).
         var subjectTemplates = await _templates.ListBySubjectAsync(tenantId, request.SubjectId, cancellationToken);
         var isConforming = ConceptRelationshipGraph.IsConforming(
-            subjectTemplates, from.ConceptTypeId, to.ConceptTypeId);
+            subjectTemplates, from.ConceptTypeId, to.ConceptTypeId, relationshipType);
 
         var now = DateTimeOffset.UtcNow;
         var entity = new RelationshipEntity
@@ -321,7 +308,8 @@ public sealed class UpdateConceptRelationshipHandler
         var to = await _nodes.GetByIdAsync(tenantId, entity.ToConceptNodeId, cancellationToken);
         var subjectTemplates = await _templates.ListBySubjectAsync(tenantId, entity.SubjectId, cancellationToken);
         var isConforming = from is not null && to is not null
-            && ConceptRelationshipGraph.IsConforming(subjectTemplates, from.ConceptTypeId, to.ConceptTypeId);
+            && ConceptRelationshipGraph.IsConforming(
+                subjectTemplates, from.ConceptTypeId, to.ConceptTypeId, entity.RelationshipType);
 
         var now = DateTimeOffset.UtcNow;
         entity.RelationshipName = request.RelationshipName.Trim();

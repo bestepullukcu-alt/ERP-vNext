@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>الادعاءات</value></data>
+  <data name="PageTitleCreate" xml:space="preserve"><value>فتح نسخة الدولة · {0}</value></data>
+  <data name="PageTitleEdit" xml:space="preserve"><value>نسخة الدولة · {0}</value></data>
+  <data name="CancelAction" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>حفظ المسودة</value></data>
+  <data name="SubmitLocal" xml:space="preserve"><value>إرسال للمراجعة المحلية</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>سحب من المراجعة</value></data>
+  <data name="OpenNewVersion" xml:space="preserve"><value>فتح إصدار جديد</value></data>
+  <data name="ReadOnlyNote" xml:space="preserve"><value>صلاحية قراءة فقط: يمكنك عرض نسخة الدولة هذه.</value></data>
+  <data name="CoreCardTitle" xml:space="preserve"><value>الادعاء الأساسي · للقراءة فقط</value></data>
+  <data name="CoreQualifierLabel" xml:space="preserve"><value>المحدِّد</value></data>
+  <data name="CoreAudienceLabel" xml:space="preserve"><value>الجمهور</value></data>
+  <data name="CoreEvidenceCount" xml:space="preserve"><value>{0} دليل</value></data>
+  <data name="VersionLabel" xml:space="preserve"><value>v{0}</value></data>
+  <data name="CountryCardTitle" xml:space="preserve"><value>الدولة</value></data>
+  <data name="CountryLanguages" xml:space="preserve"><value>لغات الدولة</value></data>
+  <data name="FromCountryMaster" xml:space="preserve"><value>· من السجل الرئيسي للدولة</value></data>
+  <data name="TextsTitle" xml:space="preserve"><value>النص والمحددات · لكل لغة</value></data>
+  <data name="CoreReferenceText" xml:space="preserve"><value>الأساس (en)</value></data>
+  <data name="CoreReferenceQualifier" xml:space="preserve"><value>المحدِّد الأساسي</value></data>
+  <data name="LocalTextLabel" xml:space="preserve"><value>نص الادعاء · {0}</value></data>
+  <data name="LocalQualifiersLabel" xml:space="preserve"><value>المحددات المحلية · {0}</value></data>
+  <data name="QualifierPlaceholder" xml:space="preserve"><value>أضف محدِّداً</value></data>
+  <data name="AddAction" xml:space="preserve"><value>إضافة</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>إزالة</value></data>
+  <data name="LanguageMissing" xml:space="preserve"><value>النص مفقود</value></data>
+  <data name="CharCount" xml:space="preserve"><value>{0} حرفاً</value></data>
+  <data name="AdaptationTitle" xml:space="preserve"><value>التكييف</value></data>
+  <data name="AdaptationHint" xml:space="preserve"><value>يمكن تضييق نسخة الدولة أو تلطيفها مقارنة بالأساس، ولا يمكن توسيع نطاقها.</value></data>
+  <data name="AdaptationTypeLabel" xml:space="preserve"><value>نوع التكييف</value></data>
+  <data name="AdaptationReasonLabel" xml:space="preserve"><value>سبب التكييف</value></data>
+  <data name="AdaptationReasonHint" xml:space="preserve"><value>مطلوب ما لم يكن النص ترجمة حرفية.</value></data>
+  <data name="Adapt_verbatim" xml:space="preserve"><value>ترجمة حرفية</value></data>
+  <data name="Adapt_narrowed" xml:space="preserve"><value>مُضيَّق</value></data>
+  <data name="Adapt_softened" xml:space="preserve"><value>مُلطَّف</value></data>
+  <data name="ValidityTitle" xml:space="preserve"><value>الصلاحية</value></data>
+  <data name="ValidFromLabel" xml:space="preserve"><value>صالح من</value></data>
+  <data name="ValidToLabel" xml:space="preserve"><value>صالح حتى</value></data>
+  <data name="AudienceTitle" xml:space="preserve"><value>الجمهور المستهدف</value></data>
+  <data name="AudienceHint" xml:space="preserve"><value>لا يمكن اختيار إلا جماهير الادعاء الأساسي (تضييق).</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>اختر</value></data>
+  <data name="EvidenceTitle" xml:space="preserve"><value>الأدلة</value></data>
+  <data name="AddLocalEvidence" xml:space="preserve"><value>إضافة دليل محلي</value></data>
+  <data name="InheritedEvidenceTitle" xml:space="preserve"><value>من الادعاء الأساسي (للقراءة فقط)</value></data>
+  <data name="LocalEvidenceTitle" xml:space="preserve"><value>الأدلة المحلية</value></data>
+  <data name="LocalEvidenceEmpty" xml:space="preserve"><value>لا توجد أدلة محلية. اربط هنا مستندات محلية مثل ملخص خصائص المنتج في {0}.</value></data>
+  <data name="InheritedEvidenceEmpty" xml:space="preserve"><value>لا يحتوي الادعاء الأساسي على أدلة بعد.</value></data>
+  <data name="EvidenceSaveFirst" xml:space="preserve"><value>احفظ المسودة أولاً؛ يُربط الدليل بنسخة دولة محفوظة.</value></data>
+  <data name="EvidenceLockedNote" xml:space="preserve"><value>لا يتغير الدليل إلا في المسودة؛ افتح إصداراً جديداً.</value></data>
+  <data name="EvidenceTextFirst" xml:space="preserve"><value>أدخل نص هذه اللغة واحفظه أولاً؛ تُحدَّد العبارات المدعومة عليه.</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>الجاهزية للمراجعة</value></data>
+  <data name="ReadyCoreApproved" xml:space="preserve"><value>الادعاء الأساسي معتمد</value></data>
+  <data name="ReadyAllLanguages" xml:space="preserve"><value>نص بكل اللغات</value></data>
+  <data name="ReadyAdaptationReason" xml:space="preserve"><value>سبب التكييف</value></data>
+  <data name="ReadyValidity" xml:space="preserve"><value>بداية الصلاحية</value></data>
+  <data name="ReadyEvidence" xml:space="preserve"><value>دليل واحد على الأقل</value></data>
+  <data name="ReadySaved" xml:space="preserve"><value>تم الحفظ</value></data>
+  <data name="ReadyMissing" xml:space="preserve"><value>ناقص</value></data>
+  <data name="FlowTitle" xml:space="preserve"><value>مسار الموافقة المحلي</value></data>
+  <data name="FlowSequentialNote" xml:space="preserve"><value>تسلسلي · يُضبط من إعدادات الموافقة</value></data>
+  <data name="FlowNoCandidates" xml:space="preserve"><value>لا يوجد منصب مرشح</value></data>
+  <data name="FlowReason_WorkflowTemplateMissing" xml:space="preserve"><value>لم يُحدَّد مسار موافقة محلي لهذه الدولة بعد. راجع المسؤول.</value></data>
+  <data name="FlowReason_WorkflowTemplateNotPublished" xml:space="preserve"><value>مسار الموافقة المحلي موجود لكنه لم يُنشر بعد.</value></data>
+  <data name="FlowReason_WorkflowPermissionMissing" xml:space="preserve"><value>لا يمكنك عرض إعدادات مسار الموافقة.</value></data>
+  <data name="FlowReason_WorkflowUnavailable" xml:space="preserve"><value>يتعذر عرض مسار الموافقة حالياً.</value></data>
+  <data name="StatusCardTitle" xml:space="preserve"><value>بطاقة الحالة</value></data>
+  <data name="LockInReview" xml:space="preserve"><value>قيد المراجعة: نسخة الدولة مقفلة حتى اكتمال مسار الموافقة المحلي أو سحبه.</value></data>
+  <data name="LockApproved" xml:space="preserve"><value>معتمدة: النص والأدلة مقفلة. افتح إصداراً جديداً لتغييرها.</value></data>
+  <data name="LockReviewRequired" xml:space="preserve"><value>تحتاج إلى مراجعة: تغيّر الأساس أو مستند مرتبط. افتح إصداراً جديداً لتحديثها.</value></data>
+  <data name="LockInactive" xml:space="preserve"><value>هذا السجل لم يعد حالياً (مستبدل أو مؤرشف).</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>إرسال نسخة الدولة هذه للمراجعة المحلية؟ ستُقفل حتى اكتمال المسار.</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>سحب نسخة الدولة هذه من المراجعة؟ ستعود إلى مسودة.</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>فتح نسخة دولة مسودة جديدة من هذه؟</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>تم حفظ المسودة.</value></data>
+  <data name="ToastSubmitted" xml:space="preserve"><value>تم الإرسال للمراجعة المحلية.</value></data>
+  <data name="ToastWithdrawn" xml:space="preserve"><value>تم السحب من المراجعة.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>تعذر تحميل نسخة الدولة.</value></data>
+  <data name="ErrorGeneric" xml:space="preserve"><value>حدث خطأ. يرجى المحاولة مرة أخرى.</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="KindCoreBadge" xml:space="preserve"><value>أساسي</value></data>
+  <data name="KindLocalBadge" xml:space="preserve"><value>محلي</value></data>
+  <data name="State_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="State_approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>تحتاج إلى مراجعة</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="State_archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Err_core_not_approved" xml:space="preserve"><value>يجب اعتماد الادعاء الأساسي قبل نسخة الدولة.</value></data>
+  <data name="Err_country_closed" xml:space="preserve"><value>هذه الدولة موسومة بعدم الفتح. أعد فتحها من مصفوفة التغطية أولاً.</value></data>
+  <data name="Err_country_version_exists" xml:space="preserve"><value>لهذه الدولة نسخة حالية بالفعل. افتحها من مصفوفة التغطية.</value></data>
+  <data name="Err_languages_incomplete" xml:space="preserve"><value>أدخل النص بكل لغات المحتوى للدولة.</value></data>
+  <data name="Err_audience_not_narrowing" xml:space="preserve"><value>لا يمكن اختيار إلا جماهير الادعاء الأساسي.</value></data>
+  <data name="Err_adaptation_reason_required" xml:space="preserve"><value>أدخل سبب التكييف (مطلوب ما لم تكن الترجمة حرفية).</value></data>
+  <data name="Err_texts_required" xml:space="preserve"><value>أدخل نصاً واحداً على الأقل.</value></data>
+  <data name="Err_language_not_allowed" xml:space="preserve"><value>هذه اللغة ليست لغة محتوى للدولة.</value></data>
+  <data name="Err_duplicate_language" xml:space="preserve"><value>تتكرر لغة مرتين.</value></data>
+  <data name="Err_invalid_validity" xml:space="preserve"><value>يجب أن تكون نهاية الصلاحية بعد بدايتها.</value></data>
+  <data name="Err_invalid_reference_value" xml:space="preserve"><value>اختر قيمة صالحة.</value></data>
+  <data name="Err_open_version_exists" xml:space="preserve"><value>لهذه الدولة بالفعل نسخة مسودة أو قيد المراجعة.</value></data>
+  <data name="Err_invalid_state" xml:space="preserve"><value>لا يمكن تنفيذ هذا الإجراء في الوضع الحالي.</value></data>
+  <data name="Err_invalid_status" xml:space="preserve"><value>لا يمكن تنفيذ هذا الإجراء في الحالة الحالية.</value></data>
+  <data name="Err_evidence_required" xml:space="preserve"><value>يلزم دليل واحد على الأقل (موروث أو محلي) قبل الإرسال للمراجعة.</value></data>
+  <data name="Err_evidence_locked" xml:space="preserve"><value>لا يتغير الدليل إلا في المسودة. افتح إصداراً جديداً.</value></data>
+  <data name="Err_evidence_unavailable" xml:space="preserve"><value>يتعذر الوصول إلى خدمة الأدلة. لم يتغير شيء؛ حاول لاحقاً.</value></data>
+  <data name="Err_in_review_locked" xml:space="preserve"><value>نسخة الدولة قيد المراجعة. اسحبها من المراجعة لتعديلها.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>لم يُحدَّد مسار موافقة محلي لهذه الدولة. راجع المسؤول.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>لا يُسمح لك ببدء مسار الموافقة.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>يتعذر الوصول إلى خدمة الموافقة. لم يتغير شيء؛ حاول لاحقاً.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>رفض مسار الموافقة الطلب.</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>لم يعد بالإمكان سحب المراجعة: اتخذ أحد المعتمدين إجراءً.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>لا توجد مراجعة مفتوحة لسحبها.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>لم تُنشر قائمة مرجعية مطلوبة بعد. راجع المسؤول.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>يتعذر الوصول إلى خدمة مطلوبة. لم يتغير شيء؛ حاول لاحقاً.</value></data>
+  <data name="Err_not_applicable" xml:space="preserve"><value>هذه الدولة خارج نطاق هذا الادعاء.</value></data>
+  <data name="Err_required" xml:space="preserve"><value>املأ الحقول الإلزامية.</value></data>
+</root>

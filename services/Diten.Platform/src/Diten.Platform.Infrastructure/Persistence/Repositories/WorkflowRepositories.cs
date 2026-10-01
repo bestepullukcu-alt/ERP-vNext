@@ -140,9 +140,49 @@ public sealed class WorkflowTemplateVersionRepository
 
 public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstance>, IWorkflowInstanceRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public WorkflowInstanceRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.WorkflowInstances)
     {
+        _dbContext = dbContext;
+    }
+
+    // WP-CL-BE-3 — the terminal write joins the Platform transaction that also carries the completion outbox event.
+    public async Task<bool> UpdateAsync(
+        IPlatformTransactionSession session,
+        WorkflowInstance instance,
+        int expectedVersion,
+        CancellationToken ct = default)
+    {
+        var handle = PlatformMongoTransactionSession.Require(session, _dbContext);
+        instance.Version = expectedVersion + 1;
+        instance.UpdatedAt = DateTimeOffset.UtcNow;
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Id, instance.Id),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Version, expectedVersion));
+        var result = await Collection.ReplaceOneAsync(handle, filter, instance, new ReplaceOptions(), ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
+    }
+
+    // WP-CL-BE-3 — batch status read over the {TenantId, ObjectType, ObjectId} index. Ordering is done by the caller in
+    // memory (DateTimeOffset is a BSON array here — see GetLatestByObjectRefAsync).
+    public async Task<IReadOnlyList<WorkflowInstance>> ListByObjectIdsAsync(
+        string objectType,
+        IReadOnlyCollection<string> objectIds,
+        CancellationToken ct = default)
+    {
+        if (objectIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.Eq(x => x.ObjectType, objectType),
+            Builders<WorkflowInstance>.Filter.In(x => x.ObjectId, objectIds));
+        return await Collection.Find(filter).ToListAsync(ct);
     }
 
     public Task<WorkflowInstance?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
@@ -212,9 +252,30 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
 
 public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IApprovalTaskRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public ApprovalTaskRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.ApprovalTasks)
     {
+        _dbContext = dbContext;
+    }
+
+    // WP-CL-BE-3 — terminal task write inside the Platform transaction.
+    public async Task<bool> UpdateAsync(
+        IPlatformTransactionSession session,
+        ApprovalTask task,
+        int expectedVersion,
+        CancellationToken ct = default)
+    {
+        var handle = PlatformMongoTransactionSession.Require(session, _dbContext);
+        task.Version = expectedVersion + 1;
+        task.UpdatedAt = DateTimeOffset.UtcNow;
+        var filter = Builders<ApprovalTask>.Filter.And(
+            ExecutionFilter,
+            Builders<ApprovalTask>.Filter.Eq(x => x.Id, task.Id),
+            Builders<ApprovalTask>.Filter.Eq(x => x.Version, expectedVersion));
+        var result = await Collection.ReplaceOneAsync(handle, filter, task, new ReplaceOptions(), ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
     }
 
     public Task<ApprovalTask?> GetFirstByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default)
@@ -332,9 +393,26 @@ public sealed class RuntimeAssignmentSnapshotRepository
 
 public sealed class WorkflowTransitionLogRepository : TenantRepository<WorkflowTransitionLog>, IWorkflowTransitionLogRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public WorkflowTransitionLogRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.WorkflowTransitionLogs)
     {
+        _dbContext = dbContext;
+    }
+
+    // WP-CL-BE-3 — terminal transition log inside the Platform transaction. Same tenant rule as the base CreateAsync:
+    // the tenant always comes from the context, never from the caller.
+    public async Task<WorkflowTransitionLog> CreateAsync(
+        IPlatformTransactionSession session,
+        WorkflowTransitionLog log,
+        CancellationToken ct = default)
+    {
+        var handle = PlatformMongoTransactionSession.Require(session, _dbContext);
+        typeof(WorkflowTransitionLog).GetProperty(nameof(WorkflowTransitionLog.TenantId))!
+            .SetValue(log, TenantContext.TenantId);
+        await Collection.InsertOneAsync(handle, log, cancellationToken: ct);
+        return log;
     }
 
     public async Task<IReadOnlyList<WorkflowTransitionLog>> ListByInstanceIdAsync(

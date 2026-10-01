@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>Claims</value></data>
+  <data name="NewCoreClaimTitle" xml:space="preserve"><value>New core claim</value></data>
+  <data name="NewLocalClaimTitle" xml:space="preserve"><value>New local claim</value></data>
+  <data name="EditClaimTitle" xml:space="preserve"><value>Edit claim</value></data>
+  <data name="CancelAction" xml:space="preserve"><value>Cancel</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Save draft</value></data>
+  <data name="SubmitReview" xml:space="preserve"><value>Send for review</value></data>
+  <data name="WithdrawReview" xml:space="preserve"><value>Withdraw from review</value></data>
+  <data name="OpenNewVersion" xml:space="preserve"><value>Open new version</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Identity and text</value></data>
+  <data name="ClaimCodeLabel" xml:space="preserve"><value>Claim code</value></data>
+  <data name="ClaimCodeHint" xml:space="preserve"><value>Suggested from the product. A stable business key across versions and country versions.</value></data>
+  <data name="ClaimCodeLocked" xml:space="preserve"><value>The code is fixed once the claim is created.</value></data>
+  <data name="ClaimNameLabel" xml:space="preserve"><value>Claim name</value></data>
+  <data name="VersionLabel" xml:space="preserve"><value>Version</value></data>
+  <data name="StatusLabel" xml:space="preserve"><value>Status</value></data>
+  <data name="StatusHint" xml:space="preserve"><value>The status changes only through Send for review, Approve and Archive.</value></data>
+  <data name="DescriptionLabel" xml:space="preserve"><value>Description</value></data>
+  <data name="CoreTextLabel" xml:space="preserve"><value>Core claim text</value></data>
+  <data name="LocalTextLabel" xml:space="preserve"><value>Local claim text</value></data>
+  <data name="TextLanguageLabel" xml:space="preserve"><value>Text language</value></data>
+  <data name="CoreTextHint" xml:space="preserve"><value>Country versions are adapted from this text and cannot widen its scope. It is locked once approved.</value></data>
+  <data name="LocalTextHint" xml:space="preserve"><value>A local claim lives in one country only and has no core text.</value></data>
+  <data name="CountryLabel" xml:space="preserve"><value>Country</value></data>
+  <data name="CharCount" xml:space="preserve"><value>{0} characters</value></data>
+  <data name="SectionScope" xml:space="preserve"><value>Scope</value></data>
+  <data name="ProductLabel" xml:space="preserve"><value>Product</value></data>
+  <data name="AudienceLabel" xml:space="preserve"><value>Target audience</value></data>
+  <data name="OrgUnitLabel" xml:space="preserve"><value>Responsible team</value></data>
+  <data name="ScopeNote" xml:space="preserve"><value>Country, language and validity dates are set on each country version.</value></data>
+  <data name="ProductUnavailable" xml:space="preserve"><value>The product catalogue cannot be reached right now.</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Select</value></data>
+  <data name="SectionQualifiers" xml:space="preserve"><value>Qualifiers</value></data>
+  <data name="QualifiersHint" xml:space="preserve"><value>Mandatory phrases that always accompany the sentence.</value></data>
+  <data name="QualifierPlaceholder" xml:space="preserve"><value>Add a qualifier</value></data>
+  <data name="AddAction" xml:space="preserve"><value>Add</value></data>
+  <data name="RemoveAction" xml:space="preserve"><value>Remove</value></data>
+  <data name="SectionEvidence" xml:space="preserve"><value>Evidence</value></data>
+  <data name="AddEvidence" xml:space="preserve"><value>Add evidence</value></data>
+  <data name="EvidenceEmpty" xml:space="preserve"><value>No evidence linked yet.</value></data>
+  <data name="EvidenceHint" xml:space="preserve"><value>At least one piece of evidence is required to send for review. Documents are chosen from Document Management.</value></data>
+  <data name="EvidenceSaveFirst" xml:space="preserve"><value>Save the draft first; evidence is linked to a saved claim.</value></data>
+  <data name="EvidenceLockedNote" xml:space="preserve"><value>Evidence can change only on a draft; open a new version to change it.</value></data>
+  <data name="EvidencePreview" xml:space="preserve"><value>Preview</value></data>
+  <data name="EvidenceSupports" xml:space="preserve"><value>Supports:</value></data>
+  <data name="EvidencePinned" xml:space="preserve"><value>{0} pinned</value></data>
+  <data name="EvidenceSuperseded" xml:space="preserve"><value>A newer version of this document is in force ({0}).</value></data>
+  <data name="EvidenceStateWarning" xml:space="preserve"><value>The document is {0}.</value></data>
+  <data name="EvidenceExpiring" xml:space="preserve"><value>Document review is due on {0}.</value></data>
+  <data name="DocState_suspended" xml:space="preserve"><value>suspended</value></data>
+  <data name="DocState_retired" xml:space="preserve"><value>retired</value></data>
+  <data name="DocState_withdrawn" xml:space="preserve"><value>withdrawn</value></data>
+  <data name="RemoveEvidenceTitle" xml:space="preserve"><value>Remove evidence</value></data>
+  <data name="RemoveEvidenceReason" xml:space="preserve"><value>Reason for removal</value></data>
+  <data name="RemoveEvidenceConfirm" xml:space="preserve"><value>Remove</value></data>
+  <data name="ReadinessTitle" xml:space="preserve"><value>Ready for review</value></data>
+  <data name="ReadyName" xml:space="preserve"><value>Name</value></data>
+  <data name="ReadyText" xml:space="preserve"><value>Claim text</value></data>
+  <data name="ReadyProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="ReadyEvidence" xml:space="preserve"><value>At least 1 evidence</value></data>
+  <data name="ReadySaved" xml:space="preserve"><value>Saved</value></data>
+  <data name="ReadyMissing" xml:space="preserve"><value>missing</value></data>
+  <data name="FlowTitleCore" xml:space="preserve"><value>Global approval flow</value></data>
+  <data name="FlowTitleLocal" xml:space="preserve"><value>Local approval flow</value></data>
+  <data name="FlowSequentialNote" xml:space="preserve"><value>Sequential · configured in the approval settings</value></data>
+  <data name="FlowNoCandidates" xml:space="preserve"><value>No candidate position</value></data>
+  <data name="FlowReason_WorkflowTemplateMissing" xml:space="preserve"><value>No approval flow is defined for this claim yet. Ask your administrator.</value></data>
+  <data name="FlowReason_WorkflowTemplateNotPublished" xml:space="preserve"><value>The approval flow exists but is not published yet.</value></data>
+  <data name="FlowReason_WorkflowPermissionMissing" xml:space="preserve"><value>You cannot view approval flow settings.</value></data>
+  <data name="FlowReason_WorkflowUnavailable" xml:space="preserve"><value>The approval flow cannot be shown right now.</value></data>
+  <data name="FlowPickCountry" xml:space="preserve"><value>Select the country to see its approval flow.</value></data>
+  <data name="StatusCardTitle" xml:space="preserve"><value>Status</value></data>
+  <data name="LockInReview" xml:space="preserve"><value>In review: the claim is locked until the approval flow completes or is withdrawn.</value></data>
+  <data name="LockApproved" xml:space="preserve"><value>Approved: the text and evidence are locked. Open a new version to change them.</value></data>
+  <data name="LockReviewRequired" xml:space="preserve"><value>Needs review: a linked document changed. Open a new version to update the claim.</value></data>
+  <data name="LockInactive" xml:space="preserve"><value>This record is no longer current (superseded or archived).</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Send this claim for review? It will be locked until the approval flow completes.</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Withdraw this claim from review? It returns to draft.</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Open a new draft version from this claim?</value></data>
+  <data name="ToastSaved" xml:space="preserve"><value>Draft saved.</value></data>
+  <data name="ToastSubmitted" xml:space="preserve"><value>Sent for review.</value></data>
+  <data name="ToastWithdrawn" xml:space="preserve"><value>Withdrawn from review.</value></data>
+  <data name="ToastEvidenceAdded" xml:space="preserve"><value>Evidence added.</value></data>
+  <data name="ToastEvidenceRemoved" xml:space="preserve"><value>Evidence removed.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>The claim could not be loaded.</value></data>
+  <data name="ErrorGeneric" xml:space="preserve"><value>Something went wrong. Please try again.</value></data>
+  <data name="Err_evidence_required" xml:space="preserve"><value>Add at least one piece of evidence before sending for review.</value></data>
+  <data name="Err_evidence_locked" xml:space="preserve"><value>Evidence can change only on a draft. Open a new version.</value></data>
+  <data name="Err_evidence_unavailable" xml:space="preserve"><value>The evidence service cannot be reached. Nothing was changed; try again later.</value></data>
+  <data name="Err_in_review_locked" xml:space="preserve"><value>The claim is in review. Withdraw it from review to change it.</value></data>
+  <data name="Err_invalid_status" xml:space="preserve"><value>This action is not possible in the claim's current status.</value></data>
+  <data name="Err_approval_template_missing" xml:space="preserve"><value>No approval flow is defined. Ask your administrator.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>You are not allowed to start the approval flow.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>The approval service cannot be reached. Nothing was changed; try again later.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>The approval flow refused the request.</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>The review cannot be withdrawn any more: an approver has already acted.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>There is no open review to withdraw.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>Claims are approved only through their approval flow.</value></data>
+  <data name="Err_product_required" xml:space="preserve"><value>Select the product.</value></data>
+  <data name="Err_product_not_found" xml:space="preserve"><value>The product was not found in the product catalogue.</value></data>
+  <data name="Err_claim_product_mismatch" xml:space="preserve"><value>The claim does not belong to this product.</value></data>
+  <data name="Err_local_country_required" xml:space="preserve"><value>Select the country of the local claim.</value></data>
+  <data name="Err_language_not_allowed" xml:space="preserve"><value>This language is not a content language of the selected country.</value></data>
+  <data name="Err_reference_set_missing" xml:space="preserve"><value>A required reference list is not published yet. Ask your administrator.</value></data>
+  <data name="Err_audience_not_found" xml:space="preserve"><value>A selected audience profile was not found.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>A required service cannot be reached. Nothing was changed; try again later.</value></data>
+  <data name="Err_open_version_exists" xml:space="preserve"><value>This claim already has an open draft or in-review version.</value></data>
+  <data name="Err_invalid_state" xml:space="preserve"><value>This action is not possible in the claim's current state.</value></data>
+  <data name="Err_duplicate_code" xml:space="preserve"><value>Another claim already uses this code. Choose a different code.</value></data>
+  <data name="Err_quote_required" xml:space="preserve"><value>Enter the quoted sentence.</value></data>
+  <data name="Err_duplicate_link" xml:space="preserve"><value>The same evidence is already linked.</value></data>
+  <data name="Err_document_not_readable" xml:space="preserve"><value>You cannot read this document.</value></data>
+  <data name="Err_document_not_found" xml:space="preserve"><value>The document was not found.</value></data>
+  <data name="Err_version_required" xml:space="preserve"><value>A controlled document needs a pinned version.</value></data>
+  <data name="Err_invalid_evidence_type" xml:space="preserve"><value>Select a valid evidence type.</value></data>
+  <data name="Err_removal_reason_required" xml:space="preserve"><value>Enter a reason for removal.</value></data>
+  <data name="Err_link_not_found" xml:space="preserve"><value>The evidence link was not found.</value></data>
+  <data name="EvStep1" xml:space="preserve"><value>1 · Choose a document</value></data>
+  <data name="EvStep2" xml:space="preserve"><value>2 · Reference and mapping</value></data>
+  <data name="EvSearchPlaceholder" xml:space="preserve"><value>Search by title or code</value></data>
+  <data name="EvKindControlled" xml:space="preserve"><value>Controlled</value></data>
+  <data name="EvKindExternal" xml:space="preserve"><value>External</value></data>
+  <data name="EvUploadNew" xml:space="preserve"><value>Upload a new document in Document Management</value></data>
+  <data name="EvNoDocuments" xml:space="preserve"><value>No readable document matches.</value></data>
+  <data name="EvWillPin" xml:space="preserve"><value>{0} will be pinned</value></data>
+  <data name="EvTypeLabel" xml:space="preserve"><value>Evidence type</value></data>
+  <data name="EvSectionLabel" xml:space="preserve"><value>Section</value></data>
+  <data name="EvPageLabel" xml:space="preserve"><value>Page</value></data>
+  <data name="EvTableLabel" xml:space="preserve"><value>Table</value></data>
+  <data name="EvQuoteLabel" xml:space="preserve"><value>Quoted sentence</value></data>
+  <data name="EvSupportsLabel" xml:space="preserve"><value>Supported phrase · mark it on the claim text</value></data>
+  <data name="EvSupportsHint" xml:space="preserve"><value>Select part of the text with the mouse or the keyboard (Shift + arrows), then choose Add selected text.</value></data>
+  <data name="EvAddSelection" xml:space="preserve"><value>Add selected text</value></data>
+  <data name="EvSpansEmpty" xml:space="preserve"><value>No phrase marked yet.</value></data>
+  <data name="EvSpansMax" xml:space="preserve"><value>At most 10 phrases can be marked.</value></data>
+  <data name="EvSaveTextFirst" xml:space="preserve"><value>The claim text is empty; enter and save it first.</value></data>
+  <data name="EvBack" xml:space="preserve"><value>Back</value></data>
+  <data name="EvNext" xml:space="preserve"><value>Next</value></data>
+  <data name="EvAdd" xml:space="preserve"><value>Add evidence</value></data>
+  <data name="EvRequiredMissing" xml:space="preserve"><value>Fill in the evidence type, the quoted sentence and at least one supported phrase.</value></data>
+  <data name="EvPreviewExternalNote" xml:space="preserve"><value>External sources have no document preview here.</value></data>
+  <data name="KindCoreBadge" xml:space="preserve"><value>Core</value></data>
+  <data name="KindLocalBadge" xml:space="preserve"><value>Local</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="State_in-review" xml:space="preserve"><value>In review</value></data>
+  <data name="State_approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="State_review-required" xml:space="preserve"><value>Needs review</value></data>
+  <data name="State_inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="State_archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="RequiredCount" xml:space="preserve"><value>Required: {0}</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="EvType_smpc-pil" xml:space="preserve"><value>SmPC / PIL</value></data>
+  <data name="EvType_clinical-study" xml:space="preserve"><value>Clinical study</value></data>
+  <data name="EvType_literature" xml:space="preserve"><value>Literature</value></data>
+  <data name="EvType_internal-data" xml:space="preserve"><value>Internal data</value></data>
+  <data name="EvType_regulatory-letter" xml:space="preserve"><value>Regulatory letter</value></data>
+  <data name="EvOriginCore" xml:space="preserve"><value>From core</value></data>
+  <data name="EvOriginLocal" xml:space="preserve"><value>Local</value></data>
+  <data name="DocStateLabel_effective" xml:space="preserve"><value>In force</value></data>
+  <data name="DocStateLabel_suspended" xml:space="preserve"><value>Suspended</value></data>
+  <data name="DocStateLabel_retired" xml:space="preserve"><value>Retired</value></data>
+  <data name="DocStateLabel_withdrawn" xml:space="preserve"><value>Withdrawn</value></data>
+  <data name="DocStateLabel_unknown" xml:space="preserve"><value>State unknown</value></data>
+</root>

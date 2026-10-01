@@ -194,6 +194,12 @@ public static class DependencyInjection
             Features.DocumentManagementControlledCopy.Services.ControlledCopyWithdrawalPortAdapter>();
         // MOD-0029-FU14 — external document register / monitoring / impact assessment orchestration.
         services.AddScoped<Features.DocumentManagementExternalDocuments.Services.ExternalDocumentRegisterService>();
+        // MOD-0031 slice 1 — the evidence-linking read gate over the existing MOD-0029 access evaluator (read-only).
+        services.AddScoped<Features.EvidenceLinking.Services.IEvidenceDocumentAccessGate,
+            Features.EvidenceLinking.Services.EvidenceDocumentAccessGate>();
+        // WP-CL-BE-5 — computed current-document state of evidence links (read-only over existing DocMgmt reads).
+        services.AddScoped<Features.EvidenceLinking.Services.IEvidenceDocumentStateResolver,
+            Features.EvidenceLinking.Services.EvidenceDocumentStateResolver>();
         // MOD-0029-FU15 — retention schedule, litigation hold and disposition (no purge engine; evaluation is opt-in).
         services.AddScoped<Features.DocumentManagementRetention.Services.DocumentRetentionTriggerDateResolver>();
         services.AddScoped<Features.DocumentManagementRetention.Services.DocumentLegalHoldEvaluator>();
@@ -339,6 +345,10 @@ public static class DependencyInjection
         // approval provider as an IEnumerable, so another module adds its own line here and nothing else.
         services.AddScoped<Features.WorkAggregation.Services.IApprovalSourceResolver,
             Features.Tasks.Providers.TaskApprovalSourceResolver>();
+        // WP-CL-BE-3 — the starter's display-context snapshot for objects owned by ANOTHER service (CRM claims). A
+        // fallback: the provider never lets it answer for a type an owner above claims.
+        services.AddScoped<Features.WorkAggregation.Services.IApprovalSourceResolver,
+            Features.WorkAggregation.Services.SnapshotApprovalSourceResolver>();
         /*
          * MOD-0357 S1 — the one bridge collection's read side. `IRecordLinkService` is used both here (through
          * TaskWorkItemProvider's `relatedRecords` projection) and by MOD-0357's own future "linked records"

@@ -24,6 +24,7 @@ public sealed class StartWorkflowInstanceHandler
     private readonly IWorkflowTransitionLogRepository _transitionLogRepository;
     private readonly IPositionAssignmentRepository? _positionAssignmentRepository;
     private readonly ISlaEscalationRuleRepository? _slaRules;
+    private readonly IPositionRepository? _positionRepository;
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserContext _currentUserContext;
 
@@ -37,7 +38,8 @@ public sealed class StartWorkflowInstanceHandler
         ITenantContext tenantContext,
         ICurrentUserContext currentUserContext,
         IPositionAssignmentRepository? positionAssignmentRepository = null,
-        ISlaEscalationRuleRepository? slaRules = null)
+        ISlaEscalationRuleRepository? slaRules = null,
+        IPositionRepository? positionRepository = null)
     {
         _templateRepository = templateRepository;
         _versionRepository = versionRepository;
@@ -47,6 +49,7 @@ public sealed class StartWorkflowInstanceHandler
         _transitionLogRepository = transitionLogRepository;
         _positionAssignmentRepository = positionAssignmentRepository;
         _slaRules = slaRules;
+        _positionRepository = positionRepository;
         _tenantContext = tenantContext;
         _currentUserContext = currentUserContext;
     }
@@ -121,6 +124,7 @@ public sealed class StartWorkflowInstanceHandler
         var normalizedCandidates = await WorkflowCandidateResolver.ResolveAsync(
             candidateSource,
             _positionAssignmentRepository,
+            _positionRepository,
             ct);
         if (normalizedCandidates.Count == 0)
         {
@@ -161,7 +165,11 @@ public sealed class StartWorkflowInstanceHandler
             StartedByUserId = _currentUserContext.UserId == Guid.Empty ? null : _currentUserContext.UserId,
             StartedAt = now,
             DueAt = dueAt,
-            LastTransitionAt = now
+            LastTransitionAt = now,
+            // WP-CL-BE-3 — snapshots: the template key for the completion event, the starter's display context for
+            // WorkCenterNext (validated by StartWorkflowInstanceValidator; written once, never changed).
+            TemplateCode = template.TemplateCode,
+            DisplayContext = request.Request.DisplayContext?.ToSnapshot()
         };
 
         var task = new ApprovalTask

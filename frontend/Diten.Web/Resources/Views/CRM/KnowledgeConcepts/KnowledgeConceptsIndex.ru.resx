@@ -4,157 +4,157 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="ConceptsMenu" xml:space="preserve"><value>Concepts</value></data>
-  <data name="ConceptsTitle" xml:space="preserve"><value>Concept Graph</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Configure the subject concept graph: types, nodes, connections and chain templates.</value></data>
-  <data name="SubjectMeaningNote" xml:space="preserve"><value>Here 'Subject' means the knowledge domain (Pharma / QMS / Language) - not the legacy 'Subject Type'.</value></data>
-  <data name="ConceptNodeCode" xml:space="preserve"><value>Node Code</value></data>
-  <data name="ConceptNodeName" xml:space="preserve"><value>Node Name</value></data>
-  <data name="ConceptTypeId" xml:space="preserve"><value>Concept Type</value></data>
-  <data name="SubjectId" xml:space="preserve"><value>Subject</value></data>
-  <data name="Status" xml:space="preserve"><value>Status</value></data>
-  <data name="ExternalRefType" xml:space="preserve"><value>External Ref Type</value></data>
-  <data name="ExternalRefId" xml:space="preserve"><value>External Ref Id</value></data>
-  <data name="Description" xml:space="preserve"><value>Description</value></data>
-  <data name="MetadataJson" xml:space="preserve"><value>Metadata (JSON)</value></data>
-  <data name="EffectiveFrom" xml:space="preserve"><value>Effective From</value></data>
-  <data name="EffectiveTo" xml:space="preserve"><value>Effective To</value></data>
-  <data name="Archived" xml:space="preserve"><value>Archived</value></data>
-  <data name="UpdatedAt" xml:space="preserve"><value>Updated At</value></data>
-  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
-  <data name="CreateNode" xml:space="preserve"><value>Create Node</value></data>
-  <data name="EditNode" xml:space="preserve"><value>Edit Node</value></data>
-  <data name="NodeDetails" xml:space="preserve"><value>Node Details</value></data>
-  <data name="ArchiveNode" xml:space="preserve"><value>Archive Node</value></data>
-  <data name="ArchiveNodeConfirm" xml:space="preserve"><value>Archive this concept node? This is a soft lifecycle action; it stays readable.</value></data>
-  <data name="ArchivedNodeReadOnly" xml:space="preserve"><value>This concept node is archived and read-only.</value></data>
-  <data name="ConceptContractUnavailable" xml:space="preserve"><value>Concept graph capability contract is unavailable. Actions are disabled.</value></data>
-  <data name="IdentitySection" xml:space="preserve"><value>Identity and Classification</value></data>
-  <data name="ReferenceSection" xml:space="preserve"><value>Effective Window and Reference</value></data>
-  <data name="SelectOption" xml:space="preserve"><value>Select...</value></data>
-  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
-  <data name="Save" xml:space="preserve"><value>Save</value></data>
-  <data name="IncludeArchived" xml:space="preserve"><value>Include archived</value></data>
-  <data name="Active" xml:space="preserve"><value>Active</value></data>
-  <data name="Passive" xml:space="preserve"><value>Passive</value></data>
-  <data name="Unknown" xml:space="preserve"><value>Unknown</value></data>
-  <data name="Edit" xml:space="preserve"><value>Edit</value></data>
-  <data name="ViewDetails" xml:space="preserve"><value>View details</value></data>
-  <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
-  <data name="View" xml:space="preserve"><value>View</value></data>
-  <data name="BulkDelete" xml:space="preserve"><value>Bulk delete</value></data>
-  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Delete the selected rows?</value></data>
-  <data name="AreYouSure" xml:space="preserve"><value>Are you sure?</value></data>
-  <data name="Search" xml:space="preserve"><value>Search</value></data>
-  <data name="Export" xml:space="preserve"><value>Export</value></data>
-  <data name="Import" xml:space="preserve"><value>Import</value></data>
-  <data name="Filter" xml:space="preserve"><value>Filter</value></data>
-  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
-  <data name="Reset" xml:space="preserve"><value>Reset</value></data>
-  <data name="ShowAll" xml:space="preserve"><value>All</value></data>
-  <data name="SaveView" xml:space="preserve"><value>Save view</value></data>
-  <data name="ColumnVisibility" xml:space="preserve"><value>Columns</value></data>
-  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
-  <data name="No" xml:space="preserve"><value>No</value></data>
-  <data name="EmptyState" xml:space="preserve"><value>No concept nodes yet.</value></data>
-  <data name="ErrorState" xml:space="preserve"><value>Something went wrong.</value></data>
-  <data name="Loading" xml:space="preserve"><value>Loading...</value></data>
-  <data name="RecordArchived" xml:space="preserve"><value>Record archived.</value></data>
-  <data name="RecordCreated" xml:space="preserve"><value>Record created.</value></data>
-  <data name="RecordUpdated" xml:space="preserve"><value>Record updated.</value></data>
-  <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>The Global Product picker is unavailable right now.</value></data>
-  <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>The MDM Global Product service is not reachable; the picker is disabled.</value></data>
-  <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>You lack the mdm.global-products.read permission, so the Global Product picker is disabled.</value></data>
-  <data name="ValidationRequired" xml:space="preserve"><value>This field is required.</value></data>
-  <data name="EffectiveToBeforeFrom" xml:space="preserve"><value>Effective To cannot be earlier than Effective From.</value></data>
-  <data name="AddRow" xml:space="preserve"><value>Add</value></data>
-  <data name="TypesTab" xml:space="preserve"><value>Concept Types</value></data>
-  <data name="NodesTab" xml:space="preserve"><value>Concept Nodes</value></data>
-  <data name="ConnectionsTab" xml:space="preserve"><value>Connections</value></data>
-  <data name="TemplatesTab" xml:space="preserve"><value>Chain Templates</value></data>
-  <data name="GraphPreviewTab" xml:space="preserve"><value>Graph Preview</value></data>
-  <data name="RecordSaved" xml:space="preserve"><value>View saved.</value></data>
-  <data name="ImmutableAfterCreate" xml:space="preserve"><value>Fixed at creation; it cannot be changed later.</value></data>
-  <data name="ArchivedRecordReadOnly" xml:space="preserve"><value>This record is archived and read-only.</value></data>
-  <data name="SortOrder" xml:space="preserve"><value>Sort Order</value></data>
-  <data name="ConceptTypeCode" xml:space="preserve"><value>Type Code</value></data>
-  <data name="ConceptTypeName" xml:space="preserve"><value>Type Name</value></data>
-  <data name="CreateType" xml:space="preserve"><value>Create Type</value></data>
-  <data name="EditType" xml:space="preserve"><value>Edit Type</value></data>
-  <data name="TypeDetails" xml:space="preserve"><value>Concept Type Details</value></data>
-  <data name="ArchiveType" xml:space="preserve"><value>Archive Type</value></data>
-  <data name="ArchiveTypeConfirm" xml:space="preserve"><value>Archive this concept type? This is a soft lifecycle action; it stays readable.</value></data>
-  <data name="TypesEmptyState" xml:space="preserve"><value>No concept types yet.</value></data>
-  <data name="TypeSortOrderNote" xml:space="preserve"><value>Management order only - this is not the chain sequence (that lives on the chain template).</value></data>
-  <data name="RelationshipCode" xml:space="preserve"><value>Connection Code</value></data>
-  <data name="RelationshipName" xml:space="preserve"><value>Connection Name</value></data>
-  <data name="RelationshipType" xml:space="preserve"><value>Relationship Type</value></data>
-  <data name="FromConceptNode" xml:space="preserve"><value>From Node</value></data>
-  <data name="ToConceptNode" xml:space="preserve"><value>To Node</value></data>
-  <data name="Direction" xml:space="preserve"><value>Direction</value></data>
-  <data name="Priority" xml:space="preserve"><value>Priority</value></data>
-  <data name="Conformance" xml:space="preserve"><value>Template Conformance</value></data>
-  <data name="Conforming" xml:space="preserve"><value>Conforming</value></data>
-  <data name="NonConforming" xml:space="preserve"><value>Non-conforming</value></data>
-  <data name="NonConformingNote" xml:space="preserve"><value>This connection does not match any chain template sequence. It is kept and stays visible - it is a diagnostic, not a rejection.</value></data>
-  <data name="CreateConnection" xml:space="preserve"><value>Create Connection</value></data>
-  <data name="EditConnection" xml:space="preserve"><value>Edit Connection</value></data>
-  <data name="ConnectionDetails" xml:space="preserve"><value>Connection Details</value></data>
-  <data name="ArchiveConnection" xml:space="preserve"><value>Archive Connection</value></data>
-  <data name="ArchiveConnectionConfirm" xml:space="preserve"><value>Archive this connection? This is a soft lifecycle action; it stays readable.</value></data>
-  <data name="ConnectionsEmptyState" xml:space="preserve"><value>No connections yet.</value></data>
-  <data name="NodePickerSubjectFirst" xml:space="preserve"><value>Pick a subject first; the node lists are scoped to it.</value></data>
-  <data name="PriorityNote" xml:space="preserve"><value>Lower value wins; ties break on the connection code.</value></data>
-  <data name="ChainCode" xml:space="preserve"><value>Chain Code</value></data>
-  <data name="ChainName" xml:space="preserve"><value>Chain Name</value></data>
-  <data name="ChainVersion" xml:space="preserve"><value>Chain Version</value></data>
-  <data name="OrderedConceptTypes" xml:space="preserve"><value>Expected Type Sequence</value></data>
-  <data name="SequenceLength" xml:space="preserve"><value>Steps</value></data>
-  <data name="AddToSequence" xml:space="preserve"><value>Add step</value></data>
-  <data name="RemoveStep" xml:space="preserve"><value>Remove step</value></data>
-  <data name="MoveUp" xml:space="preserve"><value>Move up</value></data>
-  <data name="MoveDown" xml:space="preserve"><value>Move down</value></data>
-  <data name="SequenceEmpty" xml:space="preserve"><value>No step added yet.</value></data>
-  <data name="SequenceMinTwo" xml:space="preserve"><value>The sequence needs at least two concept types.</value></data>
-  <data name="SequenceDuplicateType" xml:space="preserve"><value>A concept type may appear only once in the sequence.</value></data>
-  <data name="PublishedSequenceFrozen" xml:space="preserve"><value>A published chain freezes its sequence; a change needs a new version.</value></data>
-  <data name="CreateTemplate" xml:space="preserve"><value>Create Chain Template</value></data>
-  <data name="EditTemplate" xml:space="preserve"><value>Edit Chain Template</value></data>
-  <data name="TemplateDetails" xml:space="preserve"><value>Chain Template Details</value></data>
-  <data name="ArchiveTemplate" xml:space="preserve"><value>Archive Chain Template</value></data>
-  <data name="ArchiveTemplateConfirm" xml:space="preserve"><value>Archive this chain template? This is a soft lifecycle action; it stays readable.</value></data>
-  <data name="TemplatesEmptyState" xml:space="preserve"><value>No chain templates yet.</value></data>
-  <data name="GraphScope" xml:space="preserve"><value>Scope</value></data>
-  <data name="GraphScopeSubject" xml:space="preserve"><value>Whole subject</value></data>
-  <data name="GraphScopeNode" xml:space="preserve"><value>Around a node (1 hop)</value></data>
-  <data name="GraphScopeContent" xml:space="preserve"><value>From a content (2 layers)</value></data>
-  <data name="GraphNodeAnchor" xml:space="preserve"><value>Anchor Node</value></data>
-  <data name="GraphContentAnchor" xml:space="preserve"><value>Anchor Content</value></data>
-  <data name="GraphEffectiveAt" xml:space="preserve"><value>Effective At</value></data>
-  <data name="GraphLoad" xml:space="preserve"><value>Show graph</value></data>
-  <data name="GraphNodesSection" xml:space="preserve"><value>Nodes</value></data>
-  <data name="GraphEdgesSection" xml:space="preserve"><value>Connections</value></data>
-  <data name="GraphTemplatesSection" xml:space="preserve"><value>Chain Templates</value></data>
-  <data name="GraphNodeCount" xml:space="preserve"><value>node(s)</value></data>
-  <data name="GraphEdgeCount" xml:space="preserve"><value>connection(s)</value></data>
-  <data name="GraphTemplateCount" xml:space="preserve"><value>template(s)</value></data>
-  <data name="GraphEmpty" xml:space="preserve"><value>No graph data for this scope. Nothing is inferred - an empty graph is shown as empty.</value></data>
-  <data name="GraphPickScope" xml:space="preserve"><value>Pick a scope and press Show graph.</value></data>
-  <data name="GraphContentNoLinks" xml:space="preserve"><value>This content is not linked to any concept node yet.</value></data>
-  <data name="GraphDepthNoticeNode" xml:space="preserve"><value>Fixed depth: exactly 1 hop around the anchor node. There is no depth setting - deeper traversal is an engine and is out of scope for this module.</value></data>
-  <data name="GraphDepthNoticeContent" xml:space="preserve"><value>Fixed depth: exactly 2 edge layers (content to its nodes, then those nodes' 1-hop neighbours). There is no depth setting.</value></data>
-  <data name="GraphDepthNoticeSubject" xml:space="preserve"><value>Adjacency read for the whole subject: the node list, the connection list and the chain templates. No traversal, no scoring, no recommendation.</value></data>
-  <data name="GraphReadOnlyNotice" xml:space="preserve"><value>Read-only view. Nothing on this tab creates, changes or archives a record.</value></data>
-  <data name="GraphEdgeOrderNote" xml:space="preserve"><value>Deterministic order: Priority first, then connection code.</value></data>
-  <data name="GraphUngroupedType" xml:space="preserve"><value>Unclassified</value></data>
-  <data name="GraphOpenNode" xml:space="preserve"><value>Focus this node</value></data>
-  <data name="GraphSelfContained" xml:space="preserve"><value>This node has no connection in the current scope.</value></data>
-  <data name="GlobalProduct" xml:space="preserve"><value>Global Product</value></data>
-  <data name="GlobalProductPick" xml:space="preserve"><value>Search a global product...</value></data>
-  <data name="GlobalProductHint" xml:space="preserve"><value>Reference only - the MDM master is read, never changed or copied.</value></data>
-  <data name="GlobalProductSearching" xml:space="preserve"><value>Searching...</value></data>
-  <data name="GlobalProductNoResults" xml:space="preserve"><value>No global product matched.</value></data>
-  <data name="ExternalRefIdHint" xml:space="preserve"><value>Free-text identifier in the referenced system.</value></data>
+  <data name="ConceptsMenu" xml:space="preserve"><value>Понятия</value></data>
+  <data name="ConceptsTitle" xml:space="preserve"><value>Граф понятий</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Настройте граф понятий темы: типы, узлы, связи и шаблоны цепочек.</value></data>
+  <data name="SubjectMeaningNote" xml:space="preserve"><value>Здесь «Тема» означает область знаний (Pharma / QMS / Язык), а не прежний «Тип темы».</value></data>
+  <data name="ConceptNodeCode" xml:space="preserve"><value>Код узла</value></data>
+  <data name="ConceptNodeName" xml:space="preserve"><value>Название узла</value></data>
+  <data name="ConceptTypeId" xml:space="preserve"><value>Тип понятия</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Тема</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="ExternalRefType" xml:space="preserve"><value>Тип внешней ссылки</value></data>
+  <data name="ExternalRefId" xml:space="preserve"><value>Идентификатор внешней ссылки</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="MetadataJson" xml:space="preserve"><value>Метаданные (JSON)</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует до</value></data>
+  <data name="Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="CreateNode" xml:space="preserve"><value>Создать узел</value></data>
+  <data name="EditNode" xml:space="preserve"><value>Редактировать узел</value></data>
+  <data name="NodeDetails" xml:space="preserve"><value>Сведения об узле</value></data>
+  <data name="ArchiveNode" xml:space="preserve"><value>Архивировать узел</value></data>
+  <data name="ArchiveNodeConfirm" xml:space="preserve"><value>Архивировать этот узел понятия? Это мягкое действие жизненного цикла; он останется доступен для чтения.</value></data>
+  <data name="ArchivedNodeReadOnly" xml:space="preserve"><value>Этот узел понятия находится в архиве и доступен только для чтения.</value></data>
+  <data name="ConceptContractUnavailable" xml:space="preserve"><value>Контракт возможностей графа понятий недоступен. Действия отключены.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация и классификация</value></data>
+  <data name="ReferenceSection" xml:space="preserve"><value>Период действия и ссылка</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выберите...</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Включая архивные</value></data>
+  <data name="Active" xml:space="preserve"><value>Активен</value></data>
+  <data name="Passive" xml:space="preserve"><value>Неактивен</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="Edit" xml:space="preserve"><value>Редактировать</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="View" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Удалить выбранные строки?</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Вы уверены?</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск</value></data>
+  <data name="Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="Import" xml:space="preserve"><value>Импорт</value></data>
+  <data name="Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сбросить</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Все</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить вид</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Столбцы</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Узлов понятий пока нет.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Что-то пошло не так.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка...</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Запись перемещена в архив.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Запись создана.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Запись обновлена.</value></data>
+  <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>Выбор глобального продукта сейчас недоступен.</value></data>
+  <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>Сервис глобальных продуктов MDM недоступен; выбор отключён.</value></data>
+  <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>У вас нет разрешения mdm.global-products.read, поэтому выбор глобального продукта отключён.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Это поле обязательно.</value></data>
+  <data name="EffectiveToBeforeFrom" xml:space="preserve"><value>Дата окончания действия не может быть раньше даты начала.</value></data>
+  <data name="AddRow" xml:space="preserve"><value>Добавить</value></data>
+  <data name="TypesTab" xml:space="preserve"><value>Типы понятий</value></data>
+  <data name="NodesTab" xml:space="preserve"><value>Узлы понятий</value></data>
+  <data name="ConnectionsTab" xml:space="preserve"><value>Связи</value></data>
+  <data name="TemplatesTab" xml:space="preserve"><value>Шаблоны цепочек</value></data>
+  <data name="GraphPreviewTab" xml:space="preserve"><value>Просмотр графа</value></data>
+  <data name="RecordSaved" xml:space="preserve"><value>Вид сохранён.</value></data>
+  <data name="ImmutableAfterCreate" xml:space="preserve"><value>Задаётся при создании; изменить позже нельзя.</value></data>
+  <data name="ArchivedRecordReadOnly" xml:space="preserve"><value>Эта запись находится в архиве и доступна только для чтения.</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Порядок сортировки</value></data>
+  <data name="ConceptTypeCode" xml:space="preserve"><value>Код типа</value></data>
+  <data name="ConceptTypeName" xml:space="preserve"><value>Название типа</value></data>
+  <data name="CreateType" xml:space="preserve"><value>Создать тип</value></data>
+  <data name="EditType" xml:space="preserve"><value>Редактировать тип</value></data>
+  <data name="TypeDetails" xml:space="preserve"><value>Сведения о типе понятия</value></data>
+  <data name="ArchiveType" xml:space="preserve"><value>Архивировать тип</value></data>
+  <data name="ArchiveTypeConfirm" xml:space="preserve"><value>Архивировать этот тип понятия? Это мягкое действие жизненного цикла; он останется доступен для чтения.</value></data>
+  <data name="TypesEmptyState" xml:space="preserve"><value>Типов понятий пока нет.</value></data>
+  <data name="TypeSortOrderNote" xml:space="preserve"><value>Только порядок управления — это не последовательность цепочки (она задаётся в шаблоне цепочки).</value></data>
+  <data name="RelationshipCode" xml:space="preserve"><value>Код связи</value></data>
+  <data name="RelationshipName" xml:space="preserve"><value>Название связи</value></data>
+  <data name="RelationshipType" xml:space="preserve"><value>Тип связи</value></data>
+  <data name="FromConceptNode" xml:space="preserve"><value>Исходный узел</value></data>
+  <data name="ToConceptNode" xml:space="preserve"><value>Целевой узел</value></data>
+  <data name="Direction" xml:space="preserve"><value>Направление</value></data>
+  <data name="Priority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="Conformance" xml:space="preserve"><value>Соответствие шаблону</value></data>
+  <data name="Conforming" xml:space="preserve"><value>Соответствует</value></data>
+  <data name="NonConforming" xml:space="preserve"><value>Не соответствует</value></data>
+  <data name="NonConformingNote" xml:space="preserve"><value>Эта связь не соответствует ни одной последовательности шаблона цепочки. Она сохраняется и остаётся видимой — это диагностика, а не отклонение.</value></data>
+  <data name="CreateConnection" xml:space="preserve"><value>Создать связь</value></data>
+  <data name="EditConnection" xml:space="preserve"><value>Редактировать связь</value></data>
+  <data name="ConnectionDetails" xml:space="preserve"><value>Сведения о связи</value></data>
+  <data name="ArchiveConnection" xml:space="preserve"><value>Архивировать связь</value></data>
+  <data name="ArchiveConnectionConfirm" xml:space="preserve"><value>Архивировать эту связь? Это мягкое действие жизненного цикла; она останется доступна для чтения.</value></data>
+  <data name="ConnectionsEmptyState" xml:space="preserve"><value>Связей пока нет.</value></data>
+  <data name="NodePickerSubjectFirst" xml:space="preserve"><value>Сначала выберите тему; списки узлов ограничены ею.</value></data>
+  <data name="PriorityNote" xml:space="preserve"><value>Меньшее значение имеет приоритет; при равенстве решает код связи.</value></data>
+  <data name="ChainCode" xml:space="preserve"><value>Код цепочки</value></data>
+  <data name="ChainName" xml:space="preserve"><value>Название цепочки</value></data>
+  <data name="ChainVersion" xml:space="preserve"><value>Версия цепочки</value></data>
+  <data name="OrderedConceptTypes" xml:space="preserve"><value>Ожидаемая последовательность типов</value></data>
+  <data name="SequenceLength" xml:space="preserve"><value>Шаги</value></data>
+  <data name="AddToSequence" xml:space="preserve"><value>Добавить шаг</value></data>
+  <data name="RemoveStep" xml:space="preserve"><value>Удалить шаг</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>Переместить вверх</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>Переместить вниз</value></data>
+  <data name="SequenceEmpty" xml:space="preserve"><value>Шаги пока не добавлены.</value></data>
+  <data name="SequenceMinTwo" xml:space="preserve"><value>Каркас должен содержать не менее двух типов понятий.</value></data>
+  <data name="SequenceDuplicateType" xml:space="preserve"><value>Тип понятия может встречаться в последовательности только один раз.</value></data>
+  <data name="PublishedSequenceFrozen" xml:space="preserve"><value>Опубликованная цепочка замораживает каркас; для изменения нужна новая версия.</value></data>
+  <data name="CreateTemplate" xml:space="preserve"><value>Создать шаблон цепочки</value></data>
+  <data name="EditTemplate" xml:space="preserve"><value>Редактировать шаблон цепочки</value></data>
+  <data name="TemplateDetails" xml:space="preserve"><value>Сведения о шаблоне цепочки</value></data>
+  <data name="ArchiveTemplate" xml:space="preserve"><value>Архивировать шаблон цепочки</value></data>
+  <data name="ArchiveTemplateConfirm" xml:space="preserve"><value>Архивировать этот шаблон цепочки? Это мягкое действие жизненного цикла; он останется доступен для чтения.</value></data>
+  <data name="TemplatesEmptyState" xml:space="preserve"><value>Шаблонов цепочек пока нет.</value></data>
+  <data name="GraphScope" xml:space="preserve"><value>Область</value></data>
+  <data name="GraphScopeSubject" xml:space="preserve"><value>Вся тема</value></data>
+  <data name="GraphScopeNode" xml:space="preserve"><value>Вокруг узла (1 шаг)</value></data>
+  <data name="GraphScopeContent" xml:space="preserve"><value>От контента (2 уровня)</value></data>
+  <data name="GraphNodeAnchor" xml:space="preserve"><value>Опорный узел</value></data>
+  <data name="GraphContentAnchor" xml:space="preserve"><value>Опорный контент</value></data>
+  <data name="GraphEffectiveAt" xml:space="preserve"><value>Действует на</value></data>
+  <data name="GraphLoad" xml:space="preserve"><value>Показать граф</value></data>
+  <data name="GraphNodesSection" xml:space="preserve"><value>Узлы</value></data>
+  <data name="GraphEdgesSection" xml:space="preserve"><value>Связи</value></data>
+  <data name="GraphTemplatesSection" xml:space="preserve"><value>Шаблоны цепочек</value></data>
+  <data name="GraphNodeCount" xml:space="preserve"><value>узл.</value></data>
+  <data name="GraphEdgeCount" xml:space="preserve"><value>связ.</value></data>
+  <data name="GraphTemplateCount" xml:space="preserve"><value>шабл.</value></data>
+  <data name="GraphEmpty" xml:space="preserve"><value>Для этой области нет данных графа. Ничего не домысливается — пустой граф показывается пустым.</value></data>
+  <data name="GraphPickScope" xml:space="preserve"><value>Выберите область и нажмите «Показать граф».</value></data>
+  <data name="GraphContentNoLinks" xml:space="preserve"><value>Этот контент пока не связан ни с одним узлом понятия.</value></data>
+  <data name="GraphDepthNoticeNode" xml:space="preserve"><value>Фиксированная глубина: ровно 1 шаг вокруг опорного узла. Настройки глубины нет — более глубокий обход относится к движку и выходит за рамки этого модуля.</value></data>
+  <data name="GraphDepthNoticeContent" xml:space="preserve"><value>Фиксированная глубина: ровно 2 уровня рёбер (от контента к его узлам, затем соседи этих узлов на расстоянии 1 шага). Настройки глубины нет.</value></data>
+  <data name="GraphDepthNoticeSubject" xml:space="preserve"><value>Чтение смежности для всей темы: список узлов, список связей и шаблоны цепочек. Без обхода, без оценки, без рекомендаций.</value></data>
+  <data name="GraphReadOnlyNotice" xml:space="preserve"><value>Режим только для чтения. Ничто на этой вкладке не создаёт, не изменяет и не архивирует записи.</value></data>
+  <data name="GraphEdgeOrderNote" xml:space="preserve"><value>Детерминированный порядок: сначала приоритет, затем код связи.</value></data>
+  <data name="GraphUngroupedType" xml:space="preserve"><value>Без классификации</value></data>
+  <data name="GraphOpenNode" xml:space="preserve"><value>Сфокусироваться на этом узле</value></data>
+  <data name="GraphSelfContained" xml:space="preserve"><value>У этого узла нет связей в текущей области.</value></data>
+  <data name="GlobalProduct" xml:space="preserve"><value>Глобальный продукт</value></data>
+  <data name="GlobalProductPick" xml:space="preserve"><value>Поиск глобального продукта...</value></data>
+  <data name="GlobalProductHint" xml:space="preserve"><value>Только ссылка — мастер-данные MDM читаются, но никогда не изменяются и не копируются.</value></data>
+  <data name="GlobalProductSearching" xml:space="preserve"><value>Поиск...</value></data>
+  <data name="GlobalProductNoResults" xml:space="preserve"><value>Подходящий глобальный продукт не найден.</value></data>
+  <data name="ExternalRefIdHint" xml:space="preserve"><value>Произвольный текстовый идентификатор во внешней системе.</value></data>
   <data name="Color" xml:space="preserve"><value>Цвет</value></data>
   <data name="IsGroup" xml:space="preserve"><value>Тип группы</value></data>
   <data name="IsList" xml:space="preserve"><value>Тип списка</value></data>
@@ -184,7 +184,7 @@
   <data name="ForWhomPlaceholder" xml:space="preserve"><value>Выберите профили аудитории</value></data>
   <data name="ModeratorHint" xml:space="preserve"><value>Кто представляет эту цепочку.</value></data>
   <data name="ForWhomHint" xml:space="preserve"><value>Целевые профили аудитории для этой цепочки.</value></data>
-  <data name="ConceptType" xml:space="preserve"><value>Тип концепта</value></data>
+  <data name="ConceptType" xml:space="preserve"><value>Тип понятия</value></data>
   <data name="NewVersion" xml:space="preserve"><value>Новая версия</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>ветв(и)</value></data>
   <data name="PriorityHigh" xml:space="preserve"><value>Высокий</value></data>
@@ -204,4 +204,73 @@
   <data name="Steps" xml:space="preserve"><value>шагов</value></data>
   <data name="AddStep" xml:space="preserve"><value>Новый шаг</value></data>
   <data name="Details" xml:space="preserve"><value>Подробности</value></data>
+  <data name="Spine" xml:space="preserve"><value>Каркас</value></data>
+  <data name="BranchCount" xml:space="preserve"><value>Ветви</value></data>
+  <data name="StatusVersion" xml:space="preserve"><value>Статус / версия</value></data>
+  <data name="PublishedSiblingHint" xml:space="preserve"><value>v{0} опубликована</value></data>
+  <data name="TypePalette" xml:space="preserve"><value>Типы</value></data>
+  <data name="NodeCount" xml:space="preserve"><value>{0} узлов</value></data>
+  <data name="BranchUsage" xml:space="preserve"><value>в {0} ветвях</value></data>
+  <data name="NotOnSpine" xml:space="preserve"><value>вне каркаса</value></data>
+  <data name="TypePaletteEmpty" xml:space="preserve"><value>У этой темы пока нет типов понятий.</value></data>
+  <data name="SidePanelComingSoon" xml:space="preserve"><value>Связи, несоответствия и версии — скоро</value></data>
+  <data name="SpineStatusValid" xml:space="preserve"><value>Корректно</value></data>
+  <data name="SpineStatusNeedsTwo" xml:space="preserve"><value>Нужно не менее 2 типов</value></data>
+  <data name="SpineStatusFrozen" xml:space="preserve"><value>Заморожено</value></data>
+  <data name="DeleteBranch" xml:space="preserve"><value>Удалить ветвь</value></data>
+  <data name="BackEdgesToggle" xml:space="preserve"><value>Показать обратные стрелки</value></data>
+  <data name="MoveEarlier" xml:space="preserve"><value>Переместить раньше</value></data>
+  <data name="MoveLater" xml:space="preserve"><value>Переместить позже</value></data>
+  <data name="TypeAlreadyInBranch" xml:space="preserve"><value>Этот тип уже есть в этой ветви</value></data>
+  <data name="TabConnections" xml:space="preserve"><value>Связи</value></data>
+  <data name="TabNonConforming" xml:space="preserve"><value>Несоответствия</value></data>
+  <data name="TabVersions" xml:space="preserve"><value>Версии</value></data>
+  <data name="Inputs" xml:space="preserve"><value>Входы</value></data>
+  <data name="Outputs" xml:space="preserve"><value>Выходы</value></data>
+  <data name="TypesOnSpine" xml:space="preserve"><value>{0} / {1} в каркасе</value></data>
+  <data name="Nodes" xml:space="preserve"><value>Узлы</value></data>
+  <data name="Relationships" xml:space="preserve"><value>Связи понятий</value></data>
+  <data name="RelationshipsSummary" xml:space="preserve"><value>всего {0} · несоответствий {1}</value></data>
+  <data name="KnowledgePaths" xml:space="preserve"><value>Пути знаний</value></data>
+  <data name="Journeys" xml:space="preserve"><value>Маршруты</value></data>
+  <data name="Visits" xml:space="preserve"><value>Визиты</value></data>
+  <data name="OutputsNoSource" xml:space="preserve"><value>Пока нет источника, связывающего эти записи с шаблоном цепочки.</value></data>
+  <data name="DataFlow" xml:space="preserve"><value>Поток данных</value></data>
+  <data name="FlowSubject" xml:space="preserve"><value>Тема</value></data>
+  <data name="FlowConceptGraph" xml:space="preserve"><value>Граф понятий</value></data>
+  <data name="FlowChainTemplate" xml:space="preserve"><value>Шаблон цепочки</value></data>
+  <data name="FlowKnowledgePath" xml:space="preserve"><value>Путь знаний</value></data>
+  <data name="FlowJourney" xml:space="preserve"><value>Маршрут</value></data>
+  <data name="FlowVisit" xml:space="preserve"><value>Визит</value></data>
+  <data name="ReasonNotOnSpine" xml:space="preserve"><value>Типа нет в каркасе</value></data>
+  <data name="ReasonWrongOrder" xml:space="preserve"><value>Порядок обратный</value></data>
+  <data name="MissingTypes" xml:space="preserve"><value>Недостающие типы</value></data>
+  <data name="AddToBranch" xml:space="preserve"><value>Добавить в ветвь {0}</value></data>
+  <data name="Ignore" xml:space="preserve"><value>Игнорировать</value></data>
+  <data name="Undo" xml:space="preserve"><value>Отменить</value></data>
+  <data name="UnresolvedCount" xml:space="preserve"><value>Не решено: {0}</value></data>
+  <data name="NonConformingEmpty" xml:space="preserve"><value>Нерешённых несоответствий нет</value></data>
+  <data name="IgnoredSection" xml:space="preserve"><value>Игнорируемые ({0})</value></data>
+  <data name="OffSpineSummary" xml:space="preserve"><value>Вне каркаса</value></data>
+  <data name="VersionsEmpty" xml:space="preserve"><value>Других версий этого кода пока нет</value></data>
+  <data name="ThisVersion" xml:space="preserve"><value>Эта версия</value></data>
+  <data name="UpdatedByLabel" xml:space="preserve"><value>Изменил</value></data>
+  <data name="PublishDialogTitle" xml:space="preserve"><value>Опубликовать и заморозить</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>Опубликовать и заморозить</value></data>
+  <data name="PublishFrozenSpine" xml:space="preserve"><value>Каркас, который будет заморожен</value></data>
+  <data name="PublishEffect" xml:space="preserve"><value>После публикации каркас, ветви, модератор, аудитория и решения замораживаются. Связанные выходы переходят в новую версию; для изменений нужна новая версия.</value></data>
+  <data name="PublishChecks" xml:space="preserve"><value>Условия публикации</value></data>
+  <data name="PublishBlockMinTypes" xml:space="preserve"><value>Не менее 2 разных типов в каркасе</value></data>
+  <data name="PublishBlockBranchSteps" xml:space="preserve"><value>Не менее 2 шагов в каждой ветви</value></data>
+  <data name="PublishBlockAudience" xml:space="preserve"><value>Не менее 1 целевой аудитории</value></data>
+  <data name="PublishBranchesShort" xml:space="preserve"><value>Слишком короткие: {0}</value></data>
+  <data name="PublishWarnUnresolved" xml:space="preserve"><value>Нерешённых несоответствий: {0} — публикации это не мешает.</value></data>
+  <data name="ReadOnlyBandText" xml:space="preserve"><value>Эта версия опубликована и доступна только для чтения; каркас заморожен. Для изменений создайте новую версию.</value></data>
+  <data name="BranchLabelPrefix" xml:space="preserve"><value>Ветвь</value></data>
+  <data name="StepCountLabel" xml:space="preserve"><value>Шагов: {0}</value></data>
+  <data name="DragTypeHerePlaceholder" xml:space="preserve"><value>Перетащите сюда тип понятия</value></data>
+  <data name="AddTypeCompact" xml:space="preserve"><value>Добавить тип</value></data>
+  <data name="ChainStatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="ChainStatusPublished" xml:space="preserve"><value>Опубликован</value></data>
+  <data name="ChainStatusArchived" xml:space="preserve"><value>В архиве</value></data>
 </root>

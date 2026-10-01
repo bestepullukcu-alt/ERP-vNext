@@ -155,4 +155,39 @@
   <data name="ReorderProfiles" xml:space="preserve"><value>排序受众画像</value></data>
   <data name="ReorderHelp" xml:space="preserve"><value>拖动行以更改顺序，然后保存。</value></data>
   <data name="SaveOrder" xml:space="preserve"><value>保存顺序</value></data>
+  <data name="ClaimsSection" xml:space="preserve"><value>声明</value></data>
+  <data name="ClaimRefsLabel" xml:space="preserve"><value>本内容使用的声明</value></data>
+  <data name="ClaimRefsPlaceholder" xml:space="preserve"><value>搜索声明…</value></data>
+  <data name="ClaimRefsHelp" xml:space="preserve"><value>核心为全球声明；国家行为该国已批准的文本。发布要求声明已批准，且国家行须有内容语言的文本。</value></data>
+  <data name="ClaimRefsProductFirst" xml:space="preserve"><value>请先选择产品——声明按内容的产品列出。</value></data>
+  <data name="ClaimRefsNone" xml:space="preserve"><value>该产品没有声明。</value></data>
+  <data name="ClaimRefsLoading" xml:space="preserve"><value>正在加载声明…</value></data>
+  <data name="ClaimOptionsUnavailable" xml:space="preserve"><value>当前无法加载声明。已选声明将保留。</value></data>
+  <data name="ClaimPermissionMissing" xml:space="preserve"><value>您没有读取声明的权限。已选声明将保留。</value></data>
+  <data name="ClaimEndpointMissing" xml:space="preserve"><value>无法访问声明服务。已选声明将保留。</value></data>
+  <data name="ClaimCore" xml:space="preserve"><value>核心</value></data>
+  <data name="ClaimStatus_approved" xml:space="preserve"><value>已批准</value></data>
+  <data name="ClaimStatus_in-review" xml:space="preserve"><value>审核中</value></data>
+  <data name="ClaimStatus_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="ClaimStatus_review-required" xml:space="preserve"><value>需复核</value></data>
+  <data name="ClaimStatus_inactive" xml:space="preserve"><value>停用</value></data>
+  <data name="ClaimStatus_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="ClaimReason_not_approved" xml:space="preserve"><value>未批准——发布将被拒绝</value></data>
+  <data name="ClaimReason_language_mismatch" xml:space="preserve"><value>没有内容语言的文本</value></data>
+  <data name="ClaimRefNotInList" xml:space="preserve"><value>不适用于当前产品或语言</value></data>
+  <data name="ClaimRefsUnusableWarning" xml:space="preserve"><value>部分已选声明尚不能发布。您可以保存；在其获批并具有内容语言文本之前，发布将被拒绝。</value></data>
+  <data name="ClaimRefsStaleWarning" xml:space="preserve"><value>部分已选声明与当前产品或语言不匹配。已保留——如不再适用请移除。</value></data>
+  <data name="ClaimError_claim_refs_too_many" xml:space="preserve"><value>一个内容最多可关联 20 条声明。</value></data>
+  <data name="ClaimError_claim_ref_invalid" xml:space="preserve"><value>某条声明选择不完整或无效，请重新选择。</value></data>
+  <data name="ClaimError_claim_ref_duplicate" xml:space="preserve"><value>同一声明在该国家被多次选择。</value></data>
+  <data name="ClaimError_claim_not_found" xml:space="preserve"><value>所选声明已不存在。</value></data>
+  <data name="ClaimError_claim_ref_mismatch" xml:space="preserve"><value>选择与声明记录不再匹配；请重新加载声明并重新选择。</value></data>
+  <data name="ClaimError_claim_country_version_not_found" xml:space="preserve"><value>该声明的国家版本已不存在。</value></data>
+  <data name="ClaimError_claim_product_mismatch" xml:space="preserve"><value>该声明属于与本内容不同的产品。</value></data>
+  <data name="ClaimError_claim_not_approved" xml:space="preserve"><value>声明未获批准，内容无法发布。</value></data>
+  <data name="ClaimError_claim_language_mismatch" xml:space="preserve"><value>该声明的国家版本没有内容语言的文本，内容无法发布。</value></data>
+  <data name="ClaimError_dependency_unavailable" xml:space="preserve"><value>当前无法访问声明服务，请稍后重试。</value></data>
+  <data name="LinkedClaims" xml:space="preserve"><value>关联声明</value></data>
+  <data name="NoLinkedClaims" xml:space="preserve"><value>本内容没有关联声明。</value></data>
+  <data name="ClaimNeedsReview" xml:space="preserve"><value>需复核——此关联获批后声明已变更。</value></data>
 </root>

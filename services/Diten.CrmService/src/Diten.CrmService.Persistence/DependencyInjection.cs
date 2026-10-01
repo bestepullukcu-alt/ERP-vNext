@@ -135,6 +135,10 @@ public static class DependencyInjection
         services.AddScoped<IEligibilityPolicyRepository, EligibilityPolicyRepository>();
         // SCMM-12 (CAND-CAP-0011) — claim master (versioned; approval freezes the governed body).
         services.AddScoped<IClaimRepository, ClaimRepository>();
+        // WP-CL-BE-1 (claims v2) — claim country versions.
+        services.AddScoped<IClaimCountryVersionRepository, ClaimCountryVersionRepository>();
+        // WP-CL-BE-4 — consumed-event inbox (claim workflow outcome consumer).
+        services.AddScoped<ICrmEventInboxRepository, CrmEventInboxRepository>();
         // SCMM-14 (CAND-CAP-0011) — reusable content scope + content-set assembly draft masters.
         services.AddScoped<IContentScopeRepository, ContentScopeRepository>();
         services.AddScoped<IContentSetRepository, ContentSetRepository>();
@@ -545,6 +549,22 @@ public static class DependencyInjection
             // against a stored binary and silently returns nothing: the new-field class-map trap).
             map.GetMemberMap(c => c.ContentSetId).SetSerializer(stringGuid);
         });
+        // WP-CL-BE-6 — embedded claim references. ClaimId / CountryVersionId take the string-Guid convention (the
+        // new-field class-map trap: a binary-stored id never matches a string filter). A pre-BE-6 document has no
+        // ClaimRefs element and reads back with the empty-list default.
+        Map<KnowledgeContentClaimRef>(map =>
+        {
+            map.GetMemberMap(r => r.ClaimId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.CountryVersionId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
+        // WP-SB-2 — Content Studio provenance embedded on KnowledgeContent / KnowledgePath. Every id is a string Guid
+        // (the new-field class-map trap); a pre-SB-2 document has no StudioOrigin element and reads back null.
+        Map<KnowledgeStudioOrigin>(map =>
+        {
+            map.GetMemberMap(o => o.ContentSetId).SetSerializer(stringGuid);
+            map.GetMemberMap(o => o.ContentSetRevisionId).SetSerializer(stringGuid);
+            map.GetMemberMap(o => o.ConceptChainTemplateId).SetSerializer(stringGuid);
+        });
         Map<Subject>(map => map.GetMemberMap(s => s.ParentSubjectId)
             .SetSerializer(new NullableSerializer<Guid>(stringGuid)));
         Map<Topic>(map =>
@@ -574,9 +594,18 @@ public static class DependencyInjection
         // SCMM-12 (CAND-CAP-0011) — claim. ComponentRefs (List<Guid> → KnowledgeContent) and the embedded applicability's
         // EligibilityPolicyId take the string-Guid convention; without it those FKs store binary and every ref lookup
         // silently returns nothing (the new-aggregate class-map trap).
+        // WP-CL-BE-1 (claims v2) — the new optional Guid members (ProductId, AudienceProfileIds, ResponsibleOrgUnitId,
+        // SupersedesClaimId) take the same string-Guid convention. A pre-v2 document simply lacks them (defaults apply).
         Map<Claim>(map =>
+        {
             map.GetMemberMap(x => x.ComponentRefs)
-                .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid)));
+                .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+            map.GetMemberMap(x => x.ProductId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(x => x.AudienceProfileIds)
+                .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+            map.GetMemberMap(x => x.ResponsibleOrgUnitId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(x => x.SupersedesClaimId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
         if (!BsonClassMap.IsClassMapRegistered(typeof(ClaimApplicability)))
         {
             BsonClassMap.RegisterClassMap<ClaimApplicability>(map =>
@@ -585,6 +614,21 @@ public static class DependencyInjection
                 map.GetMemberMap(a => a.EligibilityPolicyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             });
         }
+
+        Map<ClaimCountryClosure>(_ => { });
+
+        // WP-CL-BE-1 (claims v2) — ClaimCountryVersion. ClaimId / SupersedesVersionId / AudienceProfileIds and the
+        // review round's WorkflowInstanceId take the string-Guid convention (else they store binary and the by-claim
+        // filter silently returns nothing — the new-aggregate class-map trap).
+        Map<ClaimCountryVersion>(map =>
+        {
+            map.GetMemberMap(x => x.ClaimId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.SupersedesVersionId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(x => x.AudienceProfileIds)
+                .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+        });
+        Map<ClaimLocalizedText>(_ => { });
+        Map<ClaimReviewRound>(map => map.GetMemberMap(x => x.WorkflowInstanceId).SetSerializer(stringGuid));
 
         // SCMM-14 (CAND-CAP-0011) — ContentScope has no Guid FK (only Id/TenantId on the base map); registered so the
         // driver maps it explicitly rather than as an anonymous document.
@@ -621,8 +665,13 @@ public static class DependencyInjection
         // SCMM-15 (CAND-CAP-0011) — ContentSetRevision (frozen manifest). ContentSetId takes the string-Guid convention
         // (the new-aggregate class-map trap); the snapshot value objects reuse the already-registered ContentSet* maps.
         // ContentSetReviewDecision carries no Guid member — registered so the driver maps it explicitly, not anonymously.
+        // WP-SB-2 — the produced content / path ids take the string-Guid convention too (the new-field class-map trap).
         Map<ContentSetRevision>(map =>
-            map.GetMemberMap(x => x.ContentSetId).SetSerializer(stringGuid));
+        {
+            map.GetMemberMap(x => x.ContentSetId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.ProducedKnowledgeContentId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            map.GetMemberMap(x => x.ProducedKnowledgePathId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
         Map<ContentSetReviewDecision>(_ => { });
         // SCMM-16B — the rendered-artifact pointer. ContentId is a FU01 content id and takes the same string-Guid
         // convention (the new-aggregate class-map trap) so it round-trips as a string rather than a binary sub type.
@@ -667,6 +716,10 @@ public static class DependencyInjection
             // string vs binary and silently matches nothing (the new-field class-map trap). ModeratorRoleType is a plain
             // string — AutoMap handles it, and an old document without either element reads back as null / empty (additive).
             map.GetMemberMap(x => x.ForWhomAudienceProfileIds)
+                .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+            // WP-CT-BE-B — ignored (resolved) relationship ids: same List<Guid> string-Guid trap. An old document without
+            // the element reads back as an empty list (additive).
+            map.GetMemberMap(x => x.IgnoredNonConformingRelationshipIds)
                 .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
         });
         // SCMM-10 (③) — the embedded branch/step value objects MUST register their own class map or the step's
@@ -1525,6 +1578,10 @@ public static class DependencyInjection
             knowledgeContents.Indexes.CreateOne(new CreateIndexModel<KnowledgeContent>(
                 Builders<KnowledgeContent>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.ContentSetId),
                 new CreateIndexOptions { Name = "ix_knowledge_contents_tenant_set" }));
+            // WP-CL-BE-6 — claim usage read ("where is this claim used?") by claim code.
+            knowledgeContents.Indexes.CreateOne(new CreateIndexModel<KnowledgeContent>(
+                Builders<KnowledgeContent>.IndexKeys.Ascending(c => c.TenantId).Ascending("ClaimRefs.ClaimCode"),
+                new CreateIndexOptions { Name = "ix_knowledge_contents_tenant_claim_code" }));
 
             var knowledgeSubjects = database.GetCollection<Subject>(SubjectRepository.CollectionName);
             knowledgeSubjects.Indexes.CreateOne(new CreateIndexModel<Subject>(
@@ -1558,6 +1615,18 @@ public static class DependencyInjection
             claims.Indexes.CreateOne(new CreateIndexModel<Claim>(
                 Builders<Claim>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.ClaimCode),
                 new CreateIndexOptions { Name = "ix_claims_tenant_code" }));
+
+            // WP-CL-BE-1 (claims v2) — country-version indexes (tenant first). No DateTimeOffset key (BSON array).
+            var claimCountryVersions =
+                database.GetCollection<ClaimCountryVersion>(ClaimCountryVersionRepository.CollectionName);
+            claimCountryVersions.Indexes.CreateOne(new CreateIndexModel<ClaimCountryVersion>(
+                Builders<ClaimCountryVersion>.IndexKeys
+                    .Ascending(v => v.TenantId).Ascending(v => v.ClaimCode)
+                    .Ascending(v => v.CountryCode).Ascending(v => v.Status),
+                new CreateIndexOptions { Name = "ix_claim_country_versions_tenant_code_country_status" }));
+            claimCountryVersions.Indexes.CreateOne(new CreateIndexModel<ClaimCountryVersion>(
+                Builders<ClaimCountryVersion>.IndexKeys.Ascending(v => v.TenantId).Ascending(v => v.ClaimId),
+                new CreateIndexOptions { Name = "ix_claim_country_versions_tenant_claim" }));
 
             // SCMM-14 (CAND-CAP-0011) — content-scope + content-set indexes (tenant scoped). Codes are shared across
             // versions / not unique ⇒ non-unique; uniqueness of the ACTIVE code is guarded in the create handlers.
