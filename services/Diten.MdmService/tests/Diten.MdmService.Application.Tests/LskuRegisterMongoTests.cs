@@ -5,6 +5,7 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Persistence.Repositories;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
 
@@ -16,15 +17,25 @@ public sealed class LskuRegisterMongoTests
     public async Task List_and_detail_are_tenant_safe_soft_delete_aware_and_non_disclosing()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gskuA = await scope.InsertGskuAsync(scope.TenantA, "GS-A");
-        var gskuB = await scope.InsertGskuAsync(scope.TenantB, "GS-B");
+        var productA = await scope.InsertProductAsync(scope.TenantA, "GP-A", "Product A");
+        var revisionA = await scope.InsertRevisionAsync(scope.TenantA, productA.Id, "REV-A");
+        var gskuA = await scope.InsertGskuAsync(scope.TenantA, "GS-A", revisionA.Id);
+        var productB = await scope.InsertProductAsync(scope.TenantB, "GP-B", "Product B");
+        var revisionB = await scope.InsertRevisionAsync(scope.TenantB, productB.Id, "REV-B");
+        var gskuB = await scope.InsertGskuAsync(scope.TenantB, "GS-B", revisionB.Id);
         var visible = await scope.InsertLskuAsync(scope.TenantA, gskuA.Id, "LS-A", "TR");
         var deleted = await scope.InsertLskuAsync(scope.TenantA, gskuA.Id, "LS-DELETED", "US", isDeleted: true);
         var crossTenant = await scope.InsertLskuAsync(scope.TenantB, gskuB.Id, "LS-B", "DE");
-        var lskus = new LskuRepository(scope.Database, new TenantContext(scope.TenantA));
-        var gskus = new GskuRepository(scope.Database, new TenantContext(scope.TenantA));
+        var tenantContext = new TenantContext(scope.TenantA);
+        var access = ProductLegalEntityScopeTestFixture.Preparation(tenantContext);
+        var lskus = new LskuRepository(scope.Database, tenantContext);
+        var gskus = new GskuRepository(scope.Database, tenantContext);
+        var revisions = new ProductDefinitionRevisionRepository(scope.Database, tenantContext);
+        var products = new GlobalProductRepository(scope.Database, tenantContext);
 
-        var list = await new GetLskusHandler(lskus, gskus).Handle(
+        var list = await new GetLskusHandler(
+            lskus, gskus, revisions, products,
+            access.Rollouts, access.Policies, access.Candidates, tenantContext).Handle(
             new GetLskusQuery { PageNumber = 1, PageSize = 20 },
             CancellationToken.None);
 
@@ -34,7 +45,9 @@ public sealed class LskuRegisterMongoTests
         Assert.Equal("GS-A", item.GskuCanonicalCode);
         Assert.DoesNotContain(list.Data.Items, x => x.Id == deleted.Id || x.Id == crossTenant.Id);
 
-        var detailHandler = new GetLskuByIdHandler(lskus, gskus);
+        var detailHandler = new GetLskuByIdHandler(
+            lskus, gskus, revisions, products,
+            access.Rollouts, access.Policies, access.Candidates, tenantContext);
         var visibleDetail = await detailHandler.Handle(new GetLskuByIdQuery(visible.Id), CancellationToken.None);
         Assert.True(visibleDetail.IsSuccessful);
 
@@ -54,13 +67,25 @@ public sealed class LskuRegisterMongoTests
     public async Task Paging_search_and_order_are_deterministic_in_mongo()
     {
         await using var scope = await MongoScope.CreateAsync();
-        var gsku = await scope.InsertGskuAsync(scope.TenantA, "GS-A");
-        await scope.InsertLskuAsync(scope.TenantA, gsku.Id, "LS-003", "US");
+        var product = await scope.InsertProductAsync(scope.TenantA, "GP-A", "Product A");
+        var revision = await scope.InsertRevisionAsync(scope.TenantA, product.Id, "REV-A");
+        var gsku = await scope.InsertGskuAsync(scope.TenantA, "GS-A", revision.Id);
+        await scope.InsertLskuAsync(scope.TenantA, gsku.Id, "LS-003", "US", lifecycleStatus: ProductIdentityLifecycleStatus.IdentityApproved);
         await scope.InsertLskuAsync(scope.TenantA, gsku.Id, "LS-001", "TR");
         await scope.InsertLskuAsync(scope.TenantA, gsku.Id, "LS-002", "DE");
-        var lskus = new LskuRepository(scope.Database, new TenantContext(scope.TenantA));
-        var gskus = new GskuRepository(scope.Database, new TenantContext(scope.TenantA));
-        var handler = new GetLskusHandler(lskus, gskus);
+        var tenantContext = new TenantContext(scope.TenantA);
+        var access = ProductLegalEntityScopeTestFixture.Preparation(tenantContext);
+        var lskus = new LskuRepository(scope.Database, tenantContext);
+        var gskus = new GskuRepository(scope.Database, tenantContext);
+        var handler = new GetLskusHandler(
+            lskus,
+            gskus,
+            new ProductDefinitionRevisionRepository(scope.Database, tenantContext),
+            new GlobalProductRepository(scope.Database, tenantContext),
+            access.Rollouts,
+            access.Policies,
+            access.Candidates,
+            tenantContext);
 
         var first = await handler.Handle(
             new GetLskusQuery { PageNumber = 1, PageSize = 2 },
@@ -71,6 +96,14 @@ public sealed class LskuRegisterMongoTests
         var marketSearch = await handler.Handle(
             new GetLskusQuery { PageNumber = 1, PageSize = 20, Search = "tr" },
             CancellationToken.None);
+        var approved = await handler.Handle(
+            new GetLskusQuery
+            {
+                PageNumber = 1,
+                PageSize = 20,
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved
+            },
+            CancellationToken.None);
 
         Assert.Equal(["LS-001", "LS-002"], first.Data!.Items.Select(x => x.CanonicalCode));
         Assert.Equal(["LS-003"], second.Data!.Items.Select(x => x.CanonicalCode));
@@ -78,6 +111,8 @@ public sealed class LskuRegisterMongoTests
         Assert.Equal(3, second.Data.TotalCount);
         Assert.Equal("TR", Assert.Single(marketSearch.Data!.Items).MarketCode);
         Assert.Equal(1, marketSearch.Data.TotalCount);
+        Assert.Equal("LS-003", Assert.Single(approved.Data!.Items).CanonicalCode);
+        Assert.Equal(1, approved.Data.TotalCount);
     }
 
     [Fact]
@@ -97,7 +132,7 @@ public sealed class LskuRegisterMongoTests
             scope.TenantA,
             "GS-002",
             draftRevision.Id,
-            ProductIdentityLifecycleStatus.Draft);
+            ProductIdentityLifecycleStatus.IdentityApproved);
         await scope.InsertGskuAsync(
             scope.TenantA,
             "GS-003",
@@ -109,11 +144,17 @@ public sealed class LskuRegisterMongoTests
             Guid.NewGuid(),
             ProductIdentityLifecycleStatus.Draft);
 
+        var tenantContext = new TenantContext(scope.TenantA);
+        var access = ProductLegalEntityScopeTestFixture.Preparation(tenantContext);
         var handler = new GetLskuCreateOptionsHandler(
-            new GskuRepository(scope.Database, new TenantContext(scope.TenantA)),
-            new ProductDefinitionRevisionRepository(scope.Database, new TenantContext(scope.TenantA)),
-            new GlobalProductRepository(scope.Database, new TenantContext(scope.TenantA)),
-            new MarketResolver());
+            new GskuRepository(scope.Database, tenantContext),
+            new ProductDefinitionRevisionRepository(scope.Database, tenantContext),
+            new GlobalProductRepository(scope.Database, tenantContext),
+            new MarketResolver(),
+            access.Rollouts,
+            access.Policies,
+            access.Candidates,
+            tenantContext);
         var response = await handler.Handle(
             new GetLskuCreateOptionsQuery { PageNumber = 1, PageSize = 1 },
             CancellationToken.None);
@@ -178,7 +219,7 @@ public sealed class LskuRegisterMongoTests
             var client = new MongoClient(settings);
             var databaseName = "diten_lsku_register_" + Guid.NewGuid().ToString("N");
             var database = client.GetDatabase(databaseName);
-            await database.RunCommandAsync<object>("{ ping: 1 }");
+            await database.RunCommandAsync<BsonDocument>("{ ping: 1 }");
             return new(client, database, databaseName);
         }
 
@@ -194,7 +235,7 @@ public sealed class LskuRegisterMongoTests
                 CanonicalCode = canonicalCode,
                 GlobalProductName = name,
                 GlobalProductNameNormalized = name.ToUpperInvariant(),
-                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
                 IsDeleted = false
             };
             await Database.GetCollection<GlobalProduct>("mdm_global_products").InsertOneAsync(product);
@@ -213,7 +254,7 @@ public sealed class LskuRegisterMongoTests
                 GlobalProductId = productId,
                 RevisionIdentifier = identifier,
                 CreationCommandId = "REV:" + Guid.NewGuid().ToString("N"),
-                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
                 IsDeleted = false
             };
             await Database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions")
@@ -256,7 +297,8 @@ public sealed class LskuRegisterMongoTests
             Guid gskuId,
             string canonicalCode,
             string marketCode,
-            bool isDeleted = false)
+            bool isDeleted = false,
+            ProductIdentityLifecycleStatus lifecycleStatus = ProductIdentityLifecycleStatus.Draft)
         {
             var lsku = new Lsku
             {
@@ -267,7 +309,7 @@ public sealed class LskuRegisterMongoTests
                 CodeReservationId = Guid.NewGuid(),
                 CreationCommandId = "LSKU:" + Guid.NewGuid().ToString("N"),
                 MarketCode = marketCode,
-                LifecycleStatus = ProductIdentityLifecycleStatus.Draft,
+                LifecycleStatus = lifecycleStatus,
                 IsDeleted = isDeleted,
                 DeletedAt = isDeleted ? DateTimeOffset.UtcNow : null,
                 CreatedAt = DateTimeOffset.UtcNow

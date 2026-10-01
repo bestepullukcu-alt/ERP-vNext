@@ -53,6 +53,112 @@ public sealed class WorkflowTaskTransitionTests
         Assert.Equal(2, f.Logs.Items.Count);
     }
 
+    [Theory]
+    [InlineData("approve")]
+    [InlineData("reject")]
+    [InlineData("requestInfo")]
+    [InlineData("delegate")]
+    public async Task Stale_expected_version_is_rejected_before_any_mutation(string action)
+    {
+        var f = Fixture(TenantA);
+        var runtime = await f.SeedRuntimeAsync();
+        var originalStatus = runtime.Task.Status;
+        var originalInstanceStatus = runtime.Instance.Status;
+        var originalSnapshotCount = f.Snapshots.Items.Count;
+
+        var response = action switch
+        {
+            "approve" => await f.Approve.Handle(
+                Approve(runtime.Task.Id, expectedVersion: runtime.Task.Version + 1), CancellationToken.None),
+            "reject" => await f.Reject.Handle(
+                Reject(runtime.Task.Id, expectedVersion: runtime.Task.Version + 1), CancellationToken.None),
+            "requestInfo" => await f.RequestInfo.Handle(
+                RequestInfo(runtime.Task.Id, expectedVersion: runtime.Task.Version + 1), CancellationToken.None),
+            "delegate" => await f.Delegate.Handle(
+                Delegate(runtime.Task.Id, expectedVersion: runtime.Task.Version + 1), CancellationToken.None),
+            _ => throw new InvalidOperationException(action)
+        };
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowTransitionConflict, response.ReasonCode);
+        Assert.Equal(originalStatus, runtime.Task.Status);
+        Assert.Equal(originalInstanceStatus, runtime.Instance.Status);
+        Assert.Equal(originalSnapshotCount, f.Snapshots.Items.Count);
+        Assert.Single(f.Logs.Items);
+    }
+
+    [Fact]
+    public async Task Exact_replay_is_returned_before_the_now_stale_version_is_checked()
+    {
+        var f = Fixture(TenantA);
+        var runtime = await f.SeedRuntimeAsync();
+        var projectedVersion = runtime.Task.Version;
+
+        var first = await f.Approve.Handle(
+            Approve(runtime.Task.Id, idempotencyKey: "lost-response", expectedVersion: projectedVersion),
+            CancellationToken.None);
+        var replay = await f.Approve.Handle(
+            Approve(runtime.Task.Id, idempotencyKey: "lost-response", expectedVersion: projectedVersion),
+            CancellationToken.None);
+
+        Assert.True(first.IsSuccessful);
+        Assert.True(replay.IsSuccessful);
+        Assert.True(replay.Data!.IsIdempotent);
+        Assert.Equal(first.Data!.TransitionLogId, replay.Data.TransitionLogId);
+        Assert.Equal(2, f.Logs.Items.Count);
+    }
+
+    [Theory]
+    [InlineData("approve")]
+    [InlineData("reject")]
+    [InlineData("requestInfo")]
+    [InlineData("delegate")]
+    public async Task Exact_replay_is_bound_to_the_actor_that_created_the_transition(string action)
+    {
+        var f = Fixture(TenantA);
+        var runtime = await f.SeedRuntimeAsync();
+        const string key = "actor-bound-replay";
+
+        var first = action switch
+        {
+            "approve" => await f.Approve.Handle(Approve(runtime.Task.Id, idempotencyKey: key), CancellationToken.None),
+            "reject" => await f.Reject.Handle(Reject(runtime.Task.Id, idempotencyKey: key), CancellationToken.None),
+            "requestInfo" => await f.RequestInfo.Handle(RequestInfo(runtime.Task.Id, idempotencyKey: key), CancellationToken.None),
+            "delegate" => await f.Delegate.Handle(Delegate(runtime.Task.Id, idempotencyKey: key), CancellationToken.None),
+            _ => throw new InvalidOperationException(action)
+        };
+        var differentActor = action switch
+        {
+            "approve" => await f.Approve.Handle(Approve(runtime.Task.Id, actorId: "different-actor", idempotencyKey: key), CancellationToken.None),
+            "reject" => await f.Reject.Handle(Reject(runtime.Task.Id, actorId: "different-actor", idempotencyKey: key), CancellationToken.None),
+            "requestInfo" => await f.RequestInfo.Handle(RequestInfo(runtime.Task.Id, actorId: "different-actor", idempotencyKey: key), CancellationToken.None),
+            "delegate" => await f.Delegate.Handle(Delegate(runtime.Task.Id, actorId: "different-actor", idempotencyKey: key), CancellationToken.None),
+            _ => throw new InvalidOperationException(action)
+        };
+
+        Assert.True(first.IsSuccessful);
+        Assert.False(differentActor.IsSuccessful);
+        Assert.Equal(403, differentActor.StatusCode);
+        Assert.Equal(WorkflowReasonCodes.WorkflowActorDenied, differentActor.ReasonCode);
+        Assert.Single(f.Logs.Items, log => log.Action.ToString().Equals(action, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task WorkCenter_idempotency_identity_is_compared_and_persisted_ordinal_exact()
+    {
+        var f = Fixture(TenantA);
+        var runtime = await f.SeedRuntimeAsync();
+        const string exactKey = "  bounded-ordinal-key  ";
+
+        var response = await f.Approve.Handle(
+            Approve(runtime.Task.Id, idempotencyKey: exactKey, expectedVersion: runtime.Task.Version),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(exactKey, f.Logs.Items.Single(x => x.Action == WorkflowTransitionAction.Approve).IdempotencyKey);
+    }
+
     [Fact]
     public async Task Different_idempotency_key_on_closed_task_is_invalid_state_conflict()
     {
@@ -293,6 +399,62 @@ public sealed class WorkflowTaskTransitionTests
     }
 
     [Fact]
+    public async Task Concurrent_delegate_same_key_has_one_snapshot_business_effect_and_log()
+    {
+        var f = Fixture(TenantA);
+        var runtime = await f.SeedRuntimeAsync();
+        f.Tasks.AtomicCloneMode = true;
+        f.Instances.AtomicCloneMode = true;
+        f.Snapshots.CoordinateNextEnsures(2);
+
+        var first = f.Delegate.Handle(
+            Delegate(runtime.Task.Id, idempotencyKey: "concurrent-delegate", expectedVersion: runtime.Task.Version),
+            CancellationToken.None);
+        var second = f.Delegate.Handle(
+            Delegate(runtime.Task.Id, idempotencyKey: "concurrent-delegate", expectedVersion: runtime.Task.Version),
+            CancellationToken.None);
+        var results = await Task.WhenAll(first, second);
+
+        Assert.Single(results, result => result.IsSuccessful);
+        Assert.Single(results, result => !result.IsSuccessful && result.StatusCode == 409);
+        Assert.Equal(2, f.Snapshots.Items.Count);
+        Assert.Single(f.Logs.Items, log => log.Action == WorkflowTransitionAction.Delegate);
+        var storedTask = Assert.Single(f.Tasks.Items);
+        var delegatedSnapshot = Assert.Single(f.Snapshots.Items, snapshot => snapshot.Id == storedTask.AssignmentSnapshotId);
+        Assert.Equal("delegate-001", storedTask.AssigneeRef);
+        Assert.Equal("delegate-001", delegatedSnapshot.ResolvedPrincipalId);
+    }
+
+    [Fact]
+    public async Task Concurrent_delegate_same_key_with_payload_drift_fails_closed_before_loser_cas()
+    {
+        var f = Fixture(TenantA);
+        var runtime = await f.SeedRuntimeAsync();
+        f.Tasks.AtomicCloneMode = true;
+        f.Instances.AtomicCloneMode = true;
+        f.Snapshots.CoordinateNextEnsures(2);
+
+        var first = f.Delegate.Handle(
+            Delegate(runtime.Task.Id, delegatePrincipalId: "delegate-a", idempotencyKey: "drift-key", expectedVersion: runtime.Task.Version),
+            CancellationToken.None);
+        var second = f.Delegate.Handle(
+            Delegate(runtime.Task.Id, delegatePrincipalId: "delegate-b", idempotencyKey: "drift-key", expectedVersion: runtime.Task.Version),
+            CancellationToken.None);
+        var results = await Task.WhenAll(first, second);
+
+        Assert.Single(results, result => result.IsSuccessful);
+        Assert.Single(results, result => !result.IsSuccessful &&
+            result.StatusCode == 409 &&
+            result.ReasonCode == WorkflowReasonCodes.WorkflowTransitionConflict);
+        Assert.Equal(2, f.Snapshots.Items.Count);
+        Assert.Single(f.Logs.Items, log => log.Action == WorkflowTransitionAction.Delegate);
+        var storedTask = Assert.Single(f.Tasks.Items);
+        var delegatedSnapshot = Assert.Single(f.Snapshots.Items, snapshot => snapshot.Id == storedTask.AssignmentSnapshotId);
+        Assert.Equal(delegatedSnapshot.ResolvedPrincipalId, storedTask.AssigneeRef);
+        Assert.Contains(storedTask.AssigneeRef, new[] { "delegate-a", "delegate-b" });
+    }
+
+    [Fact]
     public void Delegate_principal_required_validation_failed()
     {
         var validation = new DelegateWorkflowTaskValidator().Validate(Delegate(Guid.NewGuid(), delegatePrincipalId: ""));
@@ -456,30 +618,38 @@ public sealed class WorkflowTaskTransitionTests
         Guid taskId,
         string actorId = AssignedActor,
         string reasonCode = "APPROVED",
-        string idempotencyKey = "approve-001") =>
-        new(taskId, new ApproveWorkflowTaskRequest(actorId, reasonCode, idempotencyKey, "ok", null), Correlation);
+        string idempotencyKey = "approve-001",
+        int? expectedVersion = null) =>
+        new(taskId, new ApproveWorkflowTaskRequest(
+            actorId, reasonCode, idempotencyKey, "ok", null, expectedVersion), Correlation);
 
     private static RejectWorkflowTaskCommand Reject(
         Guid taskId,
         string actorId = AssignedActor,
         string reasonCode = "REJECTED",
-        string idempotencyKey = "reject-001") =>
-        new(taskId, new RejectWorkflowTaskRequest(actorId, reasonCode, idempotencyKey, "no", null), Correlation);
+        string idempotencyKey = "reject-001",
+        int? expectedVersion = null) =>
+        new(taskId, new RejectWorkflowTaskRequest(
+            actorId, reasonCode, idempotencyKey, "no", null, expectedVersion), Correlation);
 
     private static DelegateWorkflowTaskCommand Delegate(
         Guid taskId,
         string actorId = AssignedActor,
         string delegatePrincipalId = "delegate-001",
         string reasonCode = "DELEGATED",
-        string idempotencyKey = "delegate-001") =>
-        new(taskId, new DelegateWorkflowTaskRequest(actorId, delegatePrincipalId, reasonCode, idempotencyKey, "handoff"), Correlation);
+        string idempotencyKey = "delegate-001",
+        int? expectedVersion = null) =>
+        new(taskId, new DelegateWorkflowTaskRequest(
+            actorId, delegatePrincipalId, reasonCode, idempotencyKey, "handoff", expectedVersion), Correlation);
 
     private static RequestInfoWorkflowTaskCommand RequestInfo(
         Guid taskId,
         string actorId = AssignedActor,
         string reasonCode = "NEEDS_INFO",
-        string idempotencyKey = "request-info-001") =>
-        new(taskId, new RequestInfoWorkflowTaskRequest(actorId, "submitter-001", reasonCode, idempotencyKey, "need docs", "evidence-ref"), Correlation);
+        string idempotencyKey = "request-info-001",
+        int? expectedVersion = null) =>
+        new(taskId, new RequestInfoWorkflowTaskRequest(
+            actorId, "submitter-001", reasonCode, idempotencyKey, "need docs", "evidence-ref", expectedVersion), Correlation);
 
     private static CancelWorkflowTaskCommand Cancel(
         Guid taskId,
@@ -580,16 +750,24 @@ public sealed class WorkflowTaskTransitionTests
     private sealed class FakeWorkflowInstanceRepository : IWorkflowInstanceRepository
     {
         private readonly ITenantContext _tenantContext;
+        private readonly object _sync = new();
         public List<WorkflowInstance> Items { get; } = [];
+        public bool AtomicCloneMode { get; set; }
         public FakeWorkflowInstanceRepository(ITenantContext tenantContext) => _tenantContext = tenantContext;
         public Task<WorkflowInstance> CreateAsync(WorkflowInstance instance, CancellationToken ct = default)
         {
             typeof(WorkflowInstance).GetProperty(nameof(WorkflowInstance.TenantId))!.SetValue(instance, _tenantContext.TenantId);
-            Items.Add(instance);
+            lock (_sync) Items.Add(instance);
             return Task.FromResult(instance);
         }
-        public Task<WorkflowInstance?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
-            Task.FromResult(Items.FirstOrDefault(x => x.Id == id && x.TenantId == _tenantContext.TenantId && !x.IsDeleted));
+        public Task<WorkflowInstance?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        {
+            lock (_sync)
+            {
+                var item = Items.FirstOrDefault(x => x.Id == id && x.TenantId == _tenantContext.TenantId && !x.IsDeleted);
+                return Task.FromResult(item is null || !AtomicCloneMode ? item : Clone(item));
+            }
+        }
         public Task<WorkflowInstance?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default) =>
             Task.FromResult(Items.FirstOrDefault(x => x.IdempotencyKey == idempotencyKey && x.TenantId == _tenantContext.TenantId && !x.IsDeleted));
 
@@ -613,27 +791,74 @@ public sealed class WorkflowTaskTransitionTests
             Task.FromResult<IReadOnlyList<WorkflowInstance>>(Items.Where(x => x.TenantId == _tenantContext.TenantId && !x.IsDeleted).ToList());
         public Task<bool> UpdateAsync(WorkflowInstance instance, int expectedVersion, CancellationToken ct = default)
         {
-            var stored = Items.FirstOrDefault(x => x.Id == instance.Id && x.TenantId == _tenantContext.TenantId && x.Version == expectedVersion && !x.IsDeleted);
-            if (stored is null) return Task.FromResult(false);
-            instance.Version = expectedVersion + 1;
-            Items[Items.IndexOf(stored)] = instance;
-            return Task.FromResult(true);
+            lock (_sync)
+            {
+                var stored = Items.FirstOrDefault(x => x.Id == instance.Id && x.TenantId == _tenantContext.TenantId && x.Version == expectedVersion && !x.IsDeleted);
+                if (stored is null) return Task.FromResult(false);
+                instance.Version = expectedVersion + 1;
+                Items[Items.IndexOf(stored)] = instance;
+                return Task.FromResult(true);
+            }
         }
+
+        private static WorkflowInstance Clone(WorkflowInstance value) => new()
+        {
+            Id = value.Id,
+            TenantId = value.TenantId,
+            CreatedAt = value.CreatedAt,
+            CreatedBy = value.CreatedBy,
+            UpdatedAt = value.UpdatedAt,
+            UpdatedBy = value.UpdatedBy,
+            IsDeleted = value.IsDeleted,
+            Version = value.Version,
+            TemplateId = value.TemplateId,
+            WorkflowTemplateId = value.WorkflowTemplateId,
+            TemplateVersionId = value.TemplateVersionId,
+            ObjectType = value.ObjectType,
+            ObjectId = value.ObjectId,
+            ObjectRef = value.ObjectRef,
+            CurrentStage = value.CurrentStage,
+            CurrentStep = value.CurrentStep,
+            Status = value.Status,
+            CorrelationId = value.CorrelationId,
+            IdempotencyKey = value.IdempotencyKey,
+            TrustedConsumerClientId = value.TrustedConsumerClientId,
+            DelegatedMakerUserId = value.DelegatedMakerUserId,
+            StartRequestFingerprint = value.StartRequestFingerprint,
+            StartCheckpoint = value.StartCheckpoint,
+            InitialApprovalTaskId = value.InitialApprovalTaskId,
+            InitialAssignmentSnapshotId = value.InitialAssignmentSnapshotId,
+            StartTransitionLogId = value.StartTransitionLogId,
+            StartedBy = value.StartedBy,
+            StartedAt = value.StartedAt,
+            DueAt = value.DueAt,
+            CompletedAt = value.CompletedAt,
+            LastTransitionAt = value.LastTransitionAt,
+            DeletedAt = value.DeletedAt
+        };
     }
 
     private sealed class FakeApprovalTaskRepository : IApprovalTaskRepository
     {
         private readonly ITenantContext _tenantContext;
+        private readonly object _sync = new();
         public List<ApprovalTask> Items { get; } = [];
+        public bool AtomicCloneMode { get; set; }
         public FakeApprovalTaskRepository(ITenantContext tenantContext) => _tenantContext = tenantContext;
         public Task<ApprovalTask> CreateAsync(ApprovalTask task, CancellationToken ct = default)
         {
             typeof(ApprovalTask).GetProperty(nameof(ApprovalTask.TenantId))!.SetValue(task, _tenantContext.TenantId);
-            Items.Add(task);
+            lock (_sync) Items.Add(task);
             return Task.FromResult(task);
         }
-        public Task<ApprovalTask?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
-            Task.FromResult(Items.FirstOrDefault(x => x.Id == id && x.TenantId == _tenantContext.TenantId && !x.IsDeleted));
+        public Task<ApprovalTask?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        {
+            lock (_sync)
+            {
+                var item = Items.FirstOrDefault(x => x.Id == id && x.TenantId == _tenantContext.TenantId && !x.IsDeleted);
+                return Task.FromResult(item is null || !AtomicCloneMode ? item : Clone(item));
+            }
+        }
         public Task<ApprovalTask?> GetFirstByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default) =>
             Task.FromResult(Items.FirstOrDefault(x => x.WorkflowInstanceId == workflowInstanceId && x.TenantId == _tenantContext.TenantId && !x.IsDeleted));
 
@@ -653,24 +878,91 @@ public sealed class WorkflowTaskTransitionTests
             Task.FromResult<IReadOnlyList<ApprovalTask>>(Items.Where(x => x.TenantId == _tenantContext.TenantId && !x.IsDeleted).ToList());
         public Task<bool> UpdateAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default)
         {
-            var stored = Items.FirstOrDefault(x => x.Id == task.Id && x.TenantId == _tenantContext.TenantId && x.Version == expectedVersion && !x.IsDeleted);
-            if (stored is null) return Task.FromResult(false);
-            task.Version = expectedVersion + 1;
-            Items[Items.IndexOf(stored)] = task;
-            return Task.FromResult(true);
+            lock (_sync)
+            {
+                var stored = Items.FirstOrDefault(x => x.Id == task.Id && x.TenantId == _tenantContext.TenantId && x.Version == expectedVersion && !x.IsDeleted);
+                if (stored is null) return Task.FromResult(false);
+                task.Version = expectedVersion + 1;
+                Items[Items.IndexOf(stored)] = task;
+                return Task.FromResult(true);
+            }
         }
+
+        private static ApprovalTask Clone(ApprovalTask value) => new()
+        {
+            Id = value.Id,
+            TenantId = value.TenantId,
+            CreatedAt = value.CreatedAt,
+            CreatedBy = value.CreatedBy,
+            UpdatedAt = value.UpdatedAt,
+            UpdatedBy = value.UpdatedBy,
+            IsDeleted = value.IsDeleted,
+            Version = value.Version,
+            WorkflowInstanceId = value.WorkflowInstanceId,
+            StageCode = value.StageCode,
+            StepCode = value.StepCode,
+            Status = value.Status,
+            AssignmentSnapshotId = value.AssignmentSnapshotId,
+            AssigneeRef = value.AssigneeRef,
+            ReasonCode = value.ReasonCode,
+            IdempotencyKey = value.IdempotencyKey,
+            CommentRequired = value.CommentRequired,
+            EvidenceRequired = value.EvidenceRequired,
+            DueAt = value.DueAt,
+            EscalatedAt = value.EscalatedAt,
+            EscalationLevel = value.EscalationLevel,
+            LastEscalationReasonCode = value.LastEscalationReasonCode,
+            TimedOutAt = value.TimedOutAt,
+            CompletedAt = value.CompletedAt,
+            ActionedBy = value.ActionedBy,
+            ActionReasonCode = value.ActionReasonCode,
+            DeletedAt = value.DeletedAt
+        };
     }
 
     private sealed class FakeRuntimeAssignmentSnapshotRepository : IRuntimeAssignmentSnapshotRepository
     {
         private readonly ITenantContext _tenantContext;
+        private readonly object _sync = new();
+        private TaskCompletionSource? _ensureGate;
+        private int _expectedEnsures;
+        private int _arrivedEnsures;
         public List<RuntimeAssignmentSnapshot> Items { get; } = [];
         public FakeRuntimeAssignmentSnapshotRepository(ITenantContext tenantContext) => _tenantContext = tenantContext;
         public Task<RuntimeAssignmentSnapshot> CreateAsync(RuntimeAssignmentSnapshot snapshot, CancellationToken ct = default)
         {
             typeof(RuntimeAssignmentSnapshot).GetProperty(nameof(RuntimeAssignmentSnapshot.TenantId))!.SetValue(snapshot, _tenantContext.TenantId);
-            Items.Add(snapshot);
+            lock (_sync) Items.Add(snapshot);
             return Task.FromResult(snapshot);
+        }
+        public void CoordinateNextEnsures(int participants)
+        {
+            _expectedEnsures = participants;
+            _arrivedEnsures = 0;
+            _ensureGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+        public async Task<RuntimeAssignmentSnapshot> EnsureTrustedStartSnapshotAsync(
+            RuntimeAssignmentSnapshot snapshot,
+            CancellationToken ct = default)
+        {
+            var gate = _ensureGate;
+            if (gate is not null)
+            {
+                if (Interlocked.Increment(ref _arrivedEnsures) == _expectedEnsures)
+                {
+                    gate.TrySetResult();
+                }
+                await gate.Task.WaitAsync(ct);
+            }
+
+            lock (_sync)
+            {
+                var existing = Items.FirstOrDefault(x => x.Id == snapshot.Id && x.TenantId == _tenantContext.TenantId && !x.IsDeleted);
+                if (existing is not null) return existing;
+                typeof(RuntimeAssignmentSnapshot).GetProperty(nameof(RuntimeAssignmentSnapshot.TenantId))!.SetValue(snapshot, _tenantContext.TenantId);
+                Items.Add(snapshot);
+                return snapshot;
+            }
         }
         public Task<RuntimeAssignmentSnapshot?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
             Task.FromResult(Items.FirstOrDefault(x => x.Id == id && x.TenantId == _tenantContext.TenantId && !x.IsDeleted));

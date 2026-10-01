@@ -74,10 +74,8 @@ public class MongoTestDatabaseGuardTests
      */
     private static readonly string[] KnownPerRunDatabase =
     {
-        "services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductAbbreviationPermissionOnboardingMongoTests.cs",
         "services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/EmployeeDraftSessionRepositoryMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/AuditIntentDeliveryMongoTests.cs",
-        "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftFoundationMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductApiMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuRegisterMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LegalEntityMongoRoundTripTests.cs",
@@ -103,7 +101,6 @@ public class MongoTestDatabaseGuardTests
 
     private static readonly string[] KnownTestSideIndexBuild =
     {
-        "services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductAbbreviationPermissionOnboardingMongoTests.cs",
 
         /*
          * ⚠ NOT A DEBT — THIS ONE IS THE TEST OF THE PRODUCTION PATH ITSELF. PlatformSchemaContractMongoTests

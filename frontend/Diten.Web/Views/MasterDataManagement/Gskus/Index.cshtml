@@ -5,6 +5,7 @@
     ViewData["Title"] = Localizer["GskusTitle"].Value;
     Layout = "_LayoutTenantShell";
     var canCreate = ViewData["CanCreateGsku"] as bool? == true;
+    var canUseEditor = ViewData["CanUseGskuEditor"] as bool? == true;
 }
 
 @* Contract marker: <partial name="_Filter" /> *@
@@ -15,10 +16,14 @@
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
 </div>
 
+<form id="gskuLifecycleToken" class="d-none" data-no-tracker>
+    @Html.AntiForgeryToken()
+</form>
+
 <partial name="~/Views/MasterDataManagement/Gskus/_DataTable.cshtml" />
 @* Contract marker rendered by the partial: id="offcanvasDetailsPreview" *@
 <partial name="~/Views/MasterDataManagement/Gskus/_DetailsQuickView.cshtml" />
-@if (canCreate)
+@if (canUseEditor)
 {
     <partial name="~/Views/MasterDataManagement/Gskus/_CreateEditOffcanvas.cshtml" />
 }

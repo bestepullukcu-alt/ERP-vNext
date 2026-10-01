@@ -8,6 +8,15 @@ namespace Diten.AuthService.Application.Tests.Roles;
 // selection so the two cannot drift, and assert the platform-escalation boundary for tenant roles.
 public sealed class DefaultRolePermissionTemplateTests
 {
+    private static Permission RecoveryPermission() => new(
+        "mdm",
+        "product-identity.lifecycle-operations",
+        "recover",
+        "Recover Product Identity Lifecycle Operation",
+        null,
+        moduleOverride: "product-item-sku-master",
+        scope: PermissionScope.Tenant);
+
     private static List<Permission> Catalog() =>
     [
         new("auth", "users", "read", "Read User", null, moduleOverride: "access-governance"),
@@ -17,6 +26,67 @@ public sealed class DefaultRolePermissionTemplateTests
         new("platform", "tenants", "read", "Read Tenant", null)
     ];
 
+    [Theory]
+    [InlineData("update")]
+    [InlineData("withdraw")]
+    [InlineData("request-correction")]
+    [InlineData("request-retirement")]
+    public void Gsku_action_additions_are_not_default_Admin_or_Viewer_grants(string action)
+    {
+        var permission = new Permission("mdm", "gskus", action, action, null,
+            moduleOverride: "product-item-sku-master", scope: PermissionScope.Tenant);
+        Assert.True(DefaultRolePermissionTemplate.IsTenantAssignable(permission));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor("Admin", [permission]));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor("Viewer", [permission]));
+    }
+
+    [Theory]
+    [InlineData("withdraw")]
+    [InlineData("request-retirement")]
+    public void Lsku_action_additions_are_not_default_Admin_or_Viewer_grants(string action)
+    {
+        var permission = new Permission("mdm", "lskus", action, action, null,
+            moduleOverride: "product-item-sku-master", scope: PermissionScope.Tenant);
+        Assert.True(DefaultRolePermissionTemplate.IsTenantAssignable(permission));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor("Admin", [permission]));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor("Viewer", [permission]));
+    }
+
+    [Fact]
+    public void Recovery_is_catalogued_but_never_assignable_or_selected_for_any_default_human_role()
+    {
+        var recovery = RecoveryPermission();
+
+        Assert.Equal(
+            DefaultRolePermissionTemplate.ProductIdentityLifecycleRecoveryPermission,
+            recovery.Key);
+        Assert.False(DefaultRolePermissionTemplate.CanBeGrantedToHumanRole(recovery));
+        Assert.False(DefaultRolePermissionTemplate.IsTenantAssignable(recovery));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.SuperAdminRole, [recovery]));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.AdminRole, [recovery]));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.ViewerRole, [recovery]));
+    }
+
+    [Fact]
+    public void Human_assignability_policy_does_not_change_adjacent_product_permissions()
+    {
+        var ordinary = new Permission(
+            "mdm",
+            "gskus",
+            "update",
+            "Update GSKU",
+            null,
+            moduleOverride: "product-item-sku-master",
+            scope: PermissionScope.Tenant);
+
+        Assert.True(DefaultRolePermissionTemplate.CanBeGrantedToHumanRole(ordinary));
+        Assert.True(DefaultRolePermissionTemplate.IsTenantAssignable(ordinary));
+        Assert.Equal(
+            [ordinary.Id],
+            DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.SuperAdminRole, [ordinary])
+                .Select(permission => permission.Id));
+    }
+
     [Fact]
     public void SuperAdmin_gets_the_full_catalog()
     {
@@ -24,6 +94,49 @@ public sealed class DefaultRolePermissionTemplateTests
 
         Assert.Equal(5, keys.Count);
         Assert.Contains("platform.tenants.read", keys);
+    }
+
+    [Fact]
+    public void Service_client_provisioning_is_platform_admin_only()
+    {
+        var catalog = new List<Permission>
+        {
+            new(
+                "auth",
+                "service-clients",
+                "provision",
+                "Provision Service Clients",
+                null,
+                moduleOverride: "platform",
+                scope: PermissionScope.PlatformAdmin)
+        };
+
+        Assert.Equal(
+            [DefaultRolePermissionTemplate.ServiceClientProvisionPermission],
+            DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.SuperAdminRole, catalog)
+                .Select(permission => permission.Key));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.AdminRole, catalog));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.ViewerRole, catalog));
+        Assert.False(DefaultRolePermissionTemplate.IsTenantAssignable(catalog[0]));
+    }
+
+    [Fact]
+    public void Tenant_workflow_execution_keys_are_assignable_but_not_default_Admin_or_Viewer_grants()
+    {
+        var catalog = new List<Permission>
+        {
+            new("platform", "workflow.instances", "start", "Start Workflow Instance", null,
+                moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", null,
+                moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "reject", "Reject Workflow Task", null,
+                moduleOverride: "workflow", scope: PermissionScope.Tenant)
+        };
+
+        Assert.All(catalog, permission => Assert.True(DefaultRolePermissionTemplate.IsTenantAssignable(permission)));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.AdminRole, catalog));
+        Assert.Empty(DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.ViewerRole, catalog));
+        Assert.Equal(3, DefaultRolePermissionTemplate.SelectFor(DefaultRolePermissionTemplate.SuperAdminRole, catalog).Count);
     }
 
     [Fact]
@@ -70,6 +183,42 @@ public sealed class DefaultRolePermissionTemplateTests
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "lskus", "create", "Create LSKUs", null,
                 moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "submit", "Submit Global Products", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "retire", "Retire Global Products", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "finished-goods", "submit", "Submit Finished Goods", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "finished-goods", "retire", "Retire Finished Goods", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "submit", "Submit GSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "retire", "Retire GSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "update", "Update GSKU", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "withdraw", "Withdraw GSKU", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "request-correction", "Request GSKU Correction", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "gskus", "request-retirement", "Request GSKU Retirement", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "update", "Update Global Product", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "withdraw", "Withdraw Global Product", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "request-correction", "Request Global Product Correction", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "global-products", "request-retirement", "Request Global Product Retirement", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "submit", "Submit LSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "retire", "Retire LSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "withdraw", "Withdraw LSKUs", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "lskus", "request-retirement", "Request LSKU Retirement", null,
+                moduleOverride: "product-item-sku-master"),
             new("mdm", "product-abbreviations", "read", "Read Product Abbreviations", null,
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "product-abbreviations", "request", "Request Product Abbreviations", null,
@@ -86,6 +235,18 @@ public sealed class DefaultRolePermissionTemplateTests
                 moduleOverride: "product-item-sku-master"),
             new("mdm", "product-abbreviations", "audit", "Audit Product Abbreviations", null,
                 moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-legal-entity-scopes", "read", "Read Product Legal Entity Scopes", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-legal-entity-scopes", "configure", "Configure Product Legal Entity Scopes", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-legal-entity-scopes", "replace", "Replace Product Legal Entity Scopes", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-legal-entity-scopes", "end", "End Product Legal Entity Scopes", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-legal-entity-scope-rollout", "activate", "Activate Product Legal Entity Scope Rollout", null,
+                moduleOverride: "product-item-sku-master"),
+            new("mdm", "product-legal-entity-scope-rollout", "rollback", "Rollback Product Legal Entity Scope Rollout", null,
+                moduleOverride: "product-item-sku-master"),
             new("mdm", "legal-entities", "read", "Read Legal Entities", null,
                 moduleOverride: "legal-entity")
         };
@@ -101,18 +262,40 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.DoesNotContain("mdm.lskus.read", viewerKeys);
         Assert.DoesNotContain("mdm.lskus.create", viewerKeys);
         Assert.DoesNotContain("mdm.lskus.create", adminKeys);
+        Assert.DoesNotContain("mdm.global-products.submit", adminKeys);
+        Assert.DoesNotContain("mdm.finished-goods.retire", viewerKeys);
         Assert.DoesNotContain("mdm.product-abbreviations.read", viewerKeys);
         Assert.DoesNotContain("mdm.product-abbreviations.read", adminKeys);
+        Assert.DoesNotContain("mdm.product-legal-entity-scopes.read", viewerKeys);
+        Assert.DoesNotContain("mdm.product-legal-entity-scopes.read", adminKeys);
         Assert.Equal(
             [
                 "mdm.finished-goods.create",
                 "mdm.finished-goods.read",
+                "mdm.finished-goods.retire",
+                "mdm.finished-goods.submit",
                 "mdm.global-products.create",
                 "mdm.global-products.read",
+                "mdm.global-products.request-correction",
+                "mdm.global-products.request-retirement",
+                "mdm.global-products.retire",
+                "mdm.global-products.submit",
+                "mdm.global-products.update",
+                "mdm.global-products.withdraw",
                 "mdm.gskus.create",
                 "mdm.gskus.read",
+                "mdm.gskus.request-correction",
+                "mdm.gskus.request-retirement",
+                "mdm.gskus.retire",
+                "mdm.gskus.submit",
+                "mdm.gskus.update",
+                "mdm.gskus.withdraw",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
+                "mdm.lskus.request-retirement",
+                "mdm.lskus.retire",
+                "mdm.lskus.submit",
+                "mdm.lskus.withdraw",
                 "mdm.product-abbreviations.approve",
                 "mdm.product-abbreviations.audit",
                 "mdm.product-abbreviations.cancel",
@@ -120,7 +303,13 @@ public sealed class DefaultRolePermissionTemplateTests
                 "mdm.product-abbreviations.read",
                 "mdm.product-abbreviations.reject",
                 "mdm.product-abbreviations.request",
-                "mdm.product-abbreviations.retire"
+                "mdm.product-abbreviations.retire",
+                "mdm.product-legal-entity-scope-rollout.activate",
+                "mdm.product-legal-entity-scope-rollout.rollback",
+                "mdm.product-legal-entity-scopes.configure",
+                "mdm.product-legal-entity-scopes.end",
+                "mdm.product-legal-entity-scopes.read",
+                "mdm.product-legal-entity-scopes.replace"
             ],
             DefaultRolePermissionTemplate.EntitlementOnlyViewerPermissions.OrderBy(k => k).ToArray());
     }

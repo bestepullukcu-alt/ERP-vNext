@@ -9,6 +9,7 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Validators;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.ValueObjects;
 using Xunit;
 
 namespace Diten.MdmService.Application.Tests;
@@ -130,6 +131,30 @@ public sealed class FinishedGoodDraftFoundationUnitTests
     }
 
     [Fact]
+    public void Finished_good_lifecycle_audit_ordinals_are_explicit_unique_and_preserve_historical_gaps()
+    {
+        var expected = new Dictionary<ProductAuditOperation, int>
+        {
+            [ProductAuditOperation.FinishedGoodDraftCreated] = 9,
+            [ProductAuditOperation.FinishedGoodIdentitySubmitted] = 32,
+            [ProductAuditOperation.FinishedGoodIdentityApproved] = 33,
+            [ProductAuditOperation.FinishedGoodIdentityRejected] = 34,
+            [ProductAuditOperation.FinishedGoodIdentityRetired] = 35,
+            [ProductAuditOperation.FinishedGoodDraftCancelled] = 72,
+            [ProductAuditOperation.FinishedGoodIdentityApprovalWithdrawn] = 73,
+            [ProductAuditOperation.FinishedGoodRetirementRequested] = 74,
+            [ProductAuditOperation.FinishedGoodRetirementRejected] = 75,
+            [ProductAuditOperation.FinishedGoodRetirementCancelled] = 76
+        };
+
+        Assert.All(expected, pair => Assert.Equal(pair.Value, (int)pair.Key));
+        var allValues = Enum.GetValues<ProductAuditOperation>().Select(value => (int)value).ToArray();
+        Assert.Equal(allValues.Length, allValues.Distinct().Count());
+        Assert.DoesNotContain(36, allValues);
+        Assert.DoesNotContain(37, allValues);
+    }
+
+    [Fact]
     public void Repository_result_marks_only_explicit_write_outcomes_as_ambiguous()
     {
         var rejected = new FinishedGoodCreateResult(false, null, "FINISHED_GOOD_DUPLICATE_CONFLICT");
@@ -146,7 +171,8 @@ public sealed class FinishedGoodDraftFoundationUnitTests
     [Fact]
     public async Task Programming_contract_violation_propagates_instead_of_becoming_reconciliation_pending()
     {
-        var handler = new CreateFinishedGoodDraftHandler(null!, null!, null!, null!, null!);
+        var handler = new CreateFinishedGoodDraftHandler(
+            null!, null!, null!, null!, null!, null!, null!, null!, null!, null!);
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             handler.Handle(null!, CancellationToken.None));
@@ -213,6 +239,47 @@ public sealed class FinishedGoodDraftFoundationUnitTests
         Assert.Equal(CodeReservationBindingState.PendingIdentityWrite, fixture.Reservations.Current.BindingState);
     }
 
+    [Fact]
+    public async Task Unverified_creation_attempt_binding_fails_closed_before_admission_or_reservation()
+    {
+        var fixture = HandlerFixture.Create(
+            _ => throw new InvalidOperationException("Create must not be reached when binding is unavailable."),
+            bind: (_, _, _) => FinishedGoodCreationAttemptResult.Unavailable());
+
+        var response = await fixture.Handle();
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(202, response.StatusCode);
+        Assert.Contains("FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED", response.Errors);
+        Assert.Equal(0, fixture.FinishedGoods.CreateCalls);
+        Assert.Equal(0, fixture.Reservations.ReserveCalls);
+        Assert.Equal(0, fixture.Reservations.ConfirmCalls);
+        Assert.Equal(CodeReservationBindingState.None, fixture.Reservations.Current.BindingState);
+    }
+
+    [Fact]
+    public async Task Overlength_creation_key_binding_is_unavailable_and_stops_before_admission_or_reservation()
+    {
+        var overlengthKey = new string('K', 129);
+        var fixture = HandlerFixture.Create(
+            _ => throw new InvalidOperationException("Create must not be reached when binding rejects the key."),
+            bind: (_, key, _) =>
+            {
+                Assert.Equal(overlengthKey, key);
+                return FinishedGoodCreationAttemptResult.Unavailable();
+            });
+
+        var response = await fixture.Handle(overlengthKey);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(202, response.StatusCode);
+        Assert.Contains("FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED", response.Errors);
+        Assert.Equal(0, fixture.FinishedGoods.CreateCalls);
+        Assert.Equal(0, fixture.Reservations.ReserveCalls);
+        Assert.Equal(0, fixture.Reservations.ConfirmCalls);
+        Assert.Equal(CodeReservationBindingState.None, fixture.Reservations.Current.BindingState);
+    }
+
     private sealed class HandlerFixture
     {
         private readonly CreateFinishedGoodDraftHandler _handler;
@@ -235,40 +302,86 @@ public sealed class FinishedGoodDraftFoundationUnitTests
 
         public static HandlerFixture Create(
             Func<FinishedGood, FinishedGoodCreateResult> create,
-            bool returnCapturedOnReread = false)
+            bool returnCapturedOnReread = false,
+            Func<Guid, string, string, FinishedGoodCreationAttemptResult>? bind = null)
         {
             var tenantId = Guid.NewGuid();
+            var product = new GlobalProduct
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                CanonicalCode = "GP-UNIT-0001",
+                GlobalProductName = "Unit Product",
+                GlobalProductNameNormalized = "UNIT PRODUCT",
+                LifecycleStatus = ProductIdentityLifecycleStatus.Draft
+            };
+            var revision = new ProductDefinitionRevision
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                GlobalProductId = product.Id,
+                RevisionIdentifier = "REV-001",
+                LifecycleStatus = ProductIdentityLifecycleStatus.Draft
+            };
             var gsku = new Gsku
             {
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
+                ProductDefinitionRevisionId = revision.Id,
                 CanonicalCode = "GS-UNIT-0001",
                 LifecycleStatus = ProductIdentityLifecycleStatus.Draft
             };
-            var finishedGoods = new TestFinishedGoodRepository(create, returnCapturedOnReread);
+            var finishedGoods = new TestFinishedGoodRepository(tenantId, create, returnCapturedOnReread, bind);
             var reservations = new TestReservationRepository(tenantId);
+            var tenantContext = new TestTenantContext(tenantId);
+            var access = ProductLegalEntityScopeTestFixture.Preparation(tenantContext);
             var handler = new CreateFinishedGoodDraftHandler(
                 reservations,
                 finishedGoods,
                 new TestGskuRepository(gsku),
-                new TestTenantContext(tenantId),
-                new TestActorContext());
+                new TestRevisionRepository(revision),
+                new TestProductRepository(product),
+                tenantContext,
+                new TestActorContext(),
+                access.Rollouts,
+                access.Policies,
+                access.Candidates);
             return new(handler, gsku.Id, finishedGoods, reservations);
         }
 
-        public Task<Diten.Shared.Core.Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>> Handle()
+        public Task<Diten.Shared.Core.Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>> Handle(
+            string idempotencyKey = "unit-hardening-command")
             => _handler.Handle(new CreateFinishedGoodDraftCommand(new()
             {
                 GskuId = _gskuId,
-                IdempotencyKey = "unit-hardening-command"
+                IdempotencyKey = idempotencyKey
             }), CancellationToken.None);
     }
 
     private sealed class TestFinishedGoodRepository(
+        Guid tenantId,
         Func<FinishedGood, FinishedGoodCreateResult> create,
-        bool returnCapturedOnReread) : IFinishedGoodRepository
+        bool returnCapturedOnReread,
+        Func<Guid, string, string, FinishedGoodCreationAttemptResult>? bind) : IFinishedGoodRepository
     {
         public FinishedGood? Captured { get; private set; }
+        public int CreateCalls { get; private set; }
+
+        public Task<FinishedGoodCreationAttemptResult> BindCreationAttemptAsync(
+            Guid gskuId,
+            string normalizedCreationCommandId,
+            string requestFingerprint,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(bind?.Invoke(gskuId, normalizedCreationCommandId, requestFingerprint)
+                ?? FinishedGoodCreationAttemptResult.Bound(new FinishedGoodCreationAttempt
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    GskuId = gskuId,
+                    CreationCommandId = normalizedCreationCommandId,
+                    RequestFingerprint = requestFingerprint,
+                    IsDeleted = false
+                }));
 
         public Task<FinishedGood?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult<FinishedGood?>(null);
@@ -295,9 +408,16 @@ public sealed class FinishedGoodDraftFoundationUnitTests
             FinishedGood finishedGood,
             CancellationToken cancellationToken = default)
         {
+            CreateCalls++;
             Captured = finishedGood;
             return Task.FromResult(create(finishedGood));
         }
+
+        public Task<FinishedGoodCreateResult> CreateDraftWithAdmissionAsync(
+            FinishedGood finishedGood,
+            string admissionFingerprint,
+            CancellationToken cancellationToken = default) =>
+            CreateDraftAsync(finishedGood, cancellationToken);
     }
 
     private sealed class TestReservationRepository(Guid tenantId) : ICodeReservationRepository
@@ -314,6 +434,7 @@ public sealed class FinishedGoodDraftFoundationUnitTests
         };
 
         public int ConfirmCalls { get; private set; }
+        public int ReserveCalls { get; private set; }
 
         public Task<CodeReservation?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult<CodeReservation?>(Current.Id == id ? Current : null);
@@ -324,7 +445,10 @@ public sealed class FinishedGoodDraftFoundationUnitTests
             string actorId,
             string correlationId,
             CancellationToken cancellationToken = default)
-            => Task.FromResult(Current);
+        {
+            ReserveCalls++;
+            return Task.FromResult(Current);
+        }
 
         public Task<ReservationOperationResult> ConsumeForIdentityAsync(
             Guid reservationId,
@@ -397,6 +521,76 @@ public sealed class FinishedGoodDraftFoundationUnitTests
             int expectedVersion,
             CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
+
+        public Task<GskuChildCreationAdmissionResult> AcquireChildCreationAdmissionAsync(
+            Guid id,
+            GskuChildIdentityKind childKind,
+            string creationCommandId,
+            string requestFingerprint,
+            DateTimeOffset acquiredAtUtc,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(new GskuChildCreationAdmissionResult(
+                id == gsku.Id, false, id == gsku.Id ? gsku : null,
+                id == gsku.Id ? null : "GSKU_NOT_REFERENCEABLE"));
+
+        public Task<GskuChildCreationAdmissionResult> CompleteChildCreationAdmissionAsync(
+            Guid id,
+            GskuChildIdentityKind childKind,
+            string creationCommandId,
+            string requestFingerprint,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(new GskuChildCreationAdmissionResult(
+                id == gsku.Id, true, id == gsku.Id ? gsku : null,
+                id == gsku.Id ? null : "GSKU_NOT_REFERENCEABLE"));
+    }
+
+    private sealed class TestRevisionRepository(ProductDefinitionRevision revision)
+        : IProductDefinitionRevisionRepository
+    {
+        public Task<ProductDefinitionRevision?> GetByIdAsync(
+            Guid id,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<ProductDefinitionRevision?>(id == revision.Id ? revision : null);
+
+        public Task<ProductDefinitionRevision?> GetByCreationCommandIdAsync(
+            string creationCommandId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<ProductDefinitionRevision?>(null);
+
+        public Task<FirstGskuPairAllocationResult> AllocateForFirstGskuAsync(
+            Guid globalProductId,
+            string creationCommandId,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
+        public Task<ProductDefinitionRevisionCreateResult> CreateForFirstGskuAsync(
+            ProductDefinitionRevision value,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
+    }
+
+    private sealed class TestProductRepository(GlobalProduct product) : IGlobalProductRepository
+    {
+        public Task<GlobalProduct?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+            Task.FromResult<GlobalProduct?>(id == product.Id ? product : null);
+
+        public Task<GlobalProduct?> GetByReservationIdAsync(
+            Guid reservationId,
+            CancellationToken cancellationToken = default) => Task.FromResult<GlobalProduct?>(null);
+
+        public Task<bool> NameExistsAsync(
+            string normalizedName,
+            CancellationToken cancellationToken = default) => Task.FromResult(false);
+
+        public Task<GlobalProductPage> GetPageAsync(
+            int pageNumber,
+            int pageSize,
+            string? normalizedSearch,
+            ProductIdentityLifecycleStatus? lifecycleStatus,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new GlobalProductPage([product], 1));
+
+        public Task<GlobalProductCreateResult> CreateDraftAsync(
+            GlobalProduct value,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
     }
 
     private sealed class TestTenantContext(Guid tenantId) : ITenantContext

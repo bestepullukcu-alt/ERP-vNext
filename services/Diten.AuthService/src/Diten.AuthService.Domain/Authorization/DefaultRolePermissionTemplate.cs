@@ -16,6 +16,15 @@ public static class DefaultRolePermissionTemplate
 
     public const string PlatformModule = "platform";
     public const string ReadAction = "read";
+    public const string ServiceClientProvisionPermission = "auth.service-clients.provision";
+    public const string ProductIdentityLifecycleRecoveryPermission =
+        "mdm.product-identity.lifecycle-operations.recover";
+
+    private static readonly IReadOnlySet<string> NonHumanPermissionKeys =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ProductIdentityLifecycleRecoveryPermission
+        };
 
     // FIX-PERM-ATTRIBUTION-2 — reference-data is a genuine, distinct Module (RoleAssignments grouping,
     // ModulePermissionResolver entitlement matching) but its screens are ALL platform-admin-only
@@ -81,6 +90,24 @@ public static class DefaultRolePermissionTemplate
             "mdm.gskus.create",
             "mdm.lskus.read",
             "mdm.lskus.create",
+            "mdm.global-products.submit",
+            "mdm.global-products.retire",
+            "mdm.global-products.update",
+            "mdm.global-products.withdraw",
+            "mdm.global-products.request-correction",
+            "mdm.global-products.request-retirement",
+            "mdm.finished-goods.submit",
+            "mdm.finished-goods.retire",
+            "mdm.gskus.submit",
+            "mdm.gskus.retire",
+            "mdm.gskus.update",
+            "mdm.gskus.withdraw",
+            "mdm.gskus.request-correction",
+            "mdm.gskus.request-retirement",
+            "mdm.lskus.submit",
+            "mdm.lskus.retire",
+            "mdm.lskus.withdraw",
+            "mdm.lskus.request-retirement",
             "mdm.product-abbreviations.read",
             "mdm.product-abbreviations.request",
             "mdm.product-abbreviations.cancel",
@@ -88,7 +115,13 @@ public static class DefaultRolePermissionTemplate
             "mdm.product-abbreviations.reject",
             "mdm.product-abbreviations.correct",
             "mdm.product-abbreviations.retire",
-            "mdm.product-abbreviations.audit"
+            "mdm.product-abbreviations.audit",
+            "mdm.product-legal-entity-scopes.read",
+            "mdm.product-legal-entity-scopes.configure",
+            "mdm.product-legal-entity-scopes.replace",
+            "mdm.product-legal-entity-scopes.end",
+            "mdm.product-legal-entity-scope-rollout.activate",
+            "mdm.product-legal-entity-scope-rollout.rollback"
         };
 
     /// <summary>
@@ -100,8 +133,11 @@ public static class DefaultRolePermissionTemplate
     {
         // BL-359 — explicit-grant-only permissions (e.g. ppm.portfolios.assign-owner) never enter any
         // default/startup role template, including the SuperAdmin full-catalog branch below. Only an
-        // authorized person's explicit role-permission assignment may grant one.
-        var available = catalog.Where(p => !p.IsDeleted && !ExplicitGrantOnlyPermissions.Keys.Contains(p.Key));
+        // authorized person's explicit role-permission assignment may grant one. Non-human execution permissions
+        // (CanBeGrantedToHumanRole) are excluded the same way.
+        var available = catalog.Where(p => !p.IsDeleted
+                                           && !ExplicitGrantOnlyPermissions.Keys.Contains(p.Key)
+                                           && CanBeGrantedToHumanRole(p));
 
         return roleName switch
         {
@@ -148,5 +184,17 @@ public static class DefaultRolePermissionTemplate
     /// İŞ3-FAZ0 — `!IsPlatform` → `Scope == Tenant` (bit-identical via ClassifyScope).
     /// </summary>
     public static bool IsTenantAssignable(Permission permission)
-        => permission.Scope == PermissionScope.Tenant || TenantSelfServicePermissions.Contains(permission.Key);
+        => CanBeGrantedToHumanRole(permission)
+           && (permission.Scope == PermissionScope.Tenant || TenantSelfServicePermissions.Contains(permission.Key));
+
+    /// <summary>
+    /// Canonical safety boundary for permissions that may be granted to human roles. Non-human execution
+    /// permissions remain catalogued, but default-role provisioning, catalog auto-grants and manual assignment
+    /// must all consult this policy before creating a new role grant. Existing grants are intentionally untouched.
+    /// </summary>
+    public static bool CanBeGrantedToHumanRole(Permission permission)
+    {
+        ArgumentNullException.ThrowIfNull(permission);
+        return !NonHumanPermissionKeys.Contains(permission.Key);
+    }
 }

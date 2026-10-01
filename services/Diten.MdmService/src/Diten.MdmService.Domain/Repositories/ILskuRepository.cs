@@ -1,4 +1,6 @@
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.ValueObjects;
+using Diten.MdmService.Domain.Enums;
 
 namespace Diten.MdmService.Domain.Repositories;
 
@@ -13,8 +15,19 @@ public interface ILskuRepository
         int pageNumber,
         int pageSize,
         string? search,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("LSKU_READ_CONTRACT_NOT_IMPLEMENTED");
+
+    Task<LskuPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? search,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_LEGAL_ENTITY_SCOPE_READ_CONTRACT_NOT_IMPLEMENTED");
 
     Task<Lsku?> GetByCreationCommandIdAsync(
         string creationCommandId,
@@ -32,6 +45,35 @@ public interface ILskuRepository
     Task<LskuCreateResult> CreateDraftAsync(
         Lsku lsku,
         CancellationToken cancellationToken = default);
+    Task<LskuCreateResult> CreateDraftWithAdmissionAsync(
+        Lsku lsku, string admissionFingerprint,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_CHILD_ADMISSION_NOT_IMPLEMENTED");
+
+    Task<LskuLifecycleWriteResult> SubmitIdentityAsync(
+        Guid id, int expectedVersion, ProductIdentityWorkflowBinding workflowBinding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_LIFECYCLE_SUBMIT_NOT_IMPLEMENTED");
+
+    Task<LskuLifecycleWriteResult> ReconcileIdentityDecisionAsync(
+        Guid id, int expectedVersion, ProductIdentityWorkflowDecisionEvidence decisionEvidence,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_LIFECYCLE_DECISION_NOT_IMPLEMENTED");
+
+    Task<LskuLifecycleWriteResult> RetireIdentityAsync(
+        Guid id, int expectedVersion, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_LIFECYCLE_RETIRE_NOT_IMPLEMENTED");
+
+    Task<LskuLifecycleWriteResult> AcquireLifecycleOperationAsync(
+        Guid id, int expectedVersion, LskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_LIFECYCLE_OPERATION_ADMISSION_NOT_IMPLEMENTED");
+
+    Task<LskuLifecycleWriteResult> ApplyRetirementDecisionAsync(
+        Guid id, int expectedVersion, LskuActiveLifecycleOperationBinding binding, bool approved,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("LSKU_RETIREMENT_DECISION_NOT_IMPLEMENTED");
 }
 
 public sealed record LskuPage(
@@ -51,3 +93,9 @@ public enum LskuCreateConflictKind
     CommandOrPayload = 1,
     IdentityKey = 2
 }
+
+public sealed record LskuLifecycleWriteResult(
+    bool Succeeded,
+    Lsku? Lsku,
+    string? ErrorCode = null,
+    bool IsReplay = false);

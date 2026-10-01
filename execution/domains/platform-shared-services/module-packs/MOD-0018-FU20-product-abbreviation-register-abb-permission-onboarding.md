@@ -140,7 +140,7 @@ to the following exact allow-list.
 
 - `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/DefaultRolePermissionTemplateTests.cs`
 - `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductAbbreviationEntitlementGrantProfileTests.cs` — new
-- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductAbbreviationPermissionOnboardingMongoTests.cs` — new, real `localhost:27017`
+- `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductAbbreviationPermissionOnboardingMongoTests.cs` — real, explicitly owned isolated Mongo instance; never application port 27017
 - `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementPermissionSyncServiceTests.cs`
 - `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementSyncConsumerTests.cs`
 - `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/RoleProvisioningServiceTests.cs` — regression only
@@ -151,6 +151,91 @@ to the following exact allow-list.
 - `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationRegisterAuthorizationTests.cs`
 
 No Platform path is allow-listed. The generic Platform manifest/catalog/entitlement chain is consumed unchanged.
+
+### Approved FU20 Mongo test isolation amendment (2026-09-10)
+
+The user-approved test-only adaptation additionally allows these exact paths:
+
+- `services/Diten.AuthService/src/Diten.AuthService.Persistence/Configurations/MongoDbIndexConfigurations.cs`
+  — extract existing roles/permissions/userRoles/rolePermissions index definitions into
+  `EnsurePermissionOnboardingIndexesAsync`; production bootstrap calls the same definitions.
+  Key order, names, unique/partial options and collation remain unchanged; no copied index definitions.
+- `tests/architecture/TenantArchitecture.ArchitectureTests/MongoTestDatabaseGuardTests.cs`
+  — remove only the two FU20 exceptions after per-run database and full-schema violations are removed.
+
+Only the FU20 Mongo test and this pack accompany those two paths. No new shared harness or Platform
+schema profile is introduced. Reuse the existing Auth nonparallel onboarding collection and explicit
+`MONGO_TEST_URI` convention, a fixed `diten_auth_fu20_itest` database, per-test tenant IDs and
+owned-ID/tenant cleanup. The URI must target isolated loopback Mongo, not application port 27017.
+Real-Mongo proof must retain exact role/grant assertions and test permission compound uniqueness,
+user-role uniqueness, replay, revoke/restore, manual/other-source preservation and tenant isolation.
+This amendment authorizes neither runtime authorization changes nor operational provisioning.
+
+#### Isolated validation evidence (2026-09-10)
+
+- Starting integration HEAD: `582d9db3de4dd4b801b8073045e45d26c0533714`.
+- Auth API Release build: 0 errors, 1 existing obsolete Mongo GUID-setting warning.
+  Auth test-project Release build: 0 errors, 4 existing Platform nullable warnings.
+- Native MongoDB 7.0, invocation-owned standalone process, loopback port 50260, separate data directory
+  `.testoutput/fu20-isolation-20260910/data`; application port 27017 was not used.
+  Only the invocation-owned process was stopped after the run; evidence was retained.
+- FU20 real-Mongo: 2 passed / 0 failed / 0 skipped. Exact six-role / 18-module-grant assertions,
+  replay, revoke/restore, manual/other-source preservation, role-name collision/tenant isolation and
+  no automatic user assignment passed. Separate real duplicate inserts proved permission-key and
+  permission compound uniqueness, user-role tenant-scoped uniqueness, role and role-permission uniqueness.
+  Reapplying the narrow schema preserved identical index metadata and created only four collections.
+- Focused Auth template/profile/entitlement/provisioning regressions: 126 passed / 0 failed / 0 skipped.
+- Broader non-Mongo Auth regressions: 756 passed / 2 failed / 0 skipped. This run includes the focused
+  tests; counts must not be added. Existing `UserLookupValidationContractTests.ResponseDtoContainsOnlyUserIdAndReferenceable`
+  and `ResponseJsonDoesNotLeakTenantOrProfileAuthorizationOrStatusDetails` disagree with the existing
+  `TenantUserLookupValidationDto` masked-name/email fields. Both files match starting HEAD exactly.
+  Other Mongo classes that still hardcode application Mongo were not run.
+- Mongo architecture guard suite: 3 passed / 2 failed / 0 skipped.
+  `NoTestBuildsThePlatformSchema`, `SchemaBuildExceptionListStaysHonest` and
+  `TheScanActuallySeesTheTestTree` passed. FU20 is absent from all reported violations.
+  `NoTestCreatesItsOwnDatabasePerRun` reports these existing, unchanged paths:
+  - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/AuditOutboxTemporalStorageMigrationMongoTests.cs`
+  - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs`
+  - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/TrustedSourceAuditIntentMongoTests.cs`
+  - `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs`
+  `PerRunDatabaseExceptionListStaysHonest` reports these existing stale exceptions:
+  - `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/AuditIntentDeliveryMongoTests.cs`
+  - `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LegalEntityMongoRoundTripTests.cs`
+  - `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationRegisterMongoTests.cs`
+  All seven source blobs equal starting HEAD. No unrelated exception or guard rule was changed.
+- Guard execution initially needed package restore (NETSDK1004); retry with permitted access to the
+  existing NuGet configuration restored packages without changing configuration, then produced the
+  actual test failures above. These are not classified as environment failures.
+- Repository-wide gates are not green; no claim of live acceptance or operational reconciliation is made.
+
+#### Comparative baseline and bounded local commit approval (2026-09-10)
+
+The four failures were actually rerun on both the modified worktree and a temporary, test-owned
+`git archive` of `582d9db3de4dd4b801b8073045e45d26c0533714`. No branch/worktree was created;
+no Mongo connection or service operation was needed. All 5,947 baseline source/build files matched
+the commit's blob hashes. The existing four dirty files retained their pre-comparison SHA-256 hashes.
+
+| Test | Baseline | Modified | Exact comparison / FU20 effect |
+|---|---|---|---|
+| `UserLookupValidationContractTests.ResponseDtoContainsOnlyUserIdAndReferenceable` | Failed | Failed | Identical error: existing MaskedEmail/MaskedName fields exceed the expected UserId/Referenceable pair; unrelated to FU20 |
+| `UserLookupValidationContractTests.ResponseJsonDoesNotLeakTenantOrProfileAuthorizationOrStatusDetails` | Failed | Failed | Identical error: existing MaskedEmail JSON field matches the forbidden Email substring; unrelated to FU20 |
+| `MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun` | Failed | Failed | Identical four Platform file paths listed above; no new violation |
+| `MongoTestDatabaseGuardTests.PerRunDatabaseExceptionListStaysHonest` | Failed | Failed | Identical three MDM stale exception paths listed above; no new stale exception |
+
+Each version ran these four tests: 0 passed / 4 failed / 0 skipped. Error-message strings were equal,
+not merely aggregate counts. Both guard scans covered the same 825 paths; excluding the guard itself,
+only the FU20 test source differed after line-ending normalization.
+
+For `ProductAbbreviationPermissionOnboardingMongoTests.cs` specifically, baseline had both the
+GUID-database pattern and the full-schema call, each suppressed by its existing exception. Modified
+source has neither pattern and neither exception. Thus FU20 removes two actual violations without
+adding a new violation; unchanged overall failure counts do not negate that improvement.
+
+Evidence remains uncommitted under `.testoutput/fu20-baseline-comparison-20260910/`:
+`baseline-userlookup.trx`, `current-userlookup.trx`, `baseline-guards.trx`, `current-guards.trx`.
+Based on this comparison the user explicitly approved a local commit of only the four FU20 amendment
+files, with all four unrelated failures left open. This is a bounded preservation decision, not a
+green overall-suite claim, waiver of hooks/security checks, or permission to fix unrelated sources.
 
 ## 6. Protected Paths
 
@@ -322,7 +407,9 @@ Gateway change is unnecessary and prohibited.
 | Live Development | Supported catalog/entitlement reconciliation, explicit responsibility-role membership, token refresh and allow/deny matrix |
 
 Runtime delivery must run focused Auth/MDM tests, full Auth suite, applicable MDM manifest/ABB tests and API builds.
-Mongo-backed catalog/role/grant tests use real `localhost:27017`; fake/in-memory proof cannot close persistence claims.
+Mongo-backed catalog/role/grant tests use an explicitly owned isolated real Mongo instance under the
+2026-09-10 amendment; application `localhost:27017` is prohibited. Fake/in-memory proof cannot close persistence claims.
+The 2026-08-09 observations below are historical evidence, not authorization to repeat application-data operations.
 
 ## 18. Ready-for-dev Checklist
 

@@ -19,6 +19,12 @@ namespace Diten.AuthService.Api.Controllers;
 public sealed class InternalPermissionsController : ControllerBase
 {
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
+    private static readonly HashSet<string> SeedOwnedTenantScopeKeys = new(StringComparer.Ordinal)
+    {
+        "platform.workflow.instances.start",
+        "platform.workflow.tasks.approve",
+        "platform.workflow.tasks.reject"
+    };
 
     private readonly IInternalEventAuthService _internalEventAuthService;
     private readonly IPermissionRepository _permissionRepository;
@@ -93,7 +99,7 @@ public sealed class InternalPermissionsController : ControllerBase
             // A1 — a first-time permission must land on the full-catalog role (default-tenant SuperAdmin) so it
             // becomes usable on re-login without a hand-edited seed. Idempotent + best-effort (never blocks sync).
             // BL-359 — the grant service itself refuses an explicit-grant-only key (e.g. assign-owner).
-            await _fullCatalogGrantService.GrantToFullCatalogRolesAsync(permission.Id, permission.Key, ct);
+            await _fullCatalogGrantService.GrantToFullCatalogRolesAsync(permission, ct);
 
             _logger.LogInformation(
                 "Catalog permission synced (created). Key={Key} Module={Module}",
@@ -114,7 +120,7 @@ public sealed class InternalPermissionsController : ControllerBase
             // and re-grant it to the full-catalog role (like first creation). ReactivateAsync uses an Id-only filter —
             // the normal filtered UpdateAsync/ReplaceOne would match zero rows on a soft-deleted doc and never persist.
             await _permissionRepository.ReactivateAsync(existing.Id, newDisplayName, newDescription, ct);
-            await _fullCatalogGrantService.GrantToFullCatalogRolesAsync(existing.Id, existing.Key, ct);
+            await _fullCatalogGrantService.GrantToFullCatalogRolesAsync(existing, ct);
 
             _logger.LogInformation(
                 "Catalog permission synced (reactivated). Key={Key} Module={Module}",
@@ -145,10 +151,21 @@ public sealed class InternalPermissionsController : ControllerBase
         {
             // Tie-break (most restrictive wins): the same key can be synced from several pages with different
             // routes. If ANY of them is platform-scoped the key stays PlatformAdmin — never downgrade to Tenant.
-            // This is now the ONLY thing standing between a manifest and the escalation boundary — do not relax it.
-            var effectiveScope = existing.Scope == PermissionScope.PlatformAdmin || incomingScope.Value == PermissionScope.PlatformAdmin
-                ? PermissionScope.PlatformAdmin
-                : PermissionScope.Tenant;
+            // This is the ONLY thing standing between a manifest and the escalation boundary — do not relax it.
+            //
+            // ONE explicit, Auth-owned exception (MOD-0018-FU24/FU25, carried over in the product takeover merge of
+            // 2026-10-01 — ⚠ DECISION PENDING: CT security review + owner sign-off before this branch reaches main):
+            // the three seeded Workflow EXECUTION keys (start / approve / reject). After startup has reconciled their
+            // SYSTEM rows to Tenant, a catalog replay may refresh their metadata/module but may not promote them back
+            // to PlatformAdmin. Catalog-created/user-defined rows and every other key keep the generic rule.
+            var seedOwnedTenantScope = existing.IsSystem
+                && existing.Scope == PermissionScope.Tenant
+                && SeedOwnedTenantScopeKeys.Contains(existing.Key);
+            var effectiveScope = seedOwnedTenantScope
+                ? PermissionScope.Tenant
+                : existing.Scope == PermissionScope.PlatformAdmin || incomingScope.Value == PermissionScope.PlatformAdmin
+                    ? PermissionScope.PlatformAdmin
+                    : PermissionScope.Tenant;
             existing.SetScope(effectiveScope);
         }
 

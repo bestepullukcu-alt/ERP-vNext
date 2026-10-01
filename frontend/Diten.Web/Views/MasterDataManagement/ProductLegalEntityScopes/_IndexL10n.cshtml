@@ -1,0 +1,24 @@
+@using Diten.Web.Views.MasterDataManagement.ProductLegalEntityScopes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductLegalEntityScopesIndex> Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+<script id="product-legal-entity-scopes-l10n" type="application/json">
+@Json.Serialize(new {
+    Actions = Localizer["Actions"].Value, AddNew = Localizer["AddNewProductLegalEntityScope"].Value,
+    Apply = SharedLocalizer["Apply"].Value, Cancel = SharedLocalizer["Cancel"].Value,
+    Configure = Localizer["Configure"].Value, ConfigureTitle = Localizer["ConfigureTitle"].Value,
+    Replace = Localizer["Replace"].Value, ReplaceTitle = Localizer["ReplaceTitle"].Value,
+    End = Localizer["End"].Value, EndConfirmation = Localizer["EndConfirmation"].Value,
+    Export = SharedLocalizer["Export"].Value, Filter = SharedLocalizer["Filter"].Value,
+    ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value, Status = SharedLocalizer["Status"].Value,
+    Save = SharedLocalizer["Save"].Value, SaveView = SharedLocalizer["SaveView"].Value,
+    QuickView = Localizer["QuickView"].Value, ViewDetails = Localizer["ViewDetails"].Value,
+    Reset = SharedLocalizer["Reset"].Value, Search = SharedLocalizer["Search"].Value,
+    GroupWide = Localizer["GroupWide"].Value, Scoped = Localizer["Scoped"].Value,
+    LegacyUnclassified = Localizer["LegacyUnclassified"].Value, Configured = Localizer["Configured"].Value,
+    Unknown = Localizer["Unknown"].Value, ErrorGateway = Localizer["ErrorGateway"].Value,
+    ErrorValidation = Localizer["ErrorValidation"].Value, ErrorConflict = Localizer["ErrorConflict"].Value,
+    ErrorNotFound = Localizer["ErrorNotFound"].Value, ErrorForbidden = Localizer["ErrorForbidden"].Value,
+    Saved = Localizer["Saved"].Value, ReconciliationPending = Localizer["ReconciliationPending"].Value
+})
+</script>

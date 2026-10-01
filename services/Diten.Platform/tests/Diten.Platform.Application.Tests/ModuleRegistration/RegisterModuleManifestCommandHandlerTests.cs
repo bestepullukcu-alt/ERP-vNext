@@ -38,6 +38,71 @@ public sealed class RegisterModuleManifestCommandHandlerTests
     }
 
     [Fact]
+    public async Task Explicit_permission_owner_flows_in_descriptor_order_and_replay_converges_to_the_same_payloads()
+    {
+        var (handler, catalog, pages, actions, sync) = Build();
+        var command = new RegisterModuleManifestCommand(ProductManifestWithPermissionOwners(), "DITENMDMSERVICE");
+
+        var first = await handler.Handle(command, CancellationToken.None);
+        var firstPass = sync.Synced.ToArray();
+        var second = await handler.Handle(command, CancellationToken.None);
+        var replayPass = sync.Synced.Skip(firstPass.Length).ToArray();
+
+        Assert.True(first.IsSuccessful);
+        Assert.True(second.IsSuccessful);
+        Assert.Equal(5, first.Data!.PermissionsSynced);
+        Assert.Equal(5, second.Data!.PermissionsSynced);
+        Assert.Equal(
+            [
+                ("mdm.brands.read", "BRAND-PRODUCT-MASTER", "Tenant"),
+                ("mdm.brands.read", "BRAND-PRODUCT-MASTER", "Tenant"),
+                ("mdm.global-products.read", "PRODUCT-ITEM-SKU-MASTER", "Tenant"),
+                ("mdm.gskus.update", "PRODUCT-ITEM-SKU-MASTER", "Tenant"),
+                ("mdm.brands.read", "BRAND-PRODUCT-MASTER", "Tenant")
+            ],
+            firstPass);
+        Assert.Equal(firstPass, replayPass);
+        Assert.Single(catalog.Items);
+        Assert.Equal(2, pages.Items.Count);
+        Assert.Equal(3, actions.Items.Count);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Brand_owner_and_product_consumer_registration_order_and_replay_converge(bool ownerRegistersFirst)
+    {
+        var (handler, catalog, pages, _, sync) = Build();
+        var owner = new RegisterModuleManifestCommand(BrandOwnerManifest());
+        var consumer = new RegisterModuleManifestCommand(ProductBrandConsumerManifest(), "DITENMDMSERVICE");
+        RegisterModuleManifestCommand[] ordered = ownerRegistersFirst ? [owner, consumer] : [consumer, owner];
+
+        foreach (var command in ordered)
+        {
+            Assert.True((await handler.Handle(command, CancellationToken.None)).IsSuccessful);
+        }
+
+        foreach (var command in ordered)
+        {
+            Assert.True((await handler.Handle(command, CancellationToken.None)).IsSuccessful);
+        }
+
+        Assert.Equal(2, catalog.Items.Count);
+        Assert.Contains(catalog.Items, item => item.ModuleCode == "BRAND-PRODUCT-MASTER");
+        Assert.Contains(catalog.Items, item => item.ModuleCode == "PRODUCT-ITEM-SKU-MASTER");
+        Assert.Equal(2, pages.Items.Count);
+        var brandPayloads = sync.Synced
+            .Where(item => item.Key == "mdm.brands.read")
+            .ToArray();
+        Assert.Equal(4, brandPayloads.Length);
+        Assert.All(brandPayloads, item =>
+        {
+            Assert.Equal("BRAND-PRODUCT-MASTER", item.ModuleCode);
+            Assert.Equal("Tenant", item.Scope);
+        });
+    }
+
+    [Fact]
     public async Task Re_register_same_manifest_is_idempotent_no_duplicates()
     {
         var (handler, catalog, pages, actions, _) = Build();
@@ -316,6 +381,48 @@ public sealed class RegisterModuleManifestCommandHandlerTests
                 new ModuleManifestPage(
                     "GLOBAL_PRODUCTS", "Global Products", "/GlobalProducts", "mdm.global-products.read", null, true, "List", 10,
                     [new ModuleManifestAction("CREATE", "Create", "mdm.global-products.create", "Toolbar", 10, false, true, false)])
+            ]);
+
+    private static ModuleManifestDocument ProductManifestWithPermissionOwners() =>
+        new(
+            "product-item-sku-master", "ProductItemSkuMaster", "Product", "MasterDataManagement", "DitenMdmService",
+            "1.0.0", true, 100,
+            [
+                new ModuleManifestPage(
+                    "BRANDS", "Brands", "/Brands", "mdm.brands.read", null, true, "List", 10,
+                    [
+                        new ModuleManifestAction(
+                            "OPEN", "Open Brand", "mdm.brands.read", "RowAction", 10, false, false, true)
+                    ],
+                    PermissionOwnerModuleCode: "brand-product-master"),
+                new ModuleManifestPage(
+                    "GLOBAL_PRODUCTS", "Global Products", "/GlobalProducts", "mdm.global-products.read", null, true, "List", 20,
+                    [
+                        new ModuleManifestAction(
+                            "UPDATE", "Update GSKU", "mdm.gskus.update", "Toolbar", 10, false, true, false),
+                        new ModuleManifestAction(
+                            "BRAND_LOOKUP", "Open Brand Lookup", "mdm.brands.read", "Toolbar", 20, false, true, false,
+                            PermissionOwnerModuleCode: "brand-product-master")
+                    ])
+            ]);
+
+    private static ModuleManifestDocument BrandOwnerManifest() =>
+        new(
+            "brand-product-master", "BrandProductMaster", "Brands", "MasterDataManagement", "DitenMdmService",
+            "1.0.0", true, 90,
+            [
+                new ModuleManifestPage(
+                    "BRANDS", "Brands", "/Brands", "mdm.brands.read", null, true, "List", 10, [])
+            ]);
+
+    private static ModuleManifestDocument ProductBrandConsumerManifest() =>
+        new(
+            "product-item-sku-master", "ProductItemSkuMaster", "Product", "MasterDataManagement", "DitenMdmService",
+            "1.0.0", true, 100,
+            [
+                new ModuleManifestPage(
+                    "BRANDS", "Brands", "/Brands", "mdm.brands.read", null, true, "List", 10, [],
+                    PermissionOwnerModuleCode: "brand-product-master")
             ]);
 
     // ── harness ──

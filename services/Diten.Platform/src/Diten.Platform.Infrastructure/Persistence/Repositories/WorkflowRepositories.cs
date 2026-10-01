@@ -185,12 +185,100 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
         return await Collection.Find(filter).ToListAsync(ct);
     }
 
+    public Task<WorkflowInstance?> GetByIdAsync(
+        IPlatformTransactionSession session,
+        Guid id,
+        CancellationToken ct = default) =>
+        Collection.Find(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            Builders<WorkflowInstance>.Filter.And(
+                ExecutionFilter,
+                Builders<WorkflowInstance>.Filter.Eq(x => x.Id, id)))
+            .FirstOrDefaultAsync(ct)!;
+
+    public async Task<bool> CancelTrustedAsync(
+        IPlatformTransactionSession session,
+        Guid instanceId,
+        int expectedVersion,
+        DateTimeOffset decisionAt,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Id, instanceId),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Status, WorkflowInstanceStatus.Active));
+        var update = Builders<WorkflowInstance>.Update
+            .Set(x => x.Status, WorkflowInstanceStatus.Cancelled)
+            .Set(x => x.CompletedAt, decisionAt)
+            .Set(x => x.LastTransitionAt, decisionAt)
+            .Set(x => x.UpdatedAt, decisionAt)
+            .Inc(x => x.Version, 1);
+        var result = await Collection.UpdateOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            filter,
+            update,
+            cancellationToken: ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
+    }
+
     public Task<WorkflowInstance?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
     {
         var filter = Builders<WorkflowInstance>.Filter.And(
             ExecutionFilter,
             Builders<WorkflowInstance>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey));
         return Collection.Find(filter).FirstOrDefaultAsync(ct)!;
+    }
+
+    public async Task<(WorkflowInstance Instance, bool Created)> ReserveTrustedStartAsync(
+        WorkflowInstance instance,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            return (await CreateAsync(instance, ct), true);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            var existing = await GetByIdempotencyKeyAsync(instance.IdempotencyKey!, ct);
+            if (existing is null)
+            {
+                throw;
+            }
+
+            return (existing, false);
+        }
+    }
+
+    public async Task<bool> AdvanceStartCheckpointAsync(
+        Guid instanceId,
+        int expectedVersion,
+        WorkflowStartCheckpoint expectedCheckpoint,
+        WorkflowStartCheckpoint nextCheckpoint,
+        CancellationToken ct = default)
+    {
+        if ((int)nextCheckpoint != (int)expectedCheckpoint + 1)
+        {
+            return false;
+        }
+
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Id, instanceId),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<WorkflowInstance>.Filter.Eq(x => x.StartCheckpoint, expectedCheckpoint));
+        var update = Builders<WorkflowInstance>.Update
+            .Set(x => x.StartCheckpoint, nextCheckpoint)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1);
+        if (nextCheckpoint == WorkflowStartCheckpoint.Completed)
+        {
+            update = update
+                .Set(x => x.Status, WorkflowInstanceStatus.Active)
+                .Set(x => x.LastTransitionAt, DateTimeOffset.UtcNow);
+        }
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
     }
 
     // "Latest" is picked in memory, NOT by a server-side sort — and it must stay that way until BL-030 lands.
@@ -278,12 +366,67 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
         return result.IsAcknowledged && result.ModifiedCount == 1;
     }
 
+    public Task<ApprovalTask?> GetByIdAsync(
+        IPlatformTransactionSession session,
+        Guid id,
+        CancellationToken ct = default) =>
+        Collection.Find(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            Builders<ApprovalTask>.Filter.And(
+                ExecutionFilter,
+                Builders<ApprovalTask>.Filter.Eq(x => x.Id, id)))
+            .FirstOrDefaultAsync(ct)!;
+
+    public async Task<bool> CancelTrustedAsync(
+        IPlatformTransactionSession session,
+        Guid taskId,
+        int expectedVersion,
+        Guid actorUserId,
+        string reasonCode,
+        DateTimeOffset decisionAt,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<ApprovalTask>.Filter.And(
+            ExecutionFilter,
+            Builders<ApprovalTask>.Filter.Eq(x => x.Id, taskId),
+            Builders<ApprovalTask>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<ApprovalTask>.Filter.In(
+                x => x.Status,
+                [ApprovalTaskStatus.WaitingApproval, ApprovalTaskStatus.WaitingEvidence]));
+        var update = Builders<ApprovalTask>.Update
+            .Set(x => x.Status, ApprovalTaskStatus.Cancelled)
+            .Set(x => x.CompletedAt, decisionAt)
+            .Set(x => x.ActionedBy, actorUserId.ToString("D"))
+            .Set(x => x.ActionReasonCode, reasonCode)
+            .Set(x => x.UpdatedAt, decisionAt)
+            .Inc(x => x.Version, 1);
+        var result = await Collection.UpdateOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            filter,
+            update,
+            cancellationToken: ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
+    }
+
     public Task<ApprovalTask?> GetFirstByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default)
     {
         var filter = Builders<ApprovalTask>.Filter.And(
             ExecutionFilter,
             Builders<ApprovalTask>.Filter.Eq(x => x.WorkflowInstanceId, workflowInstanceId));
         return Collection.Find(filter).SortBy(x => x.CreatedAt).FirstOrDefaultAsync(ct)!;
+    }
+
+    public async Task<ApprovalTask> EnsureTrustedStartTaskAsync(ApprovalTask task, CancellationToken ct = default)
+    {
+        try
+        {
+            return await CreateAsync(task, ct);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return await GetByIdAsync(task.Id, ct) ??
+                throw new InvalidOperationException("Duplicate workflow task could not be re-read in tenant scope.");
+        }
     }
 
     public Task<ApprovalTask?> GetActiveByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default)
@@ -389,6 +532,21 @@ public sealed class RuntimeAssignmentSnapshotRepository
             Builders<RuntimeAssignmentSnapshot>.Filter.Eq(x => x.WorkflowInstanceId, workflowInstanceId));
         return await Collection.Find(filter).SortByDescending(x => x.ResolvedAt).ToListAsync(ct);
     }
+
+    public async Task<RuntimeAssignmentSnapshot> EnsureTrustedStartSnapshotAsync(
+        RuntimeAssignmentSnapshot snapshot,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            return await CreateAsync(snapshot, ct);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return await GetByIdAsync(snapshot.Id, ct) ??
+                throw new InvalidOperationException("Duplicate workflow assignment snapshot could not be re-read in tenant scope.");
+        }
+    }
 }
 
 public sealed class WorkflowTransitionLogRepository : TenantRepository<WorkflowTransitionLog>, IWorkflowTransitionLogRepository
@@ -449,12 +607,55 @@ public sealed class WorkflowTransitionLogRepository : TenantRepository<WorkflowT
     public Task<WorkflowTransitionLog> AppendAsync(WorkflowTransitionLog log, CancellationToken ct = default) =>
         CreateAsync(log, ct);
 
+    public async Task<WorkflowTransitionLog> AppendAsync(
+        IPlatformTransactionSession session,
+        WorkflowTransitionLog log,
+        CancellationToken ct = default)
+    {
+        await Collection.InsertOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext),
+            log,
+            cancellationToken: ct);
+        return log;
+    }
+
+    public async Task<WorkflowTransitionLog> EnsureTrustedStartLogAsync(
+        WorkflowTransitionLog log,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            return await CreateAsync(log, ct);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return await GetByIdAsync(log.Id, ct) ??
+                throw new InvalidOperationException("Duplicate workflow start log could not be re-read in tenant scope.");
+        }
+    }
+
     public async Task<long> GetLatestSequenceNoAsync(Guid workflowInstanceId, CancellationToken ct = default)
     {
         var latest = await Collection
             .Find(Builders<WorkflowTransitionLog>.Filter.And(
                 ExecutionFilter,
                 Builders<WorkflowTransitionLog>.Filter.Eq(x => x.WorkflowInstanceId, workflowInstanceId)))
+            .SortByDescending(x => x.SequenceNo)
+            .FirstOrDefaultAsync(ct);
+        return latest?.SequenceNo ?? 0;
+    }
+
+    public async Task<long> GetLatestSequenceNoAsync(
+        IPlatformTransactionSession session,
+        Guid workflowInstanceId,
+        CancellationToken ct = default)
+    {
+        var latest = await Collection
+            .Find(
+                PlatformMongoTransactionSession.Require(session, _dbContext),
+                Builders<WorkflowTransitionLog>.Filter.And(
+                    ExecutionFilter,
+                    Builders<WorkflowTransitionLog>.Filter.Eq(x => x.WorkflowInstanceId, workflowInstanceId)))
             .SortByDescending(x => x.SequenceNo)
             .FirstOrDefaultAsync(ct);
         return latest?.SequenceNo ?? 0;

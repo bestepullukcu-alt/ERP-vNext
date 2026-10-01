@@ -7,6 +7,8 @@
 const TenantDetails = (function () {
     const root = document.getElementById('tenantDetailsRoot');
     const tenantId = root?.getAttribute('data-tenant-id');
+    const localResetEnabled = root?.getAttribute('data-local-reset-enabled') === 'true';
+    const localResetEmail = (root?.getAttribute('data-local-reset-email') || '').trim().toLowerCase();
     const apiBase = '/Platform/Tenants/api';
     let L = window.L10n || {};
     let currentBranding = {
@@ -1879,6 +1881,14 @@ const TenantDetails = (function () {
                 }
             },
             {
+                key: 'local-reset-admin-password',
+                visible: localResetEnabled && user.status === 'Active' &&
+                    Boolean(localResetEmail) && String(user.email || '').trim().toLowerCase() === localResetEmail,
+                icon: 'bx bx-key',
+                text: 'Reset password (Local Dev)',
+                attrs: { 'data-id': user.id, 'data-email': user.email }
+            },
+            {
                 key: 'delete-admin-user',
                 className: 'text-danger',
                 icon: 'bx bx-trash',
@@ -1977,6 +1987,10 @@ const TenantDetails = (function () {
                             if (!id) return;
                             inviteAdminUser(id).catch((error) => window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error'));
                         },
+                        'local-reset-admin-password': ({ row }) => {
+                            if (!row?.email) return;
+                            resetLocalAdminPassword(row.email).catch((error) => window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error'));
+                        },
                         'delete-admin-user': ({ id, row }) => {
                             if (!id) return;
                             deleteAdminUser(id, row?.name || row?.email).catch((error) => window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error'));
@@ -2051,6 +2065,32 @@ const TenantDetails = (function () {
         }
         await reloadAdminUsers();
         await loadTenantQuotaGovernance();
+    };
+
+    const resetLocalAdminPassword = async (email) => {
+        if (!localResetEnabled || !window.Swal) return;
+        const confirmation = await window.Swal.fire({
+            title: 'Reset existing tenant admin password?',
+            text: email,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Create one-time link',
+            cancelButtonText: L.Cancel || 'Cancel'
+        });
+        if (!confirmation.isConfirmed) return;
+        const result = await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/admin-users/local-password-reset`, {
+            method: 'POST',
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const setupUrl = result?.setupUrl;
+        if (!setupUrl) throw new Error('Reset link was not returned.');
+        await window.Swal.fire({
+            title: 'Set a new password',
+            html: `<p class="small text-muted">This one-time link is shown only here. Open it in the tenant-admin browser profile.</p><input id="localAdminResetLink" type="text" class="form-control" readonly value="${escapeHtml(setupUrl)}">`,
+            confirmButtonText: L.Close || 'Close',
+            didOpen: () => document.getElementById('localAdminResetLink')?.select()
+        });
     };
 
     // Dev-only invitation fallback (SMTP off): copyable login URL + temporary password in a modal, with

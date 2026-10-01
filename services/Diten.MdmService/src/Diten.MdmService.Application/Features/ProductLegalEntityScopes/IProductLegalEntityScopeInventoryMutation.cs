@@ -1,0 +1,3 @@
+namespace Diten.MdmService.Application.Features.ProductLegalEntityScopes;
+
+public interface IProductLegalEntityScopeInventoryMutation;

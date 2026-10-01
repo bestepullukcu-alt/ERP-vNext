@@ -133,6 +133,16 @@ public sealed class TenantsController : Controller
         return ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/admin/tenants/{id}/admin-users/{adminUserId}/invite");
     }
 
+    [HttpPost("api/{id:guid}/admin-users/local-password-reset")]
+    public async Task<IActionResult> LocalAdminPasswordResetProxy(Guid id)
+    {
+        Response.Headers.CacheControl = "no-store";
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+        var body = await reader.ReadToEndAsync();
+        return await ProxyGatewayAsync(HttpMethod.Post,
+            $"{_gatewayUrl}/api/platform-auth/local-tenant-admin-reset/{id}", body);
+    }
+
     [HttpGet("api/{id:guid}/settings")]
     public Task<IActionResult> SettingsProxy(Guid id)
     {

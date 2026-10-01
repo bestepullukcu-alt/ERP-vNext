@@ -12,25 +12,21 @@ using Xunit;
 
 namespace Diten.AuthService.Application.Tests.Roles;
 
+[Collection(AuthPermissionOnboardingMongoCollectionDefinition.Name)]
 public sealed class ProductAbbreviationPermissionOnboardingMongoTests
 {
-    private static readonly Guid TenantA = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-    private static readonly Guid TenantB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+    private const string DatabaseName = "diten_auth_fu20_itest";
+    private readonly Guid TenantA = Guid.NewGuid();
+    private readonly Guid TenantB = Guid.NewGuid();
 
     [Fact]
     public async Task Real_mongo_reconciles_replays_revokes_and_restores_exact_tenant_scoped_profile()
     {
-        var settings = MongoClientSettings.FromConnectionString("mongodb://localhost:27017");
-        settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
-        settings.ConnectTimeout = TimeSpan.FromSeconds(5);
-        var client = new MongoClient(settings);
-        await client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
-
-        var databaseName = "diten_auth_fu20_" + Guid.NewGuid().ToString("N");
-        var database = client.GetDatabase(databaseName);
+        var database = OpenOwnedTestDatabase();
+        var catalog = ProductItemSkuMasterCatalog();
         try
         {
-            await MongoDbIndexConfigurations.EnsureIndexesAsync(database);
+            await MongoDbIndexConfigurations.EnsurePermissionOnboardingIndexesAsync(database);
             var tenantContext = new TenantContext();
             tenantContext.SetTenant(TenantA);
             var permissions = new PermissionRepository(database);
@@ -43,7 +39,6 @@ public sealed class ProductAbbreviationPermissionOnboardingMongoTests
                 new PpmEntitlementPermissionPolicy(),
                 NullLogger<EntitlementPermissionSyncService>.Instance);
 
-            var catalog = ProductItemSkuMasterCatalog();
             foreach (var permission in catalog)
             {
                 await permissions.CreateAsync(permission, CancellationToken.None);
@@ -75,7 +70,8 @@ public sealed class ProductAbbreviationPermissionOnboardingMongoTests
             Assert.Equal(grantCountAfterFirst, await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == TenantA));
             Assert.Equal(6, roleCountAfterFirst);
             Assert.Equal(18, grantCountAfterFirst);
-            Assert.Equal(0, await database.GetCollection<UserRole>("userRoles").CountDocumentsAsync(FilterDefinition<UserRole>.Empty));
+            Assert.Equal(0, await database.GetCollection<UserRole>("userRoles").CountDocumentsAsync(
+                role => role.TenantId == TenantA || role.TenantId == TenantB));
 
             await service.SyncTenantModulesWithKeysAsync(
                 TenantA,
@@ -114,11 +110,127 @@ public sealed class ProductAbbreviationPermissionOnboardingMongoTests
 
             Assert.Equal(0, await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == TenantB));
             Assert.Equal(grantCountAfterFirst, await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == TenantA));
+
+            // Exercise source preservation after the original exact 6-role / 18-grant assertions.
+            tenantContext.SetTenant(TenantA);
+            var viewer = await roles.GetByNameAndTenantAsync("Viewer", TenantA, CancellationToken.None);
+            Assert.NotNull(viewer);
+            var manualPermission = new Permission("fu20", "manual", "read", "Test manual", null);
+            var otherPermission = new Permission("fu20", "other", "read", "Test other source", null);
+            catalog.AddRange([manualPermission, otherPermission]);
+            await permissions.CreateAsync(manualPermission, CancellationToken.None);
+            await permissions.CreateAsync(otherPermission, CancellationToken.None);
+            var manual = RolePermission.ManualGrant(viewer.Id, manualPermission.Id, TenantA, "fu20-test");
+            var other = RolePermission.ModuleGrant(viewer.Id, otherPermission.Id, TenantA, "fu20-test", "other-module");
+            await rolePermissions.AssignAsync(manual, CancellationToken.None);
+            await rolePermissions.AssignAsync(other, CancellationToken.None);
+            await service.RevokeModuleAsync(TenantA, ProductAbbreviationEntitlementGrantProfile.ModuleCode, "fu20-test");
+            var retained = await grantsCollection.Find(grant => grant.TenantId == TenantA).ToListAsync();
+            Assert.Equal(new[] { manual.Id, other.Id }.OrderBy(id => id), retained.Select(grant => grant.Id).OrderBy(id => id));
+            Assert.Equal(GrantSource.Manual, retained.Single(grant => grant.Id == manual.Id).GrantSource);
+            Assert.Equal("other-module", retained.Single(grant => grant.Id == other.Id).SourceModuleCode);
+            await service.GrantModuleWithKeysAsync(TenantA, ProductAbbreviationEntitlementGrantProfile.ModuleCode, permissionKeys, "fu20-test");
+            await service.GrantModuleWithKeysAsync(TenantA, ProductAbbreviationEntitlementGrantProfile.ModuleCode, permissionKeys, "fu20-test");
+            Assert.Equal(20, await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == TenantA));
+            Assert.Equal(2, await grantsCollection.CountDocumentsAsync(grant => grant.Id == manual.Id || grant.Id == other.Id));
+            Assert.Equal(0, await grantsCollection.CountDocumentsAsync(grant => grant.TenantId == TenantB));
+            Assert.Equal(0, await database.GetCollection<UserRole>("userRoles").CountDocumentsAsync(
+                role => role.TenantId == TenantA || role.TenantId == TenantB));
         }
         finally
         {
-            await client.DropDatabaseAsync(databaseName);
+            await CleanupAsync(database, catalog);
         }
+    }
+
+    [Fact]
+    public async Task Real_mongo_preserves_production_unique_indexes_and_idempotent_schema()
+    {
+        var database = OpenOwnedTestDatabase();
+        var permission = new Permission("fu20-index", "resource", "read", "Index test", null);
+        try
+        {
+            await MongoDbIndexConfigurations.EnsurePermissionOnboardingIndexesAsync(database);
+            var before = await ReadIndexesAsync(database);
+            await MongoDbIndexConfigurations.EnsurePermissionOnboardingIndexesAsync(database);
+            Assert.Equal(before, await ReadIndexesAsync(database));
+            var collections = (await database.ListCollectionNamesAsync()).ToList();
+            Assert.Equal(new[] { "permissions", "rolePermissions", "roles", "userRoles" }, collections.OrderBy(name => name));
+
+            var permissions = database.GetCollection<BsonDocument>("permissions");
+            var original = permission.ToBsonDocument();
+            await permissions.InsertOneAsync(original);
+            var duplicateKey = original.DeepClone().AsBsonDocument;
+            duplicateKey["_id"] = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard);
+            duplicateKey["Action"] = "different";
+            await AssertDuplicateAsync(() => permissions.InsertOneAsync(duplicateKey));
+            var duplicateTuple = original.DeepClone().AsBsonDocument;
+            duplicateTuple["_id"] = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard);
+            duplicateTuple["Key"] = "fu20-index.different.key";
+            await AssertDuplicateAsync(() => permissions.InsertOneAsync(duplicateTuple));
+
+            var userRoles = database.GetCollection<UserRole>("userRoles");
+            var userId = Guid.NewGuid();
+            var roleId = Guid.NewGuid();
+            await userRoles.InsertOneAsync(new UserRole(userId, roleId, TenantA, "fu20-test"));
+            await AssertDuplicateAsync(() => userRoles.InsertOneAsync(new UserRole(userId, roleId, TenantA, "fu20-test")));
+            await userRoles.InsertOneAsync(new UserRole(userId, roleId, TenantB, "fu20-test"));
+            Assert.Equal(1, await userRoles.CountDocumentsAsync(role => role.TenantId == TenantA));
+            Assert.Equal(1, await userRoles.CountDocumentsAsync(role => role.TenantId == TenantB));
+
+            var roles = database.GetCollection<Role>("roles");
+            await roles.InsertOneAsync(new Role("FU20-index-role", "Test", null, TenantA));
+            await AssertDuplicateAsync(() => roles.InsertOneAsync(new Role("FU20-index-role", "Test", null, TenantA)));
+            await roles.InsertOneAsync(new Role("FU20-index-role", "Test", null, TenantB));
+            var grants = database.GetCollection<RolePermission>("rolePermissions");
+            await grants.InsertOneAsync(RolePermission.ManualGrant(roleId, permission.Id, TenantA, "fu20-test"));
+            await AssertDuplicateAsync(() => grants.InsertOneAsync(RolePermission.ManualGrant(roleId, permission.Id, TenantA, "fu20-test")));
+            await grants.InsertOneAsync(RolePermission.ManualGrant(roleId, permission.Id, TenantB, "fu20-test"));
+        }
+        finally
+        {
+            await CleanupAsync(database, [permission]);
+        }
+    }
+
+    private static IMongoDatabase OpenOwnedTestDatabase()
+    {
+        var uri = Environment.GetEnvironmentVariable("MONGO_TEST_URI")
+            ?? throw new InvalidOperationException("An explicit owned-test Mongo URI is required.");
+        var url = new MongoUrl(uri);
+        if (url.Servers.Count() != 1 || url.Server.Host != "127.0.0.1" || url.Server.Port == 27017
+            || url.Username is not null || url.Password is not null)
+            throw new InvalidOperationException("FU20 requires an isolated loopback test Mongo port, never application Mongo.");
+        var settings = MongoClientSettings.FromUrl(url);
+        settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
+        settings.ConnectTimeout = TimeSpan.FromSeconds(5);
+        return new MongoClient(settings).GetDatabase(DatabaseName);
+    }
+
+    private async Task CleanupAsync(IMongoDatabase database, IReadOnlyList<Permission> catalog)
+    {
+        await database.GetCollection<UserRole>("userRoles").DeleteManyAsync(role => role.TenantId == TenantA || role.TenantId == TenantB);
+        await database.GetCollection<RolePermission>("rolePermissions").DeleteManyAsync(grant => grant.TenantId == TenantA || grant.TenantId == TenantB);
+        await database.GetCollection<Role>("roles").DeleteManyAsync(role => role.TenantId == TenantA || role.TenantId == TenantB);
+        var ids = catalog.Select(permission => permission.Id).ToArray();
+        await database.GetCollection<Permission>("permissions").DeleteManyAsync(permission => ids.Contains(permission.Id));
+    }
+
+    private static async Task AssertDuplicateAsync(Func<Task> insert)
+    {
+        var error = await Assert.ThrowsAsync<MongoWriteException>(insert);
+        Assert.Equal(ServerErrorCategory.DuplicateKey, error.WriteError.Category);
+    }
+
+    private static async Task<string[]> ReadIndexesAsync(IMongoDatabase database)
+    {
+        var result = new List<string>();
+        foreach (var name in new[] { "permissions", "rolePermissions", "roles", "userRoles" })
+        {
+            var indexes = await (await database.GetCollection<BsonDocument>(name).Indexes.ListAsync()).ToListAsync();
+            result.AddRange(indexes.Select(index => name + ":" + index.ToJson()));
+        }
+        return result.OrderBy(index => index, StringComparer.Ordinal).ToArray();
     }
 
     private static List<Permission> ProductItemSkuMasterCatalog() =>
@@ -135,7 +247,7 @@ public sealed class ProductAbbreviationPermissionOnboardingMongoTests
                 moduleOverride: "product-item-sku-master"))
     ];
 
-    private static async Task AssertExactProfileAsync(
+    private async Task AssertExactProfileAsync(
         RoleRepository roles,
         RolePermissionRepository rolePermissions,
         IReadOnlyList<Permission> catalog)
@@ -164,7 +276,7 @@ public sealed class ProductAbbreviationPermissionOnboardingMongoTests
         }
     }
 
-    private static async Task AssertRoleAsync(
+    private async Task AssertRoleAsync(
         RoleRepository roles,
         RolePermissionRepository rolePermissions,
         IReadOnlyList<Permission> catalog,

@@ -8104,6 +8104,35 @@
         if (running && running.switchToken) { showTimerUndo(running); }
     };
 
+    /*
+     * One browser attempt must keep one identity across a double-click, retry or lost response. The identity is
+     * derived from the exact projected tuple rather than generated at click time, so rebuilding the payload does
+     * not create a second business attempt. The digest is deliberately non-secret and bounded; the server still
+     * owns authorization, assignment, maker-checker and replay decisions.
+     */
+    const hashActionAttemptTuple = (value) => {
+        const hashes = [0x811c9dc5, 0x9e3779b9, 0x85ebca6b, 0xc2b2ae35];
+        const primes = [0x01000193, 0x27d4eb2d, 0x165667b1, 0x1b873593];
+        for (let index = 0; index < value.length; index += 1) {
+            const code = value.charCodeAt(index);
+            for (let slot = 0; slot < hashes.length; slot += 1) {
+                hashes[slot] = Math.imul(hashes[slot] ^ (code + slot), primes[slot]);
+            }
+        }
+        return hashes.map((hash) => (hash >>> 0).toString(16).padStart(8, '0')).join('');
+    };
+
+    const stableWorkItemActionIdentity = (providerCode, itemId, actionCode, projectedVersion) => {
+        const parts = [providerCode, itemId, actionCode].map((part) => typeof part === 'string' ? part : '');
+        const version = Number(projectedVersion);
+        // Version 0 is a real version: a provider whose records start there (MDM) is as writable as one that starts at 1.
+        if (parts.some((part) => !part.trim()) || !Number.isInteger(version) || version < 0) { return null; }
+
+        // Length prefixes make tuple boundaries unambiguous without normalizing the ordinal source facts.
+        const tuple = parts.map((part) => `${part.length}:${part}`).concat(`v:${version}`).join('|');
+        return `wcn-action-v1:${hashActionAttemptTuple(tuple)}`;
+    };
+
     const submitRealTransition = async (
         item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         const label = actionLabel(action);
@@ -8112,7 +8141,19 @@
         render();
 
         // The concurrency token from the projection — an expected-version write, so a stale screen loses cleanly.
-        const expectedVersion = Number(item.concurrency?.token ?? 0);
+        const projectedToken = item.concurrency?.token;
+        const expectedVersion = Number(projectedToken ?? 0);
+        /*
+         * The stable identity exists only when the projection CARRIED a version. An item with no token has nothing
+         * that changes between two honest attempts (accept → decline → accept on an invitation), so a key derived
+         * for it would make the second attempt look like a replay of the first; it sends no key and the owner
+         * decides. Nothing is refused here: whether a version or a key is REQUIRED is the owning module's rule,
+         * answered by the server (MOD-0023's dispatcher refuses both when missing) — a browser-side refusal turned
+         * every item that starts at version 0, or carries no token, into an action that could never be taken.
+         */
+        const idempotencyKey = projectedToken === null || projectedToken === undefined
+            ? null
+            : stableWorkItemActionIdentity(item.source?.providerCode, item.id, action.code, expectedVersion);
         /*
          * WC-D2 — ONE ADDRESS, EVERY PROVIDER. This used to be TasksApi.transition(), which posts to
          * /Tasks/api/{id}/{verb} — MOD-0024's own route, and the reason only MOD-0024's items could be acted on.
@@ -8126,9 +8167,12 @@
             item.id,
             action.code,
             item.source?.providerCode,
-            buildTransitionBody(
-                action.code,
-                { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues }));
+            {
+                ...buildTransitionBody(
+                    action.code,
+                    { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues }),
+                ...(idempotencyKey ? { idempotencyKey } : {})
+            });
 
         state.submittingItemId = null;
         state.submittingActionCode = null;

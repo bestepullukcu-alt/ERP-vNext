@@ -13,7 +13,10 @@ public static class DependencyInjection
 {
     private static bool _guidSerializerRegistered;
 
-    public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddPersistence(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        bool runStartupMaintenance = true)
     {
         RegisterGuidSerializer();
 
@@ -35,12 +38,15 @@ public static class DependencyInjection
         clientSettings.GuidRepresentation = GuidRepresentation.Standard;
         var client = new MongoClient(clientSettings);
 
-        // MOD-0220 FULL — one-shot, idempotent backfill of legacy LifecycleStatus → OperationalStatus, run before
-        // any request hits the typed repository (matches Platform's synchronous startup-migration convention).
-        Configurations.LegalEntityOperationalStatusMigration
-            .MigrateAsync(client.GetDatabase(databaseName))
-            .GetAwaiter()
-            .GetResult();
+        if (runStartupMaintenance)
+        {
+            // MOD-0220 FULL — one-shot, idempotent backfill of legacy LifecycleStatus → OperationalStatus, run before
+            // any request hits the typed repository (matches Platform's synchronous startup-migration convention).
+            Configurations.LegalEntityOperationalStatusMigration
+                .MigrateAsync(client.GetDatabase(databaseName))
+                .GetAwaiter()
+                .GetResult();
+        }
 
         services.AddSingleton<IMongoClient>(client);
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));
@@ -51,11 +57,38 @@ public static class DependencyInjection
         services.AddScoped<IGskuRepository, GskuRepository>();
         services.AddScoped<IFinishedGoodRepository, FinishedGoodRepository>();
         services.AddScoped<ILskuRepository, LskuRepository>();
+        services.AddScoped<ILskuIdentityWorkflowOperationRepository, LskuIdentityWorkflowOperationRepository>();
+        services.AddScoped<ILskuIdentityWorkflowTenantPartitionDiscovery, LskuIdentityWorkflowTenantPartitionDiscoveryRepository>();
+        services.AddScoped<ILskuRetirementRequestOperationRepository, LskuRetirementRequestOperationRepository>();
         services.AddScoped<IProductAbbreviationRegisterRepository, ProductAbbreviationRegisterRepository>();
         services.AddScoped<IProductAbbreviationAllocationLedgerRepository, ProductAbbreviationAllocationLedgerRepository>();
         services.AddScoped<IProductAbbreviationHistoryRepository, ProductAbbreviationHistoryRepository>();
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IAuditIntentDeliveryRepository, AuditIntentDeliveryRepository>();
+        services.AddScoped<IAuditIntentTenantPartitionDiscovery, AuditIntentTenantPartitionDiscoveryRepository>();
+        services.AddScoped<IAuditIntentTemporalMigrationRepository, AuditIntentTemporalMigrationRepository>();
+        services.AddScoped<AuditIntentTemporalMigrationRunner>();
+        services.AddScoped<IProductLegalEntityScopePolicyRepository, ProductLegalEntityScopePolicyRepository>();
+        services.AddScoped<IProductLegalEntityScopeOperationalReadinessRepository,
+            ProductLegalEntityScopeOperationalReadinessRepository>();
+        services.AddScoped<IProductLegalEntityScopeGuardedWriteSession,
+            ProductLegalEntityScopeGuardedWriteSession>();
+        services.AddScoped<IProductLegalEntityScopeRolloutStateRepository, ProductLegalEntityScopeRolloutStateRepository>();
+        services.AddScoped<IGlobalProductIdentityWorkflowOperationRepository,
+            GlobalProductIdentityWorkflowOperationRepository>();
+        services.AddScoped<IGlobalProductCorrectionOperationRepository,
+            GlobalProductCorrectionOperationRepository>();
+        services.AddScoped<IGlobalProductRetirementRequestOperationRepository,
+            GlobalProductRetirementRequestOperationRepository>();
+        services.AddScoped<IGlobalProductIdentityWorkflowTenantPartitionDiscovery,
+            GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository>();
+        services.AddScoped<IFirstGskuIdentityWorkflowOperationRepository, FirstGskuIdentityWorkflowOperationRepository>();
+        services.AddScoped<IFirstGskuIdentityRetirementOperationRepository, FirstGskuIdentityRetirementOperationRepository>();
+        services.AddScoped<IFirstGskuIdentityWorkflowTenantPartitionDiscovery, FirstGskuIdentityWorkflowTenantPartitionDiscoveryRepository>();
+        services.AddScoped<IGskuCorrectionWorkflowOperationRepository, GskuCorrectionWorkflowOperationRepository>();
+        services.AddScoped<IGskuCorrectionWorkflowTenantDiscoveryRepository, GskuCorrectionWorkflowTenantDiscoveryRepository>();
+        services.AddScoped<IGskuRetirementRequestOperationRepository, GskuRetirementRequestOperationRepository>();
+        services.AddScoped<IGskuRetirementRequestWorkflowTenantDiscoveryRepository, GskuRetirementRequestWorkflowTenantDiscoveryRepository>();
 
         // MOD-0290-FU02 — Brand/Product master repositories (tenant-scoped, soft archive, no hard delete).
         services.AddScoped<IBrandRepository, BrandRepository>();

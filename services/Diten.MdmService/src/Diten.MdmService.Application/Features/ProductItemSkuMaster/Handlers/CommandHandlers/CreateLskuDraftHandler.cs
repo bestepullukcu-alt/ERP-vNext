@@ -3,7 +3,9 @@ using System.Text;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Contracts.ReferenceData;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -19,24 +21,35 @@ public sealed class CreateLskuDraftHandler
     private readonly ICodeReservationRepository _reservations;
     private readonly ILskuRepository _lskus;
     private readonly IGskuRepository _gskus;
+    private readonly IProductDefinitionRevisionRepository _revisions;
+    private readonly IGlobalProductRepository _globalProducts;
     private readonly IVerifiedMarketReferenceResolver _markets;
     private readonly ITenantContext _tenantContext;
     private readonly IProductIdentityActorContext _actorContext;
+    private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
 
     public CreateLskuDraftHandler(
         ICodeReservationRepository reservations,
         ILskuRepository lskus,
         IGskuRepository gskus,
+        IProductDefinitionRevisionRepository revisions,
+        IGlobalProductRepository globalProducts,
         IVerifiedMarketReferenceResolver markets,
         ITenantContext tenantContext,
-        IProductIdentityActorContext actorContext)
+        IProductIdentityActorContext actorContext,
+        IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+        IProductLegalEntityScopePolicyRepository policies,
+        ProductLegalEntityScopeCandidateFacade candidates)
     {
         _reservations = reservations;
         _lskus = lskus;
         _gskus = gskus;
+        _revisions = revisions;
+        _globalProducts = globalProducts;
         _markets = markets;
         _tenantContext = tenantContext;
         _actorContext = actorContext;
+        _scopeGuard = new(rolloutStates, policies, candidates, tenantContext);
     }
 
     public async Task<Response<ProductItemSkuMasterModels.LskuDraftDto>> Handle(
@@ -47,9 +60,26 @@ public sealed class CreateLskuDraftHandler
         ArgumentNullException.ThrowIfNull(request.Request);
         var command = request.Request;
         var commandId = command.IdempotencyKey.Trim().ToUpperInvariant();
+        var admissionFingerprint = GskuChildCreationAdmission.ComputeRequestFingerprint(
+            command.GskuId, GskuChildIdentityKind.Lsku, commandId, command.MarketCode);
+        var scope = await _scopeGuard.ResolveContextAsync("mdm.lskus.create", cancellationToken);
+        if (!scope.IsSuccessful)
+        {
+            return Fail(scope.FailureCode!, scope.StatusCode);
+        }
+
         var replay = await _lskus.GetByCreationCommandIdAsync(commandId, cancellationToken);
         if (replay is not null)
         {
+            var replayScopeFailure = await EvaluateGskuScopeAsync(
+                replay.GskuId,
+                scope.Context!,
+                cancellationToken);
+            if (replayScopeFailure is not null)
+            {
+                return replayScopeFailure;
+            }
+
             if (replay.IsDeleted)
             {
                 return Fail("CREATION_COMMAND_TOMBSTONED", 409);
@@ -61,7 +91,14 @@ public sealed class CreateLskuDraftHandler
                 return Fail("IDEMPOTENCY_KEY_CONFLICT", 409);
             }
 
-            return await CompleteReplayAsync(replay, commandId, cancellationToken);
+            return await CompleteReplayAsync(
+                replay, commandId, admissionFingerprint, cancellationToken);
+        }
+
+        var scopeFailure = await EvaluateGskuScopeAsync(command.GskuId, scope.Context!, cancellationToken);
+        if (scopeFailure is not null)
+        {
+            return scopeFailure;
         }
 
         var gsku = await _gskus.GetReferenceableByIdAsync(command.GskuId, cancellationToken);
@@ -76,6 +113,19 @@ public sealed class CreateLskuDraftHandler
             return Fail(
                 resolution.FailureCode ?? "REFERENCE_PROVIDER_UNAVAILABLE",
                 resolution.StatusCode is 404 or 503 or 504 ? resolution.StatusCode : 503);
+        }
+
+        var admission = await _gskus.AcquireChildCreationAdmissionAsync(
+            gsku.Id,
+            GskuChildIdentityKind.Lsku,
+            commandId,
+            admissionFingerprint,
+            DateTimeOffset.UtcNow,
+            cancellationToken);
+        if (!admission.Succeeded)
+        {
+            return Fail(admission.ErrorCode ?? "GSKU_CHILD_ADMISSION_CONFLICT",
+                AdmissionStatus(admission.ErrorCode));
         }
 
         CodeReservation reservation;
@@ -116,7 +166,8 @@ public sealed class CreateLskuDraftHandler
         }
 
         var lsku = BuildLsku(gsku.Id, command.MarketCode, resolution.Selection, reservation, identityId, commandId);
-        var createResult = await _lskus.CreateDraftAsync(lsku, cancellationToken);
+        var createResult = await _lskus.CreateDraftWithAdmissionAsync(
+            lsku, admissionFingerprint, cancellationToken);
         if (createResult.WriteOutcomeAmbiguous)
         {
             var persisted = await _lskus.GetByReservationIdAsync(reservation.Id, cancellationToken);
@@ -140,14 +191,53 @@ public sealed class CreateLskuDraftHandler
             return Fail(createResult.ErrorCode ?? "LSKU_WRITE_FAILED", 409);
         }
 
-        return await ConfirmAndMapAsync(createResult.Lsku, reservation, commandId, cancellationToken);
+        return await ConfirmAndMapAsync(
+            createResult.Lsku, reservation, commandId, admissionFingerprint, cancellationToken);
+    }
+
+    private async Task<Response<ProductItemSkuMasterModels.LskuDraftDto>?> EvaluateGskuScopeAsync(
+        Guid gskuId,
+        ProductLegalEntityScopeConsumerContext scopeContext,
+        CancellationToken cancellationToken)
+    {
+        var gsku = await _gskus.GetByIdAsync(gskuId, cancellationToken);
+        var revision = gsku is null
+            ? null
+            : await _revisions.GetByIdAsync(gsku.ProductDefinitionRevisionId, cancellationToken);
+        var product = revision is null
+            ? null
+            : await _globalProducts.GetByIdAsync(revision.GlobalProductId, cancellationToken);
+        if (gsku is null || revision is null || product is null)
+        {
+            return Fail("GSKU_NOT_REFERENCEABLE", 404);
+        }
+
+        var decision = await _scopeGuard.EvaluateAsync(scopeContext, product.Id, cancellationToken);
+        return decision.Allowed ? null : Fail("GSKU_NOT_REFERENCEABLE", 404);
+    }
+
+    private async Task<Response<ProductItemSkuMasterModels.LskuDraftDto>?> EvaluateGskuScopeAsync(
+        Guid gskuId,
+        CancellationToken cancellationToken)
+    {
+        var scope = await _scopeGuard.ResolveContextAsync("mdm.lskus.create", cancellationToken);
+        return scope.IsSuccessful
+            ? await EvaluateGskuScopeAsync(gskuId, scope.Context!, cancellationToken)
+            : Fail(scope.FailureCode!, scope.StatusCode);
     }
 
     private async Task<Response<ProductItemSkuMasterModels.LskuDraftDto>> CompleteReplayAsync(
         Lsku replay,
         string commandId,
+        string admissionFingerprint,
         CancellationToken cancellationToken)
     {
+        var scopeFailure = await EvaluateGskuScopeAsync(replay.GskuId, cancellationToken);
+        if (scopeFailure is not null)
+        {
+            return scopeFailure;
+        }
+
         var reservation = await _reservations.GetByIdAsync(replay.CodeReservationId, cancellationToken);
         if (!MatchesBinding(reservation, replay))
         {
@@ -156,7 +246,8 @@ public sealed class CreateLskuDraftHandler
 
         if (reservation!.BindingState == CodeReservationBindingState.Confirmed)
         {
-            return Success(replay, reservation.BindingState, false, 201);
+            return await CompleteAdmissionAndMapAsync(
+                replay, reservation.BindingState, commandId, admissionFingerprint, cancellationToken);
         }
 
         if (reservation.BindingState != CodeReservationBindingState.PendingIdentityWrite)
@@ -164,15 +255,23 @@ public sealed class CreateLskuDraftHandler
             return Fail("LSKU_BINDING_INVARIANT_VIOLATION", 500);
         }
 
-        return await ConfirmAndMapAsync(replay, reservation, commandId, cancellationToken);
+        return await ConfirmAndMapAsync(
+            replay, reservation, commandId, admissionFingerprint, cancellationToken);
     }
 
     private async Task<Response<ProductItemSkuMasterModels.LskuDraftDto>> ConfirmAndMapAsync(
         Lsku lsku,
         CodeReservation reservation,
         string commandId,
+        string admissionFingerprint,
         CancellationToken cancellationToken)
     {
+        var scopeFailure = await EvaluateGskuScopeAsync(lsku.GskuId, cancellationToken);
+        if (scopeFailure is not null)
+        {
+            return scopeFailure;
+        }
+
         var confirmation = await _reservations.ConfirmIdentityBindingAsync(
             reservation.Id,
             lsku.Id,
@@ -183,7 +282,8 @@ public sealed class CreateLskuDraftHandler
             cancellationToken);
         if (confirmation.Succeeded && confirmation.Reservation is not null)
         {
-            return Success(lsku, CodeReservationBindingState.Confirmed, false, 201);
+            return await CompleteAdmissionAndMapAsync(
+                lsku, CodeReservationBindingState.Confirmed, commandId, admissionFingerprint, cancellationToken);
         }
 
         var actual = await _reservations.GetByIdAsync(reservation.Id, cancellationToken);
@@ -194,11 +294,38 @@ public sealed class CreateLskuDraftHandler
 
         return actual!.BindingState switch
         {
-            CodeReservationBindingState.Confirmed => Success(lsku, actual.BindingState, false, 201),
+            CodeReservationBindingState.Confirmed => await CompleteAdmissionAndMapAsync(
+                lsku, actual.BindingState, commandId, admissionFingerprint, cancellationToken),
             CodeReservationBindingState.PendingIdentityWrite => Success(lsku, actual.BindingState, true, 202),
             _ => Fail("LSKU_BINDING_INVARIANT_VIOLATION", 500)
         };
     }
+
+    private async Task<Response<ProductItemSkuMasterModels.LskuDraftDto>> CompleteAdmissionAndMapAsync(
+        Lsku lsku,
+        CodeReservationBindingState bindingState,
+        string commandId,
+        string admissionFingerprint,
+        CancellationToken cancellationToken)
+    {
+        var completion = await _gskus.CompleteChildCreationAdmissionAsync(
+            lsku.GskuId,
+            GskuChildIdentityKind.Lsku,
+            commandId,
+            admissionFingerprint,
+            cancellationToken);
+        return completion.Succeeded
+            ? Success(lsku, bindingState, false, 201)
+            : Fail(completion.ErrorCode ?? "LSKU_BINDING_RECONCILIATION_REQUIRED",
+                completion.ErrorCode == "GSKU_CHILD_ADMISSION_CONFLICT" ? 409 : 202);
+    }
+
+    private static int AdmissionStatus(string? code) => code switch
+    {
+        "GSKU_NOT_REFERENCEABLE" or "GSKU_NOT_FOUND" => 404,
+        "GSKU_CHILD_ADMISSION_CAPACITY_EXCEEDED" => 409,
+        _ => 409
+    };
 
     private Lsku BuildLsku(
         Guid gskuId,
@@ -225,6 +352,8 @@ public sealed class CreateLskuDraftHandler
             CommandId = commandId,
             Sequence = 1,
             TimestampUtc = timestamp,
+            TimestampUtcTicksV1 = timestamp.UtcTicks,
+            TemporalStorageVersion = AuditIntentTemporalStorage.CurrentVersion,
             EvidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(evidence))),
             SnapshotReference = $"Lsku/{identityId:N}/0",
             DeliveryState = AuditIntentDeliveryState.Pending,

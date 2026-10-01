@@ -35,4 +35,26 @@
   <data name="ErrorProviderTimeout"><value>参考数据提供程序超时。</value></data>
   <data name="ErrorForbidden"><value>您没有权限。</value></data>
   <data name="ErrorGateway"><value>无法完成请求。</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve"><value>标识已批准</value></data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve"><value>等待标识审批</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>已停用</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>提交审批</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>是否提交此 LSKU 标识以供审批？</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>停用原因</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>必须填写停用原因。</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>停用原因不能超过 128 个字符。</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>LSKU 标识已提交，正在等待审批。</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>生命周期状态已更改，已加载最新记录。</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>会话已过期，请重新登录。</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>生命周期服务不可用，请稍后重试。</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>生命周期请求超时，请重试。</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>撤回审批</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>撤回审批请求？</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>撤回仍在处理中。</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>审批请求已撤回。</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>申请退役</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>提交退役申请？</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>退役申请正在等待决定。</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>退役申请已提交。</value></data>
 </root>

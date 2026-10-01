@@ -1,4 +1,5 @@
 using Diten.MdmService.Application.Features.LegalEntity.Validators;
+using Diten.MdmService.Application.Features.LegalEntity.Commands;
 using Xunit;
 
 namespace Diten.MdmService.Application.Tests;
@@ -66,5 +67,50 @@ public sealed class LegalEntityWriteRequestValidatorTests
         var result = _validator.Validate(LegalEntityTestData.ValidRequest(
             organizationRoleCode: null, parentLegalEntityId: null, registeredAddressJson: null));
         Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public void Create_WithExpectedVersion_Fails()
+    {
+        var request = WithExpectedVersion(LegalEntityTestData.ValidRequest(), 0);
+
+        var result = new CreateLegalEntityCommandValidator().Validate(new CreateLegalEntityCommand(request));
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.PropertyName.Contains("ExpectedVersion", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Update_WithoutExpectedVersion_Fails()
+    {
+        var request = WithExpectedVersion(LegalEntityTestData.ValidRequest(), null);
+
+        var result = new UpdateLegalEntityCommandValidator().Validate(
+            new UpdateLegalEntityCommand(Guid.NewGuid(), request));
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.PropertyName.Contains("ExpectedVersion", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Update_WithNegativeExpectedVersion_Fails()
+    {
+        var request = WithExpectedVersion(LegalEntityTestData.ValidRequest(), -1);
+
+        var result = new UpdateLegalEntityCommandValidator().Validate(
+            new UpdateLegalEntityCommand(Guid.NewGuid(), request));
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, error => error.PropertyName.Contains("ExpectedVersion", StringComparison.Ordinal));
+    }
+
+    private static Features.LegalEntity.LegalEntityWriteRequest WithExpectedVersion(
+        Features.LegalEntity.LegalEntityWriteRequest request,
+        int? expectedVersion)
+    {
+        var property = Assert.IsAssignableFrom<System.Reflection.PropertyInfo>(
+            typeof(Features.LegalEntity.LegalEntityWriteRequest).GetProperty("ExpectedVersion"));
+        property.SetValue(request, expectedVersion);
+        return request;
     }
 }

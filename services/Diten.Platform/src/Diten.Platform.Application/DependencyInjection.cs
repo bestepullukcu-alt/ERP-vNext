@@ -62,6 +62,7 @@ public static class DependencyInjection
         // See IWorkReportScopeSource for why a second copy in the items handler would be the dangerous shape.
         services.AddScoped<Features.Tasks.Services.IWorkReportScopeSource,
             Features.Tasks.Services.WorkReportScopeSource>();
+        services.AddScoped<IOrgDataScopeCandidateResolver, OrgDataScopeCandidateResolver>();
         /*
          * The ONE surface MOD-0024 asks "who sits in which seat" through. Nine files used to inject the
          * assignment repository directly and each re-wrote the active-window rule; BL-071 moves that fact to
@@ -312,7 +313,6 @@ public static class DependencyInjection
         services.AddScoped<SchedulerSmokeTestJob>();
         services.AddScoped<DeferredPlatformJobHandler>();
         services.AddScoped<EmailDispatchJob>();
-        services.AddScoped<EmailDispatchSweepJob>();
         services.AddScoped<Features.Workflow.BackgroundJobs.WorkflowEscalationSweepJob>();
         // WC-4 — the ONE place a task notification is sent from (opt-out, actor skip, real addresses,
         // never fails the write).
@@ -333,6 +333,10 @@ public static class DependencyInjection
         // A3 — workflow transition gate (defence-in-depth): business modules inject this and must check it
         // BEFORE committing a state transition. Blocked ⇒ do not commit (not best-effort).
         services.AddScoped<Contracts.IWorkflowTransitionGate, Services.WorkflowTransitionGate>();
+        services.AddScoped<Features.Workflow.Services.IWorkflowInstanceStartCoordinator,
+            Features.Workflow.Services.WorkflowInstanceStartCoordinator>();
+        services.AddScoped<Features.Workflow.Services.ITrustedWorkflowCancellationCoordinator,
+            Features.Workflow.Services.TrustedWorkflowCancellationCoordinator>();
 
         // WC-1 (DCP-004) — read-only work-item projection + provider abstraction. The
         // projection service is pure; providers are registered as an IEnumerable so WC-5 adds more without

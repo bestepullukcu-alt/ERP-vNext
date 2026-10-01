@@ -3,10 +3,15 @@
 @using System.Text.Json
 @inject IHtmlLocalizer<TenantsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnvironment
 @{
     ViewData["Title"] = Localizer["Details"].Value;
     Layout = "_LayoutPlatformAdmin";
     var tenantId = ViewData["TenantId"]?.ToString() ?? string.Empty;
+    var localResetEnabled = HostEnvironment.IsDevelopment()
+        && string.Equals(Environment.GetEnvironmentVariable("DITEN_LOCAL_TENANT_ADMIN_RESET_ENABLED"), "true", StringComparison.Ordinal)
+        && string.Equals(Environment.GetEnvironmentVariable("DITEN_LOCAL_TENANT_ADMIN_RESET_TENANT_ID"), tenantId, StringComparison.OrdinalIgnoreCase);
+    var localResetEmail = localResetEnabled ? Environment.GetEnvironmentVariable("DITEN_LOCAL_TENANT_ADMIN_RESET_EMAIL") ?? string.Empty : string.Empty;
     var currentActorJson = JsonSerializer.Serialize(new
     {
         id = ViewData["CurrentActorId"]?.ToString() ?? string.Empty,
@@ -14,7 +19,7 @@
     });
 }
 
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4" data-tenant-id="@tenantId" id="tenantDetailsRoot">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4" data-tenant-id="@tenantId" data-local-reset-enabled="@(localResetEnabled ? "true" : "false")" data-local-reset-email="@localResetEmail" id="tenantDetailsRoot">
     <div class="d-flex flex-column justify-content-center">
         <h5 class="mb-0" id="detailsTitle">@Localizer["Details"]</h5>
         <nav aria-label="breadcrumb" class="text-muted">

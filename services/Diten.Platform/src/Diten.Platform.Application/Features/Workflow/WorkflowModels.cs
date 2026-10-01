@@ -39,6 +39,11 @@ public static class WorkflowReasonCodes
     public const string WorkflowTemplateNotPublished = "WORKFLOW_TEMPLATE_NOT_PUBLISHED";
     public const string WorkflowTemplateNoActiveVersion = "WORKFLOW_TEMPLATE_NO_ACTIVE_VERSION";
     public const string WorkflowInstanceStartConflict = "WORKFLOW_INSTANCE_START_CONFLICT";
+    public const string WorkflowStartIdempotencyConflict = "WORKFLOW_START_IDEMPOTENCY_CONFLICT";
+    public const string WorkflowStartRecoveryConflict = "WORKFLOW_START_RECOVERY_CONFLICT";
+    public const string WorkflowStartNotCompleted = "WORKFLOW_START_NOT_COMPLETED";
+    public const string WorkflowTerminalEvidenceInconsistent = "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT";
+    public const string WorkflowDecisionNotTerminal = "WORKFLOW_DECISION_NOT_TERMINAL";
     public const string WorkflowAssignmentCandidatesRequired = "WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED";
     public const string WorkflowTaskNotFound = "WORKFLOW_TASK_NOT_FOUND";
     public const string WorkflowInstanceNotFound = "WORKFLOW_INSTANCE_NOT_FOUND";
@@ -273,6 +278,97 @@ public sealed record StartWorkflowInstanceResponse(
     DateTimeOffset? DueAt,
     string? CorrelationId);
 
+public sealed record TrustedWorkflowStartRequest(
+    Guid? TemplateId,
+    string? TemplateCode,
+    string ObjectType,
+    string ObjectId,
+    string? ObjectRef,
+    IReadOnlyList<string> CandidatePrincipalIds,
+    string? ReasonCode,
+    string IdempotencyKey,
+    bool CommentRequired,
+    bool EvidenceRequired,
+    DateTimeOffset? DueAt);
+
+public sealed record TrustedWorkflowStartResult(
+    Guid WorkflowInstanceId,
+    Guid TemplateId,
+    Guid TemplateVersionId,
+    Guid ApprovalTaskId,
+    Guid AssignmentSnapshotId,
+    Guid StartTransitionLogId,
+    string ObjectRef,
+    string Status,
+    string CurrentStage,
+    string CurrentStep,
+    DateTimeOffset? StartedAt,
+    DateTimeOffset? DueAt,
+    bool IsReplay,
+    string? CorrelationId);
+
+public sealed record TrustedWorkflowTerminalDecisionEvidence(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    Guid TemplateId,
+    Guid TemplateVersionId,
+    string ObjectType,
+    string ObjectId,
+    string ObjectRef,
+    string TerminalAction,
+    string ActorUserId,
+    string? ReasonCode,
+    DateTimeOffset DecisionAt,
+    long TransitionSequence,
+    string TaskStatus,
+    string InstanceStatus,
+    string? CorrelationId);
+
+public sealed record TrustedWorkflowCancellationPreflight(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    string ObjectType,
+    string ObjectId,
+    string ObjectRef,
+    int WorkflowInstanceVersion,
+    int ApprovalTaskVersion,
+    string WorkflowInstanceStatus,
+    string ApprovalTaskStatus);
+
+public sealed record TrustedWorkflowCancellationRequest(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    string ExpectedObjectType,
+    string ExpectedObjectId,
+    Guid ExpectedMakerSubjectId,
+    int ExpectedWorkflowInstanceVersion,
+    int ExpectedApprovalTaskVersion,
+    string ReasonCode,
+    string? Comment,
+    string IdempotencyKey);
+
+public sealed record TrustedWorkflowCancellationEvidence(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    Guid TemplateId,
+    Guid TemplateVersionId,
+    string ObjectType,
+    string ObjectId,
+    string ObjectRef,
+    string TerminalAction,
+    Guid ActorUserId,
+    string ReasonCode,
+    string? Comment,
+    DateTimeOffset DecisionAt,
+    long TransitionSequence,
+    Guid TransitionLogId,
+    string TaskStatus,
+    string InstanceStatus,
+    int WorkflowInstanceVersion,
+    int ApprovalTaskVersion,
+    bool IsReplay,
+    string? CorrelationId);
+
 public sealed record WorkflowInstanceDto(
     Guid Id,
     Guid TemplateId,
@@ -334,14 +430,16 @@ public sealed record ApproveWorkflowTaskRequest(
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
-    string? EvidenceRef);
+    string? EvidenceRef,
+    int? ExpectedVersion = null);
 
 public sealed record RejectWorkflowTaskRequest(
     string? ActorId,
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
-    string? EvidenceRef);
+    string? EvidenceRef,
+    int? ExpectedVersion = null);
 
 public sealed record WorkflowTaskTransitionResponse(
     Guid WorkflowInstanceId,
@@ -360,7 +458,8 @@ public sealed record DelegateWorkflowTaskRequest(
     string DelegatePrincipalId,
     string ReasonCode,
     string IdempotencyKey,
-    string? Comment);
+    string? Comment,
+    int? ExpectedVersion = null);
 
 public sealed record RequestInfoWorkflowTaskRequest(
     string? ActorId,
@@ -368,7 +467,8 @@ public sealed record RequestInfoWorkflowTaskRequest(
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
-    string? EvidenceRef);
+    string? EvidenceRef,
+    int? ExpectedVersion = null);
 
 public sealed record CancelWorkflowTaskRequest(
     string? ActorId,

@@ -20,8 +20,11 @@
                     <label for="globalProductName" class="form-label fw-medium">
                         @Localizer["GlobalProductName"] <span class="text-danger">*</span>
                     </label>
-                    <input type="text" id="globalProductName" name="GlobalProductName" class="form-control"
-                           maxlength="200" placeholder="@Localizer["GlobalProductNamePlaceholder"]" required />
+                    <div class="diten-field">
+                        <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="globalProductName" name="GlobalProductName" class="form-control"
+                               maxlength="400" placeholder="@Localizer["GlobalProductNamePlaceholder"]" required />
+                    </div>
                     <div class="invalid-feedback">@Localizer["GlobalProductNameRequired"]</div>
                     <div class="form-text">@Localizer["GlobalProductNameHelp"]</div>
                 </div>
@@ -33,7 +36,8 @@
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
             @SharedLocalizer["Cancel"]
         </button>
-        <button type="button" id="btnSaveGlobalProduct" class="btn btn-primary">
+        <button type="button" id="btnSaveGlobalProduct" class="btn btn-primary"
+                data-create-label="@SharedLocalizer["Save"]" data-edit-label="@Localizer["UpdateDraft"]">
             @SharedLocalizer["Save"]
         </button>
     </div>

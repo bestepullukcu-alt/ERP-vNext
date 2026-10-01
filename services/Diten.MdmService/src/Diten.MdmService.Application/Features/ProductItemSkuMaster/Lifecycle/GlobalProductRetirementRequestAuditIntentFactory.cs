@@ -1,0 +1,51 @@
+using System.Security.Cryptography;
+using System.Text;
+using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
+
+namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
+
+public static class GlobalProductRetirementRequestAuditIntentFactory
+{
+    public static LocalAuditIntent Create(GlobalProduct product, int expectedVersion, Guid operationId,
+        Guid actorId, ProductAuditOperation operation, DateTimeOffset timestampUtc)
+        => Create(product, expectedVersion, operationId, actorId, operation, string.Empty, timestampUtc);
+
+    public static LocalAuditIntent Create(GlobalProduct product, int expectedVersion, Guid operationId,
+        Guid actorId, ProductAuditOperation operation, string requestReason, DateTimeOffset timestampUtc)
+    {
+        if (product.Id == Guid.Empty || product.TenantId == Guid.Empty || expectedVersion < 0
+            || operationId == Guid.Empty || actorId == Guid.Empty || timestampUtc.Offset != TimeSpan.Zero
+            || operation is not (ProductAuditOperation.GlobalProductRetirementRequested
+                or ProductAuditOperation.GlobalProductRetirementRejected
+                or ProductAuditOperation.GlobalProductRetirementManualReconciliationRequired
+                or ProductAuditOperation.GlobalProductIdentityRetired))
+            throw new ArgumentException("Global Product retirement audit facts are invalid.");
+        var key = $"global-product-retirement:{operationId:D}:{operation}";
+        var postVersion = checked(expectedVersion + 1);
+        var facts = Encoding.UTF8.GetBytes(string.Join('\n', product.TenantId, product.Id,
+            expectedVersion, operationId, actorId, operation,
+            Convert.ToBase64String(Encoding.UTF8.GetBytes(requestReason))));
+        return new()
+        {
+            IntentId = DeterministicGuid($"{product.TenantId:D}|{product.Id:D}|{operation}|{operationId:D}"),
+            TenantId = product.TenantId, AggregateType = AuditAggregateType.GlobalProduct,
+            AggregateId = product.Id, PreVersion = expectedVersion, PostVersion = postVersion,
+            Operation = operation, ActorId = actorId.ToString("D"), CorrelationId = operationId.ToString("D"),
+            CausationId = operationId.ToString("D"), CommandId = key, Sequence = postVersion,
+            TimestampUtc = timestampUtc, TimestampUtcTicksV1 = timestampUtc.UtcTicks,
+            TemporalStorageVersion = AuditIntentTemporalStorage.CurrentVersion,
+            EvidenceHash = Convert.ToHexString(SHA256.HashData(facts)),
+            SnapshotReference = $"GlobalProduct/{product.Id:N}/{postVersion}",
+            DeliveryState = AuditIntentDeliveryState.Pending, IdempotencyKey = key
+        };
+    }
+
+    private static Guid DeterministicGuid(string value)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+        Span<byte> bytes = stackalloc byte[16]; hash.AsSpan(0, 16).CopyTo(bytes);
+        bytes[7] = (byte)((bytes[7] & 0x0F) | 0x50); bytes[8] = (byte)((bytes[8] & 0x3F) | 0x80);
+        return new(bytes);
+    }
+}
