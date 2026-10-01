@@ -38,6 +38,7 @@ Blueprint-canonical SoR modülleri (DCP-002 gate PASS; registry'ye DCP-009 ile e
 - `MOD-0290 Product/Item/SKU Master` → **MDM-owned** (item kimliği, UoM, materialType). SCE consume eder (`itemId/skuId`), lokal kopya açmaz.
 - `MOD-0172 Allocation & ATP/CTP` → **Commercial-owned** (O2C). 0173 availability+reservation okur; ikinci balance açmaz.
 - **Physical Location Master** (Site→Warehouse→StorageLocation→Zone→Bin) → **DEC-INV-03: Option B shared master** (yeni lightweight master; MOD-# registry collision-check pending). OrganizationUnit DEĞİL (K6).
+  **2026-10-01 — kimlik çözüldü:** `MOD-0173-FU02 Location / Storage Master` (Blueprint 8.1: MOD-0173 SoR "locations (as scoped)"; yeni MOD yok). Bu domain'in sahipliğinde, `Diten.InventoryService` içinde; LOCATION sözleşmesinin sahibi. Diğer modüller (0178, 0142, üretim) yalnız okur.
 - Backbone (consume): Canonical ID (MOD-0040/0288) · RBAC (MOD-0018) · Audit (MOD-0021) · Workflow (MOD-0023) · Reference Data (MOD-0048) · Evidence/Docs (MOD-0029) · Event Bus · Gateway.
 - Feeder seam: `MOD-0142 GRN` (Procurement/Commercial) → 0173'e goods-receipt post eder.
 
