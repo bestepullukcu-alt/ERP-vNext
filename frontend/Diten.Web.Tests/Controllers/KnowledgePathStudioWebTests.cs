@@ -367,13 +367,13 @@ public sealed class KnowledgePathStudioWebTests
             Const("KnowledgePath.cs", "KnowledgePathStudioErrors", "ChainTemplateRequired"),
             Const("KnowledgePath.cs", "KnowledgePathStudioErrors", "ChainSubjectMismatch"),
             Const("KnowledgePath.cs", "KnowledgePathStudioErrors", "PathIdentityLocked"),
-            Const("ContentSet.cs", "ChainContextErrors", "CountryInvalid"),
-            Const("ContentSet.cs", "ChainContextErrors", "LanguageNotInCountry"),
-            Const("ContentSet.cs", "ChainContextErrors", "ReferenceSetUnavailable"),
+            Const("ChainContextErrors.cs", "ChainContextErrors", "CountryInvalid"),
+            Const("ChainContextErrors.cs", "ChainContextErrors", "LanguageNotInCountry"),
+            Const("ChainContextErrors.cs", "ChainContextErrors", "ReferenceSetUnavailable"),
             Const("KnowledgePath.cs", "KnowledgePathStudioErrors", "ChainSlotInvalid"),
             Const("KnowledgePath.cs", "KnowledgePathStudioErrors", "ChainSlotFull"),
             Const("KnowledgePath.cs", "KnowledgePathStudioErrors", "ChainSlotMoveForbidden"),
-            Const("ContentSet.cs", "ChainContextErrors", "ComponentLanguageMismatch"),
+            Const("ChainContextErrors.cs", "ChainContextErrors", "ComponentLanguageMismatch"),
             Const("KnowledgeContent.cs", "KnowledgeContentClaimErrors", "ClaimProductMismatch"),
             Const("KnowledgeContent.cs", "KnowledgeContentClaimErrors", "ClaimRefDuplicate")
         };

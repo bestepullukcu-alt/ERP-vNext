@@ -6,7 +6,8 @@ namespace Diten.CrmService.Application.Tests;
 
 // ---------------- shared knowledge studio test doubles ----------------
 // WP-KP-4 — moved out of the retired ContentSetContextTests (the content set authoring surface is gone). The names keep
-// their WP-SB-1R prefix: the knowledge path tests (KP-1 / KP-2 / KP-3) and the read-only set tests use them.
+// their WP-SB-1R prefix: the knowledge path tests (KP-1 / KP-2 / KP-3) use them (WP-CLN-1 removed the set / revision
+// repository doubles with the code).
 
 /// <summary>BRD reference data for the set context: COUNTRY_CODES (TR, UZ, GB, QQ) and country-content-languages
 /// (TR: tr · UZ: uz, ru · GB: en · QQ: none). <see cref="Published"/> false = unreadable.</summary>
@@ -63,19 +64,6 @@ internal sealed class ContentSetTestProfiles : IAudienceProfileRepository
     public Task UpdateAsync(AudienceProfile profile, CancellationToken ct) => Task.CompletedTask;
 }
 
-internal sealed class ContentSetTestSets : IContentSetRepository
-{
-    public List<ContentSet> Items { get; } = new();
-    public Task<ContentSet?> GetByIdAsync(Guid t, Guid id, CancellationToken ct)
-        => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == t && x.Id == id));
-    public Task<IReadOnlyList<ContentSet>> ListAsync(Guid t, CancellationToken ct)
-        => Task.FromResult((IReadOnlyList<ContentSet>)Items.Where(x => x.TenantId == t).ToList());
-    public Task<ContentSet?> GetActiveByCodeAsync(Guid t, string code, CancellationToken ct)
-        => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == t && x.SetCode == code && !x.IsArchived()));
-    public Task InsertAsync(ContentSet entity, CancellationToken ct) { Items.Add(entity); return Task.CompletedTask; }
-    public Task UpdateAsync(ContentSet entity, CancellationToken ct) => Task.CompletedTask;
-}
-
 internal sealed class ContentSetTestTemplates : IConceptChainTemplateRepository
 {
     public List<ConceptChainTemplate> Items { get; } = new();
@@ -117,15 +105,4 @@ internal sealed class ContentSetTestClaims : IClaimRepository
         => Task.FromResult(Items.FirstOrDefault(c => c.TenantId == t && c.ClaimCode == code && !c.IsArchived()));
     public Task InsertAsync(Claim entity, CancellationToken ct) { Items.Add(entity); return Task.CompletedTask; }
     public Task UpdateAsync(Claim entity, CancellationToken ct) => Task.CompletedTask;
-}
-
-internal sealed class ContentSetTestRevisions : IContentSetRevisionRepository
-{
-    public List<ContentSetRevision> Items { get; } = new();
-    public Task<ContentSetRevision?> GetByIdAsync(Guid t, Guid id, CancellationToken ct)
-        => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == t && x.Id == id));
-    public Task<IReadOnlyList<ContentSetRevision>> ListByContentSetAsync(Guid t, Guid setId, CancellationToken ct)
-        => Task.FromResult((IReadOnlyList<ContentSetRevision>)Items.Where(x => x.TenantId == t && x.ContentSetId == setId).ToList());
-    public Task InsertAsync(ContentSetRevision e, CancellationToken ct) { Items.Add(e); return Task.CompletedTask; }
-    public Task UpdateAsync(ContentSetRevision e, CancellationToken ct) => Task.CompletedTask;
 }

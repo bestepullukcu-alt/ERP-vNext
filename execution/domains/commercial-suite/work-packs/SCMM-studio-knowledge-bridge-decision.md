@@ -84,7 +84,7 @@
 | 6 | Sayfa tasarımcısı (sürükle-bırak), marka kiti (ürün), ülke yasal blokları, onaylı görsel kütüphanesi, kilitli iddia blokları, uyum kontrolü | Stüdyo v2 (mockup sonrası fazlara bölünecek) |
 | 7 | Sahadan sayfa gösterim takibi | Stüdyo v2 son faz + mobil |
 | 8 | Zincir editörü "Çıktılar" paneli boş | **SB-2b** (SB-2'nin geri izini okur) |
-| 9 | İçerik Kapsamı serbest metin | **SB-1R: kapsam KALDIRILIYOR, bağlam setten türetilir (§7)** |
+| 9 | İçerik Kapsamı serbest metin | **SB-1R: kapsam KALDIRILIYOR, bağlam setten türetilir (§7)** · **CLN-1 ile kaldırıldı** (2026-10-01): kapsam / set / revizyon kodu CRM'den silindi; 97c5'te 1 kapsam belgesi kaldı (okuyucusu yok, CLN-2) |
 | 10 | Uygunluk kontrolü fiilen hep "Belirsiz": iddialarda `Applicability.EligibilityPolicyId` İddialar v2 arayüzünde girilemiyor; kapsam değerleri serbest metin | SB-1R ile birlikte; Uygunluk Politikaları ayrıca gözden geçirilecek |
 | 11 | Karar bekleyen: play'deki doğrudan Bilgi Yolu bağı ziyarette tek aşamalı yolculuk sayılsın mı? | SB-3 öncesi kullanıcıdan |
 | 11b | **SB-2 yeniden yayın riski:** set yeniden yayınlanınca eski yol `inactive` olur. Sürüme sabitlenmiş (`PathVersionPinPolicy`) bir yolculuk aşaması pasif yola bakar; yanıtta `previous_path_in_use` uyarısı var. **Öneri: aşamalar varsayılan olarak "yolun en son yayındaki sürümünü izle" çalışsın.** | **SB-3'te ele alınacak.** Kullanıcı (2026-09-30): ziyaret tarafına gelince yeniden değerlendirilecek. |

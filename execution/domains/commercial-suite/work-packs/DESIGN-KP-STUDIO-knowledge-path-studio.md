@@ -193,6 +193,7 @@ Yayındaki yol, yolculuk aşamasından **ziyarete** gider.
    - Kapsam okuma uçları + repository kaldırılır (SB-1R'den kalan).
    - Auth anahtarları `crm.content-set.*` ve `crm.content-scope.*` silinmez, "deprecated" yapılır.
 3. Sonraki temizlik: salt okunur set / kapsam repository'leri ve class-map `LegacyScope` (veri 0 olduğu doğrulanınca).
+   - **CLN-1 ile kaldırıldı** (2026-10-01): set 0 / revizyon 0 / kapsam 1 doğrulandı; iki controller, iki feature, üç entity + `ContentSetScopeRef`, üç repository, DI, class-map'ler (`LegacyScope` dahil) ve index oluşturma kodu silindi. `ChainContextErrors` ayrı dosyaya taşındı; `KnowledgeStudioOrigin` ve `KnowledgeContent.ContentSetId` korundu. Koleksiyon / index / veri dokunulmadı (CLN-2).
 
 ## 8. Paketler ve bağımlılıklar
 | Paket | Kapsam | Katman | Bağımlı |

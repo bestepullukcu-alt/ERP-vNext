@@ -139,10 +139,8 @@ public static class DependencyInjection
         services.AddScoped<IClaimCountryVersionRepository, ClaimCountryVersionRepository>();
         // WP-CL-BE-4 — consumed-event inbox (claim workflow outcome consumer).
         services.AddScoped<ICrmEventInboxRepository, CrmEventInboxRepository>();
-        // SCMM-14 (CAND-CAP-0011) — reusable content scope + content-set assembly draft masters.
-        services.AddScoped<IContentScopeRepository, ContentScopeRepository>();
-        services.AddScoped<IContentSetRepository, ContentSetRepository>();
-        services.AddScoped<IContentSetRevisionRepository, ContentSetRevisionRepository>();
+        // WP-CLN-1 — the content scope / content set / set revision repositories are removed (retired by WP-KP-4;
+        // no set / revision data, one scope document left for CLN-2; the collections and indexes stay in place).
 
         // MOD-0162 FU04 — KnowledgePath master (steps embedded, D2 → one collection, one repository). No delete method
         // (soft archive). The read-only consumption seam a future MOD-0155/MOD-0309 consumer reads makes no decision.
@@ -637,73 +635,6 @@ public static class DependencyInjection
         });
         Map<ClaimLocalizedText>(_ => { });
         Map<ClaimReviewRound>(map => map.GetMemberMap(x => x.WorkflowInstanceId).SetSerializer(stringGuid));
-
-        // SCMM-14 (CAND-CAP-0011) — ContentScope has no Guid FK (only Id/TenantId on the base map); registered so the
-        // driver maps it explicitly rather than as an anonymous document.
-        Map<ContentScope>(_ => { });
-
-        // SCMM-14 (CAND-CAP-0011) — ContentSet. Its Guid FKs live in embedded value objects; each takes the string-Guid
-        // convention (the new-aggregate class-map trap) so a stored ref round-trips as a string subtype and any future
-        // by-ref filter compares string vs string, not string vs binary.
-        // WP-SB-1R — the retired ContentScope binding keeps its old element name "Scope" on the LegacyScope member, so a
-        // pre-SB-1R document still reads (this class map rejects unknown elements) and a re-save keeps it; nothing reads
-        // it. CountryCode / LanguageCode are plain strings (AutoMap).
-#pragma warning disable CS0618 // LegacyScope is obsolete on purpose (read-compatibility only)
-        Map<ContentSet>(map => map.GetMemberMap(x => x.LegacyScope).SetElementName("Scope").SetIgnoreIfNull(true));
-#pragma warning restore CS0618
-        Map<ContentSetTemplateRef>(map =>
-            map.GetMemberMap(x => x.ConceptChainTemplateId).SetSerializer(stringGuid));
-        Map<ContentSetScopeRef>(map =>
-            map.GetMemberMap(x => x.ContentScopeId).SetSerializer(stringGuid));
-        // WP-SB-1R — the frozen set context of a revision; ids follow the string-Guid convention.
-        Map<ContentSetContextSnapshot>(map =>
-        {
-            map.GetMemberMap(x => x.ProductId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
-            map.GetMemberMap(x => x.AudienceProfileIds).SetSerializer(
-                new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
-        });
-        Map<ContentArrangement>(map =>
-            map.GetMemberMap(x => x.TemplateStepId).SetSerializer(stringGuid));
-        Map<ContentSetComponent>(map =>
-        {
-            map.GetMemberMap(x => x.SelectionId).SetSerializer(stringGuid);
-            map.GetMemberMap(x => x.KnowledgeContentId).SetSerializer(stringGuid);
-        });
-        Map<ContentSetClaim>(map =>
-        {
-            map.GetMemberMap(x => x.SelectionId).SetSerializer(stringGuid);
-            map.GetMemberMap(x => x.ClaimId).SetSerializer(stringGuid);
-        });
-        Map<ContentSetEligibilitySnapshot>(_ => { });
-        Map<ContentSetEligibilityItem>(map =>
-        {
-            map.GetMemberMap(x => x.SelectionId).SetSerializer(stringGuid);
-            map.GetMemberMap(x => x.ItemId).SetSerializer(stringGuid);
-            map.GetMemberMap(x => x.PolicyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
-        });
-
-        // SCMM-15 (CAND-CAP-0011) — ContentSetRevision (frozen manifest). ContentSetId takes the string-Guid convention
-        // (the new-aggregate class-map trap); the snapshot value objects reuse the already-registered ContentSet* maps.
-        // ContentSetReviewDecision carries no Guid member — registered so the driver maps it explicitly, not anonymously.
-        // WP-SB-2 — the produced content / path ids take the string-Guid convention too (the new-field class-map trap).
-        Map<ContentSetRevision>(map =>
-        {
-            map.GetMemberMap(x => x.ContentSetId).SetSerializer(stringGuid);
-            map.GetMemberMap(x => x.ProducedKnowledgeContentId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
-            map.GetMemberMap(x => x.ProducedKnowledgePathId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
-            // WP-SB-1R — a pre-SB-1R revision's frozen "Scope" element reads into LegacyScope (never used).
-#pragma warning disable CS0618 // LegacyScope is obsolete on purpose (read-compatibility only)
-            map.GetMemberMap(x => x.LegacyScope).SetElementName("Scope").SetIgnoreIfNull(true);
-#pragma warning restore CS0618
-        });
-        Map<ContentSetReviewDecision>(_ => { });
-        // SCMM-16B — the rendered-artifact pointer. ContentId is a FU01 content id and takes the same string-Guid
-        // convention (the new-aggregate class-map trap) so it round-trips as a string rather than a binary sub type.
-        Map<ContentSetRenderedArtifact>(map =>
-            map.GetMemberMap(x => x.ContentId).SetSerializer(stringGuid));
-        // SCMM-17 — the release state. The pinned released-artifact content id takes the same string-Guid convention.
-        Map<ContentSetReleaseState>(map =>
-            map.GetMemberMap(x => x.ReleasedArtifactContentId).SetSerializer(stringGuid));
 
         Map<KnowledgeExternalReference>(_ => { });
 
@@ -1728,18 +1659,6 @@ public static class DependencyInjection
             claimCountryVersions.Indexes.CreateOne(new CreateIndexModel<ClaimCountryVersion>(
                 Builders<ClaimCountryVersion>.IndexKeys.Ascending(v => v.TenantId).Ascending(v => v.ClaimId),
                 new CreateIndexOptions { Name = "ix_claim_country_versions_tenant_claim" }));
-
-            // SCMM-14 (CAND-CAP-0011) — content-scope + content-set indexes (tenant scoped). Codes are shared across
-            // versions / not unique ⇒ non-unique; uniqueness of the ACTIVE code is guarded in the create handlers.
-            var contentScopes = database.GetCollection<ContentScope>(ContentScopeRepository.CollectionName);
-            contentScopes.Indexes.CreateOne(new CreateIndexModel<ContentScope>(
-                Builders<ContentScope>.IndexKeys.Ascending(s => s.TenantId).Ascending(s => s.ScopeCode),
-                new CreateIndexOptions { Name = "ix_content_scopes_tenant_code" }));
-
-            var contentSets = database.GetCollection<ContentSet>(ContentSetRepository.CollectionName);
-            contentSets.Indexes.CreateOne(new CreateIndexModel<ContentSet>(
-                Builders<ContentSet>.IndexKeys.Ascending(s => s.TenantId).Ascending(s => s.SetCode),
-                new CreateIndexOptions { Name = "ix_content_sets_tenant_code" }));
 
             // MOD-0162 FU03 — concept-graph indexes (tenant scoped, soft-delete aware). EffectiveFrom / EffectiveTo /
             // ArchivedAt are DateTimeOffset (BSON array) and are deliberately NOT index keys (parallel-array trap); code

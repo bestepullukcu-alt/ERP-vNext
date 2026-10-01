@@ -51,8 +51,8 @@ public static class DependencyInjection
         // IKnowledgePathReader seam is never widened and no FU04 aggregate is ever mutated.
         services.AddScoped<Features.Knowledge.ContentEngagementJourney.ContentEngagementJourneyPathResolver>();
 
-        // WP-KP-1 — the single chain context resolver (product + audience a chain template derives). Shared by the
-        // knowledge path (studio model) and the read-only content-set adapter below.
+        // WP-KP-1 — the single chain context resolver (product + audience a chain template derives) of the knowledge
+        // path studio model.
         services.AddScoped<Features.Knowledge.Chain.IChainContextResolver, Features.Knowledge.Chain.ChainContextResolver>();
 
         // WP-KP-1 — the studio part of a knowledge path detail read (chain, derived context, claims, conformance).
@@ -60,11 +60,6 @@ public static class DependencyInjection
         // WP-KP-2 — the path review: the single outcome applier (event consumer, reconcile, withdraw) + reconcile-on-read.
         services.AddScoped<Features.Knowledge.Path.Review.KnowledgePathRevisionOutcomeApplier>();
         services.AddScoped<Features.Knowledge.Path.Review.KnowledgePathReviewReconciler>();
-
-        // WP-SB-1R — the content-set context resolver (country + language of the set; product + audience derived from
-        // the template). WP-KP-4: the set is retired and read-only, so only the obsolete set reads use it.
-        services.AddScoped<Features.ContentComposition.ContentSets.IContentSetContextResolver,
-            Features.ContentComposition.ContentSets.ContentSetContextResolver>();
 
         // MOD-0155 FU01 — the four read-only PlannedVisit provenance probes. Each is a thin in-process wrapper over an
         // already-registered seam (frequency resolver, consent evaluator, journey reader, contact-availability repo):
