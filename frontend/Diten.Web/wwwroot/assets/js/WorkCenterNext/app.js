@@ -1811,8 +1811,8 @@
      * action two pictures — measured: the rail drew `bx-user-pin` for "Yeniden ata" while the dialog it opened
      * drew a speech bubble. If an action has no entry here, ADD IT HERE; do not work around it at a call site.
      *
-     * `logTime` and `requestInfo` were added for exactly that reason: both open a dialog, neither was listed,
-     * and both would otherwise have fallen through to the generic arrow.
+     * `requestInfo` was added for exactly that reason: it opens a dialog, was not listed, and would otherwise
+     * have fallen through to the generic arrow.
      */
     /*
      * ⚠ THE MAP DECIDES, NEVER THE CALL SITE. A glyph chosen where the button is drawn is how one action ends
@@ -1834,7 +1834,7 @@
         inquire: 'bx-question-mark', requestInfo: 'bx-question-mark',
         // BL-439 — the other half of `inquire`: the addressee replies.
         answer: 'bx-reply',
-        reassign: 'bx-user-pin', plan: 'bx-calendar-plus', logTime: 'bx-time-five',
+        reassign: 'bx-user-pin', plan: 'bx-calendar-plus',
         scheduleReviewMeeting: 'bx-calendar-event',
         /*
          * ── THE LIFECYCLE VERBS (2026-08-25, BL-245) ────────────────────────────────────────────────────
@@ -2533,15 +2533,14 @@
         const all = itemActions(item);
         const actions = all.filter((a) => {
             /*
-             * ⚠ "Süre gir" IS DRAWN BY THE TIMESHEET CARD, NOT HERE (2026-08-24, Tur B). It is a personal
-             * measurement, not a lifecycle move — it changes no state — so standing it beside Complete and
-             * Pause misfiled it. The card owns it now; leaving it in both places would be one action with two
-             * homes, which is how the two drift.
+             * BL-486 — THE TIMER IS DRAWN BY THE TIME CARD, NOT HERE. Start / Stop is a measurement, not a
+             * lifecycle move, and the card paints it beside the figures it changes; the rail and the narrow bar's
+             * ··· menu repeated the same button. Only where the card is actually drawn: a surface without the card
+             * keeps the action, or it would have no home at all.
              *
-             * ⚠ THE ACTION ITSELF IS UNTOUCHED: same projection entry, same key, same handler, same dialog.
-             * Only where the button is painted moved.
+             * The action itself is untouched: same projection entry, same key, same dispatch.
              */
-            if (a.key === 'logTime') { return false; }
+            if (TIMER_ACTION_KEYS.includes(a.key) && timeCardDrawn(item)) { return false; }
             if (!a.disabled || a.disabledReason) { return true; }
             if (!reportedUnexplainedActions.has(a.code)) {
                 reportedUnexplainedActions.add(a.code);
@@ -4614,11 +4613,15 @@
 
     // The time card (task only). Drawn only where the provider declares timeTracking — a confident zero on a task
     // whose time is not tracked would read as "nobody worked on this".
+    // ONE answer to "is the time card on this page", read by the card AND by actionTiers (which leaves the timer
+    // to the card only where there is one).
+    const timeCardDrawn = (item) => hasCap(item, 'timeTracking')
+        && item.itemType === 'task' && item.lifecycle !== 'PendingAcceptance'
+        && !!timeEntriesOf(item);
+
     const renderTimesheet = (item) => {
-        if (!hasCap(item, 'timeTracking')) { return ''; }
-        if (item.itemType !== 'task' || item.lifecycle === 'PendingAcceptance') { return ''; }
+        if (!timeCardDrawn(item)) { return ''; }
         const te = timeEntriesOf(item);
-        if (!te) { return ''; }
         const figure = (value, labelKey, cls) => `<span class="wcn-ts-figure ${cls}">
                 <span class="wcn-ts-total">${esc(formatMinutes(value))}</span>
                 <span class="wcn-ts-sub">${esc(t(labelKey))}</span>
@@ -4635,13 +4638,6 @@
                     <i class="bx ${inboxActionIcon(a)} me-1"></i>${esc(actionLabel(a))}
                </button>`)
             .join('');
-        const logAction = itemActions(item).find((a) => a.key === 'logTime' && !a.disabled);
-        const logButton = logAction
-            ? `<button type="button" class="btn btn-sm btn-label-secondary wcn-ts-log"
-                       data-wcn-action="${esc(logAction.key)}" data-wcn-id="${esc(item.id)}">
-                    <i class="bx ${inboxActionIcon(logAction)} me-1"></i>${esc(actionLabel(logAction))}
-               </button>`
-            : '';
         // The running line is the SERVER's timer state for this reader (D2, §19.2); a paused TASK (Waiting, PendingReview
         // — ResolveExecutionState) still says so, because that state is real even though nothing pauses a timer.
         const stateKey = item.timerState === 'running' ? 'TimerRunningNow'
@@ -4661,7 +4657,6 @@
             ${runningLine}
             <div class="wcn-ts-actions">
                 ${timerButtons}
-                ${logButton}
                 <a class="btn btn-sm btn-text-secondary wcn-ts-sheet" href="/TimeEntry">${esc(t('OpenMyTimesheet'))}</a>
             </div>
         </div>`;
@@ -8162,13 +8157,14 @@
          * The body's shape still comes from the vocabulary above, never from a guess at this call site — the
          * server now reads those same field names off one payload and builds the module's DTO itself.
          */
-        const result = await global.WorkCenterNextApi.dispatchAction(
-            item.id,
+        const body = buildTransitionBody(
             action.code,
-            item.source?.providerCode,
-            buildTransitionBody(
-                action.code,
-                { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues }));
+            { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues });
+        // BL-491 — the person an action flagged by the server hands the work to, in the field the dispatcher reads.
+        // Added only for such an action, so every other request is byte for byte what it was.
+        if (action.targetPerson && assigneeUserId) { body.targetPrincipalId = assigneeUserId; }
+        const result = await global.WorkCenterNextApi.dispatchAction(
+            item.id, action.code, item.source?.providerCode, body);
 
         state.submittingItemId = null;
         state.submittingActionCode = null;
@@ -9643,53 +9639,6 @@
         return outcome;
     };
 
-    // Log time — manual minutes entry into the timesheet (task only).
-    const openLogTime = (item, action) => {
-        const label = actionLabel(action);
-        if (!global.Swal) { return Promise.resolve({ outcome: 'cancelled' }); }
-        let resolveOutcome;
-        const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
-        sharedConfirm({
-            title: label,
-            /*
-             * ITS OWN SENTENCE, saying what the box cannot: that this ADDS to what is already logged and does
-             * not touch the running timer. The generic "are you sure?" it used to wear said nothing at all
-             * above a field asking "how many minutes?".
-             */
-            subtext: esc(t('LogTimeSubtext')),
-            icon: inboxActionIcon(action),
-            confirmText: t('LogTimeConfirm'),
-            input: {
-                type: 'number',
-                label: t('LogTimeLabel'),
-                // Already a real example ("örn. 30"), so it was kept rather than replaced.
-                placeholder: t('LogTimePlaceholder'),
-                // The glyph is painted ON the box, exactly as the date field does it — no wrapper, nothing for
-                // the library's slot walk to trip over.
-                onOpen: (input) => { if (input) { input.classList.add('wcn-time-input'); } },
-                validate: (value) => {
-                    const m = parseInt(value, 10);
-                    return (!m || m <= 0) ? t('LogTimeLabel') : null;
-                }
-            },
-            onConfirm: (value) => {
-                const mins = parseInt(value, 10);
-                if (mins > 0) {
-                    // Showcase only (fixture `logTime`): no local timesheet is kept any more — real time is recorded on
-                    // My Timesheet (MOD-0280-FU01). The dialog stays a showcase of the dialog, nothing more.
-                    item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, atMs: data.referenceDate(item.provenance) });
-                    render();
-                    toast(tf('ToastTimeLogged', formatMinutes(mins)));
-                    resolveOutcome({ outcome: 'done' });
-                } else {
-                    resolveOutcome({ outcome: 'cancelled' });
-                }
-            },
-            onCancel: () => resolveOutcome({ outcome: 'cancelled' })
-        });
-        return outcome;
-    };
-
     /*
      * ── THE PERSONAL OVERLAY'S THREE WRITES (WC-1) ───────────────────────────────────────────────────────────
      *
@@ -10203,12 +10152,21 @@
         }
         if (action.input === 'date') { return openDatePicker(item, action); }
         if (action.input === 'meeting') { return openMeetingScheduler(item, action); }
-        if (action.input === 'minutes') { return openLogTime(item, action); }
 
         // Reason-capturing action (reject/return/inquire/dispute/delegate/reassign):
         // a mandatory-rationale textarea, which also serves as the confirm step.
-        if (action.reason) {
+        /*
+         * BL-491 — an action the SERVER flags as naming a person (`requiresTargetPerson` → `action.targetPerson`)
+         * opens this same window for its picker, even when it demands no reason: a delegation sent without its
+         * delegate is refused every time. Never derived from the action code.
+         */
+        if (action.reason || action.targetPerson) {
             if (!global.Swal) { return { outcome: 'cancelled' }; }
+            const asksTarget = !!action.targetPerson;
+            // The text box is mandatory only for an action that REQUIRES a reason. A person-naming action without
+            // one gets the optional note the server flagged (`acceptsNote`), or no text box at all.
+            const reasonRequired = !!action.reason;
+            const offersText = reasonRequired || !!action.note;
 
             /*
              * BL-043 — `reassign` also has to name the PERSON. The dialog used to ask only for a rationale, so
@@ -10218,7 +10176,7 @@
              * the list the server validates against — offering anyone else would build a dialog whose confirm is
              * refused, which is the shape of defect this ticket exists to close.
              */
-            const needsAssignee = ASSIGNEE_REQUIRED_ACTIONS.includes(action.code);
+            const needsAssignee = ASSIGNEE_REQUIRED_ACTIONS.includes(action.code) || asksTarget;
             /*
              * `inquire` may ALSO name a person, and must not require one — see WAITING_ON_ACTIONS. One fetch
              * serves both: the picker's list is the same list either way, because the server validates both
@@ -10232,9 +10190,15 @@
                 // `data` IS the array — unwrapped once in TasksApi (BL-113). This line was wrong for three
                 // rounds while each caller unwrapped the envelope in its own hand-written expression.
                 people = res.ok ? res.data : [];
+                // BL-491 — the people the server says this action cannot be handed to (the reader, and whoever
+                // started the workflow) are never offered.
+                if (asksTarget && action.excludedTargetIds.length) {
+                    people = people.filter((person) =>
+                        !action.excludedTargetIds.includes(String(personUserId(person) || '').toLowerCase()));
+                }
                 if (!people.length && needsAssignee) {
                     // Refusing beats opening a dialog that cannot be confirmed.
-                    toast(t('ReassignNoAssignableUsers'), 'error');
+                    toast(t(asksTarget ? 'DelegateNoEligiblePeople' : 'ReassignNoAssignableUsers'), 'error');
                     return { outcome: 'refused' };
                 }
             }
@@ -10248,7 +10212,7 @@
                 .map((person) => `<option value="${esc(personUserId(person))}">${esc(person.displayName || personUserId(person))}</option>`)
                 .join('');
             const assigneeField = needsAssignee
-                ? `<label class="form-label d-block text-start" for="wcnReassignAssignee">${esc(t('ReassignAssigneeLabel'))}</label>`
+                ? `<label class="form-label d-block text-start" for="wcnReassignAssignee">${esc(t(asksTarget ? 'DelegateTargetLabel' : 'ReassignAssigneeLabel'))}</label>`
                   + `<select id="wcnReassignAssignee" class="form-select">`
                   + `<option value="">${esc(t('ReassignAssigneePlaceholder'))}</option>${options}</select>`
                 : '';
@@ -10269,7 +10233,17 @@
                 ? `<p class="form-label d-block text-start mb-1">${esc(t('InquiryQuestionLabel'))}</p>`
                   + `<blockquote class="wcn-dialog-lead text-start">${esc(item.summary)}</blockquote>`
                 : '';
-            const textLabel = isAnswer ? t('InquiryAnswerLabel') : t('ReasonLabel');
+            const textLabel = isAnswer ? t('InquiryAnswerLabel')
+                : reasonRequired ? t('ReasonLabel') : t('ApprovalNoteLabel');
+            const textPlaceholder = isAnswer ? t('InquiryAnswerPlaceholder')
+                : reasonRequired ? t('ReasonPlaceholder') : t('ApprovalNotePlaceholder');
+            const textField = offersText
+                ? `<label class="form-label d-block text-start" for="wcnReasonText">${esc(textLabel)}</label>`
+                  // The server's ceiling for an answer is a task description's (4000); saying so here means the
+                  // textarea stops the reader rather than a 400 after they have written it.
+                  + `<textarea id="wcnReasonText" class="form-control" rows="3"${isAnswer ? ' maxlength="4000"' : ''} `
+                  + `placeholder="${esc(textPlaceholder)}"></textarea>`
+                : '';
 
             const waitingOnField = offersWaitingOn && offered.length
                 ? `<label class="form-label d-block text-start" for="wcnWaitingOn">${esc(t('WaitingOnLabel'))}</label>`
@@ -10308,13 +10282,7 @@
                     + questionQuote
                     + assigneeField
                     + waitingOnField
-                    + `<label class="form-label d-block text-start" for="wcnReasonText">${esc(textLabel)}</label>`
-                    // The server's ceiling for an answer is a task description's (4000); saying so here means the
-                    // textarea stops the reader rather than a 400 after they have written it.
-                    + `<textarea id="wcnReasonText" class="form-control" rows="3"${isAnswer ? ' maxlength="4000"' : ''} `
-                    + (isAnswer
-                        ? `placeholder="${esc(t('InquiryAnswerPlaceholder'))}"></textarea>`
-                        : `placeholder="${esc(t('ReasonPlaceholder'))}"></textarea>`),
+                    + textField,
                 showCancelButton: true,
                 confirmButtonText: t('ReasonConfirm'),
                 cancelButtonText: t('DialogDismiss'),
@@ -10325,7 +10293,8 @@
                 },
                 preConfirm: () => {
                     const reason = String(document.getElementById('wcnReasonText')?.value || '').trim();
-                    if (!reason) {
+                    // An optional note (BL-491) is never validated: empty is a real answer.
+                    if (!reason && reasonRequired) {
                         global.Swal.showValidationMessage(t(isAnswer ? 'InquiryAnswerRequired' : 'ReasonRequired'));
                         return false;
                     }
@@ -10338,7 +10307,8 @@
 
                     const assigneeUserId = String(document.getElementById('wcnReassignAssignee')?.value || '').trim();
                     // Cannot be confirmed without a person: the server requires it and a silent 400 helps nobody.
-                    if (!assigneeUserId) { global.Swal.showValidationMessage(t('ReassignAssigneeRequired')); return false; }
+                    const personRequiredKey = asksTarget ? 'DelegateTargetRequired' : 'ReassignAssigneeRequired';
+                    if (!assigneeUserId) { global.Swal.showValidationMessage(t(personRequiredKey)); return false; }
                     return { reason, assigneeUserId };
                 }
             }, dialogLook())).then((res) => {

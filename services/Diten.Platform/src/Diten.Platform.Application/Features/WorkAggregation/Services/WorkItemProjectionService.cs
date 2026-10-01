@@ -228,11 +228,28 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             BuildDecision("requestInfo", ActionRequestInfoKey, WorkflowPermissions.TasksRequestInfo, actor,
                 requiresConfirmation: false, requiresReason: true, supportsBulk: false, riskLevel: "normal"),
             BuildDecision("delegate", ActionDelegateKey, WorkflowPermissions.TasksDelegate, actor,
-                // No note flag: from the Task Center a delegation cannot name its person yet, so it is always refused
-                // (the dispatcher requires a target). A note box there would invite text that can never be sent; the
-                // person picker and the note arrive together (follow-up work package).
-                requiresConfirmation: true, requiresReason: false, supportsBulk: false, riskLevel: "normal")
+                // BL-491 — a delegation names its person (the dispatcher refuses one that does not), and may carry a
+                // note. The two arrive together: a note box on a window that could not name anybody invited text
+                // that could never be sent.
+                requiresConfirmation: true, requiresReason: false, supportsBulk: false, riskLevel: "normal",
+                acceptsNote: true, excludedTargets: DelegationExcludedTargets(instance, actor))
         ];
+    }
+
+    /*
+     * BL-491 — who a delegation must not be offered: the delegator (MOD-0023 refuses a delegation to oneself) and
+     * the person who STARTED the workflow (a starter cannot approve their own record, so the approval would lock
+     * with them). This narrows what the window offers; MOD-0023 still decides every delegation that is sent.
+     */
+    private static IReadOnlyList<string> DelegationExcludedTargets(WorkflowInstance instance, WorkItemActor actor)
+    {
+        var excluded = new List<string> { actor.UserId.ToString() };
+        if (instance.StartedByUserId is { } starter && starter != Guid.Empty && starter != actor.UserId)
+        {
+            excluded.Add(starter.ToString());
+        }
+
+        return excluded;
     }
 
     private static WorkItemActionDto BuildApprove(
@@ -287,7 +304,9 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
     private static WorkItemActionDto BuildDecision(
         string code, string labelKey, string permissionKey, WorkItemActor actor,
         bool requiresConfirmation, bool requiresReason, bool supportsBulk, string riskLevel,
-        bool acceptsNote = false)
+        bool acceptsNote = false,
+        // BL-491 — non-null means "this action names a person"; the list is who must not be offered.
+        IReadOnlyList<string>? excludedTargets = null)
     {
         if (!actor.Has(permissionKey))
         {
@@ -308,7 +327,9 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             RequiresEvidence: false,
             SupportsBulk: supportsBulk,
             RiskLevel: riskLevel,
-            AcceptsNote: acceptsNote ? AcceptsNoteWhen(requiresReason) : null);
+            AcceptsNote: acceptsNote ? AcceptsNoteWhen(requiresReason) : null,
+            RequiresTargetPerson: excludedTargets is null ? null : true,
+            ExcludedTargetPrincipalIds: excludedTargets);
     }
 
     private static WorkItemActionDto Disabled(

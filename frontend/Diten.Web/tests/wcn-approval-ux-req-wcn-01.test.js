@@ -269,8 +269,9 @@ describe("W-2 — an optional note on approve, offered only when the server says
     document.getElementById("wcnReasonText").remove();
   });
 
-  // The box follows the server's FLAG, whatever the action is called. (The server does not flag delegate today:
-  // from the Task Center it cannot name its person yet — see Delegate_carries_no_note_flag_until_it_can_name_its_person.)
+  // The box follows the server's FLAG, whatever the action is called. (The server's own Devret also carries the
+  // person flag since BL-491 and opens the person window — wcn-delegate-picker-logtime.test.js; this is an action
+  // flagged for a note ONLY.)
   it("gives any flagged action the same optional note, and adds no person field", async () => {
     const item = approval({ actions: [action("delegate", { acceptsNote: true })] });
     await bootSurface({ items: [item], wcn: translator });

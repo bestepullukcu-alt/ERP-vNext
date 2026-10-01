@@ -345,6 +345,9 @@ public sealed class TaskWorkItemContractGuardTests
         Assert.Equal(WorkItemContract.TimerRunning, byId[running.Id.ToString()].TimerState);
         Assert.Contains(byId[running.Id.ToString()].Actions, a => a.Code == "stopTimer");
         Assert.Contains(byId[other.Id.ToString()].Actions, a => a.Code == "startTimer");
+        // BL-486 — the time card draws the timer; the ··· list must not name it a second time.
+        Assert.All(items, item => Assert.DoesNotContain(
+            item.OverflowActionCodes ?? [], code => code is "startTimer" or "stopTimer"));
         foreach (var item in items)
         {
             var verdict = ValidateWithRealContract(item);
