@@ -456,3 +456,110 @@ services/Diten.AuthService/src/Diten.AuthService.Api/.work/fu24-build/Release/ne
 - `codex/product-pv-delivery-integration-20260907` için bu raporun commit’i ve yeni `archive/pc2/codex/product-pv-delivery-integration-20260907` ref’i, rapor snapshot’ından sonra tamamlanıp son kullanıcı yanıtında SHA ile doğrulanmalıdır; commit kendi SHA’sını içeremez.
 - Secret stop verilen dört worktree’nin mevcut kaynakları/çıktıları ve archive ref’leri bu turda aktarılmadı; güvenli ayıklama ve ayrı onay gerekir. Burada kalan iş bağımsız denetimde yapılmış sayılmamalıdır.
 - Ürün işinde bağımsız denetim bitene kadar yeni geliştirme yapılmamalıdır.
+
+## Ek tur — kalan dört worktree'nin güvenli arşivlenmesi (2026-10-01)
+
+Bu bölüm önceki snapshot'taki dört secret-stop dalın aktarılmamış olması durumunu günceller. Kullanıcının yeni, açık config-hariç checkpoint/push yetkisiyle dört dalın güvenli kaynak ve commit geçmişi GitHub'a aktarıldı. Secret config ve üretilmiş çıktılar aktarılmadı; çalışma ağacında korundu. Yeni geliştirme, test/build, servis/veri işlemi, merge, rebase, force push, silme, reset veya stash işlemi yapılmadı. Mevcut worktree dalları değiştirilmedi.
+
+### Başlangıç envanteri
+
+| Worktree | Yerel dal | Başlangıç HEAD | Değişmiş tracked | Untracked | Bu tur checkpoint dosyası |
+|---|---|---|---:|---:|---:|
+| `C:/dev/ERP-vNext` | `feature/mdm/mod-0290-product-item-sku-master` | `9b7f0e61a1fdc1f697cda1acf3a803188aa1d74f` | 3 | 26072 | 5 |
+| `C:/dev/ERP-vNext/.worktrees/mod-0290-final-integration` | `feature/mdm/mod-0290-product-identity-final-integration` | `bb9ce94d0ca3d4520f3d1555d284cbe3f8219f25` | 1 | 15261 | 0 |
+| `C:/dev/ERP-vNext/.worktrees/mod-0290-fu01-abb-workcenter` | `feature/mdm/mod-0290-fu01-abb-workcenter` | `7dd8b91bc34851ffb8258308f1cfbfc7508f6459` | 0 | 442 | 0 |
+| `C:/dev/ERP-vNext/.worktrees/mod-0290-fu03-integration` | `feature/mdm/product-identity-lifecycle-integration` | `af0432c62c8c695b9f0b2e2b641a8559136c74aa` | 0 | 2842 | 0 |
+
+Untracked üst-klasör dağılımı (checkpoint öncesi, dosya sayımı):
+
+| Worktree | Üst klasör → dosya sayısı |
+|---|---|
+| Ana checkout | `.work` 24625; `services` 855; `work` 542; `.worktrees` 39; `docs` 8; `.pnpm-store` 3 |
+| final-integration | `.work` 8815; `services` 5531; `.testoutput` 880; `frontend` 35 |
+| ABB WorkCenter | `.work` 442 |
+| FU03 integration | `.work` 2713; `services` 129 |
+
+### Checkpoint ve GitHub read-back
+
+Ana checkout checkpoint'i: `23c0f21839ed8b6df77625e6c4f40fc11b1cb194`.
+
+Mesaj: `wip: checkpoint before independent audit — ERP-vNext (config with secrets excluded)`.
+
+Exact beş kaynak-belge yolu:
+
+- `docs/product-backlog.md`
+- `execution/domains/platform-shared-services/module-packs/CAND-CAP-0002-FU05-tenant-module-entitlements.md`
+- `execution/domains/platform-shared-services/module-packs/PSS-012-business-reference-data-stewardship.md`
+- `docs/audits/product-five-cross-branch-delivery-audit-2026-09-29.md`
+- `docs/audits/product-five-cross-branch-inventory-2026-09-29.json`
+
+Diğer üç worktree'de üretilmiş/secret içerik dışında checkpoint edilecek yeni kaynak/test/belge bulunmadı; boş commit oluşturulmadı. Mevcut commit geçmişleri yine push edildi.
+
+| Yerel dal | Origin archive ref | Origin'den doğrulanan SHA | Ürün kapsamı |
+|---|---|---|---|
+| `feature/mdm/mod-0290-product-item-sku-master` | `archive/pc2/feature/mdm/mod-0290-product-item-sku-master` | `23c0f21839ed8b6df77625e6c4f40fc11b1cb194` | Beş ürünün çapraz-dal teslim envanteri; bu checkpoint runtime değişikliği içermez |
+| `feature/mdm/mod-0290-product-identity-final-integration` | `archive/pc2/feature/mdm/mod-0290-product-identity-final-integration` | `bb9ce94d0ca3d4520f3d1555d284cbe3f8219f25` | GP/GSKU/LSKU ve ortak ürün lifecycle entegrasyon geçmişi |
+| `feature/mdm/mod-0290-fu01-abb-workcenter` | `archive/pc2/feature/mdm/mod-0290-fu01-abb-workcenter` | `7dd8b91bc34851ffb8258308f1cfbfc7508f6459` | ABB / WorkCenter |
+| `feature/mdm/product-identity-lifecycle-integration` | `archive/pc2/feature/mdm/product-identity-lifecycle-integration` | `af0432c62c8c695b9f0b2e2b641a8559136c74aa` | GP/GSKU/LSKU/ABB/Scope entegrasyon geçmişi |
+
+Dört yeni ref atomik, normal push ile oluşturuldu; `git ls-remote origin "refs/heads/archive/pc2/*"` read-back'i dört tip SHA'sını birebir doğruladı. Önceki 41 ref ile toplam 45 archive ref gözlendi. Bu raporun entegrasyon-dalı commit'i ayrıca mevcut `archive/pc2/codex/product-pv-delivery-integration-20260907` ref'ine normal fast-forward push edilir; kendi commit SHA'sı son kullanıcı yanıtında bildirilir.
+
+### Commit geçmişi / secret kapısı
+
+Origin'deki güncel `main` SHA'sı `90fde0846ef5c5eb630439c52ba13a6053ffad55` olarak doğrulandı ve yalnız remote-tracking `origin/main` güncellendi; yerel main/checkout değiştirilmedi. Önceki eski baseline'ın yerine bu güncel baseline ile dört dalın belirlenen config yolları yeniden karşılaştırıldı.
+
+| Worktree | `origin/main` → dal config yol farkı | Main dışında config-yolu commit sayısı | Sonuç |
+|---|---:|---:|---|
+| Ana checkout | 0 | 0 | Push güvenlik kapısı geçti |
+| final-integration | 1 | 0 | Yalnız `services/Diten.Platform/src/Diten.Platform.API/appsettings.Development.json`; secret leaf değer farkı 0, yalnız non-secret şekil farkı; geçti |
+| ABB WorkCenter | 0 | 0 | Geçti |
+| FU03 integration | 0 | 0 | Geçti |
+
+Final-integration config karşılaştırması JSON içinde, değerler çıktıya alınmadan yapıldı. Secret alanlarının path/değer eşitliği korundu. Dalın main'de bulunmayan yeni secret config commit'i saptanmadı. Bu tur push edilemeyen dal yoktur. Bu kontrol, main'de zaten bulunan secret'ları yeni secret saymaz veya main'in genel secret güvenliğine sertifika vermez.
+
+### Dışarıda kalan dosyalar ve korunma
+
+305 secret-config dosyasının exact ADLARI önceki dört-worktree ekindeki listelerde yer alır; hiçbir değer raporlanmaz. Bu tur statü sınıflaması:
+
+- Ana checkout: önceki `C:/dev/ERP-vNext` listesindeki 171 yolun tamamı **untracked**, commit dışında.
+- final-integration: önceki 103 yoldan `services/Diten.Platform/src/Diten.Platform.API/appsettings.Development.json` **dirty tracked**; kalan 102 yol **untracked**, commit dışında.
+- ABB WorkCenter: önceki 3 yolun tamamı **untracked**, commit dışında.
+- FU03 integration: önceki 28 yolun tamamı **untracked**, commit dışında.
+
+Toplam: 304 untracked secret config + 1 dirty tracked secret config. Dirty config değiştirilmedi/stage edilmedi. Ordinal `relative path + SHA-256` envanterlerinin checkpoint/push öncesi ve sonrası eşitliği:
+
+| Worktree | Dosya | Önce = sonra SHA-256 |
+|---|---:|---|
+| Ana checkout | 171 | `C5E4134642AF3C26958A6442C549BFB3203167B0A6B43071C752F7FDD419C078` |
+| final-integration | 103 | `0ADC983E14183C8E0ACD3A269ECC0ADDFD55EBFF01C217F9625B59D7C5357717` |
+| ABB WorkCenter | 3 | `3C8A6FD75A3AFE7A0F48BFE02399A16508F62F3D8A5FB0BDB12F130B03AD738F` |
+| FU03 integration | 28 | `BB5515008E738FD50F9761DEDE37A232FD6F9BBE639D7AD5CB91869B28D72F34` |
+
+Üretilmiş çıktılar, dependency/cache ve kopya runtime/build ağaçları (`bin/`, `obj/`, `.local/`, `.testoutput/`, `.work/`, `node_modules/`, `.pnpm-store/`, `TestResults/`, `work/`, nested checkout çıktıları ve geçici çıktılar) kapsam dışında kaldı. Yukarıdaki untracked dağılımlar bunları içerir; tamamı korunmuştur.
+
+Ek özel dışlamalar:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/LskuIdentityWorkflowOptions.cs`: uzantısı `.cs` olsa da içerik gerçek kaynak değil, yakalanmış dosya-okuma hata transcript'idir; generated error output olarak dışlandı ve korundu.
+- `docs/ES-ek-doc/Decomposition_Work_Structuring_Engine_Spec_v2_0_Audited.docx`
+- `docs/ES-ek-doc/Integrated_Product_Development_CTD_Canonical_Architecture_v1.3.docx`
+- `docs/ES-ek-doc/Management_Governance_Domain_Structure_v2_1_Audited.docx`
+- `docs/ES-ek-doc/Project ongoing status report 26 July 2026 Integrated RnD-RA Lifecycle - v4.xlsx`
+- `docs/ES-ek-doc/Project ongoing status report 26 July 2026 Integrated RnD-RA Lifecycle - v5.xlsx`
+- `docs/System Capability & Implementation Blueprint - master 8.1.xlsx`
+
+Son altı belge, bu talebin açık kaynak/test/belge uzantı allow-list'inde `.docx/.xlsx` bulunmadığı için commit edilmedi; yerinde korunur.
+
+### Özellikle istenen commit nesneleri
+
+| İstenen nesne | Tam commit SHA | GitHub archive üzerinden erişim |
+|---|---|---|
+| `af0432c62` | `af0432c62c8c695b9f0b2e2b641a8559136c74aa` | `archive/pc2/feature/mdm/product-identity-lifecycle-integration` tip'i |
+| `bb9ce94d0` | `bb9ce94d0ca3d4520f3d1555d284cbe3f8219f25` | `archive/pc2/feature/mdm/mod-0290-product-identity-final-integration` tip'i |
+| `9b7f0e61a` | `9b7f0e61a1fdc1f697cda1acf3a803188aa1d74f` | Ana checkout archive tip'inin atası |
+| `48154c4f1` | `48154c4f18c2070d0b912bd86a5a62cbb6805158` | FU03 lifecycle-integration archive tip'inin atası |
+
+Dört nesne commit olarak doğrulandı; belirtilen dal tipleri için dört `git merge-base --is-ancestor` kontrolü exit 0 verdi. Origin tip SHA read-back'i ile birlikte nesnelerin push edilen geçmişten ulaşılabilir olduğu doğrulandı.
+
+### Son sınır
+
+Kayıt ve arşivleme, modüllerin tamamlandığı veya kabul/merge-ready olduğu anlamına gelmez. Secret config ve kapsam dışı binary belgeler bilinçli biçimde yalnız yerel kalır. Bağımsız denetim tamamlanana kadar bu PC'de ürün geliştirmesi yapılmayacaktır.
