@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('node:assert/strict');
-const { describe, it } = require('node:test');
+// vitest's own describe/it (globals) run this file: with `node:test` imported, vitest found no suite in it and
+// reported the file as failed without running a single assertion (product takeover, 2026-10-01).
 
 const root = path.resolve(__dirname, '..');
 const read = relative => fs.readFileSync(path.join(root, relative), 'utf8');
