@@ -142,3 +142,22 @@ KORU/YAPMA: CRM/Platform/Auth DOKUNMA; İddialar/Bilgi İçerikleri/yolculuk ekr
 DOĞRULA (E2): cd C:\tmp\kp-ui-1; dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 343); Web build 0 hata; node --check temiz. Yeni testler: izin kapısı (UAS-001 düz 403), lookup'lar (yayında+dallı zincir, ülke/dil adları, içerik dil/ürün filtresi, iddia gerekçesi), proxy allowlist, 13 hata kodu → metin, L10n 7 dil + JS↔resx eşliği, ham kod görünmemesi, FE-5 claim-options değişmedi. Sabotaj: izin kapısı + iddia gerekçesi testleri kırmızıya dönmeli. Commit ("feat(crm): WP-KP-UI-1 — knowledge path studio list, workspace shell, composition" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: mevcut api/* proxy'lerinden biri başka ekranda kullanılıyor ve değişiklik onu bozacaksa DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-01) — **ACCEPTED (E2)**
+- **Commit:** `702d76d5` (`wp/kp-ui-1`) → `test/crm-content-visit-e2e` fast-forward. 30 dosya, yalnız `frontend/`.
+- **Diff (K13 okuma):**
+  - Yeni `KnowledgePathsController.Studio.cs` (lookup + proxy) ve `Workspace` aksiyonu (`/CRM/KnowledgePaths/{id}`, `RequirePage(Read)`).
+  - `Details` → çalışma alanına yönlendirme (eski bağlantılar çalışır). `Edit`, zincirli / arşivli yolu çalışma alanına yönlendiriyor; eski yolda eski düzenleyici.
+  - **Ortak yardımcılar:** `ClaimCoverageOptions` (FE-5 claim-options ↔ yol iddia lookup'ı) ve `ReferenceValueSet` (FE-2 ülke listesi). FE-2 / FE-5 testleri değişmeden yeşil.
+  - `workspace.js` HTML üretiminde `esc()` kullanılıyor.
+- **CT testleri:** Web **368/0** (343 + 25).
+- **CT sabotajı:** `Workspace` izin kapısı kaldırıldı → `KnowledgePathStudio` 1 kırmızı. Kod geri alındı.
+- **Ajan notları (kabul):**
+  - Web taban 341/2'ydi. KP-1'in hata kodlarını ortak sınıfa taşıması bir Web testini bozmuştu; test her iki sınıfı çözecek şekilde düzeltildi. **CT KP-1 E2'de Web'i koşmamıştı — ders:** CRM'deki sabit / ad taşımalarında Web testleri de koşulmalı.
+  - Adım ayarları (zorunlu / süre / ön koşul) içerik (yol adımı) düzeyinde; zincir adımı kartında özet.
+  - **Eski yolların yayın düğmesi arayüzde kalktı** (Details kaldırıldı). Eski yollar zaten sahada kullanılmayacak; yayın arayüzü KP-UI-2.
+  - Yol iddia lookup'ı ürünün her iddiası için bir detay okuması yapıyor (iddia sayısı küçük; kabul).
+- **Açık (kullanıcı kararı):** liste ekranının altın şablondan **12 önceden var olan sapması** (veri modu bildirimi, `_TableSkeleton`, hızlı görünüm paneli, toplu işlem altyapısı vb.). CT önerisi: "bilinen sapma" olarak kaydet; toplu işlem gerekmiyor.
+- **E4:** CT, fleet restart sonrası (TPL-ALMIBA-01 yayınlandıktan sonra).
