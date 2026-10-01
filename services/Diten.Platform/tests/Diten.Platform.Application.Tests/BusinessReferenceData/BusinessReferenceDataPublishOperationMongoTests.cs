@@ -11,29 +11,22 @@ namespace Diten.Platform.Application.Tests.BusinessReferenceData;
 
 public sealed class BusinessReferenceDataPublishOperationMongoTests : IAsyncLifetime
 {
-    private string _databaseName = null!;
-    private MongoClient _client = null!;
+    private Persistence.MongoIntegrationHarness _harness = null!;
     private IMongoDatabase _database = null!;
 
+    /*
+     * BL-482 (BRD half): the SHARED test database, isolated by tenant. Every test here already works under fresh
+     * Guid tenants and every BRD unique index is tenant-keyed, so nothing in this class needs a database of its
+     * own. It used to create one per test, ping it with RunCommandAsync<object> (which cannot read the replica
+     * set's Timestamp in the reply) and drop it on dispose. The harness pings, locks and builds the schema.
+     */
     public async Task InitializeAsync()
     {
-        await Diten.Platform.Application.Tests.Persistence.PlatformMongoTestLock.EnsureHeldAsync(); // BL-395
-
-        var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017");
-        settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
-        _client = new MongoClient(settings);
-        _databaseName = await BusinessReferenceDataMongoResidueSweeper.CreateDatabaseAsync(_client, "pub");
-        _database = _client.GetDatabase(_databaseName);
-        await _database.RunCommandAsync<object>("{ ping: 1 }");
-        await PlatformSchemaManifest.ApplyAsync(
-            _database,
-            new[] { SchemaProfile.BusinessReferenceData });
+        _harness = await Persistence.MongoIntegrationHarness.CreateAsync(SchemaProfile.BusinessReferenceData);
+        _database = _harness.Database;
     }
 
-    public Task DisposeAsync()
-    {
-        return _client.DropDatabaseAsync(_databaseName);
-    }
+    public Task DisposeAsync() => _harness.DisposeAsync().AsTask();
 
     [Fact]
     public async Task Idempotency_SameFingerprintReplaysAndDifferentTargetConflicts()
@@ -410,8 +403,7 @@ public sealed class BusinessReferenceDataPublishOperationMongoTests : IAsyncLife
     {
         var context = new TenantContext();
         context.SetTenant(tenantId);
-        var dbContext = new PlatformDbContext(_client, _database);
-        return (new BusinessReferenceDataStewardshipRepository(dbContext, context), context);
+        return (new BusinessReferenceDataStewardshipRepository(_harness.DbContext, context), context);
     }
 
     private static BusinessReferenceDataPublishOperation CreateOperation(

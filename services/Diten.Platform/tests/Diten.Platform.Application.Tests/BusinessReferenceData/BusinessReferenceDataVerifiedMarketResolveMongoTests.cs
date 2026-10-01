@@ -12,7 +12,7 @@ public sealed class BusinessReferenceDataVerifiedMarketResolveMongoTests : IAsyn
 {
     private BusinessReferenceDataTestHarness _harness = null!;
 
-    public async Task InitializeAsync() => _harness = await BusinessReferenceDataTestHarness.CreateAsync();
+    public async Task InitializeAsync() => _harness = await BusinessReferenceDataTestHarness.CreateAsync("market_resolve");
 
     public Task DisposeAsync() => _harness.DisposeAsync().AsTask();
 

@@ -10,7 +10,7 @@ namespace Diten.Platform.Application.Tests.BusinessReferenceData;
 public sealed class BusinessReferenceDataVerifiedMarketOperationalMongoTests : IAsyncLifetime
 {
     private BusinessReferenceDataTestHarness _harness=null!;
-    public async Task InitializeAsync()=>_harness=await BusinessReferenceDataTestHarness.CreateAsync();
+    public async Task InitializeAsync()=>_harness=await BusinessReferenceDataTestHarness.CreateAsync("market_operational");
     public Task DisposeAsync()=>_harness.DisposeAsync().AsTask();
 
     [Fact]

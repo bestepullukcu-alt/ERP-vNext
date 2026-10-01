@@ -5,19 +5,37 @@ using Xunit;
 
 namespace Diten.Platform.Application.Tests.BusinessReferenceData;
 
-public sealed class BusinessReferenceDataMongoResidueSweeperTests : IAsyncLifetime
+/*
+ * BL-482 (BRD half): THESE TESTS RUN AGAINST A PRIVATE mongod, NOT THE SHARED ONE. Their subject is a sweeper that
+ * DROPS databases, and proving it means planting databases and dropping them. On the shared mongod that broke two
+ * rules at once: a shared server's databases are not dropped by tests, and every other BRD class was sweeping the
+ * same residue at the same moment ("database is currently being dropped" — 3 of these 4 went red or green depending
+ * on which class won, measured 2026-10-01). DisposableStandaloneMongo is a throwaway process on its own port and
+ * data directory; nothing planted or dropped here can reach another run.
+ *
+ * The BRD harness itself no longer calls this sweeper (it uses fixed-name scoped databases that are emptied, not
+ * dropped — see BusinessReferenceDataTestHarness), so nothing sweeps the shared mongod from this folder any more.
+ */
+public sealed class BusinessReferenceDataMongoResidueSweeperTests
+    : IClassFixture<BusinessReferenceDataMongoResidueSweeperTests.PrivateMongo>, IAsyncLifetime
 {
-    private readonly MongoClient _client = new("mongodb://127.0.0.1:27017");
+    public sealed class PrivateMongo : IAsyncLifetime
+    {
+        private Persistence.DisposableStandaloneMongo _mongo = null!;
+
+        public IMongoClient Client => _mongo.Client;
+
+        public async Task InitializeAsync() => _mongo = await Persistence.DisposableStandaloneMongo.StartAsync();
+
+        public Task DisposeAsync() => _mongo.DisposeAsync().AsTask();
+    }
+
+    private readonly IMongoClient _client;
     private readonly List<string> _createdDatabaseNames = [];
 
-    public async Task InitializeAsync()
-    {
-        // BL-395: these tests plant marked databases and then sweep the whole server; a second test process must not
-        // sweep them first. The machine-wide lock comes before anything touches the shared mongod.
-        await Persistence.PlatformMongoTestLock.EnsureHeldAsync();
+    public BusinessReferenceDataMongoResidueSweeperTests(PrivateMongo mongo) => _client = mongo.Client;
 
-        await _client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
-    }
+    public Task InitializeAsync() => Task.CompletedTask;
 
     public async Task DisposeAsync()
     {

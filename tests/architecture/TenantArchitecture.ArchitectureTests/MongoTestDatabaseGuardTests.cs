@@ -86,9 +86,12 @@ public class MongoTestDatabaseGuardTests
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationRegisterMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductItemSkuMasterMongoTests.cs",
 
-        // BRD deliberately keeps database-per-class isolation because its global unique indexes cannot be
-        // isolated safely by TenantId alone. The shared harness owns a marker-scoped residue sweeper; this
-        // infrastructure pair replaces the three former per-test call-site exceptions above.
+        // BL-482 (BRD half, 2026-10-01): the BRD harness NO LONGER names a database per run — it opens fixed-name
+        // scoped databases through MongoIntegrationHarness (measured: every BRD unique index is tenant-keyed; what
+        // needs a database of its own is the whole-collection assertions, and a fixed name gives that). What is
+        // left here is the old residue sweeper and its tests: the sweeper still knows how to mint a Guid-named
+        // database, but only its own tests call it, and they run on a private mongod (DisposableStandaloneMongo),
+        // not the shared one this guard protects. Retiring the pair removes both lines.
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataMongoResidueSweeper.cs",
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataMongoResidueSweeperTests.cs",
         // Neither of these touches the shared mongod this guard protects. Each starts its OWN mongod process on a
