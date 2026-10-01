@@ -95,6 +95,8 @@ public sealed class PrismConsumedContractSmokeTests : IClassFixture<PrismMockFix
             ["Inventory:Upstream:LocationMasterBaseUrl"] = locationMaster.ToString(),
             // W-0173-02 client: not exercised by these Prism smokes, but the registration requires an absolute URL.
             ["Inventory:Upstream:LegalEntityMasterBaseUrl"] = "http://127.0.0.1:9/",
+            // MOD-0173-FU02 org-unit client: not exercised here either; the registration requires an absolute URL.
+            ["Inventory:Upstream:OrgUnitDirectoryBaseUrl"] = "http://127.0.0.1:9/",
             ["Inventory:Upstream:TimeoutSeconds"] = "5"
         }).Build();
 

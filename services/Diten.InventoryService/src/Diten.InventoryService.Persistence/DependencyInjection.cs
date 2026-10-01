@@ -1,8 +1,10 @@
 using Diten.BuildingBlocks.Security.Secrets;
+using Diten.InventoryService.Application.Common.Upstream;
 using Diten.InventoryService.Domain.Repositories;
 using Diten.InventoryService.Persistence.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Driver;
 
@@ -35,6 +37,13 @@ public static class DependencyInjection
         services.AddScoped<IReservationExpirySweeper, ReservationExpirySweeper>();
         services.AddScoped<ISkuPositionRebuilder, SkuPositionRebuilder>();
         services.Configure<ReservationSweeperOptions>(configuration.GetSection(ReservationSweeperOptions.SectionName));
+        services.AddSingleton<TransactionRetryCounter>();
+
+        // MOD-0173-FU02: the location master lives in this service. The ledger's ILocationMasterClient is REPLACED by the
+        // in-process directory (no HTTP, no second list — §8, ASSUMPTION-LOC-07); the HTTP client registered by
+        // AddInfrastructure stays only for the LOCATION contract smoke against Prism.
+        services.AddScoped<ILocationRepository, LocationRepository>();
+        services.Replace(ServiceDescriptor.Scoped<ILocationMasterClient, InventoryLocationDirectory>());
 
         // Indexes + SKU-position rebuild happen before the host serves traffic; failure stops the host.
         services.AddHostedService<InventoryIndexInitializerHostedService>();

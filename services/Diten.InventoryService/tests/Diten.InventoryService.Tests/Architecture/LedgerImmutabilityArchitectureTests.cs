@@ -74,10 +74,16 @@ public sealed class LedgerImmutabilityArchitectureTests
         Assert.All(calls, call => Assert.Contains(call, new[] { "Find", "InsertOneAsync", "CountDocumentsAsync" }));
     }
 
+    /// <summary>
+    /// The LEDGER controller (every /api/inventory route) is GET / POST only. MOD-0173-FU02 adds LocationsController in
+    /// the same assembly, whose frozen-by-pack PATCH is master-data editing, not ledger mutation; it has its own, equally
+    /// exact guard (<see cref="LocationRouteArchitectureTests"/>), and no controller may expose PUT or DELETE
+    /// (<see cref="No_controller_in_the_service_exposes_put_or_delete"/>).
+    /// </summary>
     [Fact]
     public void No_controller_route_can_put_patch_or_delete()
     {
-        var verbs = ControllerActions()
+        var verbs = LedgerControllerActions()
             .SelectMany(a => a.GetCustomAttributes<HttpMethodAttribute>())
             .SelectMany(a => a.HttpMethods)
             .Distinct()
@@ -90,7 +96,7 @@ public sealed class LedgerImmutabilityArchitectureTests
     [Fact]
     public void The_routes_are_exactly_the_six_contract_operations()
     {
-        var routes = ControllerActions()
+        var routes = LedgerControllerActions()
             .SelectMany(a => a.GetCustomAttributes<HttpMethodAttribute>().Select(h => $"{h.HttpMethods.Single()} api/inventory/{h.Template}"))
             .OrderBy(r => r, StringComparer.Ordinal)
             .ToList();
@@ -110,6 +116,31 @@ public sealed class LedgerImmutabilityArchitectureTests
     }
 
     [Fact]
+    public void Every_api_inventory_route_is_served_by_the_ledger_controller_only()
+    {
+        var owners = typeof(InventoryController).Assembly.GetTypes()
+            .Where(t => typeof(ControllerBase).IsAssignableFrom(t) && !t.IsAbstract)
+            .Where(t => t.GetCustomAttribute<RouteAttribute>()?.Template?.StartsWith("api/inventory", StringComparison.OrdinalIgnoreCase) == true)
+            .ToList();
+
+        Assert.Equal([typeof(InventoryController)], owners);
+    }
+
+    [Fact]
+    public void No_controller_in_the_service_exposes_put_or_delete()
+    {
+        var verbs = ControllerActions()
+            .SelectMany(a => a.GetCustomAttributes<HttpMethodAttribute>())
+            .SelectMany(a => a.HttpMethods)
+            .Distinct()
+            .ToList();
+
+        Assert.NotEmpty(verbs);
+        Assert.DoesNotContain("PUT", verbs);
+        Assert.DoesNotContain("DELETE", verbs);
+    }
+
+    [Fact]
     public void Every_controller_derives_from_CustomBaseController()
     {
         var controllers = typeof(InventoryController).Assembly.GetTypes()
@@ -119,6 +150,9 @@ public sealed class LedgerImmutabilityArchitectureTests
         Assert.NotEmpty(controllers);
         Assert.All(controllers, c => Assert.True(typeof(CustomBaseController).IsAssignableFrom(c), c.Name));
     }
+
+    private static IEnumerable<MethodInfo> LedgerControllerActions()
+        => typeof(InventoryController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
     private static IEnumerable<MethodInfo> ControllerActions()
         => typeof(InventoryController).Assembly.GetTypes()

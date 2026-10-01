@@ -14,6 +14,12 @@ public static class TestTokens
 
     public static readonly string[] AllPermissions = [ReadPermission, PostPermission, ReservationsPermission];
 
+    // MOD-0173-FU02 (§14). Kept out of AllPermissions: the ledger tests need no location permission (in-process directory).
+    public const string LocationsReadPermission = "inventory.locations.read";
+    public const string LocationsManagePermission = "inventory.locations.manage";
+
+    public static readonly string[] LocationPermissions = [LocationsReadPermission, LocationsManagePermission];
+
     public static string Mint(
         Guid? tenantId,
         Guid? legalEntityId,

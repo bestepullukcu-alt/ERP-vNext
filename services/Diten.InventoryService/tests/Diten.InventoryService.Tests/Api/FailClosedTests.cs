@@ -3,12 +3,18 @@ using Xunit;
 
 namespace Diten.InventoryService.Tests.Api;
 
-/// <summary>AC16 / pack §13.8 — an unreachable upstream master is never a silent pass.</summary>
-public sealed class FailClosedTests : IClassFixture<InventoryApiFactory>
+/// <summary>
+/// AC16 / pack §13.8 — an unreachable upstream master is never a silent pass.
+/// <para>MOD-0173-FU02 (AC-22): the location case keeps the pre-FU02 LOCATION stub (<see cref="StubLocationMasterApiFactory"/>)
+/// — the in-process directory has no unreachable remote to switch off; its own failure path (a database read failure →
+/// the same 503) is the same handler branch. The locations themselves are real documents (the in-transaction K-13
+/// check still runs).</para>
+/// </summary>
+public sealed class FailClosedTests : IClassFixture<StubLocationMasterApiFactory>
 {
     private readonly InventoryApiFactory _factory;
 
-    public FailClosedTests(InventoryApiFactory factory) => _factory = factory;
+    public FailClosedTests(StubLocationMasterApiFactory factory) => _factory = factory;
 
     [Fact]
     public async Task Product_master_down_is_503_PRODUCT_MASTER_UNAVAILABLE_and_writes_nothing()

@@ -21,6 +21,8 @@ public static class InventoryIndexConfiguration
     public const string BalanceDimensionIndex = "ux_balance_dimension";
     public const string ReservationIdempotencyIndex = "ux_tenant_le_reservation_idempotencykey";
     public const string SkuPositionIndex = "ux_sku_position";
+    public const string LocationCodeIndex = "ux_location_code";
+    public const string LocationCreateKeyIndex = "ux_location_create_key";
 
     public static IReadOnlyList<CreateIndexModel<InventoryTransaction>> BuildTransactions()
     {
@@ -62,7 +64,12 @@ public static class InventoryIndexConfiguration
                     .Ascending(x => x.StockStatus).Ascending(x => x.OwnerId).Ascending(x => x.ProjectId),
                 new CreateIndexOptions { Name = BalanceDimensionIndex, Unique = true }),
             new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ItemId).Ascending(x => x.WarehouseId),
-                new CreateIndexOptions { Name = "ix_tenant_le_item_warehouse" })
+                new CreateIndexOptions { Name = "ix_tenant_le_item_warehouse" }),
+            // MOD-0173-FU02 K-10: stock presence of a location / warehouse is answered from these rows.
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.LocationId),
+                new CreateIndexOptions { Name = "ix_tenant_le_location" }),
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.WarehouseId),
+                new CreateIndexOptions { Name = "ix_tenant_le_warehouse" })
         ];
     }
 
@@ -121,6 +128,47 @@ public static class InventoryIndexConfiguration
         ];
     }
 
+    /// <summary>
+    /// MOD-0173-FU02 §10. <c>ux_location_code</c> carries K-02 (code unique per company, case-insensitive, every status);
+    /// <c>ux_location_create_key</c> makes a create key commit once even under a race (§8).
+    /// </summary>
+    public static IReadOnlyList<CreateIndexModel<Location>> BuildLocations()
+    {
+        var b = Builders<Location>.IndexKeys;
+        return
+        [
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CodeNormalized),
+                new CreateIndexOptions { Name = LocationCodeIndex, Unique = true }),
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CreateIdempotencyKey),
+                new CreateIndexOptions<Location>
+                {
+                    Name = LocationCreateKeyIndex,
+                    Unique = true,
+                    PartialFilterExpression = new BsonDocument(nameof(Location.CreateIdempotencyKey), new BsonDocument("$type", "string"))
+                }),
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ParentId),
+                new CreateIndexOptions { Name = "ix_location_parent" }),
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.AncestorIds),
+                new CreateIndexOptions { Name = "ix_location_ancestors" }),
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.BulkIdempotencyKey),
+                new CreateIndexOptions<Location>
+                {
+                    Name = "ix_location_bulk_key",
+                    PartialFilterExpression = new BsonDocument(nameof(Location.BulkIdempotencyKey), new BsonDocument("$type", "string"))
+                })
+        ];
+    }
+
+    public static IReadOnlyList<CreateIndexModel<LocationChangeEntry>> BuildLocationHistory()
+    {
+        var b = Builders<LocationChangeEntry>.IndexKeys;
+        return
+        [
+            new(b.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.LocationId).Descending(x => x.OccurredAt),
+                new CreateIndexOptions { Name = "ix_location_history" })
+        ];
+    }
+
     /// <summary>Creates the MOD-0173 indexes (idempotent). Nothing outside the MOD-0173 collections is touched.</summary>
     public static async Task ApplyAsync(IMongoDatabase database, CancellationToken ct = default)
     {
@@ -135,5 +183,7 @@ public static class InventoryIndexConfiguration
         await database.GetCollection<InventoryBalance>(InventoryCollections.Balances).Indexes.CreateManyAsync(BuildBalances(), ct);
         await database.GetCollection<InventoryAuditRecord>(InventoryCollections.Audit).Indexes.CreateManyAsync(BuildAudit(), ct);
         await database.GetCollection<InventoryOutboxMessage>(InventoryCollections.Outbox).Indexes.CreateManyAsync(BuildOutbox(), ct);
+        await database.GetCollection<Location>(InventoryCollections.Locations).Indexes.CreateManyAsync(BuildLocations(), ct);
+        await database.GetCollection<LocationChangeEntry>(InventoryCollections.LocationHistory).Indexes.CreateManyAsync(BuildLocationHistory(), ct);
     }
 }

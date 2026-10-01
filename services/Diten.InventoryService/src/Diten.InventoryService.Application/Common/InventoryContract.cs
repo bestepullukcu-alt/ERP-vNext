@@ -10,6 +10,9 @@ public static class InventoryContract
 
     public const string BasePath = "/api/inventory";
 
+    /// <summary>MOD-0173-FU02: LOCATION v1 / v1.1 (contract <c>servers</c>), served by this service under the same scope rules.</summary>
+    public const string LocationsBasePath = "/api/locations";
+
     public const string IdempotencyKeyHeader = "Idempotency-Key";
 
     /// <summary>Required by releaseReservation; value <c>W/"&lt;version&gt;"</c> (pack ASSUMPTION-0173-17).</summary>

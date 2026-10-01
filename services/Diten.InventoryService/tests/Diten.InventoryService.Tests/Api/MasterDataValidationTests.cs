@@ -133,10 +133,12 @@ public sealed class MasterDataValidationTests : IClassFixture<InventoryApiFactor
     public async Task Non_stockable_or_inactive_location_is_422_UNKNOWN_LOCATION()
     {
         var s = new InventoryScenario(_factory);
-        _factory.Locations.AddBin("zone-" + s.Tenant.ToString("N"), s.Warehouse, s.LegalEntity.ToString(), stockable: false);
-        _factory.Locations.AddBin("old-" + s.Tenant.ToString("N"), s.Warehouse, s.LegalEntity.ToString(), status: "Inactive");
+        // Real locations (MOD-0173-FU02 AC-22): a Zone (never stockable), a bin made non-stockable, an Inactive bin.
+        var zone = s.AddLocation(LocationType.Zone);
+        var nonStockableBin = s.AddLocation(LocationType.Bin, stockable: false);
+        var inactiveBin = s.AddLocation(LocationType.Bin, status: LocationStatus.Inactive);
 
-        foreach (var location in new[] { "zone-" + s.Tenant.ToString("N"), "old-" + s.Tenant.ToString("N") })
+        foreach (var location in new[] { zone, nonStockableBin, inactiveBin })
         {
             var body = s.Receipt("1");
             body["toLocationId"] = location;
@@ -155,13 +157,22 @@ public sealed class MasterDataValidationTests : IClassFixture<InventoryApiFactor
     public async Task Location_of_another_legal_entity_is_refused_while_the_check_is_on()
     {
         var s = new InventoryScenario(_factory);
-        var foreign = "foreign-" + s.Tenant.ToString("N");
-        _factory.Locations.AddBin(foreign, s.Warehouse, Guid.NewGuid().ToString());
+        var (foreignWarehouse, foreignBin) = s.AddForeignCompanyBin();
 
+        // Under the caller's own warehouse id …
         await AssertRefused(s, x =>
         {
             var body = x.Receipt("1");
-            body["toLocationId"] = foreign;
+            body["toLocationId"] = foreignBin;
+            return body;
+        }, "UNKNOWN_LOCATION");
+
+        // … and under the foreign company's own warehouse id: the place does not exist for this caller.
+        await AssertRefused(s, x =>
+        {
+            var body = x.Receipt("1");
+            body["toWarehouseId"] = foreignWarehouse;
+            body["toLocationId"] = foreignBin;
             return body;
         }, "UNKNOWN_LOCATION");
 

@@ -43,6 +43,8 @@ public static class TestSettings
             Environment.SetEnvironmentVariable("Inventory__Upstream__ProductMasterBaseUrl", "http://127.0.0.1:9/");
             Environment.SetEnvironmentVariable("Inventory__Upstream__LocationMasterBaseUrl", "http://127.0.0.1:9/");
             Environment.SetEnvironmentVariable("Inventory__Upstream__LegalEntityMasterBaseUrl", "http://127.0.0.1:9/");
+            // MOD-0173-FU02: a closed port — the stub replaces it, except in RealOrgUnitClientApiFactory (measured 503 path).
+            Environment.SetEnvironmentVariable("Inventory__Upstream__OrgUnitDirectoryBaseUrl", "http://127.0.0.1:9/");
             // S2: the periodic expiry sweeper is off in API tests so the in-transaction expiry path is measured alone;
             // the sweeper itself is driven directly through IReservationExpirySweeper (AC-R7).
             Environment.SetEnvironmentVariable("Inventory__Reservations__SweeperEnabled", "false");

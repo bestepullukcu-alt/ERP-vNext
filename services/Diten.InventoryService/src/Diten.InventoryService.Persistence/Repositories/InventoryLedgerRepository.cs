@@ -6,6 +6,7 @@ using Diten.InventoryService.Domain.Repositories;
 using Diten.InventoryService.Domain.Rules;
 using Diten.InventoryService.Domain.ValueObjects;
 using MongoDB.Bson;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace Diten.InventoryService.Persistence.Repositories;
@@ -22,6 +23,12 @@ namespace Diten.InventoryService.Persistence.Repositories;
 /// coverage condition against the committed winner — so balance 100 with two parallel issues of 60 ends at 40,
 /// never −20 (AC6).</para>
 ///
+/// <para><b>Locations (MOD-0173-FU02 K-13, §8)</b>: inside the same transaction, before any leg, every leg location
+/// must still be an Active stockable location of this company under the leg's warehouse; its <c>StockTouchSeq</c> is
+/// incremented. A deactivation / archive / move / stockable change writes the same document in its own transaction,
+/// so the two conflict in Mongo and the loser re-runs on the committed state: stock never lands on an Inactive
+/// location. A location id that is not the canonical UUID string is not a location (ASSUMPTION-LOC1-03).</para>
+///
 /// <para><b>Append-only</b>: the transaction collection is only ever read or <c>InsertOne</c>-ed. There is no
 /// update, replace or delete of a transaction anywhere in this class (AC17, architecture-tested).</para>
 /// </summary>
@@ -33,11 +40,19 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
     private readonly IMongoCollection<InventoryAuditRecord> _audit;
     private readonly IMongoCollection<InventoryOutboxMessage> _outbox;
     private readonly IMongoCollection<BsonDocument> _sequences;
+    private readonly IMongoCollection<Location> _locations;
+    private readonly TransactionRetryCounter _retries;
+    private readonly ILogger<InventoryLedgerRepository> _logger;
     private readonly ReservationPositionOperations _reservations;
     private readonly Guid _tenantId;
     private readonly Guid _legalEntityId;
 
-    public InventoryLedgerRepository(IMongoClient client, IMongoDatabase database, ITenantContext tenantContext)
+    public InventoryLedgerRepository(
+        IMongoClient client,
+        IMongoDatabase database,
+        ITenantContext tenantContext,
+        TransactionRetryCounter retries,
+        ILogger<InventoryLedgerRepository> logger)
     {
         _client = client;
         _transactions = database.GetCollection<InventoryTransaction>(InventoryCollections.Transactions);
@@ -45,6 +60,9 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         _audit = database.GetCollection<InventoryAuditRecord>(InventoryCollections.Audit);
         _outbox = database.GetCollection<InventoryOutboxMessage>(InventoryCollections.Outbox);
         _sequences = database.GetCollection<BsonDocument>(InventoryCollections.Sequences);
+        _locations = database.GetCollection<Location>(InventoryCollections.Locations);
+        _retries = retries;
+        _logger = logger;
         _tenantId = tenantContext.TenantId;
         _legalEntityId = tenantContext.LegalEntityId;
         _reservations = new ReservationPositionOperations(database, _tenantId, _legalEntityId, tenantContext.LegalEntitySource);
@@ -122,10 +140,19 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         var snapshotLeg = LedgerLegs.SnapshotLeg(posting.Legs);
 
         using var session = await _client.StartSessionAsync(cancellationToken: cancellationToken);
+        var attempt = 0;
         try
         {
             return await session.WithTransactionAsync(async (s, ct) =>
             {
+                if (++attempt > 1)
+                {
+                    _retries.Retried(TransactionRetryCounter.Posting);
+                    _logger.LogInformation("Ledger posting transaction re-run after a transient conflict (attempt {Attempt}).", attempt);
+                }
+
+                await TouchLegLocationsAsync(s, posting.Legs, ct);
+
                 var number = await NextTransactionNumberAsync(s, transaction.PostingDate.UtcDateTime.Year, ct);
                 transaction.TransactionNumber = number;
                 posting.Audit.TransactionNumber = number;
@@ -159,6 +186,10 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         catch (UncoveredQuantityException uncovered)
         {
             return LedgerPostingResult.Insufficient(uncovered.Available, uncovered.Requested);
+        }
+        catch (LocationNotPostableException notPostable)
+        {
+            return LedgerPostingResult.NotPostable(notPostable.LocationId);
         }
         catch (MongoWriteException ex) when (IsDuplicateOn(ex, InventoryIndexConfiguration.IdempotencyIndex))
         {
@@ -199,6 +230,41 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
 
         await _reservations.ApplyAvailableDeltaAsync(session, sku, netAvailable, transaction.BaseUomId, now, ct);
     }
+
+    /// <summary>
+    /// K-13 inside the posting transaction: each distinct (warehouse, location) of the legs must match an Active
+    /// stockable location of this company whose path contains the warehouse; matching bumps its StockTouchSeq (the
+    /// write that serialises the posting with a lifecycle change of the same document).
+    /// </summary>
+    private async Task TouchLegLocationsAsync(IClientSessionHandle session, IReadOnlyList<LedgerLeg> legs, CancellationToken ct)
+    {
+        var f = Builders<Location>.Filter;
+        foreach (var (warehouseId, locationId) in legs.Select(l => (l.Dimension.WarehouseId, l.Dimension.LocationId)).Distinct())
+        {
+            if (!TryCanonicalId(locationId, out var location) || !TryCanonicalId(warehouseId, out var warehouse))
+            {
+                throw new LocationNotPostableException(locationId ?? string.Empty);
+            }
+
+            var filter = f.Eq(x => x.Id, location)
+                         & f.Eq(x => x.TenantId, (Guid?)_tenantId)
+                         & f.Eq(x => x.LegalEntityId, (Guid?)_legalEntityId)
+                         & f.Eq(x => x.IsDeleted, false)
+                         & f.Eq(x => x.Status, LocationStatus.Active)
+                         & f.Eq(x => x.IsStockable, true)
+                         & f.AnyEq(x => x.AncestorIds, warehouse);
+            var touched = await _locations.UpdateOneAsync(session, filter,
+                Builders<Location>.Update.Inc(x => x.StockTouchSeq, 1L), cancellationToken: ct);
+            if (touched.MatchedCount == 0)
+            {
+                throw new LocationNotPostableException(locationId!);
+            }
+        }
+    }
+
+    /// <summary>A location / warehouse id is the canonical lower-case UUID string the location master returns.</summary>
+    private static bool TryCanonicalId(string? wire, out Guid id)
+        => Guid.TryParseExact(wire, "D", out id) && string.Equals(wire, id.ToString("D"), StringComparison.Ordinal);
 
     private async Task<string> NextTransactionNumberAsync(IClientSessionHandle session, int year, CancellationToken ct)
     {

@@ -11,31 +11,48 @@ namespace Diten.InventoryService.Tests.TestInfrastructure;
 
 /// <summary>
 /// Hosts the REAL service (Program.cs, real middleware, real MediatR pipeline, real Mongo repository on a
-/// transaction-capable replica set) with only the two upstream masters swapped for in-process stubs.
+/// transaction-capable replica set) with only the EXTERNAL masters swapped for in-process stubs: PRODUCT-MASTER,
+/// the MDM legal-entity master and the Platform org-unit directory. LOCATION is not external any more
+/// (MOD-0173-FU02): the ledger reads the real <c>inventory_locations</c> through the production in-process directory.
+/// Only <see cref="StubLocationMasterApiFactory"/> puts the old LOCATION stub back, for the one scenario the in-process
+/// directory cannot produce on demand — "location master unreachable" (AC-22 note in the evidence).
 /// Database per DB-010: the fixed <see cref="TestSettings.DatabaseName"/>; each scenario gets its own TenantId, and
 /// the tenants a factory created are removed from the shared database when it is disposed.
 /// </summary>
 public class InventoryApiFactory : WebApplicationFactory<Program>
 {
+    private static readonly string[] OwnedCollections =
+    [
+        "inventory_transactions", "inventory_balances", "inventory_audit", "inventory_outbox", "inventory_sequences",
+        "inventory_reservations", "inventory_sku_positions", "inventory_locations", "inventory_location_history"
+    ];
+
     private readonly ConcurrentBag<Guid> _tenants = [];
 
     static InventoryApiFactory() => TestSettings.Apply();
 
     public StubProductMaster Products { get; } = new();
 
+    /// <summary>The pre-FU02 LOCATION stub. Registered in the host ONLY by <see cref="StubLocationMasterApiFactory"/>.</summary>
     public StubLocationMaster Locations { get; } = new();
 
     public StubLegalEntityMaster LegalEntities { get; } = new();
 
+    public StubOrgUnitDirectory OrgUnits { get; } = new();
+
     /// <summary>Host environment; "Testing" unless a test needs another one.</summary>
     public string HostEnvironment { get; init; } = "Testing";
+
+    protected virtual bool UseLocationStub => false;
+
+    protected virtual bool UseOrgUnitStub => true;
 
     public IMongoDatabase Database { get; } =
         new MongoClient(TestSettings.MongoConnectionString).GetDatabase(TestSettings.DatabaseName);
 
     public void TrackTenant(Guid tenantId) => _tenants.Add(tenantId);
 
-    /// <summary>An HttpClient whose every response is checked against the frozen contract (AC15).</summary>
+    /// <summary>An HttpClient whose every response is checked against the frozen contracts (AC15 / FU02 AC-15).</summary>
     public HttpClient CreateContractClient() => CreateDefaultClient(new ContractValidatingHandler());
 
     public IMongoCollection<BsonDocument> Collection(string name) => Database.GetCollection<BsonDocument>(name);
@@ -46,7 +63,16 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
         builder.ConfigureTestServices(services =>
         {
             services.AddSingleton<IProductMasterClient>(Products);
-            services.AddSingleton<ILocationMasterClient>(Locations);
+            if (UseLocationStub)
+            {
+                services.AddSingleton<ILocationMasterClient>(Locations);
+            }
+
+            if (UseOrgUnitStub)
+            {
+                services.AddSingleton<IOrgUnitDirectoryClient>(OrgUnits);
+            }
+
             services.AddSingleton<ILegalEntityMasterClient>(sp =>
             {
                 LegalEntities.HttpContextAccessor = sp.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>();
@@ -60,7 +86,7 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
         if (disposing && !_tenants.IsEmpty)
         {
             var tenants = new BsonArray(_tenants.Select(t => t.ToString()));
-            foreach (var name in new[] { "inventory_transactions", "inventory_balances", "inventory_audit", "inventory_outbox", "inventory_sequences", "inventory_reservations", "inventory_sku_positions" })
+            foreach (var name in OwnedCollections)
             {
                 Collection(name).DeleteMany(new BsonDocument("TenantId", new BsonDocument("$in", tenants)));
             }
@@ -68,4 +94,16 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
 
         base.Dispose(disposing);
     }
+}
+
+/// <summary>The pre-FU02 LOCATION stub in place of the in-process directory — only for "location master unreachable".</summary>
+public sealed class StubLocationMasterApiFactory : InventoryApiFactory
+{
+    protected override bool UseLocationStub => true;
+}
+
+/// <summary>The REAL Platform org-unit HTTP client, pointed at a closed port (TestSettings) — measures the 503 path.</summary>
+public sealed class RealOrgUnitClientApiFactory : InventoryApiFactory
+{
+    protected override bool UseOrgUnitStub => false;
 }

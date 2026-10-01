@@ -31,6 +31,9 @@ namespace Diten.InventoryService.Infrastructure.Middleware;
 /// <item><c>X-Tenant-Id</c> present and ≠ token tenant → <b>403</b> (the family answers 400).</item>
 /// <item><c>tenantId</c> / <c>legalEntityId</c> in the query → <b>400 INVALID_REQUEST</b> (the body is checked by the
 /// request reader). A legal entity is never accepted from a query or a body.</item>
+/// <item>MOD-0173-FU02 §8: <c>/api/locations</c> is covered by the SAME rules (one rule set). One exception, from the
+/// frozen LOCATION v1 contract: <c>GET /api/locations?legalEntityId=</c> (<c>listLocations</c>) passes here, and the
+/// handler accepts it only when it equals the resolved company (else 403 CROSS_LE_FORBIDDEN, ASSUMPTION-LOC-06).</item>
 /// </list>
 /// A positive MDM answer is cached for at most <see cref="MembershipCacheLifetime"/>, keyed by tenant + legal entity +
 /// a hash of the caller's bearer token, so it cannot carry from one user (or one token) to another; refusals and
@@ -47,6 +50,9 @@ public sealed class InventoryScopeResolutionMiddleware
 
     private static readonly string[] ForbiddenQueryKeys = ["tenantId", "legalEntityId", "tenant_id", "legal_entity_id"];
 
+    /// <summary>Every base path this middleware scopes (MOD-0173 ledger + MOD-0173-FU02 locations).</summary>
+    public static readonly IReadOnlyList<string> ScopedBasePaths = [InventoryContract.BasePath, InventoryContract.LocationsBasePath];
+
     private readonly RequestDelegate _next;
     private readonly IMemoryCache _cache;
     private readonly ILogger<InventoryScopeResolutionMiddleware> _logger;
@@ -61,7 +67,7 @@ public sealed class InventoryScopeResolutionMiddleware
     public async Task InvokeAsync(HttpContext context, ITenantContext tenantContext, ILegalEntityMasterClient legalEntities)
     {
         if (HttpMethods.IsOptions(context.Request.Method)
-            || !context.Request.Path.StartsWithSegments(InventoryContract.BasePath, StringComparison.OrdinalIgnoreCase)
+            || !ScopedBasePaths.Any(p => context.Request.Path.StartsWithSegments(p, StringComparison.OrdinalIgnoreCase))
             || context.User.Identity?.IsAuthenticated != true)
         {
             await _next(context);
@@ -89,7 +95,7 @@ public sealed class InventoryScopeResolutionMiddleware
             return;
         }
 
-        if (ForbiddenQueryKeys.Any(k => context.Request.Query.Keys.Contains(k, StringComparer.OrdinalIgnoreCase)))
+        if (ForbiddenQueryKeys.Any(k => context.Request.Query.Keys.Contains(k, StringComparer.OrdinalIgnoreCase) && !IsFrozenListFilter(context, k)))
         {
             await ContractErrorWriter.WriteAsync(context, StatusCodes.Status400BadRequest, InventoryErrorCodes.InvalidRequest,
                 "tenantId/legalEntityId must not be sent: scope is taken from the access token.");
@@ -160,6 +166,12 @@ public sealed class InventoryScopeResolutionMiddleware
         tenantContext.SetScope(tenant.Value, headerLegalEntity.Value, subject.Value, LegalEntitySources.HeaderUnverifiedMembership);
         await _next(context);
     }
+
+    /// <summary>The frozen LOCATION v1 <c>listLocations</c> filter <c>legalEntityId</c> on <c>GET /api/locations</c> only.</summary>
+    private static bool IsFrozenListFilter(HttpContext context, string key)
+        => string.Equals(key, "legalEntityId", StringComparison.Ordinal)
+           && HttpMethods.IsGet(context.Request.Method)
+           && context.Request.Path.Value?.TrimEnd('/').Equals(InventoryContract.LocationsBasePath, StringComparison.OrdinalIgnoreCase) == true;
 
     /// <summary>Exactly one claim across the given types, holding a non-empty UUID.</summary>
     private static Guid? SingleUuid(ClaimsPrincipal user, params string[] claimTypes)

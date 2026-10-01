@@ -1,4 +1,5 @@
 using Diten.InventoryService.Application.Features.Inventory.Services;
+using Diten.InventoryService.Application.Features.Locations.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,7 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
 
         services.AddScoped<MovementMasterDataValidator>();
+        services.AddScoped<LocationWriteSupport>();
 
         return services;
     }

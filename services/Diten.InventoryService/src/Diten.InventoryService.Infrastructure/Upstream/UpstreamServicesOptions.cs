@@ -18,5 +18,8 @@ public sealed class UpstreamServicesOptions
     public string LegalEntityMasterBaseUrl { get; set; } = string.Empty;
 
     /// <summary>Per-call timeout; an upstream slower than this is treated as unavailable (fail-closed).</summary>
+    /// <summary>MOD-0173-FU02: Platform organization units through the Gateway (…/api/platform/organization-units/).</summary>
+    public string OrgUnitDirectoryBaseUrl { get; set; } = string.Empty;
+
     public int TimeoutSeconds { get; set; } = 5;
 }

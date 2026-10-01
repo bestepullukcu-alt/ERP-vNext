@@ -15,4 +15,10 @@ public static class InventoryPermissions
 
     /// <summary>S2: create and release reservations (pack §3 / §14).</summary>
     public const string ManageReservations = "inventory.reservations.manage";
+
+    /// <summary>MOD-0173-FU02: every LOCATION read (v1 + v1.1 GETs, validate, history, stock presence).</summary>
+    public const string LocationsRead = "inventory.locations.read";
+
+    /// <summary>MOD-0173-FU02: create, edit (incl. move), status change, bulk bins — one Tier-3 steward action (§14).</summary>
+    public const string LocationsManage = "inventory.locations.manage";
 }

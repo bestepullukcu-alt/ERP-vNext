@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Diten.InventoryService.Domain.Entities;
 using Diten.InventoryService.Domain.Enums;
 using Diten.InventoryService.Domain.Rules;
 using MongoDB.Bson;
@@ -10,7 +11,10 @@ namespace Diten.InventoryService.Tests.TestInfrastructure;
 
 /// <summary>
 /// One isolated world per test: a fresh tenant + legal entity + user, a fresh item / sku registered in the product
-/// stub, and bins in two warehouses registered in the location stub under THIS legal entity.
+/// stub, and a REAL location tree under THIS legal entity (MOD-0173-FU02 AC-22): Site → Warehouse → StorageLocation →
+/// bins A, B and Site → Warehouse2 → StorageLocation2 → bin C, written as <c>inventory_locations</c> documents with
+/// fresh UUIDs. The ledger resolves them through the production in-process directory. The same ids are also put in
+/// the pre-FU02 LOCATION stub, which only <see cref="StubLocationMasterApiFactory"/> registers.
 /// </summary>
 public sealed class InventoryScenario
 {
@@ -29,12 +33,22 @@ public sealed class InventoryScenario
         _client = factory.CreateContractClient();
         factory.TrackTenant(Tenant);
 
-        var suffix = Guid.NewGuid().ToString("N")[..8];
-        Warehouse = "wh-" + suffix;
-        Warehouse2 = "wh2-" + suffix;
-        LocationA = "bin-a-" + suffix;
-        LocationB = "bin-b-" + suffix;
-        LocationC = "bin-c-" + suffix;
+        var suffix = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+        SiteNode = LocationSeed.Node(Tenant, LegalEntity, LocationType.Site, "SITE-" + suffix, null);
+        WarehouseNode = LocationSeed.Node(Tenant, LegalEntity, LocationType.Warehouse, "WH-" + suffix, SiteNode);
+        StorageNode = LocationSeed.Node(Tenant, LegalEntity, LocationType.StorageLocation, "SL-" + suffix, WarehouseNode);
+        var binA = LocationSeed.Node(Tenant, LegalEntity, LocationType.Bin, "A-" + suffix, StorageNode);
+        var binB = LocationSeed.Node(Tenant, LegalEntity, LocationType.Bin, "B-" + suffix, StorageNode);
+        Warehouse2Node = LocationSeed.Node(Tenant, LegalEntity, LocationType.Warehouse, "WH2-" + suffix, SiteNode);
+        Storage2Node = LocationSeed.Node(Tenant, LegalEntity, LocationType.StorageLocation, "SL2-" + suffix, Warehouse2Node);
+        var binC = LocationSeed.Node(Tenant, LegalEntity, LocationType.Bin, "C-" + suffix, Storage2Node);
+        LocationSeed.Insert(factory.Database, SiteNode, WarehouseNode, StorageNode, binA, binB, Warehouse2Node, Storage2Node, binC);
+
+        Warehouse = WarehouseNode.Id.ToString("D");
+        Warehouse2 = Warehouse2Node.Id.ToString("D");
+        LocationA = binA.Id.ToString("D");
+        LocationB = binB.Id.ToString("D");
+        LocationC = binC.Id.ToString("D");
         LotControlled = lotControlled;
 
         factory.Products.AddItem(Item, lotControlled, serialControlled);
@@ -55,10 +69,41 @@ public sealed class InventoryScenario
     public string LocationA { get; }
     public string LocationB { get; }
     public string LocationC { get; }
+    public Location SiteNode { get; }
+    public Location WarehouseNode { get; }
+    public Location StorageNode { get; }
+    public Location Warehouse2Node { get; }
+    public Location Storage2Node { get; }
     public bool LotControlled { get; }
     public string Token { get; }
 
     public InventoryApiFactory Factory => _factory;
+
+    /// <summary>One more REAL location of this scenario's company (default: a bin under the first storage location).</summary>
+    public string AddLocation(LocationType type = LocationType.Bin, Location? parent = null, bool? stockable = null,
+        LocationStatus status = LocationStatus.Active)
+    {
+        var node = LocationSeed.Node(Tenant, LegalEntity, type, type + "-" + Guid.NewGuid().ToString("N")[..10].ToUpperInvariant(),
+            parent ?? StorageNode, stockable, status);
+        LocationSeed.Insert(_factory.Database, node);
+        return node.Id.ToString("D");
+    }
+
+    /// <summary>
+    /// A complete Site → Warehouse → StorageLocation → Bin chain of ANOTHER legal entity of the same tenant; returns
+    /// (warehouseId, binId). For this scenario's company those ids do not exist.
+    /// </summary>
+    public (string WarehouseId, string BinId) AddForeignCompanyBin()
+    {
+        var other = Guid.NewGuid();
+        var suffix = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+        var site = LocationSeed.Node(Tenant, other, LocationType.Site, "FS-" + suffix, null);
+        var warehouse = LocationSeed.Node(Tenant, other, LocationType.Warehouse, "FW-" + suffix, site);
+        var storage = LocationSeed.Node(Tenant, other, LocationType.StorageLocation, "FL-" + suffix, warehouse);
+        var bin = LocationSeed.Node(Tenant, other, LocationType.Bin, "FB-" + suffix, storage);
+        LocationSeed.Insert(_factory.Database, site, warehouse, storage, bin);
+        return (warehouse.Id.ToString("D"), bin.Id.ToString("D"));
+    }
 
     // ── request bodies ───────────────────────────────────────────────────────────────────────────────────
 

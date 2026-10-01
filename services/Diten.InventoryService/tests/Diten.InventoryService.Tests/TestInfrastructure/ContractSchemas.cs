@@ -6,15 +6,19 @@ using YamlDotNet.Serialization;
 namespace Diten.InventoryService.Tests.TestInfrastructure;
 
 /// <summary>
-/// Validates response bodies against the FROZEN <c>inventory-bundle.openapi.yaml</c> itself (AC15). The OpenAPI 3.1
-/// document is turned into JSON Schema 2020-12:
+/// Validates response bodies against the contract files themselves — the FROZEN <c>inventory-bundle.openapi.yaml</c>
+/// (AC15) and, since MOD-0173-FU02, <c>location.openapi.yaml</c> v1.1 (FU02 AC-15). Each OpenAPI 3.1 document is
+/// turned into JSON Schema 2020-12:
 /// <list type="bullet">
-/// <item><c>components.schemas</c> become <c>$defs</c> (refs rewritten accordingly); the inline 200 bodies of
-/// <c>getBalance</c> / <c>getTransactions</c> are lifted from <c>paths</c>.</item>
+/// <item><c>components.schemas</c> become <c>$defs</c> (refs rewritten accordingly); inline 200 bodies declared under
+/// <c>paths</c> are lifted by name.</item>
+/// <item>LOCATION v1 declares <c>getLocationPath</c> / <c>validateLocations</c> by EXAMPLE only (no schema, and the
+/// frozen v1 blocks may not be edited): their schema is inferred from that example — every member and type the example
+/// shows, nothing else (closed, see below).</item>
 /// <item><c>nullable: true</c> (an OpenAPI 3.0 keyword JSON Schema does not know) becomes <c>type: [T, "null"]</c>.</item>
 /// <item>STRICTER than the contract on one point, deliberately: every object schema that declares
 /// <c>properties</c> but no <c>additionalProperties</c> is closed (<c>false</c>). The service must not put a field on
-/// the wire that the frozen contract does not name — this is how "no invented field" is checked, not assumed.</item>
+/// the wire that the contract does not name — this is how "no invented field" is checked, not assumed.</item>
 /// <item>Formats (<c>uuid</c>, <c>date-time</c>, <c>date</c>) are enforced, not just annotated.</item>
 /// </list>
 /// </summary>
@@ -27,90 +31,192 @@ public static class ContractSchemas
     public const string Error = "Error";
     public const string ReservationResponse = "ReservationResponse";
 
-    private static readonly Lazy<JsonObject> Defs = new(BuildDefs);
-    private static readonly Dictionary<string, JsonSchema> Compiled = new(StringComparer.Ordinal);
+    // LOCATION (v1 frozen + v1.1 owner).
+    public const string LocationRef = "LocationRef";
+    public const string LocationList = "LocationList";
+    public const string LocationPath = "LocationPath";
+    public const string LocationValidation = "LocationValidation";
+    public const string LocationDetail = "LocationDetail";
+    public const string LocationSearchPage = "LocationSearchPage";
+    public const string LocationHistoryPage = "LocationHistoryPage";
+    public const string LocationStockPresence = "LocationStockPresence";
+    public const string BulkBinsResult = "BulkBinsResult";
+    public const string BulkBins200 = "BulkBins200";
+
+    private static readonly Contract Inventory = new("inventory-bundle.openapi.yaml", "inventory-bundle", doc => new Dictionary<string, JsonNode>
+    {
+        [BalancePage] = doc["paths"]!["/balance"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["schema"]!.DeepClone(),
+        [TransactionPage] = doc["paths"]!["/transactions"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["schema"]!.DeepClone()
+    });
+
+    private static readonly Contract Location = new("location.openapi.yaml", "location", doc => new Dictionary<string, JsonNode>
+    {
+        [LocationList] = doc["paths"]!["/"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["schema"]!.DeepClone(),
+        [LocationPath] = InferFromExample(doc["paths"]!["/{id}/path"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["example"]!),
+        [LocationValidation] = InferFromExample(doc["paths"]!["/validate"]!["post"]!["responses"]!["200"]!["content"]!["application/json"]!["example"]!),
+        [BulkBins200] = doc["paths"]!["/{id}/bins/bulk"]!["post"]!["responses"]!["200"]!["content"]!["application/json"]!["schema"]!.DeepClone()
+    });
+
     private static readonly object Gate = new();
 
     public static string ContractPath => RepoPaths.Contract("inventory-bundle.openapi.yaml");
 
-    /// <summary>Returns the validation errors of <paramref name="body"/> against the named contract schema (empty = valid).</summary>
-    public static IReadOnlyList<string> Validate(string schemaName, string body)
+    public static string LocationContractPath => RepoPaths.Contract("location.openapi.yaml");
+
+    /// <summary>Returns the validation errors of <paramref name="body"/> against the named INVENTORY-BUNDLE schema (empty = valid).</summary>
+    public static IReadOnlyList<string> Validate(string schemaName, string body) => Inventory.Validate(schemaName, body);
+
+    /// <summary>Returns the validation errors of <paramref name="body"/> against the named LOCATION schema (empty = valid).</summary>
+    public static IReadOnlyList<string> ValidateLocation(string schemaName, string body) => Location.Validate(schemaName, body);
+
+    private sealed class Contract
     {
-        JsonNode? instance;
-        try
+        private readonly string _file;
+        private readonly string _name;
+        private readonly Func<JsonObject, IDictionary<string, JsonNode>> _lifted;
+        private readonly Lazy<JsonObject> _defs;
+        private readonly Dictionary<string, JsonSchema> _compiled = new(StringComparer.Ordinal);
+
+        public Contract(string file, string name, Func<JsonObject, IDictionary<string, JsonNode>> lifted)
         {
-            instance = JsonNode.Parse(body);
-        }
-        catch (Exception ex)
-        {
-            return [$"body is not JSON: {ex.Message}"];
+            _file = file;
+            _name = name;
+            _lifted = lifted;
+            _defs = new Lazy<JsonObject>(BuildDefs);
         }
 
-        // Serialised on purpose: with the API test classes running in parallel, concurrent Evaluate calls on the same
-        // compiled schema were measured to let an invalid body through (a boolean sent as "false" passed once in a
-        // full run, never in isolation). A validator that can say "valid" by accident is worse than a slow one.
-        EvaluationResults result;
-        lock (Gate)
+        public IReadOnlyList<string> Validate(string schemaName, string body)
         {
-            result = Schema(schemaName).Evaluate(instance, new EvaluationOptions
+            JsonNode? instance;
+            try
             {
-                OutputFormat = OutputFormat.List,
-                RequireFormatValidation = true
-            });
-        }
-        if (result.IsValid)
-        {
-            return [];
+                instance = JsonNode.Parse(body);
+            }
+            catch (Exception ex)
+            {
+                return [$"body is not JSON: {ex.Message}"];
+            }
+
+            // Serialised on purpose: with the API test classes running in parallel, concurrent Evaluate calls on the same
+            // compiled schema were measured to let an invalid body through (a boolean sent as "false" passed once in a
+            // full run, never in isolation). A validator that can say "valid" by accident is worse than a slow one.
+            EvaluationResults result;
+            lock (Gate)
+            {
+                result = Schema(schemaName).Evaluate(instance, new EvaluationOptions
+                {
+                    OutputFormat = OutputFormat.List,
+                    RequireFormatValidation = true
+                });
+            }
+
+            if (result.IsValid)
+            {
+                return [];
+            }
+
+            return (result.Details ?? [])
+                .Where(d => d.Errors is { Count: > 0 })
+                .SelectMany(d => d.Errors!.Select(e => $"{d.InstanceLocation}: {e.Key} — {e.Value}"))
+                .DefaultIfEmpty("invalid (no detail)")
+                .ToList();
         }
 
-        return (result.Details ?? [])
-            .Where(d => d.Errors is { Count: > 0 })
-            .SelectMany(d => d.Errors!.Select(e => $"{d.InstanceLocation}: {e.Key} — {e.Value}"))
-            .DefaultIfEmpty("invalid (no detail)")
-            .ToList();
+        private JsonSchema Schema(string name)
+        {
+            lock (Gate)
+            {
+                if (_compiled.TryGetValue(name, out var cached)) return cached;
+                var root = new JsonObject
+                {
+                    ["$schema"] = "https://json-schema.org/draft/2020-12/schema",
+                    ["$id"] = $"https://contracts.diten.test/{_name}/v1/{name}",
+                    ["$defs"] = _defs.Value.DeepClone(),
+                    ["$ref"] = $"#/$defs/{name}"
+                };
+                var schema = JsonSchema.FromText(root.ToJsonString());
+                _compiled[name] = schema;
+                return schema;
+            }
+        }
+
+        private JsonObject BuildDefs()
+        {
+            var yaml = new DeserializerBuilder()
+                .WithAttemptingUnquotedStringTypeDeserialization()
+                .Build()
+                .Deserialize<object>(File.ReadAllText(RepoPaths.Contract(_file)));
+            var doc = (JsonObject)ToNode(yaml)!;
+
+            var defs = new JsonObject();
+            foreach (var (key, value) in doc["components"]!["schemas"]!.AsObject())
+            {
+                defs[key] = value!.DeepClone();
+            }
+
+            foreach (var (key, value) in _lifted(doc))
+            {
+                defs[key] = value;
+            }
+
+            foreach (var (_, schema) in defs)
+            {
+                Normalise(schema!);
+            }
+
+            return defs;
+        }
     }
 
-    private static JsonSchema Schema(string name)
+    /// <summary>
+    /// The schema an example shows: objects list exactly the members present (across all array elements), arrays take
+    /// the merged element shape, scalars their JSON type. No member is required (an example shows one instance).
+    /// </summary>
+    private static JsonNode InferFromExample(JsonNode example)
     {
-        lock (Gate)
+        switch (example)
         {
-            if (Compiled.TryGetValue(name, out var cached)) return cached;
-            var root = new JsonObject
+            case JsonObject obj:
             {
-                ["$schema"] = "https://json-schema.org/draft/2020-12/schema",
-                ["$id"] = $"https://contracts.diten.test/inventory-bundle/v1/{name}",
-                ["$defs"] = Defs.Value.DeepClone(),
-                ["$ref"] = $"#/$defs/{name}"
-            };
-            var schema = JsonSchema.FromText(root.ToJsonString());
-            Compiled[name] = schema;
-            return schema;
+                var properties = new JsonObject();
+                foreach (var (key, value) in obj)
+                {
+                    properties[key] = value is null ? new JsonObject { ["type"] = "null" } : InferFromExample(value);
+                }
+
+                return new JsonObject { ["type"] = "object", ["properties"] = properties };
+            }
+            case JsonArray array:
+            {
+                JsonObject? merged = null;
+                foreach (var item in array.Where(i => i is not null))
+                {
+                    var shape = (JsonObject)InferFromExample(item!);
+                    merged = merged is null ? shape : Merge(merged, shape);
+                }
+
+                return new JsonObject { ["type"] = "array", ["items"] = merged ?? new JsonObject() };
+            }
+            case JsonValue value when value.TryGetValue<bool>(out _):
+                return new JsonObject { ["type"] = "boolean" };
+            case JsonValue value when value.TryGetValue<string>(out _):
+                return new JsonObject { ["type"] = "string" };
+            default:
+                return new JsonObject { ["type"] = "number" };
         }
     }
 
-    private static JsonObject BuildDefs()
+    private static JsonObject Merge(JsonObject a, JsonObject b)
     {
-        var yaml = new DeserializerBuilder()
-            .WithAttemptingUnquotedStringTypeDeserialization()
-            .Build()
-            .Deserialize<object>(File.ReadAllText(ContractPath));
-        var doc = (JsonObject)ToNode(yaml)!;
-
-        var defs = new JsonObject();
-        foreach (var (key, value) in doc["components"]!["schemas"]!.AsObject())
+        if (a["properties"] is JsonObject pa && b["properties"] is JsonObject pb)
         {
-            defs[key] = value!.DeepClone();
+            foreach (var (key, value) in pb)
+            {
+                if (!pa.ContainsKey(key)) pa[key] = value!.DeepClone();
+            }
         }
 
-        defs[BalancePage] = doc["paths"]!["/balance"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["schema"]!.DeepClone();
-        defs[TransactionPage] = doc["paths"]!["/transactions"]!["get"]!["responses"]!["200"]!["content"]!["application/json"]!["schema"]!.DeepClone();
-
-        foreach (var (_, schema) in defs)
-        {
-            Normalise(schema!);
-        }
-
-        return defs;
+        return a;
     }
 
     private static void Normalise(JsonNode node)
@@ -163,6 +269,9 @@ public static class ContractSchemas
         bool b => JsonValue.Create(b),
         int i => JsonValue.Create(i),
         long l => JsonValue.Create(l),
+        // YamlDotNet's unquoted-type inference returns the SMALLEST fitting integer type (minimum: 1 → byte).
+        byte or sbyte or short or ushort or uint => JsonValue.Create(Convert.ToInt64(value, System.Globalization.CultureInfo.InvariantCulture)),
+        ulong u => JsonValue.Create(u),
         double d => JsonValue.Create(d),
         float f => JsonValue.Create(f),
         decimal m => JsonValue.Create(m),

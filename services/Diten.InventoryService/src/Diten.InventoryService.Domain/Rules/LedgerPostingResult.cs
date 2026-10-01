@@ -6,7 +6,8 @@ public sealed record LedgerPostingResult(
     LedgerPostingOutcome Outcome,
     InventoryTransaction? Transaction = null,
     decimal? Available = null,
-    decimal? Requested = null)
+    decimal? Requested = null,
+    string? RefusedLocationId = null)
 {
     public static LedgerPostingResult Posted(InventoryTransaction transaction) => new(LedgerPostingOutcome.Posted, transaction);
 
@@ -16,4 +17,7 @@ public sealed record LedgerPostingResult(
     public static LedgerPostingResult KeyTaken() => new(LedgerPostingOutcome.IdempotencyKeyTaken);
 
     public static LedgerPostingResult Reversed() => new(LedgerPostingOutcome.AlreadyReversed);
+
+    public static LedgerPostingResult NotPostable(string locationId)
+        => new(LedgerPostingOutcome.LocationNotPostable, RefusedLocationId: locationId);
 }

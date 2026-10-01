@@ -12,5 +12,11 @@ public enum LedgerPostingOutcome
     IdempotencyKeyTaken,
 
     /// <summary>Another REVERSAL of the same original committed first; nothing was written by this one.</summary>
-    AlreadyReversed
+    AlreadyReversed,
+
+    /// <summary>
+    /// K-13 (MOD-0173-FU02): a leg location is not an Active stockable location of this company under the named
+    /// warehouse at commit time (deactivated, archived, made non-stockable or moved meanwhile); nothing was written.
+    /// </summary>
+    LocationNotPostable
 }

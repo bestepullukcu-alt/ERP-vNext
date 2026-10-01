@@ -1,15 +1,17 @@
 <#
 .SYNOPSIS
   WP-0173-S1 section R - runtime E4 probe of Diten.InventoryService (MOD-0173) as a REAL process on port 5066.
+  WP-0173-LOC1 D6 - the location master (MOD-0173-FU02) is in this service: locations are built through its owner API.
 
 .DESCRIPTION
   1. Builds the Api and the probe console.
-  2. Starts Prism 4.10.5 mocks of the FROZEN PRODUCT-MASTER (4010) and LOCATION (4011) contracts - one node process
-     each, on the cached CLI entry point (no cmd/npx chain, so nothing is orphaned).
+  2. Starts a Prism 4.10.5 mock of the FROZEN PRODUCT-MASTER contract (4010) - one node process on the cached CLI entry
+     point (no cmd/npx chain, so nothing is orphaned). LOCATION is NOT mocked any more (WP-0173-LOC1): the ledger reads
+     the real inventory_locations in-process; the LOCATION and org-unit URLs point at a closed port and are never called.
   3. Starts the service (environment Mock, JWT secret minted for this run and passed by environment variable -
      never written to a file) and waits for /health.
-  4. Runs the probe "flows" phase (AC2, AC3, AC4, AC5, AC7, AC9, AC10): request, response, X-Correlation-Id and the
-     persisted Mongo documents are written as JSON evidence.
+  4. Runs the probe "flows" phase (AC2, AC3, AC4, AC5, AC7, AC9, AC10, S2, LOC1 D6.1-D6.7): request, response,
+     X-Correlation-Id and the persisted Mongo documents are written as JSON evidence (bearer masked).
   5. STOPS the service process, starts a NEW process from the same freshly built binary, and runs the probe
      "after-restart" phase. PIDs, start times and the binary's timestamp + SHA-256 are recorded in r-process.json.
   6. Stops everything it started.
@@ -21,7 +23,7 @@ param(
     [Parameter(Mandatory = $true)][string]$EvidenceDir,
     [int]$ServicePort = 5066,
     [int]$ProductMasterPort = 4010,
-    [int]$LocationPort = 4011,
+    [int]$ClosedPort = 9,
     [string]$MongoConnectionString = 'mongodb://localhost:27017',
     [string]$MongoDatabase = 'diten_inventory_mock'
 )
@@ -61,7 +63,9 @@ function Start-Service-Process([string]$label) {
     $env:Mongo__DatabaseName = $MongoDatabase
     $env:Kestrel__Endpoints__Http__Url = "http://localhost:$ServicePort"
     $env:Inventory__Upstream__ProductMasterBaseUrl = "http://127.0.0.1:$ProductMasterPort/"
-    $env:Inventory__Upstream__LocationMasterBaseUrl = "http://127.0.0.1:$LocationPort/"
+    # Not called (in-process locations, no orgUnitRef in the probe); the configuration only has to be well-formed.
+    $env:Inventory__Upstream__LocationMasterBaseUrl = "http://127.0.0.1:$ClosedPort/"
+    $env:Inventory__Upstream__OrgUnitDirectoryBaseUrl = "http://127.0.0.1:$ClosedPort/"
     $p = Start-Process -FilePath 'dotnet' -ArgumentList "`"$script:dll`"" -WorkingDirectory $script:binDir -PassThru -WindowStyle Hidden `
         -RedirectStandardOutput (Join-Path $EvidenceDir "service-$label.log") -RedirectStandardError (Join-Path $EvidenceDir "service-$label.err.log")
     [void]$started.Add($p)
@@ -84,7 +88,7 @@ function Stop-Tracked($process) {
 }
 
 try {
-    foreach ($port in @($ServicePort, $ProductMasterPort, $LocationPort)) { Assert-PortFree $port }
+    foreach ($port in @($ServicePort, $ProductMasterPort)) { Assert-PortFree $port }
 
     # -- build -------------------------------------------------------------------------------------------
     & dotnet build $apiProject -c Debug -nologo -v q | Out-File (Join-Path $EvidenceDir 'probe-build.log') -Encoding utf8
@@ -96,9 +100,8 @@ try {
     $dllInfo = Get-Item $script:dll
     $script:secret = 'probe-' + [guid]::NewGuid().ToString('N') + [guid]::NewGuid().ToString('N')
 
-    # -- Prism mocks of the frozen consumed contracts ----------------------------------------------------
+    # -- Prism mock of the frozen consumed PRODUCT-MASTER contract (the only external master left) --------
     $productSpec = (Get-ChildItem -Path (Join-Path $repoRoot 'docs') -Recurse -Filter 'product-master-bundle.openapi.yaml' | Select-Object -First 1).FullName
-    $locationSpec = (Get-ChildItem -Path (Join-Path $repoRoot 'docs') -Recurse -Filter 'location.openapi.yaml' | Select-Object -First 1).FullName
     $prismPackage = Get-ChildItem "$env:LOCALAPPDATA\npm-cache\_npx\*\node_modules\@stoplight\prism-cli\package.json" -ErrorAction SilentlyContinue |
         Where-Object { (Get-Content $_.FullName -Raw | ConvertFrom-Json).version -eq '4.10.5' } | Select-Object -First 1
     if (-not $prismPackage) {
@@ -108,8 +111,7 @@ try {
     }
     $prismJs = Join-Path $prismPackage.Directory.FullName 'dist\index.js'
 
-    foreach ($mock in @(@{ name = 'product-master'; spec = $productSpec; port = $ProductMasterPort },
-                        @{ name = 'location'; spec = $locationSpec; port = $LocationPort })) {
+    foreach ($mock in @(@{ name = 'product-master'; spec = $productSpec; port = $ProductMasterPort })) {
         $p = Start-Process -FilePath 'node' -ArgumentList @("`"$prismJs`"", 'mock', "`"$($mock.spec)`"", '--port', $mock.port, '--host', '127.0.0.1') `
             -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $EvidenceDir "prism-$($mock.name).log") `
             -RedirectStandardError (Join-Path $EvidenceDir "prism-$($mock.name).err.log")
@@ -141,9 +143,9 @@ try {
             lastWriteTime = $dllInfo.LastWriteTime.ToString('o')
             sha256 = (Get-FileHash $script:dll -Algorithm SHA256).Hash
         }
-        environment = 'Mock (EnforceLocationLegalEntityMatch=false - Prism static locations carry le-tr; ASSUMPTION-0173-07)'
+        environment = 'Mock (locations real, in-process, built through the owner API per tenant - WP-0173-LOC1)'
         mongo = "$MongoConnectionString / $MongoDatabase"
-        prism = [ordered]@{ productMaster = "127.0.0.1:$ProductMasterPort"; location = "127.0.0.1:$LocationPort"; entryPoint = '@stoplight/prism-cli 4.10.5' }
+        prism = [ordered]@{ productMaster = "127.0.0.1:$ProductMasterPort"; location = 'none (in-process LOCATION master, MOD-0173-FU02)'; entryPoint = '@stoplight/prism-cli 4.10.5' }
         run1 = $run1
         run1StoppedAt = $stoppedAt
         run2 = $run2

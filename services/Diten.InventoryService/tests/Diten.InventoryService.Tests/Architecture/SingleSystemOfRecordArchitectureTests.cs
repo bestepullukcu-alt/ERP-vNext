@@ -18,9 +18,10 @@ public sealed class SingleSystemOfRecordArchitectureTests
     public void The_service_owns_exactly_the_declared_collections()
     {
         // S2 adds inventory_reservations (holds) and inventory_sku_positions (projection, ASSUMPTION-0173-13).
+        // MOD-0173-FU02 adds inventory_locations (place master, no quantity) and inventory_location_history (K-11).
         Assert.Equal(
-            ["inventory_audit", "inventory_balances", "inventory_outbox", "inventory_reservations", "inventory_sequences",
-             "inventory_sku_positions", "inventory_transactions"],
+            ["inventory_audit", "inventory_balances", "inventory_location_history", "inventory_locations", "inventory_outbox",
+             "inventory_reservations", "inventory_sequences", "inventory_sku_positions", "inventory_transactions"],
             InventoryCollections.All.OrderBy(x => x).ToList());
     }
 

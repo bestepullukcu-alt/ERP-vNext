@@ -44,6 +44,7 @@ public static class DependencyInjection
         var productMaster = RequireAbsolute(upstream.ProductMasterBaseUrl, "ProductMasterBaseUrl");
         var locationMaster = RequireAbsolute(upstream.LocationMasterBaseUrl, "LocationMasterBaseUrl");
         var legalEntityMaster = RequireAbsolute(upstream.LegalEntityMasterBaseUrl, "LegalEntityMasterBaseUrl");
+        var orgUnitDirectory = RequireAbsolute(upstream.OrgUnitDirectoryBaseUrl, "OrgUnitDirectoryBaseUrl");
         var timeout = TimeSpan.FromSeconds(upstream.TimeoutSeconds > 0 ? upstream.TimeoutSeconds : 5);
 
         services.AddTransient<ForwardCallerHeadersHandler>();
@@ -63,6 +64,13 @@ public static class DependencyInjection
         services.AddHttpClient<ILegalEntityMasterClient, LegalEntityMasterHttpClient>(http =>
             {
                 http.BaseAddress = legalEntityMaster;
+                http.Timeout = timeout;
+            })
+            .AddHttpMessageHandler<ForwardCallerHeadersHandler>();
+        // MOD-0173-FU02 §7: org-unit soft link checked once on a location write, caller token forwarded; never cached.
+        services.AddHttpClient<IOrgUnitDirectoryClient, OrgUnitDirectoryHttpClient>(http =>
+            {
+                http.BaseAddress = orgUnitDirectory;
                 http.Timeout = timeout;
             })
             .AddHttpMessageHandler<ForwardCallerHeadersHandler>();

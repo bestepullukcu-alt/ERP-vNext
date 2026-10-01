@@ -123,6 +123,13 @@ public sealed class PostMovementHandler : IRequestHandler<PostMovementCommand, R
             case LedgerPostingOutcome.AlreadyReversed:
                 return AlreadyReversed();
 
+            case LedgerPostingOutcome.LocationNotPostable:
+                // MOD-0173-FU02 K-13: re-checked inside the posting transaction (REVERSAL included) — a location that is
+                // not Active + stockable under the named warehouse at commit time is, for the ledger, unknown.
+                return Response<MovementResponseDto>.Fail(InventoryErrorCodes.UnknownLocation,
+                    "Location is not an Active stockable location of this company under the named warehouse.", 422,
+                    new Dictionary<string, object?> { ["locationId"] = result.RefusedLocationId });
+
             case LedgerPostingOutcome.IdempotencyKeyTaken:
             {
                 // A concurrent request committed this key between our lookup and our insert.
