@@ -1238,7 +1238,7 @@ describe("the guidance banner says what the task needs from the reader", () => {
     expect(bannerText()).toBe("GuidancePendingClaim");
   });
 
-  it("names the holder's own reason when the task is paused with one", async () => {
+  it("draws no banner when the task is paused with a reason — the strip carries it (BL-444)", async () => {
     await bootDetailPage(projectionItem({
       normalizedStatus: "Waiting",
       taskLifecycle: "Waiting",
@@ -1251,11 +1251,12 @@ describe("the guidance banner says what the task needs from the reader", () => {
         expectedUntil: null
       }
     }));
-    // The "...because X" wording, not the bare one — the reason is the whole point when there is one.
-    expect(bannerText()).toBe("GuidanceWaitingBecause");
+    // BL-444: no banner — the lifecycle strip says "paused now: … because X"; the banner was the same sentence again.
+    expect(bannerText()).toBeNull();
+    expect(app().querySelector(".wcn-step-paused")).not.toBeNull();
   });
 
-  it("falls back to the bare wording when the pause carries no reason", async () => {
+  it("draws no banner when the pause carries no reason either (BL-444)", async () => {
     await bootDetailPage(projectionItem({
       normalizedStatus: "Waiting",
       taskLifecycle: "Waiting",
@@ -1268,7 +1269,9 @@ describe("the guidance banner says what the task needs from the reader", () => {
         expectedUntil: null
       }
     }));
-    expect(bannerText()).toBe("GuidanceWaiting");
+    // BL-444: the bare wording moved with it — the strip's "paused now" is the one line for this state.
+    expect(bannerText()).toBeNull();
+    expect(app().querySelector(".wcn-step-paused")).not.toBeNull();
   });
 
   // A banner for every state would be noise; a banner that guesses would be a lie. Silence is the correct output.
@@ -1688,47 +1691,41 @@ describe("the comment composer writes to the engine", () => {
  */
 describe("the plan date picker writes to the engine for a real task", () => {
   /*
-   * ⚠ THE STUB MOVED TO `showConfirm` (2026-08-24, A3). The plan picker used to be a raw `Swal.fire` with its
-   * own `<input id="wcnPlanDate">`; it now goes through the product's ONE confirm component, which builds the
-   * box itself and hands it to the caller through `didOpen`. So the stand-in stands in for THAT: it creates the
-   * popup and the `.swal2-input` slot the real component would create, runs `didOpen` synchronously, and then
-   * answers with a confirm value.
+   * ⚠ THE STUB MOVED BACK TO `Swal.fire` (WP-UI-CALENDAR-VIEW-01). The plan dialog asks for a day, an optional
+   * start time and a length now — three values, which the shared confirm cannot carry (BL-146) — so it is a raw
+   * form dialog dressed with `dialogLook()`, like the closure and reason forms. The stand-in reproduces what the
+   * real library does with that config: it renders `html` into a popup, runs `didOpen`, lets the test fill the
+   * fields, runs `preConfirm`, and resolves with its value.
    *
-   * ⚠ `.swal2-input` AS A DIRECT CHILD, deliberately — the stub reproduces the real popup's SLOT shape rather
-   * than a convenient one, because the seam's `onOpen` finds the box by querying that slot list. A stub that
-   * wrapped the input would pass while the shipped code failed, which is the exact defect this module already
-   * paid for once.
+   * The zone a typed time is read in comes from the calendar feed (`fetchCalendar`), stubbed at the network seam
+   * like every other read in this file.
    */
-  const stubSwal = (confirmed) => {
-    global.Swal = { showValidationMessage: () => {} };
-    global.showConfirm = (title, callback, options) => {
-      /*
-       * ⚠ ONLY THE NEWEST POPUP SURVIVES. Every previously-booted instance in this file still has its click
-       * listener attached (the accumulated-listener property this file documents throughout), so ONE click
-       * opens one dialog per booted item. Keeping them all would make `getElementById` answer with the
-       * OLDEST item's seed — a value that belongs to a different test.
-       */
-      document.querySelectorAll(".swal2-popup").forEach((el) => el.remove());
-      const popup = document.createElement("div");
-      popup.className = "swal2-popup";
-      const box = document.createElement("input");
-      box.className = "swal2-input";
-      // The component's own id, so a test that wants to read the seeded value can still find it by name.
-      box.id = "wcnPlanDate";
-      popup.appendChild(box);
-      document.body.appendChild(popup);
-      if (typeof options.didOpen === "function") { options.didOpen(popup); }
-      if (confirmed && confirmed.isConfirmed && typeof callback === "function") {
-        callback(confirmed.value !== undefined ? confirmed.value : box.value);
+  const stubSwal = ({ confirm = false, day, time, minutes } = {}) => {
+    global.Swal = {
+      showValidationMessage: () => {},
+      fire: (config) => {
+        document.querySelectorAll(".swal2-popup").forEach((el) => el.remove());
+        const popup = document.createElement("div");
+        popup.className = "swal2-popup";
+        popup.innerHTML = config.html;
+        document.body.appendChild(popup);
+        if (typeof config.didOpen === "function") { config.didOpen(popup); }
+        if (!confirm) { return Promise.resolve({ isConfirmed: false }); }
+        if (day !== undefined) { document.getElementById("wcnPlanDay").value = day; }
+        if (time !== undefined) { document.getElementById("wcnPlanTime").value = time; }
+        if (minutes !== undefined) { document.getElementById("wcnPlanDuration").value = String(minutes); }
+        const value = config.preConfirm();
+        return Promise.resolve(value ? { isConfirmed: true, value } : { isConfirmed: false });
       }
     };
   };
 
+  const stubZone = (zone = "Europe/Istanbul") => {
+    global.WorkCenterNextApi.fetchCalendar = () => Promise.resolve({ ok: true, status: 200, data: { timeZoneId: zone, tasks: [], meetings: [], days: [] } });
+  };
+
   afterEach(() => {
-    // Several OTHER action flows in this module (reject/return/inquire) also branch on `global.Swal` presence;
-    // leaving a stub behind would silently change their behaviour in a later, unrelated test.
     delete global.Swal;
-    delete global.showConfirm;
     document.querySelectorAll(".swal2-popup").forEach((el) => el.remove());
   });
 
@@ -1750,74 +1747,71 @@ describe("the plan date picker writes to the engine for a real task", () => {
   const clickPlan = async () => {
     app().querySelector('[data-wcn-action="plan"]').click();
     await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
   };
 
   it("opens the picker for a real task and seeds it with the existing planned date", async () => {
-    stubSwal({ isConfirmed: false });
+    stubSwal();
     await bootDetailPage(projectionItem({
       actions: [planAction()],
       plannedDate: "2026-08-01",
       dueAt: "2026-08-10T00:00:00+00:00"
     }));
 
-    app().querySelector('[data-wcn-action="plan"]').click();
-    // onClick runs via a queued microtask (Promise.resolve().then(...)), not synchronously inside click() — the
-    // input does not exist yet the instant click() returns.
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await clickPlan();
 
-    // The existing plan wins over the source due date, matching openDatePicker's own fallback order.
-    expect(document.getElementById("wcnPlanDate").value).toBe("2026-08-01");
+    // The existing plan wins over the source due date.
+    expect(document.getElementById("wcnPlanDay").value).toBe("2026-08-01");
+    // A day plan has no time, so the length is not offered until a time is chosen.
+    expect(document.getElementById("wcnPlanTime").value).toBe("");
+    expect(document.getElementById("wcnPlanDuration").disabled).toBe(true);
   });
 
   it("seeds correctly even when the wire sends a full instant, not a bare date", async () => {
-    // The engine's PlannedDate is a DateTimeOffset and serializes with a time and an offset. adaptProjection has
-    // to normalize it the same way it already normalizes dueAt, or a type="date" input rejects the value outright
-    // (an invalid value for that input type sets .value to "", which a same-day midnight fixture would not catch).
-    stubSwal({ isConfirmed: false });
+    stubSwal();
     await bootDetailPage(projectionItem({
       actions: [planAction()],
       plannedDate: "2026-08-01T14:30:00+03:00",
       dueAt: null
     }));
 
-    app().querySelector('[data-wcn-action="plan"]').click();
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await clickPlan();
 
-    expect(document.getElementById("wcnPlanDate").value).toBe("2026-08-01");
+    expect(document.getElementById("wcnPlanDay").value).toBe("2026-08-01");
   });
 
   it("falls back to the source due date when there is no plan yet", async () => {
-    stubSwal({ isConfirmed: false });
+    stubSwal();
     await bootDetailPage(projectionItem({
       actions: [planAction()],
       plannedDate: null,
       dueAt: "2026-08-10T00:00:00+00:00"
     }));
 
-    app().querySelector('[data-wcn-action="plan"]').click();
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
+    await clickPlan();
 
-    // dueAt is normalized to date-only by adaptProjection before openDatePicker ever sees it (the SLA math and
-    // the date input both expect a date, not a full instant) — so the seed is already just the date.
-    expect(document.getElementById("wcnPlanDate").value).toBe("2026-08-10");
+    expect(document.getElementById("wcnPlanDay").value).toBe("2026-08-10");
   });
 
-  it("posts the chosen date to the engine, not a local mutation", async () => {
+  it("the day field is the shared DitenDateField, not a picker of its own", async () => {
+    stubSwal();
+    await bootDetailPage(projectionItem({ actions: [planAction()] }));
+
+    await clickPlan();
+
+    const day = document.getElementById("wcnPlanDay");
+    expect(day.classList.contains("flatpickr-date")).toBe(true);
+    expect(day.closest(".diten-field").querySelector(".diten-field-icon")).not.toBeNull();
+  });
+
+  it("posts a DAY plan dressed with the tenant offset, not a local mutation", async () => {
     const planCalls = [];
-    stubSwal({ isConfirmed: true, value: "2026-08-20" });
-    // A token no other test in this file uses, so a call carrying it can only have come from THIS item —
-    // decisive even though the same click also reaches every other "plan"-capable instance booted so far (see
-    // the "content, not count" note used throughout this file for the same accumulated-listener reason).
+    stubSwal({ confirm: true, day: "2026-08-20", time: "" });
     await bootDetailPage(projectionItem({ actions: [planAction()], concurrency: { kind: "version", token: "424242" } }));
-    /*
-     * WC-D2 — `plan` goes through the SINGLE dispatch address now, like every other projected action, instead of
-     * TasksApi.plan (which posts to MOD-0024's own /Tasks/api route and was the reason only MOD-0024's items
-     * could be planned). The RULE under test is unchanged: the chosen date reaches the server with the
-     * projection's concurrency token, and nothing is applied locally.
-     */
+    stubZone();
     global.WorkCenterNextApi.dispatchAction = (taskId, actionCode, providerCode, payload) => {
       planCalls.push({ taskId, actionCode, providerCode, payload });
-      return Promise.resolve({ ok: true, status: 204 });
+      return Promise.resolve({ ok: true, status: 200, data: { warnings: [] } });
     };
 
     await clickPlan();
@@ -1826,18 +1820,48 @@ describe("the plan date picker writes to the engine for a real task", () => {
     expect(mine).toHaveLength(1);
     expect(mine[0].taskId).toBe(TASK_ID);
     expect(mine[0].actionCode).toBe("plan");
-    expect(mine[0].payload).toEqual({ expectedVersion: 424242, plannedDate: "2026-08-20" });
+    expect(mine[0].payload).toEqual({ expectedVersion: 424242, plannedDate: "2026-08-20T00:00:00+03:00" });
+  });
+
+  it("posts a BLOCK when a start time is chosen: the tenant wall clock as UTC, and the chosen length", async () => {
+    const planCalls = [];
+    stubSwal({ confirm: true, day: "2026-08-20", time: "10:00", minutes: 90 });
+    await bootDetailPage(projectionItem({ actions: [planAction()], concurrency: { kind: "version", token: "434343" } }));
+    stubZone();
+    global.WorkCenterNextApi.dispatchAction = (taskId, actionCode, providerCode, payload) => {
+      planCalls.push({ taskId, actionCode, providerCode, payload });
+      return Promise.resolve({ ok: true, status: 200, data: { warnings: [] } });
+    };
+
+    await clickPlan();
+
+    const mine = planCalls.filter((call) => call.payload.expectedVersion === 434343);
+    expect(mine).toHaveLength(1);
+    expect(mine[0].payload).toEqual({
+      expectedVersion: 434343, plannedStartAt: "2026-08-20T07:00:00.000Z", plannedDurationMinutes: 90
+    });
+  });
+
+  it("refuses to guess the hour when the tenant zone cannot be read", async () => {
+    const planCalls = [];
+    stubSwal({ confirm: true, day: "2026-08-20", time: "10:00", minutes: 60 });
+    await bootDetailPage(projectionItem({ actions: [planAction()], concurrency: { kind: "version", token: "444444" } }));
+    global.WorkCenterNextApi.fetchCalendar = () => Promise.resolve({ ok: false, status: 503, data: null });
+    global.WorkCenterNextApi.dispatchAction = (...args) => { planCalls.push(args); return Promise.resolve({ ok: true }); };
+
+    await clickPlan();
+
+    expect(planCalls.filter((call) => call[3].expectedVersion === 444444)).toHaveLength(0);
   });
 
   it("shows no plan date at all when the write is refused", async () => {
-    // No optimistic apply: a refused write must leave the screen exactly as it was, or a rejected write would
-    // look identical to an accepted one.
-    stubSwal({ isConfirmed: true, value: "2026-08-20" });
+    stubSwal({ confirm: true, day: "2026-08-20", time: "" });
     await bootDetailPage(projectionItem({
       actions: [planAction()],
       plannedDate: null,
       dueAt: null
     }));
+    stubZone();
     global.WorkCenterNextApi.dispatchAction = () => Promise.resolve({
       ok: false, status: 400, reasonCode: "TASK_PLAN_DATE_REQUIRED"
     });
@@ -1846,8 +1870,6 @@ describe("the plan date picker writes to the engine for a real task", () => {
 
     const cell = Array.from(app().querySelectorAll(".wcn-date-cell"))
       .find((el) => el.textContent.includes("PlannedDateLabel"));
-    // No dueAt and no plannedDate means renderPlanDates prints nothing at all for this item — the empty state,
-    // not a value that was never actually stored.
     expect(cell).toBeUndefined();
   });
 });
@@ -1971,5 +1993,41 @@ describe("a closed task's actions on the detail page (BL-038)", () => {
     await bootDetailPage(projectionItem());
 
     expect(app().querySelectorAll("[data-wcn-action]").length).toBeGreaterThan(0);
+  });
+});
+
+/*
+ * BL-444 (owner, 2026-09-25) — THE SAME WAIT, SAID TWICE, NOT FOUR TIMES. A paused task used to print the holder's
+ * sentence in the guidance banner, the lifecycle strip, the resolver's notice and the waiting note. Two surfaces stay
+ * (strip + note); the banner and the generic notice go — unless nothing else on the page can name the wait.
+ */
+describe("BL-444 — a paused task says its wait twice, not four times", () => {
+  const paused = (extra) => projectionItem({
+    normalizedStatus: "Waiting",
+    taskLifecycle: "Waiting",
+    executionState: "paused",
+    waitingContext: {
+      type: "externalInformation",
+      waitingOn: { id: "cccccccc-cccc-cccc-cccc-cccccccccccc", isCurrentUser: false },
+      reason: { kind: "display", text: "Tedarikçi belgesi bekleniyor", locale: "tr" },
+      since: "2026-07-25T09:00:00+00:00",
+      expectedUntil: null,
+      ...extra
+    }
+  });
+
+  it("with a person and a reason: the strip and the waiting note carry the sentence; no banner, no generic notice", async () => {
+    await bootDetailPage(paused());
+    expect(app().querySelector(".wcn-guidance"), "no guidance banner").toBeNull();
+    expect(app().querySelector(".wcn-step-paused"), "the lifecycle strip says it").not.toBeNull();
+    expect(app().querySelector(".wcn-parked-waiting"), "the waiting note says it").not.toBeNull();
+    expect(app().textContent, "the resolver's generic notice is not a third copy").not.toContain("NoticeWaitingExternal");
+  });
+
+  it("with neither a person nor a reason: the generic notice is the one line naming the wait, so it stays", async () => {
+    await bootDetailPage(paused({ waitingOn: null, reason: null }));
+    expect(app().querySelector(".wcn-guidance")).toBeNull();
+    expect(app().querySelector(".wcn-parked-waiting"), "no sentence, no waiting note").toBeNull();
+    expect(app().textContent).toContain("NoticeWaitingExternal");
   });
 });

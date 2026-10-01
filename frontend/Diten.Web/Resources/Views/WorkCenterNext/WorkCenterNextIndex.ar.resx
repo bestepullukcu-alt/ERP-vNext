@@ -575,12 +575,6 @@
   <data name="TimesheetLabel" xml:space="preserve">
     <value>الوقت</value>
   </data>
-  <data name="TimeLoggedLabel" xml:space="preserve">
-    <value>مسجّل</value>
-  </data>
-  <data name="TimerRunning" xml:space="preserve">
-    <value>قيد التشغيل</value>
-  </data>
   <data name="AwaitingReview" xml:space="preserve">
     <value>بانتظار المراجعة</value>
   </data>
@@ -604,12 +598,6 @@
   </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · مجدول ليوم {1} (تجريبي)</value>
-  </data>
-  <data name="ToastPlanSaved" xml:space="preserve">
-    <value>تم حفظ الخطة لـ {0}</value>
-  </data>
-  <data name="ToastTimerStarted" xml:space="preserve">
-    <value>{0} · بدأ المؤقّت (تجريبي)</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>تم تسجيل {0} (تجريبي)</value>
@@ -931,15 +919,6 @@
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>كل الحقول</value>
   </data>
-  <data name="TimerStateRunning" xml:space="preserve">
-    <value>قيد التنفيذ</value>
-  </data>
-  <data name="TimerStatePaused" xml:space="preserve">
-    <value>موقوف مؤقتًا</value>
-  </data>
-  <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>لا يُسجَّل الوقت المنقضي — أدخل الوقت الذي قضيته يدويًا.</value>
-  </data>
   <data name="SubtaskStartedNotCompleted" xml:space="preserve">
     <value>بدأت المهمة الفرعية لكن تعذّر إكمالها: {0}</value>
   </data>
@@ -1089,21 +1068,6 @@
   </data>
   <data name="KanbanDropHint" xml:space="preserve">
     <value>أفلت هنا: {0}</value>
-  </data>
-  <data name="CalPrevMonth" xml:space="preserve">
-    <value>الشهر السابق</value>
-  </data>
-  <data name="CalNextMonth" xml:space="preserve">
-    <value>الشهر التالي</value>
-  </data>
-  <data name="CalToday" xml:space="preserve">
-    <value>اليوم</value>
-  </data>
-  <data name="CalOutside" xml:space="preserve">
-    <value>{0} عنصرًا في أشهر أخرى.</value>
-  </data>
-  <data name="CalOutsideAndUndated" xml:space="preserve">
-    <value>{0} عنصرًا في أشهر أخرى؛ و{1} بلا تاريخ ولا تظهر في التقويم أبدًا.</value>
   </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>استحقاق المصدر</value>
@@ -1538,6 +1502,9 @@
   <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
     <value>الإثبات المطلوب غير متوفر.</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_SelfApproval" xml:space="preserve">
+    <value>أنت من بدأ هذه الموافقة، لذا يجب أن يتخذ شخص آخر القرار.</value>
+  </data>
   <data name="NoAccessTitle" xml:space="preserve">
     <value>ليس لديك حق الوصول إلى مركز المهام</value>
   </data>
@@ -1901,6 +1868,9 @@
   </data>
   <data name="AuditEventPlanned" xml:space="preserve">
     <value>خُطِّطت المهمة</value>
+  </data>
+  <data name="AuditEventUnplanned" xml:space="preserve">
+    <value>أُزيلت المهمة من التقويم</value>
   </data>
   <data name="AuditEventStarted" xml:space="preserve">
     <value>بدأ العمل</value>
@@ -2408,5 +2378,137 @@
   </data>
   <data name="AuditEventInquiryAnswered" xml:space="preserve">
     <value>تمت الإجابة عن السؤال</value>
+  </data>
+  <data name="CalPanelTitle" xml:space="preserve">
+    <value>أعمال بانتظار التخطيط</value>
+  </data>
+  <data name="CalPanelUnplanned" xml:space="preserve">
+    <value>غير مخطط</value>
+  </data>
+  <data name="CalPanelPlanPassed" xml:space="preserve">
+    <value>فات موعد الخطة</value>
+  </data>
+  <data name="CalPanelInvites" xml:space="preserve">
+    <value>الدعوات</value>
+  </data>
+  <data name="CalPanelEmpty" xml:space="preserve">
+    <value>لا يوجد شيء هنا.</value>
+  </data>
+  <data name="CalPanelHint" xml:space="preserve">
+    <value>اسحب بطاقة إلى التقويم: إلى يوم في عرض الشهر، أو إلى ساعة في عرض الأسبوع أو اليوم. اسحب كتلة مخططة إلى هنا لإزالتها.</value>
+  </data>
+  <data name="CalChipEstimate" xml:space="preserve">
+    <value>التقدير {0} س</value>
+  </data>
+  <data name="CalChipPlanPassed" xml:space="preserve">
+    <value>مخطط في {0}</value>
+  </data>
+  <data name="CalChipRemaining" xml:space="preserve">
+    <value>متبقٍ {0} د</value>
+  </data>
+  <data name="CalLegendTask" xml:space="preserve">
+    <value>يوم مخطط</value>
+  </data>
+  <data name="CalLegendBlock" xml:space="preserve">
+    <value>كتلة زمنية مخططة</value>
+  </data>
+  <data name="CalLegendMeetingAccepted" xml:space="preserve">
+    <value>اجتماع (مقبول)</value>
+  </data>
+  <data name="CalLegendMeetingPending" xml:space="preserve">
+    <value>اجتماع (بلا رد)</value>
+  </data>
+  <data name="CalLegendConflict" xml:space="preserve">
+    <value>يتداخل مع كتلة أخرى</value>
+  </data>
+  <data name="CalLegendOffHours" xml:space="preserve">
+    <value>خارج ساعات العمل</value>
+  </data>
+  <data name="CalLegendHoliday" xml:space="preserve">
+    <value>عطلة</value>
+  </data>
+  <data name="CalPlanSaved" xml:space="preserve">
+    <value>تم تخطيط «{0}».</value>
+  </data>
+  <data name="CalTruncated" xml:space="preserve">
+    <value>قُطع عند نهاية يوم العمل — متبقٍ {0} د.</value>
+  </data>
+  <data name="CalConflictWith" xml:space="preserve">
+    <value>يتداخل مع «{0}» {1}. اختر وقتًا آخر.</value>
+  </data>
+  <data name="CalZoneUnavailable" xml:space="preserve">
+    <value>تعذّرت قراءة المنطقة الزمنية للشركة، فلم يُحفظ الوقت. حاول مرة أخرى.</value>
+  </data>
+  <data name="PlanTimeLabel" xml:space="preserve">
+    <value>وقت البدء</value>
+  </data>
+  <data name="PlanTimeNone" xml:space="preserve">
+    <value>بدون وقت (اليوم كله)</value>
+  </data>
+  <data name="PlanDurationLabel" xml:space="preserve">
+    <value>المدة</value>
+  </data>
+  <data name="PlanDurationOption" xml:space="preserve">
+    <value>{0} د</value>
+  </data>
+  <data name="PlanTimeHint" xml:space="preserve">
+    <value>الأوقات بتوقيت المنطقة الزمنية للشركة. تُقطع الكتلة التي تتجاوز نهاية يوم العمل عند تلك النقطة.</value>
+  </data>
+  <data name="CalTruncatedNoEstimate" xml:space="preserve">
+    <value>تم قطعه عند نهاية اليوم.</value>
+  </data>
+  <data name="TimeDraftLabel" xml:space="preserve">
+    <value>مسودتي</value>
+  </data>
+  <data name="TimeSubmittedLabel" xml:space="preserve">
+    <value>مُرسَل</value>
+  </data>
+  <data name="TimeApprovedLabel" xml:space="preserve">
+    <value>معتمد</value>
+  </data>
+  <data name="TimerRunningNow" xml:space="preserve">
+    <value>مؤقتك يعمل على هذه المهمة.</value>
+  </data>
+  <data name="OpenMyTimesheet" xml:space="preserve">
+    <value>فتح سجل ساعاتي</value>
+  </data>
+  <data name="TimerSwitchedText" xml:space="preserve">
+    <value>انتقل مؤقتك إلى هذه المهمة.</value>
+  </data>
+  <data name="TimerUndo" xml:space="preserve">
+    <value>تراجع</value>
+  </data>
+  <data name="TimerUndone" xml:space="preserve">
+    <value>عاد المؤقت إلى المهمة السابقة.</value>
+  </data>
+  <data name="TimerErrDisabled" xml:space="preserve">
+    <value>المؤقت غير مفعّل لكيانك القانوني. أدخل الوقت في سجل ساعاتي.</value>
+  </data>
+  <data name="TimerErrNotHeld" xml:space="preserve">
+    <value>يعمل المؤقت فقط على مهمة مسندة إليك.</value>
+  </data>
+  <data name="TimerErrNotInProgress" xml:space="preserve">
+    <value>يعمل المؤقت فقط على مهمة قيد التنفيذ.</value>
+  </data>
+  <data name="TimerErrNotRunning" xml:space="preserve">
+    <value>لم يعد مؤقت هذه المهمة يعمل.</value>
+  </data>
+  <data name="TimerErrConflict" xml:space="preserve">
+    <value>تغيّر المؤقت في هذه الأثناء. تم تحديث الصفحة.</value>
+  </data>
+  <data name="TimerErrUndoExpired" xml:space="preserve">
+    <value>فات أوان التراجع عن هذا التبديل.</value>
+  </data>
+  <data name="TimerErrGeneric" xml:space="preserve">
+    <value>تعذر تغيير المؤقت. حاول مرة أخرى.</value>
+  </data>
+  <data name="WorkAggregation_Action_StartTimer" xml:space="preserve">
+    <value>تشغيل المؤقت</value>
+  </data>
+  <data name="WorkAggregation_Action_StopTimer" xml:space="preserve">
+    <value>إيقاف المؤقت</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>موقوف مؤقتًا</value>
   </data>
 </root>

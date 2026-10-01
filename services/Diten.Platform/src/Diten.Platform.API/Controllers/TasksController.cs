@@ -128,6 +128,18 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// WP-TASK-CALENDAR-ENGINE-01 — take the task off the holder's calendar (Planned → Open, plan day and block
+    /// cleared). Holder only; the same key as <see cref="Plan"/>.
+    /// </summary>
+    [HttpPost("{id:guid}/unplan")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> Unplan(Guid id, [FromBody] TaskTransitionRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new UnplanTaskItemCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpPost("{id:guid}/start")]
     [HasPermission(TaskPermissions.Update)]
     public async Task<IActionResult> Start(Guid id, [FromBody] TaskTransitionRequest request, CancellationToken ct)

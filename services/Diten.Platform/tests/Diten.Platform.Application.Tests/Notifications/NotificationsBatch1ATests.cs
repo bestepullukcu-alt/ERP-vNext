@@ -99,6 +99,28 @@ public sealed class NotificationsBatch1ATests
         Assert.Contains("https://example.test/invite", response.Data.BodyHtmlPreview);
     }
 
+    /// <summary>
+    /// 2026-09-30 (MOD-0280-FU01 T3 review): a variable is data, never markup. An approver's free-text reason such as
+    /// <c>&lt;a href="https://evil.example"&gt;</c> must reach the HTML body as text, not as a live link; the subject and the
+    /// plain-text body carry it unchanged (they are not HTML).
+    /// </summary>
+    [Fact]
+    public void TemplateRenderer_encodes_a_variable_in_the_html_body_and_leaves_subject_and_text_as_they_are()
+    {
+        const string hostile = "<a href=\"https://evil.example\">Open your timesheet</a> & more";
+        var response = new EmailTemplateRenderer().Render(CreateTemplate("tenant.invite.email"), new Dictionary<string, object?>
+        {
+            ["tenantName"] = hostile,
+            ["inviteUrl"] = hostile
+        });
+
+        Assert.True(response.IsSuccessful);
+        Assert.DoesNotContain("<a href", response.Data!.BodyHtml);
+        Assert.Contains("&lt;a href=&quot;https://evil.example&quot;&gt;Open your timesheet&lt;/a&gt; &amp; more", response.Data.BodyHtml);
+        Assert.Equal("Welcome " + hostile, response.Data.Subject);
+        Assert.Equal("Open " + hostile, response.Data.BodyText);
+    }
+
     [Fact]
     public void TemplateRenderer_ShouldFail_WhenRequiredVariableMissing()
     {

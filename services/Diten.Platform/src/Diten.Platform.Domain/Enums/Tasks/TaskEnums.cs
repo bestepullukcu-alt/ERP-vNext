@@ -146,7 +146,14 @@ public enum TaskTransitionKind
     /// entry's actor is who answered. The task goes back to the lifecycle it had BEFORE it was parked, which is
     /// why the kind cannot be inferred from the target alone.</para>
     /// </summary>
-    InquiryAnswered = 16
+    InquiryAnswered = 16,
+
+    /// <summary>
+    /// WP-TASK-CALENDAR-ENGINE-01 — the holder took the task OFF their calendar: the plan day and block were
+    /// cleared and the lifecycle went back to before it was planned. Its own kind rather than <see cref="Planned"/>
+    /// or <see cref="Edited"/>: "planned for the 5th" and "no longer planned" are opposite sentences.
+    /// </summary>
+    Unplanned = 17
 }
 
 /// <summary>Assignment/ownership history event kinds (append-only audit of who held the task).</summary>

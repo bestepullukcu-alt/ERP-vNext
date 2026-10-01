@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Quotas;
 using Diten.Platform.Application.Features.Quotas.Services;
 using Diten.Platform.Domain.Entities;
@@ -54,7 +55,7 @@ public sealed class QuotaServiceTests
         var usage = new QuotaUsage
         {
             TenantId = tenantId,
-            QuotaKey = QuotaKeys.UsersMax,
+            QuotaKey = QuotaKeys.StorageGbMax,
             CurrentValue = 15,
             LimitValue = 15,
             PeriodStart = DateTimeOffset.UtcNow.AddDays(-1),
@@ -64,15 +65,15 @@ public sealed class QuotaServiceTests
         };
 
         fixture.Usages
-            .Setup(x => x.TryConsumeAtomicAsync(tenantId, QuotaKeys.UsersMax, 1, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.TryConsumeAtomicAsync(tenantId, QuotaKeys.StorageGbMax, 1, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new QuotaMutationResult(true, usage));
         fixture.Usages
-            .Setup(x => x.MarkNotificationStateAsync(tenantId, QuotaKeys.UsersMax, true, true, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.MarkNotificationStateAsync(tenantId, QuotaKeys.StorageGbMax, true, true, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(WithNotificationFlags(usage));
 
         var response = await fixture.Service.TryConsumeAsync(new TryConsumeQuotaRequest(
             tenantId,
-            QuotaKeys.UsersMax,
+            QuotaKeys.StorageGbMax,
             1,
             "UserCreate",
             "op-2",
@@ -96,7 +97,7 @@ public sealed class QuotaServiceTests
         var usage = new QuotaUsage
         {
             TenantId = tenantId,
-            QuotaKey = QuotaKeys.UsersMax,
+            QuotaKey = QuotaKeys.StorageGbMax,
             CurrentValue = 15,
             LimitValue = 15,
             PeriodStart = DateTimeOffset.UtcNow.AddDays(-1),
@@ -106,15 +107,15 @@ public sealed class QuotaServiceTests
         };
 
         fixture.Usages
-            .Setup(x => x.TryConsumeAtomicAsync(tenantId, QuotaKeys.UsersMax, 1, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.TryConsumeAtomicAsync(tenantId, QuotaKeys.StorageGbMax, 1, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new QuotaMutationResult(false, null));
         fixture.Usages
-            .Setup(x => x.GetByTenantAndKeyAsync(tenantId, QuotaKeys.UsersMax, It.IsAny<CancellationToken>()))
+            .Setup(x => x.GetByTenantAndKeyAsync(tenantId, QuotaKeys.StorageGbMax, It.IsAny<CancellationToken>()))
             .ReturnsAsync(usage);
 
         var response = await fixture.Service.TryConsumeAsync(new TryConsumeQuotaRequest(
             tenantId,
-            QuotaKeys.UsersMax,
+            QuotaKeys.StorageGbMax,
             1,
             "UserCreate",
             "op-3",
@@ -224,6 +225,84 @@ public sealed class QuotaServiceTests
         return usage;
     }
 
+    // ── BL-459 F1 — users.max is a COUNT of AuthService's Active + Invited users, never a counter ──
+
+    [Fact]
+    public async Task UsersMax_consume_at_the_count_limit_is_refused_and_moves_no_counter()
+    {
+        var (fixture, tenantId) = CountedFixture(limit: 10, current: 3, new TenantUserCounts(Total: 14, Active: 8, Invited: 2, Inactive: 4));
+
+        var response = await fixture.Service.TryConsumeAsync(UsersRequest(tenantId), CancellationToken.None);
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Contains(QuotaErrorCodes.LimitExceeded, response.Errors);
+        fixture.Usages.Verify(x => x.SetCurrentValueAsync(tenantId, QuotaKeys.UsersMax, 10, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Once);
+        fixture.Usages.Verify(x => x.TryConsumeAtomicAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UsersMax_inactive_users_hold_no_seat()
+    {
+        // 5 Active + 2 Invited = 7 seats; the 5 Inactive are not counted → one more fits under 8.
+        var (fixture, tenantId) = CountedFixture(limit: 8, current: 7, new TenantUserCounts(Total: 12, Active: 5, Invited: 2, Inactive: 5));
+
+        var response = await fixture.Service.TryConsumeAsync(UsersRequest(tenantId), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        fixture.Usages.Verify(x => x.TryConsumeAtomicAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UsersMax_with_the_count_unreadable_decides_nothing()
+    {
+        var (fixture, tenantId) = CountedFixture(limit: 8, current: 0, counts: null);
+
+        var response = await fixture.Service.TryConsumeAsync(UsersRequest(tenantId), CancellationToken.None);
+
+        Assert.Equal(503, response.StatusCode);
+        Assert.Contains(QuotaErrorCodes.UsageUnknown, response.Errors);
+    }
+
+    [Fact]
+    public async Task UsersMax_release_is_a_no_op()
+    {
+        var (fixture, tenantId) = CountedFixture(limit: 8, current: 5, new TenantUserCounts(5, 5, 0, 0));
+
+        var response = await fixture.Service.ReleaseAsync(new ReleaseQuotaRequest(
+            tenantId, QuotaKeys.UsersMax, 1, "TenantAdminUserDelete", "op-r", "user-r", "Deleted.", "actor", "corr"), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.False(response.Data!.Applied);
+        fixture.Usages.Verify(x => x.TryReleaseAtomicAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    private static TryConsumeQuotaRequest UsersRequest(Guid tenantId) =>
+        new(tenantId, QuotaKeys.UsersMax, 1, "Diten.AuthService", Guid.NewGuid().ToString(), "user-create", "Create user.", "actor", "corr");
+
+    private static (QuotaFixture Fixture, Guid TenantId) CountedFixture(decimal limit, decimal current, TenantUserCounts? counts)
+    {
+        var tenantId = Guid.NewGuid();
+        var planId = Guid.NewGuid();
+        var subscriptionId = Guid.NewGuid();
+        var fixture = CreateEligibleFixture(tenantId, subscriptionId, planId);
+        QuotaUsage Usage(decimal value) => new()
+        {
+            TenantId = tenantId, QuotaKey = QuotaKeys.UsersMax, CurrentValue = value, LimitValue = limit,
+            PeriodStart = DateTimeOffset.UtcNow.AddDays(-1), PeriodEnd = DateTimeOffset.UtcNow.AddDays(29),
+            SubscriptionId = subscriptionId, PlanId = planId
+        };
+
+        fixture.UserCounts.Setup(x => x.GetCountsAsync(tenantId, It.IsAny<CancellationToken>())).ReturnsAsync(counts);
+        fixture.Usages.Setup(x => x.GetByTenantAndKeyAsync(tenantId, QuotaKeys.UsersMax, It.IsAny<CancellationToken>())).ReturnsAsync(Usage(current));
+        fixture.Usages
+            .Setup(x => x.SetCurrentValueAsync(tenantId, QuotaKeys.UsersMax, It.IsAny<decimal>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid _, string _, decimal value, DateTimeOffset _, CancellationToken _) => Usage(value));
+        fixture.Usages
+            .Setup(x => x.MarkNotificationStateAsync(tenantId, QuotaKeys.UsersMax, It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Usage(current));
+        return (fixture, tenantId);
+    }
+
     private static QuotaFixture CreateEligibleFixture(Guid tenantId, Guid subscriptionId, Guid planId)
     {
         var fixture = CreateFixture();
@@ -245,7 +324,8 @@ public sealed class QuotaServiceTests
                 Name = "Pro",
                 DefaultQuotas = new Dictionary<string, decimal>
                 {
-                    [QuotaKeys.UsersMax] = 15
+                    [QuotaKeys.UsersMax] = 15,
+                    [QuotaKeys.StorageGbMax] = 15
                 }
             });
         return fixture;
@@ -259,6 +339,7 @@ public sealed class QuotaServiceTests
         var plans = new Mock<ISubscriptionPlanRepository>(MockBehavior.Strict);
         var tenants = new Mock<ITenantRegistryRepository>(MockBehavior.Strict);
         var entitlements = new Mock<ITenantModuleEntitlementRepository>(MockBehavior.Strict);
+        var userCounts = new Mock<ITenantUserCountReader>(MockBehavior.Strict);
 
         events
             .Setup(x => x.CreateAsync(It.IsAny<QuotaEvent>(), It.IsAny<CancellationToken>()))
@@ -274,6 +355,7 @@ public sealed class QuotaServiceTests
             plans,
             tenants,
             entitlements,
+            userCounts,
             new QuotaService(
                 usages.Object,
                 events.Object,
@@ -281,6 +363,7 @@ public sealed class QuotaServiceTests
                 plans.Object,
                 tenants.Object,
                 entitlements.Object,
+                userCounts.Object,
                 NullLogger<QuotaService>.Instance));
     }
 
@@ -291,5 +374,6 @@ public sealed class QuotaServiceTests
         Mock<ISubscriptionPlanRepository> Plans,
         Mock<ITenantRegistryRepository> Tenants,
         Mock<ITenantModuleEntitlementRepository> Entitlements,
+        Mock<ITenantUserCountReader> UserCounts,
         QuotaService Service);
 }

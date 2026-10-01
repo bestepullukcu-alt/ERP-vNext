@@ -4,6 +4,7 @@ using Diten.AuthService.Application.Features.Users.Commands;
 using Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
+using Diten.AuthService.Application.Tests.Testing;
 
 namespace Diten.AuthService.Application.Tests.Users;
 
@@ -71,7 +72,7 @@ public sealed class AssignRoleCommandHandlerTests
             userRoles,
             version,
             tenantContext,
-            new NoOpRbacAuditRecorder(),
+            UserAuditForTests.None(),
             new FakeCurrentUser(actor),
             NullLogger<AssignRoleCommandHandler>.Instance);
     }

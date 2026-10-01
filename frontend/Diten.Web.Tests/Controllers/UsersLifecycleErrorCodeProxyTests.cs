@@ -62,6 +62,30 @@ public sealed class UsersLifecycleErrorCodeProxyTests
         Assert.Equal("USER_INVITATION_PENDING", json.GetProperty("errorCode").GetString());
     }
 
+    // BL-459 — the plan's user limit: the code AND its numbers reach the screen (index.js adds "In use: 5 of 5").
+    [Fact]
+    public async Task Create_hands_over_USER_QUOTA_EXCEEDED_with_its_numbers()
+    {
+        const string body = """{"isSuccessful":false,"statusCode":409,"errors":["limit"],"errorCodes":[{"code":"USER_QUOTA_EXCEEDED","params":{"max":"5","current":"5"}}]}""";
+        var controller = ControllerWith(new CapturingGateway(HttpStatusCode.Conflict, body), Form());
+
+        var json = Body(await controller.Create(new UserEditViewModel { Email = "a@b.test", FirstName = "A", LastName = "B" }));
+
+        Assert.Equal("USER_QUOTA_EXCEEDED", json.GetProperty("errorCode").GetString());
+        Assert.Equal("5", json.GetProperty("errorParams").GetProperty("max").GetString());
+        Assert.Equal("5", json.GetProperty("errorParams").GetProperty("current").GetString());
+    }
+
+    [Fact]
+    public async Task A_code_without_params_carries_errorParams_null()
+    {
+        var controller = ControllerWith(new CapturingGateway(HttpStatusCode.Conflict, Refusal("USER_EMAIL_TAKEN", "taken")), Form());
+
+        var json = Body(await controller.Create(new UserEditViewModel { Email = "a@b.test", FirstName = "A", LastName = "B" }));
+
+        Assert.Equal(JsonValueKind.Null, json.GetProperty("errorParams").ValueKind);
+    }
+
     [Fact]
     public async Task A_refusal_without_a_code_carries_errorCode_null_and_the_gateway_text()
     {

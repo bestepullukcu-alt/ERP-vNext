@@ -575,12 +575,6 @@
   <data name="TimesheetLabel" xml:space="preserve">
     <value>Время</value>
   </data>
-  <data name="TimeLoggedLabel" xml:space="preserve">
-    <value>учтено</value>
-  </data>
-  <data name="TimerRunning" xml:space="preserve">
-    <value>идёт</value>
-  </data>
   <data name="AwaitingReview" xml:space="preserve">
     <value>Ожидает проверки</value>
   </data>
@@ -604,12 +598,6 @@
   </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · запланировано на {1} (макет)</value>
-  </data>
-  <data name="ToastPlanSaved" xml:space="preserve">
-    <value>План сохранён на {0}</value>
-  </data>
-  <data name="ToastTimerStarted" xml:space="preserve">
-    <value>{0} · таймер запущен (макет)</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>учтено {0} (макет)</value>
@@ -931,15 +919,6 @@
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>Все поля</value>
   </data>
-  <data name="TimerStateRunning" xml:space="preserve">
-    <value>В работе</value>
-  </data>
-  <data name="TimerStatePaused" xml:space="preserve">
-    <value>Приостановлено</value>
-  </data>
-  <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>Затраченное время не записывается — вводите его вручную.</value>
-  </data>
   <data name="SubtaskStartedNotCompleted" xml:space="preserve">
     <value>Подзадача запущена, но завершить её не удалось: {0}</value>
   </data>
@@ -1089,21 +1068,6 @@
   </data>
   <data name="KanbanDropHint" xml:space="preserve">
     <value>Перетащите сюда: {0}</value>
-  </data>
-  <data name="CalPrevMonth" xml:space="preserve">
-    <value>Предыдущий месяц</value>
-  </data>
-  <data name="CalNextMonth" xml:space="preserve">
-    <value>Следующий месяц</value>
-  </data>
-  <data name="CalToday" xml:space="preserve">
-    <value>Сегодня</value>
-  </data>
-  <data name="CalOutside" xml:space="preserve">
-    <value>Ещё {0} задач в других месяцах.</value>
-  </data>
-  <data name="CalOutsideAndUndated" xml:space="preserve">
-    <value>Ещё {0} задач в других месяцах; у {1} нет даты, и они никогда не появятся в календаре.</value>
   </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Срок источника</value>
@@ -1538,6 +1502,9 @@
   <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
     <value>Отсутствует обязательное подтверждение.</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_SelfApproval" xml:space="preserve">
+    <value>Вы начали это согласование, поэтому решение должен принять другой сотрудник.</value>
+  </data>
   <data name="NoAccessTitle" xml:space="preserve">
     <value>У вас нет доступа к Центру задач</value>
   </data>
@@ -1901,6 +1868,9 @@
   </data>
   <data name="AuditEventPlanned" xml:space="preserve">
     <value>Задача запланирована</value>
+  </data>
+  <data name="AuditEventUnplanned" xml:space="preserve">
+    <value>Задача убрана из календаря</value>
   </data>
   <data name="AuditEventStarted" xml:space="preserve">
     <value>Работа начата</value>
@@ -2408,5 +2378,137 @@
   </data>
   <data name="AuditEventInquiryAnswered" xml:space="preserve">
     <value>Ответ на вопрос получен</value>
+  </data>
+  <data name="CalPanelTitle" xml:space="preserve">
+    <value>Работа для планирования</value>
+  </data>
+  <data name="CalPanelUnplanned" xml:space="preserve">
+    <value>Не запланировано</value>
+  </data>
+  <data name="CalPanelPlanPassed" xml:space="preserve">
+    <value>План просрочен</value>
+  </data>
+  <data name="CalPanelInvites" xml:space="preserve">
+    <value>Приглашения</value>
+  </data>
+  <data name="CalPanelEmpty" xml:space="preserve">
+    <value>Здесь ничего нет.</value>
+  </data>
+  <data name="CalPanelHint" xml:space="preserve">
+    <value>Перетащите карточку в календарь: на день в режиме месяца, на время в режиме недели или дня. Чтобы снять блок с плана, перетащите его обратно сюда.</value>
+  </data>
+  <data name="CalChipEstimate" xml:space="preserve">
+    <value>Оценка {0} ч</value>
+  </data>
+  <data name="CalChipPlanPassed" xml:space="preserve">
+    <value>План на {0}</value>
+  </data>
+  <data name="CalChipRemaining" xml:space="preserve">
+    <value>Осталось {0} мин</value>
+  </data>
+  <data name="CalLegendTask" xml:space="preserve">
+    <value>План на день</value>
+  </data>
+  <data name="CalLegendBlock" xml:space="preserve">
+    <value>Запланированный блок</value>
+  </data>
+  <data name="CalLegendMeetingAccepted" xml:space="preserve">
+    <value>Совещание (принято)</value>
+  </data>
+  <data name="CalLegendMeetingPending" xml:space="preserve">
+    <value>Совещание (без ответа)</value>
+  </data>
+  <data name="CalLegendConflict" xml:space="preserve">
+    <value>Пересекается с другим блоком</value>
+  </data>
+  <data name="CalLegendOffHours" xml:space="preserve">
+    <value>Нерабочее время</value>
+  </data>
+  <data name="CalLegendHoliday" xml:space="preserve">
+    <value>Праздник</value>
+  </data>
+  <data name="CalPlanSaved" xml:space="preserve">
+    <value>«{0}» запланировано.</value>
+  </data>
+  <data name="CalTruncated" xml:space="preserve">
+    <value>Обрезано в конце рабочего дня — осталось {0} мин.</value>
+  </data>
+  <data name="CalConflictWith" xml:space="preserve">
+    <value>Пересекается с «{0}» {1}. Выберите другое время.</value>
+  </data>
+  <data name="CalZoneUnavailable" xml:space="preserve">
+    <value>Не удалось прочитать часовой пояс компании, время не сохранено. Повторите попытку.</value>
+  </data>
+  <data name="PlanTimeLabel" xml:space="preserve">
+    <value>Время начала</value>
+  </data>
+  <data name="PlanTimeNone" xml:space="preserve">
+    <value>Без времени (весь день)</value>
+  </data>
+  <data name="PlanDurationLabel" xml:space="preserve">
+    <value>Длительность</value>
+  </data>
+  <data name="PlanDurationOption" xml:space="preserve">
+    <value>{0} мин</value>
+  </data>
+  <data name="PlanTimeHint" xml:space="preserve">
+    <value>Время указано в часовом поясе компании. Блок, выходящий за конец рабочего дня, обрезается.</value>
+  </data>
+  <data name="CalTruncatedNoEstimate" xml:space="preserve">
+    <value>Обрезано в конце рабочего дня.</value>
+  </data>
+  <data name="TimeDraftLabel" xml:space="preserve">
+    <value>мой черновик</value>
+  </data>
+  <data name="TimeSubmittedLabel" xml:space="preserve">
+    <value>отправлено</value>
+  </data>
+  <data name="TimeApprovedLabel" xml:space="preserve">
+    <value>утверждено</value>
+  </data>
+  <data name="TimerRunningNow" xml:space="preserve">
+    <value>Ваш таймер работает по этой задаче.</value>
+  </data>
+  <data name="OpenMyTimesheet" xml:space="preserve">
+    <value>Открыть «Мой табель»</value>
+  </data>
+  <data name="TimerSwitchedText" xml:space="preserve">
+    <value>Ваш таймер переключился на эту задачу.</value>
+  </data>
+  <data name="TimerUndo" xml:space="preserve">
+    <value>Отменить</value>
+  </data>
+  <data name="TimerUndone" xml:space="preserve">
+    <value>Таймер вернулся к предыдущей задаче.</value>
+  </data>
+  <data name="TimerErrDisabled" xml:space="preserve">
+    <value>Таймер не включён для вашего юридического лица. Внесите время в «Мой табель».</value>
+  </data>
+  <data name="TimerErrNotHeld" xml:space="preserve">
+    <value>Таймер работает только на задаче, закреплённой за вами.</value>
+  </data>
+  <data name="TimerErrNotInProgress" xml:space="preserve">
+    <value>Таймер работает только на задаче в работе.</value>
+  </data>
+  <data name="TimerErrNotRunning" xml:space="preserve">
+    <value>Таймер этой задачи больше не работает.</value>
+  </data>
+  <data name="TimerErrConflict" xml:space="preserve">
+    <value>Таймер за это время изменился. Страница обновлена.</value>
+  </data>
+  <data name="TimerErrUndoExpired" xml:space="preserve">
+    <value>Отменить это переключение уже поздно.</value>
+  </data>
+  <data name="TimerErrGeneric" xml:space="preserve">
+    <value>Не удалось изменить таймер. Попробуйте ещё раз.</value>
+  </data>
+  <data name="WorkAggregation_Action_StartTimer" xml:space="preserve">
+    <value>Запустить таймер</value>
+  </data>
+  <data name="WorkAggregation_Action_StopTimer" xml:space="preserve">
+    <value>Остановить таймер</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>Приостановлено</value>
   </data>
 </root>

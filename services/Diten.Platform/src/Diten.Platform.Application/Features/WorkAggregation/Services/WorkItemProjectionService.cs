@@ -34,6 +34,7 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
     private const string ActionDelegateKey = "WorkAggregation_Action_Delegate";
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledEvidenceKey = "WorkAggregation_ActionDisabled_EvidenceRequired";
+    private const string DisabledSelfApprovalKey = "WorkAggregation_ActionDisabled_SelfApproval";
     private const string WaitingEvidenceType = "evidenceRequired";
 
     public WorkItemProjectionDto? Project(
@@ -95,7 +96,7 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         // Terminal items are read-only: no enabled inline state-changing action (contract invariant).
         var actions = isTerminal
             ? Array.Empty<WorkItemActionDto>()
-            : BuildActionableActions(task, actor);
+            : BuildActionableActions(task, instance, actor);
 
         var waitingContext = isWaiting
             ? new WorkItemWaitingContextDto(
@@ -199,13 +200,14 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
 
     // The single authoritative actions[] for an actionable approval task. Each action's enabled state is
     // resolved here (permission + evidence blocker); the browser never invents or re-derives eligibility.
-    private static IReadOnlyList<WorkItemActionDto> BuildActionableActions(ApprovalTask task, WorkItemActor actor)
+    private static IReadOnlyList<WorkItemActionDto> BuildActionableActions(
+        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor)
     {
         var evidencePending = task.Status == ApprovalTaskStatus.WaitingEvidence;
 
         return
         [
-            BuildApprove(task, actor, evidencePending),
+            BuildApprove(task, instance, actor, evidencePending),
             BuildDecision("reject", ActionRejectKey, WorkflowPermissions.TasksReject, actor,
                 requiresConfirmation: true, requiresReason: true, supportsBulk: true, riskLevel: "elevated"),
             BuildDecision("requestInfo", ActionRequestInfoKey, WorkflowPermissions.TasksRequestInfo, actor,
@@ -215,7 +217,8 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         ];
     }
 
-    private static WorkItemActionDto BuildApprove(ApprovalTask task, WorkItemActor actor, bool evidencePending)
+    private static WorkItemActionDto BuildApprove(
+        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor, bool evidencePending)
     {
         var permitted = actor.Has(WorkflowPermissions.TasksApprove);
 
@@ -224,6 +227,15 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         {
             return Disabled("approve", ActionApproveKey, WorkAggregationReasonCodes.PermissionDenied,
                 DisabledPermissionKey, requiresConfirmation: true, requiresReason: task.CommentRequired,
+                requiresEvidence: task.EvidenceRequired, supportsBulk: true, riskLevel: "normal");
+        }
+
+        // B2 — the reader STARTED this approval. MOD-0023 refuses a starter's approve, so the button says so up front
+        // instead of being offered and then refused. Only decidable when the instance recorded its starter's id.
+        if (instance.StartedByUserId is { } starter && starter != Guid.Empty && starter == actor.UserId)
+        {
+            return Disabled("approve", ActionApproveKey, WorkAggregationReasonCodes.SelfApprovalNotAllowed,
+                DisabledSelfApprovalKey, requiresConfirmation: true, requiresReason: task.CommentRequired,
                 requiresEvidence: task.EvidenceRequired, supportsBulk: true, riskLevel: "normal");
         }
 

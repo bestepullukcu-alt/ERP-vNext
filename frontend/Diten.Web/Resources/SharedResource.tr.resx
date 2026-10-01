@@ -597,6 +597,7 @@
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Görev Tanımları</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>İş Akışı</value></data>
   <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>Toplantılar</value></data>
+  <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>Zaman Çizelgesi</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Kullanıcılar</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Roller</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Rol İzinleri</value></data>
@@ -878,6 +879,10 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>İstisna</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Alan Tanımları</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Toplantılar</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>Zaman Çizelgem</value></data>
+  <data name="Nav.Page.TIMEAPPROVALS" xml:space="preserve"><value>Zaman Çizelgesi Onayları</value></data>
+  <data name="Nav.Page.TIMECATEGORIES" xml:space="preserve"><value>İş Kategorileri</value></data>
+  <data name="Nav.Page.TIMESETTINGS" xml:space="preserve"><value>Zaman Kaydı Ayarları</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Toplantı Türleri</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Toplantı Serileri</value></data>
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Toplantı Raporu</value></data>
@@ -982,4 +987,113 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Sekmeler arasında geç (odak bir sekmedeyken)</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Görevi düzenle</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Görev listesine dön</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>Dışa aktarılacak satır sayısı çok fazla (50.000'den fazla). Süzgeci daraltıp yeniden deneyin.</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
+  <!-- BL-452 package 2 (WP-UI-EXPORT-02): list Action menu + controlled copy (PDF / print header block, footer). -->
+  <data name="Action" xml:space="preserve">
+    <value>İşlem</value>
+    <comment>List toolbar: the Action (export) dropdown button. BL-452 package 2 (finding 34, toolbar part).</comment>
+  </data>
+  <data name="ControlledCopy.Report" xml:space="preserve">
+    <value>Rapor</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Tenant" xml:space="preserve">
+    <value>Şirket</value>
+    <comment>BL-452 package 2 controlled copy header: label for the tenant's display name (the customer company).</comment>
+  </data>
+  <data name="ControlledCopy.Filters" xml:space="preserve">
+    <value>Filtreler</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Search" xml:space="preserve">
+    <value>Arama</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Sort" xml:space="preserve">
+    <value>Sıralama</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortAsc" xml:space="preserve">
+    <value>artan</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortDesc" xml:space="preserve">
+    <value>azalan</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Rows" xml:space="preserve">
+    <value>Satır sayısı</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedBy" xml:space="preserve">
+    <value>Oluşturan</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedAt" xml:space="preserve">
+    <value>Oluşturma zamanı</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.None" xml:space="preserve">
+    <value>Yok</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Uncontrolled" xml:space="preserve">
+    <value>Bu çıktı kontrolsüz kopyadır — {0}</value>
+    <comment>BL-452 package 2 controlled copy footer on every page; {0} = creation date-time with time zone.</comment>
+  </data>
+  <data name="ControlledCopy.Page" xml:space="preserve">
+    <value>Sayfa {0} / {1}</value>
+    <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
+  </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>Bugün</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>Ay</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>Hafta</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>Gün</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>Önceki</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>Sonraki</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>Tüm gün</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>+{0} daha</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>Gösterilecek kayıt yok</value>
+  </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>Çalışma takvimi tanımlı değil — hafta sonu ve tatiller gösterilemiyor.</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>Toplantı daveti</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>Kabul Et</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>Reddet</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>Bu toplantı planınızla çakışıyor</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>Planlı bloğunuz "{0}" ({1}) ile çakışıyor. Yine de kabul edilsin mi?</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>Yine De Kabul Et</value>
+  </data>
 </root>

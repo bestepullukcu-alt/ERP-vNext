@@ -147,6 +147,53 @@ public sealed class InternalUsersControllerTests
         Assert.NotEqual(nameless.Id.ToString(), row.DisplayName);
     }
 
+    // ── contacts: only an account that can still be reached ───────────────────
+
+    /// <summary>
+    /// 2026-09-30 (MOD-0280-FU01 T3 stop report): deactivation sets IsActive = false and deletes nothing, so the sweep
+    /// used to hand a switched-off person's address to every Platform mailer. They are omitted now; an invited account
+    /// (active, pending state derived) still resolves; and display-names still names the deactivated person in history.
+    /// </summary>
+    [Fact]
+    public async Task Contacts_omit_a_deactivated_user_but_keep_an_active_one()
+    {
+        var alice = NewUser("alice@a.test", "Alice", "Adams", TenantA);
+        var gone = NewUser("gone@a.test", "Gina", "Gone", TenantA);
+        gone.Deactivate();
+        var controller = Build(authorized: true, alice, gone);
+
+        var result = await controller.GetContacts(TenantA, $"{alice.Id},{gone.Id}", CancellationToken.None);
+
+        var rows = Assert.IsType<List<InternalUserContactDto>>(Assert.IsType<OkObjectResult>(result).Value);
+        Assert.Equal([alice.Id], rows.Select(r => r.Id));
+    }
+
+    [Fact]
+    public async Task Contacts_still_resolve_an_invited_account_that_has_not_signed_in_yet()
+    {
+        var invited = NewUser("new@a.test", "Nur", "New", TenantA);
+        invited.RequirePasswordChange(DateTime.UtcNow.AddDays(7));
+        Assert.True(invited.IsInvitationPending());
+        var controller = Build(authorized: true, invited);
+
+        var result = await controller.GetContacts(TenantA, invited.Id.ToString(), CancellationToken.None);
+
+        var row = Assert.Single(Assert.IsType<List<InternalUserContactDto>>(Assert.IsType<OkObjectResult>(result).Value));
+        Assert.Equal("new@a.test", row.Email);
+    }
+
+    [Fact]
+    public async Task Display_names_still_name_a_deactivated_user_so_history_keeps_its_labels()
+    {
+        var gone = NewUser("gone@a.test", "Gina", "Gone", TenantA);
+        gone.Deactivate();
+        var controller = Build(authorized: true, gone);
+
+        var rows = Rows(await controller.GetDisplayNames(TenantA, gone.Id.ToString(), CancellationToken.None));
+
+        Assert.Equal(gone.Id, Assert.Single(rows).Id);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static List<InternalUserDisplayNameDto> Rows(IActionResult result)
@@ -166,12 +213,22 @@ public sealed class InternalUsersControllerTests
         var controller = new InternalUsersController(
             new FakeInternalEventAuthService(authorized ? ApiKey : null),
             repository,
+            new UnusedListReader(),
             NullLogger<InternalUsersController>.Instance);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Headers[Header] = ApiKey;
         controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
         return controller;
+    }
+
+    /// <summary>BL-459 — the counts endpoint is proven over HTTP (TenantUserCountsEndpointTests); these tests never reach it.</summary>
+    private sealed class UnusedListReader : IUserListReader
+    {
+        public Task<Diten.AuthService.Application.Features.Users.Models.UserListPage> SearchAsync(Guid tenantId, Diten.AuthService.Application.Features.Users.Models.UserListCriteria criteria, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Diten.AuthService.Application.Features.Users.Models.UserListSummary> GetSummaryAsync(Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<Guid>> GetUserIdsHoldingAnyRoleAsync(Guid tenantId, IReadOnlyCollection<Guid> roleIds, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IReadOnlyDictionary<Guid, IReadOnlyList<string>>> GetRoleNamesForUsersAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => throw new NotSupportedException();
     }
 
     /// <summary>Mirrors the real repository's tenant filter — the scoping under test lives in that argument.</summary>

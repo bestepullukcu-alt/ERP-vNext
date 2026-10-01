@@ -536,6 +536,7 @@
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Настройки задач</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Рабочий процесс</value></data>
   <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>Совещания</value></data>
+  <data name="Nav.Module.TIMEENTRY" xml:space="preserve"><value>Табель рабочего времени</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Пользователи</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Роли</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Разрешения ролей</value></data>
@@ -817,6 +818,10 @@
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>Исключение</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Определения полей</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Совещания</value></data>
+  <data name="Nav.Page.MYTIMESHEET" xml:space="preserve"><value>Мой табель</value></data>
+  <data name="Nav.Page.TIMEAPPROVALS" xml:space="preserve"><value>Утверждение табелей</value></data>
+  <data name="Nav.Page.TIMECATEGORIES" xml:space="preserve"><value>Категории работ</value></data>
+  <data name="Nav.Page.TIMESETTINGS" xml:space="preserve"><value>Настройки учёта времени</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Типы совещаний</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Серии совещаний</value></data>
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Отчёт по совещаниям</value></data>
@@ -922,4 +927,113 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Переход между вкладками (когда вкладка в фокусе)</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Изменить задачу</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Вернуться к списку задач</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>Слишком много строк для экспорта (более 50 000). Сузьте фильтр и повторите попытку.</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
+  <!-- BL-452 package 2 (WP-UI-EXPORT-02): list Action menu + controlled copy (PDF / print header block, footer). -->
+  <data name="Action" xml:space="preserve">
+    <value>Действия</value>
+    <comment>List toolbar: the Action (export) dropdown button. BL-452 package 2 (finding 34, toolbar part).</comment>
+  </data>
+  <data name="ControlledCopy.Report" xml:space="preserve">
+    <value>Отчёт</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Tenant" xml:space="preserve">
+    <value>Компания</value>
+    <comment>BL-452 package 2 controlled copy header: label for the tenant's display name (the customer company).</comment>
+  </data>
+  <data name="ControlledCopy.Filters" xml:space="preserve">
+    <value>Фильтры</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Search" xml:space="preserve">
+    <value>Поиск</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Sort" xml:space="preserve">
+    <value>Сортировка</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortAsc" xml:space="preserve">
+    <value>по возрастанию</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.SortDesc" xml:space="preserve">
+    <value>по убыванию</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Rows" xml:space="preserve">
+    <value>Количество строк</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedBy" xml:space="preserve">
+    <value>Создал</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.CreatedAt" xml:space="preserve">
+    <value>Дата создания</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.None" xml:space="preserve">
+    <value>Нет</value>
+    <comment>BL-452 package 2 controlled copy header block (PDF and print).</comment>
+  </data>
+  <data name="ControlledCopy.Uncontrolled" xml:space="preserve">
+    <value>Эта распечатка является неконтролируемой копией — {0}</value>
+    <comment>BL-452 package 2 controlled copy footer on every page; {0} = creation date-time with time zone.</comment>
+  </data>
+  <data name="ControlledCopy.Page" xml:space="preserve">
+    <value>Страница {0} из {1}</value>
+    <comment>BL-452 package 2 controlled copy footer; {0} = page number, {1} = page count.</comment>
+  </data>
+  <data name="CalendarToday" xml:space="preserve">
+    <value>Сегодня</value>
+  </data>
+  <data name="CalendarMonth" xml:space="preserve">
+    <value>Месяц</value>
+  </data>
+  <data name="CalendarWeek" xml:space="preserve">
+    <value>Неделя</value>
+  </data>
+  <data name="CalendarDay" xml:space="preserve">
+    <value>День</value>
+  </data>
+  <data name="CalendarPrevious" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="CalendarNext" xml:space="preserve">
+    <value>Вперёд</value>
+  </data>
+  <data name="CalendarAllDay" xml:space="preserve">
+    <value>Весь день</value>
+  </data>
+  <data name="CalendarMore" xml:space="preserve">
+    <value>ещё {0}</value>
+  </data>
+  <data name="CalendarNoEvents" xml:space="preserve">
+    <value>Нечего показать</value>
+  </data>
+  <data name="CalendarUnresolved" xml:space="preserve">
+    <value>Рабочий календарь не задан — выходные и праздники не могут быть показаны.</value>
+  </data>
+  <data name="InviteCardType" xml:space="preserve">
+    <value>Приглашение на встречу</value>
+  </data>
+  <data name="InviteAccept" xml:space="preserve">
+    <value>Принять</value>
+  </data>
+  <data name="InviteDecline" xml:space="preserve">
+    <value>Отклонить</value>
+  </data>
+  <data name="InviteOverlapTitle" xml:space="preserve">
+    <value>Эта встреча пересекается с вашим планом</value>
+  </data>
+  <data name="InviteOverlapText" xml:space="preserve">
+    <value>Она пересекается с запланированным блоком «{0}» ({1}). Всё равно принять?</value>
+  </data>
+  <data name="InviteAcceptAnyway" xml:space="preserve">
+    <value>Всё Равно Принять</value>
+  </data>
 </root>

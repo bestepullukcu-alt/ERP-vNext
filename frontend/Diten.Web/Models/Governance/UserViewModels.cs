@@ -40,6 +40,12 @@ public sealed class UserDetailViewModel
 
     // WP-AUTH-USER-KIND-UPDATE-01 — the enum NAME AuthService reports; the edit form's select starts from it.
     public string? AccountKind { get; set; }
+
+    // WP-AUTH-INVITED-LIFECYCLE-01, finding 22 (owner, 2026-09-24): AuthService's DERIVED status (Invited · Inactive ·
+    // Active). The list row carried it, this detail model dropped it, so the edit form fell back to IsActive and drew
+    // the activation switch for an invited account — the exact control the lifecycle work had removed. Only the
+    // server can say "Invited"; the form must receive it from here, not guess it.
+    public string? Status { get; set; }
 }
 
 // AuthService CreateUserRequest: { email, firstName, lastName }. Password is intentionally omitted —

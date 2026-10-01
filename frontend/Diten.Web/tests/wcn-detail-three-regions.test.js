@@ -1881,7 +1881,10 @@ describe("the actions card puts its weight where the decision is", () => {
      * goes through the shared confirm, so its lead sentence rides `subtext` instead of a hand-built `html`
      * string. The claim under test is unchanged: the PRIMARY's prose reaches its dialog.
      */
-    expect(src, "the plan dialog lost its lead").toMatch(/subtext: outcomeLead\(action\)/);
+    // ⚠ UPDATED AGAIN (WP-UI-CALENDAR-VIEW-01): the plan dialog is a form now (day + time + length), so its
+    // lead sentence is the first block of its `html`, exactly like the closure and reason forms.
+    const plan = src.slice(src.indexOf("const openDatePicker"), src.indexOf("const openDatePicker") + 5000);
+    expect(plan, "the plan dialog lost its lead").toMatch(/\$\{outcomeLead\(action\)\}/);
   });
 
   it("never draws a disabled action it cannot explain", async () => {
@@ -2895,9 +2898,14 @@ describe("the page reaches the product's one confirm implementation", () => {
      * a file input, a kind select and a note textarea is three fields, not one. Reported here rather than
      * growing the shared component, matching every prior entry in this list.
      */
-    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(3);
+    /*
+     * ⚠ FOUR (WP-UI-CALENDAR-VIEW-01). The PLAN dialog joins the same category: it now asks for a day, a start
+     * time and a length (a day plan or a time block), and the shared wrapper carries one value (BL-146). It is
+     * dressed with the declared package like the other three — not a new kind of dialog.
+     */
+    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(4);
     expect((src.match(/dialogLook\(\)/g) || []).length,
-      "a raw dialog is drawing itself again").toBe(3);
+      "a raw dialog is drawing itself again").toBe(4);
   });
 });
 

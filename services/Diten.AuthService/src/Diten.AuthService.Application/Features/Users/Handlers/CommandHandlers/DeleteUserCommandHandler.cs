@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Users.Commands;
+using Diten.AuthService.Application.Features.Users.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -44,6 +45,7 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
     private readonly IRolePermissionRepository _rolePermissionRepository;
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserAccessor _currentUser;
+    private readonly IUserAuditRecorder _audit;
     private readonly ILogger<DeleteUserCommandHandler> _logger;
 
     public DeleteUserCommandHandler(
@@ -53,6 +55,7 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
         IRolePermissionRepository rolePermissionRepository,
         ITenantContext tenantContext,
         ICurrentUserAccessor currentUser,
+        IUserAuditRecorder audit,
         ILogger<DeleteUserCommandHandler> logger)
     {
         _userRepository = userRepository;
@@ -61,6 +64,7 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
         _rolePermissionRepository = rolePermissionRepository;
         _tenantContext = tenantContext;
         _currentUser = currentUser;
+        _audit = audit;
         _logger = logger;
     }
 
@@ -93,6 +97,12 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
 
         await _userRepository.SoftDeleteAsync(request.Id, tenantId, ct);
         _logger.LogInformation("User soft-deleted. Id={Id} TenantId={TenantId}", request.Id, tenantId);
+        // BL-459 F1 — no quota call: users.max is Platform's live count of Active + Invited users, and a deleted user
+        // simply leaves it. (A release here used to give back seats that were never taken.)
+
+        // BL-456 — the status the account had when it went (Active / Inactive / Invited): the one fact the row loses.
+        await _audit.RecordAsync(UserAuditEvents.Deleted, tenantId, request.Id,
+            new Dictionary<string, object?> { ["previousStatus"] = UserLifecycle.StatusOf(target) }, ct);
         return Response<NoContent>.Success(204);
     }
 

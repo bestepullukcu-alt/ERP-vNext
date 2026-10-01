@@ -4,6 +4,7 @@ using Diten.AuthService.Application.Features.Users.Commands;
 using Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
+using Diten.AuthService.Application.Tests.Testing;
 
 namespace Diten.AuthService.Application.Tests.Users;
 
@@ -146,7 +147,7 @@ public sealed class RevokeRoleCommandHandlerTests
             refreshTokens,
             version ?? new FakeRoleAssignmentVersionService(),
             tenantContext,
-            new NoOpRbacAuditRecorder(),
+            UserAuditForTests.None(),
             NullLogger<RevokeRoleCommandHandler>.Instance);
     }
 

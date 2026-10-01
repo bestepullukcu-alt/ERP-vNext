@@ -1076,7 +1076,7 @@
                 { data: null, name: 'actor', orderable: false, render: (data, type, row) => renderActor(row) },
                 { data: 'tenantId', name: 'tenantId', render: (data) => `<code>${escapeHtml(data)}</code>` },
                 { data: 'category', name: 'category', render: categoryBadge },
-                { data: 'operation', name: 'operation', render: escapeHtml },
+                { data: 'operation', name: 'operation', render: (data, type, row) => escapeHtml(eventLabel(row) || data) },
                 { data: 'entityType', name: 'entityType', render: escapeHtml },
                 { data: 'entityId', name: 'entityId', render: (data) => data ? `<code>${escapeHtml(data)}</code>` : '' },
                 { data: 'outcome', name: 'outcome', render: statusBadge },
@@ -1185,6 +1185,14 @@
         return { color: 'secondary', icon: 'bx-detail' };
     }
 
+    // BL-456 — a source's own event name (RequestType, e.g. AuthService "user_invited") has a label of its own; the
+    // generic Operation ("Execute", "Update") cannot tell a password reset from a resent invitation. Unknown → null.
+    function eventLabel(item) {
+        const requestType = item && (item.requestType || item.RequestType);
+        const labels = L.AuditLogEventLabels || {};
+        return requestType && Object.prototype.hasOwnProperty.call(labels, requestType) ? labels[requestType] : null;
+    }
+
     function renderDetailHeader(item) {
         const operation = item.operation || item.Operation || '';
         const entityType = item.entityType || item.EntityType || '';
@@ -1197,7 +1205,7 @@
 
         const titleEl = document.getElementById('auditDetailModalLabel');
         if (titleEl) {
-            const opLabel = lookupLabels.operation.get(operation) || operation;
+            const opLabel = eventLabel(item) || lookupLabels.operation.get(operation) || operation;
             const entityLabel = entityType + (entityId ? ' · ' + String(entityId).slice(0, 8) : '');
             titleEl.textContent = `${opLabel} → ${entityLabel}`;
         }

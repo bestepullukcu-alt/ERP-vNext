@@ -50,6 +50,31 @@ public interface ITaskReadAccessPolicy
     /// through them either — listing their members here would be a second rule.
     /// </summary>
     Task<IReadOnlySet<Guid>> ResolveDataLegCandidatesAsync(TaskItem task, CancellationToken ct);
+
+    /// <summary>
+    /// BL-484 — <see cref="CanReadAsync"/> for MANY tasks at once: the ids of those among <paramref name="tasks"/> that
+    /// <paramref name="actorUserId"/> may read. The same legs in the same order, task by task; what is shared is only the
+    /// reading — the watchers and the parents of all the tasks in one read each, and the caller's scope, team and
+    /// ReadAll resolved once instead of once per task. A consumer that shows many tasks (a timesheet week) asks this,
+    /// never <see cref="CanReadAsync"/> in a loop.
+    /// <para><b>Duplicate ids.</b> Callers pass distinct rows (the time-entry adapter does). Should two rows carry the same
+    /// id, the rule judges the FIRST one and ignores the rest.</para>
+    /// <para>The default asks <see cref="CanReadAsync"/> task by task — what a test double needs; the rule overrides it.</para>
+    /// </summary>
+    async Task<IReadOnlySet<Guid>> ReadableTaskIdsAsync(IReadOnlyCollection<TaskItem> tasks, Guid actorUserId, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(tasks);
+        var readable = new HashSet<Guid>();
+        foreach (var task in tasks)
+        {
+            if (await CanReadAsync(task, actorUserId, ct))
+            {
+                readable.Add(task.Id);
+            }
+        }
+
+        return readable;
+    }
 }
 
 /// <inheritdoc cref="ITaskReadAccessPolicy"/>
@@ -113,6 +138,97 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
     {
         ArgumentNullException.ThrowIfNull(task);
 
+        var watchers = await _watchers.ListByTaskIdAsync(task.Id, ct);
+        var parent = task.ParentTaskItemId is { } parentId ? await _tasks.GetByIdAsync(parentId, ct) : null;
+        return await DataLegCandidatesAsync(task, watchers, parent, ct);
+    }
+
+    public async Task<IReadOnlySet<Guid>> ReadableTaskIdsAsync(
+        IReadOnlyCollection<TaskItem> tasks, Guid actorUserId, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(tasks);
+
+        var readable = new HashSet<Guid>();
+        var distinct = tasks.DistinctBy(t => t.Id).ToList();          // a repeated id: the first row is the one judged
+        if (distinct.Count == 0)
+        {
+            return readable;
+        }
+
+        // The data legs — the SAME candidates ResolveDataLegCandidatesAsync names — with the watchers and the parents of
+        // every task read once.
+        var watchers = (await _watchers.ListByTaskIdsAsync(distinct.Select(t => t.Id).ToList(), ct)).ToLookup(w => w.TaskItemId);
+        var parentIds = distinct.Select(t => t.ParentTaskItemId).OfType<Guid>().Distinct().ToList();
+        var parents = parentIds.Count == 0
+            ? new Dictionary<Guid, TaskItem>()
+            : (await _tasks.ListByIdsAsync(parentIds, ct)).ToDictionary(p => p.Id);
+
+        var undecided = new List<TaskItem>();
+        foreach (var task in distinct)
+        {
+            var parent = task.ParentTaskItemId is { } parentId && parents.TryGetValue(parentId, out var found) ? found : null;
+            if ((await DataLegCandidatesAsync(task, watchers[task.Id], parent, ct)).Contains(actorUserId))
+            {
+                readable.Add(task.Id);
+            }
+            else
+            {
+                undecided.Add(task);
+            }
+        }
+
+        // Scope, team and ReadAll answer only for the CURRENT caller (interface note) — for anyone else, the data legs
+        // were the whole answer, exactly as in CanReadAsync.
+        if (undecided.Count == 0 || actorUserId != _currentUser.UserId)
+        {
+            return readable;
+        }
+
+        // Then, task by task and in CanReadAsync's order: scope, team, ReadAll — each caller-wide fact resolved once, on
+        // first need, and each unit read once.
+        var units = new Dictionary<Guid, Domain.Entities.Organization.OrganizationUnit?>();
+        TaskAssignmentScope? scope = null;
+        TaskTeamScope? team = null;
+        bool? readAll = null;
+        foreach (var task in undecided)
+        {
+            if (!units.TryGetValue(task.OrganizationUnitId, out var unit))
+            {
+                unit = await _organizationUnits.GetByIdAsync(task.OrganizationUnitId, ct);
+                units[task.OrganizationUnitId] = unit;
+            }
+
+            if (unit is not null && !unit.IsArchived)
+            {
+                scope ??= await _scopes.ResolveAsync(ct);
+                if (TaskAssigneeEligibility.AllowsUnit(unit.Id, unit.LegalEntityId, scope))
+                {
+                    readable.Add(task.Id);
+                    continue;
+                }
+            }
+
+            team ??= await _team.ResolveTeamAsync(ct);
+            if (team.Covers(task))
+            {
+                readable.Add(task.Id);
+                continue;
+            }
+
+            readAll ??= _permissions.Has(TaskPermissions.ReadAll);
+            if (readAll.Value)
+            {
+                readable.Add(task.Id);
+            }
+        }
+
+        return readable;
+    }
+
+    /// <summary>The data legs from the task's watchers and parent, however they were read (one task, or a batch).</summary>
+    private async Task<IReadOnlySet<Guid>> DataLegCandidatesAsync(
+        TaskItem task, IEnumerable<TaskWatcher> watchers, TaskItem? parent, CancellationToken ct)
+    {
         var candidates = new HashSet<Guid>();
 
         if (task.AssigneeUserId is { } assignee && assignee != Guid.Empty)
@@ -130,7 +246,7 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
             candidates.Add(holder);
         }
 
-        foreach (var watcher in await _watchers.ListByTaskIdAsync(task.Id, ct))
+        foreach (var watcher in watchers)
         {
             if (watcher.UserId != Guid.Empty)
             {
@@ -156,20 +272,17 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
 
         // The parent leg is narrower than the direct leg on purpose (class doc): only the parent's assignee and
         // pool holders, not its creator or watchers.
-        if (task.ParentTaskItemId is { } parentId)
+        // A parent id that resolves to nothing (deleted, gone) grants nothing.
+        if (task.ParentTaskItemId is not null && parent is not null)
         {
-            var parent = await _tasks.GetByIdAsync(parentId, ct);
-            if (parent is not null)
+            if (parent.AssigneeUserId is { } parentAssignee && parentAssignee != Guid.Empty)
             {
-                if (parent.AssigneeUserId is { } parentAssignee && parentAssignee != Guid.Empty)
-                {
-                    candidates.Add(parentAssignee);
-                }
+                candidates.Add(parentAssignee);
+            }
 
-                foreach (var holder in await _notifications.ResolvePoolHoldersAsync(parent, ct))
-                {
-                    candidates.Add(holder);
-                }
+            foreach (var holder in await _notifications.ResolvePoolHoldersAsync(parent, ct))
+            {
+                candidates.Add(holder);
             }
         }
 

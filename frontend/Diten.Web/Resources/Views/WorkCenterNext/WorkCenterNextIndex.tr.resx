@@ -575,12 +575,6 @@
   <data name="TimesheetLabel" xml:space="preserve">
     <value>Süre</value>
   </data>
-  <data name="TimeLoggedLabel" xml:space="preserve">
-    <value>girildi</value>
-  </data>
-  <data name="TimerRunning" xml:space="preserve">
-    <value>çalışıyor</value>
-  </data>
   <data name="AwaitingReview" xml:space="preserve">
     <value>İnceleme bekliyor</value>
   </data>
@@ -604,12 +598,6 @@
   </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · {1} tarihine planlandı (mock)</value>
-  </data>
-  <data name="ToastPlanSaved" xml:space="preserve">
-    <value>{0} için plan kaydedildi</value>
-  </data>
-  <data name="ToastTimerStarted" xml:space="preserve">
-    <value>{0} · zamanlayıcı başladı (mock)</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>{0} girildi (mock)</value>
@@ -931,15 +919,6 @@
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>Tüm alanlar</value>
   </data>
-  <data name="TimerStateRunning" xml:space="preserve">
-    <value>Devam ediyor</value>
-  </data>
-  <data name="TimerStatePaused" xml:space="preserve">
-    <value>Duraklatıldı</value>
-  </data>
-  <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>Geçen süre kaydedilmiyor — harcadığınız süreyi elle girin.</value>
-  </data>
   <data name="SubtaskStartedNotCompleted" xml:space="preserve">
     <value>Alt görev başlatıldı ama tamamlanamadı: {0}</value>
   </data>
@@ -1089,21 +1068,6 @@
   </data>
   <data name="KanbanDropHint" xml:space="preserve">
     <value>Buraya bırak: {0}</value>
-  </data>
-  <data name="CalPrevMonth" xml:space="preserve">
-    <value>Önceki ay</value>
-  </data>
-  <data name="CalNextMonth" xml:space="preserve">
-    <value>Sonraki ay</value>
-  </data>
-  <data name="CalToday" xml:space="preserve">
-    <value>Bugün</value>
-  </data>
-  <data name="CalOutside" xml:space="preserve">
-    <value>Başka aylarda {0} iş var.</value>
-  </data>
-  <data name="CalOutsideAndUndated" xml:space="preserve">
-    <value>Başka aylarda {0} iş var; {1} işin tarihi yok ve takvimde görünmüyor.</value>
   </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>Kaynak son tarih</value>
@@ -1538,6 +1502,9 @@
   <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
     <value>Gerekli kanıt eksik.</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_SelfApproval" xml:space="preserve">
+    <value>Bu onayı siz başlattınız; kararı başka biri vermeli.</value>
+  </data>
   <data name="NoAccessTitle" xml:space="preserve">
     <value>Görev Merkezi'ne erişiminiz yok</value>
   </data>
@@ -1901,6 +1868,9 @@
   </data>
   <data name="AuditEventPlanned" xml:space="preserve">
     <value>Görev planlandı</value>
+  </data>
+  <data name="AuditEventUnplanned" xml:space="preserve">
+    <value>Görev takvimden çıkarıldı</value>
   </data>
   <data name="AuditEventStarted" xml:space="preserve">
     <value>Çalışmaya başlandı</value>
@@ -2408,5 +2378,137 @@
   </data>
   <data name="AuditEventInquiryAnswered" xml:space="preserve">
     <value>Soru cevaplandı</value>
+  </data>
+  <data name="CalPanelTitle" xml:space="preserve">
+    <value>Planlanacak işler</value>
+  </data>
+  <data name="CalPanelUnplanned" xml:space="preserve">
+    <value>Planlanmamış</value>
+  </data>
+  <data name="CalPanelPlanPassed" xml:space="preserve">
+    <value>Planı geçmiş</value>
+  </data>
+  <data name="CalPanelInvites" xml:space="preserve">
+    <value>Davetler</value>
+  </data>
+  <data name="CalPanelEmpty" xml:space="preserve">
+    <value>Burada bir şey yok.</value>
+  </data>
+  <data name="CalPanelHint" xml:space="preserve">
+    <value>Kartı takvime sürükleyin: ay görünümünde bir güne, hafta ya da gün görünümünde bir saate. Planlı bir bloğu takvimden çıkarmak için buraya geri sürükleyin.</value>
+  </data>
+  <data name="CalChipEstimate" xml:space="preserve">
+    <value>Tahmin {0} sa</value>
+  </data>
+  <data name="CalChipPlanPassed" xml:space="preserve">
+    <value>Plan: {0}</value>
+  </data>
+  <data name="CalChipRemaining" xml:space="preserve">
+    <value>Kalan {0} dk</value>
+  </data>
+  <data name="CalLegendTask" xml:space="preserve">
+    <value>Günlük plan</value>
+  </data>
+  <data name="CalLegendBlock" xml:space="preserve">
+    <value>Saat bloğu</value>
+  </data>
+  <data name="CalLegendMeetingAccepted" xml:space="preserve">
+    <value>Toplantı (kabul edildi)</value>
+  </data>
+  <data name="CalLegendMeetingPending" xml:space="preserve">
+    <value>Toplantı (yanıt bekliyor)</value>
+  </data>
+  <data name="CalLegendConflict" xml:space="preserve">
+    <value>Başka blokla çakışıyor</value>
+  </data>
+  <data name="CalLegendOffHours" xml:space="preserve">
+    <value>Çalışma saati dışı</value>
+  </data>
+  <data name="CalLegendHoliday" xml:space="preserve">
+    <value>Tatil</value>
+  </data>
+  <data name="CalPlanSaved" xml:space="preserve">
+    <value>“{0}” planlandı.</value>
+  </data>
+  <data name="CalTruncated" xml:space="preserve">
+    <value>Gün sonunda kesildi — kalan {0} dk.</value>
+  </data>
+  <data name="CalConflictWith" xml:space="preserve">
+    <value>“{0}” {1} ile çakışıyor. Başka bir saat seçin.</value>
+  </data>
+  <data name="CalZoneUnavailable" xml:space="preserve">
+    <value>Şirket saat dilimi okunamadı, saat kaydedilmedi. Tekrar deneyin.</value>
+  </data>
+  <data name="PlanTimeLabel" xml:space="preserve">
+    <value>Başlangıç saati</value>
+  </data>
+  <data name="PlanTimeNone" xml:space="preserve">
+    <value>Saatsiz (tüm gün)</value>
+  </data>
+  <data name="PlanDurationLabel" xml:space="preserve">
+    <value>Süre</value>
+  </data>
+  <data name="PlanDurationOption" xml:space="preserve">
+    <value>{0} dk</value>
+  </data>
+  <data name="PlanTimeHint" xml:space="preserve">
+    <value>Saatler şirket saat diliminde. Çalışma gününün sonunu aşan blok orada kesilir.</value>
+  </data>
+  <data name="CalTruncatedNoEstimate" xml:space="preserve">
+    <value>Gün sonunda kesildi.</value>
+  </data>
+  <data name="TimeDraftLabel" xml:space="preserve">
+    <value>taslağım</value>
+  </data>
+  <data name="TimeSubmittedLabel" xml:space="preserve">
+    <value>gönderilen</value>
+  </data>
+  <data name="TimeApprovedLabel" xml:space="preserve">
+    <value>onaylı</value>
+  </data>
+  <data name="TimerRunningNow" xml:space="preserve">
+    <value>Sayacınız bu görevde çalışıyor.</value>
+  </data>
+  <data name="OpenMyTimesheet" xml:space="preserve">
+    <value>Zaman Çizelgem'i aç</value>
+  </data>
+  <data name="TimerSwitchedText" xml:space="preserve">
+    <value>Sayacınız bu göreve geçti.</value>
+  </data>
+  <data name="TimerUndo" xml:space="preserve">
+    <value>Geri al</value>
+  </data>
+  <data name="TimerUndone" xml:space="preserve">
+    <value>Sayaç önceki göreve döndü.</value>
+  </data>
+  <data name="TimerErrDisabled" xml:space="preserve">
+    <value>Tüzel kişiniz için sayaç açık değil. Süreyi Zaman Çizelgem'e girin.</value>
+  </data>
+  <data name="TimerErrNotHeld" xml:space="preserve">
+    <value>Sayaç yalnız üzerinizdeki bir görevde çalışır.</value>
+  </data>
+  <data name="TimerErrNotInProgress" xml:space="preserve">
+    <value>Sayaç yalnız devam eden bir görevde çalışır.</value>
+  </data>
+  <data name="TimerErrNotRunning" xml:space="preserve">
+    <value>Bu görevin sayacı artık çalışmıyor.</value>
+  </data>
+  <data name="TimerErrConflict" xml:space="preserve">
+    <value>Sayaç bu arada değişti. Sayfa yenilendi.</value>
+  </data>
+  <data name="TimerErrUndoExpired" xml:space="preserve">
+    <value>Bu geçişi geri almak için geç kalındı.</value>
+  </data>
+  <data name="TimerErrGeneric" xml:space="preserve">
+    <value>Sayaç değiştirilemedi. Yeniden deneyin.</value>
+  </data>
+  <data name="WorkAggregation_Action_StartTimer" xml:space="preserve">
+    <value>Sayacı başlat</value>
+  </data>
+  <data name="WorkAggregation_Action_StopTimer" xml:space="preserve">
+    <value>Sayacı durdur</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>Duraklatıldı</value>
   </data>
 </root>

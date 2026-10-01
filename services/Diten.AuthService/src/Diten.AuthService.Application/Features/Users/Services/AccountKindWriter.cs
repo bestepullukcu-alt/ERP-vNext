@@ -24,9 +24,9 @@ public sealed class AccountKindWriter
 {
     public const string AuditEventName = "user_account_kind_changed";
 
-    private readonly IRbacAuditRecorder _audit;
+    private readonly IUserAuditRecorder _audit;
 
-    public AccountKindWriter(IRbacAuditRecorder audit)
+    public AccountKindWriter(IUserAuditRecorder audit)
     {
         _audit = audit;
     }
@@ -57,14 +57,16 @@ public sealed class AccountKindWriter
         return new AccountKindChange(previous, newKind);
     }
 
-    /// <summary>The audit row for a change the caller has already persisted. The actor is stamped by the recorder.</summary>
+    /// <summary>
+    /// The audit row for a change the caller has already persisted. The actor is stamped by the recorder; BL-456 — the
+    /// user audit recorder writes the same authAuditLogs row as before and also forwards it to Platform's central log.
+    /// </summary>
     public Task RecordAsync(User user, AccountKindChange change, Guid tenantId, string? correlationId, CancellationToken ct)
-        => _audit.RecordAsync(AuditEventName, tenantId, new
+        => _audit.RecordAsync(AuditEventName, tenantId, user.Id, new Dictionary<string, object?>
         {
-            targetUserId = user.Id,
-            tenantId,
-            previousKind = change.Previous.ToString(),
-            newKind = change.Next.ToString(),
-            correlationId
+            ["tenantId"] = tenantId,
+            ["previousKind"] = change.Previous.ToString(),
+            ["newKind"] = change.Next.ToString(),
+            ["correlationId"] = correlationId
         }, ct);
 }

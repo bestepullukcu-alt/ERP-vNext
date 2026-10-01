@@ -121,6 +121,8 @@
   <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>Cette étape ne peut pas être clôturée tant que le procès-verbal de la réunion de revue liée n'est pas publié.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>Cette tâche ne peut pas être terminée dans cet état. Démarrez-la d'abord.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Seule la personne qui a demandé cette tâche peut l'annuler. Si vous ne voulez pas ce travail, renvoyez-le.</value></data>
+  <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>Vous ne pouvez pas être l'approbateur d'une approbation que vous demandez. Choisissez une autre personne comme responsable de l'approbation.</value></data>
+  <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>Vous ne pouvez pas examiner votre propre soumission. Demandez à une autre personne d'examiner cette tâche.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Indiquez ce que la tâche attend.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>Un titre est requis.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>Le titre ne peut pas dépasser 200 caractères.</value></data>
@@ -260,5 +262,26 @@
   </data>
   <data name="ErrorInquiryNotAddressee" xml:space="preserve">
     <value>Cette question ne vous attend plus : elle a reçu une réponse ou a été retirée. Actualisez la liste.</value>
+  </data>
+  <data name="ErrorPlanNotHolder" xml:space="preserve">
+    <value>Seule la personne qui détient cette tâche peut la planifier. En tant que demandeur, exprimez votre attente avec la date d’échéance.</value>
+  </data>
+  <data name="ErrorPlanConflict" xml:space="preserve">
+    <value>Ce créneau chevauche une autre tâche que vous avez déjà planifiée. Choisissez un autre créneau ou déplacez l’autre tâche.</value>
+  </data>
+  <data name="ErrorPlanDurationInvalid" xml:space="preserve">
+    <value>La durée planifiée doit être d’au moins 15 minutes, par tranches de 15 minutes.</value>
+  </data>
+  <data name="ErrorUnplanNotAllowed" xml:space="preserve">
+    <value>Seule une tâche planifiée et non commencée peut être retirée du calendrier.</value>
+  </data>
+  <data name="ErrorCalendarRangeInvalid" xml:space="preserve">
+    <value>Le calendrier peut afficher au maximum 42 jours à la fois. Choisissez une période plus courte.</value>
+  </data>
+  <data name="WarningPlanOverlapsMeeting" xml:space="preserve">
+    <value>Enregistré, mais ce créneau chevauche la réunion « {0} ».</value>
+  </data>
+  <data name="WarningPlanOutsideWorkingHours" xml:space="preserve">
+    <value>Enregistré, mais ce créneau est en dehors de vos heures de travail.</value>
   </data>
 </root>

@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Text.Json;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks.Providers;
+using Diten.Platform.Application.Features.TimeEntry;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Application.Features.WorkAggregation;
 using Diten.Platform.Domain.Entities.Tasks;
@@ -310,6 +312,114 @@ public sealed class TaskWorkItemContractGuardTests
             CancellationToken.None);
 
         return items.Single(x => x.Id == task.Id.ToString());
+    }
+
+    /// <summary>
+    /// MOD-0280-FU01 T2b — the switch is ON in production now (<c>DeclareTimeTracking = true</c>). The item that carries
+    /// the whole time block — <c>timeTracking</c>, the <c>timeEntries</c> container, a RUNNING timer and the startTimer /
+    /// stopTimer actions — must pass the SHIPPED WC-1 contract, not a copy of it.
+    /// </summary>
+    [Fact]
+    public async Task A_time_tracked_item_with_a_running_timer_and_its_timer_actions_passes_the_real_contract()
+    {
+        var running = SelfTask("Sayaçlı görev");
+        running.Lifecycle = TaskLifecycle.InProgress;
+        var other = SelfTask("Diğer görev");
+        other.Lifecycle = TaskLifecycle.InProgress;
+        var provider = new TaskWorkItemProvider(
+            new FakeTaskItemRepository(running, other),
+            new FakePositionAssignmentRepository(), new TaskLifecycleService(), new TaskAssignmentResolver(),
+            new FakeUserDisplayNameResolver(), new FakeChecklistRunRepository(), new FakeTaskApprovalService(),
+            new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
+            new FakeTaskPersonalOverlayRepository(), new FakeTaskWatcherRepository(), TaskActors.PermitAll(),
+            new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(),
+            new FakeTaskFieldDefinitionRepository(), new FakeTaskTypeRepository(),
+            spentTime: new RunningTimerSource(running.Id),
+            timeTracking: new TaskTimeTrackingOptions { DeclareTimeTracking = true },
+            timerAvailability: new TimerOn());
+
+        var items = await provider.GetWorkItemsAsync(
+            new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()), CancellationToken.None);
+
+        var byId = items.ToDictionary(i => i.Id);
+        Assert.Equal(WorkItemContract.TimerRunning, byId[running.Id.ToString()].TimerState);
+        Assert.Contains(byId[running.Id.ToString()].Actions, a => a.Code == "stopTimer");
+        Assert.Contains(byId[other.Id.ToString()].Actions, a => a.Code == "startTimer");
+        foreach (var item in items)
+        {
+            var verdict = ValidateWithRealContract(item);
+            Assert.True(verdict.Valid, verdict.Report);
+        }
+    }
+
+    /// <summary>
+    /// LIVE DEFECT (since 29c4b4a30, fixed with MOD-0280-FU01 T2b) — <c>taskContext</c> went out without the <c>effort</c>
+    /// container the contract ties to it, so the browser's contract check dropped the task from the board. Two ways a task
+    /// declares taskContext: it was ESTIMATED, or it has APPROVED time and no estimate. Both must pass the shipped contract.
+    /// </summary>
+    [Fact]
+    public async Task An_estimated_task_carries_its_effort_container_and_passes_the_real_contract()
+    {
+        var task = SelfTask("Tahminli görev");
+        task.EstimateHours = 6m;
+
+        var item = Assert.Single(await Provider(new FakeTaskItemRepository(task)).GetWorkItemsAsync(
+            new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()), CancellationToken.None));
+
+        Assert.Contains("taskContext", item.WorkItemCapabilities);
+        Assert.Equal(new WorkItemEffortDto(6m, 0m), item.Effort);
+        var verdict = ValidateWithRealContract(item);
+        Assert.True(verdict.Valid, verdict.Report);
+    }
+
+    [Fact]
+    public async Task A_task_with_approved_time_and_no_estimate_carries_its_effort_container_and_passes_the_real_contract()
+    {
+        var task = SelfTask("Onaylı süreli görev");
+        var provider = new TaskWorkItemProvider(
+            new FakeTaskItemRepository(task),
+            new FakePositionAssignmentRepository(), new TaskLifecycleService(), new TaskAssignmentResolver(),
+            new FakeUserDisplayNameResolver(), new FakeChecklistRunRepository(), new FakeTaskApprovalService(),
+            new FakeTaskDependencyRepository(), new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
+            new FakeTaskPersonalOverlayRepository(), new FakeTaskWatcherRepository(), TaskActors.PermitAll(),
+            new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(),
+            new FakeTaskFieldDefinitionRepository(), new FakeTaskTypeRepository(),
+            spentTime: new RunningTimerSource(Guid.NewGuid()),                        // 90 approved minutes
+            timeTracking: new TaskTimeTrackingOptions { DeclareTimeTracking = false });  // even with the switch off
+
+        var item = Assert.Single(await provider.GetWorkItemsAsync(
+            new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()), CancellationToken.None));
+
+        Assert.Contains("taskContext", item.WorkItemCapabilities);
+        Assert.Equal(new WorkItemEffortDto(0m, 1.5m), item.Effort);
+        var verdict = ValidateWithRealContract(item);
+        Assert.True(verdict.Valid, verdict.Report);
+    }
+
+    [Fact]
+    public async Task A_task_with_neither_carries_neither_the_capability_nor_the_container()
+    {
+        var item = await ProjectBareItemAsync();
+
+        Assert.DoesNotContain("taskContext", item.WorkItemCapabilities);
+        Assert.Null(item.Effort);
+    }
+
+    private sealed class TimerOn : ITimeEntryTimerAvailability
+    {
+        public Task<bool> IsTimerEnabledForAsync(Guid userId, CancellationToken ct = default) => Task.FromResult(true);
+    }
+
+    private sealed class RunningTimerSource(Guid runningTask) : ITaskSpentTimeSource
+    {
+        public Task<IReadOnlyDictionary<Guid, int>> ApprovedMinutesAsync(IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyDictionary<Guid, int>>(taskIds.ToDictionary(id => id, _ => 90));
+
+        public Task<IReadOnlyDictionary<Guid, TaskSpentTime>> SpentTimeAsync(IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyDictionary<Guid, TaskSpentTime>>(taskIds.ToDictionary(id => id, _ => new TaskSpentTime(90, 30)));
+
+        public Task<TaskReaderTime> ReaderTimeAsync(Guid readerUserId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
+            => Task.FromResult(new TaskReaderTime(runningTask, taskIds.ToDictionary(id => id, _ => 15)));
     }
 
     /// <summary>A task with none of the optional data — the vacuous case, kept to prove it IS vacuous.</summary>

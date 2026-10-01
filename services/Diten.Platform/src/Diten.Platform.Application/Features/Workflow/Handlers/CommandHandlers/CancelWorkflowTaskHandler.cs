@@ -28,10 +28,11 @@ public sealed class CancelWorkflowTaskHandler
     public Task<Response<WorkflowTaskTransitionResponse>> Handle(CancelWorkflowTaskCommand request, CancellationToken ct) =>
         _support.CancelAsync(
             request.TaskId,
-            request.Request.ActorId,
+            request.Request.ActorId!,
             request.Request.ReasonCode,
             request.Request.IdempotencyKey,
             request.Request.Comment,
             request.CorrelationId,
-            ct);
+            ct,
+            request.AllowEscalated);
 }

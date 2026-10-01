@@ -59,6 +59,10 @@ public sealed class GoldenReferenceCompactRepository : IGoldenReferenceCompactRe
             ? total
             : await _collection.CountDocumentsAsync(filtered, cancellationToken: cancellationToken);
 
+        // BL-452 export: the count already exceeds the cap → the caller refuses the file (413); no row is read for a "no".
+        if (criteria.RefuseAbove is { } refuseAbove && filteredTotal > refuseAbove)
+            return new GoldenReferenceCompactListPage([], total, filteredTotal);
+
         var find = _collection.Find(filtered).Sort(SortOf(criteria.SortField, criteria.Descending));
         if (criteria.Start > 0)
             find = find.Skip(criteria.Start);

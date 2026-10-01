@@ -22,7 +22,7 @@ public sealed class RequestInfoWorkflowTaskHandler
     public Task<Response<WorkflowTaskTransitionResponse>> Handle(RequestInfoWorkflowTaskCommand request, CancellationToken ct) =>
         _support.RequestInfoAsync(
             request.TaskId,
-            request.Request.ActorId,
+            request.Request.ActorId!,
             request.Request.TargetPrincipalId,
             request.Request.ReasonCode,
             request.Request.IdempotencyKey,

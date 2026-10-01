@@ -215,6 +215,8 @@ public static class DependencyInjection
         services.AddScoped<IAuthPermissionModulesClient, AuthPermissionModulesClient>();
         // MOD-0024 §K6.4 — display-name resolution for task assignees/requesters (best-effort S2S).
         services.AddScoped<IUserDisplayNameResolver, AuthUserDisplayNameClient>();
+        // BL-459 — the tenant users summary counts AuthService's users, not only Platform's AdminUsers list.
+        services.AddScoped<ITenantUserCountReader, AuthTenantUserCountClient>();
         services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
         services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();
@@ -379,6 +381,19 @@ public static class DependencyInjection
         services.AddScoped<IMeetingMinutesVersionRepository, MeetingMinutesVersionRepository>();
         // MOD-0357 S11 — the recurring cadence rule's own storage.
         services.AddScoped<IMeetingSeriesRepository, MeetingSeriesRepository>();
+        // MOD-0280-FU01 T1a (ADR-004) — the time-entry module's own storage (time_entry_* collections).
+        services.AddScoped<ITimesheetWeekRepository, TimesheetWeekRepository>();
+        services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
+        services.AddScoped<IWorkCategoryRepository, WorkCategoryRepository>();
+        services.AddScoped<ITimeEntrySettingsRepository, TimeEntrySettingsRepository>();
+        services.AddScoped<ILegalEntityTimeSettingRepository, LegalEntityTimeSettingRepository>();
+        services.AddScoped<ITaskTimeTotalRepository, TaskTimeTotalRepository>();
+        // MOD-0280-FU01 T1b — the timer's segments and the meeting-suggestion decisions.
+        services.AddScoped<ITimerSegmentRepository, TimerSegmentRepository>();
+        services.AddScoped<ITimeSuggestionRepository, TimeSuggestionRepository>();
+        // MOD-0280-FU01 T3 — the at-most-once notification marks, and the deep links its e-mails carry.
+        services.AddScoped<ITimeEntryNotificationMarkRepository, TimeEntryNotificationMarkRepository>();
+        services.AddScoped<Diten.Platform.Application.Features.TimeEntry.Services.ITimeEntryLinks, TimeEntryLinks>();
         // MOD-0357 S5 — needs AuthServiceOptions.FrontendBaseUrl for the "Toplantıyı aç" deep link, which is
         // why the implementation lives here rather than beside ITaskNotificationService in Application.
         services.AddScoped<Diten.Platform.Application.Features.Meetings.Services.IMeetingInviteMailer,

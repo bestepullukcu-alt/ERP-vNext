@@ -131,6 +131,17 @@
         // A plan write with no date at all (a 400, not a 409 — it never reaches BLOCKING_REASON_CODES).
         TASK_PLAN_DATE_REQUIRED: 'errorPlanDateRequired',
         /*
+         * WP-TASK-CALENDAR-ENGINE-01 — the plan block's refusals, mapped the moment the codes were written.
+         * TASK_PLAN_NOT_HOLDER (BL-449): only the holder plans; TASK_PLAN_CONFLICT: two of the holder's own blocks
+         * in the same hour (the response data names the other one); TASK_UNPLAN_NOT_ALLOWED: nothing to take back.
+         * WORK_CALENDAR_RANGE_INVALID is the calendar feed's own 400.
+         */
+        TASK_PLAN_NOT_HOLDER: 'errorPlanNotHolder',
+        TASK_PLAN_CONFLICT: 'errorPlanConflict',
+        TASK_PLAN_DURATION_INVALID: 'errorPlanDurationInvalid',
+        TASK_UNPLAN_NOT_ALLOWED: 'errorUnplanNotAllowed',
+        WORK_CALENDAR_RANGE_INVALID: 'errorCalendarRangeInvalid',
+        /*
          * CREATE WITH NO DUE DATE. Measured on both surfaces: the main create endpoint and the subtask panel
          * refuse identically (`400 VALIDATION_REQUEST_DUE_AT_NOT_NULL`, "A due date is required."), so the rule
          * is the product's and not a subtask quirk — the create FORM already stars the field, the panel did not.
@@ -214,6 +225,10 @@
         // Cancelling is the requester's right: an assignee gets 403 with this code. failureMessage checks the
         // reason code BEFORE the status, so this replaces the generic "you are not allowed" with the reason.
         TASK_CANCEL_NOT_REQUESTER: 'errorCancelNotRequester',
+        // WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — MOD-0023 never lets whoever started an approval or review decide it, so
+        // routing one back to its own starter is refused up front (400 on create/edit, 409 on submit for review).
+        TASK_APPROVAL_MANAGER_IS_SELF: 'errorApprovalManagerIsSelf',
+        TASK_REVIEWER_IS_SUBMITTER: 'errorReviewerIsSubmitter',
         TASK_WAITING_REASON_REQUIRED: 'errorWaitingReasonRequired',
         /*
          * BL-439 — AnswerInquiryHandler's three refusals. NOT_ADDRESSEE is the one a real reader meets: the
@@ -312,8 +327,31 @@
         'WORKFLOW_REJECTED',
         'WORKFLOW_CANCELLED',
         'WORKFLOW_NOT_TERMINAL_APPROVED',
-        'WorkflowGateEvaluationFailed'
+        'WorkflowGateEvaluationFailed',
+        // WP-TASK-CALENDAR-ENGINE-01 — RULES about the holder's calendar and the task's state, not a race.
+        'TASK_PLAN_CONFLICT',
+        'TASK_UNPLAN_NOT_ALLOWED'
     ]);
+
+    /*
+     * WP-TASK-CALENDAR-ENGINE-01 — a plan that WAS saved can still carry warnings (`warnings[]` on the plan answer,
+     * or on the work-item action answer). Not failures, so they never pass through failureMessage; the calendar
+     * turns each into its sentence here. `{0}` is the meeting title where the warning names one.
+     */
+    const PLAN_WARNING_MESSAGE_KEYS = {
+        TASK_PLAN_OVERLAPS_MEETING: 'warningPlanOverlapsMeeting',
+        TASK_PLAN_OUTSIDE_WORKING_HOURS: 'warningPlanOutsideWorkingHours'
+    };
+
+    const planWarningMessage = (warning) => {
+        const t = (key) => global.TasksL10n?.t?.(key) ?? key;
+        const key = PLAN_WARNING_MESSAGE_KEYS[warning?.code];
+        if (!key) {
+            global.console?.warn?.(`[TasksApi] no message key for plan warning "${warning?.code}".`);
+            return null;
+        }
+        return String(t(key)).replace('{0}', warning?.title ?? '');
+    };
 
     const isTransitionBlocked = (result) =>
         result?.status === 409 && BLOCKING_REASON_CODES.has(result?.reasonCode);
@@ -358,6 +396,8 @@
 
     global.TasksApi = {
         REASON_CODE_MESSAGE_KEYS,
+        PLAN_WARNING_MESSAGE_KEYS,
+        planWarningMessage,
         INQUIRE_REASON_CODE_OVERRIDES,
         BLOCKING_REASON_CODES,
         isTransitionBlocked,

@@ -2015,3 +2015,52 @@ internal sealed class FakeUserNotificationRepository : IUserNotificationReposito
     private IEnumerable<UserNotification> Owned(Guid tenantId, Guid userId)
         => Written.Where(x => !x.IsDeleted && x.TenantId == tenantId && x.UserId == userId);
 }
+
+/// <summary>
+/// WP-TASK-CALENDAR-ENGINE-01 — a working-hours answer the test chooses: one window per day from
+/// <paramref name="start"/> to <paramref name="end"/> in <paramref name="zone"/> (UTC when omitted), and no window
+/// at all when either is null. The real resolution is exercised by the Mongo HTTP tests.
+/// </summary>
+internal sealed class FakeWorkingHoursProvider(
+    TimeOnly? start = null,
+    TimeOnly? end = null,
+    TimeZoneInfo? zone = null) : Diten.Platform.Application.Features.WorkingHours.IWorkingHoursProvider
+{
+    public Task<Diten.Platform.Application.Features.WorkingHours.WorkingHoursResult> GetWorkingWindowsAsync(
+        Guid userId, DateOnly from, DateOnly to, CancellationToken ct = default)
+    {
+        var tz = zone ?? TimeZoneInfo.Utc;
+        var days = new List<Diten.Platform.Application.Features.WorkingHours.WorkingDay>();
+        for (var date = from; date <= to; date = date.AddDays(1))
+        {
+            var windows = start is { } s && end is { } e
+                ? new[]
+                {
+                    new Diten.Platform.Application.Features.WorkingHours.WorkingWindow(
+                        new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(date.ToDateTime(s), tz), TimeSpan.Zero),
+                        new DateTimeOffset(TimeZoneInfo.ConvertTimeToUtc(date.ToDateTime(e), tz), TimeSpan.Zero))
+                }
+                : Array.Empty<Diten.Platform.Application.Features.WorkingHours.WorkingWindow>();
+            days.Add(new Diten.Platform.Application.Features.WorkingHours.WorkingDay(
+                date,
+                Diten.Platform.Application.Features.WorkingHours.WorkingDayKinds.WorkingDay,
+                null,
+                windows,
+                Diten.Platform.Application.Features.WorkingHours.WorkingHoursSources.TenantDefault,
+                CalendarUnresolved: false));
+        }
+
+        return Task.FromResult(new Diten.Platform.Application.Features.WorkingHours.WorkingHoursResult(tz, days));
+    }
+}
+
+/// <summary>WP-TASK-CALENDAR-ENGINE-01 — the caller's meetings, as seeded.</summary>
+internal sealed class FakeCalendarMeetingReader(
+    params Diten.Platform.Application.Features.WorkAggregation.Calendar.CalendarMeeting[] seed)
+    : Diten.Platform.Application.Features.WorkAggregation.Calendar.ICalendarMeetingReader
+{
+    public Task<IReadOnlyList<Diten.Platform.Application.Features.WorkAggregation.Calendar.CalendarMeeting>> ListMineAsync(
+        Guid userId, DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<Diten.Platform.Application.Features.WorkAggregation.Calendar.CalendarMeeting>>(
+            seed.Where(m => m.StartAt < toUtc && m.EndAt > fromUtc).ToList());
+}

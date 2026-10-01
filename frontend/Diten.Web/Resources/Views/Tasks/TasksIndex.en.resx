@@ -121,6 +121,8 @@
   <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>This step cannot close until the linked review meeting's minutes are published.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>This task cannot be completed while it is in this state. Start it first.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Only the person who requested this task can cancel it. If you do not want the work, return it instead.</value></data>
+  <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>You cannot be the approver of an approval you request. Choose someone else as the approval manager.</value></data>
+  <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>You cannot review your own submission. Ask someone else to review this task.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Say what the task is waiting for.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>A title is required.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>The title may be at most 200 characters.</value></data>
@@ -260,5 +262,26 @@
   </data>
   <data name="ErrorInquiryNotAddressee" xml:space="preserve">
     <value>This question is no longer waiting on you — it was answered or withdrawn. Refresh the list.</value>
+  </data>
+  <data name="ErrorPlanNotHolder" xml:space="preserve">
+    <value>Only the person holding this task can plan it. As the requester, state your expectation with the due date.</value>
+  </data>
+  <data name="ErrorPlanConflict" xml:space="preserve">
+    <value>This time overlaps another task you have already planned. Choose a different time or move the other task.</value>
+  </data>
+  <data name="ErrorPlanDurationInvalid" xml:space="preserve">
+    <value>The planned duration must be at least 15 minutes, in 15-minute steps.</value>
+  </data>
+  <data name="ErrorUnplanNotAllowed" xml:space="preserve">
+    <value>Only a planned task that has not started can be taken off the calendar.</value>
+  </data>
+  <data name="ErrorCalendarRangeInvalid" xml:space="preserve">
+    <value>The calendar can show at most 42 days at a time. Choose a shorter date range.</value>
+  </data>
+  <data name="WarningPlanOverlapsMeeting" xml:space="preserve">
+    <value>Saved, but this time overlaps the meeting “{0}”.</value>
+  </data>
+  <data name="WarningPlanOutsideWorkingHours" xml:space="preserve">
+    <value>Saved, but this time is outside your working hours.</value>
   </data>
 </root>

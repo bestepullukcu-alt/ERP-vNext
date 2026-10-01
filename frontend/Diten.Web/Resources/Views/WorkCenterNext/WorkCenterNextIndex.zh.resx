@@ -575,12 +575,6 @@
   <data name="TimesheetLabel" xml:space="preserve">
     <value>工时</value>
   </data>
-  <data name="TimeLoggedLabel" xml:space="preserve">
-    <value>已记录</value>
-  </data>
-  <data name="TimerRunning" xml:space="preserve">
-    <value>计时中</value>
-  </data>
   <data name="AwaitingReview" xml:space="preserve">
     <value>等待审核</value>
   </data>
@@ -604,12 +598,6 @@
   </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · 已计划于 {1}（模拟）</value>
-  </data>
-  <data name="ToastPlanSaved" xml:space="preserve">
-    <value>已为 {0} 保存计划</value>
-  </data>
-  <data name="ToastTimerStarted" xml:space="preserve">
-    <value>{0} · 计时已开始（模拟）</value>
   </data>
   <data name="ToastTimeLogged" xml:space="preserve">
     <value>已记录 {0}（模拟）</value>
@@ -931,15 +919,6 @@
   <data name="SubtaskCreateAllFields" xml:space="preserve">
     <value>全部字段</value>
   </data>
-  <data name="TimerStateRunning" xml:space="preserve">
-    <value>进行中</value>
-  </data>
-  <data name="TimerStatePaused" xml:space="preserve">
-    <value>已暂停</value>
-  </data>
-  <data name="TimerFollowsStatusHint" xml:space="preserve">
-    <value>系统不记录经过的时间 — 请手动填写您花费的时间。</value>
-  </data>
   <data name="SubtaskStartedNotCompleted" xml:space="preserve">
     <value>子任务已启动但无法完成：{0}</value>
   </data>
@@ -1089,21 +1068,6 @@
   </data>
   <data name="KanbanDropHint" xml:space="preserve">
     <value>拖放到此处：{0}</value>
-  </data>
-  <data name="CalPrevMonth" xml:space="preserve">
-    <value>上个月</value>
-  </data>
-  <data name="CalNextMonth" xml:space="preserve">
-    <value>下个月</value>
-  </data>
-  <data name="CalToday" xml:space="preserve">
-    <value>今天</value>
-  </data>
-  <data name="CalOutside" xml:space="preserve">
-    <value>另有 {0} 项在其他月份。</value>
-  </data>
-  <data name="CalOutsideAndUndated" xml:space="preserve">
-    <value>另有 {0} 项在其他月份；{1} 项没有日期，永远不会出现在日历中。</value>
   </data>
   <data name="CalLegendDue" xml:space="preserve">
     <value>来源截止</value>
@@ -1538,6 +1502,9 @@
   <data name="WorkAggregation_ActionDisabled_EvidenceRequired" xml:space="preserve">
     <value>缺少必需的证明材料。</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_SelfApproval" xml:space="preserve">
+    <value>此审批由您发起，须由他人作出决定。</value>
+  </data>
   <data name="NoAccessTitle" xml:space="preserve">
     <value>您无权访问任务中心</value>
   </data>
@@ -1901,6 +1868,9 @@
   </data>
   <data name="AuditEventPlanned" xml:space="preserve">
     <value>任务已计划</value>
+  </data>
+  <data name="AuditEventUnplanned" xml:space="preserve">
+    <value>任务已从日历中移除</value>
   </data>
   <data name="AuditEventStarted" xml:space="preserve">
     <value>工作已开始</value>
@@ -2408,5 +2378,137 @@
   </data>
   <data name="AuditEventInquiryAnswered" xml:space="preserve">
     <value>问题已回答</value>
+  </data>
+  <data name="CalPanelTitle" xml:space="preserve">
+    <value>待计划的工作</value>
+  </data>
+  <data name="CalPanelUnplanned" xml:space="preserve">
+    <value>未计划</value>
+  </data>
+  <data name="CalPanelPlanPassed" xml:space="preserve">
+    <value>计划已过期</value>
+  </data>
+  <data name="CalPanelInvites" xml:space="preserve">
+    <value>邀请</value>
+  </data>
+  <data name="CalPanelEmpty" xml:space="preserve">
+    <value>这里没有内容。</value>
+  </data>
+  <data name="CalPanelHint" xml:space="preserve">
+    <value>将卡片拖到日历上：月视图中拖到某一天，周视图或日视图中拖到某个时间。将已计划的时间块拖回此处即可取消计划。</value>
+  </data>
+  <data name="CalChipEstimate" xml:space="preserve">
+    <value>预估 {0} 小时</value>
+  </data>
+  <data name="CalChipPlanPassed" xml:space="preserve">
+    <value>计划于 {0}</value>
+  </data>
+  <data name="CalChipRemaining" xml:space="preserve">
+    <value>剩余 {0} 分钟</value>
+  </data>
+  <data name="CalLegendTask" xml:space="preserve">
+    <value>计划日</value>
+  </data>
+  <data name="CalLegendBlock" xml:space="preserve">
+    <value>计划时间块</value>
+  </data>
+  <data name="CalLegendMeetingAccepted" xml:space="preserve">
+    <value>会议（已接受）</value>
+  </data>
+  <data name="CalLegendMeetingPending" xml:space="preserve">
+    <value>会议（未答复）</value>
+  </data>
+  <data name="CalLegendConflict" xml:space="preserve">
+    <value>与其他时间块重叠</value>
+  </data>
+  <data name="CalLegendOffHours" xml:space="preserve">
+    <value>非工作时间</value>
+  </data>
+  <data name="CalLegendHoliday" xml:space="preserve">
+    <value>节假日</value>
+  </data>
+  <data name="CalPlanSaved" xml:space="preserve">
+    <value>“{0}”已计划。</value>
+  </data>
+  <data name="CalTruncated" xml:space="preserve">
+    <value>已在工作日结束时截断——剩余 {0} 分钟。</value>
+  </data>
+  <data name="CalConflictWith" xml:space="preserve">
+    <value>与“{0}” {1} 重叠。请选择其他时间。</value>
+  </data>
+  <data name="CalZoneUnavailable" xml:space="preserve">
+    <value>无法读取公司时区，时间未保存。请重试。</value>
+  </data>
+  <data name="PlanTimeLabel" xml:space="preserve">
+    <value>开始时间</value>
+  </data>
+  <data name="PlanTimeNone" xml:space="preserve">
+    <value>不指定时间（全天）</value>
+  </data>
+  <data name="PlanDurationLabel" xml:space="preserve">
+    <value>时长</value>
+  </data>
+  <data name="PlanDurationOption" xml:space="preserve">
+    <value>{0} 分钟</value>
+  </data>
+  <data name="PlanTimeHint" xml:space="preserve">
+    <value>时间按公司时区显示。超出工作日结束时间的时间块将在该处截断。</value>
+  </data>
+  <data name="CalTruncatedNoEstimate" xml:space="preserve">
+    <value>已在当天结束时截断。</value>
+  </data>
+  <data name="TimeDraftLabel" xml:space="preserve">
+    <value>我的草稿</value>
+  </data>
+  <data name="TimeSubmittedLabel" xml:space="preserve">
+    <value>已提交</value>
+  </data>
+  <data name="TimeApprovedLabel" xml:space="preserve">
+    <value>已批准</value>
+  </data>
+  <data name="TimerRunningNow" xml:space="preserve">
+    <value>您的计时器正在此任务上运行。</value>
+  </data>
+  <data name="OpenMyTimesheet" xml:space="preserve">
+    <value>打开我的工时表</value>
+  </data>
+  <data name="TimerSwitchedText" xml:space="preserve">
+    <value>您的计时器已切换到此任务。</value>
+  </data>
+  <data name="TimerUndo" xml:space="preserve">
+    <value>撤销</value>
+  </data>
+  <data name="TimerUndone" xml:space="preserve">
+    <value>计时器已回到上一个任务。</value>
+  </data>
+  <data name="TimerErrDisabled" xml:space="preserve">
+    <value>您所在的法人实体未开启计时器。请在“我的工时表”中填写时间。</value>
+  </data>
+  <data name="TimerErrNotHeld" xml:space="preserve">
+    <value>计时器只能用于您负责的任务。</value>
+  </data>
+  <data name="TimerErrNotInProgress" xml:space="preserve">
+    <value>计时器只能用于进行中的任务。</value>
+  </data>
+  <data name="TimerErrNotRunning" xml:space="preserve">
+    <value>此任务的计时器已不再运行。</value>
+  </data>
+  <data name="TimerErrConflict" xml:space="preserve">
+    <value>计时器在此期间已被修改。页面已刷新。</value>
+  </data>
+  <data name="TimerErrUndoExpired" xml:space="preserve">
+    <value>已来不及撤销该切换。</value>
+  </data>
+  <data name="TimerErrGeneric" xml:space="preserve">
+    <value>无法更改计时器。请重试。</value>
+  </data>
+  <data name="WorkAggregation_Action_StartTimer" xml:space="preserve">
+    <value>开始计时</value>
+  </data>
+  <data name="WorkAggregation_Action_StopTimer" xml:space="preserve">
+    <value>停止计时</value>
+  </data>
+  <data name="TimerStatePaused" xml:space="preserve">
+    <value>已暂停</value>
   </data>
 </root>

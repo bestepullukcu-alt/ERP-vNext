@@ -1,0 +1,14 @@
+@using Diten.Web.Views.TimeEntry
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TimeEntryIndex> TimeEntryLocalizer
+@*
+    MOD-0280-FU01 T2b — the Time Entry error-code sentences (every Err* key of TimeEntryIndex, 7 languages) for the
+    admin pages, so a refusal on Approvals / Categories / Settings reads exactly as it does on My Timesheet: ONE bridge
+    (TimeEntry/core.js REASON_CODE_MESSAGE_KEYS), one set of sentences.
+*@
+@{
+    var errors = TimeEntryLocalizer.GetAllStrings(true)
+        .Where(s => s.Name.StartsWith("Err", StringComparison.Ordinal))
+        .ToDictionary(s => s.Name, s => s.Value);
+}
+<script id="time-entry-errors-l10n" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(errors))</script>

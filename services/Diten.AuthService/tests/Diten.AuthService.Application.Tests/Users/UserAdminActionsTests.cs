@@ -2,8 +2,10 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Users.Commands;
 using Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
+using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
+using Diten.AuthService.Application.Tests.Testing;
 
 namespace Diten.AuthService.Application.Tests.Users;
 
@@ -123,10 +125,17 @@ public sealed class UserAdminActionsTests
 
     // ── Builders ──
     private static SetUserActiveStatusCommandHandler StatusHandler(InMemoryUserRepository repo, FakeRefreshTokenRepository refreshTokens) =>
-        new(repo, refreshTokens, TenantContextFor(TenantA), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
+        new(repo, refreshTokens, TenantContextFor(TenantA), new SomeoneElse(), UserAuditForTests.None(), new RecordingUserQuotaClient(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
+
+    /// <summary>The signed-in administrator is never one of the rows these tests act on (the self-deactivation
+    /// refusal has its own file, <c>SetUserActiveStatusGuardTests</c>).</summary>
+    private sealed class SomeoneElse : ICurrentUserAccessor
+    {
+        public Guid? UserId { get; } = Guid.NewGuid();
+    }
 
     private static AdminResetPasswordCommandHandler ResetHandler(InMemoryUserRepository repo, FakeInvitationEmailService email, FakeRefreshTokenHasher hasher) =>
-        new(repo, TenantContextFor(TenantA), new FakeTokenService(), hasher, email, new FakeHostEnvironment(isDevelopment: true), NullLogger<AdminResetPasswordCommandHandler>.Instance);
+        new(repo, TenantContextFor(TenantA), new FakeTokenService(), hasher, email, new FakeHostEnvironment(isDevelopment: true), UserAuditForTests.None(), NullLogger<AdminResetPasswordCommandHandler>.Instance);
 
     private static TestTenantContext TenantContextFor(Guid tenantId)
     {
@@ -198,5 +207,34 @@ public sealed class UserAdminActionsTests
         public Guid? TargetTenantId => null;
         public void SetTenant(Guid tenantId) { _tenantId = tenantId; IsResolved = true; }
         public void SetPlatformContext(Guid targetTenantId) => SetTenant(targetTenantId);
+    }
+
+    // ── CT acceptance, WP-AUTH-PLATFORM-LINKS-01 (2026-09-25) ────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task An_admin_reset_whose_email_fails_in_production_is_still_audited()
+    {
+        var user = new User("reset@acme.test", "hash:x", "Re", "Set", TenantA);
+        var repo = new InMemoryUserRepository([user]);
+        var local = new EventNames();
+        var handler = new AdminResetPasswordCommandHandler(repo, TenantContextFor(TenantA), new FakeTokenService(), new FakeRefreshTokenHasher(),
+            new ThrowingInvitationEmail(), new FakeHostEnvironment(isDevelopment: false), UserAuditForTests.Over(local),
+            NullLogger<AdminResetPasswordCommandHandler>.Instance);
+
+        await Assert.ThrowsAnyAsync<Exception>(() => handler.Handle(new AdminResetPasswordCommand(user.Id), CancellationToken.None));
+
+        Assert.Contains(UserAuditEvents.PasswordResetByAdmin, local.Names);
+    }
+
+    private sealed class EventNames : IRbacAuditRecorder
+    {
+        public List<string> Names { get; } = [];
+        public Task RecordAsync(string eventName, Guid tenantId, object metadata, CancellationToken ct = default) { Names.Add(eventName); return Task.CompletedTask; }
+    }
+
+    private sealed class ThrowingInvitationEmail : ITenantUserInvitationEmailService
+    {
+        public string BuildTenantSetPasswordUrl(string email, string setupToken) => "http://localhost/set-password";
+        public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct) => throw new InvalidOperationException("SMTP down");
     }
 }
