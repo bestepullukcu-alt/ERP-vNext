@@ -25,6 +25,7 @@ public static class ContractSchemas
     public const string BalancePage = "BalancePage";
     public const string TransactionPage = "TransactionPage";
     public const string Error = "Error";
+    public const string ReservationResponse = "ReservationResponse";
 
     private static readonly Lazy<JsonObject> Defs = new(BuildDefs);
     private static readonly Dictionary<string, JsonSchema> Compiled = new(StringComparer.Ordinal);

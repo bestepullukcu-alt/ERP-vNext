@@ -88,19 +88,23 @@ public sealed class LedgerImmutabilityArchitectureTests
     }
 
     [Fact]
-    public void The_routes_are_exactly_the_four_S1_contract_operations()
+    public void The_routes_are_exactly_the_six_contract_operations()
     {
         var routes = ControllerActions()
             .SelectMany(a => a.GetCustomAttributes<HttpMethodAttribute>().Select(h => $"{h.HttpMethods.Single()} api/inventory/{h.Template}"))
-            .OrderBy(r => r)
+            .OrderBy(r => r, StringComparer.Ordinal)
             .ToList();
 
+        // S1's four + S2's createReservation / releaseReservation — the frozen contract has no other operation (no
+        // GET reservation, no reservation list), so neither does the service.
         Assert.Equal(
             [
                 "GET api/inventory/availability",
                 "GET api/inventory/balance",
                 "GET api/inventory/transactions",
-                "POST api/inventory/movements"
+                "POST api/inventory/movements",
+                "POST api/inventory/reservations",
+                "POST api/inventory/reservations/{id}/release"
             ],
             routes);
     }

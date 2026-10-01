@@ -15,10 +15,12 @@ public sealed class SingleSystemOfRecordArchitectureTests
     private static readonly Regex CollectionName = new(@"""(inventory_[a-z_]+|[a-z]+_[a-z_]+)""", RegexOptions.Compiled);
 
     [Fact]
-    public void The_service_owns_exactly_the_five_declared_collections()
+    public void The_service_owns_exactly_the_declared_collections()
     {
+        // S2 adds inventory_reservations (holds) and inventory_sku_positions (projection, ASSUMPTION-0173-13).
         Assert.Equal(
-            ["inventory_audit", "inventory_balances", "inventory_outbox", "inventory_sequences", "inventory_transactions"],
+            ["inventory_audit", "inventory_balances", "inventory_outbox", "inventory_reservations", "inventory_sequences",
+             "inventory_sku_positions", "inventory_transactions"],
             InventoryCollections.All.OrderBy(x => x).ToList());
     }
 
@@ -50,7 +52,9 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .Select(t => t.Name)
             .ToList();
 
-        Assert.Equal([nameof(InventoryBalance)], quantityCarriers);
+        // S2: the per-SKU position carries Reserved / AvailableOnHand — it is a projection of the ledger + reservations
+        // (pack ASSUMPTION-0173-13, rebuild-proven by the AC-R9 invariant test), not a second stock truth.
+        Assert.Equal([nameof(InventoryBalance), nameof(InventorySkuPosition)], quantityCarriers.OrderBy(x => x, StringComparer.Ordinal));
     }
 
     [Theory]

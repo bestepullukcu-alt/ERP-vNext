@@ -10,8 +10,9 @@ public static class TestTokens
 {
     public const string ReadPermission = "supplychain.inventory.read";
     public const string PostPermission = "supplychain.inventory.movements.post";
+    public const string ReservationsPermission = "supplychain.inventory.reservations.manage";
 
-    public static readonly string[] AllPermissions = [ReadPermission, PostPermission];
+    public static readonly string[] AllPermissions = [ReadPermission, PostPermission, ReservationsPermission];
 
     public static string Mint(
         Guid? tenantId,

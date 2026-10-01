@@ -53,7 +53,7 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
         if (disposing && !_tenants.IsEmpty)
         {
             var tenants = new BsonArray(_tenants.Select(t => t.ToString()));
-            foreach (var name in new[] { "inventory_transactions", "inventory_balances", "inventory_audit", "inventory_outbox", "inventory_sequences" })
+            foreach (var name in new[] { "inventory_transactions", "inventory_balances", "inventory_audit", "inventory_outbox", "inventory_sequences", "inventory_reservations", "inventory_sku_positions" })
             {
                 Collection(name).DeleteMany(new BsonDocument("TenantId", new BsonDocument("$in", tenants)));
             }

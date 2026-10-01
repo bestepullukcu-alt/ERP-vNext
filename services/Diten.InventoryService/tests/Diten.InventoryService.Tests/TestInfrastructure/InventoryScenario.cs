@@ -110,6 +110,70 @@ public sealed class InventoryScenario
         return body;
     }
 
+    /// <summary>A contract <c>ReservationRequest</c> for this scenario's SKU (quantity in base UoM).</summary>
+    public Dictionary<string, object?> Reservation(
+        string quantity, string? sourceDocumentId = null, string? sourceLineId = null, string sourceModule = "MOD-0172", string? expiresAt = null)
+    {
+        var body = new Dictionary<string, object?>
+        {
+            ["idempotencyKey"] = "rsv-" + Guid.NewGuid().ToString("N"),
+            ["itemId"] = Item.ToString(),
+            ["skuId"] = Sku.ToString(),
+            ["skuLevel"] = "Lsku",
+            ["quantity"] = quantity,
+            ["reservationType"] = "SALES_ORDER",
+            ["sourceModule"] = sourceModule,
+            ["priority"] = 10
+        };
+        if (sourceDocumentId is not null) body["sourceDocumentId"] = sourceDocumentId;
+        if (sourceLineId is not null) body["sourceLineId"] = sourceLineId;
+        if (expiresAt is not null) body["expiresAt"] = expiresAt;
+        return body;
+    }
+
+    public Task<HttpResponseMessage> ReserveAsync(Dictionary<string, object?> body, string? token = null, Action<HttpRequestMessage>? configure = null)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/inventory/reservations") { Content = JsonContent.Create(body) };
+        if (body.GetValueOrDefault("idempotencyKey") is string key) request.Headers.TryAddWithoutValidation("Idempotency-Key", key);
+        Authorize(request, token);
+        configure?.Invoke(request);
+        return _client.SendAsync(request);
+    }
+
+    public async Task<System.Text.Json.JsonElement> ReserveExpectingAsync(Dictionary<string, object?> body, int expectedStatus)
+    {
+        using var response = await ReserveAsync(body);
+        var json = await ReadAsync(response);
+        Xunit.Assert.True((int)response.StatusCode == expectedStatus, $"expected {expectedStatus}, got {(int)response.StatusCode}: {json}");
+        return json;
+    }
+
+    public Task<HttpResponseMessage> ReleaseAsync(string reservationId, string? ifMatch, string? token = null)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, $"/api/inventory/reservations/{reservationId}/release");
+        if (ifMatch is not null) request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
+        Authorize(request, token);
+        return _client.SendAsync(request);
+    }
+
+    /// <summary>Issue with a source reference (consumption of a matching reservation, pack ASSUMPTION-0173-15).</summary>
+    public Dictionary<string, object?> IssueFor(string quantity, string sourceModule, string sourceDocumentId, string? sourceLineId)
+    {
+        var body = Issue(quantity);
+        body["sourceModule"] = sourceModule;
+        body["sourceDocumentId"] = sourceDocumentId;
+        if (sourceLineId is not null) body["sourceLineId"] = sourceLineId;
+        return body;
+    }
+
+    public async Task<(decimal OnHand, decimal Reserved, decimal Available)> AvailabilityAsync()
+    {
+        var json = await ReadAsync(await GetAsync($"/api/inventory/availability?skuId={Sku}"));
+        static decimal D(System.Text.Json.JsonElement e, string name)
+            => decimal.Parse(e.GetProperty(name).GetString()!, System.Globalization.CultureInfo.InvariantCulture);
+        return (D(json, "onHand"), D(json, "reserved"), D(json, "available"));
+    }
+
     // ── HTTP ─────────────────────────────────────────────────────────────────────────────────────────────
 
     /// <summary>POST /movements. The Idempotency-Key header defaults to the body key (as a well-behaved caller sends it).</summary>

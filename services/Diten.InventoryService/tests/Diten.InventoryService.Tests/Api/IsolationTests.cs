@@ -35,8 +35,11 @@ public sealed class IsolationTests : IClassFixture<InventoryApiFactory>
         await a.PostExpectingAsync(a.Receipt("100"), 201);
         var b = new InventoryScenario(_factory);
 
-        using var availability = await b.GetAsync($"/api/inventory/availability?itemId={a.Item}");
-        Assert.Equal(404, (int)availability.StatusCode);
+        // S2 / FU-S1-01 (pack ASSUMPTION-0173-18): an item PRODUCT-MASTER knows but that has no ledger row in this
+        // tenant answers 200 with zeros (was 404 in S1). Isolation still holds: tenant B sees zeros, never A's 100.
+        var availability = await b.ReadAsync(await b.GetAsync($"/api/inventory/availability?itemId={a.Item}"));
+        Assert.Equal("0.000", availability.GetProperty("onHand").GetString());
+        Assert.Equal("0.000", availability.GetProperty("available").GetString());
 
         var balance = await b.ReadAsync(await b.GetAsync($"/api/inventory/balance?itemId={a.Item}"));
         Assert.Empty(balance.GetProperty("rows").EnumerateArray());
@@ -63,8 +66,9 @@ public sealed class IsolationTests : IClassFixture<InventoryApiFactory>
 
         var balance = await a.ReadAsync(await a.GetAsync($"/api/inventory/balance?itemId={a.Item}", otherLe));
         Assert.Empty(balance.GetProperty("rows").EnumerateArray());
-        using var availability = await a.GetAsync($"/api/inventory/availability?itemId={a.Item}", otherLe);
-        Assert.Equal(404, (int)availability.StatusCode);
+        // FU-S1-01: 200 with zeros for the other legal entity (was 404 in S1) — never the first LE's 100.
+        var availability = await a.ReadAsync(await a.GetAsync($"/api/inventory/availability?itemId={a.Item}", otherLe));
+        Assert.Equal("0.000", availability.GetProperty("onHand").GetString());
     }
 
     [Fact]
