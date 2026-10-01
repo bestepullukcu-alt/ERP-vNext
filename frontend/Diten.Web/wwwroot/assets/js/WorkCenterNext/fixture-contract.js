@@ -273,6 +273,20 @@
                     push(errors, fixture, 'ACTION_NOTE_WITH_REQUIRED_REASON', `${path}.acceptsNote`);
                 }
             }
+            // BL-491 — OPTIONAL, the same way: the server says which action names a person, and whom its window must
+            // not offer. Validated only when present. The excluded ids mean nothing without the flag beside them.
+            if (action.requiresTargetPerson !== undefined && action.requiresTargetPerson !== null
+                && typeof action.requiresTargetPerson !== 'boolean') {
+                push(errors, fixture, 'ACTION_TARGET_PERSON_INVALID', `${path}.requiresTargetPerson`);
+            }
+            if (action.excludedTargetPrincipalIds !== undefined && action.excludedTargetPrincipalIds !== null) {
+                const ids = action.excludedTargetPrincipalIds;
+                if (!Array.isArray(ids) || ids.some((id) => typeof id !== 'string' || !id)) {
+                    push(errors, fixture, 'ACTION_EXCLUDED_TARGETS_INVALID', `${path}.excludedTargetPrincipalIds`);
+                } else if (action.requiresTargetPerson !== true) {
+                    push(errors, fixture, 'ACTION_EXCLUDED_TARGETS_WITHOUT_TARGET', `${path}.excludedTargetPrincipalIds`);
+                }
+            }
         });
         if (enabledInlineActions(fixture).length && (!fixture.concurrency || !fixture.concurrency.kind || !fixture.concurrency.token)) {
             push(errors, fixture, 'CONCURRENCY_REQUIRED_FOR_ENABLED_INLINE_ACTION', 'concurrency');

@@ -539,9 +539,6 @@
   <data name="ActResume" xml:space="preserve">
     <value>Resume</value>
   </data>
-  <data name="ActLogTime" xml:space="preserve">
-    <value>Log Time</value>
-  </data>
   <data name="StepBarLabel" xml:space="preserve">
     <value>Lifecycle</value>
   </data>
@@ -587,20 +584,8 @@
   <data name="PlanConfirm" xml:space="preserve">
     <value>Set date</value>
   </data>
-  <data name="LogTimeLabel" xml:space="preserve">
-    <value>Minutes</value>
-  </data>
-  <data name="LogTimePlaceholder" xml:space="preserve">
-    <value>e.g. 30</value>
-  </data>
-  <data name="LogTimeConfirm" xml:space="preserve">
-    <value>Log</value>
-  </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · planned for {1} (mock)</value>
-  </data>
-  <data name="ToastTimeLogged" xml:space="preserve">
-    <value>{0} logged (mock)</value>
   </data>
   <data name="ToastSentToReview" xml:space="preserve">
     <value>{0} · sent for review (mock)</value>
@@ -903,9 +888,6 @@
   </data>
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>Which module?</value>
-  </data>
-  <data name="LogTimeSubtext" xml:space="preserve">
-    <value>Adds to the time already logged on this task; it does not start or stop the timer.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>The calendar connection is not in place yet: this record shows only on this screen and is lost when you close the page. The due date is unchanged.</value>
@@ -2522,5 +2504,14 @@
   </data>
   <data name="ApprovalStepBadgeTitle" xml:space="preserve">
     <value>Approval step</value>
+  </data>
+  <data name="DelegateTargetLabel" xml:space="preserve">
+    <value>Delegate to</value>
+  </data>
+  <data name="DelegateTargetRequired" xml:space="preserve">
+    <value>Choose who this approval is being delegated to.</value>
+  </data>
+  <data name="DelegateNoEligiblePeople" xml:space="preserve">
+    <value>There is nobody this approval can be delegated to.</value>
   </data>
 </root>

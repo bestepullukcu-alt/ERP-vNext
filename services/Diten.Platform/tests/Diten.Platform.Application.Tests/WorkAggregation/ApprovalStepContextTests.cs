@@ -388,19 +388,75 @@ public sealed class ApprovalStepContextTests
         Assert.True(approve.AcceptsNote);
     }
 
+    // ── BL-491 — a delegation names its person ────────────────────────────────────────────────────────────
+
     /// <summary>
-    /// CT acceptance. From the Task Center a delegation cannot name its person yet, so the dispatcher refuses every
-    /// one of them. A note box on that confirm would invite text that can never be sent — the flag arrives with the
-    /// person picker, not before it.
+    /// The note flag and the person flag arrive together: a note box on a window that could not name anybody
+    /// invited text that could never be sent.
     /// </summary>
     [Fact]
-    public void Delegate_carries_no_note_flag_until_it_can_name_its_person()
+    public void Delegate_asks_for_a_person_and_accepts_an_optional_note()
     {
         var instance = Instance(null);
 
         var dto = _projection.Project(Approval(instance), instance, Actor(), "workflow", "1.0")!;
 
-        Assert.Null(dto.Actions.Single(a => a.Code == "delegate").AcceptsNote);
+        var delegation = dto.Actions.Single(a => a.Code == "delegate");
+        Assert.True(delegation.RequiresTargetPerson);
+        Assert.True(delegation.AcceptsNote);
+        Assert.False(delegation.RequiresReason);
+    }
+
+    [Fact]
+    public void Only_delegate_asks_for_a_person()
+    {
+        var instance = Instance(null);
+
+        var dto = _projection.Project(Approval(instance), instance, Actor(), "workflow", "1.0")!;
+
+        Assert.Equal(["delegate"], dto.Actions.Where(a => a.RequiresTargetPerson is not null).Select(a => a.Code));
+        Assert.Equal(["delegate"], dto.Actions.Where(a => a.ExcludedTargetPrincipalIds is not null).Select(a => a.Code));
+    }
+
+    [Fact]
+    public void Delegate_excludes_the_delegator_and_the_person_who_started_the_workflow()
+    {
+        var starter = Guid.NewGuid();
+        var instance = Instance(null);
+        instance.StartedByUserId = starter;
+
+        var dto = _projection.Project(Approval(instance), instance, Actor(), "workflow", "1.0")!;
+
+        Assert.Equal(
+            [Me.ToString(), starter.ToString()],
+            dto.Actions.Single(a => a.Code == "delegate").ExcludedTargetPrincipalIds);
+    }
+
+    [Theory]
+    [InlineData(false)] // the instance recorded no starter
+    [InlineData(true)]  // the delegator IS the starter — named once
+    public void Delegate_excludes_only_the_delegator_when_there_is_no_other_starter(bool startedByMe)
+    {
+        var instance = Instance(null);
+        instance.StartedByUserId = startedByMe ? Me : null;
+
+        var dto = _projection.Project(Approval(instance), instance, Actor(), "workflow", "1.0")!;
+
+        Assert.Equal([Me.ToString()], dto.Actions.Single(a => a.Code == "delegate").ExcludedTargetPrincipalIds);
+    }
+
+    [Fact]
+    public void A_delegate_the_reader_may_not_use_asks_for_nobody()
+    {
+        var instance = Instance(null);
+        var reader = new WorkItemActor(Me, IsPlatformActor: false, new HashSet<string>());
+
+        var delegation = _projection.Project(Approval(instance), instance, reader, "workflow", "1.0")!
+            .Actions.Single(a => a.Code == "delegate");
+
+        Assert.False(delegation.Enabled);
+        Assert.Null(delegation.RequiresTargetPerson);
+        Assert.Null(delegation.ExcludedTargetPrincipalIds);
     }
 
     [Fact]
@@ -439,6 +495,38 @@ public sealed class ApprovalStepContextTests
             WorkItemContract.ActionSourceProvider, null, null, false, false, false, false, "normal");
 
         Assert.DoesNotContain("acceptsNote", JsonSerializer.Serialize(action, WebOptions), StringComparison.Ordinal);
+    }
+
+    // BL-491 — without the person flag an action is, byte for byte, what it was before the flag existed.
+    [Fact]
+    public void An_action_that_names_nobody_serializes_exactly_as_before()
+    {
+        var action = new WorkItemActionDto("start", WorkItemLabelDto.Resource("K"), "start", true,
+            WorkItemContract.ActionSourceProvider, null, null, false, false, false, false, "normal");
+
+        const string before =
+            "{'code':'start','label':{'kind':'resource','key':'K'},'semanticType':'start','enabled':true,"
+            + "'source':'provider','disabledReasonCode':null,'disabledReason':null,'requiresConfirmation':false,"
+            + "'requiresReason':false,'requiresEvidence':false,'supportsBulk':false,'riskLevel':'normal',"
+            + "'targetStatus':null}";
+
+        Assert.Equal(before.Replace('\'', '"'), JsonSerializer.Serialize(action, WebOptions));
+    }
+
+    [Fact]
+    public void The_person_flag_serializes_in_the_shape_the_executable_contract_reads()
+    {
+        var starter = Guid.NewGuid();
+        var instance = Instance(null);
+        instance.StartedByUserId = starter;
+
+        var delegation = Json(_projection.Project(Approval(instance), instance, Actor(), "workflow", "1.0")!)
+            .GetProperty("actions").EnumerateArray().Single(a => a.GetProperty("code").GetString() == "delegate");
+
+        Assert.Equal(JsonValueKind.True, delegation.GetProperty("requiresTargetPerson").ValueKind);
+        Assert.Equal(
+            [Me.ToString(), starter.ToString()],
+            delegation.GetProperty("excludedTargetPrincipalIds").EnumerateArray().Select(e => e.GetString()));
     }
 
     [Fact]
