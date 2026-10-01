@@ -228,8 +228,10 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             BuildDecision("requestInfo", ActionRequestInfoKey, WorkflowPermissions.TasksRequestInfo, actor,
                 requiresConfirmation: false, requiresReason: true, supportsBulk: false, riskLevel: "normal"),
             BuildDecision("delegate", ActionDelegateKey, WorkflowPermissions.TasksDelegate, actor,
-                requiresConfirmation: true, requiresReason: false, supportsBulk: false, riskLevel: "normal",
-                acceptsNote: true)
+                // No note flag: from the Task Center a delegation cannot name its person yet, so it is always refused
+                // (the dispatcher requires a target). A note box there would invite text that can never be sent; the
+                // person picker and the note arrive together (follow-up work package).
+                requiresConfirmation: true, requiresReason: false, supportsBulk: false, riskLevel: "normal")
         ];
     }
 

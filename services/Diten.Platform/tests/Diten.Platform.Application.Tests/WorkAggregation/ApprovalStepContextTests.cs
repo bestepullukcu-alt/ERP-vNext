@@ -211,6 +211,121 @@ public sealed class ApprovalStepContextTests
         Assert.Null(item.CandidatePositions);
     }
 
+    /// <summary>
+    /// A delegation hands the task to ONE named person and puts it back to WaitingApproval — an escalated task
+    /// included. The status then says nothing; the task's current assignment snapshot does. Naming the step's
+    /// positions there would tell the delegate the decision waits on a group it no longer waits on.
+    /// </summary>
+    [Theory]
+    [InlineData("delegate_request")]
+    [InlineData("escalation_rules")]
+    public async Task A_task_that_left_its_steps_candidates_keeps_its_step_name_and_names_no_positions(string movedBy)
+    {
+        var finance = Position(Tenant, "Finans Müdürü");
+        var version = Version(Step("step-1", "Finans Onayı", $"position:{finance.Id}"));
+        var instance = Instance(version.Id);
+        var snapshot = Snapshot(instance, movedBy);
+        var task = Approval(instance);
+        task.AssignmentSnapshotId = snapshot.Id;
+
+        var item = Assert.Single(await ProviderWith(version, [finance], new SnapshotStore(snapshot), task)
+            .GetWorkItemsAsync(Actor()));
+
+        Assert.Equal("Finans Onayı", item.StepName!.Text);
+        Assert.Null(item.CandidatePositions);
+    }
+
+    [Theory]
+    [InlineData("runtime_candidates")]
+    [InlineData("runtime_next_step_candidates")]
+    public async Task A_task_still_with_its_steps_own_candidates_names_the_positions(string openedBy)
+    {
+        var finance = Position(Tenant, "Finans Müdürü");
+        var version = Version(Step("step-1", "Finans Onayı", $"position:{finance.Id}"));
+        var instance = Instance(version.Id);
+        var snapshot = Snapshot(instance, openedBy);
+        var task = Approval(instance);
+        task.AssignmentSnapshotId = snapshot.Id;
+
+        var item = Assert.Single(await ProviderWith(version, [finance], new SnapshotStore(snapshot), task)
+            .GetWorkItemsAsync(Actor()));
+
+        Assert.Equal(["Finans Müdürü"], item.CandidatePositions!.Select(p => p.Text));
+    }
+
+    /// <summary>Fail-closed: a snapshot that cannot be read, or one whose source nobody classified, names nobody.</summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("a_source_nobody_classified")]
+    public async Task An_unreadable_or_unclassified_snapshot_names_no_positions(string? source)
+    {
+        var finance = Position(Tenant, "Finans Müdürü");
+        var version = Version(Step("step-1", "Finans Onayı", $"position:{finance.Id}"));
+        var instance = Instance(version.Id);
+        var task = Approval(instance);
+        var snapshot = source is null ? null : Snapshot(instance, source);
+        task.AssignmentSnapshotId = snapshot?.Id ?? Guid.NewGuid();
+
+        var store = snapshot is null ? new SnapshotStore() : new SnapshotStore(snapshot);
+        var item = Assert.Single(await ProviderWith(version, [finance], store, task).GetWorkItemsAsync(Actor()));
+
+        Assert.Equal("Finans Onayı", item.StepName!.Text);
+        Assert.Null(item.CandidatePositions);
+    }
+
+    /// <summary>
+    /// The rule above is only as good as its list. Every resolver source MOD-0023's own handlers write is read from
+    /// the PRODUCTION files and must be classified — a new one that ships unclassified would silently name nobody
+    /// (or, worse, be copied into the wrong set by guesswork).
+    /// </summary>
+    [Fact]
+    public void Every_resolver_source_MOD_0023_writes_is_classified_as_step_own_or_moved_on()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "AGENTS.md")))
+        {
+            root = root.Parent;
+        }
+
+        Assert.NotNull(root);
+        var workflow = Path.Combine(root!.FullName,
+            "services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow");
+        var written = Directory.EnumerateFiles(workflow, "*.cs", SearchOption.AllDirectories)
+            .SelectMany(file => System.Text.RegularExpressions.Regex.Matches(
+                File.ReadAllText(file), "ResolverSource\\s*=\\s*\"(?<source>[a-z_]+)\"").Select(m => m.Groups["source"].Value))
+            .Distinct()
+            .OrderBy(x => x, StringComparer.Ordinal)
+            .ToList();
+
+        Assert.True(written.Count >= 4, "the scan found fewer resolver sources than MOD-0023 is known to write");
+        var classified = WorkflowApprovalWorkItemProvider.StepOwnResolverSources
+            .Concat(WorkflowApprovalWorkItemProvider.MovedOnResolverSources).ToHashSet();
+        Assert.Empty(written.Where(source => !classified.Contains(source)));
+        Assert.Empty(WorkflowApprovalWorkItemProvider.StepOwnResolverSources
+            .Intersect(WorkflowApprovalWorkItemProvider.MovedOnResolverSources));
+    }
+
+    /// <summary>The names are an extra on top of the step name: a position read that fails costs the names only.</summary>
+    [Fact]
+    public async Task A_failing_position_read_costs_the_names_not_the_step_name()
+    {
+        var version = Version(Step("step-1", "Finans Onayı", $"position:{Guid.NewGuid()}"));
+        var instance = Instance(version.Id);
+        var provider = new WorkflowApprovalWorkItemProvider(
+            new ApprovalStore(Approval(instance)),
+            new NoSnapshots(),
+            new InstanceStore(instance),
+            _projection,
+            versions: new CountingVersions(version),
+            positions: new ThrowingPositions());
+
+        var item = Assert.Single(await provider.GetWorkItemsAsync(Actor()));
+
+        Assert.Equal("Finans Onayı", item.StepName!.Text);
+        Assert.Null(item.CandidatePositions);
+        Assert.NotEmpty(item.Actions);
+    }
+
     [Fact]
     public async Task A_page_of_approvals_reads_positions_exactly_once()
     {
@@ -271,7 +386,21 @@ public sealed class ApprovalStepContextTests
         var approve = dto.Actions.Single(a => a.Code == "approve");
         Assert.False(approve.RequiresReason);
         Assert.True(approve.AcceptsNote);
-        Assert.True(dto.Actions.Single(a => a.Code == "delegate").AcceptsNote);
+    }
+
+    /// <summary>
+    /// CT acceptance. From the Task Center a delegation cannot name its person yet, so the dispatcher refuses every
+    /// one of them. A note box on that confirm would invite text that can never be sent — the flag arrives with the
+    /// person picker, not before it.
+    /// </summary>
+    [Fact]
+    public void Delegate_carries_no_note_flag_until_it_can_name_its_person()
+    {
+        var instance = Instance(null);
+
+        var dto = _projection.Project(Approval(instance), instance, Actor(), "workflow", "1.0")!;
+
+        Assert.Null(dto.Actions.Single(a => a.Code == "delegate").AcceptsNote);
     }
 
     [Fact]
@@ -455,6 +584,51 @@ public sealed class ApprovalStepContextTests
         public Task<bool> ExistsVersionNumberAsync(Guid templateId, int versionNumber, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<IReadOnlyList<WorkflowTemplateVersion>> ListByTemplateIdAsync(Guid templateId, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<WorkflowTemplateVersionUpdateResult> UpdateAsync(WorkflowTemplateVersion version, int expectedVersion, CancellationToken ct = default) => throw new NotSupportedException();
+    }
+
+    private static RuntimeAssignmentSnapshot Snapshot(WorkflowInstance instance, string resolverSource) => new()
+    {
+        TenantId = Tenant,
+        WorkflowInstanceId = instance.Id,
+        ResolverSource = resolverSource,
+        ResolvedPrincipalId = Me.ToString(),
+        CandidatePrincipalIds = [Me.ToString()],
+        TieBreakExplanation = "single_candidate"
+    };
+
+    private WorkflowApprovalWorkItemProvider ProviderWith(
+        WorkflowTemplateVersion version, Position[] positions, IRuntimeAssignmentSnapshotRepository snapshots,
+        ApprovalTask approval)
+        => new(
+            new ApprovalStore(approval),
+            snapshots,
+            new InstanceStore(InstancesById[approval.WorkflowInstanceId]),
+            _projection,
+            versions: new CountingVersions(version),
+            positions: new CountingPositions(positions));
+
+    private sealed class SnapshotStore(params RuntimeAssignmentSnapshot[] seed) : IRuntimeAssignmentSnapshotRepository
+    {
+        public Task<RuntimeAssignmentSnapshot?> GetByIdAsync(Guid id, CancellationToken ct = default)
+            => Task.FromResult(seed.FirstOrDefault(s => s.Id == id));
+
+        public Task<RuntimeAssignmentSnapshot> CreateAsync(RuntimeAssignmentSnapshot snapshot, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<RuntimeAssignmentSnapshot>> ListByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default) => throw new NotSupportedException();
+    }
+
+    private sealed class ThrowingPositions : IPositionRepository
+    {
+        public Task<IReadOnlyList<Position>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
+            => throw new InvalidOperationException("position store unavailable");
+
+        public Task<IReadOnlyList<Position>> GetAllAsync(CancellationToken ct = default)
+            => throw new InvalidOperationException("position store unavailable");
+
+        public Task<Position?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<Position> CreateAsync(Position position, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task UpdateAsync(Position position, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
     }
 
     private sealed class ThrowingVersions : CountingVersions

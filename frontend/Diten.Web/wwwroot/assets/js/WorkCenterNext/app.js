@@ -8187,7 +8187,7 @@
              */
             if (leftTheBoardOnDetail(item)) {
                 rememberFlashToast(tf('ToastActionApplied', label, item.title));
-                global.location.assign(listReturnUrl());
+                global.location.assign(listUrlAfterDecision());
                 return { outcome: 'done' };
             }
             state.settlingDecisionId = null;
@@ -10752,25 +10752,52 @@
      * and only the sentence is lost.
      */
     const FLASH_TOAST_KEY = 'wcn:flash-toast';
+    // A success belongs to the navigation that follows it. One that was never shown (the tab went elsewhere, the
+    // navigation was aborted) must not surface minutes later on an unrelated visit to the list.
+    const FLASH_TOAST_TTL_MS = 20000;
 
     const rememberFlashToast = (message) => {
-        try { global.sessionStorage?.setItem(FLASH_TOAST_KEY, String(message || '')); } catch (error) { /* see above */ }
+        try {
+            global.sessionStorage?.setItem(FLASH_TOAST_KEY, JSON.stringify({ message: String(message || ''), at: Date.now() }));
+        } catch (error) { /* see above */ }
     };
 
     const showFlashToast = () => {
         let message = '';
         try {
-            message = global.sessionStorage?.getItem(FLASH_TOAST_KEY) || '';
+            const stored = global.sessionStorage?.getItem(FLASH_TOAST_KEY) || '';
             global.sessionStorage?.removeItem(FLASH_TOAST_KEY);
-        } catch (error) { /* storage disabled — nothing to show */ }
+            const parsed = stored ? JSON.parse(stored) : null;
+            const age = parsed ? Date.now() - Number(parsed.at) : NaN;
+            if (parsed && typeof parsed.message === 'string' && age >= 0 && age <= FLASH_TOAST_TTL_MS) {
+                message = parsed.message;
+            }
+        } catch (error) { /* storage disabled, or not ours — nothing to show */ }
         if (message) { toast(message); }
     };
 
-    /** The detail page's own item is gone from a re-read that ANSWERED (not failed, not refused by the contract). */
+    /*
+     * Where a decided item's reader goes. The remembered URL is the last LIST the reader looked at — except when a
+     * detail page was opened from another detail page (a subtask's "open full detail"), where it is a detail URL:
+     * landing there would show the success on nobody's page and leave it for a later visit. Then the plain list.
+     */
+    const listUrlAfterDecision = () => {
+        const url = listReturnUrl();
+        return url.startsWith('/WorkCenterNext/Details') ? '/WorkCenterNext' : url;
+    };
+
+    /**
+     * The detail page's own item is gone from a re-read that ANSWERED IN FULL. Not when the read failed, not when the
+     * contract refused the item, not when the board came back PARTIAL (the item's own provider may be the one that
+     * did not answer), and not when the single-item read failed for any reason other than a 404 — in every one of
+     * those the item may still exist, and a "success, back to the list" would be a claim nobody checked.
+     */
     const leftTheBoardOnDetail = (item) => {
         const root = document.getElementById('wcnApp');
         if (!root || root.dataset.wcnPage !== 'detail' || !item || root.dataset.wcnItemId !== item.id) { return false; }
         if (state.loadState !== 'ready' || itemById(item.id)) { return false; }
+        if (Array.isArray(state.unavailableSources) && state.unavailableSources.length) { return false; }
+        if (lastDetailReadHttpStatus !== null && lastDetailReadHttpStatus !== 404) { return false; }
         return !(Array.isArray(state.contractRejectedErrors)
             && state.contractRejectedErrors.some((error) => error.fixtureId === item.id));
     };
@@ -11689,11 +11716,17 @@
      * item for this reader. The server answers a missing and an unreadable task with the same 404, so both leave
      * the page's not-found answer exactly as it was.
      */
+    // The HTTP answer of the last single-item read, or null when none was needed (the list held the item).
+    let lastDetailReadHttpStatus = null;
+
     const readDetailItemMissingFrom = async (api, result) => {
+        lastDetailReadHttpStatus = null;
         const id = requestedDetailId();
         if (!id || result.items.some((item) => item.id === id)) { return null; }
         if (Array.isArray(result.errors) && result.errors.some((error) => error.fixtureId === id)) { return null; }
         const single = await api.fetchWorkItem(id);
+        // W-4 reads this: only a 404 says the item is GONE. A network failure or a 5xx says nothing about the item.
+        lastDetailReadHttpStatus = single.status === api.STATUS.OK ? 200 : single.httpStatus;
         return single.status === api.STATUS.OK ? single : null;
     };
 

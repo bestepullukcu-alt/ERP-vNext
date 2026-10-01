@@ -269,7 +269,9 @@ describe("W-2 — an optional note on approve, offered only when the server says
     document.getElementById("wcnReasonText").remove();
   });
 
-  it("gives delegate the same optional note, and adds no person field", async () => {
+  // The box follows the server's FLAG, whatever the action is called. (The server does not flag delegate today:
+  // from the Task Center it cannot name its person yet — see Delegate_carries_no_note_flag_until_it_can_name_its_person.)
+  it("gives any flagged action the same optional note, and adds no person field", async () => {
     const item = approval({ actions: [action("delegate", { acceptsNote: true })] });
     await bootSurface({ items: [item], wcn: translator });
     stubDispatch();
@@ -328,7 +330,17 @@ describe("W-4 — after a decision on the detail page", () => {
    * success sentence is handed to the next page through sessionStorage, and this page neither re-renders into
    * "not found" nor toasts.
    */
-  const decideOnDetail = async ({ stillThere }) => {
+  const GONE = { status: "error", httpStatus: 404, item: null, errors: [] };
+  const flashMessage = () => {
+    const stored = global.sessionStorage.getItem(FLASH);
+    return stored === null ? null : JSON.parse(stored).message;
+  };
+  const storeFlash = (message, ageMs = 0) =>
+    global.sessionStorage.setItem(FLASH, JSON.stringify({ message, at: Date.now() - ageMs }));
+
+  // `single` is what the single-item read answers when the list no longer holds the item; `unavailableSources` is
+  // the board's own statement that one of its providers did not answer.
+  const decideOnDetail = async ({ stillThere, single = GONE, unavailableSources = [] }) => {
     const item = approval();
     await bootSurface({ rootAttrs: DETAIL, items: [item], wcn: translator });
     global.sessionStorage.setItem("wcn:list-return-url", "/WorkCenterNext?tab=inbox&q=iddia");
@@ -336,7 +348,8 @@ describe("W-4 — after a decision on the detail page", () => {
     // The re-read after the write: the item is gone (a decided approval) or still projected (a MOD-0024 task).
     const mapped = global.WorkCenterNextApi.mapPayload(stillThere ? [item] : []);
     global.WorkCenterNextApi.fetchWorkItems = () => Promise.resolve(
-      { status: "ok", httpStatus: 200, items: mapped.items, errors: [], unavailableSources: [] });
+      { status: "ok", httpStatus: 200, items: mapped.items, errors: [], unavailableSources });
+    global.WorkCenterNextApi.fetchWorkItem = () => Promise.resolve(single);
     await press("approve");
     confirms[0].onConfirm("");
     await settle();
@@ -347,7 +360,7 @@ describe("W-4 — after a decision on the detail page", () => {
     await decideOnDetail({ stillThere: false });
 
     expect(dispatched).toHaveLength(1);
-    expect(global.sessionStorage.getItem(FLASH)).toBe("Onayla uygulandı: İddia CLM-42 ödemesi");
+    expect(flashMessage()).toBe("Onayla uygulandı: İddia CLM-42 ödemesi");
     expect(app().textContent).not.toContain("DetailItemNotFound");
     expect(toasts, "the success belongs to the list page, not to the page being left").toHaveLength(0);
   });
@@ -375,6 +388,29 @@ describe("W-4 — after a decision on the detail page", () => {
     expect(app().textContent, "a failed read is an error state, not a missing item").not.toContain("DetailItemNotFound");
   });
 
+  /*
+   * CT acceptance (2026-10-01, from the independent review). "The item is gone" is only true when somebody CHECKED.
+   * A board that came back partial may be missing the item's own provider, and a single-item read that failed for
+   * any reason other than a 404 says nothing about the item — in both the reader stays, and no success is handed on.
+   */
+  it("does not redirect when the board came back PARTIAL — the item's own provider may be the missing one", async () => {
+    await decideOnDetail({ stillThere: false, unavailableSources: ["workflow"] });
+
+    expect(dispatched).toHaveLength(1);
+    expect(global.sessionStorage.getItem(FLASH)).toBeNull();
+  });
+
+  it.each([
+    ["the network failed", { status: "unavailable", httpStatus: 0, item: null, errors: [] }],
+    ["the server answered 503", { status: "unavailable", httpStatus: 503, item: null, errors: [] }],
+    ["the server answered 500", { status: "error", httpStatus: 500, item: null, errors: [] }]
+  ])("does not redirect when the single-item read did not answer 404 (%s)", async (_label, single) => {
+    await decideOnDetail({ stillThere: false, single });
+
+    expect(dispatched).toHaveLength(1);
+    expect(global.sessionStorage.getItem(FLASH)).toBeNull();
+  });
+
   it("a refused decision does not redirect", async () => {
     await bootSurface({ rootAttrs: DETAIL, items: [approval()], wcn: translator });
     stubDispatch({ ok: false, status: 409, reasonCode: "WORKFLOW_ASSIGNMENT_MISMATCH", data: null, errors: [] });
@@ -393,7 +429,7 @@ describe("W-4 — after a decision on the detail page", () => {
   });
 
   it("the list shows the handed-over success once, then forgets it", async () => {
-    global.sessionStorage.setItem(FLASH, "Onayla uygulandı: İddia CLM-42 ödemesi");
+    storeFlash("Onayla uygulandı: İddia CLM-42 ödemesi");
     await bootSurface({ items: [], wcn: translator });
 
     expect(toasts.map((entry) => entry.message)).toEqual(["Onayla uygulandı: İddia CLM-42 ödemesi"]);
@@ -401,11 +437,44 @@ describe("W-4 — after a decision on the detail page", () => {
   });
 
   it("the detail page does not consume a success meant for the list", async () => {
-    global.sessionStorage.setItem(FLASH, "bekleyen");
+    storeFlash("bekleyen");
     await bootSurface({ rootAttrs: DETAIL, items: [approval()], wcn: translator });
 
     expect(toasts).toHaveLength(0);
-    expect(global.sessionStorage.getItem(FLASH)).toBe("bekleyen");
+    expect(flashMessage()).toBe("bekleyen");
+  });
+
+  // CT acceptance — a success that was never shown must not surface later on an unrelated visit to the list.
+  it("a success older than its window is dropped unseen", async () => {
+    storeFlash("Onayla uygulandı: eski", 21000);
+    await bootSurface({ items: [], wcn: translator });
+
+    expect(toasts).toHaveLength(0);
+    expect(global.sessionStorage.getItem(FLASH)).toBeNull();
+  });
+
+  it.each([["not json"], ['{"message":42,"at":0}'], ['"just a string"']])(
+    "a stored value that is not a success of ours is dropped unseen (%s)", async (stored) => {
+      global.sessionStorage.setItem(FLASH, stored);
+      await bootSurface({ items: [], wcn: translator });
+
+      expect(toasts).toHaveLength(0);
+      expect(global.sessionStorage.getItem(FLASH)).toBeNull();
+    });
+
+  /*
+   * jsdom cannot observe `location.assign`, so the destination is pinned at the source: the redirect asks
+   * `listUrlAfterDecision`, and that function never returns a detail address (a detail page opened from another
+   * detail page remembers a DETAIL url as "the list").
+   */
+  it("goes to the list, never to another detail page", () => {
+    const APP_SOURCE = require("fs").readFileSync(
+      require("path").join(__dirname, "../wwwroot/assets/js/WorkCenterNext/app.js"), "utf8");
+    expect(APP_SOURCE).toContain("global.location.assign(listUrlAfterDecision());");
+    const fn = APP_SOURCE.slice(
+      APP_SOURCE.indexOf("const listUrlAfterDecision = () => {"),
+      APP_SOURCE.indexOf("};", APP_SOURCE.indexOf("const listUrlAfterDecision = () => {")));
+    expect(fn).toContain("url.startsWith('/WorkCenterNext/Details') ? '/WorkCenterNext' : url");
   });
 });
 

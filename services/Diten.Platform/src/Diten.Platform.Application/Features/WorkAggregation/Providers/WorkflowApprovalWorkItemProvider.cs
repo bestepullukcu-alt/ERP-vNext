@@ -85,11 +85,13 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
         var all = await _tasks.GetAllForTenantAsync(ct);
 
         var instanceCache = new Dictionary<Guid, WorkflowInstance?>();
+        // A snapshot read for the candidate check is not read again for the step context below.
+        var snapshotCache = new Dictionary<Guid, RuntimeAssignmentSnapshot?>();
         var candidates = new List<ApprovalTask>();
 
         foreach (var task in all.Where(t => ActionableStatuses.Contains(t.Status)))
         {
-            if (!await IsCandidateAsync(task, userId, ct))
+            if (!await IsCandidateAsync(task, userId, snapshotCache, ct))
             {
                 continue;
             }
@@ -105,7 +107,7 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
         var contexts = await ResolveSourceContextsAsync(
             instanceCache.Values.OfType<WorkflowInstance>().ToList(), actor, ct);
 
-        var steps = await ResolveStepContextsAsync(candidates, instanceCache, ct);
+        var steps = await ResolveStepContextsAsync(candidates, instanceCache, snapshotCache, ct);
 
         var items = new List<WorkItemProjectionDto>();
         foreach (var task in candidates)
@@ -191,6 +193,7 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
     private async Task<IReadOnlyDictionary<Guid, ApprovalStepContext>> ResolveStepContextsAsync(
         IReadOnlyList<ApprovalTask> tasks,
         IReadOnlyDictionary<Guid, WorkflowInstance?> instances,
+        Dictionary<Guid, RuntimeAssignmentSnapshot?> snapshots,
         CancellationToken ct)
     {
         var result = new Dictionary<Guid, ApprovalStepContext>();
@@ -223,18 +226,44 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
                 }
             }
 
-            // Whose candidate positions are worth naming: the step names NO person directly, and the task still sits
-            // with the step's own candidates (an escalated task has moved on to the escalation principals).
-            var positionIdsByTask = tasks
-                .Where(task => task.Status != ApprovalTaskStatus.Escalated && stepByTask.ContainsKey(task.Id))
-                .Select(task => (task.Id, Ids: CandidatePositionIds(stepByTask[task.Id])))
-                .Where(x => x.Ids.Count > 0)
-                .ToDictionary(x => x.Id, x => x.Ids);
+            /*
+             * Whose candidate positions are worth naming: the step names NO person directly, AND the task still sits
+             * with the step's own candidates. That second half is read from the task's CURRENT assignment snapshot,
+             * not from its status: a delegation hands the task to one named person and puts it back to
+             * WaitingApproval (an escalated task included), so the status alone would go on naming the step's
+             * positions for a decision that now waits on somebody else.
+             */
+            var positionIdsByTask = new Dictionary<Guid, IReadOnlyList<Guid>>();
+            foreach (var task in tasks)
+            {
+                if (!stepByTask.TryGetValue(task.Id, out var ownStep))
+                {
+                    continue;
+                }
 
-            var positionNames = await ReadPositionNamesAsync(
-                positionIdsByTask.Values.SelectMany(ids => ids).ToHashSet(),
-                tasks.Select(task => task.TenantId).ToHashSet(),
-                ct);
+                var ids = CandidatePositionIds(ownStep);
+                if (ids.Count > 0 && await StillWithTheStepsOwnCandidatesAsync(task, snapshots, ct))
+                {
+                    positionIdsByTask[task.Id] = ids;
+                }
+            }
+
+            // The names are an extra on top of the step name: a position read that fails costs the names only.
+            IReadOnlyDictionary<Guid, string> positionNames;
+            try
+            {
+                positionNames = await ReadPositionNamesAsync(
+                    positionIdsByTask.Values.SelectMany(ids => ids).ToHashSet(),
+                    tasks.Select(task => task.TenantId).ToHashSet(),
+                    ct);
+            }
+            catch (Exception ex) when (!ct.IsCancellationRequested)
+            {
+                _logger.LogWarning(ex,
+                    "Candidate position names could not be read; {Count} approval(s) keep their step name and carry "
+                    + "no candidate positions.", positionIdsByTask.Count);
+                positionNames = new Dictionary<Guid, string>();
+            }
 
             foreach (var task in tasks)
             {
@@ -266,6 +295,49 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
                 + "no candidate positions.", tasks.Count);
             return new Dictionary<Guid, ApprovalStepContext>();
         }
+    }
+
+    /// <summary>
+    /// The assignment snapshots MOD-0023 writes when a step OPENS — the task is with the step's own candidates.
+    /// </summary>
+    internal static readonly IReadOnlySet<string> StepOwnResolverSources =
+        new HashSet<string>(StringComparer.Ordinal) { "runtime_candidates", "runtime_next_step_candidates" };
+
+    /// <summary>
+    /// The snapshots MOD-0023 writes when a task LEAVES its step's candidates: handed to one person (delegation) or
+    /// to the escalation principals. Every resolver source MOD-0023 writes is in one of the two sets — a new one is
+    /// classified here before it ships (ApprovalStepContextTests scans the production handlers for them).
+    /// </summary>
+    internal static readonly IReadOnlySet<string> MovedOnResolverSources =
+        new HashSet<string>(StringComparer.Ordinal) { "delegate_request", "escalation_rules" };
+
+    /// <summary>
+    /// Fail-closed: positions are named only for a snapshot KNOWN to be the step's own. A task with no snapshot at
+    /// all has nothing saying it moved; a snapshot that cannot be read, or whose source is not classified, names
+    /// nobody.
+    /// </summary>
+    private async Task<bool> StillWithTheStepsOwnCandidatesAsync(
+        ApprovalTask task,
+        Dictionary<Guid, RuntimeAssignmentSnapshot?> snapshots,
+        CancellationToken ct)
+    {
+        if (task.Status == ApprovalTaskStatus.Escalated)
+        {
+            return false;
+        }
+
+        if (task.AssignmentSnapshotId is not { } snapshotId)
+        {
+            return true;
+        }
+
+        if (!snapshots.TryGetValue(snapshotId, out var snapshot))
+        {
+            snapshot = await _snapshots.GetByIdAsync(snapshotId, ct);
+            snapshots[snapshotId] = snapshot;
+        }
+
+        return snapshot is not null && StepOwnResolverSources.Contains(snapshot.ResolverSource);
     }
 
     // The step's position candidates, in definition order — empty when the step names any person directly.
@@ -318,7 +390,8 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
 
     // Candidate resolution mirrors GetMyWorkflowTasks: the directly resolved assignee always sees the task;
     // otherwise the caller must be the resolved principal or a candidate in the assignment snapshot.
-    private async Task<bool> IsCandidateAsync(ApprovalTask task, string userId, CancellationToken ct)
+    private async Task<bool> IsCandidateAsync(
+        ApprovalTask task, string userId, Dictionary<Guid, RuntimeAssignmentSnapshot?> snapshots, CancellationToken ct)
     {
         if (Matches(task.AssigneeRef, userId))
         {
@@ -330,7 +403,12 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
             return false;
         }
 
-        var snapshot = await _snapshots.GetByIdAsync(snapshotId, ct);
+        if (!snapshots.TryGetValue(snapshotId, out var snapshot))
+        {
+            snapshot = await _snapshots.GetByIdAsync(snapshotId, ct);
+            snapshots[snapshotId] = snapshot;
+        }
+
         if (snapshot is null)
         {
             return false;
