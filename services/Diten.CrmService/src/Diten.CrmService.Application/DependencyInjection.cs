@@ -90,6 +90,9 @@ public static class DependencyInjection
         // persists nothing and only READS the already-registered strategy / journey / segment / content-linkage seams
         // plus the CycleCapacity repo, then delegates the arithmetic to the pure FU06B ActivityTimeBudgetCalculator.
         services.AddScoped<Features.VisitContentSequence.VisitContentSequenceResolver>();
+        // WP-SB-3b — the resolver v2's extra READ seam: journey progress, knowledge paths, contact specialty, audience.
+        services.AddScoped<Features.VisitContentSequence.IVisitContentSourceReader,
+            Features.VisitContentSequence.VisitContentSourceReader>();
 
         // MOD-0155 FU05 — the MicroTarget Visit Planning Engine + its read-only selection helpers. The engine is a
         // sealed coordinator: it CONSUMES FU03 (IRouteOptimizer), FU04 (VisitContentSequenceResolver), FU06B

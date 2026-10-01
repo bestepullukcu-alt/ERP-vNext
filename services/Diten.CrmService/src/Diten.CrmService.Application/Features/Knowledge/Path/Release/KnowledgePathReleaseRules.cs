@@ -50,6 +50,27 @@ public static class KnowledgePathReleaseRules
                 .Select(s => new KnowledgePathJourneyUse(j, s)))
             .ToList();
 
+    /// <summary>WP-SB-3b — the release status of a path, the definition the release above maintains: <c>published</c> and
+    /// not archived. A release turns the previously published version of the same PathCode <c>inactive</c>, so at most
+    /// one version of a code is current.</summary>
+    public static bool IsCurrentRelease(KnowledgePath? path)
+        => path is not null && path.IsPublished() && !path.IsArchived();
+
+    /// <summary>WP-SB-3b — the current release of a path identity (PathCode + country + language), effective at
+    /// <paramref name="at"/>: what a <c>latest-published</c> stage tells. Deterministic on legacy data that still holds
+    /// two published versions: latest publish, then latest effective-from, then highest version.</summary>
+    public static KnowledgePath? CurrentReleaseOf(
+        IEnumerable<KnowledgePath> paths, string? pathCode, string? countryCode, string? languageCode, DateTimeOffset at)
+        => paths
+            .Where(p => IsCurrentRelease(p) && p.IsEffectiveAt(at)
+                        && string.Equals(p.PathCode, pathCode, StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(p.CountryCode ?? string.Empty, countryCode ?? string.Empty, StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(p.LanguageCode ?? string.Empty, languageCode ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(p => p.PublishedAt ?? DateTimeOffset.MinValue)
+            .ThenByDescending(p => p.EffectiveFrom)
+            .ThenByDescending(p => p.PathVersion, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+
     /// <summary>Every journey stage (any status) referencing the path — the usage read.</summary>
     public static bool UsesPath(ContentEngagementJourneyStage stage, KnowledgePath path, bool includeLatestPublished)
     {

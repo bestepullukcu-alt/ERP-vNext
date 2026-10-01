@@ -98,7 +98,11 @@ public sealed class StrategyTemplateReader : IStrategyTemplateReader
                         .Select(a => new StrategyTemplateSkuShare(a.GskuId, a.Percentage, a.SortOrder))
                         .ToList(),
                     StrategyTemplateAllocationRules.TotalOf(l),
-                    ContainmentVerified: false))
+                    ContainmentVerified: false,
+                    Role: l.EffectiveRole(),
+                    JourneyId: l.JourneyId,
+                    SortOrder: l.SortOrder,
+                    GlobalProductCodeDisplay: l.GlobalProductCodeDisplay))
                 .ToList(),
             template.ContentBindings
                 .OrderBy(c => c.SortOrder).ThenBy(c => c.BindingId)

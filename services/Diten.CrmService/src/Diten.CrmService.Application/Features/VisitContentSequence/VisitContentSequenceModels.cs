@@ -16,6 +16,10 @@ namespace Diten.CrmService.Application.Features.VisitContentSequence;
 /// FU01 default-fill handler, the FU05 packing engine, or the preview endpoint) reads FU01's last visit and passes the
 /// prior <see cref="PriorStageIndex"/> — FU04 never opens the PlannedVisit store itself (isolation, §5/§6). Every id is
 /// a reference to look up through a seam, never a validated FK.</para>
+/// <para><b>WP-SB-3b:</b> the stage now comes from the doctor's <c>JourneyProgress</c> per product, so
+/// <see cref="PriorStageIndex"/> is no longer read (kept for the wire shape). <see cref="PendingExposures"/> carries the
+/// visits already planned but not yet completed that tell a product before this one — the resolver projects the stage
+/// and the exposure that far (DESIGN-SB-3 §3.3, CT projection rule).</para>
 /// </summary>
 public sealed record VisitContentSequenceRequest(
     string SubjectType,
@@ -24,12 +28,23 @@ public sealed record VisitContentSequenceRequest(
     Guid? StrategyTemplateId,
     Guid? CyclePeriodId,
     int? PriorStageIndex,
-    DateTimeOffset? EffectiveAt = null);
+    DateTimeOffset? EffectiveAt = null,
+    IReadOnlyList<VisitContentPendingExposure>? PendingExposures = null);
+
+/// <summary>WP-SB-3b — <paramref name="Count"/> earlier, not yet completed visits that tell
+/// <paramref name="ProductId"/> on <paramref name="JourneyId"/>.</summary>
+public sealed record VisitContentPendingExposure(Guid ProductId, Guid JourneyId, int Count);
 
 /// <summary>
 /// The DERIVED, never-persisted answer (§4.1): which stage comes next, its promo / non-promo content split, and the
 /// visit duration the FU06B calculator yields from those counts. <c>Status</c> and <c>ReasonCodes</c> make every
 /// fail-closed outcome a CODED result, never a silent default (§8).
+/// <para><b>WP-SB-3b (v2):</b> <see cref="Items"/> is the visit's product list (≤ MaxPromoProducts promo +
+/// ≤ MaxNonPromoProducts non-promo, weighted rotation, each on its own journey stage). The top-level journey / stage
+/// fields are filled from the FIRST PROMO item (else the first item) for the existing consumers;
+/// <see cref="PromoItemCount"/> / <see cref="NonPromoItemCount"/> are now PRODUCT counts (they were content-item counts)
+/// and the duration is computed from them. No item carries a play or campaign id (ARCH GATE S3-9); the top-level
+/// <see cref="StrategyTemplateId"/> is unchanged.</para>
 /// </summary>
 public sealed record VisitContentSequenceResult(
     string Status,
@@ -44,15 +59,44 @@ public sealed record VisitContentSequenceResult(
     int NonPromoItemCount,
     int VisitDurationMinutes,
     IReadOnlyList<string> ReasonCodes,
-    DateTimeOffset ResolvedAt)
+    DateTimeOffset ResolvedAt,
+    IReadOnlyList<VisitContentItem>? Items = null)
 {
     public static VisitContentSequenceResult NotResolved(
         string status, IReadOnlyList<string> reasonCodes, DateTimeOffset at, Guid? journeyId = null,
         Guid? strategyTemplateId = null)
         => new(
             status, journeyId, null, null, null, null,
-            PlannedVisitContentSource.Strategy, strategyTemplateId, 0, 0, 0, reasonCodes, at);
+            PlannedVisitContentSource.Strategy, strategyTemplateId, 0, 0, 0, reasonCodes, at,
+            Array.Empty<VisitContentItem>());
 }
+
+/// <summary>WP-SB-3b — one product of the visit: its journey stage, the path version that stage tells (the current
+/// release for <c>latest-published</c>, the pinned version otherwise), the path's active steps in order and its claims.
+/// <see cref="Warnings"/> never drop the product (e.g. <c>journey_audience_mismatch</c>). No play / campaign id here.</summary>
+public sealed record VisitContentItem(
+    Guid ProductId,
+    string? ProductCode,
+    string Role,
+    Guid JourneyId,
+    string JourneyCode,
+    Guid StageId,
+    int StageIndex,
+    string StageCode,
+    string StageName,
+    Guid PathId,
+    string PathCode,
+    string PathVersion,
+    IReadOnlyList<VisitContentStep> Steps,
+    IReadOnlyList<VisitContentClaim> Claims,
+    IReadOnlyList<string> Warnings);
+
+/// <summary>WP-SB-3b — one active step of the path, in StepOrder.</summary>
+public sealed record VisitContentStep(
+    Guid StepId, Guid ContentId, string ContentCode, string Title, string Type, int? Minutes);
+
+/// <summary>WP-SB-3b — one claim of the path.</summary>
+public sealed record VisitContentClaim(Guid ClaimId, string ClaimCode);
 
 /// <summary>Resolution outcome vocabulary (in-domain, fail-closed — §3). A <c>no-*</c> / <c>end-of-journey</c> value is
 /// a coded answer, never a thrown error: the resolver reports, it is not an engine.</summary>
@@ -82,7 +126,8 @@ public static class VisitContentSequenceReasonCodes
     /// <summary>The bound journey is not published / effective, or has no active stages (V2/V3).</summary>
     public const string JourneyNotPublished = "journey_not_published";
 
-    /// <summary>Next-stage advanced past the last stage — the end-of-journey flag (V4, D-END-OF-JOURNEY = flag).</summary>
+    /// <summary>Next-stage advanced past the last stage — the end-of-journey flag (V4, D-END-OF-JOURNEY = flag).
+    /// <b>No longer produced (WP-SB-3b, S3-7):</b> a journey wraps back to its first stage; kept for the vocabulary.</summary>
     public const string JourneyCompleted = "journey_completed";
 
     /// <summary>No CycleCapacity is pinned to the cycle period, so no duration can be computed (V5).</summary>
@@ -92,8 +137,25 @@ public static class VisitContentSequenceReasonCodes
     /// fail-closed to zero and the duration falls back to ReportDuration only (V6, D-CONTENT-SPLIT §4.5).</summary>
     public const string ContentSplitUnresolved = "content_split_unresolved";
 
+    /// <summary>WP-SB-3b — a strategy line without a journey (written before SB-3a): the product is dropped.</summary>
+    public const string ProductHasNoJourney = "product_has_no_journey";
+
+    /// <summary>WP-SB-3b — the line's journey is not published / effective or has no active stage: the product is dropped.</summary>
+    public const string JourneyUnpublished = "journey_unpublished";
+
+    /// <summary>WP-SB-3b — the stage's path has no current release (latest-published) or its pinned version is no longer
+    /// released: the product is dropped (no silent version drift).</summary>
+    public const string StagePathUnpublished = "stage_path_unpublished";
+
+    /// <summary>WP-SB-3b — the stored stage index no longer fits the journey (it lost stages): read as stage 0.</summary>
+    public const string StageIndexReset = "stage_index_reset";
+
+    /// <summary>WP-SB-3b — WARNING only: the journey's audience profile does not cover the doctor's specialty.</summary>
+    public const string JourneyAudienceMismatch = "journey_audience_mismatch";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
-        StrategyNotFound, JourneyNotPublished, JourneyCompleted, CapacityNotFound, ContentSplitUnresolved
+        StrategyNotFound, JourneyNotPublished, JourneyCompleted, CapacityNotFound, ContentSplitUnresolved,
+        ProductHasNoJourney, JourneyUnpublished, StagePathUnpublished, StageIndexReset, JourneyAudienceMismatch
     };
 }

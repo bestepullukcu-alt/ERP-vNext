@@ -242,6 +242,10 @@ public static class DependencyInjection
         // cancelled/archived so its history stays readable. Single-document writes only, guarded by the Version token.
         services.AddScoped<IPlannedVisitRepository, PlannedVisitRepository>();
 
+        // WP-SB-3b - JourneyProgress (doctor x product x journey). Read by the visit content resolver; written only by
+        // the SB-3c visit completion (no endpoint writes it).
+        services.AddScoped<IJourneyProgressRepository, JourneyProgressRepository>();
+
         // MOD-0155 FU05 - PlanningSession staging store + the atomic apply/re-plan unit of work. The unit of work spans
         // planning_sessions + planned_visits in one all-or-nothing operation (transaction on a replica set, compensated
         // sequential writes on dev standalone Mongo), so a half-applied plan can never survive (D-APPLY-ATOMICITY = C).
@@ -1074,6 +1078,47 @@ public static class DependencyInjection
             BsonClassMap.RegisterClassMap<PlannedVisitAvailabilitySnapshot>(map => map.AutoMap());
         }
 
+        // WP-SB-3b - the frozen per-product visit content (PlannedVisit.ContentItems) and its two embedded types. Every
+        // Guid takes the string-Guid convention (the embedded-type trap: an unmapped type stores its ids binary).
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitContentItem)))
+        {
+            BsonClassMap.RegisterClassMap<PlannedVisitContentItem>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(i => i.ProductId).SetSerializer(stringGuid);
+                map.GetMemberMap(i => i.JourneyId).SetSerializer(stringGuid);
+                map.GetMemberMap(i => i.StageId).SetSerializer(stringGuid);
+                map.GetMemberMap(i => i.PathId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitContentStep)))
+        {
+            BsonClassMap.RegisterClassMap<PlannedVisitContentStep>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(s => s.StepId).SetSerializer(stringGuid);
+                map.GetMemberMap(s => s.ContentId).SetSerializer(stringGuid);
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlannedVisitContentClaim)))
+        {
+            BsonClassMap.RegisterClassMap<PlannedVisitContentClaim>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(c => c.ClaimId).SetSerializer(stringGuid);
+            });
+        }
+
+        // WP-SB-3b - JourneyProgress: its key Guids (ContactId / ProductId / JourneyId) and the last report id take the
+        // string-Guid convention, or a by-key filter (string) would silently miss a binary stored value.
+        Map<JourneyProgress>(map =>
+        {
+            map.GetMemberMap(p => p.ContactId).SetSerializer(stringGuid);
+            map.GetMemberMap(p => p.ProductId).SetSerializer(stringGuid);
+            map.GetMemberMap(p => p.JourneyId).SetSerializer(stringGuid);
+            map.GetMemberMap(p => p.LastVisitReportId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
+
         // MOD-0155 FU05 - PlanningSession (thin staging aggregate) and its THREE embedded types + one embedded contact.
         // Every Guid FK on the root AND on each embedded type takes the string-Guid convention, or the ids
         // (CyclePeriodId, Selection.SelectedAccountIds/SelectedPharmacyIds/SegmentId/CampaignId, the contact's
@@ -1848,6 +1893,10 @@ public static class DependencyInjection
             // the create handler (an archived code is reusable, which a partial filter cannot express, and $ne in a
             // partial-index filter crash-loops the service at startup), so this is a plain lookup index rather than a
             // unique one.
+            // WP-SB-3b - journey_progress: the unique (tenant, contact, product, journey) key.
+            database.GetCollection<JourneyProgress>(JourneyProgressRepository.CollectionName)
+                .Indexes.CreateOne(JourneyProgressRepository.KeyIndex());
+
             var plannedVisits = database.GetCollection<PlannedVisit>(PlannedVisitRepository.CollectionName);
             plannedVisits.Indexes.CreateOne(new CreateIndexModel<PlannedVisit>(
                 Builders<PlannedVisit>.IndexKeys.Ascending(v => v.TenantId).Ascending(v => v.VisitCode),

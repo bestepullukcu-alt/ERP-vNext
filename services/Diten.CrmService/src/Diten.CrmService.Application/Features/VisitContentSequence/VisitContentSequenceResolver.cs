@@ -1,27 +1,29 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Features.CycleCapacity.Rules;
-using Diten.CrmService.Application.Features.Knowledge.Content;
 using Diten.CrmService.Application.Features.Knowledge.ContentEngagementJourney;
+using Diten.CrmService.Application.Features.Knowledge.Path.Release;
 using Diten.CrmService.Application.Features.Segmentation.Resolution;
 using Diten.CrmService.Application.Features.StrategyTemplate.Binding;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
+using CapacityEntity = Diten.CrmService.Domain.Entities.CycleCapacity;
 
 namespace Diten.CrmService.Application.Features.VisitContentSequence;
 
 /// <summary>
 /// MOD-0155 FU04 — <b>Visit Content Sequence resolver</b>. It answers exactly one question for a planned visit to a
-/// doctor: <i>"which content stage comes NEXT, and how long does that make the visit?"</i>
+/// doctor: <i>"which content does the visit tell, and how long does that make it?"</i>
 /// <para><b>This is NOT an engine (D8).</b> It produces no plan, packs nothing, mutates no journey / strategy / segment
-/// / capacity, and — like the FU06B calculator it calls — <b>persists NOTHING</b>. Its only I/O is READ calls to
-/// already-shipped seams; the storage of the chosen position stays FU01's <see cref="PlannedVisitContentRef"/>, which
-/// the FU01 handler writes from this result (2.2 boundary). "Auto-advance" is a deterministic ordinal step on the
-/// pinned published journey — no scoring, no "best journey", no branch evaluation.</para>
-/// <para><b>The chain (§1.3).</b> doctor → (optional segment membership gate) → StrategyTemplate ("play") → bound
-/// ContentEngagementJourney → ordered ACTIVE stages → NEXT stage (priorIndex + 1) → content set → promo / non-promo
-/// split against the play's promoted product lines (D-CONTENT-SPLIT = C, §4.5) → FU06B
-/// <see cref="ActivityTimeBudgetCalculator.VisitDuration"/>. Every gap is a CODED <see cref="VisitContentSequenceStatus"/>
-/// + reason code, never a silent default.</para>
+/// / capacity / progress, and — like the FU06B calculator it calls — <b>persists NOTHING</b>. Its only I/O is READ calls
+/// to already-shipped seams; the planning engine freezes the result onto the PlannedVisit (2.2 boundary).</para>
+/// <para><b>v2 (WP-SB-3b, DESIGN-SB-3 §3.3).</b> doctor → (optional segment membership gate) → StrategyTemplate ("play")
+/// → its product lines split by role (promo / non-promo; template-level content bindings are NOT read, S3-2) → per role
+/// the weighted rotation (<see cref="VisitContentRotation"/>, S3-5) up to the cycle capacity's MaxPromoProducts /
+/// MaxNonPromoProducts → per product: the line's journey → the doctor's <c>JourneyProgress</c> stage (+ the visits
+/// planned before this one) over the journey's ordered active stages, wrapping back to the first (S3-7) → the stage's
+/// path version (the current release for <c>latest-published</c>, the pinned version otherwise — KP-3 release rules)
+/// → its active steps and claims. A product that cannot resolve is DROPPED with a coded reason and the next candidate
+/// takes its place. Duration = FU06B <see cref="ActivityTimeBudgetCalculator.VisitDuration"/> over the PRODUCT counts.</para>
 /// </summary>
 public sealed class VisitContentSequenceResolver
 {
@@ -29,23 +31,23 @@ public sealed class VisitContentSequenceResolver
     private readonly IStrategyTemplateReader _strategies;
     private readonly ISegmentMembershipReader _segments;
     private readonly IContentEngagementJourneyReader _journeys;
-    private readonly IKnowledgeContentLinkageReader _content;
     private readonly ICycleCapacityRepository _capacities;
+    private readonly IVisitContentSourceReader _sources;
 
     public VisitContentSequenceResolver(
         ITenantContext tenant,
         IStrategyTemplateReader strategies,
         ISegmentMembershipReader segments,
         IContentEngagementJourneyReader journeys,
-        IKnowledgeContentLinkageReader content,
-        ICycleCapacityRepository capacities)
+        ICycleCapacityRepository capacities,
+        IVisitContentSourceReader sources)
     {
         _tenant = tenant;
         _strategies = strategies;
         _segments = segments;
         _journeys = journeys;
-        _content = content;
         _capacities = capacities;
+        _sources = sources;
     }
 
     public async Task<VisitContentSequenceResult> ResolveAsync(
@@ -64,79 +66,93 @@ public sealed class VisitContentSequenceResolver
                 new[] { VisitContentSequenceReasonCodes.StrategyNotFound }, at);
         }
 
-        // 2 ─ Resolve the bound journey (first content-engagement-journey binding, in author sort order).
-        var journeyId = bindings.ContentBindings
-            .Where(c => string.Equals(
-                c.ContentRefType, StrategyContentRefTypes.ContentEngagementJourney, StringComparison.Ordinal))
-            .OrderBy(c => c.SortOrder)
-            .Select(c => (Guid?)c.ContentRefId)
-            .FirstOrDefault();
-
-        if (journeyId is not { } jid || jid == Guid.Empty)
+        // 2 ─ The candidates are the play's product lines (never its template-level content bindings, S3-2).
+        var lines = bindings.ProductLines.Where(l => l.GlobalProductId != Guid.Empty).ToList();
+        if (lines.Count == 0)
         {
             return VisitContentSequenceResult.NotResolved(
                 VisitContentSequenceStatus.NoJourney,
-                new[] { VisitContentSequenceReasonCodes.JourneyNotPublished }, at,
+                new[] { VisitContentSequenceReasonCodes.ContentSplitUnresolved }, at,
                 strategyTemplateId: bindings.TemplateId);
         }
 
-        // The published + effective journey context (subject / topic / audience / language) drives the content set.
-        var published = await _journeys.ResolvePublishedJourneysAsync(
-            new ContentEngagementJourneyCriteria(EffectiveAt: at), cancellationToken);
-        var journey = published.FirstOrDefault(j => j.JourneyId == jid);
-        if (journey is null)
-        {
-            return VisitContentSequenceResult.NotResolved(
-                VisitContentSequenceStatus.NoJourney,
-                new[] { VisitContentSequenceReasonCodes.JourneyNotPublished }, at,
-                journeyId: jid, strategyTemplateId: bindings.TemplateId);
-        }
+        var capacity = await LoadCapacityAsync(request, cancellationToken);
+        var context = new ResolutionContext(
+            request, at,
+            await _sources.ListProgressAsync(request.SubjectId, cancellationToken),
+            (request.PendingExposures ?? Array.Empty<VisitContentPendingExposure>())
+                .Where(p => p.Count > 0)
+                .GroupBy(p => (p.ProductId, p.JourneyId))
+                .ToDictionary(g => g.Key, g => g.Sum(p => p.Count)),
+            (await _journeys.ResolvePublishedJourneysAsync(
+                    new ContentEngagementJourneyCriteria(EffectiveAt: at), cancellationToken))
+                .GroupBy(j => j.JourneyId)
+                .ToDictionary(g => g.Key, g => g.First()));
 
-        // 3 ─ Ordered ACTIVE stages, through the named seam (published + effective + StageOrder → StageCode).
-        var stages = await _journeys.GetOrderedStagesAsync(jid, at, cancellationToken);
-        if (stages.Count == 0)
-        {
-            return VisitContentSequenceResult.NotResolved(
-                VisitContentSequenceStatus.NoJourney,
-                new[] { VisitContentSequenceReasonCodes.JourneyNotPublished }, at,
-                journeyId: jid, strategyTemplateId: bindings.TemplateId);
-        }
-
-        // 4 ─ Next-stage (deterministic ordinal). First visit (no prior index) → index 0; otherwise prior + 1.
-        var nextIndex = request.PriorStageIndex is { } prior ? prior + 1 : 0;
-
-        // D-END-OF-JOURNEY = flag: past the last stage the resolver STOPS — no loop, no wrap-around, no repeat (§4.4).
-        if (nextIndex > stages.Count - 1)
-        {
-            return VisitContentSequenceResult.NotResolved(
-                VisitContentSequenceStatus.EndOfJourney,
-                new[] { VisitContentSequenceReasonCodes.JourneyCompleted }, at,
-                journeyId: jid, strategyTemplateId: bindings.TemplateId);
-        }
-
-        var nextStage = stages[Math.Max(0, nextIndex)];
-
-        // 5 ─ Promo / non-promo split = content set JOINED against the play's promoted product lines (D-CONTENT-SPLIT=C).
+        // 3 ─ Per role: weighted rotation, then walk the order until the role's limit is met (a dropped product's place
+        //     goes to the next candidate).
         var reasons = new List<string>();
-        var (promoCount, nonPromoCount) = await SplitContentAsync(bindings, journey, at, reasons, cancellationToken);
+        var items = new List<VisitContentItem>();
+        foreach (var role in new[] { StrategyProductLineRoles.Promo, StrategyProductLineRoles.NonPromo })
+        {
+            var max = role == StrategyProductLineRoles.Promo
+                ? capacity?.EffectiveMaxPromoProducts() ?? CycleCapacityLimits.DefaultMaxProductsPerVisit
+                : capacity?.EffectiveMaxNonPromoProducts() ?? CycleCapacityLimits.DefaultMaxProductsPerVisit;
 
-        // 6 ─ Duration = FU06B calculator over the two counts. FU04 supplies the numbers; it never does the arithmetic.
-        var duration = await ComputeDurationAsync(request, promoCount, nonPromoCount, reasons, cancellationToken);
+            var candidates = lines
+                .Where(l => RoleOf(l) == role)
+                .Select(l => new VisitContentRotationCandidate<StrategyTemplateProductMixLine>(
+                    l, l.LineWeightPercentage, l.SortOrder, l.LineId, context.ExposureOf(l)))
+                .ToList();
 
+            var taken = 0;
+            foreach (var candidate in VisitContentRotation.Order(candidates))
+            {
+                if (taken >= max)
+                {
+                    break;
+                }
+
+                var item = await BuildItemAsync(candidate.Line, role, context, reasons, cancellationToken);
+                if (item is null)
+                {
+                    continue;
+                }
+
+                items.Add(item);
+                taken++;
+            }
+        }
+
+        if (items.Count == 0)
+        {
+            return VisitContentSequenceResult.NotResolved(
+                VisitContentSequenceStatus.NoJourney, reasons.Distinct(StringComparer.Ordinal).ToList(), at,
+                strategyTemplateId: bindings.TemplateId);
+        }
+
+        // 4 ─ Duration = FU06B calculator over the PRODUCT counts. FU04 supplies the numbers; it never does the arithmetic.
+        var promoCount = items.Count(i => i.Role == StrategyProductLineRoles.Promo);
+        var nonPromoCount = items.Count - promoCount;
+        var duration = ComputeDuration(capacity, promoCount, nonPromoCount, reasons);
+
+        // Backward compatibility: the top-level journey / stage is the first promo item (else the first item).
+        var lead = items.FirstOrDefault(i => i.Role == StrategyProductLineRoles.Promo) ?? items[0];
         return new VisitContentSequenceResult(
             VisitContentSequenceStatus.Resolved,
-            jid,
-            nextStage.StageId,
-            nextIndex,
-            nextStage.StageCode,
-            nextStage.StageName,
+            lead.JourneyId,
+            lead.StageId,
+            lead.StageIndex,
+            lead.StageCode,
+            lead.StageName,
             PlannedVisitContentSource.Strategy,
             bindings.TemplateId,
             promoCount,
             nonPromoCount,
             duration,
-            reasons,
-            at);
+            reasons.Distinct(StringComparer.Ordinal).ToList(),
+            at,
+            items);
     }
 
     /// <summary>The play's bindings, or null when none resolves (fail-closed — no default play is invented).</summary>
@@ -176,82 +192,123 @@ public sealed class VisitContentSequenceResolver
             : await _strategies.GetActiveBindingsAsync(first.TemplateId, at, cancellationToken);
     }
 
-    /// <summary>
-    /// Promo / non-promo split (§4.5). A content item is <b>promo</b> when its product is one the play promotes;
-    /// everything else is non-promo. Fail-closed: when the play promotes nothing resolvable the counts are ZERO and
-    /// <c>content_split_unresolved</c> is coded, so the duration is ReportDuration only — a wrong promo figure is never
-    /// produced.
-    /// </summary>
-    private async Task<(int Promo, int NonPromo)> SplitContentAsync(
-        StrategyTemplateBindingSet bindings, ContentEngagementJourneyDto journey, DateTimeOffset at,
-        List<string> reasons, CancellationToken cancellationToken)
+    /// <summary>One product → its item, or null (dropped, the reason coded). Never throws on missing data.</summary>
+    private async Task<VisitContentItem?> BuildItemAsync(
+        StrategyTemplateProductMixLine line, string role, ResolutionContext context, List<string> reasons,
+        CancellationToken cancellationToken)
     {
-        var promoted = new HashSet<Guid>();
-        foreach (var line in bindings.ProductLines)
+        // A line written before SB-3a has no journey: nothing to tell for that product.
+        if (line.JourneyId is not { } journeyId || journeyId == Guid.Empty)
         {
-            if (line.GlobalProductId != Guid.Empty)
-            {
-                promoted.Add(line.GlobalProductId);
-            }
-
-            foreach (var sku in line.SkuAllocations)
-            {
-                if (sku.GskuId != Guid.Empty)
-                {
-                    promoted.Add(sku.GskuId);
-                }
-            }
+            reasons.Add(VisitContentSequenceReasonCodes.ProductHasNoJourney);
+            return null;
         }
 
-        if (promoted.Count == 0)
+        var stages = await context.StagesAsync(journeyId, _journeys, cancellationToken);
+        if (!context.Journeys.TryGetValue(journeyId, out var journey) || stages.Count == 0)
         {
-            reasons.Add(VisitContentSequenceReasonCodes.ContentSplitUnresolved);
-            return (0, 0);
+            reasons.Add(VisitContentSequenceReasonCodes.JourneyUnpublished);
+            return null;
         }
 
-        // The content set the play presents on this journey: published + effective knowledge content that matches the
-        // journey's subject / topic / audience / language context. Each item carries the product it is tied to
-        // (KnowledgeContentDto.ProductId) — the existing content→product binding FU04 READS, never creates (§19.1).
-        var contentItems = await _content.ResolvePublishedContentAsync(
-            new KnowledgeContentLinkageCriteria(
-                SubjectId: journey.SubjectId,
-                TopicId: journey.TopicId,
-                AudienceProfileId: journey.AudienceProfileId,
-                LanguageCode: journey.LanguageCode,
-                EffectiveAt: at),
-            cancellationToken);
-
-        var promo = 0;
-        var nonPromo = 0;
-        foreach (var item in contentItems)
+        // The doctor's position on this product's journey (+ the visits planned before this one), wrapping at the end.
+        var warnings = new List<string>();
+        var stageIndex = 0;
+        if (context.ProgressOf(line.GlobalProductId, journeyId) is { } progress)
         {
-            if (item.ProductId is { } productId && productId != Guid.Empty && promoted.Contains(productId))
+            if (progress.IsStageIndexStale(stages.Count))
             {
-                promo++;
+                warnings.Add(VisitContentSequenceReasonCodes.StageIndexReset);
+                reasons.Add(VisitContentSequenceReasonCodes.StageIndexReset);
             }
-            else
-            {
-                nonPromo++;
-            }
+
+            stageIndex = progress.EffectiveStageIndex(stages.Count);
         }
 
-        return (promo, nonPromo);
+        stageIndex = JourneyProgress.StageAfter(stageIndex, context.PendingOf(line.GlobalProductId, journeyId), stages.Count);
+        var stage = stages[stageIndex];
+
+        var path = ResolveStagePath(stage, await context.PathsAsync(_sources, cancellationToken), context.At);
+        if (path is null)
+        {
+            reasons.Add(VisitContentSequenceReasonCodes.StagePathUnpublished);
+            return null;
+        }
+
+        if (journey.AudienceProfileId is { } profileId && profileId != Guid.Empty
+            && VisitContentAudiencePolicy.Covers(
+                await context.AudienceAsync(profileId, _sources, cancellationToken),
+                await context.SpecialtyAsync(_sources, cancellationToken)) == false)
+        {
+            reasons.Add(VisitContentSequenceReasonCodes.JourneyAudienceMismatch);
+            if (VisitContentAudiencePolicy.DropOnMismatch)
+            {
+                return null;
+            }
+
+            warnings.Add(VisitContentSequenceReasonCodes.JourneyAudienceMismatch);
+        }
+
+        return new VisitContentItem(
+            line.GlobalProductId,
+            line.GlobalProductCodeDisplay,
+            role,
+            journeyId,
+            journey.JourneyCode,
+            stage.StageId,
+            stageIndex,
+            stage.StageCode,
+            stage.StageName,
+            path.Id,
+            path.PathCode,
+            path.PathVersion,
+            path.OrderedActiveSteps()
+                .Select(s => new VisitContentStep(
+                    s.StepId, s.ContentId, s.ContentCode, s.StepTitle, s.StepType, s.EstimatedDurationMinutes))
+                .ToList(),
+            path.Claims.Select(c => new VisitContentClaim(c.ClaimId, c.ClaimCode)).ToList(),
+            warnings);
     }
+
+    /// <summary>
+    /// The path version a stage tells, by the KP-3 release definition (<see cref="KnowledgePathReleaseRules"/>):
+    /// <c>latest-published</c> → the current release of the same PathCode + country + language as the stage's path;
+    /// <c>pinned</c> → the pinned version, only while it is still the released one (published, not archived, effective).
+    /// A pinned version that a later release made inactive is NOT silently replaced: null (the product drops).
+    /// </summary>
+    public static KnowledgePath? ResolveStagePath(
+        ContentEngagementJourneyStageDto stage, IReadOnlyList<KnowledgePath> paths, DateTimeOffset at)
+    {
+        var recommended = paths.FirstOrDefault(p => p.Id == stage.RecommendedKnowledgePathId);
+        if (string.Equals(
+                stage.PathVersionPinPolicy, ContentEngagementJourneyPathPin.LatestPublished, StringComparison.OrdinalIgnoreCase))
+        {
+            return recommended is null
+                ? null
+                : KnowledgePathReleaseRules.CurrentReleaseOf(
+                    paths,
+                    string.IsNullOrWhiteSpace(stage.PathCode) ? recommended.PathCode : stage.PathCode,
+                    recommended.CountryCode, recommended.LanguageCode, at);
+        }
+
+        return KnowledgePathReleaseRules.IsCurrentRelease(recommended) && recommended!.IsEffectiveAt(at) ? recommended : null;
+    }
+
+    private static string RoleOf(StrategyTemplateProductMixLine line)
+        => string.Equals(line.Role?.Trim(), StrategyProductLineRoles.NonPromo, StringComparison.OrdinalIgnoreCase)
+            ? StrategyProductLineRoles.NonPromo
+            : StrategyProductLineRoles.Promo;
+
+    private async Task<CapacityEntity?> LoadCapacityAsync(
+        VisitContentSequenceRequest request, CancellationToken cancellationToken)
+        => _tenant.TenantId is { } tenantId && request.CyclePeriodId is { } cyclePeriodId && cyclePeriodId != Guid.Empty
+            ? await _capacities.GetByCyclePeriodAsync(tenantId, cyclePeriodId, cancellationToken)
+            : null;
 
     /// <summary>The visit duration, delegated to FU06B. When no capacity is pinned to the period, the duration is 0 and
     /// <c>capacity_not_found</c> is coded — no arithmetic is attempted (V5/§4.3).</summary>
-    private async Task<int> ComputeDurationAsync(
-        VisitContentSequenceRequest request, int promoCount, int nonPromoCount, List<string> reasons,
-        CancellationToken cancellationToken)
+    private static int ComputeDuration(CapacityEntity? capacity, int promoCount, int nonPromoCount, List<string> reasons)
     {
-        if (_tenant.TenantId is not { } tenantId
-            || request.CyclePeriodId is not { } cyclePeriodId || cyclePeriodId == Guid.Empty)
-        {
-            reasons.Add(VisitContentSequenceReasonCodes.CapacityNotFound);
-            return 0;
-        }
-
-        var capacity = await _capacities.GetByCyclePeriodAsync(tenantId, cyclePeriodId, cancellationToken);
         if (capacity is null)
         {
             reasons.Add(VisitContentSequenceReasonCodes.CapacityNotFound);
@@ -259,5 +316,85 @@ public sealed class VisitContentSequenceResolver
         }
 
         return ActivityTimeBudgetCalculator.VisitDuration(capacity, promoCount, nonPromoCount);
+    }
+
+    /// <summary>The per-call read state: progress, pending projection, journeys and lazily read paths / stages / audience.</summary>
+    private sealed class ResolutionContext
+    {
+        private readonly VisitContentSequenceRequest _request;
+        private readonly IReadOnlyList<JourneyProgress> _progress;
+        private readonly IReadOnlyDictionary<(Guid ProductId, Guid JourneyId), int> _pending;
+        private readonly Dictionary<Guid, IReadOnlyList<ContentEngagementJourneyStageDto>> _stages = new();
+        private readonly Dictionary<Guid, AudienceProfile?> _audiences = new();
+        private IReadOnlyList<KnowledgePath>? _paths;
+        private (bool Read, string? Value) _specialty;
+
+        public ResolutionContext(
+            VisitContentSequenceRequest request,
+            DateTimeOffset at,
+            IReadOnlyList<JourneyProgress> progress,
+            IReadOnlyDictionary<(Guid ProductId, Guid JourneyId), int> pending,
+            IReadOnlyDictionary<Guid, ContentEngagementJourneyDto> journeys)
+        {
+            _request = request;
+            At = at;
+            _progress = progress;
+            _pending = pending;
+            Journeys = journeys;
+        }
+
+        public DateTimeOffset At { get; }
+
+        public IReadOnlyDictionary<Guid, ContentEngagementJourneyDto> Journeys { get; }
+
+        public JourneyProgress? ProgressOf(Guid productId, Guid journeyId)
+            => _progress.FirstOrDefault(p => p.ProductId == productId && p.JourneyId == journeyId && !p.IsDeleted);
+
+        public int PendingOf(Guid productId, Guid journeyId)
+            => _pending.TryGetValue((productId, journeyId), out var count) ? count : 0;
+
+        /// <summary>Times the doctor was told the line's product on the line's journey (completed + planned before).</summary>
+        public int ExposureOf(StrategyTemplateProductMixLine line)
+            => line.JourneyId is { } journeyId
+                ? (ProgressOf(line.GlobalProductId, journeyId)?.ExposureCount ?? 0) + PendingOf(line.GlobalProductId, journeyId)
+                : 0;
+
+        public async Task<IReadOnlyList<ContentEngagementJourneyStageDto>> StagesAsync(
+            Guid journeyId, IContentEngagementJourneyReader reader, CancellationToken cancellationToken)
+        {
+            if (!_stages.TryGetValue(journeyId, out var stages))
+            {
+                stages = await reader.GetOrderedStagesAsync(journeyId, At, cancellationToken);
+                _stages[journeyId] = stages;
+            }
+
+            return stages;
+        }
+
+        public async Task<IReadOnlyList<KnowledgePath>> PathsAsync(
+            IVisitContentSourceReader sources, CancellationToken cancellationToken)
+            => _paths ??= await sources.ListPathsAsync(cancellationToken);
+
+        public async Task<AudienceProfile?> AudienceAsync(
+            Guid profileId, IVisitContentSourceReader sources, CancellationToken cancellationToken)
+        {
+            if (!_audiences.TryGetValue(profileId, out var profile))
+            {
+                profile = await sources.GetAudienceProfileAsync(profileId, cancellationToken);
+                _audiences[profileId] = profile;
+            }
+
+            return profile;
+        }
+
+        public async Task<string?> SpecialtyAsync(IVisitContentSourceReader sources, CancellationToken cancellationToken)
+        {
+            if (!_specialty.Read)
+            {
+                _specialty = (true, await sources.GetContactSpecialtyAsync(_request.SubjectId, cancellationToken));
+            }
+
+            return _specialty.Value;
+        }
     }
 }
