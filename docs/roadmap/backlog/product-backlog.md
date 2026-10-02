@@ -7426,6 +7426,11 @@ tarafından geri çekilemiyor. İstemciyle birlikte değişmeli. (3) **Zaman çi
 adayını `AssignedApproverUserId` olarak saklıyor ve sayfa buna göre süzüyor; motor paketinden sonra ikinci koltuk sahibi haftayı Görev
 Merkezi'nden onaylayabilir ama `/TimeEntry/Approvals` sayfasında göremez. Bozulma değil, tutarsızlık. Gelecek regresyon riski: 🟢 (üçü de eklemeli).
 
+**Ek (2026-10-02, D1 gözden geçirmesi):** madde (3) D1 düzeltme turuna ÇEKİLDİ (ikinci koltuk sahibi haftayı açamadan onaylayabiliyordu).
+Listeye eklenenler: (4) **Yürütücü beklemesi:** işlem yürütücüsü üç commit denemesinden sonra beklemeden vazgeçiyor; geri çekilme süresi ayrı
+iş. (5) **Yükseltilmiş durumun devirle silinmesi:** devir ve bilgi isteme görevi yeniden bekleme durumuna alıyor; ondan sonra iptal yeniden
+kabul ediliyor. Görevde "yükseltildi" olgusu kalıcı tutulmuyor; ölçüm ve öneri D1 düzeltme turunun raporunda.
+
 ---
 
 ### BL-503
@@ -7584,6 +7589,65 @@ birlikte kabulü. (2) **Reddedilen / başarısız denemeler** üç serviste de y
 güvenilir başlat / iptal komutları reddi kaydetmiyor; Auth belirteç reddi BL-503 D3'te ele alınıyor). Kural §3 "reddedilen komut da kaydedilir"
 diyor; hiçbir test bunu ölçmüyor. Karşılaştırma: Veeva ve MasterControl'de başarısız imza / onay denemesi de denetim izine düşer.
 Gelecek regresyon riski: 🟡 (iki servis arası sözleşme).
+
+---
+
+### BL-511
+
+**Görevde "kabul" kapısı yalnız ekranda: sunucu kabul edilmemiş işte başlat / tamamla / planla isteğini geri çevirmiyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0024 Görev Merkezi) · BULAN: WP-WCN-TASK-REQUEST-01 Aşama 1 ölçümü · KAYIT: 2026-10-02
+
+`start` / `complete` / `plan` sunucuda yalnız "çağıran atanan mı" diye bakıyor (`TaskItemTransitionHandlers.cs:317-323`, `:1099-1110`);
+`AcceptedByUserId` okunmuyor. İş raporu, takvim, zaman çizelgesi seçicisi ve son tarih hatırlatması da kabul edilmemiş işi ilk andan atananın
+işi sayıyor. Ekran düğmeyi göstermediği için kullanıcı fark etmiyor; uç doğrudan çağrılırsa kabul adımı atlanır. Görev talebi (BL-509) bu
+kusuru tekrarlamıyor (teklif edilmiş işte atanan boş). Düzeltme: kabul kuralı sunucuda tek yerde; diğer yüzeylerin "kabul edilmemiş"i nasıl
+sayacağı ayrı karar (iş raporunda yaşlanma oluşturma anından mı kabulden mi). Karşılaştırma: SAP ve Oracle iş listelerinde "rezerve et / üstlen"
+sunucu durumudur. Gelecek regresyon riski: 🟡 (beş yüzey aynı kuralı okuyacak).
+
+---
+
+### BL-512
+
+**Onaycı seçicisi kiracıdaki herkesi döküyor: `lookups/decision-makers` aramasız ve sınırsız**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0024 Görev Merkezi) · BULAN: WP-WCN-TASK-REQUEST-01 Aşama 1 ölçümü · KAYIT: 2026-10-02
+
+`TasksController.cs:1203-1209` (izin `platform.tasks.create`) pozisyonu olan herkesi ad + pozisyon + birim + tüzel kişi kimliğiyle tek
+istekte döndürüyor (`GetTaskAssignmentPersonLookupHandler.cs:80-81`); BL-057 atama kapsamını daraltırken bu ucu bilerek muaf tutmuştu
+(onaycı başka şirkette olabilir). Sonuç: görev açabilen her kullanıcı, öbür ülke şirketlerinin çalışan listesini alabiliyor: BL-057'nin
+kapattığı kapının yan penceresi. Görev talebi için yazılan arama ucu (en az 3 harf, en çok 10 sonuç, hız sınırı, yalnız ad + şirket +
+pozisyon) bu ucun da yerini almalı. Hukuk kararları belgesine girer (şirketler arası ad görünürlüğü). Gelecek regresyon riski: 🟡.
+
+---
+
+### BL-513
+
+**Üste atanan iş ("yukarı yön talebi") görev talebiyle aynı düzene taşınsın: bugün yarım**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0024 Görev Merkezi) · BULAN: WP-WCN-TASK-REQUEST-01 Aşama 1 ölçümü · KAYIT: 2026-10-02
+
+Üste atanan iş bir iş akışı örneği açıyor (`TaskUpwardRequestService.cs:65`, nesne tipi `task-request`); cevabı kimse okumuyor, ret görevi
+iptal etmiyor (BL-023'ün açık kalanı). Görev talebi (BL-509) teklif / kabul / ret / geri çekme düzenini kuruyor; yukarı yön de aynı kavram
+olmalı (tek "talep"). Taşıma, görev talebinin sunucu ve ekran dilimleri kabul edildikten sonra. Gelecek regresyon riski: 🟡 (mevcut açık
+örneklerin geçişi).
+
+---
+
+### BL-514
+
+**Platform'da işlem içi yazılan denetim kaydı merkezi günlüğe hiç ulaşmıyor (25 komut); abonelik uçları bir aydır boru hattında düşüyor**
+
+DURUM: AÇIK — düzeltme yazılıyor (WP-PLATFORM-AUDIT-INTX-01, dal `feature/platform/audit-in-transaction`) · SAHİP: CT (denetim standardı) · BULAN: WP-PLATFORM-TENANT-MODULES-01 K1 ölçümü + CT dev ölçümü · KAYIT: 2026-10-02
+
+Kiracı modül yetkilendirmesi, kiracı aboneliği ve genel uygulanabilirlik (modül kataloğu, abonelik planları, modül kaydı) komutları kaydı iş
+verisiyle aynı işlemde `audit_outbox`'a yazıyor ama yük, taşıyıcının zorunlu alanlarını (kiracı, aktör, kategori, kaynak servis) taşımıyor:
+satır kalıcı hataya düşüyor, `audit_events`'e geçmiyor, aktör hiçbir yerde yok. Uçtan uca testle ve dev verisiyle kanıtlı (7 satırın 7'si
+ölü, hepsi modül kaydı). Defterde `platform-islem-ici` izi bu yüzden "aday"dı. İkinci bulgu: 8 abonelik komutu `AuditBehavior`'ın izin
+listesine hiç eklenmemiş (261f99105, 2026-08-31); boru hattından geçen abonelik uçları istisnayla bitiyor. Kapı: kiracı modülleri ekranı
+(BL-500) bu düzeltme kabul edilmeden ana dala gitmez (K2). Paket dışında kalan: var olan ölü satırların onarımı (canlıda sayı bilinmiyor;
+aktör bilgisi satırda yok). Karşılaştırma: SAP ve Oracle'da lisans / abonelik değişikliği değişiklik belgesi olmadan yazılamaz.
+Gelecek regresyon riski: 🟡 (merkezi yolla ortak kurucu).
 
 ---
 
