@@ -70,3 +70,11 @@ Kapsamın büyük kısmı karşılanmış: marka kiti listesi + 6 sekmeli ayrın
 4. **KP-5b-CFG:** canlı şablonlar + yetki script'i.
 
 Sıra: PLT ∥ CRM → UI → CFG.
+
+## 7. Kullanıcı kararları (2026-10-02) — "kabul paketle"
+- **K-1:** marka kiti onayı = **Regülasyon, tek adım**.
+- **K-2:** görsel onayı = **Regülasyon, tek adım** (yol içinde tam MLR ayrıca).
+- **K-3:** iki **küresel** şablon: `KP-BRAND`, `KP-ASSET` (ülke şablonu değil), Regülasyon adımı.
+- **K-4:** E1–E8 önerileri kabul (alternatif metinde yedek yok; kurum içi süresiz lisans; withdrawn / expired / archived ayrımı; kit gönderim kontrol listesi; kullanımdaki aktif kit arşivlenemez; seçici bağlamı kilitli, logo alanı yalnız logo türü). E5: KP-5a kuralı (Görev Merkezi tek kanal, kişi bazlı SoD).
+- **K-5:** iki yükleme yolu — İçerik Stüdyosu'ndan yükleme (dosya Belge Yönetimi'ne kaydedilir) + mevcut belgeyi seçme.
+- Paketler: **KP-5b-PLT ∥ KP-5b** → KP-5b-UI → KP-5b-CFG.
