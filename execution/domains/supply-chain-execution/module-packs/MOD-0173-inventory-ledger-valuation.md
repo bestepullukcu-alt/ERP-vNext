@@ -464,6 +464,8 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
 - **FU-LE1-01 (shared UI owner):** after a failed first list load the DataTables processing indicator stays visible (shared CSS, protected).
 - **FU-LE1-02 (platform):** a real seed token is ~34.6 KB (695 permission claims). Every hop that forwards it needs ≥ 64 KB header limits (Prism/Node default 16 KB failed); token size itself is a platform concern.
 - **FU-LOC-01 (blocks real use + G1):** the shared Location master (DEC-INV-03) does not exist anywhere — no code, no gateway route, no registry ID. Without it every real posting fails closed (503 `LOCATION_MASTER_UNAVAILABLE`) and the form has no warehouse/location picker; today only the Prism mock answers.
+  **Status (2026-10-02): CLOSED** — the location master is MOD-0173-FU02 (in-process, LOC1/INT2/LOC2 accepted); the G1
+  runs built real location trees through `POST /api/locations` (5 × 201, run G10G21Z).
 - **FU-PM-01 (MDM — blocks real use + G1):** no gateway route `/api/product-master` — MDM (MOD-0290) does not yet expose PRODUCT-MASTER-BUNDLE v1; real postings fail closed (503 `PRODUCT_MASTER_UNAVAILABLE`).
 
 - **FU-LE-01 (central / PSS — blocks G1):** user↔legal-entity assignment + AuthService issuing `legal_entity_id` (active company; switching = token re-issue). Same gap affects MVP-2 (ProcurementService header fallback) and MVP-6 (MOD-0183 "held"). Retires W-0173-02.
