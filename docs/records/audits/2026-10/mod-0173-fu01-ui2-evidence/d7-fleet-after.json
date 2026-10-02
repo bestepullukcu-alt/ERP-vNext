@@ -1,0 +1,112 @@
+{
+    "measuredAt":  "2026-10-02T13:18:21.1918437+03:00",
+    "fastForward":  "2026-10-02T13:15:10 — git merge --ff-only 5227e914d in C:\\Users\\Ali\\erp-vnext (c634557c5 -\u003e 5227e914d); the only change the main worktree received from this WP",
+    "observed":  [
+                     "As measured in LOC2: the one change set made EVERY dotnet watch window rebuild (Gateway, Auth, Platform, MDM, HCM, CRM, DevEnablement, Inventory, Web) — first new listener 13:16:11, last (Web) 13:17:24, ~2.3 min, self-recovered. This WP stopped / started / killed nothing of the fleet.",
+                     "Platform /health 503 unhealthy check(s): masstransit-bus,business_reference_data_provider,rabbitmq (RabbitMQ 5672 off — known, not fixed). Web /Account/Login 200; anonymous /StockMovements/Create 302 → /account/login?ReturnUrl=%2FStockMovements%2FCreate (the new route exists in the rebuilt fleet; a first probe printed 0 — a PowerShell redirect-handling artefact, re-measured)."
+                 ],
+    "listeners":  {
+                      "value":  [
+                                    {
+                                        "port":  4010,
+                                        "pidBeforeFF":  1392,
+                                        "pidAfterFF":  1392,
+                                        "name":  "node.exe",
+                                        "startedAfterFF":  "09:50:27",
+                                        "restarted":  false,
+                                        "healthGet":  null
+                                    },
+                                    {
+                                        "port":  5000,
+                                        "pidBeforeFF":  16972,
+                                        "pidAfterFF":  30236,
+                                        "name":  "Diten.ApiGateway.exe",
+                                        "startedAfterFF":  "13:16:11",
+                                        "restarted":  true,
+                                        "healthGet":  200
+                                    },
+                                    {
+                                        "port":  5001,
+                                        "pidBeforeFF":  35808,
+                                        "pidAfterFF":  38232,
+                                        "name":  "Diten.Web.exe",
+                                        "startedAfterFF":  "13:17:24",
+                                        "restarted":  true,
+                                        "healthGet":  404
+                                    },
+                                    {
+                                        "port":  5056,
+                                        "pidBeforeFF":  22600,
+                                        "pidAfterFF":  41652,
+                                        "name":  "Diten.AuthService.Api.exe",
+                                        "startedAfterFF":  "13:16:40",
+                                        "restarted":  true,
+                                        "healthGet":  503
+                                    },
+                                    {
+                                        "port":  5057,
+                                        "pidBeforeFF":  25400,
+                                        "pidAfterFF":  21540,
+                                        "name":  "dotnet.exe",
+                                        "startedAfterFF":  "13:16:46",
+                                        "restarted":  true,
+                                        "healthGet":  503
+                                    },
+                                    {
+                                        "port":  5058,
+                                        "pidBeforeFF":  1932,
+                                        "pidAfterFF":  19064,
+                                        "name":  "Diten.DevEnablementService.Api.exe",
+                                        "startedAfterFF":  "13:16:31",
+                                        "restarted":  true,
+                                        "healthGet":  404
+                                    },
+                                    {
+                                        "port":  5059,
+                                        "pidBeforeFF":  25588,
+                                        "pidAfterFF":  33564,
+                                        "name":  "Diten.MdmService.Api.exe",
+                                        "startedAfterFF":  "13:16:25",
+                                        "restarted":  true,
+                                        "healthGet":  200
+                                    },
+                                    {
+                                        "port":  5060,
+                                        "pidBeforeFF":  18704,
+                                        "pidAfterFF":  27476,
+                                        "name":  "Diten.HcmService.Api.exe",
+                                        "startedAfterFF":  "13:16:26",
+                                        "restarted":  true,
+                                        "healthGet":  200
+                                    },
+                                    {
+                                        "port":  5061,
+                                        "pidBeforeFF":  22184,
+                                        "pidAfterFF":  35008,
+                                        "name":  "Diten.CrmService.Api.exe",
+                                        "startedAfterFF":  "13:16:25",
+                                        "restarted":  true,
+                                        "healthGet":  200
+                                    },
+                                    {
+                                        "port":  5066,
+                                        "pidBeforeFF":  26232,
+                                        "pidAfterFF":  35948,
+                                        "name":  "Diten.InventoryService.Api.exe",
+                                        "startedAfterFF":  "13:16:35",
+                                        "restarted":  true,
+                                        "healthGet":  200
+                                    },
+                                    {
+                                        "port":  27017,
+                                        "pidBeforeFF":  5380,
+                                        "pidAfterFF":  5380,
+                                        "name":  "mongod.exe",
+                                        "startedAfterFF":  "11:18:43",
+                                        "restarted":  false,
+                                        "healthGet":  null
+                                    }
+                                ],
+                      "Count":  11
+                  }
+}
