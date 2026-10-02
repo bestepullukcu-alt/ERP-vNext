@@ -10,10 +10,11 @@ namespace Diten.Platform.Application.Features.TimeEntry.Services;
 /// What one pull did (BL-483). The three numbers are kept apart on purpose: a finalization that failed and was swallowed
 /// is NOT a change, and a caller that counts changes (the sweep) must not count it as one.
 /// </summary>
-/// <param name="Applied">Weeks whose state THIS pull wrote: approved, rejected, returned to Draft, or an approved
-/// week's outstanding totals.</param>
-/// <param name="Failed">Weeks whose finalization failed and was swallowed (F14); they are retried by the next read,
-/// the approvals page or the sweep.</param>
+/// <param name="Applied">Weeks whose finalization THIS pull completed: approved, rejected, returned to Draft, or an
+/// approved week's outstanding totals. A week whose approval was written but whose totals then failed is NOT counted
+/// here — it is a failure of this pull, and the pull that lands its totals counts it.</param>
+/// <param name="Failed">Weeks whose outcome could not be read or whose finalization failed, swallowed (F14); they are
+/// retried by the next read, the approvals page or the sweep.</param>
 /// <param name="Attempted">Weeks a finalization was started for, whatever came of it.</param>
 public sealed record TimesheetPullResult(int Applied, int Failed, int Attempted)
 {
@@ -41,6 +42,10 @@ public interface ITimesheetDecisionPuller
 /// <para>BL-484 — "is an outcome waiting?" is asked ONCE for the whole queue (one MOD-0023 read), not once per week.
 /// The finalizer re-reads the week and its decision before it writes anything, so an answer that went stale between
 /// the question and the command costs nothing but a no-op.</para>
+///
+/// <para>CT acceptance — when that ONE read fails, the queue is asked week by week, as it was before BL-484. The sweep
+/// takes the same oldest weeks every run, so a single instance that cannot be read would otherwise hold every other
+/// week of the tenant back for ever; asked one by one, only that week is skipped.</para>
 /// </summary>
 public sealed class TimesheetDecisionPuller : ITimesheetDecisionPuller
 {
@@ -69,23 +74,38 @@ public sealed class TimesheetDecisionPuller : ITimesheetDecisionPuller
             return TimesheetPullResult.Nothing;
         }
 
-        IReadOnlySet<Guid> waiting;
+        IReadOnlySet<Guid>? waiting;
         try
         {
             waiting = await _finalizer.PendingOutcomeWeekIdsAsync(candidates, ct);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // F14 — the read stands. Nothing was started; every candidate is taken again by the next pull.
-            LogFailure(null, OutcomeReadFailedReasonCode, ex.GetType().Name, correlationId);
-            return new TimesheetPullResult(0, 1, 0);
+            // F14 — the read stands. The shared question failed; each week is asked on its own below.
+            LogFailure(null, OutcomeReadFailedReasonCode, ex, correlationId);
+            waiting = null;
         }
 
         var applied = 0;
         var failed = 0;
         var attempted = 0;
-        foreach (var week in candidates.Where(w => waiting.Contains(w.Id)))
+        foreach (var week in candidates)
         {
+            try
+            {
+                if (!(waiting?.Contains(week.Id) ?? await _finalizer.HasPendingOutcomeAsync(week, ct)))
+                {
+                    continue;
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // Only THIS week's outcome could not be read; the rest of the queue goes on.
+                failed++;
+                LogFailure(week.Id, OutcomeReadFailedReasonCode, ex, correlationId);
+                continue;
+            }
+
             attempted++;
             try
             {
@@ -106,7 +126,7 @@ public sealed class TimesheetDecisionPuller : ITimesheetDecisionPuller
                 // totals conflict. This week is logged and skipped (the next read, the approvals page or the sweep takes
                 // it again). BL-483 — it is counted as a FAILURE, never as a change.
                 failed++;
-                LogFailure(week.Id, ThrewReasonCode, ex.GetType().Name, correlationId);
+                LogFailure(week.Id, ThrewReasonCode, ex, correlationId);
             }
         }
 
@@ -123,11 +143,16 @@ public sealed class TimesheetDecisionPuller : ITimesheetDecisionPuller
                or TimesheetFinalizationResult.SelfDecisionReturned
                or TimesheetFinalizationResult.TotalsApplied;
 
-    /// <summary>The week id, a reason code and the exception TYPE — never the exception itself: a store error's message
-    /// can carry the row's key values (the person's id among them).</summary>
-    private void LogFailure(Guid? weekId, string reasonCode, string? exceptionType, string correlationId)
+    /// <summary>
+    /// The LINE carries the week id, a reason code and the exception's type — fields a search can count — and never
+    /// the exception's text. The exception itself goes to the log beside it, as it did before BL-483: every finalizer
+    /// failure is an <see cref="InvalidOperationException"/>, and without its message and stack "the week changed",
+    /// "the totals kept changing" and "the store is down" are one indistinguishable line.
+    /// </summary>
+    private void LogFailure(Guid? weekId, string reasonCode, Exception? exception, string correlationId)
         => _logger.LogWarning(
+            exception,
             "time-entry.decision.pull.failed WeekId={WeekId} ReasonCode={ReasonCode} ExceptionType={ExceptionType} "
             + "CorrelationId={CorrelationId}; skipped, will be retried.",
-            weekId, reasonCode, exceptionType, correlationId);
+            weekId, reasonCode, exception?.GetType().Name, correlationId);
 }

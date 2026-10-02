@@ -157,7 +157,7 @@ public sealed class TimeEntryNotifier : ITimeEntryNotifier
     {
         var weekKey = WeekCalendar.KeyOf(monday);
         return SendAsync(
-            TimeEntryNotificationEvents.WeekReminder, recipient => ReminderKey(recipient, weekKey), userIds,
+            TimeEntryNotificationEvents.WeekReminder, recipient => ReminderKey(recipient, weekKey), weekKey, userIds,
             new Dictionary<string, object?>
             {
                 [Vars.WeekLabel] = WeekLabel(weekKey, monday),
@@ -228,25 +228,27 @@ public sealed class TimeEntryNotifier : ITimeEntryNotifier
     private Task<int> SendAsync(
         string eventCode, string key, IReadOnlyCollection<Guid> userIds,
         IReadOnlyDictionary<string, object?> variables, Guid? causationId, CancellationToken ct)
-        => SendAsync(eventCode, _ => key, userIds, variables, causationId, ct);
+        => SendAsync(eventCode, _ => key, key, userIds, variables, causationId, ct);
 
-    /// <summary>The four steps. <paramref name="keyOf"/> gives each recipient the key their mark is claimed under.
+    /// <summary>The four steps. <paramref name="keyOf"/> gives each recipient the key their mark is claimed under;
+    /// <paramref name="subject"/> is what the send is ABOUT (the shared key, or the week of a group of reminders) — it
+    /// names the log line of a failure that happens before any recipient is reached.
     /// <paramref name="eachRecipientOnItsOwn"/>: the recipients are unrelated people (a group of reminders), so one
     /// person's failed send must not cost the others theirs — exactly as when each was sent on their own.
     /// Returns how many e-mails were handed to the dispatch.</summary>
     private async Task<int> SendAsync(
-        string eventCode, Func<Guid, string> keyOf, IReadOnlyCollection<Guid> userIds,
+        string eventCode, Func<Guid, string> keyOf, string subject, IReadOnlyCollection<Guid> userIds,
         IReadOnlyDictionary<string, object?> variables, Guid? causationId, CancellationToken ct,
         bool eachRecipientOnItsOwn = false)
     {
         var sent = 0;
-        var key = "(none)";
+        var key = subject;
         try
         {
             var wanted = userIds.Where(id => id != Guid.Empty).Distinct().ToList();
             if (wanted.Count == 0)
             {
-                _logger.LogInformation("{EventCode}: nobody to notify.", eventCode);
+                _logger.LogInformation("{EventCode} {Key}: nobody to notify.", eventCode, key);
                 return 0;
             }
 

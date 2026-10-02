@@ -85,7 +85,10 @@ public sealed class WithdrawTimesheetWeekHandler : IRequestHandler<WithdrawTimes
             // MOD-0023 did not cancel. WHY decides the answer, and only MOD-0023's own state says why:
             // the decision landed between our read and our cancel (F13) → too late, take the decision on board;
             // otherwise nobody decided — MOD-0023 lost a concurrent write, or cancelled only part of what was open
-            // (BL-483) → a conflict the person can simply retry. The week is left exactly as it was.
+            // (BL-483) → a conflict the person can simply retry. THIS handler writes nothing to the week. (After a
+            // partial cancel MOD-0023 has already closed the instance as Cancelled, so the next read's pull returns
+            // the week to Draft through the finalizer — the withdrawal the person asked for, without its own stamp
+            // or e-mail; a retry then finds the week already open.)
             if (IsDecided(await _approvals.ReadDecisionAsync(instanceId, ct)))
             {
                 return await TooLateAsync(week, request, ct);

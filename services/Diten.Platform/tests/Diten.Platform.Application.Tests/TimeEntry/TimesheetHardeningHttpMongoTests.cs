@@ -23,6 +23,7 @@ using Diten.Platform.Infrastructure.Persistence.Schema;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
 using Xunit.Abstractions;
@@ -123,7 +124,8 @@ public sealed class TimesheetHardeningHttpMongoTests : TimerScenario
     {
         var weekId = await SubmittedWeekAsync(Row(Monday, 120, TaskA));
         Ok(await DecideAsync(Manager, weekId, approve: true));
-        // The failure's own message names the person — exactly what must not reach the log.
+        // The failure's own message names the person — exactly what must not reach the log LINE (the line is what a
+        // search counts and an alert quotes). The exception itself travels beside it, for whoever has to diagnose it.
         Host.Probes.BeforeTaskTotalWrite = _ => throw new InvalidOperationException($"store down for user {Person}");
 
         // The puller: the failure is swallowed (F14) and reported as a failure. The read still re-reads.
@@ -144,7 +146,8 @@ public sealed class TimesheetHardeningHttpMongoTests : TimerScenario
         var failure = Assert.Single(_logs.Starting("time-entry.decision.pull.failed"), l => Equals(l.Values["WeekId"], (Guid?)weekId));
         Assert.Equal(TimesheetDecisionPuller.ThrewReasonCode, failure.Values["ReasonCode"]);
         Assert.Equal(nameof(InvalidOperationException), failure.Values["ExceptionType"]);
-        Assert.Null(failure.Exception);
+        // CT acceptance — without the exception every finalizer failure is the same line ("InvalidOperationException").
+        Assert.IsType<InvalidOperationException>(failure.Exception);
         Assert.DoesNotContain(Person.ToString(), failure.Message, StringComparison.OrdinalIgnoreCase);
 
         // When the totals do land, THAT is a change — and a pull with nothing to do is neither.
@@ -154,6 +157,71 @@ public sealed class TimesheetHardeningHttpMongoTests : TimerScenario
         var nothing = await PullAsync(weekId);
         Assert.Equal(TimesheetPullResult.Nothing, nothing);
         Assert.False(nothing.ShouldReread);
+    }
+
+    // CT acceptance — a finalization that RAN and found nothing left to do is an attempt: not a change, not a failure.
+    // (The reader's copy of the week is older than the store's — somebody else's pull got there first.)
+    [Fact]
+    public async Task K2_a_pull_that_finds_the_week_already_finalized_counts_an_attempt_and_no_change()
+    {
+        var weekId = await SubmittedWeekAsync(Row(Monday, 120, TaskA));
+        Ok(await DecideAsync(Manager, weekId, approve: true));
+        var stale = await StoredWeekAsync(weekId);
+        Assert.Equal(TimesheetWeekStatus.Submitted, stale.Status);
+
+        Assert.Equal(new TimesheetPullResult(Applied: 1, Failed: 0, Attempted: 1), await PullAsync(weekId));
+
+        var late = await InTenantAsync(sp =>
+            sp.GetRequiredService<ITimesheetDecisionPuller>().PullAsync([stale], Guid.NewGuid().ToString()));
+
+        Assert.Equal(new TimesheetPullResult(Applied: 0, Failed: 0, Attempted: 1), late);
+        Assert.True(late.ShouldReread);
+        Assert.Equal(120, await ApprovedMinutesAsync(TaskA));
+    }
+
+    // CT acceptance — the ONE shared MOD-0023 read (BL-484) is also one shared point of failure. The sweep takes the
+    // same oldest weeks every run, so a single instance that cannot be read must cost its own week and nothing else.
+    [Fact]
+    public async Task K4c_an_instance_that_cannot_be_read_costs_only_its_own_week_not_the_rest_of_the_queue()
+    {
+        var weekId = await SubmittedWeekAsync(Row(Monday, 120, TaskA));
+        Ok(await DecideAsync(Manager, weekId, approve: true));
+        var decided = await StoredWeekAsync(weekId);
+
+        var unreadable = await SeedWeekAsync(TimesheetWeekStatus.Submitted, WorkflowInstanceStatus.Active);
+        var instances = Collection<WorkflowInstance>(PlatformCollections.WorkflowInstances);
+        try
+        {
+            // A stored status no build of this code can read: every read that returns this document throws.
+            await instances.UpdateOneAsync(
+                i => i.Id == unreadable.WorkflowInstanceId,
+                new BsonDocumentUpdateDefinition<WorkflowInstance>(
+                    new BsonDocument("$set", new BsonDocument(nameof(WorkflowInstance.Status), "NoSuchStatus"))));
+            _logs.Clear();
+
+            var result = await InTenantAsync(sp => sp.GetRequiredService<ITimesheetDecisionPuller>()
+                .PullAsync([unreadable, decided], Guid.NewGuid().ToString()));
+
+            Assert.Equal(new TimesheetPullResult(Applied: 1, Failed: 1, Attempted: 1), result);
+            Assert.Equal(TimesheetWeekStatus.Approved, (await StoredWeekAsync(weekId)).Status);
+            Assert.Equal(120, await ApprovedMinutesAsync(TaskA));
+            Assert.Equal(TimesheetWeekStatus.Submitted, (await StoredWeekAsync(unreadable.Id)).Status);
+
+            // Said twice, and told apart: the shared read failed (no week), then THIS week's own read failed.
+            var failures = _logs.Starting("time-entry.decision.pull.failed");
+            Assert.Contains(failures, l => l.Values["WeekId"] is null
+                && Equals(l.Values["ReasonCode"], TimesheetDecisionPuller.OutcomeReadFailedReasonCode));
+            var own = Assert.Single(failures, l => Equals(l.Values["WeekId"], (Guid?)unreadable.Id));
+            Assert.Equal(TimesheetDecisionPuller.OutcomeReadFailedReasonCode, own.Values["ReasonCode"]);
+            Assert.NotNull(own.Exception);
+            Assert.DoesNotContain(failures, l => Equals(l.Values["WeekId"], (Guid?)weekId));
+        }
+        finally
+        {
+            // Nothing this test made unreadable stays behind for the sweeps the other tests of this database run.
+            await instances.DeleteOneAsync(i => i.Id == unreadable.WorkflowInstanceId);
+            await Collection<TimesheetWeek>(PlatformCollections.TimeEntryTimesheetWeeks).DeleteOneAsync(w => w.Id == unreadable.Id);
+        }
     }
 
     // ── K3 (BL-483/1) — "too late" only when somebody decided ────────────────────────────────────────────────────
@@ -454,6 +522,35 @@ public sealed class TimesheetHardeningHttpMongoTests : TimerScenario
             people.Select(TestRecipients.Address).OrderBy(a => a, StringComparer.Ordinal),
             Reminders().Select(r => r.To.Single().Email).OrderBy(a => a, StringComparer.Ordinal));
         Assert.Equal(3, (await ReminderMarkKeysAsync()).Count);
+    }
+
+    // CT acceptance — a send that fails before it reaches anybody still says what it was about. (The group form gave
+    // the log line "(none)" for every notification of this module, not only for reminders.)
+    [Fact]
+    public async Task K5_a_group_whose_recipients_cannot_be_resolved_is_logged_under_its_week_and_claims_nobody()
+    {
+        var people = Enumerable.Range(0, 3).Select(_ => Guid.NewGuid()).ToList();
+        await Collection<TimesheetWeek>(PlatformCollections.TimeEntryTimesheetWeeks).InsertManyAsync(people.Select(DraftWeek));
+        await SwitchReminderOnAsync();
+        Host.Recipients.Unreachable = true;
+        try
+        {
+            _logs.Clear();
+            await RunReminderAsync(MondayNine);
+        }
+        finally
+        {
+            Host.Recipients.Unreachable = false;
+        }
+
+        Assert.Empty(Reminders());
+        Assert.Empty(await ReminderMarkKeysAsync());
+        var failure = Assert.Single(_logs.Starting(TimeEntryNotificationEvents.WeekReminder), l => l.Exception is not null);
+        Assert.Equal(CurrentWeek, failure.Values["Key"]);
+
+        // Nobody was claimed, so the next run reminds all three.
+        await RunReminderAsync(MondayNine.AddHours(1));
+        Assert.Equal(3, Reminders().Count);
     }
 
     // ── World building ───────────────────────────────────────────────────────────────────────────────────────────

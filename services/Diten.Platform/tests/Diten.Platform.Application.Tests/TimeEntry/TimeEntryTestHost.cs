@@ -280,8 +280,16 @@ public sealed class TestRecipients : ITaskNotificationRecipientResolver
     public int Calls => Volatile.Read(ref _calls);
     public int LargestCall => Volatile.Read(ref _largestCall);
 
+    /// <summary>CT acceptance — AuthService cannot be asked at all: every resolution throws.</summary>
+    public bool Unreachable { get; set; }
+
     public Task<IReadOnlyList<TaskNotificationRecipient>> ResolveAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
     {
+        if (Unreachable)
+        {
+            throw new InvalidOperationException("the user directory did not answer");
+        }
+
         Interlocked.Add(ref _lookups, userIds.Count);
         Interlocked.Increment(ref _calls);
         int seen;
