@@ -557,6 +557,16 @@ draft is in the evidence folder; `docs/guides/**` was outside this WP's allowed 
 view for "View in stock list" on non-bin nodes (additive `/balance` parameter, MOD-0173 owner) · **FU-LOC2-04** actor
 display names in the history (user directory read).
 
+- **WP-0173-LOC2 CT-ACCEPTED (2026-10-02)** — commits a839b9044..de00f1a61 (developed in an isolated worktree, one
+  fast-forward). CT re-measured: Diten.Web.Tests 440/440, InventoryService 353/353, architecture 18/18 (Release, 0 skipped);
+  115 files, all inside the allowed paths; SharedResource only `Nav.Page.LOCATIONTREE`; no browser call to 5066 /
+  `/api/locations` / `/api/inventory` (the 4 grep hits are comments saying so); no raw `Swal.fire`; `_LayoutTenantShell`
+  explicit; manifest test not weakened (dangerous REVERSAL / CHANGELOCATIONSTATUS and non-dangerous rest asserted).
+  Live stack: /LocationTree, /Locations redirect to login (routes present). Own sabotage in a throw-away worktree
+  (view-only gate forced open) → 2 red (read-only user gets write controls on both pages), worktree removed.
+  BLOCKED-ENV carried: DataTable verifier / quality gate (no Python), vitest (no node_modules). Incident note: landing code
+  in the main worktree hot-rebuilds the owner's whole `dotnet watch` fleet once (~2.5 min) — expected, recovered.
+
 ## 20. Follow-up Items
 
 - **FU-LOC1-01 (central):** `docs/analysis/contracts/README.md` should list LOCATION as 1.1.0, owner MOD-0173-FU02, served by InventoryService 5066 (v1 frozen, v1.1 additive).
