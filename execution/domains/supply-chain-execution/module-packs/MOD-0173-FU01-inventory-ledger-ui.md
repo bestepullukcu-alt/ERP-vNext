@@ -721,6 +721,40 @@ filter exist.
   FU-UI2-05 (UI1 reversal date in the fingerprint → retry gets IDEMPOTENCY_KEY_REUSED instead of a replay). Cosmetic: subject
   of 38db41a0c starts with a BOM (PowerShell 5.1), not amended by rule.
 
+### WP-0173-PM0 implementation notes (2026-10-02, agent PASS pending CT)
+
+PM0 = a DEVELOPMENT-only bridge for the Web's PRODUCT-MASTER reads (FU-PM-01 interim, until MDM serves
+PRODUCT-MASTER-BUNDLE through the Gateway — `docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md` §6)
+and the FU-UI2-05 fix. Evidence `docs/records/audits/2026-10/mod-0173-pm0-evidence/`, audit
+`mod-0173-pm0-audit-2026-10-02.md`.
+
+- `Models/Inventory/ProductMasterBridge.cs`: setting `Inventory:ProductMasterBaseUrl`, from the environment variable
+  `Inventory__ProductMasterBaseUrl` only (no appsettings value). Empty → the Gateway's `/api/product-master/…` as before.
+  Set + Development → that base URL, `/api/product-master` stripped, identical headers, identical fail-closed handling.
+  Set + any other environment → ignored, warning logged, Gateway. The one door is `InventoryProxy.Gateway` →
+  `InventoryGatewayClient`, so `MasterLabelResolver` and `MovementFormSources` both follow it.
+- Run scripts (additions only, Web process only): `Inventory__ProductMasterBaseUrl=http://127.0.0.1:4010/`.
+- FU-UI2-05 **closed**: S-2 Reversal mints `reversalAt` together with the idempotency key when the dialog opens; the
+  controller requires it within [now − 24 h, now + 5 min] (else 400 INVALID_REQUEST) and uses it for both dates.
+
+| ID | Assumption |
+|---|---|
+| PM0-01 | The bridge sends the identical header set the Gateway call sends today for product-master (Bearer, X-Tenant-Id); X-Legal-Entity-Id stays inventory-only and no X-Correlation-Id is added, because neither is sent to product-master today. |
+| PM0-02 | Only paths `/api/product-master`, `/api/product-master/…` and `/api/product-master?…` move; `/api/product-masterX`, inventory, location and Model A calls stay on the Gateway (test). |
+| PM0-03 | A malformed value (not an absolute http/https URL) is ignored with a warning, like a non-Development value. |
+| PM0-04 | The "ignored" warning is logged once per process (the setting is resolved per request); the core resolver always warns (that is what the tests measure). |
+| PM0-05 | With the bridge, S-1 / S-2 product / SKU labels come from the Prism mock's static examples (same as InventoryService's own upstream mock) — development data, not MDM data. |
+| PM0-06 | `run-diten.sh` opens each service in a NEW macOS Terminal tab that does not inherit the shell's environment, so `launch_service` is re-defined (additions only) just before its last call (Web) with the variable inside the tab's command; `run_all.sh` / `run_watch.sh` export before the Web line and `unset` after; `watch-diten.ps1` sets `$env:` before the Web window and removes it after (BOM kept). |
+| PM0-07 | Reversal instant range 5 min ahead (clock skew) / 24 h old (a dialog left open overnight is a new decision); out of range reuses the existing INVALID_REQUEST text (resx is not an allowed path in this WP). |
+| PM0-08 | UI-2's Correct keeps its own reversal date (fixed on GET); unchanged. |
+| PM0-09 | No Gateway route was added (protected); the runtime proof measured the gateway copy answering `/api/product-master` 404 while S-3 read units / lot flag through the bridge. |
+
+**Removal (when MDM serves PRODUCT-MASTER through the Gateway):** stop setting `Inventory__ProductMasterBaseUrl` (or run
+non-Development) — behaviour is the Gateway at once. Code removal: delete `ProductMasterBridge.cs` +
+`ProductMasterBridgeTests.cs`, the `productMasterBridge` parameter / `ProductMasterBridge.Target` call in
+`InventoryGatewayClient`, the `ProductMasterBridge.Resolve` line in `InventoryProxy.Gateway`, and the lines marked
+`FU-PM-01` in the four run scripts.
+
 ## 20. Follow-up Items
 
 - Request to MOD-0290 owner (MDM): additive product/SKU search in PRODUCT-MASTER-BUNDLE v1.1 — retires W-UI-01.
