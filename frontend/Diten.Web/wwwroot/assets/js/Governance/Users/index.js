@@ -241,24 +241,22 @@ const UsersList = (function () {
         USER_DELETE_SELF: 'ErrorUserDeleteSelf', USER_DELETE_LAST_STEWARD: 'ErrorUserDeleteLastSteward', USER_DEACTIVATE_SELF: 'ErrorUserDeactivateSelf',
         USER_NOT_FOUND: 'ErrorUserNotFound', USER_ACCOUNT_KIND_INVALID: 'ErrorUserAccountKindInvalid', USER_SETUP_ALREADY_COMPLETED: 'ErrorUserSetupAlreadyCompleted',
         USER_PASSWORD_SETUP_PENDING: 'ErrorUserPasswordSetupPending', PERM_DENIED: 'ErrorUserAccountKindPermissionDenied', USER_EMAIL_REQUIRED: 'ErrorUserEmailRequired',
-        USER_EMAIL_INVALID: 'ErrorUserEmailInvalid', USER_FIRST_NAME_REQUIRED: 'ErrorUserFirstNameRequired', USER_FIRST_NAME_TOO_LONG: 'ErrorUserFirstNameTooLong',
+        USER_EMAIL_INVALID: 'ErrorUserEmailInvalid', USER_EMAIL_TOO_LONG: 'ErrorUserEmailTooLong', USER_FIRST_NAME_REQUIRED: 'ErrorUserFirstNameRequired', USER_FIRST_NAME_TOO_LONG: 'ErrorUserFirstNameTooLong',
         USER_LAST_NAME_REQUIRED: 'ErrorUserLastNameRequired', USER_LAST_NAME_TOO_LONG: 'ErrorUserLastNameTooLong'
     };
-    // BL-459 — a code whose params carry numbers adds a second, numbered sentence; without the numbers it is left out
-    // (never a raw "{max}" on the screen).
+    // BL-459 — a code with numbered params adds a second sentence; without the numbers it is left out (no raw "{max}").
     const ERROR_PARAM_KEYS = { USER_QUOTA_EXCEEDED: { key: 'ErrorUserQuotaUsage', params: ['current', 'max'] } };
-    // Every code of the refusal: the MVC proxy's { errorCodes, uncoded, status } (errorCode = its first, the older
-    // shape) or — for the delete, which goes straight to the gateway — AuthService's own envelope { errorCodes }.
+    // Every code: the proxy's { errorCodes, uncoded, status } or, for the delete, AuthService's own envelope.
     const refusalsOf = (body) => {
         const all = Array.isArray(body.errorCodes) ? body.errorCodes.filter(c => c && c.code) : [];
         return all.length ? all : (body.errorCode ? [{ code: body.errorCode, params: body.errorParams }] : []);
     };
     const localizedErrors = (json) => {
         const body = json || {};
-        // `errors` is shown only from the proxy (success: false), which puts nothing there but its OWN localized
-        // sentences; a service's English text never reaches the screen or the console.
-        const out = body.success === false && Array.isArray(body.errors) ? body.errors.filter(Boolean) : [];
-        const unknown = [];
+        // Read: the codes, and `ownMessages` — the proxy's OWN localized sentences. NEVER `errors`: in AuthService's
+        // envelope that is the service's English text, and it reaches neither the screen nor the console.
+        const own = Array.isArray(body.ownMessages) ? body.ownMessages.filter(Boolean) : [];
+        const said = [], unknown = [];
         refusalsOf(body).forEach(({ code, params }) => {
             const key = ERROR_CODE_KEYS[code];
             if (!key || !L()[key]) { unknown.push(code); return; }
@@ -266,16 +264,22 @@ const UsersList = (function () {
             const values = params || {};
             const numbered = detail && L()[detail.key] && detail.params.every(p => values[p] != null && values[p] !== '')
                 ? ' ' + detail.params.reduce((text, p) => text.split('{' + p + '}').join(String(values[p])), L()[detail.key]) : '';
-            out.push(L()[key] + numbered);
+            said.push(L()[key] + numbered);
         });
-        // Nothing is dropped in silence: a failure without a code (or with one this screen does not know) adds the
-        // general sentence, and the console names the gap — by code and HTTP status only.
+        const out = own.concat(said);
+        // Nothing is dropped in silence: a failure without a code (or with one this screen does not know) is said too
+        // — "one more problem" next to the coded sentences, the general sentence when it stands alone — and the
+        // console names the gap by code and HTTP status only.
         if (!out.length || unknown.length || body.uncoded === true) {
             console.warn('[Users] Refusal without a mapped error code.', { codes: unknown, status: body.status ?? body.statusCode ?? null });
-            out.push(L().ErrorOccurred);
+            out.push((said.length && L().ErrorUserOneMoreProblem) || L().ErrorOccurred);
         }
         return out;
     };
+    // A refusal is thrown TAGGED; whatever else lands in the same catch (a rejected fetch speaks the browser's own
+    // English: "Failed to fetch", "Load failed") is shown as the screen's general sentence, never as its message.
+    const refusal = (json) => Object.assign(new Error(localizedErrors(json).join(' ')), { isRefusal: true });
+    const sayFailure = (error) => window.showToast?.(error && error.isRefusal ? error.message : L().ErrorOccurred, 'error');
     const submitForm = async (formData, isEdit, { editingId, headers }) => {
         const url = isEdit ? `/Users/edit/${editingId}` : '/Users/create';
         const res = await fetch(url, { method: 'POST', credentials: 'same-origin', headers, body: formData });
@@ -285,7 +289,6 @@ const UsersList = (function () {
         if (!isEdit && json.setupUrl) window.setTimeout(() => showInviteLink(json.setupUrl), 0);
         return json;
     };
-
 
     /*
      * Dev-only: the copyable set-password link (setupUrl is null in prod). ⚠ IT WEARS THE PRODUCT'S DIALOG: a raw
@@ -334,9 +337,8 @@ const UsersList = (function () {
             try {
                 const res = await fetch(cfg.url(id), { method: 'POST', credentials: 'same-origin', headers: postHeaders() });
                 const json = await res.json().catch(() => ({}));
-                // Only { success: true } is a success: the proxy refuses as 200 { success: false }, and a 200 that is
-                // not its JSON at all (a sign-in page after the session ended) is a failure too.
-                if (!res.ok || json.success !== true) throw new Error(localizedErrors(json).join(' '));
+                // Only { success: true } succeeds: a refusal is 200 { success: false }; so is a 200 that is not JSON.
+                if (!res.ok || json.success !== true) throw refusal(json);
                 // Dev-only: resend/reset return a copyable set-password link → the dialog, not the toast.
                 if (json.setupUrl) {
                     list.dt.ajax.reload(null, false);
@@ -346,7 +348,7 @@ const UsersList = (function () {
                 }
             } catch (error) {
                 console.error('[Users] Admin action failed.', error);
-                window.showToast?.(error.message || L().ErrorOccurred, 'error');
+                sayFailure(error);
             }
         }, { entityName: row?.email, type: cfg.type, icon: cfg.icon, confirmButtonText: L()[cfg.text] || '' });
     };
@@ -360,11 +362,11 @@ const UsersList = (function () {
         window.showConfirm?.(L().AreYouSure, async () => {
             try {
                 const res = await fetch(`${apiUrl}/api/users/${row.id}`, { method: 'DELETE', credentials: 'include', headers: getAuthHeaders() });
-                if (!res.ok) throw new Error(localizedErrors(await res.json().catch(() => ({}))).join(' '));
+                if (!res.ok) throw refusal(await res.json().catch(() => ({})));
                 list.reload('RecordDeleted');
             } catch (error) {
                 console.error('[Users] Delete failed.', error);
-                window.showToast?.(error.message || L().ErrorOccurred, 'error');
+                sayFailure(error);
             }
         }, { entityName: row.email, subtext: L().DeleteUserConfirmText, type: 'danger', icon: 'bx-trash', confirmButtonText: L().Delete });
     };

@@ -130,7 +130,69 @@ public sealed class UserErrorCodeEndpointTests : IClassFixture<PlatformEdgeTestH
         { "a@codes.test", "First", "", null, UserErrorCodes.LastNameRequired },
         { "a@codes.test", "First", new string('b', 101), null, UserErrorCodes.LastNameTooLong },
         { "a@codes.test", "First", "Last", "Robot", UserErrorCodes.AccountKindInvalid },
+        { "   ", "First", "Last", null, UserErrorCodes.EmailRequired }, // blank is "required" alone, never also "invalid"
+        { EmailOfLength(UserFieldLimits.EmailMaxLength + 1), "First", "Last", null, UserErrorCodes.EmailTooLong },
     };
+
+    private static string EmailOfLength(int length) => new string('e', length - "@codes.test".Length) + "@codes.test";
+
+    // ── the limits themselves: exactly at the limit is accepted, one more is refused ───────────────────
+
+    [Fact]
+    public async Task A_name_of_exactly_the_limit_is_accepted_and_one_more_character_is_refused()
+    {
+        using var client = _host.Client(_token, _tenantId);
+        var atLimit = new string('n', UserFieldLimits.NameMaxLength);
+
+        var accepted = await client.PostAsJsonAsync("api/users", new { email = $"limit.{Guid.NewGuid():N}@codes.test", firstName = atLimit, lastName = atLimit });
+        Assert.True(accepted.StatusCode == HttpStatusCode.Created, await accepted.Content.ReadAsStringAsync());
+
+        var refused = await client.PostAsJsonAsync("api/users", new { email = $"limit.{Guid.NewGuid():N}@codes.test", firstName = atLimit + "n", lastName = atLimit + "n" });
+        Assert.Equal([UserErrorCodes.FirstNameTooLong, UserErrorCodes.LastNameTooLong], await ValidatorCodesAsync(refused));
+
+        var target = await NewUserAsync(invited: false);
+        Assert.Equal(HttpStatusCode.OK, (await client.PutAsJsonAsync($"api/users/{target}", new { firstName = atLimit, lastName = atLimit, isActive = true })).StatusCode);
+        Assert.Equal([UserErrorCodes.FirstNameTooLong],
+            await ValidatorCodesAsync(await client.PutAsJsonAsync($"api/users/{target}", new { firstName = atLimit + "n", lastName = atLimit, isActive = true })));
+    }
+
+    [Fact]
+    public async Task An_address_of_exactly_the_limit_is_accepted_and_one_more_character_is_refused()
+    {
+        using var client = _host.Client(_token, _tenantId);
+        var unique = Guid.NewGuid().ToString("N");
+        var atLimit = unique + EmailOfLength(UserFieldLimits.EmailMaxLength - unique.Length);
+        Assert.Equal(UserFieldLimits.EmailMaxLength, atLimit.Length);
+
+        var accepted = await client.PostAsJsonAsync("api/users", new { email = atLimit, firstName = "At", lastName = "Limit" });
+        Assert.True(accepted.StatusCode == HttpStatusCode.Created, await accepted.Content.ReadAsStringAsync());
+
+        var refused = await client.PostAsJsonAsync("api/users", new { email = "x" + atLimit, firstName = "Over", lastName = "Limit" });
+        Assert.Equal([UserErrorCodes.EmailTooLong], await ValidatorCodesAsync(refused));
+    }
+
+    // ── a body without isActive leaves the account as it is ────────────────────────────────────────────
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task An_update_without_isActive_leaves_the_active_state_as_it_is(bool startsActive)
+    {
+        var target = await NewUserAsync(invited: false);
+        using var client = _host.Client(_token, _tenantId);
+        if (!startsActive)
+        {
+            Assert.Equal(HttpStatusCode.NoContent, (await client.PostAsync($"api/users/{target}/disable", null)).StatusCode);
+        }
+
+        var response = await client.PutAsync($"api/users/{target}",
+            new StringContent("""{"firstName":"Renamed","lastName":"Only"}""", System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.True(response.StatusCode == HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+        using var doc = JsonDocument.Parse(await (await client.GetAsync($"api/users/{target}")).Content.ReadAsStringAsync());
+        Assert.Equal("Renamed", doc.RootElement.GetProperty("data").GetProperty("firstName").GetString());
+        Assert.Equal(startsActive, doc.RootElement.GetProperty("data").GetProperty("isActive").GetBoolean());
+    }
 
     [Theory]
     [MemberData(nameof(CreateValidatorCases))]
@@ -140,7 +202,7 @@ public sealed class UserErrorCodeEndpointTests : IClassFixture<PlatformEdgeTestH
 
         var response = await client.PostAsJsonAsync("api/users", new { email, firstName, lastName, accountKind });
 
-        Assert.Equal(code, (await ValidatorCodesAsync(response))[0]);
+        Assert.Equal([code], await ValidatorCodesAsync(response)); // the whole list: one refusal, one code
     }
 
     [Theory]
@@ -154,7 +216,7 @@ public sealed class UserErrorCodeEndpointTests : IClassFixture<PlatformEdgeTestH
 
         var response = await client.PutAsJsonAsync($"api/users/{target}", new { firstName, lastName, isActive = true, accountKind });
 
-        Assert.Equal(code, (await ValidatorCodesAsync(response))[0]);
+        Assert.Equal([code], await ValidatorCodesAsync(response)); // the whole list: one refusal, one code
     }
 
     /// <summary>
@@ -174,7 +236,7 @@ public sealed class UserErrorCodeEndpointTests : IClassFixture<PlatformEdgeTestH
 
         var response = await client.PostAsync("api/users", new StringContent(json, System.Text.Encoding.UTF8, "application/json"));
 
-        Assert.Equal(code, (await ValidatorCodesAsync(response))[0]);
+        Assert.Equal([code], await ValidatorCodesAsync(response)); // the whole list: one refusal, one code
     }
 
     [Theory]
@@ -189,7 +251,7 @@ public sealed class UserErrorCodeEndpointTests : IClassFixture<PlatformEdgeTestH
 
         var response = await client.PutAsync($"api/users/{target}", new StringContent(json, System.Text.Encoding.UTF8, "application/json"));
 
-        Assert.Equal(code, (await ValidatorCodesAsync(response))[0]);
+        Assert.Equal([code], await ValidatorCodesAsync(response)); // the whole list: one refusal, one code
     }
 
     /// <summary>

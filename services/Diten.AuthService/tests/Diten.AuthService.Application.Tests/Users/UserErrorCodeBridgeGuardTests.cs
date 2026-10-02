@@ -128,52 +128,97 @@ public sealed class UserErrorCodeBridgeGuardTests
         Assert.True(refusals >= 10, $"Only {refusals} refusals were found in the command sources — the scan is not reading them.");
     }
 
-    // A rule that deliberately carries NO UserErrorCodes code — each with its reason. Anything else must carry one.
-    private static readonly IReadOnlyDictionary<(string File, string Property), string> ValidatorExemptions = new Dictionary<(string, string), string>
+    // ONE check that deliberately carries no UserErrorCodes code — file, property AND check, each with its reason. Any
+    // other check, on the same property too, must carry its code.
+    private static readonly IReadOnlyDictionary<(string File, string Property, string Check), string> ValidatorExemptions = new Dictionary<(string, string, string), string>
     {
-        [("CreateUserCommandValidator.cs", "Password")] =
+        [("CreateUserCommandValidator.cs", "Password", "MaximumLength")] =
             "self-service password ceiling: a password rule (the password.* family, out of this screen's scope); the Users form never sends a password",
-        [("UpdateUserCommandValidator.cs", "Id")] =
+        [("UpdateUserCommandValidator.cs", "Id", "NotEmpty")] =
             "the id comes from the route ({id:guid}); only Guid.Empty fails it and no screen sends that — it stays the measured example of an uncoded default (ValidationEnvelopeUnchangedTests)",
     };
 
+    // What a check on a property is called: {Property}{Suffix} in UserErrorCodes — NotEmpty on FirstName is
+    // FirstNameRequired, never "some code". A check kind missing here fails the guard until it is given a name.
+    private static readonly IReadOnlyDictionary<string, string> CodeSuffixOfCheck = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["NotEmpty"] = "Required", ["NotNull"] = "Required", ["EmailAddress"] = "Invalid", ["Must"] = "Invalid", ["Matches"] = "Invalid",
+        ["MaximumLength"] = "TooLong", ["MinimumLength"] = "TooShort",
+    };
+
     /// <summary>
-    /// The create/edit validators: EVERY rule — with or without a sentence — names a <see cref="UserErrorCodes"/> code
-    /// on each of its checks, or stands in <see cref="ValidatorExemptions"/> with its reason. A rule with neither
-    /// would leave as FluentValidation's default code, which never reaches the wire.
+    /// The create/edit validators, check by check: every check of every rule (<c>RuleFor</c> and <c>RuleForEach</c>)
+    /// is followed by ITS OWN <see cref="UserErrorCodes"/> code — the one named after the property and the kind of
+    /// check — before the next check begins, or stands in <see cref="ValidatorExemptions"/> with its reason. A check
+    /// with no code leaves as FluentValidation's default, which never reaches the wire; a check with another check's
+    /// code would say the wrong sentence.
     /// </summary>
     [Fact]
     public void Every_user_validator_rule_carries_a_code_or_is_an_explicit_exemption()
     {
         var validators = Path.Combine(RepoRoot(), "services", "Diten.AuthService", "src", "Diten.AuthService.Application", "Features", "Users", "Validators");
+        var defined = ServerCodes();
         var coded = 0;
-        var exempted = new HashSet<(string, string)>();
+        var exempted = new HashSet<(string, string, string)>();
 
         foreach (var file in new[] { "CreateUserCommandValidator.cs", "UpdateUserCommandValidator.cs" })
         {
             var source = File.ReadAllText(Path.Combine(validators, file));
-            foreach (var rule in source.Split("RuleFor(").Skip(1))
+            foreach (var rule in Regex.Split(source, @"\bRuleFor(?:Each)?\(").Skip(1))
             {
                 var property = Regex.Match(rule, @"^x => x\.(?<name>[A-Za-z]+)\)").Groups["name"].Value;
                 Assert.False(string.IsNullOrEmpty(property), $"{file}: could not read the property of → RuleFor({rule.Split('\n')[0].Trim()}");
-                if (ValidatorExemptions.ContainsKey((file, property)))
-                {
-                    exempted.Add((file, property));
-                    continue;
-                }
 
-                var checks = Regex.Matches(rule, @"\.(NotEmpty|NotNull|EmailAddress|MaximumLength|MinimumLength|Length|Must|Matches|InclusiveBetween|Equal|NotEqual)\(").Count;
-                var codes = Regex.Matches(rule, @"\.WithErrorCode\(UserErrorCodes\.[A-Za-z]+\)").Count;
-                Assert.True(checks > 0, $"{file}: {property} has no check this guard recognises — add it to the scan.");
-                Assert.True(checks == codes,
-                    $"{file}: {property} has {checks} check(s) but {codes} UserErrorCodes code(s), and is not an exemption.");
-                coded += codes;
+                // Every fluent call up to the statement's end; the checks are the ones that are not options.
+                var statement = rule[..rule.IndexOf(';')];
+                var calls = Regex.Matches(statement, @"\.(?<name>[A-Z][A-Za-z]+)\((?<args>[^()]*(?:\([^()]*\)[^()]*)*)\)").ToList();
+                var checkAt = calls.Select((call, at) => (call, at)).Where(c => c.call.Groups["name"].Value is not ("WithErrorCode" or "WithMessage" or "When" or "Unless" or "WithState" or "WithName" or "Cascade" or "IsDefinedKindName" or "Join" or "GetNames" or "IsNullOrWhiteSpace" or "IsNullOrEmpty")).ToList();
+                Assert.True(checkAt.Count > 0, $"{file}: {property} has no check this guard can read.");
+
+                for (var i = 0; i < checkAt.Count; i++)
+                {
+                    var check = checkAt[i].call.Groups["name"].Value;
+                    if (ValidatorExemptions.ContainsKey((file, property, check)))
+                    {
+                        exempted.Add((file, property, check));
+                        continue;
+                    }
+
+                    Assert.True(CodeSuffixOfCheck.TryGetValue(check, out var suffix), $"{file}: {property}.{check}() — this guard has no code name for that kind of check.");
+                    var expected = property + suffix;
+                    Assert.True(defined.ContainsKey(expected), $"{file}: {property}.{check}() should carry UserErrorCodes.{expected}, which does not exist.");
+
+                    // The code between THIS check and the next one.
+                    var until = i + 1 < checkAt.Count ? checkAt[i + 1].at : calls.Count;
+                    var own = calls.Skip(checkAt[i].at + 1).Take(until - checkAt[i].at - 1)
+                        .Where(c => c.Groups["name"].Value == "WithErrorCode").Select(c => c.Groups["args"].Value.Trim()).ToList();
+                    Assert.True(own.Count == 1 && own[0] == $"UserErrorCodes.{expected}",
+                        $"{file}: {property}.{check}() must carry exactly UserErrorCodes.{expected}; found [{string.Join(", ", own)}] — and it is not an exemption.");
+                    coded++;
+                }
             }
         }
 
-        Assert.True(coded >= 10, $"Only {coded} coded checks were found — the scan is not reading the rules.");
+        Assert.True(coded >= 12, $"Only {coded} coded checks were found — the scan is not reading the rules.");
         var stale = ValidatorExemptions.Keys.Except(exempted).ToList();
-        Assert.True(stale.Count == 0, $"Exemptions that match no rule any more: {string.Join(", ", stale)}");
+        Assert.True(stale.Count == 0, $"Exemptions that match no check any more: {string.Join(", ", stale)}");
+    }
+
+    /// <summary>The validators read their limits from the one list — a literal would drift from the form's maxlength.</summary>
+    [Fact]
+    public void The_validators_take_their_length_limits_from_UserFieldLimits()
+    {
+        var validators = Path.Combine(RepoRoot(), "services", "Diten.AuthService", "src", "Diten.AuthService.Application", "Features", "Users", "Validators");
+        var create = File.ReadAllText(Path.Combine(validators, "CreateUserCommandValidator.cs"));
+        var update = File.ReadAllText(Path.Combine(validators, "UpdateUserCommandValidator.cs"));
+
+        foreach (var source in new[] { create, update })
+        {
+            Assert.Contains(".MaximumLength(UserFieldLimits.NameMaxLength).WithErrorCode(UserErrorCodes.FirstNameTooLong)", source);
+            Assert.Contains(".MaximumLength(UserFieldLimits.NameMaxLength).WithErrorCode(UserErrorCodes.LastNameTooLong)", source);
+        }
+
+        Assert.Contains(".MaximumLength(UserFieldLimits.EmailMaxLength).WithErrorCode(UserErrorCodes.EmailTooLong)", create);
     }
 
     // ── the production sources ──────────────────────────────────────────────────────────────────────────

@@ -128,7 +128,7 @@ public sealed class PasswordPolicyDoorEndpointTests : IClassFixture<PasswordPoli
         Assert.Equal(400, root.GetProperty("status").GetInt32());
         Assert.Equal(
             "Validation failed: \n -- Password: Password must be at least 10 characters. Severity: Error\n -- Password: Password must contain at least one uppercase letter. Severity: Error\n -- Password: Password must contain at least one special character. Severity: Error",
-            root.GetProperty("detail").GetString());
+            root.GetProperty("detail").GetString()!.ReplaceLineEndings("\n")); // Environment.NewLine on the wire
 
         var codes = root.GetProperty("errorCodes").EnumerateArray().ToList();
         Assert.Equal([PasswordErrorCodes.TooShort, PasswordErrorCodes.NeedsUppercase, PasswordErrorCodes.NeedsSpecial], codes.Select(c => c.GetProperty("code").GetString()));

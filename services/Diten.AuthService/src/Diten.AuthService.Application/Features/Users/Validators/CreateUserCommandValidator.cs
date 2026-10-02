@@ -11,7 +11,10 @@ public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCom
     {
         RuleFor(x => x.Email)
             .NotEmpty().WithErrorCode(UserErrorCodes.EmailRequired).WithMessage("E-posta adresi boş bırakılamaz.")
-            .EmailAddress().WithErrorCode(UserErrorCodes.EmailInvalid).WithMessage("Geçerli bir e-posta adresi giriniz.");
+            // The format is judged only when there IS a value: an empty address is ONE refusal (required), not two.
+            .EmailAddress().WithErrorCode(UserErrorCodes.EmailInvalid).WithMessage("Geçerli bir e-posta adresi giriniz.")
+                .When(x => !string.IsNullOrWhiteSpace(x.Email), ApplyConditionTo.CurrentValidator)
+            .MaximumLength(UserFieldLimits.EmailMaxLength).WithErrorCode(UserErrorCodes.EmailTooLong).WithMessage("Email is too long.");
 
         // Password is optional (invitation flow sends a set-password link instead). Only
         // enforce the length ceiling when a password is actually supplied (self-service create).
@@ -21,11 +24,11 @@ public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCom
 
         RuleFor(x => x.FirstName)
             .NotEmpty().WithErrorCode(UserErrorCodes.FirstNameRequired).WithMessage("Ad boş bırakılamaz.")
-            .MaximumLength(100).WithErrorCode(UserErrorCodes.FirstNameTooLong).WithMessage("Ad en fazla 100 karakter olabilir.");
+            .MaximumLength(UserFieldLimits.NameMaxLength).WithErrorCode(UserErrorCodes.FirstNameTooLong).WithMessage("Ad en fazla 100 karakter olabilir.");
 
         RuleFor(x => x.LastName)
             .NotEmpty().WithErrorCode(UserErrorCodes.LastNameRequired).WithMessage("Soyad boş bırakılamaz.")
-            .MaximumLength(100).WithErrorCode(UserErrorCodes.LastNameTooLong).WithMessage("Soyad en fazla 100 karakter olabilir.");
+            .MaximumLength(UserFieldLimits.NameMaxLength).WithErrorCode(UserErrorCodes.LastNameTooLong).WithMessage("Soyad en fazla 100 karakter olabilir.");
 
         // WP-INFRA-AUTH-ACCOUNT-KIND-01 — when a kind IS supplied it must be a spelled-out enum name. Blank is not
         // an error: it means "leave the account Unknown". The permission check is the handler's (403, not 400).

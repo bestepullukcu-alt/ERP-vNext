@@ -13,11 +13,11 @@ public sealed class UpdateUserCommandValidator : AbstractValidator<UpdateUserCom
 
         RuleFor(x => x.FirstName)
             .NotEmpty().WithErrorCode(UserErrorCodes.FirstNameRequired).WithMessage("Ad boş bırakılamaz.")
-            .MaximumLength(100).WithErrorCode(UserErrorCodes.FirstNameTooLong).WithMessage("Ad en fazla 100 karakter olabilir.");
+            .MaximumLength(UserFieldLimits.NameMaxLength).WithErrorCode(UserErrorCodes.FirstNameTooLong).WithMessage("Ad en fazla 100 karakter olabilir.");
 
         RuleFor(x => x.LastName)
             .NotEmpty().WithErrorCode(UserErrorCodes.LastNameRequired).WithMessage("Soyad boş bırakılamaz.")
-            .MaximumLength(100).WithErrorCode(UserErrorCodes.LastNameTooLong).WithMessage("Soyad en fazla 100 karakter olabilir.");
+            .MaximumLength(UserFieldLimits.NameMaxLength).WithErrorCode(UserErrorCodes.LastNameTooLong).WithMessage("Soyad en fazla 100 karakter olabilir.");
 
         // WP-AUTH-USER-KIND-UPDATE-01 — same rule as create: a supplied kind must be a spelled-out enum name. Blank
         // means "leave the kind as it is". The permission check is the handler's (403, not 400).

@@ -13,7 +13,7 @@ public sealed record UpdateUserCommand(
     Guid Id,
     string FirstName,
     string LastName,
-    bool IsActive,
+    bool? IsActive, // null = leave the account's active state as it is
     string? AccountKind = null,
     bool CallerCanManageAccountKind = false,
     string? CorrelationId = null

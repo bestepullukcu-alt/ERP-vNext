@@ -8,6 +8,9 @@ public sealed class UserEditViewModel
     /// <summary>The name limit — AuthService's validators' (MaximumLength); the form's maxlength reads it too.</summary>
     public const int NameMaxLength = 100;
 
+    /// <summary>The e-mail limit — AuthService's validator's; the form's maxlength reads it too.</summary>
+    public const int EmailMaxLength = 256;
+
     public Guid? Id { get; set; }
 
     // No [Required]/[EmailAddress] here: without an ErrorMessage MVC answers in English ("The FirstName field is

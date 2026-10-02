@@ -79,7 +79,8 @@ public sealed class ValidationEnvelopeUnchangedTests : IClassFixture<PlatformEdg
         Assert.Equal(["title", "status", "detail", "traceId", .. added], doc.RootElement.EnumerateObject().Select(p => p.Name).ToArray());
         Assert.Equal("Validation failed", doc.RootElement.GetProperty("title").GetString());
         Assert.Equal(400, doc.RootElement.GetProperty("status").GetInt32());
-        return doc.RootElement.GetProperty("detail").GetString()!;
+        // FluentValidation joins its failures with Environment.NewLine; the pinned text is written with \n.
+        return doc.RootElement.GetProperty("detail").GetString()!.ReplaceLineEndings("\n");
     }
 
     private async Task<string> SeedTokenAsync()

@@ -61,6 +61,7 @@ public static class UserErrorCodes
     // ── the create/edit validators (400) ────────────────────────────────────────────────────────────────
     public const string EmailRequired = "USER_EMAIL_REQUIRED";
     public const string EmailInvalid = "USER_EMAIL_INVALID";
+    public const string EmailTooLong = "USER_EMAIL_TOO_LONG";
     public const string FirstNameRequired = "USER_FIRST_NAME_REQUIRED";
     public const string FirstNameTooLong = "USER_FIRST_NAME_TOO_LONG";
     public const string LastNameRequired = "USER_LAST_NAME_REQUIRED";

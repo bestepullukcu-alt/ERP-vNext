@@ -107,7 +107,7 @@ describe("refusals tagged with a stable code are shown in the reader's language"
     expect(source).toMatch(/USER_INVITATION_PENDING: 'ErrorUserInvitationPending'/);
     // BL-440 package 5: the factory shows `json.errors`; the page's submit hands it the LOCALIZED list.
     expect(source).toMatch(/if \(!json\.success\) return Object\.assign\(\{\}, json, \{ errors: localizedErrors\(json\) \}\);/);
-    expect(source).toMatch(/throw new Error\(localizedErrors\(json\)\.join\(' '\)\)/);
+    expect(source).toMatch(/if \(!res\.ok \|\| json\.success !== true\) throw refusal\(json\);/);
     expect(source, "the form still shows the raw gateway text").not.toMatch(/if \(!json\.success\) return json;/);
   });
 

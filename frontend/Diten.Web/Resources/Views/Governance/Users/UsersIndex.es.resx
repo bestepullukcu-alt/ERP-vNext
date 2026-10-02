@@ -71,4 +71,6 @@
   <data name="ErrorUserFirstNameTooLong" xml:space="preserve"><value>El nombre es demasiado largo. Acórtelo e inténtelo de nuevo.</value></data>
   <data name="ErrorUserLastNameRequired" xml:space="preserve"><value>Introduzca un apellido.</value></data>
   <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>El apellido es demasiado largo. Acórtelo e inténtelo de nuevo.</value></data>
+  <data name="ErrorUserEmailTooLong" xml:space="preserve"><value>La dirección de correo electrónico es demasiado larga. Acórtela e inténtelo de nuevo.</value></data>
+  <data name="ErrorUserOneMoreProblem" xml:space="preserve"><value>Hay un problema más; revise lo que ha introducido e inténtelo de nuevo.</value></data>
 </root>

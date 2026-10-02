@@ -71,4 +71,6 @@
   <data name="ErrorUserFirstNameTooLong" xml:space="preserve"><value>Имя слишком длинное. Сократите его и повторите попытку.</value></data>
   <data name="ErrorUserLastNameRequired" xml:space="preserve"><value>Введите фамилию.</value></data>
   <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>Фамилия слишком длинная. Сократите её и повторите попытку.</value></data>
+  <data name="ErrorUserEmailTooLong" xml:space="preserve"><value>Адрес электронной почты слишком длинный. Сократите его и повторите попытку.</value></data>
+  <data name="ErrorUserOneMoreProblem" xml:space="preserve"><value>Есть ещё одна проблема; проверьте введённые данные и повторите попытку.</value></data>
 </root>

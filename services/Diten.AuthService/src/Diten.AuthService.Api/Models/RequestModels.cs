@@ -39,6 +39,8 @@ public sealed record SetTenantPasswordRequest(string Email, string Token, string
 // WP-AUTH-USER-KIND-UPDATE-01 — AccountKind is optional (enum NAME). Omitted ⇒ untouched; a CHANGE needs
 // auth.users.account-kind.manage as well, else 403 PERM_DENIED (same rule as create).
 // FirstName / LastName nullable on the wire for the same reason as CreateUserRequest.
-public sealed record UpdateUserRequest(string? FirstName, string? LastName, bool IsActive, string? AccountKind = null);
+// IsActive is nullable on the wire: a body WITHOUT it leaves the account as it is (a non-nullable bool would bind a
+// missing field as false and switch the user off).
+public sealed record UpdateUserRequest(string? FirstName, string? LastName, bool? IsActive, string? AccountKind = null);
 public sealed record CreateRoleRequest(string Name, string DisplayName, string? Description);
 public sealed record UpdateRoleRequest(string DisplayName, string? Description);

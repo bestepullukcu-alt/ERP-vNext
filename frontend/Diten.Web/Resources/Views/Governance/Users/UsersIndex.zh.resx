@@ -71,4 +71,6 @@
   <data name="ErrorUserFirstNameTooLong" xml:space="preserve"><value>名字过长，请缩短后重试。</value></data>
   <data name="ErrorUserLastNameRequired" xml:space="preserve"><value>请输入姓氏。</value></data>
   <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>姓氏过长，请缩短后重试。</value></data>
+  <data name="ErrorUserEmailTooLong" xml:space="preserve"><value>电子邮件地址过长，请缩短后重试。</value></data>
+  <data name="ErrorUserOneMoreProblem" xml:space="preserve"><value>还有一个问题；请检查您输入的内容后重试。</value></data>
 </root>

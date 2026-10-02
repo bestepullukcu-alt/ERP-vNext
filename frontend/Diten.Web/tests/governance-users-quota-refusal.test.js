@@ -43,7 +43,7 @@ describe("USER_QUOTA_EXCEEDED on the Users screen", () => {
 
     const [text] = loadLocalizedErrors(labels)({
       success: false,
-      errors: [], // the proxy relays no service sentence (WP-USERS-ERROR-CODES-01): the code and its params only
+      ownMessages: [], // the proxy relays no service sentence (WP-USERS-ERROR-CODES-01): the code and its params only
       errorCode: "USER_QUOTA_EXCEEDED",
       errorParams: { max: "25", current: "25" }
     });
@@ -56,7 +56,7 @@ describe("USER_QUOTA_EXCEEDED on the Users screen", () => {
 
   test("without the numbers the sentence stands alone — never a raw placeholder", () => {
     const labels = labelsFor("tr");
-    const [text] = loadLocalizedErrors(labels)({ success: false, errors: [], errorCode: "USER_QUOTA_EXCEEDED", errorParams: null });
+    const [text] = loadLocalizedErrors(labels)({ success: false, ownMessages: [], errorCode: "USER_QUOTA_EXCEEDED", errorParams: null });
 
     expect(text).toBe(labels.ErrorUserQuotaExceeded);
   });

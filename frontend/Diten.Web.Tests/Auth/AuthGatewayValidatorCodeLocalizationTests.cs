@@ -81,6 +81,20 @@ public sealed class AuthGatewayValidatorCodeLocalizationTests
         Assert.DoesNotContain("A valid email address is required.", result.ErrorMessage);
     }
 
+    // Item 13 — a code this map does not know, next to one it does, is not dropped either (every failure HAS a code
+    // here, so only the map's own gap can add the general sentence).
+    [Fact]
+    public async Task A_known_code_next_to_an_unknown_one_reads_as_the_sentence_plus_the_general_one()
+    {
+        using var _ = new CultureScope("tr");
+        var localizer = Localizer();
+        const string body = """{"title":"Validation failed","status":400,"detail":"Validation failed: \n -- NewPassword: Password can be at most 128 characters. Severity: Error\n -- NewPassword: Something new. Severity: Error","traceId":"t","errorCodes":[{"code":"password.too_long","params":{"maxLength":"128"}},{"code":"password.a_rule_this_map_does_not_know","params":null}]}""";
+
+        var result = await Gateway(body, localizer).ResetTenantPasswordAsync("a@b.test", "the-emailed-token", new string('x', 129));
+
+        Assert.Equal(string.Format(Sentence(localizer, "Password.Error.TooLong", "tr"), "128") + " " + Sentence(localizer, "ErrorOccurred", "tr"), result.ErrorMessage);
+    }
+
     [Fact]
     public async Task A_fully_coded_refusal_gets_no_general_sentence()
     {

@@ -49,11 +49,11 @@
   <data name="AccountKindChanged" xml:space="preserve"><value>Hesap türü güncellendi</value></data>
   <data name="AccountKindCreateHint" xml:space="preserve"><value>Boş bırakılırsa hesap onaylanmamış kalır.</value></data>
   <data name="InviteLinkTitle" xml:space="preserve"><value>Davet bağlantısı (geliştirme)</value></data>
-  <data name="InviteLinkHint" xml:space="preserve"><value>Bu şifre belirleme bağlantısını kullanıcıya iletin. Yalnızca geliştirme ortamında görünür.</value></data>
+  <data name="InviteLinkHint" xml:space="preserve"><value>Bu parola belirleme bağlantısını kullanıcıya iletin. Yalnızca geliştirme ortamında görünür.</value></data>
   <data name="StatusInvited" xml:space="preserve"><value>Davet edildi</value></data>
-  <data name="InvitationPendingHint" xml:space="preserve"><value>Davet bekliyor: kişi e-postadaki bağlantıyla şifresini belirlediğinde hesap kendiliğinden aktifleşir. O zamana kadar şifre sıfırlama yoktur; gerekirse daveti yeniden gönderin.</value></data>
+  <data name="InvitationPendingHint" xml:space="preserve"><value>Davet bekliyor: kişi e-postadaki bağlantıyla parolasını belirlediğinde hesap kendiliğinden aktifleşir. O zamana kadar parola sıfırlama yoktur; gerekirse daveti yeniden gönderin.</value></data>
   <data name="ErrorUserEmailTaken" xml:space="preserve"><value>Bu e-posta adresiyle kayıtlı bir kullanıcı zaten var.</value></data>
-  <data name="ErrorUserInvitationPending" xml:space="preserve"><value>Bu kullanıcı daveti henüz kabul etmedi. Hesap, kişi şifresini belirlediğinde aktifleşir; gerekirse daveti yeniden gönderin.</value></data>
+  <data name="ErrorUserInvitationPending" xml:space="preserve"><value>Bu kullanıcı daveti henüz kabul etmedi. Hesap, kişi parolasını belirlediğinde aktifleşir; gerekirse daveti yeniden gönderin.</value></data>
   <data name="ErrorUserQuotaExceeded" xml:space="preserve"><value>Abonelik planınızın kullanıcı sınırına ulaşıldı; kullanıcı eklenmedi. Bir kullanıcıyı kaldırın ya da planı yükseltin.</value></data>
   <data name="ErrorUserQuotaUsage" xml:space="preserve"><value>Kullanımda: {current} / {max} kullanıcı.</value></data>
   <data name="DeleteUserConfirmText" xml:space="preserve"><value>Kullanıcı silinir, rolleri kaldırılır; hesap geri getirilemez. Aynı e-posta ile yeni bir hesap açılabilir.</value></data>
@@ -62,7 +62,7 @@
   <data name="ErrorUserDeactivateSelf" xml:space="preserve"><value>Kendi hesabınızı pasife alamazsınız.</value></data>
   <data name="ErrorUserNotFound" xml:space="preserve"><value>Bu kullanıcı bulunamadı; silinmiş olabilir. Listeyi yenileyip yeniden deneyin.</value></data>
   <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>Seçilen hesap türü geçerli değil. Listeden bir tür seçin.</value></data>
-  <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>Bu kullanıcı şifresini zaten belirlemiş; yeniden gönderilecek bir davet yok. Yeni şifre vermek için Parolayı Sıfırla'yı kullanın.</value></data>
+  <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>Bu kullanıcı parolasını zaten belirlemiş; yeniden gönderilecek bir davet yok. Yeni parola vermek için Parolayı Sıfırla'yı kullanın.</value></data>
   <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>Bu kullanıcının bekleyen bir parola belirleme adımı var; parola sıfırlanamaz. Bunun yerine daveti yeniden gönderin.</value></data>
   <data name="ErrorUserAccountKindPermissionDenied" xml:space="preserve"><value>Hesap türünü değiştirme yetkiniz yok; kullanıcı kaydedilmedi.</value></data>
   <data name="ErrorUserEmailRequired" xml:space="preserve"><value>Bir e-posta adresi girin.</value></data>
@@ -71,4 +71,6 @@
   <data name="ErrorUserFirstNameTooLong" xml:space="preserve"><value>Ad çok uzun. Kısaltıp yeniden deneyin.</value></data>
   <data name="ErrorUserLastNameRequired" xml:space="preserve"><value>Bir soyad girin.</value></data>
   <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>Soyad çok uzun. Kısaltıp yeniden deneyin.</value></data>
+  <data name="ErrorUserEmailTooLong" xml:space="preserve"><value>E-posta adresi çok uzun. Kısaltıp yeniden deneyin.</value></data>
+  <data name="ErrorUserOneMoreProblem" xml:space="preserve"><value>Bir sorun daha var; girdiklerinizi kontrol edip yeniden deneyin.</value></data>
 </root>

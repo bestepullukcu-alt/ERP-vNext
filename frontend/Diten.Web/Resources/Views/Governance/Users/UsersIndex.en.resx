@@ -71,4 +71,6 @@
   <data name="ErrorUserFirstNameTooLong" xml:space="preserve"><value>The first name is too long. Shorten it and try again.</value></data>
   <data name="ErrorUserLastNameRequired" xml:space="preserve"><value>Enter a last name.</value></data>
   <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>The last name is too long. Shorten it and try again.</value></data>
+  <data name="ErrorUserEmailTooLong" xml:space="preserve"><value>The e-mail address is too long. Shorten it and try again.</value></data>
+  <data name="ErrorUserOneMoreProblem" xml:space="preserve"><value>There is one more problem; check what you entered and try again.</value></data>
 </root>
