@@ -527,6 +527,11 @@ v1.1), `2e8ff898e` (service + tests), docs/evidence commit after it. Evidence:
   (AC-05 and the AC-16 race), restored → green, empty diff. Race measured by the agent: 30 rounds, both orders, no
   Inactive location holding stock.
 
+- **WP-0173-INT2 CT-ACCEPTED (2026-10-02)** — commits 6594b3c2d..8fe909947: `ocelot.json` +36/−0, routes
+  `/api/locations` + `/api/locations/{everything}` → localhost:5066, GET/POST/PATCH/OPTIONS, no AuthenticationOptions (287 → 289).
+  CT re-measured on the owner's LIVE stack: gateway 5000 (reloaded by dotnet watch) → GET /api/locations 401 from the
+  service (routed), PUT 404 at the gateway; gateway build 0/0.
+
 ## 20. Follow-up Items
 
 - **FU-LOC1-01 (central):** `docs/analysis/contracts/README.md` should list LOCATION as 1.1.0, owner MOD-0173-FU02, served by InventoryService 5066 (v1 frozen, v1.1 additive).
