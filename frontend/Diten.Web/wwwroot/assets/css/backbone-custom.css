@@ -4727,8 +4727,12 @@ div.dt-container div.dt-search input {
     min-inline-size: 0;
     padding-block-start: .0625rem;
 }
+/* Rİ3 (owner, 2026-10-02) — "unaffected" above was wrong: in a COLUMN, `align-items: center` centres horizontally,
+   so the stacked row floated its name and its chips to the middle as two separate blocks while the group header
+   and every line inside the name block stayed left. Measured at 800px: name block at x=346, chips at x=178, header
+   at x=32. Stacked rows start at the same edge as the header they sit under. */
 @media (max-width: 991.98px) {
-    .ra-row { flex-direction: column; gap: .5rem; }
+    .ra-row { flex-direction: column; align-items: stretch; gap: .5rem; }
     .ra-row-source { flex: 1 1 auto; max-inline-size: 100%; }
 }
 
