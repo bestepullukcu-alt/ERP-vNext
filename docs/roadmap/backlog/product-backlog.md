@@ -7514,6 +7514,25 @@ Gelecek regresyon riski: 🟢 (yalnız gruplama etiketi).
 
 ---
 
+### BL-508
+
+**Rol İzinleri ekranında İngilizce kalan satır ve düğme adları — "Görüntüle" ile "Read All" yan yana, sahip yanlışını işaretledi (Rİ2)**
+
+DURUM: AÇIK · SAHİP: CT (Rol İzinleri ekranı; kiracı ekranı = 7 dil) · BULAN: CT, sahibin oturumunda ekran okuması (dev, tr) + sahibin "senaryoda
+read diyorsun, ekranda view var" geri bildirimi · KAYIT: 2026-10-02
+
+Ölçüldü (`/RoleAssignments`, dil tr): **satır adları** — Zaman Çizelgesi grubunda `Approvals`, `Categories`, `Settings`, `Timesheets`, `Weeks`;
+Görevler grubunda `Checklist Templates`, `Templates`; CRM'de `Content Scope`, `Content Set`, `Eligibility`, `Visit Frequency Policy` ve başkaları.
+**Düğme adları** — `Read All`, `Reopen`, `Minutes Write`, `Minutes Publish`, `Series Manage`, `Types Manage`, `Lookup`, `Resolve`, `Confirm`,
+`Write Value`. Ekranın etiket köprüsü tanımadığı kodu İngilizce "insanlaştırıyor"; köprü yalnız tekrar eden fiilleri çeviriyor.
+**Sonuç (ölçüldü):** sahip Çalışan rolüne "Görüntüle" yerine yanındaki `Read All`'u (kiracının tüm görevlerini görme) verdi. Yapılacak:
+(1) kapsam taşıyan fiiller (`read-all`) `read-tenant-wide` gibi ayrı "Tüm kiracı" çipiyle gösterilsin, düz bir fiil gibi durmasın;
+(2) eksik fiil ve satır adları 7 dilde köprüye; (3) köprünün çevirmediği kodu sayan bir test (küçülen defter), yeni modül kendi adlarını getirsin.
+Karşılaştırma: SAP'de yetki nesnesi alanları ve Oracle'da ayrıcalık adları kullanıcının dilinde listelenir; geniş kapsamlı yetki ayrı işaretlenir.
+Gelecek regresyon riski: 🟢 (yalnız etiket), ama yetki yanlış verilmesine yol açtığı için öncelik orta.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
