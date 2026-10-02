@@ -197,6 +197,46 @@ public sealed class InventoryLedgerManifestCompletenessTests
         Assert.All(actions.Where(a => a.ActionCode == "VIEWLOCATIONSTOCK"), a => Assert.Equal(InventoryPermissions.Read, a.PermissionKey));
     }
 
+    /// <summary>
+    /// FU-RSV-01 (WP-0173-RSV1) — every key an Inventory controller enforces with <c>[HasPermission]</c> must reach the
+    /// permission catalog, i.e. be declared by the manifest as a page, an action OR an API-only permission (standard
+    /// §2d). Measured by reflection over the shipping API assembly: a key with no UI (reserve / release) that is dropped
+    /// from <c>ApiPermissions</c> makes this red — the G1 live-run failure (403 for every role) caught at build time.
+    /// </summary>
+    [Fact]
+    public void Every_enforced_permission_is_reachable_from_the_manifest()
+    {
+        var enforced = typeof(InventoryLedgerManifestProvider).Assembly.GetTypes()
+            .Where(t => typeof(Microsoft.AspNetCore.Mvc.ControllerBase).IsAssignableFrom(t) && !t.IsAbstract)
+            .SelectMany(t => t.GetCustomAttributes<HasPermissionAttribute>(inherit: true)
+                .Concat(t.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                    .SelectMany(m => m.GetCustomAttributes<HasPermissionAttribute>(inherit: true))))
+            .Select(a => a.Policy!["Permission:".Length..])
+            .ToHashSet(StringComparer.Ordinal);
+        Assert.Contains(InventoryPermissions.ManageReservations, enforced); // the measured gap, so the scan is not vacuous
+
+        var manifest = new InventoryLedgerManifestProvider().GetManifest();
+        var reachable = manifest.Pages.Select(p => p.RequiredPermission)
+            .Concat(manifest.Pages.SelectMany(p => p.Actions).Select(a => a.PermissionKey))
+            .Concat((manifest.ApiPermissions ?? []).Select(p => p.PermissionKey))
+            .ToHashSet(StringComparer.Ordinal);
+
+        Assert.All(enforced, key => Assert.True(reachable.Contains(key), $"[HasPermission({key})] is enforced but the manifest never declares it"));
+    }
+
+    [Fact]
+    public void Api_permissions_are_real_tenant_keys_without_a_ui()
+    {
+        var manifest = new InventoryLedgerManifestProvider().GetManifest();
+        var api = Assert.Single(manifest.ApiPermissions ?? []);
+        Assert.Equal(InventoryPermissions.ManageReservations, api.PermissionKey);
+        Assert.Equal("Tenant", api.Scope);
+        Assert.False(string.IsNullOrWhiteSpace(api.DisplayName));
+        // API-only means no UI: the key is neither a page gate nor a button (standard §2d — a UI key stays a page/action).
+        Assert.DoesNotContain(manifest.Pages, p => p.RequiredPermission == api.PermissionKey);
+        Assert.DoesNotContain(manifest.Pages.SelectMany(p => p.Actions), a => a.PermissionKey == api.PermissionKey);
+    }
+
     private sealed record ModuleManifestDocumentView(Diten.BuildingBlocks.ModuleRegistration.Abstractions.ModuleManifestDocument Document)
     {
         public IReadOnlyList<Diten.BuildingBlocks.ModuleRegistration.Abstractions.ModuleManifestPage> Pages => Document.Pages;

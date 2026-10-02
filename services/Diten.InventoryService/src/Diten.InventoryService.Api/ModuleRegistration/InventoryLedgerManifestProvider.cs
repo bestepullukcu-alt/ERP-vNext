@@ -23,6 +23,11 @@ namespace Diten.InventoryService.Api.ModuleRegistration;
 /// action) / History / View in stock list on both, Bulk bins on the L-1 detail of a Zone / StorageLocation. The module
 /// then has two nav-visible pages (Stock Ledger, Locations).
 /// </para>
+/// <para>
+/// FU-RSV-01 (WP-0173-RSV1): <see cref="InventoryPermissions.ManageReservations"/> is an API-only permission (standard
+/// §2d) — consumers MOD-0175 / MOD-0177 call reserve / release; there is no UI, so it is declared in
+/// <c>ApiPermissions</c>, never as a fake page or button.
+/// </para>
 /// </summary>
 public sealed class InventoryLedgerManifestProvider : IModuleManifestProvider
 {
@@ -148,5 +153,9 @@ public sealed class InventoryLedgerManifestProvider : IModuleManifestProvider
                         new ModuleManifestAction("LOCATIONHISTORY", "History", InventoryPermissions.LocationsRead, "RowAction", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("VIEWLOCATIONSTOCK", "View in stock list", InventoryPermissions.Read, "RowAction", 70, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
                     ])
+            ],
+            ApiPermissions:
+            [
+                new ModuleManifestPermission(InventoryPermissions.ManageReservations, "Manage stock reservations", "Tenant")
             ]);
 }
