@@ -752,7 +752,7 @@
         window.showConfirm(options.title, function () { onConfirm(values); }, {
             type: 'warning',
             width: '460px',
-            subtext: bodyHtml,
+            subtextHtml: bodyHtml,
             confirmButtonText: options.title,
             cancelButtonText: labels.cancel || '',
             didOpen: function (popup, SwalRef) {
