@@ -7420,6 +7420,25 @@ Merkezi'nden onaylayabilir ama `/TimeEntry/Approvals` sayfasında göremez. Bozu
 
 ---
 
+### BL-503
+
+**Ürün devralma dalında 23 yazma komutu denetim kaydı yazmıyor — Global Product canlıya çıkmadan kapanır**
+
+DURUM: AÇIK — CANLI ÖNCESİ ENGELLEYİCİ (Global Product) · SAHİP: CT (MDM ürün modülleri devralması) · BULAN: denetim kaydı standardının testi
+(`AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt`), hat → devralma birleştirmesi `96cf7d888` · KAYIT: 2026-10-02
+
+Denetim standardı (AUD-001) devralma dalıyla ilk kez karşılaştı ve dalın standarttan önce yazdığı 23 komutu adıyla saydı:
+**MDM 20** (Global Product / GSKU / LSKU kimlik akışı: taslak güncelleme, onaya gönderme, geri çekme, emekliye ayırma, düzeltme ve emeklilik
+akışlarını başlatma, karar mutabakatı; ürün–tüzel kişi kapsam politikası oluştur / değiştir / sonlandır) · **Platform 2**
+(`StartTrustedWorkflowInstanceCommand`, `CancelTrustedWorkflowInstanceCommand`) · **Auth 1** (`IssueServiceIdentityTokenCommand`).
+**Karar (CT):** borç listesine PARK EDİLMEDİ — defter yeni borç kabul etmiyor ve ürün ana verisi GxP sınıfındadır. Test devralma dalında bilerek
+kırmızı duruyor (28'de 27). Kapanış: MDM komutları MDM'in mevcut iletim yoluna (yol b) bağlanır; Platform'un iki güvenilir komutu ve Auth'un
+belirteç komutu için bugün yazılan iz ölçülür (iş akışı geçiş günlüğü, `authAuditLogs`) ve kabul edilmiş ize bağlanır ya da eksikse yazılır.
+Karşılaştırma: SAP'de malzeme ana verisinin her değişikliği değişiklik belgesi üretir; Veeva'da ürün kaydının her durum geçişi denetim izindedir.
+Gelecek regresyon riski: 🟡 (20 komutun istek hattına iletim davranışı girer).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
