@@ -46,6 +46,53 @@ Task-User, Viewer, deneme.
 | 8 | Toplantı | Ekip toplantısı, tutanak, takip görevi | Görev Merkezi | — |
 | 9 | Global Product | Ürün taslağı → onaya gönder → Metin onaylar | GSKU ve sonrası | — |
 
+## Adım adım: modül başına girilecek veri ve bakılacaklar
+
+### 2 · Roller (`/Roles`)
+Dört rol: `Çalışan`, `Ekip Lideri`, `Bölüm Yöneticisi`, `İK Yöneticisi`. Denemeler: aynı ad ikinci kez; açıklama değiştir; `deneme`
+rolünü sil (Ayşe'ye atanmış); sistem rolünü düzenle / sil; arama, sıralama, sütun gizleme, dışa aktarma; dil değiştir.
+**2026-10-02 tur 1:** R1 aynı ad reddi İngilizce · R3 dışa aktarmanın ayrı izni yok · rol olayları Denetim Günlüğü'nde yok → WP-ROLES-CLOSE-01.
+
+### 3 · Rol İzinleri (`/RoleAssignments`)
+| Rol | İzinler |
+|---|---|
+| Çalışan | `platform.tasks.read / create / update / claim / complete` · `time-entry.timesheets.read / update` · `platform.meetings.read` |
+| Ekip Lideri | Çalışan + `platform.tasks.assign / cancel / work-report.read` · `time-entry.approvals.read` · `platform.meetings.create / update / minutes-write` |
+| Bölüm Yöneticisi | Ekip Lideri + `platform.tasks.read-all` · `time-entry.weeks.reopen` |
+| İK Yöneticisi | `time-entry.timesheets.read` · `time-entry.categories.manage` · `time-entry.settings.manage` · `time-entry.weeks.reopen` |
+
+Bakılacak: kaydedince ve sayfa yenilenince kalıyor mu; tabloda olup ekranda bulunmayan izin (bulgu); izin adları anlaşılır mı;
+sistem rolünün izinleri değiştirilebiliyor mu; verilen / alınan izin Denetim Günlüğü'nde görünüyor mu.
+
+### 4 · Kullanıcı Rolleri (`/UserRoleAssignments`) — önce Kullanıcılar'da hesapları açın
+1. Kullanıcılar'da Metin, Burak, Cem, Deniz, Elif'i aktif edin; giriş yapacak olanlara (en az Burak ve Ayşe) "Parolayı Sıfırla" ile
+   bağlantı üretin (dev'de bağlantı ekranda ve Mailpit'te).
+2. Kadro tablosundaki rolleri atayın: Metin → Bölüm Yöneticisi · Burak → Ekip Lideri · Ayşe, Deniz, Elif → Çalışan · Cem → İK Yöneticisi.
+3. Ayşe'den `deneme` rolünü kaldırın; sonra Roller'e dönüp `deneme` rolünü silin.
+Bakılacak: bir kişiye iki rol; rol kaldırma; servis hesabı (svc-kargo) listede nasıl görünüyor; atama Denetim Günlüğü'nde, yapan
+kişinin adıyla görünüyor mu; Ayşe yeniden giriş yapınca yeni rolünün izinleri geçerli mi (izinler oturum açılırken yüklenir).
+
+### 5 · Organizasyon (`/OrganizationUnits`, `/Positions`, `/PositionAssignments`)
+1. Bağlılıklar: DEV-ENG → DEV-LEAD → CTO → CEO; HR-MGR → CEO.
+2. Koltuklar: Metin = CTO · Burak = DEV-LEAD (bugün bu koltukta sistemde olmayan bir kullanıcı var: önce onu sonlandırın) ·
+   Deniz = DEV-ENG (ikinci koltuk) · Cem = HR-MGR · Ayşe = DEV-ENG (var) · Elif = koltuk YOK (bilerek).
+Bakılacak: bir pozisyona iki kişi; koltuğu sonlandırma; ağaç görünümü; silinmiş / sistemde olmayan kullanıcının koltuğu nasıl
+görünüyor; değişiklikler Denetim Günlüğü'nde.
+
+### 6 · Görev Merkezi (`/WorkCenterNext`) — iki oturum: Burak ve Ayşe
+1. Burak: Ayşe'ye bir görev atar (son tarihli), Deniz'e bir görev atar, Elif'e atamayı dener (pozisyonu yok → seçicide çıkmamalı).
+2. Ayşe: görevi kabul eder, başlatır, tamamlar; bir görevi Deniz'e devretmeyi dener (yetkisi yok → ne diyor?).
+3. Onaylı görev: Burak onay gerektiren bir görev açar; Ayşe tamamlar; onay Burak'a düşer → Onayla (listeye dönüp bildirim göstermeli),
+   bir başkasında **Devret** (kişi soruyor mu; kendisi ve başlatan listede yok mu).
+
+### 7 · Zaman Çizelgesi (`/TimeEntry`) — Cem, Ayşe, Burak
+1. Cem (`/TimeEntry/Settings`, `/TimeEntry/Categories`): kategorileri kurar; Diten Pharma şirketi için sayacı gerekçe yazarak açar.
+2. Ayşe: görevde sayacı başlatır / durdurur (süre kartı; düğme tek yerde mi), elle süre girer, kategoriyle süre girer, haftayı gönderir;
+   gönderdikten sonra geri çekmeyi dener.
+3. Burak (`/TimeEntry/Approvals`): Ayşe'nin haftasını görür, bir haftayı onaylar, birini gerekçeyle reddeder.
+4. Ayşe: reddedilen haftayı düzeltip yeniden gönderir; onaylanan haftada görevin "harcanan süre"si güncellendi mi.
+5. Elif: haftasını göndermeyi dener (onaycısı yok → ne diyor?).
+
 ## Bulguların yazımı
 
 Modül harfi + sıra: `R1` (Roller), `Rİ1` (Rol İzinleri), `KR1` (Kullanıcı Rolleri), `O1` (Organizasyon), `G1` (Görev Merkezi),
