@@ -539,9 +539,6 @@
   <data name="ActResume" xml:space="preserve">
     <value>استئناف</value>
   </data>
-  <data name="ActLogTime" xml:space="preserve">
-    <value>تسجيل الوقت</value>
-  </data>
   <data name="StepBarLabel" xml:space="preserve">
     <value>دورة الحياة</value>
   </data>
@@ -587,20 +584,8 @@
   <data name="PlanConfirm" xml:space="preserve">
     <value>تعيين التاريخ</value>
   </data>
-  <data name="LogTimeLabel" xml:space="preserve">
-    <value>دقائق</value>
-  </data>
-  <data name="LogTimePlaceholder" xml:space="preserve">
-    <value>مثال 30</value>
-  </data>
-  <data name="LogTimeConfirm" xml:space="preserve">
-    <value>تسجيل</value>
-  </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · مجدول ليوم {1} (تجريبي)</value>
-  </data>
-  <data name="ToastTimeLogged" xml:space="preserve">
-    <value>تم تسجيل {0} (تجريبي)</value>
   </data>
   <data name="ToastSentToReview" xml:space="preserve">
     <value>{0} · أُرسل للمراجعة (تجريبي)</value>
@@ -903,9 +888,6 @@
   </data>
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>أي وحدة؟</value>
-  </data>
-  <data name="LogTimeSubtext" xml:space="preserve">
-    <value>يُضاف إلى الوقت المسجَّل مسبقًا على هذه المهمة؛ ولا يبدأ المؤقّت أو يوقفه.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>لم يتم بعد إعداد الاتصال بالتقويم: يظهر هذا السجل على هذه الشاشة فقط ويُفقد عند إغلاق الصفحة. لا يتغيّر تاريخ الاستحقاق.</value>
@@ -2522,5 +2504,14 @@
   </data>
   <data name="ApprovalStepBadgeTitle" xml:space="preserve">
     <value>خطوة الموافقة</value>
+  </data>
+  <data name="DelegateTargetLabel" xml:space="preserve">
+    <value>تفويض إلى</value>
+  </data>
+  <data name="DelegateTargetRequired" xml:space="preserve">
+    <value>اختر الشخص الذي تُفوَّض إليه هذه الموافقة.</value>
+  </data>
+  <data name="DelegateNoEligiblePeople" xml:space="preserve">
+    <value>لا يوجد أحد يمكن تفويض هذه الموافقة إليه.</value>
   </data>
 </root>

@@ -539,9 +539,6 @@
   <data name="ActResume" xml:space="preserve">
     <value>Devam et</value>
   </data>
-  <data name="ActLogTime" xml:space="preserve">
-    <value>Süre gir</value>
-  </data>
   <data name="StepBarLabel" xml:space="preserve">
     <value>Yaşam Döngüsü</value>
   </data>
@@ -587,20 +584,8 @@
   <data name="PlanConfirm" xml:space="preserve">
     <value>Tarihi Ayarla</value>
   </data>
-  <data name="LogTimeLabel" xml:space="preserve">
-    <value>Dakika</value>
-  </data>
-  <data name="LogTimePlaceholder" xml:space="preserve">
-    <value>örn. 30</value>
-  </data>
-  <data name="LogTimeConfirm" xml:space="preserve">
-    <value>Ekle</value>
-  </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · {1} tarihine planlandı (mock)</value>
-  </data>
-  <data name="ToastTimeLogged" xml:space="preserve">
-    <value>{0} girildi (mock)</value>
   </data>
   <data name="ToastSentToReview" xml:space="preserve">
     <value>{0} · incelemeye gönderildi (mock)</value>
@@ -903,9 +888,6 @@
   </data>
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>Hangi modül?</value>
-  </data>
-  <data name="LogTimeSubtext" xml:space="preserve">
-    <value>Bu göreve daha önce girilen süreye eklenir; sayacı başlatmaz ya da durdurmaz.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>Takvim bağlantısı henüz kurulmadı: bu kayıt yalnızca bu ekranda görünür ve sayfayı kapattığınızda kaybolur. Son tarih değişmez.</value>
@@ -2522,5 +2504,14 @@
   </data>
   <data name="ApprovalStepBadgeTitle" xml:space="preserve">
     <value>Onay adımı</value>
+  </data>
+  <data name="DelegateTargetLabel" xml:space="preserve">
+    <value>Devredilecek kişi</value>
+  </data>
+  <data name="DelegateTargetRequired" xml:space="preserve">
+    <value>Onayın kime devredileceğini seçin.</value>
+  </data>
+  <data name="DelegateNoEligiblePeople" xml:space="preserve">
+    <value>Bu onayın devredilebileceği kimse yok.</value>
   </data>
 </root>
