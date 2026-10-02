@@ -7365,6 +7365,28 @@ Gelecek regresyon riski: 🟢.
 
 ---
 
+### BL-500
+
+**Platform → Kiracı → Modüller ekranı: askıya alma çalışmıyor, süresi dolan modül uzatılamıyor, yapılamayacak işlem sunuluyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform, kiracı ticari yönetimi) · BULAN: sahip (canlı dev kontrolü, kiracı "ali") + CT ölçümü · KAYIT: 2026-10-02
+
+Sahip üç şey denedi, üçü de kusurlu çıktı (dev, lane `c79c5a49b`):
+(1) **Askıya alma (kırmızı ⊘) reddediliyor:** Active bir Add-on satırında (GOLDENSLIM) "Entitlement was modified by another process." (409).
+Kayıtta `Version=1`, `RowVersion` 16 bayt ve değişmemiş; ekran `row.rowVersion || null` gönderiyor (`Platform/Tenants/details.js:1558-1614`),
+işleyici `UpdateAsync(session, entitlement, request.Request.RowVersion, …)` ile karşılaştırıyor
+(`DisableTenantModuleEntitlementCommandHandler.cs:88`). Kök neden ölçülmedi: liste yanıtının `rowVersion` taşıyıp taşımadığı ve bayt dizisinin
+gidiş-dönüşte aynı kalıp kalmadığı ilk bakılacak yer. Sonuç: ekrandan modül askıya alınamıyor.
+(2) **Süresi dolmuş modül uzatılamıyor:** "Expired" satırda sunulan yeşil ✓ yalnız `IsEnabled`'ı açıyor; kayıt zaten açık, bitiş tarihi geçmiş →
+hiçbir şey değişmiyor ama "kaydedildi" bildirimi çıkıyor. Süre uzatma eylemi (`UpdateTenantModuleEntitlementExpiryCommand` var) bu satırda sunulmuyor.
+(3) **Temel modülde "kaldır" sunuluyor:** Görev Merkezi (baseline) satırında kaldırma var; sunucu "Baseline modules are entitlement-free and cannot
+be removed." ile reddediyor. Kural doğru, ekran yanlış: eylem çizilmemeli. Üç mesaj da İngilizce (Platform ekranı: en, tr).
+**Yan etki:** WP-AUDIT-STANDARD-01'in K1 sorusu (31 Ağustos'tan beri yetkilendirme değişiklikleri denetim günlüğüne düşüyor mu) bu yüzden dev'de
+ölçülemedi — ekrandan başarılı bir yetkilendirme değişikliği yapılamıyor; `audit_outbox`'ta `physical-entitlement:` önekli satır sayısı hâlâ 0.
+Gelecek regresyon riski: 🟡 (kiracı yetkilendirmesi).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
