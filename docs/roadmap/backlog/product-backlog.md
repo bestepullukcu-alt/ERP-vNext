@@ -7387,6 +7387,39 @@ Gelecek regresyon riski: 🟡 (kiracı yetkilendirmesi).
 
 ---
 
+### BL-501
+
+**Ortak denetim ileticisi: izi olmayan on serviste denetim kaydı yazmanın tek yolu (K4 = A)**
+
+DURUM: AÇIK — KARAR VERİLDİ (CT, 2026-10-02) · SAHİP: CT (altyapı) · BULAN: WP-AUDIT-STANDARD-01 bağımsız gözden geçirmesi · KAYIT: 2026-10-02
+
+Denetim kaydı standardı (AUD-001) on serviste (CRM, HumanCapital, HCM, ESBP, PPM, Procurement, Talent, DevEnablement, MG, PVG) kabul edilmiş
+hiçbir iz bulamıyor: bu servislerde yeni bir yazma komutu ya kırmızıdır ya da borç listesine yazılır. Kural "önce iletici kurulur" diyor ama
+ileticinin ne olduğunu söylemiyordu. **Karar:** işaret arayüzü + boru hattı davranışı + Platform'a ileten istemci `Diten.BuildingBlocks` içinde
+tek kopya durur (MDM'deki `AuditForwardingBehavior` kalıbının ortaklaştırılmışı); servis başına kopya yasak. Kapsam: ortak paket, MDM ve
+Auth'un kendi kopyalarının ona taşınması, anahtar boşken sessiz atlamanın açılışta yüksek sesle söylenmesi (bugün MDM'de `LogDebug`), mimari
+testinin ortak belirteci tanıması, bir pilot serviste (CRM ekibiyle birlikte) ilk kullanım. Karşılaştırma: SAP'de değişiklik belgeleri
+(change documents) ve Oracle'da denetim politikaları uygulama geliştiricisinin yazdığı kod değil, platformun verdiği tek mekanizmadır.
+O zamana kadar bu servislerde yeni yazma komutu = "engelli, CT'ye yaz". Gelecek regresyon riski: 🟡 (her servisin istek hattına bir davranış eklenir).
+
+---
+
+### BL-502
+
+**Onay motorunun ertelenen üç parçası: üstlenme, güvenilir iptalde yükseltilmiş görev, zaman çizelgesi onay sayfası**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 iş akışı motoru) · BULAN: WP-WF-ENGINE-CANDIDATES-01 Aşama 1 (ölçüm) · KAYIT: 2026-10-02
+
+Motor paketi "bir pozisyonda iki kişi varsa ikisi de karar verebilir, ilk karar kazanır" kuralını getiriyor (SAP ve Oracle varsayılanı).
+Bilerek dışarıda bırakılanlar: (1) **Üstlenme (claim / release):** "bu iş bende" demek için isteğe bağlı kolaylık; yeni eylem, yeni ekran metni
+(7 dil) ve bırakılmayan üstlenme için zaman aşımı ister. SAP'deki "rezerve et" karşılığı; kapı değil, kolaylık. (2) **Güvenilir iptalde
+yükseltilmiş (Escalated) görev:** MDM istemcisi ön kontrolde yalnız Active + Waiting durumlarını kabul ediyor; yükseltilmiş bir onay MDM
+tarafından geri çekilemiyor. İstemciyle birlikte değişmeli. (3) **Zaman çizelgesi onay sayfası adaylara göre (D5):** hafta, motorun ilk
+adayını `AssignedApproverUserId` olarak saklıyor ve sayfa buna göre süzüyor; motor paketinden sonra ikinci koltuk sahibi haftayı Görev
+Merkezi'nden onaylayabilir ama `/TimeEntry/Approvals` sayfasında göremez. Bozulma değil, tutarsızlık. Gelecek regresyon riski: 🟢 (üçü de eklemeli).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
