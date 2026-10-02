@@ -577,7 +577,7 @@ const ContactsList = (function () {
         }, {
             type: 'warning',
             width: '520px',
-            subtext: exportOptionsHtml(),
+            subtextHtml: exportOptionsHtml(),
             confirmButtonText: L.Download || L.ExportContacts || '',
             cancelButtonText: L.Cancel || '',
             didOpen: (popup) => {

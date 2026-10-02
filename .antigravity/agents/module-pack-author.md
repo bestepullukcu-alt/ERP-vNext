@@ -136,7 +136,7 @@ id, name, domain, service, shell, golden_reference, entity_base,
 status, owner, branch, started, target, form_field_count
 ```
 
-### Pack Gövdesi (20 zorunlu bölüm)
+### Pack Gövdesi (21 zorunlu bölüm)
 1. Module Summary
 2. Ownership and Boundaries
 3. Owned Objects
@@ -157,6 +157,7 @@ status, owner, branch, started, target, form_field_count
 18. **Ready-for-dev Checklist**
 19. Implementation Notes
 20. Follow-up Items
+21. **Audited Events** (her yazma komutu → olay adı → yol a/b/c ya da istisna sınıfı + gerekçe; `module-pack-standard.md` Bölüm 10.1, AUD-001)
 
 ## Handoff
 
@@ -177,6 +178,7 @@ Module pack tamamlandığında kullanıcıya şunu söyle:
 - ❌ Validation Rules / Failure Path / Authorization / Gateway / Ready-for-dev bölümlerinden biri eksik
 - ❌ Acceptance criteria belirsiz (`iyi çalışıyor`, `düzgün`)
 - ❌ `GlobalEntity` kullanan pack'te gerekçe yok
+- ❌ `Audited Events` bölümü yok, ya da `Owned Objects`'teki bir yazma komutu tabloda geçmiyor, ya da istisna kuraldaki `İ1…` sınıflarından biri değil / gerekçesiz (AUD-001). Pack yazarının sorusu: **"Servisin denetim altyapısı bugün var mı?"** — `tests/architecture/audit-ledger/{servis}.md` dosyasının `## İzler` tablosuna bak; kabul edilmiş (a/b/c) iz yoksa pack bunu `Dependencies`'e engel olarak yazar
 - ❌ Permission format yanlış (Platform service'te `Modules.*` veya tenant service'te `Platform.*`)
 
 
