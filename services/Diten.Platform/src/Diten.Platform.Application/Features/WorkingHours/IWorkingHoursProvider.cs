@@ -23,7 +23,28 @@ public interface IWorkingHoursProvider
     /// </summary>
     Task<WorkingHoursResult> GetWorkingWindowsAsync(
         Guid userId, DateOnly from, DateOnly to, CancellationToken ct = default);
+
+    /// <summary>
+    /// BL-484 — the same answer for several (person, range) requests at once, keyed by the request. Each entry is
+    /// EXACTLY what <see cref="GetWorkingWindowsAsync"/> answers for that request; only how the inputs are read differs
+    /// (the real provider reads the tenant, the seats, the positions and the units once for all of them). The default
+    /// asks one by one — a double that only knows the single question stays correct.
+    /// </summary>
+    async Task<IReadOnlyDictionary<WorkingHoursRequest, WorkingHoursResult>> GetWorkingWindowsForManyAsync(
+        IReadOnlyCollection<WorkingHoursRequest> requests, CancellationToken ct = default)
+    {
+        var answers = new Dictionary<WorkingHoursRequest, WorkingHoursResult>();
+        foreach (var request in requests.Distinct())
+        {
+            answers[request] = await GetWorkingWindowsAsync(request.UserId, request.From, request.To, ct);
+        }
+
+        return answers;
+    }
 }
+
+/// <summary>One question to <see cref="IWorkingHoursProvider"/>: this person, these local days (inclusive).</summary>
+public readonly record struct WorkingHoursRequest(Guid UserId, DateOnly From, DateOnly To);
 
 /// <summary>Which ring of the chain supplied a day's hours. Wire spelling, lowerCamel.</summary>
 public static class WorkingHoursSources

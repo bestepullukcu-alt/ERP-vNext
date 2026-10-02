@@ -531,4 +531,17 @@ internal sealed class CountingWorkingHours(IWorkingHoursProvider inner, CallCoun
         calls.Add($"{userId:N}:{from:yyyy-MM-dd}:{to:yyyy-MM-dd}");
         return inner.GetWorkingWindowsAsync(userId, from, to, ct);
     }
+
+    /// <summary>The page's ONE question is passed on as one (so the real provider's batched reads are what is measured);
+    /// every (person, week) it asks about is recorded just like a single question.</summary>
+    public Task<IReadOnlyDictionary<WorkingHoursRequest, WorkingHoursResult>> GetWorkingWindowsForManyAsync(
+        IReadOnlyCollection<WorkingHoursRequest> requests, CancellationToken ct = default)
+    {
+        foreach (var request in requests)
+        {
+            calls.Add($"{request.UserId:N}:{request.From:yyyy-MM-dd}:{request.To:yyyy-MM-dd}");
+        }
+
+        return inner.GetWorkingWindowsForManyAsync(requests, ct);
+    }
 }

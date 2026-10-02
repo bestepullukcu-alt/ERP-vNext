@@ -69,6 +69,13 @@ public interface IWorkflowInstanceRepository
         (await GetAllForTenantAsync(ct))
             .Where(x => string.Equals(x.ObjectType, objectType, StringComparison.Ordinal) && objectIds.Contains(x.ObjectId))
             .ToList();
+
+    // BL-484 — GetByIdAsync for several instances in ONE read (tenant scoped, non-deleted): an id that is not a live
+    // instance of this tenant is simply absent. Default = in-memory filter for test doubles.
+    async Task<IReadOnlyList<WorkflowInstance>> ListByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken ct = default) =>
+        (await GetAllForTenantAsync(ct)).Where(x => ids.Contains(x.Id)).ToList();
 }
 
 public interface IApprovalTaskRepository
