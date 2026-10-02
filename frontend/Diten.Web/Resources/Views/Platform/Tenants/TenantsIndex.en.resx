@@ -291,4 +291,13 @@
   <data name="SettingsScopeDescription" xml:space="preserve"><value>These settings apply to all users in this tenant. Individual user overrides are not supported.</value></data>
   <data name="UnitDays" xml:space="preserve"><value>days</value></data>
   <data name="UnitMin" xml:space="preserve"><value>min</value></data>
+  <data name="ExtendExpiry" xml:space="preserve"><value>Extend Expiry</value></data>
+  <data name="NoChangesMade" xml:space="preserve"><value>Nothing was changed.</value></data>
+  <data name="EntitlementStale" xml:space="preserve"><value>Someone else changed this module while this page was open. The list has been refreshed; please try again.</value></data>
+  <data name="EntitlementNotFound" xml:space="preserve"><value>This module entry no longer exists for the tenant.</value></data>
+  <data name="EntitlementModuleNotFound" xml:space="preserve"><value>The module was not found in the module catalogue.</value></data>
+  <data name="EntitlementModuleCore" xml:space="preserve"><value>Core system modules are always on and cannot be suspended.</value></data>
+  <data name="EntitlementModuleBaseline" xml:space="preserve"><value>Baseline modules come with every tenant; they cannot be added, suspended or removed here.</value></data>
+  <data name="EntitlementAlreadyExists" xml:space="preserve"><value>This module is already enabled for the tenant.</value></data>
+  <data name="EntitlementNotManualOverride" xml:space="preserve"><value>Only a manual override can be removed.</value></data>
 </root>

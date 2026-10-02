@@ -291,4 +291,13 @@
   <data name="SettingsScopeDescription" xml:space="preserve"><value>Bu ayarlar bu tenant'taki tüm kullanıcılara uygulanır. Bireysel kullanıcı geçersiz kılmaları desteklenmez.</value></data>
   <data name="UnitDays" xml:space="preserve"><value>gün</value></data>
   <data name="UnitMin" xml:space="preserve"><value>dk</value></data>
+  <data name="ExtendExpiry" xml:space="preserve"><value>Süreyi Uzat</value></data>
+  <data name="NoChangesMade" xml:space="preserve"><value>Hiçbir şey değişmedi.</value></data>
+  <data name="EntitlementStale" xml:space="preserve"><value>Bu sayfa açıkken modül başka biri tarafından değiştirildi. Liste yenilendi; lütfen yeniden deneyin.</value></data>
+  <data name="EntitlementNotFound" xml:space="preserve"><value>Bu modül kaydı kiracıda artık yok.</value></data>
+  <data name="EntitlementModuleNotFound" xml:space="preserve"><value>Modül, modül kataloğunda bulunamadı.</value></data>
+  <data name="EntitlementModuleCore" xml:space="preserve"><value>Çekirdek sistem modülleri her zaman açıktır ve askıya alınamaz.</value></data>
+  <data name="EntitlementModuleBaseline" xml:space="preserve"><value>Temel modüller her kiracıda vardır; buradan eklenemez, askıya alınamaz veya kaldırılamaz.</value></data>
+  <data name="EntitlementAlreadyExists" xml:space="preserve"><value>Bu modül kiracıda zaten açık.</value></data>
+  <data name="EntitlementNotManualOverride" xml:space="preserve"><value>Yalnızca manuel geçersiz kılma kaldırılabilir.</value></data>
 </root>
