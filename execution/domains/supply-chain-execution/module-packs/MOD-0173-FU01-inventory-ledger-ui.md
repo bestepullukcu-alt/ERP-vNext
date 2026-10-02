@@ -711,6 +711,16 @@ not a replay — fix it the way Correct does. **FU-UI2-06** the partial-correcti
 **FU-UI2-07** SKU scan cap and location-tree read are interim until PRODUCT-MASTER v1.1 search / a LOCATION subtree
 filter exist.
 
+- **WP-0173-UI2 CT-ACCEPTED (2026-10-02)** — commits 38911b95f..38db41a0c (isolated worktree, one fast-forward).
+  CT re-measured (Release): Diten.Web.Tests 496/496, InventoryService 353/353, architecture 18/18; 108 files inside the
+  allowed paths; SharedResource untouched; no non-comment `/api/mdm/products` in FU01 code; live web serves
+  /StockMovements/Create, /Details, /StockLedger/Create (login redirect). Own sabotage in a throw-away worktree (Correct
+  offered on every row) → 1 red (`Correct_is_offered_only_on_a_manual_unreversed_row_of_a_manual_type`). BLOCKED-ENV carried
+  (verifier, quality gate, vitest). **Blocking for real use:** the form reads product data through the Gateway, which has no
+  `/api/product-master` route because MDM does not yet serve PRODUCT-MASTER-BUNDLE (FU-UI2-02 = FU-PM-01). Known defect
+  FU-UI2-05 (UI1 reversal date in the fingerprint → retry gets IDEMPOTENCY_KEY_REUSED instead of a replay). Cosmetic: subject
+  of 38db41a0c starts with a BOM (PowerShell 5.1), not amended by rule.
+
 ## 20. Follow-up Items
 
 - Request to MOD-0290 owner (MDM): additive product/SKU search in PRODUCT-MASTER-BUNDLE v1.1 — retires W-UI-01.
