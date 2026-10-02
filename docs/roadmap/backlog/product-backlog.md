@@ -7471,8 +7471,9 @@ kurar" diyor (K4 kararına aykırı); `debugger` / `debug` akışlarında kapı 
 
 **GÜVENLİK — ortak onay penceresi kayıt adını HTML olarak basıyor (kalıcı XSS), 152 çağrı**
 
-DURUM: AÇIK — YÜRÜYOR (WP-SHARED-CONFIRM-XSS-01, dal `fix/shared/confirm-entity-name`) · SAHİP: CT (ortak ön yüz) · BULAN: Kullanıcılar
-paketinin bağımsız gözden geçirmesi, CT kodda doğruladı · KAYIT: 2026-10-02
+DURUM: KISMEN KAPANDI 2026-10-02 — ortak onay penceresi kapandı (`ca81e75e1` teslim + `335ed06d5` CT, hat `20113725c`; dev'de canlı ölçüldü);
+ortak pencerenin DIŞINDAKİ ham pencereler AÇIK · SAHİP: CT (ortak ön yüz) · BULAN: Kullanıcılar paketinin bağımsız gözden geçirmesi, CT kodda
+doğruladı · KAYIT: 2026-10-02
 
 `Views/Shared/_GlobalConfirmation.cshtml:243` çağıranın verdiği `entityName` değerini, aynı blok `subtext` değerini kaçışsız olarak SweetAlert
 `html` içine yazıyor. `wwwroot/assets/js` altında 127 dosyada 152 `entityName:` çağrısı var; hiçbiri kendi satırında kaçış yapmıyor. Adında HTML
@@ -7482,6 +7483,19 @@ kapısı aynı şeyi doğru yapıyor (`_GlobalNotification.cshtml`, kapıda kaç
 kaçış kapıda tek yardımcıda; önceden kaçış yapan çağıranlardan kaçış kalkar; biçim isteyen çağıran varsa adı açık ayrı giriş. Karşılaştırma:
 SAP UI5 ve Oracle JET'te ileti kutuları varsayılan olarak metin basar, HTML ayrı ve açık bir seçenektir. Gelecek regresyon riski: 🟡 (ürünün her
 onay penceresi).
+
+**Kapanan (2026-10-02):** pencere çağıranın verdiği her değeri metin olarak basıyor (başlık, cümle, kayıt adı, düğmeler, seçenek etiketleri,
+doğrulama iletisi); biçimli gövde yalnız adı açık `subtextHtml` girişinden (üç ekran + Görev Merkezi'nin iki penceresi, adlarıyla sabit). Bağımsız
+gözden geçirme teslimde bir gerileme buldu ve CT kapattı: Görev Merkezi ve davet kartı pencereye takma adla ulaşıyor, sayımda görünmemişlerdi ve
+metinlerini önceden kaçırıyorlardı — düzeltme haliyle girseydi her Görev Merkezi onayında ham `<div …>` görünecekti. Ek: çizilemeyen pencere artık
+işlemi ONAYLAMIYOR (eskiden `callback()` çağrılıyordu). Dev'de canlı ölçüm: Kullanıcılar'da kayıt adı metin, simge korumalı; Görev Merkezi'nde
+tarih penceresi ve kurulu gövde doğru; CRM Kişiler dışa aktarma penceresi dev'de açılamadı (yalnız testle ölçüldü).
+**Açık kalan (aynı sınıf, ortak pencerenin dışında — 34 doğrudan `Swal.fire` çağrısından 8'i veriyi kaçışsız basıyor):** giriş sayfası
+(`Account/login.js:211`, sunucunun `detail` metni `html` içine) · parola sıfırlama (`reset-password.js:76`) · Görev Merkezi `app.js:10465`
+(sunucudan gelen eylem etiketi düğme metnine) · `demand-ideas` iki bildirim · `PPM/Initiatives/index.js:106` · `diten-unauthorized.js:37` ·
+`shared/premium-modal.js` (başlık ve düğme metni kaçışsız; 45 çağrı bugün yalnız sabit metin veriyor). Giriş sayfaları BL-496 paketiyle birlikte
+ele alınır; PPM dosyası o ekibe yazılır. Ayrıca iki kaçış yardımcısı (bildirim ve onay) iki dosyada duruyor; bir test farkı yakalıyor, tek
+dosyaya taşımak iki layout'a ortak betik eklemeyi gerektirir.
 
 ---
 
