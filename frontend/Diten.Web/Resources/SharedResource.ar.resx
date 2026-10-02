@@ -692,6 +692,12 @@
   <data name="Nav.Page.CLAIMS" xml:space="preserve">
     <value>الادعاءات</value>
   </data>
+  <data name="Nav.Page.SAFETYTEXTS" xml:space="preserve">
+    <value>نصوص السلامة</value>
+  </data>
+  <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
+    <value>الملفات القانونية</value>
+  </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>مجموعات المحتوى</value>
   </data>

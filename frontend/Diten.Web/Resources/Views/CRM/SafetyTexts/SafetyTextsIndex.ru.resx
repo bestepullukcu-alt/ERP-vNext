@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Открыть</value></data>
+  <data name="OpenDetails" xml:space="preserve"><value>Открыть подробности</value></data>
+  <data name="OnlyActive" xml:space="preserve"><value>Только активные</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Country" xml:space="preserve"><value>Страна</value></data>
+  <data name="Language" xml:space="preserve"><value>Язык</value></data>
+  <data name="Version" xml:space="preserve"><value>Версия</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Status_in-review" xml:space="preserve"><value>На рассмотрении</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Активен</value></data>
+  <data name="Status_superseded" xml:space="preserve"><value>Заменён</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="ArchivedFilter" xml:space="preserve"><value>Архивные записи</value></data>
+  <data name="ArchivedHidden" xml:space="preserve"><value>Скрыть архивные</value></data>
+  <data name="ArchivedShown" xml:space="preserve"><value>Показать архивные</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новый черновик</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить черновик</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="IdentityLockedHint" xml:space="preserve"><value>Идентификация не меняется после создания</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выберите…</value></data>
+  <data name="CharCountTpl" xml:space="preserve"><value>{0} / {1} символов</value></data>
+  <data name="FieldRequired" xml:space="preserve"><value>Это поле обязательно.</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>Сейчас этот список недоступен.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="NotFound" xml:space="preserve"><value>Запись не найдена.</value></data>
+  <data name="Created" xml:space="preserve"><value>Черновик создан.</value></data>
+  <data name="Updated" xml:space="preserve"><value>Черновик сохранён.</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>История версий</value></data>
+  <data name="ThisVersion" xml:space="preserve"><value>эта версия</value></data>
+  <data name="NoVersions" xml:space="preserve"><value>Других версий нет.</value></data>
+  <data name="DecisionRecord" xml:space="preserve"><value>Журнал решений</value></data>
+  <data name="NoDecisions" xml:space="preserve"><value>Решений пока нет.</value></data>
+  <data name="DecisionPanelTitle" xml:space="preserve"><value>Решение регуляторного отдела</value></data>
+  <data name="DecisionComment" xml:space="preserve"><value>Комментарий</value></data>
+  <data name="DecisionCommentHint" xml:space="preserve"><value>При одобрении — по желанию, при отклонении — обязательно.</value></data>
+  <data name="DecisionCommentRequired" xml:space="preserve"><value>Укажите причину отклонения.</value></data>
+  <data name="DecisionOutcome_approve" xml:space="preserve"><value>Одобрено</value></data>
+  <data name="DecisionOutcome_reject" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="SubmittedTpl" xml:space="preserve"><value>Отправил(а) {0} · {1}</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Отправить на утверждение</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Отправить черновик на утверждение регуляторному отделу? Во время рассмотрения его нельзя изменить.</value></data>
+  <data name="Withdraw" xml:space="preserve"><value>Отозвать</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Отозвать с рассмотрения? Запись вернётся в черновик, задача утверждения будет отменена.</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Новая версия</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Создать новую черновую версию на основе этой?</value></data>
+  <data name="Archive" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Архивировать запись? Она останется доступной для чтения, но использовать её будет нельзя.</value></data>
+  <data name="Approve" xml:space="preserve"><value>Одобрить</value></data>
+  <data name="Reject" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Отправлено на утверждение регуляторному отделу.</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>Отозвано с рассмотрения.</value></data>
+  <data name="Approved" xml:space="preserve"><value>Одобрено — эта версия теперь активна.</value></data>
+  <data name="Rejected" xml:space="preserve"><value>Отклонено — черновик возвращён автору.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Заархивировано.</value></data>
+  <data name="VersionCreated" xml:space="preserve"><value>Создана новая черновая версия.</value></data>
+  <data name="ReviewTemplateAdminNote" xml:space="preserve"><value>Попросите администратора системы задать шаблон регуляторного утверждения (KP-REG) для этой страны.</value></data>
+  <data name="Err_safety_text_open_draft_exists" xml:space="preserve"><value>Для этого продукта, страны и языка уже есть открытый черновик или версия на рассмотрении.</value></data>
+  <data name="Err_legal_profile_open_draft_exists" xml:space="preserve"><value>Для этой страны и языка уже есть открытый черновик или версия на рассмотрении.</value></data>
+  <data name="Err_review_template_missing" xml:space="preserve"><value>Для этой страны не задан шаблон регуляторного утверждения.</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>Для отклонения нужен комментарий.</value></data>
+  <data name="Err_not_editable" xml:space="preserve"><value>Изменить можно только черновик. Чтобы изменить активный текст, создайте новую версию.</value></data>
+  <data name="Err_self_decision_forbidden" xml:space="preserve"><value>Нельзя принимать решение по записи, которую вы отправили сами, или эта задача вам не назначена.</value></data>
+  <data name="Err_country_invalid" xml:space="preserve"><value>Этой страны нет в списке стран.</value></data>
+  <data name="Err_language_not_in_country" xml:space="preserve"><value>Этот язык не является языком контента выбранной страны.</value></data>
+  <data name="Err_reference_set_unavailable" xml:space="preserve"><value>Список стран сейчас недоступен, выбрать страну нельзя.</value></data>
+  <data name="Err_product_not_found" xml:space="preserve"><value>Этого продукта нет в каталоге продуктов MDM.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Каталог продуктов (MDM) сейчас недоступен, выбрать продукт нельзя.</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>Решение должно быть «Одобрить» или «Отклонить».</value></data>
+  <data name="SafetyTextsTitle" xml:space="preserve"><value>Тексты по безопасности</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Утверждённая регуляторным отделом информация по безопасности для каждого продукта, страны и языка — одна активная версия на ключ.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Новый текст по безопасности</value></data>
+  <data name="Product" xml:space="preserve"><value>Продукт</value></data>
+  <data name="SectionContent" xml:space="preserve"><value>Текст по безопасности</value></data>
+  <data name="Body" xml:space="preserve"><value>Полный текст</value></data>
+  <data name="ShortBody" xml:space="preserve"><value>Краткий текст</value></data>
+  <data name="ShortBodyHint" xml:space="preserve"><value>Для узких макетов (например, баннера); оставьте пустым, если не нужно.</value></data>
+  <data name="SectionSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="SourceDocumentRef" xml:space="preserve"><value>Исходный документ</value></data>
+  <data name="SourceDate" xml:space="preserve"><value>Дата источника</value></data>
+  <data name="ApprovalReference" xml:space="preserve"><value>Местный номер одобрения</value></data>
+</root>

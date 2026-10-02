@@ -40,6 +40,8 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string ContentEngagementJourneyRead = "crm.knowledge.content-engagement-journey.read";
     private const string ClaimRead = "crm.claim.read";
     private const string EligibilityRead = "crm.eligibility.read";
+    private const string SafetyTextRead = "crm.safety-text.read";
+    private const string CountryLegalProfileRead = "crm.country-legal-profile.read";
 
     // MOD-0165-FU03 (WP-FREQ-A). The canonical crm.visit-frequency-policy.* keys are not seeded yet, so — exactly like
     // the CrmService [HasPermission] guards and the Diten.Web console — the page's read gate runs on the documented
@@ -145,6 +147,20 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 [
                     new ModuleManifestAction("MANAGE", "New Claim", "crm.claim.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("APPROVE", "Approve", "crm.claim.approve", "RowAction", 20, false, false, true)
+                ]),
+                // WP-KP-5a-UI — the Regulatory-approved master data the page designer's locked blocks will read
+                // (DESIGN-KP-STUDIO §2.4): safety texts (product × country × language) and country legal profiles
+                // (country × language). The approval itself is the MOD-0023 Regulatory task (K1); SUBMIT sends a draft
+                // to it. No delete surface (Archive).
+                new ModuleManifestPage("SAFETY_TEXTS", "Safety Texts", "/CRM/SafetyTexts", SafetyTextRead, null, true, "List", 150,
+                [
+                    new ModuleManifestAction("MANAGE", "New Safety Text", "crm.safety-text.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("SUBMIT", "Submit for Approval", "crm.safety-text.submit", "RowAction", 20, false, false, true)
+                ]),
+                new ModuleManifestPage("LEGAL_PROFILES", "Legal Profiles", "/CRM/LegalProfiles", CountryLegalProfileRead, null, true, "List", 160,
+                [
+                    new ModuleManifestAction("MANAGE", "New Legal Profile", "crm.country-legal-profile.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("SUBMIT", "Submit for Approval", "crm.country-legal-profile.submit", "RowAction", 20, false, false, true)
                 ]),
                 // WP-SB-1R retired the Content Scopes page (CONTENT_SCOPES) and WP-KP-4 the Content Sets page
                 // (CONTENT_SETS): the Knowledge Path Studio (KNOWLEDGE_PATHS) took the content set's job. A re-registration

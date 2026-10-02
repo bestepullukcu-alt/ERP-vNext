@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Ouvrir</value></data>
+  <data name="OpenDetails" xml:space="preserve"><value>Ouvrir le détail</value></data>
+  <data name="OnlyActive" xml:space="preserve"><value>Actifs uniquement</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Country" xml:space="preserve"><value>Pays</value></data>
+  <data name="Language" xml:space="preserve"><value>Langue</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Mis à jour</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="Status_in-review" xml:space="preserve"><value>En revue</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Actif</value></data>
+  <data name="Status_superseded" xml:space="preserve"><value>Remplacé</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="ArchivedFilter" xml:space="preserve"><value>Enregistrements archivés</value></data>
+  <data name="ArchivedHidden" xml:space="preserve"><value>Masquer les archivés</value></data>
+  <data name="ArchivedShown" xml:space="preserve"><value>Afficher les archivés</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nouveau brouillon</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier le brouillon</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Identité</value></data>
+  <data name="IdentityLockedHint" xml:space="preserve"><value>L’identité est figée après la création</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Choisir…</value></data>
+  <data name="CharCountTpl" xml:space="preserve"><value>{0} / {1} caractères</value></data>
+  <data name="FieldRequired" xml:space="preserve"><value>Ce champ est obligatoire.</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>Cette liste ne peut pas être lue pour le moment.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement…</value></data>
+  <data name="NotFound" xml:space="preserve"><value>L’enregistrement est introuvable.</value></data>
+  <data name="Created" xml:space="preserve"><value>Brouillon créé.</value></data>
+  <data name="Updated" xml:space="preserve"><value>Brouillon enregistré.</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>Historique des versions</value></data>
+  <data name="ThisVersion" xml:space="preserve"><value>cette version</value></data>
+  <data name="NoVersions" xml:space="preserve"><value>Aucune autre version.</value></data>
+  <data name="DecisionRecord" xml:space="preserve"><value>Registre des décisions</value></data>
+  <data name="NoDecisions" xml:space="preserve"><value>Aucune décision pour l’instant.</value></data>
+  <data name="DecisionPanelTitle" xml:space="preserve"><value>Décision réglementaire</value></data>
+  <data name="DecisionComment" xml:space="preserve"><value>Commentaire</value></data>
+  <data name="DecisionCommentHint" xml:space="preserve"><value>Facultatif pour une approbation ; obligatoire pour un rejet.</value></data>
+  <data name="DecisionCommentRequired" xml:space="preserve"><value>Indiquez le motif du rejet.</value></data>
+  <data name="DecisionOutcome_approve" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="DecisionOutcome_reject" xml:space="preserve"><value>Rejeté</value></data>
+  <data name="SubmittedTpl" xml:space="preserve"><value>Soumis par {0} · {1}</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Soumettre pour approbation</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Envoyer ce brouillon à l’approbation réglementaire ? Il ne pourra pas être modifié pendant la revue.</value></data>
+  <data name="Withdraw" xml:space="preserve"><value>Retirer</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Le retirer de la revue ? Il redevient brouillon et la tâche d’approbation est annulée.</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Nouvelle version</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Ouvrir une nouvelle version brouillon à partir de celle-ci ?</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archiver</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Archiver cet enregistrement ? Il reste lisible mais ne peut plus être utilisé.</value></data>
+  <data name="Approve" xml:space="preserve"><value>Approuver</value></data>
+  <data name="Reject" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Envoyé à l’approbation réglementaire.</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>Retiré de la revue.</value></data>
+  <data name="Approved" xml:space="preserve"><value>Approuvé — cette version est désormais active.</value></data>
+  <data name="Rejected" xml:space="preserve"><value>Rejeté — le brouillon retourne à son auteur.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivé.</value></data>
+  <data name="VersionCreated" xml:space="preserve"><value>Nouvelle version brouillon créée.</value></data>
+  <data name="ReviewTemplateAdminNote" xml:space="preserve"><value>Demandez à votre administrateur de définir le modèle d’approbation réglementaire (KP-REG) pour ce pays.</value></data>
+  <data name="Err_safety_text_open_draft_exists" xml:space="preserve"><value>Ce produit, ce pays et cette langue ont déjà un brouillon ouvert ou une version en revue.</value></data>
+  <data name="Err_legal_profile_open_draft_exists" xml:space="preserve"><value>Ce pays et cette langue ont déjà un brouillon ouvert ou une version en revue.</value></data>
+  <data name="Err_review_template_missing" xml:space="preserve"><value>Aucun modèle d’approbation réglementaire n’est défini pour ce pays.</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>Un rejet doit être accompagné d’un commentaire.</value></data>
+  <data name="Err_not_editable" xml:space="preserve"><value>Seul un brouillon peut être modifié. Ouvrez une nouvelle version pour modifier un texte actif.</value></data>
+  <data name="Err_self_decision_forbidden" xml:space="preserve"><value>Vous ne pouvez pas décider d’un enregistrement que vous avez soumis, ou cette tâche ne vous est pas attribuée.</value></data>
+  <data name="Err_country_invalid" xml:space="preserve"><value>Ce pays ne figure pas dans la liste des pays.</value></data>
+  <data name="Err_language_not_in_country" xml:space="preserve"><value>Cette langue n’est pas une langue de contenu du pays choisi.</value></data>
+  <data name="Err_reference_set_unavailable" xml:space="preserve"><value>La liste des pays ne peut pas être lue pour le moment ; le pays ne peut pas être choisi.</value></data>
+  <data name="Err_product_not_found" xml:space="preserve"><value>Ce produit ne figure pas dans le catalogue produits MDM.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Le catalogue produits (MDM) est injoignable pour le moment ; le produit ne peut pas être choisi.</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>La décision doit être Approuver ou Rejeter.</value></data>
+  <data name="LegalProfilesTitle" xml:space="preserve"><value>Profils juridiques</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Textes juridiques approuvés par les affaires réglementaires, par pays et langue — une seule version active par clé.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Nouveau profil juridique</value></data>
+  <data name="SectionLegal" xml:space="preserve"><value>Textes juridiques</value></data>
+  <data name="LegalFooterText" xml:space="preserve"><value>Mentions légales (pied de page)</value></data>
+  <data name="MarketingAuthorizationHolder" xml:space="preserve"><value>Titulaire de l’autorisation de mise sur le marché</value></data>
+  <data name="MarketingAuthorizationHolderHint" xml:space="preserve"><value>Nom et adresse.</value></data>
+  <data name="AdverseEventReportingText" xml:space="preserve"><value>Texte de déclaration des effets indésirables</value></data>
+  <data name="PromotionalNotice" xml:space="preserve"><value>Mention promotionnelle</value></data>
+  <data name="SectionPageApproval" xml:space="preserve"><value>Code d’approbation de page</value></data>
+  <data name="PageApprovalCodeFormat" xml:space="preserve"><value>Format du code</value></data>
+  <data name="PageApprovalCodeFormatHint" xml:space="preserve"><value>{CC} = pays, {YYYY} = année, {SEQ} = numéro de séquence.</value></data>
+  <data name="PageApprovalCodeExampleLabel" xml:space="preserve"><value>Exemple</value></data>
+  <data name="PageApprovalCodeExampleTpl" xml:space="preserve"><value>p. ex. {0}</value></data>
+</root>

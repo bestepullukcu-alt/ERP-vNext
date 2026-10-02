@@ -693,6 +693,12 @@
   <data name="Nav.Page.CLAIMS" xml:space="preserve">
     <value>Alegaciones</value>
   </data>
+  <data name="Nav.Page.SAFETYTEXTS" xml:space="preserve">
+    <value>Textos de seguridad</value>
+  </data>
+  <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
+    <value>Perfiles legales</value>
+  </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>Conjuntos de contenido</value>
   </data>

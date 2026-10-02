@@ -692,6 +692,12 @@
   <data name="Nav.Page.CLAIMS" xml:space="preserve">
     <value>Заявления</value>
   </data>
+  <data name="Nav.Page.SAFETYTEXTS" xml:space="preserve">
+    <value>Тексты по безопасности</value>
+  </data>
+  <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
+    <value>Правовые профили</value>
+  </data>
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>Наборы контента</value>
   </data>
