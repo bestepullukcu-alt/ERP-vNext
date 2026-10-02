@@ -7348,6 +7348,23 @@ iptal edilir; iş belgesi kilitli kalmaz. Gelecek regresyon riski: 🟡 (durum m
 
 ---
 
+### BL-499
+
+**Bildirim e-postaları: alıcının kendi dili yok, sağlayıcı geri-düşme politikasını yok sayıyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform bildirimleri) · BULAN: WP-EMAIL-SHELL-01 Aşama 1 ölçümü · KAYIT: 2026-10-02
+
+(1) **Alıcı dili.** Bildirim dili bugün kiracının dilinden geliyor (çağıranın verdiği dil → `Tenant.Settings.Language` → `Tenant.DefaultLanguage` → "en");
+kullanıcıya özel dil hiçbir yerde tutulmuyor (Web'in arayüz dili yalnız çerezde, Auth `User`'da alan yok). WP-EMAIL-SHELL-01 kiracı diliyle
+ilerliyor (sahip + CT kararı 2026-10-02). Kalan iş: `User.PreferredLanguage` (boş = kiracı dili), profil ekranı, `internal/users/contacts`
+sözleşmesi, bildirim dil zincirinde yeni halka. Karşılaştırma: SAP ve Oracle'da bildirim dili kullanıcı kaydındaki dil alanından gelir,
+yoksa sistem varsayılanına düşer. (2) **Geri-düşme politikası.** `SmtpMessagingProvider.ResolveSettingsAsync` kiracının `FallbackPolicy` ayarını
+yok sayıyor: kapalı kiracı satırı hep platform varsayılanına düşüyor (çözümleyici politikaya uyuyor, sağlayıcı uymuyor).
+(3) Yeniden denemede gövde 2000 karakterlik önizlemeden gidebiliyor (değişkenler maskelenmişse ya da şablon sürümü değişmişse) — BL-488 (2) ile aynı kök.
+Gelecek regresyon riski: 🟢.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
