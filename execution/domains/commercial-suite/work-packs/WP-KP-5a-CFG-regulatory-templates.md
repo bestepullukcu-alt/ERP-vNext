@@ -168,3 +168,11 @@ Yok. Kod değişikliği yok.
   1. Onay görevinin `ReasonCode`'u `CRM_CLAIM_SUBMITTED` — ortak iş akışı başlatma istemcisi iddia gerekçe kodunu kullanıyor; `RegulatoryTextKind.SubmitReason` (`CRM_SAFETY_TEXT_SUBMITTED`) başlatmaya geçmiyor (denetim kaydı yanlış etiket).
   2. Ayrıntı sayfasında "Gönderen" ham kullanıcı kimliği gösteriyor (`c5769c62-…`), ad değil.
   3. İncelemedeki kayıtta "Arşivle" düğmesi görünüyor; CRM bunu reddeder (409 `not_editable`) — Web düğmeyi `in-review` iken gizlemeli.
+### 8. E4 — Regülasyon onayı (sema, Work Center) → aktif → çözümleme — **TAMAM**
+- sema görevi Work Center'dan onayladı (`ActionReasonCode WORKCENTER_APPROVE`, `ActionedBy d27fa4a6…`).
+- **Platform:** görev `1f03194a…` → Approved (2); örnek `7c3bc16d…` → Completed (7).
+- **CRM (sonuç olayı ObjectType'a göre yönlendirildi):** `SAF-TR-0001` v1 `active`, `isActive: true`, `activatedAt 2026-10-02T09:41:38Z`; karar kaydı `{roundNo 1, by d27fa4a6…, outcome approve, comment null}` (Work Center kararı yorumsuz gelir — beklenen); `canDecide` artık false.
+- **Ekran:** durum çizgisi Taslak ✓ › İncelemede ✓ › **Aktif**; eylemler Yeni sürüm / Arşivle; sürüm geçmişi "v1 · Aktif"; karar paneli gizli.
+- **Çözümleme:** `resolve?productId=44e509b7…&countryCode=TR&languageCode=tr` → **200** `SAF-TR-0001 v1 active`; aynı ürün TR / **en** → **404** `safety_text_missing` (başka dil dönmüyor).
+- **Ek bulgu:** karar kaydında da karar veren ham kullanıcı kimliği (bulgu 2 ile aynı kök: ad çözümlemesi yok).
+- Test kaydı `SAF-TR-0001` canlıda **aktif** kaldı (metin `[E4 TEST]` işaretli); KP-UI-3 ya da gerçek metin gelince "Yeni sürüm" ile değiştirilir veya arşivlenir — kullanıcı kararı.
