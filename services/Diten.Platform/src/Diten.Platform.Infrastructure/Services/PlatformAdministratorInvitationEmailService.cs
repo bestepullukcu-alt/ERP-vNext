@@ -26,7 +26,7 @@ public sealed class PlatformAdministratorInvitationEmailService : IPlatformAdmin
 
         using var message = new MailMessage
         {
-            From = new MailAddress(_smtpOptions.FromEmail, _smtpOptions.FromName),
+            From = new MailAddress(_smtpOptions.FromEmail, Diten.BuildingBlocks.Email.EmailProduct.Name),
             Subject = PlatformAdministratorInvitationEmailTemplate.Subject(),
             BodyEncoding = Encoding.UTF8,
             SubjectEncoding = Encoding.UTF8,

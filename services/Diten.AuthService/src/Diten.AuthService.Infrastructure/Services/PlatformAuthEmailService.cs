@@ -26,7 +26,7 @@ public sealed class PlatformAuthEmailService : IPlatformAuthEmailService
 
         using var message = new MailMessage
         {
-            From = new MailAddress(_smtpOptions.FromEmail, _smtpOptions.FromName),
+            From = new MailAddress(_smtpOptions.FromEmail, Diten.BuildingBlocks.Email.EmailProduct.Name),
             Subject = PlatformPasswordResetEmailTemplate.Subject(),
             BodyEncoding = Encoding.UTF8,
             SubjectEncoding = Encoding.UTF8,

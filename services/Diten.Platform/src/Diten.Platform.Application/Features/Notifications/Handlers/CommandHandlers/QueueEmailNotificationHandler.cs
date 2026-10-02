@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Diten.BuildingBlocks.Email;
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Notifications.Commands;
@@ -52,6 +53,11 @@ public sealed class QueueEmailNotificationHandler
     private readonly IMessagingProviderResolver _providerResolver;
     private readonly IEventBus _eventBus;
     private readonly ILogger<QueueEmailNotificationHandler> _logger;
+    // BL-454 — trailing and OPTIONAL, the EmailDispatchJob precedent: both are registered in DI, so production
+    // always gets them. A handler built against the old 7-argument shape (every existing test) still compiles and
+    // behaves as it did: no frame, no language fallback beyond the template repository's own.
+    private readonly IEmailShellComposer? _shellComposer;
+    private readonly INotificationLocaleResolver? _localeResolver;
 
     public QueueEmailNotificationHandler(
         ITenantMessagingSettingsResolver settingsResolver,
@@ -60,8 +66,12 @@ public sealed class QueueEmailNotificationHandler
         INotificationDispatchRepository dispatchRepository,
         IMessagingProviderResolver providerResolver,
         IEventBus eventBus,
-        ILogger<QueueEmailNotificationHandler> logger)
+        ILogger<QueueEmailNotificationHandler> logger,
+        IEmailShellComposer? shellComposer = null,
+        INotificationLocaleResolver? localeResolver = null)
     {
+        _shellComposer = shellComposer;
+        _localeResolver = localeResolver;
         _settingsResolver = settingsResolver;
         _templateRepository = templateRepository;
         _renderer = renderer;
@@ -93,12 +103,7 @@ public sealed class QueueEmailNotificationHandler
                 providerResponse.Errors, providerResponse.StatusCode, ReasonProviderUnavailable);
         }
 
-        var template = await _templateRepository.GetBestActiveByKeyAsync(
-            request.TenantId,
-            NotificationParsing.NormalizeTemplateKey(request.Request.TemplateKey),
-            NotificationParsing.NormalizeLocale(request.Request.Locale),
-            NotificationChannelCode.Email,
-            ct);
+        var template = await FindTemplateAsync(request, ct);
         if (template is null)
         {
             return Response<NotificationDispatchDto>.Fail(
@@ -111,6 +116,15 @@ public sealed class QueueEmailNotificationHandler
             return Response<NotificationDispatchDto>.Fail(
                 renderResponse.Errors, renderResponse.StatusCode, ReasonRenderFailed);
         }
+
+        // BL-454 — a subject is a HEADER: a task or meeting title with a line break in it must not start one of its
+        // own. Cleaned here so the stored subject and the sent subject are the same string.
+        var subject = EmailHeaderText.CleanSubject(renderResponse.Data.Subject);
+        var composed = _shellComposer is null
+            ? null
+            : await _shellComposer.ComposeAsync(
+                request.TenantId, template, template.Locale, subject,
+                renderResponse.Data.BodyHtml, renderResponse.Data.BodyText, request.Request.Variables, ct);
 
         var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
             ? Guid.NewGuid().ToString("N")
@@ -128,7 +142,7 @@ public sealed class QueueEmailNotificationHandler
             To = MapRecipients(request.Request.To),
             Cc = MapRecipients(request.Request.Cc ?? []),
             Bcc = MapRecipients(request.Request.Bcc ?? []),
-            Subject = renderResponse.Data.Subject,
+            Subject = subject,
             // The full rendered body (renderResponse.Data.BodyHtml) is sent to the provider below; the
             // truncated preview is the only body form PERSISTED on the dispatch, so mask any sensitive
             // variable values (e.g. temporary passwords) out of it to avoid leaking them into the record
@@ -184,13 +198,14 @@ public sealed class QueueEmailNotificationHandler
                 dispatch.Bcc.Select(ToProviderRecipient).ToArray(),
                 dispatch.BodyHtmlPreview,
                 dispatch.BodyTextPreview,
-                renderResponse.Data.BodyHtml,
-                renderResponse.Data.BodyText,
+                composed?.BodyHtml ?? renderResponse.Data.BodyHtml,
+                composed?.BodyText ?? renderResponse.Data.BodyText,
                 // MOD-0357 S5b — carried straight from the caller's request into THIS SAME synchronous provider
                 // call; never assigned to `dispatch` above, so it is never persisted (NotificationDispatch has
                 // no attachment column, and none is added here — see MessagingProviderEmailRequest's own doc
                 // comment on why a later retry already cannot have one anyway).
-                request.Request.Attachments),
+                request.Request.Attachments,
+                composed?.SenderName),
             ct);
 
         if (providerResult.Accepted)
@@ -240,6 +255,48 @@ public sealed class QueueEmailNotificationHandler
         _logger.LogWarning("Notification dispatch failed. DispatchId={DispatchId} TenantId={TenantId} Status={Status} CorrelationId={CorrelationId} ErrorCode={ErrorCode}", dispatch.Id, dispatch.TenantId, dispatch.Status, dispatch.CorrelationId, dispatch.ErrorCode);
         return Response<NotificationDispatchDto>.Fail(
             "Messaging provider rejected the message.", 400, ReasonProviderRejected);
+    }
+
+    /// <summary>
+    /// BL-454 — the language chain of the template LOOKUP: the language asked for → the tenant's own language →
+    /// English. Before this, a language nobody seeded a template in answered 404 with no dispatch row at all: the
+    /// tenant lifecycle e-mails exist in en/tr only, so a tenant reading fr/es/zh/ar/ru never received them. An
+    /// e-mail in English is a worse e-mail; no e-mail is a missing one. The dispatch row records the language of
+    /// the template that was actually used (<c>template.Locale</c>), so the fallback is visible afterwards.
+    /// </summary>
+    private async Task<NotificationTemplate?> FindTemplateAsync(QueueEmailNotificationCommand request, CancellationToken ct)
+    {
+        var templateKey = NotificationParsing.NormalizeTemplateKey(request.Request.TemplateKey);
+        var requested = NotificationParsing.NormalizeLocale(request.Request.Locale);
+
+        var template = await _templateRepository.GetBestActiveByKeyAsync(
+            request.TenantId, templateKey, requested, NotificationChannelCode.Email, ct);
+        if (template is not null || _localeResolver is null)
+        {
+            return template;
+        }
+
+        var tried = new HashSet<string>(StringComparer.Ordinal) { requested };
+        var tenantLocale = await _localeResolver.ResolveAsync(request.TenantId, null, ct);
+        foreach (var candidate in new[] { tenantLocale, TenantNotificationLocaleResolver.PlatformDefaultLocale })
+        {
+            if (!tried.Add(candidate))
+            {
+                continue;
+            }
+
+            template = await _templateRepository.GetBestActiveByKeyAsync(
+                request.TenantId, templateKey, candidate, NotificationChannelCode.Email, ct);
+            if (template is not null)
+            {
+                _logger.LogInformation(
+                    "email.dispatch.locale_fallback TenantId={TenantId} TemplateKey={TemplateKey} Requested={Requested} Used={Used}",
+                    request.TenantId, templateKey, requested, candidate);
+                return template;
+            }
+        }
+
+        return null;
     }
 
     private static List<EmailRecipient> MapRecipients(IReadOnlyList<EmailRecipientDto> recipients) =>

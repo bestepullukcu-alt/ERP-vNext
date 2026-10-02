@@ -287,6 +287,9 @@ public static class DependencyInjection
         services.AddScoped<ITenantMessagingSettingsResolver, TenantMessagingSettingsResolver>();
         services.AddScoped<Features.Notifications.Services.INotificationLocaleResolver, Features.Notifications.Services.TenantNotificationLocaleResolver>();
         services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
+        // BL-454 — every notification e-mail is framed by the one shell, and sent under the one sender-name rule.
+        services.AddScoped<ITenantEmailIdentityResolver, TenantEmailIdentityResolver>();
+        services.AddScoped<IEmailShellComposer, EmailShellComposer>();
         services.AddScoped<Features.Notifications.Services.INotificationEventManifestSyncService, Features.Notifications.Services.NotificationEventManifestSyncService>();
         // MOD-0027-FU04B — eventCode → dispatch adapter (resolves Active event + validates, delegates to the existing
         // QueueEmailNotificationCommand). Producers wiring it is a separate follow-up (FU04B-Tenant / FU04D).

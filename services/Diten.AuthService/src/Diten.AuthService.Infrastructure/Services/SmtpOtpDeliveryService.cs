@@ -25,7 +25,7 @@ public sealed class SmtpOtpDeliveryService : IOtpDeliveryService
 
         using var message = new MailMessage
         {
-            From = new MailAddress(_options.FromEmail, _options.FromName),
+            From = new MailAddress(_options.FromEmail, Diten.BuildingBlocks.Email.EmailProduct.Name),
             Subject = "Diten ERP verification code",
             Body = $"Your Diten ERP verification code is {code}. It expires at {expiresAtUtc:HH:mm} UTC.",
             IsBodyHtml = false

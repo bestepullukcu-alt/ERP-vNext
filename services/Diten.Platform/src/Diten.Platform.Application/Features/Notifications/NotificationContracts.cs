@@ -93,7 +93,14 @@ public sealed record RenderedEmailTemplateDto(
     string? BodyHtmlPreview,
     string? BodyTextPreview,
     string? BodyHtml = null,
-    string? BodyText = null);
+    string? BodyText = null,
+    /// <summary>
+    /// BL-454 — ADDITIVE ONLY, set by the template editor's preview: <see cref="BodyHtml"/> as a reader will
+    /// actually receive it, inside the e-mail shell. Every field above is exactly what it was — the body the
+    /// author wrote, rendered. Null from the renderer itself, which knows nothing about the shell.
+    /// </summary>
+    string? BodyHtmlFramed = null,
+    string? BodyTextFramed = null);
 
 public sealed record EmailRecipientDto(
     string Email,

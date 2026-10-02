@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Diten.BuildingBlocks.BackgroundJobs;
+using Diten.BuildingBlocks.Email;
 using Diten.Platform.Application.Features.Notifications.Commands;
 using Diten.Platform.Application.Features.Notifications.Handlers.CommandHandlers;
 using Diten.Platform.Application.Features.Notifications.Services;
@@ -25,6 +26,8 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
     // a full-fidelity retry, which is exactly this job's own PRE-BL-374 behaviour.
     private readonly INotificationTemplateRepository? _templateRepository;
     private readonly IEmailTemplateRenderer? _renderer;
+    // BL-454 — same shape, same reason: registered in DI, absent from older test doubles.
+    private readonly IEmailShellComposer? _shellComposer;
 
     public EmailDispatchJob(
         INotificationDispatchRepository dispatchRepository,
@@ -33,8 +36,10 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         IMediator mediator,
         ILogger<EmailDispatchJob> logger,
         INotificationTemplateRepository? templateRepository = null,
-        IEmailTemplateRenderer? renderer = null)
+        IEmailTemplateRenderer? renderer = null,
+        IEmailShellComposer? shellComposer = null)
     {
+        _shellComposer = shellComposer;
         _dispatchRepository = dispatchRepository;
         _settingsResolver = settingsResolver;
         _providerResolver = providerResolver;
@@ -143,7 +148,30 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
             ? context.EffectiveCorrelationId.ToString("N")
             : dispatch.CorrelationId;
 
-        var (bodyHtml, bodyText) = await ResolveRetryBodyAsync(dispatch, context, cancellationToken);
+        var (bodyHtml, bodyText, template, variables) = await ResolveRetryBodyAsync(dispatch, context, cancellationToken);
+        var subject = EmailHeaderText.CleanSubject(dispatch.Subject);
+        string? senderName = null;
+        if (_shellComposer is not null)
+        {
+            /*
+             * BL-454 — a retry is framed like the first send. When the full body could be reproduced it is framed
+             * with its template's own heading, table and action; when all that is left is the stored preview
+             * (variables masked, template moved on), THAT fragment is framed — a degraded body, never a bare one.
+             */
+            var composed = await _shellComposer.ComposeAsync(
+                dispatch.TenantId,
+                template,
+                dispatch.Locale,
+                subject,
+                bodyHtml ?? dispatch.BodyHtmlPreview,
+                bodyText ?? dispatch.BodyTextPreview,
+                variables,
+                cancellationToken);
+            bodyHtml = composed.BodyHtml;
+            bodyText = composed.BodyText;
+            senderName = composed.SenderName;
+        }
+
         var attachments = dispatch.Attachments.Count == 0
             ? null
             : dispatch.Attachments.Select(ToProviderAttachment).ToArray();
@@ -153,7 +181,7 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
                 dispatch.Id,
                 dispatch.TenantId,
                 correlationId,
-                dispatch.Subject,
+                subject,
                 dispatch.To.Select(ToProviderRecipient).ToArray(),
                 dispatch.Cc.Select(ToProviderRecipient).ToArray(),
                 dispatch.Bcc.Select(ToProviderRecipient).ToArray(),
@@ -161,7 +189,8 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
                 dispatch.BodyTextPreview,
                 bodyHtml,
                 bodyText,
-                attachments),
+                attachments,
+                senderName),
             cancellationToken);
     }
 
@@ -171,39 +200,39 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
     /// masking deliberately removed, and only when the template itself has not moved since. Every other
     /// outcome falls back to today's pre-BL-374 behaviour (the preview alone) and says why — never silently.
     /// </summary>
-    private async Task<(string? BodyHtml, string? BodyText)> ResolveRetryBodyAsync(
+    private async Task<(string? BodyHtml, string? BodyText, NotificationTemplate? Template, IReadOnlyDictionary<string, object?>? Variables)> ResolveRetryBodyAsync(
         NotificationDispatch dispatch, BackgroundJobContext context, CancellationToken ct)
     {
         if (_templateRepository is null || _renderer is null)
         {
             // No renderer/template repository wired in (older test doubles) — not a BL-374 refusal, just the
             // feature not being present at all. Behaves exactly as it did before this WP.
-            return (null, null);
+            return (null, null, null, null);
         }
 
         if (dispatch.VariablesJson.Contains(QueueEmailNotificationHandler.RedactedToken, StringComparison.Ordinal))
         {
             LogRetryDegraded(dispatch, context, "VariablesRedacted");
-            return (null, null);
+            return (null, null, null, null);
         }
 
         if (dispatch.TemplateId is not { } templateId)
         {
             LogRetryDegraded(dispatch, context, "TemplateIdMissing");
-            return (null, null);
+            return (null, null, null, null);
         }
 
         var template = await _templateRepository.GetByIdAsync(templateId, ct);
         if (template is null)
         {
             LogRetryDegraded(dispatch, context, "TemplateNotFound");
-            return (null, null);
+            return (null, null, null, null);
         }
 
         if (!string.Equals(template.SemanticVersion, dispatch.TemplateSemanticVersion, StringComparison.Ordinal))
         {
             LogRetryDegraded(dispatch, context, "TemplateVersionChanged");
-            return (null, null);
+            return (null, null, null, null);
         }
 
         var variables = JsonSerializer.Deserialize<Dictionary<string, object?>>(dispatch.VariablesJson) ?? [];
@@ -211,10 +240,10 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         if (!rendered.IsSuccessful || rendered.Data is null)
         {
             LogRetryDegraded(dispatch, context, "RenderFailed");
-            return (null, null);
+            return (null, null, null, null);
         }
 
-        return (rendered.Data.BodyHtml, rendered.Data.BodyText);
+        return (rendered.Data.BodyHtml, rendered.Data.BodyText, template, variables);
     }
 
     private void LogRetryDegraded(NotificationDispatch dispatch, BackgroundJobContext context, string reasonCode) =>

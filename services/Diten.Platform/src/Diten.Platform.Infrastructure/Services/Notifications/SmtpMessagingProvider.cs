@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Diten.BuildingBlocks.Email;
 using Diten.Platform.Application.Features.Notifications;
 using Diten.Platform.Application.Features.Notifications.Services;
 using Diten.Platform.Domain.Entities.Notifications;
@@ -189,7 +190,12 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
     private static MimeMessage BuildMessage(MessagingProviderEmailRequest request, TenantMessagingSettings settings)
     {
         var message = new MimeMessage();
-        message.From.Add(new MailboxAddress(settings.SenderName ?? string.Empty, settings.SenderEmail));
+        // BL-454 — the name comes from the one sender-name rule when the caller composed one; the address is always
+        // the settings row's. Every header value a person can type (names, subject) is cleaned of CR/LF and other
+        // control characters HERE as well, so no caller can reach a header with a line break — MimeKit's own
+        // encoding is not what this relies on.
+        message.From.Add(new MailboxAddress(
+            EmailHeaderText.CleanDisplayName(request.SenderName ?? settings.SenderName), settings.SenderEmail));
 
         if (!string.IsNullOrWhiteSpace(settings.ReplyToEmail))
         {
@@ -200,7 +206,7 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
         AddRecipients(message.Cc, request.Cc);
         AddRecipients(message.Bcc, request.Bcc);
 
-        message.Subject = request.Subject ?? string.Empty;
+        message.Subject = EmailHeaderText.CleanSubject(request.Subject);
 
         // Prefer the full rendered body (Batch 1.1). Preview is the truncated audit/log form
         // and is only used as a fallback for retries that re-issue from a persisted dispatch.
@@ -249,7 +255,7 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
                 continue;
             }
 
-            list.Add(new MailboxAddress(recipient.DisplayName ?? string.Empty, recipient.Email));
+            list.Add(new MailboxAddress(EmailHeaderText.CleanDisplayName(recipient.DisplayName), recipient.Email));
         }
     }
 

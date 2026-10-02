@@ -11,8 +11,14 @@ public sealed class RenderNotificationTemplatePreviewHandler
     : IRequestHandler<RenderNotificationTemplatePreviewQuery, Response<RenderedEmailTemplateDto>>
 {
     private readonly IEmailTemplateRenderer _renderer;
+    // BL-454 — optional for the same reason as on the queue handler: registered in DI, absent from older test doubles.
+    private readonly IEmailShellComposer? _shellComposer;
 
-    public RenderNotificationTemplatePreviewHandler(IEmailTemplateRenderer renderer) => _renderer = renderer;
+    public RenderNotificationTemplatePreviewHandler(IEmailTemplateRenderer renderer, IEmailShellComposer? shellComposer = null)
+    {
+        _renderer = renderer;
+        _shellComposer = shellComposer;
+    }
 
     public Task<Response<RenderedEmailTemplateDto>> Handle(RenderNotificationTemplatePreviewQuery request, CancellationToken ct)
     {
@@ -47,6 +53,23 @@ public sealed class RenderNotificationTemplatePreviewHandler
             Status = NotificationTemplateStatus.Draft
         };
 
-        return Task.FromResult(_renderer.Render(template, request.Request.SampleVariables));
+        var rendered = _renderer.Render(template, request.Request.SampleVariables);
+        if (_shellComposer is null || !rendered.IsSuccessful || rendered.Data is null)
+        {
+            return Task.FromResult(rendered);
+        }
+
+        /*
+         * BL-454 — the author sees the e-mail as it arrives. The editor has no tenant and no recipient, so the frame
+         * is the platform's own (product name on the band, English); what it shows faithfully is the card, the
+         * heading taken from the subject, and where the body sits. The fields the editor already read are untouched.
+         */
+        var framed = _shellComposer.Compose(
+            TenantEmailIdentity.Platform, template, template.Locale,
+            rendered.Data.Subject, rendered.Data.BodyHtml, rendered.Data.BodyText, request.Request.SampleVariables);
+
+        return Task.FromResult(Response<RenderedEmailTemplateDto>.Success(
+            rendered.Data with { BodyHtmlFramed = framed.BodyHtml, BodyTextFramed = framed.BodyText },
+            rendered.StatusCode));
     }
 }

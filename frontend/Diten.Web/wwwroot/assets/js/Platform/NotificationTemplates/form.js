@@ -171,10 +171,13 @@
             }
             const rendered = unwrap(body);
             if (previewSubject) previewSubject.textContent = rendered?.subject || '';
-            if (previewFrame) previewFrame.srcdoc = rendered?.bodyHtml || '';
+            // BL-454 — the author sees the e-mail as it arrives: the body inside the e-mail shell. An older
+            // Platform that does not send the framed form still previews the bare body, as before.
+            if (previewFrame) previewFrame.srcdoc = rendered?.bodyHtmlFramed || rendered?.bodyHtml || '';
             if (previewText) {
-                previewText.textContent = rendered?.bodyText || '';
-                previewText.classList.toggle('d-none', !rendered?.bodyText);
+                const text = rendered?.bodyTextFramed || rendered?.bodyText || '';
+                previewText.textContent = text;
+                previewText.classList.toggle('d-none', !text);
             }
             previewResult?.classList.remove('d-none');
         } catch (error) {

@@ -29,6 +29,7 @@
         <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
         <!-- Cross-service event contracts (read-only consumption; light: depends only on BuildingBlocks.Eventing). -->
         <ProjectReference Include="..\..\..\Diten.Platform.Contracts\Diten.Platform.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.Email\Diten.BuildingBlocks.Email.csproj" />
     </ItemGroup>
 
 </Project>

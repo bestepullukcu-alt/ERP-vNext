@@ -7,10 +7,18 @@ namespace Diten.Platform.Infrastructure.Persistence.Configurations;
 
 public static class NotificationTemplateSeed
 {
-    public static async Task EnsureSeededAsync(IMongoDatabase database, CancellationToken ct = default)
+    /// <summary>The seven languages a tenant reader can have; a task template exists in each.</summary>
+    internal static readonly string[] TenantLocales = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
+
+    public static async Task<NotificationTemplateSeedResult> EnsureSeededAsync(
+        IMongoDatabase database, CancellationToken ct = default, Action<string>? log = null)
     {
         var collection = database.GetCollection<NotificationTemplate>(PlatformCollections.NotificationTemplates);
 
+        // Upgrades FIRST: a row carried forward here is then found by the insert-if-missing pass below and left alone.
+        var (upgraded, keptModified) = await UpgradeUntouchedSeedsAsync(collection, ct);
+
+        var inserted = 0;
         foreach (var template in CreatePlatformDefaults())
         {
             var exists = await collection.Find(x =>
@@ -29,8 +37,119 @@ public static class NotificationTemplateSeed
             }
 
             await collection.InsertOneAsync(template, cancellationToken: ct);
+            inserted++;
         }
+
+        var result = new NotificationTemplateSeedResult(inserted, upgraded, keptModified);
+        (log ?? Console.Out.WriteLine)(
+            $"notification.template.seed Inserted={result.Inserted} Upgraded={result.Upgraded} KeptModified={result.KeptModified}");
+        return result;
     }
+
+    /// <summary>
+    /// BL-454 — carries a seeded template forward to its current content, and ONLY a row nobody has touched.
+    ///
+    /// <para><b>Why this exists.</b> The pass above inserts what is missing and never looks at a row again, so a
+    /// template changed in code never reached a database that already had it. The shell's heading, table and action
+    /// for <c>platform.tasks.assigned</c> would have existed in new databases only.</para>
+    ///
+    /// <para><b>What "untouched" means — measured, not assumed.</b> A row is upgraded only when it is the platform
+    /// default (<c>TenantId == null</c>, <c>IsPlatformDefault</c>) AND its subject, HTML body, text body, variables
+    /// and version are character for character what the PREVIOUS seed wrote AND it was never updated AND it has no
+    /// shell part. <c>SemanticVersion == "1.0.0"</c> alone is not that evidence: an operator's edit leaves the
+    /// version where it was. A row an operator or a tenant changed is counted and left exactly as it is; a tenant
+    /// override (<c>TenantId != null</c>) is never read here at all.</para>
+    ///
+    /// <para><b>Idempotent, and safe with two instances starting together.</b> The write is one conditional
+    /// update whose filter repeats the previous content: after the first instance writes, the filter no longer
+    /// matches, so the second instance — and every later start — modifies nothing.</para>
+    /// </summary>
+    private static async Task<(int Upgraded, int KeptModified)> UpgradeUntouchedSeedsAsync(
+        IMongoCollection<NotificationTemplate> collection, CancellationToken ct)
+    {
+        var upgraded = 0;
+        var keptModified = 0;
+        var filters = Builders<NotificationTemplate>.Filter;
+
+        foreach (var (previous, current) in SeedUpgrades())
+        {
+            var scope = filters.And(
+                filters.Eq(x => x.IsDeleted, false),
+                filters.Eq(x => x.TenantId, null),
+                filters.Eq(x => x.IsPlatformDefault, true),
+                filters.Eq(x => x.Status, NotificationTemplateStatus.Active),
+                filters.Eq(x => x.Channel, current.Channel),
+                filters.Eq(x => x.Locale, current.Locale),
+                filters.Eq(x => x.TemplateKey, current.TemplateKey));
+
+            var row = await collection.Find(scope).FirstOrDefaultAsync(ct);
+            if (row is null || HasContentOf(row, current))
+            {
+                // Missing: the insert pass writes the current content. Already current: nothing to do.
+                continue;
+            }
+
+            if (!IsUntouchedSeed(row, previous))
+            {
+                keptModified++;
+                continue;
+            }
+
+            var unchangedSinceRead = filters.And(
+                scope,
+                filters.Eq(x => x.Id, row.Id),
+                filters.Eq(x => x.UpdatedAt, null),
+                filters.Eq(x => x.Shell, null),
+                filters.Eq(x => x.SubjectTemplate, previous.SubjectTemplate),
+                filters.Eq(x => x.BodyHtmlTemplate, previous.BodyHtmlTemplate),
+                filters.Eq(x => x.BodyTextTemplate, previous.BodyTextTemplate),
+                filters.Eq(x => x.SemanticVersion, previous.SemanticVersion));
+
+            var update = Builders<NotificationTemplate>.Update
+                .Set(x => x.SubjectTemplate, current.SubjectTemplate)
+                .Set(x => x.BodyHtmlTemplate, current.BodyHtmlTemplate)
+                .Set(x => x.BodyTextTemplate, current.BodyTextTemplate)
+                .Set(x => x.Variables, current.Variables)
+                .Set(x => x.Shell, current.Shell)
+                .Set(x => x.SemanticVersion, current.SemanticVersion)
+                .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+                .Set(x => x.UpdatedBy, "system.seed");
+
+            var written = await collection.UpdateOneAsync(unchangedSinceRead, update, cancellationToken: ct);
+            if (written.ModifiedCount == 1)
+            {
+                upgraded++;
+            }
+        }
+
+        return (upgraded, keptModified);
+    }
+
+    private static bool IsUntouchedSeed(NotificationTemplate row, NotificationTemplate previous) =>
+        row.UpdatedAt is null
+        && row.Shell is null
+        && string.Equals(row.SemanticVersion, previous.SemanticVersion, StringComparison.Ordinal)
+        && string.Equals(row.SubjectTemplate, previous.SubjectTemplate, StringComparison.Ordinal)
+        && string.Equals(row.BodyHtmlTemplate, previous.BodyHtmlTemplate, StringComparison.Ordinal)
+        && string.Equals(row.BodyTextTemplate, previous.BodyTextTemplate, StringComparison.Ordinal)
+        && SameVariables(row.Variables, previous.Variables);
+
+    private static bool HasContentOf(NotificationTemplate row, NotificationTemplate current) =>
+        string.Equals(row.SemanticVersion, current.SemanticVersion, StringComparison.Ordinal)
+        && string.Equals(row.SubjectTemplate, current.SubjectTemplate, StringComparison.Ordinal)
+        && string.Equals(row.BodyHtmlTemplate, current.BodyHtmlTemplate, StringComparison.Ordinal)
+        && string.Equals(row.BodyTextTemplate, current.BodyTextTemplate, StringComparison.Ordinal);
+
+    private static bool SameVariables(IReadOnlyList<TemplateVariableDefinition> left, IReadOnlyList<TemplateVariableDefinition> right) =>
+        left.Count == right.Count
+        && left.Zip(right).All(pair =>
+            string.Equals(pair.First.Name, pair.Second.Name, StringComparison.Ordinal)
+            && pair.First.Type == pair.Second.Type
+            && pair.First.IsRequired == pair.Second.IsRequired);
+
+    /// <summary>(what the previous seed wrote, what the current seed writes) — one pair per upgraded row.</summary>
+    internal static IReadOnlyList<(NotificationTemplate Previous, NotificationTemplate Current)> SeedUpgrades() =>
+        TenantLocales.Select(locale => (TaskAssignedV1(locale), TaskAssigned(locale))).ToList();
 
     private static IReadOnlyList<NotificationTemplate> CreatePlatformDefaults()
     {
@@ -287,7 +406,7 @@ public static class NotificationTemplateSeed
     /// exactly — a template that renders a variable the event does not supply produces a silent blank, which is
     /// the kind of defect nobody reports because the email still "arrived".
     /// </summary>
-    private static NotificationTemplate TaskAssigned(string locale)
+    internal static NotificationTemplate TaskAssignedV1(string locale)
     {
         var (subject, html, text) = locale switch
         {
@@ -302,6 +421,60 @@ public static class NotificationTemplateSeed
         };
 
         return Create("platform.tasks.assigned", locale, subject, html, text, ["TaskTitle", "TaskId"]);
+    }
+
+    /// <summary>
+    /// BL-454 — <c>platform.tasks.assigned</c> as the shell shows it ("A · Card", the owner's prototype): a heading,
+    /// one sentence, a table (task, due date, priority, assigned by), one button to the task and the reason the
+    /// reader got it. Version 1.1.0; <see cref="TaskAssignedV1"/> is what 1.0.0 wrote and is kept only so an
+    /// untouched 1.0.0 row can be recognised and carried forward.
+    ///
+    /// <para>The subject and the two required variables are unchanged. The body no longer repeats what the table
+    /// says. <c>Priority</c>, <c>AssignerName</c> and <c>TaskUrl</c> are optional: a row whose value is empty is
+    /// left out and a missing address draws no button, so a producer that supplies none of them still sends a
+    /// complete e-mail. There is no "Hello {name}": one dispatch goes to every recipient of the event, and the
+    /// template language has no conditional to drop a greeting whose name is missing.</para>
+    /// </summary>
+    internal static NotificationTemplate TaskAssigned(string locale)
+    {
+        var previous = TaskAssignedV1(locale);
+        var (heading, body, reference, task, due, priority, assignedBy, open, why) = locale switch
+        {
+            "en" => ("A task was assigned to you", "The task below is yours. Once you accept it, it appears under \"My Work\" in the Task Center.", "Reference", "Task", "Due date", "Priority", "Assigned by", "Open the task", "You received this notification because the task was assigned to you."),
+            "tr" => ("Size bir görev atandı", "Aşağıdaki görev sizde. Kabul ettiğinizde Görev Merkezi'nde \"İşlerim\" altında görünür.", "Referans", "Görev", "Son tarih", "Öncelik", "Atayan", "Görevi aç", "Bu bildirimi görev size atandığı için aldınız."),
+            "fr" => ("Une tâche vous a été attribuée", "La tâche ci-dessous vous revient. Une fois acceptée, elle apparaît sous « Mon travail » dans le Centre des tâches.", "Référence", "Tâche", "Échéance", "Priorité", "Attribuée par", "Ouvrir la tâche", "Vous recevez cette notification parce que la tâche vous a été attribuée."),
+            "es" => ("Se le ha asignado una tarea", "La tarea siguiente es suya. Cuando la acepte, aparecerá en «Mi trabajo» del Centro de tareas.", "Referencia", "Tarea", "Fecha de vencimiento", "Prioridad", "Asignada por", "Abrir la tarea", "Ha recibido esta notificación porque se le asignó la tarea."),
+            "zh" => ("有一项任务已分配给您", "以下任务由您负责。接受后，它将显示在任务中心的“我的工作”中。", "编号", "任务", "截止日期", "优先级", "分配人", "打开任务", "您收到此通知是因为该任务已分配给您。"),
+            "ar" => ("تم إسناد مهمة إليك", "المهمة التالية مسندة إليك. بعد قبولها تظهر ضمن «أعمالي» في مركز المهام.", "المرجع", "المهمة", "تاريخ الاستحقاق", "الأولوية", "أسندها", "فتح المهمة", "تلقيت هذا الإشعار لأن المهمة أُسندت إليك."),
+            "ru" => ("Вам назначена задача", "Задача ниже назначена вам. После принятия она появится в разделе «Моя работа» Центра задач.", "Ссылка", "Задача", "Срок", "Приоритет", "Назначил", "Открыть задачу", "Вы получили это уведомление, потому что задача назначена вам."),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported task template locale.")
+        };
+
+        var template = Create(
+            "platform.tasks.assigned",
+            locale,
+            previous.SubjectTemplate,
+            // The reference stays in the body, as in 1.0.0: it is a required variable of the event, and a required
+            // variable that no part of the template renders is a silent blank (TaskNotificationTemplateTests).
+            $"<p>{body}</p><p>{reference}: {{{{TaskId}}}}</p>",
+            $"{body} {reference}: {{{{TaskId}}}}",
+            ["TaskTitle", "TaskId"]);
+        template.SemanticVersion = "1.1.0";
+        template.Shell = new NotificationTemplateShell
+        {
+            HeadingTemplate = heading,
+            InfoRows =
+            [
+                new NotificationTemplateShellRow { Label = task, ValueTemplate = "{{TaskTitle}}" },
+                new NotificationTemplateShellRow { Label = due, ValueTemplate = "{{DueAt}}" },
+                new NotificationTemplateShellRow { Label = priority, ValueTemplate = "{{Priority}}" },
+                new NotificationTemplateShellRow { Label = assignedBy, ValueTemplate = "{{AssignerName}}" }
+            ],
+            ActionLabel = open,
+            ActionUrlVariable = "TaskUrl",
+            FootnoteTemplate = why
+        };
+        return template;
     }
 
     /// <summary>
@@ -801,3 +974,9 @@ public static class NotificationTemplateSeed
         };
     }
 }
+
+/// <summary>What one start-up pass over the seeded templates did — written to the log, returned to tests.</summary>
+/// <param name="Inserted">Rows that did not exist and were written.</param>
+/// <param name="Upgraded">Untouched previous-seed rows carried forward to the current content.</param>
+/// <param name="KeptModified">Rows an operator changed, left exactly as they are.</param>
+public sealed record NotificationTemplateSeedResult(int Inserted, int Upgraded, int KeptModified);
