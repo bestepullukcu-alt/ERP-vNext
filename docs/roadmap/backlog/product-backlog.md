@@ -7020,7 +7020,7 @@ görevleri iptal ediyor (`TaskApprovalService.cs:202`, `TaskReviewService.cs:231
 
 **Zaman çizelgesi taraması: 200 sınırında açlık, toplam işareti için indeks yok**
 
-DURUM: AÇIK · SAHİP: CT (MOD-0280-FU01) · BULAN: T1a kabulü · KAYIT: 2026-09-29
+DURUM: KISMEN KAPANDI 2026-10-01 — açlık kapalı: tarama onaylı-toplamsız haftaları ayrı sorguyla ve kendi payıyla okuyor (kod T1b'de girmişti; WP-TIMESHEET-HARDENING-01 testini ekledi: 205 eski bekleyen hafta, yeni onaylı haftanın toplamını aynı taramada engellemiyor). **Kalan:** `TotalsAppliedAtUtc` için indeks yok · SAHİP: CT (MOD-0280-FU01) · BULAN: T1a kabulü · KAYIT: 2026-09-29
 
 `ListNeedingFinalizationAsync` kiracı başına en eski 200 haftayı alıyor ve karar bekleyen bütün Submitted haftalar da bu listede: 200'den fazla eski bekleyen
 varsa onaylanmış ama toplamı düşmüş yeni hafta taranmıyor. `TotalsAppliedAtUtc` için indeks yok (onaylı dal her koşuda bütün onaylı haftaları okuyor); onay
@@ -7086,7 +7086,14 @@ bırakıyor. İş aynı: bu testler de `DisposableStandaloneMongo`'ya (ya da `em
 
 **T1a küçükleri**
 
-DURUM: AÇIK · SAHİP: CT (MOD-0280-FU01 / MOD-0023) · BULAN: T1a kabulü · KAYIT: 2026-09-29
+DURUM: KISMEN KAPANDI 2026-10-01 — (1) ve (2) kapandı (WP-TIMESHEET-HARDENING-01 + CT kabulü, hatta `36b42bb71`); (3)–(6) açık · SAHİP: CT (MOD-0280-FU01 / MOD-0023) · BULAN: T1a kabulü · KAYIT: 2026-09-29
+
+**(1) kapandı:** geri çekmede "çok geç" yalnız biri gerçekten karar verdiyse (onay / ret) söyleniyor; MOD-0023 iptali reddetti ama kimse karar vermediyse
+`TIMESHEET_CONCURRENCY_CONFLICT` dönüyor (yeniden denenebilir); başkasının iptal ettiği onay karar sayılmıyor, geri çekme geçiyor. Bilinen: kısmi
+iptalden sonra MOD-0023 örneği zaten İptal'dir; sonraki okuma haftayı Taslak'a döndürür (kişinin istediği sonuç), ama geri çekme damgası ve onaycıya
+"geri çekildi" e-postası olmadan. **(2) kapandı:** karar çekici ne yaptığını üç ayrı sayıyla söylüyor (uygulanan / başarısız / denenen); tarama
+`AppliedWeeks` ve `FailedWeeks` yazıyor, yutulan hata artık "değişiklik" sayılmıyor. CT kabulünde: hata satırı alanlarla (hafta, neden kodu, hata türü)
+yazılıyor ve hatanın kendisi de günlüğe gidiyor (yoksa bütün sonlandırma hataları aynı satırdı).
 
 (1) Geri çekmede MOD-0023 geçiş çakışması ya da kısmi iptal de 409 WITHDRAW_TOO_LATE ("onaylayan karar verdi") diyor, kimse karar vermemişken. (2) Karar
 çekici yutulan hatayı değişiklik sayıyor (tarama sayacı şişer). (3) Görev Merkezi başlatan kontrolü yalnız `StartedByUserId`'ye bakıyor; eski örneklerde Onayla
@@ -7098,7 +7105,7 @@ açık görünüp 409 dönüyor. (4) İnceleyen = atanan kişiyle görev oluştu
 
 **Zaman çizelgesi okuma yolları satır başına okuyor**
 
-DURUM: KISMEN KAPANDI 2026-10-01 (CT, 30ce6048d + b1b47deb3): (1) onay listesi işaretleri sayfa başına bir kez okunuyor (6 satır 49 → 34 okuma), (2) toplu onay yalnız seçili haftaları `weekIds` ile yeniden okuyor — 500'ü aşan kuyrukta geçerli seçim artık reddedilmiyor, (3) hafta GET görev okuma kuralını bir kez soruyor (6 görev 16 → 11). **Dağıtım sırası: önce Platform, sonra Web** (eski Platform `weekIds`'i yok sayar, seçimler güvenli yönde NOT_FOUND döner). Kalan: çalışma takvimi hâlâ (kişi, hafta) başına 4 okuma, karar çekici kuyruk haftası başına bir okuma, görev seçici her tuşta hesaplıyor (4). Önceki durum: AÇIK · SAHİP: CT (MOD-0280-FU01, T4 ile) · BULAN: T2a/T2b kabulleri · KAYIT: 2026-09-30
+DURUM: KISMEN KAPANDI 2026-10-01 (CT, 30ce6048d + b1b47deb3): (1) onay listesi işaretleri sayfa başına bir kez okunuyor (6 satır 49 → 34 okuma), (2) toplu onay yalnız seçili haftaları `weekIds` ile yeniden okuyor — 500'ü aşan kuyrukta geçerli seçim artık reddedilmiyor, (3) hafta GET görev okuma kuralını bir kez soruyor (6 görev 16 → 11). **Dağıtım sırası: önce Platform, sonra Web** (eski Platform `weekIds`'i yok sayar, seçimler güvenli yönde NOT_FOUND döner). **2026-10-01 ikinci tur (WP-TIMESHEET-HARDENING-01 + CT kabulü, hatta `36b42bb71`):** çalışma takviminin girdileri (kiracı, koltuklar, pozisyonlar, birimler) sayfa başına BİR kez okunuyor (`GetWorkingWindowsForManyAsync`), karar çekici MOD-0023'e kuyruk için BİR kez soruyor (`ListByIdsAsync`, kiracı süzgeçli). Ajan ölçümü: 6 satırlık onay sayfası 34 → 9 okuma — **dikkat: bu sayı test düzeneğinin takvim taklidiyle ölçüldü; gerçek çalışma takvimi sağlayıcısı gün başına okumaya devam ediyor** (aynı çağrı içinde aynı gün+kapsam bir kez sorulur). CT kabulünde eklendi: toplu MOD-0023 okuması hata verirse kuyruk hafta hafta sorulur — okunamayan tek bir örnek yalnız kendi haftasını bekletir (tarama her koşuda aynı en eski haftaları aldığı için aksi halde kiracının bütün kuyruğu kalıcı dururdu). **Hâlâ kalan:** çalışma takvimi sağlayıcısının gün başına okuması (aralık okuması gerekir); hatırlatma işi takvimi ve işaretleri kişi başına okuyor; görev seçici her tuşta yeniden hesaplıyor. Önceki kalan notu: çalışma takvimi hâlâ (kişi, hafta) başına 4 okuma, karar çekici kuyruk haftası başına bir okuma, görev seçici her tuşta hesaplıyor (4). Önceki durum: AÇIK · SAHİP: CT (MOD-0280-FU01, T4 ile) · BULAN: T2a/T2b kabulleri · KAYIT: 2026-09-30
 
 (1) Onay listesi işaretleri (otomatik kapanan gün, mesai dışı dakika, tatil) ve Görev Merkezi iş öğesi kimliğini sayfadaki her satır için ayrı okuyor
 (`GetApprovalListHandler`, satır başına ~4 okuma). (2) Toplu onay listeyi `length=500` ile yeniden okuyor: bir tıklama ~2 000 okuma. Kuyruk 500 haftadan
@@ -7110,7 +7117,7 @@ Gelecek regresyon riski: 🟢 (yalnız performans; sonuç aynı).
 
 **Görev Merkezi'nde kalan sahte "süre kaydet" iletişim kutusu**
 
-DURUM: AÇIK · SAHİP: CT (Görev Merkezi) · BULAN: T2b bağımsız gözden geçirme · KAYIT: 2026-09-30
+DURUM: KAPANDI 2026-10-01 — WP-WCN-DELEGATE-LOGTIME-01 (`07bc157ca`, hatta `4a9d39d71`): kutu, altı metin anahtarı (7 dil), kutuya özel stil ve gösterim verisindeki ölü alanlar kaldırıldı; süre girişi yalnız Zaman Çizelgem'de. Eski `/WorkCenter` ekranına dokunulmadı · SAHİP: CT (Görev Merkezi) · BULAN: T2b bağımsız gözden geçirme · KAYIT: 2026-09-30
 
 T2b tarayıcı sayacını kaldırdı, ama `logTime` iletişim kutusu hâlâ duruyor: yalnız `action.input === 'minutes'` ile açılıyor (fixture denetimi yok), bellekte
 etkinlik yazıp "(mock)" bildirimi gösteriyor; `LogTimeSubtext` "kaydedilmiş süreye ekler" diyor ama kart artık değişmiyor. Gösterim fixture'ında ölü
@@ -7123,7 +7130,7 @@ ve anahtarlarını (7 dil) kaldır ya da Zaman Çizelgem'e yönlendiren bir bağ
 
 DURUM: AÇIK · SAHİP: CT (MOD-0280-FU01 / Görev Merkezi) · BULAN: T2b bağımsız gözden geçirme · KAYIT: 2026-09-30
 
-(1) Başlat/Durdur hem kartta hem ··· menüsünde görünüyor (sağlayıcı `overflowActionCodes`'a da ekliyor). (2) Ayarlar sayfası ayar okuması başarısız olursa
+(1) Başlat/Durdur hem kartta hem ··· menüsünde görünüyor (sağlayıcı `overflowActionCodes`'a da ekliyor). **(1) KAPANDI 2026-10-01 (WP-WCN-DELEGATE-LOGTIME-01 + CT kabulü, `4a9d39d71`):** detay sayfasında sayaç yalnız süre kartında çiziliyor; kart çizilmeyen yüzeyde eylem yerinde kalıyor. Sunucudaki yerleşim (`overflowActionCodes`) bilerek DEĞİŞMEDİ — yerleşime göre çizen ve kartı olmayan bir tüketici sayacı kaybederdi; "karta bırakma" kararı kartı çizen yüzeyin. Kilitli sayaç düğmesinin nedeni artık kartta yazıyor. Bilinen ve kabul edilen: kart "Genel" sekmesinde, "Etkinlik" sekmesinde sayaç bir sekme uzakta (sekme değişimi sayfayı yeniden çizmiyor). (2) Ayarlar sayfası ayar okuması başarısız olursa
 sürüm 0 ile devam ediyor; sunucu sürüm çakışmasını reddeder ama sayfa hatayı söylemeli. **(2) KAPANDI 2026-10-01 (CT):** okunamayan ayar ya da sayaç satırı artık "okunamadı" diyor; havuz, hatırlatma ve sayaç düğmeleri kilitli, hiçbir şey gönderilmiyor (7 dil, 2 test + sabotaj). (3) `ITimeEntryTimerAvailability` `Contracts/` yerine
 `Features/TimeEntry/TimeEntryPorts.cs`'de (`ITaskSpentTimeSource` `Contracts/`'ta); Tasks dağıtıcısı TimeEntry komutlarını doğrudan tanıyor. (4) `taskContext`
 ile `effort` aynı koşulu iki yerde hesaplıyor (`ResolveCapabilities` ve `Effort:`); bugün tutarlı, ileride ayrışabilir — koşul tek yerden gelmeli.
@@ -7143,7 +7150,7 @@ DURUM: AÇIK · SAHİP: CT (Görev Merkezi takvimi) · BULAN: T2b kabulü · KAY
 
 **T3 bildirimlerinin ertelenen küçükleri**
 
-DURUM: AÇIK · SAHİP: CT (MOD-0280-FU01 / Platform bildirimleri) · BULAN: T3 bağımsız gözden geçirme · KAYIT: 2026-09-30
+DURUM: KISMEN KAPANDI 2026-10-01 — (1) kapandı (WP-TIMESHEET-HARDENING-01 + CT kabulü, hatta `36b42bb71`): hatırlatma alıcıları 100'lük gruplarla çözülüyor (123 kişi: 123 → 2 soru); koşu bütçesi aşılmıyor, pasif kullanıcı ne işaretleniyor ne e-posta alıyor, bir kişinin başarısız gönderimi grubun kalanını etkilemiyor; dizin yanıt vermezse kimse işaretlenmiyor ve sonraki koşu hepsini hatırlatıyor. (2) ve (3) açık · SAHİP: CT (MOD-0280-FU01 / Platform bildirimleri) · BULAN: T3 bağımsız gözden geçirme · KAYIT: 2026-09-30
 
 (1) Hatırlatma işi alıcıları kişi başına AuthService'ten çözüyor (her çağrı kiracının kullanıcı sayfalarını tarıyor); 100'lük gruplarla toplu çözüm.
 (2) Yeniden denenen e-posta, `QueueEmailNotificationHandler`'ın gizleme kuralı boşluk ve `=` içeren değerleri sakladığı için (`WeekLabel`,
@@ -7193,7 +7200,16 @@ Gelecek regresyon riski: 🟢 (eklemeli, isteğe bağlı alanlar).
 
 **Görev Merkezi'nden "Devret" hiç çalışmıyor — kişi seçici yok**
 
-DURUM: AÇIK · SAHİP: CT (Görev Merkezi) · BULAN: WP-WCN-APPROVAL-UX-01 ajan ölçümü + bağımsız gözden geçirme · KAYIT: 2026-10-01
+DURUM: KAPANDI 2026-10-01 — WP-WCN-DELEGATE-LOGTIME-01 (`07bc157ca`) + CT kabul düzeltmeleri (`092861e6e`), hatta `4a9d39d71`; canlı ekran kontrolü dev'de bekliyor · SAHİP: CT (Görev Merkezi) · BULAN: WP-WCN-APPROVAL-UX-01 ajan ölçümü + bağımsız gözden geçirme · KAYIT: 2026-10-01
+
+**Ne yapıldı:** Devret penceresi kişiyi soruyor (zorunlu) ve isteğe bağlı not alıyor; kişi `targetPrincipalId` olarak gidiyor. Hangi eylemin kişi
+sorduğunu sunucu söylüyor (`requiresTargetPerson`), tarayıcı eylem kodundan türetmiyor; devreden ve iş akışını başlatan kişi sunulmuyor
+(`excludedTargetPrincipalIds`). **CT kabulünde eklenenler:** (1) MOD-0023 artık başlatana devri reddediyor (`SOD_VIOLATION`, atama kontrolünden
+sonra — görev kendisinde olmayan kişi başlatanın kim olduğunu öğrenemez); (2) kullanıcı kimliği tek yazımda tutuluyor, "kendine devredemezsin"
+kuralı kimliği büyük harfle / süslü parantezle yazarak aşılamıyor; (3) pencere kişileri görev **atama** listesinden değil **karar verebilecekler**
+listesinden okuyor (atama listesi şirket kapsamıyla sınırlı; onay yetkisi sürece aittir — BL-057); (4) liste okunamazsa (403, bağlantı) "kimse
+yok" değil gerçek hata söyleniyor; (5) kişi zarfı (`{ people, excluded }`) iki liste için de tek yerde, TasksApi'de açılıyor. Ölçüm: Platform
+(Workflow + WorkAggregation + Tasks) 2074/2074, Web.Tests 395/395, vitest 3868 + bilinen 24; CT sabotajı 13/13 kırmızı. Kalanlar → BL-494.
 
 MOD-0023 onay öğesinde Devret penceresi düz bir onay; kimi seçeceğini sormuyor, `targetPrincipalId` gönderilmiyor ve dağıtıcı isteği
 `PayloadInvalid` ile reddediyor (WorkflowApprovalWorkItemActionDispatcher). Yani eylem sunuluyor ama her seferinde hata veriyor; bu iş
@@ -7231,6 +7247,29 @@ biri, o görevde işlem yapan kişinin tarayıcısında betik çalıştırabilir
 hiçbiri mesajda bilerek HTML göndermiyor (52 doğrudan çağrı tarandı); Content-Security-Policy başlığı yok. Düzeltme kaynağında: `showToast`
 mesajı Notyf'e vermeden önce metne çevirir; koruma testi + canlı sayfada kanıt.
 Gelecek regresyon riski: 🟢 (HTML'e yaslanan çağıran yok).
+
+---
+
+### BL-494
+
+**Devret'i kiracı kullanıcısına açmak için kalanlar (MOD-0023 + Görev Merkezi)**
+
+DURUM: AÇIK · SAHİP: CT (iş akışı motoru + Görev Merkezi) · BULAN: WP-WCN-DELEGATE-LOGTIME-01 CT kabulü + bağımsız gözden geçirme · KAYIT: 2026-10-01
+
+BL-491 pencereyi çalışır hale getirdi; aşağıdakiler aynı pakette, motor paketiyle (BL-475 / BL-476 / BL-478) birlikte yapılmalı:
+(1) **Yetki anahtarı kiracıya verilemiyor.** `platform.workflow.tasks.delegate` (ve `request-info`) platform-yönetici kapsamında; kiracı rol ekranı
+göstermiyor. Bugün Devret'i fiilen yalnız yönetici görüyor. Karar sahibin: üç onay anahtarı için açılan tek kapıya (`SeedOwnedTenantScopeKeys`)
+eklenir mi. (2) **Aday listesi iş akışının kendi ucu olmalı.** Pencere bugün görev modülünün `decision-makers` ucunu okuyor (yetki: görev oluşturma);
+yalnız iş akışı yetkisi olan onaycı 403 alır. Doğru şekil: devret yetkisiyle korunan, onay öğesine özel aday ucu — kendini ve başlatanı sunucuda
+düşer; o zaman `excludedTargetPrincipalIds` tarayıcıya hiç gitmez (bugün başlatanın kullanıcı kimliği, talep sahibi alanı boş olan onaylarda da
+tarayıcıya gidiyor — aynı kiracı, yalnız karar verebilecek kişi görür, düşük hassasiyet). (3) **Motor hedefi doğrulamıyor.** Var olmayan ya da
+başka kiracıdan bir kimliğe devredilen onay sahipsiz kalır (yalnız iptal ya da yükseltme kurtarır); hedef "bu kiracının yaşayan bir kişisi"
+olmalı, tercihen "bu adımı karara bağlayabilecek biri". (4) **Ret mesajları genel.** `WORKFLOW_DELEGATE_SAME_ACTOR_INVALID`,
+`WORKFLOW_ACTOR_DENIED`, `SOD_VIOLATION` Görev Merkezi'nde "hata oluştu" olarak görünüyor (7 dil gerekir); çözümlenmiş kişi olmayan aday
+Devret'i açık görüp genel hata alıyor (BL-475 ile aynı kök). (5) Pencerede "ne olacak" cümlesi yok. Karşılaştırma: SAP iş akışında iletme
+adımın "olası işleyenleri" ile sınırlanır, başlatan "hariç tutulan işleyen" olur; Oracle onay kurallarında yeniden atama dizinden herkese
+açıktır ama kısıtlanabilir ve talep sahibinin kendi kaydını onaylaması ayrı kuralla engellenir. Gelecek regresyon riski: 🟡 (karar yoluna ve
+yetki kapsamına dokunur).
 
 ---
 
