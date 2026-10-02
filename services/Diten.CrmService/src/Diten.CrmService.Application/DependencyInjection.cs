@@ -60,6 +60,10 @@ public static class DependencyInjection
         // WP-KP-2 — the path review: the single outcome applier (event consumer, reconcile, withdraw) + reconcile-on-read.
         services.AddScoped<Features.Knowledge.Path.Review.KnowledgePathRevisionOutcomeApplier>();
         services.AddScoped<Features.Knowledge.Path.Review.KnowledgePathReviewReconciler>();
+        // WP-KP-5a — the regulatory texts (safety text, country legal profile): the single outcome applier (event
+        // consumer, reconcile, withdraw) + reconcile-on-read.
+        services.AddScoped<Features.Knowledge.Regulatory.RegulatoryTextOutcomeApplier>();
+        services.AddScoped<Features.Knowledge.Regulatory.RegulatoryTextReviewReconciler>();
 
         // MOD-0155 FU01 — the four read-only PlannedVisit provenance probes. Each is a thin in-process wrapper over an
         // already-registered seam (frequency resolver, consent evaluator, journey reader, contact-availability repo):

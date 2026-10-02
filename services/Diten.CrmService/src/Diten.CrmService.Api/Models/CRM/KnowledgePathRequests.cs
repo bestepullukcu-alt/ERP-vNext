@@ -55,6 +55,26 @@ public sealed record ArrangeKnowledgePathClaimRequest(int Position, int? Expecte
 // WP-KP-2 — review sub-routes.
 public sealed record KnowledgePathDecisionRequest(string? Decision, string? Comment = null);
 
+// WP-KP-5a — safety text / country legal profile requests (the key is fixed at creation; PUT edits a draft's content).
+public sealed record CreateSafetyTextRequest(
+    Guid GlobalProductId, string? GlobalProductCodeDisplay, string? CountryCode, string? LanguageCode, string? Body,
+    string? ShortBody = null, string? SourceDocumentRef = null, DateTimeOffset? SourceDate = null,
+    string? ApprovalReference = null);
+
+public sealed record UpdateSafetyTextRequest(
+    string? Body, string? ShortBody = null, string? SourceDocumentRef = null, DateTimeOffset? SourceDate = null,
+    string? ApprovalReference = null, int? ExpectedVersion = null);
+
+public sealed record CreateCountryLegalProfileRequest(
+    string? CountryCode, string? LanguageCode, string? LegalFooterText, string? MarketingAuthorizationHolder = null,
+    string? AdverseEventReportingText = null, string? PromotionalNotice = null, string? PageApprovalCodeFormat = null);
+
+public sealed record UpdateCountryLegalProfileRequest(
+    string? LegalFooterText, string? MarketingAuthorizationHolder = null, string? AdverseEventReportingText = null,
+    string? PromotionalNotice = null, string? PageApprovalCodeFormat = null, int? ExpectedVersion = null);
+
+public sealed record RegulatoryTextDecisionRequest(string? Outcome, string? Comment = null);
+
 // WP-KP-3 — withdrawal of a released revision (reason required).
 public sealed record KnowledgePathWithdrawRequest(string? Reason);
 

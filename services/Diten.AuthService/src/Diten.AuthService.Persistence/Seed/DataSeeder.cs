@@ -489,6 +489,15 @@ public static class DataSeeder
             new("crm", "knowledge.path", "read", "CRM Knowledge Path Read", "Permission to view SCMM knowledge paths and the path contract", moduleOverride: "crm-knowledge"),
             new("crm", "knowledge.path", "manage", "CRM Knowledge Path Manage", "Permission to author SCMM knowledge paths and their steps", moduleOverride: "crm-knowledge"),
             new("crm", "knowledge.path", "publish", "CRM Knowledge Path Publish", "Permission to publish SCMM knowledge paths (freezes the step set)", moduleOverride: "crm-knowledge"),
+            // WP-KP-5a — Regulatory-approved master texts of the page designer (safety text per product x country x
+            // language, country legal profile per country x language). Tenant-scoped (module "crm-knowledge"). Approval
+            // itself is a MOD-0023 task (Regulatory positions), not a CRM key. Catalog only: role grants are KP-5a-CFG.
+            new("crm", "safety-text", "read", "CRM Safety Text Read", "Permission to view product safety texts (per country and language) and their approval history", moduleOverride: "crm-knowledge"),
+            new("crm", "safety-text", "manage", "CRM Safety Text Manage", "Permission to author draft product safety texts, start a new version and archive", moduleOverride: "crm-knowledge"),
+            new("crm", "safety-text", "submit", "CRM Safety Text Submit", "Permission to send a safety text draft for Regulatory approval and withdraw it", moduleOverride: "crm-knowledge"),
+            new("crm", "country-legal-profile", "read", "CRM Country Legal Profile Read", "Permission to view country legal profiles (legal footer, MAH, adverse event text) and their approval history", moduleOverride: "crm-knowledge"),
+            new("crm", "country-legal-profile", "manage", "CRM Country Legal Profile Manage", "Permission to author draft country legal profiles, start a new version and archive", moduleOverride: "crm-knowledge"),
+            new("crm", "country-legal-profile", "submit", "CRM Country Legal Profile Submit", "Permission to send a country legal profile draft for Regulatory approval and withdraw it", moduleOverride: "crm-knowledge"),
 
             // SCMM-12-API (CAND-CAP-0011) — Claim HTTP surface. Tenant-scoped keys (module code "crm-content-composition"
             // ∉ PlatformAdminModules → Scope=Tenant). Canonical crm.claim.* keys for the ContentComposition claim console.

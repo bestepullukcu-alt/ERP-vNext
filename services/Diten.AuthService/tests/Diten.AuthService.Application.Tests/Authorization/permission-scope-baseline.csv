@@ -65,6 +65,12 @@ crm.planned-visit.read,0
 crm.claim.approve,0
 crm.claim.manage,0
 crm.claim.read,0
+crm.safety-text.manage,0
+crm.safety-text.read,0
+crm.safety-text.submit,0
+crm.country-legal-profile.manage,0
+crm.country-legal-profile.read,0
+crm.country-legal-profile.submit,0
 crm.content-scope.manage,0
 crm.content-scope.read,0
 crm.content-set.manage,0

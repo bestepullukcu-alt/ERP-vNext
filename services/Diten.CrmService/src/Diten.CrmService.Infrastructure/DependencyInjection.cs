@@ -160,6 +160,10 @@ public static class DependencyInjection
         services.AddSingleton<
             Application.Features.Knowledge.Path.Review.IKnowledgePathReviewSettings,
             Workflow.ConfigurationKnowledgePathReviewSettings>();
+        // WP-KP-5a — the Regulatory round of the safety text / country legal profile (Crm:RegulatoryTexts:Workflow).
+        services.AddSingleton<
+            Application.Features.Knowledge.Regulatory.IRegulatoryTextReviewSettings,
+            Workflow.ConfigurationRegulatoryTextReviewSettings>();
         services.AddScoped<Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient>(sp =>
             (Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient)
             sp.GetRequiredService<Application.Features.ContentComposition.Claims.IClaimWorkflowClient>());

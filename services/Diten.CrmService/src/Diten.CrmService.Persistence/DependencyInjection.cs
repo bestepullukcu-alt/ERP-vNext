@@ -147,6 +147,10 @@ public static class DependencyInjection
         services.AddScoped<IKnowledgePathRepository, KnowledgePathRepository>();
         // WP-KP-2 — frozen MLR review revisions of a knowledge path (own collection, no delete).
         services.AddScoped<IKnowledgePathRevisionRepository, KnowledgePathRevisionRepository>();
+        // WP-KP-5a — the Regulatory-approved master texts (safety text, country legal profile): one collection each, no
+        // delete (archive).
+        services.AddScoped<ISafetyTextRepository, SafetyTextRepository>();
+        services.AddScoped<ICountryLegalProfileRepository, CountryLegalProfileRepository>();
         services.AddScoped<
             Application.Features.Knowledge.Path.IKnowledgePathReader,
             Application.Features.Knowledge.Path.KnowledgePathReader>();
@@ -635,6 +639,14 @@ public static class DependencyInjection
         });
         Map<ClaimLocalizedText>(_ => { });
         Map<ClaimReviewRound>(map => map.GetMemberMap(x => x.WorkflowInstanceId).SetSerializer(stringGuid));
+
+        // WP-KP-5a — the regulatory texts: the shared base (lifecycle, rounds, decisions) and the two kinds. Id / TenantId
+        // live on the EntityBase map; the safety text's product id takes the string-Guid convention (the new-aggregate
+        // trap); the review rounds reuse the ClaimReviewRound map above; the embedded decision is registered explicitly.
+        Map<RegulatoryText>(_ => { });
+        Map<RegulatoryTextDecision>(_ => { });
+        Map<SafetyText>(map => map.GetMemberMap(x => x.GlobalProductId).SetSerializer(stringGuid));
+        Map<CountryLegalProfile>(_ => { });
 
         Map<KnowledgeExternalReference>(_ => { });
 
@@ -1708,6 +1720,17 @@ public static class DependencyInjection
             // reusable), so no partial $ne filter that would crash-loop the service.
             // WP-KP-2 — knowledge_path_revisions: one revision number per (tenant, path) — the store refuses a second
             // submission racing for the same number.
+            // WP-KP-5a — one ACTIVE regulatory text per key (equality partial filter; never $ne).
+            var safetyTexts = database.GetCollection<SafetyText>(SafetyTextRepository.CollectionName);
+            // One OPEN version per key as well: the derived OpenKey with a $type partial filter (never $ne).
+            safetyTexts.Indexes.CreateOne(SafetyTextRepository.ActiveKeyIndex());
+            safetyTexts.Indexes.CreateOne(SafetyTextRepository.OpenKeyIndex(SafetyTextRepository.OpenKeyIndexName));
+            safetyTexts.Indexes.CreateOne(SafetyTextRepository.LookupIndex());
+            var legalProfiles = database.GetCollection<CountryLegalProfile>(CountryLegalProfileRepository.CollectionName);
+            legalProfiles.Indexes.CreateOne(CountryLegalProfileRepository.ActiveKeyIndex());
+            legalProfiles.Indexes.CreateOne(
+                CountryLegalProfileRepository.OpenKeyIndex(CountryLegalProfileRepository.OpenKeyIndexName));
+
             var pathRevisions = database.GetCollection<KnowledgePathRevision>(KnowledgePathRevisionRepository.CollectionName);
             pathRevisions.Indexes.CreateOne(new CreateIndexModel<KnowledgePathRevision>(
                 Builders<KnowledgePathRevision>.IndexKeys
