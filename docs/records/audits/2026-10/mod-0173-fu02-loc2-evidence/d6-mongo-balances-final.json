@@ -1,0 +1,47 @@
+[{
+	"_id": "09306c45-743a-4598-809e-60ebd8a4081a",
+	"WarehouseId": "34d5a227-229e-4dd9-9cd3-3fd9882ad241",
+	"ProjectId": null,
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"IsDeleted": false,
+	"ItemId": "b1f2c3d4-0000-0000-0000-000000000001",
+	"LotId": "LOT-LOC2-01",
+	"OwnerId": null,
+	"LocationId": "719585e5-faab-4cfd-952a-55c21a6f121a",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"SkuLevel": "Lsku",
+	"StockStatus": "Available",
+	"SkuId": "c3d4e5f6-0000-0000-0000-000000000002",
+	"Available": {
+		"$numberDecimal": "25"
+	},
+	"BaseUomId": "EA",
+	"Blocked": {
+		"$numberDecimal": "0"
+	},
+	"CreatedAt": {
+		"$date": "2026-10-02T08:04:57.711Z"
+	},
+	"DeletedAt": null,
+	"InTransit": {
+		"$numberDecimal": "0"
+	},
+	"LastMovementId": "37efecb3-2519-473d-8d03-9d003651faae",
+	"LastPostingDate": {
+		"$date": "2026-10-02T08:04:56.846Z"
+	},
+	"OnHand": {
+		"$numberDecimal": "25"
+	},
+	"QualityInspection": {
+		"$numberDecimal": "0"
+	},
+	"Reserved": {
+		"$numberDecimal": "0"
+	},
+	"UpdatedAt": {
+		"$date": "2026-10-02T08:04:57.711Z"
+	},
+	"Version": 1
+}]
+

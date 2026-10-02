@@ -85,3 +85,27 @@ other location route `legalEntityId` / `tenantId` in the query stay 400 `INVALID
 `ix_location_ancestors`, `ix_location_bulk_key`) and `inventory_location_history` (`ix_location_history`, append-only),
 both created by the startup index gate; balances gained `ix_tenant_le_location` / `ix_tenant_le_warehouse` for stock
 presence. No location document carries a quantity.
+
+## 6. Screens (slice LOC2)
+
+The tenant screens never call 5066, the Gateway or `/api/locations` from the browser: they talk to same-origin MVC
+proxies in `Diten.Web`, which call Gateway `/api/locations` (INT-2) with the cookie bearer, `X-Tenant-Id` and — for a
+token without a `legal_entity_id` claim — the selected company as `X-Legal-Entity-Id` (W-0173-02; no call at all
+without a company).
+
+| Browser → MVC | MVC → Gateway (LOCATION) | Used by |
+|---|---|---|
+| `GET /LocationTree/children?parentId&includeArchived` | `searchLocations` (`parentId`, or `type=Site` for the root; Active+Inactive unless archived asked) | L-1 tree (lazy; > 500 children → L-2) |
+| `GET /Locations/api?start&length&search&orderBy&orderDir&type*&status*&isStockable&parentId` | `searchLocations` + `getLocationPath` per distinct parent | L-2 list (server mode) |
+| `GET /Locations/node/{id}` | `getLocation` (+ `ETag`), `getLocationPath`, `getLocationStockPresence` | L-1 detail, L-3 edit, status dialog |
+| `GET /Locations/history/{id}?page` | `getLocationHistory` (10 per page) | L-1 history |
+| `GET /Locations/parents?q&type*&activeOnly` | `searchLocations` | form parent picker (Active only), L-2 parent filter |
+| `GET /Locations/orgunits` | Platform `GET /api/platform/organization-units` (same company, Active, not archived) | form org-unit picker |
+| `POST /Locations/create` (anti-forgery) | `createLocation` (`Idempotency-Key` = the form's key) | L-3 create / add child |
+| `POST /Locations/edit/{id}` (anti-forgery) | `updateLocation` PATCH with `If-Match`, changed members only | L-3 edit / move |
+| `POST /Locations/status/{id}` (anti-forgery) | `changeLocationStatus` with `If-Match` | Activate / Deactivate / Archive |
+| `POST /Locations/bins/{id}` (anti-forgery) | `bulkCreateBins` (dry run, then one run with the same key) | L-4 bulk bins |
+
+Refusals keep the service's status and code; the message is the reader's language (`LocationErrorMessages` →
+`LocationsIndex` resx, 7 languages) with the correlation id behind a "details" disclosure. "View in stock list" opens
+FU01 S-1 as `/StockLedger?locationId={id}` (exact location filter of the frozen `/balance`).

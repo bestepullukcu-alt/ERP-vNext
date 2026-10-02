@@ -532,6 +532,31 @@ v1.1), `2e8ff898e` (service + tests), docs/evidence commit after it. Evidence:
   CT re-measured on the owner's LIVE stack: gateway 5000 (reloaded by dotnet watch) → GET /api/locations 401 from the
   service (routed), PUT 404 at the gateway; gateway build 0/0.
 
+**LOC2 implementation notes (WP-0173-LOC2, 2026-10-02 — agent PASS ≠ CT ACCEPTED).** Evidence:
+`docs/records/audits/2026-10/mod-0173-fu02-loc2-evidence/`, audit `docs/records/audits/2026-10/mod-0173-fu02-loc2-audit-2026-10-02.md`.
+L-1 `/LocationTree` (ARIA tree + detail), L-2 `/Locations` (Slim, server mode), L-3 one offcanvas form on both, L-4
+bulk-bins modal on L-1, manifest pages/actions + `Nav.Page.LOCATIONTREE`, FU01 S-1/S-2 `locationId` deep link.
+
+| ID | Assumption / decision taken in LOC2 |
+|---|---|
+| LOC2-01 | `InventoryGatewayClient` treats `/api/locations` like `/api/inventory`: the W-0173-02 company header for a claim-less token, no call without a company (the LOCATION routes run through the same scope middleware, §8). Side effect, intended: FU01's location labels/pickers now resolve for claim-less users. The client also gained PATCH, `If-Match` and the answer's `ETag`. |
+| LOC2-02 | The tree reads children through `searchLocations` (parentId, or `type=Site` for the root; Active+Inactive unless "show archived"), up to 3×200; above 500 children it hands over to L-2 (`/Locations?parentId=…`). Every non-Bin node shows an expander; an empty answer turns it into a leaf. |
+| LOC2-03 | L-2 "Parent path" = one `getLocationPath` per distinct parent on the page (≤ 50); search / sort (code, name, type, status) / filters go to `searchLocations` as-is. |
+| LOC2-04 | The form sends only the CHANGED members on edit (absent = unchanged, null = cleared); the proxy forwards only `LocationUpdateRequest` members of the right JSON kind and refuses anything else (incl. `type`, a company) with 400 before the Gateway. Stockable is offered only for Bin/StorageLocation (LOC1-04), operating mode only for Site/Warehouse. |
+| LOC2-05 | "View in stock list" = `/StockLedger?locationId={id}` (exact location — the frozen `/balance` filter is exact, not subtree). For a Site / Warehouse / Zone it shows rows posted on that node only; the detail's "stock below" tells the reader where the rest is. Subtree aggregation needs an additive contract parameter (FU-LOC2-03). |
+| LOC2-06 | The org-unit picker reads Platform `GET /api/platform/organization-units` through the Gateway and keeps the same company, `Status=Active`, `!IsArchived`. Without `platform.organization-units.read` the field says "list could not be read" and the form still saves. The detail shows the unit name when readable, else the stored id. |
+| LOC2-07 | History shows `actorUserId` as stored (no user-directory proxy in scope); parent changes show the parent code when the node is loaded. |
+| LOC2-08 | Bulk bins uses the contract fields (aisle from/to, rack from/to, level from/to, positions per level); the mockup's "digits" is not a contract field (codes are always `{RACK:00}` etc.). The client mirrors the 1000 limit and disables the preview above it. |
+| LOC2-09 | Type and operating mode are select2 like every offcanvas select (the shared `.diten-field` rules inset select2, not a native select). Refusals on a select2 field are shown as the sentence under it (no `is-invalid` re-padding of the select2 box); the form does not use `was-validated`. |
+| LOC2-10 | The manifest action codes are unique PER PAGE (Platform key = tenant + page + action); `NEWLOCATION`, `EDITLOCATION`, … are declared on both location pages because both render them. Completeness test updated accordingly (the UI1 "one nav-visible page" assertion now expects STOCKLEDGER + LOCATIONTREE). |
+| LOC2-11 | Development happened in a detached scratch worktree, landed by fast-forward: the owner's fleet runs `dotnet watch` from the main worktree and would rebuild on every intermediate edit. |
+
+Follow-ups: **FU-LOC2-01** native-speaker review of the fr/es/zh/ar/ru texts of `LocationsIndex` / `LocationTreeIndex`
+(model translation, marked in each resx) · **FU-LOC2-02** user guide `docs/guides/inventory-locations/index.html` (the
+draft is in the evidence folder; `docs/guides/**` was outside this WP's allowed paths) · **FU-LOC2-03** subtree stock
+view for "View in stock list" on non-bin nodes (additive `/balance` parameter, MOD-0173 owner) · **FU-LOC2-04** actor
+display names in the history (user directory read).
+
 ## 20. Follow-up Items
 
 - **FU-LOC1-01 (central):** `docs/analysis/contracts/README.md` should list LOCATION as 1.1.0, owner MOD-0173-FU02, served by InventoryService 5066 (v1 frozen, v1.1 additive).

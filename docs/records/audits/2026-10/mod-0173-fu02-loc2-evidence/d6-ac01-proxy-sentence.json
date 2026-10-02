@@ -1,0 +1,9 @@
+{
+  "step": "AC-01 LOCATION_LEVEL_INVALID — not reachable from the form (the type list and the parent picker only offer K-01-valid pairs), so the proxy's answer was measured with a same-origin POST from the page (real login, anti-forgery token of the page): POST /Locations/create { type: Bin, parentId: <LOC2-TR site> }",
+  "response": {
+    "status": 422,
+    "code": "LOCATION_LEVEL_INVALID",
+    "message": "Bu tür seçilen üst kaydın altına bağlanamaz (tesis → depo → depolama alanı → bölge → raf; raf depolama alanı altına da bağlanabilir).",
+    "correlationIdPresent": true
+  }
+}
