@@ -6667,6 +6667,14 @@ sayfası çıkar, ekleme formu açılmaz. SAP Fiori arama: uygulamalar (rol kata
 İleride: "komut" kalemleri (sayfa + eylem, ör. `/Users?create=1` ile ekleme formu açık; görev oluştur; toplantı planla), aynı yetki
 süzgeciyle, 7 dilde ad; kısayol katmanı (BL-438) ile ortak kayıt. Karar gelince paket.
 
+**Güncelleme 2026-10-02 (sahip):** ikinci sürüm şu an gerekli değil, iş listesinde kalır. Sahibin sorusu: "yeni modüllerde bunun olması, kurala
+eklemek çok mu zor?" CT cevabı: kuralı yazmak kolay, ama kuralın karşılığı olan düzenek yoksa yeni modül uyamaz. İki adım:
+(1) **Şimdi, ucuz (kod yok):** modül paketine "Hızlı eylemler" bölümü — modülün Ctrl+K'da bulunması gereken eylemleri (ad, açtığı adres ya da
+form, gereken izin; kiracı modülünde 7 dilde ad). Yeni modül bunu paketinde yazar; ikinci sürüm yapıldığında eski modüller için borç birikmez.
+(2) **İkinci sürümle:** bu liste modül kaydına (self-registration manifest) alan olarak girer, Ctrl+K menüyle aynı yetki süzgecinden okur.
+SAP Fiori'de arama, her uygulamanın kataloğa bildirdiği "anlamsal nesne + eylem" çiftlerini bulur; düzenek aynıdır. Sahip (1) için onay verirse
+"?" yardım kuralıyla (BL-495) aynı pakette yazılır: `.antigravity` kuralı + paket bölümü + küçülen defter.
+
 ---
 
 ### BL-456
