@@ -258,7 +258,10 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
         return ProductIdentityWorkflowTransportResult<T>.Fail(outcome, error);
     }
 
-    private bool ValidConfiguration() => Uri.TryCreate(_options.PlatformBaseUrl, UriKind.Absolute, out var uri)
+    private bool ValidConfiguration() => IsValidConfiguration(_options);
+    // Static so the pre-flight readiness check (ProductIdentityWorkflowTransportReadiness) asks this exact rule.
+    public static bool IsValidConfiguration(ProductIdentityWorkflowClientOptions options) =>
+        Uri.TryCreate(options.PlatformBaseUrl, UriKind.Absolute, out var uri)
         && uri.Scheme is "http" or "https" && uri.AbsolutePath == "/" && string.IsNullOrEmpty(uri.UserInfo)
         && string.IsNullOrEmpty(uri.Query) && string.IsNullOrEmpty(uri.Fragment);
     private static bool ValidHeader(string? value, int max, bool allowNull) => value is null ? allowNull

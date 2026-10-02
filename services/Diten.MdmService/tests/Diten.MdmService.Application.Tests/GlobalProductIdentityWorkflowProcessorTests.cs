@@ -5,6 +5,9 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
+using Diten.MdmService.Infrastructure.Workflow;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 using PersistedCancellationEvidence = Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowCancellationEvidence;
 using TransportCancellationEvidence = Diten.MdmService.Application.Contracts.Workflow.ProductIdentityWorkflowCancellationEvidence;
@@ -298,21 +301,181 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
         Assert.Equal(0, harness.Products.WithdrawCount);
     }
 
+    // ── WP-GP-1A-TRUST-CHAIN-01 (D) ─────────────────────────────────────────────────────────────────────────────
+    // A submit against a transport THIS service was never configured for must not lock the draft. The transport in
+    // these tests is the PRODUCTION client and identity provider with production options; the HTTP factory throws,
+    // which also proves that neither fault ever reaches the network.
+
+    [Theory]
+    [InlineData(false, true, "PRODUCT_WORKFLOW_CLIENT_CONFIGURATION_INVALID")]
+    [InlineData(true, false, "PRODUCT_WORKFLOW_IDENTITY_CONFIGURATION_INVALID")]
+    [InlineData(false, false, "PRODUCT_WORKFLOW_CLIENT_CONFIGURATION_INVALID")]
+    public async Task StartInteractive_WhenTransportIsNotConfigured_Returns503AndWritesNoOperationDocument(
+        bool platformAddressConfigured, bool identityProviderConfigured, string expectedCode)
+    {
+        var (transport, readiness) = ProductionTransport(platformAddressConfigured, identityProviderConfigured);
+        var harness = Harness.Create(transport, readiness);
+
+        var result = await harness.Processor.StartInteractiveAsync(
+            TenantId, ProductId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(503, result.StatusCode);
+        Assert.Equal(expectedCode, result.ErrorCode);
+        Assert.Null(result.Operation);
+        Assert.Null(harness.Repository.Current); // no operation document was reserved
+        Assert.Equal(0, harness.Repository.ReserveCalls);
+        Assert.Equal(0, harness.Products.SubmitCount);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, harness.Product.LifecycleStatus);
+        Assert.Null(harness.Product.WorkflowBinding);
+    }
+
+    [Theory]
+    [InlineData(false, true, "PRODUCT_WORKFLOW_REQUEST_INVALID")]
+    [InlineData(true, false, "PRODUCT_WORKFLOW_IDENTITY_CONFIGURATION_INVALID")]
+    public async Task StartInteractive_WithoutThePreflight_TheSameFaultQuarantinesTheOperation(
+        bool platformAddressConfigured, bool identityProviderConfigured, string quarantineCode)
+    {
+        // What the pre-flight exists to prevent — measured on the same production transport, readiness not wired.
+        var (transport, _) = ProductionTransport(platformAddressConfigured, identityProviderConfigured);
+        var harness = Harness.Create(transport, readiness: null);
+
+        var result = await harness.Processor.StartInteractiveAsync(
+            TenantId, ProductId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+            harness.Repository.Current!.Checkpoint);
+        Assert.Equal(quarantineCode, harness.Repository.Current.LastFailureCode);
+    }
+
+    [Theory]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED")] // Auth 401
+    [InlineData(ProductIdentityWorkflowTransportOutcome.AuthenticationRejected, "WORKFLOW_SERVICE_TOKEN_REJECTED")] // Platform 401
+    [InlineData(ProductIdentityWorkflowTransportOutcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_INVALID")] // non-JSON answer
+    [InlineData(ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TEMPLATE_NOT_PUBLISHED")] // Platform 409
+    [InlineData(ProductIdentityWorkflowTransportOutcome.Forbidden, "WORKFLOW_TRUSTED_START_FORBIDDEN")] // Platform 403
+    public async Task StartInteractive_WhenTransportIsConfigured_RemoteRejectionsStillQuarantineAsBefore(
+        ProductIdentityWorkflowTransportOutcome outcome, string code)
+    {
+        var harness = Harness.Create(transport: null, new FixedReadiness(null));
+        harness.Client.Start = (_, _, _, _) => Task.FromResult(
+            ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(outcome, code));
+
+        var result = await harness.Processor.StartInteractiveAsync(
+            TenantId, ProductId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
+
+        Assert.False(result.Succeeded);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+            harness.Repository.Current!.Checkpoint);
+        Assert.Equal(code, harness.Repository.Current.LastFailureCode);
+        Assert.Equal(1, harness.Client.StartCalls);
+    }
+
+    [Fact]
+    public async Task StartInteractive_WhenTransportIsConfigured_StartsExactlyAsBefore()
+    {
+        var harness = Harness.Create(transport: null, new FixedReadiness(null));
+        harness.Client.Start = (_, _, _, _) => Task.FromResult(
+            ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Success(StartResult()));
+
+        var result = await harness.Processor.StartInteractiveAsync(
+            TenantId, ProductId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision, result.Operation!.Checkpoint);
+        Assert.Equal(1, harness.Products.SubmitCount);
+    }
+
+    [Fact]
+    public async Task Container_WhenInfrastructureIsRegistered_GivesTheProcessorTheProductionReadiness()
+    {
+        // The readiness parameter is optional so existing constructions keep compiling; this pins that the REAL
+        // registration fills it — an unconfigured service refuses the submit through the container-built processor.
+        var harness = Harness.Create();
+        var services = new ServiceCollection();
+        Diten.MdmService.Infrastructure.DependencyInjection.AddInfrastructure(
+            services, new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build());
+        services.AddScoped<IGlobalProductIdentityWorkflowOperationRepository>(_ => harness.Repository);
+        services.AddScoped<IGlobalProductRepository>(_ => harness.Products);
+        services.AddSingleton(Harness.StartConfiguration);
+        services.AddSingleton(TimeProvider.System);
+        services.AddScoped<ProductIdentityWorkflowStartRequestFactory>();
+        services.AddScoped<GlobalProductIdentityWorkflowProcessor>();
+        await using var provider = services.BuildServiceProvider();
+        await using var scope = provider.CreateAsyncScope();
+
+        Assert.IsType<ProductIdentityWorkflowTransportReadiness>(
+            scope.ServiceProvider.GetRequiredService<IProductIdentityWorkflowTransportReadiness>());
+        var result = await scope.ServiceProvider.GetRequiredService<GlobalProductIdentityWorkflowProcessor>()
+            .StartInteractiveAsync(TenantId, ProductId, 0, OperationId, MakerId, "maker-token",
+                TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
+
+        Assert.Equal(503, result.StatusCode);
+        Assert.Equal("PRODUCT_WORKFLOW_CLIENT_CONFIGURATION_INVALID", result.ErrorCode);
+        Assert.Null(harness.Repository.Current);
+    }
+
+    private static (IProductIdentityWorkflowClient Transport, IProductIdentityWorkflowTransportReadiness Readiness)
+        ProductionTransport(bool platformAddressConfigured, bool identityProviderConfigured)
+    {
+        var client = Options.Create(new ProductIdentityWorkflowClientOptions
+        {
+            PlatformBaseUrl = platformAddressConfigured ? "https://platform.internal/" : string.Empty
+        });
+        var identity = Options.Create(identityProviderConfigured
+            ? new AuthProductIdentityWorkflowServiceIdentityProviderOptions
+            {
+                AuthBaseUrl = "https://auth.internal/",
+                ExpectedIssuer = "issuer",
+                ClientId = "workflow-client",
+                ActiveClientSecret = "configured-but-never-sent"
+            }
+            : new AuthProductIdentityWorkflowServiceIdentityProviderOptions());
+        var network = new NoNetwork();
+        return (
+            new PlatformProductIdentityWorkflowClient(
+                network,
+                new AuthProductIdentityWorkflowServiceIdentityProvider(network, identity, TimeProvider.System),
+                client),
+            new ProductIdentityWorkflowTransportReadiness(client, identity));
+    }
+
+    private sealed class NoNetwork : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) =>
+            throw new InvalidOperationException("A configuration fault must be decided without any network call.");
+    }
+
+    private sealed class FixedReadiness(string? fault) : IProductIdentityWorkflowTransportReadiness
+    {
+        public string? FindConfigurationFault() => fault;
+    }
+
     private sealed class Harness
     {
-        private Harness()
+        private Harness(
+            IProductIdentityWorkflowClient? transport = null,
+            IProductIdentityWorkflowTransportReadiness? readiness = null)
         {
             Product = DraftProduct();
             Products = new(Product);
-            var configuration = new ProductIdentityWorkflowStartConfiguration(
-                TemplateId, null, [ApproverId], "IDENTITY_APPROVAL", true, true, null);
             Processor = new(
                 Repository,
                 Products,
-                Client,
-                new(configuration, TimeProvider.System),
-                TimeProvider.System);
+                transport ?? Client,
+                new(StartConfiguration, TimeProvider.System),
+                TimeProvider.System,
+                readiness);
         }
+
+        public static ProductIdentityWorkflowStartConfiguration StartConfiguration { get; } =
+            new(TemplateId, null, [ApproverId], "IDENTITY_APPROVAL", true, true, null);
 
         public FakeOperationRepository Repository { get; } = new();
         public TestProductRepository Products { get; }
@@ -321,6 +484,10 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
         public GlobalProduct Product { get; }
 
         public static Harness Create() => new();
+
+        public static Harness Create(
+            IProductIdentityWorkflowClient? transport,
+            IProductIdentityWorkflowTransportReadiness? readiness) => new(transport, readiness);
 
         public static Harness CreatePending()
         {
@@ -552,10 +719,12 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
     {
         public GlobalProductIdentityWorkflowOperation? Current { get; set; }
         public GlobalProductIdentityWorkflowCheckpoint? FailNextAdvanceTo { get; set; }
+        public int ReserveCalls { get; private set; }
 
         public Task<GlobalProductIdentityWorkflowReserveResult> ReserveAsync(
             GlobalProductIdentityWorkflowOperation operation, CancellationToken cancellationToken = default)
         {
+            ReserveCalls++;
             if (Current is null)
             {
                 Current = operation;

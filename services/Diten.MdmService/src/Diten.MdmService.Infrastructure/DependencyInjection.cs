@@ -106,6 +106,7 @@ public static class DependencyInjection
             configuration.GetSection(AuthProductIdentityWorkflowServiceIdentityProviderOptions.SectionName));
         services.Configure<ProductIdentityWorkflowClientOptions>(
             configuration.GetSection(ProductIdentityWorkflowClientOptions.SectionName));
+        services.AddSingleton<IProductIdentityWorkflowTransportReadiness, ProductIdentityWorkflowTransportReadiness>();
         services.AddHttpClient(nameof(AuthProductIdentityWorkflowServiceIdentityProvider), client =>
             {
                 client.Timeout = Timeout.InfiniteTimeSpan;

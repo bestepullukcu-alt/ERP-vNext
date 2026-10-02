@@ -80,6 +80,28 @@ public sealed class ServiceClientIdentityRepository : IServiceClientIdentityRepo
             current is null ? OperationalMutationStatus.NotFound : OperationalMutationStatus.Conflict, current);
     });
 
+    public Task<ServiceClientIdentity?> FindByClientCodeIncludingDeletedAsync(string clientCode, CancellationToken ct) =>
+        ExecuteAsync(async () => (ServiceClientIdentity?)await _collection
+            .Find(Builders<ServiceClientIdentity>.Filter.Eq(x => x.ClientCode, clientCode))
+            .SortBy(x => x.IsDeleted)
+            .FirstOrDefaultAsync(ct));
+
+    // MOD-0033-FU02 §F — insert only. A duplicate key (client code, or the code-derived id) means the identity is
+    // already there; it is reported to the caller and never repaired, replaced or updated from here.
+    public Task<bool> CreateIfAbsentAsync(ServiceClientIdentity identity, CancellationToken ct) => ExecuteAsync(async () =>
+    {
+        ArgumentNullException.ThrowIfNull(identity);
+        try
+        {
+            await _collection.InsertOneAsync(identity, cancellationToken: ct);
+            return true;
+        }
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return false;
+        }
+    });
+
     private static async Task<T> ExecuteAsync<T>(Func<Task<T>> action)
     {
         try { return await action(); }

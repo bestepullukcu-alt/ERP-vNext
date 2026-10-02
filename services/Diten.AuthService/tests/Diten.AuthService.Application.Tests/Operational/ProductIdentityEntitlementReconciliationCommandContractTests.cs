@@ -44,7 +44,8 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
             .SelectMany(path => AuthorityCalls(Path.GetRelativePath(root.FullName, path).Replace('\\', '/'), File.ReadAllText(path)))
             .GroupBy(row => row, StringComparer.Ordinal).Select(group => group.Key + "|" + group.Count())
             .Order(StringComparer.Ordinal).ToArray();
-        var expected = (FrozenWriterCalls + "\n" + ApprovedOperationalWriterCalls + "\n" + ApprovedBookkeepingWriterCalls).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        var expected = (FrozenWriterCalls + "\n" + ApprovedOperationalWriterCalls + "\n" + ApprovedBookkeepingWriterCalls
+            + "\n" + ApprovedDeclaredServiceClientWriterCalls).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Order(StringComparer.Ordinal).ToArray();
         Assert.DoesNotContain(actual, row => row.Contains("|UNCLASSIFIED|", StringComparison.Ordinal));
         Assert.True(expected.SequenceEqual(actual, StringComparer.Ordinal),
@@ -431,6 +432,19 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     // anywhere in the writer roots, changes this inventory and needs its own classification.
     private const string ApprovedBookkeepingWriterCalls = """
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|PermissionReconciliationMark|marks.ReplaceOneAsync|1
+    """;
+    // Approved DECLARED SERVICE CLIENT writes — MOD-0033-FU02 Section F (CONTROL TOWER decision, 2026-10-01;
+    // WP-GP-1A-TRUST-CHAIN-01). The first production writers of serviceClientIdentities / serviceClientTenantGrants:
+    // at normal Auth startup, a first-party service client DECLARED in ServiceClientRegistry:Clients[] is created if
+    // it is absent, and so is each listed tenant's grant. Both calls are insert-only (CreateIfAbsentAsync): an
+    // existing identity or grant is never updated, revoked, disabled or deleted from this file, and each create is
+    // written to the Auth audit log with a SYSTEM actor.
+    // The two entity types stay in NonAuthorityBindings (raw collection writes inside the repositories are not what
+    // this inventory counts); what IS counted is the call site, through the repository interfaces — so a second
+    // caller of either method, anywhere in the writer roots, changes this inventory and needs its own row and reason.
+    private const string ApprovedDeclaredServiceClientWriterCalls = """
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/Registry/ServiceClientRegistryReconciler.cs|IServiceClientIdentityRepository|identities.CreateIfAbsentAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/Registry/ServiceClientRegistryReconciler.cs|IServiceClientTenantGrantRepository|grants.CreateIfAbsentAsync|1
     """;
     [Fact]
     public void Bootstrap_WhenOperationalPathExists_LeavesNormalPersistenceRegistrationUnchangedAndAvoidsNormalHost()

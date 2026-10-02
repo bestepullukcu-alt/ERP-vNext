@@ -27,6 +27,10 @@ if (Diten.AuthService.Api.Operational.EntitlementReconciliationOperationalMode.I
 
 var builder = WebApplication.CreateBuilder(args);
 
+// MOD-0033-FU02 §F.3 — Development-only, git-ignored local settings (disposable keys, service-client secret); it
+// overrides appsettings.Development.json and nothing else. See Configuration/DevelopmentLocalSettings.cs.
+Diten.AuthService.Api.Configuration.DevelopmentLocalSettings.AddDevelopmentLocalSettings(builder.Configuration, builder.Environment);
+
 /*
  * ⚠ HEADER BUDGET RAISED FROM KESTREL'S 32 KB DEFAULT (2026-09-04). The access token carries
  * one claim per permission (AuthService TokenService.cs:50-52) and the tenant admin holds 408,
@@ -79,6 +83,11 @@ builder.Host.UseSerilog((context, services, loggerConfiguration) =>
 
 // Port ayarı (launcSettings de olacak ama Program.cs'te de belirtilebilir)
 // builder.WebHost.UseUrls("http://localhost:5056");
+
+// MOD-0033-FU02 §F.1 — declared first-party service clients. Validated HERE, before the persistence layer below seeds
+// anything: an invalid ServiceClientRegistry section stops startup with the entry index and field name (never a
+// value). The validated declarations are applied by a hosted service before the server accepts requests.
+builder.Services.AddServiceClientRegistry(builder.Configuration);
 
 // ── MediatR / Application / Infrastructure / Persistence ───────────────────────
 builder.Services.AddApplication();

@@ -54,6 +54,10 @@ if (operationalCommandCount > 1)
 }
 
 var builder = WebApplication.CreateBuilder(args);
+
+// MOD-0033-FU02 §F.3 — Development-only, git-ignored local settings (disposable keys, service-client secret); it
+// overrides appsettings.Development.json and nothing else. See Configuration/DevelopmentLocalSettings.cs.
+Diten.MdmService.Api.Configuration.DevelopmentLocalSettings.AddDevelopmentLocalSettings(builder.Configuration, builder.Environment);
 apiStartupExecutionMode.EnsureEnvironment(builder.Environment.EnvironmentName);
 var auditIntentTemporalMigrationRequest = runAuditIntentTemporalMigration
     ? AuditIntentTemporalMigrationCommandLine.ValidateAndCreateRequest(builder.Environment, builder.Configuration)

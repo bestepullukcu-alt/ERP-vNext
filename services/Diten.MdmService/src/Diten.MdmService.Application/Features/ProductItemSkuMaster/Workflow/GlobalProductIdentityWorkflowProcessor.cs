@@ -26,7 +26,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
     IGlobalProductRepository products,
     IProductIdentityWorkflowClient workflowClient,
     ProductIdentityWorkflowStartRequestFactory requestFactory,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IProductIdentityWorkflowTransportReadiness? transportReadiness = null)
 {
     private static readonly GlobalProductIdentityWorkflowCheckpoint[] RecoverableCheckpoints =
     [
@@ -55,6 +56,16 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             || string.IsNullOrWhiteSpace(delegatedUserToken))
         {
             return Fail("PRODUCT_IDENTITY_WORKFLOW_START_INVALID", 400);
+        }
+
+        // WP-GP-1A-TRUST-CHAIN-01 (D) — a submit against a transport THIS service has not been configured for (no or
+        // invalid Platform address, no or invalid service-identity provider settings) is refused here, before any
+        // operation document exists, as retryable. Once an operation is written the same fault quarantines it
+        // (ManualReconciliationRequired) and the draft stays blocked at that version. Only these two local classes:
+        // what Auth or Platform answer is decided further down exactly as before.
+        if (transportReadiness?.FindConfigurationFault() is { } configurationFault)
+        {
+            return Fail(configurationFault, 503);
         }
 
         var existing = await operations.GetByOperationIdAsync(operationId, cancellationToken);

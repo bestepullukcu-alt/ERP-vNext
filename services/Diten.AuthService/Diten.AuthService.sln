@@ -17,6 +17,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.AuthService.Infrastru
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.AuthService.Application.Tests", "tests\Diten.AuthService.Application.Tests\Diten.AuthService.Application.Tests.csproj", "{F3D62400-3A8D-487B-B9EC-789D20A77618}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7C5F490E-C6FC-44C2-AE29-BF8917990A21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.AuthService.ServiceClientCredentialGenerator", "tools\Diten.AuthService.ServiceClientCredentialGenerator\Diten.AuthService.ServiceClientCredentialGenerator.csproj", "{ED4B554E-7421-44DE-BB89-9D711D1A5984}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.AuthService.DevTrustBootstrap", "tools\Diten.AuthService.DevTrustBootstrap\Diten.AuthService.DevTrustBootstrap.csproj", "{287FFD62-112A-45B2-BD6D-8C2481729C98}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E2D0990D-E6D8-4192-AD90-76B2320EBD56}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.AuthService.ServiceClientRegistry.Tests", "tests\Diten.AuthService.ServiceClientRegistry.Tests\Diten.AuthService.ServiceClientRegistry.Tests.csproj", "{F767CDBA-1C3E-4F6A-B0A8-86E091E0CA24}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +60,18 @@ Global
 		{F3D62400-3A8D-487B-B9EC-789D20A77618}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3D62400-3A8D-487B-B9EC-789D20A77618}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3D62400-3A8D-487B-B9EC-789D20A77618}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED4B554E-7421-44DE-BB89-9D711D1A5984}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED4B554E-7421-44DE-BB89-9D711D1A5984}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED4B554E-7421-44DE-BB89-9D711D1A5984}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED4B554E-7421-44DE-BB89-9D711D1A5984}.Release|Any CPU.Build.0 = Release|Any CPU
+		{287FFD62-112A-45B2-BD6D-8C2481729C98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{287FFD62-112A-45B2-BD6D-8C2481729C98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{287FFD62-112A-45B2-BD6D-8C2481729C98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{287FFD62-112A-45B2-BD6D-8C2481729C98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F767CDBA-1C3E-4F6A-B0A8-86E091E0CA24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F767CDBA-1C3E-4F6A-B0A8-86E091E0CA24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F767CDBA-1C3E-4F6A-B0A8-86E091E0CA24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F767CDBA-1C3E-4F6A-B0A8-86E091E0CA24}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E0E9AB51-62EB-41E7-995C-080FBA73A545} = {D56BEA78-1211-4200-BCBD-EAD23B735A6A}
@@ -58,5 +80,8 @@ Global
 		{EF839AB9-C553-4BC3-BCD3-A48ABD9AB1B9} = {D56BEA78-1211-4200-BCBD-EAD23B735A6A}
 		{824E29AC-5900-4961-A05D-D1C48F38D88E} = {D56BEA78-1211-4200-BCBD-EAD23B735A6A}
 		{F3D62400-3A8D-487B-B9EC-789D20A77618} = {D56BEA78-1211-4200-BCBD-EAD23B735A6A}
+		{ED4B554E-7421-44DE-BB89-9D711D1A5984} = {7C5F490E-C6FC-44C2-AE29-BF8917990A21}
+		{287FFD62-112A-45B2-BD6D-8C2481729C98} = {7C5F490E-C6FC-44C2-AE29-BF8917990A21}
+		{F767CDBA-1C3E-4F6A-B0A8-86E091E0CA24} = {E2D0990D-E6D8-4192-AD90-76B2320EBD56}
 	EndGlobalSection
 EndGlobal

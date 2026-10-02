@@ -22,6 +22,10 @@ if (await VerifiedMarketOperationalMode.TryRunAsync(args))
 }
 
 var builder = WebApplication.CreateBuilder(args);
+
+// MOD-0033-FU02 §F.3 — Development-only, git-ignored local settings (disposable keys, service-client secret); it
+// overrides appsettings.Development.json and nothing else. See Configuration/DevelopmentLocalSettings.cs.
+Diten.Platform.API.Configuration.DevelopmentLocalSettings.AddDevelopmentLocalSettings(builder.Configuration, builder.Environment);
 apiStartupExecutionMode.ValidateResolvedEnvironment(builder.Environment.EnvironmentName);
 
 /*
