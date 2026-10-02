@@ -8387,7 +8387,7 @@
          */
         sharedConfirm({
             title: t('CommentWithdraw'),
-            subtext: `<div class="wcn-confirm-body">${esc(t('CommentWithdrawConfirm'))}</div>`,
+            subtextHtml: `<div class="wcn-confirm-body">${esc(t('CommentWithdrawConfirm'))}</div>`,
             type: 'danger',
             confirmText: t('CommentWithdraw'),
             onConfirm: async () => {
@@ -9367,8 +9367,10 @@
              */
             onCancel: options.onCancel,
             /*
-             * HTML, deliberately: the outcome sentence in front of a confirm is markup the caller already built,
-             * and the wrapper renders `subtext` as HTML for exactly this.
+             * TEXT. The shared confirm writes `subtext` as text (WP-SHARED-CONFIRM-XSS-01): a caller here hands
+             * over its words as they are and never escapes them first — the dialog would then show the entities.
+             * A body this module BUILT as markup (the outcome sentence in front of a confirm) goes through
+             * `subtextHtml` below, and every piece of data inside it is escaped where it is built.
              *
              * ⚠ AN INPUT PROMPT GETS NO GENERIC CONFIRMATION SENTENCE (2026-08-24, owner).
              *
@@ -9381,6 +9383,8 @@
              * bulk confirm and the subtask cancel in this very module still ask whether the reader is sure.
              */
             subtext: options.subtext !== undefined ? options.subtext : (options.input ? '' : undefined),
+            // Markup this module built itself; absent for every dialog that only has words to say.
+            subtextHtml: options.subtextHtml,
             type: options.type || 'info',
             confirmButtonText: options.confirmText,
             /*
@@ -9575,7 +9579,7 @@
         sharedConfirm({
             title: label,
             // What booking it does and does NOT do — the due date is the question a reader actually has here.
-            subtext: esc(subtextText),
+            subtext: subtextText,
             icon: inboxActionIcon(action),
             confirmText: t('PlanConfirm'),
             input: {
@@ -9635,7 +9639,7 @@
         const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
         sharedConfirm({
             title: label,
-            subtext: esc(t('MeetingTypeSubtext')),
+            subtext: t('MeetingTypeSubtext'),
             icon: inboxActionIcon(action),
             confirmText: t('PlanConfirm'),
             input: {
@@ -9809,7 +9813,7 @@
          */
         sharedConfirm({
             title: t('SnoozeTitle'),
-            subtext: esc(t('SnoozeSubtext')),
+            subtext: t('SnoozeSubtext'),
             /*
              * A MOON. The dialog's gravity is right as it stands — a plain primary confirmation — but the glyph
              * its type hands out is a question mark, which asks "are you sure?" while this dialog asks "until
@@ -10071,7 +10075,7 @@
         sharedConfirm({
             title: t('NewInSource'),
             // Where the record will LIVE, which is the thing a module picker leaves unsaid.
-            subtext: esc(t('NewInSourceSubtext')),
+            subtext: t('NewInSourceSubtext'),
             icon: 'bx-cube',
             // The button names CREATING, not opening: nothing is opened here any more (see below), and the old
             // 'NewOpenSource' label promised an act this dialog no longer performs.
@@ -10636,9 +10640,9 @@
                  * the kebab and lost their card-side prose. A confirm that says only "are you sure?" asks the
                  * reader to remember what they are sure ABOUT.
                  */
-                subtext: `${outcomeLead(action)}<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
+                subtextHtml: `${outcomeLead(action)}<div class="wcn-confirm-body">${esc(body)}</div>${requiredWarning}`,
                 // The object of the action, in the wrapper's own badge — the one mechanism the product keeps.
-                entityName: esc(item.title),
+                entityName: item.title,
                 // The wrapper picks the icon from the TYPE rather than taking one by name, so a destructive act
                 // gets the danger circle and its red button from a single word instead of three settings.
                 type: action.destructive ? 'danger' : 'info',

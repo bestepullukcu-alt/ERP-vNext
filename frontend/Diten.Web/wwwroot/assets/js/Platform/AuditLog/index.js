@@ -669,7 +669,7 @@
             }, {
                 type: 'danger',
                 width: '480px',
-                subtext: buildRedactionConfirmContent(),
+                subtextHtml: buildRedactionConfirmContent(),
                 confirmButtonText: L.AuditLogRedactActorButton || L.AuditLogRedactActor || '',
                 cancelButtonText: L.AuditLogRedactActorCancel || L.Cancel || '',
                 showInput: true,

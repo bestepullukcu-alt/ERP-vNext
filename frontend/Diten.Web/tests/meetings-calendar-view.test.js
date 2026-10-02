@@ -443,7 +443,10 @@ describe("pending invitations: the ONE shared card, with its count", () => {
 
     expect(asked).toHaveLength(1);
     expect(asked[0].title).toBe("ÇAKIŞIYOR");
-    expect(asked[0].options.subtext).toContain("Rapor &lt;img&gt;");
+    // Handed over as TEXT: the shared confirm escapes at its door (WP-SHARED-CONFIRM-XSS-01). The card escaping
+    // first would show "&lt;img&gt;" to the reader; that the dialog draws it as text is global-confirm-text-is-text's job.
+    expect(asked[0].options.subtext).toContain("Rapor <img>");
+    expect(asked[0].options.subtextHtml).toBeUndefined();
     expect(asked[0].options.subtext).toMatch(/10.00–10.30/);
     expect(responds).toEqual([{ id: mid(2), body: { response: "Accept" } }]);
     expect(modals).toContainEqual(["success", "inviteAccepted"]);
