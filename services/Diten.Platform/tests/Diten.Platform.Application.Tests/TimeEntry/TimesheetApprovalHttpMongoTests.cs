@@ -427,7 +427,11 @@ public sealed class TimesheetApprovalHttpMongoTests : TimeEntryScenario
         await RawUnsetAsync(PlatformCollections.WorkflowInstances, instanceId, "StartedByUserId");
         await Collection<RuntimeAssignmentSnapshot>(PlatformCollections.WorkflowRuntimeAssignmentSnapshots).UpdateManyAsync(
             s => s.WorkflowInstanceId == instanceId,
-            Builders<RuntimeAssignmentSnapshot>.Update.Set(s => s.ResolvedPrincipalId, Person.ToString()));
+            // D1 — as MOD-0023 really records it: the routed-to person is the snapshot's CANDIDATE (the list is what
+            // the decision gate reads now), not only its resolved principal.
+            Builders<RuntimeAssignmentSnapshot>.Update
+                .Set(s => s.ResolvedPrincipalId, Person.ToString())
+                .Set(s => s.CandidatePrincipalIds, new List<string> { Person.ToString() }));
         Assert.Equal(HttpStatusCode.OK, (await DecideAsync(Person, weekId, approve, comment: "mine")).Status);
 
         var read = await GetWeekAsync();
@@ -453,7 +457,11 @@ public sealed class TimesheetApprovalHttpMongoTests : TimeEntryScenario
         Assert.Equal(Person, (await StoredInstanceAsync(instanceId)).StartedByUserId);
         await Collection<RuntimeAssignmentSnapshot>(PlatformCollections.WorkflowRuntimeAssignmentSnapshots).UpdateManyAsync(
             s => s.WorkflowInstanceId == instanceId,
-            Builders<RuntimeAssignmentSnapshot>.Update.Set(s => s.ResolvedPrincipalId, Person.ToString()));
+            // D1 — as MOD-0023 really records it: the routed-to person is the snapshot's CANDIDATE (the list is what
+            // the decision gate reads now), not only its resolved principal.
+            Builders<RuntimeAssignmentSnapshot>.Update
+                .Set(s => s.ResolvedPrincipalId, Person.ToString())
+                .Set(s => s.CandidatePrincipalIds, new List<string> { Person.ToString() }));
 
         var approve = await DecideAsync(Person, weekId, approve: true);
 
@@ -553,6 +561,27 @@ public sealed class TimesheetApprovalHttpMongoTests : TimeEntryScenario
         Assert.Equal(HttpStatusCode.OK, (await Host.GetAsync($"/api/v1/time-entry/approvals/{weekId}", ApproverToken(assigned))).Status);
         Assert.Equal(0, (await Host.GetAsync("/api/v1/time-entry/approvals", ApproverToken(other))).Data.GetProperty("total").GetInt32());
         Assert.Equal(HttpStatusCode.NotFound, (await Host.GetAsync($"/api/v1/time-entry/approvals/{weekId}", ApproverToken(other))).Status);
+    }
+
+    // ── D1 (WP-WF-ENGINE-CANDIDATES-01) — ANY holder of the manager seat decides, and the week names who did ──
+
+    [Fact]
+    public async Task The_seat_holder_MOD_0023_did_NOT_assign_decides_and_the_week_records_THEM_as_the_approver()
+    {
+        var secondManager = Guid.NewGuid();
+        await SeatAsync(secondManager, ManagerSeat);
+        var weekId = await SubmittedWeekAsync();
+        var submitted = await StoredWeekAsync(weekId);
+        var other = submitted.AssignedApproverUserId == Manager ? secondManager : Manager;
+        Assert.NotEqual(other, submitted.AssignedApproverUserId); // non-vacuity: the decider is not the assigned one
+
+        // Before D1 this was 403 WORKFLOW_ACTOR_DENIED: only the candidate that sorted first could decide.
+        Assert.Equal(HttpStatusCode.OK, (await DecideAsync(other, weekId, approve: true)).Status);
+        await GetWeekAsync(); // the read takes the decision on board
+
+        var week = await StoredWeekAsync(weekId);
+        Assert.Equal(TimesheetWeekStatus.Approved, week.Status);
+        Assert.Equal(other, week.ApprovedByUserId);
     }
 
     // ── F8 — withdraw cancels whatever MOD-0023 has left open, escalated included ─────────────────────────────

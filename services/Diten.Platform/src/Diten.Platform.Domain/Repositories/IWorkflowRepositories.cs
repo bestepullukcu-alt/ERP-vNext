@@ -160,6 +160,12 @@ public interface IApprovalTaskRepository
     Task<bool> UpdateAsync(IPlatformTransactionSession session, ApprovalTask task, int expectedVersion,
         CancellationToken ct = default) =>
         UpdateAsync(task, expectedVersion, ct);
+
+    // D1 — the NEXT step's task, created inside the transaction that closes the step before it. Default = the plain
+    // create (in-memory doubles have no session).
+    Task<ApprovalTask> CreateAsync(IPlatformTransactionSession session, ApprovalTask task,
+        CancellationToken ct = default) =>
+        CreateAsync(task, ct);
 }
 
 public interface IRuntimeAssignmentSnapshotRepository
@@ -169,6 +175,11 @@ public interface IRuntimeAssignmentSnapshotRepository
     Task<IReadOnlyList<RuntimeAssignmentSnapshot>> ListByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default);
     Task<RuntimeAssignmentSnapshot> EnsureTrustedStartSnapshotAsync(
         RuntimeAssignmentSnapshot snapshot,
+        CancellationToken ct = default) =>
+        CreateAsync(snapshot, ct);
+
+    // D1 — the next step's assignment snapshot, inside the same transaction as its task (see IApprovalTaskRepository).
+    Task<RuntimeAssignmentSnapshot> CreateAsync(IPlatformTransactionSession session, RuntimeAssignmentSnapshot snapshot,
         CancellationToken ct = default) =>
         CreateAsync(snapshot, ct);
 }

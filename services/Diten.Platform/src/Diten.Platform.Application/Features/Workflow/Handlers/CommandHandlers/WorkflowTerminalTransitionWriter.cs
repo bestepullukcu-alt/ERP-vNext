@@ -37,6 +37,7 @@ internal sealed class WorkflowTerminalTransitionWriter
     private readonly IPlatformTransactionExecutor? _transactions;
     private readonly ITransactionalIntegrationEventWriter? _events;
     private readonly IWorkflowTemplateRepository? _templates;
+    private readonly IRuntimeAssignmentSnapshotRepository? _snapshots;
 
     public WorkflowTerminalTransitionWriter(
         IApprovalTaskRepository tasks,
@@ -44,8 +45,10 @@ internal sealed class WorkflowTerminalTransitionWriter
         IWorkflowTransitionLogRepository logs,
         IPlatformTransactionExecutor? transactions,
         ITransactionalIntegrationEventWriter? events,
-        IWorkflowTemplateRepository? templates)
+        IWorkflowTemplateRepository? templates,
+        IRuntimeAssignmentSnapshotRepository? snapshots = null)
     {
+        _snapshots = snapshots;
         _tasks = tasks;
         _instances = instances;
         _logs = logs;
@@ -104,9 +107,122 @@ internal sealed class WorkflowTerminalTransitionWriter
         }
         catch (PlatformTransactionUnavailableException)
         {
-            return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.TransactionUnavailable, null);
+            return new WorkflowTerminalWriteResult(await LostToAnotherDecisionAsync(task.Id, taskVersion, ct)
+                ? WorkflowTerminalWriteOutcome.Conflict
+                : WorkflowTerminalWriteOutcome.TransactionUnavailable, null);
         }
     }
+
+    /// <summary>
+    /// D1 — an INTERMEDIATE approval: the decided task, the instance moved to the next step, the next step's task and
+    /// assignment snapshot, and both log rows commit in ONE Platform transaction — the same executor and the same
+    /// optimistic-version rule as <see cref="CommitAsync"/>. No completion event: the instance is not terminal.
+    /// <para>
+    /// The transaction body may be replayed after a transient write conflict (two candidates deciding at once): the
+    /// replay finds the task's version already taken and ends as <see cref="WorkflowTerminalWriteOutcome.Conflict"/>.
+    /// Without an executor (in-memory test doubles) the writes stay sequential, in the order they always had.
+    /// </para>
+    /// </summary>
+    public async Task<WorkflowTerminalWriteResult> CommitStepAsync(
+        ApprovalTask task,
+        int taskVersion,
+        WorkflowInstance instance,
+        int instanceVersion,
+        WorkflowTransitionLog log,
+        ApprovalTask nextTask,
+        RuntimeAssignmentSnapshot nextSnapshot,
+        WorkflowTransitionLog nextTaskLog,
+        CancellationToken ct)
+    {
+        if (WorkflowOutcomes.For(instance.Status) is not null)
+        {
+            throw new InvalidOperationException("A terminal instance status is committed by CommitAsync, with its event.");
+        }
+
+        if (_snapshots is null)
+        {
+            throw new InvalidOperationException("An intermediate step needs the assignment snapshot repository.");
+        }
+
+        if (_transactions is null)
+        {
+            if (!await _tasks.UpdateAsync(task, taskVersion, ct) ||
+                !await _instances.UpdateAsync(instance, instanceVersion, ct))
+            {
+                return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Conflict, null);
+            }
+
+            await _tasks.CreateAsync(nextTask, ct);
+            await _snapshots.CreateAsync(nextSnapshot, ct);
+            var sequential = await _logs.CreateAsync(log, ct);
+            await _logs.CreateAsync(nextTaskLog, ct);
+            return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Committed, sequential);
+        }
+
+        try
+        {
+            var created = await _transactions.ExecuteAsync(async (session, tct) =>
+            {
+                if (!await _tasks.UpdateAsync(session, task, taskVersion, tct) ||
+                    !await _instances.UpdateAsync(session, instance, instanceVersion, tct))
+                {
+                    throw new TerminalConflictException();
+                }
+
+                await _tasks.CreateAsync(session, nextTask, tct);
+                await _snapshots.CreateAsync(session, nextSnapshot, tct);
+                var createdLog = await _logs.CreateAsync(session, log, tct);
+                await _logs.CreateAsync(session, nextTaskLog, tct);
+                return createdLog;
+            }, ct);
+            return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Committed, created);
+        }
+        catch (TerminalConflictException)
+        {
+            return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Conflict, null);
+        }
+        catch (PlatformTransactionUnavailableException)
+        {
+            return new WorkflowTerminalWriteResult(await LostToAnotherDecisionAsync(task.Id, taskVersion, ct)
+                ? WorkflowTerminalWriteOutcome.Conflict
+                : WorkflowTerminalWriteOutcome.TransactionUnavailable, null);
+        }
+    }
+
+    /// <summary>
+    /// D1 — two candidates deciding at once. The loser's transaction is aborted by MongoDB's write conflict while the
+    /// winner's is still open. The executor replays the body at once, three times, with no pause — measured
+    /// 2026-10-02: all three replays can run into the same still-open winner, and the executor then reports
+    /// "transaction unavailable" (the inner error is the labelled, transient WriteConflict 112, not an outage).
+    /// Nothing was written either way — but "try again later" is the wrong answer when somebody else has just decided
+    /// the task. So the task is read again, briefly: once its version has moved, this caller LOST (409). If it never
+    /// moves, the transaction really was unavailable (503) — at the cost of a short wait on that rare path.
+    /// </summary>
+    private async Task<bool> LostToAnotherDecisionAsync(Guid taskId, int expectedVersion, CancellationToken ct)
+    {
+        try
+        {
+            for (var attempt = 0; attempt < LostRaceReadAttempts; attempt++)
+            {
+                var current = await _tasks.GetByIdAsync(taskId, ct);
+                if (current is not null && current.Version != expectedVersion)
+                {
+                    return true;
+                }
+
+                await Task.Delay(LostRaceReadDelay, ct);
+            }
+
+            return false;
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            return false; // cannot tell → keep the honest "unavailable"
+        }
+    }
+
+    private const int LostRaceReadAttempts = 6;
+    private static readonly TimeSpan LostRaceReadDelay = TimeSpan.FromMilliseconds(100);
 
     /// <summary>The deterministic event id of an instance's completion: one instance, one id, one event.</summary>
     public static Guid CompletionEventId(Guid workflowInstanceId)

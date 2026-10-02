@@ -259,7 +259,8 @@ public sealed class WorkflowCrossServiceTests
         Assert.True(r.IsSuccessful, string.Join(",", r.Errors));
         Assert.Equal("Active", r.Data!.NewInstanceStatus);
         Assert.Empty(f.Events.Events);
-        Assert.Equal(0, f.Transactions.Calls);
+        // D1 — an intermediate approval is ONE transaction now (two candidates can decide at once); still no event.
+        Assert.Equal(1, f.Transactions.Calls);
     }
 
     [Fact]

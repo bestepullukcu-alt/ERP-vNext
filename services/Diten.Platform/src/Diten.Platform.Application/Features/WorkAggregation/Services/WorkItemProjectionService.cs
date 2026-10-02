@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Features.Workflow;
+using Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 
@@ -44,8 +45,14 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         string providerCode,
         string providerContractVersion,
         ApprovalSourceContext? sourceContext = null,
-        ApprovalStepContext? stepContext = null)
+        ApprovalStepContext? stepContext = null,
+        IReadOnlyList<string>? decidingPrincipalIds = null)
     {
+        // D1 — null = the caller did not say (today's behaviour, unchanged). A list = the reader may act only if on it.
+        var readerId = actor.UserId.ToString("D");
+        var mayDecide = decidingPrincipalIds is null
+            || decidingPrincipalIds.Any(id => WorkflowTaskTransitionSupport.PrincipalEquals(id, readerId));
+
         // Delegated → hidden from this actor (a disposition, not active work).
         if (task.Status == ApprovalTaskStatus.Delegated)
         {
@@ -97,7 +104,7 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         // Terminal items are read-only: no enabled inline state-changing action (contract invariant).
         var actions = isTerminal
             ? Array.Empty<WorkItemActionDto>()
-            : BuildActionableActions(task, instance, actor);
+            : BuildActionableActions(task, instance, actor, mayDecide);
 
         var waitingContext = isWaiting
             ? new WorkItemWaitingContextDto(
@@ -121,11 +128,16 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             : null;
 
         var actorId = actor.UserId.ToString("D");
-        var assignee = string.IsNullOrWhiteSpace(task.AssigneeRef)
-            ? null
-            : new WorkItemPersonDto(
-                task.AssigneeRef,
-                IsCurrentUser: string.Equals(task.AssigneeRef, actorId, StringComparison.Ordinal));
+        // D1 — "is it with you" follows who may DECIDE. AssigneeRef is only the first candidate: a second holder of
+        // the same seat was shown somebody else's name and "not yours" on a task they can decide.
+        var assignee = decidingPrincipalIds is not null && mayDecide
+            ? new WorkItemPersonDto(actorId, IsCurrentUser: true)
+            : string.IsNullOrWhiteSpace(task.AssigneeRef)
+                ? null
+                : new WorkItemPersonDto(
+                    task.AssigneeRef,
+                    IsCurrentUser: decidingPrincipalIds is null
+                        && string.Equals(task.AssigneeRef, actorId, StringComparison.Ordinal));
         var requesterId = ResolveRequesterId(instance);
         var requester = requesterId is null
             ? null
@@ -255,18 +267,18 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
     // The single authoritative actions[] for an actionable approval task. Each action's enabled state is
     // resolved here (permission + evidence blocker); the browser never invents or re-derives eligibility.
     private static IReadOnlyList<WorkItemActionDto> BuildActionableActions(
-        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor)
+        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor, bool mayDecide)
     {
         var evidencePending = task.Status == ApprovalTaskStatus.WaitingEvidence;
 
         return
         [
-            BuildApprove(task, instance, actor, evidencePending),
-            BuildDecision("reject", ActionRejectKey, WorkflowPermissions.TasksReject, actor,
+            BuildApprove(task, instance, actor, evidencePending, mayDecide),
+            BuildDecision("reject", ActionRejectKey, WorkflowPermissions.TasksReject, actor, mayDecide,
                 requiresConfirmation: true, requiresReason: true, supportsBulk: true, riskLevel: "elevated"),
-            BuildDecision("requestInfo", ActionRequestInfoKey, WorkflowPermissions.TasksRequestInfo, actor,
+            BuildDecision("requestInfo", ActionRequestInfoKey, WorkflowPermissions.TasksRequestInfo, actor, mayDecide,
                 requiresConfirmation: false, requiresReason: true, supportsBulk: false, riskLevel: "normal"),
-            BuildDecision("delegate", ActionDelegateKey, WorkflowPermissions.TasksDelegate, actor,
+            BuildDecision("delegate", ActionDelegateKey, WorkflowPermissions.TasksDelegate, actor, mayDecide,
                 // BL-491 — a delegation names its person (the dispatcher refuses one that does not), and may carry a
                 // note. The two arrive together: a note box on a window that could not name anybody invited text
                 // that could never be sent.
@@ -293,9 +305,11 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
     }
 
     private static WorkItemActionDto BuildApprove(
-        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor, bool evidencePending)
+        ApprovalTask task, WorkflowInstance instance, WorkItemActor actor, bool evidencePending, bool mayDecide)
     {
-        var permitted = actor.Has(WorkflowPermissions.TasksApprove);
+        // D1 — not among the people who may decide = not permitted (the gate would answer 403). Same reason code and
+        // text as a missing permission: no new wording.
+        var permitted = mayDecide && actor.Has(WorkflowPermissions.TasksApprove);
 
         // Permission is the first gate; then a pending-evidence blocker keeps approve visible but disabled.
         if (!permitted)
@@ -342,13 +356,13 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
     private static bool? AcceptsNoteWhen(bool requiresReason) => requiresReason ? null : true;
 
     private static WorkItemActionDto BuildDecision(
-        string code, string labelKey, string permissionKey, WorkItemActor actor,
+        string code, string labelKey, string permissionKey, WorkItemActor actor, bool mayDecide,
         bool requiresConfirmation, bool requiresReason, bool supportsBulk, string riskLevel,
         bool acceptsNote = false,
         // BL-491 — non-null means "this action names a person"; the list is who must not be offered.
         IReadOnlyList<string>? excludedTargets = null)
     {
-        if (!actor.Has(permissionKey))
+        if (!mayDecide || !actor.Has(permissionKey))
         {
             return Disabled(code, labelKey, WorkAggregationReasonCodes.PermissionDenied, DisabledPermissionKey,
                 requiresConfirmation, requiresReason, requiresEvidence: false, supportsBulk, riskLevel);

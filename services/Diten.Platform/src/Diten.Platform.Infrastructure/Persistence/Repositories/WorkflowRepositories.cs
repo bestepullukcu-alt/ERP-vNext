@@ -364,6 +364,18 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
         _dbContext = dbContext;
     }
 
+    // D1 — the next step's task joins the transaction that closes the previous step.
+    public async Task<ApprovalTask> CreateAsync(
+        IPlatformTransactionSession session,
+        ApprovalTask task,
+        CancellationToken ct = default)
+    {
+        var handle = PlatformMongoTransactionSession.Require(session, _dbContext);
+        typeof(ApprovalTask).GetProperty(nameof(ApprovalTask.TenantId))!.SetValue(task, TenantContext.TenantId);
+        await Collection.InsertOneAsync(handle, task, cancellationToken: ct);
+        return task;
+    }
+
     // WP-CL-BE-3 — terminal task write inside the Platform transaction.
     public async Task<bool> UpdateAsync(
         IPlatformTransactionSession session,
@@ -534,9 +546,25 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
 public sealed class RuntimeAssignmentSnapshotRepository
     : TenantRepository<RuntimeAssignmentSnapshot>, IRuntimeAssignmentSnapshotRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public RuntimeAssignmentSnapshotRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.WorkflowRuntimeAssignmentSnapshots)
     {
+        _dbContext = dbContext;
+    }
+
+    // D1 — the next step's assignment snapshot joins the transaction that closes the previous step.
+    public async Task<RuntimeAssignmentSnapshot> CreateAsync(
+        IPlatformTransactionSession session,
+        RuntimeAssignmentSnapshot snapshot,
+        CancellationToken ct = default)
+    {
+        var handle = PlatformMongoTransactionSession.Require(session, _dbContext);
+        typeof(RuntimeAssignmentSnapshot).GetProperty(nameof(RuntimeAssignmentSnapshot.TenantId))!
+            .SetValue(snapshot, TenantContext.TenantId);
+        await Collection.InsertOneAsync(handle, snapshot, cancellationToken: ct);
+        return snapshot;
     }
 
     public async Task<IReadOnlyList<RuntimeAssignmentSnapshot>> ListByInstanceIdAsync(
