@@ -7695,6 +7695,45 @@ kişisel veri). Gelecek regresyon riski: 🟢.
 
 ---
 
+### BL-518
+
+**MOD-0290 (Ürün, Kalem ve SKU Ana Verisi) tamamlama programı: yazılmış sekiz parçanın dışında on bir eksik**
+
+DURUM: AÇIK — sahip kararı 2026-10-02: "eksikleri çıkarıp hepsini yapmalıyız" · SAHİP: CT (MDM ürün modülleri) · BULAN: sahip + CT ölçümü (devralma dalı `feature/mdm/product-five-takeover`) · KAYIT: 2026-10-02
+
+Blueprint bu modül için ürün kaydı, KALEM kaydı, SKU, ölçü birimi eşlemesi, ürün tanımlayıcıları ve yaşam döngüsü sayıyor. Yazılmış ve
+kabul bekleyen: Global Ürün, GSKU, LSKU, Bitmiş Ürün, Kısaltma Kaydı, Şirket Kapsamı, Marka, Ürünler (CRM tarafı). Eksikler (ölçüldü; kodda
+dosyası yok): (1) **malzeme / kalem kaydı** (hammadde, ambalaj malzemesi): Blueprint'te var, modül tanımında ve kodda hiç yok; stok ekibi
+(MOD-0173, dal `feature/sce/mod-0173-inventory-ledger-valuation`, henüz kodu gönderilmedi) buna bağlanmak zorunda; (2) ölçü birimi eşlemesi
+ve çevrimi; (3) ürün tanımlayıcıları (GTIN); (4) Ürün Tanımı Sürümünün alanları (form, veriliş yolu, güç: tasarımda var, kodda yalnız
+kimlik); (5) ikinci sürüm kuralı (REV-002: bugün sürüm yalnız ilk GSKU ile birlikte doğuyor); (6) madde + bileşim (bileşim Ürün Tanımı
+Sürümüne bağlanır; bugün istekte bileşim alanı reddediliyor); (7) pazar ticari adı (LSKU'ya bağlı; tasarımda var, kod yok); (8) Marka ↔
+Global Ürün bağı ve marka tescilleri (Marka bugün yalnız CRM tarafındaki Ürünler ekranına bağlı); (9) ambalaj hiyerarşisi; (10) eski sistem
+kodları ve toplu veri taşıma; (11) Global Ürün adını değiştirme ve geçmişi. Modülün dışında ayrı modül olanlar: ruhsat (RIM), pazar arz
+ataması, etiket / prospektüs, üretim reçetesi, dış sistem beslemeleri. Tahmin: yaklaşık 13 paket (≈ 50 prompt; iki sohbet paralel 3–4 hafta).
+Önerilen sıra: Global Ürün kabulü → malzeme / kalem + ölçü birimi → tanım alanları + ikinci sürüm → madde + bileşim → tanımlayıcılar,
+pazar ticari adı, marka bağı, ambalaj → veri taşıma. Karşılaştırma: SAP'de tek malzeme kaydının görünümleri; Oracle'da kalem ana verisi +
+ürün merkezi; ilaç tarafında IDMP / Veeva ürün tanımı + madde. Gelecek regresyon riski: 🟡 (ikinci sürüm kuralı ve stok ekibiyle ortak kimlik).
+
+---
+
+### BL-519
+
+**Onaylarda elektronik imza: parolayı yeniden doğrulama kanıtı + ortak imza servisi + onay motoruna bağlama**
+
+DURUM: AÇIK — sahip konuşmak istiyor (2026-10-02) · SAHİP: CT (Auth + MOD-0023 onay motoru) · BULAN: sahip · KAYIT: 2026-10-02
+
+Ölçüm: Doküman Yönetimi'nde imza temeli var (MOD-0029-FU23: kim, neyi, hangi anlamla, kaydın hangi parmak izine karşı), ama "yeniden
+doğrulama yapıldı" bilgisi çağıranın beyanı (`ReAuthenticationPerformed = authContext is not null`); Auth'ta işlem anında parola doğrulayan
+bir uç yok; onay motorunda imza kavramı yok (onay = izin + aday). Kodun kendi notu: nitelikli e-imza değildir, 21 CFR Part 11 / Annex 11
+uyum iddiası yoktur. Kararlar: hangi onaylar imza ister (öneri: Global Ürün kimlik onayı için onay + denetim kaydı yeter; bileşim, ürün
+tanımı, ruhsat verisi, kalite kayıtları imza ister) · imza anında parola + anlam + kayıtta ad / tarih / anlam · tek ortak servis · sistem
+doğrulaması (validasyon) ayrı iş. Dilimler: tasarım → Auth imza kanıtı → ortak imza servisi → motor adım kuralı → ekran (7 dil) → ilk
+kullanan modül → doğrulama kanıt paketi; tahmin ≈ 12 prompt, 5–7 iş günü. Karşılaştırma: Veeva ve MasterControl'de onay anında kullanıcı
+adı + parola yeniden girilir ve imzanın anlamı kayıtta görünür. Gelecek regresyon riski: 🟡 (onay kapısına yeni şart).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
