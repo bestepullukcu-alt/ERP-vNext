@@ -518,6 +518,97 @@ public sealed class RegulatoryTextTests
             options.PartialFilterExpression.Render(registry.GetSerializer<T>(), registry));
     }
 
+    // ================================================================ WP-KP-5a-FIX-1 (E4 findings)
+
+    [Fact]
+    public async Task Each_kind_starts_its_round_with_its_own_reason_code()
+    {
+        var fx = new Fixture();
+        var text = await fx.SubmittedSafetyAsync();
+        var profile = Ok(await fx.Legal().Handle(fx.CreateLegal(), default));
+        Ok(await fx.Legal().Handle(new SubmitCountryLegalProfileCommand(profile.Id), default));
+
+        Assert.Equal(new[] { "CRM_SAFETY_TEXT_SUBMITTED", "CRM_COUNTRY_LEGAL_PROFILE_SUBMITTED" },
+            fx.Workflow.Starts.Select(s => s.ReasonCode).ToArray());
+        Assert.Equal(text.Id.ToString("D"), fx.Workflow.Starts[0].ObjectId);
+    }
+
+    [Fact]
+    public async Task The_detail_names_its_people_in_one_bulk_call_and_an_unknown_id_stays_unnamed()
+    {
+        var author = Guid.NewGuid();
+        var regulator = Guid.NewGuid();
+        var stranger = Guid.NewGuid();   // e.g. a user of another tenant: the resolver never answers it
+        var fx = new Fixture();
+        fx.Names.Known[author] = "Ayşe Yazar";
+        fx.Names.Known[regulator] = "sema pullukcu";
+
+        fx.Actor.Name = author.ToString("D");
+        var draft = Ok(await fx.Safety().Handle(fx.CreateSafety(), default));
+        Ok(await fx.Safety().Handle(new SubmitSafetyTextCommand(draft.Id), default));
+        fx.Actor.Name = regulator.ToString("D");
+        var task = fx.Workflow.Tasks.Last(t => t.WorkflowInstanceId == fx.Instance(draft.Id));
+        fx.Decisions.Mine.Add(task);
+        Ok(await fx.Safety().Handle(new DecideSafetyTextCommand(draft.Id, "reject", "Eksik."), default));
+        await fx.ApplyAsync(RegulatoryTextKind.SafetyText, draft.Id, ClaimReviewOutcomes.Rejected);
+        // A Work Center decider the resolver cannot name (and a non-id system actor) on a later round.
+        fx.SafetyRepo.Items.Single(t => t.Id == draft.Id).Decisions.Add(
+            new RegulatoryTextDecision { RoundNo = 9, By = stranger.ToString("D"), Outcome = "approve", At = DateTimeOffset.UtcNow });
+        fx.Names.Calls.Clear();
+
+        var detail = Ok(await fx.Safety().Handle(new GetSafetyTextQuery(draft.Id), default));
+
+        var call = Assert.Single(fx.Names.Calls);                               // ONE bulk call
+        Assert.Equal(new[] { author, regulator, stranger }.OrderBy(g => g), call.OrderBy(g => g));
+        Assert.Equal(("Ayşe Yazar", "Ayşe Yazar"), (detail.CreatedByName, detail.SubmittedByName));
+        Assert.Equal("sema pullukcu", detail.Decisions.Single(d => d.RoundNo == 1).ByName);
+        var unknown = detail.Decisions.Single(d => d.RoundNo == 9);
+        Assert.Null(unknown.ByName);                                             // never the id, never a guess
+        Assert.Equal(stranger.ToString("D"), unknown.By);
+    }
+
+    [Fact]
+    public async Task Can_archive_follows_the_archive_rule_of_the_command()
+    {
+        var fx = new Fixture();
+        var draft = await fx.CreateSafetyAsync();
+        Assert.True(draft.CanArchive);                                                            // draft
+        Assert.True(Ok(await fx.Safety().Handle(new GetSafetyTextQuery(draft.Id), default)).CanArchive);
+
+        var inReview = Ok(await fx.Safety().Handle(new SubmitSafetyTextCommand(draft.Id), default));
+        Assert.False(inReview.CanArchive);                                                         // in review
+        Code(await fx.Safety().Handle(new ArchiveSafetyTextCommand(draft.Id), default), 409, RegulatoryTextErrors.NotEditable);
+
+        await fx.ApplyAsync(RegulatoryTextKind.SafetyText, draft.Id, ClaimReviewOutcomes.Approved);
+        var active = Ok(await fx.Safety().Handle(new GetSafetyTextQuery(draft.Id), default));
+        Assert.True(active.CanArchive);                                                            // active
+
+        var v2 = Ok(await fx.Safety().Handle(new NewSafetyTextVersionCommand(draft.Id), default));
+        Ok(await fx.Safety().Handle(new SubmitSafetyTextCommand(v2.Id), default));
+        await fx.ApplyAsync(RegulatoryTextKind.SafetyText, v2.Id, ClaimReviewOutcomes.Approved);
+        Assert.True(Ok(await fx.Safety().Handle(new GetSafetyTextQuery(draft.Id), default)).CanArchive);   // superseded
+
+        var archived = Ok(await fx.Safety().Handle(new ArchiveSafetyTextCommand(v2.Id), default));
+        Assert.False(archived.CanArchive);                                                         // archived
+    }
+
+    [Fact]
+    public async Task A_draft_lost_to_a_concurrent_writer_is_409_not_500()
+    {
+        var fx = new Fixture();
+        fx.SafetyRepo.ConflictOnNextInsert = true;     // the store's unique open-key index refuses the insert
+        Code(await fx.Safety().Handle(fx.CreateSafety(), default), 409, RegulatoryTextErrors.SafetyTextOpenDraftExists);
+
+        fx.LegalRepo.ConflictOnNextInsert = true;
+        Code(await fx.Legal().Handle(fx.CreateLegal(), default), 409, RegulatoryTextErrors.LegalProfileOpenDraftExists);
+
+        // The same for a new version racing another one.
+        var active = await fx.ActiveSafetyAsync();
+        fx.SafetyRepo.ConflictOnNextInsert = true;
+        Code(await fx.Safety().Handle(new NewSafetyTextVersionCommand(active.Id), default), 409,
+            RegulatoryTextErrors.SafetyTextOpenDraftExists);
+    }
+
     [Fact]
     public void The_safety_text_is_not_a_claim()
         => Assert.False(typeof(Claim).IsAssignableFrom(typeof(SafetyText))); // K2
@@ -564,6 +655,7 @@ public sealed class RegulatoryTextTests
         public DecisionClient Decisions { get; } = new();
         public ContentSetTestCatalog Catalog { get; } = new();
         public ProductValidator Products { get; } = new();
+        public NameResolver Names { get; } = new();
         public RegulatoryTextOutcomeApplier Applier { get; }
         public IRegulatoryTextReviewSettings? Settings { get; init; }
         public bool NoProductValidator { get; init; }
@@ -571,10 +663,10 @@ public sealed class RegulatoryTextTests
         private RegulatoryTextReviewReconciler Reconciler() => new(Workflow, Applier, Settings);
 
         public SafetyTextHandlers Safety() => new(Tenant, Actor, SafetyRepo, Workflow, Decisions, Applier, Reconciler(), Settings,
-            Catalog, NoProductValidator ? null : Products);
+            Catalog, NoProductValidator ? null : Products, Names);
 
         public CountryLegalProfileHandlers Legal() => new(Tenant, Actor, LegalRepo, Workflow, Decisions, Applier, Reconciler(),
-            Settings, Catalog);
+            Settings, Catalog, Names);
 
         public CreateSafetyTextCommand CreateSafety(string country = "TR", string language = "tr", string? body = Body)
             => new(ProductX, "ALMIBA", country, language, body, null, "KÜB 2026-01", null, "TR-2026/14");
@@ -654,6 +746,20 @@ public sealed class RegulatoryTextTests
             => Task.FromResult<IReadOnlyList<WorkflowHistoryEntry>?>(Array.Empty<WorkflowHistoryEntry>());
     }
 
+    /// <summary>WP-KP-5a-FIX-1 — the tenant-scoped display-name seam: answers only the ids it knows, records each call.</summary>
+    private sealed class NameResolver : IUserDisplayNameResolver
+    {
+        public Dictionary<Guid, string> Known { get; } = new();
+        public List<IReadOnlyCollection<Guid>> Calls { get; } = new();
+
+        public Task<IReadOnlyDictionary<Guid, string>> ResolveAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
+        {
+            Calls.Add(userIds.ToList());
+            return Task.FromResult<IReadOnlyDictionary<Guid, string>>(
+                userIds.Where(Known.ContainsKey).ToDictionary(id => id, id => Known[id]));
+        }
+    }
+
     private sealed class ProductValidator : IStrategyTemplateProductReferenceValidator
     {
         public IStrategyTemplateProductReferenceValidator.Outcome Outcome { get; set; } =
@@ -681,8 +787,17 @@ public sealed class RegulatoryTextTests
         public Task<IReadOnlyList<T>> ListAsync(Guid tenantId, CancellationToken ct)
             => Task.FromResult<IReadOnlyList<T>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
 
+        /// <summary>WP-KP-5a-FIX-1 — the next insert loses the race on the store's unique open-key index.</summary>
+        public bool ConflictOnNextInsert { get; set; }
+
         public Task InsertAsync(T entity, CancellationToken ct)
         {
+            if (ConflictOnNextInsert)
+            {
+                ConflictOnNextInsert = false;
+                throw new RegulatoryTextKeyConflictException("duplicate key (open version of the key)");
+            }
+
             Items.Add(entity);
             return Task.CompletedTask;
         }

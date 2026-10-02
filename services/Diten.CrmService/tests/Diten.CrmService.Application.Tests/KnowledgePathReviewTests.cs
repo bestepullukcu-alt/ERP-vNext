@@ -122,6 +122,7 @@ public sealed class KnowledgePathReviewTests
         var start = Assert.Single(fx.Workflow.Starts);
         Assert.Equal("KP-MLR-TR", start.TemplateCode);
         Assert.Equal(KnowledgePathReviewRules.ObjectType, start.ObjectType);
+        Assert.Equal("CRM_KNOWLEDGE_PATH_SUBMITTED", start.ReasonCode);   // WP-KP-5a-FIX-1 — not the claim's code
         Assert.Equal(revision.Id.ToString("D"), start.ObjectId);
         Assert.Equal($"crm:knowledge-path:{id:D}:r1", start.IdempotencyKey);
         Assert.Equal($"Bilgi yolu onayı · KP-A v1.0 · Rev 1", start.DisplayContext.Title);

@@ -60,7 +60,8 @@ public sealed class GatewayClaimWorkflowClient : IClaimWorkflowClient, IWorkflow
             objectRef = request.ObjectRef,
             // Candidates come from the template's positions (WP-ORG-02); CRM sends none.
             candidatePrincipalIds = Array.Empty<string>(),
-            reasonCode = ClaimReviewRules.SubmitReasonCode,
+            // WP-KP-5a-FIX-1 — the caller's kind decides the audit label; the claim code is only the default.
+            reasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? ClaimReviewRules.SubmitReasonCode : request.ReasonCode,
             idempotencyKey = request.IdempotencyKey,
             commentRequired = false,
             evidenceRequired = false,

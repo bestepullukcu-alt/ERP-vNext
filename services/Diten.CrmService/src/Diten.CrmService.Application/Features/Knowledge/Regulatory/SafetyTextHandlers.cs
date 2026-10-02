@@ -63,13 +63,14 @@ public sealed class SafetyTextHandlers :
     public SafetyTextHandlers(ITenantContext tenant, IActorContext actor, ISafetyTextRepository repository,
         IClaimWorkflowClient workflow, IWorkflowDecisionClient decisions, RegulatoryTextOutcomeApplier applier,
         RegulatoryTextReviewReconciler? reconciler = null, IRegulatoryTextReviewSettings? settings = null,
-        IReferenceDataCatalogReader? catalog = null, IStrategyTemplateProductReferenceValidator? products = null)
+        IReferenceDataCatalogReader? catalog = null, IStrategyTemplateProductReferenceValidator? products = null,
+        IUserDisplayNameResolver? names = null)
     {
         _repository = repository;
         _catalog = catalog;
         _products = products;
         _lifecycle = new RegulatoryTextLifecycle<SafetyText>(RegulatoryTextKind.SafetyText, tenant, actor, repository,
-            workflow, decisions, applier, reconciler, settings);
+            workflow, decisions, applier, reconciler, settings, names);
     }
 
     // ---------------- reads ----------------
@@ -117,7 +118,7 @@ public sealed class SafetyTextHandlers :
         return active is null
             ? RegulatoryTextRules.Fail<SafetyTextDto>(RegulatoryTextErrors.SafetyTextMissing,
                 $"No active safety text for this product in {country} / {language}.", 404)
-            : Response<SafetyTextDto>.Success(RegulatoryTextMapper.ToDto(active, new RegulatoryTextAbilities(false, false, false)));
+            : Response<SafetyTextDto>.Success(RegulatoryTextMapper.ToDto(active, RegulatoryTextAbilities.None));
     }
 
     // ---------------- writes ----------------
@@ -161,9 +162,13 @@ public sealed class SafetyTextHandlers :
         }
 
         Apply(draft, request.Body, request.ShortBody, request.SourceDocumentRef, request.SourceDate, request.ApprovalReference);
-        await _lifecycle.InsertDraftAsync(draft, tenantId, _lifecycle.CodeFor(all, sameKey, draft.CountryCode),
-            RegulatoryTextLifecycle<SafetyText>.NextVersionNumber(sameKey), ct);
-        return Response<SafetyTextDto>.Success(RegulatoryTextMapper.ToDto(draft, new RegulatoryTextAbilities(true, true, false)), 201);
+        if (await _lifecycle.InsertDraftAsync<SafetyTextDto>(draft, tenantId, _lifecycle.CodeFor(all, sameKey, draft.CountryCode),
+            RegulatoryTextLifecycle<SafetyText>.NextVersionNumber(sameKey), ct) is { } conflict)
+        {
+            return conflict;
+        }
+
+        return Response<SafetyTextDto>.Success(RegulatoryTextMapper.ToDto(draft, RegulatoryTextAbilities.NewDraft), 201);
     }
 
     public async Task<Response<SafetyTextDto>> Handle(UpdateSafetyTextCommand request, CancellationToken ct)
@@ -203,8 +208,12 @@ public sealed class SafetyTextHandlers :
             CountryCode = source.CountryCode, LanguageCode = source.LanguageCode
         };
         Apply(draft, source.Body, source.ShortBody, source.SourceDocumentRef, source.SourceDate, source.ApprovalReference);
-        await _lifecycle.InsertDraftAsync(draft, source.TenantId, source.Code, next, ct);
-        return Response<SafetyTextDto>.Success(RegulatoryTextMapper.ToDto(draft, new RegulatoryTextAbilities(true, true, false)), 201);
+        if (await _lifecycle.InsertDraftAsync<SafetyTextDto>(draft, source.TenantId, source.Code, next, ct) is { } conflict)
+        {
+            return conflict;
+        }
+
+        return Response<SafetyTextDto>.Success(RegulatoryTextMapper.ToDto(draft, RegulatoryTextAbilities.NewDraft), 201);
     }
 
     public async Task<Response<SafetyTextDto>> Handle(SubmitSafetyTextCommand request, CancellationToken ct)
@@ -229,7 +238,9 @@ public sealed class SafetyTextHandlers :
     {
         var sameKey = (await _repository.ListAsync(text.TenantId, ct)).Where(t => t.Key() == text.Key()).ToList();
         var can = await _lifecycle.AbilitiesAsync(new[] { text }, ct);
-        return Response<SafetyTextDto>.Success(RegulatoryTextMapper.ToDto(text, can(text), RegulatoryTextMapper.History(sameKey)));
+        var names = await _lifecycle.DisplayNamesAsync(text, ct);
+        return Response<SafetyTextDto>.Success(
+            RegulatoryTextMapper.ToDto(text, can(text), RegulatoryTextMapper.History(sameKey), names));
     }
 
     private static void Apply(SafetyText text, string? body, string? shortBody, string? sourceRef, DateTimeOffset? sourceDate,

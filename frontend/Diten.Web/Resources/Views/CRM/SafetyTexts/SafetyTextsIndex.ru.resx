@@ -86,4 +86,5 @@
   <data name="SourceDocumentRef" xml:space="preserve"><value>Исходный документ</value></data>
   <data name="SourceDate" xml:space="preserve"><value>Дата источника</value></data>
   <data name="ApprovalReference" xml:space="preserve"><value>Местный номер одобрения</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
 </root>

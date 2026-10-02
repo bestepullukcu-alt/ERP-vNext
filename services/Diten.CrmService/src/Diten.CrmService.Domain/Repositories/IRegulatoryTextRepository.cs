@@ -11,6 +11,8 @@ public interface IRegulatoryTextRepository<T> where T : RegulatoryText
     /// <summary>All non-deleted rows of the tenant (archived included — history stays readable).</summary>
     Task<IReadOnlyList<T>> ListAsync(Guid tenantId, CancellationToken cancellationToken);
 
+    /// <summary>Inserts a new version. Throws <see cref="RegulatoryTextKeyConflictException"/> when the store refuses it
+    /// for the key (a concurrent writer already holds the key's open / active slot — the unique indexes).</summary>
     Task InsertAsync(T entity, CancellationToken cancellationToken);
 
     /// <summary>Replaces the row only while its token is <paramref name="expectedVersion"/>; the token becomes
@@ -19,5 +21,9 @@ public interface IRegulatoryTextRepository<T> where T : RegulatoryText
 }
 
 public interface ISafetyTextRepository : IRegulatoryTextRepository<SafetyText>;
+
+/// <summary>WP-KP-5a-FIX-1 — the store refused a write for the key (its unique open / active index): another writer won
+/// the race. The caller answers it like its own pre-check (409 open draft exists), never as a 500.</summary>
+public sealed class RegulatoryTextKeyConflictException(string message, Exception? inner = null) : Exception(message, inner);
 
 public interface ICountryLegalProfileRepository : IRegulatoryTextRepository<CountryLegalProfile>;

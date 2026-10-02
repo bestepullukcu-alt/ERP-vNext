@@ -86,4 +86,5 @@
   <data name="SourceDocumentRef" xml:space="preserve"><value>Kaynak belge</value></data>
   <data name="SourceDate" xml:space="preserve"><value>Kaynak tarihi</value></data>
   <data name="ApprovalReference" xml:space="preserve"><value>Yerel onay numarası</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Bilinmeyen kullanıcı</value></data>
 </root>

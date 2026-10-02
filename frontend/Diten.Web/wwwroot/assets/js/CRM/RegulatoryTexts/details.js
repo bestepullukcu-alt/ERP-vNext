@@ -44,6 +44,9 @@
         el.classList.toggle('is-empty', !value);
     };
 
+    /** WP-KP-5a-FIX-1 — the display name CRM resolved, else the localised "unknown user" — never a raw user id. */
+    const personName = (name) => (name && String(name).trim()) || L().UnknownUser || '';
+
     /** A rejection needs a comment — the reason the author will act on (the same rule CRM enforces). */
     const rejectCommentMissing = (outcome, comment) => outcome === 'reject' && !String(comment || '').trim();
 
@@ -100,8 +103,10 @@
         }).join('<i class="bx bx-chevron-right text-muted regulatory-flow-arrow" aria-hidden="true"></i>');
         const terminal = at < 0 && status ? ` <span class="badge bg-${STATUS_TONES[status] || 'secondary'} ms-2">${esc(statusLabel(status))}</span>` : '';
         $('#rtStatusLine').innerHTML = html + terminal;
-        const by = pick(model, 'submittedBy');
-        $('#rtSubmitted').textContent = by ? fmt(L().SubmittedTpl || '{0} · {1}', by, date(pick(model, 'submittedAt'))) : '';
+        // WP-KP-5a-FIX-1 — a person is shown by NAME (CRM resolves it); an unresolved id is never printed.
+        $('#rtSubmitted').textContent = pick(model, 'submittedBy')
+            ? fmt(L().SubmittedTpl || '{0} · {1}', personName(model.submittedByName), date(pick(model, 'submittedAt')))
+            : '';
     };
 
     const renderValues = () => {
@@ -124,7 +129,7 @@
                 const label = L()['DecisionOutcome_' + (outcome.startsWith('approve') ? 'approve' : 'reject')] || outcome;
                 return `<li class="border-start border-2 ps-3 pb-3">
                         <div class="d-flex align-items-center gap-2 flex-wrap"><span class="badge bg-label-${tone}">${esc(label)}</span>
-                            <span class="small fw-medium text-heading">${esc(pick(d, 'by', 'decidedBy') || '')}</span></div>
+                            <span class="small fw-medium text-heading">${esc(personName(d.byName))}</span></div>
                         <div class="small text-muted">${esc(date(pick(d, 'at', 'decidedAt')))}</div>
                         ${pick(d, 'comment') ? `<div class="small regulatory-preview mt-1" dir="auto">${esc(d.comment)}</div>` : ''}
                     </li>`;
@@ -164,7 +169,8 @@
         if (canSubmit && model.canSubmit === true) actions.push(actionButton('submit', 'bx-send', L().SubmitForApproval, 'btn-primary'));
         if (canSubmit && s === 'in-review') actions.push(actionButton('withdraw', 'bx-undo', L().Withdraw, 'btn-label-warning'));
         if (canManage && (s === 'active' || s === 'superseded')) actions.push(actionButton('new-version', 'bx-git-branch', L().NewVersion, 'btn-label-info'));
-        if (canManage && s !== 'archived') actions.push(actionButton('archive', 'bx-archive-in', L().Archive, 'btn-label-danger'));
+        // WP-KP-5a-FIX-1 — CRM's own archive rule (not archived, not in review) arrives as canArchive.
+        if (canManage && model.canArchive === true) actions.push(actionButton('archive', 'bx-archive-in', L().Archive, 'btn-label-danger'));
         $('#rtActions').innerHTML = actions.join('');
     };
 

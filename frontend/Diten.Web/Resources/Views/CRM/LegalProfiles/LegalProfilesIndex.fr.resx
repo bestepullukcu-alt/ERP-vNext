@@ -88,4 +88,5 @@
   <data name="PageApprovalCodeFormatHint" xml:space="preserve"><value>{CC} = pays, {YYYY} = année, {SEQ} = numéro de séquence.</value></data>
   <data name="PageApprovalCodeExampleLabel" xml:space="preserve"><value>Exemple</value></data>
   <data name="PageApprovalCodeExampleTpl" xml:space="preserve"><value>p. ex. {0}</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Utilisateur inconnu</value></data>
 </root>

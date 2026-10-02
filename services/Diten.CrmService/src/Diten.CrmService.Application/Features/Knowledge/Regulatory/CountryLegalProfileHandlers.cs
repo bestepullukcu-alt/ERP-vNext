@@ -63,12 +63,12 @@ public sealed class CountryLegalProfileHandlers :
     public CountryLegalProfileHandlers(ITenantContext tenant, IActorContext actor, ICountryLegalProfileRepository repository,
         IClaimWorkflowClient workflow, IWorkflowDecisionClient decisions, RegulatoryTextOutcomeApplier applier,
         RegulatoryTextReviewReconciler? reconciler = null, IRegulatoryTextReviewSettings? settings = null,
-        IReferenceDataCatalogReader? catalog = null)
+        IReferenceDataCatalogReader? catalog = null, IUserDisplayNameResolver? names = null)
     {
         _repository = repository;
         _catalog = catalog;
         _lifecycle = new RegulatoryTextLifecycle<CountryLegalProfile>(RegulatoryTextKind.LegalProfile, tenant, actor,
-            repository, workflow, decisions, applier, reconciler, settings);
+            repository, workflow, decisions, applier, reconciler, settings, names);
     }
 
     // ---------------- reads ----------------
@@ -118,7 +118,7 @@ public sealed class CountryLegalProfileHandlers :
             ? RegulatoryTextRules.Fail<CountryLegalProfileDto>(RegulatoryTextErrors.LegalProfileMissing,
                 $"No active legal profile for {country} / {language}.", 404)
             : Response<CountryLegalProfileDto>.Success(
-                RegulatoryTextMapper.ToDto(active, new RegulatoryTextAbilities(false, false, false)));
+                RegulatoryTextMapper.ToDto(active, RegulatoryTextAbilities.None));
     }
 
     // ---------------- writes ----------------
@@ -153,10 +153,14 @@ public sealed class CountryLegalProfileHandlers :
 
         Apply(draft, request.LegalFooterText, request.MarketingAuthorizationHolder, request.AdverseEventReportingText,
             request.PromotionalNotice, request.PageApprovalCodeFormat);
-        await _lifecycle.InsertDraftAsync(draft, tenantId, _lifecycle.CodeFor(all, sameKey, draft.CountryCode),
-            RegulatoryTextLifecycle<CountryLegalProfile>.NextVersionNumber(sameKey), ct);
+        if (await _lifecycle.InsertDraftAsync<CountryLegalProfileDto>(draft, tenantId, _lifecycle.CodeFor(all, sameKey, draft.CountryCode),
+            RegulatoryTextLifecycle<CountryLegalProfile>.NextVersionNumber(sameKey), ct) is { } conflict)
+        {
+            return conflict;
+        }
+
         return Response<CountryLegalProfileDto>.Success(
-            RegulatoryTextMapper.ToDto(draft, new RegulatoryTextAbilities(true, true, false)), 201);
+            RegulatoryTextMapper.ToDto(draft, RegulatoryTextAbilities.NewDraft), 201);
     }
 
     public async Task<Response<CountryLegalProfileDto>> Handle(UpdateCountryLegalProfileCommand request, CancellationToken ct)
@@ -195,9 +199,13 @@ public sealed class CountryLegalProfileHandlers :
         var draft = new CountryLegalProfile { CountryCode = source!.CountryCode, LanguageCode = source.LanguageCode };
         Apply(draft, source.LegalFooterText, source.MarketingAuthorizationHolder, source.AdverseEventReportingText,
             source.PromotionalNotice, source.PageApprovalCodeFormat);
-        await _lifecycle.InsertDraftAsync(draft, source.TenantId, source.Code, next, ct);
+        if (await _lifecycle.InsertDraftAsync<CountryLegalProfileDto>(draft, source.TenantId, source.Code, next, ct) is { } conflict)
+        {
+            return conflict;
+        }
+
         return Response<CountryLegalProfileDto>.Success(
-            RegulatoryTextMapper.ToDto(draft, new RegulatoryTextAbilities(true, true, false)), 201);
+            RegulatoryTextMapper.ToDto(draft, RegulatoryTextAbilities.NewDraft), 201);
     }
 
     public async Task<Response<CountryLegalProfileDto>> Handle(SubmitCountryLegalProfileCommand request, CancellationToken ct)
@@ -224,7 +232,8 @@ public sealed class CountryLegalProfileHandlers :
         var sameKey = (await _repository.ListAsync(profile.TenantId, ct)).Where(p => p.Key() == profile.Key()).ToList();
         var can = await _lifecycle.AbilitiesAsync(new[] { profile }, ct);
         return Response<CountryLegalProfileDto>.Success(
-            RegulatoryTextMapper.ToDto(profile, can(profile), RegulatoryTextMapper.History(sameKey)));
+            RegulatoryTextMapper.ToDto(profile, can(profile), RegulatoryTextMapper.History(sameKey),
+                await _lifecycle.DisplayNamesAsync(profile, ct)));
     }
 
     private static void Apply(CountryLegalProfile profile, string? footer, string? holder, string? adverseEvent,

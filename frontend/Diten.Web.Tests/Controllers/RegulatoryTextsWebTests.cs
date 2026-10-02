@@ -181,6 +181,46 @@ public sealed class RegulatoryTextsWebTests
         Assert.Contains("return;", handler[check..post]);
     }
 
+    // ============================================================ WP-KP-5a-FIX-1 (E4 findings)
+
+    [Fact]
+    public void The_archive_button_follows_crms_can_archive_flag()
+    {
+        var script = Asset("CRM", "RegulatoryTexts", "details.js");
+        Assert.Contains("if (canManage && model.canArchive === true) actions.push(actionButton('archive'", script);
+        // The old status-only rule drew "Archive" on an in-review text, which CRM refuses (409 not_editable).
+        Assert.DoesNotContain("s !== 'archived') actions.push(actionButton('archive'", script);
+    }
+
+    [Fact]
+    public void A_person_is_shown_by_name_or_as_unknown_never_as_a_raw_id()
+    {
+        var script = Asset("CRM", "RegulatoryTexts", "details.js");
+        Assert.Contains("const personName = (name) => (name && String(name).trim()) || L().UnknownUser || '';", script);
+        Assert.Contains("personName(model.submittedByName)", script);
+        Assert.Contains("esc(personName(d.byName))", script);
+        // The raw actor ids are never printed: neither the submitter id nor the decider id is rendered.
+        Assert.DoesNotContain("pick(d, 'by', 'decidedBy')", script);
+        Assert.DoesNotMatch(@"SubmittedTpl[^;]*,\s*by\s*,", script);
+    }
+
+    [Theory]
+    [InlineData("SafetyTexts", "SafetyTextsIndex")]
+    [InlineData("LegalProfiles", "LegalProfilesIndex")]
+    public void Unknown_user_is_localised_in_seven_languages_and_bridged(string module, string family)
+    {
+        var bridge = File.ReadAllText(Path.Combine(WebRoot(), "Views", "CRM", module, "_IndexL10n.cshtml"));
+        Assert.Matches(@"(?<![A-Za-z0-9_])UnknownUser\s*=", bridge);
+        foreach (var language in Languages)
+        {
+            var value = Resx(module, family, language)["UnknownUser"];
+            Assert.False(string.IsNullOrWhiteSpace(value));
+            Assert.NotEqual("UnknownUser", value);
+        }
+
+        Assert.Equal("Bilinmeyen kullanıcı", Resx(module, family, "tr")["UnknownUser"]);
+    }
+
     [Fact]
     public void The_decision_panel_exists_only_while_crm_says_can_decide()
     {

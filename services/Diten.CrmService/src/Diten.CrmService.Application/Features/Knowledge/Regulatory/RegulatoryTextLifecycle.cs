@@ -10,7 +10,16 @@ using Diten.CrmService.Domain.Repositories;
 namespace Diten.CrmService.Application.Features.Knowledge.Regulatory;
 
 /// <summary>What the caller can do with a text (computed per read; permissions themselves are the API's job).</summary>
-public sealed record RegulatoryTextAbilities(bool CanEdit, bool CanSubmit, bool CanDecide);
+/// <para>WP-KP-5a-FIX-1 — <c>CanArchive</c> comes from <see cref="RegulatoryText.IsArchivable"/>, the rule the archive
+/// command itself applies.</para>
+public sealed record RegulatoryTextAbilities(bool CanEdit, bool CanSubmit, bool CanDecide, bool CanArchive = false)
+{
+    /// <summary>A text just written as a draft (create / new version): editable, submittable, archivable.</summary>
+    public static RegulatoryTextAbilities NewDraft { get; } = new(true, true, false, true);
+
+    /// <summary>A resolve read (the page designer's locked block): no actions.</summary>
+    public static RegulatoryTextAbilities None { get; } = new(false, false, false, false);
+}
 
 /// <summary>
 /// WP-KP-5a — the shared lifecycle of a regulatory text kind: key rules (one open, one active), the Regulatory round
@@ -28,11 +37,12 @@ public sealed class RegulatoryTextLifecycle<T> where T : RegulatoryText
     private readonly RegulatoryTextOutcomeApplier _applier;
     private readonly RegulatoryTextReviewReconciler? _reconciler;
     private readonly IRegulatoryTextReviewSettings? _settings;
+    private readonly IUserDisplayNameResolver _names;
 
     public RegulatoryTextLifecycle(RegulatoryTextKind kind, ITenantContext tenant, IActorContext actor,
         IRegulatoryTextRepository<T> repository, IClaimWorkflowClient workflow, IWorkflowDecisionClient decisions,
         RegulatoryTextOutcomeApplier applier, RegulatoryTextReviewReconciler? reconciler = null,
-        IRegulatoryTextReviewSettings? settings = null)
+        IRegulatoryTextReviewSettings? settings = null, IUserDisplayNameResolver? names = null)
     {
         _kind = kind;
         _tenant = tenant;
@@ -43,6 +53,7 @@ public sealed class RegulatoryTextLifecycle<T> where T : RegulatoryText
         _applier = applier;
         _reconciler = reconciler;
         _settings = settings;
+        _names = names ?? new NullUserDisplayNameResolver();
     }
 
     public RegulatoryTextKind Kind => _kind;
@@ -80,7 +91,24 @@ public sealed class RegulatoryTextLifecycle<T> where T : RegulatoryText
             CanEdit: t.IsDraft() && !t.IsArchived(),
             CanSubmit: t.IsDraft() && !t.IsArchived(),
             CanDecide: t.OpenRound() is { } round && mine.Contains(round.WorkflowInstanceId)
-                       && !RegulatoryTextRules.IsOwnVersion(t, actor));
+                       && !RegulatoryTextRules.IsOwnVersion(t, actor),
+            CanArchive: t.IsArchivable());
+    }
+
+    /// <summary>
+    /// WP-KP-5a-FIX-1 — the display names of the people a detail names (author, last editor, submitter, deciders), in ONE
+    /// bulk call to the tenant-scoped resolver. An id it cannot resolve is simply absent (the screen then says "unknown
+    /// user"); a non-id actor (e.g. the workflow system actor) is never sent.
+    /// </summary>
+    public async Task<IReadOnlyDictionary<Guid, string>> DisplayNamesAsync(T text, CancellationToken ct)
+    {
+        var ids = new[] { text.CreatedBy, text.UpdatedBy, text.CurrentRound()?.SubmittedBy }
+            .Concat(text.Decisions.Select(d => d.By))
+            .Select(v => Guid.TryParse(v, out var id) ? id : Guid.Empty)
+            .Where(id => id != Guid.Empty)
+            .Distinct()
+            .ToList();
+        return ids.Count == 0 ? new Dictionary<Guid, string>() : await _names.ResolveAsync(ids, ct);
     }
 
     // ---------------------------------------------------------------- key rules
@@ -182,7 +210,8 @@ public sealed class RegulatoryTextLifecycle<T> where T : RegulatoryText
                     ClaimReviewRules.Truncate(text.CountryCode, 32),
                     ClaimReviewRules.Truncate(text.LanguageCode, 32),
                     ClaimReviewRules.Truncate($"v{text.VersionNumber}", 32)
-                ])), ct);
+                ]),
+            _kind.SubmitReason), ct);
         if (start.Outcome != ClaimWorkflowCallOutcome.Ok || start.WorkflowInstanceId is not { } instanceId)
         {
             return (null, RegulatoryTextRules.FromStart<TOut>(start));
@@ -426,8 +455,10 @@ public sealed class RegulatoryTextLifecycle<T> where T : RegulatoryText
         return (source, sameKey, NextVersionNumber(sameKey), null);
     }
 
-    /// <summary>Stamps a new draft (clone or create) and inserts it.</summary>
-    public async Task<T> InsertDraftAsync(T draft, Guid tenantId, string code, int versionNumber, CancellationToken ct)
+    /// <summary>Stamps a new draft (clone or create) and inserts it. A concurrent writer that took the key's open slot
+    /// between the pre-check and the insert (the store's unique index) is answered like the pre-check: 409 with the
+    /// kind's open-draft code (WP-KP-5a-FIX-1), never a 500.</summary>
+    public async Task<Response<TOut>?> InsertDraftAsync<TOut>(T draft, Guid tenantId, string code, int versionNumber, CancellationToken ct)
     {
         var now = DateTimeOffset.UtcNow;
         draft.Id = Guid.NewGuid();
@@ -437,8 +468,17 @@ public sealed class RegulatoryTextLifecycle<T> where T : RegulatoryText
         draft.Status = RegulatoryTextStatuses.Draft;
         draft.CreatedAt = now;
         draft.CreatedBy = _actor.ActorName;
-        await _repository.InsertAsync(draft, ct);
-        return draft;
+        try
+        {
+            await _repository.InsertAsync(draft, ct);
+        }
+        catch (RegulatoryTextKeyConflictException)
+        {
+            return RegulatoryTextRules.Fail<TOut>(_kind.OpenDraftError,
+                "This key already has an open draft or a version in review; finish or withdraw it first.", 409);
+        }
+
+        return null;
     }
 
     /// <summary>Soft archive (never while in review). An archived active text no longer resolves.</summary>
@@ -455,7 +495,7 @@ public sealed class RegulatoryTextLifecycle<T> where T : RegulatoryText
             return (text, null);
         }
 
-        if (text.IsInReview())
+        if (!text.IsArchivable())
         {
             return (null, RegulatoryTextRules.Fail<TOut>(RegulatoryTextErrors.NotEditable,
                 "A text in review cannot be archived; withdraw it first.", 409));

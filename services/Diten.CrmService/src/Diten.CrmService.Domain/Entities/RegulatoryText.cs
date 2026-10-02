@@ -69,6 +69,10 @@ public abstract class RegulatoryText : EntityBase
 
     public bool IsSuperseded() => string.Equals(Status, RegulatoryTextStatuses.Superseded, StringComparison.Ordinal);
 
+    /// <summary>WP-KP-5a-FIX-1 — the archive rule in ONE place (the archive command and the read's <c>canArchive</c>): a
+    /// text can be archived unless it is already archived or in review (a review is withdrawn first).</summary>
+    public bool IsArchivable() => !IsArchived() && !IsInReview();
+
     /// <summary>Draft or in review — the "open" version of a key.</summary>
     public bool IsOpenVersion() => !IsArchived() && (IsDraft() || IsInReview());
 

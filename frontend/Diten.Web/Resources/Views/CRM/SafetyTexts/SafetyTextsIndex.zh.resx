@@ -86,4 +86,5 @@
   <data name="SourceDocumentRef" xml:space="preserve"><value>来源文件</value></data>
   <data name="SourceDate" xml:space="preserve"><value>来源日期</value></data>
   <data name="ApprovalReference" xml:space="preserve"><value>本地批准编号</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>未知用户</value></data>
 </root>

@@ -86,4 +86,5 @@
   <data name="SourceDocumentRef" xml:space="preserve"><value>Document source</value></data>
   <data name="SourceDate" xml:space="preserve"><value>Date de la source</value></data>
   <data name="ApprovalReference" xml:space="preserve"><value>Numéro d’approbation local</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Utilisateur inconnu</value></data>
 </root>

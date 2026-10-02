@@ -152,7 +152,8 @@ public sealed class SubmitKnowledgePathReviewHandler
                     ClaimReviewRules.Truncate(path.CountryCode ?? string.Empty, 32),
                     ClaimReviewRules.Truncate(path.LanguageCode ?? string.Empty, 32),
                     ClaimReviewRules.Truncate($"v{path.PathVersion}", 32)
-                ])), ct);
+                ]),
+            KnowledgePathReviewRules.SubmitReasonCode), ct);
         if (start.Outcome != ClaimWorkflowCallOutcome.Ok || start.WorkflowInstanceId is not { } instanceId)
         {
             return KnowledgePathReviewLoad.FromStart<KnowledgePathRevisionDto>(start);

@@ -88,4 +88,5 @@
   <data name="PageApprovalCodeFormatHint" xml:space="preserve"><value>{CC} = страна, {YYYY} = год, {SEQ} = порядковый номер.</value></data>
   <data name="PageApprovalCodeExampleLabel" xml:space="preserve"><value>Пример</value></data>
   <data name="PageApprovalCodeExampleTpl" xml:space="preserve"><value>напр. {0}</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
 </root>

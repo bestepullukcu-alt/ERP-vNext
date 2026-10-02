@@ -88,4 +88,5 @@
   <data name="PageApprovalCodeFormatHint" xml:space="preserve"><value>‏{CC} = البلد، {YYYY} = السنة، {SEQ} = الرقم التسلسلي.</value></data>
   <data name="PageApprovalCodeExampleLabel" xml:space="preserve"><value>مثال</value></data>
   <data name="PageApprovalCodeExampleTpl" xml:space="preserve"><value>مثلًا {0}</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>مستخدم غير معروف</value></data>
 </root>

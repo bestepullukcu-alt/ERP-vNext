@@ -88,4 +88,5 @@
   <data name="PageApprovalCodeFormatHint" xml:space="preserve"><value>{CC} = 国家，{YYYY} = 年份，{SEQ} = 序号。</value></data>
   <data name="PageApprovalCodeExampleLabel" xml:space="preserve"><value>示例</value></data>
   <data name="PageApprovalCodeExampleTpl" xml:space="preserve"><value>例如 {0}</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>未知用户</value></data>
 </root>

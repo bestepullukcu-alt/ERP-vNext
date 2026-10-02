@@ -48,8 +48,18 @@ public abstract class RegulatoryTextRepository<T> : IRegulatoryTextRepository<T>
     public async Task<IReadOnlyList<T>> ListAsync(Guid tenantId, CancellationToken cancellationToken)
         => await _collection.Find(TenantFilter(tenantId)).ToListAsync(cancellationToken);
 
-    public Task InsertAsync(T entity, CancellationToken cancellationToken)
-        => _collection.InsertOneAsync(entity, cancellationToken: cancellationToken);
+    public async Task InsertAsync(T entity, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _collection.InsertOneAsync(entity, cancellationToken: cancellationToken);
+        }
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            // WP-KP-5a-FIX-1 — a second open version of the key (ux_*_open_key) raced the pre-check: say so, not 500.
+            throw new RegulatoryTextKeyConflictException("The key already has an open version (concurrent write).", ex);
+        }
+    }
 
     public async Task<bool> ReplaceAsync(T entity, int expectedVersion, CancellationToken cancellationToken)
     {
