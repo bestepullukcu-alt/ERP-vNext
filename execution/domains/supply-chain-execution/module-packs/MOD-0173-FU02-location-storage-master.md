@@ -519,7 +519,17 @@ v1.1), `2e8ff898e` (service + tests), docs/evidence commit after it. Evidence:
    stockable) instead of the BG-10 "unavailable" state once INT-2 lands — BG-10 closes for locations.
 4. DCP-009 / domain-config: record DEC-INV-03 as resolved by MOD-0173-FU02; registry FU row (CT).
 
+- **WP-0173-LOC1 CT-ACCEPTED (2026-10-02)** — commits 2c48726b4..97d169bed. CT re-measured: clean build 0/0;
+  353/353 (0 skipped); repo architecture 18/18; LOCATION contract diff = only `info.version` + `x-owner` changed, all
+  else additive, line endings unchanged; `inventory-bundle` untouched. Guard re-scope (ASSUMPTION-LOC1-01) accepted:
+  ledger controller still GET/POST only, `/api/inventory` served by it alone, no PUT/DELETE anywhere, location
+  controller pinned to the 11 contract routes. Own sabotage of the has-stock check on deactivate/archive → 2 red
+  (AC-05 and the AC-16 race), restored → green, empty diff. Race measured by the agent: 30 rounds, both orders, no
+  Inactive location holding stock.
+
 ## 20. Follow-up Items
+
+- **FU-LOC1-01 (central):** `docs/analysis/contracts/README.md` should list LOCATION as 1.1.0, owner MOD-0173-FU02, served by InventoryService 5066 (v1 frozen, v1.1 additive).
 
 - Cost-centre master / picker — when a finance master exists (today a validated text code).
 - Location capacity, bin types, putaway/pick sequences, labels/barcodes — WMS (MOD-0178…0182).
