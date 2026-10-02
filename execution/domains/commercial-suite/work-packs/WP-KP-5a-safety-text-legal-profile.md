@@ -84,3 +84,18 @@ KORU/YAPMA: Claim/ülke sürümü/CLAIM-* şablonları DEĞİŞMEZ (K2); Bilgi Y
 DOĞRULA (E2): cd C:\tmp\kp-5a; CRM testleri (tabanı ölç; son CT 2147/0/5) → 0 kırmızı (bilinen sıra flake'i hariç); dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 422); Auth testleri katalog değiştiyse 0 kırmızı; build 0 hata. Yeni testler WP Acceptance listesi; mevcut iddia + yol inceleme testleri yeşil. Sabotaj: (1) onayda önceki aktifi superseded yapmayı kaldır → tek-aktif testi kırmızı; (2) ret yorumu kontrolünü kaldır → test kırmızı. Commit ("feat(crm): WP-KP-5a — safety text + country legal profile, regulatory-only approval via MOD-0023" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: sonuç tüketicisine yeni ObjectType eklemek KP-2/iddia akışını değiştirmeyi gerektiriyorsa ya da KP-1 ülke/dil doğrulayıcısı yeniden kullanılamıyorsa → DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-02) — **ACCEPTED (E2)**
+- **Commit:** iki oturum (ilki yarıda kaldı, ikincisi devam etti) → `d3c4c927` → KP-5a-UI + KP-CH-1 üzerine rebase (çakışmasız) → `3887370d` → `test/crm-content-visit-e2e` fast-forward. 19 dosya (+2780).
+- **Diff (K13 okuma):** ortak `RegulatoryText` tabanı + `SafetyText` / `CountryLegalProfile`; tek yaşam döngüsü servisi (KP-2 istemci / uzlaşma deseni); `ClaimWorkflowOutcomeConsumer`'a yalnız ObjectType yönlendirmesi eklendi (iddia / yol akışı aynı); tek aktif (eşitlik kısmi index) + tek açık sürüm (türetilmiş `OpenKey` + `$type` kısmi index; `$ne` yok); class-map string-Guid; Auth 6 anahtar + `permission-scope-baseline.csv` (kiracı kapsamı).
+- **Sözleşme uyumu (ajan tablosu, CT kabul):** `id`, `safetyTextCode` / `countryLegalProfileCode`, sayfasız `data` dizisi, `canEdit/canSubmit/canDecide`, `decisions[{by, outcome, comment, at}]`, karar gövdesi `{outcome, comment}`, durum değerleri, uç yolları — Web (KP-5a-UI) ile birebir; Web değişikliği gerekmedi.
+- **CT testleri (KP-5a-UI ile birleşik hal):** CRM **2180/0/5**, Web **469/0**, Auth **1027/0**.
+- **CT sabotajı:** "gönderen / yazar karar veremez" kontrolü kapatıldı → 1 kırmızı. Kod geri alındı. Ajan: superseded (1) + ret yorumu (1).
+- **Sapma (kabul):** Auth izin açıklamaları yalnız İngilizce (izin başına 7 dil altyapısı yok) — ayrı karar.
+- **Açık:**
+  - eşzamanlı iki taslak açılışında index ikinciyi reddediyor ama 500 dönüyor (409 olmalı) → küçük FIX;
+  - **merkezi log (audit) bağlantısı YOK** — CRM genelindeki açıkla birlikte AUD-CRM-1'de (kullanıcı 2026-10-02 bulgusu);
+  - KP-5a-CFG (canlı `KP-REG-{CC}` şablonları + rollere izin).
+- **E4 (CT, CFG sonrası):** TR / tr güvenlilik metni taslak → gönder → Regülasyon onayı → aktif → çözümleme; Web ekranlarıyla.
