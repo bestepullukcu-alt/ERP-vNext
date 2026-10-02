@@ -53,3 +53,18 @@ KORU/YAPMA: iddia gerekçe kodu ve davranışı değişmez; canlı veri/RBAC/şa
 DOĞRULA (E2): cd C:\tmp\kp-5a-fix-1; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban 2180/0/5; PiiMasking flake'i hariç); dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 469); build 0 hata. Yeni testler WP Acceptance. Sabotaj: (1) istemcide ReasonCode'u yok say → kırmızı; (2) DuplicateKey yakalamayı kaldır → kırmızı; geri al. TestResults/*.trx izleniyor, klasörü silme. Commit ("fix(crm): WP-KP-5a-FIX-1 — workflow reason code per kind, display names, canArchive, concurrent draft 409" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: IUserDisplayNameResolver kiracı kullanıcıları için çalışmıyorsa → DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-02) — **ACCEPTED (E2)**
+- **Commit:** ajan `9d43c460` → DEC-SCMM-05 (`13909ef4`) üzerine rebase (çakışmasız) → `test/crm-content-visit-e2e` fast-forward. 31 dosya (+355 / −51).
+- **DUR yok:** ad çözücü kiracı kullanıcılarını çözüyor (ajan canlı: "sema pullukcu", "Admin User").
+- **Diff (K13 okuma):**
+  - `GatewayClaimWorkflowClient`: `reasonCode = request.ReasonCode ?? iddia kodu` — iddia varsayılanı korunuyor; güvenlilik metni / yasal profil / **Bilgi Yolu** kendi kodunu gönderiyor.
+  - Adlar: `IUserDisplayNameResolver` tek toplu çağrı; çözülemeyen → `null`; Web'de "Bilinmeyen kullanıcı" (7 dil), ham kimlik yok.
+  - Arşiv kuralı tek yerde `RegulatoryText.IsArchivable()` (arşivsiz + incelemede değil); `ArchiveAsync` ve DTO `canArchive` aynı kuraldan.
+  - Depo `InsertAsync` `DuplicateKey` → `RegulatoryTextKeyConflictException` → yaşam döngüsünde 409.
+- **CT testleri:** CRM **2187/0/5**, Web **473/0**.
+- **CT sabotajı:** `IsArchivable`'dan "incelemede değil" koşulu kaldırıldı → 2 kırmızı. Kod geri alındı. Ajan: `ReasonCode` yok sayma (3) + çakışma yakalama (1).
+- **Bilinen sınır:** Mongo `DuplicateKey` çevirisi birim testte sahte depo üzerinden taklit ediliyor (projede Mongo testi yok).
+- **E4 (CT, CRM + Web yeniden başlatma sonrası):** `SAF-TR-0001` ayrıntısında karar veren adıyla; yeni taslak (TR / en) onaya gönderilince Platform görev gerekçe kodu `CRM_SAFETY_TEXT_SUBMITTED`; incelemede "Arşivle" yok.
