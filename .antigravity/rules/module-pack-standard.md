@@ -279,6 +279,7 @@ Frontmatter altinda asagidaki bolumler zorunludur:
 | 18 | `Ready-for-dev Checklist` | Status `ready-for-dev`'e gecmeden once onaylanacak madde listesi |
 | 19 | `Implementation Notes` | Master-plan saplamalari, kararlar, gelecek baglantilari |
 | 20 | `Follow-up Items` | Sonraki sprint/wave'e birakilan isler |
+| 21 | `Audited Events` (Denetlenen Olaylar) | Paketin her yazma komutu icin: komut → olay adi → yol (a/b/c) ya da istisna sinifi + gerekce. Bkz. Bolum 10.1 ve `audit-trail-standard.md` (AUD-001) |
 
 ---
 
@@ -347,6 +348,30 @@ platform.administrators.assign-roles
 
 ---
 
+## 10.1 Audited Events (Denetlenen Olaylar) Bolumu Sablonu — ZORUNLU (AUD-001)
+
+Kural: [audit-trail-standard.md](audit-trail-standard.md). Paketin `Owned Objects` bolumunde sayilan **her yazma komutu** bu tabloda
+tam bir kez gecer. Tabloda olmayan komut yazilamaz; "sonra ekleriz" gecerli bir satir degildir.
+
+```text
+| Komut | Olay adi | Nesne (tur) | Yol | Onceki/sonraki ya da degisen alanlar | Istisna sinifi + gerekce |
+|---|---|---|---|---|---|
+| CreateSampleCommand   | sample.created   | Sample | a | AfterState: Code, Name          | — |
+| UpdateSampleCommand   | sample.updated   | Sample | a | Before/After: Name, Status      | — |
+| DeleteSampleCommand   | sample.deleted   | Sample | a | BeforeState: Code, Name         | — |
+| SaveSampleViewCommand | —                | —      | — | —                               | İ1 — yalniz kullanicinin kendi ekran gorunumunu degistirir |
+```
+
+- `Yol`: `a` Platform ici `IAuditableCommand` · `b` baska servisten merkezi gunluge iletim · `c` esdeger iz (adi yazilir ve
+  kuralin §5.c kabul kosullari tek tek isaretlenir). Servisin denetim altyapisi yoksa paket bunu **bagimlilik** olarak yazar;
+  altyapisiz servise `a`/`b` yazilamaz.
+- `Istisna sinifi`: yalniz kuraldaki `İ1…` siniflarindan biri. Sinif disi "denetlenmiyor" olamaz.
+- Kayda yazilMAyacak alanlar (parola, ozet, token, gereksiz kisisel veri) ayri satirda sayilir.
+- Kimlik, yetki, GxP kaydi ya da KVKK ozel nitelikli veri degistiren komut varsa: yazma hatasi davranisi (kural §4) pakette
+  ACIK yazilir.
+
+---
+
 ## 11. Gateway / API Routing Decision Bolumu Sablonu
 
 ```text
@@ -375,6 +400,7 @@ Karar: Gateway degisikligi {gerekli | gereksiz}.
 - [ ] Platform/Admin modulde Lookup & Reference Data Decision yazili (mevcut `/api/lookups/{key}` kullanimi, yeni Platform lookup key ihtiyaci veya MDM/reference boundary gerekcesi)
 - [ ] Acceptance criteria test edilebilir maddeler
 - [ ] Test expectations build/verifier/RESX/smoke kapsiyor
+- [ ] Audited Events tablosu her yazma komutunu tam bir kez iceriyor: yol (a/b/c) ya da istisna sinifi + gerekce (AUD-001)
 ```
 
 ---
@@ -562,6 +588,11 @@ Slim partial seti:
 - Policy: `[Authorize(Policy = "PlatformActor")]`
 - Permission format: `platform.{resource}.{action}` (PKS-001 lowercase-dotted, >= 3 segments; tenant modules use `{module}.{resource}.{action}`)
 - Permissions: ...
+
+## Audited Events
+| Komut | Olay adi | Nesne (tur) | Yol | Onceki/sonraki ya da degisen alanlar | Istisna sinifi + gerekce |
+|---|---|---|---|---|---|
+| ... | ... | ... | a/b/c | ... | — |
 
 ## Gateway / API Routing Decision
 - Karar: gerekli/gereksiz

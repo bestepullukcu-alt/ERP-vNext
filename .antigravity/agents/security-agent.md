@@ -49,4 +49,5 @@ Sen sistemin kalkanı ve son denetçisisin. Aşağıdaki kurallara İSTİSNASIZ 
 
 1. **Kod Analizi:** Yeni eklenen her Handler'da `TenantId` ve `IsDeleted` sızıntısı var mı kontrol et.
 2. **Permission Check:** Controller üzerindeki yetki attribute'larının doğruluğunu test et.
+3. **Denetim Kaydı (AUD-001):** İncelediğin değişiklikte kimlik, rol/izin, kiracı durumu ya da kişisel veri değiştiren her yazma yolu için tek soru: **"Bu değişikliği kimin yaptığı, silinemeyen bir kayıtta duruyor mu — ve o kayıtta sır var mı?"** Kayıt yoksa 🔴; kayıt parola/özet/token/gereksiz kişisel veri taşıyorsa 🔴; MediatR'a uğramayan yazma yolu (controller → servis → depo, arka plan işi, olay tüketicisi) denetimsizse 🔴 — bu yolları mimari testi GÖRMEZ, senin kapın görür. Bkz: `.antigravity/rules/audit-trail-standard.md`.
 3. **Data Protection:** Hassas verilerin (PII) loglarda maskelenip maskelenmediğini denetle.

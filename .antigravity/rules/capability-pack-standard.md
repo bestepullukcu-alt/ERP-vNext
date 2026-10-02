@@ -113,6 +113,17 @@ Naming önerisi: `DCP-{NNN}-{slug}.md` (Delivery Capability Pack). Bu prefix bil
 - Production kod **iki koşul** sağlanmadan başlamaz: (a) Delivery Capability Pack `approved`/`ready-for-execution`, (b) sıradaki üye modülün module pack'i `approved`/`ready-for-dev`.
 - `@orchestrator` çok modüllü / cross-cutting talebi önce `/prepare-capability-pack` üzerinden geçirir; doğrudan kod yazmaz.
 
+## 7.1 Denetim kaydı kapısı (AUD-001)
+
+Bir Delivery Capability Pack yazma komutu üretecek üye modüller içeriyorsa, **10. Architecture decisions** bölümünde her üye
+servis için şu üç satır yazılır (kural: [audit-trail-standard.md](audit-trail-standard.md)):
+
+1. Servisin denetim altyapısı **bugün** var mı (işaret + pipeline davranışı, iletici ya da eşdeğer iz) — varsa adı, yoksa "yok".
+2. Üye modüller hangi yolu kullanacak: `a` / `b` / `c`.
+3. Altyapı yoksa: onu kuran iş hangi üyede, hangi sırada (**8. Ordered delivery sequence**) — denetimsiz üye modül teslim edilemez.
+
+Komut düzeyindeki tablo DCP'ye değil üye module pack'in `Audited Events` bölümüne aittir.
+
 ## 8. Access Governance handling
 
 - Access Governance, **aday ilk Delivery Capability Pack**'tir (candidate first Delivery Capability Pack).
@@ -126,6 +137,7 @@ Naming önerisi: `DCP-{NNN}-{slug}.md` (Delivery Capability Pack). Bu prefix bil
 - [ ] 20 zorunlu bölüm planlandı mı?
 - [ ] Status lifecycle module pack semantiği ile çelişmiyor mu?
 - [ ] Üye module pack'ler kendi kapılarından ayrıca geçecek mi?
+- [ ] Her üye servis için denetim altyapısı + yol (a/b/c) kararı Architecture decisions'ta yazılı mı (§7.1, AUD-001)?
 - [ ] Access Governance bu aşamada yalnızca aday olarak mı işaretli (authoring yok)?
 
 > **Mühür:** Bu standart, çok modüllü işin governance omurgasıdır. Sınır, sıra ve sahiplik kâğıt üzerinde netleşmeden kod başlamaz.

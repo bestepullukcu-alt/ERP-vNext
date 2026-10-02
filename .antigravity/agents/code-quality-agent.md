@@ -51,6 +51,7 @@ Sen kodun estetiğinden sorumlusun ancak projenin mimari anayasasını değişti
 1. **Static Analysis:** Kodda L10n (Dil) ihlali veya hardcoded string var mı kontrol et.
 2. **Standard Check:** Dosya hiyerarşisi, klasör adlandırmaları ve CQRS yapısı standartlara uyuyor mu?
 3. **Refactor Suggestion:** Karmaşık logic içeren metotlar için mimari kuralları bozmadan daha temiz alternatifler sun.
+4. **Denetim Borcu Kontrolü (AUD-001):** Tek soru: **"Bu değişiklik `tests/architecture/audit-ledger/` altında bir borç ya da istisna satırı EKLEDİ mi?"** `git diff -- tests/architecture/audit-ledger/` çıktısını rapora koy. Eklenen borç satırı = ret. Eklenen istisna satırı = sınıfı kuralda var mı ve gerekçesi o komuta özgü bir cümle mi diye oku; "gerek yok" gerekçe değildir. Refactoring yaparken `IAuditableCommand` / `IAuditMetadataProvider` işaretlerini ve handler'daki denetim yazıcısı çağrısını "sadeleştirme" diye kaldıramazsın. Bkz: `audit-trail-standard.md`.
 
 ## Liste ekranı dokunma protokolü (2026-09-23, BL-440)
 

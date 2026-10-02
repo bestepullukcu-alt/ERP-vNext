@@ -85,7 +85,7 @@ id, name, domain, service, shell, golden_reference, entity_base,
 status, owner, branch, started, target, form_field_count
 ```
 
-Pack gövdesi (20 zorunlu bölüm — `module-pack-standard.md` Bölüm 6):
+Pack gövdesi (21 zorunlu bölüm — `module-pack-standard.md` Bölüm 6):
 1-8. Module Summary, Ownership, Owned Objects, Entity Fields, Repo Scope, Protected Paths, Dependencies, Runtime Constraints
 9. Layout & Shell Contract
 10. Backend File Convention
@@ -99,6 +99,7 @@ Pack gövdesi (20 zorunlu bölüm — `module-pack-standard.md` Bölüm 6):
 18. Ready-for-dev Checklist
 19. Implementation Notes
 20. Follow-up Items
+21. Audited Events — her yazma komutu → olay adı → yol (a/b/c) ya da istisna sınıfı + gerekçe (`module-pack-standard.md` Bölüm 10.1, AUD-001)
 
 Kod üretimi için kullanıcı incelemesinden sonra status `approved` veya `ready-for-dev` yapılmalıdır.
 
@@ -123,6 +124,7 @@ Pack `ready-for-dev`'e geçmeden önce **Ready-for-dev Checklist** bölümündek
 - [ ] Gateway routing kararı açık
 - [ ] Acceptance criteria test edilebilir maddeler
 - [ ] Test expectations build/verifier/RESX/smoke kapsıyor
+- [ ] Audited Events tablosu her yazma komutunu tam bir kez içeriyor; servisin denetim altyapısı var ya da `Dependencies`'te engel olarak yazılı (AUD-001)
 
 
 ---
