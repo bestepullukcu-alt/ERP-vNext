@@ -370,6 +370,14 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
   - **ASSUMPTION-0173-19 (FU-S1-02):** the `SuperAdmin` role bypass is removed from this service; every endpoint needs
     its explicit permission.
 
+- **WP-0173-OPS1 CT-ACCEPTED with incident (2026-10-02)** — commits 2b13548ed..21da43fc2: run_all.sh / run-diten.sh /
+  run_watch.sh / watch-diten.ps1 start the Prism product-master mock (4010, until FU-PM-01) and InventoryService (5066);
+  additions only; `bash -n` clean; watch-diten.ps1 saved with UTF-8 BOM → 0 parse errors on PowerShell 5.1. **Incident:**
+  an unguarded "what-if" copy ran real `dotnet build/watch` for ≤ 60 s (shim PATH split on `C:`), which hot-restarted the
+  owner's watch windows once (09:58–10:00); no process was killed, all services back, CT measured. Unrelated: RabbitMQ
+  5672 down → Auth/Platform health 503 (masstransit "not started"), login page 200. Lesson for prompts: dry runs only with
+  guarded shims (fail if a command resolves outside the shim dir) or not at all.
+
 - **WP-0173-LE1 CT-ACCEPTED (2026-10-01)** — commits 98b3b05f1..c9111e7b7. CT re-measured: Web 391/391, service
   295/295, architecture 18/18 (0 skipped); middleware read (claim wins; claim-less → header required + MDM active-LE
   check with the caller's token; 503 fail-closed; only positive results cached, key includes the bearer hash); own
