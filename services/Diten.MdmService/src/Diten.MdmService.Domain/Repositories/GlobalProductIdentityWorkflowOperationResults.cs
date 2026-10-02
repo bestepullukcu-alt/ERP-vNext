@@ -24,7 +24,10 @@ public sealed record GlobalProductIdentityWorkflowClaimRequest(
     IReadOnlyCollection<GlobalProductIdentityWorkflowCheckpoint> EligibleCheckpoints,
     string LeaseOwner,
     long NowUtcTicks,
-    long LeaseUntilUtcTicks);
+    long LeaseUntilUtcTicks,
+    // An interactive caller (the maker) is not paced by the worker's retry schedule: exclusion rests on the lease
+    // — who holds it and until when — and on nothing else.
+    bool IgnoreRetrySchedule = false);
 
 public sealed record GlobalProductIdentityWorkflowCheckpointMutation(
     GlobalProductIdentityWorkflowCheckpoint NextCheckpoint,
@@ -69,7 +72,10 @@ public sealed record GlobalProductIdentityWorkflowCheckpointMutation(
     string? WithdrawalTaskStatus = null,
     string? WithdrawalInstanceStatus = null,
     string? WithdrawalObjectRef = null,
-    bool ReleaseLease = false);
+    bool ReleaseLease = false,
+    // null leaves the two service-fault fields as they are; a value writes both (0 clears them).
+    int? ServiceFaultCount = null,
+    long? ServiceFaultSinceUtcTicksV1 = null);
 
 public sealed record GlobalProductIdentityWorkflowTenantPartitionPage(
     IReadOnlyList<Guid> TenantIds,

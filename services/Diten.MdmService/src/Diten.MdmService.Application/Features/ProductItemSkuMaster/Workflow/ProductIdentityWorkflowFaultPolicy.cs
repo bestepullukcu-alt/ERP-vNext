@@ -1,0 +1,177 @@
+using Diten.MdmService.Application.Contracts.Workflow;
+
+namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
+
+/// <summary>Which remote call produced the answer that is being classified.</summary>
+public enum ProductIdentityWorkflowCall
+{
+    Start,
+    StartResult,
+    TerminalEvidence,
+    CancellationPreflight,
+    Cancel
+}
+
+public enum ProductIdentityWorkflowFaultKind
+{
+    /// <summary>The service chain is at fault (credential, token, setting, reachability). The record waits.</summary>
+    ServiceWait,
+
+    /// <summary>Only the maker can continue: the record waits for a resubmit and the maker is told why.</summary>
+    MakerReplay,
+
+    /// <summary>The record itself is at fault and repeating the call will not help.</summary>
+    Quarantine
+}
+
+/// <summary>How far a service fault reaches — what the recovery cycle may skip without calling again.</summary>
+public enum ProductIdentityWorkflowFaultScope
+{
+    None = 0,
+    Tenant = 1,
+    AllTenants = 2
+}
+
+/// <param name="StartedNothing">
+/// True when the answer proves the remote side did not act on the request (rejected before it was processed).
+/// False when the outcome is unknown (no answer, unreadable answer).
+/// </param>
+/// <param name="MakerCode">The stable code the maker receives; only for <see cref="ProductIdentityWorkflowFaultKind.MakerReplay"/>.</param>
+public sealed record ProductIdentityWorkflowFaultDecision(
+    ProductIdentityWorkflowFaultKind Kind,
+    ProductIdentityWorkflowFaultScope Scope = ProductIdentityWorkflowFaultScope.None,
+    bool StartedNothing = false,
+    string? MakerCode = null);
+
+/// <summary>
+/// The codes a maker receives when an approval submit or withdrawal cannot continue without them. They are a
+/// contract with the screen (the sentences are GP-2's work): one place, never renamed.
+/// </summary>
+public static class ProductIdentityWorkflowMakerCodes
+{
+    /// <summary>The maker's session was not accepted by the approval engine — sign in again and resubmit.</summary>
+    public const string SessionExpired = "PRODUCT_IDENTITY_WORKFLOW_SESSION_EXPIRED";
+
+    /// <summary>The maker has no permission to start an approval.</summary>
+    public const string StartPermissionRequired = "PRODUCT_IDENTITY_WORKFLOW_START_PERMISSION_REQUIRED";
+
+    /// <summary>The approval step has nobody assigned to it.</summary>
+    public const string ApproverNotAssigned = "PRODUCT_IDENTITY_WORKFLOW_APPROVER_NOT_ASSIGNED";
+
+    /// <summary>The approval definition is missing or not published.</summary>
+    public const string DefinitionNotReady = "PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY";
+
+    /// <summary>A service connection problem: the draft is intact, the maker resubmits.</summary>
+    public const string ServiceUnavailableResubmit = "PRODUCT_IDENTITY_WORKFLOW_SERVICE_UNAVAILABLE_RESUBMIT";
+
+    /// <summary>The start never reached the approval engine and nobody but the maker can repeat it.</summary>
+    public const string MakerReplayRequired = "PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED";
+
+    public static int StatusFor(string? code) => code switch
+    {
+        SessionExpired => 401,
+        StartPermissionRequired => 403,
+        ServiceUnavailableResubmit => 503,
+        _ => 409
+    };
+
+    public static bool IsMakerCode(string? code) => code is SessionExpired or StartPermissionRequired
+        or ApproverNotAssigned or DefinitionNotReady or ServiceUnavailableResubmit or MakerReplayRequired;
+}
+
+/// <summary>
+/// One classification of what the approval transport can answer, for every product-identity processor. A fault of
+/// the service identity, of a setting or of reachability is not a fault of the business record: it waits. Manual
+/// reconciliation is only for an answer that is about the record and that repeating will not change.
+/// Successful and "not yet" answers (Success, NonTerminal, Incomplete, and NotFound outside a start) are the
+/// caller's normal flow and are not classified here.
+/// </summary>
+public static class ProductIdentityWorkflowFaultPolicy
+{
+    public const string ResponseUnreadable = "PRODUCT_WORKFLOW_RESPONSE_UNREADABLE";
+    public const string IdentityNotGranted = "PRODUCT_WORKFLOW_IDENTITY_NOT_GRANTED";
+    private const string DelegatedUserUnauthenticated = "WORKFLOW_DELEGATED_USER_UNAUTHENTICATED";
+    private const string DelegatedUserForbidden = "WORKFLOW_DELEGATED_USER_FORBIDDEN";
+    private const string ConsumerForbidden = "WORKFLOW_TRUSTED_CONSUMER_FORBIDDEN";
+    private const string TenantMismatch = "WORKFLOW_TRUSTED_CONSUMER_TENANT_MISMATCH";
+    private const string CancelRequesterForbidden = "WORKFLOW_TRUSTED_CANCEL_REQUESTER_FORBIDDEN";
+    private const string CandidatesRequired = "WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED";
+
+    private static readonly ProductIdentityWorkflowFaultDecision Quarantine =
+        new(ProductIdentityWorkflowFaultKind.Quarantine);
+
+    public static ProductIdentityWorkflowFaultDecision Classify(
+        ProductIdentityWorkflowCall call,
+        ProductIdentityWorkflowTransportOutcome outcome,
+        string? errorCode) => outcome switch
+    {
+        ProductIdentityWorkflowTransportOutcome.Retryable or ProductIdentityWorkflowTransportOutcome.Timeout =>
+            new(ProductIdentityWorkflowFaultKind.ServiceWait),
+
+        // 401. Only the maker's own session is the maker's to fix; every other refusal is the service identity
+        // (unknown codes included). A missing tenant grant stops one tenant, a refused credential or token all.
+        ProductIdentityWorkflowTransportOutcome.AuthenticationRejected => errorCode switch
+        {
+            DelegatedUserUnauthenticated => Maker(ProductIdentityWorkflowMakerCodes.SessionExpired),
+            IdentityNotGranted => new(ProductIdentityWorkflowFaultKind.ServiceWait,
+                ProductIdentityWorkflowFaultScope.Tenant, StartedNothing: true),
+            _ => new(ProductIdentityWorkflowFaultKind.ServiceWait,
+                ProductIdentityWorkflowFaultScope.AllTenants, StartedNothing: true)
+        },
+
+        // 403. Two answers are about the record (who asks, for which tenant); one is the maker's permission; the
+        // rest — unknown codes included — is how the engine treats this service.
+        ProductIdentityWorkflowTransportOutcome.Forbidden => errorCode switch
+        {
+            DelegatedUserForbidden => Maker(ProductIdentityWorkflowMakerCodes.StartPermissionRequired),
+            TenantMismatch or CancelRequesterForbidden => Quarantine,
+            ConsumerForbidden => new(ProductIdentityWorkflowFaultKind.ServiceWait,
+                ProductIdentityWorkflowFaultScope.AllTenants, StartedNothing: true),
+            _ => new(ProductIdentityWorkflowFaultKind.ServiceWait, StartedNothing: true)
+        },
+
+        // 400 and contract failures. An answer nobody could read says nothing about the record.
+        ProductIdentityWorkflowTransportOutcome.Invalid => errorCode switch
+        {
+            ResponseUnreadable => new(ProductIdentityWorkflowFaultKind.ServiceWait),
+            CandidatesRequired => Maker(ProductIdentityWorkflowMakerCodes.ApproverNotAssigned),
+            _ => Quarantine
+        },
+
+        // 409. A definition that is not ready is set-up, and only a start can meet it.
+        ProductIdentityWorkflowTransportOutcome.Conflict => call == ProductIdentityWorkflowCall.Start
+            && errorCode is "WORKFLOW_TEMPLATE_NO_ACTIVE_VERSION" or "WORKFLOW_TEMPLATE_VERSION_NOT_FOUND"
+                or "WORKFLOW_TEMPLATE_NOT_PUBLISHED"
+            ? Maker(ProductIdentityWorkflowMakerCodes.DefinitionNotReady)
+            : Quarantine,
+
+        // 404 on a start is "no such definition"; elsewhere the caller decides what an absent thing means.
+        ProductIdentityWorkflowTransportOutcome.NotFound when call == ProductIdentityWorkflowCall.Start =>
+            Maker(ProductIdentityWorkflowMakerCodes.DefinitionNotReady),
+
+        _ => Quarantine
+    };
+
+    /// <summary>Doubles from <paramref name="retryDelay"/> per consecutive fault, never above the ceiling.</summary>
+    public static TimeSpan Backoff(int consecutiveFaults, TimeSpan retryDelay, TimeSpan ceiling)
+    {
+        if (retryDelay <= TimeSpan.Zero) return ceiling;
+        if (retryDelay >= ceiling) return ceiling;
+        var delay = retryDelay;
+        for (var attempt = 1; attempt < consecutiveFaults; attempt++)
+        {
+            delay += delay;
+            if (delay >= ceiling) return ceiling;
+        }
+        return delay;
+    }
+
+    private static ProductIdentityWorkflowFaultDecision Maker(string code) =>
+        new(ProductIdentityWorkflowFaultKind.MakerReplay, StartedNothing: true, MakerCode: code);
+}
+
+/// <summary>Read from configuration: how long a waiting record may back off, and when waiting becomes an error.</summary>
+public sealed record ProductIdentityWorkflowServiceFaultSettings(TimeSpan MaxRetryDelay, int ErrorAfterAttempts)
+{
+    public static ProductIdentityWorkflowServiceFaultSettings Default { get; } = new(TimeSpan.FromMinutes(15), 5);
+}

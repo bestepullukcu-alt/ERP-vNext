@@ -152,10 +152,12 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
                          GlobalProductIdentityWorkflowOperation.CurrentTemporalStorageVersion)
                      & Builders<GlobalProductIdentityWorkflowOperation>.Filter.In(
                          item => item.Checkpoint, request.EligibleCheckpoints)
-                     & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Or(
-                         Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.NextAttemptAtUtcTicksV1, null),
-                         Builders<GlobalProductIdentityWorkflowOperation>.Filter.Lte(
-                             item => item.NextAttemptAtUtcTicksV1, request.NowUtcTicks))
+                     & (request.IgnoreRetrySchedule
+                         ? Builders<GlobalProductIdentityWorkflowOperation>.Filter.Empty
+                         : Builders<GlobalProductIdentityWorkflowOperation>.Filter.Or(
+                             Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.NextAttemptAtUtcTicksV1, null),
+                             Builders<GlobalProductIdentityWorkflowOperation>.Filter.Lte(
+                                 item => item.NextAttemptAtUtcTicksV1, request.NowUtcTicks)))
                      & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Or(
                          Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.LeaseOwner, null),
                          Builders<GlobalProductIdentityWorkflowOperation>.Filter.Lte(
@@ -326,6 +328,13 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         if (mutation.WithdrawalTaskStatus is not null) update = update.Set(item => item.WithdrawalTaskStatus, mutation.WithdrawalTaskStatus);
         if (mutation.WithdrawalInstanceStatus is not null) update = update.Set(item => item.WithdrawalInstanceStatus, mutation.WithdrawalInstanceStatus);
         if (mutation.WithdrawalObjectRef is not null) update = update.Set(item => item.WithdrawalObjectRef, mutation.WithdrawalObjectRef);
+        if (mutation.ServiceFaultCount.HasValue)
+        {
+            update = update
+                .Set(item => item.ServiceFaultCount, mutation.ServiceFaultCount.Value)
+                .Set(item => item.ServiceFaultSinceUtcTicksV1,
+                    mutation.ServiceFaultCount.Value == 0 ? null : mutation.ServiceFaultSinceUtcTicksV1);
+        }
         if (mutation.ReleaseLease)
         {
             update = update.Set(item => item.LeaseOwner, null).Set(item => item.LeaseUntilUtcTicksV1, null);
@@ -380,6 +389,9 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
             (GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
                 GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            // A maker's resubmit whose outcome is unknown again goes back to the worker's lookup.
+            (GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown) => true,
             (GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted,
                 GlobalProductIdentityWorkflowCheckpoint.LocalPendingApplied
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
@@ -416,7 +428,10 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
             (GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
                 GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested
                 or GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
-                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown) => true,
+                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+                // A maker's repeated withdrawal ends where a first one does: cancelled, or already decided.
+                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved
+                or GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision) => true,
             (GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved,
                 GlobalProductIdentityWorkflowCheckpoint.WithdrawalApplied
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,

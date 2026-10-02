@@ -60,6 +60,27 @@ public sealed class AuthProductIdentityWorkflowServiceIdentityProviderTests
         Assert.DoesNotContain("active-secret", error.ToString(), StringComparison.Ordinal);
     }
 
+    // WP-GP-1B-A-RESILIENCE-01 — "this client may not act for this tenant" (403) is told apart from "this credential
+    // is refused" by its code only; both stay refusals, and a 403 never falls back to the previous secret.
+    [Theory]
+    [InlineData(HttpStatusCode.Forbidden, "PRODUCT_WORKFLOW_IDENTITY_NOT_GRANTED", false)]
+    [InlineData(HttpStatusCode.Unauthorized, "PRODUCT_WORKFLOW_IDENTITY_REJECTED", false)]
+    [InlineData(HttpStatusCode.Conflict, "PRODUCT_WORKFLOW_IDENTITY_REJECTED", false)]
+    [InlineData(HttpStatusCode.BadRequest, "PRODUCT_WORKFLOW_IDENTITY_REJECTED", false)]
+    [InlineData(HttpStatusCode.ServiceUnavailable, "PRODUCT_WORKFLOW_IDENTITY_UNAVAILABLE", true)]
+    [InlineData(HttpStatusCode.GatewayTimeout, "PRODUCT_WORKFLOW_IDENTITY_TIMEOUT", true)]
+    public async Task Refusals_carry_a_code_that_says_which_kind(HttpStatusCode status, string code, bool retryable)
+    {
+        var handler = new TokenHandler((_, _) => new HttpResponseMessage(status));
+        var error = await Assert.ThrowsAsync<Diten.MdmService.Application.Contracts.Workflow.ProductIdentityWorkflowServiceIdentityException>(
+            () => Provider(handler).GetAsync(Guid.NewGuid(), false));
+
+        Assert.Equal(code, error.ErrorCode);
+        Assert.Equal(retryable, error.IsRetryable);
+        Assert.Equal(1, handler.Count);
+        Assert.DoesNotContain("active-secret", error.ToString(), StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task Forced_refresh_reacquires_a_distinct_token_once()
     {

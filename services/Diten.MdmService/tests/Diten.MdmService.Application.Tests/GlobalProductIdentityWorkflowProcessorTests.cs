@@ -7,6 +7,7 @@ using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
 using Diten.MdmService.Infrastructure.Workflow;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
 using PersistedCancellationEvidence = Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowCancellationEvidence;
@@ -14,7 +15,7 @@ using TransportCancellationEvidence = Diten.MdmService.Application.Contracts.Wor
 
 namespace Diten.MdmService.Application.Tests;
 
-public sealed class GlobalProductIdentityWorkflowProcessorTests
+public sealed partial class GlobalProductIdentityWorkflowProcessorTests
 {
     [Theory]
     [InlineData(GlobalProductIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart)]
@@ -331,15 +332,14 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
         Assert.Null(harness.Product.WorkflowBinding);
     }
 
-    [Theory]
-    [InlineData(false, true, "PRODUCT_WORKFLOW_REQUEST_INVALID")]
-    [InlineData(true, false, "PRODUCT_WORKFLOW_IDENTITY_CONFIGURATION_INVALID")]
-    public async Task StartInteractive_WithoutThePreflight_TheSameFaultQuarantinesTheOperation(
-        bool platformAddressConfigured, bool identityProviderConfigured, string quarantineCode)
+    [Fact]
+    public async Task StartInteractive_PastThePreflight_AnInvalidPlatformAddressStillQuarantines()
     {
-        // What the pre-flight exists to prevent — measured on the same production transport, readiness not wired.
-        var (transport, _) = ProductionTransport(platformAddressConfigured, identityProviderConfigured);
-        var harness = Harness.Create(transport, readiness: null);
+        // What the pre-flight stands before, measured on the production transport with a readiness that lets it
+        // through: the client cannot tell a bad address from a bad request (one code for both), so this one fault
+        // is only ever kept away from the record by the pre-flight.
+        var (transport, _) = ProductionTransport(platformAddressConfigured: false, identityProviderConfigured: true);
+        var harness = Harness.Create(transport, new FixedReadiness(null));
 
         var result = await harness.Processor.StartInteractiveAsync(
             TenantId, ProductId, 0, OperationId, MakerId, "maker-token",
@@ -348,32 +348,24 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
         Assert.False(result.Succeeded);
         Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
             harness.Repository.Current!.Checkpoint);
-        Assert.Equal(quarantineCode, harness.Repository.Current.LastFailureCode);
+        Assert.Equal("PRODUCT_WORKFLOW_REQUEST_INVALID", harness.Repository.Current.LastFailureCode);
     }
 
-    [Theory]
-    [InlineData(ProductIdentityWorkflowTransportOutcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED")] // Auth 401
-    [InlineData(ProductIdentityWorkflowTransportOutcome.AuthenticationRejected, "WORKFLOW_SERVICE_TOKEN_REJECTED")] // Platform 401
-    [InlineData(ProductIdentityWorkflowTransportOutcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_INVALID")] // non-JSON answer
-    [InlineData(ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TEMPLATE_NOT_PUBLISHED")] // Platform 409
-    [InlineData(ProductIdentityWorkflowTransportOutcome.Forbidden, "WORKFLOW_TRUSTED_START_FORBIDDEN")] // Platform 403
-    public async Task StartInteractive_WhenTransportIsConfigured_RemoteRejectionsStillQuarantineAsBefore(
-        ProductIdentityWorkflowTransportOutcome outcome, string code)
+    [Fact]
+    public async Task StartInteractive_PastThePreflight_AnInvalidIdentitySettingDoesNotQuarantine()
     {
-        var harness = Harness.Create(transport: null, new FixedReadiness(null));
-        harness.Client.Start = (_, _, _, _) => Task.FromResult(
-            ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(outcome, code));
+        var (transport, _) = ProductionTransport(platformAddressConfigured: true, identityProviderConfigured: false);
+        var harness = Harness.Create(transport, new FixedReadiness(null));
 
         var result = await harness.Processor.StartInteractiveAsync(
             TenantId, ProductId, 0, OperationId, MakerId, "maker-token",
             TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
 
-        Assert.False(result.Succeeded);
-        Assert.Equal(409, result.StatusCode);
-        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+        Assert.Equal(503, result.StatusCode);
+        Assert.Equal(ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, result.ErrorCode);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
             harness.Repository.Current!.Checkpoint);
-        Assert.Equal(code, harness.Repository.Current.LastFailureCode);
-        Assert.Equal(1, harness.Client.StartCalls);
+        Assert.Equal(1, harness.Repository.Current.ServiceFaultCount);
     }
 
     [Fact]
@@ -390,35 +382,6 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
         Assert.True(result.Succeeded);
         Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision, result.Operation!.Checkpoint);
         Assert.Equal(1, harness.Products.SubmitCount);
-    }
-
-    [Fact]
-    public async Task Container_WhenInfrastructureIsRegistered_GivesTheProcessorTheProductionReadiness()
-    {
-        // The readiness parameter is optional so existing constructions keep compiling; this pins that the REAL
-        // registration fills it — an unconfigured service refuses the submit through the container-built processor.
-        var harness = Harness.Create();
-        var services = new ServiceCollection();
-        Diten.MdmService.Infrastructure.DependencyInjection.AddInfrastructure(
-            services, new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build());
-        services.AddScoped<IGlobalProductIdentityWorkflowOperationRepository>(_ => harness.Repository);
-        services.AddScoped<IGlobalProductRepository>(_ => harness.Products);
-        services.AddSingleton(Harness.StartConfiguration);
-        services.AddSingleton(TimeProvider.System);
-        services.AddScoped<ProductIdentityWorkflowStartRequestFactory>();
-        services.AddScoped<GlobalProductIdentityWorkflowProcessor>();
-        await using var provider = services.BuildServiceProvider();
-        await using var scope = provider.CreateAsyncScope();
-
-        Assert.IsType<ProductIdentityWorkflowTransportReadiness>(
-            scope.ServiceProvider.GetRequiredService<IProductIdentityWorkflowTransportReadiness>());
-        var result = await scope.ServiceProvider.GetRequiredService<GlobalProductIdentityWorkflowProcessor>()
-            .StartInteractiveAsync(TenantId, ProductId, 0, OperationId, MakerId, "maker-token",
-                TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
-
-        Assert.Equal(503, result.StatusCode);
-        Assert.Equal("PRODUCT_WORKFLOW_CLIENT_CONFIGURATION_INVALID", result.ErrorCode);
-        Assert.Null(harness.Repository.Current);
     }
 
     private static (IProductIdentityWorkflowClient Transport, IProductIdentityWorkflowTransportReadiness Readiness)
@@ -461,7 +424,8 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
     {
         private Harness(
             IProductIdentityWorkflowClient? transport = null,
-            IProductIdentityWorkflowTransportReadiness? readiness = null)
+            IProductIdentityWorkflowTransportReadiness? readiness = null,
+            ProductIdentityWorkflowServiceFaultSettings? settings = null)
         {
             Product = DraftProduct();
             Products = new(Product);
@@ -471,7 +435,26 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
                 transport ?? Client,
                 new(StartConfiguration, TimeProvider.System),
                 TimeProvider.System,
-                readiness);
+                readiness ?? new FixedReadiness(null),
+                settings ?? ProductIdentityWorkflowServiceFaultSettings.Default,
+                Log);
+        }
+
+        public CapturingLogger<GlobalProductIdentityWorkflowProcessor> Log { get; } = new();
+
+        public static Harness Create(ProductIdentityWorkflowServiceFaultSettings settings) =>
+            new(null, null, settings);
+
+        public static Harness CreatePending(
+            IProductIdentityWorkflowTransportReadiness? readiness = null,
+            ProductIdentityWorkflowServiceFaultSettings? settings = null)
+        {
+            var harness = new Harness(null, readiness, settings);
+            var operation = harness.CreateOperation(GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision);
+            AddStartProof(operation);
+            harness.Repository.Current = operation;
+            harness.MakeProductPending(operation);
+            return harness;
         }
 
         public static ProductIdentityWorkflowStartConfiguration StartConfiguration { get; } =
@@ -488,16 +471,6 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
         public static Harness Create(
             IProductIdentityWorkflowClient? transport,
             IProductIdentityWorkflowTransportReadiness? readiness) => new(transport, readiness);
-
-        public static Harness CreatePending()
-        {
-            var harness = new Harness();
-            var operation = harness.CreateOperation(GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision);
-            AddStartProof(operation);
-            harness.Repository.Current = operation;
-            harness.MakeProductPending(operation);
-            return harness;
-        }
 
         public void MakeProductPending(GlobalProductIdentityWorkflowOperation operation)
         {
@@ -720,6 +693,9 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
         public GlobalProductIdentityWorkflowOperation? Current { get; set; }
         public GlobalProductIdentityWorkflowCheckpoint? FailNextAdvanceTo { get; set; }
         public int ReserveCalls { get; private set; }
+        public int ClaimCalls { get; private set; }
+        public int AdvanceCalls { get; private set; }
+        public List<bool> ClaimsIgnoringSchedule { get; } = [];
 
         public Task<GlobalProductIdentityWorkflowReserveResult> ReserveAsync(
             GlobalProductIdentityWorkflowOperation operation, CancellationToken cancellationToken = default)
@@ -748,6 +724,8 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
         public Task<GlobalProductIdentityWorkflowClaim?> TryClaimAsync(
             GlobalProductIdentityWorkflowClaimRequest request, CancellationToken cancellationToken = default)
         {
+            ClaimCalls++;
+            ClaimsIgnoringSchedule.Add(request.IgnoreRetrySchedule);
             if (Current is null || Current.OperationId != request.OperationId
                 || !request.EligibleCheckpoints.Contains(Current.Checkpoint))
             {
@@ -773,6 +751,7 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
             GlobalProductIdentityWorkflowCheckpointMutation mutation,
             CancellationToken cancellationToken = default)
         {
+            AdvanceCalls++;
             if (Current is null || Current.LeaseGeneration != claim.LeaseGeneration
                 || Current.Checkpoint != claim.Checkpoint)
             {
@@ -827,6 +806,12 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
             Current.WithdrawalTaskStatus = mutation.WithdrawalTaskStatus ?? Current.WithdrawalTaskStatus;
             Current.WithdrawalInstanceStatus = mutation.WithdrawalInstanceStatus ?? Current.WithdrawalInstanceStatus;
             Current.WithdrawalObjectRef = mutation.WithdrawalObjectRef ?? Current.WithdrawalObjectRef;
+            if (mutation.ServiceFaultCount.HasValue)
+            {
+                Current.ServiceFaultCount = mutation.ServiceFaultCount.Value;
+                Current.ServiceFaultSinceUtcTicksV1 =
+                    mutation.ServiceFaultCount.Value == 0 ? null : mutation.ServiceFaultSinceUtcTicksV1;
+            }
             if (mutation.ReleaseLease)
             {
                 Current.LeaseOwner = null;
@@ -834,6 +819,16 @@ public sealed class GlobalProductIdentityWorkflowProcessorTests
             }
             return Task.FromResult(true);
         }
+    }
+
+    private sealed class CapturingLogger<T> : ILogger<T>
+    {
+        public List<(LogLevel Level, string Message)> Entries { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+            Func<TState, Exception?, string> formatter) =>
+            Entries.Add((logLevel, formatter(state, exception) + (exception is null ? string.Empty : " " + exception)));
     }
 
     private static GlobalProduct DraftProduct() => new()

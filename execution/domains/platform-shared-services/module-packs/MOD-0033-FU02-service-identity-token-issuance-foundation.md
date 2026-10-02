@@ -587,8 +587,23 @@ the including-deleted finders), `IAuthAuditService.WriteOnceAsync`, `TenantResol
 `DevelopmentLocalSettings.cs` copies, and everything under `Features/ServiceIdentityTokens/Registry/`,
 `Api/Services/ServiceIdentityTokens/ServiceClientRegistryStartup.cs` and `tools/`.
 
-**Still open, recorded for the next packages:** a credential or transport fault quarantines a pending business
-operation on the worker and withdraw paths of MDM (only the interactive submit is guarded) — a fault of the service
-identity is not a fault of the record, and belongs in a retry, not in manual reconciliation; the seven sibling
-processors (GSKU, LSKU, correction, retirement) have no pre-flight at all; the audit write relies on the default write
-concern.
+**Closed by WP-GP-1B-A-RESILIENCE-01 (2026-10-02), Global Product identity processor only:** a credential, token,
+setting or transport fault no longer quarantines a pending operation on the submit, worker or withdraw path. The
+pre-flight runs on all three before the first write and is a required dependency of the processor. Where the worker
+can carry on (the decision poll, the start lookup, the cancellation pre-flight) the operation waits at its checkpoint
+with a doubling back-off (`ServiceFaultCount`, `ServiceFaultSinceUtcTicksV1`; ceiling and error threshold from
+`ProductIdentityWorkflowWorker`); where only the user's own token can continue (a start, a cancellation) the
+operation goes to `AwaitingMakerReplay` and the user receives a fixed code
+(`ProductIdentityWorkflowMakerCodes`). A refused credential stops the recovery cycle for every tenant, a missing
+tenant grant for that tenant only. The classification is `ProductIdentityWorkflowFaultPolicy`; two result codes were
+added to tell cases apart (`PRODUCT_WORKFLOW_RESPONSE_UNREADABLE`, `PRODUCT_WORKFLOW_IDENTITY_NOT_GRANTED`) — no
+request mapping, envelope rule or trust check changed. Operator view: the runbook, Development step 7.
+
+**Still open, recorded for the next packages:** the seven sibling processors (GSKU, LSKU, correction, retirement)
+still quarantine on a service fault, have no pre-flight, and do not ask the shared policy; a quarantined operation has
+no way out (no code writes `AbandonedBeforeWorkflowStart` / `Superseded`, the draft stays blocked at that version);
+a resubmit after a change of approver seat can answer `WORKFLOW_START_IDEMPOTENCY_CONFLICT`, which is about the record
+and still quarantines (GP-1b-B); an invalid Platform address is indistinguishable from an invalid request inside the
+client and is kept from the record only by the pre-flight; the client still refreshes the service token once when the
+rejected token was the user's; the screen sentences for the fixed codes (GP-2); the audit write relies on the default
+write concern.

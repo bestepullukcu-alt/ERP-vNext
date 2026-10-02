@@ -71,8 +71,9 @@ behaves as it did before (a submit answers 503 and writes nothing).
 stored on its first start. If you work in a second checkout against the same database, **copy the three files** from
 the first one — do not bootstrap again. A second bootstrap generates a new secret that Auth will not adopt (it warns
 `already exists and differs from configuration in CredentialHash,CredentialVersion`), MDM's token requests are then
-refused, and a refused token request **quarantines** the submit — and, with the worker enabled, every approval that
-is pending in that MDM database within one poll (the worker and the withdraw path have no pre-flight yet). If the files are lost, bootstrap with a new
+refused. A refused token request no longer quarantines anything (WP-GP-1B-A-RESILIENCE-01): a submit answers 503
+`PRODUCT_IDENTITY_WORKFLOW_SERVICE_UNAVAILABLE_RESUBMIT`, pending approvals stay pending, and MDM's worker stops its
+cycle at the first refusal and logs it (step 7) — nothing moves until the files match. If the files are lost, bootstrap with a new
 `--client-code`: a new client is created, and the bootstrap also writes Platform's authorization entry for it into
 Platform's local file.
 
@@ -113,8 +114,8 @@ Answers 201 with the definition `id`. A second create with the same code answers
 | `expectedTemplateVersion`, `expectedRowVersion`, `publishReason` | optional |
 
 Both `definitions.*` permissions are platform-administrator scope: use a platform administrator, or grant them
-explicitly. A definition that was created but not published makes the first submit fail with a conflict — and that
-quarantines it (step 7).
+explicitly. A definition that was created but not published makes the first submit answer 409
+`PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY`; publish it and submit again (step 7).
 
 ### 5. Permissions
 
@@ -135,15 +136,61 @@ id order can decide; the others see the item and are refused.
 
 ### 7. When it does not
 
-| You see | Meaning | The draft |
-|---|---|---|
-| 503 `PRODUCT_WORKFLOW_CLIENT_CONFIGURATION_INVALID` | MDM has no usable `ProductIdentityWorkflowClient:PlatformBaseUrl` | untouched — fix and submit again |
-| 503 `PRODUCT_WORKFLOW_IDENTITY_CONFIGURATION_INVALID` | MDM has no usable `AuthProductIdentityWorkflowServiceIdentityProvider` (not bootstrapped) | untouched — fix and submit again |
-| 503 `PRODUCT_IDENTITY_WORKFLOW_CONFIGURATION_INVALID` | the transport is configured but `ProductIdentityWorkflow:Enabled` is not on (settings edited by hand) | untouched |
-| 409 `PRODUCT_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED` | the operation was quarantined: Auth or Platform refused (wrong secret, missing grant, missing or unpublished definition, missing permission, missing authorization entry) | **blocked at that version** — there is no retry |
+The rule (WP-GP-1B-A-RESILIENCE-01): **a fault of the service chain is not a fault of the record.** A credential,
+token, setting or reachability fault leaves the operation where it is; it is retried or resubmitted, and it is logged.
+Manual reconciliation is only for an answer that is about the record itself.
 
-The three 503 rows are refused before anything is written; on a checkout that was never bootstrapped you get the
-second one. Everything Auth or Platform refuses lands in the last row — do steps 2–5 before the first submit.
+**What the submitter (or the withdrawing requester) sees.** These codes are fixed; the screen sentences are a later
+package.
+
+| You see | Meaning | What to do | The draft |
+|---|---|---|---|
+| 503 `PRODUCT_WORKFLOW_CLIENT_CONFIGURATION_INVALID` | MDM has no usable `ProductIdentityWorkflowClient:PlatformBaseUrl` | fix the setting, submit again | untouched — nothing was written |
+| 503 `PRODUCT_WORKFLOW_IDENTITY_CONFIGURATION_INVALID` | MDM has no usable `AuthProductIdentityWorkflowServiceIdentityProvider` (not bootstrapped) | bootstrap, submit again | untouched — nothing was written |
+| 503 `PRODUCT_IDENTITY_WORKFLOW_CONFIGURATION_INVALID` | the transport is configured but `ProductIdentityWorkflow:Enabled` is not on | fix the setting, submit again | untouched |
+| 503 `PRODUCT_IDENTITY_WORKFLOW_SERVICE_UNAVAILABLE_RESUBMIT` | Auth or Platform refused MDM itself (wrong secret, missing tenant grant, key mismatch, missing authorization entry), or did not answer | fix the chain (the MDM log names the code), then **submit again** — same draft, nothing is lost | waiting for the resubmit |
+| 401 `PRODUCT_IDENTITY_WORKFLOW_SESSION_EXPIRED` | the approval engine did not accept the submitter's session | sign in again, submit again | waiting for the resubmit |
+| 403 `PRODUCT_IDENTITY_WORKFLOW_START_PERMISSION_REQUIRED` | the submitter lacks `platform.workflow.instances.start` | grant it, sign in again, submit again | waiting for the resubmit |
+| 409 `PRODUCT_IDENTITY_WORKFLOW_APPROVER_NOT_ASSIGNED` | nobody is assigned to the approval step | assign an approver, submit again | waiting for the resubmit |
+| 409 `PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY` | the approval definition is missing or not published | create / publish it, submit again | waiting for the resubmit |
+| 409 `PRODUCT_IDENTITY_WORKFLOW_BUSY` | the worker is working on this operation right now | try again in a few seconds | unchanged |
+| 409 `PRODUCT_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED` | the operation was quarantined: the answer was about the record (a contract violation, an idempotency conflict, evidence that contradicts what MDM stored) | no retry — see below | **blocked at that version** |
+
+"Submit again" always means the same request again: the operation is resumed, never duplicated. A start and a
+cancellation carry the user's own token, so the worker can never repeat them — that is why these answers ask for a
+resubmit instead of saying "queued".
+
+**What the worker does with an approval that is already pending.** It keeps the operation at `AwaitingDecision`
+(disposition `Retryable`) and tries again with a back-off that doubles from `RetryDelaySeconds` up to
+`ServiceFaultMaxRetryDelaySeconds` (default 900). The operation carries `ServiceFaultCount` and
+`ServiceFaultSinceUtcTicksV1`; both are cleared by the first answer the chain gives again. Nothing is quarantined.
+
+| MDM log line | Level | Means |
+|---|---|---|
+| `… is waiting on a service fault at {Call}: {ResultCode}; attempt N, since …; continued by the worker` | Warning; **Error from attempt `ServiceFaultErrorAfterAttempts` (default 5)** | one operation is waiting; the worker will retry it |
+| `… continued by the maker` | same | the operation waits for the user's resubmit |
+| `recovery cycle stopped: the service identity was refused (…)` | Error | the credential or the token is refused for everybody: nothing else was tried this cycle |
+| `recovery skipped the rest of tenant …` | Warning | Auth holds no grant for that tenant; other tenants were processed |
+| `recovery cycle skipped: the transport is not configured (…)` | Error | MDM's own settings are missing; no operation was touched |
+| `… was refused to the maker on {Call}: {ResultCode} -> {MakerCode}` | Warning | one of the user-facing rows above |
+| `… was quarantined at {Checkpoint}: {ResultCode}` | Error | manual reconciliation is required |
+| `recovery of operation … failed with {ExceptionType}` | Error | an unexpected failure (the type only — never the message) |
+
+None of these lines carries a secret, a token, a header value or a user.
+
+| `{ResultCode}` in a waiting line | Look at |
+|---|---|
+| `PRODUCT_WORKFLOW_IDENTITY_REJECTED` | the secret MDM holds is not the one whose hash Auth stored (second bootstrap, rotation, revoked client) |
+| `PRODUCT_WORKFLOW_IDENTITY_NOT_GRANTED` | Auth's `ServiceClientRegistry:Clients[].Tenants[]` does not list that tenant |
+| `PRODUCT_WORKFLOW_IDENTITY_RESPONSE_INVALID` | MDM's `ExpectedIssuer` does not match Auth's issuer, or Auth answered something else |
+| `WORKFLOW_TRUSTED_CONSUMER_UNAUTHENTICATED` | Platform cannot validate Auth's token (public key / key id / issuer) |
+| `WORKFLOW_TRUSTED_START_FORBIDDEN` | Platform's `TrustedWorkflowStartAuthorization:Entries[]` has no entry for this client, object type and definition |
+| `PRODUCT_WORKFLOW_RESPONSE_UNREADABLE` | something between MDM and Platform answered instead of Platform (a proxy page, a crash page) |
+| `PRODUCT_WORKFLOW_IDENTITY_UNAVAILABLE`, `PRODUCT_WORKFLOW_UNAVAILABLE`, `…_TIMEOUT` | Auth or Platform is down or slow |
+
+**Still open.** A quarantined operation has no way out: no operator action exists and the draft stays blocked at that
+version. The seven sibling processors (correction, retirement, GSKU, LSKU) still quarantine on a service fault and
+have no pre-flight.
 
 ---
 
@@ -211,6 +258,7 @@ disabled; a different hash does **not** replace the stored one.
 | `ProductIdentityWorkflowClient:PlatformBaseUrl` | Platform's address |
 | `ProductIdentityWorkflow:Enabled`, `:GlobalProductTemplateCode`, `:CandidatePrincipalIds[]`, `:ReasonCode` | the switch, the definition's code, the approvers, the reason code |
 | `ProductIdentityWorkflowWorker:Enabled`, `:LeaseOwner` | the decision-polling worker; a lease owner name unique to the instance |
+| `ProductIdentityWorkflowWorker:ServiceFaultMaxRetryDelaySeconds` (900), `:ServiceFaultErrorAfterAttempts` (5) | how far a waiting operation backs off, and from which attempt its waiting is logged as an error — alert on that line |
 
 Restart MDM last. Then create and publish the definition (Development step 4) and assign the roles (step 5).
 

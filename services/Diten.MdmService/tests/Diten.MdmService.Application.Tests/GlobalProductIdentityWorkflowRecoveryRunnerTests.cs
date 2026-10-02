@@ -15,7 +15,8 @@ public sealed class GlobalProductIdentityWorkflowRecoveryRunnerTests
         var runner = new ProductIdentityWorkflowRecoveryRunner(
             services.GetRequiredService<IServiceScopeFactory>(),
             Options.Create(new ProductIdentityWorkflowWorkerOptions()),
-            TimeProvider.System);
+            TimeProvider.System,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<ProductIdentityWorkflowRecoveryRunner>.Instance);
 
         var result = await runner.RunCycleAsync();
 
@@ -29,7 +30,8 @@ public sealed class GlobalProductIdentityWorkflowRecoveryRunnerTests
         var runner = new ProductIdentityWorkflowRecoveryRunner(
             services.GetRequiredService<IServiceScopeFactory>(),
             Options.Create(new ProductIdentityWorkflowWorkerOptions { Enabled = true }),
-            TimeProvider.System);
+            TimeProvider.System,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<ProductIdentityWorkflowRecoveryRunner>.Instance);
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => runner.RunCycleAsync());
 
@@ -58,7 +60,8 @@ public sealed class GlobalProductIdentityWorkflowRecoveryRunnerTests
         var runner = new ProductIdentityWorkflowRecoveryRunner(
             services.GetRequiredService<IServiceScopeFactory>(),
             Options.Create(new ProductIdentityWorkflowWorkerOptions()),
-            TimeProvider.System);
+            TimeProvider.System,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<ProductIdentityWorkflowRecoveryRunner>.Instance);
         using var source = new CancellationTokenSource();
         source.Cancel();
 

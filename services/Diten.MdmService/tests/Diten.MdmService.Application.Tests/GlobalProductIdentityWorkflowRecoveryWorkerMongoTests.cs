@@ -108,7 +108,8 @@ public sealed class GlobalProductIdentityWorkflowRecoveryWorkerMongoTests : IAsy
         var runner = new ProductIdentityWorkflowRecoveryRunner(
             services.GetRequiredService<IServiceScopeFactory>(),
             Options.Create(WorkerOptions()),
-            TimeProvider.System);
+            TimeProvider.System,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<ProductIdentityWorkflowRecoveryRunner>.Instance);
 
         var first = await runner.RunCycleAsync();
         var second = await runner.RunCycleAsync();
@@ -163,7 +164,10 @@ public sealed class GlobalProductIdentityWorkflowRecoveryWorkerMongoTests : IAsy
             _templateId, null, [_approverId], "IDENTITY_APPROVAL", true, true, null));
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<ProductIdentityWorkflowStartRequestFactory>();
-        services.AddScoped<GlobalProductIdentityWorkflowProcessor>();
+        services.AddLogging();
+        services.Configure<ProductIdentityWorkflowWorkerOptions>(_ => { });
+        services.AddSingleton<IProductIdentityWorkflowTransportReadiness>(new Configured());
+        services.AddGlobalProductIdentityWorkflowProcessor();
         return services.BuildServiceProvider();
     }
 
@@ -227,6 +231,11 @@ public sealed class GlobalProductIdentityWorkflowRecoveryWorkerMongoTests : IAsy
             Guid tenantId, ProductIdentityWorkflowTerminalEvidenceRequest request,
             CancellationToken cancellationToken = default) => Task.FromResult(
             ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Success(evidence));
+    }
+
+    private sealed class Configured : IProductIdentityWorkflowTransportReadiness
+    {
+        public string? FindConfigurationFault() => null;
     }
 
     private sealed class Tenant(Guid tenantId) : ITenantContext

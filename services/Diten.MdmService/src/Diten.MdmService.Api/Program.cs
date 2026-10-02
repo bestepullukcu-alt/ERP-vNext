@@ -135,7 +135,7 @@ builder.Services.AddScoped(sp =>
     return new GlobalProductRetirementRequestWorkflowStartRequestFactory(configuration,
         sp.GetRequiredService<TimeProvider>());
 });
-builder.Services.AddScoped<GlobalProductIdentityWorkflowProcessor>();
+builder.Services.AddGlobalProductIdentityWorkflowProcessor();
 builder.Services.AddScoped<GlobalProductCorrectionWorkflowProcessor>();
 builder.Services.AddScoped<GlobalProductRetirementRequestWorkflowProcessor>();
 builder.Services.AddSingleton<ProductIdentityWorkflowRecoveryRunner>();
@@ -673,6 +673,30 @@ public static class GlobalProductWorkflowExecutionConfigurationRegistrations
                 TimeSpan.FromSeconds(options.RetryDelaySeconds));
         });
 
+        return services;
+    }
+
+    // The ONE place the Global Product identity processor is registered, so a test can resolve it exactly as the
+    // host does. Its guards are constructor dependencies: a registration that is missing fails the resolution, it
+    // does not switch a guard off.
+    public static IServiceCollection AddGlobalProductIdentityWorkflowProcessor(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddScoped(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<ProductIdentityWorkflowWorkerOptions>>().Value;
+            if (!ProductIdentityWorkflowWorkerOptions.IsServiceFaultWindowValid(
+                    options.ServiceFaultMaxRetryDelaySeconds, options.ServiceFaultErrorAfterAttempts))
+            {
+                throw new InvalidOperationException("PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID");
+            }
+
+            return new ProductIdentityWorkflowServiceFaultSettings(
+                TimeSpan.FromSeconds(options.ServiceFaultMaxRetryDelaySeconds),
+                options.ServiceFaultErrorAfterAttempts);
+        });
+        services.AddScoped<GlobalProductIdentityWorkflowProcessor>();
         return services;
     }
 

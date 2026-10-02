@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Diten.MdmService.Application.Contracts.Workflow;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Microsoft.Extensions.Options;
 
 namespace Diten.MdmService.Infrastructure.Workflow;
@@ -189,7 +190,11 @@ public sealed class AuthProductIdentityWorkflowServiceIdentityProvider : IProduc
         status is HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests or HttpStatusCode.ServiceUnavailable or HttpStatusCode.GatewayTimeout
         || (int)status >= 500
             ? new(status == HttpStatusCode.GatewayTimeout ? "PRODUCT_WORKFLOW_IDENTITY_TIMEOUT" : "PRODUCT_WORKFLOW_IDENTITY_UNAVAILABLE", true)
-            : Terminal("PRODUCT_WORKFLOW_IDENTITY_REJECTED");
+            // 403 is "this client is known and may not act for this tenant (or audience)"; everything else that is
+            // refused is the credential itself. Both are refusals — only the code tells them apart.
+            : Terminal(status == HttpStatusCode.Forbidden
+                ? ProductIdentityWorkflowFaultPolicy.IdentityNotGranted
+                : "PRODUCT_WORKFLOW_IDENTITY_REJECTED");
     private static ProductIdentityWorkflowServiceIdentityException Terminal(string code) => new(code, false);
     private static bool IsExact(string? value, int max) => !string.IsNullOrWhiteSpace(value) && value.Length <= max
         && string.Equals(value, value.Trim(), StringComparison.Ordinal) && !value.Any(char.IsControl) && !value.Contains(',');

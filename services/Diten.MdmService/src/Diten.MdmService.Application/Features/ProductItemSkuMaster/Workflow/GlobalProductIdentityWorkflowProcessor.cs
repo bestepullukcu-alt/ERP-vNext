@@ -4,6 +4,7 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
+using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
 using PersistedCancellationEvidence = Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowCancellationEvidence;
@@ -15,7 +16,9 @@ public sealed record GlobalProductIdentityWorkflowProcessingResult(
     GlobalProductIdentityWorkflowOperation? Operation,
     string? ErrorCode,
     int StatusCode,
-    bool IsReplay);
+    bool IsReplay,
+    // Set when the attempt met a fault of the service chain: what a recovery cycle may skip without calling again.
+    ProductIdentityWorkflowFaultScope FaultScope = ProductIdentityWorkflowFaultScope.None);
 
 public sealed record ProductIdentityWorkflowExecutionConfiguration(
     TimeSpan LeaseDuration,
@@ -27,8 +30,17 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
     IProductIdentityWorkflowClient workflowClient,
     ProductIdentityWorkflowStartRequestFactory requestFactory,
     TimeProvider timeProvider,
-    IProductIdentityWorkflowTransportReadiness? transportReadiness = null)
+    IProductIdentityWorkflowTransportReadiness transportReadiness,
+    ProductIdentityWorkflowServiceFaultSettings faultSettings,
+    ILogger<GlobalProductIdentityWorkflowProcessor> logger)
 {
+    // One attempt = one call into this processor. Interactive means the maker is present (a delegated token).
+    private sealed class Attempt(bool interactive)
+    {
+        public bool Interactive { get; } = interactive;
+        public ProductIdentityWorkflowFaultScope Scope { get; set; }
+    }
+
     private static readonly GlobalProductIdentityWorkflowCheckpoint[] RecoverableCheckpoints =
     [
         GlobalProductIdentityWorkflowCheckpoint.Prepared,
@@ -58,21 +70,20 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             return Fail("PRODUCT_IDENTITY_WORKFLOW_START_INVALID", 400);
         }
 
-        // WP-GP-1A-TRUST-CHAIN-01 (D) — a submit against a transport THIS service has not been configured for (no or
-        // invalid Platform address, no or invalid service-identity provider settings) is refused here, before any
-        // operation document exists, as retryable. Once an operation is written the same fault quarantines it
-        // (ManualReconciliationRequired) and the draft stays blocked at that version. Only these two local classes:
-        // what Auth or Platform answer is decided further down exactly as before.
-        if (transportReadiness?.FindConfigurationFault() is { } configurationFault)
-        {
-            return Fail(configurationFault, 503);
-        }
-
+        // A submit against a transport THIS service has not been configured for (no or invalid Platform address, no
+        // or invalid service-identity provider settings) is refused before the first write — no operation document,
+        // no lease — as retryable. A repeat of an operation that needs no transport any more (decided, awaiting the
+        // decision, quarantined, abandoned) is answered from what is stored, whatever the settings say now.
         var existing = await operations.GetByOperationIdAsync(operationId, cancellationToken);
         GlobalProductIdentityWorkflowOperation operation;
         var replay = existing is not null;
         if (existing is null)
         {
+            if (ConfigurationFault(tenantId, operationId) is { } configurationFault)
+            {
+                return configurationFault;
+            }
+
             var product = await products.GetByIdAsync(globalProductId, cancellationToken);
             if (product is null)
             {
@@ -109,6 +120,14 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         {
             return Fail("PRODUCT_IDENTITY_WORKFLOW_OPERATION_CONFLICT", 409);
         }
+        if (existing is not null
+            && existing.Checkpoint is GlobalProductIdentityWorkflowCheckpoint.Prepared
+                or GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown
+                or GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay
+            && ConfigurationFault(tenantId, operationId) is { } storedConfigurationFault)
+        {
+            return storedConfigurationFault with { Operation = existing };
+        }
 
         var result = await ProcessAsync(
             operation,
@@ -126,7 +145,28 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         string leaseOwner,
         TimeSpan leaseDuration,
         TimeSpan retryDelay,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken = default)
+    {
+        // The worker meets the same settings as a submit does. An operation that is already at rest is still
+        // answered; anything else is left exactly where it is — no lease, no write — until the settings are right.
+        if (operation.Checkpoint is not (GlobalProductIdentityWorkflowCheckpoint.Completed
+                or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired
+                or GlobalProductIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                or GlobalProductIdentityWorkflowCheckpoint.Superseded)
+            && ConfigurationFault(operation.TenantId, operation.OperationId) is { } configurationFault)
+        {
+            return Task.FromResult(configurationFault with { Operation = operation });
+        }
+
+        return RecoverConfiguredAsync(operation, leaseOwner, leaseDuration, retryDelay, cancellationToken);
+    }
+
+    private Task<GlobalProductIdentityWorkflowProcessingResult> RecoverConfiguredAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        string leaseOwner,
+        TimeSpan leaseDuration,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken) =>
         operation.WithdrawalCommandId.HasValue && operation.Checkpoint is
             GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested
             or GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
@@ -214,6 +254,16 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             return Fail("PRODUCT_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
         }
 
+        if (operation.Checkpoint is GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
+                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested
+                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
+                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+                or GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay
+            && ConfigurationFault(tenantId, operation.OperationId) is { } configurationFault)
+        {
+            return configurationFault with { Operation = operation };
+        }
+
         var result = await ProcessWithdrawalAsync(operation, delegatedUserToken,
             $"withdraw-{requesterSubjectId:N}", leaseDuration, retryDelay, cancellationToken,
             commandId, fingerprint, requesterSubjectId, expectedVersion, reasonCode, comment);
@@ -235,6 +285,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         string? comment = null)
     {
         var operation = initial;
+        var attempt = new Attempt(!string.IsNullOrWhiteSpace(delegatedUserToken));
         for (var step = 0; step < 10; step++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -254,7 +305,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
 
             var now = timeProvider.GetUtcNow();
             var claim = await operations.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
-                [operation.Checkpoint], leaseOwner, now.UtcTicks, now.Add(leaseDuration).UtcTicks), cancellationToken);
+                [operation.Checkpoint], leaseOwner, now.UtcTicks, now.Add(leaseDuration).UtcTicks,
+                IgnoreRetrySchedule: attempt.Interactive), cancellationToken);
             if (claim is null) return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_BUSY", 409);
 
             bool advanced;
@@ -281,13 +333,13 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                         ReleaseLease: true), cancellationToken);
                     break;
                 case GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested:
-                    advanced = await ObserveWithdrawalPreflightAsync(operation, claim, now, retryDelay,
+                    advanced = await ObserveWithdrawalPreflightAsync(operation, claim, attempt, now, retryDelay,
                         cancellationToken);
                     break;
                 case GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved:
                 case GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown:
                 case GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay:
-                    advanced = await ObserveWithdrawalAsync(operation, claim, delegatedUserToken, now,
+                    advanced = await ObserveWithdrawalAsync(operation, claim, delegatedUserToken, attempt, now,
                         retryDelay, cancellationToken);
                     break;
                 case GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved:
@@ -297,16 +349,20 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                     advanced = await VerifyWithdrawalAndCompleteAsync(operation, claim, now, cancellationToken);
                     break;
                 default:
+                    await ReleaseRefusedClaimAsync(claim, operation, now, cancellationToken);
                     return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
             }
-            if (!advanced) return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
+            if (!advanced)
+            {
+                await ReleaseRefusedClaimAsync(claim, operation, now, cancellationToken);
+                return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
+            }
             operation = await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken)
                 ?? throw new InvalidOperationException("PRODUCT_IDENTITY_WORKFLOW_OPERATION_LOST");
+            if (operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay)
+                return MakerAnswer(operation, attempt);
             if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks)
-                return Fail(operation, operation.LastFailureCode ?? "PRODUCT_IDENTITY_WORKFLOW_RETRY_SCHEDULED", 503);
-            if (operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay
-                && string.IsNullOrWhiteSpace(delegatedUserToken))
-                return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", 409);
+                return ScheduledAnswer(operation, attempt);
         }
         return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_STEP_BUDGET_EXCEEDED", 503);
     }
@@ -314,6 +370,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
     private async Task<bool> ObserveWithdrawalPreflightAsync(
         GlobalProductIdentityWorkflowOperation operation,
         GlobalProductIdentityWorkflowClaim claim,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
@@ -338,14 +395,19 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 WithdrawalExpectedWorkflowInstanceVersion: value.WorkflowInstanceVersion,
                 WithdrawalExpectedApprovalTaskVersion: value.ApprovalTaskVersion,
                 WithdrawalObjectRef: value.ObjectRef,
-                ReleaseLease: true), cancellationToken);
+                ReleaseLease: true,
+                ServiceFaultCount: 0), cancellationToken);
         }
         if (result.Outcome is ProductIdentityWorkflowTransportOutcome.Conflict
             or ProductIdentityWorkflowTransportOutcome.NotFound)
             return await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision,
-                ProductIdentityWorkflowRecoveryDisposition.None, now, result.ErrorCode, true, cancellationToken);
-        if (Retryable(result.Outcome))
-            return await ScheduleRetryAsync(claim, operation.Checkpoint, result.ErrorCode, now, retryDelay,
+                ProductIdentityWorkflowRecoveryDisposition.None, now, result.ErrorCode, true, cancellationToken,
+                serviceFaultCount: 0);
+        var fault = ProductIdentityWorkflowFaultPolicy.Classify(
+            ProductIdentityWorkflowCall.CancellationPreflight, result.Outcome, result.ErrorCode);
+        if (fault.Kind == ProductIdentityWorkflowFaultKind.ServiceWait)
+            return await WaitForServiceAsync(operation, claim, operation.Checkpoint,
+                ProductIdentityWorkflowCall.CancellationPreflight, result.ErrorCode, fault, attempt, now, retryDelay,
                 cancellationToken);
         return await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
     }
@@ -354,6 +416,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         GlobalProductIdentityWorkflowOperation operation,
         GlobalProductIdentityWorkflowClaim claim,
         string? delegatedUserToken,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
@@ -387,16 +450,31 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 WithdrawalTaskStatus: evidence.TaskStatus,
                 WithdrawalInstanceStatus: evidence.InstanceStatus,
                 WithdrawalObjectRef: evidence.ObjectRef,
-                ReleaseLease: true), cancellationToken);
+                ReleaseLease: true,
+                ServiceFaultCount: 0), cancellationToken);
         }
-        if (Retryable(result.Outcome))
-            return await ScheduleRetryAsync(claim, GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
-                result.ErrorCode, now, retryDelay, cancellationToken);
         if (result.Outcome is ProductIdentityWorkflowTransportOutcome.Conflict
             or ProductIdentityWorkflowTransportOutcome.NotFound)
             return await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision,
-                ProductIdentityWorkflowRecoveryDisposition.None, now, result.ErrorCode, true, cancellationToken);
-        return await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+                ProductIdentityWorkflowRecoveryDisposition.None, now, result.ErrorCode, true, cancellationToken,
+                serviceFaultCount: 0);
+        // The cancellation carries the maker's own token: the worker can never repeat it. Whatever stops it short of
+        // an answer about the record leaves the withdrawal to the maker's resubmit (same command id, idempotent).
+        var fault = ProductIdentityWorkflowFaultPolicy.Classify(
+            ProductIdentityWorkflowCall.Cancel, result.Outcome, result.ErrorCode);
+        return fault.Kind switch
+        {
+            ProductIdentityWorkflowFaultKind.MakerReplay => await ToMakerAsync(operation, claim,
+                ProductIdentityWorkflowCall.Cancel, result.ErrorCode, fault.MakerCode!, null, attempt, now,
+                cancellationToken),
+            ProductIdentityWorkflowFaultKind.ServiceWait when fault.StartedNothing => await ToMakerAsync(operation,
+                claim, ProductIdentityWorkflowCall.Cancel, result.ErrorCode,
+                ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, fault, attempt, now, cancellationToken),
+            ProductIdentityWorkflowFaultKind.ServiceWait => await WaitForServiceAsync(operation, claim,
+                GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown, ProductIdentityWorkflowCall.Cancel,
+                result.ErrorCode, fault, attempt, now, retryDelay, cancellationToken),
+            _ => await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken)
+        };
     }
 
     private async Task<bool> ApplyWithdrawalAsync(
@@ -455,6 +533,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         CancellationToken cancellationToken)
     {
         var operation = initial;
+        var attempt = new Attempt(!string.IsNullOrWhiteSpace(delegatedUserToken));
         for (var step = 0; step < 12; step++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -490,7 +569,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                     [operation.Checkpoint],
                     leaseOwner,
                     now.UtcTicks,
-                    now.Add(leaseDuration).UtcTicks),
+                    now.Add(leaseDuration).UtcTicks,
+                    IgnoreRetrySchedule: attempt.Interactive),
                 cancellationToken);
             if (claim is null)
             {
@@ -505,7 +585,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                         cancellationToken: cancellationToken),
                 GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown or
                     GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay =>
-                    await ResolveStartAsync(operation, claim, delegatedUserToken, now, retryDelay, cancellationToken),
+                    await ResolveStartAsync(operation, claim, delegatedUserToken, attempt, now, retryDelay,
+                        cancellationToken),
                 GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted =>
                     await ApplyLocalPendingAsync(operation, claim, now, retryDelay, cancellationToken),
                 GlobalProductIdentityWorkflowCheckpoint.LocalPendingApplied =>
@@ -513,7 +594,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                         ProductIdentityWorkflowRecoveryDisposition.None, now, releaseLease: true,
                         cancellationToken: cancellationToken),
                 GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision =>
-                    await ObserveDecisionAsync(operation, claim, now, retryDelay, cancellationToken),
+                    await ObserveDecisionAsync(operation, claim, attempt, now, retryDelay, cancellationToken),
                 GlobalProductIdentityWorkflowCheckpoint.DecisionObserved =>
                     await ApplyDecisionAsync(operation, claim, now, retryDelay, cancellationToken),
                 GlobalProductIdentityWorkflowCheckpoint.DecisionApplied =>
@@ -522,14 +603,21 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             };
             if (!advanced)
             {
+                await ReleaseRefusedClaimAsync(claim, operation, now, cancellationToken);
                 return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
             }
 
             operation = await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken)
                 ?? throw new InvalidOperationException("PRODUCT_IDENTITY_WORKFLOW_OPERATION_LOST");
+            // The step that just ran handed the operation to the maker: the answer says so, now, with the reason.
+            // Going round again would repeat the same refused start until the step budget ran out.
+            if (operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay)
+            {
+                return MakerAnswer(operation, attempt);
+            }
             if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks)
             {
-                return Fail(operation, operation.LastFailureCode ?? "PRODUCT_IDENTITY_WORKFLOW_RETRY_SCHEDULED", 503);
+                return ScheduledAnswer(operation, attempt);
             }
         }
 
@@ -540,28 +628,43 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         GlobalProductIdentityWorkflowOperation operation,
         GlobalProductIdentityWorkflowClaim claim,
         string? delegatedUserToken,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
     {
-        ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult> outcome;
-        if (!string.IsNullOrWhiteSpace(delegatedUserToken))
+        // A start carries the maker's own token, so only a maker's submit can make it. The worker can find out
+        // whether an earlier start arrived (the lookup below) and nothing more: whenever a start is known not to
+        // have happened, the operation is the maker's to resubmit — it is never reported as "queued".
+        var makerPresent = !string.IsNullOrWhiteSpace(delegatedUserToken);
+        if (makerPresent)
         {
-            outcome = await workflowClient.StartAsync(
+            var outcome = await workflowClient.StartAsync(
                 operation.TenantId,
                 requestFactory.Rehydrate(operation),
-                delegatedUserToken,
+                delegatedUserToken!,
                 cancellationToken);
             if (outcome.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
             {
                 return await PersistStartedAsync(operation, claim, outcome.Value, now, cancellationToken);
             }
-            if (outcome.Outcome is ProductIdentityWorkflowTransportOutcome.Forbidden
-                or ProductIdentityWorkflowTransportOutcome.Invalid
-                or ProductIdentityWorkflowTransportOutcome.Conflict
-                or ProductIdentityWorkflowTransportOutcome.AuthenticationRejected)
+            if (outcome.Outcome != ProductIdentityWorkflowTransportOutcome.Incomplete)
             {
-                return await QuarantineAsync(claim, outcome.ErrorCode, now, cancellationToken);
+                var fault = ProductIdentityWorkflowFaultPolicy.Classify(
+                    ProductIdentityWorkflowCall.Start, outcome.Outcome, outcome.ErrorCode);
+                switch (fault.Kind)
+                {
+                    case ProductIdentityWorkflowFaultKind.Quarantine:
+                        return await QuarantineAsync(claim, outcome.ErrorCode, now, cancellationToken);
+                    case ProductIdentityWorkflowFaultKind.MakerReplay:
+                        return await ToMakerAsync(operation, claim, ProductIdentityWorkflowCall.Start,
+                            outcome.ErrorCode, fault.MakerCode!, null, attempt, now, cancellationToken);
+                    case ProductIdentityWorkflowFaultKind.ServiceWait when fault.StartedNothing:
+                        return await ToMakerAsync(operation, claim, ProductIdentityWorkflowCall.Start,
+                            outcome.ErrorCode, ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, fault,
+                            attempt, now, cancellationToken);
+                }
+                // No answer, or one nobody could read: the start may have arrived. Ask.
             }
         }
 
@@ -578,21 +681,31 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         if (lookup.Outcome is ProductIdentityWorkflowTransportOutcome.NotFound
             or ProductIdentityWorkflowTransportOutcome.Incomplete)
         {
+            logger.LogWarning(
+                "Product identity workflow operation {OperationId} of tenant {TenantId} has no completed start at the approval engine ({ResultCode}); it is the maker's to resubmit.",
+                operation.OperationId, operation.TenantId,
+                BoundedCode(lookup.ErrorCode, ProductIdentityWorkflowMakerCodes.MakerReplayRequired));
             return await AdvanceAsync(
                 claim,
                 GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
                 ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay,
                 now,
-                lookup.ErrorCode ?? "PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED",
+                makerPresent
+                    ? ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit
+                    : lookup.ErrorCode ?? ProductIdentityWorkflowMakerCodes.MakerReplayRequired,
                 releaseLease: true,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken,
+                serviceFaultCount: 0);
         }
 
-        if (Retryable(lookup.Outcome))
+        var lookupFault = ProductIdentityWorkflowFaultPolicy.Classify(
+            ProductIdentityWorkflowCall.StartResult, lookup.Outcome, lookup.ErrorCode);
+        if (lookupFault.Kind == ProductIdentityWorkflowFaultKind.ServiceWait)
         {
-            return await ScheduleRetryAsync(
-                claim, GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown,
-                lookup.ErrorCode, now, retryDelay, cancellationToken);
+            return await WaitForServiceAsync(
+                operation, claim, GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown,
+                ProductIdentityWorkflowCall.StartResult, lookup.ErrorCode, lookupFault, attempt, now, retryDelay,
+                cancellationToken);
         }
 
         return await QuarantineAsync(claim, lookup.ErrorCode, now, cancellationToken);
@@ -629,7 +742,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 AssignmentSnapshotId: result.AssignmentSnapshotId,
                 StartTransitionLogId: result.StartTransitionLogId,
                 WorkflowStartedAtUtcTicksV1: startedAt.UtcTicks,
-                ReleaseLease: true),
+                ReleaseLease: true,
+                ServiceFaultCount: 0),
             cancellationToken);
     }
 
@@ -710,6 +824,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
     private async Task<bool> ObserveDecisionAsync(
         GlobalProductIdentityWorkflowOperation operation,
         GlobalProductIdentityWorkflowClaim claim,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
@@ -725,8 +840,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             cancellationToken);
         if (result.Outcome is ProductIdentityWorkflowTransportOutcome.NonTerminal
             or ProductIdentityWorkflowTransportOutcome.NotFound
-            or ProductIdentityWorkflowTransportOutcome.Incomplete
-            || Retryable(result.Outcome))
+            or ProductIdentityWorkflowTransportOutcome.Incomplete)
         {
             return await ScheduleRetryAsync(
                 claim,
@@ -734,9 +848,21 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 result.ErrorCode ?? "PRODUCT_IDENTITY_WORKFLOW_DECISION_PENDING",
                 now,
                 retryDelay,
-                cancellationToken);
+                cancellationToken,
+                chainAnswered: true);
         }
-        if (result.Outcome != ProductIdentityWorkflowTransportOutcome.Success || result.Value is null)
+        if (result.Outcome != ProductIdentityWorkflowTransportOutcome.Success)
+        {
+            // The decision is polled with the service's own token: the worker carries a waiting operation on.
+            var fault = ProductIdentityWorkflowFaultPolicy.Classify(
+                ProductIdentityWorkflowCall.TerminalEvidence, result.Outcome, result.ErrorCode);
+            return fault.Kind == ProductIdentityWorkflowFaultKind.ServiceWait
+                ? await WaitForServiceAsync(operation, claim, GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision,
+                    ProductIdentityWorkflowCall.TerminalEvidence, result.ErrorCode, fault, attempt, now, retryDelay,
+                    cancellationToken)
+                : await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+        }
+        if (result.Value is null)
         {
             return await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
         }
@@ -781,7 +907,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 DecisionInstanceStatus: evidence.InstanceStatus,
                 DecisionTransitionSequence: evidence.TransitionSequence,
                 DecisionAtUtcTicksV1: evidence.DecisionAt.UtcTicks,
-                ReleaseLease: true),
+                ReleaseLease: true,
+                ServiceFaultCount: 0),
             cancellationToken);
     }
 
@@ -856,7 +983,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         string? errorCode,
         DateTimeOffset now,
         TimeSpan retryDelay,
-        CancellationToken cancellationToken) =>
+        CancellationToken cancellationToken,
+        bool chainAnswered = false) =>
         operations.AdvanceAsync(
             claim,
             new(
@@ -865,6 +993,151 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 now.UtcTicks,
                 now.Add(retryDelay).UtcTicks,
                 BoundedCode(errorCode, "PRODUCT_IDENTITY_WORKFLOW_PROVIDER_UNAVAILABLE"),
+                ReleaseLease: true,
+                ServiceFaultCount: chainAnswered ? 0 : null),
+            cancellationToken);
+
+    // A fault of the service chain at a stage the worker can carry on: the operation stays at its checkpoint, the
+    // next attempt backs off, the count and the first moment are kept, and it is said out loud.
+    private Task<bool> WaitForServiceAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        GlobalProductIdentityWorkflowCheckpoint checkpoint,
+        ProductIdentityWorkflowCall call,
+        string? errorCode,
+        ProductIdentityWorkflowFaultDecision fault,
+        Attempt attempt,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken)
+    {
+        var count = operation.ServiceFaultCount + 1;
+        var since = operation.ServiceFaultSinceUtcTicksV1 ?? now.UtcTicks;
+        var code = BoundedCode(errorCode, "PRODUCT_IDENTITY_WORKFLOW_PROVIDER_UNAVAILABLE");
+        attempt.Scope = fault.Scope;
+        LogServiceFault(operation, call, code, count, since, "worker");
+        return operations.AdvanceAsync(
+            claim,
+            new(
+                checkpoint,
+                ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks,
+                now.Add(ProductIdentityWorkflowFaultPolicy.Backoff(count, retryDelay, faultSettings.MaxRetryDelay))
+                    .UtcTicks,
+                code,
+                ReleaseLease: true,
+                ServiceFaultCount: count,
+                ServiceFaultSinceUtcTicksV1: since),
+            cancellationToken);
+    }
+
+    // The operation is handed to the maker: nothing was started (or cancelled) and only a resubmit can do it.
+    // serviceFault is null when the engine answered and the reason is the maker's or the set-up's.
+    private Task<bool> ToMakerAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        ProductIdentityWorkflowCall call,
+        string? errorCode,
+        string makerCode,
+        ProductIdentityWorkflowFaultDecision? serviceFault,
+        Attempt attempt,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        var code = BoundedCode(errorCode, makerCode);
+        var count = 0;
+        long? since = null;
+        if (serviceFault is not null)
+        {
+            count = operation.ServiceFaultCount + 1;
+            since = operation.ServiceFaultSinceUtcTicksV1 ?? now.UtcTicks;
+            attempt.Scope = serviceFault.Scope;
+            LogServiceFault(operation, call, code, count, since.Value, "maker");
+        }
+        else
+        {
+            logger.LogWarning(
+                "Product identity workflow operation {OperationId} of tenant {TenantId} was refused to the maker on {Call}: {ResultCode} -> {MakerCode}.",
+                operation.OperationId, operation.TenantId, call, code, makerCode);
+        }
+
+        return operations.AdvanceAsync(
+            claim,
+            new(
+                GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay,
+                now.UtcTicks,
+                LastFailureCode: makerCode,
+                ReleaseLease: true,
+                ServiceFaultCount: count,
+                ServiceFaultSinceUtcTicksV1: since),
+            cancellationToken);
+    }
+
+    private void LogServiceFault(
+        GlobalProductIdentityWorkflowOperation operation,
+        ProductIdentityWorkflowCall call,
+        string code,
+        int count,
+        long sinceUtcTicks,
+        string continuedBy) =>
+        logger.Log(
+            count >= faultSettings.ErrorAfterAttempts ? LogLevel.Error : LogLevel.Warning,
+            "Product identity workflow operation {OperationId} of tenant {TenantId} is waiting on a service fault at {Call}: {ResultCode}; attempt {Attempt}, since {SinceUtc:O}; continued by the {ContinuedBy}.",
+            operation.OperationId, operation.TenantId, call, code, count,
+            new DateTimeOffset(sinceUtcTicks, TimeSpan.Zero), continuedBy);
+
+    private GlobalProductIdentityWorkflowProcessingResult? ConfigurationFault(Guid tenantId, Guid operationId)
+    {
+        if (transportReadiness.FindConfigurationFault() is not { } code)
+        {
+            return null;
+        }
+
+        logger.LogError(
+            "Product identity workflow transport is not configured ({ResultCode}); operation {OperationId} of tenant {TenantId} was not touched.",
+            code, operationId, tenantId);
+        return Fail(code, 503) with { FaultScope = ProductIdentityWorkflowFaultScope.AllTenants };
+    }
+
+    private static GlobalProductIdentityWorkflowProcessingResult MakerAnswer(
+        GlobalProductIdentityWorkflowOperation operation,
+        Attempt attempt)
+    {
+        var code = ProductIdentityWorkflowMakerCodes.IsMakerCode(operation.LastFailureCode)
+            ? operation.LastFailureCode!
+            : ProductIdentityWorkflowMakerCodes.MakerReplayRequired;
+        return Fail(operation, code, ProductIdentityWorkflowMakerCodes.StatusFor(code))
+            with { FaultScope = attempt.Scope };
+    }
+
+    // A retry is scheduled. A maker who is present is never told "queued" for something only they can finish:
+    // while the service chain is at fault, every interactive path ends in a resubmit.
+    private static GlobalProductIdentityWorkflowProcessingResult ScheduledAnswer(
+        GlobalProductIdentityWorkflowOperation operation,
+        Attempt attempt) =>
+        Fail(
+            operation,
+            attempt.Interactive && operation.ServiceFaultCount > 0
+                ? ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit
+                : operation.LastFailureCode ?? "PRODUCT_IDENTITY_WORKFLOW_RETRY_SCHEDULED",
+            503) with { FaultScope = attempt.Scope };
+
+    // A step this call claimed and then could not write (a transition that is not allowed, a checkpoint this path
+    // does not handle) must not keep the lease: the next caller would be told "busy" until it ran out.
+    private Task ReleaseRefusedClaimAsync(
+        GlobalProductIdentityWorkflowClaim claim,
+        GlobalProductIdentityWorkflowOperation operation,
+        DateTimeOffset now,
+        CancellationToken cancellationToken) =>
+        operations.AdvanceAsync(
+            claim,
+            new(
+                claim.Checkpoint,
+                operation.RecoveryDisposition,
+                now.UtcTicks,
+                operation.NextAttemptAtUtcTicksV1,
+                operation.LastFailureCode,
                 ReleaseLease: true),
             cancellationToken);
 
@@ -872,15 +1145,21 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         GlobalProductIdentityWorkflowClaim claim,
         string? errorCode,
         DateTimeOffset now,
-        CancellationToken cancellationToken) =>
-        AdvanceAsync(
+        CancellationToken cancellationToken)
+    {
+        var code = BoundedCode(errorCode, "PRODUCT_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED");
+        logger.LogError(
+            "Product identity workflow operation {OperationId} of tenant {TenantId} was quarantined at {Checkpoint}: {ResultCode}.",
+            claim.OperationId, claim.TenantId, claim.Checkpoint, code);
+        return AdvanceAsync(
             claim,
             GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
             ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired,
             now,
-            BoundedCode(errorCode, "PRODUCT_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED"),
+            code,
             releaseLease: true,
             cancellationToken: cancellationToken);
+    }
 
     private Task<bool> AdvanceAsync(
         GlobalProductIdentityWorkflowClaim claim,
@@ -889,11 +1168,12 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         DateTimeOffset now,
         string? errorCode = null,
         bool releaseLease = false,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken = default,
+        int? serviceFaultCount = null) =>
         operations.AdvanceAsync(
             claim,
             new(checkpoint, disposition, now.UtcTicks, LastFailureCode: errorCode,
-                ReleaseLease: releaseLease),
+                ReleaseLease: releaseLease, ServiceFaultCount: serviceFaultCount),
             cancellationToken);
 
     private static bool CompleteStartProof(GlobalProductIdentityWorkflowOperation operation) =>
@@ -1130,10 +1410,6 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
 
     private static bool OptionalExactText(string? value, int maximum) =>
         value is null || ExactText(value, maximum);
-
-    private static bool Retryable(ProductIdentityWorkflowTransportOutcome outcome) =>
-        outcome is ProductIdentityWorkflowTransportOutcome.Retryable
-            or ProductIdentityWorkflowTransportOutcome.Timeout;
 
     private static string BoundedCode(string? code, string fallback) =>
         !string.IsNullOrWhiteSpace(code) && code.Length <= 128 && code.All(character => !char.IsControl(character))

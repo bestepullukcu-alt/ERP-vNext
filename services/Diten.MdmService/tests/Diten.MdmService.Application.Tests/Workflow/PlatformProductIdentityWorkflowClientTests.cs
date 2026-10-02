@@ -249,6 +249,92 @@ public sealed class PlatformProductIdentityWorkflowClientTests
         Assert.Equal("cancel-key", sent.IdempotencyKey);
     }
 
+    // WP-GP-1B-A-RESILIENCE-01 — an answer nobody could read is told apart from a readable answer that breaks the
+    // contract, by its code only: the outcome, the envelope rules and every validation are what they were.
+    [Theory]
+    [InlineData("html-502")]
+    [InlineData("problem-json-500")]
+    [InlineData("not-json")]
+    [InlineData("not-the-envelope")]
+    [InlineData("status-contradicts-envelope")]
+    [InlineData("failure-status-that-says-success")]
+    [InlineData("too-large")]
+    public async Task An_answer_nobody_could_read_is_unreadable_not_invalid(string shape)
+    {
+        var client = Client(new CaptureHandler(_ => shape switch
+        {
+            "html-502" => new HttpResponseMessage(HttpStatusCode.BadGateway)
+            {
+                Content = new StringContent("<html>bad gateway</html>", Encoding.UTF8, "text/html")
+            },
+            "problem-json-500" => new HttpResponseMessage(HttpStatusCode.InternalServerError)
+            {
+                Content = new StringContent("{\"title\":\"boom\"}", Encoding.UTF8, "application/problem+json")
+            },
+            "not-json" => Json(HttpStatusCode.OK, "<<<"),
+            "not-the-envelope" => Json(HttpStatusCode.OK, "{\"title\":\"boom\"}"),
+            "status-contradicts-envelope" => Json(HttpStatusCode.OK, JsonSerializer.Serialize(new Dictionary<string, object?>
+            {
+                ["data"] = null, ["statusCode"] = 409, ["isSuccessful"] = false,
+                ["errors"] = new[] { "X" }, ["reason_code"] = "X", ["correlation_id"] = "corr"
+            })),
+            "failure-status-that-says-success" => Json(HttpStatusCode.Conflict, JsonSerializer.Serialize(new Dictionary<string, object?>
+            {
+                ["data"] = null, ["statusCode"] = 409, ["isSuccessful"] = true,
+                ["errors"] = Array.Empty<string>(), ["reason_code"] = null, ["correlation_id"] = "corr"
+            })),
+            _ => Json(HttpStatusCode.OK, new string(' ', 70 * 1024))
+        }), new IdentityProvider());
+
+        var result = await client.GetStartResultAsync(Guid.NewGuid(), new(
+            "GlobalProduct", Guid.NewGuid().ToString("D"), Guid.NewGuid(), "key"));
+
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.Invalid, result.Outcome);
+        Assert.Equal("PRODUCT_WORKFLOW_RESPONSE_UNREADABLE", result.ErrorCode);
+        Assert.Null(result.Value);
+    }
+
+    [Theory]
+    [InlineData("unknown-field")]
+    [InlineData("no-started-at")]
+    [InlineData("success-status-that-says-failure")]
+    public async Task A_readable_success_that_breaks_the_contract_stays_invalid(string shape)
+    {
+        var client = Client(new CaptureHandler(_ => shape switch
+        {
+            "unknown-field" => Success(StartResult(), extraData: true),
+            "no-started-at" => Success(StartResult() with { StartedAt = null }),
+            _ => Json(HttpStatusCode.Created, JsonSerializer.Serialize(new Dictionary<string, object?>
+            {
+                ["data"] = null, ["statusCode"] = 201, ["isSuccessful"] = false,
+                ["errors"] = new[] { "X" }, ["reason_code"] = "X", ["correlation_id"] = "corr"
+            }))
+        }), new IdentityProvider());
+
+        var result = await client.StartAsync(Guid.NewGuid(), StartRequest(), "human.jwt");
+
+        Assert.Equal(ProductIdentityWorkflowTransportOutcome.Invalid, result.Outcome);
+        Assert.Equal("PRODUCT_WORKFLOW_RESPONSE_INVALID", result.ErrorCode);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized, "WORKFLOW_DELEGATED_USER_UNAUTHENTICATED", ProductIdentityWorkflowTransportOutcome.AuthenticationRejected)]
+    [InlineData(HttpStatusCode.Unauthorized, "WORKFLOW_TRUSTED_CONSUMER_UNAUTHENTICATED", ProductIdentityWorkflowTransportOutcome.AuthenticationRejected)]
+    [InlineData(HttpStatusCode.Forbidden, "WORKFLOW_DELEGATED_USER_FORBIDDEN", ProductIdentityWorkflowTransportOutcome.Forbidden)]
+    [InlineData(HttpStatusCode.Forbidden, "WORKFLOW_TRUSTED_START_FORBIDDEN", ProductIdentityWorkflowTransportOutcome.Forbidden)]
+    [InlineData(HttpStatusCode.BadRequest, "WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED", ProductIdentityWorkflowTransportOutcome.Invalid)]
+    [InlineData(HttpStatusCode.Conflict, "WORKFLOW_TEMPLATE_NOT_PUBLISHED", ProductIdentityWorkflowTransportOutcome.Conflict)]
+    public async Task The_reason_code_the_policy_decides_by_reaches_the_caller_unchanged(
+        HttpStatusCode status, string code, ProductIdentityWorkflowTransportOutcome expected)
+    {
+        var client = Client(new CaptureHandler(_ => Failure(status, code)), new IdentityProvider());
+
+        var result = await client.StartAsync(Guid.NewGuid(), StartRequest(), "human.jwt");
+
+        Assert.Equal(expected, result.Outcome);
+        Assert.Equal(code, result.ErrorCode);
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.BadRequest, "INVALID", ProductIdentityWorkflowTransportOutcome.Invalid)]
     [InlineData(HttpStatusCode.Forbidden, "FORBIDDEN", ProductIdentityWorkflowTransportOutcome.Forbidden)]
