@@ -755,6 +755,13 @@ non-Development) — behaviour is the Gateway at once. Code removal: delete `Pro
 `InventoryGatewayClient`, the `ProductMasterBridge.Resolve` line in `InventoryProxy.Gateway`, and the lines marked
 `FU-PM-01` in the four run scripts.
 
+- **WP-0173-PM0 CT-ACCEPTED (2026-10-02)** — commits 7491c5efd..0d64aa190. Development-only product-master bridge
+  (`Inventory__ProductMasterBaseUrl`, env var only; ignored with a warning outside `Development` or when not an absolute
+  http(s) URL; only the `/api/product-master` prefix is redirected, prefix stripped) + run-script additions (0 deletions) +
+  FU-UI2-05 closed (reversal instant fixed at dialog open, server range check). CT re-measured: Diten.Web.Tests 511/511,
+  architecture 18/18; no appsettings / ocelot change. Time-boxed: removed when MDM serves PRODUCT-MASTER (FU-PM-01;
+  requirements in docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md).
+
 ## 20. Follow-up Items
 
 - Request to MOD-0290 owner (MDM): additive product/SKU search in PRODUCT-MASTER-BUNDLE v1.1 — retires W-UI-01.
