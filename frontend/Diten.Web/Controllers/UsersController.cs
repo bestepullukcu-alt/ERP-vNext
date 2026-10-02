@@ -92,7 +92,7 @@ public sealed class UsersController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Users create failed.");
-            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+            return Json(new { success = false, errors = BuildExceptionErrors(ex), rawText = true });
         }
     }
 
@@ -125,7 +125,7 @@ public sealed class UsersController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Users edit failed for {UserId}.", id);
-            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+            return Json(new { success = false, errors = BuildExceptionErrors(ex), rawText = true });
         }
     }
 
@@ -326,7 +326,7 @@ public sealed class UsersController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Users {Action} failed for {UserId}.", action, id);
-            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+            return Json(new { success = false, errors = BuildExceptionErrors(ex), rawText = true });
         }
     }
 
@@ -366,7 +366,14 @@ public sealed class UsersController : Controller
      */
     // BL-459 — errorParams: the code's own string params (e.g. USER_QUOTA_EXCEEDED { max, current }); null when none.
     private async Task<IActionResult> GatewayFailureAsync(HttpResponseMessage response)
-        => Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response), errorCode = await ExtractGatewayErrorCodeAsync(response), errorParams = await ExtractGatewayErrorParamsAsync(response) });
+        => Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response), errorCode = await ExtractGatewayErrorCodeAsync(response), errorParams = await ExtractGatewayErrorParamsAsync(response), rawText = await IsRelayedTextAsync(response) });
+
+    // WP-USERS-ERROR-CODES-01 — true when `errors` is the service's own (English) text relayed as-is; false when it is
+    // this proxy's localized sentence (401, empty body). index.js never shows relayed text: code → sentence, else the
+    // general error.
+    private static async Task<bool> IsRelayedTextAsync(HttpResponseMessage response)
+        => response.StatusCode != System.Net.HttpStatusCode.Unauthorized
+           && !string.IsNullOrWhiteSpace(await response.Content.ReadAsStringAsync());
 
     private static async Task<string?> ExtractGatewayErrorCodeAsync(HttpResponseMessage response)
         => (await ExtractGatewayErrorCodeWithParamsAsync(response)).Code;

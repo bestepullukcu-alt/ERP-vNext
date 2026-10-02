@@ -57,4 +57,18 @@
   <data name="ErrorUserQuotaExceeded" xml:space="preserve"><value>تم بلوغ الحد الأقصى للمستخدمين في خطة اشتراكك، لذلك لم تتم إضافة أي مستخدم. احذف مستخدمًا أو قم بترقية الخطة.</value></data>
   <data name="ErrorUserQuotaUsage" xml:space="preserve"><value>المستخدَم: {current} من {max} مستخدمين.</value></data>
   <data name="DeleteUserConfirmText" xml:space="preserve"><value>يُحذف المستخدم وتُزال أدواره؛ ولا يمكن استعادة الحساب. يمكن فتح حساب جديد بعنوان البريد الإلكتروني نفسه.</value></data>
+  <data name="ErrorUserDeleteSelf" xml:space="preserve"><value>لا يمكنك حذف حسابك الخاص.</value></data>
+  <data name="ErrorUserDeleteLastSteward" xml:space="preserve"><value>هذا آخر حساب يستطيع إضافة مستخدمين، لذلك لا يمكن حذفه. امنح هذه الصلاحية لمستخدم آخر أولاً.</value></data>
+  <data name="ErrorUserDeactivateSelf" xml:space="preserve"><value>لا يمكنك تعطيل حسابك الخاص.</value></data>
+  <data name="ErrorUserNotFound" xml:space="preserve"><value>تعذّر العثور على هذا المستخدم؛ ربما تم حذفه. حدِّث القائمة ثم حاول مرة أخرى.</value></data>
+  <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>نوع الحساب المحدد غير صالح. اختر نوعاً من القائمة.</value></data>
+  <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>هذا المستخدم عيّن كلمة المرور بالفعل؛ لا توجد دعوة لإعادة إرسالها. لمنحه كلمة مرور جديدة استخدم «إعادة تعيين كلمة المرور».</value></data>
+  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>هذا المستخدم لم يعيّن كلمة المرور بعد، لذلك لا يمكن إعادة تعيينها. أعد إرسال الدعوة بدلاً من ذلك.</value></data>
+  <data name="ErrorUserAccountKindPermissionDenied" xml:space="preserve"><value>ليست لديك صلاحية تغيير نوع الحساب؛ لم يُحفظ المستخدم.</value></data>
+  <data name="ErrorUserEmailRequired" xml:space="preserve"><value>أدخل عنوان بريد إلكتروني.</value></data>
+  <data name="ErrorUserEmailInvalid" xml:space="preserve"><value>أدخل عنوان بريد إلكتروني صالحاً.</value></data>
+  <data name="ErrorUserFirstNameRequired" xml:space="preserve"><value>أدخل الاسم الأول.</value></data>
+  <data name="ErrorUserFirstNameTooLong" xml:space="preserve"><value>الاسم الأول طويل جداً. اختصره ثم حاول مرة أخرى.</value></data>
+  <data name="ErrorUserLastNameRequired" xml:space="preserve"><value>أدخل اسم العائلة.</value></data>
+  <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>اسم العائلة طويل جداً. اختصره ثم حاول مرة أخرى.</value></data>
 </root>

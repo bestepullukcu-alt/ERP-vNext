@@ -16,7 +16,7 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
     /// way back in from that seat. Same shape as <see cref="DeleteUserCommandHandler.SelfDeleteCode"/>: refused with a
     /// code the screen can translate, before anything is written. SAP (SU01) and Oracle Fusion refuse the same act.
     /// </summary>
-    public const string SelfDeactivateCode = "USER_DEACTIVATE_SELF";
+    public const string SelfDeactivateCode = UserErrorCodes.DeactivateSelf;
 
     private readonly IUserRepository _userRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
@@ -47,7 +47,7 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
     public async Task<Response<NoContent>> Handle(SetUserActiveStatusCommand request, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
-        if (user is null) return Response<NoContent>.Fail("User not found.", 404);
+        if (user is null) return UserErrorCodes.NotFoundRefusal<NoContent>();
 
         if (!request.IsActive && _currentUser.UserId == request.Id)
         {

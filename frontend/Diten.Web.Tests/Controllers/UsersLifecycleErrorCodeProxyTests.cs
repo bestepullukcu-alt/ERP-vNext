@@ -97,6 +97,57 @@ public sealed class UsersLifecycleErrorCodeProxyTests
         Assert.Equal("Something else.", json.GetProperty("errors")[0].GetString());
     }
 
+    // WP-USERS-ERROR-CODES-01 — the proxy says whether `errors` is a service's text it only relayed (never shown by
+    // index.js) or its own localized sentence (shown as it is).
+    [Fact]
+    public async Task A_relayed_service_sentence_is_marked_rawText()
+    {
+        var controller = ControllerWith(new CapturingGateway(HttpStatusCode.Conflict, """{"isSuccessful":false,"errors":["User has already completed setup."]}"""), Form());
+
+        var json = Body(await controller.ResendInvite(UserId));
+
+        Assert.True(json.GetProperty("rawText").GetBoolean());
+        Assert.Equal(JsonValueKind.Null, json.GetProperty("errorCode").ValueKind);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized, """{"title":"Unauthorized"}""")]
+    [InlineData(HttpStatusCode.BadGateway, "")]
+    public async Task The_proxys_own_localized_sentence_is_not_marked_rawText(HttpStatusCode status, string body)
+    {
+        var controller = ControllerWith(new CapturingGateway(status, body), Form());
+
+        var json = Body(await controller.Disable(UserId));
+
+        Assert.False(json.GetProperty("success").GetBoolean());
+        Assert.False(json.GetProperty("rawText").GetBoolean());
+    }
+
+    [Fact]
+    public async Task Every_new_code_is_handed_over_untouched_on_the_kebab_door()
+    {
+        foreach (var code in new[] { "USER_NOT_FOUND", "USER_DEACTIVATE_SELF", "USER_SETUP_ALREADY_COMPLETED", "USER_PASSWORD_SETUP_PENDING" })
+        {
+            var controller = ControllerWith(new CapturingGateway(HttpStatusCode.Conflict, Refusal(code, "english")), Form());
+
+            Assert.Equal(code, Body(await controller.ResetPassword(UserId)).GetProperty("errorCode").GetString());
+        }
+    }
+
+    // A VALIDATOR's refusal is not an envelope: { title, status, detail, traceId, errorCodes }. Same root errorCodes.
+    [Fact]
+    public async Task A_validators_code_is_handed_over_from_the_validation_failed_body()
+    {
+        const string body = """{"title":"Validation failed","status":400,"detail":"Validation failed: \n -- FirstName: Ad boş bırakılamaz. Severity: Error","traceId":"t","errorCodes":[{"code":"USER_FIRST_NAME_REQUIRED","params":null}]}""";
+        var controller = ControllerWith(new CapturingGateway(HttpStatusCode.BadRequest, body), Form());
+
+        var json = Body(await controller.Edit(UserId, new UserEditViewModel { Email = "a@b.test", FirstName = "A", LastName = "B", IsActive = true }));
+
+        Assert.Equal("USER_FIRST_NAME_REQUIRED", json.GetProperty("errorCode").GetString());
+        Assert.Equal(JsonValueKind.Null, json.GetProperty("errorParams").ValueKind);
+        Assert.True(json.GetProperty("rawText").GetBoolean()); // the server's sentence is relayed text, never shown
+    }
+
     private static JsonElement Body(IActionResult result)
         => JsonDocument.Parse(JsonSerializer.Serialize(Assert.IsType<JsonResult>(result).Value)).RootElement;
 

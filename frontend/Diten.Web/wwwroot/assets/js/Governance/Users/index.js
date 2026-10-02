@@ -233,22 +233,45 @@ const UsersList = (function () {
         setSelectValue(byId('userAccountKind'), currentKind === 'Unknown' ? '' : currentKind);
     };
     // A refusal tagged with a stable code (the proxy's `errorCode`) is shown in the reader's language.
-    const ERROR_CODE_KEYS = { USER_EMAIL_TAKEN: 'ErrorUserEmailTaken', USER_INVITATION_PENDING: 'ErrorUserInvitationPending', USER_QUOTA_EXCEEDED: 'ErrorUserQuotaExceeded' };
+    // WP-USERS-ERROR-CODES-01 (BL-450) — one entry per AuthService UserErrorCodes constant; the Auth-side guard
+    // (UserErrorCodeBridgeGuardTests) reads THIS object and fails when a code, a key or a language is missing.
+    const ERROR_CODE_KEYS = {
+        USER_EMAIL_TAKEN: 'ErrorUserEmailTaken', USER_INVITATION_PENDING: 'ErrorUserInvitationPending', USER_QUOTA_EXCEEDED: 'ErrorUserQuotaExceeded',
+        USER_DELETE_SELF: 'ErrorUserDeleteSelf', USER_DELETE_LAST_STEWARD: 'ErrorUserDeleteLastSteward', USER_DEACTIVATE_SELF: 'ErrorUserDeactivateSelf',
+        USER_NOT_FOUND: 'ErrorUserNotFound', USER_ACCOUNT_KIND_INVALID: 'ErrorUserAccountKindInvalid', USER_SETUP_ALREADY_COMPLETED: 'ErrorUserSetupAlreadyCompleted',
+        USER_PASSWORD_SETUP_PENDING: 'ErrorUserPasswordSetupPending', PERM_DENIED: 'ErrorUserAccountKindPermissionDenied', USER_EMAIL_REQUIRED: 'ErrorUserEmailRequired',
+        USER_EMAIL_INVALID: 'ErrorUserEmailInvalid', USER_FIRST_NAME_REQUIRED: 'ErrorUserFirstNameRequired', USER_FIRST_NAME_TOO_LONG: 'ErrorUserFirstNameTooLong',
+        USER_LAST_NAME_REQUIRED: 'ErrorUserLastNameRequired', USER_LAST_NAME_TOO_LONG: 'ErrorUserLastNameTooLong'
+    };
     // BL-459 — a code whose params carry numbers adds a second, numbered sentence; without the numbers it is left out
     // (never a raw "{max}" on the screen).
     const ERROR_PARAM_KEYS = { USER_QUOTA_EXCEEDED: { key: 'ErrorUserQuotaUsage', params: ['current', 'max'] } };
+    // Two shapes carry the code: the MVC proxy's { errorCode, errorParams } and — for the delete, which goes straight
+    // to the gateway — AuthService's own envelope { errorCodes: [{ code, params }] }.
+    const refusalOf = (json) => {
+        const body = json || {};
+        const first = Array.isArray(body.errorCodes) ? (body.errorCodes[0] || {}) : {};
+        return { code: body.errorCode || first.code || null, params: body.errorParams || first.params || {} };
+    };
+    // The proxy's OWN sentences (form validation, "Unauthorized") are already in the reader's language and carry no
+    // rawText flag; a sentence the proxy only relayed from a service is English and is never shown.
+    const isProxyOwnText = (json) => !!json && json.success === false && json.rawText !== true && !refusalOf(json).code
+        && Array.isArray(json.errors) && json.errors.length > 0;
     const localizedErrors = (json) => {
-        const key = ERROR_CODE_KEYS[(json || {}).errorCode];
+        const { code, params: values } = refusalOf(json);
+        const key = ERROR_CODE_KEYS[code];
         if (key && L()[key]) {
-            const detail = ERROR_PARAM_KEYS[json.errorCode];
-            const values = json.errorParams || {};
+            const detail = ERROR_PARAM_KEYS[code];
             if (detail && L()[detail.key] && detail.params.every(p => values[p] != null && values[p] !== '')) {
                 const numbered = detail.params.reduce((text, p) => text.split('{' + p + '}').join(String(values[p])), L()[detail.key]);
                 return [L()[key] + ' ' + numbered];
             }
             return [L()[key]];
         }
-        return (json && Array.isArray(json.errors) && json.errors.length) ? json.errors : [L().ErrorOccurred];
+        if (isProxyOwnText(json)) return json.errors;
+        // A refusal without a code this screen knows: the general sentence on screen, the gap in the console.
+        console.warn('[Users] Refusal without a mapped error code.', { code: code, errors: (json || {}).errors || null });
+        return [L().ErrorOccurred];
     };
     const submitForm = async (formData, isEdit, { editingId, headers }) => {
         const url = isEdit ? `/Users/edit/${editingId}` : '/Users/create';
@@ -308,7 +331,8 @@ const UsersList = (function () {
             try {
                 const res = await fetch(cfg.url(id), { method: 'POST', credentials: 'same-origin', headers: postHeaders() });
                 const json = await res.json().catch(() => ({}));
-                if (!res.ok) throw new Error(localizedErrors(json)[0] || L().ErrorOccurred);
+                // The proxy answers a refusal as 200 { success: false } — the status alone says nothing.
+                if (!res.ok || json.success === false) throw new Error(localizedErrors(json)[0] || L().ErrorOccurred);
                 // Dev-only: resend/reset return a copyable set-password link → the dialog, not the toast.
                 if (json.setupUrl) {
                     list.dt.ajax.reload(null, false);
@@ -332,11 +356,11 @@ const UsersList = (function () {
         window.showConfirm?.(L().AreYouSure, async () => {
             try {
                 const res = await fetch(`${apiUrl}/api/users/${row.id}`, { method: 'DELETE', credentials: 'include', headers: getAuthHeaders() });
-                if (!res.ok) throw new Error('Delete failed.');
+                if (!res.ok) throw new Error(localizedErrors(await res.json().catch(() => ({})))[0] || L().ErrorOccurred);
                 list.reload('RecordDeleted');
             } catch (error) {
-                console.error(error);
-                window.showToast?.(L().ErrorOccurred, 'error');
+                console.error('[Users] Delete failed.', error);
+                window.showToast?.(error.message || L().ErrorOccurred, 'error');
             }
         }, { entityName: row.email, subtext: L().DeleteUserConfirmText, type: 'danger', icon: 'bx-trash', confirmButtonText: L().Delete });
     };

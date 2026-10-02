@@ -57,4 +57,18 @@
   <data name="ErrorUserQuotaExceeded" xml:space="preserve"><value>Se ha alcanzado el límite de usuarios de su plan de suscripción; no se ha añadido ningún usuario. Elimine un usuario o amplíe el plan.</value></data>
   <data name="ErrorUserQuotaUsage" xml:space="preserve"><value>En uso: {current} de {max} usuarios.</value></data>
   <data name="DeleteUserConfirmText" xml:space="preserve"><value>El usuario se elimina y se le retiran sus roles; la cuenta no se puede restaurar. Se puede abrir una cuenta nueva con la misma dirección de correo electrónico.</value></data>
+  <data name="ErrorUserDeleteSelf" xml:space="preserve"><value>No puede eliminar su propia cuenta.</value></data>
+  <data name="ErrorUserDeleteLastSteward" xml:space="preserve"><value>Esta es la última cuenta que puede añadir usuarios, por lo que no se puede eliminar. Conceda primero ese permiso a otro usuario.</value></data>
+  <data name="ErrorUserDeactivateSelf" xml:space="preserve"><value>No puede desactivar su propia cuenta.</value></data>
+  <data name="ErrorUserNotFound" xml:space="preserve"><value>No se encontró a este usuario; es posible que se haya eliminado. Actualice la lista e inténtelo de nuevo.</value></data>
+  <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>El tipo de cuenta seleccionado no es válido. Elija uno de la lista.</value></data>
+  <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>Este usuario ya ha establecido su contraseña; no hay ninguna invitación que reenviar. Para darle una contraseña nueva, use Restablecer contraseña.</value></data>
+  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>Este usuario aún no ha establecido su contraseña, por lo que no se puede restablecer. Reenvíe la invitación en su lugar.</value></data>
+  <data name="ErrorUserAccountKindPermissionDenied" xml:space="preserve"><value>No tiene permiso para cambiar el tipo de cuenta; el usuario no se guardó.</value></data>
+  <data name="ErrorUserEmailRequired" xml:space="preserve"><value>Introduzca una dirección de correo electrónico.</value></data>
+  <data name="ErrorUserEmailInvalid" xml:space="preserve"><value>Introduzca una dirección de correo electrónico válida.</value></data>
+  <data name="ErrorUserFirstNameRequired" xml:space="preserve"><value>Introduzca un nombre.</value></data>
+  <data name="ErrorUserFirstNameTooLong" xml:space="preserve"><value>El nombre es demasiado largo. Acórtelo e inténtelo de nuevo.</value></data>
+  <data name="ErrorUserLastNameRequired" xml:space="preserve"><value>Introduzca un apellido.</value></data>
+  <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>El apellido es demasiado largo. Acórtelo e inténtelo de nuevo.</value></data>
 </root>

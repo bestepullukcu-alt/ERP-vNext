@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
@@ -33,6 +34,25 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         }
 
         httpContext.Response.StatusCode = statusCode;
+
+        // WP-USERS-ERROR-CODES-01 — a pipeline validator's refusal carries its stable codes (the one prefix list and
+        // the one helper ExceptionHandlingBehavior uses). ADDITIVE ONLY: without an allowed code the body below is
+        // byte for byte what it always was.
+        var errorCodes = exception is ValidationException validation ? EnvelopeErrorCodePrefixes.Extract(validation.Errors) : [];
+        if (errorCodes.Count > 0)
+        {
+            await httpContext.Response.WriteAsJsonAsync(new
+            {
+                title,
+                status = statusCode,
+                detail = exception.Message,
+                traceId = httpContext.TraceIdentifier,
+                errorCodes
+            }, cancellationToken);
+
+            return true;
+        }
+
         await httpContext.Response.WriteAsJsonAsync(new
         {
             title,

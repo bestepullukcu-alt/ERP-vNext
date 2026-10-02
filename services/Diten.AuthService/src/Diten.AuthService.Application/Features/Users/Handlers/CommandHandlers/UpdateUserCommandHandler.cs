@@ -45,7 +45,7 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
     public async Task<Response<UserDto>> Handle(UpdateUserCommand request, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
-        if (user == null) return Response<UserDto>.Fail("User not found.", 404);
+        if (user == null) return UserErrorCodes.NotFoundRefusal<UserDto>();
 
         // WP-AUTH-USER-KIND-UPDATE-01 — the kind rides on the edit form's "Update" under create's rule: classifying is
         // a SEPARATE right from editing. A supplied kind that CHANGES the account, from a caller without
@@ -56,7 +56,7 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         var newKind = user.AccountKind;
         if (hasKind && !AccountKindWriter.TryParse(request.AccountKind, out newKind))
         {
-            return Response<UserDto>.Fail("AccountKind must be one of: Unknown, Human, Service.", 400);
+            return Response<UserDto>.Fail("AccountKind must be one of: Unknown, Human, Service.", [new ResponseError(UserErrorCodes.AccountKindInvalid)], 400);
         }
 
         if (hasKind && newKind != user.AccountKind && !request.CallerCanManageAccountKind)

@@ -56,7 +56,7 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
     }
 
     // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the stable code the frontend maps; the message is the English fallback.
-    public const string PermissionDeniedCode = "PERM_DENIED";
+    public const string PermissionDeniedCode = UserErrorCodes.AccountKindPermissionDenied;
 
     public async Task<Response<UserDto>> Handle(CreateUserCommand request, CancellationToken ct)
     {

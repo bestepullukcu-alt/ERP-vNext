@@ -24,16 +24,16 @@ public static class UserLifecycle
     public const string StatusActive = "Active";
 
     /// <summary>Stable code: an administrator tried to activate an account whose invitation is still pending.</summary>
-    public const string InvitationPendingCode = "USER_INVITATION_PENDING";
+    public const string InvitationPendingCode = UserErrorCodes.InvitationPending;
 
     /// <summary>Stable code: a live (not deleted) user of the same tenant already has this e-mail address.</summary>
-    public const string EmailTakenCode = "USER_EMAIL_TAKEN";
+    public const string EmailTakenCode = UserErrorCodes.EmailTaken;
 
     /// <summary>
     /// BL-459 — stable code: the subscription plan's user limit (<c>users.max</c>) is reached; params <c>max</c> and
     /// <c>current</c> when Platform told us the numbers. Nothing was written and no invitation went out.
     /// </summary>
-    public const string QuotaExceededCode = "USER_QUOTA_EXCEEDED";
+    public const string QuotaExceededCode = UserErrorCodes.QuotaExceeded;
 
     public static Response<T> QuotaExceededRefusal<T>(decimal? max, decimal? current)
     {

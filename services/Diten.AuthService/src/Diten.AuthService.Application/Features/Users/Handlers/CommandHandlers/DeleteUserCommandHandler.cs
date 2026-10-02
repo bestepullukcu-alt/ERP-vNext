@@ -36,8 +36,8 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
     /// <summary>The capability that makes recovery possible: whoever holds it can put an account back.</summary>
     public const string RecoveryPermission = "auth.users.create";
 
-    public const string SelfDeleteCode = "USER_DELETE_SELF";
-    public const string LastStewardCode = "USER_DELETE_LAST_STEWARD";
+    public const string SelfDeleteCode = UserErrorCodes.DeleteSelf;
+    public const string LastStewardCode = UserErrorCodes.DeleteLastSteward;
 
     private readonly IUserRepository _userRepository;
     private readonly IUserRoleRepository _userRoleRepository;
@@ -76,7 +76,7 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
         var target = await _userRepository.GetByIdAndTenantAsync(request.Id, tenantId, ct);
         if (target is null)
         {
-            return Response<NoContent>.Fail("User not found.", 404);
+            return UserErrorCodes.NotFoundRefusal<NoContent>();
         }
 
         if (_currentUser.UserId == request.Id)
