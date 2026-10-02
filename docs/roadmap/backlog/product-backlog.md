@@ -7439,6 +7439,73 @@ Gelecek regresyon riski: 🟡 (20 komutun istek hattına iletim davranışı gir
 
 ---
 
+### BL-504
+
+**Denetim kaydı standardının (AUD-001) testinin hâlâ göremedikleri — iki gözden geçirmeden kalanlar**
+
+DURUM: AÇIK · SAHİP: CT (altyapı) · BULAN: WP-AUDIT-STANDARD-01 düzeltme turunun ikinci bağımsız gözden geçirmesi · KAYIT: 2026-10-02
+
+Düzeltme turu ve CT düzeltmeleri hatta (`3f42003a3`): sayılar ve kabul edilmiş izler sabit, zayıf yazıcı biçimi daraltıldı, CI adımı var.
+Kural bunları "yakalamayan" sütununda dürüstçe sayıyor; kapatılması gerekenler:
+(1) **Dar sorgu algılayıcısı:** adı `*Query` olan bir istek, `…Repository / …Store / …Collection` dışındaki bir yoldan yazarsa (servis
+üzerinden, `SaveChangesAsync`, `ArchiveAsync` gibi listede olmayan fiiller) görünmüyor. (2) **Ad değiş tokuşu:** borç listesinden bir adı silip
+yerine yeni denetimsiz bir komutun adını yazmak sayıyı korur; yalnız PR'da CI adımı yakalar, `push`'ta adım atlanır. (3) **Miras alan handler:**
+`IRequestHandler`'ı taban sınıftan alan handler çözümleme testine görünmüyor; MG'nin jenerik muafiyeti ada göre. (4) **Yazan üç sorgu** (kiracı
+yönetici kullanıcılarını okurken ilk yöneticiyi oluşturan iki sorgu, giriş ayarlarını okurken varsayılanı yazan sorgu): yazma komuta taşınmalı.
+(5) **Platform'da K2 sınırı:** 192 komut özellik klasörüne göre seçildi (platform yöneticileri, kiracılar, belge yönetimi); pozisyon atamaları
+dışarıda — onaycıyı belirlediği için içeri alınması tartışılmalı. (6) **Paket talimatı üç yerde üç türlü:** izi olmayan serviste paket "engelli
+yazılır" / "hazır sayılmaz" / "komut pakete hiç yazılmaz"; tek cümleye inmeli. (7) `capability-pack-standard.md` §7.1 hâlâ "üye modül altyapıyı
+kurar" diyor (K4 kararına aykırı); `debugger` / `debug` akışlarında kapı yok. Gelecek regresyon riski: 🟢 (yalnız test ve kural metni).
+
+---
+
+### BL-505
+
+**GÜVENLİK — ortak onay penceresi kayıt adını HTML olarak basıyor (kalıcı XSS), 152 çağrı**
+
+DURUM: AÇIK — YÜRÜYOR (WP-SHARED-CONFIRM-XSS-01, dal `fix/shared/confirm-entity-name`) · SAHİP: CT (ortak ön yüz) · BULAN: Kullanıcılar
+paketinin bağımsız gözden geçirmesi, CT kodda doğruladı · KAYIT: 2026-10-02
+
+`Views/Shared/_GlobalConfirmation.cshtml:243` çağıranın verdiği `entityName` değerini, aynı blok `subtext` değerini kaçışsız olarak SweetAlert
+`html` içine yazıyor. `wwwroot/assets/js` altında 127 dosyada 152 `entityName:` çağrısı var; hiçbiri kendi satırında kaçış yapmıyor. Adında HTML
+olan bir kayıt (kullanıcı e-postası, rol adı, görev başlığı) oluşturan kişi, o kaydın silme / devre dışı bırakma penceresini açan başka bir
+kullanıcının oturumunda betik çalıştırır; görev başlığını her kiracı kullanıcısı yazabildiği için yetki yükseltme yoludur. Bildirim (toast)
+kapısı aynı şeyi doğru yapıyor (`_GlobalNotification.cshtml`, kapıda kaçış). Çözüm: pencere çağıranın verdiği her değeri METİN olarak basar,
+kaçış kapıda tek yardımcıda; önceden kaçış yapan çağıranlardan kaçış kalkar; biçim isteyen çağıran varsa adı açık ayrı giriş. Karşılaştırma:
+SAP UI5 ve Oracle JET'te ileti kutuları varsayılan olarak metin basar, HTML ayrı ve açık bir seçenektir. Gelecek regresyon riski: 🟡 (ürünün her
+onay penceresi).
+
+---
+
+### BL-506
+
+**Onay izni kiracı rollerine verilemiyor — Admin olmayan yönetici onaylayamıyor (düzeltme devralma dalında bekliyor)**
+
+DURUM: AÇIK — düzeltme yazıldı ve kabul edildi (`b314cb8b8` + `9d108368c`, dal `feature/mdm/product-five-takeover`), hatta TAŞINMADI · SAHİP: CT
+(Auth) · BULAN: CT ölçümü, sahibin "Rol İzinleri'nde ne var" sorusu üzerine (dev `diten_auth_v3`) · KAYIT: 2026-10-02
+
+`platform.workflow.tasks.approve / reject` (ve iş akışının diğer 11 anahtarı) hat, ana dal ve canlıda platform kapsamında: Rol İzinleri ekranı
+göstermiyor, yalnız `Admin` ve `SuperAdmin` rollerinde var. Sonuç: "Ekip Lideri" gibi bir kiracı rolündeki yönetici ne zaman çizelgesi haftasını
+ne Görev Merkezi'ndeki bir onay görevini onaylayabilir. Sahibin 1 Ekim kararı (iş akışı yürütme anahtarları tek belgeli listeden kiracı
+kapsamına alınır: `SeedOwnedTenantScopeKeys`) yalnız devralma dalında uygulandı. Yapılacak: iki commit'in Auth kısmı Roller paketi birleştikten
+sonra hatta taşınır (aynı tohum dosyasına dokunuyorlar), Auth testleri, dev'de izinlerin ekranda göründüğünün ölçümü. Zaman Çizelgesi canlı
+pilotunda onaylayan kişi o zamana kadar Admin rolünde olmalı. İlgili: BL-494 (Devret için aynı kapı). Gelecek regresyon riski: 🟡 (izin kapsamı).
+
+---
+
+### BL-507
+
+**Rol İzinleri ekranında "mod0251" grubu: İK Çalışan Ana Kaydı izinleri ad yerine modül numarasıyla görünüyor (Rİ1)**
+
+DURUM: AÇIK · SAHİP: etiket CT (Rol İzinleri ekranı), kalıcı ad İK ekibi (MOD-0251 tohumu) · BULAN: sahip (Rol İzinleri, dev) · KAYIT: 2026-10-02
+
+`DataSeeder` MOD-0251 (Core HR / Employee Master) için 13 izni `Module = "mod0251"` ile ekiyor; aynı alanın diğer izinleri `human-capital` (73) ve
+`hcm-employee-master` (1) gruplarında. Ekran grup başlığını modül kodundan türettiği için okuyana anlamsız bir "mod0251" başlığı çıkıyor.
+Yapılacak: ekranın grup adı köprüsüne okunur ad (7 dil), ve tohumda üç grubun tek modül adında birleşmesi (anahtarlar değişmez: ADR-001).
+Gelecek regresyon riski: 🟢 (yalnız gruplama etiketi).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
