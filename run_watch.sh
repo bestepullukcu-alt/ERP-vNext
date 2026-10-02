@@ -23,6 +23,7 @@ echo ""
 
 # Terminate processes on our target ports
 lsof -ti :5000,5001,5056,5057,5058,5059,5060 | xargs kill -9 2>/dev/null || true
+lsof -ti :4010,5066 | xargs kill -9 2>/dev/null || true # Prism product-master mock + Inventory
 killall -9 dotnet 2>/dev/null || true
 
 # Watch mode commands
@@ -33,6 +34,18 @@ prefix_logs "[DEVEN   ]" "dotnet watch run --non-interactive --project services/
 prefix_logs "[PLATFORM]" "dotnet watch run --non-interactive --project services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj --urls http://0.0.0.0:5057" &
 prefix_logs "[MDM     ]" "dotnet watch run --non-interactive --project services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj --urls http://0.0.0.0:5059" &
 prefix_logs "[HCM     ]" "dotnet watch run --non-interactive --project services/Diten.HcmService/src/Diten.HcmService.Api/Diten.HcmService.Api.csproj --urls http://0.0.0.0:5060" &
+# FU-PM-01: MDM PRODUCT-MASTER gerçek uç noktası gelene kadar geçici — Prism product-master mock (4010)
+PRISM_JS=""
+for c in "${LOCALAPPDATA//\\//}"/npm-cache/_npx/*/node_modules/@stoplight/prism-cli/dist/index.js "$HOME"/.npm/_npx/*/node_modules/@stoplight/prism-cli/dist/index.js; do
+    [ -f "$c" ] && PRISM_JS="$c" && break
+done
+PM_SPEC=$(find docs -name 'product-master-bundle.openapi.yaml' -print -quit 2>/dev/null)
+if [ -n "$PRISM_JS" ] && [ -n "$PM_SPEC" ]; then
+    prefix_logs "[PRISM-PM]" "node --max-http-header-size=65536 $PRISM_JS mock $PM_SPEC --port 4010 --host 127.0.0.1" &
+else
+    echo "⚠️ Prism product-master mock (4010) atlandı: prism-cli önbellekte ya da product-master-bundle.openapi.yaml bulunamadı (önbelleğe almak için: npx --yes @stoplight/prism-cli@4.10.5 --version)"
+fi
+prefix_logs "[INVENTRY]" "env Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet watch run --non-interactive --project services/Diten.InventoryService/src/Diten.InventoryService.Api/Diten.InventoryService.Api.csproj --launch-profile http --urls http://0.0.0.0:5066" &
 prefix_logs "[GATEWAY ]" "dotnet watch run --non-interactive --project gateway/Diten.ApiGateway/Diten.ApiGateway.csproj --urls http://0.0.0.0:5000" &
 prefix_logs "[FRONTEND]" "dotnet watch run --non-interactive --project frontend/Diten.Web/Diten.Web.csproj --urls http://0.0.0.0:5001" &
 
