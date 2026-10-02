@@ -659,6 +659,15 @@ StockLedger/Create are UI-2. Evidence `docs/records/audits/2026-10/mod-0173-fu01
   (it is removed in `initComplete`, which a failed load never reaches); the shared processing indicator stays visible
   in that case (shared CSS — FU).
 
+- **CT break-glass (2026-10-02, SOP §3.1):** the owner granted inventory permissions but the tenant menu showed no
+  Inventory entry. Measured cause: `Diten.InventoryService` had no `PlatformRegistration` (BaseUrl / InternalApiKey), so
+  `ModuleRegistrationHostedService` logged "Module self-registration skipped" and the INVENTORY-LEDGER manifest never
+  reached the Platform module catalog (UI1-10 had left it out of scope). Fix: `appsettings.Development.json` gets the same
+  `PlatformRegistration` section as ProcurementService (Platform 5057, shared local-dev internal key); service restarted.
+  The menu additionally needs the module **entitled to the tenant** (Module Catalog → assignment, owner action) and a
+  **fresh login** (permissions are read into the token at login). Non-Development environments still need this
+  configured through their own secrets (follow-up FU-REG-01).
+
 ## 20. Follow-up Items
 
 - Request to MOD-0290 owner (MDM): additive product/SKU search in PRODUCT-MASTER-BUNDLE v1.1 — retires W-UI-01.
