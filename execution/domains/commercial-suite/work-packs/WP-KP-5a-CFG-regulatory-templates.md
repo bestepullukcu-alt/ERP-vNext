@@ -157,3 +157,14 @@ Yok. Kod değişikliği yok.
 - **Ara bulgu:** ilk kontrolde CRM servisi (5061) çalışmıyordu (süreç yok, `/health` yanıtsız) → tüm `/CRM/*/api` istekleri gövdesiz 502 (Bilgi Yolları dahil). Kullanıcı CRM'i başlattıktan sonra hepsi 200. Konsoldaki 502 kayıtları yalnız o döneme ait.
 - **Küçük gözlem (hata değil):** liste yüklenirken iki istek gidiyor (`draw=1`, `draw=2`) — fabrikanın kayıtlı görünümü uygulaması; davranış diğer sunucu modu listeleriyle aynı.
 - Kayıt oluşturulmadı, örnek başlatılmadı. **E4 (CT):** TR / tr güvenlilik metni → gönder → `KP-REG-TR` → sema onayı → aktif → çözümleme.
+### 7. E4 — oluştur + onaya gönder (kullanıcı isteğiyle, 2026-10-02)
+- **Oluşturma (ekrandan, `/CRM/SafetyTexts/Create`):** ürün ALMIBA (`GP-000000000001`, `44e509b7-78be-46ad-9499-9a6f641f49f7`), TR / tr (ülke → dil zinciri yalnız `tr` sundu), tam metin 324 karakter (sayaç "324 / 20000"), kısa metin, kaynak belge "KÜB ALMIBA (E4 test)", kaynak tarihi 2026-10-02. Metin `[E4 TEST — WP-KP-5a-CFG]` ile işaretli.
+- **Sonuç:** `SAF-TR-0001` v1 (`8bed7dd5-0413-4a3a-a7ad-755fa9a7f152`), ayrıntı sayfasına yönlendirdi; durum Taslak; eylemler Düzenle / Onaya gönder / Arşivle; karar paneli gizli.
+- **XSS:** metne konan `<script>alert(1)</script>` önizlemede düz metin; DOM'da `script` öğesi yok.
+- **Onaya gönder:** onay penceresi → CRM `in-review`, `workflowInstanceId` `7c3bc16d-2a75-4d75-a21e-c350601b4954`; eylemler Geri çek / Arşivle; gönderen kendi kaydında karar panelini görmüyor (`canDecide: false`).
+- **Platform:** örnek `KP-REG-TR` (v1 `ba00ebe5…`), `ObjectType crm.safety-text`, aşama / adım `regulatory`, süre 3 gün; başlık "Güvenlilik metni onayı · SAF-TR-0001 v1", alt başlık "GP-000000000001 · TR/tr", `DeepLinkUrl /CRM/SafetyTexts/8bed7dd5…`. Onay görevi `1f03194a-4e3a-4894-9373-7fbae178503c` açık, **atanan sema** (`d27fa4a6…`).
+- **Kalan E4 (sema):** WCN görevinden derin bağlantıyla gel → Onayla (ya da yorumla Reddet) → aktif → `GET …/safety-texts/resolve?productId=44e509b7…&countryCode=TR&languageCode=tr`.
+- **Bulgular (hata değil, sonraki iş):**
+  1. Onay görevinin `ReasonCode`'u `CRM_CLAIM_SUBMITTED` — ortak iş akışı başlatma istemcisi iddia gerekçe kodunu kullanıyor; `RegulatoryTextKind.SubmitReason` (`CRM_SAFETY_TEXT_SUBMITTED`) başlatmaya geçmiyor (denetim kaydı yanlış etiket).
+  2. Ayrıntı sayfasında "Gönderen" ham kullanıcı kimliği gösteriyor (`c5769c62-…`), ad değil.
+  3. İncelemedeki kayıtta "Arşivle" düğmesi görünüyor; CRM bunu reddeder (409 `not_editable`) — Web düğmeyi `in-review` iken gizlemeli.
