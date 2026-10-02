@@ -5985,6 +5985,8 @@ dilimi kendi geçiş cümlesini yazar (kimin neyi görmeyi bırakacağı).
 
 DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT (sahip sorusu: "bu servis hesabı nasıl olmalı, etiketleme dışında ne işe yarar?") · KAYIT: 2026-09-21
 
+**2026-10-02 — sahip:** büyük iş, sonraya; Kullanıcılar modülünün kapanışını bekletmez.
+
 Ölçüldü (`origin/main`, 2026-09-21): `AccountKind` (Unknown | Human | Service) `Diten.AuthService.Domain/Enums/AccountKind.cs`'de
 tanımlı; değiştirmek `auth.users.account-kind.manage` iznini istiyor ve bu izin `ExplicitGrantOnlyPermissions`
 listesinde (hiçbir role kendiliğinden gelmez, SuperAdmin otomatiği dahil); `GET api/users/{id}/account-assertion`
@@ -6009,6 +6011,8 @@ açıldığında kimsenin girişi kesilmez; yanlış işaretlenmiş bir hesap is
 **Servis hesabının kimlik bilgisi yok — insan şifresiyle çalışan entegrasyon, süresi ve iptali olmayan erişim demek**
 
 DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT (sahip sorusu: "servis hesabı belli süreliğine mi açılıyor, o hesaba belli sayfalar yetki mi veriliyor?") · KAYIT: 2026-09-21
+
+**2026-10-02 — sahip:** büyük iş, sonraya; Kullanıcılar modülünün kapanışını bekletmez.
 
 Bugünkü durum: bir entegrasyonun sistemimize bağlanma yolu, birinin insan hesabı açıp şifresini entegrasyona
 vermesidir. Bunun üç sonucu var — şifre bir insanın parola politikasına tabi (dolayısıyla bir gün süresi dolar ve
@@ -6624,6 +6628,15 @@ başlasa da dönmez (canlı kanıt bekleniyor).
 **E-posta bildirimleri: tasarım yok, gönderici Gmail hesabı — kurumsal şablon ve kurumsal gönderici**
 
 DURUM: AÇIK — sahip kararı 2026-09-24 ("Kullanıcılar sayfasından sonra bakalım") · SAHİP: CT (tasarım + gönderim prompt'u) · KAYIT: 2026-09-24
+
+**2026-10-02 — sahip kararları (Kullanıcılar turu, CT'ye iletildi):** (a) **E-posta kabuğu** ayrı iş paketi, önce tasarım onayı: tek kabuk
+(logo, kiracı adı, başlık, gövde, tek eylem düğmesi, altbilgi) `Diten.Building.Blocks` altında; her e-posta yalnız içeriğini verir; dil alıcının
+dili; Outlook / koyu mod bir kez çözülür. Bugün elle yazılmış ayrı HTML şablonları iki serviste: Auth (`TenantUserInvitationEmailTemplate`,
+`PlatformPasswordResetEmailTemplate`, OTP) ve Platform (`AdminUserInvitationEmailTemplate`, `PlatformAdministratorInvitationEmailTemplate`,
+`SmtpMessagingProvider`). İlk tüketici kullanıcı daveti, sonra görev atama. Sahibe iki örnekli prototip gösterildi (davet + görev ataması);
+onay bekliyor. (b) **Gönderen adı kiracıya göre** ("Diten Pharma (Di10 üzerinden)"), yanıt adresi kiracının — küçük iş, kabuk paketiyle birlikte.
+(c) **İki servisin gönderen adı tek olsun** (bugün Auth "Diten ERP", Platform "Diten PPM") — aynı pakette. Kiracının kendi alan adından gönderim
+büyük iş → BL-497.
 
 **Sahibin gözlemi:** e-postalar "berbat gidiyor": düz metin, marka yok, başlık/altbilgi yok; dil kiracı ayarından (BL-445). Sunucu
 şu an bir Gmail hesabıyla gönderiyor (canlı SMTP ayarı); kurumsal hesap/adres olmalı.
@@ -7270,6 +7283,50 @@ Devret'i açık görüp genel hata alıyor (BL-475 ile aynı kök). (5) Pencered
 adımın "olası işleyenleri" ile sınırlanır, başlatan "hariç tutulan işleyen" olur; Oracle onay kurallarında yeniden atama dizinden herkese
 açıktır ama kısıtlanabilir ve talep sahibinin kendi kaydını onaylaması ayrı kuralla engellenir. Gelecek regresyon riski: 🟡 (karar yoluna ve
 yetki kapsamına dokunur).
+
+---
+
+### BL-495
+
+**Bağlamsal yardım: "bu sayfa nasıl kullanılır" + klavye kısayolları her sayfada tek girişten**
+
+DURUM: AÇIK — tasarım konuşması gerekli (sahip + CT) · SAHİP: CT (ortak ön yüz) · BULAN: sahip (canlı kullanıcılar "sayfayı nasıl kullanacağız" bilgisi istiyor) · KAYIT: 2026-10-02
+
+Ölçüm: ortak kısayol katmanı var (`assets/js/shared/diten-shortcuts.js`, BL-438) ama `_DitenShortcuts` yalnız Görev Merkezi (Index, Details)
+ve Görevler (Create, Edit, Details) sayfalarına yükleniyor; düğme Görev Merkezi kutusunun içinde. Başka hiçbir sayfada "ne işe yarar,
+nasıl kullanılır" bilgisi yok. Öneri: üst çubukta tek "?" girişi — (a) bu sayfa hakkında: ne işe yarar + 3–5 adım, metni modül verir, kiracı
+ekranında 7 dil; (b) klavye kısayolları: kısayolu olmayan sayfada satır çıkmaz; (c) ilk kullanım turu: sonraya. Karşılaştırma tasarım
+konuşmasında ölçülerek yapılacak (SAP Web Assistant / Enable Now, Oracle Guided Learning — bu kayıttaki adlar hafızadan, doğrulanmadı).
+Modül paketi şablonuna "sayfa yardım metni" satırı eklenmesi aynı işin parçası. Gelecek regresyon riski: 🟢 (ek).
+
+---
+
+### BL-496
+
+**Giriş ekranı retleri İngilizce ve ortak diyaloğun dışında — "Account is disabled."**
+
+DURUM: AÇIK — sahip: düzeltilecek (2026-10-02); prompt Roller kapanışı hatta girince verilecek (ortak `diten-refusal.js` oradan geliyor) · SAHİP: CT (Auth + ortak ön yüz) · BULAN: sahip (Kullanıcılar turu) · KAYIT: 2026-10-02
+
+Ölçüm: `LoginCommandHandler.cs:102` "Account is disabled." sabit İngilizce; aynı dosyada 5 ham ret daha (72, 78, 82, 93, 129). `login.js:77`
+`problem.detail`'i olduğu gibi basıyor. Mesaj parola doğrulandıktan SONRA dönüyor (hesap varlığını sızdırmıyor) — bu sıra korunmalı.
+`login.js`, `forgot-password.js`, `reset-password.js` ürünün ortak diyaloğunu değil kendi `Swal.fire` görünümünü çiziyor; vendor dışında toplam
+20 dosyada ham `Swal.fire` var, hangilerinin ortak görünümü giydiği ayrılmadı. İş: (1) giriş / parola akışı retlerine kalıcı kod + 7 dil
+(WP-ROLES-CLOSE-01'de yazılan ortak köprü), hangi durumda hangi cümlenin gösterileceği hesap varlığını sızdırmayacak şekilde; (2) üç sayfanın
+ortak diyaloğa geçmesi; (3) 20 dosyalık `Swal.fire` envanteri (hangisi ortak, hangisi değil) — düzeltmesi ayrı karar.
+İlgili: BL-328 (kiracı girişinde "Parolamı unuttum" yok — sahip 2026-10-02: sonraya, başka geliştirici yapabilir). Gelecek regresyon riski: 🟡 (giriş yolu).
+
+---
+
+### BL-497
+
+**Kiracının kendi alan adından e-posta gönderimi**
+
+DURUM: AÇIK (büyük iş, sonraya — sahip 2026-10-02) · SAHİP: SAHİPSİZ (Platform bildirimleri) · BULAN: sahip · KAYIT: 2026-10-02
+
+Bugün bütün e-postalar servis ayarındaki tek hesaptan gidiyor (`Smtp:FromEmail` — Auth ve Platform `appsettings.json`); kiracıya göre değişen
+bir şey yok. Küçük adım (gönderen adı + yanıt adresi kiracıya göre) BL-454'ün e-posta kabuğu paketinde. Bu kayıt büyük adım: kiracı başına
+gönderim kimliği (SPF / DKIM doğrulaması, kiracı başına SMTP ya da sağlayıcı), doğrulanmamış alan adından gönderimin reddi, geri dönen
+iletilerin (bounce) izlenmesi. Gelecek regresyon riski: 🟡 (bildirim teslimi).
 
 ---
 

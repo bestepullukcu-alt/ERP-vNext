@@ -67,6 +67,8 @@ sistem rolünün izinleri değiştirilebiliyor mu; verilen / alınan izin Deneti
 ### 4 · Kullanıcı Rolleri (`/UserRoleAssignments`) — önce Kullanıcılar'da hesapları açın
 1. Kullanıcılar'da Metin, Burak, Cem, Deniz, Elif'i aktif edin; giriş yapacak olanlara (en az Burak ve Ayşe) "Parolayı Sıfırla" ile
    bağlantı üretin (dev'de bağlantı ekranda ve Mailpit'te).
+   **Rol atamadan ÖNCE** (BL-410 kontrolü): Elif'le giriş yapın — rolsüz hesap Görev Merkezi'ni görür (tasarım gereği); yalnız kendi işini mi
+   görüyor, "+ Yeni" gibi yetki isteyen düğmeler çizilmiyor mu?
 2. Kadro tablosundaki rolleri atayın: Metin → Bölüm Yöneticisi · Burak → Ekip Lideri · Ayşe, Deniz, Elif → Çalışan · Cem → İK Yöneticisi.
 3. Ayşe'den `deneme` rolünü kaldırın; sonra Roller'e dönüp `deneme` rolünü silin.
 Bakılacak: bir kişiye iki rol; rol kaldırma; servis hesabı (svc-kargo) listede nasıl görünüyor; atama Denetim Günlüğü'nde, yapan
