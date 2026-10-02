@@ -33,7 +33,7 @@ public sealed class GetRolePermissionsQueryHandler : IRequestHandler<GetRolePerm
         var role = await _roleRepository.GetByIdAndTenantAsync(request.RoleId, tenantId, ct);
         if (role is null)
         {
-            return Response<RolePermissionsDto>.Fail("Role not found.", 404);
+            return RoleErrorCodes.Refuse<RolePermissionsDto>(RoleErrorCodes.NotFound, "Role not found.", 404);
         }
 
         var grants = await _rolePermissionRepository.GetByRoleAsync(role.Id, tenantId, ct);

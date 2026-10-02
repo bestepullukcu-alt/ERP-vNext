@@ -15,6 +15,10 @@ form_field_count: 0
 screens:
   - module: Users
     data_mode: server
+  # WP-ROLES-CLOSE-01: rol kumesi tasarimda sinirli (kiraci basina tipik < 30; GetAllRolesQueryHandler tum kumeyi tek istekte doner).
+  - module: Roles
+    data_mode: client
+    data_mode_max_rows: 200
 dates:
   started: 2026-06-11
 ---

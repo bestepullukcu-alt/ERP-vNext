@@ -29,4 +29,13 @@
   <data name="Remove" xml:space="preserve"><value>Retirer</value></data>
   <data name="PermissionCountFormat" xml:space="preserve"><value>{0} autorisations</value></data>
   <data name="RolesShownFormat" xml:space="preserve"><value>{0} rôles affichés</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Votre session n'a pas pu être vérifiée. Reconnectez-vous puis réessayez.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Ce rôle n'existe plus. Actualisez la page.</value>
+  </data>
+  <data name="ErrorUserRoleUserNotFound" xml:space="preserve">
+    <value>Cet utilisateur n'existe plus. Actualisez la page.</value>
+  </data>
 </root>

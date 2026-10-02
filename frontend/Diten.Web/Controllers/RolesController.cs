@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Web.Models;
+using Diten.Web.Services.Governance;
 using Diten.Web.Models.Governance;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -47,10 +48,10 @@ public sealed class RolesController : Controller
     public async Task<IActionResult> Create([FromForm] RoleEditViewModel model)
     {
         if (!ModelState.IsValid)
-            return Json(new { success = false, errors = CollectModelErrors() });
+            return Json(new { success = false, errors = CollectModelErrors(), errorCode = (string?)null, local = true });
 
         if (!AddAuthHeaders())
-            return Json(new { success = false, errors = new[] { _sharedLocalizer["Unauthorized"].Value } });
+            return Json(GatewayRefusal.Local(_sharedLocalizer["Unauthorized"].Value));
 
         try
         {
@@ -58,7 +59,7 @@ public sealed class RolesController : Controller
             var response = await _httpClient.PostAsJsonAsync($"{_gatewayUrl}/api/roles", payload, _jsonOptions);
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer));
         }
         catch (Exception ex)
         {
@@ -73,10 +74,10 @@ public sealed class RolesController : Controller
     {
         model.Id = id;
         if (!ModelState.IsValid)
-            return Json(new { success = false, errors = CollectModelErrors() });
+            return Json(new { success = false, errors = CollectModelErrors(), errorCode = (string?)null, local = true });
 
         if (!AddAuthHeaders())
-            return Json(new { success = false, errors = new[] { _sharedLocalizer["Unauthorized"].Value } });
+            return Json(GatewayRefusal.Local(_sharedLocalizer["Unauthorized"].Value));
 
         try
         {
@@ -85,7 +86,7 @@ public sealed class RolesController : Controller
             var response = await _httpClient.PutAsJsonAsync($"{_gatewayUrl}/api/roles/{id}", payload, _jsonOptions);
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer));
         }
         catch (Exception ex)
         {
@@ -139,24 +140,6 @@ public sealed class RolesController : Controller
     {
         var message = ex.GetBaseException().Message;
         return [string.IsNullOrWhiteSpace(message) ? _sharedLocalizer["GatewayError"].Value : message];
-    }
-
-    private async Task<List<string>> ExtractGatewayErrorsAsync(HttpResponseMessage response)
-    {
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            return [_sharedLocalizer["Unauthorized"].Value];
-
-        try
-        {
-            var payload = await response.Content.ReadFromJsonAsync<GovernanceGatewayResponse<object>>(_jsonOptions);
-            var errors = payload?.Errors?.Where(e => !string.IsNullOrWhiteSpace(e)).ToList();
-            if (errors?.Count > 0)
-                return errors;
-        }
-        catch { }
-
-        var raw = await response.Content.ReadAsStringAsync();
-        return [string.IsNullOrWhiteSpace(raw) ? _sharedLocalizer["GatewayError"].Value : raw];
     }
 
     private bool AddAuthHeaders()

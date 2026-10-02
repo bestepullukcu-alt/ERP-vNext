@@ -11,7 +11,7 @@ public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand
     private readonly IRoleRepository _roleRepository;
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
-    private readonly IRbacAuditRecorder _rbacAudit;
+    private readonly IRoleAuditRecorder _rbacAudit;
     private readonly ICurrentUserAccessor _currentUser;
     private readonly ILogger<DeleteRoleCommandHandler> _logger;
 
@@ -19,7 +19,7 @@ public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand
         IRoleRepository roleRepository,
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
-        IRbacAuditRecorder rbacAudit,
+        IRoleAuditRecorder rbacAudit,
         ICurrentUserAccessor currentUser,
         ILogger<DeleteRoleCommandHandler> logger)
     {
@@ -36,12 +36,12 @@ public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand
         // BL-412 F1 — DELETE api/roles/{id} is a person path: the soft delete names who deleted the role (UpdatedBy),
         // the same actor id the role_deleted audit row carries.
         if (_currentUser.UserId is not { } actorId)
-            return Response<NoContent>.Fail("An authenticated user is required to delete a role.", 401);
+            return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.ActorRequired, "An authenticated user is required to delete a role.", 401);
 
         var role = await _roleRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
-        if (role == null) return Response<NoContent>.Fail("Role not found.", 404);
+        if (role == null) return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.NotFound, "Role not found.", 404);
 
-        if (role.IsSystem) return Response<NoContent>.Fail("System roles cannot be deleted.", 403);
+        if (role.IsSystem) return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.SystemNotDeletable, "System roles cannot be deleted.", 403);
 
         await _roleRepository.DeleteAsync(request.Id, _tenantContext.TenantId, actorId.ToString(), ct);
 
@@ -49,8 +49,9 @@ public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand
         await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
 
         // FEAT-AUDIT-RBAC — a role was deleted.
-        await _rbacAudit.RecordAsync("role_deleted", _tenantContext.TenantId,
-            new { roleId = request.Id, roleName = role.Name }, ct);
+        // WP-ROLES-CLOSE-01 — the same local row, now also forwarded to Platform's central audit log.
+        await _rbacAudit.RecordAsync(RoleAuditEvents.Deleted, _tenantContext.TenantId, request.Id,
+            new Dictionary<string, object?> { ["roleName"] = role.Name }, ct);
 
         return Response<NoContent>.Success(204);
     }

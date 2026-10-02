@@ -31,4 +31,28 @@
   <data name="KpiSystemRoles" xml:space="preserve"><value>Roles del sistema</value></data>
   <data name="KpiCustomRoles" xml:space="preserve"><value>Roles personalizados</value></data>
   <data name="KpiAssignedUsers" xml:space="preserve"><value>Usuarios asignados</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>No se pudo verificar su sesión. Inicie sesión de nuevo y vuelva a intentarlo.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Este rol ya no existe. Actualice la página.</value>
+  </data>
+  <data name="ErrorRoleNameTaken" xml:space="preserve">
+    <value>Ya existe un rol con este nombre. Elija otro nombre.</value>
+  </data>
+  <data name="ErrorRoleSystemNotDeletable" xml:space="preserve">
+    <value>Los roles del sistema no se pueden eliminar.</value>
+  </data>
+  <data name="ErrorRoleNameRequired" xml:space="preserve">
+    <value>Introduzca un nombre de rol.</value>
+  </data>
+  <data name="ErrorRoleNameTooLong" xml:space="preserve">
+    <value>El nombre del rol puede tener 50 caracteres como máximo.</value>
+  </data>
+  <data name="ErrorRoleDisplayNameRequired" xml:space="preserve">
+    <value>Introduzca un nombre para mostrar.</value>
+  </data>
+  <data name="ErrorRoleDisplayNameTooLong" xml:space="preserve">
+    <value>El nombre para mostrar puede tener 100 caracteres como máximo.</value>
+  </data>
 </root>

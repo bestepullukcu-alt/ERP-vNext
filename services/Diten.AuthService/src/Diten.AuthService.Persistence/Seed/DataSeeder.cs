@@ -131,6 +131,8 @@ public static class DataSeeder
         {
             // BL-452 package 3 — which tenants already hold auth.users.export, measured BEFORE this run writes anything.
             var tenantsAlreadyOnExport = await SnapshotTenantsOnUsersExportAsync(database);
+            // WP-ROLES-CLOSE-01 — the same measurement for auth.roles.export.
+            var tenantsAlreadyOnRolesExport = await SnapshotTenantsOnRolesExportAsync(database);
 
             Console.WriteLine("Seeding permissions...");
             await SeedPermissionsAsync(database);
@@ -188,6 +190,9 @@ public static class DataSeeder
 
             Console.WriteLine("Backfilling auth.users.export for roles that read users (one-way, once per tenant)...");
             await BackfillUsersExportAsync(database, tenantsAlreadyOnExport);
+
+            Console.WriteLine("Backfilling auth.roles.export for roles that read roles (one-way, once per tenant, audited)...");
+            await BackfillRolesExportAsync(database, tenantsAlreadyOnRolesExport);
 
             Console.WriteLine("Seeding completed successfully.");
         }
@@ -421,6 +426,9 @@ public static class DataSeeder
             new("auth", "roles", "update", "Update Role", "Permission to edit roles", moduleOverride: "access-governance"),
             new("auth", "roles", "delete", "Delete Role", "Permission to delete roles", moduleOverride: "access-governance"),
             new("auth", "roles", "assign-permission", "Assign Permission", "Permission to assign permissions to roles", moduleOverride: "access-governance"),
+            // WP-ROLES-CLOSE-01 (BL-452) — exporting the Roles list is its own right (was auth.roles.read). Tenant Admin
+            // receives it through the access-governance breadth; existing reading roles get it once, by BackfillRolesExportAsync.
+            new("auth", "roles", "export", "Export Roles", "Permission to export the role list (print/CSV/Excel/PDF/copy) as the screen shows it", moduleOverride: "access-governance"),
 
             new("mdm", "legal-entities", "create", "Create Legal Entity", null, moduleOverride: "legal-entity"),
             new("mdm", "legal-entities", "read", "Read Legal Entity", null, moduleOverride: "legal-entity"),
@@ -1303,6 +1311,77 @@ public static class DataSeeder
         }
 
         Console.WriteLine($"Backfilled auth.users.export on {planned.Count} role(s) that read users.");
+    }
+
+    private static async Task<IReadOnlySet<Guid>> SnapshotTenantsOnRolesExportAsync(IMongoDatabase database)
+    {
+        var export = await database.GetCollection<Permission>("permissions")
+            .Find(p => p.Key == RolesExportGrantBackfill.ExportKey && p.IsDeleted == false).FirstOrDefaultAsync();
+        if (export is null) return new HashSet<Guid>();
+
+        var (roles, grants) = await LoadRoleGrantsAsync(database);
+        return RolesExportGrantBackfill.TenantsAlreadyOnExport(roles, grants, export.Id);
+    }
+
+    // WP-ROLES-CLOSE-01 — see RolesExportGrantBackfill: every role holding auth.roles.read gets auth.roles.export, in the
+    // tenants that were not on the export key when this run started and are not marked. Additive, idempotent,
+    // System-sourced grants. ⚠ AN AUTHORITY WRITER: each grant also leaves a role_permission_granted row in
+    // authAuditLogs with the system actor — a permission nobody clicked must still be answerable on "who gave this?".
+    private static async Task BackfillRolesExportAsync(IMongoDatabase database, IReadOnlySet<Guid> tenantsAlreadyOnExport)
+    {
+        var permCol = database.GetCollection<Permission>("permissions");
+        var read = await permCol.Find(p => p.Key == RolesExportGrantBackfill.ReadKey && p.IsDeleted == false).FirstOrDefaultAsync();
+        var export = await permCol.Find(p => p.Key == RolesExportGrantBackfill.ExportKey && p.IsDeleted == false).FirstOrDefaultAsync();
+        if (read is null || export is null) return;
+
+        var (roles, grants) = await LoadRoleGrantsAsync(database);
+
+        // The persistent gate: a tenant marked once is never backfilled again (its revokes stick).
+        var marks = database.GetCollection<PermissionReconciliationMark>(PermissionReconciliationMark.CollectionName);
+        var marked = (await marks.Find(m => m.Key == RolesExportGrantBackfill.ExportKey).ToListAsync())
+            .Select(m => m.TenantId)
+            .ToHashSet();
+        var skip = marked.Concat(tenantsAlreadyOnExport).ToHashSet();
+
+        var planned = RolesExportGrantBackfill.PlanMissingGrants(roles, grants, read.Id, export.Id, skip);
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+        var auditCol = database.GetCollection<AuthAuditLog>("authAuditLogs");
+        var roleNames = roles.ToDictionary(r => r.RoleId, r => r.Name);
+        foreach (var g in planned)
+        {
+            await rpCol.InsertOneAsync(RolePermission.SystemGrant(g.RoleId, g.PermissionId, g.TenantId, SystemUser));
+            var metadata = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object?>
+            {
+                ["roleId"] = g.RoleId,
+                ["roleName"] = roleNames.GetValueOrDefault(g.RoleId),
+                ["permissionId"] = g.PermissionId,
+                ["permissionKey"] = RolesExportGrantBackfill.ExportKey,
+                ["source"] = RolesExportGrantBackfill.AuditSource,
+                ["actor"] = SystemUser,
+                ["actorId"] = null
+            });
+            await auditCol.InsertOneAsync(new AuthAuditLog("role_permission_granted", Guid.Empty, g.TenantId, metadata));
+        }
+
+        // Every tenant looked at in this run is marked — granted, skipped as already on the key, or with no reader at all.
+        var now = DateTime.UtcNow;
+        foreach (var tenantId in RolesExportGrantBackfill.TenantsToMark(roles, marked))
+        {
+            await marks.ReplaceOneAsync(
+                m => m.TenantId == tenantId && m.Key == RolesExportGrantBackfill.ExportKey,
+                new PermissionReconciliationMark { TenantId = tenantId, Key = RolesExportGrantBackfill.ExportKey, ReconciledAtUtc = now },
+                new ReplaceOptions { IsUpsert = true });
+        }
+
+        if (planned.Count == 0) return;
+
+        var versionService = new RoleAssignmentVersionRepository(database);
+        foreach (var tenantId in planned.Select(g => g.TenantId).ToHashSet())
+        {
+            await versionService.IncrementAsync(tenantId, CancellationToken.None);
+        }
+
+        Console.WriteLine($"Backfilled auth.roles.export on {planned.Count} role(s) that read roles.");
     }
 
     private static async Task<(List<TenantAdminSelfServiceReconciler.RoleRef> Roles, HashSet<(Guid RoleId, Guid PermissionId)> Grants)> LoadRoleGrantsAsync(IMongoDatabase database)

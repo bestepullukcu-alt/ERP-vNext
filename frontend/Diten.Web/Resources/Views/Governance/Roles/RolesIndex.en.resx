@@ -31,4 +31,28 @@
   <data name="KpiSystemRoles" xml:space="preserve"><value>System Roles</value></data>
   <data name="KpiCustomRoles" xml:space="preserve"><value>Custom Roles</value></data>
   <data name="KpiAssignedUsers" xml:space="preserve"><value>Assigned Users</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Your session could not be verified. Sign in again and retry.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>This role no longer exists. Refresh the page.</value>
+  </data>
+  <data name="ErrorRoleNameTaken" xml:space="preserve">
+    <value>A role with this name already exists. Choose a different name.</value>
+  </data>
+  <data name="ErrorRoleSystemNotDeletable" xml:space="preserve">
+    <value>System roles cannot be deleted.</value>
+  </data>
+  <data name="ErrorRoleNameRequired" xml:space="preserve">
+    <value>Enter a role name.</value>
+  </data>
+  <data name="ErrorRoleNameTooLong" xml:space="preserve">
+    <value>The role name can be at most 50 characters.</value>
+  </data>
+  <data name="ErrorRoleDisplayNameRequired" xml:space="preserve">
+    <value>Enter a display name.</value>
+  </data>
+  <data name="ErrorRoleDisplayNameTooLong" xml:space="preserve">
+    <value>The display name can be at most 100 characters.</value>
+  </data>
 </root>

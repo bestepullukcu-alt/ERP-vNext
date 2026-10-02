@@ -15,7 +15,7 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
     private readonly IPermissionRepository _permissionRepository;
-    private readonly IRbacAuditRecorder _rbacAudit;
+    private readonly IRoleAuditRecorder _rbacAudit;
 
     public RevokePermissionCommandHandler(
         IRoleRepository roleRepository,
@@ -25,7 +25,7 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
         IPermissionRepository permissionRepository,
-        IRbacAuditRecorder rbacAudit)
+        IRoleAuditRecorder rbacAudit)
     {
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
@@ -58,7 +58,7 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
         if (target is null)
             return Response<NoContent>.Success(204); // idempotent: nothing to remove
         if (target.GrantSource != GrantSource.Manual)
-            return Response<NoContent>.Fail("System/Module grants are provisioning-managed and cannot be manually removed.", 409);
+            return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.PermissionGrantManaged, "System/Module grants are provisioning-managed and cannot be manually removed.", 409);
 
         await _rolePermissionRepository.RevokeAsync(request.RoleId, request.PermissionId, tenantId, ct);
 
@@ -78,8 +78,9 @@ public sealed class RevokePermissionCommandHandler : IRequestHandler<RevokePermi
 
         // FEAT-AUDIT-RBAC — a permission was revoked from a role (permissionKey resolved best-effort for readability).
         var permission = await _permissionRepository.GetByIdAsync(request.PermissionId, ct);
-        await _rbacAudit.RecordAsync("role_permission_revoked", tenantId,
-            new { roleId = request.RoleId, roleName = role?.Name, permissionId = request.PermissionId, permissionKey = permission?.Key }, ct);
+        // WP-ROLES-CLOSE-01 — the same local row, now also forwarded to Platform's central audit log.
+        await _rbacAudit.RecordAsync(RoleAuditEvents.PermissionRevoked, tenantId, request.RoleId,
+            new Dictionary<string, object?> { ["roleName"] = role?.Name, ["permissionId"] = request.PermissionId, ["permissionKey"] = permission?.Key }, ct);
 
         return Response<NoContent>.Success(204);
     }

@@ -94,4 +94,16 @@
   <data name="ActionVerb_Move" xml:space="preserve"><value>Перемещение</value></data>
   <data name="ActionVerb_Start" xml:space="preserve"><value>Старт</value></data>
   <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>Просмотр цепочки руководителей</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Не удалось подтвердить ваш сеанс. Войдите снова и повторите попытку.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Эта роль больше не существует. Обновите страницу.</value>
+  </data>
+  <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
+    <value>Это разрешение предназначено для администрирования платформы и не может быть выдано роли.</value>
+  </data>
+  <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
+    <value>Это разрешение предоставляется вместе с ролью или модулем вашей подписки, поэтому его нельзя снять здесь.</value>
+  </data>
 </root>

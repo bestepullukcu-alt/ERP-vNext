@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Features.Roles;
 using Diten.AuthService.Application.Features.Users.Commands;
 using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Domain.Entities;
@@ -45,13 +46,13 @@ public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand
         // invitation, platform-admin provisioning and self-registration write UserRole directly and never reach this
         // handler. So the assignment names the person — the same actor id the user_role_assigned audit row carries.
         if (_currentUser.UserId is not { } actorId)
-            return Response<NoContent>.Fail("An authenticated user is required to assign a role.", 401);
+            return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.ActorRequired, "An authenticated user is required to assign a role.", 401);
 
         var user = await _userRepository.GetByIdAndTenantAsync(request.UserId, _tenantContext.TenantId, ct);
-        if (user == null) return Response<NoContent>.Fail("User not found.", 404);
+        if (user == null) return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.UserRoleUserNotFound, "User not found.", 404);
 
         var role = await _roleRepository.GetByIdAndTenantAsync(request.RoleId, _tenantContext.TenantId, ct);
-        if (role == null) return Response<NoContent>.Fail("Role not found.", 404);
+        if (role == null) return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.NotFound, "Role not found.", 404);
 
         if (await _userRoleRepository.ExistsAsync(request.UserId, request.RoleId, _tenantContext.TenantId, ct))
             return Response<NoContent>.Success(204);

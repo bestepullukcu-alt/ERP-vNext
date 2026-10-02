@@ -8,11 +8,11 @@ public sealed class CreateRoleCommandValidator : AbstractValidator<CreateRoleCom
     public CreateRoleCommandValidator()
     {
         RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Rol adı boş bırakılamaz.")
-            .MaximumLength(50).WithMessage("Rol adı en fazla 50 karakter olabilir.");
+            .NotEmpty().WithMessage("Rol adı boş bırakılamaz.").WithErrorCode(RoleErrorCodes.NameRequired)
+            .MaximumLength(50).WithMessage("Rol adı en fazla 50 karakter olabilir.").WithErrorCode(RoleErrorCodes.NameTooLong);
 
         RuleFor(x => x.DisplayName)
-            .NotEmpty().WithMessage("Görünen ad boş bırakılamaz.")
-            .MaximumLength(100).WithMessage("Görünen ad en fazla 100 karakter olabilir.");
+            .NotEmpty().WithMessage("Görünen ad boş bırakılamaz.").WithErrorCode(RoleErrorCodes.DisplayNameRequired)
+            .MaximumLength(100).WithMessage("Görünen ad en fazla 100 karakter olabilir.").WithErrorCode(RoleErrorCodes.DisplayNameTooLong);
     }
 }

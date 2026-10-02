@@ -94,4 +94,16 @@
   <data name="ActionVerb_Move" xml:space="preserve"><value>Mover</value></data>
   <data name="ActionVerb_Start" xml:space="preserve"><value>Iniciar</value></data>
   <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>Ver cadena de mando</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>No se pudo verificar su sesión. Inicie sesión de nuevo y vuelva a intentarlo.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Este rol ya no existe. Actualice la página.</value>
+  </data>
+  <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
+    <value>Este permiso está reservado a la administración de la plataforma y no se puede conceder a un rol.</value>
+  </data>
+  <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
+    <value>Este permiso viene con el rol o con un módulo de su suscripción, por lo que no se puede quitar aquí.</value>
+  </data>
 </root>

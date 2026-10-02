@@ -31,4 +31,28 @@
   <data name="KpiSystemRoles" xml:space="preserve"><value>Sistem Rolleri</value></data>
   <data name="KpiCustomRoles" xml:space="preserve"><value>Özel Roller</value></data>
   <data name="KpiAssignedUsers" xml:space="preserve"><value>Atanan Kullanıcılar</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Oturumunuz doğrulanamadı. Yeniden giriş yapıp tekrar deneyin.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Bu rol artık yok. Sayfayı yenileyin.</value>
+  </data>
+  <data name="ErrorRoleNameTaken" xml:space="preserve">
+    <value>Bu adda bir rol zaten var. Farklı bir ad seçin.</value>
+  </data>
+  <data name="ErrorRoleSystemNotDeletable" xml:space="preserve">
+    <value>Sistem rolleri silinemez.</value>
+  </data>
+  <data name="ErrorRoleNameRequired" xml:space="preserve">
+    <value>Rol adını girin.</value>
+  </data>
+  <data name="ErrorRoleNameTooLong" xml:space="preserve">
+    <value>Rol adı en fazla 50 karakter olabilir.</value>
+  </data>
+  <data name="ErrorRoleDisplayNameRequired" xml:space="preserve">
+    <value>Görünen adı girin.</value>
+  </data>
+  <data name="ErrorRoleDisplayNameTooLong" xml:space="preserve">
+    <value>Görünen ad en fazla 100 karakter olabilir.</value>
+  </data>
 </root>

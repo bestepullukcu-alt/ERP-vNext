@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Tests.Testing;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Roles.Commands;
@@ -169,7 +170,7 @@ public sealed class AssignPermissionCommandHandlerTests
             rolePerms,
             version,
             tenantContext,
-            new NoOpRbacAuditRecorder(),
+            RoleAuditForTests.Over(new NoOpRbacAuditRecorder()),
             new FakeCurrentUser(authenticated ? ActorId : null));
     }
 

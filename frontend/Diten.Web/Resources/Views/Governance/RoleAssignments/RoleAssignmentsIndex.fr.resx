@@ -94,4 +94,16 @@
   <data name="ActionVerb_Move" xml:space="preserve"><value>Déplacer</value></data>
   <data name="ActionVerb_Start" xml:space="preserve"><value>Démarrer</value></data>
   <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>Consulter la chaîne hiérarchique</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Votre session n'a pas pu être vérifiée. Reconnectez-vous puis réessayez.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Ce rôle n'existe plus. Actualisez la page.</value>
+  </data>
+  <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
+    <value>Cette autorisation est réservée à l'administration de la plateforme et ne peut pas être accordée à un rôle.</value>
+  </data>
+  <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
+    <value>Cette autorisation est fournie avec le rôle ou avec un module de votre abonnement ; elle ne peut pas être retirée ici.</value>
+  </data>
 </root>

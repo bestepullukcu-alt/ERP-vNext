@@ -31,4 +31,28 @@
   <data name="KpiSystemRoles" xml:space="preserve"><value>أدوار النظام</value></data>
   <data name="KpiCustomRoles" xml:space="preserve"><value>أدوار مخصصة</value></data>
   <data name="KpiAssignedUsers" xml:space="preserve"><value>المستخدمون المعيّنون</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>تعذّر التحقق من جلستك. سجّل الدخول من جديد ثم أعد المحاولة.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>هذا الدور لم يعد موجودًا. حدّث الصفحة.</value>
+  </data>
+  <data name="ErrorRoleNameTaken" xml:space="preserve">
+    <value>يوجد دور بهذا الاسم بالفعل. اختر اسمًا آخر.</value>
+  </data>
+  <data name="ErrorRoleSystemNotDeletable" xml:space="preserve">
+    <value>لا يمكن حذف أدوار النظام.</value>
+  </data>
+  <data name="ErrorRoleNameRequired" xml:space="preserve">
+    <value>أدخل اسم الدور.</value>
+  </data>
+  <data name="ErrorRoleNameTooLong" xml:space="preserve">
+    <value>لا يمكن أن يتجاوز اسم الدور 50 حرفًا.</value>
+  </data>
+  <data name="ErrorRoleDisplayNameRequired" xml:space="preserve">
+    <value>أدخل الاسم المعروض.</value>
+  </data>
+  <data name="ErrorRoleDisplayNameTooLong" xml:space="preserve">
+    <value>لا يمكن أن يتجاوز الاسم المعروض 100 حرف.</value>
+  </data>
 </root>
