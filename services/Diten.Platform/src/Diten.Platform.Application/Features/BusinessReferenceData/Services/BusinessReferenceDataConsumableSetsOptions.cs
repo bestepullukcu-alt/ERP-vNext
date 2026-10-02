@@ -28,7 +28,8 @@ public sealed class BusinessReferenceDataConsumableSetsOptions
 
     /// <summary>
     /// Every reference set CRM consumes (Diten.CrmService, measured 2026-10-02 from the IReferenceDataValidator /
-    /// IReferenceMetadataReader / IReferenceDataCatalogReader call sites). Keep in step with appsettings.json.
+    /// IReferenceMetadataReader / IReferenceDataCatalogReader call sites) plus the sets the CRM Web screens read for their
+    /// dropdowns (Diten.Web Controllers/CRM through CrmReferenceSetReader). Keep in step with appsettings.json.
     /// </summary>
     public static IReadOnlyList<string> DefaultConsumableSets { get; } =
     [
@@ -80,7 +81,12 @@ public sealed class BusinessReferenceDataConsumableSetsOptions
         "visit-frequency-type",
         "visit-frequency-period-type",
         "visit-frequency-source",
-        "visit-frequency-status"
+        "visit-frequency-status",
+        // CRM Web dropdowns (Diten.Web Controllers/CRM, step 2 — read only by the Web, not validated by CrmService):
+        // Claims v2 evidence-type lookup, Territory node planning-center type, Chain Template moderator picker.
+        "evidence-type",
+        "planning-center-type",
+        "content-moderator-role"
     ];
 
     /// <summary>The configured list when it names at least one set, otherwise the code default.</summary>

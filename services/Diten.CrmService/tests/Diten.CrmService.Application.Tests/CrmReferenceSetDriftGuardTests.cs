@@ -31,6 +31,10 @@ namespace Diten.CrmService.Application.Tests;
 /// <c>reference-set</c> value sources); (4) a string literal passed straight to a reference reader. A constant that matches
 /// (1)/(2) but is NOT a set code is named in <see cref="NotSetCodes"/> with the reason — a reviewed exception, checked to
 /// still exist so the list cannot go stale.</para>
+///
+/// <para><b>Step 2 — the CRM Web screens.</b> The Web CRM controllers read their dropdown sets on the same route with the
+/// caller's token (<c>Diten.Web.Services.CrmReferenceSetReader</c>), so their set codes — measured from the Web source,
+/// controllers and the CRM screens' JS — are held to the same list (<see cref="WebSetCodes"/>).</para>
 /// </summary>
 public sealed class CrmReferenceSetDriftGuardTests
 {
@@ -102,6 +106,52 @@ public sealed class CrmReferenceSetDriftGuardTests
         Assert.True(codes.Count >= 35, $"only {codes.Count} CRM set codes were found — discovery is broken");
         Assert.DoesNotContain("content-set", codes);
         Assert.DoesNotContain("rank", codes);
+    }
+
+    /// <summary>
+    /// WP-BRD-TENANT-CRM-SETS step 2 — the CRM Web screens read their dropdown sets with the caller's token through
+    /// <c>CrmReferenceSetReader</c> (consumable-sets route first). A Web set the Platform does not list would again be empty
+    /// for every role but the administrator, so the Web set codes are held to the same list.
+    /// </summary>
+    [Fact]
+    public void Every_reference_set_code_the_CRM_Web_screens_read_is_on_the_platform_consumable_list()
+    {
+        var platform = PlatformConsumableSets().ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var missing = WebSetCodes()
+            .Where(entry => !platform.Contains(entry.Code))
+            .Select(entry => $"{entry.Code} (from {entry.Source})")
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(x => x, StringComparer.Ordinal)
+            .ToList();
+
+        Assert.True(missing.Count == 0,
+            "The CRM Web screens read reference sets the Platform does not list as consumable — a non-admin user gets an "
+            + "empty dropdown. Add them to BusinessReferenceData:ConsumableSets in "
+            + "services/Diten.Platform/src/Diten.Platform.API/appsettings.json AND to "
+            + "BusinessReferenceDataConsumableSetsOptions.DefaultConsumableSets: " + string.Join(", ", missing));
+    }
+
+    [Fact]
+    public void The_Web_scan_finds_the_known_web_sets_so_it_is_not_vacuous()
+    {
+        var codes = WebSetCodes().Select(entry => entry.Code).ToHashSet(StringComparer.Ordinal);
+
+        foreach (var expected in new[]
+                 {
+                     // server-side constants (Accounts / Contacts / Territory / VisitFrequencyPolicies / Knowledge claims)
+                     "account-type", "contact-type", "contact-availability-source", "planning-center-type", "COUNTRY_CODES",
+                     "business-unit", "country-content-languages",
+                     // literal reads (Claims v2 lookups)
+                     "claim-country-closure-reason", "evidence-type",
+                     // client-chosen codes sent to the pass-through proxies (Knowledge axes, Chain Template moderator)
+                     "medical-specialty", "content-moderator-role"
+                 })
+        {
+            Assert.Contains(expected, codes);
+        }
+
+        Assert.True(codes.Count >= 30, $"only {codes.Count} Web CRM set codes were found — discovery is broken");
     }
 
     [Fact]
@@ -187,6 +237,83 @@ public sealed class CrmReferenceSetDriftGuardTests
                 }
             }
         }
+    }
+
+    // ---- CRM Web side -----------------------------------------------------------------------------------------------
+
+    /// <summary>A server-side set code constant in a CRM Web controller: <c>const string XxxSetCode = "…"</c> / <c>XxxSet</c>.</summary>
+    private static readonly Regex WebSetConstant = new(
+        @"\bconst\s+string\s+(\w*Set(?:Code)?)\s*=\s*""([^""]+)""", RegexOptions.Compiled);
+
+    /// <summary>A set code passed as a literal to a Web reference read (Claims v2 lookups, the shared reader).</summary>
+    private static readonly Regex WebLiteralRead = new(
+        @"\b(?:ReadReferenceValuesAsync|ReferenceLookupAsync|LoadReferenceOptionsAsync|ReadAsync)\(\s*""([^""]+)""",
+        RegexOptions.Compiled);
+
+    /// <summary>JS: a set code constant (<c>const MODERATOR_SET_CODE = '…'</c>).</summary>
+    private static readonly Regex JsSetConstant = new(
+        @"\b(?:const|let|var)\s+[A-Z_]*SET_CODE\s*=\s*['""]([^'""]+)['""]", RegexOptions.Compiled);
+
+    /// <summary>JS: a literal set code in a pass-through reference proxy URL (<c>…/reference-data/xyz/values</c>).</summary>
+    private static readonly Regex JsLiteralProxyUrl = new(
+        @"/reference-data/([A-Za-z0-9_\-]+)/values", RegexOptions.Compiled);
+
+    /// <summary>JS: the Knowledge audience-profile reference axes (<c>const REF_AXES = ['…', …]</c>).</summary>
+    private static readonly Regex JsReferenceAxes = new(
+        @"\bREF_AXES\s*=\s*\[([^\]]*)\]", RegexOptions.Compiled);
+
+    private static readonly Regex JsQuoted = new(@"['""]([^'""]+)['""]", RegexOptions.Compiled);
+
+    /// <summary>
+    /// The reference set codes the CRM Web screens read, measured from the shipped Web source: (1) set code constants and
+    /// literal reads in <c>frontend/Diten.Web/Controllers/CRM</c>; (2) the codes the CRM screens' JS sends to the
+    /// pass-through reference proxies (Knowledge axes, Chain Template moderator). The Segments proxy only serves sets the
+    /// CRM segment attribute catalog declares — those are already covered by the CRM scan above.
+    /// </summary>
+    private static IReadOnlyList<(string Code, string Source)> WebSetCodes()
+    {
+        var codes = new List<(string Code, string Source)>();
+        var web = Path.Combine(RepoRoot(), "frontend", "Diten.Web");
+
+        foreach (var file in Directory.EnumerateFiles(Path.Combine(web, "Controllers", "CRM"), "*.cs", SearchOption.AllDirectories))
+        {
+            var text = File.ReadAllText(file);
+            foreach (Match match in WebSetConstant.Matches(text))
+            {
+                codes.Add((match.Groups[2].Value, $"{Path.GetFileName(file)} {match.Groups[1].Value}"));
+            }
+
+            foreach (Match match in WebLiteralRead.Matches(text))
+            {
+                codes.Add((match.Groups[1].Value, $"literal in {Path.GetFileName(file)}"));
+            }
+        }
+
+        foreach (var file in Directory.EnumerateFiles(
+                     Path.Combine(web, "wwwroot", "assets", "js", "CRM"), "*.js", SearchOption.AllDirectories))
+        {
+            var text = File.ReadAllText(file);
+            var name = Path.GetFileName(file);
+            foreach (Match match in JsSetConstant.Matches(text))
+            {
+                codes.Add((match.Groups[1].Value, $"{name} set code constant"));
+            }
+
+            foreach (Match match in JsLiteralProxyUrl.Matches(text))
+            {
+                codes.Add((match.Groups[1].Value, $"{name} reference proxy URL"));
+            }
+
+            foreach (Match axes in JsReferenceAxes.Matches(text))
+            {
+                foreach (Match quoted in JsQuoted.Matches(axes.Groups[1].Value))
+                {
+                    codes.Add((quoted.Groups[1].Value, $"{name} REF_AXES"));
+                }
+            }
+        }
+
+        return codes;
     }
 
     // ---- Platform side ----------------------------------------------------------------------------------------------
