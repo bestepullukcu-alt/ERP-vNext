@@ -158,6 +158,41 @@ public sealed class UserErrorCodeEndpointTests : IClassFixture<PlatformEdgeTestH
     }
 
     /// <summary>
+    /// A null or MISSING field is the same refusal as an empty one: it reaches the validator and leaves with the same
+    /// code — not [ApiController]'s automatic 400, which carries none.
+    /// </summary>
+    [Theory]
+    [InlineData("""{"email":null,"firstName":"First","lastName":"Last"}""", UserErrorCodes.EmailRequired)]
+    [InlineData("""{"firstName":"First","lastName":"Last"}""", UserErrorCodes.EmailRequired)]
+    [InlineData("""{"email":"a@codes.test","firstName":null,"lastName":"Last"}""", UserErrorCodes.FirstNameRequired)]
+    [InlineData("""{"email":"a@codes.test","lastName":"Last"}""", UserErrorCodes.FirstNameRequired)]
+    [InlineData("""{"email":"a@codes.test","firstName":"First","lastName":null}""", UserErrorCodes.LastNameRequired)]
+    [InlineData("""{"email":"a@codes.test","firstName":"First"}""", UserErrorCodes.LastNameRequired)]
+    public async Task A_create_with_a_null_or_missing_field_carries_the_same_code_as_an_empty_one(string json, string code)
+    {
+        using var client = _host.Client(_token, _tenantId);
+
+        var response = await client.PostAsync("api/users", new StringContent(json, System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(code, (await ValidatorCodesAsync(response))[0]);
+    }
+
+    [Theory]
+    [InlineData("""{"firstName":null,"lastName":"Last","isActive":true}""", UserErrorCodes.FirstNameRequired)]
+    [InlineData("""{"lastName":"Last","isActive":true}""", UserErrorCodes.FirstNameRequired)]
+    [InlineData("""{"firstName":"First","lastName":null,"isActive":true}""", UserErrorCodes.LastNameRequired)]
+    [InlineData("""{"firstName":"First","isActive":true}""", UserErrorCodes.LastNameRequired)]
+    public async Task An_update_with_a_null_or_missing_field_carries_the_same_code_as_an_empty_one(string json, string code)
+    {
+        var target = await NewUserAsync(invited: false);
+        using var client = _host.Client(_token, _tenantId);
+
+        var response = await client.PutAsync($"api/users/{target}", new StringContent(json, System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(code, (await ValidatorCodesAsync(response))[0]);
+    }
+
+    /// <summary>
     /// The rule itself, on the wire: a validator code with a prefix on the one list (EnvelopeErrorCodePrefixes) is in
     /// the body's <c>errorCodes</c>; FluentValidation's own default code ("NotEmptyValidator", the Id rule) is not —
     /// that body has no <c>errorCodes</c> at all.

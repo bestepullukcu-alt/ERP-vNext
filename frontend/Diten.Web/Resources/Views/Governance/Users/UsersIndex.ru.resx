@@ -63,7 +63,7 @@
   <data name="ErrorUserNotFound" xml:space="preserve"><value>Пользователь не найден; возможно, он был удалён. Обновите список и повторите попытку.</value></data>
   <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>Выбранный тип учётной записи недопустим. Выберите тип из списка.</value></data>
   <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>Этот пользователь уже задал пароль; приглашения для повторной отправки нет. Чтобы выдать новый пароль, используйте «Сбросить пароль».</value></data>
-  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>Этот пользователь ещё не задал пароль, поэтому его нельзя сбросить. Вместо этого отправьте приглашение повторно.</value></data>
+  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>У этого пользователя есть незавершённый шаг установки пароля, поэтому пароль нельзя сбросить. Вместо этого отправьте приглашение повторно.</value></data>
   <data name="ErrorUserAccountKindPermissionDenied" xml:space="preserve"><value>У вас нет прав на изменение типа учётной записи; пользователь не сохранён.</value></data>
   <data name="ErrorUserEmailRequired" xml:space="preserve"><value>Введите адрес электронной почты.</value></data>
   <data name="ErrorUserEmailInvalid" xml:space="preserve"><value>Введите действительный адрес электронной почты.</value></data>

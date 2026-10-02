@@ -63,7 +63,7 @@
   <data name="ErrorUserNotFound" xml:space="preserve"><value>تعذّر العثور على هذا المستخدم؛ ربما تم حذفه. حدِّث القائمة ثم حاول مرة أخرى.</value></data>
   <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>نوع الحساب المحدد غير صالح. اختر نوعاً من القائمة.</value></data>
   <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>هذا المستخدم عيّن كلمة المرور بالفعل؛ لا توجد دعوة لإعادة إرسالها. لمنحه كلمة مرور جديدة استخدم «إعادة تعيين كلمة المرور».</value></data>
-  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>هذا المستخدم لم يعيّن كلمة المرور بعد، لذلك لا يمكن إعادة تعيينها. أعد إرسال الدعوة بدلاً من ذلك.</value></data>
+  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>لدى هذا المستخدم خطوة تعيين كلمة مرور لم تكتمل بعد، لذلك لا يمكن إعادة تعيين كلمة المرور. أعد إرسال الدعوة بدلاً من ذلك.</value></data>
   <data name="ErrorUserAccountKindPermissionDenied" xml:space="preserve"><value>ليست لديك صلاحية تغيير نوع الحساب؛ لم يُحفظ المستخدم.</value></data>
   <data name="ErrorUserEmailRequired" xml:space="preserve"><value>أدخل عنوان بريد إلكتروني.</value></data>
   <data name="ErrorUserEmailInvalid" xml:space="preserve"><value>أدخل عنوان بريد إلكتروني صالحاً.</value></data>

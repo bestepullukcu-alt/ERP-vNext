@@ -63,7 +63,7 @@
   <data name="ErrorUserNotFound" xml:space="preserve"><value>Cet utilisateur est introuvable ; il a peut-être été supprimé. Actualisez la liste et réessayez.</value></data>
   <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>Le type de compte sélectionné n'est pas valide. Choisissez-en un dans la liste.</value></data>
   <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>Cet utilisateur a déjà défini son mot de passe ; il n'y a aucune invitation à renvoyer. Pour lui donner un nouveau mot de passe, utilisez Réinitialiser le mot de passe.</value></data>
-  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>Cet utilisateur n'a pas encore défini son mot de passe ; il ne peut donc pas être réinitialisé. Renvoyez plutôt l'invitation.</value></data>
+  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>Cet utilisateur a encore une étape de définition du mot de passe en attente ; le mot de passe ne peut pas être réinitialisé. Renvoyez plutôt l'invitation.</value></data>
   <data name="ErrorUserAccountKindPermissionDenied" xml:space="preserve"><value>Vous n'êtes pas autorisé à modifier le type de compte ; l'utilisateur n'a pas été enregistré.</value></data>
   <data name="ErrorUserEmailRequired" xml:space="preserve"><value>Saisissez une adresse e-mail.</value></data>
   <data name="ErrorUserEmailInvalid" xml:space="preserve"><value>Saisissez une adresse e-mail valide.</value></data>

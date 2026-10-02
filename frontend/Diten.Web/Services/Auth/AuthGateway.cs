@@ -327,7 +327,13 @@ public sealed class AuthGateway : IAuthGateway
                 var localized = LocalizeErrorCodes(errorCodes);
                 if (!string.IsNullOrWhiteSpace(localized))
                 {
-                    return localized;
+                    // WP-USERS-ERROR-CODES-01 — no refusal is dropped in silence: when a failure came WITHOUT a code
+                    // (or with one this map does not know) beside the coded ones, the general sentence is added —
+                    // otherwise "bad e-mail + password too long" would read as "too long" alone.
+                    var refusal = GatewayRefusal.Read(content);
+                    var unsaid = refusal.HasUncoded || refusal.Codes.Any(c => !ErrorCodeResourceKeys.ContainsKey(c.Code));
+                    var general = unsaid ? _localizer["ErrorOccurred"] : null;
+                    return general is { ResourceNotFound: false } ? $"{localized} {general.Value}" : localized;
                 }
             }
 

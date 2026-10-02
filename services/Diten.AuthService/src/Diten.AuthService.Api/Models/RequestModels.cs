@@ -30,12 +30,15 @@ public sealed record AssignPermissionRequest(Guid PermissionId);
 // Password is optional: omit it to create the user as an invitation (set-password link emailed).
 // WP-INFRA-AUTH-ACCOUNT-KIND-01 — AccountKind is optional (enum NAME: Unknown | Human | Service). Omitted ⇒ Unknown;
 // supplied ⇒ the caller must also hold auth.users.account-kind.manage, else 403 PERM_DENIED.
-public sealed record CreateUserRequest(string Email, string? Password, string FirstName, string LastName, string? AccountKind = null);
+// Email / FirstName / LastName are nullable ON THE WIRE only: a null or missing field must reach the validator (which
+// answers with its USER_… code), not [ApiController]'s automatic, codeless 400. The command still gets a string.
+public sealed record CreateUserRequest(string? Email, string? Password, string? FirstName, string? LastName, string? AccountKind = null);
 // WP-INFRA-AUTH-ACCOUNT-KIND-01 — body of POST api/users/{id}/account-kind. Kind is the enum NAME, case-insensitive.
 public sealed record SetAccountKindRequest(string Kind);
 public sealed record SetTenantPasswordRequest(string Email, string Token, string NewPassword);
 // WP-AUTH-USER-KIND-UPDATE-01 — AccountKind is optional (enum NAME). Omitted ⇒ untouched; a CHANGE needs
 // auth.users.account-kind.manage as well, else 403 PERM_DENIED (same rule as create).
-public sealed record UpdateUserRequest(string FirstName, string LastName, bool IsActive, string? AccountKind = null);
+// FirstName / LastName nullable on the wire for the same reason as CreateUserRequest.
+public sealed record UpdateUserRequest(string? FirstName, string? LastName, bool IsActive, string? AccountKind = null);
 public sealed record CreateRoleRequest(string Name, string DisplayName, string? Description);
 public sealed record UpdateRoleRequest(string DisplayName, string? Description);

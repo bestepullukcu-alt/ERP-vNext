@@ -63,7 +63,7 @@
   <data name="ErrorUserNotFound" xml:space="preserve"><value>No se encontró a este usuario; es posible que se haya eliminado. Actualice la lista e inténtelo de nuevo.</value></data>
   <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>El tipo de cuenta seleccionado no es válido. Elija uno de la lista.</value></data>
   <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>Este usuario ya ha establecido su contraseña; no hay ninguna invitación que reenviar. Para darle una contraseña nueva, use Restablecer contraseña.</value></data>
-  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>Este usuario aún no ha establecido su contraseña, por lo que no se puede restablecer. Reenvíe la invitación en su lugar.</value></data>
+  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>Este usuario aún tiene pendiente un paso para establecer la contraseña, por lo que no se puede restablecer. Reenvíe la invitación en su lugar.</value></data>
   <data name="ErrorUserAccountKindPermissionDenied" xml:space="preserve"><value>No tiene permiso para cambiar el tipo de cuenta; el usuario no se guardó.</value></data>
   <data name="ErrorUserEmailRequired" xml:space="preserve"><value>Introduzca una dirección de correo electrónico.</value></data>
   <data name="ErrorUserEmailInvalid" xml:space="preserve"><value>Introduzca una dirección de correo electrónico válida.</value></data>

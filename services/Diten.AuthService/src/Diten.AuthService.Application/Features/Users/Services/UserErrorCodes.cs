@@ -44,8 +44,11 @@ public static class UserErrorCodes
     public const string SetupAlreadyCompleted = "USER_SETUP_ALREADY_COMPLETED";
 
     /// <summary>
-    /// A password reset was asked for a user who still has an unredeemed set-password link (a first invitation OR an
-    /// earlier reset — wider than <see cref="InvitationPending"/>, which is only the never-accepted invitation).
+    /// A password reset was asked for a user whose <c>MustChangePassword</c> is set — a password-setup step is still
+    /// waiting. Three situations share it: an invited user who never set a password, a user whose earlier reset link
+    /// was never redeemed, and a tenant administrator provisioned with a temporary password who has not changed it.
+    /// (Wider than <see cref="InvitationPending"/>, which is only the never-accepted invitation — so the screen's
+    /// sentence must not say "has not set a password yet".)
     /// </summary>
     public const string PasswordSetupPending = "USER_PASSWORD_SETUP_PENDING";
 

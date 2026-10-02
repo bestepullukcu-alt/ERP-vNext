@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Diten.Web.Models;
 using Diten.Web.Models.Governance;
+using Diten.Web.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -63,11 +64,11 @@ public sealed class UsersController : Controller
     {
         // Invitation flow: no password is collected. The user sets their own via the emailed link.
         ModelState.Remove(nameof(model.Password));
-        if (!ModelState.IsValid)
-            return Json(new { success = false, errors = CollectModelErrors() });
+        if (FormRefusal(model) is { } refused)
+            return refused;
 
         if (!AddAuthHeaders())
-            return Json(new { success = false, errors = new[] { _sharedLocalizer["Unauthorized"].Value } });
+            return Refusal([], uncoded: false, status: null, _sharedLocalizer["Unauthorized"].Value);
 
         try
         {
@@ -92,7 +93,7 @@ public sealed class UsersController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Users create failed.");
-            return Json(new { success = false, errors = BuildExceptionErrors(ex), rawText = true });
+            return Refusal([], uncoded: false, status: null, _sharedLocalizer["GatewayError"].Value);
         }
     }
 
@@ -102,11 +103,11 @@ public sealed class UsersController : Controller
     {
         model.Id = id;
         ModelState.Remove(nameof(model.Password)); // password not edited here
-        if (!ModelState.IsValid)
-            return Json(new { success = false, errors = CollectModelErrors() });
+        if (FormRefusal(model) is { } refused)
+            return refused;
 
         if (!AddAuthHeaders())
-            return Json(new { success = false, errors = new[] { _sharedLocalizer["Unauthorized"].Value } });
+            return Refusal([], uncoded: false, status: null, _sharedLocalizer["Unauthorized"].Value);
 
         try
         {
@@ -125,7 +126,7 @@ public sealed class UsersController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Users edit failed for {UserId}.", id);
-            return Json(new { success = false, errors = BuildExceptionErrors(ex), rawText = true });
+            return Refusal([], uncoded: false, status: null, _sharedLocalizer["GatewayError"].Value);
         }
     }
 
@@ -312,7 +313,7 @@ public sealed class UsersController : Controller
     private async Task<IActionResult> ForwardUserActionAsync(string downstreamPath, string action, Guid id)
     {
         if (!AddAuthHeaders())
-            return Json(new { success = false, errors = new[] { _sharedLocalizer["Unauthorized"].Value } });
+            return Refusal([], uncoded: false, status: null, _sharedLocalizer["Unauthorized"].Value);
 
         try
         {
@@ -326,7 +327,7 @@ public sealed class UsersController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Users {Action} failed for {UserId}.", action, id);
-            return Json(new { success = false, errors = BuildExceptionErrors(ex), rawText = true });
+            return Refusal([], uncoded: false, status: null, _sharedLocalizer["GatewayError"].Value);
         }
     }
 
@@ -350,140 +351,65 @@ public sealed class UsersController : Controller
         return null;
     }
 
-    private List<string> CollectModelErrors() =>
-        ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).Where(m => !string.IsNullOrWhiteSpace(m)).ToList();
-
-    private List<string> BuildExceptionErrors(Exception ex)
-    {
-        var message = ex.GetBaseException().Message;
-        return [string.IsNullOrWhiteSpace(message) ? _sharedLocalizer["GatewayError"].Value : message];
-    }
+    /*
+     * WP-USERS-ERROR-CODES-01 — WHAT A REFUSAL LOOKS LIKE TO THE SCREEN. Never a sentence this proxy did not write:
+     *   errorCodes  every stable code of the refusal ({ code, params }) — index.js says each in the reader's language
+     *   errorCode / errorParams  the first of them (the shape the screen read before; kept)
+     *   uncoded     true when a failure came without a code — the screen adds its general sentence, nothing is dropped
+     *   status      the upstream HTTP status (null when the refusal is this proxy's own)
+     *   errors      ONLY this proxy's own localized sentences ("Unauthorized", the gateway being unreachable)
+     * A service's English text and an exception's message (which can name an internal host:port) go to the server
+     * log, not to the browser.
+     */
+    private JsonResult Refusal(IReadOnlyList<GatewayErrorCode> codes, bool uncoded, int? status, params string[] ownSentences)
+        => Json(new
+        {
+            success = false,
+            errors = ownSentences,
+            errorCode = codes.Count > 0 ? codes[0].Code : null,
+            errorParams = codes.Count > 0 ? codes[0].Params : null,
+            errorCodes = codes.Select(c => new { code = c.Code, @params = c.Params }).ToArray(),
+            uncoded,
+            status
+        });
 
     /*
-     * WP-AUTH-INVITED-LIFECYCLE-01 — a failed hop as the screen reads it: the gateway's text (English fallback) PLUS
-     * the first stable code from the Response envelope's errorCodes, so index.js can show the sentence in the
-     * reader's language (USER_EMAIL_TAKEN, USER_INVITATION_PENDING, …). Text-only failures carry errorCode = null.
+     * The form's own check, answered with the codes AuthService's validators use for the same rules (the screen has
+     * their sentences in seven languages) instead of MVC's English DataAnnotations text. A binding failure this
+     * method does not know is reported as uncoded — the general sentence, never an English one.
      */
-    // BL-459 — errorParams: the code's own string params (e.g. USER_QUOTA_EXCEEDED { max, current }); null when none.
-    private async Task<IActionResult> GatewayFailureAsync(HttpResponseMessage response)
-        => Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response), errorCode = await ExtractGatewayErrorCodeAsync(response), errorParams = await ExtractGatewayErrorParamsAsync(response), rawText = await IsRelayedTextAsync(response) });
-
-    // WP-USERS-ERROR-CODES-01 — true when `errors` is the service's own (English) text relayed as-is; false when it is
-    // this proxy's localized sentence (401, empty body). index.js never shows relayed text: code → sentence, else the
-    // general error.
-    private static async Task<bool> IsRelayedTextAsync(HttpResponseMessage response)
-        => response.StatusCode != System.Net.HttpStatusCode.Unauthorized
-           && !string.IsNullOrWhiteSpace(await response.Content.ReadAsStringAsync());
-
-    private static async Task<string?> ExtractGatewayErrorCodeAsync(HttpResponseMessage response)
-        => (await ExtractGatewayErrorCodeWithParamsAsync(response)).Code;
-
-    private static async Task<Dictionary<string, string>?> ExtractGatewayErrorParamsAsync(HttpResponseMessage response)
-        => (await ExtractGatewayErrorCodeWithParamsAsync(response)).Params;
-
-    private static async Task<(string? Code, Dictionary<string, string>? Params)> ExtractGatewayErrorCodeWithParamsAsync(HttpResponseMessage response)
+    private JsonResult? FormRefusal(UserEditViewModel model)
     {
-        try
-        {
-            var raw = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrWhiteSpace(raw)) return (null, null);
-            using var doc = JsonDocument.Parse(raw);
-            if (doc.RootElement.ValueKind == JsonValueKind.Object
-                && doc.RootElement.TryGetProperty("errorCodes", out var codes)
-                && codes.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var entry in codes.EnumerateArray())
-                {
-                    if (entry.ValueKind == JsonValueKind.Object
-                        && entry.TryGetProperty("code", out var code)
-                        && code.ValueKind == JsonValueKind.String
-                        && !string.IsNullOrWhiteSpace(code.GetString()))
-                    {
-                        Dictionary<string, string>? parameters = null;
-                        if (entry.TryGetProperty("params", out var ps) && ps.ValueKind == JsonValueKind.Object)
-                        {
-                            parameters = ps.EnumerateObject()
-                                .Where(p => p.Value.ValueKind == JsonValueKind.String)
-                                .ToDictionary(p => p.Name, p => p.Value.GetString()!, StringComparer.Ordinal);
-                        }
-
-                        return (code.GetString(), parameters is { Count: > 0 } ? parameters : null);
-                    }
-                }
-            }
-        }
-        catch { }
-        return (null, null);
+        var codes = FormRefusalCodes(model).Select(code => new GatewayErrorCode(code, null)).ToList();
+        return codes.Count == 0 && ModelState.IsValid ? null : Refusal(codes, uncoded: codes.Count == 0, status: null);
     }
 
-    private async Task<List<string>> ExtractGatewayErrorsAsync(HttpResponseMessage response)
+    [NonAction]
+    public static IEnumerable<string> FormRefusalCodes(UserEditViewModel model)
     {
+        if (string.IsNullOrWhiteSpace(model.Email)) yield return "USER_EMAIL_REQUIRED";
+        else if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(model.Email)) yield return "USER_EMAIL_INVALID";
+
+        if (string.IsNullOrWhiteSpace(model.FirstName)) yield return "USER_FIRST_NAME_REQUIRED";
+        else if (model.FirstName.Length > UserEditViewModel.NameMaxLength) yield return "USER_FIRST_NAME_TOO_LONG";
+
+        if (string.IsNullOrWhiteSpace(model.LastName)) yield return "USER_LAST_NAME_REQUIRED";
+        else if (model.LastName.Length > UserEditViewModel.NameMaxLength) yield return "USER_LAST_NAME_TOO_LONG";
+    }
+
+    // A refused hop: the codes travel on, the service's text stays in the log (BL-459 — a code's own string params,
+    // e.g. USER_QUOTA_EXCEEDED { max, current }, travel with it).
+    private async Task<IActionResult> GatewayFailureAsync(HttpResponseMessage response)
+    {
+        var status = (int)response.StatusCode;
         if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            return [_sharedLocalizer["Unauthorized"].Value];
+            return Refusal([], uncoded: false, status, _sharedLocalizer["Unauthorized"].Value);
 
         var raw = await response.Content.ReadAsStringAsync();
-        if (string.IsNullOrWhiteSpace(raw))
-            return [_sharedLocalizer["GatewayError"].Value];
-
-        try
-        {
-            using var doc = JsonDocument.Parse(raw);
-            var root = doc.RootElement;
-
-            if (root.TryGetProperty("errors", out var errorsEl))
-            {
-                // (1) Response envelope: "errors": [ "..." ]
-                if (errorsEl.ValueKind == JsonValueKind.Array)
-                {
-                    var list = errorsEl.EnumerateArray()
-                        .Where(e => e.ValueKind == JsonValueKind.String)
-                        .Select(e => CleanError(e.GetString()))
-                        .Where(s => !string.IsNullOrWhiteSpace(s))
-                        .Select(s => s!)
-                        .ToList();
-                    if (list.Count > 0) return list;
-                }
-                // (2) ProblemDetails validation shape: "errors": { "Field": [ "..." ] }
-                else if (errorsEl.ValueKind == JsonValueKind.Object)
-                {
-                    var list = errorsEl.EnumerateObject()
-                        .Where(p => p.Value.ValueKind == JsonValueKind.Array)
-                        .SelectMany(p => p.Value.EnumerateArray())
-                        .Where(e => e.ValueKind == JsonValueKind.String)
-                        .Select(e => CleanError(e.GetString()))
-                        .Where(s => !string.IsNullOrWhiteSpace(s))
-                        .Select(s => s!)
-                        .ToList();
-                    if (list.Count > 0) return list;
-                }
-            }
-
-            // (3) ProblemDetails single line: "detail" then "title" — parsed BEFORE the raw fallback
-            // so password-policy / duplicate-email errors read cleanly in #formUserAlert.
-            if (root.TryGetProperty("detail", out var detail) && detail.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(detail.GetString()))
-                return [CleanError(detail.GetString())!];
-            if (root.TryGetProperty("title", out var title) && title.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(title.GetString()))
-                return [CleanError(title.GetString())!];
-        }
-        catch { }
-
-        return [raw];
-    }
-
-    // Strip FluentValidation noise so a single readable line reaches the form alert.
-    private static string? CleanError(string? message)
-    {
-        if (string.IsNullOrWhiteSpace(message)) return message;
-        var clean = message
-            .Replace("Validation failed:", string.Empty, StringComparison.OrdinalIgnoreCase)
-            .Replace("Severity: Error", string.Empty, StringComparison.OrdinalIgnoreCase)
-            .Replace("\r", string.Empty)
-            .Replace("\n", " ")
-            .Replace(" --", " ")
-            .Trim();
-        while (clean.Contains("  ", StringComparison.Ordinal))
-            clean = clean.Replace("  ", " ", StringComparison.Ordinal);
-        return string.IsNullOrWhiteSpace(clean) ? message : clean;
+        var refusal = GatewayRefusal.Read(raw);
+        _logger.LogWarning("Users gateway refusal. Status={Status} Codes={Codes} Body={Body}",
+            status, string.Join(",", refusal.Codes.Select(c => c.Code)), raw.Length > 2000 ? raw[..2000] : raw);
+        return Refusal(refusal.Codes, refusal.HasUncoded, status);
     }
 
     private bool AddAuthHeaders()

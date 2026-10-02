@@ -63,7 +63,7 @@
   <data name="ErrorUserNotFound" xml:space="preserve"><value>This user could not be found; they may have been deleted. Refresh the list and try again.</value></data>
   <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>The selected account type is not valid. Choose one from the list.</value></data>
   <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>This user has already set their password, so there is no invitation to resend. To give them a new password, use Reset Password.</value></data>
-  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>This user has not set their password yet, so it cannot be reset. Resend the invitation instead.</value></data>
+  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>This user still has a password setup step waiting, so the password cannot be reset. Resend the invitation instead.</value></data>
   <data name="ErrorUserAccountKindPermissionDenied" xml:space="preserve"><value>You do not have permission to change the account type, so the user was not saved.</value></data>
   <data name="ErrorUserEmailRequired" xml:space="preserve"><value>Enter an e-mail address.</value></data>
   <data name="ErrorUserEmailInvalid" xml:space="preserve"><value>Enter a valid e-mail address.</value></data>

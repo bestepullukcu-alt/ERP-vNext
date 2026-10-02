@@ -228,7 +228,7 @@ describe("behaviour: what the page hands the factory", () => {
   });
 
   test("a refusal with a stable code reaches the form in the reader's language", async () => {
-    const fetchImpl = async () => ({ ok: false, json: async () => ({ success: false, errorCode: "USER_EMAIL_TAKEN", errors: ["raw gateway text"] }) });
+    const fetchImpl = async () => ({ ok: false, json: async () => ({ success: false, errors: [], errorCode: "USER_EMAIL_TAKEN", errorParams: null, errorCodes: [{ code: "USER_EMAIL_TAKEN", params: null }], uncoded: false, status: 409 }) });
     const { options } = await run(ALL, fetchImpl);
     const result = await options.form.submit(new FormData(), false, { editingId: null, headers: {} });
     expect(result.errors).toEqual(["E-mail taken"]);

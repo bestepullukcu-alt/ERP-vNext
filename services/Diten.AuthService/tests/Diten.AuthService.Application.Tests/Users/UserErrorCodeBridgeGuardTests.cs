@@ -128,31 +128,52 @@ public sealed class UserErrorCodeBridgeGuardTests
         Assert.True(refusals >= 10, $"Only {refusals} refusals were found in the command sources — the scan is not reading them.");
     }
 
+    // A rule that deliberately carries NO UserErrorCodes code — each with its reason. Anything else must carry one.
+    private static readonly IReadOnlyDictionary<(string File, string Property), string> ValidatorExemptions = new Dictionary<(string, string), string>
+    {
+        [("CreateUserCommandValidator.cs", "Password")] =
+            "self-service password ceiling: a password rule (the password.* family, out of this screen's scope); the Users form never sends a password",
+        [("UpdateUserCommandValidator.cs", "Id")] =
+            "the id comes from the route ({id:guid}); only Guid.Empty fails it and no screen sends that — it stays the measured example of an uncoded default (ValidationEnvelopeUnchangedTests)",
+    };
+
     /// <summary>
-    /// The create/edit validators: every rule that says a sentence also names its code from <see cref="UserErrorCodes"/>.
-    /// The one exemption is the self-service password ceiling — a password rule (out of this screen's scope: the form
-    /// never sends a password) that belongs to the password code family.
+    /// The create/edit validators: EVERY rule — with or without a sentence — names a <see cref="UserErrorCodes"/> code
+    /// on each of its checks, or stands in <see cref="ValidatorExemptions"/> with its reason. A rule with neither
+    /// would leave as FluentValidation's default code, which never reaches the wire.
     /// </summary>
     [Fact]
-    public void Every_user_validator_sentence_carries_a_UserErrorCodes_code()
+    public void Every_user_validator_rule_carries_a_code_or_is_an_explicit_exemption()
     {
         var validators = Path.Combine(RepoRoot(), "services", "Diten.AuthService", "src", "Diten.AuthService.Application", "Features", "Users", "Validators");
-        var sentences = 0;
+        var coded = 0;
+        var exempted = new HashSet<(string, string)>();
 
         foreach (var file in new[] { "CreateUserCommandValidator.cs", "UpdateUserCommandValidator.cs" })
         {
             var source = File.ReadAllText(Path.Combine(validators, file));
-            foreach (var rule in source.Split("RuleFor(").Skip(1).Where(r => !r.StartsWith("x => x.Password)", StringComparison.Ordinal)))
+            foreach (var rule in source.Split("RuleFor(").Skip(1))
             {
-                var messages = Regex.Matches(rule, @"\.WithMessage\(").Count;
+                var property = Regex.Match(rule, @"^x => x\.(?<name>[A-Za-z]+)\)").Groups["name"].Value;
+                Assert.False(string.IsNullOrEmpty(property), $"{file}: could not read the property of → RuleFor({rule.Split('\n')[0].Trim()}");
+                if (ValidatorExemptions.ContainsKey((file, property)))
+                {
+                    exempted.Add((file, property));
+                    continue;
+                }
+
+                var checks = Regex.Matches(rule, @"\.(NotEmpty|NotNull|EmailAddress|MaximumLength|MinimumLength|Length|Must|Matches|InclusiveBetween|Equal|NotEqual)\(").Count;
                 var codes = Regex.Matches(rule, @"\.WithErrorCode\(UserErrorCodes\.[A-Za-z]+\)").Count;
-                sentences += messages;
-                Assert.True(messages == codes,
-                    $"{file}: a rule has {messages} sentence(s) but {codes} UserErrorCodes code(s) → RuleFor({rule.Split('\n')[0].Trim()}");
+                Assert.True(checks > 0, $"{file}: {property} has no check this guard recognises — add it to the scan.");
+                Assert.True(checks == codes,
+                    $"{file}: {property} has {checks} check(s) but {codes} UserErrorCodes code(s), and is not an exemption.");
+                coded += codes;
             }
         }
 
-        Assert.True(sentences >= 10, $"Only {sentences} validator sentences were found — the scan is not reading the rules.");
+        Assert.True(coded >= 10, $"Only {coded} coded checks were found — the scan is not reading the rules.");
+        var stale = ValidatorExemptions.Keys.Except(exempted).ToList();
+        Assert.True(stale.Count == 0, $"Exemptions that match no rule any more: {string.Join(", ", stale)}");
     }
 
     // ── the production sources ──────────────────────────────────────────────────────────────────────────

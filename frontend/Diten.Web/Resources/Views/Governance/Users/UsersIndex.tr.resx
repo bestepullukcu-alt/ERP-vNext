@@ -63,7 +63,7 @@
   <data name="ErrorUserNotFound" xml:space="preserve"><value>Bu kullanıcı bulunamadı; silinmiş olabilir. Listeyi yenileyip yeniden deneyin.</value></data>
   <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>Seçilen hesap türü geçerli değil. Listeden bir tür seçin.</value></data>
   <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>Bu kullanıcı şifresini zaten belirlemiş; yeniden gönderilecek bir davet yok. Yeni şifre vermek için Parolayı Sıfırla'yı kullanın.</value></data>
-  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>Bu kullanıcı henüz şifresini belirlemedi; şifresi sıfırlanamaz. Bunun yerine daveti yeniden gönderin.</value></data>
+  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>Bu kullanıcının bekleyen bir parola belirleme adımı var; parola sıfırlanamaz. Bunun yerine daveti yeniden gönderin.</value></data>
   <data name="ErrorUserAccountKindPermissionDenied" xml:space="preserve"><value>Hesap türünü değiştirme yetkiniz yok; kullanıcı kaydedilmedi.</value></data>
   <data name="ErrorUserEmailRequired" xml:space="preserve"><value>Bir e-posta adresi girin.</value></data>
   <data name="ErrorUserEmailInvalid" xml:space="preserve"><value>Geçerli bir e-posta adresi girin.</value></data>
