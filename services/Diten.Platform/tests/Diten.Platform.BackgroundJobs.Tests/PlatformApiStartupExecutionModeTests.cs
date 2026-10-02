@@ -239,6 +239,9 @@ public sealed class PlatformApiStartupExecutionModeTests
         start.ArgumentList.Add(ApiStartupExecutionMode.ServeWithoutStartupMaintenanceArgument);
         start.Environment["DOTNET_ENVIRONMENT"] = Environments.Development;
         start.Environment["ASPNETCORE_ENVIRONMENT"] = Environments.Development;
+        // MOD-0033-FU02 §F.3 — a real Development host in the real project directory: it must not load the
+        // git-ignored appsettings.Development.local.json a developer may have bootstrapped there.
+        start.Environment["DevelopmentLocalSettings__Enabled"] = "false";
         start.Environment["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}";
         foreach (var entry in StartupModeConfiguration(mongo.ConnectionString, databaseName).AsEnumerable())
         {

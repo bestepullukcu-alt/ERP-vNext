@@ -40,6 +40,10 @@ public static class DevTrustBootstrapCommand
         + "--approver-user-id <guid> [--approver-user-id <guid> ...] [--client-code <code>] [--issuer <text>] "
         + "[--auth-base-url <url>]";
 
+    public const string AuthBaseUrlRefusal =
+        "refused: --auth-base-url must be an http or https URL of THIS machine (host exactly localhost, 127.0.0.1 "
+        + "or [::1]) with no user info, path, query or fragment; nothing was changed.";
+
     private static readonly string[] AuthSections = ["ServiceIdentityTokenIssuer", "ServiceClientRegistry"];
     private static readonly string[] PlatformSections = ["TrustedServiceTokenValidation"];
     private static readonly string[] MdmSections =
@@ -51,9 +55,10 @@ public static class DevTrustBootstrapCommand
         ArgumentNullException.ThrowIfNull(output);
         ArgumentNullException.ThrowIfNull(error);
 
-        if (!TryParse(args, out var options))
+        if (!TryParse(args, out var options, out var refusal))
         {
-            error.WriteLine(Usage);
+            // A refusal names the argument and never repeats its value (a URL can carry user info).
+            error.WriteLine(refusal ?? Usage);
             return UsageError;
         }
 
@@ -266,9 +271,10 @@ public static class DevTrustBootstrapCommand
         }
     }
 
-    private static bool TryParse(string[] args, out Options options)
+    private static bool TryParse(string[] args, out Options options, out string? refusal)
     {
         options = default!;
+        refusal = null;
         string? authDirectory = null, platformDirectory = null, mdmDirectory = null;
         string? clientCode = null, issuer = null, authBaseUrl = null;
         var tenants = new List<Guid>();
@@ -303,10 +309,14 @@ public static class DevTrustBootstrapCommand
         if (string.IsNullOrWhiteSpace(authDirectory) || string.IsNullOrWhiteSpace(platformDirectory)
             || string.IsNullOrWhiteSpace(mdmDirectory) || tenants.Count == 0
             || approvers.Count is 0 or > 100
-            || !IsExact(clientCode, 128) || !IsExact(issuer, 256)
-            || !Uri.TryCreate(authBaseUrl, UriKind.Absolute, out var uri)
-            || uri.Scheme is not ("http" or "https") || uri.AbsolutePath != "/")
+            || !IsExact(clientCode, 128) || !IsExact(issuer, 256))
         {
+            return false;
+        }
+
+        if (!IsLocalAuthBaseUrl(authBaseUrl))
+        {
+            refusal = AuthBaseUrlRefusal;
             return false;
         }
 
@@ -314,6 +324,23 @@ public static class DevTrustBootstrapCommand
             tenants, approvers);
         return true;
     }
+
+    /// <summary>
+    /// The value becomes MDM's <c>AuthProductIdentityWorkflowServiceIdentityProvider:AuthBaseUrl</c>, and MDM sends
+    /// the RAW client secret there. A Development tool must not be able to point that secret at another machine, so
+    /// the host has to be exactly <c>localhost</c>, <c>127.0.0.1</c> or <c>[::1]</c> (as <see cref="Uri"/> reports
+    /// it — a name that merely starts with "localhost" is another host). Everything else is what MDM's own validator
+    /// (<c>AuthProductIdentityWorkflowServiceIdentityProvider.EnsureValidConfiguration</c>) requires — absolute
+    /// http/https, path "/", no user info, no query, no fragment — so the bootstrap never writes a value MDM rejects.
+    /// </summary>
+    public static bool IsLocalAuthBaseUrl(string? value) =>
+        value is not null && IsExact(value, 256)
+        && Uri.TryCreate(value, UriKind.Absolute, out var uri)
+        && uri.Scheme is "http" or "https" && uri.AbsolutePath == "/"
+        && string.IsNullOrEmpty(uri.UserInfo)
+        && string.IsNullOrEmpty(uri.Query)
+        && string.IsNullOrEmpty(uri.Fragment)
+        && uri.Host is "localhost" or "127.0.0.1" or "[::1]";
 
     private static bool TryGuid(string value, out Guid id) =>
         Guid.TryParseExact(value, "D", out id) && id != Guid.Empty;

@@ -435,6 +435,10 @@ public sealed class ApiStartupExecutionModeMongoTests(AuditIntentTemporalMongoFi
         startInfo.ArgumentList.Add(ApiStartupExecutionMode.ExactArgument);
         startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = Environments.Development;
         startInfo.Environment["DOTNET_ENVIRONMENT"] = Environments.Development;
+        // MOD-0033-FU02 §F.3 — a real Development host in the real project directory: it must not load the
+        // git-ignored appsettings.Development.local.json a developer may have bootstrapped there (the raw
+        // service-client secret, the workflow switch).
+        startInfo.Environment["DevelopmentLocalSettings__Enabled"] = "false";
         startInfo.Environment["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}";
         startInfo.Environment["Mongo__ConnectionString"] = mongo.StandaloneConnectionString;
         startInfo.Environment["Mongo__DatabaseName"] = databaseName;

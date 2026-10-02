@@ -52,11 +52,14 @@ Development only.
 | `services/Diten.MdmService/src/Diten.MdmService.Api` | `AuthProductIdentityWorkflowServiceIdentityProvider` (raw secret), `ProductIdentityWorkflow` (`Enabled`, `CandidatePrincipalIds`), `ProductIdentityWorkflowWorker` (`Enabled`) |
 
 Running it again changes nothing and says `already set up`. It never overwrites a file: if only some of the three
-exist it stops and tells you which. The local file overrides `appsettings.Development.json` only — user secrets,
-environment variables and command-line arguments still win over it — and it is never copied to build or publish output.
+exist it stops and tells you which. The local file sits directly after `appsettings.Development.json`: it outranks that
+file (and `appsettings.json` before it), while user secrets, environment variables and command-line arguments still win
+over it. It is never copied to build or publish output. `DevelopmentLocalSettings__Enabled=false` (environment variable
+or argument) makes a service ignore the file — test hosts that run a real service under Development set it.
 
 Options: `--tenant-id` and `--approver-user-id` may be repeated; `--auth-dir`, `--platform-dir`, `--mdm-dir` write
-somewhere else; `--client-code`, `--issuer`, `--auth-base-url` replace the defaults.
+somewhere else; `--client-code`, `--issuer`, `--auth-base-url` replace the defaults. `--auth-base-url` must be this
+machine (`localhost`, `127.0.0.1` or `[::1]`, no user info, query or fragment): MDM sends the raw secret there.
 
 What is **tracked** (not secret, already in `appsettings.Development.json`): Platform's
 `TrustedWorkflowStartAuthorization` entry for the default client and `GlobalProduct`; MDM's
@@ -68,7 +71,8 @@ behaves as it did before (a submit answers 503 and writes nothing).
 stored on its first start. If you work in a second checkout against the same database, **copy the three files** from
 the first one — do not bootstrap again. A second bootstrap generates a new secret that Auth will not adopt (it warns
 `already exists and differs from configuration in CredentialHash,CredentialVersion`), MDM's token requests are then
-refused, and a refused token request **quarantines** the submit. If the files are lost, bootstrap with a new
+refused, and a refused token request **quarantines** the submit — and, with the worker enabled, every approval that
+is pending in that MDM database within one poll (the worker and the withdraw path have no pre-flight yet). If the files are lost, bootstrap with a new
 `--client-code`: a new client is created, and the bootstrap also writes Platform's authorization entry for it into
 Platform's local file.
 

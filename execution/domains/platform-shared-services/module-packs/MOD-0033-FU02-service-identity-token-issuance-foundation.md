@@ -544,3 +544,51 @@ Rotation or revocation from configuration; a grant that follows a tenant's modul
 F.1 is the first step — onboarding a tenant today means adding its id and restarting Auth); an administration surface;
 making Section E's tool runnable (its permission seed, journal and cross-platform sink). Production key custody and
 rotation remain the separate gates of §20.5.
+
+#### F.5 Decisions taken at acceptance (2026-10-02, CONTROL TOWER — WP-GP-1A-TRUST-CHAIN-01 v2 + fix round)
+
+These complete F.1–F.3; where they add to the text above, they win.
+
+1. **The identity id is derived from the client code** (`ServiceClientIdentityIds.FromClientCode`, name-based). The id
+   is not a secret and proves nothing; it has to be knowable before Auth runs because the consumer's allow entry
+   (Platform `TrustedWorkflowStartAuthorization:Entries[].ClientId`) names it. An identity that already exists under
+   ANOTHER id is reported at startup (field `Id`, no values) and is not the declared client: it receives no grants.
+2. **A differing hash or version does not stop grants; a differing id, service name or audience does.** A credential
+   rotated through Section E is still the declared client, so tenants added to its entry are still granted. Only Auth
+   configuration can add a tenant; the holder of the stored credential is the one who gains it.
+3. **The audit row is written BEFORE the creation it records**, under an id derived from the event and the thing
+   created, create-if-absent. No audit row → no insert → Auth does not start. Several instances starting together, or
+   a restart after a failed insert, leave ONE row per creation. Accepted consequence: a row can stand for a creation
+   whose insert failed and was never retried (over-reporting). Known limit: a row hard-deleted out of band and
+   re-created by the registry gets no second audit row.
+4. **Auth does not start when the declared clients cannot be applied** (section present, persistence unavailable). A
+   client that silently failed to register would surface later as token failures in another service.
+5. **The token endpoint needs no ambient tenant.** `POST /api/internal/v1/auth/service-tokens/issue` takes its tenant
+   from the request body and checks it against an explicit grant; the tenant-resolution middleware lifts the
+   REQUIREMENT of a tenant for that path prefix only, never applies the development bypass tenant there, and still
+   refuses a contradicting header/JWT tenant. (Before this the endpoint answered 400 in every environment but
+   Development.)
+6. **Development local settings** (`appsettings.Development.local.json`): loaded in Development only, directly after
+   the tracked `appsettings.Development.json`, so user secrets, environment variables and the command line keep their
+   precedence over it; not loaded at all when that position cannot be found; never copied to build or publish output.
+   `DevelopmentLocalSettings:Enabled=false` (any value other than `true`) turns it OFF and can never turn it on outside
+   Development — every test host that runs a real Program under Development sets it. The switches that turn the
+   approval chain on (`ProductIdentityWorkflow:Enabled`, the worker's `Enabled`) live in the local file, not in tracked
+   files: a checkout that was never bootstrapped must not act on pending operations of a shared local database.
+7. **The development bootstrap only points at this machine**: `--auth-base-url` must be `localhost`, `127.0.0.1` or
+   `[::1]` with no user info, query or fragment — the consumer sends the raw secret to that address.
+8. **One credential set per Auth database.** A second checkout against the same databases copies the three local
+   files; running the bootstrap again there produces a hash Auth does not hold (Auth keeps the first, reports the
+   difference) and the consumer's token requests are refused.
+
+**Files this section authorizes beyond Section E's list** (additive only): the two registry repository interfaces and
+implementations (`IServiceClientIdentityRepository`, `IServiceClientTenantGrantRepository` — `CreateIfAbsentAsync` and
+the including-deleted finders), `IAuthAuditService.WriteOnceAsync`, `TenantResolutionMiddleware` (item 5), the three
+`DevelopmentLocalSettings.cs` copies, and everything under `Features/ServiceIdentityTokens/Registry/`,
+`Api/Services/ServiceIdentityTokens/ServiceClientRegistryStartup.cs` and `tools/`.
+
+**Still open, recorded for the next packages:** a credential or transport fault quarantines a pending business
+operation on the worker and withdraw paths of MDM (only the interactive submit is guarded) — a fault of the service
+identity is not a fault of the record, and belongs in a retry, not in manual reconciliation; the seven sibling
+processors (GSKU, LSKU, correction, retirement) have no pre-flight at all; the audit write relies on the default write
+concern.

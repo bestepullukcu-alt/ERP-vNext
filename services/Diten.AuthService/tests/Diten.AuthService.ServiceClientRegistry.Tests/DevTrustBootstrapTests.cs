@@ -1,8 +1,12 @@
+extern alias MdmInfrastructure;
+
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Diten.AuthService.DevTrustBootstrap;
 using Diten.AuthService.ServiceClientRegistry.Tests.Support;
+using Microsoft.Extensions.Configuration;
+using MdmInfrastructure::Diten.MdmService.Infrastructure.Workflow;
 
 namespace Diten.AuthService.ServiceClientRegistry.Tests;
 
@@ -104,6 +108,81 @@ public sealed class DevTrustBootstrapTests
         Assert.Equal(DevTrustBootstrapCommand.UsageError, exit);
         Assert.Empty(targets.AllEntries());
         Assert.DoesNotContain(value, output.ToString() + error, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// The URL goes into MDM's settings and MDM sends the RAW client secret there: a Development tool must not be
+    /// able to point that secret at another machine. Refused before anything is written; the message names the
+    /// argument and never repeats the value (it can carry user info).
+    /// </summary>
+    [Theory]
+    [InlineData("https://auth.example.com")]                  // another machine
+    [InlineData("http://192.168.1.10:5056")]                  // another machine, by address
+    [InlineData("http://0.0.0.0:5056")]                       // not a loopback name
+    [InlineData("http://localhost.example.com:5056")]         // merely STARTS with "localhost"
+    [InlineData("http://localhost.:5056")]                    // not exactly "localhost"
+    [InlineData("http://127.0.0.1.example.com:5056")]         // merely starts with the loopback address
+    [InlineData("http://localhost:5056@auth.example.com")]    // "localhost" is the user info here; the host is remote
+    [InlineData("http://someone@localhost:5056")]             // user info on a local host
+    [InlineData("http://someone:something@127.0.0.1:5056")]   // user info with a password part
+    [InlineData("http://localhost:5056/?next=1")]             // query
+    [InlineData("http://localhost:5056/#fragment")]           // fragment
+    [InlineData("http://localhost:5056/api")]                 // a path
+    [InlineData("ftp://localhost")]                           // not http/https
+    [InlineData(" http://localhost:5056")]                    // not exact
+    [InlineData("localhost:5056")]                            // no scheme
+    public void Bootstrap_WhenTheAuthUrlIsNotAPlainUrlOfThisMachine_RefusesNamingTheArgument_AndWritesNothing(string url)
+    {
+        using var targets = new Targets();
+        var output = new StringWriter();
+        var error = new StringWriter();
+
+        var exit = DevTrustBootstrapCommand.Run([.. targets.Arguments(Tenant, Approver), "--auth-base-url", url], output, error);
+
+        Assert.Equal(DevTrustBootstrapCommand.UsageError, exit);
+        Assert.Empty(targets.AllEntries());
+        Assert.Contains("--auth-base-url", error.ToString(), StringComparison.Ordinal);
+        Assert.Contains("nothing was changed", error.ToString(), StringComparison.Ordinal);
+        Assert.DoesNotContain(url, output.ToString() + error, StringComparison.Ordinal);
+        Assert.DoesNotContain("someone", output.ToString() + error, StringComparison.Ordinal);
+        Assert.False(DevTrustBootstrapCommand.IsLocalAuthBaseUrl(url));
+    }
+
+    /// <summary>What the bootstrap accepts is local AND is a value MDM's own validator accepts — written as given.</summary>
+    [Theory]
+    [InlineData("http://localhost:5056")]
+    [InlineData("http://localhost:5056/")]
+    [InlineData("https://localhost")]
+    [InlineData("http://127.0.0.1:5056")]
+    [InlineData("http://[::1]:5056")]
+    public void Bootstrap_WhenTheAuthUrlIsThisMachine_WritesItAsGiven_AndMdmsOwnValidatorAcceptsIt(string url)
+    {
+        using var targets = new Targets();
+        var error = new StringWriter();
+
+        var exit = DevTrustBootstrapCommand.Run([.. targets.Arguments(Tenant, Approver), "--auth-base-url", url], new StringWriter(), error);
+
+        Assert.Equal(DevTrustBootstrapCommand.Success, exit);
+        Assert.True(string.IsNullOrEmpty(error.ToString()), "nothing is written to standard error on success");
+        var mdm = new ConfigurationBuilder().AddJsonFile(targets.Files[2], optional: false, reloadOnChange: false).Build()
+            .GetSection(AuthProductIdentityWorkflowServiceIdentityProviderOptions.SectionName)
+            .Get<AuthProductIdentityWorkflowServiceIdentityProviderOptions>()!;
+        Assert.Equal(url, mdm.AuthBaseUrl);
+        AuthProductIdentityWorkflowServiceIdentityProvider.EnsureValidConfiguration(mdm); // throws when MDM would refuse it
+    }
+
+    [Fact]
+    public void Bootstrap_ByDefault_PointsMdmAtAuthOnThisMachine()
+    {
+        Assert.True(DevTrustBootstrapCommand.IsLocalAuthBaseUrl(DevTrustBootstrapCommand.DefaultAuthBaseUrl));
+        using var targets = new Targets();
+
+        Assert.Equal(DevTrustBootstrapCommand.Success,
+            DevTrustBootstrapCommand.Run(targets.Arguments(Tenant, Approver), new StringWriter(), new StringWriter()));
+
+        using var mdm = JsonDocument.Parse(File.ReadAllText(targets.Files[2]));
+        Assert.Equal(DevTrustBootstrapCommand.DefaultAuthBaseUrl, mdm.RootElement
+            .GetProperty("AuthProductIdentityWorkflowServiceIdentityProvider").GetProperty("AuthBaseUrl").GetString());
     }
 
     [Fact]

@@ -37,7 +37,7 @@ public enum ServiceClientRegistryOutcome
 {
     IdentityCreated = 1,
     IdentityUnchanged = 2,
-    /// <summary>Exists with a different hash, version, service name or audience. Left exactly as it is.</summary>
+    /// <summary>Exists with a different id, hash, version, service name or audience. Left exactly as it is.</summary>
     IdentityDiffers = 3,
     IdentityRevoked = 4,
     IdentityDeleted = 5,

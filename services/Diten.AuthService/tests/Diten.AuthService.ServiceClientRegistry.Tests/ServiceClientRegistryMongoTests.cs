@@ -22,6 +22,8 @@ public sealed class ServiceClientRegistryMongoTests(OwnedMongo mongo)
     private IMongoCollection<ServiceClientTenantGrant> Grants =>
         mongo.Database.GetCollection<ServiceClientTenantGrant>("serviceClientTenantGrants");
 
+    private IMongoCollection<AuthAuditLog> Audits => mongo.Database.GetCollection<AuthAuditLog>("authAuditLogs");
+
     [Fact]
     public async Task Startup_WhenClientIsDeclared_CreatesIdentityGrantsAndAuditRows()
     {
@@ -229,6 +231,187 @@ public sealed class ServiceClientRegistryMongoTests(OwnedMongo mongo)
         var audits = (await RegistryStartup.SnapshotAsync(mongo.Database, [code], [tenant]))
             .Where(line => line.StartsWith("audit ", StringComparison.Ordinal)).ToArray();
         Assert.Equal(2, audits.Length); // exactly one winner wrote each create
+        // …and it holds through the derived id: all eight instances wrote ahead under the SAME two ids.
+        Assert.Equal(1, await Audits.CountDocumentsAsync(x => x.Id == ServiceClientRegistryReconciler.IdentityAuditId(identityId)));
+        Assert.Equal(1, await Audits.CountDocumentsAsync(
+            x => x.Id == ServiceClientRegistryReconciler.GrantAuditId(tenant, identityId, "TRUSTED_WORKFLOW_CONSUMER")));
+    }
+
+    [Fact]
+    public async Task Startup_WritesEachAuditRowUnderItsDerivedId_AndASecondStartWritesNothing()
+    {
+        var code = RegistryStartup.NewClientCode();
+        var tenant = Guid.NewGuid();
+        var configuration = RegistryStartup.Configuration(new RegistryStartup.Declared(code, RegistryStartup.NewHash(), [tenant]));
+        var identityId = ServiceClientIdentityIds.FromClientCode(code);
+        var identityAuditId = ServiceClientRegistryReconciler.IdentityAuditId(identityId);
+        var grantAuditId = ServiceClientRegistryReconciler.GrantAuditId(tenant, identityId, "TRUSTED_WORKFLOW_CONSUMER");
+
+        await RegistryStartup.RunAsync(mongo.Database, configuration);
+
+        var identityRow = await Audits.Find(x => x.Id == identityAuditId).SingleAsync();
+        var grantRow = await Audits.Find(x => x.Id == grantAuditId).SingleAsync();
+        Assert.Equal((ServiceClientRegistryReconciler.IdentityRegisteredEvent, Guid.Empty, Guid.Empty),
+            (identityRow.EventName, identityRow.UserId, identityRow.TenantId));
+        Assert.Equal((ServiceClientRegistryReconciler.TenantGrantedEvent, Guid.Empty, tenant),
+            (grantRow.EventName, grantRow.UserId, grantRow.TenantId));
+        var before = await RegistryStartup.SnapshotAsync(mongo.Database, [code], [tenant]);
+        Assert.Equal(2, before.Count(line => line.StartsWith("audit ", StringComparison.Ordinal)));
+
+        await RegistryStartup.RunAsync(mongo.Database, configuration);
+
+        // Byte-identical: no second audit row, and the two rows themselves (time, metadata) untouched.
+        Assert.Equal(before, await RegistryStartup.SnapshotAsync(mongo.Database, [code], [tenant]));
+    }
+
+    /// <summary>
+    /// The finding this closes: with an audit log that cannot be written, the old order (insert, then audit) refused
+    /// the first start but left the row behind — the next start found it "already there" and never audited it, so
+    /// N+1 restarts applied the whole registry with no audit row at all. The audit collection of the owned mongod is
+    /// made to refuse exactly this test's rows (a collection validator on the client code), then released.
+    /// </summary>
+    [Fact]
+    public async Task Startup_WhenTheAuditLogRefusesTheRows_CreatesNothingHoweverOftenAuthRestarts_AndAuditsOnceWhenItRecovers()
+    {
+        await MongoDbIndexConfigurations.EnsureServiceIdentityIndexesAsync(mongo.Database);
+        var code = RegistryStartup.NewClientCode();
+        var tenants = new[] { Guid.NewGuid(), Guid.NewGuid() };
+        var configuration = RegistryStartup.Configuration(new RegistryStartup.Declared(code, RegistryStartup.NewHash(), tenants));
+        var identityId = ServiceClientIdentityIds.FromClientCode(code);
+
+        await RefuseAuditRowsMentioningAsync(code);
+        try
+        {
+            for (var restart = 0; restart < 4; restart++)
+            {
+                var refused = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => RegistryStartup.RunAsync(mongo.Database, configuration));
+                Assert.StartsWith("Startup error: the declared service clients could not be applied", refused.Message, StringComparison.Ordinal);
+                Assert.Equal(0, await Identities.CountDocumentsAsync(x => x.ClientCode == code));
+                Assert.Equal(0, await Grants.CountDocumentsAsync(x => x.ServiceClientIdentityId == identityId));
+            }
+
+            Assert.Empty(await RegistryStartup.SnapshotAsync(mongo.Database, [code], tenants));
+        }
+        finally
+        {
+            await AcceptAllAuditRowsAsync();
+        }
+
+        await RegistryStartup.RunAsync(mongo.Database, configuration);
+
+        Assert.Equal(1, await Identities.CountDocumentsAsync(x => x.ClientCode == code));
+        Assert.Equal(2, await Grants.CountDocumentsAsync(x => x.ServiceClientIdentityId == identityId));
+        var audits = (await RegistryStartup.SnapshotAsync(mongo.Database, [code], tenants))
+            .Where(line => line.StartsWith("audit ", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(3, audits.Length); // one identity + two grants — each created thing has its row, once
+        Assert.Equal(1, await Audits.CountDocumentsAsync(x => x.Id == ServiceClientRegistryReconciler.IdentityAuditId(identityId)));
+        foreach (var tenant in tenants)
+        {
+            Assert.Equal(1, await Audits.CountDocumentsAsync(
+                x => x.Id == ServiceClientRegistryReconciler.GrantAuditId(tenant, identityId, "TRUSTED_WORKFLOW_CONSUMER")));
+        }
+    }
+
+    /// <summary>The same for the grants alone: the identity is created and audited, the grant rows are refused.</summary>
+    [Fact]
+    public async Task Startup_WhenTheAuditLogRefusesOnlyTheGrantRows_CreatesNoGrantHoweverOftenAuthRestarts_AndAuditsEachOnceWhenItRecovers()
+    {
+        await MongoDbIndexConfigurations.EnsureServiceIdentityIndexesAsync(mongo.Database);
+        var code = RegistryStartup.NewClientCode();
+        var tenants = new[] { Guid.NewGuid(), Guid.NewGuid() };
+        var configuration = RegistryStartup.Configuration(new RegistryStartup.Declared(code, RegistryStartup.NewHash(), tenants));
+        var identityId = ServiceClientIdentityIds.FromClientCode(code);
+        var identityAuditId = ServiceClientRegistryReconciler.IdentityAuditId(identityId);
+
+        await RefuseAuditRowsMentioningAsync(code, ServiceClientRegistryReconciler.TenantGrantedEvent);
+        try
+        {
+            for (var restart = 0; restart < 4; restart++)
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(() => RegistryStartup.RunAsync(mongo.Database, configuration));
+                Assert.Equal(1, await Identities.CountDocumentsAsync(x => x.ClientCode == code));
+                Assert.Equal(1, await Audits.CountDocumentsAsync(x => x.Id == identityAuditId));
+                Assert.Equal(0, await Grants.CountDocumentsAsync(x => x.ServiceClientIdentityId == identityId));
+            }
+        }
+        finally
+        {
+            await AcceptAllAuditRowsAsync();
+        }
+
+        await RegistryStartup.RunAsync(mongo.Database, configuration);
+
+        Assert.Equal(2, await Grants.CountDocumentsAsync(x => x.ServiceClientIdentityId == identityId));
+        foreach (var tenant in tenants)
+        {
+            Assert.Equal(1, await Audits.CountDocumentsAsync(
+                x => x.Id == ServiceClientRegistryReconciler.GrantAuditId(tenant, identityId, "TRUSTED_WORKFLOW_CONSUMER")));
+        }
+
+        var audits = (await RegistryStartup.SnapshotAsync(mongo.Database, [code], tenants))
+            .Where(line => line.StartsWith("audit ", StringComparison.Ordinal)).ToArray();
+        Assert.Equal(3, audits.Length); // still one identity row, and one per grant
+    }
+
+    [Fact]
+    public async Task WriteOnce_WhenManyWritersUseTheSameId_KeepsOneRow_AndNeverModifiesIt()
+    {
+        var audit = new AuthAuditService(mongo.Database);
+        var id = Guid.NewGuid();
+        var tenant = Guid.NewGuid();
+
+        var results = await Task.WhenAll(Enumerable.Range(0, 8).Select(writer => Task.Run(
+            () => audit.WriteOnceAsync(id, "test.write_once", null, tenant, $"{{\"writer\":{writer}}}"))));
+
+        Assert.Single(results, wrote => wrote);
+        var row = (await Audits.Find(x => x.Id == id).SingleAsync()).ToBsonDocument().ToJson();
+
+        // A later writer — after a restart, with other content — is told "already there" and changes nothing.
+        Assert.False(await audit.WriteOnceAsync(id, "test.another_event", Guid.NewGuid(), Guid.NewGuid(), "{\"writer\":\"late\"}"));
+        Assert.Equal(row, (await Audits.Find(x => x.Id == id).SingleAsync()).ToBsonDocument().ToJson());
+
+        // The plain write is as it was: every call is its own row.
+        await audit.WriteAsync("test.plain_write", null, tenant, "{}");
+        await audit.WriteAsync("test.plain_write", null, tenant, "{}");
+        Assert.Equal(2, await Audits.CountDocumentsAsync(x => x.EventName == "test.plain_write" && x.TenantId == tenant));
+        await Assert.ThrowsAsync<ArgumentException>(() => audit.WriteOnceAsync(Guid.Empty, "test.write_once", null, tenant, "{}"));
+    }
+
+    [Fact]
+    public async Task Startup_WhenIdentityExistsUnderAnotherId_LeavesItByteIdentical_ReportsId_AndCreatesNoGrant()
+    {
+        var code = RegistryStartup.NewClientCode();
+        var tenant = Guid.NewGuid();
+        var hash = RegistryStartup.NewHash();
+        var storedId = Guid.NewGuid(); // not the id derived from the code: a row created by hand or by a fixture
+        await Identities.InsertOneAsync(new ServiceClientIdentity
+        {
+            Id = storedId, ClientCode = code, ServiceName = "Diten.MDM", AllowedAudience = "TRUSTED_WORKFLOW_CONSUMER",
+            ActiveCredentialHash = hash, ActiveCredentialVersion = "v1", CreatedBy = "somebody-by-hand"
+        });
+        var before = await RegistryStartup.SnapshotAsync(mongo.Database, [code], [tenant]);
+        var derivedId = ServiceClientIdentityIds.FromClientCode(code);
+
+        var log = await RegistryStartup.RunAsync(mongo.Database,
+            RegistryStartup.Configuration(new RegistryStartup.Declared(code, hash, [tenant])));
+
+        Assert.Equal(before, await RegistryStartup.SnapshotAsync(mongo.Database, [code], [tenant]));
+        Assert.Equal(storedId, (await Identities.Find(x => x.ClientCode == code).SingleAsync()).Id);
+        Assert.Equal(0, await Grants.CountDocumentsAsync(x => x.TenantId == tenant));
+        Assert.Equal(0, await Audits.CountDocumentsAsync(x => x.TenantId == tenant));
+        var differs = Assert.Single(log, entry => entry.Level == LogLevel.Warning
+            && entry.Text.Contains("differs from configuration", StringComparison.Ordinal));
+        Assert.Contains(code, differs.Text, StringComparison.Ordinal);
+        Assert.Contains(" in Id;", differs.Text, StringComparison.Ordinal);
+        Assert.Contains(log, entry => entry.Level == LogLevel.Warning
+            && entry.Text.Contains("no tenant grant was created", StringComparison.Ordinal));
+        Assert.All(log, entry =>
+        {
+            Assert.DoesNotContain(storedId.ToString("D"), entry.Text, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain(derivedId.ToString("D"), entry.Text, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain(hash, entry.Text, StringComparison.Ordinal);
+        });
     }
 
     [Fact]
@@ -270,4 +453,30 @@ public sealed class ServiceClientRegistryMongoTests(OwnedMongo mongo)
         // The VALID first entry was not applied either: validation is over the whole section, before any write.
         Assert.Empty(await RegistryStartup.SnapshotAsync(mongo.Database, [valid, invalid], [tenant]));
     }
+
+    /// <summary>
+    /// Only audit rows whose metadata names this client code (and, when given, only those of one event) are refused;
+    /// every other test's rows still go in.
+    /// </summary>
+    private async Task RefuseAuditRowsMentioningAsync(string clientCode, string? onlyEvent = null)
+    {
+        var names = await (await mongo.Database.ListCollectionNamesAsync()).ToListAsync();
+        if (!names.Contains("authAuditLogs")) await mongo.Database.CreateCollectionAsync("authAuditLogs");
+        var refused = new BsonDocument("Metadata", new BsonRegularExpression(clientCode));
+        if (onlyEvent is not null) refused.Add("EventName", onlyEvent);
+        await mongo.Database.RunCommandAsync<BsonDocument>(new BsonDocument
+        {
+            { "collMod", "authAuditLogs" },
+            { "validator", new BsonDocument("$nor", new BsonArray { refused }) },
+            { "validationLevel", "strict" },
+            { "validationAction", "error" }
+        });
+    }
+
+    private Task AcceptAllAuditRowsAsync() => mongo.Database.RunCommandAsync<BsonDocument>(new BsonDocument
+    {
+        { "collMod", "authAuditLogs" },
+        { "validator", new BsonDocument() },
+        { "validationLevel", "off" }
+    });
 }
