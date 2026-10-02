@@ -150,3 +150,10 @@ DRY-RUN — nothing written. Re-run with --apply.
 
 ### 5. Hata / sapma
 Yok. Kod değişikliği yok.
+### 6. İkinci tur (kullanıcı `--apply` + yeniden giriş sonrası, 2026-10-02)
+- **Script uygulandı (kullanıcı):** marker `manual-grant-regulatory-text-rbac` ile 6 `rolePermissions` satırı, tüm GUID'ler subtype-4; dry-run tekrarında "0 grant(s) to insert" (idempotent).
+- **Menü:** "Güvenlilik Metinleri" (`/CRM/SafetyTexts`) ve "Ülke Yasal Profilleri" (`/CRM/LegalProfiles`) görünür; iki sayfa 403'süz açılır, "Yeni" düğmesi görünür (manage yetkisi).
+- **Listeler:** ikisi boş ve hatasız ("Tabloda veri bulunmuyor", 0 kayıt). Liste, ülke ekseni (7 seçenek) ve MDM ürün seçicisi (178 seçenek) istekleri 200.
+- **Ara bulgu:** ilk kontrolde CRM servisi (5061) çalışmıyordu (süreç yok, `/health` yanıtsız) → tüm `/CRM/*/api` istekleri gövdesiz 502 (Bilgi Yolları dahil). Kullanıcı CRM'i başlattıktan sonra hepsi 200. Konsoldaki 502 kayıtları yalnız o döneme ait.
+- **Küçük gözlem (hata değil):** liste yüklenirken iki istek gidiyor (`draw=1`, `draw=2`) — fabrikanın kayıtlı görünümü uygulaması; davranış diğer sunucu modu listeleriyle aynı.
+- Kayıt oluşturulmadı, örnek başlatılmadı. **E4 (CT):** TR / tr güvenlilik metni → gönder → `KP-REG-TR` → sema onayı → aktif → çözümleme.
