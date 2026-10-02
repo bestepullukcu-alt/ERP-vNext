@@ -451,6 +451,13 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
   `inventory.reservations.manage` — Module `inventory-ledger`, Scope Tenant, 1 row, 0 pages / 0 actions for it; catalog
   unchanged at 8 pages / 19 actions. Granting it to a role and reserve/release 403 → 201 are NOT claimed (CT measures).
   Evidence `docs/records/audits/2026-10/wp-0173-rsv1-evidence-2026-10-02.md`.
+  **CT acceptance (K13):** re-measured in a separate worktree at `8105e1581` — Inventory 355/355, Platform
+  ModuleRegistration + NoAddress 48/48; CT sabotage (handler scope forced to "PlatformAdmin") → 7 red, restored, empty
+  diff; read-only catalog read: 5/5 `inventory.*` keys Module `inventory-ledger`, Scope 0 (Tenant). Live after the owner's
+  grant + re-login (run G10G21Z, 46/46): token carries 5/5 keys; reserve 30 → 201 (`W/"1"`), reserved 30, available
+  278 = AVAILABLE 308 − 30; release with current If-Match → 200 (available back to 308); stale If-Match → 409
+  `RESERVATION_CONFLICT`. Persisted: `inventory_reservations` 1 row (Released, Version 2, same tenant/LE), 2 audit rows
+  (Created, Released), 2 outbox rows `InventoryReservationChanged` (Pending — RabbitMQ down on this machine).
 
 ## 20. Follow-up Items
 
