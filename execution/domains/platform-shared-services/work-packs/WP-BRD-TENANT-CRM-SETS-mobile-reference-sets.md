@@ -110,3 +110,12 @@ Durma: kiracı yalnız X-Tenant-Id başlığından (token doğrulamasız) alın�
 **Acceptance (E2):** Web 0 kırmızı (taban 395), CRM 0 (taban 2125/0/5), Platform ilgili testler 0 yeni kırmızı, build 0 hata. Yeni testler: yardımcı önce consumable'ı çağırır / fallback + önbellek / tanınmayan red; dokuz denetleyicinin her biri yardımcıyı kullanır (eski URL kurma kalmadı — kaynak taraması); kayma testi Web set kodlarını da kapsar. **Sabotaj:** (1) yardımcıda fallback kaldır → liste dışı set testi kırmızı; (2) bir denetleyiciyi eski URL'ye geri döndür → kaynak taraması testi kırmızı.
 
 **E4 (CT, fleet):** Admin olmayan 97c5 kullanıcısıyla hesap, kişi, iddia, segment, bölge formlarında açılır listeler dolu; kayıt başarılı.
+
+## §37 — CT bağımsız doğrulama, Adım 2 (2026-10-02) — **ACCEPTED (E2)**
+- **Commit:** ajan `3238591d` (18 dosya, +988 / −85). Ortak `Services/CrmReferenceSetReader` + `CrmReferenceSetRouting` (süreç içi önbellek); dokuz CRM denetleyicisi geçti; CRM dışı denetleyiciler değişmedi.
+- **Okuyucu kuralı (K13 okuma):** consumable-sets önce (kullanıcının Bearer + `X-Tenant-Id`, `scope_key` yok); `not_tenant_accessible` → eski yol (scope_key, global sinyalde anahtarsız tekrar) + önbellek; tanınmayan red önbelleğe alınmaz; kiracısız → istek yok, `null`. İzin kapıları aynı.
+- **Platform listesine eklenen 3 set:** `evidence-type`, `planning-center-type`, `content-moderator-role` (appsettings + kod varsayılanı aynı). Kayma testi artık Web CRM denetleyicilerini + CRM ekran JS'ini de tarıyor.
+- **CT testleri:** Web **434/0** (+39), CRM **2127/0/5** (ilk koşuda bilinen PiiMasking flake'i 1 kez kırmızı, ikinci koşu temiz), Platform ilgili **41/0**.
+- **CT sabotajı:** okuyucunun "liste dışı" sinyali bozuldu → 1 kırmızı. Kod geri alındı. Ajan: fallback kaldırma (5), bir denetleyiciyi eski URL'ye döndürme (4), listeden `planning-center-type` çıkarma (kayma).
+- **Açık:** Admin de artık consumable yolundan okuyor → içerik aynılığı E4'te; Knowledge / KnowledgeConcepts `ReferenceValues` istemciden set kodu alıyor ama yalnız listedeki setler (yeni açıklık yok); önbellek süreç ömrü (liste genişlerse Web + CRM yeniden başlat).
+- **E4 (CT, fleet):** Admin olmayan 97c5 kullanıcısıyla hesap, kişi, iddia, segment, bölge formlarında açılır listeler dolu + kayıt başarılı; mobil beş set.
