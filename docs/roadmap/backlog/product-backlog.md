@@ -7547,6 +7547,46 @@ Gelecek regresyon riski: 🟢 (yalnız etiket), ama yetki yanlış verilmesine y
 
 ---
 
+### BL-509
+
+**Şirketler arası iş: aynı kiracıda, farklı tüzel kişilerdeki iki meslektaş birbirine görev atayamıyor — "görev talebi" ve "çalışma grubu"**
+
+DURUM: AÇIK — SAHİP KARARI BEKLİYOR (Görev Merkezi turunda, senaryo adım 6) · SAHİP: CT (Görev Merkezi / MOD-0024) · BULAN: sahip (kullanıcı
+ihtiyacı: aynı pozisyonda, farklı şirketlerde iki kişi) · KAYIT: 2026-10-02
+
+Ölçüldü (`TaskAssignmentScopeResolver`, BL-057): bir kişi (1) kendi tüzel kişisindeki herkese, (2) pozisyon zincirinde altındaki herkese,
+(3) kendisine ayrıca verilmiş birim / pozisyon kapsamına görev atayabilir. Farklı şirketteki eşit düzey meslektaş üçüne de girmez; ret kodu
+`TASK_ASSIGNEE_NOT_ASSIGNABLE`. Sınır bilerek kondu: önceden Miguel Garriga'daki kullanıcı Polonya ve Türkiye şirketlerinin bütün çalışanlarını
+görüp iş atayabiliyordu (GDPR sınırı). (3) için kapsam verecek ekran YOK; kapsamlar yalnız organizasyon verisinden türüyor.
+**Öneri (iki ayrı özellik, ikisi de "ata"dan ayrı):**
+(a) **Görev talebi** — kapsam dışındaki birine "şunu yapar mısın": karşı taraf kabul ederse kendi görevi olur, reddederse gerekçe yazar; talep
+eden emir veremez. Motorun "Kabul et / Reddet" adımı var; eksik olan kapsam dışındaki kişiyi adresleyebilmek. Hukuki nokta: talep gönderebilmek
+için başka şirketteki kişinin en az adının, şirketinin ve pozisyonunun görünmesi gerekir → yönetim kararları belgesine eklenir.
+(b) **Çalışma grubu** — farklı şirketlerden kişiler bir gruba alınır, grup içinde atama serbesttir (kuralın 3. bacağına ekran).
+Karşılaştırma: SAP'de (yapısal yetki) ve Oracle'da (güvenlik profili) doğrudan iş verme organizasyon yapısına bağlıdır; şirketler arası iş
+talep / bildirim olarak gider ve karşı taraf ya da yöneticisi üstlenir; sürekli ortak çalışma matris / proje ekibiyle tanımlanır.
+Kod yazmadan bugün: iki kişinin üstünde ortak bir grup pozisyonu varsa o yönetici ikisine de atayabilir. İkinci koltuk vermek çalışır ama
+önerilmez (onay zincirini ve zaman çizelgesi onaycısını da değiştirir). Gelecek regresyon riski: 🟡 (atama kapsamı, kişisel veri görünürlüğü).
+
+---
+
+### BL-510
+
+**Ürün modüllerinin denetim izinde iki bilinen eksik: değişen alan adları (sözleşme v2) ve reddedilen denemeler**
+
+DURUM: AÇIK · SAHİP: CT (MDM ürün modülleri + denetim standardı) · BULAN: WP-GP-AUDIT-TRAIL-01 Aşama 1 / 1b ölçümü · KAYIT: 2026-10-02
+
+Global Product ve kardeş modüller kaydı iş verisiyle aynı belgeye "niyet" olarak yazıyor (işlem içi outbox); iz `mdm-urun-niyeti` olarak kabul
+edilecek (BL-503). İki eksik bu paketin dışında bırakıldı: (1) **Değişen alan adları:** niyet sürüm numarası + özet + anlık görüntü referansı
+taşıyor, hangi alanların değiştiğini taşımıyor (kural §3). Eklemek MDM ↔ Platform tel sözleşmesinin sürümünü değiştirir (Platform tek sürüm
+kabul ediyor): üretici, ayrıştırıcı, parmak izi, makbuz doğrulaması ve iki servisin testleri; bekleyen eski sürümlü niyetler için iki sürümün
+birlikte kabulü. (2) **Reddedilen / başarısız denemeler** üç serviste de yazılmıyor (MDM niyeti yalnız başarılı yazımda oluşur; Platform'un
+güvenilir başlat / iptal komutları reddi kaydetmiyor; Auth belirteç reddi BL-503 D3'te ele alınıyor). Kural §3 "reddedilen komut da kaydedilir"
+diyor; hiçbir test bunu ölçmüyor. Karşılaştırma: Veeva ve MasterControl'de başarısız imza / onay denemesi de denetim izine düşer.
+Gelecek regresyon riski: 🟡 (iki servis arası sözleşme).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
