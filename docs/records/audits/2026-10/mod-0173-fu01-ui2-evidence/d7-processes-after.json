@@ -1,0 +1,41 @@
+﻿{
+    "stopped":  [
+                    {
+                        "name":  "sku-mock",
+                        "pid":  14884,
+                        "started":  "2026-10-02T12:53:44.6656915+03:00"
+                    },
+                    {
+                        "name":  "inventory-service",
+                        "pid":  20624,
+                        "started":  "2026-10-02T12:53:44.7159851+03:00"
+                    },
+                    {
+                        "name":  "gateway",
+                        "pid":  30136,
+                        "started":  "2026-10-02T12:53:45.0502532+03:00"
+                    },
+                    {
+                        "name":  "diten-web",
+                        "pid":  23288,
+                        "started":  "2026-10-02T12:53:45.0882892+03:00"
+                    },
+                    {
+                        "name":  "persona-helper",
+                        "pid":  9160,
+                        "started":  "2026-10-02T12:53:45.1666491+03:00"
+                    },
+                    {
+                        "name":  "prism-lot",
+                        "pid":  41404,
+                        "started":  "2026-10-02T12:59:04.3463866+03:00"
+                    }
+                ],
+    "gatewayCopyRemoved":  true,
+    "listenersLeftOnOwnPorts":  [
+
+                                ],
+    "startedPidsStillAlive":  [
+
+                              ]
+}

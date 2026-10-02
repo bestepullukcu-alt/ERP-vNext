@@ -668,6 +668,49 @@ StockLedger/Create are UI-2. Evidence `docs/records/audits/2026-10/mod-0173-fu01
   **fresh login** (permissions are read into the token at login). Non-Development environments still need this
   configured through their own secrets (follow-up FU-REG-01).
 
+### WP-0173-UI2 implementation notes (2026-10-02, agent PASS pending CT)
+
+UI-2 = S-3 `/StockMovements/Create`, `/StockMovements/Edit` ("Correct", KD-1), `/StockMovements/Details` (receipt) and
+`/StockLedger/Create` ("New stock entry", KD-2) on ONE shared `_Form`, plus S-1 "New stock entry" / row "Movement" and
+S-2 "New movement" / row "Correct". Evidence `docs/records/audits/2026-10/mod-0173-fu01-ui2-evidence/`, audit
+`mod-0173-fu01-ui2-audit-2026-10-02.md`.
+
+| ID | Assumption |
+|---|---|
+| UI2-01 | Built in a detached scratch worktree and landed by ONE fast-forward (the user's `dotnet watch` fleet runs from the main worktree — WP instruction, LOC2 method). |
+| UI2-02 | The form posts JSON (`POST /StockMovements/Create`, `/StockMovements/Edit`, antiforgery header) and lands on `GET Details` by PRG (receipt in TempData, Peek): a script-driven direction matrix with live pickers cannot be re-rendered by a classic form post without losing the pickers' labels; the manifest completeness rule "every View( is a one-line GET page" is kept. |
+| UI2-03 | Edit takes the history row in the address (BG-06: no GET by id); only one of the 7 manual types can be corrected; MOD-0173 re-checks the reversal identity against the original. The reversal's dates are fixed when the page opens (the service fingerprints the dates), so a retry of the same correction REPLAYS step (1) instead of IDEMPOTENCY_KEY_REUSED. |
+| UI2-04 | The S-2 row "Correct" is a manifest action `CORRECTION` (RowAction, `movements.create`, IsDangerous — it posts a reversal) on STOCKMOVEMENTS: §14 lists four actions, but "every rendered button is a manifest action" (self-registration standard, completeness test) needs it. |
+| UI2-05 | S-1's toolbar "New" is "New stock entry" → `/StockLedger/Create` (Compact: a list's New opens its own Create; KD-2), code NEWMOVEMENT on STOCKLEDGER; S-2's is "New movement" → S-3 (NEWMOVEMENT on STOCKMOVEMENTS). |
+| UI2-06 | The four form pages are manifest pages with `PageType "Detail"` and no actions (Golden Compact precedent). |
+| UI2-07 | SKU of a product: Model A has no product filter — `/api/gskus` (`globalProductId`) and `/api/lskus` (`gskuId`) are read (≤ 5 pages × 100) and kept to the product; a capped scan is answered as incomplete. FinishedGood is not offered (UI1-08). |
+| UI2-08 | Target locations: LOCATION v1.1 search filters by direct parent only, so the company's StorageLocation / Zone / Bin rows (≤ 10 × 200, every status) are read, the warehouse's subtree is walked by `parentId` and only Active + stockable locations are offered (FU02 K-13); the warehouse itself is not offered as a target location. Target warehouses = Active warehouses. |
+| UI2-09 | Lot (W-UI-02): a text input with the SKU's known lots as a datalist (not select2 `tags`: its clear mark is drawn over the field icon and the shared CSS is protected); trimmed + upper-cased on change and again by the MVC (`MovementRules.TryNormalizeLot`). |
+| UI2-10 | Unit list = base UoM + every declared `fromUom` (§12); a unit with no path to the base is still listed, the hint says so, and the service refuses it (UOM_CONVERSION_MISSING). |
+| UI2-11 | The base-quantity hint, the serial counter's "required" and the stock-effect panel are computed server-side in decimal (`MovementFormSources`, the same walk as MOD-0173 `UomConverter`) — UI-13; the service converts again and decides. |
+| UI2-12 | Dates: the browser converts the reader's local date-time to UTC ISO (only it knows the zone); the MVC accepts UTC only and normalises to seconds (§8 said "MVC converts"). |
+| UI2-13 | Details follows the live Golden Compact Details (`row g-4`, `backbone-preview-field`), not the template text (`row g-6`, `dl.row`). |
+| UI2-14 | Reason code (BG-03): not drawn (`ReasonCodesAvailable = false`), counted in the 15. |
+| UI2-15 | The pickers keep UI-1's gates: lookups need `inventory.stock.read`; LOCATION reads need `inventory.locations.read` — a `movements.create` user without them sees "unavailable". |
+| UI2-16 | `tests/diten-field-icons.test.js` `ICON_MAP` is pinned to `Views/Tasks/_Form.cshtml` (its count test would break with foreign ids), so it is not edited; the UI-2 form's icon rule is measured by `MovementPagesSurfaceTests` (wrapper, glyph present in `iconify-icons.css`, count pinned). |
+| UI2-17 | Labels: a location whose name equals its code (bulk bins) is shown once — `MasterLabelResolver` / `LocationPickerSource` (also visible on S-1 / S-2). |
+| UI2-18 | W-UI-02 "every list / receipt shows the lot as unregistered": a badge on the S-1 / S-2 lot columns, the form hint and the receipt. |
+| UI2-19 | Quantities inside sentences and the Correct card are printed in the reader's number format ("24.000" is twenty-four thousand in tr). |
+| UI2-20 | Form hints insert values as bidi isolates and the "before → after" value is always LTR (ar showed "24 → 0" for "0 → 24"). |
+| UI2-21 | Runtime evidence ran against probe stand-ins for PRODUCT-MASTER (no Gateway route, FU-PM-01) and the Model A lists (dev MDM: 0 GSKU / 0 LSKU, 0 products in the seed user's tenant); the shipped code calls the real paths. |
+| UI2-22 | In card ④ the serial box comes after quantity and unit (its counter depends on them); §12's numbering is kept for the fields. |
+
+Follow-ups: **FU-UI2-01** native-speaker review of the fr/es/zh/ar/ru texts (112 new keys). **FU-UI2-02 (blocks real
+use, = FU-PM-01)** no Gateway `/api/product-master` route: in the user's fleet S-3 says "product data cannot be read"
+and offers no unit, so no movement can be posted from the UI until MDM / integration-agent adds the route.
+**FU-UI2-03** dev data: no GSKU / LSKU and no global product in the seed user's tenant (MDM owner). **FU-UI2-04**
+BG-05: the source side of a corrected outbound / transfer is re-entered (TransactionItem has no from-side).
+**FU-UI2-05** the UI-1 S-2 Reversal posts `now` as its dates, so a network retry of the same dialog is a key reuse,
+not a replay — fix it the way Correct does. **FU-UI2-06** the partial-correction box repeats the refused movement's
+"nothing was changed" sentence (true for that movement; the reversal stands and the title says so) — wording.
+**FU-UI2-07** SKU scan cap and location-tree read are interim until PRODUCT-MASTER v1.1 search / a LOCATION subtree
+filter exist.
+
 ## 20. Follow-up Items
 
 - Request to MOD-0290 owner (MDM): additive product/SKU search in PRODUCT-MASTER-BUNDLE v1.1 — retires W-UI-01.
