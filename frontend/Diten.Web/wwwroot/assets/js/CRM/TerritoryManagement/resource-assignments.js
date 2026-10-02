@@ -34,10 +34,15 @@
     var savedViewRecord = null;
     var savedViewState = null;
 
+    // Used inside quoted attributes as well as in text (value="…", data-name="…"), so the quotes are escaped too:
+    // the old textContent → innerHTML form left them alone (WP-SHARED-CONFIRM-XSS-01 review).
     function esc(v) {
-        var el = document.createElement('span');
-        el.textContent = v === null || v === undefined ? '' : String(v);
-        return el.innerHTML;
+        return String(v === null || v === undefined ? '' : v)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     function token() {
