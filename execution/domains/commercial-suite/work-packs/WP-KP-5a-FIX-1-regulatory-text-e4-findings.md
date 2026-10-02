@@ -68,3 +68,11 @@ Durma: IUserDisplayNameResolver kiracı kullanıcıları için çalışmıyorsa 
 - **CT sabotajı:** `IsArchivable`'dan "incelemede değil" koşulu kaldırıldı → 2 kırmızı. Kod geri alındı. Ajan: `ReasonCode` yok sayma (3) + çakışma yakalama (1).
 - **Bilinen sınır:** Mongo `DuplicateKey` çevirisi birim testte sahte depo üzerinden taklit ediliyor (projede Mongo testi yok).
 - **E4 (CT, CRM + Web yeniden başlatma sonrası):** `SAF-TR-0001` ayrıntısında karar veren adıyla; yeni taslak (TR / en) onaya gönderilince Platform görev gerekçe kodu `CRM_SAFETY_TEXT_SUBMITTED`; incelemede "Arşivle" yok.
+
+### §37 ek — E4 (CT, canlı, 2026-10-02) — **ACCEPTED (E4)**
+- Kullanıcı fleet'i güncel dalla yeniden başlattı ve giriş yaptı; CT yerleşik tarayıcıda, ayrı sekmede.
+- **1. Adlar:** `SAF-TR-0001` v1 ayrıntısı: "Gönderen **Admin User**", karar kaydı "Onaylandı · **sema pullukcu**" — ham kimlik yok. ✓
+- **2. Gerekçe kodu:** v1'den "Yeni sürüm" → v2 taslak (`ffc1455d…`) → onaya gönder → Platform örneği `KP-REG-TR`, `ObjectType crm.safety-text`; `approval_tasks.ReasonCode` ve `workflow_transition_logs.ReasonCode` = **`CRM_SAFETY_TEXT_SUBMITTED`** (Mongo, salt okuma). ✓ (TR için yalnız `tr` dili tanımlı olduğundan TR / en yerine v2 kullanıldı.)
+- **3. Arşivle düğmesi:** incelemedeki v2'de eylemler yalnız "Geri çek"; Onayla / Reddet gönderene gizli. Taslağa dönünce "Düzenle / Onaya gönder / Arşivle". ✓
+- **Temizlik:** v2 geri çekildi (örnek + görev iptal, durum 6) ve arşivlendi; v1 `active` (KP-UI-3 testleri için kalır). Platform'da v2 için tek örnek (çift gönderim yok).
+- **Gözlem (ürün hatası değil):** tarayıcı paneli arka plandayken SweetAlert kapanma animasyonu tamamlanmıyor, eski onay penceresi DOM'da kalıyor — sayfa yenilenince düzeliyor.
