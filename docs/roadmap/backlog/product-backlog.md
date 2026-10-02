@@ -7651,6 +7651,50 @@ Gelecek regresyon riski: 🟡 (merkezi yolla ortak kurucu).
 
 ---
 
+### BL-515
+
+**Liste yüklenemediğinde ekran tarayıcının İngilizce uyarı kutusunu gösteriyor ya da hiçbir şey göstermiyor (ortak liste bileşeni)**
+
+DURUM: AÇIK · SAHİP: CT (BL-440 liste bileşeni) · BULAN: Kullanıcılar ekranı FIX2 bağımsız gözden geçirmesi · KAYIT: 2026-10-02
+
+Ortak liste bileşeninde ve varsayılanlarda liste isteğinin reddi için bir işleyici yok; DataTables'ın kendi varsayılanı (`errMode: "alert"`)
+çalışıyor. Liste isteği 401 / 403 / 5xx dönerse tarayıcı `DataTables warning: table id=… - Ajax error` diye İngilizce bir uyarı kutusu açıyor;
+ağ kesikse hiçbir şey görünmüyor (boş tablo). Yalnız üç sayfa kendi işleyicisini yazmış (PPM, Referans Veri, Farmakovijilans vaka girişi).
+Sayfa standardının "hata hali" maddesi her liste sayfasında bu yüzden eksik. Düzeltme tek yerde: bileşen uyarı kutusunu kapatır, tablonun
+içinde okuyanın dilinde "Liste yüklenemedi" cümlesi ve "Yeniden dene" düğmesi gösterir; oturum düşmüşse girişe yönlendirme kuralı aynen.
+Ortak tarayıcı dosyası olduğu için canlı sayfa bakışı zorunlu. Karşılaştırma: SAP Fiori ve Oracle Redwood listelerinde yükleme hatası
+tablonun içinde mesaj + yeniden dene olarak gösterilir. Gelecek regresyon riski: 🟢 (eklemeli; üç sayfanın kendi işleyicisi bileşene taşınır).
+
+---
+
+### BL-516
+
+**Auth servisi 500 hatasında istisnanın kendi mesajını yanıta yazıyor**
+
+DURUM: AÇIK — Kullanıcılar dalının kabulünde CT düzeltiyor · SAHİP: CT (Auth) · BULAN: Kullanıcılar ekranı FIX2 bağımsız gözden geçirmesi · KAYIT: 2026-10-02
+
+`GlobalExceptionHandler` her durumda `detail = exception.Message` yazıyor; 500'de bu, veritabanı sürücüsünün ya da bir kütüphanenin iç
+mesajıdır (sunucu adı ve portu içerebilir). Liste, dışa aktarma ve silme istekleri tarayıcıdan doğrudan gateway'e gittiği için yanıt
+gövdesi ağ sekmesinde okunabilir (ekran ve konsol okumuyor). Düzeltme: 5xx'te sabit, içerik taşımayan bir cümle + izleme numarası; istisna
+yalnız sunucu günlüğüne. 4xx'teki uygulama cümleleri değişmez. Aynı kalıp öbür servislerin istisna işleyicilerinde de aranmalı (ayrı ölçüm).
+Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-517
+
+**Web uygulamasının günlüğüne arama terimleri düşüyor (istek adresinin sorgu kısmı)**
+
+DURUM: AÇIK · SAHİP: CT (altyapı) · BULAN: Kullanıcılar ekranı FIX2 bağımsız gözden geçirmesi · KAYIT: 2026-10-02
+
+`Logging:LogLevel` hem `Default` hem `Microsoft.AspNetCore` için `Information`; HTTP istemci fabrikası giden her isteğin tam adresini,
+ASP.NET de gelen isteğin yolunu sorgu dizgisiyle yazıyor. Kişi arama uçlarında (`…/lookup?search=…`) yazılan ad parçaları günlüğe giriyor.
+Kullanıcılar vekili kendi hata satırında yalnız yolu yazıyor ama fabrikanın ve sunucunun satırları aynı adresi tam yazıyor. Karar gerekir:
+üretimde bu iki kategori `Warning`'e mi alınır, yoksa sorgu dizgisi günlükten süzülür mü. Hukuk kararları belgesine girer (günlüklerde
+kişisel veri). Gelecek regresyon riski: 🟢.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
