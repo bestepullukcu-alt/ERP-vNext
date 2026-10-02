@@ -71,20 +71,31 @@ public sealed class WithdrawTimesheetWeekHandler : IRequestHandler<WithdrawTimes
             return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
         }
 
-        var decision = await _approvals.ReadDecisionAsync(instanceId, ct);
-        if (decision.Outcome != TimesheetDecisionOutcome.Pending)
+        // BL-483 — "too late" means somebody DECIDED. An instance that was cancelled (or is gone) was decided by nobody:
+        // there is nothing left to wait for, CancelAsync answers true for it, and the withdrawal goes through.
+        if (IsDecided(await _approvals.ReadDecisionAsync(instanceId, ct)))
         {
-            await _puller.PullAsync([week], request.CorrelationId, ct);
-            return Fail("The approver has already decided.", 409, TimeEntryReasonCodes.WithdrawTooLate, request);
+            return await TooLateAsync(week, request, ct);
         }
 
         await _probe.BeforeWithdrawCancelAsync(week.Id, ct);
 
         if (!await _approvals.CancelAsync(instanceId, userId, ct))
         {
-            // The decision landed between our read and our cancel (F13): too late — take the decision on board.
-            await _puller.PullAsync([week], request.CorrelationId, ct);
-            return Fail("The approver has already decided.", 409, TimeEntryReasonCodes.WithdrawTooLate, request);
+            // MOD-0023 did not cancel. WHY decides the answer, and only MOD-0023's own state says why:
+            // the decision landed between our read and our cancel (F13) → too late, take the decision on board;
+            // otherwise nobody decided — MOD-0023 lost a concurrent write, or cancelled only part of what was open
+            // (BL-483) → a conflict the person can simply retry. THIS handler writes nothing to the week. (After a
+            // partial cancel MOD-0023 has already closed the instance as Cancelled, so the next read's pull returns
+            // the week to Draft through the finalizer — the withdrawal the person asked for, without its own stamp
+            // or e-mail; a retry then finds the week already open.)
+            if (IsDecided(await _approvals.ReadDecisionAsync(instanceId, ct)))
+            {
+                return await TooLateAsync(week, request, ct);
+            }
+
+            return Fail("The approval changed meanwhile and nobody has decided; reload and retry.", 409,
+                TimeEntryReasonCodes.ConcurrencyConflict, request);
         }
 
         week.Status = TimesheetWeekStatus.Draft;
@@ -102,6 +113,17 @@ public sealed class WithdrawTimesheetWeekHandler : IRequestHandler<WithdrawTimes
         await _notifier.WeekWithdrawnAsync(week, CancellationToken.None);
 
         return Response<TimesheetWeekMutationDto>.Success(TimesheetRules.ToMutation(week), correlationId: request.CorrelationId);
+    }
+
+    /// <summary>Only an approval or a rejection is a decision. Pending, cancelled and missing are not.</summary>
+    private static bool IsDecided(TimesheetDecision decision)
+        => decision.Outcome is TimesheetDecisionOutcome.Approved or TimesheetDecisionOutcome.Rejected;
+
+    private async Task<Response<TimesheetWeekMutationDto>> TooLateAsync(
+        Domain.Entities.TimeEntry.TimesheetWeek week, WithdrawTimesheetWeekCommand request, CancellationToken ct)
+    {
+        await _puller.PullAsync([week], request.CorrelationId, ct);
+        return Fail("The approver has already decided.", 409, TimeEntryReasonCodes.WithdrawTooLate, request);
     }
 
     private static Response<TimesheetWeekMutationDto> Fail(string message, int status, string code, WithdrawTimesheetWeekCommand request)

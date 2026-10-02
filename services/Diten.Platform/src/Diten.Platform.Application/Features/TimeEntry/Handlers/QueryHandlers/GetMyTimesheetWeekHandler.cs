@@ -75,7 +75,7 @@ public sealed class GetMyTimesheetWeekHandler : IRequestHandler<GetMyTimesheetWe
         await _timer.ReconcileAsync(userId, request.CorrelationId, ct);
         var context = await _reader.LoadAsync(userId, monday, ct);
 
-        if (await _puller.PullAsync(context.Revisions, request.CorrelationId, ct))
+        if ((await _puller.PullAsync(context.Revisions, request.CorrelationId, ct)).ShouldReread)
         {
             context = await _reader.LoadAsync(userId, monday, ct);
         }

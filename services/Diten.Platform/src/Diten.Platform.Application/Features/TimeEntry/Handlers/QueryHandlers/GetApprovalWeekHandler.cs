@@ -58,7 +58,7 @@ public sealed class GetApprovalWeekHandler : IRequestHandler<GetApprovalWeekQuer
             return NotFound(request);
         }
 
-        if (await _puller.PullAsync([week!], request.CorrelationId, ct))
+        if ((await _puller.PullAsync([week!], request.CorrelationId, ct)).ShouldReread)
         {
             week = await _weeks.GetByIdAsync(request.WeekId, ct);
             if (!IsRoutedToCaller(week))

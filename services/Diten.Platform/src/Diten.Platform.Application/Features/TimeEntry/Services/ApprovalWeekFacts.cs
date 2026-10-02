@@ -98,12 +98,12 @@ public sealed class ApprovalWeekFacts : IApprovalWeekFacts
             .GroupBy(s => (s.UserId, s.WeekKey))
             .ToDictionary(g => g.Key, g => (IReadOnlyList<TimerSegment>)g.ToList());
 
-        // The working calendar is per person (their unit and legal entity): once per distinct (person, week).
-        var daysByWeek = new Dictionary<(Guid UserId, DateOnly WeekStart), IReadOnlyList<WorkingDay>>();
-        foreach (var key in weeks.Select(w => (w.UserId, w.WeekStartDate)).Distinct())
-        {
-            daysByWeek[key] = (await _workingHours.GetWorkingWindowsAsync(key.UserId, key.WeekStartDate, key.WeekStartDate.AddDays(6), ct)).Days;
-        }
+        // The working calendar is per person (their unit and legal entity): one question for the page's distinct
+        // (person, week) pairs — the provider reads the tenant, the seats, the positions and the units once for all.
+        var calendar = await _workingHours.GetWorkingWindowsForManyAsync(
+            weeks.Select(w => new WorkingHoursRequest(w.UserId, w.WeekStartDate, w.WeekStartDate.AddDays(6))).Distinct().ToList(), ct);
+        var daysByWeek = calendar.ToDictionary(
+            answer => (answer.Key.UserId, WeekStart: answer.Key.From), answer => answer.Value.Days);
 
         var marks = new Dictionary<Guid, ApprovalWeekMarks>();
         foreach (var week in weeks)

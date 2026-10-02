@@ -539,9 +539,6 @@
   <data name="ActResume" xml:space="preserve">
     <value>Продолжить</value>
   </data>
-  <data name="ActLogTime" xml:space="preserve">
-    <value>Учесть время</value>
-  </data>
   <data name="StepBarLabel" xml:space="preserve">
     <value>Жизненный цикл</value>
   </data>
@@ -587,20 +584,8 @@
   <data name="PlanConfirm" xml:space="preserve">
     <value>Задать дату</value>
   </data>
-  <data name="LogTimeLabel" xml:space="preserve">
-    <value>Минуты</value>
-  </data>
-  <data name="LogTimePlaceholder" xml:space="preserve">
-    <value>напр. 30</value>
-  </data>
-  <data name="LogTimeConfirm" xml:space="preserve">
-    <value>Учесть</value>
-  </data>
   <data name="ToastPlanned" xml:space="preserve">
     <value>{0} · запланировано на {1} (макет)</value>
-  </data>
-  <data name="ToastTimeLogged" xml:space="preserve">
-    <value>учтено {0} (макет)</value>
   </data>
   <data name="ToastSentToReview" xml:space="preserve">
     <value>{0} · отправлено на проверку (макет)</value>
@@ -903,9 +888,6 @@
   </data>
   <data name="NewPickModuleLabel" xml:space="preserve">
     <value>Какой модуль?</value>
-  </data>
-  <data name="LogTimeSubtext" xml:space="preserve">
-    <value>Добавляется к уже учтённому времени по этой задаче; таймер не запускается и не останавливается.</value>
   </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>Связь с календарём ещё не настроена: эта запись видна только на этом экране и исчезнет при закрытии страницы. Срок не меняется.</value>
@@ -2522,5 +2504,14 @@
   </data>
   <data name="ApprovalStepBadgeTitle" xml:space="preserve">
     <value>Этап утверждения</value>
+  </data>
+  <data name="DelegateTargetLabel" xml:space="preserve">
+    <value>Делегировать</value>
+  </data>
+  <data name="DelegateTargetRequired" xml:space="preserve">
+    <value>Выберите, кому делегируется это согласование.</value>
+  </data>
+  <data name="DelegateNoEligiblePeople" xml:space="preserve">
+    <value>Это согласование некому делегировать.</value>
   </data>
 </root>

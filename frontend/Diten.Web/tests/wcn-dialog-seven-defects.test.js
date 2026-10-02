@@ -109,8 +109,9 @@ describe("an input prompt is not a confirmation", () => {
     expect(APP).toContain("subtext: options.subtext !== undefined ? options.subtext : (options.input ? '' : undefined)");
   });
 
-  it("gives the three named dialogs a sentence that says what the box cannot", () => {
-    ["LogTimeSubtext", "MeetingWhenSubtext", "NewInSourceSubtext"].forEach((key) => {
+  // Two now: the fake "log time" dialog and its sentence were removed (BL-485).
+  it("gives the two named dialogs a sentence that says what the box cannot", () => {
+    ["MeetingWhenSubtext", "NewInSourceSubtext"].forEach((key) => {
       expect(APP, `${key} is not wired`).toContain(`t('${key}')`);
       LANGS.forEach((lang) => {
         const v = String(value(resx(lang), key) || "").trim();
@@ -120,7 +121,6 @@ describe("an input prompt is not a confirmation", () => {
          * tried and rejected: 17 characters of Chinese carry the whole sentence, so the threshold would have
          * measured the writing system rather than the writing.
          */
-        expect(v, `${lang}/${key} just repeats a label`).not.toBe(value(resx(lang), "LogTimeLabel"));
         expect(v, `${lang}/${key} just repeats a label`).not.toBe(value(resx(lang), "MeetingWhenLabel"));
         expect(v, `${lang}/${key} just repeats a label`).not.toBe(value(resx(lang), "NewPickModuleLabel"));
       });

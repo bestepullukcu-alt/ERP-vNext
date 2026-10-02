@@ -17,6 +17,7 @@ Her yeni sürüm, modül veya kritik hata düzeltmesi (hotfix) yayına alınmada
 - [ ] **JWT Validation:** Geçersiz veya süresi dolmuş token ile erişim engelleniyor mu?
 - [ ] **Secret Leak:** `.appsettings` veya kod içinde temizlenmemiş şifre, API key veya bağlantı cümlesi (connection string) var mı?
 - [ ] **Authorize Attribute:** Yeni eklenen Controller'larda `[Authorize]` veya `[HasPermission]` unutuldu mu?
+- [ ] **Denetim Kaydı (AUD-001):** Bu sürümün her yazma komutu denetleniyor mu ya da gerekçeli istisna mı? `--filter AuditTrailStandard` yeşil mi, borç listesi büyümedi mi (`git diff --stat <önceki-sürüm>..HEAD -- tests/architecture/audit-ledger/`)? Bir oluşturma/güncelleme/silme **canlıda** yapılıp kaydı görüldü mü? (`.antigravity/rules/audit-trail-standard.md` §8)
 
 
 
@@ -74,6 +75,7 @@ Her sürüm sonunda aşağıdaki özet rapor hazırlanmalıdır:
 |---|---|---|
 | Derleme & Sağlık | | |
 | Güvenlik | | |
+| Denetim kaydı (AUD-001) | | |
 | Yerelleştirme (Platform: 2 Dil, Tenant: 7 Dil) | | |
 | Veritabanı (Index) | | |
 

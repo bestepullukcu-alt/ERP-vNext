@@ -278,7 +278,20 @@ public sealed record WorkItemActionDto(
     /// serializes exactly as before.
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    bool? AcceptsNote = null);
+    bool? AcceptsNote = null,
+    /// <summary>
+    /// BL-491 — this action hands the work to a PERSON, and its window must ask who (sent back as
+    /// <c>targetPrincipalId</c>). The server says so; the browser never derives it from the action code. Omitted
+    /// when null, so every action that names nobody serializes exactly as before.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    bool? RequiresTargetPerson = null,
+    /// <summary>
+    /// BL-491 — the people that window must NOT offer, by user id: handing the work to them cannot go through.
+    /// Only ever set beside <c>RequiresTargetPerson</c>; omitted when null.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<string>? ExcludedTargetPrincipalIds = null);
 
 /// <summary>
 /// waitingContext { type, waitingOn?, reason?, since?, expectedUntil? } — present iff normalizedStatus == Waiting.

@@ -3189,7 +3189,8 @@ describe("the person picker on the waiting dialog", () => {
       /ASSIGNEE_REQUIRED_ACTIONS = \[[^\]]*inquire/);
 
     // The optional branch returns whatever was chosen — including nothing — without validating it.
-    const dialog = src.slice(src.indexOf("const offersWaitingOn"), src.indexOf("const offersWaitingOn") + 4000);
+    // The window grew when the same dialog learned to name a delegate (BL-491); the reach follows it.
+    const dialog = src.slice(src.indexOf("const offersWaitingOn"), src.indexOf("const offersWaitingOn") + 6000);
     expect(dialog).toContain("wcnWaitingOn");
     const optionalBranch = dialog.slice(dialog.indexOf("if (!needsAssignee)"));
     expect(optionalBranch.slice(0, 400), "an empty choice is being refused")

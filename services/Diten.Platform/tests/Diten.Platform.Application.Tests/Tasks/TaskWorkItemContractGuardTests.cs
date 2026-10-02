@@ -345,6 +345,10 @@ public sealed class TaskWorkItemContractGuardTests
         Assert.Equal(WorkItemContract.TimerRunning, byId[running.Id.ToString()].TimerState);
         Assert.Contains(byId[running.Id.ToString()].Actions, a => a.Code == "stopTimer");
         Assert.Contains(byId[other.Id.ToString()].Actions, a => a.Code == "startTimer");
+        // BL-486 — the timer keeps its PLACEMENT: a consumer that renders by placement and has no time card must
+        // still find it. Leaving it to the card is the decision of the surface that draws one.
+        Assert.Contains("stopTimer", byId[running.Id.ToString()].OverflowActionCodes ?? []);
+        Assert.Contains("startTimer", byId[other.Id.ToString()].OverflowActionCodes ?? []);
         foreach (var item in items)
         {
             var verdict = ValidateWithRealContract(item);

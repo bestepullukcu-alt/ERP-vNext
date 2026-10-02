@@ -40,6 +40,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
      | 6 | DataTable ise `golden_reference` kararı doğru mu? (≤8 slim, >8 compact) | Slim/Compact + form alan sayısı |
      | 7 | Compact DataTable ise Create/Edit/Details logical section haritası planlandı mı? | Evet/Hayır + section listesi + `_Form.cshtml`/`Details.cshtml` parite notu |
      | 8 | Required alan kontratı Backend Validator + Web ViewModel + Razor + tracker için aynı mı? | Evet/Hayır + required alan listesi + opsiyonel nullable alan listesi + ilk açılış progress beklentisi |
+     | 10 | **Denetim kaydı (AUD-001):** Paketin `Audited Events` tablosu her yazma komutunu içeriyor mu; servisin denetim altyapısı var mı? | Evet/Hayır + komut → yol (a/b/c) ya da istisna sınıfı listesi + altyapının adı (yoksa: ENGEL) |
      | 9 | Platform lookup dependency checked mi? Dropdown/filter/select/default alanları PSS `/api/lookups/{key}` kullanıyor mu, yeni lookup key pack'te açık mı, MDM/reference boundary korunuyor mu? | Evet/Hayır/Yok + endpoint listesi veya gerekçe |
 
    - **Onay Mekaniği:** Orchestrator, doldurulmuş tabloyu kullanıcıya `AskUserQuestion` ile (ya da CLI'da düz mesaj olarak) sunar ve "Onaylıyor musunuz?" sorusuyla bekler. **Kullanıcıdan açık `evet/onay/approved` cevabı alınmadan Phase 2'ye geçilemez.**
@@ -158,6 +159,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - xUnit testlerini yaz (Tenant isolation check).
    - `/tenant-audit` komutunu çalıştırarak sızıntı kontrolü yap.
    - `code-quality-agent` → İsimlendirme, dosya yapısı ve standart denetimi yap.
+   - **Denetim kaydı kapısı (AUD-001 — ZORUNLU):** `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter AuditTrailStandard` yeşil; `git diff --stat -- tests/architecture/audit-ledger/` borç listesine ekleme göstermiyor; modülün bir oluşturma, bir güncelleme ve bir silme komutu **canlıda** çalıştırılıp üç kaydı `.antigravity/rules/audit-trail-standard.md` §8'deki salt-okunur sorguyla gösterildi. Üçü olmadan Phase 6'ya geçilmez.
 
 6. **Phase 6: Dokümantasyon ve Denetim (documentation-writer & user-manual-generator)**
    - `documentation-writer` → Yeni modülün API dokümanlarını güncelle. **Yol zorunlu:**

@@ -34,6 +34,7 @@ public sealed class WorkingHoursProvider : IWorkingHoursProvider
     private readonly IWorkingCalendarProvider _calendar;
     private readonly IReadOnlyList<IWorkingHoursRing> _rings;
     private readonly ILogger<WorkingHoursProvider>? _logger;
+    private readonly IOrganizationReportingGraphRepository? _unitGraph;
 
     public WorkingHoursProvider(
         ITenantRegistryRepository tenants,
@@ -43,8 +44,12 @@ public sealed class WorkingHoursProvider : IWorkingHoursProvider
         IOrganizationUnitRepository organizationUnits,
         IWorkingCalendarProvider calendar,
         IEnumerable<IWorkingHoursRing> rings,
-        ILogger<WorkingHoursProvider>? logger = null)
+        ILogger<WorkingHoursProvider>? logger = null,
+        IOrganizationReportingGraphRepository? unitGraph = null)
     {
+        // BL-484 — the units of many people in one read. Optional: a host that does not register the graph repository
+        // (older test hosts) reads each distinct unit by id instead, with the same answer.
+        _unitGraph = unitGraph;
         _tenants = tenants;
         _tenantContext = tenantContext;
         _seats = seats;
@@ -61,19 +66,66 @@ public sealed class WorkingHoursProvider : IWorkingHoursProvider
         var tenant = await ReadTenantAsync(ct);
         var timeZone = ResolveTimeZone(tenant?.Settings?.Timezone, tenant?.DefaultTimezone);
 
-        if (to < from || to.DayNumber - from.DayNumber + 1 > MaxDays)
+        if (IsUnanswerable(from, to))
         {
             return new WorkingHoursResult(timeZone, []);
         }
 
+        // ── Which days: the working calendar, scoped to the person's home unit / legal entity ──────────────
+        var scope = await ResolveCalendarScopeAsync(userId, tenant?.Country, ct);
+
+        return await ComposeAsync(tenant, timeZone, userId, from, to, scope, dayKinds: null, ct);
+    }
+
+    /// <summary>
+    /// BL-484 — many (person, range) questions with the inputs read ONCE: the tenant, the seats, the positions, the
+    /// units. Every answer goes through the same <see cref="ComposeAsync"/> as the single question, with the scope the
+    /// single question would have resolved for that person, so the two cannot answer differently. A (day, scope) the
+    /// calendar already answered inside this call is not asked again.
+    /// </summary>
+    public async Task<IReadOnlyDictionary<WorkingHoursRequest, WorkingHoursResult>> GetWorkingWindowsForManyAsync(
+        IReadOnlyCollection<WorkingHoursRequest> requests, CancellationToken ct = default)
+    {
+        var answers = new Dictionary<WorkingHoursRequest, WorkingHoursResult>();
+        var wanted = requests.Distinct().ToList();
+        if (wanted.Count == 0)
+        {
+            return answers;
+        }
+
+        var tenant = await ReadTenantAsync(ct);
+        var timeZone = ResolveTimeZone(tenant?.Settings?.Timezone, tenant?.DefaultTimezone);
+
+        var answerable = wanted.Where(r => !IsUnanswerable(r.From, r.To)).ToList();
+        var scopes = await ResolveCalendarScopesAsync(answerable.Select(r => r.UserId).Distinct().ToList(), tenant?.Country, ct);
+        var dayKinds = new Dictionary<(DateOnly Date, WorkingCalendarScope Scope), (string, string?, bool, bool)>();
+
+        foreach (var request in wanted)
+        {
+            answers[request] = IsUnanswerable(request.From, request.To)
+                ? new WorkingHoursResult(timeZone, [])
+                : await ComposeAsync(tenant, timeZone, request.UserId, request.From, request.To, scopes[request.UserId], dayKinds, ct);
+        }
+
+        return answers;
+    }
+
+    private static bool IsUnanswerable(DateOnly from, DateOnly to)
+        => to < from || to.DayNumber - from.DayNumber + 1 > MaxDays;
+
+    /// <summary>The days of one person's range, from inputs that were read by the caller — one person at a time or for
+    /// many at once. <paramref name="dayKinds"/> remembers the calendar's answers across the people of one call.</summary>
+    private async Task<WorkingHoursResult> ComposeAsync(
+        Domain.Entities.Tenant? tenant, TimeZoneInfo timeZone, Guid userId, DateOnly from, DateOnly to,
+        WorkingCalendarScope? scope,
+        Dictionary<(DateOnly Date, WorkingCalendarScope Scope), (string, string?, bool, bool)>? dayKinds,
+        CancellationToken ct)
+    {
         // ── Which window: the first ring that answers, else the tenant default ──────────────────────────────
         var (schedule, source) = await ResolveScheduleAsync(userId, ct);
         schedule ??= tenant is null
             ? null
             : new WorkingHoursRingSchedule(tenant.DefaultWorkdayStart, tenant.DefaultWorkdayEnd);
-
-        // ── Which days: the working calendar, scoped to the person's home unit / legal entity ──────────────
-        var scope = await ResolveCalendarScopeAsync(userId, tenant?.Country, ct);
 
         // ── How much: the tenant's daily target (MOD-0280-FU01 D13), never derived from the window ────────────
         var dailyTarget = tenant is null ? 0 : Math.Max(0, tenant.DefaultDailyTargetMinutes);
@@ -81,7 +133,17 @@ public sealed class WorkingHoursProvider : IWorkingHoursProvider
         var days = new List<WorkingDay>(to.DayNumber - from.DayNumber + 1);
         for (var date = from; date <= to; date = date.AddDays(1))
         {
-            var (kind, holidayName, unresolved, halfDay) = await ResolveDayKindAsync(date, scope, ct);
+            (string, string?, bool, bool) resolved;
+            if (scope is null || dayKinds is null)
+            {
+                resolved = await ResolveDayKindAsync(date, scope, ct);
+            }
+            else if (!dayKinds.TryGetValue((date, scope), out resolved))
+            {
+                resolved = dayKinds[(date, scope)] = await ResolveDayKindAsync(date, scope, ct);
+            }
+
+            var (kind, holidayName, unresolved, halfDay) = resolved;
             var windows = kind == WorkingDayKinds.WorkingDay && schedule is not null
                 ? WindowFor(date, schedule, timeZone)
                 : [];
@@ -158,6 +220,76 @@ public sealed class WorkingHoursProvider : IWorkingHoursProvider
             _logger?.LogError(ex, "Working hours: org scope for {UserId} could not be read; using the country only.", userId);
             return new WorkingCalendarScope(country);
         }
+    }
+
+    /// <summary>
+    /// <see cref="ResolveCalendarScopeAsync"/> for many people: one read of the seats, one of their home positions, one
+    /// of those positions' units. Person by person the rule is the single one, step for step — no country → no scope;
+    /// no seat → the country; the PRIMARY seat first; a position that is gone → the country; a unit that is gone → the
+    /// position's unit with no legal entity; the org chart unreadable → the country for everybody.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<Guid, WorkingCalendarScope?>> ResolveCalendarScopesAsync(
+        IReadOnlyCollection<Guid> userIds, string? country, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(country))
+        {
+            return userIds.ToDictionary(id => id, _ => (WorkingCalendarScope?)null);
+        }
+
+        try
+        {
+            var wanted = userIds.ToHashSet();
+            var homePositionByUser = (await _seats.ActiveAsync(ct))
+                .Where(seat => wanted.Contains(seat.UserId))
+                .GroupBy(seat => seat.UserId)
+                // The same order ActiveForUserAsync gives one person: PRIMARY first, the rest as stored.
+                .ToDictionary(seats => seats.Key, seats => seats.OrderBy(seat => seat.AssignmentType).First().PositionId);
+
+            var positions = (await _positions.GetByIdsAsync(homePositionByUser.Values.Distinct().ToList(), ct))
+                .ToDictionary(position => position.Id);
+            var units = await ReadUnitsAsync(positions.Values.Select(position => position.OrganizationUnitId).Distinct().ToList(), ct);
+
+            return userIds.ToDictionary(id => id, id =>
+            {
+                if (!homePositionByUser.TryGetValue(id, out var positionId) || !positions.TryGetValue(positionId, out var position))
+                {
+                    return (WorkingCalendarScope?)new WorkingCalendarScope(country);
+                }
+
+                units.TryGetValue(position.OrganizationUnitId, out var unit);
+                return new WorkingCalendarScope(country, position.OrganizationUnitId, unit?.LegalEntityId);
+            });
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger?.LogError(ex, "Working hours: org scope for {Count} people could not be read; using the country only.", userIds.Count);
+            return userIds.ToDictionary(id => id, _ => (WorkingCalendarScope?)new WorkingCalendarScope(country));
+        }
+    }
+
+    private async Task<IReadOnlyDictionary<Guid, Domain.Entities.Organization.OrganizationUnit>> ReadUnitsAsync(
+        IReadOnlyCollection<Guid> unitIds, CancellationToken ct)
+    {
+        if (unitIds.Count == 0)
+        {
+            return new Dictionary<Guid, Domain.Entities.Organization.OrganizationUnit>();
+        }
+
+        if (_unitGraph is not null)
+        {
+            return (await _unitGraph.GetByIdsAsync(unitIds, ct)).ToDictionary(unit => unit.Id);
+        }
+
+        var units = new Dictionary<Guid, Domain.Entities.Organization.OrganizationUnit>();
+        foreach (var unitId in unitIds)
+        {
+            if (await _organizationUnits.GetByIdAsync(unitId, ct) is { } unit)
+            {
+                units[unitId] = unit;
+            }
+        }
+
+        return units;
     }
 
     private async Task<(string Kind, string? HolidayName, bool Unresolved, bool HalfDay)> ResolveDayKindAsync(

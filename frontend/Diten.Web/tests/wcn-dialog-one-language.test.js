@@ -126,7 +126,7 @@ describe("eight dialogs, four moved and four dressed", () => {
      * start time and a length (a day plan or a time block), so it is no longer a confirmation and moved to the
      * dressed-form group below — asserted there, not dropped.
      */
-    ["const openMeetingScheduler", "const openLogTime", "const openCreateInSource"]
+    ["const openMeetingScheduler", "const openCreateInSource"]
       .forEach((name) => {
         const fn = APP.slice(APP.indexOf(name), APP.indexOf(name) + 2600);
         expect(fn.indexOf(name), `${name} vanished`).toBe(0);
@@ -235,7 +235,6 @@ describe("every box carries a real example", () => {
   const BOXES = [
     { dialog: "Planla", key: "DatePlaceholder", labelKey: "PlanDateLabel" },
     { dialog: "Toplantı zamanı", key: "DateTimePlaceholder", labelKey: "MeetingWhenLabel" },
-    { dialog: "Süre gir", key: "LogTimePlaceholder", labelKey: "LogTimeLabel" },
     { dialog: "Aksiyon onayı — gerekçe", key: "ReasonPlaceholder", labelKey: "ReasonLabel" },
     // BL-439 — the answer box of "Cevapla": its own label and its own example, never the reason's.
     { dialog: "Cevapla", key: "InquiryAnswerPlaceholder", labelKey: "InquiryAnswerLabel" }
@@ -245,11 +244,15 @@ describe("every box carries a real example", () => {
     // MUTATION GUARD #3: delete one `placeholder:` / `placeholder="` and this goes red.
     expect(APP).toContain("placeholder: t('DatePlaceholder')");
     expect(APP).toContain("placeholder: t('DateTimePlaceholder')");
-    expect(APP).toContain("placeholder: t('LogTimePlaceholder')");
     // The meeting FORM's two boxes went with the form itself (deleted); its strings stay in the resx for the
     // deferred feature and are checked by the l10n block below, not here.
-    expect(APP).toContain(`placeholder="${"$"}{esc(t('ReasonPlaceholder'))}"`);
-    expect(APP).toContain(`placeholder="${"$"}{esc(t('InquiryAnswerPlaceholder'))}"`);
+    // BL-491 — the reason window's one textarea takes its example from ONE expression: the answer's, the
+    // reason's, or the optional note's. Each of the three must still feed it.
+    expect(APP).toContain(`placeholder="${"$"}{esc(textPlaceholder)}"`);
+    const example = APP.slice(APP.indexOf("const textPlaceholder = "), APP.indexOf("const textPlaceholder = ") + 200);
+    expect(example).toContain("t('InquiryAnswerPlaceholder')");
+    expect(example).toContain("t('ReasonPlaceholder')");
+    expect(example).toContain("t('ApprovalNotePlaceholder')");
   });
 
   it("never repeats the field's own name back at the reader", () => {
@@ -282,16 +285,14 @@ describe("a field gets a glyph only when the glyph says something", () => {
    */
   it("paints the calendar and the clock ON the box, with no element added", () => {
     expect(APP).toContain("input.classList.add('wcn-date-input')");
-    expect(APP).toContain("input.classList.add('wcn-time-input')");
-    expect(CSS).toContain(".swal2-input.wcn-time-input");
-    expect(CSS).toContain('[data-bs-theme="dark"] .swal2-container .swal2-modal.swal2-popup .swal2-input.wcn-time-input');
-    // RTL follows the text to the other edge, same as the date box.
-    expect(CSS).toContain('[dir="rtl"] .swal2-container .swal2-modal.swal2-popup .swal2-input.wcn-time-input');
+    // The clock went with the fake "log time" dialog it was painted on (BL-485); nothing else used it.
+    expect(APP).not.toContain("wcn-time-input");
+    expect(CSS).not.toContain("wcn-time-input");
     /*
      * The wrapper that broke it must not come back INSIDE A POPUP. `.diten-field` is right everywhere else in
      * this product, so the check is scoped to the dialog functions rather than to the whole file.
      */
-    ["const openDatePicker", "const openMeetingScheduler", "const openLogTime", "const openCreateInSource",
+    ["const openDatePicker", "const openMeetingScheduler", "const openCreateInSource",
       "const openNew"].forEach((name) => {
       const fn = APP.slice(APP.indexOf(name), APP.indexOf(name) + 2600);
       expect(fn, `${name} put a wrapper around a dialog input`).not.toContain("diten-field");
@@ -316,8 +317,9 @@ describe("a field gets a glyph only when the glyph says something", () => {
     // dictionary, which is why this grew from 3 to 4 rather than a dialog starting to name its own glyph.
     // WP-UI-CALENDAR-VIEW-01 — 4 → 3: the PLAN dialog left the `icon:` seam for the raw form builder
     // (`dialogIcon('info', inboxActionIcon(action))`), still the same dictionary value.
+    // BL-485 — 3 → 2: the fake "log time" dialog was removed, with its read of the dictionary.
     expect((APP.match(/icon: inboxActionIcon\(action\)/g) || []).length,
-      "an action dialog started choosing its own picture").toBe(3);
+      "an action dialog started choosing its own picture").toBe(2);
     expect(APP, "the snooze moon is not action-driven and stays").toContain("icon: 'bx-moon'");
   });
 });

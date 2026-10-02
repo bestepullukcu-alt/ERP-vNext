@@ -54,6 +54,12 @@ public interface ITimesheetFinalizer
     /// <summary>Is there a MOD-0023 decision this week has not taken on yet? Cheap; writes nothing.</summary>
     Task<bool> HasPendingOutcomeAsync(TimesheetWeek week, CancellationToken ct = default);
 
+    /// <summary>
+    /// BL-484 — <see cref="HasPendingOutcomeAsync"/> for a whole queue: the ids of the weeks for which it answers true,
+    /// with MOD-0023 asked ONCE about all their instances. Writes nothing.
+    /// </summary>
+    Task<IReadOnlySet<Guid>> PendingOutcomeWeekIdsAsync(IReadOnlyCollection<TimesheetWeek> weeks, CancellationToken ct = default);
+
     /// <summary>Applies MOD-0023's outcome to the week, if there is one, and recomputes the affected task totals.</summary>
     Task<TimesheetFinalizationResult> FinalizeAsync(Guid weekId, CancellationToken ct = default);
 }
@@ -123,13 +129,44 @@ public sealed class TimesheetFinalizer : ITimesheetFinalizer
             return true;
         }
 
-        if (week.Status != TimesheetWeekStatus.Submitted || week.WorkflowInstanceId is not { } instanceId)
+        if (AwaitedInstanceOf(week) is not { } instanceId)
         {
             return false;
         }
 
         return (await _approvals.ReadDecisionAsync(instanceId, ct)).Outcome != TimesheetDecisionOutcome.Pending;
     }
+
+    public async Task<IReadOnlySet<Guid>> PendingOutcomeWeekIdsAsync(
+        IReadOnlyCollection<TimesheetWeek> weeks, CancellationToken ct = default)
+    {
+        // The same three questions as the single check, in the same order; only the MOD-0023 read is shared.
+        var pending = weeks.Where(NeedsTotals).Select(w => w.Id).ToHashSet();
+        var awaiting = weeks
+            .Where(w => !pending.Contains(w.Id) && AwaitedInstanceOf(w) is not null)
+            .Select(w => (WeekId: w.Id, InstanceId: AwaitedInstanceOf(w)!.Value))
+            .ToList();
+        if (awaiting.Count == 0)
+        {
+            return pending;
+        }
+
+        var outcomes = await _approvals.ReadOutcomesAsync(awaiting.Select(a => a.InstanceId).Distinct().ToList(), ct);
+        foreach (var (weekId, instanceId) in awaiting)
+        {
+            // An instance the answer does not name does not exist — which is an outcome to take on, not "undecided".
+            if (!outcomes.TryGetValue(instanceId, out var outcome) || outcome != TimesheetDecisionOutcome.Pending)
+            {
+                pending.Add(weekId);
+            }
+        }
+
+        return pending;
+    }
+
+    /// <summary>The MOD-0023 instance a week is waiting on: a submitted week's own; null for every other week.</summary>
+    private static Guid? AwaitedInstanceOf(TimesheetWeek week)
+        => week.Status == TimesheetWeekStatus.Submitted ? week.WorkflowInstanceId : null;
 
     public async Task<TimesheetFinalizationResult> FinalizeAsync(Guid weekId, CancellationToken ct = default)
     {

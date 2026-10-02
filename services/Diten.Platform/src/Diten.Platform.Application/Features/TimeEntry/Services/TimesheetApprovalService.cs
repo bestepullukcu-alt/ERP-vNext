@@ -1,6 +1,7 @@
 using Diten.Platform.Application.Features.Workflow.Commands;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.TimeEntry;
+using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -48,6 +49,15 @@ public interface ITimesheetApprovalService
     Task RetireSubmissionAsync(TimesheetWeek week, int submissionNumber, Guid actorUserId, CancellationToken ct = default);
 
     Task<TimesheetDecision> ReadDecisionAsync(Guid workflowInstanceId, CancellationToken ct = default);
+
+    /// <summary>
+    /// BL-484 — the OUTCOME of several instances in ONE read, keyed by instance id: exactly the
+    /// <see cref="TimesheetDecision.Outcome"/> <see cref="ReadDecisionAsync"/> answers for each (an instance that does not
+    /// exist in this tenant is <see cref="TimesheetDecisionOutcome.Missing"/>). Who decided and why is NOT read here —
+    /// the finalizer reads that for the one week it applies.
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, TimesheetDecisionOutcome>> ReadOutcomesAsync(
+        IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -251,16 +261,7 @@ public sealed class TimesheetApprovalService : ITimesheetApprovalService
             return new TimesheetDecision(TimesheetDecisionOutcome.Missing, null, null, null);
         }
 
-        var outcome = instance.Status switch
-        {
-            // MOD-0023 closes an approved single-step instance as Completed; Approved is accepted too.
-            WorkflowInstanceStatus.Completed or WorkflowInstanceStatus.Approved => TimesheetDecisionOutcome.Approved,
-            WorkflowInstanceStatus.Rejected => TimesheetDecisionOutcome.Rejected,
-            WorkflowInstanceStatus.Cancelled => TimesheetDecisionOutcome.Cancelled,
-            // Pending, Active, Escalated, TimedOut: nobody has decided — escalation is not an approval.
-            _ => TimesheetDecisionOutcome.Pending
-        };
-
+        var outcome = OutcomeOf(instance);
         if (outcome is TimesheetDecisionOutcome.Pending or TimesheetDecisionOutcome.Cancelled)
         {
             return new TimesheetDecision(outcome, null, null, instance.CompletedAt);
@@ -276,6 +277,32 @@ public sealed class TimesheetApprovalService : ITimesheetApprovalService
         Guid? actor = decision is not null && Guid.TryParse(decision.ActorId, out var parsed) ? parsed : null;
         return new TimesheetDecision(outcome, actor, decision?.Comment, instance.CompletedAt ?? decision?.CreatedAt);
     }
+
+    public async Task<IReadOnlyDictionary<Guid, TimesheetDecisionOutcome>> ReadOutcomesAsync(
+        IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)
+    {
+        var wanted = workflowInstanceIds.Distinct().ToList();
+        if (wanted.Count == 0)
+        {
+            return new Dictionary<Guid, TimesheetDecisionOutcome>();
+        }
+
+        var found = (await _instances.ListByIdsAsync(wanted, ct)).ToDictionary(i => i.Id);
+        return wanted.ToDictionary(id => id, id => OutcomeOf(found.GetValueOrDefault(id)));
+    }
+
+    /// <summary>MOD-0023's instance state as this module reads it — the ONE mapping, for the single read and the batch.</summary>
+    private static TimesheetDecisionOutcome OutcomeOf(WorkflowInstance? instance)
+        => instance?.Status switch
+        {
+            null => TimesheetDecisionOutcome.Missing,
+            // MOD-0023 closes an approved single-step instance as Completed; Approved is accepted too.
+            WorkflowInstanceStatus.Completed or WorkflowInstanceStatus.Approved => TimesheetDecisionOutcome.Approved,
+            WorkflowInstanceStatus.Rejected => TimesheetDecisionOutcome.Rejected,
+            WorkflowInstanceStatus.Cancelled => TimesheetDecisionOutcome.Cancelled,
+            // Pending, Active, Escalated, TimedOut: nobody has decided — escalation is not an approval.
+            _ => TimesheetDecisionOutcome.Pending
+        };
 
     /// <summary>Find or install (and publish) the tenant's timesheet definition — lazy and race-tolerant, exactly as
     /// <c>TaskApprovalService.EnsureTemplateAsync</c> does it.</summary>

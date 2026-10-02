@@ -53,6 +53,8 @@ public sealed class TimesheetDecisionSweepJob : IBackgroundJobHandler<TimesheetD
         var tenants = await _tenantRegistry.GetActiveTenantsAsync(cancellationToken);
         var finalizedTenants = 0;
         var failedTenants = 0;
+        var appliedWeeks = 0;
+        var failedWeeks = 0;
 
         foreach (var tenant in tenants)
         {
@@ -62,7 +64,13 @@ public sealed class TimesheetDecisionSweepJob : IBackgroundJobHandler<TimesheetD
                 using (TenantScope.Begin(_tenantContext, tenant.Id))
                 {
                     var submitted = await _weeks.ListNeedingFinalizationAsync(maxWeeks, cancellationToken);
-                    if (await _puller.PullAsync(submitted, correlationId, cancellationToken))
+                    var pulled = await _puller.PullAsync(submitted, correlationId, cancellationToken);
+                    appliedWeeks += pulled.Applied;
+                    failedWeeks += pulled.Failed;
+
+                    // BL-483 — a tenant counts only when a week's state was really written; a swallowed failure is
+                    // counted on its own line below, never here.
+                    if (pulled.Applied > 0)
                     {
                         finalizedTenants++;
                     }
@@ -83,7 +91,8 @@ public sealed class TimesheetDecisionSweepJob : IBackgroundJobHandler<TimesheetD
         }
 
         _logger.LogInformation(
-            "time-entry.decision.sweep.completed Tenants={Tenants} TenantsWithDecisions={Finalized} FailedTenants={Failed} CorrelationId={CorrelationId}",
-            tenants.Count, finalizedTenants, failedTenants, correlationId);
+            "time-entry.decision.sweep.completed Tenants={Tenants} TenantsWithDecisions={Finalized} FailedTenants={Failed} "
+            + "AppliedWeeks={AppliedWeeks} FailedWeeks={FailedWeeks} CorrelationId={CorrelationId}",
+            tenants.Count, finalizedTenants, failedTenants, appliedWeeks, failedWeeks, correlationId);
     }
 }

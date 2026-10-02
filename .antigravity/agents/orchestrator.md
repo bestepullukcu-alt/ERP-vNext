@@ -70,6 +70,9 @@ Alt ajanları koordine ederken HİÇBİR AJANIN inisiyatif almasına izin vereme
     - **KAPANIŞ YALNIZ BACKLOG DEĞİL — ÜÇ KAYIT:** Aynı iş bittiğinde (a) backlog kapanış kaydı, (b) ilgili **module pack'in `Acceptance Criteria` kutusu**, (c) bir seam kurulduysa **seam register** birlikte güncellenir. Üçü de aynı gerçeği farklı yerlerde anlatır; biri güncellenip diğerleri bırakılırsa kayıtlar birbirinden ayrışır. Ölçüldü (2026-07-31): MOD-0024 pack'inde **20 kutu** işaretsizken işi yapılmıştı, seam register'ın **5** satırı "yapılmıyor" derken beşi de shipped'di.
     - **KAYITTA SAYI YERİNE ÖLÇÜM KOMUTU:** Kapanış kaydına "7 aksiyon üretiyor", "3576 satır" gibi **sayı yazma** — sayı kodla birlikte kayar ve kayıt sessizce yanlışa döner (BL-034 tam olarak böyle bayatladı). Sayı gerekiyorsa **onu üreten komutu** yaz. Böylece kayıt güncellenmese bile **yanlış olmaz**, ölçülebilir kalır.
     - **PERİYODİK MUTABAKAT:** Yazma-anı kuralı var olan bir kaydın gövdesinin bayatlamasını engelleyemez. [`/reconcile-records`](../workflows/reconcile-records.md) workflow'u modül kapanışında ve periyodik olarak koşar; kayıtları koda karşı **ölçer**, düzeltmez.
+11. **Denetim Kaydı Kapısı (ZORUNLU — AUD-001, 2026-10-02):** Yazma komutu üreten hiçbir işi, şu soru cevaplanmadan alt ajana verme ve teslim alma: **"Bu işin her yazma komutu için — kim, neyi, ne zaman değiştirdi kaydı nereye düşüyor?"** Cevap komut başına üçünden biridir: yol `a`/`b`/`c`, kuraldaki bir istisna sınıfı + gerekçe, ya da "servisin denetim altyapısı yok" — sonuncusu bir cevap değil bir **engeldir** ve kullanıcıya sorulur. Paketin `Audited Events` bölümü boşsa kod başlamaz (`/prepare-module-pack`'e dön). Teslimde `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter AuditTrailStandard` çıktısı rapora konur; `tests/architecture/audit-ledger/` altındaki **"Bilinen borç" listesine satır EKLEMEK YASAKTIR** — liste yalnız küçülür. Kural: `.antigravity/rules/audit-trail-standard.md`.
+    - **Ölçülmüş gerekçesi:** BL-456 — canlıda bir kullanıcı hesabı silindi ve kimin sildiği hiçbir yerde yazmıyordu. 2026-10-02 envanteri aynı eksiğin modüllerin çoğunda olduğunu gösterdi (`docs/records/audits/2026-10/`). Hiçbir ajan, şablon ya da test bu soruyu sormuyordu.
+
 ---
 
 ## 🔴 AŞAMA 0: BAĞLAM KONTROLÜ VE SOKRATİK KAPI (ZORUNLU)
@@ -180,6 +183,7 @@ Canonical roster 20 agent file'dir: 1 `orchestrator` + aşağıdaki 19 specialis
 - [x] Repository altyapısı doğrulandı: `IRepository<T>` ✓ / `GenericRepository<T>` ✓
 - [x] Backend CQRS yapısı kuruldu (Action-Based Separation: Her command/query/handler ayrı dosya).
 - [x] ocelot.json rotaları eklendi (integration-agent).
+- [x] **Denetim kaydı (demir kural #11, AUD-001):** Her yazma komutu için yol (a/b/c) ya da istisna sınıfı + gerekçe tablosu buraya yapıştırıldı; `--filter AuditTrailStandard` çıktısı yeşil; borç listesine satır eklenmedi (`git diff --stat -- tests/architecture/audit-ledger/` yalnız silme gösterir ya da boştur); **bir komut canlıda çalıştırıldı ve kaydı salt-okunur sorguyla gösterildi** (kural §8) — test yeşili kaydın yazıldığını kanıtlamaz.
 - [x] L10n standartları, Altın HTML Şablonu ve DtDefaults.create() uygulandı.
 - [x] Platform/Admin ise Ctrl+K registry + `en/tr` search localization tamamlandı veya N/A/blocker gerekçesi yazıldı.
 > ⚠ **İşe başlamadan önce kural haritasını oku:** `.antigravity/rules/GEMINI.md` §KURAL HARİTASI.
