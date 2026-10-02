@@ -62,3 +62,15 @@ KORU/YAPMA: CRM ve Auth DOKUNMA; textContent/esc(); UAS-001 (yetkisize iskelet y
 DOĞRULA (E2): cd C:\tmp\kp-5a-ui; dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 422); Platform testleri (manifest) 0 kırmızı; CRM testleri 0 kırmızı (dokunulmadı); build 0 hata. Yeni testler WP Acceptance listesi; iki yeni liste altın şablon denetiminden SAPMASIZ. Sabotaj: (1) ret yorumu istemci kontrolü kaldır → kırmızı; (2) önizlemede innerHTML → XSS testi kırmızı. Commit ("feat(web): WP-KP-5a-UI — safety texts + country legal profiles screens, regulatory decision panel, CRM manifest pages" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: manifest kaydı plan yetkileri/entitlement tüketicisini kırıyorsa ya da yeni gateway rotası gerekiyorsa → DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-02) — **ACCEPTED (E2, sahte gateway)**
+- **Commit:** ajan `bfaa1902` (taban `47d7ffd0`) → `test/crm-content-visit-e2e` fast-forward. 53 dosya (+4392). Web + Platform `CrmManifestProvider`; CRM diff yok.
+- **Diff (K13 okuma):** ortak `RegulatoryTextsControllerBase` (proxy, izinler, 204 gövdesiz, ret yorumu sunucuda da zorunlu — gateway'e gitmeden 400); `details.js` tüm `innerHTML` şablonları `esc()`'li, önizleme `textContent`; Compact yapı; menü `SAFETY_TEXTS` 150 / `LEGAL_PROFILES` 160 (MANAGE + SUBMIT); 82 + 84 anahtar × 7 dil.
+- **CT testleri:** Web **459/0** (+37), Platform manifest testleri **6/0**. Ajan: CRM 2147/0/5 (dokunulmadı), Platform 174 kırmızı = 173 ortam tabanı + 1 Mongo oynaklığı (tek başına yeşil).
+- **CT sabotajı:** sunucu tarafı yorumsuz ret kontrolü kapatıldı → 2 kırmızı. Kod geri alındı. Ajan: istemci ret yorumu + `innerHTML` XSS.
+- **Kabul edilen kararlar:** Compact (8 alan sınırı; derin bağlantı + 20 000 karakter + karar paneli); aynı köken proxy profili (İddialar / Bilgi Yolları gibi); paylaşılan `personalization-client.js` maddesi bütün listelerde → ayrı iş.
+- **Açık (KP-5a birleşince CT):** sözleşmede kesin JSON adları yoktu — Web `id` / `safetyTextId` / `countryLegalProfileId` / `legalProfileId` ve oluşturma yanıtı için birden çok ad kabul ediyor, CRM listesinin sayfasız döndüğünü varsayıyor → gerçek KP-5a DTO'larıyla karşılaştırılacak; uyumsuzluk → küçük FIX.
+- **Kullanıcı (2026-10-02):** mockup sorulmadan paketlendi; "devam etsin, sonradan bakarız, olmadıysa mockup yaptırırız".
+- **E4:** KP-5a + KP-5a-CFG sonrası.
