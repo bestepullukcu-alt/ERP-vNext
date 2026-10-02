@@ -70,3 +70,16 @@ KORU/YAPMA: yazma YOK; yeni koleksiyon/index yok; zincir uyumu/sürüm akışı/
 DOĞRULA (E2): cd C:\tmp\kp-ch-1; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban 2153/0/5; bilinen sıra flake'i hariç); dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı (taban 422); build 0 hata. Yeni testler WP Acceptance listesi. Sabotaj: (1) ChainRef filtresi kaldır → yol testi kırmızı; (2) ziyaret sayımında iptal filtresi kaldır → sayım testi kırmızı. Commit ("feat(crm): WP-KP-CH-1 — chain template outputs panel (knowledge paths, journeys, planned visits)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: UsesPath yolculuk için tek anlamlı değilse ya da ChainRef dışında bir zincir↔yol ilişkisi varsa → DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-02) — **ACCEPTED (E2)**
+- **Commit:** ajan `200207c4` (taban `9bbca6a4`) → CLN-1 + KP-5a-UI üzerine rebase (çakışmasız) → `41ee1630` → `test/crm-content-visit-e2e` fast-forward. 19 dosya (+1027 / −15). Rapor kullanıcıya ulaşmadı; CT doğrudan daldan doğruladı.
+- **Diff (K13 okuma):**
+  - `GET concept-chain-templates/{id}/outputs`: tenant'lı; yollar KP-1 `ChainTemplate` ref'iyle (ChainRef'siz eski yol hiçbir zincire ait değil); yolculuklar KP-3 `KnowledgePathReleaseRules.UsesPath` (pinned + latest-published); ziyaret yalnız SAYI.
+  - Yetki: zincir okuma; yol / yolculuk okuma izni yoksa o bölüm sayı + `Restricted`.
+  - Yeni depo okuması `ListFromDateByContentPathsAsync` (tenant + tarih ≥ + `ElemMatch` PathId; mevcut index, yeni index yok); sayma kuralı `ConceptChainOutputRules.CountsAsPlannedVisit` (iptal / arşiv / tarih).
+  - Web paneli: tüm değerler `esc()` / `encodeURIComponent`; "diğer sürümler" anahtarı; kayıtsız şablonda "kaydedince görünür".
+- **CT testleri (birleşik hal):** CRM **2156/0/5**, Web **469/0**.
+- **CT sabotajı:** `CountsAsPlannedVisit` içindeki tarih koşulu kaldırıldı → **kırmızı OLMADI**: tarih filtresi depoda (ve test sahtelerinde) de uygulanıyor, kuraldaki kontrol ikinci savunma hattı. Geçmiş ziyaret dışlaması depo katmanı üzerinden test ediliyor; kural katmanı için doğrudan test yok (küçük test açığı, davranış doğru). Ajan sabotajları: ChainRef filtresi + iptal filtresi (kırmızı).
+- **E4 (CT, Faz 0):** TPL-ALMIBA-01 panelinde ALMIBA TR yolu + yolculuğu.
