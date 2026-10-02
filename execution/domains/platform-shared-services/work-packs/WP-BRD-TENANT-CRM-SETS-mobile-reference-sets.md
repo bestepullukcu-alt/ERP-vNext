@@ -85,3 +85,28 @@ KORU/YAPMA: Platform.BusinessReferenceData.Consumer.Read kiracı rollerine VERİ
 DOĞRULA (E2): Platform testleri (tabanı ölç; ~173 ortam kaynaklı kırmızı — yalnız FARK) → 0 yeni kırmızı; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban ölç); dotnet test frontend/Diten.Web.Tests -c Release --nologo → 0 kırmızı; build 0 hata. Yeni testler WP Acceptance (mobil §9 1-11, 14 + Tenant/Global kapsam + CRM fallback/önbellek + kayma testi; 12-13 harness'ta mümkünse). Sabotaj: (1) Tenant seti referans kiracıda oku → izolasyon kırmızı; (2) listeden bir CRM seti çıkar → kayma kırmızı; (3) CRM fallback'i kaldır → liste dışı set testi kırmızı. Commit ("fix(brd): WP-BRD-TENANT-CRM-SETS — consumable reference sets route for every tenant role + CRM validator switch + drift guard" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: kiracı yalnız X-Tenant-Id başlığından (token doğrulamasız) alınıyorsa; set metadata'sından kapsam güvenilir okunamıyorsa; segment reference-set kaynağı keyfi set kodu kabul ediyorsa → DUR + raporla.
 ```
+
+---
+
+## §37 — CT bağımsız doğrulama, Adım 1 (2026-10-02) — **ACCEPTED (E2)**
+- **Commit:** ajan `e55c24d5` (18 dosya, +1662 / −30). Platform: `ConsumableReferenceDataController`, `TenantUserCaller`, consumable sorgu / handler / doğrulayıcı / options, appsettings; CRM: `ConsumableReferenceSetRouting` + `GatewayReferenceDataValidator`.
+- **DUR yok:** `/api/lookups` kiracı ara katmanında bypass → kiracı yalnız doğrulanmış token'dan (`actor_type=tenant_user` + tek `tenant_id`); `X-Tenant-Id` yalnız karşılaştırılır (farklıysa 400 `tenant_mismatch`); ScopeType BRD set kaydından; segment `reference-set` kaynağı statik katalog.
+- **İzin listesi:** 40 set (appsettings + kod varsayılanı, aynı içerik); kayma testi CRM sabitlerini + segment kataloğunu tarıyor.
+- **CT testleri:** CRM **2125/0/5**, Platform ilgili testler **41/0** (consumable + options + LoginOnly guard + tenant ref-data), Web **395/0**. Ajan: Platform Application 455 ortam kaynaklı kırmızı, tabanla birebir aynı küme (yeni 0).
+- **CT sabotajı:** izin listesi kontrolü devre dışı (her set okunur) → 4 kırmızı. Kod geri alındı. Ajan: referans kiracıda okuma (8), listeden set çıkarma (kayma), CRM fallback kaldırma (7).
+- **Ajan yorumları (kabul):** Global set çağıranın kiracısında da varsa kiracının kopyası okunur (Admin'in bugün gördüğüyle aynı); kiracıda yoksa yalnız referans kiracının **global** seti. Tanınmayan red (eski Platform `{}` 404) → o okuma eski yola, önbelleğe alınmaz (dağıtım sırası güvenliği). Önbellek süreç ömrü boyunca (liste genişlerse CRM yeniden başlatılır).
+
+## Adım 2 — Web açılır listeleri (CT, 2026-10-02)
+**Sorun:** CRM Web denetleyicileri seçenekleri kendileri, kullanıcının token'ıyla genel tüketici yolundan okuyor → Admin olmayan kullanıcıda **form açılır listeleri boş**: `Controllers/CRM/{AccountsController (:553), ContactsController (:590), ClaimsController.V2 (:16 ReferenceDataBase), KnowledgeController, KnowledgeController.Claims, KnowledgeConceptsController, SegmentsController, TerritoryManagementController, VisitFrequencyPoliciesController}.cs`.
+
+**NE:**
+1. Tek ortak Web yardımcısı (ör. `Services/CrmReferenceSetReader`): önce `consumable-sets`, 404 + `reference_set_not_tenant_accessible` → mevcut genel yol (scope_key) + süreç içi önbellek; tanınmayan red → o okuma eski yola, önbelleğe alma (CRM doğrulayıcısıyla aynı kural). Yanıt şekli değişmez (çağıranlar aynı modeli okur).
+2. Dokuz CRM denetleyicisi bu yardımcıya geçer; kendi URL kurma kodları kalkar.
+3. Web'in CRM ekranlarında okuduğu ama Platform listesinde olmayan set varsa → Platform `ConsumableSets`'e (appsettings + kod varsayılanı) eklenir; **kayma testi Web CRM denetleyicilerini de tarar**.
+4. CRM dışı denetleyiciler (`DocumentManagement*`, `LegalEntities`, `WorkingCalendarOverrides`) **DEĞİŞMEZ** (kendi modülleri; ayrı karar).
+
+**KORU:** Platform izni kiracı rollerine verilmez; seçenek içerikleri Admin için bugünküyle aynı; UAS / yetki kapıları değişmez; HCM dokunulmaz.
+
+**Acceptance (E2):** Web 0 kırmızı (taban 395), CRM 0 (taban 2125/0/5), Platform ilgili testler 0 yeni kırmızı, build 0 hata. Yeni testler: yardımcı önce consumable'ı çağırır / fallback + önbellek / tanınmayan red; dokuz denetleyicinin her biri yardımcıyı kullanır (eski URL kurma kalmadı — kaynak taraması); kayma testi Web set kodlarını da kapsar. **Sabotaj:** (1) yardımcıda fallback kaldır → liste dışı set testi kırmızı; (2) bir denetleyiciyi eski URL'ye geri döndür → kaynak taraması testi kırmızı.
+
+**E4 (CT, fleet):** Admin olmayan 97c5 kullanıcısıyla hesap, kişi, iddia, segment, bölge formlarında açılır listeler dolu; kayıt başarılı.
