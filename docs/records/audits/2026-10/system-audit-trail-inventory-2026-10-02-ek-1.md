@@ -10,7 +10,7 @@ Bu ek, [system-audit-trail-inventory-2026-10-02.md](system-audit-trail-inventory
 | 1 | PvgService ve ManagementGovernanceService'te adı `Command` ile biten her tür yazma komutudur (yalnız bu iki servis) | PVG'nin 13 komutu borç defterine girdi. MG'nin 10 "MediatR dışı" türü, aynı adlı MediatR komutlarının sözleşme kaydı (`Modules/Dws/DwsContracts.cs`) çıktı; adları zaten borçtaydı, ikinci kez sayılmadı. |
 | 2 | Beş İ1 istisnası | Onaylandı; değişiklik yok. |
 | 3 | Üç eşdeğer iz + "kiracı tarafında okunabilir" tanımı | Onaylandı; tanım kuralın §5.c-3 maddesine yazıldı. |
-| 4 | Yazma hatasında komut dursun mu (K2) | Açık karar olarak kaldı. |
+| 4 | Yazma hatasında komut dursun mu (K2) | **Karar verildi (sahip, 2026-10-02): EVET** — kimlik / yetki / kiracı durumu / GxP / KVKK-özel sınıfında kayıt yazılamazsa işlem durur. Bugün hiçbir yol bunu teslim etmiyor; uyulabilir yol ve K2 borcu için Ek 2. |
 | 5 | Platform işlem içi yol | Aşağıda §3 — **hiçbir komut borçtan çıkarılmadı.** |
 
 ## 2. Envanter (testin ürettiği tablo, 27/27 yeşil)

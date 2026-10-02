@@ -13,7 +13,8 @@ namespace TenantArchitecture.ArchitectureTests.AuditTrailStandard;
  *
  * WHAT IT CANNOT SEE (stated here so nobody has to discover it):
  *   - it does not resolve symbols: `IRequest` is matched by NAME, the last segment of the base type;
- *   - one namespace per file (the first one) — a file with two namespace blocks is attributed to the first;
+ *   - a `using X = Some.Type;` alias is not followed: a handler written against an alias names a request this
+ *     scanner cannot find — which is why AuditTrailStandardTests requires every handler's request to RESOLVE;
  *   - a base list inherited from a base CLASS is not followed (only interfaces declared in the same service are
  *     followed transitively); a command that gets `IRequest` from an abstract base record is invisible.
  */
@@ -36,7 +37,8 @@ internal static class CSharpSourceScanner
         @"\b(class|record|struct|interface|enum)\s+(?:(?:class|struct)\s+)?([A-Z_]\w*)",
         RegexOptions.Compiled);
 
-    private static readonly Regex NamespaceDeclaration = new(@"\bnamespace\s+([\w.]+)", RegexOptions.Compiled);
+    private static readonly Regex FileScopedNamespace = new(@"\bnamespace\s+([\w.]+)\s*;", RegexOptions.Compiled);
+    private static readonly Regex BlockNamespace = new(@"\bnamespace\s+([\w.]+)\s*\{", RegexOptions.Compiled);
 
     public static List<SourceType> ScanDirectory(string repoRoot, string directory)
     {
@@ -64,8 +66,18 @@ internal static class CSharpSourceScanner
     public static IEnumerable<SourceType> ScanSource(string relativePath, string rawSource)
     {
         var s = StripCommentsAndStrings(rawSource);
-        var namespaceMatch = NamespaceDeclaration.Match(s);
-        var ns = namespaceMatch.Success ? namespaceMatch.Groups[1].Value : string.Empty;
+        // EACH TYPE GETS ITS OWN NAMESPACE. Reading only the first `namespace` of a file would let a second block
+        // (`namespace X.Queries { … }`) decide — or fail to decide — whether a type in it is a query.
+        var fileScoped = FileScopedNamespace.Match(s);
+        var filePrefix = fileScoped.Success ? fileScoped.Groups[1].Value : string.Empty;
+        var blocks = BlockNamespace.Matches(s)
+            .Select(m => (Start: m.Index + m.Length - 1, End: SkipBalanced(s, m.Index + m.Length - 1, '{', '}'), Name: m.Groups[1].Value))
+            .ToList();
+        string NamespaceAt(int index) => string.Join(
+            '.',
+            new[] { filePrefix }
+                .Concat(blocks.Where(b => b.Start < index && index < b.End).OrderBy(b => b.Start).Select(b => b.Name))
+                .Where(part => part.Length > 0));
 
         foreach (Match match in Declaration.Matches(s))
         {
@@ -129,7 +141,7 @@ internal static class CSharpSourceScanner
                 body = s[k..SkipBalanced(s, k, '{', '}')];
             }
 
-            yield return new SourceType(relativePath, kind, name, ns, IsAbstract(s, match.Index), bases, parameters + body);
+            yield return new SourceType(relativePath, kind, name, NamespaceAt(match.Index), IsAbstract(s, match.Index), bases, parameters + body);
         }
     }
 
