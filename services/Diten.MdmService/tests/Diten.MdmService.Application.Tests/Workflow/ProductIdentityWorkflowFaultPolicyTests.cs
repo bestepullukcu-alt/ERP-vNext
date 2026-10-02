@@ -23,6 +23,7 @@ public sealed class ProductIdentityWorkflowFaultPolicyTests
     [InlineData(Call.Start, Outcome.Forbidden, "WORKFLOW_TRUSTED_START_FORBIDDEN", Kind.ServiceWait, Scope.None, true)]
     [InlineData(Call.Start, Outcome.Forbidden, null, Kind.ServiceWait, Scope.None, true)]
     [InlineData(Call.Cancel, Outcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_UNREADABLE", Kind.ServiceWait, Scope.None, false)]
+    [InlineData(Call.Start, Outcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_INVALID", Kind.ServiceWait, Scope.None, false)]
     // the maker's, or the set-up's
     [InlineData(Call.Start, Outcome.AuthenticationRejected, "WORKFLOW_DELEGATED_USER_UNAUTHENTICATED", Kind.MakerReplay, Scope.None, true)]
     [InlineData(Call.Start, Outcome.Forbidden, "WORKFLOW_DELEGATED_USER_FORBIDDEN", Kind.MakerReplay, Scope.None, true)]
@@ -32,7 +33,7 @@ public sealed class ProductIdentityWorkflowFaultPolicyTests
     // the record's
     [InlineData(Call.Start, Outcome.Forbidden, "WORKFLOW_TRUSTED_CONSUMER_TENANT_MISMATCH", Kind.Quarantine, Scope.None, false)]
     [InlineData(Call.Cancel, Outcome.Forbidden, "WORKFLOW_TRUSTED_CANCEL_REQUESTER_FORBIDDEN", Kind.Quarantine, Scope.None, false)]
-    [InlineData(Call.Start, Outcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_INVALID", Kind.Quarantine, Scope.None, false)]
+    [InlineData(Call.Start, Outcome.Invalid, "PRODUCT_WORKFLOW_FAILURE_WITHOUT_REASON", Kind.Quarantine, Scope.None, false)]
     [InlineData(Call.Start, Outcome.Invalid, null, Kind.Quarantine, Scope.None, false)]
     [InlineData(Call.Start, Outcome.Conflict, "WORKFLOW_START_IDEMPOTENCY_CONFLICT", Kind.Quarantine, Scope.None, false)]
     [InlineData(Call.Start, Outcome.Conflict, null, Kind.Quarantine, Scope.None, false)]
@@ -47,6 +48,8 @@ public sealed class ProductIdentityWorkflowFaultPolicyTests
         Assert.Equal(scope, decision.Scope);
         Assert.Equal(startedNothing, decision.StartedNothing);
         Assert.Equal(kind == Kind.MakerReplay, decision.MakerCode is not null);
+        // Only a success that breaks the contract is said as an error at once: waiting will not mend it.
+        Assert.Equal(code == "PRODUCT_WORKFLOW_RESPONSE_INVALID", decision.Loud);
     }
 
     [Theory]

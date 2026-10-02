@@ -73,9 +73,11 @@ public sealed record GlobalProductIdentityWorkflowCheckpointMutation(
     string? WithdrawalInstanceStatus = null,
     string? WithdrawalObjectRef = null,
     bool ReleaseLease = false,
-    // null leaves the two service-fault fields as they are; a value writes both (0 clears them).
+    // null leaves the two service-fault fields as they are; a value writes BOTH, exactly as given.
     int? ServiceFaultCount = null,
-    long? ServiceFaultSinceUtcTicksV1 = null);
+    long? ServiceFaultSinceUtcTicksV1 = null,
+    // Forgets a withdrawal that did not happen (every Withdrawal* field), so the requester can ask again.
+    bool ClearWithdrawal = false);
 
 public sealed record GlobalProductIdentityWorkflowTenantPartitionPage(
     IReadOnlyList<Guid> TenantIds,

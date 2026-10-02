@@ -88,7 +88,10 @@ public sealed class TrustChainEndToEndTests(OwnedMongo mongo)
         // A tenant that was not declared gets nothing.
         var rejected = await Assert.ThrowsAsync<ProductIdentityWorkflowServiceIdentityException>(
             () => provider.GetAsync(otherTenant, forceRefresh: false));
-        Assert.Equal("PRODUCT_WORKFLOW_IDENTITY_REJECTED", rejected.ErrorCode);
+        // Auth answers 403 for a tenant it holds no grant for; MDM's provider names that apart from a refused
+        // credential (WP-GP-1B-A-RESILIENCE-01), so that only that tenant's work is left alone.
+        Assert.Equal("PRODUCT_WORKFLOW_IDENTITY_NOT_GRANTED", rejected.ErrorCode);
+        Assert.False(rejected.IsRetryable);
 
         // ── Platform's validation scheme accepts that token ────────────────────────────────────────────────────
         var validation = platformSettings.GetSection(TrustedServiceTokenValidationOptions.SectionName)

@@ -332,8 +332,27 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         {
             update = update
                 .Set(item => item.ServiceFaultCount, mutation.ServiceFaultCount.Value)
-                .Set(item => item.ServiceFaultSinceUtcTicksV1,
-                    mutation.ServiceFaultCount.Value == 0 ? null : mutation.ServiceFaultSinceUtcTicksV1);
+                .Set(item => item.ServiceFaultSinceUtcTicksV1, mutation.ServiceFaultSinceUtcTicksV1);
+        }
+        if (mutation.ClearWithdrawal)
+        {
+            update = update
+                .Set(item => item.WithdrawalCommandId, null)
+                .Set(item => item.WithdrawalFingerprint, null)
+                .Set(item => item.WithdrawalRequesterSubjectId, null)
+                .Set(item => item.WithdrawalExpectedProductVersion, null)
+                .Set(item => item.WithdrawalReasonCode, null)
+                .Set(item => item.WithdrawalComment, null)
+                .Set(item => item.WithdrawalExpectedWorkflowInstanceVersion, null)
+                .Set(item => item.WithdrawalExpectedApprovalTaskVersion, null)
+                .Set(item => item.WithdrawalTransitionLogId, null)
+                .Set(item => item.WithdrawalObservedAtUtcTicksV1, null)
+                .Set(item => item.WithdrawalTransitionSequence, null)
+                .Set(item => item.WithdrawalResultWorkflowInstanceVersion, null)
+                .Set(item => item.WithdrawalResultApprovalTaskVersion, null)
+                .Set(item => item.WithdrawalTaskStatus, null)
+                .Set(item => item.WithdrawalInstanceStatus, null)
+                .Set(item => item.WithdrawalObjectRef, null);
         }
         if (mutation.ReleaseLease)
         {

@@ -81,6 +81,11 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay,
             harness.Repository.Current.RecoveryDisposition);
         Assert.Equal(0, harness.Client.StartCalls);
+        // What the engine said is kept on the operation for the operator; the caller is never handed a code that is
+        // not one of the fixed ones.
+        Assert.Equal("WORKFLOW_START_NOT_FOUND", harness.Repository.Current.LastFailureCode);
+        Assert.Equal(ProductIdentityWorkflowMakerCodes.MakerReplayRequired, result.ErrorCode);
+        Assert.Equal(409, result.StatusCode);
     }
 
     [Fact]
@@ -365,7 +370,8 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         Assert.Equal(ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, result.ErrorCode);
         Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
             harness.Repository.Current!.Checkpoint);
-        Assert.Equal(1, harness.Repository.Current.ServiceFaultCount);
+        Assert.Equal(0, harness.Repository.Current.ServiceFaultCount); // a maker's attempt is not a worker attempt
+        Assert.NotNull(harness.Repository.Current.ServiceFaultSinceUtcTicksV1);
     }
 
     [Fact]
@@ -586,6 +592,7 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         public int SubmitMutationCount { get; private set; }
         public int ReconcileCount { get; private set; }
         public int WithdrawCount { get; private set; }
+        public string? SubmitFailure { get; set; }
 
         public Task<GlobalProduct?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
             Task.FromResult(product.Id == id && !product.IsDeleted ? product : null);
@@ -612,6 +619,10 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
             LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
         {
             SubmitCount++;
+            if (SubmitFailure is not null)
+            {
+                return Task.FromResult(new GlobalProductLifecycleWriteResult(false, product, SubmitFailure));
+            }
             if (product.WorkflowBinding is { } existingBinding
                 && product.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
                 && product.Version == expectedVersion + 1
@@ -696,6 +707,9 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         public int ClaimCalls { get; private set; }
         public int AdvanceCalls { get; private set; }
         public List<bool> ClaimsIgnoringSchedule { get; } = [];
+        // Refuses the next advance to this checkpoint the way the real store refuses a transition it does not
+        // allow: it answers false and leaves the lease exactly as it is.
+        public GlobalProductIdentityWorkflowCheckpoint? RefuseNextAdvanceTo { get; set; }
 
         public Task<GlobalProductIdentityWorkflowReserveResult> ReserveAsync(
             GlobalProductIdentityWorkflowOperation operation, CancellationToken cancellationToken = default)
@@ -757,6 +771,11 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
             {
                 return Task.FromResult(false);
             }
+            if (RefuseNextAdvanceTo == mutation.NextCheckpoint)
+            {
+                RefuseNextAdvanceTo = null;
+                return Task.FromResult(false);
+            }
             if (FailNextAdvanceTo == mutation.NextCheckpoint)
             {
                 FailNextAdvanceTo = null;
@@ -809,8 +828,26 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
             if (mutation.ServiceFaultCount.HasValue)
             {
                 Current.ServiceFaultCount = mutation.ServiceFaultCount.Value;
-                Current.ServiceFaultSinceUtcTicksV1 =
-                    mutation.ServiceFaultCount.Value == 0 ? null : mutation.ServiceFaultSinceUtcTicksV1;
+                Current.ServiceFaultSinceUtcTicksV1 = mutation.ServiceFaultSinceUtcTicksV1;
+            }
+            if (mutation.ClearWithdrawal)
+            {
+                Current.WithdrawalCommandId = null;
+                Current.WithdrawalFingerprint = null;
+                Current.WithdrawalRequesterSubjectId = null;
+                Current.WithdrawalExpectedProductVersion = null;
+                Current.WithdrawalReasonCode = null;
+                Current.WithdrawalComment = null;
+                Current.WithdrawalExpectedWorkflowInstanceVersion = null;
+                Current.WithdrawalExpectedApprovalTaskVersion = null;
+                Current.WithdrawalTransitionLogId = null;
+                Current.WithdrawalObservedAtUtcTicksV1 = null;
+                Current.WithdrawalTransitionSequence = null;
+                Current.WithdrawalResultWorkflowInstanceVersion = null;
+                Current.WithdrawalResultApprovalTaskVersion = null;
+                Current.WithdrawalTaskStatus = null;
+                Current.WithdrawalInstanceStatus = null;
+                Current.WithdrawalObjectRef = null;
             }
             if (mutation.ReleaseLease)
             {

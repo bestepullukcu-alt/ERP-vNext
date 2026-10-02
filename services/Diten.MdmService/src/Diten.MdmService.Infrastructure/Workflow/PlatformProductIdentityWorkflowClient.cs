@@ -267,7 +267,8 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
 
     private static ProductIdentityWorkflowTransportResult<T> MapFailure<T>(HttpStatusCode status, string? code)
     {
-        var error = string.IsNullOrWhiteSpace(code) ? "PRODUCT_WORKFLOW_RESPONSE_INVALID" : code;
+        // (Not RESPONSE_INVALID: that name now belongs to a SUCCESS that breaks the contract, which waits.)
+        var error = string.IsNullOrWhiteSpace(code) ? ProductIdentityWorkflowFaultPolicy.FailureWithoutReason : code;
         var outcome = status switch
         {
             HttpStatusCode.BadRequest or HttpStatusCode.RequestEntityTooLarge => ProductIdentityWorkflowTransportOutcome.Invalid,
@@ -402,7 +403,7 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
     private static ProductIdentityWorkflowTransportResult<T> Unreadable<T>() =>
         ProductIdentityWorkflowTransportResult<T>.Fail(ProductIdentityWorkflowTransportOutcome.Invalid, ProductIdentityWorkflowFaultPolicy.ResponseUnreadable);
     private static ProductIdentityWorkflowTransportResult<T> Contract<T>() =>
-        ProductIdentityWorkflowTransportResult<T>.Fail(ProductIdentityWorkflowTransportOutcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_INVALID");
+        ProductIdentityWorkflowTransportResult<T>.Fail(ProductIdentityWorkflowTransportOutcome.Invalid, ProductIdentityWorkflowFaultPolicy.ResponseInvalid);
     private static async Task<byte[]> ReadBoundedAsync(HttpContent content, CancellationToken ct)
     {
         if (content.Headers.ContentLength is > MaximumResponseBytes) throw new InvalidDataException();

@@ -7,6 +7,7 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
+using ProductIdentityWorkflowCancellationEvidence = Diten.MdmService.Application.Contracts.Workflow.ProductIdentityWorkflowCancellationEvidence;
 using Diten.MdmService.Persistence.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -21,10 +22,14 @@ namespace Diten.MdmService.Application.Tests;
 
 // WP-GP-1B-A-RESILIENCE-01 on the REAL operation repository, processor and recovery runner: the lease, the
 // transition table, the persisted fault fields and the cycle breaker. Only the transport is a fake.
-// Isolation is by tenant id (DB-010): every test owns two fresh tenants and removes what it wrote.
+// ITS OWN DATABASE, with a fixed suffix (DB-010): the recovery runner walks EVERY tenant of the database it is given,
+// so in the shared test database another class's leftover operation was both written to and counted. Here nothing
+// but this class's operations exist: the collection is emptied before each test, and each test still owns two
+// fresh tenants.
 [Collection(ProductLegalEntityScopeMongoCollection.Name)]
 public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLifetime
 {
+    private const string DatabaseName = ProductLegalEntityScopeMongoCollection.DatabaseName + "_gp_identity_resilience";
     private static readonly TimeSpan Lease = TimeSpan.FromMinutes(1);
     private static readonly TimeSpan Retry = TimeSpan.FromSeconds(30);
     private readonly Guid _tenantA = Guid.NewGuid();
@@ -49,8 +54,11 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
         settings.GuidRepresentation = GuidRepresentation.Standard;
 #pragma warning restore CS0618
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
-        _database = new MongoClient(settings).GetDatabase(ProductLegalEntityScopeMongoCollection.DatabaseName);
+        _database = new MongoClient(settings).GetDatabase(DatabaseName);
         await _database.RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
+        await _database.GetCollection<GlobalProductIdentityWorkflowOperation>(
+                GlobalProductIdentityWorkflowOperationRepository.CollectionName)
+            .DeleteManyAsync(FilterDefinition<GlobalProductIdentityWorkflowOperation>.Empty);
     }
 
     public async Task DisposeAsync()
@@ -93,7 +101,7 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
         var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision, withPendingProduct: true);
         var repository = Repository(_tenantA);
         await ScheduleAsync(repository, operation, _clock.GetUtcNow().AddMinutes(15));
-        _transport.Preflight = _ => (Outcome.Retryable, "PRODUCT_WORKFLOW_UNAVAILABLE");
+        _transport.Preflight = (_, _) => (Outcome.Retryable, "PRODUCT_WORKFLOW_UNAVAILABLE");
         using var services = Services();
 
         var now = _clock.GetUtcNow().UtcTicks;
@@ -124,7 +132,8 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
         Assert.Equal(503, passed.StatusCode);
         Assert.Equal(ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, passed.ErrorCode);
         Assert.Equal(Checkpoint.WithdrawalRequested, stored.Checkpoint); // the claim went through
-        Assert.Equal(5, stored.ServiceFaultCount);
+        // The requester's attempt is not the worker's: what the worker counted and when it started stay as they were.
+        Assert.Equal(4, stored.ServiceFaultCount);
         Assert.Equal(now, stored.ServiceFaultSinceUtcTicksV1);
         Assert.Null(stored.LeaseOwner);
     }
@@ -136,8 +145,8 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
     {
         var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingMakerReplay, withDraftProduct: true);
         var repository = Repository(_tenantA);
-        _transport.Start = _ => (Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
-        _transport.StartResult = _ => (Outcome.Retryable, "PRODUCT_WORKFLOW_UNAVAILABLE");
+        _transport.Start = (_, _) => (Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
+        _transport.StartResult = (_, _) => (Outcome.Retryable, "PRODUCT_WORKFLOW_UNAVAILABLE");
         using var services = Services();
 
         var result = await SubmitAsync(services, operation);
@@ -147,27 +156,43 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
         Assert.Equal(ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, result.ErrorCode);
         Assert.Equal(Checkpoint.StartOutcomeUnknown, stored.Checkpoint);
         Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, stored.RecoveryDisposition);
-        Assert.Equal(1, stored.ServiceFaultCount);
+        Assert.Equal(0, stored.ServiceFaultCount); // the maker's attempt does not count
         Assert.Equal(_clock.GetUtcNow().UtcTicks, stored.ServiceFaultSinceUtcTicksV1);
-        Assert.Equal(_clock.GetUtcNow().Add(Retry).UtcTicks, stored.NextAttemptAtUtcTicksV1);
+        Assert.Null(stored.NextAttemptAtUtcTicksV1); // …and does not move the worker's next attempt
         Assert.Null(stored.LeaseOwner);
         Assert.Null(stored.LeaseUntilUtcTicksV1);
+        var since = stored.ServiceFaultSinceUtcTicksV1;
 
-        // The worker's lookup then learns that nothing arrived: the chain answered, the fault is cleared, and the
-        // operation is the maker's again.
-        _clock.Advance(TimeSpan.FromMinutes(1));
-        _transport.StartResult = _ => (Outcome.NotFound, "NOT_FOUND_NON_LEAKAGE");
-        await using (var scope = services.CreateAsyncScope())
+        // The worker's lookup fails too: THAT counts, backs off, and keeps the first moment.
+        _clock.Advance(TimeSpan.FromSeconds(15));
+        await RecoverAsync(services, stored);
+        stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(Checkpoint.StartOutcomeUnknown, stored.Checkpoint);
+        Assert.Equal(1, stored.ServiceFaultCount);
+        Assert.Equal(since, stored.ServiceFaultSinceUtcTicksV1);
+        Assert.Equal(_clock.GetUtcNow().Add(Retry).UtcTicks, stored.NextAttemptAtUtcTicksV1);
+
+        // The maker clicks six times while the worker is backing off: nothing the worker scheduled moves.
+        var scheduled = stored.NextAttemptAtUtcTicksV1;
+        for (var click = 0; click < 6; click++)
         {
-            scope.ServiceProvider.GetRequiredService<ITenantContext>().SetTenant(_tenantA);
-            await scope.ServiceProvider.GetRequiredService<GlobalProductIdentityWorkflowProcessor>()
-                .RecoverAsync(stored, "worker", Lease, Retry);
+            Assert.Equal(503, (await SubmitAsync(services, operation)).StatusCode);
         }
+        stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(1, stored.ServiceFaultCount);
+        Assert.Equal(since, stored.ServiceFaultSinceUtcTicksV1);
+        Assert.Equal(scheduled, stored.NextAttemptAtUtcTicksV1);
+
+        // The worker's lookup then learns that nothing arrived. That is not the chain answering the START: the
+        // operation is the maker's again and the fault is not forgotten.
+        _clock.Advance(TimeSpan.FromMinutes(1));
+        _transport.StartResult = (_, _) => (Outcome.NotFound, "NOT_FOUND_NON_LEAKAGE");
+        await RecoverAsync(services, stored);
 
         stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
         Assert.Equal(Checkpoint.AwaitingMakerReplay, stored.Checkpoint);
-        Assert.Equal(0, stored.ServiceFaultCount);
-        Assert.Null(stored.ServiceFaultSinceUtcTicksV1);
+        Assert.Equal(1, stored.ServiceFaultCount);
+        Assert.Equal(since, stored.ServiceFaultSinceUtcTicksV1);
     }
 
     [Theory]
@@ -196,24 +221,152 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
     }
 
     [Fact]
-    public async Task ARefusedInteractiveStep_GivesTheLeaseBack()
+    public async Task ASubmitRepeatedWhileAWithdrawalIsInFlight_IsRefused_WithoutALeaseOrACall()
     {
-        // A submit repeated while a withdrawal is in flight: this path has no step for that checkpoint.
         var operation = await SeedAsync(_tenantA, Checkpoint.WithdrawalRequested, withPendingProduct: true);
         var repository = Repository(_tenantA);
+        var before = (await repository.GetByOperationIdAsync(operation.OperationId))!;
         using var services = Services();
 
         var result = await SubmitAsync(services, operation);
 
         var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
         Assert.Equal(409, result.StatusCode);
-        Assert.Equal("PRODUCT_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", result.ErrorCode);
-        Assert.Equal(Checkpoint.WithdrawalRequested, stored.Checkpoint);
+        Assert.Equal("PRODUCT_IDENTITY_WORKFLOW_STATE_CONFLICT", result.ErrorCode);
+        Assert.Equal(0, _transport.Calls(_tenantA));
+        Assert.Equal((before.Checkpoint, before.Version, before.LeaseGeneration),
+            (stored.Checkpoint, stored.Version, stored.LeaseGeneration));
+    }
+
+    [Fact]
+    public async Task ASubmitInterruptedInTheMiddleOfAStep_GivesTheLeaseBack_KeepsTheSchedule_AndTheNextSubmitIsNotBusy()
+    {
+        var operation = await SeedAsync(_tenantA, Checkpoint.StartOutcomeUnknown, withDraftProduct: true);
+        var repository = Repository(_tenantA);
+        var scheduled = _clock.GetUtcNow().AddMinutes(15);
+        await ScheduleAsync(repository, operation, scheduled);
+        _transport.Start = (_, _) => throw new OperationCanceledException("the caller went away");
+        using var services = Services();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => SubmitAsync(services, operation));
+
+        var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(Checkpoint.StartOutcomeUnknown, stored.Checkpoint);
         Assert.Null(stored.LeaseOwner);
         Assert.Null(stored.LeaseUntilUtcTicksV1);
-        var now = _clock.GetUtcNow().UtcTicks;
-        Assert.NotNull(await repository.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
-            [Checkpoint.WithdrawalRequested], "next", now + 10, now + Lease.Ticks)));
+        Assert.Equal(scheduled.UtcTicks, stored.NextAttemptAtUtcTicksV1);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, stored.RecoveryDisposition);
+
+        // Straight away, with the same clock: a lease left behind would answer 409 BUSY here.
+        _transport.Start = (_, _) => (Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED");
+        var next = await SubmitAsync(services, operation);
+
+        Assert.Equal(503, next.StatusCode);
+        Assert.Equal(ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, next.ErrorCode);
+    }
+
+    [Fact]
+    public async Task AWithdrawalInterruptedInTheMiddleOfAStep_GivesTheLeaseBack_AndTheNextOneIsNotBusy()
+    {
+        var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision, withPendingProduct: true);
+        var repository = Repository(_tenantA);
+        _transport.Preflight = (_, _) => throw new InvalidOperationException("the wire broke");
+        using var services = Services();
+        var commandId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => WithdrawAsync(services, operation, commandId));
+
+        var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(Checkpoint.WithdrawalRequested, stored.Checkpoint);
+        Assert.Null(stored.LeaseOwner);
+
+        _transport.Preflight = (_, _) => (Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
+        var next = await WithdrawAsync(services, operation, commandId);
+
+        Assert.Equal(503, next.StatusCode);
+        Assert.Equal(ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, next.ErrorCode);
+    }
+
+    // ── a withdrawal met by an outage never hides an approval from the worker (item 2) ────────────────────────────
+
+    [Fact]
+    public async Task WithdrawalRefusedDuringAnOutage_NeverRepeated_TheApproversDecisionIsObserved_AndTheProductLeavesPending()
+    {
+        var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision, withPendingProduct: true);
+        var repository = Repository(_tenantA);
+        _transport.Preflight = (_, request) => PreflightOpen(request);
+        _transport.Cancel = (_, _) => (Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED");
+        using var services = Services();
+
+        var refused = await WithdrawAsync(services, operation, Guid.NewGuid());
+
+        var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(503, refused.StatusCode);
+        Assert.Equal(ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, refused.ErrorCode);
+        Assert.Equal(Checkpoint.AwaitingDecision, stored.Checkpoint); // a state the worker reads
+        Assert.Null(stored.WithdrawalCommandId);
+        Assert.Null(stored.WithdrawalFingerprint);
+        Assert.Null(stored.WithdrawalExpectedWorkflowInstanceVersion);
+        Assert.Null(stored.NextAttemptAtUtcTicksV1);
+
+        // The requester gives up. The approver approves at the engine. The worker's next cycle — the real runner,
+        // the real discovery — finds the operation and applies the decision.
+        _transport.Terminal = (_, _) => Approved(stored);
+        var cycle = await Runner(services).RunCycleAsync();
+
+        stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(1, cycle.CompletedCount);
+        Assert.Equal(Checkpoint.Completed, stored.Checkpoint);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, (await ProductAsync(operation)).LifecycleStatus);
+    }
+
+    [Fact]
+    public async Task WithdrawalWhoseOutcomeIsUnknown_NeverRepeated_TheWorkerReadsTheApproval_AndTheDecisionIsObserved()
+    {
+        var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision, withPendingProduct: true);
+        var repository = Repository(_tenantA);
+        _transport.Preflight = (_, request) => PreflightOpen(request);
+        _transport.Cancel = (_, _) => (Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
+        using var services = Services();
+
+        Assert.Equal(503, (await WithdrawAsync(services, operation, Guid.NewGuid())).StatusCode);
+        var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(Checkpoint.WithdrawalOutcomeUnknown, stored.Checkpoint);
+
+        // First cycle: the approval is still open, so the withdrawal did not land — it is forgotten, and the
+        // decision is polled in the same cycle (not decided yet).
+        _transport.Terminal = (_, _) => (Outcome.NonTerminal, "WORKFLOW_DECISION_NOT_TERMINAL");
+        await Runner(services).RunCycleAsync();
+        stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(Checkpoint.AwaitingDecision, stored.Checkpoint);
+        Assert.Null(stored.WithdrawalCommandId);
+        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, (await ProductAsync(operation)).LifecycleStatus);
+
+        // Later the approver approves; the next cycle observes it.
+        _clock.Advance(TimeSpan.FromMinutes(1));
+        _transport.Terminal = (_, _) => Approved(stored);
+        await Runner(services).RunCycleAsync();
+
+        Assert.Equal(Checkpoint.Completed, (await repository.GetByOperationIdAsync(operation.OperationId))!.Checkpoint);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, (await ProductAsync(operation)).LifecycleStatus);
+    }
+
+    [Fact]
+    public async Task ARefusedWithdrawal_CanBeAskedAgain_AndThenWithdraws()
+    {
+        var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision, withPendingProduct: true);
+        var repository = Repository(_tenantA);
+        _transport.Preflight = (_, request) => PreflightOpen(request);
+        _transport.Cancel = (_, _) => (Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED");
+        using var services = Services();
+        Assert.Equal(503, (await WithdrawAsync(services, operation, Guid.NewGuid())).StatusCode);
+
+        _transport.Cancel = (_, request) => Cancelled((ProductIdentityWorkflowCancellationRequest)request);
+        var again = await WithdrawAsync(services, operation, Guid.NewGuid()); // a NEW command: the old one is forgotten
+
+        Assert.True(again.Succeeded, again.ErrorCode);
+        Assert.Equal(Checkpoint.Completed, (await repository.GetByOperationIdAsync(operation.OperationId))!.Checkpoint);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, (await ProductAsync(operation)).LifecycleStatus);
     }
 
     // ── the recovery cycle ────────────────────────────────────────────────────────────────────────────────────────
@@ -226,7 +379,7 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
             await SeedAsync(_tenantA, Checkpoint.AwaitingDecision), await SeedAsync(_tenantA, Checkpoint.AwaitingDecision),
             await SeedAsync(_tenantB, Checkpoint.AwaitingDecision), await SeedAsync(_tenantB, Checkpoint.AwaitingDecision)
         };
-        _transport.Terminal = _ => (Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED");
+        _transport.Terminal = (_, _) => (Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED");
         using var services = Services();
 
         var result = await Runner(services).RunCycleAsync();
@@ -254,7 +407,7 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
     {
         var a = new[] { await SeedAsync(_tenantA, Checkpoint.AwaitingDecision), await SeedAsync(_tenantA, Checkpoint.AwaitingDecision) };
         var b = new[] { await SeedAsync(_tenantB, Checkpoint.AwaitingDecision), await SeedAsync(_tenantB, Checkpoint.AwaitingDecision) };
-        _transport.Terminal = tenant => tenant == _tenantA
+        _transport.Terminal = (tenant, _) => tenant == _tenantA
             ? (Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_NOT_GRANTED")
             : (Outcome.NonTerminal, "WORKFLOW_DECISION_NOT_TERMINAL");
         using var services = Services();
@@ -302,14 +455,16 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
     public async Task Cycle_AnExceptionIsNoLongerSwallowedSilently_AndItsMessageIsNotLogged()
     {
         var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision);
-        _transport.Terminal = tenant => tenant == _tenantA
+        _transport.Terminal = (tenant, _) => tenant == _tenantA
             ? throw new InvalidOperationException("a message that could carry the-raw-client-secret")
             : (Outcome.NonTerminal, "WORKFLOW_DECISION_NOT_TERMINAL");
         using var services = Services();
 
         var result = await Runner(services).RunCycleAsync();
 
-        Assert.True(result.FailedCount >= 1);
+        Assert.Equal(1, result.FailedCount);
+        // The step that threw gave its lease back: the operation is not held until the lease runs out.
+        Assert.Null((await Repository(_tenantA).GetByOperationIdAsync(operation.OperationId))!.LeaseOwner);
         var line = Assert.Single(_log.Entries, entry => entry.Message.Contains(operation.OperationId.ToString(), StringComparison.Ordinal)
             && entry.Message.Contains("failed with", StringComparison.Ordinal));
         Assert.Equal(LogLevel.Error, line.Level);
@@ -343,8 +498,8 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
         services.AddScoped<ProductIdentityWorkflowStartRequestFactory>();
         services.AddSingleton<ILoggerFactory>(_log);
         services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
-        services.Configure<ProductIdentityWorkflowWorkerOptions>(_ => { });
-        services.AddGlobalProductIdentityWorkflowProcessor();
+        services.AddGlobalProductIdentityWorkflowProcessor(
+            new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build());
         return services.BuildServiceProvider();
     }
 
@@ -382,6 +537,36 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
             .WithdrawInteractiveAsync(operation.TenantId, operation.GlobalProductId, 1, commandId, _makerId,
                 "REQUESTER_WITHDRAWAL", null, "maker-token", Lease, Retry);
     }
+
+    private async Task RecoverAsync(ServiceProvider services, GlobalProductIdentityWorkflowOperation operation)
+    {
+        await using var scope = services.CreateAsyncScope();
+        scope.ServiceProvider.GetRequiredService<ITenantContext>().SetTenant(operation.TenantId);
+        await scope.ServiceProvider.GetRequiredService<GlobalProductIdentityWorkflowProcessor>()
+            .RecoverAsync(operation, "worker", Lease, Retry);
+    }
+
+    private async Task<GlobalProduct> ProductAsync(GlobalProductIdentityWorkflowOperation operation) =>
+        await _database.GetCollection<GlobalProduct>("mdm_global_products")
+            .Find(item => item.TenantId == operation.TenantId && item.Id == operation.GlobalProductId).SingleAsync();
+
+    private static ProductIdentityWorkflowCancellationPreflight PreflightOpen(object request)
+    {
+        var asked = (ProductIdentityWorkflowCancellationPreflightRequest)request;
+        return new(asked.WorkflowInstanceId, asked.ApprovalTaskId, asked.ExpectedObjectType, asked.ExpectedObjectId,
+            "GP-REF", 3, 5, "Active", "WaitingApproval");
+    }
+
+    private ProductIdentityWorkflowTerminalEvidence Approved(GlobalProductIdentityWorkflowOperation operation) => new(
+        operation.WorkflowInstanceId!.Value, operation.ApprovalTaskId!.Value, operation.WorkflowTemplateId!.Value,
+        operation.WorkflowTemplateVersionId!.Value, "GlobalProduct", operation.ObjectId, operation.ObjectRef,
+        "Approve", _approverId.ToString("D"), "APPROVED", _clock.GetUtcNow(), 2, "Approved", "Completed", "corr");
+
+    private ProductIdentityWorkflowCancellationEvidence Cancelled(ProductIdentityWorkflowCancellationRequest request) => new(
+        request.WorkflowInstanceId, request.ApprovalTaskId, _templateId, _templateVersionId,
+        request.ExpectedObjectType, request.ExpectedObjectId, "GP-REF", "Cancel", _makerId,
+        request.ReasonCode, request.Comment, _clock.GetUtcNow(), 3, Guid.NewGuid(), "Cancelled",
+        "Cancelled", 4, 6, false, "corr");
 
     private GlobalProductIdentityWorkflowOperationRepository Repository(Guid tenantId) =>
         new(_database, new Tenant(tenantId));
@@ -542,41 +727,51 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
     private sealed class Transport : IProductIdentityWorkflowClient
     {
         private readonly Dictionary<Guid, int> _calls = [];
-        public Func<Guid, (Outcome Outcome, string Code)>? Start { get; set; }
-        public Func<Guid, (Outcome Outcome, string Code)>? StartResult { get; set; }
-        public Func<Guid, (Outcome Outcome, string Code)>? Terminal { get; set; }
-        public Func<Guid, (Outcome Outcome, string Code)>? Preflight { get; set; }
+        // A responder answers either (Outcome, code) — a failure — or the value a success carries.
+        public Func<Guid, object, object>? Start { get; set; }
+        public Func<Guid, object, object>? StartResult { get; set; }
+        public Func<Guid, object, object>? Terminal { get; set; }
+        public Func<Guid, object, object>? Preflight { get; set; }
+        public Func<Guid, object, object>? Cancel { get; set; }
 
         public int Calls(Guid tenantId) => _calls.GetValueOrDefault(tenantId);
 
         private Task<ProductIdentityWorkflowTransportResult<T>> Answer<T>(
-            Guid tenantId, Func<Guid, (Outcome Outcome, string Code)>? responder)
+            Guid tenantId, object request, Func<Guid, object, object>? responder)
         {
             _calls[tenantId] = _calls.GetValueOrDefault(tenantId) + 1;
-            var (outcome, code) = responder?.Invoke(tenantId)
+            var answer = responder?.Invoke(tenantId, request)
                 ?? (Outcome.NonTerminal, "WORKFLOW_DECISION_NOT_TERMINAL");
-            return Task.FromResult(ProductIdentityWorkflowTransportResult<T>.Fail(outcome, code));
+            return Task.FromResult(answer is T value
+                ? ProductIdentityWorkflowTransportResult<T>.Success(value)
+                : ProductIdentityWorkflowTransportResult<T>.Fail(
+                    ((ValueTuple<Outcome, string>)answer).Item1, ((ValueTuple<Outcome, string>)answer).Item2));
         }
 
         public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>> StartAsync(
             Guid tenantId, ProductIdentityWorkflowStartRequest request, string delegatedUserToken,
             CancellationToken cancellationToken = default) =>
-            Answer<ProductIdentityWorkflowStartResult>(tenantId, Start);
+            Answer<ProductIdentityWorkflowStartResult>(tenantId, request, Start);
 
         public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>> GetStartResultAsync(
             Guid tenantId, ProductIdentityWorkflowStartResultRequest request,
             CancellationToken cancellationToken = default) =>
-            Answer<ProductIdentityWorkflowStartResult>(tenantId, StartResult);
+            Answer<ProductIdentityWorkflowStartResult>(tenantId, request, StartResult);
 
         public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>> GetTerminalEvidenceAsync(
             Guid tenantId, ProductIdentityWorkflowTerminalEvidenceRequest request,
             CancellationToken cancellationToken = default) =>
-            Answer<ProductIdentityWorkflowTerminalEvidence>(tenantId, Terminal);
+            Answer<ProductIdentityWorkflowTerminalEvidence>(tenantId, request, Terminal);
 
         public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationPreflight>> GetCancellationPreflightAsync(
             Guid tenantId, ProductIdentityWorkflowCancellationPreflightRequest request,
             CancellationToken cancellationToken = default) =>
-            Answer<ProductIdentityWorkflowCancellationPreflight>(tenantId, Preflight);
+            Answer<ProductIdentityWorkflowCancellationPreflight>(tenantId, request, Preflight);
+
+        public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationEvidence>> CancelAsync(
+            Guid tenantId, ProductIdentityWorkflowCancellationRequest request, string delegatedUserToken,
+            CancellationToken cancellationToken = default) =>
+            Answer<ProductIdentityWorkflowCancellationEvidence>(tenantId, request, Cancel);
     }
 
     private sealed class Log : ILoggerFactory, ILogger

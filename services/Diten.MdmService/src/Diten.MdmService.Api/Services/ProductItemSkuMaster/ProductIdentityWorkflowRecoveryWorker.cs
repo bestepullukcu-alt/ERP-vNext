@@ -18,8 +18,10 @@ public sealed class ProductIdentityWorkflowRecoveryWorker(
         }
 
         settings.EnsureValidWhenEnabled();
+        long cycle = 0;
         while (!stoppingToken.IsCancellationRequested)
         {
+            cycle++;
             try
             {
                 await runner.RunCycleAsync(stoppingToken);
@@ -30,7 +32,11 @@ public sealed class ProductIdentityWorkflowRecoveryWorker(
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Product identity workflow recovery cycle failed.");
+                // The type and the cycle only — the same rule the runner keeps for one operation: an exception's
+                // message and stack can carry whatever the failing layer put into them.
+                logger.LogError(
+                    "Product identity workflow recovery cycle {Cycle} failed with {ExceptionType}.",
+                    cycle, exception.GetType().FullName);
             }
             await Task.Delay(TimeSpan.FromSeconds(settings.PollIntervalSeconds), stoppingToken);
         }

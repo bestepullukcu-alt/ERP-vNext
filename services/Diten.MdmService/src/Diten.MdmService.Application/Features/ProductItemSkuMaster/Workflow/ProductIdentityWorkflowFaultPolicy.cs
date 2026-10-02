@@ -37,11 +37,13 @@ public enum ProductIdentityWorkflowFaultScope
 /// False when the outcome is unknown (no answer, unreadable answer).
 /// </param>
 /// <param name="MakerCode">The stable code the maker receives; only for <see cref="ProductIdentityWorkflowFaultKind.MakerReplay"/>.</param>
+/// <param name="Loud">The fault is logged as an error the first time it is met, not after a threshold.</param>
 public sealed record ProductIdentityWorkflowFaultDecision(
     ProductIdentityWorkflowFaultKind Kind,
     ProductIdentityWorkflowFaultScope Scope = ProductIdentityWorkflowFaultScope.None,
     bool StartedNothing = false,
-    string? MakerCode = null);
+    string? MakerCode = null,
+    bool Loud = false);
 
 /// <summary>
 /// The codes a maker receives when an approval submit or withdrawal cannot continue without them. They are a
@@ -89,6 +91,10 @@ public static class ProductIdentityWorkflowMakerCodes
 public static class ProductIdentityWorkflowFaultPolicy
 {
     public const string ResponseUnreadable = "PRODUCT_WORKFLOW_RESPONSE_UNREADABLE";
+    /// <summary>The engine answered "done" and what it sent does not fit this service's contract.</summary>
+    public const string ResponseInvalid = "PRODUCT_WORKFLOW_RESPONSE_INVALID";
+    /// <summary>A failure status whose envelope names no reason.</summary>
+    public const string FailureWithoutReason = "PRODUCT_WORKFLOW_FAILURE_WITHOUT_REASON";
     public const string IdentityNotGranted = "PRODUCT_WORKFLOW_IDENTITY_NOT_GRANTED";
     private const string DelegatedUserUnauthenticated = "WORKFLOW_DELEGATED_USER_UNAUTHENTICATED";
     private const string DelegatedUserForbidden = "WORKFLOW_DELEGATED_USER_FORBIDDEN";
@@ -134,6 +140,10 @@ public static class ProductIdentityWorkflowFaultPolicy
         ProductIdentityWorkflowTransportOutcome.Invalid => errorCode switch
         {
             ResponseUnreadable => new(ProductIdentityWorkflowFaultKind.ServiceWait),
+            // A success this service could not accept (a field it does not know, a contradiction) is a mismatch of
+            // VERSIONS, not a fault of the record — and the engine may well have done what was asked. The outcome
+            // is unknown: wait and ask again, and say so loudly at once, because waiting will not fix it.
+            ResponseInvalid => new(ProductIdentityWorkflowFaultKind.ServiceWait, Loud: true),
             CandidatesRequired => Maker(ProductIdentityWorkflowMakerCodes.ApproverNotAssigned),
             _ => Quarantine
         },

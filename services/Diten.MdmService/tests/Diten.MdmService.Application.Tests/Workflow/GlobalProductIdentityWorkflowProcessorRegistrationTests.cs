@@ -73,24 +73,56 @@ public sealed class GlobalProductIdentityWorkflowProcessorRegistrationTests
         Assert.Equal(expectedThreshold, settings.ErrorAfterAttempts);
     }
 
+    // A wrong window keeps the host from STARTING (item 9). It is validated once, by the start-up validator the
+    // host runs before it serves anything — never by a factory that would turn every request into a 500.
     [Theory]
-    [InlineData("0", "5")]
-    [InlineData("86401", "5")]
-    [InlineData("900", "0")]
-    [InlineData("900", "1001")]
-    public async Task Service_fault_thresholds_out_of_range_fail_closed(string ceiling, string threshold)
+    [InlineData("0", "5", "30")]
+    [InlineData("86401", "5", "30")]
+    [InlineData("900", "0", "30")]
+    [InlineData("900", "1001", "30")]
+    [InlineData("20", "5", "30")] // a ceiling below the ordinary retry delay is not a back-off
+    public async Task Service_fault_window_out_of_range_stops_the_host_at_start(
+        string ceiling, string threshold, string retryDelay)
     {
         await using var provider = HostServices(new()
         {
             ["ProductIdentityWorkflowWorker:ServiceFaultMaxRetryDelaySeconds"] = ceiling,
-            ["ProductIdentityWorkflowWorker:ServiceFaultErrorAfterAttempts"] = threshold
+            ["ProductIdentityWorkflowWorker:ServiceFaultErrorAfterAttempts"] = threshold,
+            ["ProductIdentityWorkflowWorker:RetryDelaySeconds"] = retryDelay
         }).BuildServiceProvider();
-        await using var scope = provider.CreateAsyncScope();
 
-        var error = Assert.Throws<InvalidOperationException>(() =>
-            scope.ServiceProvider.GetRequiredService<GlobalProductIdentityWorkflowProcessor>());
+        var error = Assert.Throws<Microsoft.Extensions.Options.OptionsValidationException>(() =>
+            provider.GetRequiredService<Microsoft.Extensions.Options.IStartupValidator>().Validate());
 
-        Assert.Equal("PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID", error.Message);
+        Assert.Contains("PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID", error.Failures);
+    }
+
+    [Fact]
+    public async Task A_valid_window_passes_the_start_up_validation()
+    {
+        await using var provider = HostServices().BuildServiceProvider();
+
+        provider.GetRequiredService<Microsoft.Extensions.Options.IStartupValidator>().Validate();
+    }
+
+    [Theory]
+    [InlineData(0, 5, 30)]
+    [InlineData(900, 0, 30)]
+    [InlineData(20, 5, 30)]
+    public void An_enabled_worker_refuses_a_wrong_service_fault_window(int ceiling, int threshold, int retryDelay)
+    {
+        var options = new ProductIdentityWorkflowWorkerOptions
+        {
+            Enabled = true,
+            LeaseOwner = "worker",
+            RetryDelaySeconds = retryDelay,
+            ServiceFaultMaxRetryDelaySeconds = ceiling,
+            ServiceFaultErrorAfterAttempts = threshold
+        };
+
+        Assert.Equal("PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID",
+            Assert.Throws<InvalidOperationException>(options.EnsureValidWhenEnabled).Message);
+        new ProductIdentityWorkflowWorkerOptions { Enabled = true, LeaseOwner = "worker" }.EnsureValidWhenEnabled();
     }
 
     [Fact]
@@ -99,10 +131,16 @@ public sealed class GlobalProductIdentityWorkflowProcessorRegistrationTests
         var root = new DirectoryInfo(AppContext.BaseDirectory);
         while (root is not null && !File.Exists(Path.Combine(root.FullName, "AGENTS.md"))) root = root.Parent;
         Assert.NotNull(root);
-        var program = File.ReadAllText(Path.Combine(root!.FullName, "services", "Diten.MdmService", "src",
-            "Diten.MdmService.Api", "Program.cs"));
+        // Code only: a call that sits in a comment is not a call.
+        var program = System.Text.RegularExpressions.Regex.Replace(
+            File.ReadAllText(Path.Combine(root!.FullName, "services", "Diten.MdmService", "src",
+                "Diten.MdmService.Api", "Program.cs")),
+            @"/\*.*?\*/|//[^\n]*", string.Empty, System.Text.RegularExpressions.RegexOptions.Singleline);
 
-        Assert.Equal(1, Count(program, "builder.Services.AddGlobalProductIdentityWorkflowProcessor();"));
+        Assert.Equal(1, Count(program, "builder.Services.AddGlobalProductIdentityWorkflowProcessor(builder.Configuration);"));
+        // The worker options are bound in the seam and nowhere else in the host.
+        Assert.Equal(0, Count(program, "Configure<ProductIdentityWorkflowWorkerOptions>"));
+        Assert.Equal(1, Count(program, "AddOptions<ProductIdentityWorkflowWorkerOptions>()"));
         Assert.Equal(1, Count(program, "AddScoped<GlobalProductIdentityWorkflowProcessor>()")); // inside the seam
         Assert.Equal(0, Count(program, "builder.Services.AddScoped<GlobalProductIdentityWorkflowProcessor>()"));
     }
@@ -124,9 +162,8 @@ public sealed class GlobalProductIdentityWorkflowProcessorRegistrationTests
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddInfrastructure(configuration);
-        services.Configure<ProductIdentityWorkflowWorkerOptions>(
-            configuration.GetSection(ProductIdentityWorkflowWorkerOptions.SectionName));
-        services.AddGlobalProductIdentityWorkflowProcessor();
+        // No binding of the worker options here: the seam the host calls does it, and that is what is under test.
+        services.AddGlobalProductIdentityWorkflowProcessor(configuration);
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton(new ProductIdentityWorkflowStartConfiguration(
             Guid.NewGuid(), null, [Guid.NewGuid()], "IDENTITY_APPROVAL", true, true, null));

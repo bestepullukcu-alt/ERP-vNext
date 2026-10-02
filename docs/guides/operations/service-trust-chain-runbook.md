@@ -153,7 +153,12 @@ package.
 | 403 `PRODUCT_IDENTITY_WORKFLOW_START_PERMISSION_REQUIRED` | the submitter lacks `platform.workflow.instances.start` | grant it, sign in again, submit again | waiting for the resubmit |
 | 409 `PRODUCT_IDENTITY_WORKFLOW_APPROVER_NOT_ASSIGNED` | nobody is assigned to the approval step | assign an approver, submit again | waiting for the resubmit |
 | 409 `PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY` | the approval definition is missing or not published | create / publish it, submit again | waiting for the resubmit |
-| 409 `PRODUCT_IDENTITY_WORKFLOW_BUSY` | the worker is working on this operation right now | try again in a few seconds | unchanged |
+| 409 `PRODUCT_IDENTITY_WORKFLOW_BUSY` | somebody else holds the operation at this very moment — the worker's poll, or another request for the same draft. An attempt that is interrupted (the browser went away, a store error) gives its hold back at once, so this does not outlast the other caller's step | try again in a few seconds | unchanged |
+| 409 `PRODUCT_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT` | the operation moved under this request (another caller advanced it first) | reload, look at the state, repeat if still needed | unchanged by this request |
+| 409 `PRODUCT_IDENTITY_WORKFLOW_STATE_CONFLICT` | the request does not fit where the operation is — e.g. a submit repeated while a withdrawal of the same draft is in flight; no call is made | reload | unchanged |
+| 409 `PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED` | the start never reached the approval engine (found out by the worker) and only the submitter can repeat it | submit again | waiting for the resubmit |
+| 503 `PRODUCT_IDENTITY_WORKFLOW_STEP_BUDGET_EXCEEDED` | one request ran out of steps — not expected; report it with the MDM log | try again | wherever the last step left it |
+| 409 with a Platform code (`WORKFLOW_TRUSTED_CANCEL_CONFLICT`, `WORKFLOW_TRUSTED_CANCEL_NOT_FOUND`, …) on a **withdrawal** | the approval was decided or closed before the withdrawal reached it; the code is Platform's own, passed through | nothing to withdraw — the decision is (or will shortly be) on the register | follows the decision |
 | 409 `PRODUCT_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED` | the operation was quarantined: the answer was about the record (a contract violation, an idempotency conflict, evidence that contradicts what MDM stored) | no retry — see below | **blocked at that version** |
 
 "Submit again" always means the same request again: the operation is resumed, never duplicated. A start and a
@@ -162,35 +167,57 @@ resubmit instead of saying "queued".
 
 **What the worker does with an approval that is already pending.** It keeps the operation at `AwaitingDecision`
 (disposition `Retryable`) and tries again with a back-off that doubles from `RetryDelaySeconds` up to
-`ServiceFaultMaxRetryDelaySeconds` (default 900). The operation carries `ServiceFaultCount` and
-`ServiceFaultSinceUtcTicksV1`; both are cleared by the first answer the chain gives again. Nothing is quarantined.
+`ServiceFaultMaxRetryDelaySeconds` (default 900). Nothing is quarantined. The operation carries
+`ServiceFaultCount` — the WORKER's consecutive failed attempts; a user's clicks during an outage neither count nor
+move the worker's next attempt — and `ServiceFaultSinceUtcTicksV1`, the moment the fault was first met by anybody.
+Both are cleared only when the chain really answers: a start is accepted, or a decision is read.
+
+**A withdrawal during an outage.** The approval still exists at the engine and may be decided at any moment, so the
+operation never waits where the worker does not read. If the cancellation is refused before it is processed, the
+withdrawal is forgotten, the operation awaits the decision again and the requester is told to ask again. If the
+cancellation got no answer, the worker reads the approval at its next cycle: still open → the withdrawal did not
+happen (forgotten, decision awaited again); decided → the decision is applied; closed with no readable decision →
+the withdrawal landed, and the operation stays at `WithdrawalOutcomeUnknown` until its requester repeats it (the
+worker re-reads it every `ServiceFaultMaxRetryDelaySeconds`).
+
+**A success MDM cannot accept** (`PRODUCT_WORKFLOW_RESPONSE_INVALID`: Platform answered 200/201 with a field MDM does
+not know, or contradicting itself) is a mismatch of versions between the two services, not a fault of the record.
+The operation waits, and the line is an **Error the first time** — waiting will not mend it; deploy matching versions.
 
 | MDM log line | Level | Means |
 |---|---|---|
-| `… is waiting on a service fault at {Call}: {ResultCode}; attempt N, since …; continued by the worker` | Warning; **Error from attempt `ServiceFaultErrorAfterAttempts` (default 5)** | one operation is waiting; the worker will retry it |
-| `… continued by the maker` | same | the operation waits for the user's resubmit |
+| `… met a service fault at {Call}: {ResultCode}; worker attempt N, failing since …; the worker retries` | Warning; **Error** from worker attempt `ServiceFaultErrorAfterAttempts` (default 5), or once the fault has lasted longer than `ServiceFaultMaxRetryDelaySeconds`, or at once for `…RESPONSE_INVALID` | one operation is waiting; the worker will retry it |
+| `…; nothing was started; the maker resubmits` · `…; the maker was told to resubmit; the worker's schedule is unchanged` | same rule (the attempt number shown is the worker's and does not rise) | a user met the fault; the answer was 503 `…SERVICE_UNAVAILABLE_RESUBMIT` |
+| `…; the withdrawal was dropped and its requester repeats it; the decision is awaited again` · `…; the worker reads the approval to learn whether the withdrawal landed` | same rule | a withdrawal met the fault (see above) |
+| `… the approval is closed and no decision can be read (…); the withdrawal appears to have landed and waits for its requester` | Warning | only the requester's repeat can finish that withdrawal |
 | `recovery cycle stopped: the service identity was refused (…)` | Error | the credential or the token is refused for everybody: nothing else was tried this cycle |
-| `recovery skipped the rest of tenant …` | Warning | Auth holds no grant for that tenant; other tenants were processed |
+| `recovery skipped the rest of tenant …` | Warning | Auth answered 403 for that tenant — it holds no grant for it, or the audience is not allowed for this client (Auth does not say which); other tenants were processed |
 | `recovery cycle skipped: the transport is not configured (…)` | Error | MDM's own settings are missing; no operation was touched |
 | `… was refused to the maker on {Call}: {ResultCode} -> {MakerCode}` | Warning | one of the user-facing rows above |
 | `… was quarantined at {Checkpoint}: {ResultCode}` | Error | manual reconciliation is required |
-| `recovery of operation … failed with {ExceptionType}` | Error | an unexpected failure (the type only — never the message) |
+| `recovery of operation … failed with {ExceptionType}` · `recovery cycle N failed with {ExceptionType}` | Error | an unexpected failure (the type only — never the message or the stack) |
+| `… the lease could not be given back ({ExceptionType}); it expires by itself` | Warning | an interrupted attempt could not release its hold; `BUSY` until `LeaseSeconds` pass |
 
 None of these lines carries a secret, a token, a header value or a user.
 
 | `{ResultCode}` in a waiting line | Look at |
 |---|---|
 | `PRODUCT_WORKFLOW_IDENTITY_REJECTED` | the secret MDM holds is not the one whose hash Auth stored (second bootstrap, rotation, revoked client) |
-| `PRODUCT_WORKFLOW_IDENTITY_NOT_GRANTED` | Auth's `ServiceClientRegistry:Clients[].Tenants[]` does not list that tenant |
+| `PRODUCT_WORKFLOW_IDENTITY_NOT_GRANTED` | Auth answered 403: its `ServiceClientRegistry:Clients[].Tenants[]` does not list that tenant, or the client's audience is not the one MDM asks for |
+| `PRODUCT_WORKFLOW_RESPONSE_INVALID` | MDM and Platform are on versions whose workflow contract differs |
 | `PRODUCT_WORKFLOW_IDENTITY_RESPONSE_INVALID` | MDM's `ExpectedIssuer` does not match Auth's issuer, or Auth answered something else |
 | `WORKFLOW_TRUSTED_CONSUMER_UNAUTHENTICATED` | Platform cannot validate Auth's token (public key / key id / issuer) |
 | `WORKFLOW_TRUSTED_START_FORBIDDEN` | Platform's `TrustedWorkflowStartAuthorization:Entries[]` has no entry for this client, object type and definition |
 | `PRODUCT_WORKFLOW_RESPONSE_UNREADABLE` | something between MDM and Platform answered instead of Platform (a proxy page, a crash page) |
 | `PRODUCT_WORKFLOW_IDENTITY_UNAVAILABLE`, `PRODUCT_WORKFLOW_UNAVAILABLE`, `…_TIMEOUT` | Auth or Platform is down or slow |
 
-**Still open.** A quarantined operation has no way out: no operator action exists and the draft stays blocked at that
-version. The seven sibling processors (correction, retirement, GSKU, LSKU) still quarantine on a service fault and
-have no pre-flight.
+A wrong `ServiceFault*` value (or a `RetryDelaySeconds` above the ceiling) keeps MDM from **starting**
+(`PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID`); it never turns requests into 500s.
+
+**Still open.** A quarantined operation has no way out (BL-498): no operator action exists and the draft stays
+blocked at that version. An unreadable answer or an unknown 403 has no end state: the worker keeps trying at the
+ceiling for ever. The seven sibling processors (correction, retirement, GSKU, LSKU) still quarantine on a service
+fault and have no pre-flight.
 
 ---
 

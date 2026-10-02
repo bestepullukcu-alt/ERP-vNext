@@ -298,7 +298,7 @@ public sealed class PlatformProductIdentityWorkflowClientTests
     [InlineData("unknown-field")]
     [InlineData("no-started-at")]
     [InlineData("success-status-that-says-failure")]
-    public async Task A_readable_success_that_breaks_the_contract_stays_invalid(string shape)
+    public async Task A_readable_success_that_breaks_the_contract_is_named_apart_and_waits_loudly(string shape)
     {
         var client = Client(new CaptureHandler(_ => shape switch
         {
@@ -313,8 +313,40 @@ public sealed class PlatformProductIdentityWorkflowClientTests
 
         var result = await client.StartAsync(Guid.NewGuid(), StartRequest(), "human.jwt");
 
+        // The strict reading is what it was: the answer is refused, nothing of it is used. What changed is what the
+        // refusal MEANS — the engine said "done" in a shape this service does not know, which is a mismatch of
+        // versions, not a fault of the record: the outcome is unknown, so the operation waits and it is an error
+        // in the log the first time (P-2026-10-02-04-FIX1 item 3).
         Assert.Equal(ProductIdentityWorkflowTransportOutcome.Invalid, result.Outcome);
+        Assert.Null(result.Value);
         Assert.Equal("PRODUCT_WORKFLOW_RESPONSE_INVALID", result.ErrorCode);
+        var decision = Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.ProductIdentityWorkflowFaultPolicy
+            .Classify(Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.ProductIdentityWorkflowCall.Start,
+                result.Outcome, result.ErrorCode);
+        Assert.Equal(Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.ProductIdentityWorkflowFaultKind.ServiceWait, decision.Kind);
+        Assert.False(decision.StartedNothing);
+        Assert.True(decision.Loud);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.BadRequest, ProductIdentityWorkflowTransportOutcome.Invalid)]
+    [InlineData(HttpStatusCode.MethodNotAllowed, ProductIdentityWorkflowTransportOutcome.Invalid)]
+    [InlineData(HttpStatusCode.UnprocessableEntity, ProductIdentityWorkflowTransportOutcome.Invalid)]
+    public async Task A_failure_that_names_no_reason_is_not_mistaken_for_a_success_that_breaks_the_contract(
+        HttpStatusCode status, ProductIdentityWorkflowTransportOutcome expected)
+    {
+        var client = Client(new CaptureHandler(_ => Json(status, JsonSerializer.Serialize(new Dictionary<string, object?>
+        {
+            ["data"] = null, ["statusCode"] = (int)status, ["isSuccessful"] = false,
+            ["errors"] = new[] { "X" }, ["reason_code"] = null, ["correlation_id"] = "corr"
+        }))), new IdentityProvider());
+
+        var result = await client.GetStartResultAsync(Guid.NewGuid(), new(
+            "GlobalProduct", Guid.NewGuid().ToString("D"), Guid.NewGuid(), "key"));
+
+        // Still about the record (unchanged this round): it keeps quarantining, under its own name.
+        Assert.Equal(expected, result.Outcome);
+        Assert.Equal("PRODUCT_WORKFLOW_FAILURE_WITHOUT_REASON", result.ErrorCode);
     }
 
     [Theory]

@@ -44,8 +44,9 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay, stored.Checkpoint);
         Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay, stored.RecoveryDisposition);
         Assert.Equal(Resubmit, stored.LastFailureCode);
-        Assert.Equal(1, stored.ServiceFaultCount);
+        Assert.Equal(0, stored.ServiceFaultCount); // a maker's attempt is not a worker attempt
         Assert.NotNull(stored.ServiceFaultSinceUtcTicksV1);
+        Assert.Null(stored.NextAttemptAtUtcTicksV1);
         Assert.Null(stored.LeaseOwner);
         Assert.Equal(1, harness.Client.StartCalls); // refused once, not repeated until the step budget ran out
         Assert.Equal(0, harness.Client.StartResultCalls);
@@ -56,9 +57,10 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         Assert.Contains(code, line.Message, StringComparison.Ordinal);
         Assert.Contains(OperationId.ToString(), line.Message, StringComparison.Ordinal);
         Assert.Contains(TenantId.ToString(), line.Message, StringComparison.Ordinal);
-        Assert.Contains("Start", line.Message, StringComparison.Ordinal);
-        Assert.Contains("attempt 1", line.Message, StringComparison.Ordinal);
-        Assert.Contains("maker", line.Message, StringComparison.Ordinal);
+        Assert.Contains("service fault at Start", line.Message, StringComparison.Ordinal);
+        Assert.Contains("worker attempt 0", line.Message, StringComparison.Ordinal);
+        Assert.Contains("the maker resubmits", line.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("the worker retries", line.Message, StringComparison.Ordinal);
     }
 
     // ── submit: the engine answered, and the reason is the maker's or the set-up's (rows 9, 12, 14, 16, 17) ───────
@@ -110,7 +112,7 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
     [InlineData(Outcome.Invalid, "WORKFLOW_TRUSTED_START_INVALID")]
     [InlineData(Outcome.Invalid, "VALIDATION_FAILED")]
     [InlineData(Outcome.Invalid, "PRODUCT_WORKFLOW_REQUEST_INVALID")]
-    [InlineData(Outcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_INVALID")]
+    [InlineData(Outcome.Invalid, "PRODUCT_WORKFLOW_FAILURE_WITHOUT_REASON")]
     [InlineData(Outcome.Invalid, "A_400_NOBODY_HAS_SEEN_YET")]
     [InlineData(Outcome.Conflict, "WORKFLOW_START_IDEMPOTENCY_CONFLICT")]
     [InlineData(Outcome.Conflict, "WORKFLOW_START_RECOVERY_CONFLICT")]
@@ -143,6 +145,7 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
     [InlineData(Outcome.Retryable, "PRODUCT_WORKFLOW_UNAVAILABLE")]
     [InlineData(Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT")]
     [InlineData(Outcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_UNREADABLE")]
+    [InlineData(Outcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_INVALID")]
     public async Task Submit_OutcomeUnknownAndTheLookupFailsToo_WaitsForTheWorker_AndTheMakerIsNotToldQueued(
         Outcome outcome, string code)
     {
@@ -159,11 +162,18 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown, stored.Checkpoint);
         Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, stored.RecoveryDisposition);
         Assert.Equal(code, stored.LastFailureCode);
-        Assert.Equal(1, stored.ServiceFaultCount);
-        Assert.True(stored.NextAttemptAtUtcTicksV1 > stored.UpdatedAtUtcTicksV1);
+        // The maker's attempt neither counts nor moves the worker's next attempt: the worker looks it up at its
+        // next cycle.
+        Assert.Equal(0, stored.ServiceFaultCount);
+        Assert.NotNull(stored.ServiceFaultSinceUtcTicksV1);
+        Assert.Null(stored.NextAttemptAtUtcTicksV1);
         Assert.Equal(1, harness.Client.StartCalls);
         Assert.Equal(1, harness.Client.StartResultCalls);
-        Assert.Contains("worker", Assert.Single(harness.Log.Entries).Message, StringComparison.Ordinal);
+        var line = Assert.Single(harness.Log.Entries);
+        Assert.Contains("service fault at StartResult", line.Message, StringComparison.Ordinal);
+        Assert.Contains("the worker's schedule is unchanged", line.Message, StringComparison.Ordinal);
+        // A success this service cannot accept is a version mismatch: said as an error the first time.
+        Assert.Equal(code == "PRODUCT_WORKFLOW_RESPONSE_INVALID" ? LogLevel.Error : LogLevel.Warning, line.Level);
     }
 
     [Fact]
@@ -181,9 +191,33 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         Assert.Equal(Resubmit, result.ErrorCode);
         Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
             harness.Repository.Current!.Checkpoint);
-        Assert.Equal(0, harness.Repository.Current.ServiceFaultCount); // the chain answered
         Assert.Equal(1, harness.Client.StartCalls);
-        Assert.Contains("maker's to resubmit", Assert.Single(harness.Log.Entries).Message, StringComparison.Ordinal);
+        // The lookup's "nothing arrived" does not end the fault of the START that went unanswered: it is said as a
+        // service fault, and its first moment is kept.
+        Assert.NotNull(harness.Repository.Current.ServiceFaultSinceUtcTicksV1);
+        var line = Assert.Single(harness.Log.Entries);
+        Assert.Contains("service fault at Start", line.Message, StringComparison.Ordinal);
+        Assert.Contains("PRODUCT_WORKFLOW_TIMEOUT", line.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Submit_OutcomeUnknownAndTheLookupSaysNothingArrived_DoesNotResetWhatTheWorkerCounted()
+    {
+        var harness = Harness.Create();
+        var operation = harness.CreateOperation(GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown);
+        operation.ServiceFaultCount = 3;
+        operation.ServiceFaultSinceUtcTicksV1 = 111;
+        harness.Repository.Current = operation;
+        harness.Client.Start = (_, _, _, _) =>
+            Failed<ProductIdentityWorkflowStartResult>(Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
+        harness.Client.StartResult = (_, _, _) =>
+            Failed<ProductIdentityWorkflowStartResult>(Outcome.NotFound, "NOT_FOUND_NON_LEAKAGE");
+
+        await Submit(harness);
+
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay, operation.Checkpoint);
+        Assert.Equal(3, operation.ServiceFaultCount);
+        Assert.Equal(111, operation.ServiceFaultSinceUtcTicksV1);
     }
 
     // ── the maker's resubmit ──────────────────────────────────────────────────────────────────────────────────────
@@ -269,13 +303,14 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         var line = Assert.Single(harness.Log.Entries);
         Assert.Equal(LogLevel.Warning, line.Level);
         Assert.Contains(code, line.Message, StringComparison.Ordinal);
-        Assert.Contains("TerminalEvidence", line.Message, StringComparison.Ordinal);
-        Assert.Contains("worker", line.Message, StringComparison.Ordinal);
+        Assert.Contains("service fault at TerminalEvidence", line.Message, StringComparison.Ordinal);
+        Assert.Contains("worker attempt 1", line.Message, StringComparison.Ordinal);
+        Assert.Contains("the worker retries", line.Message, StringComparison.Ordinal);
     }
 
     [Theory]
     [InlineData(Outcome.Conflict, "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT")]
-    [InlineData(Outcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_INVALID")]
+    [InlineData(Outcome.Invalid, "PRODUCT_WORKFLOW_FAILURE_WITHOUT_REASON")]
     [InlineData(Outcome.Invalid, "WORKFLOW_TERMINAL_EVIDENCE_INVALID")]
     [InlineData(Outcome.Forbidden, "WORKFLOW_TRUSTED_CONSUMER_TENANT_MISMATCH")]
     public async Task Worker_AnAnswerAboutTheRecordWhileAwaitingTheDecision_StillQuarantines(
@@ -379,18 +414,21 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         Assert.Equal(Resubmit, result.ErrorCode);
         Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested, stored.Checkpoint);
         Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, stored.RecoveryDisposition);
-        Assert.Equal(1, stored.ServiceFaultCount);
+        Assert.Equal(0, stored.ServiceFaultCount);
+        Assert.NotNull(stored.ServiceFaultSinceUtcTicksV1);
+        Assert.Null(stored.NextAttemptAtUtcTicksV1); // the worker picks it up at its next cycle
         Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Product.LifecycleStatus);
     }
 
     [Theory]
-    [InlineData(Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED", Resubmit, 503, 1)]
-    [InlineData(Outcome.AuthenticationRejected, "WORKFLOW_TRUSTED_CONSUMER_UNAUTHENTICATED", Resubmit, 503, 1)]
-    [InlineData(Outcome.Forbidden, "WORKFLOW_TRUSTED_CONSUMER_FORBIDDEN", Resubmit, 503, 1)]
+    [InlineData(Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED", Resubmit, 503, true)]
+    [InlineData(Outcome.AuthenticationRejected, "WORKFLOW_TRUSTED_CONSUMER_UNAUTHENTICATED", Resubmit, 503, true)]
+    [InlineData(Outcome.Forbidden, "WORKFLOW_TRUSTED_CONSUMER_FORBIDDEN", Resubmit, 503, true)]
+    [InlineData(Outcome.Forbidden, "A_403_NOBODY_HAS_SEEN_YET", Resubmit, 503, true)]
     [InlineData(Outcome.AuthenticationRejected, "WORKFLOW_DELEGATED_USER_UNAUTHENTICATED",
-        ProductIdentityWorkflowMakerCodes.SessionExpired, 401, 0)]
-    public async Task Withdraw_CancellationRefusedBeforeItWasProcessed_DoesNotQuarantine_AndIsTheMakersToRepeat(
-        Outcome outcome, string code, string makerCode, int status, int faultCount)
+        ProductIdentityWorkflowMakerCodes.SessionExpired, 401, false)]
+    public async Task Withdraw_CancellationRefusedBeforeItWasProcessed_GoesBackToAwaitingTheDecision_WhereTheWorkerReads(
+        Outcome outcome, string code, string makerCode, int status, bool serviceFault)
     {
         var harness = Harness.CreatePending();
         harness.Client.Preflight = PreflightOk;
@@ -401,16 +439,46 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         var stored = harness.Repository.Current!;
         Assert.Equal(status, result.StatusCode);
         Assert.Equal(makerCode, result.ErrorCode);
-        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay, stored.Checkpoint);
-        Assert.Equal(makerCode, stored.LastFailureCode);
-        Assert.Equal(faultCount, stored.ServiceFaultCount);
+        // An approval exists at the engine and may be decided at any moment: the operation never waits where the
+        // worker does not read. The withdrawal that did not happen is forgotten, so its requester may ask again.
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision, stored.Checkpoint);
+        Assert.Null(stored.WithdrawalCommandId);
+        Assert.Null(stored.WithdrawalFingerprint);
+        Assert.Null(stored.NextAttemptAtUtcTicksV1);
+        Assert.Null(stored.LeaseOwner);
+        Assert.Equal(0, stored.ServiceFaultCount);
+        Assert.Equal(serviceFault, stored.ServiceFaultSinceUtcTicksV1.HasValue);
+        Assert.Equal(1, harness.Repository.ClaimCalls - 2); // requested, preflight, cancel — and no fourth round
         Assert.Equal(0, harness.Products.WithdrawCount);
         Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Product.LifecycleStatus);
+        Assert.Contains(code, Assert.Single(harness.Log.Entries).Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Withdraw_RefusedDuringAnOutage_AndNeverRepeated_TheApproversDecisionIsStillObserved()
+    {
+        var harness = Harness.CreatePending();
+        harness.Client.Preflight = PreflightOk;
+        harness.Client.Cancel = (_, _, _, _) => Failed<TransportCancellationEvidence>(
+            Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED");
+        Assert.Equal(503, (await Withdraw(harness, Guid.NewGuid())).StatusCode);
+
+        // The requester gives up. The approver approves at the engine; the worker's next cycle reads it.
+        harness.Client.Terminal = (_, _, _) => Task.FromResult(
+            ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Success(TerminalEvidence()));
+        var recovered = await Recover(harness);
+
+        Assert.True(recovered.Succeeded);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.Completed, harness.Repository.Current!.Checkpoint);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Product.LifecycleStatus);
+        Assert.Equal(0, harness.Repository.Current.ServiceFaultCount);
+        Assert.Null(harness.Repository.Current.ServiceFaultSinceUtcTicksV1); // a decision was read: the chain answered
     }
 
     [Theory]
     [InlineData(Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT")]
     [InlineData(Outcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_UNREADABLE")]
+    [InlineData(Outcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_INVALID")]
     public async Task Withdraw_CancellationOutcomeUnknown_DoesNotQuarantine_AndTheMakerIsToldToResubmit(
         Outcome outcome, string code)
     {
@@ -424,13 +492,19 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         Assert.Equal(Resubmit, result.ErrorCode);
         Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
             harness.Repository.Current!.Checkpoint);
-        Assert.Equal(1, harness.Repository.Current.ServiceFaultCount);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, harness.Repository.Current.RecoveryDisposition);
+        Assert.Equal(0, harness.Repository.Current.ServiceFaultCount);
+        Assert.NotNull(harness.Repository.Current.ServiceFaultSinceUtcTicksV1);
+        Assert.Null(harness.Repository.Current.NextAttemptAtUtcTicksV1); // due at the worker's next cycle
+        var line = Assert.Single(harness.Log.Entries);
+        Assert.Contains("the worker reads the approval", line.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("the worker retries", line.Message, StringComparison.Ordinal);
     }
 
     [Theory]
     [InlineData(Outcome.Forbidden, "WORKFLOW_TRUSTED_CANCEL_REQUESTER_FORBIDDEN")]
     [InlineData(Outcome.Invalid, "WORKFLOW_TRUSTED_CANCEL_INVALID")]
-    [InlineData(Outcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_INVALID")]
+    [InlineData(Outcome.Invalid, "PRODUCT_WORKFLOW_FAILURE_WITHOUT_REASON")]
     public async Task Withdraw_AnAnswerAboutTheRecord_StillQuarantines(Outcome outcome, string code)
     {
         var harness = Harness.CreatePending();
@@ -575,34 +649,6 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         Assert.Equal(0, broken.Repository.ClaimCalls);
     }
 
-    // ── who is paced by the retry schedule ────────────────────────────────────────────────────────────────────────
-
-    [Fact]
-    public async Task TheMaker_IsNotPacedByTheRetrySchedule_TheWorkerIs()
-    {
-        var submit = Harness.Create();
-        submit.Client.Start = (_, _, _, _) => Task.FromResult(
-            ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Success(StartResult()));
-        await Submit(submit);
-
-        var withdraw = Harness.CreatePending();
-        withdraw.Client.Preflight = PreflightOk;
-        withdraw.Client.Cancel = CancelOk;
-        await Withdraw(withdraw, Guid.NewGuid());
-
-        var worker = Harness.CreatePending();
-        worker.Client.Terminal = (_, _, _) => Failed<ProductIdentityWorkflowTerminalEvidence>(
-            Outcome.NonTerminal, "WORKFLOW_DECISION_NOT_TERMINAL");
-        await Recover(worker);
-
-        Assert.NotEmpty(submit.Repository.ClaimsIgnoringSchedule);
-        Assert.All(submit.Repository.ClaimsIgnoringSchedule, Assert.True);
-        Assert.NotEmpty(withdraw.Repository.ClaimsIgnoringSchedule);
-        Assert.All(withdraw.Repository.ClaimsIgnoringSchedule, Assert.True);
-        Assert.NotEmpty(worker.Repository.ClaimsIgnoringSchedule);
-        Assert.All(worker.Repository.ClaimsIgnoringSchedule, Assert.False);
-    }
-
     // ── a step that is refused after the claim gives the lease back ───────────────────────────────────────────────
 
     [Fact]
@@ -663,6 +709,315 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         Assert.DoesNotContain("workflow-client-code", everything, StringComparison.Ordinal);
         Assert.DoesNotContain(MakerId.ToString(), everything, StringComparison.Ordinal);
         Assert.DoesNotContain("Bearer", everything, StringComparison.OrdinalIgnoreCase);
+    }
+
+    // ── fix round (P-2026-10-02-04-FIX1) ──────────────────────────────────────────────────────────────────────────
+
+    // A success the service cannot accept (item 3): a version mismatch, not a fault of the record.
+    [Fact]
+    public async Task Worker_ASuccessThatBreaksTheContract_Waits_AndIsAnErrorTheFirstTime()
+    {
+        var harness = Harness.CreatePending();
+        harness.Client.Terminal = (_, _, _) => Failed<ProductIdentityWorkflowTerminalEvidence>(
+            Outcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_INVALID");
+
+        var result = await Recover(harness);
+
+        Assert.Equal(503, result.StatusCode);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision, harness.Repository.Current!.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, harness.Repository.Current.RecoveryDisposition);
+        Assert.Equal(1, harness.Repository.Current.ServiceFaultCount);
+        var line = Assert.Single(harness.Log.Entries);
+        Assert.Equal(LogLevel.Error, line.Level);
+        Assert.Contains("PRODUCT_WORKFLOW_RESPONSE_INVALID", line.Message, StringComparison.Ordinal);
+    }
+
+    // The maker's clicks are not the worker's attempts (items 5 and 6).
+    [Fact]
+    public async Task TheMakersAttempts_NeitherCount_NorMoveTheWorkersNextAttempt_AndTheWorkersDo()
+    {
+        var harness = Harness.Create();
+        var operation = harness.CreateOperation(GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown);
+        operation.ServiceFaultCount = 2;
+        operation.ServiceFaultSinceUtcTicksV1 = DateTimeOffset.UtcNow.AddMinutes(-1).UtcTicks;
+        operation.NextAttemptAtUtcTicksV1 = DateTimeOffset.UtcNow.AddMinutes(1).UtcTicks;
+        var since = operation.ServiceFaultSinceUtcTicksV1;
+        var next = operation.NextAttemptAtUtcTicksV1;
+        harness.Repository.Current = operation;
+        harness.Client.Start = (_, _, _, _) =>
+            Failed<ProductIdentityWorkflowStartResult>(Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
+        harness.Client.StartResult = (_, _, _) =>
+            Failed<ProductIdentityWorkflowStartResult>(Outcome.Retryable, "PRODUCT_WORKFLOW_UNAVAILABLE");
+
+        for (var click = 0; click < 6; click++)
+        {
+            var answer = await Submit(harness);
+            Assert.Equal(503, answer.StatusCode);
+            Assert.Equal(Resubmit, answer.ErrorCode);
+        }
+
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown, operation.Checkpoint);
+        Assert.Equal(2, operation.ServiceFaultCount);
+        Assert.Equal(since, operation.ServiceFaultSinceUtcTicksV1);
+        Assert.Equal(next, operation.NextAttemptAtUtcTicksV1);
+        Assert.All(harness.Log.Entries, entry => Assert.Equal(LogLevel.Warning, entry.Level));
+        Assert.All(harness.Log.Entries, entry => Assert.Contains("worker attempt 2", entry.Message, StringComparison.Ordinal));
+
+        await Recover(harness);
+
+        Assert.Equal(3, operation.ServiceFaultCount);
+        Assert.Equal(since, operation.ServiceFaultSinceUtcTicksV1);
+        Assert.Equal(TimeSpan.FromSeconds(120).Ticks, operation.NextAttemptAtUtcTicksV1 - operation.UpdatedAtUtcTicksV1);
+    }
+
+    [Fact]
+    public async Task AnOutageLongerThanTheLongestBackOff_IsAnError_HoweverFewWorkerAttemptsThereWere()
+    {
+        var harness = Harness.Create();
+        var operation = harness.CreateOperation(GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay);
+        operation.ServiceFaultSinceUtcTicksV1 = DateTimeOffset.UtcNow.AddMinutes(-16).UtcTicks; // ceiling: 15 min
+        harness.Repository.Current = operation;
+        harness.Client.Start = (_, _, _, _) => Failed<ProductIdentityWorkflowStartResult>(
+            Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED");
+
+        await Submit(harness);
+
+        var line = Assert.Single(harness.Log.Entries);
+        Assert.Equal(LogLevel.Error, line.Level);
+        Assert.Contains("worker attempt 0", line.Message, StringComparison.Ordinal);
+    }
+
+    // A retry that is scheduled for a reason that is NOT a service fault answers with its own reason.
+    [Fact]
+    public async Task Submit_ARetryThatIsNotAServiceFault_AnswersWithItsOwnReason_NotWithResubmit()
+    {
+        var harness = Harness.Create();
+        harness.Client.Start = (_, _, _, _) => Task.FromResult(
+            ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Success(StartResult()));
+        harness.Products.SubmitFailure = "AUDIT_INTENT_CAPACITY_EXCEEDED";
+
+        var result = await Submit(harness);
+
+        Assert.Equal(503, result.StatusCode);
+        Assert.Equal("AUDIT_INTENT_CAPACITY_EXCEEDED", result.ErrorCode);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted, harness.Repository.Current!.Checkpoint);
+        Assert.Equal(0, harness.Repository.Current.ServiceFaultCount);
+        Assert.Empty(harness.Log.Entries);
+    }
+
+    // A start repeated on an operation that carries a withdrawal (item 7).
+    [Theory]
+    [InlineData(GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay)]
+    [InlineData(GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested)]
+    [InlineData(GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved)]
+    [InlineData(GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown)]
+    [InlineData(GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved)]
+    [InlineData(GlobalProductIdentityWorkflowCheckpoint.WithdrawalApplied)]
+    public async Task Submit_RepeatedOnAnOperationThatCarriesAWithdrawal_IsRefusedWithoutAnyCall(
+        GlobalProductIdentityWorkflowCheckpoint checkpoint)
+    {
+        var harness = Harness.CreatePending();
+        harness.Repository.Current!.Checkpoint = checkpoint;
+        harness.Repository.Current.WithdrawalCommandId = Guid.NewGuid();
+        harness.Product.Version = 0; // the submit this repeats was made against version 0
+
+        var result = await Submit(harness);
+
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal("PRODUCT_IDENTITY_WORKFLOW_STATE_CONFLICT", result.ErrorCode);
+        Assert.Equal(0, harness.Repository.ClaimCalls);
+        Assert.Equal(0, harness.Repository.AdvanceCalls);
+        Assert.Equal(0, harness.Client.StartCalls);
+        Assert.Equal(0, harness.Client.StartResultCalls);
+        Assert.Equal(checkpoint, harness.Repository.Current.Checkpoint);
+    }
+
+    // A refused step gives the lease back and leaves the worker's schedule alone — on both paths.
+    [Fact]
+    public async Task Worker_AStepTheStoreRefuses_GivesTheLeaseBack_AndKeepsTheSchedule()
+    {
+        var harness = Harness.CreatePending();
+        var operation = harness.Repository.Current!;
+        operation.Checkpoint = GlobalProductIdentityWorkflowCheckpoint.LocalPendingApplied;
+        operation.RecoveryDisposition = ProductIdentityWorkflowRecoveryDisposition.Retryable;
+        operation.NextAttemptAtUtcTicksV1 = 777;
+        operation.LastFailureCode = "KEPT";
+        harness.Repository.RefuseNextAdvanceTo = GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision;
+
+        var result = await Recover(harness);
+
+        Assert.Equal("PRODUCT_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", result.ErrorCode);
+        Assert.Null(operation.LeaseOwner);
+        Assert.Null(operation.LeaseUntilUtcTicksV1);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.LocalPendingApplied, operation.Checkpoint);
+        Assert.Equal(777, operation.NextAttemptAtUtcTicksV1);
+        Assert.Equal("KEPT", operation.LastFailureCode);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, operation.RecoveryDisposition);
+    }
+
+    [Fact]
+    public async Task Withdraw_AStepTheStoreRefuses_GivesTheLeaseBack()
+    {
+        var harness = Harness.CreatePending();
+        harness.Repository.RefuseNextAdvanceTo = GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested;
+
+        var result = await Withdraw(harness, Guid.NewGuid());
+
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal("PRODUCT_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", result.ErrorCode);
+        Assert.Null(harness.Repository.Current!.LeaseOwner);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision, harness.Repository.Current.Checkpoint);
+    }
+
+    // A lease does not outlive an attempt that was interrupted (item 4).
+    [Fact]
+    public async Task Submit_InterruptedInTheMiddleOfAStep_GivesTheLeaseBack()
+    {
+        var harness = Harness.Create();
+        using var source = new CancellationTokenSource();
+        harness.Client.Start = (_, _, _, _) => throw new OperationCanceledException(source.Token);
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => harness.Processor.StartInteractiveAsync(
+            TenantId, ProductId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30), source.Token));
+
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown, harness.Repository.Current!.Checkpoint);
+        Assert.Null(harness.Repository.Current.LeaseOwner);
+        Assert.Null(harness.Repository.Current.LeaseUntilUtcTicksV1);
+    }
+
+    [Fact]
+    public async Task Withdraw_InterruptedInTheMiddleOfAStep_GivesTheLeaseBack()
+    {
+        var harness = Harness.CreatePending();
+        harness.Client.Preflight = (_, _, _) => throw new InvalidOperationException("the store or the wire broke");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Withdraw(harness, Guid.NewGuid()));
+
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested, harness.Repository.Current!.Checkpoint);
+        Assert.Null(harness.Repository.Current.LeaseOwner);
+    }
+
+    // A withdrawal the requester did not finish, met by the worker (item 2).
+    [Theory]
+    [InlineData(GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested)]
+    [InlineData(GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved)]
+    [InlineData(GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown)]
+    [InlineData(GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay)]
+    public async Task Worker_AnUnfinishedWithdrawalWhoseApprovalIsStillOpen_IsForgotten_AndTheDecisionIsPolledAgain(
+        GlobalProductIdentityWorkflowCheckpoint checkpoint)
+    {
+        var harness = PendingWithdrawal(checkpoint);
+        harness.Client.Preflight = PreflightOk;
+        harness.Client.Terminal = (_, _, _) => Failed<ProductIdentityWorkflowTerminalEvidence>(
+            Outcome.NonTerminal, "WORKFLOW_DECISION_NOT_TERMINAL");
+
+        await Recover(harness);
+
+        var stored = harness.Repository.Current!;
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision, stored.Checkpoint);
+        Assert.Null(stored.WithdrawalCommandId);
+        Assert.Null(stored.WithdrawalExpectedWorkflowInstanceVersion);
+        Assert.Equal("WORKFLOW_DECISION_NOT_TERMINAL", stored.LastFailureCode); // polled in the same cycle
+        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Product.LifecycleStatus);
+    }
+
+    [Fact]
+    public async Task Worker_AnUnfinishedWithdrawalWhoseApprovalWasDecided_AppliesTheDecision()
+    {
+        var harness = PendingWithdrawal(GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown);
+        harness.Client.Preflight = (_, _, _) => Failed<ProductIdentityWorkflowCancellationPreflight>(
+            Outcome.NotFound, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND");
+        harness.Client.Terminal = (_, _, _) => Task.FromResult(
+            ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Success(TerminalEvidence()));
+
+        var result = await Recover(harness);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.Completed, harness.Repository.Current!.Checkpoint);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Product.LifecycleStatus);
+        Assert.Equal(0, harness.Products.WithdrawCount);
+    }
+
+    [Fact]
+    public async Task Worker_AnUnfinishedWithdrawalThatLanded_StaysWhereTheWorkerKeepsReading_ForItsRequester()
+    {
+        var harness = PendingWithdrawal(GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown);
+        harness.Client.Preflight = (_, _, _) => Failed<ProductIdentityWorkflowCancellationPreflight>(
+            Outcome.NotFound, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND");
+        harness.Client.Terminal = (_, _, _) => Failed<ProductIdentityWorkflowTerminalEvidence>(
+            Outcome.Conflict, "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT");
+
+        var result = await Recover(harness);
+
+        var stored = harness.Repository.Current!;
+        Assert.Equal(503, result.StatusCode);
+        Assert.Equal(ProductIdentityWorkflowMakerCodes.MakerReplayRequired, result.ErrorCode);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown, stored.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, stored.RecoveryDisposition);
+        Assert.NotNull(stored.WithdrawalCommandId); // kept: the requester's repeat fetches the evidence
+        Assert.Equal(TimeSpan.FromMinutes(15).Ticks, stored.NextAttemptAtUtcTicksV1 - stored.UpdatedAtUtcTicksV1);
+        Assert.Null(stored.LeaseOwner);
+
+        // …and the requester's repeat does finish it.
+        harness.Client.Cancel = CancelOk;
+        var repeated = await harness.Processor.WithdrawInteractiveAsync(TenantId, ProductId, 1,
+            stored.WithdrawalCommandId!.Value, MakerId, "REQUESTER_WITHDRAWAL", null, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30));
+        Assert.Equal("PRODUCT_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT", repeated.ErrorCode); // not this requester's fingerprint
+    }
+
+    [Theory]
+    [InlineData(Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED", Scope.AllTenants)]
+    [InlineData(Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT", Scope.None)]
+    public async Task Worker_AnUnfinishedWithdrawalDuringAnOutage_WaitsWhereItIs(Outcome outcome, string code, Scope scope)
+    {
+        var harness = PendingWithdrawal(GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown);
+        harness.Client.Preflight = (_, _, _) => Failed<ProductIdentityWorkflowCancellationPreflight>(outcome, code);
+
+        var result = await Recover(harness);
+
+        Assert.Equal(503, result.StatusCode);
+        Assert.Equal(scope, result.FaultScope);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown, harness.Repository.Current!.Checkpoint);
+        Assert.Equal(1, harness.Repository.Current.ServiceFaultCount);
+        Assert.NotNull(harness.Repository.Current.WithdrawalCommandId);
+        Assert.Contains("the worker retries", Assert.Single(harness.Log.Entries).Message, StringComparison.Ordinal);
+    }
+
+    // Rows written before the withdrawal stopped parking in AwaitingMakerReplay: the requester's repeat still ends.
+    [Fact]
+    public async Task Withdraw_RepeatedFromAwaitingMakerReplay_WhenTheApprovalWasDecidedMeanwhile_GoesBackToTheDecision()
+    {
+        var harness = Harness.CreatePending();
+        var commandId = Guid.NewGuid();
+        harness.Client.Preflight = PreflightOk;
+        harness.Client.Cancel = (_, _, _, _) => Failed<TransportCancellationEvidence>(Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
+        await Withdraw(harness, commandId);
+        harness.Repository.Current!.Checkpoint = GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay;
+        harness.Client.Cancel = (_, _, _, _) => Failed<TransportCancellationEvidence>(
+            Outcome.Conflict, "WORKFLOW_TRUSTED_CANCEL_CONFLICT");
+
+        var result = await Withdraw(harness, commandId);
+
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal("WORKFLOW_TRUSTED_CANCEL_CONFLICT", result.ErrorCode);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision, harness.Repository.Current.Checkpoint);
+    }
+
+    private static Harness PendingWithdrawal(GlobalProductIdentityWorkflowCheckpoint checkpoint)
+    {
+        var harness = Harness.CreatePending();
+        var operation = harness.Repository.Current!;
+        operation.Checkpoint = checkpoint;
+        operation.WithdrawalCommandId = Guid.NewGuid();
+        operation.WithdrawalFingerprint = "fingerprint";
+        operation.WithdrawalRequesterSubjectId = MakerId;
+        operation.WithdrawalExpectedProductVersion = 1;
+        operation.WithdrawalReasonCode = "REQUESTER_WITHDRAWAL";
+        operation.WithdrawalExpectedWorkflowInstanceVersion = 3;
+        operation.WithdrawalExpectedApprovalTaskVersion = 5;
+        return harness;
     }
 
     private sealed class RefusingNetwork : HttpMessageHandler, IHttpClientFactory

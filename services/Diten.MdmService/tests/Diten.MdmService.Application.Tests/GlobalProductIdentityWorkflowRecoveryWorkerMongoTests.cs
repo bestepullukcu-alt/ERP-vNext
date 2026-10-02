@@ -165,9 +165,9 @@ public sealed class GlobalProductIdentityWorkflowRecoveryWorkerMongoTests : IAsy
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<ProductIdentityWorkflowStartRequestFactory>();
         services.AddLogging();
-        services.Configure<ProductIdentityWorkflowWorkerOptions>(_ => { });
         services.AddSingleton<IProductIdentityWorkflowTransportReadiness>(new Configured());
-        services.AddGlobalProductIdentityWorkflowProcessor();
+        services.AddGlobalProductIdentityWorkflowProcessor(
+            new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build());
         return services.BuildServiceProvider();
     }
 
