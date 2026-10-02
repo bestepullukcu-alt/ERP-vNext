@@ -176,3 +176,17 @@ Yok. Kod değişikliği yok.
 - **Çözümleme:** `resolve?productId=44e509b7…&countryCode=TR&languageCode=tr` → **200** `SAF-TR-0001 v1 active`; aynı ürün TR / **en** → **404** `safety_text_missing` (başka dil dönmüyor).
 - **Ek bulgu:** karar kaydında da karar veren ham kullanıcı kimliği (bulgu 2 ile aynı kök: ad çözümlemesi yok).
 - Test kaydı `SAF-TR-0001` canlıda **aktif** kaldı (metin `[E4 TEST]` işaretli); KP-UI-3 ya da gerçek metin gelince "Yeni sürüm" ile değiştirilir veya arşivlenir — kullanıcı kararı.
+
+---
+
+## §37 — CT bağımsız doğrulama (2026-10-02) — **ACCEPTED (E4)**
+- **Commit'ler:** ajan `f13e58e6` (şablonlar + script) · `ff00ee00` (ikinci tur, grant uygulandı) · `32b430cc` (E4 oluştur + gönder) · `391ea882` (E4 onay → aktif) → `test/crm-content-visit-e2e` fast-forward. Kod değişikliği yok; yalnız rapor + `scripts/rbac/grant_regulatory_text_rbac_97c5.py`.
+- **Script (CT okuma, kullanıcı çalıştırmadan önce):** dry-run varsayılan; yalnız 97c5 Admin'e 6 anahtar; rol / izin oluşturmaz (eksikse durur); subtype-4 GUID + yazdıktan sonra doğrulama; tarih alanları yerel kayıttan aynen; idempotent; marker ile geri alınabilir. Kullanıcı `--apply` çalıştırdı.
+- **CT canlı kontrol (salt okuma, Mongo):** `KP-REG-{AZ,BY,GE,TM,TR,UZ}` 6/6 Published + aktif sürüm; `CLAIM-*` + `KP-MLR-*` 13 şablon yerinde (ajan: parmak izi önce / sonra aynı); `rolePermissions` marker'lı 6 satır; `safety_texts` `SAF-TR-0001` `VersionNumber 1`, `Status active`, `OpenKey null` (açık sürüm anahtarı aktifte temizlenmiş), Guid'ler string; `country_legal_profiles` 0.
+- **E4 (ajan, kullanıcı oturumu):** ekrandan oluştur → onaya gönder (gönderen karar panelini görmüyor) → Platform örneği `KP-REG-TR`, görev sema'ya → sema Work Center'dan onayladı → CRM sonuç olayı ObjectType'a göre yönlendirildi → aktif; çözümleme TR / tr 200, TR / en 404 `safety_text_missing`; `<script>` metni düz metin (XSS yok).
+- **Bulgular → WP-KP-5a-FIX-1:**
+  1. iş akışı başlatma gerekçe kodu `CRM_CLAIM_SUBMITTED` (iddia kodu) — `CRM_SAFETY_TEXT_SUBMITTED` / yasal profil kodu geçmiyor;
+  2. ayrıntıda "Gönderen" ve karar kaydında karar veren ham kullanıcı kimliği (ad yok);
+  3. incelemedeki kayıtta "Arşivle" düğmesi görünüyor (CRM 409 `not_editable` verir);
+  4. (KP-5a §37) eşzamanlı ikinci taslak 409 yerine 500.
+- **Açık (kullanıcı kararı):** test kaydı `SAF-TR-0001` (`[E4 TEST]`) canlıda aktif — ALMIBA TR / tr'nin geçerli güvenlilik metni olarak çözümleniyor.
