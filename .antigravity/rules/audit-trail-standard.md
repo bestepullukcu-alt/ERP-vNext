@@ -50,9 +50,12 @@ Bu cümle üç yerde **makineyle** tutulur — biri tek başına yetmez:
    yükseltmek test dosyasını değiştirmeyi gerektirir.
 2. CI (`scripts/run_phase1_gates.sh`, "audit ledger growth"): taban dala göre deftere `- Ad` satırı **ekleyen**
    değişiklik kırmızıdır — sayı da yükseltilmiş olsa.
-3. İkisini birden aşmanın tek yolu Control Tower kararıdır: karar
+3. İkisini birden aşmanın **kurallı** yolu Control Tower kararıdır: karar
    `tests/architecture/audit-ledger/CT-DECISIONS.md` dosyasına ad + gerekçeyle yazılır ve sabit sayı aynı
    değişiklikte yükseltilir.
+4. Bu iki koruma her şeyi görmez; göremediği yollar §9'un "yakalamayan" sütununda tek tek yazılıdır (bir borç
+   satırının adını başka bir komutla değiştirmek sayıyı korur ve yalnız PR'da CI'a takılır; dar sorgu algılayıcısı;
+   adı serviste tek olan bir sınıf üyesine dayanan yol `c` notu). O yolların bekçisi inceleme ve ajan kapılarıdır.
 
 ## 2. Tanımlar
 
@@ -144,7 +147,7 @@ tamamlanır ve eksik kayıt yalnız uygulama günlüğünde bir uyarı satırıd
 | olay sınıfı | kabul edilen | durum |
 |---|---|---|
 | Kişisel verinin toplu dışa aktarımı | Kayıt yoksa işlem yok (fail-closed) | **uygulanıyor** |
-| Kimlik, rol/izin, kiracı durumu, GxP kaydı (belge, imza, sapma, eğitim, kalite olayı), KVKK özel nitelikli veri | **Kayıt yoksa işlem yok (fail-closed) — sahip kararı 2026-10-02 (K2).** Kayıt ile iş verisi BİRLİKTE yazılır (aynı işlem ya da işlem-içi outbox); kayıt yazılamıyorsa komut başarısız olur ve kullanıcı "şu an yapılamadı" cevabını alır. "En iyi çaba" bu sınıfta kabul edilmez. **Bu sınıftaki her YENİ komut böyle doğar**; pakette yazma hatası davranışı açıkça yazılır ve testi vardır. Mevcut komutların bu davranışa geçirilmesi borçtur: defterde `K2-borç` notuyla izlenir ve ayrı iş paketleriyle kapatılır (bugün bu sınıfın hiçbir yolu fail-closed değil). **Bugün hiçbir yol bunu teslim etmiyor — uyulabilir yol §4.4.** | karar verildi · teslim eden yol YOK (§4.4) |
+| Kimlik, rol/izin, kiracı durumu, GxP kaydı (belge, imza, sapma, eğitim, kalite olayı), KVKK özel nitelikli veri | **Kayıt yoksa işlem yok (fail-closed) — sahip kararı 2026-10-02 (K2).** Kayıt ile iş verisi BİRLİKTE yazılır (aynı işlem ya da işlem-içi outbox); kayıt yazılamıyorsa komut başarısız olur ve kullanıcı "şu an yapılamadı" cevabını alır. "En iyi çaba" bu sınıfta kabul edilmez. **Bu sınıftaki her YENİ komut böyle doğar**; pakette yazma hatası davranışı açıkça yazılır ve testi vardır. Mevcut komutların bu davranışa geçirilmesi borçtur: defterde `## K2 borcu` bölümünde izlenir (sayısı testte sabit) ve ayrı iş paketleriyle kapatılır (bugün bu sınıfın hiçbir yolu fail-closed değil). **Bugün hiçbir yol bunu teslim etmiyor — uyulabilir yol §4.4.** | karar verildi · teslim eden yol YOK (§4.4) |
 | Diğer iş kayıtları ve yapılandırma | En iyi çaba, **ama sessiz değil**: düşmeyen kayıt uyarı olarak loglanır ve sayılabilir olur | ⚠ **AÇIK — yol `b` bunu sağlamıyor.** Anahtar / adres boşken iletim atlanıyor ve MDM'de bu `LogDebug`: kayıt düşmüyor, uyarı da yok. Yol `a` sağlıyor (uyarı logu). Düzeltme üretim kodu ister; bu standart yalnız adını koyar. |
 
 **4.4 · K2'nin uyulabilir yolu — bugün ne yapılır**
@@ -298,7 +301,7 @@ ya da yazıcının **bağlı** olduğunu görür; kaydın **yazıldığını** g
 |---|---|---|
 | §1 Yeni komut denetimsiz gelemez | `AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt` | MediatR'a uğramayan yazma yolu — yalnız ajan kapıları (`security-agent`, `add-endpoint-cqrs`) |
 | §1 Borç yalnız küçülür | `…DebtAndExceptionCounts_ArePinned_AddingDebtNeedsAControlTowerDecision` (sayılar testte sabit) + `…KnownDebt_OnlyShrinks_…` + CI "audit ledger growth" adımı (taban dala göre eklenen `- ` satırı) | CI adımı yalnız taban dal bilindiğinde çalışır (PR); push'ta ve taban getirilemediğinde **ATLANDI** der. Aynı değişiklikte hem satır ekleyip hem sabiti yükselten ve hem de `CT-DECISIONS.md`'ye yazan birini yalnız inceleme durdurur |
-| §1 Denetlenen komuttan işaret kaldırılamaz | aynı ilk test (komut "yeni denetimsiz" olur) | — |
+| §1 Denetlenen komuttan işaret kaldırılamaz | aynı ilk test (komut "yeni denetimsiz" olur) | Handler aynı zamanda kabul edilmiş bir yazıcı izin üyesini çağırıyorsa (ör. `TaskItem.Declare`) komut yol `c` ile denetlenmiş sayılmaya devam eder |
 | §2 MediatR dışı `*Command` yalnız adla ölçülen iki serviste olabilir | `…CommandsThatBypassMediatR_ExistOnlyInTheServicesMeasuredByName` | Komut türü hiç olmayan yazma yolu (controller → servis → depo, arka plan işi, olay tüketicisi) |
 | §2 Sorgu kuralı yazmayı gizlemez | `…ACommandFiledUnderQueries_IsRefused_…` (`.Queries` ad alanında `*Command`) · `…QueriesThatWrite_AreListed_AndNewOnesAreRefused` (sorgu işleyicisinde depo yazma çağrısı) | İkincisi dardır: `…Repository / …Store / …Collection` adlı bir alana yapılan yazma çağrısını görür; bir servis üzerinden ya da başka adlı bir alan üzerinden yazan sorguyu **görmez** |
 | §2 Tarayıcının göremediği istek | `…EveryRequestHandler_HandlesARequestThisMeasureCanSee` — taban sınıftan miras `IRequest`, başka projedeki istek arayüzü, `using` takma adı, küçük harfle başlayan ad: handler'ın isteği çözülemez ve kırmızıdır | Handler'ı da olmayan (hiç gönderilmeyen) bir istek |
@@ -310,9 +313,9 @@ ya da yazıcının **bağlı** olduğunu görür; kaydın **yazıldığını** g
 | §4.1 Kayıt değiştirilemez / silinemez | — | **Hiçbir test.** `data-agent` kapısı; depo arayüzü elle okunur |
 | §4.2 Yazma hatası davranışı | Servislerin kendi davranış testleri (varsa) | Bu standardın testi ölçmez |
 | §5 İşaret gerçekten bir pipeline davranışına bağlı | `…DeclaredTrails_ExistInProductionCode_AndMarkersAreWiredIntoThePipeline` | Davranışın içi kapatılmışsa (`if (false && …)`) yeşil kalır |
-| §5 Yazıcı izinde handler yazma üyesini çağırıyor | ölçümün kendisi: belirteç `Tip.Metot`, handler'da çağrı aranır; `…DeclaredTrails_…` belirtecin bu biçimde ve üretimde var olduğunu doğrular | Çağrı ölü bir dalda ise (`if (false)`) yeşil kalır. Bir sınıfın (arayüz değil) üyesi `var` üzerinden çağrılıyorsa yalnız metot adına bakılır — ad çakışırsa sahte kredi |
+| §5 Yazıcı izinde handler yazma üyesini çağırıyor | ölçümün kendisi: belirteç `Tip.Metot`, handler'da çağrı aranır; `…DeclaredTrails_…` belirtecin bu biçimde ve üretimde var olduğunu doğrular | Çağrı ölü bir dalda ise (`if (false)`) yeşil kalır. Bir sınıfın (arayüz değil) üyesi `var` üzerinden çağrılıyorsa yalnız metot adına bakılır; bu zayıf biçim yalnız o adı serviste **tek bir tür** bildiriyorsa geçerlidir (`…WeakWriterForm_IsRefused_WhenSeveralTypesDeclareThatMethodName`) — 2026-10-02'de `.CancelAsync(` çağıran sekiz handler'a iş akışı günlüğü notu verdiği ölçüldü. Kalan boşluk: ad serviste tek ama çağrılan nesne başka (çerçeve türü, başka paket) ise sahte kredi |
 | §5.c Eşdeğer izin beş koşulu | Koşulların kendisi: — . Kabulün kendisi: `…AcceptedTrails_ArePinned_ALedgerCellCannotGrantCredit` — defterde `aday` → `c` yapmak not vermez | Beş koşulu ölçen **hiçbir test yok**; kabul bir insan kararıdır, test yalnız o kararın bu dosyaya yazılmasını zorlar |
-| §5 `## Dolaylı` bildirimi doğru | `…IndirectDeclarations_AreProvenByTheHandlerAndTheTypeItGoesThrough` (iki ucu kanıtlar) | Aradaki türün **o komut için** yazıcıyı çağırdığını görmez; geniş bir tür (depo, genel servis) yazılırsa sahte kredi verir — inceleme |
+| §5 `## Dolaylı` bildirimi doğru | `…IndirectDeclarations_AreProvenByTheHandlerAndTheTypeItGoesThrough` (iki ucu kanıtlar); satır sayısı servis başına sabit (`PinnedCounts.Indirect`) — tek satır ekleyerek not alınamaz | Aradaki türün **o komut için** yazıcıyı çağırdığını görmez; geniş bir tür (depo, genel servis) yazılırsa sahte kredi verir — inceleme |
 | §6 İstisnanın sınıfı kuralda var, gerekçesi bir cümle, kimlik/rol/izin komutu istisna değil | `…Exceptions_NameARealUnauditedCommand_AClassFromTheRule_AndAReason` (en az beş farklı kelime; adında `User` / `Role` / `Permission` geçen komut istisna olamaz); istisna sayısı da sabit | Gerekçenin **doğru** olduğunu; adı bu üç kelimeyi içermeyen bir kimlik komutunu — inceleme |
 | §7 Okuma denetimi | — | **Hiçbir test.** Paket tablosu + `security-agent` |
 | §8 Çalıştırılmış kanıt | — | Yalnız orchestrator teslim kutusu ve release checklist |

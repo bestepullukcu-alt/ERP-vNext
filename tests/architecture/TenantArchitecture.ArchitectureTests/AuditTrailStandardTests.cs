@@ -46,7 +46,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         "\n  (3) hiçbiri değilse bu yeni borçtur ve defter yeni borç KABUL ETMEZ: '## Bilinen borç' yalnız küçülür." +
         "\nDefter: " + AuditTrailMeasurement.LedgerDirectory + "/<servis>.md";
 
-    private sealed record Pinned(int Debt, int Exceptions, int K2Debt = 0, int WritingQueries = 0);
+    private sealed record Pinned(int Debt, int Exceptions, int K2Debt = 0, int WritingQueries = 0, int Indirect = 0);
 
     /// <summary>
     /// ⚠ EXACT, PER SERVICE. A number here goes DOWN when a team pays debt (same change as the ledger line). It goes
@@ -58,13 +58,13 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.AuthService"] = new(Debt: 18, Exceptions: 0, K2Debt: 8),
         ["Diten.CrmService"] = new(Debt: 188, Exceptions: 0),
         ["Diten.DevEnablementService"] = new(Debt: 8, Exceptions: 0),
-        ["Diten.EnterpriseStrategyService"] = new(Debt: 36, Exceptions: 0),
+        ["Diten.EnterpriseStrategyService"] = new(Debt: 36, Exceptions: 0, Indirect: 20),
         ["Diten.HcmService"] = new(Debt: 8, Exceptions: 0),
         ["Diten.HumanCapitalService"] = new(Debt: 70, Exceptions: 0),
         ["Diten.ManagementGovernanceService"] = new(Debt: 23, Exceptions: 0),
-        ["Diten.MdmService"] = new(Debt: 13, Exceptions: 0),
+        ["Diten.MdmService"] = new(Debt: 13, Exceptions: 0, Indirect: 8),
         ["Diten.Platform"] = new(Debt: 164, Exceptions: 5, K2Debt: 192, WritingQueries: 3),
-        ["Diten.PpmService"] = new(Debt: 26, Exceptions: 0),
+        ["Diten.PpmService"] = new(Debt: 26, Exceptions: 0, Indirect: 25),
         ["Diten.ProcurementService"] = new(Debt: 35, Exceptions: 0),
         ["Diten.PvgService"] = new(Debt: 13, Exceptions: 0),
         ["Diten.TalentEcosystemService"] = new(Debt: 106, Exceptions: 0),
@@ -203,6 +203,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
             Compare("istisna", pinned.Exceptions, found.Ledger.Exceptions.Count);
             Compare("K2 borcu", pinned.K2Debt, found.Ledger.K2Debt.Distinct(StringComparer.Ordinal).Count());
             Compare("yazan sorgu", pinned.WritingQueries, found.Ledger.WritingQueries.Distinct(StringComparer.Ordinal).Count());
+            // A '## Dolaylı' row grants credit like a debt line withholds it, so its count is pinned the same way:
+            // one added row used to audit a command with no other edit (review of 2026-10-02).
+            Compare("dolaylı bildirim", pinned.Indirect, found.Ledger.Indirect.Count);
         }
 
         Assert.True(failures.Count == 0, Report("Defter sayıları sabitlenen sayılarla aynı değil", failures));
@@ -278,7 +281,10 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
                 }
 
                 // Rule §6: identity / role / permission changes can never be an exception. The part a name can show.
-                if (new[] { "User", "Role", "Permission" }.Any(part => exception.Command.Contains(part, StringComparison.Ordinal)))
+                // Only in the Auth service, where those words name the identity records themselves: elsewhere the
+                // same check refused the rule's own example of a legitimate exception (a user's theme preference).
+                if (service.Service == "Diten.AuthService"
+                    && new[] { "User", "Role", "Permission" }.Any(part => exception.Command.Contains(part, StringComparison.Ordinal)))
                 {
                     failures.Add($"{service.Service}: {exception.Command} — KİMLİK / ROL / İZİN komutu istisna olamaz (kural §6); denetle");
                 }
@@ -634,6 +640,75 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         unresolved.ForEach(output.WriteLine);
 
         Assert.Equal(totals[0], totals[1] + totals[2] + totals[3] + totals[4] + totals[5]);
+    }
+
+    // ── The weak form of a writer trail (a class reached through `var`) ────────────────────────────────────────
+    // Measured 2026-10-02: the token WorkflowTaskTransitionSupport.CancelAsync credited every Platform handler that
+    // called `.CancelAsync(` on ANYTHING — eight commands, among them the timesheet withdrawal that only calls its
+    // own approval service. A method name is proof only when one type in the service declares it.
+
+    private static SourceType Type(string kind, string name, string body) =>
+        new($"{name}.cs", kind, name, "N", false, [], body);
+
+    [Fact]
+    public void WeakWriterForm_IsRefused_WhenSeveralTypesDeclareThatMethodName()
+    {
+        var pool = new List<SourceType>
+        {
+            Type("class", "WorkflowSupport", "public Task CancelAsync(Guid id) { return Task.CompletedTask; }"),
+            Type("class", "ApprovalService", "public async Task CancelAsync(Guid id) { await Task.Yield(); }"),
+            Type("class", "Handler", "public async Task Handle() { await _approvals.CancelAsync(id); }")
+        };
+
+        Assert.False(AuditTrailMeasurement.CallsWriteMember(pool[2].Body, "WorkflowSupport.CancelAsync", pool));
+    }
+
+    [Fact]
+    public void WeakWriterForm_IsAccepted_WhenThatClassAloneDeclaresTheMethod_AndCallsAreNotDeclarations()
+    {
+        var pool = new List<SourceType>
+        {
+            Type("class", "TaskItem", "public void Declare(TaskTransitionKind kind) { }"),
+            // Three CALL shapes — none of them is a declaration, so they must not make the name look shared.
+            Type("class", "HandlerA", "public async Task Handle() { var task = await _tasks.GetAsync(id); task.Declare(kind); }"),
+            Type("class", "HandlerB", "public Task Handle() { return Declare(kind); }"),
+            Type("class", "HandlerC", "public async Task Handle() { await Declare(kind); }")
+        };
+
+        Assert.True(AuditTrailMeasurement.CallsWriteMember(pool[1].Body, "TaskItem.Declare", pool));
+        Assert.True(AuditTrailMeasurement.DeclaresMethod(pool[0], "Declare"));
+        Assert.False(AuditTrailMeasurement.DeclaresMethod(pool[1], "Declare"));
+        Assert.False(AuditTrailMeasurement.DeclaresMethod(pool[2], "Declare"));
+        Assert.False(AuditTrailMeasurement.DeclaresMethod(pool[3], "Declare"));
+    }
+
+    [Fact]
+    public void WeakWriterForm_IsRefused_WhenTheOnlyDeclarerIsAnotherType()
+    {
+        // The name is unique in the service, but it is ANOTHER type's method: a call to it says nothing about the
+        // token's type.
+        var pool = new List<SourceType>
+        {
+            Type("class", "TaskItem", "public void Rename(string title) { }"),
+            Type("class", "Meeting", "public void Declare(string kind) { }"),
+            Type("class", "Handler", "public async Task Handle() { var meeting = await _meetings.GetAsync(id); meeting.Declare(kind); }")
+        };
+
+        Assert.False(AuditTrailMeasurement.CallsWriteMember(pool[2].Body, "TaskItem.Declare", pool));
+    }
+
+    [Fact]
+    public void WeakWriterForm_IsNeverAccepted_ForAnInterface_AndTheTypedFormStillIs()
+    {
+        var pool = new List<SourceType>
+        {
+            Type("interface", "IAuditRecorder", "Task RecordAsync(string what);"),
+            Type("class", "Typed", "private readonly IAuditRecorder _recorder; public Task Handle() => _recorder.RecordAsync(\"x\");"),
+            Type("class", "Untyped", "public Task Handle() => something.RecordAsync(\"x\");")
+        };
+
+        Assert.True(AuditTrailMeasurement.CallsWriteMember(pool[1].Body, "IAuditRecorder.RecordAsync", pool));
+        Assert.False(AuditTrailMeasurement.CallsWriteMember(pool[2].Body, "IAuditRecorder.RecordAsync", pool));
     }
 
     private static string Report(string headline, List<string> failures) =>

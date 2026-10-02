@@ -333,9 +333,12 @@ internal static class AuditTrailMeasurement
     /// <item><c>Type.Method(</c> written out — a static helper;</item>
     /// <item>a variable DECLARED with that type (<c>Type name</c>: field, parameter, primary-constructor parameter)
     /// and <c>name.Method(</c> — the injected-dependency case, and the ONLY form accepted for an interface;</item>
-    /// <item>for a CLASS nobody declares a variable of (an entity reached through <c>var</c>): any <c>.Method(</c>.
-    /// This is the weak form — it trusts the method name to be distinctive — and is refused for interfaces, where
-    /// it would credit any handler calling <c>.CreateAsync(</c> on anything.</item>
+    /// <item>for a CLASS nobody declares a variable of (an entity reached through <c>var</c>): any <c>.Method(</c>,
+    /// but ONLY when that class is the one type in the service that declares a method of that name. This is the weak
+    /// form — it trusts the method name — so the name has to belong to the class alone: <c>.CancelAsync(</c> or
+    /// <c>.TransitionAsync(</c>, which many types declare, proves nothing about which one was called (measured
+    /// 2026-10-02: a handler calling <c>_approvals.CancelAsync(</c> was credited with the workflow log). It is
+    /// refused for interfaces outright, where it would credit any handler calling <c>.CreateAsync(</c> on anything.</item>
     /// </list>
     /// </summary>
     public static bool CallsWriteMember(string text, string token, IReadOnlyList<SourceType> pool)
@@ -364,8 +367,35 @@ internal static class AuditTrailMeasurement
         }
 
         var isInterface = pool.Any(t => t.Name == typeName && t.Kind == "interface");
-        return !isInterface && Regex.IsMatch(text, $@"\.\s*{method}\s*\(");
+        if (isInterface)
+        {
+            return false;
+        }
+
+        // Asked once per (service pool, method): every handler of a service asks the same question about the same pool.
+        var declarers = DeclarersByPool.GetOrCreateValue(pool).GetOrAdd(
+            method,
+            name => pool.Where(t => DeclaresMethod(t, name)).Select(t => t.Name).Distinct(StringComparer.Ordinal).ToList());
+        return declarers.Count == 1
+               && declarers[0] == typeName
+               && Regex.IsMatch(text, $@"\.\s*{method}\s*\(");
     }
+
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<IReadOnlyList<SourceType>, System.Collections.Concurrent.ConcurrentDictionary<string, List<string>>> DeclarersByPool = new();
+
+    private static readonly HashSet<string> NotAReturnType = new(StringComparer.Ordinal)
+    {
+        "new", "return", "await", "throw", "else", "in", "is", "and", "or", "not", "out", "ref", "case", "when",
+        "yield", "typeof", "nameof", "var", "this", "base"
+    };
+
+    /// <summary>
+    /// Does the type DECLARE a method of that name (its return type in front of it, never a dot)? A call —
+    /// <c>x.Method(</c>, <c>await Method(</c>, <c>return Method(</c> — is not a declaration.
+    /// </summary>
+    internal static bool DeclaresMethod(SourceType type, string escapedMethod) =>
+        Regex.Matches(type.Body, $@"(?<![\w.])([A-Za-z_][\w.]*(?:<[^;{{}}()]*>)?[\?\]\[]*)\s+{escapedMethod}\s*(?:<[^<>()]*>)?\s*\(")
+            .Any(match => !NotAReturnType.Contains(match.Groups[1].Value));
 
     /// <summary>The type exists and declares (or at least names) the method — a ledger token cannot point at a ghost.</summary>
     public static bool WriteMemberExists(string token, IReadOnlyList<SourceType> pool)

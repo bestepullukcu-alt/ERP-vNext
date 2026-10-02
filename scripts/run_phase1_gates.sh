@@ -14,7 +14,8 @@ cd "$ROOT_DIR"
 # default depth 1 — measured 2026-10-02, phase1-gates.yml sets no fetch-depth), so the base TIP is fetched here with
 # depth 1 and compared tree-to-tree — no merge base, no history, the workflow file is not touched. Locally:
 #   AUDIT_LEDGER_BASE=<ref> [AUDIT_LEDGER_HEAD=WORKTREE] ./scripts/run_phase1_gates.sh --audit-ledger-only
-# When no base is known or it cannot be fetched the step says SKIPPED in capitals. It never passes silently.
+# When no base is known, it cannot be fetched, or the diff cannot be produced, the step says SKIPPED in capitals.
+# It never passes silently. Only the service ledgers (Diten.*.md) are read; a line moved inside one file is not growth.
 check_audit_ledger_growth() {
   local ledger_dir="tests/architecture/audit-ledger"
   local base="${AUDIT_LEDGER_BASE:-}"
@@ -53,16 +54,37 @@ check_audit_ledger_growth() {
   # A line whose command is named in CT-DECISIONS.md was added by a recorded Control Tower decision. The file is in
   # the same diff, so the decision is reviewed with the line it allows.
   local decisions="$ledger_dir/CT-DECISIONS.md"
-  local added="" line name
-  while IFS= read -r line; do
-    [ -z "$line" ] && continue
-    name="${line#+- }"
-    if [ -f "$decisions" ] && grep -qwF -- "$name" "$decisions"; then
-      echo "[phase1] audit ledger growth: allowed by a recorded decision — $name"
-    else
-      added="${added}${line}"$'\n'
+  local added="" line name file changed file_diff removed
+  # Only the service ledgers (Diten.*.md) carry lists. The README's own bullets are prose, not ledger lines.
+  # A diff that cannot be produced is reported, never read as "nothing added".
+  if ! changed="$(git diff --name-only "$base" ${head:+"$head"} -- "$ledger_dir/Diten.*.md")"; then
+    echo "[phase1] audit ledger growth: *** SKIPPED *** — the ledger diff against '$base' could not be produced."
+    echo "[phase1]   NOTHING WAS CHECKED."
+    return 0
+  fi
+
+  while IFS= read -r file; do
+    [ -z "$file" ] && continue
+    if ! file_diff="$(git diff --unified=0 "$base" ${head:+"$head"} -- "$file")"; then
+      echo "[phase1] audit ledger growth: *** SKIPPED *** — the diff of $file could not be produced. NOTHING WAS CHECKED."
+      return 0
     fi
-  done <<< "$(git diff --unified=0 "$base" ${head:+"$head"} -- "$ledger_dir" ':!'"$decisions" | grep -E '^\+- ' || true)"
+    # A line that left one place of the file and entered another (a sort, a move between sections) is not growth:
+    # the same name is removed and added in the same file. The pinned counts still watch each section's size.
+    removed="$(printf '%s\n' "$file_diff" | grep -E '^-- ' | sed 's/^-- //' || true)"
+    while IFS= read -r line; do
+      [ -z "$line" ] && continue
+      name="${line#+- }"
+      if [ -n "$removed" ] && printf '%s\n' "$removed" | grep -qxF -- "$name"; then
+        continue
+      fi
+      if [ -f "$decisions" ] && grep -qwF -- "$name" "$decisions"; then
+        echo "[phase1] audit ledger growth: allowed by a recorded decision — $name"
+      else
+        added="${added}${line}  (${file##*/})"$'\n'
+      fi
+    done <<< "$(printf '%s\n' "$file_diff" | grep -E '^\+- ' || true)"
+  done <<< "$changed"
 
   if [ -n "$added" ]; then
     echo "[phase1] audit ledger growth: FAILED — list lines were ADDED to $ledger_dir (base: $base):"

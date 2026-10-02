@@ -11,12 +11,16 @@ deftere satır EKLEYEN Control Tower kararlarının kaydıdır.
 
 Bir komutun denetlenip denetlenmediği **buradan okunmaz**. O, `services/<servis>/src` altındaki üretim kodundan
 okunur: komut türü işareti taşıyor mu, handler'ı yazma üyesini çağırıyor mu. Defter yalnız bir insanın söylemesi
-gereken şeyleri tutar — ve söylenen her şeyin **sayısı test dosyasında sabittir**: defterde bir satır ya da hücre
-değiştirmek tek başına hiçbir şeyi değiştirmez, testi kırar.
+gereken şeyleri tutar — ve söylenen her şeyin **sayısı test dosyasında sabittir** (borç, istisna, K2 borcu, yazan
+sorgu, dolaylı bildirim; kabul edilmiş izler tek tek): defterde satır eklemek ya da bir izin yolunu değiştirmek testi
+kırar. Testin göremediği tek şey sayıyı koruyan bir değiş tokuştur (bir adı silip yerine başkasını yazmak); onu PR'da
+CI adımı ve inceleme yakalar.
 
 ## Biçim — ayrıştırıcı katıdır
 
-Okunamayan her satır `okunamayan satır: dosya:satır` diye kırmızıdır; hiçbir satır sessizce atlanmaz.
+Okunamayan her satır `okunamayan satır: dosya:satır` diye kırmızıdır. Bilinen üç istisna, sessizce atlanır:
+bir tablonun ilk satırı (her zaman başlık sayılır), `|` ile başlamayan tablo satırı ve liste bölümünde `1. X` / `– X`
+biçimli madde. Bu biçimleri kullanma.
 
 - Yalnız altı `## ` bölüm başlığı tanınır (aşağıda). `###` ve bilinmeyen `##` kırmızıdır.
 - Liste bölümlerinde satır tam olarak `- TürAdı` biçimindedir: girintisiz, `- ` ile, tek ad. `* X`, `-X`, sekmeyle
