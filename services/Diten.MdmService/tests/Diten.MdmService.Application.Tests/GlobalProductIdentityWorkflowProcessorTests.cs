@@ -710,6 +710,8 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         // Refuses the next advance to this checkpoint the way the real store refuses a transition it does not
         // allow: it answers false and leaves the lease exactly as it is.
         public GlobalProductIdentityWorkflowCheckpoint? RefuseNextAdvanceTo { get; set; }
+        // The store fails when a lease is being given back (the write that only releases).
+        public bool ThrowWhenALeaseIsGivenBack { get; set; }
 
         public Task<GlobalProductIdentityWorkflowReserveResult> ReserveAsync(
             GlobalProductIdentityWorkflowOperation operation, CancellationToken cancellationToken = default)
@@ -766,6 +768,11 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
             CancellationToken cancellationToken = default)
         {
             AdvanceCalls++;
+            if (ThrowWhenALeaseIsGivenBack && mutation.ReleaseLease && mutation.NextCheckpoint == claim.Checkpoint
+                && mutation.RecoveryDisposition == Current?.RecoveryDisposition && mutation.ServiceFaultCount is null)
+            {
+                throw new TimeoutException("the store is not answering");
+            }
             if (Current is null || Current.LeaseGeneration != claim.LeaseGeneration
                 || Current.Checkpoint != claim.Checkpoint)
             {

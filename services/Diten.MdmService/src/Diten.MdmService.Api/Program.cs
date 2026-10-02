@@ -687,6 +687,11 @@ public static class GlobalProductWorkflowExecutionConfigurationRegistrations
 
         services.AddOptions<ProductIdentityWorkflowWorkerOptions>()
             .Bind(configuration.GetSection(ProductIdentityWorkflowWorkerOptions.SectionName))
+            // The same window the per-request factory above checks: a wrong lease or retry delay must keep the host
+            // from starting, enabled worker or not — not answer every submit with a 500.
+            .Validate(
+                options => options.LeaseSeconds is >= 10 and <= 900 && options.RetryDelaySeconds is >= 1 and <= 3_600,
+                "PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
             .Validate(
                 options => ProductIdentityWorkflowWorkerOptions.IsServiceFaultWindowValid(
                     options.RetryDelaySeconds,

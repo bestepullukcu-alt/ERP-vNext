@@ -43,6 +43,14 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         public (string Code, int Status)? Answer { get; set; }
     }
 
+    /*
+     * How long the worker leaves a withdrawal in flight alone. The requester's cancellation is processed by the
+     * engine inside its own two-second budget; a worker that reads the approval before that budget has surely run
+     * out can find it "still open", forget the withdrawal — and then the cancellation lands. The floor is fixed
+     * (fifteen budgets), not a setting: a RetryDelaySeconds of 1 must not shrink it. A longer retry delay extends it.
+     */
+    private static readonly TimeSpan WithdrawalSettleFloor = TimeSpan.FromSeconds(30);
+
     private static readonly GlobalProductIdentityWorkflowCheckpoint[] RecoverableCheckpoints =
     [
         GlobalProductIdentityWorkflowCheckpoint.Prepared,
@@ -329,25 +337,21 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             {
                 switch (operation.Checkpoint)
                 {
-                    case GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision:
-                        if (!commandId.HasValue || fingerprint is null || !requesterSubjectId.HasValue
-                            || !expectedVersion.HasValue || reasonCode is null)
-                        {
-                            // Nothing to withdraw: the decision poll owns this operation.
-                            await ReleaseClaimAsync(claim, operation, now);
-                            return await ProcessAsync(operation, delegatedUserToken, leaseOwner, leaseDuration,
-                                retryDelay, stopWhenAwaitingDecision: attempt.Interactive, cancellationToken);
-                        }
+                    case GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision
+                        when commandId.HasValue && fingerprint is not null && requesterSubjectId.HasValue
+                             && expectedVersion.HasValue && reasonCode is not null:
                         advanced = await operations.AdvanceAsync(claim, new(
                             GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested,
                             ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+                            SettledNextAttempt(operation, now, retryDelay),
                             WithdrawalCommandId: commandId,
                             WithdrawalFingerprint: fingerprint,
                             WithdrawalRequesterSubjectId: requesterSubjectId,
                             WithdrawalExpectedProductVersion: expectedVersion,
                             WithdrawalReasonCode: reasonCode,
                             WithdrawalComment: comment,
-                            ReleaseLease: true), cancellationToken);
+                            ReleaseLease: true,
+                            ServiceFaultCount: StreakIsOver(operation, now) ? 0 : null), cancellationToken);
                         break;
                     case GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested:
                         advanced = attempt.Interactive
@@ -361,7 +365,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                     case GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay:
                         advanced = attempt.Interactive
                             ? await ObserveWithdrawalAsync(operation, claim, delegatedUserToken!, attempt, now,
-                                cancellationToken)
+                                retryDelay, cancellationToken)
                             : await ResolveAbandonedWithdrawalAsync(operation, claim, attempt, now, retryDelay,
                                 cancellationToken);
                         break;
@@ -379,8 +383,9 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             catch
             {
                 // Cancelled by the caller, or the store failed in the middle of the step: the lease must not
-                // outlive the attempt, or the requester's next try is told "busy" until it runs out.
-                await ReleaseClaimAsync(claim, operation, now);
+                // outlive the attempt, or the requester's next try is told "busy" until it runs out. The worker is
+                // kept away for the settle window: a cancellation that was cut off may still land at the engine.
+                await ReleaseClaimAsync(claim, operation, now, SettledNextAttempt(operation, now, retryDelay));
                 throw;
             }
             if (!advanced)
@@ -400,7 +405,11 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                     stopWhenAwaitingDecision: false, cancellationToken);
             if (operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay)
                 return MakerAnswer(operation, attempt);
-            if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks)
+            // A requester who is present walks on through the settle window their own steps wrote (it keeps the
+            // WORKER away, not them); only a retry that was really scheduled ends the request.
+            if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks
+                && (!attempt.Interactive
+                    || operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable))
                 return ScheduledAnswer(operation, attempt);
         }
         return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_STEP_BUDGET_EXCEEDED", 503);
@@ -431,15 +440,19 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             return await operations.AdvanceAsync(claim, new(
                 GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved,
                 ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+                SettledNextAttempt(operation, now, retryDelay),
                 WithdrawalExpectedWorkflowInstanceVersion: value.WorkflowInstanceVersion,
                 WithdrawalExpectedApprovalTaskVersion: value.ApprovalTaskVersion,
                 WithdrawalObjectRef: value.ObjectRef,
+                // The fault streak is left as it stands: the versions are only read here, and what the request
+                // meets is said by the cancellation that follows (its answer ends a streak, its fault goes on in it).
                 ReleaseLease: true), cancellationToken);
         }
         if (result.Outcome is ProductIdentityWorkflowTransportOutcome.Conflict
             or ProductIdentityWorkflowTransportOutcome.NotFound)
-            return await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision,
-                ProductIdentityWorkflowRecoveryDisposition.None, now, result.ErrorCode, true, cancellationToken);
+            // The approval is not open any more (decided, or closed): there is nothing to withdraw. The request is
+            // kept on the operation so that the same answer is given again; the decision poll takes it from here.
+            return await ClosedBeforeWithdrawalAsync(operation, claim, result.ErrorCode, now, cancellationToken);
         var fault = ProductIdentityWorkflowFaultPolicy.Classify(
             ProductIdentityWorkflowCall.CancellationPreflight, result.Outcome, result.ErrorCode);
         if (fault.Kind == ProductIdentityWorkflowFaultKind.ServiceWait)
@@ -490,17 +503,24 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 return await WaitForServiceAsync(operation, claim, claim.Checkpoint,
                     ProductIdentityWorkflowCall.TerminalEvidence, evidence.ErrorCode, evidenceFault, attempt, now,
                     retryDelay, cancellationToken);
-            logger.LogWarning(
-                "Product identity workflow operation {OperationId} of tenant {TenantId}: the approval is closed and no decision can be read ({ResultCode}); the withdrawal appears to have landed and waits for its requester to repeat it. The worker keeps reading.",
-                operation.OperationId, operation.TenantId,
-                BoundedCode(evidence.ErrorCode, ProductIdentityWorkflowMakerCodes.MakerReplayRequired));
+            if (evidence.Outcome == ProductIdentityWorkflowTransportOutcome.Conflict)
+                logger.LogWarning(
+                    "Product identity workflow operation {OperationId} of tenant {TenantId}: the approval is closed and holds no decision ({ResultCode}); the withdrawal appears to have landed and waits for its requester to repeat it. The worker keeps reading.",
+                    operation.OperationId, operation.TenantId,
+                    BoundedCode(evidence.ErrorCode, ProductIdentityWorkflowMakerCodes.MakerReplayRequired));
+            else
+                logger.LogWarning(
+                    "Product identity workflow operation {OperationId} of tenant {TenantId}: the approval is closed and its decision could not be accepted ({ResultCode}); whether the withdrawal landed is not known. It waits for its requester to repeat it. The worker keeps reading.",
+                    operation.OperationId, operation.TenantId,
+                    BoundedCode(evidence.ErrorCode, ProductIdentityWorkflowMakerCodes.MakerReplayRequired));
             return await operations.AdvanceAsync(claim, new(
                 claim.Checkpoint,
                 ProductIdentityWorkflowRecoveryDisposition.Retryable,
                 now.UtcTicks,
                 now.Add(faultSettings.MaxRetryDelay).UtcTicks,
                 ProductIdentityWorkflowMakerCodes.MakerReplayRequired,
-                ReleaseLease: true), cancellationToken);
+                ReleaseLease: true,
+                ServiceFaultCount: 0), cancellationToken); // the engine answered both questions
         }
         var fault = ProductIdentityWorkflowFaultPolicy.Classify(
             ProductIdentityWorkflowCall.CancellationPreflight, preflight.Outcome, preflight.ErrorCode);
@@ -512,21 +532,41 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
     }
 
     // The withdrawal did not happen: it is forgotten (so its requester may ask again) and the operation awaits the
-    // decision once more, due at the worker's next cycle. The service-fault fields are not this step's to change.
+    // decision once more. The worker's schedule is kept as it stands — a withdrawal never brings the worker's next
+    // read forward. faultSince is given when a service fault ended the withdrawal (the streak goes on); without it
+    // the engine answered, and an answer ends the streak.
     private Task<bool> BackToDecisionAsync(
         GlobalProductIdentityWorkflowOperation operation,
         GlobalProductIdentityWorkflowClaim claim,
         DateTimeOffset now,
         CancellationToken cancellationToken,
-        long? faultSince = null) =>
+        (int Count, long Since)? faultStreak = null) =>
         operations.AdvanceAsync(claim, new(
             GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision,
             ProductIdentityWorkflowRecoveryDisposition.None,
             now.UtcTicks,
+            operation.NextAttemptAtUtcTicksV1,
             ReleaseLease: true,
-            ServiceFaultCount: faultSince.HasValue ? operation.ServiceFaultCount : null,
-            ServiceFaultSinceUtcTicksV1: faultSince,
+            ServiceFaultCount: faultStreak?.Count ?? 0,
+            ServiceFaultSinceUtcTicksV1: faultStreak?.Since,
             ClearWithdrawal: true), cancellationToken);
+
+    // The approval was decided or closed before the withdrawal reached it. The request stays on the operation (the
+    // same answer is given to a repeat) and the decision poll goes on; the engine answered, so a fault streak ends.
+    private Task<bool> ClosedBeforeWithdrawalAsync(
+        GlobalProductIdentityWorkflowOperation operation,
+        GlobalProductIdentityWorkflowClaim claim,
+        string? errorCode,
+        DateTimeOffset now,
+        CancellationToken cancellationToken) =>
+        operations.AdvanceAsync(claim, new(
+            GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision,
+            ProductIdentityWorkflowRecoveryDisposition.None,
+            now.UtcTicks,
+            operation.NextAttemptAtUtcTicksV1,
+            errorCode,
+            ReleaseLease: true,
+            ServiceFaultCount: 0), cancellationToken);
 
     private async Task<bool> ObserveWithdrawalAsync(
         GlobalProductIdentityWorkflowOperation operation,
@@ -534,6 +574,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         string delegatedUserToken,
         Attempt attempt,
         DateTimeOffset now,
+        TimeSpan retryDelay,
         CancellationToken cancellationToken)
     {
         if (!CompleteWithdrawalPreflight(operation))
@@ -561,12 +602,55 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 WithdrawalTaskStatus: evidence.TaskStatus,
                 WithdrawalInstanceStatus: evidence.InstanceStatus,
                 WithdrawalObjectRef: evidence.ObjectRef,
-                ReleaseLease: true), cancellationToken);
+                ReleaseLease: true,
+                ServiceFaultCount: 0), cancellationToken);
         }
-        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.Conflict
-            or ProductIdentityWorkflowTransportOutcome.NotFound)
-            return await AdvanceAsync(claim, GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision,
-                ProductIdentityWorkflowRecoveryDisposition.None, now, result.ErrorCode, true, cancellationToken);
+        if (result.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound)
+            return await ClosedBeforeWithdrawalAsync(operation, claim, result.ErrorCode, now, cancellationToken);
+        if (result.Outcome == ProductIdentityWorkflowTransportOutcome.Conflict)
+        {
+            /*
+             * The engine answers "conflict" for two different things: the approval was decided or closed — or it is
+             * STILL OPEN and merely moved on since the versions were read (somebody delegated it, a reminder ran).
+             * Only the first means there is nothing to withdraw. So the approval is asked: still open → this
+             * withdrawal is forgotten and, the requester being here, asked again with fresh versions in this same
+             * request; not open → nothing to withdraw; no answer → the worker finds out.
+             */
+            var open = await workflowClient.GetCancellationPreflightAsync(operation.TenantId,
+                new(operation.WorkflowInstanceId.Value, operation.ApprovalTaskId.Value, operation.ObjectType,
+                    operation.ObjectId, operation.MakerSubjectId), cancellationToken);
+            if (open.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
+            {
+                logger.LogInformation(
+                    "Product identity workflow operation {OperationId} of tenant {TenantId}: the approval moved on while it was being withdrawn ({ResultCode}) and is still open; the withdrawal is asked again with fresh versions.",
+                    operation.OperationId, operation.TenantId,
+                    BoundedCode(result.ErrorCode, "PRODUCT_IDENTITY_WORKFLOW_PROVIDER_UNAVAILABLE"));
+                return await BackToDecisionAsync(operation, claim, now, cancellationToken);
+            }
+            if (open.Outcome is ProductIdentityWorkflowTransportOutcome.Conflict
+                or ProductIdentityWorkflowTransportOutcome.NotFound)
+                return await ClosedBeforeWithdrawalAsync(operation, claim, result.ErrorCode, now, cancellationToken);
+            var openFault = ProductIdentityWorkflowFaultPolicy.Classify(
+                ProductIdentityWorkflowCall.CancellationPreflight, open.Outcome, open.ErrorCode);
+            if (openFault.Kind != ProductIdentityWorkflowFaultKind.ServiceWait)
+                return await QuarantineAsync(claim, open.ErrorCode, now, cancellationToken);
+            var openStreak = FaultStreak(operation, now, countsAsWorkerAttempt: false);
+            attempt.Scope = openFault.Scope;
+            attempt.Answer = (ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, 503);
+            var openCode = BoundedCode(open.ErrorCode, "PRODUCT_IDENTITY_WORKFLOW_PROVIDER_UNAVAILABLE");
+            LogServiceFault(operation, ProductIdentityWorkflowCall.CancellationPreflight, openCode, openStreak.Count,
+                openStreak.Since, now, openFault.Loud,
+                "the worker reads the approval to learn whether it is still open");
+            return await operations.AdvanceAsync(claim, new(
+                GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
+                ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks,
+                SettledNextAttempt(operation, now, retryDelay),
+                openCode,
+                ReleaseLease: true,
+                ServiceFaultCount: openStreak.Count,
+                ServiceFaultSinceUtcTicksV1: openStreak.Since), cancellationToken);
+        }
 
         // The cancellation carries the requester's own token: the worker can never repeat it. The approval, though,
         // is still at the engine and may be decided at any moment — so whatever stops the cancellation, the
@@ -586,30 +670,32 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 return await BackToDecisionAsync(operation, claim, now, cancellationToken);
             case ProductIdentityWorkflowFaultKind.ServiceWait:
             {
-                var since = operation.ServiceFaultSinceUtcTicksV1 ?? now.UtcTicks;
+                var streak = FaultStreak(operation, now, countsAsWorkerAttempt: false);
                 attempt.Scope = fault.Scope;
                 attempt.Answer = (ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, 503);
                 if (fault.StartedNothing)
                 {
                     // Refused before it was processed: the withdrawal did not happen.
-                    LogServiceFault(operation, ProductIdentityWorkflowCall.Cancel, code, operation.ServiceFaultCount,
-                        since, now, fault.Loud,
+                    LogServiceFault(operation, ProductIdentityWorkflowCall.Cancel, code, streak.Count,
+                        streak.Since, now, fault.Loud,
                         "the withdrawal was dropped and its requester repeats it; the decision is awaited again");
-                    return await BackToDecisionAsync(operation, claim, now, cancellationToken, since);
+                    return await BackToDecisionAsync(operation, claim, now, cancellationToken, streak);
                 }
 
-                // No answer: the cancellation may have landed. The worker reads the approval to find out.
-                LogServiceFault(operation, ProductIdentityWorkflowCall.Cancel, code, operation.ServiceFaultCount,
-                    since, now, fault.Loud,
+                // No answer: the cancellation may have landed — or may still land. The worker reads the approval
+                // to find out, and not before the settle window has passed.
+                LogServiceFault(operation, ProductIdentityWorkflowCall.Cancel, code, streak.Count,
+                    streak.Since, now, fault.Loud,
                     "the worker reads the approval to learn whether the withdrawal landed");
                 return await operations.AdvanceAsync(claim, new(
                     GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
                     ProductIdentityWorkflowRecoveryDisposition.Retryable,
                     now.UtcTicks,
-                    LastFailureCode: code,
+                    SettledNextAttempt(operation, now, retryDelay),
+                    code,
                     ReleaseLease: true,
-                    ServiceFaultCount: operation.ServiceFaultCount,
-                    ServiceFaultSinceUtcTicksV1: since), cancellationToken);
+                    ServiceFaultCount: streak.Count,
+                    ServiceFaultSinceUtcTicksV1: streak.Since), cancellationToken);
             }
             default:
                 return await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
@@ -770,7 +856,9 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             {
                 return MakerAnswer(operation, attempt);
             }
-            if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks)
+            if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks
+                && (!attempt.Interactive
+                    || operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable))
             {
                 return ScheduledAnswer(operation, attempt);
             }
@@ -860,7 +948,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                     ? ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit
                     : lookup.ErrorCode ?? ProductIdentityWorkflowMakerCodes.MakerReplayRequired,
                 releaseLease: true,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken,
+                serviceFaultCount: 0);
         }
 
         var lookupFault = ProductIdentityWorkflowFaultPolicy.Classify(
@@ -1168,9 +1257,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
      *
      * WHO COUNTS. Only the worker's attempts count and back off. A maker who is present is answered at once
      * ("resubmit") and changes neither the count nor the worker's next attempt — six clicks during an outage must
-     * not push the worker's retry to the ceiling or turn a two-minute outage into an "error since attempt 6". The
-     * moment the fault was first met is kept either way: how long the chain has been failing is what an operator
-     * needs, whoever met it first.
+     * not push the worker's retry to the ceiling or turn a two-minute outage into an "error since attempt 6".
      */
     private Task<bool> WaitForServiceAsync(
         GlobalProductIdentityWorkflowOperation operation,
@@ -1184,13 +1271,13 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
     {
-        var since = operation.ServiceFaultSinceUtcTicksV1 ?? now.UtcTicks;
+        var streak = FaultStreak(operation, now, countsAsWorkerAttempt: !attempt.Interactive);
         var code = BoundedCode(errorCode, "PRODUCT_IDENTITY_WORKFLOW_PROVIDER_UNAVAILABLE");
         attempt.Scope = fault.Scope;
         if (attempt.Interactive)
         {
             attempt.Answer = (ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, 503);
-            LogServiceFault(operation, call, code, operation.ServiceFaultCount, since, now, fault.Loud,
+            LogServiceFault(operation, call, code, streak.Count, streak.Since, now, fault.Loud,
                 "the maker was told to resubmit; the worker's schedule is unchanged");
             return operations.AdvanceAsync(
                 claim,
@@ -1201,31 +1288,31 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                     operation.NextAttemptAtUtcTicksV1,
                     code,
                     ReleaseLease: true,
-                    ServiceFaultCount: operation.ServiceFaultCount,
-                    ServiceFaultSinceUtcTicksV1: since),
+                    ServiceFaultCount: streak.Count,
+                    ServiceFaultSinceUtcTicksV1: streak.Since),
                 cancellationToken);
         }
 
-        var count = operation.ServiceFaultCount + 1;
-        LogServiceFault(operation, call, code, count, since, now, fault.Loud, "the worker retries");
+        LogServiceFault(operation, call, code, streak.Count, streak.Since, now, fault.Loud, "the worker retries");
         return operations.AdvanceAsync(
             claim,
             new(
                 checkpoint,
                 ProductIdentityWorkflowRecoveryDisposition.Retryable,
                 now.UtcTicks,
-                now.Add(ProductIdentityWorkflowFaultPolicy.Backoff(count, retryDelay, faultSettings.MaxRetryDelay))
+                now.Add(ProductIdentityWorkflowFaultPolicy.Backoff(
+                        streak.Count, retryDelay, faultSettings.MaxRetryDelay))
                     .UtcTicks,
                 code,
                 ReleaseLease: true,
-                ServiceFaultCount: count,
-                ServiceFaultSinceUtcTicksV1: since),
+                ServiceFaultCount: streak.Count,
+                ServiceFaultSinceUtcTicksV1: streak.Since),
             cancellationToken);
     }
 
     // The operation is handed to the maker: nothing was started and only a resubmit can do it. serviceFault is null
-    // when the engine answered and the reason is the maker's or the set-up's. Only a maker's own attempt gets
-    // here, so the count is not touched (see WaitForServiceAsync); the first moment of a service fault is kept.
+    // when the engine answered and the reason is the maker's or the set-up's — an answer, which ends a fault streak.
+    // Only a maker's own attempt gets here, so a service fault does not count as a worker attempt.
     private Task<bool> ToMakerAsync(
         GlobalProductIdentityWorkflowOperation operation,
         GlobalProductIdentityWorkflowClaim claim,
@@ -1238,12 +1325,12 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         CancellationToken cancellationToken)
     {
         var code = BoundedCode(errorCode, makerCode);
-        long? since = null;
+        (int Count, long Since)? streak = null;
         if (serviceFault is not null)
         {
-            since = operation.ServiceFaultSinceUtcTicksV1 ?? now.UtcTicks;
+            streak = FaultStreak(operation, now, countsAsWorkerAttempt: false);
             attempt.Scope = serviceFault.Scope;
-            LogServiceFault(operation, call, code, operation.ServiceFaultCount, since.Value, now, serviceFault.Loud,
+            LogServiceFault(operation, call, code, streak.Value.Count, streak.Value.Since, now, serviceFault.Loud,
                 "nothing was started; the maker resubmits");
         }
         else
@@ -1261,14 +1348,39 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 now.UtcTicks,
                 LastFailureCode: makerCode,
                 ReleaseLease: true,
-                ServiceFaultCount: since.HasValue ? operation.ServiceFaultCount : null,
-                ServiceFaultSinceUtcTicksV1: since),
+                ServiceFaultCount: streak?.Count ?? 0,
+                ServiceFaultSinceUtcTicksV1: streak?.Since),
             cancellationToken);
     }
 
-    // An error when the worker has tried often enough, when the chain has been failing for longer than the longest
-    // back-off (so a fault met only by makers still becomes an error — by its duration, not by their clicks), or
-    // at once for a fault that waiting will not mend.
+    /*
+     * The streak of CONSECUTIVE service faults this operation is in: how many of them were the worker's, and when
+     * the first one happened. A streak ends with the first answer the chain gives for the operation (every step
+     * that got one writes the two fields back to nothing), and it also ends by itself when its last fault is long
+     * past: faults further apart than two ceilings are not one outage — the worker never leaves a waiting operation
+     * alone for longer than one — so a glitch at eleven does not read "failing since nine".
+     */
+    private (int Count, long Since) FaultStreak(
+        GlobalProductIdentityWorkflowOperation operation,
+        DateTimeOffset now,
+        bool countsAsWorkerAttempt)
+    {
+        var ongoing = operation.ServiceFaultSinceUtcTicksV1 is { } since && !StreakIsOver(operation, now)
+            ? (Count: operation.ServiceFaultCount, Since: since)
+            : (Count: 0, Since: now.UtcTicks);
+        return countsAsWorkerAttempt ? (ongoing.Count + 1, ongoing.Since) : ongoing;
+    }
+
+    // A streak is on record and its last write is further back than two ceilings. A write that only passes by
+    // (the first step of a withdrawal, a lease given back) clears such a streak, so that its own timestamp does not
+    // make an old streak look as if it were going on.
+    private bool StreakIsOver(GlobalProductIdentityWorkflowOperation operation, DateTimeOffset now) =>
+        operation.ServiceFaultSinceUtcTicksV1.HasValue
+        && now.UtcTicks - operation.UpdatedAtUtcTicksV1 > 2 * faultSettings.MaxRetryDelay.Ticks;
+
+    // An error when the worker has tried often enough, when the streak of consecutive faults has lasted longer than
+    // the longest back-off (so a fault met only by makers still becomes an error — by how long it has gone on, not
+    // by their clicks), or on every attempt for a fault that waiting will not mend.
     private void LogServiceFault(
         GlobalProductIdentityWorkflowOperation operation,
         ProductIdentityWorkflowCall call,
@@ -1286,6 +1398,16 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             "Product identity workflow operation {OperationId} of tenant {TenantId} met a service fault at {Call}: {ResultCode}; worker attempt {Attempt}, failing since {SinceUtc:O}; {WhatHappensNext}.",
             operation.OperationId, operation.TenantId, call, code, workerAttempts,
             new DateTimeOffset(sinceUtcTicks, TimeSpan.Zero), whatHappensNext);
+
+    // Never earlier than the worker's own schedule, never inside the settle window.
+    private static long SettledNextAttempt(
+        GlobalProductIdentityWorkflowOperation operation,
+        DateTimeOffset now,
+        TimeSpan retryDelay)
+    {
+        var settled = now.Add(retryDelay > WithdrawalSettleFloor ? retryDelay : WithdrawalSettleFloor).UtcTicks;
+        return operation.NextAttemptAtUtcTicksV1 is { } scheduled && scheduled > settled ? scheduled : settled;
+    }
 
     private GlobalProductIdentityWorkflowProcessingResult? ConfigurationFault(Guid tenantId, Guid operationId)
     {
@@ -1326,7 +1448,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
     private async Task ReleaseClaimAsync(
         GlobalProductIdentityWorkflowClaim claim,
         GlobalProductIdentityWorkflowOperation operation,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        long? nextAttemptAtUtcTicks = null)
     {
         try
         {
@@ -1336,9 +1459,10 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                     claim.Checkpoint,
                     operation.RecoveryDisposition,
                     now.UtcTicks,
-                    operation.NextAttemptAtUtcTicksV1,
+                    nextAttemptAtUtcTicks ?? operation.NextAttemptAtUtcTicksV1,
                     operation.LastFailureCode,
-                    ReleaseLease: true),
+                    ReleaseLease: true,
+                    ServiceFaultCount: StreakIsOver(operation, now) ? 0 : null),
                 CancellationToken.None);
         }
         catch (Exception exception)

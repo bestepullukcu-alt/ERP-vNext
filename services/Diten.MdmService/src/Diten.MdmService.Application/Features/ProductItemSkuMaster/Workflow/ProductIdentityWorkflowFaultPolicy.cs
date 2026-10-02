@@ -37,7 +37,7 @@ public enum ProductIdentityWorkflowFaultScope
 /// False when the outcome is unknown (no answer, unreadable answer).
 /// </param>
 /// <param name="MakerCode">The stable code the maker receives; only for <see cref="ProductIdentityWorkflowFaultKind.MakerReplay"/>.</param>
-/// <param name="Loud">The fault is logged as an error the first time it is met, not after a threshold.</param>
+/// <param name="Loud">The fault is logged as an error on every attempt, not only after a threshold.</param>
 public sealed record ProductIdentityWorkflowFaultDecision(
     ProductIdentityWorkflowFaultKind Kind,
     ProductIdentityWorkflowFaultScope Scope = ProductIdentityWorkflowFaultScope.None,

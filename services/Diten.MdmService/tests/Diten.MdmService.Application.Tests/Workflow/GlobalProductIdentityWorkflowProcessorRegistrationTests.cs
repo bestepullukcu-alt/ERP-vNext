@@ -97,12 +97,48 @@ public sealed class GlobalProductIdentityWorkflowProcessorRegistrationTests
         Assert.Contains("PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID", error.Failures);
     }
 
+    // The lease and the retry delay too: submit and withdraw read them, so a wrong value used to turn every request
+    // into a 500 — and it stops the host whether or not the worker is switched on.
+    [Theory]
+    [InlineData("LeaseSeconds", "9")]
+    [InlineData("LeaseSeconds", "901")]
+    [InlineData("RetryDelaySeconds", "0")]
+    [InlineData("RetryDelaySeconds", "3601")]
+    public async Task A_lease_or_retry_delay_out_of_range_stops_the_host_at_start_with_the_worker_off(
+        string setting, string value)
+    {
+        await using var provider = HostServices(new()
+        {
+            ["ProductIdentityWorkflowWorker:Enabled"] = "false",
+            ["ProductIdentityWorkflowWorker:ServiceFaultMaxRetryDelaySeconds"] = "86400",
+            [$"ProductIdentityWorkflowWorker:{setting}"] = value
+        }).BuildServiceProvider();
+
+        var error = Assert.Throws<Microsoft.Extensions.Options.OptionsValidationException>(() =>
+            provider.GetRequiredService<Microsoft.Extensions.Options.IStartupValidator>().Validate());
+
+        Assert.Contains("PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID", error.Failures);
+    }
+
     [Fact]
     public async Task A_valid_window_passes_the_start_up_validation()
     {
         await using var provider = HostServices().BuildServiceProvider();
 
         provider.GetRequiredService<Microsoft.Extensions.Options.IStartupValidator>().Validate();
+    }
+
+    [Theory]
+    [InlineData(0, 0, 5, false)] // a zero ceiling is no ceiling, even when the retry delay does not exceed it
+    [InlineData(0, 1, 5, true)]
+    [InlineData(30, 86_400, 1_000, true)]
+    [InlineData(30, 86_401, 5, false)]
+    [InlineData(30, 900, 0, false)]
+    [InlineData(30, 900, 1_001, false)]
+    [InlineData(901, 900, 5, false)]
+    public void The_service_fault_window_has_exact_bounds(int retryDelay, int ceiling, int threshold, bool valid)
+    {
+        Assert.Equal(valid, ProductIdentityWorkflowWorkerOptions.IsServiceFaultWindowValid(retryDelay, ceiling, threshold));
     }
 
     [Theory]

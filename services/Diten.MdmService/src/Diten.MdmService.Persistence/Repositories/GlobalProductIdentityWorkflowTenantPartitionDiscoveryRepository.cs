@@ -28,7 +28,6 @@ public sealed class GlobalProductIdentityWorkflowTenantPartitionDiscoveryReposit
         var terminal = new[]
         {
             GlobalProductIdentityWorkflowCheckpoint.Completed,
-            GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
             GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired
         };
         var filter = Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.IsDeleted, false)
@@ -36,6 +35,13 @@ public sealed class GlobalProductIdentityWorkflowTenantPartitionDiscoveryReposit
                          item => item.TemporalStorageVersion,
                          GlobalProductIdentityWorkflowOperation.CurrentTemporalStorageVersion)
                      & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Nin(item => item.Checkpoint, terminal)
+                     // AwaitingMakerReplay is the maker's to continue — EXCEPT a withdrawal an earlier version
+                     // parked there: its approval exists at the engine, so the worker must keep reading it.
+                     & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Or(
+                         Builders<GlobalProductIdentityWorkflowOperation>.Filter.Ne(
+                             item => item.Checkpoint, GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay),
+                         Builders<GlobalProductIdentityWorkflowOperation>.Filter.Ne(
+                             item => item.WithdrawalCommandId, null))
                      & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Or(
                          Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.NextAttemptAtUtcTicksV1, null),
                          Builders<GlobalProductIdentityWorkflowOperation>.Filter.Lte(

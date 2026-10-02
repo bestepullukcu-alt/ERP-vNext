@@ -600,13 +600,27 @@ withdraw path.
 - *An operation whose approval exists at the engine never waits where the worker does not read.* A start that did
   not happen may wait in `AwaitingMakerReplay` (nothing exists at the engine). A withdrawal that did not happen is
   forgotten and the operation returns to `AwaitingDecision`; one whose outcome is unknown is resolved by the worker
-  reading the approval.
+  reading the approval. Rows an earlier version parked in `AwaitingMakerReplay` WITH a withdrawal on them are read
+  by the worker too (the discovery of this processor includes exactly those).
+- *The settle window (fix round 2).* A cancellation without an answer may still land. Every write of a withdrawal
+  in flight — the request, the versions read, the unknown outcome, and the lease given back when a step is cut off —
+  keeps the worker away until `max(what the worker had scheduled, now + max(RetryDelaySeconds, 30 s))`. The floor
+  is fixed (Platform works on a cancellation inside a two-second budget; MDM's answer "unknown" comes after its own
+  client time-out on top) and is not a setting. A withdrawal therefore never brings the worker's next attempt
+  forward, and a cycle between the requester's two steps does not drop it.
+- *"Conflict" on a cancellation (fix round 2).* Platform answers it both for an approval that was decided or closed
+  and for one that is still open and merely moved on. MDM asks the approval: still open → the withdrawal is
+  forgotten and asked again with fresh versions inside the same request; not open → nothing to withdraw, the
+  request stays on the operation and a repeat gets the same answer; no answer → `WithdrawalOutcomeUnknown`.
 - *Counting.* `ServiceFaultCount` counts the WORKER's consecutive failed attempts only; `ServiceFaultSinceUtcTicksV1`
-  is when the fault was first met by anybody. Both are cleared only when a start is accepted or a decision is read.
-  A user's attempts neither count nor move `NextAttemptAtUtcTicksV1`. Ceiling and error threshold come from
+  is the first fault of the streak of consecutive faults. Both are cleared by the first real answer the chain gives
+  for the operation (a refusal that is the user's own is an answer; reading the versions before a cancellation is
+  not — the cancellation's answer is). Faults further apart than two ceilings are not one streak. A user's attempts
+  neither count nor move `NextAttemptAtUtcTicksV1`. The duration rule (Error once the streak spans the ceiling)
+  measures first fault to latest fault of one streak. Ceiling, error threshold, lease and retry delay come from
   `ProductIdentityWorkflowWorker` and are validated when the host starts.
-- *A success that breaks the contract* (`PRODUCT_WORKFLOW_RESPONSE_INVALID`) waits and is logged as an error at
-  once; the strict parsing is unchanged.
+- *A success that breaks the contract* (`PRODUCT_WORKFLOW_RESPONSE_INVALID`) waits and is logged as an error on
+  every attempt; the strict parsing is unchanged.
 - *The lease* is given back when a step is refused, when the caller goes away and when the store fails mid-step. An
   interactive claim ignores the worker's retry schedule and never a held lease.
 - *The cycle breaker.* A refused credential stops the recovery cycle for every tenant; an Auth 403 for one tenant
@@ -650,7 +664,20 @@ from the withdrawal checkpoints remain allowed for rows written earlier.
   `VALIDATION_FAILED` "Trusted workflow identity is incomplete".
 - Auth's 403 does not say whether the tenant holds no grant or the audience is forbidden for the client (Auth sends
   no code); MDM treats both as one tenant's fault, which costs one failed call per tenant per cycle.
-- An unreadable answer and an unknown 403 have no end state: the operation is retried at the ceiling for ever.
+- An unreadable answer, an unknown 403 and `PRODUCT_WORKFLOW_RESPONSE_INVALID` have no end state: the operation is
+  retried at the ceiling for ever (the last one with an Error line per attempt).
+- An exception the recovery cycle swallows has no back-off: the operation is tried again at the next cycle and
+  writes one Error line per cycle.
+- `WORKFLOW_TRUSTED_CONSUMER_TENANT_MISMATCH` quarantines on a start (deliberate: it is about the record).
+- `ServiceFaultCount` / `ServiceFaultSinceUtcTicksV1` stay on a quarantined operation as they were (accepted).
+- A start whose lookup answered "nothing arrived" and that Platform processed LATER: the operation is the maker's
+  (`AwaitingMakerReplay`, no withdrawal on it, so not read by the worker) while an approval exists at the engine;
+  the maker's resubmit replays the same idempotency key and finds it.
+- A cancellation that lands AFTER the settle window and after the worker read "still open": the withdrawal is
+  forgotten, the decision poll meets a cancelled approval (`WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT`) and the
+  operation is quarantined. Proposed, not built: keep a trace of the forgotten withdrawal and let the decision poll
+  treat that answer as "the withdrawal landed" (MDM only; needs one new transition and evidence that the answer can
+  mean nothing else).
 - The remote `reason_code` text is carried as it is into the log and into some answers (a withdrawal that conflicts).
 - A resubmit after a change of approver seat can answer `WORKFLOW_START_IDEMPOTENCY_CONFLICT`, which is about the
   record and still quarantines (GP-1b-B).
