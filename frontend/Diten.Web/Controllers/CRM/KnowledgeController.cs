@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -31,6 +32,7 @@ public sealed partial class KnowledgeController : Controller
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
     private readonly ILogger<KnowledgeController> _logger;
+    private readonly CrmReferenceSetReader _referenceSets;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true };
 
     public KnowledgeController(
@@ -44,6 +46,7 @@ public sealed partial class KnowledgeController : Controller
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _sharedLocalizer = sharedLocalizer;
         _logger = logger;
+        _referenceSets = new CrmReferenceSetReader(httpClient, _gatewayUrl, logger);
     }
 
     // ---------------- Content Compact pages ----------------
@@ -379,14 +382,16 @@ public sealed partial class KnowledgeController : Controller
 
     // WP-MOD0162-AUD-UI: read-only MOD-0048 published values for the AudienceProfile dimension builder (axis =
     // reference-set code → its published ValueCodes; the browser stores the stable ValueCode and resolves the display
-    // name live). scope_key is the JWT tenant (never taken from the client). Same gate as the profile list so any user
-    // who can open the profile form can populate its reference axes.
+    // name live). Same gate as the profile list so any user who can open the profile form can populate its reference axes.
+    // WP-BRD-TENANT-CRM-SETS — read through the shared CrmReferenceSetReader (consumable-sets route first, so a non-admin
+    // gets the axes too; the tenant is the JWT tenant, never taken from the client). The Platform answer is passed through.
     [HttpGet("api/reference-data/{setCode}/values")]
-    public Task<IActionResult> ReferenceValues(string setCode, CancellationToken ct)
+    public async Task<IActionResult> ReferenceValues(string setCode, CancellationToken ct)
     {
-        var tenantId = GetTenantId() ?? string.Empty;
-        var path = $"/api/v1/reference-data/sets/{Uri.EscapeDataString(setCode)}/published-values?scope_key={Uri.EscapeDataString(tenantId)}";
-        return ProxyGetAsync(path, SubjectReadPermission, ct, ReadPermission, ReadFallback);
+        if (RequireJson(SubjectReadPermission, ReadPermission, ReadFallback) is { } denied) return denied;
+        var response = await _referenceSets.ReadAsync(
+            setCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), GetTenantId(), ct);
+        return await ToProxyResultAsync(response, ct);
     }
 
     // ---------------- helpers ----------------

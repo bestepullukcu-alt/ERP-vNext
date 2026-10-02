@@ -128,6 +128,9 @@ public static class DependencyInjection
         services.Configure<TenantManagementOptions>(configuration.GetSection(TenantManagementOptions.SectionName));
         services.Configure<AuditRetentionSeedOptions>(configuration.GetSection(AuditRetentionSeedOptions.SectionName));
         services.Configure<BusinessReferenceDataCatalogLoadOptions>(configuration.GetSection(BusinessReferenceDataCatalogLoadOptions.SectionName));
+        // WP-BRD-TENANT-CRM-SETS — the reference sets every tenant user may read on api/lookups/reference-data/consumable-sets.
+        services.Configure<Diten.Platform.Application.Features.BusinessReferenceData.Services.BusinessReferenceDataConsumableSetsOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.BusinessReferenceData.Services.BusinessReferenceDataConsumableSetsOptions.SectionName));
         services.Configure<BusinessReferenceDataProviderOptions>(configuration.GetSection(BusinessReferenceDataProviderOptions.SectionName));
         services.AddSingleton<IValidateOptions<BusinessReferenceDataProviderOptions>, BusinessReferenceDataProviderOptionsValidator>();
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
