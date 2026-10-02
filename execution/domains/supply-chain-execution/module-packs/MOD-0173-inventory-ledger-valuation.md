@@ -441,7 +441,7 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
   `Inventory:Upstream:LegalEntityMasterBaseUrl`; new code `LEGAL_ENTITY_MASTER_UNAVAILABLE` (named by W-0173-02); the
   "select a company" 403 carries no code. Real-login E2E measured; evidence `docs/records/audits/2026-10/mod-0173-le1-evidence/`.
 
-- **WP-0173-RSV1 (agent result, pending CT, 2026-10-02) — FU-RSV-01 fixed, owner decision 2026-10-02 = option 1.**
+- **WP-0173-RSV1 (CT-ACCEPTED 2026-10-02) — FU-RSV-01 fixed, owner decision 2026-10-02 = option 1.**
   The shared manifest gains an OPTIONAL, LAST `ApiPermissions` list (`ModuleManifestPermission(PermissionKey,
   DisplayName, Scope = "Tenant")`); the Platform reconcile syncs each key to AuthService with its declared scope
   ("Tenant" | "PlatformAdmin" exactly; anything else skipped with a warning), creates no page/action, prunes nothing.
@@ -474,7 +474,7 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
   granted "all Inventory" to Admin, re-login, token (runs G1X9U4R, G1Y13QY) still carries 4/5 `inventory.*` keys; reserve
   and release → 403. Mechanics stay proven by the test suite (S2 acceptance) but not live. Fix needs a decision on a
   shared seam (manifest API-only permission entries, or a per-service A1 sync) — not an in-module invented action.
-  **Status (2026-10-02): FIXED — awaiting CT live measurement.** WP-0173-RSV1 (`c0abc6728`): manifest `ApiPermissions`
+  **Status (2026-10-02): CLOSED — CT measured live (run G10G21Z), see §19 WP-0173-RSV1.** WP-0173-RSV1 (`c0abc6728`): manifest `ApiPermissions`
   (standard §2d); the key is in the AuthService catalog as Module `inventory-ledger`, Scope Tenant (measured). Open for
   CT: role grant on the tenant role screen, re-login, reserve/release 403 → 201.
 
