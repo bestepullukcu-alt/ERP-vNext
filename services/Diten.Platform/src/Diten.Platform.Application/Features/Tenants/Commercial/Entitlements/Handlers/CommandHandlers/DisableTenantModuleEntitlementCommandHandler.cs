@@ -50,19 +50,19 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
         var module = await _moduleRepository.GetByCodeAsync(moduleCode, ct);
         if (module is null)
         {
-            return Response<NoContent>.Fail("Module was not found.", 404);
+            return Response<NoContent>.Fail("Module was not found.", 404, TenantModuleEntitlementRefusalCodes.ModuleNotFound);
         }
 
         if (module.IsCoreModule)
         {
-            return Response<NoContent>.Fail("Core system modules cannot be disabled.", 409);
+            return Response<NoContent>.Fail("Core system modules cannot be disabled.", 409, TenantModuleEntitlementRefusalCodes.CoreModule);
         }
 
         // FEAT-BASELINE-MODULES — a baseline module is entitlement-free (every tenant auto-has it); disabling it via a
         // manual override is meaningless (access checks bypass entitlements for baseline) and misleading, so reject.
         if (module.IsBaseline)
         {
-            return Response<NoContent>.Fail("Baseline modules are entitlement-free and cannot be disabled.", 409);
+            return Response<NoContent>.Fail("Baseline modules are entitlement-free and cannot be disabled.", 409, TenantModuleEntitlementRefusalCodes.BaselineModule);
         }
 
         try
@@ -72,7 +72,7 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
                 var entitlement = await _repository.GetByIdAsync(request.TenantId, request.Request.PhysicalEntitlementId.Value, ct);
                 if (entitlement is null)
                 {
-                    return Response<NoContent>.Fail("Entitlement was not found.", 404);
+                    return Response<NoContent>.Fail("Entitlement was not found.", 404, TenantModuleEntitlementRefusalCodes.NotFound);
                 }
 
                 var wasEnabled = entitlement.IsEnabled;

@@ -15,7 +15,14 @@ public sealed record TenantModuleEntitlementRowDto(
     bool IsProjectionRow,
     bool HasManualOverride,
     DateTimeOffset? LastUpdatedAtUtc,
-    byte[]? RowVersion);
+    byte[]? RowVersion,
+    /// <summary>
+    /// BL-500 — what the Modules tab may offer on this row, in order (the first is the primary action). Decided by
+    /// <see cref="TenantModuleEntitlementRowActions"/>; the screen draws these and nothing else. Trailing and
+    /// optional only so the callers that build a row for other purposes keep compiling: the list query always sets
+    /// it, and a row without it offers nothing.
+    /// </summary>
+    IReadOnlyList<string>? AllowedActions = null);
 
 // FIX-3 — S2S projection for AuthService's catalog-key-driven entitlement → permission sync. For each
 // effectively-Active entitled module, carries the permission keys the module DECLARES in the page/action

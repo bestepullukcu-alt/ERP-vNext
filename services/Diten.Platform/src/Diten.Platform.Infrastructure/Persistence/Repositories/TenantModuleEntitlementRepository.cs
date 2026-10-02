@@ -98,10 +98,28 @@ public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantM
 
     public async Task UpdateAsync(IPlatformTransactionSession session, TenantModuleEntitlement entitlement, byte[]? expectedRowVersion, CancellationToken ct = default)
     {
+        /*
+         * BL-500 — the tenant of the write is the ROW's own tenant, the same rule CreateAsync follows.
+         *
+         * This filter used to read TenantContext.TenantId. A platform administrator's request runs in the platform
+         * context, where that is Guid.Empty: the filter matched no row, MatchedCount was 0, and every suspend, enable
+         * and expiry change made from the tenant's Modules tab was refused as "modified by another process" — a
+         * concurrency error about a row nobody had touched. The handlers load the row by (route tenant, id), so the
+         * row already carries the authoritative tenant.
+         *
+         * The tenant condition is NOT dropped — only where its value comes from changes. The filter still pins tenant
+         * + id + (when given) version, and a tenant-scoped caller is still refused a row of another tenant before any
+         * write is attempted.
+         */
+        if (!TenantContext.IsPlatformContext && entitlement.TenantId != TenantContext.TenantId)
+        {
+            throw new TenantModuleEntitlementConcurrencyException();
+        }
+
         var filters = new List<FilterDefinition<TenantModuleEntitlement>>
         {
             ExecutionFilter,
-            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
+            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.TenantId, entitlement.TenantId),
             Builders<TenantModuleEntitlement>.Filter.Eq(x => x.Id, entitlement.Id)
         };
 

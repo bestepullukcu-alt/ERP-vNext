@@ -15,13 +15,16 @@ public sealed class GetTenantModuleEntitlementsQueryHandler
     private readonly IPlatformCatalogContract _catalogContract;
     private readonly ITenantSubscriptionRepository _subscriptionRepository;
     private readonly ISubscriptionPlanRepository _planRepository;
+    private readonly IModuleCatalogRepository _moduleRepository;
 
     public GetTenantModuleEntitlementsQueryHandler(
         ITenantModuleEntitlementRepository entitlementRepository,
         IPlatformCatalogContract catalogContract,
         ITenantSubscriptionRepository subscriptionRepository,
-        ISubscriptionPlanRepository planRepository)
+        ISubscriptionPlanRepository planRepository,
+        IModuleCatalogRepository moduleRepository)
     {
+        _moduleRepository = moduleRepository;
         _entitlementRepository = entitlementRepository;
         _catalogContract = catalogContract;
         _subscriptionRepository = subscriptionRepository;
@@ -56,6 +59,10 @@ public sealed class GetTenantModuleEntitlementsQueryHandler
                 moduleRows,
                 now);
             var hasManualOverride = moduleRows.Any(x => x.Source == EntitlementSource.ManualOverride);
+            // BL-500 — the same two flags the command handlers refuse on, read from the same record they read.
+            var catalogItem = await _moduleRepository.GetByCodeAsync(code, ct);
+            var isCore = catalogItem?.IsCoreModule ?? module?.IsCoreModule == true;
+            var isBaseline = catalogItem?.IsBaseline == true;
 
             if (planModuleCodes.Contains(code, StringComparer.OrdinalIgnoreCase))
             {
@@ -72,7 +79,15 @@ public sealed class GetTenantModuleEntitlementsQueryHandler
                     true,
                     hasManualOverride,
                     null,
-                    null));
+                    null,
+                    TenantModuleEntitlementRowActions.For(
+                        isProjectionRow: true,
+                        grantsAccess: access.HasAccess && access.Source == "Plan",
+                        source: null,
+                        storedIsEnabled: false,
+                        isExpired: false,
+                        isCore,
+                        isBaseline)));
             }
 
             rows.AddRange(moduleRows.Select(row => new TenantModuleEntitlementRowDto(
@@ -88,7 +103,15 @@ public sealed class GetTenantModuleEntitlementsQueryHandler
                 false,
                 hasManualOverride,
                 row.UpdatedAt ?? row.CreatedAt,
-                row.RowVersion)));
+                row.RowVersion,
+                TenantModuleEntitlementRowActions.For(
+                    isProjectionRow: false,
+                    grantsAccess: false,
+                    row.Source,
+                    row.IsEnabled,
+                    TenantModuleEntitlementAccessEvaluator.IsExpired(row, now),
+                    isCore,
+                    isBaseline))));
         }
 
         return Response<IReadOnlyList<TenantModuleEntitlementRowDto>>.Success(rows);

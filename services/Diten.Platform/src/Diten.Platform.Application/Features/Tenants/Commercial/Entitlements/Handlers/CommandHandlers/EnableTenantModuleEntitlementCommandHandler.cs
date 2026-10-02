@@ -46,7 +46,7 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
         var entitlement = await _repository.GetByIdAsync(request.TenantId, request.EntitlementId, ct);
         if (entitlement is null)
         {
-            return Response<NoContent>.Fail("Entitlement was not found.", 404);
+            return Response<NoContent>.Fail("Entitlement was not found.", 404, TenantModuleEntitlementRefusalCodes.NotFound);
         }
 
         try

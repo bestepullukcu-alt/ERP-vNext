@@ -49,12 +49,12 @@ public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHan
         var entitlement = await _repository.GetByIdAsync(request.TenantId, request.EntitlementId, ct);
         if (entitlement is null)
         {
-            return Response<NoContent>.Fail("Entitlement was not found.", 404);
+            return Response<NoContent>.Fail("Entitlement was not found.", 404, TenantModuleEntitlementRefusalCodes.NotFound);
         }
 
         if (entitlement.Source != EntitlementSource.ManualOverride)
         {
-            return Response<NoContent>.Fail("Only manual overrides can be removed.", 409);
+            return Response<NoContent>.Fail("Only manual overrides can be removed.", 409, TenantModuleEntitlementRefusalCodes.NotManualOverride);
         }
 
         // FEAT-BASELINE-MODULES — defense in depth: a baseline module is entitlement-free (every tenant auto-has it).
@@ -64,7 +64,7 @@ public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHan
         var module = await _moduleRepository.GetByCodeAsync(entitlement.ModuleCode, ct);
         if (module?.IsBaseline == true)
         {
-            return Response<NoContent>.Fail("Baseline modules are entitlement-free and cannot be removed.", 409);
+            return Response<NoContent>.Fail("Baseline modules are entitlement-free and cannot be removed.", 409, TenantModuleEntitlementRefusalCodes.BaselineModule);
         }
 
         try

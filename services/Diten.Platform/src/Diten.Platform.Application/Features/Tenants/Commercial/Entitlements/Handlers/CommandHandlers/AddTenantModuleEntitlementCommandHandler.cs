@@ -51,7 +51,7 @@ public sealed class AddTenantModuleEntitlementCommandHandler : IRequestHandler<A
         var moduleValidation = await TenantModuleEntitlementCommandSupport.ValidateModuleAsync(_moduleRepository, moduleCode, ct);
         if (!moduleValidation.IsValid)
         {
-            return Response<Guid>.Fail(moduleValidation.Error!, moduleValidation.StatusCode);
+            return Response<Guid>.Fail(moduleValidation.Error!, moduleValidation.StatusCode, moduleValidation.Code);
         }
 
         var duplicate = await TenantModuleEntitlementCommandSupport.ValidateDuplicateAsync(
@@ -62,7 +62,7 @@ public sealed class AddTenantModuleEntitlementCommandHandler : IRequestHandler<A
             ct);
         if (!duplicate.IsValid)
         {
-            return Response<Guid>.Fail(duplicate.Error!, duplicate.StatusCode);
+            return Response<Guid>.Fail(duplicate.Error!, duplicate.StatusCode, duplicate.Code);
         }
 
         var entitlement = new TenantModuleEntitlement
