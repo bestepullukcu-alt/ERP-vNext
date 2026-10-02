@@ -314,15 +314,65 @@ public sealed class InventoryProxyControllerTests
 
     // ── harness ──────────────────────────────────────────────────────────────────────────────────────────────
 
-    private static ReversalRequestViewModel Reversal(Guid key) => new()
+    private static ReversalRequestViewModel Reversal(Guid key, string? reversalAt = null) => new()
     {
         IdempotencyKey = key.ToString(),
         ItemId = Item,
         SkuId = Sku,
         SkuLevel = "Lsku",
         Quantity = "12.500",
-        UomId = "EA"
+        UomId = "EA",
+        ReversalAt = reversalAt ?? DateTime.UtcNow.AddSeconds(-30).ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", System.Globalization.CultureInfo.InvariantCulture)
     };
+
+    // ── FU-UI2-05 (WP-0173-PM0): the dialog's instant travels with its key ──────────────────────────────────
+
+    [Fact]
+    public async Task A_resent_reversal_dialog_carries_the_same_dates_so_the_service_replays_it()
+    {
+        var gateway = new FakeGateway();
+        gateway.On("/api/inventory/movements", 201, """{"transactionId":"t-2","transactionNumber":"INV-2","idempotentReplay":false}""");
+        var original = Guid.NewGuid().ToString();
+        var key = Guid.NewGuid();
+        var openedAt = DateTime.UtcNow.AddMinutes(-2).ToString("yyyy-MM-dd'T'HH:mm:ss.fff'Z'", System.Globalization.CultureInfo.InvariantCulture);
+
+        await Movements(gateway, ReadAndCreate).Reverse(original, Reversal(key, openedAt), CancellationToken.None);
+        await Task.Delay(1100); // a later second: a server-side "now" would differ here
+        await Movements(gateway, ReadAndCreate).Reverse(original, Reversal(key, openedAt), CancellationToken.None);
+
+        Assert.Equal(2, gateway.Requests.Count);
+        // Same key AND same body — the service's fingerprint matches, so the second is a replay, not a key reuse.
+        Assert.Equal(gateway.Requests[0].IdempotencyKey, gateway.Requests[1].IdempotencyKey);
+        Assert.Equal(gateway.Requests[0].Body, gateway.Requests[1].Body);
+        using var body = JsonDocument.Parse(gateway.Requests[0].Body);
+        var expected = openedAt[..19] + "Z";
+        Assert.Equal(expected, body.RootElement.GetProperty("transactionDate").GetString());
+        Assert.Equal(expected, body.RootElement.GetProperty("postingDate").GetString());
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("2026-10-02 09:00")]
+    [InlineData("+10m")]
+    [InlineData("-25h")]
+    public async Task A_reversal_without_a_plausible_dialog_instant_never_reaches_the_gateway(string? instant)
+    {
+        var gateway = new FakeGateway();
+        var value = instant switch
+        {
+            "+10m" => DateTime.UtcNow.AddMinutes(10).ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", System.Globalization.CultureInfo.InvariantCulture),
+            "-25h" => DateTime.UtcNow.AddHours(-25).ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", System.Globalization.CultureInfo.InvariantCulture),
+            _ => instant
+        };
+        var model = Reversal(Guid.NewGuid());
+        model.ReversalAt = value;
+
+        var result = Assert.IsType<JsonResult>(await Movements(gateway, ReadAndCreate).Reverse(Guid.NewGuid().ToString(), model, CancellationToken.None));
+
+        Assert.Equal(400, result.StatusCode);
+        Assert.Equal("ErrInvalidRequest", Body(result).GetProperty("error").GetProperty("message").GetString());
+        Assert.Empty(gateway.Requests);
+    }
 
     private static JsonElement Body(IActionResult result) =>
         JsonDocument.Parse(JsonSerializer.Serialize(Assert.IsType<JsonResult>(result).Value, new JsonSerializerOptions(JsonSerializerDefaults.Web))).RootElement;

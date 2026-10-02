@@ -78,6 +78,25 @@ if [ $? -ne 0 ]; then
     (cd "$PWD/services/Diten.InventoryService/src/Diten.InventoryService.Api" && Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet run --no-build --launch-profile http --urls "http://localhost:5066" > "/tmp/diten_Inventory.log" 2>&1 &)
 fi
 launch_service "Gateway" "gateway/Diten.ApiGateway" 5000
+# FU-PM-01: MDM PRODUCT-MASTER gelene kadar geçici (docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md §6) — WP-0173-PM0
+# Diten.Web'in /api/product-master okumaları Prism mock'a (4010), yalnız Development'ta. Yeni Terminal sekmesi bu kabuğun
+# ortamını almadığı için değişken komutun içinde olmalı: launch_service burada yeniden tanımlanır; son çağrısı Web'dir.
+launch_service() {
+    local NAME=$1
+    local DIR=$2
+    local PORT=$3
+    echo "Starting $NAME on port $PORT (product-master bridge -> 4010)..."
+    /usr/bin/osascript <<EOF
+tell application "Terminal"
+    do script "cd '$PWD/$DIR' && Inventory__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet run --no-build --urls http://localhost:$PORT"
+end tell
+EOF
+    if [ $? -ne 0 ]; then
+        echo "Could not open new terminal tab for $NAME, running in background..."
+        cd "$PWD/$DIR" && Inventory__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet run --no-build --urls "http://localhost:$PORT" > "/tmp/diten_$NAME.log" 2>&1 &
+        cd - > /dev/null
+    fi
+}
 launch_service "Web" "frontend/Diten.Web" 5001
 
 echo "✨ Services are launching."

@@ -25,14 +25,18 @@ public sealed class InventoryGatewayClient
     private readonly string _tenantId;
     private readonly Guid? _company;
     private readonly bool _companyRequired;
+    private readonly string? _productMasterBridge;
 
     /// <summary>The synthetic refusal code for an inventory call made without a company (never reaches the Gateway).</summary>
     public const string CompanyNotSelected = "COMPANY_NOT_SELECTED";
 
-    public InventoryGatewayClient(HttpClient http, string gatewayUrl, string? accessToken, string tenantId, Guid? company = null, bool companyRequired = false)
+    /// <param name="productMasterBridge">WP-0173-PM0: a DEVELOPMENT-only base URL for <c>/api/product-master/…</c>
+    /// (<see cref="ProductMasterBridge"/>); null = the Gateway, as before.</param>
+    public InventoryGatewayClient(HttpClient http, string gatewayUrl, string? accessToken, string tenantId, Guid? company = null, bool companyRequired = false, string? productMasterBridge = null)
     {
         _company = company;
         _companyRequired = companyRequired;
+        _productMasterBridge = productMasterBridge;
         _http = http;
         _gatewayUrl = gatewayUrl.TrimEnd('/');
         _accessToken = accessToken;
@@ -66,7 +70,8 @@ public sealed class InventoryGatewayClient
             return new GatewayReply(403, JsonSerializer.Serialize(new { error = new { code = CompanyNotSelected, message = "Select a company." } }), null);
         }
 
-        using var request = new HttpRequestMessage(method, _gatewayUrl + pathAndQuery);
+        // The headers below are the same on both targets; only the address differs (and the bridge's has no prefix).
+        using var request = new HttpRequestMessage(method, ProductMasterBridge.Target(_gatewayUrl, _productMasterBridge, pathAndQuery));
         if (isInventory && _company is not null)
             request.Headers.Add(CompanySelection.LegalEntityHeader, _company.Value.ToString("D"));
         if (!string.IsNullOrWhiteSpace(_accessToken))

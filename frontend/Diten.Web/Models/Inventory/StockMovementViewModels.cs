@@ -95,6 +95,11 @@ public sealed class ReversalRequestViewModel
     public string? SkuLevel { get; set; }
     public string? Quantity { get; set; }
     public string? UomId { get; set; }
+    /// <summary>
+    /// FU-UI2-05 (WP-0173-PM0): the reversal's transaction / posting instant, UTC, minted WITH the key when the dialog
+    /// opened — a re-send of the same dialog then carries the same dates and the service replays it.
+    /// </summary>
+    public string? ReversalAt { get; set; }
 }
 
 /// <summary>Contract <c>MovementResponse</c> (the fields the reversal result shows).</summary>

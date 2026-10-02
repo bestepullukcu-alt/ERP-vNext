@@ -178,7 +178,7 @@ const StockMovementsList = (function () {
     const antiforgeryToken = () =>
         document.querySelector('#stockmovements-antiforgery input[name="__RequestVerificationToken"]')?.value || '';
 
-    const postReversal = async (row, idempotencyKey) => {
+    const postReversal = async (row, idempotencyKey, reversalAt) => {
         try {
             const res = await fetch(`/StockMovements/reverse/${encodeURIComponent(row.id)}`, {
                 method: 'POST',
@@ -190,7 +190,8 @@ const StockMovementsList = (function () {
                     skuId: row.skuId,
                     skuLevel: row.skuLevel,
                     quantity: row.quantity,
-                    uomId: row.uomId
+                    uomId: row.uomId,
+                    reversalAt: reversalAt
                 })
             });
             const json = await res.json().catch(() => null);
@@ -207,7 +208,10 @@ const StockMovementsList = (function () {
     // the confirm button is taken over in `didOpen`: post, and either close + reload, or stay with the sentence.
     const reverse = ({ row }) => {
         if (!row?.id || !row.canReverse || !canReverse()) return;
+        // FU-UI2-05: the key AND the instant are fixed when the dialog opens — a re-send of this dialog is the same
+        // request (the service fingerprints the dates), so it replays instead of failing as a reused key.
         const idempotencyKey = newKey();
+        const reversalAt = new Date().toISOString();
         const sentence = String(L().ReversalConfirmText || '').replace('{0}', row.transactionNumber || row.id);
         let busy = false;
 
@@ -227,7 +231,7 @@ const StockMovementsList = (function () {
                     busy = true;
                     swal.resetValidationMessage();
                     swal.showLoading(confirm);
-                    const outcome = await postReversal(row, idempotencyKey);
+                    const outcome = await postReversal(row, idempotencyKey, reversalAt);
                     if (outcome.ok) {
                         swal.close();
                         list.reload(outcome.message || L().RecordSaved);

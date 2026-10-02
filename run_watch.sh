@@ -47,6 +47,10 @@ else
 fi
 prefix_logs "[INVENTRY]" "env Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet watch run --non-interactive --project services/Diten.InventoryService/src/Diten.InventoryService.Api/Diten.InventoryService.Api.csproj --launch-profile http --urls http://0.0.0.0:5066" &
 prefix_logs "[GATEWAY ]" "dotnet watch run --non-interactive --project gateway/Diten.ApiGateway/Diten.ApiGateway.csproj --urls http://0.0.0.0:5000" &
+# FU-PM-01: MDM PRODUCT-MASTER gelene kadar geçici (docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md §6) — WP-0173-PM0
+# Diten.Web'in /api/product-master okumaları Prism mock'a (4010) — yalnız bu Web süreci alır ve yalnız Development'ta geçerlidir.
+export Inventory__ProductMasterBaseUrl=http://127.0.0.1:4010/
 prefix_logs "[FRONTEND]" "dotnet watch run --non-interactive --project frontend/Diten.Web/Diten.Web.csproj --urls http://0.0.0.0:5001" &
+unset Inventory__ProductMasterBaseUrl # yalnız Diten.Web süreci aldı
 
 wait

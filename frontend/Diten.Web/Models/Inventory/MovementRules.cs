@@ -110,6 +110,29 @@ public static partial class MovementRules
             ? amount.ToString("#,0.######", CultureInfo.CurrentCulture)
             : value ?? string.Empty;
 
+    /// <summary>How far a dialog's instant may run ahead of the server clock (browser clock skew).</summary>
+    public static readonly TimeSpan DialogInstantMaxAhead = TimeSpan.FromMinutes(5);
+
+    /// <summary>How old a dialog's instant may be — an S-2 Reversal dialog left open longer is stale; reload.</summary>
+    public static readonly TimeSpan DialogInstantMaxAge = TimeSpan.FromHours(24);
+
+    /// <summary>
+    /// FU-UI2-05: an instant minted by the browser when a confirmation opened — UTC, not more than
+    /// <see cref="DialogInstantMaxAhead"/> in the future and not older than <see cref="DialogInstantMaxAge"/>.
+    /// </summary>
+    public static bool TryDialogInstant(string? value, DateTimeOffset now, out string utc)
+    {
+        if (!TryUtc(value, out utc)) return false;
+        var instant = DateTimeOffset.Parse(utc, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+        if (instant > now + DialogInstantMaxAhead || instant < now - DialogInstantMaxAge)
+        {
+            utc = string.Empty;
+            return false;
+        }
+
+        return true;
+    }
+
     /// <summary>A UTC ISO-8601 instant as the contract wants it (the browser converts the reader's local time).</summary>
     public static bool TryUtc(string? value, out string utc)
     {

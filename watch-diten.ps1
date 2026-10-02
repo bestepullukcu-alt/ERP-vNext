@@ -59,7 +59,12 @@ Write-Host "Starting Inventory on port 5066 with watch..." -ForegroundColor Gree
 $inventoryPath = (Resolve-Path "services/Diten.InventoryService/src/Diten.InventoryService.Api").Path
 Start-Process cmd.exe -ArgumentList "/k title Diten ERP - Inventory && cd `"$inventoryPath`" && set `"Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/`" && dotnet watch run --non-interactive --launch-profile http"
 Launch-Service -Name "Gateway" -Path "gateway/Diten.ApiGateway" -Port 5000
+# FU-PM-01: MDM PRODUCT-MASTER gelene kadar geçici (docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md §6) — WP-0173-PM0
+# Diten.Web'in /api/product-master okumaları Prism mock'a (4010), yalnız Development'ta. Web penceresi bu değişkeni devralır;
+# hemen ardından silinir, sonraki hiçbir pencere almaz.
+$env:Inventory__ProductMasterBaseUrl = 'http://127.0.0.1:4010/'
 Launch-Service -Name "Web" -Path "frontend/Diten.Web" -Port 5001
+Remove-Item Env:Inventory__ProductMasterBaseUrl -ErrorAction SilentlyContinue
 
 Write-Host "`n✨ Services are launching in separate CMD windows." -ForegroundColor Green
 Write-Host "🔗 Access: http://localhost:5001/platform/login" -ForegroundColor Cyan

@@ -302,7 +302,10 @@ public sealed partial class StockMovementsController : Controller
             || !Guid.TryParse(model.SkuId, out var skuId)
             || !InventoryListAdapter.SkuLevels.Contains(model.SkuLevel ?? string.Empty, StringComparer.Ordinal)
             || model.Quantity is null || !QuantityPattern().IsMatch(model.Quantity)
-            || string.IsNullOrWhiteSpace(model.UomId))
+            || string.IsNullOrWhiteSpace(model.UomId)
+            // FU-UI2-05: the instant comes WITH the key (fixed when the dialog opened), so a re-send of the same dialog is
+            // the same request — a replay — and not IDEMPOTENCY_KEY_REUSED (the service fingerprints the dates).
+            || !MovementRules.TryDialogInstant(model.ReversalAt, DateTimeOffset.UtcNow, out var reversalAt))
             return Refuse(StatusCodes.Status400BadRequest, InventoryListAdapter.InvalidFilter, null);
 
         var gateway = InventoryProxy.Gateway(_httpClient, _gatewayUrl, Request, User);
@@ -310,7 +313,7 @@ public sealed partial class StockMovementsController : Controller
             return Refuse(StatusCodes.Status401Unauthorized, null, null);
 
         var idempotencyKey = "reversal-" + key.ToString("N");
-        var now = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture);
+        var now = reversalAt;
         var payload = new
         {
             idempotencyKey,

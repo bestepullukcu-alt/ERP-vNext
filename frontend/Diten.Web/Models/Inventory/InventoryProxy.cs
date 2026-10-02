@@ -29,7 +29,9 @@ public static class InventoryProxy
         // W-0173-02: the token's company wins; without one, the user's selected company travels as X-Legal-Entity-Id.
         var tokenHasCompany = CompanySelection.TokenLegalEntity(user) is not null;
         var company = tokenHasCompany ? null : CompanySelection.SelectedCompany(request, user);
-        return new InventoryGatewayClient(http, gatewayUrl, token, tenantId, company, companyRequired: !tokenHasCompany);
+        // WP-0173-PM0: Development-only product-master bridge (null everywhere else and whenever it is not configured).
+        var bridge = ProductMasterBridge.Resolve(request.HttpContext?.RequestServices);
+        return new InventoryGatewayClient(http, gatewayUrl, token, tenantId, company, companyRequired: !tokenHasCompany, productMasterBridge: bridge);
     }
 
     /// <summary>
