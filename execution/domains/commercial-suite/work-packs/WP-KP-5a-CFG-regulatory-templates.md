@@ -84,3 +84,69 @@ KORU/YAPMA: kod değişikliği YOK; CLAIM-* / KP-MLR-* DOKUNMA; RBAC'a yazma YOK
 DOĞRULA (E4): yukarıdaki duman + rapor tabloları (şablon kodu → definition id + aktif sürüm; rol → eklenecek anahtarlar). Commit ("chore(crm): WP-KP-5a-CFG — regulatory approval templates (6 countries) + regulatory text rbac grant script" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: şablon kodu ayarı KP-REG-{CC} değilse; 6 izin Auth kataloğunda yoksa; Platform requestedObjectType'ı kayıtlı listeden doğruluyorsa → DUR + raporla.
 ```
+---
+
+## §36.2 Uygulama raporu (owner, 2026-10-02) — canlı 97c5
+
+**Ön koşul ve DUR kontrolü:**
+- **Şablon kodu:** `RegulatoryTextReviewDefaults.TemplateCodeFormat = "KP-REG-{0}"`; CrmService.Api `appsettings*.json` içinde `Crm:RegulatoryTexts:Workflow` override'ı yok.
+- **Auth kataloğu:** 6 yeni anahtar mevcut (Scope 0 = Tenant, Module `crm-knowledge`) — fleet doğru dalla çalışıyor.
+- **Nesne tipi doğrulaması:** Platform kodunda `requestedObjectType` hiç geçmiyor; kayıtlı bir nesne tipi listesi yok (serbest veri).
+- Üç DUR koşulu da tetiklenmedi.
+- **Oturum:** kullanıcı yerleşik tarayıcıda giriş yaptı; işlemler ayrı sekmede, aynı kaynaktaki `/Platform/Workflow/api/…` proxy'si üzerinden yapıldı. Mock / harness eklenmedi, örnek başlatılmadı, CRM kaydı oluşturulmadı.
+- **Başlangıç durumu:** `KP-REG-*` yoktu. `CLAIM-*` (7) ve `KP-MLR-*` (6) şablonlarının parmak izi alındı (şablon + sürüm dokümanlarının SHA-256'sı, Mongo `diten_personalization_dev`).
+
+### 1. Şablonlar — 6/6 Published
+- Kaynak: canlı `KP-MLR-TR` v1'in `regulatory` adımı, birebir. Değişenler: kod, ad, tek aşama / tek adım, `requestedObjectType`.
+- İşlem: `POST definitions` (201) → `POST definitions/{id}/publish` (200), hepsi ilk denemede. `publishReason` = WP-KP-5a-CFG.
+
+| Kod | Ad | Template id | Aktif sürüm (v1) | Durum |
+|---|---|---|---|---|
+| `KP-REG-TR` | Güvenlilik / Yasal metin — Türkiye Regülasyon onayı | `98a42638-ac41-4aab-b897-6239fce48a3f` | `ba00ebe5-950e-4c1a-a1c8-60b513686782` | Published |
+| `KP-REG-BY` | Güvenlilik / Yasal metin — Belarus Regülasyon onayı | `f8c1ae04-e78b-4bf5-9e95-d0108ec3a9ac` | `52401c7b-1025-4523-b315-8a2e345d46c9` | Published |
+| `KP-REG-UZ` | Güvenlilik / Yasal metin — Özbekistan Regülasyon onayı | `4c54aea9-6ca6-4b50-b4e9-a78f367e505b` | `f3f43b23-ea53-495d-80ef-51848887621a` | Published |
+| `KP-REG-TM` | Güvenlilik / Yasal metin — Türkmenistan Regülasyon onayı | `6b2d751b-4e1f-4394-a387-29b7fb896b6a` | `06ab42cd-cdaf-4f00-8bf2-c179194f13cd` | Published |
+| `KP-REG-GE` | Güvenlilik / Yasal metin — Gürcistan Regülasyon onayı | `795a0ca7-3d03-445c-8fc4-c80223138de7` | `ff4a4ba3-3b37-4da3-9163-b9a352487c6c` | Published |
+| `KP-REG-AZ` | Güvenlilik / Yasal metin — Azerbaycan Regülasyon onayı | `bd905eda-d04a-4345-9a9c-3f66144379f7` | `569804b4-4424-41c0-8609-24b7f2062df3` | Published |
+
+### 2. Duman (salt okuma)
+- `GET definitions/{id}` + yayınlı sürüm: 6 şablonda `Published`, `activePublishedVersionId` = yayınlı v1.
+- Yayınlı JSON (6 şablonda aynı): `requestedObjectType: crm.safety-text`, tek aşama `regulatory` ("Ruhsat İnceleme"), tek adım `regulatory` ("Ruhsat inceleme") [POS-REG-MGR `b122780a…`, POS-REG-SPC `0f0b5c2c…`], SLA 4320 / 2880 → POS-REG-MGR, `commentRequired: false` (ret yorumu CRM karar ucunda, KP-5a).
+- **`requestedObjectType` bilgi amaçlı:** CRM iki türü (`crm.safety-text`, `crm.country-legal-profile`) aynı ülke şablonuyla başlatır; Platform alanı doğrulamaz. Yasal profil örneği de bu şablonla başlar, örneğin kendi `ObjectType`'ı CRM'in gönderdiği değerdir.
+- **`CLAIM-*` ve `KP-MLR-*` değişmedi:** 13 şablonun parmak izi önce ve sonra aynı.
+- Konsol hatası yok; ağda 4xx / 5xx yok.
+
+### 3. Yetki — script yazıldı, RBAC'a yazılmadı
+97c5 salt okuma kontrolü:
+
+| Rol | 6 yeni anahtar | `platform.workflow.instances.start / view`, `tasks.approve / reject` |
+|---|---|---|
+| `Admin` (`6a315467-7d80-4ad8-bd76-78f8f762fe8a`) | yok | var |
+| `GQD` (`7832826f-…`) | yok | var |
+| `QADocumentation` (`e48a918e-…`) | yok | var |
+
+- sema (`b.pullukcu@grandmedical.eu`, `d27fa4a6-…`) rolleri: **Admin**, GQD, QADocumentation → Admin olduğu için ayrı okuma rolü gerekmiyor.
+- Not: platform kiracısındaki (`…0001`) `SuperAdmin` / `Viewer` rolleri yeni anahtarları seed'den almış (sistem deseni); 97c5'i etkilemez.
+
+**Rol → eklenecek anahtarlar:**
+
+| Rol | Eklenecek |
+|---|---|
+| `Admin` | `crm.safety-text.read / manage / submit`, `crm.country-legal-profile.read / manage / submit` |
+| (Admin olmayan karar verici, `--reader-role` ile) | yalnız `crm.safety-text.read`, `crm.country-legal-profile.read` — 97c5'te bugün gerekmiyor |
+
+**Script:** `scripts/rbac/grant_regulatory_text_rbac_97c5.py` — dry-run varsayılan, subtype-4 GUID, tarih alanları yerel 97c5 rolePermissions dokümanından kopya, idempotent, marker `manual-grant-regulatory-text-rbac`, rol / izin oluşturmaz. Dry-run çıktısı:
+
+```
+role 'Admin' (6a315467-7d80-4ad8-bd76-78f8f762fe8a): 6 grant(s) to insert: ['crm.safety-text.read', 'crm.safety-text.manage', 'crm.safety-text.submit', 'crm.country-legal-profile.read', 'crm.country-legal-profile.manage', 'crm.country-legal-profile.submit']
+DRY-RUN — nothing written. Re-run with --apply.
+```
+
+**Kullanıcı adımı:** `py -3 scripts/rbac/grant_regulatory_text_rbac_97c5.py --apply` → Admin rolündeki kullanıcılar **yeniden giriş** yapar. Geri alma: `db.rolePermissions.deleteMany({CreatedBy: "manual-grant-regulatory-text-rbac"})`.
+
+### 4. Kalan (ikinci tur, kullanıcı `--apply` + yeniden giriş sonrası)
+- Menüde "Safety Texts" ve "Legal Profiles" görünür; iki liste boş ama hatasız açılır (konsol / ağ 4xx-5xx yok).
+- E4 (CT): TR / tr güvenlilik metni → gönder → `KP-REG-TR` örneği → sema onayı → aktif → çözümleme.
+
+### 5. Hata / sapma
+Yok. Kod değişikliği yok.
