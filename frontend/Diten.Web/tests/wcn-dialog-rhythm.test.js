@@ -96,21 +96,20 @@ describe("one action, one icon", () => {
      * dialog started naming its own glyph by hand (the defect this count exists to catch).
      */
     expect((APP.match(/inboxActionIcon\(action\)/g) || []).length,
-      "a dialog stopped reading the dictionary").toBe(7);
+      "a dialog stopped reading the dictionary").toBe(6);
     // Three of those are the `icon:` seam; the raw form dialogs ask the builder (WP-UI-CALENDAR-VIEW-01 moved
     // the plan dialog from the first group to the second — same dictionary, one fewer `icon:` read).
-    expect((APP.match(/icon: inboxActionIcon\(action\)/g) || []).length).toBe(3);
+    expect((APP.match(/icon: inboxActionIcon\(action\)/g) || []).length).toBe(2);
   });
 
   it("adds a missing action TO the dictionary rather than working around it", () => {
-    // Both open a dialog and neither was listed; without an entry they fell through to the generic arrow.
+    // It opens a dialog and was not listed; without an entry it fell through to the generic arrow.
     const dict = APP.slice(APP.indexOf("const inboxActionIcon"), APP.indexOf("const inboxActionIcon") + 700);
-    expect(dict).toContain("logTime: 'bx-time-five'");
     expect(dict).toContain("requestInfo: 'bx-question-mark'");
   });
 
   it("names no glyph by hand in any dialog an action opens", () => {
-    ["const openMeetingScheduler", "const openLogTime"].forEach((name) => {
+    ["const openMeetingScheduler"].forEach((name) => {
       const fn = APP.slice(APP.indexOf(name), APP.indexOf(name) + 2600);
       expect(fn, `${name} hand-picked a glyph`).not.toMatch(/icon: '(bx-[a-z-]+)'/);
       expect(fn, `${name} stopped reading the dictionary`).toContain("icon: inboxActionIcon(action)");

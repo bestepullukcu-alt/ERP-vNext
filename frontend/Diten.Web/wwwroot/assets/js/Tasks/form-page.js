@@ -842,7 +842,8 @@
          * a GUID.
          */
         const decisions = await global.TasksApi.decisionMakers();
-        const decisionRows = decisions.ok ? decisions.data?.people || [] : [];
+        // `data` IS the array — unwrapped once in TasksApi, as `assignablePeople` is.
+        const decisionRows = decisions.ok ? decisions.data : [];
         global.TaskForm.renderPersonOptions(el('taskReviewer'), decisionRows, personLabels);
         global.TaskForm.renderPersonOptions(el('taskApprovalManager'), decisionRows, personLabels);
 

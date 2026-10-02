@@ -154,9 +154,14 @@ public sealed class TimesheetReminderJob : IBackgroundJobHandler<TimesheetRemind
         // CT acceptance round 1 (M1): the limit is on SENDS, never on the participant list. Cutting the list first took
         // the same first N people every hour and left the rest un-reminded for ever. People already reminded for this
         // week are skipped by a read of their mark (the key the send claimed), so they never use up a run's budget.
+        //
+        // BL-488 — the people who are due are sent to in GROUPS: one recipient resolution per group, not one per person
+        // (each resolution makes AuthService walk the tenant's users). A group is never larger than what is left of the
+        // run's budget, so a run still hands over at most `max` reminders.
         var sent = 0;
         var alreadyReminded = 0;
         var index = 0;
+        var due = new List<Guid>();
         for (; index < participants.Count && sent < max; index++)
         {
             var userId = participants[index];
@@ -169,9 +174,9 @@ public sealed class TimesheetReminderJob : IBackgroundJobHandler<TimesheetRemind
                     continue;
                 }
 
-                if (await IsDueAsync(userId, monday, weekKey, correlationId, ct) && await _notifier.WeekReminderAsync(userId, monday, ct))
+                if (await IsDueAsync(userId, monday, weekKey, correlationId, ct))
                 {
-                    sent++;
+                    due.Add(userId);
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -180,6 +185,17 @@ public sealed class TimesheetReminderJob : IBackgroundJobHandler<TimesheetRemind
                     "time-entry.reminder.person_failed UserId={UserId} WeekKey={WeekKey} CorrelationId={CorrelationId}",
                     userId, weekKey, correlationId);
             }
+
+            if (due.Count >= Math.Min(ITimeEntryNotifier.ReminderGroupSize, max - sent))
+            {
+                sent += await SendGroupAsync(due, monday, weekKey, correlationId, ct);
+            }
+        }
+
+        // The people still waiting when the list ran out. (When the budget ran out, the last group was sent in the loop.)
+        if (due.Count > 0)
+        {
+            sent += await SendGroupAsync(due, monday, weekKey, correlationId, ct);
         }
 
         if (index < participants.Count)
@@ -191,6 +207,24 @@ public sealed class TimesheetReminderJob : IBackgroundJobHandler<TimesheetRemind
         }
 
         return sent;
+    }
+
+    /// <summary>Sends to one group and empties it. A group's failure is logged and never stops the rest of the run.</summary>
+    private async Task<int> SendGroupAsync(List<Guid> due, DateOnly monday, string weekKey, string correlationId, CancellationToken ct)
+    {
+        var group = due.ToList();
+        due.Clear();
+        try
+        {
+            return await _notifier.WeekRemindersAsync(group, monday, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                "time-entry.reminder.group_failed People={People} WeekKey={WeekKey} ExceptionType={ExceptionType} CorrelationId={CorrelationId}",
+                group.Count, weekKey, ex.GetType().Name, correlationId);
+            return 0;
+        }
     }
 
     /// <summary>N2 — the Monday of the week to remind about: the PREVIOUS ISO week, from Monday 09:00 in the tenant's zone
@@ -216,7 +250,7 @@ public sealed class TimesheetReminderJob : IBackgroundJobHandler<TimesheetRemind
     {
         var revisions = await _weeks.ListRevisionsAsync(userId, weekKey, ct);
         if (revisions.Any(r => r.Status == TimesheetWeekStatus.Submitted)
-            && await _puller.PullAsync(revisions, correlationId, ct))
+            && (await _puller.PullAsync(revisions, correlationId, ct)).ShouldReread)
         {
             revisions = await _weeks.ListRevisionsAsync(userId, weekKey, ct);
         }

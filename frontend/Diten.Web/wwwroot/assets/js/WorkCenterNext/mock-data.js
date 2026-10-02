@@ -276,6 +276,11 @@
         reason: action.requiresReason,
         // REQ-WCN-01 (W-2) — the SERVER says an action accepts an optional note; never derived from the code here.
         note: action.acceptsNote === true,
+        // BL-491 — the SERVER says an action names a person, and whom it must not offer; never derived from the code.
+        targetPerson: action.requiresTargetPerson === true,
+        excludedTargetIds: Array.isArray(action.excludedTargetPrincipalIds)
+            ? action.excludedTargetPrincipalIds.map((id) => String(id).toLowerCase())
+            : [],
         evidence: action.requiresEvidence,
         bulk: action.supportsBulk,
         // WP-WCN-KANBAN-01 — the Kanban drag target, a normalizedStatus string or null (the action does not

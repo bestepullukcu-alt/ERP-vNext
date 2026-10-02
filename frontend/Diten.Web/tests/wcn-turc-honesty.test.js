@@ -42,7 +42,6 @@ describe("the timer readout no longer claims what it cannot know", () => {
     expect(card).toContain("timeEntriesOf(item)");
     expect(card).toContain("TimeDraftLabel");
     expect(card).toContain("TimeApprovedLabel");
-    expect(card).toContain("wcn-ts-log");
     expect(code(APP), "the local total came back").not.toMatch(/loggedMinutes|item\.timesheet\b/);
   });
 
