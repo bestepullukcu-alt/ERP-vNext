@@ -7332,6 +7332,22 @@ iletilerin (bounce) izlenmesi. Gelecek regresyon riski: 🟡 (bildirim teslimi).
 
 ---
 
+### BL-498
+
+**MDM ürün onayı: "elle düzeltilmeli" (karantina) durumundan çıkış yolu yok ve durum sessiz**
+
+DURUM: AÇIK · SAHİP: CT (MDM ürün modülleri, devralma) · BULAN: WP-GP-1B-A-RESILIENCE-01 Aşama 1 ölçümü · KAYIT: 2026-10-02
+
+Ölçüm (takeover `4012838c1`, kod okuması): karantinaya düşen operasyonu kodla geri alan hiçbir yol yok — `AbandonedBeforeWorkflowStart` /
+`Superseded` değerlerini yazan kod yok; benzersiz (kiracı, ürün, sürüm) dizini yüzünden taslak o sürümde kilitli kalıyor. İşlemcide logger yok,
+runner istisnayı yutuyor (`catch { failedCount++; }`), işçi döngü sonucunu atıyor: karantina hiçbir günlükte görünmüyor.
+WP-GP-1B-A-RESILIENCE-01 servis hatalarının karantinaya DÜŞMESİNİ engelliyor ve günlüğü ekliyor; bu kayıt kalan iş: (1) operatör için
+"yeniden dene / vazgeç" eylemi (yetkili, gerekçeli, denetimli), (2) kiracı kullanıcısına durumun ve nedeninin gösterilmesi (GP-2 kayıt geçmişi),
+(3) taslağın yeni sürümle serbest bırakılması. Karşılaştırma: SAP'de hatalı entegrasyon iletileri izleme ekranından toplu yeniden başlatılır ya da
+iptal edilir; iş belgesi kilitli kalmaz. Gelecek regresyon riski: 🟡 (durum makinesi).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
