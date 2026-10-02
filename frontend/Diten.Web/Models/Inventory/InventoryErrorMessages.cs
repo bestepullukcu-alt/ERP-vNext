@@ -25,6 +25,7 @@ public static class InventoryErrorMessages
         ["LOT_REQUIRED"] = "ErrLotRequired",
         ["SERIAL_COUNT_MISMATCH"] = "ErrSerialMismatch",
         ["RESERVATION_CONFLICT"] = "ErrConflict",
+        ["POSTING_PERIOD_CLOSED"] = "ErrPeriodClosed",
         // W-0173-02 company selector
         ["LEGAL_ENTITY_MASTER_UNAVAILABLE"] = "ErrCompanyCheckUnavailable",
         [InventoryGatewayClient.CompanyNotSelected] = "ErrSelectCompany",
@@ -40,9 +41,12 @@ public static class InventoryErrorMessages
     public const string Conflict = "ErrConflict";
     public const string Generic = "ErrGeneric";
 
+    /// <summary>UI-2: the amounts of an INSUFFICIENT_STOCK refusal (<c>error.details.available / requested</c>).</summary>
+    public const string InsufficientStockAmounts = "ErrInsufficientStockAmounts";
+
     /// <summary>Every key this class can return — the resx parity test asserts each is in all 14 files.</summary>
     public static IEnumerable<string> AllKeys =>
-        ByCode.Values.Concat([NoPermission, SessionExpired, ServiceUnavailable, Conflict, Generic]).Distinct(StringComparer.Ordinal);
+        ByCode.Values.Concat([NoPermission, SessionExpired, ServiceUnavailable, Conflict, Generic, InsufficientStockAmounts]).Distinct(StringComparer.Ordinal);
 
     /// <summary>The key for an answer: the contract code first, then the HTTP status.</summary>
     public static string KeyFor(string? code, int status)

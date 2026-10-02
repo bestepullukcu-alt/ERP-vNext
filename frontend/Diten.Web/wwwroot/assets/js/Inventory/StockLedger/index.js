@@ -1,9 +1,11 @@
 /**
- * MOD-0173-FU01 S-1 Stock list — DataTables index script (UI-1).
+ * MOD-0173-FU01 S-1 Stock list — DataTables index script (UI-1, UI-2).
  *
  * THE LIST IS A COMPONENT (BL-440): Save View, column state, filters and the inline bar come from
  * DitenDataTable.createList. This file writes only what is the stock list's own: columns, renderers, the KPI strip
- * and its filters' sources.
+ * and its filters' sources. UI-2 adds two navigations for a user who may post: the toolbar "New stock entry"
+ * (→ /StockLedger/Create, KD-2: an inbound movement, never a balance write) and the row "Movement" (→ S-3 with the
+ * row as the source).
  *
  * SERVER MODE, PROXY PROFILE (pack §8, ASSUMPTION-UI-01): the factory sends start/length/draw + the applied filters
  * to the same-origin adapter '/StockLedger/api', which translates them for INVENTORY-BUNDLE /balance and answers
@@ -21,6 +23,8 @@ const StockLedgerList = (function () {
     const tableEl = document.querySelector('.datatables-stockledger');
     const L = () => window.L10n || {};
     const byId = (id) => document.getElementById(id);
+    // Display decision only (UAS-001 §6: a user who may not post sees no post action at all); MOD-0173 decides.
+    const canCreate = () => window.Permissions?.has?.('inventory.movements.create') === true;
     const esc = (value) => String(value ?? '')
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     const numberFormat = new Intl.NumberFormat(document.documentElement.lang || undefined, { maximumFractionDigits: 6 });
@@ -175,6 +179,20 @@ const StockLedgerList = (function () {
             const query = new URLSearchParams({ itemId: row.itemId });
             if (row.lotId) query.set('lotId', row.lotId);
             window.location.href = `/StockMovements?${query.toString()}`;
+        },
+        // UI-11 (UI-2): "Movement" opens S-3 as a location transfer with THIS row as the source (mockup); the reader
+        // may change the type (count loss, scrap, warehouse transfer…) and the row stays the source.
+        movement: ({ row }) => {
+            if (!row?.itemId || !row.skuId || !canCreate()) return;
+            const query = new URLSearchParams({
+                type: 'LOCATION_TRANSFER',
+                itemId: row.itemId,
+                itemText: row.productLabel || row.itemId,
+                sku: `${row.skuLevel}:${row.skuId}`,
+                skuText: row.skuLabel || row.skuId,
+                source: [row.warehouseId || '', row.locationId || '', row.stockStatus || '', row.lotId || ''].join('|')
+            });
+            window.location.href = `/StockMovements/Create?${query.toString()}`;
         }
     };
 
@@ -187,8 +205,13 @@ const StockLedgerList = (function () {
             ajax: { url: '/StockLedger/api', type: 'GET', error: onListError },
             onResponse: onResponse,
             actions: { onRowAction: rowActionHandlers },
-            // No "New movement" in UI-1: its target page arrives with UI-2 (no dead link, no disabled stand-in).
-            toolbar: { addNewText: '', colvisColumns: [2, 3, 4, 6, 8, 9, 10, 11] },
+            // KD-2 (UI-2): the list's "New" is the stock ENTRY page — an inbound movement, never a balance write — and
+            // only for a user who may post (absent otherwise, UAS-001 §6).
+            toolbar: {
+                addNewText: canCreate() ? (L().NewStockEntry || '') : '',
+                onAddNew: () => { window.location.href = '/StockLedger/Create'; },
+                colvisColumns: [2, 3, 4, 6, 8, 9, 10, 11]
+            },
             filters: { hostId: 'inlineFilterHost', collapseId: 'inlineFilterCollapse', fields: filterFields, loadOptions: loadLookupOptions },
             savedView: {
                 moduleKey: 'Inventory',
@@ -236,7 +259,8 @@ const StockLedgerList = (function () {
                         render: (data, type, full) => `<div class="d-flex flex-column"><span>${esc(full.warehouseLabel || full.warehouseId || '')}</span>`
                             + `<small class="text-muted">${esc(full.locationLabel || full.locationId || '')}</small></div>`
                     },
-                    { targets: 3, render: (data) => esc(data || '') },
+                    // W-UI-02: until MOD-0174 registers lots, every lot is an "unregistered lot (pre-MOD-0174)".
+                    { targets: 3, render: (data) => data ? `${esc(data)} <span class="badge bg-label-secondary ms-1" title="${esc(L().LotUnregisteredHint)}">${esc(L().LotUnregisteredBadge)}</span>` : '' },
                     { targets: 4, render: (data) => statusBadge(data) },
                     { targets: [5, 6, 7, 8, 9, 10], className: 'text-end font-monospace', render: (data) => esc(formatQuantity(data)) },
                     { targets: 11, render: (data) => esc(data || '') },
@@ -246,6 +270,7 @@ const StockLedgerList = (function () {
                         searchable: false,
                         className: 'cell-fit all',
                         render: (data, type, full) => window.DitenDataTable.renderActions([
+                            { key: 'movement', visible: canCreate(), icon: 'bx bx-transfer-alt', text: L().RowMovement, attrs: { 'data-id': full.id, 'data-json': JSON.stringify(full), title: L().RowMovement, 'aria-label': L().RowMovement } },
                             { key: 'history', icon: 'bx bx-history', text: L().History, attrs: { 'data-id': full.id, 'data-json': JSON.stringify(full), title: L().History, 'aria-label': L().History } }
                         ])
                     }

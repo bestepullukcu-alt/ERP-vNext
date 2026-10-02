@@ -6,7 +6,8 @@
         'Actions', 'History', 'Unknown', 'Filter', 'Apply', 'Reset', 'ShowAll', 'SaveView', 'ColumnVisibility',
         'RecordSaved', 'ErrorOccurred', 'Searching', 'NoResults', 'PickerUnavailable', 'ErrServiceUnavailable',
         'StatusAVAILABLE', 'StatusQUALITY_INSPECTION', 'StatusQUARANTINE', 'StatusBLOCKED', 'StatusIN_TRANSIT',
-        'StatusDAMAGED', 'StatusEXPIRED', 'SkuLevelGsku', 'SkuLevelLsku', 'SkuLevelFinishedGood', 'KpiSelectProduct'
+        'StatusDAMAGED', 'StatusEXPIRED', 'SkuLevelGsku', 'SkuLevelLsku', 'SkuLevelFinishedGood', 'KpiSelectProduct',
+        'NewStockEntry', 'RowMovement', 'LotUnregisteredBadge', 'LotUnregisteredHint'
     ];
 
     const logMissingKeys = (dictionary) => {

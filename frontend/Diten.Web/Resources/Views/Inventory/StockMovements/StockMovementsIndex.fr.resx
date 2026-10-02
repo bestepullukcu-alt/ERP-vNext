@@ -86,4 +86,111 @@
   <data name="CompanyUnavailable" xml:space="preserve"><value>La liste des sociétés n'a pas pu être chargée ; aucune donnée de stock n'est affichée. Demandez à votre administrateur l'accès aux sociétés ou réessayez plus tard.</value></data>
   <data name="ErrSelectCompany" xml:space="preserve"><value>Sélectionnez d'abord une société. Rien n'a été lu ni modifié.</value></data>
   <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>La société sélectionnée ne peut pas être confirmée pour le moment ; aucune modification n'a été faite. Réessayez dans un instant.</value></data>
+  <!-- WP-0173-UI2: model translation, native-speaker review pending (FU-UI2-01). -->
+  <data name="NewMovement" xml:space="preserve"><value>Nouveau mouvement</value></data>
+  <data name="Correct" xml:space="preserve"><value>Corriger</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nouveau mouvement</value></data>
+  <data name="FormTitleEntry" xml:space="preserve"><value>Nouvelle entrée de stock</value></data>
+  <data name="FormTitleCorrect" xml:space="preserve"><value>Corriger le mouvement</value></data>
+  <data name="SubmitCreate" xml:space="preserve"><value>Enregistrer le mouvement</value></data>
+  <data name="SubmitCorrect" xml:space="preserve"><value>Corriger</value></data>
+  <data name="OriginalMissingTitle" xml:space="preserve"><value>Ouvrez la correction depuis l’historique des mouvements</value></data>
+  <data name="OriginalMissingText" xml:space="preserve"><value>Cette page corrige un mouvement de l’historique. Utilisez « Corriger » sur un mouvement manuel dans l’historique ; les mouvements automatiques se corrigent dans le module qui les a créés.</value></data>
+  <data name="BackToHistory" xml:space="preserve"><value>Historique des mouvements</value></data>
+  <data name="BackToStock" xml:space="preserve"><value>Liste des stocks</value></data>
+  <data name="RetryButton" xml:space="preserve"><value>Réessayer</value></data>
+  <data name="RestartLink" xml:space="preserve"><value>Ouvrir un nouveau formulaire</value></data>
+  <data name="PartialTitle" xml:space="preserve"><value>Correction inachevée</value></data>
+  <data name="PartialText" xml:space="preserve"><value>L’extourne {0} a été enregistrée, mais pas le mouvement corrigé : {1}</value></data>
+  <data name="PartialHint" xml:space="preserve"><value>Le mouvement d’origine est déjà annulé par l’extourne. Corrigez le champ ci-dessous et enregistrez le mouvement corrigé ; la même requête est réutilisée, rien n’est enregistré deux fois.</value></data>
+  <data name="PartialRetry" xml:space="preserve"><value>Enregistrer le mouvement corrigé</value></data>
+  <data name="SectionMovement" xml:space="preserve"><value>Mouvement</value></data>
+  <data name="FieldMovementType" xml:space="preserve"><value>Type de mouvement</value></data>
+  <data name="GroupInbound" xml:space="preserve"><value>Entrée</value></data>
+  <data name="GroupOutbound" xml:space="preserve"><value>Sortie</value></data>
+  <data name="GroupTransfer" xml:space="preserve"><value>Transfert</value></data>
+  <data name="FieldReasonCode" xml:space="preserve"><value>Code motif</value></data>
+  <data name="SectionItem" xml:space="preserve"><value>Article</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="PlaceholderProduct" xml:space="preserve"><value>Rechercher un produit par code ou nom</value></data>
+  <data name="FieldSku" xml:space="preserve"><value>Référence (SKU)</value></data>
+  <data name="PlaceholderSku" xml:space="preserve"><value>Choisissez la référence du produit</value></data>
+  <data name="HintSelectProductFirst" xml:space="preserve"><value>Choisissez d’abord un produit ; seules ses références sont listées.</value></data>
+  <data name="HintSkuNone" xml:space="preserve"><value>Ce produit n’a encore aucune référence dans les données de base ; aucun mouvement n’est possible.</value></data>
+  <data name="SectionSourceTarget" xml:space="preserve"><value>Source et destination</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Source (lot / emplacement)</value></data>
+  <data name="PlaceholderSource" xml:space="preserve"><value>Choisissez la ligne de stock à prélever</value></data>
+  <data name="HintSourceSelectSku" xml:space="preserve"><value>Choisissez d’abord la référence ; ses lignes de stock apparaissent ici.</value></data>
+  <data name="HintSourceNone" xml:space="preserve"><value>Cette référence n’a aucun stock disponible dans cette société.</value></data>
+  <data name="HintSourceStock" xml:space="preserve"><value>En stock à cette source : {0} {1}</value></data>
+  <data name="FieldTargetWarehouse" xml:space="preserve"><value>Entrepôt de destination</value></data>
+  <data name="PlaceholderTargetWarehouse" xml:space="preserve"><value>Choisissez un entrepôt actif</value></data>
+  <data name="HintLocationTransferWarehouse" xml:space="preserve"><value>Un transfert d’emplacement reste dans l’entrepôt de la source.</value></data>
+  <data name="FieldTargetLocation" xml:space="preserve"><value>Emplacement de destination</value></data>
+  <data name="PlaceholderTargetLocation" xml:space="preserve"><value>Rechercher un emplacement de l’entrepôt</value></data>
+  <data name="HintTargetLocation" xml:space="preserve"><value>Seuls les emplacements actifs pouvant contenir du stock sont proposés.</value></data>
+  <data name="HintTargetLocationNone" xml:space="preserve"><value>Cet entrepôt n’a aucun emplacement actif pouvant contenir du stock. Ajoutez-en un dans Emplacements.</value></data>
+  <data name="FieldTargetStockStatus" xml:space="preserve"><value>Statut de stock cible</value></data>
+  <data name="FieldLot" xml:space="preserve"><value>Numéro de lot</value></data>
+  <data name="PlaceholderLot" xml:space="preserve"><value>Choisissez un lot connu ou saisissez-en un nouveau</value></data>
+  <data name="HintLotUnregistered" xml:space="preserve"><value>Lot non enregistré (avant MOD-0174) : les lots de cette référence déjà en stock sont listés en premier ; un lot saisi est enregistré en majuscules (A–Z, 0–9, . / -, 40 max).</value></data>
+  <data name="SectionQuantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="PlaceholderQuantity" xml:space="preserve"><value>ex. 12 ou 2.5</value></data>
+  <data name="FieldUnit" xml:space="preserve"><value>Unité</value></data>
+  <data name="HintUnitBase" xml:space="preserve"><value>{0} {1} = {2} {3} (unité de base)</value></data>
+  <data name="HintUnitNoConversion" xml:space="preserve"><value>Aucune conversion de cette unité vers l’unité de base de la référence n’est définie ; le mouvement sera refusé.</value></data>
+  <data name="FieldSerialNumbers" xml:space="preserve"><value>Numéros de série</value></data>
+  <data name="PlaceholderSerials" xml:space="preserve"><value>Un numéro de série par ligne</value></data>
+  <data name="HintSerialCounter" xml:space="preserve"><value>{0} saisis / {1} requis</value></data>
+  <data name="HintSerialCounterUnknown" xml:space="preserve"><value>{0} saisis — le nombre requis découle de la quantité et de l’unité</value></data>
+  <data name="SectionDocumentDates" xml:space="preserve"><value>Document et dates</value></data>
+  <data name="FieldDocumentNo" xml:space="preserve"><value>N° de document</value></data>
+  <data name="PlaceholderDocumentNo" xml:space="preserve"><value>ex. numéro de fiche d’inventaire ou de rapport</value></data>
+  <data name="FieldTransactionDate" xml:space="preserve"><value>Date de l’opération</value></data>
+  <data name="FieldPostingDate" xml:space="preserve"><value>Date de comptabilisation</value></data>
+  <data name="OriginalTitle" xml:space="preserve"><value>Mouvement corrigé</value></data>
+  <data name="CorrectExplain" xml:space="preserve"><value>Corriger crée deux enregistrements : (1) l’extourne de ce mouvement, (2) le mouvement corrigé ci-dessous. L’original reste dans l’historique.</value></data>
+  <data name="EffectTitle" xml:space="preserve"><value>Effet sur le stock</value></data>
+  <data name="EffectNote" xml:space="preserve"><value>Avant → après, en unité de base. À titre indicatif : le service de stock vérifie la quantité à l’enregistrement.</value></data>
+  <data name="EffectEmpty" xml:space="preserve"><value>Choisissez le type, le produit, la quantité et les emplacements pour voir l’effet.</value></data>
+  <data name="EffectSource" xml:space="preserve"><value>Origine</value></data>
+  <data name="EffectTarget" xml:space="preserve"><value>Destination</value></data>
+  <data name="EffectNegative" xml:space="preserve"><value>Plus que le stock disponible — le service de stock refusera sauf si le stock change.</value></data>
+  <data name="EffectUnavailable" xml:space="preserve"><value>L’effet ne peut pas être calculé pour le moment (données produit indisponibles).</value></data>
+  <data name="PickerIncomplete" xml:space="preserve"><value>La liste est trop longue pour être affichée entièrement ; saisissez une partie du code ou du nom pour la réduire.</value></data>
+  <data name="ProductFactsUnavailable" xml:space="preserve"><value>Les données produit (suivi par lot et par série, unités) ne peuvent pas être lues pour le moment ; le mouvement ne peut donc pas être enregistré. Rien n’a été modifié ; réessayez plus tard.</value></data>
+  <data name="ValRequired" xml:space="preserve"><value>Ce champ est obligatoire.</value></data>
+  <data name="ValMovementType" xml:space="preserve"><value>Choisissez l’un des types de mouvement proposés sur cette page.</value></data>
+  <data name="ValQuantity" xml:space="preserve"><value>Saisissez une quantité supérieure à 0, avec au plus 6 décimales (point décimal : 2.5).</value></data>
+  <data name="ValTooLong" xml:space="preserve"><value>Cette valeur est trop longue (200 caractères maximum).</value></data>
+  <data name="ValDate" xml:space="preserve"><value>Saisissez une date et une heure.</value></data>
+  <data name="ValLotFormat" xml:space="preserve"><value>Un lot peut contenir A–Z, 0–9, point, barre oblique et tiret, 40 caractères maximum.</value></data>
+  <data name="ValSerialDuplicate" xml:space="preserve"><value>Chaque numéro de série ne peut apparaître qu’une fois.</value></data>
+  <data name="ValSerialCount" xml:space="preserve"><value>{0} numéros de série saisis ; la quantité en exige {1}.</value></data>
+  <data name="ValSameWarehouse" xml:space="preserve"><value>Un transfert entre entrepôts exige un entrepôt différent de celui de la source.</value></data>
+  <data name="ValSameWarehouseRequired" xml:space="preserve"><value>Un transfert d’emplacement reste dans l’entrepôt de la source ; utilisez un transfert entre entrepôts pour en changer.</value></data>
+  <data name="ValSameLocation" xml:space="preserve"><value>Choisissez un emplacement différent de celui de la source.</value></data>
+  <data name="ValFixFields" xml:space="preserve"><value>Certains champs sont à corriger. Rien n’a été enregistré.</value></data>
+  <data name="ConfirmCorrectTitle" xml:space="preserve"><value>Corriger ce mouvement ?</value></data>
+  <data name="ConfirmCorrectText" xml:space="preserve"><value>Le mouvement {0} reste dans l’historique. Une extourne annule son effet sur le stock et le mouvement corrigé est enregistré comme un nouvel enregistrement. Cette action est irréversible.</value></data>
+  <data name="ConfirmCorrectButton" xml:space="preserve"><value>Extourner et enregistrer</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Reçu du mouvement</value></data>
+  <data name="ReceiptMissing" xml:space="preserve"><value>Aucun reçu à afficher. Un reçu apparaît juste après l’enregistrement d’un mouvement dans cette session ; les mouvements précédents sont dans l’historique.</value></data>
+  <data name="ReceiptPosted" xml:space="preserve"><value>Le mouvement {0} a été enregistré.</value></data>
+  <data name="ReplayBanner" xml:space="preserve"><value>Ce formulaire avait déjà été envoyé ; rien de nouveau n’a été enregistré. Voici le reçu de ce mouvement.</value></data>
+  <data name="CorrectionDone" xml:space="preserve"><value>Le mouvement {0} a été annulé par l’extourne {1} ; le mouvement corrigé est {2}.</value></data>
+  <data name="DetailPostedAt" xml:space="preserve"><value>Enregistré le</value></data>
+  <data name="DetailFrom" xml:space="preserve"><value>De</value></data>
+  <data name="DetailTo" xml:space="preserve"><value>Vers</value></data>
+  <data name="BalanceTitle" xml:space="preserve"><value>Solde actuel</value></data>
+  <data name="BalanceNote" xml:space="preserve"><value>La ligne de stock laissée par ce mouvement, telle que renvoyée par le service de stock.</value></data>
+  <data name="BalanceLocation" xml:space="preserve"><value>Entrepôt / emplacement</value></data>
+  <data name="BalanceOnHand" xml:space="preserve"><value>En stock</value></data>
+  <data name="BalanceAvailable" xml:space="preserve"><value>Disponible</value></data>
+  <data name="LotUnregisteredBadge" xml:space="preserve"><value>non enregistré</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>Lot non enregistré (avant MOD-0174)</value></data>
+  <data name="ErrPeriodClosed" xml:space="preserve"><value>La date de comptabilisation tombe dans une période close. Rien n’a été modifié ; choisissez une date d’une période ouverte.</value></data>
+  <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Disponible à la source : {0} ; demandé : {1} (unité de base).</value></data>
+  <data name="HintChooseTypeFirst" xml:space="preserve"><value>Choisissez d’abord le type de mouvement : il détermine les champs de source et de destination nécessaires.</value></data>
 </root>

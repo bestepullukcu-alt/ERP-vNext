@@ -68,4 +68,10 @@
   <data name="CompanyUnavailable" xml:space="preserve"><value>The company list could not be loaded, so no stock data is shown. Ask your administrator for permission to view companies, or try again later.</value></data>
   <data name="ErrSelectCompany" xml:space="preserve"><value>Select a company first. Nothing was read or changed.</value></data>
   <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>The selected company cannot be confirmed right now, so no change was made. Try again in a moment.</value></data>
+  <data name="NewStockEntry" xml:space="preserve"><value>New stock entry</value></data>
+  <data name="RowMovement" xml:space="preserve"><value>Movement</value></data>
+  <data name="LotUnregisteredBadge" xml:space="preserve"><value>unregistered</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>Unregistered lot (pre-MOD-0174)</value></data>
+  <data name="ErrPeriodClosed" xml:space="preserve"><value>The posting date falls in a closed period. Nothing was changed; choose a date in an open period.</value></data>
+  <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Available at the source: {0}; requested: {1} (base unit).</value></data>
 </root>

@@ -68,4 +68,11 @@
   <data name="CompanyUnavailable" xml:space="preserve"><value>Не удалось загрузить список компаний, поэтому данные об остатках не показаны. Запросите у администратора право просмотра компаний или повторите попытку позже.</value></data>
   <data name="ErrSelectCompany" xml:space="preserve"><value>Сначала выберите компанию. Ничего не прочитано и не изменено.</value></data>
   <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>Сейчас невозможно подтвердить выбранную компанию, поэтому изменения не внесены. Повторите попытку чуть позже.</value></data>
+  <!-- WP-0173-UI2: model translation, native-speaker review pending (FU-UI2-01). -->
+  <data name="NewStockEntry" xml:space="preserve"><value>Новое поступление запаса</value></data>
+  <data name="RowMovement" xml:space="preserve"><value>Движение</value></data>
+  <data name="LotUnregisteredBadge" xml:space="preserve"><value>не зарегистр.</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>Незарегистрированная партия (до MOD-0174)</value></data>
+  <data name="ErrPeriodClosed" xml:space="preserve"><value>Дата проводки попадает в закрытый период. Ничего не изменено; выберите дату открытого периода.</value></data>
+  <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Доступно в источнике: {0}; запрошено: {1} (базовая единица).</value></data>
 </root>

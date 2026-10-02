@@ -78,6 +78,11 @@ public sealed class StockMovementRowViewModel
     public bool ReversedOnPage { get; init; }
     /// <summary>Manual (MOD-0173), not a reversal, not reversed on this page (UI-08). Permission is decided by the screen.</summary>
     public bool CanReverse { get; init; }
+    /// <summary>
+    /// UI-2 "Correct" (KD-1): every reversible row whose type is one of the SEVEN manual types (parent §21) — the form
+    /// can only re-post a manual type. An automatic movement, a reversal or a reversed row is never offered it.
+    /// </summary>
+    public bool CanCorrect { get; init; }
 }
 
 /// <summary>Body of <c>POST /StockMovements/reverse/{transactionId}</c> — the original row's identity (UI-09, BG-06).</summary>

@@ -210,7 +210,8 @@ public static class InventoryListAdapter
                 TransactionDate = t.TransactionDate,
                 PostingDate = t.PostingDate,
                 ReversedOnPage = reversed,
-                CanReverse = IsReversible(t) && !reversed
+                CanReverse = IsReversible(t) && !reversed,
+                CanCorrect = IsCorrectable(t) && !reversed
             };
         }).ToList();
     }
@@ -220,6 +221,10 @@ public static class InventoryListAdapter
         string.Equals(t.SourceModule, ManualSourceModule, StringComparison.Ordinal)
         && !string.Equals(t.MovementType, ReversalMovementType, StringComparison.Ordinal)
         && !string.IsNullOrWhiteSpace(t.TransactionId);
+
+    /// <summary>UI-2 KD-1: reversible (UI-08) AND one of the seven manual types the movement form can re-post.</summary>
+    public static bool IsCorrectable(TransactionItemDto t) =>
+        IsReversible(t) && MovementRules.ManualTypes.Contains(t.MovementType ?? string.Empty, StringComparer.Ordinal);
 
     public static string DirectionOf(string? movementType) =>
         movementType is null ? string.Empty

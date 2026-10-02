@@ -12,8 +12,9 @@ namespace Diten.Web.Controllers;
 // The list is SERVER mode through the proxy profile (ASSUMPTION-UI-01): the browser asks /StockLedger/api, this
 // controller asks Gateway GET /api/inventory/balance — one call per page — plus /availability for the KPI strip
 // when a product / SKU filter is set, folded into the SAME browser response (pack §8). The browser never calls
-// 5066 or /api/inventory itself. The balance is a projection: no create / edit / delete lives here (UI-2 adds
-// the inbound entry page, KD-2).
+// 5066 or /api/inventory itself. The balance is a projection: no create / edit / delete lives here. UI-2 adds the
+// inbound entry PAGE (KD-2, pack §19): it hosts the shared movement _Form restricted to the inbound manual types and
+// posts to /StockMovements/Create → POST /api/inventory/movements. This controller has no POST and writes nothing.
 [Authorize]
 [Route("StockLedger")]
 public sealed class StockLedgerController : Controller
@@ -44,6 +45,11 @@ public sealed class StockLedgerController : Controller
     // UAS-001: the view itself draws _AccessDenied (and nothing else) without inventory.stock.read — no redirect.
     [HttpGet("")]
     public IActionResult Index() => View($"{ViewRoot}/Index.cshtml");
+
+    // KD-2 "New stock entry": Opening balance / Count gain through the ONE movement form; the balance changes only as
+    // the projection of that movement. UAS-001 on inventory.movements.create is the view's.
+    [HttpGet("Create")]
+    public IActionResult Create() => View($"{ViewRoot}/Create.cshtml", StockMovementFormViewModel.ForEntry(Request.Query));
 
     // List adapter: repo server-mode wire → INVENTORY-BUNDLE /balance (pack §8). Errors keep the contract shape.
     [HttpGet("api")]

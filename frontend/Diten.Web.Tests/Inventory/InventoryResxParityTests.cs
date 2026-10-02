@@ -60,7 +60,7 @@ public sealed class InventoryResxParityTests
             "INSUFFICIENT_STOCK", "ALREADY_REVERSED", "PRODUCT_MASTER_UNAVAILABLE", "LOCATION_MASTER_UNAVAILABLE",
             "CROSS_LE_FORBIDDEN", "IDEMPOTENCY_KEY_REUSED", "INVALID_REQUEST", "INVALID_MOVEMENT_TYPE", "UNKNOWN_ITEM",
             "SKU_ITEM_MISMATCH", "UNKNOWN_LOCATION", "UOM_CONVERSION_MISSING", "LOT_REQUIRED", "SERIAL_COUNT_MISMATCH",
-            "RESERVATION_CONFLICT"
+            "RESERVATION_CONFLICT", "POSTING_PERIOD_CLOSED"
         ];
         Assert.All(codes, code => Assert.NotEqual(InventoryErrorMessages.Generic, InventoryErrorMessages.KeyFor(code, 422)));
         Assert.Equal(InventoryErrorMessages.NoPermission, InventoryErrorMessages.KeyFor(null, 403));
@@ -82,6 +82,23 @@ public sealed class InventoryResxParityTests
 
         Assert.NotEmpty(asked);
         Assert.All(asked, key => Assert.Contains(key, keys));
+    }
+
+    [Theory]
+    // UI-2: what each script reads (form.js: t('Key'); the lists: L().Key) must be delivered by its page's payload —
+    // a key read but never delivered prints nothing (no English fallback in the scripts).
+    [InlineData("Views/Inventory/StockMovements/_FormL10n.cshtml", "StockMovements/form.js", @"\bt\('(?<key>[A-Z]\w*)'\)")]
+    [InlineData("Views/Inventory/StockMovements/_IndexL10n.cshtml", "StockMovements/index.js", @"L\(\)\.(?<key>[A-Z]\w*)")]
+    [InlineData("Views/Inventory/StockLedger/_IndexL10n.cshtml", "StockLedger/index.js", @"L\(\)\.(?<key>[A-Z]\w*)")]
+    public void Every_key_a_movement_script_reads_is_delivered_by_its_payload(string payload, string script, string pattern)
+    {
+        var delivered = Regex.Matches(File.ReadAllText(Path.Combine(WebRoot, payload)), @"^\s*(?<name>\w+)\s*=", RegexOptions.Multiline)
+            .Select(m => m.Groups["name"].Value).ToHashSet(StringComparer.Ordinal);
+        var read = Regex.Matches(File.ReadAllText(Path.Combine(WebRoot, "wwwroot", "assets", "js", "Inventory", script)), pattern)
+            .Select(m => m.Groups["key"].Value).Distinct().ToList();
+
+        Assert.NotEmpty(read);
+        Assert.All(read, key => Assert.True(delivered.Contains(key), $"{script} reads {key} but {payload} does not deliver it"));
     }
 
     [Fact]

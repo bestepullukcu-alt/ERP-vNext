@@ -22,6 +22,8 @@ public sealed class BalanceViewDto
     public string? Blocked { get; set; }
     public string? QualityInspection { get; set; }
     public string? BaseUomId { get; set; }
+    /// <summary>Only on a <c>MovementResponse.balanceSnapshot</c>: the movement's quantity in the base UoM (UI-2 receipt).</summary>
+    public string? BaseQuantity { get; set; }
     public string? LastMovementId { get; set; }
     public string? LastPostingDate { get; set; }
 }

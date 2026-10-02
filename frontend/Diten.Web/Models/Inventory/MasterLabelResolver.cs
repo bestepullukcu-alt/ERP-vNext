@@ -138,6 +138,9 @@ public static class MasterLabelResolver
             ? value.GetString()
             : null;
 
+    // A bulk-created bin's name IS its code (FU02 bulk bins): shown once.
     private static string? Join(string? code, string? name) =>
-        string.IsNullOrWhiteSpace(code) ? name : string.IsNullOrWhiteSpace(name) ? code : $"{code} · {name}";
+        string.IsNullOrWhiteSpace(code) ? name
+        : string.IsNullOrWhiteSpace(name) || string.Equals(name, code, StringComparison.OrdinalIgnoreCase) ? code
+        : $"{code} · {name}";
 }

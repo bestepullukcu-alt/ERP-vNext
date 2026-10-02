@@ -68,4 +68,11 @@
   <data name="CompanyUnavailable" xml:space="preserve"><value>无法加载公司列表，因此不显示库存数据。请向管理员申请查看公司的权限，或稍后重试。</value></data>
   <data name="ErrSelectCompany" xml:space="preserve"><value>请先选择公司。未读取或更改任何数据。</value></data>
   <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>暂时无法确认所选公司，因此未做任何更改。请稍后重试。</value></data>
+  <!-- WP-0173-UI2: model translation, native-speaker review pending (FU-UI2-01). -->
+  <data name="NewStockEntry" xml:space="preserve"><value>新建入库</value></data>
+  <data name="RowMovement" xml:space="preserve"><value>移动</value></data>
+  <data name="LotUnregisteredBadge" xml:space="preserve"><value>未登记</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>未登记批次（MOD-0174 之前）</value></data>
+  <data name="ErrPeriodClosed" xml:space="preserve"><value>过账日期位于已关闭期间。未做任何更改；请选择未结期间内的日期。</value></data>
+  <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>来源可用：{0}；请求：{1}（基本单位）。</value></data>
 </root>

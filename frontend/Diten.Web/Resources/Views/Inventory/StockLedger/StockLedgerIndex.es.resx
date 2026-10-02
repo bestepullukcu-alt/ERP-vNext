@@ -68,4 +68,11 @@
   <data name="CompanyUnavailable" xml:space="preserve"><value>No se pudo cargar la lista de empresas, por lo que no se muestran datos de existencias. Solicite a su administrador permiso para ver las empresas o inténtelo más tarde.</value></data>
   <data name="ErrSelectCompany" xml:space="preserve"><value>Seleccione primero una empresa. No se ha leído ni cambiado nada.</value></data>
   <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>Ahora no se puede confirmar la empresa seleccionada, por lo que no se ha realizado ningún cambio. Inténtelo de nuevo en un momento.</value></data>
+  <!-- WP-0173-UI2: model translation, native-speaker review pending (FU-UI2-01). -->
+  <data name="NewStockEntry" xml:space="preserve"><value>Nueva entrada de stock</value></data>
+  <data name="RowMovement" xml:space="preserve"><value>Movimiento</value></data>
+  <data name="LotUnregisteredBadge" xml:space="preserve"><value>no registrado</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>Lote no registrado (anterior a MOD-0174)</value></data>
+  <data name="ErrPeriodClosed" xml:space="preserve"><value>La fecha de contabilización está en un período cerrado. No se cambió nada; elija una fecha de un período abierto.</value></data>
+  <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Disponible en el origen: {0}; solicitado: {1} (unidad base).</value></data>
 </root>

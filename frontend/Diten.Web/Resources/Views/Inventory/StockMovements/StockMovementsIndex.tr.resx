@@ -86,4 +86,110 @@
   <data name="CompanyUnavailable" xml:space="preserve"><value>Şirket listesi alınamadı, bu yüzden stok verisi gösterilmiyor. Yöneticinizden şirketleri görüntüleme yetkisi isteyin veya daha sonra tekrar deneyin.</value></data>
   <data name="ErrSelectCompany" xml:space="preserve"><value>Önce bir şirket seçin. Hiçbir veri okunmadı veya değiştirilmedi.</value></data>
   <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>Seçilen şirket şu anda doğrulanamıyor, bu yüzden değişiklik yapılmadı. Biraz sonra tekrar deneyin.</value></data>
+  <data name="NewMovement" xml:space="preserve"><value>Yeni hareket</value></data>
+  <data name="Correct" xml:space="preserve"><value>Düzelt</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni hareket</value></data>
+  <data name="FormTitleEntry" xml:space="preserve"><value>Yeni stok girişi</value></data>
+  <data name="FormTitleCorrect" xml:space="preserve"><value>Hareketi düzelt</value></data>
+  <data name="SubmitCreate" xml:space="preserve"><value>Hareketi kaydet</value></data>
+  <data name="SubmitCorrect" xml:space="preserve"><value>Düzelt</value></data>
+  <data name="OriginalMissingTitle" xml:space="preserve"><value>Düzeltmeyi hareket geçmişinden açın</value></data>
+  <data name="OriginalMissingText" xml:space="preserve"><value>Bu sayfa geçmişteki bir hareketi düzeltir. Hareket geçmişinde elle girilmiş bir hareketin “Düzelt” düğmesini kullanın; otomatik hareketler onları oluşturan modülde düzeltilir.</value></data>
+  <data name="BackToHistory" xml:space="preserve"><value>Hareket geçmişi</value></data>
+  <data name="BackToStock" xml:space="preserve"><value>Stok listesi</value></data>
+  <data name="RetryButton" xml:space="preserve"><value>Tekrar dene</value></data>
+  <data name="RestartLink" xml:space="preserve"><value>Yeni form aç</value></data>
+  <data name="PartialTitle" xml:space="preserve"><value>Düzeltme yarım kaldı</value></data>
+  <data name="PartialText" xml:space="preserve"><value>{0} numaralı ters kayıt yapıldı, ancak düzeltilmiş hareket kaydedilemedi: {1}</value></data>
+  <data name="PartialHint" xml:space="preserve"><value>Orijinal hareket ters kayıtla zaten iptal edildi. Aşağıdaki alanı düzeltip düzeltilmiş hareketi kaydedin; aynı istek yeniden kullanılır, hiçbir şey iki kez kaydedilmez.</value></data>
+  <data name="PartialRetry" xml:space="preserve"><value>Düzeltilmiş hareketi kaydet</value></data>
+  <data name="SectionMovement" xml:space="preserve"><value>Hareket</value></data>
+  <data name="FieldMovementType" xml:space="preserve"><value>Hareket türü</value></data>
+  <data name="GroupInbound" xml:space="preserve"><value>Giriş</value></data>
+  <data name="GroupOutbound" xml:space="preserve"><value>Çıkış</value></data>
+  <data name="GroupTransfer" xml:space="preserve"><value>Aktarım</value></data>
+  <data name="FieldReasonCode" xml:space="preserve"><value>Sebep kodu</value></data>
+  <data name="SectionItem" xml:space="preserve"><value>Ürün</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="PlaceholderProduct" xml:space="preserve"><value>Kod veya ada göre ürün arayın</value></data>
+  <data name="FieldSku" xml:space="preserve"><value>Stok kodu (SKU)</value></data>
+  <data name="PlaceholderSku" xml:space="preserve"><value>Ürünün stok kodunu seçin</value></data>
+  <data name="HintSelectProductFirst" xml:space="preserve"><value>Önce ürünü seçin; yalnız o ürünün stok kodları listelenir.</value></data>
+  <data name="HintSkuNone" xml:space="preserve"><value>Bu ürünün ana veride henüz stok kodu (SKU) yok; bu yüzden hareket kaydedilemez.</value></data>
+  <data name="SectionSourceTarget" xml:space="preserve"><value>Kaynak ve hedef</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Kaynak (lot / lokasyon)</value></data>
+  <data name="PlaceholderSource" xml:space="preserve"><value>Stoğun alınacağı satırı seçin</value></data>
+  <data name="HintSourceSelectSku" xml:space="preserve"><value>Önce stok kodunu seçin; stoklu satırları burada listelenir.</value></data>
+  <data name="HintSourceNone" xml:space="preserve"><value>Bu stok kodunun bu şirkette eldeki stoğu yok.</value></data>
+  <data name="HintSourceStock" xml:space="preserve"><value>Bu kaynakta eldeki: {0} {1}</value></data>
+  <data name="FieldTargetWarehouse" xml:space="preserve"><value>Hedef depo</value></data>
+  <data name="PlaceholderTargetWarehouse" xml:space="preserve"><value>Aktif bir depo seçin</value></data>
+  <data name="HintLocationTransferWarehouse" xml:space="preserve"><value>Lokasyon transferi kaynağın deposunda kalır.</value></data>
+  <data name="FieldTargetLocation" xml:space="preserve"><value>Hedef lokasyon</value></data>
+  <data name="PlaceholderTargetLocation" xml:space="preserve"><value>Depodaki bir lokasyonu arayın</value></data>
+  <data name="HintTargetLocation" xml:space="preserve"><value>Yalnız aktif ve stok tutulabilir lokasyonlar gösterilir.</value></data>
+  <data name="HintTargetLocationNone" xml:space="preserve"><value>Bu depoda aktif ve stok tutulabilir lokasyon yok. Lokasyonlar ekranından ekleyin.</value></data>
+  <data name="FieldTargetStockStatus" xml:space="preserve"><value>Hedef stok durumu</value></data>
+  <data name="FieldLot" xml:space="preserve"><value>Lot numarası</value></data>
+  <data name="PlaceholderLot" xml:space="preserve"><value>Bilinen bir lotu seçin veya yenisini yazın</value></data>
+  <data name="HintLotUnregistered" xml:space="preserve"><value>Kayıtsız lot (MOD-0174 öncesi): bu stok kodunun stoktaki lotları önce listelenir; yazılan lot büyük harfle saklanır (A–Z, 0–9, . / -, en çok 40).</value></data>
+  <data name="SectionQuantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="PlaceholderQuantity" xml:space="preserve"><value>Örn. 12 veya 2.5</value></data>
+  <data name="FieldUnit" xml:space="preserve"><value>Birim</value></data>
+  <data name="HintUnitBase" xml:space="preserve"><value>{0} {1} = {2} {3} (temel birim)</value></data>
+  <data name="HintUnitNoConversion" xml:space="preserve"><value>Bu birimden stok kodunun temel birimine dönüşüm tanımlı değil; hareket reddedilir.</value></data>
+  <data name="FieldSerialNumbers" xml:space="preserve"><value>Seri numaraları</value></data>
+  <data name="PlaceholderSerials" xml:space="preserve"><value>Her satıra bir seri numarası</value></data>
+  <data name="HintSerialCounter" xml:space="preserve"><value>{0} girildi / {1} gerekli</value></data>
+  <data name="HintSerialCounterUnknown" xml:space="preserve"><value>{0} girildi — gereken sayı miktar ve birimden çıkar</value></data>
+  <data name="SectionDocumentDates" xml:space="preserve"><value>Belge ve tarihler</value></data>
+  <data name="FieldDocumentNo" xml:space="preserve"><value>Belge no.</value></data>
+  <data name="PlaceholderDocumentNo" xml:space="preserve"><value>Örn. sayım föyü veya tutanak numarası</value></data>
+  <data name="FieldTransactionDate" xml:space="preserve"><value>İşlem tarihi</value></data>
+  <data name="FieldPostingDate" xml:space="preserve"><value>Kayıt tarihi</value></data>
+  <data name="OriginalTitle" xml:space="preserve"><value>Düzeltilen hareket</value></data>
+  <data name="CorrectExplain" xml:space="preserve"><value>Düzelt iki kayıt oluşturur: (1) bu hareketin ters kaydı, (2) aşağıdaki düzeltilmiş hareket. Orijinal hareket geçmişte kalır.</value></data>
+  <data name="EffectTitle" xml:space="preserve"><value>Stok etkisi</value></data>
+  <data name="EffectNote" xml:space="preserve"><value>Önce → sonra, temel birimde. Bilgi amaçlıdır: miktarı kayıt sırasında stok servisi kontrol eder.</value></data>
+  <data name="EffectEmpty" xml:space="preserve"><value>Etkiyi görmek için tür, ürün, miktar ve yerleri seçin.</value></data>
+  <data name="EffectSource" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="EffectTarget" xml:space="preserve"><value>Hedef</value></data>
+  <data name="EffectNegative" xml:space="preserve"><value>Eldekinden fazla — stok değişmedikçe stok servisi bunu reddeder.</value></data>
+  <data name="EffectUnavailable" xml:space="preserve"><value>Etki şu an hesaplanamıyor (ürün verisine ulaşılamıyor).</value></data>
+  <data name="PickerIncomplete" xml:space="preserve"><value>Liste tamamı gösterilemeyecek kadar uzun; daraltmak için kodun veya adın bir kısmını yazın.</value></data>
+  <data name="ProductFactsUnavailable" xml:space="preserve"><value>Ürün ana verisi (lot ve seri takibi, birimler) şu an okunamıyor; bu yüzden hareket kaydedilemez. Hiçbir şey değiştirilmedi; daha sonra tekrar deneyin.</value></data>
+  <data name="ValRequired" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
+  <data name="ValMovementType" xml:space="preserve"><value>Bu sayfada sunulan hareket türlerinden birini seçin.</value></data>
+  <data name="ValQuantity" xml:space="preserve"><value>0’dan büyük, en çok 6 ondalıklı bir miktar girin (ondalık için nokta: 2.5).</value></data>
+  <data name="ValTooLong" xml:space="preserve"><value>Bu değer çok uzun (en çok 200 karakter).</value></data>
+  <data name="ValDate" xml:space="preserve"><value>Tarih ve saat girin.</value></data>
+  <data name="ValLotFormat" xml:space="preserve"><value>Lot yalnız A–Z, 0–9, nokta, eğik çizgi ve tire içerebilir; en çok 40 karakter.</value></data>
+  <data name="ValSerialDuplicate" xml:space="preserve"><value>Her seri numarası yalnız bir kez yazılabilir.</value></data>
+  <data name="ValSerialCount" xml:space="preserve"><value>{0} seri numarası girildi; miktar {1} adet gerektiriyor.</value></data>
+  <data name="ValSameWarehouse" xml:space="preserve"><value>Depolar arası transferde hedef depo kaynağın deposundan farklı olmalıdır.</value></data>
+  <data name="ValSameWarehouseRequired" xml:space="preserve"><value>Lokasyon transferi kaynağın deposunda kalır; depo değiştirmek için depolar arası transfer kullanın.</value></data>
+  <data name="ValSameLocation" xml:space="preserve"><value>Kaynağın lokasyonundan farklı bir lokasyon seçin.</value></data>
+  <data name="ValFixFields" xml:space="preserve"><value>Bazı alanlar düzeltilmeli. Hiçbir şey kaydedilmedi.</value></data>
+  <data name="ConfirmCorrectTitle" xml:space="preserve"><value>Bu hareket düzeltilsin mi?</value></data>
+  <data name="ConfirmCorrectText" xml:space="preserve"><value>{0} hareketi geçmişte kalır. Bir ters kayıt stok etkisini iptal eder ve düzeltilmiş hareket yeni bir kayıt olarak eklenir. Bu işlem geri alınamaz.</value></data>
+  <data name="ConfirmCorrectButton" xml:space="preserve"><value>Ters kayıt yap ve kaydet</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Hareket makbuzu</value></data>
+  <data name="ReceiptMissing" xml:space="preserve"><value>Gösterilecek makbuz yok. Makbuz, bu tarayıcı oturumunda bir hareket kaydedildikten hemen sonra görünür; önceki hareketler hareket geçmişindedir.</value></data>
+  <data name="ReceiptPosted" xml:space="preserve"><value>{0} numaralı hareket kaydedildi.</value></data>
+  <data name="ReplayBanner" xml:space="preserve"><value>Bu form daha önce gönderilmişti; bu yüzden yeni bir kayıt oluşmadı. Bu, o hareketin makbuzudur.</value></data>
+  <data name="CorrectionDone" xml:space="preserve"><value>{0} hareketi {1} numaralı ters kayıtla iptal edildi; düzeltilmiş hareket {2}.</value></data>
+  <data name="DetailPostedAt" xml:space="preserve"><value>Kayıt zamanı</value></data>
+  <data name="DetailFrom" xml:space="preserve"><value>Nereden</value></data>
+  <data name="DetailTo" xml:space="preserve"><value>Nereye</value></data>
+  <data name="BalanceTitle" xml:space="preserve"><value>Güncel bakiye</value></data>
+  <data name="BalanceNote" xml:space="preserve"><value>Bu hareketin bıraktığı stok satırı, stok servisinin döndürdüğü haliyle.</value></data>
+  <data name="BalanceLocation" xml:space="preserve"><value>Depo / lokasyon</value></data>
+  <data name="BalanceOnHand" xml:space="preserve"><value>Eldeki</value></data>
+  <data name="BalanceAvailable" xml:space="preserve"><value>Kullanılabilir</value></data>
+  <data name="LotUnregisteredBadge" xml:space="preserve"><value>kayıtsız</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>Kayıtsız lot (MOD-0174 öncesi)</value></data>
+  <data name="ErrPeriodClosed" xml:space="preserve"><value>Kayıt tarihi kapalı bir döneme düşüyor. Hiçbir şey değiştirilmedi; açık bir dönemden tarih seçin.</value></data>
+  <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Kaynakta mevcut: {0}; istenen: {1} (temel birim).</value></data>
+  <data name="HintChooseTypeFirst" xml:space="preserve"><value>Önce hareket türünü seçin: hangi kaynak ve hedef alanlarının gerektiğini tür belirler.</value></data>
 </root>

@@ -68,4 +68,10 @@
   <data name="CompanyUnavailable" xml:space="preserve"><value>Şirket listesi alınamadı, bu yüzden stok verisi gösterilmiyor. Yöneticinizden şirketleri görüntüleme yetkisi isteyin veya daha sonra tekrar deneyin.</value></data>
   <data name="ErrSelectCompany" xml:space="preserve"><value>Önce bir şirket seçin. Hiçbir veri okunmadı veya değiştirilmedi.</value></data>
   <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>Seçilen şirket şu anda doğrulanamıyor, bu yüzden değişiklik yapılmadı. Biraz sonra tekrar deneyin.</value></data>
+  <data name="NewStockEntry" xml:space="preserve"><value>Yeni stok girişi</value></data>
+  <data name="RowMovement" xml:space="preserve"><value>Hareket</value></data>
+  <data name="LotUnregisteredBadge" xml:space="preserve"><value>kayıtsız</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>Kayıtsız lot (MOD-0174 öncesi)</value></data>
+  <data name="ErrPeriodClosed" xml:space="preserve"><value>Kayıt tarihi kapalı bir döneme düşüyor. Hiçbir şey değiştirilmedi; açık bir dönemden tarih seçin.</value></data>
+  <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Kaynakta mevcut: {0}; istenen: {1} (temel birim).</value></data>
 </root>

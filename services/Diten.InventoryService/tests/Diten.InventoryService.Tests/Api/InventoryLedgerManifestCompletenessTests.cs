@@ -26,14 +26,18 @@ public sealed class InventoryLedgerManifestCompletenessTests
 {
     private static readonly string WebRoot = Path.Combine(RepoPaths.Root, "frontend", "Diten.Web");
 
-    // The controllers, the JS folder and the Razor folder of each page (FU01 pack §5/§11, FU02 pack §5/§11).
-    private static readonly (string Controller, string JsFolder, string ViewFolder, string PageCode)[] Screens =
+    // The controllers, the JS folder and the Razor folder of each LIST page (FU01 pack §5/§11, FU02 pack §5/§11), with
+    // the manifest code of that list's toolbar "New" button.
+    private static readonly (string Controller, string JsFolder, string ViewFolder, string PageCode, string ToolbarNew)[] Screens =
     [
-        ("StockLedgerController.cs", "StockLedger", "StockLedger", "STOCKLEDGER"),
-        ("StockMovementsController.cs", "StockMovements", "StockMovements", "STOCKMOVEMENTS"),
-        ("LocationTreeController.cs", "LocationTree", "LocationTree", "LOCATIONTREE"),
-        ("LocationsController.cs", "Locations", "Locations", "LOCATIONS")
+        ("StockLedgerController.cs", "StockLedger", "StockLedger", "STOCKLEDGER", "NEWMOVEMENT"),
+        ("StockMovementsController.cs", "StockMovements", "StockMovements", "STOCKMOVEMENTS", "NEWMOVEMENT"),
+        ("LocationTreeController.cs", "LocationTree", "LocationTree", "LOCATIONTREE", "NEWLOCATION"),
+        ("LocationsController.cs", "Locations", "Locations", "LOCATIONS", "NEWLOCATION")
     ];
+
+    // UI-2: the form / receipt pages (pack §14) — reached from a list's button, they render no manifest action of their own.
+    private static readonly string[] FormPages = ["STOCKMOVEMENTCREATE", "STOCKMOVEMENTEDIT", "STOCKMOVEMENTDETAILS", "STOCKLEDGERCREATE"];
 
     // JS / Razor action key → manifest ActionCode (FU01 / FU02 pack §14 naming). The three status buttons are ONE
     // manifest action (CHANGELOCATIONSTATUS — one permission, one dangerous lifecycle operation).
@@ -41,6 +45,8 @@ public sealed class InventoryLedgerManifestCompletenessTests
     {
         ["history"] = "ROWHISTORY",
         ["reversal"] = "REVERSAL",
+        ["movement"] = "ROWMOVEMENT",
+        ["correct"] = "CORRECTION",
         ["newLocation"] = "NEWLOCATION",
         ["edit"] = "EDITLOCATION",
         ["addChild"] = "ADDCHILDLOCATION",
@@ -51,8 +57,6 @@ public sealed class InventoryLedgerManifestCompletenessTests
         ["locationHistory"] = "LOCATIONHISTORY",
         ["viewStock"] = "VIEWLOCATIONSTOCK"
     };
-
-    private const string ToolbarNew = "NEWLOCATION";
 
     private static readonly ModuleManifestDocumentView Manifest = new(new InventoryLedgerManifestProvider().GetManifest());
 
@@ -73,7 +77,7 @@ public sealed class InventoryLedgerManifestCompletenessTests
     public void Every_frontend_view_route_is_a_manifest_page_and_nothing_else_is()
     {
         var routes = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var (controller, _, _, _) in Screens)
+        foreach (var (controller, _, _, _, _) in Screens)
         {
             var source = File.ReadAllText(Path.Combine(WebRoot, "Controllers", controller));
             var prefix = Regex.Match(source, @"\[Route\(""(?<prefix>[^""]+)""\)\]").Groups["prefix"].Value;
@@ -97,7 +101,7 @@ public sealed class InventoryLedgerManifestCompletenessTests
     [Fact]
     public void Every_rendered_button_is_a_manifest_action_on_its_page_and_nothing_else_is()
     {
-        foreach (var (_, jsFolder, viewFolder, pageCode) in Screens)
+        foreach (var (_, jsFolder, viewFolder, pageCode, toolbarNew) in Screens)
         {
             var script = File.ReadAllText(Path.Combine(WebRoot, "wwwroot", "assets", "js", "Inventory", jsFolder, "index.js"));
             // An action object opens with its key (`{ key: 'history', … }`); a filter field opens with its id.
@@ -112,17 +116,26 @@ public sealed class InventoryLedgerManifestCompletenessTests
             // The list toolbar's "New" comes from the factory: an empty add-new text means no button.
             var addNew = Regex.Match(script, @"addNewText:\s*(?<value>[^,\n]+)").Groups["value"].Value.Trim();
             var hasToolbarNew = addNew.Length > 0 && addNew != "''";
-            if (hasToolbarNew) expected.Add(ToolbarNew);
+            if (hasToolbarNew) expected.Add(toolbarNew);
 
             var page = Manifest.Pages.Single(p => p.PageCode == pageCode);
             Assert.Equal(expected.OrderBy(c => c), page.Actions.Select(a => a.ActionCode).OrderBy(c => c));
             Assert.All(page.Actions, a =>
             {
-                var toolbar = a.ActionCode == ToolbarNew;
+                var toolbar = a.ActionCode == toolbarNew;
                 Assert.True(a.IsToolbarAction == toolbar && a.IsRowAction == !toolbar, $"{pageCode}.{a.ActionCode}: wrong placement");
                 Assert.Equal(toolbar ? "Toolbar" : "RowAction", a.ActionType);
             });
         }
+
+        // The form / receipt pages declare no action, and their views render no action key either (the other direction).
+        Assert.All(FormPages, code => Assert.Empty(Manifest.Pages.Single(p => p.PageCode == code).Actions));
+        var formViews = new[] { "Create.cshtml", "Edit.cshtml", "Details.cshtml", "_Form.cshtml" }
+            .Select(f => Path.Combine(WebRoot, "Views", "Inventory", "StockMovements", f))
+            .Append(Path.Combine(WebRoot, "Views", "Inventory", "StockLedger", "Create.cshtml"));
+        Assert.All(formViews, f => Assert.DoesNotMatch(@"data-(location-)?action=""", File.ReadAllText(f)));
+        var formScript = File.ReadAllText(Path.Combine(WebRoot, "wwwroot", "assets", "js", "Inventory", "StockMovements", "form.js"));
+        Assert.DoesNotMatch(@"\{\s*key:\s*'\w+'", formScript);
     }
 
     [Fact]
@@ -157,7 +170,23 @@ public sealed class InventoryLedgerManifestCompletenessTests
         Assert.True(actions.Single(a => a.ActionCode == "REVERSAL").IsDangerous);
         // Archive lives in the status change: dangerous on every page that offers it (FU02 pack §14).
         Assert.All(actions.Where(a => a.ActionCode == "CHANGELOCATIONSTATUS"), a => Assert.True(a.IsDangerous));
-        Assert.All(actions.Where(a => a.ActionCode != "REVERSAL" && a.ActionCode != "CHANGELOCATIONSTATUS"), a => Assert.False(a.IsDangerous));
+        // UI-2 KD-1: "Correct" posts a REVERSAL first — as dangerous as Reversal itself.
+        Assert.True(actions.Single(a => a.ActionCode == "CORRECTION").IsDangerous);
+        string[] dangerous = ["REVERSAL", "CHANGELOCATIONSTATUS", "CORRECTION"];
+        Assert.All(actions.Where(a => !dangerous.Contains(a.ActionCode)), a => Assert.False(a.IsDangerous));
+
+        // UI-2 (FU01 pack §14): the movement pages and buttons gate on movements.create; the form pages hang under the
+        // list they are reached from.
+        Assert.All(actions.Where(a => a.ActionCode is "NEWMOVEMENT" or "ROWMOVEMENT" or "CORRECTION" or "REVERSAL"),
+            a => Assert.Equal(InventoryPermissions.CreateMovements, a.PermissionKey));
+        Assert.Equal(["STOCKLEDGER", "STOCKMOVEMENTS"], manifest.Pages.Where(p => p.Actions.Any(a => a.ActionCode == "NEWMOVEMENT")).Select(p => p.PageCode).OrderBy(c => c));
+        foreach (var (code, parent) in new[] { ("STOCKMOVEMENTCREATE", "STOCKMOVEMENTS"), ("STOCKMOVEMENTEDIT", "STOCKMOVEMENTS"), ("STOCKMOVEMENTDETAILS", "STOCKMOVEMENTS"), ("STOCKLEDGERCREATE", "STOCKLEDGER") })
+        {
+            var page = manifest.Pages.Single(p => p.PageCode == code);
+            Assert.Equal(parent, page.ParentPageCode);
+            Assert.False(page.IsNavigationVisible);
+            Assert.Equal(InventoryPermissions.CreateMovements, page.RequiredPermission);
+        }
 
         // The location pages gate on the location permissions; "View in stock list" on the stock list's own gate.
         Assert.All(manifest.Pages.Where(p => p.PageCode.StartsWith("LOCATION", StringComparison.Ordinal)),

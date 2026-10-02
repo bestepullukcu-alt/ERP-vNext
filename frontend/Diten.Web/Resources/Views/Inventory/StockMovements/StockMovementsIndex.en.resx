@@ -86,4 +86,110 @@
   <data name="CompanyUnavailable" xml:space="preserve"><value>The company list could not be loaded, so no stock data is shown. Ask your administrator for permission to view companies, or try again later.</value></data>
   <data name="ErrSelectCompany" xml:space="preserve"><value>Select a company first. Nothing was read or changed.</value></data>
   <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>The selected company cannot be confirmed right now, so no change was made. Try again in a moment.</value></data>
+  <data name="NewMovement" xml:space="preserve"><value>New movement</value></data>
+  <data name="Correct" xml:space="preserve"><value>Correct</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New movement</value></data>
+  <data name="FormTitleEntry" xml:space="preserve"><value>New stock entry</value></data>
+  <data name="FormTitleCorrect" xml:space="preserve"><value>Correct movement</value></data>
+  <data name="SubmitCreate" xml:space="preserve"><value>Post movement</value></data>
+  <data name="SubmitCorrect" xml:space="preserve"><value>Correct</value></data>
+  <data name="OriginalMissingTitle" xml:space="preserve"><value>Open the correction from the movement history</value></data>
+  <data name="OriginalMissingText" xml:space="preserve"><value>This page corrects one movement from the history. Use “Correct” on a manual movement in the movement history; automatic movements are corrected in the module that posted them.</value></data>
+  <data name="BackToHistory" xml:space="preserve"><value>Movement history</value></data>
+  <data name="BackToStock" xml:space="preserve"><value>Stock list</value></data>
+  <data name="RetryButton" xml:space="preserve"><value>Try again</value></data>
+  <data name="RestartLink" xml:space="preserve"><value>Start a new form</value></data>
+  <data name="PartialTitle" xml:space="preserve"><value>Correction not finished</value></data>
+  <data name="PartialText" xml:space="preserve"><value>Reversal {0} has been posted, but the corrected movement was not: {1}</value></data>
+  <data name="PartialHint" xml:space="preserve"><value>The original movement is already cancelled by the reversal. Fix the field below and post the corrected movement; the same request is reused, so nothing is posted twice.</value></data>
+  <data name="PartialRetry" xml:space="preserve"><value>Post corrected movement</value></data>
+  <data name="SectionMovement" xml:space="preserve"><value>Movement</value></data>
+  <data name="FieldMovementType" xml:space="preserve"><value>Movement type</value></data>
+  <data name="GroupInbound" xml:space="preserve"><value>Inbound</value></data>
+  <data name="GroupOutbound" xml:space="preserve"><value>Outbound</value></data>
+  <data name="GroupTransfer" xml:space="preserve"><value>Transfer</value></data>
+  <data name="FieldReasonCode" xml:space="preserve"><value>Reason code</value></data>
+  <data name="SectionItem" xml:space="preserve"><value>Item</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="PlaceholderProduct" xml:space="preserve"><value>Search product by code or name</value></data>
+  <data name="FieldSku" xml:space="preserve"><value>SKU</value></data>
+  <data name="PlaceholderSku" xml:space="preserve"><value>Select the product’s SKU</value></data>
+  <data name="HintSelectProductFirst" xml:space="preserve"><value>Select a product first; only its SKUs are listed.</value></data>
+  <data name="HintSkuNone" xml:space="preserve"><value>This product has no SKU in the product master yet, so it cannot be posted.</value></data>
+  <data name="SectionSourceTarget" xml:space="preserve"><value>Source and target</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Source (lot / location)</value></data>
+  <data name="PlaceholderSource" xml:space="preserve"><value>Select the stock row to take from</value></data>
+  <data name="HintSourceSelectSku" xml:space="preserve"><value>Select the SKU first; its stock rows are listed here.</value></data>
+  <data name="HintSourceNone" xml:space="preserve"><value>This SKU has no stock on hand anywhere in this company.</value></data>
+  <data name="HintSourceStock" xml:space="preserve"><value>On hand at this source: {0} {1}</value></data>
+  <data name="FieldTargetWarehouse" xml:space="preserve"><value>Target warehouse</value></data>
+  <data name="PlaceholderTargetWarehouse" xml:space="preserve"><value>Select an active warehouse</value></data>
+  <data name="HintLocationTransferWarehouse" xml:space="preserve"><value>A location transfer stays in the source’s warehouse.</value></data>
+  <data name="FieldTargetLocation" xml:space="preserve"><value>Target location</value></data>
+  <data name="PlaceholderTargetLocation" xml:space="preserve"><value>Search a location of the warehouse</value></data>
+  <data name="HintTargetLocation" xml:space="preserve"><value>Only active locations that can hold stock are offered.</value></data>
+  <data name="HintTargetLocationNone" xml:space="preserve"><value>This warehouse has no active location that can hold stock. Add one in Locations.</value></data>
+  <data name="FieldTargetStockStatus" xml:space="preserve"><value>Target stock status</value></data>
+  <data name="FieldLot" xml:space="preserve"><value>Lot</value></data>
+  <data name="PlaceholderLot" xml:space="preserve"><value>Choose a known lot or type a new one</value></data>
+  <data name="HintLotUnregistered" xml:space="preserve"><value>Unregistered lot (pre-MOD-0174): lots of this SKU already in stock are listed first; a typed lot is stored in capitals (A–Z, 0–9, . / -, up to 40).</value></data>
+  <data name="SectionQuantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="PlaceholderQuantity" xml:space="preserve"><value>e.g. 12 or 2.5</value></data>
+  <data name="FieldUnit" xml:space="preserve"><value>Unit</value></data>
+  <data name="HintUnitBase" xml:space="preserve"><value>{0} {1} = {2} {3} (base unit)</value></data>
+  <data name="HintUnitNoConversion" xml:space="preserve"><value>No conversion from this unit to the SKU’s base unit is defined; the movement will be refused.</value></data>
+  <data name="FieldSerialNumbers" xml:space="preserve"><value>Serial numbers</value></data>
+  <data name="PlaceholderSerials" xml:space="preserve"><value>One serial number per line</value></data>
+  <data name="HintSerialCounter" xml:space="preserve"><value>{0} entered / {1} required</value></data>
+  <data name="HintSerialCounterUnknown" xml:space="preserve"><value>{0} entered — the required count follows from the quantity and unit</value></data>
+  <data name="SectionDocumentDates" xml:space="preserve"><value>Document and dates</value></data>
+  <data name="FieldDocumentNo" xml:space="preserve"><value>Document no.</value></data>
+  <data name="PlaceholderDocumentNo" xml:space="preserve"><value>e.g. count sheet or report number</value></data>
+  <data name="FieldTransactionDate" xml:space="preserve"><value>Transaction date</value></data>
+  <data name="FieldPostingDate" xml:space="preserve"><value>Posting date</value></data>
+  <data name="OriginalTitle" xml:space="preserve"><value>Movement being corrected</value></data>
+  <data name="CorrectExplain" xml:space="preserve"><value>Correct creates two records: (1) a reversal of this movement, (2) the corrected movement below. The original stays in the history.</value></data>
+  <data name="EffectTitle" xml:space="preserve"><value>Stock effect</value></data>
+  <data name="EffectNote" xml:space="preserve"><value>Before → after, in the base unit. For information: the stock service checks the quantity when you post.</value></data>
+  <data name="EffectEmpty" xml:space="preserve"><value>Choose the type, product, quantity and places to see the effect.</value></data>
+  <data name="EffectSource" xml:space="preserve"><value>Source</value></data>
+  <data name="EffectTarget" xml:space="preserve"><value>Target</value></data>
+  <data name="EffectNegative" xml:space="preserve"><value>More than is on hand — the stock service will refuse this unless the stock changes.</value></data>
+  <data name="EffectUnavailable" xml:space="preserve"><value>The effect cannot be calculated right now (product data unavailable).</value></data>
+  <data name="PickerIncomplete" xml:space="preserve"><value>The list is too long to show completely; type part of the code or name to narrow it.</value></data>
+  <data name="ProductFactsUnavailable" xml:space="preserve"><value>Product data (lot and serial tracking, units) cannot be read right now, so the movement cannot be posted. Nothing was changed; try again later.</value></data>
+  <data name="ValRequired" xml:space="preserve"><value>This field is required.</value></data>
+  <data name="ValMovementType" xml:space="preserve"><value>Choose one of the movement types offered on this page.</value></data>
+  <data name="ValQuantity" xml:space="preserve"><value>Enter a quantity greater than 0 with up to 6 decimals (use a dot: 2.5).</value></data>
+  <data name="ValTooLong" xml:space="preserve"><value>This value is too long (at most 200 characters).</value></data>
+  <data name="ValDate" xml:space="preserve"><value>Enter a date and time.</value></data>
+  <data name="ValLotFormat" xml:space="preserve"><value>A lot may use A–Z, 0–9, dot, slash and hyphen, up to 40 characters.</value></data>
+  <data name="ValSerialDuplicate" xml:space="preserve"><value>Each serial number may appear only once.</value></data>
+  <data name="ValSerialCount" xml:space="preserve"><value>{0} serial numbers entered; the quantity needs {1}.</value></data>
+  <data name="ValSameWarehouse" xml:space="preserve"><value>A warehouse transfer needs a different warehouse than the source’s.</value></data>
+  <data name="ValSameWarehouseRequired" xml:space="preserve"><value>A location transfer stays in the source’s warehouse; use a warehouse transfer to change warehouse.</value></data>
+  <data name="ValSameLocation" xml:space="preserve"><value>Choose a location different from the source’s.</value></data>
+  <data name="ValFixFields" xml:space="preserve"><value>Some fields need your attention. Nothing was posted.</value></data>
+  <data name="ConfirmCorrectTitle" xml:space="preserve"><value>Correct this movement?</value></data>
+  <data name="ConfirmCorrectText" xml:space="preserve"><value>Movement {0} stays in the history. A reversal cancels its stock effect and the corrected movement is posted as a new record. This cannot be undone.</value></data>
+  <data name="ConfirmCorrectButton" xml:space="preserve"><value>Reverse and post</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Movement receipt</value></data>
+  <data name="ReceiptMissing" xml:space="preserve"><value>There is no receipt to show. A receipt appears right after a movement is posted in this browser session; earlier movements are in the movement history.</value></data>
+  <data name="ReceiptPosted" xml:space="preserve"><value>Movement {0} has been posted.</value></data>
+  <data name="ReplayBanner" xml:space="preserve"><value>This form had already been submitted, so nothing new was posted. This is the receipt of that movement.</value></data>
+  <data name="CorrectionDone" xml:space="preserve"><value>Movement {0} was cancelled by reversal {1}; the corrected movement is {2}.</value></data>
+  <data name="DetailPostedAt" xml:space="preserve"><value>Posted at</value></data>
+  <data name="DetailFrom" xml:space="preserve"><value>From</value></data>
+  <data name="DetailTo" xml:space="preserve"><value>To</value></data>
+  <data name="BalanceTitle" xml:space="preserve"><value>Current balance</value></data>
+  <data name="BalanceNote" xml:space="preserve"><value>The stock row this movement left, as the stock service returned it.</value></data>
+  <data name="BalanceLocation" xml:space="preserve"><value>Warehouse / location</value></data>
+  <data name="BalanceOnHand" xml:space="preserve"><value>On hand</value></data>
+  <data name="BalanceAvailable" xml:space="preserve"><value>Available</value></data>
+  <data name="LotUnregisteredBadge" xml:space="preserve"><value>unregistered</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>Unregistered lot (pre-MOD-0174)</value></data>
+  <data name="ErrPeriodClosed" xml:space="preserve"><value>The posting date falls in a closed period. Nothing was changed; choose a date in an open period.</value></data>
+  <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Available at the source: {0}; requested: {1} (base unit).</value></data>
+  <data name="HintChooseTypeFirst" xml:space="preserve"><value>Choose the movement type first: it decides which source and target fields are needed.</value></data>
 </root>

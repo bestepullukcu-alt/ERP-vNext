@@ -56,6 +56,86 @@ public sealed class ProductPickerSource
         return new PickerResult(options, replies[0].IsSuccess && replies[1].IsSuccess);
     }
 
+    /// <summary>MDM's page limit for the Model A lists (GetGskusValidator / GetLskusValidator: 1–100).</summary>
+    public const int ScanPageSize = 100;
+
+    /// <summary>How many pages of each list a product-scoped SKU lookup reads before it says "refine the search".</summary>
+    public const int MaxScanPages = 5;
+
+    /// <summary>
+    /// UI-2 S-3: the SKUs OF ONE PRODUCT (pack §12 field 4, a child of Product). Model A has no "SKUs of product" query
+    /// — <c>/api/gskus</c> carries <c>globalProductId</c>, <c>/api/lskus</c> carries <c>gskuId</c> and both search by code
+    /// prefix only — so the lists are read (≤ <see cref="MaxScanPages"/> pages of <see cref="ScanPageSize"/>) and kept
+    /// to that product: its GSKUs, then the LSKUs under those GSKUs. A scan that hits the cap is answered as
+    /// incomplete, never as "no SKU".
+    /// </summary>
+    public async Task<PickerResult> SearchSkusOfProductAsync(string itemId, string? search, CancellationToken cancellationToken)
+    {
+        var gskus = await ScanAsync("/api/gskus", search, cancellationToken);
+        if (gskus is null) return PickerResult.Unavailable;
+
+        var own = gskus.Items.Where(item => string.Equals(Text(item, "globalProductId"), itemId, StringComparison.OrdinalIgnoreCase)).ToList();
+        var options = own
+            .Select(item => new PickerOption("Gsku:" + Text(item, "id"), Join(Text(item, "canonicalCode"), Text(item, "globalProductName")) ?? Text(item, "id")!))
+            .Where(o => o.Value.Length > 5)
+            .ToList();
+
+        var complete = gskus.Complete;
+        var gskuIds = own.Select(item => Text(item, "id")).Where(id => id is not null).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (gskuIds.Count > 0)
+        {
+            var lskus = await ScanAsync("/api/lskus", search, cancellationToken);
+            if (lskus is null) return new PickerResult(options, false);
+            complete &= lskus.Complete;
+            options.AddRange(lskus.Items
+                .Where(item => gskuIds.Contains(Text(item, "gskuId") ?? string.Empty))
+                .Select(item => new PickerOption("Lsku:" + Text(item, "id"), Join(Text(item, "canonicalCode"), Text(item, "marketCode")) ?? Text(item, "id")!))
+                .Where(o => o.Value.Length > 5));
+        }
+
+        return new PickerResult(options, complete);
+    }
+
+    private sealed record Scan(List<JsonElement> Items, bool Complete);
+
+    private async Task<Scan?> ScanAsync(string path, string? search, CancellationToken cancellationToken)
+    {
+        var items = new List<JsonElement>();
+        for (var page = 1; page <= MaxScanPages; page++)
+        {
+            var parts = new List<string> { "pageNumber=" + page, "pageSize=" + ScanPageSize };
+            if (!string.IsNullOrWhiteSpace(search)) parts.Add("search=" + Uri.EscapeDataString(search.Trim()));
+            var reply = await _gateway.GetAsync(path + "?" + string.Join("&", parts), cancellationToken);
+            if (!reply.IsSuccess) return null;
+
+            var (pageItems, total) = Page(reply);
+            items.AddRange(pageItems);
+            if (pageItems.Count < ScanPageSize || (total is not null && items.Count >= total)) return new Scan(items, true);
+        }
+
+        return new Scan(items, false);
+    }
+
+    private static (List<JsonElement> Items, long? Total) Page(GatewayReply reply)
+    {
+        var list = new List<JsonElement>();
+        try
+        {
+            using var doc = JsonDocument.Parse(reply.Body);
+            var root = doc.RootElement;
+            var data = root.ValueKind == JsonValueKind.Object && root.TryGetProperty("data", out var d) ? d : root;
+            if (data.ValueKind != JsonValueKind.Object || !data.TryGetProperty("items", out var items) || items.ValueKind != JsonValueKind.Array)
+                return (list, null);
+            list.AddRange(items.EnumerateArray().Select(item => item.Clone()));
+            long? total = data.TryGetProperty("totalCount", out var t) && t.TryGetInt64(out var value) ? value : null;
+            return (list, total);
+        }
+        catch (JsonException)
+        {
+            return (list, null);
+        }
+    }
+
     private static string Query(string? search)
     {
         var parts = new List<string> { "pageNumber=1", "pageSize=" + PageSize };

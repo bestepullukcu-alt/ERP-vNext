@@ -1,9 +1,10 @@
 /**
- * MOD-0173-FU01 S-2 Movement history — DataTables index script (UI-1).
+ * MOD-0173-FU01 S-2 Movement history — DataTables index script (UI-1, UI-2).
  *
  * THE LIST IS A COMPONENT (BL-440): Save View, column state, filters and the inline bar come from
  * DitenDataTable.createList. This file writes only the history's own business: columns, renderers, the filter
- * sources and the ONE state-changing action, Reversal.
+ * sources, the ONE state-changing action on the list itself (Reversal) and two navigations of UI-2: the toolbar
+ * "New movement" (→ S-3) and the row "Correct" (→ Edit, KD-1: a reversal + a new movement, never an edit).
  *
  * SERVER MODE, PROXY PROFILE (pack §8, ASSUMPTION-UI-01): '/StockMovements/api' translates paging for
  * INVENTORY-BUNDLE /transactions. No column is orderable, no search box (BG-04/BG-09). The browser never calls
@@ -240,7 +241,31 @@ const StockMovementsList = (function () {
         });
     };
 
-    const rowActionHandlers = { reversal: reverse };
+    // KD-1 (UI-2): "Correct" opens Edit with THIS row (BG-06: there is no GET by id). It posts a REVERSAL of the row
+    // plus the corrected movement — two records; the row itself is never edited. Offered on the same rows as
+    // Reversal (manual, not a reversal, not reversed here) AND only for one of the seven manual types (canCorrect).
+    const correct = ({ row }) => {
+        if (!row?.id || !row.canCorrect || !canReverse()) return;
+        const query = new URLSearchParams({
+            id: row.id,
+            no: row.transactionNumber || '',
+            type: row.movementType || '',
+            itemId: row.itemId || '',
+            itemText: row.productLabel || row.itemId || '',
+            skuId: row.skuId || '',
+            skuLevel: row.skuLevel || '',
+            skuText: row.skuLabel || row.skuId || '',
+            quantity: row.quantity || '',
+            uomId: row.uomId || ''
+        });
+        [['toWarehouseId', row.toWarehouseId], ['toWarehouseText', row.toWarehouseLabel], ['toLocationId', row.toLocationId],
+            ['toLocationText', row.toLocationLabel], ['toStatus', row.toStockStatus], ['lotId', row.lotId],
+            ['doc', row.sourceDocumentId && row.sourceDocumentId !== row.id ? row.sourceDocumentId : ''], ['txDate', row.transactionDate]]
+            .forEach(([key, value]) => { if (value) query.set(key, value); });
+        window.location.href = `/StockMovements/Edit?${query.toString()}`;
+    };
+
+    const rowActionHandlers = { reversal: reverse, correct: correct };
 
     const renderAction = (full) => {
         if (!canReverse()) return '';
@@ -250,6 +275,13 @@ const StockMovementsList = (function () {
                 + `<a class="btn btn-icon disabled" aria-disabled="true"><i class="bx bx-undo icon-md"></i></a></span>`;
         }
         return window.DitenDataTable.renderActions([
+            {
+                key: 'correct',
+                visible: !!full.canCorrect,
+                icon: 'bx bx-edit-alt',
+                text: L().Correct,
+                attrs: { 'data-id': full.id, 'data-json': JSON.stringify(full), title: L().Correct, 'aria-label': L().Correct }
+            },
             {
                 key: 'reversal',
                 visible: !!full.canReverse,
@@ -270,8 +302,12 @@ const StockMovementsList = (function () {
             ajax: { url: '/StockMovements/api', type: 'GET', error: onListError },
             onResponse: onResponse,
             actions: { onRowAction: rowActionHandlers },
-            // No "New movement" in UI-1: the movement form arrives with UI-2 (no dead link, no disabled stand-in).
-            toolbar: { addNewText: '', colvisColumns: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+            // UI-2: "New movement" → S-3, only for a user who may post (absent otherwise, UAS-001 §6).
+            toolbar: {
+                addNewText: canReverse() ? (L().NewMovement || '') : '',
+                onAddNew: () => { window.location.href = '/StockMovements/Create'; },
+                colvisColumns: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+            },
             filters: { hostId: 'inlineFilterHost', collapseId: 'inlineFilterCollapse', fields: filterFields, loadOptions: loadLookupOptions },
             savedView: {
                 moduleKey: 'Inventory',
@@ -337,7 +373,8 @@ const StockMovementsList = (function () {
                         render: (data, type, full) => `<div class="d-flex flex-column"><span>${esc(full.toWarehouseLabel || full.toWarehouseId || '')}</span>`
                             + `<small class="text-muted">${esc(full.toLocationLabel || full.toLocationId || '')}</small></div>`
                     },
-                    { targets: 8, render: (data) => esc(data || '') },
+                    // W-UI-02: until MOD-0174 registers lots, every lot is an "unregistered lot (pre-MOD-0174)".
+                    { targets: 8, render: (data) => data ? `${esc(data)} <span class="badge bg-label-secondary ms-1" title="${esc(L().LotUnregisteredHint)}">${esc(L().LotUnregisteredBadge)}</span>` : '' },
                     {
                         targets: 9,
                         // "from → to" only when the movement names both and they differ (an outbound has no "to").

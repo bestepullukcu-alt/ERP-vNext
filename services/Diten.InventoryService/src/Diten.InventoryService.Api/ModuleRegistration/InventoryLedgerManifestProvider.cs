@@ -10,10 +10,12 @@ namespace Diten.InventoryService.Api.ModuleRegistration;
 /// <item><c>/StockLedger</c> (S-1 stock list, nav-visible) with the row action "History";</item>
 /// <item><c>/StockMovements</c> (S-2 movement history, reached from S-1) with the row action "Reversal".</item>
 /// </list>
-/// Create / Details / Edit ("Correct") / StockLedger Create pages and the NEWMOVEMENT / ROWMOVEMENT actions arrive
-/// with UI-2, appended then — never declared before their route exists. Every permission is a real
-/// <see cref="InventoryPermissions"/> constant that the API enforces with <c>[HasPermission]</c>.
-/// Both routes are tenant routes (not <c>/Platform/…</c>), so the derived permission scope is Tenant (§2c).
+/// UI-2 (pack §14) appends what it renders: the pages <c>/StockMovements/Create</c> (S-3), <c>/StockMovements/Edit</c>
+/// ("Correct", KD-1), <c>/StockMovements/Details</c> (the receipt) and <c>/StockLedger/Create</c> ("New stock entry",
+/// KD-2), the toolbar NEWMOVEMENT on S-1 and S-2, the S-1 row ROWMOVEMENT and the S-2 row CORRECTION ("Correct" —
+/// dangerous: it posts a reversal). Every permission is a real <see cref="InventoryPermissions"/> constant that the
+/// API enforces with <c>[HasPermission]</c>. Every route is a tenant route (not <c>/Platform/…</c>), so the derived
+/// permission scope is Tenant (§2c).
 /// <para>
 /// MOD-0173-FU02 (LOC2) appends the location master to the SAME module (FU02 pack §14 decision): <c>/LocationTree</c>
 /// (L-1 tree + detail, nav-visible) and <c>/Locations</c> (L-2 list, reached from L-1), with exactly the buttons LOC2
@@ -50,7 +52,9 @@ public sealed class InventoryLedgerManifestProvider : IModuleManifestProvider
                     SortOrder: 10,
                     Actions:
                     [
-                        new ModuleManifestAction("ROWHISTORY", "History", InventoryPermissions.Read, "RowAction", 10, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("NEWMOVEMENT", "New stock entry", InventoryPermissions.CreateMovements, "Toolbar", 5, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("ROWHISTORY", "History", InventoryPermissions.Read, "RowAction", 10, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("ROWMOVEMENT", "Movement", InventoryPermissions.CreateMovements, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
                     ]),
                 new ModuleManifestPage(
                     PageCode: "STOCKMOVEMENTS",
@@ -63,8 +67,50 @@ public sealed class InventoryLedgerManifestProvider : IModuleManifestProvider
                     SortOrder: 20,
                     Actions:
                     [
-                        new ModuleManifestAction("REVERSAL", "Reversal", InventoryPermissions.CreateMovements, "RowAction", 10, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                        new ModuleManifestAction("NEWMOVEMENT", "New movement", InventoryPermissions.CreateMovements, "Toolbar", 5, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("REVERSAL", "Reversal", InventoryPermissions.CreateMovements, "RowAction", 10, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("CORRECTION", "Correct", InventoryPermissions.CreateMovements, "RowAction", 20, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
                     ]),
+                new ModuleManifestPage(
+                    PageCode: "STOCKMOVEMENTCREATE",
+                    DisplayName: "New movement",
+                    RoutePath: "/StockMovements/Create",
+                    RequiredPermission: InventoryPermissions.CreateMovements,
+                    ParentPageCode: "STOCKMOVEMENTS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 21,
+                    Actions: []),
+                new ModuleManifestPage(
+                    PageCode: "STOCKMOVEMENTEDIT",
+                    DisplayName: "Correct movement",
+                    RoutePath: "/StockMovements/Edit",
+                    RequiredPermission: InventoryPermissions.CreateMovements,
+                    ParentPageCode: "STOCKMOVEMENTS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 22,
+                    Actions: []),
+                new ModuleManifestPage(
+                    PageCode: "STOCKMOVEMENTDETAILS",
+                    DisplayName: "Movement receipt",
+                    RoutePath: "/StockMovements/Details",
+                    RequiredPermission: InventoryPermissions.CreateMovements,
+                    ParentPageCode: "STOCKMOVEMENTS",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 23,
+                    Actions: []),
+                new ModuleManifestPage(
+                    PageCode: "STOCKLEDGERCREATE",
+                    DisplayName: "New stock entry",
+                    RoutePath: "/StockLedger/Create",
+                    RequiredPermission: InventoryPermissions.CreateMovements,
+                    ParentPageCode: "STOCKLEDGER",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 11,
+                    Actions: []),
                 new ModuleManifestPage(
                     PageCode: "LOCATIONTREE",
                     DisplayName: "Locations",
