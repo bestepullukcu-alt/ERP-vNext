@@ -985,4 +985,5 @@
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Tedarik Zinciri Yürütme</value></data>
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Envanter</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Stok Defteri</value></data>
+  <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Lokasyonlar</value></data>
 </root>

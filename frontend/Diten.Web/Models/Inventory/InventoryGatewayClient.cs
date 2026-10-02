@@ -11,6 +11,9 @@ namespace Diten.Web.Models.Inventory;
 /// <c>tenantId</c> / <c>legalEntityId</c> never travel in a query or a body (parent §8: 400). <c>X-Legal-Entity-Id</c>
 /// (W-0173-02) is added to inventory calls ONLY for a token without a <c>legal_entity_id</c> claim, carrying the user's
 /// selected company; with no company selected an inventory call is not sent at all (<see cref="CompanyNotSelected"/>).
+/// MOD-0173-FU02 (LOC2): <c>/api/locations</c> runs through the SAME scope middleware in InventoryService (FU02 pack
+/// §8), so the company rule covers it too; the location owner operations add PATCH, <c>If-Match</c> and the
+/// answer's <c>ETag</c>.
 /// </summary>
 public sealed class InventoryGatewayClient
 {
@@ -37,14 +40,26 @@ public sealed class InventoryGatewayClient
     }
 
     public Task<GatewayReply> GetAsync(string pathAndQuery, CancellationToken cancellationToken) =>
-        SendAsync(HttpMethod.Get, pathAndQuery, null, null, cancellationToken);
+        SendAsync(HttpMethod.Get, pathAndQuery, null, null, null, cancellationToken);
 
     public Task<GatewayReply> PostAsync(string path, object body, string idempotencyKey, CancellationToken cancellationToken) =>
-        SendAsync(HttpMethod.Post, path, body, idempotencyKey, cancellationToken);
+        SendAsync(HttpMethod.Post, path, body, idempotencyKey, null, cancellationToken);
 
-    private async Task<GatewayReply> SendAsync(HttpMethod method, string pathAndQuery, object? body, string? idempotencyKey, CancellationToken cancellationToken)
+    /// <summary>A POST guarded by optimistic concurrency (LOCATION v1.1 status change): <c>If-Match</c>, no key.</summary>
+    public Task<GatewayReply> PostIfMatchAsync(string path, object body, string ifMatch, CancellationToken cancellationToken) =>
+        SendAsync(HttpMethod.Post, path, body, null, ifMatch, cancellationToken);
+
+    public Task<GatewayReply> PatchAsync(string path, object body, string ifMatch, CancellationToken cancellationToken) =>
+        SendAsync(HttpMethod.Patch, path, body, null, ifMatch, cancellationToken);
+
+    /// <summary>The paths InventoryService scopes by company (W-0173-02): the ledger and the location master.</summary>
+    private static bool IsCompanyScoped(string pathAndQuery) =>
+        pathAndQuery.StartsWith("/api/inventory", StringComparison.Ordinal)
+        || pathAndQuery.StartsWith("/api/locations", StringComparison.Ordinal);
+
+    private async Task<GatewayReply> SendAsync(HttpMethod method, string pathAndQuery, object? body, string? idempotencyKey, string? ifMatch, CancellationToken cancellationToken)
     {
-        var isInventory = pathAndQuery.StartsWith("/api/inventory", StringComparison.Ordinal);
+        var isInventory = IsCompanyScoped(pathAndQuery);
         if (isInventory && _companyRequired && _company is null)
         {
             // W-0173-02: no company, no inventory call — not even one the service would refuse.
@@ -59,6 +74,9 @@ public sealed class InventoryGatewayClient
         request.Headers.Add("X-Tenant-Id", _tenantId);
         if (idempotencyKey is not null)
             request.Headers.Add("Idempotency-Key", idempotencyKey);
+        // W/"<version>" is a weak entity tag; it goes in verbatim, unparsed.
+        if (ifMatch is not null)
+            request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
         if (body is not null)
             request.Content = JsonContent.Create(body, options: Json);
 
@@ -67,7 +85,10 @@ public sealed class InventoryGatewayClient
             using var response = await _http.SendAsync(request, cancellationToken);
             var text = await response.Content.ReadAsStringAsync(cancellationToken);
             response.Headers.TryGetValues("X-Correlation-Id", out var correlation);
-            return new GatewayReply((int)response.StatusCode, text, correlation?.FirstOrDefault());
+            return new GatewayReply((int)response.StatusCode, text, correlation?.FirstOrDefault())
+            {
+                ETag = response.Headers.ETag?.ToString()
+            };
         }
         catch (HttpRequestException)
         {
@@ -86,6 +107,9 @@ public sealed record GatewayReply(int StatusCode, string Body, string? Correlati
     public static readonly GatewayReply Unreachable = new(0, string.Empty, null);
 
     public bool IsSuccess => StatusCode is >= 200 and < 300;
+
+    /// <summary>The answer's <c>ETag</c> (LOCATION owner reads/writes: <c>W/"&lt;version&gt;"</c>), if any.</summary>
+    public string? ETag { get; init; }
 
     public T? Read<T>() where T : class
     {

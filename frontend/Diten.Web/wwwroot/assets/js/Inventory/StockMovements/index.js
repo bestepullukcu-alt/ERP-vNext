@@ -106,11 +106,13 @@ const StockMovementsList = (function () {
     // UI-11: S-1 "History" opens this page as /StockMovements?itemId=…&lotId=… — those become the APPLIED filters.
     // Runs after the factory has initialised the filter bar (a task after loadOptions resolves), through the same
     // Apply button a reader would press, so the Save View dirty-state stays the factory's.
+    // MOD-0173-FU02 (K-10): a location link may add ?locationId=… — applied the same way.
     const applyFiltersFromUrl = () => {
         const params = new URLSearchParams(window.location.search);
         const itemId = params.get('itemId');
         const lotId = params.get('lotId');
-        if (!itemId && !lotId) return;
+        const locationId = params.get('locationId');
+        if (!itemId && !lotId && !locationId) return;
         window.setTimeout(() => {
             if (itemId) {
                 const select = byId('filterItemId');
@@ -118,6 +120,11 @@ const StockMovementsList = (function () {
                 $(select).val(itemId).trigger('change');
             }
             if (lotId && byId('filterLotId')) byId('filterLotId').value = lotId;
+            if (locationId) {
+                const select = byId('filterLocationId');
+                if (select && !Array.from(select.options).some((o) => o.value === locationId)) select.add(new Option(locationId, locationId, true, true));
+                $(select).val(locationId).trigger('change');
+            }
             byId('btnFilterApply')?.click();
         }, 0);
     };

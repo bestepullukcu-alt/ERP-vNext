@@ -101,11 +101,25 @@ const StockLedgerList = (function () {
         }
     };
 
+    // MOD-0173-FU02 (K-10): "View in stock list" on a location opens /StockLedger?locationId=… — that location becomes
+    // the APPLIED filter, through the same Apply button a reader would press (the S-2 itemId/lotId pattern), so the
+    // Save View dirty-state stays the factory's. Runs after the factory has initialised the filter bar.
+    const applyFiltersFromUrl = () => {
+        const locationId = new URLSearchParams(window.location.search).get('locationId');
+        if (!locationId) return;
+        window.setTimeout(() => {
+            const select = byId('filterLocationId');
+            if (select && !Array.from(select.options).some((o) => o.value === locationId)) select.add(new Option(locationId, locationId, true, true));
+            $(select).val(locationId).trigger('change');
+            byId('btnFilterApply')?.click();
+        }, 0);
+    };
+
     const loadLookupOptions = async ({ fillSelect }) => {
         initSearchPicker('filterItemId', 'products');
         initSearchPicker('filterSku', 'skus');
         const warehouse = byId('filterWarehouseId');
-        if (!warehouse) return;
+        if (!warehouse) { applyFiltersFromUrl(); return; }
         try {
             const res = await fetch('/StockMovements/lookups/warehouses', { credentials: 'same-origin' });
             const data = res.ok ? await res.json() : null;
@@ -115,6 +129,7 @@ const StockLedgerList = (function () {
             pickerNotice(false);
         }
         $(warehouse).on('change.stockledger', () => loadLocations(warehouse.value, fillSelect));
+        applyFiltersFromUrl();
     };
 
     const writeKpis = (json) => {

@@ -985,4 +985,5 @@
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Supply Chain Execution</value></data>
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Inventory</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Stock Ledger</value></data>
+  <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Locations</value></data>
 </root>

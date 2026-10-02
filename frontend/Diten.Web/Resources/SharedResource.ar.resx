@@ -925,4 +925,5 @@
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>تنفيذ سلسلة الإمداد</value></data>
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>إدارة المخزون</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>دفتر المخزون</value></data>
+  <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>المواقع</value></data>
 </root>
