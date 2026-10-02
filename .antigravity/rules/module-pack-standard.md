@@ -279,7 +279,7 @@ Frontmatter altinda asagidaki bolumler zorunludur:
 | 18 | `Ready-for-dev Checklist` | Status `ready-for-dev`'e gecmeden once onaylanacak madde listesi |
 | 19 | `Implementation Notes` | Master-plan saplamalari, kararlar, gelecek baglantilari |
 | 20 | `Follow-up Items` | Sonraki sprint/wave'e birakilan isler |
-| 21 | `Audited Events` (Denetlenen Olaylar) | Paketin her yazma komutu icin: komut → olay adi → yol (a/b/c) ya da istisna sinifi + gerekce. Bkz. Bolum 10.1 ve `audit-trail-standard.md` (AUD-001) |
+| 21 | `Audited Events` (Denetlenen Olaylar) | Yeni paketlerde zorunlu; mevcut pakette yazma komutu ekleyen/degistiren ilk iste zorunlu (Bolum 10.1 gecis kurali). Paketin her yazma komutu icin: komut → olay adi → yol (a/b/c) ya da istisna sinifi + gerekce. Bkz. Bolum 10.1 ve `audit-trail-standard.md` (AUD-001) |
 
 ---
 
@@ -367,8 +367,15 @@ tam bir kez gecer. Tabloda olmayan komut yazilamaz; "sonra ekleriz" gecerli bir 
   altyapisiz servise `a`/`b` yazilamaz.
 - `Istisna sinifi`: yalniz kuraldaki `İ1…` siniflarindan biri. Sinif disi "denetlenmiyor" olamaz.
 - Kayda yazilMAyacak alanlar (parola, ozet, token, gereksiz kisisel veri) ayri satirda sayilir.
-- Kimlik, yetki, GxP kaydi ya da KVKK ozel nitelikli veri degistiren komut varsa: yazma hatasi davranisi (kural §4) pakette
-  ACIK yazilir.
+- **K2 sinifi** (kimlik, yetki, kiraci durumu, GxP kaydi ya da KVKK ozel nitelikli veri degistiren komut): kayit yazilamazsa islem DURUR
+  (sahip karari 2026-10-02, kural §4.3–§4.4). Paket, komutun bunu hangi yolla sagladigini ve testini yazar. "En iyi caba" yazan
+  paket bu sinifta GECMEZ; kapali-basarisiz yol bugun yoksa komut pakete yazilmaz, Control Tower'a yazilir.
+- **Izi olmayan on servis** (CRM, HumanCapital, HCM, EnterpriseStrategy, PPM, Procurement, TalentEcosystem, DevEnablement,
+  ManagementGovernance, PVG): ortak iletici paketi gelene kadar pakete yeni yazma komutu yazilmaz (kural §5 K4).
+
+**Gecis kurali.** Bu bolum yeni paketlerde zorunludur. Mevcut bir pakette (2026-10-02'de 106 paketin hicbirinde yok), o modulde
+yazma komutu ekleyen ya da degistiren **ilk iste** zorunludur: bolum o isin ilk adiminda yazilir ve modulun MEVCUT yazma
+komutlarini da kapsar. Yazma komutuna dokunmayan is (ekran duzeltmesi, ceviri, sorgu) icin zorunlu degildir.
 
 ---
 

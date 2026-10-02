@@ -9,11 +9,11 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 
 | iz | yol | tür | belirteç |
 |---|---|---|---|
-| ppm-denetim-niyeti | aday | yazıcı | IAuditIntentRepository |
+| ppm-denetim-niyeti | aday | yazıcı | IAuditIntentRepository.AddAsync |
 
 Ölçüm notları (2026-10-02; `yol = aday` kabul edilmemiş demektir ve o ize giden komut borçta kalır):
 
-* **ppm-denetim-niyeti** — `ppm_audit_intents` (iş yazmasıyla aynı işlemde) — üretici ayarda kapalı, Platform'da tüketici yok, okuma ucu yok.
+> **ppm-denetim-niyeti** — `ppm_audit_intents` (iş yazmasıyla aynı işlemde) — üretici ayarda kapalı, Platform'da tüketici yok, okuma ucu yok.
 
 ## İstisnalar
 
