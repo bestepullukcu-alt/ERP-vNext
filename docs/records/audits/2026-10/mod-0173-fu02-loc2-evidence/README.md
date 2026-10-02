@@ -36,6 +36,12 @@ Notes
    rebuild / restart their Web and InventoryService (the OPS1 incident pattern). LOC2 was therefore written, built,
    tested and run in a detached scratch worktree (`C:\Users\Ali\erp-vnext-wt-loc2`, removed afterwards) and landed on
    the branch by ONE fast-forward. `C:\Users\Ali\erp-vnext-wt-inventory-ui` was not touched.
+   **Measured at the fast-forward (11:29, `d7-fleet-after.json`):** the one change set did NOT reload only Web and
+   InventoryService — every `dotnet watch` window of the fleet (Gateway, Auth, Platform, MDM, HCM, CRM, DevEnablement,
+   Inventory, Web) rebuilt at the same moment and came back by itself in ~2.5 min (11:30:28–11:31:38) with new
+   processes; the nine watch hosts are the same processes as before, nothing was stopped or started by this WP. Same
+   pattern as the 10:15 rebuild. Auth / Platform `/health` 503 afterwards = `masstransit-bus` only (RabbitMQ 5672 off,
+   known, not fixed). The D7 evidence commit after it touches `docs/` only.
 2. **Screenshot 16** was taken before the select2 field-error fix (ASSUMPTION-LOC2-09): its icon overlaps the parent
    code; the sentence is the evidence.
 3. **Browser pane painting.** The pane does not paint while hidden, so CSS transitions (offcanvas slide-in) finish
