@@ -455,6 +455,15 @@ controller exists; headers to propagate: `Authorization`, `X-Tenant-Id`, `X-Lega
 
 - **FU-S2-01 (low, before G1):** the startup SKU-position rebuild counts scope-incomplete groups (`LastSkippedUnscoped`) but nothing logs it — a skipped group would be silent. Log a warning with the count (and fail the startup gate if > 0 outside test databases).
 
+- **FU-RSV-01 (blocks G1 reservation item; found by the CT G1 live run 2026-10-02):** `inventory.reservations.manage`
+  can never be granted to a tenant role. The key exists only on the API (`InventoryController` `[HasPermission]`); the
+  only way a non-Platform service's key reaches the Auth permission catalog is the self-registration manifest, which
+  mirrors UI buttons only (module-self-registration-standard §2) — and reservations have no UI (consumers MOD-0175/0177
+  call the API). Platform's `[HasPermission]` auto-registration (A1) reflects the Platform assembly only. Measured: owner
+  granted "all Inventory" to Admin, re-login, token (runs G1X9U4R, G1Y13QY) still carries 4/5 `inventory.*` keys; reserve
+  and release → 403. Mechanics stay proven by the test suite (S2 acceptance) but not live. Fix needs a decision on a
+  shared seam (manifest API-only permission entries, or a per-service A1 sync) — not an in-module invented action.
+
 - **FU-S1-01 (before G1 freeze):** `GET /availability` for a *known* item/SKU with no ledger rows returns
   404 `UNKNOWN_ITEM` (ASSUMPTION-S1-04). Consumers (0172 ATP, 0189 MRP) must see 200 with zeros; 404 only when
   PRODUCT-MASTER says the item/SKU does not exist (fail-closed 503 when it is unreachable).
