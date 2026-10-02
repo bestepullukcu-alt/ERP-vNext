@@ -61,12 +61,11 @@ public sealed class RoleAssignmentsController : Controller
                 _jsonOptions);
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer));
+                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer, _logger));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Role-permission assign failed for {RoleId}/{PermissionId}.", roleId, permissionId);
-            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+            return Json(GatewayRefusal.Failure(ex, _sharedLocalizer, _logger, "Role-permission assign"));
         }
     }
 
@@ -85,19 +84,12 @@ public sealed class RoleAssignmentsController : Controller
             var response = await _httpClient.DeleteAsync($"{_gatewayUrl}/api/roles/{roleId}/permissions/{permissionId}");
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer));
+                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer, _logger));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Role-permission revoke failed for {RoleId}/{PermissionId}.", roleId, permissionId);
-            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+            return Json(GatewayRefusal.Failure(ex, _sharedLocalizer, _logger, "Role-permission revoke"));
         }
-    }
-
-    private List<string> BuildExceptionErrors(Exception ex)
-    {
-        var message = ex.GetBaseException().Message;
-        return [string.IsNullOrWhiteSpace(message) ? _sharedLocalizer["GatewayError"].Value : message];
     }
 
     private bool AddAuthHeaders()

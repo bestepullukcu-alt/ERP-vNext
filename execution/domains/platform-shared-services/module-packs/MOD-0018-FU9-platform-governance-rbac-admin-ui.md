@@ -16,6 +16,9 @@ screens:
   - module: Users
     data_mode: server
   # WP-ROLES-CLOSE-01: rol kumesi tasarimda sinirli (kiraci basina tipik < 30; GetAllRolesQueryHandler tum kumeyi tek istekte doner).
+  # DIKKAT - `auth.roles.export` bu ekranda yalniz Islem MENUSUNU cizer; sunucuda koruduğu bir uc YOK. Dosya tarayicida,
+  # `auth.roles.read` ile zaten okunmus satirlardan uretilir: listeyi okuyabilen veriye sahiptir. Sunucu tarafinda zorlanan
+  # disa aktarma izni yalniz sunucu modlu listelerde vardir (Users: GET api/users/export, [HasPermission("auth.users.export")]).
   - module: Roles
     data_mode: client
     data_mode_max_rows: 200

@@ -1,4 +1,5 @@
 using Diten.AuthService.Application.Common;
+using Diten.AuthService.Application.Common.Exceptions;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Domain.Entities;
 using MongoDB.Driver;
@@ -41,7 +42,15 @@ public sealed class RolePermissionRepository : RepositoryBase<RolePermission>, I
 
     public async Task AssignAsync(RolePermission rolePermission, CancellationToken ct)
     {
-        await InsertOneAsync(rolePermission, ct);
+        try
+        {
+            await InsertOneAsync(rolePermission, ct);
+        }
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            // The unique (role, permission, tenant) index: the role already holds it. Said in the Application's own words.
+            throw new DuplicateRolePermissionException(rolePermission.RoleId, rolePermission.PermissionId, ex);
+        }
     }
 
     public async Task RevokeAsync(Guid roleId, Guid permissionId, Guid tenantId, CancellationToken ct)

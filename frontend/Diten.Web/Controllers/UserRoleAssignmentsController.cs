@@ -60,12 +60,11 @@ public sealed class UserRoleAssignmentsController : Controller
                 _jsonOptions);
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer));
+                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer, _logger));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "User-role assign failed for {UserId}/{RoleId}.", userId, roleId);
-            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+            return Json(GatewayRefusal.Failure(ex, _sharedLocalizer, _logger, "User-role assign"));
         }
     }
 
@@ -84,19 +83,12 @@ public sealed class UserRoleAssignmentsController : Controller
             var response = await _httpClient.DeleteAsync($"{_gatewayUrl}/api/users/{userId}/roles/{roleId}");
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer));
+                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer, _logger));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "User-role revoke failed for {UserId}/{RoleId}.", userId, roleId);
-            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+            return Json(GatewayRefusal.Failure(ex, _sharedLocalizer, _logger, "User-role revoke"));
         }
-    }
-
-    private List<string> BuildExceptionErrors(Exception ex)
-    {
-        var message = ex.GetBaseException().Message;
-        return [string.IsNullOrWhiteSpace(message) ? _sharedLocalizer["GatewayError"].Value : message];
     }
 
     private bool AddAuthHeaders()

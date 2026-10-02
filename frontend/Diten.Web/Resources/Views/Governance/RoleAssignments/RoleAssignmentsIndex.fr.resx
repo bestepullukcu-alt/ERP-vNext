@@ -106,4 +106,7 @@
   <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
     <value>Cette autorisation est fournie avec le rôle ou avec un module de votre abonnement ; elle ne peut pas être retirée ici.</value>
   </data>
+  <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
+    <value>Le rôle dispose déjà de cette autorisation. Actualisez la page.</value>
+  </data>
 </root>

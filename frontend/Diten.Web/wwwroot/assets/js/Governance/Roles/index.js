@@ -8,7 +8,14 @@
  * screen's own business only.
  *
  * NO SELECTION COLUMN, deliberately: there is no bulk endpoint for roles (`HasSelection = false`).
- * FE-B (window.Permissions) gates are UX only; AuthService's [HasPermission] is the authority.
+ *
+ * WHO ENFORCES WHAT. window.Permissions only decides what is DRAWN. For create / edit / delete / read the authority is
+ * AuthService's [HasPermission] on api/roles — a hidden button is not a protection, the endpoint is.
+ * ⚠ auth.roles.export IS DIFFERENT, and this must not be read as more than it is: there is no export endpoint. The
+ * file is made in the browser from the rows GET api/roles already returned under auth.roles.read, so the export key
+ * governs the Action MENU and nothing else. Anyone who can read the list holds its data; the key decides whether the
+ * screen offers them Print / CSV / Excel / PDF / Copy. (A server-side export, with the key on its endpoint, is what a
+ * server-mode list has — Users; this bounded client-mode list does not.)
  */
 'use strict';
 
@@ -25,7 +32,7 @@ const RolesList = (function () {
     const canCreate = () => can('auth.roles.create');
     const canUpdate = () => can('auth.roles.update');
     const canDelete = () => can('auth.roles.delete');
-    // BL-452 package 3 — exporting is its own right (auth.roles.export); without it the menu carries no file entry.
+    // BL-452 package 3 — without auth.roles.export the Action menu carries no file entry. Menu only: see the header.
     const canExport = () => can('auth.roles.export');
 
     const escapeHtml = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -33,6 +40,8 @@ const RolesList = (function () {
     // ─── Refusals: a stable code from AuthService → the reader's language (shared/diten-refusal.js) ──
     const ERROR_CODE_KEYS = { ROLE_ACTOR_REQUIRED: 'ErrorRoleActorRequired', ROLE_NOT_FOUND: 'ErrorRoleNotFound', ROLE_NAME_TAKEN: 'ErrorRoleNameTaken', ROLE_SYSTEM_NOT_DELETABLE: 'ErrorRoleSystemNotDeletable', ROLE_NAME_REQUIRED: 'ErrorRoleNameRequired', ROLE_NAME_TOO_LONG: 'ErrorRoleNameTooLong', ROLE_DISPLAY_NAME_REQUIRED: 'ErrorRoleDisplayNameRequired', ROLE_DISPLAY_NAME_TOO_LONG: 'ErrorRoleDisplayNameTooLong' };
     const refusalText = (json) => window.DitenRefusal.message(json, ERROR_CODE_KEYS, L(), 'Roles');
+    // A form with two mistakes says both (the proxy lists every broken rule).
+    const refusalTexts = (json) => window.DitenRefusal.messages(json, ERROR_CODE_KEYS, L(), 'Roles');
 
     // ─── Role type ───────────────────────────────────────────────────────────
     const typeLabel = (isSystem) => isSystem ? (L().RoleTypeSystem || '') : (L().RoleTypeCustom || '');
@@ -142,7 +151,7 @@ const RolesList = (function () {
         const url = isEdit ? `/Roles/edit/${editingId}` : '/Roles/create';
         const res = await fetch(url, { method: 'POST', credentials: 'same-origin', headers, body: formData });
         const json = await res.json();
-        return json.success ? json : Object.assign({}, json, { errors: [refusalText(json)] });
+        return json.success ? json : Object.assign({}, json, { errors: refusalTexts(json) });
     };
 
     // ─── Delete: the endpoint is the screen's; the refusal is said in the reader's language ──

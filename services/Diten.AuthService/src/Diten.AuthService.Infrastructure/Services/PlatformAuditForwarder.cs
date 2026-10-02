@@ -91,6 +91,8 @@ public sealed class PlatformAuditForwarder : IPlatformAuditForwarder
             Operation = auditEvent.Operation,
             Outcome = auditEvent.Outcome,
             Metadata = auditEvent.Metadata,
+            BeforeState = auditEvent.BeforeState,
+            AfterState = auditEvent.AfterState,
             SourceService = SourceServiceName,
             SourceModule,
             IsPlatformGlobal = false,
@@ -118,7 +120,13 @@ public sealed class PlatformAuditForwarder : IPlatformAuditForwarder
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            // Request aborted / shutting down — nothing to do.
+            // The caller went away (request aborted, shutting down) while the event was on its way. The operation it
+            // describes already happened and its local authAuditLogs row is written — but Platform's log may now lack
+            // the row, and that must not pass in silence.
+            _logger.LogWarning(
+                "Audit forwarding was cancelled before Platform answered. RequestType={RequestType} TenantId={TenantId}",
+                auditEvent.RequestType,
+                auditEvent.TenantId);
         }
         catch (Exception ex)
         {

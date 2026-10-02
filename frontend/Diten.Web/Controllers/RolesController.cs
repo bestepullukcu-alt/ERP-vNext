@@ -47,24 +47,26 @@ public sealed class RolesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create([FromForm] RoleEditViewModel model)
     {
-        if (!ModelState.IsValid)
-            return Json(new { success = false, errors = CollectModelErrors(), errorCode = (string?)null, local = true });
+        // The form's own rules, as the codes the screen has a sentence for in seven languages — every broken rule, not
+        // the first. (A bare ModelState message would be the framework's English sentence.)
+        var broken = model.ValidationCodes();
+        if (broken.Count > 0 || !ModelState.IsValid)
+            return Json(GatewayRefusal.Invalid(broken, _sharedLocalizer));
 
         if (!AddAuthHeaders())
             return Json(GatewayRefusal.Local(_sharedLocalizer["Unauthorized"].Value));
 
         try
         {
-            var payload = new RoleCreatePayload { Name = model.Name, DisplayName = model.DisplayName, Description = model.Description };
+            var payload = new RoleCreatePayload { Name = model.Name!.Trim(), DisplayName = model.DisplayName!.Trim(), Description = model.Description };
             var response = await _httpClient.PostAsJsonAsync($"{_gatewayUrl}/api/roles", payload, _jsonOptions);
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer));
+                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer, _logger));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Roles create failed.");
-            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+            return Json(GatewayRefusal.Failure(ex, _sharedLocalizer, _logger, "Roles create"));
         }
     }
 
@@ -73,8 +75,11 @@ public sealed class RolesController : Controller
     public async Task<IActionResult> Edit(Guid id, [FromForm] RoleEditViewModel model)
     {
         model.Id = id;
-        if (!ModelState.IsValid)
-            return Json(new { success = false, errors = CollectModelErrors(), errorCode = (string?)null, local = true });
+        // The form's own rules, as the codes the screen has a sentence for in seven languages — every broken rule, not
+        // the first. (A bare ModelState message would be the framework's English sentence.)
+        var broken = model.ValidationCodes();
+        if (broken.Count > 0 || !ModelState.IsValid)
+            return Json(GatewayRefusal.Invalid(broken, _sharedLocalizer));
 
         if (!AddAuthHeaders())
             return Json(GatewayRefusal.Local(_sharedLocalizer["Unauthorized"].Value));
@@ -82,16 +87,15 @@ public sealed class RolesController : Controller
         try
         {
             // AuthService UpdateRoleRequest is { displayName, description } — name is immutable.
-            var payload = new RoleUpdatePayload { DisplayName = model.DisplayName, Description = model.Description };
+            var payload = new RoleUpdatePayload { DisplayName = model.DisplayName!.Trim(), Description = model.Description };
             var response = await _httpClient.PutAsJsonAsync($"{_gatewayUrl}/api/roles/{id}", payload, _jsonOptions);
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer));
+                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer, _logger));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Roles edit failed for {RoleId}.", id);
-            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+            return Json(GatewayRefusal.Failure(ex, _sharedLocalizer, _logger, "Roles edit"));
         }
     }
 
@@ -131,15 +135,6 @@ public sealed class RolesController : Controller
             _logger.LogError(ex, "Roles get-by-id failed for {RoleId}.", id);
             return Json(new { success = false });
         }
-    }
-
-    private List<string> CollectModelErrors() =>
-        ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-
-    private List<string> BuildExceptionErrors(Exception ex)
-    {
-        var message = ex.GetBaseException().Message;
-        return [string.IsNullOrWhiteSpace(message) ? _sharedLocalizer["GatewayError"].Value : message];
     }
 
     private bool AddAuthHeaders()

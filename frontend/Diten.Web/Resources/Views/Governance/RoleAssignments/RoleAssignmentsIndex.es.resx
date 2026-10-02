@@ -106,4 +106,7 @@
   <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
     <value>Este permiso viene con el rol o con un módulo de su suscripción, por lo que no se puede quitar aquí.</value>
   </data>
+  <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
+    <value>El rol ya tiene este permiso. Actualice la página.</value>
+  </data>
 </root>

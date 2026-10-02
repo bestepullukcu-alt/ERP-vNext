@@ -106,4 +106,7 @@
   <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
     <value>Bu izin rolle birlikte ya da aboneliğinizdeki bir modülle gelir; buradan kaldırılamaz.</value>
   </data>
+  <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
+    <value>Rol bu izne zaten sahip. Sayfayı yenileyin.</value>
+  </data>
 </root>

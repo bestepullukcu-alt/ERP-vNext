@@ -1,4 +1,6 @@
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
+using Microsoft.Extensions.Logging;
 using Diten.AuthService.Application.Features.Roles;
 using Diten.AuthService.Application.Tests.Testing;
 
@@ -51,14 +53,64 @@ public sealed class RoleAuditRecorderTests
     }
 
     [Fact]
-    public async Task A_forwarder_that_throws_does_not_break_the_caller_and_the_local_row_stands()
+    public async Task A_forwarder_that_throws_does_not_break_the_caller_the_local_row_stands_and_the_failure_is_logged()
     {
         var local = new RecordingLocal();
-        var recorder = RoleAuditForTests.Over(local, new ThrowingForwarder());
+        var logs = new CapturingLoggerProvider();
+        var recorder = RoleAuditForTests.Over(local, new ThrowingForwarder(), logs.CreateLogger<RoleAuditRecorder>());
 
         await recorder.RecordAsync(RoleAuditEvents.Deleted, Tenant, RoleId, new Dictionary<string, object?>());
 
         Assert.Single(local.Rows);
+        // Not swallowed in silence: the log names the event that did not reach Platform.
+        var entry = Assert.Single(logs.Entries, e => e.Level >= LogLevel.Warning);
+        Assert.Contains(RoleAuditEvents.Deleted, entry.Message);
+    }
+
+    [Fact]
+    public async Task A_name_outside_the_vocabulary_is_logged_as_an_error()
+    {
+        var logs = new CapturingLoggerProvider();
+
+        await RoleAuditForTests.Over(new RecordingLocal(), new RecordingPlatformAuditForwarder(), logs.CreateLogger<RoleAuditRecorder>())
+            .RecordAsync("role_something_new", Tenant, RoleId, new Dictionary<string, object?>());
+
+        var entry = Assert.Single(logs.Entries, e => e.Level == LogLevel.Error);
+        Assert.Contains("role_something_new", entry.Message);
+    }
+
+    // CT 4b — Platform's audit log keeps a change in BeforeState / AfterState; left inside Metadata they are two more keys.
+    [Fact]
+    public async Task An_updates_before_and_after_travel_as_BeforeState_and_AfterState_and_the_local_row_keeps_its_shape()
+    {
+        var local = new RecordingLocal();
+        var forwarder = new RecordingPlatformAuditForwarder();
+        var before = new Dictionary<string, object?> { ["displayName"] = "Old", ["description"] = null };
+        var after = new Dictionary<string, object?> { ["displayName"] = "New", ["description"] = "now" };
+
+        await RoleAuditForTests.Over(local, forwarder).RecordAsync(RoleAuditEvents.Updated, Tenant, RoleId,
+            new Dictionary<string, object?> { ["roleName"] = "Auditors", ["before"] = before, ["after"] = after });
+
+        var sent = Assert.Single(forwarder.Events);
+        Assert.Equal("Old", sent.BeforeState!["displayName"]);
+        Assert.Equal("New", sent.AfterState!["displayName"]);
+        Assert.Equal(["roleName"], sent.Metadata.Keys); // not repeated inside Metadata
+        var localMetadata = Assert.IsAssignableFrom<IReadOnlyDictionary<string, object?>>(Assert.Single(local.Rows).Metadata);
+        Assert.Same(before, localMetadata["before"]); // authAuditLogs is written exactly as before
+        Assert.Same(after, localMetadata["after"]);
+    }
+
+    [Fact]
+    public async Task An_event_without_before_and_after_sends_neither()
+    {
+        var forwarder = new RecordingPlatformAuditForwarder();
+
+        await RoleAuditForTests.Over(new RecordingLocal(), forwarder).RecordAsync(RoleAuditEvents.Deleted, Tenant, RoleId,
+            new Dictionary<string, object?> { ["roleName"] = "Auditors" });
+
+        var sent = Assert.Single(forwarder.Events);
+        Assert.Null(sent.BeforeState);
+        Assert.Null(sent.AfterState);
     }
 
     [Fact]

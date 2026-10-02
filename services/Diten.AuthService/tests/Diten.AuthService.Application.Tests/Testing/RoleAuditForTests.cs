@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Diten.AuthService.Application.Tests.Testing;
@@ -11,6 +12,6 @@ namespace Diten.AuthService.Application.Tests.Testing;
 /// </summary>
 internal static class RoleAuditForTests
 {
-    public static RoleAuditRecorder Over(IRbacAuditRecorder local, IPlatformAuditForwarder? forwarder = null)
-        => new(local, forwarder ?? new RecordingPlatformAuditForwarder(), NullLogger<RoleAuditRecorder>.Instance);
+    public static RoleAuditRecorder Over(IRbacAuditRecorder local, IPlatformAuditForwarder? forwarder = null, ILogger<RoleAuditRecorder>? logger = null)
+        => new(local, forwarder ?? new RecordingPlatformAuditForwarder(), logger ?? NullLogger<RoleAuditRecorder>.Instance);
 }

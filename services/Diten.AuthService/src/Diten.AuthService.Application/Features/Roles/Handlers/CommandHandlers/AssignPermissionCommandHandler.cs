@@ -1,4 +1,5 @@
 using Diten.AuthService.Application.Common;
+using Diten.AuthService.Application.Common.Exceptions;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Roles.Commands;
 using Diten.AuthService.Domain.Authorization;
@@ -60,8 +61,23 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
             return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.PermissionNotTenantAssignable, "This permission cannot be assigned to a tenant role.", 403);
         }
 
-        await _rolePermissionRepository.AssignAsync(
-            RolePermission.ManualGrant(request.RoleId, request.PermissionId, _tenantContext.TenantId, actorId.ToString()), ct);
+        // The role already holds it (from a person, the template or a module): say so instead of failing. The check
+        // answers the ordinary case; the catch answers the race — a double click, or two administrators at once, where
+        // both requests pass the check and the unique index refuses the second insert. Same answer either way, and
+        // nothing below runs: no version bump, no audit row for a grant that was not made.
+        var held = await _rolePermissionRepository.GetByRoleAsync(request.RoleId, _tenantContext.TenantId, ct);
+        if (held.Any(g => g.PermissionId == request.PermissionId))
+            return AlreadyGranted();
+
+        try
+        {
+            await _rolePermissionRepository.AssignAsync(
+                RolePermission.ManualGrant(request.RoleId, request.PermissionId, _tenantContext.TenantId, actorId.ToString()), ct);
+        }
+        catch (DuplicateRolePermissionException)
+        {
+            return AlreadyGranted();
+        }
 
         // FU13 — bump the tenant role-assignment version so every holder's cached snapshot is invalidated at once.
         await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
@@ -73,4 +89,7 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
 
         return Response<NoContent>.Success(204);
     }
+
+    private static Response<NoContent> AlreadyGranted() =>
+        RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.PermissionAlreadyGranted, "The role already holds this permission.", 409);
 }

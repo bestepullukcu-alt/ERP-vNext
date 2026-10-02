@@ -60,3 +60,35 @@ describe("DitenRefusal.message", () => {
     expect(window.DitenRefusal.message(null, KEYS, L, "Roles")).toBe(L.ErrorOccurred);
   });
 });
+
+describe("DitenRefusal.messages — a refusal with several codes says every one of them", () => {
+  const KEYS = { ROLE_NAME_REQUIRED: "ErrorRoleNameRequired", ROLE_DISPLAY_NAME_TOO_LONG: "ErrorRoleDisplayNameTooLong" };
+  const L = { ErrorOccurred: "Bir hata oluştu.", ErrorRoleNameRequired: "Rol adını girin.", ErrorRoleDisplayNameTooLong: "Görünen ad en fazla 100 karakter olabilir." };
+  let warn;
+
+  beforeEach(() => {
+    delete window.DitenRefusal;
+    loadScript("wwwroot/assets/js/shared/diten-refusal.js");
+    warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+  afterEach(() => warn.mockRestore());
+
+  test("the proxy's list of codes becomes one sentence per code, in order", () => {
+    const texts = window.DitenRefusal.messages(
+      { success: false, errors: ["Doğrulama başarısız."], errorCode: "ROLE_NAME_REQUIRED", errorCodes: ["ROLE_NAME_REQUIRED", "ROLE_DISPLAY_NAME_TOO_LONG"], local: true }, KEYS, L, "Roles");
+
+    expect(texts).toEqual([L.ErrorRoleNameRequired, L.ErrorRoleDisplayNameTooLong]);
+  });
+
+  test("the envelope's list ([{ code }]) is read the same way, and a repeated code is said once", () => {
+    const texts = window.DitenRefusal.messages(
+      { isSuccessful: false, errors: ["x"], errorCodes: [{ code: "ROLE_NAME_REQUIRED" }, { code: "ROLE_NAME_REQUIRED" }, { code: "ROLE_DISPLAY_NAME_TOO_LONG" }] }, KEYS, L, "Roles");
+
+    expect(texts).toEqual([L.ErrorRoleNameRequired, L.ErrorRoleDisplayNameTooLong]);
+  });
+
+  test("with no code the screen knows, it is the single sentence message() gives", () => {
+    expect(window.DitenRefusal.messages({ success: false, errors: ["Oturumunuz sona erdi."], errorCodes: [], local: true }, KEYS, L, "Roles")).toEqual(["Oturumunuz sona erdi."]);
+    expect(window.DitenRefusal.messages({ success: false, errors: ["raw"], errorCodes: ["ROLE_UNKNOWN"] }, KEYS, L, "Roles")).toEqual([L.ErrorOccurred]);
+  });
+});

@@ -106,4 +106,7 @@
   <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
     <value>Это разрешение предоставляется вместе с ролью или модулем вашей подписки, поэтому его нельзя снять здесь.</value>
   </data>
+  <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
+    <value>У роли уже есть это разрешение. Обновите страницу.</value>
+  </data>
 </root>

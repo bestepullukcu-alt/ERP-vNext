@@ -42,6 +42,14 @@ public sealed class RoleAuditRecorder : IRoleAuditRecorder
             return;
         }
 
+        // An update's before/after go where Platform's audit log keeps them (BeforeState / AfterState) — the screen
+        // shows those as the change; left inside Metadata they are just two more keys. The local row is untouched.
+        var before = metadata.GetValueOrDefault("before") as IReadOnlyDictionary<string, object?>;
+        var after = metadata.GetValueOrDefault("after") as IReadOnlyDictionary<string, object?>;
+        var forwarded = before is null && after is null
+            ? metadata
+            : metadata.Where(kv => kv.Key is not ("before" or "after")).ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.Ordinal);
+
         try
         {
             await _forwarder.ForwardAsync(
@@ -52,7 +60,9 @@ public sealed class RoleAuditRecorder : IRoleAuditRecorder
                     roleId,
                     operation,
                     RoleAuditEvents.OutcomeSucceeded,
-                    metadata),
+                    forwarded,
+                    before,
+                    after),
                 ct);
         }
         catch (Exception ex)

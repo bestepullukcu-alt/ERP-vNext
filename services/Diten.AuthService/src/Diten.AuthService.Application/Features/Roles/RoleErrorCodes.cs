@@ -25,6 +25,8 @@ public static class RoleErrorCodes
 
     /// <summary>A platform-administration permission cannot be granted to a tenant role.</summary>
     public const string PermissionNotTenantAssignable = "ROLE_PERMISSION_NOT_TENANT_ASSIGNABLE";
+    /// <summary>The role already holds the permission (also the answer to a double click).</summary>
+    public const string PermissionAlreadyGranted = "ROLE_PERMISSION_ALREADY_GRANTED";
     /// <summary>A System/Module grant is provisioning-managed and cannot be removed by hand.</summary>
     public const string PermissionGrantManaged = "ROLE_PERMISSION_GRANT_MANAGED";
 

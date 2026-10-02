@@ -39,6 +39,7 @@ public sealed class RoleErrorCodeContractTests
             [RoleErrorCodes.ActorRequired] = "ErrorRoleActorRequired",
             [RoleErrorCodes.NotFound] = "ErrorRoleNotFound",
             [RoleErrorCodes.PermissionNotTenantAssignable] = "ErrorRolePermissionNotTenantAssignable",
+            [RoleErrorCodes.PermissionAlreadyGranted] = "ErrorRolePermissionAlreadyGranted",
             [RoleErrorCodes.PermissionGrantManaged] = "ErrorRolePermissionGrantManaged"
         }),
         new("UserRoleAssignments", "UserRoleAssignmentsIndex", new Dictionary<string, string>(StringComparer.Ordinal)
@@ -130,6 +131,32 @@ public sealed class RoleErrorCodeContractTests
 
     // The validator codes cannot be asserted over HTTP on this branch (their passage through ExceptionHandlingBehavior
     // belongs to another work package), so they are proven where they are produced.
+    // CT 2b — one true value. AuthService's validator reads RoleFieldLimits; the Roles form (a project that cannot
+    // reference this one) restates the two numbers and the four codes in RoleEditViewModel, and its `maxlength` reads
+    // those constants. This holds the restatement equal and proves the form has no third, literal copy.
+    [Fact]
+    public void The_forms_limits_and_codes_are_AuthServices_and_the_markup_reads_them_instead_of_a_literal()
+    {
+        var model = File.ReadAllText(Web("Models", "Governance", "RoleViewModels.cs"));
+        Assert.Contains($"public const int NameMaxLength = {RoleFieldLimits.NameMaxLength};", model, StringComparison.Ordinal);
+        Assert.Contains($"public const int DisplayNameMaxLength = {RoleFieldLimits.DisplayNameMaxLength};", model, StringComparison.Ordinal);
+        Assert.Contains($"NameRequiredCode = \"{RoleErrorCodes.NameRequired}\";", model, StringComparison.Ordinal);
+        Assert.Contains($"NameTooLongCode = \"{RoleErrorCodes.NameTooLong}\";", model, StringComparison.Ordinal);
+        Assert.Contains($"DisplayNameRequiredCode = \"{RoleErrorCodes.DisplayNameRequired}\";", model, StringComparison.Ordinal);
+        Assert.Contains($"DisplayNameTooLongCode = \"{RoleErrorCodes.DisplayNameTooLong}\";", model, StringComparison.Ordinal);
+
+        var form = File.ReadAllText(Web("Views", "Governance", "Roles", "_CreateEditOffcanvas.cshtml"));
+        Assert.Contains("maxlength=\"@Diten.Web.Models.Governance.RoleEditViewModel.NameMaxLength\"", form, StringComparison.Ordinal);
+        Assert.Contains("maxlength=\"@Diten.Web.Models.Governance.RoleEditViewModel.DisplayNameMaxLength\"", form, StringComparison.Ordinal);
+        Assert.DoesNotMatch("id=\"role(Name|DisplayName)\"[^>]*maxlength=\"\\d", form); // no literal on the two limited fields
+
+        // …and the validator refuses exactly beyond those limits.
+        var validator = new CreateRoleCommandValidator();
+        Assert.True(validator.Validate(new CreateRoleCommand(new string('n', RoleFieldLimits.NameMaxLength), new string('d', RoleFieldLimits.DisplayNameMaxLength), null)).IsValid);
+        Assert.Contains(validator.Validate(new CreateRoleCommand(new string('n', RoleFieldLimits.NameMaxLength + 1), "d", null)).Errors, e => e.ErrorCode == RoleErrorCodes.NameTooLong);
+        Assert.Contains(validator.Validate(new CreateRoleCommand("n", new string('d', RoleFieldLimits.DisplayNameMaxLength + 1), null)).Errors, e => e.ErrorCode == RoleErrorCodes.DisplayNameTooLong);
+    }
+
     [Theory]
     [InlineData("", "Reviewers", RoleErrorCodes.NameRequired)]
     [InlineData("123456789012345678901234567890123456789012345678901", "Reviewers", RoleErrorCodes.NameTooLong)]

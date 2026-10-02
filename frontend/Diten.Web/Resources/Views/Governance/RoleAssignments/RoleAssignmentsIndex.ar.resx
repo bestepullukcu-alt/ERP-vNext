@@ -106,4 +106,7 @@
   <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
     <value>هذا الإذن يأتي مع الدور أو مع إحدى وحدات اشتراكك، ولذلك لا يمكن إزالته من هنا.</value>
   </data>
+  <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
+    <value>الدور يملك هذا الإذن بالفعل. حدّث الصفحة.</value>
+  </data>
 </root>

@@ -109,8 +109,13 @@ public sealed class UsersExportPermissionSeedTests : IClassFixture<AccountKindAc
             .CountDocumentsAsync(m => m.TenantId == tenant && m.Key == UsersExportGrantBackfill.ExportKey)); // marked once
     }
 
+    // CT acceptance, WP-ROLES-CLOSE-01 correction round — this used to assert the OPPOSITE ("a tenant one of whose roles
+    // already holds export is not backfilled"). That guess is what lost roles their export after an interrupted first
+    // start, or when Platform's entitlement sync had already handed the key to Admin. Old-or-new is now a persistent
+    // mark (ExportGrantBackfill): an unmarked tenant with roles is old and is processed in full. The intent the old
+    // test protected — a tenant set up AFTER the key existed is left alone — is S-D in ExportGrantBackfillScenarioTests.
     [Fact]
-    public async Task A_tenant_already_on_the_export_key_is_not_backfilled()
+    public async Task An_old_tenant_one_of_whose_roles_already_exports_still_has_its_other_readers_backfilled()
     {
         var tenant = Guid.NewGuid();
         var exporters = await NewRoleAsync(tenant, "Exporters", UsersExportGrantBackfill.ReadKey, UsersExportGrantBackfill.ExportKey);
@@ -119,7 +124,7 @@ public sealed class UsersExportPermissionSeedTests : IClassFixture<AccountKindAc
         await DataSeeder.SeedAsync(_host.Database);
 
         Assert.True(await HoldsExportAsync(exporters));
-        Assert.False(await HoldsExportAsync(readers));
+        Assert.True(await HoldsExportAsync(readers));
     }
 
     [Fact]

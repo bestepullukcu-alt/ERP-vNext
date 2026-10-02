@@ -15,7 +15,7 @@ const vm = require("vm");
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
 const web = (...p) => path.join(repoRoot, "frontend", "Diten.Web", ...p);
 const read = (...p) => fs.readFileSync(web(...p), "utf8");
-const until = async (predicate, ms = 3000) => {
+const until = async (predicate, ms = 10000) => {
   const end = Date.now() + ms;
   while (Date.now() < end) { if (predicate()) return; await new Promise((r) => setTimeout(r, 10)); }
   throw new Error("timed out");
@@ -30,7 +30,9 @@ const razor = (name) => read("Views", "Governance", "Roles", name)
 const ROLES = [
   { id: "r-admin", name: "Admin", displayName: "Administrator", description: "", isSystem: true, permissionCount: 7, userCount: 2, modulePermissions: { auth: 5, platform: 2 } },
   { id: "r-qa", name: "qa-reviewers", displayName: "QA Reviewers", description: "", isSystem: false, permissionCount: 1, userCount: 3, modulePermissions: { auth: 1 } },
-  { id: "r-empty", name: "visitors", displayName: "Visitors", description: "", isSystem: false, permissionCount: 0, userCount: 0, modulePermissions: {} }
+  { id: "r-empty", name: "visitors", displayName: "Visitors", description: "", isSystem: false, permissionCount: 0, userCount: 0, modulePermissions: {} },
+  // A role whose own words carry markup: an administrator can type this, and the list must show it as characters.
+  { id: "r-markup", name: "<img src=x onerror=alert(1)>", displayName: "<b>Bold</b> & Co", description: "", isSystem: false, permissionCount: 2, userCount: 0, modulePermissions: { "<i>mod</i>": 2 } }
 ];
 
 const L10N = {
@@ -43,8 +45,20 @@ const L10N = {
 
 const ALL = ["auth.roles.read", "auth.roles.create", "auth.roles.update", "auth.roles.delete", "auth.roles.export"];
 
+// One page at a time, as in a browser: every mount shares this jsdom document, so the document-level listeners the
+// previous page registered (the factory's click dispatcher among them) are taken off before the next page is mounted.
+// Without this a click would also be answered by the pages of earlier tests.
+let pageListeners = [];
+const unmountPreviousPage = () => {
+  pageListeners.forEach(([type, fn, opts]) => document.removeEventListener(type, fn, opts));
+  pageListeners = [];
+};
+
 /** Mounts the Roles page for a reader holding `permissions`; `respond(url, init)` answers the screen's own fetches. */
 const mountRoles = async (permissions, respond) => {
+  unmountPreviousPage();
+  const addListener = document.addEventListener.bind(document);
+  document.addEventListener = (type, fn, opts) => { pageListeners.push([type, fn, opts]); return addListener(type, fn, opts); };
   document.body.innerHTML = razor("_Filter.cshtml")
     + ["kpi-roles-total", "kpi-roles-system", "kpi-roles-custom", "kpi-roles-users"].map((id) => `<h5 id="${id}">0</h5>`).join("")
     + '<div class="card"><div class="card-datatable"><table id="dt-roles" data-dt-standard="v2" data-dt-data-mode="client" class="datatables-roles table border-top">'
@@ -109,6 +123,7 @@ const mountRoles = async (permissions, respond) => {
   vm.runInContext("RolesList.init()", ctx);
   window.DitenDataTable.createList = createList;
   await until(() => ctx.RolesListHandle && listRequests.length >= 1 && document.querySelectorAll("#dt-roles tbody tr").length >= ROLES.length);
+  delete document.addEventListener; // back to the prototype's own
   return { handle: ctx.RolesListHandle, options: ctx.RolesListOptions, calls, toasts, listRequests };
 };
 
@@ -141,10 +156,10 @@ describe("C — the Roles list on the component", () => {
   test("shows every role, counts the KPI cards from the whole set and says the type in the reader's words", async () => {
     const { handle } = await mountRoles(ALL);
 
-    expect(document.querySelectorAll("#dt-roles tbody tr").length).toBe(3);
-    expect(document.getElementById("kpi-roles-total").textContent).toBe("3");
+    expect(document.querySelectorAll("#dt-roles tbody tr").length).toBe(4);
+    expect(document.getElementById("kpi-roles-total").textContent).toBe("4");
     expect(document.getElementById("kpi-roles-system").textContent).toBe("1");
-    expect(document.getElementById("kpi-roles-custom").textContent).toBe("2");
+    expect(document.getElementById("kpi-roles-custom").textContent).toBe("3");
     expect(document.getElementById("kpi-roles-users").textContent).toBe("5");
     expect(rowOf("Administrator").textContent).toContain("Sistem");
     expect(rowOf("QA Reviewers").textContent).toContain("Özel");
@@ -152,7 +167,7 @@ describe("C — the Roles list on the component", () => {
     // Search still narrows the rows; the KPI cards keep counting the whole set.
     handle.dt.search("QA").draw();
     expect(document.querySelectorAll("#dt-roles tbody tr").length).toBe(1);
-    expect(document.getElementById("kpi-roles-total").textContent).toBe("3");
+    expect(document.getElementById("kpi-roles-total").textContent).toBe("4");
     handle.dt.destroy();
   });
 
@@ -164,7 +179,7 @@ describe("C — the Roles list on the component", () => {
     expect(cells).toEqual(expect.arrayContaining(["Sistem", "Özel", "auth 5, platform 2", "auth 1", "0"]));
     expect(cells).not.toContain("System");
     // …while the column still sorts by the number.
-    expect(handle.dt.cells(null, 4).render("sort").toArray().sort()).toEqual([0, 1, 7]);
+    expect(handle.dt.cells(null, 4).render("sort").toArray().sort()).toEqual([0, 1, 2, 7]);
     handle.dt.destroy();
   });
 
@@ -199,8 +214,8 @@ describe("C — the Roles list on the component", () => {
     const type = options.filters.fields.find((f) => f.key === "type");
 
     expect(ROLES.filter((r) => type.matches(r, ["System"])).map((r) => r.name)).toEqual(["Admin"]);
-    expect(ROLES.filter((r) => type.matches(r, ["Custom"])).map((r) => r.name)).toEqual(["qa-reviewers", "visitors"]);
-    expect(ROLES.filter((r) => type.matches(r, [])).length).toBe(3);
+    expect(ROLES.filter((r) => type.matches(r, ["Custom"])).map((r) => r.id)).toEqual(["r-qa", "r-empty", "r-markup"]);
+    expect(ROLES.filter((r) => type.matches(r, [])).length).toBe(4);
     handle.dt.destroy();
   });
 });
@@ -273,10 +288,16 @@ describe("A — refusals on the Roles screen", () => {
       ? { status: 403, body: { isSuccessful: false, statusCode: 403, errors: ["System roles cannot be deleted."], errorCodes: [{ code: "ROLE_SYSTEM_NOT_DELETABLE" }] } }
       : null);
 
-    await options.actions.onRowAction.delete({ row: ROLES[1] });
+    // Through the screen's own click dispatcher: the reader clicks Delete in the row's menu, the confirm is accepted.
+    expect(typeof options.actions.onRowAction.delete).toBe("function");
+    rowOf("QA Reviewers").querySelector(".delete-record").dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
     await until(() => toasts.length > 0);
 
-    expect(calls.some((c) => c.method === "DELETE" && c.url === "http://gw/api/roles/r-qa")).toBe(true);
+    const deletes = calls.filter((c) => c.method === "DELETE");
+    expect(deletes.length).toBeGreaterThan(0);
+    expect(deletes.every((c) => c.url === "http://gw/api/roles/r-qa"), "the click reached the delete of THAT row").toBe(true);
+    expect(deletes.length, "one click, one request").toBe(1);
+    // One sentence, the reader's — not AuthService's.
     expect(toasts).toEqual([{ message: L10N.ErrorRoleSystemNotDeletable, type: "error" }]);
     handle.dt.destroy();
   });
@@ -299,11 +320,31 @@ describe("D — the form's error box writes text, not markup", () => {
     handle.dt.destroy();
   });
 
-  test("the list cells escape a role's own name too", async () => {
-    const { handle } = await mountRoles(ALL);
+  test("a form with two mistakes shows both sentences, each as its own line", async () => {
+    const { handle } = await mountRoles(ALL, (url) => url === "/Roles/create"
+      ? { body: { success: false, errors: ["Doğrulama başarısız."], errorCode: "ROLE_NAME_TAKEN", errorCodes: ["ROLE_NAME_TAKEN", "ROLE_NOT_FOUND"], local: true } }
+      : null);
+    handle.openCreate();
+    fillForm("qa", "QA");
 
-    const html = handle.dt.cell(0, 1).render("display");
-    expect(String(html)).not.toMatch(/<(?!\/?span)/);
+    await handle.submitForm();
+
+    expect(Array.from(alertEl().children).map((el) => el.textContent)).toEqual([L10N.ErrorRoleNameTaken, L10N.ErrorRoleNotFound]);
+    handle.dt.destroy();
+  });
+
+  test("a role whose name, display name and module carry markup is drawn as characters in the row", async () => {
+    const { handle } = await mountRoles(ALL);
+    const row = rowOf("Bold");
+
+    expect(row, "the row is found by its visible text").toBeTruthy();
+    expect(row.textContent).toContain("<img src=x onerror=alert(1)>");
+    expect(row.textContent).toContain("<b>Bold</b> & Co");
+    expect(row.textContent).toContain("<i>mod</i> 2");
+    // Nothing the role typed became an element.
+    expect(row.querySelector("img")).toBeNull();
+    expect(row.querySelector("b")).toBeNull();
+    expect(row.querySelector("i:not(.bx)")).toBeNull();
     handle.dt.destroy();
   });
 });

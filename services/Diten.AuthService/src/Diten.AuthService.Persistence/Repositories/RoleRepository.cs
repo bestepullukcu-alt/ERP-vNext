@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Domain.Entities;
+using Diten.AuthService.Persistence.Seed;
 using MongoDB.Driver;
 
 namespace Diten.AuthService.Persistence.Repositories;
@@ -46,6 +47,9 @@ public sealed class RoleRepository : RepositoryBase<Role>, IRoleRepository
 
     public async Task<Role> CreateAsync(Role role, CancellationToken ct)
     {
+        // The first role of a tenant, created by a build that knows the export keys: the tenant is "born" with them
+        // and never receives the export backfill (ExportGrantBackfill). No-op for a tenant that already has a role.
+        await ExportGrantBackfillRunner.MarkBornIfTenantHasNoRolesAsync(Collection.Database, role.TenantId, ct);
         await InsertOneAsync(role, ct);
         return role;
     }
@@ -56,6 +60,9 @@ public sealed class RoleRepository : RepositoryBase<Role>, IRoleRepository
             Builders<Role>.Filter.Eq(r => r.TenantId, tenantId),
             Builders<Role>.Filter.Eq(r => r.Name, name),
             Builders<Role>.Filter.Eq(r => r.IsDeleted, false));
+
+        // See CreateAsync: a tenant whose first role this build provisions is "born" with the export keys.
+        await ExportGrantBackfillRunner.MarkBornIfTenantHasNoRolesAsync(Collection.Database, tenantId, ct);
 
         try
         {

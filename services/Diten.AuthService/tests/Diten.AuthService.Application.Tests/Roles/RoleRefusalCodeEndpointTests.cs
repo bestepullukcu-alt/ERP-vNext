@@ -81,6 +81,44 @@ public sealed class RoleRefusalCodeEndpointTests : IClassFixture<AccountKindAcce
     }
 
     [Fact]
+    public async Task Granting_a_permission_the_role_already_holds_returns_ROLE_PERMISSION_ALREADY_GRANTED_not_a_500()
+    {
+        var role = await _world.NewRoleAsync("twice");
+        var permission = await _world.PermissionAsync("auth.users.read");
+        using var client = _world.Client();
+        Assert.Equal(HttpStatusCode.NoContent, (await client.PostAsJsonAsync($"api/roles/{role.Id}/permissions", new { permissionId = permission.Id })).StatusCode);
+        var auditBefore = (await _world.LocalRowsAsync(RoleAuditEvents.PermissionGranted, role.Id)).Count;
+
+        var again = await client.PostAsJsonAsync($"api/roles/{role.Id}/permissions", new { permissionId = permission.Id });
+
+        await AssertRefusedAsync(again, HttpStatusCode.Conflict, RoleErrorCodes.PermissionAlreadyGranted);
+        Assert.Single(await _world.GrantsAsync(role.Id));
+        Assert.Equal(auditBefore, (await _world.LocalRowsAsync(RoleAuditEvents.PermissionGranted, role.Id)).Count); // no row for a grant that was not made
+    }
+
+    // The double click: both requests are in flight before either has written. One makes the grant; every other one —
+    // whether it lost at the handler's check or at the unique index — gets the same coded 409, never a 500.
+    [Fact]
+    public async Task A_double_click_race_makes_one_grant_and_answers_every_loser_with_the_same_code()
+    {
+        var role = await _world.NewRoleAsync("race");
+        var permission = await _world.PermissionAsync("auth.users.read");
+        using var client = _world.Client();
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 8)
+            .Select(_ => client.PostAsJsonAsync($"api/roles/{role.Id}/permissions", new { permissionId = permission.Id })));
+
+        Assert.Single(responses, r => r.StatusCode == HttpStatusCode.NoContent);
+        foreach (var loser in responses.Where(r => r.StatusCode != HttpStatusCode.NoContent))
+        {
+            await AssertRefusedAsync(loser, HttpStatusCode.Conflict, RoleErrorCodes.PermissionAlreadyGranted);
+        }
+
+        Assert.Single(await _world.GrantsAsync(role.Id));
+        Assert.Single(await _world.LocalRowsAsync(RoleAuditEvents.PermissionGranted, role.Id));
+    }
+
+    [Fact]
     public async Task Removing_a_provisioning_managed_grant_returns_ROLE_PERMISSION_GRANT_MANAGED()
     {
         var role = await _world.NewRoleAsync("managed");

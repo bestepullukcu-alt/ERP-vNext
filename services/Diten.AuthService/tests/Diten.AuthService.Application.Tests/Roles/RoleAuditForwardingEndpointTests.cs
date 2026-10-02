@@ -55,9 +55,16 @@ public sealed class RoleAuditForwardingEndpointTests : IClassFixture<PlatformEdg
 
         Assert.True(response.StatusCode == HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
         var body = await AssertAuditedAsync(_world, RoleAuditEvents.Updated, role.Id, Update);
-        var metadata = body.GetProperty("metadata");
-        Assert.Equal(role.DisplayName, metadata.GetProperty("before").GetProperty("displayName").GetString());
-        Assert.Equal("Renamed role", metadata.GetProperty("after").GetProperty("displayName").GetString());
+        // Where Platform's AuditAppendRequest reads a change from — not two more keys inside metadata.
+        Assert.Equal(role.DisplayName, body.GetProperty("beforeState").GetProperty("displayName").GetString());
+        Assert.Equal("Renamed role", body.GetProperty("afterState").GetProperty("displayName").GetString());
+        Assert.Equal("after", body.GetProperty("afterState").GetProperty("description").GetString());
+        Assert.False(body.GetProperty("metadata").TryGetProperty("before", out _));
+        Assert.False(body.GetProperty("metadata").TryGetProperty("after", out _));
+        // The local authAuditLogs row keeps the delta it always carried.
+        var local = Assert.Single(await _world.LocalRowsAsync(RoleAuditEvents.Updated, role.Id));
+        Assert.Contains("\"before\"", local.Metadata);
+        Assert.Contains("Renamed role", local.Metadata);
     }
 
     [Fact]

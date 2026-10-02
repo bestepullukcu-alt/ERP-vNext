@@ -26,7 +26,7 @@
                        reason is the same one the hint below states: this string is the key, and it does not change. *@
                     <div class="diten-field">
                         <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
-                        <input type="text" id="roleName" name="Name" class="form-control" maxlength="64" placeholder="@Localizer["NamePlaceholder"]" required />
+                        <input type="text" id="roleName" name="Name" class="form-control" maxlength="@Diten.Web.Models.Governance.RoleEditViewModel.NameMaxLength" placeholder="@Localizer["NamePlaceholder"]" required />
                     </div>
                     @* KEPT. The golden reference has no counterpart for this hint, which is not a reason to drop it:
                        it is the only place the user is told the name cannot be changed later. *@
@@ -42,7 +42,7 @@
                        two adjacent "name" fields legible as two different things. *@
                     <div class="diten-field">
                         <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
-                        <input type="text" id="roleDisplayName" name="DisplayName" class="form-control" maxlength="128" placeholder="@Localizer["DisplayNamePlaceholder"]" required />
+                        <input type="text" id="roleDisplayName" name="DisplayName" class="form-control" maxlength="@Diten.Web.Models.Governance.RoleEditViewModel.DisplayNameMaxLength" placeholder="@Localizer["DisplayNamePlaceholder"]" required />
                     </div>
                     <div class="invalid-feedback"></div>
                 </div>

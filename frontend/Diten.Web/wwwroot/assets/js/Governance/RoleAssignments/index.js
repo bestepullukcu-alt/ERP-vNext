@@ -103,7 +103,7 @@ const RoleAssignments = (function () {
     };
     const clearError = () => els.alert?.classList.add('d-none');
     // WP-ROLES-CLOSE-01 — a refusal tagged with a stable code is said in the reader's language (shared/diten-refusal.js).
-    const ERROR_CODE_KEYS = { ROLE_ACTOR_REQUIRED: 'ErrorRoleActorRequired', ROLE_NOT_FOUND: 'ErrorRoleNotFound', ROLE_PERMISSION_NOT_TENANT_ASSIGNABLE: 'ErrorRolePermissionNotTenantAssignable', ROLE_PERMISSION_GRANT_MANAGED: 'ErrorRolePermissionGrantManaged' };
+    const ERROR_CODE_KEYS = { ROLE_ACTOR_REQUIRED: 'ErrorRoleActorRequired', ROLE_NOT_FOUND: 'ErrorRoleNotFound', ROLE_PERMISSION_NOT_TENANT_ASSIGNABLE: 'ErrorRolePermissionNotTenantAssignable', ROLE_PERMISSION_ALREADY_GRANTED: 'ErrorRolePermissionAlreadyGranted', ROLE_PERMISSION_GRANT_MANAGED: 'ErrorRolePermissionGrantManaged' };
     const refusalText = (json) => window.DitenRefusal.message(json, ERROR_CODE_KEYS, L, 'RoleAssignments');
 
     const unwrap = (json) => {

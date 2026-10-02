@@ -106,4 +106,7 @@
   <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
     <value>此权限随角色或您订阅的模块提供，无法在此移除。</value>
   </data>
+  <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
+    <value>该角色已拥有此权限。请刷新页面。</value>
+  </data>
 </root>
