@@ -1,11 +1,13 @@
 using System.Text.Json;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Diten.SupplyChainService.Application.Common;
 using Diten.SupplyChainService.Domain.Features.Shipments;
 namespace Diten.SupplyChainService.Persistence.Features.Shipments;
 public sealed class ShipmentRepository(IMongoDatabase db, IShipmentCommitProbe probe) : IShipmentRepository
 {
     private readonly IMongoCollection<Shipment> _shipments = db.GetCollection<Shipment>("sce_shipments");
+    private readonly IMongoCollection<BsonDocument> _shipmentDocuments = db.GetCollection<BsonDocument>("sce_shipments");
     private readonly IMongoCollection<BsonDocument> _receipts = db.GetCollection<BsonDocument>("sce_shipment_receipts");
     private static FilterDefinition<Shipment> Scoped(ShipmentScope s)
     {
@@ -14,6 +16,17 @@ public sealed class ShipmentRepository(IMongoDatabase db, IShipmentCommitProbe p
     }
     public async Task<Shipment?> GetAsync(ShipmentScope scope, Guid id, CancellationToken ct) =>
      await _shipments.Find(Scoped(scope) & Builders<Shipment>.Filter.Eq(x => x.Id, id)).FirstOrDefaultAsync(ct);
+    public async Task<ShipmentDetailReadResult?> GetDetailAsync(ShipmentScope scope, Guid id, CancellationToken ct)
+    {
+        if (scope.TenantId == Guid.Empty || scope.LegalEntityId == Guid.Empty || scope.ActorId == Guid.Empty)
+            throw new InvalidOperationException("Trusted scope is required.");
+        var filter = new BsonDocument {
+            { "_id", id.ToString() }, { "TenantId", scope.TenantId.ToString() },
+            { "LegalEntityId", scope.LegalEntityId.ToString() }, { "IsDeleted", false }
+        };
+        var raw = await _shipmentDocuments.Find(filter).FirstOrDefaultAsync(ct);
+        return raw is null ? null : ShipmentDetailMaterializer.Materialize(raw);
+    }
     public async Task<(IReadOnlyList<Shipment> Items, long Total)> QueryAsync(ShipmentScope scope, ShipmentStatus? status, string? sourceDocumentId, int page, int pageSize, CancellationToken ct)
     {
         var filter = Scoped(scope);
@@ -33,8 +46,11 @@ public sealed class ShipmentRepository(IMongoDatabase db, IShipmentCommitProbe p
             using var session = await db.Client.StartSessionAsync(cancellationToken: ct);
             try
             {
-                return await session.WithTransactionAsync(async (transaction, token) =>
+                var enqueued = 0;
+                var result = await session.WithTransactionAsync(async (transaction, token) =>
                 {
+                    // The driver may run this body more than once; only the committed run's count survives.
+                    enqueued = 0;
                     if (source is not null)
                     {
                         var linkFilter = new BsonDocument { { "TenantId", scope.TenantId.ToString() }, { "LegalEntityId", scope.LegalEntityId.ToString() }, { "Key", source.Key } };
@@ -119,8 +135,13 @@ public sealed class ShipmentRepository(IMongoDatabase db, IShipmentCommitProbe p
                             new BsonDocument("$set", new BsonDocument("State", "Committed")), cancellationToken: token);
                     }
                     await probe.BeforeCommitAsync(token);
+                    enqueued = eventTypes.Length;
                     return new ShipmentMutationResult(s, false, change.StatusCode, null);
                 }, new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority), ct);
+                // O-3 replay and O-4 pending are counted once, after commit and outside every retry, so a retry is not a second event.
+                if (result.Replay && result.ErrorCode is null) ShipmentTelemetry.IdempotentReplays.Add(1);
+                if (enqueued > 0) ShipmentTelemetry.OutboxPending.Add(enqueued);
+                return result;
             }
             catch (MongoWriteException ex) when (ex.WriteError.Category == ServerErrorCategory.DuplicateKey && attempt < 5)
             {

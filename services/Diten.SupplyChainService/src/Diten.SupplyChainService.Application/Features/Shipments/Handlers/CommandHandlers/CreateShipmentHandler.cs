@@ -40,6 +40,7 @@ public sealed class CreateShipmentHandler(IShipmentRepository repository, Reques
                 PlannedDeliverAt = b.PlannedDeliverAt,
                 Status = ShipmentStatus.Draft,
                 CorrelationId = context.CorrelationId,
+                LifecycleCorrelationId = context.CorrelationId,
                 Lines = normalized.Lines.Select(x => new ShipmentLine(x.LineNumber, x.ItemId, x.SkuId, x.Quantity, x.UomId, x.InventoryReferenceId)).ToArray()
             };
             return new ShipmentChange(shipment, null, 201, now);

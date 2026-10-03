@@ -1,3 +1,4 @@
+using Diten.SupplyChainService.Application.Common;
 using Diten.SupplyChainService.Application.Features.Shipments;
 using Diten.SupplyChainService.Application.Features.Shipments.Commands;
 using Diten.SupplyChainService.Application.Features.Shipments.Validators;
@@ -19,14 +20,14 @@ public sealed class WarehouseIntakeCoordinator(IWarehouseReadClient warehouse, I
         if (upstreamCorrelation is not null)
         {
             if (!Guid.TryParse(upstreamCorrelation, out var parsed) || parsed == Guid.Empty)
-                return await Block("Quarantined", "INVALID_UPSTREAM_CORRELATION", upstreamCorrelation);
+                return await CountedBlockAsync("Quarantined", "INVALID_UPSTREAM_CORRELATION", upstreamCorrelation);
             upstream = parsed;
         }
         var supplied = new[] { context.CorrelationId, upstream, envelopeCorrelation }.Where(x => x.HasValue).Select(x => x!.Value).ToArray();
         if (supplied.Contains(Guid.Empty) || supplied.Distinct().Count() > 1)
-            return await Block("Quarantined", "CONFLICTING_CORRELATION", JsonSerializer.Serialize(new { upstreamCorrelation, envelopeCorrelation, context.CorrelationId }));
+            return await CountedBlockAsync("Quarantined", "CONFLICTING_CORRELATION", JsonSerializer.Serialize(new { upstreamCorrelation, envelopeCorrelation, context.CorrelationId }));
         var detail = await warehouse.GetAsync(context, outboundId, ct);
-        if (!detail.Success) return await Block("Blocked", detail.ErrorCode!, JsonSerializer.Serialize(new { detail.ErrorCode, detail.StatusCode }));
+        if (!detail.Success) return await CountedBlockAsync("Blocked", detail.ErrorCode!, JsonSerializer.Serialize(new { detail.ErrorCode, detail.StatusCode }));
         var body = detail.Value;
         if (body.GetProperty("outboundId").GetString() != outboundId)
             return await Block("Blocked", "SOURCE_ID_MISMATCH", WarehouseShipmentMapper.Canonical(body));
@@ -34,7 +35,7 @@ public sealed class WarehouseIntakeCoordinator(IWarehouseReadClient warehouse, I
         var observedSnapshot = WarehouseShipmentMapper.Canonical(body);
         var observedHash = WarehouseShipmentMapper.Hash(observedSnapshot);
         if (previous is not null && previous.Hash != observedHash)
-            return await Block("Drift", "SOURCE_DRIFT", JsonSerializer.Serialize(new { previousHash = previous.Hash, observedHash, observedSnapshot }));
+            return await CountedDriftAsync(JsonSerializer.Serialize(new { previousHash = previous.Hash, observedHash, observedSnapshot }));
         if (body.GetProperty("status").GetString() != "ReadyToShip")
             return await Block("Blocked", "SOURCE_NOT_READY", WarehouseShipmentMapper.Canonical(body));
         if (body.GetProperty("lines").GetArrayLength() == 0)
@@ -50,9 +51,9 @@ public sealed class WarehouseIntakeCoordinator(IWarehouseReadClient warehouse, I
         if (!validation.IsValid) return await Block("Blocked", "SHIPMENT_MAPPING_INCOMPATIBLE", candidate.Snapshot);
         var intent = await store.PrepareAsync(context.Scope, candidate, ct);
         if (intent.Hash != candidate.Hash)
-            return await Block("Drift", "SOURCE_DRIFT", JsonSerializer.Serialize(new { previousHash = intent.Hash, observedHash = candidate.Hash, observedSnapshot = candidate.Snapshot }));
+            return await CountedDriftAsync(JsonSerializer.Serialize(new { previousHash = intent.Hash, observedHash = candidate.Hash, observedSnapshot = candidate.Snapshot }));
         if (supplied.Length > 0 && intent.Shipment.CorrelationId != supplied[0])
-            return await Block("Quarantined", "CONFLICTING_PERSISTED_ROOT", JsonSerializer.Serialize(new { upstreamCorrelation, envelopeCorrelation, supplied = supplied[0], persisted = intent.Shipment.CorrelationId }));
+            return await CountedBlockAsync("Quarantined", "CONFLICTING_PERSISTED_ROOT", JsonSerializer.Serialize(new { upstreamCorrelation, envelopeCorrelation, supplied = supplied[0], persisted = intent.Shipment.CorrelationId }));
         try
         {
             var result = await shipments.MutateAsync(context.Scope, null, "create", intent.Key, intent.Hash,
@@ -69,6 +70,22 @@ public sealed class WarehouseIntakeCoordinator(IWarehouseReadClient warehouse, I
             await store.RecordEvidenceAsync(context.Scope, WarehouseShipmentMapper.Key(context.Scope, outboundId), outboundId,
                 state, JsonSerializer.Serialize(new { code, evidence }), ct);
             return new SourceIntakeResult(state, null, false, code);
+        }
+        // O-3 intake: only the pack §13 causes — unavailable Warehouse detail or incompatible correlation — are counted.
+        async Task<SourceIntakeResult> CountedBlockAsync(string state, string code, string evidence)
+        {
+            var blocked = await Block(state, code, evidence);
+            ShipmentTelemetry.IntakeBlocked.Add(1);
+            return blocked;
+        }
+        // O-3 drift (pack §13 drift line): each detection counts, after its evidence row is written. The commit-time hash
+        // guard (ShipmentRepository) ends as COMMIT_FAILED and is deliberately not counted: it is an integrity invariant the
+        // product's own writers cannot break, and COMMIT_FAILED also covers unrelated commit failures (Q315).
+        async Task<SourceIntakeResult> CountedDriftAsync(string evidence)
+        {
+            var drifted = await Block("Drift", "SOURCE_DRIFT", evidence);
+            ShipmentTelemetry.SourceDrifts.Add(1);
+            return drifted;
         }
     }
 }

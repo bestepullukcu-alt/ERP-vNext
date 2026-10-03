@@ -125,6 +125,11 @@ public sealed class ShipmentTests(ITestOutputHelper output)
         using (var client = app.CreateClient())
         {
             id = await Create(app, client);
+            var createdRaw = await Db(app).GetCollection<BsonDocument>("sce_shipments").Find(Scope() & new BsonDocument("_id", id.ToString())).FirstAsync();
+            Assert.True(createdRaw.Contains("LifecycleCorrelationId"));
+            Assert.Equal(_correlation.ToString(), createdRaw["LifecycleCorrelationId"].AsString);
+            var createdDetail = (await Send(client, "GET", $"/{id}")).Body;
+            Assert.Equal(_correlation.ToString(), createdDetail["lifecycleCorrelationId"]!.GetValue<string>());
             Assert.Equal("Draft", (await Send(client, "GET", $"/{id}")).Body["status"]!.GetValue<string>());
             Assert.Equal(200, (await Send(client, "POST", $"/{id}/transition", Transition("Planned"), "plan")).Status);
             Assert.Equal(200, (await Send(client, "POST", $"/{id}/transition", Transition("Dispatched"), "dispatch")).Status);
@@ -140,7 +145,7 @@ public sealed class ShipmentTests(ITestOutputHelper output)
         using (var restarted = new Factory(probe))
         using (var client = restarted.CreateClient())
         {
-            var detail = await Send(client, "GET", $"/{id}"); Assert.Equal(200, detail.Status); Assert.Equal("Closed", detail.Body["status"]!.GetValue<string>());
+            var detail = await Send(client, "GET", $"/{id}"); Assert.Equal(200, detail.Status); Assert.Equal("Closed", detail.Body["status"]!.GetValue<string>()); Assert.Equal(_correlation.ToString(), detail.Body["lifecycleCorrelationId"]!.GetValue<string>());
             var replay = await Send(client, "POST", "", CreateBody(), "create"); Assert.Equal(200, replay.Status);
             Assert.Equal(id.ToString(), replay.Body["shipmentId"]!.GetValue<string>()); Assert.True(replay.Body["idempotentReplay"]!.GetValue<bool>());
             Assert.Equal("Draft", replay.Body["status"]!.GetValue<string>());

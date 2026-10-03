@@ -1,5 +1,6 @@
 using System.Text;
 using Diten.BuildingBlocks.Eventing;
+using Diten.SupplyChainService.Application.Common;
 using MongoDB.Bson;
 using MongoDB.Driver;
 namespace Diten.SupplyChainService.Persistence.Features.Shipments;
@@ -24,12 +25,21 @@ public sealed class ShipmentOutboxStore(IMongoDatabase db, Guid? tenantId = null
     }
     public Task CompletePublishAsync(Guid eventId, CancellationToken cancellationToken = default) =>
      _outbox.UpdateOneAsync(new BsonDocument { { "_id", eventId.ToString() }, { "Status", "Publishing" } }, Builders<BsonDocument>.Update.Set("Status", "Published"), cancellationToken: cancellationToken);
-    public Task FailPublishAsync(Guid eventId, string error, DateTimeOffset nextAttemptAtUtc, int maxAttempts, CancellationToken cancellationToken = default) =>
-     _outbox.UpdateOneAsync(new BsonDocument { { "_id", eventId.ToString() }, { "Status", "Publishing" } },
+    public async Task FailPublishAsync(Guid eventId, string error, DateTimeOffset nextAttemptAtUtc, int maxAttempts, CancellationToken cancellationToken = default)
+    {
+        var doc = await _outbox.FindOneAndUpdateAsync(new BsonDocument { { "_id", eventId.ToString() }, { "Status", "Publishing" } },
       new PipelineUpdateDefinition<BsonDocument>(new[]{new BsonDocument("$set",new BsonDocument {
     {"AttemptCount",new BsonDocument("$add",new BsonArray{"$AttemptCount",1})},
     {"Status",new BsonDocument("$cond",new BsonArray{new BsonDocument("$gte",new BsonArray{new BsonDocument("$add",new BsonArray{"$AttemptCount",1}),maxAttempts}),"DeadLettered","Pending"})},
-    {"LastError",error},{"NextAttemptAt",nextAttemptAtUtc.UtcDateTime}})}), cancellationToken: cancellationToken);
-    public Task DeadLetterPublishAsync(Guid eventId, EventOutboxTerminalFailure failure, CancellationToken cancellationToken = default) =>
-     _outbox.UpdateOneAsync(new BsonDocument { { "_id", eventId.ToString() }, { "Status", "Publishing" } }, Builders<BsonDocument>.Update.Set("Status", "DeadLettered").Set("LastError", failure.ReasonCode).Inc("AttemptCount", 1), cancellationToken: cancellationToken);
+    {"LastError",error},{"NextAttemptAt",nextAttemptAtUtc.UtcDateTime}})}),
+         new FindOneAndUpdateOptions<BsonDocument> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        // O-4: the stored outcome decides which counter moves; nothing is counted when no Publishing row matched.
+        if (doc is null) return;
+        if (doc["Status"].AsString == "DeadLettered") ShipmentTelemetry.OutboxDeadLetters.Add(1); else ShipmentTelemetry.OutboxRetries.Add(1);
+    }
+    public async Task DeadLetterPublishAsync(Guid eventId, EventOutboxTerminalFailure failure, CancellationToken cancellationToken = default)
+    {
+        var update = await _outbox.UpdateOneAsync(new BsonDocument { { "_id", eventId.ToString() }, { "Status", "Publishing" } }, Builders<BsonDocument>.Update.Set("Status", "DeadLettered").Set("LastError", failure.ReasonCode).Inc("AttemptCount", 1), cancellationToken: cancellationToken);
+        if (update.ModifiedCount == 1) ShipmentTelemetry.OutboxDeadLetters.Add(1);
+    }
 }

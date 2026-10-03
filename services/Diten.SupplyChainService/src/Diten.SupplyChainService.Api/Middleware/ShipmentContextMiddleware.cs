@@ -9,7 +9,11 @@ public sealed class ShipmentContextMiddleware(RequestDelegate next)
         if (!http.Request.Path.StartsWithSegments("/api/shipment-bundle")) { await next(http); return; }
         var correlation = http.Request.Headers["X-Correlation-Id"];
         if (correlation.Count != 1 || !Guid.TryParse(correlation, out var correlationId) || correlationId == Guid.Empty)
-        { await Error(http, 400, "A non-empty UUID X-Correlation-Id is required.", Guid.NewGuid()); return; }
+        {
+            // Q280: the generated trace id goes on the response header like a valid one does, so the log can carry it too.
+            var generated = Guid.NewGuid(); http.Response.Headers["X-Correlation-Id"] = generated.ToString();
+            await Error(http, 400, "A non-empty UUID X-Correlation-Id is required.", generated); return;
+        }
         context.CorrelationId = correlationId;
         http.Response.Headers["X-Correlation-Id"] = correlationId.ToString();
         if (http.User.Identity?.IsAuthenticated != true) { await Error(http, 401, "Authentication required.", correlationId); return; }
@@ -21,7 +25,8 @@ public sealed class ShipmentContextMiddleware(RequestDelegate next)
         { await Error(http, 403, "Trusted tenant, legal entity and actor context required.", correlationId); return; }
         if (!ValidHeader(http, "X-Tenant-Id", out var headerTenant) || !ValidHeader(http, "X-Legal-Entity-Id", out var headerEntity))
         { await Error(http, 400, "Scope headers are required UUIDs.", correlationId); return; }
-        if (tenant != headerTenant || entity != headerEntity) { await Error(http, 404, "Shipment not found.", correlationId, "SHIPMENT_NOT_FOUND"); return; }
+        if (tenant != headerTenant || entity != headerEntity)
+        { ShipmentTelemetry.ScopeDenials.Add(1); await Error(http, 404, "Shipment not found.", correlationId, ContractErrorCodes.ShipmentNotFound); return; }
         if (http.Request.Query.Keys.Any(k => k.Equals("tenantId", StringComparison.OrdinalIgnoreCase) || k.Equals("legalEntityId", StringComparison.OrdinalIgnoreCase)))
         { await Error(http, 400, "Scope is not accepted from the query.", correlationId); return; }
         context.Scope = new ShipmentScope(tenant, entity, actor);

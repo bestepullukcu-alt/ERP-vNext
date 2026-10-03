@@ -9,6 +9,10 @@ public sealed class ExceptionHandlingBehavior<TRequest, TResponse>(ILogger<Excep
     {
         try { return await next(); }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
-        catch (Exception ex) { logger.LogError("Operation failed: {ExceptionType}", ex.GetType().Name); return TResponse.Fail("INVALID_REQUEST", 500, "Operation could not be completed."); }
+        // C-02 (2026-10-03): SHIPMENT-BUNDLE declares INTERNAL_ERROR as the only code for HTTP 500. This used to
+        // return INVALID_REQUEST, which the contract reserves for 400, so a server failure was indistinguishable
+        // from a validation failure and the UI's code map (details.js:51) resolved to undefined — the user saw no
+        // message at all. Pack §274 freezes error codes in the contract.
+        catch (Exception ex) { logger.LogError("Operation failed: {ExceptionType}", ex.GetType().Name); return TResponse.Fail(ContractErrorCodes.InternalError, 500, "Operation could not be completed."); }
     }
 }

@@ -22,5 +22,6 @@ public sealed class Shipment : EntityBase
     public DateTimeOffset? DispatchedAt { get; set; }
     public ShipmentStatus Status { get; set; }
     public Guid CorrelationId { get; set; }
+    public Guid? LifecycleCorrelationId { get; set; }
     public ProofOfDelivery? Pod { get; set; }
 }
