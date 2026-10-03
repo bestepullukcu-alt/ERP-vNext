@@ -7747,6 +7747,26 @@ sayfa yardımı (BL-495) ile aynı pakette yapılabilir. Gelecek regresyon riski
 
 ---
 
+### BL-521
+
+**İş ortağı yöneticisi (partner_admin) bütün kiracıları görüp değiştirebiliyor: "izin verilen kiracılar" hiçbir yerde okunmuyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform yetki) · BULAN: WP-PLATFORM-TENANT-MODULES-01 FIX1 ölçümü (2026-10-03) · KAYIT: 2026-10-03
+
+`PlatformActor` politikası platform_admin ile partner_admin'i aynı sayıyor (`Infrastructure/DependencyInjection.cs:99-101`); `[HasPermission]`
+her platform aktörünü her anahtarda geçiriyor (`API/Security/HasPermissionAttribute.cs:36-38`); kiracı çözümleme ara katmanı yönetim yolunda
+yalnız aktör tipine bakıyor (`TenantResolutionMiddleware`: Common 347-351, gateway 426-430). `PlatformAdministrator.PartnerId` ve
+`AllowedTenantIds` yalnız yönetici kaydında yazılıyor; JWT'de yok (`TokenService.cs:107-113`), sorgu filtresinde ve denetleyicilerde
+okunmuyor; `EntitlementDenyReason.PartnerScopeViolation` tanımlı ama kullanılmıyor; `Tenant` varlığında iş ortağı alanı yok. Sonuç: bir
+iş ortağı yöneticisi kiracı listesini, ayrıntısını, düzenleme / askıya alma / silme uçlarını, abonelik ve modül uçlarını BÜTÜN kiracılar
+için kullanabiliyor. Bir test (`HasPermissionAttributeDualReadTests:86`) sınırsız geçişi sabitliyor. Kapalı olan iki yer: denetim uçları
+(`PlatformAdminOnly`) ve kiracı tarafı yetki işleyicileri. Düzeltme dört aile birlikte: izin verilen kiracılar ya belirtece girer ya
+sunucuda okunur; liste süzülür, kimlikle erişimde kapsam dışı = bulunamadı; denetim kaydı. Karşılaştırma: SAP'de iş ortağı erişimi
+organizasyon birimi / şirket koduyla, Oracle'da veri erişim kümeleriyle sınırlanır. Önce sahibe: canlıda partner_admin hesabı var mı?
+Gelecek regresyon riski: 🟡 (yetki katmanına dokunur).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
