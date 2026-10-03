@@ -47,6 +47,52 @@ public sealed class RoleRefusalCodeEndpointTests : IClassFixture<AccountKindAcce
         await AssertRefusedAsync(await client.DeleteAsync($"api/roles/{missing}"), HttpStatusCode.NotFound, RoleErrorCodes.NotFound);
     }
 
+    // FIX2 item 6 — the Roles screen offers no Edit for a system role; the endpoint now answers the same.
+    [Fact]
+    public async Task Updating_a_system_role_returns_ROLE_SYSTEM_NOT_EDITABLE_and_changes_nothing()
+    {
+        var system = await _world.NewRoleAsync("sys-edit", system: true);
+        using var client = _world.Client();
+
+        var response = await client.PutAsJsonAsync($"api/roles/{system.Id}", new { displayName = "Renamed by hand", description = "x" });
+
+        await AssertRefusedAsync(response, HttpStatusCode.Forbidden, RoleErrorCodes.SystemNotEditable);
+        using var read = JsonDocument.Parse(await (await client.GetAsync($"api/roles/{system.Id}")).Content.ReadAsStringAsync());
+        Assert.Equal(system.DisplayName, read.RootElement.GetProperty("data").GetProperty("displayName").GetString());
+        Assert.Empty(await _world.LocalRowsAsync(RoleAuditEvents.Updated, system.Id));
+    }
+
+    [Fact]
+    public async Task A_custom_role_is_still_editable()
+    {
+        var role = await _world.NewRoleAsync("custom-edit");
+        using var client = _world.Client();
+
+        var response = await client.PutAsJsonAsync($"api/roles/{role.Id}", new { displayName = "Renamed", description = "ok" });
+
+        Assert.True(response.StatusCode == HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+    }
+
+    // The update validator is in the pipeline: a blank display name is refused (400) and nothing is written. Its CODE
+    // reaching the envelope depends on ExceptionHandlingBehavior, which belongs to another branch — not asserted here.
+    [Fact]
+    public async Task Updating_with_a_blank_or_overlong_display_name_is_refused_and_changes_nothing()
+    {
+        var role = await _world.NewRoleAsync("blank-edit");
+        using var client = _world.Client();
+
+        var blank = await client.PutAsJsonAsync($"api/roles/{role.Id}", new { displayName = "   ", description = "x" });
+        var tooLong = await client.PutAsJsonAsync($"api/roles/{role.Id}", new { displayName = new string('d', RoleFieldLimits.DisplayNameMaxLength + 1), description = "x" });
+        var longDescription = await client.PutAsJsonAsync($"api/roles/{role.Id}", new { displayName = "QA", description = new string('x', RoleFieldLimits.DescriptionMaxLength + 1) });
+
+        Assert.Equal(HttpStatusCode.BadRequest, blank.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, tooLong.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, longDescription.StatusCode);
+        using var read = JsonDocument.Parse(await (await client.GetAsync($"api/roles/{role.Id}")).Content.ReadAsStringAsync());
+        Assert.Equal(role.DisplayName, read.RootElement.GetProperty("data").GetProperty("displayName").GetString());
+        Assert.Empty(await _world.LocalRowsAsync(RoleAuditEvents.Updated, role.Id));
+    }
+
     [Fact]
     public async Task Deleting_a_system_role_returns_ROLE_SYSTEM_NOT_DELETABLE()
     {

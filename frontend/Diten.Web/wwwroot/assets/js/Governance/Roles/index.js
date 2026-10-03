@@ -38,7 +38,7 @@ const RolesList = (function () {
     const escapeHtml = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
     // ─── Refusals: a stable code from AuthService → the reader's language (shared/diten-refusal.js) ──
-    const ERROR_CODE_KEYS = { ROLE_ACTOR_REQUIRED: 'ErrorRoleActorRequired', ROLE_NOT_FOUND: 'ErrorRoleNotFound', ROLE_NAME_TAKEN: 'ErrorRoleNameTaken', ROLE_SYSTEM_NOT_DELETABLE: 'ErrorRoleSystemNotDeletable', ROLE_NAME_REQUIRED: 'ErrorRoleNameRequired', ROLE_NAME_TOO_LONG: 'ErrorRoleNameTooLong', ROLE_DISPLAY_NAME_REQUIRED: 'ErrorRoleDisplayNameRequired', ROLE_DISPLAY_NAME_TOO_LONG: 'ErrorRoleDisplayNameTooLong' };
+    const ERROR_CODE_KEYS = { ROLE_ACTOR_REQUIRED: 'ErrorRoleActorRequired', ROLE_NOT_FOUND: 'ErrorRoleNotFound', ROLE_NAME_TAKEN: 'ErrorRoleNameTaken', ROLE_SYSTEM_NOT_DELETABLE: 'ErrorRoleSystemNotDeletable', ROLE_NAME_REQUIRED: 'ErrorRoleNameRequired', ROLE_NAME_TOO_LONG: 'ErrorRoleNameTooLong', ROLE_DISPLAY_NAME_REQUIRED: 'ErrorRoleDisplayNameRequired', ROLE_DISPLAY_NAME_TOO_LONG: 'ErrorRoleDisplayNameTooLong', ROLE_DESCRIPTION_TOO_LONG: 'ErrorRoleDescriptionTooLong', ROLE_SYSTEM_NOT_EDITABLE: 'ErrorRoleSystemNotEditable' };
     const refusalText = (json) => window.DitenRefusal.message(json, ERROR_CODE_KEYS, L(), 'Roles');
     // A form with two mistakes says both (the proxy lists every broken rule).
     const refusalTexts = (json) => window.DitenRefusal.messages(json, ERROR_CODE_KEYS, L(), 'Roles');

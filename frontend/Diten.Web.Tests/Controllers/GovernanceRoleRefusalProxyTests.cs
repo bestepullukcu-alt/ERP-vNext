@@ -228,6 +228,54 @@ public sealed class GovernanceRoleRefusalProxyTests
     }
 
     [Fact]
+    public async Task A_description_over_the_limit_answers_ROLE_DESCRIPTION_TOO_LONG()
+    {
+        var gateway = new FixedGateway(HttpStatusCode.OK, "{}");
+
+        var json = Body(await Roles(gateway).Edit(RoleId, new RoleEditViewModel { Name = "qa", DisplayName = "QA", Description = new string('x', RoleEditViewModel.DescriptionMaxLength + 1) }));
+
+        Assert.Equal(["ROLE_DESCRIPTION_TOO_LONG"], json.GetProperty("errorCodes").EnumerateArray().Select(e => e.GetString()));
+        Assert.Equal(0, gateway.Calls);
+    }
+
+    // What actually leaves for AuthService: the name and the display name without the white space around them (the
+    // form's rules measure the trimmed text, so the untrimmed one must not be what is stored).
+    [Fact]
+    public async Task Create_and_edit_send_the_name_and_display_name_trimmed()
+    {
+        var create = new FixedGateway(HttpStatusCode.Created, "{}");
+        var edit = new FixedGateway(HttpStatusCode.OK, "{}");
+
+        Assert.True(Body(await Roles(create).Create(new RoleEditViewModel { Name = "  qa-reviewers ", DisplayName = "\tQA Reviewers  ", Description = " keep " })).GetProperty("success").GetBoolean());
+        Assert.True(Body(await Roles(edit).Edit(RoleId, new RoleEditViewModel { Name = " qa-reviewers", DisplayName = "  QA Leads ", Description = null })).GetProperty("success").GetBoolean());
+
+        using var sentCreate = JsonDocument.Parse(create.LastBody!);
+        Assert.Equal("qa-reviewers", sentCreate.RootElement.GetProperty("name").GetString());
+        Assert.Equal("QA Reviewers", sentCreate.RootElement.GetProperty("displayName").GetString());
+        Assert.Equal(" keep ", sentCreate.RootElement.GetProperty("description").GetString()); // free text is left as typed
+        using var sentEdit = JsonDocument.Parse(edit.LastBody!);
+        Assert.Equal("QA Leads", sentEdit.RootElement.GetProperty("displayName").GetString());
+        Assert.False(sentEdit.RootElement.TryGetProperty("name", out _)); // the name is immutable: never sent on edit
+    }
+
+    // FIX2 item 7 — a coded 4xx is the product working as designed (Information); what is not expected is a Warning.
+    [Fact]
+    public async Task A_coded_business_refusal_is_logged_as_Information_and_an_uncoded_or_5xx_one_as_Warning()
+    {
+        var business = new RecordingLogger();
+        var uncoded = new RecordingLogger();
+        var serverError = new RecordingLogger();
+
+        await Roles(new FixedGateway(HttpStatusCode.Conflict, Refusal("ROLE_NAME_TAKEN", "Role name is already in use.")), logs: business).Create(new RoleEditViewModel { Name = "qa", DisplayName = "QA" });
+        await Roles(new FixedGateway(HttpStatusCode.BadRequest, """{"isSuccessful":false,"errors":["raw"]}"""), logs: uncoded).Create(new RoleEditViewModel { Name = "qa", DisplayName = "QA" });
+        await Roles(new FixedGateway(HttpStatusCode.InternalServerError, Refusal("ROLE_NAME_TAKEN", "boom")), logs: serverError).Create(new RoleEditViewModel { Name = "qa", DisplayName = "QA" });
+
+        Assert.Equal([LogLevel.Information], business.Levels);
+        Assert.Equal([LogLevel.Warning], uncoded.Levels);
+        Assert.Equal([LogLevel.Warning], serverError.Levels);
+    }
+
+    [Fact]
     public void The_forms_rules_refuse_exactly_beyond_the_limits()
     {
         var atLimit = new RoleEditViewModel { Name = new string('n', RoleEditViewModel.NameMaxLength), DisplayName = new string('d', RoleEditViewModel.DisplayNameMaxLength) };
@@ -307,11 +355,13 @@ public sealed class GovernanceRoleRefusalProxyTests
     private sealed class FixedGateway(HttpStatusCode status, string responseBody) : HttpMessageHandler
     {
         public int Calls { get; private set; }
+        public string? LastBody { get; private set; }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Calls++;
-            return Task.FromResult(new HttpResponseMessage(status)
+            LastBody = request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
+            return await Task.FromResult(new HttpResponseMessage(status)
             {
                 RequestMessage = request,
                 Content = new StringContent(responseBody, Encoding.UTF8, "application/json")
@@ -329,6 +379,7 @@ public sealed class GovernanceRoleRefusalProxyTests
     private sealed class RecordingLogger
     {
         public List<string> Lines { get; } = [];
+        public List<LogLevel> Levels { get; } = [];
 
         public ILogger<T> For<T>() => new Typed<T>(this);
 
@@ -337,7 +388,10 @@ public sealed class GovernanceRoleRefusalProxyTests
             public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
             public bool IsEnabled(LogLevel logLevel) => true;
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-                => owner.Lines.Add(formatter(state, exception) + (exception is null ? string.Empty : " | " + exception));
+            {
+                owner.Levels.Add(logLevel);
+                owner.Lines.Add(formatter(state, exception) + (exception is null ? string.Empty : " | " + exception));
+            }
         }
     }
 }

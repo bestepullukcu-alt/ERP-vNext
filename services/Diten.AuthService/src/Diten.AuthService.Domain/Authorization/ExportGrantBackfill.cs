@@ -12,22 +12,25 @@ namespace Diten.AuthService.Domain.Authorization;
 /// every role of an OLD tenant that holds read also receives export — nobody loses a capability they had yesterday —
 /// once per tenant and key.</para>
 ///
-/// <para><b>Old or born — a PERSISTENT MARK, never a guess.</b> A tenant is decided by its
-/// <c>permissionReconciliations</c> row (tenant, export key), not by what its roles happen to hold:
+/// <para><b>Old or born — a STORED FACT, never a guess.</b> A tenant with a <c>permissionReconciliations</c> row for
+/// the key is settled and is not looked at. For a tenant WITHOUT one, the decision is read off two timestamps the
+/// database already holds: the <c>CreatedAt</c> of the tenant's OLDEST role document (deleted or not — a deleted role
+/// still proves the tenant was there) and the <c>CreatedAt</c> of the export permission's catalog row:
 /// <list type="bullet">
-/// <item><c>born</c> — written BEFORE a build that knows the key creates the tenant's first role (seeder, role
-/// repository). Such a tenant was configured with the key in the catalog; it never receives a backfill, so a reading
-/// role its administrator opened without export stays that way.</item>
-/// <item><c>backfilled</c> — written after the backfill finished that tenant. It is never looked at again, so an
-/// administrator's later revoke sticks.</item>
-/// <item>no row, and the tenant has roles — an OLD tenant: processed, whatever its roles already hold (an Admin that got
-/// the key from the template or from an entitlement sync before the first run does not make the tenant "done").</item>
-/// </list></para>
+/// <item>oldest role STRICTLY BEFORE the key — the tenant was configured when the key did not exist: OLD. Its reading
+/// roles receive export, whatever any of its roles already holds (an Admin that got the key from the template or an
+/// entitlement sync does not make the tenant "done").</item>
+/// <item>oldest role at or after the key — the tenant was set up with the key in the catalog: BORN. It never receives
+/// a backfill, so a reading role opened without export stays that way.</item>
+/// <item>either timestamp missing or default — UNKNOWN, treated as BORN.</item>
+/// </list>
+/// ⚠ Every doubt resolves to NOT GRANTING. A wrongly withheld export costs an administrator one click on the Role
+/// Permissions screen; a wrongly granted one is an authority nobody decided to give (<c>auth.users.export</c> is
+/// enforced on the server). The same instant (a tie) is therefore BORN, and so is a tenant provisioned within the clock
+/// skew of the instance that created the key.</para>
 ///
-/// <para><b>Restartable.</b> A tenant is marked only after all of its grants are written; a run that stops half-way
-/// leaves it unmarked and the next run finishes it. The audit row and the mark carry DETERMINISTIC ids
-/// (<see cref="AuditId"/>, <see cref="MarkId"/>), so a re-run or a second instance starting at the same time writes
-/// the same documents and a duplicate key means "already done".</para>
+/// <para><b>Each key decides for itself</b>: the two export permissions were created at different times, so a tenant
+/// can be born for one and old for the other.</para>
 ///
 /// <para>⚠ This plans AUTHORITY WRITES (role → permission grants made by the system, not by a person).</para>
 /// </summary>
@@ -39,8 +42,15 @@ public static class ExportGrantBackfill
     /// <summary>The audit event a backfilled grant is written as — the same name a person's grant carries.</summary>
     public const string AuditEventName = "role_permission_granted";
 
+    /// <summary>The audit event of a grant whose SOURCE was corrected (nothing granted, nothing removed).</summary>
+    public const string SourceCorrectedEventName = "role_permission_source_corrected";
+
     /// <summary>One read → export pair and what its audit rows name as their source.</summary>
-    public sealed record KeyPair(string ReadKey, string ExportKey, string AuditSource);
+    public sealed record KeyPair(string ReadKey, string ExportKey, string AuditSource)
+    {
+        /// <summary>The audit source of a source correction of this key's grants.</summary>
+        public string CorrectionAuditSource => AuditSource + "-source-correction";
+    }
 
     public static readonly KeyPair Users = new("auth.users.read", "auth.users.export", "users-export-backfill");
     public static readonly KeyPair Roles = new("auth.roles.read", "auth.roles.export", "roles-export-backfill");
@@ -48,18 +58,30 @@ public static class ExportGrantBackfill
     /// <summary>Every pair the backfill covers. A new "{module}.export" key is one line here.</summary>
     public static readonly IReadOnlyList<KeyPair> Keys = [Users, Roles];
 
-    public sealed record RoleState(Guid RoleId, string Name, Guid TenantId, bool IsSystem);
+    /// <summary>A role document as the decision needs it. <paramref name="IsDeleted"/> roles prove the tenant's age and receive nothing.</summary>
+    public sealed record RoleState(Guid RoleId, string Name, Guid TenantId, bool IsSystem, DateTimeOffset CreatedAt = default, bool IsDeleted = false);
 
     public sealed record PlannedGrant(Guid RoleId, string RoleName, Guid TenantId, Guid PermissionId, GrantSource Source);
 
-    /// <summary>One unmarked tenant: the grants it still lacks (possibly none) — after which it is marked.</summary>
-    public sealed record TenantPlan(Guid TenantId, IReadOnlyList<PlannedGrant> Grants);
+    /// <summary>One unmarked tenant: what it is (<see cref="OriginBorn"/> / <see cref="OriginBackfilled"/>) and, for an
+    /// old tenant, the grants it still lacks (possibly none). Either way it is marked afterwards.</summary>
+    public sealed record TenantPlan(Guid TenantId, string Origin, IReadOnlyList<PlannedGrant> Grants);
 
     /// <summary>
-    /// The tenants to process, in a stable order, each with the grants it still lacks. A tenant in
-    /// <paramref name="markedTenants"/> (born or already backfilled) is not looked at; neither is a role without a tenant
-    /// (<see cref="Guid.Empty"/>). Additive only, deterministic, idempotent: a role that already holds export — from a
-    /// template, an entitlement sync, a person or an earlier, interrupted run — plans no grant.
+    /// Old, or born? See the type's remarks. <paramref name="oldestRoleCreatedAt"/> is the earliest
+    /// <c>CreatedAt</c> among ALL the tenant's role documents, deleted ones included.
+    /// </summary>
+    public static string Classify(DateTimeOffset oldestRoleCreatedAt, DateTimeOffset exportKeyCreatedAt)
+    {
+        if (oldestRoleCreatedAt == default || exportKeyCreatedAt == default) return OriginBorn; // unknown → do not grant
+        return oldestRoleCreatedAt.UtcTicks < exportKeyCreatedAt.UtcTicks ? OriginBackfilled : OriginBorn;
+    }
+
+    /// <summary>
+    /// The tenants to settle, in a stable order. A tenant in <paramref name="markedTenants"/> is not looked at; neither
+    /// is a role without a tenant (<see cref="Guid.Empty"/>). Additive only, deterministic, idempotent: a live role
+    /// that already holds export — from a template, an entitlement sync, a person or an earlier, interrupted run —
+    /// plans no grant; a deleted role plans none either.
     /// </summary>
     /// <param name="templateGrantsExport">True when the default role template itself gives export to this (system) role.</param>
     public static IReadOnlyList<TenantPlan> Plan(
@@ -67,6 +89,7 @@ public static class ExportGrantBackfill
         ISet<(Guid RoleId, Guid PermissionId)> grants,
         Guid readPermissionId,
         Guid exportPermissionId,
+        DateTimeOffset exportKeyCreatedAt,
         IReadOnlySet<Guid> markedTenants,
         Func<RoleState, bool> templateGrantsExport)
     {
@@ -74,13 +97,22 @@ public static class ExportGrantBackfill
             .Where(r => r.TenantId != Guid.Empty && !markedTenants.Contains(r.TenantId))
             .GroupBy(r => r.TenantId)
             .OrderBy(g => g.Key)
-            .Select(tenant => new TenantPlan(
-                tenant.Key,
-                tenant
-                    .Where(r => grants.Contains((r.RoleId, readPermissionId)) && !grants.Contains((r.RoleId, exportPermissionId)))
-                    .OrderBy(r => r.RoleId)
-                    .Select(r => new PlannedGrant(r.RoleId, r.Name, r.TenantId, exportPermissionId, SourceFor(r, templateGrantsExport)))
-                    .ToList()))
+            .Select(tenant =>
+            {
+                // The oldest role that HAS a date decides; a role without one says nothing about the tenant's age.
+                var dated = tenant.Where(r => r.CreatedAt != default).Select(r => r.CreatedAt).ToList();
+                var origin = Classify(dated.Count == 0 ? default : dated.Min(), exportKeyCreatedAt);
+                IReadOnlyList<PlannedGrant> planned = origin == OriginBorn
+                    ? []
+                    : tenant
+                        .Where(r => !r.IsDeleted
+                                    && grants.Contains((r.RoleId, readPermissionId))
+                                    && !grants.Contains((r.RoleId, exportPermissionId)))
+                        .OrderBy(r => r.RoleId)
+                        .Select(r => new PlannedGrant(r.RoleId, r.Name, r.TenantId, exportPermissionId, SourceFor(r, templateGrantsExport)))
+                        .ToList();
+                return new TenantPlan(tenant.Key, origin, planned);
+            })
             .ToList();
     }
 
@@ -94,11 +126,22 @@ public static class ExportGrantBackfill
     public static GrantSource SourceFor(RoleState role, Func<RoleState, bool> templateGrantsExport)
         => role.IsSystem && templateGrantsExport(role) ? GrantSource.System : GrantSource.Manual;
 
+    /// <summary>
+    /// A grant an EARLIER build's backfill filed as <see cref="GrantSource.System"/> on a role the template does not
+    /// give export to: its source is wrong (it locks the grant on the screen) and is corrected to Manual. A System
+    /// grant on a role the template DOES give export to is right and is left alone; so is every Module / Manual grant.
+    /// </summary>
+    public static bool NeedsSourceCorrection(RoleState role, GrantSource current, Func<RoleState, bool> templateGrantsExport)
+        => current == GrantSource.System && SourceFor(role, templateGrantsExport) == GrantSource.Manual;
+
     /// <summary>The id of THE mark of a tenant and key: two writers produce the same document.</summary>
     public static Guid MarkId(Guid tenantId, string exportKey) => Deterministic($"export-backfill-mark|{tenantId:N}|{exportKey}");
 
     /// <summary>The id of THE audit row of a backfilled grant: written once however often the run is repeated.</summary>
     public static Guid AuditId(Guid tenantId, Guid roleId, string exportKey) => Deterministic($"export-backfill-audit|{tenantId:N}|{roleId:N}|{exportKey}");
+
+    /// <summary>The id of THE audit row of a source correction.</summary>
+    public static Guid CorrectionAuditId(Guid tenantId, Guid roleId, string exportKey) => Deterministic($"export-backfill-source-correction|{tenantId:N}|{roleId:N}|{exportKey}");
 
     private static Guid Deterministic(string name) => new(MD5.HashData(Encoding.UTF8.GetBytes(name)));
 }

@@ -16,12 +16,15 @@ public static class RoleErrorCodes
     public const string NotFound = "ROLE_NOT_FOUND";
     public const string NameTaken = "ROLE_NAME_TAKEN";
     public const string SystemNotDeletable = "ROLE_SYSTEM_NOT_DELETABLE";
+    /// <summary>A system role's display name and description are the template's; the screen offers no Edit for it.</summary>
+    public const string SystemNotEditable = "ROLE_SYSTEM_NOT_EDITABLE";
 
     // CreateRoleCommandValidator (FluentValidation ErrorCode).
     public const string NameRequired = "ROLE_NAME_REQUIRED";
     public const string NameTooLong = "ROLE_NAME_TOO_LONG";
     public const string DisplayNameRequired = "ROLE_DISPLAY_NAME_REQUIRED";
     public const string DisplayNameTooLong = "ROLE_DISPLAY_NAME_TOO_LONG";
+    public const string DescriptionTooLong = "ROLE_DESCRIPTION_TOO_LONG";
 
     /// <summary>A platform-administration permission cannot be granted to a tenant role.</summary>
     public const string PermissionNotTenantAssignable = "ROLE_PERMISSION_NOT_TENANT_ASSIGNABLE";

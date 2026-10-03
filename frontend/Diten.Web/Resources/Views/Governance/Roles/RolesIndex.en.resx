@@ -55,4 +55,10 @@
   <data name="ErrorRoleDisplayNameTooLong" xml:space="preserve">
     <value>The display name can be at most 100 characters.</value>
   </data>
+  <data name="ErrorRoleDescriptionTooLong" xml:space="preserve">
+    <value>The description can be at most 500 characters.</value>
+  </data>
+  <data name="ErrorRoleSystemNotEditable" xml:space="preserve">
+    <value>System roles cannot be edited.</value>
+  </data>
 </root>

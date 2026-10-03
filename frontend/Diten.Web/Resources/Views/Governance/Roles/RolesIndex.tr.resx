@@ -55,4 +55,10 @@
   <data name="ErrorRoleDisplayNameTooLong" xml:space="preserve">
     <value>Görünen ad en fazla 100 karakter olabilir.</value>
   </data>
+  <data name="ErrorRoleDescriptionTooLong" xml:space="preserve">
+    <value>Açıklama en fazla 500 karakter olabilir.</value>
+  </data>
+  <data name="ErrorRoleSystemNotEditable" xml:space="preserve">
+    <value>Sistem rolleri düzenlenemez.</value>
+  </data>
 </root>

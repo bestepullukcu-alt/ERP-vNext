@@ -22,7 +22,11 @@ public static class GatewayRefusal
     public static async Task<object> ReadAsync(HttpResponseMessage response, IStringLocalizer<SharedResource> localizer, ILogger logger)
     {
         var (codes, upstream) = await ReadEnvelopeAsync(response);
-        logger.LogWarning(
+        // A coded 4xx is a business refusal — the product working as designed (a name already taken, a locked grant):
+        // Information. Anything else — no code, or a 5xx — is not expected: Warning.
+        var status = (int)response.StatusCode;
+        var level = codes.Count > 0 && status is >= 400 and < 500 ? LogLevel.Information : LogLevel.Warning;
+        logger.Log(level,
             "Gateway refused {Method} {Path} with {StatusCode}. Codes=[{Codes}] Upstream=[{Upstream}]",
             response.RequestMessage?.Method.Method,
             response.RequestMessage?.RequestUri?.AbsolutePath,

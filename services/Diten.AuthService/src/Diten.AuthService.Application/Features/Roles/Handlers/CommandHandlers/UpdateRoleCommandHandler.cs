@@ -40,6 +40,11 @@ public sealed class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand
         var role = await _roleRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
         if (role == null) return RoleErrorCodes.Refuse<RoleDto>(RoleErrorCodes.NotFound, "Role not found.", 404);
 
+        // WP-ROLES-CLOSE-01 — a system role's display name and description are the template's. The Roles screen
+        // offers no Edit for one (measured: the row action and the quick view's Edit are both hidden when isSystem);
+        // the endpoint now answers the same, like DELETE already does.
+        if (role.IsSystem) return RoleErrorCodes.Refuse<RoleDto>(RoleErrorCodes.SystemNotEditable, "System roles cannot be edited.", 403);
+
         // FEAT-AUDIT-RBAC — capture the before-state for the audit delta before mutating.
         var beforeDisplayName = role.DisplayName;
         var beforeDescription = role.Description;

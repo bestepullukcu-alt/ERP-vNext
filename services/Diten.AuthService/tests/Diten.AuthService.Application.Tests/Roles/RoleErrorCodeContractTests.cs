@@ -32,7 +32,9 @@ public sealed class RoleErrorCodeContractTests
             [RoleErrorCodes.NameRequired] = "ErrorRoleNameRequired",
             [RoleErrorCodes.NameTooLong] = "ErrorRoleNameTooLong",
             [RoleErrorCodes.DisplayNameRequired] = "ErrorRoleDisplayNameRequired",
-            [RoleErrorCodes.DisplayNameTooLong] = "ErrorRoleDisplayNameTooLong"
+            [RoleErrorCodes.DisplayNameTooLong] = "ErrorRoleDisplayNameTooLong",
+            [RoleErrorCodes.DescriptionTooLong] = "ErrorRoleDescriptionTooLong",
+            [RoleErrorCodes.SystemNotEditable] = "ErrorRoleSystemNotEditable"
         }),
         new("RoleAssignments", "RoleAssignmentsIndex", new Dictionary<string, string>(StringComparer.Ordinal)
         {
@@ -144,17 +146,97 @@ public sealed class RoleErrorCodeContractTests
         Assert.Contains($"NameTooLongCode = \"{RoleErrorCodes.NameTooLong}\";", model, StringComparison.Ordinal);
         Assert.Contains($"DisplayNameRequiredCode = \"{RoleErrorCodes.DisplayNameRequired}\";", model, StringComparison.Ordinal);
         Assert.Contains($"DisplayNameTooLongCode = \"{RoleErrorCodes.DisplayNameTooLong}\";", model, StringComparison.Ordinal);
+        Assert.Contains($"public const int DescriptionMaxLength = {RoleFieldLimits.DescriptionMaxLength};", model, StringComparison.Ordinal);
+        Assert.Contains($"DescriptionTooLongCode = \"{RoleErrorCodes.DescriptionTooLong}\";", model, StringComparison.Ordinal);
 
         var form = File.ReadAllText(Web("Views", "Governance", "Roles", "_CreateEditOffcanvas.cshtml"));
         Assert.Contains("maxlength=\"@Diten.Web.Models.Governance.RoleEditViewModel.NameMaxLength\"", form, StringComparison.Ordinal);
         Assert.Contains("maxlength=\"@Diten.Web.Models.Governance.RoleEditViewModel.DisplayNameMaxLength\"", form, StringComparison.Ordinal);
-        Assert.DoesNotMatch("id=\"role(Name|DisplayName)\"[^>]*maxlength=\"\\d", form); // no literal on the two limited fields
+        Assert.Contains("maxlength=\"@Diten.Web.Models.Governance.RoleEditViewModel.DescriptionMaxLength\"", form, StringComparison.Ordinal);
+        Assert.DoesNotMatch("id=\"role(Name|DisplayName|Description)\"[^>]*maxlength=\"\\d", form); // no literal on the limited fields
 
         // …and the validator refuses exactly beyond those limits.
         var validator = new CreateRoleCommandValidator();
         Assert.True(validator.Validate(new CreateRoleCommand(new string('n', RoleFieldLimits.NameMaxLength), new string('d', RoleFieldLimits.DisplayNameMaxLength), null)).IsValid);
         Assert.Contains(validator.Validate(new CreateRoleCommand(new string('n', RoleFieldLimits.NameMaxLength + 1), "d", null)).Errors, e => e.ErrorCode == RoleErrorCodes.NameTooLong);
         Assert.Contains(validator.Validate(new CreateRoleCommand("n", new string('d', RoleFieldLimits.DisplayNameMaxLength + 1), null)).Errors, e => e.ErrorCode == RoleErrorCodes.DisplayNameTooLong);
+    }
+
+    // FIX2 item 7 — the limit is also a NUMBER inside sentences: the three "too long" sentences of the Roles screen in
+    // seven languages (21 sentences) and the validators' own fallback sentences. Each must say the limit that is
+    // enforced, so a changed limit cannot leave a sentence behind.
+    [Fact]
+    public void Every_too_long_sentence_says_the_limit_that_is_enforced()
+    {
+        var limits = new Dictionary<string, int>(StringComparer.Ordinal)
+        {
+            ["ErrorRoleNameTooLong"] = RoleFieldLimits.NameMaxLength,
+            ["ErrorRoleDisplayNameTooLong"] = RoleFieldLimits.DisplayNameMaxLength,
+            ["ErrorRoleDescriptionTooLong"] = RoleFieldLimits.DescriptionMaxLength
+        };
+        var roles = Screens.Single(s => s.Folder == "Roles");
+        foreach (var language in Languages)
+        {
+            var values = ResxValues(roles, language);
+            foreach (var (key, limit) in limits)
+            {
+                var numbers = Regex.Matches(values[key], @"\d+").Select(m => int.Parse(m.Value)).ToList();
+                Assert.True(numbers.SequenceEqual([limit]),
+                    $"RolesIndex.{language}.resx {key} says [{string.Join(", ", numbers)}], the limit is {limit}: \"{values[key]}\"");
+            }
+        }
+
+        var create = new CreateRoleCommandValidator().Validate(new CreateRoleCommand(
+            new string('n', RoleFieldLimits.NameMaxLength + 1), new string('d', RoleFieldLimits.DisplayNameMaxLength + 1), new string('x', RoleFieldLimits.DescriptionMaxLength + 1)));
+        Assert.Contains(RoleFieldLimits.NameMaxLength.ToString(), create.Errors.Single(e => e.ErrorCode == RoleErrorCodes.NameTooLong).ErrorMessage);
+        Assert.Contains(RoleFieldLimits.DisplayNameMaxLength.ToString(), create.Errors.Single(e => e.ErrorCode == RoleErrorCodes.DisplayNameTooLong).ErrorMessage);
+        Assert.Contains(RoleFieldLimits.DescriptionMaxLength.ToString(), create.Errors.Single(e => e.ErrorCode == RoleErrorCodes.DescriptionTooLong).ErrorMessage);
+    }
+
+    // FIX2 item 6 — PUT api/roles/{id} had no validator at all.
+    [Theory]
+    [InlineData("", null, RoleErrorCodes.DisplayNameRequired)]
+    [InlineData("   ", null, RoleErrorCodes.DisplayNameRequired)]
+    public void The_update_validator_refuses_a_blank_display_name(string displayName, string? description, string code)
+    {
+        var result = new UpdateRoleCommandValidator().Validate(new UpdateRoleCommand(Guid.NewGuid(), displayName, description));
+
+        Assert.Contains(result.Errors, e => e.ErrorCode == code);
+    }
+
+    [Fact]
+    public void The_update_validator_enforces_the_same_limits_as_create()
+    {
+        var validator = new UpdateRoleCommandValidator();
+        var atLimit = new UpdateRoleCommand(Guid.NewGuid(), new string('d', RoleFieldLimits.DisplayNameMaxLength), new string('x', RoleFieldLimits.DescriptionMaxLength));
+        var over = new UpdateRoleCommand(Guid.NewGuid(), new string('d', RoleFieldLimits.DisplayNameMaxLength + 1), new string('x', RoleFieldLimits.DescriptionMaxLength + 1));
+
+        Assert.True(validator.Validate(atLimit).IsValid);
+        Assert.True(validator.Validate(new UpdateRoleCommand(Guid.NewGuid(), "QA", null)).IsValid); // a description is optional
+        Assert.Equal(
+            new[] { RoleErrorCodes.DescriptionTooLong, RoleErrorCodes.DisplayNameTooLong },
+            validator.Validate(over).Errors.Select(e => e.ErrorCode).OrderBy(c => c));
+    }
+
+    // The validators run in the MediatR pipeline only if they are registered: both are found by the assembly scan.
+    [Fact]
+    public void Both_role_validators_are_in_the_assembly_the_pipeline_scans()
+    {
+        var found = typeof(CreateRoleCommandValidator).Assembly.GetTypes()
+            .Where(t => !t.IsAbstract && t.BaseType is { IsGenericType: true } b && b.GetGenericTypeDefinition() == typeof(FluentValidation.AbstractValidator<>))
+            .Select(t => t.BaseType!.GetGenericArguments()[0])
+            .ToHashSet();
+
+        Assert.Contains(typeof(CreateRoleCommand), found);
+        Assert.Contains(typeof(UpdateRoleCommand), found);
+    }
+
+    [Fact]
+    public void A_description_over_the_limit_is_tagged_ROLE_DESCRIPTION_TOO_LONG_on_create()
+    {
+        var result = new CreateRoleCommandValidator().Validate(new CreateRoleCommand("reviewers", "Reviewers", new string('x', RoleFieldLimits.DescriptionMaxLength + 1)));
+
+        Assert.Contains(result.Errors, e => e.ErrorCode == RoleErrorCodes.DescriptionTooLong);
     }
 
     [Theory]

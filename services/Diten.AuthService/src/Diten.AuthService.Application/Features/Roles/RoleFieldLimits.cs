@@ -10,4 +10,7 @@ public static class RoleFieldLimits
 {
     public const int NameMaxLength = 50;
     public const int DisplayNameMaxLength = 100;
+
+    /// <summary>A role's description. Dev's longest today is 83 characters (measured 2026-10-02); nothing limited it before.</summary>
+    public const int DescriptionMaxLength = 500;
 }

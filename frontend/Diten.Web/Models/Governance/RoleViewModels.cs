@@ -11,11 +11,13 @@ public sealed class RoleEditViewModel
     // and holds both equal. The form's `maxlength` reads these two constants — there is no third copy.
     public const int NameMaxLength = 50;
     public const int DisplayNameMaxLength = 100;
+    public const int DescriptionMaxLength = 500;
 
     public const string NameRequiredCode = "ROLE_NAME_REQUIRED";
     public const string NameTooLongCode = "ROLE_NAME_TOO_LONG";
     public const string DisplayNameRequiredCode = "ROLE_DISPLAY_NAME_REQUIRED";
     public const string DisplayNameTooLongCode = "ROLE_DISPLAY_NAME_TOO_LONG";
+    public const string DescriptionTooLongCode = "ROLE_DESCRIPTION_TOO_LONG";
 
     public Guid? Id { get; set; }
 
@@ -42,6 +44,8 @@ public sealed class RoleEditViewModel
 
         if (displayName.Length == 0) codes.Add(DisplayNameRequiredCode);
         else if (displayName.Length > DisplayNameMaxLength) codes.Add(DisplayNameTooLongCode);
+
+        if ((Description?.Length ?? 0) > DescriptionMaxLength) codes.Add(DescriptionTooLongCode);
 
         return codes;
     }

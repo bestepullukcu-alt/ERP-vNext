@@ -109,22 +109,27 @@ public sealed class UsersExportPermissionSeedTests : IClassFixture<AccountKindAc
             .CountDocumentsAsync(m => m.TenantId == tenant && m.Key == UsersExportGrantBackfill.ExportKey)); // marked once
     }
 
-    // CT acceptance, WP-ROLES-CLOSE-01 correction round — this used to assert the OPPOSITE ("a tenant one of whose roles
-    // already holds export is not backfilled"). That guess is what lost roles their export after an interrupted first
-    // start, or when Platform's entitlement sync had already handed the key to Admin. Old-or-new is now a persistent
-    // mark (ExportGrantBackfill): an unmarked tenant with roles is old and is processed in full. The intent the old
-    // test protected — a tenant set up AFTER the key existed is left alone — is S-D in ExportGrantBackfillScenarioTests.
+    // What the build that introduced auth.users.export leaves behind for a tenant opened AFTER it last restarted: the
+    // Admin template gave Admin the key, Viewer / a custom reader hold only auth.users.read, and no mark was ever
+    // written. Such a tenant was set up with the key in the catalog — its roles are NEWER than the key — so it is not
+    // backfilled: auth.users.export is enforced on the server (UsersController), and handing it to those roles on an
+    // upgrade would be an authority nobody decided to give. It is marked "born" instead.
+    // (WP-ROLES-CLOSE-01 FIX2: a correction round had turned this assertion around; the decision is now read off the
+    // stored CreatedAt of the tenant's oldest role against the key's, not guessed from what the roles hold.)
     [Fact]
-    public async Task An_old_tenant_one_of_whose_roles_already_exports_still_has_its_other_readers_backfilled()
+    public async Task A_tenant_already_on_the_export_key_is_not_backfilled()
     {
         var tenant = Guid.NewGuid();
-        var exporters = await NewRoleAsync(tenant, "Exporters", UsersExportGrantBackfill.ReadKey, UsersExportGrantBackfill.ExportKey);
-        var readers = await NewRoleAsync(tenant, "Readers", UsersExportGrantBackfill.ReadKey);
+        var exporters = await NewRoleAsync(tenant, "Exporters", createdBeforeTheKey: false, UsersExportGrantBackfill.ReadKey, UsersExportGrantBackfill.ExportKey);
+        var readers = await NewRoleAsync(tenant, "Readers", createdBeforeTheKey: false, UsersExportGrantBackfill.ReadKey);
 
         await DataSeeder.SeedAsync(_host.Database);
 
         Assert.True(await HoldsExportAsync(exporters));
-        Assert.True(await HoldsExportAsync(readers));
+        Assert.False(await HoldsExportAsync(readers));
+        var mark = await _host.Database.GetCollection<PermissionReconciliationMark>(PermissionReconciliationMark.CollectionName)
+            .Find(m => m.TenantId == tenant && m.Key == UsersExportGrantBackfill.ExportKey).SingleAsync();
+        Assert.Equal(ExportGrantBackfill.OriginBorn, mark.Origin);
     }
 
     [Fact]
@@ -159,9 +164,17 @@ public sealed class UsersExportPermissionSeedTests : IClassFixture<AccountKindAc
         Assert.False((await Permissions.Find(p => p.Key == UsersExportGrantBackfill.ExportKey).SingleAsync()).IsDeleted);
     }
 
-    private async Task<Guid> NewRoleAsync(Guid tenant, string name, params string[] keys)
+    /// <summary>A role of an OLD tenant: it existed before auth.users.export entered the catalog.</summary>
+    private Task<Guid> NewRoleAsync(Guid tenant, string name, params string[] keys)
+        => NewRoleAsync(tenant, name, createdBeforeTheKey: true, keys);
+
+    private async Task<Guid> NewRoleAsync(Guid tenant, string name, bool createdBeforeTheKey, params string[] keys)
     {
-        var role = new Role(name, name, "export backfill fixture", tenant);
+        var keyCreatedAt = (await Permissions.Find(p => p.Key == UsersExportGrantBackfill.ExportKey).SingleAsync()).CreatedAt;
+        var role = new Role(name, name, "export backfill fixture", tenant)
+        {
+            CreatedAt = createdBeforeTheKey ? keyCreatedAt.AddDays(-30) : keyCreatedAt.AddMinutes(5)
+        };
         await Roles.InsertOneAsync(role);
         foreach (var key in keys)
         {

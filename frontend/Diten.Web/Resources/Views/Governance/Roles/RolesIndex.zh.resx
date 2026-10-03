@@ -55,4 +55,10 @@
   <data name="ErrorRoleDisplayNameTooLong" xml:space="preserve">
     <value>显示名称最多 100 个字符。</value>
   </data>
+  <data name="ErrorRoleDescriptionTooLong" xml:space="preserve">
+    <value>说明最多 500 个字符。</value>
+  </data>
+  <data name="ErrorRoleSystemNotEditable" xml:space="preserve">
+    <value>系统角色无法编辑。</value>
+  </data>
 </root>

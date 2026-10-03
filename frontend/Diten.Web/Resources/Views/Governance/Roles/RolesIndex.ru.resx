@@ -55,4 +55,10 @@
   <data name="ErrorRoleDisplayNameTooLong" xml:space="preserve">
     <value>Отображаемое имя может содержать не более 100 символов.</value>
   </data>
+  <data name="ErrorRoleDescriptionTooLong" xml:space="preserve">
+    <value>Описание может содержать не более 500 символов.</value>
+  </data>
+  <data name="ErrorRoleSystemNotEditable" xml:space="preserve">
+    <value>Системные роли нельзя изменить.</value>
+  </data>
 </root>

@@ -2,6 +2,7 @@ using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Domain.Enums;
 using Diten.AuthService.Persistence.Repositories;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace Diten.AuthService.Persistence.Seed;
@@ -125,20 +126,11 @@ public static class DataSeeder
     /// </summary>
     public const string MockUsersOptInConfigurationKey = "DevSeeds:MockUsers";
 
-    public static async Task SeedAsync(IMongoDatabase database, bool seedMockUsers = false)
+    public static async Task SeedAsync(IMongoDatabase database, bool seedMockUsers = false, ILogger? logger = null)
     {
+        logger ??= SeedConsoleLogger.Instance;
         try 
         {
-            // BL-452 / WP-ROLES-CLOSE-01 — BEFORE this build creates any role: a tenant the seeder is about to give
-            // its FIRST roles is "born" with the export keys and never receives the export backfill (a brand-new
-            // database's default tenant must look like any tenant provisioned later). A tenant that already has roles
-            // is left unmarked: it is an old tenant, and the backfill at the end decides it — on this start or, if a
-            // step in between fails, on the next one.
-            foreach (var seededTenant in new[] { DefaultTenantId, Tenant97c5Id })
-            {
-                await ExportGrantBackfillRunner.MarkBornIfTenantHasNoRolesAsync(database, seededTenant);
-            }
-
             Console.WriteLine("Seeding permissions...");
             await SeedPermissionsAsync(database);
             
@@ -193,16 +185,30 @@ public static class DataSeeder
             Console.WriteLine("Reconciling tenant Admin self-service grants (backfill)...");
             await ReconcileTenantAdminSelfServiceGrantsAsync(database);
 
-            Console.WriteLine("Backfilling export keys for roles of OLD tenants that hold the read key (one-way, once per tenant, audited)...");
-            var backfilled = await ExportGrantBackfillRunner.RunAsync(database);
-            if (backfilled > 0) Console.WriteLine($"Backfilled {backfilled} export grant(s).");
-
             Console.WriteLine("Seeding completed successfully.");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Critical Seeding Error: {ex.Message}");
             if (ex.InnerException != null) Console.WriteLine($"Inner: {ex.InnerException.Message}");
+        }
+
+        // BL-452 / WP-ROLES-CLOSE-01 — the export backfill (an AUTHORITY WRITER) runs in its own step: a seed step that
+        // failed above does not skip it, and a failure in it is logged through ILogger with its TYPE only (never the
+        // message: a serializer's message quotes document contents). Inside, each tenant fails on its own.
+        try
+        {
+            var result = await ExportGrantBackfillRunner.RunAsync(database, logger);
+            if (result.GrantsWritten > 0 || result.SourcesCorrected > 0 || result.FailedTenants.Count > 0 || result.GrantsNotRepeated.Count > 0)
+            {
+                logger.LogInformation(
+                    "Export backfill: {Grants} grant(s) written, {NotRepeated} role(s) whose grant was not repeated, {Corrected} grant source(s) corrected, {Failed} tenant(s) failed and will be retried.",
+                    result.GrantsWritten, result.GrantsNotRepeated.Count, result.SourcesCorrected, result.FailedTenants.Count);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Export backfill could not run: {ExceptionType}. Nothing is marked; it is retried on the next start.", ex.GetType().FullName);
         }
     }
 

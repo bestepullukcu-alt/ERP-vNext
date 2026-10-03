@@ -52,7 +52,7 @@
                     @* --top: a four-row textarea would otherwise wear its glyph beside line three, pointing at nothing. *@
                     <div class="diten-field">
                         <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
-                        <textarea id="roleDescription" name="Description" class="form-control" rows="4" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                        <textarea id="roleDescription" name="Description" class="form-control" rows="4" maxlength="@Diten.Web.Models.Governance.RoleEditViewModel.DescriptionMaxLength" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
                     </div>
                 </div>
             </div>

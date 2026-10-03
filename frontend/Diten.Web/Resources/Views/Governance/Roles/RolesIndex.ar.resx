@@ -55,4 +55,10 @@
   <data name="ErrorRoleDisplayNameTooLong" xml:space="preserve">
     <value>لا يمكن أن يتجاوز الاسم المعروض 100 حرف.</value>
   </data>
+  <data name="ErrorRoleDescriptionTooLong" xml:space="preserve">
+    <value>لا يمكن أن يتجاوز الوصف 500 حرف.</value>
+  </data>
+  <data name="ErrorRoleSystemNotEditable" xml:space="preserve">
+    <value>لا يمكن تعديل أدوار النظام.</value>
+  </data>
 </root>

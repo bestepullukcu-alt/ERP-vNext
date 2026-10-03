@@ -15,18 +15,118 @@ public sealed class UsersExportGrantBackfillTests
     private static readonly Guid Create = Guid.NewGuid();
     private static readonly IReadOnlySet<Guid> NoMarks = new HashSet<Guid>();
 
+    /// <summary>When the export key entered the catalog.</summary>
+    private static readonly DateTimeOffset KeyCreated = new(2026, 9, 24, 10, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset Before = KeyCreated.AddDays(-30);
+    private static readonly DateTimeOffset After = KeyCreated.AddDays(3);
+
     // What the default template does for the export keys: Admin gets them, nobody else.
     private static bool TemplateGrants(RoleState role) => role.Name is "Admin" or "SuperAdmin";
+
+    private static RoleState Old(string name, Guid tenant, bool system = false) => new(Guid.NewGuid(), name, tenant, system, Before);
+
+    private static IReadOnlyList<ExportGrantBackfill.TenantPlan> Plan(IEnumerable<RoleState> roles, ISet<(Guid, Guid)> grants, IReadOnlySet<Guid>? marked = null)
+        => ExportGrantBackfill.Plan(roles, grants, Read, Export, KeyCreated, marked ?? NoMarks, TemplateGrants);
+
+    // ── old or born: the stored fact ─────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void A_tenant_whose_oldest_role_is_older_than_the_key_is_old()
+        => Assert.Equal(ExportGrantBackfill.OriginBackfilled, ExportGrantBackfill.Classify(Before, KeyCreated));
+
+    [Fact]
+    public void A_tenant_whose_oldest_role_is_newer_than_the_key_is_born()
+        => Assert.Equal(ExportGrantBackfill.OriginBorn, ExportGrantBackfill.Classify(After, KeyCreated));
+
+    // Every doubt resolves to NOT granting.
+    [Fact]
+    public void The_same_instant_is_born()
+        => Assert.Equal(ExportGrantBackfill.OriginBorn, ExportGrantBackfill.Classify(KeyCreated, KeyCreated));
+
+    [Fact]
+    public void One_tick_before_the_key_is_old_and_the_comparison_is_in_UTC_whatever_the_offset()
+    {
+        Assert.Equal(ExportGrantBackfill.OriginBackfilled, ExportGrantBackfill.Classify(KeyCreated.AddTicks(-1), KeyCreated));
+        // The same instant written with another offset is still the same instant → born.
+        Assert.Equal(ExportGrantBackfill.OriginBorn, ExportGrantBackfill.Classify(KeyCreated.ToOffset(TimeSpan.FromHours(3)), KeyCreated));
+    }
+
+    [Fact]
+    public void A_missing_timestamp_on_either_side_is_born()
+    {
+        Assert.Equal(ExportGrantBackfill.OriginBorn, ExportGrantBackfill.Classify(default, KeyCreated));
+        Assert.Equal(ExportGrantBackfill.OriginBorn, ExportGrantBackfill.Classify(Before, default));
+        Assert.Equal(ExportGrantBackfill.OriginBorn, ExportGrantBackfill.Classify(DateTimeOffset.MinValue, KeyCreated));
+    }
+
+    [Fact]
+    public void A_role_without_a_date_says_nothing_the_dated_roles_decide_and_with_none_the_tenant_is_born()
+    {
+        var mixed = Guid.NewGuid();
+        var oldRole = new RoleState(Guid.NewGuid(), "Readers", mixed, false, Before);
+        var undated = new RoleState(Guid.NewGuid(), "Undated", mixed, false);
+        var onlyUndated = new RoleState(Guid.NewGuid(), "Undated", Guid.NewGuid(), false);
+        var grants = new HashSet<(Guid, Guid)> { (oldRole.RoleId, Read), (undated.RoleId, Read), (onlyUndated.RoleId, Read) };
+
+        var plans = Plan([oldRole, undated, onlyUndated], grants).ToDictionary(p => p.TenantId);
+
+        Assert.Equal(ExportGrantBackfill.OriginBackfilled, plans[mixed].Origin);            // the dated role proves the tenant is old
+        Assert.Equal(ExportGrantBackfill.OriginBorn, plans[onlyUndated.TenantId].Origin);   // nothing dates this one → no grant
+        Assert.Empty(plans[onlyUndated.TenantId].Grants);
+    }
+
+    [Fact]
+    public void A_born_tenant_is_planned_with_no_grant_so_that_it_gets_its_born_mark()
+    {
+        var tenant = Guid.NewGuid();
+        var admin = new RoleState(Guid.NewGuid(), "Admin", tenant, true, After);
+        var viewer = new RoleState(Guid.NewGuid(), "Viewer", tenant, true, After);
+        var grants = new HashSet<(Guid, Guid)> { (admin.RoleId, Read), (admin.RoleId, Export), (viewer.RoleId, Read) };
+
+        var plan = Assert.Single(Plan([admin, viewer], grants));
+
+        Assert.Equal(ExportGrantBackfill.OriginBorn, plan.Origin);
+        Assert.Empty(plan.Grants);
+    }
+
+    // The tenant's age is its OLDEST role document — also one that has since been deleted.
+    [Fact]
+    public void A_deleted_role_dates_the_tenant_but_receives_nothing()
+    {
+        var tenant = Guid.NewGuid();
+        var deletedOld = new RoleState(Guid.NewGuid(), "Gone", tenant, false, Before, IsDeleted: true);
+        var liveNew = new RoleState(Guid.NewGuid(), "Readers", tenant, false, After);
+        var grants = new HashSet<(Guid, Guid)> { (deletedOld.RoleId, Read), (liveNew.RoleId, Read) };
+
+        var plan = Assert.Single(Plan([deletedOld, liveNew], grants));
+
+        Assert.Equal(ExportGrantBackfill.OriginBackfilled, plan.Origin); // the tenant was there before the key
+        Assert.Equal(liveNew.RoleId, Assert.Single(plan.Grants).RoleId);  // only the live reader is granted
+    }
+
+    [Fact]
+    public void A_tenant_with_only_deleted_roles_is_still_planned_and_so_marked()
+    {
+        var tenant = Guid.NewGuid();
+        var deleted = new RoleState(Guid.NewGuid(), "Gone", tenant, false, Before, IsDeleted: true);
+
+        var plan = Assert.Single(Plan([deleted], new HashSet<(Guid, Guid)> { (deleted.RoleId, Read) }));
+
+        Assert.Equal(tenant, plan.TenantId);
+        Assert.Empty(plan.Grants);
+    }
+
+    // ── what an old tenant receives ──────────────────────────────────────────────────────────────────────
 
     [Fact]
     public void A_reading_role_gets_export_and_nothing_else_does()
     {
         var tenant = Guid.NewGuid();
-        var reader = new RoleState(Guid.NewGuid(), "Readers", tenant, IsSystem: false);
-        var writer = new RoleState(Guid.NewGuid(), "Writers", tenant, IsSystem: false);
+        var reader = Old("Readers", tenant);
+        var writer = Old("Writers", tenant);
         var grants = new HashSet<(Guid, Guid)> { (reader.RoleId, Read), (writer.RoleId, Create) };
 
-        var plan = Assert.Single(ExportGrantBackfill.Plan([reader, writer], grants, Read, Export, NoMarks, TemplateGrants));
+        var plan = Assert.Single(Plan([reader, writer], grants));
 
         Assert.Equal(tenant, plan.TenantId);
         var grant = Assert.Single(plan.Grants);
@@ -37,43 +137,38 @@ public sealed class UsersExportGrantBackfillTests
     public void Feeding_the_plan_back_plans_no_grant_but_the_tenant_is_still_to_be_marked()
     {
         var tenant = Guid.NewGuid();
-        var reader = new RoleState(Guid.NewGuid(), "Readers", tenant, IsSystem: false);
+        var reader = Old("Readers", tenant);
         var grants = new HashSet<(Guid, Guid)> { (reader.RoleId, Read) };
 
-        foreach (var g in ExportGrantBackfill.Plan([reader], grants, Read, Export, NoMarks, TemplateGrants).SelectMany(p => p.Grants))
-        {
-            grants.Add((g.RoleId, g.PermissionId));
-        }
+        foreach (var g in Plan([reader], grants).SelectMany(p => p.Grants)) grants.Add((g.RoleId, g.PermissionId));
 
-        var again = Assert.Single(ExportGrantBackfill.Plan([reader], grants, Read, Export, NoMarks, TemplateGrants));
-        Assert.Empty(again.Grants);
+        Assert.Empty(Assert.Single(Plan([reader], grants)).Grants);
     }
 
     [Fact]
     public void A_marked_tenant_is_not_looked_at_whatever_its_roles_hold()
     {
         var tenant = Guid.NewGuid();
-        var reader = new RoleState(Guid.NewGuid(), "Readers", tenant, IsSystem: false); // export was taken from it on purpose
-        var grants = new HashSet<(Guid, Guid)> { (reader.RoleId, Read) };
+        var reader = Old("Readers", tenant); // export was taken from it on purpose
 
-        Assert.Empty(ExportGrantBackfill.Plan([reader], grants, Read, Export, new HashSet<Guid> { tenant }, TemplateGrants));
+        Assert.Empty(Plan([reader], new HashSet<(Guid, Guid)> { (reader.RoleId, Read) }, new HashSet<Guid> { tenant }));
     }
 
     // The heuristic this replaced ("a role of the tenant already holds export, so the tenant is done") skipped exactly
-    // these tenants: an Admin that got the key from the template or an entitlement sync before the first run.
+    // these OLD tenants: an Admin that got the key from the template or an entitlement sync before the first run.
     [Fact]
-    public void A_role_that_already_holds_export_does_not_make_the_tenant_done()
+    public void In_an_old_tenant_a_role_that_already_holds_export_does_not_make_the_tenant_done()
     {
         var tenant = Guid.NewGuid();
-        var admin = new RoleState(Guid.NewGuid(), "Admin", tenant, IsSystem: true);
-        var viewer = new RoleState(Guid.NewGuid(), "Viewer", tenant, IsSystem: true);
-        var readers = new RoleState(Guid.NewGuid(), "Readers", tenant, IsSystem: false);
+        var admin = Old("Admin", tenant, system: true);
+        var viewer = Old("Viewer", tenant, system: true);
+        var readers = Old("Readers", tenant);
         var grants = new HashSet<(Guid, Guid)>
         {
             (admin.RoleId, Read), (admin.RoleId, Export), (viewer.RoleId, Read), (readers.RoleId, Read)
         };
 
-        var plan = Assert.Single(ExportGrantBackfill.Plan([admin, viewer, readers], grants, Read, Export, NoMarks, TemplateGrants));
+        var plan = Assert.Single(Plan([admin, viewer, readers], grants));
 
         Assert.Equal(new[] { viewer.RoleId, readers.RoleId }.OrderBy(x => x), plan.Grants.Select(g => g.RoleId).OrderBy(x => x));
     }
@@ -81,36 +176,55 @@ public sealed class UsersExportGrantBackfillTests
     [Fact]
     public void A_role_without_a_tenant_is_never_planned_and_its_empty_tenant_is_never_marked()
     {
-        var orphan = new RoleState(Guid.NewGuid(), "Orphans", Guid.Empty, IsSystem: false);
-        var grants = new HashSet<(Guid, Guid)> { (orphan.RoleId, Read) };
+        var orphan = Old("Orphans", Guid.Empty);
 
-        Assert.Empty(ExportGrantBackfill.Plan([orphan], grants, Read, Export, NoMarks, TemplateGrants));
+        Assert.Empty(Plan([orphan], new HashSet<(Guid, Guid)> { (orphan.RoleId, Read) }));
     }
 
     [Fact]
-    public void A_tenant_with_no_reading_role_is_still_planned_so_that_it_gets_marked()
+    public void An_old_tenant_with_no_reading_role_is_still_planned_so_that_it_gets_marked()
     {
-        var writer = new RoleState(Guid.NewGuid(), "Writers", Guid.NewGuid(), IsSystem: false);
+        var writer = Old("Writers", Guid.NewGuid());
 
-        var plan = Assert.Single(ExportGrantBackfill.Plan([writer], new HashSet<(Guid, Guid)> { (writer.RoleId, Create) }, Read, Export, NoMarks, TemplateGrants));
+        var plan = Assert.Single(Plan([writer], new HashSet<(Guid, Guid)> { (writer.RoleId, Create) }));
 
+        Assert.Equal(ExportGrantBackfill.OriginBackfilled, plan.Origin);
         Assert.Empty(plan.Grants);
     }
+
+    // ── the source of a backfilled grant ─────────────────────────────────────────────────────────────────
 
     [Fact]
     public void The_grant_is_template_managed_only_for_a_system_role_the_template_gives_export_to()
     {
         var tenant = Guid.NewGuid();
-        var admin = new RoleState(Guid.NewGuid(), "Admin", tenant, IsSystem: true);
-        var viewer = new RoleState(Guid.NewGuid(), "Viewer", tenant, IsSystem: true);
-        var custom = new RoleState(Guid.NewGuid(), "Readers", tenant, IsSystem: false);
-        var customNamedAdmin = new RoleState(Guid.NewGuid(), "Admin", Guid.NewGuid(), IsSystem: false);
+        var admin = Old("Admin", tenant, system: true);
+        var viewer = Old("Viewer", tenant, system: true);
+        var custom = Old("Readers", tenant);
+        var customNamedAdmin = Old("Admin", Guid.NewGuid());
 
         Assert.Equal(GrantSource.System, ExportGrantBackfill.SourceFor(admin, TemplateGrants));
         Assert.Equal(GrantSource.Manual, ExportGrantBackfill.SourceFor(viewer, TemplateGrants));          // nothing re-provisions it
         Assert.Equal(GrantSource.Manual, ExportGrantBackfill.SourceFor(custom, TemplateGrants));          // the administrator's to take away
         Assert.Equal(GrantSource.Manual, ExportGrantBackfill.SourceFor(customNamedAdmin, TemplateGrants));
     }
+
+    [Fact]
+    public void Only_a_System_grant_on_a_role_the_template_does_not_serve_needs_its_source_corrected()
+    {
+        var tenant = Guid.NewGuid();
+        var admin = Old("Admin", tenant, system: true);
+        var viewer = Old("Viewer", tenant, system: true);
+        var custom = Old("Readers", tenant);
+
+        Assert.True(ExportGrantBackfill.NeedsSourceCorrection(viewer, GrantSource.System, TemplateGrants));
+        Assert.True(ExportGrantBackfill.NeedsSourceCorrection(custom, GrantSource.System, TemplateGrants));
+        Assert.False(ExportGrantBackfill.NeedsSourceCorrection(admin, GrantSource.System, TemplateGrants));  // the template's own
+        Assert.False(ExportGrantBackfill.NeedsSourceCorrection(custom, GrantSource.Manual, TemplateGrants)); // already right
+        Assert.False(ExportGrantBackfill.NeedsSourceCorrection(custom, GrantSource.Module, TemplateGrants)); // an entitlement's, not ours
+    }
+
+    // ── identities ───────────────────────────────────────────────────────────────────────────────────────
 
     [Fact]
     public void Mark_and_audit_ids_are_the_same_for_every_writer_and_differ_per_tenant_role_and_key()
@@ -124,6 +238,7 @@ public sealed class UsersExportGrantBackfillTests
         Assert.Equal(ExportGrantBackfill.AuditId(tenant, role, "auth.roles.export"), ExportGrantBackfill.AuditId(tenant, role, "auth.roles.export"));
         Assert.NotEqual(ExportGrantBackfill.AuditId(tenant, role, "auth.roles.export"), ExportGrantBackfill.AuditId(tenant, Guid.NewGuid(), "auth.roles.export"));
         Assert.NotEqual(ExportGrantBackfill.AuditId(tenant, role, "auth.roles.export"), ExportGrantBackfill.AuditId(tenant, role, "auth.users.export"));
+        Assert.NotEqual(ExportGrantBackfill.AuditId(tenant, role, "auth.roles.export"), ExportGrantBackfill.CorrectionAuditId(tenant, role, "auth.roles.export"));
     }
 
     [Fact]
@@ -133,5 +248,6 @@ public sealed class UsersExportGrantBackfillTests
             [(UsersExportGrantBackfill.ReadKey, UsersExportGrantBackfill.ExportKey), (RolesExportGrantBackfill.ReadKey, RolesExportGrantBackfill.ExportKey)],
             ExportGrantBackfill.Keys.Select(k => (k.ReadKey, k.ExportKey)));
         Assert.Equal(RolesExportGrantBackfill.AuditSource, ExportGrantBackfill.Roles.AuditSource);
+        Assert.NotEqual(ExportGrantBackfill.Users.AuditSource, ExportGrantBackfill.Users.CorrectionAuditSource);
     }
 }
