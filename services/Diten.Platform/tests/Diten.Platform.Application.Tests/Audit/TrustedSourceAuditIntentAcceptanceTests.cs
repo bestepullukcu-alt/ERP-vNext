@@ -11,7 +11,7 @@ public sealed class TrustedSourceAuditIntentAcceptanceTests
     public async Task Accept_ValidEnvelope_UsesCanonicalKeyFingerprintAndMappedOperation()
     {
         var outbox = new CapturingOutbox();
-        var service = new TrustedSourceAuditIntentAcceptanceService(outbox, new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now));
+        var service = new TrustedSourceAuditIntentAcceptanceService(outbox, new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now), new Diten.Platform.Application.Tests.Tasks.FakeUserDisplayNameResolver(), new Diten.Platform.Common.Tenancy.TenantContext(), Microsoft.Extensions.Logging.Abstractions.NullLogger<TrustedSourceAuditIntentAcceptanceService>.Instance);
         var envelope = TrustedSourceAuditIntentTestData.Envelope();
 
         var result = await service.AcceptAsync(envelope);
@@ -34,7 +34,7 @@ public sealed class TrustedSourceAuditIntentAcceptanceTests
         string? operation = null)
     {
         var outbox = new CapturingOutbox();
-        var service = new TrustedSourceAuditIntentAcceptanceService(outbox, new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now));
+        var service = new TrustedSourceAuditIntentAcceptanceService(outbox, new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now), new Diten.Platform.Application.Tests.Tasks.FakeUserDisplayNameResolver(), new Diten.Platform.Common.Tenancy.TenantContext(), Microsoft.Extensions.Logging.Abstractions.NullLogger<TrustedSourceAuditIntentAcceptanceService>.Instance);
         var envelope = TrustedSourceAuditIntentTestData.Envelope() with
         {
             SourceService = source,
@@ -68,7 +68,7 @@ public sealed class TrustedSourceAuditIntentAcceptanceTests
     public async Task Accept_InvalidEnvelope_DoesNotReachOutbox(TrustedSourceAuditIntentEnvelope envelope)
     {
         var outbox = new CapturingOutbox();
-        var service = new TrustedSourceAuditIntentAcceptanceService(outbox, new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now));
+        var service = new TrustedSourceAuditIntentAcceptanceService(outbox, new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now), new Diten.Platform.Application.Tests.Tasks.FakeUserDisplayNameResolver(), new Diten.Platform.Common.Tenancy.TenantContext(), Microsoft.Extensions.Logging.Abstractions.NullLogger<TrustedSourceAuditIntentAcceptanceService>.Instance);
 
         var result = await service.AcceptAsync(envelope);
 
@@ -90,6 +90,7 @@ public sealed class TrustedSourceAuditIntentAcceptanceTests
             string sourceIntentFingerprint,
             string mappedEntityType,
             AuditOperation mappedOperation,
+            TrustedSourceAuditActor actor,
             CancellationToken ct = default)
         {
             Calls++;

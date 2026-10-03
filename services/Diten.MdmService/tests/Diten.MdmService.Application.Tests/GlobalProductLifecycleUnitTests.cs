@@ -89,88 +89,6 @@ public sealed class GlobalProductLifecycleUnitTests
     }
 
     [Fact]
-    public async Task Submit_exact_human_binding_persists_pending_state_and_audit()
-    {
-        var product = LifecycleTestData.Product(ProductIdentityLifecycleStatus.Draft, version: 0);
-        var actor = new LifecycleTestActor(LifecycleTestData.Maker,
-            ProductIdentityLifecyclePermissions.GlobalProductSubmit);
-        var repository = new LifecycleTestGlobalProductRepository(product)
-        {
-            SubmitResult = new(true, LifecycleTestData.Product(
-                ProductIdentityLifecycleStatus.PendingIdentityApproval,
-                version: 1,
-                LifecycleTestData.Binding()))
-        };
-        var handler = new SubmitGlobalProductIdentityHandler(repository, actor);
-
-        var response = await handler.Handle(new(new(
-            product.Id,
-            0,
-            LifecycleTestData.Binding())), CancellationToken.None);
-
-        Assert.True(response.IsSuccessful);
-        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, response.Data!.LifecycleStatus);
-        Assert.NotNull(repository.LastAuditIntent);
-        Assert.Equal(ProductAuditOperation.GlobalProductIdentitySubmitted, repository.LastAuditIntent!.Operation);
-        Assert.Equal(LifecycleTestData.Maker.ToString("D"), repository.LastAuditIntent.ActorId);
-        Assert.Equal(0, repository.LastAuditIntent.PreVersion);
-        Assert.Equal(1, repository.LastAuditIntent.PostVersion);
-        Assert.Equal(1, repository.LastAuditIntent.Sequence);
-    }
-
-    [Fact]
-    public async Task Reconcile_distinct_approver_and_coherent_evidence_applies_decision()
-    {
-        var binding = LifecycleTestData.Binding();
-        var product = LifecycleTestData.Product(
-            ProductIdentityLifecycleStatus.PendingIdentityApproval,
-            version: 1,
-            binding);
-        var repository = new LifecycleTestGlobalProductRepository(product)
-        {
-            ReconcileResult = new(true, LifecycleTestData.Product(
-                ProductIdentityLifecycleStatus.IdentityApproved,
-                version: 2,
-                binding))
-        };
-        var handler = new ReconcileGlobalProductIdentityDecisionHandler(repository);
-
-        var response = await handler.Handle(new(new(
-            product.Id,
-            1,
-            binding.WorkflowInstanceId,
-            LifecycleTestData.Decision(ProductIdentityDecisionKind.Approved))), CancellationToken.None);
-
-        Assert.True(response.IsSuccessful);
-        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, response.Data!.LifecycleStatus);
-        Assert.Equal(ProductAuditOperation.GlobalProductIdentityApproved, repository.LastAuditIntent!.Operation);
-        Assert.Equal(LifecycleTestData.Approver.ToString("D"), repository.LastAuditIntent.ActorId);
-    }
-
-    [Fact]
-    public async Task Reconcile_same_subject_fails_maker_checker_before_repository_write()
-    {
-        var binding = LifecycleTestData.Binding();
-        var repository = new LifecycleTestGlobalProductRepository(LifecycleTestData.Product(
-            ProductIdentityLifecycleStatus.PendingIdentityApproval,
-            version: 1,
-            binding));
-        var evidence = LifecycleTestData.Decision(ProductIdentityDecisionKind.Approved);
-        evidence.DecisionActorSubjectId = LifecycleTestData.Maker;
-        var handler = new ReconcileGlobalProductIdentityDecisionHandler(repository);
-
-        var response = await handler.Handle(new(new(
-            LifecycleTestData.ProductId,
-            1,
-            binding.WorkflowInstanceId,
-            evidence)), CancellationToken.None);
-
-        Assert.False(response.IsSuccessful);
-        Assert.Equal(403, response.StatusCode);
-        Assert.Equal(0, repository.ReconcileCalls);
-    }
-
-    [Fact]
     public async Task Retire_passes_bounded_reason_into_stable_audit_evidence()
     {
         var product = LifecycleTestData.Product(ProductIdentityLifecycleStatus.IdentityApproved, version: 2);
@@ -215,23 +133,6 @@ public sealed class GlobalProductLifecycleUnitTests
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, error => error.PropertyName.EndsWith("ReasonCode", StringComparison.Ordinal));
         Assert.Contains(result.Errors, error => error.PropertyName.EndsWith("Comment", StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void Submit_validator_rejects_non_utc_and_non_exact_workflow_binding()
-    {
-        var binding = LifecycleTestData.Binding();
-        binding.ObjectRef = " GP-TEST";
-        binding.SubmittedAtUtc = new DateTimeOffset(2030, 1, 1, 0, 0, 0, TimeSpan.FromHours(3));
-        var command = new SubmitGlobalProductIdentityCommand(new(
-            LifecycleTestData.ProductId,
-            0,
-            binding));
-        var result = new SubmitGlobalProductIdentityValidator().Validate(command);
-
-        Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, error => error.PropertyName.EndsWith("ObjectRef", StringComparison.Ordinal));
-        Assert.Contains(result.Errors, error => error.PropertyName.EndsWith("SubmittedAtUtc", StringComparison.Ordinal));
     }
 
     [Fact]

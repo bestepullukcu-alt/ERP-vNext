@@ -23,7 +23,7 @@ public sealed class TrustedSourceAuditIntentTwoServiceContractTests
         var wire = Encoding.UTF8.GetBytes(TrustedSourceAuditIntentTestData.Json(sourceEnvelope));
         Assert.True(parser.TryParse(wire, out var request));
         var outbox = new ReplayOutbox();
-        var provider = new TrustedSourceAuditIntentAcceptanceService(outbox, new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now));
+        var provider = new TrustedSourceAuditIntentAcceptanceService(outbox, new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now), new Diten.Platform.Application.Tests.Tasks.FakeUserDisplayNameResolver(), new Diten.Platform.Common.Tenancy.TenantContext(), Microsoft.Extensions.Logging.Abstractions.NullLogger<TrustedSourceAuditIntentAcceptanceService>.Instance);
 
         var first = await provider.AcceptAsync(request!.ToEnvelope());
         var replay = await provider.AcceptAsync(request.ToEnvelope());
@@ -40,7 +40,7 @@ public sealed class TrustedSourceAuditIntentTwoServiceContractTests
     public async Task SourceAcknowledgementLoss_ReplaysSameReceipt_AndDriftConflicts()
     {
         var outbox = new ReplayOutbox();
-        var provider = new TrustedSourceAuditIntentAcceptanceService(outbox, new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now));
+        var provider = new TrustedSourceAuditIntentAcceptanceService(outbox, new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now), new Diten.Platform.Application.Tests.Tasks.FakeUserDisplayNameResolver(), new Diten.Platform.Common.Tenancy.TenantContext(), Microsoft.Extensions.Logging.Abstractions.NullLogger<TrustedSourceAuditIntentAcceptanceService>.Instance);
         var source = TrustedSourceAuditIntentTestData.Envelope(intentId: Guid.NewGuid());
 
         _ = await provider.AcceptAsync(source); // Provider accepted; source did not persist local acknowledgement.
@@ -67,6 +67,7 @@ public sealed class TrustedSourceAuditIntentTwoServiceContractTests
             string sourceIntentFingerprint,
             string mappedEntityType,
             AuditOperation mappedOperation,
+            TrustedSourceAuditActor actor,
             CancellationToken ct = default)
         {
             Operation = mappedOperation;

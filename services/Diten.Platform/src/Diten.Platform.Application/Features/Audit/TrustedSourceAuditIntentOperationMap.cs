@@ -81,6 +81,11 @@ public static class TrustedSourceAuditIntentOperationMap
             [("ProductLegalEntityScopeRolloutState", "ProductLegalEntityScopeEnforcementSuspended")] = ("ProductLegalEntityScopeRolloutState", AuditOperation.Suspend)
         };
 
+    /// <summary>Every source operation name this map accepts, whatever its aggregate — what the cross-service guard
+    /// (<c>TrustedSourceAuditOperationCoverageTests</c>) holds MDM's own operation list against.</summary>
+    public static IReadOnlySet<string> MappedOperationNames { get; } =
+        Mappings.Keys.Select(key => key.Operation).ToHashSet(StringComparer.Ordinal);
+
     public static bool TryMap(
         string aggregateType,
         string operation,

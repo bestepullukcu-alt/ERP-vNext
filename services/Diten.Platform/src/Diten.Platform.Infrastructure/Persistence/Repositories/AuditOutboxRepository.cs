@@ -90,9 +90,11 @@ internal sealed class AuditOutboxRepository : IAuditOutboxWriter, ITransactional
         string sourceIntentFingerprint,
         string mappedEntityType,
         AuditOperation mappedOperation,
+        TrustedSourceAuditActor actor,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(envelope);
+        ArgumentNullException.ThrowIfNull(actor);
 
         if (string.IsNullOrWhiteSpace(centralIdempotencyKey)
             || string.IsNullOrWhiteSpace(sourceIntentFingerprint)
@@ -106,7 +108,8 @@ internal sealed class AuditOutboxRepository : IAuditOutboxWriter, ITransactional
             centralIdempotencyKey,
             sourceIntentFingerprint,
             mappedEntityType,
-            mappedOperation);
+            mappedOperation,
+            actor);
 
         try
         {
@@ -454,7 +457,8 @@ internal sealed class AuditOutboxRepository : IAuditOutboxWriter, ITransactional
         string centralIdempotencyKey,
         string sourceIntentFingerprint,
         string mappedEntityType,
-        AuditOperation mappedOperation)
+        AuditOperation mappedOperation,
+        TrustedSourceAuditActor actor)
     {
         var sourceIntent = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
@@ -499,7 +503,15 @@ internal sealed class AuditOutboxRepository : IAuditOutboxWriter, ITransactional
             ["TenantId"] = envelope.TenantId,
             ["CorrelationId"] = envelope.CorrelationId,
             ["RequestType"] = "TrustedSourceAuditIntent",
-            ["ActorType"] = AuditActorType.Service,
+            /*
+             * WP-GP-AUDIT-TRAIL-01 D1 — the PERSON who acted in the source service, when the source names one. The
+             * service that carried the intent stays in SourceService; the source's own actor id stays in the metadata
+             * (SourceActorId) as it always has. Not part of the fingerprint: a name resolved later must never turn a
+             * replay of the same intent into a conflict.
+             */
+            ["ActorType"] = actor.UserId is null ? AuditActorType.Service : AuditActorType.TenantUser,
+            ["ActorId"] = actor.UserId,
+            ["ActorDisplayNameMasked"] = actor.UserId is null ? null : actor.DisplayNameMasked,
             ["Category"] = AuditCategory.MasterData,
             ["EntityType"] = mappedEntityType,
             ["EntityId"] = envelope.AggregateId,
