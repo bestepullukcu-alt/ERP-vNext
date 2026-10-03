@@ -7870,6 +7870,23 @@ gerçek Mongo testi. Gelecek regresyon riski: 🟡 (dizin değişikliği gerekeb
 
 ---
 
+### BL-527
+
+**MDM testleri dev Mongo'nun koştuğu sunucuda sabit adlı bir test veritabanını paylaşıyor: bir dalın koşusu başka dalların testlerini kırıyor**
+
+DURUM: AÇIK · SAHİP: CT (test altyapısı) · BULAN: WP-MDM-GSKU-ACCEPT-01 FIX1 ölçümü (2026-10-03) · KAYIT: 2026-10-03
+
+Birçok MDM test sınıfı depoları `localhost:27017` üzerindeki sabit adlı `diten_mdm_product_scope_itest` veritabanıyla kuruyor; depo kurucuları
+dizinleri `CreateMany` ile oraya yazıyor. Sonuç: GSKU turunun eklediği yeni dizin (`ix_mdm_first_gsku_identity_workflow_gsku_unfinished`) o ortak
+veritabanında kaldı ve eski koddaki dallarda "tam dört dizin" testi (`FirstGskuIdentityWorkflowOperationMongoTests…`) kırmızıya döndü (onay motoru
+ve denetim izi sohbetleri aynı tabanda kırmızı, MDM sohbeti yeşil ölçtü — sıraya bağlı). Aynı sunucuda geliştirme veritabanı (`DitenERP_Dev`) da
+duruyor: test ile dev aynı süreçte. Düzeltme: MDM test düzenekleri geçici bir mongod (Platform'daki `DITEN_TEST_MONGOD` / EphemeralMongo deseni)
+ve koşu başına benzersiz veritabanı kullanır, sonunda siler; Platform'daki `MongoTestDatabaseGuardTests` benzeri bir koruma testi 27017'ye ve sabit
+veritabanı adlarına bağlanan testi kırmızıya çevirir. Ortak test veritabanındaki fazladan dizin elle düşürülmez (testler yeniden kurar).
+Gelecek regresyon riski: 🟢 (yalnız testler).
+
+---
+
 ### BL-524
 
 **Platform modül kaydı ve abonelik: işlem dışında kalan iki yazım**
