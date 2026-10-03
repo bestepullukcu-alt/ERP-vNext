@@ -98,7 +98,8 @@ public sealed class SeedDefaultSubscriptionPlansCommandHandler : IRequestHandler
             var normalized = SubscriptionPlanCodeNormalizer.Normalize(seed.Code);
             seed.Code = normalized;
             await _transaction.ExecuteAsync(
-                new(nameof(SeedDefaultSubscriptionPlansCommand), AuditOperation.Create, "SubscriptionPlan", seed.Id),
+                new(nameof(SeedDefaultSubscriptionPlansCommand), AuditOperation.Create, "SubscriptionPlan", seed.Id,
+                    SystemActor: "subscription-plan-startup-seed"),
                 async (session, transactionCt) =>
                 {
                     var existing = await _repository.GetByCodeAsync(session, normalized, transactionCt);

@@ -282,32 +282,131 @@ public sealed class TenantModulesScreenHttpMongoTests
         Assert.Equal("ENTITLEMENT_MODULE_BASELINE", baseline.Code);
     }
 
+    // ── WP-PLATFORM-AUDIT-INTX-01 (AUD-001 §10-K1): the in-transaction audit record is DELIVERED ───────────────
+    // Real HTTP → real handler → real transaction → audit_outbox → the production AuditOutboxProcessor → audit_events.
+    // Before the fix every such row went to dead letter (the payload had no TenantId / ActorType / Category /
+    // SourceService) and not one reached audit_events.
+
     [Fact]
-    public async Task K1_measure_what_an_entitlement_change_leaves_in_the_audit_outbox_and_whether_it_reaches_audit_events()
+    public async Task K1_suspending_a_module_reaches_audit_events_once_with_the_administrator_and_the_state_before_and_after()
     {
         await using var host = await Host.StartAsync();
         var seeded = await host.SeedAsync(Tenant, "GOLDENSLIM", EntitlementSource.Addon);
         var row = (await host.ListAsync(Tenant)).Single(r => r.PhysicalEntitlementId == seeded.Id);
-        var response = await host.PostAsync(Tenant, "disable", new { moduleCode = "GOLDENSLIM", physicalEntitlementId = seeded.Id, reason = "audit measure", rowVersion = row.RowVersion });
+
+        var response = await host.PostAsync(Tenant, "disable", new { moduleCode = "GOLDENSLIM", physicalEntitlementId = seeded.Id, reason = "audit proof", rowVersion = row.RowVersion });
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        var outbox = host.Database.GetCollection<BsonDocument>("audit_outbox");
-        var before = await outbox.Find(FilterDefinition<BsonDocument>.Empty).ToListAsync();
-        _output.WriteLine("OUTBOX BEFORE WORKER: " + before.ToJson());
+        Assert.Equal(1, await host.ProcessAuditOutboxAsync());
+        var audit = Assert.Single(await host.AuditEventsAsync());
+        Assert.Equal("DisableTenantModuleEntitlementCommand", audit.RequestType);
+        Assert.Equal(AuditActorType.PlatformAdministrator, audit.ActorType);   // who: the kind of person …
+        Assert.Equal(Host.Administrator, audit.ActorId);                         // … and which one
+        Assert.Equal("p***@di10.test", audit.ActorEmailMasked);                 // masked as the central pipeline masks
+        Assert.Equal(Tenant, audit.TenantId);                                    // owned by the tenant the change is about
+        Assert.Equal(Tenant, audit.TargetTenantId);
+        Assert.Equal(AuditCategory.SubscriptionBilling, audit.Category);
+        Assert.Equal("TenantModuleEntitlement", audit.EntityType);
+        Assert.Equal(seeded.Id, audit.EntityId);
+        Assert.Equal(AuditOperation.Deactivate, audit.Operation);
+        Assert.Equal(AuditOutcome.Succeeded, audit.Outcome);
+        Assert.Equal("Diten.Platform", audit.SourceService);
+        Assert.Equal("subscription-billing", audit.SourceModule);
+        Assert.Equal(true, audit.BeforeState!["IsEnabled"]);
+        Assert.Equal(false, audit.AfterState!["IsEnabled"]);
+        Assert.Equal("Addon", audit.AfterState["Source"]);
+        Assert.Equal("GOLDENSLIM", audit.Metadata["ModuleCode"]);
+        Assert.DoesNotContain("audit proof", audit.AfterState.Values.OfType<string>());   // the free-text reason is not in the record
+        Assert.Equal(0, await host.DeadLettersAsync());
 
-        var context = new PlatformDbContext(host.MongoClient, host.Database);
-        var tenantContext = new TenantContext();
-        var processor = new Diten.Platform.Infrastructure.Services.Audit.AuditOutboxProcessor(
-            new AuditOutboxRepository(context),
-            new AuditEventRepository(host.Database, tenantContext),
-            tenantContext,
-            new Diten.Platform.Infrastructure.Services.Audit.AuditOutboxPayloadMapper(),
-            new Diten.Platform.Infrastructure.Services.Audit.AuditOutboxWorkerOptions { BatchSize = 10, MaxAttempts = 5, InitialRetryDelay = TimeSpan.FromSeconds(1), MaxRetryDelay = TimeSpan.FromSeconds(5) },
-            Microsoft.Extensions.Logging.Abstractions.NullLogger<Diten.Platform.Infrastructure.Services.Audit.AuditOutboxProcessor>.Instance);
-        var processed = await processor.ProcessBatchAsync();
-        _output.WriteLine("PROCESSED: " + processed);
-        _output.WriteLine("OUTBOX AFTER WORKER: " + (await outbox.Find(FilterDefinition<BsonDocument>.Empty).ToListAsync()).ToJson());
-        _output.WriteLine("AUDIT EVENTS: " + (await host.Database.GetCollection<BsonDocument>("audit_events").Find(FilterDefinition<BsonDocument>.Empty).ToListAsync()).ToJson());
+        // Processing again finds nothing to do and writes no second row.
+        Assert.Equal(0, await host.ProcessAuditOutboxAsync());
+        Assert.Single(await host.AuditEventsAsync());
+    }
+
+    [Fact]
+    public async Task K1_extending_a_module_records_the_expiry_date_before_and_after()
+    {
+        await using var host = await Host.StartAsync();
+        var seeded = await host.SeedAsync(Tenant, "GOLDENSLIM", EntitlementSource.Addon, expiry: new DateTimeOffset(2026, 12, 31, 0, 0, 0, TimeSpan.Zero));
+        var row = (await host.ListAsync(Tenant)).Single(r => r.PhysicalEntitlementId == seeded.Id);
+
+        var response = await host.PatchAsync(Tenant, $"{seeded.Id:D}/expiry",
+            new { expiryDateUtc = new DateTimeOffset(2027, 6, 30, 0, 0, 0, TimeSpan.Zero), reason = (string?)null, rowVersion = row.RowVersion });
+        Assert.True(response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
+
+        await host.ProcessAuditOutboxAsync();
+        var audit = Assert.Single(await host.AuditEventsAsync());
+        Assert.Equal("UpdateTenantModuleEntitlementExpiryCommand", audit.RequestType);
+        Assert.Equal(AuditOperation.Update, audit.Operation);
+        Assert.Equal("2026-12-31T00:00:00.0000000+00:00", audit.BeforeState!["ExpiryDateUtc"]);
+        Assert.Equal("2027-06-30T00:00:00.0000000+00:00", audit.AfterState!["ExpiryDateUtc"]);
+    }
+
+    [Fact]
+    public async Task K1_every_entitlement_action_of_the_screen_is_delivered_none_dead_letters()
+    {
+        await using var host = await Host.StartAsync();
+
+        var added = await host.PostAsync(Tenant, null, new { moduleCode = "CRM", source = "Addon", isEnabled = true, expiryDateUtc = (DateTimeOffset?)null, reason = (string?)null, rowVersion = (string?)null });
+        Assert.True(added.IsSuccessStatusCode, await added.Content.ReadAsStringAsync());
+        var id = (await host.ListAsync(Tenant)).Single(r => r.ModuleCode == "CRM").PhysicalEntitlementId!.Value;
+        async Task<string> Version() => (await host.ListAsync(Tenant)).Single(r => r.PhysicalEntitlementId == id).RowVersion!;
+
+        var disabled = await host.PostAsync(Tenant, "disable", new { moduleCode = "CRM", physicalEntitlementId = id, reason = "audit proof", rowVersion = await Version() });
+        Assert.True(disabled.IsSuccessStatusCode, await disabled.Content.ReadAsStringAsync());
+        Assert.True((await host.PostAsync(Tenant, $"{id:D}/enable", await Version())).IsSuccessStatusCode);
+        Assert.True((await host.PatchAsync(Tenant, $"{id:D}/expiry", new { expiryDateUtc = DateTimeOffset.UtcNow.AddDays(30), reason = (string?)null, rowVersion = await Version() })).IsSuccessStatusCode);
+
+        Assert.Equal(4, await host.ProcessAuditOutboxAsync());
+        var audits = await host.AuditEventsAsync();
+        Assert.Equal(
+            ["AddTenantModuleEntitlementCommand", "DisableTenantModuleEntitlementCommand", "EnableTenantModuleEntitlementCommand", "UpdateTenantModuleEntitlementExpiryCommand"],
+            audits.Select(a => a.RequestType).OrderBy(x => x, StringComparer.Ordinal).ToArray());
+        Assert.All(audits, audit =>
+        {
+            Assert.Equal(AuditActorType.PlatformAdministrator, audit.ActorType);
+            Assert.Equal(Host.Administrator, audit.ActorId);
+            Assert.Equal(id, audit.EntityId);
+            Assert.NotNull(audit.AfterState);
+        });
+        Assert.Null(audits.Single(a => a.RequestType == "AddTenantModuleEntitlementCommand").BeforeState); // nothing existed before an add
+        Assert.Equal(0, await host.DeadLettersAsync());
+    }
+
+    /// <summary>
+    /// K2 — fail-closed. A signed-in administrator whose token carries no user id cannot be named, so the change is
+    /// refused; and because the record and the business data share one transaction, the entitlement is unchanged.
+    /// </summary>
+    [Fact]
+    public async Task K1_a_change_whose_actor_cannot_be_named_is_refused_and_the_entitlement_is_unchanged()
+    {
+        await using var host = await Host.StartAsync();
+        var seeded = await host.SeedAsync(Tenant, "GOLDENSLIM", EntitlementSource.Addon);
+        var row = (await host.ListAsync(Tenant)).Single(r => r.PhysicalEntitlementId == seeded.Id);
+
+        // Refused BY THE AUDIT DOOR — not by request validation before the handler ran (that would prove nothing here).
+        // The pipeline does not turn this refusal into a response, so the in-memory test server surfaces it as the
+        // exception itself; through the real Api it is the Api's error response. Either way: refused, and why.
+        string outcome;
+        try
+        {
+            var response = await host.PostWithoutSubjectAsync(Tenant, "disable", new { moduleCode = "GOLDENSLIM", physicalEntitlementId = seeded.Id, reason = "audit proof", rowVersion = row.RowVersion });
+            Assert.False(response.IsSuccessStatusCode, "a change with nobody to name was accepted");
+            outcome = await response.Content.ReadAsStringAsync();
+        }
+        catch (Diten.Platform.Application.Features.Audit.TransactionOwnedAuditRefusedException refusal)
+        {
+            outcome = refusal.Message;
+        }
+
+        Assert.Contains("could not name who made it", outcome);
+        var stored = await host.StoredAsync(seeded.Id);
+        Assert.True(stored.IsEnabled);
+        Assert.Equal(seeded.RowVersion, stored.RowVersion);
+        Assert.Equal(0, await host.CountAsync("audit_outbox"));
+        Assert.Equal(0, await host.ProcessAuditOutboxAsync());
+        Assert.Empty(await host.AuditEventsAsync());
     }
 
     private sealed record Row(
@@ -392,7 +491,9 @@ public sealed class TenantModulesScreenHttpMongoTests
                     services.AddScoped<IPlatformTransactionExecutor, PlatformTransactionExecutor>();
                     services.AddScoped<IEntitlementStateVersionRepository, EntitlementStateVersionRepository>();
                     services.AddScoped<AuditOutboxRepository>();
-                    services.AddScoped<ITransactionalAuditOutboxWriter>(sp => sp.GetRequiredService<AuditOutboxRepository>());
+                    // As production wires it (WP-PLATFORM-AUDIT-INTX-01): the repository is only the STORE; the writer the
+                    // handlers get is AddApplication's CanonicalTransactionalAuditOutboxWriter.
+                    services.AddScoped<ITransactionalAuditOutboxStore>(sp => sp.GetRequiredService<AuditOutboxRepository>());
                     services.AddScoped<IAuditOutboxWriter>(sp => sp.GetRequiredService<AuditOutboxRepository>());
 
                     // Not this file's subject.
@@ -451,6 +552,35 @@ public sealed class TenantModulesScreenHttpMongoTests
         public async Task<TenantModuleEntitlement> StoredAsync(Guid id) =>
             await Database.GetCollection<TenantModuleEntitlement>("tenant_module_entitlements").Find(x => x.Id == id).SingleAsync();
 
+        /// <summary>One pass of the PRODUCTION outbox processor — the unit of work the hosted worker repeats.</summary>
+        public Task<int> ProcessAuditOutboxAsync()
+        {
+            var context = new PlatformDbContext(MongoClient, Database);
+            var tenantContext = new TenantContext();
+            return new Diten.Platform.Infrastructure.Services.Audit.AuditOutboxProcessor(
+                new AuditOutboxRepository(context),
+                new AuditEventRepository(Database, tenantContext),
+                tenantContext,
+                new Diten.Platform.Infrastructure.Services.Audit.AuditOutboxPayloadMapper(),
+                new Diten.Platform.Infrastructure.Services.Audit.AuditOutboxWorkerOptions { BatchSize = 10, MaxAttempts = 5, InitialRetryDelay = TimeSpan.FromSeconds(1), MaxRetryDelay = TimeSpan.FromSeconds(5) },
+                Microsoft.Extensions.Logging.Abstractions.NullLogger<Diten.Platform.Infrastructure.Services.Audit.AuditOutboxProcessor>.Instance).ProcessBatchAsync();
+        }
+
+        public async Task<IReadOnlyList<Diten.Platform.Domain.Entities.Audit.AuditEvent>> AuditEventsAsync() =>
+            await Database.GetCollection<Diten.Platform.Domain.Entities.Audit.AuditEvent>("audit_events")
+                .Find(FilterDefinition<Diten.Platform.Domain.Entities.Audit.AuditEvent>.Empty).ToListAsync();
+
+        public Task<long> DeadLettersAsync() =>
+            Database.GetCollection<BsonDocument>("audit_outbox").CountDocumentsAsync(new BsonDocument("Status", 5));
+
+        /// <summary>A signed-in platform administrator whose token names no subject — a person nobody can name.</summary>
+        public Task<HttpResponseMessage> PostWithoutSubjectAsync(Guid tenantId, string? suffix, object? body)
+        {
+            var client = _server.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", PlatformToken(withSubject: false));
+            return client.PostAsync(Path(tenantId, suffix), JsonContent.Create(body, options: Json));
+        }
+
         public Task<long> CountAsync(string collection) =>
             Database.GetCollection<BsonDocument>(collection).CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty);
 
@@ -502,14 +632,18 @@ public sealed class TenantModulesScreenHttpMongoTests
 
         public static readonly Guid Administrator = Guid.Parse("50050050-0000-4000-8000-0000000000d4");
 
-        private static string PlatformToken()
+        private static string PlatformToken(bool withSubject = true)
         {
-            var claims = new[]
+            var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, Administrator.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, "platform.admin@di10.test"),
-                new Claim("actor_type", "platform_admin")
+                new(JwtRegisteredClaimNames.Email, "platform.admin@di10.test"),
+                new("actor_type", "platform_admin")
             };
+            if (withSubject)
+            {
+                claims.Add(new Claim(JwtRegisteredClaimNames.Sub, Administrator.ToString()));
+            }
+
             var key = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret)), SecurityAlgorithms.HmacSha256);
             return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
                 Issuer, Audience, claims, notBefore: DateTime.UtcNow.AddMinutes(-1), expires: DateTime.UtcNow.AddMinutes(10), signingCredentials: key));

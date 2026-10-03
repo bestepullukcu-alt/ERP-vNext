@@ -63,7 +63,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.HumanCapitalService"] = new(Debt: 70, Exceptions: 0),
         ["Diten.ManagementGovernanceService"] = new(Debt: 23, Exceptions: 0),
         ["Diten.MdmService"] = new(Debt: 13, Exceptions: 0, Indirect: 8),
-        ["Diten.Platform"] = new(Debt: 164, Exceptions: 5, K2Debt: 192, WritingQueries: 3),
+        ["Diten.Platform"] = new(Debt: 139, Exceptions: 5, K2Debt: 192, WritingQueries: 3),
         ["Diten.PpmService"] = new(Debt: 26, Exceptions: 0, Indirect: 25),
         ["Diten.ProcurementService"] = new(Debt: 35, Exceptions: 0),
         ["Diten.PvgService"] = new(Debt: 13, Exceptions: 0),
@@ -82,6 +82,12 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ("Diten.Platform", "platform-merkezi", "a",
             "IAuditableCommand+IAuditMetadataProvider+!IAuditExcludedRequest+!ITransactionOwnedAuditCommand"),
         ("Diten.Platform", "platform-meta-denetim", "a", "IAuditMetaAuditWriter.WriteAsync"),
+        // WP-PLATFORM-AUDIT-INTX-01 (2026-10-02) — the in-transaction door, proven end to end; the token is the CALL,
+        // not the ITransactionOwnedAuditCommand marker (a marked command that calls none of these is unaudited).
+        ("Diten.Platform", "platform-islem-ici", "a",
+            "PhysicalEntitlementAuditIntent.EnqueueAsync/TenantSubscriptionTransactionWriter.UpdateAsync"
+            + "/TenantSubscriptionCommandSupport.CreateAsync/IGlobalApplicabilityTransactionCoordinator.ExecuteAsync"
+            + "/IGlobalApplicabilityTransactionCoordinator.ExecuteBatchAsync"),
         ("Diten.Platform", "gorev-etkinlik-akisi", "c", "TaskItem.Declare"),
         ("Diten.Platform", "is-akisi-gecis-gunlugu", "c",
             "IWorkflowTransitionLogRepository.CreateAsync/IWorkflowTransitionLogRepository.AppendAsync"

@@ -118,7 +118,8 @@ public sealed class RemoveTenantManualModuleOverrideCommandHandler : IRequestHan
                 transactionCt);
                 await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, correlationId,
                     auditIntentId, nameof(RemoveTenantManualModuleOverrideCommand), AuditOperation.Revoke,
-                    entitlement.Id, entitlement.ModuleCode, transactionCt);
+                    entitlement.Id, entitlement.ModuleCode, transactionCt,
+                    PhysicalEntitlementAuditIntent.StateOf(entitlement), PhysicalEntitlementAuditIntent.Removed());
                 return true;
             }, ct);
 

@@ -548,7 +548,10 @@ public static class DependencyInjection
         services.AddScoped<IMessagingProviderResolver, MessagingProviderResolver>();
         services.AddScoped<AuditOutboxRepository>();
         services.AddScoped<IAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
-        services.AddScoped<ITransactionalAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        // WP-PLATFORM-AUDIT-INTX-01 — the repository is only the STORE under the in-transaction door. Handlers get
+        // ITransactionalAuditOutboxWriter = CanonicalTransactionalAuditOutboxWriter (registered in AddApplication), which
+        // builds the canonical payload and names the actor before anything is stored.
+        services.AddScoped<ITransactionalAuditOutboxStore>(provider => provider.GetRequiredService<AuditOutboxRepository>());
         services.AddScoped<IAuditOutboxProcessingRepository>(provider => provider.GetRequiredService<AuditOutboxRepository>());
         services.AddSingleton<AuditOutboxWorkerOptions>();
         services.AddScoped<AuditOutboxPayloadMapper>();

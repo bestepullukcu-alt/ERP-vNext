@@ -295,8 +295,28 @@ public sealed class GlobalApplicabilityTransactionMongoTests
                     new CreateIndexOptions { Unique = true }));
             var coordinator = new GlobalApplicabilityTransactionCoordinator(
                 new PlatformTransactionExecutor(context), versions ?? new EntitlementStateVersionRepository(context),
-                integration ?? new TestIntegrationWriter(outbox), audit ?? new AuditOutboxRepository(context));
+                integration ?? new TestIntegrationWriter(outbox), audit ?? ProductionAuditDoor(context));
             return new() { Database = database, Plans = plans, Modules = modules, State = state, Coordinator = coordinator };
+        }
+
+        // WP-PLATFORM-AUDIT-INTX-01 — the in-transaction audit door as production wires it (the canonical writer over
+        // the outbox repository), with a signed-in platform administrator: these tests are a person's catalogue and
+        // plan changes, and a change with nobody to name is refused.
+        private static ITransactionalAuditOutboxWriter ProductionAuditDoor(PlatformDbContext context)
+        {
+            var administrator = Guid.Parse("7c000000-0000-4000-8000-0000000000ad");
+            var principal = new Moq.Mock<Diten.Platform.Common.Authorization.ITenantAuthorizationContext>();
+            principal.SetupGet(x => x.IsAuthenticated).Returns(true);
+            principal.SetupGet(x => x.ActorType).Returns("platform_admin");
+            principal.SetupGet(x => x.UserId).Returns(administrator);
+            var user = new Moq.Mock<Diten.Platform.Application.Contracts.ICurrentUserContext>();
+            user.SetupGet(x => x.IsAuthenticated).Returns(true);
+            user.SetupGet(x => x.UserId).Returns(administrator);
+            user.SetupGet(x => x.Email).Returns("platform.admin@di10.test");
+            user.SetupGet(x => x.ActorName).Returns("platform.admin@di10.test");
+            return new Diten.Platform.Application.Features.Audit.CanonicalTransactionalAuditOutboxWriter(
+                new AuditOutboxRepository(context), principal.Object, user.Object,
+                new Diten.Platform.Application.Features.Audit.SensitiveFieldRedactor(new Diten.Platform.Application.Features.Audit.SensitiveFieldRedactionRegistry()));
         }
 
         public async Task AssertCountsAsync(long plans, long modules, long projections, long counters,

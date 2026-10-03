@@ -109,7 +109,8 @@ public sealed class AddTenantModuleEntitlementCommandHandler : IRequestHandler<A
                         TenantId = request.TenantId, Producer = "Diten.Platform", OccurredAtUtc = occurredAtUtc }, transactionCt);
                 await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, correlationId,
                     auditIntentId, nameof(AddTenantModuleEntitlementCommand), AuditOperation.Assign,
-                    entitlement.Id, moduleCode, transactionCt);
+                    entitlement.Id, moduleCode, transactionCt,
+                    before: null, after: PhysicalEntitlementAuditIntent.StateOf(entitlement));
                 return true;
             }, ct);
         }

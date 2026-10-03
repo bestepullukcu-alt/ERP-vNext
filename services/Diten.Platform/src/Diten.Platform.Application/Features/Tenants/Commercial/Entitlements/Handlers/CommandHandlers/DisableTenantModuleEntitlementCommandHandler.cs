@@ -76,6 +76,7 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
                 }
 
                 var wasEnabled = entitlement.IsEnabled;
+                var auditBefore = PhysicalEntitlementAuditIntent.StateOf(entitlement);
                 if (!wasEnabled && string.Equals(entitlement.Reason, request.Request.Reason, StringComparison.Ordinal))
                 {
                     return Response<NoContent>.Success(204);
@@ -95,7 +96,8 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
                     await EnqueueDisabledAsync(session, request.TenantId, entitlement.ModuleCode, transactionCt);
                     await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, Guid.NewGuid(),
                         auditIntentId, nameof(DisableTenantModuleEntitlementCommand), AuditOperation.Deactivate,
-                        entitlement.Id, entitlement.ModuleCode, transactionCt);
+                        entitlement.Id, entitlement.ModuleCode, transactionCt,
+                        auditBefore, PhysicalEntitlementAuditIntent.StateOf(entitlement));
                     return true;
                 }, ct);
                 return Response<NoContent>.Success(204);
@@ -105,6 +107,7 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
             if (existingOverride is not null)
             {
                 var wasEnabled = existingOverride.IsEnabled;
+                var auditBefore = PhysicalEntitlementAuditIntent.StateOf(existingOverride);
                 if (!wasEnabled && string.Equals(existingOverride.Reason, request.Request.Reason, StringComparison.Ordinal))
                 {
                     return Response<NoContent>.Success(204);
@@ -124,7 +127,8 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
                     await EnqueueDisabledAsync(session, request.TenantId, existingOverride.ModuleCode, transactionCt);
                     await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, Guid.NewGuid(),
                         auditIntentId, nameof(DisableTenantModuleEntitlementCommand), AuditOperation.Deactivate,
-                        existingOverride.Id, existingOverride.ModuleCode, transactionCt);
+                        existingOverride.Id, existingOverride.ModuleCode, transactionCt,
+                        auditBefore, PhysicalEntitlementAuditIntent.StateOf(existingOverride));
                     return true;
                 }, ct);
                 return Response<NoContent>.Success(204);
@@ -139,7 +143,8 @@ public sealed class DisableTenantModuleEntitlementCommandHandler : IRequestHandl
                 await EnqueueDisabledAsync(session, request.TenantId, moduleCode, transactionCt);
                 await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, Guid.NewGuid(),
                     newAuditIntentId, nameof(DisableTenantModuleEntitlementCommand), AuditOperation.Deactivate,
-                    newOverride.Id, moduleCode, transactionCt);
+                    newOverride.Id, moduleCode, transactionCt,
+                    before: null, after: PhysicalEntitlementAuditIntent.StateOf(newOverride));
                 return true;
             }, ct);
             return Response<NoContent>.Success(204);

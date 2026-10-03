@@ -50,7 +50,7 @@ public sealed class TenantSubscriptionTransactionWriter
                 var response = await participant(session, subscription, plan, transactionCt);
                 if (!response.IsSuccessful) throw new SubscriptionMutationRejectedException(response.Errors, response.StatusCode);
             }
-            await WriteIntentsAsync(session, subscription, null, mutation, operation, transactionCt);
+            await WriteIntentsAsync(session, subscription, null, null, mutation, operation, transactionCt);
             return Response<Guid>.Success(subscription.Id, 201);
         }, ct);
 
@@ -60,6 +60,9 @@ public sealed class TenantSubscriptionTransactionWriter
         Func<IPlatformTransactionSession, TenantSubscription, SubscriptionPlan, CancellationToken, Task<Response<NoContent>>>? participant,
         CancellationToken ct) => ExecuteAsync(async (session, transactionCt) =>
         {
+            // What is stored BEFORE this write — the audit record's before-state (statuses and dates).
+            var stored = await _subscriptions.GetByIdAsync(subscription.Id, transactionCt);
+            var auditBefore = stored is null || ReferenceEquals(stored, subscription) ? null : StateOf(stored);
             await _subscriptions.UpdateAsync(session, subscription, expectedRowVersion, transactionCt);
             var tenant = await _tenants.GetByIdAsync(subscription.TenantId, transactionCt)
                 ?? throw new SubscriptionMutationRejectedException(["Tenant not found."], 404);
@@ -72,12 +75,13 @@ public sealed class TenantSubscriptionTransactionWriter
                 var response = await participant(session, subscription, plan, transactionCt);
                 if (!response.IsSuccessful) throw new SubscriptionMutationRejectedException(response.Errors, response.StatusCode);
             }
-            await WriteIntentsAsync(session, subscription, (previousPlanId, previousStatus), mutation, operation, transactionCt);
+            await WriteIntentsAsync(session, subscription, (previousPlanId, previousStatus), auditBefore, mutation, operation, transactionCt);
             return Response<NoContent>.Success(204);
         }, ct);
 
     private async Task WriteIntentsAsync(IPlatformTransactionSession session, TenantSubscription subscription,
-        (Guid PlanId, string Status)? previous, string mutation, AuditOperation operation, CancellationToken ct)
+        (Guid PlanId, string Status)? previous, IReadOnlyDictionary<string, object?>? storedBefore,
+        string mutation, AuditOperation operation, CancellationToken ct)
     {
         await _versions.IncrementSubscriptionSelectionVersionAsync(session, subscription.TenantId, ct);
         var eventId = Guid.NewGuid();
@@ -99,9 +103,36 @@ public sealed class TenantSubscriptionTransactionWriter
             Operation = operation,
             EntityType = "TenantSubscription",
             EntityId = subscription.Id,
-            Payload = new Dictionary<string, object?> { ["Outcome"] = "Succeeded", ["Status"] = subscription.Status.ToString() }
+            // WP-PLATFORM-AUDIT-INTX-01 — an INTENT; the canonical payload is built at the writer's entry.
+            Intent = new TransactionOwnedAuditIntent
+            {
+                Category = AuditCategory.SubscriptionBilling,
+                TargetTenantId = subscription.TenantId,
+                BeforeState = storedBefore ?? (previous is { } p
+                    ? new Dictionary<string, object?> { ["Status"] = p.Status, ["PlanId"] = p.PlanId.ToString("D") }
+                    : null),
+                AfterState = StateOf(subscription),
+                SourceModule = "subscription-billing"
+            }
         }, ct);
         if (!inserted) throw new PlatformTransactionUnavailableException("Transactional subscription audit intent was not inserted.");
+    }
+
+    /// <summary>What an auditor reads of a subscription: status, plan and its dates (ISO-8601 text). No free text.</summary>
+    private static IReadOnlyDictionary<string, object?> StateOf(TenantSubscription subscription)
+    {
+        static string? Iso(DateTimeOffset? value) =>
+            value?.ToUniversalTime().ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+
+        return new Dictionary<string, object?>
+        {
+            ["Status"] = subscription.Status.ToString(),
+            ["PlanId"] = subscription.PlanId.ToString("D"),
+            ["TrialEndDateUtc"] = Iso(subscription.TrialEndDateUtc),
+            ["CurrentPeriodStartUtc"] = Iso(subscription.CurrentPeriodStartUtc),
+            ["CurrentPeriodEndUtc"] = Iso(subscription.CurrentPeriodEndUtc),
+            ["CancelAtPeriodEnd"] = subscription.CancelAtPeriodEnd
+        };
     }
 
     private static void ApplyTenantSnapshot(Tenant tenant, TenantSubscription subscription, SubscriptionPlan? plan,

@@ -53,6 +53,7 @@ public sealed class UpdateTenantModuleEntitlementExpiryCommandHandler : IRequest
             {
                 return Response<NoContent>.Success(204);
             }
+            var auditBefore = PhysicalEntitlementAuditIntent.StateOf(entitlement);
             entitlement.ExpiryDateUtc = request.Request.ExpiryDateUtc;
             if (!string.IsNullOrWhiteSpace(request.Request.Reason))
             {
@@ -89,7 +90,8 @@ public sealed class UpdateTenantModuleEntitlementExpiryCommandHandler : IRequest
                     transactionCt);
                 await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, correlationId,
                     auditIntentId, nameof(UpdateTenantModuleEntitlementExpiryCommand), AuditOperation.Update,
-                    entitlement.Id, entitlement.ModuleCode, transactionCt);
+                    entitlement.Id, entitlement.ModuleCode, transactionCt,
+                    auditBefore, PhysicalEntitlementAuditIntent.StateOf(entitlement));
                 return true;
             }, ct);
 

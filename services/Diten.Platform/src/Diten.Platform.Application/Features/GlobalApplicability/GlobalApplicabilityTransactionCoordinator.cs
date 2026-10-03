@@ -18,8 +18,14 @@ public interface IGlobalApplicabilityTransactionCoordinator
         CancellationToken cancellationToken = default);
 }
 
+/// <param name="SystemActor">
+/// WP-PLATFORM-AUDIT-INTX-01 — the name of the unattended job allowed to make this change with no signed-in person
+/// (the startup plan seed, module self-registration). Null: a person must be named or the change is refused.
+/// </param>
+/// <param name="AuditMetadata">Extra facts for the audit record's metadata (names and codes — never secrets).</param>
 public sealed record GlobalApplicabilityMutationDescriptor(string RequestType,
-    AuditOperation AuditOperation, string EntityType, Guid EntityId);
+    AuditOperation AuditOperation, string EntityType, Guid EntityId, string? SystemActor = null,
+    IReadOnlyDictionary<string, object?>? AuditMetadata = null);
 
 public sealed record GlobalApplicabilityMutation<T>(T Result, bool EffectiveStateChanged,
     Func<IPlatformTransactionSession, ulong, CancellationToken, Task>? WriteProjectionAsync = null);
@@ -86,6 +92,22 @@ public sealed class GlobalApplicabilityTransactionCoordinator : IGlobalApplicabi
         }, cancellationToken);
     }
 
+    // The two kinds of global record this coordinator writes. A third kind must be given its category here — an
+    // unknown one is refused at the writer's entry (AuditCategory.Unknown) rather than filed under a guess.
+    private static AuditCategory CategoryOf(string entityType) => entityType switch
+    {
+        "ModuleCatalogItem" => AuditCategory.ModuleCatalog,
+        "SubscriptionPlan" => AuditCategory.SubscriptionBilling,
+        _ => AuditCategory.Unknown
+    };
+
+    private static string? SourceModuleOf(string entityType) => entityType switch
+    {
+        "ModuleCatalogItem" => "module-catalog",
+        "SubscriptionPlan" => "subscription-billing",
+        _ => null
+    };
+
     private async Task WriteChangeAsync(IPlatformTransactionSession session,
         GlobalApplicabilityMutationDescriptor descriptor,
         Func<IPlatformTransactionSession, ulong, CancellationToken, Task> writeProjectionAsync,
@@ -111,10 +133,17 @@ public sealed class GlobalApplicabilityTransactionCoordinator : IGlobalApplicabi
                 Operation = descriptor.AuditOperation,
                 EntityType = descriptor.EntityType,
                 EntityId = descriptor.EntityId,
-                Payload = new Dictionary<string, object?>
+                // WP-PLATFORM-AUDIT-INTX-01 — an INTENT; the canonical payload is built at the writer's entry.
+                Intent = new TransactionOwnedAuditIntent
                 {
-                    ["Outcome"] = "Succeeded",
-                    ["GlobalApplicabilityVersion"] = version
+                    Category = CategoryOf(descriptor.EntityType),
+                    TargetTenantId = null, // platform-global: owned by the platform-system tenant
+                    Metadata = new Dictionary<string, object?>(descriptor.AuditMetadata ?? new Dictionary<string, object?>())
+                    {
+                        ["GlobalApplicabilityVersion"] = version
+                    },
+                    SourceModule = SourceModuleOf(descriptor.EntityType),
+                    SystemActor = descriptor.SystemActor
                 }
             }, transactionCt);
             if (!inserted)

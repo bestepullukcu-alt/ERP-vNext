@@ -52,6 +52,7 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
         try
         {
             var wasEnabled = entitlement.IsEnabled;
+            var auditBefore = PhysicalEntitlementAuditIntent.StateOf(entitlement);
             if (wasEnabled)
             {
                 return Response<NoContent>.Success(204);
@@ -123,7 +124,8 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
                     transactionCt);
                 await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, correlationId,
                     auditIntentId, nameof(EnableTenantModuleEntitlementCommand), AuditOperation.Activate,
-                    entitlement.Id, entitlement.ModuleCode, transactionCt);
+                    entitlement.Id, entitlement.ModuleCode, transactionCt,
+                    auditBefore, PhysicalEntitlementAuditIntent.StateOf(entitlement));
                 return true;
             }, ct);
 

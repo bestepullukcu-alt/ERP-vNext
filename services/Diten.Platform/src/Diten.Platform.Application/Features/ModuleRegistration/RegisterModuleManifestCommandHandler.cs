@@ -89,6 +89,7 @@ public sealed class RegisterModuleManifestCommandHandler
             manifest,
             moduleCode,
             string.Equals(moduleCode, ProtectedModuleCode, StringComparison.Ordinal) ? ProtectedOwner : null,
+            request.PushedOverInternalEndpoint,
             ct);
 
         var pagesUpserted = 0;
@@ -264,10 +265,17 @@ public sealed class RegisterModuleManifestCommandHandler
         return null;
     }
 
+    /// <summary>The audit record's System actor name: Platform's own startup worker registering its modules.</summary>
+    public const string ModuleSelfRegistrationActor = "module-self-registration";
+
+    /// <summary>The audit record's System actor name: another service pushing its manifest over the internal endpoint.</summary>
+    public const string ModuleManifestPushActor = "module-manifest-push";
+
     private async Task<string> ReconcileCatalogItemAsync(
         ModuleManifestDocument manifest,
         string moduleCode,
         string? producerOwnerCode,
+        bool pushedOverInternalEndpoint,
         CancellationToken ct)
     {
         // FIX-SELFREG-DOMAIN-REGISTER — ensure the manifest's Domain exists in the operator lookup (auto-register an
@@ -277,7 +285,12 @@ public sealed class RegisterModuleManifestCommandHandler
 
         var seededService = await _taxonomyResolver.ResolveServiceCodeAsync(manifest.Service, ct);
         return await _transaction.ExecuteAsync(
-            new(nameof(RegisterModuleManifestCommand), AuditOperation.Update, "ModuleCatalogItem", DeterministicEntityId(moduleCode)),
+            // No person registers a manifest, and the internal endpoint authenticates no caller IDENTITY (a shared key):
+            // the actor is the System, named by which of the two unattended doors ran. The module code is what the
+            // manifest DECLARES — recorded as such in the metadata, never as an actor id.
+            new(nameof(RegisterModuleManifestCommand), AuditOperation.Update, "ModuleCatalogItem", DeterministicEntityId(moduleCode),
+                SystemActor: pushedOverInternalEndpoint ? ModuleManifestPushActor : ModuleSelfRegistrationActor,
+                AuditMetadata: new Dictionary<string, object?> { ["DeclaredModuleCode"] = moduleCode }),
             async (session, transactionCt) =>
             {
         var existing = await _catalogRepository.GetByCodeAsync(session, moduleCode, transactionCt);
