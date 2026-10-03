@@ -1,0 +1,9 @@
+tree	suite	exit	summary
+build-before	platform-application	1	Failed!  - Failed:    64, Passed:  4333, Skipped:     0, Total:  4397, Duration: 4 m 14 s - Diten.Platform.Application.Tests.dll (net8.0)
+build-after	platform-application	1	Failed!  - Failed:    64, Passed:  4333, Skipped:     0, Total:  4397, Duration: 4 m 34 s - Diten.Platform.Application.Tests.dll (net8.0)
+build-before	architecture	1	Failed!  - Failed:     1, Passed:    17, Skipped:     0, Total:    18, Duration: 5 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+build-after	architecture	0	Passed!  - Failed:     0, Passed:    18, Skipped:     0, Total:    18, Duration: 5 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+build-after	supplychain-single	1	Failed!  - Failed:    33, Passed:   375, Skipped:     0, Total:   408, Duration: 5 m 13 s - Diten.SupplyChainService.Tests.dll (net8.0)
+build-after	gateway	0	Passed!  - Failed:     0, Passed:    87, Skipped:     0, Total:    87, Duration: 162 ms - Diten.ApiGateway.Tests.dll (net8.0)
+build-after	web	0	Passed!  - Failed:     0, Passed:   158, Skipped:     0, Total:   158, Duration: 5 s - Diten.Web.Tests.dll (net8.0)
+build-after	secrets	0	Passed!  - Failed:     0, Passed:     5, Skipped:     0, Total:     5, Duration: 4 ms - Diten.BuildingBlocks.Security.Secrets.Tests.dll (net8.0)

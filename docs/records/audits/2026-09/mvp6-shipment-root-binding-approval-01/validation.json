@@ -1,0 +1,11 @@
+{
+  "decisionPath":"docs/records/decisions/2026-09/mvp6-shipment-root-docs-path-owner-binding-01.json",
+  "decisionSha256":"fe06837bf77c70dacd3525a3b05a9168bb2965cd5bfc3ba3927efa90892a2307",
+  "approvedPayloadSha256":"6a3f1aef23058a4cc9b4c4718e43b089483e8e0ab4c05deb22c44df3047004e4",
+  "activationCandidateSha256":"d743d0f1485eef7a0442c4c4cf06ae3f532e16d790166736d82584a27dd787c3",
+  "targetSealPayloadUnchanged":true,
+  "canonicalTargetCandidate":"91d505c900ce214262fd35ecb6bad9f005b4bbc42f1680d9db7cc1932bf0fbc9",
+  "currentCanonical":"93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571",
+  "productionGuard":"BLOCKED_PRECONDITION",
+  "reason":"Current canonical is still 2.0.0 hash; candidate authority target is 2.1.0. Supplied target/seal payload hash is preserved but cannot be asserted until canonical publication and payload recomputation are applied."
+}

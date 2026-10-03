@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>Hasar Talepleri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Sevkiyatlara ait taşıyıcı hasar taleplerini kaydedin, inceleyin ve karara bağlayın.</value></data>
+  <data name="AddNewClaims" xml:space="preserve"><value>Talep Ekle</value></data>
+  <data name="ActionsHeader" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="ClaimNumber" xml:space="preserve"><value>Talep Numarası</value></data>
+  <data name="ClaimId" xml:space="preserve"><value>Talep Kimliği</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>Sevkiyat Kimliği</value></data>
+  <data name="ShipmentIdHelp" xml:space="preserve"><value>Sevkiyatın UUID değerini girin.</value></data>
+  <data name="ClaimedAmount" xml:space="preserve"><value>Talep Edilen Tutar</value></data>
+  <data name="CurrencyLabel" xml:space="preserve"><value>Para Birimi</value></data>
+  <data name="ClaimSummary" xml:space="preserve"><value>Talep Özeti</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı Görünüm</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Geçerli filtreye uyan talep yok.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>Talepler yüklenemedi.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Yeniden Dene</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Belirtilmemiş</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Destek referansı</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Panoya kopyalandı.</value></data>
+  <data name="TotalLabel" xml:space="preserve"><value>Dönen talep sayısı</value></data>
+  <data name="ApprovedAmountNotListed" xml:space="preserve"><value>Onaylanan tutar liste verisinde yer almaz; onaydan sonraki bildirimde gösterilir.</value></data>
+  <data name="StatusOpen" xml:space="preserve"><value>Açık</value></data>
+  <data name="StatusInvestigating" xml:space="preserve"><value>İnceleniyor</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="StatusSettled" xml:space="preserve"><value>Uzlaşıldı</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Kapandı</value></data>
+  <data name="StatusWithdrawn" xml:space="preserve"><value>Geri Çekildi</value></data>
+  <data name="ShipmentStatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="ShipmentStatusPlanned" xml:space="preserve"><value>Planlandı</value></data>
+  <data name="ShipmentStatusDispatched" xml:space="preserve"><value>Sevk Edildi</value></data>
+  <data name="ShipmentStatusInTransit" xml:space="preserve"><value>Yolda</value></data>
+  <data name="ShipmentStatusDelivered" xml:space="preserve"><value>Teslim Edildi</value></data>
+  <data name="ShipmentStatusException" xml:space="preserve"><value>İstisna</value></data>
+  <data name="ShipmentStatusClosed" xml:space="preserve"><value>Kapandı</value></data>
+  <data name="ShipmentStatusCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni Talep</value></data>
+  <data name="Resolve" xml:space="preserve"><value>Sorgula</value></data>
+  <data name="ResolveFirst" xml:space="preserve"><value>Talebi oluşturmadan önce sevkiyatı sorgulayın.</value></data>
+  <data name="ShipmentNumber" xml:space="preserve"><value>Sevkiyat Numarası</value></data>
+  <data name="ShipmentStatus" xml:space="preserve"><value>Sevkiyat Durumu</value></data>
+  <data name="EligibilityNote" xml:space="preserve"><value>Talep yalnızca Sevk Edildi, Yolda, Teslim Edildi, İstisna veya Kapandı durumundaki sevkiyatlar için oluşturulabilir.</value></data>
+  <data name="ShipmentIneligible" xml:space="preserve"><value>Bu sevkiyatın durumu talep oluşturmaya izin vermiyor.</value></data>
+  <data name="LinkShipmentCarrier" xml:space="preserve"><value>Sevkiyatın taşıyıcısını bağla</value></data>
+  <data name="NoShipmentCarrier" xml:space="preserve"><value>Yalnızca sorgulanan sevkiyatın bir taşıyıcısı varsa kullanılabilir.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Neden Kodu</value></data>
+  <data name="AmountHelp" xml:space="preserve"><value>Yazıldığı gibi gönderilir, örneğin 250.00.</value></data>
+  <data name="CurrencyHelp" xml:space="preserve"><value>Yazıldığı gibi gönderilen üç harfli kod, örneğin EUR.</value></data>
+  <data name="EvidenceReferenceIds" xml:space="preserve"><value>Kanıt Referansları</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>Kanıt referansı</value></data>
+  <data name="AddEvidenceReference" xml:space="preserve"><value>Referans Ekle</value></data>
+  <data name="RemoveEvidenceReference" xml:space="preserve"><value>Referansı kaldır</value></data>
+  <data name="EvidenceHelp" xml:space="preserve"><value>İsteğe bağlı. Referanslar gösterilen sırayla gönderilir.</value></data>
+  <data name="CreateClaim" xml:space="preserve"><value>Talep Oluştur</value></data>
+  <data name="ClaimCreated" xml:space="preserve"><value>Talep oluşturuldu.</value></data>
+  <data name="ClaimCreateReplayed" xml:space="preserve"><value>Bu talep aynı istekle zaten oluşturulmuştu; tamamlandı olarak gösteriliyor.</value></data>
+  <data name="TransitionTitle" xml:space="preserve"><value>Talep Durumunu Değiştir</value></data>
+  <data name="TransitionTarget" xml:space="preserve"><value>Yeni Durum</value></data>
+  <data name="ActionInvestigate" xml:space="preserve"><value>İncelemeye Al</value></data>
+  <data name="ActionWithdraw" xml:space="preserve"><value>Geri Çek</value></data>
+  <data name="ActionApprove" xml:space="preserve"><value>Onayla</value></data>
+  <data name="ActionReject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="ActionSettle" xml:space="preserve"><value>Uzlaştır (ödeme kaydedilmez)</value></data>
+  <data name="ActionClose" xml:space="preserve"><value>Kapat</value></data>
+  <data name="TargetSettledLabel" xml:space="preserve"><value>Uzlaşıldı (operasyonel durum, ödeme kaydedilmez)</value></data>
+  <data name="SettledNoPaymentNote" xml:space="preserve"><value>Uzlaştırma yalnızca talep durumunu değiştirir. Ödeme, borç veya alacak kaydı oluşturulmaz.</value></data>
+  <data name="OccurredAt" xml:space="preserve"><value>Gerçekleşme Zamanı</value></data>
+  <data name="OccurredAtHelp" xml:space="preserve"><value>Saat farkıyla tarih ve saat, örneğin 2026-09-26T14:30:00+03:00.</value></data>
+  <data name="ApprovedAmount" xml:space="preserve"><value>Onaylanan Tutar</value></data>
+  <data name="ApprovedAmountHelp" xml:space="preserve"><value>Onay için zorunlu; sıfır ile talep edilen tutar arasında olmalıdır.</value></data>
+  <data name="ResolutionCode" xml:space="preserve"><value>Çözüm Kodu</value></data>
+  <data name="NoteLabel" xml:space="preserve"><value>Not</value></data>
+  <data name="SubmitTransition" xml:space="preserve"><value>Durumu Uygula</value></data>
+  <data name="ConfirmTransition" xml:space="preserve"><value>Talep durumu seçilen değere değiştirilsin mi?</value></data>
+  <data name="TransitionCompleted" xml:space="preserve"><value>Talep durumu güncellendi.</value></data>
+  <data name="TransitionReplayed" xml:space="preserve"><value>Bu durum değişikliği aynı istekle zaten uygulanmıştı; tamamlandı olarak gösteriliyor.</value></data>
+  <data name="ApprovedAmountResult" xml:space="preserve"><value>Onaylanan tutar</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Bu işlem için bir istek hâlâ sürüyor.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>İstek geçerli değil. Girilen değerleri kontrol edin.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Oturumunuz sona erdi. Lütfen yeniden oturum açın.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="ErrClaimNotFound" xml:space="preserve"><value>Kayıt bulunamadı veya sizin için erişilebilir değil.</value></data>
+  <data name="ErrUnsupportedMediaType" xml:space="preserve"><value>İstek biçimi desteklenmiyor.</value></data>
+  <data name="ErrClaimShipmentIneligible" xml:space="preserve"><value>Sevkiyatın durumu talep oluşturmaya izin vermiyor.</value></data>
+  <data name="ErrClaimCarrierMismatch" xml:space="preserve"><value>Taşıyıcı sevkiyatın taşıyıcısıyla eşleşmiyor veya kullanılamaz.</value></data>
+  <data name="ErrClaimAmountInvalid" xml:space="preserve"><value>Talep edilen tutar sıfırdan büyük olmalıdır.</value></data>
+  <data name="ErrClaimApprovalAmountInvalid" xml:space="preserve"><value>Onaylanan tutar sıfır ile talep edilen tutar arasında olmalıdır.</value></data>
+  <data name="ErrClaimApprovedAmountNotAllowed" xml:space="preserve"><value>Onaylanan tutar yalnızca onay sırasında gönderilebilir.</value></data>
+  <data name="ErrInvalidClaimTransition" xml:space="preserve"><value>Talep bu arada değişti ve bu durum değişikliği artık mümkün değil. Liste yeniden yüklendi.</value></data>
+  <data name="ErrClaimCorrelationMismatch" xml:space="preserve"><value>İstek artık sevkiyat kaydıyla eşleşmiyor.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Bu istek farklı değerlerle zaten kullanıldı. Yeni bir işlem başlatın.</value></data>
+  <data name="ErrClaimReferenceInvalid" xml:space="preserve"><value>Sevkiyat referans verisi geçersiz. Lütfen destek ekibine başvurun.</value></data>
+  <data name="ErrClaimReferenceIncomplete" xml:space="preserve"><value>Sevkiyat referans verisi eksik. Aynı isteği daha sonra yeniden deneyin.</value></data>
+  <data name="ErrClaimReferenceUnavailable" xml:space="preserve"><value>Sevkiyat referans verisine geçici olarak ulaşılamıyor. Aynı isteği yeniden deneyin.</value></data>
+  <data name="ErrClaimStorageUnavailable" xml:space="preserve"><value>Talepler geçici olarak kullanılamıyor. Sonuç doğrulanmadı; aynı isteği yeniden deneyin.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>Beklenmeyen bir hata oluştu. Aynı işlemi yeniden deneyebilirsiniz.</value></data>
+</root>

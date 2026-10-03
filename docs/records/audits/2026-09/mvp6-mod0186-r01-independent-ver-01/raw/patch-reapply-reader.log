@@ -1,0 +1,4 @@
+patching file 'services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnReferenceReader.cs'
+patching file 'services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnReferenceTests.cs'
+Ignoring previously applied (or reversed) patch.
+1 out of 1 hunks ignored--saving rejects to 'services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Returns/ReturnReferenceTests.cs.rej'

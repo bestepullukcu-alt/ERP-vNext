@@ -1,0 +1,34 @@
+{
+  "name": "cap-first-six",
+  "request": {
+    "bodyUtf8": "{\"shipmentId\":\"954d938e-6e07-403c-9ba0-2d94cd58ad82\",\"reasonCode\":\"DAMAGED\",\"lines\":[{\"shipmentLineNumber\":\"1\",\"quantity\":\"6\",\"uomId\":\"EA\"}]}",
+    "headers": {
+      "Authorization": "Bearer <redacted>",
+      "Content-Type": "application/json",
+      "Idempotency-Key": "cap-6a",
+      "X-Correlation-Id": "7e349762-3592-4f3a-849a-8d2bcb174285",
+      "X-Legal-Entity-Id": "22222222-2222-4222-8222-222222222222",
+      "X-Tenant-Id": "11111111-1111-4111-8111-111111111111"
+    },
+    "method": "POST",
+    "path": "/api/shipment-bundle/returns"
+  },
+  "response": {
+    "body": {
+      "contractVersion": "v1",
+      "idempotentReplay": false,
+      "returnId": "9406f665-5bf0-429b-9bff-5f22669809c8",
+      "rmaNumber": "RMA-9406F6655BF0429B9BFF5F22669809C8",
+      "shipmentId": "954d938e-6e07-403c-9ba0-2d94cd58ad82",
+      "status": "Requested"
+    },
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Mon, 21 Sep 2026 17:05:30 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "7e349762-3592-4f3a-849a-8d2bcb174285"
+    },
+    "status": 201
+  }
+}

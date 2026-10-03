@@ -1,0 +1,20 @@
+{
+  "workPackage": "MVP6-MOD0186-R01-REWORK-01",
+  "agentVerdict": "PASS",
+  "writerComplete": true,
+  "head": "4a8d4d4b339528a88e6220fb8402e5a2c771136c",
+  "branch": "codex/mod-0186-r01-rework-01",
+  "patchSha256": "0bb36d02d3972f65d6644a5b12eaabc7a8820a1a50da13b17769ef7a5148e82c",
+  "apiBinarySha256": "81e7af9ee0a7e70b7f7a6f93209ea324e050b1e964025287749c73d22d672195",
+  "freshResults": {
+    "red": "1 expected failure: expected 502, actual 503",
+    "targetedGreen": "10/10",
+    "returnsRegression": "78/78",
+    "http": "52/52",
+    "restart": "4/4",
+    "build": "0 warnings, 0 errors"
+  },
+  "nextGate": "independent Returns VER",
+  "commit": null,
+  "push": null
+}

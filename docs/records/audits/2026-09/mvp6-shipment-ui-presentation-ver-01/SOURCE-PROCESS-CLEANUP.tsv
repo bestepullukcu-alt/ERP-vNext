@@ -1,0 +1,8 @@
+stage	identity	result	evidence
+source	FINAL-354-SOURCE-MANIFEST.tsv / e6551f4552bd05682dcd9f2753044aa0b803dd4df90875952cca89608ab98ab3	PASS	raw/source-manifest-check.tsv (354/354)
+build	native .NET 8 Release build	PASS	raw/build-web.log and raw/build-web.exit
+binary	Diten.Web.dll / b7bf5cf8949e587da087565956dc3071e302c6cbe23513a6b4724dcf561df5ae	PASS	raw/runtime-hashes.txt
+fixture	presentation_fixture.py / 7128fc24472084b70e153bfef21da533a7cf1fb4e13e15ea6b3a1e47956ced9a	PASS	raw/runtime-hashes.txt
+process	fixture 127.0.0.1:6030 PID 69711; Web 127.0.0.1:6031 PID 69712	PASS	raw/processes-before-cleanup.txt
+browser	Codex IAB; explicit 390x844 and 768x1024 viewport overrides	PASS	raw/browser-measurements.json
+cleanup	viewport reset, temporary tab closed, PIDs stopped, ephemeral JWT secret removed	PASS	raw/cleanup.txt

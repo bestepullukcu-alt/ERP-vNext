@@ -1,0 +1,10 @@
+kind	path	sha256	use
+policy_manifest	docs/records/audits/2026-09/mvp6-shipment-ui-policy-error-ver-01/ARTIFACTS.sha256	18bd21b6e0bbdf11bcb8294f004ff4f474fbaf570e365a5d3ac167e22ab673b2	input package integrity
+policy_report	docs/records/audits/2026-09/mvp6-shipment-ui-policy-error-ver-01/SOP-22.md	e348a295acdb31fc9f3f1d7afb86c75f8cec6db203bc383922082a528babe1a9	A03/A07-A12 evidence and gaps
+policy_acceptance	docs/records/audits/2026-09/mvp6-shipment-ui-policy-error-ver-01/ACCEPTANCE.tsv	091aa5c4f4a76ce6db19cf9415c41d537fb84b09aae3e6963786f6628acefe1f	row dispositions
+presentation_manifest	docs/records/audits/2026-09/mvp6-shipment-ui-presentation-ver-01/ARTIFACTS.sha256	b49046a9f1179e3d482d64b8c8069ef87ed09be4d6c04d7572faa51310e8cfc1	input package integrity
+presentation_report	docs/records/audits/2026-09/mvp6-shipment-ui-presentation-ver-01/SOP-22.md	5525856473c5cc4c2c2dd9f693d4662cd295cf3b89e9edf9b5ee60edb2d3db4b	presentation findings and gate result
+datatable_raw	docs/records/audits/2026-09/mvp6-shipment-ui-presentation-ver-01/raw/datatable-quality-gate.log	f0e3cb065d668b4f5625d840645733a44507ddc7af52e1678fb01bf544860538	49 PASS / 35 FAIL raw authority
+controlling_acceptance	docs/roadmap/plans/mvp6-shipment-pod-ui-scope-01/ACCEPTANCE.md	83d0db58eff28b0ac56af7c0299fd775aa575615fc1d80d8ad6f57d0630eefa1	UI183-A01–A16 scope
+functional_ct_matrix	docs/records/audits/2026-09/mvp6-shipment-ui-functional-ct-consolidation-01/ACCEPTANCE.tsv	e8fccf13083a945bfda95f72a019767eaadd054018eb0bafbc1445be8fc03664	predecessor disposition
+bounded_pack	execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md	32381634163a2acff440475f4582c05defc8261957386dfa43d5c8fc7eaf962e	module boundary and prohibited scope

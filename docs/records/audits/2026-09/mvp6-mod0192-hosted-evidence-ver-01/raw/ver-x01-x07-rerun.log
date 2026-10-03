@@ -1,0 +1,8 @@
+Test run for /private/tmp/mvp6-mod0192-hosted-evidence-ver-01-20260923-a/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 18.0.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+Results File: /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/ver-x01-x07-rerun.trx
+
+Passed!  - Failed:     0, Passed:     8, Skipped:     0, Total:     8, Duration: 3 s - Diten.SupplyChainService.Tests.dll (net8.0)

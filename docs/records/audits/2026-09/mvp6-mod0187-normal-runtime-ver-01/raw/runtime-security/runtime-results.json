@@ -1,0 +1,1003 @@
+{
+  "status": "PASS",
+  "evidenceKind": "fresh-real-shipment-producer-through-forward-only-capture",
+  "binarySha256": "4673a6b970a4ee31c3413325b4024349ad91773262fb6e56e84eebbd1106fb8b",
+  "rows": [
+    {
+      "case": "non-nil",
+      "tenantId": "c0ca5168-547c-4926-89aa-a57182e42ac8",
+      "legalEntityId": "64c95fdf-3608-408b-a4a2-ea2b545b07f4",
+      "shipmentId": "222be1fa-cbad-4659-8230-fef83c66aeef",
+      "storedRootMode": "value",
+      "storedRoot": "a2270785-8522-44c2-82a9-2b1833481131",
+      "requestRoot": "a2270785-8522-44c2-82a9-2b1833481131",
+      "detail": {
+        "method": "GET",
+        "path": "/api/shipment-bundle/shipments/222be1fa-cbad-4659-8230-fef83c66aeef",
+        "requestCorrelation": "409de4b4-d664-4453-8694-4ba8b2f8aef4",
+        "requestBodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "requestBodyBytes": 0,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-correlation-id": "409de4b4-d664-4453-8694-4ba8b2f8aef4"
+        },
+        "body": {
+          "shipmentId": "222be1fa-cbad-4659-8230-fef83c66aeef",
+          "shipmentNumber": "SHP-R21-222be1fa",
+          "sourceDocumentId": "SO-R21",
+          "status": "Delivered",
+          "carrierId": null,
+          "loadId": null,
+          "plannedShipAt": "2026-09-21T11:00:00+00:00",
+          "plannedDeliverAt": null,
+          "actualDeliverAt": null,
+          "sourceModule": "MOD-0141",
+          "sourceType": "SALES_ORDER",
+          "warehouseReferenceId": "WH-R21",
+          "shipToReference": "C-R21",
+          "lines": [],
+          "pod": null,
+          "contractVersion": "v1",
+          "lifecycleCorrelationId": "a2270785-8522-44c2-82a9-2b1833481131"
+        },
+        "responseBodySha256": "172c5c5c62e3943af722b11f815be1d414d9fb1dffc4226f8ab700205c9b28af",
+        "responseBodyBytes": 480
+      },
+      "beforeCounts": {
+        "claims": 0,
+        "claims_receipts": 0,
+        "claims_audit": 0,
+        "claims_outbox": 0
+      },
+      "create": {
+        "method": "POST",
+        "path": "/api/shipment-bundle/claims",
+        "requestCorrelation": "a2270785-8522-44c2-82a9-2b1833481131",
+        "requestBodySha256": "23c5d09d6a211b3e51703caa6546472719478c741357610811a3d09028dcc71d",
+        "requestBodyBytes": 117,
+        "status": 201,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-correlation-id": "a2270785-8522-44c2-82a9-2b1833481131"
+        },
+        "body": {
+          "claimId": "d652244b-2989-4118-991a-24865d83912f",
+          "claimNumber": "CLM-d652244b29894118991a24865d83912f",
+          "shipmentId": "222be1fa-cbad-4659-8230-fef83c66aeef",
+          "status": "Open",
+          "approvedAmount": null,
+          "idempotentReplay": false,
+          "contractVersion": "v1"
+        },
+        "responseBodySha256": "70094e38cac09b32b35d445f88fa1c5f11ce41547af612e856b3f8f2614b85b1",
+        "responseBodyBytes": 241
+      },
+      "afterCounts": {
+        "claims": 1,
+        "claims_receipts": 1,
+        "claims_audit": 1,
+        "claims_outbox": 1
+      },
+      "dependencyCaptures": [
+        {
+          "path": "/api/shipment-bundle/shipments/222be1fa-cbad-4659-8230-fef83c66aeef",
+          "xCorrelationId": "4548ac53-352d-4e2a-8952-ea0c6dd5f09e",
+          "xTenantId": "c0ca5168-547c-4926-89aa-a57182e42ac8",
+          "xLegalEntityId": "64c95fdf-3608-408b-a4a2-ea2b545b07f4",
+          "authorizationPresent": true
+        }
+      ],
+      "replay": null,
+      "replayCounts": null,
+      "dependencyCapturesAfterReplay": null,
+      "persistence": {
+        "claims": [
+          {
+            "_id": "d652244b-2989-4118-991a-24865d83912f",
+            "TenantId": "c0ca5168-547c-4926-89aa-a57182e42ac8",
+            "IsDeleted": false,
+            "DeletedAt": null,
+            "CreatedAt": "2026-09-22T07:04:50.908534+00:00",
+            "UpdatedAt": null,
+            "Version": 1,
+            "LegalEntityId": "64c95fdf-3608-408b-a4a2-ea2b545b07f4",
+            "CreatedBy": "7e274815-d602-4874-b085-8fc48e274241",
+            "UpdatedBy": null,
+            "ClaimNumber": "CLM-d652244b29894118991a24865d83912f",
+            "ShipmentId": "222be1fa-cbad-4659-8230-fef83c66aeef",
+            "CarrierId": null,
+            "ReasonCode": "R21-NON-NIL",
+            "ClaimedAmount": "1",
+            "Currency": "USD",
+            "ApprovedAmount": null,
+            "EvidenceReferenceIds": [],
+            "Status": "Open",
+            "CorrelationRoot": "a2270785-8522-44c2-82a9-2b1833481131",
+            "LastEventId": "308d2781-37ac-4ff0-883f-6f37a67e7aee",
+            "ReferenceSnapshot": {
+              "ShipmentId": "222be1fa-cbad-4659-8230-fef83c66aeef",
+              "ShipmentStatus": "Delivered",
+              "ShipmentCarrierId": null,
+              "CarrierStatus": null,
+              "Root": "a2270785-8522-44c2-82a9-2b1833481131",
+              "ObservedAt": "2026-09-22T07:04:50.974862+00:00"
+            }
+          }
+        ],
+        "claims_receipts": [
+          {
+            "_id": "24cd5685-c9b7-4afa-bce3-7df6f20a87ef",
+            "TenantId": "c0ca5168-547c-4926-89aa-a57182e42ac8",
+            "LegalEntityId": "64c95fdf-3608-408b-a4a2-ea2b545b07f4",
+            "Operation": "createClaim",
+            "TargetId": "create",
+            "IdempotencyKey": "r21-non-nil",
+            "Fingerprint": "c79829aaa9a6b9659d4f9493364a625db36d15540049ae05a9d667912655ec63",
+            "CorrelationRoot": "a2270785-8522-44c2-82a9-2b1833481131",
+            "ClaimId": "d652244b-2989-4118-991a-24865d83912f",
+            "ClaimNumber": "CLM-d652244b29894118991a24865d83912f",
+            "ShipmentId": "222be1fa-cbad-4659-8230-fef83c66aeef",
+            "ResultingStatus": "Open",
+            "ApprovedAmount": null,
+            "ActorId": "7e274815-d602-4874-b085-8fc48e274241",
+            "StatusCode": 201
+          }
+        ],
+        "claims_audit": [
+          {
+            "_id": "fc2f8b40-10ec-443e-8705-d1f086204580",
+            "TenantId": "c0ca5168-547c-4926-89aa-a57182e42ac8",
+            "LegalEntityId": "64c95fdf-3608-408b-a4a2-ea2b545b07f4",
+            "ClaimId": "d652244b-2989-4118-991a-24865d83912f",
+            "ActorId": "7e274815-d602-4874-b085-8fc48e274241",
+            "Version": 1,
+            "Before": null,
+            "After": {
+              "_id": "d652244b-2989-4118-991a-24865d83912f",
+              "TenantId": "c0ca5168-547c-4926-89aa-a57182e42ac8",
+              "IsDeleted": false,
+              "DeletedAt": null,
+              "CreatedAt": "2026-09-22T07:04:50.908534+00:00",
+              "UpdatedAt": null,
+              "Version": 1,
+              "LegalEntityId": "64c95fdf-3608-408b-a4a2-ea2b545b07f4",
+              "CreatedBy": "7e274815-d602-4874-b085-8fc48e274241",
+              "UpdatedBy": null,
+              "ClaimNumber": "CLM-d652244b29894118991a24865d83912f",
+              "ShipmentId": "222be1fa-cbad-4659-8230-fef83c66aeef",
+              "CarrierId": null,
+              "ReasonCode": "R21-NON-NIL",
+              "ClaimedAmount": "1",
+              "Currency": "USD",
+              "ApprovedAmount": null,
+              "EvidenceReferenceIds": [],
+              "Status": "Open",
+              "CorrelationRoot": "a2270785-8522-44c2-82a9-2b1833481131",
+              "LastEventId": "308d2781-37ac-4ff0-883f-6f37a67e7aee",
+              "ReferenceSnapshot": {
+                "ShipmentId": "222be1fa-cbad-4659-8230-fef83c66aeef",
+                "ShipmentStatus": "Delivered",
+                "ShipmentCarrierId": null,
+                "CarrierStatus": null,
+                "Root": "a2270785-8522-44c2-82a9-2b1833481131",
+                "ObservedAt": "2026-09-22T07:04:50.974862+00:00"
+              }
+            },
+            "CorrelationRoot": "a2270785-8522-44c2-82a9-2b1833481131",
+            "OccurredAt": "2026-09-22T07:04:50.9085340+00:00",
+            "ReceivedAt": "2026-09-22T07:04:50.9085340+00:00",
+            "CommittedAt": "2026-09-22T07:04:51.0190760+00:00",
+            "ResolutionCode": null,
+            "Note": null
+          }
+        ],
+        "claims_outbox": [
+          {
+            "_id": "31cb0e06-03cd-4589-9dc7-1bd56aa426e2",
+            "TenantId": "c0ca5168-547c-4926-89aa-a57182e42ac8",
+            "LegalEntityId": "64c95fdf-3608-408b-a4a2-ea2b545b07f4",
+            "ClaimId": "d652244b-2989-4118-991a-24865d83912f",
+            "EventId": "308d2781-37ac-4ff0-883f-6f37a67e7aee",
+            "Status": "Pending",
+            "Envelope": {
+              "eventId": "308d2781-37ac-4ff0-883f-6f37a67e7aee",
+              "eventType": "ClaimOpened",
+              "occurredAt": "2026-09-22T07:04:50.9085340+00:00",
+              "correlationId": "a2270785-8522-44c2-82a9-2b1833481131",
+              "causationId": null,
+              "aggregateType": "Claim",
+              "aggregateId": "d652244b-2989-4118-991a-24865d83912f",
+              "payload": {
+                "claimId": "d652244b-2989-4118-991a-24865d83912f",
+                "claimNumber": "CLM-d652244b29894118991a24865d83912f",
+                "shipmentId": "222be1fa-cbad-4659-8230-fef83c66aeef",
+                "status": "Open",
+                "approvedAmount": null
+              },
+              "contractVersion": "v1"
+            }
+          }
+        ]
+      },
+      "checks": {
+        "expectedCreateStatus": true,
+        "expectedCreateCode": true,
+        "claimsResponseCorrelationPreserved": true,
+        "oneDependencyRead": true,
+        "dependencyTracePresent": true,
+        "dependencyTraceIsUuid": true,
+        "dependencyTraceNonNil": true,
+        "dependencyTraceSeparateFromBusinessRoot": true
+      }
+    },
+    {
+      "case": "nil",
+      "tenantId": "f48dc040-f5bd-4f7a-8e2f-bb5e8b8d9838",
+      "legalEntityId": "9262f307-7fc5-459a-a900-d0c0af21d872",
+      "shipmentId": "7fffb1f9-895f-4915-8063-267734971b24",
+      "storedRootMode": "value",
+      "storedRoot": "00000000-0000-0000-0000-000000000000",
+      "requestRoot": "00000000-0000-0000-0000-000000000000",
+      "detail": {
+        "method": "GET",
+        "path": "/api/shipment-bundle/shipments/7fffb1f9-895f-4915-8063-267734971b24",
+        "requestCorrelation": "389adaa9-06b4-488c-97af-5e8e22e7a80f",
+        "requestBodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "requestBodyBytes": 0,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-correlation-id": "389adaa9-06b4-488c-97af-5e8e22e7a80f"
+        },
+        "body": {
+          "shipmentId": "7fffb1f9-895f-4915-8063-267734971b24",
+          "shipmentNumber": "SHP-R21-7fffb1f9",
+          "sourceDocumentId": "SO-R21",
+          "status": "Delivered",
+          "carrierId": null,
+          "loadId": null,
+          "plannedShipAt": "2026-09-21T11:00:00+00:00",
+          "plannedDeliverAt": null,
+          "actualDeliverAt": null,
+          "sourceModule": "MOD-0141",
+          "sourceType": "SALES_ORDER",
+          "warehouseReferenceId": "WH-R21",
+          "shipToReference": "C-R21",
+          "lines": [],
+          "pod": null,
+          "contractVersion": "v1",
+          "lifecycleCorrelationId": "00000000-0000-0000-0000-000000000000"
+        },
+        "responseBodySha256": "0bc6bdd5b7b90197092f9a2234d326804846e9f8e00ef0e170c3ea51bd412d9e",
+        "responseBodyBytes": 480
+      },
+      "beforeCounts": {
+        "claims": 0,
+        "claims_receipts": 0,
+        "claims_audit": 0,
+        "claims_outbox": 0
+      },
+      "create": {
+        "method": "POST",
+        "path": "/api/shipment-bundle/claims",
+        "requestCorrelation": "00000000-0000-0000-0000-000000000000",
+        "requestBodySha256": "6c2b18265900d620b8d89d956defbb448ba77e4536c6d5ad4aada5fc502152f5",
+        "requestBodyBytes": 113,
+        "status": 201,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-correlation-id": "00000000-0000-0000-0000-000000000000"
+        },
+        "body": {
+          "claimId": "a9e4600f-a10b-474a-a58d-f892e70d7a5f",
+          "claimNumber": "CLM-a9e4600fa10b474aa58df892e70d7a5f",
+          "shipmentId": "7fffb1f9-895f-4915-8063-267734971b24",
+          "status": "Open",
+          "approvedAmount": null,
+          "idempotentReplay": false,
+          "contractVersion": "v1"
+        },
+        "responseBodySha256": "a23de2089202ff2dbff5a62465a17e7edb96cf0422c8e755badd7fa0b9c4209a",
+        "responseBodyBytes": 241
+      },
+      "afterCounts": {
+        "claims": 1,
+        "claims_receipts": 1,
+        "claims_audit": 1,
+        "claims_outbox": 1
+      },
+      "dependencyCaptures": [
+        {
+          "path": "/api/shipment-bundle/shipments/7fffb1f9-895f-4915-8063-267734971b24",
+          "xCorrelationId": "f66aa239-aaee-41dd-a62a-eeee60a2afe6",
+          "xTenantId": "f48dc040-f5bd-4f7a-8e2f-bb5e8b8d9838",
+          "xLegalEntityId": "9262f307-7fc5-459a-a900-d0c0af21d872",
+          "authorizationPresent": true
+        }
+      ],
+      "replay": {
+        "method": "POST",
+        "path": "/api/shipment-bundle/claims",
+        "requestCorrelation": "00000000-0000-0000-0000-000000000000",
+        "requestBodySha256": "6c2b18265900d620b8d89d956defbb448ba77e4536c6d5ad4aada5fc502152f5",
+        "requestBodyBytes": 113,
+        "status": 201,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-correlation-id": "00000000-0000-0000-0000-000000000000"
+        },
+        "body": {
+          "claimId": "a9e4600f-a10b-474a-a58d-f892e70d7a5f",
+          "claimNumber": "CLM-a9e4600fa10b474aa58df892e70d7a5f",
+          "shipmentId": "7fffb1f9-895f-4915-8063-267734971b24",
+          "status": "Open",
+          "approvedAmount": null,
+          "idempotentReplay": true,
+          "contractVersion": "v1"
+        },
+        "responseBodySha256": "9a25364acbeff19fe30152d47d94a7b23a56cec99b06e3aa5c7b0078d666892f",
+        "responseBodyBytes": 240
+      },
+      "replayCounts": {
+        "claims": 1,
+        "claims_receipts": 1,
+        "claims_audit": 1,
+        "claims_outbox": 1
+      },
+      "dependencyCapturesAfterReplay": [
+        {
+          "path": "/api/shipment-bundle/shipments/7fffb1f9-895f-4915-8063-267734971b24",
+          "xCorrelationId": "f66aa239-aaee-41dd-a62a-eeee60a2afe6",
+          "xTenantId": "f48dc040-f5bd-4f7a-8e2f-bb5e8b8d9838",
+          "xLegalEntityId": "9262f307-7fc5-459a-a900-d0c0af21d872",
+          "authorizationPresent": true
+        }
+      ],
+      "persistence": {
+        "claims": [
+          {
+            "_id": "a9e4600f-a10b-474a-a58d-f892e70d7a5f",
+            "TenantId": "f48dc040-f5bd-4f7a-8e2f-bb5e8b8d9838",
+            "IsDeleted": false,
+            "DeletedAt": null,
+            "CreatedAt": "2026-09-22T07:04:58.376155+00:00",
+            "UpdatedAt": null,
+            "Version": 1,
+            "LegalEntityId": "9262f307-7fc5-459a-a900-d0c0af21d872",
+            "CreatedBy": "492c2d98-d077-457a-8d63-d65675eb022e",
+            "UpdatedBy": null,
+            "ClaimNumber": "CLM-a9e4600fa10b474aa58df892e70d7a5f",
+            "ShipmentId": "7fffb1f9-895f-4915-8063-267734971b24",
+            "CarrierId": null,
+            "ReasonCode": "R21-NIL",
+            "ClaimedAmount": "1",
+            "Currency": "USD",
+            "ApprovedAmount": null,
+            "EvidenceReferenceIds": [],
+            "Status": "Open",
+            "CorrelationRoot": "00000000-0000-0000-0000-000000000000",
+            "LastEventId": "380e9357-4789-4795-8c54-31c343dec8a4",
+            "ReferenceSnapshot": {
+              "ShipmentId": "7fffb1f9-895f-4915-8063-267734971b24",
+              "ShipmentStatus": "Delivered",
+              "ShipmentCarrierId": null,
+              "CarrierStatus": null,
+              "Root": "00000000-0000-0000-0000-000000000000",
+              "ObservedAt": "2026-09-22T07:04:58.384564+00:00"
+            }
+          }
+        ],
+        "claims_receipts": [
+          {
+            "_id": "1940b04b-44d4-4477-8ef9-0f32bd6806c6",
+            "TenantId": "f48dc040-f5bd-4f7a-8e2f-bb5e8b8d9838",
+            "LegalEntityId": "9262f307-7fc5-459a-a900-d0c0af21d872",
+            "Operation": "createClaim",
+            "TargetId": "create",
+            "IdempotencyKey": "r21-nil",
+            "Fingerprint": "19c8c21f3d4331ad4ae6a4b767ba006c81c081a8b343cca721adc951e378781b",
+            "CorrelationRoot": "00000000-0000-0000-0000-000000000000",
+            "ClaimId": "a9e4600f-a10b-474a-a58d-f892e70d7a5f",
+            "ClaimNumber": "CLM-a9e4600fa10b474aa58df892e70d7a5f",
+            "ShipmentId": "7fffb1f9-895f-4915-8063-267734971b24",
+            "ResultingStatus": "Open",
+            "ApprovedAmount": null,
+            "ActorId": "492c2d98-d077-457a-8d63-d65675eb022e",
+            "StatusCode": 201
+          }
+        ],
+        "claims_audit": [
+          {
+            "_id": "2d62f601-db9a-4f3f-8d38-2d3fdc4933a9",
+            "TenantId": "f48dc040-f5bd-4f7a-8e2f-bb5e8b8d9838",
+            "LegalEntityId": "9262f307-7fc5-459a-a900-d0c0af21d872",
+            "ClaimId": "a9e4600f-a10b-474a-a58d-f892e70d7a5f",
+            "ActorId": "492c2d98-d077-457a-8d63-d65675eb022e",
+            "Version": 1,
+            "Before": null,
+            "After": {
+              "_id": "a9e4600f-a10b-474a-a58d-f892e70d7a5f",
+              "TenantId": "f48dc040-f5bd-4f7a-8e2f-bb5e8b8d9838",
+              "IsDeleted": false,
+              "DeletedAt": null,
+              "CreatedAt": "2026-09-22T07:04:58.376155+00:00",
+              "UpdatedAt": null,
+              "Version": 1,
+              "LegalEntityId": "9262f307-7fc5-459a-a900-d0c0af21d872",
+              "CreatedBy": "492c2d98-d077-457a-8d63-d65675eb022e",
+              "UpdatedBy": null,
+              "ClaimNumber": "CLM-a9e4600fa10b474aa58df892e70d7a5f",
+              "ShipmentId": "7fffb1f9-895f-4915-8063-267734971b24",
+              "CarrierId": null,
+              "ReasonCode": "R21-NIL",
+              "ClaimedAmount": "1",
+              "Currency": "USD",
+              "ApprovedAmount": null,
+              "EvidenceReferenceIds": [],
+              "Status": "Open",
+              "CorrelationRoot": "00000000-0000-0000-0000-000000000000",
+              "LastEventId": "380e9357-4789-4795-8c54-31c343dec8a4",
+              "ReferenceSnapshot": {
+                "ShipmentId": "7fffb1f9-895f-4915-8063-267734971b24",
+                "ShipmentStatus": "Delivered",
+                "ShipmentCarrierId": null,
+                "CarrierStatus": null,
+                "Root": "00000000-0000-0000-0000-000000000000",
+                "ObservedAt": "2026-09-22T07:04:58.384564+00:00"
+              }
+            },
+            "CorrelationRoot": "00000000-0000-0000-0000-000000000000",
+            "OccurredAt": "2026-09-22T07:04:58.3761550+00:00",
+            "ReceivedAt": "2026-09-22T07:04:58.3761550+00:00",
+            "CommittedAt": "2026-09-22T07:04:58.3869020+00:00",
+            "ResolutionCode": null,
+            "Note": null
+          }
+        ],
+        "claims_outbox": [
+          {
+            "_id": "7f64297a-e76b-4ab0-9d6c-7e0e7701b97c",
+            "TenantId": "f48dc040-f5bd-4f7a-8e2f-bb5e8b8d9838",
+            "LegalEntityId": "9262f307-7fc5-459a-a900-d0c0af21d872",
+            "ClaimId": "a9e4600f-a10b-474a-a58d-f892e70d7a5f",
+            "EventId": "380e9357-4789-4795-8c54-31c343dec8a4",
+            "Status": "Pending",
+            "Envelope": {
+              "eventId": "380e9357-4789-4795-8c54-31c343dec8a4",
+              "eventType": "ClaimOpened",
+              "occurredAt": "2026-09-22T07:04:58.3761550+00:00",
+              "correlationId": "00000000-0000-0000-0000-000000000000",
+              "causationId": null,
+              "aggregateType": "Claim",
+              "aggregateId": "a9e4600f-a10b-474a-a58d-f892e70d7a5f",
+              "payload": {
+                "claimId": "a9e4600f-a10b-474a-a58d-f892e70d7a5f",
+                "claimNumber": "CLM-a9e4600fa10b474aa58df892e70d7a5f",
+                "shipmentId": "7fffb1f9-895f-4915-8063-267734971b24",
+                "status": "Open",
+                "approvedAmount": null
+              },
+              "contractVersion": "v1"
+            }
+          }
+        ]
+      },
+      "checks": {
+        "expectedCreateStatus": true,
+        "expectedCreateCode": true,
+        "claimsResponseCorrelationPreserved": true,
+        "oneDependencyRead": true,
+        "dependencyTracePresent": true,
+        "dependencyTraceIsUuid": true,
+        "dependencyTraceNonNil": true,
+        "dependencyTraceSeparateFromBusinessRoot": true,
+        "replayStatus": true,
+        "replayFlag": true,
+        "replayNoExtraWrites": true,
+        "replayNoDependencyReread": true
+      }
+    },
+    {
+      "case": "missing",
+      "tenantId": "98a00349-2151-4b7a-be32-85157c042f28",
+      "legalEntityId": "2d25a1b1-1ea8-4e94-b7aa-5a53804e21f4",
+      "shipmentId": "09967741-4f7b-45d7-bda9-2b94c2657141",
+      "storedRootMode": "missing",
+      "storedRoot": null,
+      "requestRoot": "5d9ce165-5794-45ef-b234-47d0e2acb9ed",
+      "detail": {
+        "method": "GET",
+        "path": "/api/shipment-bundle/shipments/09967741-4f7b-45d7-bda9-2b94c2657141",
+        "requestCorrelation": "833dab64-2e31-4bbb-935e-9b3397a1d40b",
+        "requestBodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "requestBodyBytes": 0,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-correlation-id": "833dab64-2e31-4bbb-935e-9b3397a1d40b"
+        },
+        "body": {
+          "shipmentId": "09967741-4f7b-45d7-bda9-2b94c2657141",
+          "shipmentNumber": "SHP-R21-09967741",
+          "sourceDocumentId": "SO-R21",
+          "status": "Delivered",
+          "carrierId": null,
+          "loadId": null,
+          "plannedShipAt": "2026-09-21T11:00:00+00:00",
+          "plannedDeliverAt": null,
+          "actualDeliverAt": null,
+          "sourceModule": "MOD-0141",
+          "sourceType": "SALES_ORDER",
+          "warehouseReferenceId": "WH-R21",
+          "shipToReference": "C-R21",
+          "lines": [],
+          "pod": null,
+          "contractVersion": "v1",
+          "lifecycleCorrelationId": null
+        },
+        "responseBodySha256": "6ce08cfca45934139725c672413eaf7c10f4f19515014e7bef9fcd863a2f084a",
+        "responseBodyBytes": 446
+      },
+      "beforeCounts": {
+        "claims": 0,
+        "claims_receipts": 0,
+        "claims_audit": 0,
+        "claims_outbox": 0
+      },
+      "create": {
+        "method": "POST",
+        "path": "/api/shipment-bundle/claims",
+        "requestCorrelation": "5d9ce165-5794-45ef-b234-47d0e2acb9ed",
+        "requestBodySha256": "fd9ad75cd1e9c43a37855bf05f8f682d3a6fc7e7a475eb500176c9a3b65adcf7",
+        "requestBodyBytes": 117,
+        "status": 503,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-correlation-id": "5d9ce165-5794-45ef-b234-47d0e2acb9ed"
+        },
+        "body": {
+          "error": {
+            "code": "CLAIM_REFERENCE_INCOMPLETE",
+            "message": "Required reference data is unavailable.",
+            "correlationId": "5d9ce165-5794-45ef-b234-47d0e2acb9ed"
+          },
+          "contractVersion": "v1"
+        },
+        "responseBodySha256": "901ab58c548ab3014efc7f85b4bce50e71e24eb69e02fcf53f8f7d69b5b45433",
+        "responseBodyBytes": 177
+      },
+      "afterCounts": {
+        "claims": 0,
+        "claims_receipts": 0,
+        "claims_audit": 0,
+        "claims_outbox": 0
+      },
+      "dependencyCaptures": [
+        {
+          "path": "/api/shipment-bundle/shipments/09967741-4f7b-45d7-bda9-2b94c2657141",
+          "xCorrelationId": "f79f4463-fb87-4bed-a8fc-00660f100f28",
+          "xTenantId": "98a00349-2151-4b7a-be32-85157c042f28",
+          "xLegalEntityId": "2d25a1b1-1ea8-4e94-b7aa-5a53804e21f4",
+          "authorizationPresent": true
+        }
+      ],
+      "replay": null,
+      "replayCounts": null,
+      "dependencyCapturesAfterReplay": null,
+      "persistence": {
+        "claims": [],
+        "claims_receipts": [],
+        "claims_audit": [],
+        "claims_outbox": []
+      },
+      "checks": {
+        "expectedCreateStatus": true,
+        "expectedCreateCode": true,
+        "claimsResponseCorrelationPreserved": true,
+        "oneDependencyRead": true,
+        "dependencyTracePresent": true,
+        "dependencyTraceIsUuid": true,
+        "dependencyTraceNonNil": true,
+        "dependencyTraceSeparateFromBusinessRoot": true,
+        "failedCreateHasZeroWrites": true
+      }
+    },
+    {
+      "case": "null",
+      "tenantId": "08fe5b60-764b-47a9-93a9-5cf22abd4d93",
+      "legalEntityId": "63f15ff6-45b7-4b19-9cac-1e05fef6e019",
+      "shipmentId": "59620126-84c1-4a90-956e-9848ca1e8d50",
+      "storedRootMode": "null",
+      "storedRoot": null,
+      "requestRoot": "33c578e2-4c4a-4d72-b756-913166e528b7",
+      "detail": {
+        "method": "GET",
+        "path": "/api/shipment-bundle/shipments/59620126-84c1-4a90-956e-9848ca1e8d50",
+        "requestCorrelation": "f17f3cdf-e78f-48e1-8ea6-6f1c2ad64ce0",
+        "requestBodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "requestBodyBytes": 0,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-correlation-id": "f17f3cdf-e78f-48e1-8ea6-6f1c2ad64ce0"
+        },
+        "body": {
+          "shipmentId": "59620126-84c1-4a90-956e-9848ca1e8d50",
+          "shipmentNumber": "SHP-R21-59620126",
+          "sourceDocumentId": "SO-R21",
+          "status": "Delivered",
+          "carrierId": null,
+          "loadId": null,
+          "plannedShipAt": "2026-09-21T11:00:00+00:00",
+          "plannedDeliverAt": null,
+          "actualDeliverAt": null,
+          "sourceModule": "MOD-0141",
+          "sourceType": "SALES_ORDER",
+          "warehouseReferenceId": "WH-R21",
+          "shipToReference": "C-R21",
+          "lines": [],
+          "pod": null,
+          "contractVersion": "v1",
+          "lifecycleCorrelationId": null
+        },
+        "responseBodySha256": "cad0c80b57364970fa0a5917e29bb112035f5d0cd3b0f94ca39a573d6a005274",
+        "responseBodyBytes": 446
+      },
+      "beforeCounts": {
+        "claims": 0,
+        "claims_receipts": 0,
+        "claims_audit": 0,
+        "claims_outbox": 0
+      },
+      "create": {
+        "method": "POST",
+        "path": "/api/shipment-bundle/claims",
+        "requestCorrelation": "33c578e2-4c4a-4d72-b756-913166e528b7",
+        "requestBodySha256": "6238ca602e5e91af08ad19e963a1e978bfa300e0f0431bf3b34378d9a765be7d",
+        "requestBodyBytes": 114,
+        "status": 503,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-correlation-id": "33c578e2-4c4a-4d72-b756-913166e528b7"
+        },
+        "body": {
+          "error": {
+            "code": "CLAIM_REFERENCE_INCOMPLETE",
+            "message": "Required reference data is unavailable.",
+            "correlationId": "33c578e2-4c4a-4d72-b756-913166e528b7"
+          },
+          "contractVersion": "v1"
+        },
+        "responseBodySha256": "a83d880719e29dad6f2dbb78d2e3a15bb09846c2af990f64b468e222455ce7ca",
+        "responseBodyBytes": 177
+      },
+      "afterCounts": {
+        "claims": 0,
+        "claims_receipts": 0,
+        "claims_audit": 0,
+        "claims_outbox": 0
+      },
+      "dependencyCaptures": [
+        {
+          "path": "/api/shipment-bundle/shipments/59620126-84c1-4a90-956e-9848ca1e8d50",
+          "xCorrelationId": "729583ea-15b2-4c7b-a73b-485599f3e23e",
+          "xTenantId": "08fe5b60-764b-47a9-93a9-5cf22abd4d93",
+          "xLegalEntityId": "63f15ff6-45b7-4b19-9cac-1e05fef6e019",
+          "authorizationPresent": true
+        }
+      ],
+      "replay": null,
+      "replayCounts": null,
+      "dependencyCapturesAfterReplay": null,
+      "persistence": {
+        "claims": [],
+        "claims_receipts": [],
+        "claims_audit": [],
+        "claims_outbox": []
+      },
+      "checks": {
+        "expectedCreateStatus": true,
+        "expectedCreateCode": true,
+        "claimsResponseCorrelationPreserved": true,
+        "oneDependencyRead": true,
+        "dependencyTracePresent": true,
+        "dependencyTraceIsUuid": true,
+        "dependencyTraceNonNil": true,
+        "dependencyTraceSeparateFromBusinessRoot": true,
+        "failedCreateHasZeroWrites": true
+      }
+    },
+    {
+      "case": "malformed",
+      "tenantId": "3ba7666a-e3e4-4274-a592-dd43c74aa1f2",
+      "legalEntityId": "ecd703b4-716e-48ed-8624-10b4c78035a2",
+      "shipmentId": "182235ad-9328-4986-b678-e8e84ebc9819",
+      "storedRootMode": "malformed",
+      "storedRoot": null,
+      "requestRoot": "bb2922b1-79fe-48c1-9f97-a4e1b4b0d116",
+      "detail": {
+        "method": "GET",
+        "path": "/api/shipment-bundle/shipments/182235ad-9328-4986-b678-e8e84ebc9819",
+        "requestCorrelation": "3b32c67a-b43f-4860-b534-fa87d3780612",
+        "requestBodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "requestBodyBytes": 0,
+        "status": 500,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-correlation-id": "3b32c67a-b43f-4860-b534-fa87d3780612"
+        },
+        "body": {
+          "error": {
+            "code": "SHIPMENT_ROOT_INVALID",
+            "message": "SHIPMENT_ROOT_INVALID",
+            "correlationId": "3b32c67a-b43f-4860-b534-fa87d3780612"
+          },
+          "contractVersion": "v1"
+        },
+        "responseBodySha256": "2b69b7af3c92fcf282f0cb781659aea67f5ad1ffd0230bd0c452fe3903628196",
+        "responseBodyBytes": 154
+      },
+      "beforeCounts": {
+        "claims": 0,
+        "claims_receipts": 0,
+        "claims_audit": 0,
+        "claims_outbox": 0
+      },
+      "create": {
+        "method": "POST",
+        "path": "/api/shipment-bundle/claims",
+        "requestCorrelation": "bb2922b1-79fe-48c1-9f97-a4e1b4b0d116",
+        "requestBodySha256": "6509807d7fc8f7fa8519d87ec05d54e4997b7b0e851fc06a4c5bf0203f9957c6",
+        "requestBodyBytes": 119,
+        "status": 502,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-correlation-id": "bb2922b1-79fe-48c1-9f97-a4e1b4b0d116"
+        },
+        "body": {
+          "error": {
+            "code": "CLAIM_REFERENCE_INVALID",
+            "message": "Reference response is invalid.",
+            "correlationId": "bb2922b1-79fe-48c1-9f97-a4e1b4b0d116"
+          },
+          "contractVersion": "v1"
+        },
+        "responseBodySha256": "b85abd2c4b8d89e5500357f226afe9965ec98cbd96f42f8bf3986e8eb98a8e92",
+        "responseBodyBytes": 165
+      },
+      "afterCounts": {
+        "claims": 0,
+        "claims_receipts": 0,
+        "claims_audit": 0,
+        "claims_outbox": 0
+      },
+      "dependencyCaptures": [
+        {
+          "path": "/api/shipment-bundle/shipments/182235ad-9328-4986-b678-e8e84ebc9819",
+          "xCorrelationId": "b5a9e16b-3466-4302-a982-3a6ebe540032",
+          "xTenantId": "3ba7666a-e3e4-4274-a592-dd43c74aa1f2",
+          "xLegalEntityId": "ecd703b4-716e-48ed-8624-10b4c78035a2",
+          "authorizationPresent": true
+        }
+      ],
+      "replay": null,
+      "replayCounts": null,
+      "dependencyCapturesAfterReplay": null,
+      "persistence": {
+        "claims": [],
+        "claims_receipts": [],
+        "claims_audit": [],
+        "claims_outbox": []
+      },
+      "checks": {
+        "expectedCreateStatus": true,
+        "expectedCreateCode": true,
+        "claimsResponseCorrelationPreserved": true,
+        "oneDependencyRead": true,
+        "dependencyTracePresent": true,
+        "dependencyTraceIsUuid": true,
+        "dependencyTraceNonNil": true,
+        "dependencyTraceSeparateFromBusinessRoot": true,
+        "failedCreateHasZeroWrites": true
+      }
+    },
+    {
+      "case": "mismatch",
+      "tenantId": "1324d968-9d23-4cc5-8b5d-ebc013af5a91",
+      "legalEntityId": "279061ad-c2fb-4e85-b6ae-e5559fad4182",
+      "shipmentId": "3ca86d37-2268-4bf9-82b9-ec2490b246c1",
+      "storedRootMode": "value",
+      "storedRoot": "8e29ffce-7ed9-4758-9da5-d48afcf48f8b",
+      "requestRoot": "47414e40-34e0-4c1b-8663-2fa8dec101f2",
+      "detail": {
+        "method": "GET",
+        "path": "/api/shipment-bundle/shipments/3ca86d37-2268-4bf9-82b9-ec2490b246c1",
+        "requestCorrelation": "7f6bd386-8e63-4b74-aec7-54f918db2bc9",
+        "requestBodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "requestBodyBytes": 0,
+        "status": 200,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-correlation-id": "7f6bd386-8e63-4b74-aec7-54f918db2bc9"
+        },
+        "body": {
+          "shipmentId": "3ca86d37-2268-4bf9-82b9-ec2490b246c1",
+          "shipmentNumber": "SHP-R21-3ca86d37",
+          "sourceDocumentId": "SO-R21",
+          "status": "Delivered",
+          "carrierId": null,
+          "loadId": null,
+          "plannedShipAt": "2026-09-21T11:00:00+00:00",
+          "plannedDeliverAt": null,
+          "actualDeliverAt": null,
+          "sourceModule": "MOD-0141",
+          "sourceType": "SALES_ORDER",
+          "warehouseReferenceId": "WH-R21",
+          "shipToReference": "C-R21",
+          "lines": [],
+          "pod": null,
+          "contractVersion": "v1",
+          "lifecycleCorrelationId": "8e29ffce-7ed9-4758-9da5-d48afcf48f8b"
+        },
+        "responseBodySha256": "9bdaa32bdbeb60a3e8611724141ec0e59ab8d8118b8667ccc20caf559ec60025",
+        "responseBodyBytes": 480
+      },
+      "beforeCounts": {
+        "claims": 0,
+        "claims_receipts": 0,
+        "claims_audit": 0,
+        "claims_outbox": 0
+      },
+      "create": {
+        "method": "POST",
+        "path": "/api/shipment-bundle/claims",
+        "requestCorrelation": "47414e40-34e0-4c1b-8663-2fa8dec101f2",
+        "requestBodySha256": "de2960afdd5f207f5e1499d2c85858a673e212fd2401e2982d59e37df319e79c",
+        "requestBodyBytes": 118,
+        "status": 409,
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "x-correlation-id": "47414e40-34e0-4c1b-8663-2fa8dec101f2"
+        },
+        "body": {
+          "error": {
+            "code": "CLAIM_CORRELATION_MISMATCH",
+            "message": "Correlation does not match the lifecycle root.",
+            "correlationId": "47414e40-34e0-4c1b-8663-2fa8dec101f2"
+          },
+          "contractVersion": "v1"
+        },
+        "responseBodySha256": "70c085e1258dc44198d832d49b5ff45fe8ab72a2ee1bc5891abaff17d2a13590",
+        "responseBodyBytes": 184
+      },
+      "afterCounts": {
+        "claims": 0,
+        "claims_receipts": 0,
+        "claims_audit": 0,
+        "claims_outbox": 0
+      },
+      "dependencyCaptures": [
+        {
+          "path": "/api/shipment-bundle/shipments/3ca86d37-2268-4bf9-82b9-ec2490b246c1",
+          "xCorrelationId": "65250806-1290-45ce-aa33-17264c74dfdb",
+          "xTenantId": "1324d968-9d23-4cc5-8b5d-ebc013af5a91",
+          "xLegalEntityId": "279061ad-c2fb-4e85-b6ae-e5559fad4182",
+          "authorizationPresent": true
+        }
+      ],
+      "replay": null,
+      "replayCounts": null,
+      "dependencyCapturesAfterReplay": null,
+      "persistence": {
+        "claims": [],
+        "claims_receipts": [],
+        "claims_audit": [],
+        "claims_outbox": []
+      },
+      "checks": {
+        "expectedCreateStatus": true,
+        "expectedCreateCode": true,
+        "claimsResponseCorrelationPreserved": true,
+        "oneDependencyRead": true,
+        "dependencyTracePresent": true,
+        "dependencyTraceIsUuid": true,
+        "dependencyTraceNonNil": true,
+        "dependencyTraceSeparateFromBusinessRoot": true,
+        "failedCreateHasZeroWrites": true
+      }
+    }
+  ],
+  "failureRows": [],
+  "security": {
+    "anonymous": {
+      "status": 401,
+      "code": "UNAUTHENTICATED",
+      "responseCorrelation": "bd0680b0-89f4-4a27-9237-911e08e6bb71"
+    },
+    "missingCreatePermission": {
+      "status": 403,
+      "code": "FORBIDDEN",
+      "responseCorrelation": "bd0680b0-89f4-4a27-9237-911e08e6bb71"
+    },
+    "foreignTenant": {
+      "status": 404,
+      "code": "CLAIM_NOT_FOUND",
+      "responseCorrelation": "bd0680b0-89f4-4a27-9237-911e08e6bb71"
+    },
+    "foreignLegalEntity": {
+      "status": 404,
+      "code": "CLAIM_NOT_FOUND",
+      "responseCorrelation": "bd0680b0-89f4-4a27-9237-911e08e6bb71"
+    },
+    "ownerScopeCounts": {
+      "claims": 0,
+      "claims_receipts": 0,
+      "claims_audit": 0,
+      "claims_outbox": 0
+    },
+    "pass": true
+  },
+  "restart": {
+    "priorApiPid": 30663,
+    "newApiPid": 31048,
+    "binarySha256": "4673a6b970a4ee31c3413325b4024349ad91773262fb6e56e84eebbd1106fb8b",
+    "replay": {
+      "method": "POST",
+      "path": "/api/shipment-bundle/claims",
+      "requestCorrelation": "00000000-0000-0000-0000-000000000000",
+      "requestBodySha256": "6c2b18265900d620b8d89d956defbb448ba77e4536c6d5ad4aada5fc502152f5",
+      "requestBodyBytes": 113,
+      "status": 201,
+      "headers": {
+        "content-type": "application/json; charset=utf-8",
+        "x-correlation-id": "00000000-0000-0000-0000-000000000000"
+      },
+      "body": {
+        "claimId": "a9e4600f-a10b-474a-a58d-f892e70d7a5f",
+        "claimNumber": "CLM-a9e4600fa10b474aa58df892e70d7a5f",
+        "shipmentId": "7fffb1f9-895f-4915-8063-267734971b24",
+        "status": "Open",
+        "approvedAmount": null,
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      },
+      "responseBodySha256": "9a25364acbeff19fe30152d47d94a7b23a56cec99b06e3aa5c7b0078d666892f",
+      "responseBodyBytes": 240
+    },
+    "beforeCounts": {
+      "claims": 1,
+      "claims_receipts": 1,
+      "claims_audit": 1,
+      "claims_outbox": 1
+    },
+    "afterCounts": {
+      "claims": 1,
+      "claims_receipts": 1,
+      "claims_audit": 1,
+      "claims_outbox": 1
+    },
+    "dependencyReadsBefore": 8,
+    "dependencyReadsAfter": 8,
+    "pass": true
+  },
+  "failureCaseChecks": {},
+  "nilPersistenceChecks": {
+    "oneOfEachClaimRecord": true,
+    "aggregateRootNil": true,
+    "receiptRootNil": true,
+    "auditRootNil": true,
+    "eventRootNil": true,
+    "responseDoesNotInventRoot": true
+  },
+  "caseChecks": {
+    "non-nil": true,
+    "nil": true,
+    "missing": true,
+    "null": true,
+    "malformed": true,
+    "mismatch": true
+  },
+  "captureCount": 8,
+  "secretsRecorded": false
+}

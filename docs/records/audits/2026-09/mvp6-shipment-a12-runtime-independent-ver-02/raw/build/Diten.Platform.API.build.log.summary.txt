@@ -1,0 +1,16 @@
+  Diten.BuildingBlocks.Eventing -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Release/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.Platform.Common -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Release/net8.0/Diten.Platform.Common.dll
+  Diten.BuildingBlocks.BackgroundJobs -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/bin/Release/net8.0/Diten.BuildingBlocks.BackgroundJobs.dll
+  Diten.BuildingBlocks.ModuleRegistration.Abstractions -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/bin/Release/net8.0/Diten.BuildingBlocks.ModuleRegistration.Abstractions.dll
+  Diten.BuildingBlocks.InterfaceRegistry.Abstractions -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/bin/Release/net8.0/Diten.BuildingBlocks.InterfaceRegistry.Abstractions.dll
+  Diten.PpmService.Contracts -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.PpmService/src/Diten.PpmService.Contracts/bin/Release/net8.0/Diten.PpmService.Contracts.dll
+  Diten.Platform.Contracts -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Platform.Contracts/bin/Release/net8.0/Diten.Platform.Contracts.dll
+  Diten.Platform.Domain -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Platform/src/Diten.Platform.Domain/bin/Release/net8.0/Diten.Platform.Domain.dll
+  Diten.Platform.Application -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Platform/src/Diten.Platform.Application/bin/Release/net8.0/Diten.Platform.Application.dll
+  Diten.Platform.Infrastructure -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Platform/src/Diten.Platform.Infrastructure/bin/Release/net8.0/Diten.Platform.Infrastructure.dll
+  Diten.Platform.API -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Platform/src/Diten.Platform.API/bin/Release/net8.0/Diten.Platform.API.dll
+Build succeeded.
+    32 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:33.81

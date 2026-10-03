@@ -1,0 +1,83 @@
+{
+  "phase": "regression",
+  "mode": "v3",
+  "startedAt": "2026-09-27T10:06:48.596Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "REG-D-02-single-shell": {
+      "result": "PASS",
+      "dom": {
+        "layoutWrappers": 1,
+        "mainJs": 1,
+        "footers": 1
+      }
+    },
+    "REG-D1-skeleton-hidden-after-load": {
+      "result": "PASS"
+    },
+    "REG-filter-saveview": {
+      "result": "PASS",
+      "s0": false,
+      "s1": true,
+      "s2": false
+    },
+    "REG-quickview": {
+      "result": "PASS",
+      "adapterCalls": 0
+    },
+    "REG-D-01-create-reload-and-D4-focus": {
+      "result": "PASS",
+      "createStatus": 201,
+      "reloaded": true,
+      "rowShowsAmount": true,
+      "surfaceClosedAfterSave": true,
+      "focusReturnedToAdd": true,
+      "newJsErrors": 0
+    },
+    "REG-D2-transition-flow": {
+      "result": "PASS",
+      "claimId": "d441eeee-7971-4118-8a23-7211a5ba6784",
+      "focusedOnOpen": "transitionTarget",
+      "status": 200,
+      "reloaded": true,
+      "newJsErrors": 0
+    }
+  },
+  "png": [
+    {
+      "name": "regression-create-reload.png",
+      "sha256": "89019c0923d4e016f4144e2f09a70db3b06be8bfef492b586ac6a941dc715f1f",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T10:06:55.534Z",
+      "phase": "regression",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "regression-transition-investigating.png",
+      "sha256": "1597a662b87faf71e8b5009ce580b84ee0f022d96d27f25d77b94ed26dc3ade2",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T10:06:59.295Z",
+      "phase": "regression",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [
+    {
+      "tag": "create",
+      "text": "Claim created.",
+      "type": "success"
+    },
+    {
+      "tag": "transition",
+      "text": "Claim status updated.",
+      "type": "success"
+    }
+  ],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-27T10:06:59.322Z"
+}

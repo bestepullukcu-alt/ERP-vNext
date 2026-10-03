@@ -1,0 +1,21 @@
+{
+  "command": [
+    "/Users/natig/.dotnet/dotnet",
+    "test",
+    "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj",
+    "-c",
+    "Debug",
+    "--no-build",
+    "--no-restore",
+    "-m:1",
+    "/nr:false",
+    "--filter",
+    "(FullyQualifiedName~Diten.SupplyChainService.Tests.Claims.|FullyQualifiedName~Diten.SupplyChainService.Tests.Returns.|FullyQualifiedName~Diten.SupplyChainService.Tests.Loads.|FullyQualifiedName~Diten.SupplyChainService.Tests.Carriers.)&FullyQualifiedName!~TwoIndependentTestProcesses",
+    "--logger",
+    "trx;LogFileName=same-host.trx",
+    "--results-directory",
+    "/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/mvp6-mod0187-normal-ver-ftmpk8e2/regressions"
+  ],
+  "databaseEndpoint": "mongodb://127.0.0.1:27989/?replicaSet=mvp6_normal_integration_net8",
+  "exit": 0
+}

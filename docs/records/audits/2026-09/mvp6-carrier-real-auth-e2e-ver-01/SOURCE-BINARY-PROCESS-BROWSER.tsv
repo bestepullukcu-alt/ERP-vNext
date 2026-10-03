@@ -1,0 +1,13 @@
+stage	identity_or_observation	verdict	boundary
+Carrier UI source	manifest e96578d0e874e8796469ee763aa9b6e723c7f0c9a966b5fe8a46b535279b26cb; Index da254157aa3edc3a32434281e71303c1fd7a2bf9bc8863afe4b21884b37ddd0a	PASS inherited	Sealed prior independent VER; producer manifest path unavailable in current checkout
+Shared integration source	manifest dec28b6aebd7552df82d380cf8b601aabc4d28c7d21349ff43807bd0747e4634	PASS inherited	422/422 independently verified bounded source
+Auth/Platform source	candidate patch 6559c94835814ab65dc50a05cca32db905e31e637f9a15aeeeb033e9850c83e6	OPEN	Unapproved and unapplied; not executable acceptance source
+Historical Web binary	33496b3a05bf03678238897d4cfb924f8b8657ea883b51cbe9255d5fff0cb172	PASS historical	Predates authorized Auth uptake; cannot prove successor chain
+Historical Auth binary	7bbbee1e43e16885c153c59bc444741b7ffd8fb7bdcd5eb7a57979c164b66a58	PASS historical	Emits no legal_entity_id in observed token
+Historical Platform binary	64b055fc9797645b439c1d895c138c7d9b698bcc71c0993012617e28fad67d97	PASS historical	No approved Auth issuance seam
+Historical SupplyChain binary	2c36a3402011cb737f81f3f5f1215d372ee2cde2ba4491dbc84bd59799c21eb9	PASS historical	Carrier fail-closed behavior observed
+Historical Gateway binary	d4c56f42c6af13a801047f45eb03ac036e73435ea3ffad35c0916ee54be2fc43	PASS historical	JWT enforcement observed
+Fresh successor processes	No process started	OPEN	Start dependency failed
+Fresh real-token HTTP	No request issued	OPEN	Would be invalid before approved Auth/Platform uptake and VER
+Fresh browser chain	No browser session started	OPEN	No Auth-scoped list row can be established
+Prior UAS/browser shell	Four browser captures visibly observed; hashes in prior SCREENSHOT-INDEX.tsv	PASS/PARTIAL inherited	No durable PNG archive; no fresh screenshot claim

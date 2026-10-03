@@ -1,0 +1,4 @@
+cf7194de59aab991dd1885a15d287f33f738a9f90a4f48318c9312a0c24f2042  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll
+5cac5ae8d8d45ba29603c93d317ccd95d4c6988ea752c1c3a24fb33c013ffdc1  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Debug/net8.0/Diten.SupplyChainService.Persistence.dll
+37b4dfdd2d2a7756cc86d61c60e8a7c9b0e750c221264b29dfa9d5e2cc547ee5  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/bin/Debug/net8.0/Diten.SupplyChainService.Application.dll
+2bac1106c0415466990983d91b9c1ed7cbe05d12ca4dccfaf1c8a708eace5083  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/bin/Debug/net8.0/Diten.SupplyChainService.Domain.dll

@@ -1,0 +1,15 @@
+43186e3b57bd75d5eb8a00704c88c5d733820fe930c45318b5e0537571d9776e  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/COMMAND-RESULTS.tsv
+2935d511e2217cfed001412e4cc6e4180af9d6b44f9ed23f7f5d02ac37001b92  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/HASH-VERIFICATION.tsv
+098686979790f824f1df88035ad2ae0e7385efb693aba9e333f43a918941c18f  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/NO-CHANGE.tsv
+e0ac509c83c8082d2f4309d5db681908eda5203c2e745b9cce512d18b7eb503a  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/PHASE1-FINDINGS.md
+2619d111c068380aabe99ccefd14d0d9a29bb780a75657f3b3560b95dfd06661  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/RUNTIME-ACCEPTANCE.tsv
+674269a15842488f634acb65751b33ad3d2b550429ff2f74cab931c4bd2c8a09  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/SOP-22.md
+27c0c493073373f0547f8f3c6a387d34da823142a9a3f6b8eef8560dca65f2e3  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/WRITER-GATE.tsv
+76fd77c1ece9998187a3c39375ad4cd78717aa9804d11c0696110afd199e7805  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/raw/archive-target-check.tsv
+faebe9e908ad9a4ae7f8519a589437ece2a694e9921e8cae3da4603a8ddcb527  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/raw/input-sha256.txt
+f98bfd05800a39227fbc9ac01a8ec64fd9d2965bdbae730db07e9f3a17964c0e  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/raw/native-dotnet-info.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/raw/patch-apply-check.stderr
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/raw/patch-apply-check.stdout
+ea65d194a8150886f4abc189e5912495dfaa7b9578a12f9553c32c12a4284e9d  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/raw/root-manifest-check.txt
+01d699a7e64eb677fec42eeb8129a4b3cab4d0157600ace17d587306b838dfd7  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/raw/verify_archive.py
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-ver-01/raw/writer-marker-search.txt

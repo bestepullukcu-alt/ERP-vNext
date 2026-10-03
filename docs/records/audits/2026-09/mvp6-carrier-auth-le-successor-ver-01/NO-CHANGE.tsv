@@ -1,0 +1,8 @@
+measurement	value
+baseline HEAD	4a8d4d4b339528a88e6220fb8402e5a2c771136c
+baseline branch	feature/mvp6-logistics
+pre-report dirty entry count	2410
+pre-report dirty inventory sha256	18fe1f92d68c17e310abdc70973c4784b6bdef7c237af169c91ab184a8729b28
+post-report dirty inventory sha256 excluding this owned output	18fe1f92d68c17e310abdc70973c4784b6bdef7c237af169c91ab184a8729b28
+product source changes by verifier	0
+git commit push stash	0

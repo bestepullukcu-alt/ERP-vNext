@@ -1,0 +1,1 @@
+{"phase":"late","summary":{"login-actor-a":"info","late-soft-delete-step":"fixture-step","late-async-stale-response":"PASS"},"db":["late-softdelete-fixture:PASS","late-browser-zero-write:PASS"],"png":1,"consoleErrors":1}

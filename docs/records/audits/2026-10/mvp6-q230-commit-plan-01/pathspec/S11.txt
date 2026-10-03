@@ -1,0 +1,14 @@
+AGENTS.md
+scripts/smoke-mod0162-fu02-knowledge-content-authenticated.ps1
+scripts/smoke-mod0162-fu03-concept-graph-authenticated.ps1
+scripts/smoke-mod0162-fu04-knowledge-path-authenticated.ps1
+scripts/smoke-mod0162-fu05-content-engagement-journey-authenticated.ps1
+scripts/smoke-mod0164-fu02-consent-preference-authenticated.ps1
+scripts/smoke-mod0165-fu03-visit-frequency-authenticated.ps1
+scripts/smoke-mod0165-fu04-campaign-targeting-authenticated.ps1
+scripts/smoke-mod0165-fu06-cycle-period-authenticated.ps1
+scripts/smoke-mod0167-fu02-segment-foundation-authenticated.ps1
+scripts/smoke-mod0167-fu04-strategy-template-authenticated.ps1
+scripts/test-env/mvp6-test-mongo-env.sh
+watch-diten-bg.ps1
+watch-diten.ps1

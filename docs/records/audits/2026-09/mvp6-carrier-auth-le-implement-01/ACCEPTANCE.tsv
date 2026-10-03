@@ -1,0 +1,22 @@
+criterion	result	evidence	disposition
+Exact approved patch SHA-256	PASS	applied.patch = 6559c94835814ab65dc50a05cca32db905e31e637f9a15aeeeb033e9850c83e6	content-bound
+Exact approved ten-path manifest SHA-256	PASS	APPLIED-SOURCE-MANIFEST.tsv = 84ce27833951bfed92edf46c02a0ee7c8934d1c6eff006e665d3ddaf09bf8b23	content-bound
+Ten target source hashes	PASS	raw-evidence.tar.gz::raw/applied-source-manifest-check.log	10/10
+Auth API fresh build	PASS	raw-evidence.tar.gz::raw/auth-build.log; raw/auth-build.exit	0 warnings / 0 errors
+Platform API fresh build	PASS	raw-evidence.tar.gz::raw/platform-build.log; raw/platform-build.exit	0 warnings / 0 errors
+Internal-key rejection	PASS	raw-evidence.tar.gz::raw/runtime-evidence/internal-scope-wrong-key.*	HTTP 401
+Exactly one active LE emitted	FAIL	raw-evidence.tar.gz::raw/runtime-evidence/internal-scope-correct-key.*; auth-issued-safe-claims.json	Platform HTTP 400; claim absent
+Zero active LE omits claim	NOT RUN	blocked by F1	not claimed
+Multiple active LE omits claim	NOT RUN	blocked by F1	not claimed
+Inactive/revoked scope omitted	NOT RUN	blocked by F1	not claimed
+Tenant and actor boundaries	FAIL	raw-evidence.tar.gz::raw/runtime-evidence/tenant-actor-boundaries.tsv	all requests stop at tenant-context HTTP 400
+Dependency failure is fail-closed	PARTIAL	auth-issued-safe-claims.json	Platform 400 omits claim; MDM failure path not reached
+Login token contains authoritative LE	FAIL	raw-evidence.tar.gz::raw/runtime-evidence/auth-issued-safe-claims.json	HTTP 200, legal_entity_id null
+Refresh token re-resolves authoritative LE	FAIL	raw-evidence.tar.gz::raw/runtime-evidence/auth-issued-safe-claims.json	HTTP 200, legal_entity_id null
+MFA issuance	NOT RUN	blocked by F1	not claimed
+Forced-password issuance	NOT RUN	blocked by F1	not claimed
+Carrier missing-LE 403 remains fail-closed	PRESERVED	mvp6-carrier-auth-le-resolution-01/SOP-22.md; no Carrier source change	inherited/content-bound
+Full Auth tests	NOT ESTABLISHED	raw-evidence.tar.gz::raw/auth-tests.log; raw/auth-tests.exit	test project compile failed on existing unavailable test dependencies
+Secrets or bearer tokens archived	PASS	raw-evidence.tar.gz::raw/runtime-evidence/auth-issued-safe-claims.json; processes-safe.log	redacted claims only
+Runtime process cleanup	PASS	raw-evidence.tar.gz::raw/runtime-evidence/cleanup.log	all four lane ports released
+Independent verification	PENDING	separate verifier required	must not be inferred from DEV

@@ -1,0 +1,26 @@
+now:      400 entries
+## writer start -> writer post-step2
+20a21
+> ?? docs/analysis/contracts/loads-semantics-v3.1.0.md
+121a123
+> ?? docs/records/audits/2026-09/mvp6-loads-publication-guard-01/
+285a288
+> ?? docs/records/decisions/2026-09/mvp6-loads-publication-guard-owner-decision-01.json
+## writer post-step2 -> now (VER folder expected only)
+112a113
+> ?? docs/records/audits/2026-09/mvp6-ct-loads-publication-intake-2026-09-26.md
+123a125
+> ?? docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/
+## writer start -> now
+20a21
+> ?? docs/analysis/contracts/loads-semantics-v3.1.0.md
+111a113
+> ?? docs/records/audits/2026-09/mvp6-ct-loads-publication-intake-2026-09-26.md
+121a124,125
+> ?? docs/records/audits/2026-09/mvp6-loads-publication-guard-01/
+> ?? docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/
+285a290
+> ?? docs/records/decisions/2026-09/mvp6-loads-publication-guard-owner-decision-01.json
+## tracked diff name-only
+      17
+4:docs/analysis/contracts/shipment-bundle.openapi.yaml

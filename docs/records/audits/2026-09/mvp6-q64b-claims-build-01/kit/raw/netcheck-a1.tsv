@@ -1,0 +1,7 @@
+service	pid	connections_to_27017	connections_to_lane_mongo
+auth	35589	0	4
+platform	35661	0	12
+mdm	35771	0	3
+supplychain	35824	0	3
+gateway	35891	0	0
+web	35954	0	0

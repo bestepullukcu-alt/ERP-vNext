@@ -1,0 +1,6 @@
+login=200
+page=200
+datatable=1
+create_surface=3
+status_surface=3
+access_denied=0

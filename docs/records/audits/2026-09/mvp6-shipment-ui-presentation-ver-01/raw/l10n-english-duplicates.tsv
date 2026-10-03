@@ -1,0 +1,4 @@
+language	key	english_value	non_english_value	result
+fr	Actions	Actions	Actions	REVIEW
+fr	Note	Note	Note	REVIEW
+zh	SkuId	SKU ID	SKU ID	REVIEW

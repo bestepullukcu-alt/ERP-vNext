@@ -1,0 +1,8 @@
+action	artifact_or_target	status	authority_or_gap
+Inspect and reconstruct B	cdc6228aa3d215f34f2f2f9d5b784cf57ac20b6eb8f2c2f26bdcace9dcd4d76c	AUTHORIZED	MVP6-BC-INTEGRATION-SUCCESSOR-01 inspection request
+Inspect C uptake	f4fc82b44eb237d1dbc8bdd9c0d9633c948ca4e33cd2dcff91cd65f653780c8f	AUTHORIZED	MVP6-BC-INTEGRATION-SUCCESSOR-01 inspection request
+Apply C in disposable B copy	dec28b6aebd7552df82d380cf8b601aabc4d28c7d21349ff43807bd0747e4634	AUTHORIZED	Disposable composition requested by this WP
+Apply C to registered B integration checkout	dec28b6aebd7552df82d380cf8b601aabc4d28c7d21349ff43807bd0747e4634	HELD	Prior C authority is limited to the isolated Capacity checkout and expressly requires a separate successor manifest; it does not authorize mutation of B
+Change Program.cs	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs	PROHIBITED	This WP forbids Program.cs changes
+Change contract, guard or gateway	shared surfaces	PROHIBITED	This WP forbids those changes
+

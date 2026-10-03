@@ -1,0 +1,108 @@
+{
+  "tenant": "5dd5272f-9d39-49ea-9cb9-875329ebb94b",
+  "legalEntity": "cf9ca1b4-ee4d-4093-bc6c-e5c6ec26de3f",
+  "actor": "4527cbec-1b5a-4da8-ba49-936d3c779c97",
+  "correlation": "4ece1ef1-a027-47a1-9297-bc0af97723b9",
+  "cases": [
+    {
+      "name": "health",
+      "method": "GET",
+      "path": "/health",
+      "requestHeaders": {
+        "X-Tenant-Id": "5dd5272f-9d39-49ea-9cb9-875329ebb94b",
+        "X-Legal-Entity-Id": "cf9ca1b4-ee4d-4093-bc6c-e5c6ec26de3f",
+        "X-Correlation-Id": "4ece1ef1-a027-47a1-9297-bc0af97723b9",
+        "Idempotency-Key": "key-5dd5272f-9d39-49ea-9cb9-875329ebb94b",
+        "Content-Type": "application/json"
+      },
+      "requestBody": null,
+      "status": 200,
+      "responseHeaders": {
+        "Connection": "close",
+        "Content-Type": "application/json; charset=utf-8",
+        "Date": "Tue, 22 Sep 2026 19:51:52 GMT",
+        "Server": "Kestrel",
+        "Transfer-Encoding": "chunked"
+      },
+      "responseBody": "{\"status\":\"up\",\"module\":\"MOD-0183\",\"warehouseIntake\":\"unimplemented\",\"outboxTransport\":\"integration-owned\"}"
+    },
+    {
+      "name": "unauthenticated",
+      "method": "GET",
+      "path": "/api/supply-chain/sandop-plans/2a2a1f20-228b-4156-a3b2-f017bda3944e",
+      "requestHeaders": {
+        "X-Tenant-Id": "5dd5272f-9d39-49ea-9cb9-875329ebb94b",
+        "X-Legal-Entity-Id": "cf9ca1b4-ee4d-4093-bc6c-e5c6ec26de3f",
+        "X-Correlation-Id": "4ece1ef1-a027-47a1-9297-bc0af97723b9",
+        "Idempotency-Key": "key-5dd5272f-9d39-49ea-9cb9-875329ebb94b",
+        "Content-Type": "application/json"
+      },
+      "requestBody": null,
+      "status": 401,
+      "responseHeaders": {
+        "Content-Length": "0",
+        "Connection": "close",
+        "Date": "Tue, 22 Sep 2026 19:51:52 GMT",
+        "Server": "Kestrel",
+        "WWW-Authenticate": "Bearer"
+      },
+      "responseBody": ""
+    },
+    {
+      "name": "no-permission",
+      "method": "POST",
+      "path": "/api/supply-chain/sandop-plans",
+      "requestHeaders": {
+        "X-Tenant-Id": "5dd5272f-9d39-49ea-9cb9-875329ebb94b",
+        "X-Legal-Entity-Id": "cf9ca1b4-ee4d-4093-bc6c-e5c6ec26de3f",
+        "X-Correlation-Id": "4ece1ef1-a027-47a1-9297-bc0af97723b9",
+        "Idempotency-Key": "key-5dd5272f-9d39-49ea-9cb9-875329ebb94b",
+        "Content-Type": "application/json"
+      },
+      "requestBody": {
+        "name": "FY2027",
+        "horizonStart": "2027-01-01",
+        "horizonEnd": "2027-12-31",
+        "demandPlanId": "dp-2027",
+        "demandPlanVersion": "3"
+      },
+      "status": 403,
+      "responseHeaders": {
+        "Connection": "close",
+        "Content-Type": "application/json; charset=utf-8",
+        "Date": "Tue, 22 Sep 2026 19:51:53 GMT",
+        "Server": "Kestrel",
+        "Transfer-Encoding": "chunked",
+        "X-Correlation-Id": "4ece1ef1-a027-47a1-9297-bc0af97723b9"
+      },
+      "responseBody": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Permission denied\",\"correlationId\":\"4ece1ef1-a027-47a1-9297-bc0af97723b9\"},\"contractVersion\":\"v1\"}"
+    },
+    {
+      "name": "authorized-create",
+      "method": "POST",
+      "path": "/api/supply-chain/sandop-plans",
+      "requestHeaders": {
+        "X-Tenant-Id": "5dd5272f-9d39-49ea-9cb9-875329ebb94b",
+        "X-Legal-Entity-Id": "cf9ca1b4-ee4d-4093-bc6c-e5c6ec26de3f",
+        "X-Correlation-Id": "4ece1ef1-a027-47a1-9297-bc0af97723b9",
+        "Idempotency-Key": "key-5dd5272f-9d39-49ea-9cb9-875329ebb94b",
+        "Content-Type": "application/json"
+      },
+      "requestBody": {
+        "name": "FY2027",
+        "horizonStart": "2027-01-01",
+        "horizonEnd": "2027-12-31",
+        "demandPlanId": "dp-2027",
+        "demandPlanVersion": "3"
+      },
+      "status": 500,
+      "responseHeaders": {
+        "Content-Length": "0",
+        "Connection": "close",
+        "Date": "Tue, 22 Sep 2026 19:51:53 GMT",
+        "Server": "Kestrel"
+      },
+      "responseBody": ""
+    }
+  ]
+}

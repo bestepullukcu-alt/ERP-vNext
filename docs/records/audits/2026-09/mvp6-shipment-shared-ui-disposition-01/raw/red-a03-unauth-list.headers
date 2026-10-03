@@ -1,0 +1,6 @@
+HTTP/1.1 302 Found
+Content-Length: 0
+Date: Thu, 24 Sep 2026 20:22:29 GMT
+Server: Kestrel
+Location: http://127.0.0.1:6041/account/login?ReturnUrl=%2FSupplyChain%2FShipments%2Fapi
+

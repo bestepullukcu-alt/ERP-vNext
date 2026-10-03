@@ -1,0 +1,510 @@
+{
+  "verdict": "FINDING \u2014 inline example violates normative consumer policy",
+  "inline_findings": [
+    {
+      "operation": "C",
+      "status": 422,
+      "example": "shipmentTransition",
+      "error": "bounded Carrier policy excludes error.details",
+      "body": {
+        "error": {
+          "code": "INVALID_SHIPMENT_TRANSITION",
+          "message": "Shipment lifecycle gecisi gecersiz",
+          "details": {
+            "from": "Draft",
+            "to": "Delivered"
+          },
+          "correlationId": "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "operation": "C",
+      "status": 422,
+      "example": "loadTransition",
+      "error": "bounded Carrier policy excludes error.details",
+      "body": {
+        "error": {
+          "code": "INVALID_LOAD_TRANSITION",
+          "message": "Load lifecycle gecisi gecersiz",
+          "details": {
+            "from": "Draft",
+            "to": "Dispatched"
+          },
+          "correlationId": "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "operation": "C",
+      "status": 422,
+      "example": "returnTransition",
+      "error": "bounded Carrier policy excludes error.details",
+      "body": {
+        "error": {
+          "code": "INVALID_RETURN_TRANSITION",
+          "message": "Return lifecycle gecisi gecersiz",
+          "details": {
+            "from": "Requested",
+            "to": "Received"
+          },
+          "correlationId": "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    {
+      "operation": "C",
+      "status": 422,
+      "example": "claimTransition",
+      "error": "bounded Carrier policy excludes error.details",
+      "body": {
+        "error": {
+          "code": "INVALID_CLAIM_TRANSITION",
+          "message": "Claim lifecycle gecisi gecersiz",
+          "details": {
+            "from": "Open",
+            "to": "Settled"
+          },
+          "correlationId": "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa"
+        },
+        "contractVersion": "v1"
+      }
+    }
+  ],
+  "response_inventory": [
+    {
+      "operation": "Q",
+      "status": 200,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "Q",
+      "status": 400,
+      "examples": 4,
+      "result": "PASS"
+    },
+    {
+      "operation": "Q",
+      "status": 401,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "Q",
+      "status": 403,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "Q",
+      "status": 404,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "Q",
+      "status": 500,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "Q",
+      "status": 503,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "C",
+      "status": 201,
+      "examples": 2,
+      "result": "PASS"
+    },
+    {
+      "operation": "C",
+      "status": 409,
+      "examples": 2,
+      "result": "PASS"
+    },
+    {
+      "operation": "C",
+      "status": 422,
+      "examples": 5,
+      "result": "FAIL"
+    },
+    {
+      "operation": "C",
+      "status": 400,
+      "examples": 5,
+      "result": "PASS"
+    },
+    {
+      "operation": "C",
+      "status": 401,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "C",
+      "status": 403,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "C",
+      "status": 404,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "C",
+      "status": 415,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "C",
+      "status": 500,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "C",
+      "status": 503,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "S",
+      "status": 200,
+      "examples": 2,
+      "result": "PASS"
+    },
+    {
+      "operation": "S",
+      "status": 404,
+      "examples": 2,
+      "result": "PASS"
+    },
+    {
+      "operation": "S",
+      "status": 422,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "S",
+      "status": 400,
+      "examples": 5,
+      "result": "PASS"
+    },
+    {
+      "operation": "S",
+      "status": 401,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "S",
+      "status": 403,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "S",
+      "status": 409,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "S",
+      "status": 415,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "S",
+      "status": 500,
+      "examples": 1,
+      "result": "PASS"
+    },
+    {
+      "operation": "S",
+      "status": 503,
+      "examples": 1,
+      "result": "PASS"
+    }
+  ],
+  "response_count": 27,
+  "scenario_results": [
+    {
+      "scenario": "E02 authentication",
+      "operation": "Q",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E02 authentication",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E02 authentication",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E03 unusable claims veya missing permission",
+      "operation": "Q",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E03 unusable claims veya missing permission",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E03 unusable claims veya missing permission",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E04 correlation header",
+      "operation": "Q",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E04 correlation header",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E04 correlation header",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E04 tenant header",
+      "operation": "Q",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E04 tenant header",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E04 tenant header",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E04 LE header",
+      "operation": "Q",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E04 LE header",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E04 LE header",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E04 key header",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E04 key header",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E05 header/claim mismatch",
+      "operation": "Q",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E05 header/claim mismatch",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E05 header/claim mismatch",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E06 malformed path/query/JSON/schema",
+      "operation": "Q",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E06 malformed path/query/JSON/schema",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E06 malformed path/query/JSON/schema",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E07 unsupported request media type",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E07 unsupported request media type",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E08 target unavailable in scope",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E09 committed scoped key / different validated payload",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E09 committed scoped key / different validated payload",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E10 reserved same-scope code",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E11 invalid lifecycle / new-key same-state",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E12 unavailable persistence / exhausted safe retry / unresolved commit",
+      "operation": "Q",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E12 unavailable persistence / exhausted safe retry / unresolved commit",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E12 unavailable persistence / exhausted safe retry / unresolved commit",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E13 unexpected internal error",
+      "operation": "Q",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E13 unexpected internal error",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "E13 unexpected internal error",
+      "operation": "S",
+      "result": "PASS"
+    },
+    {
+      "scenario": "missing JWT + invalid correlation + invalid key",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "valid JWT / missing permission + invalid correlation",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "authorized + invalid correlation/tenant/LE/key",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "valid tenant mismatch + invalid key",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "valid headers / tenant mismatch + malformed body",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "valid context + malformed body + previously committed key",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "RP02 different current correlation replay",
+      "operation": "C",
+      "result": "PASS"
+    },
+    {
+      "scenario": "RP02 different current correlation replay",
+      "operation": "S",
+      "result": "PASS"
+    }
+  ],
+  "scenario_count": 44,
+  "negative_mutations": [
+    {
+      "case": "missing correlation",
+      "result": "REJECTED"
+    },
+    {
+      "case": "success correlation leakage",
+      "result": "REJECTED"
+    },
+    {
+      "case": "wrong replay status",
+      "result": "REJECTED"
+    },
+    {
+      "case": "unknown status",
+      "result": "REJECTED"
+    },
+    {
+      "case": "outer envelope",
+      "result": "REJECTED"
+    },
+    {
+      "case": "error header/body mismatch",
+      "result": "REJECTED"
+    },
+    {
+      "case": "missing bearer challenge",
+      "result": "REJECTED"
+    }
+  ],
+  "hashes": {
+    "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/shipment-bundle.openapi.candidate.yaml": "c650bf44d3fd813bfd2424f48141ff4aed5decda7b4d49e3a945426678e8ee1e",
+    "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/carrier-semantics-v1.1.0.md": "87557ef9f5b5a4427862effbece2bb528ebc1b95361c29416373709223021fee",
+    "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/publication-after-approval.patch": "2cbcf65b4909419a2d0a79d688b3ed95ee33f0993fc666ef5c5edda246f0920f",
+    "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/examples.json": "fc4084e1c69910a640711bef105e8fd07763f90e9087c759d0ff1c0be94dd051",
+    "docs/analysis/contracts/shipment-bundle.openapi.yaml": "f6415bbfda42a61a9845e7e1fc843be087bf249cac6bcdc9cb678284766450a1",
+    "docs/records/audits/2026-09/mod-0184-contract-owner-decisions-v1.0.md": "01988d8d57399d317f93633dac25a430a2a6af132b52b2b7510336c34b62f16a"
+  },
+  "limitations": [
+    "No Carrier service/mock/router/generated SDK exists in inspected runtime source; this is an audit-only parser.",
+    "Headers for inline examples are constructed from normative expected policy, not observed HTTP.",
+    "44 static response fixtures do not execute auth precedence, DB lookup counts, audit immutability, concurrency or recovery.",
+    "RP01/RP03-RP16 runtime sequence coverage remains pending implementation.",
+    "No owner approval, publication, consumer uptake, E4 or DEV GO."
+  ]
+}

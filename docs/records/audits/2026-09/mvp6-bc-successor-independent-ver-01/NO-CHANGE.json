@@ -1,0 +1,14 @@
+{
+  "branchBefore": "feature/mvp6-logistics",
+  "branchAfter": "feature/mvp6-logistics",
+  "headBefore": "4a8d4d4b339528a88e6220fb8402e5a2c771136c",
+  "headAfter": "4a8d4d4b339528a88e6220fb8402e5a2c771136c",
+  "addedStatus": [
+    "?? docs/records/audits/2026-09/mvp6-bc-successor-independent-ver-01/"
+  ],
+  "removedStatus": [],
+  "onlyExpectedOwnedOutputAdded": true,
+  "diffNameOnlySame": true,
+  "cachedNameOnlySame": true,
+  "diffCheckExit": 0
+}

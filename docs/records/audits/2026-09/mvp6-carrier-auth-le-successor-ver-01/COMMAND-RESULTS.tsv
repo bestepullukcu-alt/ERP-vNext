@@ -1,0 +1,9 @@
+command	result	exit	evidence
+input sha256	four exact candidate hashes matched	0	raw/input-sha256.txt
+root manifest check	9/9 PASS	0	raw/root-manifest-check.txt
+archive target verifier	22/22 PASS	0	raw/archive-target-check.tsv
+git apply check	applicable to current preimages	0	raw/patch-apply-check.stdout; raw/patch-apply-check.stderr
+native dotnet info	SDK 8.0.417; no major roll-forward	0	raw/native-dotnet-info.txt
+writer marker search	no successor writer-complete/final handoff found	0	raw/writer-marker-search.txt
+phase2 build/process/runtime	not executed because gate is open	NOT RUN	WRITER-GATE.tsv
+

@@ -1,0 +1,11 @@
+A (Q121c, tree-identical, 57192): 408 results, failed 1 | B: 417 results, failed 2
+new in B: 9 {'CapacityTestMongoTests', '0', 'example'} all passed: True
+failed only in B:
+   Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce | Assert.Equal() Failure: Values differ
+Expected: Created
+Actual:   ServiceUnavailable
+failed in both: ['Receipt_TwoIndependentTestProcesses_DurableRecovery']
+fixed in B: []
+CapacityPlans in B: 48 / 48
+CapacityRestartTests: {'Separate_processes_claim_once_and_restart_recovers_after_ser': 'Passed', 'ChildWorker': 'Passed'}
+BackgroundJobs B PlatformContainerValidationTests: {'Platform_container_builds_under_the_validation_the_app_boots': 'Passed'}

@@ -1,0 +1,25 @@
+criterion	result	evidence	disposition
+source_identity_shipment_351	PASS	SHIPMENT-351-SOURCE-MANIFEST.tsv	351/351 exact source inputs
+source_identity_auth_22	PASS	AUTH-22-SOURCE-MANIFEST.tsv	22/22 exact Auth successor inputs
+native_dotnet8_build	PASS	raw/build; SOURCE-BINARY-PROCESS.tsv	SDK 8.0.417/runtime 8.0.23, four builds passed
+real_auth_login	PASS	raw/http/login-safe.json	fresh Auth-issued session; bearer and secret excluded
+list	PASS	raw/http/list.json	HTTP 200
+create	PASS	raw/http/create.json	HTTP 201 and persisted
+create_replay	PASS	raw/http/create-replay.json	HTTP 200, same shipment, no extra write
+create_changed_payload	PASS	raw/http/create-changed-payload.json; raw/http/zero-write-recheck.json	HTTP 409, zero write
+detail	PASS	raw/http/detail-draft.json; raw/http/detail-delivered.json	Draft and Delivered views observed
+transition	PASS	raw/http/transition-planned.json; raw/http/transition-dispatched.json	Draft→Planned→Dispatched
+transition_replay	PASS	raw/http/transition-replay.json	HTTP 200 replay, no extra write
+invalid_transition	PASS	raw/http/transition-invalid.json; raw/http/zero-write-recheck.json	HTTP 422, zero write
+pod_capture	PASS	raw/http/pod.json	HTTP 201 and Delivered
+pod_replay	PASS	raw/http/pod-replay.json	HTTP 201 replay, no extra write
+pod_duplicate	PASS	raw/http/pod-already-captured.json; raw/http/zero-write-recheck.json	HTTP 409, zero write
+permission	PASS	raw/http/permission-create-readonly.json; raw/http/zero-write-recheck.json	read-only actor create HTTP 403, zero write
+legal_entity_isolation	PASS	raw/http/le-mismatch-create.json; raw/http/zero-write-recheck.json	wrong LE HTTP 404, zero write
+tenant_isolation	PASS	raw/http/tenant-isolation-summary.json	wrong tenant create/detail HTTP 404, zero write
+persistence	PASS	raw/db/final-persistence.json	shipment/POD/history/audit/receipt persisted
+outbox_pending	PASS	raw/db/outbox-status.json	5 Pending, 0 non-Pending
+restart	PASS	raw/http/restart-detail.json; raw/http/restart-create-replay.json; raw/launch/process-after-restart.tsv	same DB, fixture and binary; detail and replay retained
+root_explicit_emission	FAIL	raw/db/final-persistence.json; raw/http/detail-delivered.json	persisted LifecycleCorrelationId absent and detail returns null
+browser_png	OPEN	FIXTURE-LAUNCH-HANDOFF.md	outside this HTTP recovery scope
+platform_aggregate_health	OBSERVED	raw/launch/health-5757.body	503 retained; consumer chain success is not aggregate Platform health PASS

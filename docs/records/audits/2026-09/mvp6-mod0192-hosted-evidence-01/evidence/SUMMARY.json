@@ -1,0 +1,121 @@
+{
+  "capacityTests": {
+    "outcome": null,
+    "counters": {
+      "total": "36",
+      "executed": "36",
+      "passed": "36",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    }
+  },
+  "laterReadFaults": [
+    {
+      "boundary": "active-slot",
+      "skip": 4,
+      "failpointEntries": 1,
+      "injectedFailures": 1
+    },
+    {
+      "boundary": "audit-broad",
+      "skip": 2,
+      "failpointEntries": 1,
+      "injectedFailures": 1
+    },
+    {
+      "boundary": "audit-exact",
+      "skip": 3,
+      "failpointEntries": 1,
+      "injectedFailures": 1
+    },
+    {
+      "boundary": "event-broad",
+      "skip": 0,
+      "failpointEntries": 1,
+      "injectedFailures": 1
+    },
+    {
+      "boundary": "event-exact",
+      "skip": 1,
+      "failpointEntries": 1,
+      "injectedFailures": 1
+    }
+  ],
+  "httpStatuses": {
+    "200": 3,
+    "201": 8,
+    "202": 3,
+    "401": 1,
+    "403": 1,
+    "404": 3,
+    "409": 1
+  },
+  "responseLoss": {
+    "case": "response-loss",
+    "transportClosedBeforeRead": true,
+    "receiptObservedBeforeRetry": true,
+    "recoveredCapacityPlanId": "feaada3f-3263-4656-9333-db173ac6d0ae",
+    "receiptCorrelationId": "16061c42-6dea-4596-b93a-c8a8b1c27416"
+  },
+  "processes": [
+    {
+      "name": "main-http",
+      "pid": 56954,
+      "exitCode": -9,
+      "binarySha256": "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f"
+    },
+    {
+      "name": "restart-host",
+      "pid": 57016,
+      "exitCode": 0,
+      "binarySha256": "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f"
+    },
+    {
+      "name": "race-seed",
+      "pid": 57108,
+      "exitCode": 0,
+      "binarySha256": "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f"
+    },
+    {
+      "name": "worker-a",
+      "pid": 57119,
+      "exitCode": 0,
+      "binarySha256": "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f"
+    },
+    {
+      "name": "worker-b",
+      "pid": 57133,
+      "exitCode": 0,
+      "binarySha256": "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f"
+    }
+  ],
+  "staleFenceWarning": true,
+  "noPublisherWarnings": 5,
+  "hostedProbe": {
+    "result": "PASS",
+    "httpRecords": 21,
+    "binarySha256": "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f",
+    "killRestart": {
+      "events": 1,
+      "audits": 1,
+      "slots": 0
+    },
+    "staleRace": {
+      "events": 1,
+      "audits": 1,
+      "slots": 0
+    },
+    "noPublisherPendingEvents": 10
+  }
+}

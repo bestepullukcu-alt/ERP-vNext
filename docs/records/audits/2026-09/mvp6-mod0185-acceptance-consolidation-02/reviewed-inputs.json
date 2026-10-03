@@ -1,0 +1,58 @@
+[
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-01/SOP-22.md",
+    "sha256": "c0b666a5b6f56fb328fae63dde926c1776970de0ca08cd8d9323807de6c75ef4"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-01/acceptance-matrix.md",
+    "sha256": "6a5c33db838ef2db5387e77ae6aaafb6b86678465810acf9cb773a4b8986f207"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-01/historical-trx.tsv",
+    "sha256": "496a8ba8852d123f944f38b287054f3b8868b5eb61135431ee27407353199fe4"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-01/inspected-inputs.sha256",
+    "sha256": "17026f7c4856f8d4823521d0aa3734c75605bac61aee458499b452af0a0a32a2"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-01/missing-evidence.tsv",
+    "sha256": "d6f3bee7a550b6adef329a3fe85d2608a280603cb18c1e9799da1aed40b6a3c1"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-01/preflight.txt",
+    "sha256": "217f26fd90cc424cc6a4fdec56f334a457db44e70900fd1adb62b5662b7c9702"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-01/source-binding.tsv",
+    "sha256": "87dc1283ad7f48349294b8fea451b9faed9259d314a81c3f4079bf64b34cfbce"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-01/missing-evidence.tsv",
+    "sha256": "d6f3bee7a550b6adef329a3fe85d2608a280603cb18c1e9799da1aed40b6a3c1"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-evidence-recovery-02/README.md",
+    "sha256": "8e4ed239c544609e0cfd149bc6d0a78864792043b24bfc6d5230ab185778d8e9"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-evidence-recovery-02/recovery.tsv",
+    "sha256": "3958cf512b9ea012d382c558cfd1a31def2f439d5710c9235a9dfccb4aa612d0"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-fresh-evidence-ver-03/SOP-22.md",
+    "sha256": "3b23c2de66bf27e5eb89eee7f341014aca0677c91d0b6e00bceb6b0986b6fe96"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-fresh-evidence-ver-03/evidence-manifest.sha256",
+    "sha256": "5ecbc25d57b153d84965d5482f3fd5b90395e1eb619475eee92cd60b227ead03"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-fresh-evidence-ver-03/evidence.tar.gz",
+    "sha256": "21d8aad34e0dbc365b89583f2095d9a854fe31481c5a08c02f2ce0f2060b0d6e"
+  },
+  {
+    "path": "docs/records/audits/2026-09/mvp6-mod0185-fresh-evidence-ver-03/missing-to-fresh.tsv",
+    "sha256": "e85d7543af80317161fa7b6cf80e1e88c62372c61b0f7666706853ec83fefe71"
+  }
+]

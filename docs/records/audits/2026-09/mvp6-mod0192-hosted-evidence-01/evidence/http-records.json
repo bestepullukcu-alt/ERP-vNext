@@ -1,0 +1,842 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/supply-chain/capacity-plans/4be1f13e-5294-41fa-bdee-ec0bc721ce78",
+    "status": 401,
+    "requestHeaders": {
+      "X-Correlation-Id": "10801326-246f-4157-b1a6-0cf13abd2a25",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002"
+    },
+    "requestBody": null,
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:51:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "WWW-Authenticate": "Bearer",
+      "X-Correlation-Id": "10801326-246f-4157-b1a6-0cf13abd2a25"
+    },
+    "responseBody": {
+      "error": {
+        "code": "UNAUTHENTICATED",
+        "message": "Authentication required",
+        "correlationId": "10801326-246f-4157-b1a6-0cf13abd2a25"
+      },
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/supply-chain/capacity-plans/45c5e1a3-49a2-4d68-b62e-f2c4ffa208c9",
+    "status": 403,
+    "requestHeaders": {
+      "X-Correlation-Id": "de9d29c4-a324-46b4-817f-dfb4680bec7b",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>"
+    },
+    "requestBody": null,
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:51:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "de9d29c4-a324-46b4-817f-dfb4680bec7b"
+    },
+    "responseBody": {
+      "error": {
+        "code": "FORBIDDEN",
+        "message": "Permission denied",
+        "correlationId": "de9d29c4-a324-46b4-817f-dfb4680bec7b"
+      },
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/supply-chain/capacity-plans",
+    "status": 201,
+    "requestHeaders": {
+      "X-Correlation-Id": "707c8bd7-ed5b-4ad6-8e54-6b645db836f4",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>",
+      "Idempotency-Key": "http-plan",
+      "Content-Type": "application/json"
+    },
+    "requestBody": {
+      "name": "Hosted HTTP",
+      "horizonStart": "2027-01-01",
+      "horizonEnd": "2027-12-31",
+      "demandPlanId": "dp-2027",
+      "demandPlanVersion": "3",
+      "sourceCapturedAt": "2026-09-15T09:45:00Z",
+      "sourceChecksum": "sha256:ee56d4f9a3c8"
+    },
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:51:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "707c8bd7-ed5b-4ad6-8e54-6b645db836f4"
+    },
+    "responseBody": {
+      "capacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "name": "Hosted HTTP",
+      "horizonStart": "2027-01-01",
+      "horizonEnd": "2027-12-31",
+      "provenance": {
+        "demandPlanId": "dp-2027",
+        "demandPlanVersion": "3",
+        "sourceContract": "DEMAND",
+        "sourceContractVersion": "v1",
+        "sourceCapturedAt": "2026-09-15T09:45:00+00:00",
+        "sourceChecksum": "sha256:ee56d4f9a3c8"
+      },
+      "status": "Draft",
+      "createdAt": "2026-09-22T21:51:49.439952+00:00",
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/supply-chain/capacity-plans",
+    "status": 201,
+    "requestHeaders": {
+      "X-Correlation-Id": "e91c5a36-ac6a-4175-a843-caaa94126830",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>",
+      "Idempotency-Key": "http-plan",
+      "Content-Type": "application/json"
+    },
+    "requestBody": {
+      "name": "Hosted HTTP",
+      "horizonStart": "2027-01-01",
+      "horizonEnd": "2027-12-31",
+      "demandPlanId": "dp-2027",
+      "demandPlanVersion": "3",
+      "sourceCapturedAt": "2026-09-15T09:45:00Z",
+      "sourceChecksum": "sha256:ee56d4f9a3c8"
+    },
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:51:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "e91c5a36-ac6a-4175-a843-caaa94126830"
+    },
+    "responseBody": {
+      "capacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "name": "Hosted HTTP",
+      "horizonStart": "2027-01-01",
+      "horizonEnd": "2027-12-31",
+      "provenance": {
+        "demandPlanId": "dp-2027",
+        "demandPlanVersion": "3",
+        "sourceContract": "DEMAND",
+        "sourceContractVersion": "v1",
+        "sourceCapturedAt": "2026-09-15T09:45:00+00:00",
+        "sourceChecksum": "sha256:ee56d4f9a3c8"
+      },
+      "status": "Draft",
+      "createdAt": "2026-09-22T21:51:49.439952+00:00",
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/supply-chain/capacity-plans",
+    "status": 409,
+    "requestHeaders": {
+      "X-Correlation-Id": "50b7e77b-f218-4656-b945-d022c6b92355",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>",
+      "Idempotency-Key": "http-plan",
+      "Content-Type": "application/json"
+    },
+    "requestBody": {
+      "name": "Changed valid payload",
+      "horizonStart": "2027-01-01",
+      "horizonEnd": "2027-12-31",
+      "demandPlanId": "dp-2027",
+      "demandPlanVersion": "3",
+      "sourceCapturedAt": "2026-09-15T09:45:00Z",
+      "sourceChecksum": "sha256:ee56d4f9a3c8"
+    },
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:51:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "50b7e77b-f218-4656-b945-d022c6b92355"
+    },
+    "responseBody": {
+      "error": {
+        "code": "IDEMPOTENCY_KEY_REUSED",
+        "message": "Idempotency key was used with a different valid payload",
+        "correlationId": "50b7e77b-f218-4656-b945-d022c6b92355"
+      },
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/supply-chain/capacity-plans/25cb36ab-24c7-486a-9356-56475aef92b0",
+    "status": 200,
+    "requestHeaders": {
+      "X-Correlation-Id": "6892cd69-e49b-426a-8c1a-65fef0871afe",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>"
+    },
+    "requestBody": null,
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:51:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "6892cd69-e49b-426a-8c1a-65fef0871afe"
+    },
+    "responseBody": {
+      "capacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "name": "Hosted HTTP",
+      "horizonStart": "2027-01-01",
+      "horizonEnd": "2027-12-31",
+      "provenance": {
+        "demandPlanId": "dp-2027",
+        "demandPlanVersion": "3",
+        "sourceContract": "DEMAND",
+        "sourceContractVersion": "v1",
+        "sourceCapturedAt": "2026-09-15T09:45:00+00:00",
+        "sourceChecksum": "sha256:ee56d4f9a3c8"
+      },
+      "status": "Draft",
+      "createdAt": "2026-09-22T21:51:49.439952+00:00",
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/supply-chain/capacity-plans/25cb36ab-24c7-486a-9356-56475aef92b0",
+    "status": 404,
+    "requestHeaders": {
+      "X-Correlation-Id": "d558dae7-ff6b-4c7b-b4c4-7fc88be6253c",
+      "X-Tenant-Id": "37dfc142-00eb-44fa-8d7a-9631b6c25656",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>"
+    },
+    "requestBody": null,
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:51:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "d558dae7-ff6b-4c7b-b4c4-7fc88be6253c"
+    },
+    "responseBody": {
+      "error": {
+        "code": "UNKNOWN_CAPACITY_PLAN",
+        "message": "Capacity plan not found",
+        "correlationId": "d558dae7-ff6b-4c7b-b4c4-7fc88be6253c"
+      },
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/supply-chain/capacity-plans/25cb36ab-24c7-486a-9356-56475aef92b0",
+    "status": 404,
+    "requestHeaders": {
+      "X-Correlation-Id": "61655993-6141-4dc8-ad68-2133cc7cf565",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "efa14643-9e48-452d-8881-cef2ad465e22",
+      "Authorization": "<redacted>"
+    },
+    "requestBody": null,
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:51:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "61655993-6141-4dc8-ad68-2133cc7cf565"
+    },
+    "responseBody": {
+      "error": {
+        "code": "UNKNOWN_CAPACITY_PLAN",
+        "message": "Capacity plan not found",
+        "correlationId": "61655993-6141-4dc8-ad68-2133cc7cf565"
+      },
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/supply-chain/capacity-plans/25cb36ab-24c7-486a-9356-56475aef92b0/scenarios",
+    "status": 201,
+    "requestHeaders": {
+      "X-Correlation-Id": "14e9e56f-07ce-4000-88a7-984446b17c84",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>",
+      "Idempotency-Key": "http-scenario",
+      "Content-Type": "application/json"
+    },
+    "requestBody": {
+      "name": "Hosted scenario",
+      "constraintRefs": [
+        {
+          "constraintId": "line-4-hours",
+          "source": "SUPPLY-CONSTRAINTS",
+          "sourceVersion": "8"
+        }
+      ],
+      "adjustments": [
+        {
+          "resourceRef": "line-4",
+          "period": "2027-W03",
+          "availableCapacityDelta": "80.000",
+          "uomId": "HOUR"
+        }
+      ]
+    },
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:51:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "14e9e56f-07ce-4000-88a7-984446b17c84"
+    },
+    "responseBody": {
+      "scenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+      "capacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "name": "Hosted scenario",
+      "constraintRefs": [
+        {
+          "constraintId": "line-4-hours",
+          "source": "SUPPLY-CONSTRAINTS",
+          "sourceVersion": "8"
+        }
+      ],
+      "adjustments": [
+        {
+          "resourceRef": "line-4",
+          "period": "2027-W03",
+          "availableCapacityDelta": "80.000",
+          "uomId": "HOUR"
+        }
+      ],
+      "status": "Draft",
+      "createdAt": "2026-09-22T21:51:49.595653+00:00",
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/supply-chain/capacity-plans/25cb36ab-24c7-486a-9356-56475aef92b0/scenarios/581c3bd5-ff24-494d-baa1-4db909baffc2",
+    "status": 200,
+    "requestHeaders": {
+      "X-Correlation-Id": "2eaeca66-aa76-48da-a5e5-8896a36a058e",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>"
+    },
+    "requestBody": null,
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:51:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "2eaeca66-aa76-48da-a5e5-8896a36a058e"
+    },
+    "responseBody": {
+      "scenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+      "capacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "name": "Hosted scenario",
+      "constraintRefs": [
+        {
+          "constraintId": "line-4-hours",
+          "source": "SUPPLY-CONSTRAINTS",
+          "sourceVersion": "8"
+        }
+      ],
+      "adjustments": [
+        {
+          "resourceRef": "line-4",
+          "period": "2027-W03",
+          "availableCapacityDelta": "80.000",
+          "uomId": "HOUR"
+        }
+      ],
+      "status": "Draft",
+      "createdAt": "2026-09-22T21:51:49.595653+00:00",
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/supply-chain/capacity-plans/25cb36ab-24c7-486a-9356-56475aef92b0/scenarios/581c3bd5-ff24-494d-baa1-4db909baffc2/evaluations",
+    "status": 202,
+    "requestHeaders": {
+      "X-Correlation-Id": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>",
+      "Idempotency-Key": "http-eval",
+      "Content-Type": "application/json"
+    },
+    "requestBody": {
+      "evaluationMode": "Finite",
+      "resourceRefs": [
+        "line-4"
+      ]
+    },
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:51:49 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "393c19a9-23ac-4ddd-bc66-dd5c2637165e"
+    },
+    "responseBody": {
+      "evaluationId": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+      "capacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "scenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+      "evaluationMode": "Finite",
+      "status": "Accepted",
+      "bottlenecks": [],
+      "submittedAt": "2026-09-22T21:51:49.640603+00:00",
+      "completedAt": null,
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/supply-chain/capacity-plans/25cb36ab-24c7-486a-9356-56475aef92b0/evaluations/1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+    "status": 200,
+    "requestHeaders": {
+      "X-Correlation-Id": "93bb6cda-54a8-47e9-a8db-7d0ce82d52b8",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>"
+    },
+    "requestBody": null,
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:51:59 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "93bb6cda-54a8-47e9-a8db-7d0ce82d52b8"
+    },
+    "responseBody": {
+      "evaluationId": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+      "capacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "scenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+      "evaluationMode": "Finite",
+      "status": "Completed",
+      "bottlenecks": [
+        {
+          "resourceRef": "line-4",
+          "period": "2027-W03",
+          "requiredCapacity": "520.000",
+          "availableCapacity": "480.000",
+          "shortfall": "40.000",
+          "uomId": "HOUR"
+        }
+      ],
+      "submittedAt": "2026-09-22T21:51:49.640603+00:00",
+      "completedAt": "2026-09-22T21:51:59.081+00:00",
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/supply-chain/capacity-plans/25cb36ab-24c7-486a-9356-56475aef92b0",
+    "status": 404,
+    "requestHeaders": {
+      "X-Correlation-Id": "fa07a03c-2404-4580-bc92-fa9b0ecc5604",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>"
+    },
+    "requestBody": null,
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:52:12 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "fa07a03c-2404-4580-bc92-fa9b0ecc5604"
+    },
+    "responseBody": {
+      "error": {
+        "code": "UNKNOWN_CAPACITY_PLAN",
+        "message": "Capacity plan not found",
+        "correlationId": "fa07a03c-2404-4580-bc92-fa9b0ecc5604"
+      },
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/supply-chain/capacity-plans",
+    "status": 201,
+    "requestHeaders": {
+      "X-Correlation-Id": "13362daf-9a7a-49e0-adc1-ac3f04b10f1d",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>",
+      "Idempotency-Key": "response-loss",
+      "Content-Type": "application/json"
+    },
+    "requestBody": {
+      "name": "Response loss",
+      "horizonStart": "2028-01-01",
+      "horizonEnd": "2028-12-31",
+      "demandPlanId": "dp-2027",
+      "demandPlanVersion": "3",
+      "sourceCapturedAt": "2026-09-15T09:45:00Z",
+      "sourceChecksum": "sha256:ee56d4f9a3c8"
+    },
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:52:13 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "13362daf-9a7a-49e0-adc1-ac3f04b10f1d"
+    },
+    "responseBody": {
+      "capacityPlanId": "feaada3f-3263-4656-9333-db173ac6d0ae",
+      "name": "Response loss",
+      "horizonStart": "2028-01-01",
+      "horizonEnd": "2028-12-31",
+      "provenance": {
+        "demandPlanId": "dp-2027",
+        "demandPlanVersion": "3",
+        "sourceContract": "DEMAND",
+        "sourceContractVersion": "v1",
+        "sourceCapturedAt": "2026-09-15T09:45:00+00:00",
+        "sourceChecksum": "sha256:ee56d4f9a3c8"
+      },
+      "status": "Draft",
+      "createdAt": "2026-09-22T21:52:13.033668+00:00",
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "case": "response-loss",
+    "transportClosedBeforeRead": true,
+    "receiptObservedBeforeRetry": true,
+    "recoveredCapacityPlanId": "feaada3f-3263-4656-9333-db173ac6d0ae",
+    "receiptCorrelationId": "16061c42-6dea-4596-b93a-c8a8b1c27416"
+  },
+  {
+    "method": "POST",
+    "path": "/api/supply-chain/capacity-plans",
+    "status": 201,
+    "requestHeaders": {
+      "X-Correlation-Id": "405a5b99-3be2-4fd3-8b7a-9cc54c32853a",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>",
+      "Idempotency-Key": "plan-kill",
+      "Content-Type": "application/json"
+    },
+    "requestBody": {
+      "name": "Hosted kill",
+      "horizonStart": "2029-01-01",
+      "horizonEnd": "2029-12-31",
+      "demandPlanId": "dp-2027",
+      "demandPlanVersion": "3",
+      "sourceCapturedAt": "2026-09-15T09:45:00Z",
+      "sourceChecksum": "sha256:ee56d4f9a3c8"
+    },
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:52:14 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "405a5b99-3be2-4fd3-8b7a-9cc54c32853a"
+    },
+    "responseBody": {
+      "capacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "name": "Hosted kill",
+      "horizonStart": "2029-01-01",
+      "horizonEnd": "2029-12-31",
+      "provenance": {
+        "demandPlanId": "dp-2027",
+        "demandPlanVersion": "3",
+        "sourceContract": "DEMAND",
+        "sourceContractVersion": "v1",
+        "sourceCapturedAt": "2026-09-15T09:45:00+00:00",
+        "sourceChecksum": "sha256:ee56d4f9a3c8"
+      },
+      "status": "Draft",
+      "createdAt": "2026-09-22T21:52:14.558065+00:00",
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/supply-chain/capacity-plans/4c568479-112a-4e68-9923-fb9b9dd0d664/scenarios",
+    "status": 201,
+    "requestHeaders": {
+      "X-Correlation-Id": "70d539c5-8e39-4d4d-b767-346dca1ada75",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>",
+      "Idempotency-Key": "scenario-kill",
+      "Content-Type": "application/json"
+    },
+    "requestBody": {
+      "name": "Scenario kill",
+      "constraintRefs": [
+        {
+          "constraintId": "line-4-hours",
+          "source": "SUPPLY-CONSTRAINTS",
+          "sourceVersion": "8"
+        }
+      ],
+      "adjustments": [
+        {
+          "resourceRef": "line-4",
+          "period": "2027-W03",
+          "availableCapacityDelta": "80.000",
+          "uomId": "HOUR"
+        }
+      ]
+    },
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:52:14 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "70d539c5-8e39-4d4d-b767-346dca1ada75"
+    },
+    "responseBody": {
+      "scenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "capacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "name": "Scenario kill",
+      "constraintRefs": [
+        {
+          "constraintId": "line-4-hours",
+          "source": "SUPPLY-CONSTRAINTS",
+          "sourceVersion": "8"
+        }
+      ],
+      "adjustments": [
+        {
+          "resourceRef": "line-4",
+          "period": "2027-W03",
+          "availableCapacityDelta": "80.000",
+          "uomId": "HOUR"
+        }
+      ],
+      "status": "Draft",
+      "createdAt": "2026-09-22T21:52:14.568808+00:00",
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/supply-chain/capacity-plans/4c568479-112a-4e68-9923-fb9b9dd0d664/scenarios/bebc9983-7415-4745-b941-a1f1a5d42bad/evaluations",
+    "status": 202,
+    "requestHeaders": {
+      "X-Correlation-Id": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>",
+      "Idempotency-Key": "evaluation-kill",
+      "Content-Type": "application/json"
+    },
+    "requestBody": {
+      "evaluationMode": "Finite",
+      "resourceRefs": [
+        "line-4"
+      ]
+    },
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:52:14 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "b90bb9c5-0b99-49c0-9c7b-e419d120df22"
+    },
+    "responseBody": {
+      "evaluationId": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "capacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "scenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "evaluationMode": "Finite",
+      "status": "Accepted",
+      "bottlenecks": [],
+      "submittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "completedAt": null,
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/supply-chain/capacity-plans",
+    "status": 201,
+    "requestHeaders": {
+      "X-Correlation-Id": "c4e1d8df-e395-4372-a449-54ced269599c",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>",
+      "Idempotency-Key": "plan-race",
+      "Content-Type": "application/json"
+    },
+    "requestBody": {
+      "name": "Hosted race",
+      "horizonStart": "2030-01-01",
+      "horizonEnd": "2030-12-31",
+      "demandPlanId": "dp-2027",
+      "demandPlanVersion": "3",
+      "sourceCapturedAt": "2026-09-15T09:45:00Z",
+      "sourceChecksum": "sha256:ee56d4f9a3c8"
+    },
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:53:20 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "c4e1d8df-e395-4372-a449-54ced269599c"
+    },
+    "responseBody": {
+      "capacityPlanId": "dc65a9d1-bfb1-4129-a21c-0364929177a1",
+      "name": "Hosted race",
+      "horizonStart": "2030-01-01",
+      "horizonEnd": "2030-12-31",
+      "provenance": {
+        "demandPlanId": "dp-2027",
+        "demandPlanVersion": "3",
+        "sourceContract": "DEMAND",
+        "sourceContractVersion": "v1",
+        "sourceCapturedAt": "2026-09-15T09:45:00+00:00",
+        "sourceChecksum": "sha256:ee56d4f9a3c8"
+      },
+      "status": "Draft",
+      "createdAt": "2026-09-22T21:53:21.192067+00:00",
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/supply-chain/capacity-plans/dc65a9d1-bfb1-4129-a21c-0364929177a1/scenarios",
+    "status": 201,
+    "requestHeaders": {
+      "X-Correlation-Id": "d57c0c26-4c87-4846-a35d-e5f6fda20edd",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>",
+      "Idempotency-Key": "scenario-race",
+      "Content-Type": "application/json"
+    },
+    "requestBody": {
+      "name": "Scenario race",
+      "constraintRefs": [
+        {
+          "constraintId": "line-4-hours",
+          "source": "SUPPLY-CONSTRAINTS",
+          "sourceVersion": "8"
+        }
+      ],
+      "adjustments": [
+        {
+          "resourceRef": "line-4",
+          "period": "2027-W03",
+          "availableCapacityDelta": "80.000",
+          "uomId": "HOUR"
+        }
+      ]
+    },
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:53:20 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "d57c0c26-4c87-4846-a35d-e5f6fda20edd"
+    },
+    "responseBody": {
+      "scenarioId": "7501c283-2b74-40b4-ac59-42d442863594",
+      "capacityPlanId": "dc65a9d1-bfb1-4129-a21c-0364929177a1",
+      "name": "Scenario race",
+      "constraintRefs": [
+        {
+          "constraintId": "line-4-hours",
+          "source": "SUPPLY-CONSTRAINTS",
+          "sourceVersion": "8"
+        }
+      ],
+      "adjustments": [
+        {
+          "resourceRef": "line-4",
+          "period": "2027-W03",
+          "availableCapacityDelta": "80.000",
+          "uomId": "HOUR"
+        }
+      ],
+      "status": "Draft",
+      "createdAt": "2026-09-22T21:53:21.315402+00:00",
+      "contractVersion": "v1"
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/api/supply-chain/capacity-plans/dc65a9d1-bfb1-4129-a21c-0364929177a1/scenarios/7501c283-2b74-40b4-ac59-42d442863594/evaluations",
+    "status": 202,
+    "requestHeaders": {
+      "X-Correlation-Id": "3ea17c48-781a-407d-b936-177e06725741",
+      "X-Tenant-Id": "19200000-0000-4000-8000-000000000001",
+      "X-Legal-Entity-Id": "19200000-0000-4000-8000-000000000002",
+      "Authorization": "<redacted>",
+      "Idempotency-Key": "evaluation-race",
+      "Content-Type": "application/json"
+    },
+    "requestBody": {
+      "evaluationMode": "Finite",
+      "resourceRefs": [
+        "line-4"
+      ]
+    },
+    "responseHeaders": {
+      "Connection": "close",
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Tue, 22 Sep 2026 21:53:20 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "3ea17c48-781a-407d-b936-177e06725741"
+    },
+    "responseBody": {
+      "evaluationId": "2a1bed52-76a9-4a0d-b168-c58a8c3ab97c",
+      "capacityPlanId": "dc65a9d1-bfb1-4129-a21c-0364929177a1",
+      "scenarioId": "7501c283-2b74-40b4-ac59-42d442863594",
+      "evaluationMode": "Finite",
+      "status": "Accepted",
+      "bottlenecks": [],
+      "submittedAt": "2026-09-22T21:53:21.359965+00:00",
+      "completedAt": null,
+      "contractVersion": "v1"
+    }
+  }
+]

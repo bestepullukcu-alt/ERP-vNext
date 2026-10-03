@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>Réclamations</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Enregistrez, instruisez et tranchez les réclamations transporteur liées aux expéditions.</value></data>
+  <data name="AddNewClaims" xml:space="preserve"><value>Ajouter une réclamation</value></data>
+  <data name="ActionsHeader" xml:space="preserve"><value>Actions</value></data>
+  <data name="ClaimNumber" xml:space="preserve"><value>Numéro de réclamation</value></data>
+  <data name="ClaimId" xml:space="preserve"><value>Identifiant de la réclamation</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>Identifiant de l’expédition</value></data>
+  <data name="ShipmentIdHelp" xml:space="preserve"><value>Saisissez l’UUID de l’expédition.</value></data>
+  <data name="ClaimedAmount" xml:space="preserve"><value>Montant réclamé</value></data>
+  <data name="CurrencyLabel" xml:space="preserve"><value>Devise</value></data>
+  <data name="ClaimSummary" xml:space="preserve"><value>Résumé de la réclamation</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aucune réclamation ne correspond au filtre actuel.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>Impossible de charger les réclamations.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Réessayer</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Non renseigné</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Référence support</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Copié dans le presse-papiers.</value></data>
+  <data name="TotalLabel" xml:space="preserve"><value>Réclamations renvoyées</value></data>
+  <data name="ApprovedAmountNotListed" xml:space="preserve"><value>Le montant approuvé ne figure pas dans les données de la liste ; il est affiché dans la confirmation après une approbation.</value></data>
+  <data name="StatusOpen" xml:space="preserve"><value>Ouverte</value></data>
+  <data name="StatusInvestigating" xml:space="preserve"><value>En cours d’instruction</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Approuvée</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Rejetée</value></data>
+  <data name="StatusSettled" xml:space="preserve"><value>Réglée</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Clôturée</value></data>
+  <data name="StatusWithdrawn" xml:space="preserve"><value>Retirée</value></data>
+  <data name="ShipmentStatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="ShipmentStatusPlanned" xml:space="preserve"><value>Planifiée</value></data>
+  <data name="ShipmentStatusDispatched" xml:space="preserve"><value>Expédiée</value></data>
+  <data name="ShipmentStatusInTransit" xml:space="preserve"><value>En transit</value></data>
+  <data name="ShipmentStatusDelivered" xml:space="preserve"><value>Livrée</value></data>
+  <data name="ShipmentStatusException" xml:space="preserve"><value>Incident</value></data>
+  <data name="ShipmentStatusClosed" xml:space="preserve"><value>Clôturée</value></data>
+  <data name="ShipmentStatusCancelled" xml:space="preserve"><value>Annulée</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nouvelle réclamation</value></data>
+  <data name="Resolve" xml:space="preserve"><value>Rechercher</value></data>
+  <data name="ResolveFirst" xml:space="preserve"><value>Recherchez l’expédition avant de créer la réclamation.</value></data>
+  <data name="ShipmentNumber" xml:space="preserve"><value>Numéro d’expédition</value></data>
+  <data name="ShipmentStatus" xml:space="preserve"><value>Statut de l’expédition</value></data>
+  <data name="EligibilityNote" xml:space="preserve"><value>Une réclamation peut être créée pour les expéditions Expédiée, En transit, Livrée, Incident ou Clôturée.</value></data>
+  <data name="ShipmentIneligible" xml:space="preserve"><value>Le statut de cette expédition ne permet pas de réclamation.</value></data>
+  <data name="LinkShipmentCarrier" xml:space="preserve"><value>Associer le transporteur de l’expédition</value></data>
+  <data name="NoShipmentCarrier" xml:space="preserve"><value>Disponible uniquement si l’expédition recherchée a un transporteur.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Code motif</value></data>
+  <data name="AmountHelp" xml:space="preserve"><value>Envoyé tel que saisi, par exemple 250.00.</value></data>
+  <data name="CurrencyHelp" xml:space="preserve"><value>Code à trois lettres envoyé tel que saisi, par exemple EUR.</value></data>
+  <data name="EvidenceReferenceIds" xml:space="preserve"><value>Références de justificatifs</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>Référence de justificatif</value></data>
+  <data name="AddEvidenceReference" xml:space="preserve"><value>Ajouter une référence</value></data>
+  <data name="RemoveEvidenceReference" xml:space="preserve"><value>Retirer la référence</value></data>
+  <data name="EvidenceHelp" xml:space="preserve"><value>Facultatif. Les références sont envoyées dans l’ordre affiché.</value></data>
+  <data name="CreateClaim" xml:space="preserve"><value>Créer la réclamation</value></data>
+  <data name="ClaimCreated" xml:space="preserve"><value>Réclamation créée.</value></data>
+  <data name="ClaimCreateReplayed" xml:space="preserve"><value>Cette réclamation a déjà été créée par la même demande ; elle est affichée comme terminée.</value></data>
+  <data name="TransitionTitle" xml:space="preserve"><value>Modifier le statut de la réclamation</value></data>
+  <data name="TransitionTarget" xml:space="preserve"><value>Nouveau statut</value></data>
+  <data name="ActionInvestigate" xml:space="preserve"><value>Instruire</value></data>
+  <data name="ActionWithdraw" xml:space="preserve"><value>Retirer</value></data>
+  <data name="ActionApprove" xml:space="preserve"><value>Approuver</value></data>
+  <data name="ActionReject" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="ActionSettle" xml:space="preserve"><value>Régler (aucun paiement comptabilisé)</value></data>
+  <data name="ActionClose" xml:space="preserve"><value>Clôturer</value></data>
+  <data name="TargetSettledLabel" xml:space="preserve"><value>Réglée (statut opérationnel, aucun paiement comptabilisé)</value></data>
+  <data name="SettledNoPaymentNote" xml:space="preserve"><value>Le règlement ne modifie que le statut de la réclamation. Aucun paiement, dette ou créance n’est comptabilisé.</value></data>
+  <data name="OccurredAt" xml:space="preserve"><value>Survenu le</value></data>
+  <data name="OccurredAtHelp" xml:space="preserve"><value>Date et heure avec décalage, par exemple 2026-09-26T14:30:00+03:00.</value></data>
+  <data name="ApprovedAmount" xml:space="preserve"><value>Montant approuvé</value></data>
+  <data name="ApprovedAmountHelp" xml:space="preserve"><value>Obligatoire pour l’approbation ; de zéro jusqu’au montant réclamé.</value></data>
+  <data name="ResolutionCode" xml:space="preserve"><value>Code de résolution</value></data>
+  <data name="NoteLabel" xml:space="preserve"><value>Remarque</value></data>
+  <data name="SubmitTransition" xml:space="preserve"><value>Appliquer le statut</value></data>
+  <data name="ConfirmTransition" xml:space="preserve"><value>Modifier le statut de la réclamation avec la valeur sélectionnée ?</value></data>
+  <data name="TransitionCompleted" xml:space="preserve"><value>Statut de la réclamation mis à jour.</value></data>
+  <data name="TransitionReplayed" xml:space="preserve"><value>Ce changement de statut a déjà été appliqué par la même demande ; il est affiché comme terminé.</value></data>
+  <data name="ApprovedAmountResult" xml:space="preserve"><value>Montant approuvé</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Une demande pour cette action est encore en cours.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>La demande n’est pas valide. Vérifiez les valeurs saisies.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Votre session a expiré. Veuillez vous reconnecter.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>Vous n’êtes pas autorisé à effectuer cette action.</value></data>
+  <data name="ErrClaimNotFound" xml:space="preserve"><value>L’enregistrement est introuvable ou ne vous est pas accessible.</value></data>
+  <data name="ErrUnsupportedMediaType" xml:space="preserve"><value>Le format de la demande n’est pas pris en charge.</value></data>
+  <data name="ErrClaimShipmentIneligible" xml:space="preserve"><value>Le statut de l’expédition ne permet pas de réclamation.</value></data>
+  <data name="ErrClaimCarrierMismatch" xml:space="preserve"><value>Le transporteur ne correspond pas à celui de l’expédition ou ne peut pas être utilisé.</value></data>
+  <data name="ErrClaimAmountInvalid" xml:space="preserve"><value>Le montant réclamé doit être supérieur à zéro.</value></data>
+  <data name="ErrClaimApprovalAmountInvalid" xml:space="preserve"><value>Le montant approuvé doit être compris entre zéro et le montant réclamé.</value></data>
+  <data name="ErrClaimApprovedAmountNotAllowed" xml:space="preserve"><value>Un montant approuvé ne peut être envoyé que lors d’une approbation.</value></data>
+  <data name="ErrInvalidClaimTransition" xml:space="preserve"><value>La réclamation a été modifiée entre-temps et ce changement de statut n’est plus possible. La liste a été rechargée.</value></data>
+  <data name="ErrClaimCorrelationMismatch" xml:space="preserve"><value>La demande ne correspond plus à l’enregistrement de l’expédition.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Cette demande a déjà été utilisée avec d’autres valeurs. Lancez une nouvelle action.</value></data>
+  <data name="ErrClaimReferenceInvalid" xml:space="preserve"><value>Les données de référence de l’expédition sont invalides. Veuillez contacter le support.</value></data>
+  <data name="ErrClaimReferenceIncomplete" xml:space="preserve"><value>Les données de référence de l’expédition sont incomplètes. Réessayez plus tard la même demande.</value></data>
+  <data name="ErrClaimReferenceUnavailable" xml:space="preserve"><value>Les données de référence de l’expédition sont temporairement indisponibles. Réessayez la même demande.</value></data>
+  <data name="ErrClaimStorageUnavailable" xml:space="preserve"><value>Les réclamations sont temporairement indisponibles. Le résultat n’est pas confirmé ; réessayez la même demande.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>Une erreur inattendue s’est produite. Vous pouvez réessayer la même action.</value></data>
+</root>

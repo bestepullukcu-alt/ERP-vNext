@@ -1,0 +1,27 @@
+--- R2/sandop-capacity.openapi.candidate.yaml
++++ FINAL/sandop-capacity.openapi.final-proposed.yaml
+@@ -8,10 +8,10 @@
+     provenance, never a second demand source of record. Tenant and LegalEntity
+     scope are resolved from authenticated server context and are never accepted
+     in request bodies.
+-  version: 2.0.0-rc.2
+-  x-status: CANDIDATE
++  version: 2.0.0
++  x-status: FROZEN
+   x-contract-version: v1
+-  x-semantics-annex: sandop-capacity-semantics-v2.0.0-rc.2.md
++  x-semantics-annex: sandop-capacity-semantics-v2.0.0.md
+   x-owner: [MOD-0190, MOD-0192]
+   x-consumes: [DEMAND]
+ servers:
+--- R2/sandop-capacity-semantics-v2.0.0-rc.2.md
++++ FINAL/sandop-capacity-semantics-v2.0.0.md
+@@ -1,6 +1,6 @@
+-# SANDOP-CAPACITY semantics v2.0.0-rc.2 — unpublished candidate
++# SANDOP-CAPACITY semantics v2.0.0 — proposed final publication artifact (UNAPPROVED)
+ 
+-This annex belongs to the R2 candidate YAML only. Proposed metadata `info.version: 2.0.0-rc.2`, `x-status: CANDIDATE`, wire `contractVersion: v1`. The major line is a **release proposal** because state eligibility and new error cases can narrow behavior; it does not negotiate routes or migrate consumers. The actual 2026-09-22 user messages approve D190-04/05 and C192-02…07 **for amendment-candidate preparation**, exact parsed key/no trim, the fixture-only DEMAND/constraint scope, local JWT actor/no Workflow, Pending-only outbox/no Event Bus publisher, and the exact MOD-0192 executor design bound to `DECISION.md` SHA-256 `cfddf953a1a98107869417ef8afbcad5f578fcfde2a8cad8e1d2b6b05197cc5d`. The newly proposed wire dispositions and final 2.0.0 version remain UNAPPROVED for publication; no canonical publication, consumer consent, pack promotion, Phase 1.5, Program.cs or runtime DEV follows.
++This annex belongs to the proposed final 2.0.0 YAML only. Proposed publication metadata `info.version: 2.0.0`, `x-status: FROZEN`, wire `contractVersion: v1`; these bytes are not canonical until separately authorized and applied. The major line is a **release proposal** because state eligibility and new error cases can narrow behavior; it does not negotiate routes or migrate consumers. The actual 2026-09-22 user messages approve D190-04/05 and C192-02…07 **for amendment-candidate preparation**, exact parsed key/no trim, the fixture-only DEMAND/constraint scope, local JWT actor/no Workflow, Pending-only outbox/no Event Bus publisher, and the exact MOD-0192 executor design bound to `DECISION.md` SHA-256 `cfddf953a1a98107869417ef8afbcad5f578fcfde2a8cad8e1d2b6b05197cc5d`. The newly proposed wire dispositions and final 2.0.0 version remain UNAPPROVED for publication; no canonical publication, consumer consent, pack promotion, Phase 1.5, Program.cs or runtime DEV follows.
+ 
+ ## Common transport, error, receipt and precedence proposal
+ 

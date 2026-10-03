@@ -1,0 +1,4 @@
+path	sha256	bytes
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll	e1b1ec3dff4530171c5a9f4fa3fa1ca8156547448ebac1719a2907d8461629d0	136192
+gateway/Diten.ApiGateway/bin/Debug/net8.0/Diten.ApiGateway.dll	b1c9e3aea05cb514d29f43e7356de10d9a40dfe56473e14389c3b141acf57824	49152
+services/Diten.CrmService/src/Diten.CrmService.Api/bin/Debug/net8.0/Diten.CrmService.Api.dll	fd91c0bac1d54931d2259c902c761217eb22c1fc91995f28a9a77bafabfe975f	668160

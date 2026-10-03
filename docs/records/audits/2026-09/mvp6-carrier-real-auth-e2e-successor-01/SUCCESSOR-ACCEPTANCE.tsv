@@ -1,0 +1,23 @@
+id	acceptance	verdict	evidence_or_gap
+SUC-01	Final UI exact identity	PASS	Manifest 3b7086f0...; 21/21 fresh rehash against registered UI worktree
+SUC-02	NumericDate-corrected writer-complete exists	BLOCKED	Only unapplied candidate exists; decision text is UNAPPROVED
+SUC-03	Later independent Auth runtime PASS handoff exists	BLOCKED	Newest independent record is REWORK and Carrier handoff HELD
+SUC-04	Native .NET 8 source→binary→process chain	NOT RUN	Start gate failed before build or launch
+SUC-05	Real Auth-issued scoped token	NOT RUN	Required exact Auth runtime PASS handoff absent
+SUC-06	Frontend list through Gateway	NOT RUN	No real token or process chain
+SUC-07	Frontend create through Gateway	NOT RUN	No real token or process chain
+SUC-08	Same-key replay and payload conflict	NOT RUN	No real token mutation run
+SUC-09	Status transition	NOT RUN	No real token mutation run
+SUC-10	Status offcanvas opened from persisted row	NOT RUN	No authenticated persisted row produced
+SUC-11	Read/create/status permission separation	NOT RUN	Requires distinct Auth-issued identities and live chain
+SUC-12	Tenant isolation	NOT RUN	Requires positive and cross-tenant real Auth pair
+SUC-13	Legal Entity isolation	NOT RUN	Requires positive and cross-LE real Auth pair
+SUC-14	Create/replay/status persistence	NOT RUN	No mutation or DB observation
+SUC-15	Missing-LE fail-closed fresh verification	NOT RUN	Historical PASS preserved; no fresh runtime launched
+SUC-16	UAS-001 fresh browser smoke	NOT RUN	Historical bounded evidence preserved; no fresh browser launched
+SUC-17	Seven-language and Carrier L10n quality	PASS_INHERITED	Final UI bytes unchanged; controlling quality-close evidence only
+SUC-18	Responsive 768/390	PASS_INHERITED	RESPONSIVE.tsv SHA c93a70b6...; not rerun
+SUC-19	Durable PNG archive	OPEN	No supported save/export capability; forbidden alternatives not attempted
+SUC-20	Candidate 49/49 as independent successor PASS	N/A	Explicitly prohibited by start condition
+SUC-21	Full-module/E5/G5/rollout	N/A	Outside bounded handoff
+OVERALL	Real-Auth Carrier E2E successor	BLOCKED	NumericDate writer-complete plus later independent Auth runtime PASS are absent

@@ -1,0 +1,25 @@
+module	type	declared_at	dependency	registered
+SandopPlans	CreateSandopPlanHandler	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SandopPlans/Handlers/CommandHandlers/CreateSandopPlanHandler.cs:3	ISandopRepository	yes — AddSandopPersistence (SandopPersistenceRegistration.cs:10), not called by Program.cs
+SandopPlans	CreateSandopPlanHandler	services/Diten.SupplyChainService/src/…/CreateSandopPlanHandler.cs:3	Domain.Features.SandopPlans.IDemandFixtureReader	NO — only implementation is the test-only DemandFixtureReader(IEnumerable<DemandFixture>)
+SandopPlans	CaptureSandopSnapshotHandler	services/Diten.SupplyChainService/src/…/CaptureSandopSnapshotHandler.cs:3	ISandopRepository	yes (same as above)
+SandopPlans	CaptureSandopSnapshotHandler	services/Diten.SupplyChainService/src/…/CaptureSandopSnapshotHandler.cs:3	Domain.Features.SandopPlans.IDemandFixtureReader	NO
+SandopPlans	RecordSandopSignOffHandler	services/Diten.SupplyChainService/src/…/RecordSandopSignOffHandler.cs:3	ISandopRepository	yes
+SandopPlans	RecordSandopSignOffHandler	services/Diten.SupplyChainService/src/…/RecordSandopSignOffHandler.cs:3	Domain.Features.SandopPlans.IDemandFixtureReader	NO
+SandopPlans	GetSandopPlanHandler	services/Diten.SupplyChainService/src/…/QueryHandlers/GetSandopPlanHandler.cs:3	ISandopRepository	yes
+SandopPlans	ListSandopSignOffsHandler	services/Diten.SupplyChainService/src/…/QueryHandlers/ListSandopSignOffsHandler.cs:3	ISandopRepository	yes
+SandopPlans	ListSandopSnapshotsHandler	services/Diten.SupplyChainService/src/…/QueryHandlers/ListSandopSnapshotsHandler.cs:3	ISandopRepository	yes
+SandopPlans	3 validators	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SandopPlans/Validators/*.cs	none (parameterless)	n/a
+SandopPlans	SandopRepository	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/SandopPlans/SandopRepository.cs:7	IMongoDatabase	yes — AddPersistence
+SandopPlans	SandopSchema (hosted)	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/SandopPlans/SandopSchema.cs:9	IMongoDatabase	yes
+SandopPlans	SandopPlansController	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/SandopPlans/SandopPlansController.cs:5	ISender	yes
+SandopPlans	SandopContextMiddleware	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/SandopPlans/SandopContextMiddleware.cs:4	none — static helper called by the controller, not pipeline middleware	n/a
+CapacityPlans	6 handlers	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/CapacityPlans/Handlers/*/*.cs:6	ICapacityRepository, CapacityRequestContext	yes — AddCapacityPersistence (CapacityPersistenceRegistration.cs:10-11), not called by Program.cs
+CapacityPlans	3 validators	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/CapacityPlans/Validators/*.cs:6	none (parameterless)	n/a
+CapacityPlans	CapacityRepository	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityRepository.cs:6	IMongoDatabase	yes
+CapacityPlans	CapacityRepository	services/Diten.SupplyChainService/src/…/CapacityRepository.cs:6	Domain.Features.CapacityPlans.IDemandFixtureReader	NO — only implementation is Infrastructure/Features/CapacityPlans/DemandFixtureReader (hard-coded tenant 19200000-…-0001, plan dp-2027 v3)
+CapacityPlans	CapacityRepository	services/Diten.SupplyChainService/src/…/CapacityRepository.cs:6	Domain.Features.CapacityPlans.IConstraintFixtureReader	NO — only implementation is ConstraintFixtureReader (hard-coded literal tuple)
+CapacityPlans	CapacityLeaseStore	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs:5	IMongoDatabase	yes
+CapacityPlans	CapacitySchema (hosted)	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacitySchema.cs:5	IMongoDatabase	yes
+CapacityPlans	CapacityEvaluationExecutor (BackgroundService)	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/CapacityPlans/CapacityEvaluationExecutor.cs:5	ICapacityLeaseStore, ILogger	deps yes — but the executor ITSELF is registered nowhere in src/; without it evaluations are accepted 202 and never complete. Its oracle is a literal fixture (line 7, 27-30).
+CapacityPlans	CapacityPlansController	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/CapacityPlans/CapacityPlansController.cs:13	ISender, CapacityRequestContext	yes / yes (once composed)
+CapacityPlans	CapacityContextMiddleware	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/CapacityPlans/CapacityContextMiddleware.cs:7,30	RequestDelegate; Invoke: CapacityRequestContext, RequestContext	resolvable — but not wired in Program.cs (no UseWhen for IsCapacityPath), so CapacityRequestContext would stay empty

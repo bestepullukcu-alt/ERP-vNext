@@ -1,0 +1,125 @@
+{
+  "phase": "crafted",
+  "extra": null,
+  "startedAt": "2026-09-27T12:10:16.745Z",
+  "web": "http://127.0.0.1:5901",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-03-envelope-absent-fields": {
+      "result": "PASS",
+      "rows": 2,
+      "notProvidedCount": 2,
+      "actionsOnRowWithoutClaimId": 0,
+      "malformed": {
+        "errorStateVisible": true,
+        "tableHidden": true,
+        "skeletonHidden": true
+      }
+    },
+    "CU-04-exact-amount": {
+      "result": "PASS",
+      "cells": [
+        {
+          "text": "999999999999…(80 chars)",
+          "bdiDir": "ltr"
+        },
+        {
+          "text": "000250.00",
+          "bdiDir": "ltr"
+        }
+      ],
+      "long80Length": 80
+    },
+    "CU-13-resolve-stale-guard": {
+      "result": "PASS",
+      "responseOrder": [
+        {
+          "k": 2,
+          "url": "c8312c99-24be-4b2f-a683-a417a0ae4a25",
+          "at": "2026-09-27T12:10:27.162Z"
+        },
+        {
+          "k": 1,
+          "url": "7115dbca-3bae-409b-9a6b-2bcc0e63c660",
+          "at": "2026-09-27T12:10:29.626Z"
+        }
+      ],
+      "inputAfter": "c8312c99-24be-4b2f-a683-a417a0ae4a25",
+      "shipmentNumberShown": "SHP-c8312c9924be4b2fa683a417a0ae4a25",
+      "note": "the delayed first response (SEED) arrived last and did not replace the DISPATCHED result"
+    }
+  },
+  "png": [
+    {
+      "name": "cu03-absent-fields-en.png",
+      "sha256": "5fba9746a2752d6abdc4a0aeb40954401b4e5b7af12f28bcb48f03e6201aa240",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:10:19.521Z",
+      "phase": "crafted",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu03-malformed-envelope-en.png",
+      "sha256": "4d258097cef1fbbbb5ae45ea77fedefc230fcb21ddb33a5139724bf6d436319d",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:10:22.098Z",
+      "phase": "crafted",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu04-exact-amount-en.png",
+      "sha256": "9cd5924578904b9453b22919df02a121e04d830e7e4fb7d619f73edf9cac7ddd",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:10:24.686Z",
+      "phase": "crafted",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu13-stale-resolve-en.png",
+      "sha256": "65de341cc04ade850aef7b21ce1712763efa4ec7bd064c47c22bc54ed50cc317",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:10:31.308Z",
+      "phase": "crafted",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "cu03a",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu03a",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "cu03b",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu03b",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "cu04",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu04",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "cu13",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu13",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "endedAt": "2026-09-27T12:10:31.334Z"
+}

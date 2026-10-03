@@ -1,0 +1,95 @@
+# Q84 STATIC-CHECKS — MOD-0190 S&OP tenant UI draft overlay
+# Run at 2026-09-26 18:44:49 +03:00 (Istanbul) in the chat-lane Linux VM workspace, scratch /tmp/q84; node v22.23.2, xmllint 20913, python 3.10.12, tree-sitter-c-sharp 0.23.5 (pip, VM /tmp)
+# STATIC checks only. No dotnet build/test, no analyzers, no Razor compile, no browser run (see NOT-VERIFIED.md).
+# The SHA256SUMS verification of this folder is run after this file is written; its result is in README.md (hand-off line).
+
+status	check	detail
+PASS	node --check overlay/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/SandopPlans/details.js	
+PASS	node --check overlay/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/SandopPlans/details.l10n.js	
+PASS	node --check overlay/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/SandopPlans/index.js	
+PASS	node --check overlay/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/SandopPlans/index.l10n.js	
+PASS	node --check runtime-scenarios/sop-ui.spec.mjs	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlanDetails.ar.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlanDetails.en.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlanDetails.es.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlanDetails.fr.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlanDetails.ru.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlanDetails.tr.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlanDetails.zh.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlansIndex.ar.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlansIndex.en.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlansIndex.es.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlansIndex.fr.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlansIndex.ru.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlansIndex.tr.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/SandopPlans/SandopPlansIndex.zh.resx	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.ar.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.en.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.es.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.fr.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.ru.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.tr.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.zh.resx.fragment.xml	
+PASS	json.load gateway-sandop-routes.ocelot-fragment.json	
+PASS	resx key parity SandopPlansIndex.{7 langs}	en=44, tr=44, fr=44, es=44, zh=44, ar=44, ru=44
+PASS	resx no empty value / no key echo (SandopPlansIndex)	[]
+PASS	resx no placeholder text (SandopPlansIndex)	[]
+PASS	resx non-en values identical to en — review list (SandopPlansIndex)	[]
+PASS	resx zh/ar/ru contain no English words (≥4 Latin letters; uppercase codes excluded) (SandopPlansIndex)	[]
+PASS	resx localizes all 14 published S&OP error codes (SandopPlansIndex)	14
+PASS	resx key parity SandopPlanDetails.{7 langs}	en=87, tr=87, fr=87, es=87, zh=87, ar=87, ru=87
+PASS	resx no empty value / no key echo (SandopPlanDetails)	[]
+PASS	resx no placeholder text (SandopPlanDetails)	[]
+PASS	resx non-en values identical to en — review list (SandopPlanDetails)	[('fr', 'Role.Finance')]
+PASS	resx zh/ar/ru contain no English words (≥4 Latin letters; uppercase codes excluded) (SandopPlanDetails)	[]
+PASS	resx localizes all 14 published S&OP error codes (SandopPlanDetails)	14
+PASS	contract: S&OP operations publish 14 error codes	['COMMIT_RESULT_UNRESOLVED', 'DEPENDENCY_UNAVAILABLE', 'FORBIDDEN', 'IDEMPOTENCY_KEY_REUSED', 'INVALID_CORRELATION_ID', 'INVALID_DEMAND_REFERENCE', 'INVALID_REQUEST', 'INVALID_SNAPSHOT_REFERENCE', 'SANDOP_PLAN_ALREADY_EXISTS', 'SANDOP_PLAN_STATE_CONFLICT', 'SANDOP_SIGN_OFF_STATE_CONFLICT', 'SIGN_OFF_ALREADY_RECORDED', 'UNAUTHENTICATED', 'UNKNOWN_SANDOP_PLAN']
+PASS	controller PublishedCodes == contract codes	[]
+PASS	index.js ERROR_KEY maps all 14 published codes	[]
+PASS	details.js ERROR_KEY maps all 14 published codes	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web.Tests/Controllers/SupplyChainSandopPlansControllerTests.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web.Tests/Forms/SandopPlanFormContractTests.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web.Tests/JavaScript/SandopPlanDetailsBehaviorTests.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Controllers/SupplyChainSandopPlansController.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Models/SupplyChain/SandopPlans/SandopPlanViewModels.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Views/SupplyChain/SandopPlans/SandopPlanDetails.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Views/SupplyChain/SandopPlans/SandopPlansIndex.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/SopWorkflowSignoffsManifestProvider.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/SopWorkflowSignoffsManifestProviderTests.cs	[]
+PASS	cshtml: no hard-coded UI text (text nodes / aria-label / title / placeholder)	[]
+PASS	js: no hard-coded English phrases in string literals (console lines excluded)	[]
+PASS	no native dialogs (alert/confirm/prompt) and no direct Swal.fire	[]
+PASS	no inline event handlers / javascript: URLs in views	[]
+PASS	no browser storage in module JS	[]
+PASS	no invented permission keys (overlay keys ⊆ backend SandopPermissions constants)	used=['supplychain.sandop-plans.create', 'supplychain.sandop-plans.read', 'supplychain.sandop-plans.sign-off.record', 'supplychain.sandop-plans.snapshot.capture'] backend=['supplychain.sandop-plans.create', 'supplychain.sandop-plans.read', 'supplychain.sandop-plans.sign-off.record', 'supplychain.sandop-plans.snapshot.capture']
+PASS	controller routes == §23.4 (2 view + 6 adapter), nothing else	[]
+PASS	js URL literals only the §23.4 same-origin routes	['/SupplyChain/SandopPlans/Details/', '/SupplyChain/SandopPlans/api', '/SupplyChain/SandopPlans/api/']
+PASS	controller downstream base = published /api/supply-chain/sandop-plans	{'/api/supply-chain/sandop-plans'}
+PASS	mirror: entry page has exactly one fetch (create POST), no list request	
+PASS	mirror: token absent from index.js/details.js: colvis	
+PASS	mirror: token absent from index.js/details.js: exportButtons	
+PASS	mirror: token absent from index.js/details.js: personalizationClient	
+PASS	mirror: token absent from index.js/details.js: dt-checkboxes	
+PASS	mirror: token absent from index.js/details.js: QuickView	
+PASS	mirror: token absent from index.js/details.js: .trim(	
+PASS	mirror: token absent from index.js/details.js: /status	
+PASS	mirror: token absent from index.js/details.js: /transition	
+PASS	mirror: token absent from index.js/details.js: ?page	
+PASS	mirror: token absent from index.js/details.js: search=	
+PASS	mirror: create form fields = 5 schema fields in order	['planName', 'planHorizonStart', 'planHorizonEnd', 'planDemandPlanId', 'planDemandPlanVersion']
+PASS	mirror: no client tightening attributes in _CreateOffcanvas.cshtml	
+PASS	mirror: no client tightening attributes in _CaptureSnapshotOffcanvas.cshtml	
+PASS	mirror: no client tightening attributes in _RecordSignOffOffcanvas.cshtml	
+PASS	mirror: _IndexL10n.cshtml bridges every SandopPlansIndex key once	44
+PASS	mirror: _DetailsL10n.cshtml bridges every SandopPlanDetails key once	87
+PASS	mirror: Details.cshtml states Layout = "_LayoutTenantShell"	
+PASS	mirror: Index.cshtml states Layout = "_LayoutTenantShell"	
+PASS	mirror: _CaptureSnapshotOffcanvas.cshtml states Layout = "_LayoutTenantShell"	
+PASS	mirror: _CreateOffcanvas.cshtml states Layout = "_LayoutTenantShell"	
+PASS	mirror: _DetailsL10n.cshtml states Layout = "_LayoutTenantShell"	
+PASS	mirror: _IndexL10n.cshtml states Layout = "_LayoutTenantShell"	
+PASS	mirror: _RecordSignOffOffcanvas.cshtml states Layout = "_LayoutTenantShell"	
+PASS	FILE-PLAN OWNED+SR-D4 rows == SOURCE-MANIFEST module+SR rows	34 / 34; diff=[]
+PASS	FILE-PLAN maps every §23.1–§23.14 and §24 item	27 section rows; missing=[]
+PASS	overlay archive sop-ui-draft-overlay.tar.gz extracts byte-identical to overlay/ (diff -r empty), 47 files	fcf52d827914dc9c1d217b191a416821a024ba1e3314148f488ebbb2c81e5e30
+PASS	verify_module_id.py --check-id MOD-0190 --name "S&OP Workflow & Sign-offs" (read-only gate, pack §23.1)	exit 0: OK  MOD-0190: proven against Blueprint/registry.

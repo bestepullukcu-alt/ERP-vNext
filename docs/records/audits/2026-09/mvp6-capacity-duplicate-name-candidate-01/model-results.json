@@ -1,0 +1,36 @@
+{
+  "scope": "E1/E2 in-memory contract model, NOT Mongo race or production evidence",
+  "passed": 15,
+  "failed": 0,
+  "mutants": {
+    "trim": {
+      "rejected": true,
+      "failed_cases": [
+        "test_exact_name_no_normalization (__main__.Cases)"
+      ]
+    },
+    "duplicate_before_receipt": {
+      "rejected": true,
+      "failed_cases": [
+        "test_changed_valid_payload_before_business (__main__.Cases)",
+        "test_fixture_before_duplicate (__main__.Cases)",
+        "test_lifecycle_before_duplicate (__main__.Cases)",
+        "test_replay_before_state_fixture_name (__main__.Cases)",
+        "test_same_key_race_replays (__main__.Cases)",
+        "test_unknown_commit_not_duplicate (__main__.Cases)"
+      ]
+    },
+    "race_503": {
+      "rejected": true,
+      "failed_cases": [
+        "test_race_same_outcome (__main__.Cases)"
+      ]
+    },
+    "unknown_as_duplicate": {
+      "rejected": true,
+      "failed_cases": [
+        "test_unknown_commit_not_duplicate (__main__.Cases)"
+      ]
+    }
+  }
+}

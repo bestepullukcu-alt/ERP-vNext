@@ -1,0 +1,6 @@
+Sun 27 Sep 2026 16:39:35 +03
+== K06: netcheck before cleanup
+K06 netcheck PASS: no kit process connected to 27017 (netcheck-a2.tsv)
+K11 PASS: see CLEANUP.tsv
+Now write the lane's SOP-22/ACCEPTANCE files, then ARTIFACTS.sha256 (all files), then: run-kit.sh seal
+DOWN-EXIT 0

@@ -1,0 +1,1941 @@
+[
+  {
+    "label": "drop-hosted-db",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.dropDatabase()));",
+    "stdout": {
+      "ok": 1,
+      "dropped": "DitenSupplyChain_Mod0192_Hosted_Dev"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-1b7749f3-f2a7-426d-97cb-7c77f1da94f8-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"1b7749f3-f2a7-426d-97cb-7c77f1da94f8\"})));",
+    "stdout": {
+      "_id": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:51:49.640603+00:00",
+      "UpdatedAt": null,
+      "Version": 1,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "ScenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Accepted",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:51:49.640603+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+      "CausationId": "5823e643-b576-4c29-806e-67073509f688",
+      "Attempt": 0,
+      "Fence": {
+        "low": 0,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": null
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-1b7749f3-f2a7-426d-97cb-7c77f1da94f8-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"1b7749f3-f2a7-426d-97cb-7c77f1da94f8\"})));",
+    "stdout": {
+      "_id": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:51:49.640603+00:00",
+      "UpdatedAt": null,
+      "Version": 1,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "ScenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Accepted",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:51:49.640603+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+      "CausationId": "5823e643-b576-4c29-806e-67073509f688",
+      "Attempt": 0,
+      "Fence": {
+        "low": 0,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": null
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-1b7749f3-f2a7-426d-97cb-7c77f1da94f8-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"1b7749f3-f2a7-426d-97cb-7c77f1da94f8\"})));",
+    "stdout": {
+      "_id": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:51:49.640603+00:00",
+      "UpdatedAt": null,
+      "Version": 1,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "ScenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Accepted",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:51:49.640603+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+      "CausationId": "5823e643-b576-4c29-806e-67073509f688",
+      "Attempt": 0,
+      "Fence": {
+        "low": 0,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": null
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-1b7749f3-f2a7-426d-97cb-7c77f1da94f8-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"1b7749f3-f2a7-426d-97cb-7c77f1da94f8\"})));",
+    "stdout": {
+      "_id": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:51:49.640603+00:00",
+      "UpdatedAt": null,
+      "Version": 1,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "ScenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Accepted",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:51:49.640603+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+      "CausationId": "5823e643-b576-4c29-806e-67073509f688",
+      "Attempt": 0,
+      "Fence": {
+        "low": 0,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": null
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-1b7749f3-f2a7-426d-97cb-7c77f1da94f8-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"1b7749f3-f2a7-426d-97cb-7c77f1da94f8\"})));",
+    "stdout": {
+      "_id": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:51:49.640603+00:00",
+      "UpdatedAt": null,
+      "Version": 1,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "ScenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Accepted",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:51:49.640603+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+      "CausationId": "5823e643-b576-4c29-806e-67073509f688",
+      "Attempt": 0,
+      "Fence": {
+        "low": 0,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": null
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-1b7749f3-f2a7-426d-97cb-7c77f1da94f8-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"1b7749f3-f2a7-426d-97cb-7c77f1da94f8\"})));",
+    "stdout": {
+      "_id": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:51:49.640603+00:00",
+      "UpdatedAt": null,
+      "Version": 1,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "ScenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Accepted",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:51:49.640603+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+      "CausationId": "5823e643-b576-4c29-806e-67073509f688",
+      "Attempt": 0,
+      "Fence": {
+        "low": 0,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": null
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-1b7749f3-f2a7-426d-97cb-7c77f1da94f8-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"1b7749f3-f2a7-426d-97cb-7c77f1da94f8\"})));",
+    "stdout": {
+      "_id": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:51:49.640603+00:00",
+      "UpdatedAt": null,
+      "Version": 1,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "ScenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Accepted",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:51:49.640603+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+      "CausationId": "5823e643-b576-4c29-806e-67073509f688",
+      "Attempt": 0,
+      "Fence": {
+        "low": 0,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": null
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-1b7749f3-f2a7-426d-97cb-7c77f1da94f8-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"1b7749f3-f2a7-426d-97cb-7c77f1da94f8\"})));",
+    "stdout": {
+      "_id": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:51:49.640603+00:00",
+      "UpdatedAt": null,
+      "Version": 3,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+      "ScenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Completed",
+      "Bottlenecks": [
+        {
+          "ResourceRef": "line-4",
+          "Period": "2027-W03",
+          "RequiredCapacity": "520.000",
+          "AvailableCapacity": "480.000",
+          "Shortfall": "40.000",
+          "UomId": "HOUR"
+        }
+      ],
+      "SubmittedAt": "2026-09-22T21:51:49.640603+00:00",
+      "CompletedAt": "2026-09-22T21:51:59.081Z",
+      "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+      "CausationId": "5823e643-b576-4c29-806e-67073509f688",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": null
+    },
+    "stderr": ""
+  },
+  {
+    "label": "http-terminal-state",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(({event:d.capacity_outbox.findOne({AggregateId:\"1b7749f3-f2a7-426d-97cb-7c77f1da94f8\"}),audit:d.capacity_audit.findOne({TargetId:\"1b7749f3-f2a7-426d-97cb-7c77f1da94f8\"}),slot:d.capacity_active_slots.countDocuments({EvaluationId:\"1b7749f3-f2a7-426d-97cb-7c77f1da94f8\"})})));",
+    "stdout": {
+      "event": {
+        "_id": "a01cc57e-ba78-431a-ae38-879f15957ae8",
+        "TenantId": "19200000-0000-4000-8000-000000000001",
+        "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+        "AggregateId": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+        "EventType": "capacity.evaluation.completed.v1",
+        "Status": "Pending",
+        "EvaluationStatus": "Completed",
+        "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+        "CausationId": "5823e643-b576-4c29-806e-67073509f688",
+        "OccurredAt": "2026-09-22T21:51:59.081Z",
+        "ContractVersion": "v1",
+        "Payload": {
+          "capacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+          "scenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+          "evaluationId": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+          "status": "Completed"
+        }
+      },
+      "audit": {
+        "_id": "93c27050-b7fc-45ba-b801-b9d2d2760d72",
+        "TenantId": "19200000-0000-4000-8000-000000000001",
+        "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+        "TargetId": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+        "Operation": "evaluateCapacityScenario",
+        "ActorId": "19200000-0000-4000-8000-000000000003",
+        "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+        "OccurredAt": "2026-09-22T21:51:49.660Z"
+      },
+      "slot": 0
+    },
+    "stderr": ""
+  },
+  {
+    "label": "pending-after-host-running",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_outbox.findOne({AggregateId:\"1b7749f3-f2a7-426d-97cb-7c77f1da94f8\"}).Status));",
+    "stdout": "Pending",
+    "stderr": ""
+  },
+  {
+    "label": "soft-delete-plan",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_plans.updateOne({_id:\"25cb36ab-24c7-486a-9356-56475aef92b0\"},{$set:{IsDeleted:true}})));",
+    "stdout": {
+      "acknowledged": true,
+      "insertedId": null,
+      "matchedCount": 1,
+      "modifiedCount": 1,
+      "upsertedCount": 0
+    },
+    "stderr": ""
+  },
+  {
+    "label": "response-loss-receipt-before-retry",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_receipts.findOne({Key:\"response-loss\",Operation:\"createCapacityPlan\"})));",
+    "stdout": {
+      "_id": "1a2e445f-487f-4f7d-8cba-a62f1eec43a3",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "Operation": "createCapacityPlan",
+      "Target": "create",
+      "Key": "response-loss",
+      "Fingerprint": "4bbec4fc4439960816f8040377675b59801213e05ecfc150a464bf8c2ac48b61",
+      "Body": "{\"LegalEntityId\":\"19200000-0000-4000-8000-000000000002\",\"Name\":\"Response loss\",\"HorizonStart\":\"2028-01-01\",\"HorizonEnd\":\"2028-12-31\",\"DemandPlanId\":\"dp-2027\",\"DemandPlanVersion\":\"3\",\"SourceCapturedAt\":\"2026-09-15T09:45:00+00:00\",\"SourceChecksum\":\"sha256:ee56d4f9a3c8\",\"Status\":\"Draft\",\"CreatedBy\":\"19200000-0000-4000-8000-000000000003\",\"CreatedEventId\":\"661e2a01-212c-4673-98af-f287431acb58\",\"Id\":\"feaada3f-3263-4656-9333-db173ac6d0ae\",\"TenantId\":\"19200000-0000-4000-8000-000000000001\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-22T21:52:13.033668+00:00\",\"UpdatedAt\":null,\"Version\":1}",
+      "Status": 201,
+      "CorrelationId": "16061c42-6dea-4596-b93a-c8a8b1c27416"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "failpoint-on-mod192-host-main",
+    "javascript": "print(JSON.stringify(db.adminCommand({configureFailPoint:\"failCommand\",mode:{skip:1},data:{failCommands:[\"findAndModify\"],appName:\"mod192-host-main\",blockConnection:true,blockTimeMS:60000}})))",
+    "stdout": {
+      "count": 6,
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": "7688480798348935170"
+        },
+        "signature": {
+          "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "keyId": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          }
+        }
+      },
+      "operationTime": {
+        "$timestamp": "7688480798348935170"
+      }
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Running",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 1,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Accepted",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 0,
+      "Fence": {
+        "low": 0,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": null
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Running",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 1,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Accepted",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 0,
+      "Fence": {
+        "low": 0,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": null
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Running",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 1,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Accepted",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 0,
+      "Fence": {
+        "low": 0,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": null
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Running",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "valid-lease-after-restart",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:52:49.049Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 3,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 2,
+      "Fence": {
+        "low": 2,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:53:19.876Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-b0cc760f-f10d-4aae-aa02-901ff8cd9fd1-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})));",
+    "stdout": {
+      "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+      "UpdatedAt": null,
+      "Version": 4,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+      "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Completed",
+      "Bottlenecks": [
+        {
+          "ResourceRef": "line-4",
+          "Period": "2027-W03",
+          "RequiredCapacity": "520.000",
+          "AvailableCapacity": "480.000",
+          "Shortfall": "40.000",
+          "UomId": "HOUR"
+        }
+      ],
+      "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+      "CompletedAt": "2026-09-22T21:52:49.894Z",
+      "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+      "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+      "Attempt": 2,
+      "Fence": {
+        "low": 2,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": null
+    },
+    "stderr": ""
+  },
+  {
+    "label": "kill-failpoint-off",
+    "javascript": "print(JSON.stringify(db.adminCommand({configureFailPoint:\"failCommand\",mode:\"off\"})))",
+    "stdout": {
+      "count": 7,
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": "7688481077521809409"
+        },
+        "signature": {
+          "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "keyId": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          }
+        }
+      },
+      "operationTime": {
+        "$timestamp": "7688481077521809409"
+      }
+    },
+    "stderr": ""
+  },
+  {
+    "label": "kill-restart-effect",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(({events:d.capacity_outbox.countDocuments({AggregateId:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"}),audits:d.capacity_audit.countDocuments({TargetId:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\",Operation:\"terminalCapacityEvaluation\"}),slots:d.capacity_active_slots.countDocuments({EvaluationId:\"b0cc760f-f10d-4aae-aa02-901ff8cd9fd1\"})})));",
+    "stdout": {
+      "events": 1,
+      "audits": 1,
+      "slots": 0
+    },
+    "stderr": ""
+  },
+  {
+    "label": "failpoint-on-mod192-worker-a",
+    "javascript": "print(JSON.stringify(db.adminCommand({configureFailPoint:\"failCommand\",mode:{skip:1},data:{failCommands:[\"findAndModify\"],appName:\"mod192-worker-a\",blockConnection:true,blockTimeMS:45000}})))",
+    "stdout": {
+      "count": 7,
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": "7688481090406711299"
+        },
+        "signature": {
+          "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "keyId": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          }
+        }
+      },
+      "operationTime": {
+        "$timestamp": "7688481090406711299"
+      }
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-2a1bed52-76a9-4a0d-b168-c58a8c3ab97c-Running",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"2a1bed52-76a9-4a0d-b168-c58a8c3ab97c\"})));",
+    "stdout": {
+      "_id": "2a1bed52-76a9-4a0d-b168-c58a8c3ab97c",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:53:21.359965+00:00",
+      "UpdatedAt": null,
+      "Version": 2,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "dc65a9d1-bfb1-4129-a21c-0364929177a1",
+      "ScenarioId": "7501c283-2b74-40b4-ac59-42d442863594",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Running",
+      "Bottlenecks": [],
+      "SubmittedAt": "2026-09-22T21:53:21.359965+00:00",
+      "CompletedAt": null,
+      "CorrelationId": "3ea17c48-781a-407d-b936-177e06725741",
+      "CausationId": "da733592-eaff-4bf9-ab07-de0249b58f91",
+      "Attempt": 1,
+      "Fence": {
+        "low": 1,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": "2026-09-22T21:53:52.791Z"
+    },
+    "stderr": ""
+  },
+  {
+    "label": "poll-2a1bed52-76a9-4a0d-b168-c58a8c3ab97c-Completed",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(d.capacity_evaluations.findOne({_id:\"2a1bed52-76a9-4a0d-b168-c58a8c3ab97c\"})));",
+    "stdout": {
+      "_id": "2a1bed52-76a9-4a0d-b168-c58a8c3ab97c",
+      "TenantId": "19200000-0000-4000-8000-000000000001",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-22T21:53:21.359965+00:00",
+      "UpdatedAt": null,
+      "Version": 4,
+      "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+      "CapacityPlanId": "dc65a9d1-bfb1-4129-a21c-0364929177a1",
+      "ScenarioId": "7501c283-2b74-40b4-ac59-42d442863594",
+      "EvaluationMode": "Finite",
+      "ResourceRefs": [
+        "line-4"
+      ],
+      "Status": "Completed",
+      "Bottlenecks": [
+        {
+          "ResourceRef": "line-4",
+          "Period": "2027-W03",
+          "RequiredCapacity": "520.000",
+          "AvailableCapacity": "480.000",
+          "Shortfall": "40.000",
+          "UomId": "HOUR"
+        }
+      ],
+      "SubmittedAt": "2026-09-22T21:53:21.359965+00:00",
+      "CompletedAt": "2026-09-22T21:53:55.289Z",
+      "CorrelationId": "3ea17c48-781a-407d-b936-177e06725741",
+      "CausationId": "da733592-eaff-4bf9-ab07-de0249b58f91",
+      "Attempt": 2,
+      "Fence": {
+        "low": 2,
+        "high": 0,
+        "unsigned": false
+      },
+      "LeaseUntil": null
+    },
+    "stderr": ""
+  },
+  {
+    "label": "stale-race-effect",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(({events:d.capacity_outbox.countDocuments({AggregateId:\"2a1bed52-76a9-4a0d-b168-c58a8c3ab97c\"}),audits:d.capacity_audit.countDocuments({TargetId:\"2a1bed52-76a9-4a0d-b168-c58a8c3ab97c\",Operation:\"terminalCapacityEvaluation\"}),slots:d.capacity_active_slots.countDocuments({EvaluationId:\"2a1bed52-76a9-4a0d-b168-c58a8c3ab97c\"})})));",
+    "stdout": {
+      "events": 1,
+      "audits": 1,
+      "slots": 0
+    },
+    "stderr": ""
+  },
+  {
+    "label": "race-failpoint-off",
+    "javascript": "print(JSON.stringify(db.adminCommand({configureFailPoint:\"failCommand\",mode:\"off\"})))",
+    "stdout": {
+      "count": 8,
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": "7688481292270174209"
+        },
+        "signature": {
+          "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "keyId": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          }
+        }
+      },
+      "operationTime": {
+        "$timestamp": "7688481292270174209"
+      }
+    },
+    "stderr": ""
+  },
+  {
+    "label": "final-db-snapshot",
+    "javascript": "const d=db.getSiblingDB(\"DitenSupplyChain_Mod0192_Hosted_Dev\");print(JSON.stringify(({evaluations:d.capacity_evaluations.find({}).sort({_id:1}).toArray(),outbox:d.capacity_outbox.find({}).sort({_id:1}).toArray(),audit:d.capacity_audit.find({}).sort({_id:1}).toArray(),activeSlots:d.capacity_active_slots.find({}).toArray()})));",
+    "stdout": {
+      "evaluations": [
+        {
+          "_id": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "IsDeleted": false,
+          "DeletedAt": null,
+          "CreatedAt": "2026-09-22T21:51:49.640603+00:00",
+          "UpdatedAt": null,
+          "Version": 3,
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "CapacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+          "ScenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+          "EvaluationMode": "Finite",
+          "ResourceRefs": [
+            "line-4"
+          ],
+          "Status": "Completed",
+          "Bottlenecks": [
+            {
+              "ResourceRef": "line-4",
+              "Period": "2027-W03",
+              "RequiredCapacity": "520.000",
+              "AvailableCapacity": "480.000",
+              "Shortfall": "40.000",
+              "UomId": "HOUR"
+            }
+          ],
+          "SubmittedAt": "2026-09-22T21:51:49.640603+00:00",
+          "CompletedAt": "2026-09-22T21:51:59.081Z",
+          "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+          "CausationId": "5823e643-b576-4c29-806e-67073509f688",
+          "Attempt": 1,
+          "Fence": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "LeaseUntil": null
+        },
+        {
+          "_id": "2a1bed52-76a9-4a0d-b168-c58a8c3ab97c",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "IsDeleted": false,
+          "DeletedAt": null,
+          "CreatedAt": "2026-09-22T21:53:21.359965+00:00",
+          "UpdatedAt": null,
+          "Version": 4,
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "CapacityPlanId": "dc65a9d1-bfb1-4129-a21c-0364929177a1",
+          "ScenarioId": "7501c283-2b74-40b4-ac59-42d442863594",
+          "EvaluationMode": "Finite",
+          "ResourceRefs": [
+            "line-4"
+          ],
+          "Status": "Completed",
+          "Bottlenecks": [
+            {
+              "ResourceRef": "line-4",
+              "Period": "2027-W03",
+              "RequiredCapacity": "520.000",
+              "AvailableCapacity": "480.000",
+              "Shortfall": "40.000",
+              "UomId": "HOUR"
+            }
+          ],
+          "SubmittedAt": "2026-09-22T21:53:21.359965+00:00",
+          "CompletedAt": "2026-09-22T21:53:55.289Z",
+          "CorrelationId": "3ea17c48-781a-407d-b936-177e06725741",
+          "CausationId": "da733592-eaff-4bf9-ab07-de0249b58f91",
+          "Attempt": 2,
+          "Fence": {
+            "low": 2,
+            "high": 0,
+            "unsigned": false
+          },
+          "LeaseUntil": null
+        },
+        {
+          "_id": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "IsDeleted": false,
+          "DeletedAt": null,
+          "CreatedAt": "2026-09-22T21:52:14.578702+00:00",
+          "UpdatedAt": null,
+          "Version": 4,
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "CapacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+          "ScenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+          "EvaluationMode": "Finite",
+          "ResourceRefs": [
+            "line-4"
+          ],
+          "Status": "Completed",
+          "Bottlenecks": [
+            {
+              "ResourceRef": "line-4",
+              "Period": "2027-W03",
+              "RequiredCapacity": "520.000",
+              "AvailableCapacity": "480.000",
+              "Shortfall": "40.000",
+              "UomId": "HOUR"
+            }
+          ],
+          "SubmittedAt": "2026-09-22T21:52:14.578703+00:00",
+          "CompletedAt": "2026-09-22T21:52:49.894Z",
+          "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+          "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+          "Attempt": 2,
+          "Fence": {
+            "low": 2,
+            "high": 0,
+            "unsigned": false
+          },
+          "LeaseUntil": null
+        }
+      ],
+      "outbox": [
+        {
+          "_id": "10d469c1-06b2-4e1d-9972-b7f478dfa5f3",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "AggregateId": "2a1bed52-76a9-4a0d-b168-c58a8c3ab97c",
+          "EventType": "capacity.evaluation.completed.v1",
+          "Status": "Pending",
+          "EvaluationStatus": "Completed",
+          "CorrelationId": "3ea17c48-781a-407d-b936-177e06725741",
+          "CausationId": "da733592-eaff-4bf9-ab07-de0249b58f91",
+          "OccurredAt": "2026-09-22T21:53:55.289Z",
+          "ContractVersion": "v1",
+          "Payload": {
+            "capacityPlanId": "dc65a9d1-bfb1-4129-a21c-0364929177a1",
+            "scenarioId": "7501c283-2b74-40b4-ac59-42d442863594",
+            "evaluationId": "2a1bed52-76a9-4a0d-b168-c58a8c3ab97c",
+            "status": "Completed"
+          }
+        },
+        {
+          "_id": "245e7907-68a6-4480-9c6d-2170f80c5b3d",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "AggregateId": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+          "EventType": "capacity.evaluation.completed.v1",
+          "Status": "Pending",
+          "EvaluationStatus": "Completed",
+          "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+          "CausationId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+          "OccurredAt": "2026-09-22T21:52:49.894Z",
+          "ContractVersion": "v1",
+          "Payload": {
+            "capacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+            "scenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+            "evaluationId": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+            "status": "Completed"
+          }
+        },
+        {
+          "_id": "5823e643-b576-4c29-806e-67073509f688",
+          "EventId": "5823e643-b576-4c29-806e-67073509f688",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "EventType": "capacity.scenario.created.v1",
+          "AggregateId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+          "Status": "Pending",
+          "CorrelationId": "14e9e56f-07ce-4000-88a7-984446b17c84",
+          "CausationId": "d782ce57-f58d-4ff1-baf3-447b09dda804",
+          "OccurredAt": "2026-09-22T21:51:49.595Z",
+          "ContractVersion": "v1",
+          "Payload": {
+            "capacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+            "scenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2"
+          }
+        },
+        {
+          "_id": "5b81c3c2-787f-41c6-90a6-5c4955166d2a",
+          "EventId": "5b81c3c2-787f-41c6-90a6-5c4955166d2a",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "EventType": "capacity.plan.created.v1",
+          "AggregateId": "dc65a9d1-bfb1-4129-a21c-0364929177a1",
+          "Status": "Pending",
+          "CorrelationId": "c4e1d8df-e395-4372-a449-54ced269599c",
+          "CausationId": null,
+          "OccurredAt": "2026-09-22T21:53:21.192Z",
+          "ContractVersion": "v1",
+          "Payload": {
+            "capacityPlanId": "dc65a9d1-bfb1-4129-a21c-0364929177a1",
+            "provenance": {
+              "demandPlanId": "dp-2027",
+              "demandPlanVersion": "3",
+              "sourceContract": "DEMAND",
+              "sourceContractVersion": "v1",
+              "sourceCapturedAt": "2026-09-15T09:45:00.000Z",
+              "sourceChecksum": "sha256:ee56d4f9a3c8"
+            }
+          }
+        },
+        {
+          "_id": "661e2a01-212c-4673-98af-f287431acb58",
+          "EventId": "661e2a01-212c-4673-98af-f287431acb58",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "EventType": "capacity.plan.created.v1",
+          "AggregateId": "feaada3f-3263-4656-9333-db173ac6d0ae",
+          "Status": "Pending",
+          "CorrelationId": "16061c42-6dea-4596-b93a-c8a8b1c27416",
+          "CausationId": null,
+          "OccurredAt": "2026-09-22T21:52:13.033Z",
+          "ContractVersion": "v1",
+          "Payload": {
+            "capacityPlanId": "feaada3f-3263-4656-9333-db173ac6d0ae",
+            "provenance": {
+              "demandPlanId": "dp-2027",
+              "demandPlanVersion": "3",
+              "sourceContract": "DEMAND",
+              "sourceContractVersion": "v1",
+              "sourceCapturedAt": "2026-09-15T09:45:00.000Z",
+              "sourceChecksum": "sha256:ee56d4f9a3c8"
+            }
+          }
+        },
+        {
+          "_id": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+          "EventId": "6808f36f-12bc-4c1c-bb9d-7f332d7baa95",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "EventType": "capacity.scenario.created.v1",
+          "AggregateId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+          "Status": "Pending",
+          "CorrelationId": "70d539c5-8e39-4d4d-b767-346dca1ada75",
+          "CausationId": "88197c61-64c1-46f3-9e0d-ca918a1b1be0",
+          "OccurredAt": "2026-09-22T21:52:14.568Z",
+          "ContractVersion": "v1",
+          "Payload": {
+            "capacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+            "scenarioId": "bebc9983-7415-4745-b941-a1f1a5d42bad"
+          }
+        },
+        {
+          "_id": "88197c61-64c1-46f3-9e0d-ca918a1b1be0",
+          "EventId": "88197c61-64c1-46f3-9e0d-ca918a1b1be0",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "EventType": "capacity.plan.created.v1",
+          "AggregateId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+          "Status": "Pending",
+          "CorrelationId": "405a5b99-3be2-4fd3-8b7a-9cc54c32853a",
+          "CausationId": null,
+          "OccurredAt": "2026-09-22T21:52:14.558Z",
+          "ContractVersion": "v1",
+          "Payload": {
+            "capacityPlanId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+            "provenance": {
+              "demandPlanId": "dp-2027",
+              "demandPlanVersion": "3",
+              "sourceContract": "DEMAND",
+              "sourceContractVersion": "v1",
+              "sourceCapturedAt": "2026-09-15T09:45:00.000Z",
+              "sourceChecksum": "sha256:ee56d4f9a3c8"
+            }
+          }
+        },
+        {
+          "_id": "a01cc57e-ba78-431a-ae38-879f15957ae8",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "AggregateId": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+          "EventType": "capacity.evaluation.completed.v1",
+          "Status": "Pending",
+          "EvaluationStatus": "Completed",
+          "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+          "CausationId": "5823e643-b576-4c29-806e-67073509f688",
+          "OccurredAt": "2026-09-22T21:51:59.081Z",
+          "ContractVersion": "v1",
+          "Payload": {
+            "capacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+            "scenarioId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+            "evaluationId": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+            "status": "Completed"
+          }
+        },
+        {
+          "_id": "d782ce57-f58d-4ff1-baf3-447b09dda804",
+          "EventId": "d782ce57-f58d-4ff1-baf3-447b09dda804",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "EventType": "capacity.plan.created.v1",
+          "AggregateId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+          "Status": "Pending",
+          "CorrelationId": "707c8bd7-ed5b-4ad6-8e54-6b645db836f4",
+          "CausationId": null,
+          "OccurredAt": "2026-09-22T21:51:49.439Z",
+          "ContractVersion": "v1",
+          "Payload": {
+            "capacityPlanId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+            "provenance": {
+              "demandPlanId": "dp-2027",
+              "demandPlanVersion": "3",
+              "sourceContract": "DEMAND",
+              "sourceContractVersion": "v1",
+              "sourceCapturedAt": "2026-09-15T09:45:00.000Z",
+              "sourceChecksum": "sha256:ee56d4f9a3c8"
+            }
+          }
+        },
+        {
+          "_id": "da733592-eaff-4bf9-ab07-de0249b58f91",
+          "EventId": "da733592-eaff-4bf9-ab07-de0249b58f91",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "EventType": "capacity.scenario.created.v1",
+          "AggregateId": "7501c283-2b74-40b4-ac59-42d442863594",
+          "Status": "Pending",
+          "CorrelationId": "d57c0c26-4c87-4846-a35d-e5f6fda20edd",
+          "CausationId": "5b81c3c2-787f-41c6-90a6-5c4955166d2a",
+          "OccurredAt": "2026-09-22T21:53:21.315Z",
+          "ContractVersion": "v1",
+          "Payload": {
+            "capacityPlanId": "dc65a9d1-bfb1-4129-a21c-0364929177a1",
+            "scenarioId": "7501c283-2b74-40b4-ac59-42d442863594"
+          }
+        }
+      ],
+      "audit": [
+        {
+          "_id": "1b027a8e-65f9-4826-beed-0c1ebac589fc",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "TargetId": "feaada3f-3263-4656-9333-db173ac6d0ae",
+          "Operation": "createCapacityPlan",
+          "ActorId": "19200000-0000-4000-8000-000000000003",
+          "CorrelationId": "16061c42-6dea-4596-b93a-c8a8b1c27416",
+          "OccurredAt": "2026-09-22T21:52:13.035Z"
+        },
+        {
+          "_id": "46916df2-e662-46a8-ae02-6f6d707d18e5",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "TargetId": "2a1bed52-76a9-4a0d-b168-c58a8c3ab97c",
+          "Operation": "evaluateCapacityScenario",
+          "ActorId": "19200000-0000-4000-8000-000000000003",
+          "CorrelationId": "3ea17c48-781a-407d-b936-177e06725741",
+          "OccurredAt": "2026-09-22T21:53:21.382Z"
+        },
+        {
+          "_id": "693c4dee-2f35-4c73-88c4-eeaaf6f9397a",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "TargetId": "4c568479-112a-4e68-9923-fb9b9dd0d664",
+          "Operation": "createCapacityPlan",
+          "ActorId": "19200000-0000-4000-8000-000000000003",
+          "CorrelationId": "405a5b99-3be2-4fd3-8b7a-9cc54c32853a",
+          "OccurredAt": "2026-09-22T21:52:14.560Z"
+        },
+        {
+          "_id": "7b84e776-625f-4c47-9db3-55bd06e0d6c8",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "TargetId": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+          "Operation": "terminalCapacityEvaluation",
+          "Status": "Completed",
+          "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+          "OccurredAt": "2026-09-22T21:52:49.894Z"
+        },
+        {
+          "_id": "7ba5b593-154f-49d9-8ea9-684e2a496cfb",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "TargetId": "2a1bed52-76a9-4a0d-b168-c58a8c3ab97c",
+          "Operation": "terminalCapacityEvaluation",
+          "Status": "Completed",
+          "CorrelationId": "3ea17c48-781a-407d-b936-177e06725741",
+          "OccurredAt": "2026-09-22T21:53:55.289Z"
+        },
+        {
+          "_id": "93c27050-b7fc-45ba-b801-b9d2d2760d72",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "TargetId": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+          "Operation": "evaluateCapacityScenario",
+          "ActorId": "19200000-0000-4000-8000-000000000003",
+          "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+          "OccurredAt": "2026-09-22T21:51:49.660Z"
+        },
+        {
+          "_id": "a472f887-c65e-445c-9599-c9834cd142ac",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "TargetId": "25cb36ab-24c7-486a-9356-56475aef92b0",
+          "Operation": "createCapacityPlan",
+          "ActorId": "19200000-0000-4000-8000-000000000003",
+          "CorrelationId": "707c8bd7-ed5b-4ad6-8e54-6b645db836f4",
+          "OccurredAt": "2026-09-22T21:51:49.512Z"
+        },
+        {
+          "_id": "ae0d034b-bef6-4df2-89a0-e389f4e85937",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "TargetId": "bebc9983-7415-4745-b941-a1f1a5d42bad",
+          "Operation": "createCapacityScenario",
+          "ActorId": "19200000-0000-4000-8000-000000000003",
+          "CorrelationId": "70d539c5-8e39-4d4d-b767-346dca1ada75",
+          "OccurredAt": "2026-09-22T21:52:14.571Z"
+        },
+        {
+          "_id": "d9a65b9d-c785-4b43-826a-9dfe80aa20c0",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "TargetId": "b0cc760f-f10d-4aae-aa02-901ff8cd9fd1",
+          "Operation": "evaluateCapacityScenario",
+          "ActorId": "19200000-0000-4000-8000-000000000003",
+          "CorrelationId": "b90bb9c5-0b99-49c0-9c7b-e419d120df22",
+          "OccurredAt": "2026-09-22T21:52:14.581Z"
+        },
+        {
+          "_id": "e8dbb3e7-f127-49cc-8991-0d3af895b9dc",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "TargetId": "581c3bd5-ff24-494d-baa1-4db909baffc2",
+          "Operation": "createCapacityScenario",
+          "ActorId": "19200000-0000-4000-8000-000000000003",
+          "CorrelationId": "14e9e56f-07ce-4000-88a7-984446b17c84",
+          "OccurredAt": "2026-09-22T21:51:49.609Z"
+        },
+        {
+          "_id": "edd960b9-5580-4e08-a5a6-35fe5fa9b136",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "TargetId": "dc65a9d1-bfb1-4129-a21c-0364929177a1",
+          "Operation": "createCapacityPlan",
+          "ActorId": "19200000-0000-4000-8000-000000000003",
+          "CorrelationId": "c4e1d8df-e395-4372-a449-54ced269599c",
+          "OccurredAt": "2026-09-22T21:53:21.267Z"
+        },
+        {
+          "_id": "f28e1bd5-f675-4213-97d5-da66700fe511",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "TargetId": "1b7749f3-f2a7-426d-97cb-7c77f1da94f8",
+          "Operation": "terminalCapacityEvaluation",
+          "Status": "Completed",
+          "CorrelationId": "393c19a9-23ac-4ddd-bc66-dd5c2637165e",
+          "OccurredAt": "2026-09-22T21:51:59.081Z"
+        },
+        {
+          "_id": "ffb634b1-bf7c-44c0-b9ff-e5931f3d1c82",
+          "TenantId": "19200000-0000-4000-8000-000000000001",
+          "LegalEntityId": "19200000-0000-4000-8000-000000000002",
+          "TargetId": "7501c283-2b74-40b4-ac59-42d442863594",
+          "Operation": "createCapacityScenario",
+          "ActorId": "19200000-0000-4000-8000-000000000003",
+          "CorrelationId": "d57c0c26-4c87-4846-a35d-e5f6fda20edd",
+          "OccurredAt": "2026-09-22T21:53:21.340Z"
+        }
+      ],
+      "activeSlots": []
+    },
+    "stderr": ""
+  },
+  {
+    "label": "final-failpoint-off",
+    "javascript": "print(JSON.stringify(db.adminCommand({configureFailPoint:\"failCommand\",mode:\"off\"})))",
+    "stdout": {
+      "count": 8,
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": "7688481292270174209"
+        },
+        "signature": {
+          "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "keyId": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          }
+        }
+      },
+      "operationTime": {
+        "$timestamp": "7688481292270174209"
+      }
+    },
+    "stderr": ""
+  }
+]

@@ -1,0 +1,63 @@
+{
+  "phase": "cu25",
+  "mode": "v2",
+  "startedAt": "2026-09-27T10:05:49.952Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-25b-create-keyboard": {
+      "result": "FAIL",
+      "openedByEnter": false,
+      "openedBySpace": true,
+      "focusInsideAfterOpen": true,
+      "closedByEscape": true,
+      "inertAfterClose": true,
+      "focusReturnedToAdd": false,
+      "focusedAfterClose": "BODY",
+      "evidenceIds": [
+        "claimEvidence_e426c598-b4d1-43b1-9aef-a467562351b0",
+        "claimEvidence_976468fa-38ad-41b1-b564-966e7c22903d"
+      ],
+      "note": "Enter on Add = Q64d-D3 (template owner; not changed here)"
+    },
+    "CU-25c-transition-keyboard": {
+      "result": "FAIL",
+      "claimId": "f54745a9-2441-4c73-87ac-e8a0e99e6d4f",
+      "immediate50ms": {
+        "focusInside": false,
+        "focused": "BODY",
+        "closedByEscape": false
+      },
+      "settled900ms": {
+        "focusInside": true,
+        "focused": "offcanvasClaimTransition",
+        "closedByEscape": true
+      }
+    }
+  },
+  "png": [
+    {
+      "name": "cu25-create-open-v2.png",
+      "sha256": "3d81a3f5443230bb9e294f96924cda5d8d718c446084a766919225420ee9ce19",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T10:05:54.718Z",
+      "phase": "cu25",
+      "mode": "v2",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-transition-open-v2.png",
+      "sha256": "4644079a0e05b442875cba0bb6082cd381c6a1667b47ed97b14493d450b04cf3",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T10:06:00.523Z",
+      "phase": "cu25",
+      "mode": "v2",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-27T10:06:01.468Z"
+}

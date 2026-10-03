@@ -1,0 +1,212 @@
+{
+  "evidenceFiles": 94,
+  "sourceSnapshotEntries": 244,
+  "loadsBindingRows": 94,
+  "loadsUniquePins": 47,
+  "producerExcluded": [
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentProjection.cs",
+      "excludedCurrentHash": "261599302d76dae29322664c845e2b2dc7ad1262b69588cf0f1860b083dc75b0",
+      "selectedHeadHash": "33beb3132db4bfaa7fe47c37069ac6e51f80487d7c90a4c0927aa2c57574d178"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/QueryHandlers/GetShipmentByIdHandler.cs",
+      "excludedCurrentHash": "bd86160e3273d605f99a4d276a80400473789b99cd3939e09dab4ea59f1f9c33",
+      "selectedHeadHash": "d9a1aecdd3f51439b135d364a6fcb574a6a9c88853239ba6a38351aaf974d32f"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/IShipmentRepository.cs",
+      "excludedCurrentHash": "83840fc4561e2cb88e8ab92e1970c3a1e07be0f334c23714f3ee727edbc5ef33",
+      "selectedHeadHash": "51a52c90cad2e6225f585cc742c9742ae242a230b13ec5d972cb172815f4e41e"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentDetailReadResult.cs",
+      "excludedCurrentHash": "c56c28658228fb7e0230135094da6801cc45576492add18b4b135a5bf9f6e8f8",
+      "selection": "excluded-untracked-producer"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentDetailMaterializer.cs",
+      "excludedCurrentHash": "832bc229cd6be609d6bea9fbff103f15dbd475901a93f56fcaae922641a8985d",
+      "selection": "excluded-untracked-producer"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentRepository.cs",
+      "excludedCurrentHash": "51a79d9c9f809782e8ec41d06ef559385b84b0b928561469fba76c48847e5d7b",
+      "selectedHeadHash": "f0c3f2943712c7e32d2ef4abd6e02a3544ed56ec79d8968915451d5018975df1"
+    }
+  ],
+  "oldRows": 19,
+  "newRows": 19,
+  "uniqueOldPaths": 19,
+  "uniqueFreshMembers": 24,
+  "runs": [
+    [
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnresolvedUnknownCommitReturns503WithoutPretendingRollbackOrSuccess",
+        "outcome": "Failed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadConcurrencyTests.CompetingCreatesForOneShipmentCommitExactlyOneOwner",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadIsolationTests.PermissionScopesAndTrustedHeaderMismatchFailBeforePersistence",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadIsolationTests.ScopeQueryKeysAreRejectedAfterOneDecodeAndUnknownKeysRemainIgnored",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: \"receipt\")",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce",
+        "outcome": "Failed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadReplayTests.RootPrecedesFingerprintAndReplayUsesOriginalReceiptWithoutDependencyReads",
+        "outcome": "Failed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: \"audit\")",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadContractTests.CreateSchemaRejectsNullWrongTypeEnumsAndArrayBoundsWithoutInventingDefaults",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadContractTests.DuplicateShipmentAndInvalidStopSequencesAreBusiness422ButReturnStopAndEmptyLocationStayAllowed",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadIsolationTests.AuthenticationAndPostAuthDuplicateSignedClaimsHaveDistinctOutcomes",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadContractTests.SchemaUnknownFieldsAndNoExtraRoutesAreRejected",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: \"event\")",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.UpstreamAuthServerAndUnexpectedStatusesFailClosedAsSpecified",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: \"beforeCommit\")",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadReplayTests.HistoricalCreateReplayAfterCancellationDoesNotReacquireAssignment",
+        "outcome": "Failed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.AcknowledgedCommitLossRetriesFromDurableReceiptWithoutDuplicateWrites",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.FreshRetryReobservesDependenciesButSuccessfulReplayDoesNot",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadIsolationTests.TwoTenantsByTwoLegalEntitiesCanReuseIdsWithoutCrossScopeVisibility",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadConcurrencyTests.ConcurrentPlannedAndCancelledTransitionsProduceOnlyASerialLifecycle",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadLifecycleTests.EverySourceTargetPairMatchesFrozenLifecycleAndRejectedPairsAreAtomic",
+        "outcome": "Failed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.CancellationReleaseAndAggregateAuditReceiptEventCommitTogether",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadContractTests.FrozenThreeOperationWireAndSuccessfulCreateList",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.CarrierAndShipmentReferenceProfilesFailClosedOnMissingOrContradictoryData",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadConcurrencyTests.ConcurrentSameKeyRequestsProduceOneCommitAndOneDurableReplay",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: \"assignment\")",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: \"entity\")",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.BusinessReferenceOutcomesMatchApprovedCarrierAndShipmentRules",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadReplayTests.TransitionReplayReturnsHistoricalStatusAndNoteNullNormalizationIsExact",
+        "outcome": "Failed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.ReferencesAreGetOnlyAndCarryTrustedScopeAndCorrelation",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadReferenceTests.PendingOutboxAndHistoricalReplaySurviveApiRestart",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadContractTests.EveryRequiredCreateFieldAndTransitionFieldIsEnforcedBeforeWrites",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadConcurrencyTests.RetryAfterCancellationNeverDeletesNewOwnersAssignment",
+        "outcome": "Passed"
+      }
+    ],
+    [
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadReplayTests.TransitionReplayReturnsHistoricalStatusAndNoteNullNormalizationIsExact",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadReplayTests.RootPrecedesFingerprintAndReplayUsesOriginalReceiptWithoutDependencyReads",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnresolvedUnknownCommitReturns503WithoutPretendingRollbackOrSuccess",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadReplayTests.HistoricalCreateReplayAfterCancellationDoesNotReacquireAssignment",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Diten.SupplyChainService.Tests.Loads.LoadLifecycleTests.EverySourceTargetPairMatchesFrozenLifecycleAndRejectedPairsAreAtomic",
+        "outcome": "Passed"
+      }
+    ]
+  ],
+  "apiBinary": "01ff7878e3783fb2cb9d98db09f9ddc7daaa06666b698e60a49fe789887443b8",
+  "allChecksPassed": true,
+  "testsExecutedThisReview": 0,
+  "snapshotIncludesGeneratedSupportArtifacts": [
+    "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/.tmp-fu11/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.deps.json",
+    "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/.tmp-fu11/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll",
+    "services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/.tmp-fu11/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.pdb"
+  ]
+}

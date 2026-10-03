@@ -1,0 +1,85 @@
+diff --git a/frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml b/frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml
+index 2b69793e..7c49dd0b 100644
+--- a/frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml
++++ b/frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml
+@@ -17,11 +17,11 @@
+     @if (Perms.Has("supplychain.shipments.create"))
+     { <a asp-action="CreatePage" class="btn btn-primary"><i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["CreateShipment"]</a> }
+ </div>
+-<partial name="_Filter" />
+-<partial name="_DataTable" />
++<partial name="~/Views/SupplyChain/Shipments/_Filter.cshtml" />
++<partial name="~/Views/SupplyChain/Shipments/_DataTable.cshtml" />
+ <script id="shipment-permissions" type="application/json">@Json.Serialize(new { canCreate = Perms.Has("supplychain.shipments.create"), canDispatch = Perms.Has("supplychain.shipments.dispatch"), canCancel = Perms.Has("supplychain.shipments.cancel"), canCapturePod = Perms.Has("supplychain.shipments.pod.capture") })</script>
+ @section Scripts {
+-    <partial name="_IndexL10n" />
++    <partial name="~/Views/SupplyChain/Shipments/_IndexL10n.cshtml" />
+     <script src="~/assets/js/SupplyChain/Shipments/index.l10n.js" asp-append-version="true"></script>
+     <script src="~/assets/js/SupplyChain/Shipments/index.js" asp-append-version="true"></script>
+ }
+diff --git a/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js b/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js
+index 764b47be..b85b3690 100644
+--- a/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js
++++ b/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js
+@@ -7,10 +7,13 @@ const ShipmentDetails = (function () {
+     let permissions = { canDispatch: false, canCancel: false, canCapturePod: false };
+     let shipment = null;
+     const intents = new Map();
++    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+     const transitions = { Draft: ['Planned', 'Cancelled'], Planned: ['Dispatched', 'Cancelled'],
+         Dispatched: ['InTransit', 'Delivered', 'Exception'], InTransit: ['Delivered', 'Exception'],
+         Exception: ['InTransit', 'Cancelled'], Delivered: ['Closed'], Closed: [], Cancelled: [] };
+     const uuid = () => crypto.randomUUID();
++    const authoritativeRoot = () => typeof shipment?.lifecycleCorrelationId === 'string'
++        && uuidPattern.test(shipment.lifecycleCorrelationId) ? shipment.lifecycleCorrelationId : null;
+     const token = (form) => form.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+     const text = (id, value) => { document.getElementById(id).textContent = value ?? L.unavailable; };
+     const date = (value) => value ? new Intl.DateTimeFormat(document.documentElement.lang || 'en', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : L.unavailable;
+@@ -69,11 +72,14 @@ const ShipmentDetails = (function () {
+         catch (_) { showError(L.persistenceUnavailable); }
+     };
+     const send = async (kind, payload, form, alertId) => {
++        const correlationId = authoritativeRoot();
++        if (!correlationId) { showError(L.validationError, alertId); return; }
+         const body = JSON.stringify(payload); const previous = intents.get(kind);
+-        const intent = previous?.body === body ? previous : { body, key: uuid() }; intents.set(kind, intent);
++        const intent = previous?.body === body && previous?.correlationId === correlationId
++            ? previous : { body, key: uuid(), correlationId }; intents.set(kind, intent);
+         const execute = async () => {
+             try { const response = await fetch(`/SupplyChain/Shipments/api/${shipmentId}/${kind}`, { method: 'POST', credentials: 'same-origin',
+-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token(form), 'Idempotency-Key': intent.key, 'X-Correlation-Id': uuid() }, body: intent.body });
++                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token(form), 'Idempotency-Key': intent.key, 'X-Correlation-Id': intent.correlationId }, body: intent.body });
+                 if (!response.ok) { const code = await error(response, alertId); if (code === 'IDEMPOTENCY_KEY_REUSED') intents.delete(kind); await load(); return; }
+                 const result = await response.json(); window.showToast?.(result.idempotentReplay ? L.replay : L.success, 'success');
+                 bootstrap.Offcanvas.getInstance(form.closest('.offcanvas'))?.hide(); await load();
+diff --git a/frontend/Diten.Web.Tests/Forms/ShipmentFormContractTests.cs b/frontend/Diten.Web.Tests/Forms/ShipmentFormContractTests.cs
+index cadff6e3..4a0e54c3 100644
+--- a/frontend/Diten.Web.Tests/Forms/ShipmentFormContractTests.cs
++++ b/frontend/Diten.Web.Tests/Forms/ShipmentFormContractTests.cs
+@@ -38,6 +38,14 @@ public sealed class ShipmentFormContractTests
+         Assert.All(dictionaries.Skip(1), dictionary => Assert.Equal(dictionaries[0].Keys.Order(), dictionary.Keys.Order()));
+     }
+ 
++    [Fact]
++    public void Index_UsesExplicitNestedPartialPaths()
++    {
++        var index = Read("frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml");
++        foreach (var partial in new[] { "_Filter.cshtml", "_DataTable.cshtml", "_IndexL10n.cshtml" })
++            Assert.Contains($"~/Views/SupplyChain/Shipments/{partial}", index);
++    }
++
+     private static string Read(string path) => File.ReadAllText(Path.Combine(Root(), path));
+     private static int Count(string text, string token) => text.Split(token, StringSplitOptions.None).Length - 1;
+     private static string Root() { var dir = new DirectoryInfo(AppContext.BaseDirectory); while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "AGENTS.md"))) dir = dir.Parent; return dir?.FullName ?? throw new DirectoryNotFoundException(); }
+diff --git a/frontend/Diten.Web.Tests/JavaScript/ShipmentDetailActionTests.cs b/frontend/Diten.Web.Tests/JavaScript/ShipmentDetailActionTests.cs
+index 82636c3f..57ecfb5e 100644
+--- a/frontend/Diten.Web.Tests/JavaScript/ShipmentDetailActionTests.cs
++++ b/frontend/Diten.Web.Tests/JavaScript/ShipmentDetailActionTests.cs
+@@ -10,6 +10,7 @@ public sealed class ShipmentDetailActionTests
+     [Fact] public void StableIntentPreservesPayloadAndKey() { Assert.Contains("previous?.body === body", _details); Assert.Contains("'Idempotency-Key': intent.key", _details); Assert.Contains("intent.payload !== serialized", _create); Assert.Contains("body: intent.payload", _create); }
+     [Fact] public void UsesSharedModalAndDoesNotUploadOrStoreSecrets() { Assert.Contains("window.showConfirm?.", _details); Assert.Contains("window.showToast?.", _details); Assert.DoesNotContain("Swal.fire", _details); Assert.DoesNotContain("window.confirm", _details); Assert.DoesNotContain("FormData", _details); Assert.DoesNotContain("localStorage", _details + _create); Assert.DoesNotContain(":5061", _details + _create); }
+     [Fact] public void CorrelationAndLifecycleRootRemainSeparate() { Assert.Contains("data.lifecycleCorrelationId", _details); Assert.Contains("body?.error?.correlationId", _details); Assert.DoesNotContain("lifecycleCorrelationId ||", _details); }
++    [Fact] public void MutationsUseOnlyValidatedAuthoritativeRoot() { Assert.Contains("const authoritativeRoot", _details); Assert.Contains("uuidPattern.test(shipment.lifecycleCorrelationId)", _details); Assert.Contains("if (!correlationId)", _details); Assert.Contains("'X-Correlation-Id': intent.correlationId", _details); Assert.DoesNotContain("'X-Correlation-Id': uuid() }, body: intent.body", _details); }
+     private static string Read(string path) => File.ReadAllText(Path.Combine(Root(), path));
+     private static string Root() { var dir = new DirectoryInfo(AppContext.BaseDirectory); while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "AGENTS.md"))) dir = dir.Parent; return dir?.FullName ?? throw new DirectoryNotFoundException(); }
+ }

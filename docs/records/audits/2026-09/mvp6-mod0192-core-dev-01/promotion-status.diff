@@ -1,0 +1,77 @@
+--- approved-draft-target/MOD-0192-capacity-planning.md
++++ promoted/MOD-0192-capacity-planning.md
+@@ -6,8 +6,8 @@
+ shell: none
+ golden_reference: none
+ entity_base: EntityBase
+-status: draft
+-status_note: "Published SANDOP-CAPACITY 2.0.0 / wire v1 design alignment proposed; Phase 1.5 mapped, pack promotion and runtime DEV remain HELD pending exact owner authorization."
++status: ready-for-dev
++status_note: "Owner-approved bounded 43-path CapacityPlans core/executor DEV; published SANDOP-CAPACITY 2.0.0 / wire v1; shared composition and product acceptance remain separate."
+ owner: supply-chain-execution / control-tower
+ branch: feature/mvp6-logistics
+ started: 2026-09-15
+@@ -20,8 +20,7 @@
+ > **Identity gate:** `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0192 --name "Capacity Planning"`
+ > returned `OK` on 2026-09-15. Blueprint 8.1 and the module ID registry prove the canonical identity.
+ >
+-> **Execution gate:** this is a draft specification for a backend/contract initial slice. It grants no runtime-code,
+-> service-scaffold, gateway, permission-registry or shared-registration authority. The bounded logistics sequence-evidence gate is recorded; this pack still needs exact owner promotion and bounded runtime authority.
++> **Execution gate:** this ready-for-dev pack authorizes only isolated bounded 43-path CapacityPlans core/executor DEV and independent VER under the exact 2026-09-22 owner decision. It grants no service-scaffold, gateway, permission-registry or shared-registration authority. The bounded logistics sequence-evidence gate is recorded.
+ >
+ > **ASSUMPTION:** UI journeys and form fields are not sufficiently defined, so the initial slice uses `shell: none` and
+ > `golden_reference: none`. Any UI requires an approved revision or follow-up pack.
+@@ -30,9 +29,9 @@
+ 
+ MOD-0192 owns capacity plans, alternative capacity scenarios and their evaluations/bottleneck results. A plan records requested immutable provenance for one frozen DEMAND plan version; scenarios express opaque
+ constraint references and owned adjustments. Live DEMAND version/checksum verification remains outside this fixture-only slice; evaluation
+-calculation/execution use the design-approved literal fixture and fenced executor, pending runtime authority; no DEMAND facts are copied or changed.
+-
+-The planned initial slice is backend/contract only. Its sequence-evidence gate is recorded; isolated DEV still requires this pack to be promoted and bounded runtime authority. MOD-0190 is a disjoint parallel peer.
++calculation/execution use the authorized literal fixture and fenced executor within the isolated DEV scope; no DEMAND facts are copied or changed.
++
++The authorized initial slice is backend/contract only. Its sequence-evidence gate, pack promotion and bounded runtime authority are recorded. MOD-0190 is a disjoint parallel peer.
+ 
+ ## 2. Ownership and Boundaries
+ 
+@@ -89,7 +88,7 @@
+ 
+ ## 5. Repo Scope
+ 
+-After a later `ready-for-dev` promotion, the bounded initial slice may write only:
++In the approved isolated `ready-for-dev` DEV lane, the bounded initial slice may write only:
+ 
+ - `services/Diten.SupplyChainService/src/**/Features/CapacityPlans/**`.
+ - `services/Diten.SupplyChainService/tests/**/CapacityPlans/**`.
+@@ -129,7 +128,7 @@
+ - Scenario/evaluation state, audit and outbox event must be atomic or expose an explicit failure.
+ - DEMAND and constraint sources use scoped, versioned test fixtures only; no live HTTP, database/internal-type sharing or producer verification.
+ - Decimal values remain invariant-culture strings at contract boundaries.
+-- This draft authorizes no runtime code.
++- The 2026-09-22 exact owner decision authorizes only isolated bounded core/executor DEV and independent VER.
+ 
+ ## 9. Layout & Shell Contract
+ 
+@@ -222,12 +221,12 @@
+ - [x] Bounded logistics sequence evidence recorded in `mvp6-mod0186-wp-acceptance-01/SOP-22.md` (not E5/G5).
+ - [x] Owner bounded this slice to exact DEMAND/constraint fixtures; live producer proof stays out of scope.
+ - [x] Exact constraint fixture and Pending-only outbox/no publisher boundaries are recorded.
+-- [x] Executor and literal fixture oracle design approved for candidate preparation; runtime execution remains separately held.
++- [x] Executor and literal fixture oracle design approved; bounded isolated runtime DEV/independent VER authorized on 2026-09-22.
+ - [x] Bounded sequence disposition recorded; shared Program.cs/permission/gateway remain one separately authorized integration-owner surface.
+ - [x] 43 prospective owned paths are disjoint from MOD-0190; current dirty input baseline has 190 hash-bound rows with separately recorded publication drift.
+-- [ ] User/owner approves this pack for `ready-for-dev`.
+-
+-Status remains `draft`; unchecked items prohibit dispatch.
++- [x] User/owner approved exact draft target b5b948ee0803c535f91c9a3cc66e6098e7e29635c6b7f2aeaf6873b64eed74fc for isolated `ready-for-dev` promotion and bounded 43-path DEV/independent VER on 2026-09-22.
++
++Status is `ready-for-dev` for the exact isolated 43-path DEV/independent VER scope; composed HTTP, shared integration and product acceptance remain separate.
+ 
+ ## 19. Implementation Notes
+ 
+@@ -252,4 +251,4 @@
+ 
+ This slice has Draft plans and scenarios only; evaluation is Accepted→Running→Completed/Failed. `CAPACITY-EVAL-FIXTURE-192-01@1` provides literal Finite/Infinite outputs. Three POST transactions atomically create their aggregate/evaluation, receipt, audit and Pending outbox (submit also creates an active slot); reads are read-only. The feature-local executor design is bound to `mod-0192-executor-exact-decisions-01/DECISION.md` SHA-256 `cfddf953a1a98107869417ef8afbcad5f578fcfde2a8cad8e1d2b6b05197cc5d`: successful scoped claim increments attempt 0→1→2→3 with version/fence and Mongo server-time 30s lease; 10s scan/renewal uses current fence without attempt increment; stale terminal CAS has zero writes; terminal result+slot release+audit+one Pending event commit atomically; after expired claim 3, Failed without claim 4; unknown commit is read-resolved. Computation may repeat, but only one durable terminal effect is allowed. `10s/30s/3` is not a recovery SLA or exactly-once execution. X01–X10 require real isolated replica-set/process/restart evidence; local `$$NOW` smoke is syntax evidence only.
+ 
+-The 43 exact prospective source/test paths are in `mvp6-mod0190-0192-dispatch-preflight-01/MOD-0192-OWNED.tsv`. No `Program.cs`, shared permission, gateway, producer, MOD-0190, publisher, Event Bus worker, optimizer or stock path is included. UI/DataTable/lookup are N/A (`shell:none`). The current draft is not itself a DEV grant; pack promotion and bounded runtime require a separate exact owner decision.
++The 43 exact prospective source/test paths are in `mvp6-mod0190-0192-dispatch-preflight-01/MOD-0192-OWNED.tsv`. No `Program.cs`, shared permission, gateway, producer, MOD-0190, publisher, Event Bus worker, optimizer or stock path is included. UI/DataTable/lookup are N/A (`shell:none`). This promoted pack is bound to the 2026-09-22 exact owner decision for isolated core/executor DEV and independent VER only.

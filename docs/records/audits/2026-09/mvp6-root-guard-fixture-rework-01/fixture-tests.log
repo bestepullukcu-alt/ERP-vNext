@@ -1,0 +1,89 @@
+/private/tmp/mvp6-root-guard-fixture-rework-01/checkout/tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+  TenantArchitecture.ArchitectureTests -> /private/tmp/mvp6-root-guard-fixture-rework-01/checkout/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll
+Test run for /private/tmp/mvp6-root-guard-fixture-rework-01/checkout/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:07.76]     TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [FAIL]
+  Failed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [5 s]
+  Error Message:
+   code points into docs/ outside vendor · records · roadmap · guides · reference. Each of these fails the day it runs, not the day the docs moved:
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/input-manifest.json:3 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:3 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:3 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:3 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:307 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:385 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:640 → docs/decisions — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:1279 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:2054 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:2660 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:2962 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:3074 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:3169 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:3187 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:3400 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:3414 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:3533 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:3916 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:4206 → docs/decisions — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:4652 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:5119 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:5425 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:7559 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:9300 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:9501 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:9627 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:10150 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:10437 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:11195 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:11425 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:11542 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:11568 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:12346 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:13086 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:13139 → docs/decisions — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:13463 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:13519 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:13733 → docs/analysis — bkz. docs-organization.md §4
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json:13886 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0185-dev-03/changed-files.json:206 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0185-dev-03/changed-files.json:207 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0185-dev-03/changed-files.json:208 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0185-dev-02/changed-files.json:222 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0185-dev-02/changed-files.json:223 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0185-dev-02/changed-files.json:224 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json:10 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json:14 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json:54 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json:55 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json:84 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json:95 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json:115 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json:135 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-root-guard-disposition-recovery-01/authority-candidate.json:155 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:5 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:6 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:7 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:8 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:9 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:10 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:11 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:12 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:13 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:14 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:15 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:16 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:17 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:18 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:19 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:20 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json:21 → docs/analysis — bkz. docs-organization.md §4
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.VerifyRoot(String root, Boolean syntheticFixture) in /private/tmp/mvp6-root-guard-fixture-rework-01/checkout/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs:line 139
+   at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders() in /private/tmp/mvp6-root-guard-fixture-rework-01/checkout/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs:line 90
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:    35, Skipped:     0, Total:    36, Duration: 7 s - TenantArchitecture.ArchitectureTests.dll (net8.0)

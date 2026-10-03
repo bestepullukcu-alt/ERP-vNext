@@ -1,0 +1,27 @@
+{
+  "result": "PASS",
+  "candidateVersion": "2.0.0-rc.2",
+  "operationCount": 12,
+  "mutationCount": 6,
+  "localRefsChecked": 274,
+  "responseExampleChecks": 98,
+  "negativeMutantsRejected": [
+    "missing-evaluate-422",
+    "get-unknown-commit",
+    "missing-401-correlation",
+    "trimmed-key-schema",
+    "missing-checksum-example"
+  ],
+  "disposablePatchCheckExit": 0,
+  "disposablePatchApplyExit": 0,
+  "yamlByteEqual": true,
+  "annexByteEqual": true,
+  "oldSuccessRequestEventSchemasPreserved": true,
+  "fullOpenApiDocumentMetaSchema": "NOT_RUN_validator_unavailable",
+  "baselineSha256": "c255e92923ba91714cec8daf229262101b5d45648b7f714a03ab402811db683c",
+  "demandSha256": "3c77262e411976e311bcf9b65be131e2035fd18a33215d24075f87209f87bb9d",
+  "decisionSha256": "cfddf953a1a98107869417ef8afbcad5f578fcfde2a8cad8e1d2b6b05197cc5d",
+  "candidateYamlSha256": "5dc5e9750797ea687fce2e959b17d9b3312231b5701238815cab48e7ca3b661c",
+  "candidateAnnexSha256": "9f7d87fc72934dc204fb6dffba1a6646ef583dea3c24d996974e716a9add9b20",
+  "patchSha256": "0e1aca53609c2cd137c50882615e65cf1870e37ddad212891decad6f2a0e8835"
+}

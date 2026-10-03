@@ -1,0 +1,12 @@
+layer	identity_or_result	verdict
+proposed final 22-path manifest	6221006b5e4bdccff9eb567b49a3e6c111ecb611b9e96d169ee3ff5fe57c1ad2	PASS artifact identity
+immutable build-source archive	47c39cdbeaa61a59b9b4891439bc758589911d535f7b84736e8ce3a4a88688e6; 3333/3333	PASS artifact identity
+disposable patch reconstruction	22/22 target hashes after exact patch	PASS Phase 1
+native executable	/Users/natig/.dotnet/dotnet; 6d06c4a53676021a7572c989528067a3fe1195f569c27fbcac25e5302dc0d72c	AVAILABLE NOT USED
+Auth binary	no Phase 2 build	NOT RUN
+Platform binary	no Phase 2 build	NOT RUN
+MDM binary	no Phase 2 build	NOT RUN
+runtime processes	no process launched	NOT RUN
+HTTP DB evidence	no runtime execution	NOT RUN
+cleanup	no lane process created	N/A
+

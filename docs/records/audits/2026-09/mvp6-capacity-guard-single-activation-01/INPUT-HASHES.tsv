@@ -1,0 +1,6 @@
+path	sha256
+docs/reference/architecture/docs-path-authority.json	063e0cde7c436cf0926101ac9a300b9b1e6147dd5bea5c7dbfd100e65a868fe9
+docs/records/decisions/2026-09/mvp6-capacity-guard-single-disposition-owner-decision-01.json	877c3878d9b38446fc437a384d5e61630ccbec601dc5dd025a536ea21aa20ae2
+docs/records/audits/2026-09/mvp6-capacity-guard-single-disposition-01/authority-unapproved.patch	5a508276323c3f8195579dc4aeb7d14565612c899b898a20bb3fb9a2bb7a9f24
+docs/records/audits/2026-09/mvp6-capacity-guard-single-disposition-01/authority-payload.txt	3bd20e2608ec62cd5c2da1fc60bc4419b6aefa594e0efc45f32b35df17ad8dfb
+docs/records/audits/2026-09/mvp6-capacity-guard-single-disposition-01/PROVENANCE.md	401174ea2ff6e12861a9f2e375f5990f42bd879623ecc20b8c83e21f93f2ceda

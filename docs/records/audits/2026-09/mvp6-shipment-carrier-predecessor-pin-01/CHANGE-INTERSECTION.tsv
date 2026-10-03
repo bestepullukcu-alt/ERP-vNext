@@ -1,0 +1,5 @@
+later_artifact	artifact_sha256	declared_changed_scope	intersection_with_18	result
+docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/carrier-writer/CARRIER-OWNED.patch	57f90dadedd6e2304e3775fd1ea0bd7def29ad9d265ccbbeb892afdc04ba1adb	Carrier index.l10n.js and CarrierIndexBehaviorTests.cs	0	NO_IMPACT
+docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/carrier-writer/UI-SOURCE-MANIFEST-v3.tsv	3b7086f0cc839c33f0753076e732aa436b9a8e5cd186f1484f2b0225364d033c	21 Carrier UI-owned paths	0	SEPARATE_UI_MANIFEST
+docs/records/audits/2026-09/mvp6-carrier-ui-quality-close-01/shared-search/SHARED-SEARCH.patch	2abe82415f68870f8d714af093473f497bcb1f210f970e491c32d288b1440074	main.js and _LayoutTenantShell.cshtml; unapplied proposal	0	NO_IMPACT_UNAPPLIED
+docs/records/audits/2026-09/mvp6-carrier-ver-environment-close-01/FINAL-UI-SOURCE.tsv	3b7086f0cc839c33f0753076e732aa436b9a8e5cd186f1484f2b0225364d033c	Final 21-path Carrier UI identity	0	SEPARATE_UI_MANIFEST

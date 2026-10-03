@@ -1,0 +1,18 @@
+# V8 2026-09-27T13:16:13+0300
+branch=feature/mvp6-logistics
+head=4a8d4d4b339528a88e6220fb8402e5a2c771136c
+index_lock=absent
+diff_paths=19
+git_diff_sha256=a705e73f93575211e3c0ee1b68f74aa442b87ab3b52f959fe5f65eb35150f6d2 (preflight a705e73f93575211e3c0ee1b68f74aa442b87ab3b52f959fe5f65eb35150f6d2)
+status_delta_vs_preflight:
+101a102
+> ?? docs/records/audits/2026-09/mvp6-claims-ui-draft-03/
+130a132
+> ?? docs/records/audits/2026-09/mvp6-ct-verdicts-q118-q64d-q117-2026-09-27.md
+base_manifest_sha256=a8a236de82a9f2b5d4c0f3560aa13894c3740c6e187cb0140f5da1b08109c661
+base_src_verify=14566/14566 match, files_on_disk=14566
+base_src_writable_files=0
+q117_folder_sha256sums=12/12
+lane_mongod_57192_listeners=0
+lane_processes(env MOD0183_TEST_MONGO or Q119_ORDER_LOG)=0
+foreign_msbuild_nodes_left_untouched=7

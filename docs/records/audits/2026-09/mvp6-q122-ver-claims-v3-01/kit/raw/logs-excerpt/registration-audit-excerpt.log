@@ -1,0 +1,5 @@
+/Users/natig/mvp6-env/q122/ek-work/logs/supplychain-a1.log:11:[15:01:08 INF] Module manifest self-registered with Platform. ModuleCode=carrier-management Attempt=1
+/Users/natig/mvp6-env/q122/ek-work/logs/supplychain-a1.log:22:[15:01:09 INF] Module manifest self-registered with Platform. ModuleCode=shipment-tracking-pod Attempt=1
+/Users/natig/mvp6-env/q122/ek-work/logs/supplychain-a1.log:27:[15:01:09 INF] Module manifest self-registered with Platform. ModuleCode=claims-management Attempt=1
+/Users/natig/mvp6-env/q122/ek-work/logs/mdm-a1.log:26:      Module manifest self-registered with Platform. ModuleCode=legal-entity Attempt=1
+/Users/natig/mvp6-env/q122/ek-work/logs/mdm-a1.log:36:      Module manifest self-registered with Platform. ModuleCode=product-item-sku-master Attempt=1

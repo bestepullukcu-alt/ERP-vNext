@@ -1,0 +1,2 @@
+COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+mongod  27146 natig    9u  IPv4 0xf1b3907b76402ca4      0t0  TCP 127.0.0.1:57192 (LISTEN)

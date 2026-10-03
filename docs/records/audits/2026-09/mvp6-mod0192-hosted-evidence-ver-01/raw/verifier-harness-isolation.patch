@@ -1,0 +1,81 @@
+diff -ru /private/tmp/mvp6-mod0192-hosted-evidence-01-20260923/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs
+--- /private/tmp/mvp6-mod0192-hosted-evidence-01-20260923/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs	2026-09-23 00:19:22
++++ services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs	2026-09-23 01:04:18
+@@ -12,8 +12,8 @@
+     [Fact]
+     public async Task Fixture_mutations_and_fenced_terminal_are_durable_and_single_effect()
+     {
+-        var client=new MongoClient("mongodb://127.0.0.1:57192/?replicaSet=rsmod192&serverSelectionTimeoutMS=5000");
+-        var db=client.GetDatabase("DitenSupplyChain_Mod0192_Test");
++        var client=new MongoClient("mongodb://127.0.0.1:57492/?replicaSet=rsmod192ver&serverSelectionTimeoutMS=5000");
++        var db=client.GetDatabase("DitenSupplyChain_Mod0192_Ver01");
+         foreach(var name in new[]{"capacity_plans","capacity_scenarios","capacity_evaluations","capacity_receipts","capacity_active_slots","capacity_audit","capacity_outbox"})
+             await db.DropCollectionAsync(name);
+         var schema=new CapacitySchema(db);await schema.StartAsync(CancellationToken.None);
+@@ -93,8 +93,8 @@
+ {
+     private readonly ITestOutputHelper output;
+     public CapacityFaultTests(ITestOutputHelper output) => this.output=output;
+-    private const string Connection = "mongodb://127.0.0.1:57192/?replicaSet=rsmod192&serverSelectionTimeoutMS=5000";
+-    private const string Database = "DitenSupplyChain_Mod0192_Test";
++    private const string Connection = "mongodb://127.0.0.1:57492/?replicaSet=rsmod192ver&serverSelectionTimeoutMS=5000";
++    private const string Database = "DitenSupplyChain_Mod0192_Ver01";
+     private static readonly string[] Collections = ["capacity_plans","capacity_scenarios","capacity_evaluations","capacity_receipts","capacity_active_slots","capacity_audit","capacity_outbox"];
+     private static readonly CapacityScope Scope = new(DemandFixtureReader.Tenant,DemandFixtureReader.LegalEntity,Guid.Parse("19200000-0000-4000-8000-000000000003"));
+ 
+diff -ru /private/tmp/mvp6-mod0192-hosted-evidence-01-20260923/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityConcurrencyTests.cs services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityConcurrencyTests.cs
+--- /private/tmp/mvp6-mod0192-hosted-evidence-01-20260923/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityConcurrencyTests.cs	2026-09-22 23:58:09
++++ services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityConcurrencyTests.cs	2026-09-23 01:04:18
+@@ -11,8 +11,8 @@
+     [Fact]
+     public async Task Twenty_distinct_keys_produce_one_active_evaluation()
+     {
+-        var db=new MongoClient("mongodb://127.0.0.1:57192/?replicaSet=rsmod192&serverSelectionTimeoutMS=5000")
+-            .GetDatabase("DitenSupplyChain_Mod0192_Test");
++        var db=new MongoClient("mongodb://127.0.0.1:57492/?replicaSet=rsmod192ver&serverSelectionTimeoutMS=5000")
++            .GetDatabase("DitenSupplyChain_Mod0192_Ver01");
+         foreach(var name in new[]{"capacity_plans","capacity_scenarios","capacity_evaluations","capacity_receipts","capacity_active_slots","capacity_audit","capacity_outbox"})
+             await db.DropCollectionAsync(name);
+         await new CapacitySchema(db).StartAsync(CancellationToken.None);
+diff -ru /private/tmp/mvp6-mod0192-hosted-evidence-01-20260923/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityIsolationTests.cs services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityIsolationTests.cs
+--- /private/tmp/mvp6-mod0192-hosted-evidence-01-20260923/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityIsolationTests.cs	2026-09-22 23:58:09
++++ services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityIsolationTests.cs	2026-09-23 01:04:18
+@@ -11,8 +11,8 @@
+     [Fact]
+     public async Task Invalid_fixture_and_foreign_or_deleted_scope_create_no_visible_data()
+     {
+-        var db=new MongoClient("mongodb://127.0.0.1:57192/?replicaSet=rsmod192&serverSelectionTimeoutMS=5000")
+-            .GetDatabase("DitenSupplyChain_Mod0192_Test");
++        var db=new MongoClient("mongodb://127.0.0.1:57492/?replicaSet=rsmod192ver&serverSelectionTimeoutMS=5000")
++            .GetDatabase("DitenSupplyChain_Mod0192_Ver01");
+         foreach(var name in new[]{"capacity_plans","capacity_scenarios","capacity_evaluations","capacity_receipts","capacity_active_slots","capacity_audit","capacity_outbox"})
+             await db.DropCollectionAsync(name);
+         await new CapacitySchema(db).StartAsync(CancellationToken.None);
+diff -ru /private/tmp/mvp6-mod0192-hosted-evidence-01-20260923/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityLeaseTests.cs services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityLeaseTests.cs
+--- /private/tmp/mvp6-mod0192-hosted-evidence-01-20260923/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityLeaseTests.cs	2026-09-22 23:58:09
++++ services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityLeaseTests.cs	2026-09-23 01:04:18
+@@ -11,8 +11,8 @@
+     [Fact]
+     public async Task Renewal_advances_version_without_attempt_and_rejects_old_terminal()
+     {
+-        var db=new MongoClient("mongodb://127.0.0.1:57192/?replicaSet=rsmod192&serverSelectionTimeoutMS=5000")
+-            .GetDatabase("DitenSupplyChain_Mod0192_Test");
++        var db=new MongoClient("mongodb://127.0.0.1:57492/?replicaSet=rsmod192ver&serverSelectionTimeoutMS=5000")
++            .GetDatabase("DitenSupplyChain_Mod0192_Ver01");
+         foreach(var name in new[]{"capacity_plans","capacity_scenarios","capacity_evaluations","capacity_receipts","capacity_active_slots","capacity_audit","capacity_outbox"})
+             await db.DropCollectionAsync(name);
+         await new CapacitySchema(db).StartAsync(CancellationToken.None);
+diff -ru /private/tmp/mvp6-mod0192-hosted-evidence-01-20260923/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs
+--- /private/tmp/mvp6-mod0192-hosted-evidence-01-20260923/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs	2026-09-22 23:58:09
++++ services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs	2026-09-23 01:04:18
+@@ -13,8 +13,8 @@
+ [Collection("CapacityMongo")]
+ public sealed class CapacityRestartTests
+ {
+-    private const string Connection = "mongodb://127.0.0.1:57192/?replicaSet=rsmod192&serverSelectionTimeoutMS=5000";
+-    private const string Database = "DitenSupplyChain_Mod0192_Test";
++    private const string Connection = "mongodb://127.0.0.1:57492/?replicaSet=rsmod192ver&serverSelectionTimeoutMS=5000";
++    private const string Database = "DitenSupplyChain_Mod0192_Ver01";
+     private static readonly CapacityScope Scope=new(DemandFixtureReader.Tenant,DemandFixtureReader.LegalEntity,Guid.Parse("19200000-0000-4000-8000-000000000003"));
+     [Fact]
+     public async Task ChildWorker()

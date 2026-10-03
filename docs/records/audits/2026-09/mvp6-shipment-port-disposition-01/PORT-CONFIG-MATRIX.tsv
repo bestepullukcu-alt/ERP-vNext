@@ -1,0 +1,13 @@
+surface	service	configured_port	kind	observed_state	decision
+AGENTS.md	SupplyChain	5061	canonical allocation	active explicit assignment	KEEP
+SupplyChain domain config	SupplyChain	5061	domain allocation	user-approved 2026-09-11	KEEP
+SupplyChain appsettings	SupplyChain	5061	service launch config	binds when process starts	KEEP
+CRM prerequisite pack	CRM	5061	module authority	ready-for-dev accepted scaffold rule	RECONCILE
+CRM launchSettings	CRM	5061	service launch config	binds when process starts	MIGRATE TO 5065 CANDIDATE
+Gateway Carrier predecessor	CRM	5061	35 downstream route descriptors	configuration present; no listener now	MIGRATE TO 5065 CANDIDATE
+Fleet scripts	CRM	5061	process launch/cleanup config	configuration present	MIGRATE TO 5065 CANDIDATE
+CRM smoke scripts	CRM	5061	10 test settings	configuration present	MIGRATE TO 5065 CANDIDATE
+SupplyChain evidence	SupplyChain	lane-specific free ports or canonical 5061	test runtime	isolated evidence may override ASPNETCORE_URLS	DO NOT TREAT AS PERMANENT DISPOSITION
+TCP listener	unbound	5061	runtime observation	no listener at inspection time	NO PROCESS ACTION
+TCP listener	unbound	5065	runtime observation	no listener at inspection time	NOT AN ALLOCATION
+Recommended permanent target	CRM	5065	UNAPPROVED disposition	first unallocated port after 5062-5064	OWNER DECISION REQUIRED

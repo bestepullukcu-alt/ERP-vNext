@@ -1,0 +1,13 @@
+pack	section	item_id	action	subject	finding_id	evidence_record	applied
+MOD-0183	§23.8	G183-UI-01	ADDED (open)	Golden flow	F-Q231-8	docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/SOP-22.md; SLICE-GATE-MATRIX.tsv	NO — proposal only
+MOD-0183	§23.8	G183-UI-02	ADDED (open)	No-shell: gateway has 0 routes	F-Q231-1	docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/SOP-22.md; SLICE-GATE-MATRIX.tsv	NO — proposal only
+MOD-0183	§23.8	G183-UI-03	ADDED (open)	No-shell: permission seed	F-Q231-2	docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/SOP-22.md; SLICE-GATE-MATRIX.tsv	NO — proposal only
+MOD-0183	§23.8	G183-UI-04	ADDED (open)	Contract blocker: error-code mismatch	F-Q231-4	docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/SOP-22.md; SLICE-GATE-MATRIX.tsv	NO — proposal only
+MOD-0183	§23.8	G183-UI-05	ADDED (open)	Validation: no client validation on Change Status and Capture POD	F-Q231-6	docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/SOP-22.md; SLICE-GATE-MATRIX.tsv	NO — proposal only
+MOD-0183	§23.8	G183-UI-06	ADDED (open)	Audit / evidence for POD	F-Q231-7	docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/SOP-22.md; SLICE-GATE-MATRIX.tsv	NO — proposal only
+MOD-0183	§23.8	G183-UI-07	ADDED (open)	UX states	F-Q231-5, F-Q231-12	docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/SOP-22.md; SLICE-GATE-MATRIX.tsv	NO — proposal only
+MOD-0183	§23.8	G183-UI-08	ADDED (open)	Observability	F-Q231-9	docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/SOP-22.md; SLICE-GATE-MATRIX.tsv	NO — proposal only
+MOD-0183	§23.8	G183-UI-09	ADDED (open)	Hard-coded status names	F-Q231-11	docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/SOP-22.md; SLICE-GATE-MATRIX.tsv	NO — proposal only
+MOD-0183	§23.8	G183-UI-10	ADDED (open)	Note length mismatch 2000 vs 1000	F-Q231-10	docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/SOP-22.md; SLICE-GATE-MATRIX.tsv	NO — proposal only
+MOD-0186	§32.13	Loads 3.1.0 forward drift of the 5dfe7c1b… pin	CLOSED	contract pin drift	F-Q218-2; F-Q218-3 (reported as F-Q210-8)	docs/records/audits/2026-10/mvp6-q218-contract-pin-01/FIELD-PARITY.tsv	NO — proposal only
+MOD-0187	§32.13	Loads 3.1.0 forward drift of the 5dfe7c1b… pin	CLOSED	contract pin drift	F-Q218-2; F-Q218-3 (reported as F-Q211-4)	docs/records/audits/2026-10/mvp6-q218-contract-pin-01/FIELD-PARITY.tsv	NO — proposal only

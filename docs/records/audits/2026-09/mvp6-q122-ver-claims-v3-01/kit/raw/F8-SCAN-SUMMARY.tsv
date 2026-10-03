@@ -1,0 +1,25 @@
+file	phase	rootLeak	nativeDialogs	pageErrors	consoleErrors	foreignHosts	png	error
+checks-mut-grant-a1.json	checks-mut	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+checks-mut-nogrant-a1.json	checks-mut	0	0	0	1	fonts.googleapis.com,fonts.gstatic.com	1	-
+checks-neg-a1.json	checks-neg	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	4	-
+crafted-a1.json	crafted	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	4	-
+cu05-a1.json	cu05	0	0	0	1	fonts.googleapis.com,fonts.gstatic.com	4	-
+cu12-a1.json	cu12	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+cu18-a1.json	cu18	0	0	0	1	fonts.googleapis.com,fonts.gstatic.com	2	-
+cu18ui-a1.json	cu18ui	0	0	0	2	fonts.googleapis.com,fonts.gstatic.com	1	-
+cu19-a1.json	cu19	0	0	0	7	fonts.googleapis.com,fonts.gstatic.com	2	-
+cu20-a1.json	cu20	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+cu22-a1.json	cu22	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	2	-
+cu26-a1.json	cu26	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+kbd-a1.json	kbd	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	2	-
+l10n-a1.json	l10n	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	15	-
+login-a1.json	login	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+login-full-a1.json	login	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	0	-
+nf-ui-a1.json	nf-ui	0	0	0	7	fonts.googleapis.com,fonts.gstatic.com	7	-
+regd01-a1.json	regd01	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+regression-a1.json	regression	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	2	-
+saveview-a1.json	saveview	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	4	-
+spec-a1.json	spec	0	0	0	0	-	13	-
+ui-flows-a1.json	ui-flows	0	0	0	1	fonts.googleapis.com,fonts.gstatic.com	6	-
+vs1-a1.json	vs1	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	1	-
+TOTAL	23 files	0	0	0	20	fonts.googleapis.com,fonts.gstatic.com	74	-

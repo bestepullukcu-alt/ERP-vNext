@@ -1,0 +1,9 @@
+group	files	change	owner	verification
+central authority	2	AGENTS port table/note and ports rule band/active allocations	central CT / rules owner	exact preimage and target hashes; rule consistency
+CRM module authority	14	5061 references become 5065 in active Commercial module packs	Commercial Suite owners	no business-rule delta; port-only diff review
+CRM runtime	6	launch profile plus Program/controller comments	CRM source owner	native build and health on approved port
+Gateway	1	35 CRM downstream ports 5061 to 5065	integration owner	JSON parse, route count, gateway tests, composed runtime
+Fleet	2	CRM cleanup/start port 5061 to 5065	integration owner/static scripts review	PowerShell parse and isolated fleet boot
+CRM smoke tests	10	direct health/port assumptions 5061 to 5065	CRM test owner	selected CRM smoke runs after application
+Shipment shared successor	12	regenerated over the migrated gateway preimage; Shipment remains 5061	single integration owner	patch apply, exact hashes, gateway/manifest/nav tests
+SupplyChain runtime/tests	0	no change	SupplyChain owner	5061 preserved

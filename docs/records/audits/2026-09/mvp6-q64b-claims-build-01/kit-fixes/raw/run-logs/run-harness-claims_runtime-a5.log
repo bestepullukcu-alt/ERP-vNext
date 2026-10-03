@@ -1,0 +1,1 @@
+{"phase":"ui-flows","file":"ui-flows-a1.json","verdicts":{"create-then-reload":"PASS","CU-02-filter":"PASS","CU-31-quickview":"PASS","CU-08-open-to-investigating":"PASS","CU-21-stale-transition":"FAIL"},"rootLeak":0}

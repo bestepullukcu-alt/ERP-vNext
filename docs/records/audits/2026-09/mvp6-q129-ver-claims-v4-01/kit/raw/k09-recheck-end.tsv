@@ -1,0 +1,8 @@
+component	port	k09_pid	listener_now	same
+auth	5856	55111	55111	yes
+platform	5857	55184	55184	yes
+mdm	5859	55299	55299	yes
+supplychain	5861	55354	55354	yes
+gateway	5800	55420	55420	yes
+web	5801	55479	55479	yes
+mongod	38994	55032	55032	yes

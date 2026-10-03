@@ -1,0 +1,71 @@
+{
+  "cases": [
+    {
+      "case": "A08-exact-error",
+      "request": {
+        "idempotencyKey": "d1000000-0000-4000-8000-000000000008",
+        "kind": "transition",
+        "payloadSha256": "42657b48a310b434b6dc852e67f2594de809eacfb2d08e98223d4b173eccdc9b",
+        "root": "770306bf-b5b5-4645-b232-3d2b8713c323",
+        "shipmentId": "868e6fed-32bb-4301-9f6e-fb5223ce6b6a"
+      },
+      "response": {
+        "body": {
+          "contractVersion": "v1",
+          "error": {
+            "code": "INVALID_SHIPMENT_TRANSITION",
+            "correlationId": "770306bf-b5b5-4645-b232-3d2b8713c323",
+            "message": "INVALID_SHIPMENT_TRANSITION"
+          }
+        },
+        "correlationHeader": "770306bf-b5b5-4645-b232-3d2b8713c323",
+        "status": 422
+      }
+    },
+    {
+      "case": "A09-409-exact-error",
+      "request": {
+        "idempotencyKey": "d2000000-0000-4000-8000-000000000009",
+        "kind": "pod",
+        "payloadSha256": "0c15c6eacbd92fc031dbd4ea521bd6780e35c77d7e1b27e80702282c4706780c",
+        "root": "d7f1caef-9aa0-4d92-94d7-b5c135d045bb",
+        "shipmentId": "ba94aaf0-36e9-450c-b982-49406667eeb7"
+      },
+      "response": {
+        "body": {
+          "contractVersion": "v1",
+          "error": {
+            "code": "POD_ALREADY_CAPTURED",
+            "correlationId": "d7f1caef-9aa0-4d92-94d7-b5c135d045bb",
+            "message": "POD_ALREADY_CAPTURED"
+          }
+        },
+        "correlationHeader": "d7f1caef-9aa0-4d92-94d7-b5c135d045bb",
+        "status": 409
+      }
+    },
+    {
+      "case": "A09-422-exact-error",
+      "request": {
+        "idempotencyKey": "d3000000-0000-4000-8000-000000000009",
+        "kind": "pod",
+        "payloadSha256": "fe3153462c85ad89c4931ab38a7f42414166bbb5e4c7db400d22240cbd35f651",
+        "root": "a51831b9-44e2-4b74-9bf3-4f360cd9ca38",
+        "shipmentId": "777e506c-5b08-4e8e-8201-b4604896c61b"
+      },
+      "response": {
+        "body": {
+          "contractVersion": "v1",
+          "error": {
+            "code": "INVALID_SHIPMENT_TRANSITION",
+            "correlationId": "a51831b9-44e2-4b74-9bf3-4f360cd9ca38",
+            "message": "INVALID_SHIPMENT_TRANSITION"
+          }
+        },
+        "correlationHeader": "a51831b9-44e2-4b74-9bf3-4f360cd9ca38",
+        "status": 422
+      }
+    }
+  ],
+  "profile": "real-auth-t1-le-a-actor-b"
+}

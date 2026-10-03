@@ -1,0 +1,124 @@
+{
+  "database": "diten_claims_r22r25_e02",
+  "collections": [
+    "carrier_audit",
+    "carrier_idempotency",
+    "carriers",
+    "claims",
+    "claims_audit",
+    "claims_outbox",
+    "claims_receipts",
+    "load_assignments",
+    "loads",
+    "loads_audit",
+    "loads_outbox",
+    "loads_receipts",
+    "return_entitlements",
+    "returns",
+    "returns_audit",
+    "returns_outbox",
+    "returns_receipts",
+    "sce_shipment_audit",
+    "sce_shipment_history",
+    "sce_shipment_outbox",
+    "sce_shipment_receipts",
+    "sce_shipment_source_evidence",
+    "sce_shipment_source_intents",
+    "sce_shipment_source_links",
+    "sce_shipments"
+  ],
+  "claims": 5,
+  "receipts": 4,
+  "audit": 4,
+  "outbox": 4,
+  "shipments": 14,
+  "indexes": {
+    "claims": [
+      {
+        "v": 2,
+        "key": {
+          "_id": 1
+        },
+        "name": "_id_"
+      },
+      {
+        "v": 2,
+        "key": {
+          "TenantId": 1,
+          "LegalEntityId": 1
+        },
+        "name": "claim_scope"
+      },
+      {
+        "v": 2,
+        "key": {
+          "TenantId": 1,
+          "LegalEntityId": 1,
+          "ClaimNumber": 1
+        },
+        "name": "claim_number",
+        "unique": true
+      }
+    ],
+    "receipts": [
+      {
+        "v": 2,
+        "key": {
+          "_id": 1
+        },
+        "name": "_id_"
+      },
+      {
+        "v": 2,
+        "key": {
+          "TenantId": 1,
+          "LegalEntityId": 1
+        },
+        "name": "claim_scope"
+      },
+      {
+        "v": 2,
+        "key": {
+          "TenantId": 1,
+          "LegalEntityId": 1,
+          "Operation": 1,
+          "TargetId": 1,
+          "IdempotencyKey": 1
+        },
+        "name": "claim_receipt",
+        "unique": true
+      }
+    ],
+    "outbox": [
+      {
+        "v": 2,
+        "key": {
+          "_id": 1
+        },
+        "name": "_id_"
+      },
+      {
+        "v": 2,
+        "key": {
+          "TenantId": 1,
+          "LegalEntityId": 1
+        },
+        "name": "claim_scope"
+      },
+      {
+        "v": 2,
+        "key": {
+          "TenantId": 1,
+          "LegalEntityId": 1,
+          "EventId": 1
+        },
+        "name": "claim_event",
+        "unique": true
+      }
+    ]
+  },
+  "hello": {
+    "setName": "claims_r22r25_e02",
+    "isWritablePrimary": true
+  }
+}

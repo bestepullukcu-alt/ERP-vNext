@@ -1,0 +1,7 @@
+{
+  "sandop-capacity.openapi.candidate.yaml": "81f9a34b178c50e7a59b4512f77444be3a5dd0699b786a663ad5f72461245f64",
+  "sandop-capacity-semantics-v3.0.0-rc.1.md": "d040723c83990255e719b63b80e5fc189cd149c8ea19d5e06e1e2d69b0d3e3af",
+  "successor-candidate.patch": "231c83f239f1b55c42c4446e7f63ae55928e41bf2cc0bb2426a8e1c75d5ef303",
+  "verify_candidate.py": "ab5af12a13effa08839894f55cdcb1c8d1f7ff64689bfb3ca188bae9adc09591",
+  "contract_model_checks.py": "a2ebd2e1fc5d895cd5ec5fb06cab027c240f3cc78d1fb3779a4c4bff61e70f29"
+}

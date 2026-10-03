@@ -1,0 +1,11 @@
+{
+  "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs": "L1-A12-360",
+  "gateway/Diten.ApiGateway/ocelot.json": "L1-A12-360",
+  "frontend/Diten.Web/Resources/SharedResource.en.resx": "L1-A12-360",
+  "frontend/Diten.Web/Resources/SharedResource.tr.resx": "L1-A12-360",
+  "frontend/Diten.Web/Resources/SharedResource.fr.resx": "L1-A12-360",
+  "frontend/Diten.Web/Resources/SharedResource.es.resx": "L1-A12-360",
+  "frontend/Diten.Web/Resources/SharedResource.zh.resx": "L1-A12-360",
+  "frontend/Diten.Web/Resources/SharedResource.ar.resx": "L1-A12-360",
+  "frontend/Diten.Web/Resources/SharedResource.ru.resx": "L1-A12-360"
+}

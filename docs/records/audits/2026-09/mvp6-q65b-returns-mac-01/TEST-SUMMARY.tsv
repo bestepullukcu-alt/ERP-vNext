@@ -1,0 +1,21 @@
+suite	tree	total	passed	failed	skipped	new_failures_vs_A	new_failure_names	fixed_vs_A	trx
+web-tests	treeA	158	158	0	0	-	-	-	logs/test/treeA--web-tests.trx
+web-tests	treeB	257	257	0	0	0	-	0	logs/test/treeB--web-tests.trx
+supplychain-tests	treeA	417	415	2	0	-	-	-	logs/test/treeA--supplychain-tests.trx
+supplychain-tests	treeB	426	424	2	0	0	-	0	logs/test/treeB--supplychain-tests.trx
+
+# failures and added tests
+suite	tree	kind	test	note
+web-tests	treeB	ADDED-TESTS	98	tests present in B only (overlay tests)
+supplychain-tests	treeA	FAILED	Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery	baseline
+supplychain-tests	treeA	FAILED	Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce	baseline
+supplychain-tests	treeB	FAILED	Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery	also fails on A
+supplychain-tests	treeB	FAILED	Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce	also fails on A
+supplychain-tests	treeB	ADDED-TESTS	9	tests present in B only (overlay tests)
+
+# console summaries (dotnet test)
+tree	suite	exit	summary
+treeB	web-tests	0	Passed!  - Failed:     0, Passed:   257, Skipped:     0, Total:   257, Duration: 7 s - Diten.Web.Tests.dll (net8.0)
+treeB	supplychain-tests	1	Failed!  - Failed:     2, Passed:   424, Skipped:     0, Total:   426, Duration: 4 m 39 s - Diten.SupplyChainService.Tests.dll (net8.0)
+treeA	web-tests	0	Passed!  - Failed:     0, Passed:   158, Skipped:     0, Total:   158, Duration: 13 s - Diten.Web.Tests.dll (net8.0)
+treeA	supplychain-tests	1	Failed!  - Failed:     2, Passed:   415, Skipped:     0, Total:   417, Duration: 4 m 36 s - Diten.SupplyChainService.Tests.dll (net8.0)

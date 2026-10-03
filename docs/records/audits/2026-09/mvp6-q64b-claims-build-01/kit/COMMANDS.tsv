@@ -1,0 +1,121 @@
+utc_start	utc_end	phase	step	command_redacted	exit
+2026-09-26T19:29:22Z	2026-09-26T19:29:37Z	K01	K01	k01_source.py (HEAD archive + overlays)	0
+2026-09-26T19:29:37Z	2026-09-26T19:29:37Z	K03	K03	k03_ports.py slot 5	0
+2026-09-26T19:29:37Z	2026-09-26T19:29:37Z	K02	dotnet-info	dotnet --info (source dir)	0
+2026-09-26T19:29:37Z	2026-09-26T19:29:37Z	K02	K02	k02_runtime.sh	0
+2026-09-26T19:29:37Z	2026-09-26T19:29:40Z	K06	auth-restore	dotnet restore <auth csproj>  > raw/build/auth-restore-a1.log	0
+2026-09-26T19:29:40Z	2026-09-26T19:29:51Z	K06	auth-build	dotnet build <auth csproj> -c Release --no-restore > raw/build/auth-build-a1.log	0
+2026-09-26T19:29:37Z	2026-09-26T19:29:51Z	K06	K06	build auth	0
+2026-09-26T19:29:51Z	2026-09-26T19:29:54Z	K06	platform-restore	dotnet restore <platform csproj>  > raw/build/platform-restore-a1.log	0
+2026-09-26T19:29:54Z	2026-09-26T19:30:23Z	K06	platform-build	dotnet build <platform csproj> -c Release --no-restore > raw/build/platform-build-a1.log	0
+2026-09-26T19:29:51Z	2026-09-26T19:30:24Z	K06	K06	build platform	0
+2026-09-26T19:30:24Z	2026-09-26T19:30:25Z	K06	mdm-restore	dotnet restore <mdm csproj>  > raw/build/mdm-restore-a1.log	0
+2026-09-26T19:30:25Z	2026-09-26T19:30:29Z	K06	mdm-build	dotnet build <mdm csproj> -c Release --no-restore > raw/build/mdm-build-a1.log	0
+2026-09-26T19:30:24Z	2026-09-26T19:30:29Z	K06	K06	build mdm	0
+2026-09-26T19:30:29Z	2026-09-26T19:30:31Z	K06	supplychain-restore	dotnet restore <supplychain csproj>  > raw/build/supplychain-restore-a1.log	0
+2026-09-26T19:30:31Z	2026-09-26T19:30:34Z	K06	supplychain-build	dotnet build <supplychain csproj> -c Release --no-restore > raw/build/supplychain-build-a1.log	0
+2026-09-26T19:30:29Z	2026-09-26T19:30:34Z	K06	K06	build supplychain	0
+2026-09-26T19:30:34Z	2026-09-26T19:30:36Z	K06	gateway-restore	dotnet restore <gateway csproj>  > raw/build/gateway-restore-a1.log	0
+2026-09-26T19:30:36Z	2026-09-26T19:30:38Z	K06	gateway-build	dotnet build <gateway csproj> -c Release --no-restore > raw/build/gateway-build-a1.log	0
+2026-09-26T19:30:34Z	2026-09-26T19:30:38Z	K06	K06	build gateway	0
+2026-09-26T19:30:38Z	2026-09-26T19:30:40Z	K06	web-restore	dotnet restore <web csproj>  > raw/build/web-restore-a1.log	0
+2026-09-26T19:30:40Z	2026-09-26T19:31:09Z	K06	web-build	dotnet build <web csproj> -c Release --no-restore > raw/build/web-build-a1.log	0
+2026-09-26T19:30:38Z	2026-09-26T19:31:10Z	K06	K06	build web	0
+2026-09-26T19:31:10Z	2026-09-26T19:31:10Z	K04b	K04b	k04b_gateway_routes.py	0
+2026-09-26T19:31:10Z	2026-09-26T19:31:10Z	K04	K04	k04_config.py shared (issuer/audience; no secret)	0
+2026-09-26T19:31:10Z	2026-09-26T19:31:10Z	K04	K04	k04_config.py render (placeholders only)	0
+2026-09-26T19:31:10Z	2026-09-26T19:31:10Z	K04	K04	k04_config.py check (incl. D2 pairing, D4 no literal secret)	0
+2026-09-26T19:31:11Z	2026-09-26T19:31:12Z	K05	mongod-start	mongod --replSet rsClaimsQ64b01 --port 35994 --bind_ip 127.0.0.1 --dbpath <lane> --fork	0
+2026-09-26T19:31:12Z	2026-09-26T19:31:14Z	K05	rs-initiate	rs.initiate single member 127.0.0.1:35994	0
+2026-09-26T19:31:10Z	2026-09-26T19:31:15Z	K05	K05	k05_mongo.sh	0
+2026-09-26T19:31:16Z	2026-09-26T19:31:16Z	SUP	supervisor-start	k00_supervisor.py groups=['auth-platform', 'jwt', 'mfa', 'platform-mdm-active', 'svcid'] actors=['fixadmin', 'full', 'leb', 'noread', 'readonly', 't2admin', 't2user'] (values in memory only; core dumps off; lifetime 43200s; idle 14400s)	pid 35553
+2026-09-26T19:31:16Z	2026-09-26T19:31:22Z	SUP	auth-launch	supervisor: base env + <auth.env placeholders substituted in memory> dotnet Diten.AuthService.Api.dll --urls http://127.0.0.1:5556	pid 35589; health 200; runtime Microsoft.NETCore.App/8.0.23; listen 127.0.0.1:5556; ok
+2026-09-26T19:31:16Z	2026-09-26T19:31:22Z	K06	K06	launch auth via supervisor	0
+2026-09-26T19:31:22Z	2026-09-26T19:31:36Z	SUP	platform-launch	supervisor: base env + <platform.env placeholders substituted in memory> dotnet Diten.Platform.API.dll --urls http://127.0.0.1:5557	pid 35661; health 200; runtime Microsoft.NETCore.App/8.0.23; listen 127.0.0.1:5557; ok
+2026-09-26T19:31:22Z	2026-09-26T19:31:36Z	K06	K06	launch platform via supervisor	0
+2026-09-26T19:31:36Z	2026-09-26T19:31:38Z	SUP	mdm-launch	supervisor: base env + <mdm.env placeholders substituted in memory> dotnet Diten.MdmService.Api.dll --urls http://127.0.0.1:5559	pid 35771; health 400; runtime Microsoft.NETCore.App/8.0.23; listen 127.0.0.1:5559; ok
+2026-09-26T19:31:36Z	2026-09-26T19:31:38Z	K06	K06	launch mdm via supervisor	0
+2026-09-26T19:31:38Z	2026-09-26T19:31:42Z	SUP	supplychain-launch	supervisor: base env + <supplychain.env placeholders substituted in memory> dotnet Diten.SupplyChainService.Api.dll --urls http://127.0.0.1:5561	pid 35824; health 200; runtime Microsoft.NETCore.App/8.0.23; listen 127.0.0.1:5561; ok
+2026-09-26T19:31:38Z	2026-09-26T19:31:42Z	K06	K06	launch supplychain via supervisor	0
+2026-09-26T19:31:42Z	2026-09-26T19:31:46Z	SUP	gateway-launch	supervisor: base env + <gateway.env placeholders substituted in memory> dotnet Diten.ApiGateway.dll --urls http://127.0.0.1:5500	pid 35891; health 200; runtime Microsoft.NETCore.App/8.0.23; listen 127.0.0.1:5500; ok
+2026-09-26T19:31:42Z	2026-09-26T19:31:46Z	K06	K06	launch gateway via supervisor	0
+2026-09-26T19:31:46Z	2026-09-26T19:31:48Z	SUP	web-launch	supervisor: base env + <web.env placeholders substituted in memory> dotnet Diten.Web.dll --urls http://127.0.0.1:5501 --contentRoot <source project>	pid 35954; health 200; runtime Microsoft.NETCore.App/8.0.23; listen 127.0.0.1:5501; ok
+2026-09-26T19:31:46Z	2026-09-26T19:31:48Z	K06	K06	launch web via supervisor	0
+2026-09-26T19:31:48Z	2026-09-26T19:31:48Z	K06	K06	netcheck after start	0
+2026-09-26T19:31:49Z	2026-09-26T19:32:00Z	SUP	run-k07	task k07 (scope actors): /Users/natig/mvp6-env/venv/bin/python3 <kit>/k07_identity.py rotate --work <W> --evidence <E> --suffix ClaimsQ64b01 --actors /Users/natig/mvp6-env/lane/actors.tsv	exit 1; log run-k07-a1.log
+2026-09-26T19:31:48Z	2026-09-26T19:32:00Z	K07	K07	k07_identity.py rotate (supervisor task k07; actor passwords only)	1
+2026-09-26T19:32:00Z	2026-09-26T19:32:00Z	K00	abort	k00_ctl.py abort (stop own services, clear values, remove socket)	0
+2026-09-26T19:32:00Z	2026-09-26T19:32:00Z	SUP	supervisor-abort	values cleared from memory; socket and fallback log folder removed; own services stopped	exit 0
+2026-09-26T19:32:00Z	2026-09-26T19:32:06Z	K11	abort-cleanup	k11_cleanup.sh (abort path)	0
+2026-09-26T19:33:03Z	2026-09-26T19:33:17Z	K01	K01	k01_source.py (HEAD archive + overlays)	0
+2026-09-26T19:33:18Z	2026-09-26T19:33:18Z	K03	K03	k03_ports.py slot 5	0
+2026-09-26T19:33:18Z	2026-09-26T19:33:18Z	K02	dotnet-info	dotnet --info (source dir)	0
+2026-09-26T19:33:18Z	2026-09-26T19:33:18Z	K02	K02	k02_runtime.sh	0
+2026-09-26T19:33:18Z	2026-09-26T19:33:20Z	K06	auth-restore	dotnet restore <auth csproj>  > raw/build/auth-restore-a2.log	0
+2026-09-26T19:33:20Z	2026-09-26T19:33:26Z	K06	auth-build	dotnet build <auth csproj> -c Release --no-restore > raw/build/auth-build-a2.log	0
+2026-09-26T19:33:18Z	2026-09-26T19:33:26Z	K06	K06	build auth	0
+2026-09-26T19:33:27Z	2026-09-26T19:33:29Z	K06	platform-restore	dotnet restore <platform csproj>  > raw/build/platform-restore-a2.log	0
+2026-09-26T19:33:29Z	2026-09-26T19:33:45Z	K06	platform-build	dotnet build <platform csproj> -c Release --no-restore > raw/build/platform-build-a2.log	0
+2026-09-26T19:33:26Z	2026-09-26T19:33:45Z	K06	K06	build platform	0
+2026-09-26T19:33:45Z	2026-09-26T19:33:47Z	K06	mdm-restore	dotnet restore <mdm csproj>  > raw/build/mdm-restore-a2.log	0
+2026-09-26T19:33:47Z	2026-09-26T19:33:52Z	K06	mdm-build	dotnet build <mdm csproj> -c Release --no-restore > raw/build/mdm-build-a2.log	0
+2026-09-26T19:33:45Z	2026-09-26T19:33:52Z	K06	K06	build mdm	0
+2026-09-26T19:33:52Z	2026-09-26T19:33:55Z	K06	supplychain-restore	dotnet restore <supplychain csproj>  > raw/build/supplychain-restore-a2.log	0
+2026-09-26T19:33:55Z	2026-09-26T19:33:59Z	K06	supplychain-build	dotnet build <supplychain csproj> -c Release --no-restore > raw/build/supplychain-build-a2.log	0
+2026-09-26T19:33:52Z	2026-09-26T19:33:59Z	K06	K06	build supplychain	0
+2026-09-26T19:33:59Z	2026-09-26T19:34:01Z	K06	gateway-restore	dotnet restore <gateway csproj>  > raw/build/gateway-restore-a2.log	0
+2026-09-26T19:34:01Z	2026-09-26T19:34:03Z	K06	gateway-build	dotnet build <gateway csproj> -c Release --no-restore > raw/build/gateway-build-a2.log	0
+2026-09-26T19:33:59Z	2026-09-26T19:34:03Z	K06	K06	build gateway	0
+2026-09-26T19:34:03Z	2026-09-26T19:34:05Z	K06	web-restore	dotnet restore <web csproj>  > raw/build/web-restore-a2.log	0
+2026-09-26T19:34:05Z	2026-09-26T19:34:32Z	K06	web-build	dotnet build <web csproj> -c Release --no-restore > raw/build/web-build-a2.log	0
+2026-09-26T19:34:03Z	2026-09-26T19:34:32Z	K06	K06	build web	0
+2026-09-26T19:34:32Z	2026-09-26T19:34:32Z	K04b	K04b	k04b_gateway_routes.py	0
+2026-09-26T19:34:32Z	2026-09-26T19:34:32Z	K04	K04	k04_config.py shared (issuer/audience; no secret)	0
+2026-09-26T19:34:32Z	2026-09-26T19:34:33Z	K04	K04	k04_config.py render (placeholders only)	0
+2026-09-26T19:34:33Z	2026-09-26T19:34:33Z	K04	K04	k04_config.py check (incl. D2 pairing, D4 no literal secret)	0
+2026-09-26T19:34:33Z	2026-09-26T19:34:35Z	K05	mongod-start	mongod --replSet rsClaimsQ64b01 --port 35994 --bind_ip 127.0.0.1 --dbpath <lane> --fork	0
+2026-09-26T19:34:35Z	2026-09-26T19:34:36Z	K05	rs-initiate	rs.initiate single member 127.0.0.1:35994	0
+2026-09-26T19:34:33Z	2026-09-26T19:34:38Z	K05	K05	k05_mongo.sh	0
+2026-09-26T19:34:38Z	2026-09-26T19:34:38Z	SUP	supervisor-start	k00_supervisor.py groups=['auth-platform', 'jwt', 'mfa', 'platform-mdm-active', 'svcid'] actors=['fixadmin', 'full', 'leb', 'noread', 'readonly', 't2admin', 't2user'] (values in memory only; core dumps off; lifetime 43200s; idle 14400s)	pid 37467
+2026-09-26T19:34:39Z	2026-09-26T19:34:45Z	SUP	auth-launch	supervisor: base env + <auth.env placeholders substituted in memory> dotnet Diten.AuthService.Api.dll --urls http://127.0.0.1:5556	pid 37506; health 200; runtime Microsoft.NETCore.App/8.0.23; listen 127.0.0.1:5556; ok
+2026-09-26T19:34:38Z	2026-09-26T19:34:45Z	K06	K06	launch auth via supervisor	0
+2026-09-26T19:34:45Z	2026-09-26T19:34:59Z	SUP	platform-launch	supervisor: base env + <platform.env placeholders substituted in memory> dotnet Diten.Platform.API.dll --urls http://127.0.0.1:5557	pid 37579; health 200; runtime Microsoft.NETCore.App/8.0.23; listen 127.0.0.1:5557; ok
+2026-09-26T19:34:45Z	2026-09-26T19:34:59Z	K06	K06	launch platform via supervisor	0
+2026-09-26T19:34:59Z	2026-09-26T19:35:01Z	SUP	mdm-launch	supervisor: base env + <mdm.env placeholders substituted in memory> dotnet Diten.MdmService.Api.dll --urls http://127.0.0.1:5559	pid 37693; health 400; runtime Microsoft.NETCore.App/8.0.23; listen 127.0.0.1:5559; ok
+2026-09-26T19:34:59Z	2026-09-26T19:35:01Z	K06	K06	launch mdm via supervisor	0
+2026-09-26T19:35:01Z	2026-09-26T19:35:04Z	SUP	supplychain-launch	supervisor: base env + <supplychain.env placeholders substituted in memory> dotnet Diten.SupplyChainService.Api.dll --urls http://127.0.0.1:5561	pid 37746; health 200; runtime Microsoft.NETCore.App/8.0.23; listen 127.0.0.1:5561; ok
+2026-09-26T19:35:01Z	2026-09-26T19:35:04Z	K06	K06	launch supplychain via supervisor	0
+2026-09-26T19:35:05Z	2026-09-26T19:35:08Z	SUP	gateway-launch	supervisor: base env + <gateway.env placeholders substituted in memory> dotnet Diten.ApiGateway.dll --urls http://127.0.0.1:5500	pid 37808; health 200; runtime Microsoft.NETCore.App/8.0.23; listen 127.0.0.1:5500; ok
+2026-09-26T19:35:04Z	2026-09-26T19:35:08Z	K06	K06	launch gateway via supervisor	0
+2026-09-26T19:35:08Z	2026-09-26T19:35:11Z	SUP	web-launch	supervisor: base env + <web.env placeholders substituted in memory> dotnet Diten.Web.dll --urls http://127.0.0.1:5501 --contentRoot <source project>	pid 37871; health 200; runtime Microsoft.NETCore.App/8.0.23; listen 127.0.0.1:5501; ok
+2026-09-26T19:35:08Z	2026-09-26T19:35:11Z	K06	K06	launch web via supervisor	0
+2026-09-26T19:35:11Z	2026-09-26T19:35:11Z	K06	K06	netcheck after start	0
+2026-09-26T19:35:11Z	2026-09-26T19:35:13Z	SUP	run-harness-tenant_fixture	task harness-tenant_fixture (scope actors): /Users/natig/mvp6-env/venv/bin/python3 /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-q64b-claims-build-01/lane-scripts/tenant_fixture.py 35994 ClaimsQ64b01 <E>/raw/fixture/tenant-fixture.json	exit 0; log run-harness-tenant_fixture-a1.log
+2026-09-26T19:35:11Z	2026-09-26T19:35:13Z	K07pre	K07pre	tenant_fixture.py via supervisor harness (lane Platform DB tenant records; no secret)	0
+2026-09-26T19:35:13Z	2026-09-26T19:35:25Z	SUP	run-k07	task k07 (scope actors): /Users/natig/mvp6-env/venv/bin/python3 <kit>/k07_identity.py rotate --work <W> --evidence <E> --suffix ClaimsQ64b01 --actors /Users/natig/mvp6-env/lane/actors.tsv	exit 0; log run-k07-a1.log
+2026-09-26T19:35:13Z	2026-09-26T19:35:25Z	K07	K07	k07_identity.py rotate (supervisor task k07; actor passwords only)	0
+2026-09-26T19:35:55Z	2026-09-26T19:35:56Z	K10	snap-fixture-before	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/fixture-before-a1.json	0
+2026-09-26T19:35:56Z	2026-09-26T19:36:08Z	SUP	run-harness-org_fixture	task harness-org_fixture (scope actors): /Users/natig/mvp6-env/venv/bin/python3 /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-q64b-claims-build-01/lane-scripts/org_fixture.py 5500 35994 ClaimsQ64b01 <E>/raw/fixture/org-fixture.json	exit 0; log run-harness-org_fixture-a1.log
+2026-09-26T19:36:08Z	2026-09-26T19:36:09Z	K10	snap-fixture-after	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/fixture-after-a1.json	0
+2026-09-26T19:36:44Z	2026-09-26T19:37:00Z	SUP	run-harness-claims_runtime	task harness-claims_runtime (scope actors): /opt/homebrew/bin/node /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-q64b-claims-build-01/lane-scripts/claims_runtime.mjs login 5501 <E> <E>/raw/fixture/org-fixture.json /Users/natig/mvp6-env/tmp/state /Users/natig/mvp6-env/runtime	exit 0; log run-harness-claims_runtime-a1.log
+2026-09-26T19:37:11Z	2026-09-26T19:37:12Z	K10	snap-vs1-before	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/vs1-before-a1.json	0
+2026-09-26T19:37:13Z	2026-09-26T19:37:48Z	SUP	run-harness-claims_runtime	task harness-claims_runtime (scope actors): /opt/homebrew/bin/node /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-q64b-claims-build-01/lane-scripts/claims_runtime.mjs vs1 5501 <E> <E>/raw/fixture/org-fixture.json /Users/natig/mvp6-env/tmp/state /Users/natig/mvp6-env/runtime	exit 1; log run-harness-claims_runtime-a2.log
+2026-09-26T19:37:48Z	2026-09-26T19:37:49Z	K10	snap-vs1-after	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/vs1-after-a1.json	0
+2026-09-26T19:38:28Z	2026-09-26T19:38:29Z	K10	snap-spec-before	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/spec-before-a1.json	0
+2026-09-26T19:38:30Z	2026-09-26T19:40:58Z	SUP	run-harness-claims_runtime	task harness-claims_runtime (scope actors): /opt/homebrew/bin/node /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-q64b-claims-build-01/lane-scripts/claims_runtime.mjs spec 5501 <E> <E>/raw/fixture/org-fixture.json /Users/natig/mvp6-env/tmp/state /Users/natig/mvp6-env/runtime	exit 1; log run-harness-claims_runtime-a3.log
+2026-09-26T19:40:58Z	2026-09-26T19:40:59Z	K10	snap-spec-after	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/spec-after-a1.json	0
+2026-09-26T19:41:26Z	2026-09-26T19:41:27Z	K10	snap-neg-before	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/neg-before-a1.json	0
+2026-09-26T19:41:27Z	2026-09-26T19:41:37Z	SUP	run-harness-claims_runtime	task harness-claims_runtime (scope actors): /opt/homebrew/bin/node /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-q64b-claims-build-01/lane-scripts/claims_runtime.mjs checks-neg 5501 <E> <E>/raw/fixture/org-fixture.json /Users/natig/mvp6-env/tmp/state /Users/natig/mvp6-env/runtime	exit 0; log run-harness-claims_runtime-a4.log
+2026-09-26T19:41:37Z	2026-09-26T19:41:38Z	K10	snap-neg-after	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/neg-after-a1.json	0
+2026-09-26T19:42:03Z	2026-09-26T19:42:04Z	K10	snap-cu10-before	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/cu10-before-a1.json	0
+2026-09-26T19:42:04Z	2026-09-26T19:42:09Z	SUP	run-harness-claims_runtime	task harness-claims_runtime (scope actors): /opt/homebrew/bin/node /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-q64b-claims-build-01/lane-scripts/claims_runtime.mjs checks-mut 5501 <E> <E>/raw/fixture/org-fixture.json /Users/natig/mvp6-env/tmp/state /Users/natig/mvp6-env/runtime	exit 1; log run-harness-claims_runtime-a5.log
+2026-09-26T19:42:09Z	2026-09-26T19:42:09Z	K10	snap-cu10-after	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/cu10-after-a1.json	0
+2026-09-26T19:42:41Z	2026-09-26T19:42:55Z	SUP	run-harness-claims_runtime	task harness-claims_runtime (scope actors): /opt/homebrew/bin/node /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-q64b-claims-build-01/lane-scripts/claims_runtime.mjs login 5501 <E> <E>/raw/fixture/org-fixture.json /Users/natig/mvp6-env/tmp/state /Users/natig/mvp6-env/runtime	exit 0; log run-harness-claims_runtime-a6.log
+2026-09-26T19:42:55Z	2026-09-26T19:42:56Z	K10	snap-cu10b-before	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/cu10b-before-a1.json	0
+2026-09-26T19:42:56Z	2026-09-26T19:43:00Z	SUP	run-harness-claims_runtime	task harness-claims_runtime (scope actors): /opt/homebrew/bin/node /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-q64b-claims-build-01/lane-scripts/claims_runtime.mjs checks-mut 5501 <E> <E>/raw/fixture/org-fixture.json /Users/natig/mvp6-env/tmp/state /Users/natig/mvp6-env/runtime	exit 0; log run-harness-claims_runtime-a7.log
+2026-09-26T19:43:00Z	2026-09-26T19:43:01Z	K10	snap-cu10b-after	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/cu10b-after-a1.json	0
+2026-09-26T19:45:51Z	2026-09-26T19:45:52Z	K10	snap-flows-delivered-before	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/flows-delivered-before-a1.json	0
+2026-09-26T19:45:52Z	2026-09-26T19:47:03Z	SUP	run-harness-claims_runtime	task harness-claims_runtime (scope actors): /opt/homebrew/bin/node /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-q64b-claims-build-01/lane-scripts/claims_runtime.mjs ui-flows 5501 <E> <E>/raw/fixture/org-fixture.json /Users/natig/mvp6-env/tmp/state /Users/natig/mvp6-env/runtime delivered	exit 1; log run-harness-claims_runtime-a8.log
+2026-09-26T19:47:03Z	2026-09-26T19:47:04Z	K10	snap-flows-delivered-after	mongosh <lane uri> --file k10_db_snapshot.js > raw/db/flows-delivered-after-a1.json	0
+2026-09-26T19:48:55Z	2026-09-26T19:48:55Z	K06	K06	netcheck before cleanup	0
+2026-09-26T19:48:55Z	2026-09-26T19:51:05Z	K11	cleanup	k11_cleanup.sh (supervisor stays up for the seal)	0

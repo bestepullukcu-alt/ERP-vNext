@@ -1,0 +1,11 @@
+check	result
+owner/patch/manifest sha256	PASS
+preimage sha256 + git apply --check	PASS
+native restore	PASS
+native MDM Release build	PASS; 0 errors
+sandboxed VSTest	ABORTED; local IPC denied
+controlling validator VSTest	PASS 33/33
+first runtime matrix	FAIL 48/49; retained
+controlling runtime matrix	PASS 49/49
+3333-entry source verification	PASS
+cleanup API 18759 and Mongo 37884	PASS

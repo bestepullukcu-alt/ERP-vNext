@@ -1,0 +1,14 @@
+L4 Q117 files placed: 11 (replaced 10, new 1)
+L5 module files placed: 23 (all new paths)
+L6(a) SupplyChain Program.cs: ClaimsManagementManifestProvider line after the Shipment provider line
+L6(b) ocelot confirm /api/shipment-bundle/shipments/{shipmentId} GET: present
+L6(b) ocelot route added /api/shipment-bundle/claims ['GET', 'POST', 'OPTIONS']
+L6(b) ocelot route added /api/shipment-bundle/claims/{claimId}/transition ['POST', 'OPTIONS']
+L6(b) ocelot routes 275 -> 277
+L6(c) SharedResource x7: Nav.Module.CLAIMSMANAGEMENT + Nav.Page.CLAIMS
+L6 not applied: gateway-tests-ocelot-count.patch.txt (Gateway tests out of scope), icon-map.proposal.md, platform-registration.md, frontend-Program.cs.note.txt (notes/proposals)
+L6 env-integration files 9
+derived overlay q117-files: 11 files tar=835b6088002f0931a8611dde4cf66d6e950d0a4e903daf685a4884f3c59be1df manifest=eb3d6aa93bedff3511b5b67d4ba016a514c7c01ce41e9dad8a98fc18762c90dd
+derived overlay claims-v3-module: 23 files tar=3f896415e58bb66e0f185d8535f1bd2e6220e4ea3cad4975352e42b079918d9c manifest=5603391db972fb76709156b13e128c84557de86b98b7dfc0cd5be1c17cdc6205
+derived overlay claims-v3-env-integration: 9 files tar=bc398cb82fe22587a5e797b481d942b15438df4d690347cef1d88c779b0dcfa3 manifest=b45b83ff4d2cffc4d2bae3a712c1b89ee6743fc275fc330c3085477e4fd6d225
+src files after compose: 14590

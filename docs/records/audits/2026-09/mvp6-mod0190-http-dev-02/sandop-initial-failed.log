@@ -1,0 +1,16 @@
+/private/tmp/mvp6-mod0190-http-integration-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+/private/tmp/mvp6-mod0190-http-integration-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Diten.SupplyChainService.Application.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+/private/tmp/mvp6-mod0190-http-integration-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Diten.SupplyChainService.Persistence.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+/private/tmp/mvp6-mod0190-http-integration-01/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Diten.SupplyChainService.Infrastructure.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+/private/tmp/mvp6-mod0190-http-integration-01/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+Test run for /private/tmp/mvp6-mod0190-http-integration-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:01.62]     Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Receipt_insert_failure_after_plan_write_rolls_back_and_same_key_retries [FAIL]
+[xUnit.net 00:00:01.63]     Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Committed_write_concern_uncertainty_resolves_original_receipt [FAIL]
+[xUnit.net 00:00:01.63]     Diten.SupplyChainService.Tests.SandopPlans.SandopAtomicityTests.Unknown_commit_without_receipt_returns_unresolved_then_exact_key_recovers [FAIL]
+Results File: /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-mod0190-http-dev-02/sandop.trx
+
+Failed!  - Failed:     3, Passed:    16, Skipped:     0, Total:    19, Duration: 573 ms - Diten.SupplyChainService.Tests.dll (net8.0)

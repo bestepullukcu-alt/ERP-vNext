@@ -1,0 +1,33 @@
+Q88b NETCHECK 27017 — result: 0 connections to 27017 by any lane process during tests (step 4) and runtime (step 5)
+
+Window: sampler start 2026-10-01 13:58:58 +0200 (before compose/build) -> stop after lane cleanup
+Owner dev mongod: pid 758, 127.0.0.1:27017 + [::1]:27017 — not started, stopped or touched by this lane
+
+1. lsof sampler (1/s): 1470 samples; baseline client ports 24; seen 27; NEW 3 (49670, 49680, 50049).
+   Every sampled socket on 27017 — both the client side and the server side — belongs to pid 758 (the only pid in the samples).
+2. dev mongod log from line 1147098+1: 129 lines; "Connection accepted": 3 — the same three ports. Their client metadata (system time, +02):
+      14:49:04 127.0.0.1:49670 application.name = None · driver = NetworkInterfaceTL-ReplicaSetMonitor-TaskExecutor 8.0.18
+      15:10:03 127.0.0.1:49680 application.name = None · driver = NetworkInterfaceTL-ReplicaSetMonitor-TaskExecutor 8.0.18
+      15:11:44 127.0.0.1:50049 application.name = None · driver = NetworkInterfaceTL-ReplicaSetMonitor-TaskExecutor 8.0.18
+   Attribution: 'NetworkInterfaceTL-ReplicaSetMonitor-TaskExecutor' is the mongod server's INTERNAL replica-set monitor: the dev mongod (pid 758, itself a
+   replica-set member) reconnecting to itself. It is not a client driver: lane services use the .NET driver, the kit and fixtures use mongosh, and
+   both announce other names. The 24 baseline connections are of the same self-connection kind (all owned by pid 758).
+3. kit netcheck (every lane service PID, ESTABLISHED connections to :27017):
+   kit-a1/raw/netcheck-a1.tsv
+     service	pid	connections_to_27017	connections_to_lane_mongo
+     auth	2929	0	4
+     platform	3039	0	11
+     mdm	3226	0	3
+     supplychain	3300	0	3
+     gateway	3394	0	0
+     web	3481	0	0
+   kit-a1/raw/netcheck-a2.tsv
+     service	pid	connections_to_27017	connections_to_lane_mongo
+     auth	2929	0	4
+     platform	3039	0	23
+     mdm	3226	0	3
+     supplychain	3300	0	4
+     gateway	3394	0	0
+     web	3481	0	0
+4. config: K04 'no 27017' PASS; tests used only mvp6-test-mongo-env.sh --slot 5 (35994; refuses 27017-27021 and >= 49152). Lane mongods: 127.0.0.1:35994 only. 57192 never used.
+Positive control: not run (the prompt forbids connecting to 27017).

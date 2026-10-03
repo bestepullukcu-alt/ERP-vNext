@@ -1,0 +1,16 @@
+./ACCEPTANCE-MATRIX.md: OK
+./EVIDENCE-MANIFEST.sha256: OK
+./EVIDENCE-MANIFEST.verify.txt: OK
+./NO-CHANGE.md: OK
+./SOP-22.md: OK
+./authority/MOD-0186-reverse-logistics.md: OK
+./authority/PHASE15.md: OK
+./authority/error-matrix.tsv: OK
+./authority/operation-status.tsv: OK
+./authority/shipment-root-semantics-v3.0.0.md: OK
+./manifests/combined-source-manifest.tsv: OK
+./manifests/integration-source-baseline.tar.gz: OK
+./manifests/returns-source-manifest.tsv: OK
+./manifests/source-inventory.json: OK
+./raw-evidence.tar.gz: OK
+./writer-complete.json: OK

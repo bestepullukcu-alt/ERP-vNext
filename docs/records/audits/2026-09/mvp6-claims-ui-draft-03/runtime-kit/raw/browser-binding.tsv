@@ -1,0 +1,5 @@
+kind	url_or_path	source_path	http	observed	expected	result
+served-asset	/assets/js/SupplyChain/Claims/index.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js	200	95f796844177e6a959ef4f107b97a4826257bfa6be00d2f53e4ff1ea1fc25c51	95f796844177e6a959ef4f107b97a4826257bfa6be00d2f53e4ff1ea1fc25c51	match
+served-asset	/assets/js/dt-defaults.js	frontend/Diten.Web/wwwroot/assets/js/dt-defaults.js	200	9637beb5f9906a1d48c59e3f4de3e4c8db861a5d5aaef0fdefb0d6e9c8ab1614	9637beb5f9906a1d48c59e3f4de3e4c8db861a5d5aaef0fdefb0d6e9c8ab1614	match
+browser-url	http://127.0.0.1:5801/SupplyChain/Claims	-	-	127.0.0.1:5801	127.0.0.1:5801	match
+served-override	q64e-v2-index-js-baseline	6a4c01cfb10e6ba2b1dc6dda9ae6bd8560a4089110a73a03372f37c1b43c6c53	-	6a4c01cfb10e6ba2b1dc6dda9ae6bd8560a4089110a73a03372f37c1b43c6c53	pre-serve record == every served body	match

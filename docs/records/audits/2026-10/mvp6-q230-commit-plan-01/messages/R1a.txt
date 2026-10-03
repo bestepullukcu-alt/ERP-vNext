@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: Shipment / MOD-0183 (part a)
+
+26 folders/items, first '(files at month level)', last 'mvp6-shipment-line-accessibility-independent-ver-01'.
+Work packages: as named in each folder.
+445 files from pathspec/R1a.txt (Q230 commit plan).

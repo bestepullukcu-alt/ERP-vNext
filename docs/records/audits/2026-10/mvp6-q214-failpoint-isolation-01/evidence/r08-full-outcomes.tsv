@@ -1,0 +1,418 @@
+start_local	test	outcome	duration
+20:02:39.436	ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "missing")	Passed	00:00:00.0380492
+20:02:39.447	ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "null")	Passed	00:00:00.0005907
+20:02:39.448	ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "malformed")	Passed	00:00:00.0000848
+20:02:39.449	ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "valid")	Passed	00:00:00.0009646
+20:02:39.450	ShipmentRootStorageTests.PresenceAwareRootStatesAreDistinct(fixture: "nil")	Passed	00:00:00.0000596
+20:02:39.451	ShipmentRootStorageTests.MaterializationDoesNotMutateRawDocument	Passed	00:00:00.0065111
+20:02:41.081	SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "warehouse")	Passed	00:00:01.6317694
+20:02:41.386	SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "order")	Passed	00:00:00.3046694
+20:02:41.541	SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "address")	Passed	00:00:00.1539095
+20:02:41.675	SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "orderRef")	Passed	00:00:00.1340738
+20:02:41.788	SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "quantity")	Passed	00:00:00.1132225
+20:02:41.901	SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "empty-lines")	Passed	00:00:00.1124847
+20:02:42.011	SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "status")	Passed	00:00:00.1093426
+20:02:42.119	SourceIntakeTests.ChangedSourceIsDriftAndNeverRewritesShipment(change: "lines")	Passed	00:00:00.1082668
+20:02:42.275	SourceIntakeTests.InvalidCorrelationAndDependencyFailuresCannotClaimSource	Passed	00:00:00.1547122
+20:02:42.515	SourceIntakeTests.EightConcurrentIntakesCommitOnceAndIdenticalReplayChangesNothing	Passed	00:00:00.2398378
+20:02:42.639	SourceIntakeTests.CancelledOrSoftDeletedShipmentKeepsSourceReserved(deleted: False)	Passed	00:00:00.1234680
+20:02:42.760	SourceIntakeTests.CancelledOrSoftDeletedShipmentKeepsSourceReserved(deleted: True)	Passed	00:00:00.1213082
+20:02:42.956	SourceIntakeTests.FailedTransactionRetainsOnlyPendingDefaultsAndRestartCommitsThoseExactDefaults	Passed	00:00:00.1949238
+20:02:43.060	SourceIntakeTests.TrustedSuppliedRootIsPreservedAsSourceAndLocalCorrelation	Passed	00:00:00.1037711
+20:02:43.196	SourceIntakeTests.SameSourceIdentityIsIsolatedByTenantAndLegalEntity	Passed	00:00:00.1358768
+20:02:43.198	Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "--1")	Passed	00:00:00.0005479
+20:02:43.199	Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "")	Passed	00:00:00.0000991
+20:02:43.200	Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "1e2")	Passed	00:00:00.0000058
+20:02:43.201	Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: " 1")	Passed	00:00:00.0000026
+20:02:43.202	Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "+1")	Passed	00:00:00.0000019
+20:02:43.203	Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: ".1")	Passed	00:00:00.0000017
+20:02:43.204	Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "1.")	Passed	00:00:00.0000019
+20:02:43.204	Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "١")	Passed	00:00:00.0000017
+20:02:43.205	Claims.ClaimAmountTests.Parse_WhenNotAsciiDecimal_Rejects(text: "1 ")	Passed	00:00:00.0000020
+20:02:43.210	Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "1.0000000000000000000000000000000000001", right: "1", expected: 1)	Passed	00:00:00.0006417
+20:02:43.211	Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "000250.00", right: "250", expected: 0)	Passed	00:00:00.0001405
+20:02:43.214	Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "99999999999999999999999999999999999999", right: "100000000000000000000000000000000000000", expected: -1)	Passed	00:00:00.0000063
+20:02:43.215	Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "-1.0000000000000000000000000000000000001", right: "-1", expected: -1)	Passed	00:00:00.0000073
+20:02:43.216	Claims.ClaimAmountTests.Comparison_WhenBeyondDecimalPrecision_IsExact(left: "-0", right: "0", expected: 0)	Passed	00:00:00.0000052
+20:02:43.217	Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "-0", positive: False, negative: False)	Passed	00:00:00.0001519
+20:02:43.217	Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "0.0000000000000000000000000000000000000001", positive: True, negative: False)	Passed	00:00:00.0022615
+20:02:43.218	Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "-0.000", positive: False, negative: False)	Passed	00:00:00.0000056
+20:02:43.219	Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "-0.01", positive: False, negative: True)	Passed	00:00:00.0000036
+20:02:43.220	Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "0", positive: False, negative: False)	Passed	00:00:00.0000029
+20:02:43.220	Claims.ClaimAmountTests.Parse_WhenValid_PreservesLexemeAndNumericSign(text: "000250.00", positive: True, negative: False)	Passed	00:00:00.0000037
+20:02:43.532	Claims.ClaimAmountTests.Approval_ZeroRetainedThroughSettlementAndClosure_ExactBsonStrings	Passed	00:00:00.3301461
+20:02:43.924	SandopPlans.SandopAtomicityTests.Unavailable_dependency_returns_declared_503	Passed	00:00:00.3907580
+20:02:43.973	SandopPlans.SandopAtomicityTests.Receipt_insert_failure_after_plan_write_rolls_back_and_same_key_retries	Passed	00:00:00.0488890
+20:02:49.849	SandopPlans.SandopAtomicityTests.Committed_write_concern_uncertainty_resolves_original_receipt	Passed	00:00:05.8748739
+20:02:59.886	SandopPlans.SandopAtomicityTests.Unknown_commit_without_receipt_returns_unresolved_then_exact_key_recovers	Passed	00:00:10.0357608
+20:02:59.945	SandopPlans.SandopAtomicityTests.Checksum_mismatch_produces_422_and_no_capture_effects	Passed	00:00:00.0588705
+20:02:59.969	SandopPlans.SandopAtomicityTests.Invalid_fixture_creates_nothing_in_five_effect_collections	Passed	00:00:00.0229537
+20:03:00.034	SandopPlans.SandopAtomicityTests.Mongo_unique_index_rejects_definite_duplicate_plan_without_partial_effect	Passed	00:00:00.0651042
+20:03:00.056	CapacityPlans.CapacityReplayTests.Fingerprint_uses_decoded_business_body_and_exact_target	Passed	00:00:00.0198766
+20:03:00.086	Claims.ClaimIsolationTests.Component_UnauthenticatedPrecedesBadHeader	Passed	00:00:00.0293742
+20:03:00.087	Claims.ClaimIsolationTests.FamilyMatch_IsSegmentBounded(path: "/api/shipment-bundle/claims/123/transition", match: True)	Passed	00:00:00.0002948
+20:03:00.088	Claims.ClaimIsolationTests.FamilyMatch_IsSegmentBounded(path: "/api/shipment-bundle/claims", match: True)	Passed	00:00:00.0002370
+20:03:00.089	Claims.ClaimIsolationTests.FamilyMatch_IsSegmentBounded(path: "/api/shipment-bundle/returns", match: False)	Passed	00:00:00.0000111
+20:03:00.091	Claims.ClaimIsolationTests.FamilyMatch_IsSegmentBounded(path: "/api/shipment-bundle/claimsXYZ", match: False)	Passed	00:00:00.0000072
+20:03:00.098	Claims.ClaimIsolationTests.Component_UnusableTrustedIdentityForbidden(kind: "duplicate")	Passed	00:00:00.0036906
+20:03:00.099	Claims.ClaimIsolationTests.Component_UnusableTrustedIdentityForbidden(kind: "missing")	Passed	00:00:00.0006188
+20:03:00.100	Claims.ClaimIsolationTests.Component_UnusableTrustedIdentityForbidden(kind: "nil")	Passed	00:00:00.0064301
+20:03:00.102	Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: "{aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa}", valid: False)	Passed	00:00:00.0002298
+20:03:00.103	Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: "00000000-0000-0000-0000-000000000000", valid: True)	Passed	00:00:00.0002863
+20:03:00.104	Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA", valid: True)	Passed	00:00:00.0000079
+20:03:00.105	Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: " aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", valid: False)	Passed	00:00:00.0000053
+20:03:00.106	Claims.ClaimIsolationTests.WireUuid_AllowsNilButRequiresExactAsciiD(text: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", valid: False)	Passed	00:00:00.0000067
+20:03:00.107	Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "X-TENANT-ID")	Passed	00:00:00.0080176
+20:03:00.109	Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "legal_ENTITY_id")	Passed	00:00:00.0006613
+20:03:00.110	Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "tenant_ID")	Passed	00:00:00.0002501
+20:03:00.111	Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "LEGALENTITYID")	Passed	00:00:00.0002075
+20:03:00.112	Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "x-LEGAL-entity-ID")	Passed	00:00:00.0009349
+20:03:00.113	Claims.ClaimIsolationTests.Component_QueryScopeAliasesRejectAfterSingleDecode(key: "TeNaNtId")	Passed	00:00:00.0003443
+20:03:00.114	Claims.ClaimIsolationTests.Component_InvalidCorrelationHasGeneratedRejectionTrace(value: null)	Passed	00:00:00.0035935
+20:03:00.115	Claims.ClaimIsolationTests.Component_InvalidCorrelationHasGeneratedRejectionTrace(value: "not-a-uuid")	Passed	00:00:00.0008065
+20:03:00.116	Claims.ClaimIsolationTests.Component_InvalidIdempotencyKeysRejectWithoutCallingDownstream(kind: "empty")	Passed	00:00:00.0013734
+20:03:00.117	Claims.ClaimIsolationTests.Component_InvalidIdempotencyKeysRejectWithoutCallingDownstream(kind: "duplicate")	Passed	00:00:00.0005352
+20:03:00.125	Claims.ClaimIsolationTests.Component_InvalidIdempotencyKeysRejectWithoutCallingDownstream(kind: "overlong")	Passed	00:00:00.0003473
+20:03:00.128	Claims.ClaimIsolationTests.Component_ScalarKeyIsNotSplitOrCountedAsUtf16(kind: "unicode")	Passed	00:00:00.0028652
+20:03:00.129	Claims.ClaimIsolationTests.Component_ScalarKeyIsNotSplitOrCountedAsUtf16(kind: "comma,inside")	Passed	00:00:00.0005116
+20:03:00.130	Claims.ClaimIsolationTests.Component_OptionalScopeMismatchForbidden	Passed	00:00:00.0009803
+20:03:00.131	Claims.ClaimIsolationTests.Component_OrdinaryUnknownQueryAndNilTraceProceedWithSignedScope	Passed	00:00:00.0037880
+20:03:00.250	SandopPlans.SandopLifecycleTests.Create_capture_signoff_preserves_prior_snapshot_and_draft_to_inreview	Passed	00:00:00.1235639
+20:03:00.382	SandopPlans.SandopLifecycleTests.All_five_role_decisions_leave_plan_in_review_and_outbox_pending	Passed	00:00:00.1318711
+20:03:00.383	Claims.ClaimContractTests.Instant_ValidatesWithoutPrecisionNarrowing(instant: "2026-09-20T12:34:56.1234567890123456789+03:00", valid: True)	Passed	00:00:00.0007159
+20:03:00.384	Claims.ClaimContractTests.Instant_ValidatesWithoutPrecisionNarrowing(instant: "2026-09-20T12:00:00", valid: False)	Passed	00:00:00.0002214
+20:03:00.386	Claims.ClaimContractTests.Instant_ValidatesWithoutPrecisionNarrowing(instant: "2026-02-30T12:00:00Z", valid: False)	Passed	00:00:00.0000118
+20:03:00.387	Claims.ClaimContractTests.Create_SchemaInvalidMembers_Reject(extra: ",\"reasonCode\":\"duplicate\"")	Passed	00:00:00.0024732
+20:03:00.387	Claims.ClaimContractTests.Create_SchemaInvalidMembers_Reject(extra: ",\"tenantId\":\"x\"")	Passed	00:00:00.0001566
+20:03:00.388	Claims.ClaimContractTests.Create_SchemaInvalidMembers_Reject(extra: ",\"evidenceReferenceIds\":null")	Passed	00:00:00.0002653
+20:03:00.389	Claims.ClaimContractTests.Create_NumberTokenCannotReplaceDecimalString	Passed	00:00:00.0002123
+20:03:00.390	Claims.ClaimContractTests.Create_OpaqueEvidencePreservesEmptyDuplicatesOrder	Passed	00:00:00.0025371
+20:03:00.396	Shipments.ShipmentTrackingPodManifestProviderTests.Declares_exact_three_page_topology_and_existing_permissions	Passed	00:00:00.0067102
+20:03:00.460	SandopPlans.SandopReplayTests.All_three_mutations_replay_without_duplicate_effects_or_fixture_reread	Passed	00:00:00.0629425
+20:03:00.489	SandopPlans.SandopReplayTests.Exact_key_replays_original_body_without_second_effect_and_changed_payload_conflicts	Passed	00:00:00.0287843
+20:03:00.512	SandopPlans.SandopReplayTests.Replay_survives_new_client_and_does_not_reread_fixture	Passed	00:00:00.0226347
+20:03:00.548	SandopPlans.SandopReplayTests.Exact_key_is_not_trimmed	Passed	00:00:00.0359234
+20:03:01.163	CapacityPlans.CapacityAtomicityTests.Fixture_mutations_and_fenced_terminal_are_durable_and_single_effect	Passed	00:00:00.6140342
+20:03:01.647	CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-time")	Passed	00:00:00.4835408
+20:03:02.106	CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-status")	Passed	00:00:00.4585423
+20:03:02.611	CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-causation")	Passed	00:00:00.5053088
+20:03:03.055	CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-duplicate")	Passed	00:00:00.4434659
+20:03:03.533	CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-missing")	Passed	00:00:00.4783275
+20:03:04.000	CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-correlation")	Passed	00:00:00.4666791
+20:03:04.466	CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-duplicate")	Passed	00:00:00.4657971
+20:03:04.986	CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-correlation")	Passed	00:00:00.5188853
+20:03:05.509	CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-time")	Passed	00:00:00.5234940
+20:03:06.032	CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "slot-not-released")	Passed	00:00:00.5222069
+20:03:06.549	CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "event-payload")	Passed	00:00:00.5163985
+20:03:07.063	CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-status")	Passed	00:00:00.5141635
+20:03:07.579	CapacityPlans.CapacityFaultTests.X07_Scoped_terminal_reconciliation_rejects_inexact_effects(mutant: "audit-missing")	Passed	00:00:00.5153302
+20:03:08.092	CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "event-exact", aggregateSkip: 1)	Passed	00:00:00.5126205
+20:03:08.620	CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "audit-broad", aggregateSkip: 2)	Passed	00:00:00.5285211
+20:03:09.109	CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "active-slot", aggregateSkip: 4)	Passed	00:00:00.4886704
+20:03:09.589	CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "event-broad", aggregateSkip: 0)	Passed	00:00:00.4791354
+20:03:10.046	CapacityPlans.CapacityFaultTests.X07_Each_later_reconciliation_read_failure_is_fail_closed(boundary: "audit-exact", aggregateSkip: 3)	Passed	00:00:00.4574189
+20:03:10.503	CapacityPlans.CapacityFaultTests.X01_Accepted_commit_ack_loss_recovers_original_scoped_receipt	Passed	00:00:00.4566194
+20:03:10.954	CapacityPlans.CapacityFaultTests.X07_Scoped_reconciliation_read_failure_is_not_success	Passed	00:00:00.4501509
+20:03:11.408	CapacityPlans.CapacityFaultTests.X06_Terminal_fault_after_staged_update_and_slot_delete_rolls_back_then_fence_recovers	Passed	00:00:00.4541691
+20:03:11.917	CapacityPlans.CapacityFaultTests.X01_Accepted_precommit_failure_has_no_partial_writes_then_same_key_recovers	Passed	00:00:00.5089907
+20:03:12.916	CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_no_commit_is_reconciled_before_fenced_retry	Passed	00:00:00.9977891
+20:03:13.437	CapacityPlans.CapacityFaultTests.X01_Unknown_commit_without_receipt_stays_unresolved	Passed	00:00:00.5209062
+20:04:23.389	CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_ack_loss_keeps_one_scoped_terminal_effect	Passed	00:01:09.9520564
+20:04:24.155	CapacityPlans.CapacityConcurrencyTests.Duplicate_policy_preserves_replay_precedence_scope_and_non_name_duplicate_failures	Passed	00:00:00.7616632
+20:04:24.725	CapacityPlans.CapacityConcurrencyTests.Proven_name_index_race_loser_converges_to_name_conflict_without_extra_write_set	Passed	00:00:00.5699220
+20:04:25.365	CapacityPlans.CapacityConcurrencyTests.Twenty_distinct_keys_produce_one_active_evaluation	Passed	00:00:00.6402677
+20:04:25.862	CapacityPlans.CapacityIsolationTests.Invalid_fixture_and_foreign_or_deleted_scope_create_no_visible_data	Passed	00:00:00.4965478
+20:04:26.388	CapacityPlans.CapacityLeaseTests.Renewal_advances_version_without_attempt_and_rejects_old_terminal	Passed	00:00:00.5252534
+20:05:02.080	CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry	Passed	00:00:35.6909681
+20:05:02.082	CapacityPlans.CapacityRestartTests.ChildWorker	Passed	00:00:00.0021761
+20:05:02.085	Carriers.CarrierManagementManifestProviderTests.Declares_exact_tenant_page_and_three_existing_permissions	Passed	00:00:00.0028861
+20:05:02.497	Loads.LoadContractTests.FrozenThreeOperationWireAndSuccessfulCreateList	Passed	00:00:00.4114657
+20:05:02.646	Loads.LoadContractTests.DuplicateShipmentAndInvalidStopSequencesAreBusiness422ButReturnStopAndEmptyLocationStayAllowed	Passed	00:00:00.1487982
+20:05:02.801	Loads.LoadContractTests.EveryRequiredCreateFieldAndTransitionFieldIsEnforcedBeforeWrites	Passed	00:00:00.1544170
+20:05:02.905	Loads.LoadContractTests.SchemaUnknownFieldsAndNoExtraRoutesAreRejected	Passed	00:00:00.1037577
+20:05:03.020	Loads.LoadContractTests.CreateSchemaRejectsNullWrongTypeEnumsAndArrayBoundsWithoutInventingDefaults	Passed	00:00:00.1152511
+20:05:03.030	Carriers.CarrierModuleRegistrationHostedServiceTests.Sends_exact_manifest_with_supported_internal_key	Passed	00:00:00.0091015
+20:05:03.031	Carriers.CarrierModuleRegistrationHostedServiceTests.Missing_internal_key_fails_closed_without_request	Passed	00:00:00.0004036
+20:05:03.032	SandopPlans.SandopContractTests.Module_request_gate_requires_permission_and_preserves_exact_key_and_correlation	Passed	00:00:00.0020148
+20:05:03.033	SandopPlans.SandopContractTests.Fingerprint_normalizes_member_order_but_retains_decimal_lexeme_and_unicode	Passed	00:00:00.0001250
+20:05:03.033	SandopPlans.SandopContractTests.Schema_rejects_extra_fields_and_invalid_enums	Passed	00:00:00.0001101
+20:05:03.034	CapacityPlans.CapacityTestMongoTests.OperationalPorts_FailClosed(value: "mongodb://127.0.0.1:27017/?replicaSet=rs0")	Passed	00:00:00.0001310
+20:05:03.034	CapacityPlans.CapacityTestMongoTests.OperationalPorts_FailClosed(value: "mongodb://localhost/?replicaSet=rs0")	Passed	00:00:00.0003133
+20:05:03.035	CapacityPlans.CapacityTestMongoTests.ExplicitSelectionTimeout_IsKept	Passed	00:00:00.0020677
+20:05:03.036	CapacityPlans.CapacityTestMongoTests.MissingUri_FailsClosed(value: "")	Passed	00:00:00.0001950
+20:05:03.036	CapacityPlans.CapacityTestMongoTests.MissingUri_FailsClosed(value: null)	Passed	00:00:00.0001359
+20:05:03.037	CapacityPlans.CapacityTestMongoTests.MissingUri_FailsClosed(value: "   ")	Passed	00:00:00.0000374
+20:05:03.037	CapacityPlans.CapacityTestMongoTests.RemoteHostOrMissingReplicaSet_FailsClosed(value: "mongodb://db.example.test:31994/?replicaSet=rsq131")	Passed	00:00:00.0001950
+20:05:03.038	CapacityPlans.CapacityTestMongoTests.LaneReplicaSet_IsAccepted_AndKeepsTheFiveSecondSelectionTimeout	Passed	00:00:00.0003125
+20:05:03.038	CapacityPlans.CapacityTestMongoTests.RemoteHostOrMissingReplicaSet_FailsClosed(value: "mongodb://127.0.0.1:31994/")	Passed	00:00:00.0001080
+20:05:03.953	Carriers.CarrierContractTests.AllLifecyclePairs(from: "Suspended", to: "Retired", expected: 200)	Passed	00:00:00.9166963
+20:05:04.060	Carriers.CarrierContractTests.AllLifecyclePairs(from: "Retired", to: "Suspended", expected: 422)	Passed	00:00:00.1064921
+20:05:04.163	Carriers.CarrierContractTests.AllLifecyclePairs(from: "Suspended", to: "Suspended", expected: 422)	Passed	00:00:00.1026770
+20:05:04.267	Carriers.CarrierContractTests.AllLifecyclePairs(from: "Active", to: "Retired", expected: 200)	Passed	00:00:00.1037553
+20:05:04.365	Carriers.CarrierContractTests.AllLifecyclePairs(from: "Active", to: "Suspended", expected: 200)	Passed	00:00:00.0983715
+20:05:04.523	Carriers.CarrierContractTests.AllLifecyclePairs(from: "Retired", to: "Retired", expected: 422)	Passed	00:00:00.1574226
+20:05:04.713	Carriers.CarrierContractTests.AllLifecyclePairs(from: "Suspended", to: "Active", expected: 200)	Passed	00:00:00.1897745
+20:05:04.872	Carriers.CarrierContractTests.AllLifecyclePairs(from: "Retired", to: "Active", expected: 422)	Passed	00:00:00.1588863
+20:05:04.999	Carriers.CarrierContractTests.AllLifecyclePairs(from: "Active", to: "Active", expected: 422)	Passed	00:00:00.1260839
+20:05:05.152	Carriers.CarrierContractTests.EveryWriteFaultRollsBackCreateAndStatus(phase: "entity")	Passed	00:00:00.1529593
+20:05:05.295	Carriers.CarrierContractTests.EveryWriteFaultRollsBackCreateAndStatus(phase: "audit")	Passed	00:00:00.1432108
+20:05:05.409	Carriers.CarrierContractTests.EveryWriteFaultRollsBackCreateAndStatus(phase: "receipt")	Passed	00:00:00.1129025
+20:05:05.532	Carriers.CarrierContractTests.EveryWriteFaultRollsBackCreateAndStatus(phase: "beforeCommit")	Passed	00:00:00.1235940
+20:05:05.631	Carriers.CarrierContractTests.OrderedHeaderBodyAndReplayValidation	Passed	00:00:00.0980740
+20:05:05.736	Carriers.CarrierContractTests.ExactCreateListAndHistoricalReplay	Passed	00:00:00.1050670
+20:05:05.950	Carriers.CarrierContractTests.SimultaneousReplayAndCodeUniquenessHaveSingleWinners	Passed	00:00:00.2138761
+20:05:06.023	Carriers.CarrierContractTests.OperationPermissionsAreIndependent(grant: "status.change")	Passed	00:00:00.0729806
+20:05:06.094	Carriers.CarrierContractTests.OperationPermissionsAreIndependent(grant: "read")	Passed	00:00:00.0700395
+20:05:06.172	Carriers.CarrierContractTests.OperationPermissionsAreIndependent(grant: "create")	Passed	00:00:00.0781533
+20:05:06.298	Carriers.CarrierContractTests.BarrierSynchronizedDistinctTargetsEqualValidSerialHistory	Passed	00:00:00.1259577
+20:05:06.409	Carriers.CarrierContractTests.CanonicalFingerprintPreservesModeOrderDuplicatesAndStrings	Passed	00:00:00.1104478
+20:05:06.493	Carriers.CarrierContractTests.AfterCommitFailureRecoversByReceipt(unknown: True)	Passed	00:00:00.0841763
+20:05:06.573	Carriers.CarrierContractTests.AfterCommitFailureRecoversByReceipt(unknown: False)	Passed	00:00:00.0793994
+20:05:06.999	Carriers.CarrierContractTests.IndexCreationFailureIsNotIgnored	Passed	00:00:00.4262158
+20:05:07.084	Carriers.CarrierContractTests.ValidationStagesOneThroughFiveDoNotCallRepository	Passed	00:00:00.0849102
+20:05:07.220	Carriers.CarrierContractTests.HeaderBoundariesNilCorrelationAndSchemaStrings	Passed	00:00:00.1355247
+20:05:07.289	Carriers.CarrierContractTests.SignedDuplicateJsonContextMemberIsRejected	Passed	00:00:00.0680983
+20:05:07.428	Carriers.CarrierContractTests.StatusReplayFingerprintAndDeletedHistoricalReceipt	Passed	00:00:00.1391496
+20:05:07.493	Carriers.CarrierContractTests.DuplicateClaimsFailClosed(claim: "sub")	Passed	00:00:00.0646814
+20:05:07.574	Carriers.CarrierContractTests.DuplicateClaimsFailClosed(claim: "legal_entity_id")	Passed	00:00:00.0810601
+20:05:07.636	Carriers.CarrierContractTests.DuplicateClaimsFailClosed(claim: "tenant_id")	Passed	00:00:00.0621556
+20:05:07.742	Carriers.CarrierContractTests.ConcurrentDifferentPayloadUsesFirstCommittedReceipt	Passed	00:00:00.1052788
+20:05:07.900	Carriers.CarrierContractTests.TwoByTwoScopesDeletedReservationsAndReceiptVisibility	Passed	00:00:00.1582604
+20:05:08.027	ShipmentTests.NormalizedReplayAndCrossScopeListRemainIsolated	Passed	00:00:00.1265058
+20:05:08.192	ShipmentTests.PodNoteBoundaryCountsScalarsAndRejectsWithoutWrites	Passed	00:00:00.1649643
+20:05:08.287	ShipmentTests.CancelPermissionIsRequiredAndCannotDispatch	Passed	00:00:00.0945796
+20:05:08.423	ShipmentTests.UnicodeQuantityIsRejectedBeforeAnyPersistence	Passed	00:00:00.1358516
+20:05:08.526	ShipmentTests.FailureBeforeCommitRollsBackEveryRecordAndRetrySucceeds	Passed	00:00:00.1026642
+20:05:08.634	ShipmentTests.OutboxRetryPreservesCanonicalBytesAndIdentity	Passed	00:00:00.1076929
+20:05:08.738	ShipmentTests.TransitionNoteBoundaryCountsScalarsAndRejectsWithoutWrites	Passed	00:00:00.1035626
+20:05:08.969	ShipmentTests.AllowedBranchesAndPodFailureHaveAtomicHistory	Passed	00:00:00.2311821
+20:05:09.108	ShipmentTests.Scope_Rbac_Schema_AndCorrelationFailClosed	Passed	00:00:00.1387150
+20:05:09.380	ShipmentTests.GoldenFlow_Replay_Outbox_AndRestartAreDurable	Passed	00:00:00.2711179
+20:05:09.568	ShipmentTests.ReplayConflict_AndConcurrentCreateOrTransitionProduceOneWinner	Passed	00:00:00.1884133
+20:05:10.303	ShipmentTests.EveryForbiddenTransitionLeavesPersistenceUnchanged	Passed	00:00:00.7345547
+20:05:10.475	Loads.LoadReferenceTests.PendingOutboxAndHistoricalReplaySurviveApiRestart	Passed	00:00:00.1711311
+20:05:10.593	Loads.LoadReferenceTests.FreshRetryReobservesDependenciesButSuccessfulReplayDoesNot	Passed	00:00:00.1182606
+20:05:10.728	Loads.LoadReferenceTests.UpstreamAuthServerAndUnexpectedStatusesFailClosedAsSpecified	Passed	00:00:00.1344777
+20:05:10.832	Loads.LoadReferenceTests.ReferencesAreGetOnlyAndCarryTrustedScopeAndCorrelation	Passed	00:00:00.1034941
+20:05:10.939	Loads.LoadReferenceTests.CarrierAndShipmentReferenceProfilesFailClosedOnMissingOrContradictoryData	Passed	00:00:00.1072300
+20:05:11.055	Loads.LoadReferenceTests.BusinessReferenceOutcomesMatchApprovedCarrierAndShipmentRules	Passed	00:00:00.1161262
+20:05:11.056	ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: null, expected: True)	Passed	00:00:00.0006356
+20:05:11.057	ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"···, expected: True)	Passed	00:00:00.0001923
+20:05:11.057	ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "ééééééééééééééééééééééééé"···, expected: False)	Passed	00:00:00.0000863
+20:05:11.058	ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "", expected: True)	Passed	00:00:00.0000349
+20:05:11.059	ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"···, expected: False)	Passed	00:00:00.0000615
+20:05:11.059	ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"···, expected: True)	Passed	00:00:00.0000559
+20:05:11.060	ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00"···, expected: True)	Passed	00:00:00.0000488
+20:05:11.060	ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "ééééééééééééééééééééééééé"···, expected: True)	Passed	00:00:00.0000451
+20:05:11.061	ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00"···, expected: False)	Passed	00:00:00.0000867
+20:05:11.061	ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"···, expected: False)	Passed	00:00:00.0000496
+20:05:11.062	ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "３０.０００", expected: False)	Passed	00:00:00.0001789
+20:05:11.063	ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: ".5", expected: False)	Passed	00:00:00.0000265
+20:05:11.063	ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "0", expected: True)	Passed	00:00:00.0001243
+20:05:11.063	ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "٣٠.٠٠٠", expected: False)	Passed	00:00:00.0000263
+20:05:11.064	ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "000.010", expected: True)	Passed	00:00:00.0000200
+20:05:11.064	ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "30.", expected: False)	Passed	00:00:00.0000235
+20:05:11.065	ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "1e3", expected: False)	Passed	00:00:00.0000220
+20:05:11.065	ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "30.000", expected: True)	Passed	00:00:00.0000220
+20:05:11.066	ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "+30", expected: False)	Passed	00:00:00.0000220
+20:05:11.066	ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "-30.000", expected: True)	Passed	00:00:00.0000185
+20:05:11.067	ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "3٠.000", expected: False)	Passed	00:00:00.0000229
+20:05:11.067	ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "۳۰.۰۰۰", expected: False)	Passed	00:00:00.0000209
+20:05:11.068	ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "", expected: True)	Passed	00:00:00.0001109
+20:05:11.068	ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"···, expected: True)	Passed	00:00:00.0001883
+20:05:11.069	ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"···, expected: True)	Passed	00:00:00.0000343
+20:05:11.069	ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "ééééééééééééééééééééééééé"···, expected: False)	Passed	00:00:00.0000391
+20:05:11.070	ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00"···, expected: True)	Passed	00:00:00.0000368
+20:05:11.070	ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "ééééééééééééééééééééééééé"···, expected: True)	Passed	00:00:00.0000335
+20:05:11.070	ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: null, expected: True)	Passed	00:00:00.0000206
+20:05:11.071	ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"···, expected: False)	Passed	00:00:00.0000437
+20:05:11.071	ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"···, expected: False)	Passed	00:00:00.0000357
+20:05:11.072	ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00"···, expected: False)	Passed	00:00:00.0000405
+20:05:11.106	SandopPlans.SandopConcurrencyTests.Concurrent_different_keys_cannot_record_same_role_twice	Passed	00:00:00.0476184
+20:05:11.124	Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "beforeCommit")	Passed	00:00:00.0176003
+20:05:11.137	Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "receipt")	Passed	00:00:00.0131343
+20:05:11.151	Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "outbox")	Passed	00:00:00.0137793
+20:05:11.164	Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "aggregate")	Passed	00:00:00.0119318
+20:05:11.177	Claims.ClaimAtomicityTests.Mutation_FailureAfterDistinctWriteStage_RollsBackAllFourCollections(fault: "audit")	Passed	00:00:00.0130510
+20:05:11.366	Claims.ClaimAtomicityTests.Storage_CapacityExceeded_FailsWithoutPartialDocuments	Passed	00:00:00.1890513
+20:05:11.466	Claims.ClaimAtomicityTests.DriverCapacityFailure_HasMeasuredExceptionType	Passed	00:00:00.0992825
+20:05:11.492	Claims.ClaimAtomicityTests.Mutation_ResponseLostAfterCommit_RecoversOriginalReceiptWithoutSecondWrite	Passed	00:00:00.0263650
+20:05:11.729	Claims.ClaimAtomicityTests.MissingUniqueIndex_FailsClosedBeforeAnyWrite	Passed	00:00:00.2361717
+20:05:11.882	Loads.LoadConcurrencyTests.ConcurrentPlannedAndCancelledTransitionsProduceOnlyASerialLifecycle	Passed	00:00:00.1529792
+20:05:12.006	Loads.LoadConcurrencyTests.CompetingCreatesForOneShipmentCommitExactlyOneOwner	Passed	00:00:00.1239430
+20:05:12.127	Loads.LoadConcurrencyTests.ConcurrentSameKeyRequestsProduceOneCommitAndOneDurableReplay	Passed	00:00:00.1209702
+20:05:12.260	Loads.LoadConcurrencyTests.RetryAfterCancellationNeverDeletesNewOwnersAssignment	Passed	00:00:00.1327222
+20:05:12.263	CapacityPlans.CapacityContractTests.Request_does_not_accept_client_scope_or_unknown_fields	Passed	00:00:00.0019517
+20:05:12.263	CapacityPlans.CapacityContractTests.Scenario_name_conflict_uses_the_exact_successor_message	Passed	00:00:00.0005599
+20:05:12.265	CapacityPlans.CapacityContractTests.Plan_projection_has_published_wire_keys_and_provenance	Passed	00:00:00.0022128
+20:05:12.579	Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "receipt", reached: 3)	Passed	00:00:00.3137942
+20:05:12.607	Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "aggregate", reached: 2)	Passed	00:00:00.0271424
+20:05:12.641	Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "outbox", reached: 5)	Passed	00:00:00.0339833
+20:05:12.668	Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "entitlement", reached: 1)	Passed	00:00:00.0266048
+20:05:12.697	Returns.ReturnAtomicityTests.PrecommitFault_EachActualWriteStage_RollsBackAllFive(stage: "audit", reached: 4)	Passed	00:00:00.0286991
+20:05:12.712	Returns.ReturnAtomicityTests.MultilineFailure_SecondLineOverCap_LeavesNoFirstLineDebit	Passed	00:00:00.0155744
+20:06:22.847	Returns.ReturnAtomicityTests.UnknownCommit_Unresolved503_AllOrNoneThenSameKeyRecovery	Passed	00:01:10.1344764
+20:06:22.895	Returns.ReturnAtomicityTests.PostCommitResponseLoss_RecoversOriginalReceipt_NotZeroWrites	Passed	00:00:00.0472011
+20:06:22.938	Returns.ReturnConcurrencyTests.FirstSnapshot_IdentityOrOrdinalUomDrift_Returns409(field: "uom")	Passed	00:00:00.0428242
+20:06:22.974	Returns.ReturnConcurrencyTests.FirstSnapshot_IdentityOrOrdinalUomDrift_Returns409(field: "item")	Passed	00:00:00.0352767
+20:06:23.007	Returns.ReturnConcurrencyTests.FirstSnapshot_IdentityOrOrdinalUomDrift_Returns409(field: "sku")	Passed	00:00:00.0332389
+20:06:23.059	Returns.ReturnConcurrencyTests.FirstSnapshot_NumericEquivalentAllowed_DriftConflictsAtomically	Passed	00:00:00.0516395
+20:06:23.106	Returns.ReturnConcurrencyTests.Create_Races_RespectsExactCap(first: "4", second: "6", successes: 2)	Passed	00:00:00.0467796
+20:06:23.134	Returns.ReturnConcurrencyTests.Create_Races_RespectsExactCap(first: "6", second: "6", successes: 1)	Passed	00:00:00.0274412
+20:06:23.248	Returns.ReturnConcurrencyTests.RmaNumber_KnownCollision_MaxThreeAttemptsAndAtomicRecovery	Passed	00:00:00.1136432
+20:06:23.340	Returns.ReturnConcurrencyTests.ClosedAndManualReceived_RetainEntitlementOpaqueReferenceAndPendingEvents	Passed	00:00:00.0923617
+20:06:23.392	Returns.ReturnConcurrencyTests.Release_ReplayAndDifferentKey_DebitsExactlyOnce(target: Rejected)	Passed	00:00:00.0518435
+20:06:23.455	Returns.ReturnConcurrencyTests.Release_ReplayAndDifferentKey_DebitsExactlyOnce(target: Cancelled)	Passed	00:00:00.0627776
+20:06:23.635	Returns.ReturnConcurrencyTests.SameKey_TwentyConcurrentCalls_OneAggregateReceiptEvent	Passed	00:00:00.1792135
+20:06:24.006	Returns.ReturnConcurrencyTests.Entitlement_DefaultCaseInsensitiveCollection_UsesExplicitOrdinalOperations	Passed	00:00:00.3705212
+20:06:24.026	Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "scope-query", expected: 400)	Passed	00:00:00.0193052
+20:06:24.027	Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "unauthenticated", expected: 401)	Passed	00:00:00.0001432
+20:06:24.027	Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "unknown-query", expected: 200)	Passed	00:00:00.0003463
+20:06:24.028	Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "foreign-scope", expected: 404)	Passed	00:00:00.0000538
+20:06:24.028	Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "untrusted", expected: 403)	Passed	00:00:00.0000431
+20:06:24.029	Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "missing-root", expected: 400)	Passed	00:00:00.0000492
+20:06:24.029	Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "valid", expected: 200)	Passed	00:00:00.0000297
+20:06:24.030	Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "duplicate-root", expected: 400)	Passed	00:00:00.0000404
+20:06:24.030	Returns.ReturnIsolationTests.Middleware_PostAuthenticationUnit_OrderedContextMatrix(variant: "missing-scope", expected: 400)	Passed	00:00:00.0000967
+20:06:24.065	Returns.ReturnIsolationTests.SoftDelete_HidesAggregate_PreservesReceiptAndEntitlement	Passed	00:00:00.0386441
+20:06:24.103	Returns.ReturnIsolationTests.Receipt_SameKeyDifferentLegalEntity_IsIndependent	Passed	00:00:00.0374646
+20:06:24.104	Returns.ReturnIsolationTests.Permissions_ReturnsSpecificTargets_HaveNoClaimsInheritance	Passed	00:00:00.0008407
+20:06:24.133	Returns.ReturnIsolationTests.Scope_AnotherTenantOrLE_CannotReadMutateOrReplay	Passed	00:00:00.0291477
+20:06:26.416	Returns.ReturnLifecycleTests.Entitlement_OnlyRejectedCancelled_Release	Passed	00:00:00.0005578
+20:06:26.416	Returns.ReturnLifecycleTests.Lifecycle_ActualRepository_All64PairsRejectWithoutWrites	Passed	00:00:02.2821302
+20:06:26.417	Returns.ReturnLifecycleTests.Lifecycle_All64Pairs_MatchesSevenCanonicalArrows	Passed	00:00:00.0002798
+20:06:26.422	Returns.ReturnReferenceTests.Root_Unusable_ExactFailure(value: "null", status: 503, code: "RETURN_SHIPMENT_ROOT_UNAVAILABLE")	Passed	00:00:00.0048769
+20:06:26.423	Returns.ReturnReferenceTests.Root_Unusable_ExactFailure(value: "", status: 502, code: "RETURN_SHIPMENT_ROOT_INVALID")	Passed	00:00:00.0000713
+20:06:26.423	Returns.ReturnReferenceTests.Root_Unusable_ExactFailure(value: "missing", status: 503, code: "RETURN_SHIPMENT_ROOT_UNAVAILABLE")	Passed	00:00:00.0004624
+20:06:26.424	Returns.ReturnReferenceTests.Root_Unusable_ExactFailure(value: "bad", status: 502, code: "RETURN_SHIPMENT_ROOT_INVALID")	Passed	00:00:00.0000579
+20:06:26.436	Returns.ReturnReferenceTests.LocalInvalidQuantity_RejectsBeforeReferenceLookup(quantity: "0")	Passed	00:00:00.0133790
+20:06:26.448	Returns.ReturnReferenceTests.LocalInvalidQuantity_RejectsBeforeReferenceLookup(quantity: "-0.00")	Passed	00:00:00.0121050
+20:06:26.461	Returns.ReturnReferenceTests.LocalInvalidQuantity_RejectsBeforeReferenceLookup(quantity: "-1")	Passed	00:00:00.0123121
+20:06:26.466	Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 500, body: "{\"error\":{\"code\":\"INTERNAL_ERROR\"},\"contrac"···)	Passed	00:00:00.0052336
+20:06:26.467	Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 500, body: "not-json")	Passed	00:00:00.0008660
+20:06:26.467	Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 500, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···)	Passed	00:00:00.0002962
+20:06:26.471	Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 501, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···)	Passed	00:00:00.0000788
+20:06:26.472	Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 401, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···)	Passed	00:00:00.0000712
+20:06:26.472	Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 403, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···)	Passed	00:00:00.0000692
+20:06:26.473	Returns.ReturnReferenceTests.MalformedSuccessfulRoot_RemainsReturnsRootInvalid	Passed	00:00:00.0039775
+20:06:26.485	Returns.ReturnReferenceTests.LocalDuplicateLines_RejectsBeforeReferenceLookup	Passed	00:00:00.0133906
+20:06:26.486	Returns.ReturnReferenceTests.Reference_DuplicateOrNonpositiveLines_RejectsMalformed	Passed	00:00:00.0007771
+20:06:26.487	Returns.ReturnReferenceTests.Reference_MockedTransport_OnlyShipmentGetAndTrustedScope	Passed	00:00:00.0012516
+20:06:26.488	Returns.ReturnReferenceTests.ProducerShipmentRootInvalid500_MapsToReturnsRootInvalid	Passed	00:00:00.0008643
+20:06:26.489	Returns.ReturnReferenceTests.RefusedProducer_RemainsDependencyUnavailable	Passed	00:00:00.0008723
+20:06:26.490	Returns.ReturnReferenceTests.Reference_Omission_RequiredVersusOptionalDecisionField(key: "shipmentId", status: 503)	Passed	00:00:00.0002076
+20:06:26.490	Returns.ReturnReferenceTests.Root_PersistedNil_IsPreserved	Passed	00:00:00.0001155
+20:06:26.490	Returns.ReturnReferenceTests.TimedOutProducer_RemainsDependencyUnavailable	Passed	00:00:00.0006059
+20:06:26.491	Returns.ReturnReferenceTests.Reference_Omission_RequiredVersusOptionalDecisionField(key: "sourceModule", status: 502)	Passed	00:00:00.0002129
+20:06:26.491	Returns.ReturnReferenceTests.Reference_Omission_RequiredVersusOptionalDecisionField(key: "status", status: 503)	Passed	00:00:00.0000583
+20:06:26.521	Returns.ReturnReplayTests.Receipt_RootBeforePayload_AndCurrentActorDoesNotRewriteAudit	Passed	00:00:00.0299839
+20:06:26.546	Returns.ReturnReplayTests.RawCreateAudit_PreservesUuidSpellingAndOmission_WhileFingerprintNormalizes	Passed	00:00:00.0256302
+20:06:26.572	Returns.ReturnReplayTests.RestartReceipt	Passed	00:00:00.0251708
+20:06:26.607	Returns.ReturnReplayTests.Receipt_AfterLaterState_ReturnsOriginalResultWithoutReread	Passed	00:00:00.0352036
+20:06:26.648	Claims.ClaimOutboxTests.Mutations_PersistPendingOutboxAndOriginalTransitionTime	Passed	00:00:00.0404683
+20:06:26.704	Claims.ClaimConcurrencyTests.Transition_ConcurrentApproveReject_OneWinnerAndLifecycleLoser	Passed	00:00:00.0552938
+20:06:26.744	Claims.ClaimConcurrencyTests.DefiniteNumberCollisionAfterSoftDelete_DoesNotRenumberOrPartiallyWrite	Passed	00:00:00.0400381
+20:06:26.835	Claims.ClaimConcurrencyTests.Create_TwentyDifferentKeysSameShipment_AllIndependentClaims	Passed	00:00:00.0909863
+20:06:26.942	Claims.ClaimConcurrencyTests.Create_TwentySameKeys_OneFourCollectionCommit	Passed	00:00:00.1061421
+20:06:26.942	ShipmentRootHttpTests.AcceptanceContractRequiresScopedReadOnlyDetail	Passed	00:00:00.0001138
+20:06:27.071	Loads.LoadIsolationTests.ScopeQueryKeysAreRejectedAfterOneDecodeAndUnknownKeysRemainIgnored	Passed	00:00:00.1284656
+20:06:27.274	Loads.LoadIsolationTests.TwoTenantsByTwoLegalEntitiesCanReuseIdsWithoutCrossScopeVisibility	Passed	00:00:00.2028679
+20:06:27.369	Loads.LoadIsolationTests.PermissionScopesAndTrustedHeaderMismatchFailBeforePersistence	Passed	00:00:00.0947946
+20:06:27.470	Loads.LoadIsolationTests.AuthenticationAndPostAuthDuplicateSignedClaimsHaveDistinctOutcomes	Passed	00:00:00.1006959
+20:06:27.472	Claims.ClaimReplayTests.TransitionFingerprint_EquivalentInstantsDifferentText_Conflicts	Passed	00:00:00.0024820
+20:06:27.497	Claims.ClaimReplayTests.NilAuthoritativeRoot_PersistsAndReplaysWithoutDefaulting	Passed	00:00:00.0242527
+20:06:27.549	Claims.ClaimReplayTests.Scope_SoftDeleteAndActorReplay_PreserveReceiptAndAudit	Passed	00:00:00.0520054
+20:06:27.550	Claims.ClaimReplayTests.CreateFingerprint_LexicalAmountChanges_Conflicts	Passed	00:00:00.0013158
+20:06:27.577	Claims.ClaimReplayTests.CreateFingerprint_NullableOmissionAndEmptyEvidence_Replays	Passed	00:00:00.0002919
+20:06:27.577	Claims.ClaimReplayTests.Receipt_RootBeforeChangedPayload_AndOriginalResultReplay	Passed	00:00:00.0261582
+20:06:27.578	Claims.ClaimReplayTests.CreateFingerprint_EvidenceOrderAndMultiplicity_RemainSignificant	Passed	00:00:00.0001637
+20:06:27.599	Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery	Failed	00:00:00.0012374
+20:06:27.719	Loads.LoadReplayTests.RootPrecedesFingerprintAndReplayUsesOriginalReceiptWithoutDependencyReads	Passed	00:00:00.1251579
+20:06:27.862	Loads.LoadReplayTests.HistoricalCreateReplayAfterCancellationDoesNotReacquireAssignment	Passed	00:00:00.1435375
+20:06:28.044	Loads.LoadReplayTests.TransitionReplayReturnsHistoricalStatusAndNoteNullNormalizationIsExact	Passed	00:00:00.1816941
+20:06:28.047	CapacityPlans.CapacityLifecycleTests.Approved_literal_oracle_only_emits_fixture_result(mode: "Infinite", count: 0)	Passed	00:00:00.0025055
+20:06:28.048	CapacityPlans.CapacityLifecycleTests.Approved_literal_oracle_only_emits_fixture_result(mode: "Finite", count: 1)	Passed	00:00:00.0005927
+20:06:28.049	SourceClientTests.ExplicitWarehouseFailures(status: 200, code: "SCHEMA_INCOMPATIBLE")	Passed	00:00:00.0013471
+20:06:28.049	SourceClientTests.ExplicitWarehouseFailures(status: 503, code: "DEPENDENCY_HTTP_503")	Passed	00:00:00.0001518
+20:06:28.050	SourceClientTests.ExplicitWarehouseFailures(status: 404, code: "DEPENDENCY_HTTP_404")	Passed	00:00:00.0000128
+20:06:28.053	SourceClientTests.WarehouseFrozenDetailAndPagePreserveFactsAndForwardTrustedScope	Passed	00:00:00.0037695
+20:06:28.054	SourceClientTests.TrustedContextRejectsMissingUnauthenticatedAndConflictingScopes	Passed	00:00:00.0008830
+20:06:28.060	SourceClientTests.InventoryReadOnlyScopeAndFailureIsolation	Passed	00:00:00.0056579
+20:06:28.061	Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Closed, suffix: "decide")	Passed	00:00:00.0001302
+20:06:28.061	SourceClientTests.WarehouseTimeoutAndStrictNullableGapAreExplicit	Passed	00:00:00.0010219
+20:06:28.062	Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Settled, suffix: "settle")	Passed	00:00:00.0001341
+20:06:28.063	Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Approved, suffix: "decide")	Passed	00:00:00.0000012
+20:06:28.063	Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Investigating, suffix: "investigate")	Passed	00:00:00.0000005
+20:06:28.063	Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Rejected, suffix: "decide")	Passed	00:00:00.0000004
+20:06:28.064	Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Open, suffix: "create")	Passed	00:00:00.0000004
+20:06:28.064	Claims.ClaimPermissionTests.TargetPermission_MatchesApprovedActionPolicy(target: Withdrawn, suffix: "investigate")	Passed	00:00:00.0000004
+20:06:28.065	Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Closed, grant: "settle", expected: 403)	Passed	00:00:00.0020098
+20:06:28.065	Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Withdrawn, grant: "investigate", expected: 200)	Passed	00:00:00.0004851
+20:06:28.066	Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Approved, grant: "decide", expected: 200)	Passed	00:00:00.0000140
+20:06:28.066	Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Closed, grant: "decide", expected: 200)	Passed	00:00:00.0000362
+20:06:28.067	Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Approved, grant: "create", expected: 403)	Passed	00:00:00.0000092
+20:06:28.067	Claims.ClaimPermissionTests.Handler_TargetGrantDenied_DoesNotReachReceiptOrAggregate(target: Withdrawn, grant: "create", expected: 403)	Passed	00:00:00.0000085
+20:06:36.107	Loads.LoadLifecycleTests.EverySourceTargetPairMatchesFrozenLifecycleAndRejectedPairsAreAtomic	Passed	00:00:08.0432346
+20:06:36.115	Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "supportedModes")	Passed	00:00:00.0077771
+20:06:36.116	Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "carrierCode")	Passed	00:00:00.0002382
+20:06:36.117	Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "displayName")	Passed	00:00:00.0001049
+20:06:36.117	Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "status")	Passed	00:00:00.0001164
+20:06:36.118	Claims.ClaimReferenceTests.Reader_ExplicitMatchingCarrier_AllHistoricalStatusesQualify(status: "Active")	Passed	00:00:00.0009147
+20:06:36.118	Claims.ClaimReferenceTests.Reader_RequiredCarrierFieldMissing_IsMalformed502(field: "carrierId")	Passed	00:00:00.0001042
+20:06:36.119	Claims.ClaimReferenceTests.Reader_ExplicitMatchingCarrier_AllHistoricalStatusesQualify(status: "Retired")	Passed	00:00:00.0000522
+20:06:36.119	Claims.ClaimReferenceTests.Reader_ExplicitMatchingCarrier_AllHistoricalStatusesQualify(status: "Suspended")	Passed	00:00:00.0001343
+20:06:36.120	Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Dispatched", eligible: True)	Passed	00:00:00.0004206
+20:06:36.120	Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "InTransit", eligible: True)	Passed	00:00:00.0001214
+20:06:36.121	Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Delivered", eligible: True)	Passed	00:00:00.0000035
+20:06:36.121	Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Draft", eligible: False)	Passed	00:00:00.0000522
+20:06:36.122	Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Cancelled", eligible: False)	Passed	00:00:00.0000372
+20:06:36.122	Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Closed", eligible: True)	Passed	00:00:00.0000031
+20:06:36.123	Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Exception", eligible: True)	Passed	00:00:00.0000029
+20:06:36.123	Claims.ClaimReferenceTests.Eligibility_AllEightShipmentStates_MatchesPolicy(status: "Planned", eligible: False)	Passed	00:00:00.0000323
+20:06:36.123	Claims.ClaimReferenceTests.Reader_ProducerShipmentRootInvalid500_MapsToClaimReferenceInvalid	Passed	00:00:00.0012977
+20:06:36.124	Claims.ClaimReferenceTests.Reader_UnusableRoot_DistinguishesIncompleteFromMalformed(mode: "malformed", status: 502)	Passed	00:00:00.0003691
+20:06:36.124	Claims.ClaimReferenceTests.Reader_UnusableRoot_DistinguishesIncompleteFromMalformed(mode: "null", status: 503)	Passed	00:00:00.0034428
+20:06:36.125	Claims.ClaimReferenceTests.Reader_UnusableRoot_DistinguishesIncompleteFromMalformed(mode: "empty", status: 503)	Passed	00:00:00.0001157
+20:06:36.130	Claims.ClaimReferenceTests.Reader_UnusableRoot_DistinguishesIncompleteFromMalformed(mode: "missing", status: 503)	Passed	00:00:00.0001039
+20:06:36.131	Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "{\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\"···)	Passed	00:00:00.0002277
+20:06:36.131	Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"m"···)	Passed	00:00:00.0006089
+20:06:36.131	Claims.ClaimReferenceTests.Reader_RealNilRoot_PreservesNilAndUsesSeparateNonNilDependencyTrace	Passed	00:00:00.0007592
+20:06:36.132	Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···)	Passed	00:00:00.0001062
+20:06:36.132	Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 501, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"m"···)	Passed	00:00:00.0001077
+20:06:36.133	Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "not-json")	Passed	00:00:00.0052597
+20:06:36.133	Claims.ClaimReferenceTests.Reader_OtherProducer5xx_RemainReferenceUnavailable(status: 500, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"m"···)	Passed	00:00:00.0001039
+20:06:36.134	Claims.ClaimReferenceTests.Reader_MismatchedIdentity_IsMalformedNotNotFound	Passed	00:00:00.0006942
+20:06:36.134	Claims.ClaimReferenceTests.Reader_TransportFailures_MapWithoutRawErrorLeak(fault: "invalid-json", status: 502, code: "CLAIM_REFERENCE_INVALID")	Passed	00:00:00.0008741
+20:06:36.134	Claims.ClaimReferenceTests.Reader_TransportFailures_MapWithoutRawErrorLeak(fault: "timeout", status: 503, code: "CLAIM_REFERENCE_UNAVAILABLE")	Passed	00:00:00.0004500
+20:06:36.135	Claims.ClaimReferenceTests.Reader_TransportFailures_MapWithoutRawErrorLeak(fault: "refusal", status: 503, code: "CLAIM_REFERENCE_UNAVAILABLE")	Passed	00:00:00.0002467
+20:06:36.136	Claims.ClaimReferenceTests.Reader_ExplicitCarrierNotInList_Generic404	Passed	00:00:00.0006743
+20:06:36.136	Claims.ClaimReferenceTests.Reader_TransportFailures_MapWithoutRawErrorLeak(fault: "not-found", status: 404, code: "CLAIM_NOT_FOUND")	Passed	00:00:00.0001009
+20:06:36.137	Claims.ClaimReferenceTests.Reader_ExplicitCarrierWithMissingShipmentField_IncompleteBeforeCarrierRead	Passed	00:00:00.0006378
+20:06:36.137	Claims.ClaimReferenceTests.Reader_ExplicitCarrierWithNullShipmentCarrier_BusinessMismatch422	Passed	00:00:00.0008213
+20:06:36.153	SandopPlans.SandopIsolationTests.Tenant_and_legal_entity_cross_scope_reads_are_404	Passed	00:00:00.0180513
+20:06:36.170	SandopPlans.SandopIsolationTests.Cross_scope_mutation_cannot_disclose_receipt_or_plan	Passed	00:00:00.0164991
+20:06:36.172	Claims.ClaimLifecycleTests.CanTransition_All49Pairs_ExactlySevenFrozenArrows	Passed	00:00:00.0021378
+20:06:36.296	Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "audit")	Passed	00:00:00.1232726
+20:06:36.449	Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "event")	Passed	00:00:00.1527377
+20:06:36.587	Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "assignment")	Passed	00:00:00.1376838
+20:06:36.719	Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "beforeCommit")	Passed	00:00:00.1315427
+20:06:36.850	Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "receipt")	Passed	00:00:00.1312417
+20:06:37.008	Loads.LoadAtomicityTests.FailureBeforeCommitRollsBackAllFiveCollectionsAndKeyCanRetry(phase: "entity")	Passed	00:00:00.1576159
+20:06:37.133	Loads.LoadAtomicityTests.AcknowledgedCommitLossRetriesFromDurableReceiptWithoutDuplicateWrites	Passed	00:00:00.1249862
+20:06:39.973	Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce	Passed	00:00:02.8392658
+20:06:40.148	Loads.LoadAtomicityTests.CancellationReleaseAndAggregateAuditReceiptEventCommitTogether	Passed	00:00:00.1752399
+20:06:49.968	Loads.LoadAtomicityTests.UnresolvedUnknownCommitReturns503WithoutPretendingRollbackOrSuccess	Passed	00:00:09.8198455
+20:06:49.971	Returns.ReturnContractTests.Instant_LeapSecond_OffsetEquivalentDistinctFromNextSecond	Passed	00:00:00.0013456
+20:06:49.975	Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "١")	Passed	00:00:00.0001446
+20:06:49.976	Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: " 1")	Passed	00:00:00.0002953
+20:06:49.977	Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "+1")	Passed	00:00:00.0000409
+20:06:49.977	Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "1.")	Passed	00:00:00.0000455
+20:06:49.978	Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: ".1")	Passed	00:00:00.0000390
+20:06:49.978	Returns.ReturnContractTests.Quantity_InvalidLexical_Rejects(value: "1e2")	Passed	00:00:00.0000391
+20:06:49.979	Returns.ReturnContractTests.Quantity_EquivalentNumericValues_Equal(a: "-0", b: "000.000")	Passed	00:00:00.0027585
+20:06:49.979	Returns.ReturnContractTests.Wire_BoundedShape_RejectsNullEvidenceAndExtrasAllowsOpaqueEmpty	Passed	00:00:00.0051103
+20:06:49.980	Returns.ReturnContractTests.Quantity_EquivalentNumericValues_Equal(a: "1.0", b: "1.00")	Passed	00:00:00.0002046
+20:06:49.981	Returns.ReturnContractTests.Quantity_Arithmetic_HasNoPrecisionLoss	Passed	00:00:00.0002679
+20:06:49.981	Returns.ReturnContractTests.Quantity_EquivalentNumericValues_Equal(a: "123456789012345678901234567890.1234567890123456789"···, b: "123456789012345678901234567890.1234567890123456789"···)	Passed	00:00:00.0000782
+20:06:49.982	Returns.ReturnContractTests.Fingerprint_NumericAndInstantEquivalence_ReplaysWhileArrayOrderConflicts	Passed	00:00:00.0019498
+20:06:49.982	Returns.ReturnContractTests.Instant_GregorianYearZeroAndBoundaries_KeepEquivalentInstants	Passed	00:00:00.0002457

@@ -1,0 +1,6 @@
+searched_target	result	evidence
+BC successor manifest dec28b6aebd7552df82d380cf8b601aabc4d28c7d21349ff43807bd0747e4634	DRAFT/HELD ONLY	docs/records/audits/2026-09/mvp6-bc-integration-successor-01/OWNER-DECISION-TEXT.md explicitly says it is a draft until owner approval
+Apply C patch f4fc82b44eb237d1dbc8bdd9c0d9633c948ca4e33cd2dcff91cd65f653780c8f to B cdc6228aa3d215f34f2f2f9d5b784cf57ac20b6eb8f2c2f26bdcace9dcd4d76c	NOT FOUND	Repository-wide authority search found no approved decision bound to this B target
+Original isolated C uptake authority	FOUND BUT NOT PORTABLE	Authorized only the isolated Capacity checkout and required a separate successor manifest
+MVP6-BC-SUCCESSOR-EXEC-01 launcher	CONDITIONAL, NOT CONSENT	Instruction says execute only if a real target-bound decision exists
+

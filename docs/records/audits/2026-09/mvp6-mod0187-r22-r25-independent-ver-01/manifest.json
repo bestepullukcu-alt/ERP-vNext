@@ -1,0 +1,27 @@
+{
+  "workPackage": "MVP6-MOD0187-R22-R25-INDEPENDENT-VER-01",
+  "branch": "feature/mvp6-logistics",
+  "head": "4a8d4d4b339528a88e6220fb8402e5a2c771136c",
+  "agentVerdict": {
+    "R22": "PASS",
+    "R25": "PASS_BOUNDED_E4"
+  },
+  "disposable": "/private/tmp/mvp6-mod0187-r22-r25-independent-ver-01-bp1jJM",
+  "ports": {
+    "api": 51925,
+    "mongo": 27925
+  },
+  "sha256": {
+    "writerPatch": "d0844d8c8e4b28dc3ab1f1559b6f49c45005567f6f1ea252fca6c51f84f75eca",
+    "normalProbe": "4082bb189256e6bffbec4440913f4fd2544ed79ce88252324cd86007d069a222",
+    "normalRegistration": "0361088e461cfac00ecf3b34b39ee311a9e58f0b82d51327b82f44ae196752de",
+    "evidenceProbe": "05cb87877bf427e3232fd2a074915a26e4256d9a5c61e357c4d7ab2b8ceef68b",
+    "evidenceRegistration": "c4ca2690bb964529cb7d1d2a1265c514c10946f792829d4da821597636761a9c",
+    "freshApiBinary": "513150e9bcfa87d408c8074c992144634a88e73272e56afc7ab31f2a220636df",
+    "freshPersistenceBinary": "9b8d57bca6fde68446b0019bbf1a5162870da1c007edb219768f8a9ccadf7a2f",
+    "processBoundary": "06464a5456feea1b6dc51a01818e0759e5740b3cfcff4dac8a391064ef0c7495",
+    "unknownRestart": "70d1c788d99d87d9f76921abe13ef8dc42bf4e088f1d217ac5ca172fd88baa4b",
+    "timeline": "2d7200bd99d173a4fe8cd33e1ed2e6fb5d1ccc363c5ffd6367ca821d5f4b014c",
+    "oracle": "3e151457c68f145c2487bb28b224859930e4fe0ef50c03bb6ea038294d415e65"
+  }
+}

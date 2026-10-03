@@ -1,0 +1,6 @@
+{
+  "uri": "mongodb://127.0.0.1:27989/?replicaSet=mvp6_normal_integration_net8",
+  "result": "true",
+  "exit": 0,
+  "port": 27989
+}

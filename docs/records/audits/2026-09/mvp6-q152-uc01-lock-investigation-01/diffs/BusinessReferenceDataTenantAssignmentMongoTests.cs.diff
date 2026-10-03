@@ -1,0 +1,17 @@
+--- HEAD:services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataTenantAssignmentMongoTests.cs
++++ WORKTREE:services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataTenantAssignmentMongoTests.cs
+@@ -1,4 +1,5 @@
+ using Diten.Platform.Common.Tenancy;
++using Diten.Platform.Application.Tests.Persistence;
+ using Diten.Platform.Domain.Entities;
+ using Diten.Platform.Infrastructure.Persistence;
+ using Diten.Platform.Infrastructure.Persistence.Schema;
+@@ -16,7 +17,7 @@
+ 
+     public async Task InitializeAsync()
+     {
+-        var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017");
++        var settings = MongoClientSettings.FromConnectionString(PlatformMongoTestConnection.RequireConnectionString());
+         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
+         _client = new MongoClient(settings);
+         _databaseName = await BusinessReferenceDataMongoResidueSweeper.CreateDatabaseAsync(_client, "asn");

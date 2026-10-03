@@ -1,0 +1,18 @@
+n	time_istanbul	command	result
+1	12:11:01	TZ=Europe/Istanbul date	2026-09-26T12:11:01+0300
+2	12:11:01	uname -sm	Linux aarch64
+3	12:11:01	cat /etc/os-release	Ubuntu 22.04.5 LTS (Jammy Jellyfish)
+4	12:11:01	df -h /tmp	/dev/nvme0n1p1 9.6G total, 5.4G used, 4.2G avail (requirement >= 6 GB): FAIL
+5	12:11:01	free -h; nproc	RAM 3.8Gi total, 3.5Gi available; 4 CPUs
+6	12:11:01	GIT_OPTIONAL_LOCKS=0 git rev-parse HEAD; git branch --show-current	4a8d4d4b339528a88e6220fb8402e5a2c771136c; feature/mvp6-logistics: PASS
+7	12:11:01	which curl wget python3 node npm pip3	all present
+8	12:11:01	env (proxy variables, credentials redacted)	HTTP(S)_PROXY -> local egress proxy localhost:3128; NO_PROXY loopback/private ranges
+9	12:11:xx	curl -sS -I -L --max-time 20 https://dot.net/v1/dotnet-install.sh	000; curl: (56) Received HTTP code 403 from proxy after CONNECT: FAIL
+10	12:11:xx	curl -sS -I -L https://builds.dotnet.microsoft.com/dotnet/Sdk/8.0.417/dotnet-sdk-8.0.417-linux-arm64.tar.gz	000 (proxy refused): FAIL
+11	12:11:xx	curl -sS -I -L https://dotnetcli.azureedge.net/dotnet/Sdk/8.0.417/dotnet-sdk-8.0.417-linux-arm64.tar.gz	000 (proxy refused): FAIL
+12	12:11:xx	curl -sS -I -L https://fastdl.mongodb.org/linux/mongodb-linux-aarch64-ubuntu2204-8.0.4.tgz	000; 403 from proxy after CONNECT: FAIL
+13	12:11:xx	curl -sS -I -L https://pypi.org/simple/playwright/	200 (Python package index reachable)
+14	12:11:xx	curl -sS -I -L https://registry.npmjs.org/playwright	200 (npm registry reachable)
+15	12:11:xx	curl -sS -I -L https://cdn.playwright.dev/	000; 403 from proxy after CONNECT: FAIL (Chromium browser download host)
+16	12:11:xx	curl -sS -I -L https://playwright.azureedge.net/	000 (proxy refused): FAIL
+17	12:11:xx	df -h $HOME	/sessions volume 7.7G available (not /tmp; recorded only)

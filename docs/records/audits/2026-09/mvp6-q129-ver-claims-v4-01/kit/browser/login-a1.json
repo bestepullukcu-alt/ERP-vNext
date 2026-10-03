@@ -1,0 +1,192 @@
+{
+  "phase": "login",
+  "extra": null,
+  "startedAt": "2026-09-27T13:32:51.286Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "login-full": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.C_2-KIh9ck0",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-readonly": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.C_2-KIh9ck0",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-noread": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.C_2-KIh9ck0",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-leb": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.C_2-KIh9ck0",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-t2user": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.C_2-KIh9ck0",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    }
+  },
+  "png": [],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "login-full",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "login-full",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "login-full",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "login-full",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "login-readonly",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "login-readonly",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "login-readonly",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "login-readonly",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "login-noread",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "login-noread",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "login-noread",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "login-noread",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "login-leb",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "login-leb",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "login-leb",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "login-leb",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "login-t2user",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "login-t2user",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "login-t2user",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "login-t2user",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "endedAt": "2026-09-27T13:33:08.302Z"
+}

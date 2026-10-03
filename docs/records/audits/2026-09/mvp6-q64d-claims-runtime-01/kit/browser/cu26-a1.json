@@ -1,0 +1,41 @@
+{
+  "phase": "cu26",
+  "startedAt": "2026-09-26T21:26:36.615Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-26-premium-no-secrets": {
+      "result": "PASS",
+      "inlineHandlersInModuleDom": [],
+      "storageKeys": [
+        "templateCustomizer-vertical-menu-template-free--Theme",
+        "templateCustomizer-vertical-menu-template--Rtl",
+        "templateCustomizer-vertical-menu-template--Theme"
+      ],
+      "jwtLikeStorageKeys": [],
+      "cookies": [
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        },
+        {
+          "name": ".AspNetCore.Antiforgery.3KWxGQSSzxg",
+          "httpOnly": true
+        }
+      ],
+      "cookiesReadableByScript": [],
+      "nativeDialogsThisPhase": 0,
+      "note": "native dialogs are also counted in every other phase file (dialogs[])"
+    }
+  },
+  "png": [],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T21:26:38.797Z"
+}

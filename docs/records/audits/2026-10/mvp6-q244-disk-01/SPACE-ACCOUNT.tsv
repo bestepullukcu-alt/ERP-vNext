@@ -1,0 +1,56 @@
+path	kib	gib	inside_repo	git_ignored	note
+~/Projects/ERP-vNext-recovery	3164620	3.02	inside	no	whole repository folder
+~/Projects/ERP-vNext-recovery/.git	409864	0.39	inside	no	object database 0.35 GiB; 16 worktree registrations 35 MiB
+~/Projects/ERP-vNext-recovery/.git-backups	561312	0.54	inside	yes	GIT-001 artefacts of 25 and 26 Sep: 2 bundles, 2 untracked tarballs, 2 patches
+~/Projects/ERP-vNext-recovery/services	1351092	1.29	inside	no	
+~/Projects/ERP-vNext-recovery/docs	346808	0.33	inside	no	
+~/Projects/ERP-vNext-recovery/frontend	282452	0.27	inside	no	
+~/Projects/ERP-vNext-recovery/gateway	116544	0.11	inside	no	
+~/Projects/ERP-vNext-recovery/tests	74412	0.07	inside	no	
+~/Projects/ERP-vNext-recovery/execution	9044	0.01	inside	no	
+~/Projects/ERP-vNext-recovery/logs	5888	0.01	inside	no	
+(repo) all bin/ + obj/ + TestResults/ + loose *.trx	1058705	1.01	inside	bin, obj: yes · TestResults, trx: NO	57 bin (0.87 GiB), 57 obj (0.08 GiB), 3 TestResults (12 MiB), 148 trx under docs/ (0.05 GiB, evidence, not build output)
+~/mvp6-env	66501268	63.42	outside	n/a (outside repo)	lane build environments; 100 copies of services/Diten.SupplyChainService; APFS clones possible — see RECLAMATION-PLAN.md
+~/mvp6-env/q84b	11593456	11.06	outside	n/a (outside repo)	
+~/mvp6-env/base	6145900	5.86	outside	n/a (outside repo)	
+~/mvp6-env/q88b	6077816	5.80	outside	n/a (outside repo)	
+~/mvp6-env/q65b	6077292	5.80	outside	n/a (outside repo)	
+~/mvp6-env/q185	6025416	5.75	outside	n/a (outside repo)	
+~/mvp6-env/q154	5903984	5.63	outside	n/a (outside repo)	
+~/mvp6-env/q117	4452376	4.25	outside	n/a (outside repo)	
+~/mvp6-env/q121b	4257220	4.06	outside	n/a (outside repo)	
+~/mvp6-env/q119	4207736	4.01	outside	n/a (outside repo)	
+~/mvp6-env/q129	3842296	3.66	outside	n/a (outside repo)	
+~/mvp6-env/q122	2083048	1.99	outside	n/a (outside repo)	
+~/mvp6-env/q64c	1182084	1.13	outside	n/a (outside repo)	
+~/mvp6-env/q64d	1181988	1.13	outside	n/a (outside repo)	
+~/mvp6-env/claims-fixes	1178944	1.12	outside	n/a (outside repo)	
+~/mvp6-env/claims	1178708	1.12	outside	n/a (outside repo)	
+~/mvp6-env/q64e	1003660	0.96	outside	n/a (outside repo)	
+~/.codex/worktrees	5949416	5.67	outside	n/a (outside repo)	6 registered git worktrees of this repository, all with uncommitted work
+~/.codex	11467632	10.94	outside	n/a (outside repo)	Codex tool data incl. the worktrees (sessions 2.4 GiB, archived sessions 0.9 GiB)
+~/Backups	1704944	1.63	outside	n/a (outside repo)	Q198 safety archive (1,745,856,694 bytes) + its .sha256
+~/.nuget/packages	2369544	2.26	outside	n/a (outside repo)	NuGet cache; builds restore from it
+~/.dotnet	619476	0.59	outside	n/a (outside repo)	SDK
+/private/tmp/claude-501	40	0.00	outside	n/a (outside repo)	session scratchpad root — EMPTY after the 00:30 restart except this WP
+/private/tmp/mvp6-*	0	0.00	outside	n/a	ABSENT — wiped by the restart
+/private/tmp/q2*	0	0.00	outside	n/a	ABSENT — wiped by the restart (Q205, Q208, Q214, Q216, Q217, Q232, Q235 scratch; Q220/Q232/Q236 service copies)
+~/Projects/ERP-vNext	3078684	2.94	outside	n/a (outside repo)	sibling checkout or archive in ~/Projects; not part of this pilot
+~/Projects/ERP-vNext 31 May 2026	3079788	2.94	outside	n/a (outside repo)	sibling checkout or archive in ~/Projects; not part of this pilot
+~/Projects/ERP-vNext 31 May 2026-1	3079784	2.94	outside	n/a (outside repo)	sibling checkout or archive in ~/Projects; not part of this pilot
+~/Projects/ERP-vNext_BACKUP_before_diten_migration_remediation.zip	1479768	1.41	outside	n/a (outside repo)	sibling checkout or archive in ~/Projects; not part of this pilot
+~/Projects/ERP-vNext-mod0149-wave0b	1114204	1.06	outside	n/a (outside repo)	sibling checkout or archive in ~/Projects; not part of this pilot
+~/Projects/ERP-vNext-mod0023-remediation	913852	0.87	outside	n/a (outside repo)	sibling checkout or archive in ~/Projects; not part of this pilot
+~/Projects/ERP-vNext_ESBP_CLEAN	909352	0.87	outside	n/a (outside repo)	sibling checkout or archive in ~/Projects; not part of this pilot
+~/Projects/ERP-vNext-main	832768	0.79	outside	n/a (outside repo)	sibling checkout or archive in ~/Projects; not part of this pilot
+~/Projects/ERP-vNext-mod0028-p3	676716	0.65	outside	n/a (outside repo)	sibling checkout or archive in ~/Projects; not part of this pilot
+~/Projects/ERP-vNext-backups	517252	0.49	outside	n/a (outside repo)	sibling checkout or archive in ~/Projects; not part of this pilot
+~/Projects	21997556	20.98	outside	n/a (outside repo)	all of ~/Projects
+~/Library	45707016	43.59	outside	n/a (outside repo)	owner data outside the pilot; not broken down
+~/Development	45255676	43.16	outside	n/a (outside repo)	owner data outside the pilot; not broken down
+~/Desktop	15542328	14.82	outside	n/a (outside repo)	owner data outside the pilot; not broken down
+~/Library/Application Support/Claude	14670544	13.99	outside	n/a (outside repo)	Claude desktop app data
+~/Library/Caches	7600172	7.25	outside	n/a (outside repo)	
+/Applications	28072876	26.77	outside	n/a	
+/private/var/vm	2097152	2.00	outside	n/a	swap files
+/opt/homebrew	2470628	2.36	outside	n/a	

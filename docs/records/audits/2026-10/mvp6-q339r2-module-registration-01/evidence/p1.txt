@@ -1,0 +1,30 @@
+== p1-boot1 pid=65420 now_listening=yes after_s=3
+== p1-boot1 GET /health -> 200
+== p1-boot1 alive_before_stop=yes
+== p1-boot1 stopped; 58339 free
+== p1-boot2 pid=65450 now_listening=yes after_s=1
+== p1-boot2 GET /health -> 200
+== p1-boot2 alive_before_stop=yes
+== p1-boot2 stopped; 58339 free
+== p1-boot3 pid=65473 now_listening=yes after_s=1
+== p1-boot3 GET /health -> 200
+== p1-boot3 alive_before_stop=yes
+== p1-boot3 stopped; 58339 free
+--- p1-boot1.log (lifetime + registration lines)
+[19:20:12 INF] Now listening on: http://127.0.0.1:58339 CorrelationId= TenantId= LegalEntityId=
+[19:20:12 INF] Application started. Press Ctrl+C to shut down. CorrelationId= TenantId= LegalEntityId=
+[19:20:12 INF] Hosting environment: Development CorrelationId= TenantId= LegalEntityId=
+[19:20:12 WRN] Module self-registration attempt 1 could not reach Platform; will retry. ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=
+[19:20:14 WRN] Module self-registration attempt 2 could not reach Platform; will retry. ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=
+--- p1-boot2.log (lifetime + registration lines)
+[19:20:17 WRN] Module self-registration attempt 1 could not reach Platform; will retry. ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=
+[19:20:17 INF] Now listening on: http://127.0.0.1:58339 CorrelationId= TenantId= LegalEntityId=
+[19:20:17 INF] Application started. Press Ctrl+C to shut down. CorrelationId= TenantId= LegalEntityId=
+[19:20:17 INF] Hosting environment: Development CorrelationId= TenantId= LegalEntityId=
+[19:20:19 WRN] Module self-registration attempt 2 could not reach Platform; will retry. ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=
+--- p1-boot3.log (lifetime + registration lines)
+[19:20:22 WRN] Module self-registration attempt 1 could not reach Platform; will retry. ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=
+[19:20:22 INF] Now listening on: http://127.0.0.1:58339 CorrelationId= TenantId= LegalEntityId=
+[19:20:22 INF] Application started. Press Ctrl+C to shut down. CorrelationId= TenantId= LegalEntityId=
+[19:20:22 INF] Hosting environment: Development CorrelationId= TenantId= LegalEntityId=
+[19:20:24 WRN] Module self-registration attempt 2 could not reach Platform; will retry. ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=

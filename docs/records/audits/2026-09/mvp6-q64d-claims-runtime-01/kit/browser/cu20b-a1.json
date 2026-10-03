@@ -1,0 +1,134 @@
+{
+  "phase": "cu20b",
+  "startedAt": "2026-09-26T21:23:02.153Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-20-approval-amount": {
+      "result": "PASS",
+      "rejected422": {
+        "missing": {
+          "status": 422,
+          "requestCorrelation": "aa1a3b37-eb21-4d1c-b326-397fc03a300e",
+          "idempotencyKey": "d7157318-39f1-4a30-b8bf-3c7f606adf25",
+          "responseCorrelation": "aa1a3b37-eb21-4d1c-b326-397fc03a300e",
+          "location": null,
+          "contentType": "application/json; charset=utf-8",
+          "antiforgeryTokenUsed": true,
+          "errorCode": "CLAIM_APPROVAL_AMOUNT_INVALID",
+          "errorCorrelation": "aa1a3b37-eb21-4d1c-b326-397fc03a300e",
+          "errorMessage": "Approved amount must be between zero and the claimed amount.",
+          "okKeys": null,
+          "claimId": null,
+          "claimStatus": null,
+          "approvedAmount": null,
+          "idempotentReplay": null,
+          "items": null,
+          "rootLeak": []
+        },
+        "minus001": {
+          "status": 422,
+          "requestCorrelation": "d5f2c26a-d221-4e57-b2ca-b0ccc18b6ebf",
+          "idempotencyKey": "b81abeff-4917-4764-b179-790cbbb66013",
+          "responseCorrelation": "d5f2c26a-d221-4e57-b2ca-b0ccc18b6ebf",
+          "location": null,
+          "contentType": "application/json; charset=utf-8",
+          "antiforgeryTokenUsed": true,
+          "errorCode": "CLAIM_APPROVAL_AMOUNT_INVALID",
+          "errorCorrelation": "d5f2c26a-d221-4e57-b2ca-b0ccc18b6ebf",
+          "errorMessage": "Approved amount must be between zero and the claimed amount.",
+          "okKeys": null,
+          "claimId": null,
+          "claimStatus": null,
+          "approvedAmount": null,
+          "idempotentReplay": null,
+          "items": null,
+          "rootLeak": []
+        },
+        "over": {
+          "status": 422,
+          "requestCorrelation": "43365908-94a0-4850-84ec-e3a3d7c2c145",
+          "idempotencyKey": "6d2229ba-ab77-4c69-bf2e-171afb7bc385",
+          "responseCorrelation": "43365908-94a0-4850-84ec-e3a3d7c2c145",
+          "location": null,
+          "contentType": "application/json; charset=utf-8",
+          "antiforgeryTokenUsed": true,
+          "errorCode": "CLAIM_APPROVAL_AMOUNT_INVALID",
+          "errorCorrelation": "43365908-94a0-4850-84ec-e3a3d7c2c145",
+          "errorMessage": "Approved amount must be between zero and the claimed amount.",
+          "okKeys": null,
+          "claimId": null,
+          "claimStatus": null,
+          "approvedAmount": null,
+          "idempotentReplay": null,
+          "items": null,
+          "rootLeak": []
+        }
+      },
+      "approvedAmountOnReject": {
+        "status": 422,
+        "requestCorrelation": "68bdc995-a28f-4d6a-92a4-222219ce399e",
+        "idempotencyKey": "c6bcf0db-a44e-4745-9a2b-aa4481e94223",
+        "responseCorrelation": "68bdc995-a28f-4d6a-92a4-222219ce399e",
+        "location": null,
+        "contentType": "application/json; charset=utf-8",
+        "antiforgeryTokenUsed": true,
+        "errorCode": "CLAIM_APPROVED_AMOUNT_NOT_ALLOWED",
+        "errorCorrelation": "68bdc995-a28f-4d6a-92a4-222219ce399e",
+        "errorMessage": "Approved amount is not allowed for this action.",
+        "okKeys": null,
+        "claimId": null,
+        "claimStatus": null,
+        "approvedAmount": null,
+        "idempotentReplay": null,
+        "items": null,
+        "rootLeak": []
+      },
+      "fieldVisibleOnReject": false,
+      "fieldVisibleOnApprove": true,
+      "uiApprove": {
+        "status": 200,
+        "sentBody": "{\"targetStatus\":\"Approved\",\"occurredAt\":\"2026-09-26T21:23:06+00:00\",\"approvedAmount\":\"250\"}",
+        "responseApprovedAmount": "250"
+      },
+      "successMessage": "Claim status updated. Approved amount: 250",
+      "accepted200": "APPR0 \"0\" and APPRNEG0 \"-0\" → 200 in cu20-a1 (K10 +2; raw/db/cu20-approved-a1.json)"
+    },
+    "CU-25c-transition-escape": {
+      "result": "FAIL",
+      "focusInsideTransitionSurfaceAfterOpen": false,
+      "closedByEscape": false,
+      "note": "transition offcanvas opened from a row dropdown item; Escape pressed once"
+    }
+  },
+  "png": [
+    {
+      "name": "cu20b-after-close-en.png",
+      "sha256": "adfa3eac9f0f9614c9a169bb00dea1c0be8d16c6a5d8ec968f15203726748089",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:23:06.064Z",
+      "phase": "cu20b",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu20-approve-250-success-en.png",
+      "sha256": "bffa505c87b31f8acd083f9238c084848064b4ab47717ec138acfbe3e5ba7c73",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:23:07.881Z",
+      "phase": "cu20b",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [
+    {
+      "tag": "cu20b",
+      "text": "Claim status updated. Approved amount: 250",
+      "type": "success",
+      "at": "2026-09-26T21:23:06.847Z"
+    }
+  ],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T21:23:07.935Z"
+}

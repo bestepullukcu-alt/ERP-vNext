@@ -1,0 +1,17 @@
+  Diten.CrmService.Domain -> /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Domain/bin/Release/net8.0/Diten.CrmService.Domain.dll
+/Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Application/Features/Territory/AccountAssignments/Handlers/AccountTerritoryAssignmentHandlers.cs(155,34): warning CS8602: Dereference of a possibly null reference. [/Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Application/Diten.CrmService.Application.csproj]
+  Diten.CrmService.Application -> /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Application/bin/Release/net8.0/Diten.CrmService.Application.dll
+  Diten.CrmService.Infrastructure -> /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Infrastructure/bin/Release/net8.0/Diten.CrmService.Infrastructure.dll
+/Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Persistence/Repositories/AccountTerritoryAssignmentRepository.cs(23,12): warning CS8619: Nullability of reference types in value of type 'Task<AccountTerritoryAssignment>' doesn't match target type 'Task<AccountTerritoryAssignment?>'. [/Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Persistence/Diten.CrmService.Persistence.csproj]
+  Diten.CrmService.Persistence -> /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Persistence/bin/Release/net8.0/Diten.CrmService.Persistence.dll
+  Diten.BuildingBlocks.Security.Secrets -> /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.CrmService.Api -> /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Api/bin/Release/net8.0/Diten.CrmService.Api.dll
+
+Build succeeded.
+
+/Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Application/Features/Territory/AccountAssignments/Handlers/AccountTerritoryAssignmentHandlers.cs(155,34): warning CS8602: Dereference of a possibly null reference. [/Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Application/Diten.CrmService.Application.csproj]
+/Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Persistence/Repositories/AccountTerritoryAssignmentRepository.cs(23,12): warning CS8619: Nullability of reference types in value of type 'Task<AccountTerritoryAssignment>' doesn't match target type 'Task<AccountTerritoryAssignment?>'. [/Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.CrmService/src/Diten.CrmService.Persistence/Diten.CrmService.Persistence.csproj]
+    2 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:26.90

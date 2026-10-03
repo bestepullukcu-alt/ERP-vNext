@@ -1,0 +1,4 @@
+path	disposition
+services/Diten.MdmService/src/Diten.MdmService.Api/Security/PlatformServiceTokenValidator.cs	isolated-source modified
+services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/PlatformServiceTokenValidatorTests.cs	isolated-test modified
+docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/	repository audit output added

@@ -1,0 +1,9 @@
+phase	command/result	exit
+source	verify combined 360 manifest against disposable source	0 (360/360)
+source	verify Auth successor 22 manifest against disposable source	0 (22/22)
+build	dotnet build Auth/Platform/MDM/SupplyChain/Gateway/Web -c Release	0 each
+runtime	launch Mongo 42994; Auth 5956; Platform 5957; MDM 5959; SupplyChain 5961; Gateway 5900; Web 5901	0/listening
+browser	three real-Auth profiles; A08/A09/A12 scripted UI interactions	completed
+probe	real-Auth same-origin exact failure adapter probes	0
+db	mongosh before/after snapshots on 42994	0
+cleanup	stop tabs/processes and remove disposable secrets/DB	see CLEANUP.txt

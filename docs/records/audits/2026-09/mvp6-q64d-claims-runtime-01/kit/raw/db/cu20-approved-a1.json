@@ -1,0 +1,32 @@
+{
+ "purpose": "CU-20 proof for cu20-a1 (APPR0 \"0\", APPRNEG0 \"-0\" → 200); APPRBAD must still be Investigating (422s zero-write)",
+ "claims": [
+  {
+   "name": "APPR0",
+   "claimId": "c3b65011-cb32-4341-91c9-8464cb15ffd7",
+   "status": "Approved",
+   "approvedAmount": "0",
+   "approvedAmountType": "String",
+   "claimedAmount": "250.00",
+   "receipts": 3
+  },
+  {
+   "name": "APPRNEG0",
+   "claimId": "5c5028a7-0629-4cf3-b58c-a4c733fe9d07",
+   "status": "Approved",
+   "approvedAmount": "-0",
+   "approvedAmountType": "String",
+   "claimedAmount": "250.00",
+   "receipts": 3
+  },
+  {
+   "name": "APPRBAD",
+   "claimId": "00a183fe-759d-47c6-939e-af91dba8e0b9",
+   "status": "Investigating",
+   "approvedAmount": null,
+   "approvedAmountType": "null",
+   "claimedAmount": "250.00",
+   "receipts": 2
+  }
+ ]
+}

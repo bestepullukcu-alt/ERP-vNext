@@ -1,0 +1,3 @@
+suite	filter	exit	summary
+supplychain-single	-	1	Failed!  - Failed:     1, Passed:   416, Skipped:     0, Total:   417, Duration: 4 m 37 s - Diten.SupplyChainService.Tests.dll (net8.0)
+supplychain-claims-and-provider	FullyQualifiedName~Diten.SupplyChainService.Tests.Claims.|FullyQualifiedName~ClaimsManagementManifestProvider	1	Failed!  - Failed:     1, Passed:   137, Skipped:     0, Total:   138, Duration: 750 ms - Diten.SupplyChainService.Tests.dll (net8.0)

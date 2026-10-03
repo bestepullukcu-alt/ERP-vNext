@@ -1,0 +1,946 @@
+[
+  {
+    "at": "$/paths//shipments/get/responses/200/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//shipments/post/requestBody/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//shipments/post/responses/201/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//shipments/post/responses/200/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/get/responses/200/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/transition/post/requestBody/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/transition/post/responses/200/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/pod/post/requestBody/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//shipments/{shipmentId}/pod/post/responses/201/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//carriers/get/responses/200/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//carriers/post/requestBody/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//carriers/post/responses/201/content/application/json",
+    "name": "first"
+  },
+  {
+    "at": "$/paths//carriers/post/responses/201/content/application/json",
+    "name": "replay"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/requestBody/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/responses/200/content/application/json",
+    "name": "first"
+  },
+  {
+    "at": "$/paths//carriers/{carrierId}/status/post/responses/200/content/application/json",
+    "name": "replay"
+  },
+  {
+    "at": "$/paths//loads/get/responses/200/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//loads/get/responses/400/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//loads/get/responses/401/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//loads/get/responses/403/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//loads/get/responses/404/content/application/json",
+    "name": "LOAD_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//loads/get/responses/500/content/application/json",
+    "name": "INTERNAL_ERROR"
+  },
+  {
+    "at": "$/paths//loads/get/responses/503/content/application/json",
+    "name": "PERSISTENCE_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//loads/post/requestBody/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//loads/post/responses/201/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//loads/post/responses/404/content/application/json",
+    "name": "LOAD_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//loads/post/responses/404/content/application/json",
+    "name": "CARRIER_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//loads/post/responses/404/content/application/json",
+    "name": "SHIPMENT_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//loads/post/responses/409/content/application/json",
+    "name": "CORRELATION_ROOT_MISMATCH"
+  },
+  {
+    "at": "$/paths//loads/post/responses/409/content/application/json",
+    "name": "IDEMPOTENCY_KEY_REUSED"
+  },
+  {
+    "at": "$/paths//loads/post/responses/409/content/application/json",
+    "name": "SHIPMENT_ALREADY_ASSIGNED"
+  },
+  {
+    "at": "$/paths//loads/post/responses/422/content/application/json",
+    "name": "SHIPMENT_NOT_ELIGIBLE"
+  },
+  {
+    "at": "$/paths//loads/post/responses/422/content/application/json",
+    "name": "SHIPMENT_CARRIER_MISMATCH"
+  },
+  {
+    "at": "$/paths//loads/post/responses/422/content/application/json",
+    "name": "CARRIER_MODE_UNSUPPORTED"
+  },
+  {
+    "at": "$/paths//loads/post/responses/422/content/application/json",
+    "name": "DUPLICATE_SHIPMENT"
+  },
+  {
+    "at": "$/paths//loads/post/responses/422/content/application/json",
+    "name": "INVALID_LOAD_STOPS"
+  },
+  {
+    "at": "$/paths//loads/post/responses/400/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//loads/post/responses/401/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//loads/post/responses/403/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//loads/post/responses/415/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//loads/post/responses/500/content/application/json",
+    "name": "INTERNAL_ERROR"
+  },
+  {
+    "at": "$/paths//loads/post/responses/502/content/application/json",
+    "name": "DEPENDENCY_RESPONSE_INVALID"
+  },
+  {
+    "at": "$/paths//loads/post/responses/503/content/application/json",
+    "name": "REFERENCE_STATE_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//loads/post/responses/503/content/application/json",
+    "name": "DEPENDENCY_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//loads/post/responses/503/content/application/json",
+    "name": "PERSISTENCE_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/requestBody/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/200/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/404/content/application/json",
+    "name": "LOAD_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/404/content/application/json",
+    "name": "CARRIER_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/404/content/application/json",
+    "name": "SHIPMENT_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/422/content/application/json",
+    "name": "SHIPMENT_NOT_ELIGIBLE"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/422/content/application/json",
+    "name": "SHIPMENT_CARRIER_MISMATCH"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/422/content/application/json",
+    "name": "CARRIER_MODE_UNSUPPORTED"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/422/content/application/json",
+    "name": "INVALID_LOAD_TRANSITION"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/400/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/401/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/403/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/409/content/application/json",
+    "name": "CORRELATION_ROOT_MISMATCH"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/409/content/application/json",
+    "name": "IDEMPOTENCY_KEY_REUSED"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/409/content/application/json",
+    "name": "SHIPMENT_ALREADY_ASSIGNED"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/415/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/500/content/application/json",
+    "name": "INTERNAL_ERROR"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/502/content/application/json",
+    "name": "DEPENDENCY_RESPONSE_INVALID"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/503/content/application/json",
+    "name": "REFERENCE_STATE_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/503/content/application/json",
+    "name": "DEPENDENCY_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//loads/{loadId}/transition/post/responses/503/content/application/json",
+    "name": "PERSISTENCE_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//returns/get/responses/200/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//returns/get/responses/400/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//returns/get/responses/401/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//returns/get/responses/403/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//returns/get/responses/404/content/application/json",
+    "name": "RETURN_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//returns/get/responses/500/content/application/json",
+    "name": "INTERNAL_ERROR"
+  },
+  {
+    "at": "$/paths//returns/get/responses/503/content/application/json",
+    "name": "PERSISTENCE_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//returns/post/requestBody/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//returns/post/responses/201/content/application/json",
+    "name": "committed"
+  },
+  {
+    "at": "$/paths//returns/post/responses/201/content/application/json",
+    "name": "replay"
+  },
+  {
+    "at": "$/paths//returns/post/responses/400/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//returns/post/responses/401/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//returns/post/responses/403/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//returns/post/responses/404/content/application/json",
+    "name": "RETURN_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//returns/post/responses/404/content/application/json",
+    "name": "SHIPMENT_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//returns/post/responses/404/content/application/json",
+    "name": "SHIPMENT_LINE_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//returns/post/responses/409/content/application/json",
+    "name": "CORRELATION_ROOT_MISMATCH"
+  },
+  {
+    "at": "$/paths//returns/post/responses/409/content/application/json",
+    "name": "IDEMPOTENCY_KEY_REUSED"
+  },
+  {
+    "at": "$/paths//returns/post/responses/409/content/application/json",
+    "name": "RETURN_SOURCE_CHANGED"
+  },
+  {
+    "at": "$/paths//returns/post/responses/415/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//returns/post/responses/422/content/application/json",
+    "name": "DUPLICATE_RETURN_LINE"
+  },
+  {
+    "at": "$/paths//returns/post/responses/422/content/application/json",
+    "name": "INVALID_RETURN_QUANTITY"
+  },
+  {
+    "at": "$/paths//returns/post/responses/422/content/application/json",
+    "name": "RETURN_UOM_MISMATCH"
+  },
+  {
+    "at": "$/paths//returns/post/responses/422/content/application/json",
+    "name": "SHIPMENT_NOT_RETURNABLE"
+  },
+  {
+    "at": "$/paths//returns/post/responses/422/content/application/json",
+    "name": "RETURN_QUANTITY_EXCEEDED"
+  },
+  {
+    "at": "$/paths//returns/post/responses/500/content/application/json",
+    "name": "INTERNAL_ERROR"
+  },
+  {
+    "at": "$/paths//returns/post/responses/502/content/application/json",
+    "name": "DEPENDENCY_RESPONSE_INVALID"
+  },
+  {
+    "at": "$/paths//returns/post/responses/502/content/application/json",
+    "name": "RETURN_SHIPMENT_ROOT_INVALID"
+  },
+  {
+    "at": "$/paths//returns/post/responses/503/content/application/json",
+    "name": "REFERENCE_STATE_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//returns/post/responses/503/content/application/json",
+    "name": "DEPENDENCY_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//returns/post/responses/503/content/application/json",
+    "name": "PERSISTENCE_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//returns/post/responses/503/content/application/json",
+    "name": "RETURN_SHIPMENT_ROOT_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/requestBody/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/200/content/application/json",
+    "name": "committed"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/200/content/application/json",
+    "name": "replay"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/400/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/401/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/403/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/404/content/application/json",
+    "name": "RETURN_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/409/content/application/json",
+    "name": "CORRELATION_ROOT_MISMATCH"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/409/content/application/json",
+    "name": "IDEMPOTENCY_KEY_REUSED"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/415/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/422/content/application/json",
+    "name": "INVALID_RETURN_TRANSITION"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/422/content/application/json",
+    "name": "DISPOSITION_REQUIRED"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/500/content/application/json",
+    "name": "INTERNAL_ERROR"
+  },
+  {
+    "at": "$/paths//returns/{returnId}/transition/post/responses/503/content/application/json",
+    "name": "PERSISTENCE_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//claims/get/responses/200/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/get/responses/200/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/get/responses/400/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//claims/get/responses/400/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/get/responses/401/content/application/json",
+    "name": "UNAUTHENTICATED"
+  },
+  {
+    "at": "$/paths//claims/get/responses/401/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/get/responses/401/headers/WWW-Authenticate",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/get/responses/403/content/application/json",
+    "name": "FORBIDDEN"
+  },
+  {
+    "at": "$/paths//claims/get/responses/403/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/get/responses/500/content/application/json",
+    "name": "INTERNAL_ERROR"
+  },
+  {
+    "at": "$/paths//claims/get/responses/500/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/get/responses/503/content/application/json",
+    "name": "CLAIM_STORAGE_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//claims/get/responses/503/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/requestBody/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/responses/201/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/responses/201/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/responses/400/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//claims/post/responses/400/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/responses/401/content/application/json",
+    "name": "UNAUTHENTICATED"
+  },
+  {
+    "at": "$/paths//claims/post/responses/401/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/responses/401/headers/WWW-Authenticate",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/responses/403/content/application/json",
+    "name": "FORBIDDEN"
+  },
+  {
+    "at": "$/paths//claims/post/responses/403/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/responses/404/content/application/json",
+    "name": "CLAIM_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//claims/post/responses/404/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/responses/409/content/application/json",
+    "name": "IDEMPOTENCY_KEY_REUSED"
+  },
+  {
+    "at": "$/paths//claims/post/responses/409/content/application/json",
+    "name": "CLAIM_CORRELATION_MISMATCH"
+  },
+  {
+    "at": "$/paths//claims/post/responses/409/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/responses/415/content/application/json",
+    "name": "UNSUPPORTED_MEDIA_TYPE"
+  },
+  {
+    "at": "$/paths//claims/post/responses/415/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/responses/422/content/application/json",
+    "name": "CLAIM_AMOUNT_INVALID"
+  },
+  {
+    "at": "$/paths//claims/post/responses/422/content/application/json",
+    "name": "CLAIM_SHIPMENT_INELIGIBLE"
+  },
+  {
+    "at": "$/paths//claims/post/responses/422/content/application/json",
+    "name": "CLAIM_CARRIER_MISMATCH"
+  },
+  {
+    "at": "$/paths//claims/post/responses/422/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/responses/500/content/application/json",
+    "name": "INTERNAL_ERROR"
+  },
+  {
+    "at": "$/paths//claims/post/responses/500/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/responses/502/content/application/json",
+    "name": "CLAIM_REFERENCE_INVALID"
+  },
+  {
+    "at": "$/paths//claims/post/responses/502/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/post/responses/503/content/application/json",
+    "name": "CLAIM_REFERENCE_INCOMPLETE"
+  },
+  {
+    "at": "$/paths//claims/post/responses/503/content/application/json",
+    "name": "CLAIM_REFERENCE_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//claims/post/responses/503/content/application/json",
+    "name": "CLAIM_STORAGE_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//claims/post/responses/503/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/requestBody/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/200/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/200/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/400/content/application/json",
+    "name": "INVALID_REQUEST"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/400/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/401/content/application/json",
+    "name": "UNAUTHENTICATED"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/401/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/401/headers/WWW-Authenticate",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/403/content/application/json",
+    "name": "FORBIDDEN"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/403/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/404/content/application/json",
+    "name": "CLAIM_NOT_FOUND"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/404/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/409/content/application/json",
+    "name": "IDEMPOTENCY_KEY_REUSED"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/409/content/application/json",
+    "name": "CLAIM_CORRELATION_MISMATCH"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/409/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/415/content/application/json",
+    "name": "UNSUPPORTED_MEDIA_TYPE"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/415/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/422/content/application/json",
+    "name": "INVALID_CLAIM_TRANSITION"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/422/content/application/json",
+    "name": "CLAIM_APPROVAL_AMOUNT_INVALID"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/422/content/application/json",
+    "name": "CLAIM_APPROVED_AMOUNT_NOT_ALLOWED"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/422/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/500/content/application/json",
+    "name": "INTERNAL_ERROR"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/500/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/503/content/application/json",
+    "name": "CLAIM_STORAGE_UNAVAILABLE"
+  },
+  {
+    "at": "$/paths//claims/{claimId}/transition/post/responses/503/headers/X-Correlation-Id",
+    "name": "example"
+  },
+  {
+    "at": "$/webhooks/shipmentLifecycleEvent/post/requestBody/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/webhooks/shipmentLifecycleEvent/post/responses/202/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/components/responses/BadRequest/content/application/json",
+    "name": "example"
+  },
+  {
+    "at": "$/components/responses/NotFound/content/application/json",
+    "name": "shipment"
+  },
+  {
+    "at": "$/components/responses/NotFound/content/application/json",
+    "name": "carrier"
+  },
+  {
+    "at": "$/components/responses/NotFound/content/application/json",
+    "name": "load"
+  },
+  {
+    "at": "$/components/responses/NotFound/content/application/json",
+    "name": "return"
+  },
+  {
+    "at": "$/components/responses/NotFound/content/application/json",
+    "name": "claim"
+  },
+  {
+    "at": "$/components/responses/Conflict/content/application/json",
+    "name": "idempotency"
+  },
+  {
+    "at": "$/components/responses/Conflict/content/application/json",
+    "name": "duplicatePod"
+  },
+  {
+    "at": "$/components/responses/Unprocessable/content/application/json",
+    "name": "shipmentTransition"
+  },
+  {
+    "at": "$/components/responses/Unprocessable/content/application/json",
+    "name": "loadTransition"
+  },
+  {
+    "at": "$/components/responses/Unprocessable/content/application/json",
+    "name": "returnTransition"
+  },
+  {
+    "at": "$/components/responses/Unprocessable/content/application/json",
+    "name": "claimTransition"
+  },
+  {
+    "at": "$/components/responses/Unprocessable/content/application/json",
+    "name": "inventory"
+  },
+  {
+    "at": "$/components/responses/DependencyUnavailable/content/application/json",
+    "name": "inventory"
+  },
+  {
+    "at": "$/components/responses/DependencyUnavailable/content/application/json",
+    "name": "warehouseGap"
+  },
+  {
+    "at": "$/components/responses/CarrierQError400/content/application/json",
+    "name": "E04_0"
+  },
+  {
+    "at": "$/components/responses/CarrierQError400/content/application/json",
+    "name": "E04_1"
+  },
+  {
+    "at": "$/components/responses/CarrierQError400/content/application/json",
+    "name": "E04_2"
+  },
+  {
+    "at": "$/components/responses/CarrierQError400/content/application/json",
+    "name": "E06_3"
+  },
+  {
+    "at": "$/components/responses/CarrierQError401/headers/WWW-Authenticate",
+    "name": "example"
+  },
+  {
+    "at": "$/components/responses/CarrierQError401/content/application/json",
+    "name": "E02_0"
+  },
+  {
+    "at": "$/components/responses/CarrierQError403/content/application/json",
+    "name": "E03_0"
+  },
+  {
+    "at": "$/components/responses/CarrierQError404/content/application/json",
+    "name": "E05_0"
+  },
+  {
+    "at": "$/components/responses/CarrierQError500/content/application/json",
+    "name": "E13_0"
+  },
+  {
+    "at": "$/components/responses/CarrierQError503/content/application/json",
+    "name": "E12_0"
+  },
+  {
+    "at": "$/components/responses/CarrierCError400/content/application/json",
+    "name": "E04_0"
+  },
+  {
+    "at": "$/components/responses/CarrierCError400/content/application/json",
+    "name": "E04_1"
+  },
+  {
+    "at": "$/components/responses/CarrierCError400/content/application/json",
+    "name": "E04_2"
+  },
+  {
+    "at": "$/components/responses/CarrierCError400/content/application/json",
+    "name": "E04_3"
+  },
+  {
+    "at": "$/components/responses/CarrierCError400/content/application/json",
+    "name": "E06_4"
+  },
+  {
+    "at": "$/components/responses/CarrierCError401/headers/WWW-Authenticate",
+    "name": "example"
+  },
+  {
+    "at": "$/components/responses/CarrierCError401/content/application/json",
+    "name": "E02_0"
+  },
+  {
+    "at": "$/components/responses/CarrierCError403/content/application/json",
+    "name": "E03_0"
+  },
+  {
+    "at": "$/components/responses/CarrierCError404/content/application/json",
+    "name": "E05_0"
+  },
+  {
+    "at": "$/components/responses/CarrierCError409/content/application/json",
+    "name": "E09_0"
+  },
+  {
+    "at": "$/components/responses/CarrierCError409/content/application/json",
+    "name": "E10_1"
+  },
+  {
+    "at": "$/components/responses/CarrierCError415/content/application/json",
+    "name": "E07_0"
+  },
+  {
+    "at": "$/components/responses/CarrierCError500/content/application/json",
+    "name": "E13_0"
+  },
+  {
+    "at": "$/components/responses/CarrierCError503/content/application/json",
+    "name": "E12_0"
+  },
+  {
+    "at": "$/components/responses/CarrierSError400/content/application/json",
+    "name": "E04_0"
+  },
+  {
+    "at": "$/components/responses/CarrierSError400/content/application/json",
+    "name": "E04_1"
+  },
+  {
+    "at": "$/components/responses/CarrierSError400/content/application/json",
+    "name": "E04_2"
+  },
+  {
+    "at": "$/components/responses/CarrierSError400/content/application/json",
+    "name": "E04_3"
+  },
+  {
+    "at": "$/components/responses/CarrierSError400/content/application/json",
+    "name": "E06_4"
+  },
+  {
+    "at": "$/components/responses/CarrierSError401/headers/WWW-Authenticate",
+    "name": "example"
+  },
+  {
+    "at": "$/components/responses/CarrierSError401/content/application/json",
+    "name": "E02_0"
+  },
+  {
+    "at": "$/components/responses/CarrierSError403/content/application/json",
+    "name": "E03_0"
+  },
+  {
+    "at": "$/components/responses/CarrierSError404/content/application/json",
+    "name": "E05_0"
+  },
+  {
+    "at": "$/components/responses/CarrierSError404/content/application/json",
+    "name": "E08_1"
+  },
+  {
+    "at": "$/components/responses/CarrierSError409/content/application/json",
+    "name": "E09_0"
+  },
+  {
+    "at": "$/components/responses/CarrierSError415/content/application/json",
+    "name": "E07_0"
+  },
+  {
+    "at": "$/components/responses/CarrierSError422/content/application/json",
+    "name": "E11_0"
+  },
+  {
+    "at": "$/components/responses/CarrierSError500/content/application/json",
+    "name": "E13_0"
+  },
+  {
+    "at": "$/components/responses/CarrierSError503/content/application/json",
+    "name": "E12_0"
+  },
+  {
+    "at": "$/components/headers/CarrierResponseCorrelation",
+    "name": "example"
+  }
+]

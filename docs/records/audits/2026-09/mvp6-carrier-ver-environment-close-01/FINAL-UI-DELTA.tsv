@@ -1,0 +1,3 @@
+path	final_sha256	bytes	role
+frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.l10n.js	8a62578a0f5652a12eed8cd5d4bd8824b8a079f50cc018848f001768aa76ab8d	2070	final Carrier L10n bridge
+frontend/Diten.Web.Tests/JavaScript/CarrierIndexBehaviorTests.cs	5393232f80bf7a24e468e7d49fbc2efcc7b564b1fa5c9daa2fcecc655760e79b	3301	final Carrier missing-key tests

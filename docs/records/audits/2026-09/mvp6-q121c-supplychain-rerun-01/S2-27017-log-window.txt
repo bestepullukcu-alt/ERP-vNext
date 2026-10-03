@@ -1,0 +1,5 @@
+dev mongod log /opt/homebrew/var/log/mongodb/mongo.log; entries overall 2026-01-28T23:32:47 .. 2026-09-27T16:04:34
+window 2026-09-27T15:59:20..2026-09-27T16:04:10 (+03:00 local; log uses local offset): 8 log entries, 0 "Connection accepted"
+positive control: Q121b Platform window 2026-09-27T14:34:00..2026-09-27T14:43:30: 44 "Connection accepted" (method sees connections)
+timestamp offsets seen today: {'+03:00'}
+the 8 entries in the Q121c window: ['WiredTiger message', 'WiredTiger message', 'WiredTiger message', 'WiredTiger message', 'Task finished', 'Acquired connection for remote operation and completed writing to wire', 'WiredTiger message', 'Deleting excess documents']

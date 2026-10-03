@@ -1,0 +1,26 @@
+criterion	result	evidence	disposition
+Approved patch SHA-256	PASS	evidence/artifact-hash-verification.tsv	6559c94835814ab65dc50a05cca32db905e31e637f9a15aeeeb033e9850c83e6
+Approved ten-path source manifest SHA-256	PASS	evidence/artifact-hash-verification.tsv	84ce27833951bfed92edf46c02a0ee7c8934d1c6eff006e665d3ddaf09bf8b23
+Final source archive	PASS	evidence/artifact-hash-verification.tsv; evidence/source-archive-validation.txt	a10bb93246557475d6518975aa0ee1dd8928ca08781fc2fb0cfbb04136463388; gzip valid; 2507 entries
+Build source set	PASS	evidence/build-source-set-check.log	298eb741dcc33cb45eb6f9096a8c7d190e9ec47e77fd5cba032c7f13cce9956e; all entries OK
+Ten archived target source hashes	PASS	evidence/ten-target-hashes.tsv	10/10 exact
+Real repository preimages preserved	PASS	evidence/real-repo-preimage-preservation.tsv; evidence/final-source-preservation.tsv	modified paths remain at approved preimages; added paths absent
+Auth API independent fresh build	PASS	evidence/auth-fresh-build.log; evidence/auth-fresh-build.exit	0 errors; 19 warnings including NU1900 and existing obsolete warnings
+Platform API independent fresh build	PASS	evidence/platform-fresh-build.log; evidence/platform-fresh-build.exit	0 errors; 55 warnings including NU1900 and existing warnings
+Wrong internal key rejected	PASS	evidence/runtime-wrong-key.status.txt; evidence/runtime-wrong-key.body.txt	independent runtime HTTP 401
+Correct internal key reaches resolver path	FAIL	evidence/runtime-correct-key.status.txt; evidence/runtime-correct-key.body.txt	independent runtime HTTP 400: tenant context unresolved before scope resolution
+Exactly one active LE emitted	FAIL	evidence/runtime-correct-key.*; writer content-bound auth-issued-safe-claims.json	blocking HTTP 400; writer login and refresh claims omit legal_entity_id
+Zero active LE omits claim	NOT RUN	blocked by F1	no independent result claimed
+Multiple active LE omits claim	NOT RUN	blocked by F1	no independent result claimed
+Inactive or revoked scope omitted	NOT RUN	blocked by F1	no independent result claimed
+Tenant and actor boundaries	NOT RUN	blocked by F1	writer failures are inherited/content-bound, not fresh VER PASS
+Dependency failure is fail-closed	PARTIAL	evidence/source-path-evidence.txt	400 omits claim, but MDM validation path is not reached
+Login token contains authoritative LE	FAIL	writer raw evidence, content-bound	HTTP 200 token has legal_entity_id null; not independently rerun
+Refresh re-resolves authoritative LE	FAIL	writer raw evidence, content-bound	HTTP 200 token has legal_entity_id null; not independently rerun
+MFA issuance	NOT RUN	blocked by F1	no independent result claimed
+Forced-password issuance	NOT RUN	blocked by F1	no independent result claimed
+MDM authorization seam	FAIL	evidence/source-path-evidence.txt	Auth internal client sends no bearer; Platform only forwards caller bearer; MDM endpoint requires authorization and permission
+Carrier missing-LE 403 remains fail-closed	PRESERVED	10-path scope and real-repo preimage checks	no Carrier source changed
+Secrets or usable bearer archived	PASS	evidence archive inspection	no usable bearer, signing key, internal key, or connection string retained
+Runtime cleanup	PASS	evidence/cleanup.txt	lane ports 18157 and 37181 released
+Independent product verdict	REWORK	SOP-22-VER-REPORT.md	GAP-CARRIER-AUTH-LE-01 confirmed; GAP-CARRIER-AUTH-LE-02 source-confirmed

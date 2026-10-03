@@ -1,0 +1,117 @@
+./docs/roadmap/plans/mod-0183-readiness-and-development-prompt.md:14:- [SHIPMENT-BUNDLE](../../analysis/contracts/shipment-bundle.openapi.yaml), [WAREHOUSE-OUTBOUND](../../analysis/contracts/warehouse-outbound.openapi.yaml), [SUPPLIER](../../analysis/contracts/supplier.openapi.yaml): all v1/FROZEN; files remain byte-for-byte unchanged.
+./docs/roadmap/plans/mod-0183-readiness-and-development-prompt.md:16:- Baseline: untracked `shipment-bundle.openapi.yaml`, `sandop-capacity.openapi.yaml`, `supplier-performance.openapi.yaml` under `docs/analysis/contracts/`; nine packs under the SCE `module-packs/` directory; `docs/records/audits/2026-09/mvp6-phase-a-spec-freeze-report-2026-09-15.md`; `docs/roadmap/plans/mvp6-logistics-development-plan.md`. These are expected task inputs, preserved. Staging empty. Only one listed worktree. Re-run preflight at dispatch; unknown changes stop the affected writer.
+./docs/roadmap/plans/mod-0183-readiness-and-development-prompt.md:20:Approved core: five-layer `Diten.SupplyChainService` on 5061; `GET/POST /api/shipment-bundle/shipments`,
+./docs/roadmap/plans/mod-0183-readiness-and-development-prompt.md:28:| SHIPMENT-BUNDLE v1 | Available; local references and explicit examples validate | Core authority; preserve wire envelope exception |
+./docs/roadmap/plans/mod-0183-readiness-and-development-prompt.md:36:Historical Phase-A reports are immutable evidence. Stale prose and error examples inside frozen SHIPMENT-BUNDLE
+./docs/roadmap/plans/mod-0183-readiness-and-development-prompt.md:198:| 1 | All pack fields | Plan: Yes. `Domain/Features/Shipments/Shipment.cs`: inherited Id/TenantId/IsDeleted/DeletedAt/CreatedAt/UpdatedAt/Version; LegalEntityId, ShipmentNumber, SourceModule/SourceType/SourceDocumentId, SourceSystem/ExternalRef, WarehouseReferenceId, CarrierId, LoadPlanId (wire loadId), ShipToReference, Lines, PlannedShipAt/PlannedDeliverAt/ActualDeliverAt, Status, CreatedBy/UpdatedBy and root correlation. `ShipmentLine.cs`: LineNumber/ItemId/SkuId/Quantity/UomId/InventoryReferenceId. `ProofOfDelivery.cs`: Id/ShipmentId/ReceivedAt/RecipientName/EvidenceReferenceIds/Note/CorrelationId plus scope/base/audit. `ShipmentLifecycleEntry.cs`: sequence, from/to, occurredAt, reason/note, actor, correlation/causation/event IDs. `ShipmentException.cs`: transition reason/note/time evidence. Source snapshot/link, replay and outbox retain §§3–5 evidence; never serialize internal fields into frozen DTOs. |
+./docs/roadmap/plans/mod-0183-readiness-and-development-prompt.md:205:| 8 | Required / optional parity | Plan: Yes for backend. Create requires SourceModule/SourceType/SourceDocumentId/WarehouseReferenceId/ShipToReference/PlannedShipAt/Lines; lines require LineNumber/ItemId/SkuId/Quantity/UomId. Transition TargetStatus/OccurredAt; POD RecipientName/ReceivedAt/EvidenceReferenceIds. UUID correlation all operations; key mutations. Nullable PlannedDeliverAt/InventoryReferenceId/ReasonCode/Note and response CarrierId/LoadId/ActualDeliverAt/POD per schema. No ViewModel/Razor/tracker; progress N/A. Use frozen required/null rules plus pack business checks, no invented public fields. |
+./docs/roadmap/plans/mod-0183-readiness-and-development-prompt.md:247:docs/analysis/contracts/{shipment-bundle,warehouse-outbound,supplier,inventory-bundle}.openapi.yaml
+./docs/roadmap/plans/mod-0184-ver-01-prompt-v1.0.md:33:4. docs/analysis/contracts/shipment-bundle.openapi.yaml (FROZEN 1.0.0 / v1)
+./docs/roadmap/plans/mod-0184-ver-01-prompt-v1.0.md:56:Target-agent inputs: validate CreateCarrier/ChangeCarrierStatus/GetCarrierList handlers and
+./docs/roadmap/plans/mod-0184-dev-01-prompt-v1.0.md:33:4. docs/analysis/contracts/shipment-bundle.openapi.yaml (FROZEN 1.0.0 / v1)
+./docs/roadmap/plans/mod-0184-dev-01-prompt-v1.0.md:60:NE: Implement only GET/POST /api/shipment-bundle/carriers and POST
+./docs/roadmap/plans/mod-0184-dev-01-prompt-v1.0.md:61:/api/shipment-bundle/carriers/{carrierId}/status, matching pack §21 and approved decisions.
+./docs/roadmap/plans/mvp6-logistics-development-plan.md:94:   and exact `/api/shipment-bundle` paths. Report backend-only acceptance separately if gateway work is still pending.
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:3:  title: SHIPMENT-BUNDLE
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:21:  - url: /api/shipment-bundle
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:54:                    carrierId: 18400000-0000-0000-0000-000000000001
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:135:                carrierId: 18400000-0000-0000-0000-000000000001
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:202:  /carriers:
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:209:        - { name: status, in: query, schema: { $ref: '#/components/schemas/CarrierStatus' } }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:216:              example: { items: [{ carrierId: 18400000-0000-0000-0000-000000000001, carrierCode: CARR-01, displayName: North Star Logistics, status: Active, supportedModes: [Road] }], total: 1, contractVersion: v1 }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:219:      operationId: createCarrier
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:228:            schema: { $ref: '#/components/schemas/CreateCarrierCommand' }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:236:              example: { carrierId: 18400000-0000-0000-0000-000000000001, carrierCode: CARR-01, status: Active, idempotentReplay: false, contractVersion: v1 }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:239:  /carriers/{carrierId}/status:
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:242:      operationId: changeCarrierStatus
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:246:        - { name: carrierId, in: path, required: true, schema: { type: string, format: uuid } }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:253:            schema: { $ref: '#/components/schemas/ChangeCarrierStatusCommand' }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:261:              example: { carrierId: 18400000-0000-0000-0000-000000000001, carrierCode: CARR-01, status: Suspended, idempotentReplay: false, contractVersion: v1 }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:272:        - { name: carrierId, in: query, schema: { type: string, format: uuid } }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:279:              example: { items: [{ loadId: 18500000-0000-0000-0000-000000000001, loadNumber: LOAD-2026-001, carrierId: 18400000-0000-0000-0000-000000000001, shipmentIds: [18300000-0000-0000-0000-000000000001], status: Planned }], total: 1, contractVersion: v1 }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:293:              carrierId: 18400000-0000-0000-0000-000000000001
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:438:            example: { shipmentId: 18300000-0000-0000-0000-000000000001, carrierId: 18400000-0000-0000-0000-000000000001, reasonCode: DAMAGE, claimedAmount: '250.00', currency: USD, evidenceReferenceIds: [photo-damage-22, pod-9001] }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:481:      summary: Event Bus'a yayilan shipment-bundle lifecycle event'i
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:612:        carrierId: { type: [string, 'null'], format: uuid }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:649:    CreateCarrierCommand:
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:658:    ChangeCarrierStatusCommand:
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:663:        targetStatus: { $ref: '#/components/schemas/CarrierStatus' }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:667:      required: [carrierId, carrierCode, displayName, status, supportedModes]
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:669:        carrierId: { type: string, format: uuid }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:672:        status: { $ref: '#/components/schemas/CarrierStatus' }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:676:      required: [carrierId, carrierCode, status, idempotentReplay, contractVersion]
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:678:        carrierId: { type: string, format: uuid }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:680:        status: { $ref: '#/components/schemas/CarrierStatus' }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:687:        items: { type: array, items: { $ref: '#/components/schemas/CarrierSummary' } }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:701:      required: [carrierId, shipmentIds, mode, plannedDepartAt, stops]
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:703:        carrierId: { type: string, format: uuid }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:721:        carrierId: { type: string, format: uuid }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:794:        carrierId: { type: [string, 'null'], format: uuid }
+./docs/analysis/contracts/shipment-bundle.openapi.yaml:843:        carrierId: { type: [string, 'null'], format: uuid }
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:29:references. Phase A freezes its external API in `SHIPMENT-BUNDLE` v1; it does not create runtime code or UI.
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:35:**Consumes:** Data Contract Registry identifiers and `SHIPMENT-BUNDLE` v1. MVP-6 also records
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:47:| API | Exactly GET/POST `/carriers` and POST `/carriers/{carrierId}/status`; see §21 |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:59:`docs/analysis/contracts/shipment-bundle.openapi.yaml` is frozen authority and read-only during implementation.
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:65:- All frozen contracts, including `SHIPMENT-BUNDLE` v1, after Phase A.
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:72:| `SHIPMENT-BUNDLE` v1 | Frozen | Carrier API authority and mock source |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:89:Prospective feature root is `Features/Carriers/` with separate Commands, Queries, Handlers/CommandHandlers,
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:114:Desired family is the frozen `SHIPMENT-BUNDLE` carrier surface. Only `integration-agent` may modify gateway routes.
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:132:- [x] Owned boundary and frozen `SHIPMENT-BUNDLE` v1 are identified.
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:152:Authority: `docs/analysis/contracts/shipment-bundle.openapi.yaml`, OpenAPI 3.1.0,
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:153:info.version 1.0.0, x-contract-version v1, x-status FROZEN. Base URL `/api/shipment-bundle`.
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:158:| queryCarriers | GET `/carriers` | Required correlation header; optional `status` enum | 200 CarrierListResponse only |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:159:| createCarrier | POST `/carriers` | Both headers; required CreateCarrierCommand body | 201 CarrierResponse; 409 Conflict; 422 Unprocessable |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:160:| changeCarrierStatus | POST `/carriers/{carrierId}/status` | UUID path ID; both headers; required ChangeCarrierStatusCommand | 200 CarrierResponse; 404 NotFound; 422 Unprocessable |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:175:| Summary.carrierId | required / non-null | UUID string |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:179:| Response.carrierId, carrierCode, status | required / non-null | UUID string, string, CarrierStatus |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:201:aggregateType and eventType; no CarrierCreated/CarrierStatusChanged event or shared event transport is authorized.
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:238:| Domain | `S.Domain/Features/Carriers/` | Carrier.cs, CarrierScope.cs, CarrierStatus.cs, TransportMode.cs, CarrierLifecycle.cs, CarrierAuditEntry.cs, CarrierMutationResult.cs, ICarrierRepository.cs |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:239:| Application | `S.Application/Features/Carriers/` | Commands/CreateCarrierCommand.cs, Commands/ChangeCarrierStatusCommand.cs; Queries/GetCarrierListQuery.cs; Handlers/CommandHandlers/CreateCarrierHandler.cs, ChangeCarrierStatusHandler.cs; Handlers/QueryHandlers/GetCarrierListHandler.cs; Validators/CreateCarrierValidator.cs, ChangeCarrierStatusValidator.cs, GetCarrierListValidator.cs; CarrierModels.cs, CarrierRequestContext.cs, CarrierRequestFingerprint.cs |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:240:| API | `S.Api/Features/Carriers/` | CarriersController.cs, CarrierContextMiddleware.cs, CarrierContractError.cs; exact three frozen routes |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:241:| Persistence | `S.Persistence/Features/Carriers/` | CarrierRepository.cs, CarrierSchema.cs, CarrierPersistenceRegistration.cs, ICarrierCommitProbe.cs, NoOpCarrierCommitProbe.cs; collections carriers/carrier_idempotency/carrier_audit |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:242:| Infrastructure | `S.Infrastructure/Features/Carriers/` | CarrierPermissions.cs, CarrierPermissionAttribute.cs; no external transport/client |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:243:| Tests | `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Carriers/` | CarrierContractTests.cs, CarrierLifecycleTests.cs, CarrierIsolationTests.cs, CarrierReplayTests.cs, CarrierAtomicityTests.cs, CarrierConcurrencyTests.cs |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:244:| HTTP/restart probes | `services/Diten.SupplyChainService/tests/carriers/` | runtime_probe.py, restart_probe.py, verify_evidence.py; no edits to MOD-0183 probes |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:289:| C07 replay | Same key/payload including after process restart returns same carrierId/code/original resulting status with replay=true, no second audit/write; replay an older success after later status changes without overwriting current state. Different payload under same scope/key fails approved 409; test separate targets/operations/scopes and correlation policy |
+./execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md:320:| 4 | Entity base | Plan: Domain/Features/Carriers/Carrier.cs inherits existing Domain/Common/EntityBase.cs; tenant owned, no GlobalEntity. Evet |
+./execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md:57:API reference and this pack are writable. `docs/analysis/contracts/shipment-bundle.openapi.yaml` remains the
+./execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md:73:| `SHIPMENT-BUNDLE` v1 | Frozen | Reverse API/lifecycle/mock authority |
+./execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md:114:Use frozen `SHIPMENT-BUNDLE` `/returns**`; route publication is a separate integration-agent task.
+./execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md:51:`CarrierId`, reason, positive decimal-string `ClaimedAmount`, ISO-4217 currency, evidence refs, nullable approved amount,
+./execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md:57:reference and this pack may change. `docs/analysis/contracts/shipment-bundle.openapi.yaml` is frozen/read-only
+./execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md:73:| `SHIPMENT-BUNDLE` v1 | Frozen | Claim schema/lifecycle/event/mock authority |
+./execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md:115:Use frozen `SHIPMENT-BUNDLE` `/claims**`; only a separate integration-agent WP may add gateway routes.
+./execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md:28:Its first prospective slice is backend/contract only and conforms to `SHIPMENT-BUNDLE` v1.
+./execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md:51:`LoadPlan` carries server UUID, server-resolved TenantId/LegalEntityId, unique `LoadNumber`, required `CarrierId`,
+./execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md:58:reference and this pack are writable. `docs/analysis/contracts/shipment-bundle.openapi.yaml` remains read-only
+./execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md:74:| `SHIPMENT-BUNDLE` v1 | Frozen | Load schema, transitions, event and mock authority |
+./execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md:101:- Lifecycle accepts only the transition matrix frozen in `SHIPMENT-BUNDLE` v1.
+./execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md:115:Use the `SHIPMENT-BUNDLE` `/loads**` surface. Gateway changes belong only to a later integration-agent WP.
+./execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md:48:- Shipment lifecycle event payloads in `SHIPMENT-BUNDLE`.
+./execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md:77:| API | `/api/shipment-bundle/shipments/**` from `SHIPMENT-BUNDLE` v1 |
+./execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md:94:| `CarrierId` | Optional MOD-0184 reference |
+./execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md:129:The frozen file `docs/analysis/contracts/shipment-bundle.openapi.yaml` is implementation authority. Phase B must not
+./execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md:146:| `SHIPMENT-BUNDLE` v1 | SATISFIED when Phase A validation passes | Owned frozen contract |
+./execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md:170:  `/api/shipment-bundle` wire response is the unwrapped OpenAPI v1 schema, matching the eight Wave-0 mock contracts.
+./execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md:236:The canonical contract family is `/api/shipment-bundle/**` to service port 5061, exactly matching the OpenAPI
+./execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md:246:- [ ] Allowed transitions match `SHIPMENT-BUNDLE` v1 and invalid transitions fail without partial state.
+./execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md:259:- OpenAPI syntax/reference validation and Prism mock startup/smoke for `SHIPMENT-BUNDLE`.
+./execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md:271:- [x] Owned contract is versioned, validated and frozen as `SHIPMENT-BUNDLE` v1.
+./execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md:315:listed conceptually in §3 are not implemented without an approved frozen assignment surface. `loadId`/`carrierId`
+./services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentRepository.cs:95:                            payload = new { shipmentId = s.Id, shipmentNumber = s.ShipmentNumber, status = s.Status.ToString(), carrierId = s.CarrierId, loadId = s.LoadPlanId, podId = s.Pod?.Id, reasonCode = change.ReasonCode },
+./services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/Shipment.cs:16:    public Guid? CarrierId { get; set; }
+./services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentProjection.cs:13:        s.CarrierId,
+./services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Controllers/ShipmentsController.cs:10:[Route("api/shipment-bundle/shipments")]
+./services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Middleware/ShipmentContextMiddleware.cs:9:        if (!http.Request.Path.StartsWithSegments("/api/shipment-bundle")) { await next(http); return; }
+./services/Diten.SupplyChainService/README.md:4:SHIPMENT-BUNDLE, module pack or DCP-009 acceptance.
+./services/Diten.SupplyChainService/README.md:27:| GET | /api/shipment-bundle/shipments | read |
+./services/Diten.SupplyChainService/README.md:28:| POST | /api/shipment-bundle/shipments | create |
+./services/Diten.SupplyChainService/README.md:29:| GET | /api/shipment-bundle/shipments/{shipmentId} | read |
+./services/Diten.SupplyChainService/README.md:30:| POST | /api/shipment-bundle/shipments/{shipmentId}/transition | cancel for Cancelled; otherwise dispatch |
+./services/Diten.SupplyChainService/README.md:31:| POST | /api/shipment-bundle/shipments/{shipmentId}/pod | pod.capture |
+./services/Diten.SupplyChainService/README.md:69:MOD0183_TEST_MONGO='mongodb://127.0.0.1:27027/?replicaSet=mod0183verify' python3 services/Diten.SupplyChainService/tests/runtime_probe.py /private/tmp/mod0183-evidence docs/analysis/contracts/shipment-bundle.openapi.yaml
+./services/Diten.SupplyChainService/tests/sent_body_probe.py:22:    if isinstance(request, urllib.request.Request) and "/api/shipment-bundle/shipments" in request.full_url:
+./services/Diten.SupplyChainService/tests/sent_body_probe.py:25:            "path": request.full_url.split("/api/shipment-bundle/shipments", 1)[1],
+./services/Diten.SupplyChainService/tests/runtime_probe.py:30:    req=urllib.request.Request("http://127.0.0.1:5061/api/shipment-bundle/shipments"+path,
+./services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentTests.cs:100:        using var request = new HttpRequestMessage(new HttpMethod(method), "/api/shipment-bundle/shipments" + path);
+./services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentTests.cs:279:        using var options = new HttpRequestMessage(HttpMethod.Options, "/api/shipment-bundle/shipments");

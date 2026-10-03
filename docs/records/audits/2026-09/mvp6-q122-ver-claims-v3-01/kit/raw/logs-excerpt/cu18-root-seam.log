@@ -1,0 +1,13 @@
+197:[15:05:40 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5961/api/shipment-bundle/shipments/8cf6badd-ce43-4096-86ac-1ed8912d1412/transition - 200 null application/json; charset=utf-8 11.3736ms
+205:[15:05:40 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5961/api/shipment-bundle/shipments/8cf6badd-ce43-4096-86ac-1ed8912d1412/transition - 200 null application/json; charset=utf-8 11.5558ms
+213:[15:05:40 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5961/api/shipment-bundle/shipments/8cf6badd-ce43-4096-86ac-1ed8912d1412 - 200 null application/json; charset=utf-8 2.3636ms
+229:[15:05:40 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5961/api/shipment-bundle/shipments/0acf96c8-47d3-4656-8a3f-9a8bab421932/transition - 200 null application/json; charset=utf-8 9.982ms
+237:[15:05:40 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5961/api/shipment-bundle/shipments/0acf96c8-47d3-4656-8a3f-9a8bab421932/transition - 200 null application/json; charset=utf-8 10.4117ms
+245:[15:05:40 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5961/api/shipment-bundle/shipments/0acf96c8-47d3-4656-8a3f-9a8bab421932 - 200 null application/json; charset=utf-8 1.7628ms
+1418:[15:11:17 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5961/api/shipment-bundle/shipments/8cf6badd-ce43-4096-86ac-1ed8912d1412 - 200 null application/json; charset=utf-8 1.8105ms
+1426:[15:11:19 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5961/api/shipment-bundle/shipments/0acf96c8-47d3-4656-8a3f-9a8bab421932 - 500 null application/json; charset=utf-8 1.5193ms
+1434:[15:11:20 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5961/api/shipment-bundle/shipments/8cf6badd-ce43-4096-86ac-1ed8912d1412 - 200 null application/json; charset=utf-8 2.0212ms
+1442:[15:11:20 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5961/api/shipment-bundle/shipments/0acf96c8-47d3-4656-8a3f-9a8bab421932 - 500 null application/json; charset=utf-8 1.8325ms
+1458:[15:11:52 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5961/api/shipment-bundle/shipments/8cf6badd-ce43-4096-86ac-1ed8912d1412 - 200 null application/json; charset=utf-8 2.9443ms
+1466:[15:11:52 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5961/api/shipment-bundle/shipments/8cf6badd-ce43-4096-86ac-1ed8912d1412 - 200 null application/json; charset=utf-8 1.2909ms
+1474:[15:11:53 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5961/api/shipment-bundle/shipments/8cf6badd-ce43-4096-86ac-1ed8912d1412 - 200 null application/json; charset=utf-8 1.5982ms

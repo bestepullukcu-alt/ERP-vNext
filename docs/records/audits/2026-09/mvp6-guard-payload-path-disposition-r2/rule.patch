@@ -1,0 +1,17 @@
+--- a/.antigravity/rules/docs-organization.md
++++ b/.antigravity/rules/docs-organization.md
+@@ -175,3 +175,14 @@
+ files, changed evidence, stale dispositions and missing/invalid approval records fail closed.
+ Any new path/content requires a newly reviewed disposition; an existing record is not a waiver
+ for future changes. Existing immutable evidence/manifests/contracts remain byte-identical.
++
++## R2 exact recovery snapshot disposition (requires new owner approval)
++
++Only the following historical-data seals may remain outside records:
++- `docs/roadmap/plans/mod-0183-root-uptake-recovery-01/input-manifest.json`, SHA256 `a70f79d7892d83ddbe772653a06cb009ebfe7e2b72549d11dd956f72ab9f83fe`.
++- `docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json`, SHA256 `74e31359aaeb662645d224d9602cb801f8f81a433cc75cf09840d852fd2e878e`.
++
++These are exact immutable snapshots, not a roadmap prefix exemption. Existing
++records-only provenance, approved payload binding, source hash, empty historical
++targets, inventory consumption and every other fail-closed check still apply.
++Changing either path or byte content requires a new reviewed rule and payload.

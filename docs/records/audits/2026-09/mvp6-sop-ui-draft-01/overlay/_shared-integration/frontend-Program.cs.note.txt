@@ -1,0 +1,10 @@
+# MOD-0190 S&OP — frontend Program.cs / DI (no new line required)
+#
+# SupplyChainSandopPlansController takes (HttpClient, IConfiguration, ILogger<>) exactly like SupplyChainShipmentsController;
+# the transient default HttpClient registration (builder.Services.AddHttpClient();) already exists in frontend Program.cs.
+# MVC discovers the controller by convention. No frontend Program.cs edit is proposed.
+#
+# DEPENDENCY (README FINDING F2, same as Claims F3): the controller uses Diten.Web.Security.JsonAdapterEndpointAttribute and
+# relies on the JSON challenge branch in frontend Program.cs (OnRedirectToLogin → 401 JSON when the endpoint carries the
+# attribute). Both exist in the A12 360 overlay (7b6a0d1a…314d) and NOT in the common checkout. The Q84b isolated environment
+# must apply that overlay; the integrated target must contain it before this module lands.

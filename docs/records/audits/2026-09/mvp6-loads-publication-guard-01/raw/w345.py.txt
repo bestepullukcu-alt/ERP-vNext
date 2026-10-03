@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""Q25 W3/W4/W5 writer (EXECUTION-ORDER.md Step 2.3) — run against a ROOT (rehearsal copy or the repository).
+W3: byte copy of PROVENANCE.md.txt. W4: candidate decision with exactly two exact string replacements. W5: candidate
+authority with exactly one exact block replacement binding W4 path + SHA-256. Fail-closed: every replacement must match
+exactly once; every expected hash is checked; nothing is written if a precondition fails. Prints hashes only.
+Usage: w345.py ROOT PREP_DIR
+"""
+import hashlib, os, pathlib, sys
+
+ROOT = pathlib.Path(sys.argv[1]); PREP = pathlib.Path(sys.argv[2])
+W3 = "docs/records/audits/2026-09/mvp6-loads-publication-guard-01/PROVENANCE.md"
+W4 = "docs/records/decisions/2026-09/mvp6-loads-publication-guard-owner-decision-01.json"
+W5 = "docs/reference/architecture/docs-path-authority.json"
+APPROVED_BY = "current-role-user-message-2026-09-26"
+PAYLOAD = "a77538b4784e1749b7ebe2e7d38d2e8400803c63ec8e6f49d3382929d7d611e0"
+sha = lambda b: hashlib.sha256(b).hexdigest()
+
+
+def need(cond, msg):
+    if not cond:
+        print("STOP:", msg); sys.exit(1)
+
+
+def replace_once(text, old, new, label):
+    need(text.count(old) == 1, f"{label}: expected exactly one occurrence, found {text.count(old)}")
+    return text.replace(old, new)
+
+
+def raw_span(text, key):
+    """Raw JSON text of the array value of top-level `key` (string-aware bracket matcher), as GetRawText() returns."""
+    i = text.index(f'"{key}"'); i = text.index("[", i)
+    depth, j, ins, esc = 0, i, False, False
+    while True:
+        c = text[j]
+        if ins:
+            if esc: esc = False
+            elif c == "\\": esc = True
+            elif c == '"': ins = False
+        elif c == '"': ins = True
+        elif c == "[": depth += 1
+        elif c == "]":
+            depth -= 1
+            if depth == 0: return text[i:j + 1]
+        j += 1
+
+
+src3 = (PREP / "PROVENANCE.md.txt").read_bytes()
+src4 = (PREP / "owner-decision.candidate.json.txt").read_bytes()
+src5 = (PREP / "docs-path-authority.candidate.json.txt").read_bytes()
+need(sha(src3) == "84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a", "PROVENANCE.md.txt hash")
+need(sha(src4) == "825f0853d0f1ef50c6ba5bed732ee964cece6585327eff2c6277d13207b84e5e", "decision candidate hash")
+need(sha(src5) == "36013649effa878319db150dca5a942bfac592fe012fc4c71526f0a3010ca825", "authority candidate hash")
+for p in (W3, W4):
+    need(not (ROOT / p).exists(), f"{p} must be absent before the write")
+
+t4 = src4.decode("utf-8")
+t4 = replace_once(t4, '"status": "UNAPPROVED"', '"status": "APPROVED"', "W4 status")
+t4 = replace_once(t4, '"approvedBy": "PENDING-OWNER"', f'"approvedBy": "{APPROVED_BY}"', "W4 approvedBy")
+need(f'"payloadSha256": "{PAYLOAD}"' in t4, "W4 payloadSha256")
+b4 = t4.encode("utf-8"); h4 = sha(b4)
+
+t5 = src5.decode("utf-8")
+t5 = replace_once(t5, '"status": "UNAPPROVED",\n  "decision": null,',
+                  '"status": "APPROVED",\n  "decision": {\n    "path": "' + W4 + '",\n    "sha256": "' + h4 + '"\n  },', "W5 status/decision")
+payload = raw_span(t5, "canonicalTargets") + "\n" + raw_span(t5, "sealedInputs")
+need(sha(payload.encode("utf-8")) == PAYLOAD, "W5 payload re-hash")
+b5 = t5.encode("utf-8")
+
+(ROOT / W3).parent.mkdir(parents=True, exist_ok=True)
+(ROOT / W3).write_bytes(src3)
+(ROOT / W4).write_bytes(b4)
+(ROOT / W5).write_bytes(b5)
+for p, want in ((W3, sha(src3)), (W4, h4), (W5, sha(b5))):
+    need(sha((ROOT / p).read_bytes()) == want, f"read-back {p}")
+print(f"W3 {sha(src3)} {W3}")
+print(f"W4 {h4} {W4}")
+print(f"W5 {sha(b5)} {W5}")
+print(f"W5 payload {PAYLOAD} (re-hashed from written file: {sha((raw_span((ROOT / W5).read_text('utf-8'), 'canonicalTargets') + chr(10) + raw_span((ROOT / W5).read_text('utf-8'), 'sealedInputs')).encode('utf-8'))})")

@@ -1,0 +1,23 @@
+id	acceptance	verdict	evidence_or_exact_gap
+RA2-01	Auth successor independent runtime PASS exists	BLOCKED	Latest independent SOP SHA 674269a15842488f634acb65751b33ad3d2b550429ff2f74cab931c4bd2c8a09 is REWORK / Phase 2 NOT RUN; no bounded Carrier handoff
+RA2-02	Successor DEV writer complete	PASS_INPUT	DEV SOP SHA ec31466889f9872de0f57357057dcf291fa90228aa59742f37c136243395e325; 22-path manifest 275f204c...; independent acceptance still open
+RA2-03	Final UI exact identity	PASS	FINAL-UI-SOURCE.tsv SHA 3b7086f0...; registered UI worktree 21/21; e96578d0 is preimage only
+RA2-04	Closed seven-language L10n remains bound	PASS_INHERITED	Final 21/21 unchanged; 70/70 matrix SHA fbc83bfa...; final-v3 Carrier console zero warnings/errors
+RA2-05	Closed 768/390 responsive checks remain bound	PASS_INHERITED	RESPONSIVE.tsv SHA c93a70b6...; exact innerWidth 768/390, DPR 1, no overflow
+RA2-06	Fresh native source→binary→process chain	NOT RUN	Start prerequisite failed; no process launched
+RA2-07	Real Auth-issued legal_entity_id	NOT RUN	No independent Auth successor PASS
+RA2-08	MVC→Gateway→Carrier list	NOT RUN	No real Auth token run
+RA2-09	MVC→Gateway→Carrier create	NOT RUN	No real Auth token run
+RA2-10	Same-key replay and conflict	NOT RUN	No real Auth token mutation run
+RA2-11	Status transition	NOT RUN	No real Auth token mutation run
+RA2-12	Status offcanvas from persisted row	NOT RUN	No authenticated list row produced
+RA2-13	Read/create/status permission isolation	NOT RUN	Requires distinct real Auth-issued permission identities
+RA2-14	Tenant isolation	NOT RUN	Requires positive and cross-tenant real Auth pair
+RA2-15	Legal Entity isolation	NOT RUN	Requires positive and cross-LE real Auth pair
+RA2-16	Create/replay/status persistence	NOT RUN	No mutation or DB observation run
+RA2-17	Fresh UAS-001 denial/remediation	NOT RUN	Requested fresh Auth-dependent run held by start gate; historical bounded evidence retained only
+RA2-18	Durable PNG archive	OPEN	No permitted screenshot artifact-save/export mechanism; forbidden bypasses not attempted
+RA2-19	Auth PASS as automatic Carrier PASS	N/A	Explicitly prohibited; each Carrier row requires its own evidence
+RA2-20	Full-module E5 G5 rollout	N/A	Outside bounded verifier scope
+OVERALL	MVP6 Carrier real-Auth E2E successor	BLOCKED	Auth successor independent runtime PASS prerequisite absent; all authenticated Carrier rows remain NOT RUN
+

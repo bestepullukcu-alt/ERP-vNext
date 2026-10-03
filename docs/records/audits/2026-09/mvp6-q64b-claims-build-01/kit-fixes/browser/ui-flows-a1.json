@@ -1,0 +1,81 @@
+{
+  "phase": "ui-flows",
+  "startedAt": "2026-09-26T19:59:51.380Z",
+  "web": "http://127.0.0.1:5601",
+  "cases": {
+    "create-then-reload": {
+      "result": "PASS",
+      "createStatus": 201,
+      "reloadRequestAfterCreate": true,
+      "rowShowsAmount": true,
+      "amount": "261.00",
+      "newJsErrors": 0
+    },
+    "CU-02-filter": {
+      "result": "PASS",
+      "applyRequestSent": true,
+      "queryKeys": [
+        "shipmentId"
+      ],
+      "resetReloaded": true
+    },
+    "CU-31-quickview": {
+      "result": "PASS",
+      "adapterCallsDuringQuickView": 0
+    },
+    "CU-08-open-to-investigating": {
+      "result": "PASS",
+      "claimId": "882710cf-61d3-49c5-b374-66d4e8753d99",
+      "status": 200,
+      "occurredAtHasOffset": true,
+      "reloadAfter": true,
+      "newJsErrors": 0
+    },
+    "CU-21-stale-transition": {
+      "result": "FAIL",
+      "claimId": "29ad4009-aeae-4259-b5b9-1342e0309ead",
+      "approve": 200,
+      "approvedAmountInResponse": "10.00",
+      "stale": 422,
+      "code": "INVALID_CLAIM_TRANSITION",
+      "supportRefShown": false,
+      "reloadAfter": true
+    }
+  },
+  "png": [
+    {
+      "name": "fixed-native-create-reload-en.png",
+      "sha256": "f558c0d8934f9481c7ac1156b17d4ae8ca493aae239d9533137db7f2118dcde6",
+      "url": "http://127.0.0.1:5601/SupplyChain/Claims"
+    },
+    {
+      "name": "fixed-native-quickview-en.png",
+      "sha256": "079595cbc9e3228e6b794798019fa931129bd8a51acc02031e3d6d372bae12d8",
+      "url": "http://127.0.0.1:5601/SupplyChain/Claims"
+    },
+    {
+      "name": "fixed-native-transition-investigating-en.png",
+      "sha256": "1bae1adcd455df2e78921f0ca71bd51fb1f8042b68e988dbf389c441273e2e62",
+      "url": "http://127.0.0.1:5601/SupplyChain/Claims"
+    },
+    {
+      "name": "fixed-native-stale-transition-422-en.png",
+      "sha256": "b93439803662b24d03720e8cbc7cb68aa6a09f4ef4c8aaeae31e99d9cc5ba42e",
+      "url": "http://127.0.0.1:5601/SupplyChain/Claims"
+    }
+  ],
+  "console": [
+    {
+      "tag": "fixed-native-stale-b",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    }
+  ],
+  "rootLeak": [],
+  "mode": "fixed-native",
+  "targets": {
+    "open": "882710cf-61d3-49c5-b374-66d4e8753d99",
+    "investigating": "29ad4009-aeae-4259-b5b9-1342e0309ead"
+  },
+  "endedAt": "2026-09-26T20:00:04.225Z"
+}

@@ -1,0 +1,173 @@
+{
+  "phase": "uipm",
+  "locale": "en",
+  "startedAt": "2026-09-30T20:36:43.900Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "UI-PM-05": {
+      "result": "PASS",
+      "during": {
+        "display": "block",
+        "height": 268,
+        "opacity": "1",
+        "tableHidden": true
+      },
+      "after": "none",
+      "faked": "delay only (real response)",
+      "evidence": [
+        "png/uipm05-skeleton-visible-en.png",
+        "png/uipm05-list-loaded-en.png"
+      ]
+    },
+    "UI-PM-12": {
+      "result": "PASS",
+      "out": {
+        "fail500": {
+          "errorVisible": true,
+          "skeletonDisplay": "none",
+          "tableHidden": true,
+          "message": "The shipment reference data is temporarily unavailable. Try the same request again.",
+          "referenceShown": true,
+          "rawErrorInPage": false,
+          "retryRequest": true,
+          "retryStatus": 200,
+          "tableVisibleAfterRetry": true,
+          "errorHiddenAfterRetry": true
+        },
+        "malformed": {
+          "errorVisible": true,
+          "skeletonDisplay": "none",
+          "tableHidden": true,
+          "message": "An unexpected error occurred. You can retry the same action.",
+          "referenceShown": true,
+          "rawErrorInPage": false,
+          "retryRequest": true,
+          "retryStatus": 200,
+          "tableVisibleAfterRetry": true,
+          "errorHiddenAfterRetry": true
+        }
+      },
+      "faked": "list 500 and list 200 {\"unexpected\":true} via route.fulfill; retry hits the real service",
+      "evidence": [
+        "png/uipm12-fail500-error-en.png",
+        "png/uipm12-fail500-after-retry-en.png",
+        "png/uipm12-malformed-error-en.png",
+        "png/uipm12-malformed-after-retry-en.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "uipm05-skeleton-visible-en.png",
+      "sha256": "79f9adfa894ab2333f01153fd1e4fa4516c37d2334cb3ad03d4de5a84f13e5d6",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:36:47.003Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm05-list-loaded-en.png",
+      "sha256": "c22df7dfaf9b15501c4a08dfe36f4b088f945bc3f6366bad71faab608b061c97",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:36:50.483Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-fail500-error-en.png",
+      "sha256": "98dfb5f5412a3695f39dbeadb2f9303aa11c1366b873c9b5a3653aac98cd636d",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:36:52.980Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-fail500-after-retry-en.png",
+      "sha256": "77856f9e25d93914d3a8fe6fb6edd3e4bce8959b4fddbb6103b6f8cb7bd6b9ed",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:36:53.982Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-malformed-error-en.png",
+      "sha256": "1c0adf111ba6cef9297b4e762269ee0e2f2b024ae165a0bfabc7ffaf38f7d7ab",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:36:56.066Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "uipm12-malformed-after-retry-en.png",
+      "sha256": "77856f9e25d93914d3a8fe6fb6edd3e4bce8959b4fddbb6103b6f8cb7bd6b9ed",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:36:57.031Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "uipm-en-pm12-fail500",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    }
+  ],
+  "toasts": [],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "uipm-en-pm05",
+      "at": "2026-09-30T20:36:49.367Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-fail500",
+      "at": "2026-09-30T20:36:51.786Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 500,
+      "errorCode": "DEPENDENCY_UNAVAILABLE",
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-fail500",
+      "at": "2026-09-30T20:36:53.123Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-malformed",
+      "at": "2026-09-30T20:36:54.910Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm12-malformed",
+      "at": "2026-09-30T20:36:56.203Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "uipm-en-pm09",
+      "at": "2026-09-30T20:36:58.024Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    }
+  ],
+  "shellFonts": 8,
+  "error": "locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('#offcanvasCreateEdit.show') to be visible\n",
+  "endedAt": "2026-09-30T20:37:14.546Z"
+}

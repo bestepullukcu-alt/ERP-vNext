@@ -1,0 +1,11 @@
+id	verdict	fresh_evidence	boundary
+UI183-A03	REWORK	unauthenticated direct adapter returned 302 login redirect	controlling direct-adapter 401/403 requirement is not met
+UI183-A07	PASS	real Auth HTTP 403/zero-write matrix plus dispatch-only browser action filtering	no claim beyond dispatch/cancel/POD permission combinations
+UI183-A08	PARTIAL	422 INVALID_SHIPMENT_TRANSITION and four-collection zero-write	live browser race/refresh not executed
+UI183-A09	PARTIAL	POD 422 and 409 POD_ALREADY_CAPTURED with four-collection zero-write	live browser stale-POD presentation not executed
+UI183-A10	OPEN	stable-intent source and focused test control only	no authorized runtime 500/503/unknown-response seam
+UI183-A11	PARTIAL	browser safe-404 support reference display	copy action and complete precedence matrix not run
+UI183-A12	PARTIAL	deleted/foreign-tenant/unknown browser-safe 404; cross-LE HTTP 404; scoped zero-write	cross-LE not repeated in separate browser session
+PNG	OPEN	no supported durable PNG export	no waiver and no restricted workaround
+PLATFORM-HEALTH	OBSERVED-503	lane runtime observation	consumer success is not aggregate health PASS
+

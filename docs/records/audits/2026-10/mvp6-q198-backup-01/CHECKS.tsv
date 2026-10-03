@@ -1,0 +1,23 @@
+id	check	result	observed
+P1	uname -s = Darwin	PASS	Darwin
+P2	.git/index.lock absent	PASS	absent
+P3	HEAD and branch	PASS	4a8d4d4b339528a88e6220fb8402e5a2c771136c / feature/mvp6-logistics
+P4	archive absent before run	PASS	~/Backups/ existed and was empty (v4 leftover)
+P5	free space >= 4 GB	PASS	6.9Gi available (df -h ~)
+P6	no dotnet/msbuild/vstest; no mongod other than PID 758	PASS	only PID 758 /opt/homebrew/opt/mongodb-community@8.0/bin/mongod
+P7	evidence folder absent before run	PASS	absent
+B0	START	RECORDED	2026-10-02T12:34:16Z (2026-10-02 15:34:16 +03)
+B1	git status --porcelain=v1 -uall sha256 + lines	RECORDED	4b01fa71d1ec2b0acbb0e1dbb72e04d5682638fc1b225424877a5f74026b3596 / 7183
+B2	.git/index sha256	RECORDED	8cb25ba2fbc8ec9c783bb196d6142b4bfa424281d461685bb83b11ec5a582291
+B3	HEAD / branch / stash count / branch count	RECORDED	4a8d4d4b339528a88e6220fb8402e5a2c771136c / feature/mvp6-logistics / 3 / 37 local branches
+B4	find <repo> | wc -l	RECORDED	42721
+W1	tar -czf ~/Backups/ERP-vNext-recovery-2026-10-02.tar.gz	DONE	exit code 0, no stderr; disk guard (2 GB) never tripped
+W2	shasum -a 256 archive > .sha256	DONE	124-byte file written
+V1	archive exists, gzip -t OK, sha256 recorded	PASS	1745856694 bytes (1.6G); sha256 11908716e818bea901ee27d3aa811f0a61572fcd3c4981ab53d501c50fb49542 = .sha256 content
+V2	member count vs folder count	PASS	tar -tzf 42721 = find 42721 (B4 and recount after tar); difference 0
+V3a	spot check CT-QUEUE.tsv archive = repo	PASS	754c63fec96900ba50d79a4c212b202059b8dfd8f862992015b5413bcd77008d
+V3b	spot check mvp6-ct-verdicts-q191-q189-2026-10-02.md archive = repo	PASS	c44130bd61935fcc81ef4b28111a96931f85672161422aa5e0ffb4fb444b954b
+V3c	spot check SupplyChainService.Api/Program.cs archive = repo	PASS	7fdb5ef0d322c3b9c814fab709dcfbaf1c9a2904f3d9a39e6f90bce077f204d8
+V4	B1, B2, B3 identical after the backup	PASS	porcelain sha256 and 7183 lines identical; index sha256 identical; HEAD, branch, stash count 3, branch list identical
+V5	no repo file newer than START (outside .git)	PASS	find -newermt "2026-10-02 15:34:16" printed nothing; control run on ~/Backups listed the 2 new files
+V6	nothing deleted; mongod PID 758 untouched	PASS	PID 758 still running (elapsed 02-22:22:36); v4 leftovers intact; df after: 3.2Gi available

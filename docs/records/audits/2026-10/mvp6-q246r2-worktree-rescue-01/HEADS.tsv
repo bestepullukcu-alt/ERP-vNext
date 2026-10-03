@@ -1,0 +1,7 @@
+worktree	path	branch_or_detached	head_sha	dirty_count_q246	dirty_count_now	kept_files	kept_bytes	excluded_files	excluded_bytes
+claims-dev-start-01	/Users/natig/.codex/worktrees/claims-dev-start-01/ERP-vNext-recovery	codex/mod-0187-claims-dev-start-01	4a8d4d4b339528a88e6220fb8402e5a2c771136c	54	54	378	2811271	113	217839715
+mod-0190-isolated-dev-01	/Users/natig/.codex/worktrees/mod-0190-isolated-dev-01/ERP-vNext-recovery	(detached HEAD)	4a8d4d4b339528a88e6220fb8402e5a2c771136c	33	33	110	561546	13	4346977
+mvp6-carrier-ui-dev	/Users/natig/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery	(detached HEAD)	4a8d4d4b339528a88e6220fb8402e5a2c771136c	64	64	336	1676867	12	52834
+mvp6-mod0190-core	/Users/natig/.codex/worktrees/mvp6-mod0190-core/ERP-vNext-recovery	(detached HEAD)	4a8d4d4b339528a88e6220fb8402e5a2c771136c	36	36	137	533404	22	4469409
+returns-phase15-close-01	/Users/natig/.codex/worktrees/returns-phase15-close-01/ERP-vNext-recovery	codex/mod-0186-phase15-core-dev-01	4a8d4d4b339528a88e6220fb8402e5a2c771136c	55	55	402	5353031	27	11702481
+shipment-integration-rework-exec-01	/Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery	(detached HEAD)	4a8d4d4b339528a88e6220fb8402e5a2c771136c	99	99	339	2399858	13	92915

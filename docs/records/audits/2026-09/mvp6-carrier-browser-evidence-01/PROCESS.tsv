@@ -1,0 +1,6 @@
+component	port	state
+Gateway	5200	STOPPED
+Web	5201	STOPPED
+Auth	5256	STOPPED
+Platform	5257	STOPPED
+SupplyChain	5261	STOPPED

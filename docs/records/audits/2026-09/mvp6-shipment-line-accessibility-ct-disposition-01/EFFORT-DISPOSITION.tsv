@@ -1,0 +1,6 @@
+effort_row	current_omp	relationship	numeric_treatment	reason
+0183-4-DELIVERED Frontend	40/64/104 delivered	Implementation falls inside already credited bounded Shipment/POD UI	0/0/0 new delivered	A second implementation credit would double-count frontend already recorded as fully delivered
+0183-6-DELIVERED Test/VER	30/44/60 delivered	Existing completed bounded verification ledger	0/0/0 new delivered	No controlling allocation identifies this accessibility VER as a distinct delivered-hour slice
+0183-6-REMAINING Test/VER	14/24/44 remaining	Co-mingled broader browser/PNG/UI reserve	Retain unchanged	PNG, PRES-183-02/03 and other partial UI criteria remain; no reliable split permits a transfer
+PRES-183-01 DEV	N/A	Evidence-only closure	ACCEPTED_BOUNDED / no hours	No dedicated O/M/P row exists
+PRES-183-01 independent VER	N/A	Evidence-only closure	ACCEPTED_BOUNDED / no hours	No dedicated O/M/P row exists

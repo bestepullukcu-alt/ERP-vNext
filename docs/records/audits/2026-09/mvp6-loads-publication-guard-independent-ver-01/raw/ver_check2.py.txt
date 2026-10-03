@@ -1,0 +1,75 @@
+# Independent VER check 2 (Q32). Own implementation; does not reuse the writer's w345.py or the prep guard-emulator.
+import hashlib, json, os, sys
+R = "/Users/natig/Projects/ERP-vNext-recovery"
+def sha(p): return hashlib.sha256(open(os.path.join(R, p), "rb").read()).hexdigest()
+def raw_span(text, key):
+    # locate top-level "key": then bracket-match the array, string-aware
+    i = text.index('"%s"' % key); i = text.index('[', i)
+    depth = 0; ins = False; esc = False
+    for j in range(i, len(text)):
+        c = text[j]
+        if ins:
+            if esc: esc = False
+            elif c == '\\': esc = True
+            elif c == '"': ins = False
+        elif c == '"': ins = True
+        elif c == '[': depth += 1
+        elif c == ']':
+            depth -= 1
+            if depth == 0: return text[i:j+1]
+    raise SystemExit("unbalanced")
+ok = True
+def chk(name, cond, detail=""):
+    global ok; ok &= bool(cond); print(("PASS" if cond else "FAIL"), name, detail)
+W = {"W1":"docs/analysis/contracts/shipment-bundle.openapi.yaml",
+     "W2":"docs/analysis/contracts/loads-semantics-v3.1.0.md",
+     "W3":"docs/records/audits/2026-09/mvp6-loads-publication-guard-01/PROVENANCE.md",
+     "W4":"docs/records/decisions/2026-09/mvp6-loads-publication-guard-owner-decision-01.json",
+     "W5":"docs/reference/architecture/docs-path-authority.json"}
+EXP = {"W1":"6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2",
+       "W2":"9d8a370664abb8221d5f8b23038f7c506e0621fadb2e5c83450ad93e63cf5034",
+       "W3":"84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a",
+       "W4":"64db811693d3a25143ebe94435114739ac8016d289c8d26a296c12d516491234",
+       "W5":"65a8ccbdd09acb97be8bed0195b3732fba241667e494a314d4dc4a192b660a4e"}
+PAY = "a77538b4784e1749b7ebe2e7d38d2e8400803c63ec8e6f49d3382929d7d611e0"
+for k in W:
+    h = sha(W[k]); chk(k + " sha256", h == EXP[k], h + "  " + W[k])
+RP = "docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/artifacts/"
+chk("W1 byte-equal release-prep", open(os.path.join(R,W["W1"]),"rb").read() == open(os.path.join(R,RP+"shipment-bundle-v3.1.0-final-proposed.openapi.yaml"),"rb").read())
+chk("W2 byte-equal release-prep", open(os.path.join(R,W["W2"]),"rb").read() == open(os.path.join(R,RP+"loads-semantics-v3.1.0.md"),"rb").read())
+P = "docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/"
+chk("W3 byte-equal PROVENANCE.md.txt", open(os.path.join(R,W["W3"]),"rb").read() == open(os.path.join(R,P+"PROVENANCE.md.txt"),"rb").read())
+# W5 payload recompute from raw text
+t5 = open(os.path.join(R,W["W5"]),"rb").read().decode("utf-8")
+payload = raw_span(t5,"canonicalTargets") + "\n" + raw_span(t5,"sealedInputs")
+ph = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+chk("W5 payload sha256", ph == PAY, ph)
+chk("W5 payload byte-equal authority-payload.txt", payload.encode() == open(os.path.join(R,P+"authority-payload.txt"),"rb").read(), "%d bytes" % len(payload.encode()))
+j5 = json.loads(t5); j4 = json.loads(open(os.path.join(R,W["W4"])).read())
+chk("W4 payloadSha256 = payload", j4["payloadSha256"] == ph)
+chk("W4 status/approvedBy/decisionId", j4["status"]=="APPROVED" and j4["approvedBy"]=="current-role-user-message-2026-09-26" and j4["decisionId"]=="MVP6-LOADS-PUBLICATION-GUARD-01", json.dumps(j4))
+chk("W5 status APPROVED", j5["status"]=="APPROVED")
+chk("W5 decision.path = W4 path", j5["decision"]["path"]==W["W4"])
+chk("W5 decision.sha256 = sha256(W4)", j5["decision"]["sha256"]==sha(W["W4"]), j5["decision"]["sha256"])
+chk("2 canonical targets", len(j5["canonicalTargets"])==2, str([t["path"] for t in j5["canonicalTargets"]]))
+chk("43 sealed inputs", len(j5["sealedInputs"])==43, str(len(j5["sealedInputs"])))
+# every target and seal hash matches the file on disk; provenance hashes too
+bad = []
+for t in j5["canonicalTargets"]:
+    if sha(t["path"]) != t["sha256"]: bad.append(t["path"])
+for s in j5["sealedInputs"]:
+    if sha(s["path"]) != s["sha256"]: bad.append(s["path"])
+    if "provenancePath" in s and sha(s["provenancePath"]) != s["provenanceSha256"]: bad.append("prov:"+s["provenancePath"])
+chk("all 2 target + 43 seal + provenance hashes match disk", not bad, str(bad))
+# byte-level diff vs candidates: only the allowed replacements
+c4 = open(os.path.join(R,P+"owner-decision.candidate.json.txt"),"rb").read().decode()
+exp4 = c4.replace('"status": "UNAPPROVED"','"status": "APPROVED"',1).replace('"approvedBy": "PENDING-OWNER"','"approvedBy": "current-role-user-message-2026-09-26"',1)
+chk("W4 = candidate with only the 2 allowed replacements", c4.count('"status": "UNAPPROVED"')==1 and c4.count('"approvedBy": "PENDING-OWNER"')==1 and exp4 == open(os.path.join(R,W["W4"])).read())
+c5 = open(os.path.join(R,P+"docs-path-authority.candidate.json.txt"),"rb").read().decode()
+old = '"status": "UNAPPROVED",\n  "decision": null,'
+new = '"status": "APPROVED",\n  "decision": {\n    "path": "%s",\n    "sha256": "%s"\n  },' % (W["W4"], sha(W["W4"]))
+chk("W5 = candidate with only the allowed status/decision replacement", c5.count(old)==1 and c5.replace(old,new,1)==t5)
+chk("candidate payload unchanged by activation", hashlib.sha256((raw_span(c5,"canonicalTargets")+"\n"+raw_span(c5,"sealedInputs")).encode()).hexdigest()==PAY)
+v2 = sha("docs/analysis/contracts/loads-semantics-v2.0.0.md")
+chk("v2 annex unchanged", v2=="a2187c934cf9176cae4cb8b9c70dfd1298154e5124cdc197d3029103636c2be1", v2)
+print("OVERALL", "PASS" if ok else "FAIL"); sys.exit(0 if ok else 1)

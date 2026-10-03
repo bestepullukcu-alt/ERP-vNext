@@ -1,0 +1,18 @@
+step	command	result
+0	uname -a; git rev-parse HEAD; git branch --show-current (GIT_OPTIONAL_LOCKS=0)	4a8d4d4b339528a88e6220fb8402e5a2c771136c / feature/mvp6-logistics
+0	sha256sum docs/records/decisions/2026-09/mvp6-claims-pack-signoff-owner-decision-01.md	365de5be6fc670a8522dd173f4fbc4d15d72324ece4856519ac9e0424928827b (expected prefix 365de5be6fc6) PASS
+1	(cd docs/roadmap/plans/mvp6-ui-pack-revisions-01 && sha256sum -c SHA256SUMS)	6/6 OK; SHA256SUMS file itself 6b7d770bb97ec2c49269ad094a0ed1384d536722ebe56924380b3b83d5854d62 = decision bound_to
+1	sha256sum -c docs/roadmap/plans/mvp6-pack-alignment-02-claims/SHA256SUMS	5/5 OK
+1	sha256sum docs/roadmap/plans/mvp6-pack-alignment-02-claims/proposed-pack.patch	00dee2b1fd202f1adc25ca4d3c2aeae532e1bf8d944aca0c68a7fe0417ca5c59 = decision PASS
+1	sha256sum docs/roadmap/plans/mvp6-ui-pack-revisions-01/claims/ui-revision.patch	5644479a77db172adf9d24f5a7031eed82c4eb82067d326403a37058270dae92 = decision PASS
+1	sha256sum docs/roadmap/plans/mvp6-ui-pack-revisions-01/claims/SIGN-OFF-DECISION.md	c55ab9aaf378b825c0a735a8b992a26b646ed3a2dbcdc88d26daf243bc435de2 = decision bound_to PASS
+1	sha256sum execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md	a342054cddcd88a9fae67f21b51ca90eadcdf355e6119c77c9578bae744b1c1f PASS
+1	grep 762ab533 docs/roadmap/plans/mvp6-ui-pack-revisions-01/claims/SOP-22-PACK-REVISION.md	full target 762ab5337af85b965216d41a212217db3681af3a31bbd1514544b58dbfc7786b
+2	scratch git repo outside repo (session home q38/rehearsal): git apply --check + git apply alignment patch	f0e4d3bd6af5c16a0d0904721019bfb33f10818a6f9baffd92d3f50740bb1baf PASS
+2	same scratch: git apply --check + git apply ui-revision.patch	762ab5337af85b965216d41a212217db3681af3a31bbd1514544b58dbfc7786b PASS; status: ready-for-dev
+3	snapshot: cp pack to session home q38/snapshot/MOD-0187.pre.md; git --no-optional-locks status --porcelain > status-before.txt	a342054c…1c1f; 360 rows
+3	(01:34:21 +03:00) git apply --check --include=<pack> alignment patch; git apply --include=<pack> alignment patch (no --index, no fuzz option)	exit 0; pack f0e4d3bd6af5c16a0d0904721019bfb33f10818a6f9baffd92d3f50740bb1baf; warning "unable to unlink" (folder delete not permitted; file rewritten in place)
+3	git apply --check --include=<pack> ui-revision.patch; git apply --include=<pack> ui-revision.patch	exit 0; pack 762ab5337af85b965216d41a212217db3681af3a31bbd1514544b58dbfc7786b; same unlink warning
+3	grep status; ls .git/index.lock; git --no-optional-locks status --porcelain > status-after.txt; diff before after	status: ready-for-dev; no index.lock; porcelain identical before/after (pack was already " M")
+3	ls module-packs; stat pack; git status --untracked-files=all -- execution/	no stray/.orig/.rej file; mode 600 unchanged; only pre-existing " M" pack lines
+4	restore path	NOT NEEDED (no failure)

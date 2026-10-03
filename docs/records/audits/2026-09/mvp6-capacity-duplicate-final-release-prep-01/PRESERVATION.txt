@@ -1,0 +1,4 @@
+Checked UTC: 2026-09-22T21:19:01.859583+00:00
+40 exact input pins unchanged, including every A/B manifest entry, published YAML/v2 annex, DEMAND and guard input bytes.
+Final trio and candidate-to-final diff hashes verified.
+No repository-wide or active Lane B no-change claim; this writer touched only the new release-prep package.

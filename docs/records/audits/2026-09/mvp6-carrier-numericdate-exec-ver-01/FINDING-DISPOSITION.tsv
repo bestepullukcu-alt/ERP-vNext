@@ -1,0 +1,5 @@
+finding	verdict	evidence	disposition
+F-01 cardinality	CLOSED	ACCEPTANCE.tsv; evidence.tar.gz::numericdate-independent-results.json	Duplicate/missing claims and audience cases reject with HTTP 401 and zero scoped repository reads; 33/33 validator tests pass.
+F-02 NumericDate JSON type	CLOSED	ACCEPTANCE.tsv; evidence.tar.gz::numericdate-independent-results.json	Digit-only JSON strings for iat/nbf/exp each reject with HTTP 401 and zero scoped repository reads; fractional/out-of-range/malformed cases also reject.
+Real Auth login/refresh	NOT RUN / HELD	evidence.tar.gz::platform-build.log; cross-service-build-exits.tsv	Bounded cross-service attempt did not reach runtime: Platform fresh build was cancelled after 4m39s while compiling unrelated project dependency; Auth build was not started. No diagnostic token result is substituted.
+Carrier E2E handoff	HELD	SOP-22-VER.md	Independent F-01/F-02 closure is complete, but fresh real Auth login/refresh and LE re-resolution were not reproduced for this source/binary set.

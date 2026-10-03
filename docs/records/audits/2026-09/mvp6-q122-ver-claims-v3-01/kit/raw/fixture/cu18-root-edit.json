@@ -1,0 +1,15 @@
+{
+  "purpose": "CU-18 lane-DB setup only (no product API sets a root)",
+  "nullRoot": {
+    "shipmentId": "8cf6badd-ce43-4096-86ac-1ed8912d1412",
+    "before": "350cfd75-7717-408a-8dc8-9efe996de8b5",
+    "after": null,
+    "modified": 1
+  },
+  "malformedRoot": {
+    "shipmentId": "0acf96c8-47d3-4656-8a3f-9a8bab421932",
+    "before": "0d37e449-ac42-49ee-a40b-f00e715aba56",
+    "after": "not-a-uuid-q122",
+    "modified": 1
+  }
+}

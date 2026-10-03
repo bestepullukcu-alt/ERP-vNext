@@ -1,0 +1,14 @@
+# Q212 mvp6-q212-ver-0190-01 — ARTIFACTS.sha256 (last write)
+# start 2026-10-02 20:39:33 +03 · end 2026-10-02 20:48:40 +03 (Europe/Istanbul)
+# branch feature/mvp6-logistics · HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+# no-change: git status --porcelain before = after, byte-identical (sha256 01ef1f7fe7d9b0e91795cef4a4bdf728669428b5dee4fccb3f80c8144f2f9d5e); 665 lines = 89 M + 576 ?? + 0 staged; git diff not run; no build, no test, no service start
+# written by this lane: this folder only (inside the already-untracked docs/records/audits/2026-10/)
+# verify: cd docs/records/audits/2026-10/mvp6-q212-ver-0190-01 && grep -v '^#' ARTIFACTS.sha256 | shasum -a 256 -c
+5bdd2897018b96caf2fd656bfe14e68d607c76e1d057068f623e40ca28d26b28  ACCEPTANCE-MATRIX.tsv
+6fed0f96032124f2846514f36fb23e04fb8ac9ca92c54b38d0bbf4261e5e8d40  BOUNDARY-REFS.tsv
+90112e6ef324014101187b091fd00da755fc568ce32f57d20c42f478d1e1180d  OWNED-PATH-COVERAGE.tsv
+215174b544fb7279f8e94aaacd7005765e2a7dd61dd389e91f7624ba50370f48  REACHABILITY.md
+035d7ac0e677ad44ba476b4db138d34a5c0be6c0c527113c9f9fff539a319229  SCOPE-DELTA.tsv
+8189c09feda4f530f63b0d0a47f85560ffd29a62f13c1c0399c9d3679b92fdab  SOP-22.md
+ebf2b801d002bc7d75972ae180689e69773b5159034c363fe84eb79cf6244881  THINNESS-VERDICT.md
+b5ed52cdcde77858215e4a9be171974dbd30b29fe06be0d3549773f1ab850cea  tools/q212_matrix.py

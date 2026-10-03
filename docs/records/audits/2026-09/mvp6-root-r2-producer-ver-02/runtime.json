@@ -1,0 +1,82 @@
+{
+  "status": "PASS",
+  "api": "http://127.0.0.1:5162",
+  "db": "diten_db010_root_r2_ver02",
+  "tenant": "c5bbf9bc-4ab2-433b-bbe5-732e3666bd5b",
+  "legalEntity": "f1a89996-5f25-4c84-aaa3-aaa464af64c0",
+  "rows": [
+    {
+      "case": "missing",
+      "shipmentId": "99eab582-7e00-4e73-a768-13fa25d28de5",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-Correlation-Id": "948b8ea2-f065-4794-8f87-cac859975820"
+      },
+      "body": "{\"shipmentId\":\"99eab582-7e00-4e73-a768-13fa25d28de5\",\"shipmentNumber\":\"R2-missing\",\"sourceDocumentId\":\"SO-99eab582-7e00-4e73-a768-13fa25d28de5\",\"status\":\"Draft\",\"carrierId\":null,\"loadId\":null,\"plannedShipAt\":\"2026-09-20T11:18:31.471+00:00\",\"plannedDeliverAt\":null,\"actualDeliverAt\":null,\"sourceModule\":\"MOD-0141\",\"sourceType\":\"SALES_ORDER\",\"warehouseReferenceId\":\"WH-1\",\"shipToReference\":\"C-1\",\"lines\":[],\"pod\":null,\"contractVersion\":\"v1\",\"lifecycleCorrelationId\":null}",
+      "before": "1",
+      "after": "1",
+      "insertExit": 0
+    },
+    {
+      "case": "null",
+      "shipmentId": "4d0cb3e4-7931-4628-832e-6d8274cb1127",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-Correlation-Id": "e6da0c94-41e0-43e8-87c6-b10501b2a821"
+      },
+      "body": "{\"shipmentId\":\"4d0cb3e4-7931-4628-832e-6d8274cb1127\",\"shipmentNumber\":\"R2-null\",\"sourceDocumentId\":\"SO-4d0cb3e4-7931-4628-832e-6d8274cb1127\",\"status\":\"Draft\",\"carrierId\":null,\"loadId\":null,\"plannedShipAt\":\"2026-09-20T11:18:34.162+00:00\",\"plannedDeliverAt\":null,\"actualDeliverAt\":null,\"sourceModule\":\"MOD-0141\",\"sourceType\":\"SALES_ORDER\",\"warehouseReferenceId\":\"WH-1\",\"shipToReference\":\"C-1\",\"lines\":[],\"pod\":null,\"contractVersion\":\"v1\",\"lifecycleCorrelationId\":null}",
+      "before": "2",
+      "after": "2",
+      "insertExit": 0
+    },
+    {
+      "case": "malformed",
+      "shipmentId": "e06daea5-2161-4bf3-b2a7-2c44d448498e",
+      "status": 500,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-Correlation-Id": "8915a6dc-393f-4071-9b79-4012cd32a9aa"
+      },
+      "body": "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"message\":\"SHIPMENT_ROOT_INVALID\",\"correlationId\":\"8915a6dc-393f-4071-9b79-4012cd32a9aa\"},\"contractVersion\":\"v1\"}",
+      "before": "3",
+      "after": "3",
+      "insertExit": 0
+    },
+    {
+      "case": "valid",
+      "shipmentId": "dcb25d71-967f-41b9-8a44-cb501759ce3a",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-Correlation-Id": "cb1fd193-7a84-4537-9461-586d60588e8f"
+      },
+      "body": "{\"shipmentId\":\"dcb25d71-967f-41b9-8a44-cb501759ce3a\",\"shipmentNumber\":\"R2-valid\",\"sourceDocumentId\":\"SO-dcb25d71-967f-41b9-8a44-cb501759ce3a\",\"status\":\"Draft\",\"carrierId\":null,\"loadId\":null,\"plannedShipAt\":\"2026-09-20T11:18:38.989+00:00\",\"plannedDeliverAt\":null,\"actualDeliverAt\":null,\"sourceModule\":\"MOD-0141\",\"sourceType\":\"SALES_ORDER\",\"warehouseReferenceId\":\"WH-1\",\"shipToReference\":\"C-1\",\"lines\":[],\"pod\":null,\"contractVersion\":\"v1\",\"lifecycleCorrelationId\":\"55718a53-b16f-42f1-8205-81e66f6fa655\"}",
+      "before": "4",
+      "after": "4",
+      "insertExit": 0
+    },
+    {
+      "case": "nil",
+      "shipmentId": "44f3fe81-33ab-4cf4-ab67-e21438fa9d50",
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-Correlation-Id": "cadd61cc-4532-4286-90eb-760e44e30f1a"
+      },
+      "body": "{\"shipmentId\":\"44f3fe81-33ab-4cf4-ab67-e21438fa9d50\",\"shipmentNumber\":\"R2-nil\",\"sourceDocumentId\":\"SO-44f3fe81-33ab-4cf4-ab67-e21438fa9d50\",\"status\":\"Draft\",\"carrierId\":null,\"loadId\":null,\"plannedShipAt\":\"2026-09-20T11:18:41.372+00:00\",\"plannedDeliverAt\":null,\"actualDeliverAt\":null,\"sourceModule\":\"MOD-0141\",\"sourceType\":\"SALES_ORDER\",\"warehouseReferenceId\":\"WH-1\",\"shipToReference\":\"C-1\",\"lines\":[],\"pod\":null,\"contractVersion\":\"v1\",\"lifecycleCorrelationId\":\"00000000-0000-0000-0000-000000000000\"}",
+      "before": "5",
+      "after": "5",
+      "insertExit": 0
+    },
+    {
+      "case": "soft-delete",
+      "status": 404
+    },
+    {
+      "case": "no-read-grant",
+      "status": 403
+    }
+  ]
+}

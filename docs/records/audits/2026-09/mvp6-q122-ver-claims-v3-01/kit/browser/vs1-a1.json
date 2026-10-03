@@ -1,0 +1,209 @@
+{
+  "phase": "vs1",
+  "extra": null,
+  "startedAt": "2026-09-27T12:06:34.160Z",
+  "web": "http://127.0.0.1:5901",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-VS1": {
+      "result": "PASS",
+      "page": 200,
+      "list": 200,
+      "resolve": 200,
+      "resolveKeys": [
+        "carrierId",
+        "shipmentNumber",
+        "status"
+      ],
+      "carrierCheckboxDisabled": true,
+      "createStatus": 201,
+      "createBody": {
+        "claimId": "7ceb7776-daaf-4197-849b-5ba5bff4a64b",
+        "claimNumber": "CLM-7ceb7776daaf4197849b5ba5bff4a64b",
+        "shipmentId": "c8312c99-24be-4b2f-a683-a417a0ae4a25",
+        "status": "Open",
+        "approvedAmount": null,
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      },
+      "sentBody": "{\"shipmentId\":\"c8312c99-24be-4b2f-a683-a417a0ae4a25\",\"reasonCode\":\"DAMAGE\",\"claimedAmount\":\"250.00\",\"currency\":\"EUR\"}",
+      "idempotencyKeyPresent": true,
+      "browserRequestCorrelation": "fc3ae5ef-3ed6-45bb-a337-246b2829edee",
+      "browserResponseCorrelation": "fc3ae5ef-3ed6-45bb-a337-246b2829edee",
+      "responseCorrelationIsRoot": false,
+      "listReloadedAfterCreate": true,
+      "reloadShows25000": true,
+      "network": [
+        {
+          "foreignRequest": "https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+        },
+        {
+          "at": "2026-09-27T12:06:34.941Z",
+          "method": "GET",
+          "path": "/SupplyChain/Claims",
+          "status": 200,
+          "host": "127.0.0.1:5901",
+          "requestCorrelation": null,
+          "idempotencyKey": null,
+          "requestBodyText": null,
+          "responseCorrelation": null,
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": null,
+          "itemCount": null
+        },
+        {
+          "foreignRequest": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+        },
+        {
+          "at": "2026-09-27T12:06:35.887Z",
+          "method": "GET",
+          "path": "/api/personalization/views?moduleKey=claims-management&pageKey=CLAIMS",
+          "status": 200,
+          "host": "127.0.0.1:5901",
+          "requestCorrelation": null,
+          "idempotencyKey": null,
+          "requestBodyText": null,
+          "responseCorrelation": null,
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": null,
+          "itemCount": null
+        },
+        {
+          "at": "2026-09-27T12:06:35.985Z",
+          "method": "GET",
+          "path": "/SupplyChain/Claims/api",
+          "status": 200,
+          "host": "127.0.0.1:5901",
+          "requestCorrelation": "8e0fcc45-eb1e-493b-8ab3-3a71ba87c621",
+          "idempotencyKey": null,
+          "requestBodyText": null,
+          "responseCorrelation": "8e0fcc45-eb1e-493b-8ab3-3a71ba87c621",
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": [
+            "contractVersion",
+            "items",
+            "total"
+          ],
+          "itemCount": 8
+        },
+        {
+          "at": "2026-09-27T12:06:36.373Z",
+          "method": "GET",
+          "path": "/SupplyChain/Claims/api/shipments/c8312c99-24be-4b2f-a683-a417a0ae4a25",
+          "status": 200,
+          "host": "127.0.0.1:5901",
+          "requestCorrelation": "891050a8-e1be-4db7-9df4-c33f6bd50814",
+          "idempotencyKey": null,
+          "requestBodyText": null,
+          "responseCorrelation": "891050a8-e1be-4db7-9df4-c33f6bd50814",
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": [
+            "carrierId",
+            "shipmentNumber",
+            "status"
+          ],
+          "itemCount": null
+        },
+        {
+          "at": "2026-09-27T12:06:36.465Z",
+          "method": "POST",
+          "path": "/SupplyChain/Claims/api",
+          "status": 201,
+          "host": "127.0.0.1:5901",
+          "requestCorrelation": "fc3ae5ef-3ed6-45bb-a337-246b2829edee",
+          "idempotencyKey": "1185fb71-52bb-4928-b7bb-78ae872ca638",
+          "requestBodyText": "{\"shipmentId\":\"c8312c99-24be-4b2f-a683-a417a0ae4a25\",\"reasonCode\":\"DAMAGE\",\"claimedAmount\":\"250.00\",\"currency\":\"EUR\"}",
+          "responseCorrelation": "fc3ae5ef-3ed6-45bb-a337-246b2829edee",
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": [
+            "approvedAmount",
+            "claimId",
+            "claimNumber",
+            "contractVersion",
+            "idempotentReplay",
+            "shipmentId",
+            "status"
+          ],
+          "itemCount": null
+        },
+        {
+          "at": "2026-09-27T12:06:36.505Z",
+          "method": "GET",
+          "path": "/SupplyChain/Claims/api",
+          "status": 200,
+          "host": "127.0.0.1:5901",
+          "requestCorrelation": "fbb28670-2831-4ed1-8426-2a69c13e2157",
+          "idempotencyKey": null,
+          "requestBodyText": null,
+          "responseCorrelation": "fbb28670-2831-4ed1-8426-2a69c13e2157",
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": [
+            "contractVersion",
+            "items",
+            "total"
+          ],
+          "itemCount": 9
+        }
+      ]
+    },
+    "CU-01-same-origin": {
+      "result": "PASS",
+      "adapterCallHosts": [
+        "127.0.0.1:5901"
+      ],
+      "foreignHosts": [
+        "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com"
+      ],
+      "noAuthorizationHeaderFromBrowser": true,
+      "note": "Authorization is added server-side by the MVC adapter; the browser holds no bearer token (see CU-26 storage scan)"
+    },
+    "CU-09-create-body-parity": {
+      "result": "PASS",
+      "sentBody": "{\"shipmentId\":\"c8312c99-24be-4b2f-a683-a417a0ae4a25\",\"reasonCode\":\"DAMAGE\",\"claimedAmount\":\"250.00\",\"currency\":\"EUR\"}",
+      "scopeHeaders": {
+        "tenant": null,
+        "legalEntity": null
+      }
+    }
+  },
+  "png": [
+    {
+      "name": "vs1-after-create-en.png",
+      "sha256": "2512e30c848f907b74c3374fc9890d7ff4cadaac4037b4374749d7cc4cedec2d",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:06:37.413Z",
+      "phase": "vs1",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [
+    {
+      "tag": "vs1",
+      "text": "Claim created.",
+      "type": "success",
+      "at": "2026-09-27T12:06:36.464Z"
+    }
+  ],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "vs1",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "vs1",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "createdClaimId": "7ceb7776-daaf-4197-849b-5ba5bff4a64b",
+  "endedAt": "2026-09-27T12:06:37.441Z"
+}

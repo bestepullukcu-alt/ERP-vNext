@@ -1,0 +1,8 @@
+id	browser_state	sha256	bytes	retention	verdict
+BR-S01	UAS-001 denial/remediation; no table or create	e2c20da1221b274ba85362c74252192a3b1d97a18143fea5b7a4135d406ef7d9	39610	Browser tool transcript only; PNG export policy-blocked	PASS visible
+BR-S02	Authorized English Carrier list and DataTables v2 desktop	227dffa2d9b27c8d0163d6bfa10e8b0d44a907be5cd62fc7499a1a500481efe3	49604	Browser tool transcript only; PNG export policy-blocked	PASS visible
+BR-S03	GoldenReferenceSlim Add Carrier offcanvas with four fields	e31726ecb4663ea074306fb784b04ac753ecdbb6253c3b163fe534e6c40bebf8	48552	Browser tool transcript only; PNG export policy-blocked	PASS visible
+BR-S04	Arabic Carrier page stable RTL state	6d8126d0c36312ec37e794503612edb0e092dd7975d735eff697235bc6cfc2bd	42209	Browser tool transcript only; PNG export policy-blocked	PASS visible
+BR-SX01	Arabic transient loading frame	2129a80fff2994359f2047b5dbb260beff355a81b11eaafb4089d9332f540250	40609	Excluded transient frame	NOT acceptance
+BR-SX02	Attempted mobile capture while viewport remained 1280	f93033e57e79afcf66c41b61c5140ab39063c09bbd05b2a11c6f7f988f3bb371	48125	Excluded; not a mobile screenshot	NOT acceptance
+

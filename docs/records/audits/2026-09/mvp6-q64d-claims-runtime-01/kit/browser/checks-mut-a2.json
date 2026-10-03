@@ -1,0 +1,162 @@
+{
+  "phase": "checks-mut",
+  "startedAt": "2026-09-26T21:24:18.027Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-10-carrier-linked": {
+      "result": "PASS",
+      "run": "cu10-granted",
+      "resolveBody": {
+        "shipmentNumber": "SHP-38b2bdbb64434c1c846dab4684b3cdca",
+        "status": "Dispatched",
+        "carrierId": "da09e391-ff2f-45e5-b00f-211ac41ab0e6"
+      },
+      "checkboxEnabled": true,
+      "sentBody": "{\"shipmentId\":\"38b2bdbb-6443-4c1c-846d-ab4684b3cdca\",\"carrierId\":\"da09e391-ff2f-45e5-b00f-211ac41ab0e6\",\"reasonCode\":\"CARRIER-DAMAGE\",\"claimedAmount\":\"40.00\",\"currency\":\"EUR\"}",
+      "createStatus": 201,
+      "createErrorCode": null,
+      "alertText": "",
+      "network": [
+        {
+          "foreignRequest": "https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+        },
+        {
+          "at": "2026-09-26T21:24:18.564Z",
+          "method": "GET",
+          "path": "/SupplyChain/Claims",
+          "status": 200,
+          "host": "127.0.0.1:5701",
+          "requestCorrelation": null,
+          "idempotencyKey": null,
+          "requestBodyText": null,
+          "responseCorrelation": null,
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": null,
+          "itemCount": null
+        },
+        {
+          "foreignRequest": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+        },
+        {
+          "at": "2026-09-26T21:24:19.420Z",
+          "method": "GET",
+          "path": "/api/personalization/views?moduleKey=claims-management&pageKey=CLAIMS",
+          "status": 200,
+          "host": "127.0.0.1:5701",
+          "requestCorrelation": null,
+          "idempotencyKey": null,
+          "requestBodyText": null,
+          "responseCorrelation": null,
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": null,
+          "itemCount": null
+        },
+        {
+          "at": "2026-09-26T21:24:19.773Z",
+          "method": "GET",
+          "path": "/SupplyChain/Claims/api",
+          "status": 200,
+          "host": "127.0.0.1:5701",
+          "requestCorrelation": "946da685-7411-4a41-9ddb-7e6c4baeb571",
+          "idempotencyKey": null,
+          "requestBodyText": null,
+          "responseCorrelation": "946da685-7411-4a41-9ddb-7e6c4baeb571",
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": [
+            "contractVersion",
+            "items",
+            "total"
+          ],
+          "itemCount": 13
+        },
+        {
+          "at": "2026-09-26T21:24:20.152Z",
+          "method": "GET",
+          "path": "/SupplyChain/Claims/api/shipments/38b2bdbb-6443-4c1c-846d-ab4684b3cdca",
+          "status": 200,
+          "host": "127.0.0.1:5701",
+          "requestCorrelation": "0eec6575-97c7-4d3a-a9ec-86235ab6a830",
+          "idempotencyKey": null,
+          "requestBodyText": null,
+          "responseCorrelation": "0eec6575-97c7-4d3a-a9ec-86235ab6a830",
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": [
+            "carrierId",
+            "shipmentNumber",
+            "status"
+          ],
+          "itemCount": null
+        },
+        {
+          "at": "2026-09-26T21:24:20.357Z",
+          "method": "POST",
+          "path": "/SupplyChain/Claims/api",
+          "status": 201,
+          "host": "127.0.0.1:5701",
+          "requestCorrelation": "2caaed2b-9eb2-4fed-b04d-50e5a6a5bd51",
+          "idempotencyKey": "9040d596-51a2-4b5d-8411-23d42b3ba17b",
+          "requestBodyText": "{\"shipmentId\":\"38b2bdbb-6443-4c1c-846d-ab4684b3cdca\",\"carrierId\":\"da09e391-ff2f-45e5-b00f-211ac41ab0e6\",\"reasonCode\":\"CARRIER-DAMAGE\",\"claimedAmount\":\"40.00\",\"currency\":\"EUR\"}",
+          "responseCorrelation": "2caaed2b-9eb2-4fed-b04d-50e5a6a5bd51",
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": [
+            "approvedAmount",
+            "claimId",
+            "claimNumber",
+            "contractVersion",
+            "idempotentReplay",
+            "shipmentId",
+            "status"
+          ],
+          "itemCount": null
+        },
+        {
+          "at": "2026-09-26T21:24:20.422Z",
+          "method": "GET",
+          "path": "/SupplyChain/Claims/api",
+          "status": 200,
+          "host": "127.0.0.1:5701",
+          "requestCorrelation": "d828a063-741e-4691-988c-6b5649758b5c",
+          "idempotencyKey": null,
+          "requestBodyText": null,
+          "responseCorrelation": "d828a063-741e-4691-988c-6b5649758b5c",
+          "errorCode": null,
+          "errorCorrelation": null,
+          "okKeys": [
+            "contractVersion",
+            "items",
+            "total"
+          ],
+          "itemCount": 14
+        }
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "cu10-granted-carrier-linked-create-en.png",
+      "sha256": "946adfacdff6d492770c75146a22c698be4decf9ab3d20ce41b875cacbe857e8",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:24:21.338Z",
+      "phase": "checks-mut",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [
+    {
+      "tag": "cu10",
+      "text": "Claim created.",
+      "type": "success",
+      "at": "2026-09-26T21:24:20.357Z"
+    }
+  ],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T21:24:21.384Z"
+}

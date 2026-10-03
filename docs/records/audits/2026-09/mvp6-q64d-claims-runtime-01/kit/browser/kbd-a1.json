@@ -1,0 +1,48 @@
+{
+  "phase": "kbd",
+  "startedAt": "2026-09-26T21:27:12.103Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-25b-keyboard-create": {
+      "result": "PASS",
+      "addButton": {
+        "tag": "BUTTON",
+        "type": "button",
+        "tabindex": "0",
+        "role": null,
+        "classes": "btn add-new btn-primary shadow-none"
+      },
+      "addFocusable": true,
+      "openedByEnter": false,
+      "openedBySpace": true,
+      "focusInsideAfterOpen": true,
+      "closedByEscapeFromField": true,
+      "inertAfterClose": true,
+      "focusReturnedToAdd": false,
+      "evidenceIds": [
+        "claimEvidence_be96f607-3d1e-4c02-b999-646be4d639fb",
+        "claimEvidence_ae4e81e8-8a0c-4abe-b26a-7b348c5d9562"
+      ],
+      "evidenceInputsLabelled": [
+        true,
+        true
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "cu25-keyboard-create-open-en.png",
+      "sha256": "ba238d67c310be76fe219d97cf0ddbe755e544ebe09ee76a295568c77b1bac84",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:27:16.362Z",
+      "phase": "kbd",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T21:27:17.206Z"
+}

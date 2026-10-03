@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: work packages and CT verdicts (2026-10) (part b)
+
+3 folders/items, first 'mvp6-q88b-capacity-mac-01', last 'mvp6-returns-ui-draft-03'.
+Work packages: Q88B.
+244 files from pathspec/R8b.txt (Q230 commit plan).

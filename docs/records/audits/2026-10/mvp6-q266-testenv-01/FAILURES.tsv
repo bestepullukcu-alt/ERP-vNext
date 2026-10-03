@@ -1,0 +1,2 @@
+test	module	cause_class	message	duration
+Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery	Claims	cause 4 — restart-mode test, by design not runnable in an ordinary suite run (needs CLAIMS_RESTART_MODE, two processes)	System.InvalidOperationException : Explicit write/read restart mode required; exclude from ordinary suite.	00:00:00.0012519

@@ -1,0 +1,12 @@
+kind	path	sha256	use
+control	docs/records/audits/2026-09/mvp6-shipment-ui-functional-ct-consolidation-01/SOP-22.md	c3fb837e2f5db2e3d466a14c51b5de440d688f628ca71b16b39f84df8b6fb97e	controlling CT boundary
+control	docs/records/audits/2026-09/mvp6-shipment-ui-functional-ct-consolidation-01/ACCEPTANCE.tsv	e8fccf13083a945bfda95f72a019767eaadd054018eb0bafbc1445be8fc03664	open UI183-A13/A14 and PNG criteria
+acceptance	docs/roadmap/plans/mvp6-shipment-pod-ui-scope-01/ACCEPTANCE.md	83d0db58eff28b0ac56af7c0299fd775aa575615fc1d80d8ad6f57d0630eefa1	UI183-A01..A15 definitions
+source-manifest	docs/records/audits/2026-09/mvp6-shipment-ui-b01-b02-independent-ver-01/FINAL-354-SOURCE-MANIFEST.tsv	e6551f4552bd05682dcd9f2753044aa0b803dd4df90875952cca89608ab98ab3	exact final source identity
+source-archive	docs/records/audits/2026-09/mvp6-shipment-ui-b01-b02-rework-01/source.tar.gz	b922ab8f0d4d4c00c72a0e3fa8f6e53728cdcece21479b36d13a14d992358c14	reconstruct exact source over HEAD
+rule	.antigravity/rules/localization-standard.md	4029a06b9509fb260b3d86c919a96568e8559a0554b1af0c8e753f922b98f31f	seven-language/RTL rules
+rule	.antigravity/rules/frontend-datatable-template.md	02dd882fa0b58dd511ee5592aa1ddd9934ab2b6c699bf5778e1c8729fc1e5037	DataTables v2 rules
+rule	.antigravity/rules/frontend-standards.md	82c4b6d43dca6de7f62c980ff446b3ece1f0574363fe36ae7af06287d1282b81	frontend/accessibility baseline
+rule	.antigravity/rules/frontend-form-template.md	8b7879348d514f0ea1da0075b036acf7a6060edef033b9fff9f066ccc7815895	Compact create/form rules
+rule	.antigravity/rules/frontend-details-template.md	d5c05da2ae39398030c4eb8702e122693dd3613264a01c4f27b081e75b500b3e	detail surface rules
+rule	.antigravity/rules/unauthorized-surface-standard.md	16f9fab927f45420c934b12d28f3a4673661cbdc30da6a5c3b22b924c3657331	UAS boundary; inherited, not rerun

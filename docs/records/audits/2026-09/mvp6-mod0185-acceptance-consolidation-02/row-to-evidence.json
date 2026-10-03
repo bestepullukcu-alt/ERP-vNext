@@ -1,0 +1,224 @@
+[
+  {
+    "historical_path": "/private/tmp/mod0185-dev02-runtime/runtime.json",
+    "claim": "A01/A06/A10/A12 HTTP create/list/replay",
+    "fresh_evidence": "runtime.json;runtime-http.json;runtime-processes.json;a12-controls.json",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "runtime.json",
+      "runtime-http.json",
+      "runtime-processes.json",
+      "a12-controls.json"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-dev02-runtime/restart.json",
+    "claim": "A06/A09 two-process durable replay and Pending outbox",
+    "fresh_evidence": "restart.json;restart-http.json;restart-processes.json",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "restart.json",
+      "restart-http.json",
+      "restart-processes.json"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-dev02-runtime/failure-paths.json",
+    "claim": "A04 refusal/timeout 5 collection rollback and 20 negatives",
+    "fresh_evidence": "failure-paths.json;failure-http.json;failure-processes.json;independent-query.json",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "failure-paths.json",
+      "failure-http.json",
+      "failure-processes.json",
+      "independent-query.json"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-dev02-audit/verifier-old.out",
+    "claim": "A12 fail-closed evidence verifier",
+    "fresh_evidence": "a12-controls.json;a12-*.log (fresh mutants; not old DEV01 bytes)",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "a12-controls.json",
+      "a12-byte-count.log",
+      "a12-get-body.log",
+      "a12-missing-transport-record.log",
+      "a12-reference-get-body.log",
+      "a12-replay-flag.log",
+      "a12-valid.log"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-dev02-audit/verifier-green.out",
+    "claim": "A12 fail-closed evidence verifier",
+    "fresh_evidence": "a12-controls.json;a12-*.log (fresh mutants; not old DEV01 bytes)",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "a12-controls.json",
+      "a12-byte-count.log",
+      "a12-get-body.log",
+      "a12-missing-transport-record.log",
+      "a12-reference-get-body.log",
+      "a12-replay-flag.log",
+      "a12-valid.log"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-dev03-runtime/runtime.json",
+    "claim": "A01/A06/A10/A12 HTTP create/list/replay",
+    "fresh_evidence": "runtime.json;runtime-http.json;runtime-processes.json;a12-controls.json",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "runtime.json",
+      "runtime-http.json",
+      "runtime-processes.json",
+      "a12-controls.json"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-dev03-runtime/restart.json",
+    "claim": "A06/A09 two-process durable replay and Pending outbox",
+    "fresh_evidence": "restart.json;restart-http.json;restart-processes.json",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "restart.json",
+      "restart-http.json",
+      "restart-processes.json"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-dev03-runtime/failure-paths.json",
+    "claim": "A04 refusal/timeout 5 collection rollback and 20 negatives",
+    "fresh_evidence": "failure-paths.json;failure-http.json;failure-processes.json;independent-query.json",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "failure-paths.json",
+      "failure-http.json",
+      "failure-processes.json",
+      "independent-query.json"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-dev03/a07-standalone-api.log",
+    "claim": "A07 startup fail-closed",
+    "fresh_evidence": "startup-results.json;a07-standalone-api.log",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "startup-results.json",
+      "a07-standalone-api.log"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-dev03/a07-unavailable-api.log",
+    "claim": "A07 startup fail-closed",
+    "fresh_evidence": "startup-results.json;a07-unavailable-api.log",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "startup-results.json",
+      "a07-unavailable-api.log"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-dev03/a07-index-api.log",
+    "claim": "A07 startup fail-closed",
+    "fresh_evidence": "startup-results.json;a07-index-api.log",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "startup-results.json",
+      "a07-index-api.log"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-ver02-runtime/runtime.json",
+    "claim": "A01/A06/A10/A12 HTTP create/list/replay",
+    "fresh_evidence": "runtime.json;runtime-http.json;runtime-processes.json;a12-controls.json",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "runtime.json",
+      "runtime-http.json",
+      "runtime-processes.json",
+      "a12-controls.json"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-ver02-runtime/restart.json",
+    "claim": "A06/A09 two-process durable replay and Pending outbox",
+    "fresh_evidence": "restart.json;restart-http.json;restart-processes.json",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "restart.json",
+      "restart-http.json",
+      "restart-processes.json"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-a04-rework02-runtime/SOP-22-DEV-HANDOFF.md",
+    "claim": "A04 source/build/process provenance and verification disposition",
+    "fresh_evidence": "build-input-manifest.json;binary-manifest.json;failure-processes.json;SOP-22.md",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "build-input-manifest.json",
+      "binary-manifest.json",
+      "failure-processes.json",
+      "external:SOP-22.md"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-a04-rework02-runtime/changed-files.json",
+    "claim": "A04 source/build/process provenance and verification disposition",
+    "fresh_evidence": "build-input-manifest.json;binary-manifest.json;failure-processes.json;SOP-22.md",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "build-input-manifest.json",
+      "binary-manifest.json",
+      "failure-processes.json",
+      "external:SOP-22.md"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-a04-ver02-runtime/SOP-22-VER-REPORT.md",
+    "claim": "A04 source/build/process provenance and verification disposition",
+    "fresh_evidence": "build-input-manifest.json;binary-manifest.json;failure-processes.json;SOP-22.md",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "build-input-manifest.json",
+      "binary-manifest.json",
+      "failure-processes.json",
+      "external:SOP-22.md"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-a04-ver02-runtime/manifest.json",
+    "claim": "A04 source/build/process provenance and verification disposition",
+    "fresh_evidence": "build-input-manifest.json;binary-manifest.json;failure-processes.json;SOP-22.md",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "build-input-manifest.json",
+      "binary-manifest.json",
+      "failure-processes.json",
+      "external:SOP-22.md"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-a04-ver02-runtime/failure-paths.json",
+    "claim": "A04 refusal/timeout 5 collection rollback and 20 negatives",
+    "fresh_evidence": "failure-paths.json;failure-http.json;failure-processes.json;independent-query.json",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "failure-paths.json",
+      "failure-http.json",
+      "failure-processes.json",
+      "independent-query.json"
+    ]
+  },
+  {
+    "historical_path": "/private/tmp/mod0185-a04-ver02-runtime/independent-query.json",
+    "claim": "A04 independent before/after persistence measurements",
+    "fresh_evidence": "independent-query.json",
+    "historical_bytes": "NOT_RECOVERED; fresh successor evidence only",
+    "resolvedMembers": [
+      "independent-query.json"
+    ]
+  }
+]

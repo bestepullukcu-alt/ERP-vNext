@@ -1,0 +1,211 @@
+{
+  "method": "lane-local bcrypt(12) rotation of seeded users in DitenAuth_CapQ88b01",
+  "seedHashesKnown": 1,
+  "actors": [
+    {
+      "actor": "capfull",
+      "email": "cap.full.q88b@diten.com",
+      "tenantId": "19200000-0000-4000-8000-000000000001",
+      "expectedLegalEntityId": null,
+      "db": {
+        "matched": 1,
+        "pre": {
+          "IsActive": true,
+          "EmailConfirmed": true,
+          "MustChangePassword": false,
+          "IsDeleted": false,
+          "LockedOut": false
+        },
+        "previousHashWasRepoSeed": true,
+        "modified": 1
+      },
+      "passwordSource": "lane supervisor memory",
+      "passwordPersisted": false,
+      "login": {
+        "via": "gateway",
+        "status": 200,
+        "setCookieNames": [],
+        "claimNames": [
+          "actor_type",
+          "aud",
+          "email",
+          "exp",
+          "family_name",
+          "given_name",
+          "iss",
+          "pwd_change_required",
+          "sub",
+          "tenant_id"
+        ],
+        "tenantClaimMatches": true,
+        "legalEntityClaim": "absent",
+        "tokenPersisted": false
+      },
+      "result": "PASS"
+    },
+    {
+      "actor": "capro",
+      "email": "cap.readonly.q88b@diten.com",
+      "tenantId": "19200000-0000-4000-8000-000000000001",
+      "expectedLegalEntityId": null,
+      "db": {
+        "matched": 1,
+        "pre": {
+          "IsActive": true,
+          "EmailConfirmed": true,
+          "MustChangePassword": false,
+          "IsDeleted": false,
+          "LockedOut": false
+        },
+        "previousHashWasRepoSeed": true,
+        "modified": 1
+      },
+      "passwordSource": "lane supervisor memory",
+      "passwordPersisted": false,
+      "login": {
+        "via": "gateway",
+        "status": 200,
+        "setCookieNames": [],
+        "claimNames": [
+          "actor_type",
+          "aud",
+          "email",
+          "exp",
+          "family_name",
+          "given_name",
+          "iss",
+          "pwd_change_required",
+          "sub",
+          "tenant_id"
+        ],
+        "tenantClaimMatches": true,
+        "legalEntityClaim": "absent",
+        "tokenPersisted": false
+      },
+      "result": "PASS"
+    },
+    {
+      "actor": "capnoread",
+      "email": "cap.noread.q88b@diten.com",
+      "tenantId": "19200000-0000-4000-8000-000000000001",
+      "expectedLegalEntityId": null,
+      "db": {
+        "matched": 1,
+        "pre": {
+          "IsActive": true,
+          "EmailConfirmed": true,
+          "MustChangePassword": false,
+          "IsDeleted": false,
+          "LockedOut": false
+        },
+        "previousHashWasRepoSeed": true,
+        "modified": 1
+      },
+      "passwordSource": "lane supervisor memory",
+      "passwordPersisted": false,
+      "login": {
+        "via": "gateway",
+        "status": 200,
+        "setCookieNames": [],
+        "claimNames": [
+          "actor_type",
+          "aud",
+          "email",
+          "exp",
+          "family_name",
+          "given_name",
+          "iss",
+          "pwd_change_required",
+          "sub",
+          "tenant_id"
+        ],
+        "tenantClaimMatches": true,
+        "legalEntityClaim": "absent",
+        "tokenPersisted": false
+      },
+      "result": "PASS"
+    },
+    {
+      "actor": "capadmin",
+      "email": "cap.admin.q88b@diten.com",
+      "tenantId": "19200000-0000-4000-8000-000000000001",
+      "expectedLegalEntityId": null,
+      "db": {
+        "matched": 1,
+        "pre": {
+          "IsActive": true,
+          "EmailConfirmed": true,
+          "MustChangePassword": false,
+          "IsDeleted": false,
+          "LockedOut": false
+        },
+        "previousHashWasRepoSeed": true,
+        "modified": 1
+      },
+      "passwordSource": "lane supervisor memory",
+      "passwordPersisted": false,
+      "login": {
+        "via": "gateway",
+        "status": 200,
+        "setCookieNames": [],
+        "claimNames": [
+          "actor_type",
+          "aud",
+          "email",
+          "exp",
+          "family_name",
+          "given_name",
+          "iss",
+          "pwd_change_required",
+          "sub",
+          "tenant_id"
+        ],
+        "tenantClaimMatches": true,
+        "legalEntityClaim": "absent",
+        "tokenPersisted": false
+      },
+      "result": "PASS"
+    },
+    {
+      "actor": "navfull",
+      "email": "john.doe.def@diten.com",
+      "tenantId": "00000000-0000-0000-0000-000000000001",
+      "expectedLegalEntityId": null,
+      "db": {
+        "matched": 1,
+        "pre": {
+          "IsActive": true,
+          "EmailConfirmed": true,
+          "MustChangePassword": false,
+          "IsDeleted": false,
+          "LockedOut": false
+        },
+        "previousHashWasRepoSeed": true,
+        "modified": 1
+      },
+      "passwordSource": "lane supervisor memory",
+      "passwordPersisted": false,
+      "login": {
+        "via": "gateway",
+        "status": 200,
+        "setCookieNames": [],
+        "claimNames": [
+          "actor_type",
+          "aud",
+          "email",
+          "exp",
+          "family_name",
+          "given_name",
+          "iss",
+          "pwd_change_required",
+          "sub",
+          "tenant_id"
+        ],
+        "tenantClaimMatches": true,
+        "legalEntityClaim": "absent",
+        "tokenPersisted": false
+      },
+      "result": "PASS"
+    }
+  ]
+}

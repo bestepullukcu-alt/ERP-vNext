@@ -1,0 +1,25 @@
+Q65b FINAL-CHECK — 2026-09-30 23:42:42 +03
+uname -s: Darwin
+HEAD: 4a8d4d4b339528a88e6220fb8402e5a2c771136c (expected 4a8d4d4b339528a88e6220fb8402e5a2c771136c)
+branch: feature/mvp6-logistics
+.git/index.lock: absent
+git status --porcelain entries: start 559 (sha256 da20a362440905facc456831fb6b7a4122faa1c7494eb03de505a959f642ddce) · end 564
+entries added vs start:
+  > ?? docs/records/audits/2026-09/mvp6-capacity-ui-draft-03/
+  > ?? docs/records/audits/2026-09/mvp6-ct-verdicts-q84b-2026-09-30.md
+  > ?? docs/records/audits/2026-09/mvp6-q184-ver-draft-03/
+  > ?? docs/records/audits/2026-09/mvp6-q65b-returns-mac-01/
+  > ?? docs/records/audits/2026-09/mvp6-sop-ui-draft-03/
+entries removed vs start: 0
+
+lane processes left: 0
+lane port listeners (5700-5799, 37994): 0
+27017 listener: owner dev mongod only: 758
+57192 listener: 0
+
+No git diff / add / commit / push. No tracked file edited. No ledger write. No rm / rmdir. Writes only in ~/mvp6-env/q65b/ and docs/records/audits/2026-09/mvp6-q65b-returns-mac-01/ (new files).
+
+Note on the 4 other added entries: created during this run by OTHER lanes, not by this session (birth times +03):
+  mvp6-ct-verdicts-q84b-2026-09-30.md 23:12:27 (CT verdict on Q84b) · mvp6-capacity-ui-draft-03/ 23:21:38 · mvp6-sop-ui-draft-03/ 23:21:38 · mvp6-q184-ver-draft-03/ 23:34:17
+  This session wrote only mvp6-q65b-returns-mac-01/ in the repo (every write here was cp/tee/redirect into that folder). They were not read, used or touched.
+This lane's own delta vs start: exactly 1 entry (?? docs/records/audits/2026-09/mvp6-q65b-returns-mac-01/).

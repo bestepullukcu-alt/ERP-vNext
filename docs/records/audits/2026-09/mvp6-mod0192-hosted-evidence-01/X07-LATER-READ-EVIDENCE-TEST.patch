@@ -1,0 +1,54 @@
+--- a/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs
+@@ -113,6 +113,13 @@
+         return await new MongoClient(Connection).GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument {
+             {"configureFailPoint","failCommand"},{"mode",new BsonDocument("times",times)},{"data",data}});
+     }
++    private static async Task<BsonDocument> FailAfter(string appName,string command,int skip)
++    {
++        var data=new BsonDocument { {"failCommands",new BsonArray {command}}, {"appName",appName},
++            {"errorCode",8}, {"errorLabels",new BsonArray()} };
++        return await new MongoClient(Connection).GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument {
++            {"configureFailPoint","failCommand"},{"mode",new BsonDocument("skip",skip)},{"data",data}});
++    }
+     private static async Task<int> StopFail()
+     {
+         var result=await new MongoClient(Connection).GetDatabase("admin").RunCommandAsync<BsonDocument>(
+@@ -213,6 +220,37 @@
+         var before=(await Fail(app,"find",4)).GetValue("count",0).ToInt32();
+         try {await Assert.ThrowsAsync<InvalidOperationException>(()=>Reconcile(store,id));}
+         finally {var hits=await StopFail()-before;output.WriteLine($"X07 reconciliation read failure hits={hits}");Assert.True(hits>=1);}
++    }
++
++    [Theory]
++    [InlineData("event-broad",0)]
++    [InlineData("event-exact",1)]
++    [InlineData("audit-broad",2)]
++    [InlineData("audit-exact",3)]
++    [InlineData("active-slot",4)]
++    public async Task X07_Each_later_reconciliation_read_failure_is_fail_closed(string boundary,int aggregateSkip)
++    {
++        var app="mod192-x07-later-"+boundary;var db=await Reset(app);
++        var (store,lease,id)=await TerminalSetup(db);
++        Assert.True(await store.TerminalAsync(Scope,id,lease.Version,lease.Fence,"Completed",[],false,CancellationToken.None));
++        Assert.True(await Reconcile(store,id));
++        var beforeStatus=(await db.GetCollection<CapacityEvaluation>("capacity_evaluations").Find(x=>x.Id==id).SingleAsync()).Status;
++        var beforeEvent=await Count(db,"capacity_outbox",Event(id));
++        var beforeAudit=await Count(db,"capacity_audit",Target(id));
++        var beforeSlot=await Count(db,"capacity_active_slots");
++        var enteredBefore=(await FailAfter(app,"aggregate",aggregateSkip)).GetValue("count",0).ToInt32();
++        try {await Assert.ThrowsAsync<InvalidOperationException>(()=>Reconcile(store,id));}
++        finally
++        {
++            var entered=await StopFail()-enteredBefore;
++            output.WriteLine($"X07 later read boundary={boundary} aggregateSkip={aggregateSkip} failpointEntries={entered} injectedFailures=1");
++            Assert.Equal(1,entered);
++        }
++        Assert.Equal(beforeStatus,(await db.GetCollection<CapacityEvaluation>("capacity_evaluations").Find(x=>x.Id==id).SingleAsync()).Status);
++        Assert.Equal(beforeEvent,await Count(db,"capacity_outbox",Event(id)));
++        Assert.Equal(beforeAudit,await Count(db,"capacity_audit",Target(id)));
++        Assert.Equal(beforeSlot,await Count(db,"capacity_active_slots"));
++        Assert.True(await Reconcile(store,id));
+     }
+ 
+     [Fact]

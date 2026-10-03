@@ -1,0 +1,342 @@
+{
+  "phase": "happy",
+  "locale": "ar",
+  "startedAt": "2026-10-01T13:18:15.529Z",
+  "web": "http://127.0.0.1:5501",
+  "playwright": "1.59.1",
+  "cases": {
+    "MOD0192-happy-create-plan": {
+      "result": "PASS",
+      "planId": "92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "createStatus": 201,
+      "createErrorCode": null,
+      "createBodyKeys": [
+        "name",
+        "horizonStart",
+        "horizonEnd",
+        "demandPlanId",
+        "demandPlanVersion",
+        "sourceCapturedAt",
+        "sourceChecksum"
+      ],
+      "entry": {
+        "markup": 1,
+        "cta": 1,
+        "tables": 0,
+        "apiGetsOnEntry": 0,
+        "title": "خطط السعة"
+      },
+      "summary": {
+        "title": "Q88b ar plan 17115b03",
+        "status": "مسودة",
+        "scenarioCta": true,
+        "evaluateCta": false
+      },
+      "evidence": [
+        "png/happy-01-entry-ar.png",
+        "png/happy-02-create-plan-ar.png",
+        "png/happy-03-details-ar.png"
+      ]
+    },
+    "MOD0192-happy-create-scenario": {
+      "result": "PASS",
+      "scenarioId": "ed7e57be-06ec-4d84-a189-0c5634be6046",
+      "status": 201,
+      "errorCode": null,
+      "scenario": {
+        "panel": {
+          "empty": false,
+          "skeleton": false,
+          "error": false,
+          "content": true
+        },
+        "idShown": "ed7e57be-06ec-4d84-a189-0c5634be6046",
+        "nameShown": "Q88b ar scenario A",
+        "address": {
+          "scenarioId": "ed7e57be-06ec-4d84-a189-0c5634be6046",
+          "evaluationId": null
+        },
+        "evaluateCta": true
+      },
+      "requestBody": {
+        "name": "Q88b ar scenario A",
+        "constraintRefs": [
+          {
+            "constraintId": "line-4-hours",
+            "source": "SUPPLY-CONSTRAINTS",
+            "sourceVersion": "8"
+          }
+        ],
+        "adjustments": [
+          {
+            "resourceRef": "line-4",
+            "period": "2027-W03",
+            "availableCapacityDelta": "80.000",
+            "uomId": "HOUR"
+          }
+        ]
+      },
+      "evidence": [
+        "png/happy-04-create-scenario-ar.png",
+        "png/happy-05-scenario-ar.png"
+      ]
+    },
+    "MOD0192-happy-evaluate": {
+      "result": "PASS",
+      "evaluationId": "868b3ca2-331c-43fd-af50-a3e2c448349a",
+      "status": 202,
+      "errorCode": null,
+      "firstStatus": "مقبول",
+      "refresh": {
+        "completed": true,
+        "statuses": [
+          "مقبول",
+          "مكتمل"
+        ],
+        "refreshClicks": 1
+      },
+      "evaluation": {
+        "panel": {
+          "empty": false,
+          "skeleton": false,
+          "error": false,
+          "content": true
+        },
+        "idShown": "868b3ca2-331c-43fd-af50-a3e2c448349a",
+        "scenarioShown": "ed7e57be-06ec-4d84-a189-0c5634be6046",
+        "status": "مكتمل",
+        "bottleneckRows": 1,
+        "bottleneckText": "line-4 2027-W03 520.000 480.000 40.000 HOUR",
+        "address": {
+          "scenarioId": "ed7e57be-06ec-4d84-a189-0c5634be6046",
+          "evaluationId": "868b3ca2-331c-43fd-af50-a3e2c448349a"
+        }
+      },
+      "afterReload": {
+        "scenario": {
+          "empty": false,
+          "skeleton": false,
+          "error": false,
+          "content": true
+        },
+        "evaluation": {
+          "empty": false,
+          "skeleton": false,
+          "error": false,
+          "content": true
+        },
+        "address": {
+          "scenarioId": "ed7e57be-06ec-4d84-a189-0c5634be6046",
+          "evaluationId": "868b3ca2-331c-43fd-af50-a3e2c448349a"
+        },
+        "evaluationIdShown": "868b3ca2-331c-43fd-af50-a3e2c448349a"
+      },
+      "evidence": [
+        "png/happy-06-evaluate-ar.png",
+        "png/happy-07-evaluation-completed-ar.png",
+        "png/happy-08-after-reload-ar.png"
+      ]
+    },
+    "UI-PM-01": {
+      "result": "PASS",
+      "entryShell": {
+        "layoutWrappers": 1,
+        "layoutMenus": 1,
+        "navbars": 1,
+        "footers": 1,
+        "mainJs": 1,
+        "htmlDir": "rtl",
+        "htmlLang": "ar"
+      },
+      "detailsShell": {
+        "layoutWrappers": 1,
+        "layoutMenus": 1,
+        "navbars": 1,
+        "footers": 1,
+        "mainJs": 1,
+        "htmlDir": "rtl",
+        "htmlLang": "ar"
+      },
+      "note": "entry and details with every partial (create plan / create scenario / evaluate offcanvas, L10n)",
+      "evidence": [
+        "png/happy-01-entry-ar.png",
+        "png/happy-08-after-reload-ar.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "happy-01-entry-ar.png",
+      "sha256": "1c3d4b253a08a410c5896a6afe188c120778ed9e47ed0891ca093b749a3ac33c",
+      "url": "/SupplyChain/CapacityPlans",
+      "capturedAt": "2026-10-01T13:18:18.933Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-02-create-plan-ar.png",
+      "sha256": "523da19662de9719e02afef1fd36ed4d419bf7c4e2efac65f54b236ed6304295",
+      "url": "/SupplyChain/CapacityPlans",
+      "capturedAt": "2026-10-01T13:18:19.436Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-03-details-ar.png",
+      "sha256": "ebe803b1d611dd9e598df4ba4e10e17feb0f8f2b32b5d80dd464dbb8a6b0a7dc",
+      "url": "/SupplyChain/CapacityPlans/Details/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "capturedAt": "2026-10-01T13:18:21.042Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-04-create-scenario-ar.png",
+      "sha256": "61439cdca361d5811acc10bd21f226037e9b937730fefb98f07c9e9ceae99de2",
+      "url": "/SupplyChain/CapacityPlans/Details/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "capturedAt": "2026-10-01T13:18:21.833Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-05-scenario-ar.png",
+      "sha256": "a08a14623468e925262fbf173168ea15a717804f41f91af494d06de3fd1caea9",
+      "url": "/SupplyChain/CapacityPlans/Details/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "capturedAt": "2026-10-01T13:18:23.180Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-06-evaluate-ar.png",
+      "sha256": "f2e5c2e3b95684d457ce90270bd43faa869ed3dca49e93cba265018a9315300a",
+      "url": "/SupplyChain/CapacityPlans/Details/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "capturedAt": "2026-10-01T13:18:23.633Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-07-evaluation-completed-ar.png",
+      "sha256": "aa8ca2e98501c95d973af78a2dc28dcf6a43073cbc06396de7bd85bf26dfba50",
+      "url": "/SupplyChain/CapacityPlans/Details/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "capturedAt": "2026-10-01T13:18:29.764Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-08-after-reload-ar.png",
+      "sha256": "14aefad1dbb90c2d518dfada5884f5f0389a95fc2a317df0e9cbb2524e1067f1",
+      "url": "/SupplyChain/CapacityPlans/Details/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "capturedAt": "2026-10-01T13:18:32.011Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [
+    {
+      "tag": "happy-ar",
+      "text": "تم إنشاء الخطة.",
+      "type": "success",
+      "at": "2026-10-01T13:18:19.624Z"
+    },
+    {
+      "tag": "happy-ar",
+      "text": "تم إنشاء السيناريو.",
+      "type": "success",
+      "at": "2026-10-01T13:18:21.899Z"
+    },
+    {
+      "tag": "happy-ar",
+      "text": "تم إرسال التقييم.",
+      "type": "success",
+      "at": "2026-10-01T13:18:23.799Z"
+    }
+  ],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "happy-ar",
+      "at": "2026-10-01T13:18:19.708Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api",
+      "status": 201,
+      "errorCode": null,
+      "idempotencyKey": true
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-10-01T13:18:19.826Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-10-01T13:18:21.909Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87/scenarios",
+      "status": 201,
+      "errorCode": null,
+      "idempotencyKey": true
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-10-01T13:18:21.931Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87/scenarios/ed7e57be-06ec-4d84-a189-0c5634be6046",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-10-01T13:18:23.803Z",
+      "method": "POST",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87/scenarios/ed7e57be-06ec-4d84-a189-0c5634be6046/evaluations",
+      "status": 202,
+      "errorCode": null,
+      "idempotencyKey": true
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-10-01T13:18:23.877Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87/evaluations/868b3ca2-331c-43fd-af50-a3e2c448349a",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-10-01T13:18:29.091Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87/evaluations/868b3ca2-331c-43fd-af50-a3e2c448349a",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-10-01T13:18:29.927Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87/scenarios/ed7e57be-06ec-4d84-a189-0c5634be6046",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-10-01T13:18:29.927Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-ar",
+      "at": "2026-10-01T13:18:29.970Z",
+      "method": "GET",
+      "path": "/SupplyChain/CapacityPlans/api/92c7b69e-ae8d-4118-a5aa-7368640edd87/evaluations/868b3ca2-331c-43fd-af50-a3e2c448349a",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    }
+  ],
+  "shellFonts": 6,
+  "endedAt": "2026-10-01T13:18:32.057Z"
+}

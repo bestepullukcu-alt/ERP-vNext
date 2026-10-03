@@ -1,0 +1,127 @@
+
+Golden DataTable Verify Report
+================================
+Passed: 49
+Failed: 35
+
+[PASS] Index.cshtml exists
+[PASS] _Filter.cshtml exists
+[PASS] _DataTable.cshtml exists
+[PASS] _IndexL10n.cshtml exists
+[PASS] index.js exists
+[PASS] index.l10n.js exists
+[PASS] dt-defaults.js exists
+[PASS] backbone-custom.css exists
+[PASS] Compact reference has Create.cshtml
+[FAIL] Compact reference has Edit.cshtml
+  - Missing: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/Edit.cshtml
+[PASS] Compact reference has Details.cshtml
+[PASS] Compact reference has _Form.cshtml
+[FAIL] Index.cshtml includes <partial name="_Filter" />
+  - Missing filter partial include (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml)
+[PASS] Index.cshtml uses _LayoutTenantShell
+[PASS] Index.cshtml does NOT use legacy _LayoutBackbone
+[PASS] DataTable markup has #skeleton-loader
+[PASS] Compact Index does not include create/edit offcanvas
+[FAIL] Compact _Form.cshtml matches Details.cshtml section/card map
+  - Expected _Form.cshtml and Details.cshtml to use the same localized section headings in the same order. Form: ['Localizer:SourceAndDestination', 'Localizer:Schedule', 'Localizer:ShipmentLines']; Details: ['Localizer:ShipmentSummary', 'Localizer:ScheduleAndAssignment', 'Localizer:ShipmentLines', 'Localizer:ProofOfDelivery']
+[PASS] Optional numeric/date fields use nullable ViewModel types
+[PASS] Required label markers match ViewModel required metadata
+[PASS] Index.cshtml shows @Localizer["PageDescription"]
+[PASS] _Filter.cshtml has #inlineFilterHost
+[PASS] _Filter.cshtml has #inlineFilterCollapse
+[PASS] _Filter.cshtml uses pt-0 pb-3 wrapper
+[PASS] _Filter.cshtml does not use pt-2
+[PASS] index.js does not add mx-* to inlineFilterHost
+[PASS] Inline filter host aligns with px-3
+[PASS] dt-defaults.js topStart rowClass matches golden toolbar contract
+[PASS] dt-defaults.js bottomStart rowClass matches golden toolbar contract
+[PASS] backbone-custom.css has MOD-0022 media query
+[PASS] Responsive toolbar reserves top safe-area (padding-top)
+[PASS] Export button height aligned (dt-export-collection-btn min-block-size)
+[PASS] backbone-custom.css has shared inline filter Select2 styling
+[PASS] Inline filter styling follows form-select-sm standard
+[PASS] Index.cshtml does not embed inline filter CSS in @section Styles
+[PASS] Index.cshtml does not embed toolbar CSS in @section Styles
+[FAIL] Index.cshtml includes <partial name="_IndexL10n" />
+  - Missing _IndexL10n partial include (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml)
+[PASS] Index.cshtml includes script: ~/assets/js/SupplyChain/Shipments/index.l10n.js
+[PASS] Index.cshtml does not inline-assign window.L10n keys
+[PASS] _IndexL10n.cshtml renders application/json payload
+[PASS] index.l10n.js parses payload JSON
+[PASS] index.l10n.js merges payload into window.L10n
+[FAIL] _IndexL10n.cshtml provides Active
+  - Missing L10n key: Active (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Passive
+  - Missing L10n key: Passive (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Unknown
+  - Missing L10n key: Unknown (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Actions
+  - Missing L10n key: Actions (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Edit
+  - Missing L10n key: Edit (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides ViewDetails
+  - Missing L10n key: ViewDetails (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides QuickView
+  - Missing L10n key: QuickView (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides BulkDelete
+  - Missing L10n key: BulkDelete (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides BulkDeleteConfirm
+  - Missing L10n key: BulkDeleteConfirm (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides AreYouSure
+  - Missing L10n key: AreYouSure (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Cancel
+  - Missing L10n key: Cancel (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Search
+  - Missing L10n key: Search (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Export
+  - Missing L10n key: Export (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Import
+  - Missing L10n key: Import (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Filter
+  - Missing L10n key: Filter (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Apply
+  - Missing L10n key: Apply (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Reset
+  - Missing L10n key: Reset (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides ShowAll
+  - Missing L10n key: ShowAll (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides SaveView
+  - Missing L10n key: SaveView (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides ColumnVisibility
+  - Missing L10n key: ColumnVisibility (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[FAIL] _IndexL10n.cshtml provides Status
+  - Missing L10n key: Status (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml)
+[PASS] Index.cshtml has <table id="..." data-dt-standard="v2">
+[PASS] Index.cshtml includes script: ~/assets/js/SupplyChain/Shipments/index.js
+[PASS] Index.cshtml has no inline onclick=
+[PASS] Index.cshtml does not define/call populateOffcanvas(...)
+[PASS] index.js uses DataTables v2 constructor (new DataTable(...))
+[PASS] index.js uses window.DtDefaults.create(...)
+[PASS] index.js uses DtDefaults.exportButtons(...)
+[FAIL] index.js includes .js-quick-view selector
+  - Missing .js-quick-view wiring for Quick View (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/index.js)
+[FAIL] index.js uses event delegation (closest('.js-quick-view'))
+  - Quick View must use event delegation (closest('.js-quick-view')) (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/index.js)
+[PASS] index.js defines getAuthHeaders()
+[PASS] index.js uses getAuthHeaders() in fetch headers
+[PASS] index.js does not read HttpOnly auth cookies or build Bearer tokens
+[FAIL] direct-gateway profile uses window.API service base
+  - Direct Gateway profile requires window.API.{service} as the service base URL (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/index.js)
+[PASS] index.js does not use jQuery DataTable plugin (.(DataTable|dataTable)(...))
+[FAIL] _DataTable.cshtml has select-all checkbox header (dt-checkboxes-select-all)
+  - Missing select-all checkbox header (class containing dt-checkboxes-select-all) (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/Views/SupplyChain/Shipments/_DataTable.cshtml)
+[FAIL] index.js declares bulk action config (bulkOptions / bulkBarSelector)
+  - Missing bulk action config (bulkOptions or bulkBarSelector wiring) (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/index.js)
+[FAIL] index.js wires bulk selection (getSelectedIds(...) or onBulkAction)
+  - Missing bulk selection wiring (expected getSelectedIds(...) or bulkOptions.onBulkAction) (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/index.js)
+[FAIL] index.js calls bulk endpoint (.../bulk)
+  - Missing bulk endpoint binding (expected URL ending with /bulk) (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/index.js)
+[FAIL] index.js wires bulk delete trigger (#btnBulkDelete | .bulk-delete-btn | [data-bulk-action])
+  - Missing bulk delete trigger (#btnBulkDelete, .bulk-delete-btn or [data-bulk-action]) (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/index.js)
+[FAIL] index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)
+  - Missing reload-with-toast lifecycle wiring; tek satır ve bulk delete aynı reloadWithToast üzerinden gitmeli (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/index.js)
+[FAIL] index.js wires clear-selection (clearSelectionSelector or clearSelection())
+  - Missing clear-selection wiring (bulk bar must expose a clear control) (file: /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/index.js)
+
+Result: FAIL

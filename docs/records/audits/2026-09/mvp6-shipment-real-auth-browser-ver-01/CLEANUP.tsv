@@ -1,0 +1,12 @@
+resource	result	detail
+IAB tab 2	CLOSED	Browser verification tab closed
+Gateway 5800	FREE	Verifier process stopped
+Web 5801	FREE	Verifier process stopped
+Auth 5856	FREE	Verifier process stopped
+Platform 5857	FREE	Verifier process stopped
+MDM 5859	FREE	Verifier process stopped
+SupplyChain 5861	FREE	Verifier process stopped after successful persistence restart check
+Mongo 41994	FREE	Lane replica set stopped
+ephemeral secrets	REMOVED	/private/tmp/mvp6-shipment-browser-ver01-01/runtime/secrets.env deleted; never archived
+operational Mongo 27017	UNTOUCHED	No connection or cleanup attempt
+product source	UNCHANGED	Only new audit directory written

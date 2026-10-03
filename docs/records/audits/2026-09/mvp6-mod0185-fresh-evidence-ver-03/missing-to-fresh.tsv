@@ -1,0 +1,20 @@
+historical_path	claim	fresh_evidence	historical_bytes
+/private/tmp/mod0185-dev02-runtime/runtime.json	A01/A06/A10/A12 HTTP create/list/replay	runtime.json;runtime-http.json;runtime-processes.json;a12-controls.json	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-dev02-runtime/restart.json	A06/A09 two-process durable replay and Pending outbox	restart.json;restart-http.json;restart-processes.json	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-dev02-runtime/failure-paths.json	A04 refusal/timeout 5 collection rollback and 20 negatives	failure-paths.json;failure-http.json;failure-processes.json;independent-query.json	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-dev02-audit/verifier-old.out	A12 fail-closed evidence verifier	a12-controls.json;a12-*.log (fresh mutants; not old DEV01 bytes)	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-dev02-audit/verifier-green.out	A12 fail-closed evidence verifier	a12-controls.json;a12-*.log (fresh mutants; not old DEV01 bytes)	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-dev03-runtime/runtime.json	A01/A06/A10/A12 HTTP create/list/replay	runtime.json;runtime-http.json;runtime-processes.json;a12-controls.json	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-dev03-runtime/restart.json	A06/A09 two-process durable replay and Pending outbox	restart.json;restart-http.json;restart-processes.json	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-dev03-runtime/failure-paths.json	A04 refusal/timeout 5 collection rollback and 20 negatives	failure-paths.json;failure-http.json;failure-processes.json;independent-query.json	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-dev03/a07-standalone-api.log	A07 startup fail-closed	startup-results.json;a07-standalone-api.log	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-dev03/a07-unavailable-api.log	A07 startup fail-closed	startup-results.json;a07-unavailable-api.log	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-dev03/a07-index-api.log	A07 startup fail-closed	startup-results.json;a07-index-api.log	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-ver02-runtime/runtime.json	A01/A06/A10/A12 HTTP create/list/replay	runtime.json;runtime-http.json;runtime-processes.json;a12-controls.json	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-ver02-runtime/restart.json	A06/A09 two-process durable replay and Pending outbox	restart.json;restart-http.json;restart-processes.json	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-a04-rework02-runtime/SOP-22-DEV-HANDOFF.md	A04 source/build/process provenance and verification disposition	build-input-manifest.json;binary-manifest.json;failure-processes.json;SOP-22.md	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-a04-rework02-runtime/changed-files.json	A04 source/build/process provenance and verification disposition	build-input-manifest.json;binary-manifest.json;failure-processes.json;SOP-22.md	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-a04-ver02-runtime/SOP-22-VER-REPORT.md	A04 source/build/process provenance and verification disposition	build-input-manifest.json;binary-manifest.json;failure-processes.json;SOP-22.md	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-a04-ver02-runtime/manifest.json	A04 source/build/process provenance and verification disposition	build-input-manifest.json;binary-manifest.json;failure-processes.json;SOP-22.md	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-a04-ver02-runtime/failure-paths.json	A04 refusal/timeout 5 collection rollback and 20 negatives	failure-paths.json;failure-http.json;failure-processes.json;independent-query.json	NOT_RECOVERED; fresh successor evidence only
+/private/tmp/mod0185-a04-ver02-runtime/independent-query.json	A04 independent before/after persistence measurements	independent-query.json	NOT_RECOVERED; fresh successor evidence only

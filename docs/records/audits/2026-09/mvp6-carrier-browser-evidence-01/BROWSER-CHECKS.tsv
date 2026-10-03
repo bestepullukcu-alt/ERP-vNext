@@ -1,0 +1,11 @@
+check	status	instruction
+Authorized page shell	READY	Login as admin then open /SupplyChain/Carriers
+Four create fields	READY	Capture carrierCode, displayName, supportedModes, externalReference
+Independent surfaces	READY	Capture create and status controls visible for admin
+UAS-001	READY	Log out/login no-role user; capture denial only and absence of table/actions
+Seven languages	READY	Capture requested locale variants on the page
+Arabic RTL	READY	Set Arabic and capture html/body RTL rendering
+Same-origin network	READY	Confirm browser calls Web 5201; no direct 5261 browser request
+Auth-issued list/create/status	OPEN	Missing legal_entity_id claim causes fail-closed 403
+Tenant/LE hiding	OPEN	Requires supported Auth-issued scoped identity
+Replay/error mutation flows	OPEN	Requires supported Auth-issued scoped identity

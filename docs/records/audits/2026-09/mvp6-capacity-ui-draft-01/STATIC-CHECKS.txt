@@ -1,0 +1,133 @@
+# Q88 STATIC-CHECKS — MOD-0192 Capacity tenant UI draft overlay
+# Run at 2026-09-26 19:37:25 +03:00 (Istanbul) in the chat-lane Linux VM workspace, scratch /tmp/q88; node v22.23.2, xmllint 20913, python 3.10, tree-sitter-c-sharp 0.23.5 (pip, VM /tmp)
+# STATIC checks only. No dotnet build/test, no analyzers, no Razor compile, no browser run (see NOT-VERIFIED.md).
+# Totals: 127 PASS / 0 FAIL. The SHA256SUMS verification of this folder is run after this file is written; its result is in README.md (hand-off line).
+
+status	check	detail
+PASS	node --check overlay/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/CapacityPlans/details.js	
+PASS	node --check overlay/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/CapacityPlans/details.l10n.js	
+PASS	node --check overlay/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/CapacityPlans/index.js	
+PASS	node --check overlay/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/CapacityPlans/index.l10n.js	
+PASS	node --check runtime-scenarios/capacity-ui.spec.mjs	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlanDetails.ar.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlanDetails.en.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlanDetails.es.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlanDetails.fr.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlanDetails.ru.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlanDetails.tr.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlanDetails.zh.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlansIndex.ar.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlansIndex.en.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlansIndex.es.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlansIndex.fr.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlansIndex.ru.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlansIndex.tr.resx	
+PASS	xmllint --noout overlay/frontend/Diten.Web/Resources/Views/SupplyChain/CapacityPlans/CapacityPlansIndex.zh.resx	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.ar.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.en.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.es.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.fr.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.ru.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.tr.resx.fragment.xml	
+PASS	xmllint --noout overlay/_shared-integration/sharedresource-nav-keys/SharedResource.zh.resx.fragment.xml	
+PASS	json.load gateway-capacity-routes.ocelot-fragment.json	
+PASS	resx key parity CapacityPlansIndex.{7 langs}	en=49, tr=49, fr=49, es=49, zh=49, ar=49, ru=49
+PASS	resx no empty value / no key echo (CapacityPlansIndex)	[]
+PASS	resx no placeholder text (CapacityPlansIndex)	[]
+PASS	resx non-en values identical to en — review list (CapacityPlansIndex)	[]
+PASS	resx zh/ar/ru contain no English words (≥4 Latin letters; uppercase codes excluded) (CapacityPlansIndex)	[]
+PASS	resx localizes all 16 published Capacity error codes (CapacityPlansIndex)	16
+PASS	resx ar values are Arabic script (RTL) (CapacityPlansIndex)	
+PASS	resx key parity CapacityPlanDetails.{7 langs}	en=106, tr=106, fr=106, es=106, zh=106, ar=106, ru=106
+PASS	resx no empty value / no key echo (CapacityPlanDetails)	[]
+PASS	resx no placeholder text (CapacityPlanDetails)	[]
+PASS	resx non-en values identical to en — review list (CapacityPlanDetails)	[]
+PASS	resx zh/ar/ru contain no English words (≥4 Latin letters; uppercase codes excluded) (CapacityPlanDetails)	[]
+PASS	resx localizes all 16 published Capacity error codes (CapacityPlanDetails)	16
+PASS	resx ar values are Arabic script (RTL) (CapacityPlanDetails)	
+PASS	contract: Capacity operations publish 16 error codes	['CAPACITY_PLAN_ALREADY_EXISTS', 'CAPACITY_PLAN_STATE_CONFLICT', 'CAPACITY_SCENARIO_NAME_CONFLICT', 'COMMIT_RESULT_UNRESOLVED', 'DEPENDENCY_UNAVAILABLE', 'EVALUATION_ALREADY_ACTIVE', 'FORBIDDEN', 'IDEMPOTENCY_KEY_REUSED', 'INVALID_CONSTRAINT_REFERENCE', 'INVALID_CORRELATION_ID', 'INVALID_DEMAND_REFERENCE', 'INVALID_REQUEST', 'UNAUTHENTICATED', 'UNKNOWN_CAPACITY_EVALUATION', 'UNKNOWN_CAPACITY_PLAN', 'UNKNOWN_CAPACITY_SCENARIO']
+PASS	controller PublishedCodes == contract codes	[]
+PASS	index.js ERROR_KEY maps all 16 published codes	[]
+PASS	details.js ERROR_KEY maps all 16 published codes	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web.Tests/Controllers/SupplyChainCapacityPlansControllerTests.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web.Tests/Forms/CapacityPlanFormContractTests.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web.Tests/JavaScript/CapacityPlanDetailsBehaviorTests.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Controllers/SupplyChainCapacityPlansController.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Models/SupplyChain/CapacityPlans/CapacityPlanViewModels.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Views/SupplyChain/CapacityPlans/CapacityPlanDetails.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/frontend/Diten.Web/Views/SupplyChain/CapacityPlans/CapacityPlansIndex.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/CapacityPlanningManifestProvider.cs	[]
+PASS	tree-sitter-c-sharp parse overlay/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/CapacityPlanningManifestProviderTests.cs	[]
+PASS	cshtml: no hard-coded UI text (text nodes / aria-label / title / placeholder)	[]
+PASS	js: no hard-coded English phrases in string literals (console lines excluded)	[]
+PASS	no native dialogs (alert/confirm/prompt) and no direct Swal.fire	[]
+PASS	no inline event handlers / javascript: URLs in views	[]
+PASS	no browser storage in module JS	[]
+PASS	no invented permission keys (overlay keys == backend CapacityPermissions constants)	used=['supplychain.capacity-plans.create', 'supplychain.capacity-plans.evaluate', 'supplychain.capacity-plans.read', 'supplychain.capacity-plans.scenario.create'] backend=['supplychain.capacity-plans.create', 'supplychain.capacity-plans.evaluate', 'supplychain.capacity-plans.read', 'supplychain.capacity-plans.scenario.create']
+PASS	controller routes == §23.4 (2 view + 6 adapter), nothing else	[]
+PASS	js URL literals only the §23.4 same-origin routes	['/SupplyChain/CapacityPlans/Details/', '/SupplyChain/CapacityPlans/api', '/SupplyChain/CapacityPlans/api/']
+PASS	controller downstream base = published /api/supply-chain/capacity-plans	{'/api/supply-chain/capacity-plans'}
+PASS	mirror: entry page has exactly one fetch (create POST), no list request	
+PASS	mirror: token absent from index.js/details.js: colvis	
+PASS	mirror: token absent from index.js/details.js: exportButtons	
+PASS	mirror: token absent from index.js/details.js: personalizationClient	
+PASS	mirror: token absent from index.js/details.js: dt-checkboxes	
+PASS	mirror: token absent from index.js/details.js: QuickView	
+PASS	mirror: token absent from index.js/details.js: .trim(	
+PASS	mirror: token absent from index.js/details.js: /status	
+PASS	mirror: token absent from index.js/details.js: /approve	
+PASS	mirror: token absent from index.js/details.js: /archive	
+PASS	mirror: token absent from index.js/details.js: /cancel	
+PASS	mirror: token absent from index.js/details.js: ?page	
+PASS	mirror: token absent from index.js/details.js: search=	
+PASS	mirror: token absent from index.js/details.js: setTimeout	
+PASS	mirror: token absent from index.js/details.js: setInterval	
+PASS	mirror: token absent from index.js/details.js: requestAnimationFrame	
+PASS	mirror: token absent from index.js/details.js: EventSource	
+PASS	mirror: token absent from index.js/details.js: WebSocket	
+PASS	mirror: token absent from index.js/details.js: parseFloat	
+PASS	mirror: token absent from index.js/details.js: Number(	
+PASS	mirror: token absent from index.js/details.js: history.pushState	
+PASS	mirror: token absent from index.js/details.js: history.replaceState	
+PASS	mirror: token absent from index.js/details.js: location.hash	
+PASS	mirror: token absent from index.js/details.js: URLSearchParams	
+PASS	mirror: create-plan form fields = 7 schema fields in order	['planName', 'planHorizonStart', 'planHorizonEnd', 'planDemandPlanId', 'planDemandPlanVersion', 'planSourceCapturedAt', 'planSourceChecksum']
+PASS	mirror: create-plan form prefills nothing (first-open progress 0/7)	
+PASS	mirror: no client tightening attributes in _CreatePlanOffcanvas.cshtml	
+PASS	mirror: no client tightening attributes in _CreateScenarioOffcanvas.cshtml	
+PASS	mirror: no client tightening attributes in _EvaluateOffcanvas.cshtml	
+PASS	mirror: _IndexL10n.cshtml bridges every CapacityPlansIndex key once	49
+PASS	mirror: _DetailsL10n.cshtml bridges every CapacityPlanDetails key once	106
+PASS	mirror: Details.cshtml states Layout = "_LayoutTenantShell"	
+PASS	mirror: Index.cshtml states Layout = "_LayoutTenantShell"	
+PASS	mirror: _CreatePlanOffcanvas.cshtml states Layout = "_LayoutTenantShell"	
+PASS	mirror: _CreateScenarioOffcanvas.cshtml states Layout = "_LayoutTenantShell"	
+PASS	mirror: _DetailsL10n.cshtml states Layout = "_LayoutTenantShell"	
+PASS	mirror: _EvaluateOffcanvas.cshtml states Layout = "_LayoutTenantShell"	
+PASS	mirror: _IndexL10n.cshtml states Layout = "_LayoutTenantShell"	
+PASS	controller sends no tenant/legal-entity header (scope from the signed token server-side, CapacityContextMiddleware.cs:46-49)	
+PASS	controller: 6 JSON adapters, antiforgery on the 3 POSTs	
+PASS	no "Permission denied"/"Forbidden" UI text in views, JS or resx (controller wire message is contract text for API clients only)	[]
+PASS	gateway fragment = the 6 §23.10 routes with OPTIONS on 5061, no collection GET, no catch-all	[]
+PASS	manifest provider (§24): ModuleCode: "capacity-planning"	
+PASS	manifest provider (§24): ModuleName: "CapacityPlanning"	
+PASS	manifest provider (§24): DisplayName: "Capacity Planning"	
+PASS	manifest provider (§24): SortOrder: 450	
+PASS	manifest provider (§24): Icon: "bx-bar-chart-alt-2"	
+PASS	manifest provider (§24): IsTenantAssignable: true	
+PASS	manifest provider (§24): IsBaseline: false	
+PASS	manifest provider (§24): RoutePath: "/SupplyChain/CapacityPlans"	
+PASS	manifest provider (§24): RoutePath: "/SupplyChain/CapacityPlans/Details/{capacityPlanId:guid}"	
+PASS	manifest provider (§24): PageCode: "CAPACITY_PLANS"	
+PASS	manifest provider (§24): PageCode: "CAPACITY_PLAN_DETAILS"	
+PASS	manifest provider (§24): "CREATE", "Create Plan", CapacityPermissions.Create	
+PASS	manifest provider (§24): "CREATE_SCENARIO", "Create Scenario", CapacityPermissions.ScenarioCreate	
+PASS	manifest provider (§24): "EVALUATE", "Evaluate", CapacityPermissions.Evaluate	
+PASS	manifest provider: 3 actions, none dangerous	
+PASS	nav key fragments: 2 keys × 7 languages, no empty or echo value	7
+PASS	_shared-integration Program.cs line names CapacityPlanningManifestProvider	
+PASS	FILE-PLAN OWNED+SR-D4 rows == SOURCE-MANIFEST module+SR rows	34 / 34; diff=[]
+PASS	FILE-PLAN maps every §23.1–§23.14 and §24 item	30 section rows; missing=[]
+PASS	SOURCE-MANIFEST sha256 matches every overlay file (47)	[]
+PASS	overlay archive capacity-ui-draft-overlay.tar.gz extracts byte-identical to overlay/ (diff -r empty), 47 files; rebuild gives the same hash (deterministic)	dd290891d67eb1ccb6943acd25f855902b86b00af6384d0ec43525e1ee162818
+PASS	verify_module_id.py . --check-id MOD-0192 --name "Capacity Planning" (read-only gate, pack §23.1)	exit 0: OK  MOD-0192: proven against Blueprint/registry.

@@ -1,0 +1,34 @@
+{
+  "case": "pod-replay",
+  "method": "POST",
+  "path": "/api/shipment-bundle/shipments/0857dd87-b133-4b2e-8d90-92ed4aa0bcbd/pod",
+  "requestHeaders": {
+    "X-Tenant-Id": "00000000-0000-0000-0000-000000000001",
+    "X-Legal-Entity-Id": "10000000-0000-0000-0000-000000000001",
+    "X-Correlation-Id": "f87ab867-ce62-49a5-bb8a-bbd6abe1d84b",
+    "Idempotency-Key": "sra-pod-001"
+  },
+  "requestBody": {
+    "recipientName": "Test Recipient",
+    "receivedAt": "2026-09-24T14:16:25.005646+00:00",
+    "evidenceReferenceIds": [
+      "SRA-POD-001"
+    ],
+    "note": "delivered"
+  },
+  "requestBytes": 140,
+  "status": 201,
+  "responseHeaders": {
+    "Content-Type": "application/json; charset=utf-8",
+    "X-Correlation-Id": "f87ab867-ce62-49a5-bb8a-bbd6abe1d84b"
+  },
+  "responseBody": {
+    "podId": "949cf2fb-0eb0-4505-be3d-729f9a272868",
+    "shipmentId": "0857dd87-b133-4b2e-8d90-92ed4aa0bcbd",
+    "shipmentStatus": "Delivered",
+    "receivedAt": "2026-09-24T14:16:25.005646+00:00",
+    "idempotentReplay": true,
+    "contractVersion": "v1"
+  },
+  "responseBytes": 224
+}

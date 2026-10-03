@@ -1,0 +1,249 @@
+{
+  "run": "ec8a62",
+  "tenants": {
+    "T1": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+    "T2": "00000000-0000-0000-0000-000000000001"
+  },
+  "steps": [
+    {
+      "step": "mdm-create-le-A",
+      "status": 201,
+      "ok": true,
+      "id": "134756de-5dbe-44da-bf9d-d7cf19b0ea78"
+    },
+    {
+      "step": "mdm-activate-le-A",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "platform-create-ou-A",
+      "status": 201,
+      "ok": true,
+      "id": "2b3ff445-cb0c-4910-a140-66b12132304a"
+    },
+    {
+      "step": "platform-create-position-full",
+      "status": 201,
+      "ok": true,
+      "id": "56ccfce3-8f80-4b87-aad3-e3c127146656"
+    },
+    {
+      "step": "platform-assign-full-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "0b5dfd3e-86b0-4bb7-b75b-87a119e82b8b"
+    },
+    {
+      "step": "platform-create-position-readonly",
+      "status": 201,
+      "ok": true,
+      "id": "7e9392a2-cbb5-43b0-bc6c-1cb33a554755"
+    },
+    {
+      "step": "platform-assign-readonly-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "a75f1e5d-31ee-4430-aeaf-ac0716da24b6"
+    },
+    {
+      "step": "platform-create-position-noread",
+      "status": 201,
+      "ok": true,
+      "id": "15daad43-68a2-41fa-a8bc-e38cb253e018"
+    },
+    {
+      "step": "platform-assign-noread-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "aa9b2c07-9bde-40eb-a268-89f3452db106"
+    },
+    {
+      "step": "platform-create-position-fixadmin",
+      "status": 201,
+      "ok": true,
+      "id": "df5acb2d-cd7d-4f7d-9482-178c4b4e449d"
+    },
+    {
+      "step": "platform-assign-fixadmin-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "eab20701-e599-4cf8-bf15-54b3fb0f8f8c"
+    },
+    {
+      "step": "mdm-create-le-B",
+      "status": 201,
+      "ok": true,
+      "id": "6d95219f-d875-4230-9345-91213b646123"
+    },
+    {
+      "step": "mdm-activate-le-B",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "platform-create-ou-B",
+      "status": 201,
+      "ok": true,
+      "id": "dd9ab28d-58f0-4ec6-ac60-b282728c4b05"
+    },
+    {
+      "step": "platform-create-position-leb",
+      "status": 201,
+      "ok": true,
+      "id": "ec217b1d-48ea-4d44-ba6f-8230c9788a68"
+    },
+    {
+      "step": "platform-assign-leb-to-LE-B",
+      "status": 201,
+      "ok": true,
+      "id": "8fd64c34-373b-4ead-b4b2-bfd6b8b265c1"
+    }
+  ],
+  "catalogWaitSeconds": 1.3,
+  "catalogMissing": [],
+  "authRoles": {
+    "Q84bSopFull@97c59330": {
+      "reused": false,
+      "keys": [
+        "supplychain.sandop-plans.read",
+        "supplychain.sandop-plans.create",
+        "supplychain.sandop-plans.snapshot.capture",
+        "supplychain.sandop-plans.sign-off.record"
+      ],
+      "grantsAdded": 4,
+      "members": [
+        "full",
+        "leb"
+      ]
+    },
+    "Q84bSopReadOnly@97c59330": {
+      "reused": false,
+      "keys": [
+        "supplychain.sandop-plans.read"
+      ],
+      "grantsAdded": 1,
+      "members": [
+        "readonly"
+      ]
+    },
+    "Q84bNoSop@97c59330": {
+      "reused": false,
+      "keys": [
+        "supplychain.shipments.read"
+      ],
+      "grantsAdded": 1,
+      "members": [
+        "noread"
+      ]
+    },
+    "Q84bFixtureAdmin@97c59330": {
+      "reused": false,
+      "keys": [
+        "mdm.legal-entities.create",
+        "mdm.legal-entities.read",
+        "mdm.legal-entities.update",
+        "platform.organization-units.create",
+        "platform.organization-units.read",
+        "platform.positions.create",
+        "platform.positions.read",
+        "platform.position-assignments.create",
+        "platform.position-assignments.read",
+        "auth.users.lookup-validation"
+      ],
+      "grantsAdded": 10,
+      "members": [
+        "fixadmin"
+      ]
+    }
+  },
+  "userIds": {
+    "full": "93ba7047-1883-4fbb-949b-413dae80dc76",
+    "readonly": "7edf0b6c-b774-47da-ac50-3bbc16e4c746",
+    "noread": "ab6ecfb3-1521-4eb8-a4ff-c747cff50df7",
+    "leb": "5f0098f5-bcb7-4c38-accd-8f11bd4cf43b",
+    "fixadmin": "142e782e-3941-4cc7-93c5-26a8d09c531b"
+  },
+  "adminLoginsBeforeOrg": [
+    {
+      "actor": "fixadmin",
+      "tenantMatches": true,
+      "legalEntityId": null,
+      "sandopPermissions": [],
+      "shipmentsRead": false,
+      "permissionCount": 10
+    }
+  ],
+  "organization": {
+    "legalEntities": {
+      "A": "134756de-5dbe-44da-bf9d-d7cf19b0ea78",
+      "B": "6d95219f-d875-4230-9345-91213b646123"
+    },
+    "orgUnits": {
+      "A": "2b3ff445-cb0c-4910-a140-66b12132304a",
+      "B": "dd9ab28d-58f0-4ec6-ac60-b282728c4b05"
+    },
+    "positions": {
+      "full": "56ccfce3-8f80-4b87-aad3-e3c127146656",
+      "readonly": "7e9392a2-cbb5-43b0-bc6c-1cb33a554755",
+      "noread": "15daad43-68a2-41fa-a8bc-e38cb253e018",
+      "fixadmin": "df5acb2d-cd7d-4f7d-9482-178c4b4e449d",
+      "leb": "ec217b1d-48ea-4d44-ba6f-8230c9788a68"
+    }
+  },
+  "actorLogins": {
+    "full": {
+      "actor": "full",
+      "tenantMatches": true,
+      "legalEntityId": "134756de-5dbe-44da-bf9d-d7cf19b0ea78",
+      "sandopPermissions": [
+        "supplychain.sandop-plans.create",
+        "supplychain.sandop-plans.read",
+        "supplychain.sandop-plans.sign-off.record",
+        "supplychain.sandop-plans.snapshot.capture"
+      ],
+      "shipmentsRead": false,
+      "permissionCount": 4
+    },
+    "readonly": {
+      "actor": "readonly",
+      "tenantMatches": true,
+      "legalEntityId": "134756de-5dbe-44da-bf9d-d7cf19b0ea78",
+      "sandopPermissions": [
+        "supplychain.sandop-plans.read"
+      ],
+      "shipmentsRead": false,
+      "permissionCount": 1
+    },
+    "noread": {
+      "actor": "noread",
+      "tenantMatches": true,
+      "legalEntityId": "134756de-5dbe-44da-bf9d-d7cf19b0ea78",
+      "sandopPermissions": [],
+      "shipmentsRead": true,
+      "permissionCount": 1
+    },
+    "leb": {
+      "actor": "leb",
+      "tenantMatches": true,
+      "legalEntityId": "6d95219f-d875-4230-9345-91213b646123",
+      "sandopPermissions": [
+        "supplychain.sandop-plans.create",
+        "supplychain.sandop-plans.read",
+        "supplychain.sandop-plans.sign-off.record",
+        "supplychain.sandop-plans.snapshot.capture"
+      ],
+      "shipmentsRead": false,
+      "permissionCount": 4
+    },
+    "fixadmin": {
+      "actor": "fixadmin",
+      "tenantMatches": true,
+      "legalEntityId": "134756de-5dbe-44da-bf9d-d7cf19b0ea78",
+      "sandopPermissions": [],
+      "shipmentsRead": false,
+      "permissionCount": 10
+    }
+  },
+  "result": "PASS"
+}

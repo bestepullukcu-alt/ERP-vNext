@@ -1,0 +1,61 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
+@@ -6,8 +6,8 @@
+ shell: none
+ golden_reference: none
+ entity_base: EntityBase
+-status: draft
+-status_note: "Published SANDOP-CAPACITY 2.0.0 bound to fixture-only proposed scope; Phase 1.5 owner approval, pack promotion and isolated runtime authority remain open."
++status: ready-for-dev
++status_note: "2026-09-22 owner approved exact draft target, bounded Phase 1.5 and isolated 38-path core DEV/independent VER; shared composition and live integrations excluded."
+ owner: supply-chain-execution / control-tower
+ branch: feature/mvp6-logistics
+ started: 2026-09-15
+@@ -20,9 +20,7 @@
+ > **Identity gate:** `python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0190 --name "S&OP Workflow & Sign-offs"`
+ > returned `OK` on 2026-09-15. Blueprint 8.1 and the module ID registry prove the canonical identity.
+ >
+-> **Execution gate:** this is a draft specification for a backend/contract initial slice. It grants no runtime-code,
+-> service-scaffold, gateway, permission-registry or shared-registration authority. The shipment lane must be frozen and
+-> independently verified before MOD-0190 and MOD-0192 may enter their parallel implementation wave.
++> **Execution gate:** the 2026-09-22 owner approved this exact bounded 38-path backend core after published-contract and Phase 1.5 verification. It grants isolated core DEV and later independent VER only. Gateway, permission-registry, shared registration, Program.cs, live producer, UI and rollout remain separately owned. The bounded MOD-0183..0187 sequence-evidence prerequisite is met; full E5/G5 is not.
+ >
+ > **ASSUMPTION:** UI journeys and form fields are not sufficiently defined, so the initial slice uses `shell: none` and
+ > `golden_reference: none`. Any UI requires an approved revision or follow-up pack.
+@@ -132,7 +130,7 @@
+ - Snapshots and sign-offs are append-only evidence. Prior decisions are not overwritten.
+ - Each mutation atomically writes state, durable receipt, audit and one Pending lifecycle event or exposes an explicit failure. Same-key/same-valid-payload replay returns original status/body without reread or new writes; current response correlation differs from original audit/event correlation when retried. Changed valid payload returns 409 `IDEMPOTENCY_KEY_REUSED`; unresolved unknown commit follows published 503 `COMMIT_RESULT_UNRESOLVED` and scoped receipt recovery.
+ - DEMAND ID/version/checksum is checked only against exact scoped test fixtures; no live DEMAND HTTP, Workflow HTTP, direct database/internal-type sharing or publisher is in this slice.
+-- This draft authorizes no runtime code.
++- This ready-for-dev pack authorizes only the exact isolated 38-path core DEV and subsequent independent VER granted by the 2026-09-22 owner decision; composed HTTP requires separate shared integration authority.
+ 
+ ## 9. Layout & Shell Contract
+ 
+@@ -225,9 +223,9 @@
+ - [x] Bounded MOD-0183..0187 sequence evidence is recorded by Returns/Claims CT; not full E5/G5.
+ - [x] Owner approved trusted JWT actor/no Workflow and atomic Pending-only outbox/no publisher for this bounded slice.
+ - [x] The 38 prospective SandopPlans paths are absent and disjoint from MOD-0192's 43; shared composition is integration-owned. Recheck hashes at dispatch.
+-- [ ] User/owner approves this pack for `ready-for-dev`.
++- [x] User/owner approved exact draft target SHA-256 `04f2e36f89cae0a21300217b63756b0cd3104c33af145d985b9fc101a83b38a2`, Phase 1.5 and isolated 38-path core DEV/VER on 2026-09-22.
+ 
+-Status remains `draft`; unchecked items prohibit dispatch.
++Status is `ready-for-dev` for the exact isolated core scope. Shared composition and broader integration remain separately gated.
+ 
+ ## 19. Implementation Notes
+ 
+@@ -238,12 +236,12 @@
+ 
+ ## 20. Follow-up Items
+ 
+-- Record shipment-lane independent verification before pack promotion.
++- Retain bounded MOD-0183..0187 sequence CT evidence; do not call it full E5/G5 or shared-checkout integration.
+ - Keep Workflow and Event Bus delivery outside this bounded slice; later live integration needs separate producer/owner binding.
+ - Create an integration-agent WP for gateway and shared permission/registration changes.
+ - Define a separate tenant UI follow-up if product journeys require one.
+ - Complete G5 E5 integration across S&OP, capacity, logistics and source reconciliation.
+ 
+-## 21. Published-contract reconciliation (proposed draft target)
++## 21. Published-contract reconciliation and approved bounded core
+ 
+-This draft target binds the six operations to published YAML `9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3` and annex `eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda`. D190-01…03 bounded fixture/JWT/Pending scope and D190-04/05 candidate design were later followed by exact consumer consent/publication. Those decisions do not promote this pack, approve Phase 1.5, authorize runtime DEV or shared Program.cs composition. See `mvp6-mod0190-pack-phase15-close-01` for exact proposed patch and HELD dispatch.
++The owner-approved pack binds the six operations to published YAML `9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3` and annex `eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda`. D190-01…03 bounded fixture/JWT/Pending scope and D190-04/05 candidate design were later followed by exact consumer consent/publication. The separate 2026-09-22 owner decision approved draft target SHA-256 `04f2e36f89cae0a21300217b63756b0cd3104c33af145d985b9fc101a83b38a2`, its Phase 1.5 design and isolated core DEV/VER within the 38-path allowlist. The promotion status diff has its own hash; this promoted pack is not the draft target hash. Shared Program.cs composition, live integrations and broader acceptance remain excluded.

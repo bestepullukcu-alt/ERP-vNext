@@ -1,0 +1,33 @@
+ts_istanbul	step	exit	command_or_action
+2026-09-26T12:57:52+0300	0	0	git rev-parse HEAD; git branch --show-current; ls .git/index.lock; git status --porcelain > $HOME/q67-status-before.txt (411 lines, VM home); find proposal-03 -type f; sha256sum proposal-03/SHA256SUMS -> e8bec4d7…
+2026-09-26T12:58:17+0300	1	0	(cd docs/roadmap/plans/mvp6-evidence-kit-proposal-03 && sha256sum -c SHA256SUMS | grep -c ': OK$'; sha256sum -c SHA256SUMS 2>&1 | grep -v ': OK$'; wc -l < SHA256SUMS)
+2026-09-26T12:58:17+0300	1	0	grep -nE '^[0-9a-f]{64}  ' docs/roadmap/plans/mvp6-evidence-kit-proposal-03/ADOPTION-DECISION-v1.2.md | while IFS= read -r l; do h=$(echo "$l" | cut -d: -f2- | cut -c1-64); f=$(echo "$l" | cut -d: -f2- | awk '{print $2}'); tag=$(echo "$l" | awk '{print $3}'); a=$(sha256sum < docs/roadmap/plans/mvp6-evidence-kit-proposal-03/$f | cut -c1-64); if [ -f docs/roadmap/plans/mvp6-evidence-kit-proposal-02/$f ]; then c=$(cmp -s docs/roadmap/plans/mvp6-evidence-kit-proposal-02/$f docs/roadmap/plans/mvp6-evidence-kit-proposal-03/$f && echo same-as-v1.1 || echo CHANGED); else c=NEW; fi; echo "$([ $a = $h ] && echo OK || echo MISMATCH) $c $tag $f"; done | sort -k2 | tee /tmp/q67/files.txt; echo; awk '{print $1, $2}' /tmp/q67/files.txt | sort | uniq -c
+2026-09-26T12:58:18+0300	1	0	for f in $(cd docs/roadmap/plans/mvp6-evidence-kit-proposal-02/proposed && find . -type f | sed 's#^./##' | sort); do [ -f docs/roadmap/plans/mvp6-evidence-kit-proposal-03/proposed/$f ] || echo "REMOVED in v1.2: $f"; done; echo removed-check-done
+2026-09-26T12:58:49+0300	2	0	python3 /tmp/q67/cites.py
+2026-09-26T12:59:00+0300	1	0	cat proposal-03 README.md, CHANGES.tsv
+2026-09-26T13:00:00+0300	2	0	cat key-pairing.tsv, templates/overlays.tsv
+2026-09-26T13:00:11+0300	2	0	cd /tmp/q67/v12/kit && PYTHONDONTWRITEBYTECODE=1 python3 tests/test_k04_pairing.py; echo "rc=$?"; find /tmp/q67/v12 -name __pycache__ | wc -l
+2026-09-26T13:00:38+0300	2	0	python3 /tmp/q67/k04work.py 2>&1 | grep -v "archive sha256"; mkdir -p /tmp/q67/nohome; cat /tmp/q67/overrides.tsv
+2026-09-26T13:00:55+0300	2	0	/tmp/q67/k04run.sh /tmp/q67/v12/kit /tmp/q67/v12/kit/service-map.tsv v12
+2026-09-26T13:00:55+0300	2	0	/tmp/q67/k04run.sh /tmp/q67/v12/kit /tmp/q67/v11/kit/service-map.tsv v11map-on-v12check
+2026-09-26T13:00:55+0300	2	0	/tmp/q67/k04run.sh /tmp/q67/v12/kit /tmp/q67/map-uncited.tsv uncited
+2026-09-26T13:00:55+0300	2	0	grep -c "" /tmp/q67/ev-*/raw/effective-config-*.json >/dev/null; grep -l -E "e96ab|FAKE" /tmp/q67/ev-v12/raw/* ; echo "no value check: $(grep -rhoE "\"value\": \"[^\[\"][^\"]{20,}\"" /tmp/q67/ev-v12/raw/effective-config-*.json | grep -ciE "secret|apikey" )"
+2026-09-26T13:01:30+0300	2	0	python3 /tmp/q67/cites.py (print of every cited line) and /tmp/q67/ctx.py (MDM ModuleRegistrationHostedService.cs 95-112; Platform InternalModuleRegistrationController.cs 40-110)
+2026-09-26T13:02:00+0300	2	0	python3 /tmp/q67/sweep.py (secret-named config keys in 6 services, HEAD+OV1+OV2) and /tmp/q67/gsku.py (VerifiedGsku keys in appsettings: none)
+2026-09-26T13:02:22+0300	3	0	bash /tmp/q67/selftest.sh /tmp/q67/v12/kit
+2026-09-26T13:02:22+0300	3	0	bash /tmp/q67/selftest.sh /tmp/q67/v11/kit
+2026-09-26T13:02:30+0300	2	0	sed -n k04_config.py (load_pairing/verify_citations/check_pairing/uncited check); cat tests/test_k04_pairing.py
+2026-09-26T13:02:54+0300	3	0	bash /tmp/q67/suptest.sh
+2026-09-26T13:03:00+0300	3	0	cat -n k00_supervisor.py, k00_ctl.py, run-kit.sh; diff -u v1.1 v1.2 ek_lib.sh, k11_cleanup.sh, k01_source.py; grep git calls; sed k08_redact_scan.py
+2026-09-26T13:03:46+0300	3	0	python3 /tmp/q67/pty_reveal.py
+2026-09-26T13:04:05+0300	3	0	bash /tmp/q67/runkit_test.sh
+2026-09-26T13:04:36+0300	4	0	python3 /tmp/q67/f9_12_13.py
+2026-09-26T13:05:00+0300	5	0	diff service-map (per column), k07, k08 seal logic grep, lane.env.example, PLACEMENT.tsv, k10_db_diff, k01 wrapper; read ADOPTION-DECISION-v1.2 §2/§4/§5, guide diff, STATIC-CHECKS headers, CT verdict q63
+2026-09-26T13:05:05+0300	4	0	cd /tmp/q67/v12 && for f in kit/*.sh; do bash -n "$f" && echo "OK bash -n $f" || echo "FAIL $f"; done | sort | uniq -c | awk "{print \$2, \$3, \$4}" | sort | uniq -c | head; ls kit/*.sh | wc -l
+2026-09-26T13:05:05+0300	4	0	cd /tmp/q67/v12 && PYTHONDONTWRITEBYTECODE=1 python3 -c " import ast,glob,sys fs=sorted(glob.glob(\"kit/*.py\")+glob.glob(\"kit/tests/*.py\")); bad=0 for f in fs:     s=open(f).read()     try: ast.parse(s,f); compile(s,f,\"exec\")     except SyntaxError as e: bad+=1; print(\"FAIL\",f,e) print(\"python ast+compile OK\",len(fs)-bad,\"/\",len(fs)); sys.exit(bad)"
+2026-09-26T13:05:05+0300	4	0	cd /tmp/q67/v12 && for f in kit/k10_db_snapshot.js templates/served-asset-hash.js; do node --check "$f" && echo "OK node --check $f"; done
+2026-09-26T13:05:05+0300	4	0	pip install --quiet --target /tmp/q67/sc shellcheck-py 2>&1 | tail -1; cd /tmp/q67/v12/kit && /tmp/q67/sc/bin/shellcheck --version | sed -n 2p && /tmp/q67/sc/bin/shellcheck -S warning -x *.sh; echo "shellcheck warning-level rc=$?"; /tmp/q67/sc/bin/shellcheck -S info -x -f gcc *.sh | sed -E "s/.*\[(SC[0-9]+)\]$/\1/" | sort | uniq -c
+2026-09-26T13:05:14+0300	4	0	find /tmp/q67/v12 -name __pycache__ | wc -l
+2026-09-26T13:05:48+0300	3	0	bash /tmp/q67/f14.sh
+2026-09-26T13:06:03+0300	3	0	bash /tmp/q67/f14.sh
+2026-09-26T13:08:14+0300	9	0	git status --porcelain vs start snapshot (diff); ls -la docs/roadmap/plans/mvp6-effort-update-08/ (attribution, read-only); test ! -e .git/index.lock; sha256sum SOP-22-VER.md COMMANDS.tsv > ARTIFACTS.sha256

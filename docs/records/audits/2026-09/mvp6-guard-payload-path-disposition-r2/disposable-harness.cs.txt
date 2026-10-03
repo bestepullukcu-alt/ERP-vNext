@@ -1,0 +1,21 @@
+using System.Reflection;
+namespace TenantArchitecture.ArchitectureTests;
+// Disposable harness only. This file is not part of the proposed implementation diff.
+public class R2DisposableValidationTests
+{
+    [Fact]
+    public void CompleteInventory_WithSyntheticDecision_UsesRealReaderAndScanner()
+    {
+        var type = typeof(DocsPathGuardTests);
+        var root = (string)type.GetMethod("RepoRoot", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, null)!;
+        type.GetMethod("VerifyRoot", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { root, true });
+    }
+    [Fact]
+    public void ProductionReader_RejectsSyntheticDecision()
+    {
+        var type = typeof(DocsPathGuardTests);
+        var root = (string)type.GetMethod("RepoRoot", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, null)!;
+        var error = Assert.Throws<TargetInvocationException>(() => type.GetMethod("ReadAuthority", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, new object[] { root, false }));
+        Assert.Contains("DOCS_PATH_OWNER_DECISION", error.InnerException!.Message);
+    }
+}

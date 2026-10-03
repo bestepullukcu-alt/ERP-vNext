@@ -1,0 +1,4 @@
+path	sha256
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll	c81a3018f576b0637d6e3818b1bc7995f64600e6c22e33ac2272674eeb46f142
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Debug/net8.0/Diten.SupplyChainService.Persistence.dll	984ca5b7d4185d6c62aab7b6b38945043bd946d9166dc08cbf9291a5ce947ee8
+services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll	5d258e4daadf86faa7b6acf59f85f473d70da02f7cf7af2717140f0f794b4aa4

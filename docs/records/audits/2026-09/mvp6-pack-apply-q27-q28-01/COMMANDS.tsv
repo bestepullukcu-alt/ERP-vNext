@@ -1,0 +1,16 @@
+step	time_local	command	result
+0	2026-09-26T14:41:16+03:00	GIT_OPTIONAL_LOCKS=0 git rev-parse HEAD; GIT_OPTIONAL_LOCKS=0 git branch --show-current	4a8d4d4b339528a88e6220fb8402e5a2c771136c; feature/mvp6-logistics (match)
+0	2026-09-26T14:41:16+03:00	GIT_OPTIONAL_LOCKS=0 git status --porcelain > /tmp/q71/st-before.txt	420 rows (VM /tmp, outside repo)
+0	2026-09-26T14:41+03:00	(cd docs/roadmap/plans/mvp6-decision-prep-02 && sha256sum -c SHA256SUMS)	12/12 OK
+1	2026-09-26T14:45:53+03:00	python3 /tmp/q71/build.py --write (sources hash-checked first; exact decision blocks copied from source files)	8 records written (1 verdict + 7 decisions); quote-in-record check 10/10 True
+2	2026-09-26T14:45+03:00	sha256sum mod-0190-sop/proposed-pack.patch mod-0192-capacity/proposed-pack.patch MOD-0190-sop-workflow-signoffs.md MOD-0192-capacity-planning.md	116b7c47… / 7d9b587e… / 637690f3… / edd550b8… (all = expected)
+2	2026-09-26T14:45+03:00	cp -p MOD-0190-sop-workflow-signoffs.md MOD-0192-capacity-planning.md /tmp/q71/pre/	pre-copies 637690f3… / edd550b8…
+3	2026-09-26T14:46:01+03:00	GIT_OPTIONAL_LOCKS=0 git apply --check -v docs/roadmap/plans/mvp6-pack-alignment-01/mod-0190-sop/proposed-pack.patch	OK
+3	2026-09-26T14:46:01+03:00	GIT_OPTIONAL_LOCKS=0 git apply -v docs/roadmap/plans/mvp6-pack-alignment-01/mod-0190-sop/proposed-pack.patch	Applied cleanly; warning "unable to unlink … Operation not permitted" (bridge cannot delete; file rewritten in place)
+3	2026-09-26T14:46:01+03:00	sha256sum execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md	8403d8f46059c99ef34d3fe08b3cacdbbbefb321f30f921b620eceda9180ea40 (= expected)
+4	2026-09-26T14:46:06+03:00	GIT_OPTIONAL_LOCKS=0 git apply --check -v docs/roadmap/plans/mvp6-pack-alignment-01/mod-0192-capacity/proposed-pack.patch	OK
+4	2026-09-26T14:46:06+03:00	GIT_OPTIONAL_LOCKS=0 git apply -v docs/roadmap/plans/mvp6-pack-alignment-01/mod-0192-capacity/proposed-pack.patch	Applied cleanly; same unlink warning
+4	2026-09-26T14:46:06+03:00	sha256sum execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md	de81a0e289fff2732ca333357654fcd0ea7254fd9496391d2b06933d1891946c (= expected)
+4	2026-09-26T14:46:06+03:00	find . -maxdepth 6 -newer /tmp/q71/st-before.txt ( -name '*.orig' -o -name '*.rej' ); ls .git/index.lock	none; no index.lock
+5	2026-09-26T14:47+03:00	python3 ledger edit (state column of Q03, Q09, Q10, Q11, Q12, Q24, Q27, Q28; append Q68–Q73; BLOCKERS status B03/B04; append 10 MILESTONE-EVENTS lines); pre-copies in /tmp/q71/pre/	old states asserted before edit; column counts 8/6/9 unchanged
+6	2026-09-26T14:47+03:00	grep -nEi (password/secret/JwtSettings__Secret/api key/bearer/JWT/private key/mongodb URI/AKIA/ghp_/sk-) on the 8 records + 3 ledgers	0 hits

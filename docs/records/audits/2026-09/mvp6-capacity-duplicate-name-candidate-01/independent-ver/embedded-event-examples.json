@@ -1,0 +1,26 @@
+[
+  {
+    "schema": "SandopPlanCreatedEvent",
+    "verdict": "PASS"
+  },
+  {
+    "schema": "SandopSnapshotCapturedEvent",
+    "verdict": "PASS"
+  },
+  {
+    "schema": "SandopSignOffRecordedEvent",
+    "verdict": "PASS"
+  },
+  {
+    "schema": "CapacityPlanCreatedEvent",
+    "verdict": "PASS"
+  },
+  {
+    "schema": "CapacityScenarioCreatedEvent",
+    "verdict": "PASS"
+  },
+  {
+    "schema": "CapacityEvaluationCompletedEvent",
+    "verdict": "PASS"
+  }
+]

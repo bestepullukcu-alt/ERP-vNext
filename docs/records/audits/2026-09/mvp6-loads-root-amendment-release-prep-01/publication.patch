@@ -1,0 +1,289 @@
+--- a/docs/analysis/contracts/shipment-bundle.openapi.yaml
++++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml
+@@ -10,7 +10,7 @@
+     shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
+     yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
+     WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
+-  version: 3.0.0
++  version: 3.1.0
+   x-status: FROZEN
+   x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
+   x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
+@@ -453,6 +453,7 @@
+                   shipmentIds:
+                   - 18300000-0000-0000-0000-000000000001
+                   status: Planned
++                  lifecycleCorrelationId: 18500000-0000-0000-0000-0000000000aa
+                 total: 1
+                 contractVersion: v1
+           headers:
+@@ -606,8 +607,8 @@
+                       message: Request rejected.
+                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                     contractVersion: v1
+-      x-loads-semantics: loads-semantics-v2.0.0.md
+-      description: ' Normative Loads candidate: loads-semantics-v2.0.0.md. Publication HELD; D185-01..05 approved
++      x-loads-semantics: loads-semantics-v3.1.0.md
++      description: ' Normative Loads candidate: loads-semantics-v3.1.0.md. Publication HELD; D185-01..05 approved
+         design only.'
+     post:
+       tags:
+@@ -986,8 +987,8 @@
+                       message: Request rejected.
+                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                     contractVersion: v1
+-      x-loads-semantics: loads-semantics-v2.0.0.md
+-      description: ' Normative Loads candidate: loads-semantics-v2.0.0.md. Publication HELD; D185-01..05 approved
++      x-loads-semantics: loads-semantics-v3.1.0.md
++      description: ' Normative Loads candidate: loads-semantics-v3.1.0.md. Publication HELD; D185-01..05 approved
+         design only.'
+   /loads/{loadId}/transition:
+     post:
+@@ -997,7 +998,7 @@
+       summary: Load lifecycle durumunu ilerlet
+       description: "Izinli gecisler: Draft->Planned|Cancelled; Planned->Tendered|Cancelled; Tendered->Accepted|Cancelled;\
+         \ Accepted->Dispatched|Cancelled; Dispatched->Completed. Diger gecisler INVALID_LOAD_TRANSITION ile reddedilir.\n\
+-        \ Normative Loads candidate: loads-semantics-v2.0.0.md. Publication HELD; D185-01..05 approved design only."
++        \ Normative Loads candidate: loads-semantics-v3.1.0.md. Publication HELD; D185-01..05 approved design only."
+       parameters:
+       - name: loadId
+         in: path
+@@ -1359,7 +1360,7 @@
+                       message: Request rejected.
+                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                     contractVersion: v1
+-      x-loads-semantics: loads-semantics-v2.0.0.md
++      x-loads-semantics: loads-semantics-v3.1.0.md
+   /returns:
+     get:
+       tags:
+@@ -3193,6 +3194,7 @@
+         carrierId: { type: string, format: uuid }
+         shipmentIds: { type: array, items: { type: string, format: uuid } }
+         status: { $ref: '#/components/schemas/LoadStatus' }
++        lifecycleCorrelationId: { type: [string, 'null'], format: uuid, description: 'Authoritative persisted LoadPlan.CorrelationRoot. Upgraded producers emit the stored value when present; no derivation or backfill.' }
+     LoadResponse:
+       type: object
+       required: [loadId, loadNumber, status, idempotentReplay, contractVersion]
+--- /dev/null
++++ b/docs/analysis/contracts/loads-semantics-v3.1.0.md
+@@ -0,0 +1,219 @@
++# Loads semantics — 3.1.0 final-proposed candidate
++
++**NOT PUBLISHED.** D185-01…05 owner-approved behavior and owner-selected `D185-ROOT-ACQ-01` are represented in this versioned amendment candidate. Wire `contractVersion` remains `v1`. `3.1.0` is the release-owner proposal and remains candidate metadata only; final version selection, consumer consent, canonical publication, producer/UI uptake, Phase 1.5 and runtime authorization remain separate. This annex governs only `queryLoads`, `createLoadPlan` and `transitionLoad`.
++
++## Approved business scope
++
++Create begins Draft. Eligible Shipment statuses are exactly Draft and Planned. Carrier must be Active; Load.mode must occur in Carrier.supportedModes. Shipment has no mode field and no Shipment-mode comparison is introduced. Shipment.carrierId must be explicit null or the chosen Carrier. Shipment IDs are unique UUID values. Stop sequence values form exactly1..N with at least one Pickup and one Delivery; Return remains an allowed additional stop. No route optimization, Shipment mutation, stock reservation, public ingress or publisher is introduced.
++
++Fresh create and fresh transitions targeting Planned, Tendered, Accepted or Dispatched re-read Carrier and all Shipments. Completed, Cancelled and successful replay do not re-read dependencies. Successful fresh operations preserve the actual observations used; skipped reads do not imply new remote observations. HTTP snapshots do not guarantee remote state at local commit time.
++
++Assignments are retained in Draft, Planned, Tendered, Accepted, Dispatched and Completed; only successful Cancelled releases them. Soft-delete never releases an assignment. Assignment changes, aggregate, receipt, audit and one lifecycle outbox event commit atomically.
++
++## Schema and application response scope
++
++Existing request, response, event and shared Error schemas remain unchanged. Additional conditions below are business policy, not silent JSON-schema restrictions. Application responses carry X-Correlation-Id;401 also carries WWW-Authenticate: Bearer. Frozen unwrapped response bodies and wire contractVersion v1 remain. Q=queryLoads, C=createLoadPlan, T=transitionLoad; ER=shared Error, HC=shared CorrelationId parameter, EV=LifecycleEventEnvelope.
++
++**D185-01/02 — referansların exact yorumu**
++
++Kontroller:
++
++- Carrier, scoped `GET /carriers?status=Active` sonucunda **tam bir** eşleşmeyle bulunur. Yoksa `404 CARRIER_NOT_FOUND`; bu cevap “yok/inactive/başka scope” ayrımını açıklamaz. Birden fazla eşleşme veya Active filtresine aykırı response →`502 DEPENDENCY_RESPONSE_INVALID`.
++- Her Shipment, scoped `GET /shipments/{shipmentId}` ile okunur. Explicit `carrierId:null` kabul edilir; farklı Carrier ID’si `422 SHIPMENT_CARRIER_MISMATCH`.
++- Create sırasında explicit `loadId:null` gerekir. Transition’da null veya bu Load’ın ID’si kabul edilir; başka Load ID’si `409 SHIPMENT_ALREADY_ASSIGNED`.
++- Shipment mode’u yoktur; yalnız **Load.mode ↔ Carrier.supportedModes** karşılaştırılır.
++- Stop dizisinin gönderim sırası korunur; execution sırası `sequence` ile belirlenir. Sequence benzersiz ve kesintisiz olur. Yeni location master doğrulaması, boş location string yasağı veya tarih aralığı şartı eklenmez.
++
++**Önemli source-profile sınırı:** SS’de `shipmentId/status/carrierId/loadId` alanlarının presence’ı zorunlu değil. Bu nedenle eksik alanı null/uygun kabul etmeyin.
++
++Tüketim profili, bu dört alanın açıkça bulunmasını gerektirir. Schema-valid fakat karar için yetersiz cevap →`503 REFERENCE_STATE_UNAVAILABLE`; **“upstream schema ihlali” denmez**. Wrong type/enum veya istenenden farklı shipmentId →502. Bu profil ve producer/mock uyumluluğu DEV önkoşuludur; shared Shipment schema’sı bu WP’de değiştirilmez.
++
++Acceptance: aynı fixture’da `carrierId:null` geçer; alanın kaldırılması503 üretir; hiçbirinde eksik bilgi uydurulmaz. Producer bu profili sağlayamıyorsa DEV önkoşulu karşılanmaz; ayrı versioned Shipment reference-profile kararı gerekir. Eksik alan null sayılmaz.
++
++HTTP okumaları aynı zaman noktasını veya commit anındaki remote durumu garanti etmez. Her okumanın zamanı ve kullanılan referans alanları saklanır. Yerel transaction yeniden başlatılırsa henüz commit edilmemiş fresh komut referansları yeniden okur; unknown-commit recovery önce receipt’i arar.
++
++Completed yalnız **Load operasyonunun tamamlanmasıdır**; Shipment Delivered/POD kanıtı değildir. Completed/Cancelled için remote okuma yapılmaması bu nedenle ayrıca onay kapsamındadır.
++
++**D185-03 — yarışların sonucu**
++
++Constraint kimliği `(TenantId, LegalEntityId, ShipmentId)`; sahibi `LoadId`. Her Load bütün Shipment assignment’larını **tek transaction’da**, tamamı veya hiçbiri olarak alır.
++
++| Yarış / durum | Acceptance sonucu |
++|---|---|
++| Farklı key’lerle iki create, ortak Shipment | Unique constraint sonucunda yalnız bir Load commit; kaybeden409 `SHIPMENT_ALREADY_ASSIGNED`; kısmi assignment/event yok |
++| Cancelled ile yeni create | Create cancel commit’inden önce değerlendirilirse409 olabilir; cancel commit’inden sonra yeniden denendiğinde kazanabilir |
++| Eski cancel ile yeni assignment | Release işlemi scope+ShipmentId+**eski LoadId** ile koşullu; yeni sahibin kaydı silinmez |
++| Aynı Load’da farklı transition’lar | Yerel Version/current-state kontrolüyle geçerli seri sıra; retry sonrası artık geçersiz ok422 `INVALID_LOAD_TRANSITION` |
++| Completed veya soft-deleted Load | Assignment korunur; yeni create409 |
++| Eski create receipt’inin Cancelled sonrasında replay’i | Orijinal Draft response döner; assignment yeniden alınmaz |
++
++Frozen lifecycle aynen korunur: Draft→Planned/Cancelled; Planned→Tendered/Cancelled; Tendered→Accepted/Cancelled; Accepted→Dispatched/Cancelled; Dispatched→Completed. Yeni key ile aynı-state dahil diğer bütün oklar422.
++
++**D185-04 — auth/header/error matrisi**
++
++Güvenlik profili: tek geçerli `tenant_id`, `legal_entity_id`, `sub`; tenant/LE scope’u validated JWT’den gelir. `X-Tenant-Id` ve `X-Legal-Entity-Id` bununla eşleşen doğrulama header’larıdır, scope seçemez. Exact izinler:
++
++- Q: `supplychain.loads.read`
++- C: `supplychain.loads.create`
++- T: `supplychain.loads.transition`
++
++Bu exact claim/header profili **Loads için geçerlidir**; Carrier onayının devri değildir. Alias fallback veya platform bypass tanımlı değildir.
++
++İlk başarısız aşama kazanır:
++
++1. Authentication.
++2. Trusted tenant → LE → actor → operation permission.
++3. Header syntax: correlation → tenant → LE → POST idempotency key.
++4. Tenant/header eşitliği → LE/header eşitliği.
++5. Path → query → content type → JSON/schema.
++6. Scoped committed receipt: root → fingerprint → replay.
++7. Fresh transition target → root → lifecycle.
++8. Create business yapısı → Carrier → Shipment’lar gönderim sırasıyla → assignment/atomik commit.
++
++Unknown query parametrelerine genel ret eklenmez; scope override girişimi reddedilir. Body scope alanları zaten `additionalProperties:false` ihlalidir.
++
++| Koşul | Operation | HTTP / exact code | Test oracle |
++|---|---|---|---|
++| Eksik/invalid/ambiguous Bearer | Q/C/T | 401 `INVALID_REQUEST` | Invalid token + bozuk correlation →401 |
++| Authentication sonrası kullanılamayan/duplicate trusted claim veya eksik izin | Q/C/T | 403 `INVALID_REQUEST` | İzin yok + bozuk key →403 |
++| Eksik/invalid/duplicate required header; path/query/JSON/schema hatası | Q/C/T, uygulanabildiği yerde | 400 `INVALID_REQUEST` | İki bozuk header’da yukarıdaki sıra kazanır |
++| Scope header/claim uyuşmazlığı | Q/C/T | 404 `LOAD_NOT_FOUND` | DB/receipt sorgulanmaz |
++| Unsupported request content type | C/T | 415 `INVALID_REQUEST` | `text/plain` →415; receipt yok |
++| Missing/cross-scope/soft-deleted fresh Load | T | 404 `LOAD_NOT_FOUND` | Foreign ID ile existence sızmaz |
++| Kullanılabilir scoped Carrier bulunamadı | C/T referans kapısı | 404 `CARRIER_NOT_FOUND` | Active listesinde yok →404 |
++| Shipment reference404 | C/T referans kapısı | 404 `SHIPMENT_NOT_FOUND` | Yerel write yok |
++| Different-root mutation/replay | C receipt / T | 409 `CORRELATION_ROOT_MISMATCH` | Mevcut root değişmez |
++| Aynı scoped key, farklı valid payload | C/T | 409 `IDEMPOTENCY_KEY_REUSED` | Root da farklıysa root hatası öncelikli |
++| Assignment başka Load’da | C/T | 409 `SHIPMENT_ALREADY_ASSIGNED` | Transaction bütünü rollback |
++| Uygun olmayan Shipment status | C/T referans kapısı | 422 `SHIPMENT_NOT_ELIGIBLE` | Draft/Planned geçer; diğer altı durum reddedilir |
++| Carrier uyuşmazlığı / desteklenmeyen mode | C/T referans kapısı | 422 `SHIPMENT_CARRIER_MISMATCH` / `CARRIER_MODE_UNSUPPORTED` | İki kural ayrı fixture |
++| Duplicate Shipment / geçersiz stop düzeni | C | 422 `DUPLICATE_SHIPMENT` / `INVALID_LOAD_STOPS` | Repeated UUID değeri / eksik Pickup reddedilir |
++| Geçersiz lifecycle | T | 422 `INVALID_LOAD_TRANSITION` | Bütün source×target çiftleri |
++| Malformed/çelişkili dependency response | C/T referans kapısı | 502 `DEPENDENCY_RESPONSE_INVALID` | Yanlış ID/type veya duplicate Carrier |
++| Schema-valid fakat yetersiz reference | C/T referans kapısı | 503 `REFERENCE_STATE_UNAVAILABLE` | Optional karar alanı missing |
++| Dependency timeout/network/5xx veya upstream401/403 | C/T referans kapısı | 503 `DEPENDENCY_UNAVAILABLE` | İç servis yetki hatası caller’ın401’i yapılmaz |
++| Persistence kesintisi, safe retry tükenmesi veya unresolved commit | Q/C/T | 503 `PERSISTENCE_UNAVAILABLE` | Unknown commit için “rollback oldu” iddiası yok |
++| Beklenmeyen application hatası | Q/C/T | 500 `INTERNAL_ERROR` | Sanitized response; secret/stack yok |
++
++Bütün application hata yanıtları ER biçimindedir:
++
++```json
++{
++  "error": {
++    "code": "CORRELATION_ROOT_MISMATCH",
++    "message": "Request correlation does not match the load root.",
++    "correlationId": "aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa"
++  },
++  "contractVersion": "v1"
++}
++```
++
++`message` açıklayıcı metindir; client branching `code` üzerinden yapılır. `details` bu bounded slice’ta üretilmez; başka tenant, root, token, key veya payload açıklanmaz. Başka envelope eklenmez.
++
++Correlation davranışı:
++
++- Tek schema-valid inbound UUID →`C_req`; nil UUID geçerli, UUID değeri karşılaştırılır.
++- Missing/invalid/ambiguous correlation →request başına bir fallback UUID. Bu yalnız rejection trace’idir; business root olmaz.
++- Her application response header’ı `X-Correlation-Id=C_req`; C_req yoksa fallback. Error body correlation aynı değerdir.
++- 401 ayrıca `WWW-Authenticate: Bearer` taşır.
++- Başarı body’sine correlation alanı eklenmez.
++- Transport/router/startup seviyesinde operation’a ulaşmayan retler bu JSON garantisinin dışında kalır.
++- Idempotency key parser sonrası exact string, uzunluk1–128; trim/case-fold/nonblank kısıtı yok. Tek string içindeki virgül geçerli; birden fazla field value reddedilir.
++
++**Replay matrisi**
++
++Receipt identity: `(TenantId, LegalEntityId, operationId, targetId-or-create, exact-key)`. Actor identity’ye dahil edilmez; replay yapan aktör yeniden yetkilendirilir, original audit actor değişmez.
++
++| İstek | Tanımlı sonuç | Body / header / kalıcı etki |
++|---|---|---|
++| Aynı key + payload + root | Create201 veya transition200 | Orijinal başarı snapshot’ı; yalnız `idempotentReplay:true`; header current=root; yeni audit/event yok |
++| Aynı key + payload + farklı correlation | 409 `CORRELATION_ROOT_MISMATCH` | Error body/header **current** correlation; original root açıklanmaz/değişmez |
++| Aynı key + farklı valid payload + aynı root | 409 `IDEMPOTENCY_KEY_REUSED` | Current correlation; mutation yok |
++| Aynı key + invalid payload | 400 | Receipt karşılaştırmasından önce schema reddi |
++| Eşzamanlı aynı istek | Tek commit; diğeri receipt replay | İkinci business işlem/event yok; outcome çözülemiyorsa503 ve aynı-key retry |
++| Commit sonrası HTTP yanıtı kayıp | Aynı-key retry orijinal başarıyı getirir | Yeni Load/number/event üretilmez |
++| Sonraki lifecycle değişiminden sonra eski receipt | Orijinal tarihsel response | Güncel state’i geri almaz; referans yeniden okunmaz |
++
++Fingerprint: object property sırası önemsiz; UUID değerleri ve date-time instant’ları normalize; array sırası ve diğer string içerikleri korunur. Optional `note` omission/null eşdeğer, boş string farklıdır. Correlation fingerprint’e dahil edilmez; ayrı root kontrolüdür. Failed request için receipt/başarı key tüketimi yok; başarılı receipt’lere TTL yok.
++
++HC’nin event correlation eşitliği ve EV’nin immutable root şartı nedeniyle **farklı correlation’lı fresh transition da reddedilir**. Alternatif cross-root kabul, bu iki normatif açıklamanın ayrıca değiştirilmesini gerektirir; bu annex onu tanımlamaz.
++
++**D185-05 — number, transaction, audit/outbox**
++
++- `LoadId`: server-generated UUID. `LoadNumber = "LOAD-" + LoadId.ToString("N").ToUpperInvariant()`.
++- `(TenantId, LegalEntityId, LoadNumber)` unique; soft-delete numarayı serbest bırakmaz. Sıralı/gapless/yıllık sayaç garantisi yok.
++- Gerçek UUID/number collision’da bütün işlem yeni ID ile en fazla üç aday dener; tükenirse503 `PERSISTENCE_UNAVAILABLE`. Unknown commit’te yeni ID üretmeden receipt recovery yapılır.
++- Collections: `loads`, `load_assignments`, `loads_receipts`, `loads_audit`, `loads_outbox`. Hepsi scoped; replica-set transaction zorunlu. Standalone/in-memory fallback yok.
++- Fresh success atomik olarak aggregate, assignment etkisi, receipt, audit ve bir lifecycle outbox kaydı yazar.
++- Create event: `LoadCreated`, server UTC `occurredAt`, `causationId:null`.
++- Transition event: frozen target event’i; `occurredAt` command’dan, aynı instant korunarak; `causationId` önceki committed Load eventId.
++- Tüm event’lerde root, ilk create’in correlation’ıdır. Audit ayrıca actor, önce/sonra state, server commit zamanı, internal Version ve kullanılan reference snapshot’ını taşır.
++- Geçmiş/gelecek `occurredAt` için yeni business yasağı konmaz. İşlem sırası server commit/Version ile belirlenir; event zamanı monotonluk garantisi değildir.
++- Outbox **Pending** kalır; canlı publisher, delivery acknowledgement veya remote exactly-once iddiası yok. Restart sonrası pending kayıt korunur; replay yeni kayıt üretmez.
++
++Acceptance: her write sınırına fault injection →ya tüm kayıtlar ya hiçbiri; commit sonrası kayıp response →tek receipt/audit/event; restart →aynı number/root/result; source Shipment/Carrier ve stock verisi değişmez.
++
++
++## R185-C01 — Carrier response validation (approved precision)
++
++Validate the complete CarrierListResponse and every CarrierSummary item before selecting a match.
++CarrierSummary requires carrierId, carrierCode, displayName, status and supportedModes.
++Any required omission or malformed field is 502 DEPENDENCY_RESPONSE_INVALID, never503.
++Duplicate identity or contradiction of the Active filter is502. A valid list with no matching
++identity is404 CARRIER_NOT_FOUND. Empty supportedModes is schema-valid but requested mode
++cannot match:422 CARRIER_MODE_UNSUPPORTED. Shipment's schema-valid optional decision-field
++omission remains503 REFERENCE_STATE_UNAVAILABLE under the existing Shipment profile above.
++
++## R185-C02 — Exact query scope predicate (approved precision)
++
++At the query-validation stage, inspect each key after exactly one URL query decode.
++ASCII case-insensitive exact keys are tenantId, tenant_id, X-Tenant-Id, legalEntityId,
++legal_entity_id, X-Legal-Entity-Id. Presence alone, including empty values, returns400
++INVALID_REQUEST. Do not recursively decode. Other unknown keys are ignored and never bind
++trusted scope; tenantId[] is not in the set. No general unknown-query rejection is added.
++
++## R185-C03 — Lexical and authentication precision
++
++UUID lexical form is ASCII hex 8-4-4-4-12, uppercase/lowercase accepted, no application trim,
++no extra version/variant restriction. Nil correlation is valid. Trusted claim names tenant_id,
++legal_entity_id, sub are exact-case; each must be one string with that UUID lexical form and
++non-nil value. Authentication parser/token validation rejection is401. Only after authentication
++success, unusable or duplicate trusted claims are403. Successfully authenticated signed-payload
++duplicates cannot be hidden by last-wins parsing. There is no universal duplicate-sub403 oracle.
++Header names are case-insensitive; repeated values, even identical, are duplicates and rejected
++at the relevant required-header stage. Authentication -> trusted tenant/LE/actor/permission ->
++correlation/tenant/LE/POST key syntax -> scope equality remains the exact precedence.
++Idempotency key is a single parser-produced value,1–128 Unicode code points, no trim/case-fold;
++a comma within that one value is valid. Invalid correlation generates one rejection-only trace
++UUID per request, never a business root. UUID comparisons use UUID value equivalence.
++
++## R185-C04 — Release and migration boundary
++
++info.version3.1.0 is proposed candidate metadata only; wire contractVersion v1 remains unchanged.
++New business restrictions reject some baseline-schema-valid requests. This is not proven minor
++compatibility. Metadata major does not supply route negotiation, migration, cutover or rollback.
++No new route is introduced. Consumer compatibility/consent and published uptake remain separate
++release prerequisites; no consent is inferred from the external-consumer inventory statement.
++
++## R185-C05 — Separate authority binding
++
++Any future canonical publication must have a separately exact approved authority payload/decision
++binding for its final SHA256. Old canonical pin plus new candidate bytes fails integrity. This
++candidate does not alter guard or authority files. The17 historical sealed paths/hashes/contents
++remain unchanged. Passing a future hash comparison alone does not establish valid owner approval.
++
++## D185-ROOT-ACQ-01 — authoritative Load root acquisition
++
++`queryLoads` may expose `LoadSummary.lifecycleCorrelationId` as an optional, nullable UUID. Its only authoritative source is the persisted `LoadPlan.CorrelationRoot`, established by the accepted correlation UUID of the original successful Load create command.
++
++An upgraded producer emits the stored non-null UUID when that persisted field is present. It does not derive the value from the current GET trace, Load ID, Shipment ID, one or more Shipment lifecycle roots, browser/session state, audit data, or any user-entered value. Reads do not create, replace, normalize, or backfill the field. A genuinely stored nil UUID remains a present UUID value; it is not synthesized for missing or null storage.
++
++The field remains optional and nullable for wire compatibility with legacy records and older producers. A consumer that receives a missing, null, malformed, or otherwise non-authoritative value keeps transition unavailable and emits no transition request. It must not substitute the GET `X-Correlation-Id`, request user input, or consult a database/audit channel outside the published API.
++
++The existing `queryLoads` tenant/LE filtering and `supplychain.loads.read` permission protect disclosure. Possession of the root grants no mutation authority: `transitionLoad` continues to require `supplychain.loads.transition`, and the existing trusted-scope, root-before-fingerprint, replay, lifecycle, error, audit and Pending-outbox rules remain unchanged.
++
++For a stale or tampered row, existing behavior controls: cross-scope, missing or soft-deleted Load returns non-disclosing `404 LOAD_NOT_FOUND`; a different authoritative root returns `409 CORRELATION_ROOT_MISMATCH`; an invalid current lifecycle returns `422 INVALID_LOAD_TRANSITION`; persistence/read failure returns `503 PERSISTENCE_UNAVAILABLE`. None of these responses disclose or replace the persisted root.
++
++One Load may reference several Shipments while retaining exactly one Load root from its own create command. This amendment does not compare, merge, select or constrain Shipment roots, and it introduces no multi-root event. A relationship rule between Load and Shipment roots requires a separate owner decision.
++
++No Loads detail/search operation, searchable lookup, Gateway change, migration, backfill, publisher or runtime implementation is introduced by this candidate.

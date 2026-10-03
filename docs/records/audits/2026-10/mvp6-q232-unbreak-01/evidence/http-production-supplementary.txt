@@ -1,0 +1,199 @@
+*   Trying 127.0.0.1:5061...
+* Connected to 127.0.0.1 (127.0.0.1) port 5061
+> GET /health HTTP/1.1
+> Host: 127.0.0.1:5061
+> User-Agent: curl/8.7.1
+> Accept: */*
+> X-Correlation-Id: 11111111-2222-4333-8444-555555555555
+> X-Tenant-Id: 00000000-0000-0000-0000-000000000001
+> X-Legal-Entity-Id: 00000000-0000-0000-0000-000000000001
+> 
+* Request completely sent off
+< HTTP/1.1 200 OK
+< Content-Type: application/json; charset=utf-8
+< Date: Fri, 02 Oct 2026 20:18:14 GMT
+< Server: Kestrel
+< Transfer-Encoding: chunked
+< 
+{ [118 bytes data]
+* Connection #0 to host 127.0.0.1 left intact
+{"status":"up","module":"MOD-0183","warehouseIntake":"unimplemented","outboxTransport":"integration-owned"}
+*   Trying 127.0.0.1:5061...
+* Connected to 127.0.0.1 (127.0.0.1) port 5061
+> GET /api/shipment-bundle/shipments HTTP/1.1
+> Host: 127.0.0.1:5061
+> User-Agent: curl/8.7.1
+> Accept: */*
+> X-Correlation-Id: 11111111-2222-4333-8444-555555555555
+> X-Tenant-Id: 00000000-0000-0000-0000-000000000001
+> X-Legal-Entity-Id: 00000000-0000-0000-0000-000000000001
+> 
+* Request completely sent off
+< HTTP/1.1 401 Unauthorized
+< Content-Type: application/json; charset=utf-8
+< Date: Fri, 02 Oct 2026 20:18:14 GMT
+< Server: Kestrel
+< Transfer-Encoding: chunked
+< X-Correlation-Id: 11111111-2222-4333-8444-555555555555
+< 
+{ [162 bytes data]
+* Connection #0 to host 127.0.0.1 left intact
+{"error":{"code":"INVALID_REQUEST","message":"Authentication required.","correlationId":"11111111-2222-4333-8444-555555555555"},"contractVersion":"v1"}
+*   Trying 127.0.0.1:5061...
+* Connected to 127.0.0.1 (127.0.0.1) port 5061
+> GET /api/shipment-bundle/claims HTTP/1.1
+> Host: 127.0.0.1:5061
+> User-Agent: curl/8.7.1
+> Accept: */*
+> X-Correlation-Id: 11111111-2222-4333-8444-555555555555
+> X-Tenant-Id: 00000000-0000-0000-0000-000000000001
+> X-Legal-Entity-Id: 00000000-0000-0000-0000-000000000001
+> 
+* Request completely sent off
+< HTTP/1.1 401 Unauthorized
+< Content-Type: application/json; charset=utf-8
+< Date: Fri, 02 Oct 2026 20:18:14 GMT
+< Server: Kestrel
+< Transfer-Encoding: chunked
+< X-Correlation-Id: 11111111-2222-4333-8444-555555555555
+< 
+{ [162 bytes data]
+* Connection #0 to host 127.0.0.1 left intact
+{"error":{"code":"INVALID_REQUEST","message":"Authentication required.","correlationId":"11111111-2222-4333-8444-555555555555"},"contractVersion":"v1"}
+*   Trying 127.0.0.1:5061...
+* Connected to 127.0.0.1 (127.0.0.1) port 5061
+> GET /api/shipment-bundle/returns HTTP/1.1
+> Host: 127.0.0.1:5061
+> User-Agent: curl/8.7.1
+> Accept: */*
+> X-Correlation-Id: 11111111-2222-4333-8444-555555555555
+> X-Tenant-Id: 00000000-0000-0000-0000-000000000001
+> X-Legal-Entity-Id: 00000000-0000-0000-0000-000000000001
+> 
+* Request completely sent off
+< HTTP/1.1 401 Unauthorized
+< Content-Type: application/json; charset=utf-8
+< Date: Fri, 02 Oct 2026 20:18:14 GMT
+< Server: Kestrel
+< Transfer-Encoding: chunked
+< X-Correlation-Id: 11111111-2222-4333-8444-555555555555
+< 
+{ [162 bytes data]
+* Connection #0 to host 127.0.0.1 left intact
+{"error":{"code":"INVALID_REQUEST","message":"Authentication required.","correlationId":"11111111-2222-4333-8444-555555555555"},"contractVersion":"v1"}
+*   Trying 127.0.0.1:5061...
+* Connected to 127.0.0.1 (127.0.0.1) port 5061
+> GET /api/shipment-bundle/carriers HTTP/1.1
+> Host: 127.0.0.1:5061
+> User-Agent: curl/8.7.1
+> Accept: */*
+> X-Correlation-Id: 11111111-2222-4333-8444-555555555555
+> X-Tenant-Id: 00000000-0000-0000-0000-000000000001
+> X-Legal-Entity-Id: 00000000-0000-0000-0000-000000000001
+> 
+* Request completely sent off
+< HTTP/1.1 401 Unauthorized
+< Content-Type: application/json; charset=utf-8
+< Date: Fri, 02 Oct 2026 20:18:14 GMT
+< Server: Kestrel
+< Transfer-Encoding: chunked
+< WWW-Authenticate: Bearer
+< X-Correlation-Id: 11111111-2222-4333-8444-555555555555
+< 
+{ [162 bytes data]
+* Connection #0 to host 127.0.0.1 left intact
+{"error":{"code":"INVALID_REQUEST","message":"Authentication required.","correlationId":"11111111-2222-4333-8444-555555555555"},"contractVersion":"v1"}
+*   Trying 127.0.0.1:5061...
+* Connected to 127.0.0.1 (127.0.0.1) port 5061
+> GET /api/shipment-bundle/loads HTTP/1.1
+> Host: 127.0.0.1:5061
+> User-Agent: curl/8.7.1
+> Accept: */*
+> X-Correlation-Id: 11111111-2222-4333-8444-555555555555
+> X-Tenant-Id: 00000000-0000-0000-0000-000000000001
+> X-Legal-Entity-Id: 00000000-0000-0000-0000-000000000001
+> 
+* Request completely sent off
+< HTTP/1.1 401 Unauthorized
+< Content-Type: application/json; charset=utf-8
+< Date: Fri, 02 Oct 2026 20:18:14 GMT
+< Server: Kestrel
+< Transfer-Encoding: chunked
+< WWW-Authenticate: Bearer
+< X-Correlation-Id: 11111111-2222-4333-8444-555555555555
+< 
+{ [174 bytes data]
+* Connection #0 to host 127.0.0.1 left intact
+{"error":{"code":"INVALID_REQUEST","message":"Load request could not be completed.","correlationId":"11111111-2222-4333-8444-555555555555"},"contractVersion":"v1"}
+*   Trying 127.0.0.1:5061...
+* Connected to 127.0.0.1 (127.0.0.1) port 5061
+> GET /api/supply-chain/sandop-plans/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee HTTP/1.1
+> Host: 127.0.0.1:5061
+> User-Agent: curl/8.7.1
+> Accept: */*
+> X-Correlation-Id: 11111111-2222-4333-8444-555555555555
+> X-Tenant-Id: 00000000-0000-0000-0000-000000000001
+> X-Legal-Entity-Id: 00000000-0000-0000-0000-000000000001
+> 
+* Request completely sent off
+< HTTP/1.1 401 Unauthorized
+< Content-Length: 0
+< Date: Fri, 02 Oct 2026 20:18:14 GMT
+< Server: Kestrel
+< WWW-Authenticate: Bearer
+< 
+* Connection #0 to host 127.0.0.1 left intact
+
+*   Trying 127.0.0.1:5061...
+* Connected to 127.0.0.1 (127.0.0.1) port 5061
+> GET /api/supply-chain/capacity-plans/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee HTTP/1.1
+> Host: 127.0.0.1:5061
+> User-Agent: curl/8.7.1
+> Accept: */*
+> X-Correlation-Id: 11111111-2222-4333-8444-555555555555
+> X-Tenant-Id: 00000000-0000-0000-0000-000000000001
+> X-Legal-Entity-Id: 00000000-0000-0000-0000-000000000001
+> 
+* Request completely sent off
+< HTTP/1.1 401 Unauthorized
+< Content-Length: 0
+< Date: Fri, 02 Oct 2026 20:18:14 GMT
+< Server: Kestrel
+< WWW-Authenticate: Bearer
+< 
+* Connection #0 to host 127.0.0.1 left intact
+
+*   Trying 127.0.0.1:5061...
+* Connected to 127.0.0.1 (127.0.0.1) port 5061
+> GET /api/shipment-bundle/shipments HTTP/1.1
+> Host: 127.0.0.1:5061
+> User-Agent: curl/8.7.1
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 400 Bad Request
+< Content-Type: application/json; charset=utf-8
+< Date: Fri, 02 Oct 2026 20:18:14 GMT
+< Server: Kestrel
+< Transfer-Encoding: chunked
+< 
+{ [184 bytes data]
+* Connection #0 to host 127.0.0.1 left intact
+{"error":{"code":"INVALID_REQUEST","message":"A non-empty UUID X-Correlation-Id is required.","correlationId":"0fb5a04d-cf99-47b8-acac-157d019e85a7"},"contractVersion":"v1"}
+*   Trying 127.0.0.1:5061...
+* Connected to 127.0.0.1 (127.0.0.1) port 5061
+> GET /api/shipment-bundle/claims HTTP/1.1
+> Host: 127.0.0.1:5061
+> User-Agent: curl/8.7.1
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 400 Bad Request
+< Content-Type: application/json; charset=utf-8
+< Date: Fri, 02 Oct 2026 20:18:14 GMT
+< Server: Kestrel
+< Transfer-Encoding: chunked
+< 
+{ [184 bytes data]
+* Connection #0 to host 127.0.0.1 left intact
+{"error":{"code":"INVALID_REQUEST","message":"A non-empty UUID X-Correlation-Id is required.","correlationId":"7a8a7d5b-e029-4f93-bc1b-a2f1fc7b8ef7"},"contractVersion":"v1"}

@@ -1,0 +1,61 @@
+{
+  "phase": "login",
+  "startedAt": "2026-09-26T19:42:42.054Z",
+  "web": "http://127.0.0.1:5501",
+  "cases": {
+    "login-full": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.e472jTcglI4",
+        "access_token",
+        "refresh_token"
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-readonly": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.e472jTcglI4",
+        "access_token",
+        "refresh_token"
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-noread": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.e472jTcglI4",
+        "access_token",
+        "refresh_token"
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-leb": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.e472jTcglI4",
+        "access_token",
+        "refresh_token"
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-t2user": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/Claims",
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.e472jTcglI4",
+        "access_token",
+        "refresh_token"
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    }
+  },
+  "png": [],
+  "console": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T19:42:55.481Z"
+}

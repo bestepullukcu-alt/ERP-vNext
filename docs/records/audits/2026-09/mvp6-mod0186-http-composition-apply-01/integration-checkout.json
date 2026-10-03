@@ -1,0 +1,16 @@
+{
+  "task": "MVP6-MOD0186-HTTP-COMPOSITION-APPLY-01",
+  "checkout": "/private/tmp/mvp6-mod0186-http-integration-01",
+  "registeredWorktree": true,
+  "detachedHead": "4a8d4d4b339528a88e6220fb8402e5a2c771136c",
+  "claimsSourceWorktree": "/Users/natig/.codex/worktrees/claims-dev-start-01/ERP-vNext-recovery",
+  "claimsDirtyInputCount": 491,
+  "claimsCopiedInputCountExcludingProgram": 490,
+  "programBaselineSource": "docs/records/audits/2026-09/mvp6-mod0186-http-composition-01/Program.baseline.cs",
+  "programBaselineSha256": "a28cb1ab5b7dc235cb68bb0bf7ad72cdc4889a49846ab6fdd4f01601285ab34a",
+  "approvedPatchSha256": "70b80f7920f0d216ccd22795328df750a761c949e438a55ede7876c57cbf6444",
+  "programTargetSha256": "a72a05a5e185e04d70ba221f086baacb8c8fca11ea061f289cb4b54fd430254c",
+  "returnsCoreDeliveredToIntegrationCheckout": false,
+  "returnsCoreTransferredByThisTask": false,
+  "commitPushStash": false
+}

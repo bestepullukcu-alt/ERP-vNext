@@ -1,0 +1,73 @@
+{
+  set: 'returns_r01_rework',
+  date: ISODate('2026-09-21T16:22:06.981Z'),
+  myState: 1,
+  term: Long('2'),
+  syncSourceHost: '',
+  syncSourceId: -1,
+  heartbeatIntervalMillis: Long('2000'),
+  majorityVoteCount: 1,
+  writeMajorityCount: 1,
+  votingMembersCount: 1,
+  writableVotingMembersCount: 1,
+  optimes: {
+    lastCommittedOpTime: { ts: Timestamp({ t: 1790007722, i: 1 }), t: Long('2') },
+    lastCommittedWallTime: ISODate('2026-09-21T16:22:02.800Z'),
+    readConcernMajorityOpTime: { ts: Timestamp({ t: 1790007722, i: 1 }), t: Long('2') },
+    appliedOpTime: { ts: Timestamp({ t: 1790007722, i: 1 }), t: Long('2') },
+    durableOpTime: { ts: Timestamp({ t: 1790007722, i: 1 }), t: Long('2') },
+    writtenOpTime: { ts: Timestamp({ t: 1790007722, i: 1 }), t: Long('2') },
+    lastAppliedWallTime: ISODate('2026-09-21T16:22:02.800Z'),
+    lastDurableWallTime: ISODate('2026-09-21T16:22:02.800Z'),
+    lastWrittenWallTime: ISODate('2026-09-21T16:22:02.800Z')
+  },
+  lastStableRecoveryTimestamp: Timestamp({ t: 1790007668, i: 1 }),
+  electionCandidateMetrics: {
+    lastElectionReason: 'electionTimeout',
+    lastElectionDate: ISODate('2026-09-21T16:21:52.788Z'),
+    electionTerm: Long('2'),
+    lastCommittedOpTimeAtElection: { ts: Timestamp({ t: 0, i: 0 }), t: Long('-1') },
+    lastSeenWrittenOpTimeAtElection: { ts: Timestamp({ t: 1790007668, i: 1 }), t: Long('1') },
+    lastSeenOpTimeAtElection: { ts: Timestamp({ t: 1790007668, i: 1 }), t: Long('1') },
+    numVotesNeeded: 1,
+    priorityAtElection: 1,
+    electionTimeoutMillis: Long('10000'),
+    newTermStartDate: ISODate('2026-09-21T16:21:52.797Z'),
+    wMajorityWriteAvailabilityDate: ISODate('2026-09-21T16:21:52.910Z')
+  },
+  members: [
+    {
+      _id: 0,
+      name: '127.0.0.1:27187',
+      health: 1,
+      state: 1,
+      stateStr: 'PRIMARY',
+      uptime: 15,
+      optime: { ts: Timestamp({ t: 1790007722, i: 1 }), t: Long('2') },
+      optimeDate: ISODate('2026-09-21T16:22:02.000Z'),
+      optimeWritten: { ts: Timestamp({ t: 1790007722, i: 1 }), t: Long('2') },
+      optimeWrittenDate: ISODate('2026-09-21T16:22:02.000Z'),
+      lastAppliedWallTime: ISODate('2026-09-21T16:22:02.800Z'),
+      lastDurableWallTime: ISODate('2026-09-21T16:22:02.800Z'),
+      lastWrittenWallTime: ISODate('2026-09-21T16:22:02.800Z'),
+      syncSourceHost: '',
+      syncSourceId: -1,
+      infoMessage: 'Could not find member to sync from',
+      electionTime: Timestamp({ t: 1790007712, i: 1 }),
+      electionDate: ISODate('2026-09-21T16:21:52.000Z'),
+      configVersion: 1,
+      configTerm: 2,
+      self: true,
+      lastHeartbeatMessage: ''
+    }
+  ],
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1790007722, i: 1 }),
+    signature: {
+      hash: Binary.createFromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAA=', 0),
+      keyId: Long('0')
+    }
+  },
+  operationTime: Timestamp({ t: 1790007722, i: 1 })
+}

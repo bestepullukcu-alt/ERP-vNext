@@ -1,0 +1,2 @@
+Microsoft.AspNetCore.App 8.0.23 [/Users/natig/.dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 8.0.23 [/Users/natig/.dotnet/shared/Microsoft.NETCore.App]

@@ -1,0 +1,38 @@
+[13:20:40 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest. CorrelationId= TenantId= LegalEntityId=
+[13:20:42 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held. CorrelationId= TenantId= LegalEntityId=
+[13:20:42 INF] Now listening on: http://127.0.0.1:5061 CorrelationId= TenantId= LegalEntityId=
+[13:20:42 INF] Application started. Press Ctrl+C to shut down. CorrelationId= TenantId= LegalEntityId=
+[13:20:42 INF] Hosting environment: Development CorrelationId= TenantId= LegalEntityId=
+[13:20:42 INF] Content root path: /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api CorrelationId= TenantId= LegalEntityId=
+[13:20:43 INF] Request starting HTTP/1.1 GET http://localhost:5061/health - null null CorrelationId= TenantId= LegalEntityId=
+[13:20:43 INF] Executing endpoint 'HTTP: GET /health' CorrelationId= TenantId= LegalEntityId=
+[13:20:43 INF] Setting HTTP status code 200. CorrelationId= TenantId= LegalEntityId=
+[13:20:43 INF] Writing value of type '<>f__AnonymousType2`4' as Json. CorrelationId= TenantId= LegalEntityId=
+[13:20:43 INF] Executed endpoint 'HTTP: GET /health' CorrelationId= TenantId= LegalEntityId=
+[13:20:43 INF] Request finished HTTP/1.1 GET http://localhost:5061/health - 200 null application/json; charset=utf-8 51.4319ms CorrelationId= TenantId= LegalEntityId=
+[13:20:43 INF] Request starting HTTP/1.1 GET http://localhost:5061/api/shipment-bundle/shipments?page=1&pageSize=5 - null null CorrelationId=85e883bd-3894-42d4-ad21-05ec8939453d TenantId= LegalEntityId=
+[13:20:43 INF] Executing endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.List (Diten.SupplyChainService.Api)' CorrelationId=85e883bd-3894-42d4-ad21-05ec8939453d TenantId= LegalEntityId=
+[13:20:43 INF] Route matched with {action = "List", controller = "Shipments"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.String, Int32, Int32, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Controllers.ShipmentsController (Diten.SupplyChainService.Api). CorrelationId=85e883bd-3894-42d4-ad21-05ec8939453d TenantId= LegalEntityId=
+[13:20:43 INF] Handling GetShipmentListQuery CorrelationId=85e883bd-3894-42d4-ad21-05ec8939453d TenantId=11111111-1111-4111-8111-111111111111 LegalEntityId=22222222-2222-4222-8222-222222222222
+[13:20:43 INF] Executing ObjectResult, writing value of type 'System.Text.Json.Nodes.JsonObject'. CorrelationId=85e883bd-3894-42d4-ad21-05ec8939453d TenantId= LegalEntityId=
+[13:20:43 INF] Executed action Diten.SupplyChainService.Api.Controllers.ShipmentsController.List (Diten.SupplyChainService.Api) in 102.0655ms CorrelationId=85e883bd-3894-42d4-ad21-05ec8939453d TenantId= LegalEntityId=
+[13:20:43 INF] Executed endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.List (Diten.SupplyChainService.Api)' CorrelationId=85e883bd-3894-42d4-ad21-05ec8939453d TenantId= LegalEntityId=
+[13:20:43 INF] Request finished HTTP/1.1 GET http://localhost:5061/api/shipment-bundle/shipments?page=1&pageSize=5 - 200 null application/json; charset=utf-8 156.7808ms CorrelationId=85e883bd-3894-42d4-ad21-05ec8939453d TenantId= LegalEntityId=
+[13:20:43 INF] Request starting HTTP/1.1 GET http://localhost:5061/api/shipment-bundle/returns?page=1&pageSize=5 - null null CorrelationId=ae4694c3-765b-4e9e-9a2d-d4561151620d TenantId= LegalEntityId=
+[13:20:43 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.List (Diten.SupplyChainService.Api)' CorrelationId=ae4694c3-765b-4e9e-9a2d-d4561151620d TenantId= LegalEntityId=
+[13:20:43 INF] Route matched with {action = "List", controller = "Returns"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.String, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Returns.ReturnsController (Diten.SupplyChainService.Api). CorrelationId=ae4694c3-765b-4e9e-9a2d-d4561151620d TenantId= LegalEntityId=
+[13:20:43 INF] Handling GetReturnListQuery CorrelationId=ae4694c3-765b-4e9e-9a2d-d4561151620d TenantId=11111111-1111-4111-8111-111111111111 LegalEntityId=22222222-2222-4222-8222-222222222222
+[13:20:43 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Returns.ReturnListResponse'. CorrelationId=ae4694c3-765b-4e9e-9a2d-d4561151620d TenantId= LegalEntityId=
+[13:20:43 INF] Executed action Diten.SupplyChainService.Api.Features.Returns.ReturnsController.List (Diten.SupplyChainService.Api) in 21.6476ms CorrelationId=ae4694c3-765b-4e9e-9a2d-d4561151620d TenantId= LegalEntityId=
+[13:20:43 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.List (Diten.SupplyChainService.Api)' CorrelationId=ae4694c3-765b-4e9e-9a2d-d4561151620d TenantId= LegalEntityId=
+[13:20:43 INF] Return request completed 200 ae4694c3-765b-4e9e-9a2d-d4561151620d CorrelationId=ae4694c3-765b-4e9e-9a2d-d4561151620d TenantId= LegalEntityId=
+[13:20:43 INF] Request finished HTTP/1.1 GET http://localhost:5061/api/shipment-bundle/returns?page=1&pageSize=5 - 200 null application/json; charset=utf-8 34.0017ms CorrelationId=ae4694c3-765b-4e9e-9a2d-d4561151620d TenantId= LegalEntityId=
+[13:20:43 INF] Request starting HTTP/1.1 GET http://localhost:5061/api/shipment-bundle/claims?page=1&pageSize=5 - null null CorrelationId=9fe2dbca-6b62-41ae-954f-bf22255981c4 TenantId= LegalEntityId=
+[13:20:43 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.List (Diten.SupplyChainService.Api)' CorrelationId=9fe2dbca-6b62-41ae-954f-bf22255981c4 TenantId= LegalEntityId=
+[13:20:43 INF] Route matched with {action = "List", controller = "Claims"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.String, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Claims.ClaimsController (Diten.SupplyChainService.Api). CorrelationId=9fe2dbca-6b62-41ae-954f-bf22255981c4 TenantId= LegalEntityId=
+[13:20:43 INF] Handling GetClaimListQuery CorrelationId=9fe2dbca-6b62-41ae-954f-bf22255981c4 TenantId=11111111-1111-4111-8111-111111111111 LegalEntityId=22222222-2222-4222-8222-222222222222
+[13:20:43 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Claims.ClaimListResponse'. CorrelationId=9fe2dbca-6b62-41ae-954f-bf22255981c4 TenantId= LegalEntityId=
+[13:20:43 INF] Executed action Diten.SupplyChainService.Api.Features.Claims.ClaimsController.List (Diten.SupplyChainService.Api) in 9.1617ms CorrelationId=9fe2dbca-6b62-41ae-954f-bf22255981c4 TenantId= LegalEntityId=
+[13:20:43 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.List (Diten.SupplyChainService.Api)' CorrelationId=9fe2dbca-6b62-41ae-954f-bf22255981c4 TenantId= LegalEntityId=
+[13:20:43 INF] Request finished HTTP/1.1 GET http://localhost:5061/api/shipment-bundle/claims?page=1&pageSize=5 - 200 null application/json; charset=utf-8 18.3041ms CorrelationId=9fe2dbca-6b62-41ae-954f-bf22255981c4 TenantId= LegalEntityId=
+[13:20:43 INF] Application is shutting down... CorrelationId= TenantId= LegalEntityId=

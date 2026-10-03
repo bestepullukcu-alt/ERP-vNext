@@ -1,0 +1,123 @@
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/SandopPlans/SandopRepository.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/SandopPlans/SandopRepository.cs
+@@ -81,11 +81,11 @@
+  commitAttempted=true;await session.CommitTransactionAsync(ct);return new(201,null,result);
+  }catch(OperationCanceledException)when(ct.IsCancellationRequested){throw;}
+  catch(Exception ex)when(ex is MongoException or TimeoutException)
+- { if(!commitAttempted&&session.IsInTransaction)try{await session.AbortTransactionAsync(CancellationToken.None);}catch(MongoException){}
+- if(commitAttempted){try{var saved=await Receipts.Find(rf,new FindOptions{Collation=Collation.Simple}).FirstOrDefaultAsync(ct);if(saved is not null)return Replay(saved,fingerprint);}catch(MongoException){}return SandopResult.Error(503,"COMMIT_RESULT_UNRESOLVED");}
++ { if(!commitAttempted&&session.IsInTransaction)try{await session.AbortTransactionAsync(CancellationToken.None);}catch(Exception abortError)when(abortError is MongoException or TimeoutException){}
++ if(commitAttempted){try{var saved=await Receipts.Find(rf,new FindOptions{Collation=Collation.Simple}).FirstOrDefaultAsync(ct);if(saved is not null)return Replay(saved,fingerprint);}catch(Exception receiptError)when(receiptError is MongoException or TimeoutException){}return SandopResult.Error(503,"COMMIT_RESULT_UNRESOLVED");}
+  if(ex is MongoException m&&(m.HasErrorLabel("TransientTransactionError")||m.Message.Contains("Concurrent plan version change")))continue;
+  if(ex is MongoWriteException{WriteError.Category:ServerErrorCategory.DuplicateKey})
+- { try { var resolved=await Receipts.Find(rf,new FindOptions{Collation=Collation.Simple}).FirstOrDefaultAsync(ct);if(resolved is not null)return Replay(resolved,fingerprint); } catch(MongoException) { return SandopResult.Error(503,"DEPENDENCY_UNAVAILABLE"); }
++ { try { var resolved=await Receipts.Find(rf,new FindOptions{Collation=Collation.Simple}).FirstOrDefaultAsync(ct);if(resolved is not null)return Replay(resolved,fingerprint); } catch(Exception receiptError) when(receiptError is MongoException or TimeoutException) { return SandopResult.Error(503,"DEPENDENCY_UNAVAILABLE"); }
+  if(action==SandopAction.SignOff)return SandopResult.Error(409,"SIGN_OFF_ALREADY_RECORDED");if(action==SandopAction.Create)return SandopResult.Error(409,"SANDOP_PLAN_ALREADY_EXISTS");continue;}
+  return SandopResult.Error(503,"DEPENDENCY_UNAVAILABLE");}
+  catch{if(session.IsInTransaction)try{await session.AbortTransactionAsync(CancellationToken.None);}catch(MongoException){}return SandopResult.Error(500,"INTERNAL_ERROR");}
+--- a/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SandopPlans/SandopReplayTests.cs
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SandopPlans/SandopReplayTests.cs
+@@ -17,9 +17,18 @@
+  var scoped=new BsonDocument("TenantId",s.TenantId.ToString());Assert.Equal(1,await db.GetCollection<BsonDocument>("sandop_receipts").CountDocumentsAsync(scoped));Assert.Equal(1,await db.GetCollection<BsonDocument>("sandop_outbox").CountDocumentsAsync(scoped));
+  }
+  [Fact]public async Task Exact_key_is_not_trimmed()
+- {var(h,db,s,f)=await SandopTestHost.Open();var first=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,"a-"+Guid.NewGuid(),SandopTestHost.Create());Assert.Equal(201,first.Status);
+- var different=SandopTestHost.J("""{"name":"FY2028","horizonStart":"2028-01-01","horizonEnd":"2028-12-31","demandPlanId":"dp-2027","demandPlanVersion":"3"}""");
+- var second=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null," a-"+Guid.NewGuid(),different);Assert.Equal(201,second.Status);
++ {var(h,db,s,f)=await SandopTestHost.Open();var token="exact-"+Guid.NewGuid();var key=" "+token+" ";var body=SandopTestHost.Create();
++ var first=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body);Assert.Equal(201,first.Status);
++ var noFixture=new Diten.SupplyChainService.Infrastructure.Features.SandopPlans.DemandFixtureReader([]);
++ var replay=await SandopTestHost.Mutate(h,s,noFixture,SandopAction.Create,null,key,body);Assert.Equal(201,replay.Status);Assert.Equal(first.Body,replay.Body);
++ foreach(var otherKey in new[]{token," "+token,token+" "})
++ {var distinct=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,otherKey,body);
++ Assert.Equal(409,distinct.Status);Assert.Equal("SANDOP_PLAN_ALREADY_EXISTS",distinct.Code);}
++ var scoped=new BsonDocument{{"TenantId",s.TenantId.ToString()},{"LegalEntityId",s.LegalEntityId.ToString()}};
++ var receipt=await db.GetCollection<BsonDocument>("sandop_receipts").Find(scoped).SingleAsync();
++ Assert.Equal(key,receipt["Key"].AsString);
++ Assert.Equal(1,await db.GetCollection<BsonDocument>("sandop_plans").CountDocumentsAsync(scoped));
++ foreach(var name in new[]{"sandop_receipts","sandop_audit","sandop_outbox"})Assert.Equal(1,await db.GetCollection<BsonDocument>(name).CountDocumentsAsync(scoped));
+  }
+ 
+ 
+--- a/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SandopPlans/SandopAtomicityTests.cs
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SandopPlans/SandopAtomicityTests.cs
+@@ -1,7 +1,21 @@
+ using Xunit;using MongoDB.Bson;using MongoDB.Driver;using Diten.SupplyChainService.Domain.Features.SandopPlans;
+ namespace Diten.SupplyChainService.Tests.SandopPlans;
++[CollectionDefinition("SandopMongoFailpoint", DisableParallelization = true)]
++public sealed class SandopMongoFailpointCollection;
++
++[Collection("SandopMongoFailpoint")]
+ public sealed class SandopAtomicityTests
+-{[Fact]public async Task Invalid_fixture_creates_nothing_in_five_effect_collections()
++{
++ private static readonly string[] Effects = ["sandop_plans","sandop_snapshots","sandop_receipts","sandop_audit","sandop_outbox"];
++ private static BsonDocument Scoped(SandopScope s)=>new(){{"TenantId",s.TenantId.ToString()},{"LegalEntityId",s.LegalEntityId.ToString()}};
++ private static async Task<long[]> Counts(IMongoDatabase db,SandopScope s)=>await Task.WhenAll(Effects.Select(n=>db.GetCollection<BsonDocument>(n).CountDocumentsAsync(Scoped(s))));
++ private static Task<BsonDocument> Configure(IMongoDatabase db,BsonDocument data,int times=1)=>db.Client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument{{"configureFailPoint","failCommand"},{"mode",new BsonDocument("times",times)},{"data",data}});
++ private static Task<BsonDocument> Disable(IMongoDatabase db)=>db.Client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument{{"configureFailPoint","failCommand"},{"mode","off"}});
++ private static IMongoDatabase FreshDatabase()
++ {var url=new MongoUrlBuilder(Environment.GetEnvironmentVariable("MVP6_MOD0190_MONGO_URI")!){DirectConnection=true,ReplicaSetName=null,ApplicationName="mod0190-recovery-"+Guid.NewGuid()};
++ return new MongoClient(url.ToMongoUrl()).GetDatabase("DitenSupplyChain_Mod0190_Test");}
++
++ [Fact]public async Task Invalid_fixture_creates_nothing_in_five_effect_collections()
+ {var(h,db,s,f)=await SandopTestHost.Open();var bad=SandopTestHost.J("""{"name":"bad","horizonStart":"2027-01-01","horizonEnd":"2027-12-31","demandPlanId":"missing","demandPlanVersion":"3"}""");
+  var result=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,Guid.NewGuid().ToString(),bad);Assert.Equal(422,result.Status);Assert.Equal("INVALID_DEMAND_REFERENCE",result.Code);
+  foreach(var name in new[]{"sandop_plans","sandop_snapshots","sandop_receipts","sandop_audit","sandop_outbox"})Assert.Equal(0,await db.GetCollection<BsonDocument>(name).CountDocumentsAsync(new BsonDocument("TenantId",s.TenantId.ToString())));
+@@ -16,4 +30,56 @@
+  [Fact]public async Task Unavailable_dependency_returns_declared_503()
+  {var(h,db,s,f)=await SandopTestHost.Open();var unreachable=new MongoClient("mongodb://127.0.0.1:57191/?serverSelectionTimeoutMS=150");var repo=new Diten.SupplyChainService.Persistence.Features.SandopPlans.SandopRepository(unreachable.GetDatabase("DitenSupplyChain_Mod0190_Test"));var result=await SandopTestHost.Mutate(repo,s,f,SandopAction.Create,null,Guid.NewGuid().ToString(),SandopTestHost.Create());Assert.Equal(503,result.Status);Assert.Equal("DEPENDENCY_UNAVAILABLE",result.Code);}
+ 
++ [Fact]public async Task Receipt_insert_failure_after_plan_write_rolls_back_and_same_key_retries()
++ {var(h,db,s,f)=await SandopTestHost.Open();var body=SandopTestHost.Create();var key="postwrite-"+Guid.NewGuid();var before=await Counts(db,s);
++ var data=new BsonDocument{{"failCommands",new BsonArray{"insert"}},{"namespace","DitenSupplyChain_Mod0190_Test.sandop_receipts"},{"errorCode",2}};
++ var configured=await Configure(db,data);BsonDocument disabled;SandopResult failed;
++ try{failed=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body);}
++ finally{disabled=await Disable(db);}
++ Assert.True(disabled["count"].ToInt32()>configured["count"].ToInt32());Assert.Equal(503,failed.Status);Assert.Equal("DEPENDENCY_UNAVAILABLE",failed.Code);
++ Assert.Equal(before,await Counts(db,s));
++ var retried=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body);Assert.Equal(201,retried.Status);
++ Assert.Equal(new long[]{1,0,1,1,1},await Counts(db,s));
++ }
++
++ [Fact]public async Task Mongo_unique_index_rejects_definite_duplicate_plan_without_partial_effect()
++ {var(h,db,s,f)=await SandopTestHost.Open();var body=SandopTestHost.Create();var first=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,"unique-"+Guid.NewGuid(),body);Assert.Equal(201,first.Status);
++ var plans=db.GetCollection<BsonDocument>("sandop_plans");var original=await plans.Find(Scoped(s)).SingleAsync();var duplicate=original.DeepClone().AsBsonDocument;duplicate["_id"]=Guid.NewGuid().ToString();
++ var ex=await Assert.ThrowsAsync<MongoWriteException>(()=>plans.InsertOneAsync(duplicate));Assert.Equal(ServerErrorCategory.DuplicateKey,ex.WriteError.Category);
++ var second=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,"another-"+Guid.NewGuid(),body);Assert.Equal(409,second.Status);Assert.Equal("SANDOP_PLAN_ALREADY_EXISTS",second.Code);
++ Assert.Equal(new long[]{1,0,1,1,1},await Counts(db,s));
++ }
++
++ [Fact]public async Task Unknown_commit_without_receipt_returns_unresolved_then_exact_key_recovers()
++ {var(h,db,s,f)=await SandopTestHost.Open();var body=SandopTestHost.Create();var key="unknown-"+Guid.NewGuid();
++ var data=new BsonDocument{{"failCommands",new BsonArray{"commitTransaction"}},{"errorCode",91},{"errorLabels",new BsonArray{"UnknownTransactionCommitResult"}}};
++ var configured=await Configure(db,data,3);BsonDocument disabled;SandopResult uncertain;
++ try{uncertain=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body);}
++ finally{disabled=await Disable(db);}
++ Assert.True(disabled["count"].ToInt32()>configured["count"].ToInt32());Assert.Equal(503,uncertain.Status);Assert.Equal("COMMIT_RESULT_UNRESOLVED",uncertain.Code);
++ // A failed commit can leave an inactive server transaction. Resolve the isolated test session before retrying.
++ await db.Client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("killAllSessions",new BsonArray()));
++ var recoveredDb=FreshDatabase();
++ Assert.Equal(new long[]{0,0,0,0,0},await Counts(recoveredDb,s));
++ var fresh=new Diten.SupplyChainService.Persistence.Features.SandopPlans.SandopRepository(recoveredDb);
++ var recovered=await SandopTestHost.Mutate(fresh,s,f,SandopAction.Create,null,key,body);Assert.True(recovered.Status==201,$"Recovery returned {recovered.Status} {recovered.Code}");
++ var replay=await SandopTestHost.Mutate(fresh,s,new Diten.SupplyChainService.Infrastructure.Features.SandopPlans.DemandFixtureReader([]),SandopAction.Create,null,key,body);Assert.Equal(201,replay.Status);Assert.Equal(recovered.Body,replay.Body);
++ Assert.Equal(new long[]{1,0,1,1,1},await Counts(recoveredDb,s));
++ }
++
++ [Fact]public async Task Committed_write_concern_uncertainty_resolves_original_receipt()
++ {var(h,db,s,f)=await SandopTestHost.Open();var body=SandopTestHost.Create();var key="committed-"+Guid.NewGuid();var originalCorrelation=Guid.NewGuid();
++ var data=new BsonDocument{{"failCommands",new BsonArray{"commitTransaction"}},{"writeConcernError",new BsonDocument{{"code",91},{"errmsg","injected commit acknowledgement loss"}}},{"errorLabels",new BsonArray{"UnknownTransactionCommitResult"}}};
++ var configured=await Configure(db,data);BsonDocument disabled;SandopResult resolved;
++ try{resolved=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body,originalCorrelation);}
++ finally{disabled=await Disable(db);}
++ Assert.True(disabled["count"].ToInt32()>configured["count"].ToInt32());Assert.Equal(503,resolved.Status);Assert.Equal("COMMIT_RESULT_UNRESOLVED",resolved.Code);
++ var recoveredDb=FreshDatabase();
++ var receipt=await recoveredDb.GetCollection<BsonDocument>("sandop_receipts").Find(Scoped(s)).SingleAsync();Assert.Equal(originalCorrelation.ToString(),receipt["OriginalCorrelationId"].AsString);
++ var fresh=new Diten.SupplyChainService.Persistence.Features.SandopPlans.SandopRepository(recoveredDb);
++ var replay=await SandopTestHost.Mutate(fresh,s,new Diten.SupplyChainService.Infrastructure.Features.SandopPlans.DemandFixtureReader([]),SandopAction.Create,null,key,body);
++ Assert.Equal(201,replay.Status);Assert.Equal(receipt["Body"].AsString,replay.Body);
++ Assert.Equal(new long[]{1,0,1,1,1},await Counts(recoveredDb,s));
++ }
++
+ }

@@ -1,0 +1,206 @@
+{
+  "tenant": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+  "steps": [
+    {
+      "step": "mdm-create-le-A",
+      "status": 201,
+      "ok": true,
+      "dataId": "b23ff1de-c1af-47f0-8720-942d8a54436a"
+    },
+    {
+      "step": "mdm-activate-le-A",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "mdm-lookup-validation-le-A",
+      "status": 200,
+      "ok": true,
+      "dataId": null
+    },
+    {
+      "step": "mdm-create-le-B",
+      "status": 201,
+      "ok": true,
+      "dataId": "c652ec19-e786-4bb7-8a19-a355cb06cc1b"
+    },
+    {
+      "step": "mdm-activate-le-B",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "mdm-lookup-validation-le-B",
+      "status": 200,
+      "ok": true,
+      "dataId": null
+    },
+    {
+      "step": "platform-create-ou-A",
+      "status": 201,
+      "ok": true,
+      "dataId": "4b403db9-67f0-4e1e-a887-43cd29bffc8f"
+    },
+    {
+      "step": "platform-create-position-A",
+      "status": 201,
+      "ok": true,
+      "dataId": "d78d9330-bc50-46c8-910f-db0dd2f56784"
+    },
+    {
+      "step": "platform-create-ou-B",
+      "status": 201,
+      "ok": true,
+      "dataId": "c2dbcb1c-0e83-4ef1-8068-658bb59c2310"
+    },
+    {
+      "step": "platform-create-position-B",
+      "status": 201,
+      "ok": true,
+      "dataId": "d6fe2302-6fb0-4e4e-baab-b0cd32fbd81d"
+    },
+    {
+      "step": "platform-assign-A-to-A",
+      "status": 201,
+      "ok": true,
+      "dataId": "ba26c1f5-63ac-4d88-a973-dc70074a0cdd"
+    },
+    {
+      "step": "platform-assign-B-to-A",
+      "status": 409,
+      "ok": false,
+      "dataId": "00000000-0000-0000-0000-000000000000",
+      "body": {
+        "statusCode": 409,
+        "isSuccessful": false,
+        "errors": [
+          "Another Primary assignment already covers this interval for the position."
+        ],
+        "reason_code": null,
+        "correlation_id": null
+      }
+    }
+  ],
+  "platformTenantFixture": {
+    "tenantCreated": false,
+    "status": 1,
+    "tenantType": 0,
+    "isDeleted": false
+  },
+  "authFixture": {
+    "users": {
+      "A": {
+        "email": "john.doe.t97@diten.com",
+        "userId": "eca6c699-21d1-4370-9f80-250ed26c3371",
+        "preconditions": {
+          "isActive": true,
+          "emailConfirmed": true,
+          "mustChange": false,
+          "lockedOut": false
+        },
+        "previousHashWasSharedSeedHash": false,
+        "rotated": true
+      },
+      "B": {
+        "email": "jane.smith.t97@diten.com",
+        "userId": "ceca3320-f450-4f55-b040-85e2be8f41ba",
+        "preconditions": {
+          "isActive": true,
+          "emailConfirmed": true,
+          "mustChange": false,
+          "lockedOut": false
+        },
+        "previousHashWasSharedSeedHash": false,
+        "rotated": true
+      },
+      "LEB": {
+        "email": "bob.johnson.t97@diten.com",
+        "userId": "10fba98a-031e-46ee-ad2e-621200df8a3e",
+        "preconditions": {
+          "isActive": true,
+          "emailConfirmed": true,
+          "mustChange": false,
+          "lockedOut": false
+        },
+        "previousHashWasSharedSeedHash": false,
+        "rotated": true
+      },
+      "ADM": {
+        "email": "alice.williams.t97@diten.com",
+        "userId": "11e9121d-7be6-47c4-9bcd-23750ef6363a",
+        "preconditions": {
+          "isActive": true,
+          "emailConfirmed": true,
+          "mustChange": false,
+          "lockedOut": false
+        },
+        "previousHashWasSharedSeedHash": false,
+        "rotated": true
+      }
+    },
+    "roles": {
+      "A12VerShipmentOperator": {
+        "roleId": "3caa5c24-287d-433d-8d23-892440d78426",
+        "reused": true,
+        "permissionKeys": [
+          "supplychain.shipments.read",
+          "supplychain.shipments.create",
+          "supplychain.shipments.dispatch",
+          "supplychain.shipments.cancel",
+          "supplychain.shipments.pod.capture"
+        ],
+        "grantsAdded": 0,
+        "members": [
+          "A",
+          "B",
+          "LEB"
+        ]
+      },
+      "A12VerFixtureAdmin": {
+        "roleId": "ad37d340-47ef-476c-81be-f062db14767b",
+        "reused": true,
+        "permissionKeys": [
+          "mdm.legal-entities.create",
+          "mdm.legal-entities.read",
+          "mdm.legal-entities.update",
+          "platform.organization-units.create",
+          "platform.organization-units.read",
+          "platform.positions.create",
+          "platform.positions.read",
+          "platform.position-assignments.create",
+          "platform.position-assignments.read",
+          "auth.users.lookup-validation"
+        ],
+        "grantsAdded": 1,
+        "members": [
+          "ADM"
+        ]
+      }
+    }
+  },
+  "fixtureAdminLogin": {
+    "actor": "ADM",
+    "status": 200,
+    "claimNames": [
+      "actor_type",
+      "aud",
+      "email",
+      "exp",
+      "family_name",
+      "given_name",
+      "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+      "iss",
+      "permission",
+      "pwd_change_required",
+      "sub",
+      "tenant_id"
+    ],
+    "tenantMatches": true,
+    "legalEntityId": null,
+    "shipmentPermissions": [],
+    "otherPermissionCount": 10
+  },
+  "codeSuffix": "92a799",
+  "leAReferenceable": true,
+  "leBReferenceable": true
+}

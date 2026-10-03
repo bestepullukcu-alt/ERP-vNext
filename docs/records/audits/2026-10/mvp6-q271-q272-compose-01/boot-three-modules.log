@@ -1,0 +1,17 @@
+Unhandled exception. System.AggregateException: Some services are not able to be constructed (Error while validating the service descriptor 'ServiceType: Diten.SupplyChainService.Domain.Features.CapacityPlans.ICapacityRepository Lifetime: Scoped ImplementationType: Diten.SupplyChainService.Persistence.Features.CapacityPlans.CapacityRepository': Unable to resolve service for type 'Diten.SupplyChainService.Domain.Features.CapacityPlans.IDemandFixtureReader' while attempting to activate 'Diten.SupplyChainService.Persistence.Features.CapacityPlans.CapacityRepository'.)
+ ---> System.InvalidOperationException: Error while validating the service descriptor 'ServiceType: Diten.SupplyChainService.Domain.Features.CapacityPlans.ICapacityRepository Lifetime: Scoped ImplementationType: Diten.SupplyChainService.Persistence.Features.CapacityPlans.CapacityRepository': Unable to resolve service for type 'Diten.SupplyChainService.Domain.Features.CapacityPlans.IDemandFixtureReader' while attempting to activate 'Diten.SupplyChainService.Persistence.Features.CapacityPlans.CapacityRepository'.
+ ---> System.InvalidOperationException: Unable to resolve service for type 'Diten.SupplyChainService.Domain.Features.CapacityPlans.IDemandFixtureReader' while attempting to activate 'Diten.SupplyChainService.Persistence.Features.CapacityPlans.CapacityRepository'.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteFactory.CreateArgumentCallSites(ServiceIdentifier serviceIdentifier, Type implementationType, CallSiteChain callSiteChain, ParameterInfo[] parameters, Boolean throwIfCallSiteNotFound)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteFactory.CreateConstructorCallSite(ResultCache lifetime, ServiceIdentifier serviceIdentifier, Type implementationType, CallSiteChain callSiteChain)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteFactory.TryCreateExact(ServiceDescriptor descriptor, ServiceIdentifier serviceIdentifier, CallSiteChain callSiteChain, Int32 slot)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteFactory.GetCallSite(ServiceDescriptor serviceDescriptor, CallSiteChain callSiteChain)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.ValidateService(ServiceDescriptor descriptor)
+   --- End of inner exception stack trace ---
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.ValidateService(ServiceDescriptor descriptor)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider..ctor(ICollection`1 serviceDescriptors, ServiceProviderOptions options)
+   --- End of inner exception stack trace ---
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider..ctor(ICollection`1 serviceDescriptors, ServiceProviderOptions options)
+   at Microsoft.Extensions.DependencyInjection.ServiceCollectionContainerBuilderExtensions.BuildServiceProvider(IServiceCollection services, ServiceProviderOptions options)
+   at Microsoft.Extensions.Hosting.HostApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at Program.<Main>$(String[] args) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs:line 97

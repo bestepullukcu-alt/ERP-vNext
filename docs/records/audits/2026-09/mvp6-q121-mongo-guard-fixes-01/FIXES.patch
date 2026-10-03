@@ -1,0 +1,81 @@
+Q121a (WP-MVP6-FIX-121a) — FIXES.patch against BASE (Q103 accepted base a8a236de…; the two preimages are
+byte-identical to HEAD working tree and to BASE-MANIFEST). Apply from the repo root: `git apply --check FIXES.patch`
+then `git apply FIXES.patch` (or `patch -p1`). Rule: .antigravity/rules/mongo-indexing.md DB-010 — a Mongo test does
+not create a database per run; a test that is not tenant-bound (an idempotent seed, a database-wide rule) takes its
+own database with a FIXED suffix, not a GUID. Guard: MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun
+(PerRunDatabaseInline = GetDatabase\s*\([^;]{0,400}?Guid\.NewGuid). No guard, exception-list or product change.
+
+# ---- File 1: services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
+# Hunk 1 (@@ -20,6 +20,10 @@): add the fixed name `SeedDatabaseName = "diten_platform_audit_seed"` with a DB-010
+#   comment. The class already owns its own mongod (fresh port, temporary dbpath) per class, so isolation comes
+#   from the process, not from the name.
+# Hunk 2 (@@ -76,7 +80,7 @@): line 79 — replace GetDatabase($"diten_platform_audit_seed_{Guid.NewGuid():N}") with
+#   GetDatabase(SeedDatabaseName). This is the guard hit. Seed data, the single [Fact], its assertions and the
+#   DisposeAsync drop (by _database.DatabaseNamespace.DatabaseName) are unchanged.
+diff --git a/services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs b/services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
+index 1b70c0e..d19a222 100644
+--- a/services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
++++ b/services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
+@@ -20,6 +20,10 @@ namespace Diten.Platform.Application.Tests.Audit;
+ public sealed class PpmAuditRetentionPolicySeedMongoTests : IAsyncLifetime
+ {
+     private const string MongoExecutable = "/opt/homebrew/bin/mongod";
++
++    // DB-010: a seed test that is not tenant-bound gets its own database with a FIXED suffix, not a GUID.
++    // Isolation comes from the test-owned mongod (fresh port and temporary dbpath per class), not from the name.
++    private const string SeedDatabaseName = "diten_platform_audit_seed";
+     private static readonly HashSet<int> ProtectedPorts = [27017, 27018, 27019, 27020, 27021];
+     private readonly AuditRetentionSeedOptions _options = new()
+     {
+@@ -76,7 +80,7 @@ public sealed class PpmAuditRetentionPolicySeedMongoTests : IAsyncLifetime
+ 
+         _client = new MongoClient($"mongodb://127.0.0.1:{_port}/?directConnection=true&serverSelectionTimeoutMS=1000");
+         await WaitForPingAsync(_client);
+-        _database = _client.GetDatabase($"diten_platform_audit_seed_{Guid.NewGuid():N}");
++        _database = _client.GetDatabase(SeedDatabaseName);
+ 
+         var policies = _database.GetCollection<AuditEventRetentionPolicy>("audit_event_retention_policies");
+         var baseline = Enum.GetValues<AuditCategory>()
+# ---- File 2: services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs
+# Hunk 1 (@@ -8,6 +8,10 @@): add the fixed name `StandaloneDatabaseName = "diten_platform_standalone"` with a
+#   DB-010 comment. Each DisposableStandaloneMongo instance is its own mongod on a fresh port and temp dbpath.
+# Hunk 2 (@@ -22,7 +26,7 @@): line 25 — CreateDatabase() returns GetDatabase(StandaloneDatabaseName) instead of a
+#   "diten_platform_standalone_" + Guid name. This is the guard hit. Both consumers
+#   (StandaloneMongoTransactionFailClosedTests, SubscriptionSessionAndStandaloneFailureTests) call StartAsync and
+#   then CreateDatabase() exactly once per instance, so they still get a fresh, empty database.
+# Hunk 3 (@@ -71,7 +75,7 @@): DisposeAsync drops exactly StandaloneDatabaseName (was: every name starting with
+#   "diten_platform_standalone_"). Needed because the old prefix no longer matches the fixed name; cleanup scope is
+#   unchanged (the only database the helper creates), and the process + dbpath deletion that follows is unchanged.
+diff --git a/services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs b/services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs
+index 6e37158..214dc32 100644
+--- a/services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs
++++ b/services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs
+@@ -8,6 +8,10 @@ namespace Diten.Platform.Application.Tests.Persistence;
+ 
+ public sealed class DisposableStandaloneMongo : IAsyncDisposable
+ {
++    // DB-010: one fixed database per disposable standalone mongod. Every instance owns a fresh port and a
++    // temporary dbpath, so the process isolates each test; the database name no longer carries a GUID.
++    private const string StandaloneDatabaseName = "diten_platform_standalone";
++
+     private readonly Process _process;
+     private readonly string _root;
+     private readonly MongoClient _client;
+@@ -22,7 +26,7 @@ public sealed class DisposableStandaloneMongo : IAsyncDisposable
+ 
+     public int Port { get; }
+     public IMongoClient Client => _client;
+-    public IMongoDatabase CreateDatabase() => _client.GetDatabase("diten_platform_standalone_" + Guid.NewGuid().ToString("N"));
++    public IMongoDatabase CreateDatabase() => _client.GetDatabase(StandaloneDatabaseName);
+ 
+     public static async Task<DisposableStandaloneMongo> StartAsync(CancellationToken ct = default)
+     {
+@@ -71,7 +75,7 @@ public sealed class DisposableStandaloneMongo : IAsyncDisposable
+     {
+         try
+         {
+-            foreach (var name in (await _client.ListDatabaseNames().ToListAsync()).Where(x => x.StartsWith("diten_platform_standalone_", StringComparison.Ordinal)))
++            foreach (var name in (await _client.ListDatabaseNames().ToListAsync()).Where(x => string.Equals(x, StandaloneDatabaseName, StringComparison.Ordinal)))
+                 await _client.DropDatabaseAsync(name);
+         }
+         finally

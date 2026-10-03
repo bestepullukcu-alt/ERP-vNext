@@ -1,0 +1,13 @@
+Q154 PARALLEL-SLOT TRIAL (R4 preparation; report only — no rule changed)
+slot 6: mongod 127.0.0.1:36994 rsq154s6 (enableTestCommands=1), build clone B/build
+slot 7: mongod 127.0.0.1:37994 rsq154s7 (enableTestCommands=1), build clone B/build-s7
+Variables per slot only from the overlay script: mvp6-test-mongo-env.sh --slot N --rs rsq154sN (port = 30994 + 1000·N)
+
+timeline (logs/PARALLEL-TIMES.txt)
+  20:24:11  slot 6 CapacityPlans start   | 20:24:11 slot 7 CapacityPlans start      (same second)
+  20:26:18  slot 6 CapacityPlans 48/48   | 20:26:31 slot 7 CapacityPlans 48/48      (overlap 2 m 07 s, incl. restart test + child worker on both)
+  20:26:18→20:26:51 slot 6 Platform Mongo (PlatformSchemaContract + TaskCommentOrder) 14/14
+  20:26:31→20:27:08 slot 7 Platform Mongo 14/14                                    (overlap 20 s)
+Databases: slot 7 held only its own 2 test DBs; slot 6 its own (logs/CLEAN-slot6-dbs.txt, CLEAN-slot7-dbs.txt). No cross-slot DB, lock or port conflict.
+RESULT: no collision — two sessions on disjoint slots run the formerly hard-coded suites at the same time.
+Note: a single build tree was cloned per slot to avoid concurrent writes to one bin/TestResults folder; R4 should keep one build tree per session.

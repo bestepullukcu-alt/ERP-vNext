@@ -1,0 +1,16 @@
+/private/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/mvp6-mod0187-normal-ver-ftmpk8e2/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+  Diten.SupplyChainService.Domain -> /private/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/mvp6-mod0187-normal-ver-ftmpk8e2/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/bin/Debug/net8.0/Diten.SupplyChainService.Domain.dll
+  Diten.SupplyChainService.Application -> /private/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/mvp6-mod0187-normal-ver-ftmpk8e2/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/bin/Debug/net8.0/Diten.SupplyChainService.Application.dll
+  Diten.BuildingBlocks.Eventing -> /private/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/mvp6-mod0187-normal-ver-ftmpk8e2/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Debug/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.SupplyChainService.Persistence -> /private/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/mvp6-mod0187-normal-ver-ftmpk8e2/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Debug/net8.0/Diten.SupplyChainService.Persistence.dll
+  Diten.SupplyChainService.Infrastructure -> /private/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/mvp6-mod0187-normal-ver-ftmpk8e2/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/bin/Debug/net8.0/Diten.SupplyChainService.Infrastructure.dll
+  Diten.BuildingBlocks.Security.Secrets -> /private/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/mvp6-mod0187-normal-ver-ftmpk8e2/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.SupplyChainService.Api -> /private/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/mvp6-mod0187-normal-ver-ftmpk8e2/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll
+
+Build succeeded.
+
+/private/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/mvp6-mod0187-normal-ver-ftmpk8e2/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:02:36.64

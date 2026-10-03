@@ -1,0 +1,787 @@
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://127.0.0.1:5201
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /private/tmp/mvp6-carrier-ui-ver-01/snapshot-v2/frontend/Diten.Web
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 552.2133ms - 502
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 565.7828ms - 502
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 1639.617ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 1639.9383ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 84.4967ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 84.803ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 167.9563ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 168.3207ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 727.3485ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 727.7759ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 43.2679ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 43.4455ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 4.0097ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 4.1073ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 3.2681ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 3.4229ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 460.0047ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 460.1159ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 68.774ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 68.9738ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 3479.4151ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 3481.667ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 1103.0557ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 1103.4413ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 1062.6973ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 1063.1445ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 9.7723ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 9.8987ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 4.3182ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 4.8349ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 70.3885ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 70.5249ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 1250.0693ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 1251.3501ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 4.101ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 4.2682ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 4.7384ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 4.8279ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 54.2111ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 54.368ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 17.5304ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 17.9627ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 4.2608ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 4.3422ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 55.6044ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 55.671ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[104]
+      HTTP request failed after 24.6944ms
+      System.Net.Http.HttpRequestException: Connection refused (127.0.0.1:5257)
+       ---> System.Net.Sockets.SocketException (61): Connection refused
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+         at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.DiagnosticsHandler.SendAsyncCore(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[104]
+      HTTP request failed after 36.4355ms
+      System.Net.Http.HttpRequestException: Connection refused (127.0.0.1:5257)
+       ---> System.Net.Sockets.SocketException (61): Connection refused
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+         at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.DiagnosticsHandler.SendAsyncCore(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+warn: Diten.Web.Services.Branding.BrandingGateway[0]
+      Failed to fetch tenant branding for 00000000-0000-0000-0000-000000000001; falling back to platform default.
+      System.Net.Http.HttpRequestException: Connection refused (127.0.0.1:5257)
+       ---> System.Net.Sockets.SocketException (61): Connection refused
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+         at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+         at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.InjectNewHttp11ConnectionAsync(QueueItem queueItem)
+         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+         at System.Net.Http.DiagnosticsHandler.SendAsyncCore(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+         at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+         at Diten.Web.Services.Branding.BrandingGateway.GetTenantBrandingAsync(Guid tenantId, CancellationToken ct) in /private/tmp/mvp6-carrier-ui-ver-01/snapshot-v2/frontend/Diten.Web/Services/Branding/BrandingGateway.cs:line 44
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 1037.7931ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 1038.0795ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 13.1122ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 13.2115ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 3.2324ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 3.3676ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 123.5367ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 123.5942ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 137.6414ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 137.8821ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 10.8388ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 11.002ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 9.5677ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 9.6715ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 149.1672ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 149.2915ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 528.0513ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 528.3409ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 72.9242ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 73.3262ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 62.2108ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 62.5253ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/auth/logout
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/auth/logout
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 205.5816ms - 204
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 205.6907ms - 204
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 18.7701ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 18.8347ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 8.1496ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 8.2949ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:5200/api/tenant-auth/login
+info: System.Net.Http.HttpClient.IAuthGateway.ClientHandler[101]
+      Received HTTP response headers after 873.1669ms - 200
+info: System.Net.Http.HttpClient.IAuthGateway.LogicalHandler[101]
+      End processing HTTP request after 873.5792ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 3.7511ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 3.8138ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 4.2478ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 4.2907ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 2.7312ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 2.7892ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 26.3313ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 26.3685ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 30.814ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 30.8898ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 120.4132ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 120.558ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 52.8245ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 53.0963ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 4.5022ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 4.5649ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 2.6185ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 2.6564ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 93.0878ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 93.1751ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 294.6301ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 294.7272ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 365.8432ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 365.9244ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 32.2551ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 32.558ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 2.9517ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 3.0117ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 62.7003ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 62.7585ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 20.6782ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 20.739ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/status
+info: System.Net.Http.HttpClient.ITenantStatusGateway.ClientHandler[101]
+      Received HTTP response headers after 14.4915ms - 200
+info: System.Net.Http.HttpClient.ITenantStatusGateway.LogicalHandler[101]
+      End processing HTTP request after 14.8781ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 3.3486ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 3.4572ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 3.9606ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 4.0132ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 51.3514ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 51.4012ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 107.6823ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 107.7439ms - 200
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 229.7591ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 229.9075ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 4.2028ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 4.2984ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 3.0848ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 3.1567ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 31.7644ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 31.8364ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 19.46ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 20.0115ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 5.144ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 5.2255ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 3.228ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 3.2958ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 33.8755ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 33.9474ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 11.4986ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 11.5837ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 4.4107ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 4.4898ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 2.7957ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 2.9202ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 35.5056ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 35.6301ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 9.1336ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 9.21ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 5.1556ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 5.2608ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 5.014ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 5.0926ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 35.266ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 35.3658ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 11.9575ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 12.0404ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 6.5647ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 6.6572ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 4.3419ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 4.5486ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 52.3242ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 52.4077ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 307.7292ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 307.815ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 10.5855ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 11.0359ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 5.0519ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 5.1284ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 147.802ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 147.9105ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 158.1231ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 158.2322ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 35.7932ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 35.9959ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5257/api/internal/tenants/00000000-0000-0000-0000-000000000001/branding
+info: System.Net.Http.HttpClient.IBrandingGateway.ClientHandler[101]
+      Received HTTP response headers after 2.0198ms - 200
+info: System.Net.Http.HttpClient.IBrandingGateway.LogicalHandler[101]
+      End processing HTTP request after 2.063ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/platform/navigation/menu
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 147.5995ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 147.6631ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:5200/api/personalization/views?*
+info: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response headers after 28.687ms - 200
+info: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 28.7897ms - 200

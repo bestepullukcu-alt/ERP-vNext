@@ -1,0 +1,60 @@
+      Start processing HTTP request POST http://127.0.0.1:5757/api/internal/module-catalog/register-manifest
+      Sending HTTP request POST http://127.0.0.1:5757/api/internal/module-catalog/register-manifest
+      Received HTTP response headers after 410.4183ms - 200
+      Module manifest self-registered with Platform. ModuleCode=legal-entity Attempt=1
+      Start processing HTTP request POST http://127.0.0.1:5757/api/internal/module-catalog/register-manifest
+      Sending HTTP request POST http://127.0.0.1:5757/api/internal/module-catalog/register-manifest
+      Received HTTP response headers after 583.4584ms - 200
+      Module manifest self-registered with Platform. ModuleCode=product-item-sku-master Attempt=1
+      Start processing HTTP request POST http://127.0.0.1:5757/api/internal/audit/append
+      Sending HTTP request POST http://127.0.0.1:5757/api/internal/audit/append
+      Received HTTP response headers after 75.2295ms - 202
+      Start processing HTTP request POST http://127.0.0.1:5757/api/internal/audit/append
+      Sending HTTP request POST http://127.0.0.1:5757/api/internal/audit/append
+      Received HTTP response headers after 8.0611ms - 202
+      Start processing HTTP request POST http://127.0.0.1:5757/api/internal/audit/append
+      Sending HTTP request POST http://127.0.0.1:5757/api/internal/audit/append
+      Received HTTP response headers after 5.9385ms - 202
+      Start processing HTTP request POST http://127.0.0.1:5757/api/internal/audit/append
+      Sending HTTP request POST http://127.0.0.1:5757/api/internal/audit/append
+      Received HTTP response headers after 5.796ms - 202
+      Start processing HTTP request POST http://127.0.0.1:5757/api/internal/audit/append
+      Sending HTTP request POST http://127.0.0.1:5757/api/internal/audit/append
+      Received HTTP response headers after 7.6232ms - 202
+      Start processing HTTP request POST http://127.0.0.1:5757/api/internal/audit/append
+      Sending HTTP request POST http://127.0.0.1:5757/api/internal/audit/append
+      Received HTTP response headers after 5.5009ms - 202
+[00:10:01 INF] Start processing HTTP request POST http://127.0.0.1:5757/api/internal/module-catalog/register-manifest
+[00:10:01 INF] Sending HTTP request POST http://127.0.0.1:5757/api/internal/module-catalog/register-manifest
+[00:10:01 INF] Received HTTP response headers after 137.1831ms - 200
+[00:10:01 INF] Module manifest self-registered with Platform. ModuleCode=carrier-management Attempt=1
+[00:10:01 INF] Start processing HTTP request POST http://127.0.0.1:5757/api/internal/module-catalog/register-manifest
+[00:10:01 INF] Sending HTTP request POST http://127.0.0.1:5757/api/internal/module-catalog/register-manifest
+[00:10:01 INF] Received HTTP response headers after 307.2897ms - 200
+[00:10:01 INF] Module manifest self-registered with Platform. ModuleCode=shipment-tracking-pod Attempt=1
+[00:10:01 INF] Start processing HTTP request POST http://127.0.0.1:5757/api/internal/module-catalog/register-manifest
+[00:10:01 INF] Sending HTTP request POST http://127.0.0.1:5757/api/internal/module-catalog/register-manifest
+[00:10:01 INF] Received HTTP response headers after 246.2779ms - 200
+[00:10:01 INF] Module manifest self-registered with Platform. ModuleCode=claims-management Attempt=1
+[00:14:57 INF] Received HTTP response headers after 8.0204ms - 200
+[00:14:57 INF] Received HTTP response headers after 4.5989ms - 200
+[00:14:57 INF] Received HTTP response headers after 3.0663ms - 200
+[00:14:57 INF] Received HTTP response headers after 2.6101ms - 200
+[00:14:57 INF] Received HTTP response headers after 2.7767ms - 200
+[00:14:57 INF] Received HTTP response headers after 2.5161ms - 200
+[00:14:57 INF] Received HTTP response headers after 2.994ms - 200
+[00:14:57 INF] Received HTTP response headers after 2.4851ms - 200
+[00:15:59 INF] Received HTTP response headers after 4.1979ms - 200
+[00:16:34 INF] Received HTTP response headers after 4.1912ms - 200
+[00:16:58 INF] Received HTTP response headers after 9.5731ms - 200
+[00:16:58 INF] Received HTTP response headers after 9.644ms - 200
+[00:17:13 INF] Received HTTP response headers after 4.7607ms - 200
+[00:19:33 INF] Received HTTP response headers after 6.6934ms - 200
+[00:21:10 INF] Received HTTP response headers after 3.7026ms - 200
+[00:21:10 INF] Received HTTP response headers after 2.5933ms - 200
+[00:21:14 INF] Received HTTP response headers after 1.8715ms - 200
+[00:23:44 INF] Received HTTP response headers after 5.6735ms - 200
+[00:23:44 INF] Received HTTP response headers after 8.6692ms - 403
+[00:24:20 INF] Received HTTP response headers after 10.989ms - 200
+[00:24:20 INF] Received HTTP response headers after 43.8004ms - 200
+[00:25:10 INF] Received HTTP response headers after 9.4079ms - 200

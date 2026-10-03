@@ -1,0 +1,20 @@
+# MOD-0186 Returns — service Program.cs registration (SPECIFICATION patch; integration owner applies; SR-D4, pack §33
+# ship rule D4 = A). NOT APPLIED.
+# Target file: services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs of the INTEGRATED target.
+# Preimage: take it from the integrated target (DCP-009 §21.2). The common checkout copy is an older baseline without the
+# Returns backend; the accepted source normal-source.tar.gz (edb759a0…5a21) has its own Program.cs (R14 composition) without
+# the registration foundation.
+#
+# Precondition (present in the A12 360 overlay 7b6a0d1a…314d, which carries the Supply Chain registration foundation:
+# IModuleManifestProvider, PlatformRegistrationOptions, ModuleRegistrationHostedService, the Shipment/Carrier providers and the
+# Api .csproj reference to Diten.BuildingBlocks.ModuleRegistration.Abstractions). If the target lacks the foundation, apply
+# DCP-009 §21.2 first, each line exactly once:
+#   builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));
+#   builder.Services.AddHostedService<ModuleRegistrationHostedService>();
+#
+# Returns line (ships WITH the Returns UI only — pack §33 ship rule, DCP-009 §21.4), next to the other SupplyChain providers:
+@@ builder.Services (module manifest providers) @@
++builder.Services.AddSingleton<IModuleManifestProvider, ReverseLogisticsManifestProvider>();
+#
+# using: Diten.SupplyChainService.Api.ModuleRegistration (already imported where the other providers are registered).
+# Guard F-06: the line must exist exactly once; ModuleRegistrationHostedService must resolve every provider.

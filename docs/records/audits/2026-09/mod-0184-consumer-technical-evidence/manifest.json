@@ -1,0 +1,65 @@
+{
+  "self_excluded": true,
+  "files": [
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/README.md",
+      "sha256": "bf1267ffb65b954b07b73ea3a6398f753b2e5a7c75ae144168055947d94d818d"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/carrier/README.md",
+      "sha256": "a42c337b5c1fb90a5732efffc2844bf34aed3e4b0dc678f6690493a30ee1a274"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/carrier/check_consumer.py",
+      "sha256": "7eec131cf04d54b8d10b77a845e921cfdd362142de62fec69fe103ff25431bf4"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/carrier/results.json",
+      "sha256": "2c0453649a247e7fbc11afe9df4e669fc9a75938ef5e5dab8816609b67dd3560"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/README.md",
+      "sha256": "09310325d75e5d30acfb6ac78b1aa6596a70b708ba04d8ba0dcf36efbe00c607"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/active_repository-matches.txt",
+      "sha256": "d7ad909b8da45969f1fadca659f60024e9a600801ed839d9cb0259e90d011ace"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/manifest.json",
+      "sha256": "69858199c1b8adf930c4687dec6f1b9c8a5ae510d263189a4d41cc9a673d5ffe"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/results.json",
+      "sha256": "08266336bb1828649f3b07ccd90835518457728bfc2b27395c6291f8aea396be"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/runtime-file-inventory.txt",
+      "sha256": "b310ef1bc1296e7c4b1ae86f7875f762ddc339db96f38dc92169954738fb4cfa"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/runtime-matches.txt",
+      "sha256": "ebfbe112bb6ad668388b7f52c591dd86e8d5a9e53a9b213a9989b1cb6725ecec"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/verify.py",
+      "sha256": "f0e7846f54a4ad64035600bfb1da8cf757f54dde4698be763c0d2797bc7deb82"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/mod0183/README.md",
+      "sha256": "296f3cfeb5ecbe785443343029768c01794b1c77c2b713e08c5a1bd42397676a"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/mod0183/compare.py",
+      "sha256": "89519c9e022cfe0b9463e91e082b26ffe5fc5714f6f82584652193a4eed0a789"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/mod0183/results.json",
+      "sha256": "bb86c17af70d8a155d16c5d163efe529436c0aea176771f94c88889c307c8f90"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/preservation.json",
+      "sha256": "579aa6e654734dbae686311d8e74391b925ee162ee8d937683b55bd974495ffe"
+    }
+  ]
+}

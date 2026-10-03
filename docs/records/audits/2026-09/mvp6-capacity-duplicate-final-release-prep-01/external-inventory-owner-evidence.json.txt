@@ -1,0 +1,21 @@
+{
+  "source": "/Users/natig/.codex/sessions/2026/09/21/rollout-2026-09-21T18-49-55-01a0ab32-c980-7dd0-8872-e597eb94e6f9_01a0c4a8-da42-79a3-bb44-b941b1eef8b0.jsonl",
+  "messages": [
+    {
+      "line": 4054,
+      "timestamp": "2026-09-22T08:41:09.797Z",
+      "messageId": "msg_01a0c846-aba2-7d90-a162-4f081689c6ca",
+      "role": "user",
+      "textSha256": "01740204191807a16ef598b0a37fba0ed01fb225816f3390dd6517f3db1ab73a",
+      "text": "SANDOP-CAPACITY için final sürümün 2.0.0 / wire v1 olarak\nhazırlanmasını onaylıyorum.\n\nRepo dışında bu sözleşmeyi kullanan uygulama, SDK veya entegrasyon\n[yoktur / şunlardır: ...].\nConsumer envanterinin sorumluluğu bendedir.\n\nBağımsız PASS almış R2'nin business semantics'i korunarak\nfinal YAML/annex, exact patch ve hash manifesti hazırlansın.\nBu karar canonical publication veya exact-hash consumer consent değildir.\nBunları final byte'lar doğrulandıktan sonra ayrıca karara bağlayacağım.\nRuntime, pack promotion, Program.cs, rollout veya git yetkisi vermiyorum.\n"
+    },
+    {
+      "line": 4099,
+      "timestamp": "2026-09-22T08:42:05.340Z",
+      "messageId": "msg_01a0c847-849c-70e0-8504-3da87ade7f7b",
+      "role": "user",
+      "textSha256": "83ca37a02596b5f9b5f3406707f7939470064e1e506bd1398e6726ac8037585b",
+      "text": "<send_user_message_question_reply>\n[{\"questionItemId\":\"[\\\"request_user_input_async\\\",\\\"call_YC63hMVtOvj32bjL5xAR4Rdv\\\",0]\",\"question\":\"SANDOP-CAPACITY sözleşmesini repo dışında kullanan uygulama, SDK veya entegrasyon var mı? Mesajınızdaki köşeli parantezli ifadede hangi seçeneği kastettiniz?\",\"answer\":\"Yoktur\"}]\n</send_user_message_question_reply>"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+Aşağıdaki üç ayrı kapsamı onaylıyorum.
+
+A. MOD-0190 transfer, composition ve izole HTTP/VER
+
+38-file transfer manifest:
+b55e7b2128df259604e4a318cc9194bfeff24610b1dba1790f333ef20d74a824
+
+Source archive:
+09bfb801490e3a7aefdb6925b66c0187062f4f3f52a4efb0f0b1e70aa0fd2bcd
+
+Integration baseline archive:
+edb759a07475184e11ae7ef94698f6300572b72aaeb2a39c7e2be13b74795a21
+
+Program.cs patch:
+bd972051be35971465b008d783afe9eabf529d90b3e12ccfe6369f2c9c12a074
+
+Program.cs baseline:
+11c586e04e12c7ecc9c543907414bf77a6c8fe3b23643ae5f42666c580c7b0f1
+
+Program.cs target:
+0f6bf84e1c7ddff79868d32a23099e8934a33e3ac80ccecbe8b16f5e0a6c5cc2
+
+Bu exact girdilerin ayrı kayıtlı integration checkout'a aktarılmasını,
+composition patch'inin tek integration owner tarafından uygulanmasını
+ve izole direct-service HTTP/JWT/restart DEV kanıtı ile sonraki
+bağımsız VER'i onaylıyorum. Farklı hedef içerik overwrite yetkisi değildir.
+
+B. MOD-0192 production persistence rework
+
+Yalnız CapacityRepository.cs, CapacityLeaseStore.cs ve ilgili onaylı
+CapacityPlans test yollarında X01 ve X07 production rework'ünü
+yetkilendiriyorum.
+
+X01 önerilen patch:
+7ac18cdd58fb2441a4c9bea0847f1e79b51893137e81d0263f1f0ebc55da25ce
+
+X07 başlangıç adayı:
+94f65a697acf533f4f1b3ea49e5d3c18e962426686873ec19961162f1ae50730
+
+X01 definite precommit failure ile uncertain commit'i ayıracaktır.
+X07 scoped evaluation, exact terminal event ve exact audit bağını;
+OccurredAt, causation ve payload eşitliğini controlling acceptance'a
+göre doğrulayacak, reconciliation read failure'da fail-closed kalacaktır.
+
+X07 başlangıç adayının eksik kısımları için addendum hazırlanmasını,
+ayrı diff/hash olarak kaydedilmesini ve bu sınırlı rework kapsamında
+uygulanmasını onaylıyorum. Fresh baseline doğrulaması, RED→GREEN,
+ilgili regresyon ve bağımsız VER zorunludur.
+
+Bu yetki test-only değildir; belirtilen production persistence
+dosyalarının izole checkout'ta değiştirilmesini açıkça kapsar.
+
+C. Duplicate-name contract adayı
+
+Mevcut exact-name uniqueness kuralını koruyarak
+createCapacityScenario için 409 CAPACITY\_SCENARIO\_NAME\_CONFLICT
+davranışının dar, versioned contract successor adayı olarak
+hazırlanmasını onaylıyorum.
+
+Deterministik kontrol ve unique-index yarışının aynı sonuca bağlanması
+adayda tanımlansın. Final sürüm, exact artifact consent'i, canonical
+yayın ve buna bağlı duplicate-name production uygulaması ayrı kapılardır.
+
+Ortak sınırlar:
+Gateway, shared permission, UI, live DEMAND/Workflow/optimizer,
+publisher, guard, migration, rollout, E5/G5 ve commit/push/stash yok.
+B ve C, Program.cs değişikliği yetkisi vermez.
+Bu kararlar ürün veya CT acceptance değildir.

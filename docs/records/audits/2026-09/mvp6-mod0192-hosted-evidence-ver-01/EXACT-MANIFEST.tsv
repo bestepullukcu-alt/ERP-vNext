@@ -1,0 +1,14 @@
+kind	path	sha256	disposition
+writer-seal	docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/SHA256SUMS	f1667f45fea1c26355431be441717d8534ec16a6ce16e80904a8da1bc9404deb	sealed writer package index
+writer-source-manifest	docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/COMBINED-SOURCE-MANIFEST.tsv	edfb66423a9763634b895eba19b1a1dd063cc2e4cc9b1212fdbd79f4426400ee	379+43 exact source binding
+writer-binary-manifest	docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/BINARY-MANIFEST.tsv	7efb753f785e2570a3ec187faf49112a26c1bf8297820597e721efcd48ccfb4e	52-file binary binding
+writer-rollforward-trx	docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/evidence/capacity-hosted-dev-rollforward.trx	975b6b7ebe911ce62f6020d99d40408d13e79053eea74ed0ea93b410d7b1141a	writer 36/36 run
+writer-http	docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/evidence/http-records.json	c4caa8b3747be3fa2979ec82fac9f04bbed8b0a0b46db86df26ace3b233410ca	21 raw HTTP records
+writer-mongo	docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/evidence/mongo-transcript.json	8fdd0c26be52d546e32e9846a34604e274f6b252c32fd6bcbd3a9b04de529504	raw DB transcript
+writer-process	docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/evidence/process-transcript.json	024728c82570b0337520e97584b2509778509076959afa461ec229ac2bfef48f	five process chain
+candidate-program	/private/tmp/mvp6-mod0192-hosted-evidence-01-20260923/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs	50c48a2b895804162f36740703bca20d3f0c3f96f2511133e843d75fcf7830f0	read-only exact Program target
+candidate-atomicity-test	/private/tmp/mvp6-mod0192-hosted-evidence-01-20260923/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs	2c133ac1b6b431db074b0054b0337bbc3957fce5869c7aca9291454a53681c43	authorized test-only target
+verifier-copy-api-binary	/private/tmp/mvp6-mod0192-hosted-evidence-ver-01-20260923-a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll	f494174e83bafed8ea4191dac4a930331afa7e73b7ad7f2ddd12b41430c9c077	fresh independent build
+verifier-rerun-trx	docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/ver-x01-x07-rerun.trx	9218b8ce3848f8d9c8ca3a26a36ceb49febdb433a1e4662a3dad64ee3e950b6a	8/8 focused rerun
+verifier-results	docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/verification-results.json	5d209cfb67e32287383d529295250efac7cf36ab3f7bd40135b8e64378c669f8	independent machine-readable verdict
+verifier-harness-diff	docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/verifier-harness-isolation.patch	932ee55df46f6eb15a74d72d01a25d00119c61121cca42277356c65beda1def1	test-only port/RS/DB isolation

@@ -1,0 +1,29 @@
+--- HEAD:services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/MongoIntegrationHarness.cs
++++ WORKTREE:services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/MongoIntegrationHarness.cs
+@@ -8,7 +8,7 @@
+ 
+ namespace Diten.Platform.Application.Tests.Persistence;
+ 
+-// Talks to a REAL MongoDB (localhost:27017 in dev), not a fake. Repository-level defects such as the
++// Talks to a REAL MongoDB supplied by DITEN_PLATFORM_TEST_MONGO_URI, not a fake. Repository-level defects such as the
+ // "cannot sort with keys that are parallel arrays" failure that killed the MOD-0023 transition gate are
+ // invisible to fake repositories — the Mongo query never runs, so the whole suite stays green while the
+ // feature is dead in production. Tests built on this harness deliberately have no skip-if-unavailable
+@@ -31,7 +31,7 @@
+ // that matters: it cannot accumulate.
+ public sealed class MongoIntegrationHarness : IAsyncDisposable
+ {
+-    public const string ConnectionString = "mongodb://localhost:27017";
++    public const string ConnectionStringEnvironmentVariable = PlatformMongoTestConnection.EnvironmentVariableName;
+ 
+     /// <summary>The one database every tenant-isolated test shares.</summary>
+     public const string SharedDatabaseName = "diten_platform_itest";
+@@ -116,7 +116,7 @@
+     {
+         RegisterProductionSerializers();
+ 
+-        var settings = MongoClientSettings.FromConnectionString(ConnectionString);
++        var settings = MongoClientSettings.FromConnectionString(PlatformMongoTestConnection.RequireConnectionString());
+         settings.GuidRepresentation = GuidRepresentation.Standard;
+         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
+         var client = new MongoClient(settings);

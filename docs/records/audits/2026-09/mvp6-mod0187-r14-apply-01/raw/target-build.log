@@ -1,0 +1,13 @@
+  Diten.SupplyChainService.Domain -> /private/tmp/mvp6-mod0187-r14-apply-01-Q7vmHi/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/bin/Release/net8.0/Diten.SupplyChainService.Domain.dll
+  Diten.SupplyChainService.Application -> /private/tmp/mvp6-mod0187-r14-apply-01-Q7vmHi/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/bin/Release/net8.0/Diten.SupplyChainService.Application.dll
+  Diten.BuildingBlocks.Eventing -> /private/tmp/mvp6-mod0187-r14-apply-01-Q7vmHi/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Release/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.SupplyChainService.Persistence -> /private/tmp/mvp6-mod0187-r14-apply-01-Q7vmHi/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Release/net8.0/Diten.SupplyChainService.Persistence.dll
+  Diten.SupplyChainService.Infrastructure -> /private/tmp/mvp6-mod0187-r14-apply-01-Q7vmHi/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/bin/Release/net8.0/Diten.SupplyChainService.Infrastructure.dll
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-mod0187-r14-apply-01-Q7vmHi/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.SupplyChainService.Api -> /private/tmp/mvp6-mod0187-r14-apply-01-Q7vmHi/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0/Diten.SupplyChainService.Api.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:02:41.90

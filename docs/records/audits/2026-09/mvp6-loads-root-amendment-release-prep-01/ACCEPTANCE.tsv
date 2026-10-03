@@ -1,0 +1,15 @@
+id	requirement	result	evidence	boundary
+RP01	Controlling candidate YAML/annex/patch hashes match	PASS	raw/validation-results.json#/hashes	Candidate-02 only
+RP02	Independent candidate-02 re-VER PASS is exact-hash bound	PASS	../mvp6-loads-root-amendment-independent-rever-01/SOP-22.md:6-17; ARTIFACTS.sha256 SHA256 6b0990b9...	Technical unpublished candidate scope
+RP03	Final proposal changes candidate only in version/status/annex pointers and descriptions	PASS	raw/validation-results.json#/candidateToFinal; candidate02-to-final-proposed.patch	No business semantic delta
+RP04	Baseline publication patch applies and reproduces exact bytes	PASS	raw/validation-results.json#/apply	Disposable copy only
+RP05	Full OpenAPI 3.1 packaged meta-schema validation	PASS	raw/validation-results.json#/validator/metaSchemaErrors	Fresh against final-proposed YAML
+RP06	OpenAPIV31SpecValidator semantic validation	PASS	raw/validation-results.json#/validator/semanticErrors	Fresh against final-proposed YAML
+RP07	Local refs and schema-bound examples validate	PASS	raw/validation-results.json#/validator	298 refs; 236 examples
+RP08	Missing/null/valid/nil accepted; malformed UUID rejected	PASS	raw/validation-results.json#/fixtures	Schema/model only
+RP09	Final annex name and normative version agree with YAML	PASS	raw/validation-results.json#/annexChecks	3.1.0; no rc.1 token remains
+RP10	Strict-consumer compatibility is not presumed	OPEN	CONSUMER-MATRIX.tsv	Owner inventory and exact-hash consent required
+RP11	Final version selected	OPEN	RELEASE-REVIEW.md	3.1.0 recommended; owner decision absent
+RP12	Canonical publication authorized	HELD	OWNER-DECISION-PACK.md	Separate exact publication decision absent
+RP13	Runtime producer/UI uptake authorized and verified	HELD	CONSUMER-MATRIX.tsv	Separate post-publication gate
+

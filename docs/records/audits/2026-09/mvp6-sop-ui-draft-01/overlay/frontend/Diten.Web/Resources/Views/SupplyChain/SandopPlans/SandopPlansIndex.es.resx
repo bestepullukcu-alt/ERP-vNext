@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SandopPlansTitle" xml:space="preserve"><value>Planes S&amp;OP</value></data>
+  <data name="PlanId" xml:space="preserve"><value>ID del plan</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Nombre del plan</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>Inicio del horizonte</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>Fin del horizonte</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>ID del plan de demanda</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>Versión del plan de demanda</value></data>
+  <data name="Status" xml:space="preserve"><value>Estado del plan</value></data>
+  <data name="Status.Draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="Status.InReview" xml:space="preserve"><value>En revisión</value></data>
+  <data name="Status.Approved" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="Status.Rejected" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="Status.Archived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>No indicado</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Referencia de soporte</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Copiado al portapapeles.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>La solicitud anterior todavía se está procesando.</value></data>
+  <data name="RequiredMissing" xml:space="preserve"><value>Complete todos los campos obligatorios.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>La solicitud no es válida. Revise los datos e inténtelo de nuevo.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>No se pudo rastrear la solicitud. Recargue la página e inténtelo de nuevo.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Su sesión ha finalizado. Inicie sesión de nuevo.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>No tiene permiso para esta acción.</value></data>
+  <data name="ErrUnknownSandopPlan" xml:space="preserve"><value>Este plan S&amp;OP no existe o no está disponible para usted.</value></data>
+  <data name="ErrSandopPlanAlreadyExists" xml:space="preserve"><value>Ya existe un plan S&amp;OP para este horizonte y esta versión del plan de demanda.</value></data>
+  <data name="ErrSandopPlanStateConflict" xml:space="preserve"><value>El estado del plan ya no permite capturar una instantánea. El plan se ha recargado.</value></data>
+  <data name="ErrSandopSignOffStateConflict" xml:space="preserve"><value>El estado del plan ya no permite registrar aprobaciones. El plan se ha recargado.</value></data>
+  <data name="ErrSignOffAlreadyRecorded" xml:space="preserve"><value>Ya hay una decisión registrada para este rol y esta instantánea.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Esta solicitud ya se usó con otros valores. Cambie los datos para enviar una nueva solicitud.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>La referencia del plan de demanda es desconocida o no está publicada.</value></data>
+  <data name="ErrInvalidSnapshotReference" xml:space="preserve"><value>La instantánea seleccionada no pertenece a este plan.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>El servicio no está disponible temporalmente. Inténtelo de nuevo; se enviará la misma solicitud.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>No se pudo confirmar el resultado. Inténtelo de nuevo; se enviará la misma solicitud y nada se registrará dos veces.</value></data>
+  <data name="SandopPlansPageDescription" xml:space="preserve"><value>Cree un plan S&amp;OP o abra un plan existente por su ID.</value></data>
+  <data name="NoPlanListNote" xml:space="preserve"><value>Los planes no se listan aquí. Guarde el ID que se muestra tras la creación para abrir el plan más tarde.</value></data>
+  <data name="CreatePlan" xml:space="preserve"><value>Crear plan</value></data>
+  <data name="OpenPlan" xml:space="preserve"><value>Abrir plan</value></data>
+  <data name="OpenPlanTitle" xml:space="preserve"><value>Abrir un plan por ID</value></data>
+  <data name="PlanIdHelp" xml:space="preserve"><value>Introduzca el UUID del plan tal como se mostró tras la creación.</value></data>
+  <data name="PlanIdInvalid" xml:space="preserve"><value>Introduzca un ID de plan válido (UUID).</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nuevo plan S&amp;OP</value></data>
+  <data name="HorizonOrderInvalid" xml:space="preserve"><value>El fin del horizonte debe ser igual o posterior al inicio.</value></data>
+  <data name="DemandReferenceHelp" xml:space="preserve"><value>Introduzca la referencia del plan DEMAND tal como está publicada.</value></data>
+  <data name="RequiredFilled" xml:space="preserve"><value>Campos obligatorios completados</value></data>
+  <data name="PlanCreated" xml:space="preserve"><value>Plan creado.</value></data>
+</root>

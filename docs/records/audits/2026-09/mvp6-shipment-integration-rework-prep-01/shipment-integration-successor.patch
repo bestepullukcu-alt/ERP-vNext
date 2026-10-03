@@ -1,0 +1,73 @@
+--- a/gateway/Diten.ApiGateway/ocelot.json
++++ b/gateway/Diten.ApiGateway/ocelot.json
+@@ -67,7 +67,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5065
++          "Port": 5061
+         }
+       ],
+       "UpstreamPathTemplate": "/api/shipment-bundle/carriers",
+@@ -84,7 +84,7 @@
+       "DownstreamHostAndPorts": [
+         {
+           "Host": "localhost",
+-          "Port": 5065
++          "Port": 5061
+         }
+       ],
+       "UpstreamPathTemplate": "/api/shipment-bundle/carriers/{carrierId}/status",
+--- a/gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs
++++ b/gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs
+@@ -11,9 +11,10 @@
+ public sealed class OcelotConfigurationTests
+ {
+     // Known downstream services as of this test's authoring: auth(5056), platform(5057), dev-enablement(5058),
+-    // mdm(5059), hcm(5060), pvg(5011), crm(5061), ppm(5062), esbp/delivery-execution/uploads(5004). Adding a new backend is a deliberate, reviewed change to
++    // mdm(5059), hcm(5060), pvg(5011), supply-chain(5061), ppm(5062), human-capital(5063),
++    // talent-ecosystem(5064), crm(5065), esbp/delivery-execution/uploads(5004). Adding a new backend is a deliberate, reviewed change to
+     // this set — an unrecognized port is far more likely a typo than a new service.
+-    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060, 5061, 5062 };
++    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060, 5061, 5062, 5063, 5064, 5065 };
+ 
+     private static readonly HashSet<string> PpmMethods = new(StringComparer.Ordinal)
+     {
+@@ -118,6 +119,23 @@
+             violations.Count == 0,
+             "Unrecognized downstream port(s) — likely a typo, unless a new service was deliberately added " +
+             "(update KnownDownstreamPorts if so):\n" + string.Join("\n", violations));
++    }
++
++    [Fact]
++    public void CrmAndSupplyChainRoutes_MapOnlyToTheirOwnedServicePorts()
++    {
++        var config = LoadConfiguration();
++        var crmRoutes = config.Routes
++            .Where(route => route.UpstreamPathTemplate.StartsWith("/api/crm/", StringComparison.Ordinal))
++            .ToArray();
++        var supplyChainRoutes = config.Routes
++            .Where(route => route.UpstreamPathTemplate.StartsWith("/api/shipment-bundle/", StringComparison.Ordinal))
++            .ToArray();
++
++        Assert.Equal(35, crmRoutes.Length);
++        Assert.Equal(6, supplyChainRoutes.Length);
++        Assert.All(crmRoutes, route => AssertRoutePort(route, 5065));
++        Assert.All(supplyChainRoutes, route => AssertRoutePort(route, 5061));
+     }
+ 
+     [Fact]
+@@ -193,6 +211,13 @@
+         Assert.Equal(5062, route.DownstreamHostAndPorts[0].Port);
+         Assert.True(PpmMethods.SetEquals(route.UpstreamHttpMethod),
+             $"Unexpected PPM methods for {template}: {string.Join(",", route.UpstreamHttpMethod)}");
++    }
++
++    private static void AssertRoutePort(FileRoute route, int expectedPort)
++    {
++        Assert.Single(route.DownstreamHostAndPorts);
++        Assert.Equal("localhost", route.DownstreamHostAndPorts[0].Host);
++        Assert.Equal(expectedPort, route.DownstreamHostAndPorts[0].Port);
+     }
+ 
+     public static IEnumerable<object[]> CriticalRoutes()

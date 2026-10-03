@@ -1,0 +1,9 @@
+path	sha256	role
+docs/analysis/contracts/shipment-bundle.openapi.yaml	5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c	canonical_yaml_preimage
+docs/analysis/contracts/loads-semantics-v2.0.0.md	a2187c934cf9176cae4cb8b9c70dfd1298154e5124cdc197d3029103636c2be1	canonical_annex_preimage
+docs/records/audits/2026-09/mvp6-loads-root-acquisition-amendment-candidate-01/shipment-bundle-v3.1.0-rc.1.openapi.yaml	aeb354e8cc5d06f36bc0ee0e4e43b28a8701a2c3bec44200d47cec9095dfc744	candidate01_yaml
+docs/records/audits/2026-09/mvp6-loads-root-acquisition-amendment-candidate-01/loads-semantics-v3.1.0-rc.1.md	620038c8d53af260ef03238db9dddebe74fd368ccbed6e04b47d032a44a15ac1	candidate01_annex
+docs/records/audits/2026-09/mvp6-loads-root-acquisition-amendment-candidate-01/amendment.patch	6a87af9fb006a2583b0f734fe7a374ebdd383a15459c4bd76e0d7a58c2ac568a	candidate01_patch
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/SOP-22.md	665650b30aa1c8c06271b9f7fd140f63e3d011c534fda995d8820480126ef88a	independent_rework_verdict
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/FINDINGS.tsv	b44861a1b1c709bd72556c978a73a25d88eb6a9c90fb14f7385d464792187574	single_controlling_finding
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/raw/raw-results.json	8255831b4510abdcc60a29ebc3d860df7a37e2d9f77305a1da00df180f82aa9c	prior_full_oas_result

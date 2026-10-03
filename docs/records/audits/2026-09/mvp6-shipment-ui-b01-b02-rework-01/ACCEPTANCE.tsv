@@ -1,0 +1,13 @@
+id	result	evidence
+B01-RED	PASS	evidence/red/red.trx: baseline fails Index_UsesExplicitNestedPartialPaths
+B01-GREEN	PASS	evidence/green/TestResults/green.trx and evidence/final-tests/shipment-ui-final.trx
+B01-RUNTIME	PASS	evidence/runtime/browser-observations.json: list 200 and filter surface
+B02-RED	PASS	evidence/red/red.trx: baseline fails MutationsUseOnlyValidatedAuthoritativeRoot
+B02-GREEN	PASS	evidence/green/TestResults/green.trx and evidence/final-tests/shipment-ui-final.trx
+B02-TRANSITION	PASS	evidence/runtime/browser-observations.json and persisted-after-actions.txt
+B02-POD	PASS	evidence/runtime/browser-observations.json and persisted-after-actions.txt
+B02-REPLAY	PASS	evidence/runtime/replay.status; replay.headers; replay.body
+B02-CONFLICT	PASS	evidence/runtime/conflict.status; conflict.headers; conflict.body
+B02-ZERO-WRITE	PASS	evidence/runtime/counts-before-replay.json; counts-after-replay.json
+B02-RESTART	PASS	evidence/runtime/browser-observations.json
+PNG	OPEN	evidence/runtime/browser-observations.json

@@ -1,0 +1,25 @@
+  Determining projects to restore...
+CSSM_ModuleLoad(): One or more parameters passed to a function were not valid.
+  Restored /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Domain/Diten.CrmService.Domain.csproj (in 1.62 sec).
+  Restored /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Persistence/Diten.CrmService.Persistence.csproj (in 4.92 sec).
+  Restored /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Application/Diten.CrmService.Application.csproj (in 4.91 sec).
+  Restored /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Infrastructure/Diten.CrmService.Infrastructure.csproj (in 4.9 sec).
+  Restored /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Api/Diten.CrmService.Api.csproj (in 4.92 sec).
+  1 of 6 projects are up-to-date for restore.
+  Diten.CrmService.Domain -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Domain/bin/Release/net8.0/Diten.CrmService.Domain.dll
+/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Application/Features/Territory/AccountAssignments/Handlers/AccountTerritoryAssignmentHandlers.cs(155,34): warning CS8602: Dereference of a possibly null reference. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Application/Diten.CrmService.Application.csproj]
+  Diten.CrmService.Application -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Application/bin/Release/net8.0/Diten.CrmService.Application.dll
+  Diten.CrmService.Infrastructure -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Infrastructure/bin/Release/net8.0/Diten.CrmService.Infrastructure.dll
+/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Persistence/Repositories/AccountTerritoryAssignmentRepository.cs(23,12): warning CS8619: Nullability of reference types in value of type 'Task<AccountTerritoryAssignment>' doesn't match target type 'Task<AccountTerritoryAssignment?>'. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Persistence/Diten.CrmService.Persistence.csproj]
+  Diten.CrmService.Persistence -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Persistence/bin/Release/net8.0/Diten.CrmService.Persistence.dll
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.CrmService.Api -> /private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Api/bin/Release/net8.0/Diten.CrmService.Api.dll
+
+Build succeeded.
+
+/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Application/Features/Territory/AccountAssignments/Handlers/AccountTerritoryAssignmentHandlers.cs(155,34): warning CS8602: Dereference of a possibly null reference. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Application/Diten.CrmService.Application.csproj]
+/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Persistence/Repositories/AccountTerritoryAssignmentRepository.cs(23,12): warning CS8619: Nullability of reference types in value of type 'Task<AccountTerritoryAssignment>' doesn't match target type 'Task<AccountTerritoryAssignment?>'. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Persistence/Diten.CrmService.Persistence.csproj]
+    2 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:03:17.19

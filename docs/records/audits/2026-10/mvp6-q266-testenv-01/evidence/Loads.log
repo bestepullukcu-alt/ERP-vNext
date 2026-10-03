@@ -1,0 +1,8 @@
+Test run for /Users/natig/mvp6-env/q266-20261003-1247/src/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+Results File: /Users/natig/mvp6-env/q266-20261003-1247/results/Loads.trx
+
+Passed!  - Failed:     0, Passed:    33, Skipped:     0, Total:    33, Duration: 48 s - Diten.SupplyChainService.Tests.dll (net8.0)

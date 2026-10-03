@@ -1,0 +1,69 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  TenantArchitecture.ArchitectureTests -> /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll
+Test run for /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:02.41]     TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew [FAIL]
+[xUnit.net 00:00:02.41]     TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun [FAIL]
+  Failed TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew [2 s]
+  Error Message:
+   a JWT validator wrote its own ClockSkew instead of using JwtValidationDefaults.ClockSkew — that is BL-296 coming back: the same token judged differently by two services, 30 seconds wide and invisible from the symptom. Use the shared constant; if the value itself is wrong, change it in services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtValidationDefaults.cs so every service moves together:
+services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs:line 76
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun [826 ms]
+  Error Message:
+   a Mongo test named its database with a fresh Guid — share one database and isolate by TenantId, or add the file to KnownPerRunDatabase with a reason:
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/MongoTestDatabaseGuardTests.cs:line 126
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:03.65]     TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew [FAIL]
+  Failed TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew [1 s]
+  Error Message:
+   this file validates token lifetime but never names JwtValidationDefaults.ClockSkew. With no ClockSkew set, Microsoft.IdentityModel applies its own default of FIVE MINUTES — silently looser than every other validator in this system:
+services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs:line 93
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.57]     TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [FAIL]
+  Failed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [2 s]
+  Error Message:
+   code points into docs/ outside vendor · records · roadmap · guides · reference. Each of these fails the day it runs, not the day the docs moved:
+docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/verify_release_prep.py:58 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/verify_release_prep.py:59 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/verify_release_prep.py:75 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/verify_candidate.py:58 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/verify_candidate.py:59 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/verify_candidate.py:71 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/verify_rever.py:28 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/verify_rever.py:29 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/verify_rever.py:60 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/raw/results.json:4 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/raw/results.json:10 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/raw/raw-results.json:5 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/raw/raw-results.json:11 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/raw/verifier.stdout.json:5 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/raw/verifier.stdout.json:11 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/raw/validation-results.json:5 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/raw/validation-results.json:11 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/raw/validator.stdout.json:5 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/raw/validator.stdout.json:11 → docs/analysis — bkz. docs-organization.md §4
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.VerifyRoot(String root, Boolean syntheticFixture) in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs:line 139
+   at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs:line 90
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+Results File: /private/tmp/mvp6-q25-loadspub.4mTLMX/trx/BASELINE-ARCHITECTURE-FULL-attempt1.trx
+
+Failed!  - Failed:     4, Passed:    52, Skipped:     0, Total:    56, Duration: 5 s - TenantArchitecture.ArchitectureTests.dll (net8.0)

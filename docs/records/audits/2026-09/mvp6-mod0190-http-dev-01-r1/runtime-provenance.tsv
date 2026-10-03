@@ -1,0 +1,10 @@
+item	value
+worktree	/private/tmp/mvp6-mod0190-http-integration-01
+head	4a8d4d4b339528a88e6220fb8402e5a2c771136c
+program-target-sha256	0f6bf84e1c7ddff79868d32a23099e8934a33e3ac80ccecbe8b16f5e0a6c5cc2
+api-binary-sha256	455876aadc1b9c7d27b78f7931fd75fb120138c019b84bb8150eadf87f37e7ef
+api-endpoint	http://127.0.0.1:57690
+api-content-root	/private/tmp/mvp6-mod0190-http-integration-01
+mongo-db	DitenSupplyChain_Mod0190_Test
+mongo-port	57590
+api-session-id	49682

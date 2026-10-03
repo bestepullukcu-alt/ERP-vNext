@@ -1,0 +1,1 @@
+{"phase":"a08","summary":{"login-actor-a":"info","login-actor-b":"info","A08-stale-transition":"PASS"},"db":["a08-actor-a-commit:PASS","a08-actor-b-stale-zero-write:PASS"],"png":1,"consoleErrors":1}

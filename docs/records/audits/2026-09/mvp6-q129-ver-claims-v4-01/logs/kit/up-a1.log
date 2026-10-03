@@ -1,0 +1,49 @@
+Sun 27 Sep 2026 16:27:50 +03
+== K01: k01_source.py (HEAD archive + overlays)
+K01 PASS: head=4a8d4d4b339528a88e6220fb8402e5a2c771136c overlays=6 tree_manifest_sha256=05084467f901eef1015e8e36e177c7539f0a1716f160938305e9321f97bb24f5
+== K03: k03_ports.py slot 8
+K03 PASS: gateway=5800 web=5801 auth=5856 platform=5857 mdm=5859 supplychain=5861 sink=5899 mongo=38994
+== K02: k02_runtime.sh
+K02 PASS: SDK 8.0.417, runtime 8.0.23, arm64
+== K06: build auth
+K06 build PASS: auth 365548e76a0fe07431f0def2b15baf5b8cda79c19f6453904b20ba952ded9876
+== K06: build platform
+K06 build PASS: platform c4e30a935debe6bc297ebb340b5182d25ce5be713810b82fe3a7ec796c6a2620
+== K06: build mdm
+K06 build PASS: mdm fa665016672fe882cfa7a2f3fcc98dcb17264525649a25e5c178746e9550b7f3
+== K06: build supplychain
+K06 build PASS: supplychain 98c2f49370ca4f42964f3218f5eed30dffc3d31864b0e04d199f3acb9eb8dc6e
+== K06: build gateway
+K06 build PASS: gateway c83a7af641232726508de9f9630cc5f2ac5ec344aa161b092aaa5ba31ed4b0f9
+== K06: build web
+K06 build PASS: web 4c08cb1563c69a591dabb1e29f871e76a68d2a6a11f49143cee232998c37c7b1
+== K04b: k04b_gateway_routes.py
+K04b PASS: 277 downstream entries; mapped=96 sink=181; runtime ocelot e9f4db6674b5bf9fc2279e2bc59f03caba37a285ded5b332ebb556c5fa2151be
+== K04: k04_config.py shared (issuer/audience; no secret)
+K04 shared: issuer/audience pinned to Auth's; rotated secret groups ['auth-platform', 'jwt', 'mfa', 'platform-mdm-active', 'svcid'] are placeholders resolved only inside the lane supervisor
+== K04: k04_config.py render (placeholders only)
+K04 render: 6 env files written (0600; secrets as placeholders only)
+== K04: k04_config.py check (incl. D2 pairing, D4 no literal secret)
+K04 check PASS: 6 services resolved; no 27017; DB-010 suffix ClaimsQ129Ver01
+== K05: k05_mongo.sh (kit file, unmodified)
+K05 PASS: rsClaimsQ129Ver01 PRIMARY on 127.0.0.1:38994 (pid 55032)
+== K06: launch auth via supervisor
+K06 launch: {"ok": true, "pid": 55111, "port": 5856, "health": "200", "runtime": "Microsoft.NETCore.App/8.0.23", "listen": ["127.0.0.1:5856"]}
+== K06: launch platform via supervisor
+K06 launch: {"ok": true, "pid": 55184, "port": 5857, "health": "200", "runtime": "Microsoft.NETCore.App/8.0.23", "listen": ["127.0.0.1:5857"]}
+== K06: launch mdm via supervisor
+K06 launch: {"ok": true, "pid": 55299, "port": 5859, "health": "400", "runtime": "Microsoft.NETCore.App/8.0.23", "listen": ["127.0.0.1:5859"]}
+== K06: launch supplychain via supervisor
+K06 launch: {"ok": true, "pid": 55354, "port": 5861, "health": "200", "runtime": "Microsoft.NETCore.App/8.0.23", "listen": ["127.0.0.1:5861"]}
+== K06: launch gateway via supervisor
+K06 launch: {"ok": true, "pid": 55420, "port": 5800, "health": "200", "runtime": "Microsoft.NETCore.App/8.0.23", "listen": ["127.0.0.1:5800"]}
+== K06: launch web via supervisor
+K06 launch: {"ok": true, "pid": 55479, "port": 5801, "health": "200", "runtime": "Microsoft.NETCore.App/8.0.23", "listen": ["127.0.0.1:5801"]}
+== K06: netcheck after start
+K06 netcheck PASS: no kit process connected to 27017 (netcheck-a1.tsv)
+== K07pre: tenant_fixture.py via supervisor harness (lane Platform DB tenant records; no secret)
+{"ok": true, "rc": 0, "log": "run-harness-tenant_fixture-a1.log"}
+== K07: k07_identity.py rotate (supervisor task k07; actor passwords only)
+{"ok": true, "rc": 0, "log": "run-k07-a1.log"}
+UP: lane running. Do the lane work (harness via k00_ctl.py run harness), K10 snapshots, K09 binding, then: run-kit.sh down
+UP-EXIT 0

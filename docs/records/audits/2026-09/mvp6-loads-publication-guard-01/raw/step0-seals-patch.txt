@@ -1,0 +1,14 @@
+## 8 seal inputs (ANALYSIS.md §3)
+mvp6-loads-root-amendment-independent-ver-01/verify_candidate.py: OK
+mvp6-loads-root-amendment-independent-ver-01/raw/raw-results.json: OK
+mvp6-loads-root-amendment-independent-ver-01/raw/verifier.stdout.json: OK
+mvp6-loads-root-amendment-independent-rever-01/verify_rever.py: OK
+mvp6-loads-root-amendment-independent-rever-01/raw/results.json: OK
+mvp6-loads-root-amendment-release-prep-01/verify_release_prep.py: OK
+mvp6-loads-root-amendment-release-prep-01/raw/validation-results.json: OK
+mvp6-loads-root-amendment-release-prep-01/raw/validator.stdout.json: OK
+## patch headers
+--- a/docs/analysis/contracts/shipment-bundle.openapi.yaml
++++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml
+--- /dev/null
++++ b/docs/analysis/contracts/loads-semantics-v3.1.0.md

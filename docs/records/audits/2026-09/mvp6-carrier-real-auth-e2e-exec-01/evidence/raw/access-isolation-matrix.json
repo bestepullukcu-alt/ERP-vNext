@@ -1,0 +1,94 @@
+{
+  "generatedAt": "2026-09-24",
+  "tokenPersistence": false,
+  "janeReadOnly": {
+    "login": {
+      "http": 200,
+      "accessTokenIssued": true,
+      "refreshTokenIssued": true
+    },
+    "list": {
+      "http": 200,
+      "body": {
+        "items": [],
+        "total": 0,
+        "contractVersion": "v1"
+      }
+    },
+    "create": {
+      "http": 403,
+      "body": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Required authorization context or permission is missing.",
+          "correlationId": "62000000-0000-0000-0000-000000000002"
+        },
+        "contractVersion": "v1"
+      }
+    },
+    "status": {
+      "http": 403,
+      "body": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Required authorization context or permission is missing.",
+          "correlationId": "62000000-0000-0000-0000-000000000003"
+        },
+        "contractVersion": "v1"
+      }
+    }
+  },
+  "legalEntityIsolation": {
+    "signedLe1RequestLe2": {
+      "http": 404,
+      "body": {
+        "error": {
+          "code": "CARRIER_NOT_FOUND",
+          "message": "Carrier not found.",
+          "correlationId": "62000000-0000-0000-0000-000000000004"
+        },
+        "contractVersion": "v1"
+      }
+    }
+  },
+  "tenantIsolation": {
+    "tenant97OwnScope": {
+      "http": 200,
+      "body": {
+        "items": [],
+        "total": 0,
+        "contractVersion": "v1"
+      }
+    },
+    "tenant97RequestTenant1": {
+      "http": 400,
+      "body": {
+        "title": "Tenant mismatch",
+        "status": 400,
+        "detail": "The authenticated tenant and the request's other tenant signals name different tenants. 'X-Tenant-Id' and the request host must match the token's tenant_id claim.",
+        "traceId": "62000000-0000-0000-0000-000000000006",
+        "conflictingSignals": [
+          "header"
+        ]
+      }
+    }
+  },
+  "missingLegalEntity": {
+    "login": {
+      "http": 200,
+      "accessTokenIssued": true,
+      "signedLegalEntityClaimPresent": false
+    },
+    "consumer": {
+      "http": 403,
+      "body": {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "Required authorization context or permission is missing.",
+          "correlationId": "62000000-0000-0000-0000-000000000007"
+        },
+        "contractVersion": "v1"
+      }
+    }
+  }
+}

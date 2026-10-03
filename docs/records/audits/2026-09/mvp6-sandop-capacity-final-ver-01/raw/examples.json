@@ -1,0 +1,590 @@
+[
+  {
+    "id": "createSandopPlan",
+    "status": "201",
+    "name": "example",
+    "valueSha256": "93802f3ae857bcde57a01cb71684a7ba9b03bdd3b3081754750e65d7cd730df5"
+  },
+  {
+    "id": "createSandopPlan",
+    "status": "409",
+    "name": "existingBusinessConflict",
+    "valueSha256": "7dc00ea5d17737b55cb7471495ead4a268314e226d798dda4f30cf03e7bd028e"
+  },
+  {
+    "id": "createSandopPlan",
+    "status": "409",
+    "name": "idempotencyKeyReused",
+    "valueSha256": "38395a9d761ec8a6547625c963b73aa472ff4ec36adeed5e2118b2196d1c611e"
+  },
+  {
+    "id": "createSandopPlan",
+    "status": "422",
+    "name": "unknownOrUnpublished",
+    "valueSha256": "3eec786c334b4c85da106fc4daf7fe14bafa6c55acfad86e1ee62d2b3b2168aa"
+  },
+  {
+    "id": "createSandopPlan",
+    "status": "422",
+    "name": "checksumMismatch",
+    "valueSha256": "f5033bd3dc93879429e44f0142e4bd0b61092e00c14c02026a844eec128d38a3"
+  },
+  {
+    "id": "createSandopPlan",
+    "status": "400",
+    "name": "example",
+    "valueSha256": "cad9f1819a84e32be6d4f9d232817f8317f4890c3f13c80cb3263f22ee028bb8"
+  },
+  {
+    "id": "createSandopPlan",
+    "status": "401",
+    "name": "example",
+    "valueSha256": "ddbd63b9c01e6e8f10980e15b62e6076e91f8bfb21db3440e0a7feee44187ece"
+  },
+  {
+    "id": "createSandopPlan",
+    "status": "403",
+    "name": "example",
+    "valueSha256": "bdd9de9bfd1e58e63b780efd54509ce2bd4211bc3de0f64ea52a77fd0cb0e58f"
+  },
+  {
+    "id": "createSandopPlan",
+    "status": "503",
+    "name": "dependency",
+    "valueSha256": "356c8ed3198aabe4c8fe0e04eba941cde11201c3c5bf5655ad7f59e96bacea62"
+  },
+  {
+    "id": "createSandopPlan",
+    "status": "503",
+    "name": "unknownCommit",
+    "valueSha256": "b83765063e5119bd124d51410a21589f8b4d55d8412990dcd7c690a4a54ab057"
+  },
+  {
+    "id": "getSandopPlan",
+    "status": "200",
+    "name": "example",
+    "valueSha256": "1a7b8c457bb14a2fca7898adf9ac8962801be941d1e7c228844f12ecf7ed1529"
+  },
+  {
+    "id": "getSandopPlan",
+    "status": "404",
+    "name": "example",
+    "valueSha256": "a056e295d660880139d37f223af0853e9a3bac2e9a321875f46314dcc75bfccd"
+  },
+  {
+    "id": "getSandopPlan",
+    "status": "400",
+    "name": "example",
+    "valueSha256": "cad9f1819a84e32be6d4f9d232817f8317f4890c3f13c80cb3263f22ee028bb8"
+  },
+  {
+    "id": "getSandopPlan",
+    "status": "401",
+    "name": "example",
+    "valueSha256": "ddbd63b9c01e6e8f10980e15b62e6076e91f8bfb21db3440e0a7feee44187ece"
+  },
+  {
+    "id": "getSandopPlan",
+    "status": "403",
+    "name": "example",
+    "valueSha256": "bdd9de9bfd1e58e63b780efd54509ce2bd4211bc3de0f64ea52a77fd0cb0e58f"
+  },
+  {
+    "id": "getSandopPlan",
+    "status": "503",
+    "name": "example",
+    "valueSha256": "356c8ed3198aabe4c8fe0e04eba941cde11201c3c5bf5655ad7f59e96bacea62"
+  },
+  {
+    "id": "captureSandopSnapshot",
+    "status": "201",
+    "name": "example",
+    "valueSha256": "d502b63dbc6f7393b7bd2ed650690d5485fbbb729d306e1f074a6dfc0bea3329"
+  },
+  {
+    "id": "captureSandopSnapshot",
+    "status": "404",
+    "name": "example",
+    "valueSha256": "a056e295d660880139d37f223af0853e9a3bac2e9a321875f46314dcc75bfccd"
+  },
+  {
+    "id": "captureSandopSnapshot",
+    "status": "409",
+    "name": "existingBusinessConflict",
+    "valueSha256": "0bb199c394a19ad2e7d2cc6434bc3412f0d101a3f348cb78373263370edc11f6"
+  },
+  {
+    "id": "captureSandopSnapshot",
+    "status": "409",
+    "name": "idempotencyKeyReused",
+    "valueSha256": "38395a9d761ec8a6547625c963b73aa472ff4ec36adeed5e2118b2196d1c611e"
+  },
+  {
+    "id": "captureSandopSnapshot",
+    "status": "422",
+    "name": "unknownOrUnpublished",
+    "valueSha256": "3eec786c334b4c85da106fc4daf7fe14bafa6c55acfad86e1ee62d2b3b2168aa"
+  },
+  {
+    "id": "captureSandopSnapshot",
+    "status": "422",
+    "name": "checksumMismatch",
+    "valueSha256": "f5033bd3dc93879429e44f0142e4bd0b61092e00c14c02026a844eec128d38a3"
+  },
+  {
+    "id": "captureSandopSnapshot",
+    "status": "400",
+    "name": "example",
+    "valueSha256": "cad9f1819a84e32be6d4f9d232817f8317f4890c3f13c80cb3263f22ee028bb8"
+  },
+  {
+    "id": "captureSandopSnapshot",
+    "status": "401",
+    "name": "example",
+    "valueSha256": "ddbd63b9c01e6e8f10980e15b62e6076e91f8bfb21db3440e0a7feee44187ece"
+  },
+  {
+    "id": "captureSandopSnapshot",
+    "status": "403",
+    "name": "example",
+    "valueSha256": "bdd9de9bfd1e58e63b780efd54509ce2bd4211bc3de0f64ea52a77fd0cb0e58f"
+  },
+  {
+    "id": "captureSandopSnapshot",
+    "status": "503",
+    "name": "dependency",
+    "valueSha256": "356c8ed3198aabe4c8fe0e04eba941cde11201c3c5bf5655ad7f59e96bacea62"
+  },
+  {
+    "id": "captureSandopSnapshot",
+    "status": "503",
+    "name": "unknownCommit",
+    "valueSha256": "b83765063e5119bd124d51410a21589f8b4d55d8412990dcd7c690a4a54ab057"
+  },
+  {
+    "id": "listSandopSnapshots",
+    "status": "200",
+    "name": "example",
+    "valueSha256": "d84739ded164d493ec88f1fa7780cde3578bb800512c077f0c4a318e8615a931"
+  },
+  {
+    "id": "listSandopSnapshots",
+    "status": "404",
+    "name": "example",
+    "valueSha256": "a056e295d660880139d37f223af0853e9a3bac2e9a321875f46314dcc75bfccd"
+  },
+  {
+    "id": "listSandopSnapshots",
+    "status": "400",
+    "name": "example",
+    "valueSha256": "cad9f1819a84e32be6d4f9d232817f8317f4890c3f13c80cb3263f22ee028bb8"
+  },
+  {
+    "id": "listSandopSnapshots",
+    "status": "401",
+    "name": "example",
+    "valueSha256": "ddbd63b9c01e6e8f10980e15b62e6076e91f8bfb21db3440e0a7feee44187ece"
+  },
+  {
+    "id": "listSandopSnapshots",
+    "status": "403",
+    "name": "example",
+    "valueSha256": "bdd9de9bfd1e58e63b780efd54509ce2bd4211bc3de0f64ea52a77fd0cb0e58f"
+  },
+  {
+    "id": "listSandopSnapshots",
+    "status": "503",
+    "name": "example",
+    "valueSha256": "356c8ed3198aabe4c8fe0e04eba941cde11201c3c5bf5655ad7f59e96bacea62"
+  },
+  {
+    "id": "recordSandopSignOff",
+    "status": "201",
+    "name": "example",
+    "valueSha256": "04804677813b5b2e891b22b00ecb82fa73c42dc1c3d8ef43f2ef41b3569af9bd"
+  },
+  {
+    "id": "recordSandopSignOff",
+    "status": "404",
+    "name": "example",
+    "valueSha256": "a056e295d660880139d37f223af0853e9a3bac2e9a321875f46314dcc75bfccd"
+  },
+  {
+    "id": "recordSandopSignOff",
+    "status": "409",
+    "name": "existingBusinessConflict",
+    "valueSha256": "cc13f51ca9b1051ad62c09c19a315fc9ac535165cbd5b1635988f36c62e9cd9c"
+  },
+  {
+    "id": "recordSandopSignOff",
+    "status": "409",
+    "name": "idempotencyKeyReused",
+    "valueSha256": "38395a9d761ec8a6547625c963b73aa472ff4ec36adeed5e2118b2196d1c611e"
+  },
+  {
+    "id": "recordSandopSignOff",
+    "status": "409",
+    "name": "signOffStateConflict",
+    "valueSha256": "65511f1b91dcdb1b86ba62569c7a42c5e9d50009497be71d88251698bda30838"
+  },
+  {
+    "id": "recordSandopSignOff",
+    "status": "422",
+    "name": "example",
+    "valueSha256": "fb33e341d0f948ff91aef12b7fa0d57532d0af98004adaccbffd24786c14a44b"
+  },
+  {
+    "id": "recordSandopSignOff",
+    "status": "400",
+    "name": "example",
+    "valueSha256": "cad9f1819a84e32be6d4f9d232817f8317f4890c3f13c80cb3263f22ee028bb8"
+  },
+  {
+    "id": "recordSandopSignOff",
+    "status": "401",
+    "name": "example",
+    "valueSha256": "ddbd63b9c01e6e8f10980e15b62e6076e91f8bfb21db3440e0a7feee44187ece"
+  },
+  {
+    "id": "recordSandopSignOff",
+    "status": "403",
+    "name": "example",
+    "valueSha256": "bdd9de9bfd1e58e63b780efd54509ce2bd4211bc3de0f64ea52a77fd0cb0e58f"
+  },
+  {
+    "id": "recordSandopSignOff",
+    "status": "503",
+    "name": "dependency",
+    "valueSha256": "356c8ed3198aabe4c8fe0e04eba941cde11201c3c5bf5655ad7f59e96bacea62"
+  },
+  {
+    "id": "recordSandopSignOff",
+    "status": "503",
+    "name": "unknownCommit",
+    "valueSha256": "b83765063e5119bd124d51410a21589f8b4d55d8412990dcd7c690a4a54ab057"
+  },
+  {
+    "id": "listSandopSignOffs",
+    "status": "200",
+    "name": "example",
+    "valueSha256": "dc4d510495cd06bf685d16b6d313e11eccacfbb36d65ab82f20385862207122b"
+  },
+  {
+    "id": "listSandopSignOffs",
+    "status": "404",
+    "name": "example",
+    "valueSha256": "a056e295d660880139d37f223af0853e9a3bac2e9a321875f46314dcc75bfccd"
+  },
+  {
+    "id": "listSandopSignOffs",
+    "status": "400",
+    "name": "example",
+    "valueSha256": "cad9f1819a84e32be6d4f9d232817f8317f4890c3f13c80cb3263f22ee028bb8"
+  },
+  {
+    "id": "listSandopSignOffs",
+    "status": "401",
+    "name": "example",
+    "valueSha256": "ddbd63b9c01e6e8f10980e15b62e6076e91f8bfb21db3440e0a7feee44187ece"
+  },
+  {
+    "id": "listSandopSignOffs",
+    "status": "403",
+    "name": "example",
+    "valueSha256": "bdd9de9bfd1e58e63b780efd54509ce2bd4211bc3de0f64ea52a77fd0cb0e58f"
+  },
+  {
+    "id": "listSandopSignOffs",
+    "status": "503",
+    "name": "example",
+    "valueSha256": "356c8ed3198aabe4c8fe0e04eba941cde11201c3c5bf5655ad7f59e96bacea62"
+  },
+  {
+    "id": "createCapacityPlan",
+    "status": "201",
+    "name": "example",
+    "valueSha256": "35bde9b0b38beeb3a22a3963b08235c8eed1c2ccaaaaf61e3b8a83d56671a336"
+  },
+  {
+    "id": "createCapacityPlan",
+    "status": "409",
+    "name": "existingBusinessConflict",
+    "valueSha256": "6128e75481c761915694e036ae84faaf911f7a7d768b41e84e721e0108c59469"
+  },
+  {
+    "id": "createCapacityPlan",
+    "status": "409",
+    "name": "idempotencyKeyReused",
+    "valueSha256": "38395a9d761ec8a6547625c963b73aa472ff4ec36adeed5e2118b2196d1c611e"
+  },
+  {
+    "id": "createCapacityPlan",
+    "status": "422",
+    "name": "unknownOrUnpublished",
+    "valueSha256": "3eec786c334b4c85da106fc4daf7fe14bafa6c55acfad86e1ee62d2b3b2168aa"
+  },
+  {
+    "id": "createCapacityPlan",
+    "status": "422",
+    "name": "checksumMismatch",
+    "valueSha256": "f5033bd3dc93879429e44f0142e4bd0b61092e00c14c02026a844eec128d38a3"
+  },
+  {
+    "id": "createCapacityPlan",
+    "status": "400",
+    "name": "example",
+    "valueSha256": "cad9f1819a84e32be6d4f9d232817f8317f4890c3f13c80cb3263f22ee028bb8"
+  },
+  {
+    "id": "createCapacityPlan",
+    "status": "401",
+    "name": "example",
+    "valueSha256": "ddbd63b9c01e6e8f10980e15b62e6076e91f8bfb21db3440e0a7feee44187ece"
+  },
+  {
+    "id": "createCapacityPlan",
+    "status": "403",
+    "name": "example",
+    "valueSha256": "bdd9de9bfd1e58e63b780efd54509ce2bd4211bc3de0f64ea52a77fd0cb0e58f"
+  },
+  {
+    "id": "createCapacityPlan",
+    "status": "503",
+    "name": "dependency",
+    "valueSha256": "356c8ed3198aabe4c8fe0e04eba941cde11201c3c5bf5655ad7f59e96bacea62"
+  },
+  {
+    "id": "createCapacityPlan",
+    "status": "503",
+    "name": "unknownCommit",
+    "valueSha256": "b83765063e5119bd124d51410a21589f8b4d55d8412990dcd7c690a4a54ab057"
+  },
+  {
+    "id": "getCapacityPlan",
+    "status": "200",
+    "name": "example",
+    "valueSha256": "609ddca91e387393e25cb121d1ddd0271776873ac88a12d1d5a3f1a3123b79e9"
+  },
+  {
+    "id": "getCapacityPlan",
+    "status": "404",
+    "name": "example",
+    "valueSha256": "9bc61f968b9146bfb2c63473f0ce374392c385e78ef2e0d91682e598f29d67e6"
+  },
+  {
+    "id": "getCapacityPlan",
+    "status": "400",
+    "name": "example",
+    "valueSha256": "cad9f1819a84e32be6d4f9d232817f8317f4890c3f13c80cb3263f22ee028bb8"
+  },
+  {
+    "id": "getCapacityPlan",
+    "status": "401",
+    "name": "example",
+    "valueSha256": "ddbd63b9c01e6e8f10980e15b62e6076e91f8bfb21db3440e0a7feee44187ece"
+  },
+  {
+    "id": "getCapacityPlan",
+    "status": "403",
+    "name": "example",
+    "valueSha256": "bdd9de9bfd1e58e63b780efd54509ce2bd4211bc3de0f64ea52a77fd0cb0e58f"
+  },
+  {
+    "id": "getCapacityPlan",
+    "status": "503",
+    "name": "example",
+    "valueSha256": "356c8ed3198aabe4c8fe0e04eba941cde11201c3c5bf5655ad7f59e96bacea62"
+  },
+  {
+    "id": "createCapacityScenario",
+    "status": "201",
+    "name": "example",
+    "valueSha256": "ab05f91ea9ce058262efcc2c2d409ca25e540cfb668fa3c012e11ab2391e0f84"
+  },
+  {
+    "id": "createCapacityScenario",
+    "status": "404",
+    "name": "example",
+    "valueSha256": "9bc61f968b9146bfb2c63473f0ce374392c385e78ef2e0d91682e598f29d67e6"
+  },
+  {
+    "id": "createCapacityScenario",
+    "status": "409",
+    "name": "existingBusinessConflict",
+    "valueSha256": "54541834c106b8fd603cc5185dbcc9dee85c7e8f5195c1a0360046cac9c9ba23"
+  },
+  {
+    "id": "createCapacityScenario",
+    "status": "409",
+    "name": "idempotencyKeyReused",
+    "valueSha256": "38395a9d761ec8a6547625c963b73aa472ff4ec36adeed5e2118b2196d1c611e"
+  },
+  {
+    "id": "createCapacityScenario",
+    "status": "400",
+    "name": "example",
+    "valueSha256": "cad9f1819a84e32be6d4f9d232817f8317f4890c3f13c80cb3263f22ee028bb8"
+  },
+  {
+    "id": "createCapacityScenario",
+    "status": "401",
+    "name": "example",
+    "valueSha256": "ddbd63b9c01e6e8f10980e15b62e6076e91f8bfb21db3440e0a7feee44187ece"
+  },
+  {
+    "id": "createCapacityScenario",
+    "status": "403",
+    "name": "example",
+    "valueSha256": "bdd9de9bfd1e58e63b780efd54509ce2bd4211bc3de0f64ea52a77fd0cb0e58f"
+  },
+  {
+    "id": "createCapacityScenario",
+    "status": "503",
+    "name": "dependency",
+    "valueSha256": "356c8ed3198aabe4c8fe0e04eba941cde11201c3c5bf5655ad7f59e96bacea62"
+  },
+  {
+    "id": "createCapacityScenario",
+    "status": "503",
+    "name": "unknownCommit",
+    "valueSha256": "b83765063e5119bd124d51410a21589f8b4d55d8412990dcd7c690a4a54ab057"
+  },
+  {
+    "id": "createCapacityScenario",
+    "status": "422",
+    "name": "example",
+    "valueSha256": "55f0e6f8bff21d731cc1b8fa6e18ce2e4456942806442d8eb106c991337a76bd"
+  },
+  {
+    "id": "getCapacityScenario",
+    "status": "200",
+    "name": "example",
+    "valueSha256": "d077f1da76139137851c335f5d9744ceb24458bf3f425ec2edebe28a991a18a7"
+  },
+  {
+    "id": "getCapacityScenario",
+    "status": "404",
+    "name": "example",
+    "valueSha256": "6893f59324a2c265f6d27ce7bbc37a0466882b1ea49971faf92cacef3a90e4dc"
+  },
+  {
+    "id": "getCapacityScenario",
+    "status": "400",
+    "name": "example",
+    "valueSha256": "cad9f1819a84e32be6d4f9d232817f8317f4890c3f13c80cb3263f22ee028bb8"
+  },
+  {
+    "id": "getCapacityScenario",
+    "status": "401",
+    "name": "example",
+    "valueSha256": "ddbd63b9c01e6e8f10980e15b62e6076e91f8bfb21db3440e0a7feee44187ece"
+  },
+  {
+    "id": "getCapacityScenario",
+    "status": "403",
+    "name": "example",
+    "valueSha256": "bdd9de9bfd1e58e63b780efd54509ce2bd4211bc3de0f64ea52a77fd0cb0e58f"
+  },
+  {
+    "id": "getCapacityScenario",
+    "status": "503",
+    "name": "example",
+    "valueSha256": "356c8ed3198aabe4c8fe0e04eba941cde11201c3c5bf5655ad7f59e96bacea62"
+  },
+  {
+    "id": "evaluateCapacityScenario",
+    "status": "202",
+    "name": "example",
+    "valueSha256": "7fbc7a5b1c8fa523d799931be02df42ac51d3a1cf43317a5514447f4c6c39de7"
+  },
+  {
+    "id": "evaluateCapacityScenario",
+    "status": "404",
+    "name": "example",
+    "valueSha256": "6893f59324a2c265f6d27ce7bbc37a0466882b1ea49971faf92cacef3a90e4dc"
+  },
+  {
+    "id": "evaluateCapacityScenario",
+    "status": "409",
+    "name": "existingBusinessConflict",
+    "valueSha256": "1a6c76f573ef4bfa6cf96b7af641698eff97e1fe48fd31a8c19dad5a75be6088"
+  },
+  {
+    "id": "evaluateCapacityScenario",
+    "status": "409",
+    "name": "idempotencyKeyReused",
+    "valueSha256": "38395a9d761ec8a6547625c963b73aa472ff4ec36adeed5e2118b2196d1c611e"
+  },
+  {
+    "id": "evaluateCapacityScenario",
+    "status": "400",
+    "name": "example",
+    "valueSha256": "cad9f1819a84e32be6d4f9d232817f8317f4890c3f13c80cb3263f22ee028bb8"
+  },
+  {
+    "id": "evaluateCapacityScenario",
+    "status": "401",
+    "name": "example",
+    "valueSha256": "ddbd63b9c01e6e8f10980e15b62e6076e91f8bfb21db3440e0a7feee44187ece"
+  },
+  {
+    "id": "evaluateCapacityScenario",
+    "status": "403",
+    "name": "example",
+    "valueSha256": "bdd9de9bfd1e58e63b780efd54509ce2bd4211bc3de0f64ea52a77fd0cb0e58f"
+  },
+  {
+    "id": "evaluateCapacityScenario",
+    "status": "503",
+    "name": "dependency",
+    "valueSha256": "356c8ed3198aabe4c8fe0e04eba941cde11201c3c5bf5655ad7f59e96bacea62"
+  },
+  {
+    "id": "evaluateCapacityScenario",
+    "status": "503",
+    "name": "unknownCommit",
+    "valueSha256": "b83765063e5119bd124d51410a21589f8b4d55d8412990dcd7c690a4a54ab057"
+  },
+  {
+    "id": "evaluateCapacityScenario",
+    "status": "422",
+    "name": "example",
+    "valueSha256": "55f0e6f8bff21d731cc1b8fa6e18ce2e4456942806442d8eb106c991337a76bd"
+  },
+  {
+    "id": "getCapacityEvaluation",
+    "status": "200",
+    "name": "example",
+    "valueSha256": "c8ab2e55f9f49b6104ee467cfed642531a6c066c9fbc73f386644def1f428754"
+  },
+  {
+    "id": "getCapacityEvaluation",
+    "status": "404",
+    "name": "example",
+    "valueSha256": "0decc78d6cd12730f0d9794c618b7e7de5680d287adf96d66f71efa9249ccb6e"
+  },
+  {
+    "id": "getCapacityEvaluation",
+    "status": "400",
+    "name": "example",
+    "valueSha256": "cad9f1819a84e32be6d4f9d232817f8317f4890c3f13c80cb3263f22ee028bb8"
+  },
+  {
+    "id": "getCapacityEvaluation",
+    "status": "401",
+    "name": "example",
+    "valueSha256": "ddbd63b9c01e6e8f10980e15b62e6076e91f8bfb21db3440e0a7feee44187ece"
+  },
+  {
+    "id": "getCapacityEvaluation",
+    "status": "403",
+    "name": "example",
+    "valueSha256": "bdd9de9bfd1e58e63b780efd54509ce2bd4211bc3de0f64ea52a77fd0cb0e58f"
+  },
+  {
+    "id": "getCapacityEvaluation",
+    "status": "503",
+    "name": "example",
+    "valueSha256": "356c8ed3198aabe4c8fe0e04eba941cde11201c3c5bf5655ad7f59e96bacea62"
+  }
+]

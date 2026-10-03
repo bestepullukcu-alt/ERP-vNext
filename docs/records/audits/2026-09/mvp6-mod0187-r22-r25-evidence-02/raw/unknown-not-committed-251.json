@@ -1,0 +1,111 @@
+{
+  "status": "FAIL",
+  "fixedId": "29292929-2929-4929-8929-292929292929",
+  "failpointErrorCode": 251,
+  "failpointEnable": {
+    "count": 12,
+    "ok": 1,
+    "$clusterTime": {
+      "clusterTime": {
+        "$timestamp": "7688068782136229889"
+      },
+      "signature": {
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "keyId": {
+          "low": 0,
+          "high": 0,
+          "unsigned": false
+        }
+      }
+    },
+    "operationTime": {
+      "$timestamp": "7688068782136229889"
+    }
+  },
+  "request": {
+    "shipmentId": "924fff26-80d3-4d83-aa21-247cf6c66a84",
+    "reasonCode": "DAMAGED",
+    "claimedAmount": "10.00",
+    "currency": "USD",
+    "evidenceReferenceIds": []
+  },
+  "firstResponse": {
+    "status": 503,
+    "correlation": "a0cffe3f-158d-4d5a-bc4a-e85cb8e4e301",
+    "body": {
+      "error": {
+        "code": "CLAIM_STORAGE_UNAVAILABLE",
+        "message": "Claim storage is unavailable.",
+        "correlationId": "a0cffe3f-158d-4d5a-bc4a-e85cb8e4e301"
+      },
+      "contractVersion": "v1"
+    },
+    "requestBodySha256": "c90285a9428d8e2435cd251c5bd822cd7aee4e5fa430b6f6c4a5d7742bb05bad"
+  },
+  "countsAfterUnknown": {
+    "claims": 0,
+    "receipts": 0,
+    "audit": 0,
+    "outbox": 0
+  },
+  "documentsAfterUnknown": {
+    "claims": [],
+    "receipts": [],
+    "audit": [],
+    "outbox": []
+  },
+  "restartSameKeyResponse": {
+    "status": 503,
+    "correlation": "a0cffe3f-158d-4d5a-bc4a-e85cb8e4e301",
+    "body": {
+      "error": {
+        "code": "CLAIM_STORAGE_UNAVAILABLE",
+        "message": "Claim storage is unavailable.",
+        "correlationId": "a0cffe3f-158d-4d5a-bc4a-e85cb8e4e301"
+      },
+      "contractVersion": "v1"
+    },
+    "requestBodySha256": "c90285a9428d8e2435cd251c5bd822cd7aee4e5fa430b6f6c4a5d7742bb05bad"
+  },
+  "countsAfterRestartRecovery": {
+    "claims": 0,
+    "receipts": 0,
+    "audit": 0,
+    "outbox": 0
+  },
+  "documentsAfterRecovery": {
+    "claims": [],
+    "receipts": [],
+    "audit": [],
+    "outbox": []
+  },
+  "firstLaunch": {
+    "label": "r25-unknown-not-committed-251-first",
+    "mode": "ClaimsEvidence",
+    "pid": 12226,
+    "port": 5066,
+    "fixedIdConfigured": true,
+    "faultStage": null,
+    "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+    "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r25-unknown-not-committed-251-first.log",
+    "health": "health=200",
+    "startedAt": "2026-09-21T19:13:21Z",
+    "exitCode": 0,
+    "stoppedAt": "2026-09-21T19:13:29Z"
+  },
+  "restartLaunch": {
+    "label": "r25-unknown-not-committed-251-restart",
+    "mode": "ClaimsEvidence",
+    "pid": 12238,
+    "port": 5066,
+    "fixedIdConfigured": true,
+    "faultStage": null,
+    "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+    "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r25-unknown-not-committed-251-restart.log",
+    "health": "health=200",
+    "startedAt": "2026-09-21T19:13:30Z",
+    "exitCode": 0,
+    "stoppedAt": "2026-09-21T19:13:39Z"
+  },
+  "interpretation": "server labelled commit result unknown and returned NoSuchTransaction; measured state was not committed; restart same-key request created one durable write group"
+}

@@ -1,0 +1,65 @@
+@using Diten.Web.Views.SupplyChain.SandopPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SandopPlansIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Pack §23.2: every S&OP .cshtml states the tenant shell. Rendered as a partial view, so Razor does not apply it.
+    Layout = "_LayoutTenantShell";
+}
+
+@* JSON bridge (pack §23.9) for the entry page: shared words from SharedResource, module text from
+   SandopPlansIndex.{lang}.resx. Dotted resx keys (Status.Draft) become PascalCase properties (StatusDraft).
+   No hard-coded fallback text anywhere. *@
+<script id="sandop-index-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Close = SharedLocalizer["Close"].Value,
+        Copy = SharedLocalizer["Copy"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        SandopPlansTitle = Localizer["SandopPlansTitle"].Value,
+        PlanId = Localizer["PlanId"].Value,
+        PlanName = Localizer["PlanName"].Value,
+        HorizonStart = Localizer["HorizonStart"].Value,
+        HorizonEnd = Localizer["HorizonEnd"].Value,
+        DemandPlanId = Localizer["DemandPlanId"].Value,
+        DemandPlanVersion = Localizer["DemandPlanVersion"].Value,
+        Status = Localizer["Status"].Value,
+        StatusDraft = Localizer["Status.Draft"].Value,
+        StatusInReview = Localizer["Status.InReview"].Value,
+        StatusApproved = Localizer["Status.Approved"].Value,
+        StatusRejected = Localizer["Status.Rejected"].Value,
+        StatusArchived = Localizer["Status.Archived"].Value,
+        NotProvided = Localizer["NotProvided"].Value,
+        SupportReference = Localizer["SupportReference"].Value,
+        CopyDone = Localizer["CopyDone"].Value,
+        RequestPending = Localizer["RequestPending"].Value,
+        RequiredMissing = Localizer["RequiredMissing"].Value,
+        ErrInvalidRequest = Localizer["ErrInvalidRequest"].Value,
+        ErrInvalidCorrelationId = Localizer["ErrInvalidCorrelationId"].Value,
+        ErrUnauthenticated = Localizer["ErrUnauthenticated"].Value,
+        ErrForbidden = Localizer["ErrForbidden"].Value,
+        ErrUnknownSandopPlan = Localizer["ErrUnknownSandopPlan"].Value,
+        ErrSandopPlanAlreadyExists = Localizer["ErrSandopPlanAlreadyExists"].Value,
+        ErrSandopPlanStateConflict = Localizer["ErrSandopPlanStateConflict"].Value,
+        ErrSandopSignOffStateConflict = Localizer["ErrSandopSignOffStateConflict"].Value,
+        ErrSignOffAlreadyRecorded = Localizer["ErrSignOffAlreadyRecorded"].Value,
+        ErrIdempotencyKeyReused = Localizer["ErrIdempotencyKeyReused"].Value,
+        ErrInvalidDemandReference = Localizer["ErrInvalidDemandReference"].Value,
+        ErrInvalidSnapshotReference = Localizer["ErrInvalidSnapshotReference"].Value,
+        ErrDependencyUnavailable = Localizer["ErrDependencyUnavailable"].Value,
+        ErrCommitResultUnresolved = Localizer["ErrCommitResultUnresolved"].Value,
+        SandopPlansPageDescription = Localizer["SandopPlansPageDescription"].Value,
+        NoPlanListNote = Localizer["NoPlanListNote"].Value,
+        CreatePlan = Localizer["CreatePlan"].Value,
+        OpenPlan = Localizer["OpenPlan"].Value,
+        OpenPlanTitle = Localizer["OpenPlanTitle"].Value,
+        PlanIdHelp = Localizer["PlanIdHelp"].Value,
+        PlanIdInvalid = Localizer["PlanIdInvalid"].Value,
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        HorizonOrderInvalid = Localizer["HorizonOrderInvalid"].Value,
+        DemandReferenceHelp = Localizer["DemandReferenceHelp"].Value,
+        RequiredFilled = Localizer["RequiredFilled"].Value,
+        PlanCreated = Localizer["PlanCreated"].Value
+    })
+</script>

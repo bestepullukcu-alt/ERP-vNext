@@ -1,0 +1,3 @@
+Unhandled exception. System.InvalidOperationException: JwtSettings:Secret is required.
+   at Program.<>c__DisplayClass0_0.<<Main>$>g__Required|2(String key) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs:line 24
+   at Program.<Main>$(String[] args) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs:line 25

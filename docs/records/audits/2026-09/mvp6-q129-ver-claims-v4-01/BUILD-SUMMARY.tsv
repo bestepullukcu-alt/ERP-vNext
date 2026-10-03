@@ -1,0 +1,4 @@
+tree	target	exit	warnings	errors
+v4/build	frontend/Diten.Web.Tests/Diten.Web.Tests.csproj	0	18	0
+v4/build	services/Diten.SupplyChainService/Diten.SupplyChainService.sln	0	0	0
+v3/sab	frontend/Diten.Web.Tests/Diten.Web.Tests.csproj	0	18	0

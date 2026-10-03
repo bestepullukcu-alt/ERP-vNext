@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: Returns / MOD-0186 and Claims / MOD-0187 (part a)
+
+18 folders/items, first 'mod-0186-prep-02', last 'mvp6-mod0186-r01-ct-close-01'.
+Work packages: as named in each folder.
+376 files from pathspec/R4a.txt (Q230 commit plan).

@@ -1,0 +1,455 @@
+{
+  "run": "bb4bda",
+  "tenants": {
+    "T1": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+    "T2": "00000000-0000-0000-0000-000000000001"
+  },
+  "steps": [
+    {
+      "step": "mdm-create-le-A",
+      "status": 201,
+      "ok": true,
+      "id": "ad648820-0f4e-4247-b46b-3b63b863b0d6"
+    },
+    {
+      "step": "mdm-activate-le-A",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "platform-create-ou-A",
+      "status": 201,
+      "ok": true,
+      "id": "93294981-62d1-4ae4-9a2d-667d7b4031e8"
+    },
+    {
+      "step": "platform-create-position-full",
+      "status": 201,
+      "ok": true,
+      "id": "ef3a2702-f0c1-487a-b335-16f8101035a7"
+    },
+    {
+      "step": "platform-assign-full-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "658019e0-3236-427e-b1d6-dd62bf7df311"
+    },
+    {
+      "step": "platform-create-position-readonly",
+      "status": 201,
+      "ok": true,
+      "id": "82e1da91-85d9-47d7-b515-8a2dc28fb352"
+    },
+    {
+      "step": "platform-assign-readonly-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "7ff6c087-f4d9-46b1-8174-cfcd4fd6dc01"
+    },
+    {
+      "step": "platform-create-position-noread",
+      "status": 201,
+      "ok": true,
+      "id": "28a1ca88-b2d8-46c0-a0ea-a5a99d97499a"
+    },
+    {
+      "step": "platform-assign-noread-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "c13919c1-3f1b-4985-940a-5cd67311e056"
+    },
+    {
+      "step": "platform-create-position-fixadmin",
+      "status": 201,
+      "ok": true,
+      "id": "02292008-1944-41d2-a27b-92102a3a852e"
+    },
+    {
+      "step": "platform-assign-fixadmin-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "7cb15b4f-6753-44f4-9548-7b160d1c426f"
+    },
+    {
+      "step": "mdm-create-le-B",
+      "status": 201,
+      "ok": true,
+      "id": "8ed8347a-b16d-4f4d-9735-ea5be2f05e56"
+    },
+    {
+      "step": "mdm-activate-le-B",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "platform-create-ou-B",
+      "status": 201,
+      "ok": true,
+      "id": "6ab4a73a-30b3-429d-b5c3-428fb3a78eaa"
+    },
+    {
+      "step": "platform-create-position-leb",
+      "status": 201,
+      "ok": true,
+      "id": "144b2270-ff7d-4d9a-822b-26258c312504"
+    },
+    {
+      "step": "platform-assign-leb-to-LE-B",
+      "status": 201,
+      "ok": true,
+      "id": "fba9e92f-f2e1-450a-b403-7542f1ca8c5c"
+    },
+    {
+      "step": "shipment-create-DELIV-EN",
+      "status": "Draft",
+      "ok": true,
+      "id": null,
+      "shipmentId": "f6e416b9-1416-4c97-a761-4af92fa737d2"
+    },
+    {
+      "step": "shipment-DELIV-EN-Planned",
+      "status": "Planned",
+      "ok": true,
+      "id": null,
+      "shipmentId": "f6e416b9-1416-4c97-a761-4af92fa737d2"
+    },
+    {
+      "step": "shipment-DELIV-EN-Dispatched",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "f6e416b9-1416-4c97-a761-4af92fa737d2"
+    },
+    {
+      "step": "shipment-DELIV-EN-Delivered",
+      "status": "Delivered",
+      "ok": true,
+      "id": null,
+      "shipmentId": "f6e416b9-1416-4c97-a761-4af92fa737d2"
+    },
+    {
+      "step": "shipment-get-DELIV-EN",
+      "status": "Delivered",
+      "ok": true,
+      "id": null,
+      "shipmentId": "f6e416b9-1416-4c97-a761-4af92fa737d2",
+      "carrierId": null
+    },
+    {
+      "step": "shipment-create-DELIV-AR",
+      "status": "Draft",
+      "ok": true,
+      "id": null,
+      "shipmentId": "dbe16ee1-1d7d-44c1-bd57-2456ef22f738"
+    },
+    {
+      "step": "shipment-DELIV-AR-Planned",
+      "status": "Planned",
+      "ok": true,
+      "id": null,
+      "shipmentId": "dbe16ee1-1d7d-44c1-bd57-2456ef22f738"
+    },
+    {
+      "step": "shipment-DELIV-AR-Dispatched",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "dbe16ee1-1d7d-44c1-bd57-2456ef22f738"
+    },
+    {
+      "step": "shipment-DELIV-AR-Delivered",
+      "status": "Delivered",
+      "ok": true,
+      "id": null,
+      "shipmentId": "dbe16ee1-1d7d-44c1-bd57-2456ef22f738"
+    },
+    {
+      "step": "shipment-get-DELIV-AR",
+      "status": "Delivered",
+      "ok": true,
+      "id": null,
+      "shipmentId": "dbe16ee1-1d7d-44c1-bd57-2456ef22f738",
+      "carrierId": null
+    },
+    {
+      "step": "shipment-create-DELIV-NEG",
+      "status": "Draft",
+      "ok": true,
+      "id": null,
+      "shipmentId": "489b040d-5181-49d3-ae0d-540b41939827"
+    },
+    {
+      "step": "shipment-DELIV-NEG-Planned",
+      "status": "Planned",
+      "ok": true,
+      "id": null,
+      "shipmentId": "489b040d-5181-49d3-ae0d-540b41939827"
+    },
+    {
+      "step": "shipment-DELIV-NEG-Dispatched",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "489b040d-5181-49d3-ae0d-540b41939827"
+    },
+    {
+      "step": "shipment-DELIV-NEG-Delivered",
+      "status": "Delivered",
+      "ok": true,
+      "id": null,
+      "shipmentId": "489b040d-5181-49d3-ae0d-540b41939827"
+    },
+    {
+      "step": "shipment-get-DELIV-NEG",
+      "status": "Delivered",
+      "ok": true,
+      "id": null,
+      "shipmentId": "489b040d-5181-49d3-ae0d-540b41939827",
+      "carrierId": null
+    },
+    {
+      "step": "shipment-create-DISPATCHED",
+      "status": "Draft",
+      "ok": true,
+      "id": null,
+      "shipmentId": "a78693a2-11c4-4de2-812f-29f14cb50e18"
+    },
+    {
+      "step": "shipment-DISPATCHED-Planned",
+      "status": "Planned",
+      "ok": true,
+      "id": null,
+      "shipmentId": "a78693a2-11c4-4de2-812f-29f14cb50e18"
+    },
+    {
+      "step": "shipment-DISPATCHED-Dispatched",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "a78693a2-11c4-4de2-812f-29f14cb50e18"
+    },
+    {
+      "step": "shipment-get-DISPATCHED",
+      "status": "Dispatched",
+      "ok": true,
+      "id": null,
+      "shipmentId": "a78693a2-11c4-4de2-812f-29f14cb50e18",
+      "carrierId": null
+    }
+  ],
+  "catalogWaitSeconds": 1.6,
+  "catalogMissing": [],
+  "laneAuthPermissionInsert": {
+    "key": "supplychain.returns.transition",
+    "before": 0,
+    "templateKey": "supplychain.returns.authorize",
+    "after": 1
+  },
+  "authRoles": {
+    "Q65bReturnsFull@97c59330": {
+      "reused": false,
+      "keys": [
+        "supplychain.returns.read",
+        "supplychain.returns.create",
+        "supplychain.returns.transition",
+        "supplychain.returns.authorize",
+        "supplychain.returns.transit",
+        "supplychain.returns.cancel",
+        "supplychain.returns.receive",
+        "supplychain.returns.disposition",
+        "supplychain.returns.close",
+        "supplychain.shipments.read"
+      ],
+      "grantsAdded": 10,
+      "members": [
+        "full",
+        "leb"
+      ]
+    },
+    "Q65bReturnsReadOnly@97c59330": {
+      "reused": false,
+      "keys": [
+        "supplychain.returns.read"
+      ],
+      "grantsAdded": 1,
+      "members": [
+        "readonly"
+      ]
+    },
+    "Q65bNoReturns@97c59330": {
+      "reused": false,
+      "keys": [
+        "supplychain.shipments.read"
+      ],
+      "grantsAdded": 1,
+      "members": [
+        "noread"
+      ]
+    },
+    "Q65bFixtureAdmin@97c59330": {
+      "reused": false,
+      "keys": [
+        "mdm.legal-entities.create",
+        "mdm.legal-entities.read",
+        "mdm.legal-entities.update",
+        "platform.organization-units.create",
+        "platform.organization-units.read",
+        "platform.positions.create",
+        "platform.positions.read",
+        "platform.position-assignments.create",
+        "platform.position-assignments.read",
+        "auth.users.lookup-validation",
+        "supplychain.shipments.read",
+        "supplychain.shipments.create",
+        "supplychain.shipments.dispatch"
+      ],
+      "grantsAdded": 13,
+      "members": [
+        "fixadmin"
+      ]
+    }
+  },
+  "userIds": {
+    "full": "69cf28c2-43a4-4ec6-a93a-cf208011325f",
+    "readonly": "5dbc6a4d-d50c-4b86-847b-80ce6ea3364a",
+    "noread": "1c80931b-c767-41d2-a434-dde298216068",
+    "leb": "f8b48b4c-01de-41fc-a769-d93616746013",
+    "fixadmin": "87f32770-8d04-4393-aebe-d9100b84e494"
+  },
+  "adminLoginsBeforeOrg": [
+    {
+      "actor": "fixadmin",
+      "tenantMatches": true,
+      "legalEntityId": null,
+      "returnsPermissions": [
+        "supplychain.shipments.read"
+      ],
+      "shipmentsRead": true,
+      "permissionCount": 13
+    }
+  ],
+  "organization": {
+    "legalEntities": {
+      "A": "ad648820-0f4e-4247-b46b-3b63b863b0d6",
+      "B": "8ed8347a-b16d-4f4d-9735-ea5be2f05e56"
+    },
+    "orgUnits": {
+      "A": "93294981-62d1-4ae4-9a2d-667d7b4031e8",
+      "B": "6ab4a73a-30b3-429d-b5c3-428fb3a78eaa"
+    },
+    "positions": {
+      "full": "ef3a2702-f0c1-487a-b335-16f8101035a7",
+      "readonly": "82e1da91-85d9-47d7-b515-8a2dc28fb352",
+      "noread": "28a1ca88-b2d8-46c0-a0ea-a5a99d97499a",
+      "fixadmin": "02292008-1944-41d2-a27b-92102a3a852e",
+      "leb": "144b2270-ff7d-4d9a-822b-26258c312504"
+    }
+  },
+  "actorLogins": {
+    "full": {
+      "actor": "full",
+      "tenantMatches": true,
+      "legalEntityId": "ad648820-0f4e-4247-b46b-3b63b863b0d6",
+      "returnsPermissions": [
+        "supplychain.returns.authorize",
+        "supplychain.returns.cancel",
+        "supplychain.returns.close",
+        "supplychain.returns.create",
+        "supplychain.returns.disposition",
+        "supplychain.returns.read",
+        "supplychain.returns.receive",
+        "supplychain.returns.transit",
+        "supplychain.returns.transition",
+        "supplychain.shipments.read"
+      ],
+      "shipmentsRead": true,
+      "permissionCount": 10
+    },
+    "readonly": {
+      "actor": "readonly",
+      "tenantMatches": true,
+      "legalEntityId": "ad648820-0f4e-4247-b46b-3b63b863b0d6",
+      "returnsPermissions": [
+        "supplychain.returns.read"
+      ],
+      "shipmentsRead": false,
+      "permissionCount": 1
+    },
+    "noread": {
+      "actor": "noread",
+      "tenantMatches": true,
+      "legalEntityId": "ad648820-0f4e-4247-b46b-3b63b863b0d6",
+      "returnsPermissions": [
+        "supplychain.shipments.read"
+      ],
+      "shipmentsRead": true,
+      "permissionCount": 1
+    },
+    "leb": {
+      "actor": "leb",
+      "tenantMatches": true,
+      "legalEntityId": "8ed8347a-b16d-4f4d-9735-ea5be2f05e56",
+      "returnsPermissions": [
+        "supplychain.returns.authorize",
+        "supplychain.returns.cancel",
+        "supplychain.returns.close",
+        "supplychain.returns.create",
+        "supplychain.returns.disposition",
+        "supplychain.returns.read",
+        "supplychain.returns.receive",
+        "supplychain.returns.transit",
+        "supplychain.returns.transition",
+        "supplychain.shipments.read"
+      ],
+      "shipmentsRead": true,
+      "permissionCount": 10
+    },
+    "fixadmin": {
+      "actor": "fixadmin",
+      "tenantMatches": true,
+      "legalEntityId": "ad648820-0f4e-4247-b46b-3b63b863b0d6",
+      "returnsPermissions": [
+        "supplychain.shipments.read"
+      ],
+      "shipmentsRead": true,
+      "permissionCount": 13
+    }
+  },
+  "fixtures": {
+    "shipments": {
+      "DELIV-EN": {
+        "shipmentId": "f6e416b9-1416-4c97-a761-4af92fa737d2",
+        "requestRoot": "60e43428-a06c-4851-b20b-f9ee3317d649",
+        "lifecycleCorrelationId": "60e43428-a06c-4851-b20b-f9ee3317d649",
+        "status": "Delivered",
+        "carrierId": null,
+        "legalEntity": "A"
+      },
+      "DELIV-AR": {
+        "shipmentId": "dbe16ee1-1d7d-44c1-bd57-2456ef22f738",
+        "requestRoot": "4a67dbd2-595a-4495-993d-31ee5f0931e8",
+        "lifecycleCorrelationId": "4a67dbd2-595a-4495-993d-31ee5f0931e8",
+        "status": "Delivered",
+        "carrierId": null,
+        "legalEntity": "A"
+      },
+      "DELIV-NEG": {
+        "shipmentId": "489b040d-5181-49d3-ae0d-540b41939827",
+        "requestRoot": "721368a2-7fbe-4e30-958d-e19eb474e2d8",
+        "lifecycleCorrelationId": "721368a2-7fbe-4e30-958d-e19eb474e2d8",
+        "status": "Delivered",
+        "carrierId": null,
+        "legalEntity": "A"
+      },
+      "DISPATCHED": {
+        "shipmentId": "a78693a2-11c4-4de2-812f-29f14cb50e18",
+        "requestRoot": "fa525a84-8ae0-4406-8be4-883a2dce9592",
+        "lifecycleCorrelationId": "fa525a84-8ae0-4406-8be4-883a2dce9592",
+        "status": "Dispatched",
+        "carrierId": null,
+        "legalEntity": "A"
+      }
+    }
+  },
+  "result": "PASS"
+}

@@ -1,0 +1,3 @@
+dev mongod log (read as a file), window 2026-09-27T20:04:58..2026-09-27T20:27:23: 28 entries; "Connection accepted": 0; client metadata: 0
+positive control (same parser, Q121b Platform window 14:34–14:43 today): 44 "Connection accepted"
+lsof sampler (bash, quoted args, positive control PASS): 1256 samples 20:04:59→end; pids seen ['841'] (841 = dev mongod); client-side ports 11 = first sample 11; NEW sockets during run: 0 []

@@ -1,0 +1,4 @@
+gateway/Diten.ApiGateway.Tests/CarrierRouteCoverageTests.cs
+gateway/Diten.ApiGateway.Tests/ShipmentRouteCoverageTests.cs
+gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs
+.antigravity/rules/ports.md

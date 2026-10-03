@@ -1,0 +1,27 @@
+{
+  "actor": "actor-a",
+  "tenant": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+  "actorLegalEntityClaim": "06df9bbb-22c3-4f69-b0f7-b7fca6f32d46",
+  "run": "eec3a8a3",
+  "fixtures": {
+    "LATE": {
+      "shipmentId": "2997bde4-7181-41f6-8069-aad89009d9f6",
+      "root": "66376d6e-4bfb-4c53-bcd1-11a2d38fe1e4",
+      "sourceDocumentId": "S-LATE-eec3a8a3",
+      "status": "Draft",
+      "lastEventAt": "2026-09-26T07:44:16.465Z"
+    }
+  },
+  "calls": [
+    {
+      "fixture": "LATE",
+      "op": "create",
+      "status": 201,
+      "responseCorrelation": "66376d6e-4bfb-4c53-bcd1-11a2d38fe1e4",
+      "requestCorrelation": "66376d6e-4bfb-4c53-bcd1-11a2d38fe1e4",
+      "key": "K-LATE-eec3a8a3-CREATE",
+      "payloadSha256": "ec5285e259680976ef9bbbf5c7879c2a0ab3a9147ae7c2c5e9cb9732b661afef",
+      "errorCode": null
+    }
+  ]
+}

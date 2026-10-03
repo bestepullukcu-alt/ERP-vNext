@@ -1,0 +1,165 @@
+{
+  "verdict": "PASS",
+  "checks": {
+    "baseline_yaml_pin": true,
+    "baseline_annex_pin": true,
+    "full_oas31": true,
+    "oas31_meta": true,
+    "embedded_schema_examples": true,
+    "local_refs": true,
+    "all_schema_bound_examples": true,
+    "codes_exact": true,
+    "response_headers_unchanged": true,
+    "error_schema_unchanged": true,
+    "old_examples_unchanged": true,
+    "one_new_example": true,
+    "new_exact_code_message": true,
+    "metadata": true,
+    "entire_remaining_document_identical": true,
+    "12_operations": true,
+    "response_used_only_by_scenario_create": true,
+    "all_other_annex_bytes_preserved": true,
+    "oas_string_code_does_not_enforce_allowlist": true,
+    "baseline_strict_consumer_rejects_new_code": true,
+    "candidate_strict_consumer_accepts_new_code": true,
+    "candidate_allowlist_rejects_unknown": true,
+    "negative_controls": true,
+    "patch_dry_run": true,
+    "patch_apply": true,
+    "patch_yaml_byte_equal": true,
+    "patch_annex_byte_equal": true,
+    "old_annex_byte_preserved": true
+  },
+  "refs": 204,
+  "schema_bound_examples": 47,
+  "embedded_schema_examples": [
+    "SandopPlanCreatedEvent/0",
+    "SandopSnapshotCapturedEvent/0",
+    "SandopSignOffRecordedEvent/0",
+    "CapacityPlanCreatedEvent/0",
+    "CapacityScenarioCreatedEvent/0",
+    "CapacityEvaluationCompletedEvent/0"
+  ],
+  "total_examples": 53,
+  "example_paths": [
+    "/paths//sandop-plans/post/requestBody/content/application/json/example",
+    "/paths//sandop-plans/post/responses/201/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/get/responses/200/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/snapshots/post/requestBody/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/snapshots/post/responses/201/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/snapshots/get/responses/200/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/sign-offs/post/requestBody/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/sign-offs/post/responses/201/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/sign-offs/get/responses/200/content/application/json/example",
+    "/paths//capacity-plans/post/requestBody/content/application/json/example",
+    "/paths//capacity-plans/post/responses/201/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/get/responses/200/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/scenarios/post/requestBody/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/scenarios/post/responses/201/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/get/responses/200/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations/post/requestBody/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations/post/responses/202/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/evaluations/{evaluationId}/get/responses/200/content/application/json/example",
+    "/components/responses/InvalidRequest/content/application/json/example",
+    "/components/responses/Unauthenticated/headers/WWW-Authenticate/example",
+    "/components/responses/Unauthenticated/content/application/json/example",
+    "/components/responses/Forbidden/content/application/json/example",
+    "/components/responses/ReadUnavailable/content/application/json/example",
+    "/components/responses/MutationUnavailable/content/application/json/dependency",
+    "/components/responses/MutationUnavailable/content/application/json/unknownCommit",
+    "/components/responses/InvalidConstraintReference/content/application/json/example",
+    "/components/responses/UnknownSandopPlan/content/application/json/example",
+    "/components/responses/PlanConflict/content/application/json/existingBusinessConflict",
+    "/components/responses/PlanConflict/content/application/json/idempotencyKeyReused",
+    "/components/responses/PlanStateConflict/content/application/json/existingBusinessConflict",
+    "/components/responses/PlanStateConflict/content/application/json/idempotencyKeyReused",
+    "/components/responses/InvalidDemandReference/content/application/json/unknownOrUnpublished",
+    "/components/responses/InvalidDemandReference/content/application/json/checksumMismatch",
+    "/components/responses/InvalidSnapshotReference/content/application/json/example",
+    "/components/responses/SignOffConflict/content/application/json/existingBusinessConflict",
+    "/components/responses/SignOffConflict/content/application/json/idempotencyKeyReused",
+    "/components/responses/SignOffConflict/content/application/json/signOffStateConflict",
+    "/components/responses/UnknownCapacityPlan/content/application/json/example",
+    "/components/responses/CapacityPlanConflict/content/application/json/existingBusinessConflict",
+    "/components/responses/CapacityPlanConflict/content/application/json/idempotencyKeyReused",
+    "/components/responses/CapacityPlanStateConflict/content/application/json/existingBusinessConflict",
+    "/components/responses/CapacityPlanStateConflict/content/application/json/idempotencyKeyReused",
+    "/components/responses/CapacityPlanStateConflict/content/application/json/scenarioNameConflict",
+    "/components/responses/UnknownCapacityScenario/content/application/json/example",
+    "/components/responses/EvaluationConflict/content/application/json/existingBusinessConflict",
+    "/components/responses/EvaluationConflict/content/application/json/idempotencyKeyReused",
+    "/components/responses/UnknownCapacityEvaluation/content/application/json/example"
+  ],
+  "negative_controls": {
+    "bad_openapi": true,
+    "missing_title": true,
+    "broken_ref": true,
+    "missing_code": true,
+    "wrong_wire": true,
+    "bad_correlation": true
+  },
+  "operations": [
+    [
+      "/sandop-plans",
+      "post",
+      "createSandopPlan"
+    ],
+    [
+      "/sandop-plans/{sandopPlanId}",
+      "get",
+      "getSandopPlan"
+    ],
+    [
+      "/sandop-plans/{sandopPlanId}/snapshots",
+      "post",
+      "captureSandopSnapshot"
+    ],
+    [
+      "/sandop-plans/{sandopPlanId}/snapshots",
+      "get",
+      "listSandopSnapshots"
+    ],
+    [
+      "/sandop-plans/{sandopPlanId}/sign-offs",
+      "post",
+      "recordSandopSignOff"
+    ],
+    [
+      "/sandop-plans/{sandopPlanId}/sign-offs",
+      "get",
+      "listSandopSignOffs"
+    ],
+    [
+      "/capacity-plans",
+      "post",
+      "createCapacityPlan"
+    ],
+    [
+      "/capacity-plans/{capacityPlanId}",
+      "get",
+      "getCapacityPlan"
+    ],
+    [
+      "/capacity-plans/{capacityPlanId}/scenarios",
+      "post",
+      "createCapacityScenario"
+    ],
+    [
+      "/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}",
+      "get",
+      "getCapacityScenario"
+    ],
+    [
+      "/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations",
+      "post",
+      "evaluateCapacityScenario"
+    ],
+    [
+      "/capacity-plans/{capacityPlanId}/evaluations/{evaluationId}",
+      "get",
+      "getCapacityEvaluation"
+    ]
+  ],
+  "validator": "0.7.2",
+  "python": "3.9.6 (default, Dec  2 2025, 07:27:58) \n[Clang 17.0.0 (clang-1700.6.3.2)]"
+}

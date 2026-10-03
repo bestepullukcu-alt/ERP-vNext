@@ -1,0 +1,7 @@
+{
+  "kind": "DOCS_PATH_OWNER_DECISION",
+  "status": "UNAPPROVED",
+  "decisionId": "MVP6-CAPACITY-GUARD-SINGLE-DISPOSITION-01",
+  "approvedBy": "PENDING-OWNER",
+  "payloadSha256": "3bd20e2608ec62cd5c2da1fc60bc4419b6aefa594e0efc45f32b35df17ad8dfb"
+}

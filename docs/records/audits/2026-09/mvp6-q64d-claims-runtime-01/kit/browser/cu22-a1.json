@@ -1,0 +1,54 @@
+{
+  "phase": "cu22",
+  "startedAt": "2026-09-26T21:23:23.886Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-22-settled-wording": {
+      "result": "PASS",
+      "actionLabel": "Settle (no payment posted)",
+      "targetText": "Settled (operational status, no payment posted)",
+      "surfaceHasNote": true,
+      "confirmText": "Settled (operational status, no payment posted)\nChange the claim status to the selected value? Settling changes only the claim status. No payment, payable or receivable is posted.\nCancel\nApply Status",
+      "status": 200,
+      "browserCallPaths": [
+        "/SupplyChain/Claims",
+        "/api/personalization/views?moduleKey=claims-management&pageKey=CLAIMS",
+        "/SupplyChain/Claims/api",
+        "/SupplyChain/Claims/api?shipmentId=1773fff6-8ba0-44f0-8661-5442a951b106",
+        "/SupplyChain/Claims/api/362b0202-4f6c-4426-81a0-d7607564ada7/transition?shipmentId=1773fff6-8ba0-44f0-8661-5442a951b106"
+      ],
+      "dbCheck": "K10 pair cu22: only claims collections change"
+    }
+  },
+  "png": [
+    {
+      "name": "cu22-settle-confirm-en.png",
+      "sha256": "167ebbea3f31db8b1a027434ff6686159fa19d1c88ff364073d8e886aa31fa61",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:23:27.579Z",
+      "phase": "cu22",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu22-settled-en.png",
+      "sha256": "bcbef501e2d249692c4c13d7ed6f1fa3acc6e5ef291d655ff676db0dd45b674f",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:23:28.742Z",
+      "phase": "cu22",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [
+    {
+      "tag": "cu22",
+      "text": "Claim status updated.",
+      "type": "success",
+      "at": "2026-09-26T21:23:27.827Z"
+    }
+  ],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T21:23:28.781Z"
+}

@@ -1,0 +1,8 @@
+id	type	exact_check	result	evidence
+A03-RED	historical exact-source runtime	Unauthenticated GET /SupplyChain/Shipments/api returns 302 login redirect.	RED	raw/red-a03-unauth-list.headers; source manifest e6551f4552bd05682dcd9f2753044aa0b803dd4df90875952cca89608ab98ab3
+A03-GREEN	fresh disposable pipeline	Five adapter routes return 401 JSON/no Location/correlation; HTML page remains 302 login redirect.	PASS	raw/green-regression.trx
+A03-REG	fresh focused regression	Existing permission, scope/header, frozen-query and mutation-intent tests remain green.	PASS	raw/green-regression.trx; 9 total tests includes 4 controller, 3 Shipment index, and 2 new candidate tests
+MODAL-RED	historical exact-source browser	Arabic responsive modal renders Details/Close in English.	RED	raw/red-presentation-browser-measurements.json; presentation SOP §22 and ACCESSIBILITY-FINDINGS.tsv
+MODAL-GREEN	fresh disposable executable guard	Shared payload contains Details/Close; dtText owns title/close; all seven SharedResource sets contain both non-empty keys.	PASS	raw/green-regression.trx
+MODAL-BROWSER	post-application independent browser	Seven cultures at 390/768, title and close accessible name, RTL and row/action preservation.	PENDING	Requires authorized integration target; candidate guard is not browser acceptance.
+PATCH-APPLY	fresh disposable apply	Combined patch applies to the exact baseline and every target byte equals its manifest hash.	PASS	raw/patch-apply-byte-equality.tsv

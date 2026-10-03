@@ -1,0 +1,6 @@
+resource	result	evidence
+api_5772	STOPPED	no listener after Ctrl-C
+mongo_databases	DROPPED	cleanup-databases.json
+mongod_41020	STOPPED	cleanup-mongod.txt and no listener
+operational_mongo_27017	UNTOUCHED	all commands bound to 41020
+repository_production_sources	UNCHANGED	three source preimages remain baseline hashes

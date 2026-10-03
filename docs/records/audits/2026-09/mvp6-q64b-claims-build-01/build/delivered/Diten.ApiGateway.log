@@ -1,0 +1,13 @@
+  Determining projects to restore...
+  Restored /Users/natig/mvp6-env/claims/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj (in 329 ms).
+  Restored /Users/natig/mvp6-env/claims/gateway/Diten.ApiGateway/Diten.ApiGateway.csproj (in 329 ms).
+  1 of 3 projects are up-to-date for restore.
+  Diten.BuildingBlocks.Security.Secrets -> /Users/natig/mvp6-env/claims/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.Platform.Common -> /Users/natig/mvp6-env/claims/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Debug/net8.0/Diten.Platform.Common.dll
+  Diten.ApiGateway -> /Users/natig/mvp6-env/claims/gateway/Diten.ApiGateway/bin/Debug/net8.0/Diten.ApiGateway.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:06.20

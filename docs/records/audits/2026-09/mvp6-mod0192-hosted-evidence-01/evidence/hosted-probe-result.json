@@ -1,0 +1,16 @@
+{
+  "result": "PASS",
+  "httpRecords": 21,
+  "binarySha256": "f43af77c5c7ffeb5ea438daac4801b61cdf89e0e39f6d5f9dfb40576e3e8ee8f",
+  "killRestart": {
+    "events": 1,
+    "audits": 1,
+    "slots": 0
+  },
+  "staleRace": {
+    "events": 1,
+    "audits": 1,
+    "slots": 0
+  },
+  "noPublisherPendingEvents": 10
+}

@@ -1,0 +1,249 @@
+@model Guid
+@using Diten.Web.Models.SupplyChain.CapacityPlans
+@using Diten.Web.Views.SupplyChain.CapacityPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CapacityPlanDetails> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    // MOD-0192 Capacity plan workspace (pack §23.4–§23.8, GoldenReferenceSlim). DRAFT overlay — not built, not writer-complete.
+    ViewData["Title"] = Localizer["PlanDetailsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@if (!Perms.Has(CapacityUiPermissions.Read))
+{
+    <partial name="_AccessDenied" model="@Localizer["PlanDetailsTitle"].Value" />
+    return;
+}
+@{
+    var permissions = CapacityPagePermissions.From(Perms.Has);
+}
+
+<div id="capacity-plan-details" data-capacity-plan-id="@Model.ToString("D")">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-3">
+        <div class="min-w-0">
+            <h4 class="mb-1 text-break" id="planTitle">@Localizer["PlanDetailsTitle"]</h4>
+            <nav aria-label="@Localizer["CapacityPlansTitle"]">
+                <ol class="breadcrumb mb-0 py-0">
+                    <li class="breadcrumb-item"><a href="~/SupplyChain/CapacityPlans">@Localizer["CapacityPlansTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary" aria-current="page">@Localizer["PlanDetailsTitle"]</li>
+                </ol>
+            </nav>
+        </div>
+        @* State-gated toolbar (pack §23.7): details.js shows "Create scenario" only for its key once the plan is loaded. *@
+        <div class="d-flex flex-wrap gap-2" id="planActions">
+            @if (permissions.CanCreateScenario)
+            {
+                <button type="button" class="btn btn-primary d-none" id="btnOpenCreateScenario" aria-controls="offcanvasCreateScenario">
+                    <i class="bx bx-git-branch me-1" aria-hidden="true"></i>@Localizer["CreateScenario"]
+                </button>
+            }
+            <a href="~/SupplyChain/CapacityPlans" class="btn btn-label-secondary border">@Localizer["BackToPlans"]</a>
+        </div>
+    </div>
+
+    @* Page-level surface for plan safe-not-found (UNKNOWN_CAPACITY_PLAN) and page denial. *@
+    <div id="planAlert" class="alert alert-danger d-none" role="alert" tabindex="-1" aria-live="assertive"></div>
+
+    <div id="planWorkspace" class="row g-6">
+        @* ① Plan summary — skeleton / content / error are three distinct states (VIEW-001 §3.1) *@
+        <div class="col-12">
+            <section class="card backbone-preview-section p-4" aria-labelledby="planSummaryTitle">
+                <h5 class="card-title mb-4" id="planSummaryTitle">@Localizer["PlanSummary"]</h5>
+                <div id="summary-skeleton" class="backbone-skeleton" aria-hidden="true">
+                    <div class="shimmer skeleton-row skeleton-row-lg"></div>
+                    <div class="shimmer skeleton-row"></div>
+                    <div class="shimmer skeleton-row skeleton-row-last"></div>
+                </div>
+                <div id="summary-error" class="text-center d-none" role="alert">
+                    <i class="bx bx-error-circle fs-2 text-danger d-block mb-2" aria-hidden="true"></i>
+                    <p class="mb-1 fw-medium js-section-error-message">@Localizer["SummaryErrorState"]</p>
+                    <p class="mb-3 small text-muted d-none js-section-error-reference"></p>
+                    <button type="button" class="btn btn-sm btn-label-primary js-retry" data-retry="summary">@Localizer["Retry"]</button>
+                </div>
+                <dl id="summary-content" class="row mb-0 d-none">
+                    <dt class="col-sm-4 mb-3">@Localizer["PlanId"]</dt>
+                    <dd class="col-sm-8 mb-3" id="summaryPlanId"></dd>
+                    <dt class="col-sm-4 mb-3">@Localizer["PlanName"]</dt>
+                    <dd class="col-sm-8 mb-3 text-break" id="summaryPlanName"></dd>
+                    <dt class="col-sm-4 mb-3">@Localizer["Status"]</dt>
+                    <dd class="col-sm-8 mb-3" id="summaryStatus"></dd>
+                    <dt class="col-sm-4 mb-3">@Localizer["Horizon"]</dt>
+                    <dd class="col-sm-8 mb-3" id="summaryHorizon"></dd>
+                    <dt class="col-sm-4 mb-3">@Localizer["Provenance"]</dt>
+                    <dd class="col-sm-8 mb-3" id="summaryProvenance"></dd>
+                    <dt class="col-sm-4 mb-3">@Localizer["SourceChecksum"]</dt>
+                    <dd class="col-sm-8 mb-3" id="summarySourceChecksum"></dd>
+                    <dt class="col-sm-4 mb-3">@Localizer["SourceCapturedAt"]</dt>
+                    <dd class="col-sm-8 mb-3" id="summarySourceCapturedAt"></dd>
+                    <dt class="col-sm-4 mb-0">@Localizer["CreatedAt"]</dt>
+                    <dd class="col-sm-8 mb-0" id="summaryCreatedAt"></dd>
+                </dl>
+            </section>
+        </div>
+
+        @* ② Scenario — open by ID (no scenario list operation exists, F192-LIST) or reached after "Create scenario". *@
+        <div class="col-12">
+            <section class="card p-4" aria-labelledby="scenarioTitle">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-3">
+                    <div class="min-w-0">
+                        <h5 class="card-title mb-1" id="scenarioTitle" tabindex="-1">@Localizer["Scenarios"]</h5>
+                        <p class="small text-muted mb-0">@Localizer["SessionIdNote"]</p>
+                    </div>
+                    @if (permissions.CanEvaluate)
+                    {
+                        <button type="button" class="btn btn-label-primary d-none" id="btnOpenEvaluate" aria-controls="offcanvasEvaluate">
+                            <i class="bx bx-play-circle me-1" aria-hidden="true"></i>@Localizer["Evaluate"]
+                        </button>
+                    }
+                </div>
+                <form id="formOpenScenario" class="mb-4" novalidate>
+                    <label for="openScenarioId" class="form-label fw-medium">@Localizer["ScenarioId"] <span class="text-danger">*</span></label>
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+                        <div class="diten-field flex-grow-1">
+                            <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" id="openScenarioId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false"
+                                   aria-describedby="openScenarioIdHelp openScenarioIdError" />
+                        </div>
+                        <button type="submit" class="btn btn-label-secondary border" id="btnOpenScenario">@Localizer["OpenScenario"]</button>
+                    </div>
+                    <div id="openScenarioIdHelp" class="form-text">@Localizer["ScenarioIdHelp"]</div>
+                    <div id="openScenarioIdError" class="invalid-feedback d-block d-none" role="alert">@Localizer["ScenarioIdInvalid"]</div>
+                </form>
+                <p id="scenario-empty" class="text-muted mb-0">@Localizer["ScenarioEmptyState"]</p>
+                <div id="scenario-skeleton" class="backbone-skeleton d-none" aria-hidden="true">
+                    <div class="shimmer skeleton-row skeleton-row-lg"></div>
+                    <div class="shimmer skeleton-row"></div>
+                    <div class="shimmer skeleton-row skeleton-row-last"></div>
+                </div>
+                <div id="scenario-error" class="text-center d-none" role="alert">
+                    <i class="bx bx-error-circle fs-2 text-danger d-block mb-2" aria-hidden="true"></i>
+                    <p class="mb-1 fw-medium js-section-error-message">@Localizer["ScenarioErrorState"]</p>
+                    <p class="mb-3 small text-muted d-none js-section-error-reference"></p>
+                    <button type="button" class="btn btn-sm btn-label-primary js-retry" data-retry="scenario">@Localizer["Retry"]</button>
+                </div>
+                <div id="scenario-content" class="d-none">
+                    <dl class="row mb-2">
+                        <dt class="col-sm-4 mb-3">@Localizer["ScenarioId"]</dt>
+                        <dd class="col-sm-8 mb-3" id="scenarioIdValue"></dd>
+                        <dt class="col-sm-4 mb-3">@Localizer["ScenarioName"]</dt>
+                        <dd class="col-sm-8 mb-3 text-break" id="scenarioNameValue"></dd>
+                        <dt class="col-sm-4 mb-3">@Localizer["ScenarioStatusLabel"]</dt>
+                        <dd class="col-sm-8 mb-3" id="scenarioStatusValue"></dd>
+                        <dt class="col-sm-4 mb-3">@Localizer["CreatedAt"]</dt>
+                        <dd class="col-sm-8 mb-3" id="scenarioCreatedAtValue"></dd>
+                    </dl>
+                    @* Read-only row sets of the loaded scenario, rendered with textContent (README A9). *@
+                    <h6 class="mb-2">@Localizer["ConstraintRefs"]</h6>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm border-top mb-0" id="scenarioConstraintRefs">
+                            <thead>
+                                <tr>
+                                    <th scope="col">@Localizer["ConstraintId"]</th>
+                                    <th scope="col">@Localizer["Source"]</th>
+                                    <th scope="col">@Localizer["SourceVersion"]</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <h6 class="mb-2">@Localizer["Adjustments"]</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm border-top mb-0" id="scenarioAdjustments">
+                            <thead>
+                                <tr>
+                                    <th scope="col">@Localizer["ResourceRef"]</th>
+                                    <th scope="col">@Localizer["Period"]</th>
+                                    <th scope="col" class="text-end">@Localizer["AvailableCapacityDelta"]</th>
+                                    <th scope="col">@Localizer["UomId"]</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        @* ③ Evaluation — opened by the 202 of "Run evaluation" in this session; manual Refresh only (F192-POLL). *@
+        <div class="col-12">
+            <section class="card" aria-labelledby="evaluationTitle">
+                <div class="p-4 pb-0 d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+                    <div class="min-w-0">
+                        <h5 class="card-title mb-1" id="evaluationTitle">@Localizer["Evaluation"]</h5>
+                        <p class="small text-muted mb-3">@Localizer["RefreshNote"]</p>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-label-primary d-none" id="btnRefreshEvaluation">
+                        <i class="bx bx-refresh me-1" aria-hidden="true"></i>@Localizer["Refresh"]
+                    </button>
+                </div>
+                <p id="evaluation-empty" class="text-muted px-4 pb-4 mb-0">@Localizer["EvaluationEmptyState"]</p>
+                <div id="evaluation-skeleton" class="backbone-skeleton px-4 pb-4 d-none" aria-hidden="true">
+                    <div class="shimmer skeleton-row skeleton-row-lg"></div>
+                    <div class="shimmer skeleton-row"></div>
+                    <div class="shimmer skeleton-row skeleton-row-last"></div>
+                </div>
+                <div id="evaluation-error" class="p-4 text-center d-none" role="alert">
+                    <i class="bx bx-error-circle fs-2 text-danger d-block mb-2" aria-hidden="true"></i>
+                    <p class="mb-1 fw-medium js-section-error-message">@Localizer["EvaluationErrorState"]</p>
+                    <p class="mb-3 small text-muted d-none js-section-error-reference"></p>
+                    <button type="button" class="btn btn-sm btn-label-primary js-retry d-none" data-retry="evaluation">@Localizer["Retry"]</button>
+                </div>
+                <div id="evaluation-content" class="d-none">
+                    <dl class="row mb-2 px-4">
+                        <dt class="col-sm-4 mb-3">@Localizer["EvaluationId"]</dt>
+                        <dd class="col-sm-8 mb-3" id="evaluationIdValue"></dd>
+                        <dt class="col-sm-4 mb-3">@Localizer["ScenarioId"]</dt>
+                        <dd class="col-sm-8 mb-3" id="evaluationScenarioIdValue"></dd>
+                        <dt class="col-sm-4 mb-3">@Localizer["EvaluationMode"]</dt>
+                        <dd class="col-sm-8 mb-3" id="evaluationModeValue"></dd>
+                        <dt class="col-sm-4 mb-3">@Localizer["EvaluationStatusLabel"]</dt>
+                        <dd class="col-sm-8 mb-3" id="evaluationStatusValue"></dd>
+                        <dt class="col-sm-4 mb-3">@Localizer["SubmittedAt"]</dt>
+                        <dd class="col-sm-8 mb-3" id="evaluationSubmittedAtValue"></dd>
+                        <dt class="col-sm-4 mb-3">@Localizer["CompletedAt"]</dt>
+                        <dd class="col-sm-8 mb-3" id="evaluationCompletedAtValue"></dd>
+                    </dl>
+                    @* Bottlenecks — bounded client-side DataTables v2 over the returned evaluation only (pack §23.5).
+                       Shown when the evaluation is Completed; decimals are the wire strings, isolated LTR. *@
+                    <div id="bottlenecks-host" class="d-none">
+                        <h6 class="px-4 mb-2">@Localizer["Bottlenecks"]</h6>
+                        <div class="card-datatable table-responsive">
+                            <table id="dt-capacity-bottlenecks" data-dt-standard="v2" class="datatables-capacity-bottlenecks table border-top">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th class="all">@Localizer["ResourceRef"]</th>
+                                        <th>@Localizer["Period"]</th>
+                                        <th class="text-end">@Localizer["RequiredCapacity"]</th>
+                                        <th class="text-end">@Localizer["AvailableCapacity"]</th>
+                                        <th class="text-end all">@Localizer["Shortfall"]</th>
+                                        <th>@Localizer["UomId"]</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    @if (permissions.CanCreateScenario)
+    {
+        <partial name="~/Views/SupplyChain/CapacityPlans/_CreateScenarioOffcanvas.cshtml" />
+    }
+    @if (permissions.CanEvaluate)
+    {
+        <partial name="~/Views/SupplyChain/CapacityPlans/_EvaluateOffcanvas.cshtml" />
+    }
+</div>
+
+@* Display decision only (UAS-001 §4); the backend permission gate stays the authority. *@
+<script id="capacity-plan-permissions" type="application/json">@Json.Serialize(new { canCreateScenario = permissions.CanCreateScenario, canEvaluate = permissions.CanEvaluate })</script>
+
+@section Scripts {
+    <partial name="~/Views/SupplyChain/CapacityPlans/_DetailsL10n.cshtml" />
+    <script src="~/assets/js/SupplyChain/CapacityPlans/details.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/SupplyChain/CapacityPlans/details.js" asp-append-version="true"></script>
+}

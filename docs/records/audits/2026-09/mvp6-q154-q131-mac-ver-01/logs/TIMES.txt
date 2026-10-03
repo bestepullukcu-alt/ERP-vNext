@@ -1,0 +1,8 @@
+slot7 capacity start 20:24:11
+slot6 capacity start 20:24:11
+slot6 capacity end 20:26:18 rc 0 :: Passed!  - Failed:     0, Passed:    48, Skipped:     0, Total:    48, Duration: 2 m 5 s - Diten.SupplyChainService.Tests.dll (net8.0)
+slot6 platform start 20:26:18
+slot7 capacity end 20:26:31 rc 0 :: Passed!  - Failed:     0, Passed:    48, Skipped:     0, Total:    48, Duration: 2 m 17 s - Diten.SupplyChainService.Tests.dll (net8.0)
+slot7 platform start 20:26:31
+slot6 platform end 20:26:51 rc 0 :: Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 30 s - Diten.Platform.Application.Tests.dll (net8.0)
+slot7 platform end 20:27:08 rc 0 :: Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 32 s - Diten.Platform.Application.Tests.dll (net8.0)

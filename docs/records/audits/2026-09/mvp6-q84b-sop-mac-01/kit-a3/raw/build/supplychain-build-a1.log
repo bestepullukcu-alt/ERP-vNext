@@ -1,0 +1,14 @@
+  Diten.BuildingBlocks.ModuleRegistration.Abstractions -> /Users/natig/mvp6-env/q84b/ek-work-a3/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/bin/Release/net8.0/Diten.BuildingBlocks.ModuleRegistration.Abstractions.dll
+  Diten.BuildingBlocks.Eventing -> /Users/natig/mvp6-env/q84b/ek-work-a3/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Release/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.BuildingBlocks.Security.Secrets -> /Users/natig/mvp6-env/q84b/ek-work-a3/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.SupplyChainService.Domain -> /Users/natig/mvp6-env/q84b/ek-work-a3/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/bin/Release/net8.0/Diten.SupplyChainService.Domain.dll
+  Diten.SupplyChainService.Application -> /Users/natig/mvp6-env/q84b/ek-work-a3/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/bin/Release/net8.0/Diten.SupplyChainService.Application.dll
+  Diten.SupplyChainService.Infrastructure -> /Users/natig/mvp6-env/q84b/ek-work-a3/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/bin/Release/net8.0/Diten.SupplyChainService.Infrastructure.dll
+  Diten.SupplyChainService.Persistence -> /Users/natig/mvp6-env/q84b/ek-work-a3/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Release/net8.0/Diten.SupplyChainService.Persistence.dll
+  Diten.SupplyChainService.Api -> /Users/natig/mvp6-env/q84b/ek-work-a3/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0/Diten.SupplyChainService.Api.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.61

@@ -1,0 +1,15 @@
+Test run for /Users/natig/mvp6-env/q84b/c2/A/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:03:50.81]     Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery [FAIL]
+  Failed Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery [1 ms]
+  Error Message:
+   System.InvalidOperationException : Explicit write/read restart mode required; exclude from ordinary suite.
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery() in /Users/natig/mvp6-env/q84b/c2/A/build/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimReplayTests.cs:line 46
+--- End of stack trace from previous location ---
+Results File: /Users/natig/mvp6-env/q84b/logs/test/A--supplychain-tests.trx
+
+Failed!  - Failed:     1, Passed:   416, Skipped:     0, Total:   417, Duration: 4 m 31 s - Diten.SupplyChainService.Tests.dll (net8.0)

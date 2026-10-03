@@ -1,0 +1,158 @@
+[
+  {
+    "path": "BINARY-MANIFEST.tsv",
+    "expected": "7efb753f785e2570a3ec187faf49112a26c1bf8297820597e721efcd48ccfb4e",
+    "actual": "7efb753f785e2570a3ec187faf49112a26c1bf8297820597e721efcd48ccfb4e",
+    "ok": true
+  },
+  {
+    "path": "COMBINED-SOURCE-MANIFEST.tsv",
+    "expected": "edfb66423a9763634b895eba19b1a1dd063cc2e4cc9b1212fdbd79f4426400ee",
+    "actual": "edfb66423a9763634b895eba19b1a1dd063cc2e4cc9b1212fdbd79f4426400ee",
+    "ok": true
+  },
+  {
+    "path": "INPUT-MANIFEST.tsv",
+    "expected": "0b65ce243e97d53ac970679a040054fe022c9a45a023c286746e7ea5dcee63e3",
+    "actual": "0b65ce243e97d53ac970679a040054fe022c9a45a023c286746e7ea5dcee63e3",
+    "ok": true
+  },
+  {
+    "path": "OWNER-DECISION.md",
+    "expected": "b47d667be009ee1cadbfe725c7b6789abbab237cb337c34c24457c824a7f2cb1",
+    "actual": "b47d667be009ee1cadbfe725c7b6789abbab237cb337c34c24457c824a7f2cb1",
+    "ok": true
+  },
+  {
+    "path": "PROCESS-CLEANUP.md",
+    "expected": "eb1c5bf2df788654640ca3a2b6283c0a6cd2d3031a3320b24ddcbcf1a3abc410",
+    "actual": "eb1c5bf2df788654640ca3a2b6283c0a6cd2d3031a3320b24ddcbcf1a3abc410",
+    "ok": true
+  },
+  {
+    "path": "SOP-22.md",
+    "expected": "b6d6145df7af96b38bdf7e83803f4b55bf20be208bcc76ff50f76defa3b21867",
+    "actual": "b6d6145df7af96b38bdf7e83803f4b55bf20be208bcc76ff50f76defa3b21867",
+    "ok": true
+  },
+  {
+    "path": "VER-HANDOFF.md",
+    "expected": "d7db02d790d2afc385f3f9785b3cc628ae8e16ff7d69b58319d9304d7f09f647",
+    "actual": "d7db02d790d2afc385f3f9785b3cc628ae8e16ff7d69b58319d9304d7f09f647",
+    "ok": true
+  },
+  {
+    "path": "X07-LATER-READ-EVIDENCE-TEST.patch",
+    "expected": "b6744cddfd498536abeb4b350d8b8b2bd1c30c0824875757522026ed5f01df81",
+    "actual": "b6744cddfd498536abeb4b350d8b8b2bd1c30c0824875757522026ed5f01df81",
+    "ok": true
+  },
+  {
+    "path": "combined-source-verification.json",
+    "expected": "8e5555a120cc4fa2829021e38edeeb8b10086c92bea5c58d460467f05cec46df",
+    "actual": "8e5555a120cc4fa2829021e38edeeb8b10086c92bea5c58d460467f05cec46df",
+    "ok": true
+  },
+  {
+    "path": "discarded-pre-final-evidence.tar.gz",
+    "expected": "fbf0a1c84b43d85829546345f346abc96a56d828ec8daf2a95b8df77e34fa1b5",
+    "actual": "fbf0a1c84b43d85829546345f346abc96a56d828ec8daf2a95b8df77e34fa1b5",
+    "ok": true
+  },
+  {
+    "path": "evidence/BUILD.log",
+    "expected": "8963caaed0569301704d6234a2658e22fbd859d6d095f4fbc336919114b7c574",
+    "actual": "8963caaed0569301704d6234a2658e22fbd859d6d095f4fbc336919114b7c574",
+    "ok": true
+  },
+  {
+    "path": "evidence/SUMMARY.json",
+    "expected": "580994e0c8948a7c8d71103bde4d8c0764429ae3aada46a266ecb658a4288b6c",
+    "actual": "580994e0c8948a7c8d71103bde4d8c0764429ae3aada46a266ecb658a4288b6c",
+    "ok": true
+  },
+  {
+    "path": "evidence/capacity-hosted-dev-rollforward.trx",
+    "expected": "975b6b7ebe911ce62f6020d99d40408d13e79053eea74ed0ea93b410d7b1141a",
+    "actual": "975b6b7ebe911ce62f6020d99d40408d13e79053eea74ed0ea93b410d7b1141a",
+    "ok": true
+  },
+  {
+    "path": "evidence/capacity-hosted-dev.trx",
+    "expected": "6fc41cc08468c4df88bfd5e43c12dcaaf850a2a938a5afba7d633d812984203b",
+    "actual": "6fc41cc08468c4df88bfd5e43c12dcaaf850a2a938a5afba7d633d812984203b",
+    "ok": true
+  },
+  {
+    "path": "evidence/hosted-probe-result.json",
+    "expected": "39cd9b3d447d70e1d5737b525d604b60d0dc203e3301efe01b8d3cd6dc06d9d6",
+    "actual": "39cd9b3d447d70e1d5737b525d604b60d0dc203e3301efe01b8d3cd6dc06d9d6",
+    "ok": true
+  },
+  {
+    "path": "evidence/http-records.json",
+    "expected": "c4caa8b3747be3fa2979ec82fac9f04bbed8b0a0b46db86df26ace3b233410ca",
+    "actual": "c4caa8b3747be3fa2979ec82fac9f04bbed8b0a0b46db86df26ace3b233410ca",
+    "ok": true
+  },
+  {
+    "path": "evidence/main-http.log",
+    "expected": "615afb127a6fa8b5bb4d9c98be9fc5be4d5200dd22900c8ef51eb9ae3962d889",
+    "actual": "615afb127a6fa8b5bb4d9c98be9fc5be4d5200dd22900c8ef51eb9ae3962d889",
+    "ok": true
+  },
+  {
+    "path": "evidence/mongo-transcript.json",
+    "expected": "8fdd0c26be52d546e32e9846a34604e274f6b252c32fd6bcbd3a9b04de529504",
+    "actual": "8fdd0c26be52d546e32e9846a34604e274f6b252c32fd6bcbd3a9b04de529504",
+    "ok": true
+  },
+  {
+    "path": "evidence/process-transcript.json",
+    "expected": "024728c82570b0337520e97584b2509778509076959afa461ec229ac2bfef48f",
+    "actual": "024728c82570b0337520e97584b2509778509076959afa461ec229ac2bfef48f",
+    "ok": true
+  },
+  {
+    "path": "evidence/race-seed.log",
+    "expected": "e222f25d83bf8672becae78df371ce56f0ba36856e558bfb9af990440999b493",
+    "actual": "e222f25d83bf8672becae78df371ce56f0ba36856e558bfb9af990440999b493",
+    "ok": true
+  },
+  {
+    "path": "evidence/restart-host.log",
+    "expected": "676698a10bd8f54bd9b2b18d42a11b6f11038ef669bc8b380e2a86f7cd3d5d79",
+    "actual": "676698a10bd8f54bd9b2b18d42a11b6f11038ef669bc8b380e2a86f7cd3d5d79",
+    "ok": true
+  },
+  {
+    "path": "evidence/worker-a.log",
+    "expected": "89dabfb3c493cd7c505d0a9a5df4269682b2c310fb01359391d2bfdb0f2a280c",
+    "actual": "89dabfb3c493cd7c505d0a9a5df4269682b2c310fb01359391d2bfdb0f2a280c",
+    "ok": true
+  },
+  {
+    "path": "evidence/worker-b.log",
+    "expected": "3691f5e1bace6a25de31e2a9a903b1913024fe882ef12d2ce69f63533193fd0a",
+    "actual": "3691f5e1bace6a25de31e2a9a903b1913024fe882ef12d2ce69f63533193fd0a",
+    "ok": true
+  },
+  {
+    "path": "hosted_probe.py",
+    "expected": "b94eb4af44c4fa1f99eb295c2971c985ce913eeb7a199e855b90489577b51f90",
+    "actual": "b94eb4af44c4fa1f99eb295c2971c985ce913eeb7a199e855b90489577b51f90",
+    "ok": true
+  },
+  {
+    "path": "summarize_evidence.py",
+    "expected": "8b8bb00f793ff90f86e89f639adcf08e7cfc12d37883f56d59aa376cee696100",
+    "actual": "8b8bb00f793ff90f86e89f639adcf08e7cfc12d37883f56d59aa376cee696100",
+    "ok": true
+  },
+  {
+    "path": "verify_combined_source.py",
+    "expected": "90832a48d32f096653e50ffb0b8fcaa1ab10f2cf559213727d229088151947bf",
+    "actual": "90832a48d32f096653e50ffb0b8fcaa1ab10f2cf559213727d229088151947bf",
+    "ok": true
+  }
+]

@@ -1,0 +1,15 @@
+sdk:
+8.0.417
+runtimes:
+Microsoft.AspNetCore.App 8.0.23 [/Users/natig/.dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 8.0.23 [/Users/natig/.dotnet/shared/Microsoft.NETCore.App]
+source-archive:
+490d51be87d249265a2cc9fe6d1f8f3b23bd6976f4e5830d733bff2dfff613a3  docs/records/audits/2026-09/mvp6-shipment-shared-ui-exec-01/combined-source.tar.gz
+source-manifest:
+7d7bec63a1f2e9e906864e5dea6dc96a00e94a280b830dd06f95a8b68246b4fc  docs/records/audits/2026-09/mvp6-shipment-shared-ui-exec-01/COMBINED-360-SOURCE-MANIFEST.tsv
+auth-overlay:
+f50350b8e541a4c1cbc640926c581cf510b4c2dbb57b31ef4193bf4c25c9e2cd  docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/final-source.tar.gz
+auth-overlay-manifest:
+b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731  docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/FINAL-22-SOURCE-MANIFEST.tsv
+gateway-runtime-config:
+776cfe9e2a1342b9dff78a35451ca33ea2392c8fa7c599bb1d9752a0a33d5ad3  /private/tmp/mvp6-shipment-remaining-evidence-JDCqRq/gateway-runtime/ocelot.json

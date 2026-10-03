@@ -1,0 +1,18 @@
+resource	check	result	utc
+web:3481	stop	stopped (zombie until supervisor exits)	2026-10-01T13:20:46Z
+gateway:3394	stop	stopped (zombie until supervisor exits)	2026-10-01T13:20:47Z
+supplychain:3300	stop	stopped (zombie until supervisor exits)	2026-10-01T13:20:47Z
+mdm:3226	stop	stopped (zombie until supervisor exits)	2026-10-01T13:20:48Z
+platform:3039	stop	stopped (zombie until supervisor exits)	2026-10-01T13:20:49Z
+auth:2929	stop	stopped (zombie until supervisor exits)	2026-10-01T13:20:49Z
+mongod:2800	stop	stopped	2026-10-01T13:20:51Z
+port:auth:5556	no listener	PASS	2026-10-01T13:20:53Z
+port:platform:5557	no listener	PASS	2026-10-01T13:20:53Z
+port:mdm:5559	no listener	PASS	2026-10-01T13:20:53Z
+port:supplychain:5561	no listener	PASS	2026-10-01T13:20:53Z
+port:gateway:5500	no listener	PASS	2026-10-01T13:20:53Z
+port:web:5501	no listener	PASS	2026-10-01T13:20:53Z
+port:sink:5599	no listener	PASS	2026-10-01T13:20:53Z
+port:mongo:35994	no listener	PASS	2026-10-01T13:20:53Z
+workspace	not removed (owner rule no-rm; allowed path ~/mvp6-env/q88b)	INFO	2026-10-01T13:20:53Z
+repo-head	4a8d4d4b339528a88e6220fb8402e5a2c771136c	PASS	2026-10-01T13:20:53Z

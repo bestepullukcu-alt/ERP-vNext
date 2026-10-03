@@ -1,0 +1,160 @@
+diff --git a/frontend/Diten.Web/Program.cs b/frontend/Diten.Web/Program.cs
+index 51229a09..c14f79cc 100644
+--- a/frontend/Diten.Web/Program.cs
++++ b/frontend/Diten.Web/Program.cs
+@@ -1,6 +1,7 @@
+ using Diten.Web;
+ using Diten.BuildingBlocks.Security.Secrets;
+ using Diten.Web.Filters;
++using Diten.Web.Security;
+ using Diten.Web.Services.Auth;
+ using Diten.Web.Services.EnterpriseStrategy;
+ using Diten.Web.Services.ManagementGovernance;
+@@ -75,6 +76,31 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
+         options.Cookie.Name = "auth_ticket"; // Use a separate cookie for ASP.NET state if needed
+         options.LoginPath = "/account/login";
+         options.LogoutPath = "/account/logout";
++        options.Events.OnRedirectToLogin = async context =>
++        {
++            if (context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<JsonAdapterEndpointAttribute>() is null)
++            {
++                context.Response.Redirect(context.RedirectUri);
++                return;
++            }
++
++            var correlationId = context.Request.Headers.TryGetValue("X-Correlation-Id", out var values)
++                && values.Count == 1 && Guid.TryParse(values[0], out var parsed)
++                    ? parsed
++                    : Guid.NewGuid();
++            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
++            context.Response.Headers["X-Correlation-Id"] = correlationId.ToString("D");
++            await context.Response.WriteAsJsonAsync(new
++            {
++                error = new
++                {
++                    code = "INVALID_REQUEST",
++                    message = "Authentication required.",
++                    correlationId
++                },
++                contractVersion = "v1"
++            });
++        };
+     });
+ 
+ var authServiceUrl = builder.Configuration["GatewayUrl"] ?? "http://localhost:5000";
+diff --git ab/frontend/Diten.Web/Security/JsonAdapterEndpointAttribute.cs b/frontend/Diten.Web/Security/JsonAdapterEndpointAttribute.cs
+new file mode 100644
+index 00000000..015d3d40
+--- /dev/null
++++ b/frontend/Diten.Web/Security/JsonAdapterEndpointAttribute.cs
+@@ -0,0 +1,9 @@
++namespace Diten.Web.Security;
++
++/// <summary>
++/// Marks same-origin MVC adapter endpoints whose authentication challenge is JSON.
++/// The marker changes only the cookie challenge representation; authorization still
++/// runs through the normal ASP.NET Core pipeline.
++/// </summary>
++[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
++public sealed class JsonAdapterEndpointAttribute : Attribute;
+diff --git a/frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs b/frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs
+index de836a20..4f7a26ab 100644
+--- a/frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs
++++ b/frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs
+@@ -50,6 +50,7 @@ public sealed class SupplyChainShipmentsController : Controller
+     }
+ 
+     [HttpGet("api")]
++    [JsonAdapterEndpoint]
+     public Task<IActionResult> List([FromQuery] string? status, [FromQuery] string? sourceDocumentId,
+         [FromQuery] int page = 1, [FromQuery] int pageSize = 50, CancellationToken cancellationToken = default)
+     {
+@@ -64,6 +65,7 @@ public sealed class SupplyChainShipmentsController : Controller
+     }
+ 
+     [HttpGet("api/{shipmentId:guid}")]
++    [JsonAdapterEndpoint]
+     public Task<IActionResult> Detail(Guid shipmentId, CancellationToken cancellationToken)
+     {
+         if (!HasPermission(ReadPermission)) return Task.FromResult(ContractFailure(StatusCodes.Status403Forbidden));
+@@ -71,6 +73,7 @@ public sealed class SupplyChainShipmentsController : Controller
+     }
+ 
+     [HttpPost("api")]
++    [JsonAdapterEndpoint]
+     [ValidateAntiForgeryToken]
+     public Task<IActionResult> Create([FromBody] CreateShipmentViewModel model, CancellationToken cancellationToken)
+     {
+@@ -81,6 +84,7 @@ public sealed class SupplyChainShipmentsController : Controller
+     }
+ 
+     [HttpPost("api/{shipmentId:guid}/transition")]
++    [JsonAdapterEndpoint]
+     [ValidateAntiForgeryToken]
+     public Task<IActionResult> Transition(Guid shipmentId, [FromBody] TransitionShipmentViewModel model,
+         CancellationToken cancellationToken)
+@@ -94,6 +98,7 @@ public sealed class SupplyChainShipmentsController : Controller
+     }
+ 
+     [HttpPost("api/{shipmentId:guid}/pod")]
++    [JsonAdapterEndpoint]
+     [ValidateAntiForgeryToken]
+     public Task<IActionResult> CapturePod(Guid shipmentId, [FromBody] CaptureShipmentPodViewModel model,
+         CancellationToken cancellationToken)
+diff --git ab/frontend/Diten.Web.Tests/Controllers/ShipmentJsonAdapterChallengeTests.cs b/frontend/Diten.Web.Tests/Controllers/ShipmentJsonAdapterChallengeTests.cs
+new file mode 100644
+index 00000000..49f567a3
+--- /dev/null
++++ b/frontend/Diten.Web.Tests/Controllers/ShipmentJsonAdapterChallengeTests.cs
+@@ -0,0 +1,51 @@
++using System.Net;
++using System.Text.Json;
++using Microsoft.AspNetCore.Mvc.Testing;
++using Xunit;
++
++namespace Diten.Web.Tests.Controllers;
++
++public sealed class ShipmentJsonAdapterChallengeTests : IClassFixture<WebApplicationFactory<Program>>
++{
++    private readonly WebApplicationFactory<Program> _factory;
++
++    public ShipmentJsonAdapterChallengeTests(WebApplicationFactory<Program> factory) => _factory = factory;
++
++    [Fact]
++    public async Task Unauthenticated_adapter_uses_json_401_while_page_keeps_login_redirect()
++    {
++        using var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
++        var id = "44444444-4444-4444-8444-444444444444";
++        var adapters = new[]
++        {
++            new HttpRequestMessage(HttpMethod.Get, "/SupplyChain/Shipments/api"),
++            new HttpRequestMessage(HttpMethod.Get, $"/SupplyChain/Shipments/api/{id}"),
++            JsonPost("/SupplyChain/Shipments/api"),
++            JsonPost($"/SupplyChain/Shipments/api/{id}/transition"),
++            JsonPost($"/SupplyChain/Shipments/api/{id}/pod")
++        };
++
++        foreach (var request in adapters)
++        {
++            using (request)
++            using (var adapter = await client.SendAsync(request))
++            {
++                Assert.Equal(HttpStatusCode.Unauthorized, adapter.StatusCode);
++                Assert.Null(adapter.Headers.Location);
++                Assert.True(adapter.Headers.Contains("X-Correlation-Id"));
++                using var body = JsonDocument.Parse(await adapter.Content.ReadAsStringAsync());
++                Assert.Equal("INVALID_REQUEST", body.RootElement.GetProperty("error").GetProperty("code").GetString());
++                Assert.Equal("v1", body.RootElement.GetProperty("contractVersion").GetString());
++            }
++        }
++
++        var page = await client.GetAsync("/SupplyChain/Shipments");
++        Assert.Equal(HttpStatusCode.Found, page.StatusCode);
++        Assert.Equal("/account/login", page.Headers.Location?.AbsolutePath);
++    }
++
++    private static HttpRequestMessage JsonPost(string path) => new(HttpMethod.Post, path)
++    {
++        Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json")
++    };
++}

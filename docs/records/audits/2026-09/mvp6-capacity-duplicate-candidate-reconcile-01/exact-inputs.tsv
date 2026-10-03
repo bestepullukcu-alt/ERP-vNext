@@ -1,0 +1,10 @@
+sha256	path
+9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3	docs/analysis/contracts/sandop-capacity.openapi.yaml
+eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda	docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md
+231c83f239f1b55c42c4446e7f63ae55928e41bf2cc0bb2426a8e1c75d5ef303	docs/records/audits/2026-09/mvp6-capacity-duplicate-name-candidate-01/successor-candidate.patch
+81f9a34b178c50e7a59b4512f77444be3a5dd0699b786a663ad5f72461245f64	docs/records/audits/2026-09/mvp6-capacity-duplicate-name-candidate-01/sandop-capacity.openapi.candidate.yaml
+d040723c83990255e719b63b80e5fc189cd149c8ea19d5e06e1e2d69b0d3e3af	docs/records/audits/2026-09/mvp6-capacity-duplicate-name-candidate-01/sandop-capacity-semantics-v3.0.0-rc.1.md
+ebae377670587256108e3dc8107f178486f2097dfa1d72d2e880ed8cdfe78579	docs/records/audits/2026-09/mvp6-capacity-duplicate-name-candidate-01/owner-message.txt
+d87ccb1f07db31f2126ff0dc49bca8a749c4c46a3da184bc60cd29ded332d8f3	docs/records/audits/2026-09/mvp6-capacity-duplicate-name-contract-candidate-01/successor.patch
+206a5976303719b930ad850d83653fbc7d7161e6dabed3c022a0baaf15a57ff6	docs/records/audits/2026-09/mvp6-capacity-duplicate-name-contract-candidate-01/sandop-capacity.openapi.candidate.yaml
+0a413dd641d04dadbf454968b7af99c9ea58f9cf563ed49de98f273d69019aaa	docs/records/audits/2026-09/mvp6-capacity-duplicate-name-contract-candidate-01/sandop-capacity-semantics-v2.1.0-rc.1.md

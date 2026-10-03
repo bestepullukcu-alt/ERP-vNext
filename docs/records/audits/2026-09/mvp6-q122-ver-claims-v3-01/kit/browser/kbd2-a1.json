@@ -1,0 +1,25 @@
+{
+  "phase": "kbd2",
+  "extra": null,
+  "startedAt": "2026-09-27T12:30:49.808Z",
+  "web": "http://127.0.0.1:5901",
+  "playwright": "1.59.1",
+  "cases": {},
+  "png": [],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "kbd2",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "kbd2",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "error": "page.waitForResponse: Timeout 30000ms exceeded while waiting for event \"response\"",
+  "endedAt": "2026-09-27T12:31:23.639Z"
+}

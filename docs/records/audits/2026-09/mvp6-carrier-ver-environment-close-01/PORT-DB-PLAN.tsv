@@ -1,0 +1,8 @@
+component	reserved_port	database_or_scope	preflight	cleanup
+Gateway	5400	runtime-only Ocelot copy	no listener before start	TERM recorded PID; verify no listener
+Web	5401	MVC session only	no listener before start	TERM recorded PID; verify no listener
+Auth	5456	DitenAuth_CarrierRealAuth_Ver01	no listener before start	TERM recorded PID; verify no listener
+Platform	5457	DitenPlatform_CarrierRealAuth_Ver01	no listener before start	TERM recorded PID; verify no listener
+MDM	5459	DitenMdm_CarrierRealAuth_Ver01	no listener before start	TERM recorded PID; verify no listener
+SupplyChain	5461	DitenSupplyChain_CarrierRealAuth_Ver01	no listener before start	TERM recorded PID; verify no listener
+Mongo replica set	37484	rsCarrierRealAuthVer01; lane-local dbPath	no listener; PRIMARY required; operational 27017 untouched	TERM recorded PID; verify no listener and no child process

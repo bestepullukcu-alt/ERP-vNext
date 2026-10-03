@@ -1,0 +1,11 @@
+{
+  "client": "python-http.client",
+  "scalarCount": 128,
+  "wireByteCount": 128,
+  "uniqueWireBytesHex": [
+    "e9"
+  ],
+  "latin1RoundTrip": true,
+  "strictUtf8Decode": "REJECT",
+  "requiredUtf8PrefixHex": "c3a9c3a9"
+}

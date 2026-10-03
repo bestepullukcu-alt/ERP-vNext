@@ -1,0 +1,36 @@
+{
+  "name": "list-by-shipment",
+  "request": {
+    "bodyUtf8": null,
+    "headers": {
+      "Authorization": "Bearer <redacted>",
+      "X-Correlation-Id": "c278009d-b92a-43a6-9291-0ea86ad1a476",
+      "X-Legal-Entity-Id": "22222222-2222-4222-8222-222222222222",
+      "X-Tenant-Id": "11111111-1111-4111-8111-111111111111"
+    },
+    "method": "GET",
+    "path": "/api/shipment-bundle/returns?shipmentId=de4a163a-2fca-45cb-982c-d0605c9a2a8d"
+  },
+  "response": {
+    "body": {
+      "contractVersion": "v1",
+      "items": [
+        {
+          "returnId": "47325401-d7cb-48d7-ad3b-f93850be678a",
+          "rmaNumber": "RMA-47325401D7CB48D7AD3BF93850BE678A",
+          "shipmentId": "de4a163a-2fca-45cb-982c-d0605c9a2a8d",
+          "status": "Requested"
+        }
+      ],
+      "total": 1
+    },
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Mon, 21 Sep 2026 16:22:54 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "c278009d-b92a-43a6-9291-0ea86ad1a476"
+    },
+    "status": 200
+  }
+}

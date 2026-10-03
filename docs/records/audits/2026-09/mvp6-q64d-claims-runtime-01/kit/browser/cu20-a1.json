@@ -1,0 +1,14 @@
+{
+  "phase": "cu20",
+  "startedAt": "2026-09-26T21:21:35.272Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {},
+  "png": [],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('#dt-claims tbody tr:has(.js-quick-view[data-claim-id=\"00a183fe-759d-47c6-939e-af91dba8e0b9\"])').locator('.dropdown-toggle')\n    - locator resolved to <button type=\"button\" aria-label=\"Actions\" aria-expanded=\"false\" data-bs-toggle=\"dropdown\" class=\"btn btn-sm btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow\">…</button>\n  - attempting click action\n    2 × waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"offcanvas-body border-top p-4\">…</div> from <div tabindex=\"-1\" role=\"dialog\" aria-modal=\"true\" id=\"offcanvasClaimTransition\" class=\"offcanvas offcanvas-end show\" aria-labelledby=\"offcanvasClaimTransitionLabel\">…</div> subtree intercepts pointer events\n    - retrying click action\n    - waiting 20ms\n    - waiting for element to be visible, enabled and stable\n    - element is visible, enabled and stable\n    - scrolling into view if needed\n    - done scrolling\n    - <div class=\"offcanvas-body border-top p-4\">…</div> from <div tabindex=\"-1\" role=\"dialog\" aria-modal=\"true\" id=\"offcanvasClaimTransition\" class=\"offcanvas offcanvas-end show\" aria-labelledby=\"offcanvasClaimTransitionLabel\">…</div> subtree intercepts pointer events\n  - retrying click action\n    - waiting 100ms\n    - waiting for element to be visible, enabled and stable\n    - element is not stable\n  ",
+  "endedAt": "2026-09-26T21:22:08.162Z"
+}

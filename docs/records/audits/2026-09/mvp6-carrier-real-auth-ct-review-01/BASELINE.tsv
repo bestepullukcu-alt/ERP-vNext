@@ -1,0 +1,13 @@
+field	value
+repository	/Users/natig/Projects/ERP-vNext-recovery
+branch	feature/mvp6-logistics
+head	4a8d4d4b339528a88e6220fb8402e5a2c771136c
+initial_status_entries	2800
+initial_status_sha256	c35ba9c1414071ec53e6377e1e73d8d7ce9816a2f0765239b33d25bf89c7b3dc
+registered_ui_worktree	/Users/natig/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery
+ui_manifest_check	21/21 PASS
+auth_source_archive_check	22/22 PASS
+tests_rerun	no
+source_mutation	no
+effort_reporting_input	docs/roadmap/plans/mvp6-effort-carrier-e2e-update-05/ARTIFACTS.sha256 verified; read only; excluded from technical acceptance
+reviewed_input_drift	none; controlling hashes rechecked after output creation

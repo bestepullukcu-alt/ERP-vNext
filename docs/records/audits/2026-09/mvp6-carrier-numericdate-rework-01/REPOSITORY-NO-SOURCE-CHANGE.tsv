@@ -1,0 +1,5 @@
+check	result
+product source paths in repository	absent from git status; no patch applied
+branch	feature/mvp6-logistics
+HEAD	4a8d4d4b339528a88e6220fb8402e5a2c771136c
+commit/push/stash	NONE

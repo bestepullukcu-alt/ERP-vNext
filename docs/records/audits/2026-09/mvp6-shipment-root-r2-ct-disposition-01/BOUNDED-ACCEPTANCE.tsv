@@ -1,0 +1,16 @@
+id	criterion	result	controlling_evidence	boundary
+CT-R2-01	Owner authority and exact three-path scope	PASS	emission-exec-01/OWNER-AUTHORITY-BINDING.md; rework-01/OWNER-DECISION-TEXT.md	Authority excludes browser, publication, rollout and full-module acceptance
+CT-R2-02	Exact source closure	PASS	exec and VER FINAL-SOURCE-MANIFEST.tsv; exec APPLIED-DELTA.tsv	354/354 identical; exactly three approved paths changed
+CT-R2-03	Fresh create root emission	PASS	VER http-create-detail-replay.json; ver-golden-pass.trx	First validated create correlation persisted as LifecycleCorrelationId
+CT-R2-04	Persist and detail equality	PASS	VER http-create-detail-replay.json; raw Mongo evidence	Stored CorrelationId/LifecycleCorrelationId and detail root equal the accepted root
+CT-R2-05	Replay and concurrency	PASS	VER ver-replay-concurrency.trx; http-create-detail-replay.json	Four same-key replays preserve one scoped aggregate; changed payload 409
+CT-R2-06	Rollback and retry	PASS	VER ver-rollback-retry.trx	Precommit failure rolls back; exact retry succeeds without partial root state
+CT-R2-07	Legacy root variants	PASS	VER ver-storage.trx; legacy-runtime.json	Missing/null/malformed/valid/stored-nil remain distinct; no derivation/backfill
+CT-R2-08	Tenant/LE, permission and soft-delete isolation	PASS	VER ver-scope-rbac.trx; legacy-runtime.json	Cross-scope 404, missing permission 403, soft-delete 404; rejected/read paths do not mutate counts
+CT-R2-09	Audit, receipt and Pending outbox atomicity	PASS	VER http-create-detail-replay.json; ver-golden-pass.trx	Exactly one audit, receipt and Pending outbox share the authoritative root
+CT-R2-10	Real process restart	PASS	VER restart-detail.json; restart-persistence.json; SOURCE-BINARY-PROCESS.tsv	Same database, fixture and binary retain the exact root and 1/1/1/1/1/1 counts
+CT-R2-11	Shipment regression	PASS	VER ver-shipment-regression.trx	12/12; focused tests overlap and are not added
+CT-R2-12	Serializer race disposition	PASS_WITH_CONSTRAINT	writer/verifier reports and preserved discarded attempts	Known process-global test constraint handled with separate processes; no product-fix claim
+CT-R2-13	Shipment real-Auth browser regression	OPEN	No completed parallel browser result reviewed	Do not infer from HTTP/runtime evidence
+CT-R2-14	Durable PNG	OPEN	No supported saved PNG in inputs	No waiver or alternate capture claim
+CT-R2-15	Full MOD-0183 / E5 / G5 / rollout	OPEN	Outside owner and CT bounded scope	No downstream acceptance

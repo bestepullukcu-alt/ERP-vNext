@@ -1,0 +1,6 @@
+{
+  "uri": "mongodb://127.0.0.1:27990/?replicaSet=mvp6_normal_shipment_exact",
+  "result": "true",
+  "exit": 0,
+  "port": 27990
+}

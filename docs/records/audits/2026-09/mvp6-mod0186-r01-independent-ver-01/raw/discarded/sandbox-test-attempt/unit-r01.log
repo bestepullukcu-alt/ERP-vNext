@@ -1,0 +1,24 @@
+  Diten.SupplyChainService.Domain -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/bin/Release/net8.0/Diten.SupplyChainService.Domain.dll
+  Diten.SupplyChainService.Application -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/bin/Release/net8.0/Diten.SupplyChainService.Application.dll
+  Diten.BuildingBlocks.Eventing -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Release/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.SupplyChainService.Persistence -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/bin/Release/net8.0/Diten.SupplyChainService.Persistence.dll
+  Diten.SupplyChainService.Infrastructure -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/bin/Release/net8.0/Diten.SupplyChainService.Infrastructure.dll
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.SupplyChainService.Api -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0/Diten.SupplyChainService.Api.dll
+  Diten.SupplyChainService.Tests -> /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Release/net8.0/Diten.SupplyChainService.Tests.dll
+Test run for /private/tmp/mvp6-mod0186-r01-independent-ver-01/source/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Release/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 18.0.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+System.Net.Sockets.SocketException (13): Permission denied
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at System.Net.Sockets.TcpListener.Start(Int32 backlog)
+   at Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.SocketServer.Start(String endPoint) in /_/src/vstest/src/Microsoft.TestPlatform.CommunicationUtilities/SocketServer.cs:line 65
+   at Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.TestRequestSender.InitializeCommunication() in /_/src/vstest/src/Microsoft.TestPlatform.CommunicationUtilities/TestRequestSender.cs:line 168
+   at Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.ProxyOperationManager.SetupChannel(IEnumerable`1 sources, String runSettings) in /_/src/vstest/src/Microsoft.TestPlatform.CrossPlatEngine/Client/ProxyOperationManager.cs:line 207
+   at Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.ProxyExecutionManager.InitializeTestRun(TestRunCriteria testRunCriteria, IInternalTestRunEventsHandler eventHandler) in /_/src/vstest/src/Microsoft.TestPlatform.CrossPlatEngine/Client/ProxyExecutionManager.cs:line 184
+
+Test Run Aborted.

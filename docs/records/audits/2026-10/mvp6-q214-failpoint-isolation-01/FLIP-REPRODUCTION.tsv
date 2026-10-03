@@ -1,0 +1,17 @@
+run	source	scope	mongo_uri_options	result_of_Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce	fault_hit_local_time	same_transaction_commit_succeeded	failpoint_times_fired	evidence
+Q208-full	Q208 (prior lane, cited)	full suite, 417 tests	serverSelectionTimeoutMS=5000	PASSED	not measured	not measured	-	docs/records/audits/2026-10/mvp6-q208-suite-baseline-01/FAILURE-CLASSIFICATION.tsv:3
+Q208-folder	Q208 (prior lane, cited)	Loads folder, 33 tests	serverSelectionTimeoutMS=5000	FAILED (503)	not measured	not measured	-	docs/records/audits/2026-10/mvp6-q208-suite-baseline-01/FAILURE-CLASSIFICATION.tsv:3
+Q208-alone x4	Q208 (prior lane, cited)	test alone	serverSelectionTimeoutMS=5000	FAILED 4/4 (503)	not measured	not measured	-	docs/records/audits/2026-10/mvp6-q208-suite-baseline-01/FAILURE-CLASSIFICATION.tsv:3
+r01-alone	Q214	test alone	serverSelectionTimeoutMS=5000 (lane default)	FAILED (503)	19:58:46.115	NEVER — no second commitTransaction reached the server	1	evidence/r01-alone.log; evidence/failpoint-episodes.tsv:2
+r02-alone	Q214	test alone	serverSelectionTimeoutMS=5000 (lane default)	FAILED (503)	20:00:14.481	NEVER	1	evidence/r02-alone.log; evidence/failpoint-episodes.tsv:3
+r03-alone-sst30000	Q214	test alone	serverSelectionTimeoutMS=30000	PASSED	20:00:26.681	9.504 s later	1	evidence/r03-alone-sst30000.log; evidence/failpoint-episodes.tsv:4
+r04-alone-hb1000	Q214	test alone	serverSelectionTimeoutMS=5000 & heartbeatFrequencyMS=1000	PASSED	20:00:40.063	0.174 s later	1	evidence/r04-alone-hb1000.log; evidence/failpoint-episodes.tsv:5
+r05-alone-nosst	Q214	test alone	no serverSelectionTimeoutMS (driver default 30 s)	PASSED	20:00:44.900	9.114 s later	1	evidence/r05-alone-nosst.log; evidence/failpoint-episodes.tsv:6
+r06-loads-folder	Q214	Loads folder, 33 tests	serverSelectionTimeoutMS=5000 (lane default)	PASSED (33/33)	20:01:46.492	3.221 s later	1	evidence/r06-loads-folder.log; evidence/failpoint-episodes.tsv:7
+r07-loadatomicity-class	Q214	LoadAtomicityTests class, 10 tests	serverSelectionTimeoutMS=5000 (lane default)	FAILED (503); 9/10	20:02:07.427	NEVER	1	evidence/r07-loadatomicity-class.log; evidence/failpoint-episodes.tsv:9
+r08-full	Q214	full suite, 417 tests (416 passed; the 1 failure is ClaimReplayTests, by design)	serverSelectionTimeoutMS=5000 (lane default)	PASSED	20:06:37.241	2.719 s later	1	evidence/r08-full.log; evidence/r08-full-outcomes.tsv; evidence/failpoint-episodes.tsv:27
+H1	Q214 harness (driver only, no product code)	errorCode 91, fault 0 s after cluster open	serverSelectionTimeoutMS=5000	second commit: TimeoutException after 5.0 s; 0 rows; server usable again at 10.1 s	-	NEVER	1	evidence/harness.tsv:1-5
+H2	Q214 harness	errorCode 91, fault 7 s after cluster open	serverSelectionTimeoutMS=5000	second commit OK after 2.9 s; 1 row	-	2.907 s later	1	evidence/harness.tsv:6-10
+H3	Q214 harness	errorCode 91, fault 0 s after cluster open	serverSelectionTimeoutMS=30000	second commit OK after 9.96 s; 1 row	-	9.964 s later	1	evidence/harness.tsv:11-15
+H4	Q214 harness	errorCode 8 (not a state-change code), fault 0 s after cluster open	serverSelectionTimeoutMS=5000	second commit OK after 0.011 s; 1 row; server never left Connected	-	0.011 s later	1	evidence/harness.tsv:16-20
+H5	Q214 harness	errorCode 91, fault 0 s after cluster open	serverSelectionTimeoutMS=5000 & heartbeatFrequencyMS=1000	second commit OK after 0.9 s; 1 row	-	0.916 s later	1	evidence/harness.tsv:21-25

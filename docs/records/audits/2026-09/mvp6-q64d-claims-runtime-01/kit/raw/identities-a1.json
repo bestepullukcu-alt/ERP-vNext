@@ -1,0 +1,293 @@
+{
+  "method": "lane-local bcrypt(12) rotation of seeded users in DitenAuth_ClaimsQ64d01",
+  "seedHashesKnown": 1,
+  "actors": [
+    {
+      "actor": "full",
+      "email": "john.doe.t97@diten.com",
+      "tenantId": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+      "expectedLegalEntityId": null,
+      "db": {
+        "matched": 1,
+        "pre": {
+          "IsActive": true,
+          "EmailConfirmed": true,
+          "MustChangePassword": false,
+          "IsDeleted": false,
+          "LockedOut": false
+        },
+        "previousHashWasRepoSeed": true,
+        "modified": 1
+      },
+      "passwordSource": "lane supervisor memory",
+      "passwordPersisted": false,
+      "login": {
+        "via": "gateway",
+        "status": 200,
+        "setCookieNames": [],
+        "claimNames": [
+          "actor_type",
+          "aud",
+          "email",
+          "exp",
+          "family_name",
+          "given_name",
+          "iss",
+          "pwd_change_required",
+          "sub",
+          "tenant_id"
+        ],
+        "tenantClaimMatches": true,
+        "legalEntityClaim": "absent",
+        "tokenPersisted": false
+      },
+      "result": "PASS"
+    },
+    {
+      "actor": "readonly",
+      "email": "jane.smith.t97@diten.com",
+      "tenantId": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+      "expectedLegalEntityId": null,
+      "db": {
+        "matched": 1,
+        "pre": {
+          "IsActive": true,
+          "EmailConfirmed": true,
+          "MustChangePassword": false,
+          "IsDeleted": false,
+          "LockedOut": false
+        },
+        "previousHashWasRepoSeed": true,
+        "modified": 1
+      },
+      "passwordSource": "lane supervisor memory",
+      "passwordPersisted": false,
+      "login": {
+        "via": "gateway",
+        "status": 200,
+        "setCookieNames": [],
+        "claimNames": [
+          "actor_type",
+          "aud",
+          "email",
+          "exp",
+          "family_name",
+          "given_name",
+          "iss",
+          "pwd_change_required",
+          "sub",
+          "tenant_id"
+        ],
+        "tenantClaimMatches": true,
+        "legalEntityClaim": "absent",
+        "tokenPersisted": false
+      },
+      "result": "PASS"
+    },
+    {
+      "actor": "noread",
+      "email": "charlie.brown.t97@diten.com",
+      "tenantId": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+      "expectedLegalEntityId": null,
+      "db": {
+        "matched": 1,
+        "pre": {
+          "IsActive": true,
+          "EmailConfirmed": true,
+          "MustChangePassword": false,
+          "IsDeleted": false,
+          "LockedOut": false
+        },
+        "previousHashWasRepoSeed": true,
+        "modified": 1
+      },
+      "passwordSource": "lane supervisor memory",
+      "passwordPersisted": false,
+      "login": {
+        "via": "gateway",
+        "status": 200,
+        "setCookieNames": [],
+        "claimNames": [
+          "actor_type",
+          "aud",
+          "email",
+          "exp",
+          "family_name",
+          "given_name",
+          "iss",
+          "pwd_change_required",
+          "sub",
+          "tenant_id"
+        ],
+        "tenantClaimMatches": true,
+        "legalEntityClaim": "absent",
+        "tokenPersisted": false
+      },
+      "result": "PASS"
+    },
+    {
+      "actor": "leb",
+      "email": "bob.johnson.t97@diten.com",
+      "tenantId": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+      "expectedLegalEntityId": null,
+      "db": {
+        "matched": 1,
+        "pre": {
+          "IsActive": true,
+          "EmailConfirmed": true,
+          "MustChangePassword": false,
+          "IsDeleted": false,
+          "LockedOut": false
+        },
+        "previousHashWasRepoSeed": true,
+        "modified": 1
+      },
+      "passwordSource": "lane supervisor memory",
+      "passwordPersisted": false,
+      "login": {
+        "via": "gateway",
+        "status": 200,
+        "setCookieNames": [],
+        "claimNames": [
+          "actor_type",
+          "aud",
+          "email",
+          "exp",
+          "family_name",
+          "given_name",
+          "iss",
+          "pwd_change_required",
+          "sub",
+          "tenant_id"
+        ],
+        "tenantClaimMatches": true,
+        "legalEntityClaim": "absent",
+        "tokenPersisted": false
+      },
+      "result": "PASS"
+    },
+    {
+      "actor": "fixadmin",
+      "email": "alice.williams.t97@diten.com",
+      "tenantId": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+      "expectedLegalEntityId": null,
+      "db": {
+        "matched": 1,
+        "pre": {
+          "IsActive": true,
+          "EmailConfirmed": true,
+          "MustChangePassword": false,
+          "IsDeleted": false,
+          "LockedOut": false
+        },
+        "previousHashWasRepoSeed": true,
+        "modified": 1
+      },
+      "passwordSource": "lane supervisor memory",
+      "passwordPersisted": false,
+      "login": {
+        "via": "gateway",
+        "status": 200,
+        "setCookieNames": [],
+        "claimNames": [
+          "actor_type",
+          "aud",
+          "email",
+          "exp",
+          "family_name",
+          "given_name",
+          "iss",
+          "pwd_change_required",
+          "sub",
+          "tenant_id"
+        ],
+        "tenantClaimMatches": true,
+        "legalEntityClaim": "absent",
+        "tokenPersisted": false
+      },
+      "result": "PASS"
+    },
+    {
+      "actor": "t2user",
+      "email": "john.doe.def@diten.com",
+      "tenantId": "00000000-0000-0000-0000-000000000001",
+      "expectedLegalEntityId": null,
+      "db": {
+        "matched": 1,
+        "pre": {
+          "IsActive": true,
+          "EmailConfirmed": true,
+          "MustChangePassword": false,
+          "IsDeleted": false,
+          "LockedOut": false
+        },
+        "previousHashWasRepoSeed": true,
+        "modified": 1
+      },
+      "passwordSource": "lane supervisor memory",
+      "passwordPersisted": false,
+      "login": {
+        "via": "gateway",
+        "status": 200,
+        "setCookieNames": [],
+        "claimNames": [
+          "actor_type",
+          "aud",
+          "email",
+          "exp",
+          "family_name",
+          "given_name",
+          "iss",
+          "pwd_change_required",
+          "sub",
+          "tenant_id"
+        ],
+        "tenantClaimMatches": true,
+        "legalEntityClaim": "absent",
+        "tokenPersisted": false
+      },
+      "result": "PASS"
+    },
+    {
+      "actor": "t2admin",
+      "email": "alice.williams.def@diten.com",
+      "tenantId": "00000000-0000-0000-0000-000000000001",
+      "expectedLegalEntityId": null,
+      "db": {
+        "matched": 1,
+        "pre": {
+          "IsActive": true,
+          "EmailConfirmed": true,
+          "MustChangePassword": false,
+          "IsDeleted": false,
+          "LockedOut": false
+        },
+        "previousHashWasRepoSeed": true,
+        "modified": 1
+      },
+      "passwordSource": "lane supervisor memory",
+      "passwordPersisted": false,
+      "login": {
+        "via": "gateway",
+        "status": 200,
+        "setCookieNames": [],
+        "claimNames": [
+          "actor_type",
+          "aud",
+          "email",
+          "exp",
+          "family_name",
+          "given_name",
+          "iss",
+          "pwd_change_required",
+          "sub",
+          "tenant_id"
+        ],
+        "tenantClaimMatches": true,
+        "legalEntityClaim": "absent",
+        "tokenPersisted": false
+      },
+      "result": "PASS"
+    }
+  ]
+}

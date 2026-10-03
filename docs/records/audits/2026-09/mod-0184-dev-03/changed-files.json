@@ -1,0 +1,68 @@
+{
+  "files": [
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/README.md",
+      "sha256": "f2b00e656c8d5bf7fe7108c49457827a5fe51bfcda6d51b468e8b121534dde08"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/baseline-hashes.sha256",
+      "sha256": "bb9091a58f9bd2b36ad55f00353b1dbc3c2d7447082b62fc6525730a7f67037b"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/changed-files.json",
+      "sha256": null
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/failpoint-final.json",
+      "sha256": "cd9681ab2a07271f2303943393a6633764d09e7b6183065f5c40275d96d35867"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/live-run.log",
+      "sha256": "e838a0d1e753e7180be3d6508dbe8ae77ddf26e00ebcab8e55bec355cc3fc76e"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/live/commit-uncertainty.json",
+      "sha256": "ee9d8ecfbb729506e78d60bb4a2b902ad9dab94eee5cd7971162486621d6173e"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/live/outage.json",
+      "sha256": "68a329c8e000fe895c7b9718c15562e84359a11425c3fbf0f40b9e4d0a9c035e"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/live/service.log",
+      "sha256": "3e306686bba664bf522db795127c51f56eae042e81863de284f722e34beef080"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/live/transport-capture.json",
+      "sha256": "55688d98254c75931681b325a6be8dd2e0c3b0499666695532b227c5ba94a119"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/live/transport-comparison.json",
+      "sha256": "14eaf1b80fcb60cb48cceedd5ba4fddd5d9c0a19e3e57b5b48a6398cee5e92d3"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/preservation.json",
+      "sha256": "f6f013f6cd21d5abef937c964dd012e221ea8ab952ca3632ed6b9d3accd9bf09"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/recorder.diff",
+      "sha256": "409c9437452a12f5d8e01700d7787ee82fb1c17224767940c3935f09a52496d4"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/regression-green.log",
+      "sha256": "7d59a8fbca92ef540f42b6883247c3844892d23f501b6cf2621d0e535813fb81"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-03/regression-red.log",
+      "sha256": "1525b31f112bd52ba54d5c40d89bc0b34219b14856573bdd2cb4c03a910f8e8c"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/carriers/restart_probe.py",
+      "sha256": "8ff2674d5cc17c38b7349b0617523239e2502e4c4bb9622a393cac9d1d63f434"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/carriers/test_outage_capture.py",
+      "sha256": "32036af47cc1247e10515f8e1e8cd8304a762086a2d55add259d2f143be26d0c"
+    }
+  ]
+}

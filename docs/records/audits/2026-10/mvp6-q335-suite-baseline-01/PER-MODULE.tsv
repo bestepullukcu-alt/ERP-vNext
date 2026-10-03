@@ -1,0 +1,9 @@
+module	variables_used	passed	failed	total	duration_s_wall	duration_vstest	blocked_by_hardcoded_name	filter
+Shipments	MOD0183_TEST_MONGO	90	0	90	10	8 s	no — not re-analysed; same variable and filter as Q266, which found no replica-set name in the module	FullyQualifiedName~Diten.SupplyChainService.Tests.Shipment|FullyQualifiedName~Diten.SupplyChainService.Tests.Source
+Carriers	MOD0184_TEST_MONGO	36	0	36	8	6 s	no — as Q266	FullyQualifiedName~Diten.SupplyChainService.Tests.Carriers.
+Loads	MOD0185_TEST_MONGO	33	0	33	53	49 s	no — as Q266	FullyQualifiedName~Diten.SupplyChainService.Tests.Loads.
+Returns	RETURNS_MONGO_URI	78	0	78	89	1 m 26 s	no — as Q266 (`returns_dev` is only the fallback when the variable is unset)	FullyQualifiedName~Diten.SupplyChainService.Tests.Returns.
+Claims	CLAIMS_TEST_MONGO	128	1	129	3	1 s	no — as Q266	FullyQualifiedName~Diten.SupplyChainService.Tests.Claims.
+SandopPlans	MVP6_MOD0190_MONGO_URI	19	0	19	22	19 s	no — as Q266	FullyQualifiedName~Diten.SupplyChainService.Tests.SandopPlans.
+CapacityPlans	MVP6_MOD0192_MONGO_URI	48	0	48	130	2 m 8 s	no — as Q266 (`rs0`/`rsq131` only as validator unit-test inputs)	FullyQualifiedName~Diten.SupplyChainService.Tests.CapacityPlans.
+TOTAL	one variable per run	432	1	433	315			

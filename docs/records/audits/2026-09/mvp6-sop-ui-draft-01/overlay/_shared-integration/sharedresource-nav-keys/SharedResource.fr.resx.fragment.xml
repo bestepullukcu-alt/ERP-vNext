@@ -1,0 +1,5 @@
+<!-- Insert these rows into frontend/Diten.Web/Resources/SharedResource.fr.resx (integration owner, SR-D4). -->
+<fragment>
+  <data name="Nav.Module.SOPWORKFLOWSIGNOFFS" xml:space="preserve"><value>Workflow et validations S&amp;OP</value></data>
+  <data name="Nav.Page.SANDOP_PLANS" xml:space="preserve"><value>Plans S&amp;OP</value></data>
+</fragment>

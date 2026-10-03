@@ -1,0 +1,2 @@
+COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+dotnet  87872 natig  309u  IPv4 0x2af511e62de77f45      0t0  TCP 127.0.0.1:51862 (LISTEN)

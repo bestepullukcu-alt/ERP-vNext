@@ -1,0 +1,67 @@
+Build started 23/09/2026 20:50:18.
+Logging verbosity is set to: Normal.Project "/Users/natig/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery/frontend/Diten.Web/Diten.Web.csproj" on node 1 (default targets).
+Project "/Users/natig/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery/frontend/Diten.Web/Diten.Web.csproj" (1) is building "/Users/natig/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj" (2:2) on node 1 (default targets).
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreGenerateAssemblyInfo:
+Skipping target "CoreGenerateAssemblyInfo" because all output files are up-to-date with respect to the input files.
+_GenerateSourceLinkFile:
+  Source Link file 'obj/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.sourcelink.json' is up-to-date.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+GenerateBuildDependencyFile:
+Skipping target "GenerateBuildDependencyFile" because all output files are up-to-date with respect to the input files.
+CopyFilesToOutputDirectory:
+  Diten.BuildingBlocks.Security.Secrets -> /Users/natig/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+Done Building Project "/Users/natig/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj" (default targets).
+CoreResGen:
+  No resources are out of date with respect to their source files. Skipping resource generation.
+GenerateTargetFrameworkMonikerAttribute:
+Skipping target "GenerateTargetFrameworkMonikerAttribute" because all output files are up-to-date with respect to the input files.
+CoreGenerateAssemblyInfo:
+Skipping target "CoreGenerateAssemblyInfo" because all output files are up-to-date with respect to the input files.
+_DiscoverMvcApplicationParts:
+Skipping target "_DiscoverMvcApplicationParts" because all output files are up-to-date with respect to the input files.
+_CoreGenerateRazorAssemblyInfo:
+Skipping target "_CoreGenerateRazorAssemblyInfo" because all output files are up-to-date with respect to the input files.
+_GenerateSourceLinkFile:
+  Source Link file 'obj/Debug/net8.0/Diten.Web.sourcelink.json' is up-to-date.
+CoreCompile:
+Skipping target "CoreCompile" because all output files are up-to-date with respect to the input files.
+_CreateAppHost:
+Skipping target "_CreateAppHost" because all output files are up-to-date with respect to the input files.
+CoreGenerateSatelliteAssemblies:
+Skipping target "CoreGenerateSatelliteAssemblies" because all output files are up-to-date with respect to the input files.
+CoreGenerateSatelliteAssemblies:
+Skipping target "CoreGenerateSatelliteAssemblies" because all output files are up-to-date with respect to the input files.
+CoreGenerateSatelliteAssemblies:
+Skipping target "CoreGenerateSatelliteAssemblies" because all output files are up-to-date with respect to the input files.
+CoreGenerateSatelliteAssemblies:
+Skipping target "CoreGenerateSatelliteAssemblies" because all output files are up-to-date with respect to the input files.
+CoreGenerateSatelliteAssemblies:
+Skipping target "CoreGenerateSatelliteAssemblies" because all output files are up-to-date with respect to the input files.
+CoreGenerateSatelliteAssemblies:
+Skipping target "CoreGenerateSatelliteAssemblies" because all output files are up-to-date with respect to the input files.
+CoreGenerateSatelliteAssemblies:
+Skipping target "CoreGenerateSatelliteAssemblies" because all output files are up-to-date with respect to the input files.
+_ProcessScopedCssFiles:
+Skipping target "_ProcessScopedCssFiles" because all output files are up-to-date with respect to the input files.
+ResolveBuildCompressedStaticWebAssetsConfiguration:
+  Resolved 0 compressed assets for 0 candidate assets.
+_BuildCopyStaticWebAssetsPreserveNewest:
+Skipping target "_BuildCopyStaticWebAssetsPreserveNewest" because it has no outputs.
+_CopyOutOfDateSourceItemsToOutputDirectory:
+Skipping target "_CopyOutOfDateSourceItemsToOutputDirectory" because all output files are up-to-date with respect to the input files.
+GenerateBuildDependencyFile:
+Skipping target "GenerateBuildDependencyFile" because all output files are up-to-date with respect to the input files.
+GenerateBuildRuntimeConfigurationFiles:
+Skipping target "GenerateBuildRuntimeConfigurationFiles" because all output files are up-to-date with respect to the input files.
+CopyFilesToOutputDirectory:
+  Diten.Web -> /Users/natig/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery/frontend/Diten.Web/bin/Debug/net8.0/Diten.Web.dll
+Done Building Project "/Users/natig/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery/frontend/Diten.Web/Diten.Web.csproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.30

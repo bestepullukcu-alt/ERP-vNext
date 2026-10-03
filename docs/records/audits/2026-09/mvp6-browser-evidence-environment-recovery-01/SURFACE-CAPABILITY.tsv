@@ -1,0 +1,5 @@
+surface\texposed_as_browser_provider\tlocalhost_result\tscreenshot_capture\tdurable_png_save_export\tdisposition
+Codex In-app Browser\tyes\tPASS on 127.0.0.1:38765\tPASS inline/in-memory\tNot advertised or documented\tReusable for reachability and inline visual inspection; persistent PNG remains OPEN
+Google Chrome native app\tno\tNOT TESTED as browser provider\tNative app Target.getScreenshot returns display bytes only\tNo documented browser artifact-save API in current inventory\tNot an eligible alternate capture route
+pageAssets capability\tIAB tab capability\tN/A\tNot a screenshot API\tBundles observed page resources only\tCannot close PNG criterion
+ContentAPI.export\tgeneric API reference only\tN/A\tExports page content, not viewport image\tIAB backend rejected tab_content_export\tCannot close PNG criterion

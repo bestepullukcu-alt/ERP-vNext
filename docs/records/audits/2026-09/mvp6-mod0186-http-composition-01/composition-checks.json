@@ -1,0 +1,62 @@
+[
+  {
+    "check": "Claims DI preserved",
+    "pass": true,
+    "kind": "source-composition"
+  },
+  {
+    "check": "Claims typed client preserved",
+    "pass": true,
+    "kind": "source-composition"
+  },
+  {
+    "check": "Claims modelstate preserved",
+    "pass": true,
+    "kind": "source-composition"
+  },
+  {
+    "check": "Claims middleware preserved",
+    "pass": true,
+    "kind": "source-composition"
+  },
+  {
+    "check": "exact one Returns persistence",
+    "pass": true,
+    "kind": "source-composition"
+  },
+  {
+    "check": "no duplicate direct request context",
+    "pass": true,
+    "kind": "source-composition"
+  },
+  {
+    "check": "typed client timeout5",
+    "pass": true,
+    "kind": "source-composition"
+  },
+  {
+    "check": "authenticated Returns branch",
+    "pass": true,
+    "kind": "source-composition"
+  },
+  {
+    "check": "Shipment excludes all four",
+    "pass": true,
+    "kind": "source-composition"
+  },
+  {
+    "check": "no worker added",
+    "pass": true,
+    "kind": "source-composition"
+  },
+  {
+    "check": "auth config unchanged",
+    "pass": true,
+    "kind": "source-composition"
+  },
+  {
+    "check": "serializer unchanged",
+    "pass": true,
+    "kind": "source-composition"
+  }
+]

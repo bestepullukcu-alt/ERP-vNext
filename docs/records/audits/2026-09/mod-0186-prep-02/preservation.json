@@ -1,0 +1,38 @@
+{
+  "baseline_files": 14502,
+  "unchanged": 14501,
+  "changed": [
+    "execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md"
+  ],
+  "protected_changed": [],
+  "new_paths": [
+    "docs/records/audits/2026-09/mod-0186-prep-02/README.md",
+    "docs/records/audits/2026-09/mod-0186-prep-02/dcp-002.txt",
+    "docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json",
+    "docs/records/audits/2026-09/mod-0186-prep-02/preservation.json",
+    "docs/records/audits/2026-09/mod-0186-prep-02/verification.json",
+    "docs/records/audits/2026-09/mod-0187-prep-02/SOP-22-PREP-03.md",
+    "docs/records/audits/2026-09/mvp6-mod0185-ct-review-01/README.md",
+    "docs/roadmap/plans/mod-0186-prep-02/dev-prompt-v1.0-HELD.md",
+    "docs/roadmap/plans/mod-0186-prep-02/owned-paths-v1.0.md",
+    "docs/roadmap/plans/mod-0186-prep-02/owner-decisions-v1.0.md",
+    "docs/roadmap/plans/mod-0186-prep-02/ver-prompt-v1.0-HELD.md",
+    "docs/roadmap/plans/mod-0187-prep-02/README.md",
+    "docs/roadmap/plans/mod-0187-prep-02/dev-prompt-v1.0-HELD.md",
+    "docs/roadmap/plans/mod-0187-prep-02/owner-decisions-v1.0.md",
+    "docs/roadmap/plans/mod-0187-prep-02/owner-decisions.md",
+    "docs/roadmap/plans/mod-0187-prep-02/ver-prompt-v1.0-HELD.md"
+  ],
+  "outside_owned_new": [
+    "docs/records/audits/2026-09/mod-0187-prep-02/SOP-22-PREP-03.md",
+    "docs/records/audits/2026-09/mvp6-mod0185-ct-review-01/README.md",
+    "docs/roadmap/plans/mod-0187-prep-02/README.md",
+    "docs/roadmap/plans/mod-0187-prep-02/dev-prompt-v1.0-HELD.md",
+    "docs/roadmap/plans/mod-0187-prep-02/owner-decisions-v1.0.md",
+    "docs/roadmap/plans/mod-0187-prep-02/owner-decisions.md",
+    "docs/roadmap/plans/mod-0187-prep-02/ver-prompt-v1.0-HELD.md"
+  ],
+  "head_same": true,
+  "baseline_inventory": "/private/tmp/mod0186-prep02-0t364hyp/baseline.json",
+  "baseline_sha256": "c9c95f62a9ed1560d0ee18053f4ab0d6bea0751416a19c550936d7d8d58d9894"
+}

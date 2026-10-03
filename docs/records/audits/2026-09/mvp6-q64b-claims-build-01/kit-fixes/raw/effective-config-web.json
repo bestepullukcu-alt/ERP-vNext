@@ -1,0 +1,104 @@
+{
+  "service": "web",
+  "environment": "Development",
+  "contentRoot": "/Users/natig/mvp6-env/ek-work-fixes/source/frontend/Diten.Web",
+  "externalUrlKeysForReview": [],
+  "keys": {
+    "AllowedHosts": {
+      "value": "*",
+      "layer": "appsettings.json"
+    },
+    "ApiSettings:BaseUrl": {
+      "value": "http://127.0.0.1:5699",
+      "layer": "environment"
+    },
+    "ApiSettings:PublicApiUrl": {
+      "value": "http://127.0.0.1:5699",
+      "layer": "environment"
+    },
+    "ASPNETCORE_ENVIRONMENT": {
+      "value": "Development",
+      "layer": "environment"
+    },
+    "ConnectionStrings:MongoDb": {
+      "value": "mongodb://127.0.0.1:36994/?replicaSet=rsClaimsFixQ64b01&serverSelectionTimeoutMS=5000&connectTimeoutMS=3000",
+      "layer": "environment"
+    },
+    "DatabaseName": {
+      "value": "DitenWeb_ClaimsFixQ64b01",
+      "layer": "environment"
+    },
+    "DocumentManagement:ReferenceData:OwnerFunctionSetCode": {
+      "value": "qms-owner-function",
+      "layer": "appsettings.json"
+    },
+    "DocumentManagement:ReferenceData:RetentionClassSetCode": {
+      "value": "qms-document-retention",
+      "layer": "appsettings.json"
+    },
+    "DOTNET_ROLL_FORWARD": {
+      "value": "LatestPatch",
+      "layer": "environment"
+    },
+    "FeatureFlags:EnableGoalHierarchyUi": {
+      "value": "false",
+      "layer": "appsettings.Development.json"
+    },
+    "GatewayUrl": {
+      "value": "http://127.0.0.1:5600",
+      "layer": "environment"
+    },
+    "JwtSettings:Audience": {
+      "value": "diten-erp",
+      "layer": "environment"
+    },
+    "JwtSettings:Issuer": {
+      "value": "diten-auth-service",
+      "layer": "environment"
+    },
+    "JwtSettings:PreviousSecrets:0": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:PreviousSecrets:1": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:PreviousSecrets:2": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:PreviousSecrets:3": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:PreviousSecrets:4": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:Secret": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "Logging:LogLevel:Default": {
+      "value": "Information",
+      "layer": "appsettings.Development.json"
+    },
+    "Logging:LogLevel:Microsoft.AspNetCore": {
+      "value": "Warning",
+      "layer": "appsettings.Development.json"
+    },
+    "Platform:InternalApiKey": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "PlatformServiceUrl": {
+      "value": "http://127.0.0.1:5657",
+      "layer": "environment"
+    },
+    "urls": {
+      "value": "http://127.0.0.1:5601",
+      "layer": "command-line"
+    }
+  }
+}

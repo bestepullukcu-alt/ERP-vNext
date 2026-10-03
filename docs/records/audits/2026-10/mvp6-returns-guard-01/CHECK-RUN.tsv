@@ -1,0 +1,15 @@
+id	check	result	evidence
+C01	Every preimage = BASE-MANIFEST row (and = extracted BC-SOURCE copy)	PASS	4/4 BASE rows match BASE-MANIFEST a8a236de and BC-SOURCE ebd5d80c copy; ReturnsController.cs preimage dbb036cc… = prompt example
+C02	NEW file absent from BASE-MANIFEST	PASS	1 NEW row; not in BASE-MANIFEST (14,566 rows read: 14566)
+C03	No Q117/Q121/Q131 layer touches a changed path	PASS	33 layer members (Q117 11 + Q121 2 + Q131 20; archives 83e6322c/93bf1c07/4a4a0860 re-hashed); intersection = 0; 0 Returns paths in any layer
+C04	Archive members = OVERLAY-MANIFEST; member sha256 = postimage; 0644, 0/0, files only, no AppleDouble	PASS	5=5 same set; sha 5/5; modes/owner/type OK=True; deterministic rebuild sha identical
+C05	Only Returns backend + Returns tests changed (full-tree compare, 422 BC-SOURCE files)	PASS	diff -rq pre/post: 5 entries = 4 modified + 1 added, all under */Features/Returns/ or tests/…/Returns/
+C06	No guard references "supplychain.returns.transition"	PASS	post src/: 0 hits (pre: ReturnsController.cs:20 + ReturnPermissions.cs:6); only reference left is the negative-test constant in ReturnTransitionGuardTests.cs (1 line)
+C07	Per-target map unchanged	PASS	ForTarget switch arms identical (sha f9e677960a7e… both); ReturnIsolationTests.cs:49 map assertion unchanged (file = BASE 6c7894e68090…)
+C08	No new permission key anywhere; generic key removed	PASS	post src keys (8): authorize, cancel, close, create, disposition, read, receive, transit; removed: transition; added: none
+C09	C# syntax sanity: tree-sitter-c-sharp parse + balanced {} () [] tokens	PASS	5/5 PASS, 0 ERROR/MISSING nodes; same check on the 4 preimages also PASS (tree-sitter 0.26.0 in temp venv)
+C10	Compile (dotnet build)	N/A	no dotnet SDK in this lane (VM: no dotnet; container: none; dot.net/nuget.org blocked by egress). Mac build+test is Q190
+C11	Routes, wire format, error codes, lifecycle unchanged	PASS	route attrs identical ['HttpGet', 'HttpPost', 'HttpPost("{returnId}/transition")']; middleware Error(status,code) set identical (6 distinct); ReturnContractError/ReturnModels(ReturnWire)/ReturnLifecycle/handlers/repository untouched (C05)
+C12	Existing replay/isolation/atomicity/lifecycle tests unchanged; none asserted the old conjunction	PASS	7/7 existing Returns test files = BASE; grep: no existing test referenced ReturnPermissions.Transition or "supplychain.returns.transition"
+C13	Encoding: LF, no BOM, trailing newline (matches preimages)	PASS	5/5
+C14	FIXES.patch (diff -u, not git) applied to a fresh BC-SOURCE copy reproduces every postimage	PASS	patch -p1: 5/5 postimages match

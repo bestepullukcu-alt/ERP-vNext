@@ -1,0 +1,235 @@
+{
+  "phase": "happy",
+  "locale": "en",
+  "startedAt": "2026-09-30T20:36:17.290Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "MOD0186-happy-list-create": {
+      "result": "PASS",
+      "returnId": "38f1fe01-12c5-4c19-a17c-56b171634cde",
+      "rmaNumber": "RMA-38F1FE0112C54C19A17C56B171634CDE",
+      "createStatus": 201,
+      "responseStatus": "Requested",
+      "createBodyKeys": [
+        "shipmentId",
+        "reasonCode",
+        "lines"
+      ],
+      "resolve": {
+        "resolveStatus": 200,
+        "shipmentStatus": "Delivered",
+        "lines": 1,
+        "saveEnabled": true
+      },
+      "listStatus": 200,
+      "before": {
+        "rows": 0,
+        "add": 1,
+        "title": "Returns"
+      },
+      "afterCreate": {
+        "rowPresent": true,
+        "rowText": "RMA-38F1FE0112C54C19A17C56B171634CDE f6e416b9-1416-4c97-a761-4af92fa737d2 Requested "
+      },
+      "evidence": [
+        "png/happy-01-list-en.png",
+        "png/happy-02-create-resolved-en.png",
+        "png/happy-03-list-after-create-en.png"
+      ]
+    },
+    "MOD0186-happy-details": {
+      "result": "PASS",
+      "qv": {
+        "rma": "RMA-38F1FE0112C54C19A17C56B171634CDE",
+        "status": "Requested",
+        "returnIdShown": "38f1fe01-12c5-4c19-a17c-56b171634cde"
+      },
+      "byIdRequests": 0,
+      "evidence": [
+        "png/happy-04-quickview-en.png"
+      ]
+    },
+    "MOD0186-happy-authorize": {
+      "result": "PASS",
+      "transitionStatus": 200,
+      "responseStatus": "Authorized",
+      "panel": {
+        "target": "Authorized",
+        "occurredAtSet": true
+      },
+      "quickViewStatusBefore": "Requested",
+      "quickViewStatusAfter": "Authorized",
+      "afterReload": {
+        "rowPresent": true,
+        "rowText": "RMA-38F1FE0112C54C19A17C56B171634CDE f6e416b9-1416-4c97-a761-4af92fa737d2 Authorized "
+      },
+      "evidence": [
+        "png/happy-05-transition-panel-en.png",
+        "png/happy-06-transition-confirm-en.png",
+        "png/happy-07-after-authorize-reload-en.png"
+      ]
+    },
+    "UI-PM-01": {
+      "result": "PASS",
+      "listShell": {
+        "layoutWrappers": 1,
+        "layoutMenus": 1,
+        "navbars": 1,
+        "footers": 1,
+        "mainJs": 1,
+        "htmlDir": "ltr",
+        "htmlLang": "en"
+      },
+      "note": "list page with every partial (filter, table, QuickView, create, transition surface, L10n)",
+      "evidence": [
+        "png/happy-01-list-en.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "happy-01-list-en.png",
+      "sha256": "c1b9e97862e640095f51a5102e5251196c0cce5a4b5a2181397d85d1b732b34d",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:36:20.110Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-02-create-resolved-en.png",
+      "sha256": "ca5a5bd3fbaefe0205f977d6fc7cf48e57650ea5856940edd33e7e76b9a54d2e",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:36:20.806Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-03-list-after-create-en.png",
+      "sha256": "d9e55c9d7bde2878d74b8654e7657d8c71586e9abc34feb0a7b128e24f3d6be1",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:36:25.468Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-04-quickview-en.png",
+      "sha256": "56d793381de77fbd6a01bf8c137a301a48f221d921e4a7101a6315ef87727834",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:36:25.907Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-05-transition-panel-en.png",
+      "sha256": "819dfe68516fe1b25439fb500e996723b871fa319c80464bf3e012f9c3013fef",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:36:26.976Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-06-transition-confirm-en.png",
+      "sha256": "61e9027056de5286d38a35deadc1215a9e00f7bf5460abef460ba5d7c8856906",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:36:27.207Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "happy-07-after-authorize-reload-en.png",
+      "sha256": "cbf0ef86a8e28ffcdeeaffea999cf7ac31bff4046cc1e2f2fe0b629ab1facaad",
+      "url": "/SupplyChain/Returns",
+      "capturedAt": "2026-09-30T20:36:31.394Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [
+    {
+      "tag": "happy-en",
+      "text": "Return created.",
+      "type": "success",
+      "at": "2026-09-30T20:36:21.229Z"
+    },
+    {
+      "tag": "happy-en",
+      "text": "Return status updated.",
+      "type": "success",
+      "at": "2026-09-30T20:36:27.727Z"
+    }
+  ],
+  "dialogs": [],
+  "foreign": [],
+  "net": [
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T20:36:18.857Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T20:36:20.670Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api/shipments/f6e416b9-1416-4c97-a761-4af92fa737d2",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T20:36:21.231Z",
+      "method": "POST",
+      "path": "/SupplyChain/Returns/api",
+      "status": 201,
+      "errorCode": null,
+      "idempotencyKey": true
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T20:36:21.316Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T20:36:27.729Z",
+      "method": "POST",
+      "path": "/SupplyChain/Returns/api/38f1fe01-12c5-4c19-a17c-56b171634cde/transition",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": true
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T20:36:27.779Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    },
+    {
+      "tag": "happy-en",
+      "at": "2026-09-30T20:36:29.838Z",
+      "method": "GET",
+      "path": "/SupplyChain/Returns/api",
+      "status": 200,
+      "errorCode": null,
+      "idempotencyKey": false
+    }
+  ],
+  "shellFonts": 4,
+  "info": {
+    "UI-PM-07 (row-menu transition panel focus, informational)": {
+      "id": "transitionTarget",
+      "tag": "SELECT",
+      "inCreate": false,
+      "inTransition": true,
+      "classes": "form-select",
+      "text": "Authorized\nRejected"
+    }
+  },
+  "endedAt": "2026-09-30T20:36:31.495Z"
+}

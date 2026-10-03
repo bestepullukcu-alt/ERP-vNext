@@ -1,0 +1,21 @@
+service	mongo_connection	database	external_url_keys
+auth	mongodb://127.0.0.1:36994/?replicaSet=rsSopQ18501&serverSelectionTimeoutMS=5000	DitenAuth_SopQ18501	0
+platform	mongodb://127.0.0.1:36994/?replicaSet=rsSopQ18501&serverSelectionTimeoutMS=5000	DitenPlatform_SopQ18501	2
+mdm	mongodb://127.0.0.1:36994/?replicaSet=rsSopQ18501&serverSelectionTimeoutMS=5000	DitenMdm_SopQ18501	0
+supplychain	mongodb://127.0.0.1:36994/?replicaSet=rsSopQ18501&serverSelectionTimeoutMS=5000	DitenSupplyChain_SopQ18501	0
+gateway	-	-	0
+web	mongodb://127.0.0.1:36994/?replicaSet=rsSopQ18501&serverSelectionTimeoutMS=5000&connectTimeoutMS=3000	DitenWeb_SopQ18501	0
+#groups	supervisor-memory=['auth-platform', 'jwt', 'mfa', 'platform-mdm-active', 'svcid']	inherited=['platform-mdm-previous']
+#pairing	auth-platform	secret	platform:AuthService__InternalApiKey,auth:InternalEventAuth__ApiKey,auth:PlatformService__InternalApiKey,supplychain:PlatformRegistration__InternalApiKey,web:Platform__InternalApiKey,mdm:PlatformRegistration__InternalApiKey	PASS (6 keys, one effective value)
+#pairing	jwt	secret	auth:JwtSettings__Secret,platform:JwtSettings__Secret,mdm:JwtSettings__Secret,supplychain:JwtSettings__Secret,gateway:JwtSettings__Secret,web:JwtSettings__Secret	PASS (6 keys, one effective value)
+#pairing	mdm-registration-id	value	platform:ModuleRegistrationCredentials__Mdm__Identifier,mdm:PlatformRegistration__ModuleRegistrationCredentialIdentifier	PASS (2 keys, one effective value)
+#pairing	mfa	secret	auth:Mfa__HashSecret	n/a (one member in this lane)
+#pairing	platform-mdm-active	secret	platform:ModuleRegistrationCredentials__Mdm__ActiveSecret,mdm:PlatformRegistration__ModuleRegistrationCredentialSecret	PASS (2 keys, one effective value)
+#pairing	platform-mdm-previous	secret	platform:ModuleRegistrationCredentials__Mdm__PreviousSecret	n/a (one member in this lane)
+#pairing	svcid	secret	platform:MdmServiceIdentity__Secret,mdm:PlatformServiceIdentity__Secret	PASS (2 keys, one effective value)
+#pairing	svcid-audience	value	platform:MdmServiceIdentity__Audience,mdm:PlatformServiceIdentity__Audience	PASS (2 keys, one effective value)
+#pairing	svcid-callerid	value	platform:MdmServiceIdentity__CallerId,mdm:PlatformServiceIdentity__CallerId	PASS (2 keys, one effective value)
+#pairing	svcid-enabled	value	platform:MdmServiceIdentity__Enabled,mdm:PlatformServiceIdentity__Enabled	PASS (2 keys, one effective value)
+#pairing	svcid-issuer	value	platform:MdmServiceIdentity__Issuer,mdm:PlatformServiceIdentity__Issuer	PASS (2 keys, one effective value)
+#pairing	svcid-kid	value	platform:MdmServiceIdentity__KeyId,mdm:PlatformServiceIdentity__KeyId	PASS (2 keys, one effective value)
+#result	PASS	0 finding(s)

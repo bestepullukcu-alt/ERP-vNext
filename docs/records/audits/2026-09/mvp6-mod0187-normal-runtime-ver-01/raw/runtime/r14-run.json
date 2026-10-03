@@ -1,0 +1,5 @@
+{
+  "exit": 0,
+  "stdout": "{\"phase\": \"target\", \"status\": \"PASS\", \"failures\": {}, \"cases\": {\"ascii-1\": [404, \"CLAIM_NOT_FOUND\"], \"ascii-128\": [404, \"CLAIM_NOT_FOUND\"], \"ascii-129\": [400, \"INVALID_REQUEST\"], \"utf8-eacute-128\": [404, \"CLAIM_NOT_FOUND\"], \"utf8-eacute-129\": [400, \"INVALID_REQUEST\"], \"utf8-emoji-128-lowercase-name\": [404, \"CLAIM_NOT_FOUND\"], \"utf8-emoji-129\": [400, \"INVALID_REQUEST\"], \"invalid-utf8-idempotency\": [400, null], \"duplicate-idempotency\": [400, \"INVALID_REQUEST\"], \"missing-idempotency\": [400, \"INVALID_REQUEST\"], \"ascii-other-header\": [404, \"CLAIM_NOT_FOUND\"], \"utf8-other-header\": [404, \"CLAIM_NOT_FOUND\"]}}\n",
+  "stderr": ""
+}

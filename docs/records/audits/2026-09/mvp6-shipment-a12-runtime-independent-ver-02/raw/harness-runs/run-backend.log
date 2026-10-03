@@ -1,0 +1,106 @@
+{
+  "cases": [
+    {
+      "case": "positive-control-actor-a-live",
+      "actor": "A",
+      "shipmentId": "eacd617a-0575-4246-9736-1acd0c25ed6b",
+      "status": 200,
+      "expected": 200,
+      "errorCode": null,
+      "requestCorrelation": "34c4c7a2-9d1f-4c56-8348-37e719d24887",
+      "headerCorrelation": "34c4c7a2-9d1f-4c56-8348-37e719d24887",
+      "bodyCorrelation": null,
+      "contractVersion": "v1",
+      "bodyKeys": [
+        "actualDeliverAt",
+        "carrierId",
+        "contractVersion",
+        "lifecycleCorrelationId",
+        "lines",
+        "loadId",
+        "plannedDeliverAt",
+        "plannedShipAt",
+        "pod",
+        "shipToReference",
+        "shipmentId",
+        "shipmentNumber",
+        "sourceDocumentId",
+        "sourceModule",
+        "sourceType",
+        "status",
+        "warehouseReferenceId"
+      ],
+      "pass": true
+    },
+    {
+      "case": "cross-le-actor-le-b",
+      "actor": "LEB",
+      "shipmentId": "eacd617a-0575-4246-9736-1acd0c25ed6b",
+      "status": 404,
+      "expected": 404,
+      "errorCode": "SHIPMENT_NOT_FOUND",
+      "requestCorrelation": "a42d3331-513e-4c8b-875e-299d4da4c32f",
+      "headerCorrelation": "a42d3331-513e-4c8b-875e-299d4da4c32f",
+      "bodyCorrelation": "a42d3331-513e-4c8b-875e-299d4da4c32f",
+      "contractVersion": "v1",
+      "bodyKeys": [
+        "contractVersion",
+        "error"
+      ],
+      "pass": true
+    },
+    {
+      "case": "unknown-actor-le-b",
+      "actor": "LEB",
+      "shipmentId": "bf7ba047-39df-4c3b-b68c-230ecd74eef5",
+      "status": 404,
+      "expected": 404,
+      "errorCode": "SHIPMENT_NOT_FOUND",
+      "requestCorrelation": "bb7b6b0f-eef9-4003-95f8-5781a9c4e2e0",
+      "headerCorrelation": "bb7b6b0f-eef9-4003-95f8-5781a9c4e2e0",
+      "bodyCorrelation": "bb7b6b0f-eef9-4003-95f8-5781a9c4e2e0",
+      "contractVersion": "v1",
+      "bodyKeys": [
+        "contractVersion",
+        "error"
+      ],
+      "pass": true
+    },
+    {
+      "case": "unknown-actor-a",
+      "actor": "A",
+      "shipmentId": "eae9edf0-9b61-49ac-b41c-4273b6702d63",
+      "status": 404,
+      "expected": 404,
+      "errorCode": "SHIPMENT_NOT_FOUND",
+      "requestCorrelation": "4880cae2-235c-42aa-8b05-dcd4b104a5a7",
+      "headerCorrelation": "4880cae2-235c-42aa-8b05-dcd4b104a5a7",
+      "bodyCorrelation": "4880cae2-235c-42aa-8b05-dcd4b104a5a7",
+      "contractVersion": "v1",
+      "bodyKeys": [
+        "contractVersion",
+        "error"
+      ],
+      "pass": true
+    },
+    {
+      "case": "soft-deleted-actor-a",
+      "actor": "A",
+      "shipmentId": "d99987f9-85b2-4cf3-b360-fefe2ff6fee2",
+      "status": 404,
+      "expected": 404,
+      "errorCode": "SHIPMENT_NOT_FOUND",
+      "requestCorrelation": "8434ed1e-6253-4dc0-b6b9-ebdfa12b6422",
+      "headerCorrelation": "8434ed1e-6253-4dc0-b6b9-ebdfa12b6422",
+      "bodyCorrelation": "8434ed1e-6253-4dc0-b6b9-ebdfa12b6422",
+      "contractVersion": "v1",
+      "bodyKeys": [
+        "contractVersion",
+        "error"
+      ],
+      "pass": true
+    }
+  ],
+  "dbZeroWrite": true,
+  "verdict": "PASS"
+}

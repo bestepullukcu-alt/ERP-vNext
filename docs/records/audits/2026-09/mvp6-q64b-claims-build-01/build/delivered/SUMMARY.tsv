@@ -1,0 +1,7 @@
+2026-09-26T19:15:07Z	2026-09-26T19:15:25Z	Diten.SupplyChainService.Api	0	 0 Warning(s)  0 Error(s) 
+2026-09-26T19:15:25Z	2026-09-26T19:15:36Z	Diten.SupplyChainService.Tests	0	 0 Warning(s)  0 Error(s) 
+2026-09-26T19:15:36Z	2026-09-26T19:16:30Z	Diten.Web	0	 15 Warning(s)  0 Error(s) 
+2026-09-26T19:16:30Z	2026-09-26T19:16:37Z	Diten.Web.Tests	0	 3 Warning(s)  0 Error(s) 
+2026-09-26T19:16:37Z	2026-09-26T19:16:43Z	Diten.ApiGateway	0	 0 Warning(s)  0 Error(s) 
+2026-09-26T19:16:43Z	2026-09-26T19:16:48Z	Diten.ApiGateway.Tests	0	 5 Warning(s)  0 Error(s) 
+2026-09-26T19:16:48Z	2026-09-26T19:16:51Z	TenantArchitecture.ArchitectureTests	0	 0 Warning(s)  0 Error(s) 

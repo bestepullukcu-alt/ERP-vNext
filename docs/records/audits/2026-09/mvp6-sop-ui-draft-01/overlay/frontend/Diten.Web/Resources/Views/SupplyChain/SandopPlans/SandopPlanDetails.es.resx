@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SandopPlansTitle" xml:space="preserve"><value>Planes S&amp;OP</value></data>
+  <data name="PlanId" xml:space="preserve"><value>ID del plan</value></data>
+  <data name="PlanName" xml:space="preserve"><value>Nombre del plan</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>Inicio del horizonte</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>Fin del horizonte</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>ID del plan de demanda</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>Versión del plan de demanda</value></data>
+  <data name="Status" xml:space="preserve"><value>Estado del plan</value></data>
+  <data name="Status.Draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="Status.InReview" xml:space="preserve"><value>En revisión</value></data>
+  <data name="Status.Approved" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="Status.Rejected" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="Status.Archived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>No indicado</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Referencia de soporte</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Copiado al portapapeles.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>La solicitud anterior todavía se está procesando.</value></data>
+  <data name="RequiredMissing" xml:space="preserve"><value>Complete todos los campos obligatorios.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>La solicitud no es válida. Revise los datos e inténtelo de nuevo.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>No se pudo rastrear la solicitud. Recargue la página e inténtelo de nuevo.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Su sesión ha finalizado. Inicie sesión de nuevo.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>No tiene permiso para esta acción.</value></data>
+  <data name="ErrUnknownSandopPlan" xml:space="preserve"><value>Este plan S&amp;OP no existe o no está disponible para usted.</value></data>
+  <data name="ErrSandopPlanAlreadyExists" xml:space="preserve"><value>Ya existe un plan S&amp;OP para este horizonte y esta versión del plan de demanda.</value></data>
+  <data name="ErrSandopPlanStateConflict" xml:space="preserve"><value>El estado del plan ya no permite capturar una instantánea. El plan se ha recargado.</value></data>
+  <data name="ErrSandopSignOffStateConflict" xml:space="preserve"><value>El estado del plan ya no permite registrar aprobaciones. El plan se ha recargado.</value></data>
+  <data name="ErrSignOffAlreadyRecorded" xml:space="preserve"><value>Ya hay una decisión registrada para este rol y esta instantánea.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Esta solicitud ya se usó con otros valores. Cambie los datos para enviar una nueva solicitud.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>La referencia del plan de demanda es desconocida o no está publicada.</value></data>
+  <data name="ErrInvalidSnapshotReference" xml:space="preserve"><value>La instantánea seleccionada no pertenece a este plan.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>El servicio no está disponible temporalmente. Inténtelo de nuevo; se enviará la misma solicitud.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>No se pudo confirmar el resultado. Inténtelo de nuevo; se enviará la misma solicitud y nada se registrará dos veces.</value></data>
+  <data name="PlanDetailsTitle" xml:space="preserve"><value>Plan S&amp;OP</value></data>
+  <data name="BackToPlans" xml:space="preserve"><value>Volver a los planes S&amp;OP</value></data>
+  <data name="PlanSummary" xml:space="preserve"><value>Resumen del plan</value></data>
+  <data name="Horizon" xml:space="preserve"><value>Horizonte de planificación</value></data>
+  <data name="DemandReference" xml:space="preserve"><value>Referencia de demanda</value></data>
+  <data name="CurrentSnapshot" xml:space="preserve"><value>Instantánea actual</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Creado el</value></data>
+  <data name="SummaryErrorState" xml:space="preserve"><value>No se pudo cargar el plan.</value></data>
+  <data name="Snapshots" xml:space="preserve"><value>Instantáneas de entrada</value></data>
+  <data name="SnapshotId" xml:space="preserve"><value>ID de la instantánea</value></data>
+  <data name="CaptureSnapshot" xml:space="preserve"><value>Capturar instantánea</value></data>
+  <data name="CaptureSnapshotTitle" xml:space="preserve"><value>Capturar instantánea de entrada</value></data>
+  <data name="SourceCapturedAt" xml:space="preserve"><value>Fuente capturada el</value></data>
+  <data name="SourceCapturedAtHelp" xml:space="preserve"><value>Fecha y hora UTC, por ejemplo 2026-09-26T12:00:00Z.</value></data>
+  <data name="SourceChecksum" xml:space="preserve"><value>Suma de verificación de la fuente</value></data>
+  <data name="SupplyInputRefs" xml:space="preserve"><value>Referencias de entrada de suministro</value></data>
+  <data name="SupplyInputRefsHelp" xml:space="preserve"><value>Opcional. Cada fila requiere un origen, un ID de recurso y una versión de recurso; las filas se envían en el orden mostrado.</value></data>
+  <data name="SupplyInputRefCount" xml:space="preserve"><value>Referencias de suministro</value></data>
+  <data name="Source" xml:space="preserve"><value>Sistema de origen</value></data>
+  <data name="ResourceId" xml:space="preserve"><value>ID de recurso</value></data>
+  <data name="ResourceVersion" xml:space="preserve"><value>Versión de recurso</value></data>
+  <data name="AddRow" xml:space="preserve"><value>Añadir fila</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>Quitar fila</value></data>
+  <data name="RowIncomplete" xml:space="preserve"><value>Complete o quite cada fila de referencia de suministro.</value></data>
+  <data name="CapturedAt" xml:space="preserve"><value>Capturada el</value></data>
+  <data name="Provenance" xml:space="preserve"><value>Procedencia de la demanda</value></data>
+  <data name="CurrentMarker" xml:space="preserve"><value>Actual</value></data>
+  <data name="EmptySnapshots" xml:space="preserve"><value>No se han capturado instantáneas para este plan.</value></data>
+  <data name="SnapshotsErrorState" xml:space="preserve"><value>No se pudieron cargar las instantáneas.</value></data>
+  <data name="SnapshotCaptured" xml:space="preserve"><value>Instantánea capturada.</value></data>
+  <data name="SignOffs" xml:space="preserve"><value>Aprobaciones</value></data>
+  <data name="RecordSignOff" xml:space="preserve"><value>Registrar aprobación</value></data>
+  <data name="RecordSignOffTitle" xml:space="preserve"><value>Registrar decisión de aprobación</value></data>
+  <data name="Snapshot" xml:space="preserve"><value>Instantánea de entrada</value></data>
+  <data name="Role" xml:space="preserve"><value>Rol de aprobación</value></data>
+  <data name="Role.DemandPlanning" xml:space="preserve"><value>Planificación de la demanda</value></data>
+  <data name="Role.SupplyPlanning" xml:space="preserve"><value>Planificación del suministro</value></data>
+  <data name="Role.Finance" xml:space="preserve"><value>Finanzas</value></data>
+  <data name="Role.Operations" xml:space="preserve"><value>Operaciones</value></data>
+  <data name="Role.Executive" xml:space="preserve"><value>Dirección</value></data>
+  <data name="Decision" xml:space="preserve"><value>Decisión de aprobación</value></data>
+  <data name="Decision.Approved" xml:space="preserve"><value>Aprobado</value></data>
+  <data name="Decision.Rejected" xml:space="preserve"><value>Rechazado</value></data>
+  <data name="Comment" xml:space="preserve"><value>Comentario de la decisión</value></data>
+  <data name="CommentHelp" xml:space="preserve"><value>Opcional, hasta 2000 caracteres.</value></data>
+  <data name="CommentTooLong" xml:space="preserve"><value>El comentario puede tener como máximo 2000 caracteres.</value></data>
+  <data name="DecidedBy" xml:space="preserve"><value>Decidido por</value></data>
+  <data name="DecidedAt" xml:space="preserve"><value>Decidido el</value></data>
+  <data name="ConfirmSignOff" xml:space="preserve"><value>La decisión es definitiva y no se puede cambiar para este rol y esta instantánea.</value></data>
+  <data name="SignOffRecorded" xml:space="preserve"><value>Aprobación registrada.</value></data>
+  <data name="EmptySignOffs" xml:space="preserve"><value>No se han registrado aprobaciones para este plan.</value></data>
+  <data name="SignOffsErrorState" xml:space="preserve"><value>No se pudieron cargar las aprobaciones.</value></data>
+  <data name="SignOffStatusNote" xml:space="preserve"><value>Registrar aprobaciones no cambia el estado del plan.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seleccione una opción</value></data>
+</root>

@@ -1,0 +1,21 @@
+MVP6-SHIPMENT-PORT-DISPOSITION-01 disposable validation
+
+PASS  Current branch feature/mvp6-logistics; HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c.
+PASS  Relevant source preimages were clean; unrelated dirty work was not used as accepted input.
+PASS  Read-only lsof found no TCP listener on 5061 (exit 1).
+PASS  Read-only lsof found no TCP listener on 5065 (exit 1).
+PASS  Carrier predecessor gateway hash = 239e1903ca632a7fed677260887fb0ebcbe73d79363cd3691cdd2321e8817c90.
+PASS  Fresh parse found exactly 35 CRM routes on 5061 in that predecessor.
+PASS  CRM port migration candidate applied to the disposable exact baseline with 0 byte mismatches across 35 files.
+PASS  Candidate gateway parsed as JSON and contained exactly 35 CRM routes, all targeting 5065.
+PASS  Candidate gateway hash = 7ab90b19ac915aadee5a9c16dce96bdf04eec2bf4d1be46720b82418cb2466a6.
+PASS  Regenerated Shipment successor applied with 0 byte mismatches across 12 rows.
+PASS  Composed disposable gateway contained 35 CRM routes on 5065 and 4 Shipment descriptors on 5061.
+PASS  Composed disposable gateway hash = 77363833c9ee973db6af6e798141afe9843515a324b4b00b37d86a80709d6618.
+NOT RUN  Service build/runtime: this is a candidate-only disposition and no allocation/application authority exists.
+NOT RUN  Gateway runtime: no real files were changed.
+
+Historical artifact note: the prior SHIPMENT-SHARED-SUCCESSOR.patch required
+newline normalization between adjacent RESX diff sections in the disposable
+derivation. The regenerated patch is syntactically applicable; the historical
+artifact was not modified.

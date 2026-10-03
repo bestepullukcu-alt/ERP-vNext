@@ -1,0 +1,14 @@
+[
+  [
+    "python3",
+    "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-capacity-duplicate-name-candidate-01/verify_candidate.py"
+  ],
+  [
+    "python3",
+    "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-capacity-duplicate-name-candidate-01/contract_model_checks.py"
+  ],
+  [
+    "python3",
+    "/private/tmp/mvp6-capacity-duplicate-name-independent-ver-01/check_embedded_events.py"
+  ]
+]

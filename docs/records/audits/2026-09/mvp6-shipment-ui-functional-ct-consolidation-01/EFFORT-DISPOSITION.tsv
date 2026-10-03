@@ -1,0 +1,10 @@
+row	prior_state	current_evidence_state	gross_omp	disposition
+0183-R2-02 Root mutation writer	CLOSED_BOUNDED_DELIVERY	UNCHANGED_CLOSED	4/8/16	Do not recount; prior CT acceptance remains controlling
+0183-R2-03 Root runtime VER	CLOSED_BOUNDED_DELIVERY	UNCHANGED_CLOSED	6/12/20	Do not recount; prior independent evidence remains controlling
+0183-R2-04 Root real-Auth browser	OPEN	FUNCTIONAL_ROOT_FLOW_CLOSED_BUT_ROW_PARTIAL	2/4/8	Root display/mutation/restart is evidenced, but PNG and broader UI browser acceptance remain open; retain reserve because no approved split exists
+SHIP-UI-B01 DEV	OPEN_FINDING	CLOSED_EXACT_FIX	N/A	RED and GREEN preserved; no new O/M/P invented
+SHIP-UI-B01 independent VER	REQUIRED	CLOSED_BOUNDED_VER	N/A	List 200/filter/DataTable confirmed
+SHIP-UI-B02 DEV	OPEN_FINDING	CLOSED_EXACT_FIX	N/A	RED and GREEN preserved; no new O/M/P invented
+SHIP-UI-B02 independent VER	REQUIRED	CLOSED_BOUNDED_VER	N/A	Transition/POD/root/replay/conflict/zero-write/restart confirmed
+UI183-A03/A07-A12/A14/A16	OPEN_OR_PARTIAL	RETAIN_OPEN_RESERVE	N/A	Only unproven subcriteria remain; no completed-effort claim
+UI183-A13 plus PNG	OPEN	RETAIN_OPEN_RESERVE	N/A	Responsive/RTL/accessibility/seven-language browser and persistent PNG remain open

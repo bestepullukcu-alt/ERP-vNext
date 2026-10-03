@@ -1,0 +1,14 @@
+{
+  "workPackage": "MVP6-MOD0187-AUTH-05",
+  "sourceArchiveSha256": "eaf786e647ef019f862c7dcc4f0b2ab29b2b5a36ff1bee98d2cca8d2863cc766",
+  "sourceManifestSha256": "4ae0f286479761512f50216e5bd8be721e48ae4839c062b57cfdd29696e2daa8",
+  "sourceEntryCount": 97,
+  "programSha256": "a72a05a5e185e04d70ba221f086baacb8c8fca11ea061f289cb4b54fd430254c",
+  "apiBinarySha256": "d9449651bbdda031dc403d1932beef0927f9e09641e63194900e912b8effcfcd",
+  "testBinarySha256": "76a00ee6713de3ad2040d2fc8d33907934d35966d6e78f20e029665634e0facb",
+  "rawEvidenceArchiveSha256": "828143e8a0b81799f1388f6502aa378b73ad9f76bc2696496dcb64311243efad",
+  "claimsCore": {"passed": 120, "failed": 0, "skipped": 0},
+  "http": {"runtime": "PASS", "restart": "PASS", "concurrency": "PASS", "dependencyFailure": "PASS"},
+  "productSourceChanges": [],
+  "writerComplete": true
+}

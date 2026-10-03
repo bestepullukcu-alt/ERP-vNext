@@ -1,0 +1,718 @@
+{
+  "config": {
+    "configFile": "/Users/natig/mvp6-env/q122/runtime/playwright.config.mjs",
+    "rootDir": "/Users/natig/mvp6-env/q122/runtime",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/natig/mvp6-env/q122/runtime/test-output",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/natig/mvp6-env/q122/runtime",
+        "testIgnore": [],
+        "testMatch": [
+          "claims-ui.spec.mjs"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-q122-ver-claims-v3-01/kit/browser/spec-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "claims-ui.spec.mjs",
+      "file": "claims-ui.spec.mjs",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Claims list (CU-01…CU-05, CU-31)",
+          "file": "claims-ui.spec.mjs",
+          "line": 43,
+          "column": 6,
+          "specs": [
+            {
+              "title": "list loads through the same-origin adapter only; skeleton then table",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1549,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:06.782Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-87d9b499be56f21753a2",
+              "file": "claims-ui.spec.mjs",
+              "line": 46,
+              "column": 3
+            },
+            {
+              "title": "filter sends only status and shipmentId",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2945,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:08.609Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-38e9c424e9c0fc1c01fd",
+              "file": "claims-ui.spec.mjs",
+              "line": 59,
+              "column": 3
+            },
+            {
+              "title": "QuickView makes no by-ID request (CU-31)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1087,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:11.564Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-6703b40d7bc888eba566",
+              "file": "claims-ui.spec.mjs",
+              "line": 70,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Create (CU-VS1, CU-09…CU-14, CU-17)",
+          "file": "claims-ui.spec.mjs",
+          "line": 85,
+          "column": 6,
+          "specs": [
+            {
+              "title": "create positive: 250.00 EUR on a Dispatched shipment; body is exact text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1664,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:12.659Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-27588f519ee301f28589",
+              "file": "claims-ui.spec.mjs",
+              "line": 88,
+              "column": 3
+            },
+            {
+              "title": "create negative: lowercase currency → localized 400, inputs kept (CU-11)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1734,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:14.347Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-527f24114476c6998214",
+              "file": "claims-ui.spec.mjs",
+              "line": 110,
+              "column": 3
+            },
+            {
+              "title": "ineligible shipment: note + disabled submit (CU-17)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1551,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:16.090Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-7ef8c78733e39c20cd81",
+              "file": "claims-ui.spec.mjs",
+              "line": 127,
+              "column": 3
+            },
+            {
+              "title": "carrier checkbox enabled only when the shipment has a carrier (CU-10)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1829,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:17.650Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-0ed48b10a6caad765e6b",
+              "file": "claims-ui.spec.mjs",
+              "line": 136,
+              "column": 3
+            },
+            {
+              "title": "unknown shipment → one safe not-found text, no shipment data (CU-14)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1511,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:19.490Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-f7a207cc9777e8ab65b3",
+              "file": "claims-ui.spec.mjs",
+              "line": 147,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Transition (CU-08, CU-20…CU-22)",
+          "file": "claims-ui.spec.mjs",
+          "line": 159,
+          "column": 6,
+          "specs": [
+            {
+              "title": "allowed transition Open → Investigating returns 200 and reloads",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2032,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:21.010Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-93e2bc13ac9dde4137e2",
+              "file": "claims-ui.spec.mjs",
+              "line": 162,
+              "column": 3
+            },
+            {
+              "title": "stale transition → 422 INVALID_CLAIM_TRANSITION shows conflict + reload (CU-21)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3148,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:23.062Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-e7fab15e711ec76d388d",
+              "file": "claims-ui.spec.mjs",
+              "line": 175,
+              "column": 3
+            },
+            {
+              "title": "reused key with a changed body → 409 IDEMPOTENCY_KEY_REUSED, retry stops (CU-19)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "needs a seeded Open claim id + antiforgery token capture; kept as the Q64b probe outline",
+                      "location": {
+                        "file": "/Users/natig/mvp6-env/q122/runtime/claims-ui.spec.mjs",
+                        "line": 203,
+                        "column": 10
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 28,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:26.219Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "needs a seeded Open claim id + antiforgery token capture; kept as the Q64b probe outline",
+                          "location": {
+                            "file": "/Users/natig/mvp6-env/q122/runtime/claims-ui.spec.mjs",
+                            "line": 203,
+                            "column": 10
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-dcee895c5b722c00824a",
+              "file": "claims-ui.spec.mjs",
+              "line": 201,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Scope and permissions (CU-06, CU-07, CU-15, CU-16)",
+          "file": "claims-ui.spec.mjs",
+          "line": 207,
+          "column": 6,
+          "specs": [
+            {
+              "title": "without read: only _AccessDenied inside the shell",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 964,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:26.257Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-b64e9ac6cb6d5ef36e9d",
+              "file": "claims-ui.spec.mjs",
+              "line": 208,
+              "column": 3
+            },
+            {
+              "title": "read-only: no create CTA and no row actions",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 942,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:27.228Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-a16b1da44aee2b39719e",
+              "file": "claims-ui.spec.mjs",
+              "line": 222,
+              "column": 3
+            },
+            {
+              "title": "cross-LE: LE-B list excludes LE-A claims; ?shipmentId=<LE-A> → empty",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 122,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:28.176Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-c72bed829dba6e9a6b72",
+              "file": "claims-ui.spec.mjs",
+              "line": 232,
+              "column": 3
+            },
+            {
+              "title": "cross-LE: resolve of an LE-A shipment from LE-B → 404 safe-not-found",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 110,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:28.304Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-90a014a64783c9a0a9cf",
+              "file": "claims-ui.spec.mjs",
+              "line": 242,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Languages (CU-24, CU-25)",
+          "file": "claims-ui.spec.mjs",
+          "line": 253,
+          "column": 6,
+          "specs": [
+            {
+              "title": "screen in tr",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1788,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:28.420Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-7af96af1c546e0c69d7f",
+              "file": "claims-ui.spec.mjs",
+              "line": 255,
+              "column": 5
+            },
+            {
+              "title": "screen in ar (RTL)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1709,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-27T12:15:30.217Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b89fb7d46d9888506e62-ce5ac1a1c0b0b85f524d",
+              "file": "claims-ui.spec.mjs",
+              "line": 255,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-27T12:15:06.092Z",
+    "duration": 25878.697,
+    "expected": 16,
+    "skipped": 1,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

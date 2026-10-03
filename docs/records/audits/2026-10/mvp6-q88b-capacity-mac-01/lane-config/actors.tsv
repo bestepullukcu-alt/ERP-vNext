@@ -1,0 +1,6 @@
+label	email	tenant_id	expected_legal_entity_id	note
+capfull	cap.full.q88b@diten.com	19200000-0000-4000-8000-000000000001	-	Capacity full actor in the Capacity fixture tenant (cloned user; D-2)
+capro	cap.readonly.q88b@diten.com	19200000-0000-4000-8000-000000000001	-	Capacity read-only
+capnoread	cap.noread.q88b@diten.com	19200000-0000-4000-8000-000000000001	-	no Capacity read
+capadmin	cap.admin.q88b@diten.com	19200000-0000-4000-8000-000000000001	-	fixture admin (org setup)
+navfull	john.doe.def@diten.com	00000000-0000-0000-0000-000000000001	-	nav checks: platform system tenant (Q185 D-1)

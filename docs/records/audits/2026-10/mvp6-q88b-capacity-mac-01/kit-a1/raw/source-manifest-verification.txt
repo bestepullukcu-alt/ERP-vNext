@@ -1,0 +1,8 @@
+after-overlay 1 docs/records/audits/2026-09/mvp6-bc-successor-exec-02/SOURCE-MANIFEST.tsv: wrapper stripped none; 422/422 match; mismatches=0
+after-overlay 2 docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01/SUCCESSOR-360-SOURCE-MANIFEST.tsv: wrapper stripped mvp6-shipment-a12-rework-src/; 360/360 match; mismatches=0
+after-overlay 3 docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/FINAL-22-SOURCE-MANIFEST.tsv: wrapper stripped none; 22/22 match; mismatches=0
+after-overlay 4 /Users/natig/mvp6-env/q88b/lane/inputs/q88b-derived-MANIFEST.tsv: wrapper stripped none; 75/75 match; mismatches=0
+final docs/records/audits/2026-09/mvp6-bc-successor-exec-02/SOURCE-MANIFEST.tsv: 422/422 match (declared overlaps excluded: 14); mismatches=0
+final docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01/SUCCESSOR-360-SOURCE-MANIFEST.tsv: 360/360 match (declared overlaps excluded: 17); mismatches=0
+final docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/FINAL-22-SOURCE-MANIFEST.tsv: 22/22 match (declared overlaps excluded: 2); mismatches=0
+final /Users/natig/mvp6-env/q88b/lane/inputs/q88b-derived-MANIFEST.tsv: 75/75 match (declared overlaps excluded: 0); mismatches=0

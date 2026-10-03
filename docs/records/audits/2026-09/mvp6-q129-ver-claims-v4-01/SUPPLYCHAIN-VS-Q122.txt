@@ -1,0 +1,6 @@
+Q122 test-a2 (v3 tree): 417 results, failed ['Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery']
+Q129 (v4 tree):         417 results, failed ['Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery']
+failure message: ['System.InvalidOperationException : Explicit write/read restart mode required; exclude from ordinary suite.']
+same name set: True
+different outcome: 0 []
+{'CapacityPlans': '39/39', 'Carriers': '36/36', 'Claims': '127/128', 'Loads': '33/33', 'ModuleRegistration': '9/9', 'Returns': '78/78', 'SandopPlans': '19/19', 'ShipmentRootHttpTests': '1/1', 'ShipmentRootStorageTests': '6/6', 'ShipmentTests': '12/12', 'ShipmentValidatorContractTests': '32/32', 'Shipments': '1/1', 'SourceClientTests': '7/7', 'SourceIntakeTests': '15/15'}

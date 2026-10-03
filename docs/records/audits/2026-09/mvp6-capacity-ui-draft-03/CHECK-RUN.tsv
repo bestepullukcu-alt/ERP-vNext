@@ -1,0 +1,15 @@
+draft	check	rule	result	evidence
+capacity-v3	XML-ar	fragment is well-formed XML	PASS	overlay/_shared-integration/sharedresource-nav-keys/SharedResource.ar.resx.fragment.xml: parsed; data names = ['Nav.Module.CAPACITYPLANNING', 'Nav.Page.CAPACITYPLANS']
+capacity-v3	XML-en	fragment is well-formed XML	PASS	overlay/_shared-integration/sharedresource-nav-keys/SharedResource.en.resx.fragment.xml: parsed; data names = ['Nav.Module.CAPACITYPLANNING', 'Nav.Page.CAPACITYPLANS']
+capacity-v3	XML-es	fragment is well-formed XML	PASS	overlay/_shared-integration/sharedresource-nav-keys/SharedResource.es.resx.fragment.xml: parsed; data names = ['Nav.Module.CAPACITYPLANNING', 'Nav.Page.CAPACITYPLANS']
+capacity-v3	XML-fr	fragment is well-formed XML	PASS	overlay/_shared-integration/sharedresource-nav-keys/SharedResource.fr.resx.fragment.xml: parsed; data names = ['Nav.Module.CAPACITYPLANNING', 'Nav.Page.CAPACITYPLANS']
+capacity-v3	XML-ru	fragment is well-formed XML	PASS	overlay/_shared-integration/sharedresource-nav-keys/SharedResource.ru.resx.fragment.xml: parsed; data names = ['Nav.Module.CAPACITYPLANNING', 'Nav.Page.CAPACITYPLANS']
+capacity-v3	XML-tr	fragment is well-formed XML	PASS	overlay/_shared-integration/sharedresource-nav-keys/SharedResource.tr.resx.fragment.xml: parsed; data names = ['Nav.Module.CAPACITYPLANNING', 'Nav.Page.CAPACITYPLANS']
+capacity-v3	XML-zh	fragment is well-formed XML	PASS	overlay/_shared-integration/sharedresource-nav-keys/SharedResource.zh.resx.fragment.xml: parsed; data names = ['Nav.Module.CAPACITYPLANNING', 'Nav.Page.CAPACITYPLANS']
+capacity-v3	NAV-PAGE	nav-visible page CAPACITY_PLANS (ParentPageCode null, overlay/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/CapacityPlanningManifestProvider.cs) → key Nav.Page.CAPACITYPLANS in all 7 fragments	PASS	present in 7/7
+capacity-v3	NAV-MODULE	"ModuleCode ""capacity-planning"" → key Nav.Module.CAPACITYPLANNING in all 7 fragments"	PASS	present in 7/7
+capacity-v3	NO-UNDERSCORE	"no fragment key contains ""_"""	PASS	14 keys checked; offenders []
+capacity-v3	NO-EXTRA-KEY	every fragment key is a nav page or module key of this overlay	PASS	extra []
+capacity-v3	FILE-LIST	file list of v3 = file list of v2	PASS	47 files; equal=True
+capacity-v3	CHANGED-FILES	exactly the 8 C-files changed; all others byte-identical to v2	PASS	8 changed: platform-registration.md, SharedResource.ar.resx.fragment.xml, SharedResource.en.resx.fragment.xml, SharedResource.es.resx.fragment.xml, SharedResource.fr.resx.fragment.xml, SharedResource.ru.resx.fragment.xml, SharedResource.tr.resx.fragment.xml, SharedResource.zh.resx.fragment.xml
+capacity-v3	REG-ITEM5	overlay/_shared-integration/platform-registration.md item 5 names Nav.Page.CAPACITYPLANS and states the Normalize rule	PASS	lines [16, 18]

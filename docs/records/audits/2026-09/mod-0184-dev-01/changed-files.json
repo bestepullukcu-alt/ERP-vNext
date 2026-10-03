@@ -1,0 +1,265 @@
+{
+  "baseHead": "4a8d4d4b339528a88e6220fb8402e5a2c771136c",
+  "files": [
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/README.md",
+      "sha256": "829396f237102b3463299cbaaf9293664b2c073f195a372ba6533c3b6ce8aba6"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "sha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/architecture.log",
+      "sha256": "c4a56b8b5e78515c9af8c7a351b890f005bff07e3bfc41821bf0b8ea745b7a7b"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/baseline-hashes.sha256",
+      "sha256": "689d3f4933d1717cfcc81ae88d2f2bcf976a7294a07b2aa1af0c5e66069abfce"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/build.log",
+      "sha256": "6c7dea94a9377b46e03c4b90d96534bd3566ed7469bc6d5c32e28b2f99a3385f"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/capture-tests.log",
+      "sha256": "b70aaee4b98aed3c929b11d2edf077f243b297ed21e6fabbffb70bd38d82b0f9"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/carrier-architecture.trx",
+      "sha256": "f646ffcb58afae8e599bac61777027067af7cf3aaf11f72d2a0fcb94efacaf4c"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/carrier-outage.log",
+      "sha256": "a231eee668d5095b7a0ac544ad68ec5be3386a5f0d6751460fc17dee70618473"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/carrier-outage/commit-uncertainty.json",
+      "sha256": "307e98acbbeaab9b332ba9ac6db70d2b143c675c1274025ff7958c748c6ff31a"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/carrier-outage/outage.json",
+      "sha256": "15591f6d8e23654b7465e8a866dcb956bdfbfd95d9b048009768a5919f449985"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/carrier-outage/service.log",
+      "sha256": "dfe40a92817551aba3607204357c5f5a57fc6d0d9dd814adba37e347abdc475e"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/carrier-runtime.log",
+      "sha256": "efbce182858ce7eb34e8fc48450aefd4fc9195da6cbbe20562afc784a2321ae7"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/carrier-runtime/runtime.json",
+      "sha256": "b847b50cf66bfd0b8a0f41ae84a65b7ef726d562954d53ba6a4789d0c8b85154"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/carrier-runtime/service.log",
+      "sha256": "33af476a5cae6555d9a1ec6385b16e92cecd64fbc82148ea8ffe6d08306c3d93"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/carrier-service.trx",
+      "sha256": "2c82c9c698646ba98e9bc4ae9102a926a0d21eed68ebb1f68dcb59fd31263b2d"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/changed-files.json",
+      "sha256": null
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/dcp002.log",
+      "sha256": "28150f3b4999776a94033332867e803cdbdcc9fbaa9f405909fd75cc9756146e"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/preservation.json",
+      "sha256": "0e949934810bc67a455ed7a620847a35cd8b0b2cb5f6b0c064d94c78f309df8e"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/program.diff",
+      "sha256": "26cb54477729a9d96fdee0582a2566371112d6fc72fb095ab302d467c0e1fb3d"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/service-tests.log",
+      "sha256": "b698ef57bf6d612399e3750aa033230955268b7874ec982b1140b0f44041183f"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/shipment-regression.log",
+      "sha256": "33b229d62e0fbf13434a7440128f2cac2ffecb7048212f34ae6693d307f885f8"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/shipment-regression/actual-sent.json",
+      "sha256": "60fbf95b26019615854df0abb5c1f4aab0bf8612b0b63982bfa8b1de7aa6c7da"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/shipment-regression/golden/persisted-state.json",
+      "sha256": "86a46308f1846718ccbaba82b97c4aeedb08c7ea6e68890fbe4dbda5ba4a88a8"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/shipment-regression/golden/runtime.json",
+      "sha256": "544dc809719d2c43ffd2c15d26ed6359063c52f2872790e49c3dff7cc81e4531"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/shipment-regression/golden/service.log",
+      "sha256": "7d466b72259866048a79e374550ba2855afd4a97e95f23434e628322c0971da0"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/shipment-regression/regression-state.json",
+      "sha256": "cd1028a551e392f02300340aa8233ca22a68ac06a768b1326e6624f7ec445d38"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/shipment-regression/regressions.json",
+      "sha256": "3fe1f6dea341c0f0bf831e7ff9d279a2a3eaf421ca530aa36be6e3f9ec6ebdaa"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/shipment-regression/sent-body-comparison.json",
+      "sha256": "f3fe918b684721255cee187192208955d326f3d048ee141a00998777cde4c5bb"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/standalone.log",
+      "sha256": "1b4369b5f956ac7e7622566b9fe844847efd22a7fc08de4301930eb08c7dea13"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-dev-01/standalone/startup-rejection.log",
+      "sha256": "5b76743ba18bef2660a1ea075fe46f4150f4c53f9a612724f8af464785d73e67"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Carriers/CarrierContextMiddleware.cs",
+      "sha256": "98599ec1d1bfa6ad79586b8bf37657ceb0055478947d371fd0fdf51d83a7daa7"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Carriers/CarrierContractError.cs",
+      "sha256": "bb348554dbf02b78dd90176344e383da1fd16f72a6a742615f9d698dedf3683b"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Features/Carriers/CarriersController.cs",
+      "sha256": "d82bd483cd723dfa90d7bbd361100d0901ae81d463fad5e7c4f940f218fab456"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs",
+      "sha256": "17177020c722d47c7dd29777315338212cb19c0825b141ed0053431ca3af93c0"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/CarrierModels.cs",
+      "sha256": "8487ade38fdee010c8705237ee20a3aa002f8465104e026adf70427ba98ab108"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/CarrierRequestContext.cs",
+      "sha256": "81214c51ed613e9fb27483506a60720fefc40b6303cbf91492de6a1e91333d70"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/CarrierRequestFingerprint.cs",
+      "sha256": "61e06591695a249dbfdefb385ae2953f8a4b18059a8d8b903b33c1ae02dccc9f"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Commands/ChangeCarrierStatusCommand.cs",
+      "sha256": "7376ab7003c2d5448c88917c12edb4d43dd17f17ecc399742dde3d3a61eb153a"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Commands/CreateCarrierCommand.cs",
+      "sha256": "b758414f4bc18caa4e206fb022e7555af9f13fff07dfa64a16816b3d44f023fd"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Handlers/CommandHandlers/ChangeCarrierStatusHandler.cs",
+      "sha256": "c13843b578d7a8b30e5156463773b58b6b7fd358dec251376e75479972c49c08"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Handlers/CommandHandlers/CreateCarrierHandler.cs",
+      "sha256": "d24ed4f1e66dde749d9b787bf0736a49afc0c9bf21db814709e6cd32c551d8b8"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Handlers/QueryHandlers/GetCarrierListHandler.cs",
+      "sha256": "992d46e1f8a5b6d71ef1814e32ae08093b8e9756bc1c1a611be3ec9208b24aa9"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Queries/GetCarrierListQuery.cs",
+      "sha256": "bc875e4731abebeb4d827d8603bcacce8ff3c3a60529a05f7082faacf844df86"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Validators/ChangeCarrierStatusValidator.cs",
+      "sha256": "10f01feede8abca2397295839971d81943acb0d1a57b16c892f53e61bf31e396"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Validators/CreateCarrierValidator.cs",
+      "sha256": "0e41592b9f9559c462d25e32eb0d20a400988440ba219ce01ebd6342f507e2a4"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Carriers/Validators/GetCarrierListValidator.cs",
+      "sha256": "1a7bc0a4e96b71173f1490ebd3784b82c174809c81bdc61c989eab8755cf6cc7"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/Carrier.cs",
+      "sha256": "083e595d72113e0461ea2dd6ae3623b7c61db8c2cad4fd2122ef7756588ece61"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/CarrierLifecycle.cs",
+      "sha256": "1ef4cfbc599716351de402dd8e5dd0f497b26bdabe521b4140a3030992ad36bd"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/CarrierMutationResult.cs",
+      "sha256": "c837b5a9ece37d80960980eaf270107f1d55bcbc9299683f4a752c8bbb49646d"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/CarrierPersistenceUnavailableException.cs",
+      "sha256": "8fe2d0f6dda9716bc69196b08b2a37b02bf71edfd30ca7ff128031e1993c3e01"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/CarrierScope.cs",
+      "sha256": "359678cd6dd1b1167fe003fe2eabd0911c1472bd6b6b51f940c762260354add8"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/CarrierStatus.cs",
+      "sha256": "e40c34c4da10501ca27713bdda1b449775b5306d48328f9e177ac9d93decfe15"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/ICarrierRepository.cs",
+      "sha256": "b8bc0a9a995a68f327dad13e15bfa75530ba81ba781efdc0b6ca46c1666290d4"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Carriers/TransportMode.cs",
+      "sha256": "3accae49a758ddb00510cfd31687d4afa65cd7d40ac4c43f939648279d188083"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Carriers/CarrierPermissionAttribute.cs",
+      "sha256": "280680df41a24a320f696ec5b814afdf4ae735c3c1b7a7730adee23b4e5a14cb"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Carriers/CarrierPermissions.cs",
+      "sha256": "a4a2886358846808f8575eb5a393c913b1b93ceceebb43e4e340e5db171d5ea2"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Carriers/CarrierPersistenceRegistration.cs",
+      "sha256": "908333b6511990061695d3342bd948b10ffdb7dae7a4bbb63ecc8e8a7b479c48"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Carriers/CarrierRepository.cs",
+      "sha256": "2c8ae26d2350be62506de78c3df3ff11f68d7ad44921ef19ba9217cffcd81e6d"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Carriers/CarrierSchema.cs",
+      "sha256": "e7b5eaad20dc15cc7310aec7af0dd36e38cad44e1d9ad419555f9aad3a3de265"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Carriers/ICarrierCommitProbe.cs",
+      "sha256": "ea47440a8372ce557787379bd703ea02c8af72c40c718aa43d91e35de58bd3d7"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Carriers/NoOpCarrierCommitProbe.cs",
+      "sha256": "be907d9c81f120109fbd42574f7875c43abcccbccd13366e390d820a1a87416a"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Carriers/CarrierContractTests.cs",
+      "sha256": "9bad4d542805d1f479a2dcd5d4a82e1d0b88447dcc9ed226628f61c1e65ade23"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/carriers/restart_probe.py",
+      "sha256": "4de0b3245147f0f2638751729ce9f311cde7f4d2cc9db4ff8a98493b2ef76c4f"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/carriers/runtime_probe.py",
+      "sha256": "a9eabcb4259876ddac7fa0f4329ab8d309e291c7e4a53507bff9ecd822d43a06"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/carriers/verify_evidence.py",
+      "sha256": "b898437bc64fa0a4bc8d851ab28adbc34038feb9a0cdb159b8ea7a29089bbd9f"
+    }
+  ]
+}

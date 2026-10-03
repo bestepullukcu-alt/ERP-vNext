@@ -1,0 +1,19 @@
+repo feature/mvp6-logistics@4a8d4d4b339528a88e6220fb8402e5a2c771136c OK
+input a12 docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01/successor-source.tar.gz sha256 7b6a0d1abea649d920040a039972c5d4928825e9cf2cc185487b1fe5f0f3314d OK
+input a12m docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01/SUCCESSOR-360-SOURCE-MANIFEST.tsv sha256 8ffa6c96d29f8004940f310ed704a2c05eaa38ffa501d6114a5f9251e6e00d36 OK
+input auth docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/final-source.tar.gz sha256 f50350b8e541a4c1cbc640926c581cf510b4c2dbb57b31ef4193bf4c25c9e2cd OK
+input authm docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/FINAL-22-SOURCE-MANIFEST.tsv sha256 b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731 OK
+input claims docs/records/audits/2026-09/mvp6-claims-ui-draft-01/claims-ui-draft-overlay.tar.gz sha256 bc0f5819de94273ebca162ed6ede2a62555f888f314c799c27e56a1c75b82e60 OK
+input claimsums docs/records/audits/2026-09/mvp6-claims-ui-draft-01/SHA256SUMS sha256 80da27c94c6e8a124e4636e679f95b39ef7e67ad5ea489a097e84d801df608d3 OK
+input claims-manifest SOURCE-MANIFEST.tsv sha256 9b468b37bbb15abf08e714749ece93eec1d14823e5ea22540f69fe804f0101ce OK (bound by SHA256SUMS)
+L0 head.tar sha256 96ae026a23c64bde643fb62147c83b568d511137d449dfaf3671268a4ba8ba2f
+L0 HEAD files 14251
+L1 A12 files 360; manifest 360/360
+L2 Auth files 3333; overlap with L1 0; FINAL-22 22/22
+L3 Claims module files 23 (expected 23); manifest match 23/23; replaced non-HEAD paths []
+derived overlay claims-module-23.tar.gz sha256 d41a8c62a5476e926dcd915bef3fab2a4986e06a9a47fa33dfb245c6061b1cdb manifest claims-module-23-MANIFEST.tsv sha256 b3721b7d67fffb5daf8704cfc1b21e91b9af34c38616c75102c6ccdac9c04357 files 23
+L4 ocelot confirm /api/shipment-bundle/shipments/{shipmentId} GET: present
+L4 ocelot routes appended 2 -> total 277
+L4 env-integration files 9; previous layers {'services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs': 'L1-A12-360', 'gateway/Diten.ApiGateway/ocelot.json': 'L1-A12-360', 'frontend/Diten.Web/Resources/SharedResource.en.resx': 'L1-A12-360', 'frontend/Diten.Web/Resources/SharedResource.tr.resx': 'L1-A12-360', 'frontend/Diten.Web/Resources/SharedResource.fr.resx': 'L1-A12-360', 'frontend/Diten.Web/Resources/SharedResource.es.resx': 'L1-A12-360', 'frontend/Diten.Web/Resources/SharedResource.zh.resx': 'L1-A12-360', 'frontend/Diten.Web/Resources/SharedResource.ar.resx': 'L1-A12-360', 'frontend/Diten.Web/Resources/SharedResource.ru.resx': 'L1-A12-360'}
+derived overlay claims-env-integration.tar.gz sha256 3be6ade36380e0065e9736d91a90d2464460d47efd52e836632d3c9501784131 manifest claims-env-integration-MANIFEST.tsv sha256 b45b83ff4d2cffc4d2bae3a712c1b89ee6743fc275fc330c3085477e4fd6d225 files 9
+COMPOSE PASS SOURCE-MANIFEST.tsv sha256 2dfebddb4beeab7d38bfeb58e99d0adfe28d108fa3727a672b457a9a57c6c24e files 14589

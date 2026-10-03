@@ -1,0 +1,65 @@
+{
+  "phase": "matrixdom",
+  "extra": "createNoShipRead",
+  "startedAt": "2026-09-27T12:27:44.453Z",
+  "web": "http://127.0.0.1:5901",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-08-matrixdom-createNoShipRead": {
+      "result": "PASS",
+      "actor": "readonly",
+      "addNew": 0,
+      "addExpected": 0,
+      "offered": {
+        "Open": [],
+        "Open.label": "Open",
+        "Investigating": [],
+        "Investigating.label": "Investigating",
+        "Approved": [],
+        "Approved.label": "Approved",
+        "Rejected": [],
+        "Rejected.label": "Rejected",
+        "Settled": [],
+        "Settled.label": "Settled",
+        "Withdrawn": [],
+        "Withdrawn.label": "Withdrawn",
+        "Closed": [],
+        "Closed.label": "Closed"
+      },
+      "expected": {
+        "Open": [],
+        "Investigating": [],
+        "Approved": [],
+        "Rejected": [],
+        "Settled": [],
+        "Withdrawn": [],
+        "Closed": []
+      }
+    }
+  },
+  "png": [
+    {
+      "name": "matrixdom-createNoShipRead-en.png",
+      "sha256": "f0efd0e036325a155edcc02ded2858968d23e29a1998aa082db23bdab3abe27c",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:27:46.884Z",
+      "phase": "matrixdom",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "matrixdom-createNoShipRead",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "matrixdom-createNoShipRead",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "endedAt": "2026-09-27T12:27:46.905Z"
+}

@@ -1,0 +1,2 @@
+Files v3/src/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js and v4/src/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js differ
+Files v3/src/frontend/Diten.Web.Tests/JavaScript/ClaimIndexBehaviorTests.cs and v4/src/frontend/Diten.Web.Tests/JavaScript/ClaimIndexBehaviorTests.cs differ

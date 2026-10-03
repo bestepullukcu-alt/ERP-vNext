@@ -1,0 +1,45 @@
+{
+  "case": "le-mismatch-create",
+  "method": "POST",
+  "path": "/api/shipment-bundle/shipments",
+  "requestHeaders": {
+    "X-Tenant-Id": "00000000-0000-0000-0000-000000000001",
+    "X-Legal-Entity-Id": "20000000-0000-0000-0000-000000000002",
+    "X-Correlation-Id": "af7044dc-033f-42b4-886a-6d453984249d",
+    "Idempotency-Key": "sra-le-mismatch"
+  },
+  "requestBody": {
+    "sourceModule": "MOD-0178",
+    "sourceType": "WAREHOUSE_OUTBOUND",
+    "sourceDocumentId": "SRA-OUT-001",
+    "warehouseReferenceId": "SRA-WH-001",
+    "shipToReference": "SRA-SHIPTO-001",
+    "plannedShipAt": "2026-09-24T15:06:25.005646+00:00",
+    "plannedDeliverAt": "2026-09-24T16:06:25.005646+00:00",
+    "lines": [
+      {
+        "lineNumber": "1",
+        "itemId": "20fa2637-8de0-41d8-bc18-616cfc4df1fc",
+        "skuId": "eba92f61-7aae-4eb3-9c24-5ca77a57c939",
+        "quantity": "2.000",
+        "uomId": "EA",
+        "inventoryReferenceId": "SRA-INV-001"
+      }
+    ]
+  },
+  "requestBytes": 463,
+  "status": 404,
+  "responseHeaders": {
+    "Content-Type": "application/json; charset=utf-8",
+    "X-Correlation-Id": "af7044dc-033f-42b4-886a-6d453984249d"
+  },
+  "responseBody": {
+    "error": {
+      "code": "SHIPMENT_NOT_FOUND",
+      "message": "Shipment not found.",
+      "correlationId": "af7044dc-033f-42b4-886a-6d453984249d"
+    },
+    "contractVersion": "v1"
+  },
+  "responseBytes": 149
+}

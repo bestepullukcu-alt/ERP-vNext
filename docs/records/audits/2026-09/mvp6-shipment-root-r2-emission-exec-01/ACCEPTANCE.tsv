@@ -1,0 +1,10 @@
+id	result	evidence	boundary
+EMIT-01	PASS	golden-rerun.trx; http-create-detail-replay.json	fresh create persists explicit authoritative root
+EMIT-02	PASS	http-create-detail-replay.json; restart-persistence.json	audit/receipt/outbox atomic, Pending outbox
+EMIT-03	PASS	replay-rerun.trx; http-create-detail-replay.json	replay preserves root and avoids duplicates
+EMIT-04	PASS	rollback-rerun.trx	rollback/retry does not leak partial root state
+EMIT-05	PASS	storage-rerun.trx; legacy-runtime.json	missing/null/malformed/valid/nil behavior preserved
+EMIT-06	PASS	restart-detail.json; restart-persistence.json	same fixture and binary after restart
+EMIT-07	PASS	legacy-runtime.json	soft-delete 404 and no-read-grant 403
+EMIT-08	PASS	shipment-regression-rerun.trx	12 shipment regression tests
+EMIT-09	OPEN	independent verifier required	DEV PASS cannot close independent acceptance

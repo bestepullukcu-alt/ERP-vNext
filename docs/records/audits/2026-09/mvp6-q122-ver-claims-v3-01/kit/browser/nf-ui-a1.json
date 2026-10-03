@@ -1,0 +1,237 @@
+{
+  "phase": "nf-ui",
+  "extra": null,
+  "startedAt": "2026-09-27T12:09:23.043Z",
+  "web": "http://127.0.0.1:5901",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-14-ui-one-text-no-shipment-data": {
+      "result": "PASS",
+      "alertTextsNormalised": {
+        "unknown": "The record was not found or is not available to you. Support reference: <ref>",
+        "foreignTenant": "The record was not found or is not available to you. Support reference: <ref>",
+        "softDeleted": "The record was not found or is not available to you. Support reference: <ref>",
+        "foreignLe": "The record was not found or is not available to you. Support reference: <ref>"
+      },
+      "dom": {
+        "unknown": {
+          "resolvedBlockVisible": false,
+          "shipmentNumber": "",
+          "saveDisabled": true
+        },
+        "foreignTenant": {
+          "resolvedBlockVisible": false,
+          "shipmentNumber": "",
+          "saveDisabled": true
+        },
+        "softDeleted": {
+          "resolvedBlockVisible": false,
+          "shipmentNumber": "",
+          "saveDisabled": true
+        },
+        "foreignLe": {
+          "resolvedBlockVisible": false,
+          "shipmentNumber": "",
+          "saveDisabled": true
+        }
+      },
+      "successBodiesSeen": 0,
+      "note": "support reference (UUID) replaced by <ref> before comparing"
+    },
+    "CU-15-ui-same-text-closed-inert-reload": {
+      "result": "PASS",
+      "cases": {
+        "softDeletedClaim": {
+          "status": 404,
+          "code": "CLAIM_NOT_FOUND",
+          "surfaceVisible": false,
+          "inert": true,
+          "toast": "The record was not found or is not available to you. Support reference: <ref>",
+          "reloadRequests": 1,
+          "focusInsideHiddenSurfaceAfterTab": false
+        },
+        "foreignTenantClaim": {
+          "status": 404,
+          "code": "CLAIM_NOT_FOUND",
+          "surfaceVisible": false,
+          "inert": true,
+          "toast": "The record was not found or is not available to you. Support reference: <ref>",
+          "reloadRequests": 1,
+          "focusInsideHiddenSurfaceAfterTab": false
+        },
+        "foreignLeClaim": {
+          "status": 404,
+          "code": "CLAIM_NOT_FOUND",
+          "surfaceVisible": false,
+          "inert": true,
+          "toast": "The record was not found or is not available to you. Support reference: <ref>",
+          "reloadRequests": 1,
+          "focusInsideHiddenSurfaceAfterTab": false
+        }
+      },
+      "cu14Message": "The record was not found or is not available to you.",
+      "cu15Message": "The record was not found or is not available to you.",
+      "sameTextAsCu14": true
+    }
+  },
+  "png": [
+    {
+      "name": "cu14-ui-unknown-en.png",
+      "sha256": "f4023038b4d2fe62a863b9a6d801350f484b4c1a9b063ca16e31cfe0d840f830",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:09:25.995Z",
+      "phase": "nf-ui",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu14-ui-foreignTenant-en.png",
+      "sha256": "ef24e58c30c46180b932e3007f179cf28f0eb0cfaee04e7c3ff9c3128a34bd5b",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:09:26.645Z",
+      "phase": "nf-ui",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu14-ui-softDeleted-en.png",
+      "sha256": "06a73289852cfd55bb04a3f098ea3e6f6629b54f0f555d517f6e176efb0b2ede",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:09:27.479Z",
+      "phase": "nf-ui",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu14-ui-foreignLe-en.png",
+      "sha256": "ed35809bcdfaa72f42dffdffddf694781561cbe92f72b50ad31f7d1638bb0d03",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:09:29.812Z",
+      "phase": "nf-ui",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu15-ui-softdel-en.png",
+      "sha256": "88ceb605c3ed3be65ee5de11fae921561784593bd532dcfb409244482e8f62a1",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:09:33.656Z",
+      "phase": "nf-ui",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu15-ui-foreign-tenant-en.png",
+      "sha256": "b7b488e4edce5a7373a30cb70180ea8a85ac6e0abdde486f02d05db910544b93",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:09:37.539Z",
+      "phase": "nf-ui",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu15-ui-foreign-le-en.png",
+      "sha256": "51a7b49e16ed93de20af3abf1c7dc77a7f7ea8ae53647bc8ec5bd992b77e3fe2",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:09:41.373Z",
+      "phase": "nf-ui",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "cu14ui-full",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "tag": "cu14ui-full",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "tag": "cu14ui-full",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "tag": "cu14ui-leb",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "tag": "cu15ui-softdel",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "tag": "cu15ui-foreign-tenant",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "tag": "cu15ui-foreign-le",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "toasts": [
+    {
+      "tag": "cu15ui-softdel",
+      "text": "The record was not found or is not available to you. Support reference: d5c91a8e-6f34-4079-8740-89d78f5c65e5",
+      "type": "warning",
+      "at": "2026-09-27T12:09:32.067Z"
+    },
+    {
+      "tag": "cu15ui-foreign-tenant",
+      "text": "The record was not found or is not available to you. Support reference: 884f4c60-4af3-4e22-b7d7-559855d7340b",
+      "type": "warning",
+      "at": "2026-09-27T12:09:35.942Z"
+    },
+    {
+      "tag": "cu15ui-foreign-le",
+      "text": "The record was not found or is not available to you. Support reference: 42e0c8ab-eb7e-417b-8ce9-1b339fc192e4",
+      "type": "warning",
+      "at": "2026-09-27T12:09:39.789Z"
+    }
+  ],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "cu14ui-full",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu14ui-full",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "cu14ui-leb",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu14ui-leb",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "cu15ui-softdel",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu15ui-softdel",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "cu15ui-foreign-tenant",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu15ui-foreign-tenant",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "cu15ui-foreign-le",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "cu15ui-foreign-le",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "endedAt": "2026-09-27T12:09:41.411Z"
+}

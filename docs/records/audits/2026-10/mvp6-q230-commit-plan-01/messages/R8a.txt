@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: work packages and CT verdicts (2026-10) (part a)
+
+16 folders/items, first '(files at month level)', last 'mvp6-q221-q209-prework-01'.
+Work packages: Q185, Q189, Q198, Q201, Q202A, Q205, Q208, Q210, Q211, Q212, Q213, Q214, Q216, Q220, Q221.
+299 files from pathspec/R8a.txt (Q230 commit plan).

@@ -1,0 +1,10 @@
+command=/Users/natig/.dotnet/dotnet restore frontend/Diten.Web.Tests/Diten.Web.Tests.csproj --disable-parallel -v minimal
+restore_exit=0
+command=/Users/natig/.dotnet/dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug --no-restore -m:1 /nr:false -v minimal
+build_exit=0
+sdk=8.0.417
+runtime=8.0.23
+errors=0
+warnings=15
+warning_disposition=pre-existing out-of-scope warnings in TerritoryManagementController and WorkCenter/EnterpriseStrategy views; no warning points to any of the 12 changed files
+elapsed=00:05:24.19

@@ -1,0 +1,316 @@
+--- a/services/Diten.MdmService/src/Diten.MdmService.Api/Security/PlatformServiceTokenValidator.cs
++++ b/services/Diten.MdmService/src/Diten.MdmService.Api/Security/PlatformServiceTokenValidator.cs
+@@ -42,7 +42,7 @@
+         try
+         {
+             var handler = new JwtSecurityTokenHandler { MapInboundClaims = false };
+-            var principal = handler.ValidateToken(token, new TokenValidationParameters
++            _ = handler.ValidateToken(token, new TokenValidationParameters
+             {
+                 ValidateIssuer = true,
+                 ValidIssuer = _options.Issuer,
+@@ -58,14 +58,18 @@
+             if (validatedToken is not JwtSecurityToken jwt
+                 || !string.Equals(jwt.Header.Alg, SecurityAlgorithms.HmacSha256, StringComparison.Ordinal)
+                 || !string.Equals(jwt.Header.Kid, _options.KeyId, StringComparison.Ordinal)
+-                || !HasExactClaim(principal, JwtRegisteredClaimNames.Sub, _options.CallerId)
+-                || !HasExactClaim(principal, "scope", PlatformServiceIdentityOptions.RequiredScope)
+-                || !HasExactClaim(principal, "tenant_id", tenantId.ToString("D"))
+-                || !HasExactClaim(principal, "actor_id", actorId.ToString("D"))
+-                || !HasExactClaim(principal, "legal_entity_id", legalEntityId.ToString("D"))
+-                || string.IsNullOrWhiteSpace(principal.FindFirst(JwtRegisteredClaimNames.Jti)?.Value)
+-                || !long.TryParse(principal.FindFirst(JwtRegisteredClaimNames.Iat)?.Value, out var issuedAt)
+-                || !long.TryParse(principal.FindFirst(JwtRegisteredClaimNames.Exp)?.Value, out var expiresAt)
++                || !HasExactlyOneAudience(jwt, _options.Audience)
++                || !HasExactlyOneClaim(jwt, JwtRegisteredClaimNames.Sub, _options.CallerId)
++                || !HasExactlyOneClaim(jwt, "scope", PlatformServiceIdentityOptions.RequiredScope)
++                || !HasExactlyOneClaim(jwt, "tenant_id", tenantId.ToString("D"))
++                || !HasExactlyOneClaim(jwt, "actor_id", actorId.ToString("D"))
++                || !HasExactlyOneClaim(jwt, "legal_entity_id", legalEntityId.ToString("D"))
++                || !HasExactlyOneNonEmptyClaim(jwt, JwtRegisteredClaimNames.Jti)
++                || !TryGetExactlyOneNumericDate(jwt, JwtRegisteredClaimNames.Iat, out var issuedAt)
++                || !TryGetExactlyOneNumericDate(jwt, JwtRegisteredClaimNames.Nbf, out var notBefore)
++                || !TryGetExactlyOneNumericDate(jwt, JwtRegisteredClaimNames.Exp, out var expiresAt)
++                || issuedAt != notBefore
++                || issuedAt > DateTimeOffset.UtcNow.ToUnixTimeSeconds() + _options.ClockSkewSeconds
+                 || expiresAt <= issuedAt
+                 || expiresAt - issuedAt > _options.MaximumTokenLifetimeSeconds)
+             {
+@@ -80,6 +84,42 @@
+         }
+     }
+ 
+-    private static bool HasExactClaim(ClaimsPrincipal principal, string type, string expected) =>
+-        string.Equals(principal.FindFirst(type)?.Value, expected, StringComparison.Ordinal);
++    private static bool HasExactlyOneAudience(JwtSecurityToken token, string expected)
++    {
++        var audiences = token.Audiences.ToArray();
++        return audiences.Length == 1
++               && string.Equals(audiences[0], expected, StringComparison.Ordinal);
++    }
++
++    private static bool HasExactlyOneClaim(JwtSecurityToken token, string type, string expected)
++    {
++        var values = token.Claims
++            .Where(claim => string.Equals(claim.Type, type, StringComparison.Ordinal))
++            .Select(claim => claim.Value)
++            .ToArray();
++        return values.Length == 1
++               && string.Equals(values[0], expected, StringComparison.Ordinal);
++    }
++
++    private static bool HasExactlyOneNonEmptyClaim(JwtSecurityToken token, string type)
++    {
++        var values = token.Claims
++            .Where(claim => string.Equals(claim.Type, type, StringComparison.Ordinal))
++            .Select(claim => claim.Value)
++            .ToArray();
++        return values.Length == 1 && !string.IsNullOrWhiteSpace(values[0]);
++    }
++
++    private static bool TryGetExactlyOneNumericDate(
++        JwtSecurityToken token,
++        string type,
++        out long value)
++    {
++        value = default;
++        var values = token.Claims
++            .Where(claim => string.Equals(claim.Type, type, StringComparison.Ordinal))
++            .Select(claim => claim.Value)
++            .ToArray();
++        return values.Length == 1 && long.TryParse(values[0], out value);
++    }
+ }
+--- a/services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/PlatformServiceTokenValidatorTests.cs
++++ b/services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/PlatformServiceTokenValidatorTests.cs
+@@ -16,46 +16,26 @@
+     private const string Secret = "01234567890123456789012345678901";
+ 
+     [Fact]
+-    public void Exact_platform_identity_and_scope_are_accepted()
+-    {
+-        var validator = CreateValidator();
+-        var token = CreateToken();
++    public void Exact_platform_identity_and_scope_are_accepted() =>
++        Assert.True(CreateValidator().IsAuthorized(CreateToken(), TenantId, ActorId, LegalEntityId));
+ 
+-        Assert.True(validator.IsAuthorized(token, TenantId, ActorId, LegalEntityId));
+-    }
+-
+     [Fact]
+-    public void Wrong_signing_key_is_rejected()
+-    {
+-        var validator = CreateValidator();
++    public void Wrong_signing_key_is_rejected() =>
++        Assert.False(CreateValidator().IsAuthorized(
++            CreateToken(secret: "abcdefghijklmnopqrstuvwxyz123456"), TenantId, ActorId, LegalEntityId));
+ 
+-        Assert.False(validator.IsAuthorized(
+-            CreateToken(secret: "abcdefghijklmnopqrstuvwxyz123456"),
+-            TenantId,
+-            ActorId,
+-            LegalEntityId));
+-    }
+-
+     [Theory]
+     [InlineData("wrong-caller", "mdm.legal-entities.reference.validate")]
+     [InlineData("Diten.Platform", "mdm.everything.read")]
+-    public void Wrong_caller_or_scope_is_rejected(string caller, string scope)
+-    {
+-        var validator = CreateValidator();
++    public void Wrong_caller_or_scope_is_rejected(string caller, string scope) =>
++        Assert.False(CreateValidator().IsAuthorized(
++            CreateToken(caller: caller, scope: scope), TenantId, ActorId, LegalEntityId));
+ 
+-        Assert.False(validator.IsAuthorized(
+-            CreateToken(caller: caller, scope: scope),
+-            TenantId,
+-            ActorId,
+-            LegalEntityId));
+-    }
+-
+     [Fact]
+     public void Tenant_actor_and_legal_entity_must_all_match()
+     {
+         var validator = CreateValidator();
+         var token = CreateToken();
+-
+         Assert.False(validator.IsAuthorized(token, Guid.NewGuid(), ActorId, LegalEntityId));
+         Assert.False(validator.IsAuthorized(token, TenantId, Guid.NewGuid(), LegalEntityId));
+         Assert.False(validator.IsAuthorized(token, TenantId, ActorId, Guid.NewGuid()));
+@@ -66,26 +46,105 @@
+     {
+         var options = ValidOptions();
+         options.Enabled = false;
+-        var validator = new PlatformServiceTokenValidator(Options.Create(options));
+-
+-        Assert.False(validator.IsAuthorized(CreateToken(), TenantId, ActorId, LegalEntityId));
++        Assert.False(new PlatformServiceTokenValidator(Options.Create(options))
++            .IsAuthorized(CreateToken(), TenantId, ActorId, LegalEntityId));
+     }
+ 
+     [Fact]
+     public void Excessive_token_lifetime_is_rejected()
+     {
+-        var validator = CreateValidator();
++        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++        Assert.False(CreateValidator().IsAuthorized(
++            CreateToken(iat: now, nbf: now, exp: now + 120), TenantId, ActorId, LegalEntityId));
++    }
+ 
+-        Assert.False(validator.IsAuthorized(
+-            CreateToken(lifetimeSeconds: 120),
+-            TenantId,
+-            ActorId,
+-            LegalEntityId));
++    [Theory]
++    [InlineData(JwtRegisteredClaimNames.Sub, "other-caller")]
++    [InlineData("scope", "mdm.everything.read")]
++    [InlineData("tenant_id", "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")]
++    [InlineData("actor_id", "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")]
++    [InlineData("legal_entity_id", "cccccccc-cccc-cccc-cccc-cccccccccccc")]
++    [InlineData(JwtRegisteredClaimNames.Jti, "duplicate-jti")]
++    [InlineData(JwtRegisteredClaimNames.Iat, "1")]
++    public void Duplicate_security_claim_is_rejected(string type, string conflictingValue)
++    {
++        var duplicate = new Claim(type, conflictingValue, type == JwtRegisteredClaimNames.Iat
++            ? ClaimValueTypes.Integer64
++            : ClaimValueTypes.String);
++        Assert.False(CreateValidator().IsAuthorized(
++            CreateToken(extraClaims: new[] { duplicate }), TenantId, ActorId, LegalEntityId));
+     }
+ 
+-    private static PlatformServiceTokenValidator CreateValidator() =>
+-        new(Options.Create(ValidOptions()));
++    [Theory]
++    [InlineData(JwtRegisteredClaimNames.Sub)]
++    [InlineData("scope")]
++    [InlineData("tenant_id")]
++    [InlineData("actor_id")]
++    [InlineData("legal_entity_id")]
++    [InlineData(JwtRegisteredClaimNames.Jti)]
++    [InlineData(JwtRegisteredClaimNames.Iat)]
++    public void Missing_security_claim_is_rejected(string type) =>
++        Assert.False(CreateValidator().IsAuthorized(
++            CreateToken(omitClaim: type), TenantId, ActorId, LegalEntityId));
+ 
++    [Fact]
++    public void Expected_plus_extra_audience_is_rejected() =>
++        Assert.False(CreateValidator().IsAuthorized(
++            CreateToken(extraClaims: new[] { new Claim(JwtRegisteredClaimNames.Aud, "other-audience") }),
++            TenantId, ActorId, LegalEntityId));
++
++    [Fact]
++    public void Missing_audience_is_rejected() =>
++        Assert.False(CreateValidator().IsAuthorized(
++            CreateToken(audience: null), TenantId, ActorId, LegalEntityId));
++
++    [Fact]
++    public void Future_iat_is_rejected_even_when_nbf_is_current()
++    {
++        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++        Assert.False(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
++            CreateToken(iat: now + 20, nbf: now, exp: now + 40), TenantId, ActorId, LegalEntityId));
++    }
++
++    [Fact]
++    public void Iat_and_nbf_must_have_the_same_numeric_date()
++    {
++        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++        Assert.False(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
++            CreateToken(iat: now - 1, nbf: now, exp: now + 20), TenantId, ActorId, LegalEntityId));
++    }
++
++    [Fact]
++    public void Future_nbf_outside_skew_is_rejected()
++    {
++        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++        Assert.False(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
++            CreateToken(iat: now + 20, nbf: now + 20, exp: now + 40), TenantId, ActorId, LegalEntityId));
++    }
++
++    [Fact]
++    public void Expired_token_inside_declared_skew_is_accepted()
++    {
++        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++        Assert.True(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
++            CreateToken(iat: now - 20, nbf: now - 20, exp: now - 2), TenantId, ActorId, LegalEntityId));
++    }
++
++    [Fact]
++    public void Expired_token_outside_declared_skew_is_rejected()
++    {
++        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++        Assert.False(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
++            CreateToken(iat: now - 20, nbf: now - 20, exp: now - 10), TenantId, ActorId, LegalEntityId));
++    }
++
++    private static PlatformServiceTokenValidator CreateValidator(int clockSkewSeconds = 0)
++    {
++        var options = ValidOptions();
++        options.ClockSkewSeconds = clockSkewSeconds;
++        return new PlatformServiceTokenValidator(Options.Create(options));
++    }
++
+     private static PlatformServiceIdentityOptions ValidOptions() => new()
+     {
+         Enabled = true,
+@@ -102,29 +161,43 @@
+         string caller = "Diten.Platform",
+         string scope = "mdm.legal-entities.reference.validate",
+         string secret = Secret,
+-        int lifetimeSeconds = 30)
++        string? audience = "diten-mdm-reference-validation",
++        string? omitClaim = null,
++        IEnumerable<Claim>? extraClaims = null,
++        long? iat = null,
++        long? nbf = null,
++        long? exp = null)
+     {
+-        var now = DateTimeOffset.UtcNow;
+-        var claims = new[]
+-        {
+-            new Claim(JwtRegisteredClaimNames.Sub, caller),
+-            new Claim("scope", scope),
+-            new Claim("tenant_id", TenantId.ToString("D")),
+-            new Claim("actor_id", ActorId.ToString("D")),
+-            new Claim("legal_entity_id", LegalEntityId.ToString("D")),
+-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("D")),
+-            new Claim(JwtRegisteredClaimNames.Iat, now.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+-        };
++        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++        var issuedAt = iat ?? now;
++        var notBefore = nbf ?? issuedAt;
++        var expiresAt = exp ?? issuedAt + 30;
++        var claims = new List<Claim>();
++        Add(JwtRegisteredClaimNames.Sub, caller);
++        Add("scope", scope);
++        Add("tenant_id", TenantId.ToString("D"));
++        Add("actor_id", ActorId.ToString("D"));
++        Add("legal_entity_id", LegalEntityId.ToString("D"));
++        Add(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("D"));
++        Add(JwtRegisteredClaimNames.Iat, issuedAt.ToString(), ClaimValueTypes.Integer64);
++        if (extraClaims is not null) claims.AddRange(extraClaims);
++
+         var token = new JwtSecurityToken(
+             issuer: "diten-platform-service",
+-            audience: "diten-mdm-reference-validation",
++            audience: audience,
+             claims: claims,
+-            notBefore: now.UtcDateTime,
+-            expires: now.AddSeconds(lifetimeSeconds).UtcDateTime,
++            notBefore: DateTimeOffset.FromUnixTimeSeconds(notBefore).UtcDateTime,
++            expires: DateTimeOffset.FromUnixTimeSeconds(expiresAt).UtcDateTime,
+             signingCredentials: new SigningCredentials(
+                 new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+                 SecurityAlgorithms.HmacSha256));
+         token.Header["kid"] = "platform-mdm-2026-09";
+         return new JwtSecurityTokenHandler().WriteToken(token);
++
++        void Add(string type, string value, string valueType = ClaimValueTypes.String)
++        {
++            if (!string.Equals(omitClaim, type, StringComparison.Ordinal))
++                claims.Add(new Claim(type, value, valueType));
++        }
+     }
+ }

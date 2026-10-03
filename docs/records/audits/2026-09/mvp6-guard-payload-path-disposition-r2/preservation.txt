@@ -1,0 +1,5 @@
+All 14576 pre-existing real-checkout files unchanged.
+All 22 source seals, provenance hashes and canonical targets verified.
+First 17 seal objects unchanged.
+Payload lexical tokens identical; all 442 extra bytes are JSON whitespace.
+Payload C# rerun byte-identical.

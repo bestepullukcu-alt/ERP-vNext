@@ -1,0 +1,6 @@
+patch_check_exit=0
+patch_apply_exit=0
+yaml_byte_equal=true
+annex_byte_equal=true
+applied_yaml_sha256=aeb354e8cc5d06f36bc0ee0e4e43b28a8701a2c3bec44200d47cec9095dfc744
+applied_annex_sha256=620038c8d53af260ef03238db9dddebe74fd368ccbed6e04b47d032a44a15ac1

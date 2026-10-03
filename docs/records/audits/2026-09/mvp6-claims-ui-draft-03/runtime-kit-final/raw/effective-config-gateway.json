@@ -1,0 +1,152 @@
+{
+  "service": "gateway",
+  "environment": "Development",
+  "contentRoot": "/Users/natig/mvp6-env/q64e/ek-work-final/gateway-runtime",
+  "externalUrlKeysForReview": [],
+  "keys": {
+    "AllowedHosts": {
+      "value": "*",
+      "layer": "appsettings.json"
+    },
+    "ASPNETCORE_ENVIRONMENT": {
+      "value": "Development",
+      "layer": "environment"
+    },
+    "DOTNET_ROLL_FORWARD": {
+      "value": "LatestPatch",
+      "layer": "environment"
+    },
+    "JwtSettings:Audience": {
+      "value": "diten-erp",
+      "layer": "environment"
+    },
+    "JwtSettings:Issuer": {
+      "value": "diten-auth-service",
+      "layer": "environment"
+    },
+    "JwtSettings:PreviousSecrets:0": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:PreviousSecrets:1": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:PreviousSecrets:2": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:PreviousSecrets:3": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:PreviousSecrets:4": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "JwtSettings:Secret": {
+      "value": "[REDACTED lane-generated-in-supervisor-memory]",
+      "layer": "environment"
+    },
+    "Logging:LogLevel:Default": {
+      "value": "Information",
+      "layer": "appsettings.Development.json"
+    },
+    "Logging:LogLevel:Microsoft": {
+      "value": "Warning",
+      "layer": "appsettings.Development.json"
+    },
+    "Logging:LogLevel:Microsoft.AspNetCore": {
+      "value": "Warning",
+      "layer": "appsettings.json"
+    },
+    "Logging:LogLevel:Ocelot": {
+      "value": "Debug",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Correlation:HeaderName": {
+      "value": "X-Correlation-Id",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Correlation:MaxLength": {
+      "value": "128",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Environment": {
+      "value": "Development",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Health:LivePath": {
+      "value": "/health/live",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Health:Path": {
+      "value": "/health",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Health:ReadyPath": {
+      "value": "/health/ready",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Metrics:Enabled": {
+      "value": "true",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Metrics:Path": {
+      "value": "/metrics",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Redaction:RedactedText": {
+      "value": "[REDACTED]",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Seq:ApiKey": {
+      "value": "[REDACTED secret:appsettings.Development.json]",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Seq:Enabled": {
+      "value": "false",
+      "layer": "environment"
+    },
+    "Observability:Seq:SafeDisableWhenUrlMissing": {
+      "value": "false",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Seq:Url": {
+      "value": "http://127.0.0.1:5899",
+      "layer": "environment"
+    },
+    "Observability:ServiceName": {
+      "value": "Diten.ApiGateway",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Tracing:DisabledReason": {
+      "value": "OTLP exporter is disabled until local collector infrastructure is configured.",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Tracing:Enabled": {
+      "value": "true",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Tracing:OtlpEndpoint": {
+      "value": "",
+      "layer": "appsettings.Development.json"
+    },
+    "Observability:Tracing:OtlpExporterEnabled": {
+      "value": "false",
+      "layer": "appsettings.Development.json"
+    },
+    "TenantResolution:DevBypassEnabled": {
+      "value": "true",
+      "layer": "appsettings.Development.json"
+    },
+    "TenantResolution:DevBypassTenantId": {
+      "value": "00000000-0000-0000-0000-000000000001",
+      "layer": "appsettings.Development.json"
+    },
+    "urls": {
+      "value": "http://127.0.0.1:5800",
+      "layer": "command-line"
+    }
+  }
+}

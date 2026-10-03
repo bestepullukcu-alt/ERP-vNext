@@ -1,0 +1,233 @@
+{
+  "phase": "cu25",
+  "mode": "v3",
+  "startedAt": "2026-09-27T10:06:03.957Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-25a-responsive": {
+      "result": "PASS",
+      "overflow": {
+        "en": {
+          "390": false,
+          "768": false,
+          "1024": false,
+          "1280": false,
+          "1440": false
+        },
+        "tr": {
+          "1280": false
+        },
+        "fr": {
+          "1280": false
+        },
+        "es": {
+          "1280": false
+        },
+        "zh": {
+          "1280": false
+        },
+        "ar": {
+          "390": false,
+          "768": false,
+          "1024": false,
+          "1280": false,
+          "1440": false
+        },
+        "arDir": "rtl",
+        "ru": {
+          "1280": false
+        }
+      }
+    },
+    "CU-25b-create-keyboard": {
+      "result": "PASS",
+      "openedByEnter": false,
+      "openedBySpace": true,
+      "focusInsideAfterOpen": true,
+      "closedByEscape": true,
+      "inertAfterClose": true,
+      "focusReturnedToAdd": true,
+      "focusedAfterClose": "btn add-new btn-primary shadow-none",
+      "evidenceIds": [
+        "claimEvidence_3434ed06-2048-4c9e-8cda-b76f2f9e0cfd",
+        "claimEvidence_55d097dc-97ed-4343-aa4e-09850cf11a39"
+      ],
+      "note": "Enter on Add = Q64d-D3 (template owner; not changed here)"
+    },
+    "CU-25c-transition-keyboard": {
+      "result": "PASS",
+      "claimId": "f54745a9-2441-4c73-87ac-e8a0e99e6d4f",
+      "immediate50ms": {
+        "focusInside": true,
+        "focused": "transitionTarget",
+        "closedByEscape": true
+      },
+      "settled900ms": {
+        "focusInside": true,
+        "focused": "transitionTarget",
+        "closedByEscape": true
+      }
+    }
+  },
+  "png": [
+    {
+      "name": "cu25-en-390.png",
+      "sha256": "12f443d2c1825045a1f14621bb69613cf9bd651bea5a9e21369fdbe1103df8ce",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=en&ui-culture=en",
+      "capturedAt": "2026-09-27T10:06:06.044Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-en-768.png",
+      "sha256": "51f6c654acf413b4666471769721497d3a9189aa81943a7d19519df16a292b58",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=en&ui-culture=en",
+      "capturedAt": "2026-09-27T10:06:06.497Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-en-1024.png",
+      "sha256": "9910c1a913367a346453cb598e0d00d5e57e9868b989f2643719a2ddaae30482",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=en&ui-culture=en",
+      "capturedAt": "2026-09-27T10:06:06.961Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-en-1280.png",
+      "sha256": "bba9410cbb4e2667a9c5e960018a5cb342292549683ff3a426326bc8224410c2",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=en&ui-culture=en",
+      "capturedAt": "2026-09-27T10:06:07.448Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-en-1440.png",
+      "sha256": "3e53ea4554c00405bb16f41bbeb64dc56382e85707d9ce99f5d3205d95871821",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=en&ui-culture=en",
+      "capturedAt": "2026-09-27T10:06:07.927Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-tr-1280.png",
+      "sha256": "a7dcb14ef7aefad67f9319ca8fb8ff92cffb25f7bd42b647b9f04da8bd219302",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=tr&ui-culture=tr",
+      "capturedAt": "2026-09-27T10:06:09.803Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-fr-1280.png",
+      "sha256": "718b4386e7eaf45fce87d7fda32a156d773ef4c9c351d1cc8cddac6d4442321b",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=fr&ui-culture=fr",
+      "capturedAt": "2026-09-27T10:06:11.732Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-es-1280.png",
+      "sha256": "711b6df56833263838f3f9658f361085be4f65365f686bb78889452984e85d37",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=es&ui-culture=es",
+      "capturedAt": "2026-09-27T10:06:13.665Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-zh-1280.png",
+      "sha256": "e805ffa245723423aa8a55e8b3382a0e659027f831598229a5cb32172be0103c",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=zh&ui-culture=zh",
+      "capturedAt": "2026-09-27T10:06:15.983Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-ar-390.png",
+      "sha256": "cccd3219f44832fa8442f15cf788e7f7c595ee6b0d56ecfc573387676dccfb11",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=ar&ui-culture=ar",
+      "capturedAt": "2026-09-27T10:06:17.991Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-ar-768.png",
+      "sha256": "755a052f5fee71e055c4301f51a75d025212a9c2d2a1198c46d94f72ffaabfb2",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=ar&ui-culture=ar",
+      "capturedAt": "2026-09-27T10:06:18.450Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-ar-1024.png",
+      "sha256": "525b5b6b1795982e809ee508ab517f4171cf321fe72d24fd62e60c24208d0f4c",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=ar&ui-culture=ar",
+      "capturedAt": "2026-09-27T10:06:18.921Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-ar-1280.png",
+      "sha256": "e01b63652b6bce9d90c889f705e0d8f5964dfab073c568ad7d1cad0d73e6b8cd",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=ar&ui-culture=ar",
+      "capturedAt": "2026-09-27T10:06:19.398Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-ar-1440.png",
+      "sha256": "6f5053182c1dc13488e1a062f55c6981a79570edd40dd00627d92e127f395d0c",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=ar&ui-culture=ar",
+      "capturedAt": "2026-09-27T10:06:19.880Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-ru-1280.png",
+      "sha256": "73e15ffaf8571d6730782ea0ed0a86fd13324142443de7e79ba054401e272df0",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims?culture=ru&ui-culture=ru",
+      "capturedAt": "2026-09-27T10:06:21.780Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-create-open-v3.png",
+      "sha256": "dd10a5c308511b7a92d8f441d81090b8f6c8e4908bdd61d77eac5144a2df6991",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T10:06:25.864Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu25-transition-open-v3.png",
+      "sha256": "216020fecfa9ad1328f261b46c6fefb48ecd5a61b5ad76d7189baef9db731ad9",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T10:06:30.901Z",
+      "phase": "cu25",
+      "mode": "v3",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-27T10:06:31.844Z"
+}
