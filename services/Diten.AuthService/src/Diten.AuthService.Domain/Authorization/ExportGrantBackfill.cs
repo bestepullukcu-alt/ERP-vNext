@@ -115,7 +115,9 @@ public static class ExportGrantBackfill
     /// </summary>
     /// <param name="templateGrantsExport">True when the default role template itself gives export to this (system) role.</param>
     /// <param name="readGrantCreatedAt">When each role's read grant was created, if stored. A read grant given after
-    /// the key makes its role no candidate; one without a stored date leaves the decision to the role's own age.</param>
+    /// the key makes its role no candidate; one without a stored date leaves the decision to the role's own age. (A CT
+    /// decision: every write of the product stores CreatedAt, so an undated grant can only be data from before that
+    /// field — older than the key — or a hand-written script.)</param>
     public static IReadOnlyList<TenantPlan> Plan(
         IEnumerable<RoleState> roles,
         ISet<(Guid RoleId, Guid PermissionId)> grants,

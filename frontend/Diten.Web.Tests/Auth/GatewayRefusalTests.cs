@@ -96,6 +96,15 @@ public sealed class GatewayRefusalTests
         Assert.Contains(logger.Lines, l => l.Contains("Role name is already in use.")); // it goes to the server log
     }
 
+    [Fact]
+    public async Task A_code_the_service_names_twice_is_handed_over_once()
+    {
+        var answer = Json(await GatewayRefusal.ReadAsync(Refused(HttpStatusCode.Conflict,
+            """{"errors":["a","b"],"errorCodes":[{"code":"ROLE_NAME_TAKEN"},{"code":"ROLE_NAME_TAKEN"},{"code":"ROLE_NOT_FOUND"}]}"""), new KeyLocalizer(), new LevelLogger()));
+
+        Assert.Equal(["ROLE_NAME_TAKEN", "ROLE_NOT_FOUND"], answer.GetProperty("errorCodes").EnumerateArray().Select(c => c.GetString()));
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.Conflict, """{"errors":["x"],"errorCodes":[{"code":"ROLE_NAME_TAKEN"}]}""", LogLevel.Information)] // a business refusal
     [InlineData(HttpStatusCode.BadRequest, """{"errors":["raw"]}""", LogLevel.Warning)]                                           // no code

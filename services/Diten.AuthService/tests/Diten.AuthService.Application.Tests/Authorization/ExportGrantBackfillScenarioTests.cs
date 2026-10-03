@@ -352,6 +352,7 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
             Assert.Equal(typeof(MongoWriteException).FullName, meta.RootElement.GetProperty("reason").GetString());
         }
 
+        await AgeAuditRowsAsync(tenant);
         var second = await RunAsync(); // the refusal is gone; option B: the decided role is not granted again
 
         Assert.False(await HoldsAsync(readers, pair));
@@ -625,6 +626,7 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         var roles = await ThreeOldReadersAsync(tenant, pair);
         var (_, second) = await StopAtSecondRoleAsync(pair, tenant, roles, ExportGrantBackfillRunner.Stage.AuditWritten);
         var logs = new CapturingLoggerProvider();
+        await AgeAuditRowsAsync(tenant); // the next start comes later than a slow run could still be on its way
 
         var next = await RunAsync(logger: logs.CreateLogger<ExportGrantBackfillScenarioTests>()); // the next start
 
@@ -709,6 +711,7 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
                 .RevokeAsync(first, export.Id, tenant, CancellationToken.None);
         }
 
+        await AgeAuditRowsAsync(tenant);
         var next = await RunAsync();
         await DataSeeder.SeedAsync(_host.Database); // and the start after that
 
@@ -741,7 +744,15 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         Assert.NotNull(owned);
         Assert.False(await HoldsAsync(owned!.Value, pair));                              // nobody granted it
         Assert.True(await HoldsAsync(roles.Single(r => r != owned), pair));              // the other role is complete
-        Assert.Contains((tenant, owned.Value, pair.ExportKey), other!.GrantsNotRepeated); // and the survivor said so
+        // FIX5 — the survivor met a row written moments ago: it could not tell a slow writer from a dead one, so it said
+        // nothing and left the tenant unmarked …
+        Assert.DoesNotContain(other!.GrantsNotRepeated, x => x.TenantId == tenant);
+        Assert.Equal(0, await Marks.CountDocumentsAsync(m => m.TenantId == tenant && m.Key == pair.ExportKey));
+
+        await AgeAuditRowsAsync(tenant);
+        var later = await RunAsync(); // … and a later start, when the writer cannot still be on its way, says so and settles it
+        Assert.Contains((tenant, owned.Value, pair.ExportKey), later.GrantsNotRepeated);
+        Assert.False(await HoldsAsync(owned.Value, pair));
         Assert.Equal(1, await Marks.CountDocumentsAsync(m => m.TenantId == tenant && m.Key == pair.ExportKey));
         await AssertOneAuditRowPerGrantAsync(tenant, pair, roles);
         await AssertALaterStartChangesNothingAsync(tenant);
@@ -853,13 +864,20 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         var tenant = Guid.NewGuid();
         var roles = new[] { await OldRoleAsync(tenant, "Readers-1", pair.ReadKey), await OldRoleAsync(tenant, "Readers-2", pair.ReadKey) };
         var otherInstanceRan = false;
+        var bLogs = new CapturingLoggerProvider();
 
         var a = await RunAsync(async (stage, p, id) =>
         {
             if (otherInstanceRan || p != pair || stage != ExportGrantBackfillRunner.Stage.AuditWritten || !roles.Contains(id)) return;
             otherInstanceRan = true;
-            var b = await RunAsync();
+            var b = await RunAsync(logger: bLogs.CreateLogger<ExportGrantBackfillScenarioTests>());
             Assert.DoesNotContain(tenant, b.FailedTenants);
+            // FIX5 — B met A's row while A was still on its way to the grant: B cannot verify it, so it warns nobody,
+            // reports nothing and does NOT mark the tenant (A, or the next start, does).
+            Assert.DoesNotContain(b.GrantsNotRepeated, x => x.TenantId == tenant);
+            Assert.DoesNotContain(bLogs.Entries, e => e.Level >= LogLevel.Warning && e.Message.Contains(tenant.ToString()));
+            Assert.Contains(bLogs.Entries, e => e.Level == LogLevel.Information && e.Message.Contains(tenant.ToString()) && e.Message.Contains("could not be verified"));
+            Assert.Equal(0, await Marks.CountDocumentsAsync(m => m.TenantId == tenant && m.Key == pair.ExportKey));
         });
 
         Assert.True(otherInstanceRan);
@@ -1000,6 +1018,7 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
 
         // The next start settles the failing tenant. The hook failed AFTER this role's audit row was written, so its
         // grant is not repeated (option B) — the tenant is marked and the role is reported.
+        await AgeAuditRowsAsync(failing);
         var next = await RunAsync();
         Assert.DoesNotContain(failing, next.FailedTenants);
         Assert.Equal(1, await Marks.CountDocumentsAsync(m => m.TenantId == failing && m.Key == pair.ExportKey));
@@ -1356,6 +1375,192 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         Assert.All(logs.Entries, e => Assert.DoesNotContain("SECRET", e.Message));
     }
 
+    // ── FIX5 item 1: a mark whose tenant cannot be read stops its KEY for everybody ───────────────────────
+
+    public static TheoryData<string> UnreadableTenantIds => new() { "text", "binary-not-a-uuid" };
+
+    [Theory, MemberData(nameof(UnreadableTenantIds))]
+    public async Task A_mark_whose_TenantId_cannot_be_read_stops_its_key_for_every_tenant_and_the_other_key_goes_on(string form)
+    {
+        var mine = Guid.NewGuid();
+        var elsewhere = Guid.NewGuid();
+        var myReaders = await OldRoleAsync(mine, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey);
+        var otherReaders = await OldRoleAsync(elsewhere, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey);
+        var markId = Guid.NewGuid();
+        var rawMarks = _host.Database.GetCollection<BsonDocument>(PermissionReconciliationMark.CollectionName);
+        await rawMarks.InsertOneAsync(new BsonDocument
+        {
+            { "_id", new BsonBinaryData(markId, GuidRepresentation.Standard) },
+            // The tenant this mark was meant for, in a form that is not a tenant id.
+            { "TenantId", form == "text" ? (BsonValue)mine.ToString() : new BsonBinaryData(mine.ToByteArray(), BsonBinarySubType.Binary) },
+            { "Key", ExportGrantBackfill.Users.ExportKey },
+            { "ReconciledAtUtc", DateTime.UtcNow },
+            { "Origin", ExportGrantBackfill.OriginBackfilled }
+        });
+        var logs = new CapturingLoggerProvider();
+        try
+        {
+            await RunAsync(logger: logs.CreateLogger<ExportGrantBackfillScenarioTests>());
+        }
+        finally
+        {
+            await rawMarks.DeleteOneAsync(new BsonDocument("_id", new BsonBinaryData(markId, GuidRepresentation.Standard)));
+        }
+
+        // Nobody decides the users key on this start — not the tenant the mark may have meant, not any other …
+        Assert.False(await HoldsAsync(myReaders, ExportGrantBackfill.Users));
+        Assert.False(await HoldsAsync(otherReaders, ExportGrantBackfill.Users));
+        Assert.Equal(0, await Marks.CountDocumentsAsync(m => m.Key == ExportGrantBackfill.Users.ExportKey && (m.TenantId == mine || m.TenantId == elsewhere)));
+        // … the roles key goes on …
+        Assert.True(await HoldsAsync(myReaders, ExportGrantBackfill.Roles));
+        Assert.True(await HoldsAsync(otherReaders, ExportGrantBackfill.Roles));
+        // … and the log names the document and the key.
+        Assert.Contains(logs.Entries, e => e.Level == LogLevel.Error && e.Message.Contains(markId.ToString()));
+        Assert.Contains(logs.Entries, e => e.Level == LogLevel.Error && e.Message.Contains(ExportGrantBackfill.Users.ExportKey) && e.Message.Contains("decides nothing"));
+
+        await RunAsync(); // the broken mark is gone: the next start decides the users key again
+        Assert.True(await HoldsAsync(otherReaders, ExportGrantBackfill.Users));
+    }
+
+    // ── FIX5 item 3: a text id is printed bounded and without control characters ─────────────────────────
+
+    [Fact]
+    public async Task A_text_document_id_is_logged_bounded_and_with_its_line_breaks_replaced()
+    {
+        var tenant = Guid.NewGuid();
+        await OldRoleAsync(tenant, "Readers", ExportGrantBackfill.Users.ReadKey);
+        var rawRoles = _host.Database.GetCollection<BsonDocument>("roles");
+        var id = "line1\nFORGED log line " + new string('x', 100);
+        await rawRoles.InsertOneAsync(new BsonDocument
+        {
+            { "_id", id }, // a text id — the role's Guid Id cannot be read from it
+            { "TenantId", new BsonBinaryData(tenant, GuidRepresentation.Standard) },
+            { "Name", "Odd" },
+            { "IsDeleted", false }
+        });
+        var logs = new CapturingLoggerProvider();
+        try
+        {
+            await RunAsync(logger: logs.CreateLogger<ExportGrantBackfillScenarioTests>());
+        }
+        finally
+        {
+            await rawRoles.DeleteOneAsync(new BsonDocument("_id", id));
+        }
+
+        var entry = Assert.Single(logs.Entries, e => e.Level == LogLevel.Error && e.Message.Contains(tenant.ToString()));
+        Assert.Contains("line1?FORGED log line ", entry.Message);
+        Assert.DoesNotContain("\n", entry.Message);
+        Assert.Contains(new string('x', 64 - "line1\nFORGED log line ".Length), entry.Message);
+        Assert.DoesNotContain(new string('x', 64 - "line1\nFORGED log line ".Length + 1), entry.Message);
+    }
+
+    // ── FIX5: rules that had no test of their own ────────────────────────────────────────────────────────
+
+    // A failure BEFORE the server answered (a timeout on the way): the outcome is unknown, nothing is withdrawn.
+    [Theory, MemberData(nameof(Keys))]
+    public async Task A_grant_write_that_times_out_without_reaching_the_server_withdraws_nothing(string key)
+    {
+        var pair = Pair(key);
+        var tenant = Guid.NewGuid();
+        var readers = await OldRoleAsync(tenant, "Readers", pair.ReadKey);
+
+        var first = await ExportGrantBackfillRunner.RunAsync(_host.Database, NullLogger.Instance, grantWriter: (col, row, ct) =>
+            row.TenantId == tenant ? throw new TimeoutException("never reached the server") : col.InsertOneAsync(row, cancellationToken: ct).ContinueWith(_ => true, ct));
+
+        Assert.Contains(tenant, first.FailedTenants);
+        Assert.False(await HoldsAsync(readers, pair));
+        Assert.Empty((await AuditRowsAsync(tenant, pair.AuditSource)).Where(r => r.EventName == ExportGrantBackfill.GrantNotAppliedEventName));
+    }
+
+    // A write error from the server while the grant IS there (here: the insert landed, the retry is the duplicate):
+    // the grant is in, so nothing is withdrawn.
+    [Theory, MemberData(nameof(Keys))]
+    public async Task A_write_error_while_the_grant_is_there_withdraws_nothing(string key)
+    {
+        var pair = Pair(key);
+        var tenant = Guid.NewGuid();
+        var readers = await OldRoleAsync(tenant, "Readers", pair.ReadKey);
+
+        var first = await ExportGrantBackfillRunner.RunAsync(_host.Database, NullLogger.Instance, grantWriter: async (col, row, ct) =>
+        {
+            await col.InsertOneAsync(row, cancellationToken: ct);
+            if (row.TenantId == tenant) await col.InsertOneAsync(row, cancellationToken: ct); // a server write error (duplicate key)
+            return true;
+        });
+
+        Assert.Contains(tenant, first.FailedTenants);
+        Assert.True(await HoldsAsync(readers, pair));
+        Assert.Empty((await AuditRowsAsync(tenant, pair.AuditSource)).Where(r => r.EventName == ExportGrantBackfill.GrantNotAppliedEventName));
+    }
+
+    // The source correction of an earlier build reads the tenant's roles; one that cannot be read stops the
+    // correction of THAT tenant: nothing is changed, the mark keeps no Origin and it is tried again.
+    [Theory, MemberData(nameof(Keys))]
+    public async Task A_source_correction_with_an_unreadable_role_of_its_tenant_changes_nothing_and_is_retried(string key)
+    {
+        var pair = Pair(key);
+        var tenant = Guid.NewGuid();
+        var viewer = await RoleAsync(tenant, "Viewer", old: true, system: true, GrantSource.System, pair.ReadKey, pair.ExportKey);
+        await Marks.InsertOneAsync(new PermissionReconciliationMark { TenantId = tenant, Key = pair.ExportKey, ReconciledAtUtc = DateTime.UtcNow, Origin = null });
+        var export = await Permissions.Find(p => p.Key == pair.ExportKey).SingleAsync();
+        var brokenId = Guid.NewGuid();
+        var rawRoles = _host.Database.GetCollection<BsonDocument>("roles");
+        await rawRoles.InsertOneAsync(new BsonDocument
+        {
+            { "_id", new BsonBinaryData(brokenId, GuidRepresentation.Standard) },
+            { "TenantId", new BsonBinaryData(tenant, GuidRepresentation.Standard) },
+            { "Name", new BsonDocument("not", "a name") }, // does not deserialize
+            { "IsDeleted", false }
+        });
+        ExportGrantBackfillRunner.Result result;
+        try
+        {
+            result = await RunAsync();
+        }
+        finally
+        {
+            await rawRoles.DeleteOneAsync(new BsonDocument("_id", new BsonBinaryData(brokenId, GuidRepresentation.Standard)));
+        }
+
+        Assert.Contains(tenant, result.FailedTenants);
+        Assert.Equal(0, result.SourcesCorrected);
+        Assert.Equal(GrantSource.System, (await GrantRowAsync(viewer, export.Id)).GrantSource);
+        Assert.Null((await MarkAsync(tenant, pair)).Origin);
+
+        await RunAsync(); // readable again: corrected
+        Assert.Equal(GrantSource.Manual, (await GrantRowAsync(viewer, export.Id)).GrantSource);
+    }
+
+    // A role whose TenantId is binary but no UUID: logged by id, skipped — it never stops the run.
+    [Fact]
+    public async Task A_role_whose_TenantId_is_binary_but_no_uuid_is_skipped_and_the_run_goes_on()
+    {
+        var healthy = Guid.NewGuid();
+        var healthyReaders = await OldRoleAsync(healthy, "Readers", ExportGrantBackfill.Users.ReadKey);
+        var oddId = Guid.NewGuid();
+        var rawRoles = _host.Database.GetCollection<BsonDocument>("roles");
+        await rawRoles.InsertOneAsync(new BsonDocument
+        {
+            { "_id", new BsonBinaryData(oddId, GuidRepresentation.Standard) },
+            { "TenantId", new BsonBinaryData(Guid.NewGuid().ToByteArray(), BsonBinarySubType.Binary) },
+            { "Name", "Odd" },
+            { "IsDeleted", false }
+        });
+        var logs = new CapturingLoggerProvider();
+        try
+        {
+            await RunAsync(logger: logs.CreateLogger<ExportGrantBackfillScenarioTests>());
+        }
+        finally
+        {
+            await rawRoles.DeleteOneAsync(new BsonDocument("_id", new BsonBinaryData(oddId, GuidRepresentation.Standard)));
+        }
+
+        Assert.True(await HoldsAsync(healthyReaders, ExportGrantBackfill.Users));
+        Assert.Contains(logs.Entries, e => e.Level == LogLevel.Error && e.Message.Contains(oddId.ToString()));
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────────────────────────────────
 
     /// <summary>Three reading roles of an old tenant, in the order the runner processes them (by role id).</summary>
@@ -1389,6 +1594,12 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         Assert.Equal(0, await Marks.CountDocumentsAsync(m => m.TenantId == tenant && m.Key == pair.ExportKey)); // not marked: not finished
         return (roles[0], roles[1]);
     }
+
+    /// <summary>The tenant's audit rows as a later start sees them: written longer ago than a slow run could still be on
+    /// its way to its grant (<see cref="ExportGrantBackfillRunner.OwnerGrace"/>).</summary>
+    private Task AgeAuditRowsAsync(Guid tenant)
+        => Audit.UpdateManyAsync(a => a.TenantId == tenant,
+            Builders<AuthAuditLog>.Update.Set(a => a.OccurredAt, DateTimeOffset.UtcNow - ExportGrantBackfillRunner.OwnerGrace - TimeSpan.FromMinutes(1)));
 
     private async Task AssertALaterStartChangesNothingAsync(Guid tenant)
     {
