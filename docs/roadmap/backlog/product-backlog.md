@@ -7822,6 +7822,16 @@ satırları bir kez taşınır ya da yeni adla kısmi dizin kurulur (aynı adla 
 açtırmaz; dev'de bu koleksiyonda 0 belge, 2026-10-03 salt okunur sayım); (4) yükseltilmiş (Escalated / TimedOut) onay: GP şablonuna SLA
 kuralı kurulursa ön kontrol 404 → geri çekme "kapandı", karar yoklaması 409 → karantina (BL-502 ile birlikte). Gelecek regresyon riski: 🟡.
 
+**Ek (2026-10-03, FIX3 gözden geçirmesi — GP'nin sonraki turu):** (5) "kapandı" reddi kapanma nedeni okunmadan saklanıyor
+(`GlobalProductIdentityWorkflowProcessor.cs:325-328, 467-472`): yükseltilmiş onayda ön kontrol NotFound der ama onay hâlâ karar verilebilir; ya da
+Platform iptali commit edip 409 `WORKFLOW_TRUSTED_CANCEL_INCOHERENT` dönebilir → kayıt kalıcı "kapandı", karar yoklaması karantina. Düzeltme:
+reddi saklamadan önce terminal kanıtı oku (`ResolveAbandonedWithdrawalAsync` gibi); kararsız kapanma WithdrawalOutcomeUnknown kalır. (6) Aynı komutla
+iki eşzamanlı istekte tekrar "ilk deneme" görünebiliyor (bellekteki bayrak + kontrol noktası; kira kuşağı karşılaştırılmalı). (7) Ekranda
+Platform'un açık uçlu ham kodları yerine tek sabit MDM kodu (Platform kodu yalnız günlükte) — 7 dile çevrilebilir küme. (8) `Completed` +
+`WithdrawalCommandId` belirsiz: onay kazandığında `…WITHDRAWAL_REPLAY_DRIFT` yanıltıcı. (9) Testsiz kurallar: proc:665 kontrol noktası şartı,
+:753 / :624 dizi alanları, :328 eski satır cevabı, :1821 sınır (129) ve kontrol karakteri, policy:88 `ApprovalChanging`, :749-751 alarm cümleleri.
+Sahiplenmenin sınırsız beklemesi (A3) ve park edilen geri çekmenin alarmı (A1) GSKU FIX1'de ortak desen olarak düzeltiliyor.
+
 ---
 
 ### BL-524
