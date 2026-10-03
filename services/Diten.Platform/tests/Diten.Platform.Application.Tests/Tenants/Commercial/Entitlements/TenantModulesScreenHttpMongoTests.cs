@@ -277,6 +277,30 @@ public sealed class TenantModulesScreenHttpMongoTests
         var after = (await host.ListAsync(Tenant)).Single(r => r.IsProjectionRow && r.ModuleCode == Host.PlanModule);
         Assert.Equal("BlockedByOverride", after.EffectiveAccess);
         Assert.Empty(after.AllowedActions!);
+        // It was already off: it held no modules.max slot, so nothing is given back.
+        host.Quota.Verify(x => x.ReleaseEntitlementAsync(It.IsAny<IPlatformTransactionSession>(),
+            It.IsAny<ReleaseQuotaRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Suspending_a_plan_module_whose_SWITCHED_ON_override_has_expired_gives_its_module_slot_back()
+    {
+        // CT acceptance of FIX2 — the taken-over row was ON: it held a modules.max slot that the suspension must give
+        // back, or the slot is lost for good (CT sabotage T2: dropping the release turned no test red).
+        await using var host = await Host.StartAsync();
+        var expired = await host.SeedAsync(Tenant, Host.PlanModule, EntitlementSource.ManualOverride, enabled: true, expiry: DateTimeOffset.UtcNow.AddDays(-2));
+        var plan = (await host.ListAsync(Tenant)).Single(r => r.IsProjectionRow && r.ModuleCode == Host.PlanModule);
+        Assert.Equal(["disable"], plan.AllowedActions);
+
+        var response = await host.PostAsync(Tenant, "disable", new
+        {
+            moduleCode = Host.PlanModule, physicalEntitlementId = (Guid?)null, reason = "Suspended again", rowVersion = (string?)null
+        });
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.False((await host.StoredAsync(expired.Id)).IsEnabled);
+        host.Quota.Verify(x => x.ReleaseEntitlementAsync(It.IsAny<IPlatformTransactionSession>(),
+            It.Is<ReleaseQuotaRequest>(r => r.QuotaKey == QuotaKeys.ModulesMax && r.Amount == 1), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
