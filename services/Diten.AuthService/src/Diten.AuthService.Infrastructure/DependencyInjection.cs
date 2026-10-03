@@ -79,13 +79,8 @@ public static class DependencyInjection
         // BL-454 — the tenant's e-mail identity (name, language, reply address) for the invitation mail. Its own
         // short timeout, not PlatformService:TimeoutSeconds: an e-mail waits two seconds for Platform and then goes
         // out under the product's name. The cache is a singleton; the typed client is not.
-        services.AddSingleton<TenantEmailIdentityCache>();
-        services.AddHttpClient<ITenantEmailIdentityClient, PlatformTenantEmailIdentityClient>((sp, client) =>
-        {
-            var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
-            client.BaseAddress = new Uri(options.BaseUrl);
-            client.Timeout = PlatformTenantEmailIdentityClient.Timeout;
-        });
+        // It never follows a redirect: the internal API key must not travel to another host.
+        PlatformTenantEmailIdentityClient.Register(services);
         services.AddHttpClient<IPlatformAdministratorStatusClient, PlatformAdministratorStatusClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;

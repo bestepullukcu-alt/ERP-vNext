@@ -79,6 +79,12 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
         try
         {
             var message = BuildMessage(request, settings);
+            if (!string.IsNullOrWhiteSpace(settings.ReplyToEmail) && message.ReplyTo.Count == 0)
+            {
+                _logger.LogWarning(
+                    "smtp.provider.reply_to_refused DispatchId={DispatchId} TenantId={TenantId}. The configured reply address is not a single valid address; the message is sent without one.",
+                    request.DispatchId, request.TenantId);
+            }
 
             await transport.ConnectAsync(settings.Host!, settings.Port!.Value, secureSocketOptions, timeoutCts.Token);
             // Batch 1.1 limitation: TenantMessagingSettings carries no dedicated SMTP-AUTH username field;
@@ -197,9 +203,12 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
         message.From.Add(new MailboxAddress(
             EmailHeaderText.CleanDisplayName(request.SenderName ?? settings.SenderName), settings.SenderEmail));
 
-        if (!string.IsNullOrWhiteSpace(settings.ReplyToEmail))
+        // BL-454 — a reply address from a tenant's settings goes in only if it is ONE plain address: a value with a
+        // line break or a second mailbox never reaches the header. A refused value is logged by the caller below,
+        // never with the value itself.
+        if (EmailAddressText.IsSingleAddress(settings.ReplyToEmail?.Trim()))
         {
-            message.ReplyTo.Add(new MailboxAddress(string.Empty, settings.ReplyToEmail));
+            message.ReplyTo.Add(new MailboxAddress(string.Empty, settings.ReplyToEmail!.Trim()));
         }
 
         AddRecipients(message.To, request.To);

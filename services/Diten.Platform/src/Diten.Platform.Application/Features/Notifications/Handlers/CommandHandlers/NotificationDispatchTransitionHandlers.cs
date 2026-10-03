@@ -93,7 +93,7 @@ public sealed class MarkNotificationDispatchFailedHandler
         {
             dispatch.NextRetryAt = nextRetryAt;
         }
-        if (!dispatch.TryMarkFailed(request.ErrorCode, request.ErrorMessage, DateTimeOffset.UtcNow)) return Response<NotificationDispatchDto>.Fail("Invalid dispatch status transition.", 409);
+        if (!dispatch.TryMarkFailed(request.ErrorCode, request.ErrorMessage, DateTimeOffset.UtcNow, request.IsPermanentFailure)) return Response<NotificationDispatchDto>.Fail("Invalid dispatch status transition.", 409);
 
         // BL-406 — idempotency guard: PermanentlyFailedNotifiedAt is set ONLY here and never cleared, so a second
         // command that (for whatever reason — a duplicate job execution, a re-entrant sweep) claims

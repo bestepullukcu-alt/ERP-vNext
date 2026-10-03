@@ -160,7 +160,13 @@ public sealed record RenderTemplatePreviewRequest(
     string? BodyHtmlTemplate,
     string? BodyTextTemplate,
     IReadOnlyList<TemplateVariableDefinitionDto> Variables,
-    IReadOnlyDictionary<string, object?> SampleVariables);
+    IReadOnlyDictionary<string, object?> SampleVariables,
+    /// <summary>
+    /// BL-454 — ADDITIVE ONLY. The saved template being edited, when there is one: its heading, table and action
+    /// (the shell parts the editor cannot edit yet) are drawn into the framed preview, so the operator sees what is
+    /// actually sent. Absent — a new template — the preview frames the body alone, as before.
+    /// </summary>
+    Guid? TemplateId = null);
 
 public sealed record NotificationDispatchListItemDto(
     Guid Id,

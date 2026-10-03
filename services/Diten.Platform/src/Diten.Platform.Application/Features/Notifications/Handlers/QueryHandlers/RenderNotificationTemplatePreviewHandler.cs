@@ -13,23 +13,28 @@ public sealed class RenderNotificationTemplatePreviewHandler
     private readonly IEmailTemplateRenderer _renderer;
     // BL-454 — optional for the same reason as on the queue handler: registered in DI, absent from older test doubles.
     private readonly IEmailShellComposer? _shellComposer;
+    private readonly Diten.Platform.Domain.Repositories.INotificationTemplateRepository? _templates;
 
-    public RenderNotificationTemplatePreviewHandler(IEmailTemplateRenderer renderer, IEmailShellComposer? shellComposer = null)
+    public RenderNotificationTemplatePreviewHandler(
+        IEmailTemplateRenderer renderer,
+        IEmailShellComposer? shellComposer = null,
+        Diten.Platform.Domain.Repositories.INotificationTemplateRepository? templates = null)
     {
         _renderer = renderer;
         _shellComposer = shellComposer;
+        _templates = templates;
     }
 
-    public Task<Response<RenderedEmailTemplateDto>> Handle(RenderNotificationTemplatePreviewQuery request, CancellationToken ct)
+    public async Task<Response<RenderedEmailTemplateDto>> Handle(RenderNotificationTemplatePreviewQuery request, CancellationToken ct)
     {
         var variables = new List<TemplateVariableDefinition>(request.Request.Variables.Count);
         foreach (var definition in request.Request.Variables)
         {
             if (!NotificationParsing.TryParseVariableType(definition.Type, out var type))
             {
-                return Task.FromResult(Response<RenderedEmailTemplateDto>.Fail(
+                return Response<RenderedEmailTemplateDto>.Fail(
                     $"Unknown template variable type '{definition.Type}' for variable '{definition.Name}'.",
-                    400));
+                    400);
             }
 
             variables.Add(new TemplateVariableDefinition
@@ -56,7 +61,7 @@ public sealed class RenderNotificationTemplatePreviewHandler
         var rendered = _renderer.Render(template, request.Request.SampleVariables);
         if (_shellComposer is null || !rendered.IsSuccessful || rendered.Data is null)
         {
-            return Task.FromResult(rendered);
+            return rendered;
         }
 
         /*
@@ -64,12 +69,17 @@ public sealed class RenderNotificationTemplatePreviewHandler
          * is the platform's own (product name on the band, English); what it shows faithfully is the card, the
          * heading taken from the subject, and where the body sits. The fields the editor already read are untouched.
          */
+        if (request.Request.TemplateId is { } savedId && _templates is not null)
+        {
+            template.Shell = (await _templates.GetByIdAsync(savedId, ct))?.Shell;
+        }
+
         var framed = _shellComposer.Compose(
             TenantEmailIdentity.Platform, template, template.Locale,
             rendered.Data.Subject, rendered.Data.BodyHtml, rendered.Data.BodyText, request.Request.SampleVariables);
 
-        return Task.FromResult(Response<RenderedEmailTemplateDto>.Success(
+        return Response<RenderedEmailTemplateDto>.Success(
             rendered.Data with { BodyHtmlFramed = framed.BodyHtml, BodyTextFramed = framed.BodyText },
-            rendered.StatusCode));
+            rendered.StatusCode);
     }
 }

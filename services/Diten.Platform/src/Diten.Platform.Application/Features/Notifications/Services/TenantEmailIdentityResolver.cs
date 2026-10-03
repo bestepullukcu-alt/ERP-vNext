@@ -50,7 +50,7 @@ public sealed class TenantEmailIdentityResolver : ITenantEmailIdentityResolver
         if (tenantId == Guid.Empty)
         {
             var platformDefault = await _settings.GetPlatformDefaultAsync(ct);
-            return TenantEmailIdentity.Platform with { ReplyToEmail = Blank(platformDefault?.ReplyToEmail) };
+            return TenantEmailIdentity.Platform with { ReplyToEmail = SingleAddress(platformDefault?.ReplyToEmail) };
         }
 
         var tenant = await _tenants.GetByIdAsync(tenantId, ct);
@@ -73,8 +73,11 @@ public sealed class TenantEmailIdentityResolver : ITenantEmailIdentityResolver
             Blank(tenant.DisplayName) ?? Blank(tenant.Name),
             await _locale.ResolveAsync(tenantId, null, ct),
             ownIsLive ? Blank(own!.SenderName) : null,
-            effective is { IsDeleted: false, IsEnabled: true } ? Blank(effective.ReplyToEmail) : null);
+            effective is { IsDeleted: false, IsEnabled: true } ? SingleAddress(effective.ReplyToEmail) : null);
     }
 
     private static string? Blank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? SingleAddress(string? value) =>
+        Diten.BuildingBlocks.Email.EmailAddressText.IsSingleAddress(Blank(value)) ? Blank(value) : null;
 }

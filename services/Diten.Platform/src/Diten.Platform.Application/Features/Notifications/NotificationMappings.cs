@@ -73,7 +73,8 @@ public static class NotificationMappings
             dispatch.Subject,
             dispatch.BodyHtmlPreview,
             dispatch.BodyTextPreview,
-            dispatch.VariablesJson,
+            // BL-454 — names only; the values are the tenant's data (see NotificationParsing.MaskVariableValues).
+            NotificationParsing.MaskVariableValues(dispatch.VariablesJson),
             dispatch.QueuedAt,
             dispatch.SentAt,
             dispatch.FailedAt,

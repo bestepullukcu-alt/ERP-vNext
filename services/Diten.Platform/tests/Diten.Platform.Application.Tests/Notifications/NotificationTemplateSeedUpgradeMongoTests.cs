@@ -165,6 +165,48 @@ public sealed class NotificationTemplateSeedUpgradeMongoTests : IAsyncLifetime
         Assert.Contains("KeptModified=0", line);
     }
 
+    [Fact]
+    public async Task A_row_the_seed_itself_carried_forward_is_carried_forward_again_by_the_next_version()
+    {
+        // 1.0.0 → 1.1.0 stamps the row (UpdatedAt, UpdatedBy = system.seed). A later 1.1.0 → 1.2.0 must not read that
+        // stamp as "an operator changed this" and skip the row.
+        await InsertPreviousSeedAsync();
+        await NotificationTemplateSeed.EnsureSeededAsync(_harness.Database, log: _ => { });
+
+        var nextVersion = NotificationTemplateSeed.TenantLocales.Select(locale =>
+        {
+            var current = NotificationTemplateSeed.TaskAssigned(locale);
+            var next = NotificationTemplateSeed.TaskAssigned(locale);
+            next.SemanticVersion = "1.2.0";
+            next.BodyHtmlTemplate = current.BodyHtmlTemplate + "<p>1.2.0</p>";
+            return (current, next);
+        }).ToList();
+
+        var (upgraded, kept) = await NotificationTemplateSeed.UpgradeUntouchedSeedsAsync(_templates, nextVersion, CancellationToken.None);
+
+        Assert.Equal(7, upgraded);
+        Assert.Equal(0, kept);
+        Assert.All(await AssignedRowsAsync(), row => Assert.Equal("1.2.0", row.SemanticVersion));
+    }
+
+    [Fact]
+    public async Task A_row_whose_only_difference_from_the_old_seed_is_its_variables_is_left_as_it_is()
+    {
+        await InsertPreviousSeedAsync();
+        await _templates.UpdateOneAsync(
+            x => x.TemplateKey == Key && x.Locale == "es" && x.TenantId == null,
+            Builders<NotificationTemplate>.Update.Set(x => x.Variables, new List<TemplateVariableDefinition>
+            {
+                new() { Name = "TaskTitle", Type = Diten.Platform.Domain.Enums.TemplateVariableType.String, IsRequired = true }
+            }));
+
+        var result = await NotificationTemplateSeed.EnsureSeededAsync(_harness.Database, log: _ => { });
+
+        Assert.Equal(6, result.Upgraded);
+        Assert.Equal(1, result.KeptModified);
+        Assert.Equal("1.0.0", (await AssignedRowsAsync()).Single(r => r.Locale == "es").SemanticVersion);
+    }
+
     private Task InsertPreviousSeedAsync() =>
         _templates.InsertManyAsync(NotificationTemplateSeed.TenantLocales.Select(NotificationTemplateSeed.TaskAssignedV1));
 

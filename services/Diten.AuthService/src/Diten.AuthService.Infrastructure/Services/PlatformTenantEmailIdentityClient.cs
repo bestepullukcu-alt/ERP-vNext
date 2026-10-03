@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Infrastructure.Settings;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -123,6 +124,26 @@ public sealed class PlatformTenantEmailIdentityClient : ITenantEmailIdentityClie
                 "tenant.email_identity.unavailable TenantId={TenantId} Reason={Reason}", tenantId, ex.GetType().Name);
             return null;
         }
+    }
+
+    /// <summary>
+    /// BL-454 — the client's transport. It does NOT follow redirects: the request carries the internal API key in a
+    /// custom header, and a redirect would hand that key to whatever host the answer names (HttpClient drops the
+    /// Authorization header on a redirect, never a custom one). A 3xx is simply "no answer" here.
+    /// </summary>
+    public static HttpMessageHandler CreatePrimaryHandler() => new SocketsHttpHandler { AllowAutoRedirect = false };
+
+    /// <summary>The one registration, used by AddInfrastructure and by the tests that prove it.</summary>
+    public static IHttpClientBuilder Register(IServiceCollection services)
+    {
+        services.AddSingleton<TenantEmailIdentityCache>();
+        return services.AddHttpClient<ITenantEmailIdentityClient, PlatformTenantEmailIdentityClient>((sp, client) =>
+            {
+                var options = sp.GetRequiredService<IOptions<PlatformServiceOptions>>().Value;
+                client.BaseAddress = new Uri(options.BaseUrl);
+                client.Timeout = Timeout;
+            })
+            .ConfigurePrimaryHttpMessageHandler(CreatePrimaryHandler);
     }
 
     private sealed record PlatformEnvelope(IdentityPayload? Data);

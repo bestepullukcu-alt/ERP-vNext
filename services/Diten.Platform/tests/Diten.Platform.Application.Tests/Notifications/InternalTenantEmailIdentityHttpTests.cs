@@ -49,6 +49,18 @@ public sealed class InternalTenantEmailIdentityHttpTests
     }
 
     [Fact]
+    public async Task A_wrong_key_of_the_same_length_is_refused()
+    {
+        using var host = new Host();
+        var sameLength = new string('x', ApiKey.Length);
+
+        var response = await host.GetAsync(Tenant, sameLength);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        Assert.Equal(0, host.Mediator.Sent);
+    }
+
+    [Fact]
     public async Task With_the_key_it_returns_the_four_presentation_values_and_nothing_else()
     {
         using var host = new Host();

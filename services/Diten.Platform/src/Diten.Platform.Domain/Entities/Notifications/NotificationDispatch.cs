@@ -69,6 +69,7 @@ public sealed class NotificationDispatch : BaseEntity
         }
 
         Status = NotificationDispatchStatus.Sent;
+        ReleaseVariables();
         ProviderMessageId = providerMessageId;
         SentAt = now;
         UpdatedAt = now;
@@ -76,7 +77,7 @@ public sealed class NotificationDispatch : BaseEntity
         return true;
     }
 
-    public bool TryMarkFailed(string errorCode, string errorMessage, DateTimeOffset now)
+    public bool TryMarkFailed(string errorCode, string errorMessage, DateTimeOffset now, bool isPermanent = false)
     {
         if (Status is NotificationDispatchStatus.Sent or NotificationDispatchStatus.Cancelled)
         {
@@ -84,6 +85,11 @@ public sealed class NotificationDispatch : BaseEntity
         }
 
         Status = NotificationDispatchStatus.Failed;
+        if (isPermanent)
+        {
+            ReleaseVariables();
+        }
+
         ErrorCode = errorCode;
         ErrorMessage = errorMessage;
         FailedAt = now;
@@ -100,8 +106,18 @@ public sealed class NotificationDispatch : BaseEntity
         }
 
         Status = NotificationDispatchStatus.Cancelled;
+        ReleaseVariables();
         UpdatedAt = now;
         Version++;
         return true;
     }
+
+    /// <summary>
+    /// BL-454 — the variables are kept for one purpose: a retry that sends exactly what the first attempt sent. Once
+    /// no retry can follow (sent, permanently failed, cancelled) they are released, in the same transition; the
+    /// subject and the preview stay as the record of what was sent. A row still waiting for a retry keeps them.
+    /// </summary>
+    public const string ReleasedVariablesJson = "{}";
+
+    private void ReleaseVariables() => VariablesJson = ReleasedVariablesJson;
 }

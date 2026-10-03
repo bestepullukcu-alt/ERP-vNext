@@ -105,9 +105,19 @@ public sealed class EmailShellComposer : IEmailShellComposer
         var cleanSubject = EmailHeaderText.CleanSubject(subject);
         var senderName = EmailSender.ComposeDisplayName(identity.SenderName, identity.DisplayName, language);
 
+        // BL-454 — a template without a text body gets one DERIVED from its HTML (links written out with their
+        // address). A text part that would carry no body at all is not sent.
+        var text = string.IsNullOrWhiteSpace(bodyText) ? HtmlText.ToPlainText(bodyHtml) : bodyText;
+
         if (IsWholeDocument(bodyHtml))
         {
-            return new ComposedEmail(cleanSubject, bodyHtml, bodyText, senderName, identity.ReplyToEmail, Framed: false);
+            return new ComposedEmail(cleanSubject, bodyHtml, NullIfBlank(text), senderName, identity.ReplyToEmail, Framed: false);
+        }
+
+        if (string.IsNullOrWhiteSpace(bodyHtml) && string.IsNullOrWhiteSpace(text))
+        {
+            // Nothing to say: no frame is drawn around an empty body.
+            return new ComposedEmail(cleanSubject, null, null, senderName, identity.ReplyToEmail, Framed: false);
         }
 
         var values = variables ?? NoVariables;
@@ -122,9 +132,9 @@ public sealed class EmailShellComposer : IEmailShellComposer
             TenantDisplayName = identity.DisplayName,
             Heading = heading.Length > 0 ? heading : cleanSubject,
             // A text-only template still gets a card: its text becomes the paragraphs.
-            Paragraphs = string.IsNullOrWhiteSpace(bodyHtml) ? SplitParagraphs(bodyText) : [],
+            Paragraphs = string.IsNullOrWhiteSpace(bodyHtml) ? SplitParagraphs(text) : [],
             BodyHtmlFragment = string.IsNullOrWhiteSpace(bodyHtml) ? null : bodyHtml,
-            BodyText = string.IsNullOrWhiteSpace(bodyHtml) ? null : bodyText,
+            BodyText = string.IsNullOrWhiteSpace(bodyHtml) ? null : text,
             InfoRows = (shell?.InfoRows ?? [])
                 .Select(row => new EmailShellInfoRow(row.Label, TemplateTokens.Render(row.ValueTemplate, values).Trim()))
                 .ToList(),
@@ -135,7 +145,9 @@ public sealed class EmailShellComposer : IEmailShellComposer
             ReplyToEmail = identity.ReplyToEmail
         });
 
-        return new ComposedEmail(cleanSubject, rendered.Html, rendered.Text, senderName, identity.ReplyToEmail, Framed: true);
+        // The frame's own words (heading, footer) are not a body: when the body itself has no text, no text part goes.
+        return new ComposedEmail(
+            cleanSubject, rendered.Html, string.IsNullOrWhiteSpace(text) ? null : rendered.Text, senderName, identity.ReplyToEmail, Framed: true);
     }
 
     public static bool IsWholeDocument(string? bodyHtml)
@@ -162,6 +174,8 @@ public sealed class EmailShellComposer : IEmailShellComposer
         // An unsafe or missing address is the shell's call: it draws no button rather than a dead or hostile one.
         return string.IsNullOrWhiteSpace(url) ? null : new EmailShellAction(shell.ActionLabel, url);
     }
+
+    private static string? NullIfBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
 
     private static IReadOnlyList<string> SplitParagraphs(string? text) =>
         string.IsNullOrWhiteSpace(text)

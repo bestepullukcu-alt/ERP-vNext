@@ -16,7 +16,7 @@ public static class NotificationTemplateSeed
         var collection = database.GetCollection<NotificationTemplate>(PlatformCollections.NotificationTemplates);
 
         // Upgrades FIRST: a row carried forward here is then found by the insert-if-missing pass below and left alone.
-        var (upgraded, keptModified) = await UpgradeUntouchedSeedsAsync(collection, ct);
+        var (upgraded, keptModified) = await UpgradeUntouchedSeedsAsync(collection, SeedUpgrades(), ct);
 
         var inserted = 0;
         foreach (var template in CreatePlatformDefaults())
@@ -64,14 +64,16 @@ public static class NotificationTemplateSeed
     /// update whose filter repeats the previous content: after the first instance writes, the filter no longer
     /// matches, so the second instance — and every later start — modifies nothing.</para>
     /// </summary>
-    private static async Task<(int Upgraded, int KeptModified)> UpgradeUntouchedSeedsAsync(
-        IMongoCollection<NotificationTemplate> collection, CancellationToken ct)
+    internal static async Task<(int Upgraded, int KeptModified)> UpgradeUntouchedSeedsAsync(
+        IMongoCollection<NotificationTemplate> collection,
+        IReadOnlyList<(NotificationTemplate Previous, NotificationTemplate Current)> upgrades,
+        CancellationToken ct)
     {
         var upgraded = 0;
         var keptModified = 0;
         var filters = Builders<NotificationTemplate>.Filter;
 
-        foreach (var (previous, current) in SeedUpgrades())
+        foreach (var (previous, current) in upgrades)
         {
             var scope = filters.And(
                 filters.Eq(x => x.IsDeleted, false),
@@ -98,8 +100,9 @@ public static class NotificationTemplateSeed
             var unchangedSinceRead = filters.And(
                 scope,
                 filters.Eq(x => x.Id, row.Id),
-                filters.Eq(x => x.UpdatedAt, null),
-                filters.Eq(x => x.Shell, null),
+                // Exactly as read: the seed's own earlier stamp, or none. An operator's save in between moves it.
+                filters.Eq(x => x.UpdatedAt, row.UpdatedAt),
+                filters.Eq(x => x.UpdatedBy, row.UpdatedBy),
                 filters.Eq(x => x.SubjectTemplate, previous.SubjectTemplate),
                 filters.Eq(x => x.BodyHtmlTemplate, previous.BodyHtmlTemplate),
                 filters.Eq(x => x.BodyTextTemplate, previous.BodyTextTemplate),
@@ -113,7 +116,7 @@ public static class NotificationTemplateSeed
                 .Set(x => x.Shell, current.Shell)
                 .Set(x => x.SemanticVersion, current.SemanticVersion)
                 .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
-                .Set(x => x.UpdatedBy, "system.seed");
+                .Set(x => x.UpdatedBy, SeedActor);
 
             var written = await collection.UpdateOneAsync(unchangedSinceRead, update, cancellationToken: ct);
             if (written.ModifiedCount == 1)
@@ -125,9 +128,16 @@ public static class NotificationTemplateSeed
         return (upgraded, keptModified);
     }
 
+    /// <summary>
+    /// The seed's own stamp. A row the seed itself carried forward is still untouched by an operator: the next
+    /// version may carry it forward again. (Before this, the 1.0.0 → 1.1.0 stamp would have made every later upgrade
+    /// see "an operator changed this" and skip it.)
+    /// </summary>
+    internal const string SeedActor = "system.seed";
+
     private static bool IsUntouchedSeed(NotificationTemplate row, NotificationTemplate previous) =>
-        row.UpdatedAt is null
-        && row.Shell is null
+        (row.UpdatedAt is null || string.Equals(row.UpdatedBy, SeedActor, StringComparison.Ordinal))
+        && SameShell(row.Shell, previous.Shell)
         && string.Equals(row.SemanticVersion, previous.SemanticVersion, StringComparison.Ordinal)
         && string.Equals(row.SubjectTemplate, previous.SubjectTemplate, StringComparison.Ordinal)
         && string.Equals(row.BodyHtmlTemplate, previous.BodyHtmlTemplate, StringComparison.Ordinal)
@@ -139,6 +149,23 @@ public static class NotificationTemplateSeed
         && string.Equals(row.SubjectTemplate, current.SubjectTemplate, StringComparison.Ordinal)
         && string.Equals(row.BodyHtmlTemplate, current.BodyHtmlTemplate, StringComparison.Ordinal)
         && string.Equals(row.BodyTextTemplate, current.BodyTextTemplate, StringComparison.Ordinal);
+
+    private static bool SameShell(NotificationTemplateShell? left, NotificationTemplateShell? right)
+    {
+        if (left is null || right is null)
+        {
+            return left is null && right is null;
+        }
+
+        return string.Equals(left.HeadingTemplate, right.HeadingTemplate, StringComparison.Ordinal)
+               && string.Equals(left.ActionLabel, right.ActionLabel, StringComparison.Ordinal)
+               && string.Equals(left.ActionUrlVariable, right.ActionUrlVariable, StringComparison.Ordinal)
+               && string.Equals(left.FootnoteTemplate, right.FootnoteTemplate, StringComparison.Ordinal)
+               && left.InfoRows.Count == right.InfoRows.Count
+               && left.InfoRows.Zip(right.InfoRows).All(pair =>
+                   string.Equals(pair.First.Label, pair.Second.Label, StringComparison.Ordinal)
+                   && string.Equals(pair.First.ValueTemplate, pair.Second.ValueTemplate, StringComparison.Ordinal));
+    }
 
     private static bool SameVariables(IReadOnlyList<TemplateVariableDefinition> left, IReadOnlyList<TemplateVariableDefinition> right) =>
         left.Count == right.Count

@@ -35,6 +35,9 @@ public sealed class QueueEmailNotificationHandler
     public const string ReasonTemplateNotFound = "TEMPLATE_NOT_FOUND";
     public const string ReasonRenderFailed = "TEMPLATE_RENDER_FAILED";
     public const string ReasonProviderRejected = "PROVIDER_REJECTED";
+    // BL-454 — an address that is not ONE plain address (a line break, a second mailbox) never reaches a header.
+    // Refused before a dispatch row exists, so nothing schedules a retry of a send that can never succeed.
+    public const string ReasonRecipientInvalid = "RECIPIENT_INVALID";
 
     // BL-374 — the exact token SanitizeVariables/MaskSensitiveValues write in place of a sensitive value.
     // Internal (not private) so EmailDispatchJob can recognise it in a persisted VariablesJson before
@@ -83,6 +86,14 @@ public sealed class QueueEmailNotificationHandler
 
     public async Task<Response<NotificationDispatchDto>> Handle(QueueEmailNotificationCommand request, CancellationToken ct)
     {
+        var recipients = request.Request.To
+            .Concat(request.Request.Cc ?? [])
+            .Concat(request.Request.Bcc ?? []);
+        if (recipients.Any(r => !Diten.BuildingBlocks.Email.EmailAddressText.IsSingleAddress(r.Email?.Trim())))
+        {
+            return Response<NotificationDispatchDto>.Fail("A recipient address is not a single valid address.", 400, ReasonRecipientInvalid);
+        }
+
         var settingsResponse = await _settingsResolver.ResolveAsync(request.TenantId, ct);
         if (!settingsResponse.IsSuccessful || settingsResponse.Data is null)
         {
@@ -340,7 +351,7 @@ public sealed class QueueEmailNotificationHandler
     private static IReadOnlyDictionary<string, object?> SanitizeVariables(IReadOnlyDictionary<string, object?> variables) =>
         variables.ToDictionary(
             pair => pair.Key,
-            pair => IsSensitiveKey(pair.Key) || NotificationParsing.LooksLikeRawSecret(Convert.ToString(pair.Value)) ? "[REDACTED]" : pair.Value,
+            pair => NotificationParsing.IsSensitiveVariable(pair.Key, pair.Value) ? RedactedToken : pair.Value,
             StringComparer.OrdinalIgnoreCase);
 
     // Replaces the concrete values of sensitive variables inside the persisted body preview, so a rendered
@@ -358,7 +369,7 @@ public sealed class QueueEmailNotificationHandler
         var masked = preview;
         foreach (var pair in variables)
         {
-            if (!IsSensitiveKey(pair.Key))
+            if (!NotificationParsing.IsSensitiveVariable(pair.Key, pair.Value))
             {
                 continue;
             }
@@ -383,10 +394,5 @@ public sealed class QueueEmailNotificationHandler
     private static string? Redact(string? value) =>
         NotificationParsing.LooksLikeRawSecret(value) ? "[REDACTED]" : value;
 
-    private static bool IsSensitiveKey(string key) =>
-        key.Contains("secret", StringComparison.OrdinalIgnoreCase)
-        || key.Contains("token", StringComparison.OrdinalIgnoreCase)
-        || key.Contains("password", StringComparison.OrdinalIgnoreCase)
-        || key.Contains("apiKey", StringComparison.OrdinalIgnoreCase)
-        || key.Contains("api_key", StringComparison.OrdinalIgnoreCase);
+    private static bool IsSensitiveKey(string key) => NotificationParsing.IsSensitiveVariableName(key);
 }

@@ -389,6 +389,315 @@ public sealed class EmailShellDispatchTests
         Assert.Equal(400, response.StatusCode);
     }
 
+    // ── BL-454 fix round 1 ────────────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_retry_of_a_task_mail_with_a_spaced_title_sends_the_very_same_body_as_the_first_attempt()
+    {
+        // The tenant reads English, this mail was asked for in Turkish: the retry must stay Turkish, not re-resolve.
+        var rig = new Rig { TenantLocale = "en" };
+        rig.AddTemplate("tr", "<p>Aşağıdaki görev sizde.</p>", "Aşağıdaki görev sizde.", subject: "Size bir görev atandı: {{TaskTitle}}", shell: TaskShell());
+        var variables = new Dictionary<string, object?>
+        {
+            ["TaskTitle"] = "Parti kaydı incelemesi, LOT 24-118",
+            ["Priority"] = "Yüksek",
+            ["AssignerName"] = "Burak Şen",
+            ["TaskUrl"] = "https://di10.example/WorkCenterNext/Details/42"
+        };
+
+        // The first attempt reaches the transport and is refused there.
+        rig.Transport.SendThrow = new InvalidOperationException("Mailbox unavailable");
+        var queued = await rig.QueueAsync("tr", variables);
+        Assert.False(queued.IsSuccessful);
+        var first = rig.Sent;
+        var firstHtml = first.HtmlBody;
+        var firstText = first.TextBody;
+        Assert.Contains("Open the task", firstHtml);
+        Assert.Contains(">Burak Şen</td>", firstHtml);
+
+        var dispatch = Assert.Single(rig.Dispatches.Items);
+        Assert.Equal(NotificationDispatchStatus.Failed, dispatch.Status);
+        Assert.DoesNotContain("[REDACTED]", dispatch.VariablesJson);
+
+        rig.Transport.SendThrow = null;
+        await rig.Job().HandleAsync(new EmailDispatchJobArgs(rig.TenantId, dispatch.Id), new BackgroundJobContext());
+
+        Assert.Equal(firstHtml, rig.Sent.HtmlBody);
+        Assert.Equal(firstText, rig.Sent.TextBody);
+        Assert.Equal(first.Subject, rig.Sent.Subject);
+        // The retry speaks the language of the first attempt (the dispatch's own locale, not a fresh lookup).
+        Assert.Contains("Bu e-posta Diten Pharma adına Di10 üzerinden gönderildi.", rig.Sent.HtmlBody);
+    }
+
+    [Fact]
+    public async Task A_secret_in_a_tenant_admin_invitation_is_never_stored_and_never_sent_by_a_retry()
+    {
+        var rig = new Rig();
+        rig.AddTemplate("en", "<p>Your password: {{TemporaryPassword}}</p><p>{{LoginUrl}}</p>", "Your password: {{TemporaryPassword}}");
+        const string secret = "Tmp Pass 9!x";
+
+        rig.Transport.SendThrow = new InvalidOperationException("Mailbox unavailable");
+        await rig.QueueAsync("en", new() { ["TemporaryPassword"] = secret, ["LoginUrl"] = "https://di10.example/login" });
+        var dispatch = Assert.Single(rig.Dispatches.Items);
+
+        Assert.DoesNotContain(secret, dispatch.VariablesJson);
+        Assert.DoesNotContain(secret, dispatch.BodyHtmlPreview);
+        Assert.Contains("[REDACTED]", dispatch.VariablesJson);
+        // A name that is not sensitive is stored as given — the retry needs it.
+        Assert.Contains("https://di10.example/login", dispatch.VariablesJson);
+
+        rig.Transport.SendThrow = null;
+        await rig.Job().HandleAsync(new EmailDispatchJobArgs(rig.TenantId, dispatch.Id), new BackgroundJobContext());
+
+        Assert.DoesNotContain(secret, rig.Sent.HtmlBody);
+        Assert.DoesNotContain(secret, rig.Sent.TextBody ?? string.Empty);
+    }
+
+    [Fact]
+    public void The_sensitive_variable_names_are_one_pinned_list()
+    {
+        Assert.Equal(["secret", "token", "password", "apikey", "api_key"], NotificationParsing.SensitiveVariableNameParts);
+        Assert.True(NotificationParsing.IsSensitiveVariableName("TemporaryPassword"));
+        Assert.True(NotificationParsing.IsSensitiveVariableName("ResetToken"));
+        Assert.True(NotificationParsing.IsSensitiveVariableName("ApiKey"));
+        Assert.False(NotificationParsing.IsSensitiveVariableName("TaskTitle"));
+        Assert.False(NotificationParsing.IsSensitiveVariableName("LoginUrl"));
+    }
+
+    [Theory]
+    [InlineData("LoginUrl", "https://di10.example/set?token=abc", true)]
+    [InlineData("SetupLink", "https://di10.example/reset?email=a%40b.test&Code=123", true)]
+    [InlineData("Download", "https://files.example/f.pdf?X-Amz-Signature=deadbeef", true)]
+    [InlineData("TaskUrl", "https://di10.example/WorkCenterNext/Details/123", false)]
+    [InlineData("ListUrl", "https://di10.example/a?page=2", false)]
+    [InlineData("TaskTitle", "Parti kaydı incelemesi, LOT 24-118", false)]
+    [InlineData("Formula", "a = b + c", false)]
+    [InlineData("TemporaryPassword", "anything", true)]
+    public void Only_a_secret_name_or_a_credential_bearing_link_is_masked(string name, string value, bool masked)
+    {
+        Assert.Equal(masked, NotificationParsing.IsSensitiveVariable(name, value));
+    }
+
+    [Fact]
+    public async Task A_set_password_link_under_an_ordinary_name_is_never_stored_and_a_task_link_is_kept()
+    {
+        var rig = new Rig();
+        rig.AddTemplate("en", "<p>{{LoginUrl}} {{TaskUrl}}</p>", "{{LoginUrl}}");
+        const string link = "https://di10.example/account/set-password?email=a%40b.test&token=s3cr3t";
+
+        // The first attempt fails, so the row is what a retry would work from (a sent row keeps no variables).
+        rig.Transport.SendThrow = new InvalidOperationException("Mailbox unavailable");
+        await rig.QueueAsync("en", new() { ["LoginUrl"] = link, ["TaskUrl"] = "https://di10.example/WorkCenterNext/Details/123" });
+
+        var dispatch = Assert.Single(rig.Dispatches.Items);
+        Assert.DoesNotContain("s3cr3t", dispatch.VariablesJson);
+        Assert.DoesNotContain("s3cr3t", dispatch.BodyHtmlPreview);
+        Assert.Contains("https://di10.example/WorkCenterNext/Details/123", dispatch.VariablesJson);
+        // The first send still carries the link: masking is for what is kept, not for what is sent.
+        Assert.Contains("s3cr3t", rig.Sent.HtmlBody);
+    }
+
+    [Fact]
+    public void A_dispatch_keeps_its_variables_only_while_a_retry_can_still_follow()
+    {
+        NotificationDispatch Waiting() => new() { Status = NotificationDispatchStatus.Failed, VariablesJson = "{\"TaskTitle\":\"Review\"}" };
+
+        var sent = Waiting();
+        Assert.True(sent.TryMarkSent("id", DateTimeOffset.UtcNow));
+        Assert.Equal("{}", sent.VariablesJson);
+
+        var permanent = Waiting();
+        Assert.True(permanent.TryMarkFailed("X", "y", DateTimeOffset.UtcNow, isPermanent: true));
+        Assert.Equal("{}", permanent.VariablesJson);
+
+        var retryPending = Waiting();
+        Assert.True(retryPending.TryMarkFailed("X", "y", DateTimeOffset.UtcNow));
+        Assert.Equal("{\"TaskTitle\":\"Review\"}", retryPending.VariablesJson);
+
+        var cancelled = new NotificationDispatch { Status = NotificationDispatchStatus.Queued, VariablesJson = "{\"TaskTitle\":\"Review\"}" };
+        Assert.True(cancelled.TryCancel(DateTimeOffset.UtcNow));
+        Assert.Equal("{}", cancelled.VariablesJson);
+    }
+
+    [Fact]
+    public async Task The_retry_sweeps_permanent_failure_releases_the_variables_in_the_same_transition()
+    {
+        var rig = new Rig();
+        var dispatch = rig.AddFailedDispatch("{\"TaskTitle\":\"Review\"}", templateId: null);
+        var handler = new MarkNotificationDispatchFailedHandler(rig.Dispatches, new Doubles.RecordingEventBus());
+
+        await handler.Handle(new MarkNotificationDispatchFailedCommand(rig.TenantId, dispatch.Id, "X", "y", RetryCount: 5, IsPermanentFailure: true), CancellationToken.None);
+        Assert.Equal("{}", dispatch.VariablesJson);
+
+        var waiting = rig.AddFailedDispatch("{\"TaskTitle\":\"Review\"}", templateId: null);
+        await handler.Handle(new MarkNotificationDispatchFailedCommand(rig.TenantId, waiting.Id, "X", "y", RetryCount: 2, NextRetryAt: DateTimeOffset.UtcNow.AddMinutes(5)), CancellationToken.None);
+        Assert.Equal("{\"TaskTitle\":\"Review\"}", waiting.VariablesJson);
+    }
+
+    [Fact]
+    public void The_monitoring_answer_shows_variable_names_and_never_their_values()
+    {
+        var dispatch = new NotificationDispatch
+        {
+            TenantId = Guid.NewGuid(), TemplateKey = "platform.tasks.assigned", Subject = "S",
+            VariablesJson = "{\"TaskTitle\":\"Parti kaydı incelemesi\",\"AssignerName\":\"Burak Şen\"}"
+        };
+
+        var dto = dispatch.ToDto();
+
+        Assert.DoesNotContain("Parti", dto.VariablesJson);
+        Assert.DoesNotContain("Burak", dto.VariablesJson);
+        Assert.Contains("\"TaskTitle\"", dto.VariablesJson);
+        Assert.Contains("\"AssignerName\"", dto.VariablesJson);
+    }
+
+    [Fact]
+    public async Task A_tenant_sender_name_that_tries_to_write_a_second_mailbox_leaves_exactly_one_From_mailbox()
+    {
+        var rig = new Rig();
+        rig.Settings.CreateAsync(Rig.SettingsRow(rig.TenantId, "Acme\" <evil@attacker.test>, \"", replyTo: null)).GetAwaiter().GetResult();
+        rig.AddTemplate("en", "<p>x</p>", "x");
+
+        await rig.QueueAsync("en", new());
+
+        var header = WireHeader(rig.Sent, "From");
+        var parsed = InternetAddressList.Parse(header);
+        var mailbox = Assert.Single(parsed.Mailboxes);
+        Assert.Equal("bildirim@di10.test", mailbox.Address);
+        Assert.DoesNotContain("attacker", mailbox.Address);
+
+        // OUR rule, not the library's: MimeKit quotes and escapes a display name itself, so the wire alone would stay
+        // single even if the name kept its quote. The name handed to the library must already be safe — the same
+        // name System.Net.Mail (AuthService) would put in quotes without escaping.
+        var name = rig.Sent.From.Mailboxes.Single().Name;
+        Assert.DoesNotContain('"', name);
+        Assert.DoesNotContain('<', name);
+        Assert.Equal("Acme evil@attacker.test,", name);
+    }
+
+    [Fact]
+    public async Task A_direction_override_in_a_task_title_never_reaches_the_subject_on_the_wire()
+    {
+        var rig = new Rig();
+        rig.AddTemplate("en", "<p>x</p>", "x", subject: "Assigned: {{TaskTitle}}");
+
+        await rig.QueueAsync("en", new() { ["TaskTitle"] = "Invoice " + (char)0x202E + "fdp.exe" + (char)0x200B });
+
+        Assert.Equal("Assigned: Invoice fdp.exe", rig.Sent.Subject);
+        Assert.DoesNotContain((char)0x202E, WireHeader(rig.Sent, "Subject"));
+    }
+
+    [Fact]
+    public async Task A_template_with_no_text_body_sends_a_text_part_derived_from_its_html()
+    {
+        var rig = new Rig();
+        rig.AddTemplate("en", "<p>Open <a href=\"https://di10.example/t/1\">the task</a>.</p>", null!);
+
+        await rig.QueueAsync("en", new());
+
+        Assert.Contains("Open the task (https://di10.example/t/1).", rig.Sent.TextBody);
+    }
+
+    [Fact]
+    public async Task A_template_whose_body_says_nothing_sends_no_empty_text_part()
+    {
+        var rig = new Rig();
+        rig.AddTemplate("en", "<p> </p>", null!);
+
+        await rig.QueueAsync("en", new());
+
+        Assert.Null(rig.Sent.TextBody);
+    }
+
+    [Fact]
+    public async Task A_reply_address_that_is_not_one_address_is_left_out_and_the_footer_does_not_promise_it()
+    {
+        var rig = new Rig();
+        rig.Settings.CreateAsync(Rig.SettingsRow(rig.TenantId, null, replyTo: "ik@ditenpharma.test\r\nBcc: victim@evil.test")).GetAwaiter().GetResult();
+        rig.AddTemplate("en", "<p>x</p>", "x");
+
+        await rig.QueueAsync("en", new());
+
+        Assert.Empty(rig.Sent.ReplyTo);
+        Assert.DoesNotContain("Your reply goes to", rig.Sent.HtmlBody);
+        Assert.DoesNotContain("victim", WireHeaders(rig.Sent));
+    }
+
+    [Theory]
+    [InlineData("user@example.com\r\nBcc: victim@evil.test")]
+    [InlineData("user@example.com, victim@evil.test")]
+    [InlineData("not-an-address")]
+    public async Task A_recipient_that_is_not_one_address_is_refused_with_a_code_and_nothing_is_queued_for_retry(string recipient)
+    {
+        var rig = new Rig();
+        rig.AddTemplate("en", "<p>x</p>", "x");
+
+        var response = await rig.QueueAsync("en", new(), recipient);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(QueueEmailNotificationHandler.ReasonRecipientInvalid, response.ReasonCode);
+        Assert.Empty(rig.Dispatches.Items);
+        Assert.Null(rig.Transport.LastSentMessage);
+    }
+
+    [Fact]
+    public async Task The_preview_of_a_saved_template_draws_its_own_heading_table_and_button()
+    {
+        var rig = new Rig();
+        var saved = rig.AddTemplate("en", "<p>x</p>", "x", shell: TaskShell());
+        var request = new RenderTemplatePreviewRequest(
+            "Assigned: {{TaskTitle}}", "<p>{{TaskTitle}}</p>", null,
+            [new TemplateVariableDefinitionDto("TaskTitle", "String", true)],
+            new Dictionary<string, object?> { ["TaskTitle"] = "Review", ["TaskUrl"] = "https://di10.example/t/1" },
+            saved.Id);
+
+        var response = await new RenderNotificationTemplatePreviewHandler(new EmailTemplateRenderer(), rig.Composer, rig.Templates)
+            .Handle(new RenderNotificationTemplatePreviewQuery(request), CancellationToken.None);
+
+        Assert.Contains("A task was assigned to you</h1>", response.Data!.BodyHtmlFramed);
+        Assert.Contains(">Review</td>", response.Data.BodyHtmlFramed);
+        Assert.Contains("<a href=\"https://di10.example/t/1\"", response.Data.BodyHtmlFramed);
+    }
+
+    [Fact]
+    public async Task A_tenant_whose_own_settings_row_is_switched_off_falls_back_to_the_platform_default_for_name_and_reply()
+    {
+        var rig = new Rig();
+        var own = Rig.SettingsRow(rig.TenantId, "Diten Pharma İK", replyTo: "ik@ditenpharma.test");
+        own.IsEnabled = false;
+        rig.Settings.CreateAsync(own).GetAwaiter().GetResult();
+
+        var identity = await new TenantEmailIdentityResolver(rig.Tenants, rig.Settings, new FakeNotificationLocaleResolver("en"))
+            .ResolveAsync(rig.TenantId);
+
+        Assert.Null(identity!.SenderName);
+        Assert.Null(identity.ReplyToEmail);
+        Assert.Equal("Diten Pharma", identity.DisplayName);
+    }
+
+    private static string WireHeaders(MimeMessage message)
+    {
+        using var stream = new MemoryStream();
+        message.WriteTo(stream);
+        var wire = Encoding.UTF8.GetString(stream.ToArray()).Replace("\r\n", "\n");
+        return wire[..wire.IndexOf("\n\n", StringComparison.Ordinal)];
+    }
+
+    /// <summary>One header as written on the wire, folded lines joined.</summary>
+    private static string WireHeader(MimeMessage message, string name)
+    {
+        var lines = WireHeaders(message).Split('\n');
+        var start = Array.FindIndex(lines, line => line.StartsWith(name + ":", StringComparison.OrdinalIgnoreCase));
+        Assert.True(start >= 0, $"No {name} header.");
+        var value = new StringBuilder(lines[start][(name.Length + 1)..]);
+        for (var i = start + 1; i < lines.Length && lines[i].Length > 0 && char.IsWhiteSpace(lines[i][0]); i++)
+        {
+            value.Append(lines[i]);
+        }
+
+        return value.ToString().Trim();
+    }
+
     private static NotificationTemplateShell TaskShell() => new()
     {
         HeadingTemplate = "A task was assigned to you",
@@ -466,7 +775,7 @@ public sealed class EmailShellDispatchTests
             NullLogger<SmtpMessagingProvider>.Instance);
 
         public Task<Diten.Platform.Application.Common.Response<NotificationDispatchDto>> QueueAsync(
-            string locale, Dictionary<string, object?> variables)
+            string locale, Dictionary<string, object?> variables, string recipient = "user@example.com")
         {
             var handler = new QueueEmailNotificationHandler(
                 new TenantMessagingSettingsResolver(Settings),
@@ -482,7 +791,7 @@ public sealed class EmailShellDispatchTests
             return handler.Handle(
                 new QueueEmailNotificationCommand(
                     TenantId,
-                    new QueueEmailNotificationRequest(TemplateKey, locale, variables, [new EmailRecipientDto("user@example.com", "User")]),
+                    new QueueEmailNotificationRequest(TemplateKey, locale, variables, [new EmailRecipientDto(recipient, "User")]),
                     "corr-shell"),
                 CancellationToken.None);
         }

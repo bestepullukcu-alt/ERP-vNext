@@ -151,7 +151,9 @@
             bodyHtmlTemplate: document.getElementById('bodyHtmlTemplate')?.value || null,
             bodyTextTemplate: document.getElementById('bodyTextTemplate')?.value || null,
             variables: collectVariables(),
-            sampleVariables: collectSampleVariables()
+            sampleVariables: collectSampleVariables(),
+            // BL-454 — the saved template's heading, table and button are drawn into the preview too.
+            templateId: mode === 'edit' && templateId ? templateId : null
         };
         try {
             const res = await fetch(`${apiBase}/templates/render-preview`, {

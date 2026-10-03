@@ -100,6 +100,17 @@ public sealed class TaskAssignedEmailTests
         Assert.Equal("Yüksek", TaskEmailContent.PriorityLabel(TaskPriority.High, "tr-TR"));
     }
 
+    [Theory]
+    [InlineData("en", "Low", "Medium", "High")]
+    [InlineData("tr", "Düşük", "Orta", "Yüksek")]
+    [InlineData("ar", "منخفضة", "متوسطة", "عالية")]
+    public void Each_priority_has_its_own_word(string language, string low, string medium, string high)
+    {
+        Assert.Equal(low, TaskEmailContent.PriorityLabel(TaskPriority.Low, language));
+        Assert.Equal(medium, TaskEmailContent.PriorityLabel(TaskPriority.Medium, language));
+        Assert.Equal(high, TaskEmailContent.PriorityLabel(TaskPriority.High, language));
+    }
+
     [Fact]
     public void The_seeded_template_fills_the_shell_in_seven_languages_and_none_is_a_copy_of_English()
     {

@@ -46,7 +46,7 @@ public static class EmailShell
         var action = model.Action is { } candidate && IsSafeHttpUrl(candidate.Url) && !string.IsNullOrWhiteSpace(candidate.Label)
             ? candidate
             : null;
-        var replyTo = string.IsNullOrWhiteSpace(model.ReplyToEmail) ? null : model.ReplyToEmail.Trim();
+        var replyTo = EmailAddressText.IsSingleAddress(model.ReplyToEmail?.Trim()) ? model.ReplyToEmail!.Trim() : null;
         var footer = tenantName.Length > 0
             ? string.Format(texts.FooterOnBehalf, tenantName, EmailProduct.Name)
             : string.Format(texts.FooterPlatform, EmailProduct.Name);

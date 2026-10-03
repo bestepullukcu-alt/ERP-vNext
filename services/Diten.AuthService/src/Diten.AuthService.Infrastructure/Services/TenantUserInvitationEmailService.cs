@@ -68,11 +68,29 @@ public sealed class TenantUserInvitationEmailService : ITenantUserInvitationEmai
     {
         var tenantId = ResolveTenantId();
         var identity = tenantId == Guid.Empty ? null : await _identity.GetAsync(tenantId, ct);
-        var firstName = await ResolveFirstNameAsync(email, tenantId, ct);
+        // BL-454 — the recipient is ONE plain address or nothing is sent: a value with a line break or a second
+        // mailbox never reaches a header. Coded, and thrown before anything is built.
+        if (!EmailAddressText.IsSingleAddress(email?.Trim()))
+        {
+            throw new InvalidOperationException("RECIPIENT_INVALID");
+        }
+
+        var user = await ResolveUserAsync(email!, tenantId, ct);
+        var firstName = string.IsNullOrWhiteSpace(user?.FirstName) ? null : user.FirstName.Trim();
+        // An account already IN USE whose password an administrator reset is not an invitation: same link, own words.
+        // In use = its e-mail was confirmed (redeeming a set-password link confirms it) or it has signed in. A new or
+        // re-sent invitation is neither; AdminResetPasswordCommandHandler refuses a still-pending invitation and
+        // changes neither fact, so the record the request just wrote answers it and the callers stay as they are.
+        var isPasswordReset = user is not null && (user.EmailConfirmed || user.LastLoginAt is not null);
+        var replyTo = EmailAddressText.IsSingleAddress(identity?.ReplyToEmail?.Trim()) ? identity!.ReplyToEmail!.Trim() : null;
+        if (replyTo is null && !string.IsNullOrWhiteSpace(identity?.ReplyToEmail))
+        {
+            _logger.LogWarning("tenant.invitation.reply_to_refused TenantId={TenantId}. The reply address is not a single valid address.", tenantId);
+        }
 
         var language = identity?.Language;
         var rendered = TenantUserInvitationEmailTemplate.Render(
-            language, identity?.DisplayName, firstName, BuildTenantSetPasswordUrl(email, setupToken), identity?.ReplyToEmail);
+            language, identity?.DisplayName, firstName, BuildTenantSetPasswordUrl(email!, setupToken), replyTo, isPasswordReset);
 
         var message = new MailMessage
         {
@@ -80,7 +98,7 @@ public sealed class TenantUserInvitationEmailService : ITenantUserInvitationEmai
                 _smtpOptions.FromEmail,
                 EmailSender.ComposeDisplayName(identity?.SenderName, identity?.DisplayName, language),
                 Encoding.UTF8),
-            Subject = TenantUserInvitationEmailTemplate.Subject(language, identity?.DisplayName),
+            Subject = TenantUserInvitationEmailTemplate.Subject(language, identity?.DisplayName, isPasswordReset),
             SubjectEncoding = Encoding.UTF8,
             BodyEncoding = Encoding.UTF8,
             // The plain-text part is the body; the framed HTML is its alternative — a client shows the richest it can.
@@ -88,18 +106,11 @@ public sealed class TenantUserInvitationEmailService : ITenantUserInvitationEmai
             Body = rendered.Text
         };
         message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(rendered.Html, Encoding.UTF8, MediaTypeNames.Text.Html));
-        message.To.Add(email);
+        message.To.Add(new MailAddress(email!.Trim()));
 
-        if (!string.IsNullOrWhiteSpace(identity?.ReplyToEmail))
+        if (replyTo is not null)
         {
-            try
-            {
-                message.ReplyToList.Add(new MailAddress(identity.ReplyToEmail));
-            }
-            catch (FormatException)
-            {
-                _logger.LogWarning("tenant.invitation.reply_to_invalid TenantId={TenantId}", tenantId);
-            }
+            message.ReplyToList.Add(new MailAddress(replyTo));
         }
 
         return message;
@@ -124,7 +135,7 @@ public sealed class TenantUserInvitationEmailService : ITenantUserInvitationEmai
         return _tenantContext.IsResolved ? _tenantContext.TenantId : Guid.Empty;
     }
 
-    private async Task<string?> ResolveFirstNameAsync(string email, Guid tenantId, CancellationToken ct)
+    private async Task<Diten.AuthService.Domain.Entities.User?> ResolveUserAsync(string email, Guid tenantId, CancellationToken ct)
     {
         if (tenantId == Guid.Empty)
         {
@@ -133,8 +144,7 @@ public sealed class TenantUserInvitationEmailService : ITenantUserInvitationEmai
 
         try
         {
-            var user = await _users.GetByEmailAndTenantAsync(email, tenantId, ct);
-            return string.IsNullOrWhiteSpace(user?.FirstName) ? null : user.FirstName.Trim();
+            return await _users.GetByEmailAndTenantAsync(email, tenantId, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -142,7 +152,7 @@ public sealed class TenantUserInvitationEmailService : ITenantUserInvitationEmai
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "tenant.invitation.recipient_name_unavailable TenantId={TenantId}", tenantId);
+            _logger.LogWarning(ex, "tenant.invitation.recipient_unavailable TenantId={TenantId}", tenantId);
             return null;
         }
     }
