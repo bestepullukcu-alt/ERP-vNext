@@ -98,17 +98,31 @@ public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantM
 
     public async Task UpdateAsync(IPlatformTransactionSession session, TenantModuleEntitlement entitlement, byte[]? expectedRowVersion, CancellationToken ct = default)
     {
+        /*
+         * BL-500 — the tenant of the write is the ROW's own tenant, the same rule CreateAsync follows.
+         *
+         * This filter used to read TenantContext.TenantId. A platform administrator's request runs in the platform
+         * context, where that is Guid.Empty: the filter matched no row, MatchedCount was 0, and every suspend, enable
+         * and expiry change made from the tenant's Modules tab was refused as "modified by another process" — a
+         * concurrency error about a row nobody had touched. The handlers load the row by (route tenant, id), so the
+         * row already carries the authoritative tenant.
+         *
+         * The tenant condition is NOT dropped — only where its value comes from changes. The filter pins tenant + id +
+         * version, and a tenant-scoped caller is refused a row of another tenant before any write is attempted.
+         */
+        if (!TenantContext.IsPlatformContext && entitlement.TenantId != TenantContext.TenantId)
+        {
+            throw new TenantModuleEntitlementTenantMismatchException();
+        }
+
+        RequireRowVersion(expectedRowVersion);
         var filters = new List<FilterDefinition<TenantModuleEntitlement>>
         {
             ExecutionFilter,
-            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.TenantId, TenantContext.TenantId),
-            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.Id, entitlement.Id)
+            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.TenantId, entitlement.TenantId),
+            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.Id, entitlement.Id),
+            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.RowVersion, expectedRowVersion)
         };
-
-        if (expectedRowVersion is { Length: > 0 })
-        {
-            filters.Add(Builders<TenantModuleEntitlement>.Filter.Eq(x => x.RowVersion, expectedRowVersion));
-        }
 
         entitlement.ModuleCode = NormalizeModuleCode(entitlement.ModuleCode);
         entitlement.UpdatedAt = DateTimeOffset.UtcNow;
@@ -128,17 +142,23 @@ public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantM
 
     public async Task SoftDeleteAsync(IPlatformTransactionSession session, Guid tenantId, Guid entitlementId, byte[]? expectedRowVersion, CancellationToken ct = default)
     {
+        // BL-500 — the same guard as CreateAsync and UpdateAsync: a tenant-scoped caller is pinned to its own tenant
+        // BEFORE any write is attempted. A PLATFORM actor has no tenant of its own to be pinned to: for it this member
+        // still writes under whatever tenant id it is handed, and that id must be the route's — the handler loads the
+        // row by (route tenant, id) first, and the filter below matches nothing under any other tenant.
+        if (!TenantContext.IsPlatformContext && tenantId != TenantContext.TenantId)
+        {
+            throw new TenantModuleEntitlementTenantMismatchException();
+        }
+
+        RequireRowVersion(expectedRowVersion);
         var filters = new List<FilterDefinition<TenantModuleEntitlement>>
         {
             ExecutionFilter,
             Builders<TenantModuleEntitlement>.Filter.Eq(x => x.TenantId, tenantId),
-            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.Id, entitlementId)
+            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.Id, entitlementId),
+            Builders<TenantModuleEntitlement>.Filter.Eq(x => x.RowVersion, expectedRowVersion)
         };
-
-        if (expectedRowVersion is { Length: > 0 })
-        {
-            filters.Add(Builders<TenantModuleEntitlement>.Filter.Eq(x => x.RowVersion, expectedRowVersion));
-        }
 
         var update = Builders<TenantModuleEntitlement>.Update
             .Set(x => x.IsDeleted, true)
@@ -168,16 +188,53 @@ public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantM
         // real target tenant would (and did) reject every manual entitlement add with a bogus concurrency error.
         if (!TenantContext.IsPlatformContext && entity.TenantId != TenantContext.TenantId)
         {
-            throw new TenantModuleEntitlementConcurrencyException();
+            throw new TenantModuleEntitlementTenantMismatchException();
         }
 
         entity.ModuleCode = NormalizeModuleCode(entity.ModuleCode);
         entity.IsDeleted = false;
-        await Collection.InsertOneAsync(
-            PlatformMongoTransactionSession.Require(session, _dbContext),
-            entity,
-            cancellationToken: ct);
+        try
+        {
+            await Collection.InsertOneAsync(
+                PlatformMongoTransactionSession.Require(session, _dbContext),
+                entity,
+                cancellationToken: ct);
+        }
+        catch (MongoException exception) when (IsConcurrentCreate(exception))
+        {
+            // BL-500 — one live row per (tenant, module, source): ux_tenant_module_entitlements_active_source. Another
+            // writer of the same row (two screens suspending the same plan module at once) is a stale screen, not a
+            // server failure. It surfaces in two ways: the other row is committed (duplicate key), or it is still in
+            // its transaction (a write conflict on the unique key — measured: the executor's immediate retries ran
+            // out before the other committed and the request ended as a 500). A fresh document's insert conflicts on
+            // nothing but a unique key, so either way it is that other row.
+            throw new TenantModuleEntitlementConcurrencyException();
+        }
+
         return entity;
+    }
+
+    private const int WriteConflictCode = 112;
+
+    private static bool IsConcurrentCreate(MongoException exception) => exception switch
+    {
+        MongoWriteException write => write.WriteError?.Category == ServerErrorCategory.DuplicateKey
+                                     || write.WriteError?.Code == WriteConflictCode,
+        MongoCommandException command => command.Code is 11000 or WriteConflictCode,
+        _ => false
+    };
+
+    /// <summary>
+    /// BL-500 — every write of an existing row names the version it was read at. Without one the version condition
+    /// used to be left out and the write overwrote whatever another screen had saved in between. The validators refuse
+    /// such a request with ENTITLEMENT_ROW_VERSION_REQUIRED before it gets here; this is the floor under them.
+    /// </summary>
+    private static void RequireRowVersion(byte[]? expectedRowVersion)
+    {
+        if (expectedRowVersion is not { Length: > 0 })
+        {
+            throw new ArgumentException("An entitlement row is written only against the version it was read at.", nameof(expectedRowVersion));
+        }
     }
 
     [Obsolete("Authoritative entitlement mutations require an explicit Platform transaction session.")]
@@ -192,6 +249,15 @@ public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantM
 
     [Obsolete("Authoritative entitlement mutations require an explicit Platform transaction session.")]
     public Task SoftDeleteAsync(Guid tenantId, Guid entitlementId, byte[]? expectedRowVersion, CancellationToken ct = default) =>
+        throw new PlatformTransactionUnavailableException(
+            "Sessionless physical-entitlement mutation is disabled until the caller supplies the Platform transaction session.");
+
+    /// <summary>
+    /// BL-500 — the base repository's delete-by-id: no tenant, no version, no transaction. Nothing calls it (the
+    /// interface does not expose it), and it is closed for the same reason as the three members above: an
+    /// entitlement is removed through <see cref="SoftDeleteAsync(IPlatformTransactionSession, Guid, Guid, byte[], CancellationToken)"/> or not at all.
+    /// </summary>
+    public override Task DeleteAsync(Guid id, CancellationToken ct = default) =>
         throw new PlatformTransactionUnavailableException(
             "Sessionless physical-entitlement mutation is disabled until the caller supplies the Platform transaction session.");
 

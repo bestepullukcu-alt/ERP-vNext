@@ -18,6 +18,7 @@ public sealed class AuditService : IAuditService
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserContext _currentUserContext;
     private readonly ILogger<AuditService> _logger;
+    private readonly Diten.Platform.Common.Observability.ICorrelationContext? _correlation;
 
     public AuditService(
         IAuditOutboxWriter outboxWriter,
@@ -26,8 +27,10 @@ public sealed class AuditService : IAuditService
         IAuditRecursionGuard recursionGuard,
         ITenantContext tenantContext,
         ICurrentUserContext currentUserContext,
-        ILogger<AuditService> logger)
+        ILogger<AuditService> logger,
+        Diten.Platform.Common.Observability.ICorrelationContext? correlation = null)
     {
+        _correlation = correlation;
         _outboxWriter = outboxWriter;
         _redactor = redactor;
         _idempotencyKeyBuilder = idempotencyKeyBuilder;
@@ -72,16 +75,26 @@ public sealed class AuditService : IAuditService
             request.Operation,
             request.Sequence);
 
+        // The record carries the REQUEST's correlation (AuditCorrelation); the idempotency key above keeps the caller's.
+        var recordCorrelation = AuditCorrelation.Resolve(_correlation?.CorrelationId, request.CorrelationId);
+        // INTX FIX2 — what the CLIENT gave as its correlation travels as metadata only.
+        if (AuditCorrelation.ClientValue(_correlation?.ClientCorrelationId) is { } clientCorrelation)
+        {
+            request = request with
+            {
+                Metadata = new Dictionary<string, object?>(request.Metadata) { [AuditCorrelation.ClientCorrelationMetadataKey] = clientCorrelation }
+            };
+        }
         var writeRequest = new AuditOutboxWriteRequest
         {
             TenantId = tenantResolution.TenantId,
-            CorrelationId = request.CorrelationId,
+            CorrelationId = recordCorrelation,
             IdempotencyKey = idempotencyKey,
             RequestType = request.RequestType.Trim(),
             Operation = request.Operation,
             EntityType = request.EntityType.Trim(),
             EntityId = request.EntityId,
-            Payload = BuildPayload(request, tenantResolution.TenantId, targetTenantId)
+            Payload = BuildPayload(request, tenantResolution.TenantId, targetTenantId, recordCorrelation)
         };
 
         try
@@ -107,41 +120,33 @@ public sealed class AuditService : IAuditService
         }
     }
 
-    private IReadOnlyDictionary<string, object?> BuildPayload(AuditAppendRequest request, Guid tenantId, Guid? targetTenantId)
+    // The payload itself is built by AuditOutboxPayload — the one builder both audit doors use. What stays here is
+    // the central door's own choice of actor: the request's value, else the current user's.
+    private IReadOnlyDictionary<string, object?> BuildPayload(AuditAppendRequest request, Guid tenantId, Guid? targetTenantId, Guid correlationId)
     {
-        var beforeState = request.BeforeState is null ? null : _redactor.RedactDictionary(request.BeforeState);
-        var afterState = request.AfterState is null ? null : _redactor.RedactDictionary(request.AfterState);
-        var metadata = _redactor.RedactDictionary(request.Metadata);
-        var actorEmail = request.ActorEmail ?? _currentUserContext.Email;
-        var actorDisplayName = request.ActorDisplayName ?? _currentUserContext.DisplayName ?? _currentUserContext.ActorName;
-        var actorId = request.ActorId ?? (_currentUserContext.UserId == Guid.Empty ? null : _currentUserContext.UserId);
-
-        return new Dictionary<string, object?>
-        {
-            ["TenantId"] = tenantId,
-            ["CorrelationId"] = request.CorrelationId,
-            ["RequestType"] = request.RequestType.Trim(),
-            ["ActorType"] = request.ActorType.ToString(),
-            ["ActorId"] = actorId,
-            ["ActorEmailMasked"] = MaskEmail(actorEmail),
-            ["ActorDisplayNameMasked"] = MaskDisplayName(actorDisplayName),
-            ["TargetTenantId"] = targetTenantId,
-            ["Category"] = request.Category.ToString(),
-            ["EntityType"] = request.EntityType.Trim(),
-            ["EntityId"] = request.EntityId,
-            ["Operation"] = request.Operation.ToString(),
-            ["Outcome"] = request.Outcome.ToString(),
-            ["BeforeState"] = beforeState,
-            ["AfterState"] = afterState,
-            ["Metadata"] = metadata,
-            ["IpAddressMasked"] = MaskIpAddress(request.IpAddress),
-            ["UserAgent"] = request.UserAgent,
-            ["OccurredAtUtc"] = request.OccurredAtUtc ?? DateTimeOffset.UtcNow,
-            ["SourceService"] = request.SourceService.Trim(),
-            ["SourceModule"] = request.SourceModule,
-            ["IsMetaAudit"] = request.IsMetaAudit,
-            ["RedactionStatus"] = AuditRedactionStatus.SensitiveFieldsRedacted.ToString()
-        };
+        return AuditOutboxPayload.Build(new AuditCanonicalRecord(
+            TenantId: tenantId,
+            CorrelationId: correlationId,
+            RequestType: request.RequestType,
+            ActorType: request.ActorType,
+            ActorId: request.ActorId ?? (_currentUserContext.UserId == Guid.Empty ? null : _currentUserContext.UserId),
+            ActorEmail: request.ActorEmail ?? _currentUserContext.Email,
+            ActorDisplayName: request.ActorDisplayName ?? _currentUserContext.DisplayName ?? _currentUserContext.ActorName,
+            TargetTenantId: targetTenantId,
+            Category: request.Category,
+            EntityType: request.EntityType,
+            EntityId: request.EntityId,
+            Operation: request.Operation,
+            Outcome: request.Outcome,
+            BeforeState: request.BeforeState,
+            AfterState: request.AfterState,
+            Metadata: request.Metadata,
+            IpAddress: request.IpAddress,
+            UserAgent: request.UserAgent,
+            OccurredAtUtc: request.OccurredAtUtc,
+            SourceService: request.SourceService,
+            SourceModule: request.SourceModule,
+            IsMetaAudit: request.IsMetaAudit), _redactor);
     }
 
     private (bool IsResolved, Guid TenantId, string? Error) ResolveTenantId(AuditAppendRequest request)
@@ -253,58 +258,5 @@ public sealed class AuditService : IAuditService
         return null;
     }
 
-    private static string? MaskEmail(string? email)
-    {
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            return null;
-        }
 
-        var trimmed = email.Trim();
-        var atIndex = trimmed.IndexOf('@', StringComparison.Ordinal);
-        if (atIndex <= 0)
-        {
-            return MaskDisplayName(trimmed);
-        }
-
-        var local = trimmed[..atIndex];
-        var domain = trimmed[(atIndex + 1)..];
-        return $"{local[0]}***@{domain}";
-    }
-
-    private static string? MaskDisplayName(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
-
-        var trimmed = value.Trim();
-        if (trimmed.Length == 1)
-        {
-            return "*";
-        }
-
-        return trimmed.Length == 2
-            ? $"{trimmed[0]}*"
-            : $"{trimmed[0]}***{trimmed[^1]}";
-    }
-
-    private static string? MaskIpAddress(string? ipAddress)
-    {
-        if (string.IsNullOrWhiteSpace(ipAddress))
-        {
-            return null;
-        }
-
-        var trimmed = ipAddress.Trim();
-        var ipv4Parts = trimmed.Split('.');
-        if (ipv4Parts.Length == 4)
-        {
-            return $"{ipv4Parts[0]}.{ipv4Parts[1]}.{ipv4Parts[2]}.0";
-        }
-
-        var colonIndex = trimmed.IndexOf(':', StringComparison.Ordinal);
-        return colonIndex > 0 ? $"{trimmed[..colonIndex]}:****" : "[REDACTED]";
-    }
 }

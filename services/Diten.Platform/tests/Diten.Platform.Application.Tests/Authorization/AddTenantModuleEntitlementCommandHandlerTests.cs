@@ -147,9 +147,10 @@ public sealed class AddTenantModuleEntitlementCommandHandlerTests
             Times.Never);
     }
 
-    // A disabled (IsEnabled=false) row must NOT block re-adding — the re-enable / re-add path stays open.
+    // BL-500 FIX2 A3 — a disabled row of the SAME source blocks re-adding (the unique index holds one live row per
+    // source; the insert used to meet it and end as a 500). It comes back through its own Enable action.
     [Fact]
-    public async Task AddTenantModuleEntitlementCommandHandler_AllowsReAddWhenExistingRowIsDisabled()
+    public async Task AddTenantModuleEntitlementCommandHandler_RefusesReAddNextToADisabledRowOfTheSameSource()
     {
         var fixture = CreateFixture(ActorId);
         fixture.Repository
@@ -161,10 +162,46 @@ public sealed class AddTenantModuleEntitlementCommandHandlerTests
 
         var result = await fixture.Handler.Handle(CreateCommand("HR"), CancellationToken.None);
 
-        Assert.True(result.IsSuccessful);
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.AlreadyEntitled, result.ReasonCode);
         fixture.Repository.Verify(
-            x => x.CreateAsync(It.IsAny<TenantModuleEntitlement>(), It.IsAny<CancellationToken>()),
-            Times.Once);
+            x => x.CreateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantModuleEntitlement>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    // BL-500 FIX2 A3 — another add of the same row got there first: the repository answers stale, and so does the
+    // handler. It used to fall through to the global handler as a 500.
+    [Fact]
+    public async Task AddTenantModuleEntitlementCommandHandler_AnswersAConcurrentAddAsStaleNeverAsAServerError()
+    {
+        var fixture = CreateFixture(ActorId);
+        fixture.Repository
+            .Setup(x => x.CreateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantModuleEntitlement>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TenantModuleEntitlementConcurrencyException());
+
+        var result = await fixture.Handler.Handle(CreateCommand("HR"), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.Stale, result.ReasonCode);
+    }
+
+    // A disabled row of ANOTHER source does not block: a separate row of this source is what the add writes.
+    [Fact]
+    public async Task AddTenantModuleEntitlementCommandHandler_AllowsAddNextToADisabledRowOfAnotherSource()
+    {
+        var fixture = CreateFixture(ActorId);
+        fixture.Repository
+            .Setup(x => x.GetByTenantAndModuleAsync(TenantId, "HR", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<TenantModuleEntitlement>
+            {
+                new() { TenantId = TenantId, ModuleCode = "HR", Source = EntitlementSource.Addon, IsEnabled = false }
+            });
+
+        var result = await fixture.Handler.Handle(CreateCommand("HR"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
     }
 
     [Fact]

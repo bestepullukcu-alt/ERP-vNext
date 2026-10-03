@@ -84,7 +84,7 @@ public sealed class InternalModuleRegistrationController : CustomBaseController
         _tenantContext.SetPlatformContext(Guid.Empty);
 
         var response = await _mediator.Send(
-            new RegisterModuleManifestCommand(manifest, trustedProducerOwnerCode),
+            new RegisterModuleManifestCommand(manifest, trustedProducerOwnerCode, PushedOverInternalEndpoint: true),
             ct);
         _logger.LogInformation(
             "Module manifest registered. ModuleCode={ModuleCode} Success={Success}",

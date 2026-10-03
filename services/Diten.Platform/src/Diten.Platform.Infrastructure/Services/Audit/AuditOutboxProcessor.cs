@@ -111,10 +111,10 @@ public sealed class AuditOutboxProcessor
 
     private async Task<bool> IsAlreadyPersistedAsync(AuditOutboxProcessingItem message, CancellationToken ct)
     {
-        var events = await _auditEventRepository.GetByCorrelationIdAsync(message.CorrelationId, ct);
-        return events.Any(auditEvent =>
-            auditEvent.Metadata.TryGetValue(AuditOutboxPayloadMapper.OutboxIdempotencyMetadataKey, out var value)
-            && string.Equals(value?.ToString(), message.IdempotencyKey, StringComparison.Ordinal));
+        // INTX FIX2 — by the message's own idempotency key, through its index. It used to read EVERY event of the
+        // message's correlation and compare in memory: once a correlation could gather many records (one caller-chosen
+        // header for a whole tenant), each delivery read them all — a cost that grew with the square of the volume.
+        return await _auditEventRepository.ExistsByOutboxIdempotencyKeyAsync(message.IdempotencyKey, ct);
     }
 
     private async Task MarkDeadLetterAsync(

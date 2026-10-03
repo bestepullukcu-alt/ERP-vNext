@@ -98,7 +98,8 @@ public sealed class SeedDefaultSubscriptionPlansCommandHandler : IRequestHandler
             var normalized = SubscriptionPlanCodeNormalizer.Normalize(seed.Code);
             seed.Code = normalized;
             await _transaction.ExecuteAsync(
-                new(nameof(SeedDefaultSubscriptionPlansCommand), AuditOperation.Create, "SubscriptionPlan", seed.Id),
+                new(nameof(SeedDefaultSubscriptionPlansCommand), AuditOperation.Create, "SubscriptionPlan", seed.Id,
+                    SystemActor: "subscription-plan-startup-seed"),
                 async (session, transactionCt) =>
                 {
                     var existing = await _repository.GetByCodeAsync(session, normalized, transactionCt);
@@ -109,11 +110,13 @@ public sealed class SeedDefaultSubscriptionPlansCommandHandler : IRequestHandler
                         if (existing.DefaultQuotas is { Count: > 0 })
                             return new GlobalApplicabilityMutation<bool>(false, false);
 
+                        var auditBefore = GlobalApplicabilityAuditChange.StateOf(existing);
                         existing.DefaultQuotas = seed.DefaultQuotas;
                         await _repository.UpdateAsync(session, existing, transactionCt);
                         _logger.LogInformation("SubscriptionPlan quota map backfilled PlanId={PlanId} Code={Code}", existing.Id, existing.Code);
                         return new GlobalApplicabilityMutation<bool>(true, true,
-                            (s, version, token) => _state.UpsertSubscriptionPlanAsync(s, existing, version, token));
+                            (s, version, token) => _state.UpsertSubscriptionPlanAsync(s, existing, version, token),
+                            GlobalApplicabilityAuditChange.Between(auditBefore, GlobalApplicabilityAuditChange.StateOf(existing)));
                     }
                     if (seed.IsDefault && seed.IsActive
                         && await _repository.GetActiveDefaultAsync(session, excludeId: null, transactionCt) is not null)

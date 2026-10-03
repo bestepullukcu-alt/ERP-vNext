@@ -13,7 +13,7 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 | platform-meta-denetim | a | yazıcı | IAuditMetaAuditWriter.WriteAsync |
 | gorev-etkinlik-akisi | c | yazıcı | TaskItem.Declare |
 | is-akisi-gecis-gunlugu | c | yazıcı | IWorkflowTransitionLogRepository.CreateAsync/IWorkflowTransitionLogRepository.AppendAsync/WorkflowTaskTransitionSupport.TransitionAsync/WorkflowTaskTransitionSupport.DelegateAsync/WorkflowTaskTransitionSupport.RequestInfoAsync/WorkflowTaskTransitionSupport.CancelAsync |
-| platform-islem-ici | aday | işaret | ITransactionOwnedAuditCommand |
+| platform-islem-ici | a | yazıcı | PhysicalEntitlementAuditIntent.EnqueueAsync/TenantSubscriptionTransactionWriter.UpdateAsync/TenantSubscriptionCommandSupport.CreateAsync/IGlobalApplicabilityTransactionCoordinator.ExecuteAsync/IGlobalApplicabilityTransactionCoordinator.ExecuteBatchAsync |
 | arayuz-kayit-sink | aday | yazıcı | IInterfaceRegistryAuditSink.EmitAsync |
 
 Ölçüm notları (2026-10-02; `yol = aday` kabul edilmemiş demektir ve o ize giden komut borçta kalır):
@@ -22,7 +22,7 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 > **platform-meta-denetim** — Denetim modülünün kendi yazma/okuma işlemleri; `IsMetaAudit=true` ile merkezi günlüğe.
 > **gorev-etkinlik-akisi** — Belirteç yazma üyesidir: handler `task.Declare(tür, aktör)` çağırır, depo aynı yazımda `task_transitions` satırını üretir. `task_transitions`: kim (ActorUserId) · ne (Kind + alan değişiklikleri) · ne zaman; depo arayüzünde güncelleme/silme yok; görev etkinlik akışında okunur. CT onayı: 2026-10-02.
 > **is-akisi-gecis-gunlugu** — Belirteç yazma üyeleridir: günlüğe doğrudan `CreateAsync` / `AppendAsync`, ya da her geçişte günlüğe yazan `WorkflowTaskTransitionSupport` metotları. `workflow_transition_logs`: aktör, eylem, önceki/sonraki durum, korelasyon; arayüzde güncelleme/silme yok; `…/instances/{id}/history` ile okunur. CT onayı: 2026-10-02.
-> **platform-islem-ici** — `AuditBehavior` bu komutları atlar; kayıt handler'ın işlem içinde yazdığı `audit_outbox` satırıdır. Kod okumasıyla: çağıranların yükü eşleyicinin zorunlu alanlarını (TenantId, ActorType, Category, SourceService) taşımıyor → DeadLetter. **Dev veritabanında ölçüldü 2026-10-02 (salt-okunur):** `audit_outbox` 1468 satır = 1461 `Completed` (hepsinin anahtarı `audit:` — `AuditBehavior` yolu) + 7 `DeadLetter` (hepsi `global-applicability:` / `RegisterModuleManifestCommand`). İşlem içi yoldan teslim edilmiş TEK satır yok; `physical-entitlement:` ve `tenant-subscription:` anahtarlı satır hiç yok. `AddTenantModuleEntitlementCommand` (17), `AssignPlanToTenantCommand` (10), `ActivateTenantSubscriptionCommand` (1) teslimleri işaretin eklendiği commit'ten (d3098d729, 2026-08-31) ÖNCE, eski yoldan. Kanıt olmadığı için 25 komutun hepsi borçta (kural §10-K1).
+> **platform-islem-ici** — Kayıt, handler'ın iş verisiyle AYNI işlemde yazdığı `audit_outbox` satırıdır (K2: kayıt yoksa işlem yok). Belirteç bir ÇAĞRIDIR: handler işlem içi kapıya giden yazma üyelerinden birini çağırır — yetkilendirme `PhysicalEntitlementAuditIntent.EnqueueAsync`, abonelik `TenantSubscriptionTransactionWriter.UpdateAsync` / `TenantSubscriptionCommandSupport.CreateAsync`, modül kataloğu · abonelik planı · manifest kaydı `IGlobalApplicabilityTransactionCoordinator.ExecuteAsync` / `ExecuteBatchAsync`; üçü de tek girişten (`CanonicalTransactionalAuditOutboxWriter`) geçer. İşaret (`ITransactionOwnedAuditCommand`) yalnız komutu merkezi borudan çıkarır, not vermez: işareti taşıyıp bu üyelerden birini çağırmayan komut hiçbir ize gitmez ve test kırmızıdır. **Kanıt 2026-10-02 (WP-PLATFORM-AUDIT-INTX-01):** gerçek HTTP → gerçek işlem → `audit_outbox` → üretimdeki `AuditOutboxProcessor` → `audit_events`; üç çağıranın her biri için aktör + kategori + varlık + işlem + önceki/sonraki dolu tek satır, ikinci işleme çift satır üretmiyor, adı konamayan aktörde ret ve iş verisi değişmiyor (`TenantModulesScreenHttpMongoTests` K1_*, `TenantSubscriptionEndpointsHttpMongoTests`, `TransactionOwnedAuditDeliveryMongoTests`). Önceki durum (dev, salt-okunur, aynı gün): bu yoldan gelen 7 satırın 7'si `DeadLetter`, teslim edilmiş satır yok; sekiz abonelik komutu `AuditBehavior`'ın izin listesinde olmadığı için handler'a hiç ulaşmıyordu. 25 komut borçtan çıktı. Dev ve canlıdaki eski `DeadLetter` satırlarına dokunulmadı (ayrı karar).
 > **arayuz-kayit-sink** — Kayıtlı uygulama `NullInterfaceRegistryAuditSink` (hiçbir şey yazmaz).
 
 ## İstisnalar
@@ -44,11 +44,8 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 
 Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da silinen komutun satırı çıkarılır (test bunu zorlar).
 
-- ActivateModuleCatalogItemCommand
 - ActivateModulePageDescriptorCommand
-- ActivateSubscriptionPlanCommand
 - ActivateTenantAdminUserCommand
-- ActivateTenantSubscriptionCommand
 - ActivateWorkingCalendarCommand
 - AddAgendaItemCommand
 - AddChecklistItemCommand
@@ -56,19 +53,15 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - AddTaskCommentCommand
 - AddTaskDependencyCommand
 - AddTaskPersonalNoteCommand
-- AddTenantModuleEntitlementCommand
 - ApplyGovernancePolicyPackCommand
 - ApplyWorkingCalendarImportCommand
 - ArchiveCollectionInstanceCommand
 - ArchiveNotificationEventCommand
 - ArchiveWorkingCalendarCommand
 - ArchiveWorkingCalendarDayCommand
-- AssignPlanToTenantCommand
-- BulkDeleteModuleCatalogItemsCommand
 - BulkDeleteTaskFieldDefinitionCommand
 - BulkDeleteTaskItemCommand
 - CancelMeetingCommand
-- CancelTenantSubscriptionCommand
 - ConfirmInterfaceDiffItemRequest
 - ConfirmInterfaceDiscoveryBatchRequest
 - CorrectPublishedMinutesCommand
@@ -78,32 +71,26 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - CreateMeetingCommand
 - CreateMeetingSeriesCommand
 - CreateMeetingTypeCommand
-- CreateModuleCatalogItemCommand
 - CreateModuleDomainCommand
 - CreateModulePageActionDescriptorCommand
 - CreateModulePageDescriptorCommand
 - CreateModuleServiceCommand
 - CreateSlaEscalationRuleCommand
-- CreateSubscriptionPlanCommand
 - CreateTaskFieldDefinitionCommand
 - CreateTaskFromMeetingCommand
 - CreateTaskItemFromTemplateCommand
 - CreateTaskRecurrenceRuleCommand
 - CreateTaskTemplateCommand
 - CreateTaskTypeCommand
-- CreateTenantSubscriptionCommand
 - CreateWorkflowDefinitionCommand
 - CreateWorkingCalendarCommand
-- DeactivateModuleCatalogItemCommand
 - DeactivateModulePageDescriptorCommand
-- DeactivateSubscriptionPlanCommand
 - DecideWorkingCalendarImportBatchCommand
 - DecideWorkingCalendarImportCandidateCommand
 - DeleteAgendaItemCommand
 - DeleteChecklistTemplateCommand
 - DeleteMeetingSeriesCommand
 - DeleteMeetingTypeCommand
-- DeleteModuleCatalogItemCommand
 - DeleteModuleDomainCommand
 - DeleteModulePageActionDescriptorCommand
 - DeleteModulePageDescriptorCommand
@@ -114,7 +101,6 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - DeleteTaskRecurrenceRuleCommand
 - DeleteTaskTemplateCommand
 - DeprecateInterfaceRequest
-- DisableTenantModuleEntitlementCommand
 - DiscardWorkingCalendarImportCommand
 - DispatchNotificationByEventCodeCommand
 - DryRunAccessProfileTemplatesCommand
@@ -122,10 +108,8 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - DryRunFolderShareCommand
 - DryRunInstantiationCommand
 - DryRunQmsBaselineImportCommand
-- EnableTenantModuleEntitlementCommand
 - EnsureVerifiedGskuTenantAssignmentsCommand
 - ExecuteInstantiationCommand
-- ExpireTenantSubscriptionCommand
 - GenerateDueMeetingSeriesCommand
 - GenerateDueRecurringTasksCommand
 - ImportInterfaceManifestRequest
@@ -136,19 +120,15 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - ProvisionCorporateCollectionInstanceCommand
 - PublishMinutesCommand
 - PublishWorkflowDefinitionCommand
-- ReactivateTenantSubscriptionCommand
 - ReassignMeetingOrganizerCommand
 - ReconciliationDryRunCommand
 - RefreshTenantModuleEntitlementProjectionCommand
-- RegisterModuleManifestCommand
 - RejectInterfaceDiffItemRequest
 - RejectInterfaceDiscoveryBatchRequest
 - RemoveChecklistItemCommand
 - RemoveEvidenceLinkCommand
 - RemoveMeetingAttendeeCommand
 - RemoveTaskDependencyCommand
-- RemoveTenantManualModuleOverrideCommand
-- RenewTenantSubscriptionCommand
 - ReorderAgendaCommand
 - ReorderChecklistCommand
 - ReplaceTenantNavPreferencesCommand
@@ -170,7 +150,6 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - SaveMinutesDraftCommand
 - ScheduleFollowUpMeetingCommand
 - ScheduleReviewMeetingForTaskCommand
-- SeedDefaultSubscriptionPlansCommand
 - SendDueSoonRemindersCommand
 - SetChecklistItemStateCommand
 - SetTaskPinnedCommand
@@ -179,7 +158,6 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - StartWorkingCalendarImportCommand
 - SuspendPlatformAdministratorCommand
 - SuspendTenantCommand
-- SuspendTenantSubscriptionCommand
 - SyncNotificationEventsFromManifestCommand
 - ToggleControlledDocumentFavoriteCommand
 - UpdateAgendaItemCommand
@@ -188,20 +166,17 @@ Bu liste **yalnız küçülür**. Satır eklemek yasaktır; denetlenen ya da sil
 - UpdateMeetingCommand
 - UpdateMeetingSeriesCommand
 - UpdateMeetingTypeCommand
-- UpdateModuleCatalogItemCommand
 - UpdateModuleDomainCommand
 - UpdateModulePageActionDescriptorCommand
 - UpdateModulePageDescriptorCommand
 - UpdateModuleServiceCommand
 - UpdateNotificationEventCommand
-- UpdateSubscriptionPlanCommand
 - UpdateTaskCommentCommand
 - UpdateTaskFieldDefinitionCommand
 - UpdateTaskRecurrenceRuleCommand
 - UpdateTaskTemplateCommand
 - UpdateTaskTypeCommand
 - UpdateTenantBrandingCommand
-- UpdateTenantModuleEntitlementExpiryCommand
 - UpdateTenantSettingsCommand
 - UpdateWorkingCalendarCommand
 - UpsertWorkingCalendarDayCommand

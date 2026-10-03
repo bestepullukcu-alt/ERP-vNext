@@ -7,11 +7,12 @@ using MongoDB.Driver;
 
 namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 
-internal sealed class AuditOutboxRepository : IAuditOutboxWriter, ITransactionalAuditOutboxWriter
+internal sealed class AuditOutboxRepository : IAuditOutboxWriter, ITransactionalAuditOutboxStore
     , IAuditOutboxProcessingRepository
 {
     private readonly IMongoCollection<AuditOutboxMessage> _collection;
     private readonly IPlatformDbContext _dbContext;
+    private static readonly AuditOutboxPayloadMapper PayloadGate = new();
 
     public AuditOutboxRepository(IPlatformDbContext dbContext)
     {
@@ -19,7 +20,9 @@ internal sealed class AuditOutboxRepository : IAuditOutboxWriter, ITransactional
         _collection = dbContext.Database.GetCollection<AuditOutboxMessage>(AuditCollectionNames.AuditOutbox);
     }
 
-    public async Task<bool> TryEnqueueAsync(
+    // WP-PLATFORM-AUDIT-INTX-01 — the in-transaction insert. Reached only through
+    // CanonicalTransactionalAuditOutboxWriter (Application), which builds the payload.
+    public async Task<bool> TryInsertAsync(
         IPlatformTransactionSession session,
         AuditOutboxWriteRequest request,
         CancellationToken ct = default)
@@ -31,6 +34,11 @@ internal sealed class AuditOutboxRepository : IAuditOutboxWriter, ITransactional
         var mongoSession = PlatformMongoTransactionSession.Require(session, _dbContext);
         var message = ToPersistenceMessage(request);
         message.ValidateForInsert();
+
+        // A row the mapper could not deliver must not be written: it would sit in dead letter while the business
+        // change stood with no audit record (the state measured on dev 2026-10-02). The mapper itself is asked — the
+        // one place that knows which fields audit_events requires — and its refusal fails this transaction.
+        PayloadGate.Map(ToProcessingItem(message), DateTimeOffset.UtcNow);
         try
         {
             await _collection.InsertOneAsync(mongoSession, message, cancellationToken: ct);

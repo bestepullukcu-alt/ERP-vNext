@@ -63,7 +63,12 @@ public static partial class PlatformSchemaManifest
                         new CreateIndexOptions { Name = "ix_audit_events_operation_occurred" }),
                     new CreateIndexModel<AuditEvent>(
                         Builders<AuditEvent>.IndexKeys.Ascending(x => x.CorrelationId),
-                        new CreateIndexOptions { Name = "ix_audit_events_correlation_id" })
+                        new CreateIndexOptions { Name = "ix_audit_events_correlation_id" }),
+                    // INTX FIX2 — the outbox worker's duplicate check looks a delivery up by its idempotency key. Additive,
+                    // non-unique, sparse (records written before the outbox carried the key have none): no data migration.
+                    new CreateIndexModel<AuditEvent>(
+                        Builders<AuditEvent>.IndexKeys.Ascending(Repositories.AuditEventRepository.OutboxIdempotencyKeyPath),
+                        new CreateIndexOptions { Name = "ix_audit_events_outbox_idempotency_key", Sparse = true })
 
             }),
         Collection<AuditEventRetentionPolicy>(

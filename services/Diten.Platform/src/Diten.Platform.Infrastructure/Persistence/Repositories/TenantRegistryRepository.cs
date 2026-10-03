@@ -16,6 +16,14 @@ public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenant
         _dbContext = dbContext;
     }
 
+    public async Task<Tenant?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default)
+    {
+        var filter = Builders<Tenant>.Filter.And(
+            ExecutionFilter,
+            Builders<Tenant>.Filter.Eq(t => t.Id, id));
+        return await Collection.Find(PlatformMongoTransactionSession.Require(session, _dbContext), filter).FirstOrDefaultAsync(ct);
+    }
+
     public async Task<Tenant?> GetByCodeAsync(string code, CancellationToken ct = default)
     {
         var filter = Builders<Tenant>.Filter.And(

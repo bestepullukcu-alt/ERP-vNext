@@ -80,7 +80,7 @@ public sealed class TenantModuleEntitlementQuotaDriftTests
         currentUser.SetupGet(x => x.UserId).Returns(Guid.Empty);
 
         var dependencies = PhysicalHandlerTestDependencies.Create(repo, quota, eventBus.Object);
-        var handler = new EnableTenantModuleEntitlementCommandHandler(repo.Object, quota, dependencies.Executor,
+        var handler = new EnableTenantModuleEntitlementCommandHandler(repo.Object, KnownModule("CRM"), quota, dependencies.Executor,
             dependencies.Versions, dependencies.Events, dependencies.Audit, currentUser.Object);
 
         var result = await handler.Handle(new EnableTenantModuleEntitlementCommand(TenantId, EntitlementId, entity.RowVersion), CancellationToken.None);
@@ -92,6 +92,14 @@ public sealed class TenantModuleEntitlementQuotaDriftTests
 
     private static AddTenantModuleEntitlementCommand AddCommand() =>
         new(TenantId, new TenantModuleEntitlementRequest("CRM", EntitlementSource.ManualOverride, true, null, "add", null));
+
+    private static IModuleCatalogRepository KnownModule(string code)
+    {
+        var modules = new Mock<IModuleCatalogRepository>();
+        modules.Setup(x => x.GetByCodeAsync(code, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ModuleCatalogItem { ModuleCode = code, ModuleName = code, DisplayName = code, Status = ModuleCatalogStatus.Active });
+        return modules.Object;
+    }
 
     private static AddTenantModuleEntitlementCommandHandler BuildAddHandler(IQuotaService quota)
     {

@@ -46,9 +46,9 @@ public sealed class TenantModuleEntitlementReEnableQuotaTests
         currentUser.SetupGet(x => x.UserId).Returns(Guid.Empty);
         var dependencies = PhysicalHandlerTestDependencies.Create(repo, quota, eventBus);
 
-        var enable = new EnableTenantModuleEntitlementCommandHandler(repo.Object, quota, dependencies.Executor,
+        var enable = new EnableTenantModuleEntitlementCommandHandler(repo.Object, BuildModuleRepo(), quota, dependencies.Executor,
             dependencies.Versions, dependencies.Events, dependencies.Audit, currentUser.Object);
-        var disable = new DisableTenantModuleEntitlementCommandHandler(repo.Object, moduleRepo, quota, dependencies.Executor,
+        var disable = new DisableTenantModuleEntitlementCommandHandler(repo.Object, moduleRepo, Mock.Of<ITenantSubscriptionRepository>(), Mock.Of<ISubscriptionPlanRepository>(), quota, dependencies.Executor,
             dependencies.Versions, dependencies.Events, dependencies.Audit, currentUser.Object);
 
         // 1) Enable (from disabled) — consumes one ModulesMax slot.
@@ -95,7 +95,7 @@ public sealed class TenantModuleEntitlementReEnableQuotaTests
         currentUser.SetupGet(x => x.UserId).Returns(Guid.Empty);
         var dependencies = PhysicalHandlerTestDependencies.Create(repo, quota, eventBus);
 
-        var enable = new EnableTenantModuleEntitlementCommandHandler(repo.Object, quota, dependencies.Executor,
+        var enable = new EnableTenantModuleEntitlementCommandHandler(repo.Object, BuildModuleRepo(), quota, dependencies.Executor,
             dependencies.Versions, dependencies.Events, dependencies.Audit, currentUser.Object);
 
         var result = await enable.Handle(new EnableTenantModuleEntitlementCommand(TenantId, EntitlementId, entity.RowVersion), CancellationToken.None);

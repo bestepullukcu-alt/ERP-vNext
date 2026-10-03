@@ -40,7 +40,7 @@ internal static class TenantSubscriptionCommandSupport
 
         if (await subscriptionRepository.HasCurrentAsync(tenantId, null, ct))
         {
-            return Response<Guid>.Fail("Tenant already has a current subscription.", 409);
+            return Response<Guid>.Fail("Tenant already has a current subscription.", 409, TenantSubscriptionRefusalCodes.AlreadyCurrent);
         }
 
         var now = DateTimeOffset.UtcNow;

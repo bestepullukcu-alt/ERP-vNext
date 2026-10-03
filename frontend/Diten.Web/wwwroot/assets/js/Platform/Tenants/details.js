@@ -24,6 +24,10 @@ const TenantDetails = (function () {
     let subscriptionAppliedFilters = { status: [], cancelAtPeriodEnd: '' };
     let moduleEntitlementsLoaded = false;
     let moduleEntitlementsDt;
+    // FIX2 — every list request is numbered as it starts; a failed one is remembered by its number, so an action
+    // waiting on ITS reload reads its own outcome even when two reloads overlap (one shared flag could be overwritten).
+    let moduleEntitlementsLoadSeq = 0;
+    const moduleEntitlementsLoadFailures = new Set();
     let availableModules = [];
     let moduleEntitlementAppliedFilters = { source: [], access: [] };
     let quotaGovernanceLoaded = false;
@@ -186,7 +190,10 @@ const TenantDetails = (function () {
         }
 
         if (response.status === 403) {
-            throw new Error(L.PermissionDenied || 'Permission denied.');
+            const denied = new Error(L.PermissionDenied || 'Permission denied.');
+            // BL-500 — a refusal bridge reads the STATUS: a 403 is said with its own sentence, not the general one.
+            denied.status = 403;
+            throw denied;
         }
 
         const text = await response.text();
@@ -200,7 +207,12 @@ const TenantDetails = (function () {
         }
 
         if (!response.ok) {
-            throw new Error(extractErrorMessage(payload, L.ErrorOccurred || 'Error occurred.'));
+            const failure = new Error(extractErrorMessage(payload, L.ErrorOccurred || 'Error occurred.'));
+            // BL-500 — the Platform envelope's stable refusal code, when it carries one. A screen says a refusal from
+            // the CODE; the sentence beside it is the service's English and is for the console only.
+            failure.code = (payload && typeof payload === 'object' && (payload.reason_code || payload.reasonCode)) || null;
+            failure.status = response.status;
+            throw failure;
         }
 
         if (response.status === 204) return null;
@@ -213,7 +225,11 @@ const TenantDetails = (function () {
 
         const isSuccessful = payload?.isSuccessful ?? payload?.IsSuccessful ?? payload?.succeeded ?? payload?.Succeeded ?? payload?.success ?? payload?.Success;
         if (isSuccessful === false) {
-            throw new Error(extractErrorMessage(payload, L.ErrorOccurred || 'Error occurred.'));
+            const refused = new Error(extractErrorMessage(payload, L.ErrorOccurred || 'Error occurred.'));
+            // BL-500 — the envelope's code travels on this path too, or the screen falls back to the general sentence.
+            refused.code = (payload && typeof payload === 'object' && (payload.reason_code || payload.reasonCode)) || null;
+            refused.status = response.status;
+            throw refused;
         }
 
         return unwrap(payload);
@@ -1233,22 +1249,112 @@ const TenantDetails = (function () {
         SystemLocked: L.AccessSystemLocked
     }[access] || access || '-');
 
+    // ── BL-500 — the Modules tab's row actions and refusals ─────────────────────────────────────────────────────
+    //
+    // WHAT A ROW OFFERS IS THE SERVER'S ANSWER. Every row of the list carries `allowedActions` (decided in one place,
+    // TenantModuleEntitlementRowActions): the names below, in order, the first being the row's primary action. This
+    // table only says how each NAME looks; it holds no condition. The conditions this file used to work out for
+    // itself are how a "remove" came to sit on a baseline module the server then refused, and an "enable" on an
+    // expired row that changed nothing and still said "saved".
+    const ENTITLEMENT_ROW_ACTIONS = {
+        disable: { key: 'disable-module-entitlement', buttonClass: 'text-danger', icon: 'bx bx-block', label: 'Disable' },
+        enable: { key: 'enable-module-entitlement', buttonClass: 'text-success', icon: 'bx bx-check-circle', label: 'Enable' },
+        extendExpiry: { key: 'edit-module-entitlement-expiry', icon: 'bx bx-calendar-edit', label: 'ExtendExpiry' },
+        removeOverride: { key: 'remove-module-entitlement-override', buttonClass: 'text-danger', icon: 'bx bx-trash', label: 'RemoveManualOverride' }
+    };
+
+    const moduleEntitlementActionsFor = (row, labels) =>
+        (Array.isArray(row?.allowedActions) ? row.allowedActions : [])
+            .map((name) => ENTITLEMENT_ROW_ACTIONS[name])
+            .filter(Boolean)
+            .map((action) => ({ key: action.key, buttonClass: action.buttonClass, icon: action.icon, text: (labels || {})[action.label] || '' }));
+
+    // A refusal's CODE → this screen's own sentence (TenantsIndex.*.resx, en + tr). The module-limit refusals arrive
+    // as the error text itself (QuotaService), the entitlement ones as the envelope's reason_code.
+    const ENTITLEMENT_REFUSAL_KEYS = {
+        ENTITLEMENT_STALE: 'EntitlementStale',
+        ENTITLEMENT_NOT_FOUND: 'EntitlementNotFound',
+        ENTITLEMENT_MODULE_NOT_FOUND: 'EntitlementModuleNotFound',
+        ENTITLEMENT_MODULE_CORE: 'EntitlementModuleCore',
+        ENTITLEMENT_MODULE_BASELINE: 'EntitlementModuleBaseline',
+        ENTITLEMENT_ALREADY_EXISTS: 'EntitlementAlreadyExists',
+        ENTITLEMENT_NOT_MANUAL_OVERRIDE: 'EntitlementNotManualOverride',
+        ENTITLEMENT_ACTION_NOT_OFFERED: 'EntitlementActionNotOffered',
+        ENTITLEMENT_MODULE_MISMATCH: 'EntitlementModuleMismatch',
+        // The validators' codes (TenantModuleEntitlementValidators.cs) — curated, so each has a sentence here.
+        ENTITLEMENT_ROW_VERSION_REQUIRED: 'EntitlementRowVersionRequired',
+        ENTITLEMENT_REASON_REQUIRED: 'EntitlementReasonRequired',
+        ENTITLEMENT_REASON_TOO_LONG: 'EntitlementReasonTooLong',
+        ENTITLEMENT_MODULE_REQUIRED: 'EntitlementModuleRequired',
+        ENTITLEMENT_SOURCE_INVALID: 'EntitlementSourceInvalid',
+        ENTITLEMENT_EXPIRY_REQUIRED: 'EntitlementExpiryRequired',
+        ENTITLEMENT_EXPIRY_IN_PAST: 'EntitlementExpiryInPast',
+        // INTX FIX2 — the change could not be recorded (no one to name, or the record store is down): not made.
+        AUDIT_RECORD_UNAVAILABLE: 'AuditRecordUnavailable',
+        QUOTA_LIMIT_EXCEEDED: 'QuotaLimitExceeded',
+        QUOTA_DUPLICATE_OPERATION: 'QuotaDuplicateOperation',
+        QUOTA_SUBSCRIPTION_INACTIVE: 'QuotaSubscriptionInactive',
+        QUOTA_USAGE_NOT_FOUND: 'QuotaUsageNotFound',
+        QUOTA_CONFIGURATION_MISSING: 'QuotaConfigurationMissing'
+    };
+
+    const entitlementRefusalCode = (error) => {
+        const fromEnvelope = typeof error?.code === 'string' ? error.code.trim() : '';
+        if (fromEnvelope) return fromEnvelope;
+        const fromText = typeof error?.message === 'string' ? error.message.trim() : '';
+        return ENTITLEMENT_REFUSAL_KEYS[fromText] ? fromText : '';
+    };
+
+    // Never the raw code and never the service's English sentence: a refusal this screen has no sentence for is
+    // said with the general one, and the console keeps what actually arrived.
+    const entitlementRefusalText = (error, labels) => {
+        // A 403 carries no code: the reader is told they may not do this, not that "an error occurred".
+        if (error?.status === 403 && (labels || {}).PermissionDenied) return labels.PermissionDenied;
+        const text = (labels || {})[ENTITLEMENT_REFUSAL_KEYS[entitlementRefusalCode(error)]];
+        if (text) return text;
+        if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+            console.warn('[TenantModules] A refusal arrived without a known code; the general sentence is shown.',
+                { code: error?.code || null, message: error?.message || null });
+        }
+        return (labels || {}).ErrorOccurred || '';
+    };
+
+    // INTX FIX2 — the subscription section's refusals, said from their codes (TenantSubscriptionRefusalCodes and the
+    // Platform's audit refusal). A refusal this table does not know keeps the sentence the screen showed before.
+    const SUBSCRIPTION_REFUSAL_KEYS = {
+        SUBSCRIPTION_ALREADY_CURRENT: 'SubscriptionAlreadyCurrent',
+        SUBSCRIPTION_STALE: 'SubscriptionStale',
+        AUDIT_RECORD_UNAVAILABLE: 'AuditRecordUnavailable'
+    };
+
+    const subscriptionRefusalText = (error, labels) => {
+        if (error?.status === 403 && (labels || {}).PermissionDenied) return labels.PermissionDenied;
+        const code = typeof error?.code === 'string' ? error.code.trim() : '';
+        return (labels || {})[SUBSCRIPTION_REFUSAL_KEYS[code]] || error?.message || (labels || {}).ErrorOccurred || '';
+    };
+
+    // Somebody else changed the subscription: the section is reloaded so the next attempt starts from what is there.
+    const subscriptionRefusalReloads = (error) => error?.code === 'SUBSCRIPTION_STALE';
+
+    // Did the request change anything? Read off the reloaded list rather than assumed from a 204: a stored row that
+    // still carries the version it had was not written (every write mints a new one), and a plan line whose access
+    // did not move was not suspended. "Saved" is said only for a change. A list that could not be reloaded (null)
+    // says nothing either way: the outcome is 'unknown', never 'changed'.
+    const entitlementChangeOutcome = (before, rowsAfter) => {
+        if (!Array.isArray(rowsAfter)) return 'unknown';
+        const rows = rowsAfter;
+        if (before?.physicalEntitlementId) {
+            const same = rows.find((row) => row.physicalEntitlementId === before.physicalEntitlementId);
+            return same && same.rowVersion === before.rowVersion ? 'unchanged' : 'changed';
+        }
+        const line = rows.find((row) => row.isProjectionRow === true && row.moduleCode === before?.moduleCode);
+        return line && line.effectiveAccess === before?.effectiveAccess ? 'unchanged' : 'changed';
+    };
+
     const renderModuleEntitlementActions = (row) => {
-        const isProjection = row.isProjectionRow === true;
-        const id = row.physicalEntitlementId;
-        const source = row.displaySource;
-        // Disable and Enable are mutually exclusive by state: only the state-appropriate toggle shows, and because
-        // it sits before Edit Expiry / Remove Override in this array it becomes the PRIMARY quick-action icon
-        // (enabled row → red Disable; disabled row → green Enable), the rest fall into the overflow menu.
-        const actions = [
-            { key: 'disable-module-entitlement', visible: (isProjection || id) && row.isEnabled !== false, buttonClass: 'text-danger', icon: 'bx bx-block', text: L.Disable || 'Disable' },
-            { key: 'enable-module-entitlement', visible: !isProjection && id && row.isEnabled === false, buttonClass: 'text-success', icon: 'bx bx-check-circle', text: L.Enable || 'Enable' },
-            { key: 'edit-module-entitlement-expiry', visible: !isProjection && id, icon: 'bx bx-calendar-edit', text: L.EditExpiry || 'Edit Expiry' },
-            { key: 'remove-module-entitlement-override', visible: !isProjection && id && source === 'ManualOverride', buttonClass: 'text-danger', icon: 'bx bx-trash', text: L.RemoveManualOverride || 'Remove Override' }
-        ];
-        const visibleActions = actions.filter((action) => action.visible !== false);
-        if (!visibleActions.length) return '<span class="text-muted">-</span>';
-        return window.DitenDataTable?.renderActions?.(actions) || visibleActions.map((action) =>
+        const actions = moduleEntitlementActionsFor(row, L);
+        if (!actions.length) return '<span class="text-muted">-</span>';
+        return window.DitenDataTable?.renderActions?.(actions) || actions.map((action) =>
             `<button type="button" class="btn btn-sm btn-icon btn-label-secondary me-1" data-action-key="${escapeHtml(action.key)}"><i class="icon-base ${escapeHtml(action.icon)}"></i></button>`
         ).join('');
     };
@@ -1273,9 +1379,16 @@ const TenantDetails = (function () {
 
         moduleEntitlementsDt = new DataTable(table, window.DtDefaults.create({
             ajax: (_data, callback) => {
+                const loadSeq = ++moduleEntitlementsLoadSeq;
                 fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements`)
-                    .then(rows => callback({ data: Array.isArray(rows) ? rows : [] }))
+                    .then(rows => {
+                        moduleEntitlementsLoadFailures.delete(loadSeq);
+                        callback({ data: Array.isArray(rows) ? rows : [] });
+                    })
                     .catch(error => {
+                        // The table is emptied, but an empty table is not the tenant's list: an action waiting on this
+                        // reload must not read "no rows" as its result (reloadModuleEntitlements answers null).
+                        moduleEntitlementsLoadFailures.add(loadSeq);
                         callback({ data: [] });
                         if (!error.authHandled) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
                     });
@@ -1322,10 +1435,10 @@ const TenantDetails = (function () {
                 const api = this.api();
                 revealTableWithSkeleton('dtModuleEntitlements', 'moduleEntitlementSkeleton', api);
                 const actionHandlers = {
-                    'disable-module-entitlement': (ctx) => disableModuleEntitlement(ctx.row),
-                    'enable-module-entitlement': (ctx) => enableModuleEntitlement(ctx.row),
-                    'edit-module-entitlement-expiry': (ctx) => openModuleEntitlementExpiryEditor(ctx.row),
-                    'remove-module-entitlement-override': (ctx) => removeModuleEntitlementOverride(ctx.row)
+                    'disable-module-entitlement': (ctx) => disableModuleEntitlement(ctx.row, ctx.trigger),
+                    'enable-module-entitlement': (ctx) => enableModuleEntitlement(ctx.row, ctx.trigger),
+                    'edit-module-entitlement-expiry': (ctx) => openModuleEntitlementExpiryEditor(ctx.row, ctx.trigger),
+                    'remove-module-entitlement-override': (ctx) => removeModuleEntitlementOverride(ctx.row, ctx.trigger)
                 };
                 window.DitenDataTable?.bindActionDispatcher?.({
                     tableEl: table,
@@ -1443,6 +1556,8 @@ const TenantDetails = (function () {
         return activeSubscriptionPlans;
     };
 
+    // FIX2 A3 — the picker's list is cached for the form; every add and every row action clears it (see
+    // runEntitlementAction / saveModuleEntitlement), so a module just added — or just removed — is not offered stale.
     const loadAvailableModules = async () => {
         if (availableModules.length > 0) return availableModules;
         availableModules = await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/available-modules`) || [];
@@ -1519,34 +1634,87 @@ const TenantDetails = (function () {
         reason?.toggleAttribute('required', reasonRequired);
         if (!form.checkValidity()) return;
 
-        await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements`, {
-            method: 'POST',
-            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        try {
+            await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements`, {
+                method: 'POST',
+                headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } finally {
+            availableModules = [];
+        }
         bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasModuleEntitlement'))?.hide();
         window.showToast?.(L.RecordSaved || 'Record saved.', 'success');
         moduleEntitlementsDt?.ajax.reload(null, false);
     };
 
     // FIX-ENTITLEMENT-REENABLE (frontend) — entitlement actions previously awaited fetchJson with NO catch, so a
-    // 4xx (e.g. a quota 409) was swallowed and the button looked dead. Surface it: map known backend error codes
-    // (the raw code arrives as error.message) to a friendly localized message, else fall back to the server detail.
-    const showEntitlementActionError = (error) => {
-        if (error?.authHandled) return; // auth refresh flow already handled it
-        const code = (error?.message || '').trim();
-        const friendly = {
-            QUOTA_LIMIT_EXCEEDED: L.QuotaLimitExceeded,
-            QUOTA_DUPLICATE_OPERATION: L.QuotaDuplicateOperation,
-            QUOTA_SUBSCRIPTION_INACTIVE: L.QuotaSubscriptionInactive,
-            QUOTA_USAGE_NOT_FOUND: L.QuotaUsageNotFound,
-            QUOTA_CONFIGURATION_MISSING: L.QuotaConfigurationMissing
-        }[code];
-        window.showToast?.(friendly || code || L.ErrorOccurred || 'Error occurred.', 'error');
+    // 4xx (e.g. a quota 409) was swallowed and the button looked dead. Surface it — BL-500: from the refusal's code,
+    // in the reader's language (entitlementRefusalText above).
+    // The reloaded rows, or null when the list could not be loaded — never an empty list standing in for a failure.
+    // The ajax hook numbers each request as it starts (synchronously, inside reload): the next number is this one's.
+    const reloadModuleEntitlements = () => new Promise((resolve) => {
+        if (!moduleEntitlementsDt) { resolve(null); return; }
+        const ownLoad = moduleEntitlementsLoadSeq + 1;
+        moduleEntitlementsDt.ajax.reload(
+            () => resolve(moduleEntitlementsLoadFailures.has(ownLoad) ? null : moduleEntitlementsDt.rows().data().toArray()), false);
+    });
+
+    // FIX2 — one request per row at a time. A second click while the first is on its way does nothing (the button is
+    // disabled until it answers): a double click used to send the same action twice, and the second, which the row no
+    // longer offers, came back as an error right after the success. Whatever the outcome, the picker's cached list of
+    // addable modules is dropped — the action may have changed what can be added.
+    const entitlementActionsInFlight = new Set();
+    const runEntitlementAction = async (row, trigger, work) => {
+        const key = row?.physicalEntitlementId || `plan:${row?.moduleCode || ''}`;
+        if (entitlementActionsInFlight.has(key)) return;
+        entitlementActionsInFlight.add(key);
+        if (trigger) trigger.disabled = true;
+        try {
+            await work();
+        } finally {
+            entitlementActionsInFlight.delete(key);
+            if (trigger) trigger.disabled = false;
+            availableModules = [];
+        }
     };
 
-    const disableModuleEntitlement = (row) => {
-        const run = async (reason) => {
+    // The request went through but its result could not be read back: say so plainly, and try the list once more.
+    const reportEntitlementOutcomeUnknown = () => {
+        window.showToast?.(L.EntitlementOutcomeUnknown || '', 'warning');
+        reloadModuleEntitlements();
+    };
+
+    const showEntitlementActionError = (error) => {
+        if (error?.authHandled) return; // auth refresh flow already handled it
+        const code = entitlementRefusalCode(error);
+        // FIX2 — the row no longer offers the action: it is already where the action would have taken it (a second
+        // click, another screen). Nothing went wrong for the reader — the list is simply replaced with the current one.
+        if (code === 'ENTITLEMENT_ACTION_NOT_OFFERED') {
+            reloadModuleEntitlements();
+            return;
+        }
+        window.showToast?.(entitlementRefusalText(error, L), 'error');
+        // Somebody else changed the row: the sentence says so, and the list on screen is replaced with the current one.
+        if (code === 'ENTITLEMENT_STALE') reloadModuleEntitlements();
+    };
+
+    const reportEntitlementChange = async (before, changedText) => {
+        const rows = await reloadModuleEntitlements();
+        const outcome = entitlementChangeOutcome(before, rows);
+        if (outcome === 'unknown') {
+            reportEntitlementOutcomeUnknown();
+            return;
+        }
+        if (outcome === 'unchanged') {
+            window.showToast?.(L.NoChangesMade || '', 'info');
+            return;
+        }
+        window.showToast?.(changedText, 'success');
+    };
+
+    const disableModuleEntitlement = (row, trigger) => {
+        const run = (reason) => runEntitlementAction(row, trigger, async () => {
             try {
                 await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/disable`, {
                     method: 'POST',
@@ -1555,14 +1723,15 @@ const TenantDetails = (function () {
                         moduleCode: row.moduleCode,
                         physicalEntitlementId: row.physicalEntitlementId,
                         reason: reason || row.reason || L.ManualOverrideReason || 'Manual override',
-                        rowVersion: row.rowVersion || null
+                        // The plan's own line has no stored row and so no version; every stored row sends its own.
+                        rowVersion: row.physicalEntitlementId ? row.rowVersion : null
                     })
                 });
-                moduleEntitlementsDt?.ajax.reload(() => window.showToast?.(L.RecordSaved || 'Record saved.', 'success'), false);
+                await reportEntitlementChange(row, L.RecordSaved || '');
             } catch (error) {
                 showEntitlementActionError(error);
             }
-        };
+        });
 
         window.showConfirm?.(L.AreYouSure || 'Are you sure?', run, {
             entityName: row.moduleName || row.moduleCode,
@@ -1573,51 +1742,111 @@ const TenantDetails = (function () {
         });
     };
 
-    const enableModuleEntitlement = async (row) => {
+    const enableModuleEntitlement = (row, trigger) => runEntitlementAction(row, trigger, async () => {
         if (!row?.physicalEntitlementId) return;
         try {
             await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/${encodeURIComponent(row.physicalEntitlementId)}/enable`, {
                 method: 'POST',
                 headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-                body: JSON.stringify(row.rowVersion || null)
+                body: JSON.stringify(row.rowVersion)
             });
-            moduleEntitlementsDt?.ajax.reload(() => window.showToast?.(L.RecordSaved || 'Record saved.', 'success'), false);
+            await reportEntitlementChange(row, L.RecordSaved || '');
         } catch (error) {
             showEntitlementActionError(error);
         }
+    });
+
+    // The new expiry is asked for in the shared confirmation dialog (a date box), not a browser prompt. It must hold a
+    // date, and one in the future: an empty box used to be sent as null, which REMOVED the expiry while the screen said
+    // "saved". Taking an expiry away is not this action.
+    //
+    // FIX2 — ONE definition of a date, the server's: a chosen day ends at 23:59:59 UTC, and "today" is the UTC day. The
+    // dialog used the reader's LOCAL today, so west of UTC an evening "today" passed here and was refused there as past,
+    // and the label now says the day ends in UTC.
+    const todayIsoDate = () => new Date().toISOString().slice(0, 10);
+
+    const moduleEntitlementExpiryProblem = (value) => {
+        const date = typeof value === 'string' ? value.trim() : '';
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return L.EntitlementExpiryRequired || '';
+        if (date < todayIsoDate()) return L.EntitlementExpiryInPast || '';
+        return null;
     };
 
-    const openModuleEntitlementExpiryEditor = (row) => {
-        const current = row.expiryDateUtc ? new Date(row.expiryDateUtc).toISOString().slice(0, 10) : '';
-        const nextValue = window.prompt(L.ExpiryDate || 'Expiry Date', current);
-        if (nextValue === null || !row?.physicalEntitlementId) return;
-        fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/${encodeURIComponent(row.physicalEntitlementId)}/expiry`, {
-            method: 'PATCH',
-            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                expiryDateUtc: nextValue ? new Date(`${nextValue}T23:59:59Z`).toISOString() : null,
-                reason: row.reason || null,
-                rowVersion: row.rowVersion || null
-            })
-        }).then(() => {
-            moduleEntitlementsDt?.ajax.reload(() => window.showToast?.(L.RecordSaved || 'Record saved.', 'success'), false);
-        }).catch(showEntitlementActionError);
-    };
+    // The chosen DAY is the last day of access: the expiry is the end of that day.
+    const moduleEntitlementExpiryInstant = (date) => new Date(`${date}T23:59:59Z`).toISOString();
 
-    const removeModuleEntitlementOverride = (row) => {
+    const openModuleEntitlementExpiryEditor = (row, trigger) => {
         if (!row?.physicalEntitlementId) return;
-        const run = async () => {
+        const current = row.expiryDateUtc ? new Date(row.expiryDateUtc).toISOString().slice(0, 10) : '';
+        const run = (value) => runEntitlementAction(row, trigger, async () => {
+            const nextValue = typeof value === 'string' ? value.trim() : '';
+            const problem = moduleEntitlementExpiryProblem(nextValue);
+            if (problem !== null) {
+                // The dialog's own validator stops this first; a value that still gets here is never sent.
+                window.showToast?.(problem, 'error');
+                return;
+            }
+            if (nextValue === current) {
+                window.showToast?.(L.NoChangesMade || '', 'info');
+                return;
+            }
+            try {
+                await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/${encodeURIComponent(row.physicalEntitlementId)}/expiry`, {
+                    method: 'PATCH',
+                    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        expiryDateUtc: moduleEntitlementExpiryInstant(nextValue),
+                        reason: row.reason || null,
+                        rowVersion: row.rowVersion
+                    })
+                });
+                await reportEntitlementChange(row, L.RecordSaved || '');
+            } catch (error) {
+                showEntitlementActionError(error);
+            }
+        });
+
+        window.showConfirm?.(L.ExtendExpiry || '', run, {
+            entityName: row.moduleName || row.moduleCode,
+            type: 'info',
+            confirmButtonText: L.ExtendExpiry || '',
+            showInput: true,
+            inputType: 'date',
+            inputLabel: L.ExpiryDateUtcEndOfDay || L.ExpiryDate || '',
+            inputAttributes: { min: todayIsoDate() },
+            // The box opens on the row's current date. Not through a `value` attribute — SweetAlert writes the box's
+            // value AFTER the attributes, so that opened EMPTY — and not through a new option on the shared dialog,
+            // which does not grow to suit one module (standing rule; wcn-detail-three-regions.test.js pins it). Its
+            // existing `didOpen` seam writes the date into the box it created, as the Task Center's edit box does.
+            didOpen: (_popup, swal) => {
+                const box = swal?.getInput?.();
+                if (box && current) box.value = current;
+            },
+            inputRequired: true,
+            inputValidationMessage: L.EntitlementExpiryRequired || '',
+            inputValidator: (value) => moduleEntitlementExpiryProblem(value)
+        });
+    };
+
+    const removeModuleEntitlementOverride = (row, trigger) => {
+        if (!row?.physicalEntitlementId) return;
+        const run = () => runEntitlementAction(row, trigger, async () => {
             try {
                 await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/${encodeURIComponent(row.physicalEntitlementId)}/manual-override`, {
                     method: 'DELETE',
                     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ rowVersion: row.rowVersion || null })
+                    body: JSON.stringify({ rowVersion: row.rowVersion })
                 });
-                moduleEntitlementsDt?.ajax.reload(() => window.showToast?.(L.RecordDeleted || 'Record deleted.', 'success'), false);
+                const rows = await reloadModuleEntitlements();
+                if (rows === null) {
+                    reportEntitlementOutcomeUnknown();
+                    return;
+                }
+                window.showToast?.(L.RecordDeleted || '', 'success');
             } catch (error) {
                 showEntitlementActionError(error);
             }
-        };
+        });
         window.showConfirm?.(L.AreYouSure || 'Are you sure?', run, {
             entityName: row.moduleName || row.moduleCode,
             type: 'danger',
@@ -1737,7 +1966,7 @@ const TenantDetails = (function () {
                 await loadCommercialSubscription();
                 await loadOverview();
             } catch (error) {
-                window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error');
+                showSubscriptionActionError(error);
             }
         };
 
@@ -1751,6 +1980,14 @@ const TenantDetails = (function () {
         }
 
         run();
+    };
+
+    const showSubscriptionActionError = (error) => {
+        if (error?.authHandled) return;
+        window.showToast?.(subscriptionRefusalText(error, L), 'error');
+        if (subscriptionRefusalReloads(error)) {
+            loadCommercialSubscription().catch(() => {});
+        }
     };
 
     const submitSubscriptionAction = async () => {
@@ -2469,7 +2706,7 @@ const TenantDetails = (function () {
         document.getElementById('btnReactivateSubscription')?.addEventListener('click', () => confirmReactivateSubscription());
         document.getElementById('subscriptionActionForm')?.addEventListener('submit', (event) => {
             event.preventDefault();
-            submitSubscriptionAction().catch((error) => window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error'));
+            submitSubscriptionAction().catch(showSubscriptionActionError);
         });
 
         document.getElementById('subscriptionPlanSelect')?.addEventListener('change', (event) => {
@@ -2498,10 +2735,10 @@ const TenantDetails = (function () {
         });
         document.getElementById('moduleEntitlementForm')?.addEventListener('submit', (event) => {
             event.preventDefault();
-            saveModuleEntitlement().catch((error) => window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error'));
+            saveModuleEntitlement().catch(showEntitlementActionError);
         });
         document.getElementById('btnSaveModuleEntitlement')?.addEventListener('click', () => {
-            saveModuleEntitlement().catch((error) => window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error'));
+            saveModuleEntitlement().catch(showEntitlementActionError);
         });
         document.getElementById('moduleEntitlementSource')?.addEventListener('change', () => {
             const payload = readModuleEntitlementPayload();

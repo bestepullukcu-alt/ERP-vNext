@@ -16,6 +16,7 @@ namespace Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Ha
 public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandler<EnableTenantModuleEntitlementCommand, Response<NoContent>>
 {
     private readonly ITenantModuleEntitlementRepository _repository;
+    private readonly IModuleCatalogRepository _moduleRepository;
     private readonly IQuotaService _quotaService;
     private readonly IPlatformTransactionExecutor _transactions;
     private readonly IEntitlementStateVersionRepository _versions;
@@ -25,6 +26,7 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
 
     public EnableTenantModuleEntitlementCommandHandler(
         ITenantModuleEntitlementRepository repository,
+        IModuleCatalogRepository moduleRepository,
         IQuotaService quotaService,
         IPlatformTransactionExecutor transactions,
         IEntitlementStateVersionRepository versions,
@@ -33,6 +35,7 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
         ICurrentUserContext currentUser)
     {
         _repository = repository;
+        _moduleRepository = moduleRepository;
         _quotaService = quotaService;
         _transactions = transactions;
         _versions = versions;
@@ -46,16 +49,21 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
         var entitlement = await _repository.GetByIdAsync(request.TenantId, request.EntitlementId, ct);
         if (entitlement is null)
         {
-            return Response<NoContent>.Fail("Entitlement was not found.", 404);
+            return TenantModuleEntitlementCommandSupport.NotFound();
+        }
+
+        // BL-500 — the list's own rule: enable is offered only on a switched-off row of a module the catalogue still
+        // knows (a core/baseline module, a System row or an already enabled row offer none).
+        var refusal = await TenantModuleEntitlementActionGate.RefuseStoredAsync(
+            _moduleRepository, entitlement, TenantModuleEntitlementRowActions.Enable, ct);
+        if (refusal is not null)
+        {
+            return refusal;
         }
 
         try
         {
-            var wasEnabled = entitlement.IsEnabled;
-            if (wasEnabled)
-            {
-                return Response<NoContent>.Success(204);
-            }
+            var auditBefore = PhysicalEntitlementAuditIntent.StateOf(entitlement);
 
             var auditIntentId = Guid.NewGuid();
             await _transactions.ExecuteAsync(async (session, transactionCt) =>
@@ -123,7 +131,8 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
                     transactionCt);
                 await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, correlationId,
                     auditIntentId, nameof(EnableTenantModuleEntitlementCommand), AuditOperation.Activate,
-                    entitlement.Id, entitlement.ModuleCode, transactionCt);
+                    entitlement.Id, entitlement.ModuleCode, transactionCt,
+                    auditBefore, PhysicalEntitlementAuditIntent.StateOf(entitlement));
                 return true;
             }, ct);
 
@@ -132,6 +141,10 @@ public sealed class EnableTenantModuleEntitlementCommandHandler : IRequestHandle
         catch (PhysicalEntitlementMutationRejectedException exception)
         {
             return Response<NoContent>.Fail(exception.Errors, exception.StatusCode);
+        }
+        catch (TenantModuleEntitlementTenantMismatchException)
+        {
+            return TenantModuleEntitlementCommandSupport.NotFound();
         }
         catch (TenantModuleEntitlementConcurrencyException)
         {

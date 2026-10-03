@@ -39,7 +39,7 @@ public sealed class GlobalApplicabilityTransactionalArchitectureTests
 
     [Theory]
     [InlineData("plan-participant", "SubscriptionPlans/Handlers/CommandHandlers/CreateSubscriptionPlanCommandHandler.cs", "_repository.CreateAsync(session")]
-    [InlineData("plan-included-module-increment", "SubscriptionPlans/Handlers/CommandHandlers/UpdateSubscriptionPlanCommandHandler.cs", "IncludedModuleKeys.SequenceEqual")]
+    [InlineData("plan-included-module-increment", "SubscriptionPlans/Handlers/CommandHandlers/UpdateSubscriptionPlanCommandHandler.cs", "IncludedModuleKeys.ToHashSet(StringComparer.OrdinalIgnoreCase).SetEquals")]
     [InlineData("module-participant", "ModuleCatalog/Handlers/CommandHandlers/CreateModuleCatalogItemCommandHandler.cs", "_repository.CreateAsync(session")]
     [InlineData("module-core-increment", "ModuleCatalog/Handlers/CommandHandlers/UpdateModuleCatalogItemCommandHandler.cs", "item.IsCoreModule =")]
     [InlineData("module-delete", "ModuleCatalog/Handlers/CommandHandlers/DeleteModuleCatalogItemCommandHandler.cs", "_repository.DeleteAsync(session")]

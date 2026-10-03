@@ -13,6 +13,12 @@ public interface ITenantSubscriptionRepository
     Task<TenantSubscription?> GetCurrentByTenantIdAsync(Guid tenantId, CancellationToken ct = default);
     Task<IReadOnlyList<TenantSubscription>> GetHistoryByTenantIdAsync(Guid tenantId, CancellationToken ct = default);
     Task<bool> HasCurrentAsync(Guid tenantId, Guid? excludeSubscriptionId = null, CancellationToken ct = default);
+    /// <summary>
+    /// INTX FIX2 — the same question INSIDE a transaction: the read pins the transaction's snapshot, so a live
+    /// subscription another transaction commits afterwards makes this transaction's later write of the tenant conflict.
+    /// </summary>
+    Task<bool> HasCurrentAsync(IPlatformTransactionSession session, Guid tenantId, Guid? excludeSubscriptionId = null, CancellationToken ct = default) =>
+        throw new PlatformTransactionUnavailableException("The subscription repository does not implement transaction-bound reads.");
     Task UpdateAsync(TenantSubscription subscription, byte[]? expectedRowVersion, CancellationToken ct = default);
     Task UpdateAsync(IPlatformTransactionSession session, TenantSubscription subscription, byte[]? expectedRowVersion, CancellationToken ct = default) =>
         throw new PlatformTransactionUnavailableException("The subscription repository does not implement transaction-bound updates.");

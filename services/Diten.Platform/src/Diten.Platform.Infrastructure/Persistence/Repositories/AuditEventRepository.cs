@@ -26,6 +26,26 @@ public sealed class AuditEventRepository : IAuditEventRepository
         await _collection.InsertOneAsync(auditEvent, cancellationToken: ct);
     }
 
+    /// <summary>The stored path of the outbox idempotency key — what ix_audit_events_outbox_idempotency_key indexes.</summary>
+    public const string OutboxIdempotencyKeyPath = "Metadata." + Services.Audit.AuditOutboxPayloadMapper.OutboxIdempotencyMetadataKey;
+
+    public async Task<bool> ExistsByOutboxIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(idempotencyKey))
+        {
+            throw new ArgumentException("Audit outbox idempotency key is required.", nameof(idempotencyKey));
+        }
+
+        return await _collection.Find(OutboxIdempotencyFilter(GetCurrentReadTenantId(), idempotencyKey)).Limit(1).AnyAsync(ct);
+    }
+
+    /// <summary>The duplicate check's filter: the key leads (the index), tenant and liveness narrow it.</summary>
+    internal static FilterDefinition<AuditEvent> OutboxIdempotencyFilter(Guid tenantId, string idempotencyKey) =>
+        Builders<AuditEvent>.Filter.And(
+            Builders<AuditEvent>.Filter.Eq(OutboxIdempotencyKeyPath, idempotencyKey),
+            Builders<AuditEvent>.Filter.Eq(x => x.TenantId, tenantId),
+            Builders<AuditEvent>.Filter.Eq(x => x.IsDeleted, false));
+
     public async Task<AuditEvent?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         if (id == Guid.Empty)

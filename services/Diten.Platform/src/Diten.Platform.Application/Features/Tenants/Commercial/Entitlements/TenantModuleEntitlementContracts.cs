@@ -15,7 +15,14 @@ public sealed record TenantModuleEntitlementRowDto(
     bool IsProjectionRow,
     bool HasManualOverride,
     DateTimeOffset? LastUpdatedAtUtc,
-    byte[]? RowVersion);
+    byte[]? RowVersion,
+    /// <summary>
+    /// BL-500 — what the Modules tab may offer on this row, in order (the first is the primary action). Decided by
+    /// <see cref="TenantModuleEntitlementRowActions"/>; the screen draws these and nothing else. Trailing and
+    /// optional only so the callers that build a row for other purposes keep compiling: the list query always sets
+    /// it, and a row without it offers nothing.
+    /// </summary>
+    IReadOnlyList<string>? AllowedActions = null);
 
 // FIX-3 — S2S projection for AuthService's catalog-key-driven entitlement → permission sync. For each
 // effectively-Active entitled module, carries the permission keys the module DECLARES in the page/action
@@ -46,8 +53,11 @@ public sealed record TenantAvailableModuleDto(
     string ModuleName,
     string DisplayName);
 
+// BL-500 — ModuleCode and Reason are nullable ON PURPOSE: a non-nullable string makes MVC add an implicit [Required]
+// that answers an empty value with a 400 that carries no reason_code, before the validator (which answers with one the
+// screen can say) ever runs. The validators require them.
 public sealed record TenantModuleEntitlementRequest(
-    string ModuleCode,
+    string? ModuleCode,
     EntitlementSource Source,
     bool IsEnabled,
     DateTimeOffset? ExpiryDateUtc,
@@ -55,9 +65,9 @@ public sealed record TenantModuleEntitlementRequest(
     byte[]? RowVersion);
 
 public sealed record DisableTenantModuleEntitlementRequest(
-    string ModuleCode,
+    string? ModuleCode,
     Guid? PhysicalEntitlementId,
-    string Reason,
+    string? Reason,
     byte[]? RowVersion);
 
 public sealed record UpdateTenantModuleEntitlementExpiryRequest(
