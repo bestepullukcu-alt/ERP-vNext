@@ -85,11 +85,18 @@ public sealed class RegisterModuleManifestCommandHandler
             }
         }
 
+        // WP-PLATFORM-AUDIT-INTX-01 FIX1 — the permission surface this push will add and take away, read BEFORE anything
+        // is written so it can travel in the catalogue's audit record (the page/action writes below are not in that
+        // transaction: their repositories take no session — see the FIX1 report).
+        var surface = await PlanSurfaceChangeAsync(manifest, moduleCode, ct);
+
         var catalogAction = await ReconcileCatalogItemAsync(
             manifest,
             moduleCode,
             string.Equals(moduleCode, ProtectedModuleCode, StringComparison.Ordinal) ? ProtectedOwner : null,
             request.PushedOverInternalEndpoint,
+            request.TrustedProducerOwnerCode,
+            surface,
             ct);
 
         var pagesUpserted = 0;
@@ -276,6 +283,8 @@ public sealed class RegisterModuleManifestCommandHandler
         string moduleCode,
         string? producerOwnerCode,
         bool pushedOverInternalEndpoint,
+        string? authenticatedProducer,
+        ManifestSurfaceChange surface,
         CancellationToken ct)
     {
         // FIX-SELFREG-DOMAIN-REGISTER — ensure the manifest's Domain exists in the operator lookup (auto-register an
@@ -290,7 +299,7 @@ public sealed class RegisterModuleManifestCommandHandler
             // manifest DECLARES — recorded as such in the metadata, never as an actor id.
             new(nameof(RegisterModuleManifestCommand), AuditOperation.Update, "ModuleCatalogItem", DeterministicEntityId(moduleCode),
                 SystemActor: pushedOverInternalEndpoint ? ModuleManifestPushActor : ModuleSelfRegistrationActor,
-                AuditMetadata: new Dictionary<string, object?> { ["DeclaredModuleCode"] = moduleCode }),
+                AuditMetadata: AuditMetadataOf(moduleCode, authenticatedProducer, surface)),
             async (session, transactionCt) =>
             {
         var existing = await _catalogRepository.GetByCodeAsync(session, moduleCode, transactionCt);
@@ -329,7 +338,16 @@ public sealed class RegisterModuleManifestCommandHandler
         var moduleVersion = string.IsNullOrWhiteSpace(manifest.ModuleVersion) ? existing.ModuleVersion : manifest.ModuleVersion.Trim();
         var changed = existing.ModuleName != moduleName || existing.ModuleVersion != moduleVersion
             || existing.IsBaseline != manifest.IsBaseline || existing.Origin != ModuleCatalogOrigin.SelfRegistered;
-        if (!changed) return new GlobalApplicabilityMutation<string>("updated", false);
+        if (!changed)
+        {
+            // The catalogue item is unchanged, but the pages or actions — the permission surface — may not be: that is
+            // a change to record, not a no-op (a re-push that only moved an action used to leave no trace).
+            return surface.IsEmpty
+                ? new GlobalApplicabilityMutation<string>("updated", false)
+                : new GlobalApplicabilityMutation<string>("updated", true,
+                    (s, version, token) => _applicabilityState.UpsertModuleCatalogAsync(s, existing, version, token));
+        }
+        var auditBefore = GlobalApplicabilityAuditChange.StateOf(existing);
         existing.ModuleName = moduleName;
         existing.ModuleVersion = moduleVersion;
         // FEAT-BASELINE-MODULES — HARD (code-owned): refreshed on every re-push (unlike SOFT Icon/Domain/Service).
@@ -338,8 +356,98 @@ public sealed class RegisterModuleManifestCommandHandler
         existing.Origin = ModuleCatalogOrigin.SelfRegistered;
         await _catalogRepository.UpdateAsync(session, existing, transactionCt);
         return new GlobalApplicabilityMutation<string>("updated", true,
-            (s, version, token) => _applicabilityState.UpsertModuleCatalogAsync(s, existing, version, token));
+            (s, version, token) => _applicabilityState.UpsertModuleCatalogAsync(s, existing, version, token),
+            GlobalApplicabilityAuditChange.Between(auditBefore, GlobalApplicabilityAuditChange.StateOf(existing)));
             }, ct);
+    }
+
+    /// <summary>
+    /// The audit record's metadata for a manifest push: the module code the manifest DECLARES, the producer the
+    /// internal endpoint AUTHENTICATED (only when it did — a credential-checked MDM push), and the permission surface
+    /// the push adds and removes, by code.
+    /// </summary>
+    internal static Dictionary<string, object?> AuditMetadataOf(string moduleCode, string? authenticatedProducer, ManifestSurfaceChange surface)
+    {
+        var metadata = new Dictionary<string, object?>
+        {
+            ["DeclaredModuleCode"] = moduleCode,
+            ["PagesAdded"] = surface.PagesAdded.ToArray(),
+            ["PagesRemoved"] = surface.PagesRemoved.ToArray(),
+            ["ActionsAdded"] = surface.ActionsAdded.ToArray(),
+            ["ActionsRemoved"] = surface.ActionsRemoved.ToArray()
+        };
+        if (!string.IsNullOrWhiteSpace(authenticatedProducer))
+        {
+            metadata["AuthenticatedProducer"] = authenticatedProducer.Trim();
+        }
+
+        return metadata;
+    }
+
+    /// <summary>Page and action CODES a push adds and removes (actions as <c>PAGE/ACTION</c>), sorted.</summary>
+    internal sealed record ManifestSurfaceChange(
+        IReadOnlyList<string> PagesAdded,
+        IReadOnlyList<string> PagesRemoved,
+        IReadOnlyList<string> ActionsAdded,
+        IReadOnlyList<string> ActionsRemoved)
+    {
+        public bool IsEmpty => PagesAdded.Count == 0 && PagesRemoved.Count == 0 && ActionsAdded.Count == 0 && ActionsRemoved.Count == 0;
+    }
+
+    /// <summary>
+    /// What the reconcile below will do to this module's pages and actions, decided by the same rules it applies:
+    /// pages the manifest no longer declares are removed with their actions; a manifest page whose route another
+    /// remaining page holds is skipped; on a kept page, actions the manifest no longer declares are removed. A write
+    /// that later fails on a duplicate key is skipped at write time and is not known here (it is logged there).
+    /// </summary>
+    private async Task<ManifestSurfaceChange> PlanSurfaceChangeAsync(ModuleManifestDocument manifest, string moduleCode, CancellationToken ct)
+    {
+        var pagesAdded = new List<string>();
+        var pagesRemoved = new List<string>();
+        var actionsAdded = new List<string>();
+        var actionsRemoved = new List<string>();
+
+        var manifestPageCodes = manifest.Pages
+            .Select(p => ModulePageDescriptorNormalizer.NormalizePageCode(p.PageCode))
+            .ToHashSet(StringComparer.Ordinal);
+        var existingPages = (await _pageRepository.GetByModuleAsync(moduleCode, ct)).ToList();
+        foreach (var orphan in existingPages.Where(p => !manifestPageCodes.Contains(p.PageCode)))
+        {
+            pagesRemoved.Add(orphan.PageCode);
+            actionsRemoved.AddRange((await _actionRepository.GetByPageAsync(orphan.Id, ct)).Select(a => $"{orphan.PageCode}/{a.ActionCode}"));
+        }
+
+        var occupied = existingPages.Where(p => manifestPageCodes.Contains(p.PageCode))
+            .Select(p => (p.PageCode, p.RoutePath)).ToList();
+        foreach (var manifestPage in manifest.Pages)
+        {
+            var pageCode = ModulePageDescriptorNormalizer.NormalizePageCode(manifestPage.PageCode);
+            var routePath = ModulePageDescriptorNormalizer.NormalizeRoutePath(manifestPage.RoutePath);
+            if (occupied.Any(o => string.Equals(o.RoutePath, routePath, StringComparison.Ordinal)
+                                  && !string.Equals(o.PageCode, pageCode, StringComparison.Ordinal)))
+            {
+                continue; // skipped by the reconcile: the route is held by another page
+            }
+
+            var manifestActionCodes = manifestPage.Actions
+                .Select(a => ModulePageDescriptorNormalizer.NormalizePageCode(a.ActionCode))
+                .ToHashSet(StringComparer.Ordinal);
+            var existing = existingPages.FirstOrDefault(p => string.Equals(p.PageCode, pageCode, StringComparison.Ordinal));
+            if (existing is null)
+            {
+                pagesAdded.Add(pageCode);
+                occupied.Add((pageCode, routePath));
+                actionsAdded.AddRange(manifestActionCodes.Select(code => $"{pageCode}/{code}"));
+                continue;
+            }
+
+            var existingActionCodes = (await _actionRepository.GetByPageAsync(existing.Id, ct)).Select(a => a.ActionCode).ToHashSet(StringComparer.Ordinal);
+            actionsRemoved.AddRange(existingActionCodes.Where(code => !manifestActionCodes.Contains(code)).Select(code => $"{pageCode}/{code}"));
+            actionsAdded.AddRange(manifestActionCodes.Where(code => !existingActionCodes.Contains(code)).Select(code => $"{pageCode}/{code}"));
+        }
+
+        static IReadOnlyList<string> Sorted(IEnumerable<string> codes) => codes.Distinct(StringComparer.Ordinal).OrderBy(c => c, StringComparer.Ordinal).ToList();
+        return new ManifestSurfaceChange(Sorted(pagesAdded), Sorted(pagesRemoved), Sorted(actionsAdded), Sorted(actionsRemoved));
     }
 
     private static Guid DeterministicEntityId(string moduleCode)

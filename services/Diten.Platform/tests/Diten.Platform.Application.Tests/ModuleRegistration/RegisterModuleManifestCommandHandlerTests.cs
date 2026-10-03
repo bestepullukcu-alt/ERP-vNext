@@ -295,6 +295,112 @@ public sealed class RegisterModuleManifestCommandHandlerTests
         Assert.Equal("updated", result.Data!.CatalogAction);
     }
 
+    // ── WP-PLATFORM-AUDIT-INTX-01 FIX1 — what the catalogue's audit record says about a push ──
+
+    [Fact]
+    public async Task A_re_push_that_only_moves_the_permission_surface_is_recorded_with_the_added_and_removed_codes()
+    {
+        var (handler, recorder) = BuildRecording();
+        await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest()), CancellationToken.None);
+
+        // Same module identity; DELETE is gone and an EXPORT action arrived; a REPORTS page arrived.
+        var moved = new ModuleManifestDocument(
+            "GOLDENSLIM", "Golden Reference Slim", "Golden Slim", "DevEnablement", "DevEnablement", "1.0.0", true, 100,
+            [
+                new ModuleManifestPage("RECORDS", "Records", "/GoldenReferenceSlim", "goldenslim.records.read", null, true, "List", 10,
+                [
+                    new ModuleManifestAction("CREATE", "Create", "goldenslim.records.create", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("UPDATE", "Edit", "goldenslim.records.update", "RowAction", 20, false, false, true),
+                    new ModuleManifestAction("EXPORT", "Export", "goldenslim.records.export", "Toolbar", 40, false, true, false)
+                ]),
+                new ModuleManifestPage("REPORTS", "Reports", "/GoldenReferenceSlim/Reports", "goldenslim.reports.read", null, true, "List", 20, [])
+            ]);
+        recorder.Calls.Clear();
+        await handler.Handle(new RegisterModuleManifestCommand(moved), CancellationToken.None);
+
+        var call = Assert.Single(recorder.Calls);
+        Assert.True(call.Effective, "a re-push that changed the permission surface left no record");
+        Assert.Equal(new[] { "REPORTS" }, (string[])call.Descriptor.AuditMetadata!["PagesAdded"]!);
+        Assert.Empty((string[])call.Descriptor.AuditMetadata!["PagesRemoved"]!);
+        Assert.Equal(new[] { "RECORDS/EXPORT" }, (string[])call.Descriptor.AuditMetadata!["ActionsAdded"]!);
+        Assert.Equal(new[] { "RECORDS/DELETE" }, (string[])call.Descriptor.AuditMetadata!["ActionsRemoved"]!);
+    }
+
+    [Fact]
+    public async Task An_identical_re_push_changes_nothing_and_records_nothing()
+    {
+        var (handler, recorder) = BuildRecording();
+        await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest()), CancellationToken.None);
+        recorder.Calls.Clear();
+
+        await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest()), CancellationToken.None);
+
+        Assert.False(Assert.Single(recorder.Calls).Effective);
+    }
+
+    [Fact]
+    public async Task A_first_push_records_every_page_and_action_it_adds()
+    {
+        var (handler, recorder) = BuildRecording();
+
+        await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest()), CancellationToken.None);
+
+        var metadata = Assert.Single(recorder.Calls).Descriptor.AuditMetadata!;
+        Assert.Equal("GOLDENSLIM", metadata["DeclaredModuleCode"]);
+        Assert.Equal(new[] { "RECORDS" }, (string[])metadata["PagesAdded"]!);
+        Assert.Equal(new[] { "RECORDS/CREATE", "RECORDS/DELETE", "RECORDS/UPDATE" }, (string[])metadata["ActionsAdded"]!);
+    }
+
+    [Fact]
+    public async Task An_authenticated_producer_is_recorded_apart_from_the_declared_module_code()
+    {
+        var (handler, recorder) = BuildRecording();
+
+        await handler.Handle(new RegisterModuleManifestCommand(ProductManifest(), "DITENMDMSERVICE", PushedOverInternalEndpoint: true), CancellationToken.None);
+        await handler.Handle(new RegisterModuleManifestCommand(GoldenSlimManifest(), null, PushedOverInternalEndpoint: true), CancellationToken.None);
+
+        var authenticated = recorder.Calls[0].Descriptor.AuditMetadata!;
+        Assert.Equal("DITENMDMSERVICE", authenticated["AuthenticatedProducer"]);
+        Assert.Equal("PRODUCT-ITEM-SKU-MASTER", authenticated["DeclaredModuleCode"]);
+        // A push the endpoint authenticated by a shared key only: no producer is claimed for it.
+        Assert.False(recorder.Calls[1].Descriptor.AuditMetadata!.ContainsKey("AuthenticatedProducer"));
+        Assert.Equal("GOLDENSLIM", recorder.Calls[1].Descriptor.AuditMetadata!["DeclaredModuleCode"]);
+    }
+
+    private static (RegisterModuleManifestCommandHandler handler, RecordingCoordinator recorder) BuildRecording()
+    {
+        var domains = new FakeDomainRepository();
+        domains.Items.Add(new ModuleDomain { Code = "DevEnablement", DisplayName = "DevEnablement", IsActive = true });
+        var recorder = new RecordingCoordinator();
+        var handler = new RegisterModuleManifestCommandHandler(Module(new FakeCatalogRepository()), new FakePageRepository(), new FakeActionRepository(),
+            new FakeSyncService(), new PassthroughTaxonomyResolver(), domains, NullLogger<RegisterModuleManifestCommandHandler>.Instance,
+            recorder, State);
+        return (handler, recorder);
+    }
+
+    /// <summary>Runs the body like the inline test coordinator, and keeps what the handler told it.</summary>
+    private sealed class RecordingCoordinator : Diten.Platform.Application.Features.GlobalApplicability.IGlobalApplicabilityTransactionCoordinator
+    {
+        public List<(Diten.Platform.Application.Features.GlobalApplicability.GlobalApplicabilityMutationDescriptor Descriptor, bool Effective)> Calls { get; } = [];
+
+        public async Task<T> ExecuteAsync<T>(Diten.Platform.Application.Features.GlobalApplicability.GlobalApplicabilityMutationDescriptor descriptor,
+            Func<IPlatformTransactionSession, CancellationToken, Task<Diten.Platform.Application.Features.GlobalApplicability.GlobalApplicabilityMutation<T>>> body,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await Coordinator.ExecuteAsync(descriptor, async (session, ct) =>
+            {
+                var mutation = await body(session, ct);
+                Calls.Add((descriptor, mutation.EffectiveStateChanged));
+                return mutation;
+            }, cancellationToken);
+            return result;
+        }
+
+        public Task<T> ExecuteBatchAsync<T>(
+            Func<IPlatformTransactionSession, CancellationToken, Task<Diten.Platform.Application.Features.GlobalApplicability.GlobalApplicabilityBatchMutation<T>>> body,
+            CancellationToken cancellationToken = default) => Coordinator.ExecuteBatchAsync(body, cancellationToken);
+    }
+
     // ── manifest ──
     private static ModuleManifestDocument GoldenSlimManifest(string recordsRoute = "/GoldenReferenceSlim") =>
         new(

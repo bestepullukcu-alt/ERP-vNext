@@ -27,11 +27,17 @@ public sealed record GlobalApplicabilityMutationDescriptor(string RequestType,
     AuditOperation AuditOperation, string EntityType, Guid EntityId, string? SystemActor = null,
     IReadOnlyDictionary<string, object?>? AuditMetadata = null);
 
+/// <param name="AuditChange">
+/// WP-PLATFORM-AUDIT-INTX-01 FIX1 — what an update changed (field names, scalar values before and after), known only
+/// once the body has read the record; written to the audit record's before / after state.
+/// </param>
 public sealed record GlobalApplicabilityMutation<T>(T Result, bool EffectiveStateChanged,
-    Func<IPlatformTransactionSession, ulong, CancellationToken, Task>? WriteProjectionAsync = null);
+    Func<IPlatformTransactionSession, ulong, CancellationToken, Task>? WriteProjectionAsync = null,
+    GlobalApplicabilityAuditChange? AuditChange = null);
 
 public sealed record GlobalApplicabilityBatchItem(GlobalApplicabilityMutationDescriptor Descriptor,
-    Func<IPlatformTransactionSession, ulong, CancellationToken, Task> WriteProjectionAsync);
+    Func<IPlatformTransactionSession, ulong, CancellationToken, Task> WriteProjectionAsync,
+    GlobalApplicabilityAuditChange? AuditChange = null);
 
 public sealed record GlobalApplicabilityBatchMutation<T>(T Result,
     IReadOnlyList<GlobalApplicabilityBatchItem> EffectiveChanges);
@@ -70,7 +76,7 @@ public sealed class GlobalApplicabilityTransactionCoordinator : IGlobalApplicabi
             {
                 throw new InvalidOperationException("An effective global-applicability mutation requires a projection write.");
             }
-            await WriteChangeAsync(session, descriptor, mutation.WriteProjectionAsync, transactionCt);
+            await WriteChangeAsync(session, descriptor, mutation.WriteProjectionAsync, mutation.AuditChange, transactionCt);
 
             return mutation.Result;
         }, cancellationToken);
@@ -86,7 +92,7 @@ public sealed class GlobalApplicabilityTransactionCoordinator : IGlobalApplicabi
             var mutation = await body(session, transactionCt);
             foreach (var change in mutation.EffectiveChanges)
             {
-                await WriteChangeAsync(session, change.Descriptor, change.WriteProjectionAsync, transactionCt);
+                await WriteChangeAsync(session, change.Descriptor, change.WriteProjectionAsync, change.AuditChange, transactionCt);
             }
             return mutation.Result;
         }, cancellationToken);
@@ -108,9 +114,25 @@ public sealed class GlobalApplicabilityTransactionCoordinator : IGlobalApplicabi
         _ => null
     };
 
+    private static Dictionary<string, object?> MetadataOf(
+        GlobalApplicabilityMutationDescriptor descriptor, ulong version, GlobalApplicabilityAuditChange? auditChange)
+    {
+        var metadata = new Dictionary<string, object?>(descriptor.AuditMetadata ?? new Dictionary<string, object?>())
+        {
+            ["GlobalApplicabilityVersion"] = version
+        };
+        if (auditChange is not null)
+        {
+            metadata["ChangedFields"] = auditChange.ChangedFields.ToArray();
+        }
+
+        return metadata;
+    }
+
     private async Task WriteChangeAsync(IPlatformTransactionSession session,
         GlobalApplicabilityMutationDescriptor descriptor,
         Func<IPlatformTransactionSession, ulong, CancellationToken, Task> writeProjectionAsync,
+        GlobalApplicabilityAuditChange? auditChange,
         CancellationToken transactionCt)
     {
             var version = await _versions.IncrementGlobalApplicabilityVersionAsync(session, transactionCt);
@@ -138,10 +160,9 @@ public sealed class GlobalApplicabilityTransactionCoordinator : IGlobalApplicabi
                 {
                     Category = CategoryOf(descriptor.EntityType),
                     TargetTenantId = null, // platform-global: owned by the platform-system tenant
-                    Metadata = new Dictionary<string, object?>(descriptor.AuditMetadata ?? new Dictionary<string, object?>())
-                    {
-                        ["GlobalApplicabilityVersion"] = version
-                    },
+                    BeforeState = auditChange?.Before,
+                    AfterState = auditChange?.After,
+                    Metadata = MetadataOf(descriptor, version, auditChange),
                     SourceModule = SourceModuleOf(descriptor.EntityType),
                     SystemActor = descriptor.SystemActor
                 }

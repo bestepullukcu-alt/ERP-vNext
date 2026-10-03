@@ -42,6 +42,11 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             // the client can only show a generic error, and this path used to fall through to a 500.
             WorkflowTransitionBlockedException blockedException => CreateBlockedProblemDetails(blockedException),
             ValidationException validationException => CreateValidationProblemDetails(validationException),
+            // WP-PLATFORM-AUDIT-INTX-01 FIX1 (AUD-001 §4.3) — the change could not be recorded, so it was not made:
+            // "not possible right now", not a client error. Before this it fell to the InvalidOperationException arm
+            // below and answered 400 "Application Error" with the internal sentence. The internal sentence is logged
+            // above and never sent.
+            Diten.Platform.Application.Features.Audit.TransactionOwnedAuditRefusedException => CreateAuditUnavailableProblemDetails(),
             InvalidOperationException invalidOperationException => CreateProblemDetails(
                 invalidOperationException.Message, 
                 "Application Error", 
@@ -57,6 +62,22 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
         return true;
+    }
+
+    /// <summary>The stable code of a change refused because its audit record could not be written.</summary>
+    public const string AuditRecordUnavailableCode = "AUDIT_RECORD_UNAVAILABLE";
+
+    private static ProblemDetails CreateAuditUnavailableProblemDetails()
+    {
+        var problemDetails = new ProblemDetails
+        {
+            Title = "Service Unavailable",
+            Status = (int)HttpStatusCode.ServiceUnavailable,
+            // The Platform's own sentence; the user-facing one comes from the reason code through the frontend bridge.
+            Detail = "The change could not be recorded in the audit trail right now, so it was not made. Please try again later."
+        };
+        problemDetails.Extensions["reason_code"] = AuditRecordUnavailableCode;
+        return problemDetails;
     }
 
     private static ProblemDetails CreateBlockedProblemDetails(WorkflowTransitionBlockedException ex)

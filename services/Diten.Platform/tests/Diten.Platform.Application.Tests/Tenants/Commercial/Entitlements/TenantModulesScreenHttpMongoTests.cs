@@ -606,6 +606,46 @@ public sealed class TenantModulesScreenHttpMongoTests
     /// refused; and because the record and the business data share one transaction, the entitlement is unchanged.
     /// </summary>
     [Fact]
+    public async Task K1_enabling_a_module_records_it_off_before_and_on_after()
+    {
+        // FIX1 rule b — the before-state is the row as it was, not as it became.
+        await using var host = await Host.StartAsync();
+        var seeded = await host.SeedAsync(Tenant, "GOLDENSLIM", EntitlementSource.Addon, enabled: false);
+        var row = (await host.ListAsync(Tenant)).Single(r => r.PhysicalEntitlementId == seeded.Id);
+
+        Assert.Equal(HttpStatusCode.NoContent, (await host.PostAsync(Tenant, $"{seeded.Id:D}/enable", row.RowVersion)).StatusCode);
+
+        Assert.Equal(1, await host.ProcessAuditOutboxAsync());
+        var audit = Assert.Single(await host.AuditEventsAsync());
+        Assert.Equal("EnableTenantModuleEntitlementCommand", audit.RequestType);
+        Assert.Equal(AuditOperation.Activate, audit.Operation);
+        Assert.Equal(false, audit.BeforeState!["IsEnabled"]);
+        Assert.Equal(true, audit.AfterState!["IsEnabled"]);
+        Assert.Equal(0, await host.DeadLettersAsync());
+    }
+
+    [Fact]
+    public async Task K1_removing_an_override_records_the_row_it_removed_and_that_it_is_gone()
+    {
+        // FIX1 rule c — Remove had no delivery test; its before-state is the removed row.
+        await using var host = await Host.StartAsync();
+        var seeded = await host.SeedAsync(Tenant, "CRM", EntitlementSource.ManualOverride);
+        var row = (await host.ListAsync(Tenant)).Single(r => r.PhysicalEntitlementId == seeded.Id);
+
+        Assert.Equal(HttpStatusCode.NoContent, (await host.DeleteAsync(Tenant, $"{seeded.Id:D}/manual-override", new { rowVersion = row.RowVersion })).StatusCode);
+
+        Assert.Equal(1, await host.ProcessAuditOutboxAsync());
+        var audit = Assert.Single(await host.AuditEventsAsync());
+        Assert.Equal("RemoveTenantManualModuleOverrideCommand", audit.RequestType);
+        Assert.Equal(AuditOperation.Revoke, audit.Operation);
+        Assert.NotNull(audit.BeforeState);
+        Assert.Equal(true, audit.BeforeState!["IsEnabled"]);
+        Assert.Equal("ManualOverride", audit.BeforeState["Source"]);
+        Assert.Equal(true, audit.AfterState!["IsDeleted"]);
+        Assert.Equal(0, await host.DeadLettersAsync());
+    }
+
+    [Fact]
     public async Task K1_a_change_whose_actor_cannot_be_named_is_refused_and_the_entitlement_is_unchanged()
     {
         await using var host = await Host.StartAsync();
@@ -613,21 +653,15 @@ public sealed class TenantModulesScreenHttpMongoTests
         var row = (await host.ListAsync(Tenant)).Single(r => r.PhysicalEntitlementId == seeded.Id);
 
         // Refused BY THE AUDIT DOOR — not by request validation before the handler ran (that would prove nothing here).
-        // The pipeline does not turn this refusal into a response, so the in-memory test server surfaces it as the
-        // exception itself; through the real Api it is the Api's error response. Either way: refused, and why.
-        string outcome;
-        try
-        {
-            var response = await host.PostWithoutSubjectAsync(Tenant, "disable", new { moduleCode = "GOLDENSLIM", physicalEntitlementId = seeded.Id, reason = "audit proof", rowVersion = row.RowVersion });
-            Assert.False(response.IsSuccessStatusCode, "a change with nobody to name was accepted");
-            outcome = await response.Content.ReadAsStringAsync();
-        }
-        catch (Diten.Platform.Application.Features.Audit.TransactionOwnedAuditRefusedException refusal)
-        {
-            outcome = refusal.Message;
-        }
+        // WP-PLATFORM-AUDIT-INTX-01 FIX1 item 2 (AUD-001 §4.3): "not possible right now" — 503 with its code and the
+        // Platform's own sentence. It used to be a 400 "Application Error" carrying the internal sentence.
+        var refusal = await Host.ReadRefusalAsync(await host.PostWithoutSubjectAsync(Tenant, "disable",
+            new { moduleCode = "GOLDENSLIM", physicalEntitlementId = seeded.Id, reason = "audit proof", rowVersion = row.RowVersion }));
 
-        Assert.Contains("could not name who made it", outcome);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, refusal.Status);
+        Assert.Equal("AUDIT_RECORD_UNAVAILABLE", refusal.Code);
+        Assert.DoesNotContain("could not name who made it", refusal.Body);          // the internal sentence stays inside …
+        Assert.Contains(host.Failures, line => line.Contains("could not name who made it")); // … in the server's log
         var stored = await host.StoredAsync(seeded.Id);
         Assert.True(stored.IsEnabled);
         Assert.Equal(seeded.RowVersion, stored.RowVersion);

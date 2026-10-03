@@ -10,6 +10,16 @@ using Diten.Platform.Domain.Repositories;
 
 namespace Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions;
 
+/// <summary>WP-PLATFORM-AUDIT-INTX-01 FIX1 — the stable codes of a refused subscription write.</summary>
+public static class TenantSubscriptionRefusalCodes
+{
+    /// <summary>The tenant already has a live subscription (any of <see cref="TenantSubscriptionStatuses.Current"/>).</summary>
+    public const string AlreadyCurrent = "SUBSCRIPTION_ALREADY_CURRENT";
+
+    /// <summary>Another request changed this tenant's subscription at the same moment; the screen reloads.</summary>
+    public const string Stale = "SUBSCRIPTION_STALE";
+}
+
 public sealed class TenantSubscriptionTransactionWriter
 {
     private readonly IPlatformTransactionExecutor _transactions;
@@ -42,13 +52,28 @@ public sealed class TenantSubscriptionTransactionWriter
         Func<IPlatformTransactionSession, TenantSubscription, SubscriptionPlan, CancellationToken, Task<Response<NoContent>>>? participant,
         CancellationToken ct) => ExecuteAsync(async (session, transactionCt) =>
         {
+            /*
+             * FIX1 — ONE live subscription per tenant. The unique index (TenantId, Status) only stops two of the SAME
+             * status; it lets a Trialing and an Active live side by side. It is not changed here (that is a drop and
+             * rebuild on live data — proposed in the FIX1 report). Two guards instead, both inside this transaction:
+             *   - the check below, read again at the start of the transaction body (the committed state, not the
+             *     request's earlier read): a request that gets here after the other committed is refused with its code;
+             *   - the tenant document: both requests write it, so of two that overlap exactly one commits — the other
+             *     meets a write conflict and is answered as stale (WriteTenantAsync), never as a server error.
+             */
+            if (await _subscriptions.HasCurrentAsync(subscription.TenantId, null, transactionCt))
+            {
+                throw new SubscriptionMutationRejectedException(
+                    ["Tenant already has a current subscription."], 409, TenantSubscriptionRefusalCodes.AlreadyCurrent);
+            }
+
             await _subscriptions.CreateAsync(session, subscription, transactionCt);
             ApplyTenantSnapshot(tenant, subscription, plan, false, mutation, DateTimeOffset.UtcNow);
-            await _tenants.UpdateAsync(session, tenant, transactionCt);
+            await WriteTenantAsync(session, tenant, transactionCt);
             if (participant is not null)
             {
                 var response = await participant(session, subscription, plan, transactionCt);
-                if (!response.IsSuccessful) throw new SubscriptionMutationRejectedException(response.Errors, response.StatusCode);
+                if (!response.IsSuccessful) throw new SubscriptionMutationRejectedException(response.Errors, response.StatusCode, response.ReasonCode);
             }
             await WriteIntentsAsync(session, subscription, null, null, mutation, operation, transactionCt);
             return Response<Guid>.Success(subscription.Id, 201);
@@ -69,15 +94,40 @@ public sealed class TenantSubscriptionTransactionWriter
             var plan = await _plans.GetByIdAsync(subscription.PlanId, transactionCt);
             if (plan is null) throw new SubscriptionMutationRejectedException(["Subscription plan not found."], 404);
             ApplyTenantSnapshot(tenant, subscription, plan, markTenantActive, mutation, DateTimeOffset.UtcNow);
-            await _tenants.UpdateAsync(session, tenant, transactionCt);
+            await WriteTenantAsync(session, tenant, transactionCt);
             if (participant is not null)
             {
                 var response = await participant(session, subscription, plan, transactionCt);
-                if (!response.IsSuccessful) throw new SubscriptionMutationRejectedException(response.Errors, response.StatusCode);
+                if (!response.IsSuccessful) throw new SubscriptionMutationRejectedException(response.Errors, response.StatusCode, response.ReasonCode);
             }
             await WriteIntentsAsync(session, subscription, (previousPlanId, previousStatus), auditBefore, mutation, operation, transactionCt);
             return Response<NoContent>.Success(204);
         }, ct);
+
+    /// <summary>
+    /// The tenant document is the one record every subscription write of a tenant touches. A write conflict on it is
+    /// another subscription write of the same tenant in flight: answered as stale (409 with its code). Retrying
+    /// immediately — what the executor does with a transient conflict — ran out of attempts before the other request
+    /// committed and ended as a 500.
+    /// </summary>
+    private async Task WriteTenantAsync(IPlatformTransactionSession session, Tenant tenant, CancellationToken ct)
+    {
+        try
+        {
+            await _tenants.UpdateAsync(session, tenant, ct);
+        }
+        catch (MongoDB.Driver.MongoException exception) when (IsWriteConflict(exception))
+        {
+            throw new TenantSubscriptionConcurrencyException();
+        }
+    }
+
+    private static bool IsWriteConflict(MongoDB.Driver.MongoException exception) => exception switch
+    {
+        MongoDB.Driver.MongoWriteException write => write.WriteError?.Code == 112,
+        MongoDB.Driver.MongoCommandException command => command.Code == 112,
+        _ => false
+    };
 
     private async Task WriteIntentsAsync(IPlatformTransactionSession session, TenantSubscription subscription,
         (Guid PlanId, string Status)? previous, IReadOnlyDictionary<string, object?>? storedBefore,
@@ -171,19 +221,20 @@ public sealed class TenantSubscriptionTransactionWriter
         catch (TenantSubscriptionConcurrencyException)
         {
             if (typeof(T) == typeof(Response<Guid>))
-                return (T)(object)Response<Guid>.Fail("Tenant subscription was modified by another process.", 409);
-            return (T)(object)Response<NoContent>.Fail("Tenant subscription was modified by another process.", 409);
+                return (T)(object)Response<Guid>.Fail("Tenant subscription was modified by another process.", 409, TenantSubscriptionRefusalCodes.Stale);
+            return (T)(object)Response<NoContent>.Fail("Tenant subscription was modified by another process.", 409, TenantSubscriptionRefusalCodes.Stale);
         }
         catch (SubscriptionMutationRejectedException ex)
         {
-            if (typeof(T) == typeof(Response<Guid>)) return (T)(object)Response<Guid>.Fail(ex.Errors, ex.StatusCode);
-            return (T)(object)Response<NoContent>.Fail(ex.Errors, ex.StatusCode);
+            if (typeof(T) == typeof(Response<Guid>)) return (T)(object)Response<Guid>.Fail(ex.Errors, ex.StatusCode, ex.ReasonCode);
+            return (T)(object)Response<NoContent>.Fail(ex.Errors, ex.StatusCode, ex.ReasonCode);
         }
     }
 
-    private sealed class SubscriptionMutationRejectedException(IReadOnlyList<string> errors, int statusCode) : Exception
+    private sealed class SubscriptionMutationRejectedException(IReadOnlyList<string> errors, int statusCode, string? reasonCode = null) : Exception
     {
         public IReadOnlyList<string> Errors { get; } = errors;
         public int StatusCode { get; } = statusCode;
+        public string? ReasonCode { get; } = reasonCode;
     }
 }

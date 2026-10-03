@@ -21,6 +21,7 @@ using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Authorization;
 using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Infrastructure.Services;
 using Diten.Platform.Infrastructure.Services.Audit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -127,6 +128,128 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
         Assert.DoesNotContain(AuditGateRefusal, await response.Content.ReadAsStringAsync());
     }
 
+    // ── WP-PLATFORM-AUDIT-INTX-01 FIX1 items 6 and 7 — assign and activate, the two with side effects ─────────
+
+    private const string AssignBody = """{"planId":"50050050-0000-4000-8000-0000000000c3","isTrial":false,"trialEndDateUtc":null,"currentPeriodStartUtc":"2026-10-02T00:00:00+00:00","currentPeriodEndUtc":"2027-10-02T00:00:00+00:00","source":null}""";
+    private const string AssignTrialBody = """{"planId":"50050050-0000-4000-8000-0000000000c3","isTrial":true,"trialEndDateUtc":"2026-11-02T00:00:00+00:00","currentPeriodStartUtc":null,"currentPeriodEndUtc":null,"source":null}""";
+    private const string ActivateBody = """{"currentPeriodStartUtc":"2026-10-02T00:00:00+00:00","currentPeriodEndUtc":"2027-10-02T00:00:00+00:00","rowVersion":null}""";
+
+    [Fact]
+    public async Task Assigning_a_plan_is_delivered_once_with_the_administrator_and_initializes_the_quotas_in_the_same_transaction()
+    {
+        await using var host = await Host.StartAsync();
+
+        var response = await host.PostAsync(Host.AdministratorToken(), Host.Tenant, "", AssignBody);
+
+        var answer = await Host.ReadAsync(response);
+        Assert.True(response.IsSuccessStatusCode, $"{(int)answer.Status}: {answer.Body}");
+        var subscription = Assert.Single(await host.SubscriptionsAsync(Host.Tenant));
+        Assert.Equal(2, await host.CountAsync("quota_usages"));
+        Assert.Equal(1, await host.ProcessAuditOutboxAsync());
+        var audit = Assert.Single(await host.AuditEventsAsync());
+        Assert.Equal("AssignPlanToTenantCommand", audit.RequestType);
+        Assert.Equal(AuditActorType.PlatformAdministrator, audit.ActorType);
+        Assert.Equal(Host.Administrator, audit.ActorId);
+        Assert.Equal(AuditOperation.Assign, audit.Operation);
+        Assert.Equal(subscription.Id, audit.EntityId);
+        Assert.Null(audit.BeforeState);
+        Assert.Equal(subscription.Status.ToString(), audit.AfterState!["Status"]);
+        Assert.Equal(0, await host.DeadLettersAsync());
+    }
+
+    [Fact]
+    public async Task Assigning_a_plan_with_nobody_to_name_is_refused_and_leaves_no_subscription_no_quota_and_the_tenant_as_it_was()
+    {
+        await using var host = await Host.StartAsync();
+        var before = await host.TenantAsync(Host.Tenant);
+
+        var answer = await Host.ReadAsync(await host.PostAsync(Host.AdministratorWithoutSubjectToken(), Host.Tenant, "", AssignBody));
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, answer.Status);
+        Assert.Equal("AUDIT_RECORD_UNAVAILABLE", answer.Code);
+        Assert.Empty(await host.SubscriptionsAsync(Host.Tenant));
+        Assert.Equal(0, await host.CountAsync("quota_usages"));
+        Assert.Equal(0, await host.CountAsync("quota_events"));
+        var after = await host.TenantAsync(Host.Tenant);
+        Assert.Equal(before.PlanId, after.PlanId);
+        Assert.Equal(before.SubscriptionStatus, after.SubscriptionStatus);
+        Assert.Equal(0, await host.CountAsync("audit_outbox"));
+    }
+
+    [Fact]
+    public async Task Activating_a_subscription_is_delivered_once_and_makes_the_tenant_active()
+    {
+        await using var host = await Host.StartAsync();
+        await host.Database.GetCollection<Tenant>("tenants").UpdateOneAsync(x => x.Id == Host.Tenant,
+            Builders<Tenant>.Update.Set(x => x.Status, TenantStatus.Provisioning));
+        var subscription = await host.SeedAsync(Host.Tenant, TenantSubscriptionStatus.Trialing);
+
+        var response = await host.PostAsync(Host.AdministratorToken(), Host.Tenant, $"{subscription.Id:D}/activate", ActivateBody);
+
+        var answer = await Host.ReadAsync(response);
+        Assert.True(response.IsSuccessStatusCode, $"{(int)answer.Status}: {answer.Body}");
+        Assert.Equal(TenantSubscriptionStatus.Active, (await host.StoredAsync(subscription.Id)).Status);
+        Assert.Equal(TenantStatus.Active, (await host.TenantAsync(Host.Tenant)).Status);
+        Assert.Equal(2, await host.CountAsync("quota_usages"));
+        Assert.Equal(1, await host.ProcessAuditOutboxAsync());
+        var audit = Assert.Single(await host.AuditEventsAsync());
+        Assert.Equal("ActivateTenantSubscriptionCommand", audit.RequestType);
+        Assert.Equal(Host.Administrator, audit.ActorId);
+        Assert.Equal("Trialing", audit.BeforeState!["Status"]);
+        Assert.Equal("Active", audit.AfterState!["Status"]);
+    }
+
+    [Fact]
+    public async Task Activating_with_nobody_to_name_is_refused_and_leaves_the_subscription_the_quota_and_the_tenant_as_they_were()
+    {
+        await using var host = await Host.StartAsync();
+        await host.Database.GetCollection<Tenant>("tenants").UpdateOneAsync(x => x.Id == Host.Tenant,
+            Builders<Tenant>.Update.Set(x => x.Status, TenantStatus.Provisioning));
+        var subscription = await host.SeedAsync(Host.Tenant, TenantSubscriptionStatus.Trialing);
+
+        var answer = await Host.ReadAsync(await host.PostAsync(Host.AdministratorWithoutSubjectToken(), Host.Tenant, $"{subscription.Id:D}/activate", ActivateBody));
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, answer.Status);
+        Assert.Equal("AUDIT_RECORD_UNAVAILABLE", answer.Code);
+        await host.AssertUntouchedAsync(subscription);
+        Assert.Equal(TenantStatus.Provisioning, (await host.TenantAsync(Host.Tenant)).Status);
+        Assert.Equal(0, await host.CountAsync("quota_usages"));
+        Assert.Equal(0, await host.CountAsync("quota_events"));
+    }
+
+    [Fact]
+    public async Task A_second_assign_is_refused_with_its_code_while_a_subscription_is_live()
+    {
+        await using var host = await Host.StartAsync();
+        await host.SeedAsync(Host.Tenant, TenantSubscriptionStatus.Trialing);
+
+        var answer = await Host.ReadAsync(await host.PostAsync(Host.AdministratorToken(), Host.Tenant, "", AssignBody));
+
+        Assert.Equal(HttpStatusCode.Conflict, answer.Status);
+        Assert.Equal("SUBSCRIPTION_ALREADY_CURRENT", answer.Code);
+        Assert.Single(await host.SubscriptionsAsync(Host.Tenant));
+    }
+
+    [Theory]
+    [InlineData(false)] // a double click: the same request twice
+    [InlineData(true)]  // two screens: a trial and a paid assignment — different statuses, which the index alone allows
+    public async Task Two_assignments_at_once_leave_exactly_one_live_subscription_and_the_other_hears_a_code_never_a_500(bool differentStatuses)
+    {
+        await using var host = await Host.StartAsync();
+
+        var responses = await Task.WhenAll(
+            host.PostAsync(Host.AdministratorToken(), Host.Tenant, "", AssignBody),
+            host.PostAsync(Host.AdministratorToken(), Host.Tenant, "", differentStatuses ? AssignTrialBody : AssignBody));
+        var answers = await Task.WhenAll(responses.Select(Host.ReadAsync));
+
+        Assert.True(answers.Count(a => (int)a.Status is >= 200 and < 300) == 1, string.Join(" || ", answers.Select(a => $"{(int)a.Status} {a.Body}")));
+        var loser = answers.Single(a => (int)a.Status is < 200 or >= 300);
+        Assert.True(loser.Status == HttpStatusCode.Conflict, $"{(int)loser.Status}: {loser.Body}");
+        Assert.Contains(loser.Code, new[] { "SUBSCRIPTION_ALREADY_CURRENT", "SUBSCRIPTION_STALE" });
+        var live = (await host.SubscriptionsAsync(Host.Tenant)).Where(x => TenantSubscriptionStatuses.Current.Contains(x.Status)).ToList();
+        Assert.Single(live);
+    }
+
     // ── who may call them ───────────────────────────────────────────────────────────────────────────────
 
     public static TheoryData<string, string> EveryWriteEndpoint() => new()
@@ -231,6 +354,9 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
                 {
                     services.AddRouting();
                     services.AddLogging();
+                    // As production (Program.cs): an exception becomes a problem response with its code.
+                    services.AddProblemDetails();
+                    services.AddExceptionHandler<Diten.Platform.API.Middleware.GlobalExceptionHandler>();
                     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                         .AddJwtBearer(options =>
                         {
@@ -282,7 +408,12 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
                     services.AddSingleton<ITransactionalIntegrationEventWriter, SilentEvents>();
                     services.AddSingleton(Plans());
                     services.AddSingleton(Administrators());
-                    services.AddSingleton(new Mock<IQuotaService>().Object);
+                    // WP-PLATFORM-AUDIT-INTX-01 FIX1 item 7 — the REAL quota service over the real quota repositories:
+                    // assign and activate initialize quotas inside the same transaction, and that is what is measured.
+                    services.AddScoped<IQuotaUsageRepository, QuotaUsageRepository>();
+                    services.AddScoped<IQuotaEventRepository, QuotaEventRepository>();
+                    services.AddScoped<ITenantModuleEntitlementRepository, TenantModuleEntitlementRepository>();
+                    services.AddSingleton(new Mock<Diten.Platform.Application.Contracts.ITenantUserCountReader>().Object);
 
                     services.AddControllers().ConfigureApplicationPartManager(manager =>
                     {
@@ -293,6 +424,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
                 })
                 .Configure(app =>
                 {
+                    app.UseExceptionHandler();
                     app.UseRouting();
                     app.UseAuthentication();
                     app.UseTenantResolution();
@@ -306,13 +438,23 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
         public static async Task<Host> StartAsync()
         {
             var mongo = await DisposableMongoReplicaSet.StartAsync();
-            var host = new Host(mongo, mongo.CreateDatabase());
+            var database = mongo.CreateDatabase();
+            // The production indexes of the collections these writes touch — the one-current-subscription rule and the
+            // quota rows' uniqueness live there, not in code.
+            var wanted = new HashSet<string>(StringComparer.Ordinal) { "tenant_subscriptions", "quota_usages", "quota_events", "tenants" };
+            foreach (var collection in PlatformSchemaManifest.For(Enum.GetValues<SchemaProfile>()).Where(c => wanted.Contains(c.Name)))
+            {
+                await collection.ApplyAsync(database, CancellationToken.None);
+            }
+
+            var host = new Host(mongo, database);
             foreach (var tenant in new[] { Tenant, OtherTenant })
             {
                 await host.Database.GetCollection<Tenant>("tenants").InsertOneAsync(new Tenant
                 {
-                    Id = tenant, Code = "T" + tenant.ToString("N")[..6], Slug = "t" + tenant.ToString("N")[..6], Name = "Tenant",
-                    DisplayName = "Tenant", Domain = tenant.ToString("N")[..6] + ".local", Status = TenantStatus.Active
+                    // Distinct per tenant: the production indexes (applied above) hold code, slug and domain unique.
+                    Id = tenant, Code = "T" + tenant.ToString("N")[^8..], Slug = "t" + tenant.ToString("N")[^8..], Name = "Tenant",
+                    DisplayName = "Tenant", Domain = tenant.ToString("N")[^8..] + ".local", Status = TenantStatus.Active
                 });
             }
 
@@ -375,6 +517,36 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
         public Task<long> DeadLettersAsync() =>
             Database.GetCollection<BsonDocument>("audit_outbox").CountDocumentsAsync(new BsonDocument("Status", 5));
 
+        /// <summary>A signed-in, active administrator whose token names no subject — a person nobody can name.</summary>
+        public static string AdministratorWithoutSubjectToken() => Token(
+            new Claim(JwtRegisteredClaimNames.Email, AdministratorEmail),
+            new Claim("actor_type", "platform_admin"));
+
+        public async Task<Tenant> TenantAsync(Guid id) =>
+            await Database.GetCollection<Tenant>("tenants").Find(x => x.Id == id).SingleAsync();
+
+        public async Task<IReadOnlyList<TenantSubscription>> SubscriptionsAsync(Guid tenantId) =>
+            await Database.GetCollection<TenantSubscription>("tenant_subscriptions").Find(x => x.TenantId == tenantId).ToListAsync();
+
+        public static async Task<(HttpStatusCode Status, string? Code, string Body)> ReadAsync(HttpResponseMessage response)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            string? code = null;
+            if (body.Length > 0 && body.TrimStart().StartsWith('{'))
+            {
+                using var json = System.Text.Json.JsonDocument.Parse(body);
+                foreach (var name in new[] { "reason_code", "reasonCode" })
+                {
+                    if (json.RootElement.TryGetProperty(name, out var value) && value.ValueKind == System.Text.Json.JsonValueKind.String)
+                    {
+                        code = value.GetString();
+                    }
+                }
+            }
+
+            return (response.StatusCode, code, body);
+        }
+
         public static string AdministratorToken() => Token(
             new Claim(JwtRegisteredClaimNames.Sub, Administrator.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, AdministratorEmail),
@@ -408,7 +580,11 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
         {
             var plans = new Mock<ISubscriptionPlanRepository>();
             plans.Setup(x => x.GetByIdAsync(PlanId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new SubscriptionPlan { Id = PlanId, Code = "PRO", Name = "Pro", IsActive = true });
+                .ReturnsAsync(new SubscriptionPlan
+                {
+                    Id = PlanId, Code = "PRO", Name = "Pro", IsActive = true,
+                    DefaultQuotas = new Dictionary<string, decimal> { ["users.max"] = 10, ["modules.max"] = 5 }
+                });
             return plans.Object;
         }
 

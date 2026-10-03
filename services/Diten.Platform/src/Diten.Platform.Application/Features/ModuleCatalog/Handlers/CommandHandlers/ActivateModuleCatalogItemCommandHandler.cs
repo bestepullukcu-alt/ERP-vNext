@@ -67,10 +67,12 @@ public sealed class ActivateModuleCatalogItemCommandHandler : IRequestHandler<Ac
                 if (current is null) return new(Response<NoContent>.Fail("Module catalog item not found.", 404), false);
                 if (current.Status is not (ModuleCatalogStatus.Draft or ModuleCatalogStatus.Inactive))
                     return new(Response<NoContent>.Fail($"Invalid status transition from {current.Status} to Active.", 400), false);
+                var auditBefore = GlobalApplicabilityAuditChange.StateOf(current);
                 current.Status = ModuleCatalogStatus.Active;
                 await _repository.UpdateAsync(session, current, transactionCt);
                 return new(Response<NoContent>.Success(204), true,
-                    (s, version, token) => _state.UpsertModuleCatalogAsync(s, current, version, token));
+                    (s, version, token) => _state.UpsertModuleCatalogAsync(s, current, version, token),
+                    GlobalApplicabilityAuditChange.Between(auditBefore, GlobalApplicabilityAuditChange.StateOf(current)));
             }, ct);
     }
 }

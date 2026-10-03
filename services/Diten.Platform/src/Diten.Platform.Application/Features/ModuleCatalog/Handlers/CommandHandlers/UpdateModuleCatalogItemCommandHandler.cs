@@ -78,6 +78,7 @@ public sealed class UpdateModuleCatalogItemCommandHandler : IRequestHandler<Upda
             return new(Response<NoContent>.Fail(ModuleCatalogErrorCodes.ModuleManagedByCode, 409), false);
         }
 
+        var auditBefore = GlobalApplicabilityAuditChange.StateOf(item);
         item.ModuleName = request.Request.ModuleName.Trim();
         item.DisplayName = request.Request.DisplayName.Trim();
         item.Description = string.IsNullOrWhiteSpace(request.Request.Description) ? null : request.Request.Description.Trim();
@@ -94,7 +95,8 @@ public sealed class UpdateModuleCatalogItemCommandHandler : IRequestHandler<Upda
 
         await _repository.UpdateAsync(session, item, transactionCt);
         return new(Response<NoContent>.Success(204), true,
-            (s, version, token) => _state.UpsertModuleCatalogAsync(s, item, version, token));
+            (s, version, token) => _state.UpsertModuleCatalogAsync(s, item, version, token),
+            GlobalApplicabilityAuditChange.Between(auditBefore, GlobalApplicabilityAuditChange.StateOf(item)));
             }, ct);
     }
 

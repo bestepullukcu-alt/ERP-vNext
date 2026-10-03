@@ -54,6 +54,7 @@ public sealed class UpdateSubscriptionPlanCommandHandler : IRequestHandler<Updat
                     && plan.IncludedFeatures.SequenceEqual(includedFeatures, StringComparer.OrdinalIgnoreCase)
                     && plan.IncludedModuleKeys.SequenceEqual(includedModules, StringComparer.OrdinalIgnoreCase);
                 if (noOp) return new(Response<NoContent>.Success(204), false);
+                var auditBefore = GlobalApplicabilityAuditChange.StateOf(plan);
 
                 plan.Code = normalizedCode; plan.Name = name; plan.Description = description;
                 plan.IsActive = request.Request.IsActive; plan.IsDefault = request.Request.IsDefault;
@@ -66,7 +67,8 @@ public sealed class UpdateSubscriptionPlanCommandHandler : IRequestHandler<Updat
                 await _repository.UpdateAsync(session, plan, transactionCt);
                 _logger.LogInformation("SubscriptionPlan updated PlanId={PlanId} Code={Code}", plan.Id, plan.Code);
                 return new(Response<NoContent>.Success(204), true,
-                    (s, version, token) => _state.UpsertSubscriptionPlanAsync(s, plan, version, token));
+                    (s, version, token) => _state.UpsertSubscriptionPlanAsync(s, plan, version, token),
+                    GlobalApplicabilityAuditChange.Between(auditBefore, GlobalApplicabilityAuditChange.StateOf(plan)));
             }, ct);
     }
 

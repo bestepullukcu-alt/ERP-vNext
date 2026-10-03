@@ -18,6 +18,7 @@ public sealed class AuditService : IAuditService
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserContext _currentUserContext;
     private readonly ILogger<AuditService> _logger;
+    private readonly Diten.Platform.Common.Observability.ICorrelationContext? _correlation;
 
     public AuditService(
         IAuditOutboxWriter outboxWriter,
@@ -26,8 +27,10 @@ public sealed class AuditService : IAuditService
         IAuditRecursionGuard recursionGuard,
         ITenantContext tenantContext,
         ICurrentUserContext currentUserContext,
-        ILogger<AuditService> logger)
+        ILogger<AuditService> logger,
+        Diten.Platform.Common.Observability.ICorrelationContext? correlation = null)
     {
+        _correlation = correlation;
         _outboxWriter = outboxWriter;
         _redactor = redactor;
         _idempotencyKeyBuilder = idempotencyKeyBuilder;
@@ -72,16 +75,18 @@ public sealed class AuditService : IAuditService
             request.Operation,
             request.Sequence);
 
+        // The record carries the REQUEST's correlation (AuditCorrelation); the idempotency key above keeps the caller's.
+        var recordCorrelation = AuditCorrelation.Resolve(_correlation?.CorrelationId, request.CorrelationId);
         var writeRequest = new AuditOutboxWriteRequest
         {
             TenantId = tenantResolution.TenantId,
-            CorrelationId = request.CorrelationId,
+            CorrelationId = recordCorrelation,
             IdempotencyKey = idempotencyKey,
             RequestType = request.RequestType.Trim(),
             Operation = request.Operation,
             EntityType = request.EntityType.Trim(),
             EntityId = request.EntityId,
-            Payload = BuildPayload(request, tenantResolution.TenantId, targetTenantId)
+            Payload = BuildPayload(request, tenantResolution.TenantId, targetTenantId, recordCorrelation)
         };
 
         try
@@ -109,11 +114,11 @@ public sealed class AuditService : IAuditService
 
     // The payload itself is built by AuditOutboxPayload — the one builder both audit doors use. What stays here is
     // the central door's own choice of actor: the request's value, else the current user's.
-    private IReadOnlyDictionary<string, object?> BuildPayload(AuditAppendRequest request, Guid tenantId, Guid? targetTenantId)
+    private IReadOnlyDictionary<string, object?> BuildPayload(AuditAppendRequest request, Guid tenantId, Guid? targetTenantId, Guid correlationId)
     {
         return AuditOutboxPayload.Build(new AuditCanonicalRecord(
             TenantId: tenantId,
-            CorrelationId: request.CorrelationId,
+            CorrelationId: correlationId,
             RequestType: request.RequestType,
             ActorType: request.ActorType,
             ActorId: request.ActorId ?? (_currentUserContext.UserId == Guid.Empty ? null : _currentUserContext.UserId),

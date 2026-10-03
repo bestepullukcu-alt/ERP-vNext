@@ -36,13 +36,16 @@ public sealed class CanonicalTransactionalAuditOutboxWriter : ITransactionalAudi
     private readonly ITenantAuthorizationContext _principal;
     private readonly ICurrentUserContext _currentUser;
     private readonly ISensitiveFieldRedactor _redactor;
+    private readonly Diten.Platform.Common.Observability.ICorrelationContext? _correlation;
 
     public CanonicalTransactionalAuditOutboxWriter(
         ITransactionalAuditOutboxStore store,
         ITenantAuthorizationContext principal,
         ICurrentUserContext currentUser,
-        ISensitiveFieldRedactor redactor)
+        ISensitiveFieldRedactor redactor,
+        Diten.Platform.Common.Observability.ICorrelationContext? correlation = null)
     {
+        _correlation = correlation;
         _store = store;
         _principal = principal;
         _currentUser = currentUser;
@@ -82,9 +85,12 @@ public sealed class CanonicalTransactionalAuditOutboxWriter : ITransactionalAudi
             metadata[SystemActorMetadataKey] = actor.SystemActor;
         }
 
+        // FIX1 (field 9) — the REQUEST's correlation, so every record one request writes is found together; the
+        // caller's own (a fresh Guid per row) only when no request is in scope. The idempotency key is the caller's.
+        var correlationId = AuditCorrelation.Resolve(_correlation?.CorrelationId, request.CorrelationId);
         var payload = AuditOutboxPayload.Build(new AuditCanonicalRecord(
             TenantId: request.TenantId,
-            CorrelationId: request.CorrelationId,
+            CorrelationId: correlationId,
             RequestType: request.RequestType,
             ActorType: actor.Type,
             ActorId: actor.Id,
@@ -110,7 +116,7 @@ public sealed class CanonicalTransactionalAuditOutboxWriter : ITransactionalAudi
         return _store.TryInsertAsync(session, new AuditOutboxWriteRequest
         {
             TenantId = request.TenantId,
-            CorrelationId = request.CorrelationId,
+            CorrelationId = correlationId,
             IdempotencyKey = request.IdempotencyKey,
             RequestType = request.RequestType,
             Operation = request.Operation,
