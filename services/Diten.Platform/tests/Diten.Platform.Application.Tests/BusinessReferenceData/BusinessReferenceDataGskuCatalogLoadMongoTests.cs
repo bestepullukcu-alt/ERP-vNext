@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Features.BusinessReferenceData.Services;
+using Diten.Platform.Application.Tests.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Infrastructure.Persistence;
@@ -351,7 +352,7 @@ internal sealed class BusinessReferenceDataTestHarness : IAsyncDisposable
 
     public static async Task<BusinessReferenceDataTestHarness> CreateAsync(bool configureProvider = true)
     {
-        var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017");
+        var settings = MongoClientSettings.FromConnectionString(PlatformMongoTestConnection.RequireConnectionString());
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         var client = new MongoClient(settings);
         var databaseName = await BusinessReferenceDataMongoResidueSweeper.CreateDatabaseAsync(client, "gsku");

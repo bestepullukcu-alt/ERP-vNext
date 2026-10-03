@@ -32,6 +32,7 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
     private readonly ITenantAdminActivationClient _tenantAdminActivationClient;
     private readonly IAuthAuditService _authAuditService;
     private readonly ILogger<ForcedChangeTenantPasswordCommandHandler> _logger;
+    private readonly ITenantLegalEntityScopeClient? _legalEntityScopeClient;
 
     public ForcedChangeTenantPasswordCommandHandler(
         IUserRepository userRepository,
@@ -47,7 +48,8 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
         ITenantLoginSettingsClient tenantLoginSettingsClient,
         ITenantAdminActivationClient tenantAdminActivationClient,
         IAuthAuditService authAuditService,
-        ILogger<ForcedChangeTenantPasswordCommandHandler> logger)
+        ILogger<ForcedChangeTenantPasswordCommandHandler> logger,
+        ITenantLegalEntityScopeClient? legalEntityScopeClient = null)
     {
         _userRepository = userRepository;
         _userRoleRepository = userRoleRepository;
@@ -63,6 +65,7 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
         _tenantAdminActivationClient = tenantAdminActivationClient;
         _authAuditService = authAuditService;
         _logger = logger;
+        _legalEntityScopeClient = legalEntityScopeClient;
     }
 
     public async Task<Response<AuthResponse>> Handle(ForcedChangeTenantPasswordCommand request, CancellationToken ct)
@@ -125,7 +128,11 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
             ct);
 
         // MustChangePassword is now cleared, so the re-issued token carries pwd_change_required=false.
-        var accessToken = _tokenService.GenerateAccessToken(user, roles, permissions, settings.SessionTimeoutMinutes);
+        var legalEntityId = _legalEntityScopeClient is null
+            ? null
+            : await _legalEntityScopeClient.ResolveSingleAsync(request.TenantId, user.Id, ct);
+        var accessToken = _tokenService.GenerateTenantAccessToken(
+            user, roles, permissions, settings.SessionTimeoutMinutes, legalEntityId);
         var refreshTokenStr = _tokenService.GenerateRefreshToken();
         var refreshTokenHash = _refreshTokenHasher.Hash(refreshTokenStr);
         var refreshExpiresAt = DateTime.UtcNow.AddDays(request.RememberMe ? 30 : settings.RefreshTokenLifetimeDays);

@@ -28,7 +28,6 @@ namespace Diten.Platform.Application.Tests.Schema;
 [Collection("platform-schema-contract")]
 public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
 {
-    private const string ConnectionString = "mongodb://localhost:27017";
     /*
      * ⚠ NAMED UNDER THE HARNESS'S OWNED PREFIX ON PURPOSE. This database is dropped at the end of every test,
      * but "the end" never arrives if mongod dies mid-run — which is the failure this work exists to fix. A
@@ -44,7 +43,7 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        var settings = MongoClientSettings.FromConnectionString(ConnectionString);
+        var settings = MongoClientSettings.FromConnectionString(PlatformMongoTestConnection.RequireConnectionString());
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         /*
          * ⚠ THE SAME GUID REPRESENTATION PRODUCTION USES, AND IT IS NOT OPTIONAL. MongoIntegrationHarness

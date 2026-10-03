@@ -14,5 +14,6 @@
     <ProjectReference Include="..\Diten.HumanCapitalService.Application\Diten.HumanCapitalService.Application.csproj" />
     <ProjectReference Include="..\Diten.HumanCapitalService.Infrastructure\Diten.HumanCapitalService.Infrastructure.csproj" />
     <ProjectReference Include="..\Diten.HumanCapitalService.Persistence\Diten.HumanCapitalService.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
   </ItemGroup>
 </Project>

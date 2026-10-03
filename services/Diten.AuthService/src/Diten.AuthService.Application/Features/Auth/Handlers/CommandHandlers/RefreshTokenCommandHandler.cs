@@ -24,6 +24,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
     private readonly ITenantContext _tenantContext;
     private readonly IPlatformAdministratorStatusClient _platformAdministratorStatusClient;
     private readonly ILogger<RefreshTokenCommandHandler> _logger;
+    private readonly ITenantLegalEntityScopeClient? _legalEntityScopeClient;
 
     public RefreshTokenCommandHandler(
         IUserRepository userRepository,
@@ -37,7 +38,8 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         IRefreshTokenRepository refreshTokenRepository,
         ITenantContext tenantContext,
         IPlatformAdministratorStatusClient platformAdministratorStatusClient,
-        ILogger<RefreshTokenCommandHandler> logger)
+        ILogger<RefreshTokenCommandHandler> logger,
+        ITenantLegalEntityScopeClient? legalEntityScopeClient = null)
     {
         _userRepository = userRepository;
         _userRoleRepository = userRoleRepository;
@@ -51,6 +53,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         _tenantContext = tenantContext;
         _platformAdministratorStatusClient = platformAdministratorStatusClient;
         _logger = logger;
+        _legalEntityScopeClient = legalEntityScopeClient;
     }
 
     public async Task<Response<AuthResponse>> Handle(RefreshTokenCommand request, CancellationToken ct)
@@ -138,6 +141,9 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             : await _effectivePermissionResolver.ResolveAsync(tokenTenantId, permissions, ct);
 
         var tenantSettings = isPlatformActor ? null : await _tenantLoginSettingsClient.GetAsync(tokenTenantId, ct);
+        var legalEntityId = isPlatformActor || _legalEntityScopeClient is null
+            ? null
+            : await _legalEntityScopeClient.ResolveSingleAsync(tokenTenantId, user.Id, ct);
         var accessToken = isPlatformActor
             ? _tokenService.GeneratePlatformAccessToken(
                 user.Id,
@@ -150,7 +156,8 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
                 permissions,
                 15,
                 user.MustChangePassword)
-            : _tokenService.GenerateAccessToken(user, roles, effectivePermissions, tenantSettings!.SessionTimeoutMinutes);
+            : _tokenService.GenerateTenantAccessToken(
+                user, roles, effectivePermissions, tenantSettings!.SessionTimeoutMinutes, legalEntityId);
         var newRefreshTokenStr = _tokenService.GenerateRefreshToken();
         var newRefreshTokenHash = _refreshTokenHasher.Hash(newRefreshTokenStr);
 

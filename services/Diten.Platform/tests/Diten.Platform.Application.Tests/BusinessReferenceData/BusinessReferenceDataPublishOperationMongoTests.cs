@@ -1,4 +1,5 @@
 using Diten.Platform.Common.Tenancy;
+using Diten.Platform.Application.Tests.Persistence;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence;
@@ -17,7 +18,7 @@ public sealed class BusinessReferenceDataPublishOperationMongoTests : IAsyncLife
 
     public async Task InitializeAsync()
     {
-        var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017");
+        var settings = MongoClientSettings.FromConnectionString(PlatformMongoTestConnection.RequireConnectionString());
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         _client = new MongoClient(settings);
         _databaseName = await BusinessReferenceDataMongoResidueSweeper.CreateDatabaseAsync(_client, "pub");

@@ -13,5 +13,6 @@
     <ProjectReference Include="..\Diten.TalentEcosystemService.Application\Diten.TalentEcosystemService.Application.csproj" />
     <ProjectReference Include="..\Diten.TalentEcosystemService.Infrastructure\Diten.TalentEcosystemService.Infrastructure.csproj" />
     <ProjectReference Include="..\Diten.TalentEcosystemService.Persistence\Diten.TalentEcosystemService.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
   </ItemGroup>
 </Project>

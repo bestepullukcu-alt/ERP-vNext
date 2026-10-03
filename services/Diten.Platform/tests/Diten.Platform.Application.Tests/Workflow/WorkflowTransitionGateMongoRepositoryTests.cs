@@ -2,6 +2,7 @@ using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Application.Features.Workflow;
 using Diten.Platform.Application.Features.Workflow.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.Workflow.Queries;
+using Diten.Platform.Application.Tests.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
@@ -112,7 +113,7 @@ public sealed class WorkflowTransitionGateMongoRepositoryTests
     {
         public static MongoTestSettings FromEnvironment() =>
             new(
-                Get("MongoDbSettings__ConnectionString", "mongodb://localhost:27017"),
+                PlatformMongoTestConnection.RequireConnectionString(),
                 Get("WorkflowGate__MongoDb__DatabaseName", "workflow_gate_repository_tests"));
 
         private static string Get(string key, string fallback)

@@ -441,9 +441,46 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
         public static MongoTestSettings FromEnvironment()
         {
             return new MongoTestSettings(
-                Get("Eventing__MongoDb__ConnectionString", Get("MongoDbSettings__ConnectionString", "mongodb://localhost:27017")),
+                RequireLaneMongoConnectionString(),
                 Get("Eventing__MongoDb__DatabaseName", "eventing_mvp_tests"));
         }
+    }
+
+    // Q131a: the lane's MongoDB comes only from DITEN_PLATFORM_TEST_MONGO_URI: no fallback port, no remote host, no
+    // credentials. Same rules as Diten.Platform.Application.Tests.Persistence.PlatformMongoTestConnection; this project
+    // does not reference that test assembly, so the check is repeated here. Messages never repeat the URI.
+    private static string RequireLaneMongoConnectionString()
+    {
+        const string key = "DITEN_PLATFORM_TEST_MONGO_URI";
+        var connectionString = Environment.GetEnvironmentVariable(key);
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
+                $"{key} is not set. Platform Mongo tests fail closed: point it at a lane-owned loopback MongoDB "
+                + "(scripts/test-env/mvp6-test-mongo-env.sh). There is no fallback port.");
+        }
+
+        var url = new MongoUrl(connectionString);
+        if (url.Username is not null)
+        {
+            throw new InvalidOperationException($"{key} must not carry credentials.");
+        }
+
+        foreach (var server in url.Servers ?? [])
+        {
+            if (server.Host is not ("127.0.0.1" or "localhost" or "::1" or "[::1]"))
+            {
+                throw new InvalidOperationException($"{key} must point at a loopback host.");
+            }
+
+            if (server.Port is >= 27017 and <= 27021)
+            {
+                throw new InvalidOperationException(
+                    $"{key} points at protected MongoDB port {server.Port}. Use the lane's own port.");
+            }
+        }
+
+        return connectionString;
     }
 
     private sealed class CapturingAuditService : IAuditService

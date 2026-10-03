@@ -1,4 +1,5 @@
 using Diten.Platform.Infrastructure.Persistence.Schema;
+using Diten.Platform.Application.Tests.Persistence;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -7,7 +8,7 @@ namespace Diten.Platform.Application.Tests.BusinessReferenceData;
 
 public sealed class BusinessReferenceDataMongoResidueSweeperTests : IAsyncLifetime
 {
-    private readonly MongoClient _client = new("mongodb://127.0.0.1:27017");
+    private readonly MongoClient _client = new(PlatformMongoTestConnection.RequireConnectionString());
     private readonly List<string> _createdDatabaseNames = [];
 
     public async Task InitializeAsync()

@@ -39,6 +39,7 @@ namespace Diten.Platform.Infrastructure.Services.Mdm;
 public sealed class MdmLegalEntityReferenceValidator : ILegalEntityReferenceValidator
 {
     private const string TenantHeader = "X-Tenant-Id";
+    private const string ActorHeader = "X-Actor-Id";
 
     /*
      * ⚠ THIS CALL SITS IN THE TASK CENTER'S CREATE PATH, so an MDM that is merely SLOW freezes a screen.
@@ -60,18 +61,24 @@ public sealed class MdmLegalEntityReferenceValidator : ILegalEntityReferenceVali
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<MdmLegalEntityReferenceValidator> _logger;
+    private readonly IInternalScopeResolutionContext? _internalScopeContext;
+    private readonly IMdmServiceIdentityTokenProvider? _serviceTokenProvider;
 
     public MdmLegalEntityReferenceValidator(
         HttpClient httpClient,
         IOptions<MdmServiceOptions> options,
         IHttpContextAccessor httpContextAccessor,
         ITenantContext tenantContext,
-        ILogger<MdmLegalEntityReferenceValidator> logger)
+        ILogger<MdmLegalEntityReferenceValidator> logger,
+        IInternalScopeResolutionContext? internalScopeContext = null,
+        IMdmServiceIdentityTokenProvider? serviceTokenProvider = null)
     {
         _httpClient = httpClient;
         _httpContextAccessor = httpContextAccessor;
         _tenantContext = tenantContext;
         _logger = logger;
+        _internalScopeContext = internalScopeContext;
+        _serviceTokenProvider = serviceTokenProvider;
 
         if (string.IsNullOrWhiteSpace(options.Value.BaseUrl))
         {
@@ -101,12 +108,29 @@ public sealed class MdmLegalEntityReferenceValidator : ILegalEntityReferenceVali
 
         try
         {
-            using var request = new HttpRequestMessage(
-                HttpMethod.Get,
-                $"api/legal-entities/{legalEntityId:D}/lookup-validation");
+            var internalCall = _internalScopeContext?.IsBound == true;
+            var requestPath = internalCall
+                ? $"api/internal/tenants/{tenantId.Value:D}/legal-entities/{legalEntityId:D}/reference-validation"
+                : $"api/legal-entities/{legalEntityId:D}/lookup-validation";
+            using var request = new HttpRequestMessage(HttpMethod.Get, requestPath);
 
             request.Headers.TryAddWithoutValidation(TenantHeader, tenantId.Value.ToString());
-            AttachCallerAuthorization(request);
+            if (internalCall)
+            {
+                var actorId = _internalScopeContext!.ActorId;
+                var token = _serviceTokenProvider?.Create(tenantId.Value, actorId, legalEntityId);
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    return FailClosed();
+                }
+
+                request.Headers.TryAddWithoutValidation(ActorHeader, actorId.ToString("D"));
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+            else
+            {
+                AttachCallerAuthorization(request);
+            }
 
             using var budget = CancellationTokenSource.CreateLinkedTokenSource(ct);
             budget.CancelAfter(TotalTimeout);
