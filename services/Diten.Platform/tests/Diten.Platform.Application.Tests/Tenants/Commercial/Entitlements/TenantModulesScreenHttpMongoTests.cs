@@ -13,6 +13,7 @@ using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Features.Quotas;
 using Diten.Platform.Application.Features.Quotas.Services;
+using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements;
 using Diten.Platform.Application.Tests.Persistence;
 using Diten.Platform.Application.Tests.Tasks;
 using Diten.Platform.Common.Authorization;
@@ -24,6 +25,7 @@ using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Authorization;
 using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
+using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -128,22 +130,27 @@ public sealed class TenantModulesScreenHttpMongoTests
     }
 
     [Fact]
-    public async Task An_existing_manual_override_is_suspended_by_module_code()
+    public async Task Suspending_by_module_code_where_the_list_offers_no_plan_line_action_is_refused_and_nothing_is_written()
     {
+        // BL-500 — the path without a row id is the PLAN line's. It used to fall back to "the override row of that
+        // module, if any" and write it — an action the list never offered (that row carries its own buttons).
         await using var host = await Host.StartAsync();
         var seeded = await host.SeedAsync(Tenant, "CRM", EntitlementSource.ManualOverride);
 
-        // The path the plan row takes when an override already exists: no row id, only the module.
-        var response = await host.PostAsync(Tenant, "disable", new
+        var refusal = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, "disable", new
         {
             moduleCode = "CRM",
             physicalEntitlementId = (Guid?)null,
             reason = "Suspended by module",
             rowVersion = (string?)null
-        });
+        }));
 
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.False((await host.StoredAsync(seeded.Id)).IsEnabled);
+        Assert.Equal(HttpStatusCode.Conflict, refusal.Status);
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.ActionNotOffered, refusal.Code);
+        var stored = await host.StoredAsync(seeded.Id);
+        Assert.True(stored.IsEnabled);
+        Assert.Equal(seeded.RowVersion, stored.RowVersion);
+        Assert.Equal(1, await host.CountAsync("tenant_module_entitlements"));
     }
 
     [Fact]
@@ -280,6 +287,226 @@ public sealed class TenantModulesScreenHttpMongoTests
         var baseline = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, null, Add(Host.BaselineModule)));
         Assert.Equal(HttpStatusCode.Conflict, baseline.Status);
         Assert.Equal("ENTITLEMENT_MODULE_BASELINE", baseline.Code);
+    }
+
+    // ── WP-PLATFORM-TENANT-MODULES-01 FIX1 — the server refuses exactly what the list does not offer ─────────────
+
+    /// <summary>One row state of the Modules tab and the answer every action must get on it.</summary>
+    public sealed record RowState(
+        string Name, string Module, EntitlementSource Source, bool Enabled, bool Expired,
+        string[] Offered, string? Disable, string? Enable, string? ExtendExpiry, string? RemoveOverride)
+    {
+        public override string ToString() => Name;
+    }
+
+    // An action's expectation: null = offered, the server writes (204); a code = refused with that code, nothing written.
+    public static TheoryData<RowState> RowStates() => new()
+    {
+        new("add-on, on", "GOLDENSLIM", EntitlementSource.Addon, true, false,
+            ["disable", "extendExpiry"], null, "ENTITLEMENT_ACTION_NOT_OFFERED", null, "ENTITLEMENT_NOT_MANUAL_OVERRIDE"),
+        new("add-on, off", "GOLDENSLIM", EntitlementSource.Addon, false, false,
+            ["enable", "extendExpiry"], "ENTITLEMENT_ACTION_NOT_OFFERED", null, null, "ENTITLEMENT_NOT_MANUAL_OVERRIDE"),
+        new("add-on, on but expired", "GOLDENSLIM", EntitlementSource.Addon, true, true,
+            ["extendExpiry", "disable"], null, "ENTITLEMENT_ACTION_NOT_OFFERED", null, "ENTITLEMENT_NOT_MANUAL_OVERRIDE"),
+        new("manual override, on", "CRM", EntitlementSource.ManualOverride, true, false,
+            ["disable", "extendExpiry", "removeOverride"], null, "ENTITLEMENT_ACTION_NOT_OFFERED", null, null),
+        new("system row", "GOLDENSLIM", EntitlementSource.System, true, false,
+            [], "ENTITLEMENT_ACTION_NOT_OFFERED", "ENTITLEMENT_ACTION_NOT_OFFERED", "ENTITLEMENT_ACTION_NOT_OFFERED", "ENTITLEMENT_NOT_MANUAL_OVERRIDE"),
+        new("baseline override", Host.BaselineModule, EntitlementSource.ManualOverride, true, false,
+            [], "ENTITLEMENT_MODULE_BASELINE", "ENTITLEMENT_MODULE_BASELINE", "ENTITLEMENT_MODULE_BASELINE", "ENTITLEMENT_MODULE_BASELINE"),
+        new("core add-on", Host.CoreModule, EntitlementSource.Addon, true, false,
+            [], "ENTITLEMENT_MODULE_CORE", "ENTITLEMENT_MODULE_CORE", "ENTITLEMENT_MODULE_CORE", "ENTITLEMENT_MODULE_CORE"),
+        new("add-on of a module that left the catalogue, on", Host.GoneModule, EntitlementSource.Addon, true, false,
+            ["disable"], null, "ENTITLEMENT_MODULE_NOT_FOUND", "ENTITLEMENT_MODULE_NOT_FOUND", "ENTITLEMENT_NOT_MANUAL_OVERRIDE"),
+        new("override of a module that left the catalogue, off", Host.GoneModule, EntitlementSource.ManualOverride, false, false,
+            ["removeOverride"], "ENTITLEMENT_ACTION_NOT_OFFERED", "ENTITLEMENT_MODULE_NOT_FOUND", "ENTITLEMENT_MODULE_NOT_FOUND", null),
+    };
+
+    [Theory]
+    [MemberData(nameof(RowStates))]
+    public async Task Every_action_on_every_row_state_gets_the_answer_the_list_gives(RowState state)
+    {
+        await using var host = await Host.StartAsync();
+        var expiry = state.Expired ? DateTimeOffset.UtcNow.AddDays(-2) : (DateTimeOffset?)null;
+        var actions = new (string Name, string? Expected)[]
+        {
+            ("disable", state.Disable), ("enable", state.Enable), ("extendExpiry", state.ExtendExpiry), ("removeOverride", state.RemoveOverride)
+        };
+
+        // One tenant per action, each with the same row: an action that is carried out must not change the next one's row.
+        for (var index = 0; index < actions.Length; index++)
+        {
+            var (action, expected) = actions[index];
+            var tenant = Guid.Parse($"50050050-0000-4000-8000-00000000f{index:D3}");
+            var seeded = await host.SeedAsync(tenant, state.Module, state.Source, state.Enabled, expiry);
+            var row = (await host.ListAsync(tenant)).Single(r => r.PhysicalEntitlementId == seeded.Id);
+            Assert.Equal(state.Offered, row.AllowedActions);
+            // The list and the server give ONE answer: offered ⇔ carried out.
+            Assert.Equal(state.Offered.Contains(action), expected is null);
+
+            var response = action switch
+            {
+                "disable" => await host.PostAsync(tenant, "disable", new
+                {
+                    moduleCode = row.ModuleCode, physicalEntitlementId = seeded.Id, reason = "matrix", rowVersion = row.RowVersion
+                }),
+                "enable" => await host.PostAsync(tenant, $"{seeded.Id:D}/enable", row.RowVersion),
+                "extendExpiry" => await host.PatchAsync(tenant, $"{seeded.Id:D}/expiry", new
+                {
+                    expiryDateUtc = DateTimeOffset.UtcNow.AddDays(30), reason = (string?)null, rowVersion = row.RowVersion
+                }),
+                _ => await host.DeleteAsync(tenant, $"{seeded.Id:D}/manual-override", new { rowVersion = row.RowVersion })
+            };
+
+            var refusal = await Host.ReadRefusalAsync(response);
+            if (expected is null)
+            {
+                Assert.True(response.StatusCode == HttpStatusCode.NoContent, $"{state.Name} / {action}: {refusal.Body}");
+                Assert.NotEqual(seeded.RowVersion, (await host.StoredAsync(seeded.Id)).RowVersion);
+            }
+            else
+            {
+                Assert.True(expected == refusal.Code, $"{state.Name} / {action}: expected {expected}, got {(int)refusal.Status} {refusal.Body}");
+                Assert.Equal(expected == TenantModuleEntitlementRefusalCodes.ModuleNotFound ? HttpStatusCode.NotFound : HttpStatusCode.Conflict, refusal.Status);
+                var stored = await host.StoredAsync(seeded.Id);
+                Assert.Equal(seeded.RowVersion, stored.RowVersion);
+                Assert.False(stored.IsDeleted);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task A_plan_line_whose_access_an_enabled_override_gives_offers_nothing_and_its_suspension_is_refused()
+    {
+        // The plan is not what gives access here — the override row is, and it carries its own Disable.
+        await using var host = await Host.StartAsync();
+        var seeded = await host.SeedAsync(Tenant, Host.PlanModule, EntitlementSource.ManualOverride);
+
+        var rows = await host.ListAsync(Tenant);
+        var plan = rows.Single(r => r.IsProjectionRow);
+        Assert.Equal("EnabledByOverride", plan.EffectiveAccess);
+        Assert.Empty(plan.AllowedActions!);
+        Assert.Equal(["disable", "extendExpiry", "removeOverride"], rows.Single(r => r.PhysicalEntitlementId == seeded.Id).AllowedActions);
+
+        var refusal = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, "disable", new
+        {
+            moduleCode = Host.PlanModule, physicalEntitlementId = (Guid?)null, reason = "x", rowVersion = (string?)null
+        }));
+        Assert.Equal(HttpStatusCode.Conflict, refusal.Status);
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.ActionNotOffered, refusal.Code);
+        Assert.Equal(seeded.RowVersion, (await host.StoredAsync(seeded.Id)).RowVersion);
+    }
+
+    [Fact]
+    public async Task A_row_id_is_the_module_the_body_code_only_has_to_agree_and_a_mismatch_is_refused_unwritten()
+    {
+        // FIX1 item 1 — the core/baseline check and the quota release used to read the BODY's module.
+        await using var host = await Host.StartAsync();
+        var baselineRow = await host.SeedAsync(Tenant, Host.BaselineModule, EntitlementSource.ManualOverride);
+        var addOn = await host.SeedAsync(Tenant, "GOLDENSLIM", EntitlementSource.Addon);
+
+        // A baseline row named as an ordinary module: refused, and NOT disabled under the ordinary module's rules.
+        var disguised = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, "disable", new
+        {
+            moduleCode = "GOLDENSLIM", physicalEntitlementId = baselineRow.Id, reason = "x", rowVersion = Convert.ToBase64String(baselineRow.RowVersion)
+        }));
+        // An ordinary row named as the baseline module: refused as a mismatch, not as "baseline".
+        var misnamed = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, "disable", new
+        {
+            moduleCode = Host.BaselineModule, physicalEntitlementId = addOn.Id, reason = "x", rowVersion = Convert.ToBase64String(addOn.RowVersion)
+        }));
+
+        Assert.Equal(HttpStatusCode.BadRequest, disguised.Status);
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.ModuleMismatch, disguised.Code);
+        Assert.Equal(HttpStatusCode.BadRequest, misnamed.Status);
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.ModuleMismatch, misnamed.Code);
+        Assert.True((await host.StoredAsync(baselineRow.Id)).IsEnabled);
+        Assert.True((await host.StoredAsync(addOn.Id)).IsEnabled);
+
+        // Agreeing codes (in any letter case) are the ordinary path.
+        var agreed = await host.PostAsync(Tenant, "disable", new
+        {
+            moduleCode = "goldenslim", physicalEntitlementId = addOn.Id, reason = "x", rowVersion = Convert.ToBase64String(addOn.RowVersion)
+        });
+        Assert.Equal(HttpStatusCode.NoContent, agreed.StatusCode);
+    }
+
+    [Fact]
+    public async Task A_stored_row_is_written_only_against_a_version_and_a_request_without_one_is_refused_with_its_code()
+    {
+        await using var host = await Host.StartAsync();
+        var seeded = await host.SeedAsync(Tenant, "CRM", EntitlementSource.ManualOverride, enabled: false);
+
+        var refusals = new[]
+        {
+            await Host.ReadRefusalAsync(await host.PostAsync(Tenant, "disable", new { moduleCode = "CRM", physicalEntitlementId = seeded.Id, reason = "x", rowVersion = (string?)null })),
+            await Host.ReadRefusalAsync(await host.PostAsync(Tenant, $"{seeded.Id:D}/enable", (string?)null)),
+            await Host.ReadRefusalAsync(await host.PatchAsync(Tenant, $"{seeded.Id:D}/expiry", new { expiryDateUtc = DateTimeOffset.UtcNow.AddDays(5), reason = (string?)null, rowVersion = (string?)null })),
+            await Host.ReadRefusalAsync(await host.DeleteAsync(Tenant, $"{seeded.Id:D}/manual-override", new { rowVersion = (string?)null }))
+        };
+
+        Assert.All(refusals, refusal =>
+        {
+            Assert.Equal(HttpStatusCode.BadRequest, refusal.Status);
+            Assert.Equal(TenantModuleEntitlementRefusalCodes.RowVersionRequired, refusal.Code);
+        });
+        var stored = await host.StoredAsync(seeded.Id);
+        Assert.Equal(seeded.RowVersion, stored.RowVersion);
+        Assert.False(stored.IsDeleted);
+    }
+
+    [Fact]
+    public async Task Two_screens_suspending_the_same_plan_module_at_once_write_one_override_and_the_other_hears_why()
+    {
+        await using var host = await Host.StartAsync();
+        object Suspend() => new { moduleCode = Host.PlanModule, physicalEntitlementId = (Guid?)null, reason = "at once", rowVersion = (string?)null };
+
+        var responses = await Task.WhenAll(host.PostAsync(Tenant, "disable", Suspend()), host.PostAsync(Tenant, "disable", Suspend()));
+        var answers = await Task.WhenAll(responses.Select(Host.ReadRefusalAsync));
+
+        Assert.Equal(1, answers.Count(a => a.Status == HttpStatusCode.NoContent));
+        var loser = answers.Single(a => a.Status != HttpStatusCode.NoContent);
+        Assert.True(loser.Status == HttpStatusCode.Conflict, $"{(int)loser.Status}: {loser.Body} {string.Join(" || ", host.Failures)}");
+        // Whichever way the race falls: the second write met the first one's row (stale), or read the list after it (no longer offered).
+        Assert.Contains(loser.Code, new[] { TenantModuleEntitlementRefusalCodes.Stale, TenantModuleEntitlementRefusalCodes.ActionNotOffered });
+        Assert.Equal(1, await host.CountAsync("tenant_module_entitlements"));
+    }
+
+    [Fact]
+    public async Task Extending_expiry_requires_a_date_in_the_future_and_never_removes_the_expiry()
+    {
+        // FIX1 item 8 — an empty date box used to send null, which REMOVED the expiry while the screen said "saved".
+        await using var host = await Host.StartAsync();
+        var expiry = DateTimeOffset.UtcNow.AddDays(10);
+        var seeded = await host.SeedAsync(Tenant, "GOLDENSLIM", EntitlementSource.Addon, expiry: expiry);
+        var version = Convert.ToBase64String(seeded.RowVersion);
+
+        var none = await Host.ReadRefusalAsync(await host.PatchAsync(Tenant, $"{seeded.Id:D}/expiry", new { expiryDateUtc = (DateTimeOffset?)null, reason = (string?)null, rowVersion = version }));
+        var past = await Host.ReadRefusalAsync(await host.PatchAsync(Tenant, $"{seeded.Id:D}/expiry", new { expiryDateUtc = DateTimeOffset.UtcNow.AddDays(-1), reason = (string?)null, rowVersion = version }));
+
+        Assert.Equal(HttpStatusCode.BadRequest, none.Status);
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.ExpiryRequired, none.Code);
+        Assert.Equal(HttpStatusCode.BadRequest, past.Status);
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.ExpiryInPast, past.Code);
+        var stored = await host.StoredAsync(seeded.Id);
+        Assert.NotNull(stored.ExpiryDateUtc);
+        Assert.Equal(seeded.RowVersion, stored.RowVersion);
+    }
+
+    [Fact]
+    public async Task A_suspension_without_a_reason_is_refused_with_a_code_the_screen_can_say()
+    {
+        await using var host = await Host.StartAsync();
+        var seeded = await host.SeedAsync(Tenant, "GOLDENSLIM", EntitlementSource.Addon);
+
+        var refusal = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, "disable", new
+        {
+            moduleCode = "GOLDENSLIM", physicalEntitlementId = seeded.Id, reason = "", rowVersion = Convert.ToBase64String(seeded.RowVersion)
+        }));
+
+        Assert.Equal(HttpStatusCode.BadRequest, refusal.Status);
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.ReasonRequired, refusal.Code);
+        Assert.True((await host.StoredAsync(seeded.Id)).IsEnabled);
     }
 
     // ── WP-PLATFORM-AUDIT-INTX-01 (AUD-001 §10-K1): the in-transaction audit record is DELIVERED ───────────────
@@ -434,6 +661,9 @@ public sealed class TenantModulesScreenHttpMongoTests
         private readonly TestServer _server;
 
         public IMongoDatabase Database { get; }
+
+        /// <summary>What the server logged as an error — a 500's cause, for a failure message.</summary>
+        public System.Collections.Concurrent.ConcurrentQueue<string> Failures { get; } = new();
         public IMongoClient MongoClient => _mongo.Client;
 
         private Host(DisposableMongoReplicaSet mongo, IMongoDatabase database)
@@ -448,6 +678,10 @@ public sealed class TenantModulesScreenHttpMongoTests
                 {
                     services.AddRouting();
                     services.AddLogging();
+                    services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider>(new FailureLog(Failures));
+                    // As production (Program.cs): a validation failure is a 400 problem carrying its reason_code.
+                    services.AddProblemDetails();
+                    services.AddExceptionHandler<Diten.Platform.API.Middleware.GlobalExceptionHandler>();
                     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                         .AddJwtBearer(options =>
                         {
@@ -513,6 +747,7 @@ public sealed class TenantModulesScreenHttpMongoTests
                 })
                 .Configure(app =>
                 {
+                    app.UseExceptionHandler();
                     app.UseRouting();
                     app.UseAuthentication();
                     app.UseTenantResolution();
@@ -526,11 +761,19 @@ public sealed class TenantModulesScreenHttpMongoTests
         public static async Task<Host> StartAsync()
         {
             var mongo = await DisposableMongoReplicaSet.StartAsync();
-            return new Host(mongo, mongo.CreateDatabase());
+            var database = mongo.CreateDatabase();
+            // The production indexes of the entitlement collection — the one-live-row-per-(tenant, module, source) rule
+            // lives there, not in code.
+            await PlatformSchemaManifest.For(SchemaProfile.Core)
+                .Single(collection => collection.Name == "tenant_module_entitlements")
+                .ApplyAsync(database, CancellationToken.None);
+            return new Host(mongo, database);
         }
 
         public const string PlanModule = "PLANMOD";
         public const string BaselineModule = "TASKCENTER";
+        public const string CoreModule = "COREMOD";
+        public const string GoneModule = "GONEMOD";
         public static readonly Guid PlanId = Guid.Parse("50050050-0000-4000-8000-0000000000c3");
 
         public async Task<TenantModuleEntitlement> SeedAsync(
@@ -649,18 +892,32 @@ public sealed class TenantModulesScreenHttpMongoTests
                 Issuer, Audience, claims, notBefore: DateTime.UtcNow.AddMinutes(-1), expires: DateTime.UtcNow.AddMinutes(10), signingCredentials: key));
         }
 
+        /// <summary>
+        /// Every code is a catalogue module except <see cref="GoneModule"/> (it left the catalogue);
+        /// <see cref="BaselineModule"/> is baseline and <see cref="CoreModule"/> is core.
+        /// </summary>
         private static IModuleCatalogRepository Catalogue()
         {
-            var catalogue = new Mock<IModuleCatalogRepository>();
-            catalogue.Setup(x => x.GetByCodeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((string code, CancellationToken _) => new ModuleCatalogItem
+            static ModuleCatalogItem? Record(string code) => string.Equals(code, GoneModule, StringComparison.OrdinalIgnoreCase)
+                ? null
+                : new ModuleCatalogItem
                 {
                     ModuleCode = code,
                     ModuleName = code,
                     DisplayName = code,
                     IsBaseline = string.Equals(code, BaselineModule, StringComparison.OrdinalIgnoreCase),
-                    IsCoreModule = false
-                });
+                    IsCoreModule = string.Equals(code, CoreModule, StringComparison.OrdinalIgnoreCase)
+                };
+
+            var catalogue = new Mock<IModuleCatalogRepository>();
+            catalogue.Setup(x => x.GetByCodeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((string code, CancellationToken _) => Record(code));
+            catalogue.Setup(x => x.GetByCodesAsync(It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((IReadOnlyCollection<string> codes, CancellationToken _) =>
+                    (IReadOnlyDictionary<string, ModuleCatalogItem>)codes
+                        .Select(code => Record(code))
+                        .OfType<ModuleCatalogItem>()
+                        .ToDictionary(item => item.ModuleCode, StringComparer.OrdinalIgnoreCase));
             return catalogue.Object;
         }
 
@@ -692,6 +949,22 @@ public sealed class TenantModulesScreenHttpMongoTests
         {
             _server.Dispose();
             await _mongo.DisposeAsync();
+        }
+    }
+
+    private sealed class FailureLog(System.Collections.Concurrent.ConcurrentQueue<string> sink) : Microsoft.Extensions.Logging.ILoggerProvider
+    {
+        public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName) => new Logger(sink);
+        public void Dispose() { }
+
+        private sealed class Logger(System.Collections.Concurrent.ConcurrentQueue<string> sink) : Microsoft.Extensions.Logging.ILogger
+        {
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+            public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => logLevel >= Microsoft.Extensions.Logging.LogLevel.Error;
+            public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                if (IsEnabled(logLevel)) sink.Enqueue(formatter(state, exception) + " | " + exception);
+            }
         }
     }
 

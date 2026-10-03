@@ -39,6 +39,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         });
         var handler = new EnableTenantModuleEntitlementCommandHandler(
             fixture.Repository.Object,
+            fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
             fixture.Transactions,
             fixture.Versions.Object,
@@ -53,12 +54,13 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
     }
 
     [Fact]
-    public async Task EnableTenantModuleEntitlementCommandHandler_DoesNotPublishWhenAlreadyEnabled()
+    public async Task EnableTenantModuleEntitlementCommandHandler_RefusesAnAlreadyEnabledRowAndPublishesNothing()
     {
         var fixture = CreateFixture(ActorId);
         fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(CreateEntitlement(isEnabled: true));
         var handler = new EnableTenantModuleEntitlementCommandHandler(
             fixture.Repository.Object,
+            fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
             fixture.Transactions,
             fixture.Versions.Object,
@@ -68,7 +70,10 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
 
         var result = await handler.Handle(new EnableTenantModuleEntitlementCommand(TenantId, EntitlementId, RowVersion), CancellationToken.None);
 
-        Assert.True(result.IsSuccessful);
+        // BL-500 — the list offers Disable on an enabled row, not Enable: the server refuses what the list does not offer.
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.ActionNotOffered, result.ReasonCode);
         Assert.Equal(0, fixture.Transactions.InvocationCount);
         fixture.Versions.Verify(x => x.IncrementPhysicalEntitlementVersionAsync(
             It.IsAny<IPlatformTransactionSession>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -94,6 +99,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync((TenantModuleEntitlement?)null);
         var handler = new EnableTenantModuleEntitlementCommandHandler(
             fixture.Repository.Object,
+            fixture.ModuleRepository.Object,
             fixture.QuotaService.Object,
             fixture.Transactions,
             fixture.Versions.Object,
@@ -122,6 +128,8 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         var handler = new DisableTenantModuleEntitlementCommandHandler(
             fixture.Repository.Object,
             fixture.ModuleRepository.Object,
+            Mock.Of<ITenantSubscriptionRepository>(),
+            Mock.Of<ISubscriptionPlanRepository>(),
             fixture.QuotaService.Object,
             fixture.Transactions,
             fixture.Versions.Object,
@@ -136,7 +144,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
     }
 
     [Fact]
-    public async Task DisableTenantModuleEntitlementCommandHandler_DoesNotPublishWhenAlreadyDisabled()
+    public async Task DisableTenantModuleEntitlementCommandHandler_RefusesAnAlreadyDisabledRowAndPublishesNothing()
     {
         var fixture = CreateFixture(ActorId);
         var alreadyDisabled = CreateEntitlement(isEnabled: false);
@@ -145,6 +153,8 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         var handler = new DisableTenantModuleEntitlementCommandHandler(
             fixture.Repository.Object,
             fixture.ModuleRepository.Object,
+            Mock.Of<ITenantSubscriptionRepository>(),
+            Mock.Of<ISubscriptionPlanRepository>(),
             fixture.QuotaService.Object,
             fixture.Transactions,
             fixture.Versions.Object,
@@ -154,7 +164,10 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
 
         var result = await handler.Handle(CreateDisableCommand(EntitlementId), CancellationToken.None);
 
-        Assert.True(result.IsSuccessful);
+        // BL-500 — the list offers Enable on a switched-off row, not Disable: refused, nothing written.
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.ActionNotOffered, result.ReasonCode);
         VerifyPublishNever(fixture.Events);
         Assert.Equal(0, fixture.Transactions.InvocationCount);
         fixture.Versions.Verify(x => x.IncrementPhysicalEntitlementVersionAsync(
@@ -181,6 +194,8 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         var handler = new DisableTenantModuleEntitlementCommandHandler(
             fixture.Repository.Object,
             fixture.ModuleRepository.Object,
+            Mock.Of<ITenantSubscriptionRepository>(),
+            Mock.Of<ISubscriptionPlanRepository>(),
             fixture.QuotaService.Object,
             fixture.Transactions,
             fixture.Versions.Object,
@@ -200,6 +215,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
     public async Task DisableTenantModuleEntitlementCommandHandler_RejectsBaselineModule()
     {
         var fixture = CreateFixture(ActorId);
+        fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(CreateEntitlement(isEnabled: true));
         fixture.ModuleRepository
             .Setup(x => x.GetByCodeAsync("HR", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ModuleCatalogItem
@@ -213,6 +229,8 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         var handler = new DisableTenantModuleEntitlementCommandHandler(
             fixture.Repository.Object,
             fixture.ModuleRepository.Object,
+            Mock.Of<ITenantSubscriptionRepository>(),
+            Mock.Of<ISubscriptionPlanRepository>(),
             fixture.QuotaService.Object,
             fixture.Transactions,
             fixture.Versions.Object,
@@ -241,6 +259,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         });
         var handler = new UpdateTenantModuleEntitlementExpiryCommandHandler(
             fixture.Repository.Object,
+            fixture.ModuleRepository.Object,
             fixture.Transactions,
             fixture.Versions.Object,
             fixture.Events.Object,
@@ -268,6 +287,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(unchanged);
         var handler = new UpdateTenantModuleEntitlementExpiryCommandHandler(
             fixture.Repository.Object,
+            fixture.ModuleRepository.Object,
             fixture.Transactions,
             fixture.Versions.Object,
             fixture.Events.Object,
@@ -307,6 +327,7 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync((TenantModuleEntitlement?)null);
         var handler = new UpdateTenantModuleEntitlementExpiryCommandHandler(
             fixture.Repository.Object,
+            fixture.ModuleRepository.Object,
             fixture.Transactions,
             fixture.Versions.Object,
             fixture.Events.Object,
@@ -448,6 +469,51 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
             CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
+        VerifyPublishNever(fixture.Events);
+    }
+
+    // BL-500 FIX1 item 4 — a tenant-scoped caller handed another tenant's row is refused by the repository with its OWN
+    // exception, and every handler answers it exactly as "not found": never "stale" (which told the screen somebody had
+    // changed a row it may not even see), and nothing that tells the row exists.
+    [Theory]
+    [InlineData("enable")]
+    [InlineData("disable")]
+    [InlineData("extendExpiry")]
+    [InlineData("removeOverride")]
+    public async Task A_row_of_another_tenant_refused_by_the_repository_is_answered_as_not_found_never_as_stale(string action)
+    {
+        var fixture = CreateFixture(ActorId);
+        fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateEntitlement(isEnabled: action != "enable", expiryDateUtc: DateTimeOffset.UtcNow.AddDays(1)));
+        fixture.Repository
+            .Setup(x => x.UpdateAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<TenantModuleEntitlement>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TenantModuleEntitlementTenantMismatchException());
+        fixture.Repository
+            .Setup(x => x.SoftDeleteAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TenantModuleEntitlementTenantMismatchException());
+
+        Response<NoContent> result = action switch
+        {
+            "enable" => await new EnableTenantModuleEntitlementCommandHandler(fixture.Repository.Object, fixture.ModuleRepository.Object,
+                    fixture.QuotaService.Object, fixture.Transactions, fixture.Versions.Object, fixture.Events.Object, fixture.Audit.Object, fixture.CurrentUser.Object)
+                .Handle(new EnableTenantModuleEntitlementCommand(TenantId, EntitlementId, RowVersion), CancellationToken.None),
+            "disable" => await new DisableTenantModuleEntitlementCommandHandler(fixture.Repository.Object, fixture.ModuleRepository.Object,
+                    Mock.Of<ITenantSubscriptionRepository>(), Mock.Of<ISubscriptionPlanRepository>(),
+                    fixture.QuotaService.Object, fixture.Transactions, fixture.Versions.Object, fixture.Events.Object, fixture.Audit.Object, fixture.CurrentUser.Object)
+                .Handle(CreateDisableCommand(EntitlementId), CancellationToken.None),
+            "extendExpiry" => await new UpdateTenantModuleEntitlementExpiryCommandHandler(fixture.Repository.Object, fixture.ModuleRepository.Object,
+                    fixture.Transactions, fixture.Versions.Object, fixture.Events.Object, fixture.Audit.Object, fixture.CurrentUser.Object)
+                .Handle(new UpdateTenantModuleEntitlementExpiryCommand(TenantId, EntitlementId,
+                    new UpdateTenantModuleEntitlementExpiryRequest(DateTimeOffset.UtcNow.AddDays(9), null, RowVersion)), CancellationToken.None),
+            _ => await new RemoveTenantManualModuleOverrideCommandHandler(fixture.Repository.Object, fixture.ModuleRepository.Object,
+                    fixture.QuotaService.Object, fixture.Transactions, fixture.Versions.Object, fixture.Events.Object, fixture.Audit.Object, fixture.CurrentUser.Object)
+                .Handle(new RemoveTenantManualModuleOverrideCommand(TenantId, EntitlementId, new RemoveTenantManualModuleOverrideRequest(RowVersion)), CancellationToken.None)
+        };
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(404, result.StatusCode);
+        Assert.Equal(TenantModuleEntitlementRefusalCodes.NotFound, result.ReasonCode);
+        Assert.Equal(1, fixture.Transactions.InvocationCount);
         VerifyPublishNever(fixture.Events);
     }
 

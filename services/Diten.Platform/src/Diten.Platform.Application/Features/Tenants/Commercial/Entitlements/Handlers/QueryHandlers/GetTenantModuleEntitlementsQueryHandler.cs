@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Handlers.CommandHandlers;
 using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Queries;
 using Diten.Platform.Common.Catalog;
 using Diten.Platform.Domain.Entities;
@@ -36,18 +37,23 @@ public sealed class GetTenantModuleEntitlementsQueryHandler
         var physicalRows = await _entitlementRepository.GetByTenantIdAsync(request.TenantId, ct);
         var modules = await _catalogContract.GetAssignableModulesAsync(ct);
         var moduleMap = modules.ToDictionary(x => x.ModuleCode, StringComparer.OrdinalIgnoreCase);
-        var planModuleCodes = await GetPlanModuleCodesAsync(request.TenantId, ct);
+        var planModuleCodes = await TenantModuleEntitlementActionGate.PlanModuleCodesAsync(_subscriptionRepository, _planRepository, request.TenantId, ct);
         var allCodes = planModuleCodes
             .Concat(physicalRows.Select(x => x.ModuleCode))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(x => x)
             .ToList();
+        // BL-500 — the catalogue records the command handlers refuse on, read ONCE for the whole list. This query also
+        // serves the internal S2S authorization and permission-sync reads; it used to make one catalogue round trip
+        // per module.
+        var catalogue = await _moduleRepository.GetByCodesAsync(allCodes, ct);
 
         var rows = new List<TenantModuleEntitlementRowDto>();
         var now = DateTimeOffset.UtcNow;
         foreach (var code in allCodes)
         {
             moduleMap.TryGetValue(code, out var module);
+            catalogue.TryGetValue(code, out var catalogItem);
             var moduleName = module?.DisplayName ?? module?.ModuleName ?? code;
             var moduleRows = physicalRows.Where(x => string.Equals(x.ModuleCode, code, StringComparison.OrdinalIgnoreCase)).ToList();
             var access = TenantModuleEntitlementAccessEvaluator.Evaluate(
@@ -59,20 +65,17 @@ public sealed class GetTenantModuleEntitlementsQueryHandler
                 moduleRows,
                 now);
             var hasManualOverride = moduleRows.Any(x => x.Source == EntitlementSource.ManualOverride);
-            // BL-500 — the same two flags the command handlers refuse on, read from the same record they read.
-            var catalogItem = await _moduleRepository.GetByCodeAsync(code, ct);
-            var isCore = catalogItem?.IsCoreModule ?? module?.IsCoreModule == true;
-            var isBaseline = catalogItem?.IsBaseline == true;
 
             if (planModuleCodes.Contains(code, StringComparer.OrdinalIgnoreCase))
             {
+                var planFacts = TenantModuleEntitlementRowFacts.Projection(access, catalogItem);
                 rows.Add(new TenantModuleEntitlementRowDto(
                     request.TenantId,
                     code,
                     moduleName,
                     "Plan",
                     null,
-                    access.HasAccess && access.Source == "Plan",
+                    planFacts.GrantsAccess,
                     null,
                     access.EffectiveAccess.ToString(),
                     access.Source == "Plan" ? null : access.Reason,
@@ -80,14 +83,7 @@ public sealed class GetTenantModuleEntitlementsQueryHandler
                     hasManualOverride,
                     null,
                     null,
-                    TenantModuleEntitlementRowActions.For(
-                        isProjectionRow: true,
-                        grantsAccess: access.HasAccess && access.Source == "Plan",
-                        source: null,
-                        storedIsEnabled: false,
-                        isExpired: false,
-                        isCore,
-                        isBaseline)));
+                    TenantModuleEntitlementRowActions.For(planFacts)));
             }
 
             rows.AddRange(moduleRows.Select(row => new TenantModuleEntitlementRowDto(
@@ -104,28 +100,9 @@ public sealed class GetTenantModuleEntitlementsQueryHandler
                 hasManualOverride,
                 row.UpdatedAt ?? row.CreatedAt,
                 row.RowVersion,
-                TenantModuleEntitlementRowActions.For(
-                    isProjectionRow: false,
-                    grantsAccess: false,
-                    row.Source,
-                    row.IsEnabled,
-                    TenantModuleEntitlementAccessEvaluator.IsExpired(row, now),
-                    isCore,
-                    isBaseline))));
+                TenantModuleEntitlementRowActions.For(TenantModuleEntitlementRowFacts.Stored(row, catalogItem, now)))));
         }
 
         return Response<IReadOnlyList<TenantModuleEntitlementRowDto>>.Success(rows);
-    }
-
-    private async Task<IReadOnlyList<string>> GetPlanModuleCodesAsync(Guid tenantId, CancellationToken ct)
-    {
-        var subscription = await _subscriptionRepository.GetCurrentByTenantIdAsync(tenantId, ct);
-        if (subscription is null)
-        {
-            return [];
-        }
-
-        var plan = await _planRepository.GetByIdAsync(subscription.PlanId, ct);
-        return plan?.IncludedModuleKeys ?? [];
     }
 }

@@ -59,7 +59,8 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
         var version = row.RowVersion;
 
         row.IsEnabled = false;
-        await Assert.ThrowsAsync<TenantModuleEntitlementConcurrencyException>(
+        // Its own exception, not the concurrency one: the screen must never read another tenant's row as "stale".
+        await Assert.ThrowsAsync<TenantModuleEntitlementTenantMismatchException>(
             () => rig.InTransactionAsync(session => rig.Repository.UpdateAsync(session, row, version)));
 
         await rig.AssertUntouchedAsync(row.Id, version);
@@ -114,7 +115,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
         await using var rig = await Rig.StartAsync(TenantContextFor(Ours));
         var row = await rig.SeedAsync(Theirs);
 
-        await Assert.ThrowsAsync<TenantModuleEntitlementConcurrencyException>(
+        await Assert.ThrowsAsync<TenantModuleEntitlementTenantMismatchException>(
             () => rig.InTransactionAsync(session => rig.Repository.SoftDeleteAsync(session, Theirs, row.Id, row.RowVersion)));
 
         await rig.AssertUntouchedAsync(row.Id, row.RowVersion);
@@ -138,10 +139,47 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
         await using var rig = await Rig.StartAsync(TenantContextFor(Ours));
         var row = NewRow(Theirs);
 
-        await Assert.ThrowsAsync<TenantModuleEntitlementConcurrencyException>(
+        await Assert.ThrowsAsync<TenantModuleEntitlementTenantMismatchException>(
             () => rig.InTransactionAsync(session => rig.Repository.CreateAsync(session, row)));
 
         Assert.Equal(0, await rig.Rows.CountDocumentsAsync(FilterDefinition<TenantModuleEntitlement>.Empty));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task A_write_that_names_no_version_is_refused_and_the_row_is_unchanged(bool emptyRatherThanNull)
+    {
+        // BL-500 — the version condition used to be added only when a version was given: a request without one wrote
+        // over whatever another screen had saved in between.
+        await using var rig = await Rig.StartAsync(PlatformContext());
+        var row = await rig.SeedAsync(Theirs);
+        var version = row.RowVersion;
+        byte[]? none = emptyRatherThanNull ? [] : null;
+
+        row.IsEnabled = false;
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => rig.InTransactionAsync(session => rig.Repository.UpdateAsync(session, row, none)));
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => rig.InTransactionAsync(session => rig.Repository.SoftDeleteAsync(session, Theirs, row.Id, none)));
+
+        await rig.AssertUntouchedAsync(row.Id, version);
+    }
+
+    [Fact]
+    public async Task A_second_live_override_for_the_same_tenant_and_module_is_refused_as_stale_and_one_row_is_stored()
+    {
+        // BL-500 — two screens suspending the same plan module at once both insert an override row. The production
+        // index (ux_tenant_module_entitlements_active_source) keeps ONE; the second writer hears "stale", not a
+        // transaction failure.
+        await using var rig = await Rig.StartAsync(PlatformContext());
+        await rig.ApplyProductionIndexesAsync();
+
+        await rig.InTransactionAsync(session => rig.Repository.CreateAsync(session, NewRow(Theirs)));
+        await Assert.ThrowsAsync<TenantModuleEntitlementConcurrencyException>(
+            () => rig.InTransactionAsync(session => rig.Repository.CreateAsync(session, NewRow(Theirs))));
+
+        Assert.Equal(1, await rig.Rows.CountDocumentsAsync(FilterDefinition<TenantModuleEntitlement>.Empty));
     }
 
     [Fact]
@@ -192,6 +230,12 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
 
         public IMongoCollection<TenantModuleEntitlement> Rows { get; }
         public TenantModuleEntitlementRepository Repository { get; }
+
+        public Task ApplyProductionIndexesAsync() =>
+            Diten.Platform.Infrastructure.Persistence.Schema.PlatformSchemaManifest
+                .For(Diten.Platform.Infrastructure.Persistence.Schema.SchemaProfile.Core)
+                .Single(collection => collection.Name == "tenant_module_entitlements")
+                .ApplyAsync(Rows.Database, CancellationToken.None);
 
         public static async Task<Rig> StartAsync(ITenantContext tenantContext) =>
             new(await DisposableMongoReplicaSet.StartAsync(), tenantContext);

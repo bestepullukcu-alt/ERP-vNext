@@ -211,7 +211,6 @@
   <data name="Enable" xml:space="preserve"><value>Enable</value></data>
   <data name="Disable" xml:space="preserve"><value>Disable</value></data>
   <data name="ExpiryDate" xml:space="preserve"><value>Expiry Date</value></data>
-  <data name="EditExpiry" xml:space="preserve"><value>Edit Expiry</value></data>
   <data name="EffectiveAccess" xml:space="preserve"><value>Effective Access</value></data>
   <data name="AccessActive" xml:space="preserve"><value>Active</value></data>
   <data name="AccessNoAccess" xml:space="preserve"><value>No Access</value></data>
@@ -300,4 +299,15 @@
   <data name="EntitlementModuleBaseline" xml:space="preserve"><value>Baseline modules come with every tenant; they cannot be added, suspended or removed here.</value></data>
   <data name="EntitlementAlreadyExists" xml:space="preserve"><value>This module is already enabled for the tenant.</value></data>
   <data name="EntitlementNotManualOverride" xml:space="preserve"><value>Only a manual override can be removed.</value></data>
+  <data name="EntitlementActionNotOffered" xml:space="preserve"><value>This action is no longer available for this module. The list has been refreshed.</value></data>
+  <data name="EntitlementModuleMismatch" xml:space="preserve"><value>The selected row belongs to a different module. Refresh the list and try again.</value></data>
+  <data name="EntitlementRowVersionRequired" xml:space="preserve"><value>This page is out of date. Refresh the list and try again.</value></data>
+  <data name="EntitlementReasonRequired" xml:space="preserve"><value>Enter a reason.</value></data>
+  <data name="EntitlementReasonTooLong" xml:space="preserve"><value>The reason can be at most 500 characters.</value></data>
+  <data name="EntitlementModuleRequired" xml:space="preserve"><value>Select a module.</value></data>
+  <data name="EntitlementSourceInvalid" xml:space="preserve"><value>Select a valid source.</value></data>
+  <data name="EntitlementExpiryRequired" xml:space="preserve"><value>Choose the new expiry date.</value></data>
+  <data name="EntitlementExpiryInPast" xml:space="preserve"><value>The new expiry date must be in the future.</value></data>
+  <data name="EntitlementOutcomeUnknown" xml:space="preserve"><value>The request was sent, but the list could not be reloaded, so its result could not be checked. Refresh the page to see the current state.</value></data>
+  <data name="PermissionDenied" xml:space="preserve"><value>You do not have permission for this action.</value></data>
 </root>

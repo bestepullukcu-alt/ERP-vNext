@@ -187,9 +187,9 @@
   <data name="CurrentPeriodEndRequired" xml:space="preserve"><value>Geçerli dönem bitiş tarihi zorunludur.</value></data>
   <data name="SubscriptionHistorySubtitle" xml:space="preserve"><value>Abonelik süreci boyunca gerçekleşen durum değişiklikleri, yenilemeler ve iptal geçmişi.</value></data>
   <data name="ModuleEntitlements" xml:space="preserve"><value>Modül Yetkileri</value></data>
-  <data name="ModuleEntitlementsDescription" xml:space="preserve"><value>Plan yansımalarını, eklentileri, denemeleri ve kiracıya özel override kurallarını yönetin.</value></data>
+  <data name="ModuleEntitlementsDescription" xml:space="preserve"><value>Plan yansımalarını, eklentileri, denemeleri ve kiracıya özel geçersiz kılma kurallarını yönetin.</value></data>
   <data name="AddModuleEntitlement" xml:space="preserve"><value>Modül Yetkisi Ekle</value></data>
-  <data name="ActivateSubscriptionFirst" xml:space="preserve"><value>Modül yetkisi eklemeden önce tenant aboneliğini aktive edin.</value></data>
+  <data name="ActivateSubscriptionFirst" xml:space="preserve"><value>Modül yetkisi eklemeden önce kiracının aboneliğini etkinleştirin.</value></data>
   <data name="InvitationSent" xml:space="preserve"><value>Davet gönderildi.</value></data>
   <data name="LoginUrl" xml:space="preserve"><value>Giriş URL'si</value></data>
   <data name="TemporaryPassword" xml:space="preserve"><value>Geçici parola</value></data>
@@ -203,7 +203,7 @@
   <data name="ModuleName" xml:space="preserve"><value>Modül Adı</value></data>
   <data name="Source" xml:space="preserve"><value>Kaynak</value></data>
   <data name="SourcePlan" xml:space="preserve"><value>Plan</value></data>
-  <data name="SourceManualOverride" xml:space="preserve"><value>Manuel Override</value></data>
+  <data name="SourceManualOverride" xml:space="preserve"><value>Manuel Geçersiz Kılma</value></data>
   <data name="SourceAddon" xml:space="preserve"><value>Eklenti</value></data>
   <data name="SourceTrial" xml:space="preserve"><value>Deneme</value></data>
   <data name="SourceSystem" xml:space="preserve"><value>Sistem</value></data>
@@ -211,17 +211,16 @@
   <data name="Enable" xml:space="preserve"><value>Etkinleştir</value></data>
   <data name="Disable" xml:space="preserve"><value>Devre Dışı Bırak</value></data>
   <data name="ExpiryDate" xml:space="preserve"><value>Bitiş Tarihi</value></data>
-  <data name="EditExpiry" xml:space="preserve"><value>Bitişi Düzenle</value></data>
   <data name="EffectiveAccess" xml:space="preserve"><value>Geçerli Erişim</value></data>
   <data name="AccessActive" xml:space="preserve"><value>Aktif</value></data>
   <data name="AccessNoAccess" xml:space="preserve"><value>Erişim Yok</value></data>
   <data name="AccessExpired" xml:space="preserve"><value>Süresi Doldu</value></data>
-  <data name="AccessBlockedByOverride" xml:space="preserve"><value>Override ile Engellendi</value></data>
-  <data name="AccessEnabledByOverride" xml:space="preserve"><value>Override ile Etkin</value></data>
+  <data name="AccessBlockedByOverride" xml:space="preserve"><value>Geçersiz Kılmayla Engellendi</value></data>
+  <data name="AccessEnabledByOverride" xml:space="preserve"><value>Geçersiz Kılmayla Etkin</value></data>
   <data name="AccessSystemLocked" xml:space="preserve"><value>Sistem Kilitli</value></data>
   <data name="LastUpdated" xml:space="preserve"><value>Son Güncelleme</value></data>
-  <data name="RemoveManualOverride" xml:space="preserve"><value>Manuel Override'ı Kaldır</value></data>
-  <data name="ManualOverrideReason" xml:space="preserve"><value>Manuel override</value></data>
+  <data name="RemoveManualOverride" xml:space="preserve"><value>Manuel Geçersiz Kılmayı Kaldır</value></data>
+  <data name="ManualOverrideReason" xml:space="preserve"><value>Manuel geçersiz kılma</value></data>
   <data name="tenant.commercial.quota.title" xml:space="preserve"><value>Tenant Kota Yönetimi</value></data>
   <data name="tenant.commercial.quota.description" xml:space="preserve"><value>Plana bağlı limitler ve tenant'ın mevcut kullanımı.</value></data>
   <data name="tenant.commercial.quota.users" xml:space="preserve"><value>Kullanıcılar</value></data>
@@ -300,4 +299,15 @@
   <data name="EntitlementModuleBaseline" xml:space="preserve"><value>Temel modüller her kiracıda vardır; buradan eklenemez, askıya alınamaz veya kaldırılamaz.</value></data>
   <data name="EntitlementAlreadyExists" xml:space="preserve"><value>Bu modül kiracıda zaten açık.</value></data>
   <data name="EntitlementNotManualOverride" xml:space="preserve"><value>Yalnızca manuel geçersiz kılma kaldırılabilir.</value></data>
+  <data name="EntitlementActionNotOffered" xml:space="preserve"><value>Bu işlem bu modül için artık kullanılamıyor. Liste yenilendi.</value></data>
+  <data name="EntitlementModuleMismatch" xml:space="preserve"><value>Seçilen satır başka bir modüle ait. Listeyi yenileyip yeniden deneyin.</value></data>
+  <data name="EntitlementRowVersionRequired" xml:space="preserve"><value>Bu sayfa güncel değil. Listeyi yenileyip yeniden deneyin.</value></data>
+  <data name="EntitlementReasonRequired" xml:space="preserve"><value>Bir gerekçe girin.</value></data>
+  <data name="EntitlementReasonTooLong" xml:space="preserve"><value>Gerekçe en fazla 500 karakter olabilir.</value></data>
+  <data name="EntitlementModuleRequired" xml:space="preserve"><value>Bir modül seçin.</value></data>
+  <data name="EntitlementSourceInvalid" xml:space="preserve"><value>Geçerli bir kaynak seçin.</value></data>
+  <data name="EntitlementExpiryRequired" xml:space="preserve"><value>Yeni bitiş tarihini seçin.</value></data>
+  <data name="EntitlementExpiryInPast" xml:space="preserve"><value>Yeni bitiş tarihi ileri bir tarih olmalı.</value></data>
+  <data name="EntitlementOutcomeUnknown" xml:space="preserve"><value>İstek gönderildi ama liste yeniden yüklenemediği için sonucu doğrulanamadı. Güncel durumu görmek için sayfayı yenileyin.</value></data>
+  <data name="PermissionDenied" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
 </root>

@@ -24,6 +24,7 @@ const TenantDetails = (function () {
     let subscriptionAppliedFilters = { status: [], cancelAtPeriodEnd: '' };
     let moduleEntitlementsLoaded = false;
     let moduleEntitlementsDt;
+    let moduleEntitlementsLoadFailed = false;
     let availableModules = [];
     let moduleEntitlementAppliedFilters = { source: [], access: [] };
     let quotaGovernanceLoaded = false;
@@ -186,7 +187,10 @@ const TenantDetails = (function () {
         }
 
         if (response.status === 403) {
-            throw new Error(L.PermissionDenied || 'Permission denied.');
+            const denied = new Error(L.PermissionDenied || 'Permission denied.');
+            // BL-500 — a refusal bridge reads the STATUS: a 403 is said with its own sentence, not the general one.
+            denied.status = 403;
+            throw denied;
         }
 
         const text = await response.text();
@@ -218,7 +222,11 @@ const TenantDetails = (function () {
 
         const isSuccessful = payload?.isSuccessful ?? payload?.IsSuccessful ?? payload?.succeeded ?? payload?.Succeeded ?? payload?.success ?? payload?.Success;
         if (isSuccessful === false) {
-            throw new Error(extractErrorMessage(payload, L.ErrorOccurred || 'Error occurred.'));
+            const refused = new Error(extractErrorMessage(payload, L.ErrorOccurred || 'Error occurred.'));
+            // BL-500 — the envelope's code travels on this path too, or the screen falls back to the general sentence.
+            refused.code = (payload && typeof payload === 'object' && (payload.reason_code || payload.reasonCode)) || null;
+            refused.status = response.status;
+            throw refused;
         }
 
         return unwrap(payload);
@@ -1268,6 +1276,16 @@ const TenantDetails = (function () {
         ENTITLEMENT_MODULE_BASELINE: 'EntitlementModuleBaseline',
         ENTITLEMENT_ALREADY_EXISTS: 'EntitlementAlreadyExists',
         ENTITLEMENT_NOT_MANUAL_OVERRIDE: 'EntitlementNotManualOverride',
+        ENTITLEMENT_ACTION_NOT_OFFERED: 'EntitlementActionNotOffered',
+        ENTITLEMENT_MODULE_MISMATCH: 'EntitlementModuleMismatch',
+        // The validators' codes (TenantModuleEntitlementValidators.cs) — curated, so each has a sentence here.
+        ENTITLEMENT_ROW_VERSION_REQUIRED: 'EntitlementRowVersionRequired',
+        ENTITLEMENT_REASON_REQUIRED: 'EntitlementReasonRequired',
+        ENTITLEMENT_REASON_TOO_LONG: 'EntitlementReasonTooLong',
+        ENTITLEMENT_MODULE_REQUIRED: 'EntitlementModuleRequired',
+        ENTITLEMENT_SOURCE_INVALID: 'EntitlementSourceInvalid',
+        ENTITLEMENT_EXPIRY_REQUIRED: 'EntitlementExpiryRequired',
+        ENTITLEMENT_EXPIRY_IN_PAST: 'EntitlementExpiryInPast',
         QUOTA_LIMIT_EXCEEDED: 'QuotaLimitExceeded',
         QUOTA_DUPLICATE_OPERATION: 'QuotaDuplicateOperation',
         QUOTA_SUBSCRIPTION_INACTIVE: 'QuotaSubscriptionInactive',
@@ -1285,6 +1303,8 @@ const TenantDetails = (function () {
     // Never the raw code and never the service's English sentence: a refusal this screen has no sentence for is
     // said with the general one, and the console keeps what actually arrived.
     const entitlementRefusalText = (error, labels) => {
+        // A 403 carries no code: the reader is told they may not do this, not that "an error occurred".
+        if (error?.status === 403 && (labels || {}).PermissionDenied) return labels.PermissionDenied;
         const text = (labels || {})[ENTITLEMENT_REFUSAL_KEYS[entitlementRefusalCode(error)]];
         if (text) return text;
         if (typeof console !== 'undefined' && typeof console.warn === 'function') {
@@ -1296,9 +1316,11 @@ const TenantDetails = (function () {
 
     // Did the request change anything? Read off the reloaded list rather than assumed from a 204: a stored row that
     // still carries the version it had was not written (every write mints a new one), and a plan line whose access
-    // did not move was not suspended. "Saved" is said only for a change.
+    // did not move was not suspended. "Saved" is said only for a change. A list that could not be reloaded (null)
+    // says nothing either way: the outcome is 'unknown', never 'changed'.
     const entitlementChangeOutcome = (before, rowsAfter) => {
-        const rows = Array.isArray(rowsAfter) ? rowsAfter : [];
+        if (!Array.isArray(rowsAfter)) return 'unknown';
+        const rows = rowsAfter;
         if (before?.physicalEntitlementId) {
             const same = rows.find((row) => row.physicalEntitlementId === before.physicalEntitlementId);
             return same && same.rowVersion === before.rowVersion ? 'unchanged' : 'changed';
@@ -1336,8 +1358,14 @@ const TenantDetails = (function () {
         moduleEntitlementsDt = new DataTable(table, window.DtDefaults.create({
             ajax: (_data, callback) => {
                 fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements`)
-                    .then(rows => callback({ data: Array.isArray(rows) ? rows : [] }))
+                    .then(rows => {
+                        moduleEntitlementsLoadFailed = false;
+                        callback({ data: Array.isArray(rows) ? rows : [] });
+                    })
                     .catch(error => {
+                        // The table is emptied, but an empty table is not the tenant's list: an action waiting on this
+                        // reload must not read "no rows" as its result (reloadModuleEntitlements answers null).
+                        moduleEntitlementsLoadFailed = true;
                         callback({ data: [] });
                         if (!error.authHandled) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
                     });
@@ -1594,21 +1622,36 @@ const TenantDetails = (function () {
     // FIX-ENTITLEMENT-REENABLE (frontend) — entitlement actions previously awaited fetchJson with NO catch, so a
     // 4xx (e.g. a quota 409) was swallowed and the button looked dead. Surface it — BL-500: from the refusal's code,
     // in the reader's language (entitlementRefusalText above).
+    // The reloaded rows, or null when the list could not be loaded — never an empty list standing in for a failure.
     const reloadModuleEntitlements = () => new Promise((resolve) => {
-        if (!moduleEntitlementsDt) { resolve([]); return; }
-        moduleEntitlementsDt.ajax.reload(() => resolve(moduleEntitlementsDt.rows().data().toArray()), false);
+        if (!moduleEntitlementsDt) { resolve(null); return; }
+        moduleEntitlementsDt.ajax.reload(
+            () => resolve(moduleEntitlementsLoadFailed ? null : moduleEntitlementsDt.rows().data().toArray()), false);
     });
+
+    // The request went through but its result could not be read back: say so plainly, and try the list once more.
+    const reportEntitlementOutcomeUnknown = () => {
+        window.showToast?.(L.EntitlementOutcomeUnknown || '', 'warning');
+        reloadModuleEntitlements();
+    };
 
     const showEntitlementActionError = (error) => {
         if (error?.authHandled) return; // auth refresh flow already handled it
         window.showToast?.(entitlementRefusalText(error, L), 'error');
-        // Somebody else changed the row: the sentence says so, and the list on screen is replaced with the current one.
-        if (entitlementRefusalCode(error) === 'ENTITLEMENT_STALE') reloadModuleEntitlements();
+        // Somebody else changed the row, or the row no longer offers the action: the sentence says so, and the list on
+        // screen is replaced with the current one.
+        const code = entitlementRefusalCode(error);
+        if (code === 'ENTITLEMENT_STALE' || code === 'ENTITLEMENT_ACTION_NOT_OFFERED') reloadModuleEntitlements();
     };
 
     const reportEntitlementChange = async (before, changedText) => {
         const rows = await reloadModuleEntitlements();
-        if (entitlementChangeOutcome(before, rows) === 'unchanged') {
+        const outcome = entitlementChangeOutcome(before, rows);
+        if (outcome === 'unknown') {
+            reportEntitlementOutcomeUnknown();
+            return;
+        }
+        if (outcome === 'unchanged') {
             window.showToast?.(L.NoChangesMade || '', 'info');
             return;
         }
@@ -1625,7 +1668,8 @@ const TenantDetails = (function () {
                         moduleCode: row.moduleCode,
                         physicalEntitlementId: row.physicalEntitlementId,
                         reason: reason || row.reason || L.ManualOverrideReason || 'Manual override',
-                        rowVersion: row.rowVersion || null
+                        // The plan's own line has no stored row and so no version; every stored row sends its own.
+                        rowVersion: row.physicalEntitlementId ? row.rowVersion : null
                     })
                 });
                 await reportEntitlementChange(row, L.RecordSaved || '');
@@ -1649,7 +1693,7 @@ const TenantDetails = (function () {
             await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/${encodeURIComponent(row.physicalEntitlementId)}/enable`, {
                 method: 'POST',
                 headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-                body: JSON.stringify(row.rowVersion || null)
+                body: JSON.stringify(row.rowVersion)
             });
             await reportEntitlementChange(row, L.RecordSaved || '');
         } catch (error) {
@@ -1657,13 +1701,35 @@ const TenantDetails = (function () {
         }
     };
 
-    // The new expiry is asked for in the shared confirmation dialog (a date box), not a browser prompt. An empty
-    // date means "no expiry"; the date already on the row is not sent again — nothing would change.
+    // The new expiry is asked for in the shared confirmation dialog (a date box), not a browser prompt. It must hold a
+    // date, and one in the future: an empty box used to be sent as null, which REMOVED the expiry while the screen said
+    // "saved". Taking an expiry away is not this action.
+    const todayIsoDate = () => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    };
+
+    const moduleEntitlementExpiryProblem = (value) => {
+        const date = typeof value === 'string' ? value.trim() : '';
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return L.EntitlementExpiryRequired || '';
+        if (date < todayIsoDate()) return L.EntitlementExpiryInPast || '';
+        return null;
+    };
+
+    // The chosen DAY is the last day of access: the expiry is the end of that day.
+    const moduleEntitlementExpiryInstant = (date) => new Date(`${date}T23:59:59Z`).toISOString();
+
     const openModuleEntitlementExpiryEditor = (row) => {
         if (!row?.physicalEntitlementId) return;
         const current = row.expiryDateUtc ? new Date(row.expiryDateUtc).toISOString().slice(0, 10) : '';
         const run = async (value) => {
             const nextValue = typeof value === 'string' ? value.trim() : '';
+            const problem = moduleEntitlementExpiryProblem(nextValue);
+            if (problem !== null) {
+                // The dialog's own validator stops this first; a value that still gets here is never sent.
+                window.showToast?.(problem, 'error');
+                return;
+            }
             if (nextValue === current) {
                 window.showToast?.(L.NoChangesMade || '', 'info');
                 return;
@@ -1673,9 +1739,9 @@ const TenantDetails = (function () {
                     method: 'PATCH',
                     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        expiryDateUtc: nextValue ? new Date(`${nextValue}T23:59:59Z`).toISOString() : null,
+                        expiryDateUtc: moduleEntitlementExpiryInstant(nextValue),
                         reason: row.reason || null,
-                        rowVersion: row.rowVersion || null
+                        rowVersion: row.rowVersion
                     })
                 });
                 await reportEntitlementChange(row, L.RecordSaved || '');
@@ -1691,7 +1757,18 @@ const TenantDetails = (function () {
             showInput: true,
             inputType: 'date',
             inputLabel: L.ExpiryDate || '',
-            inputAttributes: current ? { value: current } : {}
+            inputAttributes: { min: todayIsoDate() },
+            // The box opens on the row's current date. Not through a `value` attribute — SweetAlert writes the box's
+            // value AFTER the attributes, so that opened EMPTY — and not through a new option on the shared dialog,
+            // which does not grow to suit one module (standing rule; wcn-detail-three-regions.test.js pins it). Its
+            // existing `didOpen` seam writes the date into the box it created, as the Task Center's edit box does.
+            didOpen: (_popup, swal) => {
+                const box = swal?.getInput?.();
+                if (box && current) box.value = current;
+            },
+            inputRequired: true,
+            inputValidationMessage: L.EntitlementExpiryRequired || '',
+            inputValidator: (value) => moduleEntitlementExpiryProblem(value)
         });
     };
 
@@ -1702,9 +1779,13 @@ const TenantDetails = (function () {
                 await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/${encodeURIComponent(row.physicalEntitlementId)}/manual-override`, {
                     method: 'DELETE',
                     headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ rowVersion: row.rowVersion || null })
+                    body: JSON.stringify({ rowVersion: row.rowVersion })
                 });
-                await reloadModuleEntitlements();
+                const rows = await reloadModuleEntitlements();
+                if (rows === null) {
+                    reportEntitlementOutcomeUnknown();
+                    return;
+                }
                 window.showToast?.(L.RecordDeleted || '', 'success');
             } catch (error) {
                 showEntitlementActionError(error);

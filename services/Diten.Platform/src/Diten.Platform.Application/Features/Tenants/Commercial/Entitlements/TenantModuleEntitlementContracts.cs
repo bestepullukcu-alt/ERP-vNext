@@ -53,8 +53,11 @@ public sealed record TenantAvailableModuleDto(
     string ModuleName,
     string DisplayName);
 
+// BL-500 — ModuleCode and Reason are nullable ON PURPOSE: a non-nullable string makes MVC add an implicit [Required]
+// that answers an empty value with a 400 that carries no reason_code, before the validator (which answers with one the
+// screen can say) ever runs. The validators require them.
 public sealed record TenantModuleEntitlementRequest(
-    string ModuleCode,
+    string? ModuleCode,
     EntitlementSource Source,
     bool IsEnabled,
     DateTimeOffset? ExpiryDateUtc,
@@ -62,9 +65,9 @@ public sealed record TenantModuleEntitlementRequest(
     byte[]? RowVersion);
 
 public sealed record DisableTenantModuleEntitlementRequest(
-    string ModuleCode,
+    string? ModuleCode,
     Guid? PhysicalEntitlementId,
-    string Reason,
+    string? Reason,
     byte[]? RowVersion);
 
 public sealed record UpdateTenantModuleEntitlementExpiryRequest(

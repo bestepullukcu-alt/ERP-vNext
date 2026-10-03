@@ -52,6 +52,14 @@ internal static class TenantModuleEntitlementCommandSupport
             : (true, null, 0, null);
     }
 
+    /// <summary>
+    /// BL-500 — no such row under this tenant. Also the answer to a row of ANOTHER tenant (the repository's tenant guard,
+    /// <see cref="TenantModuleEntitlementTenantMismatchException"/>): the same status and code, so the answer does not
+    /// tell a caller that the row exists elsewhere.
+    /// </summary>
+    public static Response<NoContent> NotFound() =>
+        Response<NoContent>.Fail("Entitlement was not found.", 404, TenantModuleEntitlementRefusalCodes.NotFound);
+
     public static Response<NoContent> ConcurrencyFailure() =>
         Response<NoContent>.Fail("Entitlement was modified by another process.", 409, TenantModuleEntitlementRefusalCodes.Stale);
 

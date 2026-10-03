@@ -14,6 +14,7 @@ namespace Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Ha
 public sealed class UpdateTenantModuleEntitlementExpiryCommandHandler : IRequestHandler<UpdateTenantModuleEntitlementExpiryCommand, Response<NoContent>>
 {
     private readonly ITenantModuleEntitlementRepository _repository;
+    private readonly IModuleCatalogRepository _moduleRepository;
     private readonly IPlatformTransactionExecutor _transactions;
     private readonly IEntitlementStateVersionRepository _versions;
     private readonly ITransactionalIntegrationEventWriter _events;
@@ -22,6 +23,7 @@ public sealed class UpdateTenantModuleEntitlementExpiryCommandHandler : IRequest
 
     public UpdateTenantModuleEntitlementExpiryCommandHandler(
         ITenantModuleEntitlementRepository repository,
+        IModuleCatalogRepository moduleRepository,
         IPlatformTransactionExecutor transactions,
         IEntitlementStateVersionRepository versions,
         ITransactionalIntegrationEventWriter events,
@@ -29,6 +31,7 @@ public sealed class UpdateTenantModuleEntitlementExpiryCommandHandler : IRequest
         ICurrentUserContext currentUser)
     {
         _repository = repository;
+        _moduleRepository = moduleRepository;
         _transactions = transactions;
         _versions = versions;
         _events = events;
@@ -41,7 +44,16 @@ public sealed class UpdateTenantModuleEntitlementExpiryCommandHandler : IRequest
         var entitlement = await _repository.GetByIdAsync(request.TenantId, request.EntitlementId, ct);
         if (entitlement is null)
         {
-            return Response<NoContent>.Fail("Entitlement was not found.", 404, TenantModuleEntitlementRefusalCodes.NotFound);
+            return TenantModuleEntitlementCommandSupport.NotFound();
+        }
+
+        // BL-500 — the list's own rule: a new date is offered on an Addon/Trial/override row of a module the catalogue
+        // still knows. The date itself is required and in the future (the validator): this action never clears it.
+        var refusal = await TenantModuleEntitlementActionGate.RefuseStoredAsync(
+            _moduleRepository, entitlement, TenantModuleEntitlementRowActions.ExtendExpiry, ct);
+        if (refusal is not null)
+        {
+            return refusal;
         }
 
         try
@@ -96,6 +108,10 @@ public sealed class UpdateTenantModuleEntitlementExpiryCommandHandler : IRequest
             }, ct);
 
             return Response<NoContent>.Success(204);
+        }
+        catch (TenantModuleEntitlementTenantMismatchException)
+        {
+            return TenantModuleEntitlementCommandSupport.NotFound();
         }
         catch (TenantModuleEntitlementConcurrencyException)
         {
