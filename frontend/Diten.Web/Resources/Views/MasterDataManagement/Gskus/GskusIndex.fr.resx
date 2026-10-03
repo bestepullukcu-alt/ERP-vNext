@@ -22,4 +22,12 @@
   <data name="RetirementRequestReasonRequired" xml:space="preserve"><value>Un motif de retrait de 128 caractères maximum est requis.</value></data>
   <data name="RetirementRequestReasonInvalid" xml:space="preserve"><value>Le motif contient des caractères de contrôle non pris en charge.</value></data>
   <data name="RetirementRequestedSuccess" xml:space="preserve"><value>La demande de retrait a été soumise pour approbation.</value></data>
+  <data name="ErrorParentNotApproved" xml:space="preserve"><value>Le produit global de ce GSKU n'est pas encore approuvé. Faites d'abord approuver le produit global, puis soumettez le GSKU.</value></data>
+  <data name="ErrorApprovalTemplateMissing" xml:space="preserve"><value>Le modèle d'approbation des GSKU n'est pas encore configuré : rien n'a été soumis. Demandez à votre administrateur de le créer et de le publier, puis soumettez à nouveau.</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Ce GSKU est en cours de soumission pour approbation. Il ne peut pas être modifié tant que la soumission n'a pas atteint le moteur d'approbation.</value></data>
+  <data name="ErrorDependentIdentitiesExist" xml:space="preserve"><value>Ce GSKU a encore des SKU locaux ou des produits finis non retirés. Retirez-les d'abord.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>L'approbation est en cours de modification. Réessayez dans un instant.</value></data>
+  <data name="IdentityNotAppliedParent" xml:space="preserve"><value>L'approbation a été accordée mais n'a pas pu être appliquée : le produit global n'est plus approuvé. Le GSKU est de nouveau un brouillon — corrigez cela et soumettez-le à nouveau.</value></data>
+  <data name="IdentityNotAppliedReference" xml:space="preserve"><value>L'approbation a été accordée mais n'a pas pu être appliquée : l'unité d'emballage ou son applicabilité n'est plus sélectionnable. Le GSKU est de nouveau un brouillon — choisissez une valeur valide et soumettez-le à nouveau.</value></data>
+  <data name="IdentityNotAppliedGeneric" xml:space="preserve"><value>L'approbation a été accordée mais n'a pas pu être appliquée. Le GSKU est de nouveau un brouillon — vérifiez-le et soumettez-le à nouveau.</value></data>
 </root>

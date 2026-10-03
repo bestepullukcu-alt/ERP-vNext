@@ -321,6 +321,14 @@ const GskusList = (function () {
         setText('oc-version', detailVersion);
         setText('oc-created-at', formatDate(valueOf(detail, 'createdAt', 'CreatedAt')));
         setText('oc-updated-at', formatDate(valueOf(detail, 'updatedAt', 'UpdatedAt')));
+        // GSKU FIX1 (B2 b): the approval was granted and could not be applied — say why, in the reader's language.
+        const notApplied = valueOf(detail, 'identityNotAppliedReason', 'IdentityNotAppliedReason');
+        const notAppliedText = !notApplied ? ''
+            : notApplied === 'FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED' ? L.IdentityNotAppliedParent
+            : notApplied === 'REFERENCE_DATA_CONTRACT_CONFLICT' ? L.IdentityNotAppliedReference
+            : L.IdentityNotAppliedGeneric;
+        setText('oc-identity-not-applied', notAppliedText);
+        document.getElementById('oc-identity-not-applied-row')?.classList.toggle('d-none', !notAppliedText);
         const statusElement = document.getElementById('oc-status');
         if (!statusElement) throw new Error(L.ErrorGateway);
         statusElement.outerHTML = renderLifecycle(valueOf(detail, 'lifecycleStatus', 'LifecycleStatus'))

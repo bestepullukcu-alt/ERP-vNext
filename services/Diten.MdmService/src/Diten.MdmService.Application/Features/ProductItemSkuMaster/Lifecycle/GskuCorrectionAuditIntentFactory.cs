@@ -24,12 +24,12 @@ public static class GskuCorrectionAuditIntentFactory
                 or ProductAuditOperation.GskuCorrectionManualReconciliationRequired))
             throw new ArgumentException("GSKU_CORRECTION_AUDIT_FACTS_INVALID");
         var key = $"gsku-correction:{operationId:D}:{operation}";
+        // B12: the evidence is WHAT was decided (the catalog version included), never when the reference happened to
+        // be read — a repeat that re-resolves the same version must produce the same hash, or its replay conflicts.
         var evidence = Encoding.UTF8.GetBytes(string.Join('|', gsku.TenantId, gsku.Id,
             expectedVersion, operationId, actorId, operation, quantity, uomCode,
             applicabilitySelection.CatalogVersionId, applicabilitySelection.CatalogVersionNumber,
-            applicabilitySelection.ResolvedAtUtc.UtcTicks,
-            uomSelection.CatalogVersionId, uomSelection.CatalogVersionNumber,
-            uomSelection.ResolvedAtUtc.UtcTicks));
+            uomSelection.CatalogVersionId, uomSelection.CatalogVersionNumber));
         var postVersion = checked(expectedVersion + 1);
         return new()
         {

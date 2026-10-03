@@ -80,7 +80,8 @@ public sealed record GlobalProductIdentityWorkflowCheckpointMutation(
     bool ClearWithdrawal = false,
     // Why a withdrawal was refused for good (the approval was decided or closed first): the answer a repeat of the
     // same withdrawal reads. Its own field — LastFailureCode is rewritten by every decision poll.
-    string? WithdrawalRefusalCode = null);
+    string? WithdrawalRefusalCode = null,
+    long? WithdrawalAwaitingRequesterSinceUtcTicksV1 = null);
 
 public sealed record GlobalProductIdentityWorkflowTenantPartitionPage(
     IReadOnlyList<Guid> TenantIds,

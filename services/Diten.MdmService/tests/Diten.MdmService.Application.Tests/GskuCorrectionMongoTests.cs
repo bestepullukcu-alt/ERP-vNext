@@ -160,8 +160,10 @@ public sealed class GskuCorrectionMongoTests : IAsyncLifetime
             new Resolver(), factory, TimeProvider.System);
         var operationId = Guid.NewGuid();
 
+        // B11 (GSKU FIX1): this test used "EA", a unit outside the allowed list — the correction skipped the rules
+        // create and update apply, and the fake resolver let it through. It now corrects to KGM.
         var started = await processor.StartInteractiveAsync(tenantId, gsku.Id, 2, operationId, maker,
-            12, "EA", "delegated", new(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1)), default);
+            12, "KGM", "delegated", new(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1)), default);
         var durable = await operationRepository.GetByOperationIdAsync(operationId);
         var completed = await processor.RecoverAsync(durable!, "worker",
             new(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1)), default);
@@ -170,12 +172,112 @@ public sealed class GskuCorrectionMongoTests : IAsyncLifetime
         Assert.True(started.Succeeded); Assert.Equal(202, started.StatusCode);
         Assert.True(completed.Succeeded); Assert.Equal(GskuCorrectionWorkflowCheckpoint.Completed, completed.Operation!.Checkpoint);
         Assert.Equal(approved ? 12 : 1, stored!.PackQuantity);
-        Assert.Equal(approved ? "EA" : "C62", stored.PackUomCode);
+        Assert.Equal(approved ? "KGM" : "C62", stored.PackUomCode);
         Assert.Null(stored.ActiveLifecycleOperation); Assert.Equal(4, stored.Version);
         Assert.Equal(1, workflow.StartCalls);
     }
 
-    public async Task DisposeAsync()
+    // Rule COR:174 (named by WP-MDM-GSKU-ACCEPT-01) + B8: a decision by the correction's own maker is not applied —
+    // it is ignored and said, the GSKU keeps its pack and its lock, and the operation waits for another approver.
+    [Fact]
+    public async Task COR_A_decision_by_the_maker_is_ignored_and_the_correction_keeps_waiting()
+    {
+        var (gsku, _) = await SeedApprovedPairAsync("GS-SELF-COR");
+        var template = Guid.NewGuid(); var maker = Guid.NewGuid();
+        var workflow = new Workflow(template, maker, true);
+        var operations = new GskuCorrectionWorkflowOperationRepository(database, new Tenant(tenantId));
+        var processor = Processor(operations, workflow, template);
+        var operationId = Guid.NewGuid();
+
+        var started = await processor.StartInteractiveAsync(tenantId, gsku.Id, 2, operationId, maker,
+            12, "KGM", "delegated", new(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1)), default);
+        var observed = await processor.RecoverAsync((await operations.GetByOperationIdAsync(operationId))!, "worker",
+            new(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1)), default);
+        var stored = await new GskuRepository(database, new Tenant(tenantId)).GetByIdAsync(gsku.Id);
+        var operation = await operations.GetByOperationIdAsync(operationId);
+
+        Assert.Equal(202, started.StatusCode);
+        Assert.Equal(GskuCorrectionWorkflowProcessor.SelfApprovalIgnored, observed.ErrorCode);
+        Assert.NotEqual(GskuCorrectionWorkflowCheckpoint.Completed, operation!.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, operation.RecoveryDisposition);
+        Assert.Equal((1m, "C62"), (stored!.PackQuantity, stored.PackUomCode));
+        Assert.NotNull(stored.ActiveLifecycleOperation);
+    }
+
+    // Rule COR:56 (named by WP-MDM-GSKU-ACCEPT-01): a replay is the same request only under the same workflow
+    // configuration — the same key after the template changed is a conflict, not a second start.
+    [Fact]
+    public async Task COR_A_replay_under_a_changed_workflow_configuration_is_a_conflict_and_starts_nothing()
+    {
+        var (gsku, _) = await SeedApprovedPairAsync("GS-CONFIG-COR");
+        var maker = Guid.NewGuid();
+        var operations = new GskuCorrectionWorkflowOperationRepository(database, new Tenant(tenantId));
+        var firstTemplate = Guid.NewGuid();
+        var workflow = new Workflow(firstTemplate, Guid.NewGuid(), true);
+        var operationId = Guid.NewGuid();
+        var started = await Processor(operations, workflow, firstTemplate).StartInteractiveAsync(tenantId, gsku.Id, 2,
+            operationId, maker, 12, "KGM", "delegated", new(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1)), default);
+
+        var replay = await Processor(operations, workflow, Guid.NewGuid()).StartInteractiveAsync(tenantId, gsku.Id, 2,
+            operationId, maker, 12, "KGM", "delegated", new(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1)), default);
+
+        Assert.Equal(202, started.StatusCode);
+        Assert.Equal((409, "GSKU_CORRECTION_OPERATION_CONFLICT"), (replay.StatusCode, replay.ErrorCode));
+        Assert.Equal(1, workflow.StartCalls);
+    }
+
+    private GskuCorrectionWorkflowProcessor Processor(GskuCorrectionWorkflowOperationRepository operations,
+        IProductIdentityWorkflowClient workflow, Guid template) => new(operations,
+        new GskuRepository(database, new Tenant(tenantId)),
+        new ProductDefinitionRevisionRepository(database, new Tenant(tenantId)), workflow, new Resolver(),
+        new GskuCorrectionWorkflowStartRequestFactory(new(template, null, [Guid.NewGuid()],
+            "GSKU_CORRECTION", false, false, null, Guid.NewGuid(), null), TimeProvider.System),
+        TimeProvider.System);
+
+    private async Task<(Gsku Gsku, ProductDefinitionRevision Revision)> SeedApprovedPairAsync(string code)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var revision = new ProductDefinitionRevision { Id = Guid.NewGuid(), TenantId = tenantId,
+            GlobalProductId = Guid.NewGuid(), RevisionIdentifier = "REV-001", CreationCommandId = Guid.NewGuid().ToString("D"),
+            LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved, CreatedAt = now, UpdatedAt = now };
+        var gsku = new Gsku { Id = Guid.NewGuid(), TenantId = tenantId,
+            ProductDefinitionRevisionId = revision.Id, CanonicalCode = code, CreationCommandId = Guid.NewGuid().ToString("D"),
+            CodeReservationId = Guid.NewGuid(),
+            PackApplicabilityCode = "SCALAR_QUANTITY_APPLIES", PackQuantity = 1, PackUomCode = "C62",
+            PackApplicabilitySelection = Selection("pack-applicability", "SCALAR_QUANTITY_APPLIES"),
+            PackUomSelection = Selection("uom", "C62"), LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved,
+            CreatedAt = now, UpdatedAt = now, Version = 2 };
+        await database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions").InsertOneAsync(revision);
+        await database.GetCollection<Gsku>("mdm_gskus").InsertOneAsync(gsku);
+        return (gsku, revision);
+    }
+
+// B11: the correction applies the same pack rules as create and update — before anything is written.
+    [Theory]
+    [InlineData(12, "EA")]      // not an allowed unit
+    [InlineData(1.5, "C62")]    // C62 counts whole pieces
+    [InlineData(1.2345, "KGM")] // scale at most 3
+    public async Task A_correction_that_breaks_the_pack_rules_is_refused_before_anything_is_written(double quantity, string uom)
+    {
+        var operationRepository = new GskuCorrectionWorkflowOperationRepository(database, new Tenant(tenantId));
+        var workflow = new Workflow(Guid.NewGuid(), Guid.NewGuid(), true);
+        var processor = new GskuCorrectionWorkflowProcessor(operationRepository,
+            new GskuRepository(database, new Tenant(tenantId)),
+            new ProductDefinitionRevisionRepository(database, new Tenant(tenantId)), workflow, new Resolver(),
+            new GskuCorrectionWorkflowStartRequestFactory(new(Guid.NewGuid(), null, [Guid.NewGuid()],
+                "GSKU_CORRECTION", false, false, null, Guid.NewGuid(), null), TimeProvider.System),
+            TimeProvider.System);
+        var operationId = Guid.NewGuid();
+
+        var result = await processor.StartInteractiveAsync(tenantId, Guid.NewGuid(), 2, operationId, Guid.NewGuid(),
+            (decimal)quantity, uom, "delegated", new(TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1)), default);
+
+        Assert.Equal((409, "GSKU_CORRECTION_FACTS_INVALID"), (result.StatusCode, result.ErrorCode));
+        Assert.Null(await operationRepository.GetByOperationIdAsync(operationId));
+        Assert.Equal(0, workflow.StartCalls);
+    }
+
+        public async Task DisposeAsync()
     {
         await database.GetCollection<Gsku>("mdm_gskus").DeleteManyAsync(x => x.TenantId == tenantId);
         await database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions")

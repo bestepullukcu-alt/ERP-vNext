@@ -424,23 +424,220 @@ public sealed class FirstGskuIdentityWorkflowOperationMongoTests : IAsyncLifetim
             (await repository.GetByOperationIdAsync(operation.OperationId))!.Checkpoint);
     }
 
-    [Fact]
-    public async Task Repository_owns_exact_four_tenant_safe_indexes_and_no_secret_fields()
+    // ── GSKU FIX1 on the real store ──────────────────────────────────────────────────────────────────────────────
+
+    private async Task<(FirstGskuIdentityWorkflowOperation Operation, FirstGskuIdentityWorkflowClaim Claim)> SeedPairAsync(
+        FirstGskuIdentityWorkflowCheckpoint checkpoint, int gskuVersion = 1)
     {
-        var operation = Operation("shape", "shape-fingerprint");
-        Assert.True((await Repository(_tenantId).ReserveAsync(operation)).Succeeded);
-        var indexes = await (await _collection.Indexes.ListAsync()).ToListAsync();
-        var owned = indexes.Where(x => x["name"].AsString.Contains("first_gsku_identity_workflow", StringComparison.Ordinal)).ToArray();
-        Assert.Equal(4, owned.Length);
-        Assert.All(owned, index => Assert.Equal("TenantId", index["key"].AsBsonDocument.GetElement(0).Name));
-        var raw = await _database.GetCollection<BsonDocument>(FirstGskuIdentityWorkflowOperationRepository.CollectionName)
-            .Find(new BsonDocument("OperationId", new BsonBinaryData(operation.OperationId, GuidRepresentation.Standard))).SingleAsync();
-        Assert.True(raw["CreatedAtUtcTicksV1"].IsInt64);
-        Assert.DoesNotContain(raw.Names, n => n.Contains("Token", StringComparison.OrdinalIgnoreCase)
-            || n.Contains("Secret", StringComparison.OrdinalIgnoreCase)
-            || n.Contains("Credential", StringComparison.OrdinalIgnoreCase)
-            || n.Contains("Authorization", StringComparison.OrdinalIgnoreCase));
+        var now = DateTimeOffset.UtcNow;
+        var makerId = Guid.NewGuid();
+        var operation = Operation($"seed-{Guid.NewGuid():N}", $"fp-{Guid.NewGuid():N}");
+        operation.Id = Guid.NewGuid();
+        operation.WorkflowInstanceId = Guid.NewGuid();
+        operation.ApprovalTaskId = Guid.NewGuid();
+        operation.WorkflowTemplateVersionId = Guid.NewGuid();
+        operation.MakerSubjectId = makerId;
+        operation.Checkpoint = checkpoint;
+        operation.DecisionKind = ProductIdentityDecisionKind.Approved;
+        operation.DecisionActorSubjectId = Guid.NewGuid();
+        operation.LeaseOwner = "worker";
+        operation.LeaseGeneration = 1;
+        operation.LeaseUntilUtcTicksV1 = now.AddMinutes(1).UtcTicks;
+        operation.CreatedAt = now;
+        operation.UpdatedAt = now;
+        operation.UpdatedAtUtcTicksV1 = now.UtcTicks;
+        var binding = new FirstGskuIdentityWorkflowBinding
+        {
+            WorkflowInstanceId = operation.WorkflowInstanceId.Value,
+            WorkflowTemplateId = operation.WorkflowTemplateId!.Value,
+            WorkflowTemplateVersionId = operation.WorkflowTemplateVersionId.Value,
+            ApprovalTaskId = operation.ApprovalTaskId.Value,
+            AssignmentSnapshotId = Guid.NewGuid(), StartTransitionLogId = Guid.NewGuid(),
+            ObjectType = "gsku", GskuId = operation.GskuId,
+            ProductDefinitionRevisionId = operation.ProductDefinitionRevisionId,
+            ObjectRef = operation.ObjectRef, SubmitterSubjectId = makerId,
+            StartIdempotencyKey = operation.StartIdempotencyKey,
+            StartRequestFingerprint = operation.OperationFingerprint, SubmittedAtUtc = now
+        };
+        await _collection.InsertOneAsync(operation);
+        await _revisions.InsertOneAsync(new ProductDefinitionRevision
+        {
+            Id = operation.ProductDefinitionRevisionId, TenantId = _tenantId,
+            GlobalProductId = operation.GlobalProductId, RevisionIdentifier = "REV-001",
+            CreationCommandId = operation.CreationCommandId, Version = 1,
+            LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval,
+            IdentityWorkflowBinding = binding, CreatedAt = now, UpdatedAt = now
+        });
+        await _gskus.InsertOneAsync(new Gsku
+        {
+            Id = operation.GskuId, TenantId = _tenantId,
+            ProductDefinitionRevisionId = operation.ProductDefinitionRevisionId,
+            CanonicalCode = $"GS-{operation.GskuId:N}"[..20], CreationCommandId = operation.CreationCommandId,
+            CodeReservationId = Guid.NewGuid(), // unique per tenant
+            PackApplicabilityCode = "PACK", PackQuantity = 1, PackUomCode = "EA",
+            PackApplicabilitySelection = operation.PackApplicabilitySelection,
+            PackUomSelection = operation.PackUomSelection, Version = gskuVersion,
+            LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval,
+            IdentityWorkflowBinding = binding, CreatedAt = now, UpdatedAt = now
+        });
+        var claim = new FirstGskuIdentityWorkflowClaim(_tenantId, operation.OperationId,
+            operation.OperationFingerprint, "worker", 1, checkpoint, operation.LeaseUntilUtcTicksV1.Value);
+        return (operation, claim);
     }
+
+    private LocalAuditIntent NotApplicableAudit(
+        Guid aggregateId, AuditAggregateType type, ProductAuditOperation auditOperation, Guid operationId) =>
+        WithdrawalAudit(aggregateId, type, auditOperation, 1, operationId, Guid.NewGuid(), DateTimeOffset.UtcNow) is var intent
+            ? Rekey(intent, FirstGskuIdentityDecisionNotApplicable.Key(operationId))
+            : null!;
+
+    private static LocalAuditIntent Rekey(LocalAuditIntent intent, string key)
+    {
+        intent.IdempotencyKey = key;
+        intent.CommandId = key;
+        intent.CorrelationId = key;
+        return intent;
+    }
+
+    // B2 (b): "the engine approved, MDM could not apply" — both drafts, both intents, the operation final: all or none.
+    [Fact]
+    public async Task DecisionNotApplicable_returns_both_pair_members_to_draft_and_ends_the_operation_in_one_transaction()
+    {
+        var repository = Repository(_tenantId);
+        var (operation, claim) = await SeedPairAsync(FirstGskuIdentityWorkflowCheckpoint.DecisionObserved);
+
+        var result = await repository.ApplyDecisionNotApplicableAsync(claim, operation,
+            "FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED",
+            NotApplicableAudit(operation.ProductDefinitionRevisionId, AuditAggregateType.ProductDefinitionRevision,
+                ProductAuditOperation.ProductDefinitionRevisionIdentityDecisionNotApplicable, operation.OperationId),
+            NotApplicableAudit(operation.GskuId, AuditAggregateType.Gsku,
+                ProductAuditOperation.GskuIdentityDecisionNotApplicable, operation.OperationId),
+            DateTimeOffset.UtcNow.UtcTicks);
+
+        Assert.True(result.Succeeded, result.ErrorCode);
+        Assert.Equal((ProductIdentityLifecycleStatus.Draft, 2), (result.Revision!.LifecycleStatus, result.Revision.Version));
+        Assert.Equal((ProductIdentityLifecycleStatus.Draft, 2), (result.Gsku!.LifecycleStatus, result.Gsku.Version));
+        Assert.Single(result.Gsku.AuditIntents, item => item.Operation == ProductAuditOperation.GskuIdentityDecisionNotApplicable);
+        var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable, stored.Checkpoint);
+        Assert.Equal("FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED", stored.LastFailureCode);
+        Assert.Null(stored.LeaseOwner);
+        Assert.False(await repository.HasUnfinishedOperationAsync(operation.GskuId));
+    }
+
+    [Fact]
+    public async Task DecisionNotApplicable_writes_nothing_when_one_pair_member_moved()
+    {
+        var repository = Repository(_tenantId);
+        var (operation, claim) = await SeedPairAsync(FirstGskuIdentityWorkflowCheckpoint.DecisionObserved, gskuVersion: 7);
+
+        var result = await repository.ApplyDecisionNotApplicableAsync(claim, operation, "REFERENCE_DATA_CONTRACT_CONFLICT",
+            NotApplicableAudit(operation.ProductDefinitionRevisionId, AuditAggregateType.ProductDefinitionRevision,
+                ProductAuditOperation.ProductDefinitionRevisionIdentityDecisionNotApplicable, operation.OperationId),
+            NotApplicableAudit(operation.GskuId, AuditAggregateType.Gsku,
+                ProductAuditOperation.GskuIdentityDecisionNotApplicable, operation.OperationId),
+            DateTimeOffset.UtcNow.UtcTicks);
+
+        Assert.False(result.Succeeded);
+        var revision = await _revisions.Find(x => x.Id == operation.ProductDefinitionRevisionId).SingleAsync();
+        Assert.Equal((ProductIdentityLifecycleStatus.PendingIdentityApproval, 1), (revision.LifecycleStatus, revision.Version));
+        Assert.Empty(revision.AuditIntents);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.DecisionObserved,
+            (await repository.GetByOperationIdAsync(operation.OperationId))!.Checkpoint);
+    }
+
+    // B1: forgetting a withdrawal clears every field a withdrawal writes — through the explicit flag only.
+    [Fact]
+    public async Task Forgetting_a_withdrawal_clears_all_eighteen_withdrawal_fields()
+    {
+        var repository = Repository(_tenantId);
+        var (operation, claim) = await SeedPairAsync(FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown);
+        var update = Builders<FirstGskuIdentityWorkflowOperation>.Update.Combine(
+            typeof(FirstGskuIdentityWorkflowOperation).GetProperties()
+                .Where(property => property.Name.StartsWith("Withdrawal", StringComparison.Ordinal))
+                .Select(property => Builders<FirstGskuIdentityWorkflowOperation>.Update.Set(property.Name,
+                    property.PropertyType == typeof(string) ? (object)"x"
+                    : Nullable.GetUnderlyingType(property.PropertyType) == typeof(Guid) ? Guid.NewGuid()
+                    : Nullable.GetUnderlyingType(property.PropertyType) == typeof(long) ? 1L : (object)1)));
+        await _collection.UpdateOneAsync(x => x.OperationId == operation.OperationId, update);
+
+        Assert.True(await repository.AdvanceAsync(claim, new(FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision,
+            ProductIdentityWorkflowRecoveryDisposition.None, DateTimeOffset.UtcNow.UtcTicks,
+            ReleaseLease: true, ClearWithdrawal: true)));
+
+        var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        var fields = typeof(FirstGskuIdentityWorkflowOperation).GetProperties()
+            .Where(property => property.Name.StartsWith("Withdrawal", StringComparison.Ordinal)).ToList();
+        Assert.Equal(18, fields.Count);
+        Assert.All(fields, property => Assert.True(property.GetValue(stored) is null, property.Name));
+    }
+
+    // B9: the requester who is present is not paced by the worker's schedule (never by a held lease).
+    [Fact]
+    public async Task An_interactive_claim_passes_the_workers_retry_schedule_and_the_workers_does_not()
+    {
+        var repository = Repository(_tenantId);
+        var operation = Operation("schedule", "schedule-fingerprint");
+        Assert.True((await repository.ReserveAsync(operation)).Succeeded);
+        var now = DateTimeOffset.UtcNow.UtcTicks;
+        await _collection.UpdateOneAsync(x => x.OperationId == operation.OperationId,
+            Builders<FirstGskuIdentityWorkflowOperation>.Update.Set(x => x.NextAttemptAtUtcTicksV1,
+                now + TimeSpan.FromSeconds(30).Ticks));
+
+        var worker = await repository.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
+            [FirstGskuIdentityWorkflowCheckpoint.Prepared], "worker", now, now + TimeSpan.FromMinutes(1).Ticks));
+        var requester = await repository.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
+            [FirstGskuIdentityWorkflowCheckpoint.Prepared], "requester", now, now + TimeSpan.FromMinutes(1).Ticks,
+            IgnoreRetrySchedule: true));
+        var second = await repository.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
+            [FirstGskuIdentityWorkflowCheckpoint.Prepared], "requester-2", now + 1, now + TimeSpan.FromMinutes(1).Ticks,
+            IgnoreRetrySchedule: true));
+
+        Assert.Null(worker);
+        Assert.NotNull(requester);
+        Assert.Null(second); // the lease is held
+    }
+
+    // A withdrawal an earlier version parked in AwaitingMakerReplay is found; an ordinary one is not.
+    [Fact]
+    public async Task Discovery_includes_a_parked_withdrawal_and_not_an_ordinary_maker_replay()
+    {
+        var repository = Repository(_tenantId);
+        var (parked, _) = await SeedPairAsync(FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay);
+        var (ordinary, _) = await SeedPairAsync(FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay);
+        await _collection.UpdateManyAsync(x => x.TenantId == _tenantId,
+            Builders<FirstGskuIdentityWorkflowOperation>.Update.Set(x => x.LeaseOwner, null)
+                .Set(x => x.LeaseUntilUtcTicksV1, null));
+        await _collection.UpdateOneAsync(x => x.OperationId == parked.OperationId,
+            Builders<FirstGskuIdentityWorkflowOperation>.Update.Set(x => x.WithdrawalCommandId, Guid.NewGuid()));
+
+        var listed = (await repository.DiscoverRecoverableAsync(DateTimeOffset.UtcNow.UtcTicks, 10))
+            .Operations.Select(x => x.OperationId).ToList();
+
+        Assert.Contains(parked.OperationId, listed);
+        Assert.DoesNotContain(ordinary.OperationId, listed);
+    }
+
+    // B7: "is a submit in flight" for an edit.
+    [Theory]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.StartOutcomeUnknown, true)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay, true)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired, true)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.Completed, false)]
+    [InlineData(FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable, false)]
+    public async Task An_unfinished_identity_operation_is_seen_for_its_gsku(
+        FirstGskuIdentityWorkflowCheckpoint checkpoint, bool unfinished)
+    {
+        var repository = Repository(_tenantId);
+        var (operation, _) = await SeedPairAsync(checkpoint);
+
+        Assert.Equal(unfinished, await repository.HasUnfinishedOperationAsync(operation.GskuId));
+        Assert.False(await Repository(_tenantBId).HasUnfinishedOperationAsync(operation.GskuId)); // tenant-bound
+    }
+
+    // The index-shape test lives in the MDM HTTP test project (GskuIndexShapeHttpTests): it counts indexes on a
+    // throwaway mongod, never on the shared test database (which collects every branch's indexes) and without a
+    // per-run database there (the MongoTestDatabaseGuard forbids it).
 
     public async Task DisposeAsync()
     {

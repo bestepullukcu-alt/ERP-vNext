@@ -21,4 +21,12 @@
   <data name="RetirementRequestReasonRequired" xml:space="preserve"><value>A retirement reason of at most 128 characters is required.</value></data>
   <data name="RetirementRequestReasonInvalid" xml:space="preserve"><value>The retirement reason contains unsupported control characters.</value></data>
   <data name="RetirementRequestedSuccess" xml:space="preserve"><value>The retirement request was submitted for approval.</value></data>
+  <data name="ErrorParentNotApproved" xml:space="preserve"><value>The Global Product of this GSKU is not approved yet. Get the Global Product approved first, then submit the GSKU.</value></data>
+  <data name="ErrorApprovalTemplateMissing" xml:space="preserve"><value>The approval template for GSKUs is not set up yet, so nothing was submitted. Ask your administrator to create and publish it, then submit again.</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>This GSKU is being submitted for approval. It cannot be edited until the submission has reached the approval engine.</value></data>
+  <data name="ErrorDependentIdentitiesExist" xml:space="preserve"><value>This GSKU still has local SKUs or finished goods that are not retired. Retire them first.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>The approval is being changed right now. Try again in a moment.</value></data>
+  <data name="IdentityNotAppliedParent" xml:space="preserve"><value>The approval was granted but could not be applied: the Global Product is no longer approved. The GSKU is a draft again — fix this and submit it again.</value></data>
+  <data name="IdentityNotAppliedReference" xml:space="preserve"><value>The approval was granted but could not be applied: the pack unit or its applicability is no longer selectable. The GSKU is a draft again — choose a valid value and submit it again.</value></data>
+  <data name="IdentityNotAppliedGeneric" xml:space="preserve"><value>The approval was granted but could not be applied. The GSKU is a draft again — check it and submit it again.</value></data>
 </root>

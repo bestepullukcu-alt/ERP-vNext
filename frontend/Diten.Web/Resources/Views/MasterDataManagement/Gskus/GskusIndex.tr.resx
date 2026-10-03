@@ -22,4 +22,12 @@
   <data name="RetirementRequestReasonRequired" xml:space="preserve"><value>En fazla 128 karakterlik bir kullanımdan kaldırma gerekçesi gereklidir.</value></data>
   <data name="RetirementRequestReasonInvalid" xml:space="preserve"><value>Gerekçe desteklenmeyen kontrol karakterleri içeriyor.</value></data>
   <data name="RetirementRequestedSuccess" xml:space="preserve"><value>Kullanımdan kaldırma talebi onaya gönderildi.</value></data>
+  <data name="ErrorParentNotApproved" xml:space="preserve"><value>Bu GSKU'nun Global Ürünü henüz onaylanmadı. Önce Global Ürünü onaylatın, sonra GSKU'yu gönderin.</value></data>
+  <data name="ErrorApprovalTemplateMissing" xml:space="preserve"><value>GSKU onay şablonu henüz kurulmamış; hiçbir şey gönderilmedi. Yöneticinizden şablonu oluşturup yayımlamasını isteyin, sonra yeniden gönderin.</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Bu GSKU onaya gönderiliyor. Gönderim onay motoruna ulaşana kadar düzenlenemez.</value></data>
+  <data name="ErrorDependentIdentitiesExist" xml:space="preserve"><value>Bu GSKU'nun emekliye ayrılmamış yerel SKU'ları veya bitmiş ürünleri var. Önce onları emekliye ayırın.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>Onay şu anda değişiyor. Birazdan yeniden deneyin.</value></data>
+  <data name="IdentityNotAppliedParent" xml:space="preserve"><value>Onay verildi ancak uygulanamadı: Global Ürün artık onaylı değil. GSKU yeniden taslak — bunu düzeltip yeniden gönderin.</value></data>
+  <data name="IdentityNotAppliedReference" xml:space="preserve"><value>Onay verildi ancak uygulanamadı: ambalaj birimi veya uygulanabilirliği artık seçilemiyor. GSKU yeniden taslak — geçerli bir değer seçip yeniden gönderin.</value></data>
+  <data name="IdentityNotAppliedGeneric" xml:space="preserve"><value>Onay verildi ancak uygulanamadı. GSKU yeniden taslak — kontrol edip yeniden gönderin.</value></data>
 </root>

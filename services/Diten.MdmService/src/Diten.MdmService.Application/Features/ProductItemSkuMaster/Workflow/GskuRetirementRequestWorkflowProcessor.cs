@@ -4,6 +4,8 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 
@@ -17,8 +19,12 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
     IProductIdentityWorkflowClient workflow,
     FirstGskuIdentityRetirementProcessor pairRetirement,
     GskuRetirementRequestWorkflowStartRequestFactory factory,
-    TimeProvider clock)
+    TimeProvider clock,
+    ILogger<GskuRetirementRequestWorkflowProcessor>? logger = null)
 {
+    private readonly ILogger log = logger ?? NullLogger<GskuRetirementRequestWorkflowProcessor>.Instance;
+    public const string SelfApprovalIgnored = "GSKU_RETIREMENT_REQUEST_SELF_APPROVAL_IGNORED";
+
     public async Task<GskuRetirementRequestProcessingResult> StartInteractiveAsync(Guid tenantId, Guid gskuId,
         int expectedVersion, Guid operationId, Guid makerId, string requestReason,
         string delegatedToken, GskuRetirementRequestExecutionConfiguration execution, CancellationToken ct)
@@ -148,7 +154,37 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             return await operations.AdvanceAsync(claim, new(GskuRetirementRequestCheckpoint.StartOutcomeUnknown,
                 ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks,
                 now.Add(execution.RetryDelay).UtcTicks, result.ErrorCode, ReleaseLease: true), ct);
-        return await Manual(claim, result.ErrorCode, now, ct);
+        if (result.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
+            // "Started" with evidence that cannot be accepted: an approval may exist and cannot be cancelled without
+            // the requester's token — the GSKU is NOT given back.
+            return await Manual(claim, "GSKU_RETIREMENT_REQUEST_START_EVIDENCE_INVALID", now, ct);
+        var fault = ProductIdentityWorkflowFaultPolicy.Classify(
+            ProductIdentityWorkflowCall.Start, result.Outcome, result.ErrorCode);
+        return await EndAndReleaseAsync(op, claim, fault.MakerCode ?? result.ErrorCode
+            ?? "GSKU_RETIREMENT_REQUEST_START_REFUSED", now, ct);
+    }
+
+    // B3: the request ends without its decision applied; the GSKU's lock goes in the same write as the intent that
+    // says why. A lock the pair retirement already took over (its fence) stays with it, and only the reason is kept.
+    private async Task<bool> EndAndReleaseAsync(GskuRetirementRequestOperation op,
+        GskuRetirementRequestWorkflowClaim claim, string reason, DateTimeOffset now, CancellationToken ct)
+    {
+        var gsku = await gskus.GetByIdAsync(op.GskuId, ct);
+        if (gsku?.ActiveLifecycleOperation is { } held && held == Binding(op))
+        {
+            var audit = GskuRetirementRequestAuditIntentFactory.Create(gsku, checked(op.BaseGskuVersion + 1),
+                op.OperationId, op.MakerSubjectId, ProductAuditOperation.GskuRetirementManualReconciliationRequired,
+                op.RequestReason, now);
+            var released = await gskus.ReleaseLifecycleOperationAsync(gsku.Id, checked(op.BaseGskuVersion + 1),
+                Binding(op), audit, ct);
+            if (!released.Succeeded)
+                return await operations.AdvanceAsync(claim, new(op.Checkpoint,
+                    ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks,
+                    now.AddMinutes(1).UtcTicks, released.ErrorCode, ReleaseLease: true), ct);
+        }
+        log.LogWarning("GSKU retirement request {OperationId} of tenant {TenantId} ended without its decision applied ({ResultCode}); the GSKU is free again.",
+            op.OperationId, op.TenantId, reason);
+        return await Manual(claim, reason, now, ct);
     }
 
     private async Task<bool> ObserveAsync(GskuRetirementRequestOperation op, GskuRetirementRequestWorkflowClaim claim,
@@ -163,7 +199,20 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             return await operations.AdvanceAsync(claim, new(op.Checkpoint, op.RecoveryDisposition, now.UtcTicks,
                 now.Add(execution.RetryDelay).UtcTicks, result.ErrorCode ?? "GSKU_RETIREMENT_REQUEST_DECISION_PENDING",
                 ReleaseLease: true), ct);
+        if (result.Outcome != ProductIdentityWorkflowTransportOutcome.Success
+            && ProductIdentityWorkflowFaultPolicy.Classify(ProductIdentityWorkflowCall.TerminalEvidence, result.Outcome,
+                result.ErrorCode).Kind == ProductIdentityWorkflowFaultKind.ServiceWait)
+            return await operations.AdvanceAsync(claim, new(op.Checkpoint, ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks, now.Add(execution.RetryDelay).UtcTicks, result.ErrorCode, ReleaseLease: true), ct);
         var e = result.Value;
+        if (e is not null && Guid.TryParse(e.ActorUserId, out var self) && self == op.MakerSubjectId)
+        {
+            // B8: decided by its own requester — ignored and said; the operation keeps waiting.
+            log.LogWarning("GSKU retirement request {OperationId} of tenant {TenantId} was decided by its own requester; the decision is ignored ({ResultCode}).",
+                op.OperationId, op.TenantId, SelfApprovalIgnored);
+            return await operations.AdvanceAsync(claim, new(op.Checkpoint, ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks, now.AddMinutes(15).UtcTicks, SelfApprovalIgnored, ReleaseLease: true), ct);
+        }
         var approved = e?.TerminalAction == "Approve" && e.TaskStatus == "Approved" && e.InstanceStatus == "Completed";
         var rejected = e?.TerminalAction == "Reject" && e.TaskStatus == "Rejected" && e.InstanceStatus == "Rejected";
         if ((!approved && !rejected) || e is null || e.WorkflowInstanceId != op.WorkflowInstanceId
@@ -172,7 +221,9 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             || e.ObjectId != op.ObjectId || e.ObjectRef != op.ObjectRef
             || !Guid.TryParse(e.ActorUserId, out var actor) || actor == Guid.Empty || actor == op.MakerSubjectId
             || e.TransitionSequence <= 0 || e.DecisionAt.Offset != TimeSpan.Zero)
-            return await Manual(claim, "GSKU_RETIREMENT_REQUEST_EVIDENCE_CONFLICT", now, ct);
+            return e is null
+                ? await Manual(claim, "GSKU_RETIREMENT_REQUEST_EVIDENCE_CONFLICT", now, ct)
+                : await EndAndReleaseAsync(op, claim, "GSKU_RETIREMENT_REQUEST_EVIDENCE_CONFLICT", now, ct);
         return await operations.AdvanceAsync(claim, new(GskuRetirementRequestCheckpoint.DecisionObserved,
             ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
             DecisionKind: approved ? ProductIdentityDecisionKind.Approved : ProductIdentityDecisionKind.Rejected,
@@ -194,7 +245,13 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             {
                 if (pair.Operation?.Checkpoint != FirstGskuIdentityRetirementCheckpoint.ManualReconciliationRequired)
                     return await Retry(claim, pair.ErrorCode, now, execution, ct);
-                var gsku = await gskus.GetByIdAsync(op.GskuId, ct);
+                // The pair retirement did not take the GSKU (a dependant was found before its fence): the request
+                // ends "not applicable", the requester sees why, and the GSKU is given back (B3 / B4).
+                var current = await gskus.GetByIdAsync(op.GskuId, ct);
+                if (current?.ActiveLifecycleOperation is { } held && held == Binding(op))
+                    return await EndAndReleaseAsync(op, claim, pair.ErrorCode
+                        ?? FirstGskuIdentityRetirementProcessor.DependentIdentitiesExist, now, ct);
+                var gsku = current;
                 if (gsku is null) return await Retry(claim,
                     "GSKU_RETIREMENT_REQUEST_MANUAL_AUDIT_NOT_PERSISTED", now, execution, ct);
                 var conflictAudit = GskuRetirementRequestAuditIntentFactory.Create(gsku, gsku.Version,

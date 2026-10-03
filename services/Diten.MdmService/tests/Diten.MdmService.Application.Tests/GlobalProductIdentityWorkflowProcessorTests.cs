@@ -716,6 +716,9 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         public int AcknowledgeWithoutMoving { get; set; }
         // Runs while a claim is being written — and the claim then honours its token, as the real driver does.
         public Action? WhileClaiming { get; set; }
+        // The store writes the lease and then never answers (a half-open connection), honouring only its token.
+        public bool ClaimsNeverAnswer { get; set; }
+        public int ReleaseIfOwnedCalls { get; private set; }
 
         public Task<GlobalProductIdentityWorkflowReserveResult> ReserveAsync(
             GlobalProductIdentityWorkflowOperation operation, CancellationToken cancellationToken = default)
@@ -757,9 +760,26 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
             Current.UpdatedAtUtcTicksV1 = request.NowUtcTicks;
             WhileClaiming?.Invoke();
             cancellationToken.ThrowIfCancellationRequested(); // the lease is written; the answer never arrives
+            if (ClaimsNeverAnswer)
+                return Task.Delay(Timeout.Infinite, cancellationToken)
+                    .ContinueWith<GlobalProductIdentityWorkflowClaim?>(_ => null, cancellationToken,
+                        TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default);
             return Task.FromResult<GlobalProductIdentityWorkflowClaim?>(new(
                 Current.TenantId, Current.OperationId, Current.OperationFingerprint,
                 request.LeaseOwner, Current.LeaseGeneration, Current.Checkpoint, request.LeaseUntilUtcTicks));
+        }
+
+        public Task ReleaseIfOwnedAsync(
+            Guid operationId, string leaseOwner, long leaseUntilUtcTicks, CancellationToken cancellationToken = default)
+        {
+            ReleaseIfOwnedCalls++;
+            if (Current is not null && Current.OperationId == operationId && Current.LeaseOwner == leaseOwner
+                && Current.LeaseUntilUtcTicksV1 == leaseUntilUtcTicks)
+            {
+                Current.LeaseOwner = null;
+                Current.LeaseUntilUtcTicksV1 = null;
+            }
+            return Task.CompletedTask;
         }
 
         public Task<GlobalProductIdentityWorkflowRecoverablePage> DiscoverRecoverableAsync(
@@ -844,6 +864,8 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
             Current.WithdrawalInstanceStatus = mutation.WithdrawalInstanceStatus ?? Current.WithdrawalInstanceStatus;
             Current.WithdrawalObjectRef = mutation.WithdrawalObjectRef ?? Current.WithdrawalObjectRef;
             Current.WithdrawalRefusalCode = mutation.WithdrawalRefusalCode ?? Current.WithdrawalRefusalCode;
+            Current.WithdrawalAwaitingRequesterSinceUtcTicksV1 = mutation.WithdrawalAwaitingRequesterSinceUtcTicksV1
+                ?? Current.WithdrawalAwaitingRequesterSinceUtcTicksV1;
             if (mutation.ServiceFaultCount.HasValue)
             {
                 Current.ServiceFaultCount = mutation.ServiceFaultCount.Value;
@@ -868,6 +890,7 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
                 Current.WithdrawalInstanceStatus = null;
                 Current.WithdrawalObjectRef = null;
                 Current.WithdrawalRefusalCode = null;
+                Current.WithdrawalAwaitingRequesterSinceUtcTicksV1 = null;
             }
             if (mutation.ReleaseLease)
             {

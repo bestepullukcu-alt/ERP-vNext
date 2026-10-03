@@ -75,5 +75,8 @@ public enum ProductAuditOperation
     FinishedGoodIdentityApprovalWithdrawn = 73,
     FinishedGoodRetirementRequested = 74,
     FinishedGoodRetirementRejected = 75,
-    FinishedGoodRetirementCancelled = 76
+    FinishedGoodRetirementCancelled = 76,
+    // The engine approved the pair's identity and MDM could not apply it: both are drafts again.
+    ProductDefinitionRevisionIdentityDecisionNotApplicable = 77,
+    GskuIdentityDecisionNotApplicable = 78
 }

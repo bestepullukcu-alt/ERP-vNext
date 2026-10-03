@@ -29,59 +29,45 @@ public sealed class FirstGskuIdentityRetirementUnitTests
             intent => intent.Operation == ProductAuditOperation.ProductDefinitionRevisionIdentityRetired);
     }
 
-    [Fact]
-    public async Task Child_blocker_keeps_fence_and_never_retires_or_cascades()
+    // B4 (a) (GSKU FIX1). These three tests used to assert the opposite: the fence was closed first, the
+    // dependant found after it, and the retirement rescheduled every five minutes for ever behind a closed fence.
+    // Now the dependant is looked for BEFORE the fence: the GSKU stays as it is and the retirement ends with why.
+    [Theory]
+    [InlineData("LSKU_ACTIVE")]
+    [InlineData("FINISHED_GOOD_ACTIVE")]
+    [InlineData("DEPENDENT_IDENTITIES_EXIST")]
+    public async Task A_dependant_is_found_before_the_fence_and_the_retirement_ends_with_the_reason(string blocker)
     {
-        var harness = new Harness { ChildBlocker = "LSKU_ACTIVE" };
+        var harness = new Harness { ChildBlocker = blocker };
 
         var result = await harness.Processor.StartAsync(
             GskuId, 2, OperationId, ActorId, "OBSOLETE", "test", TimeSpan.FromMinutes(1));
 
+        var code = blocker == "DEPENDENT_IDENTITIES_EXIST"
+            ? FirstGskuIdentityRetirementProcessor.DependentIdentitiesExist
+            : blocker;
         Assert.False(result.Succeeded);
-        Assert.Equal("FIRST_GSKU_RETIREMENT_CHILD_BLOCKED", result.ErrorCode);
-        Assert.Equal(FirstGskuIdentityRetirementCheckpoint.AdmissionFenceClosed,
+        Assert.Equal(FirstGskuIdentityRetirementCheckpoint.ManualReconciliationRequired,
             harness.Operations.Current!.Checkpoint);
+        Assert.Equal(code, harness.Operations.Current.LastFailureCode);
+        Assert.Null(harness.Gsku.RetirementOperationId); // no fence: children may still be added and retired
         Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Gsku.LifecycleStatus);
         Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Revision.LifecycleStatus);
-        Assert.NotNull(harness.Gsku.RetirementOperationId);
     }
 
     [Fact]
-    public async Task Lsku_child_blocker_clears_only_after_child_is_retired_then_same_operation_recovers()
+    public async Task Once_the_dependant_is_retired_a_new_retirement_goes_through()
     {
         var harness = new Harness { ChildBlocker = "LSKU_ACTIVE" };
-        var blocked = await harness.Processor.StartAsync(
+        await harness.Processor.StartAsync(
             GskuId, 2, OperationId, ActorId, "OBSOLETE", "test", TimeSpan.FromMinutes(1));
+        harness.ChildBlocker = null; // the LSKU is retired
+        harness.Operations.Current = null; // a new request is a new operation
 
-        Assert.False(blocked.Succeeded);
-        Assert.Equal("FIRST_GSKU_RETIREMENT_CHILD_BLOCKED", blocked.ErrorCode);
-        harness.ChildBlocker = null; // repository projection now represents the LSKU as Retired.
+        var retired = await harness.Processor.StartAsync(
+            GskuId, 2, Guid.NewGuid(), ActorId, "OBSOLETE", "test", TimeSpan.FromMinutes(1));
 
-        var recovered = await harness.Processor.RecoverAsync(
-            harness.Operations.Current!, "recovery", TimeSpan.FromMinutes(1));
-
-        Assert.True(recovered.Succeeded);
-        Assert.Equal(ProductIdentityLifecycleStatus.Retired, harness.Gsku.LifecycleStatus);
-        Assert.Equal(ProductIdentityLifecycleStatus.Retired, harness.Revision.LifecycleStatus);
-    }
-
-    [Fact]
-    public async Task Finished_good_child_blocker_clears_only_after_child_is_retired_then_same_operation_recovers()
-    {
-        var harness = new Harness { ChildBlocker = "FINISHED_GOOD_ACTIVE" };
-        var blocked = await harness.Processor.StartAsync(
-            GskuId, 2, OperationId, ActorId, "OBSOLETE", "test", TimeSpan.FromMinutes(1));
-
-        Assert.False(blocked.Succeeded);
-        Assert.Equal("FIRST_GSKU_RETIREMENT_CHILD_BLOCKED", blocked.ErrorCode);
-        Assert.Equal(FirstGskuIdentityRetirementCheckpoint.AdmissionFenceClosed,
-            harness.Operations.Current!.Checkpoint);
-
-        harness.ChildBlocker = null; // repository projection now represents the Finished Good as Retired.
-        var recovered = await harness.Processor.RecoverAsync(
-            harness.Operations.Current!, "recovery", TimeSpan.FromMinutes(1));
-
-        Assert.True(recovered.Succeeded);
+        Assert.True(retired.Succeeded, retired.ErrorCode);
         Assert.Equal(ProductIdentityLifecycleStatus.Retired, harness.Gsku.LifecycleStatus);
         Assert.Equal(ProductIdentityLifecycleStatus.Retired, harness.Revision.LifecycleStatus);
     }
@@ -289,7 +275,7 @@ public sealed class FirstGskuIdentityRetirementUnitTests
 
     private sealed class FakeOperations(Harness harness) : IFirstGskuIdentityRetirementOperationRepository
     {
-        public FirstGskuIdentityRetirementOperation? Current { get; private set; }
+        public FirstGskuIdentityRetirementOperation? Current { get; set; }
         public Task<FirstGskuIdentityRetirementReserveResult> ReserveAsync(
             FirstGskuIdentityRetirementOperation operation, CancellationToken ct = default)
         {

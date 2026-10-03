@@ -174,6 +174,13 @@ public sealed class FirstGskuIdentityRetirementProcessor(
         DateTimeOffset now,
         CancellationToken cancellationToken)
     {
+        // B4 (a): a dependant is looked for BEFORE the fence is closed. Found → the GSKU stays as it is (no fence,
+        // the lock of a request untouched) and the retirement ends with the reason, instead of being rescheduled for
+        // ever behind a closed fence.
+        if (await gskus.FindRetirementBlockerAsync(operation.GskuId, cancellationToken) is { } blocker)
+        {
+            return await QuarantineAsync(claim, DependentsCode(blocker), now, cancellationToken);
+        }
         var result = await gskus.CloseChildAdmissionFenceAsync(
             operation.GskuId, operation.ExpectedGskuVersion, operation.OperationId,
             operation.OperationFingerprint, cancellationToken);
@@ -189,17 +196,11 @@ public sealed class FirstGskuIdentityRetirementProcessor(
         DateTimeOffset now,
         CancellationToken cancellationToken)
     {
-        if (await gskus.HasNonRetiredSiblingAsync(
-                operation.ProductDefinitionRevisionId, operation.GskuId, cancellationToken))
+        // Checked before the fence closed; finding one now means a dependant got past it (a race the fence should
+        // make impossible). Said and handed over — never retried for ever.
+        if (await gskus.FindRetirementBlockerAsync(operation.GskuId, cancellationToken) is { } blocker)
         {
-            return await ScheduleBlockedRetryAsync(
-                claim, now, "FIRST_GSKU_RETIREMENT_CHILD_BLOCKED", cancellationToken);
-        }
-        var blocker = await gskus.FindRetirementBlockerAsync(operation.GskuId, cancellationToken);
-        if (blocker is not null)
-        {
-            return await ScheduleBlockedRetryAsync(
-                claim, now, "FIRST_GSKU_RETIREMENT_CHILD_BLOCKED", cancellationToken);
+            return await QuarantineAsync(claim, DependentsCode(blocker), now, cancellationToken);
         }
         return await AdvanceAsync(claim, FirstGskuIdentityRetirementCheckpoint.ChildrenVerified,
             now, cancellationToken: cancellationToken);
@@ -283,6 +284,11 @@ public sealed class FirstGskuIdentityRetirementProcessor(
         operations.AdvanceAsync(claim, new(
             checkpoint, ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
             LastFailureCode: failure, ReleaseLease: true), cancellationToken);
+
+    public const string DependentIdentitiesExist = "GSKU_DEPENDENT_IDENTITIES_EXIST";
+
+    private static string DependentsCode(string blocker) =>
+        blocker == "DEPENDENT_IDENTITIES_EXIST" ? DependentIdentitiesExist : blocker;
 
     private Task<bool> ScheduleBlockedRetryAsync(
         FirstGskuIdentityRetirementClaim claim,

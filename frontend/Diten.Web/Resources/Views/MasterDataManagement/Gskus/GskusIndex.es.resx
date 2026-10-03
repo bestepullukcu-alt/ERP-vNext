@@ -22,4 +22,12 @@
   <data name="RetirementRequestReasonRequired" xml:space="preserve"><value>Se requiere un motivo de hasta 128 caracteres.</value></data>
   <data name="RetirementRequestReasonInvalid" xml:space="preserve"><value>El motivo contiene caracteres de control no admitidos.</value></data>
   <data name="RetirementRequestedSuccess" xml:space="preserve"><value>La solicitud de retirada se envió para aprobación.</value></data>
+  <data name="ErrorParentNotApproved" xml:space="preserve"><value>El producto global de este GSKU aún no está aprobado. Haga aprobar primero el producto global y luego envíe el GSKU.</value></data>
+  <data name="ErrorApprovalTemplateMissing" xml:space="preserve"><value>La plantilla de aprobación de GSKU aún no está configurada, por lo que no se envió nada. Pida a su administrador que la cree y la publique, y vuelva a enviar.</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Este GSKU se está enviando para aprobación. No se puede editar hasta que el envío llegue al motor de aprobación.</value></data>
+  <data name="ErrorDependentIdentitiesExist" xml:space="preserve"><value>Este GSKU todavía tiene SKU locales o productos terminados sin retirar. Retírelos primero.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>La aprobación está cambiando en este momento. Vuelva a intentarlo en un instante.</value></data>
+  <data name="IdentityNotAppliedParent" xml:space="preserve"><value>La aprobación se concedió pero no se pudo aplicar: el producto global ya no está aprobado. El GSKU vuelve a ser un borrador; corríjalo y envíelo de nuevo.</value></data>
+  <data name="IdentityNotAppliedReference" xml:space="preserve"><value>La aprobación se concedió pero no se pudo aplicar: la unidad de embalaje o su aplicabilidad ya no se puede seleccionar. El GSKU vuelve a ser un borrador; elija un valor válido y envíelo de nuevo.</value></data>
+  <data name="IdentityNotAppliedGeneric" xml:space="preserve"><value>La aprobación se concedió pero no se pudo aplicar. El GSKU vuelve a ser un borrador; revíselo y envíelo de nuevo.</value></data>
 </root>

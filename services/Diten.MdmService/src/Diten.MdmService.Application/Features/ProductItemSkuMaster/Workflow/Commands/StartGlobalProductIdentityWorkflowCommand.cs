@@ -14,7 +14,9 @@ public sealed record GlobalProductIdentityWorkflowResult(
     string Checkpoint,
     Guid? WorkflowInstanceId,
     string RecoveryDisposition,
-    bool IsReplay);
+    bool IsReplay,
+    // Only on 409 PRODUCT_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT, to the requester: the withdrawal to repeat.
+    Guid? PendingWithdrawalCommandId = null);
 
 public sealed record StartGlobalProductIdentityWorkflowCommand(
     StartGlobalProductIdentityWorkflowRequest Request)

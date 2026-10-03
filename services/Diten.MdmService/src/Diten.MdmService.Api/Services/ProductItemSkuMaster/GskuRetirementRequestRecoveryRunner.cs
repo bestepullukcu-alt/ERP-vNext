@@ -1,3 +1,4 @@
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Api.Configuration;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
@@ -36,9 +37,17 @@ public sealed class GskuRetirementRequestRecoveryRunner(IServiceScopeFactory sco
                     var repo = scope.ServiceProvider.GetRequiredService<IGskuRetirementRequestOperationRepository>();
                     var page = await repo.DiscoverRecoverableAsync(clock.GetUtcNow().UtcTicks, settings.BatchSize, cursor, ct);
                     var processor = scope.ServiceProvider.GetRequiredService<GskuRetirementRequestWorkflowProcessor>();
+                    var backgroundScope = scope.ServiceProvider.GetRequiredService<ProductIdentityBackgroundScope>();
+                    var scopeMode = await backgroundScope.ResolveAsync(ct);
                     foreach (var operation in page.Operations)
                     {
                         count++;
+                        // The same scope rule as every product-identity worker (it had none before GSKU FIX1).
+                        if (!await backgroundScope.InScopeAsync(scopeMode, operation.GlobalProductId, ct))
+                        {
+                            deferred++;
+                            continue;
+                        }
                         try
                         {
                             var result = await processor.RecoverAsync(operation,

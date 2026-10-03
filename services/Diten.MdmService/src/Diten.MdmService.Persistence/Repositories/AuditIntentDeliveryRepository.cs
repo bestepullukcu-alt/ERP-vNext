@@ -1623,7 +1623,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 or ProductAuditOperation.ProductDefinitionRevisionIdentityApproved
                 or ProductAuditOperation.ProductDefinitionRevisionIdentityRejected
                 or ProductAuditOperation.ProductDefinitionRevisionIdentityApprovalWithdrawn
-                or ProductAuditOperation.ProductDefinitionRevisionIdentityRetired,
+                or ProductAuditOperation.ProductDefinitionRevisionIdentityRetired
+                or ProductAuditOperation.ProductDefinitionRevisionIdentityDecisionNotApplicable,
             AuditAggregateType.Gsku => operation is
                 ProductAuditOperation.GskuDraftCreated or ProductAuditOperation.GskuDraftUpdated
                 or ProductAuditOperation.GskuIdentitySubmitted or ProductAuditOperation.GskuIdentityApproved
@@ -1631,7 +1632,8 @@ public sealed class AuditIntentDeliveryRepository : IAuditIntentDeliveryReposito
                 or ProductAuditOperation.GskuCorrectionRequested or ProductAuditOperation.GskuCorrectionApplied
                 or ProductAuditOperation.GskuCorrectionRejected or ProductAuditOperation.GskuCorrectionManualReconciliationRequired
                 or ProductAuditOperation.GskuRetirementRequested or ProductAuditOperation.GskuRetirementRejected
-                or ProductAuditOperation.GskuRetirementManualReconciliationRequired or ProductAuditOperation.GskuIdentityRetired,
+                or ProductAuditOperation.GskuRetirementManualReconciliationRequired or ProductAuditOperation.GskuIdentityRetired
+                or ProductAuditOperation.GskuIdentityDecisionNotApplicable,
             AuditAggregateType.Lsku => operation is
                 ProductAuditOperation.LskuDraftCreated or ProductAuditOperation.LskuIdentitySubmitted
                 or ProductAuditOperation.LskuIdentityApproved or ProductAuditOperation.LskuIdentityRejected

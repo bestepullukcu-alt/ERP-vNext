@@ -3,7 +3,7 @@ using Diten.MdmService.Domain.ValueObjects;
 
 namespace Diten.MdmService.Domain.Entities;
 
-public sealed class FirstGskuIdentityWorkflowOperation : EntityBase
+public sealed class FirstGskuIdentityWorkflowOperation : EntityBase, IProductIdentityWorkflowFaultFields
 {
     public const int CurrentTemporalStorageVersion = 1;
 
@@ -76,6 +76,14 @@ public sealed class FirstGskuIdentityWorkflowOperation : EntityBase
     public long? DecisionAtUtcTicksV1 { get; set; }
     public long? NextAttemptAtUtcTicksV1 { get; set; }
     public string? LastFailureCode { get; set; }
+    // Consecutive faults of the SERVICE chain while this operation waited (the worker's attempts only) and the first
+    // of them; cleared by the first answer the chain gives again. Rules: ProductIdentityWorkflowFaultRules.
+    public int ServiceFaultCount { get; set; }
+    public long? ServiceFaultSinceUtcTicksV1 { get; set; }
+    // Why a withdrawal was refused for good (the approval was decided or closed first): what a repeat is told.
+    public string? WithdrawalRefusalCode { get; set; }
+    // When the worker first found the withdrawal landed and waiting for its requester.
+    public long? WithdrawalAwaitingRequesterSinceUtcTicksV1 { get; set; }
     public string? LeaseOwner { get; set; }
     public long? LeaseUntilUtcTicksV1 { get; set; }
     public long LeaseGeneration { get; set; }

@@ -26,6 +26,13 @@ public interface IGlobalProductIdentityWorkflowOperationRepository
         GlobalProductIdentityWorkflowRecoveryCursor? after = null,
         CancellationToken cancellationToken = default);
 
+    // Gives back a lease this owner wrote at this exact expiry — for a claim whose answer never arrived.
+    Task ReleaseIfOwnedAsync(
+        Guid operationId,
+        string leaseOwner,
+        long leaseUntilUtcTicks,
+        CancellationToken cancellationToken = default);
+
     Task<bool> AdvanceAsync(
         GlobalProductIdentityWorkflowClaim claim,
         GlobalProductIdentityWorkflowCheckpointMutation mutation,

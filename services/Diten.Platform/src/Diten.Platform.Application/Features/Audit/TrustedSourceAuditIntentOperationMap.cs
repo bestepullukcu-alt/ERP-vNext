@@ -56,6 +56,9 @@ public static class TrustedSourceAuditIntentOperationMap
             [("Gsku", "GskuRetirementRejected")] = ("Gsku", AuditOperation.LifecycleTransition),
             [("Gsku", "GskuRetirementManualReconciliationRequired")] = ("Gsku", AuditOperation.LifecycleTransition),
             [("Gsku", "GskuIdentityRetired")] = ("Gsku", AuditOperation.Deactivate),
+            // WP-MDM-GSKU-ACCEPT-01 FIX1: the engine approved the pair and MDM could not apply it (back to draft).
+            [("ProductDefinitionRevision", "ProductDefinitionRevisionIdentityDecisionNotApplicable")] = ("ProductDefinitionRevision", AuditOperation.LifecycleTransition),
+            [("Gsku", "GskuIdentityDecisionNotApplicable")] = ("Gsku", AuditOperation.LifecycleTransition),
             [("FinishedGood", "FinishedGoodDraftCreated")] = ("FinishedGood", AuditOperation.Create),
             [("FinishedGood", "FinishedGoodIdentitySubmitted")] = ("FinishedGood", AuditOperation.LifecycleTransition),
             [("FinishedGood", "FinishedGoodIdentityApproved")] = ("FinishedGood", AuditOperation.LifecycleTransition),

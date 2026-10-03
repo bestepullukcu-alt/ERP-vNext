@@ -87,6 +87,10 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         operation.WithdrawalTaskStatus = null;
         operation.WithdrawalInstanceStatus = null;
         operation.WithdrawalObjectRef = null;
+        operation.WithdrawalRefusalCode = null;
+        operation.WithdrawalAwaitingRequesterSinceUtcTicksV1 = null;
+        operation.ServiceFaultCount = 0;
+        operation.ServiceFaultSinceUtcTicksV1 = null;
         operation.NextAttemptAtUtcTicksV1 = null;
         operation.LastFailureCode = null;
         operation.LeaseOwner = null;
@@ -169,10 +173,12 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
                          FirstGskuIdentityWorkflowOperation.CurrentTemporalStorageVersion)
                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.In(
                          item => item.Checkpoint, request.EligibleCheckpoints)
-                     & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Or(
-                         Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.NextAttemptAtUtcTicksV1, null),
-                         Builders<FirstGskuIdentityWorkflowOperation>.Filter.Lte(
-                             item => item.NextAttemptAtUtcTicksV1, request.NowUtcTicks))
+                     & (request.IgnoreRetrySchedule
+                         ? Builders<FirstGskuIdentityWorkflowOperation>.Filter.Empty
+                         : Builders<FirstGskuIdentityWorkflowOperation>.Filter.Or(
+                             Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.NextAttemptAtUtcTicksV1, null),
+                             Builders<FirstGskuIdentityWorkflowOperation>.Filter.Lte(
+                                 item => item.NextAttemptAtUtcTicksV1, request.NowUtcTicks)))
                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Or(
                          Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.LeaseOwner, null),
                          Builders<FirstGskuIdentityWorkflowOperation>.Filter.Lte(
@@ -219,16 +225,23 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         var terminal = new[]
         {
             FirstGskuIdentityWorkflowCheckpoint.Completed,
-            FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
             FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
             FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
-            FirstGskuIdentityWorkflowCheckpoint.Superseded
+            FirstGskuIdentityWorkflowCheckpoint.Superseded,
+            FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable
         };
         var filter = ActiveTenantFilter
                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
                          item => item.TemporalStorageVersion,
                          FirstGskuIdentityWorkflowOperation.CurrentTemporalStorageVersion)
                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Nin(item => item.Checkpoint, terminal)
+                     // AwaitingMakerReplay is the maker's to continue — EXCEPT a withdrawal an earlier version
+                     // parked there: its approval exists at the engine, so the worker must keep reading it.
+                     & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Or(
+                         Builders<FirstGskuIdentityWorkflowOperation>.Filter.Ne(
+                             item => item.Checkpoint, FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay),
+                         Builders<FirstGskuIdentityWorkflowOperation>.Filter.Ne(
+                             item => item.WithdrawalCommandId, null))
                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Or(
                          Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.NextAttemptAtUtcTicksV1, null),
                          Builders<FirstGskuIdentityWorkflowOperation>.Filter.Lte(
@@ -373,6 +386,36 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         if (mutation.WithdrawalTaskStatus is not null) update = update.Set(item => item.WithdrawalTaskStatus, mutation.WithdrawalTaskStatus);
         if (mutation.WithdrawalInstanceStatus is not null) update = update.Set(item => item.WithdrawalInstanceStatus, mutation.WithdrawalInstanceStatus);
         if (mutation.WithdrawalObjectRef is not null) update = update.Set(item => item.WithdrawalObjectRef, mutation.WithdrawalObjectRef);
+        if (mutation.WithdrawalRefusalCode is not null) update = update.Set(item => item.WithdrawalRefusalCode, mutation.WithdrawalRefusalCode);
+        if (mutation.WithdrawalAwaitingRequesterSinceUtcTicksV1.HasValue) update = update.Set(item => item.WithdrawalAwaitingRequesterSinceUtcTicksV1, mutation.WithdrawalAwaitingRequesterSinceUtcTicksV1);
+        if (mutation.ServiceFaultCount.HasValue)
+        {
+            update = update
+                .Set(item => item.ServiceFaultCount, mutation.ServiceFaultCount.Value)
+                .Set(item => item.ServiceFaultSinceUtcTicksV1, mutation.ServiceFaultSinceUtcTicksV1);
+        }
+        if (mutation.ClearWithdrawal)
+        {
+            update = update
+                .Set(item => item.WithdrawalCommandId, null)
+                .Set(item => item.WithdrawalFingerprint, null)
+                .Set(item => item.WithdrawalRequesterSubjectId, null)
+                .Set(item => item.WithdrawalExpectedGskuVersion, null)
+                .Set(item => item.WithdrawalReasonCode, null)
+                .Set(item => item.WithdrawalComment, null)
+                .Set(item => item.WithdrawalExpectedWorkflowInstanceVersion, null)
+                .Set(item => item.WithdrawalExpectedApprovalTaskVersion, null)
+                .Set(item => item.WithdrawalTransitionLogId, null)
+                .Set(item => item.WithdrawalObservedAtUtcTicksV1, null)
+                .Set(item => item.WithdrawalTransitionSequence, null)
+                .Set(item => item.WithdrawalResultWorkflowInstanceVersion, null)
+                .Set(item => item.WithdrawalResultApprovalTaskVersion, null)
+                .Set(item => item.WithdrawalTaskStatus, null)
+                .Set(item => item.WithdrawalInstanceStatus, null)
+                .Set(item => item.WithdrawalObjectRef, null)
+                .Set(item => item.WithdrawalRefusalCode, null)
+                .Set(item => item.WithdrawalAwaitingRequesterSinceUtcTicksV1, null);
+        }
         if (mutation.ReleaseLease)
         {
             update = update.Set(item => item.LeaseOwner, null).Set(item => item.LeaseUntilUtcTicksV1, null);
@@ -381,6 +424,166 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         var result = await _operations.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
         return result.ModifiedCount == 1;
     }
+
+    public Task ReleaseIfOwnedAsync(
+        Guid operationId,
+        string leaseOwner,
+        long leaseUntilUtcTicks,
+        CancellationToken cancellationToken = default) =>
+        _operations.UpdateOneAsync(
+            ActiveTenantFilter
+            & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.OperationId, operationId)
+            & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.LeaseOwner, leaseOwner)
+            & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.LeaseUntilUtcTicksV1, leaseUntilUtcTicks),
+            Builders<FirstGskuIdentityWorkflowOperation>.Update
+                .Set(item => item.LeaseOwner, null)
+                .Set(item => item.LeaseUntilUtcTicksV1, null),
+            cancellationToken: cancellationToken);
+
+    public async Task<bool> HasUnfinishedOperationAsync(Guid gskuId, CancellationToken cancellationToken = default) =>
+        await _operations.Find(
+                ActiveTenantFilter
+                & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.GskuId, gskuId)
+                & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Nin(item => item.Checkpoint, FinalCheckpoints))
+            .Limit(1)
+            .CountDocumentsAsync(cancellationToken) > 0;
+
+    public async Task<string?> LatestNotApplicableReasonAsync(Guid gskuId, CancellationToken cancellationToken = default)
+    {
+        var latest = await _operations.Find(
+                ActiveTenantFilter & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.GskuId, gskuId))
+            .SortByDescending(item => item.CreatedAtUtcTicksV1)
+            .Limit(1)
+            .FirstOrDefaultAsync(cancellationToken);
+        return latest?.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable ? latest.LastFailureCode : null;
+    }
+
+    private static readonly FirstGskuIdentityWorkflowCheckpoint[] FinalCheckpoints =
+    [
+        FirstGskuIdentityWorkflowCheckpoint.Completed,
+        FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+        FirstGskuIdentityWorkflowCheckpoint.Superseded,
+        FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable
+    ];
+
+    public async Task<FirstGskuIdentityDecisionNotApplicableWriteResult> ApplyDecisionNotApplicableAsync(
+        FirstGskuIdentityWorkflowClaim claim,
+        FirstGskuIdentityWorkflowOperation operation,
+        string reasonCode,
+        LocalAuditIntent revisionAuditIntent,
+        LocalAuditIntent gskuAuditIntent,
+        long updatedAtUtcTicks,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        ArgumentNullException.ThrowIfNull(revisionAuditIntent);
+        ArgumentNullException.ThrowIfNull(gskuAuditIntent);
+        var key = NotApplicableKey(operation);
+        if (claim.TenantId != _tenantId
+            || claim.OperationId != operation.OperationId
+            || claim.OperationFingerprint != operation.OperationFingerprint
+            || claim.Checkpoint != FirstGskuIdentityWorkflowCheckpoint.DecisionObserved
+            || updatedAtUtcTicks <= 0
+            || !IsExactBounded(reasonCode, 128)
+            || operation.DecisionKind != ProductIdentityDecisionKind.Approved
+            || revisionAuditIntent.Operation != ProductAuditOperation.ProductDefinitionRevisionIdentityDecisionNotApplicable
+            || gskuAuditIntent.Operation != ProductAuditOperation.GskuIdentityDecisionNotApplicable
+            || !ValidNotApplicableAudit(revisionAuditIntent, AuditAggregateType.ProductDefinitionRevision,
+                operation.ProductDefinitionRevisionId, operation.ExpectedRevisionVersion + 1, key)
+            || !ValidNotApplicableAudit(gskuAuditIntent, AuditAggregateType.Gsku, operation.GskuId,
+                operation.ExpectedGskuVersion + 1, key))
+        {
+            return new(false, false, null, null, "FIRST_GSKU_IDENTITY_NOT_APPLICABLE_CONTRACT_INVALID");
+        }
+
+        var currentRevision = await _revisions.Find(ActiveRevisionFilter(operation.ProductDefinitionRevisionId))
+            .FirstOrDefaultAsync(cancellationToken);
+        var currentGsku = await _gskus.Find(ActiveGskuFilter(operation.GskuId)).FirstOrDefaultAsync(cancellationToken);
+        using var session = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+        session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+        try
+        {
+            var revisionResult = await _revisions.UpdateOneAsync(
+                session,
+                ActiveRevisionFilter(operation.ProductDefinitionRevisionId)
+                & Builders<ProductDefinitionRevision>.Filter.Eq(item => item.Version, operation.ExpectedRevisionVersion + 1)
+                & Builders<ProductDefinitionRevision>.Filter.Eq(
+                    item => item.LifecycleStatus, ProductIdentityLifecycleStatus.PendingIdentityApproval)
+                & ExactBindingFilter<ProductDefinitionRevision>(operation),
+                Builders<ProductDefinitionRevision>.Update
+                    .Set(item => item.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
+                    .Set(item => item.UpdatedAt, new DateTimeOffset(updatedAtUtcTicks, TimeSpan.Zero))
+                    .Inc(item => item.Version, 1)
+                    .Push(item => item.AuditIntents, revisionAuditIntent),
+                cancellationToken: cancellationToken);
+            var gskuResult = revisionResult.ModifiedCount != 1 ? null : await _gskus.UpdateOneAsync(
+                session,
+                ActiveGskuFilter(operation.GskuId)
+                & Builders<Gsku>.Filter.Eq(item => item.Version, operation.ExpectedGskuVersion + 1)
+                & Builders<Gsku>.Filter.Eq(item => item.LifecycleStatus, ProductIdentityLifecycleStatus.PendingIdentityApproval)
+                & ExactBindingFilter<Gsku>(operation),
+                Builders<Gsku>.Update
+                    .Set(item => item.LifecycleStatus, ProductIdentityLifecycleStatus.Draft)
+                    .Set(item => item.UpdatedAt, new DateTimeOffset(updatedAtUtcTicks, TimeSpan.Zero))
+                    .Inc(item => item.Version, 1)
+                    .Push(item => item.AuditIntents, gskuAuditIntent),
+                cancellationToken: cancellationToken);
+            var operationResult = gskuResult is not { ModifiedCount: 1 } ? null : await _operations.UpdateOneAsync(
+                session,
+                ClaimFilter(claim, updatedAtUtcTicks),
+                Builders<FirstGskuIdentityWorkflowOperation>.Update
+                    .Set(item => item.Checkpoint, FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable)
+                    .Set(item => item.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.None)
+                    .Set(item => item.NextAttemptAtUtcTicksV1, null)
+                    .Set(item => item.LastFailureCode, reasonCode)
+                    .Set(item => item.ServiceFaultCount, 0)
+                    .Set(item => item.ServiceFaultSinceUtcTicksV1, null)
+                    .Set(item => item.LeaseOwner, null)
+                    .Set(item => item.LeaseUntilUtcTicksV1, null)
+                    .Set(item => item.UpdatedAtUtcTicksV1, updatedAtUtcTicks)
+                    .Set(item => item.UpdatedAt, new DateTimeOffset(updatedAtUtcTicks, TimeSpan.Zero))
+                    .Inc(item => item.Version, 1),
+                cancellationToken: cancellationToken);
+            if (operationResult is not { ModifiedCount: 1 })
+            {
+                await session.AbortTransactionAsync(cancellationToken);
+                return new(false, false, currentRevision, currentGsku, "FIRST_GSKU_IDENTITY_NOT_APPLICABLE_PAIR_CONFLICT");
+            }
+            await session.CommitTransactionAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+            throw;
+        }
+        catch (MongoException)
+        {
+            if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+            return new(false, false, currentRevision, currentGsku, "FIRST_GSKU_IDENTITY_NOT_APPLICABLE_PERSISTENCE_UNAVAILABLE");
+        }
+
+        currentRevision = await _revisions.Find(ActiveRevisionFilter(operation.ProductDefinitionRevisionId))
+            .FirstOrDefaultAsync(cancellationToken);
+        currentGsku = await _gskus.Find(ActiveGskuFilter(operation.GskuId)).FirstOrDefaultAsync(cancellationToken);
+        return new(true, false, currentRevision, currentGsku, null);
+    }
+
+    private static string NotApplicableKey(FirstGskuIdentityWorkflowOperation operation) =>
+        FirstGskuIdentityDecisionNotApplicable.Key(operation.OperationId);
+
+    private bool ValidNotApplicableAudit(
+        LocalAuditIntent intent,
+        AuditAggregateType aggregateType,
+        Guid aggregateId,
+        int expectedVersion,
+        string key) =>
+        intent.TenantId == _tenantId
+        && intent.AggregateType == aggregateType
+        && intent.AggregateId == aggregateId
+        && intent.PreVersion == expectedVersion
+        && intent.PostVersion == expectedVersion + 1
+        && intent.IdempotencyKey == key
+        && !string.IsNullOrWhiteSpace(intent.EvidenceHash);
 
     public async Task<FirstGskuIdentityWithdrawalWriteResult> ApplyWithdrawalAsync(
         FirstGskuIdentityWorkflowClaim claim,
@@ -657,7 +860,9 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
                 or FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
             (FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
                 FirstGskuIdentityWorkflowCheckpoint.WorkflowStarted
-                or FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+                or FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+                // A maker's resubmit whose outcome is unknown again goes back to the worker's lookup.
+                or FirstGskuIdentityWorkflowCheckpoint.StartOutcomeUnknown) => true,
             (FirstGskuIdentityWorkflowCheckpoint.WorkflowStarted,
                 FirstGskuIdentityWorkflowCheckpoint.RevisionPendingApplied
                 or FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
@@ -801,10 +1006,11 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
 
         if (current == mutation.NextCheckpoint)
         {
-            return mutation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable
-                && mutation.NextAttemptAtUtcTicksV1 is > 0
-                && !string.IsNullOrWhiteSpace(mutation.LastFailureCode)
-                && mutation.ReleaseLease && !hasStart && !hasDecision && !hasApproval;
+            // Staying where it is: a retry, a wait through a service fault, a lease given back. It may carry the
+            // fault fields, never a fact of another step.
+            return mutation.ReleaseLease && !hasStart && !hasDecision && !hasApproval
+                && !hasWithdrawalRequest && !hasWithdrawalPreflight && !hasWithdrawalEvidence
+                && !mutation.ClearWithdrawal;
         }
         if (current == FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
             && mutation.NextCheckpoint == FirstGskuIdentityWorkflowCheckpoint.DecisionObserved)
@@ -839,7 +1045,14 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         }
         if (mutation.NextCheckpoint == FirstGskuIdentityWorkflowCheckpoint.WithdrawalObserved)
         {
-            return completeWithdrawalEvidence && !hasWithdrawalRequest && !hasWithdrawalPreflight
+            // The cancellation evidence carries the object reference the engine cancelled under; the processor has
+            // always written it here. Refusing it made every GSKU withdrawal end in a concurrency conflict against
+            // the real store (found by the first HTTP test, WP-MDM-GSKU-ACCEPT-01 item 12; the fakes never checked).
+            // The versions read before the cancellation still belong to the preflight step only.
+            return completeWithdrawalEvidence && !hasWithdrawalRequest
+                && !mutation.WithdrawalExpectedWorkflowInstanceVersion.HasValue
+                && !mutation.WithdrawalExpectedApprovalTaskVersion.HasValue
+                && (mutation.WithdrawalObjectRef is null || IsExactBounded(mutation.WithdrawalObjectRef, 256))
                 && !hasStart && !hasDecision && !hasApproval;
         }
         return !hasStart && !hasDecision && !hasApproval
@@ -885,7 +1098,12 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
                     .Ascending(item => item.NextAttemptAtUtcTicksV1).Ascending(item => item.OperationId)
                     .Ascending(item => item.Checkpoint).Ascending(item => item.LeaseUntilUtcTicksV1)
                     .Ascending(item => item.CreatedAtUtcTicksV1),
-                new CreateIndexOptions { Name = "ix_mdm_first_gsku_identity_workflow_recovery" })
+                new CreateIndexOptions { Name = "ix_mdm_first_gsku_identity_workflow_recovery" }),
+            new CreateIndexModel<FirstGskuIdentityWorkflowOperation>(
+                Builders<FirstGskuIdentityWorkflowOperation>.IndexKeys
+                    .Ascending(item => item.TenantId).Ascending(item => item.GskuId).Ascending(item => item.Checkpoint),
+                new CreateIndexOptions<FirstGskuIdentityWorkflowOperation> { PartialFilterExpression = active,
+                    Name = "ix_mdm_first_gsku_identity_workflow_gsku_unfinished" })
         ]);
     }
 }

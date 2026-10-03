@@ -22,4 +22,12 @@
   <data name="RetirementRequestReasonRequired" xml:space="preserve"><value>يلزم إدخال سبب لا يتجاوز 128 حرفاً.</value></data>
   <data name="RetirementRequestReasonInvalid" xml:space="preserve"><value>يحتوي السبب على محارف تحكم غير مدعومة.</value></data>
   <data name="RetirementRequestedSuccess" xml:space="preserve"><value>تم إرسال طلب الإيقاف للموافقة.</value></data>
+  <data name="ErrorParentNotApproved" xml:space="preserve"><value>لم تتم الموافقة على المنتج العالمي لهذا الـ GSKU بعد. احصل أولاً على الموافقة على المنتج العالمي، ثم أرسل الـ GSKU.</value></data>
+  <data name="ErrorApprovalTemplateMissing" xml:space="preserve"><value>لم يتم إعداد قالب الموافقة على GSKU بعد، لذلك لم يُرسل أي شيء. اطلب من المسؤول إنشاءه ونشره، ثم أعد الإرسال.</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>يجري إرسال هذا الـ GSKU للموافقة. لا يمكن تعديله حتى يصل الإرسال إلى محرك الموافقات.</value></data>
+  <data name="ErrorDependentIdentitiesExist" xml:space="preserve"><value>لا يزال لهذا الـ GSKU وحدات SKU محلية أو منتجات نهائية غير متقاعدة. قم بإحالتها إلى التقاعد أولاً.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>الموافقة قيد التغيير الآن. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="IdentityNotAppliedParent" xml:space="preserve"><value>مُنحت الموافقة لكن تعذّر تطبيقها: لم يعد المنتج العالمي معتمداً. أصبح الـ GSKU مسودة مرة أخرى — صحّح ذلك وأرسله من جديد.</value></data>
+  <data name="IdentityNotAppliedReference" xml:space="preserve"><value>مُنحت الموافقة لكن تعذّر تطبيقها: لم تعد وحدة التعبئة أو قابلية تطبيقها قابلة للاختيار. أصبح الـ GSKU مسودة مرة أخرى — اختر قيمة صالحة وأرسله من جديد.</value></data>
+  <data name="IdentityNotAppliedGeneric" xml:space="preserve"><value>مُنحت الموافقة لكن تعذّر تطبيقها. أصبح الـ GSKU مسودة مرة أخرى — تحقّق منه وأرسله من جديد.</value></data>
 </root>

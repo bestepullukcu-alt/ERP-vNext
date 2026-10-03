@@ -405,13 +405,11 @@ public sealed class GskuRepository : IGskuRepository
             && current.LifecycleStatus == ProductIdentityLifecycleStatus.Draft
             && current.PackQuantity == gsku.PackQuantity
             && string.Equals(current.PackUomCode, gsku.PackUomCode, StringComparison.Ordinal)
-            && current.AuditIntents.Count(intent =>
-                intent.Operation == ProductAuditOperation.GskuDraftUpdated
-                && string.Equals(intent.IdempotencyKey, newIntent.IdempotencyKey, StringComparison.Ordinal)
-                && string.Equals(intent.EvidenceHash, newIntent.EvidenceHash, StringComparison.Ordinal)) == 1;
+            && PersistedWrite(current, newIntent) is { Operation: ProductAuditOperation.GskuDraftUpdated } persisted
+            && string.Equals(persisted.EvidenceHash, newIntent.EvidenceHash, StringComparison.Ordinal);
         return isExactExternalReplay
             ? new(true, current)
-            : new(false, current, "CONCURRENCY_CONFLICT");
+            : new(false, current, CapacityOr(current, "CONCURRENCY_CONFLICT"));
     }
 
     public Task<FirstGskuIdentityLifecycleMutationResult<Gsku>> MarkIdentityPendingAsync(
@@ -454,6 +452,10 @@ public sealed class GskuRepository : IGskuRepository
             return new(false, false, current, "PARENT_NOT_IDENTITY_APPROVED");
         if (current.RetirementOperationId.HasValue)
             return new(false, false, current, "GSKU_RETIREMENT_IN_PROGRESS");
+        // B4 (b): while a correction or a retirement request is in flight, no child is admitted — a child created
+        // between the request and its decision would turn an approved retirement into a silent "later".
+        if (current.ActiveLifecycleOperation is not null)
+            return new(false, false, current, "GSKU_LIFECYCLE_OPERATION_ACTIVE");
         if (current.ChildCreationAdmissions.Count >= GskuChildCreationAdmission.MaximumActiveAdmissions)
             return new(false, false, current, "GSKU_CHILD_ADMISSION_LIMIT_REACHED");
 
@@ -465,6 +467,7 @@ public sealed class GskuRepository : IGskuRepository
         var filter = ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id)
             & Builders<Gsku>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
             & Builders<Gsku>.Filter.Eq(x => x.RetirementOperationId, null)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
             & Builders<Gsku>.Filter.Not(Builders<Gsku>.Filter.ElemMatch(x => x.ChildCreationAdmissions,
                 x => x.ChildKind == childKind && x.CreationCommandId == creationCommandId))
             & Builders<Gsku>.Filter.Where(x => x.ChildCreationAdmissions.Count < GskuChildCreationAdmission.MaximumActiveAdmissions);
@@ -581,7 +584,7 @@ public sealed class GskuRepository : IGskuRepository
         if (await FindRetirementBlockerAsync(id, cancellationToken) is { } blocker)
             return new(false, false, await GetByIdAsync(id, cancellationToken), blocker);
         var current = await GetByIdAsync(id, cancellationToken);
-        var replay = current?.AuditIntents.SingleOrDefault(x => x.IdempotencyKey == auditIntent.IdempotencyKey);
+        var replay = PersistedWrite(current, auditIntent);
         if (replay is not null)
             return replay.Operation == ProductAuditOperation.GskuIdentityRetired && replay.EvidenceHash == auditIntent.EvidenceHash
                    && current!.LifecycleStatus == ProductIdentityLifecycleStatus.Retired
@@ -603,7 +606,7 @@ public sealed class GskuRepository : IGskuRepository
                 .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1).Push(x => x.AuditIntents, auditIntent),
             new FindOneAndUpdateOptions<Gsku> { ReturnDocument = ReturnDocument.After }, cancellationToken);
         return updated is not null ? new(true, false, updated, null)
-            : new(false, false, current, current is null ? "GSKU_NOT_FOUND" : "FIRST_GSKU_RETIREMENT_CONCURRENCY_CONFLICT");
+            : new(false, false, current, current is null ? "GSKU_NOT_FOUND" : CapacityOr(current, "FIRST_GSKU_RETIREMENT_CONCURRENCY_CONFLICT"));
     }
 
     public async Task<GskuRetirementRequestWriteResult> AcquireRetirementRequestAsync(
@@ -630,10 +633,13 @@ public sealed class GskuRepository : IGskuRepository
                 .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1)
                 .Push(x => x.AuditIntents, auditIntent),
             new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
-        return updated is not null ? new(true, false, updated, null)
-            : new(false, false, current, current is null ? "GSKU_NOT_FOUND"
+        if (updated is not null) return new(true, false, updated, null);
+        // Said from what is there NOW (as the correction does): a lock that got in after the reads above is "active",
+        // not an unexplained admission conflict.
+        current = await GetByIdAsync(id, cancellationToken);
+        return new(false, false, current, current is null ? "GSKU_NOT_FOUND"
                 : current.ActiveLifecycleOperation is not null ? "GSKU_LIFECYCLE_OPERATION_ACTIVE"
-                : "GSKU_RETIREMENT_REQUEST_ADMISSION_CONFLICT");
+                : CapacityOr(current, "GSKU_RETIREMENT_REQUEST_ADMISSION_CONFLICT"));
     }
 
     public async Task<GskuRetirementRequestWriteResult> RejectRetirementRequestAsync(
@@ -660,7 +666,7 @@ public sealed class GskuRepository : IGskuRepository
             new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
         return updated is not null ? new(true, false, updated, null)
             : new(false, false, current, current is null ? "GSKU_NOT_FOUND"
-                : "GSKU_RETIREMENT_REQUEST_CONCURRENCY_CONFLICT");
+                : CapacityOr(current, "GSKU_RETIREMENT_REQUEST_CONCURRENCY_CONFLICT"));
     }
 
     public async Task<GskuRetirementRequestWriteResult> RecordRetirementRequestConflictAsync(
@@ -677,7 +683,7 @@ public sealed class GskuRepository : IGskuRepository
             || !Exact(auditIntent.IdempotencyKey, 256) || !Exact(auditIntent.EvidenceHash, 256))
             return new(false, false, null, "GSKU_RETIREMENT_REQUEST_CONTRACT_INVALID");
         var current = await GetByIdAsync(id, cancellationToken);
-        var persisted = current?.AuditIntents.SingleOrDefault(x => x.IdempotencyKey == auditIntent.IdempotencyKey);
+        var persisted = PersistedWrite(current, auditIntent);
         if (persisted is not null)
             return persisted.Operation == auditIntent.Operation && persisted.EvidenceHash == auditIntent.EvidenceHash
                 ? new(true, true, current, null)
@@ -696,7 +702,7 @@ public sealed class GskuRepository : IGskuRepository
             new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
         return updated is not null ? new(true, false, updated, null)
             : new(false, false, current, current is null ? "GSKU_NOT_FOUND"
-                : "GSKU_RETIREMENT_REQUEST_CONCURRENCY_CONFLICT");
+                : CapacityOr(current, "GSKU_RETIREMENT_REQUEST_CONCURRENCY_CONFLICT"));
     }
 
     private string? ValidateRetirementRequest(Guid id, int expectedVersion,
@@ -717,7 +723,7 @@ public sealed class GskuRepository : IGskuRepository
     private static GskuRetirementRequestWriteResult? RetirementRequestReplay(Gsku? current,
         LocalAuditIntent auditIntent, GskuActiveLifecycleOperationBinding binding, bool terminal)
     {
-        var persisted = current?.AuditIntents.SingleOrDefault(x => x.IdempotencyKey == auditIntent.IdempotencyKey);
+        var persisted = PersistedWrite(current, auditIntent);
         if (persisted is null) return null;
         var bindingMatches = terminal ? current!.ActiveLifecycleOperation is null
             : current!.ActiveLifecycleOperation == binding;
@@ -756,7 +762,7 @@ public sealed class GskuRepository : IGskuRepository
         return new(false, false, current, current is null ? "GSKU_NOT_FOUND"
             : current.ActiveLifecycleOperation is not null ? "GSKU_LIFECYCLE_OPERATION_ACTIVE"
             : current.Version != expectedVersion ? "GSKU_CONCURRENCY_CONFLICT"
-            : "GSKU_CORRECTION_ADMISSION_CONFLICT");
+            : CapacityOr(current, "GSKU_CORRECTION_ADMISSION_CONFLICT"));
     }
 
     public async Task<GskuCorrectionWriteResult> ApplyCorrectionDecisionAsync(
@@ -799,7 +805,76 @@ public sealed class GskuRepository : IGskuRepository
         var updated = await _gskus.FindOneAndUpdateAsync(filter, update,
             new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
         return updated is not null ? new(true, false, updated, null)
-            : new(false, false, current, current is null ? "GSKU_NOT_FOUND" : "GSKU_CORRECTION_CONCURRENCY_CONFLICT");
+            : new(false, false, current, current is null ? "GSKU_NOT_FOUND" : CapacityOr(current, "GSKU_CORRECTION_CONCURRENCY_CONFLICT"));
+    }
+
+    public const string AuditCapacityReached = "AUDIT_INTENT_CAPACITY_REACHED";
+
+    // A write the per-aggregate cap refused (intents wait for delivery to be compacted into receipts) says so — it is
+    // not a conflict of the record, and a caller must not treat it as one.
+    private static string CapacityOr(Gsku? current, string otherwise) =>
+        current is not null && current.AuditIntents.Count >= AuditIntentLimits.MaxPerAggregate
+            ? AuditCapacityReached
+            : otherwise;
+
+    private sealed record PersistedIntent(ProductAuditOperation Operation, string EvidenceHash);
+
+    // What a write with this key left on the aggregate: its intent, or — once delivered and compacted — its receipt
+    // (the receipt keeps the intent's id, which is derived from the operation, and its evidence). LSKU's rule.
+    private static PersistedIntent? PersistedWrite(Gsku? current, LocalAuditIntent expected)
+    {
+        var intent = current?.AuditIntents.SingleOrDefault(x => x.IdempotencyKey == expected.IdempotencyKey);
+        if (intent is not null) return new(intent.Operation, intent.EvidenceHash);
+        var receipt = current?.AuditIntentReceipts.SingleOrDefault(x => x.IdempotencyKey == expected.IdempotencyKey);
+        if (receipt is null) return null;
+        return receipt.IntentId == expected.IntentId && receipt.TenantId == expected.TenantId
+               && !string.IsNullOrWhiteSpace(receipt.CentralAcknowledgement)
+               && !string.IsNullOrWhiteSpace(receipt.CompactReceiptReference)
+            ? new(expected.Operation, receipt.EvidenceHash)
+            : new((ProductAuditOperation)(-1), receipt.EvidenceHash); // a receipt of another write: a conflict
+    }
+
+    /*
+     * B3: a correction or retirement request that ends without its decision being applied (nothing was started,
+     * the decision could not be used, the decision is not applicable any more) gives the GSKU back: the lock goes in
+     * the same write that records why (the intent), conditioned on this very operation and version.
+     */
+    public async Task<GskuCorrectionWriteResult> ReleaseLifecycleOperationAsync(
+        Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default)
+    {
+        var expectedOperation = binding.Kind == GskuLifecycleOperationKind.Correction
+            ? ProductAuditOperation.GskuCorrectionManualReconciliationRequired
+            : ProductAuditOperation.GskuRetirementManualReconciliationRequired;
+        if (_tenantId == Guid.Empty || id == Guid.Empty || binding.OperationId == Guid.Empty
+            || binding.BaseGskuVersion + 1 != expectedVersion
+            || auditIntent.TenantId != _tenantId || auditIntent.AggregateType != AuditAggregateType.Gsku
+            || auditIntent.AggregateId != id || auditIntent.PreVersion != expectedVersion
+            || auditIntent.PostVersion != expectedVersion + 1 || auditIntent.Operation != expectedOperation
+            || !Exact(auditIntent.IdempotencyKey, 256) || !Exact(auditIntent.EvidenceHash, 256))
+            return new(false, false, null, "GSKU_LIFECYCLE_RELEASE_CONTRACT_INVALID");
+        var current = await GetByIdAsync(id, cancellationToken);
+        var persisted = PersistedWrite(current, auditIntent);
+        if (persisted is not null)
+            return persisted.Operation == auditIntent.Operation && persisted.EvidenceHash == auditIntent.EvidenceHash
+                   && current!.ActiveLifecycleOperation is null
+                ? new(true, true, current, null)
+                : new(false, false, current, "GSKU_LIFECYCLE_RELEASE_IDEMPOTENCY_CONFLICT");
+        var filter = ActiveFilter & Builders<Gsku>.Filter.Eq(x => x.Id, id)
+            & Builders<Gsku>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.Kind, binding.Kind)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.OperationId, binding.OperationId)
+            & Builders<Gsku>.Filter.Eq(x => x.ActiveLifecycleOperation!.BaseGskuVersion, binding.BaseGskuVersion)
+            & Builders<Gsku>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var updated = await _gskus.FindOneAndUpdateAsync(filter,
+            Builders<Gsku>.Update.Set(x => x.ActiveLifecycleOperation, null)
+                .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow).Inc(x => x.Version, 1)
+                .Push(x => x.AuditIntents, auditIntent),
+            new() { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is not null ? new(true, false, updated, null)
+            : new(false, false, current, current is null ? "GSKU_NOT_FOUND"
+                : current.ActiveLifecycleOperation is null ? "GSKU_LIFECYCLE_NOT_HELD"
+                : CapacityOr(current, "GSKU_LIFECYCLE_RELEASE_CONFLICT"));
     }
 
     private string? ValidateCorrection(Guid id, int expectedVersion,
@@ -820,7 +895,7 @@ public sealed class GskuRepository : IGskuRepository
     private static GskuCorrectionWriteResult? CorrectionReplay(Gsku? current,
         LocalAuditIntent auditIntent, GskuActiveLifecycleOperationBinding binding, bool terminal)
     {
-        var persisted = current?.AuditIntents.SingleOrDefault(x => x.IdempotencyKey == auditIntent.IdempotencyKey);
+        var persisted = PersistedWrite(current, auditIntent);
         if (persisted is null) return null;
         var bindingMatches = terminal ? current!.ActiveLifecycleOperation is null
             : current!.ActiveLifecycleOperation == binding;
@@ -844,7 +919,7 @@ public sealed class GskuRepository : IGskuRepository
         }
 
         var current = await GetByIdAsync(id, cancellationToken);
-        var replayIntent = current?.AuditIntents.SingleOrDefault(x => x.IdempotencyKey == auditIntent.IdempotencyKey);
+        var replayIntent = PersistedWrite(current, auditIntent);
         if (replayIntent is not null)
         {
             var exact = replayIntent.Operation == operation

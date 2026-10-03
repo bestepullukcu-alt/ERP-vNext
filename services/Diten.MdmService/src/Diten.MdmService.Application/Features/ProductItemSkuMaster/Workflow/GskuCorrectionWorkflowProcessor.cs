@@ -1,6 +1,9 @@
 using Diten.MdmService.Application.Contracts.ReferenceData;
 using Diten.MdmService.Application.Contracts.Workflow;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Validators;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -18,8 +21,13 @@ public sealed class GskuCorrectionWorkflowProcessor(
     IProductIdentityWorkflowClient workflow,
     IWorkflowVerifiedGskuReferenceResolver references,
     GskuCorrectionWorkflowStartRequestFactory factory,
-    TimeProvider clock)
+    TimeProvider clock,
+    ILogger<GskuCorrectionWorkflowProcessor>? logger = null)
 {
+    private readonly ILogger log = logger ?? NullLogger<GskuCorrectionWorkflowProcessor>.Instance;
+    public const string SelfApprovalIgnored = "GSKU_CORRECTION_SELF_APPROVAL_IGNORED";
+    public const string NotApplicable = "GSKU_CORRECTION_NOT_APPLICABLE";
+
     public async Task<GskuCorrectionProcessingResult> StartInteractiveAsync(Guid tenantId, Guid gskuId,
         int expectedVersion, Guid operationId, Guid makerId, decimal quantity, string uomCode,
         string delegatedToken, GskuCorrectionExecutionConfiguration execution, CancellationToken ct)
@@ -27,6 +35,7 @@ public sealed class GskuCorrectionWorkflowProcessor(
         if (tenantId == Guid.Empty || gskuId == Guid.Empty || operationId == Guid.Empty || makerId == Guid.Empty
             || expectedVersion < 0 || quantity <= 0 || string.IsNullOrWhiteSpace(uomCode)
             || string.IsNullOrWhiteSpace(delegatedToken)) return Fail("GSKU_CORRECTION_REQUEST_INVALID", 400);
+        if (!CreateFirstGskuDraftValidator.IsValidPack(quantity, uomCode)) return Fail("GSKU_CORRECTION_FACTS_INVALID", 409);
         var existing = await operations.GetByOperationIdAsync(operationId, ct);
         GskuCorrectionWorkflowOperation operation;
         var replay = existing is not null;
@@ -39,8 +48,13 @@ public sealed class GskuCorrectionWorkflowProcessor(
                 return Fail(blocker, 409);
             var revision = await revisions.GetByIdAsync(gsku.ProductDefinitionRevisionId, ct);
             if (revision is null) return Fail("GSKU_REVISION_NOT_FOUND", 409);
-            var resolved = await references.ResolveLatestAsync(tenantId,
-                "SCALAR_QUANTITY_APPLIES", uomCode, ct);
+            VerifiedGskuReferenceResolveResult resolved;
+            try { resolved = await references.ResolveLatestAsync(tenantId, "SCALAR_QUANTITY_APPLIES", uomCode, ct); }
+            catch (OperationCanceledException) { throw; }
+            catch { return Fail("REFERENCE_DATA_CONTRACT_UNAVAILABLE", 503); }
+            // An outage of the reference service is not "the facts are invalid": the maker asks again (503).
+            if (!resolved.IsSuccessful && resolved.StatusCode is 503 or 504)
+                return Fail(resolved.FailureCode ?? "REFERENCE_DATA_CONTRACT_UNAVAILABLE", 503);
             GskuCorrectionStartPlan plan;
             try { plan = factory.Create(gsku, revision.GlobalProductId, operationId, makerId, quantity, uomCode, resolved); }
             catch (InvalidOperationException e) { return Fail(e.Message, e.Message.Contains("CONFIGURATION") ? 503 : 409); }
@@ -150,7 +164,40 @@ public sealed class GskuCorrectionWorkflowProcessor(
             return await operations.AdvanceAsync(claim, new(GskuCorrectionWorkflowCheckpoint.StartOutcomeUnknown,
                 ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks,
                 now.Add(execution.RetryDelay).UtcTicks, result.ErrorCode, ReleaseLease: true), ct);
-        return await Manual(claim, result.ErrorCode, now, ct);
+        if (result.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
+            // The engine said "started" with evidence this service cannot accept: an approval may exist, and it
+            // cannot be cancelled without the maker's token — the GSKU is NOT given back (no double decision).
+            return await Manual(claim, "GSKU_CORRECTION_START_EVIDENCE_INVALID", now, ct);
+        // The start was refused before anything was processed (the shared classification): nothing exists at the
+        // engine, so the GSKU is given back and the reason recorded; the maker learns it from the answer.
+        var fault = ProductIdentityWorkflowFaultPolicy.Classify(
+            ProductIdentityWorkflowCall.Start, result.Outcome, result.ErrorCode);
+        var reason = fault.MakerCode ?? result.ErrorCode ?? "GSKU_CORRECTION_START_REFUSED";
+        return await EndAndReleaseAsync(op, claim, reason, now, ct);
+    }
+
+    // B3: the correction ends without its decision applied; the GSKU's lock goes in the same write as the intent
+    // that says why. If giving it back fails for a reason that may pass (the cap, the store), the operation waits.
+    private async Task<bool> EndAndReleaseAsync(GskuCorrectionWorkflowOperation op, GskuCorrectionWorkflowClaim claim,
+        string reason, DateTimeOffset now, CancellationToken ct)
+    {
+        var gsku = await gskus.GetByIdAsync(op.GskuId, ct);
+        if (gsku?.ActiveLifecycleOperation is { } held && held == Binding(op))
+        {
+            var audit = GskuCorrectionAuditIntentFactory.Create(gsku, checked(op.BaseGskuVersion + 1), op.OperationId,
+                op.MakerSubjectId, ProductAuditOperation.GskuCorrectionManualReconciliationRequired,
+                op.ProposedPackQuantity, op.ProposedPackUomCode, op.ProposedPackApplicabilitySelection,
+                op.ProposedPackUomSelection, now);
+            var released = await gskus.ReleaseLifecycleOperationAsync(gsku.Id, checked(op.BaseGskuVersion + 1),
+                Binding(op), audit, ct);
+            if (!released.Succeeded)
+                return await operations.AdvanceAsync(claim, new(op.Checkpoint,
+                    ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks,
+                    now.AddMinutes(1).UtcTicks, released.ErrorCode, ReleaseLease: true), ct);
+        }
+        log.LogWarning("GSKU correction {OperationId} of tenant {TenantId} ended without its decision applied ({ResultCode}); the GSKU is free again.",
+            op.OperationId, op.TenantId, reason);
+        return await Manual(claim, reason, now, ct);
     }
 
     private async Task<bool> ObserveAsync(GskuCorrectionWorkflowOperation op, GskuCorrectionWorkflowClaim claim,
@@ -164,7 +211,21 @@ public sealed class GskuCorrectionWorkflowProcessor(
             or ProductIdentityWorkflowTransportOutcome.Timeout)
             return await operations.AdvanceAsync(claim, new(op.Checkpoint, op.RecoveryDisposition, now.UtcTicks,
                 now.Add(execution.RetryDelay).UtcTicks, result.ErrorCode ?? "GSKU_CORRECTION_DECISION_PENDING", ReleaseLease: true), ct);
+        if (result.Outcome != ProductIdentityWorkflowTransportOutcome.Success
+            && ProductIdentityWorkflowFaultPolicy.Classify(ProductIdentityWorkflowCall.TerminalEvidence, result.Outcome,
+                result.ErrorCode).Kind == ProductIdentityWorkflowFaultKind.ServiceWait)
+            // The service's identity or reachability: the chain's fault, not the record's — it waits.
+            return await operations.AdvanceAsync(claim, new(op.Checkpoint, ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks, now.Add(execution.RetryDelay).UtcTicks, result.ErrorCode, ReleaseLease: true), ct);
         var e = result.Value;
+        if (e is not null && Guid.TryParse(e.ActorUserId, out var self) && self == op.MakerSubjectId)
+        {
+            // B8: the maker decided their own correction — ignored and said; the operation keeps waiting.
+            log.LogWarning("GSKU correction {OperationId} of tenant {TenantId} was decided by its own maker; the decision is ignored ({ResultCode}).",
+                op.OperationId, op.TenantId, SelfApprovalIgnored);
+            return await operations.AdvanceAsync(claim, new(op.Checkpoint, ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks, now.AddMinutes(15).UtcTicks, SelfApprovalIgnored, ReleaseLease: true), ct);
+        }
         var approved = e?.TerminalAction == "Approve" && e.TaskStatus == "Approved" && e.InstanceStatus == "Completed";
         var rejected = e?.TerminalAction == "Reject" && e.TaskStatus == "Rejected" && e.InstanceStatus == "Rejected";
         if ((!approved && !rejected) || e is null || e.WorkflowInstanceId != op.WorkflowInstanceId
@@ -173,7 +234,11 @@ public sealed class GskuCorrectionWorkflowProcessor(
             || e.ObjectId != op.ObjectId || e.ObjectRef != op.ObjectRef
             || !Guid.TryParse(e.ActorUserId, out var actor) || actor == Guid.Empty || actor == op.MakerSubjectId
             || e.TransitionSequence <= 0 || e.DecisionAt.Offset != TimeSpan.Zero)
-            return await Manual(claim, "GSKU_CORRECTION_EVIDENCE_CONFLICT", now, ct);
+            // The approval is decided (terminal evidence) and its evidence cannot be used: nothing more can come of
+            // it — the GSKU is given back (B3).
+            return e is null
+                ? await Manual(claim, "GSKU_CORRECTION_EVIDENCE_CONFLICT", now, ct)
+                : await EndAndReleaseAsync(op, claim, "GSKU_CORRECTION_EVIDENCE_CONFLICT", now, ct);
         return await operations.AdvanceAsync(claim, new(GskuCorrectionWorkflowCheckpoint.DecisionObserved,
             ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
             DecisionKind: approved ? ProductIdentityDecisionKind.Approved : ProductIdentityDecisionKind.Rejected,
@@ -193,14 +258,25 @@ public sealed class GskuCorrectionWorkflowProcessor(
         if (approved)
         {
             if (await gskus.FindRetirementBlockerAsync(op.GskuId, ct) is { } blocker)
-                return await Manual(claim, blocker, now, ct);
-            var resolved = await references.ResolveLatestAsync(op.TenantId,
-                "SCALAR_QUANTITY_APPLIES", op.ProposedPackUomCode, ct);
+                return await EndAndReleaseAsync(op, claim, blocker, now, ct);
+            VerifiedGskuReferenceResolveResult resolved;
+            try
+            {
+                resolved = await references.ResolveLatestAsync(op.TenantId,
+                    "SCALAR_QUANTITY_APPLIES", op.ProposedPackUomCode, ct);
+            }
+            catch (OperationCanceledException) { throw; }
+            catch { resolved = VerifiedGskuReferenceResolveResult.Fail(503, "REFERENCE_DATA_CONTRACT_UNAVAILABLE"); }
             (applicability, uom) = GskuCorrectionWorkflowStartRequestFactory.ResolveSelections(resolved, op.ProposedPackUomCode);
             if (applicability is null || uom is null)
-                return await operations.AdvanceAsync(claim, new(op.Checkpoint,
-                    ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks,
-                    now.Add(execution.RetryDelay).UtcTicks, "REFERENCE_DATA_CONTRACT_UNAVAILABLE", ReleaseLease: true), ct);
+                // An outage (503 / 504) or a refused service identity waits; a value that is no longer selectable
+                // will not come back by waiting: the correction is not applicable and the GSKU is given back.
+                return !resolved.IsSuccessful && resolved.StatusCode is 503 or 504 or 401 or 403
+                    ? await operations.AdvanceAsync(claim, new(op.Checkpoint,
+                        ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks,
+                        now.Add(execution.RetryDelay).UtcTicks,
+                        resolved.FailureCode ?? "REFERENCE_DATA_CONTRACT_UNAVAILABLE", ReleaseLease: true), ct)
+                    : await EndAndReleaseAsync(op, claim, NotApplicable, now, ct);
         }
         var expected = checked(op.BaseGskuVersion + 1);
         var audit = GskuCorrectionAuditIntentFactory.Create(gsku, expected, op.OperationId,
@@ -212,9 +288,13 @@ public sealed class GskuCorrectionWorkflowProcessor(
             approved ? op.ProposedPackQuantity : null, approved ? op.ProposedPackUomCode : null,
             applicability, uom, audit, ct);
         if (!result.Succeeded)
-            return await operations.AdvanceAsync(claim, new(op.Checkpoint,
-                ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks,
-                now.Add(execution.RetryDelay).UtcTicks, result.ErrorCode, ReleaseLease: true), ct);
+            // A blocker that appeared after the check above ends it like the check would have; anything else is a
+            // write that may still go through (the cap, the store, a concurrent write) and is tried again.
+            return result.ErrorCode is "DEPENDENT_IDENTITIES_EXIST" or "GSKU_CHILD_CREATION_IN_PROGRESS"
+                ? await EndAndReleaseAsync(op, claim, result.ErrorCode, now, ct)
+                : await operations.AdvanceAsync(claim, new(op.Checkpoint,
+                    ProductIdentityWorkflowRecoveryDisposition.Retryable, now.UtcTicks,
+                    now.Add(execution.RetryDelay).UtcTicks, result.ErrorCode, ReleaseLease: true), ct);
         return await Advance(claim, GskuCorrectionWorkflowCheckpoint.DecisionApplied, now, release: true, ct: ct);
     }
 

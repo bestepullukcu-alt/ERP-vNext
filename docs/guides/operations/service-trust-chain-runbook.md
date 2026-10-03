@@ -254,6 +254,49 @@ blocked at that version. An unreadable answer, an unknown 403 or `…RESPONSE_IN
 keeps trying at the ceiling for ever (the last one with an Error line each time). The seven sibling processors (correction, retirement, GSKU, LSKU) still quarantine on a service
 fault and have no pre-flight.
 
+### 8. GSKU — the three flows on the same chain (WP-MDM-GSKU-ACCEPT-01)
+
+The GSKU identity approval, the GSKU correction and the GSKU retirement request use the same client, token and worker
+rules as the Global Product. What differs is only their names:
+
+| Flow | MDM section (switch, approvers) | MDM worker section | Platform `ObjectType` | Tracked template code |
+|---|---|---|---|---|
+| GSKU identity | `FirstGskuIdentityWorkflow` | `FirstGskuIdentityWorkflowWorker` | `gsku` | `GSKU-IDENTITY` |
+| GSKU correction | `GskuCorrectionWorkflow` | `GskuCorrectionWorkflowWorker` | `GskuCorrection` | `GSKU-CORRECTION` |
+| GSKU retirement request | `GskuRetirementRequestWorkflow` | `GskuRetirementRequestWorkflowWorker` | `GskuRetirementRequest` | `GSKU-RETIREMENT-REQUEST` |
+
+- **Tracked** (not secret): the three template codes and the identity reason code in MDM's
+  `appsettings.Development.json`, and Platform's three `TrustedWorkflowStartAuthorization` entries for the default
+  client. **Written by the bootstrap** into MDM's local file: `Enabled` and `CandidatePrincipalIds` of the three flows,
+  `Enabled` of the three workers (a non-default `--client-code` also gets the three Platform entries).
+- **One approval definition per flow and tenant** (step 4, with the template code from the table). Until it exists and
+  is published, a submit or a request answers 409 `PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY`, writes nothing and
+  the screen says so ("the approval template for GSKUs is not set up yet") — publish it and submit again.
+- **Who decides.** A decision taken by the maker (or the requester) of the same item is ignored and logged as a warning
+  (`…_SELF_APPROVAL_IGNORED`); the item keeps waiting for another approver.
+- **Approved but not applicable.** When the parent Global Product is no longer approved, or a referenced unit is no
+  longer valid, by the time the decision arrives, the GSKU goes back to draft with the reason; the maker sees it in the
+  detail view in their language and submits again.
+
+### 9. Behaviour that changed with WP-MDM-GSKU-ACCEPT-01 FIX1 (Global Product included)
+
+- **Legal-entity scope and the workers.** In an `Enforced` tenant the workers used to stop altogether; a decision taken
+  in the Task Center never reached MDM there. Now every product-identity worker (Global Product, GSKU identity, GSKU
+  correction, GSKU retirement request) carries on the operations whose Global Product has a scope policy in force now
+  and skips the others; `Preparation` and no rollout run everything; `FailClosedSuspended` or an unreadable rollout
+  runs nothing. Live: nothing to switch on beyond the workers' own `Enabled`; an operation that stays pending in an
+  Enforced tenant means its product has no policy in force.
+- **A busy or silent store.** A claim the database does not answer within half the lease is given up and answered 503
+  `PRODUCT_IDENTITY_WORKFLOW_STORE_UNAVAILABLE`; the request may simply be repeated.
+- **A withdrawal under another command.** A second withdrawal of the same approval with a different command id is
+  answered 409 and told the command the first one stands under; the Web repeats it once with that id.
+- **A withdrawal whose requester never came back.** When an interrupted withdrawal can only be finished by its
+  requester and 72 hours pass, the operation is handed to manual reconciliation and logged as an error
+  (`…_WITHDRAWAL_REQUESTER_NEVER_RETURNED`) — alert on that line.
+- **Direct GSKU retirement** (`POST /api/gskus/{id}/retire`, `mdm.gskus.retire`) is system-only: the key cannot be
+  granted to a human role any more, a human caller is refused 403 `GSKU_DIRECT_RETIREMENT_SYSTEM_ONLY`, and no system
+  actor calls it today. People retire a GSKU through the retirement request.
+
 ---
 
 ## Live — for IT
@@ -321,6 +364,8 @@ disabled; a different hash does **not** replace the stored one.
 | `ProductIdentityWorkflow:Enabled`, `:GlobalProductTemplateCode`, `:CandidatePrincipalIds[]`, `:ReasonCode` | the switch, the definition's code, the approvers, the reason code |
 | `ProductIdentityWorkflowWorker:Enabled`, `:LeaseOwner` | the decision-polling worker; a lease owner name unique to the instance |
 | `ProductIdentityWorkflowWorker:ServiceFaultMaxRetryDelaySeconds` (900), `:ServiceFaultErrorAfterAttempts` (5) | how far a waiting operation backs off, and from which attempt its waiting is logged as an error — alert on that line |
+| `FirstGskuIdentityWorkflow`, `GskuCorrectionWorkflow`, `GskuRetirementRequestWorkflow` — `:Enabled`, `:TemplateCode`, `:CandidatePrincipalIds[]` (identity also `:ReasonCode`) | the three GSKU flows (Development step 8); each needs its own published definition and its Platform entry (§4) |
+| `FirstGskuIdentityWorkflowWorker:Enabled`, `:LeaseOwner`; `GskuCorrectionWorkflowWorker:Enabled`; `GskuRetirementRequestWorkflowWorker:Enabled` | the three GSKU workers — without them a decision is never applied |
 
 Restart MDM last. Then create and publish the definition (Development step 4) and assign the roles (step 5).
 

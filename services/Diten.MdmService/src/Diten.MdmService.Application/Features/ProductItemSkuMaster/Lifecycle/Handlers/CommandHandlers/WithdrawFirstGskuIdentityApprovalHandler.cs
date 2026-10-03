@@ -76,6 +76,11 @@ public sealed class WithdrawFirstGskuIdentityApprovalHandler(
             executionConfiguration.LeaseDuration,
             executionConfiguration.RetryDelay,
             cancellationToken);
+        if (result.PendingWithdrawalCommandId is { } pending)
+            return Response<FirstGskuIdentityLifecycleResult>.Fail(
+                result.ErrorCode ?? "FIRST_GSKU_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT", result.StatusCode,
+                new(gsku.ProductDefinitionRevisionId, gsku.Id, revision.LifecycleStatus, gsku.LifecycleStatus,
+                    revision.Version, gsku.Version, null, true, pending));
         if (!result.Succeeded || result.Operation is null)
         {
             return Fail(result.ErrorCode ?? "FIRST_GSKU_IDENTITY_WITHDRAWAL_FAILED", result.StatusCode);

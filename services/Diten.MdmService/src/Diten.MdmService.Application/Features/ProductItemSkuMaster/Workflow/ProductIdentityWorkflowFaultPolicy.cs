@@ -9,7 +9,9 @@ public enum ProductIdentityWorkflowCall
     StartResult,
     TerminalEvidence,
     CancellationPreflight,
-    Cancel
+    Cancel,
+    // The reference-data service a GSKU's approval revalidates against.
+    ReferenceData
 }
 
 public enum ProductIdentityWorkflowFaultKind

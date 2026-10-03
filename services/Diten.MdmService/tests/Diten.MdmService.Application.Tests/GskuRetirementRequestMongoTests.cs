@@ -194,6 +194,46 @@ public sealed class GskuRetirementRequestMongoTests : IAsyncLifetime
         Assert.Equal(1, workflow.StartCalls);
     }
 
+    // Rule RRP:173 (named by WP-MDM-GSKU-ACCEPT-01) + B8: a decision by the request's own requester is not applied —
+    // ignored and said; the pair is not retired and the request keeps waiting for another approver.
+    [Fact]
+    public async Task RRP_A_decision_by_the_requester_is_ignored_and_the_pair_is_not_retired()
+    {
+        var gsku = Gsku(2);
+        var revision = Revision(gsku);
+        await database.GetCollection<Gsku>("mdm_gskus").InsertOneAsync(gsku);
+        await database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions").InsertOneAsync(revision);
+        var tenant = new Tenant(tenantId);
+        var gskuRepository = new GskuRepository(database, tenant);
+        var revisionRepository = new ProductDefinitionRevisionRepository(database, tenant);
+        var pair = new FirstGskuIdentityRetirementProcessor(
+            new FirstGskuIdentityRetirementOperationRepository(database, tenant), gskuRepository, revisionRepository,
+            TimeProvider.System);
+        var template = Guid.NewGuid();
+        var maker = Guid.NewGuid();
+        var workflow = new Workflow(template, maker, true);
+        var operations = new GskuRetirementRequestOperationRepository(database, tenant);
+        var processor = new GskuRetirementRequestWorkflowProcessor(operations, gskuRepository, revisionRepository,
+            workflow, pair, new GskuRetirementRequestWorkflowStartRequestFactory(new(template, null, [Guid.NewGuid()],
+                "GSKU_RETIREMENT", false, false, null, Guid.NewGuid(), null, Guid.NewGuid(), null), TimeProvider.System),
+            TimeProvider.System);
+        var operationId = Guid.NewGuid();
+
+        var started = await processor.StartInteractiveAsync(tenantId, gsku.Id, 2, operationId, maker,
+            "obsolete", "delegated", new(TimeSpan.FromMinutes(1), TimeSpan.FromMilliseconds(1)), default);
+        var observed = await processor.RecoverAsync((await operations.GetByOperationIdAsync(operationId))!, "worker",
+            new(TimeSpan.FromMinutes(1), TimeSpan.FromMilliseconds(1)), default);
+        var stored = await gskuRepository.GetByIdAsync(gsku.Id);
+        var operation = await operations.GetByOperationIdAsync(operationId);
+
+        Assert.Equal(202, started.StatusCode);
+        Assert.Equal(GskuRetirementRequestWorkflowProcessor.SelfApprovalIgnored, observed.ErrorCode);
+        Assert.NotEqual(GskuRetirementRequestCheckpoint.Completed, operation!.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, operation.RecoveryDisposition);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, stored!.LifecycleStatus);
+        Assert.Null(stored.RetirementOperationId);
+    }
+
     public async Task DisposeAsync()
     {
         await database.GetCollection<Gsku>("mdm_gskus").DeleteManyAsync(x => x.TenantId == tenantId);

@@ -22,7 +22,10 @@ public sealed record FirstGskuIdentityLifecycleResult(
     int RevisionVersion,
     int GskuVersion,
     Guid? WorkflowInstanceId,
-    bool IsReplay);
+    bool IsReplay,
+    // Shared item 14 (A1): a withdrawal refused because an earlier one stands under another command names that
+    // command, so the requester (only the submitter reaches this) can repeat it instead of being stuck.
+    Guid? PendingWithdrawalCommandId = null);
 
 public sealed record WithdrawFirstGskuIdentityApprovalRequest(
     Guid GskuId,

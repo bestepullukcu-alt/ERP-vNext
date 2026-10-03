@@ -160,6 +160,29 @@ public sealed class TrustChainEndToEndTests(OwnedMongo mongo)
     /// A non-default client code (the way out when the first credential set is lost): Platform's local file then
     /// carries the authorization entry for THAT client, and over the tracked file it is the one entry in force.
     /// </summary>
+    // GSKU FIX1 (B6): the tracked Development files agree — each GSKU flow's template code in MDM is the one Platform
+    // authorizes for that object type and the default client. Before, only Global Product was listed: every GSKU start
+    // in Development was refused.
+    [Theory]
+    [InlineData("FirstGskuIdentityWorkflow", "gsku")]
+    [InlineData("GskuCorrectionWorkflow", "GskuCorrection")]
+    [InlineData("GskuRetirementRequestWorkflow", "GskuRetirementRequest")]
+    public void Tracked_development_settings_authorize_each_gsku_start_for_the_default_client(string section, string objectType)
+    {
+        var root = DevTrustBootstrapTests.RepositoryRoot();
+        var templateCode = Settings(Path.Combine(root, "services/Diten.MdmService/src/Diten.MdmService.Api/appsettings.Development.json"))
+            [section + ":TemplateCode"];
+        var platform = new ConfigurationBuilder()
+            .AddJsonFile(Path.Combine(root, "services/Diten.Platform/src/Diten.Platform.API/appsettings.Development.json"), optional: false)
+            .Build();
+        var policy = new ConfiguredTrustedWorkflowStartAuthorizationPolicy(Options.Create(
+            platform.GetSection(TrustedWorkflowStartAuthorizationOptions.SectionName).Get<TrustedWorkflowStartAuthorizationOptions>()!));
+
+        Assert.Contains((objectType, templateCode), DevTrustBootstrapCommand.GskuStarts);
+        Assert.True(policy.IsAuthorized(new(ServiceClientIdentityIds.FromClientCode(DevTrustBootstrapCommand.DefaultClientCode),
+            DevTrustBootstrapCommand.ServiceName, DevTrustBootstrapCommand.Audience, objectType, null, templateCode)));
+    }
+
     [Fact]
     public void Bootstrap_WithAnotherClientCode_WritesPlatformsAuthorizationEntryForThatClient()
     {
@@ -182,9 +205,17 @@ public sealed class TrustChainEndToEndTests(OwnedMongo mongo)
             .Get<TrustedWorkflowStartAuthorizationOptions>()!;
         var policy = new ConfiguredTrustedWorkflowStartAuthorizationPolicy(Options.Create(authorization));
 
-        Assert.Single(authorization.Entries);
+        // Four since GSKU FIX1 (B6): Global Product and the three GSKU starts, all for the new client.
+        Assert.Equal(4, authorization.Entries.Count);
         Assert.True(policy.IsAuthorized(Request(clientCode, mdmTemplateCode)));
         Assert.False(policy.IsAuthorized(Request(DevTrustBootstrapCommand.DefaultClientCode, mdmTemplateCode)));
+        foreach (var (objectType, templateCode) in DevTrustBootstrapCommand.GskuStarts)
+        {
+            Assert.True(policy.IsAuthorized(new(ServiceClientIdentityIds.FromClientCode(clientCode),
+                DevTrustBootstrapCommand.ServiceName, DevTrustBootstrapCommand.Audience, objectType, null, templateCode)));
+            Assert.False(policy.IsAuthorized(new(ServiceClientIdentityIds.FromClientCode(DevTrustBootstrapCommand.DefaultClientCode),
+                DevTrustBootstrapCommand.ServiceName, DevTrustBootstrapCommand.Audience, objectType, null, templateCode)));
+        }
 
         static TrustedWorkflowStartAuthorizationRequest Request(string code, string? templateCode) => new(
             ServiceClientIdentityIds.FromClientCode(code), DevTrustBootstrapCommand.ServiceName,

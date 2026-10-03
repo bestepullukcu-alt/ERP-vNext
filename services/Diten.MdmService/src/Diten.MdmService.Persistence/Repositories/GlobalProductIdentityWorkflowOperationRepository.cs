@@ -190,6 +190,21 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
                 request.LeaseUntilUtcTicks);
     }
 
+    public Task ReleaseIfOwnedAsync(
+        Guid operationId,
+        string leaseOwner,
+        long leaseUntilUtcTicks,
+        CancellationToken cancellationToken = default) =>
+        _operations.UpdateOneAsync(
+            ActiveTenantFilter
+            & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.OperationId, operationId)
+            & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.LeaseOwner, leaseOwner)
+            & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.LeaseUntilUtcTicksV1, leaseUntilUtcTicks),
+            Builders<GlobalProductIdentityWorkflowOperation>.Update
+                .Set(item => item.LeaseOwner, null)
+                .Set(item => item.LeaseUntilUtcTicksV1, null),
+            cancellationToken: cancellationToken);
+
     public async Task<GlobalProductIdentityWorkflowRecoverablePage> DiscoverRecoverableAsync(
         long nowUtcTicks,
         int limit,
@@ -334,6 +349,7 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         if (mutation.WithdrawalTaskStatus is not null) update = update.Set(item => item.WithdrawalTaskStatus, mutation.WithdrawalTaskStatus);
         if (mutation.WithdrawalInstanceStatus is not null) update = update.Set(item => item.WithdrawalInstanceStatus, mutation.WithdrawalInstanceStatus);
         if (mutation.WithdrawalObjectRef is not null) update = update.Set(item => item.WithdrawalObjectRef, mutation.WithdrawalObjectRef);
+        if (mutation.WithdrawalAwaitingRequesterSinceUtcTicksV1.HasValue) update = update.Set(item => item.WithdrawalAwaitingRequesterSinceUtcTicksV1, mutation.WithdrawalAwaitingRequesterSinceUtcTicksV1);
         if (mutation.WithdrawalRefusalCode is not null) update = update.Set(item => item.WithdrawalRefusalCode, mutation.WithdrawalRefusalCode);
         if (mutation.ServiceFaultCount.HasValue)
         {
@@ -360,7 +376,8 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
                 .Set(item => item.WithdrawalTaskStatus, null)
                 .Set(item => item.WithdrawalInstanceStatus, null)
                 .Set(item => item.WithdrawalObjectRef, null)
-                .Set(item => item.WithdrawalRefusalCode, null);
+                .Set(item => item.WithdrawalRefusalCode, null)
+                .Set(item => item.WithdrawalAwaitingRequesterSinceUtcTicksV1, null);
         }
         if (mutation.ReleaseLease)
         {

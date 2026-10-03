@@ -53,6 +53,10 @@ public sealed class WithdrawGlobalProductIdentityApprovalHandler(
             input.GlobalProductId, input.ExpectedVersion, input.OperationId, subjectId,
             input.ReasonCode, input.Comment, token, executionConfiguration.LeaseDuration,
             executionConfiguration.RetryDelay, cancellationToken);
+        if (result.PendingWithdrawalCommandId is { } pending)
+            return Response<GlobalProductIdentityWorkflowResult>.Fail(
+                result.ErrorCode ?? "PRODUCT_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT", result.StatusCode,
+                new(Guid.Empty, input.GlobalProductId, string.Empty, null, string.Empty, true, pending));
         if (!result.Succeeded || result.Operation is null)
             return Fail(result.ErrorCode ?? "PRODUCT_IDENTITY_WITHDRAWAL_FAILED", result.StatusCode);
         var operation = result.Operation;

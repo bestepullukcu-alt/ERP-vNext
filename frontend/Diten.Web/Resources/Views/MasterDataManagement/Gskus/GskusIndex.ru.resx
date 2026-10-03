@@ -22,4 +22,12 @@
   <data name="RetirementRequestReasonRequired" xml:space="preserve"><value>Укажите причину длиной не более 128 символов.</value></data>
   <data name="RetirementRequestReasonInvalid" xml:space="preserve"><value>Причина содержит неподдерживаемые управляющие символы.</value></data>
   <data name="RetirementRequestedSuccess" xml:space="preserve"><value>Запрос на вывод отправлен на согласование.</value></data>
+  <data name="ErrorParentNotApproved" xml:space="preserve"><value>Глобальный продукт этого GSKU ещё не утверждён. Сначала утвердите глобальный продукт, затем отправьте GSKU.</value></data>
+  <data name="ErrorApprovalTemplateMissing" xml:space="preserve"><value>Шаблон согласования для GSKU ещё не настроен, поэтому ничего не отправлено. Попросите администратора создать и опубликовать его, затем отправьте снова.</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Этот GSKU отправляется на утверждение. Его нельзя изменить, пока отправка не дойдёт до механизма утверждения.</value></data>
+  <data name="ErrorDependentIdentitiesExist" xml:space="preserve"><value>У этого GSKU ещё есть не выведенные из оборота локальные SKU или готовая продукция. Сначала выведите их из оборота.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>Утверждение сейчас изменяется. Повторите попытку чуть позже.</value></data>
+  <data name="IdentityNotAppliedParent" xml:space="preserve"><value>Утверждение получено, но его не удалось применить: глобальный продукт больше не утверждён. GSKU снова стал черновиком — исправьте это и отправьте его снова.</value></data>
+  <data name="IdentityNotAppliedReference" xml:space="preserve"><value>Утверждение получено, но его не удалось применить: единица упаковки или её применимость больше недоступны для выбора. GSKU снова стал черновиком — выберите допустимое значение и отправьте его снова.</value></data>
+  <data name="IdentityNotAppliedGeneric" xml:space="preserve"><value>Утверждение получено, но его не удалось применить. GSKU снова стал черновиком — проверьте его и отправьте снова.</value></data>
 </root>

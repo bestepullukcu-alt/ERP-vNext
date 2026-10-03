@@ -26,6 +26,9 @@ public sealed class UpdateGskuDraftHandler
     private readonly IVerifiedGskuReferenceResolver _resolver;
     private readonly IProductIdentityActorContext _actorContext;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
+    private readonly IFirstGskuIdentityWorkflowOperationRepository? _identityOperations;
+
+    public const string GskuSubmitInFlight = "GSKU_IDENTITY_SUBMIT_IN_FLIGHT";
 
     public UpdateGskuDraftHandler(
         IGskuRepository gskus,
@@ -37,8 +40,10 @@ public sealed class UpdateGskuDraftHandler
         IProductLegalEntityScopeRolloutStateRepository rolloutStates,
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        IFirstGskuIdentityWorkflowOperationRepository? identityOperations = null)
     {
+        _identityOperations = identityOperations;
         _gskus = gskus;
         _revisions = revisions;
         _globalProducts = globalProducts;
@@ -115,6 +120,14 @@ public sealed class UpdateGskuDraftHandler
         if (!decision.Allowed)
         {
             return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail("GSKU_NOT_FOUND", 404);
+        }
+
+        // B7: while a submit is in flight the draft stays a draft until the engine has it — an edit now would let the
+        // approver approve facts that are no longer the ones on the record.
+        if (_identityOperations is not null
+            && await _identityOperations.HasUnfinishedOperationAsync(current.Id, cancellationToken))
+        {
+            return Response<ProductItemSkuMasterModels.FirstGskuDraftDto>.Fail(GskuSubmitInFlight, 409);
         }
 
         VerifiedGskuReferenceResolveResult resolved;

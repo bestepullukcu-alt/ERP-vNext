@@ -47,8 +47,31 @@ public sealed class GlobalProductIdentityWorkflowRecoveryWorkerMongoTests : IAsy
     }
 
     [Fact]
-    public async Task Restart_worker_discovers_tenant_and_applies_terminal_decision_exactly_once()
+    public Task Restart_worker_discovers_tenant_and_applies_terminal_decision_exactly_once() => RunWorkerAsync(null);
+
+    // S1 — a Global Product behaviour that changed on purpose with WP-MDM-GSKU-ACCEPT-01 FIX1: in an Enforced tenant
+    // the worker used to recover nothing (the decision taken in the Task Center never reached MDM). Now it applies the
+    // decision of a product whose scope policy is in force, and leaves a product without one waiting.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public Task RUN_In_an_enforced_tenant_the_worker_applies_an_in_scope_decision_and_defers_the_rest(bool inScope) =>
+        RunWorkerAsync(inScope);
+
+    private async Task RunWorkerAsync(bool? enforcedInScope)
     {
+        if (enforcedInScope is { } inScope)
+        {
+            var rollout = ProductLegalEntityScopeRolloutState.CreatePreparation(_tenantId, Guid.NewGuid(), Guid.NewGuid(),
+                DateTimeOffset.UtcNow.AddMinutes(-1));
+            rollout.Mode = ProductLegalEntityScopeRolloutMode.Enforced;
+            await _database.GetCollection<ProductLegalEntityScopeRolloutState>("mdm_product_legal_entity_scope_rollout_states")
+                .InsertOneAsync(rollout);
+            await _database.GetCollection<ProductLegalEntityScopePolicy>("mdm_product_legal_entity_scope_policies")
+                .InsertOneAsync(ProductLegalEntityScopePolicy.Create(_tenantId, inScope ? _productId : Guid.NewGuid(),
+                    Guid.NewGuid(), ProductLegalEntityScopeMode.GroupWide, [], Guid.NewGuid(), DateTimeOffset.UtcNow.AddMinutes(-1)));
+        }
+
         var binding = new ProductIdentityWorkflowBinding
         {
             WorkflowInstanceId = _instanceId,
@@ -114,6 +137,15 @@ public sealed class GlobalProductIdentityWorkflowRecoveryWorkerMongoTests : IAsy
         var first = await runner.RunCycleAsync();
         var second = await runner.RunCycleAsync();
         var storedOperation = await operationRepository.GetByOperationIdAsync(_operationId);
+        if (enforcedInScope == false)
+        {
+            Assert.Equal((0, 1, 0), (first.CompletedCount, first.DeferredCount, first.FailedCount));
+            Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision, storedOperation!.Checkpoint);
+            Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, (await _database
+                .GetCollection<GlobalProduct>("mdm_global_products")
+                .Find(item => item.TenantId == _tenantId && item.Id == _productId).SingleAsync()).LifecycleStatus);
+            return;
+        }
 
         Assert.True(first.CompletedCount == 1,
             $"completed={first.CompletedCount}; failed={first.FailedCount}; deferred={first.DeferredCount}; " +
@@ -138,6 +170,10 @@ public sealed class GlobalProductIdentityWorkflowRecoveryWorkerMongoTests : IAsy
     {
         await _database.GetCollection<GlobalProduct>("mdm_global_products")
             .DeleteManyAsync(item => item.TenantId == _tenantId);
+        await _database.GetCollection<ProductLegalEntityScopeRolloutState>("mdm_product_legal_entity_scope_rollout_states")
+            .DeleteManyAsync(item => item.TenantId == _tenantId);
+        await _database.GetCollection<ProductLegalEntityScopePolicy>("mdm_product_legal_entity_scope_policies")
+            .DeleteManyAsync(item => item.TenantId == _tenantId);
         await _database.GetCollection<GlobalProductIdentityWorkflowOperation>(
                 GlobalProductIdentityWorkflowOperationRepository.CollectionName)
             .DeleteManyAsync(item => item.TenantId == _tenantId);
@@ -155,6 +191,10 @@ public sealed class GlobalProductIdentityWorkflowRecoveryWorkerMongoTests : IAsy
         services.AddScoped<IProductLegalEntityScopeRolloutStateRepository>(provider =>
             new ProductLegalEntityScopeRolloutStateRepository(
                 _database, provider.GetRequiredService<ITenantContext>()));
+        services.AddScoped<IProductLegalEntityScopePolicyRepository>(provider =>
+            new ProductLegalEntityScopePolicyRepository(
+                _database, provider.GetRequiredService<ITenantContext>()));
+        services.AddScoped<Diten.MdmService.Application.Features.ProductLegalEntityScopes.ProductIdentityBackgroundScope>();
         services.AddSingleton<IGlobalProductIdentityWorkflowTenantPartitionDiscovery>(
             new GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository(_database));
         services.AddScoped<IGlobalProductRepository>(provider =>

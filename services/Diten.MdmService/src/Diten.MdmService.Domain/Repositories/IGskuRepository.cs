@@ -116,6 +116,12 @@ public interface IGskuRepository
         Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
         LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("GSKU_RETIREMENT_REQUEST_NOT_IMPLEMENTED");
+    // B3: gives the GSKU back from a correction / retirement request that ends without its decision applied; the
+    // release and the intent that says why are one write.
+    Task<GskuCorrectionWriteResult> ReleaseLifecycleOperationAsync(
+        Guid id, int expectedVersion, GskuActiveLifecycleOperationBinding binding,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_LIFECYCLE_RELEASE_NOT_IMPLEMENTED");
 }
 
 public sealed record GskuCreateResult(bool Succeeded, Gsku? Gsku, string? ErrorCode = null);

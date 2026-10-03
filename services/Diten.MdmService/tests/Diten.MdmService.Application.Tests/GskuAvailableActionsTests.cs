@@ -93,7 +93,7 @@ public sealed class GskuAvailableActionsTests
         var actor = new Actor(Guid.NewGuid(), FirstGskuIdentityLifecyclePermissions.Update);
         IReadOnlyList<string> Pair() => (IReadOnlyList<string>)typeof(GetGskuByIdHandler)
             .GetMethod("BuildPairAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, [gsku, revision, actor])!;
+            .Invoke(null, [gsku, revision, actor, false])!;
         Assert.Equal(["DETAILS", "EDIT"], Pair());
         revision.LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval;
         Assert.Equal(["DETAILS"], Pair());
@@ -107,11 +107,30 @@ public sealed class GskuAvailableActionsTests
         Assert.Equal(["DETAILS"], Actions(gsku, new Actor(null, FirstGskuIdentityLifecyclePermissions.Update)));
     }
 
+    // B7 (GSKU FIX1): while a submit is in flight the draft is neither editable nor submittable.
+    [Fact]
+    public void A_draft_whose_submit_is_in_flight_offers_neither_edit_nor_submit()
+    {
+        var gsku = new Gsku { Id = Guid.NewGuid(), LifecycleStatus = ProductIdentityLifecycleStatus.Draft };
+        var actor = new Actor(Guid.NewGuid(), "mdm.gskus.update", "mdm.gskus.submit");
+
+        var idle = Assert.IsAssignableFrom<IReadOnlyList<string>>(typeof(GetGskuByIdHandler)
+            .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
+            .Invoke(null, [gsku, actor, false]));
+        var inFlight = Assert.IsAssignableFrom<IReadOnlyList<string>>(typeof(GetGskuByIdHandler)
+            .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
+            .Invoke(null, [gsku, actor, true]));
+
+        Assert.Contains("EDIT", idle);
+        Assert.Contains("SUBMIT", idle);
+        Assert.Equal(["DETAILS"], inFlight);
+    }
+
     private static IReadOnlyList<string> Actions(Gsku gsku, IProductIdentityLifecycleActorContext actor) =>
         Assert.IsAssignableFrom<IReadOnlyList<string>>(
             typeof(GetGskuByIdHandler)
                 .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
-                .Invoke(null, [gsku, actor]));
+                .Invoke(null, [gsku, actor, false]));
 
     private sealed class Actor(Guid? subjectId, params string[] permissions)
         : IProductIdentityLifecycleActorContext

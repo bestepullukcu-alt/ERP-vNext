@@ -18,7 +18,10 @@ public sealed record GlobalProductIdentityWorkflowProcessingResult(
     int StatusCode,
     bool IsReplay,
     // Set when the attempt met a fault of the service chain: what a recovery cycle may skip without calling again.
-    ProductIdentityWorkflowFaultScope FaultScope = ProductIdentityWorkflowFaultScope.None);
+    ProductIdentityWorkflowFaultScope FaultScope = ProductIdentityWorkflowFaultScope.None,
+    // On a conflicting withdrawal: the command the requester's earlier withdrawal stands under, so that it can be
+    // repeated (only ever given to that requester, in that tenant).
+    Guid? PendingWithdrawalCommandId = null);
 
 public sealed record ProductIdentityWorkflowExecutionConfiguration(
     TimeSpan LeaseDuration,
@@ -49,13 +52,6 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         public (bool Known, long? Ticks) ScheduleAtEntry { get; set; }
     }
 
-    /*
-     * How long the worker leaves a withdrawal in flight alone. The requester's cancellation is processed by the
-     * engine inside its own two-second budget; a worker that reads the approval before that budget has surely run
-     * out can find it "still open", forget the withdrawal — and then the cancellation lands. The floor is fixed
-     * (fifteen budgets), not a setting: a RetryDelaySeconds of 1 must not shrink it. A longer retry delay extends it.
-     */
-    private static readonly TimeSpan WithdrawalSettleFloor = TimeSpan.FromSeconds(30);
 
     private static readonly GlobalProductIdentityWorkflowCheckpoint[] RecoverableCheckpoints =
     [
@@ -257,7 +253,10 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             && !ExactWithdrawalFacts(operation, commandId, fingerprint, requesterSubjectId,
                 expectedVersion, reasonCode, comment))
         {
-            return Fail("PRODUCT_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT", 409);
+            // The requester is the submitter of this approval in this tenant (checked above): they may learn the
+            // command their earlier withdrawal stands under, and repeat THAT one.
+            return Fail("PRODUCT_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT", 409)
+                with { PendingWithdrawalCommandId = operation.WithdrawalCommandId };
         }
         if (operation.WithdrawalCommandId.HasValue
             && operation.Checkpoint == GlobalProductIdentityWorkflowCheckpoint.Completed)
@@ -336,11 +335,12 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", 409);
 
             var now = timeProvider.GetUtcNow();
-            // Not cancellable: a claim cut off by the caller may already be written, and nobody would hold the
-            // lease to give it back. The step below is cancellable, and whatever stops it releases the lease.
-            var claim = await operations.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
+            // Not the caller's token (a claim cut off half-way may be written with nobody to give it back) and not
+            // unbounded either (a half-open connection would hang the request and the worker): see ClaimAsync.
+            var (claim, storeSilent) = await ClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
                 [operation.Checkpoint], leaseOwner, now.UtcTicks, now.Add(leaseDuration).UtcTicks,
-                IgnoreRetrySchedule: attempt.Interactive), CancellationToken.None);
+                IgnoreRetrySchedule: attempt.Interactive), leaseDuration);
+            if (storeSilent) return Fail(operation, ProductIdentityWorkflowClaims.StoreUnavailable, 503);
             if (claim is null) return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_BUSY", 409);
 
             bool advanced;
@@ -520,6 +520,15 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 return await WaitForServiceAsync(operation, claim, claim.Checkpoint,
                     ProductIdentityWorkflowCall.TerminalEvidence, evidence.ErrorCode, evidenceFault, attempt, now,
                     retryDelay, cancellationToken);
+            var waitingSince = operation.WithdrawalAwaitingRequesterSinceUtcTicksV1 ?? now.UtcTicks;
+            if (now.UtcTicks - waitingSince >= ProductIdentityWorkflowFaultRules.WithdrawalRequesterWaitLimit.Ticks)
+            {
+                logger.LogError(
+                    "Product identity workflow operation {OperationId} of tenant {TenantId}: the approval is closed and the withdrawal has waited for its requester since {SinceUtc:O} ({ResultCode}); nobody came back to finish it. It is handed to manual reconciliation.",
+                    operation.OperationId, operation.TenantId, new DateTimeOffset(waitingSince, TimeSpan.Zero),
+                    BoundedCode(evidence.ErrorCode, ProductIdentityWorkflowMakerCodes.MakerReplayRequired));
+                return await QuarantineAsync(claim, WithdrawalRequesterNeverReturned, now, cancellationToken);
+            }
             if (evidence.Outcome == ProductIdentityWorkflowTransportOutcome.Conflict)
                 logger.LogWarning(
                     "Product identity workflow operation {OperationId} of tenant {TenantId}: the approval is closed and holds no decision ({ResultCode}); the withdrawal appears to have landed and waits for its requester to repeat it. The worker keeps reading.",
@@ -537,7 +546,8 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                 now.Add(faultSettings.MaxRetryDelay).UtcTicks,
                 ProductIdentityWorkflowMakerCodes.MakerReplayRequired,
                 ReleaseLease: true,
-                ServiceFaultCount: 0), cancellationToken); // the engine answered both questions
+                ServiceFaultCount: 0, // the engine answered both questions
+                WithdrawalAwaitingRequesterSinceUtcTicksV1: waitingSince), cancellationToken);
         }
         var fault = ProductIdentityWorkflowFaultPolicy.Classify(
             ProductIdentityWorkflowCall.CancellationPreflight, preflight.Outcome, preflight.ErrorCode);
@@ -859,7 +869,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             }
 
             var now = timeProvider.GetUtcNow();
-            var claim = await operations.TryClaimAsync(
+            var (claim, storeSilent) = await ClaimAsync(
                 new(
                     operation.OperationId,
                     operation.OperationFingerprint,
@@ -868,7 +878,11 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                     now.UtcTicks,
                     now.Add(leaseDuration).UtcTicks,
                     IgnoreRetrySchedule: attempt.Interactive),
-                CancellationToken.None); // see the withdrawal path: a claim is never cut off half-way
+                leaseDuration); // see the withdrawal path
+            if (storeSilent)
+            {
+                return Fail(operation, ProductIdentityWorkflowClaims.StoreUnavailable, 503);
+            }
             if (claim is null)
             {
                 return Fail(operation, "PRODUCT_IDENTITY_WORKFLOW_BUSY", 409);
@@ -1427,30 +1441,34 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
             cancellationToken);
     }
 
-    /*
-     * The streak of CONSECUTIVE service faults this operation is in: how many of them were the worker's, and when
-     * the first one happened. A streak ends with the first answer the chain gives for the operation (every step
-     * that got one writes the two fields back to nothing), and it also ends by itself when its last fault is long
-     * past: faults further apart than two ceilings are not one outage — the worker never leaves a waiting operation
-     * alone for longer than one — so a glitch at eleven does not read "failing since nine".
-     */
+    public const string WithdrawalRequesterNeverReturned = "PRODUCT_IDENTITY_WITHDRAWAL_REQUESTER_NEVER_RETURNED";
+
+    private async Task<(GlobalProductIdentityWorkflowClaim? Claim, bool StoreSilent)> ClaimAsync(
+        GlobalProductIdentityWorkflowClaimRequest request,
+        TimeSpan leaseDuration) =>
+        await ProductIdentityWorkflowClaims.ClaimAsync(
+            token => operations.TryClaimAsync(request, token),
+            token => operations.ReleaseIfOwnedAsync(request.OperationId, request.LeaseOwner,
+                request.LeaseUntilUtcTicks, token),
+            leaseDuration,
+            exception => logger.LogWarning(
+                "Product identity workflow operation {OperationId}: the store did not answer a claim, and a lease it may have written could not be given back ({ExceptionType}); it expires by itself.",
+                request.OperationId, exception.GetType().FullName));
+
     private (int Count, long Since) FaultStreak(
         GlobalProductIdentityWorkflowOperation operation,
         DateTimeOffset now,
-        bool countsAsWorkerAttempt)
-    {
-        var ongoing = operation.ServiceFaultSinceUtcTicksV1 is { } since && !StreakIsOver(operation, now)
-            ? (Count: operation.ServiceFaultCount, Since: since)
-            : (Count: 0, Since: now.UtcTicks);
-        return countsAsWorkerAttempt ? (ongoing.Count + 1, ongoing.Since) : ongoing;
-    }
+        bool countsAsWorkerAttempt) =>
+        ProductIdentityWorkflowFaultRules.Streak(operation, now, countsAsWorkerAttempt, faultSettings);
 
-    // A streak is on record and its last write is further back than two ceilings. A write that only passes by
-    // (the first step of a withdrawal, a lease given back) clears such a streak, so that its own timestamp does not
-    // make an old streak look as if it were going on.
     private bool StreakIsOver(GlobalProductIdentityWorkflowOperation operation, DateTimeOffset now) =>
-        operation.ServiceFaultSinceUtcTicksV1.HasValue
-        && now.UtcTicks - operation.UpdatedAtUtcTicksV1 > 2 * faultSettings.MaxRetryDelay.Ticks;
+        ProductIdentityWorkflowFaultRules.StreakIsOver(operation, now, faultSettings);
+
+    private static long SettledNextAttempt(
+        GlobalProductIdentityWorkflowOperation operation,
+        DateTimeOffset now,
+        TimeSpan retryDelay) =>
+        ProductIdentityWorkflowFaultRules.SettledNextAttempt(operation, now, retryDelay);
 
     // An error when the worker has tried often enough, when the streak of consecutive faults has lasted longer than
     // the longest back-off (so a fault met only by makers still becomes an error — by how long it has gone on, not
@@ -1465,23 +1483,10 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         bool loud,
         string whatHappensNext) =>
         logger.Log(
-            loud || workerAttempts >= faultSettings.ErrorAfterAttempts
-                || now.UtcTicks - sinceUtcTicks >= faultSettings.MaxRetryDelay.Ticks
-                ? LogLevel.Error
-                : LogLevel.Warning,
+            ProductIdentityWorkflowFaultRules.Level(loud, workerAttempts, sinceUtcTicks, now, faultSettings),
             "Product identity workflow operation {OperationId} of tenant {TenantId} met a service fault at {Call}: {ResultCode}; worker attempt {Attempt}, failing since {SinceUtc:O}; {WhatHappensNext}.",
             operation.OperationId, operation.TenantId, call, code, workerAttempts,
             new DateTimeOffset(sinceUtcTicks, TimeSpan.Zero), whatHappensNext);
-
-    // Never earlier than the worker's own schedule, never inside the settle window.
-    private static long SettledNextAttempt(
-        GlobalProductIdentityWorkflowOperation operation,
-        DateTimeOffset now,
-        TimeSpan retryDelay)
-    {
-        var settled = now.Add(retryDelay > WithdrawalSettleFloor ? retryDelay : WithdrawalSettleFloor).UtcTicks;
-        return operation.NextAttemptAtUtcTicksV1 is { } scheduled && scheduled > settled ? scheduled : settled;
-    }
 
     private GlobalProductIdentityWorkflowProcessingResult? ConfigurationFault(Guid tenantId, Guid operationId)
     {

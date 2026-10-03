@@ -50,6 +50,9 @@ public sealed class TrustedSourceAuditIntentContractTests
         yield return ["Gsku", "GskuRetirementRejected", "Gsku", AuditOperation.LifecycleTransition];
         yield return ["Gsku", "GskuRetirementManualReconciliationRequired", "Gsku", AuditOperation.LifecycleTransition];
         yield return ["Gsku", "GskuIdentityRetired", "Gsku", AuditOperation.Deactivate];
+        // WP-MDM-GSKU-ACCEPT-01 FIX1: "the engine approved, MDM could not apply" — the pair back to draft.
+        yield return ["ProductDefinitionRevision", "ProductDefinitionRevisionIdentityDecisionNotApplicable", "ProductDefinitionRevision", AuditOperation.LifecycleTransition];
+        yield return ["Gsku", "GskuIdentityDecisionNotApplicable", "Gsku", AuditOperation.LifecycleTransition];
         yield return ["FinishedGood", "FinishedGoodDraftCreated", "FinishedGood", AuditOperation.Create];
         yield return ["FinishedGood", "FinishedGoodIdentitySubmitted", "FinishedGood", AuditOperation.LifecycleTransition];
         yield return ["FinishedGood", "FinishedGoodIdentityApproved", "FinishedGood", AuditOperation.LifecycleTransition];
@@ -154,6 +157,9 @@ public sealed class TrustedSourceAuditIntentContractTests
     [InlineData("Gsku", "21")]
     [InlineData("Gsku", "gskuidentitysubmitted")]
     [InlineData("ProductDefinitionRevision", "GskuIdentitySubmitted")]
+    [InlineData("Gsku", "78")]
+    [InlineData("ProductDefinitionRevision", "GskuIdentityDecisionNotApplicable")]
+    [InlineData("Gsku", "ProductDefinitionRevisionIdentityDecisionNotApplicable")]
     [InlineData("ProductDefinitionRevision", "GskuIdentityApprovalWithdrawn")]
     [InlineData("Gsku", "ProductDefinitionRevisionIdentityApprovalWithdrawn")]
     [InlineData("ProductDefinitionRevision", "GskuCorrectionApplied")]

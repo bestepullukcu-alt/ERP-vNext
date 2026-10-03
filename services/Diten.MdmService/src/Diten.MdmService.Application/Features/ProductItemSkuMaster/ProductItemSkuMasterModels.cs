@@ -187,7 +187,10 @@ public static class ProductItemSkuMasterModels
         int GskuVersion,
         DateTimeOffset CreatedAt,
         DateTimeOffset? UpdatedAt,
-        IReadOnlyList<string> AvailableActions);
+        IReadOnlyList<string> AvailableActions,
+        // B2 (b) (GSKU FIX1): set when the latest identity approval was granted and could not be applied — the
+        // reason the pair is a draft again, for the maker to fix before submitting again.
+        string? IdentityNotAppliedReason = null);
 
     public sealed record GskuCreateGlobalProductOptionDto(
         Guid Id,

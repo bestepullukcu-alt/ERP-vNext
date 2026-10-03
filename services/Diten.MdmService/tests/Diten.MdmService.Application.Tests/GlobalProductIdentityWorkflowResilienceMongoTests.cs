@@ -962,7 +962,8 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
                 .Set(item => item.WithdrawalTaskStatus, "Cancelled")
                 .Set(item => item.WithdrawalInstanceStatus, "Cancelled")
                 .Set(item => item.WithdrawalObjectRef, "GP-REF")
-                .Set(item => item.WithdrawalRefusalCode, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND"));
+                .Set(item => item.WithdrawalRefusalCode, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND")
+                .Set(item => item.WithdrawalAwaitingRequesterSinceUtcTicksV1, 42));
         var now = _clock.GetUtcNow().UtcTicks;
         var claim = await repository.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
             [Checkpoint.WithdrawalOutcomeUnknown], "worker", now, now + Lease.Ticks));
@@ -974,7 +975,7 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
         var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
         var withdrawalFields = typeof(GlobalProductIdentityWorkflowOperation).GetProperties()
             .Where(property => property.Name.StartsWith("Withdrawal", StringComparison.Ordinal)).ToList();
-        Assert.Equal(17, withdrawalFields.Count); // an eighteenth field has to be cleared too — and listed above
+        Assert.Equal(18, withdrawalFields.Count); // a nineteenth field has to be cleared too — and listed above
         Assert.All(withdrawalFields, property => Assert.True(property.GetValue(stored) is null, property.Name));
         Assert.Equal(Checkpoint.AwaitingDecision, stored.Checkpoint);
     }
@@ -1126,6 +1127,11 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
                 _database, provider.GetRequiredService<ITenantContext>()));
         services.AddSingleton<IGlobalProductIdentityWorkflowTenantPartitionDiscovery>(
             new GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository(_database));
+        services.AddScoped<IProductLegalEntityScopePolicyRepository>(provider =>
+            new ProductLegalEntityScopePolicyRepository(
+                _database, provider.GetRequiredService<ITenantContext>()));
+        // The worker's legal-entity scope rule (S1, WP-MDM-GSKU-ACCEPT-01 FIX1): the runner asks it for every tenant.
+        services.AddScoped<Diten.MdmService.Application.Features.ProductLegalEntityScopes.ProductIdentityBackgroundScope>();
         services.AddScoped<IGlobalProductRepository>(provider =>
             new GlobalProductRepository(_database, provider.GetRequiredService<ITenantContext>()));
         services.AddSingleton<IProductIdentityWorkflowClient>(_transport);

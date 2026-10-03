@@ -21,13 +21,23 @@ public sealed class RetireGskuIdentityPairHandler(
     IProductIdentityLifecycleActorContext actorContext)
     : IRequestHandler<RetireGskuIdentityPairCommand, Response<GskuPairRetirementResult>>
 {
+    public const string DirectRetirementIsSystemOnly = "GSKU_DIRECT_RETIREMENT_SYSTEM_ONLY";
+
     public async Task<Response<GskuPairRetirementResult>> Handle(
         RetireGskuIdentityPairCommand request,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
-        if (!actorContext.TryResolveCanonicalHumanSubject(out var actorId)
-            || !actorContext.HasPermission(GskuPairRetirementPermissions.Retire))
+        // B5 (WP-MDM-GSKU-ACCEPT-01 FIX1): retiring a GSKU directly, without an approved request, is a system action
+        // (separation of duties). A person — whatever permission they hold — is refused; a person retires through a
+        // retirement REQUEST, which is approved, and whose approval the system carries out (the pair retirement).
+        // No system actor calls this endpoint today: until an inbound service identity exists in MDM, it is closed.
+        if (actorContext.TryResolveCanonicalHumanSubject(out _))
+        {
+            return Fail(DirectRetirementIsSystemOnly, 403);
+        }
+        Guid actorId = Guid.Empty;
+        if (actorId == Guid.Empty || !actorContext.HasPermission(GskuPairRetirementPermissions.Retire))
         {
             return Fail("PRODUCT_IDENTITY_LIFECYCLE_FORBIDDEN", 403);
         }

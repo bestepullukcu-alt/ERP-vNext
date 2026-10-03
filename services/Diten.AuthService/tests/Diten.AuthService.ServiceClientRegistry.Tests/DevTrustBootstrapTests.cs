@@ -185,6 +185,45 @@ public sealed class DevTrustBootstrapTests
             .GetProperty("AuthProductIdentityWorkflowServiceIdentityProvider").GetProperty("AuthBaseUrl").GetString());
     }
 
+    // WP-MDM-GSKU-ACCEPT-01 FIX1 (B6): the GSKU identity, correction and retirement-request flows and their workers are
+    // switched on with the same approvers — before this, every GSKU submit in Development answered 503 CONFIGURATION.
+    [Fact]
+    public void Bootstrap_SwitchesOnTheThreeGskuFlowsAndTheirWorkers_WithTheSameApprovers()
+    {
+        using var targets = new Targets();
+
+        Assert.Equal(DevTrustBootstrapCommand.Success,
+            DevTrustBootstrapCommand.Run(targets.Arguments(Tenant, Approver), new StringWriter(), new StringWriter()));
+
+        using var mdm = JsonDocument.Parse(File.ReadAllText(targets.Files[2]));
+        foreach (var flow in new[] { "FirstGskuIdentityWorkflow", "GskuCorrectionWorkflow", "GskuRetirementRequestWorkflow" })
+        {
+            var section = mdm.RootElement.GetProperty(flow);
+            Assert.True(section.GetProperty("Enabled").GetBoolean(), flow);
+            Assert.Equal([Approver], section.GetProperty("CandidatePrincipalIds").EnumerateArray()
+                .Select(item => item.GetString()!).ToArray());
+            Assert.True(mdm.RootElement.GetProperty(flow + "Worker").GetProperty("Enabled").GetBoolean(), flow + "Worker");
+        }
+    }
+
+    // A non-default client code writes Platform's start entries itself — the GSKU ones too, in the tracked order.
+    [Fact]
+    public void Bootstrap_WithAnotherClientCode_AuthorizesTheGskuStartsForThatClient()
+    {
+        using var targets = new Targets();
+        var arguments = targets.Arguments(Tenant, Approver).Concat(["--client-code", "diten-mdm-workflow-2"]).ToArray();
+
+        Assert.Equal(DevTrustBootstrapCommand.Success,
+            DevTrustBootstrapCommand.Run(arguments, new StringWriter(), new StringWriter()));
+
+        using var platform = JsonDocument.Parse(File.ReadAllText(targets.Files[1]));
+        var entries = platform.RootElement.GetProperty("TrustedWorkflowStartAuthorization").GetProperty("Entries")
+            .EnumerateArray().Select(entry => (entry.GetProperty("ObjectType").GetString(), entry.GetProperty("TemplateCode").GetString()))
+            .ToArray();
+        Assert.Equal([("GlobalProduct", "GLOBAL-PRODUCT-IDENTITY"), ("gsku", "GSKU-IDENTITY"),
+            ("GskuCorrection", "GSKU-CORRECTION"), ("GskuRetirementRequest", "GSKU-RETIREMENT-REQUEST")], entries);
+    }
+
     [Fact]
     public void Bootstrap_WhenTwoTargetsAreTheSameDirectoryInAnotherSpelling_RefusesAndWritesNothing()
     {

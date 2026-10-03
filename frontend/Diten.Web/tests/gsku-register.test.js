@@ -476,5 +476,37 @@ describe('MOD-0290 GSKU Register exposure', () => {
             'RequestRetirement', 'RetirementRequestConfirmation', 'RetirementRequestReasonLabel',
             'RetirementRequestReasonRequired', 'RetirementRequestReasonInvalid', 'RetirementRequestedSuccess']
             .forEach((key) => expect(keys[0]).toContain(key));
+        // GSKU FIX1: refusals the maker can act on, and why an approval could not be applied.
+        ['ErrorParentNotApproved', 'ErrorSubmitInFlight', 'ErrorDependentIdentitiesExist', 'ErrorApprovalChanging',
+            'ErrorApprovalTemplateMissing',
+            'IdentityNotAppliedParent', 'IdentityNotAppliedReference', 'IdentityNotAppliedGeneric']
+            .forEach((key) => expect(keys[0]).toContain(key));
+    });
+
+    it('says why an approved identity could not be applied, through the page dictionary and a CSS-hidden row', () => {
+        const source = script();
+        const l10n = read('Views/MasterDataManagement/Gskus/_IndexL10n.cshtml');
+        const quickView = read('Views/MasterDataManagement/Gskus/_DetailsQuickView.cshtml');
+        ['IdentityNotAppliedParent', 'IdentityNotAppliedReference', 'IdentityNotAppliedGeneric']
+            .forEach((key) => {
+                expect(l10n).toContain(`${key} = Localizer["${key}"].Value`);
+                expect(source).toContain(`L.${key}`);
+            });
+        expect(quickView).toContain('class="col-12 d-none" id="oc-identity-not-applied-row"');
+        expect(quickView).not.toMatch(/style="/);
+        expect(source).toContain("valueOf(detail, 'identityNotAppliedReason', 'IdentityNotAppliedReason')");
+        expect(source).toContain("classList.toggle('d-none', !notAppliedText)");
+    });
+
+    it('translates only an allow-listed MDM conflict code and never relays the code itself', () => {
+        const source = controller();
+        [['GSKU_PARENT_NOT_APPROVED', 'ErrorParentNotApproved'],
+            ['GSKU_IDENTITY_SUBMIT_IN_FLIGHT', 'ErrorSubmitInFlight'],
+            ['GSKU_DEPENDENT_IDENTITIES_EXIST', 'ErrorDependentIdentitiesExist'],
+            ['PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING', 'ErrorApprovalChanging'],
+            ['PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY', 'ErrorApprovalTemplateMissing']]
+            .forEach(([code, key]) => expect(source).toContain(`["${code}"] = "${key}"`));
+        expect(source).toContain('errors = new[] { _localizer[key].Value }');
+        expect(source).toMatch(/KnownFailureKeys\.TryGetValue[\s\S]*?return SafeFailure\(response\.StatusCode\);/);
     });
 });

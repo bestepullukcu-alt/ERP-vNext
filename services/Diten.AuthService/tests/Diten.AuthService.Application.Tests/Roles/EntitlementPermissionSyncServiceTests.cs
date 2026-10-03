@@ -1143,6 +1143,29 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.False(roles.Exists(TenantA, ProductLegalEntityScopeEntitlementGrantProfile.StewardRole));
     }
 
+    // B5 (WP-MDM-GSKU-ACCEPT-01 FIX1): the Retirement Steward's historical grant of direct GSKU retirement is removed by
+    // the same sync that granted it — an existing tenant converges without a hand-written migration.
+    [Fact]
+    public async Task The_retirement_stewards_historical_direct_gsku_retire_grant_is_removed_by_the_sync()
+    {
+        var catalog = ProductIdentityLifecycleCompositeCatalog();
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+        var declaredKeys = ProductIdentityDeclaredKeys(catalog);
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            declaredKeys, Actor);
+        var steward = roles.IdOf(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole);
+        var retire = catalog.Single(p => p.Key == "mdm.gskus.retire").Id;
+        rolePerms.Seed(RolePermission.ModuleGrant(steward, retire, TenantA, "historical",
+            ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode));
+
+        await svc.GrantModuleWithKeysAsync(TenantA, ProductIdentityLifecycleEntitlementGrantProfile.ModuleCode,
+            declaredKeys, Actor);
+
+        Assert.DoesNotContain(rolePerms.Rows, row => row.RoleId == steward && row.PermissionId == retire);
+        Assert.DoesNotContain("mdm.gskus.retire",
+            ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.AdminRole));
+    }
+
     [Fact]
     public async Task Product_identity_lifecycle_profile_composes_exact_twenty_seven_eleven_roles_with_ABB_and_scope()
     {
@@ -1159,7 +1182,7 @@ public sealed class EntitlementPermissionSyncServiceTests
 
         Assert.Equal(20, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.StewardRole).Count);
         Assert.Equal(7, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole).Count);
-        Assert.Equal(11, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole).Count);
+        Assert.Equal(10, ProductRoleKeys(roles, rolePerms, catalog, ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole).Count);
 
         var admin = ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.AdminRole);
         var viewer = ProductRoleKeys(roles, rolePerms, catalog, DefaultRolePermissionTemplate.ViewerRole);

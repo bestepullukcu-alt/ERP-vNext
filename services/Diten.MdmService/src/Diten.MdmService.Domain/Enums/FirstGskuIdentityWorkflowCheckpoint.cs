@@ -23,5 +23,8 @@ public enum FirstGskuIdentityWorkflowCheckpoint
     WithdrawalPreflightObserved = 19,
     WithdrawalOutcomeUnknown = 20,
     WithdrawalObserved = 21,
-    WithdrawalApplied = 22
+    WithdrawalApplied = 22,
+    // The engine approved, and the approval could not be applied (a reference changed between submit and decision):
+    // the pair is a draft again, with the reason on the operation. Final.
+    DecisionNotApplicable = 23
 }

@@ -19,6 +19,24 @@ public interface IFirstGskuIdentityWorkflowOperationRepository
     Task<bool> AdvanceAsync(
         FirstGskuIdentityWorkflowClaim claim, FirstGskuIdentityWorkflowCheckpointMutation mutation,
         CancellationToken cancellationToken = default);
+    // Gives back a lease this owner wrote at this exact expiry — for a claim whose answer never arrived.
+    Task ReleaseIfOwnedAsync(
+        Guid operationId, string leaseOwner, long leaseUntilUtcTicks, CancellationToken cancellationToken = default);
+    // The reason of this GSKU's latest identity operation when that one ended "approved, not applicable"; else null.
+    Task<string?> LatestNotApplicableReasonAsync(Guid gskuId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<string?>(null);
+    // Whether an identity operation of this GSKU has not reached a final state (a submit is in flight).
+    Task<bool> HasUnfinishedOperationAsync(Guid gskuId, CancellationToken cancellationToken = default);
+    // The engine approved and the approval cannot be applied: revision and GSKU back to draft with their audit
+    // intents, and the operation final with the reason — one transaction.
+    Task<FirstGskuIdentityDecisionNotApplicableWriteResult> ApplyDecisionNotApplicableAsync(
+        FirstGskuIdentityWorkflowClaim claim,
+        FirstGskuIdentityWorkflowOperation operation,
+        string reasonCode,
+        LocalAuditIntent revisionAuditIntent,
+        LocalAuditIntent gskuAuditIntent,
+        long updatedAtUtcTicks,
+        CancellationToken cancellationToken = default);
     Task<FirstGskuIdentityWithdrawalWriteResult> ApplyWithdrawalAsync(
         FirstGskuIdentityWorkflowClaim claim,
         FirstGskuIdentityWorkflowOperation operation,

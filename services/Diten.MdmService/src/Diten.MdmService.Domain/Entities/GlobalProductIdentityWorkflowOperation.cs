@@ -2,7 +2,7 @@ using Diten.MdmService.Domain.Enums;
 
 namespace Diten.MdmService.Domain.Entities;
 
-public sealed class GlobalProductIdentityWorkflowOperation : EntityBase
+public sealed class GlobalProductIdentityWorkflowOperation : EntityBase, IProductIdentityWorkflowFaultFields
 {
     public const int CurrentTemporalStorageVersion = 1;
 
@@ -61,6 +61,8 @@ public sealed class GlobalProductIdentityWorkflowOperation : EntityBase
     public string? WithdrawalInstanceStatus { get; set; }
     public string? WithdrawalObjectRef { get; set; }
     public string? WithdrawalRefusalCode { get; set; }
+    // When the worker first found the withdrawal landed and waiting for its requester (see WithdrawalRequesterWaitLimit).
+    public long? WithdrawalAwaitingRequesterSinceUtcTicksV1 { get; set; }
     public long? NextAttemptAtUtcTicksV1 { get; set; }
     public string? LastFailureCode { get; set; }
     // Consecutive faults of the SERVICE chain (credential, token, setting, reachability) while this operation

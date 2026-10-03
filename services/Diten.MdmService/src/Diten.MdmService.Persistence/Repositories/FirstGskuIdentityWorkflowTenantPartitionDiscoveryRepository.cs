@@ -28,14 +28,23 @@ public sealed class FirstGskuIdentityWorkflowTenantPartitionDiscoveryRepository
         var terminal = new[]
         {
             FirstGskuIdentityWorkflowCheckpoint.Completed,
-            FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
-            FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired
+            FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+            FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+            FirstGskuIdentityWorkflowCheckpoint.Superseded,
+            FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable
         };
         var filter = Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.IsDeleted, false)
                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
                          item => item.TemporalStorageVersion,
                          FirstGskuIdentityWorkflowOperation.CurrentTemporalStorageVersion)
                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Nin(item => item.Checkpoint, terminal)
+                     // AwaitingMakerReplay is the maker's to continue — EXCEPT a withdrawal an earlier version
+                     // parked there: its approval exists at the engine, so the worker must keep reading it.
+                     & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Or(
+                         Builders<FirstGskuIdentityWorkflowOperation>.Filter.Ne(
+                             item => item.Checkpoint, FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay),
+                         Builders<FirstGskuIdentityWorkflowOperation>.Filter.Ne(
+                             item => item.WithdrawalCommandId, null))
                      & Builders<FirstGskuIdentityWorkflowOperation>.Filter.Or(
                          Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.NextAttemptAtUtcTicksV1, null),
                          Builders<FirstGskuIdentityWorkflowOperation>.Filter.Lte(

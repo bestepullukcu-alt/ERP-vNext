@@ -8,6 +8,7 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
+using Microsoft.Extensions.Logging;
 using PersistedCancellationEvidence = Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowCancellationEvidence;
 
 namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
@@ -17,7 +18,11 @@ public sealed record FirstGskuIdentityWorkflowProcessingResult(
     FirstGskuIdentityWorkflowOperation? Operation,
     string? ErrorCode,
     int StatusCode,
-    bool IsReplay);
+    bool IsReplay,
+    // Set when the attempt met a fault of the service chain: what a recovery cycle may skip without calling again.
+    ProductIdentityWorkflowFaultScope FaultScope = ProductIdentityWorkflowFaultScope.None,
+    // On a conflicting withdrawal: the command the requester's earlier withdrawal stands under (only to them).
+    Guid? PendingWithdrawalCommandId = null);
 
 public sealed record FirstGskuIdentityWorkflowExecutionConfiguration(
     TimeSpan LeaseDuration,
@@ -31,8 +36,27 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
     IWorkflowVerifiedGskuReferenceResolver references,
     IProductIdentityWorkflowClient workflowClient,
     FirstGskuIdentityWorkflowStartRequestFactory requestFactory,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    ProductIdentityWorkflowServiceFaultSettings faultSettings,
+    ILogger<FirstGskuIdentityWorkflowProcessor> logger)
 {
+    // The same rules as the Global Product processor (WP-GP-1B-A-RESILIENCE-01 and its three fix rounds), carried
+    // over by WP-MDM-GSKU-ACCEPT-01: a fault of the service chain waits, it never quarantines the pair.
+    private sealed class Attempt(bool interactive)
+    {
+        public bool Interactive { get; } = interactive;
+        public ProductIdentityWorkflowFaultScope Scope { get; set; }
+        // What the step that just ran wants the caller told, instead of going round again.
+        public (string Code, int Status)? Answer { get; set; }
+        // The versions the cancellation carries were read in THIS request: no earlier cancellation can be in flight.
+        public bool VersionsReadNow { get; set; }
+        // One request asks again after a conflict at most once.
+        public bool ConflictRetried { get; set; }
+        // The worker's schedule as this request found it (known only when the request began the withdrawal itself).
+        public (bool Known, long? Ticks) ScheduleAtEntry { get; set; }
+    }
+
+
     private static readonly FirstGskuIdentityWorkflowCheckpoint[] RecoverableCheckpoints =
         Enum.GetValues<FirstGskuIdentityWorkflowCheckpoint>()
             .Except([
@@ -73,6 +97,13 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             if (revision is null)
             {
                 return Fail("GSKU_NOT_FOUND", 404);
+            }
+            // B2 (a): a child is not submitted before its parent is approved (as in SAP / Oracle, an item is not
+            // released before the definition it belongs to). Checked before anything is written or started.
+            var parent = await globalProducts.GetByIdAsync(revision.GlobalProductId, cancellationToken);
+            if (parent is null || parent.LifecycleStatus != ProductIdentityLifecycleStatus.IdentityApproved)
+            {
+                return Fail(ParentNotApproved, 409);
             }
 
             FirstGskuIdentityWorkflowStartPlan plan;
@@ -181,7 +212,10 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         if (operation.WithdrawalCommandId.HasValue
             && !ExactWithdrawalFacts(operation, commandId, fingerprint, requesterSubjectId,
                 expectedGskuVersion, reasonCode, comment))
-            return Fail("FIRST_GSKU_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT", 409);
+            // The requester is the submitter of this approval in this tenant (checked above): they may learn the
+            // command their earlier withdrawal stands under, and repeat THAT one.
+            return Fail("FIRST_GSKU_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT", 409)
+                with { PendingWithdrawalCommandId = operation.WithdrawalCommandId };
         if (operation.WithdrawalCommandId.HasValue
             && operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.Completed)
             return ExactWithdrawalState(operation, revision, gsku)
@@ -217,97 +251,136 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         string? comment = null)
     {
         var operation = initial;
+        var attempt = new Attempt(!string.IsNullOrWhiteSpace(delegatedUserToken));
+        if (initial.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision)
+            attempt.ScheduleAtEntry = (true, initial.NextAttemptAtUtcTicksV1);
         for (var step = 0; step < 10; step++)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            // Refused for good: the withdrawal's own answer, from its own field — the decision poll rewrites
+            // LastFailureCode at every cycle, and a repeat must still be told what the first request was told.
             if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision
-                && operation.WithdrawalCommandId.HasValue
-                && (!commandId.HasValue || operation.LastFailureCode is not null))
-                return Fail(operation, operation.LastFailureCode
-                    ?? "FIRST_GSKU_IDENTITY_WORKFLOW_DECISION_PENDING", 409);
+                && operation.WithdrawalCommandId.HasValue)
+                return Fail(operation, operation.WithdrawalRefusalCode ??
+                    "FIRST_GSKU_IDENTITY_WORKFLOW_DECISION_PENDING", 409);
             if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.Completed)
+            {
                 return operation.WithdrawalCommandId.HasValue
                     ? Success(operation, true)
                     : Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
+            }
             if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired)
                 return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", 409);
 
             var now = timeProvider.GetUtcNow();
-            var claim = await operations.TryClaimAsync(new(
-                operation.OperationId, operation.OperationFingerprint, [operation.Checkpoint],
-                leaseOwner, now.UtcTicks, now.Add(leaseDuration).UtcTicks), cancellationToken);
+            // Not the caller's token (a claim cut off half-way may be written with nobody to give it back) and not
+            // unbounded either (a half-open connection would hang the request and the worker): see ClaimAsync.
+            var (claim, storeSilent) = await ClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
+                [operation.Checkpoint], leaseOwner, now.UtcTicks, now.Add(leaseDuration).UtcTicks,
+                IgnoreRetrySchedule: attempt.Interactive), leaseDuration);
+            if (storeSilent) return Fail(operation, ProductIdentityWorkflowClaims.StoreUnavailable, 503);
             if (claim is null) return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_BUSY", 409);
 
             bool advanced;
-            switch (operation.Checkpoint)
+            try
             {
-                case FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision:
-                    if (!commandId.HasValue || fingerprint is null || !requesterSubjectId.HasValue
-                        || !expectedGskuVersion.HasValue || reasonCode is null)
-                    {
-                        advanced = await AdvanceAsync(claim, operation.Checkpoint, now,
-                            errorCode: "FIRST_GSKU_IDENTITY_WORKFLOW_DECISION_PENDING",
-                            releaseLease: true, cancellationToken: cancellationToken);
+                switch (operation.Checkpoint)
+                {
+                    case FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision
+                        when commandId.HasValue && fingerprint is not null && requesterSubjectId.HasValue
+                             && expectedGskuVersion.HasValue && reasonCode is not null:
+                        advanced = await operations.AdvanceAsync(claim, new(
+                            FirstGskuIdentityWorkflowCheckpoint.WithdrawalRequested,
+                            ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+                            SettledNextAttempt(operation, now, retryDelay),
+                            WithdrawalCommandId: commandId,
+                            WithdrawalFingerprint: fingerprint,
+                            WithdrawalRequesterSubjectId: requesterSubjectId,
+                            WithdrawalExpectedGskuVersion: expectedGskuVersion,
+                            WithdrawalReasonCode: reasonCode,
+                            WithdrawalComment: comment,
+                            ReleaseLease: true,
+                            ServiceFaultCount: StreakIsOver(operation, now) ? 0 : null), cancellationToken);
                         break;
-                    }
-                    advanced = await operations.AdvanceAsync(claim, new(
-                        FirstGskuIdentityWorkflowCheckpoint.WithdrawalRequested,
-                        ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
-                        WithdrawalCommandId: commandId,
-                        WithdrawalFingerprint: fingerprint,
-                        WithdrawalRequesterSubjectId: requesterSubjectId,
-                        WithdrawalExpectedGskuVersion: expectedGskuVersion,
-                        WithdrawalReasonCode: reasonCode,
-                        WithdrawalComment: comment,
-                        ReleaseLease: true), cancellationToken);
-                    break;
-                case FirstGskuIdentityWorkflowCheckpoint.WithdrawalRequested:
-                    advanced = await ObserveWithdrawalPreflightAsync(
-                        operation, claim, now, retryDelay, cancellationToken);
-                    break;
-                case FirstGskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved:
-                case FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown:
-                case FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay:
-                    advanced = await ObserveWithdrawalAsync(
-                        operation, claim, delegatedUserToken, now, retryDelay, cancellationToken);
-                    break;
-                case FirstGskuIdentityWorkflowCheckpoint.WithdrawalObserved:
-                    advanced = await ApplyWithdrawalAsync(operation, claim, now, cancellationToken);
-                    break;
-                case FirstGskuIdentityWorkflowCheckpoint.WithdrawalApplied:
-                    advanced = await VerifyWithdrawalAndCompleteAsync(
-                        operation, claim, now, cancellationToken);
-                    break;
-                default:
-                    return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
+                    case FirstGskuIdentityWorkflowCheckpoint.WithdrawalRequested:
+                        advanced = attempt.Interactive
+                            ? await ObserveWithdrawalPreflightAsync(operation, claim, attempt, now, retryDelay,
+                                cancellationToken)
+                            : await ResolveAbandonedWithdrawalAsync(operation, claim, attempt, now, retryDelay,
+                                cancellationToken);
+                        break;
+                    case FirstGskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved:
+                    case FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown:
+                    case FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay:
+                        advanced = attempt.Interactive
+                            ? await ObserveWithdrawalAsync(operation, claim, delegatedUserToken!, attempt, now,
+                                retryDelay, cancellationToken)
+                            : await ResolveAbandonedWithdrawalAsync(operation, claim, attempt, now, retryDelay,
+                                cancellationToken);
+                        break;
+                    case FirstGskuIdentityWorkflowCheckpoint.WithdrawalObserved:
+                        advanced = await ApplyWithdrawalAsync(operation, claim, now, cancellationToken);
+                        break;
+                    case FirstGskuIdentityWorkflowCheckpoint.WithdrawalApplied:
+                        advanced = await VerifyWithdrawalAndCompleteAsync(operation, claim, now, cancellationToken);
+                        break;
+                    default:
+                        await ReleaseClaimAsync(claim, operation, now);
+                        return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_STATE_CONFLICT", 409);
+                }
+            }
+            catch
+            {
+                // Cancelled by the caller, or the store failed in the middle of the step: the lease must not
+                // outlive the attempt, or the requester's next try is told "busy" until it runs out. The worker is
+                // kept away for the settle window: a cancellation that was cut off may still land at the engine.
+                await ReleaseClaimAsync(claim, operation, now, SettledNextAttempt(operation, now, retryDelay));
+                throw;
             }
             if (!advanced)
+            {
+                await ReleaseClaimAsync(claim, operation, now);
                 return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
+            }
             operation = await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken)
                 ?? throw new InvalidOperationException("FIRST_GSKU_IDENTITY_WORKFLOW_OPERATION_LOST");
-            if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks)
-                return Fail(operation, operation.LastFailureCode
-                    ?? "FIRST_GSKU_IDENTITY_WORKFLOW_RETRY_SCHEDULED", 503);
-            if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
-                && string.IsNullOrWhiteSpace(delegatedUserToken))
-                return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", 409);
+            if (attempt.Answer is { } answer)
+                return Fail(operation, answer.Code, answer.Status) with { FaultScope = attempt.Scope };
+            // The withdrawal was dropped and the decision is awaited again: the worker goes on polling it, in this
+            // very cycle. (A requester who was just refused has been answered above.)
+            if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision
+                && !operation.WithdrawalCommandId.HasValue && !attempt.Interactive)
+                return await ProcessAsync(operation, null, leaseOwner, leaseDuration, retryDelay,
+                    stopWhenAwaitingDecision: false, cancellationToken);
+            if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay)
+                return MakerAnswer(operation, attempt);
+            // A requester who is present walks on through the settle window their own steps wrote (it keeps the
+            // WORKER away, not them); only a retry that was really scheduled ends the request.
+            if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks
+                && (!attempt.Interactive
+                    || operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable))
+                return ScheduledAnswer(operation, attempt);
         }
+        // A withdrawal that was applied is a success however many steps it took: the product is a draft already.
+        if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.Completed
+            && operation.WithdrawalCommandId.HasValue)
+            return Success(operation, true);
         return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_STEP_BUDGET_EXCEEDED", 503);
     }
 
     private async Task<bool> ObserveWithdrawalPreflightAsync(
         FirstGskuIdentityWorkflowOperation operation,
         FirstGskuIdentityWorkflowClaim claim,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
     {
         if (!CompleteWithdrawalRequest(operation) || !CompleteStartProof(operation))
-            return await QuarantineAsync(claim,
-                "FIRST_GSKU_IDENTITY_WITHDRAWAL_CONTRACT_INVALID", now, cancellationToken);
+            return await QuarantineAsync(claim, "FIRST_GSKU_IDENTITY_WITHDRAWAL_CONTRACT_INVALID", now, cancellationToken);
         var result = await workflowClient.GetCancellationPreflightAsync(operation.TenantId,
-            new(operation.WorkflowInstanceId!.Value, operation.ApprovalTaskId!.Value,
-                operation.ObjectType, operation.ObjectId, operation.MakerSubjectId), cancellationToken);
+            new(operation.WorkflowInstanceId!.Value, operation.ApprovalTaskId!.Value, operation.ObjectType,
+                operation.ObjectId, operation.MakerSubjectId), cancellationToken);
         if (result.Outcome == ProductIdentityWorkflowTransportOutcome.Success && result.Value is { } value)
         {
             if (value.WorkflowInstanceId != operation.WorkflowInstanceId
@@ -315,53 +388,210 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
                 || !string.Equals(value.ObjectType, operation.ObjectType, StringComparison.Ordinal)
                 || !string.Equals(value.ObjectId, operation.ObjectId, StringComparison.Ordinal)
                 || value.WorkflowInstanceVersion <= 0 || value.ApprovalTaskVersion <= 0)
-                return await QuarantineAsync(claim,
-                    "FIRST_GSKU_IDENTITY_WITHDRAWAL_PREFLIGHT_INVALID", now, cancellationToken);
+                return await QuarantineAsync(claim, "FIRST_GSKU_IDENTITY_WITHDRAWAL_PREFLIGHT_INVALID", now,
+                    cancellationToken);
+            attempt.VersionsReadNow = true;
             return await operations.AdvanceAsync(claim, new(
                 FirstGskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved,
                 ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
+                SettledNextAttempt(operation, now, retryDelay),
                 WithdrawalExpectedWorkflowInstanceVersion: value.WorkflowInstanceVersion,
                 WithdrawalExpectedApprovalTaskVersion: value.ApprovalTaskVersion,
                 WithdrawalObjectRef: value.ObjectRef,
+                // The fault streak is left as it stands: the versions are only read here, and what the request
+                // meets is said by the cancellation that follows (its answer ends a streak, its fault goes on in it).
                 ReleaseLease: true), cancellationToken);
         }
         if (result.Outcome is ProductIdentityWorkflowTransportOutcome.Conflict
             or ProductIdentityWorkflowTransportOutcome.NotFound)
-            return await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision,
-                now, result.ErrorCode, true, cancellationToken);
-        return Retryable(result.Outcome)
-            ? await ScheduleRetryAsync(claim, operation.Checkpoint, result.ErrorCode,
-                now, retryDelay, cancellationToken)
-            : await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+            // The approval is not open any more (decided, or closed): there is nothing to withdraw. The request is
+            // kept on the operation so that the same answer is given again; the decision poll takes it from here.
+            return await ClosedBeforeWithdrawalAsync(operation, claim, attempt, result.ErrorCode, now,
+                cancellationToken);
+        var fault = ProductIdentityWorkflowFaultPolicy.Classify(
+            ProductIdentityWorkflowCall.CancellationPreflight, result.Outcome, result.ErrorCode);
+        if (fault.Kind == ProductIdentityWorkflowFaultKind.ServiceWait)
+            return await WaitForServiceAsync(operation, claim, operation.Checkpoint,
+                ProductIdentityWorkflowCall.CancellationPreflight, result.ErrorCode, fault, attempt, now, retryDelay,
+                cancellationToken);
+        return await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
     }
 
-    private async Task<bool> ObserveWithdrawalAsync(
+    /*
+     * A withdrawal the requester did not finish, met by the WORKER. The approval exists at the engine, so somebody
+     * may decide it at any moment — and the worker reads decisions only while the operation awaits one. An
+     * operation that carries a live approval therefore never waits in a state the worker does not read: the worker
+     * asks the engine where the approval stands and puts the operation back where the truth is.
+     *   - still open            → the withdrawal did not happen: it is forgotten, the decision is awaited again;
+     *   - closed, with a decision (or not yet readable) → the same: the decision poll takes it from here;
+     *   - closed, and no decision can be read → the cancellation landed and only the requester's repeat (same
+     *     command, their own token) can fetch its evidence: the operation stays where the worker keeps reading it.
+     */
+    private async Task<bool> ResolveAbandonedWithdrawalAsync(
         FirstGskuIdentityWorkflowOperation operation,
         FirstGskuIdentityWorkflowClaim claim,
-        string? delegatedUserToken,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(delegatedUserToken))
-            return await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
-                now, "FIRST_GSKU_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED", true, cancellationToken);
+        if (!CompleteWithdrawalRequest(operation) || !CompleteStartProof(operation))
+            return await QuarantineAsync(claim, "FIRST_GSKU_IDENTITY_WITHDRAWAL_CONTRACT_INVALID", now, cancellationToken);
+        var preflight = await workflowClient.GetCancellationPreflightAsync(operation.TenantId,
+            new(operation.WorkflowInstanceId!.Value, operation.ApprovalTaskId!.Value, operation.ObjectType,
+                operation.ObjectId, operation.MakerSubjectId), cancellationToken);
+        if (preflight.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
+            return await BackToDecisionAsync(operation, claim, attempt, now, cancellationToken);
+        if (preflight.Outcome is ProductIdentityWorkflowTransportOutcome.Conflict
+            or ProductIdentityWorkflowTransportOutcome.NotFound)
+        {
+            var evidence = await workflowClient.GetTerminalEvidenceAsync(operation.TenantId,
+                new(operation.WorkflowInstanceId.Value, operation.ObjectType, operation.ObjectId), cancellationToken);
+            if (evidence.Outcome is ProductIdentityWorkflowTransportOutcome.Success
+                or ProductIdentityWorkflowTransportOutcome.NonTerminal
+                or ProductIdentityWorkflowTransportOutcome.NotFound
+                or ProductIdentityWorkflowTransportOutcome.Incomplete)
+                return await BackToDecisionAsync(operation, claim, attempt, now, cancellationToken);
+            var evidenceFault = ProductIdentityWorkflowFaultPolicy.Classify(
+                ProductIdentityWorkflowCall.TerminalEvidence, evidence.Outcome, evidence.ErrorCode);
+            if (evidenceFault.Kind == ProductIdentityWorkflowFaultKind.ServiceWait)
+                return await WaitForServiceAsync(operation, claim, claim.Checkpoint,
+                    ProductIdentityWorkflowCall.TerminalEvidence, evidence.ErrorCode, evidenceFault, attempt, now,
+                    retryDelay, cancellationToken);
+            var waitingSince = operation.WithdrawalAwaitingRequesterSinceUtcTicksV1 ?? now.UtcTicks;
+            if (now.UtcTicks - waitingSince >= ProductIdentityWorkflowFaultRules.WithdrawalRequesterWaitLimit.Ticks)
+            {
+                logger.LogError(
+                    "First GSKU identity workflow operation {OperationId} of tenant {TenantId}: the approval is closed and the withdrawal has waited for its requester since {SinceUtc:O} ({ResultCode}); nobody came back to finish it. It is handed to manual reconciliation.",
+                    operation.OperationId, operation.TenantId, new DateTimeOffset(waitingSince, TimeSpan.Zero),
+                    BoundedCode(evidence.ErrorCode, ProductIdentityWorkflowMakerCodes.MakerReplayRequired));
+                return await QuarantineAsync(claim, WithdrawalRequesterNeverReturned, now, cancellationToken);
+            }
+            if (evidence.Outcome == ProductIdentityWorkflowTransportOutcome.Conflict)
+                logger.LogWarning(
+                    "First GSKU identity workflow operation {OperationId} of tenant {TenantId}: the approval is closed and holds no decision ({ResultCode}); the withdrawal appears to have landed and waits for its requester to repeat it. The worker keeps reading.",
+                    operation.OperationId, operation.TenantId,
+                    BoundedCode(evidence.ErrorCode, ProductIdentityWorkflowMakerCodes.MakerReplayRequired));
+            else
+                logger.LogWarning(
+                    "First GSKU identity workflow operation {OperationId} of tenant {TenantId}: the approval is closed and its decision could not be accepted ({ResultCode}); whether the withdrawal landed is not known. It waits for its requester to repeat it. The worker keeps reading.",
+                    operation.OperationId, operation.TenantId,
+                    BoundedCode(evidence.ErrorCode, ProductIdentityWorkflowMakerCodes.MakerReplayRequired));
+            return await operations.AdvanceAsync(claim, new(
+                claim.Checkpoint,
+                ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks,
+                now.Add(faultSettings.MaxRetryDelay).UtcTicks,
+                ProductIdentityWorkflowMakerCodes.MakerReplayRequired,
+                ReleaseLease: true,
+                ServiceFaultCount: 0, // the engine answered both questions
+                WithdrawalAwaitingRequesterSinceUtcTicksV1: waitingSince), cancellationToken);
+        }
+        var fault = ProductIdentityWorkflowFaultPolicy.Classify(
+            ProductIdentityWorkflowCall.CancellationPreflight, preflight.Outcome, preflight.ErrorCode);
+        if (fault.Kind == ProductIdentityWorkflowFaultKind.ServiceWait)
+            return await WaitForServiceAsync(operation, claim, claim.Checkpoint,
+                ProductIdentityWorkflowCall.CancellationPreflight, preflight.ErrorCode, fault, attempt, now, retryDelay,
+                cancellationToken);
+        return await QuarantineAsync(claim, preflight.ErrorCode, now, cancellationToken);
+    }
+
+    // The withdrawal did not happen: it is forgotten (so its requester may ask again) and the operation awaits the
+    // decision once more. Nothing can land any more, so the worker's schedule goes back to what it was before the
+    // request (the settle window is only for a cancellation that may still land). faultStreak is given when a
+    // service fault ended the withdrawal (the streak goes on); without it the engine answered, and an answer ends
+    // the streak.
+    private Task<bool> BackToDecisionAsync(
+        FirstGskuIdentityWorkflowOperation operation,
+        FirstGskuIdentityWorkflowClaim claim,
+        Attempt attempt,
+        DateTimeOffset now,
+        CancellationToken cancellationToken,
+        (int Count, long Since)? faultStreak = null) =>
+        operations.AdvanceAsync(claim, new(
+            FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision,
+            ProductIdentityWorkflowRecoveryDisposition.None,
+            now.UtcTicks,
+            ScheduleBeforeTheRequest(operation, attempt),
+            ReleaseLease: true,
+            ServiceFaultCount: faultStreak?.Count ?? 0,
+            ServiceFaultSinceUtcTicksV1: faultStreak?.Since,
+            ClearWithdrawal: true), cancellationToken);
+
+    // The approval was decided or closed before the withdrawal reached it. The request stays on the operation (the
+    // same answer is given to a repeat) and the decision poll goes on; the engine answered, so a fault streak ends.
+    private Task<bool> ClosedBeforeWithdrawalAsync(
+        FirstGskuIdentityWorkflowOperation operation,
+        FirstGskuIdentityWorkflowClaim claim,
+        Attempt attempt,
+        string? errorCode,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        // The engine's own reason, when it is one that can be stored and handed out; never a text of any length.
+        var code = BoundedCode(errorCode, ProductIdentityWorkflowMakerCodes.ApprovalClosed);
+        return operations.AdvanceAsync(claim, new(
+            FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision,
+            ProductIdentityWorkflowRecoveryDisposition.None,
+            now.UtcTicks,
+            ScheduleBeforeTheRequest(operation, attempt),
+            code,
+            ReleaseLease: true,
+            ServiceFaultCount: 0,
+            WithdrawalRefusalCode: code), cancellationToken);
+    }
+
+    // What the worker had scheduled before this request began the withdrawal; a request that only resumed one does
+    // not know, and leaves the schedule as it stands.
+    private static long? ScheduleBeforeTheRequest(
+        FirstGskuIdentityWorkflowOperation operation, Attempt attempt) =>
+        attempt.ScheduleAtEntry.Known ? attempt.ScheduleAtEntry.Ticks : operation.NextAttemptAtUtcTicksV1;
+
+    /*
+     * The cancellation was refused before it was processed — but an EARLIER cancellation of this withdrawal may
+     * have landed (its answer was lost, or its request was cut off). Forgetting the withdrawal now would leave an
+     * approval that is cancelled at the engine to the decision poll, which can only quarantine it. So the operation
+     * stays a withdrawal whose outcome is unknown; the worker reads the approval and decides. Nothing new can land
+     * from this attempt, so the worker's schedule is not moved.
+     */
+    private Task<bool> KeepUnknownWithdrawalAsync(
+        FirstGskuIdentityWorkflowOperation operation,
+        FirstGskuIdentityWorkflowClaim claim,
+        string code,
+        DateTimeOffset now,
+        CancellationToken cancellationToken,
+        (int Count, long Since)? faultStreak = null) =>
+        operations.AdvanceAsync(claim, new(
+            FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
+            ProductIdentityWorkflowRecoveryDisposition.Retryable,
+            now.UtcTicks,
+            operation.NextAttemptAtUtcTicksV1,
+            code,
+            ReleaseLease: true,
+            ServiceFaultCount: faultStreak?.Count ?? 0,
+            ServiceFaultSinceUtcTicksV1: faultStreak?.Since), cancellationToken);
+
+    private async Task<bool> ObserveWithdrawalAsync(
+        FirstGskuIdentityWorkflowOperation operation,
+        FirstGskuIdentityWorkflowClaim claim,
+        string delegatedUserToken,
+        Attempt attempt,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken)
+    {
         if (!CompleteWithdrawalPreflight(operation))
-            return await QuarantineAsync(claim,
-                "FIRST_GSKU_IDENTITY_WITHDRAWAL_PREFLIGHT_INVALID", now, cancellationToken);
+            return await QuarantineAsync(claim, "FIRST_GSKU_IDENTITY_WITHDRAWAL_PREFLIGHT_INVALID", now,
+                cancellationToken);
         var request = new ProductIdentityWorkflowCancellationRequest(
-            operation.WorkflowInstanceId!.Value,
-            operation.ApprovalTaskId!.Value,
-            operation.ObjectType,
-            operation.ObjectId,
-            operation.MakerSubjectId,
+            operation.WorkflowInstanceId!.Value, operation.ApprovalTaskId!.Value, operation.ObjectType,
+            operation.ObjectId, operation.MakerSubjectId,
             operation.WithdrawalExpectedWorkflowInstanceVersion!.Value,
             operation.WithdrawalExpectedApprovalTaskVersion!.Value,
-            operation.WithdrawalReasonCode!,
-            operation.WithdrawalComment,
+            operation.WithdrawalReasonCode!, operation.WithdrawalComment,
             operation.WithdrawalCommandId!.Value.ToString("D"));
-        var result = await workflowClient.CancelAsync(
-            operation.TenantId, request, delegatedUserToken, cancellationToken);
+        var result = await workflowClient.CancelAsync(operation.TenantId, request, delegatedUserToken,
+            cancellationToken);
         if (result.Outcome == ProductIdentityWorkflowTransportOutcome.Success && result.Value is { } evidence)
         {
             return await operations.AdvanceAsync(claim, new(
@@ -375,17 +605,121 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
                 WithdrawalTaskStatus: evidence.TaskStatus,
                 WithdrawalInstanceStatus: evidence.InstanceStatus,
                 WithdrawalObjectRef: evidence.ObjectRef,
-                ReleaseLease: true), cancellationToken);
+                ReleaseLease: true,
+                ServiceFaultCount: 0), cancellationToken);
         }
-        if (Retryable(result.Outcome))
-            return await ScheduleRetryAsync(claim,
+        // Only a cancellation whose versions were read in this very request is known to be the first one.
+        var earlierMayHaveLanded = !(attempt.VersionsReadNow
+            && claim.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.WithdrawalPreflightObserved);
+        if (result.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound)
+            return await ClosedBeforeWithdrawalAsync(operation, claim, attempt, result.ErrorCode, now,
+                cancellationToken);
+        if (result.Outcome == ProductIdentityWorkflowTransportOutcome.Conflict)
+        {
+            /*
+             * The engine answers "conflict" for two different things: the approval was decided or closed — or it is
+             * STILL OPEN and merely moved on since the versions were read (somebody delegated it, a reminder ran).
+             * Only the first means there is nothing to withdraw. So the approval is asked: still open → this
+             * withdrawal is forgotten and, the requester being here, asked again with fresh versions in this same
+             * request; not open → nothing to withdraw; no answer → the worker finds out.
+             */
+            var open = await workflowClient.GetCancellationPreflightAsync(operation.TenantId,
+                new(operation.WorkflowInstanceId.Value, operation.ApprovalTaskId.Value, operation.ObjectType,
+                    operation.ObjectId, operation.MakerSubjectId), cancellationToken);
+            if (open.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
+            {
+                logger.LogInformation(
+                    "First GSKU identity workflow operation {OperationId} of tenant {TenantId}: the approval moved on while it was being withdrawn ({ResultCode}) and is still open; the withdrawal is asked again with fresh versions.",
+                    operation.OperationId, operation.TenantId,
+                    BoundedCode(result.ErrorCode, "FIRST_GSKU_IDENTITY_WORKFLOW_PROVIDER_UNAVAILABLE"));
+                // Once per request. An approval that conflicts again is changing right now: the requester is told
+                // so, and the withdrawal is forgotten — a repeat begins a fresh one.
+                if (attempt.ConflictRetried)
+                    attempt.Answer = (ProductIdentityWorkflowMakerCodes.ApprovalChanging,
+                        ProductIdentityWorkflowMakerCodes.StatusFor(ProductIdentityWorkflowMakerCodes.ApprovalChanging));
+                attempt.ConflictRetried = true;
+                return await BackToDecisionAsync(operation, claim, attempt, now, cancellationToken);
+            }
+            if (open.Outcome is ProductIdentityWorkflowTransportOutcome.Conflict
+                or ProductIdentityWorkflowTransportOutcome.NotFound)
+                return await ClosedBeforeWithdrawalAsync(operation, claim, attempt, result.ErrorCode, now,
+                    cancellationToken);
+            var openFault = ProductIdentityWorkflowFaultPolicy.Classify(
+                ProductIdentityWorkflowCall.CancellationPreflight, open.Outcome, open.ErrorCode);
+            if (openFault.Kind != ProductIdentityWorkflowFaultKind.ServiceWait)
+                return await QuarantineAsync(claim, open.ErrorCode, now, cancellationToken);
+            var openStreak = FaultStreak(operation, now, countsAsWorkerAttempt: false);
+            attempt.Scope = openFault.Scope;
+            attempt.Answer = (ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, 503);
+            var openCode = BoundedCode(open.ErrorCode, "FIRST_GSKU_IDENTITY_WORKFLOW_PROVIDER_UNAVAILABLE");
+            LogServiceFault(operation, ProductIdentityWorkflowCall.CancellationPreflight, openCode, openStreak.Count,
+                openStreak.Since, now, openFault.Loud,
+                "the worker reads the approval to learn whether it is still open");
+            return await operations.AdvanceAsync(claim, new(
                 FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
-                result.ErrorCode, now, retryDelay, cancellationToken);
-        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.Conflict
-            or ProductIdentityWorkflowTransportOutcome.NotFound)
-            return await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision,
-                now, result.ErrorCode, true, cancellationToken);
-        return await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+                ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks,
+                SettledNextAttempt(operation, now, retryDelay),
+                openCode,
+                ReleaseLease: true,
+                ServiceFaultCount: openStreak.Count,
+                ServiceFaultSinceUtcTicksV1: openStreak.Since), cancellationToken);
+        }
+
+        // The cancellation carries the requester's own token: the worker can never repeat it. The approval, though,
+        // is still at the engine and may be decided at any moment — so whatever stops the cancellation, the
+        // operation ends where the worker reads it, and the requester is told to ask again.
+        var fault = ProductIdentityWorkflowFaultPolicy.Classify(
+            ProductIdentityWorkflowCall.Cancel, result.Outcome, result.ErrorCode);
+        var code = BoundedCode(result.ErrorCode, "FIRST_GSKU_IDENTITY_WORKFLOW_PROVIDER_UNAVAILABLE");
+        switch (fault.Kind)
+        {
+            case ProductIdentityWorkflowFaultKind.MakerReplay:
+                // Refused for a reason that is the requester's (their session): nothing was cancelled.
+                logger.LogWarning(
+                    "First GSKU identity workflow operation {OperationId} of tenant {TenantId} was refused to the maker on {Call}: {ResultCode} -> {MakerCode}.",
+                    operation.OperationId, operation.TenantId, ProductIdentityWorkflowCall.Cancel, code,
+                    fault.MakerCode);
+                attempt.Answer = (fault.MakerCode!, ProductIdentityWorkflowMakerCodes.StatusFor(fault.MakerCode));
+                return earlierMayHaveLanded
+                    ? await KeepUnknownWithdrawalAsync(operation, claim, code, now, cancellationToken)
+                    : await BackToDecisionAsync(operation, claim, attempt, now, cancellationToken);
+            case ProductIdentityWorkflowFaultKind.ServiceWait:
+            {
+                var streak = FaultStreak(operation, now, countsAsWorkerAttempt: false);
+                attempt.Scope = fault.Scope;
+                attempt.Answer = (ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, 503);
+                if (fault.StartedNothing)
+                {
+                    // Refused before it was processed: THIS cancellation did not happen.
+                    LogServiceFault(operation, ProductIdentityWorkflowCall.Cancel, code, streak.Count,
+                        streak.Since, now, fault.Loud,
+                        earlierMayHaveLanded
+                            ? "an earlier cancellation may have landed; the worker reads the approval to learn whether it did"
+                            : "the withdrawal was dropped and its requester repeats it; the decision is awaited again");
+                    return earlierMayHaveLanded
+                        ? await KeepUnknownWithdrawalAsync(operation, claim, code, now, cancellationToken, streak)
+                        : await BackToDecisionAsync(operation, claim, attempt, now, cancellationToken, streak);
+                }
+
+                // No answer: the cancellation may have landed — or may still land. The worker reads the approval
+                // to find out, and not before the settle window has passed.
+                LogServiceFault(operation, ProductIdentityWorkflowCall.Cancel, code, streak.Count,
+                    streak.Since, now, fault.Loud,
+                    "the worker reads the approval to learn whether the withdrawal landed");
+                return await operations.AdvanceAsync(claim, new(
+                    FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown,
+                    ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                    now.UtcTicks,
+                    SettledNextAttempt(operation, now, retryDelay),
+                    code,
+                    ReleaseLease: true,
+                    ServiceFaultCount: streak.Count,
+                    ServiceFaultSinceUtcTicksV1: streak.Since), cancellationToken);
+            }
+            default:
+                return await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+        }
     }
 
     private async Task<bool> ApplyWithdrawalAsync(
@@ -438,6 +772,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         CancellationToken cancellationToken)
     {
         var operation = initial;
+        var attempt = new Attempt(!string.IsNullOrWhiteSpace(delegatedUserToken));
         var manualResumeAttempted = false;
         for (var step = 0; step < 18; step++)
         {
@@ -445,6 +780,10 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.Completed)
             {
                 return Success(operation, true);
+            }
+            if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable)
+            {
+                return Fail(operation, operation.LastFailureCode ?? DecisionNotApplicableCode, 409);
             }
             if (operation.Checkpoint is FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
                 or FirstGskuIdentityWorkflowCheckpoint.Superseded)
@@ -476,26 +815,35 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             }
 
             var now = timeProvider.GetUtcNow();
-            var claim = await operations.TryClaimAsync(new(
+            var (claim, storeSilent) = await ClaimAsync(new(
                 operation.OperationId,
                 operation.OperationFingerprint,
                 [operation.Checkpoint],
                 leaseOwner,
                 now.UtcTicks,
-                now.Add(leaseDuration).UtcTicks), cancellationToken);
+                now.Add(leaseDuration).UtcTicks,
+                IgnoreRetrySchedule: attempt.Interactive), leaseDuration);
+            if (storeSilent)
+            {
+                return Fail(operation, ProductIdentityWorkflowClaims.StoreUnavailable, 503);
+            }
             if (claim is null)
             {
                 return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_BUSY", 409);
             }
 
-            var advanced = operation.Checkpoint switch
+            bool advanced;
+            try
+            {
+            advanced = operation.Checkpoint switch
             {
                 FirstGskuIdentityWorkflowCheckpoint.Prepared =>
                     await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.StartOutcomeUnknown,
                         now, releaseLease: true, cancellationToken: cancellationToken),
                 FirstGskuIdentityWorkflowCheckpoint.StartOutcomeUnknown or
                     FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay =>
-                    await ResolveStartAsync(operation, claim, delegatedUserToken, now, retryDelay, cancellationToken),
+                    await ResolveStartAsync(operation, claim, delegatedUserToken, attempt, now, retryDelay,
+                        cancellationToken),
                 FirstGskuIdentityWorkflowCheckpoint.WorkflowStarted =>
                     await ApplyRevisionPendingAsync(operation, claim, now, cancellationToken),
                 FirstGskuIdentityWorkflowCheckpoint.RevisionPendingApplied =>
@@ -504,16 +852,16 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
                     await AdvanceAsync(claim, FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision,
                         now, releaseLease: true, cancellationToken: cancellationToken),
                 FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision =>
-                    await ObserveDecisionAsync(operation, claim, now, retryDelay, cancellationToken),
+                    await ObserveDecisionAsync(operation, claim, attempt, now, retryDelay, cancellationToken),
                 FirstGskuIdentityWorkflowCheckpoint.DecisionObserved =>
-                    await BeginDecisionAsync(operation, claim, now, retryDelay, cancellationToken),
+                    await BeginDecisionAsync(operation, claim, attempt, now, retryDelay, cancellationToken),
                 FirstGskuIdentityWorkflowCheckpoint.ApprovalValidated =>
-                    await ApplyRevisionApprovalAsync(operation, claim, now, retryDelay, cancellationToken),
+                    await ApplyRevisionApprovalAsync(operation, claim, attempt, now, retryDelay, cancellationToken),
                 FirstGskuIdentityWorkflowCheckpoint.RevisionApproved =>
-                    await ApplyGskuApprovalAsync(operation, claim, now, retryDelay, cancellationToken),
+                    await ApplyGskuApprovalAsync(operation, claim, attempt, now, retryDelay, cancellationToken),
                 FirstGskuIdentityWorkflowCheckpoint.PairApproved or
                     FirstGskuIdentityWorkflowCheckpoint.PairDraftRestored =>
-                    await VerifyAndCompleteAsync(operation, claim, now, retryDelay, cancellationToken),
+                    await VerifyAndCompleteAsync(operation, claim, attempt, now, retryDelay, cancellationToken),
                 FirstGskuIdentityWorkflowCheckpoint.GskuDraftRestored =>
                     await ApplyRevisionRejectionAsync(operation, claim, now, cancellationToken),
                 FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired =>
@@ -522,8 +870,17 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
                         now, releaseLease: true, cancellationToken: cancellationToken),
                 _ => false
             };
+            }
+            catch
+            {
+                // Cancelled by the caller, or the store failed in the middle of the step: the lease must not
+                // outlive the attempt, or the maker's next submit is told "busy" until it runs out.
+                await ReleaseClaimAsync(claim, operation, now);
+                throw;
+            }
             if (!advanced)
             {
+                await ReleaseClaimAsync(claim, operation, now);
                 return Fail(operation, "FIRST_GSKU_IDENTITY_WORKFLOW_CONCURRENCY_CONFLICT", 409);
             }
 
@@ -534,10 +891,26 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
 
             operation = await operations.GetByOperationIdAsync(operation.OperationId, cancellationToken)
                 ?? throw new InvalidOperationException("FIRST_GSKU_IDENTITY_WORKFLOW_OPERATION_LOST");
-            if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks)
+            // The step that just ran has something to tell the caller (a service fault met by a maker who is
+            // present, a refusal): the answer goes out now, the refused call is not repeated.
+            if (attempt.Answer is { } answer)
             {
-                return Fail(operation,
-                    operation.LastFailureCode ?? "FIRST_GSKU_IDENTITY_WORKFLOW_RETRY_SCHEDULED", 503);
+                return Fail(operation, answer.Code, answer.Status) with { FaultScope = attempt.Scope };
+            }
+            if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay
+                && attempt.Interactive)
+            {
+                return MakerAnswer(operation, attempt);
+            }
+            if (operation.Checkpoint == FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable)
+            {
+                return Fail(operation, operation.LastFailureCode ?? DecisionNotApplicableCode, 409);
+            }
+            if (operation.NextAttemptAtUtcTicksV1 > timeProvider.GetUtcNow().UtcTicks
+                && (!attempt.Interactive
+                    || operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable))
+            {
+                return ScheduledAnswer(operation, attempt);
             }
         }
 
@@ -548,21 +921,42 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         FirstGskuIdentityWorkflowOperation operation,
         FirstGskuIdentityWorkflowClaim claim,
         string? delegatedUserToken,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
     {
-        if (!string.IsNullOrWhiteSpace(delegatedUserToken))
+        // A start carries the maker's own token, so only a maker's submit can make it. The worker can find out
+        // whether an earlier start arrived (the lookup below) and nothing more: whenever a start is known not to
+        // have happened, the operation is the maker's to resubmit — it is never reported as "queued".
+        var makerPresent = !string.IsNullOrWhiteSpace(delegatedUserToken);
+        (ProductIdentityWorkflowFaultDecision Fault, string? Code)? unansweredStart = null;
+        if (makerPresent)
         {
             var started = await workflowClient.StartAsync(
-                operation.TenantId, requestFactory.Rehydrate(operation), delegatedUserToken, cancellationToken);
+                operation.TenantId, requestFactory.Rehydrate(operation), delegatedUserToken!, cancellationToken);
             if (started.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
             {
                 return await PersistStartedAsync(operation, claim, started.Value, now, cancellationToken);
             }
-            if (TerminalTransportFailure(started.Outcome))
+            if (started.Outcome != ProductIdentityWorkflowTransportOutcome.Incomplete)
             {
-                return await QuarantineAsync(claim, started.ErrorCode, now, cancellationToken);
+                var fault = ProductIdentityWorkflowFaultPolicy.Classify(
+                    ProductIdentityWorkflowCall.Start, started.Outcome, started.ErrorCode);
+                switch (fault.Kind)
+                {
+                    case ProductIdentityWorkflowFaultKind.Quarantine:
+                        return await QuarantineAsync(claim, started.ErrorCode, now, cancellationToken);
+                    case ProductIdentityWorkflowFaultKind.MakerReplay:
+                        return await ToMakerAsync(operation, claim, ProductIdentityWorkflowCall.Start,
+                            started.ErrorCode, fault.MakerCode!, null, attempt, now, cancellationToken);
+                    case ProductIdentityWorkflowFaultKind.ServiceWait when fault.StartedNothing:
+                        return await ToMakerAsync(operation, claim, ProductIdentityWorkflowCall.Start,
+                            started.ErrorCode, ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, fault,
+                            attempt, now, cancellationToken);
+                }
+                // No answer, or one nobody could accept: the start may have arrived. Ask.
+                unansweredStart = (fault, started.ErrorCode);
             }
         }
 
@@ -577,16 +971,34 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         if (lookup.Outcome is ProductIdentityWorkflowTransportOutcome.NotFound
             or ProductIdentityWorkflowTransportOutcome.Incomplete)
         {
+            // "Nothing arrived" is the engine answering for this operation: the streak of faults ends here. The
+            // start that went unanswered is still what the maker met — said as a service fault, resubmit.
+            if (unansweredStart is { } unanswered)
+            {
+                return await ToMakerAsync(operation, claim, ProductIdentityWorkflowCall.Start, unanswered.Code,
+                    ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, unanswered.Fault, attempt, now,
+                    cancellationToken, answeredSince: true);
+            }
+            logger.LogWarning(
+                "First GSKU identity workflow operation {OperationId} of tenant {TenantId} has no completed start at the approval engine ({ResultCode}); it is the maker's to resubmit.",
+                operation.OperationId, operation.TenantId,
+                BoundedCode(lookup.ErrorCode, ProductIdentityWorkflowMakerCodes.MakerReplayRequired));
             return await operations.AdvanceAsync(claim, new(
                 FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
                 ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay,
                 now.UtcTicks,
-                LastFailureCode: BoundedCode(lookup.ErrorCode,
-                    "FIRST_GSKU_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED"),
-                ReleaseLease: true), cancellationToken);
+                LastFailureCode: makerPresent
+                    ? ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit
+                    : BoundedCode(lookup.ErrorCode, ProductIdentityWorkflowMakerCodes.MakerReplayRequired),
+                ReleaseLease: true,
+                ServiceFaultCount: 0), cancellationToken);
         }
-        return Retryable(lookup.Outcome)
-            ? await ScheduleRetryAsync(claim, claim.Checkpoint, lookup.ErrorCode, now, retryDelay, cancellationToken)
+        var lookupFault = ProductIdentityWorkflowFaultPolicy.Classify(
+            ProductIdentityWorkflowCall.StartResult, lookup.Outcome, lookup.ErrorCode);
+        return lookupFault.Kind == ProductIdentityWorkflowFaultKind.ServiceWait
+            ? await WaitForServiceAsync(operation, claim, FirstGskuIdentityWorkflowCheckpoint.StartOutcomeUnknown,
+                ProductIdentityWorkflowCall.StartResult, lookup.ErrorCode, lookupFault, attempt, now, retryDelay,
+                cancellationToken)
             : await QuarantineAsync(claim, lookup.ErrorCode, now, cancellationToken);
     }
 
@@ -673,6 +1085,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
     private async Task<bool> ObserveDecisionAsync(
         FirstGskuIdentityWorkflowOperation operation,
         FirstGskuIdentityWorkflowClaim claim,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
@@ -685,20 +1098,49 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             operation.TenantId,
             new(operation.WorkflowInstanceId!.Value, operation.ObjectType, operation.ObjectId),
             cancellationToken);
-        if (outcome.Outcome == ProductIdentityWorkflowTransportOutcome.NonTerminal)
+        if (outcome.Outcome is ProductIdentityWorkflowTransportOutcome.NonTerminal
+            or ProductIdentityWorkflowTransportOutcome.NotFound
+            or ProductIdentityWorkflowTransportOutcome.Incomplete)
         {
-            return await ScheduleRetryAsync(claim, claim.Checkpoint, outcome.ErrorCode, now, retryDelay, cancellationToken);
+            return await ScheduleRetryAsync(claim, claim.Checkpoint,
+                outcome.ErrorCode ?? "FIRST_GSKU_IDENTITY_WORKFLOW_DECISION_PENDING", now, retryDelay,
+                cancellationToken, chainAnswered: true);
         }
-        if (outcome.Outcome != ProductIdentityWorkflowTransportOutcome.Success || outcome.Value is null)
+        if (outcome.Outcome != ProductIdentityWorkflowTransportOutcome.Success)
         {
-            return Retryable(outcome.Outcome)
-                ? await ScheduleRetryAsync(claim, claim.Checkpoint, outcome.ErrorCode, now, retryDelay, cancellationToken)
+            // The decision is polled with the service's own token: the worker carries a waiting operation on.
+            var fault = ProductIdentityWorkflowFaultPolicy.Classify(
+                ProductIdentityWorkflowCall.TerminalEvidence, outcome.Outcome, outcome.ErrorCode);
+            return fault.Kind == ProductIdentityWorkflowFaultKind.ServiceWait
+                ? await WaitForServiceAsync(operation, claim, FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision,
+                    ProductIdentityWorkflowCall.TerminalEvidence, outcome.ErrorCode, fault, attempt, now, retryDelay,
+                    cancellationToken)
                 : await QuarantineAsync(claim, outcome.ErrorCode, now, cancellationToken);
         }
+        if (outcome.Value is null)
+        {
+            return await QuarantineAsync(claim, outcome.ErrorCode, now, cancellationToken);
+        }
         var evidence = outcome.Value;
+        if (TryMapDecision(evidence.TerminalAction, out _)
+            && Guid.TryParse(evidence.ActorUserId, out var self) && self == operation.MakerSubjectId)
+        {
+            // The maker decided their own pair (B8). That is not a decision this service accepts — and not a fault
+            // of the record either: it is ignored and said, the operation keeps awaiting a decision it can use.
+            logger.LogWarning(
+                "First GSKU identity workflow operation {OperationId} of tenant {TenantId}: the approval was decided by its own maker; the decision is ignored ({ResultCode}).",
+                operation.OperationId, operation.TenantId, SelfApprovalIgnored);
+            return await operations.AdvanceAsync(claim, new(
+                FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision,
+                ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks,
+                now.Add(faultSettings.MaxRetryDelay).UtcTicks,
+                SelfApprovalIgnored,
+                ReleaseLease: true,
+                ServiceFaultCount: 0), cancellationToken);
+        }
         if (!TryMapDecision(evidence.TerminalAction, out var decision)
             || !Guid.TryParse(evidence.ActorUserId, out var actorId) || actorId == Guid.Empty
-            || actorId == operation.MakerSubjectId
             || evidence.WorkflowInstanceId != operation.WorkflowInstanceId
             || evidence.ApprovalTaskId != operation.ApprovalTaskId
             || evidence.TemplateId != operation.WorkflowTemplateId
@@ -728,12 +1170,14 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             DecisionInstanceStatus: evidence.InstanceStatus,
             DecisionTransitionSequence: evidence.TransitionSequence,
             DecisionAtUtcTicksV1: evidence.DecisionAt.UtcTicks,
-            ReleaseLease: true), cancellationToken);
+            ReleaseLease: true,
+            ServiceFaultCount: 0), cancellationToken);
     }
 
     private async Task<bool> BeginDecisionAsync(
         FirstGskuIdentityWorkflowOperation operation,
         FirstGskuIdentityWorkflowClaim claim,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
@@ -763,9 +1207,9 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         var approval = await RevalidateApprovalAsync(operation, cancellationToken);
         if (!approval.Succeeded)
         {
-            return approval.Retryable
-                ? await ScheduleRetryAsync(claim, claim.Checkpoint, approval.ErrorCode, now, retryDelay, cancellationToken)
-                : await QuarantineAsync(claim, approval.ErrorCode, now, cancellationToken);
+            return approval.Kind == ApprovalFailure.NotApplicable
+                ? await DecisionNotApplicableAsync(operation, claim, approval.ErrorCode!, now, cancellationToken)
+                : await ApprovalFailedAsync(operation, claim, approval, attempt, now, retryDelay, cancellationToken);
         }
         return await operations.AdvanceAsync(claim, new(
             FirstGskuIdentityWorkflowCheckpoint.ApprovalValidated,
@@ -776,12 +1220,14 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             ReferencesValidatedAtUtcTicksV1: now.UtcTicks,
             ApprovalReferenceProofFingerprint: ApprovalReferenceFingerprint(
                 operation, approval.Applicability!, approval.Uom!, now.UtcTicks),
-            ReleaseLease: true), cancellationToken);
+            ReleaseLease: true,
+            ServiceFaultCount: 0), cancellationToken); // the reference service answered
     }
 
     private async Task<bool> ApplyRevisionApprovalAsync(
         FirstGskuIdentityWorkflowOperation operation,
         FirstGskuIdentityWorkflowClaim claim,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
@@ -795,9 +1241,9 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         var approval = await RevalidateApprovalAsync(operation, cancellationToken);
         if (!approval.Succeeded)
         {
-            return approval.Retryable
-                ? await ScheduleRetryAsync(claim, claim.Checkpoint, approval.ErrorCode, now, retryDelay, cancellationToken)
-                : await QuarantineAsync(claim, approval.ErrorCode, now, cancellationToken);
+            // Past the first gate the pair is already partly approved: a reference that changed now cannot be
+            // undone here, and is quarantined (see DecisionNotApplicableAsync for the first gate).
+            return await ApprovalFailedAsync(operation, claim, approval, attempt, now, retryDelay, cancellationToken);
         }
         if (!ExactReferenceSelection(operation.ApprovalPackApplicabilitySelection!, approval.Applicability!)
             || !ExactReferenceSelection(operation.ApprovalPackUomSelection!, approval.Uom!))
@@ -824,6 +1270,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
     private async Task<bool> ApplyGskuApprovalAsync(
         FirstGskuIdentityWorkflowOperation operation,
         FirstGskuIdentityWorkflowClaim claim,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
@@ -836,9 +1283,9 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         var approval = await RevalidateApprovalAsync(operation, cancellationToken);
         if (!approval.Succeeded)
         {
-            return approval.Retryable
-                ? await ScheduleRetryAsync(claim, claim.Checkpoint, approval.ErrorCode, now, retryDelay, cancellationToken)
-                : await QuarantineAsync(claim, approval.ErrorCode, now, cancellationToken);
+            // Past the first gate the pair is already partly approved: a reference that changed now cannot be
+            // undone here, and is quarantined (see DecisionNotApplicableAsync for the first gate).
+            return await ApprovalFailedAsync(operation, claim, approval, attempt, now, retryDelay, cancellationToken);
         }
         if (!ExactApprovalReferenceProof(operation)
             || !ExactReferenceSelection(operation.ApprovalPackApplicabilitySelection!, approval.Applicability!)
@@ -891,6 +1338,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
     private async Task<bool> VerifyAndCompleteAsync(
         FirstGskuIdentityWorkflowOperation operation,
         FirstGskuIdentityWorkflowClaim claim,
+        Attempt attempt,
         DateTimeOffset now,
         TimeSpan retryDelay,
         CancellationToken cancellationToken)
@@ -903,9 +1351,8 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             var approval = await RevalidateApprovalAsync(operation, cancellationToken);
             if (!approval.Succeeded)
             {
-                return approval.Retryable
-                    ? await ScheduleRetryAsync(claim, claim.Checkpoint, approval.ErrorCode, now, retryDelay, cancellationToken)
-                    : await QuarantineAsync(claim, approval.ErrorCode, now, cancellationToken);
+                return await ApprovalFailedAsync(operation, claim, approval, attempt, now, retryDelay,
+                    cancellationToken);
             }
             exact = ExactApprovalReferenceProof(operation)
                 && ExactReferenceSelection(operation.ApprovalPackApplicabilitySelection!, approval.Applicability!)
@@ -931,7 +1378,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         var parent = await globalProducts.GetByIdAsync(operation.GlobalProductId, cancellationToken);
         if (parent is null || parent.LifecycleStatus != ProductIdentityLifecycleStatus.IdentityApproved)
         {
-            return new(false, false, "FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED");
+            return new(false, ApprovalFailure.NotApplicable, "FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED");
         }
         VerifiedGskuReferenceResolveResult result;
         try
@@ -945,18 +1392,24 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         }
         catch
         {
-            return new(false, true, "REFERENCE_DATA_CONTRACT_UNAVAILABLE");
+            return new(false, ApprovalFailure.Transient, "REFERENCE_DATA_CONTRACT_UNAVAILABLE");
         }
         if (!result.IsSuccessful)
         {
-            return new(false, result.StatusCode is 503 or 504,
+            return new(false, result.StatusCode switch
+                {
+                    503 or 504 => ApprovalFailure.Transient,
+                    401 or 403 => ApprovalFailure.ServiceIdentity,
+                    _ => ApprovalFailure.Fault
+                },
                 BoundedCode(result.FailureCode, "REFERENCE_DATA_CONTRACT_UNAVAILABLE"));
         }
         var applicability = ExactSelection(result.Selections, "pack-applicability", operation.PackApplicabilityCode);
         var uom = ExactSelection(result.Selections, "uom", operation.PackUomCode);
+        // A value that is no longer selectable (retired, withdrawn from new use) is a reference the maker can fix.
         return applicability is not null && uom is not null && result.Selections.Count == 2
-            ? new(true, false, null, ToSelection(applicability), ToSelection(uom))
-            : new(false, false, "REFERENCE_DATA_CONTRACT_CONFLICT", null, null);
+            ? new(true, ApprovalFailure.None, null, ToSelection(applicability), ToSelection(uom))
+            : new(false, ApprovalFailure.NotApplicable, "REFERENCE_DATA_CONTRACT_CONFLICT", null, null);
     }
 
     private static bool CanResumeApprovalDependency(
@@ -1226,26 +1679,334 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         string? errorCode,
         DateTimeOffset now,
         TimeSpan retryDelay,
-        CancellationToken cancellationToken) =>
+        CancellationToken cancellationToken,
+        bool chainAnswered = false) =>
         operations.AdvanceAsync(claim, new(
             checkpoint,
             ProductIdentityWorkflowRecoveryDisposition.Retryable,
             now.UtcTicks,
             now.Add(retryDelay).UtcTicks,
             BoundedCode(errorCode, "FIRST_GSKU_IDENTITY_WORKFLOW_PROVIDER_UNAVAILABLE"),
-            ReleaseLease: true), cancellationToken);
+            ReleaseLease: true,
+            ServiceFaultCount: chainAnswered ? 0 : null), cancellationToken);
 
     private Task<bool> QuarantineAsync(
         FirstGskuIdentityWorkflowClaim claim,
         string? errorCode,
         DateTimeOffset now,
-        CancellationToken cancellationToken) =>
-        operations.AdvanceAsync(claim, new(
+        CancellationToken cancellationToken)
+    {
+        var code = BoundedCode(errorCode, "FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED");
+        logger.LogError(
+            "First GSKU identity workflow operation {OperationId} of tenant {TenantId} was quarantined at {Checkpoint}: {ResultCode}.",
+            claim.OperationId, claim.TenantId, claim.Checkpoint, code);
+        return operations.AdvanceAsync(claim, new(
             FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
             ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired,
             now.UtcTicks,
-            LastFailureCode: BoundedCode(errorCode, "FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED"),
+            LastFailureCode: code,
             ReleaseLease: true), cancellationToken);
+    }
+
+    public const string ParentNotApproved = "GSKU_PARENT_NOT_APPROVED";
+    public const string SelfApprovalIgnored = "FIRST_GSKU_IDENTITY_SELF_APPROVAL_IGNORED";
+    public const string DecisionNotApplicableCode = "FIRST_GSKU_IDENTITY_DECISION_NOT_APPLICABLE";
+    public const string WithdrawalRequesterNeverReturned = "FIRST_GSKU_IDENTITY_WITHDRAWAL_REQUESTER_NEVER_RETURNED";
+
+    // A revalidation that failed: an outage waits (it is not the record's fault), anything else about the record
+    // is quarantined.
+    private async Task<bool> ApprovalFailedAsync(
+        FirstGskuIdentityWorkflowOperation operation,
+        FirstGskuIdentityWorkflowClaim claim,
+        ApprovalValidation approval,
+        Attempt attempt,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken) => approval.Kind switch
+    {
+        ApprovalFailure.Transient => await ScheduleRetryAsync(claim, claim.Checkpoint, approval.ErrorCode, now,
+            retryDelay, cancellationToken),
+        ApprovalFailure.ServiceIdentity => await WaitForServiceAsync(operation, claim, claim.Checkpoint,
+            ProductIdentityWorkflowCall.ReferenceData, approval.ErrorCode,
+            new ProductIdentityWorkflowFaultDecision(ProductIdentityWorkflowFaultKind.ServiceWait), attempt, now,
+            retryDelay, cancellationToken),
+        _ => await QuarantineAsync(claim, approval.ErrorCode, now, cancellationToken)
+    };
+
+    /*
+     * The engine approved, and the approval cannot be applied: a reference the maker can fix changed between the
+     * submit and the decision (the parent product is no longer approved, a value is no longer selectable). That is
+     * not a fault of the record, and the pair must not stay locked: revision and GSKU go back to draft with an audit
+     * intent that says so ("the engine approved, MDM could not apply: <code>"), and the operation ends with the
+     * reason — one transaction. The maker sees the reason, fixes the reference and submits again (a new operation).
+     */
+    private async Task<bool> DecisionNotApplicableAsync(
+        FirstGskuIdentityWorkflowOperation operation,
+        FirstGskuIdentityWorkflowClaim claim,
+        string reasonCode,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        var code = BoundedCode(reasonCode, DecisionNotApplicableCode);
+        var revision = await revisions.GetByIdAsync(operation.ProductDefinitionRevisionId, cancellationToken);
+        var gsku = await gskus.GetByIdAsync(operation.GskuId, cancellationToken);
+        if (!ExactPendingRevision(revision, operation) || !ExactPendingGsku(gsku, operation))
+        {
+            return await QuarantineAsync(claim, "FIRST_GSKU_IDENTITY_PAIR_INCONSISTENT", now, cancellationToken);
+        }
+        var revisionAudit = CreateNotApplicableAudit(revision!, AuditAggregateType.ProductDefinitionRevision,
+            ProductAuditOperation.ProductDefinitionRevisionIdentityDecisionNotApplicable,
+            operation.ExpectedRevisionVersion + 1, operation, code, now);
+        var gskuAudit = CreateNotApplicableAudit(gsku!, AuditAggregateType.Gsku,
+            ProductAuditOperation.GskuIdentityDecisionNotApplicable,
+            operation.ExpectedGskuVersion + 1, operation, code, now);
+        var result = await operations.ApplyDecisionNotApplicableAsync(
+            claim, operation, code, revisionAudit, gskuAudit, now.UtcTicks, cancellationToken);
+        if (result.Succeeded)
+        {
+            logger.LogWarning(
+                "First GSKU identity workflow operation {OperationId} of tenant {TenantId}: the engine approved the pair and it could not be applied ({ResultCode}); revision and GSKU are drafts again for the maker to fix and resubmit.",
+                operation.OperationId, operation.TenantId, code);
+            return true;
+        }
+        return result.ErrorCode == "FIRST_GSKU_IDENTITY_NOT_APPLICABLE_PERSISTENCE_UNAVAILABLE"
+            ? await ScheduleRetryAsync(claim, claim.Checkpoint, result.ErrorCode, now,
+                faultSettings.MaxRetryDelay, cancellationToken)
+            : await QuarantineAsync(claim, result.ErrorCode, now, cancellationToken);
+    }
+
+    private static LocalAuditIntent CreateNotApplicableAudit(
+        EntityBase aggregate,
+        AuditAggregateType aggregateType,
+        ProductAuditOperation auditOperation,
+        int expectedVersion,
+        FirstGskuIdentityWorkflowOperation operation,
+        string reasonCode,
+        DateTimeOffset now)
+    {
+        var key = FirstGskuIdentityDecisionNotApplicable.Key(operation.OperationId);
+        var actor = operation.DecisionActorSubjectId ?? Guid.Empty;
+        var canonical = string.Join('|',
+            aggregate.TenantId.ToString("D"), aggregateType, aggregate.Id.ToString("D"),
+            auditOperation, expectedVersion.ToString(CultureInfo.InvariantCulture),
+            operation.WorkflowInstanceId?.ToString("D") ?? string.Empty,
+            operation.ApprovalTaskId?.ToString("D") ?? string.Empty,
+            actor.ToString("D"), "engine-approved-mdm-could-not-apply", reasonCode);
+        return new LocalAuditIntent
+        {
+            IntentId = DeterministicGuid($"{aggregate.TenantId:D}|{aggregateType}|{aggregate.Id:D}|{auditOperation}|{key}"),
+            TenantId = aggregate.TenantId,
+            AggregateType = aggregateType,
+            AggregateId = aggregate.Id,
+            PreVersion = expectedVersion,
+            PostVersion = expectedVersion + 1,
+            Operation = auditOperation,
+            ActorId = actor.ToString("D"),
+            CorrelationId = key,
+            CausationId = operation.StartIdempotencyKey,
+            CommandId = key,
+            Sequence = expectedVersion + 1L,
+            TimestampUtc = now,
+            TimestampUtcTicksV1 = now.UtcTicks,
+            TemporalStorageVersion = AuditIntentTemporalStorage.CurrentVersion,
+            EvidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))),
+            SnapshotReference = $"{aggregateType}/{aggregate.Id:N}/{expectedVersion + 1}",
+            DeliveryState = AuditIntentDeliveryState.Pending,
+            IdempotencyKey = key
+        };
+    }
+
+    private Task<bool> WaitForServiceAsync(
+        FirstGskuIdentityWorkflowOperation operation,
+        FirstGskuIdentityWorkflowClaim claim,
+        FirstGskuIdentityWorkflowCheckpoint checkpoint,
+        ProductIdentityWorkflowCall call,
+        string? errorCode,
+        ProductIdentityWorkflowFaultDecision fault,
+        Attempt attempt,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken)
+    {
+        var streak = FaultStreak(operation, now, countsAsWorkerAttempt: !attempt.Interactive);
+        var code = BoundedCode(errorCode, "FIRST_GSKU_IDENTITY_WORKFLOW_PROVIDER_UNAVAILABLE");
+        attempt.Scope = fault.Scope;
+        if (attempt.Interactive)
+        {
+            attempt.Answer = (ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit, 503);
+            LogServiceFault(operation, call, code, streak.Count, streak.Since, now, fault.Loud,
+                "the maker was told to resubmit; the worker's schedule is unchanged");
+            return operations.AdvanceAsync(
+                claim,
+                new(
+                    checkpoint,
+                    ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                    now.UtcTicks,
+                    operation.NextAttemptAtUtcTicksV1,
+                    code,
+                    ReleaseLease: true,
+                    ServiceFaultCount: streak.Count,
+                    ServiceFaultSinceUtcTicksV1: streak.Since),
+                cancellationToken);
+        }
+
+        LogServiceFault(operation, call, code, streak.Count, streak.Since, now, fault.Loud, "the worker retries");
+        return operations.AdvanceAsync(
+            claim,
+            new(
+                checkpoint,
+                ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks,
+                now.Add(ProductIdentityWorkflowFaultPolicy.Backoff(
+                        streak.Count, retryDelay, faultSettings.MaxRetryDelay))
+                    .UtcTicks,
+                code,
+                ReleaseLease: true,
+                ServiceFaultCount: streak.Count,
+                ServiceFaultSinceUtcTicksV1: streak.Since),
+            cancellationToken);
+    }
+
+    // The operation is handed to the maker: nothing was started and only a resubmit can do it. serviceFault is null
+    // when the engine answered and the reason is the maker's or the set-up's — an answer, which ends a fault streak.
+    // Only a maker's own attempt gets here, so a service fault does not count as a worker attempt.
+    private Task<bool> ToMakerAsync(
+        FirstGskuIdentityWorkflowOperation operation,
+        FirstGskuIdentityWorkflowClaim claim,
+        ProductIdentityWorkflowCall call,
+        string? errorCode,
+        string makerCode,
+        ProductIdentityWorkflowFaultDecision? serviceFault,
+        Attempt attempt,
+        DateTimeOffset now,
+        CancellationToken cancellationToken,
+        bool answeredSince = false)
+    {
+        var code = BoundedCode(errorCode, makerCode);
+        (int Count, long Since)? streak = null;
+        if (serviceFault is not null)
+        {
+            streak = FaultStreak(operation, now, countsAsWorkerAttempt: false);
+            attempt.Scope = serviceFault.Scope;
+            LogServiceFault(operation, call, code, streak.Value.Count, streak.Value.Since, now, serviceFault.Loud,
+                "nothing was started; the maker resubmits");
+        }
+        else
+        {
+            logger.LogWarning(
+                "First GSKU identity workflow operation {OperationId} of tenant {TenantId} was refused to the maker on {Call}: {ResultCode} -> {MakerCode}.",
+                operation.OperationId, operation.TenantId, call, code, makerCode);
+        }
+
+        return operations.AdvanceAsync(
+            claim,
+            new(
+                FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay,
+                now.UtcTicks,
+                LastFailureCode: makerCode,
+                ReleaseLease: true,
+                ServiceFaultCount: answeredSince ? 0 : streak?.Count ?? 0,
+                ServiceFaultSinceUtcTicksV1: answeredSince ? null : streak?.Since),
+            cancellationToken);
+    }
+
+    private async Task<(FirstGskuIdentityWorkflowClaim? Claim, bool StoreSilent)> ClaimAsync(
+        FirstGskuIdentityWorkflowClaimRequest request,
+        TimeSpan leaseDuration) =>
+        await ProductIdentityWorkflowClaims.ClaimAsync(
+            token => operations.TryClaimAsync(request, token),
+            token => operations.ReleaseIfOwnedAsync(request.OperationId, request.LeaseOwner,
+                request.LeaseUntilUtcTicks, token),
+            leaseDuration,
+            exception => logger.LogWarning(
+                "First GSKU identity workflow operation {OperationId}: the store did not answer a claim, and a lease it may have written could not be given back ({ExceptionType}); it expires by itself.",
+                request.OperationId, exception.GetType().FullName));
+
+    private (int Count, long Since) FaultStreak(
+        FirstGskuIdentityWorkflowOperation operation,
+        DateTimeOffset now,
+        bool countsAsWorkerAttempt) =>
+        ProductIdentityWorkflowFaultRules.Streak(operation, now, countsAsWorkerAttempt, faultSettings);
+
+    private bool StreakIsOver(FirstGskuIdentityWorkflowOperation operation, DateTimeOffset now) =>
+        ProductIdentityWorkflowFaultRules.StreakIsOver(operation, now, faultSettings);
+
+    private static long SettledNextAttempt(
+        FirstGskuIdentityWorkflowOperation operation,
+        DateTimeOffset now,
+        TimeSpan retryDelay) =>
+        ProductIdentityWorkflowFaultRules.SettledNextAttempt(operation, now, retryDelay);
+
+    // An error when the worker has tried often enough, when the streak of consecutive faults has lasted longer than
+    // the longest back-off (so a fault met only by makers still becomes an error — by how long it has gone on, not
+    // by their clicks), or on every attempt for a fault that waiting will not mend.
+    private void LogServiceFault(
+        FirstGskuIdentityWorkflowOperation operation,
+        ProductIdentityWorkflowCall call,
+        string code,
+        int workerAttempts,
+        long sinceUtcTicks,
+        DateTimeOffset now,
+        bool loud,
+        string whatHappensNext) =>
+        logger.Log(
+            ProductIdentityWorkflowFaultRules.Level(loud, workerAttempts, sinceUtcTicks, now, faultSettings),
+            "First GSKU identity workflow operation {OperationId} of tenant {TenantId} met a service fault at {Call}: {ResultCode}; worker attempt {Attempt}, failing since {SinceUtc:O}; {WhatHappensNext}.",
+            operation.OperationId, operation.TenantId, call, code, workerAttempts,
+            new DateTimeOffset(sinceUtcTicks, TimeSpan.Zero), whatHappensNext);
+
+    private static FirstGskuIdentityWorkflowProcessingResult MakerAnswer(
+        FirstGskuIdentityWorkflowOperation operation,
+        Attempt attempt)
+    {
+        var code = ProductIdentityWorkflowMakerCodes.IsMakerCode(operation.LastFailureCode)
+            ? operation.LastFailureCode!
+            : ProductIdentityWorkflowMakerCodes.MakerReplayRequired;
+        return Fail(operation, code, ProductIdentityWorkflowMakerCodes.StatusFor(code))
+            with { FaultScope = attempt.Scope };
+    }
+
+    // A retry is scheduled for a reason that is not a service fault met by a maker (that one is answered through
+    // the attempt): the caller is told the reason the operation carries.
+    private static FirstGskuIdentityWorkflowProcessingResult ScheduledAnswer(
+        FirstGskuIdentityWorkflowOperation operation,
+        Attempt attempt) =>
+        Fail(operation, operation.LastFailureCode ?? "FIRST_GSKU_IDENTITY_WORKFLOW_RETRY_SCHEDULED", 503)
+            with { FaultScope = attempt.Scope };
+
+    // A lease this call took and is not going to finish under — the step was refused (a transition that is not
+    // allowed, a checkpoint this path does not handle), the caller went away, or the store failed mid-step — is
+    // given back, leaving everything else about the operation as it was, the worker's schedule included. Best
+    // effort: if giving it back fails too, the lease runs out by itself, and that is said.
+    private async Task ReleaseClaimAsync(
+        FirstGskuIdentityWorkflowClaim claim,
+        FirstGskuIdentityWorkflowOperation operation,
+        DateTimeOffset now,
+        long? nextAttemptAtUtcTicks = null)
+    {
+        try
+        {
+            await operations.AdvanceAsync(
+                claim,
+                new(
+                    claim.Checkpoint,
+                    operation.RecoveryDisposition,
+                    now.UtcTicks,
+                    nextAttemptAtUtcTicks ?? operation.NextAttemptAtUtcTicksV1,
+                    operation.LastFailureCode,
+                    ReleaseLease: true,
+                    ServiceFaultCount: StreakIsOver(operation, now) ? 0 : null),
+                CancellationToken.None);
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(
+                "First GSKU identity workflow operation {OperationId} of tenant {TenantId}: the lease could not be given back ({ExceptionType}); it expires by itself.",
+                claim.OperationId, claim.TenantId, exception.GetType().FullName);
+        }
+    }
+
 
     private Task<bool> AdvanceAsync(
         FirstGskuIdentityWorkflowClaim claim,
@@ -1494,15 +2255,6 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
             _ => false
         };
 
-    private static bool TerminalTransportFailure(ProductIdentityWorkflowTransportOutcome outcome) =>
-        outcome is ProductIdentityWorkflowTransportOutcome.Forbidden
-            or ProductIdentityWorkflowTransportOutcome.Invalid
-            or ProductIdentityWorkflowTransportOutcome.Conflict
-            or ProductIdentityWorkflowTransportOutcome.AuthenticationRejected;
-
-    private static bool Retryable(ProductIdentityWorkflowTransportOutcome outcome) =>
-        outcome is ProductIdentityWorkflowTransportOutcome.Retryable or ProductIdentityWorkflowTransportOutcome.Timeout;
-
     private static string BoundedCode(string? code, string fallback) =>
         !string.IsNullOrWhiteSpace(code) && code.Length <= 128 && code.All(character => !char.IsControl(character))
             ? code : fallback;
@@ -1517,9 +2269,23 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         FirstGskuIdentityWorkflowOperation operation, string errorCode, int statusCode) =>
         new(false, operation, errorCode, statusCode, false);
 
+    private enum ApprovalFailure
+    {
+        None,
+        // 503 / 504 or an exception: ask again.
+        Transient,
+        // The reference service refused this service's identity: the chain, not the record.
+        ServiceIdentity,
+        // A reference the maker can fix changed between submit and decision (parent no longer approved, a value no
+        // longer selectable).
+        NotApplicable,
+        // Anything else the reference service answered about the record.
+        Fault
+    }
+
     private sealed record ApprovalValidation(
         bool Succeeded,
-        bool Retryable,
+        ApprovalFailure Kind,
         string? ErrorCode,
         ReferenceCatalogSelection? Applicability = null,
         ReferenceCatalogSelection? Uom = null);

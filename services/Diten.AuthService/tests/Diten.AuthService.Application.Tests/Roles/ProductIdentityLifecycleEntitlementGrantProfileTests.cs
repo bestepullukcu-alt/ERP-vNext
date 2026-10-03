@@ -41,7 +41,7 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
 
         Assert.Equal(20, roles[ProductIdentityLifecycleEntitlementGrantProfile.StewardRole].PermissionKeys.Count);
         Assert.Equal(7, roles[ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole].PermissionKeys.Count);
-        Assert.Equal(11, roles[ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole].PermissionKeys.Count);
+        Assert.Equal(10, roles[ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole].PermissionKeys.Count);
 
         var approver = roles[ProductIdentityLifecycleEntitlementGrantProfile.ApproverRole].PermissionKeys;
         Assert.Contains(ProductIdentityLifecycleEntitlementGrantProfile.WorkflowInstancesStart,
@@ -358,7 +358,7 @@ public sealed class ProductIdentityLifecycleEntitlementGrantProfileTests
         var retirement = ProductIdentityLifecycleEntitlementGrantProfile.DedicatedRoles.Single(x =>
             x.RoleName == ProductIdentityLifecycleEntitlementGrantProfile.RetirementStewardRole);
         Assert.DoesNotContain("mdm.lskus.retire", retirement.PermissionKeys);
-        Assert.Contains("mdm.gskus.retire", retirement.PermissionKeys);
+        Assert.DoesNotContain("mdm.gskus.retire", retirement.PermissionKeys); // B5: a system action since GSKU FIX1
         var keys = DeclaredKeys();
         keys.Remove(key);
         Assert.Throws<InvalidOperationException>(() => ProductIdentityLifecycleEntitlementGrantProfile.ValidateExactDeclaredPermissionSet(keys));

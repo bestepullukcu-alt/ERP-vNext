@@ -6,6 +6,7 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Domain.ValueObjects;
+using Microsoft.Extensions.Logging;
 using Xunit;
 using PersistedCancellationEvidence = Diten.MdmService.Domain.ValueObjects.ProductIdentityWorkflowCancellationEvidence;
 using TransportCancellationEvidence = Diten.MdmService.Application.Contracts.Workflow.ProductIdentityWorkflowCancellationEvidence;
@@ -95,22 +96,28 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
             item => item.Operation == ProductAuditOperation.GskuIdentitySubmitted);
     }
 
+    // B8 (GSKU FIX1). This test used to assert the opposite: a decision by the maker quarantined the pair, which
+    // locked the GSKU for good. The decision is now ignored and said; the operation keeps awaiting a usable one.
     [Fact]
-    public async Task Maker_cannot_approve_own_pair()
+    public async Task A_decision_by_the_maker_is_ignored_and_the_pair_keeps_waiting()
     {
         var harness = new Harness { TerminalActorId = MakerId };
         var submitted = await harness.Processor.StartInteractiveAsync(
             TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
             TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
 
-        var result = await harness.Processor.RecoverAsync(
+        await harness.Processor.RecoverAsync(
             submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
 
-        Assert.False(result.Succeeded);
-        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
-            harness.Operations.Current!.Checkpoint);
+        var operation = harness.Operations.Current!;
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision, operation.Checkpoint);
+        Assert.Equal(FirstGskuIdentityWorkflowProcessor.SelfApprovalIgnored, operation.LastFailureCode);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, operation.RecoveryDisposition);
+        Assert.Null(operation.DecisionKind);
         Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Revision.LifecycleStatus);
         Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Gsku.LifecycleStatus);
+        Assert.Contains(harness.Log.Entries, entry => entry.Level == LogLevel.Warning
+            && entry.Message.Contains(FirstGskuIdentityWorkflowProcessor.SelfApprovalIgnored, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -138,49 +145,52 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
             item => item.Operation == ProductAuditOperation.GskuIdentityApproved);
     }
 
-    [Fact]
-    public async Task Parent_approval_dependency_only_resumes_by_exact_interactive_replay_without_new_workflow()
+    // B2 (b) (GSKU FIX1). Previously the parent's withdrawn approval quarantined the pair (a resume needed the
+    // maker's exact replay, and the screen offered none). The engine approved and MDM cannot apply it: both are
+    // drafts again, the reason is on the operation and in the audit intents, and the operation is final.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task An_approval_that_can_no_longer_be_applied_returns_the_pair_to_draft_with_its_reason(bool unitRetired)
     {
         var harness = new Harness();
-        harness.Parent.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
         var submitted = await harness.Processor.StartInteractiveAsync(
             TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
             TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        // Between the submit and the decision: the parent loses its approval, or the unit is retired.
+        if (unitRetired) harness.References.Result = ReferenceResolver.Success(2, retiredUnit: true);
+        else harness.Parent.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
+        var code = unitRetired ? "REFERENCE_DATA_CONTRACT_CONFLICT" : "FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED";
 
-        var blocked = await harness.Processor.RecoverAsync(
+        var decided = await harness.Processor.RecoverAsync(
             submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
 
-        Assert.False(blocked.Succeeded);
-        Assert.Equal("FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED", blocked.Operation!.LastFailureCode);
-        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
-            blocked.Operation.Checkpoint);
-        Assert.Equal(1, harness.Client.StartCalls);
+        var operation = harness.Operations.Current!;
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable, operation.Checkpoint);
+        Assert.Equal(code, operation.LastFailureCode);
+        Assert.Equal((409, code), (decided.StatusCode, decided.ErrorCode));
+        Assert.Equal(1, harness.Operations.NotApplicableWrites);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, harness.Revision.LifecycleStatus);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, harness.Gsku.LifecycleStatus);
+        Assert.Single(harness.Revision.AuditIntents,
+            item => item.Operation == ProductAuditOperation.ProductDefinitionRevisionIdentityDecisionNotApplicable);
+        Assert.Single(harness.Gsku.AuditIntents,
+            item => item.Operation == ProductAuditOperation.GskuIdentityDecisionNotApplicable);
+        Assert.DoesNotContain(harness.Gsku.AuditIntents, item => item.Operation == ProductAuditOperation.GskuIdentityApproved);
 
-        harness.Parent.LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved;
-        var backgroundAttempt = await harness.Processor.RecoverAsync(
-            blocked.Operation, "worker-2", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        // Final: the same submit replayed gets the same reason and starts nothing.
         var replay = await harness.Processor.StartInteractiveAsync(
             TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
             TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
-
-        Assert.False(backgroundAttempt.Succeeded);
-        Assert.Equal(409, backgroundAttempt.StatusCode);
-        Assert.True(replay.Succeeded);
-        Assert.True(replay.IsReplay);
-        Assert.Equal(OperationId, replay.Operation!.OperationId);
-        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.Completed, replay.Operation.Checkpoint);
-        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Revision.LifecycleStatus);
-        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Gsku.LifecycleStatus);
+        Assert.Equal((409, code), (replay.StatusCode, replay.ErrorCode));
         Assert.Equal(1, harness.Client.StartCalls);
     }
 
+    // A reference service that refuses THIS service is the chain's fault, not the record's: it waits.
     [Theory]
-    [InlineData(401, "REFERENCE_UNAUTHENTICATED", true)]
-    [InlineData(403, "REFERENCE_FORBIDDEN", false)]
-    public async Task Legacy_interactive_reference_auth_failure_only_resumes_by_exact_interactive_replay_with_trusted_resolver(
-        int statusCode,
-        string failureCode,
-        bool canResume)
+    [InlineData(401, "REFERENCE_UNAUTHENTICATED")]
+    [InlineData(403, "REFERENCE_FORBIDDEN")]
+    public async Task A_reference_service_that_refuses_this_service_waits_and_then_applies(int statusCode, string failureCode)
     {
         var harness = new Harness();
         harness.References.Result = VerifiedGskuReferenceResolveResult.Fail(statusCode, failureCode);
@@ -188,64 +198,84 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
             TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
             TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
 
-        var blocked = await harness.Processor.RecoverAsync(
+        var waiting = await harness.Processor.RecoverAsync(
             submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
 
-        Assert.False(blocked.Succeeded);
-        Assert.Equal(failureCode, blocked.Operation!.LastFailureCode);
-        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired, blocked.Operation.Checkpoint);
+        var operation = harness.Operations.Current!;
+        Assert.False(waiting.Succeeded);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.DecisionObserved, operation.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, operation.RecoveryDisposition);
+        Assert.Equal(1, operation.ServiceFaultCount);
+        Assert.Equal(failureCode, operation.LastFailureCode);
+
+        harness.References.Result = ReferenceResolver.Success(2);
+        operation.NextAttemptAtUtcTicksV1 = null;
+        var applied = await harness.Processor.RecoverAsync(
+            operation, "worker-2", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.True(applied.Succeeded, applied.ErrorCode);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.Completed, harness.Operations.Current!.Checkpoint);
+        Assert.Equal(0, harness.Operations.Current.ServiceFaultCount);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Gsku.LifecycleStatus);
+    }
+
+    // Rows an earlier version quarantined for the parent or a refused reference still resume by the maker's replay.
+    [Theory]
+    [InlineData("FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED")]
+    [InlineData("REFERENCE_UNAUTHENTICATED")]
+    public async Task Legacy_rows_quarantined_for_the_parent_or_a_refused_reference_still_resume_by_exact_replay(string code)
+    {
+        var harness = new Harness();
+        harness.References.Result = VerifiedGskuReferenceResolveResult.Fail(503, "REFERENCE_DATA_CONTRACT_UNAVAILABLE");
+        var submitted = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        await harness.Processor.RecoverAsync(
+            submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        var legacy = harness.Operations.Current!;
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.DecisionObserved, legacy.Checkpoint); // the decision is read
+        legacy.Checkpoint = FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired; // as the old code left it
+        legacy.RecoveryDisposition = ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired;
+        legacy.LastFailureCode = code;
+        legacy.NextAttemptAtUtcTicksV1 = null;
         harness.References.Result = ReferenceResolver.Success(2);
 
-        var backgroundAttempt = await harness.Processor.RecoverAsync(
-            blocked.Operation, "worker-2", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        var background = await harness.Processor.RecoverAsync(
+            legacy, "worker-2", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
         var replay = await harness.Processor.StartInteractiveAsync(
             TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
             TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
 
-        Assert.False(backgroundAttempt.Succeeded);
-        if (!canResume)
-        {
-            Assert.False(replay.Succeeded);
-            Assert.Equal("FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", replay.ErrorCode);
-            Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired, replay.Operation!.Checkpoint);
-            Assert.Equal(1, harness.Client.StartCalls);
-            return;
-        }
-        Assert.True(replay.Succeeded);
-        Assert.True(replay.IsReplay);
-        Assert.Equal(OperationId, replay.Operation!.OperationId);
-        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.Completed, replay.Operation.Checkpoint);
+        Assert.Equal(409, background.StatusCode);
+        Assert.True(replay.Succeeded, replay.ErrorCode);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.Completed, replay.Operation!.Checkpoint);
         Assert.Equal(1, harness.Client.StartCalls);
     }
 
     [Fact]
-    public async Task Persistent_reference_auth_failure_does_not_spin_manual_resume_until_step_budget()
+    public async Task Persistent_reference_auth_failure_is_answered_at_once_and_does_not_spin()
     {
         var harness = new Harness();
         harness.References.Result = VerifiedGskuReferenceResolveResult.Fail(403, "REFERENCE_FORBIDDEN");
         var submitted = await harness.Processor.StartInteractiveAsync(
             TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
             TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
-        var blocked = await harness.Processor.RecoverAsync(
+        await harness.Processor.RecoverAsync(
             submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
 
         var replay = await harness.Processor.StartInteractiveAsync(
             TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
             TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
 
-        Assert.False(replay.Succeeded);
-        Assert.Equal(409, replay.StatusCode);
-        Assert.Equal("FIRST_GSKU_IDENTITY_WORKFLOW_RECONCILIATION_REQUIRED", replay.ErrorCode);
-        Assert.Equal(1, harness.References.Calls);
-        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
-            replay.Operation!.Checkpoint);
-        Assert.False(blocked.Succeeded);
+        Assert.Equal((503, ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit), (replay.StatusCode, replay.ErrorCode));
+        Assert.Equal(2, harness.References.Calls); // one per attempt — no spinning to the step budget
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.DecisionObserved, harness.Operations.Current!.Checkpoint);
     }
 
     [Fact]
     public async Task Unrelated_manual_reconciliation_cannot_resume_by_interactive_replay()
     {
-        var harness = new Harness { TerminalActorId = MakerId };
+        var harness = new Harness { TerminalActorId = Guid.Empty }; // evidence that names nobody: a fault of the record
         var submitted = await harness.Processor.StartInteractiveAsync(
             TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
             TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
@@ -408,6 +438,195 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
         Assert.Equal(0, harness.Operations.WithdrawalApplyCount);
     }
 
+    // ── GSKU FIX1 · B1 / B9 / A3 / A1 / 2(a) ─────────────────────────────────────────────────────────────────────
+
+    private static async Task<Harness> PendingPair()
+    {
+        var harness = new Harness();
+        var submitted = await harness.Processor.StartInteractiveAsync(TenantId, GskuId, 0, OperationId, MakerId,
+            "maker-token", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        Assert.True(submitted.Succeeded, submitted.ErrorCode);
+        return harness;
+    }
+
+    private static Task<FirstGskuIdentityWorkflowProcessingResult> Withdraw(Harness harness, Guid commandId) =>
+        harness.Processor.WithdrawInteractiveAsync(TenantId, GskuId, 1, commandId, MakerId,
+            "REQUESTER_WITHDRAWAL", null, "maker-token", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+    // Rule IDP:952 (named by WP-MDM-GSKU-ACCEPT-01): a reference service that is down or slow (503 / 504) is waited
+    // for — the decision stays observed and nothing is approved, returned to draft or quarantined.
+    [Theory]
+    [InlineData(503)]
+    [InlineData(504)]
+    public async Task IDP_A_reference_outage_at_approval_is_waited_for_and_changes_nothing(int status)
+    {
+        var harness = new Harness();
+        harness.References.Result = VerifiedGskuReferenceResolveResult.Fail(status, "REFERENCE_DATA_CONTRACT_UNAVAILABLE");
+        var submitted = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        var result = await harness.Processor.RecoverAsync(
+            submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.False(result.Succeeded);
+        var operation = harness.Operations.Current!;
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.DecisionObserved, operation.Checkpoint);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, operation.RecoveryDisposition);
+        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Gsku.LifecycleStatus);
+        Assert.Equal(0, harness.Operations.NotApplicableWrites);
+    }
+
+    // Rule IDP:386 (named by WP-MDM-GSKU-ACCEPT-01): a cancellation the engine answers with a conflict or "not
+    // found" means the approval is still the engine's — the pair goes back to awaiting the decision, never to
+    // manual reconciliation, and the GSKU stays pending.
+    [Theory]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TRUSTED_CANCEL_CONFLICT")]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND")]
+    public async Task IDP_A_cancellation_answered_conflict_or_not_found_returns_to_awaiting_the_decision(
+        ProductIdentityWorkflowTransportOutcome outcome, string code)
+    {
+        var harness = await PendingPair();
+        harness.Client.Cancel = _ => (outcome, code);
+
+        var result = await Withdraw(harness, Guid.NewGuid());
+
+        Assert.False(result.Succeeded);
+        var operation = harness.Operations.Current!;
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision, operation.Checkpoint);
+        Assert.NotEqual(ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired, operation.RecoveryDisposition);
+        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Gsku.LifecycleStatus);
+    }
+
+    // B1: the task changed between the read of its versions and the cancellation (claimed, reassigned, delegated).
+    // The approval is still open: the withdrawal is asked again with the versions read after the conflict.
+    [Fact]
+    public async Task Withdraw_WhenTheTaskChangedInBetween_IsAskedAgainWithFreshVersions_AndWithdraws()
+    {
+        var harness = await PendingPair();
+        harness.Client.Preflight = call => (ProductIdentityWorkflowTransportOutcome.Success, "", 3 + call, 5 + call);
+        harness.Client.Cancel = call => call == 1
+            ? (ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TRUSTED_CANCEL_CONFLICT")
+            : null;
+
+        var result = await Withdraw(harness, Guid.NewGuid());
+
+        Assert.True(result.Succeeded, result.ErrorCode);
+        Assert.Equal([(4, 6), (6, 8)], harness.Client.CancelledWithVersions);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, harness.Gsku.LifecycleStatus);
+    }
+
+    // B1: it keeps changing — the requester is told so, every withdrawal field is forgotten, and the same command
+    // as well as a new one go through afterwards. Previously the fields stayed and the GSKU was locked for good.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Withdraw_WhenTheTaskKeepsChanging_IsAnswered_ForgetsTheWithdrawal_AndCanBeAskedAgain(bool newCommand)
+    {
+        var harness = await PendingPair();
+        var commandId = Guid.NewGuid();
+        harness.Client.Cancel = call => call <= 2
+            ? (ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TRUSTED_CANCEL_CONFLICT")
+            : null;
+
+        var refused = await Withdraw(harness, commandId);
+
+        var operation = harness.Operations.Current!;
+        Assert.Equal((409, ProductIdentityWorkflowMakerCodes.ApprovalChanging), (refused.StatusCode, refused.ErrorCode));
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision, operation.Checkpoint);
+        var withdrawalFields = typeof(FirstGskuIdentityWorkflowOperation).GetProperties()
+            .Where(property => property.Name.StartsWith("Withdrawal", StringComparison.Ordinal)).ToList();
+        Assert.Equal(18, withdrawalFields.Count);
+        Assert.All(withdrawalFields, property => Assert.True(property.GetValue(operation) is null, property.Name));
+
+        var again = await Withdraw(harness, newCommand ? Guid.NewGuid() : commandId);
+
+        Assert.True(again.Succeeded, again.ErrorCode);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, harness.Gsku.LifecycleStatus);
+    }
+
+    // B1: the approval was decided or closed first — nothing to withdraw; the same answer for a repeat.
+    [Fact]
+    public async Task Withdraw_WhenTheApprovalIsClosed_HasNothingToWithdraw_AndSaysTheSameEveryTime()
+    {
+        var harness = await PendingPair();
+        var commandId = Guid.NewGuid();
+        harness.Client.Preflight = _ => (ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND", 0, 0);
+
+        var first = await Withdraw(harness, commandId);
+        var again = await Withdraw(harness, commandId);
+
+        Assert.Equal((409, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND"), (first.StatusCode, first.ErrorCode));
+        Assert.Equal((409, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND"), (again.StatusCode, again.ErrorCode));
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision, harness.Operations.Current!.Checkpoint);
+        Assert.Equal("WORKFLOW_TRUSTED_CANCEL_NOT_FOUND", harness.Operations.Current.WithdrawalRefusalCode);
+        Assert.Equal(0, harness.Client.CancellationCalls);
+    }
+
+    // Shared item 14 (A1) on GSKU: told the command the earlier withdrawal stands under.
+    [Fact]
+    public async Task Withdraw_UnderAnotherCommand_IsToldTheCommandItsWithdrawalStandsUnder()
+    {
+        var harness = await PendingPair();
+        var first = Guid.NewGuid();
+        harness.Client.CancellationOutcome = ProductIdentityWorkflowTransportOutcome.Timeout;
+        await Withdraw(harness, first);
+
+        var other = await Withdraw(harness, Guid.NewGuid());
+
+        Assert.Equal((409, "FIRST_GSKU_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT"), (other.StatusCode, other.ErrorCode));
+        Assert.Equal(first, other.PendingWithdrawalCommandId);
+    }
+
+    // B2 (a): no submit before the parent is approved — nothing written, nothing started.
+    [Fact]
+    public async Task Submit_BeforeTheParentIsApproved_IsRefused_AndStartsNothing()
+    {
+        var harness = new Harness();
+        harness.Parent.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
+
+        var result = await harness.Processor.StartInteractiveAsync(TenantId, GskuId, 0, OperationId, MakerId,
+            "maker-token", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.Equal((409, FirstGskuIdentityWorkflowProcessor.ParentNotApproved), (result.StatusCode, result.ErrorCode));
+        Assert.Null(harness.Operations.Current);
+        Assert.Equal(0, harness.Client.StartCalls);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, harness.Gsku.LifecycleStatus);
+    }
+
+    // Shared item 13 (A3) on GSKU: a claim the store never answers does not hang the request.
+    [Fact]
+    public async Task Submit_WhoseClaimTheStoreNeverAnswers_IsAnsweredWithinTheBound_AndGivesTheLeaseBack()
+    {
+        var harness = await PendingPair();
+        harness.Operations.ClaimsNeverAnswer = true;
+        harness.Operations.Current!.Checkpoint = FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay;
+
+        var result = await harness.Processor.StartInteractiveAsync(TenantId, GskuId, 0, OperationId, MakerId,
+            "maker-token", TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(5));
+
+        Assert.Equal((503, ProductIdentityWorkflowClaims.StoreUnavailable), (result.StatusCode, result.ErrorCode));
+        Assert.Equal(1, harness.Operations.ReleaseIfOwnedCalls);
+    }
+
+    // The shared classification on GSKU: a refused service identity at the start is not the record's fault.
+    [Theory]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.AuthenticationRejected)]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.Forbidden)]
+    public async Task Submit_WhoseServiceIdentityIsRefused_IsNotQuarantined_AndTheMakerIsToldToResubmit(
+        ProductIdentityWorkflowTransportOutcome outcome)
+    {
+        var harness = new Harness();
+        harness.Client.StartOutcome = outcome;
+
+        var result = await harness.Processor.StartInteractiveAsync(TenantId, GskuId, 0, OperationId, MakerId,
+            "maker-token", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.Equal((503, ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit), (result.StatusCode, result.ErrorCode));
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.AwaitingMakerReplay, harness.Operations.Current!.Checkpoint);
+        Assert.NotEqual(ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired,
+            harness.Operations.Current.RecoveryDisposition);
+    }
+
     private sealed class Harness
     {
         public Harness()
@@ -445,8 +664,12 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
                 Operations, Revisions, Gskus, products, References, Client,
                 new(new(TemplateId, null, [ApproverId], "IDENTITY_APPROVAL", true, true, null),
                     TimeProvider.System),
-                TimeProvider.System);
+                TimeProvider.System,
+                ProductIdentityWorkflowServiceFaultSettings.Default,
+                Log);
         }
+
+        public CapturingLogger<FirstGskuIdentityWorkflowProcessor> Log { get; } = new();
 
         public FirstGskuIdentityWorkflowProcessor Processor { get; }
         public FakeOperationRepository Operations { get; } = new();
@@ -468,6 +691,12 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
         public int CancellationCalls { get; private set; }
         public ProductIdentityWorkflowTransportOutcome CancellationOutcome { get; set; } =
             ProductIdentityWorkflowTransportOutcome.Success;
+        public int PreflightCalls { get; private set; }
+        public List<(int Instance, int Task)> CancelledWithVersions { get; } = [];
+        // Scripted answers by call number (1-based); null falls back to the default answer.
+        public Func<int, (ProductIdentityWorkflowTransportOutcome Outcome, string Code, int Instance, int Task)?>? Preflight { get; set; }
+        public Func<int, (ProductIdentityWorkflowTransportOutcome Outcome, string Code)?>? Cancel { get; set; }
+        public bool StartNeverAnswers { get; set; }
 
         public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>> StartAsync(
             Guid tenantId, ProductIdentityWorkflowStartRequest request, string delegatedUserToken,
@@ -500,16 +729,28 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
 
         public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationPreflight>> GetCancellationPreflightAsync(
             Guid tenantId, ProductIdentityWorkflowCancellationPreflightRequest request,
-            CancellationToken cancellationToken = default) => Task.FromResult(
-            ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationPreflight>.Success(new(
-                request.WorkflowInstanceId, request.ApprovalTaskId, request.ExpectedObjectType,
-                request.ExpectedObjectId, "GS-0001", 3, 5, "Active", "WaitingApproval")));
+            CancellationToken cancellationToken = default)
+        {
+            var scripted = Preflight?.Invoke(++PreflightCalls);
+            if (scripted is { } answer && answer.Outcome != ProductIdentityWorkflowTransportOutcome.Success)
+                return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationPreflight>.Fail(
+                    answer.Outcome, answer.Code));
+            return Task.FromResult(
+                ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationPreflight>.Success(new(
+                    request.WorkflowInstanceId, request.ApprovalTaskId, request.ExpectedObjectType,
+                    request.ExpectedObjectId, "GS-0001", scripted?.Instance ?? 3, scripted?.Task ?? 5, "Active",
+                    "WaitingApproval")));
+        }
 
         public Task<ProductIdentityWorkflowTransportResult<TransportCancellationEvidence>> CancelAsync(
             Guid tenantId, ProductIdentityWorkflowCancellationRequest request, string delegatedUserToken,
             CancellationToken cancellationToken = default)
         {
             CancellationCalls++;
+            CancelledWithVersions.Add((request.ExpectedWorkflowInstanceVersion, request.ExpectedApprovalTaskVersion));
+            if (Cancel?.Invoke(CancellationCalls) is { } scripted)
+                return Task.FromResult(ProductIdentityWorkflowTransportResult<TransportCancellationEvidence>.Fail(
+                    scripted.Outcome, scripted.Code));
             if (CancellationOutcome != ProductIdentityWorkflowTransportOutcome.Success)
                 return Task.FromResult(ProductIdentityWorkflowTransportResult<TransportCancellationEvidence>.Fail(
                     CancellationOutcome, "WORKFLOW_TIMEOUT"));
@@ -539,16 +780,16 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
             return Task.FromResult(Results.Count > 0 ? Results.Dequeue() : Result ?? Success(2));
         }
 
-        public static VerifiedGskuReferenceResolveResult Success(int version) =>
+        public static VerifiedGskuReferenceResolveResult Success(int version, bool retiredUnit = false) =>
             VerifiedGskuReferenceResolveResult.Success([
                 Verified("pack-applicability", "SCALAR_QUANTITY_APPLIES", version, 1),
-                Verified("uom", "EA", version, 2)]);
+                Verified("uom", "EA", version, 2, retiredUnit)]);
 
         private static VerifiedGskuReferenceSelection Verified(
-            string set, string code, int version, int discriminator) => new(
+            string set, string code, int version, int discriminator, bool retired = false) => new(
             set, code,
             Guid.Parse($"a0000000-0000-0000-0000-{version:D8}{discriminator:D4}"),
-            version, "LATEST", StableReferenceTime, false, true);
+            version, "LATEST", StableReferenceTime, retired, !retired);
     }
 
     private sealed class PairRevisionRepository(ProductDefinitionRevision value) : IProductDefinitionRevisionRepository
@@ -601,6 +842,9 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
         public Task<FirstGskuIdentityWorkflowOperation?> GetByStartIdempotencyKeyAsync(string key, CancellationToken ct = default) => Task.FromResult(Current?.StartIdempotencyKey == key ? Current : null);
         public Task<FirstGskuIdentityWorkflowClaim?> TryClaimAsync(FirstGskuIdentityWorkflowClaimRequest request, CancellationToken ct = default)
         {
+            if (ClaimsNeverAnswer)
+                return Task.Delay(Timeout.Infinite, ct).ContinueWith<FirstGskuIdentityWorkflowClaim?>(_ => null, ct,
+                    TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Default);
             if (Current is null || !request.EligibleCheckpoints.Contains(Current.Checkpoint)) return Task.FromResult<FirstGskuIdentityWorkflowClaim?>(null);
             Current.LeaseGeneration++;
             return Task.FromResult<FirstGskuIdentityWorkflowClaim?>(new(Current.TenantId, Current.OperationId,
@@ -613,6 +857,17 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
         {
             if (Current is null || Current.Checkpoint != claim.Checkpoint) return Task.FromResult(false);
             if (FailNextAdvanceTo == mutation.NextCheckpoint) { FailNextAdvanceTo = null; return Task.FromResult(false); }
+            AdvanceCalls++;
+            Current.UpdatedAtUtcTicksV1 = mutation.UpdatedAtUtcTicks;
+            if (mutation.ReleaseLease) { Current.LeaseOwner = null; Current.LeaseUntilUtcTicksV1 = null; }
+            if (mutation.ServiceFaultCount.HasValue)
+            {
+                Current.ServiceFaultCount = mutation.ServiceFaultCount.Value;
+                Current.ServiceFaultSinceUtcTicksV1 = mutation.ServiceFaultSinceUtcTicksV1;
+            }
+            Current.WithdrawalRefusalCode = mutation.WithdrawalRefusalCode ?? Current.WithdrawalRefusalCode;
+            Current.WithdrawalAwaitingRequesterSinceUtcTicksV1 = mutation.WithdrawalAwaitingRequesterSinceUtcTicksV1
+                ?? Current.WithdrawalAwaitingRequesterSinceUtcTicksV1;
             Current.Checkpoint = mutation.NextCheckpoint;
             Current.RecoveryDisposition = mutation.RecoveryDisposition;
             Current.NextAttemptAtUtcTicksV1 = mutation.NextAttemptAtUtcTicksV1;
@@ -657,7 +912,72 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
             Current.WithdrawalTaskStatus = mutation.WithdrawalTaskStatus ?? Current.WithdrawalTaskStatus;
             Current.WithdrawalInstanceStatus = mutation.WithdrawalInstanceStatus ?? Current.WithdrawalInstanceStatus;
             Current.WithdrawalObjectRef = mutation.WithdrawalObjectRef ?? Current.WithdrawalObjectRef;
+            if (mutation.ClearWithdrawal)
+            {
+                Current.WithdrawalCommandId = null;
+                Current.WithdrawalFingerprint = null;
+                Current.WithdrawalRequesterSubjectId = null;
+                Current.WithdrawalExpectedGskuVersion = null;
+                Current.WithdrawalReasonCode = null;
+                Current.WithdrawalComment = null;
+                Current.WithdrawalExpectedWorkflowInstanceVersion = null;
+                Current.WithdrawalExpectedApprovalTaskVersion = null;
+                Current.WithdrawalTransitionLogId = null;
+                Current.WithdrawalObservedAtUtcTicksV1 = null;
+                Current.WithdrawalTransitionSequence = null;
+                Current.WithdrawalResultWorkflowInstanceVersion = null;
+                Current.WithdrawalResultApprovalTaskVersion = null;
+                Current.WithdrawalTaskStatus = null;
+                Current.WithdrawalInstanceStatus = null;
+                Current.WithdrawalObjectRef = null;
+                Current.WithdrawalRefusalCode = null;
+                Current.WithdrawalAwaitingRequesterSinceUtcTicksV1 = null;
+            }
             return Task.FromResult(true);
+        }
+
+        public int AdvanceCalls { get; private set; }
+        public bool ClaimsNeverAnswer { get; set; }
+        public int ReleaseIfOwnedCalls { get; private set; }
+        public int NotApplicableWrites { get; private set; }
+
+        public Task ReleaseIfOwnedAsync(Guid operationId, string leaseOwner, long leaseUntilUtcTicks, CancellationToken ct = default)
+        {
+            ReleaseIfOwnedCalls++;
+            return Task.CompletedTask;
+        }
+
+        public Task<bool> HasUnfinishedOperationAsync(Guid gskuId, CancellationToken ct = default) =>
+            Task.FromResult(Current is not null && Current.GskuId == gskuId && Current.Checkpoint is not (
+                FirstGskuIdentityWorkflowCheckpoint.Completed or FirstGskuIdentityWorkflowCheckpoint.Superseded
+                or FirstGskuIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart
+                or FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable));
+
+        public Task<FirstGskuIdentityDecisionNotApplicableWriteResult> ApplyDecisionNotApplicableAsync(
+            FirstGskuIdentityWorkflowClaim claim,
+            FirstGskuIdentityWorkflowOperation operation,
+            string reasonCode,
+            LocalAuditIntent revisionAuditIntent,
+            LocalAuditIntent gskuAuditIntent,
+            long updatedAtUtcTicks,
+            CancellationToken cancellationToken = default)
+        {
+            if (Current is null || Current.Checkpoint != FirstGskuIdentityWorkflowCheckpoint.DecisionObserved
+                || Revision is null || Gsku is null)
+                return Task.FromResult(new FirstGskuIdentityDecisionNotApplicableWriteResult(
+                    false, false, Revision, Gsku, "FIRST_GSKU_IDENTITY_NOT_APPLICABLE_PAIR_CONFLICT"));
+            NotApplicableWrites++;
+            Revision.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
+            Gsku.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
+            Revision.Version++;
+            Gsku.Version++;
+            Revision.AuditIntents.Add(revisionAuditIntent);
+            Gsku.AuditIntents.Add(gskuAuditIntent);
+            Current.Checkpoint = FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable;
+            Current.LastFailureCode = reasonCode;
+            Current.UpdatedAtUtcTicksV1 = updatedAtUtcTicks;
+            return Task.FromResult(new FirstGskuIdentityDecisionNotApplicableWriteResult(
+                true, false, Revision, Gsku, null));
         }
 
         public Task<FirstGskuIdentityWithdrawalWriteResult> ApplyWithdrawalAsync(
@@ -695,6 +1015,16 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
             return Task.FromResult(new FirstGskuIdentityWithdrawalWriteResult(
                 true, false, Revision, Gsku, null));
         }
+    }
+
+    private sealed class CapturingLogger<T> : ILogger<T>
+    {
+        public List<(LogLevel Level, string Message)> Entries { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+            Func<TState, Exception?, string> formatter) =>
+            Entries.Add((logLevel, formatter(state, exception) + (exception is null ? string.Empty : " " + exception)));
     }
 
     public class RepositoryProxy : DispatchProxy

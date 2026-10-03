@@ -1,3 +1,4 @@
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Api.Configuration;
 using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts.Workflow;
@@ -89,15 +90,15 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
                         cancellationToken);
                     var processor = tenantScope.ServiceProvider
                         .GetRequiredService<GlobalProductIdentityWorkflowProcessor>();
-                    var recoveryAllowed = await IsBackgroundRecoveryAllowedAsync(
-                        tenantScope.ServiceProvider,
-                        tenantId,
-                        cancellationToken);
+                    // The legal-entity scope rule for a worker (ProductIdentityBackgroundScope): an Enforced tenant is
+                    // recovered too, operation by operation — out-of-scope operations are skipped, not the tenant.
+                    var backgroundScope = tenantScope.ServiceProvider.GetRequiredService<ProductIdentityBackgroundScope>();
+                    var scopeMode = await backgroundScope.ResolveAsync(cancellationToken);
                     foreach (var operation in page.Operations)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         operationCount++;
-                        if (!recoveryAllowed)
+                        if (!await backgroundScope.InScopeAsync(scopeMode, operation.GlobalProductId, cancellationToken))
                         {
                             deferredCount++;
                             continue;
@@ -171,35 +172,5 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
         } while (tenantCursor.HasValue && !stopCycle);
 
         return new(tenantCount, operationCount, completedCount, deferredCount, failedCount);
-    }
-
-    private static async Task<bool> IsBackgroundRecoveryAllowedAsync(
-        IServiceProvider services,
-        Guid tenantId,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var rollout = await services
-                .GetRequiredService<IProductLegalEntityScopeRolloutStateRepository>()
-                .GetAsync(cancellationToken);
-            if (rollout is null)
-            {
-                return true;
-            }
-
-            rollout.EnsureValid();
-            return rollout.TenantId == tenantId
-                   && !rollout.IsDeleted
-                   && rollout.Mode == ProductLegalEntityScopeRolloutMode.Preparation;
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch
-        {
-            return false;
-        }
     }
 }

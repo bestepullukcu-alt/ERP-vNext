@@ -30,6 +30,17 @@ public static class DevTrustBootstrapCommand
     /// <summary>The tracked Development value of MDM's <c>ProductIdentityWorkflow:GlobalProductTemplateCode</c>.</summary>
     public const string DefaultTemplateCode = "GLOBAL-PRODUCT-IDENTITY";
 
+    /// <summary>
+    /// WP-MDM-GSKU-ACCEPT-01 FIX1 (B6): the GSKU starts, by the object type each processor sends and the tracked
+    /// Development template code of each (MDM appsettings.Development.json). Platform matches all six fields exactly.
+    /// </summary>
+    public static readonly (string ObjectType, string TemplateCode)[] GskuStarts =
+    [
+        ("gsku", "GSKU-IDENTITY"),
+        ("GskuCorrection", "GSKU-CORRECTION"),
+        ("GskuRetirementRequest", "GSKU-RETIREMENT-REQUEST")
+    ];
+
     public const int Success = 0;
     public const int UsageError = 2;
     public const int StateConflict = 3;
@@ -47,7 +58,13 @@ public static class DevTrustBootstrapCommand
     private static readonly string[] AuthSections = ["ServiceIdentityTokenIssuer", "ServiceClientRegistry"];
     private static readonly string[] PlatformSections = ["TrustedServiceTokenValidation"];
     private static readonly string[] MdmSections =
-        ["AuthProductIdentityWorkflowServiceIdentityProvider", "ProductIdentityWorkflow", "ProductIdentityWorkflowWorker"];
+    [
+        "AuthProductIdentityWorkflowServiceIdentityProvider", "ProductIdentityWorkflow", "ProductIdentityWorkflowWorker",
+        // GSKU FIX1 (B6): the GSKU identity, correction and retirement-request switches and their workers.
+        "FirstGskuIdentityWorkflow", "FirstGskuIdentityWorkflowWorker",
+        "GskuCorrectionWorkflow", "GskuCorrectionWorkflowWorker",
+        "GskuRetirementRequestWorkflow", "GskuRetirementRequestWorkflowWorker"
+    ];
 
     public static int Run(string[] args, TextWriter output, TextWriter error)
     {
@@ -153,6 +170,18 @@ public static class DevTrustBootstrapCommand
                 writer.WriteString("ObjectType", GlobalProductObjectType);
                 writer.WriteString("TemplateCode", DefaultTemplateCode);
                 writer.WriteEndObject();
+                // Entries 1–3, in the tracked file's order: they replace the tracked GSKU entries, which carry the
+                // default client's id.
+                foreach (var (objectType, templateCode) in GskuStarts)
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("ClientId", ServiceClientIdentityIds.FromClientCode(options.ClientCode).ToString("D"));
+                    writer.WriteString("ServiceName", ServiceName);
+                    writer.WriteString("Audience", Audience);
+                    writer.WriteString("ObjectType", objectType);
+                    writer.WriteString("TemplateCode", templateCode);
+                    writer.WriteEndObject();
+                }
                 writer.WriteEndArray();
                 writer.WriteEndObject();
             }
@@ -179,6 +208,24 @@ public static class DevTrustBootstrapCommand
                 writer.WriteStartObject("ProductIdentityWorkflowWorker");
                 writer.WriteBoolean("Enabled", true);
                 writer.WriteEndObject();
+                // GSKU FIX1 (B6): the same switches for the three GSKU flows (template and reason codes are tracked in
+                // MDM's appsettings.Development.json) and their workers — without a worker a decision taken in the
+                // Task Center never reaches MDM.
+                foreach (var section in new[] { "FirstGskuIdentityWorkflow", "GskuCorrectionWorkflow", "GskuRetirementRequestWorkflow" })
+                {
+                    writer.WriteStartObject(section);
+                    writer.WriteBoolean("Enabled", true);
+                    writer.WriteStartArray("CandidatePrincipalIds");
+                    foreach (var approver in options.ApproverUserIds) writer.WriteStringValue(approver.ToString("D"));
+                    writer.WriteEndArray();
+                    writer.WriteEndObject();
+                }
+                foreach (var section in new[] { "FirstGskuIdentityWorkflowWorker", "GskuCorrectionWorkflowWorker", "GskuRetirementRequestWorkflowWorker" })
+                {
+                    writer.WriteStartObject(section);
+                    writer.WriteBoolean("Enabled", true);
+                    writer.WriteEndObject();
+                }
             });
         });
 

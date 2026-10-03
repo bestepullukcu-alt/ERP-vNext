@@ -318,6 +318,16 @@ public sealed class GlobalProductsController : Controller
                     // was lost. One exact idempotent replay is the only authoritative reconciliation.
                     if (responseStatus == StatusCodes.Status502BadGateway && attempt == 0)
                         continue;
+                    // The requester's earlier withdrawal stands under another command (MDM tells only them):
+                    // repeating THAT command is what finishes it. Once, and only for a withdrawal.
+                    if (responseStatus == StatusCodes.Status409Conflict && attempt == 0
+                        && mutationKind == LifecycleMutationKind.Withdraw
+                        && await PendingWithdrawalCommandAsync(response, cancellationToken) is { } pending
+                        && pending != operationId)
+                    {
+                        operationId = pending;
+                        continue;
+                    }
                     return LifecycleFailure((int)response.StatusCode);
                 }
 
@@ -370,6 +380,33 @@ public sealed class GlobalProductsController : Controller
         {
             _logger.LogError(exception, "Global Product lifecycle proxy failed.");
             return LifecycleFailure(StatusCodes.Status503ServiceUnavailable);
+        }
+    }
+
+    private async Task<Guid?> PendingWithdrawalCommandAsync(
+        HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        if (!IsJsonMediaType(response.Content.Headers.ContentType?.MediaType))
+            return null;
+        try
+        {
+            using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+            return document.RootElement.ValueKind == JsonValueKind.Object
+                   && document.RootElement.TryGetProperty("errors", out var errors)
+                   && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() == 1
+                   && errors[0].ValueKind == JsonValueKind.String
+                   && errors[0].GetString() == "PRODUCT_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT"
+                   && document.RootElement.TryGetProperty("data", out var data)
+                   && data.ValueKind == JsonValueKind.Object
+                   && data.TryGetProperty("pendingWithdrawalCommandId", out var pending)
+                   && pending.ValueKind == JsonValueKind.String
+                   && Guid.TryParse(pending.GetString(), out var command) && command != Guid.Empty
+                ? command
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
         }
     }
 

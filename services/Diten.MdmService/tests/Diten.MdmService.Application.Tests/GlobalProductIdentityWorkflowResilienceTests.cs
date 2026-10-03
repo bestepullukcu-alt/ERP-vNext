@@ -1638,6 +1638,100 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.DecisionObserved, operation.Checkpoint);
     }
 
+    // ── GSKU FIX1, shared items 13 (A3) and 14 (A1) — Global Product's behaviour changes on purpose ─────────────────
+
+    // A3: a claim that the store never answers does not hang the request; a lease it may have written goes back.
+    [Fact]
+    public async Task Submit_WhoseClaimTheStoreNeverAnswers_IsAnsweredWithinTheBound_AndGivesTheLeaseBack()
+    {
+        var harness = Harness.Create();
+        harness.Repository.Current = harness.CreateOperation(GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay);
+        harness.Repository.ClaimsNeverAnswer = true;
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+
+        var result = await harness.Processor.StartInteractiveAsync(TenantId, ProductId, 0, OperationId, MakerId,
+            "maker-token", TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(30));
+
+        Assert.True(watch.Elapsed < TimeSpan.FromSeconds(10));
+        Assert.Equal((503, ProductIdentityWorkflowClaims.StoreUnavailable), (result.StatusCode, result.ErrorCode));
+        Assert.Equal(1, harness.Repository.ReleaseIfOwnedCalls);
+        Assert.Null(harness.Repository.Current!.LeaseOwner);
+        Assert.Null(harness.Repository.Current.LeaseUntilUtcTicksV1);
+    }
+
+    [Fact]
+    public async Task Withdraw_WhoseClaimTheStoreNeverAnswers_IsAnsweredWithinTheBound_AndGivesTheLeaseBack()
+    {
+        var harness = Harness.CreatePending();
+        harness.Repository.ClaimsNeverAnswer = true;
+
+        var result = await harness.Processor.WithdrawInteractiveAsync(TenantId, ProductId, 1, Guid.NewGuid(), MakerId,
+            "REQUESTER_WITHDRAWAL", null, "maker-token", TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(30));
+
+        Assert.Equal((503, ProductIdentityWorkflowClaims.StoreUnavailable), (result.StatusCode, result.ErrorCode));
+        Assert.Equal(1, harness.Repository.ReleaseIfOwnedCalls);
+        Assert.Null(harness.Repository.Current!.LeaseOwner);
+        Assert.Equal(GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision, harness.Repository.Current.Checkpoint);
+    }
+
+    // A1 (a): the requester who repeats under another command is told which command their withdrawal stands under.
+    [Fact]
+    public async Task Withdraw_UnderAnotherCommand_IsToldTheCommandItsWithdrawalStandsUnder()
+    {
+        var harness = PendingWithdrawal(GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown);
+        var stored = harness.Repository.Current!.WithdrawalCommandId;
+
+        var result = await Withdraw(harness, Guid.NewGuid());
+
+        Assert.Equal((409, "PRODUCT_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT"), (result.StatusCode, result.ErrorCode));
+        Assert.Equal(stored, result.PendingWithdrawalCommandId);
+    }
+
+    // A1 (b): a withdrawal that landed and whose requester never comes back is not parked for ever.
+    [Theory]
+    [InlineData(71, GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown, LogLevel.Warning)]
+    [InlineData(72, GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired, LogLevel.Error)]
+    public async Task Worker_AWithdrawalThatLandedAndWaitsForItsRequester_IsHandedToReconciliationAfterTheLimit(
+        int hoursWaiting, GlobalProductIdentityWorkflowCheckpoint ends, LogLevel level)
+    {
+        var harness = PendingWithdrawal(GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown);
+        var since = DateTimeOffset.UtcNow.AddHours(-hoursWaiting).AddSeconds(-1).UtcTicks;
+        harness.Repository.Current!.WithdrawalAwaitingRequesterSinceUtcTicksV1 = since;
+        harness.Client.Preflight = (_, _, _) => Failed<ProductIdentityWorkflowCancellationPreflight>(
+            Outcome.NotFound, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND");
+        harness.Client.Terminal = (_, _, _) => Failed<ProductIdentityWorkflowTerminalEvidence>(
+            Outcome.Conflict, "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT");
+
+        await Recover(harness);
+
+        var operation = harness.Repository.Current;
+        Assert.Equal(ends, operation.Checkpoint);
+        Assert.Equal(level, harness.Log.Entries[0].Level);
+        if (ends == GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+            Assert.Contains("nobody came back", harness.Log.Entries[0].Message, StringComparison.Ordinal);
+        else
+            Assert.Single(harness.Log.Entries);
+        if (ends == GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired)
+            Assert.Equal(GlobalProductIdentityWorkflowProcessor.WithdrawalRequesterNeverReturned, operation.LastFailureCode);
+        else
+            Assert.Equal(since, operation.WithdrawalAwaitingRequesterSinceUtcTicksV1); // the first moment is kept
+    }
+
+    [Fact]
+    public async Task Worker_TheFirstTimeAWithdrawalIsFoundWaitingForItsRequester_RecordsWhen()
+    {
+        var harness = PendingWithdrawal(GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown);
+        harness.Client.Preflight = (_, _, _) => Failed<ProductIdentityWorkflowCancellationPreflight>(
+            Outcome.NotFound, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND");
+        harness.Client.Terminal = (_, _, _) => Failed<ProductIdentityWorkflowTerminalEvidence>(
+            Outcome.Conflict, "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT");
+        var before = DateTimeOffset.UtcNow.UtcTicks;
+
+        await Recover(harness);
+
+        Assert.True(harness.Repository.Current!.WithdrawalAwaitingRequesterSinceUtcTicksV1 >= before);
+    }
+
     private static Harness PendingWithdrawal(GlobalProductIdentityWorkflowCheckpoint checkpoint)
     {
         var harness = Harness.CreatePending();

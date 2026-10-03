@@ -387,7 +387,7 @@ public sealed class GskusController : Controller
                     });
                 }
 
-                return SafeFailure(response.StatusCode);
+                return await KnownOrStatusFailureAsync(response, cancellationToken);
             }
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
@@ -444,21 +444,45 @@ public sealed class GskusController : Controller
         string action,
         CancellationToken cancellationToken)
     {
-        if (!TryCreateGatewayRequest(method, targetUrl, payload, out var request))
+        // Buffered once: a withdrawal may be sent a second time (below), and a sent request disposes its content.
+        byte[] body;
+        MediaTypeHeaderValue? contentType;
+        using (payload)
         {
-            payload.Dispose();
-            return UnauthorizedResult();
+            body = await payload.ReadAsByteArrayAsync(cancellationToken);
+            contentType = payload.Headers.ContentType;
         }
-        request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"));
 
         try
         {
+            for (var attempt = 0; ; attempt++)
+            {
+            var content = new ByteArrayContent(body);
+            content.Headers.ContentType = contentType;
+            if (!TryCreateGatewayRequest(method, targetUrl, content, out var request))
+            {
+                content.Dispose();
+                return UnauthorizedResult();
+            }
+            request.Headers.TryAddWithoutValidation("Idempotency-Key", operationId.ToString("D"));
+
             using (request)
             using (var response = await _httpClient.SendAsync(request, cancellationToken))
             {
                 var responseStatus = (int)response.StatusCode;
+                // Shared item 14 (A1), as on the Global Product screen: a withdrawal refused because an earlier one
+                // stands under another command is told that command — repeating THAT command finishes it. Once, and
+                // only for a withdrawal.
+                if (responseStatus == StatusCodes.Status409Conflict && attempt == 0
+                    && action == "withdraw-identity-approval"
+                    && await PendingWithdrawalCommandAsync(response, cancellationToken) is { } pending
+                    && pending != operationId)
+                {
+                    operationId = pending;
+                    continue;
+                }
                 if (!response.IsSuccessStatusCode)
-                    return SafeFailure(response.StatusCode);
+                    return await KnownOrStatusFailureAsync(response, cancellationToken);
 
                 var mediaType = response.Content.Headers.ContentType?.MediaType;
                 if (!allowedSuccessStatusCodes.Contains(responseStatus)
@@ -467,11 +491,11 @@ public sealed class GskusController : Controller
                     return SafeFailure(HttpStatusCode.BadGateway);
                 }
 
-                var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
                 LifecycleGatewayEnvelope? envelope;
                 try
                 {
-                    envelope = JsonSerializer.Deserialize<LifecycleGatewayEnvelope>(body, _jsonOptions);
+                    envelope = JsonSerializer.Deserialize<LifecycleGatewayEnvelope>(responseBody, _jsonOptions);
                 }
                 catch (JsonException exception)
                 {
@@ -486,8 +510,9 @@ public sealed class GskusController : Controller
                 {
                     StatusCode = responseStatus,
                     ContentType = "application/json",
-                    Content = body
+                    Content = responseBody
                 };
+            }
             }
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
@@ -499,6 +524,33 @@ public sealed class GskusController : Controller
         {
             _logger.LogError(exception, "GSKU lifecycle proxy failed for {Action}.", action);
             return SafeFailure(HttpStatusCode.ServiceUnavailable);
+        }
+    }
+
+    private static async Task<Guid?> PendingWithdrawalCommandAsync(
+        HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        if (!IsJsonMediaType(response.Content.Headers.ContentType?.MediaType))
+            return null;
+        try
+        {
+            using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+            return document.RootElement.ValueKind == JsonValueKind.Object
+                   && document.RootElement.TryGetProperty("errors", out var errors)
+                   && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() == 1
+                   && errors[0].ValueKind == JsonValueKind.String
+                   && errors[0].GetString() == "FIRST_GSKU_IDENTITY_WITHDRAWAL_OPERATION_CONFLICT"
+                   && document.RootElement.TryGetProperty("data", out var data)
+                   && data.ValueKind == JsonValueKind.Object
+                   && data.TryGetProperty("pendingWithdrawalCommandId", out var pending)
+                   && pending.ValueKind == JsonValueKind.String
+                   && Guid.TryParse(pending.GetString(), out var command) && command != Guid.Empty
+                ? command
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
         }
     }
 
@@ -669,6 +721,50 @@ public sealed class GskusController : Controller
             _logger.LogWarning(exception, "GSKU gateway returned an invalid response envelope.");
             return null;
         }
+    }
+
+    // GSKU FIX1: the reasons a maker can act on are said in words (7 languages); anything else stays a status message.
+    // Only the codes listed here are ever turned into text — no other content of MDM's answer reaches the screen.
+    private static readonly IReadOnlyDictionary<string, string> KnownFailureKeys = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["GSKU_PARENT_NOT_APPROVED"] = "ErrorParentNotApproved",
+        ["GSKU_IDENTITY_SUBMIT_IN_FLIGHT"] = "ErrorSubmitInFlight",
+        ["GSKU_DEPENDENT_IDENTITIES_EXIST"] = "ErrorDependentIdentitiesExist",
+        ["PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING"] = "ErrorApprovalChanging",
+        ["PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY"] = "ErrorApprovalTemplateMissing",
+        ["FIRST_GSKU_IDENTITY_PARENT_NOT_APPROVED"] = "IdentityNotAppliedParent",
+        ["REFERENCE_DATA_CONTRACT_CONFLICT"] = "IdentityNotAppliedReference",
+        ["FIRST_GSKU_IDENTITY_DECISION_NOT_APPLICABLE"] = "IdentityNotAppliedGeneric"
+    };
+
+    private async Task<IActionResult> KnownOrStatusFailureAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        if ((int)response.StatusCode is StatusCodes.Status409Conflict
+            && IsJsonMediaType(response.Content.Headers.ContentType?.MediaType))
+        {
+            try
+            {
+                using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+                if (document.RootElement.ValueKind == JsonValueKind.Object
+                    && (document.RootElement.TryGetProperty("errors", out var errors)
+                        || document.RootElement.TryGetProperty("Errors", out errors))
+                    && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() == 1
+                    && errors[0].ValueKind == JsonValueKind.String
+                    && KnownFailureKeys.TryGetValue(errors[0].GetString()!, out var key))
+                {
+                    return StatusCode(StatusCodes.Status409Conflict, new
+                    {
+                        success = false,
+                        errors = new[] { _localizer[key].Value }
+                    });
+                }
+            }
+            catch (JsonException)
+            {
+                // Not a readable answer: the status message below.
+            }
+        }
+        return SafeFailure(response.StatusCode);
     }
 
     private IActionResult SafeFailure(HttpStatusCode statusCode)

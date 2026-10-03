@@ -14,7 +14,9 @@ public sealed record FirstGskuIdentityWorkflowClaim(
 public sealed record FirstGskuIdentityWorkflowClaimRequest(
     Guid OperationId, string OperationFingerprint,
     IReadOnlyCollection<FirstGskuIdentityWorkflowCheckpoint> EligibleCheckpoints,
-    string LeaseOwner, long NowUtcTicks, long LeaseUntilUtcTicks);
+    string LeaseOwner, long NowUtcTicks, long LeaseUntilUtcTicks,
+    // A requester who is present is not paced by the worker's retry schedule (never by a held lease).
+    bool IgnoreRetrySchedule = false);
 
 public sealed record FirstGskuIdentityWorkflowCheckpointMutation(
     FirstGskuIdentityWorkflowCheckpoint NextCheckpoint,
@@ -63,7 +65,21 @@ public sealed record FirstGskuIdentityWorkflowCheckpointMutation(
     string? WithdrawalTaskStatus = null,
     string? WithdrawalInstanceStatus = null,
     string? WithdrawalObjectRef = null,
-    bool ReleaseLease = false);
+    bool ReleaseLease = false,
+    // null leaves the two service-fault fields as they are; a value writes BOTH, exactly as given.
+    int? ServiceFaultCount = null,
+    long? ServiceFaultSinceUtcTicksV1 = null,
+    // Forgets a withdrawal that did not happen (every Withdrawal* field), so the requester can ask again.
+    bool ClearWithdrawal = false,
+    string? WithdrawalRefusalCode = null,
+    long? WithdrawalAwaitingRequesterSinceUtcTicksV1 = null);
+
+public sealed record FirstGskuIdentityDecisionNotApplicableWriteResult(
+    bool Succeeded,
+    bool IsReplay,
+    ProductDefinitionRevision? Revision,
+    Gsku? Gsku,
+    string? ErrorCode);
 
 public sealed record FirstGskuIdentityWithdrawalWriteResult(
     bool Succeeded,
@@ -81,3 +97,9 @@ public sealed record FirstGskuIdentityWorkflowTenantPartitionPage(
 
 public sealed record FirstGskuIdentityLifecycleMutationResult<T>(
     bool Succeeded, bool IsReplay, T? Aggregate, string? ErrorCode) where T : EntityBase;
+
+public static class FirstGskuIdentityDecisionNotApplicable
+{
+    // The one key both audit intents and the replay check use for an operation's "could not apply" write.
+    public static string Key(Guid operationId) => $"not-applicable:{operationId:D}";
+}

@@ -155,7 +155,9 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
                 GlobalProductsRequestRetirement,
                 WorkflowInstancesStart,
                 GskusRead,
-                GskusRetire,
+                // WP-MDM-GSKU-ACCEPT-01 FIX1 (B5): no longer granted — direct GSKU retirement is a system action
+                // (DefaultRolePermissionTemplate.NonHumanPermissionKeys). A human retires through a request, which
+                // is approved. The module sync removes this role's existing grant (it is no longer desired).
                 GskusRequestRetirement,
                 LskusRead,
                 LskusRequestRetirement,

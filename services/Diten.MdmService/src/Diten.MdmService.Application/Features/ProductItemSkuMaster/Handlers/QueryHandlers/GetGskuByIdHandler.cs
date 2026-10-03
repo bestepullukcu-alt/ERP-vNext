@@ -19,6 +19,7 @@ public sealed class GetGskuByIdHandler
     private readonly IGlobalProductRepository _globalProducts;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
     private readonly IProductIdentityLifecycleActorContext _actorContext;
+    private readonly IFirstGskuIdentityWorkflowOperationRepository? _identityOperations;
 
     public GetGskuByIdHandler(
         IGskuRepository gskus,
@@ -28,8 +29,10 @@ public sealed class GetGskuByIdHandler
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
         ITenantContext tenantContext,
-        IProductIdentityLifecycleActorContext? actorContext = null)
+        IProductIdentityLifecycleActorContext? actorContext = null,
+        IFirstGskuIdentityWorkflowOperationRepository? identityOperations = null)
     {
+        _identityOperations = identityOperations;
         _gskus = gskus;
         _revisions = revisions;
         _globalProducts = globalProducts;
@@ -86,11 +89,17 @@ public sealed class GetGskuByIdHandler
             gsku.Version,
             gsku.CreatedAt,
             gsku.UpdatedAt,
-            BuildPairAvailableActions(gsku, revision, _actorContext)));
+            BuildPairAvailableActions(gsku, revision, _actorContext,
+                _identityOperations is not null
+                && await _identityOperations.HasUnfinishedOperationAsync(gsku.Id, cancellationToken)),
+            gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft && _identityOperations is not null
+                ? await _identityOperations.LatestNotApplicableReasonAsync(gsku.Id, cancellationToken)
+                : null));
     }
 
     internal static IReadOnlyList<string> BuildPairAvailableActions(
-        Gsku gsku, ProductDefinitionRevision revision, IProductIdentityLifecycleActorContext actorContext)
+        Gsku gsku, ProductDefinitionRevision revision, IProductIdentityLifecycleActorContext actorContext,
+        bool submitInFlight = false)
     {
         if (gsku.ProductDefinitionRevisionId != revision.Id || gsku.TenantId != revision.TenantId
             || revision.IsDeleted || gsku.LifecycleStatus != revision.LifecycleStatus
@@ -98,18 +107,20 @@ public sealed class GetGskuByIdHandler
             || !string.Equals(System.Text.Json.JsonSerializer.Serialize(gsku.IdentityWorkflowBinding),
                 System.Text.Json.JsonSerializer.Serialize(revision.IdentityWorkflowBinding), StringComparison.Ordinal))
             return ["DETAILS"];
-        return BuildAvailableActions(gsku, actorContext);
+        return BuildAvailableActions(gsku, actorContext, submitInFlight);
     }
 
     internal static IReadOnlyList<string> BuildAvailableActions(
         Gsku gsku,
-        IProductIdentityLifecycleActorContext actorContext)
+        IProductIdentityLifecycleActorContext actorContext,
+        bool submitInFlight = false)
     {
         var actions = new List<string> { "DETAILS" };
         if (gsku.IsDeleted || gsku.ActiveLifecycleOperation is not null || gsku.RetirementOperationId.HasValue
             || !actorContext.TryResolveCanonicalHumanSubject(out _))
             return actions;
-        if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft)
+        // While a submit is in flight the pair is still a draft, but neither editable nor submittable (B7).
+        if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft && !submitInFlight)
         {
             if (actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Update)) actions.Add("EDIT");
             if (actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Submit)) actions.Add("SUBMIT");
