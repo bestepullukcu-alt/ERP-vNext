@@ -55,6 +55,9 @@ public static class WorkflowReasonCodes
     public const string WorkflowTransitionIdempotent = "WORKFLOW_TRANSITION_IDEMPOTENT";
     public const string WorkflowDelegatePrincipalRequired = "WORKFLOW_DELEGATE_PRINCIPAL_REQUIRED";
     public const string WorkflowDelegateSameActorInvalid = "WORKFLOW_DELEGATE_SAME_ACTOR_INVALID";
+    // D1-FIX1 — a delegation names a USER: a user id (optionally "user:"-prefixed). Anything else — free text, a
+    // position, an empty id — would leave the task with a principal no token ever matches.
+    public const string WorkflowDelegateTargetInvalid = "WORKFLOW_DELEGATE_TARGET_INVALID";
     public const string WorkflowNoInstance = "WORKFLOW_NO_INSTANCE";
     public const string WorkflowPendingApproval = "WORKFLOW_PENDING_APPROVAL";
     public const string WorkflowWaitingEvidence = "WORKFLOW_WAITING_EVIDENCE";

@@ -8,9 +8,10 @@ using MediatR;
 namespace Diten.Platform.Application.Features.TimeEntry.Handlers.QueryHandlers;
 
 /// <summary>
-/// MOD-0280-FU01 D11 — the weeks waiting for THIS approver: submitted, and assigned to them by MOD-0023 (F3 — one
-/// assignee, not the whole candidate list). A draft is never listed (it is not Submitted), and neither is a week
-/// assigned to somebody else. Decisions already made in MOD-0023 are
+/// MOD-0280-FU01 D11 — the weeks waiting for THIS approver: submitted, and whose open MOD-0023 approval task this
+/// person MAY DECIDE (D1-FIX1 — the gate's own rule; before, only the one assignee, so a second holder of the
+/// manager's seat could decide a week they could not open). A draft is never listed (it is not Submitted), neither is
+/// the reader's own week, nor a week somebody else decides. Decisions already made in MOD-0023 are
 /// taken on board first, so a week the approver just decided in the Task Center drops off the list (D7).
 ///
 /// <para><b>BL-484 — by id.</b> <c>weekIds</c> narrows the SAME queue to the listed weeks (bulk approval reads back exactly
@@ -25,14 +26,17 @@ public sealed class GetApprovalListHandler : IRequestHandler<GetApprovalListQuer
     private readonly IUserDisplayNameResolver _displayNames;
     private readonly IApprovalWeekFacts _facts;
     private readonly ICurrentUserContext _currentUser;
+    private readonly ITimesheetApprovalService _approvals;
 
     public GetApprovalListHandler(
         ITimesheetWeekRepository weeks,
         ITimesheetDecisionPuller puller,
         IUserDisplayNameResolver displayNames,
         IApprovalWeekFacts facts,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITimesheetApprovalService approvals)
     {
+        _approvals = approvals;
         _weeks = weeks;
         _puller = puller;
         _displayNames = displayNames;
@@ -138,11 +142,19 @@ public sealed class GetApprovalListHandler : IRequestHandler<GetApprovalListQuer
             new ApprovalWeekListDto(items, weeks.Count, page, pageSize, filtered.Count), correlationId: request.CorrelationId);
     }
 
-    private Task<IReadOnlyList<Domain.Entities.TimeEntry.TimesheetWeek>> ReadQueueAsync(
+    private async Task<IReadOnlyList<Domain.Entities.TimeEntry.TimesheetWeek>> ReadQueueAsync(
         Guid approverId, IReadOnlyList<Guid>? weekIds, CancellationToken ct)
-        => weekIds is null
-            ? _weeks.ListSubmittedForApproverAsync(approverId, ct)
-            : _weeks.ListSubmittedForApproverByIdsAsync(approverId, weekIds, ct);
+    {
+        // The tenant's submitted weeks (this module's own store), then MOD-0023 is asked which of their approval tasks
+        // this reader may decide. Nothing stored on the week names the approver for this purpose.
+        var submitted = (await _weeks.ListSubmittedInApprovalAsync(weekIds, ct))
+            .Where(week => week.UserId != approverId)
+            .ToList();
+        var decidable = await _approvals.DecidableInstanceIdsAsync(
+            approverId, submitted.Select(week => week.WorkflowInstanceId!.Value).Distinct().ToList(),
+            includeDecidedByUser: true, ct);
+        return submitted.Where(week => decidable.Contains(week.WorkflowInstanceId!.Value)).ToList();
+    }
 
     /// <summary>
     /// BL-484 — <c>weekIds</c>, given once as a comma-separated list or repeated (each value may itself be a list): every

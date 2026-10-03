@@ -536,9 +536,13 @@ public sealed class ApprovalStepContextTests
         var finance = Position(Tenant, "Finans Müdürü");
         var version = Version(Step("step-1", "Finans Onayı", $"position:{finance.Id}"));
         var instance = Instance(version.Id);
+        // D1-FIX1 — with a readable snapshot: a task whose snapshot cannot be read is listed with its actions closed.
+        var snapshot = Snapshot(instance, "runtime_candidates");
+        var task = Approval(instance);
+        task.AssignmentSnapshotId = snapshot.Id;
 
         var root = Json(Assert.Single(
-            await Provider(version, [finance], Approval(instance)).With(instance).GetWorkItemsAsync(Actor())));
+            await ProviderWith(version, [finance], new SnapshotStore(snapshot), task).GetWorkItemsAsync(Actor())));
 
         var step = root.GetProperty("stepName");
         Assert.Equal("display", step.GetProperty("kind").GetString());

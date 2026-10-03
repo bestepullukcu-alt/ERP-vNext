@@ -45,7 +45,8 @@ public sealed class RunWorkflowEscalationsHandler
         _assignmentSnapshotRepository = assignmentSnapshotRepository;
         _positionRepository = positionRepository;
         // WP-CL-BE-3 — a timeout is TERMINAL: it commits with the completion event in one transaction.
-        _terminal = new WorkflowTerminalTransitionWriter(tasks, instances, logs, transactions, events, templates);
+        _terminal = new WorkflowTerminalTransitionWriter(tasks, instances, logs, transactions, events, templates,
+            assignmentSnapshotRepository);
     }
 
     public async Task<Response<RunWorkflowEscalationsResponse>> Handle(
@@ -162,7 +163,7 @@ public sealed class RunWorkflowEscalationsHandler
         }
 
         var previousInstanceStatus = instance.Status;
-        Guid? newSnapshotId = null;
+        RuntimeAssignmentSnapshot? escalationSnapshot = null;
         string? newAssignee = null;
 
         if (timeoutDue)
@@ -208,8 +209,9 @@ public sealed class RunWorkflowEscalationsHandler
                         ? "single_escalation_candidate"
                         : "lexicographic_first_escalation_principal"
                 };
-                var createdSnapshot = await _assignmentSnapshotRepository.CreateAsync(snapshot, ct);
-                newSnapshotId = createdSnapshot.Id;
+                // D1-FIX1 — written with the task, the instance and the log in ONE transaction (below): an
+                // escalation that lost the version check no longer leaves an orphan snapshot behind.
+                escalationSnapshot = snapshot;
             }
 
             task.Status = ApprovalTaskStatus.Escalated;
@@ -220,9 +222,9 @@ public sealed class RunWorkflowEscalationsHandler
             {
                 task.AssigneeRef = newAssignee;
             }
-            if (newSnapshotId.HasValue)
+            if (escalationSnapshot is not null)
             {
-                task.AssignmentSnapshotId = newSnapshotId.Value;
+                task.AssignmentSnapshotId = escalationSnapshot.Id;
             }
             instance.Status = WorkflowInstanceStatus.Escalated;
         }
@@ -272,19 +274,8 @@ public sealed class RunWorkflowEscalationsHandler
                 terminal.Log!.Id);
         }
 
-        var taskVersion = task.Version;
-        var instanceVersion = instance.Version;
-        if (!await _tasks.UpdateEscalationAsync(task, taskVersion, ct) ||
-            !await _instances.UpdateEscalationOrTimeoutAsync(instance, instanceVersion, ct))
-        {
-            return Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowTransitionConflict);
-        }
-
-        var sequenceNo = await _logs.GetLatestSequenceNoAsync(instance.Id, ct) + 1;
-        var reasonCode = timeoutDue
-            ? WorkflowReasonCodes.WorkflowTimeoutProcessed
-            : WorkflowReasonCodes.WorkflowEscalationProcessed;
-        var log = await _logs.AppendAsync(new WorkflowTransitionLog
+        var reasonCode = WorkflowReasonCodes.WorkflowEscalationProcessed;
+        var escalationLog = new WorkflowTransitionLog
         {
             TenantId = task.TenantId,
             WorkflowInstanceId = instance.Id,
@@ -299,8 +290,19 @@ public sealed class RunWorkflowEscalationsHandler
             ReasonCode = reasonCode,
             IdempotencyKey = idempotencyKey,
             CorrelationId = correlationId,
-            SequenceNo = sequenceNo
-        }, ct);
+            SequenceNo = await _logs.GetLatestSequenceNoAsync(instance.Id, ct) + 1
+        };
+        var escalated = await _terminal.CommitTransitionAsync(task, task.Version, instance, instance.Version,
+            escalationLog, escalationSnapshot, escalationWrite: true, ct);
+        if (escalated.Outcome != WorkflowTerminalWriteOutcome.Committed)
+        {
+            return Skipped(task, action, previousTaskStatus, instance,
+                escalated.Outcome == WorkflowTerminalWriteOutcome.TransactionUnavailable
+                    ? WorkflowReasonCodes.WorkflowTransactionUnavailable
+                    : WorkflowReasonCodes.WorkflowTransitionConflict);
+        }
+
+        var log = escalated.Log!;
 
         return new WorkflowEscalationResultDto(
             instance.Id,

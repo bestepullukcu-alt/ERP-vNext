@@ -364,6 +364,18 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
         _dbContext = dbContext;
     }
 
+    // D1 — the next step's task joins the transaction that closes the previous step.
+    public async Task<ApprovalTask> CreateAsync(
+        IPlatformTransactionSession session,
+        ApprovalTask task,
+        CancellationToken ct = default)
+    {
+        var handle = PlatformMongoTransactionSession.Require(session, _dbContext);
+        typeof(ApprovalTask).GetProperty(nameof(ApprovalTask.TenantId))!.SetValue(task, TenantContext.TenantId);
+        await Collection.InsertOneAsync(handle, task, cancellationToken: ct);
+        return task;
+    }
+
     // WP-CL-BE-3 — terminal task write inside the Platform transaction.
     public async Task<bool> UpdateAsync(
         IPlatformTransactionSession session,
@@ -487,6 +499,20 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
         return await Collection.Find(filter).SortByDescending(x => x.CreatedAt).ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<ApprovalTask>> ListByInstanceIdsAsync(
+        IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)
+    {
+        if (workflowInstanceIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<ApprovalTask>.Filter.And(
+            ExecutionFilter,
+            Builders<ApprovalTask>.Filter.In(x => x.WorkflowInstanceId, workflowInstanceIds));
+        return await Collection.Find(filter).SortByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id).ToListAsync(ct);
+    }
+
     public async Task<IReadOnlyList<ApprovalTask>> GetAllForTenantAsync(CancellationToken ct = default)
     {
         return await Collection.Find(ExecutionFilter).SortByDescending(x => x.CreatedAt).ToListAsync(ct);
@@ -534,9 +560,39 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
 public sealed class RuntimeAssignmentSnapshotRepository
     : TenantRepository<RuntimeAssignmentSnapshot>, IRuntimeAssignmentSnapshotRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public RuntimeAssignmentSnapshotRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.WorkflowRuntimeAssignmentSnapshots)
     {
+        _dbContext = dbContext;
+    }
+
+    // D1 — the next step's assignment snapshot joins the transaction that closes the previous step.
+    public async Task<RuntimeAssignmentSnapshot> CreateAsync(
+        IPlatformTransactionSession session,
+        RuntimeAssignmentSnapshot snapshot,
+        CancellationToken ct = default)
+    {
+        var handle = PlatformMongoTransactionSession.Require(session, _dbContext);
+        typeof(RuntimeAssignmentSnapshot).GetProperty(nameof(RuntimeAssignmentSnapshot.TenantId))!
+            .SetValue(snapshot, TenantContext.TenantId);
+        await Collection.InsertOneAsync(handle, snapshot, cancellationToken: ct);
+        return snapshot;
+    }
+
+    public async Task<IReadOnlyList<RuntimeAssignmentSnapshot>> ListByIdsAsync(
+        IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
+    {
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<RuntimeAssignmentSnapshot>.Filter.And(
+            ExecutionFilter,
+            Builders<RuntimeAssignmentSnapshot>.Filter.In(x => x.Id, ids));
+        return await Collection.Find(filter).ToListAsync(ct);
     }
 
     public async Task<IReadOnlyList<RuntimeAssignmentSnapshot>> ListByInstanceIdAsync(
