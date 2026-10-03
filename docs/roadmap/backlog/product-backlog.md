@@ -7734,6 +7734,19 @@ adı + parola yeniden girilir ve imzanın anlamı kayıtta görünür. Gelecek r
 
 ---
 
+### BL-520
+
+**Üst çubuktaki arama kutusu her dilde İngilizce yazıyor: "Search [CTRL + K]"**
+
+DURUM: AÇIK · SAHİP: CT (kabuk) · BULAN: CT canlı sayfa kontrolü (Kullanıcılar kabulü, 2026-10-03) · KAYIT: 2026-10-03
+
+Etiket `wwwroot/assets/js/main.js:213`'te sabit (`placeholder: 'Search [CTRL + K]'`); Türkçe arayüzde de İngilizce görünüyor. Aramanın kendisi
+yerelleştirilmiş çalışıyor (sonuçlar "YÖNETİM → Kullanıcılar, Kullanıcı Rolleri"). Düzeltme: etiket kabuğun dil sözlüğünden okunur (kiracı kabuğu
+7 dil, platform kabuğu en + tr); kısayol tuşu adı da dile göre (macOS'ta ⌘K). Ortak tarayıcı dosyası olduğu için canlı sayfa bakışı. Küçük; "?"
+sayfa yardımı (BL-495) ile aynı pakette yapılabilir. Gelecek regresyon riski: 🟢.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
