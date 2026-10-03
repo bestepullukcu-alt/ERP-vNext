@@ -1,5 +1,6 @@
 using Diten.MdmService.Api.Configuration;
 using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Contracts.Workflow;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
@@ -17,7 +18,8 @@ public sealed record ProductIdentityWorkflowRecoveryRunResult(
 public sealed class ProductIdentityWorkflowRecoveryRunner(
     IServiceScopeFactory scopeFactory,
     IOptions<ProductIdentityWorkflowWorkerOptions> options,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    ILogger<ProductIdentityWorkflowRecoveryRunner> logger)
 {
     public async Task<ProductIdentityWorkflowRecoveryRunResult> RunCycleAsync(
         CancellationToken cancellationToken = default)
@@ -30,12 +32,27 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
             return new(0, 0, 0, 0, 0);
         }
 
+        // A service that is not configured cannot do anything for any operation: the cycle ends before it looks at
+        // one, and says so once.
+        await using (var readinessScope = scopeFactory.CreateAsyncScope())
+        {
+            if (readinessScope.ServiceProvider.GetRequiredService<IProductIdentityWorkflowTransportReadiness>()
+                    .FindConfigurationFault() is { } configurationFault)
+            {
+                logger.LogError(
+                    "Product identity workflow recovery cycle skipped: the transport is not configured ({ResultCode}). No operation was touched.",
+                    configurationFault);
+                return new(0, 0, 0, 0, 0);
+            }
+        }
+
         var tenantCount = 0;
         var operationCount = 0;
         var completedCount = 0;
         var deferredCount = 0;
         var failedCount = 0;
         Guid? tenantCursor = null;
+        var stopCycle = false;
         do
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -50,8 +67,14 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
 
             foreach (var tenantId in tenantPage.TenantIds)
             {
+                if (stopCycle)
+                {
+                    break;
+                }
+
                 tenantCount++;
                 GlobalProductIdentityWorkflowRecoveryCursor? operationCursor = null;
+                var skipTenant = false;
                 do
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -91,6 +114,29 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
                             {
                                 completedCount++;
                             }
+                            else if (result.FaultScope != ProductIdentityWorkflowFaultScope.None)
+                            {
+                                // The fault is not this operation's. A refused credential or token is the same for
+                                // every tenant, so nothing else is tried this cycle; a missing grant is one tenant's,
+                                // so only the rest of that tenant is left alone.
+                                deferredCount++;
+                                if (result.FaultScope == ProductIdentityWorkflowFaultScope.AllTenants)
+                                {
+                                    stopCycle = true;
+                                    logger.LogError(
+                                        "Product identity workflow recovery cycle stopped: the service identity was refused ({ResultCode}) at operation {OperationId} of tenant {TenantId}. The remaining operations of every tenant were left untouched.",
+                                        result.ErrorCode, operation.OperationId, tenantId);
+                                }
+                                else
+                                {
+                                    skipTenant = true;
+                                    logger.LogWarning(
+                                        "Product identity workflow recovery skipped the rest of tenant {TenantId}: the service identity may not act for it ({ResultCode}), first met at operation {OperationId}.",
+                                        tenantId, result.ErrorCode, operation.OperationId);
+                                }
+
+                                break;
+                            }
                             else if (result.Operation?.RecoveryDisposition is
                                      Domain.Enums.ProductIdentityWorkflowRecoveryDisposition.Retryable
                                      or Domain.Enums.ProductIdentityWorkflowRecoveryDisposition.AwaitingMakerReplay)
@@ -106,18 +152,23 @@ public sealed class ProductIdentityWorkflowRecoveryRunner(
                         {
                             throw;
                         }
-                        catch
+                        catch (Exception exception)
                         {
+                            // The type and the operation only: an exception message can carry whatever the failing
+                            // layer put into it.
                             failedCount++;
+                            logger.LogError(
+                                "Product identity workflow recovery of operation {OperationId} of tenant {TenantId} failed with {ExceptionType}.",
+                                operation.OperationId, tenantId, exception.GetType().FullName);
                         }
                     }
 
                     operationCursor = page.NextCursor;
-                } while (operationCursor is not null);
+                } while (operationCursor is not null && !skipTenant && !stopCycle);
             }
 
             tenantCursor = tenantPage.NextAfterTenantId;
-        } while (tenantCursor.HasValue);
+        } while (tenantCursor.HasValue && !stopCycle);
 
         return new(tenantCount, operationCount, completedCount, deferredCount, failedCount);
     }

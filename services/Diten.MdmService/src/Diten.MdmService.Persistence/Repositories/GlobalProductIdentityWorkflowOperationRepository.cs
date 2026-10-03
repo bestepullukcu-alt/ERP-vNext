@@ -152,10 +152,12 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
                          GlobalProductIdentityWorkflowOperation.CurrentTemporalStorageVersion)
                      & Builders<GlobalProductIdentityWorkflowOperation>.Filter.In(
                          item => item.Checkpoint, request.EligibleCheckpoints)
-                     & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Or(
-                         Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.NextAttemptAtUtcTicksV1, null),
-                         Builders<GlobalProductIdentityWorkflowOperation>.Filter.Lte(
-                             item => item.NextAttemptAtUtcTicksV1, request.NowUtcTicks))
+                     & (request.IgnoreRetrySchedule
+                         ? Builders<GlobalProductIdentityWorkflowOperation>.Filter.Empty
+                         : Builders<GlobalProductIdentityWorkflowOperation>.Filter.Or(
+                             Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.NextAttemptAtUtcTicksV1, null),
+                             Builders<GlobalProductIdentityWorkflowOperation>.Filter.Lte(
+                                 item => item.NextAttemptAtUtcTicksV1, request.NowUtcTicks)))
                      & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Or(
                          Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.LeaseOwner, null),
                          Builders<GlobalProductIdentityWorkflowOperation>.Filter.Lte(
@@ -202,7 +204,6 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         var terminal = new[]
         {
             GlobalProductIdentityWorkflowCheckpoint.Completed,
-            GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
             GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
             GlobalProductIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
             GlobalProductIdentityWorkflowCheckpoint.Superseded
@@ -212,6 +213,13 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
                          item => item.TemporalStorageVersion,
                          GlobalProductIdentityWorkflowOperation.CurrentTemporalStorageVersion)
                      & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Nin(item => item.Checkpoint, terminal)
+                     // AwaitingMakerReplay is the maker's to continue — EXCEPT a withdrawal an earlier version
+                     // parked there: its approval exists at the engine, so the worker must keep reading it.
+                     & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Or(
+                         Builders<GlobalProductIdentityWorkflowOperation>.Filter.Ne(
+                             item => item.Checkpoint, GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay),
+                         Builders<GlobalProductIdentityWorkflowOperation>.Filter.Ne(
+                             item => item.WithdrawalCommandId, null))
                      & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Or(
                          Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.NextAttemptAtUtcTicksV1, null),
                          Builders<GlobalProductIdentityWorkflowOperation>.Filter.Lte(
@@ -326,6 +334,34 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         if (mutation.WithdrawalTaskStatus is not null) update = update.Set(item => item.WithdrawalTaskStatus, mutation.WithdrawalTaskStatus);
         if (mutation.WithdrawalInstanceStatus is not null) update = update.Set(item => item.WithdrawalInstanceStatus, mutation.WithdrawalInstanceStatus);
         if (mutation.WithdrawalObjectRef is not null) update = update.Set(item => item.WithdrawalObjectRef, mutation.WithdrawalObjectRef);
+        if (mutation.WithdrawalRefusalCode is not null) update = update.Set(item => item.WithdrawalRefusalCode, mutation.WithdrawalRefusalCode);
+        if (mutation.ServiceFaultCount.HasValue)
+        {
+            update = update
+                .Set(item => item.ServiceFaultCount, mutation.ServiceFaultCount.Value)
+                .Set(item => item.ServiceFaultSinceUtcTicksV1, mutation.ServiceFaultSinceUtcTicksV1);
+        }
+        if (mutation.ClearWithdrawal)
+        {
+            update = update
+                .Set(item => item.WithdrawalCommandId, null)
+                .Set(item => item.WithdrawalFingerprint, null)
+                .Set(item => item.WithdrawalRequesterSubjectId, null)
+                .Set(item => item.WithdrawalExpectedProductVersion, null)
+                .Set(item => item.WithdrawalReasonCode, null)
+                .Set(item => item.WithdrawalComment, null)
+                .Set(item => item.WithdrawalExpectedWorkflowInstanceVersion, null)
+                .Set(item => item.WithdrawalExpectedApprovalTaskVersion, null)
+                .Set(item => item.WithdrawalTransitionLogId, null)
+                .Set(item => item.WithdrawalObservedAtUtcTicksV1, null)
+                .Set(item => item.WithdrawalTransitionSequence, null)
+                .Set(item => item.WithdrawalResultWorkflowInstanceVersion, null)
+                .Set(item => item.WithdrawalResultApprovalTaskVersion, null)
+                .Set(item => item.WithdrawalTaskStatus, null)
+                .Set(item => item.WithdrawalInstanceStatus, null)
+                .Set(item => item.WithdrawalObjectRef, null)
+                .Set(item => item.WithdrawalRefusalCode, null);
+        }
         if (mutation.ReleaseLease)
         {
             update = update.Set(item => item.LeaseOwner, null).Set(item => item.LeaseUntilUtcTicksV1, null);
@@ -380,6 +416,9 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
             (GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
                 GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
+            // A maker's resubmit whose outcome is unknown again goes back to the worker's lookup.
+            (GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
+                GlobalProductIdentityWorkflowCheckpoint.StartOutcomeUnknown) => true,
             (GlobalProductIdentityWorkflowCheckpoint.WorkflowStarted,
                 GlobalProductIdentityWorkflowCheckpoint.LocalPendingApplied
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,
@@ -416,7 +455,10 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
             (GlobalProductIdentityWorkflowCheckpoint.AwaitingMakerReplay,
                 GlobalProductIdentityWorkflowCheckpoint.WithdrawalRequested
                 or GlobalProductIdentityWorkflowCheckpoint.WithdrawalPreflightObserved
-                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown) => true,
+                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+                // A maker's repeated withdrawal ends where a first one does: cancelled, or already decided.
+                or GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved
+                or GlobalProductIdentityWorkflowCheckpoint.AwaitingDecision) => true,
             (GlobalProductIdentityWorkflowCheckpoint.WithdrawalObserved,
                 GlobalProductIdentityWorkflowCheckpoint.WithdrawalApplied
                 or GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired) => true,

@@ -587,8 +587,119 @@ the including-deleted finders), `IAuthAuditService.WriteOnceAsync`, `TenantResol
 `DevelopmentLocalSettings.cs` copies, and everything under `Features/ServiceIdentityTokens/Registry/`,
 `Api/Services/ServiceIdentityTokens/ServiceClientRegistryStartup.cs` and `tools/`.
 
-**Still open, recorded for the next packages:** a credential or transport fault quarantines a pending business
-operation on the worker and withdraw paths of MDM (only the interactive submit is guarded) — a fault of the service
-identity is not a fault of the record, and belongs in a retry, not in manual reconciliation; the seven sibling
-processors (GSKU, LSKU, correction, retirement) have no pre-flight at all; the audit write relies on the default write
-concern.
+**Closed by WP-GP-1B-A-RESILIENCE-01 (2026-10-02, with its fix round), Global Product identity processor only:**
+a credential, token, setting or transport fault no longer quarantines a pending operation on the submit, worker or
+withdraw path.
+
+- *Pre-flight* on all three paths before the first write; a required dependency of the processor. A repeat of an
+  operation at rest is answered from what is stored.
+- *Who continues.* Where the worker can carry on (the decision poll, the start lookup, reading an approval after an
+  unfinished withdrawal) the operation waits at its checkpoint with a doubling back-off. Where only the user's own
+  token can continue (a start, a cancellation) the user receives a fixed code (`ProductIdentityWorkflowMakerCodes`)
+  and is never told "queued".
+- *An operation whose approval exists at the engine never waits where the worker does not read.* A start that did
+  not happen may wait in `AwaitingMakerReplay` (nothing exists at the engine). A withdrawal that did not happen is
+  forgotten and the operation returns to `AwaitingDecision`; one whose outcome is unknown is resolved by the worker
+  reading the approval. Rows an earlier version parked in `AwaitingMakerReplay` WITH a withdrawal on them are read
+  by the worker too (the discovery of this processor includes exactly those).
+- *The settle window (fix round 2).* A cancellation without an answer may still land. Every write of a withdrawal
+  in flight — the request, the versions read, the unknown outcome, and the lease given back when a step is cut off —
+  keeps the worker away until `max(what the worker had scheduled, now + max(RetryDelaySeconds, 30 s))`. The floor
+  is fixed (Platform works on a cancellation inside a two-second budget; MDM's answer "unknown" comes after its own
+  client time-out on top) and is not a setting; its upper end is the retry delay's own limit, one hour. A
+  withdrawal therefore never brings the worker's next attempt forward, and a cycle between the requester's two
+  steps does not drop it. The window is for a cancellation that MAY HAVE LANDED only: a withdrawal refused before
+  it was processed, or one that found the approval closed, puts `NextAttemptAtUtcTicksV1` back to what the request
+  found (fix round 3).
+- *A refused repeat does not undo an earlier attempt (fix round 3).* A cancellation refused before it was processed
+  forgets the withdrawal only when it is known to be the first one — its versions were read in the same request.
+  Otherwise an earlier cancellation may have landed: the operation stays (or becomes) `WithdrawalOutcomeUnknown`
+  and the worker's read of the approval decides.
+- *"Conflict" on a cancellation (fix round 2).* Platform answers it both for an approval that was decided or closed
+  and for one that is still open and merely moved on. MDM asks the approval: still open → the withdrawal is
+  forgotten and asked again with fresh versions inside the same request — ONCE; a second conflict answers
+  409 `PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING` and leaves a clean `AwaitingDecision` (fix round 3); not open →
+  nothing to withdraw, the request stays on the operation and a repeat gets the same answer, read from the
+  withdrawal's own field `WithdrawalRefusalCode` (new, nullable, no migration: rows without it answer
+  `PRODUCT_IDENTITY_WORKFLOW_DECISION_PENDING`) because every decision poll rewrites `LastFailureCode`; the code is
+  bounded like every stored code; no answer → `WithdrawalOutcomeUnknown`. A withdrawal that was applied answers
+  success however many steps it took.
+- *Counting.* `ServiceFaultCount` counts the WORKER's consecutive failed attempts only; `ServiceFaultSinceUtcTicksV1`
+  is the first fault of the streak of consecutive faults. Both are cleared by the first real answer the chain gives
+  for the operation (a refusal that is the user's own is an answer; "nothing arrived" is one on the maker's path as
+  on the worker's; reading the versions before a cancellation is not — the cancellation's answer is). Faults
+  further apart than two ceilings are not one streak. A user's attempts never count. A user's SUBMIT never moves
+  `NextAttemptAtUtcTicksV1`; a user's WITHDRAWAL moves it only later, never earlier, and only while a cancellation
+  may have landed (the settle window above). The duration rule (Error once the streak spans the ceiling)
+  measures first fault to latest fault of one streak. Ceiling, error threshold, lease and retry delay come from
+  `ProductIdentityWorkflowWorker` and are validated when the host starts.
+- *A success that breaks the contract* (`PRODUCT_WORKFLOW_RESPONSE_INVALID`) waits and is logged as an error on
+  every attempt; the strict parsing is unchanged.
+- *The lease* is given back when a step is refused, when the caller goes away and when the store fails mid-step. An
+  interactive claim ignores the worker's retry schedule and never a held lease. The claim itself is not cancellable
+  (fix round 3): a claim cut off by the caller could be written with nobody left to release it.
+- *The cycle breaker.* A refused credential stops the recovery cycle for every tenant; an Auth 403 for one tenant
+  skips the rest of that tenant only.
+- *Codes added to tell cases apart* (no request mapping, envelope rule or trust check changed):
+  `PRODUCT_WORKFLOW_RESPONSE_UNREADABLE`, `PRODUCT_WORKFLOW_IDENTITY_NOT_GRANTED`,
+  `PRODUCT_WORKFLOW_FAILURE_WITHOUT_REASON` (a failure envelope with no reason; it used to share
+  `…RESPONSE_INVALID`). The sibling processors store these texts in `LastFailureCode` too; none branches on them.
+- The classification is `ProductIdentityWorkflowFaultPolicy`. Operator view: the runbook, Development step 7.
+
+*Transitions of `GlobalProductIdentityWorkflowOperation` (enforced by the repository; a checkpoint may always stay
+where it is). The three marked **new** were added by this package.*
+
+| From | To |
+|---|---|
+| `Prepared` | `StartOutcomeUnknown` |
+| `StartOutcomeUnknown` | `WorkflowStarted` · `AwaitingMakerReplay` · `ManualReconciliationRequired` |
+| `AwaitingMakerReplay` | `WorkflowStarted` · `ManualReconciliationRequired` · **new** `StartOutcomeUnknown` (a resubmit whose outcome is unknown again goes back to the worker's lookup) · `WithdrawalRequested` · `WithdrawalPreflightObserved` · `WithdrawalOutcomeUnknown` · **new** `WithdrawalObserved` · **new** `AwaitingDecision` (a repeated withdrawal ends where a first one does: cancelled, or already decided) |
+| `WorkflowStarted` | `LocalPendingApplied` · `ManualReconciliationRequired` |
+| `LocalPendingApplied` | `AwaitingDecision` · `ManualReconciliationRequired` |
+| `AwaitingDecision` | `DecisionObserved` · `WithdrawalRequested` · `ManualReconciliationRequired` |
+| `DecisionObserved` | `DecisionApplied` · `ManualReconciliationRequired` |
+| `DecisionApplied` | `Completed` · `ManualReconciliationRequired` |
+| `WithdrawalRequested` | `WithdrawalPreflightObserved` · `AwaitingDecision` · `AwaitingMakerReplay` · `ManualReconciliationRequired` |
+| `WithdrawalPreflightObserved` | `WithdrawalOutcomeUnknown` · `WithdrawalObserved` · `AwaitingDecision` · `AwaitingMakerReplay` · `ManualReconciliationRequired` |
+| `WithdrawalOutcomeUnknown` | `WithdrawalObserved` · `AwaitingDecision` · `AwaitingMakerReplay` · `ManualReconciliationRequired` |
+| `WithdrawalObserved` | `WithdrawalApplied` · `ManualReconciliationRequired` |
+| `WithdrawalApplied` | `Completed` · `ManualReconciliationRequired` |
+
+Since the fix round no code moves a WITHDRAWAL into `AwaitingMakerReplay` any more; the transitions that lead there
+from the withdrawal checkpoints remain allowed for rows written earlier.
+
+**Still open, recorded for the next packages:**
+
+- The seven sibling processors (GSKU, LSKU, correction, retirement) still quarantine on a service fault, have no
+  pre-flight, and do not ask the shared policy.
+- A quarantined operation has no way out (BL-498 — a product approval that fell into quarantine has no exit): no code
+  writes `AbandonedBeforeWorkflowStart` / `Superseded`, and the draft stays blocked at that version.
+- Still quarantining although not a fault of the record: a valid failure envelope with 405 / 415 / 422; Platform 409
+  `WORKFLOW_START_RECOVERY_CONFLICT` (which also covers the transient "checkpoint fenced" race); Platform 400
+  `VALIDATION_FAILED` "Trusted workflow identity is incomplete".
+- Auth's 403 does not say whether the tenant holds no grant or the audience is forbidden for the client (Auth sends
+  no code); MDM treats both as one tenant's fault, which costs one failed call per tenant per cycle.
+- An unreadable answer, an unknown 403 and `PRODUCT_WORKFLOW_RESPONSE_INVALID` have no end state: the operation is
+  retried at the ceiling for ever (the last one with an Error line per attempt).
+- An exception the recovery cycle swallows has no back-off: the operation is tried again at the next cycle and
+  writes one Error line per cycle.
+- `WORKFLOW_TRUSTED_CONSUMER_TENANT_MISMATCH` quarantines on a start (deliberate: it is about the record).
+- `ServiceFaultCount` / `ServiceFaultSinceUtcTicksV1` stay on a quarantined operation as they were (accepted).
+- A start whose lookup answered "nothing arrived" and that Platform processed LATER: the operation is the maker's
+  (`AwaitingMakerReplay`, no withdrawal on it, so not read by the worker) while an approval exists at the engine;
+  the maker's resubmit replays the same idempotency key and finds it.
+- A cancellation that lands AFTER the settle window and after the worker read "still open": the withdrawal is
+  forgotten, the decision poll meets a cancelled approval (`WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT`) and the
+  operation is quarantined. Proposed, not built: keep a trace of the forgotten withdrawal and let the decision poll
+  treat that answer as "the withdrawal landed" (MDM only; needs one new transition and evidence that the answer can
+  mean nothing else).
+- The remote `reason_code` text is carried as it is into the log and into some answers (a withdrawal that conflicts).
+- A resubmit after a change of approver seat can answer `WORKFLOW_START_IDEMPOTENCY_CONFLICT`, which is about the
+  record and still quarantines (GP-1b-B).
+- An invalid Platform address is indistinguishable from an invalid request inside the client and is kept from the
+  record only by the pre-flight.
+- The client still refreshes the service token once when the rejected token was the user's.
+- A withdrawal that landed while its answer was lost needs its requester's repeat to fetch the evidence; until then
+  the product stays pending although the approval is cancelled at the engine.
+- The screen sentences for the fixed codes (GP-2).
+- The audit write relies on the default write concern.

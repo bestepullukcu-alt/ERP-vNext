@@ -93,8 +93,6 @@ builder.Services.Configure<AuditIntentDeliveryWorkerOptions>(
 builder.Services.AddHostedService<AuditIntentDeliveryWorker>();
 builder.Services.Configure<ProductIdentityWorkflowOptions>(
     builder.Configuration.GetSection(ProductIdentityWorkflowOptions.SectionName));
-builder.Services.Configure<ProductIdentityWorkflowWorkerOptions>(
-    builder.Configuration.GetSection(ProductIdentityWorkflowWorkerOptions.SectionName));
 builder.Services.Configure<GlobalProductCorrectionWorkflowOptions>(
     builder.Configuration.GetSection(GlobalProductCorrectionWorkflowOptions.SectionName));
 builder.Services.Configure<GlobalProductCorrectionWorkflowWorkerOptions>(
@@ -135,7 +133,7 @@ builder.Services.AddScoped(sp =>
     return new GlobalProductRetirementRequestWorkflowStartRequestFactory(configuration,
         sp.GetRequiredService<TimeProvider>());
 });
-builder.Services.AddScoped<GlobalProductIdentityWorkflowProcessor>();
+builder.Services.AddGlobalProductIdentityWorkflowProcessor(builder.Configuration);
 builder.Services.AddScoped<GlobalProductCorrectionWorkflowProcessor>();
 builder.Services.AddScoped<GlobalProductRetirementRequestWorkflowProcessor>();
 builder.Services.AddSingleton<ProductIdentityWorkflowRecoveryRunner>();
@@ -673,6 +671,42 @@ public static class GlobalProductWorkflowExecutionConfigurationRegistrations
                 TimeSpan.FromSeconds(options.RetryDelaySeconds));
         });
 
+        return services;
+    }
+
+    // The ONE place the Global Product identity processor is registered, together with the settings it reads, so a
+    // test can resolve it exactly as the host does. Its guards are constructor dependencies: a registration that is
+    // missing fails the resolution, it does not switch a guard off. The service-fault window is validated when the
+    // host STARTS — a wrong value keeps the service from starting; it never turns each request into a 500.
+    public static IServiceCollection AddGlobalProductIdentityWorkflowProcessor(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        services.AddOptions<ProductIdentityWorkflowWorkerOptions>()
+            .Bind(configuration.GetSection(ProductIdentityWorkflowWorkerOptions.SectionName))
+            // The same window the per-request factory above checks: a wrong lease or retry delay must keep the host
+            // from starting, enabled worker or not — not answer every submit with a 500.
+            .Validate(
+                options => options.LeaseSeconds is >= 10 and <= 900 && options.RetryDelaySeconds is >= 1 and <= 3_600,
+                "PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
+            .Validate(
+                options => ProductIdentityWorkflowWorkerOptions.IsServiceFaultWindowValid(
+                    options.RetryDelaySeconds,
+                    options.ServiceFaultMaxRetryDelaySeconds,
+                    options.ServiceFaultErrorAfterAttempts),
+                "PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
+            .ValidateOnStart();
+        services.AddScoped(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<ProductIdentityWorkflowWorkerOptions>>().Value;
+            return new ProductIdentityWorkflowServiceFaultSettings(
+                TimeSpan.FromSeconds(options.ServiceFaultMaxRetryDelaySeconds),
+                options.ServiceFaultErrorAfterAttempts);
+        });
+        services.AddScoped<GlobalProductIdentityWorkflowProcessor>();
         return services;
     }
 

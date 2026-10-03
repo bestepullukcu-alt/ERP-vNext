@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Diten.MdmService.Application.Contracts.Workflow;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Microsoft.Extensions.Options;
 
 namespace Diten.MdmService.Infrastructure.Workflow;
@@ -182,7 +183,7 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
         }
         catch (InvalidDataException)
         {
-            return ProductIdentityWorkflowTransportResult<T>.Fail(ProductIdentityWorkflowTransportOutcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_INVALID");
+            return Unreadable<T>();
         }
         catch (IOException)
         {
@@ -203,7 +204,7 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
         using var response = await _clients.CreateClient(nameof(PlatformProductIdentityWorkflowClient))
             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         if (!string.Equals(response.Content.Headers.ContentType?.MediaType, "application/json", StringComparison.OrdinalIgnoreCase))
-            return Contract<T>();
+            return Unreadable<T>();
         var payload = await ReadBoundedAsync(response.Content, cancellationToken);
         return Parse(response.StatusCode, payload, validateSuccess, allowCreated);
     }
@@ -211,36 +212,63 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
     private static ProductIdentityWorkflowTransportResult<T> Parse<T>(
         HttpStatusCode status, byte[] payload, Func<T, bool> validateSuccess, bool allowCreated)
     {
+        // Two different things can be wrong with an answer, and they are kept apart by their code only (the outcome
+        // is Invalid for both, and every check is the one it was). UNREADABLE: there is no envelope to speak of —
+        // not JSON, not the envelope, or an envelope that contradicts its own status. That is the wire or the far
+        // side, never the record. INVALID: the envelope is sound and says "success", and what it carries fails the
+        // contract. That is about the record.
+        JsonDocument document;
         try
         {
-            using var document = JsonDocument.Parse(payload, StrictOptions);
-            var root = document.RootElement;
-            RequireEnvelope(root);
-            if (root.GetProperty("statusCode").GetInt32() != (int)status) return Contract<T>();
-            var successful = root.GetProperty("isSuccessful").GetBoolean();
-            if (status == HttpStatusCode.OK || allowCreated && status == HttpStatusCode.Created)
-            {
-                if (!successful || root.GetProperty("errors").GetArrayLength() != 0 || root.GetProperty("data").ValueKind != JsonValueKind.Object)
-                    return Contract<T>();
-                var value = JsonSerializer.Deserialize<T>(root.GetProperty("data").GetRawText(), JsonOptions);
-                return value is null || !validateSuccess(value)
-                    ? Contract<T>()
-                    : ProductIdentityWorkflowTransportResult<T>.Success(value);
-            }
-            if (successful || root.GetProperty("errors").GetArrayLength() == 0) return Contract<T>();
-            var reason = root.GetProperty("reason_code").ValueKind == JsonValueKind.String
-                ? root.GetProperty("reason_code").GetString() : null;
-            return MapFailure<T>(status, reason);
+            document = JsonDocument.Parse(payload, StrictOptions);
         }
-        catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+        catch (JsonException)
         {
-            return Contract<T>();
+            return Unreadable<T>();
+        }
+
+        using (document)
+        {
+            var root = document.RootElement;
+            bool successful;
+            try
+            {
+                RequireEnvelope(root);
+                if (root.GetProperty("statusCode").GetInt32() != (int)status) return Unreadable<T>();
+                successful = root.GetProperty("isSuccessful").GetBoolean();
+            }
+            catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+            {
+                return Unreadable<T>();
+            }
+
+            try
+            {
+                if (status == HttpStatusCode.OK || allowCreated && status == HttpStatusCode.Created)
+                {
+                    if (!successful || root.GetProperty("errors").GetArrayLength() != 0 || root.GetProperty("data").ValueKind != JsonValueKind.Object)
+                        return Contract<T>();
+                    var value = JsonSerializer.Deserialize<T>(root.GetProperty("data").GetRawText(), JsonOptions);
+                    return value is null || !validateSuccess(value)
+                        ? Contract<T>()
+                        : ProductIdentityWorkflowTransportResult<T>.Success(value);
+                }
+                if (successful || root.GetProperty("errors").GetArrayLength() == 0) return Unreadable<T>();
+                var reason = root.GetProperty("reason_code").ValueKind == JsonValueKind.String
+                    ? root.GetProperty("reason_code").GetString() : null;
+                return MapFailure<T>(status, reason);
+            }
+            catch (Exception exception) when (exception is JsonException or InvalidOperationException or FormatException)
+            {
+                return Contract<T>();
+            }
         }
     }
 
     private static ProductIdentityWorkflowTransportResult<T> MapFailure<T>(HttpStatusCode status, string? code)
     {
-        var error = string.IsNullOrWhiteSpace(code) ? "PRODUCT_WORKFLOW_RESPONSE_INVALID" : code;
+        // (Not RESPONSE_INVALID: that name now belongs to a SUCCESS that breaks the contract, which waits.)
+        var error = string.IsNullOrWhiteSpace(code) ? ProductIdentityWorkflowFaultPolicy.FailureWithoutReason : code;
         var outcome = status switch
         {
             HttpStatusCode.BadRequest or HttpStatusCode.RequestEntityTooLarge => ProductIdentityWorkflowTransportOutcome.Invalid,
@@ -372,8 +400,10 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
             || root.GetProperty("isSuccessful").ValueKind is not (JsonValueKind.True or JsonValueKind.False)
             || root.GetProperty("errors").ValueKind != JsonValueKind.Array) throw new JsonException();
     }
+    private static ProductIdentityWorkflowTransportResult<T> Unreadable<T>() =>
+        ProductIdentityWorkflowTransportResult<T>.Fail(ProductIdentityWorkflowTransportOutcome.Invalid, ProductIdentityWorkflowFaultPolicy.ResponseUnreadable);
     private static ProductIdentityWorkflowTransportResult<T> Contract<T>() =>
-        ProductIdentityWorkflowTransportResult<T>.Fail(ProductIdentityWorkflowTransportOutcome.Invalid, "PRODUCT_WORKFLOW_RESPONSE_INVALID");
+        ProductIdentityWorkflowTransportResult<T>.Fail(ProductIdentityWorkflowTransportOutcome.Invalid, ProductIdentityWorkflowFaultPolicy.ResponseInvalid);
     private static async Task<byte[]> ReadBoundedAsync(HttpContent content, CancellationToken ct)
     {
         if (content.Headers.ContentLength is > MaximumResponseBytes) throw new InvalidDataException();

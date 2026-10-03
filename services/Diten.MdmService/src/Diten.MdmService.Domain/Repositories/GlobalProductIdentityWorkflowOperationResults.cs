@@ -24,7 +24,10 @@ public sealed record GlobalProductIdentityWorkflowClaimRequest(
     IReadOnlyCollection<GlobalProductIdentityWorkflowCheckpoint> EligibleCheckpoints,
     string LeaseOwner,
     long NowUtcTicks,
-    long LeaseUntilUtcTicks);
+    long LeaseUntilUtcTicks,
+    // An interactive caller (the maker) is not paced by the worker's retry schedule: exclusion rests on the lease
+    // — who holds it and until when — and on nothing else.
+    bool IgnoreRetrySchedule = false);
 
 public sealed record GlobalProductIdentityWorkflowCheckpointMutation(
     GlobalProductIdentityWorkflowCheckpoint NextCheckpoint,
@@ -69,7 +72,15 @@ public sealed record GlobalProductIdentityWorkflowCheckpointMutation(
     string? WithdrawalTaskStatus = null,
     string? WithdrawalInstanceStatus = null,
     string? WithdrawalObjectRef = null,
-    bool ReleaseLease = false);
+    bool ReleaseLease = false,
+    // null leaves the two service-fault fields as they are; a value writes BOTH, exactly as given.
+    int? ServiceFaultCount = null,
+    long? ServiceFaultSinceUtcTicksV1 = null,
+    // Forgets a withdrawal that did not happen (every Withdrawal* field), so the requester can ask again.
+    bool ClearWithdrawal = false,
+    // Why a withdrawal was refused for good (the approval was decided or closed first): the answer a repeat of the
+    // same withdrawal reads. Its own field — LastFailureCode is rewritten by every decision poll.
+    string? WithdrawalRefusalCode = null);
 
 public sealed record GlobalProductIdentityWorkflowTenantPartitionPage(
     IReadOnlyList<Guid> TenantIds,

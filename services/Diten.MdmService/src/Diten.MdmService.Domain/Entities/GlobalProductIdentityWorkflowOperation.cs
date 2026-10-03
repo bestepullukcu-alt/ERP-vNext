@@ -60,8 +60,13 @@ public sealed class GlobalProductIdentityWorkflowOperation : EntityBase
     public string? WithdrawalTaskStatus { get; set; }
     public string? WithdrawalInstanceStatus { get; set; }
     public string? WithdrawalObjectRef { get; set; }
+    public string? WithdrawalRefusalCode { get; set; }
     public long? NextAttemptAtUtcTicksV1 { get; set; }
     public string? LastFailureCode { get; set; }
+    // Consecutive faults of the SERVICE chain (credential, token, setting, reachability) while this operation
+    // waited, and when the first of them happened. Both are cleared by the first answer the chain gives again.
+    public int ServiceFaultCount { get; set; }
+    public long? ServiceFaultSinceUtcTicksV1 { get; set; }
     public string? LeaseOwner { get; set; }
     public long? LeaseUntilUtcTicksV1 { get; set; }
     public long LeaseGeneration { get; set; }
