@@ -108,10 +108,12 @@ public static class TenantModuleEntitlementRowActions
     public static IReadOnlyList<string> For(TenantModuleEntitlementRowFacts facts)
     {
         // A core module is always on and a baseline module is entitlement-free: no entitlement action applies to
-        // either, so none is offered and every handler refuses them with their own code.
+        // either — with ONE exception (FIX2 A2): a manual override row that exists on such a module can be REMOVED.
+        // It cannot be added any more, but one that exists (added before the add path refused core modules) either
+        // switches a core module off for the tenant or holds a modules.max slot for good; removing it is the clean-up.
         if (facts.IsCoreModule || facts.IsBaselineModule)
         {
-            return [];
+            return !facts.IsProjectionRow && facts.Source == EntitlementSource.ManualOverride ? [RemoveOverride] : [];
         }
 
         if (facts.IsProjectionRow)
@@ -129,14 +131,18 @@ public static class TenantModuleEntitlementRowActions
         var actions = new List<string>(4);
         if (facts.IsExpired)
         {
-            // What an expired row needs is a new date. Enabling it changes nothing: it is expired, not switched off.
+            // FIX2 — what an expired row needs is a new date. Enabling it would change nothing (it is expired, not
+            // switched off) and would take a modules.max slot that grants no access, so an expired row never offers
+            // Enable. An expired row that is still switched on keeps Disable: that is how its slot is given back.
             actions.Add(ExtendExpiry);
+            if (facts.StoredIsEnabled)
+            {
+                actions.Add(Disable);
+            }
         }
-
-        actions.Add(facts.StoredIsEnabled ? Disable : Enable);
-
-        if (!facts.IsExpired)
+        else
         {
+            actions.Add(facts.StoredIsEnabled ? Disable : Enable);
             actions.Add(ExtendExpiry);
         }
 

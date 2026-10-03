@@ -30,7 +30,9 @@ const expiryBlock = slice("const todayIsoDate", "const removeModuleEntitlementOv
 const fetchBlock = source.slice(source.indexOf("const extractErrorMessage"), source.indexOf("const escapeHtml"))
   + slice("const fetchJson = async", "const imageMarkup");
 // Keys the tab's flows read besides the refusal sentences and the action labels.
-const FLOW_KEYS = ["NoChangesMade", "PermissionDenied", "EntitlementOutcomeUnknown"];
+const FLOW_KEYS = ["NoChangesMade", "PermissionDenied", "EntitlementOutcomeUnknown", "ExpiryDateUtcEndOfDay"];
+// FIX2 — the add form and the row actions, sliced as they ship (payload reader → before the subscription section).
+const actionsBlock = slice("const readModuleEntitlementPayload", "const openSubscriptionActionModal");
 
 const resx = (lang) => read("Resources", "Views", "Platform", "Tenants", `TenantsIndex.${lang}.resx`);
 const resxValue = (lang, key) => {
@@ -209,16 +211,18 @@ describe("what the screen says after an action", () => {
     const toasts = [];
     let reloads = 0;
     const window = { showToast: (text, kind) => toasts.push([text, kind]) };
+    // What DataTables does: reload calls the ajax hook (which numbers the request; seq 0 here, so this reload is #1)
+    // and, when the list request fails, hands the table an empty list and still runs the reload's callback. The hook
+    // remembers the failed request by its number.
+    const failures = new Set();
     const table = {
-      // What DataTables does when the list request fails: the ajax hook hands it an empty table and the reload's
-      // callback still runs. The hook is what records the failure (moduleEntitlementsLoadFailed).
-      ajax: { reload: (done) => { reloads += 1; done(); } },
+      ajax: { reload: (done) => { reloads += 1; if (loadFails) failures.add(1); done(); } },
       rows: () => ({ data: () => ({ toArray: () => (loadFails ? [] : rowsAfter) }) })
     };
     const labels = { ...labelsFor("tr"), RecordSaved: "Kayıt kaydedildi." };
     // eslint-disable-next-line no-new-func
-    const api = new Function("L", "window", "moduleEntitlementsDt", "moduleEntitlementsLoadFailed",
-      rulesBlock + outcomeBlock + "; return { showEntitlementActionError, reportEntitlementChange };")(labels, window, table, loadFails);
+    const api = new Function("L", "window", "moduleEntitlementsDt", "moduleEntitlementsLoadSeq", "moduleEntitlementsLoadFailures", "availableModules",
+      rulesBlock + outcomeBlock + "; return { showEntitlementActionError, reportEntitlementChange };")(labels, window, table, 0, failures, []);
     return { api, toasts, labels, reloads: () => reloads };
   };
 
@@ -254,6 +258,13 @@ describe("what the screen says after an action", () => {
     expect(stale.toasts).toEqual([[stale.labels.EntitlementStale, "error"]]);
     expect(stale.reloads()).toBe(1);
 
+    // FIX2 — "no longer offered" means the row is already where the action would take it: the list is replaced, and
+    // nothing is said to have gone wrong (a double click used to show success, then an error).
+    const settled = run([]);
+    settled.api.showEntitlementActionError({ code: "ENTITLEMENT_ACTION_NOT_OFFERED", message: "x" });
+    expect(settled.toasts).toEqual([]);
+    expect(settled.reloads()).toBe(1);
+
     const baseline = run([]);
     baseline.api.showEntitlementActionError({ code: "ENTITLEMENT_MODULE_BASELINE", message: "x" });
     expect(baseline.toasts).toEqual([[baseline.labels.EntitlementModuleBaseline, "error"]]);
@@ -271,8 +282,8 @@ describe("the list's own request records whether it failed", () => {
   const hook = (fetchJson) => {
     // eslint-disable-next-line no-new-func
     return new Function("fetchJson", "window", "L", "apiBase", "tenantId",
-      "let moduleEntitlementsLoadFailed = 'untouched'; const ajax = " + hookSource
-      + "; return { ajax, failed: () => moduleEntitlementsLoadFailed };")(
+      "let moduleEntitlementsLoadSeq = 0; const moduleEntitlementsLoadFailures = new Set([1]); const ajax = " + hookSource
+      + "; return { ajax, failed: (seq) => moduleEntitlementsLoadFailures.has(seq), seq: () => moduleEntitlementsLoadSeq };")(
       fetchJson, { showToast: () => {} }, { ErrorOccurred: "x" }, "/api", "t1");
   };
   const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -281,9 +292,10 @@ describe("the list's own request records whether it failed", () => {
     const api = hook(() => Promise.reject(new Error("down")));
     let handed = null;
     api.ajax({}, (data) => { handed = data; });
+    expect(api.seq()).toBe(1); // numbered as it starts, before it answers
     await settle();
     expect(handed).toEqual({ data: [] });
-    expect(api.failed()).toBe(true);
+    expect(api.failed(1)).toBe(true);
   });
 
   test("a successful load clears the mark", async () => {
@@ -292,7 +304,20 @@ describe("the list's own request records whether it failed", () => {
     api.ajax({}, (data) => { handed = data; });
     await settle();
     expect(handed).toEqual({ data: [{ moduleCode: "CRM" }] });
-    expect(api.failed()).toBe(false);
+    expect(api.failed(1)).toBe(false);
+  });
+
+  test("two overlapping loads keep their own outcomes", async () => {
+    // The first fails at once; the second succeeds LATER — its success must not erase the first one's failure.
+    let calls = 0;
+    const api = hook(() => (++calls === 1
+      ? Promise.reject(new Error("down"))
+      : new Promise((resolve) => setTimeout(() => resolve([]), 5))));
+    api.ajax({}, () => {});
+    api.ajax({}, () => {});
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(api.failed(1)).toBe(true);
+    expect(api.failed(2)).toBe(false);
   });
 });
 
@@ -347,11 +372,11 @@ describe("extending an expiry", () => {
       constructor(...args) { super(...(args.length ? args : [today.getTime()])); }
     }
     // eslint-disable-next-line no-new-func
-    const api = new Function("L", "window", "fetchJson", "apiBase", "tenantId", "getAuthHeaders", "reportEntitlementChange", "showEntitlementActionError", "Date",
+    const api = new Function("L", "window", "fetchJson", "apiBase", "tenantId", "getAuthHeaders", "reportEntitlementChange", "showEntitlementActionError", "Date", "runEntitlementAction",
       expiryBlock + "; return { openModuleEntitlementExpiryEditor };")(
       labels, window,
       async (url, options) => { sent.push({ url, body: JSON.parse(options.body) }); return null; },
-      "/api", "t1", () => ({}), async () => {}, () => {}, FixedDate);
+      "/api", "t1", () => ({}), async () => {}, () => {}, FixedDate, (_row, _trigger, work) => work());
     api.openModuleEntitlementExpiryEditor(row);
     return { dialog, sent, toasts, labels };
   };
@@ -403,6 +428,135 @@ describe("extending an expiry", () => {
     expect(sent).toEqual([]);
     expect(toasts).toEqual([[labels.NoChangesMade, "info"]]);
   });
+});
+
+describe("FIX2 — the row actions as they ship", () => {
+  // The actions block (reload → before the subscription section), run with the page's surroundings stubbed.
+  const harness = ({ fetchJson, loadFails = false, today } = {}) => {
+    const toasts = [];
+    let reloads = 0;
+    let available = ["CRM"];
+    const confirms = [];
+    const failures = new Set();
+    let seq = 0;
+    const table = {
+      ajax: { reload: (done) => { reloads += 1; seq += 1; if (loadFails) failures.add(seq); done && done(); } },
+      rows: () => ({ data: () => ({ toArray: () => [] }) })
+    };
+    const window = {
+      showToast: (text, kind) => toasts.push([text, kind]),
+      showConfirm: (title, callback, options) => confirms.push({ callback, options })
+    };
+    const elements = {
+      moduleEntitlementForm: { classList: { add() {} }, checkValidity: () => true },
+      moduleEntitlementReason: { value: "", toggleAttribute() {} },
+      moduleEntitlementModule: { value: "CRM" },
+      moduleEntitlementSource: { value: "Addon" },
+      moduleEntitlementEnabled: { checked: true },
+      moduleEntitlementExpiry: { value: "" },
+      offcanvasModuleEntitlement: {}
+    };
+    const document = { getElementById: (id) => elements[id] || null };
+    const bootstrap = { Offcanvas: { getInstance: () => ({ hide() {} }) } };
+    const labels = { ...labelsFor("tr"), RecordSaved: "Kayıt kaydedildi.", RecordDeleted: "Kayıt silindi." };
+    const DateImpl = today ? class extends Date { constructor(...a) { super(...(a.length ? a : [today.getTime()])); } } : Date;
+    // eslint-disable-next-line no-new-func
+    const api = new Function("L", "window", "document", "bootstrap", "fetchJson", "apiBase", "tenantId", "getAuthHeaders",
+      "normalizeString", "moduleEntitlementsDt", "Date", "state",
+      "let moduleEntitlementsLoadSeq = 0; const moduleEntitlementsLoadFailures = state.failures; "
+      + "let availableModules = state.available; "
+      + rulesBlock + actionsBlock
+      + "; return { enable: enableModuleEntitlement, remove: removeModuleEntitlementOverride, save: saveModuleEntitlement, todayIsoDate, "
+      + "expiryProblem: moduleEntitlementExpiryProblem, openExpiry: openModuleEntitlementExpiryEditor, available: () => availableModules, "
+      + "seqSync: (n) => { moduleEntitlementsLoadSeq = n; } };")(
+      labels, window, document, bootstrap, fetchJson, "/api", "t1", () => ({}), (v) => (v || "").trim() || null, table, DateImpl,
+      { failures, available });
+    // keep the page's numbering in step with the stub table's
+    const reload = table.ajax.reload;
+    table.ajax.reload = (done) => { api.seqSync(seq); reload(done); };
+    return { api, toasts, confirms, labels, reloads: () => reloads };
+  };
+  const row = { physicalEntitlementId: "e1", moduleCode: "CRM", rowVersion: "AAAA", reason: "r" };
+
+  test("a double click sends ONE request; the button is disabled while it is on its way", async () => {
+    let release;
+    let sent = 0;
+    const { api } = harness({ fetchJson: () => { sent += 1; return new Promise((resolve) => { release = resolve; }); } });
+    const trigger = { disabled: false };
+
+    const first = api.enable(row, trigger);
+    const second = api.enable(row, trigger);
+    expect(trigger.disabled).toBe(true);
+    await second;
+    expect(sent).toBe(1);
+    release(null);
+    await first;
+    expect(trigger.disabled).toBe(false);
+  });
+
+  test("every row action drops the picker's cached modules, success or failure", async () => {
+    const ok = harness({ fetchJson: async () => null });
+    await ok.api.enable(row, null);
+    expect(ok.api.available()).toEqual([]);
+
+    const refused = harness({ fetchJson: async () => { const e = new Error("x"); e.code = "ENTITLEMENT_STALE"; throw e; } });
+    await refused.api.enable(row, null);
+    expect(refused.api.available()).toEqual([]);
+  });
+
+  test("an add drops the picker's cached modules, success or failure", async () => {
+    const ok = harness({ fetchJson: async () => ({ id: "n" }) });
+    await ok.api.save();
+    expect(ok.api.available()).toEqual([]);
+
+    const refused = harness({ fetchJson: async () => { const e = new Error("x"); e.code = "ENTITLEMENT_ALREADY_EXISTS"; throw e; } });
+    await expect(refused.api.save()).rejects.toThrow();
+    expect(refused.api.available()).toEqual([]);
+  });
+
+  test("a removal whose list could not be reloaded does not say 'deleted'", async () => {
+    const { api, confirms, toasts, labels } = harness({ fetchJson: async () => null, loadFails: true });
+    api.remove(row, null);
+    await confirms[0].callback();
+
+    expect(toasts.flat()).not.toContain(labels.RecordDeleted);
+    expect(toasts[0]).toEqual([resxValue("tr", "EntitlementOutcomeUnknown"), "warning"]);
+  });
+
+  test("a removal whose list reloaded says 'deleted'", async () => {
+    const { api, confirms, toasts, labels } = harness({ fetchJson: async () => null });
+    api.remove(row, null);
+    await confirms[0].callback();
+
+    expect(toasts).toEqual([[labels.RecordDeleted, "success"]]);
+  });
+
+  test("'today' is the UTC day the server checks against: a UTC-7 evening is already tomorrow", () => {
+    // 2026-10-03 22:30 at UTC-7 is 2026-10-04 05:30 UTC. The reader's zone is set for this test (Node reads TZ on
+    // every date operation), so it measures the same on any machine.
+    const zone = process.env.TZ;
+    process.env.TZ = "America/Los_Angeles";
+    try {
+      expect(new Date("2026-10-04T05:30:00Z").getDate()).toBe(3); // the reader's own calendar still says the 3rd
+      checkUtcToday();
+    } finally {
+      if (zone === undefined) delete process.env.TZ; else process.env.TZ = zone;
+    }
+  });
+
+  const checkUtcToday = () => {
+    const { api, confirms, labels } = harness({ fetchJson: async () => null, today: new Date("2026-10-04T05:30:00Z") });
+
+    expect(api.todayIsoDate()).toBe("2026-10-04");
+    expect(api.expiryProblem("2026-10-03")).toBe(labels.EntitlementExpiryInPast); // the server would refuse it as past
+    expect(api.expiryProblem("2026-10-04")).toBeNull();
+
+    api.openExpiry({ ...row, expiryDateUtc: null }, null);
+    expect(confirms[0].options.inputAttributes).toEqual({ min: "2026-10-04" });
+    expect(confirms[0].options.inputLabel).toBe(resxValue("tr", "ExpiryDateUtcEndOfDay"));
+    expect(resxValue("en", "ExpiryDateUtcEndOfDay")).toMatch(/UTC/);
+    expect(resxValue("tr", "ExpiryDateUtcEndOfDay")).toMatch(/UTC/);
+  };
 });
 
 describe("page standard", () => {

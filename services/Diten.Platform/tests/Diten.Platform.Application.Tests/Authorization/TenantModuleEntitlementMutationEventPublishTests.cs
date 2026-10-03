@@ -404,10 +404,10 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
         VerifyPublishNever(fixture.Events);
     }
 
-    // FEAT-BASELINE-MODULES — defense in depth: even a (stray/pre-existing) baseline override row cannot be removed
-    // via this path. Guard keys off the catalog's IsBaseline, not a hardcoded code list.
+    // BL-500 FIX2 A2 — a stray override row on a baseline module is the one thing that CAN be done to it: removed
+    // (the clean-up path). It can no longer be added; one that exists must not be stuck.
     [Fact]
-    public async Task RemoveTenantManualModuleOverrideCommandHandler_RejectsBaselineModule()
+    public async Task RemoveTenantManualModuleOverrideCommandHandler_RemovesAStrayBaselineOverride()
     {
         var fixture = CreateFixture(ActorId);
         fixture.Repository.Setup(x => x.GetByIdAsync(TenantId, EntitlementId, It.IsAny<CancellationToken>())).ReturnsAsync(CreateEntitlement(isEnabled: true));
@@ -438,12 +438,10 @@ public sealed class TenantModuleEntitlementMutationEventPublishTests
                 new RemoveTenantManualModuleOverrideRequest(RowVersion)),
             CancellationToken.None);
 
-        Assert.False(result.IsSuccessful);
-        Assert.Equal(409, result.StatusCode);
-        VerifyPublishNever(fixture.Events);
+        Assert.True(result.IsSuccessful);
         fixture.Repository.Verify(
-            x => x.SoftDeleteAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()),
-            Times.Never);
+            x => x.SoftDeleteAsync(It.IsAny<IPlatformTransactionSession>(), TenantId, EntitlementId, It.IsAny<byte[]?>(), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]

@@ -26,6 +26,10 @@ public sealed class AddTenantModuleEntitlementCommandValidator : AbstractValidat
             .NotEmpty().WithErrorCode(TenantModuleEntitlementRefusalCodes.ReasonRequired)
             .When(x => x.Request.Source == EntitlementSource.ManualOverride || x.Request.IsEnabled == false);
         RuleFor(x => x.Request.Reason).MaximumLength(500).WithErrorCode(TenantModuleEntitlementRefusalCodes.ReasonTooLong);
+        // FIX2 — an add with an expiry already in the past would store a row that is expired the moment it exists.
+        RuleFor(x => x.Request.ExpiryDateUtc)
+            .Must(expiry => expiry > DateTimeOffset.UtcNow).WithErrorCode(TenantModuleEntitlementRefusalCodes.ExpiryInPast)
+            .When(x => x.Request.ExpiryDateUtc.HasValue);
     }
 }
 

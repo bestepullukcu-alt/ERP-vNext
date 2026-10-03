@@ -137,9 +137,9 @@ public sealed class PhysicalEntitlementTransactionalArchitectureTests
         {
             [typeof(AddTenantModuleEntitlementCommandHandler)] = 1,
             [typeof(EnableTenantModuleEntitlementCommandHandler)] = 1,
-            // BL-500 FIX1 — two: the stored row named by its id, and the plan line (a new override row). The third branch
-            // ("the module's existing override, found by code") wrote an action the list never offered and is gone.
-            [typeof(DisableTenantModuleEntitlementCommandHandler)] = 2,
+            // BL-500 FIX2 — three: the stored row named by its id; the plan line through a NEW override row; and the plan
+            // line through the tenant's EXISTING (expired) override row, which the unique index would refuse a second of.
+            [typeof(DisableTenantModuleEntitlementCommandHandler)] = 3,
             [typeof(UpdateTenantModuleEntitlementExpiryCommandHandler)] = 1,
             [typeof(RemoveTenantManualModuleOverrideCommandHandler)] = 1
         };

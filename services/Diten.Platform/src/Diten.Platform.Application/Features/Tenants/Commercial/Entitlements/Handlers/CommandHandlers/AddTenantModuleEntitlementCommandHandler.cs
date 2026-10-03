@@ -59,7 +59,8 @@ public sealed class AddTenantModuleEntitlementCommandHandler : IRequestHandler<A
             request.TenantId,
             moduleCode,
             null,
-            ct);
+            ct,
+            request.Request.Source);
         if (!duplicate.IsValid)
         {
             return Response<Guid>.Fail(duplicate.Error!, duplicate.StatusCode, duplicate.Code);
@@ -117,6 +118,17 @@ public sealed class AddTenantModuleEntitlementCommandHandler : IRequestHandler<A
         catch (PhysicalEntitlementMutationRejectedException exception)
         {
             return Response<Guid>.Fail(exception.Errors, exception.StatusCode);
+        }
+        catch (TenantModuleEntitlementTenantMismatchException)
+        {
+            return Response<Guid>.Fail("Entitlement was not found.", 404, TenantModuleEntitlementRefusalCodes.NotFound);
+        }
+        catch (TenantModuleEntitlementConcurrencyException)
+        {
+            // FIX2 A3 — another add of the same row got there first (the repository maps the unique index and the
+            // in-transaction write conflict to this exception, for this path and Disable's alike). It used to reach
+            // the global handler as a 500.
+            return TenantModuleEntitlementCommandSupport.Stale<Guid>();
         }
 
         return Response<Guid>.Success(entitlement.Id, 201);

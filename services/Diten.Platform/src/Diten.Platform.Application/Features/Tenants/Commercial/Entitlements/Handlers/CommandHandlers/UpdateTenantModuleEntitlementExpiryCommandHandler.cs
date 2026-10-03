@@ -63,7 +63,11 @@ public sealed class UpdateTenantModuleEntitlementExpiryCommandHandler : IRequest
                                 && !string.Equals(entitlement.Reason, request.Request.Reason, StringComparison.Ordinal);
             if (!expiryChanged && !reasonChanged)
             {
-                return Response<NoContent>.Success(204);
+                // FIX2 — "nothing to change" is only true of the row the screen saw: a stale version is answered as
+                // stale here too, not as a quiet 204 over a row somebody else has changed since.
+                return request.Request.RowVersion is { Length: > 0 } version && version.AsSpan().SequenceEqual(entitlement.RowVersion)
+                    ? Response<NoContent>.Success(204)
+                    : TenantModuleEntitlementCommandSupport.ConcurrencyFailure();
             }
             var auditBefore = PhysicalEntitlementAuditIntent.StateOf(entitlement);
             entitlement.ExpiryDateUtc = request.Request.ExpiryDateUtc;

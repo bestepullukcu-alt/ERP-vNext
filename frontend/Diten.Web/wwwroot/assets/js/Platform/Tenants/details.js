@@ -24,7 +24,10 @@ const TenantDetails = (function () {
     let subscriptionAppliedFilters = { status: [], cancelAtPeriodEnd: '' };
     let moduleEntitlementsLoaded = false;
     let moduleEntitlementsDt;
-    let moduleEntitlementsLoadFailed = false;
+    // FIX2 — every list request is numbered as it starts; a failed one is remembered by its number, so an action
+    // waiting on ITS reload reads its own outcome even when two reloads overlap (one shared flag could be overwritten).
+    let moduleEntitlementsLoadSeq = 0;
+    const moduleEntitlementsLoadFailures = new Set();
     let availableModules = [];
     let moduleEntitlementAppliedFilters = { source: [], access: [] };
     let quotaGovernanceLoaded = false;
@@ -1357,15 +1360,16 @@ const TenantDetails = (function () {
 
         moduleEntitlementsDt = new DataTable(table, window.DtDefaults.create({
             ajax: (_data, callback) => {
+                const loadSeq = ++moduleEntitlementsLoadSeq;
                 fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements`)
                     .then(rows => {
-                        moduleEntitlementsLoadFailed = false;
+                        moduleEntitlementsLoadFailures.delete(loadSeq);
                         callback({ data: Array.isArray(rows) ? rows : [] });
                     })
                     .catch(error => {
                         // The table is emptied, but an empty table is not the tenant's list: an action waiting on this
                         // reload must not read "no rows" as its result (reloadModuleEntitlements answers null).
-                        moduleEntitlementsLoadFailed = true;
+                        moduleEntitlementsLoadFailures.add(loadSeq);
                         callback({ data: [] });
                         if (!error.authHandled) window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
                     });
@@ -1412,10 +1416,10 @@ const TenantDetails = (function () {
                 const api = this.api();
                 revealTableWithSkeleton('dtModuleEntitlements', 'moduleEntitlementSkeleton', api);
                 const actionHandlers = {
-                    'disable-module-entitlement': (ctx) => disableModuleEntitlement(ctx.row),
-                    'enable-module-entitlement': (ctx) => enableModuleEntitlement(ctx.row),
-                    'edit-module-entitlement-expiry': (ctx) => openModuleEntitlementExpiryEditor(ctx.row),
-                    'remove-module-entitlement-override': (ctx) => removeModuleEntitlementOverride(ctx.row)
+                    'disable-module-entitlement': (ctx) => disableModuleEntitlement(ctx.row, ctx.trigger),
+                    'enable-module-entitlement': (ctx) => enableModuleEntitlement(ctx.row, ctx.trigger),
+                    'edit-module-entitlement-expiry': (ctx) => openModuleEntitlementExpiryEditor(ctx.row, ctx.trigger),
+                    'remove-module-entitlement-override': (ctx) => removeModuleEntitlementOverride(ctx.row, ctx.trigger)
                 };
                 window.DitenDataTable?.bindActionDispatcher?.({
                     tableEl: table,
@@ -1533,6 +1537,8 @@ const TenantDetails = (function () {
         return activeSubscriptionPlans;
     };
 
+    // FIX2 A3 — the picker's list is cached for the form; every add and every row action clears it (see
+    // runEntitlementAction / saveModuleEntitlement), so a module just added — or just removed — is not offered stale.
     const loadAvailableModules = async () => {
         if (availableModules.length > 0) return availableModules;
         availableModules = await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/available-modules`) || [];
@@ -1609,11 +1615,15 @@ const TenantDetails = (function () {
         reason?.toggleAttribute('required', reasonRequired);
         if (!form.checkValidity()) return;
 
-        await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements`, {
-            method: 'POST',
-            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        try {
+            await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements`, {
+                method: 'POST',
+                headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } finally {
+            availableModules = [];
+        }
         bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasModuleEntitlement'))?.hide();
         window.showToast?.(L.RecordSaved || 'Record saved.', 'success');
         moduleEntitlementsDt?.ajax.reload(null, false);
@@ -1623,11 +1633,32 @@ const TenantDetails = (function () {
     // 4xx (e.g. a quota 409) was swallowed and the button looked dead. Surface it — BL-500: from the refusal's code,
     // in the reader's language (entitlementRefusalText above).
     // The reloaded rows, or null when the list could not be loaded — never an empty list standing in for a failure.
+    // The ajax hook numbers each request as it starts (synchronously, inside reload): the next number is this one's.
     const reloadModuleEntitlements = () => new Promise((resolve) => {
         if (!moduleEntitlementsDt) { resolve(null); return; }
+        const ownLoad = moduleEntitlementsLoadSeq + 1;
         moduleEntitlementsDt.ajax.reload(
-            () => resolve(moduleEntitlementsLoadFailed ? null : moduleEntitlementsDt.rows().data().toArray()), false);
+            () => resolve(moduleEntitlementsLoadFailures.has(ownLoad) ? null : moduleEntitlementsDt.rows().data().toArray()), false);
     });
+
+    // FIX2 — one request per row at a time. A second click while the first is on its way does nothing (the button is
+    // disabled until it answers): a double click used to send the same action twice, and the second, which the row no
+    // longer offers, came back as an error right after the success. Whatever the outcome, the picker's cached list of
+    // addable modules is dropped — the action may have changed what can be added.
+    const entitlementActionsInFlight = new Set();
+    const runEntitlementAction = async (row, trigger, work) => {
+        const key = row?.physicalEntitlementId || `plan:${row?.moduleCode || ''}`;
+        if (entitlementActionsInFlight.has(key)) return;
+        entitlementActionsInFlight.add(key);
+        if (trigger) trigger.disabled = true;
+        try {
+            await work();
+        } finally {
+            entitlementActionsInFlight.delete(key);
+            if (trigger) trigger.disabled = false;
+            availableModules = [];
+        }
+    };
 
     // The request went through but its result could not be read back: say so plainly, and try the list once more.
     const reportEntitlementOutcomeUnknown = () => {
@@ -1637,11 +1668,16 @@ const TenantDetails = (function () {
 
     const showEntitlementActionError = (error) => {
         if (error?.authHandled) return; // auth refresh flow already handled it
-        window.showToast?.(entitlementRefusalText(error, L), 'error');
-        // Somebody else changed the row, or the row no longer offers the action: the sentence says so, and the list on
-        // screen is replaced with the current one.
         const code = entitlementRefusalCode(error);
-        if (code === 'ENTITLEMENT_STALE' || code === 'ENTITLEMENT_ACTION_NOT_OFFERED') reloadModuleEntitlements();
+        // FIX2 — the row no longer offers the action: it is already where the action would have taken it (a second
+        // click, another screen). Nothing went wrong for the reader — the list is simply replaced with the current one.
+        if (code === 'ENTITLEMENT_ACTION_NOT_OFFERED') {
+            reloadModuleEntitlements();
+            return;
+        }
+        window.showToast?.(entitlementRefusalText(error, L), 'error');
+        // Somebody else changed the row: the sentence says so, and the list on screen is replaced with the current one.
+        if (code === 'ENTITLEMENT_STALE') reloadModuleEntitlements();
     };
 
     const reportEntitlementChange = async (before, changedText) => {
@@ -1658,8 +1694,8 @@ const TenantDetails = (function () {
         window.showToast?.(changedText, 'success');
     };
 
-    const disableModuleEntitlement = (row) => {
-        const run = async (reason) => {
+    const disableModuleEntitlement = (row, trigger) => {
+        const run = (reason) => runEntitlementAction(row, trigger, async () => {
             try {
                 await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/disable`, {
                     method: 'POST',
@@ -1676,7 +1712,7 @@ const TenantDetails = (function () {
             } catch (error) {
                 showEntitlementActionError(error);
             }
-        };
+        });
 
         window.showConfirm?.(L.AreYouSure || 'Are you sure?', run, {
             entityName: row.moduleName || row.moduleCode,
@@ -1687,7 +1723,7 @@ const TenantDetails = (function () {
         });
     };
 
-    const enableModuleEntitlement = async (row) => {
+    const enableModuleEntitlement = (row, trigger) => runEntitlementAction(row, trigger, async () => {
         if (!row?.physicalEntitlementId) return;
         try {
             await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/${encodeURIComponent(row.physicalEntitlementId)}/enable`, {
@@ -1699,15 +1735,16 @@ const TenantDetails = (function () {
         } catch (error) {
             showEntitlementActionError(error);
         }
-    };
+    });
 
     // The new expiry is asked for in the shared confirmation dialog (a date box), not a browser prompt. It must hold a
     // date, and one in the future: an empty box used to be sent as null, which REMOVED the expiry while the screen said
     // "saved". Taking an expiry away is not this action.
-    const todayIsoDate = () => {
-        const now = new Date();
-        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    };
+    //
+    // FIX2 — ONE definition of a date, the server's: a chosen day ends at 23:59:59 UTC, and "today" is the UTC day. The
+    // dialog used the reader's LOCAL today, so west of UTC an evening "today" passed here and was refused there as past,
+    // and the label now says the day ends in UTC.
+    const todayIsoDate = () => new Date().toISOString().slice(0, 10);
 
     const moduleEntitlementExpiryProblem = (value) => {
         const date = typeof value === 'string' ? value.trim() : '';
@@ -1719,10 +1756,10 @@ const TenantDetails = (function () {
     // The chosen DAY is the last day of access: the expiry is the end of that day.
     const moduleEntitlementExpiryInstant = (date) => new Date(`${date}T23:59:59Z`).toISOString();
 
-    const openModuleEntitlementExpiryEditor = (row) => {
+    const openModuleEntitlementExpiryEditor = (row, trigger) => {
         if (!row?.physicalEntitlementId) return;
         const current = row.expiryDateUtc ? new Date(row.expiryDateUtc).toISOString().slice(0, 10) : '';
-        const run = async (value) => {
+        const run = (value) => runEntitlementAction(row, trigger, async () => {
             const nextValue = typeof value === 'string' ? value.trim() : '';
             const problem = moduleEntitlementExpiryProblem(nextValue);
             if (problem !== null) {
@@ -1748,7 +1785,7 @@ const TenantDetails = (function () {
             } catch (error) {
                 showEntitlementActionError(error);
             }
-        };
+        });
 
         window.showConfirm?.(L.ExtendExpiry || '', run, {
             entityName: row.moduleName || row.moduleCode,
@@ -1756,7 +1793,7 @@ const TenantDetails = (function () {
             confirmButtonText: L.ExtendExpiry || '',
             showInput: true,
             inputType: 'date',
-            inputLabel: L.ExpiryDate || '',
+            inputLabel: L.ExpiryDateUtcEndOfDay || L.ExpiryDate || '',
             inputAttributes: { min: todayIsoDate() },
             // The box opens on the row's current date. Not through a `value` attribute — SweetAlert writes the box's
             // value AFTER the attributes, so that opened EMPTY — and not through a new option on the shared dialog,
@@ -1772,9 +1809,9 @@ const TenantDetails = (function () {
         });
     };
 
-    const removeModuleEntitlementOverride = (row) => {
+    const removeModuleEntitlementOverride = (row, trigger) => {
         if (!row?.physicalEntitlementId) return;
-        const run = async () => {
+        const run = () => runEntitlementAction(row, trigger, async () => {
             try {
                 await fetchJson(`${apiBase}/${encodeURIComponent(tenantId)}/commercial/module-entitlements/${encodeURIComponent(row.physicalEntitlementId)}/manual-override`, {
                     method: 'DELETE',
@@ -1790,7 +1827,7 @@ const TenantDetails = (function () {
             } catch (error) {
                 showEntitlementActionError(error);
             }
-        };
+        });
         window.showConfirm?.(L.AreYouSure || 'Are you sure?', run, {
             entityName: row.moduleName || row.moduleCode,
             type: 'danger',

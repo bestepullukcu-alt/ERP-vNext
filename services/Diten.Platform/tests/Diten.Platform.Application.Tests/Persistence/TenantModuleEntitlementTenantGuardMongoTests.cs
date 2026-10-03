@@ -183,6 +183,31 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
     }
 
     [Fact]
+    public async Task An_insert_that_meets_another_transactions_uncommitted_row_is_stale_not_a_server_error()
+    {
+        // FIX2 — the unique key is held by a row another transaction has written but not committed yet: Mongo answers
+        // the second insert with a WRITE CONFLICT inside the transaction, not a duplicate key. Measured on a real
+        // replica set with the production index.
+        await using var rig = await Rig.StartAsync(PlatformContext());
+        await rig.ApplyProductionIndexesAsync();
+        using var other = await rig.Client.StartSessionAsync();
+        other.StartTransaction();
+        await rig.Rows.InsertOneAsync(other, NewRow(Theirs));
+
+        try
+        {
+            await Assert.ThrowsAsync<TenantModuleEntitlementConcurrencyException>(
+                () => rig.InTransactionAsync(session => rig.Repository.CreateAsync(session, NewRow(Theirs))));
+        }
+        finally
+        {
+            await other.AbortTransactionAsync();
+        }
+
+        Assert.Equal(0, await rig.Rows.CountDocumentsAsync(FilterDefinition<TenantModuleEntitlement>.Empty));
+    }
+
+    [Fact]
     public async Task The_base_repositorys_delete_by_id_is_closed_and_the_row_is_unchanged()
     {
         await using var rig = await Rig.StartAsync(PlatformContext());
@@ -229,6 +254,7 @@ public sealed class TenantModuleEntitlementTenantGuardMongoTests
         }
 
         public IMongoCollection<TenantModuleEntitlement> Rows { get; }
+        public IMongoClient Client => _mongo.Client;
         public TenantModuleEntitlementRepository Repository { get; }
 
         public Task ApplyProductionIndexesAsync() =>

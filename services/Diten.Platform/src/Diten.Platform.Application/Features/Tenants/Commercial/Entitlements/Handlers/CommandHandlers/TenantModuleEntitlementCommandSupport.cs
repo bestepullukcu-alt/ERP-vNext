@@ -29,6 +29,15 @@ internal static class TenantModuleEntitlementCommandSupport
                 TenantModuleEntitlementRefusalCodes.BaselineModule);
         }
 
+        // FIX2 A2 — a core module is always on: an entitlement row on it either switches it off for the tenant (a
+        // disabled override, with no way back once stored) or holds a modules.max slot for nothing. Refused like a
+        // baseline module, with its own code.
+        if (module.IsCoreModule)
+        {
+            return (false, "Core system modules are always on and cannot be manually entitled.", 409,
+                TenantModuleEntitlementRefusalCodes.CoreModule);
+        }
+
         return (true, null, 0, null);
     }
 
@@ -36,16 +45,20 @@ internal static class TenantModuleEntitlementCommandSupport
     // an ACTIVE (IsEnabled & !IsDeleted) entitlement for this module under ANY source, reject (409). Soft-deleted
     // rows are already excluded by the repository's execution filter, and disabled rows are ignored here, so a
     // re-enable / re-add after disable or delete still works.
+    // FIX2 A3 — a live row of the SAME source is a conflict too, enabled or not: the unique index allows one live row
+    // per (tenant, module, source), so adding next to a disabled one used to reach the index and end as a 500. A
+    // disabled row comes back through its own Enable action, not by adding it again.
     public static async Task<(bool IsValid, string? Error, int StatusCode, string? Code)> ValidateDuplicateAsync(
         ITenantModuleEntitlementRepository repository,
         Guid tenantId,
         string moduleCode,
         Guid? excludeId,
-        CancellationToken ct)
+        CancellationToken ct,
+        EntitlementSource? source = null)
     {
         var existing = await repository.GetByTenantAndModuleAsync(tenantId, NormalizeModuleCode(moduleCode), ct);
         var hasActiveConflict = existing.Any(x =>
-            x.IsEnabled && (!excludeId.HasValue || x.Id != excludeId.Value));
+            (x.IsEnabled || (source.HasValue && x.Source == source.Value)) && (!excludeId.HasValue || x.Id != excludeId.Value));
 
         return hasActiveConflict
             ? (false, "This module is already entitled for the tenant.", 409, TenantModuleEntitlementRefusalCodes.AlreadyEntitled)
@@ -60,8 +73,11 @@ internal static class TenantModuleEntitlementCommandSupport
     public static Response<NoContent> NotFound() =>
         Response<NoContent>.Fail("Entitlement was not found.", 404, TenantModuleEntitlementRefusalCodes.NotFound);
 
-    public static Response<NoContent> ConcurrencyFailure() =>
-        Response<NoContent>.Fail("Entitlement was modified by another process.", 409, TenantModuleEntitlementRefusalCodes.Stale);
+    /// <summary>The one answer to a write that met another writer of the same row (stale), for any response type.</summary>
+    public static Response<T> Stale<T>() =>
+        Response<T>.Fail("Entitlement was modified by another process.", 409, TenantModuleEntitlementRefusalCodes.Stale);
+
+    public static Response<NoContent> ConcurrencyFailure() => Stale<NoContent>();
 
     public static TenantModuleEntitlement CreateManualOverride(Guid tenantId, string moduleCode, bool isEnabled, string reason) => new()
     {

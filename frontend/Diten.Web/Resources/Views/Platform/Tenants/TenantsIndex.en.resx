@@ -310,4 +310,5 @@
   <data name="EntitlementExpiryInPast" xml:space="preserve"><value>The new expiry date must be in the future.</value></data>
   <data name="EntitlementOutcomeUnknown" xml:space="preserve"><value>The request was sent, but the list could not be reloaded, so its result could not be checked. Refresh the page to see the current state.</value></data>
   <data name="PermissionDenied" xml:space="preserve"><value>You do not have permission for this action.</value></data>
+  <data name="ExpiryDateUtcEndOfDay" xml:space="preserve"><value>Expiry date (access ends at 23:59 UTC on that day)</value></data>
 </root>

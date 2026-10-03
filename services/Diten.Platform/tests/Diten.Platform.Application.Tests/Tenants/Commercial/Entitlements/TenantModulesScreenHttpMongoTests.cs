@@ -157,7 +157,7 @@ public sealed class TenantModulesScreenHttpMongoTests
     public async Task Suspending_a_plan_module_blocks_it_and_the_override_row_carries_the_way_back()
     {
         await using var host = await Host.StartAsync();
-        var plan = (await host.ListAsync(Tenant)).Single(r => r.IsProjectionRow);
+        var plan = (await host.ListAsync(Tenant)).Single(r => r.IsProjectionRow && r.ModuleCode == Host.PlanModule);
         Assert.Equal(Host.PlanModule, plan.ModuleCode);
         Assert.Equal(["disable"], plan.AllowedActions);
 
@@ -171,7 +171,7 @@ public sealed class TenantModulesScreenHttpMongoTests
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         var rows = await host.ListAsync(Tenant);
-        var planAfter = rows.Single(r => r.IsProjectionRow);
+        var planAfter = rows.Single(r => r.IsProjectionRow && r.ModuleCode == Host.PlanModule);
         Assert.Equal("BlockedByOverride", planAfter.EffectiveAccess);
         // A plan's module comes with the plan: once blocked there is nothing left to do on the plan's own line.
         Assert.Empty(planAfter.AllowedActions!);
@@ -194,19 +194,14 @@ public sealed class TenantModulesScreenHttpMongoTests
     }
 
     [Fact]
-    public async Task A_baseline_module_offers_no_action_and_the_server_still_refuses_its_removal_with_a_code()
+    public async Task A_stray_override_on_a_baseline_module_offers_only_its_removal_and_the_server_takes_it_away()
     {
+        // FIX2 A2 — the clean-up path: such a row can no longer be added, but one that exists must be removable.
         await using var host = await Host.StartAsync();
-        // A stray override row on a baseline module — what the owner met on the Task Center line.
         var seeded = await host.SeedAsync(Tenant, Host.BaselineModule, EntitlementSource.ManualOverride);
 
         var row = (await host.ListAsync(Tenant)).Single(r => r.PhysicalEntitlementId == seeded.Id);
-        Assert.Empty(row.AllowedActions!);
-
-        // The rule itself did not move: the server refuses, now with a code a screen can translate.
-        var remove = await Host.ReadRefusalAsync(await host.DeleteAsync(Tenant, $"{seeded.Id:D}/manual-override", new { rowVersion = row.RowVersion }));
-        Assert.Equal(HttpStatusCode.Conflict, remove.Status);
-        Assert.Equal("ENTITLEMENT_MODULE_BASELINE", remove.Code);
+        Assert.Equal(["removeOverride"], row.AllowedActions);
 
         var disable = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, "disable", new
         {
@@ -214,7 +209,183 @@ public sealed class TenantModulesScreenHttpMongoTests
         }));
         Assert.Equal(HttpStatusCode.Conflict, disable.Status);
         Assert.Equal("ENTITLEMENT_MODULE_BASELINE", disable.Code);
-        Assert.True((await host.StoredAsync(seeded.Id)).IsEnabled);
+
+        var remove = await host.DeleteAsync(Tenant, $"{seeded.Id:D}/manual-override", new { rowVersion = row.RowVersion });
+        Assert.Equal(HttpStatusCode.NoContent, remove.StatusCode);
+        Assert.True((await host.StoredAsync(seeded.Id)).IsDeleted);
+    }
+
+    [Fact]
+    public async Task A_core_override_can_be_removed_and_gives_its_module_slot_back()
+    {
+        // FIX2 A2 — a switched-on core override held a modules.max slot for good; a switched-off one closed the core
+        // module for the tenant with no way back. Removing it is the way out.
+        await using var host = await Host.StartAsync();
+        var seeded = await host.SeedAsync(Tenant, Host.CoreModule, EntitlementSource.ManualOverride);
+        var row = (await host.ListAsync(Tenant)).Single(r => r.PhysicalEntitlementId == seeded.Id);
+        Assert.Equal(["removeOverride"], row.AllowedActions);
+
+        var remove = await host.DeleteAsync(Tenant, $"{seeded.Id:D}/manual-override", new { rowVersion = row.RowVersion });
+
+        Assert.Equal(HttpStatusCode.NoContent, remove.StatusCode);
+        Assert.True((await host.StoredAsync(seeded.Id)).IsDeleted);
+        host.Quota.Verify(x => x.ReleaseEntitlementAsync(It.IsAny<IPlatformTransactionSession>(),
+            It.Is<ReleaseQuotaRequest>(r => r.QuotaKey == QuotaKeys.ModulesMax && r.Amount == 1), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task A_core_module_cannot_be_added_and_the_picker_does_not_offer_it()
+    {
+        await using var host = await Host.StartAsync();
+
+        var add = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, null, new
+        {
+            moduleCode = Host.CoreModule, source = "ManualOverride", isEnabled = false, expiryDateUtc = (DateTimeOffset?)null, reason = "x", rowVersion = (string?)null
+        }));
+        Assert.Equal(HttpStatusCode.Conflict, add.Status);
+        Assert.Equal("ENTITLEMENT_MODULE_CORE", add.Code);
+        Assert.Equal(0, await host.CountAsync("tenant_module_entitlements"));
+
+        var picker = await host.AvailableModuleCodesAsync(Tenant);
+        Assert.Contains("CRM", picker);
+        Assert.DoesNotContain(Host.CoreOutsidePlan, picker);
+        Assert.DoesNotContain(Host.BaselineOutsidePlan, picker);
+        Assert.DoesNotContain(Host.CoreModule, picker);
+    }
+
+    [Fact]
+    public async Task Suspending_a_plan_module_whose_override_has_expired_takes_that_row_over_and_blocks_the_module()
+    {
+        // FIX2 A1 — the plan line offers Suspend (the expired override no longer counts); inserting a second override
+        // met the old row and answered "stale", and the same button came back after every reload.
+        await using var host = await Host.StartAsync();
+        var expired = await host.SeedAsync(Tenant, Host.PlanModule, EntitlementSource.ManualOverride, enabled: false, expiry: DateTimeOffset.UtcNow.AddDays(-2));
+        var plan = (await host.ListAsync(Tenant)).Single(r => r.IsProjectionRow && r.ModuleCode == Host.PlanModule);
+        Assert.Equal(["disable"], plan.AllowedActions);
+
+        var response = await host.PostAsync(Tenant, "disable", new
+        {
+            moduleCode = Host.PlanModule, physicalEntitlementId = (Guid?)null, reason = "Suspended again", rowVersion = (string?)null
+        });
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(1, await host.CountAsync("tenant_module_entitlements"));
+        var stored = await host.StoredAsync(expired.Id);
+        Assert.False(stored.IsEnabled);
+        Assert.Null(stored.ExpiryDateUtc);                 // cleared: a suspension with a past date would not hold
+        Assert.NotEqual(expired.RowVersion, stored.RowVersion);
+        var after = (await host.ListAsync(Tenant)).Single(r => r.IsProjectionRow && r.ModuleCode == Host.PlanModule);
+        Assert.Equal("BlockedByOverride", after.EffectiveAccess);
+        Assert.Empty(after.AllowedActions!);
+    }
+
+    [Fact]
+    public async Task The_plan_lines_of_a_core_and_a_baseline_module_offer_nothing_and_cannot_be_suspended()
+    {
+        await using var host = await Host.StartAsync();
+        var rows = await host.ListAsync(Tenant);
+        Assert.Empty(rows.Single(r => r.IsProjectionRow && r.ModuleCode == Host.CoreModule).AllowedActions!);
+        Assert.Empty(rows.Single(r => r.IsProjectionRow && r.ModuleCode == Host.BaselineModule).AllowedActions!);
+
+        foreach (var (module, code) in new[] { (Host.CoreModule, "ENTITLEMENT_MODULE_CORE"), (Host.BaselineModule, "ENTITLEMENT_MODULE_BASELINE") })
+        {
+            var refusal = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, "disable", new
+            {
+                moduleCode = module, physicalEntitlementId = (Guid?)null, reason = "x", rowVersion = (string?)null
+            }));
+            Assert.Equal(HttpStatusCode.Conflict, refusal.Status);
+            Assert.Equal(code, refusal.Code);
+        }
+
+        Assert.Equal(0, await host.CountAsync("tenant_module_entitlements"));
+    }
+
+    [Fact]
+    public async Task A_module_outside_the_plan_has_no_plan_line_to_suspend_and_an_unknown_one_is_not_found()
+    {
+        await using var host = await Host.StartAsync();
+
+        var outside = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, "disable", new
+        {
+            moduleCode = "CRM", physicalEntitlementId = (Guid?)null, reason = "x", rowVersion = (string?)null
+        }));
+        var unknown = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, "disable", new
+        {
+            moduleCode = Host.GoneModule, physicalEntitlementId = (Guid?)null, reason = "x", rowVersion = (string?)null
+        }));
+
+        Assert.Equal(HttpStatusCode.Conflict, outside.Status);
+        Assert.Equal("ENTITLEMENT_ACTION_NOT_OFFERED", outside.Code);
+        Assert.Equal(HttpStatusCode.NotFound, unknown.Status);
+        Assert.Equal("ENTITLEMENT_MODULE_NOT_FOUND", unknown.Code);
+        Assert.Equal(0, await host.CountAsync("tenant_module_entitlements"));
+    }
+
+    [Fact]
+    public async Task Adding_a_module_again_next_to_its_disabled_row_is_refused_with_a_code_never_a_500()
+    {
+        // FIX2 A3 — the duplicate check ignored a disabled row and the insert met the unique index: a 500.
+        await using var host = await Host.StartAsync();
+        object Add() => new { moduleCode = "CRM", source = "Addon", isEnabled = false, expiryDateUtc = (DateTimeOffset?)null, reason = "off", rowVersion = (string?)null };
+
+        Assert.Equal(HttpStatusCode.Created, (await host.PostAsync(Tenant, null, Add())).StatusCode);
+        var second = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, null, Add()));
+
+        Assert.Equal(HttpStatusCode.Conflict, second.Status);
+        Assert.Equal("ENTITLEMENT_ALREADY_EXISTS", second.Code);
+        Assert.Equal(1, await host.CountAsync("tenant_module_entitlements"));
+    }
+
+    [Fact]
+    public async Task Two_identical_adds_at_once_store_one_row_and_the_other_hears_a_code_never_a_500()
+    {
+        await using var host = await Host.StartAsync();
+        object Add() => new { moduleCode = "CRM", source = "Addon", isEnabled = true, expiryDateUtc = (DateTimeOffset?)null, reason = (string?)null, rowVersion = (string?)null };
+
+        var responses = await Task.WhenAll(host.PostAsync(Tenant, null, Add()), host.PostAsync(Tenant, null, Add()));
+        var answers = await Task.WhenAll(responses.Select(Host.ReadRefusalAsync));
+
+        Assert.Single(answers, a => a.Status == HttpStatusCode.Created);
+        var loser = answers.Single(a => a.Status != HttpStatusCode.Created);
+        Assert.True(loser.Status == HttpStatusCode.Conflict, $"{(int)loser.Status}: {loser.Body}");
+        Assert.Contains(loser.Code, new[] { "ENTITLEMENT_STALE", "ENTITLEMENT_ALREADY_EXISTS" });
+        Assert.Equal(1, await host.CountAsync("tenant_module_entitlements"));
+    }
+
+    [Fact]
+    public async Task An_add_with_an_expiry_in_the_past_is_refused_with_its_code()
+    {
+        await using var host = await Host.StartAsync();
+
+        var add = await Host.ReadRefusalAsync(await host.PostAsync(Tenant, null, new
+        {
+            moduleCode = "CRM", source = "Addon", isEnabled = true, expiryDateUtc = DateTimeOffset.UtcNow.AddDays(-1), reason = (string?)null, rowVersion = (string?)null
+        }));
+
+        Assert.Equal(HttpStatusCode.BadRequest, add.Status);
+        Assert.Equal("ENTITLEMENT_EXPIRY_IN_PAST", add.Code);
+        Assert.Equal(0, await host.CountAsync("tenant_module_entitlements"));
+    }
+
+    [Fact]
+    public async Task An_unchanged_expiry_against_a_stale_version_is_stale_not_a_quiet_success()
+    {
+        await using var host = await Host.StartAsync();
+        var expiry = new DateTimeOffset(2030, 1, 31, 23, 59, 59, TimeSpan.Zero);
+        var seeded = await host.SeedAsync(Tenant, "GOLDENSLIM", EntitlementSource.Addon, expiry: expiry);
+
+        var stale = await Host.ReadRefusalAsync(await host.PatchAsync(Tenant, $"{seeded.Id:D}/expiry", new
+        {
+            expiryDateUtc = expiry, reason = (string?)null, rowVersion = Convert.ToBase64String(Guid.NewGuid().ToByteArray())
+        }));
+        var current = await host.PatchAsync(Tenant, $"{seeded.Id:D}/expiry", new
+        {
+            expiryDateUtc = expiry, reason = (string?)null, rowVersion = Convert.ToBase64String(seeded.RowVersion)
+        });
+
+        Assert.Equal(HttpStatusCode.Conflict, stale.Status);
+        Assert.Equal("ENTITLEMENT_STALE", stale.Code);
+        Assert.Equal(HttpStatusCode.NoContent, current.StatusCode);
     }
 
     [Fact]
@@ -313,7 +484,11 @@ public sealed class TenantModulesScreenHttpMongoTests
         new("system row", "GOLDENSLIM", EntitlementSource.System, true, false,
             [], "ENTITLEMENT_ACTION_NOT_OFFERED", "ENTITLEMENT_ACTION_NOT_OFFERED", "ENTITLEMENT_ACTION_NOT_OFFERED", "ENTITLEMENT_NOT_MANUAL_OVERRIDE"),
         new("baseline override", Host.BaselineModule, EntitlementSource.ManualOverride, true, false,
-            [], "ENTITLEMENT_MODULE_BASELINE", "ENTITLEMENT_MODULE_BASELINE", "ENTITLEMENT_MODULE_BASELINE", "ENTITLEMENT_MODULE_BASELINE"),
+            ["removeOverride"], "ENTITLEMENT_MODULE_BASELINE", "ENTITLEMENT_MODULE_BASELINE", "ENTITLEMENT_MODULE_BASELINE", null),
+        new("core override, off", Host.CoreModule, EntitlementSource.ManualOverride, false, false,
+            ["removeOverride"], "ENTITLEMENT_MODULE_CORE", "ENTITLEMENT_MODULE_CORE", "ENTITLEMENT_MODULE_CORE", null),
+        new("add-on, off and expired", "GOLDENSLIM", EntitlementSource.Addon, false, true,
+            ["extendExpiry"], "ENTITLEMENT_ACTION_NOT_OFFERED", "ENTITLEMENT_ACTION_NOT_OFFERED", null, "ENTITLEMENT_NOT_MANUAL_OVERRIDE"),
         new("core add-on", Host.CoreModule, EntitlementSource.Addon, true, false,
             [], "ENTITLEMENT_MODULE_CORE", "ENTITLEMENT_MODULE_CORE", "ENTITLEMENT_MODULE_CORE", "ENTITLEMENT_MODULE_CORE"),
         new("add-on of a module that left the catalogue, on", Host.GoneModule, EntitlementSource.Addon, true, false,
@@ -383,7 +558,7 @@ public sealed class TenantModulesScreenHttpMongoTests
         var seeded = await host.SeedAsync(Tenant, Host.PlanModule, EntitlementSource.ManualOverride);
 
         var rows = await host.ListAsync(Tenant);
-        var plan = rows.Single(r => r.IsProjectionRow);
+        var plan = rows.Single(r => r.IsProjectionRow && r.ModuleCode == Host.PlanModule);
         Assert.Equal("EnabledByOverride", plan.EffectiveAccess);
         Assert.Empty(plan.AllowedActions!);
         Assert.Equal(["disable", "extendExpiry", "removeOverride"], rows.Single(r => r.PhysicalEntitlementId == seeded.Id).AllowedActions);
@@ -696,6 +871,9 @@ public sealed class TenantModulesScreenHttpMongoTests
 
         public IMongoDatabase Database { get; }
 
+        /// <summary>The quota service double (grants everything) — observable, so a release can be counted.</summary>
+        public Mock<IQuotaService> Quota { get; } = GrantingQuota();
+
         /// <summary>What the server logged as an error — a 500's cause, for a failure message.</summary>
         public System.Collections.Concurrent.ConcurrentQueue<string> Failures { get; } = new();
         public IMongoClient MongoClient => _mongo.Client;
@@ -766,7 +944,7 @@ public sealed class TenantModulesScreenHttpMongoTests
 
                     // Not this file's subject.
                     services.AddSingleton<ITransactionalIntegrationEventWriter, SilentEvents>();
-                    services.AddSingleton(GrantingQuota());
+                    services.AddSingleton(Quota.Object);
                     services.AddSingleton(Catalogue());
                     services.AddSingleton(CatalogueContract());
                     services.AddSingleton(Subscriptions());
@@ -808,6 +986,8 @@ public sealed class TenantModulesScreenHttpMongoTests
         public const string BaselineModule = "TASKCENTER";
         public const string CoreModule = "COREMOD";
         public const string GoneModule = "GONEMOD";
+        public const string CoreOutsidePlan = "CORE2";
+        public const string BaselineOutsidePlan = "BASE2";
         public static readonly Guid PlanId = Guid.Parse("50050050-0000-4000-8000-0000000000c3");
 
         public async Task<TenantModuleEntitlement> SeedAsync(
@@ -867,6 +1047,16 @@ public sealed class TenantModulesScreenHttpMongoTests
             var body = await response.Content.ReadAsStringAsync();
             Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode}: {body}");
             return JsonSerializer.Deserialize<Envelope<List<Row>>>(body, Json)!.Data!;
+        }
+
+        public async Task<IReadOnlyList<string>> AvailableModuleCodesAsync(Guid tenantId)
+        {
+            var response = await Client().GetAsync(Path(tenantId, "available-modules"));
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode}: {body}");
+            using var json = JsonDocument.Parse(body);
+            var data = json.RootElement.TryGetProperty("data", out var d) ? d : json.RootElement;
+            return data.EnumerateArray().Select(x => x.GetProperty("moduleCode").GetString()!).ToList();
         }
 
         public Task<HttpResponseMessage> PostAsync(Guid tenantId, string? suffix, object? body) =>
@@ -958,8 +1148,14 @@ public sealed class TenantModulesScreenHttpMongoTests
         private static IPlatformCatalogContract CatalogueContract()
         {
             var contract = new Mock<IPlatformCatalogContract>();
+            static AssignableModuleInfo Assignable(string code, bool core = false, bool baseline = false) =>
+                new(Guid.NewGuid(), code, code, code, null, "PLATFORM", "PLATFORM", "Active", "1.0.0", core, true, 0,
+                    DateTimeOffset.UtcNow, null, null, baseline);
             contract.Setup(x => x.GetAssignableModulesAsync(It.IsAny<CancellationToken>()))
-                .ReturnsAsync(Array.Empty<AssignableModuleInfo>());
+                .ReturnsAsync(new[] { Assignable("CRM"), Assignable("HRX"), Assignable(CoreModule, core: true), Assignable(BaselineModule, baseline: true),
+                    // Core and baseline modules OUTSIDE the plan: the picker must hide them for what they are, not because
+                    // the plan already gives them.
+                    Assignable(CoreOutsidePlan, core: true), Assignable(BaselineOutsidePlan, baseline: true) });
             return contract.Object;
         }
 
@@ -975,7 +1171,8 @@ public sealed class TenantModulesScreenHttpMongoTests
         {
             var plans = new Mock<ISubscriptionPlanRepository>();
             plans.Setup(x => x.GetByIdAsync(PlanId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new SubscriptionPlan { IncludedModuleKeys = [PlanModule] });
+                // FIX2 — the plan also carries a core and a baseline module: their plan lines must offer nothing.
+                .ReturnsAsync(new SubscriptionPlan { IncludedModuleKeys = [PlanModule, CoreModule, BaselineModule] });
             return plans.Object;
         }
 
@@ -1018,7 +1215,7 @@ public sealed class TenantModulesScreenHttpMongoTests
     }
 
     /// <summary>The plan has room: every consume and release is granted. Limits have their own tests.</summary>
-    private static IQuotaService GrantingQuota()
+    private static Mock<IQuotaService> GrantingQuota()
     {
         static Response<QuotaMutationDto> Granted(Guid tenantId) =>
             Response<QuotaMutationDto>.Success(new QuotaMutationDto(tenantId, QuotaKeys.ModulesMax, 1, 100, 1, true, null));
@@ -1030,6 +1227,6 @@ public sealed class TenantModulesScreenHttpMongoTests
             .ReturnsAsync((IPlatformTransactionSession _, ReleaseQuotaRequest request, CancellationToken _) => Granted(request.TenantId));
         quota.Setup(x => x.RecalculateEntitlementAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<RecalculateQuotaUsageRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Response<QuotaStatusDto>.Fail("not measured here", 404));
-        return quota.Object;
+        return quota;
     }
 }

@@ -310,4 +310,5 @@
   <data name="EntitlementExpiryInPast" xml:space="preserve"><value>Yeni bitiş tarihi ileri bir tarih olmalı.</value></data>
   <data name="EntitlementOutcomeUnknown" xml:space="preserve"><value>İstek gönderildi ama liste yeniden yüklenemediği için sonucu doğrulanamadı. Güncel durumu görmek için sayfayı yenileyin.</value></data>
   <data name="PermissionDenied" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="ExpiryDateUtcEndOfDay" xml:space="preserve"><value>Bitiş tarihi (erişim o gün 23:59 UTC'de biter)</value></data>
 </root>
