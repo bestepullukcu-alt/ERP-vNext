@@ -1,0 +1,18 @@
+{
+ "page": "/SupplyChain/Shipments/Create",
+ "httpStatus": 200,
+ "redirected": false,
+ "shellKept": true,
+ "visibleTables": 0,
+ "visibleForms": 0,
+ "visibleActionButtons": [],
+ "skeleton": 0,
+ "cardText": [
+  "You don't have access to Create Shipment",
+  "Ask your administrator to grant you permission for this page."
+ ],
+ "shipmentXhr": 0,
+ "title": "Create Shipment - Di10",
+ "culture": "en",
+ "dir": "ltr"
+}

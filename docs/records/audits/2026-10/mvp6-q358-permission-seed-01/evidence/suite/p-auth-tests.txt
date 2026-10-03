@@ -1,0 +1,4 @@
+with build rc=0
+with: Passed!  - Failed:     0, Passed:   240, Skipped:     0, Total:   240, Duration: 11 s - Di
+without build rc=0
+without: Passed!  - Failed:     0, Passed:   240, Skipped:     0, Total:   240, Duration: 11 s - Di

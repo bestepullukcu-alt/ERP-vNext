@@ -1,0 +1,16 @@
+21:32:48 HTTP GET /api/shipment-bundle/shipments responded 200 in 440.7894 ms
+21:33:02 HTTP POST /api/shipment-bundle/shipments responded 201 in 264.7416 ms
+21:33:02 HTTP GET /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec responded 200 in 59.8919 ms
+21:33:10 HTTP GET /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec responded 200 in 48.0179 ms
+21:33:24 HTTP POST /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec/transition responded 200 in 74.6100 ms
+21:33:24 HTTP GET /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec responded 200 in 7.7529 ms
+21:33:26 HTTP GET /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec responded 200 in 10.4495 ms
+21:33:39 HTTP POST /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec/transition responded 200 in 58.4161 ms
+21:33:39 HTTP GET /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec responded 200 in 5.3949 ms
+21:33:42 HTTP GET /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec responded 200 in 14.1517 ms
+21:33:56 HTTP POST /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec/pod responded 201 in 140.5985 ms
+21:33:56 HTTP GET /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec responded 200 in 23.9164 ms
+21:33:58 HTTP GET /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec responded 200 in 11.9155 ms
+21:34:13 HTTP POST /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec/transition responded 200 in 47.3483 ms
+21:34:13 HTTP GET /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec responded 200 in 14.5315 ms
+21:34:15 HTTP GET /api/shipment-bundle/shipments/a4cd43d5-f383-4f1f-a49d-78a95e3ea2ec responded 200 in 11.0720 ms

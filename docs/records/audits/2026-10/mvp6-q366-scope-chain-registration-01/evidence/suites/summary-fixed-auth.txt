@@ -1,0 +1,1 @@
+Failed!  - Failed:     3, Passed:   789, Skipped:     0, Total:   792, Duration: 2 m - Diten.AuthService.Application.Tests.dll (net8.0)

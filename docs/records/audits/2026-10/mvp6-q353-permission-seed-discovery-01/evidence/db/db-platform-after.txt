@@ -1,0 +1,76 @@
+platform collections matching page|action|module: document_management_capa_actions platform_module_catalog platform_module_domains platform_module_page_action_descriptors platform_module_page_descriptors platform_module_services tenant_module_entitlements
+== platform_module_catalog : 1
+{
+  ModuleCode: 'SHIPMENT-TRACKING-POD',
+  PageCode: undefined,
+  ActionCode: undefined,
+  RoutePath: undefined,
+  RequiredPermission: undefined,
+  PermissionKey: undefined,
+  IsDeleted: false
+}
+== platform_module_page_action_descriptors : 4
+{
+  ModuleCode: 'SHIPMENT-TRACKING-POD',
+  PageCode: 'SHIPMENT_CREATE',
+  ActionCode: 'SAVE',
+  RoutePath: undefined,
+  RequiredPermission: undefined,
+  PermissionKey: 'supplychain.shipments.create',
+  IsDeleted: false
+}
+{
+  ModuleCode: 'SHIPMENT-TRACKING-POD',
+  PageCode: 'SHIPMENT_DETAILS',
+  ActionCode: 'CHANGE_STATUS',
+  RoutePath: undefined,
+  RequiredPermission: undefined,
+  PermissionKey: 'supplychain.shipments.dispatch',
+  IsDeleted: false
+}
+{
+  ModuleCode: 'SHIPMENT-TRACKING-POD',
+  PageCode: 'SHIPMENT_DETAILS',
+  ActionCode: 'CANCEL',
+  RoutePath: undefined,
+  RequiredPermission: undefined,
+  PermissionKey: 'supplychain.shipments.cancel',
+  IsDeleted: false
+}
+{
+  ModuleCode: 'SHIPMENT-TRACKING-POD',
+  PageCode: 'SHIPMENT_DETAILS',
+  ActionCode: 'CAPTURE_POD',
+  RoutePath: undefined,
+  RequiredPermission: undefined,
+  PermissionKey: 'supplychain.shipments.pod.capture',
+  IsDeleted: false
+}
+== platform_module_page_descriptors : 3
+{
+  ModuleCode: 'SHIPMENT-TRACKING-POD',
+  PageCode: 'SHIPMENTS',
+  ActionCode: undefined,
+  RoutePath: '/SupplyChain/Shipments',
+  RequiredPermission: 'supplychain.shipments.read',
+  PermissionKey: undefined,
+  IsDeleted: false
+}
+{
+  ModuleCode: 'SHIPMENT-TRACKING-POD',
+  PageCode: 'SHIPMENT_CREATE',
+  ActionCode: undefined,
+  RoutePath: '/SupplyChain/Shipments/Create',
+  RequiredPermission: 'supplychain.shipments.create',
+  PermissionKey: undefined,
+  IsDeleted: false
+}
+{
+  ModuleCode: 'SHIPMENT-TRACKING-POD',
+  PageCode: 'SHIPMENT_DETAILS',
+  ActionCode: undefined,
+  RoutePath: '/SupplyChain/Shipments/Details/{shipmentId:guid}',
+  RequiredPermission: 'supplychain.shipments.read',
+  PermissionKey: undefined,
+  IsDeleted: false
+}

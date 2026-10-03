@@ -1,0 +1,16 @@
+--- D idempotency: replay a second time
+tenant rolePermissions rows=85
+{"status":"processed"} HTTP 200
+tenant rolePermissions rows=85
+tenant 1cbd7c866c54 Admin      holds 5/5  cancel(1:shipment-tracking-pod) create(1:shipment-tracking-pod) dispatch(1:shipment-tracking-pod) pod.capture(1:shipment-tracking-pod) read(1:shipment-tracking-pod)
+tenant 1cbd7c866c54 Viewer     holds 1/5  read(0)
+--- D duplicate EventId: resend c9-replay2 body unchanged
+{"status":"noop_duplicate"} HTTP 200
+tenant rolePermissions rows=85
+--- C Viewer isolation: remove the Viewer's System-sourced read row in this isolated DB, then replay
+deleted=1
+tenant 1cbd7c866c54 Admin      holds 5/5  cancel(1:shipment-tracking-pod) create(1:shipment-tracking-pod) dispatch(1:shipment-tracking-pod) pod.capture(1:shipment-tracking-pod) read(1:shipment-tracking-pod)
+tenant 1cbd7c866c54 Viewer     holds 0/5  
+{"status":"processed"} HTTP 200
+tenant 1cbd7c866c54 Admin      holds 5/5  cancel(1:shipment-tracking-pod) create(1:shipment-tracking-pod) dispatch(1:shipment-tracking-pod) pod.capture(1:shipment-tracking-pod) read(1:shipment-tracking-pod)
+tenant 1cbd7c866c54 Viewer     holds 1/5  read(0)

@@ -1,0 +1,16 @@
+{
+ "page": "/SupplyChain/Shipments/Details/3f1c2b9e-0000-4000-8000-000000000362",
+ "httpStatus": 200,
+ "redirected": false,
+ "shellKept": true,
+ "visibleTables": 0,
+ "visibleForms": 0,
+ "visibleActionButtons": [],
+ "offcanvas": 0,
+ "cardText": [
+  "You don't have access to Shipment Details",
+  "Ask your administrator to grant you permission for this page."
+ ],
+ "shipmentXhr": 0,
+ "title": "Shipment Details - Di10"
+}

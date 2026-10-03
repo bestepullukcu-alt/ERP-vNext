@@ -1,0 +1,13 @@
+--- /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/d055b718-e2c9-4712-a3ce-c6827969ffdf/scratchpad/q366/services_Diten.Platform_src_Diten.Platform.API_appsettings.Development.json.pre	2026-10-03 21:09:56
++++ services/Diten.Platform/src/Diten.Platform.API/appsettings.Development.json	2026-10-03 21:09:56
+@@ -166,5 +166,10 @@
+       "Identifier": "ditenmdmservice",
+       "ActiveSecret": "<REDACTED len 45>"
+     }
++  },
++  "MdmServiceIdentity": {
++    "Enabled": true,
++    "KeyId": "local-dev",
++    "Secret": "<REDACTED len 64>"
+   }
+ }

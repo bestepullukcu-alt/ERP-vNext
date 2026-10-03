@@ -1,0 +1,5 @@
+  Error Message:
+   Optional Diten.* dependencies that silently resolve to null:
+Diten.Platform.Infrastructure.Services.Mdm.MdmLegalEntityReferenceValidator(Diten.Platform.Infrastructure.Services.Mdm.IMdmServiceIdentityTokenProvider? serviceTokenProvider = null)
+
+Failed!  - Failed:     1, Passed:     1, Skipped:     0, Total:     2, Duration: 12 ms - Diten.Platform.CompositionGuard.Tests.dll (net8.0)

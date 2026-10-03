@@ -1,0 +1,2 @@
+COUNTERFACTUAL admin legal_entity_id= e5f15d4b-12ba-44d9-9009-6a16014fc4a1 shipmentKeys= 5
+COUNTERFACTUAL nokey legal_entity_id= e5f15d4b-12ba-44d9-9009-6a16014fc4a1 shipmentKeys= 0

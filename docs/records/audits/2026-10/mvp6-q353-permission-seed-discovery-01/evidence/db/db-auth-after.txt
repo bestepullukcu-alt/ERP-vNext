@@ -1,0 +1,53 @@
+collections: authAuditLogs auth_role_assignment_versions integrationEventInbox mfaChallenges permissions refreshTokens rolePermissions roles userRoles users
+permission collection: permissions  total docs: 416
+supplychain.* permissions: 5
+{
+  Key: 'supplychain.shipments.cancel',
+  Module: 'shipment-tracking-pod',
+  Resource: 'shipments',
+  Action: 'cancel',
+  Scope: 0,
+  IsSystem: false,
+  IsDeleted: false,
+  DisplayName: 'Cancel Shipment'
+}
+{
+  Key: 'supplychain.shipments.create',
+  Module: 'shipment-tracking-pod',
+  Resource: 'shipments',
+  Action: 'create',
+  Scope: 0,
+  IsSystem: false,
+  IsDeleted: false,
+  DisplayName: 'Save'
+}
+{
+  Key: 'supplychain.shipments.dispatch',
+  Module: 'shipment-tracking-pod',
+  Resource: 'shipments',
+  Action: 'dispatch',
+  Scope: 0,
+  IsSystem: false,
+  IsDeleted: false,
+  DisplayName: 'Change Status'
+}
+{
+  Key: 'supplychain.shipments.pod.capture',
+  Module: 'shipment-tracking-pod',
+  Resource: 'shipments.pod',
+  Action: 'capture',
+  Scope: 0,
+  IsSystem: false,
+  IsDeleted: false,
+  DisplayName: 'Capture POD'
+}
+{
+  Key: 'supplychain.shipments.read',
+  Module: 'shipment-tracking-pod',
+  Resource: 'shipments',
+  Action: 'read',
+  Scope: 0,
+  IsSystem: false,
+  IsDeleted: false,
+  DisplayName: 'Shipment Details'
+}

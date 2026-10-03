@@ -1,0 +1,9 @@
+{
+  ModuleCode: 'SHIPMENT-TRACKING-POD',
+  IsTenantAssignable: true,
+  IsBaseline: false,
+  DomainCode: undefined,
+  ServiceCode: undefined,
+  IsActive: undefined
+}
+tenant_module_entitlements total=0 for SHIPMENT=0

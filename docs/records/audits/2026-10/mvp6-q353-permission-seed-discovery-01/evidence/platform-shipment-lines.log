@@ -1,0 +1,8 @@
+19:52:42 Information Catalog permission synced to AuthService. PermissionKey="supplychain.shipments.read"
+19:52:42 Information Catalog permission synced to AuthService. PermissionKey="supplychain.shipments.create"
+19:52:42 Information Catalog permission synced to AuthService. PermissionKey="supplychain.shipments.create"
+19:52:42 Information Catalog permission synced to AuthService. PermissionKey="supplychain.shipments.read"
+19:52:42 Information Catalog permission synced to AuthService. PermissionKey="supplychain.shipments.dispatch"
+19:52:42 Information Catalog permission synced to AuthService. PermissionKey="supplychain.shipments.cancel"
+19:52:42 Information Catalog permission synced to AuthService. PermissionKey="supplychain.shipments.pod.capture"
+19:52:42 Information Module manifest registered. ModuleCode="shipment-tracking-pod" Success=True

@@ -1,0 +1,32 @@
+== sab-a: removed lines vs fixed:
+<         services.AddHttpClient<ITenantLegalEntityScopeClient, PlatformTenantLegalEntityScopeClient>((sp, client) =>
+<         {
+<             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
+<             client.BaseAddress = new Uri(options.BaseUrl);
+<             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
+<         });
+build rc=0
+Failed!  - Failed:     1, Passed:     1, Skipped:     0, Total:     2,
+Optional Diten.* dependencies that silently resolve to null:
+Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers.ForcedChangeTenantPasswordCommandHandler(Diten.AuthService.Application.Common.Interfaces.ITenantLegalEntityScopeClient? legalEntityScopeClient = null)
+Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers.LoginCommandHandler(Diten.AuthService.Application.Common.Interfaces.ITenantLegalEntityScopeClient? legalEntityScopeClient = null)
+Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers.RefreshTokenCommandHandler(Diten.AuthService.Application.Common.Interfaces.ITenantLegalEntityScopeClient? legalEntityScopeClient = null)
+Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers.VerifyMfaCommandHandler(Diten.AuthService.Application.Common.Interfaces.ITenantLegalEntityScopeClient? legalEntityScopeClient = null)
+== sab-m: removed lines vs fixed:
+< builder.Services.AddSingleton<IPlatformServiceTokenValidator, PlatformServiceTokenValidator>();
+build rc=0
+Failed!  - Failed:     1, Passed:     1, Skipped:     0, Total:     2,
+Controllers the production container cannot construct:
+Diten.MdmService.Api.Controllers.Internal.InternalLegalEntityReferenceController(Diten.MdmService.Api.Security.IPlatformServiceTokenValidator serviceTokenValidator)
+== sab-s: removed lines vs fixed:
+< builder.Services.AddHttpClient<IClaimReferenceReader, ClaimReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
+build rc=0
+Failed!  - Failed:     2, Passed:     0, Skipped:     0, Total:     2,
+Class fixture type 'Diten.SupplyChainService.Tests.CompositionRootGuardTests+Host' threw in its constructor
+---- System.AggregateException : Some services are not able to be constructed (Error while validating the service descriptor 'ServiceType: MediatR.IRequestHandler`2[Diten.SupplyChainService.Application.Features.Claims.Commands.CreateClaimCo
+-------- System.InvalidOperationException : Error while validating the service descriptor 'ServiceType: MediatR.IRequestHandler`2[Diten.SupplyChainService.Application.Features.Claims.Commands.CreateClaimCommand,Diten.SupplyChainService.Appl
+------------ System.InvalidOperationException : Unable to resolve service for type 'Diten.SupplyChainService.Application.Features.Claims.IClaimReferenceReader' while attempting to activate 'Diten.SupplyChainService.Application.Features.Clai
+-------- System.InvalidOperationException : Error while validating the service descriptor 'ServiceType: MediatR.IRequestHandler`2[Diten.SupplyChainService.Application.Features.Claims.Commands.TransitionClaimCommand,Diten.SupplyChainService.
+------------ System.InvalidOperationException : Unable to resolve service for type 'Diten.SupplyChainService.Application.Features.Claims.IClaimReferenceReader' while attempting to activate 'Diten.SupplyChainService.Application.Features.Clai
+--
+Class fixture type 'Diten.SupplyChainService.Tests.CompositionRootGuardTests+Host' threw in its constructor
