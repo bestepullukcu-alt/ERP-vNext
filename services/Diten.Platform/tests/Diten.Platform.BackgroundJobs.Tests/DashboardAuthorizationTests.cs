@@ -18,6 +18,16 @@ public sealed class DashboardAuthorizationTests
         Assert.False(PlatformActorDashboardAuthorization.IsAuthorized(new ClaimsPrincipal()));
     }
 
+    [Theory]
+    [InlineData("platform_admin", true)]
+    [InlineData("partner_admin", false)] // BL-521 — the dashboard runs every tenant's jobs
+    [InlineData("tenant_user", false)]
+    public void Only_a_platform_administrator_opens_the_job_dashboard(string actorType, bool expected)
+    {
+        var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("actor_type", actorType)], "Bearer"));
+        Assert.Equal(expected, PlatformActorDashboardAuthorization.IsAuthorized(user));
+    }
+
     [Fact]
     public void Development_config_true_localhost_allows_anonymous_bypass()
     {
@@ -89,9 +99,10 @@ public sealed class DashboardAuthorizationTests
         Assert.False(PlatformActorDashboardAuthorization.IsDevelopmentAnonymousBypassAllowed(httpContext));
     }
 
+    // BL-521 — this used to admit partner_admin too; the dashboard runs every tenant's jobs, so it is platform_admin only
+    // (Only_a_platform_administrator_opens_the_job_dashboard holds the partner refusal).
     [Theory]
     [InlineData("platform_admin")]
-    [InlineData("partner_admin")]
     public void Platform_actor_is_allowed(string actorType)
     {
         var identity = new ClaimsIdentity(

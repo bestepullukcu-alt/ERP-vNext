@@ -86,38 +86,7 @@ public static class DependencyInjection
                 };
             });
 
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy("PlatformActor", policy =>
-            {
-                policy.RequireAuthenticatedUser();
-                policy.RequireAssertion(context =>
-                {
-                    var actorType = context.User.Claims
-                        .FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
-                        ?.Value;
-
-                    return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
-                           || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
-                });
-            });
-
-            // Phase 5 baseline policy: audit endpoints accept ONLY platform_admin.
-            // Partner admin audit scope support (per-tenant filter, partner-scoped redaction)
-            // is follow-up; see MOD-0021 Phase 5A review H1/H2.
-            options.AddPolicy("PlatformAdminOnly", policy =>
-            {
-                policy.RequireAuthenticatedUser();
-                policy.RequireAssertion(context =>
-                {
-                    var actorType = context.User.Claims
-                        .FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
-                        ?.Value;
-
-                    return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase);
-                });
-            });
-        });
+        services.AddAuthorization(AddPlatformActorPolicies);
         services.AddSingleton<IAuthorizationPolicyProvider, EntitlementAuthorizationPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, TenantModuleAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, TenantFeatureAuthorizationHandler>();
@@ -849,5 +818,58 @@ public static class DependencyInjection
             new("ModuleRegistrationCredentials:Mdm:PreviousSecret", "Platform", SecretRequirementKind.InternalApiKey, Required: false),
             new("Smtp:Password", "Platform", MinimumLength: 8, Required: smtpEnabled, IsEnabled: () => smtpEnabled)
         ];
+    }
+
+    /// <summary>
+    /// The two platform-actor policies, as production registers them. Public so an HTTP test host registers THESE,
+    /// not a copy of them (BL-521: two hosts used to re-declare "PlatformActor" and would have kept admitting partners).
+    /// </summary>
+    public static void AddPlatformActorPolicies(Microsoft.AspNetCore.Authorization.AuthorizationOptions options)
+    {
+        options.AddPolicy("PlatformActor", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireAssertion(context =>
+            {
+                var actorType = context.User.Claims
+                    .FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
+                    ?.Value;
+
+                // BL-521 — a partner administrator only where the endpoint admits partners (tenant-scoped families).
+                return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
+                       || (string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase)
+                           && EndpointAdmitsPartners(context.Resource));
+            });
+        });
+
+        // Phase 5 baseline policy: audit endpoints accept ONLY platform_admin.
+        // Partner admin audit scope support (per-tenant filter, partner-scoped redaction)
+        // is follow-up; see MOD-0021 Phase 5A review H1/H2.
+        options.AddPolicy("PlatformAdminOnly", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireAssertion(context =>
+            {
+                var actorType = context.User.Claims
+                    .FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
+                    ?.Value;
+
+                return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase);
+            });
+        });
+    }
+
+    /// <summary>BL-521 — the endpoint being authorized admits partner administrators (IPartnerAdminAllowed metadata).
+    /// No endpoint to read → no.</summary>
+    internal static bool EndpointAdmitsPartners(object? resource)
+    {
+        var endpoint = resource switch
+        {
+            Microsoft.AspNetCore.Http.HttpContext http => Microsoft.AspNetCore.Http.EndpointHttpContextExtensions.GetEndpoint(http),
+            Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext filter => Microsoft.AspNetCore.Http.EndpointHttpContextExtensions.GetEndpoint(filter.HttpContext),
+            Microsoft.AspNetCore.Http.Endpoint direct => direct,
+            _ => null
+        };
+        return endpoint?.Metadata.GetMetadata<Diten.Platform.Application.Contracts.IPartnerAdminAllowed>() is not null;
     }
 }

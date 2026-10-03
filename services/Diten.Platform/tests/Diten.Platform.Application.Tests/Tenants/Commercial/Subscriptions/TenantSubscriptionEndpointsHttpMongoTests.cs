@@ -222,6 +222,23 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
     }
 
     [Fact]
+    public async Task A_partner_assigns_a_plan_to_its_allowed_tenant_and_another_tenant_is_not_found_with_nothing_written()
+    {
+        // BL-521 — the partner administrator is allowed Tenant only.
+        await using var host = await Host.StartAsync();
+
+        var refused = await Host.ReadAsync(await host.PostAsync(Host.PartnerToken(), Host.OtherTenant, "", AssignBody));
+        Assert.Equal(HttpStatusCode.NotFound, refused.Status);
+        Assert.Empty(await host.SubscriptionsAsync(Host.OtherTenant));
+        Assert.Equal(0, await host.EventsAsync());
+
+        var allowed = await host.PostAsync(Host.PartnerToken(), Host.Tenant, "", AssignBody);
+        var answer = await Host.ReadAsync(allowed);
+        Assert.True(allowed.IsSuccessStatusCode, $"{(int)answer.Status}: {answer.Body}");
+        Assert.Single(await host.SubscriptionsAsync(Host.Tenant));
+    }
+
+    [Fact]
     public async Task A_second_assign_is_refused_with_its_code_while_a_subscription_is_live()
     {
         await using var host = await Host.StartAsync();
@@ -379,19 +396,9 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
                                 ClockSkew = TimeSpan.Zero
                             };
                         });
-                    // The production policy (Infrastructure DependencyInjection.AddInfrastructure).
-                    services.AddAuthorization(options => options.AddPolicy("PlatformActor", policy =>
-                    {
-                        policy.RequireAuthenticatedUser();
-                        policy.RequireAssertion(context =>
-                        {
-                            var actorType = context.User.Claims
-                                .FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
-                                ?.Value;
-                            return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
-                                   || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
-                        });
-                    }));
+                    // THE production policies (BL-521: no longer a copy — a copy kept admitting partners everywhere).
+                    services.AddAuthorization(Diten.Platform.Infrastructure.DependencyInjection.AddPlatformActorPolicies);
+                    services.AddScoped<IPlatformActorTenantScope, Diten.Platform.API.Security.PlatformActorTenantScope>();
                     services.AddHttpContextAccessor();
 
                     services.AddApplication();
@@ -558,6 +565,15 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
             return (response.StatusCode, code, body);
         }
 
+        public const string PartnerEmail = "partner.admin@di10.test";
+        public static readonly Guid Partner = Guid.Parse("60060060-0000-4000-8000-0000000000e5");
+
+        /// <summary>BL-521 — a partner administrator allowed only <see cref="Tenant"/>.</summary>
+        public static string PartnerToken() => Token(
+            new Claim(JwtRegisteredClaimNames.Sub, Partner.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, PartnerEmail),
+            new Claim("actor_type", "partner_admin"));
+
         public static string AdministratorToken() => Token(
             new Claim(JwtRegisteredClaimNames.Sub, Administrator.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, AdministratorEmail),
@@ -603,6 +619,15 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
         private static IPlatformAdministratorRepository Administrators()
         {
             var administrators = new Mock<IPlatformAdministratorRepository>();
+            // BL-521 — a partner administrator allowed ONE tenant (Tenant), not OtherTenant.
+            administrators.Setup(x => x.GetByNormalizedEmailAsync(PartnerEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new PlatformAdministrator
+                {
+                    ActorType = ActorType.PartnerAdmin, AllowedTenantIds = [Tenant],
+                    Status = AdministratorStatus.Active,
+                    InvitationStatus = AdministratorInvitationStatus.Accepted,
+                    LastLoginAtUtc = DateTimeOffset.UtcNow
+                });
             administrators.Setup(x => x.GetByNormalizedEmailAsync(AdministratorEmail, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new PlatformAdministrator
                 {

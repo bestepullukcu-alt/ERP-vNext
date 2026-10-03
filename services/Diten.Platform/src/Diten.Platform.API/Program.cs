@@ -98,6 +98,9 @@ builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
  */
 builder.Services.AddScoped<Diten.Platform.Application.Contracts.IActorPermissionContext,
     Diten.Platform.API.Security.ClaimsActorPermissionContext>();
+// BL-521 — which tenants this request's platform actor may touch (read once per request from its administrator record).
+builder.Services.AddScoped<Diten.Platform.Application.Contracts.IPlatformActorTenantScope,
+    Diten.Platform.API.Security.PlatformActorTenantScope>();
 builder.Services.AddDitenObservability(
     builder.Configuration,
     builder.Environment,

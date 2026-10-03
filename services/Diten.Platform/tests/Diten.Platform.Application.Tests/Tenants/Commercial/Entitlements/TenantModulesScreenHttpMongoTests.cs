@@ -66,6 +66,26 @@ public sealed class TenantModulesScreenHttpMongoTests
     private static readonly Guid Tenant = Guid.Parse("50050050-0000-4000-8000-0000000000a1");
     private static readonly Guid OtherTenant = Guid.Parse("50050050-0000-4000-8000-0000000000b2");
 
+    // ── BL-521 — a partner administrator, allowed only Tenant ───────────────────────────────────────────
+
+    [Fact]
+    public async Task A_partner_reaches_the_modules_of_its_allowed_tenant_and_another_tenants_are_not_found()
+    {
+        await using var host = await Host.StartAsync();
+        var theirs = await host.SeedAsync(OtherTenant, "GOLDENSLIM", EntitlementSource.Addon, enabled: false);
+        var row = (await host.ListAsync(OtherTenant)).Single(r => r.PhysicalEntitlementId == theirs.Id);
+        var partner = host.PartnerClient();
+
+        var mine = await partner.GetAsync(Host.PathOf(Tenant, null));
+        var list = await partner.GetAsync(Host.PathOf(OtherTenant, null));
+        var enable = await partner.PostAsync(Host.PathOf(OtherTenant, $"{theirs.Id:D}/enable"), JsonContent.Create(row.RowVersion));
+
+        Assert.Equal(HttpStatusCode.OK, mine.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, list.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, enable.StatusCode);
+        Assert.False((await host.StoredAsync(theirs.Id)).IsEnabled); // nothing written
+    }
+
     [Fact]
     public async Task A_platform_administrator_suspends_an_active_add_on_and_the_list_shows_it_suspended()
     {
@@ -934,19 +954,9 @@ public sealed class TenantModulesScreenHttpMongoTests
                                 ClockSkew = TimeSpan.Zero
                             };
                         });
-                    // The production policy (Infrastructure DependencyInjection.AddInfrastructure).
-                    services.AddAuthorization(options => options.AddPolicy("PlatformActor", policy =>
-                    {
-                        policy.RequireAuthenticatedUser();
-                        policy.RequireAssertion(context =>
-                        {
-                            var actorType = context.User.Claims
-                                .FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
-                                ?.Value;
-                            return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
-                                   || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
-                        });
-                    }));
+                    // THE production policies (BL-521: no longer a copy — a copy kept admitting partners everywhere).
+                    services.AddAuthorization(Diten.Platform.Infrastructure.DependencyInjection.AddPlatformActorPolicies);
+                    services.AddScoped<IPlatformActorTenantScope, Diten.Platform.API.Security.PlatformActorTenantScope>();
                     services.AddHttpContextAccessor();
 
                     services.AddApplication();
@@ -973,6 +983,7 @@ public sealed class TenantModulesScreenHttpMongoTests
                     services.AddSingleton(CatalogueContract());
                     services.AddSingleton(Subscriptions());
                     services.AddSingleton(Plans());
+                    services.AddSingleton(Administrators());
 
                     services.AddControllers().ConfigureApplicationPartManager(manager =>
                     {
@@ -1119,6 +1130,46 @@ public sealed class TenantModulesScreenHttpMongoTests
             var client = _server.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", PlatformToken());
             return client;
+        }
+
+        public const string PartnerEmail = "partner.admin@di10.test";
+
+        /// <summary>BL-521 — the one tenant the test partner administrator is allowed (the class's Tenant).</summary>
+        public static readonly Guid PartnerAllowedTenant = Guid.Parse("50050050-0000-4000-8000-0000000000a1");
+
+        public HttpClient PartnerClient()
+        {
+            var client = _server.CreateClient();
+            var claims = new List<Claim>
+            {
+                new(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()),
+                new(JwtRegisteredClaimNames.Email, PartnerEmail),
+                new("actor_type", "partner_admin")
+            };
+            var key = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret)), SecurityAlgorithms.HmacSha256);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", new JwtSecurityTokenHandler().WriteToken(
+                new JwtSecurityToken(Issuer, Audience, claims, notBefore: DateTime.UtcNow.AddMinutes(-1), expires: DateTime.UtcNow.AddMinutes(10), signingCredentials: key)));
+            return client;
+        }
+
+        public static string PathOf(Guid tenantId, string? suffix) => Path(tenantId, suffix);
+
+        // The permission filter and the partner scope read the caller's administrator record.
+        private static IPlatformAdministratorRepository Administrators()
+        {
+            var administrators = new Mock<IPlatformAdministratorRepository>();
+            administrators.Setup(x => x.GetByNormalizedEmailAsync("platform.admin@di10.test", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new PlatformAdministrator
+                {
+                    Status = AdministratorStatus.Active, InvitationStatus = AdministratorInvitationStatus.Accepted, LastLoginAtUtc = DateTimeOffset.UtcNow
+                });
+            administrators.Setup(x => x.GetByNormalizedEmailAsync(PartnerEmail, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new PlatformAdministrator
+                {
+                    ActorType = ActorType.PartnerAdmin, AllowedTenantIds = [PartnerAllowedTenant],
+                    Status = AdministratorStatus.Active, InvitationStatus = AdministratorInvitationStatus.Accepted, LastLoginAtUtc = DateTimeOffset.UtcNow
+                });
+            return administrators.Object;
         }
 
         public static readonly Guid Administrator = Guid.Parse("50050050-0000-4000-8000-0000000000d4");

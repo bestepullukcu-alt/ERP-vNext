@@ -108,6 +108,11 @@ public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenant
             Builders<Tenant>.Filter.Ne(x => x.Id, SystemTenantRules.PlatformSystemTenantId)
         };
 
+        if (query.OnlyTenantIds is not null)
+        {
+            filters.Add(Builders<Tenant>.Filter.In(x => x.Id, query.OnlyTenantIds));
+        }
+
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var escaped = System.Text.RegularExpressions.Regex.Escape(query.Search.Trim());
@@ -146,10 +151,13 @@ public sealed class TenantRegistryRepository : GlobalRepository<Tenant>, ITenant
         return (items, totalCount);
     }
 
-    public async Task<TenantRegistryStats> GetStatsAsync(CancellationToken ct = default)
+    public Task<TenantRegistryStats> GetStatsAsync(CancellationToken ct = default) => GetStatsAsync(null, ct);
+
+    public async Task<TenantRegistryStats> GetStatsAsync(IReadOnlyCollection<Guid>? onlyTenantIds, CancellationToken ct = default)
     {
         var stats = await Collection.Aggregate()
             .Match(ExecutionFilter)
+            .Match(onlyTenantIds is null ? Builders<Tenant>.Filter.Empty : Builders<Tenant>.Filter.In(x => x.Id, onlyTenantIds))
             .Match(Builders<Tenant>.Filter.Ne(x => x.Id, SystemTenantRules.PlatformSystemTenantId))
             .Group(
                 _ => 1,

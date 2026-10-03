@@ -21,8 +21,8 @@ public static class PlatformActorDashboardAuthorization
             .FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
             ?.Value;
 
-        return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
-               || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
+        // BL-521 — the job dashboard shows and runs every tenant's jobs: platform administrators only, never a partner.
+        return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase);
     }
 
     public static bool IsDevelopmentAnonymousBypassAllowed(HttpContext httpContext)

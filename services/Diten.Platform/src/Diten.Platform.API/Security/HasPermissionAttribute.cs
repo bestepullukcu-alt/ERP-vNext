@@ -37,6 +37,16 @@ public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilte
         var isPlatformActor = string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
             || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
 
+        // BL-521 — a partner administrator passes ONLY an endpoint that admits partners (PartnerAdminScopeAttribute):
+        // tenant-scoped families, where its tenant scope is applied. Everywhere else — global objects, endpoints nobody
+        // has decided about yet — it is refused before anything else is read.
+        if (string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase)
+            && context.ActionDescriptor.EndpointMetadata?.OfType<Diten.Platform.Application.Contracts.IPartnerAdminAllowed>().Any() != true)
+        {
+            context.Result = PermissionDenied(context);
+            return;
+        }
+
         if (isPlatformActor)
         {
             var repository = context.HttpContext.RequestServices.GetService<IPlatformAdministratorRepository>();

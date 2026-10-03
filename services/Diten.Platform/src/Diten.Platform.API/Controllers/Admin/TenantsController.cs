@@ -1,3 +1,4 @@
+using Diten.Platform.API.Security;
 using Diten.Platform.API.Controllers.Common;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tenants;
@@ -13,6 +14,9 @@ namespace Diten.Platform.API.Controllers.Admin;
 [ApiController]
 [Route("api/admin/tenants")]
 [Authorize(Policy = "PlatformActor")]
+// BL-521 — a partner administrator lists only its tenants and reaches a tenant by {id} only when allowed (else 404).
+// Creating and deleting tenants stays with platform administrators (403 for a partner).
+[PartnerAdminScope("id")]
 public sealed class TenantsController : CustomBaseController
 {
     private readonly IMediator _mediator;
@@ -56,6 +60,7 @@ public sealed class TenantsController : CustomBaseController
     }
 
     [HttpPost]
+    [Authorize(Policy = "PlatformAdminOnly")]
     public async Task<IActionResult> RegisterTenant([FromBody] RegisterTenantCommand command, CancellationToken ct)
     {
         var result = await _mediator.Send(command, ct);
@@ -96,6 +101,7 @@ public sealed class TenantsController : CustomBaseController
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = "PlatformAdminOnly")]
     public async Task<IActionResult> DeleteTenant(Guid id, CancellationToken ct)
     {
         var result = await _mediator.Send(new DeleteTenantCommand(id), ct);
@@ -103,6 +109,7 @@ public sealed class TenantsController : CustomBaseController
     }
 
     [HttpDelete("bulk")]
+    [Authorize(Policy = "PlatformAdminOnly")]
     public async Task<IActionResult> BulkDeleteTenants([FromBody] TenantBulkDeleteRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new BulkDeleteTenantsCommand(request.Ids), ct);

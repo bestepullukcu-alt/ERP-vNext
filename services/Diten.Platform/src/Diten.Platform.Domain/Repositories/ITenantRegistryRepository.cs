@@ -21,6 +21,10 @@ public interface ITenantRegistryRepository
     Task<IReadOnlyList<Tenant>> GetAllAsync(CancellationToken ct = default);
     Task<(IReadOnlyList<Tenant> Items, long TotalCount)> QueryAsync(TenantListQuery query, CancellationToken ct = default);
     Task<TenantRegistryStats> GetStatsAsync(CancellationToken ct = default);
+    /// <summary>BL-521 — the same counts over <paramref name="onlyTenantIds"/> only (null = every tenant). A repository
+    /// that cannot filter refuses rather than count everyone.</summary>
+    Task<TenantRegistryStats> GetStatsAsync(IReadOnlyCollection<Guid>? onlyTenantIds, CancellationToken ct = default) =>
+        onlyTenantIds is null ? GetStatsAsync(ct) : throw new NotSupportedException("This tenant repository cannot count a tenant subset.");
 }
 
 public sealed record TenantListQuery(
@@ -29,7 +33,9 @@ public sealed record TenantListQuery(
     string? Region,
     int Page,
     int PageSize,
-    string Sort);
+    string Sort,
+    // BL-521 — null = every tenant; otherwise only these (possibly none: a partner administrator's scope).
+    IReadOnlyCollection<Guid>? OnlyTenantIds = null);
 
 public sealed record TenantRegistryStats(
     long Total,

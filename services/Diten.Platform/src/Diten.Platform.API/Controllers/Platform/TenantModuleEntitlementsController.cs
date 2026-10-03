@@ -12,6 +12,8 @@ namespace Diten.Platform.API.Controllers.Platform;
 [ApiController]
 [Route("api/platform/tenants/{tenantId:guid}/commercial/module-entitlements")]
 [Authorize(Policy = "PlatformActor")]
+// BL-521 — a partner administrator reaches it only for a tenant it is allowed (else 404).
+[PartnerAdminScope("tenantId")]
 public sealed class TenantModuleEntitlementsController : CustomBaseController
 {
     private const string ViewPermission = "platform.tenants.commercial.subscription.read";
