@@ -130,6 +130,22 @@ public interface IApprovalTaskRepository
     }
 
     Task<IReadOnlyList<ApprovalTask>> ListByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default);
+
+    /// <summary>D1-FIX1 — <see cref="ListByInstanceIdAsync"/> for several instances in ONE read: every task of these
+    /// instances, whatever its status, newest first (ties by id). The default asks one instance at a time (what an
+    /// in-memory double needs); the store overrides it.</summary>
+    async Task<IReadOnlyList<ApprovalTask>> ListByInstanceIdsAsync(
+        IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)
+    {
+        var tasks = new List<ApprovalTask>();
+        foreach (var instanceId in workflowInstanceIds.Distinct())
+        {
+            tasks.AddRange(await ListByInstanceIdAsync(instanceId, ct));
+        }
+
+        return tasks.OrderByDescending(t => t.CreatedAt).ThenByDescending(t => t.Id).ToList();
+    }
+
     Task<IReadOnlyList<ApprovalTask>> GetAllForTenantAsync(CancellationToken ct = default);
     Task<IReadOnlyList<ApprovalTask>> ListOverdueTasksAsync(
         DateTimeOffset nowUtc,
@@ -173,6 +189,24 @@ public interface IRuntimeAssignmentSnapshotRepository
     Task<RuntimeAssignmentSnapshot> CreateAsync(RuntimeAssignmentSnapshot snapshot, CancellationToken ct = default);
     Task<RuntimeAssignmentSnapshot?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<RuntimeAssignmentSnapshot>> ListByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default);
+
+    /// <summary>D1-FIX1 — <see cref="GetByIdAsync"/> for several snapshots in ONE read; an id that is not this tenant's
+    /// snapshot is simply absent. The default asks one at a time (in-memory doubles); the store overrides it.</summary>
+    async Task<IReadOnlyList<RuntimeAssignmentSnapshot>> ListByIdsAsync(
+        IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
+    {
+        var snapshots = new List<RuntimeAssignmentSnapshot>();
+        foreach (var id in ids.Distinct())
+        {
+            if (await GetByIdAsync(id, ct) is { } snapshot)
+            {
+                snapshots.Add(snapshot);
+            }
+        }
+
+        return snapshots;
+    }
+
     Task<RuntimeAssignmentSnapshot> EnsureTrustedStartSnapshotAsync(
         RuntimeAssignmentSnapshot snapshot,
         CancellationToken ct = default) =>

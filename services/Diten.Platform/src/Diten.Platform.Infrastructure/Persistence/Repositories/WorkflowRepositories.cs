@@ -499,6 +499,20 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
         return await Collection.Find(filter).SortByDescending(x => x.CreatedAt).ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<ApprovalTask>> ListByInstanceIdsAsync(
+        IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)
+    {
+        if (workflowInstanceIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<ApprovalTask>.Filter.And(
+            ExecutionFilter,
+            Builders<ApprovalTask>.Filter.In(x => x.WorkflowInstanceId, workflowInstanceIds));
+        return await Collection.Find(filter).SortByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id).ToListAsync(ct);
+    }
+
     public async Task<IReadOnlyList<ApprovalTask>> GetAllForTenantAsync(CancellationToken ct = default)
     {
         return await Collection.Find(ExecutionFilter).SortByDescending(x => x.CreatedAt).ToListAsync(ct);
@@ -565,6 +579,20 @@ public sealed class RuntimeAssignmentSnapshotRepository
             .SetValue(snapshot, TenantContext.TenantId);
         await Collection.InsertOneAsync(handle, snapshot, cancellationToken: ct);
         return snapshot;
+    }
+
+    public async Task<IReadOnlyList<RuntimeAssignmentSnapshot>> ListByIdsAsync(
+        IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
+    {
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<RuntimeAssignmentSnapshot>.Filter.And(
+            ExecutionFilter,
+            Builders<RuntimeAssignmentSnapshot>.Filter.In(x => x.Id, ids));
+        return await Collection.Find(filter).ToListAsync(ct);
     }
 
     public async Task<IReadOnlyList<RuntimeAssignmentSnapshot>> ListByInstanceIdAsync(

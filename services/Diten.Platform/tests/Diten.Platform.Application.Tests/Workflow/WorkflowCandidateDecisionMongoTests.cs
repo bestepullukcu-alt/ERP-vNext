@@ -34,7 +34,7 @@ namespace Diten.Platform.Application.Tests.Workflow;
 /// The assignment state is SEEDED exactly as production writes it (start / next-step / escalation snapshots), so
 /// each test controls the candidate list; every decision goes through the production handlers.
 /// </summary>
-public sealed class WorkflowCandidateDecisionMongoTests(AuditOutboxTemporalReplicaSetFixture replicaSet) :
+public sealed partial class WorkflowCandidateDecisionMongoTests(AuditOutboxTemporalReplicaSetFixture replicaSet) :
     IAsyncLifetime,
     IClassFixture<AuditOutboxTemporalReplicaSetFixture>
 {
@@ -372,7 +372,7 @@ public sealed class WorkflowCandidateDecisionMongoTests(AuditOutboxTemporalRepli
 
     private sealed record Seeded(WorkflowInstance Instance, ApprovalTask Task, RuntimeAssignmentSnapshot Snapshot);
 
-    private sealed class Store
+    private sealed partial class Store
     {
         public required IPlatformDbContext Context { get; init; }
         public required TenantContext TenantContext { get; init; }
@@ -418,7 +418,9 @@ public sealed class WorkflowCandidateDecisionMongoTests(AuditOutboxTemporalRepli
             IReadOnlyList<string> candidates,
             bool twoSteps = false,
             IReadOnlyList<string>? escalatedTo = null,
-            Guid? startedBy = null)
+            Guid? startedBy = null,
+            WorkflowStartCheckpoint? trustedCheckpoint = null,
+            DateTimeOffset? dueAt = null)
         {
             var tenantId = TenantContext.TenantId;
             var template = await Templates.CreateAsync(new WorkflowTemplate
@@ -461,7 +463,11 @@ public sealed class WorkflowCandidateDecisionMongoTests(AuditOutboxTemporalRepli
                 Status = escalated ? WorkflowInstanceStatus.Escalated : WorkflowInstanceStatus.Active,
                 StartedBy = "starter@example.test",
                 StartedByUserId = starter,
-                StartedAt = DateTimeOffset.UtcNow
+                StartedAt = DateTimeOffset.UtcNow,
+                // a TRUSTED start, caught at this checkpoint (null = an ordinary, public start)
+                TrustedConsumerClientId = trustedCheckpoint is null ? null : Guid.NewGuid(),
+                StartCheckpoint = trustedCheckpoint ?? WorkflowStartCheckpoint.None,
+                DueAt = dueAt
             });
 
             var acting = escalatedTo ?? candidates;
@@ -473,6 +479,7 @@ public sealed class WorkflowCandidateDecisionMongoTests(AuditOutboxTemporalRepli
                 StepCode = "step-a",
                 Status = escalated ? ApprovalTaskStatus.Escalated : ApprovalTaskStatus.WaitingApproval,
                 AssigneeRef = acting[0],
+                DueAt = dueAt,
                 EscalationLevel = escalated ? 1 : 0,
                 EscalatedAt = escalated ? DateTimeOffset.UtcNow : null
             };
@@ -503,8 +510,9 @@ public sealed class WorkflowCandidateDecisionMongoTests(AuditOutboxTemporalRepli
         };
 
         public Task<Diten.Platform.Application.Common.Response<WorkflowTaskTransitionResponse>> ApproveAsync(
-            Guid taskId, string actor, string key, IPlatformTransactionExecutor? executor = null) =>
-            new ApproveWorkflowTaskHandler(Tasks, Instances, Snapshots, Logs, Versions,
+            Guid taskId, string actor, string key, IPlatformTransactionExecutor? executor = null,
+            IApprovalTaskRepository? tasks = null) =>
+            new ApproveWorkflowTaskHandler(tasks ?? Tasks, Instances, Snapshots, Logs, Versions,
                     transactions: executor ?? new PlatformTransactionExecutor(Context),
                     events: new MongoIntentWriter(Context),
                     templates: Templates)
@@ -512,23 +520,25 @@ public sealed class WorkflowCandidateDecisionMongoTests(AuditOutboxTemporalRepli
                     new ApproveWorkflowTaskRequest(actor, "APPROVED", key, null, null), "corr-" + key), default);
 
         public Task<Diten.Platform.Application.Common.Response<WorkflowTaskTransitionResponse>> RejectAsync(
-            Guid taskId, string actor, string key) =>
+            Guid taskId, string actor, string key, IPlatformTransactionExecutor? executor = null) =>
             new RejectWorkflowTaskHandler(Tasks, Instances, Snapshots, Logs,
-                    transactions: new PlatformTransactionExecutor(Context),
+                    transactions: executor ?? new PlatformTransactionExecutor(Context),
                     events: new MongoIntentWriter(Context),
                     templates: Templates)
                 .Handle(new RejectWorkflowTaskCommand(taskId,
                     new RejectWorkflowTaskRequest(actor, "REJECTED", key, "no", null), "corr-" + key), default);
 
         public Task<Diten.Platform.Application.Common.Response<WorkflowTaskTransitionResponse>> RequestInfoAsync(
-            Guid taskId, string actor, string key) =>
-            new RequestInfoWorkflowTaskHandler(Tasks, Instances, Snapshots, Logs)
+            Guid taskId, string actor, string key, IPlatformTransactionExecutor? executor = null) =>
+            new RequestInfoWorkflowTaskHandler(Tasks, Instances, Snapshots, Logs,
+                    executor ?? new PlatformTransactionExecutor(Context))
                 .Handle(new RequestInfoWorkflowTaskCommand(taskId,
                     new RequestInfoWorkflowTaskRequest(actor, null, "INFO", key, "please add", null), "corr-" + key), default);
 
         public Task<Diten.Platform.Application.Common.Response<WorkflowTaskTransitionResponse>> DelegateAsync(
-            Guid taskId, string actor, string target, string key) =>
-            new DelegateWorkflowTaskHandler(Tasks, Instances, Snapshots, Logs)
+            Guid taskId, string actor, string target, string key, IPlatformTransactionExecutor? executor = null) =>
+            new DelegateWorkflowTaskHandler(Tasks, Instances, Snapshots, Logs,
+                    executor ?? new PlatformTransactionExecutor(Context))
                 .Handle(new DelegateWorkflowTaskCommand(taskId,
                     new DelegateWorkflowTaskRequest(actor, target, "DELEGATED", key, null), "corr-" + key), default);
 

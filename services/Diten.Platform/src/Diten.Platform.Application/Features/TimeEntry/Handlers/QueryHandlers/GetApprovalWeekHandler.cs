@@ -27,6 +27,7 @@ public sealed class GetApprovalWeekHandler : IRequestHandler<GetApprovalWeekQuer
     private readonly IApprovalWeekFacts _facts;
     private readonly ITimeEntryTaskGateway _tasks;
     private readonly ICurrentUserContext _currentUser;
+    private readonly ITimesheetApprovalService _approvals;
 
     public GetApprovalWeekHandler(
         ITimesheetWeekRepository weeks,
@@ -36,8 +37,10 @@ public sealed class GetApprovalWeekHandler : IRequestHandler<GetApprovalWeekQuer
         IUserDisplayNameResolver displayNames,
         IApprovalWeekFacts facts,
         ITimeEntryTaskGateway tasks,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITimesheetApprovalService approvals)
     {
+        _approvals = approvals;
         _weeks = weeks;
         _entries = entries;
         _reader = reader;
@@ -53,7 +56,7 @@ public sealed class GetApprovalWeekHandler : IRequestHandler<GetApprovalWeekQuer
         ArgumentNullException.ThrowIfNull(request);
 
         var week = await _weeks.GetByIdAsync(request.WeekId, ct);
-        if (!IsRoutedToCaller(week))
+        if (!await IsRoutedToCallerAsync(week, ct))
         {
             return NotFound(request);
         }
@@ -61,7 +64,7 @@ public sealed class GetApprovalWeekHandler : IRequestHandler<GetApprovalWeekQuer
         if ((await _puller.PullAsync([week!], request.CorrelationId, ct)).ShouldReread)
         {
             week = await _weeks.GetByIdAsync(request.WeekId, ct);
-            if (!IsRoutedToCaller(week))
+            if (!await IsRoutedToCallerAsync(week, ct))
             {
                 return NotFound(request);
             }
@@ -118,10 +121,12 @@ public sealed class GetApprovalWeekHandler : IRequestHandler<GetApprovalWeekQuer
             correlationId: request.CorrelationId);
     }
 
-    private bool IsRoutedToCaller(TimesheetWeek? week)
-        => week is { Status: TimesheetWeekStatus.Submitted }
+    // D1-FIX1 — whoever may DECIDE the week's open approval task may read the week (the list uses the same question).
+    // It used to be `AssignedApproverUserId == caller`: the one MOD-0023 showed as assignee, not everyone it lets decide.
+    private async Task<bool> IsRoutedToCallerAsync(TimesheetWeek? week, CancellationToken ct)
+        => week is { Status: TimesheetWeekStatus.Submitted, WorkflowInstanceId: { } instanceId }
            && week.UserId != _currentUser.UserId
-           && week.AssignedApproverUserId == _currentUser.UserId;
+           && (await _approvals.DecidableInstanceIdsAsync(_currentUser.UserId, [instanceId], ct: ct)).Contains(instanceId);
 
     private static Response<ApprovalWeekDto> NotFound(GetApprovalWeekQuery request)
         => Response<ApprovalWeekDto>.Fail("Not found.", 404, TimeEntryReasonCodes.ApprovalWeekNotFound, request.CorrelationId);

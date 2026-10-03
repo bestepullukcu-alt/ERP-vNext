@@ -107,9 +107,7 @@ internal sealed class WorkflowTerminalTransitionWriter
         }
         catch (PlatformTransactionUnavailableException)
         {
-            return new WorkflowTerminalWriteResult(await LostToAnotherDecisionAsync(task.Id, taskVersion, ct)
-                ? WorkflowTerminalWriteOutcome.Conflict
-                : WorkflowTerminalWriteOutcome.TransactionUnavailable, null);
+            return await AfterUnavailableAsync(task.Id, taskVersion, log, ct);
         }
     }
 
@@ -183,42 +181,150 @@ internal sealed class WorkflowTerminalTransitionWriter
         }
         catch (PlatformTransactionUnavailableException)
         {
-            return new WorkflowTerminalWriteResult(await LostToAnotherDecisionAsync(task.Id, taskVersion, ct)
-                ? WorkflowTerminalWriteOutcome.Conflict
-                : WorkflowTerminalWriteOutcome.TransactionUnavailable, null);
+            return await AfterUnavailableAsync(task.Id, taskVersion, log, ct);
+        }
+    }
+
+    /// <summary>True when writes run in a Platform transaction; false for in-memory doubles (sequential writes).</summary>
+    public bool IsTransactional => _transactions is not null;
+
+    /// <summary>
+    /// D1-FIX1 — A TRANSITION THAT KEEPS THE INSTANCE OPEN (delegate, request information, escalate): the task, the
+    /// instance, the new assignment snapshot (when the transition re-assigns) and the transition log commit in ONE
+    /// Platform transaction. Before this they were separate writes: a delegation whose instance write lost left the
+    /// task delegated WITHOUT its log row — an authority change with no trail (the transition log is an accepted
+    /// audit trail, AUD-001 path c) — and the caller was told 409.
+    /// <para><paramref name="escalationWrite"/> only chooses the sequential fallback's repository methods (the ones
+    /// in-memory doubles implement for the SLA runner); inside a transaction the writes are the same.</para>
+    /// </summary>
+    public async Task<WorkflowTerminalWriteResult> CommitTransitionAsync(
+        ApprovalTask task,
+        int taskVersion,
+        WorkflowInstance instance,
+        int instanceVersion,
+        WorkflowTransitionLog log,
+        RuntimeAssignmentSnapshot? newSnapshot,
+        bool escalationWrite,
+        CancellationToken ct)
+    {
+        if (WorkflowOutcomes.For(instance.Status) is not null)
+        {
+            throw new InvalidOperationException("A terminal instance status is committed by CommitAsync, with its event.");
+        }
+
+        if (_transactions is null)
+        {
+            if (newSnapshot is not null && _snapshots is not null)
+            {
+                await _snapshots.CreateAsync(newSnapshot, ct);
+            }
+
+            var updated = escalationWrite
+                ? await _tasks.UpdateEscalationAsync(task, taskVersion, ct) &&
+                  await _instances.UpdateEscalationOrTimeoutAsync(instance, instanceVersion, ct)
+                : await _tasks.UpdateAsync(task, taskVersion, ct) &&
+                  await _instances.UpdateAsync(instance, instanceVersion, ct);
+            if (!updated)
+            {
+                return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Conflict, null);
+            }
+
+            var sequential = escalationWrite ? await _logs.AppendAsync(log, ct) : await _logs.CreateAsync(log, ct);
+            return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Committed, sequential);
+        }
+
+        if (newSnapshot is not null && _snapshots is null)
+        {
+            throw new InvalidOperationException("A re-assigning transition needs the assignment snapshot repository.");
+        }
+
+        try
+        {
+            var created = await _transactions.ExecuteAsync(async (session, tct) =>
+            {
+                if (!await _tasks.UpdateAsync(session, task, taskVersion, tct) ||
+                    !await _instances.UpdateAsync(session, instance, instanceVersion, tct))
+                {
+                    throw new TerminalConflictException();
+                }
+
+                if (newSnapshot is not null)
+                {
+                    await _snapshots!.CreateAsync(session, newSnapshot, tct);
+                }
+
+                return await _logs.CreateAsync(session, log, tct);
+            }, ct);
+            return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Committed, created);
+        }
+        catch (TerminalConflictException)
+        {
+            return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Conflict, null);
+        }
+        catch (PlatformTransactionUnavailableException)
+        {
+            return await AfterUnavailableAsync(task.Id, taskVersion, log, ct);
         }
     }
 
     /// <summary>
-    /// D1 — two candidates deciding at once. The loser's transaction is aborted by MongoDB's write conflict while the
-    /// winner's is still open. The executor replays the body at once, three times, with no pause — measured
-    /// 2026-10-02: all three replays can run into the same still-open winner, and the executor then reports
-    /// "transaction unavailable" (the inner error is the labelled, transient WriteConflict 112, not an outage).
-    /// Nothing was written either way — but "try again later" is the wrong answer when somebody else has just decided
-    /// the task. So the task is read again, briefly: once its version has moved, this caller LOST (409). If it never
-    /// moves, the transaction really was unavailable (503) — at the cost of a short wait on that rare path.
+    /// WHAT "TRANSACTION UNAVAILABLE" REALLY WAS — asked before the caller is told anything.
+    /// <list type="bullet">
+    /// <item><b>It was MINE.</b> The executor also reports "unavailable" when the commit's outcome is unknown; the
+    /// commit may have landed. Then the task's version moved by THIS caller's own write, and its log row is there
+    /// (same task, action, idempotency key and actor). That is a success — the same answer an idempotent retry gets —
+    /// not "somebody else decided". (The first version read only the version, and told such a caller 409.)</item>
+    /// <item><b>Somebody else won.</b> Two candidates deciding at once: the loser's transaction is aborted by MongoDB's
+    /// write conflict while the winner's is still open; the executor replays the body at once, three times, with no
+    /// pause, and all three can meet the same open winner (measured 2026-10-02 — the inner error is the labelled,
+    /// transient WriteConflict 112). The version moves a moment later, without a log row of mine: 409.</item>
+    /// <item><b>Really unavailable.</b> Nothing moved within the short wait, or the re-read itself failed: 503.</item>
+    /// </list>
     /// </summary>
-    private async Task<bool> LostToAnotherDecisionAsync(Guid taskId, int expectedVersion, CancellationToken ct)
+    private async Task<WorkflowTerminalWriteResult> AfterUnavailableAsync(
+        Guid taskId, int expectedVersion, WorkflowTransitionLog attempted, CancellationToken ct)
     {
         try
         {
-            for (var attempt = 0; attempt < LostRaceReadAttempts; attempt++)
+            for (var attempt = 1; attempt <= LostRaceReadAttempts; attempt++)
             {
+                if (await MyCommittedLogAsync(attempted, ct) is { } mine)
+                {
+                    return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Committed, mine);
+                }
+
                 var current = await _tasks.GetByIdAsync(taskId, ct);
                 if (current is not null && current.Version != expectedVersion)
                 {
-                    return true;
+                    // The version moved between the two reads: once more, was it my own commit landing late?
+                    return await MyCommittedLogAsync(attempted, ct) is { } late
+                        ? new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Committed, late)
+                        : new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Conflict, null);
                 }
 
-                await Task.Delay(LostRaceReadDelay, ct);
+                if (attempt < LostRaceReadAttempts)
+                {
+                    await Task.Delay(LostRaceReadDelay, ct); // no sleep after the last read
+                }
             }
-
-            return false;
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            return false; // cannot tell → keep the honest "unavailable"
+            // cannot tell → the honest answer is "unavailable"
         }
+
+        return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.TransactionUnavailable, null);
+    }
+
+    private async Task<WorkflowTransitionLog?> MyCommittedLogAsync(WorkflowTransitionLog attempted, CancellationToken ct)
+    {
+        if (attempted.ApprovalTaskId is not { } taskId || string.IsNullOrWhiteSpace(attempted.IdempotencyKey))
+        {
+            return null;
+        }
+
+        var found = await _logs.GetByTaskActionIdempotencyKeyAsync(taskId, attempted.Action, attempted.IdempotencyKey, ct);
+        return found is not null && string.Equals(found.ActorId, attempted.ActorId, StringComparison.Ordinal) ? found : null;
     }
 
     private const int LostRaceReadAttempts = 6;

@@ -16,6 +16,11 @@ public sealed class WorkflowTaskTransitionTests
     private static readonly Guid TenantB = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private const string Correlation = "wf-transition-corr-001";
     private const string AssignedActor = "approver-001";
+    // D1-FIX1 — a delegation names a USER: delegate targets are user ids (free text is refused with 400).
+    private const string DelegateTarget = "d0000000-0000-4000-8000-000000000001";
+    private const string DelegateTargetA = "d0000000-0000-4000-8000-00000000000a";
+    private const string DelegateTargetB = "d0000000-0000-4000-8000-00000000000b";
+    private const string StarterUserId = "50000000-0000-4000-8000-000000000001";
 
     [Fact]
     public async Task Assigned_actor_approve_closes_task_and_completes_instance_with_log()
@@ -378,7 +383,7 @@ public sealed class WorkflowTaskTransitionTests
         Assert.Equal(2, f.Snapshots.Items.Count);
         Assert.Equal(originalResolvedPrincipal, f.Snapshots.Items.Single(x => x.Id == originalSnapshotId).ResolvedPrincipalId);
         Assert.NotEqual(originalSnapshotId, runtime.Task.AssignmentSnapshotId);
-        Assert.Equal("delegate-001", f.Snapshots.Items.Single(x => x.Id == runtime.Task.AssignmentSnapshotId).ResolvedPrincipalId);
+        Assert.Equal(DelegateTarget, f.Snapshots.Items.Single(x => x.Id == runtime.Task.AssignmentSnapshotId).ResolvedPrincipalId);
         Assert.Equal(2, f.Logs.Items.Single(x => x.Action == WorkflowTransitionAction.Delegate).SequenceNo);
     }
 
@@ -421,8 +426,8 @@ public sealed class WorkflowTaskTransitionTests
         Assert.Single(f.Logs.Items, log => log.Action == WorkflowTransitionAction.Delegate);
         var storedTask = Assert.Single(f.Tasks.Items);
         var delegatedSnapshot = Assert.Single(f.Snapshots.Items, snapshot => snapshot.Id == storedTask.AssignmentSnapshotId);
-        Assert.Equal("delegate-001", storedTask.AssigneeRef);
-        Assert.Equal("delegate-001", delegatedSnapshot.ResolvedPrincipalId);
+        Assert.Equal(DelegateTarget, storedTask.AssigneeRef);
+        Assert.Equal(DelegateTarget, delegatedSnapshot.ResolvedPrincipalId);
     }
 
     [Fact]
@@ -435,10 +440,10 @@ public sealed class WorkflowTaskTransitionTests
         f.Snapshots.CoordinateNextEnsures(2);
 
         var first = f.Delegate.Handle(
-            Delegate(runtime.Task.Id, delegatePrincipalId: "delegate-a", idempotencyKey: "drift-key", expectedVersion: runtime.Task.Version),
+            Delegate(runtime.Task.Id, delegatePrincipalId: DelegateTargetA, idempotencyKey: "drift-key", expectedVersion: runtime.Task.Version),
             CancellationToken.None);
         var second = f.Delegate.Handle(
-            Delegate(runtime.Task.Id, delegatePrincipalId: "delegate-b", idempotencyKey: "drift-key", expectedVersion: runtime.Task.Version),
+            Delegate(runtime.Task.Id, delegatePrincipalId: DelegateTargetB, idempotencyKey: "drift-key", expectedVersion: runtime.Task.Version),
             CancellationToken.None);
         var results = await Task.WhenAll(first, second);
 
@@ -451,7 +456,7 @@ public sealed class WorkflowTaskTransitionTests
         var storedTask = Assert.Single(f.Tasks.Items);
         var delegatedSnapshot = Assert.Single(f.Snapshots.Items, snapshot => snapshot.Id == storedTask.AssignmentSnapshotId);
         Assert.Equal(delegatedSnapshot.ResolvedPrincipalId, storedTask.AssigneeRef);
-        Assert.Contains(storedTask.AssigneeRef, new[] { "delegate-a", "delegate-b" });
+        Assert.Contains(storedTask.AssigneeRef, new[] { DelegateTargetA, DelegateTargetB });
     }
 
     [Fact]
@@ -486,11 +491,11 @@ public sealed class WorkflowTaskTransitionTests
     public async Task Delegate_to_the_person_who_started_the_workflow_is_refused_and_nothing_is_written()
     {
         var f = Fixture(TenantA);
-        var runtime = await f.SeedRuntimeAsync(startedBy: "submitter-001");
+        var runtime = await f.SeedRuntimeAsync(startedBy: StarterUserId);
         var snapshotId = runtime.Task.AssignmentSnapshotId;
 
         var response = await f.Delegate.Handle(
-            Delegate(runtime.Task.Id, delegatePrincipalId: "submitter-001"), CancellationToken.None);
+            Delegate(runtime.Task.Id, delegatePrincipalId: StarterUserId), CancellationToken.None);
 
         Assert.False(response.IsSuccessful);
         Assert.Equal(409, response.StatusCode);
@@ -560,10 +565,10 @@ public sealed class WorkflowTaskTransitionTests
     public async Task A_non_assigned_actor_naming_the_starter_is_denied_as_a_non_assigned_actor()
     {
         var f = Fixture(TenantA);
-        var runtime = await f.SeedRuntimeAsync(startedBy: "submitter-001");
+        var runtime = await f.SeedRuntimeAsync(startedBy: StarterUserId);
 
         var response = await f.Delegate.Handle(
-            Delegate(runtime.Task.Id, actorId: "somebody-else", delegatePrincipalId: "submitter-001"), CancellationToken.None);
+            Delegate(runtime.Task.Id, actorId: "somebody-else", delegatePrincipalId: StarterUserId), CancellationToken.None);
 
         Assert.Equal(WorkflowReasonCodes.WorkflowActorDenied, response.ReasonCode);
     }
@@ -723,7 +728,7 @@ public sealed class WorkflowTaskTransitionTests
     private static DelegateWorkflowTaskCommand Delegate(
         Guid taskId,
         string actorId = AssignedActor,
-        string delegatePrincipalId = "delegate-001",
+        string delegatePrincipalId = DelegateTarget,
         string reasonCode = "DELEGATED",
         string idempotencyKey = "delegate-001",
         int? expectedVersion = null) =>

@@ -120,6 +120,11 @@ internal sealed class WorkflowTaskTransitionSupport
                 correlationId);
         }
 
+        if (StartIsIncomplete(instance))
+        {
+            return StartNotCompleted(correlationId);
+        }
+
         if (action == WorkflowTransitionAction.Approve && IsStarter(instance, actorId))
         {
             return Response<WorkflowTaskTransitionResponse>.Fail(
@@ -320,10 +325,13 @@ internal sealed class WorkflowTaskTransitionSupport
         // BL-491 — every later gate compares principals letter for letter, so a user id written in another spelling
         // (upper case, braces, no dashes) would pass the "not yourself" check below and then leave the task with a
         // principal nobody's token ever matches. A user id is kept in ONE spelling; any other principal is untouched.
-        delegatePrincipalId = CanonicalPrincipal(delegatePrincipalId.Trim());
+        // D1-FIX1 — and a delegation names a USER. Any candidate may delegate now, so a free-text or `position:`
+        // target would lock every other candidate out until the task times out.
+        var targetIsUser = TryCanonicalUser(delegatePrincipalId, out var canonicalTarget);
         reasonCode = reasonCode.Trim();
 
-        if (PrincipalEquals(actorId, delegatePrincipalId))
+        // "Not to yourself" is asked first and in any spelling of the id (`user:` prefix, upper case, braces).
+        if (PrincipalEquals(actorId, targetIsUser ? canonicalTarget : delegatePrincipalId))
         {
             return Response<WorkflowTaskTransitionResponse>.Fail(
                 "Delegate principal must be different from the actor.",
@@ -331,6 +339,17 @@ internal sealed class WorkflowTaskTransitionSupport
                 WorkflowReasonCodes.WorkflowDelegateSameActorInvalid,
                 correlationId);
         }
+
+        if (!targetIsUser)
+        {
+            return Response<WorkflowTaskTransitionResponse>.Fail(
+                "A workflow task is delegated to a user: the target must be a user id.",
+                400,
+                WorkflowReasonCodes.WorkflowDelegateTargetInvalid,
+                correlationId);
+        }
+
+        delegatePrincipalId = canonicalTarget;
 
         var existingLog = await _logRepository.GetByTaskActionIdempotencyKeyAsync(
             taskId,
@@ -365,6 +384,25 @@ internal sealed class WorkflowTaskTransitionSupport
             return ActorDenied(correlationId);
         }
 
+        // D1-FIX1 — THE STARTER DOES NOT CHOOSE THEIR OWN APPROVER. With "any candidate decides", a starter who sits
+        // in the approving seat next to A and B could delegate the task to X: the snapshot becomes [X], A and B are
+        // out, X approves. Refused here — asked AFTER the candidate check, so somebody who is not a candidate learns
+        // nothing about who started the workflow. (The starter may still REJECT: that is withdrawing their own
+        // request, and it hands nobody an approval.)
+        if (IsStarter(instance, actorId))
+        {
+            return Response<WorkflowTaskTransitionResponse>.Fail(
+                "The person who started the workflow cannot delegate its approval.",
+                409,
+                WorkflowReasonCodes.SodViolation,
+                correlationId);
+        }
+
+        if (StartIsIncomplete(instance))
+        {
+            return StartNotCompleted(correlationId);
+        }
+
         // BL-491 — the approve gate refuses the starter (SOD_VIOLATION), so a task delegated TO the starter would sit
         // with the one person who can never approve it. The same rule, at the gate that would create that lock —
         // asked after the assignment check, so somebody the task is not with learns nothing about who started it.
@@ -391,14 +429,19 @@ internal sealed class WorkflowTaskTransitionSupport
             ResolvedAt = DateTime.UtcNow,
             TieBreakExplanation = "single_candidate"
         };
-        var createdSnapshot = await _snapshotRepository.EnsureTrustedStartSnapshotAsync(newSnapshot, ct);
-        if (!MatchesDelegateSnapshot(createdSnapshot, newSnapshot))
+        // D1-FIX1 — the new snapshot is written INSIDE the transition's transaction (PersistAndLogAsync). Only the
+        // sequential fallback (in-memory doubles, no executor) keeps the old ensure-then-compare.
+        if (!_terminal.IsTransactional)
         {
-            return StaleVersion(correlationId);
+            var ensured = await _snapshotRepository.EnsureTrustedStartSnapshotAsync(newSnapshot, ct);
+            if (!MatchesDelegateSnapshot(ensured, newSnapshot))
+            {
+                return StaleVersion(correlationId);
+            }
         }
 
         task.Status = ApprovalTaskStatus.WaitingApproval;
-        task.AssignmentSnapshotId = createdSnapshot.Id;
+        task.AssignmentSnapshotId = newSnapshot.Id;
         task.AssigneeRef = delegatePrincipalId;
         task.ActionedBy = actorId;
         task.ActionReasonCode = reasonCode;
@@ -419,7 +462,8 @@ internal sealed class WorkflowTaskTransitionSupport
             comment,
             null,
             correlationId,
-            ct);
+            ct,
+            _terminal.IsTransactional ? newSnapshot : null);
     }
 
     public async Task<Response<WorkflowTaskTransitionResponse>> RequestInfoAsync(
@@ -468,6 +512,11 @@ internal sealed class WorkflowTaskTransitionSupport
         if (!IsCandidate(snapshot, actorId))
         {
             return ActorDenied(correlationId);
+        }
+
+        if (StartIsIncomplete(instance))
+        {
+            return StartNotCompleted(correlationId);
         }
 
         var previousTaskStatus = task.Status;
@@ -581,7 +630,8 @@ internal sealed class WorkflowTaskTransitionSupport
         string? comment,
         string? evidenceRef,
         string correlationId,
-        CancellationToken ct)
+        CancellationToken ct,
+        RuntimeAssignmentSnapshot? newSnapshot = null)
     {
         if (WorkflowOutcomes.For(instance.Status) is not null)
         {
@@ -595,53 +645,14 @@ internal sealed class WorkflowTaskTransitionSupport
                 correlationId);
         }
 
-        var taskVersion = task.Version;
-        var instanceVersion = instance.Version;
-        if (!await _taskRepository.UpdateAsync(task, taskVersion, ct) ||
-            !await _instanceRepository.UpdateAsync(instance, instanceVersion, ct))
-        {
-            return Response<WorkflowTaskTransitionResponse>.Fail(
-                "Workflow transition conflict.",
-                409,
-                WorkflowReasonCodes.WorkflowTransitionConflict,
-                correlationId);
-        }
-
-        var sequenceNo = await _logRepository.GetLatestSequenceNoAsync(instance.Id, ct) + 1;
-        var log = new WorkflowTransitionLog
-        {
-            TenantId = task.TenantId,
-            WorkflowInstanceId = instance.Id,
-            ApprovalTaskId = task.Id,
-            Action = action,
-            FromState = previousTaskStatus.ToString(),
-            ToState = task.Status.ToString(),
-            FromStatus = previousInstanceStatus.ToString(),
-            ToStatus = instance.Status.ToString(),
-            ActorId = actorId,
-            ActorRef = actorId,
-            ReasonCode = reasonCode,
-            IdempotencyKey = idempotencyKey,
-            Comment = comment,
-            EvidenceRef = evidenceRef,
-            CorrelationId = correlationId,
-            SequenceNo = sequenceNo
-        };
-        var createdLog = await _logRepository.CreateAsync(log, ct);
-
-        return Response<WorkflowTaskTransitionResponse>.Success(
-            new WorkflowTaskTransitionResponse(
-                instance.Id,
-                task.Id,
-                previousTaskStatus.ToString(),
-                task.Status.ToString(),
-                previousInstanceStatus.ToString(),
-                instance.Status.ToString(),
-                action.ToString(),
-                false,
-                createdLog.Id,
-                correlationId),
-            correlationId: correlationId);
+        // D1-FIX1 — one write: task + instance (+ the new snapshot) + log, or nothing (see CommitTransitionAsync).
+        var log = NewLog(task, instance, action, previousTaskStatus, previousInstanceStatus, actorId, reasonCode,
+            idempotencyKey, comment, evidenceRef, correlationId,
+            await _logRepository.GetLatestSequenceNoAsync(instance.Id, ct) + 1);
+        var written = await _terminal.CommitTransitionAsync(task, task.Version, instance, instance.Version, log,
+            newSnapshot, escalationWrite: false, ct);
+        return TerminalResponse(written, task, instance, previousTaskStatus, previousInstanceStatus, action,
+            correlationId);
     }
 
     private async Task<TransitionContext> LoadTransitionContextAsync(
@@ -815,10 +826,58 @@ internal sealed class WorkflowTaskTransitionSupport
             return false;
         }
 
-        return Guid.TryParse(left.Trim(), out var leftId) && Guid.TryParse(right.Trim(), out var rightId)
+        var leftIsId = Guid.TryParse(left.Trim(), out var leftId);
+        var rightIsId = Guid.TryParse(right.Trim(), out var rightId);
+
+        // The empty id is nobody: it equals nothing, not even itself. (The controller refuses an empty actor; this is
+        // the helper's own guard, so a zeroed id in a snapshot can never match a zeroed id from anywhere else.)
+        if ((leftIsId && leftId == Guid.Empty) || (rightIsId && rightId == Guid.Empty))
+        {
+            return false;
+        }
+
+        return leftIsId && rightIsId
             ? leftId == rightId
             : string.Equals(left.Trim(), right.Trim(), StringComparison.Ordinal);
     }
+
+    private const string UserPrefix = "user:";
+
+    /// <summary>
+    /// D1-FIX1 — a USER principal in its one spelling: a user id, optionally written <c>user:{id}</c> (the prefix the
+    /// candidate resolver strips). False for anything else — free text, <c>position:…</c>, the empty id.
+    /// </summary>
+    internal static bool TryCanonicalUser(string? principal, out string canonical)
+    {
+        var value = (principal ?? string.Empty).Trim();
+        if (value.StartsWith(UserPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            value = value[UserPrefix.Length..].Trim();
+        }
+
+        if (Guid.TryParse(value, out var userId) && userId != Guid.Empty)
+        {
+            canonical = userId.ToString();
+            return true;
+        }
+
+        canonical = string.Empty;
+        return false;
+    }
+
+    /// <summary>
+    /// D1-FIX1 — a TRUSTED start that has not finished (task and snapshot written, start log not yet). A decision
+    /// taken now would take sequence number 1 — the start log's — and the start could never be completed afterwards.
+    /// </summary>
+    private static bool StartIsIncomplete(WorkflowInstance instance) =>
+        instance.TrustedConsumerClientId is not null && instance.StartCheckpoint != WorkflowStartCheckpoint.Completed;
+
+    private static Response<WorkflowTaskTransitionResponse> StartNotCompleted(string correlationId) =>
+        Response<WorkflowTaskTransitionResponse>.Fail(
+            "The workflow start has not completed yet. Decide once it has.",
+            409,
+            WorkflowReasonCodes.WorkflowStartNotCompleted,
+            correlationId);
 
     /// <summary>A principal that is a user id, in the one spelling tokens and snapshots carry it; anything else as given.</summary>
     internal static string CanonicalPrincipal(string principalId) =>

@@ -118,6 +118,18 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         }
 
         var existing = await _instances.GetByIdempotencyKeyAsync(idempotencyKey, ct);
+
+        // D1-FIX1 — A REPLAY IS COMPARED IN THE SPELLING THE START WAS STORED IN. The resolver now writes a user id in
+        // one spelling. An instance started before that, from a list in another spelling (upper case, braces, no
+        // dashes, the same person twice), stored THAT list — and its fingerprint and proofs were computed over it. The
+        // fingerprint's computation is untouched; when the stored snapshot names the SAME principals, the replay uses
+        // the stored list, so it reproduces the stored fingerprint and proofs instead of a conflict.
+        if (existing?.InitialAssignmentSnapshotId is { } storedSnapshotId
+            && await _snapshots.GetByIdAsync(storedSnapshotId, ct) is { } storedSnapshot
+            && NamesTheSamePrincipals(storedSnapshot.CandidatePrincipalIds, candidates))
+        {
+            candidates = storedSnapshot.CandidatePrincipalIds;
+        }
         var now = DateTimeOffset.UtcNow;
         var dueAt = request.DueAt?.ToUniversalTime() ?? existing?.DueAt ??
             ResolveDueAtFromStep(firstStep, now) ??
@@ -486,7 +498,7 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         actual.Status == expected.Status &&
         string.Equals(actual.StageCode, expected.StageCode, StringComparison.Ordinal) &&
         string.Equals(actual.StepCode, expected.StepCode, StringComparison.Ordinal) &&
-        string.Equals(actual.AssigneeRef, expected.AssigneeRef, StringComparison.Ordinal) &&
+        SamePrincipal(actual.AssigneeRef, expected.AssigneeRef) &&
         string.Equals(actual.ReasonCode, expected.ReasonCode, StringComparison.Ordinal) &&
         string.Equals(actual.IdempotencyKey, expected.IdempotencyKey, StringComparison.Ordinal) &&
         actual.CommentRequired == expected.CommentRequired &&
@@ -499,8 +511,8 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         actual.WorkflowInstanceId == expected.WorkflowInstanceId &&
         actual.ApprovalTaskId == expected.ApprovalTaskId &&
         string.Equals(actual.ResolverSource, expected.ResolverSource, StringComparison.Ordinal) &&
-        string.Equals(actual.ResolvedPrincipalId, expected.ResolvedPrincipalId, StringComparison.Ordinal) &&
-        actual.CandidatePrincipalIds.SequenceEqual(expected.CandidatePrincipalIds, StringComparer.Ordinal) &&
+        SamePrincipal(actual.ResolvedPrincipalId, expected.ResolvedPrincipalId) &&
+        NamesTheSamePrincipals(actual.CandidatePrincipalIds, expected.CandidatePrincipalIds) &&
         actual.ResolvedAt == expected.ResolvedAt &&
         string.Equals(actual.TieBreakExplanation, expected.TieBreakExplanation, StringComparison.Ordinal);
 
@@ -516,7 +528,20 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         string.Equals(actual.IdempotencyKey, expected.IdempotencyKey, StringComparison.Ordinal) &&
         string.Equals(actual.ToStatus, expected.ToStatus, StringComparison.Ordinal);
 
-    private static string ComputeFingerprint(
+    // D1-FIX1 — a proof names a PERSON: a user id matches in any spelling; any other principal letter for letter.
+    private static bool SamePrincipal(string? left, string? right) =>
+        string.Equals(left, right, StringComparison.Ordinal) || WorkflowTaskTransitionSupport.PrincipalEquals(left, right);
+
+    private static bool NamesTheSamePrincipals(IReadOnlyList<string> left, IReadOnlyList<string> right)
+    {
+        static HashSet<string> Canonical(IReadOnlyList<string> principals) =>
+            principals.Select(p => WorkflowTaskTransitionSupport.CanonicalPrincipal(p.Trim())).ToHashSet(StringComparer.Ordinal);
+
+        return Canonical(left).SetEquals(Canonical(right));
+    }
+
+    /// <summary>internal for the byte-for-byte fingerprint test (D1-FIX1): the computation itself is unchanged.</summary>
+    internal static string ComputeFingerprint(
         Guid tenantId,
         Guid clientId,
         Guid makerId,

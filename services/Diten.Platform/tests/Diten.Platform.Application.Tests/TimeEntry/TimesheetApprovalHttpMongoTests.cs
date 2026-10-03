@@ -11,6 +11,7 @@ using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Infrastructure.Persistence.Schema;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
+using MongoDB.Bson;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.TimeEntry;
@@ -425,13 +426,8 @@ public sealed class TimesheetApprovalHttpMongoTests : TimeEntryScenario
         // A delegation that routed the approval back to the person, as MOD-0023 would record it — on an instance that
         // predates StartedByUserId (the legacy shape, where MOD-0023's own starter check cannot see them).
         await RawUnsetAsync(PlatformCollections.WorkflowInstances, instanceId, "StartedByUserId");
-        await Collection<RuntimeAssignmentSnapshot>(PlatformCollections.WorkflowRuntimeAssignmentSnapshots).UpdateManyAsync(
-            s => s.WorkflowInstanceId == instanceId,
-            // D1 — as MOD-0023 really records it: the routed-to person is the snapshot's CANDIDATE (the list is what
-            // the decision gate reads now), not only its resolved principal.
-            Builders<RuntimeAssignmentSnapshot>.Update
-                .Set(s => s.ResolvedPrincipalId, Person.ToString())
-                .Set(s => s.CandidatePrincipalIds, new List<string> { Person.ToString() }));
+        // D1-FIX1 — the REAL path: the manager delegates on MOD-0023's own route and MOD-0023 writes the snapshot.
+        Assert.Equal(HttpStatusCode.OK, (await DelegateAsync(Manager, weekId, Person)).Status);
         Assert.Equal(HttpStatusCode.OK, (await DecideAsync(Person, weekId, approve, comment: "mine")).Status);
 
         var read = await GetWeekAsync();
@@ -455,13 +451,17 @@ public sealed class TimesheetApprovalHttpMongoTests : TimeEntryScenario
         var weekId = await SubmittedWeekAsync();
         var instanceId = (await StoredWeekAsync(weekId)).WorkflowInstanceId!.Value;
         Assert.Equal(Person, (await StoredInstanceAsync(instanceId)).StartedByUserId);
-        await Collection<RuntimeAssignmentSnapshot>(PlatformCollections.WorkflowRuntimeAssignmentSnapshots).UpdateManyAsync(
-            s => s.WorkflowInstanceId == instanceId,
-            // D1 — as MOD-0023 really records it: the routed-to person is the snapshot's CANDIDATE (the list is what
-            // the decision gate reads now), not only its resolved principal.
-            Builders<RuntimeAssignmentSnapshot>.Update
-                .Set(s => s.ResolvedPrincipalId, Person.ToString())
-                .Set(s => s.CandidatePrincipalIds, new List<string> { Person.ToString() }));
+        // MOD-0023 refuses a delegation TO the starter, so this state has no real route any more…
+        var refused = await DelegateAsync(Manager, weekId, Person);
+        Assert.Equal(HttpStatusCode.Conflict, refused.Status);
+        Assert.Equal(WorkflowReasonCodes.SodViolation, refused.ReasonCode);
+        // …it is staged the only way it can still exist: a task delegated (really) while the instance did not yet
+        // carry its starter, and the starter recorded afterwards. The snapshot is MOD-0023's own, not edited here.
+        await RawUnsetAsync(PlatformCollections.WorkflowInstances, instanceId, "StartedByUserId");
+        Assert.Equal(HttpStatusCode.OK, (await DelegateAsync(Manager, weekId, Person)).Status);
+        await RawSetAsync(PlatformCollections.WorkflowInstances, instanceId,
+            ("StartedByUserId", new BsonBinaryData(Person, GuidRepresentation.Standard)));
+        Assert.Equal(Person, (await StoredInstanceAsync(instanceId)).StartedByUserId);
 
         var approve = await DecideAsync(Person, weekId, approve: true);
 
@@ -539,10 +539,10 @@ public sealed class TimesheetApprovalHttpMongoTests : TimeEntryScenario
         Assert.Null(await ApprovedMinutesAsync(TaskA));
     }
 
-    // ── F3 — the ONE approver MOD-0023 assigned is the only one who sees the week ─────────────────────────────
+    // ── F3 / D1-FIX1 — who can DECIDE the week's open approval task can see and open the week ────────────────
 
     [Fact]
-    public async Task With_two_holders_of_the_manager_seat_only_the_one_MOD_0023_assigned_sees_the_week()
+    public async Task With_two_holders_of_the_manager_seat_BOTH_see_and_open_the_week()
     {
         var secondManager = Guid.NewGuid();
         await SeatAsync(secondManager, ManagerSeat);
@@ -555,12 +555,51 @@ public sealed class TimesheetApprovalHttpMongoTests : TimeEntryScenario
             .Find(t => t.WorkflowInstanceId == week.WorkflowInstanceId!.Value).SingleAsync();
         var assigned = Guid.Parse(task.AssigneeRef);
         var other = assigned == Manager ? secondManager : Manager;
+        // The name shown to the week's owner does not change: it is still the one MOD-0023 named first.
         Assert.Equal(assigned, week.AssignedApproverUserId);
 
-        Assert.Equal(1, (await Host.GetAsync("/api/v1/time-entry/approvals", ApproverToken(assigned))).Data.GetProperty("total").GetInt32());
-        Assert.Equal(HttpStatusCode.OK, (await Host.GetAsync($"/api/v1/time-entry/approvals/{weekId}", ApproverToken(assigned))).Status);
-        Assert.Equal(0, (await Host.GetAsync("/api/v1/time-entry/approvals", ApproverToken(other))).Data.GetProperty("total").GetInt32());
-        Assert.Equal(HttpStatusCode.NotFound, (await Host.GetAsync($"/api/v1/time-entry/approvals/{weekId}", ApproverToken(other))).Status);
+        foreach (var holder in new[] { assigned, other })
+        {
+            var list = await Host.GetAsync("/api/v1/time-entry/approvals", ApproverToken(holder));
+            Assert.Equal(1, list.Data.GetProperty("total").GetInt32());
+            Assert.Equal(HttpStatusCode.OK, (await Host.GetAsync($"/api/v1/time-entry/approvals/{weekId}", ApproverToken(holder))).Status);
+        }
+
+        // Somebody who is not a candidate of the task sees nothing — the seat above included.
+        foreach (var outsider in new[] { GrandManager, Stranger })
+        {
+            Assert.Equal(0, (await Host.GetAsync("/api/v1/time-entry/approvals", ApproverToken(outsider))).Data.GetProperty("total").GetInt32());
+            var detail = await Host.GetAsync($"/api/v1/time-entry/approvals/{weekId}", ApproverToken(outsider));
+            Assert.Equal(HttpStatusCode.NotFound, detail.Status);
+            Assert.Equal(TimeEntryReasonCodes.ApprovalWeekNotFound, detail.ReasonCode);
+        }
+
+        // Another tenant: the same user id with the other tenant's token finds nothing.
+        Assert.Equal(HttpStatusCode.NotFound,
+            (await Host.GetAsync($"/api/v1/time-entry/approvals/{weekId}", ApproverToken(other, OtherTenant))).Status);
+        Assert.Equal(0, (await Host.GetAsync("/api/v1/time-entry/approvals", ApproverToken(other, OtherTenant))).Data.GetProperty("total").GetInt32());
+    }
+
+    [Fact]
+    public async Task After_a_delegation_the_delegate_sees_and_opens_the_week_and_the_former_candidates_do_not()
+    {
+        var secondManager = Guid.NewGuid();
+        await SeatAsync(secondManager, ManagerSeat);
+        var weekId = await SubmittedWeekAsync();
+
+        Assert.Equal(HttpStatusCode.OK, (await DelegateAsync(secondManager, weekId, GrandManager)).Status);
+
+        Assert.Equal(1, (await Host.GetAsync("/api/v1/time-entry/approvals", ApproverToken(GrandManager))).Data.GetProperty("total").GetInt32());
+        Assert.Equal(HttpStatusCode.OK, (await Host.GetAsync($"/api/v1/time-entry/approvals/{weekId}", ApproverToken(GrandManager))).Status);
+        foreach (var former in new[] { Manager, secondManager })
+        {
+            Assert.Equal(0, (await Host.GetAsync("/api/v1/time-entry/approvals", ApproverToken(former))).Data.GetProperty("total").GetInt32());
+            Assert.Equal(HttpStatusCode.NotFound, (await Host.GetAsync($"/api/v1/time-entry/approvals/{weekId}", ApproverToken(former))).Status);
+        }
+
+        // See = decide: the delegate's decision is accepted, a former candidate's is not.
+        Assert.Equal(HttpStatusCode.Forbidden, (await DecideAsync(Manager, weekId, approve: true)).Status);
+        Assert.Equal(HttpStatusCode.OK, (await DecideAsync(GrandManager, weekId, approve: true)).Status);
     }
 
     // ── D1 (WP-WF-ENGINE-CANDIDATES-01) — ANY holder of the manager seat decides, and the week names who did ──

@@ -122,8 +122,10 @@ public sealed class WorkflowApprovalWorkItemProvider : IWorkItemProvider
                 : null;
             var projected = _projection.Project(
                 task, instance, actor, ProviderCode, ProviderContractVersion, context, step,
-                // no readable snapshot → no list: the projection keeps its AssigneeRef reading (see IsListedFor)
-                snapshot is null ? null : WorkflowTaskTransitionSupport.DecidingPrincipals(snapshot));
+                // D1-FIX1 — no readable snapshot: the task stays LISTED for its assignee (IsListedFor), so a stuck
+                // record is seen, but NOBODY may decide it (the gate answers 404) — an empty list, never null: null
+                // would mean "the caller did not say" and leave every button enabled.
+                snapshot is null ? [] : WorkflowTaskTransitionSupport.DecidingPrincipals(snapshot));
             if (projected is not null)
             {
                 items.Add(projected);

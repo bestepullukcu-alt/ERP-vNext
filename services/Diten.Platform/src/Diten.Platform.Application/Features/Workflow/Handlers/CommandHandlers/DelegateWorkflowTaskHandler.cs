@@ -14,9 +14,13 @@ public sealed class DelegateWorkflowTaskHandler
         IApprovalTaskRepository taskRepository,
         IWorkflowInstanceRepository instanceRepository,
         IRuntimeAssignmentSnapshotRepository snapshotRepository,
-        IWorkflowTransitionLogRepository logRepository)
+        IWorkflowTransitionLogRepository logRepository,
+        IPlatformTransactionExecutor? transactions = null)
     {
-        _support = new WorkflowTaskTransitionSupport(taskRepository, instanceRepository, snapshotRepository, logRepository);
+        // D1-FIX1 — the transition commits in one Platform transaction (the executor comes from DI; null keeps the
+        // sequential writes for in-memory doubles).
+        _support = new WorkflowTaskTransitionSupport(taskRepository, instanceRepository, snapshotRepository, logRepository,
+            seams: new WorkflowTransitionSeams(null, transactions, null, null));
     }
 
     public Task<Response<WorkflowTaskTransitionResponse>> Handle(DelegateWorkflowTaskCommand request, CancellationToken ct) =>
