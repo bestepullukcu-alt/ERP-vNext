@@ -454,6 +454,30 @@ public sealed class TaskTransitionLogTests
     //
     // One real handler per kind. Each returns the entry the handler wrote, or null if it wrote none.
 
+    /// <summary>BL-509 — an open request sent by <see cref="TaskTestData.Me"/>, addressed to
+    /// <paramref name="offeredTo"/> (or to nobody: declined / withdrawn).</summary>
+    private static TaskItem RequestTask(Guid? offeredTo) => new()
+    {
+        TenantId = TaskTestData.Tenant,
+        Title = "Review the stability report",
+        AssignmentTarget = TaskAssignmentTarget.Offered,
+        OfferedToUserId = offeredTo,
+        IsRequest = true,
+        CreatedByUserId = TaskTestData.Me,
+        OrganizationUnitId = AssignmentWorld.HomeUnit,
+        CreatedBy = "wc1"
+    };
+
+    /// <summary>The REAL request service over the two-company world; every account is switched on.</summary>
+    private static TaskRequestService Requests(Guid actor) => new(
+        AssignmentWorld.SeatRepository(),
+        AssignmentWorld.PositionRepository(),
+        AssignmentWorld.UnitRepository(),
+        new FakeTaskNotificationRecipientResolver(
+            AssignmentWorld.EveryPerson.Select(person => (person, $"{person:N}@tenant.example")).ToArray()),
+        TaskActors.PermitAll(),
+        new FakeCurrentUserContext(actor));
+
     private static readonly IReadOnlyDictionary<TaskTransitionKind, Func<Task<TaskTransition?>>> Scenarios =
         new Dictionary<TaskTransitionKind, Func<Task<TaskTransition?>>>
         {
@@ -616,6 +640,46 @@ public sealed class TaskTransitionLogTests
                 var task = AssignedTask(TaskLifecycle.Open);
                 var repository = new FakeTaskItemRepository(task);
                 await Return(repository, task, "Not my remit");
+                return Last(repository);
+            },
+            // BL-509 — the task request: addressed again by its sender, declined by the person asked, withdrawn.
+            [TaskTransitionKind.Offered] = async () =>
+            {
+                var task = RequestTask(offeredTo: null);
+                var repository = new FakeTaskItemRepository(task);
+                await new OfferTaskItemHandler(
+                        repository, new FakeTaskAssignmentRepository(), Requests(TaskTestData.Me),
+                        new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant))
+                    .Handle(
+                        new OfferTaskItemCommand(
+                            task.Id, new OfferTaskItemRequest(task.Version, AssignmentWorld.ForeignPeer), "corr"),
+                        CancellationToken.None);
+                return Last(repository);
+            },
+            [TaskTransitionKind.Declined] = async () =>
+            {
+                var task = RequestTask(offeredTo: AssignmentWorld.ForeignPeer);
+                var repository = new FakeTaskItemRepository(task);
+                await new DeclineTaskOfferHandler(
+                        repository, new FakeTaskAssignmentRepository(), Requests(AssignmentWorld.ForeignPeer),
+                        new FakeCurrentUserContext(AssignmentWorld.ForeignPeer),
+                        new FakeTenantContext(TaskTestData.Tenant))
+                    .Handle(
+                        new DeclineTaskOfferCommand(
+                            task.Id, new DeclineTaskOfferRequest(task.Version, "No capacity this month"), "corr"),
+                        CancellationToken.None);
+                return Last(repository);
+            },
+            [TaskTransitionKind.Withdrawn] = async () =>
+            {
+                var task = RequestTask(offeredTo: AssignmentWorld.ForeignPeer);
+                var repository = new FakeTaskItemRepository(task);
+                await new WithdrawTaskOfferHandler(
+                        repository, new FakeTaskAssignmentRepository(), Requests(TaskTestData.Me),
+                        new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant))
+                    .Handle(
+                        new WithdrawTaskOfferCommand(task.Id, new WithdrawTaskOfferRequest(task.Version), "corr"),
+                        CancellationToken.None);
                 return Last(repository);
             },
             // BL-439 — the person a parked task is asking answers it.

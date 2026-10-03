@@ -381,6 +381,18 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
                         && x.Lifecycle == Domain.Enums.Tasks.TaskLifecycle.Waiting)
             .ToList());
 
+    /// <summary>BL-509 — mirrors <c>TaskItemRepository.ListOfferedToAsync</c>, all three conditions included.</summary>
+    public Task<IReadOnlyList<TaskItem>> ListOfferedToAsync(Guid userId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<TaskItem>>(_items
+            .Where(x => x.TenantId == TaskTestData.Tenant
+                        && !x.IsDeleted
+                        && x.OfferedToUserId == userId
+                        && x.AssignmentTarget == Domain.Enums.Tasks.TaskAssignmentTarget.Offered
+                        && x.AssigneeUserId is null
+                        && x.Lifecycle != Domain.Enums.Tasks.TaskLifecycle.Done
+                        && x.Lifecycle != Domain.Enums.Tasks.TaskLifecycle.Cancelled)
+            .ToList());
+
     public Task<IReadOnlyList<TaskItem>> ListByParentAsync(Guid parentTaskItemId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<TaskItem>>(_items
             .Where(x => x.TenantId == TaskTestData.Tenant && !x.IsDeleted && x.ParentTaskItemId == parentTaskItemId)

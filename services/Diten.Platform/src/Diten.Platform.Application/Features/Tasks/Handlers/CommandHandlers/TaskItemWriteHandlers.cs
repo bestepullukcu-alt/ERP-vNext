@@ -67,6 +67,16 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 "A closed task cannot be edited.", 409, TaskReasonCodes.InvalidState, command.CorrelationId);
         }
 
+        // BL-509 (owner decision 3) — the sender of an ACCEPTED request watches and comments; the task, due date
+        // included, is its holder's to change. Before acceptance it is still the sender's own request to edit.
+        if (!TaskRequestPolicy.SenderMayEditAfterAcceptance
+            && TaskRequestPolicy.IsSenderOfAcceptedRequest(task, _currentUser.UserId))
+        {
+            return Response<NoContent>.Fail(
+                "This task was accepted as a request; it is its holder's to edit.",
+                403, TaskReasonCodes.RequestSenderCannotDirect, command.CorrelationId);
+        }
+
         if (request.OrganizationUnitId is { } unitId && unitId != task.OrganizationUnitId)
         {
             var unit = await _organizationUnits.GetByIdAsync(unitId, ct);

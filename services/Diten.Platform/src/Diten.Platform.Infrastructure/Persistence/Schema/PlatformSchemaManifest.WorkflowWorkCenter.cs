@@ -273,6 +273,14 @@ public static partial class PlatformSchemaManifest
                             .Ascending(x => x.Lifecycle)
                             .Ascending(x => x.IsDeleted),
                         new CreateIndexOptions { Name = "ix_task_items_tenant_waiting_on" }),
+                    // BL-509 — the request inbox: what ListOfferedToAsync reads (requests waiting on a user's answer).
+                    new CreateIndexModel<TaskItem>(
+                        Builders<TaskItem>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.OfferedToUserId)
+                            .Ascending(x => x.Lifecycle)
+                            .Ascending(x => x.IsDeleted),
+                        new CreateIndexOptions { Name = "ix_task_items_tenant_offered_to" }),
                     new CreateIndexModel<TaskItem>(
                         Builders<TaskItem>.IndexKeys
                             .Ascending(x => x.TenantId)

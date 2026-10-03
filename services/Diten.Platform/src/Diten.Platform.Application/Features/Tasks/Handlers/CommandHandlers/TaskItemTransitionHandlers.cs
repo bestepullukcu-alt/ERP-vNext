@@ -24,17 +24,22 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
     private readonly ITaskAssignmentRepository _assignments;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
+    // BL-509 — who a request may be accepted by, and where the task moves when it is. Null only in a test that
+    // builds this handler for a plain assignment; an Offered task is then REFUSED, never accepted unchecked.
+    private readonly ITaskRequestService? _requests;
 
     public AcceptTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ITaskRequestService? requests = null)
     {
         _tasks = tasks;
         _assignments = assignments;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
+        _requests = requests;
     }
 
     public async Task<Response<NoContent>> Handle(AcceptTaskItemCommand command, CancellationToken ct)
@@ -43,6 +48,11 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        if (task.AssignmentTarget == TaskAssignmentTarget.Offered)
+        {
+            return await AcceptOfferAsync(task, command, ct);
         }
 
         if (task.AssignmentTarget != TaskAssignmentTarget.Person || task.AssigneeUserId != _currentUser.UserId)
@@ -106,6 +116,89 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
             EventType = TaskAssignmentEventType.Accepted,
             UserId = _currentUser.UserId,
             ActorUserId = _currentUser.UserId,
+            ReasonCode = command.Request.ReasonCode,
+            Note = command.Request.Note,
+            CreatedBy = _currentUser.ActorName
+        }, ct);
+
+        return Response<NoContent>.Success(204, command.CorrelationId);
+    }
+
+    /// <summary>
+    /// BL-509 — accepting a REQUEST. The person it was addressed to takes the work on, and at that moment it stops
+    /// being an offer: they are the assignee of an ordinary Person task, already accepted, filed under their own
+    /// unit. Until this write nobody held it, which is what kept it out of their reports, calendar and reminders.
+    /// </summary>
+    private async Task<Response<NoContent>> AcceptOfferAsync(
+        TaskItem task, AcceptTaskItemCommand command, CancellationToken ct)
+    {
+        var me = _currentUser.UserId;
+
+        if (!TaskRequestPolicy.IsPendingOffer(task))
+        {
+            return Response<NoContent>.Fail(
+                "This request is no longer waiting for an answer.",
+                409, TaskReasonCodes.RequestNotPending, command.CorrelationId);
+        }
+
+        if (!TaskRequestPolicy.IsOfferedTo(task, me))
+        {
+            return Response<NoContent>.Fail(
+                "Only the person a request is addressed to can accept it.",
+                403, TaskReasonCodes.RequestNotAddressee, command.CorrelationId);
+        }
+
+        // Asked again NOW: the seat that made them reachable when the request was sent may have ended since, and
+        // the task needs a unit of theirs to move to.
+        var recipient = _requests is null ? null : await _requests.ResolveRecipientAsync(me, ct);
+        if (recipient is null)
+        {
+            return Response<NoContent>.Fail(
+                TaskRequestService.RecipientUnavailable.Message,
+                409, TaskReasonCodes.RequestRecipientUnavailable, command.CorrelationId);
+        }
+
+        var sender = task.CreatedByUserId;
+
+        task.AssigneeUserId = me;
+        task.AssignmentTarget = TaskAssignmentTarget.Person;
+        task.OfferedToUserId = null;
+        task.OfferDeclineReason = null;
+        task.CloseAcceptanceGate(me);
+        // CT decision 4 — the sender's unit until it is accepted, the recipient's from then on, so the work is
+        // counted in the company of whoever does it.
+        if (recipient.OrganizationUnitId is { } homeUnit)
+        {
+            task.OrganizationUnitId = homeUnit;
+        }
+
+        // The same promotion an accepted assignment gets: Open work starts when it is taken on.
+        if (task.Lifecycle == TaskLifecycle.Open)
+        {
+            task.Lifecycle = TaskLifecycle.InProgress;
+        }
+
+        task.UpdatedBy = _currentUser.ActorName;
+        task.Declare(TaskTransitionKind.Accepted, me, command.Request.Note, command.Request.ReasonCode);
+
+        if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        await _assignments.CreateAsync(new TaskAssignment
+        {
+            TenantId = _tenantContext.TenantId,
+            TaskItemId = task.Id,
+            EventType = TaskAssignmentEventType.Accepted,
+            UserId = me,
+            ActorUserId = me,
+            ActorLegalEntityId = recipient.LegalEntityId,
+            TargetLegalEntityId = sender is { } from && _requests is not null
+                ? await _requests.LegalEntityOfAsync(from, ct)
+                : null,
             ReasonCode = command.Request.ReasonCode,
             Note = command.Request.Note,
             CreatedBy = _currentUser.ActorName
@@ -1680,6 +1773,9 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
         // the lifecycle rewind alone stopped meaning "unaccepted" when BL-042 gave acceptance its own field.)
         task.AssigneeUserId = task.CreatedByUserId;
         task.AssignmentTarget = TaskAssignmentTarget.Person;
+        // BL-509 — handed back, a request is over: the task is its sender's own again, and whatever they do with
+        // it next is an ordinary assignment. Left set, the mark would stop them directing work they now own.
+        task.IsRequest = false;
         task.ReopenAcceptanceGate();
         // BL-439 — the lifecycle rewinds to Open, so any waiting story goes with it (see ReleaseTaskItemHandler).
         task.ClearWaiting();
@@ -1789,6 +1885,31 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
         }
 
         /*
+         * BL-509 — a REQUEST and this verb.
+         *
+         * Still waiting for an answer: refused. Assigning it to somebody else would pull it out from under the
+         * person who was asked without telling them; the sender withdraws first, which is an act with its own
+         * record.
+         *
+         * Accepted: the sender no longer directs the work (owner decision 3, TaskRequestPolicy). The holder's own
+         * delegation is untouched — it is their task now, and DelegationAllowed speaks for it below.
+         */
+        if (TaskRequestPolicy.IsPendingOffer(task))
+        {
+            return Response<NoContent>.Fail(
+                "This request is still waiting for an answer. Withdraw it first.",
+                409, TaskReasonCodes.RequestPending, command.CorrelationId);
+        }
+
+        if (!TaskRequestPolicy.SenderMayReassignAfterAcceptance
+            && TaskRequestPolicy.IsSenderOfAcceptedRequest(task, _currentUser.UserId))
+        {
+            return Response<NoContent>.Fail(
+                "This task was accepted as a request; it is its holder's to hand on.",
+                403, TaskReasonCodes.RequestSenderCannotDirect, command.CorrelationId);
+        }
+
+        /*
          * BL-357 — THE FLAG LIMITS THE HOLDER'S FURTHER DELEGATION, NOT THE REQUESTER'S OWN CORRECTION.
          *
          * `DelegationAllowed` has been collected by the create form since Phase 1 and was asked NOWHERE: a task
@@ -1848,6 +1969,14 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
          * (accepted = lifecycle past Open/Planned); once BL-042 moved the fact to its own field, the same line
          * did nothing and reassigned work went straight into the new holder's My Work, unaccepted.
          */
+        // BL-509 — an unanswered request the sender now ASSIGNS inside their own scope (the guard above has just
+        // said yes) is an order from here on, not a request: the mark and the decline note go with the offer.
+        if (task.AssignmentTarget == TaskAssignmentTarget.Offered)
+        {
+            task.IsRequest = false;
+            task.OfferDeclineReason = null;
+        }
+
         task.AssigneeUserId = command.Request.AssigneeUserId;
         task.AssignmentTarget = TaskAssignmentTarget.Person;
         task.ReopenAcceptanceGate();

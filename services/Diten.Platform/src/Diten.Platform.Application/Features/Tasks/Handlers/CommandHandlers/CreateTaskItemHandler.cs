@@ -42,6 +42,9 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
     // BL-023 — is the assignee above me, and if so who carries the request. Neither decides anything.
     private readonly ITaskAssignmentDirection? _direction;
     private readonly ITaskUpwardRequestService? _upwardRequests;
+    // BL-509 — who a request may be sent to. Null only where a test builds this handler without it; an Offered
+    // target is then REFUSED, so an absent service can never let a request through unchecked.
+    private readonly ITaskRequestService? _requests;
     private readonly TaskDocumentReferenceFreezer _documentFreezer;
     // BL-057 at the write — who the work may go to. The same rule the pickers ask.
     private readonly ITaskAssignmentGuard _assignmentGuard;
@@ -91,8 +94,10 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
          * accident. The freezer was different: absent, it silently discarded data the author had entered.
          */
         ITaskAssignmentDirection? direction = null,
-        ITaskUpwardRequestService? upwardRequests = null)
+        ITaskUpwardRequestService? upwardRequests = null,
+        ITaskRequestService? requests = null)
     {
+        _requests = requests;
         _tasks = tasks;
         _assignments = assignments;
         _watchers = watchers;
@@ -132,7 +137,10 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
          * caller; the recurring sweep does not, which is the one thing the two callers disagree about.
          */
         if (TaskAssignmentIntentRules.Validate(
-                request.AssignmentTarget, request.AssigneeUserId, request.PoolPositionId, allowSelfAssigned: true)
+                request.AssignmentTarget, request.AssigneeUserId, request.PoolPositionId, allowSelfAssigned: true,
+                request.OfferedToUserId,
+                // BL-509 — a request is a person asking a person: not the sweep, and not a template.
+                allowOffered: !command.IsScheduledGeneration && command.TemplateSnapshotAt is null)
             is { } invalid)
         {
             return Fail(invalid.Message, invalid.ReasonCode, command.CorrelationId);
@@ -152,6 +160,11 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
                 // A pool task has NO holder until someone claims it — that is the point of a pool.
                 assigneeUserId = null;
                 poolPositionId = request.PoolPositionId;
+                break;
+
+            case TaskAssignmentTarget.Offered:
+                // BL-509 — ASKED of somebody, held by nobody until they accept.
+                assigneeUserId = null;
                 break;
 
             default:
@@ -175,6 +188,41 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         {
             return Response<Guid>.Fail(
                 refused.Message, refused.StatusCode, refused.ReasonCode, command.CorrelationId);
+        }
+
+        /*
+         * ── BL-509 — a REQUEST: may this caller ask THAT person? ─────────────
+         *
+         * Beside the check above, never instead of it: CheckTargetAsync has nothing to say about an Offered target
+         * (nobody is being ASSIGNED work), and BL-057's scope is not asked here at all — a request is how work
+         * reaches somebody the scope withholds. What is asked: the sending key, not yourself, and whether the
+         * addressee can receive work at all. Every "no" about the addressee is one answer.
+         */
+        TaskRequestRecipient? requestRecipient = null;
+        if (request.AssignmentTarget == TaskAssignmentTarget.Offered)
+        {
+            if (_requests is null)
+            {
+                return Fail(TaskAssignmentIntentRules.RequestNotAvailableMessage,
+                    TaskReasonCodes.AssignmentTargetInvalid, command.CorrelationId);
+            }
+
+            var (requestRefused, recipient) = await _requests.CheckSendAsync(request.OfferedToUserId!.Value, ct);
+            if (requestRefused is not null)
+            {
+                return Response<Guid>.Fail(
+                    requestRefused.Message, requestRefused.StatusCode, requestRefused.ReasonCode,
+                    command.CorrelationId);
+            }
+
+            // Approval and review are the sender naming who decides about work that is not theirs to direct.
+            if (request.ApprovalRequired || request.ReviewRequired)
+            {
+                return Fail("A request cannot carry an approval or a review.",
+                    TaskReasonCodes.RequestOptionNotSupported, command.CorrelationId);
+            }
+
+            requestRecipient = recipient;
         }
 
         /*
@@ -221,8 +269,11 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             //   2. the assignee's active position's unit
             //   3. the tenant's root unit — so a person holding no position can still create work
             //   4. otherwise fail, because inventing a unit would silently misfile the task
+            // BL-509 — a request is filed under its SENDER's unit until somebody accepts it (CT decision 4); the
+            // accept moves it to the recipient's. There is no assignee to read a unit from yet.
+            var unitOwner = requestRecipient is null ? assigneeUserId!.Value : actorId;
             var resolved = request.OrganizationUnitId
-                           ?? await ResolveUnitForUserAsync(assigneeUserId!.Value, ct)
+                           ?? await ResolveUnitForUserAsync(unitOwner, ct)
                            ?? await ResolveTenantRootUnitAsync(ct);
             if (resolved is null || resolved == Guid.Empty)
             {
@@ -318,6 +369,8 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             AssignmentTarget = request.AssignmentTarget,
             AssigneeUserId = assigneeUserId,
             PoolPositionId = poolPositionId,
+            OfferedToUserId = requestRecipient?.UserId,
+            IsRequest = requestRecipient is not null,
             CreatedByUserId = actorId,
             OrganizationUnitId = organizationUnitId,
             DueAt = request.DueAt,
@@ -418,10 +471,15 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         {
             TenantId = _tenantContext.TenantId,
             TaskItemId = task.Id,
-            EventType = TaskAssignmentEventType.Created,
-            UserId = assigneeUserId,
+            EventType = requestRecipient is null
+                ? TaskAssignmentEventType.Created
+                : TaskAssignmentEventType.Offered,
+            UserId = requestRecipient?.UserId ?? assigneeUserId,
             PositionId = poolPositionId,
             ActorUserId = actorId,
+            // BL-509 — both companies, as they stood when the request was sent. Null on every ordinary create.
+            ActorLegalEntityId = requestRecipient is null ? null : await _requests!.LegalEntityOfAsync(actorId, ct),
+            TargetLegalEntityId = requestRecipient?.LegalEntityId,
             CreatedBy = _currentUser.ActorName
         }, ct);
 

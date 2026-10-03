@@ -136,6 +136,21 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
         return await Collection.Find(filter).SortBy(x => x.DueAt).ToListAsync(ct);
     }
 
+    /// <summary>BL-509 — the requests waiting on this user. See the interface for why all three conditions are
+    /// part of the filter.</summary>
+    public async Task<IReadOnlyList<TaskItem>> ListOfferedToAsync(
+        Guid userId,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<TaskItem>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskItem>.Filter.Eq(x => x.OfferedToUserId, (Guid?)userId),
+            Builders<TaskItem>.Filter.Eq(x => x.AssignmentTarget, TaskAssignmentTarget.Offered),
+            Builders<TaskItem>.Filter.Eq(x => x.AssigneeUserId, (Guid?)null),
+            Builders<TaskItem>.Filter.Nin(x => x.Lifecycle, new[] { TaskLifecycle.Done, TaskLifecycle.Cancelled }));
+        return await Collection.Find(filter).SortBy(x => x.DueAt).ToListAsync(ct);
+    }
+
     /// <summary>
     /// A new task, with the <see cref="TaskTransitionKind.Created"/> entry that opens its history.
     ///

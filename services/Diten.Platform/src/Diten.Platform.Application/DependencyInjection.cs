@@ -450,6 +450,10 @@ public static class DependencyInjection
             Features.Tasks.Services.TaskAssignmentDirection>();
         services.AddScoped<Features.Tasks.Services.ITaskUpwardRequestService,
             Features.Tasks.Services.TaskUpwardRequestService>();
+        // BL-509 — the task REQUEST: who may be asked to take work on, across the assignment scope. It consumes the
+        // seat directory and the shared eligibility rule; BL-057's scope is deliberately not among its dependencies.
+        services.AddScoped<Features.Tasks.Services.ITaskRequestService,
+            Features.Tasks.Services.TaskRequestService>();
 
         /*
          * WC-2 — the working-time seam and the SLA decision that rides on it.

@@ -133,5 +133,8 @@ public static class TaskItemMapper
                 r.ListVersionId))
             .ToList(),
         task.TaskTypeId,
-        task.ClosureNote);
+        task.ClosureNote,
+        task.OfferedToUserId,
+        task.IsRequest,
+        task.OfferDeclineReason);
 }

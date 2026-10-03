@@ -71,6 +71,16 @@ public interface ITaskItemRepository
     Task<IReadOnlyList<TaskItem>> ListWaitingOnUserAsync(Guid userId, CancellationToken ct = default);
 
     /// <summary>
+    /// BL-509 — requests waiting for THIS user's answer: offered to them, held by nobody, not closed.
+    ///
+    /// <para>The fifth question the Task Center asks. <see cref="ListByAssigneeAsync"/> cannot answer it and must
+    /// not: a request nobody has accepted has no assignee, which is exactly what keeps it out of every surface
+    /// that counts a person's work. All three conditions are in the filter rather than left to the caller — the
+    /// moment the request is accepted, declined or withdrawn the row stops matching.</para>
+    /// </summary>
+    Task<IReadOnlyList<TaskItem>> ListOfferedToAsync(Guid userId, CancellationToken ct = default);
+
+    /// <summary>
     /// Optimistic-concurrency update. Returns false when the expected version no longer matches — the caller
     /// turns that into a controlled 409 rather than silently overwriting (pack §13).
     /// </summary>

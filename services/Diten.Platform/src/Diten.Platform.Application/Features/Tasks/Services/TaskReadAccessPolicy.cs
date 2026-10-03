@@ -209,7 +209,7 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
             }
 
             team ??= await _team.ResolveTeamAsync(ct);
-            if (team.Covers(task))
+            if (team.Covers(task) || TaskRequestPolicy.TeamSeesPendingOffer(task, team))
             {
                 readable.Add(task.Id);
                 continue;
@@ -270,6 +270,19 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
             candidates.Add(asked);
         }
 
+        /*
+         * BL-509 — THE PERSON A REQUEST IS ADDRESSED TO, and only while it waits for their answer
+         * (TaskRequestPolicy.IsOfferedTo — the SAME predicate the accept / decline handlers and the inbox ask).
+         * They have to read what they are being asked to take on. The moment they decline or the sender withdraws,
+         * the id is cleared and the leg answers no; when they accept they are the assignee and the first leg holds.
+         *
+         * THIS task only, like the question leg above — being asked about a subtask admits nobody to its parent.
+         */
+        if (task.OfferedToUserId is { } offeredTo && TaskRequestPolicy.IsOfferedTo(task, offeredTo))
+        {
+            candidates.Add(offeredTo);
+        }
+
         // The parent leg is narrower than the direct leg on purpose (class doc): only the parent's assignee and
         // pool holders, not its creator or watchers.
         // A parent id that resolves to nothing (deleted, gone) grants nothing.
@@ -321,6 +334,6 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
         }
 
         var team = await _team.ResolveTeamAsync(ct);
-        return team.Covers(task);
+        return team.Covers(task) || TaskRequestPolicy.TeamSeesPendingOffer(task, team);
     }
 }
