@@ -200,10 +200,10 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.BadRequest, silent.Status);
         Assert.Equal(TaskReasonCodes.HandoverReasonRequired, ReasonCode(silent.Body));
 
+        // Piotr may not even read it (another company's unit, not asked): answered as a task that does not exist.
         var notAsked = await _host.PostAsync($"/api/v1/tasks/{id}/decline", piotr,
             new { expectedVersion = await VersionAsync(id), reason = "Benim değil." });
-        Assert.Equal(HttpStatusCode.Forbidden, notAsked.Status);
-        Assert.Equal(TaskReasonCodes.RequestNotAddressee, ReasonCode(notAsked.Body));
+        Assert.Equal(HttpStatusCode.NotFound, notAsked.Status);
         Assert.Equal(Ewa, (await StoredAsync(id)).OfferedToUserId);
 
         // Through the Task Center's one dispatch address: the action code IS the route segment.
@@ -509,9 +509,9 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.NoContent, withdrawn.Status);
         Assert.Equal(Deniz, Assert.Single(await HistoryAsync(id), e => e.Kind == TaskTransitionKind.Withdrawn).ActorUserId);
 
+        // Withdrawn, it is no longer hers to read: answered as a task that does not exist (read first, then state).
         var late = await _host.PostAsync($"/api/v1/tasks/{id}/accept", ewa, new { expectedVersion = await VersionAsync(id) });
-        Assert.Equal(HttpStatusCode.Conflict, late.Status);
-        Assert.Equal(TaskReasonCodes.RequestNotPending, ReasonCode(late.Body));
+        Assert.Equal(HttpStatusCode.NotFound, late.Status);
         Assert.DoesNotContain(await MineAsync(ewa), item => IdOf(item) == id);
 
         var forDeniz = Assert.Single(await MineAsync(deniz), item => IdOf(item) == id);
@@ -540,7 +540,8 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
         Assert.DoesNotContain(await MineAsync(ewa), item => IdOf(item) == id);
         Assert.Equal(HttpStatusCode.NotFound, (await _host.GetAsync($"/api/v1/work-items/{id}", ewa)).Status);
         var accept = await _host.PostAsync($"/api/v1/tasks/{id}/accept", ewa, new { expectedVersion = await VersionAsync(id) });
-        Assert.Equal(HttpStatusCode.Conflict, accept.Status);
+        Assert.Equal(HttpStatusCode.NotFound, accept.Status);
+        Assert.Equal(TaskLifecycle.Cancelled, (await StoredAsync(id)).Lifecycle);
     }
 
     /// <summary>
@@ -605,6 +606,396 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
         Assert.Equal(TaskReasonCodes.RequestDeclineReasonTooLong, ReasonCode(answer.Body));
         Assert.Equal(Ewa, (await StoredAsync(id)).OfferedToUserId);
     }
+
+    // ── D1 fix round 1 · 1 — who was asked, and who declined, reach only the two people concerned ─────────────
+
+    /// <summary>
+    /// [BLOCKER] MUTATION TARGET (visibility). Three readers who may read the task but are not its parties — the
+    /// sender's colleague (unit scope), a read-all holder, and once it is accepted the new holder's manager — never
+    /// receive the person asked, the person who declined or the reason: not in the task detail, not in the work
+    /// item, not in the activity feed, not in the @mention picker. Before the decline, after it, after acceptance.
+    /// The sender keeps all of it.
+    /// </summary>
+    [Fact]
+    public async Task Who_was_asked_and_who_declined_reach_only_the_sender_and_the_person_asked()
+    {
+        const string Reason = "Bu ay kapasitem yok, Ewa.";
+        var deniz = Token(Deniz, SenderKeys);
+        var burak = Token(Burak, UserKeys);                                   // the sender's colleague (scope)
+        var readAll = Token(Elif, [.. UserKeys, TaskPermissions.ReadAll]);    // reads every task in the tenant
+        var id = await SendRequestAsync(deniz, Ewa);
+
+        // ── pending ──
+        foreach (var reader in new[] { burak, readAll })
+        {
+            var seen = await EverythingAsync(id, reader);
+            Assert.DoesNotContain(Ewa.ToString(), seen);
+            Assert.DoesNotContain("Ewa", seen);
+            Assert.DoesNotContain("offeredToUserId", seen);
+        }
+
+        Assert.Contains($"\"offeredToUserId\":\"{Ewa}\"", (await _host.GetAsync($"/api/v1/tasks/{id}", deniz)).Body);
+
+        // ── declined ──
+        var declined = await _host.PostAsync($"/api/v1/tasks/{id}/decline", Token(Ewa, UserKeys),
+            new { expectedVersion = await VersionAsync(id), reason = Reason });
+        Assert.Equal(HttpStatusCode.NoContent, declined.Status);
+
+        foreach (var reader in new[] { burak, readAll })
+        {
+            var seen = await EverythingAsync(id, reader);
+            Assert.DoesNotContain(Ewa.ToString(), seen);
+            Assert.DoesNotContain(Reason, seen);
+            Assert.DoesNotContain("offerDeclineReason", seen);
+            Assert.DoesNotContain("\"code\":\"declined\"", seen);
+            Assert.Contains("\"state\":\"unaddressed\"", seen);
+        }
+
+        var forDeniz = await EverythingAsync(id, deniz);
+        Assert.Contains(Reason, forDeniz);
+        Assert.Contains("\"code\":\"declined\"", forDeniz);
+
+        // ── asked again, accepted ──
+        await _host.PostAsync($"/api/v1/tasks/{id}/offer", deniz,
+            new { expectedVersion = await VersionAsync(id), offeredToUserId = Piotr });
+        var piotr = Token(Piotr, UserKeys);
+        Assert.DoesNotContain(Reason, await EverythingAsync(id, piotr));       // the next person asked is not told
+        Assert.DoesNotContain(Ewa.ToString(), await EverythingAsync(id, piotr));
+        await _host.PostAsync($"/api/v1/tasks/{id}/accept", piotr, new { expectedVersion = await VersionAsync(id) });
+
+        foreach (var reader in new[] { Token(Marek, UserKeys), readAll, piotr })
+        {
+            var seen = await EverythingAsync(id, reader);
+            Assert.DoesNotContain(Ewa.ToString(), seen);
+            Assert.DoesNotContain(Reason, seen);
+            Assert.DoesNotContain("\"code\":\"declined\"", seen);
+        }
+
+        Assert.Contains("\"code\":\"declined\"", await EverythingAsync(id, deniz));
+    }
+
+    [Fact]
+    public async Task The_sender_cannot_mention_the_person_asked_into_the_feed()
+    {
+        var id = await SendRequestAsync(Token(Deniz, SenderKeys), Ewa);
+
+        var mention = await _host.GetAsync($"/api/v1/tasks/{id}/mention-candidates", Token(Deniz, SenderKeys));
+        Assert.Equal(HttpStatusCode.OK, mention.Status);
+        Assert.DoesNotContain(Ewa.ToString(), mention.Body);     // the sender cannot @mention her into the feed
+    }
+
+    /// <summary>What a reader receives about one task: the detail, the work item (activity included) and the @mention
+    /// picker, as one string. A 404 contributes nothing.</summary>
+    private async Task<string> EverythingAsync(Guid id, string bearer)
+    {
+        var parts = new[]
+        {
+            await _host.GetAsync($"/api/v1/tasks/{id}", bearer),
+            await _host.GetAsync($"/api/v1/work-items/{id}", bearer),
+            await _host.GetAsync($"/api/v1/tasks/{id}/mention-candidates", bearer)
+        };
+        return string.Join("\n", parts.Where(p => p.Status == HttpStatusCode.OK).Select(p => p.Body));
+    }
+
+    // ── 2 — a returned request goes back to the unit it was sent from ───────────────────────────────────────
+
+    [Fact]
+    public async Task A_returned_request_goes_back_to_the_unit_it_was_sent_from()
+    {
+        var ewa = Token(Ewa, UserKeys);
+        var id = await SendRequestAsync(Token(Deniz, SenderKeys), Ewa);
+        Assert.Equal((Guid?)_unitTr, (await StoredAsync(id)).RequestOriginUnitId);
+
+        await _host.PostAsync($"/api/v1/tasks/{id}/accept", ewa, new { expectedVersion = await VersionAsync(id) });
+        Assert.Equal(_unitPl, (await StoredAsync(id)).OrganizationUnitId);
+
+        var returned = await _host.PostAsync($"/api/v1/tasks/{id}/return", ewa,
+            new { expectedVersion = await VersionAsync(id), reason = "Yanlış kişiyim." });
+        Assert.Equal(HttpStatusCode.NoContent, returned.Status);
+        Assert.Equal(_unitTr, (await StoredAsync(id)).OrganizationUnitId);
+
+        // …so the recipient's company no longer reads the sender's own work.
+        Assert.Equal(HttpStatusCode.NotFound, (await _host.GetAsync($"/api/v1/tasks/{id}", Token(Marek, UserKeys))).Status);
+    }
+
+    // ── 3 — whether somebody can be reached is the LAST question ─────────────────────────────────────────────
+
+    /// <summary>
+    /// MUTATION TARGET (order). A request that is wrong in some OTHER way answers byte for byte the same for a person
+    /// who can be reached and for one who cannot: the other refusal comes first, the addressee is asked last.
+    /// </summary>
+    [Fact]
+    public async Task A_request_wrong_in_another_way_answers_the_same_for_a_reachable_and_an_unreachable_person()
+    {
+        var deniz = Token(Deniz, SenderKeys);
+        foreach (var broken in new Func<Guid, object>[]
+                 {
+                     to => CreateBody(TaskAssignmentTarget.Offered, offeredTo: to, approvalManager: Burak),
+                     to => CreateBodyWith(to, review: true),
+                     to => CreateBodyWith(to, parent: Guid.NewGuid())
+                 })
+        {
+            var reachable = await _host.PostAsync("/api/v1/tasks", deniz, broken(Ewa));
+            var unreachable = await _host.PostAsync("/api/v1/tasks", deniz, broken(Elif));
+            Assert.NotEqual(HttpStatusCode.Created, reachable.Status);
+            Assert.Equal((reachable.Status, reachable.Body), (unreachable.Status, unreachable.Body));
+        }
+
+        // The review case by its own code, and nothing stored by any of them.
+        var review = await _host.PostAsync("/api/v1/tasks", deniz, CreateBodyWith(Ewa, review: true));
+        Assert.Equal(TaskReasonCodes.RequestOptionNotSupported, ReasonCode(review.Body));
+        Assert.Empty(await AllTasksAsync(_harness.TenantId));
+
+        // Addressing again from an out-of-date page: the same 409 for both.
+        var id = await SendRequestAsync(deniz, Ewa);
+        await _host.PostAsync($"/api/v1/tasks/{id}/withdraw", deniz, new { expectedVersion = await VersionAsync(id) });
+        var stale = await VersionAsync(id) - 1;
+        var toReachable = await _host.PostAsync($"/api/v1/tasks/{id}/offer", deniz, new { expectedVersion = stale, offeredToUserId = Piotr });
+        var toUnreachable = await _host.PostAsync($"/api/v1/tasks/{id}/offer", deniz, new { expectedVersion = stale, offeredToUserId = Elif });
+        Assert.Equal(HttpStatusCode.Conflict, toReachable.Status);
+        Assert.Equal((toReachable.Status, toReachable.Body), (toUnreachable.Status, toUnreachable.Body));
+    }
+
+    // ── 4 — the reminder sweep leaves an unanswered request alone ────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_reminder_sweep_does_not_rewrite_a_waiting_request_so_the_page_version_still_answers()
+    {
+        var created = await _host.PostAsync("/api/v1/tasks", Token(Deniz, SenderKeys),
+            CreateBody(TaskAssignmentTarget.Offered, offeredTo: Ewa, reminderLeadDays: 3));
+        using var document = JsonDocument.Parse(created.Body);
+        var id = document.RootElement.GetProperty("data").GetGuid();
+
+        var pageOpenedAt = await VersionAsync(id);      // what the person asked has on screen
+        await SweepRemindersAsync();
+        await SweepRemindersAsync();
+
+        Assert.Equal(pageOpenedAt, await VersionAsync(id));
+        var accepted = await _host.PostAsync($"/api/v1/tasks/{id}/accept", Token(Ewa, UserKeys),
+            new { expectedVersion = pageOpenedAt });
+        Assert.Equal(HttpStatusCode.NoContent, accepted.Status);
+    }
+
+    // ── 5 — after acceptance the sender writes through no gate ───────────────────────────────────────────────
+
+    /// <summary>MUTATION TARGET (sender gates). Cancel, a checklist step, a dependency and a subtask — each refused
+    /// with the one code; the holder's own checklist write still lands.</summary>
+    [Fact]
+    public async Task After_acceptance_the_sender_cannot_cancel_or_add_steps_predecessors_or_subtasks()
+    {
+        var deniz = Token(Deniz, SenderKeys);
+        var ewa = Token(Ewa, UserKeys);
+        var id = await SendRequestAsync(deniz, Ewa);
+        await _host.PostAsync($"/api/v1/tasks/{id}/accept", ewa, new { expectedVersion = await VersionAsync(id) });
+        var other = await SendRequestAsync(deniz, Burak);
+
+        var refused = new[]
+        {
+            await _host.PostAsync($"/api/v1/tasks/{id}/cancel", deniz, new { expectedVersion = await VersionAsync(id) }),
+            await _host.PostAsync($"/api/v1/tasks/{id}/checklist/items", deniz,
+                new { text = "Engelleyici adım", requirement = "Blocking", expectedVersion = 0 }),
+            await _host.PostAsync($"/api/v1/tasks/{id}/dependencies", deniz,
+                new { dependsOnTaskItemId = other, dependencyType = "FinishToStart" }),
+            await _host.PostAsync("/api/v1/tasks", deniz, CreateBodyWith(null, parent: id, target: TaskAssignmentTarget.SelfAssigned))
+        };
+
+        Assert.All(refused, answer =>
+        {
+            Assert.Equal(HttpStatusCode.Forbidden, answer.Status);
+            Assert.Equal(TaskReasonCodes.RequestSenderCannotDirect, ReasonCode(answer.Body));
+        });
+        Assert.Equal(TaskLifecycle.InProgress, (await StoredAsync(id)).Lifecycle);
+
+        // The holder's own step is theirs to add.
+        var holderStep = await _host.PostAsync($"/api/v1/tasks/{id}/checklist/items", ewa,
+            new { text = "Kendi adımım", requirement = "Optional", expectedVersion = 0 });
+        Assert.True(holderStep.Status is HttpStatusCode.NoContent or HttpStatusCode.OK, holderStep.Body);
+    }
+
+    // ── 6 — an unanswered request keeps the shape it was sent with ───────────────────────────────────────────
+
+    [Fact]
+    public async Task An_unanswered_request_cannot_gain_an_approval_or_a_review_or_move_unit_by_an_edit()
+    {
+        var deniz = Token(Deniz, SenderKeys);
+        var id = await SendRequestAsync(deniz, Ewa);
+
+        var review = await _host.PutAsync($"/api/v1/tasks/{id}", deniz, EditBodyWith(await VersionAsync(id), review: true));
+        Assert.Equal(TaskReasonCodes.RequestOptionNotSupported, ReasonCode(review.Body));
+        var approval = await _host.PutAsync($"/api/v1/tasks/{id}", deniz, EditBodyWith(await VersionAsync(id), approvalManager: Burak));
+        Assert.Equal(TaskReasonCodes.RequestOptionNotSupported, ReasonCode(approval.Body));
+        var moved = await _host.PutAsync($"/api/v1/tasks/{id}", deniz, EditBodyWith(await VersionAsync(id), unit: _unitPl));
+        Assert.Equal(HttpStatusCode.Conflict, moved.Status);
+        Assert.Equal(TaskReasonCodes.RequestUnitFixed, ReasonCode(moved.Body));
+
+        var stored = await StoredAsync(id);
+        Assert.Equal((_unitTr, false, false), (stored.OrganizationUnitId, stored.ReviewRequired, stored.ApprovalRequired));
+
+        // A plain edit of the sender's own unanswered request still lands.
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await _host.PutAsync($"/api/v1/tasks/{id}", deniz, EditBody(await VersionAsync(id), "Yeni başlık"))).Status);
+    }
+
+    // ── 7 — read, then who, then state ───────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Answering_asks_read_first_then_who_then_state()
+    {
+        var deniz = Token(Deniz, SenderKeys);
+        var id = await SendRequestAsync(deniz, Ewa);
+        var version = await VersionAsync(id);
+
+        // Cannot read it: answered as a task that does not exist — not "it is waiting for somebody".
+        foreach (var verb in new[] { "accept", "decline", "withdraw", "offer" })
+        {
+            var answer = await _host.PostAsync($"/api/v1/tasks/{id}/{verb}", Token(Piotr, SenderKeys),
+                new { expectedVersion = version, reason = "x", offeredToUserId = Marek });
+            Assert.Equal(HttpStatusCode.NotFound, answer.Status);
+        }
+
+        // Can read it (same company as the sender), but it is not theirs.
+        var burak = Token(Burak, SenderKeys);
+        var accept = await _host.PostAsync($"/api/v1/tasks/{id}/accept", burak, new { expectedVersion = version });
+        Assert.Equal((HttpStatusCode.Forbidden, TaskReasonCodes.RequestNotAddressee), (accept.Status, ReasonCode(accept.Body)));
+        var decline = await _host.PostAsync($"/api/v1/tasks/{id}/decline", burak, new { expectedVersion = version, reason = "x" });
+        Assert.Equal((HttpStatusCode.Forbidden, TaskReasonCodes.RequestNotAddressee), (decline.Status, ReasonCode(decline.Body)));
+
+        // A key holder who did not send it does not redirect it, even once it is declined.
+        await _host.PostAsync($"/api/v1/tasks/{id}/decline", Token(Ewa, UserKeys), new { expectedVersion = version, reason = "Hayır." });
+        var redirect = await _host.PostAsync($"/api/v1/tasks/{id}/offer", burak,
+            new { expectedVersion = await VersionAsync(id), offeredToUserId = Piotr });
+        Assert.Equal((HttpStatusCode.Forbidden, TaskReasonCodes.RequestNotSender), (redirect.Status, ReasonCode(redirect.Body)));
+
+        // The person who declined no longer reads it.
+        var late = await _host.PostAsync($"/api/v1/tasks/{id}/accept", Token(Ewa, UserKeys), new { expectedVersion = await VersionAsync(id) });
+        Assert.Equal(HttpStatusCode.NotFound, late.Status);
+
+        // State comes last: an addressee who CAN read a request that was called off reads "not pending".
+        var toBurak = await SendRequestAsync(deniz, Burak);
+        await _host.PostAsync($"/api/v1/tasks/{toBurak}/cancel", deniz, new { expectedVersion = await VersionAsync(toBurak) });
+        var afterCancel = await _host.PostAsync($"/api/v1/tasks/{toBurak}/accept", Token(Burak, UserKeys),
+            new { expectedVersion = await VersionAsync(toBurak) });
+        Assert.Equal((HttpStatusCode.Conflict, TaskReasonCodes.RequestNotPending), (afterCancel.Status, ReasonCode(afterCancel.Body)));
+    }
+
+    // ── rules that had no test (CT list) ─────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Asking_again_while_it_waits_is_refused_and_the_person_asked_stays_the_same()
+    {
+        var deniz = Token(Deniz, SenderKeys);
+        var id = await SendRequestAsync(deniz, Ewa);
+
+        var again = await _host.PostAsync($"/api/v1/tasks/{id}/offer", deniz,
+            new { expectedVersion = await VersionAsync(id), offeredToUserId = Piotr });
+
+        Assert.Equal((HttpStatusCode.Conflict, TaskReasonCodes.RequestPending), (again.Status, ReasonCode(again.Body)));
+        Assert.Equal(Ewa, (await StoredAsync(id)).OfferedToUserId);
+    }
+
+    [Fact]
+    public async Task A_request_that_was_called_off_cannot_be_asked_again()
+    {
+        var deniz = Token(Deniz, SenderKeys);
+        var id = await SendRequestAsync(deniz, Ewa);
+        await _host.PostAsync($"/api/v1/tasks/{id}/withdraw", deniz, new { expectedVersion = await VersionAsync(id) });
+        await _host.PostAsync($"/api/v1/tasks/{id}/cancel", deniz, new { expectedVersion = await VersionAsync(id) });
+
+        var again = await _host.PostAsync($"/api/v1/tasks/{id}/offer", deniz,
+            new { expectedVersion = await VersionAsync(id), offeredToUserId = Piotr });
+
+        Assert.Equal((HttpStatusCode.Conflict, TaskReasonCodes.RequestNotPending), (again.Status, ReasonCode(again.Body)));
+        Assert.Null((await StoredAsync(id)).OfferedToUserId);
+    }
+
+    /// <summary>The ownership log names the right event, the right person and BOTH companies on every row.</summary>
+    [Fact]
+    public async Task Every_ownership_row_names_its_event_its_person_and_both_companies()
+    {
+        var deniz = Token(Deniz, SenderKeys);
+        var id = await SendRequestAsync(deniz, Ewa);
+        await _host.PostAsync($"/api/v1/tasks/{id}/decline", Token(Ewa, UserKeys),
+            new { expectedVersion = await VersionAsync(id), reason = "Olmaz." });
+        await _host.PostAsync($"/api/v1/tasks/{id}/offer", deniz, new { expectedVersion = await VersionAsync(id), offeredToUserId = Piotr });
+        await _host.PostAsync($"/api/v1/tasks/{id}/withdraw", deniz, new { expectedVersion = await VersionAsync(id) });
+
+        var log = await OwnershipLogAsync(id);
+        var declined = Assert.Single(log, e => e.EventType == TaskAssignmentEventType.Declined);
+        Assert.Equal((Ewa, Ewa, LegalEntityPl, LegalEntityTr),
+            (declined.UserId!.Value, declined.ActorUserId!.Value, declined.ActorLegalEntityId!.Value, declined.TargetLegalEntityId!.Value));
+
+        var offered = Assert.Single(log, e => e.EventType == TaskAssignmentEventType.Offered && e.UserId == Piotr);
+        Assert.Equal((Deniz, LegalEntityTr, LegalEntityPl),
+            (offered.ActorUserId!.Value, offered.ActorLegalEntityId!.Value, offered.TargetLegalEntityId!.Value));
+
+        var withdrawn = Assert.Single(log, e => e.EventType == TaskAssignmentEventType.Withdrawn);
+        Assert.Equal((Piotr, Deniz, LegalEntityTr, LegalEntityPl),
+            (withdrawn.UserId!.Value, withdrawn.ActorUserId!.Value, withdrawn.ActorLegalEntityId!.Value, withdrawn.TargetLegalEntityId!.Value));
+    }
+
+    [Fact]
+    public async Task A_recipient_whose_seat_ended_after_being_asked_gets_a_coded_409_on_accept()
+    {
+        var id = await SendRequestAsync(Token(Deniz, SenderKeys), Ewa);
+
+        // Her seat goes after she was asked. Removed (soft) rather than closed by date: the organization store keeps
+        // its window dates in a shape a second date write cannot index (BL-030), and "no longer holds a seat" is the
+        // fact under test either way.
+        var seats = new PositionAssignmentRepository(_harness.DbContext, In(_harness.TenantId));
+        foreach (var seat in (await seats.GetAllAsync()).Where(s => s.UserId == Ewa))
+        {
+            await seats.DeleteAsync(seat.Id);
+        }
+
+        var accept = await _host.PostAsync($"/api/v1/tasks/{id}/accept", Token(Ewa, UserKeys),
+            new { expectedVersion = await VersionAsync(id) });
+
+        Assert.Equal((HttpStatusCode.Conflict, TaskReasonCodes.RequestRecipientUnavailable), (accept.Status, ReasonCode(accept.Body)));
+        Assert.Null((await StoredAsync(id)).AssigneeUserId);
+    }
+
+    [Fact]
+    public async Task A_decline_reason_of_exactly_the_limit_is_accepted()
+    {
+        var id = await SendRequestAsync(Token(Deniz, SenderKeys), Ewa);
+
+        var answer = await _host.PostAsync($"/api/v1/tasks/{id}/decline", Token(Ewa, UserKeys),
+            new { expectedVersion = await VersionAsync(id), reason = new string('x', TaskFieldLimits.MaxDescriptionLength) });
+
+        Assert.Equal(HttpStatusCode.NoContent, answer.Status);
+    }
+
+    private static object CreateBodyWith(
+        Guid? offeredTo, bool review = false, Guid? parent = null,
+        TaskAssignmentTarget target = TaskAssignmentTarget.Offered) => new
+    {
+        title = "Stabilite raporunu gözden geçir",
+        priority = "Medium",
+        assignmentTarget = target.ToString(),
+        offeredToUserId = offeredTo,
+        parentTaskItemId = parent,
+        dueAt = DateTimeOffset.UtcNow.AddDays(1),
+        reviewRequired = review,
+        reviewerCandidateUserId = review ? Burak : (Guid?)null,
+        approvalRequired = false,
+        emailNotificationsEnabled = true,
+        delegationAllowed = true
+    };
+
+    private static object EditBodyWith(int expectedVersion, bool review = false, Guid? approvalManager = null, Guid? unit = null) => new
+    {
+        title = "Stabilite raporunu gözden geçir",
+        priority = "Medium",
+        organizationUnitId = unit,
+        reviewRequired = review,
+        reviewerCandidateUserId = review ? Burak : (Guid?)null,
+        approvalRequired = approvalManager is not null ? true : (bool?)null,
+        approvalManagerUserId = approvalManager,
+        emailNotificationsEnabled = true,
+        delegationAllowed = true,
+        fieldValues = Array.Empty<object>(),
+        expectedVersion
+    };
 
     // ── races: exactly one wins ──────────────────────────────────────────────────────────────────────────────
 
@@ -858,11 +1249,20 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
         Assert.True(winners == 1, $"expected exactly one winner: {a.Status} {a.Body} / {b.Status} {b.Body}");
 
         var loser = a.Status == HttpStatusCode.NoContent ? b : a;
-        Assert.Equal(HttpStatusCode.Conflict, loser.Status);
-        Assert.Contains(ReasonCode(loser.Body), new[]
-        {
-            TaskReasonCodes.ConcurrencyConflict, TaskReasonCodes.RequestNotPending, TaskReasonCodes.AlreadyAccepted
-        });
+
+        /*
+         * The loser changes nothing, and is told so in one of two ways. It lost AT THE WRITE (409, version), or it
+         * read the task after the winner had written: the request was gone — accepted (409, not pending / already
+         * accepted) or withdrawn, in which case the person who was asked no longer may read it at all and is
+         * answered as for a task that does not exist (404, CT rule "read first", D1 fix round 1).
+         */
+        Assert.True(
+            (loser.Status == HttpStatusCode.Conflict && new[]
+            {
+                TaskReasonCodes.ConcurrencyConflict, TaskReasonCodes.RequestNotPending, TaskReasonCodes.AlreadyAccepted
+            }.Contains(ReasonCode(loser.Body)))
+            || (loser.Status == HttpStatusCode.NotFound && ReasonCode(loser.Body) == TaskReasonCodes.NotFound),
+            $"loser: {loser.Status} {loser.Body}");
     }
 
     private async Task<IReadOnlyList<JsonElement>> MineAsync(string bearer, bool team = false)
@@ -1046,6 +1446,7 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
                     services.AddScoped<ITaskNotificationRecipientResolver>(sp =>
                         new TenantAccounts(sp.GetRequiredService<ITenantContext>(), activeAccounts));
                     services.AddScoped<ITaskRequestService, TaskRequestService>();
+                    services.AddSingleton<IUserDisplayNameResolver>(names);
                     services.AddScoped<ITaskReadAccessPolicy>(sp => new TaskReadAccessPolicy(
                         sp.GetRequiredService<ITaskItemRepository>(),
                         new FakeTaskWatcherRepository(),
@@ -1079,7 +1480,7 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
                             new FakeTaskTypeRepository(),
                             teamResolver: sp.GetRequiredService<ITaskTeamResolver>())
                     });
-                    services.AddScoped<IMediator>(sp => new Router(sp, Notifications));
+                    services.AddScoped<IMediator>(sp => new Router(sp, Notifications, Checklists, Dependencies));
                     services.AddScoped<IEnumerable<IWorkItemActionDispatcher>>(sp =>
                         new IWorkItemActionDispatcher[] { new TaskWorkItemActionDispatcher(sp.GetRequiredService<IMediator>()) });
                     services.AddControllers().AddApplicationPart(typeof(TasksController).Assembly);
@@ -1098,6 +1499,10 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
         }
 
         public FakeTaskNotificationService Notifications { get; } = new();
+
+        public FakeChecklistRunRepository Checklists { get; } = new();
+
+        public FakeTaskDependencyRepository Dependencies { get; } = new();
 
         public string Token(Guid user, Guid tenant, params string[] keys)
         {
@@ -1147,8 +1552,15 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
     }
 
     /// <summary>Routes each request this flow sends to its REAL handler, built over the request's own services.</summary>
-    private sealed class Router(IServiceProvider services, FakeTaskNotificationService notifications) : IMediator
+    /// <param name="Checklists">Per host, shared across requests: the checklist runs.</param>
+    /// <param name="Dependencies">Per host, shared across requests: the dependency edges.</param>
+    private sealed class Router(
+        IServiceProvider services,
+        FakeTaskNotificationService notifications,
+        FakeChecklistRunRepository Checklists,
+        FakeTaskDependencyRepository Dependencies) : IMediator
     {
+
         public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken ct = default)
         {
             var tasks = services.GetRequiredService<ITaskItemRepository>();
@@ -1158,6 +1570,7 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
             var requests = services.GetRequiredService<ITaskRequestService>();
             var guard = services.GetRequiredService<ITaskAssignmentGuard>();
             var units = services.GetRequiredService<IOrganizationUnitRepository>();
+            var readAccess = services.GetRequiredService<ITaskReadAccessPolicy>();
             var fields = new TaskFieldDefinitionService(
                 new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll());
 
@@ -1199,15 +1612,26 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
                         requests: requests).Handle(command, ct), ct),
 
                 AcceptTaskItemCommand command => await new AcceptTaskItemHandler(
-                    tasks, events, currentUser, tenant, requests).Handle(command, ct),
+                    tasks, events, currentUser, tenant, requests, readAccess).Handle(command, ct),
                 DeclineTaskOfferCommand command => await new DeclineTaskOfferHandler(
-                    tasks, events, requests, currentUser, tenant).Handle(command, ct),
+                    tasks, events, requests, readAccess, currentUser, tenant).Handle(command, ct),
                 WithdrawTaskOfferCommand command => await new WithdrawTaskOfferHandler(
-                    tasks, events, requests, currentUser, tenant).Handle(command, ct),
+                    tasks, events, requests, readAccess, currentUser, tenant).Handle(command, ct),
                 OfferTaskItemCommand command => await new OfferTaskItemHandler(
-                    tasks, events, requests, currentUser, tenant).Handle(command, ct),
+                    tasks, events, requests, readAccess, currentUser, tenant).Handle(command, ct),
                 ReturnTaskItemCommand command => await new ReturnTaskItemHandler(
-                    tasks, events, currentUser, tenant).Handle(command, ct),
+                    tasks, events, currentUser, tenant, requests).Handle(command, ct),
+                AddChecklistItemCommand command => await new AddChecklistItemHandler(
+                    tasks, Checklists, new TaskChecklistService(), currentUser, tenant).Handle(command, ct),
+                AddTaskDependencyCommand command => await new AddTaskDependencyHandler(
+                    tasks, Dependencies, tenant, currentUser).Handle(command, ct),
+                GetTaskMentionCandidatesQuery query => await new GetTaskMentionCandidatesHandler(
+                    tasks, readAccess, services.GetRequiredService<IUserDisplayNameResolver>(), currentUser)
+                    .Handle(query, ct),
+                GetTaskItemByIdQuery query => await new GetTaskItemByIdHandler(
+                    tasks, new FakeTaskWatcherRepository(), Dependencies, new TaskLifecycleService(),
+                    new FakeTaskApprovalService(), new FakeTaskFieldDefinitionRepository(),
+                    services.GetRequiredService<IActorPermissionContext>(), readAccess, currentUser).Handle(query, ct),
                 ReassignTaskItemCommand command => await new ReassignTaskItemHandler(
                     tasks, events, guard, currentUser, tenant).Handle(command, ct),
                 UpdateTaskItemCommand command => await new UpdateTaskItemHandler(

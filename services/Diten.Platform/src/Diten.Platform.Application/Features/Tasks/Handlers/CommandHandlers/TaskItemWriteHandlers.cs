@@ -77,6 +77,30 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 403, TaskReasonCodes.RequestSenderCannotDirect, command.CorrelationId);
         }
 
+        /*
+         * BL-509 — an UNANSWERED request keeps the shape it was sent with. An approval or a review is the sender
+         * naming who decides about work that is not theirs to direct (refused at creation, refused here too), and
+         * the unit is the sender's until somebody accepts: moving it into another company's unit would show the
+         * request to that company's managers before anybody said yes (owner decision 4).
+         */
+        if (TaskRequestPolicy.IsUnanswered(task))
+        {
+            if ((request.ApprovalRequired == true && !task.ApprovalRequired)
+                || (request.ReviewRequired && !task.ReviewRequired))
+            {
+                return Response<NoContent>.Fail(
+                    "A request cannot carry an approval or a review.",
+                    400, TaskReasonCodes.RequestOptionNotSupported, command.CorrelationId);
+            }
+
+            if (request.OrganizationUnitId is { } movedTo && movedTo != task.OrganizationUnitId)
+            {
+                return Response<NoContent>.Fail(
+                    "A request stays in the unit it was sent from until it is accepted.",
+                    409, TaskReasonCodes.RequestUnitFixed, command.CorrelationId);
+            }
+        }
+
         if (request.OrganizationUnitId is { } unitId && unitId != task.OrganizationUnitId)
         {
             var unit = await _organizationUnits.GetByIdAsync(unitId, ct);

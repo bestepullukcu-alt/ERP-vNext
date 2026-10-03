@@ -113,6 +113,11 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
     {
         ArgumentNullException.ThrowIfNull(task);
 
+        if (AddresseeReads(task, actorUserId))
+        {
+            return true;
+        }
+
         if ((await ResolveDataLegCandidatesAsync(task, ct)).Contains(actorUserId))
         {
             return true;
@@ -167,7 +172,8 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
         foreach (var task in distinct)
         {
             var parent = task.ParentTaskItemId is { } parentId && parents.TryGetValue(parentId, out var found) ? found : null;
-            if ((await DataLegCandidatesAsync(task, watchers[task.Id], parent, ct)).Contains(actorUserId))
+            if (AddresseeReads(task, actorUserId)
+                || (await DataLegCandidatesAsync(task, watchers[task.Id], parent, ct)).Contains(actorUserId))
             {
                 readable.Add(task.Id);
             }
@@ -270,18 +276,9 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
             candidates.Add(asked);
         }
 
-        /*
-         * BL-509 — THE PERSON A REQUEST IS ADDRESSED TO, and only while it waits for their answer
-         * (TaskRequestPolicy.IsOfferedTo — the SAME predicate the accept / decline handlers and the inbox ask).
-         * They have to read what they are being asked to take on. The moment they decline or the sender withdraws,
-         * the id is cleared and the leg answers no; when they accept they are the assignee and the first leg holds.
-         *
-         * THIS task only, like the question leg above — being asked about a subtask admits nobody to its parent.
-         */
-        if (task.OfferedToUserId is { } offeredTo && TaskRequestPolicy.IsOfferedTo(task, offeredTo))
-        {
-            candidates.Add(offeredTo);
-        }
+        // BL-509 — the person a request waits on is deliberately NOT a data leg: these candidates are enumerated
+        // to every reader (the @mention picker), and who a request was put to is for its two parties only. Their
+        // read is the caller-only leg in CanReadAsync (AddresseeReads).
 
         // The parent leg is narrower than the direct leg on purpose (class doc): only the parent's assignee and
         // pool holders, not its creator or watchers.
@@ -301,6 +298,18 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
 
         return candidates;
     }
+
+    /// <summary>
+    /// BL-509 — THE PERSON A REQUEST IS ADDRESSED TO reads it while it waits for their answer
+    /// (<see cref="TaskRequestPolicy.IsOfferedTo"/> — the SAME predicate the accept / decline handlers and the inbox
+    /// ask). The moment they decline or the sender withdraws, the leg answers no; once they accept they are the
+    /// assignee and the first data leg holds.
+    ///
+    /// <para><b>The CALLER only</b>, like scope and read-all: asked about somebody else (an @mention check) it says
+    /// no, so a sender cannot @mention the person asked into a feed the sender's colleagues read.</para>
+    /// </summary>
+    private bool AddresseeReads(TaskItem task, Guid actorUserId)
+        => actorUserId == _currentUser.UserId && TaskRequestPolicy.IsOfferedTo(task, actorUserId);
 
     private async Task<bool> ActorScopeCoversUnitAsync(Guid organizationUnitId, Guid actorUserId, CancellationToken ct)
     {

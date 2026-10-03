@@ -788,9 +788,10 @@ public sealed record WorkItemProjectionDto(
 /// item is an ordinary task and this is gone.
 /// </summary>
 /// <param name="State"><c>pending</c> (waiting for the addressee's answer), <c>declined</c> (they said no — see
-/// <paramref name="DeclineReason"/>) or <c>withdrawn</c> (the sender took it back, or it was never re-addressed).</param>
-/// <param name="OfferedTo">Who it is addressed to, while pending. A person, never an id standing in for one.</param>
-/// <param name="DeclineReason">Their own words — a DISPLAY label, never a resource key.</param>
+/// <paramref name="DeclineReason"/>), <c>withdrawn</c> (the sender took it back), or — for anybody but the sender —
+/// <c>unaddressed</c> (nobody is being asked right now; which of the two happened is the sender's to know).</param>
+/// <param name="OfferedTo">Who it is addressed to, while pending — sent ONLY to the sender and the person asked.</param>
+/// <param name="DeclineReason">Their own words — a DISPLAY label, never a resource key. Sent only to the sender.</param>
 public sealed record WorkItemOfferDto(
     string State,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

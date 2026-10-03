@@ -27,19 +27,24 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
     // BL-509 — who a request may be accepted by, and where the task moves when it is. Null only in a test that
     // builds this handler for a plain assignment; an Offered task is then REFUSED, never accepted unchecked.
     private readonly ITaskRequestService? _requests;
+    // BL-509 — the request's first question is "may you read this at all" (404 otherwise). Null only where a test
+    // builds this handler for a plain assignment; an Offered task is then answered as one that does not exist.
+    private readonly ITaskReadAccessPolicy? _readAccess;
 
     public AcceptTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext,
-        ITaskRequestService? requests = null)
+        ITaskRequestService? requests = null,
+        ITaskReadAccessPolicy? readAccess = null)
     {
         _tasks = tasks;
         _assignments = assignments;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
         _requests = requests;
+        _readAccess = readAccess;
     }
 
     public async Task<Response<NoContent>> Handle(AcceptTaskItemCommand command, CancellationToken ct)
@@ -134,18 +139,24 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
     {
         var me = _currentUser.UserId;
 
-        if (!TaskRequestPolicy.IsPendingOffer(task))
+        // Read, then who, then state — see TaskRequestHandlers.cs for why the order is part of the rule.
+        if (_readAccess is null || !await _readAccess.CanReadAsync(task, me, ct))
+        {
+            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        if (task.OfferedToUserId != me)
         {
             return Response<NoContent>.Fail(
-                "This request is no longer waiting for an answer.",
-                409, TaskReasonCodes.RequestNotPending, command.CorrelationId);
+                "Only the person a request is addressed to can accept it.",
+                403, TaskReasonCodes.RequestNotAddressee, command.CorrelationId);
         }
 
         if (!TaskRequestPolicy.IsOfferedTo(task, me))
         {
             return Response<NoContent>.Fail(
-                "Only the person a request is addressed to can accept it.",
-                403, TaskReasonCodes.RequestNotAddressee, command.CorrelationId);
+                "This request is no longer waiting for an answer.",
+                409, TaskReasonCodes.RequestNotPending, command.CorrelationId);
         }
 
         // Asked again NOW: the seat that made them reachable when the request was sent may have ended since, and
@@ -462,6 +473,17 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
          * conflict (the task is in the wrong lifecycle). Conflating them would tell the caller to reload and
          * retry, which would never help.
          */
+        // BL-509 (decision 3) — once a request was accepted the work is its holder's: the sender no longer calls
+        // it off (before acceptance they withdraw, or cancel their own unanswered request). Administrative
+        // authority over any task is untouched.
+        if (command.Target == TaskLifecycle.Cancelled
+            && !command.ActorMayCancelAnyTask
+            && TaskRequestPolicy.RefuseSenderOfAcceptedRequest(task, _currentUser.UserId) is { } senderRefused)
+        {
+            return Response<NoContent>.Fail(
+                senderRefused.Message, senderRefused.StatusCode, senderRefused.ReasonCode, command.CorrelationId);
+        }
+
         if (command.Target == TaskLifecycle.Cancelled
             && task.CreatedByUserId != _currentUser.UserId
             && !command.ActorMayCancelAnyTask)
@@ -1722,16 +1744,21 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
 
+    // BL-509 — the sender's home seat, asked only for a request sent before its origin unit was recorded.
+    private readonly ITaskRequestService? _requests;
+
     public ReturnTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ITaskRequestService? requests = null)
     {
         _tasks = tasks;
         _assignments = assignments;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
+        _requests = requests;
     }
 
     public async Task<Response<NoContent>> Handle(ReturnTaskItemCommand command, CancellationToken ct)
@@ -1775,6 +1802,20 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
         task.AssignmentTarget = TaskAssignmentTarget.Person;
         // BL-509 — handed back, a request is over: the task is its sender's own again, and whatever they do with
         // it next is an ordinary assignment. Left set, the mark would stop them directing work they now own.
+        // It also goes back to the unit it was SENT from: left in the recipient's unit, the sender's own work would
+        // stay filed — and counted, and readable through the unit scope — in another company.
+        if (task.IsRequest)
+        {
+            var origin = task.RequestOriginUnitId
+                         ?? (_requests is not null && task.CreatedByUserId is { } sender
+                             ? (await _requests.HomeOfAsync(sender, ct))?.OrganizationUnitId
+                             : null);
+            if (origin is { } originUnit)
+            {
+                task.OrganizationUnitId = originUnit;
+            }
+        }
+
         task.IsRequest = false;
         task.ReopenAcceptanceGate();
         // BL-439 — the lifecycle rewinds to Open, so any waiting story goes with it (see ReleaseTaskItemHandler).

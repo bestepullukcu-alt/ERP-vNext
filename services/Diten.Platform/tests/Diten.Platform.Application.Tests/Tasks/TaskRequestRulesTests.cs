@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Diten.Platform.Application.Features.Tasks;
+using Diten.Platform.Application.Features.Tasks.Attachments;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 using Diten.Platform.Application.Features.Tasks.Services;
@@ -73,6 +74,139 @@ public sealed class TaskRequestRulesTests
 
         Assert.Equal(("offered", "unowned", "pendingOffer"),
             (projection.AssignmentMode, projection.OwnershipState, projection.AdmissionState));
+    }
+
+    [Fact]
+    public void A_declined_or_withdrawn_request_is_not_reported_as_a_pending_offer()
+    {
+        var declined = Request();
+        declined.OfferedToUserId = null;
+
+        var projection = new TaskAssignmentResolver().Resolve(declined);
+
+        Assert.Equal(("offered", "unowned", "notApplicable"),
+            (projection.AssignmentMode, projection.OwnershipState, projection.AdmissionState));
+    }
+
+    // ── who may know who was asked ───────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void Who_was_asked_is_for_the_sender_and_the_person_asked_and_a_decline_for_the_sender()
+    {
+        var pending = Request();
+        Assert.True(TaskRequestPolicy.MaySeeAddressee(pending, Sender));
+        Assert.True(TaskRequestPolicy.MaySeeAddressee(pending, Asked));
+        Assert.False(TaskRequestPolicy.MaySeeAddressee(pending, TaskTestData.Watcher));
+        Assert.False(TaskRequestPolicy.MaySeeAddressee(pending, Guid.Empty));
+
+        Assert.True(TaskRequestPolicy.MaySeeDecline(pending, Sender));
+        Assert.False(TaskRequestPolicy.MaySeeDecline(pending, Asked));
+        Assert.False(TaskRequestPolicy.MaySeeDecline(pending, TaskTestData.Watcher));
+    }
+
+    /// <summary>
+    /// The person asked READS the request (as the caller), but is never enumerated as a data-leg candidate — the
+    /// @mention picker lists those to every reader — and an @mention check about them, asked by somebody else,
+    /// says no.
+    /// </summary>
+    [Fact]
+    public async Task The_person_asked_reads_as_the_caller_but_is_never_an_enumerated_or_mentionable_reader()
+    {
+        var task = Request();
+        var asSender = Policy(task, Sender);
+        var asAsked = Policy(task, Asked);
+
+        Assert.True(await asAsked.CanReadAsync(task, Asked, CancellationToken.None));
+        Assert.DoesNotContain(Asked, await asSender.ResolveDataLegCandidatesAsync(task, CancellationToken.None));
+        Assert.False(await asSender.CanReadAsync(task, Asked, CancellationToken.None));
+        Assert.Contains(task.Id, await asAsked.ReadableTaskIdsAsync([task], Asked, CancellationToken.None));
+    }
+
+    private static TaskReadAccessPolicy Policy(TaskItem task, Guid caller) => new(
+        new FakeTaskItemRepository(task),
+        new FakeTaskWatcherRepository(),
+        new FakeTaskNotificationService(),
+        new FakeOrganizationUnitRepository(),
+        new EmptyScopes(),
+        new FakeTaskTeamResolver(),
+        TaskActors.None(),
+        new FakeCurrentUserContext(caller));
+
+    private sealed class EmptyScopes : ITaskAssignmentScopeResolver
+    {
+        public Task<TaskAssignmentScope> ResolveAsync(CancellationToken ct) => Task.FromResult(TaskAssignmentScope.Empty);
+    }
+
+    // ── decision 3 at every write gate the HTTP suite does not reach ─────────────────────────────────────────
+
+    /// <summary>MUTATION TARGET (sender gates). Ticking, rewording, removing and reordering a step; removing a
+    /// predecessor; adding and removing a file — each refused to the sender of an accepted request.</summary>
+    [Fact]
+    public async Task After_acceptance_the_sender_cannot_touch_the_checklist_the_files_or_the_predecessors()
+    {
+        var task = Accepted();
+        var run = new Diten.Platform.Domain.Entities.Tasks.ChecklistRun
+        {
+            TenantId = TaskTestData.Tenant,
+            TaskItemId = task.Id,
+            Items =
+            [
+                new Diten.Platform.Domain.Entities.Tasks.ChecklistRunItem
+                {
+                    Code = "S1", LabelText = "Adım", Requirement = Diten.Platform.Domain.Enums.Tasks.ChecklistItemRequirement.Optional,
+                    AddedByUserId = Sender
+                }
+            ]
+        };
+        var tasks = new FakeTaskItemRepository(task);
+        var runs = new FakeChecklistRunRepository(run);
+        var me = new FakeCurrentUserContext(Sender);
+
+        var answers = new List<string?>
+        {
+            Code(await new SetChecklistItemStateHandler(tasks, runs, new TaskChecklistService(), me, new FakeTaskAttachmentRepository())
+                .Handle(new SetChecklistItemStateCommand(task.Id, new SetChecklistItemStateRequest("S1", true, run.Version), "c"), CancellationToken.None)),
+            Code(await new UpdateChecklistItemHandler(tasks, runs, new TaskChecklistService(), me)
+                .Handle(new UpdateChecklistItemCommand(task.Id, "S1", new UpdateChecklistItemRequest("Yeni", Diten.Platform.Domain.Enums.Tasks.ChecklistItemRequirement.Blocking, false, run.Version), "c"), CancellationToken.None)),
+            Code(await new RemoveChecklistItemHandler(tasks, runs, new TaskChecklistService(), me)
+                .Handle(new RemoveChecklistItemCommand(task.Id, "S1", new RemoveChecklistItemRequest(run.Version), "c"), CancellationToken.None)),
+            Code(await new ReorderChecklistHandler(tasks, runs, me)
+                .Handle(new ReorderChecklistCommand(task.Id, new ReorderChecklistRequest(["S1"], run.Version), "c"), CancellationToken.None)),
+            Code(await new RemoveTaskDependencyHandler(new FakeTaskDependencyRepository(), tasks, me)
+                .Handle(new RemoveTaskDependencyCommand(task.Id, Guid.NewGuid(), "c"), CancellationToken.None)),
+            Code(await new RemoveTaskAttachmentHandler(tasks, new FakeTaskAttachmentRepository(), me)
+                .Handle(new RemoveTaskAttachmentCommand(task.Id, Guid.NewGuid(), "c"), CancellationToken.None))
+        };
+
+        // Adding a file: the shared attachment authorization every write goes through.
+        var (_, addRefused) = await TaskAttachmentAuthorization.ResolveAsync<NoContentPlaceholder>(
+            tasks, task.Id, Sender, "c", CancellationToken.None, requireOpen: true);
+        answers.Add(addRefused?.ReasonCode);
+
+        Assert.All(answers, code => Assert.Equal(TaskReasonCodes.RequestSenderCannotDirect, code));
+
+        // Reading the files stays open to the sender, and the holder writes through the same gate.
+        var (_, readRefused) = await TaskAttachmentAuthorization.ResolveAsync<NoContentPlaceholder>(
+            tasks, task.Id, Sender, "c", CancellationToken.None, requireOpen: false);
+        Assert.Null(readRefused);
+        var (_, holderRefused) = await TaskAttachmentAuthorization.ResolveAsync<NoContentPlaceholder>(
+            tasks, task.Id, Asked, "c", CancellationToken.None, requireOpen: true);
+        Assert.Null(holderRefused);
+    }
+
+    private sealed record NoContentPlaceholder;
+
+    private static string? Code<T>(Diten.Platform.Application.Common.Response<T> response) => response.ReasonCode;
+
+    private static TaskItem Accepted()
+    {
+        var task = Request();
+        task.AssignmentTarget = TaskAssignmentTarget.Person;
+        task.OfferedToUserId = null;
+        task.AssigneeUserId = Asked;
+        task.Lifecycle = TaskLifecycle.InProgress;
+        task.CloseAcceptanceGate(Asked);
+        return task;
     }
 
     // ── nobody works on what nobody accepted ─────────────────────────────────────────────────────────────────

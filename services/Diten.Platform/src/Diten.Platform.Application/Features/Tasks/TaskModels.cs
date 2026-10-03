@@ -283,6 +283,9 @@ public static class TaskReasonCodes
     /// </summary>
     public const string RequestRecipientUnavailable = "TASK_REQUEST_RECIPIENT_UNAVAILABLE";
 
+    /// <summary>BL-509 — an unanswered request stays in the unit it was sent from.</summary>
+    public const string RequestUnitFixed = "TASK_REQUEST_UNIT_FIXED";
+
     /// <summary>BL-509 — the decline reason is longer than a task's own description may be.</summary>
     public const string RequestDeclineReasonTooLong = "TASK_REQUEST_DECLINE_REASON_TOO_LONG";
 
@@ -1244,11 +1247,17 @@ public sealed record TaskItemDetailDto(
     Guid? TaskTypeId = null,
     /// <summary>Faz 2a — the closing narrative, present only once the task is closed.</summary>
     string? ClosureNote = null,
-    /// <summary>BL-509 — who the task is being asked of, while it is a request nobody has answered.</summary>
+    /// <summary>BL-509 — who the task is being asked of, while it is a request nobody has answered. Sent only to the
+    /// sender and the person asked; absent — not null — for every other reader.</summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     Guid? OfferedToUserId = null,
     /// <summary>BL-509 — the task was born as a request (and stays marked as one after it is accepted).</summary>
     bool IsRequest = false,
-    /// <summary>BL-509 — why the last person asked declined, in their own words.</summary>
+    /// <summary>BL-509 — why the last person asked declined, in their own words. The sender's alone; absent for
+    /// every other reader.</summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     string? OfferDeclineReason = null);
 
 public sealed record TaskWatcherDto(Guid Id, Guid UserId, string Role, Guid? PositionId);

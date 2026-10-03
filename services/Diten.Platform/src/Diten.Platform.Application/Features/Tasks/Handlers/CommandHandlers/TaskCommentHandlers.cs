@@ -85,6 +85,15 @@ public sealed class AddTaskCommentHandler : IRequestHandler<AddTaskCommentComman
                 409, TaskReasonCodes.CommentTaskClosed, command.CorrelationId);
         }
 
+        // BL-509 — the person a request waits on reads it in order to answer it, and that is all. A comment would
+        // put their name in a feed the sender's colleagues read before anybody said yes; they accept or decline.
+        if (TaskRequestPolicy.IsOfferedTo(task, _currentUser.UserId))
+        {
+            return Response<Guid>.Fail(
+                "Answer the request first: accept it, or decline it with a reason.",
+                409, TaskReasonCodes.RequestNotAccepted, command.CorrelationId);
+        }
+
         var mentionValidation = await TaskMentionValidation.ValidateAsync(
             _readAccess, task, command.Request.MentionedUserIds, ct);
         if (mentionValidation.Refusal is { } mentionRefusal)

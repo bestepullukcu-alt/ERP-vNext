@@ -133,7 +133,7 @@ public sealed class TaskDependencyTests
         await handler.Handle(Add(a.Id, b.Id), CancellationToken.None);
         var edge = Assert.Single(edges.Edges);
 
-        var remover = new RemoveTaskDependencyHandler(edges);
+        var remover = new RemoveTaskDependencyHandler(edges, new FakeTaskItemRepository(), new FakeCurrentUserContext(TaskTestData.Me));
         var refused = await remover.Handle(
             new RemoveTaskDependencyCommand(c.Id, edge.Id, "corr"), CancellationToken.None);
 
@@ -365,7 +365,7 @@ public sealed class TaskDependencyTests
     {
         var repository = new FakeTaskItemRepository(tasks);
         var edges = new FakeTaskDependencyRepository();
-        return (new AddTaskDependencyHandler(repository, edges, new FakeTenantContext(TaskTestData.Tenant)), repository, edges);
+        return (new AddTaskDependencyHandler(repository, edges, new FakeTenantContext(TaskTestData.Tenant), new FakeCurrentUserContext(TaskTestData.Me)), repository, edges);
     }
 
     /// <summary>Projects <paramref name="dependent"/> with one edge onto <paramref name="predecessor"/>.</summary>

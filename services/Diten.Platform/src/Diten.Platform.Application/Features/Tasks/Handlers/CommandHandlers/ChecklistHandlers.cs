@@ -46,6 +46,11 @@ public sealed class SetChecklistItemStateHandler
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
         }
 
+        if (ChecklistWriteGuards.RefuseSender(task, _currentUser.UserId, command.CorrelationId) is { } senderRefused)
+        {
+            return senderRefused;
+        }
+
         var run = await _runs.GetByTaskIdAsync(command.TaskItemId, ct);
         if (run is null)
         {
@@ -141,6 +146,11 @@ public sealed class AddChecklistItemHandler : IRequestHandler<AddChecklistItemCo
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        if (ChecklistWriteGuards.RefuseSender(task, _currentUser.UserId, command.CorrelationId) is { } senderRefused)
+        {
+            return senderRefused;
         }
 
         /*
@@ -258,7 +268,7 @@ public sealed class UpdateChecklistItemHandler : IRequestHandler<UpdateChecklist
     public async Task<Response<NoContent>> Handle(UpdateChecklistItemCommand command, CancellationToken ct)
     {
         var found = await ChecklistWriteGuards.ResolveAsync(
-            _tasks, _runs, command.TaskItemId, command.ItemCode, command.CorrelationId, ct);
+            _tasks, _runs, command.TaskItemId, command.ItemCode, command.CorrelationId, ct, _currentUser.UserId);
         if (found.Failure is not null) { return found.Failure; }
         var (run, item) = (found.Run!, found.Item!);
 
@@ -327,7 +337,7 @@ public sealed class RemoveChecklistItemHandler : IRequestHandler<RemoveChecklist
     public async Task<Response<NoContent>> Handle(RemoveChecklistItemCommand command, CancellationToken ct)
     {
         var found = await ChecklistWriteGuards.ResolveAsync(
-            _tasks, _runs, command.TaskItemId, command.ItemCode, command.CorrelationId, ct);
+            _tasks, _runs, command.TaskItemId, command.ItemCode, command.CorrelationId, ct, _currentUser.UserId);
         if (found.Failure is not null) { return found.Failure; }
         var (run, item) = (found.Run!, found.Item!);
 
@@ -371,7 +381,7 @@ public sealed class ReorderChecklistHandler : IRequestHandler<ReorderChecklistCo
     public async Task<Response<NoContent>> Handle(ReorderChecklistCommand command, CancellationToken ct)
     {
         var found = await ChecklistWriteGuards.ResolveAsync(
-            _tasks, _runs, command.TaskItemId, itemCode: null, command.CorrelationId, ct);
+            _tasks, _runs, command.TaskItemId, itemCode: null, command.CorrelationId, ct, _currentUser.UserId);
         if (found.Failure is not null) { return found.Failure; }
         var run = found.Run!;
 
@@ -424,13 +434,19 @@ internal static class ChecklistWriteGuards
         Guid taskItemId,
         string? itemCode,
         string correlationId,
-        CancellationToken ct)
+        CancellationToken ct,
+        Guid actorUserId)
     {
         var task = await tasks.GetByIdAsync(taskItemId, ct);
         if (task is null)
         {
             return new(Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, correlationId),
                 null, null);
+        }
+
+        if (RefuseSender(task, actorUserId, correlationId) is { } senderRefused)
+        {
+            return new(senderRefused, null, null);
         }
 
         var run = await runs.GetByTaskIdAsync(taskItemId, ct);
@@ -460,6 +476,15 @@ internal static class ChecklistWriteGuards
 
         return new(null, run, item);
     }
+
+    /// <summary>
+    /// BL-509 (decision 3) — the sender of an accepted request writes nothing on this list: a blocking step holds the
+    /// holder's completion, and ticking, adding, rewording or reordering is directing their work.
+    /// </summary>
+    internal static Response<NoContent>? RefuseSender(TaskItem task, Guid actorUserId, string correlationId)
+        => TaskRequestPolicy.RefuseSenderOfAcceptedRequest(task, actorUserId) is { } refused
+            ? Response<NoContent>.Fail(refused.Message, refused.StatusCode, refused.ReasonCode, correlationId)
+            : null;
 
     /// <summary>
     /// May this caller CHANGE this item — reword it, re-level it, re-flag it, remove it?

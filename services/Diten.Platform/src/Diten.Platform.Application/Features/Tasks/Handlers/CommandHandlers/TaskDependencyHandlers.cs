@@ -1,4 +1,6 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
@@ -21,15 +23,18 @@ public sealed class AddTaskDependencyHandler : IRequestHandler<AddTaskDependency
     private readonly ITaskItemRepository _tasks;
     private readonly ITaskDependencyRepository _dependencies;
     private readonly ITenantContext _tenantContext;
+    private readonly ICurrentUserContext _currentUser;
 
     public AddTaskDependencyHandler(
         ITaskItemRepository tasks,
         ITaskDependencyRepository dependencies,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ICurrentUserContext currentUser)
     {
         _tasks = tasks;
         _dependencies = dependencies;
         _tenantContext = tenantContext;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<Guid>> Handle(AddTaskDependencyCommand command, CancellationToken ct)
@@ -48,6 +53,13 @@ public sealed class AddTaskDependencyHandler : IRequestHandler<AddTaskDependency
         if (task is null)
         {
             return Response<Guid>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // BL-509 (decision 3) — a predecessor holds this task's start or completion; adding one is directing it.
+        if (TaskRequestPolicy.RefuseSenderOfAcceptedRequest(task, _currentUser.UserId) is { } senderRefused)
+        {
+            return Response<Guid>.Fail(
+                senderRefused.Message, senderRefused.StatusCode, senderRefused.ReasonCode, command.CorrelationId);
         }
 
         // The read goes through the tenant execution filter, so an edge to another tenant's task reports NOT
@@ -144,14 +156,29 @@ public sealed class AddTaskDependencyHandler : IRequestHandler<AddTaskDependency
 public sealed class RemoveTaskDependencyHandler : IRequestHandler<RemoveTaskDependencyCommand, Response<NoContent>>
 {
     private readonly ITaskDependencyRepository _dependencies;
+    private readonly ITaskItemRepository _tasks;
+    private readonly ICurrentUserContext _currentUser;
 
-    public RemoveTaskDependencyHandler(ITaskDependencyRepository dependencies)
+    public RemoveTaskDependencyHandler(
+        ITaskDependencyRepository dependencies,
+        ITaskItemRepository tasks,
+        ICurrentUserContext currentUser)
     {
         _dependencies = dependencies;
+        _tasks = tasks;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<NoContent>> Handle(RemoveTaskDependencyCommand command, CancellationToken ct)
     {
+        // BL-509 (decision 3) — lifting a predecessor is directing the holder's work as much as adding one is.
+        if (await _tasks.GetByIdAsync(command.TaskItemId, ct) is { } task
+            && TaskRequestPolicy.RefuseSenderOfAcceptedRequest(task, _currentUser.UserId) is { } senderRefused)
+        {
+            return Response<NoContent>.Fail(
+                senderRefused.Message, senderRefused.StatusCode, senderRefused.ReasonCode, command.CorrelationId);
+        }
+
         var dependency = await _dependencies.GetByIdAsync(command.DependencyId, ct);
 
         // Both conditions are one 404: an edge belonging to a DIFFERENT task must not be removable through this

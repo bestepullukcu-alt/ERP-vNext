@@ -984,7 +984,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 : null;
 
         var activity = ToActivity(
-            comments ?? [], transitions ?? [], displayNames, actor.UserId, fieldDefinitions, _permissions,
+            comments ?? [],
+            // BL-509 — WHO declined a request, and their words, are the sender's alone — before and after somebody
+            // else accepts. Every other reader's feed has no such entry (not an anonymised one: the person who
+            // declined is in another company, and "somebody declined" is already more than BL-057 allows).
+            (transitions ?? [])
+                .Where(t => t.Kind != TaskTransitionKind.Declined || TaskRequestPolicy.MaySeeDecline(task, actor.UserId))
+                .ToList(),
+            displayNames, actor.UserId, fieldDefinitions, _permissions,
             resolvedType);
 
         /*
@@ -1415,8 +1422,15 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // WHO was asked is for the sender and the person asked. Anybody else who may read the task (the
             // sender's own company, through the unit scope) learns that it waits for an answer, not whose —
             // naming a person across the company boundary is exactly what the sending key is granted for.
-            var concerned = actor.UserId == offeredTo || actor.UserId == task.CreatedByUserId;
-            return new WorkItemOfferDto("pending", concerned ? Person(offeredTo, actor, displayNames) : null);
+            return new WorkItemOfferDto("pending",
+                TaskRequestPolicy.MaySeeAddressee(task, actor.UserId) ? Person(offeredTo, actor, displayNames) : null);
+        }
+
+        // Declined or withdrawn — and which one, and why, is the sender's to know: anybody else reading learns only
+        // that the request is waiting for its sender.
+        if (!TaskRequestPolicy.MaySeeDecline(task, actor.UserId))
+        {
+            return new WorkItemOfferDto("unaddressed");
         }
 
         return string.IsNullOrWhiteSpace(task.OfferDeclineReason)

@@ -195,11 +195,12 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
          *
          * Beside the check above, never instead of it: CheckTargetAsync has nothing to say about an Offered target
          * (nobody is being ASSIGNED work), and BL-057's scope is not asked here at all — a request is how work
-         * reaches somebody the scope withholds. What is asked: the sending key, not yourself, and whether the
-         * addressee can receive work at all. Every "no" about the addressee is one answer.
+         * reaches somebody the scope withholds. Asked HERE: the sending key and "not yourself" — facts about the
+         * caller. Whether the ADDRESSEE can be reached is asked last, right before the write (see below).
          */
-        TaskRequestRecipient? requestRecipient = null;
-        if (request.AssignmentTarget == TaskAssignmentTarget.Offered)
+        var isRequest = request.AssignmentTarget == TaskAssignmentTarget.Offered;
+        TaskRequestHome? senderHome = null;
+        if (isRequest)
         {
             if (_requests is null)
             {
@@ -207,11 +208,10 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
                     TaskReasonCodes.AssignmentTargetInvalid, command.CorrelationId);
             }
 
-            var (requestRefused, recipient) = await _requests.CheckSendAsync(request.OfferedToUserId!.Value, ct);
-            if (requestRefused is not null)
+            if (await _requests.CheckSenderAsync(request.OfferedToUserId!.Value, ct) is { } senderRefused)
             {
                 return Response<Guid>.Fail(
-                    requestRefused.Message, requestRefused.StatusCode, requestRefused.ReasonCode,
+                    senderRefused.Message, senderRefused.StatusCode, senderRefused.ReasonCode,
                     command.CorrelationId);
             }
 
@@ -222,7 +222,9 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
                     TaskReasonCodes.RequestOptionNotSupported, command.CorrelationId);
             }
 
-            requestRecipient = recipient;
+            // The sender's home seat — the unit the request is filed under AND the company recorded for them, from
+            // one and the same seat.
+            senderHome = await _requests.HomeOfAsync(actorId, ct);
         }
 
         /*
@@ -271,9 +273,10 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             //   4. otherwise fail, because inventing a unit would silently misfile the task
             // BL-509 — a request is filed under its SENDER's unit until somebody accepts it (CT decision 4); the
             // accept moves it to the recipient's. There is no assignee to read a unit from yet.
-            var unitOwner = requestRecipient is null ? assigneeUserId!.Value : actorId;
             var resolved = request.OrganizationUnitId
-                           ?? await ResolveUnitForUserAsync(unitOwner, ct)
+                           ?? (isRequest
+                               ? senderHome?.OrganizationUnitId
+                               : await ResolveUnitForUserAsync(assigneeUserId!.Value, ct))
                            ?? await ResolveTenantRootUnitAsync(ct);
             if (resolved is null || resolved == Guid.Empty)
             {
@@ -346,6 +349,14 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
                 return Fail("A subtask cannot itself have subtasks.",
                     TaskReasonCodes.SubtaskDepthExceeded, command.CorrelationId);
             }
+
+            // BL-509 (decision 3) — an open subtask holds its parent's completion (BL-035), so hanging one under a
+            // request somebody else accepted is directing their work.
+            if (TaskRequestPolicy.RefuseSenderOfAcceptedRequest(parent, actorId) is { } senderRefused)
+            {
+                return Response<Guid>.Fail(
+                    senderRefused.Message, senderRefused.StatusCode, senderRefused.ReasonCode, command.CorrelationId);
+            }
         }
 
         var task = new TaskItem
@@ -369,8 +380,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             AssignmentTarget = request.AssignmentTarget,
             AssigneeUserId = assigneeUserId,
             PoolPositionId = poolPositionId,
-            OfferedToUserId = requestRecipient?.UserId,
-            IsRequest = requestRecipient is not null,
+            IsRequest = isRequest,
             CreatedByUserId = actorId,
             OrganizationUnitId = organizationUnitId,
             DueAt = request.DueAt,
@@ -420,6 +430,30 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             }
 
             task.DocumentReferences = frozen.References;
+        }
+
+        /*
+         * ── BL-509 — the ADDRESSEE, asked LAST ────────────────────────────────
+         *
+         * Every other check on this request has passed by now — fields, options, unit, parent, citations. Asked any
+         * earlier, a request that is wrong in some other way would answer "unavailable" for one person and the
+         * other field's refusal for another, and the difference would tell the caller who can be reached without
+         * leaving a trace. From here the only outcomes are this one answer or the write.
+         */
+        TaskRequestRecipient? requestRecipient = null;
+        if (isRequest)
+        {
+            var (recipientRefused, recipient) = await _requests!.CheckRecipientAsync(request.OfferedToUserId!.Value, ct);
+            if (recipientRefused is not null)
+            {
+                return Response<Guid>.Fail(
+                    recipientRefused.Message, recipientRefused.StatusCode, recipientRefused.ReasonCode,
+                    command.CorrelationId);
+            }
+
+            requestRecipient = recipient!;
+            task.OfferedToUserId = requestRecipient.UserId;
+            task.RequestOriginUnitId = organizationUnitId;
         }
 
         await _tasks.CreateAsync(task, ct);
@@ -478,7 +512,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             PositionId = poolPositionId,
             ActorUserId = actorId,
             // BL-509 — both companies, as they stood when the request was sent. Null on every ordinary create.
-            ActorLegalEntityId = requestRecipient is null ? null : await _requests!.LegalEntityOfAsync(actorId, ct),
+            ActorLegalEntityId = senderHome?.LegalEntityId,
             TargetLegalEntityId = requestRecipient?.LegalEntityId,
             CreatedBy = _currentUser.ActorName
         }, ct);

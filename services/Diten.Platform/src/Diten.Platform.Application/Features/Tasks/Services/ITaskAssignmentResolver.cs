@@ -39,6 +39,7 @@ public sealed class TaskAssignmentResolver : ITaskAssignmentResolver
     private const string PendingClaim = "pendingClaim";
     private const string ModeOffered = "offered";
     private const string PendingOffer = "pendingOffer";
+    private const string NotApplicable = "notApplicable";
 
     public TaskAssignmentProjection Resolve(TaskItem task)
     {
@@ -68,9 +69,15 @@ public sealed class TaskAssignmentResolver : ITaskAssignmentResolver
                 // BL-509 — asked of one person and held by nobody. Accepting turns the task into a Person task of
                 // theirs, so an Offered task is by construction never owned; a holder here would be a defect, and
                 // it reads as owned work rather than as an offer nobody can answer.
-                return task.AssigneeUserId is null
+                // Declined or withdrawn — addressed to nobody — is no longer an offer anybody can take up.
+                if (task.AssigneeUserId is not null)
+                {
+                    return new TaskAssignmentProjection(ModeOffered, Owned, Admitted);
+                }
+
+                return task.OfferedToUserId is not null
                     ? new TaskAssignmentProjection(ModeOffered, Unowned, PendingOffer)
-                    : new TaskAssignmentProjection(ModeOffered, Owned, Admitted);
+                    : new TaskAssignmentProjection(ModeOffered, Unowned, NotApplicable);
 
             default:
                 throw new InvalidOperationException($"Unmapped TaskAssignmentTarget: {task.AssignmentTarget}");

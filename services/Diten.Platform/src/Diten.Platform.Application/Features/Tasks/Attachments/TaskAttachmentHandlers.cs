@@ -39,6 +39,14 @@ internal static class TaskAttachmentAuthorization
                 403, TaskReasonCodes.AttachmentNotAuthorized, correlationId));
         }
 
+        // BL-509 (decision 3) — a write (add, remove) by the sender of an accepted request is directing the
+        // holder's work. Reading the files stays open to them.
+        if (requireOpen && TaskRequestPolicy.RefuseSenderOfAcceptedRequest(task, actorId) is { } senderRefused)
+        {
+            return (null, Response<T>.Fail(
+                senderRefused.Message, senderRefused.StatusCode, senderRefused.ReasonCode, correlationId));
+        }
+
         if (requireOpen && task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
         {
             return (null, Response<T>.Fail(

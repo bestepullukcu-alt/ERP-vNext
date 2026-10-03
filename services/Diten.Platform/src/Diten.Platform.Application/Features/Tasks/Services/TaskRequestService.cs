@@ -30,6 +30,37 @@ public static class TaskRequestPolicy
     /// <summary>The recipient's manager does not see an offer before it is accepted (decision 4).</summary>
     public static readonly bool RecipientManagerSeesPendingOffer = false;
 
+    /// <summary>A request nobody has taken on — waiting, declined or withdrawn. Nobody holds it.</summary>
+    public static bool IsUnanswered(TaskItem task)
+        => task.AssignmentTarget == TaskAssignmentTarget.Offered && task.AssigneeUserId is null;
+
+    /// <summary>
+    /// WHO a request was put to, and anything that names them, is for the two people it concerns: the sender and
+    /// the person asked while it waits. Everybody else who may read the task — the sender's colleagues through the
+    /// unit scope, a read-all holder, a manager once it is accepted — gets no such field at all (not an empty one).
+    /// This is the cross-company visibility BL-057 closed; a request must not reopen it.
+    /// </summary>
+    public static bool MaySeeAddressee(TaskItem task, Guid userId)
+        => userId != Guid.Empty && (task.CreatedByUserId == userId || IsOfferedTo(task, userId));
+
+    /// <summary>
+    /// A DECLINE — who said no, and why — is the sender's alone, before and after somebody else accepts. The person
+    /// who declined no longer reads the task at all.
+    /// </summary>
+    public static bool MaySeeDecline(TaskItem task, Guid userId)
+        => task.IsRequest && userId != Guid.Empty && task.CreatedByUserId == userId;
+
+    /// <summary>
+    /// Decision 3 at EVERY write gate (edit, reassign, cancel, checklist, subtasks, attachments, dependencies): the
+    /// sender of an accepted request watches and comments. Null when the caller may write; the refusal otherwise —
+    /// one wording and one code for all of them.
+    /// </summary>
+    public static TaskAssignmentRefusal? RefuseSenderOfAcceptedRequest(TaskItem task, Guid userId)
+        => !SenderMayEditAfterAcceptance && IsSenderOfAcceptedRequest(task, userId)
+            ? new TaskAssignmentRefusal(403, TaskReasonCodes.RequestSenderCannotDirect,
+                "This task was accepted as a request; it is its holder's to change. You can follow it and comment.")
+            : null;
+
     /// <summary>An offer that is still waiting for its answer: no holder yet, and somebody it is addressed to.</summary>
     public static bool IsPendingOffer(TaskItem task)
         => task.AssignmentTarget == TaskAssignmentTarget.Offered
@@ -60,6 +91,9 @@ public static class TaskRequestPolicy
            && holder != userId;
 }
 
+/// <summary>A person's home seat: the unit and the legal entity, always read from one and the same seat.</summary>
+public sealed record TaskRequestHome(Guid OrganizationUnitId, Guid LegalEntityId);
+
 /// <summary>Who a request may be addressed to, with the two facts the handlers need about them.</summary>
 /// <param name="OrganizationUnitId">The unit of their home seat — the task moves there when they accept.</param>
 /// <param name="LegalEntityId">That unit's legal entity, recorded on the assignment row.</param>
@@ -80,11 +114,21 @@ public sealed record TaskRequestRecipient(Guid UserId, Guid? OrganizationUnitId,
 public interface ITaskRequestService
 {
     /// <summary>
-    /// May the CALLER send a request to this person? Null when yes. Asks the sending key (403), then self (400),
-    /// then the addressee (400, the one answer).
+    /// May the CALLER send a request at all, to this id? The sending key (403) and "not yourself" (400). Nothing
+    /// about the addressee is asked here — that is <see cref="CheckRecipientAsync"/>, and it comes LAST.
     /// </summary>
-    Task<(TaskAssignmentRefusal? Refusal, TaskRequestRecipient? Recipient)> CheckSendAsync(
+    Task<TaskAssignmentRefusal?> CheckSenderAsync(Guid offeredToUserId, CancellationToken ct);
+
+    /// <summary>
+    /// Can this person be asked? The one answer for every "no". Callers ask it as the LAST step before they write,
+    /// after every other check on the request: asked earlier, the difference between "refused for this field" and
+    /// "refused for this person" would tell the caller whether somebody can be reached, without leaving a trace.
+    /// </summary>
+    Task<(TaskAssignmentRefusal? Refusal, TaskRequestRecipient? Recipient)> CheckRecipientAsync(
         Guid offeredToUserId, CancellationToken ct);
+
+    /// <summary>A person's home seat — unit and legal entity from the SAME seat — or null when they hold none.</summary>
+    Task<TaskRequestHome?> HomeOfAsync(Guid userId, CancellationToken ct);
 
     /// <summary>The addressee as they stand NOW, or null when they cannot receive a request.</summary>
     Task<TaskRequestRecipient?> ResolveRecipientAsync(Guid userId, CancellationToken ct);
@@ -122,33 +166,40 @@ public sealed class TaskRequestService : ITaskRequestService
     public static TaskAssignmentRefusal RecipientUnavailable { get; } = new(
         400, TaskReasonCodes.RequestRecipientUnavailable, "That person cannot be sent a request.");
 
-    public async Task<(TaskAssignmentRefusal? Refusal, TaskRequestRecipient? Recipient)> CheckSendAsync(
-        Guid offeredToUserId, CancellationToken ct)
+    public async Task<TaskAssignmentRefusal?> CheckSenderAsync(Guid offeredToUserId, CancellationToken ct)
     {
         // Asked HERE as well as on the controller: creating a task needs only Create, and the request rides the
         // create endpoint — the same reason TaskAssignmentGuard asks Assign itself.
         if (!_permissions.Has(TaskPermissions.RequestsCreate))
         {
-            return (new TaskAssignmentRefusal(
-                403, DocumentManagementReasonCodes.PermissionDenied, "Permission denied."), null);
+            return new TaskAssignmentRefusal(
+                403, DocumentManagementReasonCodes.PermissionDenied, "Permission denied.");
         }
 
         if (offeredToUserId == _currentUser.UserId)
         {
-            return (new TaskAssignmentRefusal(
-                400, TaskReasonCodes.RequestToSelf, "A request cannot be sent to yourself."), null);
+            return new TaskAssignmentRefusal(
+                400, TaskReasonCodes.RequestToSelf, "A request cannot be sent to yourself.");
         }
 
-        if (TaskRequestPolicy.SenderNeedsActiveSeat
-            && (await _seats.ActiveForUserAsync(_currentUser.UserId, ct)).Count == 0)
+        if (TaskRequestPolicy.SenderNeedsActiveSeat && await HomeOfAsync(_currentUser.UserId, ct) is null)
         {
-            return (new TaskAssignmentRefusal(
-                403, DocumentManagementReasonCodes.PermissionDenied, "Permission denied."), null);
+            return new TaskAssignmentRefusal(
+                403, DocumentManagementReasonCodes.PermissionDenied, "Permission denied.");
         }
 
+        return null;
+    }
+
+    public async Task<(TaskAssignmentRefusal? Refusal, TaskRequestRecipient? Recipient)> CheckRecipientAsync(
+        Guid offeredToUserId, CancellationToken ct)
+    {
         var recipient = await ResolveRecipientAsync(offeredToUserId, ct);
         return recipient is null ? (RecipientUnavailable, null) : (null, recipient);
     }
+
+    public async Task<TaskRequestHome?> HomeOfAsync(Guid userId, CancellationToken ct)
+        => await ResolveHomeUnitAsync(userId, ct) is { } unit ? new TaskRequestHome(unit.Id, unit.LegalEntityId) : null;
 
     public async Task<TaskRequestRecipient?> ResolveRecipientAsync(Guid userId, CancellationToken ct)
     {

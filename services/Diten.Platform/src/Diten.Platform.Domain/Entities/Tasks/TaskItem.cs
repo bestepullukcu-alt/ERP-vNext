@@ -144,6 +144,13 @@ public sealed class TaskItem : TenantScopedEntity
     /// </summary>
     public string? OfferDeclineReason { get; set; }
 
+    /// <summary>
+    /// The unit the request was filed under when it was SENT (the sender's). Accepting moves the task to the
+    /// recipient's unit; handing it BACK moves it here again, so the sender's own work is not left filed in another
+    /// company. Null on every task that was never a request.
+    /// </summary>
+    public Guid? RequestOriginUnitId { get; set; }
+
     // ── Organization context (pack §12 K6) ───────────────────────────────────
     /// <summary>Owning unit/facility; defaults to the assignee's or pool position's unit.</summary>
     public required Guid OrganizationUnitId { get; set; }

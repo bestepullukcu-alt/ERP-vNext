@@ -112,7 +112,8 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
         return Response<TaskItemDetailDto>.Success(
             TaskItemMapper.ToDetail(
                 task, _lifecycle, approvalOutstanding, approvalRejected, watchers, dependencies,
-                _actor, definitions, spentHours, reviewOutstanding, reviewRejected),
+                _actor, definitions, spentHours, reviewOutstanding, reviewRejected,
+                viewerUserId: _currentUser.UserId),
             correlationId: request.CorrelationId);
     }
 }

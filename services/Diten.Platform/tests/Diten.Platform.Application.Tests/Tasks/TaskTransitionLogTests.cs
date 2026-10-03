@@ -649,6 +649,7 @@ public sealed class TaskTransitionLogTests
                 var repository = new FakeTaskItemRepository(task);
                 await new OfferTaskItemHandler(
                         repository, new FakeTaskAssignmentRepository(), Requests(TaskTestData.Me),
+                        new AlwaysAdmitReadAccessPolicy(),
                         new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant))
                     .Handle(
                         new OfferTaskItemCommand(
@@ -662,6 +663,7 @@ public sealed class TaskTransitionLogTests
                 var repository = new FakeTaskItemRepository(task);
                 await new DeclineTaskOfferHandler(
                         repository, new FakeTaskAssignmentRepository(), Requests(AssignmentWorld.ForeignPeer),
+                        new AlwaysAdmitReadAccessPolicy(),
                         new FakeCurrentUserContext(AssignmentWorld.ForeignPeer),
                         new FakeTenantContext(TaskTestData.Tenant))
                     .Handle(
@@ -676,6 +678,7 @@ public sealed class TaskTransitionLogTests
                 var repository = new FakeTaskItemRepository(task);
                 await new WithdrawTaskOfferHandler(
                         repository, new FakeTaskAssignmentRepository(), Requests(TaskTestData.Me),
+                        new AlwaysAdmitReadAccessPolicy(),
                         new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant))
                     .Handle(
                         new WithdrawTaskOfferCommand(task.Id, new WithdrawTaskOfferRequest(task.Version), "corr"),
