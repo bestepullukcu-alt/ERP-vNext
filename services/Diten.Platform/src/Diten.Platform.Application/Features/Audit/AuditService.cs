@@ -272,7 +272,9 @@ public sealed class AuditService : IAuditService
         return $"{local[0]}***@{domain}";
     }
 
-    private static string? MaskDisplayName(string? value)
+    /// <summary>Platform's ONE rule for a name in an audit row — also applied to a trusted source's actor
+    /// (<c>TrustedSourceAuditIntentAcceptanceService</c>), so no second masking exists.</summary>
+    internal static string? MaskDisplayName(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
         {

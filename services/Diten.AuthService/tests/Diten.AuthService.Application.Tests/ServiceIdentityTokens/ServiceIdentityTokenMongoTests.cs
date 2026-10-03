@@ -98,9 +98,9 @@ public sealed class ServiceIdentityTokenMongoTests
 
             var verifier = new ServiceClientCredentialVerifier();
             var auditHandler = new IssueServiceIdentityTokenHandler(
-                identityRepository, grantRepository, verifier, new StubIssuer(), TimeProvider.System);
+                identityRepository, grantRepository, verifier, new StubIssuer(), new NoAudit(), TimeProvider.System);
             var workflowHandler = new IssueServiceIdentityTokenHandler(
-                identityRepository, grantRepository, verifier, new StubIssuer(), TimeProvider.System);
+                identityRepository, grantRepository, verifier, new StubIssuer(), new NoAudit(), TimeProvider.System);
             var auditSuccess = await auditHandler.Handle(new IssueServiceIdentityTokenCommand(
                 identity.ClientCode, "audit-secret", tenantA, ServiceIdentityTokenAudiencePolicy.TrustedAuditSourceIngest), CancellationToken.None);
             var workflowSuccess = await workflowHandler.Handle(new IssueServiceIdentityTokenCommand(
@@ -112,7 +112,7 @@ public sealed class ServiceIdentityTokenMongoTests
             var wrongWorkflowCredential = await workflowHandler.Handle(new IssueServiceIdentityTokenCommand(
                 workflowIdentity.ClientCode, "audit-secret", tenantA, ServiceIdentityTokenAudiencePolicy.TrustedWorkflowConsumer), CancellationToken.None);
             var referenceDataHandler = new IssueServiceIdentityTokenHandler(
-                identityRepository, grantRepository, verifier, new StubIssuer(), TimeProvider.System);
+                identityRepository, grantRepository, verifier, new StubIssuer(), new NoAudit(), TimeProvider.System);
             var referenceDataSuccess = await referenceDataHandler.Handle(new IssueServiceIdentityTokenCommand(
                 referenceDataIdentity.ClientCode, "reference-data-secret", tenantA,
                 ServiceIdentityTokenAudiencePolicy.TrustedReferenceDataConsumer), CancellationToken.None);
@@ -222,5 +222,14 @@ public sealed class ServiceIdentityTokenMongoTests
     {
         public ServiceIdentityTokenIssue Issue(Guid clientId, string serviceName, Guid tenantId, string audience) =>
             new("token", DateTimeOffset.UtcNow.AddMinutes(5), 300);
+    }
+
+    /// <summary>This test runs against the shared server; the token audit is proven elsewhere and writes nothing here.</summary>
+    private sealed class NoAudit : IAuthAuditService
+    {
+        public Task WriteEmptyRoleLoginAsync(Guid userId, Guid tenantId, string email, CancellationToken ct = default) => Task.CompletedTask;
+        public Task WriteAsync(string eventName, Guid? userId, Guid tenantId, string metadata, CancellationToken ct = default) => Task.CompletedTask;
+        public Task<bool> WriteOnceAsync(Guid auditId, string eventName, Guid? userId, Guid tenantId, string metadata, CancellationToken ct = default) =>
+            Task.FromResult(true);
     }
 }

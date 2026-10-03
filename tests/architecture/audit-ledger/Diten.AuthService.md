@@ -23,6 +23,7 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 
 | komut | sınıf | gerekçe |
 |---|---|---|
+| IssueServiceIdentityTokenCommand | İ5 | Hiçbir kalıcı iş kaydını değiştirmez: bir servis istemcisine kısa ömürlü belirteç verir ya da reddeder; verilen ve reddedilen her istek (istemci, kiracı, hedef kitle, UTC gün; ret için sonuç kodu) güvenlik olayı olarak `authAuditLogs`'a yazılır ve verilen belirtecin kaydı yazılamazsa belirteç verilmez. |
 
 ## Dolaylı
 

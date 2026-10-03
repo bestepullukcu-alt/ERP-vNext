@@ -1,6 +1,8 @@
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.Audit;
 using Diten.Platform.Application.Tests.Persistence;
+using Diten.Platform.Application.Tests.Tasks;
+using Diten.Platform.Domain.Enums;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Audit;
 using Diten.Platform.Infrastructure.Persistence;
@@ -38,7 +40,7 @@ public sealed class TrustedSourceAuditIntentMongoTests : IAsyncLifetime
         _repository = new AuditOutboxRepository(
             _database,
             new AuditOutboxTemporalMigrationRepository(_database));
-        _service = new(_repository, new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now));
+        _service = Service(new FakeUserDisplayNameResolver());
     }
 
     public async Task DisposeAsync() => await _harness.DisposeAsync();
@@ -154,6 +156,90 @@ public sealed class TrustedSourceAuditIntentMongoTests : IAsyncLifetime
         Assert.Equal(BsonType.Int64, row["CreatedAtUtcTicksV1"].BsonType);
         Assert.Equal(BsonType.Int64, row["NextAttemptAtUtcTicksV1"].BsonType);
         Assert.Equal(1, row["TemporalStorageVersion"].AsInt32);
+    }
+
+    // ── WP-GP-AUDIT-TRAIL-01 D1 — the person who acted in MDM, on the central row ───────────────────────────────
+
+    private static readonly Guid Maker = Guid.Parse("50000000-0000-0000-0000-0000000000a1");
+
+    /// <summary>
+    /// MUTATION TARGET (actor). An intent whose actor id is a USER id lands in <c>audit_events</c> as a TENANT USER row: that
+    /// user's id, their name masked by Platform's own rule, and MDM still named as the service that carried it.
+    /// </summary>
+    [Fact]
+    public async Task An_intent_from_a_person_is_written_as_that_person_with_their_masked_name()
+    {
+        _service = Service(new FakeUserDisplayNameResolver((Maker, "Ayşe Yılmaz")));
+        var envelope = TrustedSourceAuditIntentTestData.Envelope(intentId: Guid.NewGuid()) with { ActorId = Maker.ToString("D") };
+
+        await _service.AcceptAsync(envelope);
+        var auditEvent = await DrainSingleAsync(envelope.TenantId);
+
+        Assert.Equal(AuditActorType.TenantUser, auditEvent.ActorType);
+        Assert.Equal(Maker, auditEvent.ActorId);
+        Assert.Equal("A***z", auditEvent.ActorDisplayNameMasked);
+        Assert.Equal("Diten.MDM", auditEvent.SourceService);
+        Assert.Equal(Maker.ToString("D"), auditEvent.Metadata["SourceActorId"]?.ToString());
+    }
+
+    /// <summary>MUTATION TARGET (name resolution). A name that cannot be resolved leaves the row nameless — the
+    /// person's id still on it — and the row is still written.</summary>
+    [Fact]
+    public async Task An_unresolvable_name_still_writes_the_row_with_the_person_and_no_name()
+    {
+        _service = Service(new FakeUserDisplayNameResolver());
+        var envelope = TrustedSourceAuditIntentTestData.Envelope(intentId: Guid.NewGuid()) with { ActorId = Maker.ToString("D") };
+
+        await _service.AcceptAsync(envelope);
+        var auditEvent = await DrainSingleAsync(envelope.TenantId);
+
+        Assert.Equal(AuditActorType.TenantUser, auditEvent.ActorType);
+        Assert.Equal(Maker, auditEvent.ActorId);
+        Assert.Null(auditEvent.ActorDisplayNameMasked);
+    }
+
+    [Fact]
+    public async Task An_intent_from_a_non_person_actor_stays_a_service_row()
+    {
+        var envelope = TrustedSourceAuditIntentTestData.Envelope(intentId: Guid.NewGuid());   // "product-data-owner"
+
+        await _service.AcceptAsync(envelope);
+        var auditEvent = await DrainSingleAsync(envelope.TenantId);
+
+        Assert.Equal(AuditActorType.Service, auditEvent.ActorType);
+        Assert.Null(auditEvent.ActorId);
+        Assert.Null(auditEvent.ActorDisplayNameMasked);
+    }
+
+    private TrustedSourceAuditIntentAcceptanceService Service(FakeUserDisplayNameResolver names) => new(
+        _repository,
+        new FixedTimeProvider(TrustedSourceAuditIntentTestData.Now),
+        names,
+        new TenantContext(),
+        NullLogger<TrustedSourceAuditIntentAcceptanceService>.Instance);
+
+    private async Task<AuditEvent> DrainSingleAsync(Guid tenantId)
+    {
+        var tenantContext = new TenantContext();
+        var processor = new AuditOutboxProcessor(
+            _repository,
+            new AuditEventRepository(_database, tenantContext),
+            tenantContext,
+            new AuditOutboxPayloadMapper(),
+            new AuditOutboxWorkerOptions
+            {
+                BatchSize = 10,
+                MaxAttempts = 5,
+                InitialRetryDelay = TimeSpan.FromSeconds(1),
+                MaxRetryDelay = TimeSpan.FromMinutes(1),
+                ProcessingStaleAfter = TimeSpan.FromMinutes(5)
+            },
+            NullLogger<AuditOutboxProcessor>.Instance);
+        await processor.ProcessBatchAsync();
+
+        return Assert.Single(await _database.GetCollection<AuditEvent>(AuditCollectionNames.AuditEvents)
+            .Find(x => x.TenantId == tenantId)
+            .ToListAsync());
     }
 
     private IMongoCollection<BsonDocument> Outbox() =>

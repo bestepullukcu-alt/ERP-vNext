@@ -12,17 +12,6 @@ public static class ProductIdentityLifecyclePermissions
     public const string GlobalProductRequestRetirement = "mdm.global-products.request-retirement";
 }
 
-public sealed record SubmitGlobalProductIdentityRequest(
-    Guid GlobalProductId,
-    int ExpectedVersion,
-    ProductIdentityWorkflowBinding WorkflowBinding);
-
-public sealed record ReconcileGlobalProductIdentityDecisionRequest(
-    Guid GlobalProductId,
-    int ExpectedVersion,
-    Guid ExpectedWorkflowInstanceId,
-    ProductIdentityWorkflowDecisionEvidence DecisionEvidence);
-
 public sealed record RetireGlobalProductIdentityRequest(
     Guid GlobalProductId,
     int ExpectedVersion,

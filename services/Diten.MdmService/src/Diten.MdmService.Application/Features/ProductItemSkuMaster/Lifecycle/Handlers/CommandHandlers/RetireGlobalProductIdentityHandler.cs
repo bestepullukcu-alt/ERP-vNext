@@ -79,7 +79,7 @@ public sealed class RetireGlobalProductIdentityHandler
         {
             return Fail(
                 result.ErrorCode ?? "PRODUCT_IDENTITY_STATE_CONFLICT",
-                SubmitGlobalProductIdentityHandler.StatusFor(result.ErrorCode));
+                GlobalProductLifecycleStatus.For(result.ErrorCode));
         }
 
         var updated = result.GlobalProduct;

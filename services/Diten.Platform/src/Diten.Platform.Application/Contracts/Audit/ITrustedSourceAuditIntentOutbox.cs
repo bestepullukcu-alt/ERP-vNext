@@ -10,5 +10,6 @@ public interface ITrustedSourceAuditIntentOutbox
         string sourceIntentFingerprint,
         string mappedEntityType,
         AuditOperation mappedOperation,
+        TrustedSourceAuditActor actor,
         CancellationToken ct = default);
 }

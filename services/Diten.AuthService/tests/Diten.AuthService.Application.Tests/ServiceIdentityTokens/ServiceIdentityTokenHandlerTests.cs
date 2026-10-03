@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.ServiceIdentityTokens.Commands;
 using Diten.AuthService.Application.Features.ServiceIdentityTokens.Handlers.CommandHandlers;
@@ -227,7 +228,7 @@ public sealed class ServiceIdentityTokenHandlerTests
     public async Task Internal_two_second_budget_maps_to_504()
     {
         var handler = new IssueServiceIdentityTokenHandler(
-            new BlockingIdentityRepository(), new GrantRepository(true), new SpyVerifier(), new StubIssuer(), TimeProvider.System);
+            new BlockingIdentityRepository(), new GrantRepository(true), new SpyVerifier(), new StubIssuer(), new RecordingAudit(), TimeProvider.System);
         var response = await handler.Handle(new IssueServiceIdentityTokenCommand(
             "mdm", "secret", Guid.NewGuid(), "TRUSTED_AUDIT_SOURCE_INGEST"), CancellationToken.None);
         Assert.Equal(504, response.StatusCode);
@@ -239,7 +240,7 @@ public sealed class ServiceIdentityTokenHandlerTests
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         var handler = new IssueServiceIdentityTokenHandler(
-            new BlockingIdentityRepository(), new GrantRepository(true), new SpyVerifier(), new StubIssuer(), TimeProvider.System);
+            new BlockingIdentityRepository(), new GrantRepository(true), new SpyVerifier(), new StubIssuer(), new RecordingAudit(), TimeProvider.System);
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => handler.Handle(new IssueServiceIdentityTokenCommand(
             "mdm", "secret", Guid.NewGuid(), "TRUSTED_AUDIT_SOURCE_INGEST"), cancellation.Token));
     }
@@ -248,7 +249,7 @@ public sealed class ServiceIdentityTokenHandlerTests
     public async Task Repository_unavailable_maps_narrowly_to_503()
     {
         var handler = new IssueServiceIdentityTokenHandler(
-            new UnavailableIdentityRepository(), new GrantRepository(true), new SpyVerifier(), new StubIssuer(), TimeProvider.System);
+            new UnavailableIdentityRepository(), new GrantRepository(true), new SpyVerifier(), new StubIssuer(), new RecordingAudit(), TimeProvider.System);
         var response = await handler.Handle(new IssueServiceIdentityTokenCommand(
             "mdm", "secret", Guid.NewGuid(), "TRUSTED_AUDIT_SOURCE_INGEST"), CancellationToken.None);
         Assert.Equal(503, response.StatusCode);
@@ -258,8 +259,11 @@ public sealed class ServiceIdentityTokenHandlerTests
         ServiceClientIdentity? identity,
         IServiceClientTenantGrantRepository grants,
         IServiceClientCredentialVerifier verifier,
-        IServiceIdentityTokenIssuer? issuer = null) =>
-        new(new IdentityRepository(identity), grants, verifier, issuer ?? new StubIssuer(), TimeProvider.System);
+        IServiceIdentityTokenIssuer? issuer = null,
+        IAuthAuditService? audit = null,
+        TimeProvider? clock = null) =>
+        new(new IdentityRepository(identity), grants, verifier, issuer ?? new StubIssuer(), audit ?? new RecordingAudit(),
+            clock ?? TimeProvider.System);
 
     private static ServiceClientIdentity Identity(
         ServiceClientCredentialVerifier verifier,
@@ -324,5 +328,179 @@ public sealed class ServiceIdentityTokenHandlerTests
         public bool IsStateCoherent(ServiceClientIdentity identity) => true;
         public void PerformUnknownClientWork(string presentedSecret) => UnknownCalls++;
         public string Hash(string secret) => string.Empty;
+    }
+
+    // WP-GP-AUDIT-TRAIL-01 D3 — the security event of a token request (ServiceIdentityTokenAudit).
+
+    [Fact]
+    public async Task An_issued_token_writes_one_security_row_with_the_key_and_no_secret_or_token()
+    {
+        var verifier = new ServiceClientCredentialVerifier();
+        var audit = new RecordingAudit();
+        var tenantId = Guid.NewGuid();
+        var clock = new FixedClock(new DateTimeOffset(2026, 10, 3, 9, 0, 0, TimeSpan.Zero));
+
+        var response = await Handler(Identity(verifier, "Diten.MDM"), new GrantRepository(true), verifier, new DistinctIssuer(), audit, clock)
+            .Handle(new IssueServiceIdentityTokenCommand("mdm", "secret", tenantId, "TRUSTED_AUDIT_SOURCE_INGEST"), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        var row = Assert.Single(audit.Rows.Values);
+        // First: whatever else is wrong with the row, a secret or a token in it is the failure to report.
+        AssertCarriesNoSecret(row, "secret", response.Data!.AccessToken, verifier.Hash("secret"));
+        Assert.Equal(ServiceIdentityTokenAudit.IssuedEvent, row.EventName);
+        Assert.Null(row.UserId);
+        Assert.Equal(tenantId, row.TenantId);
+        Assert.Equal(ServiceIdentityTokenAudit.IssuedAuditId("mdm", tenantId, "TRUSTED_AUDIT_SOURCE_INGEST", new DateOnly(2026, 10, 3)), row.Id);
+        Assert.Contains("\"clientCode\":\"mdm\"", row.Metadata, StringComparison.Ordinal);
+        Assert.Contains("\"dayUtc\":\"2026-10-03\"", row.Metadata, StringComparison.Ordinal);
+        Assert.Contains("\"audience\":\"TRUSTED_AUDIT_SOURCE_INGEST\"", row.Metadata, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task A_second_token_the_same_day_adds_no_row_but_the_next_day_and_another_tenant_do()
+    {
+        var verifier = new ServiceClientCredentialVerifier();
+        var audit = new RecordingAudit();
+        var tenantA = Guid.NewGuid();
+        var tenantB = Guid.NewGuid();
+        var clock = new FixedClock(new DateTimeOffset(2026, 10, 3, 0, 0, 1, TimeSpan.Zero));
+        var handler = Handler(Identity(verifier, "Diten.MDM"), new GrantRepository(true), verifier, audit: audit, clock: clock);
+        Task<Response<ServiceIdentityTokenResponse>> Issue(Guid tenant) => handler.Handle(
+            new IssueServiceIdentityTokenCommand("mdm", "secret", tenant, "TRUSTED_AUDIT_SOURCE_INGEST"), CancellationToken.None);
+
+        Assert.True((await Issue(tenantA)).IsSuccessful);
+        clock.Now = clock.Now.AddHours(23).AddMinutes(59);
+        Assert.True((await Issue(tenantA)).IsSuccessful);
+        Assert.Single(audit.Rows);
+        Assert.Equal(2, audit.Attempts);
+
+        Assert.True((await Issue(tenantB)).IsSuccessful);
+        Assert.Equal(2, audit.Rows.Count);
+        Assert.Contains(audit.Rows.Values, row => row.TenantId == tenantB);
+
+        clock.Now = clock.Now.AddMinutes(1);
+        Assert.True((await Issue(tenantA)).IsSuccessful);
+        Assert.Equal(3, audit.Rows.Count);
+    }
+
+    [Fact]
+    public async Task A_refusal_writes_a_coded_row_once_a_day_and_its_answer_is_unchanged()
+    {
+        var verifier = new ServiceClientCredentialVerifier();
+        var audit = new RecordingAudit();
+        var tenantId = Guid.NewGuid();
+        var handler = Handler(Identity(verifier, "Diten.MDM"), new GrantRepository(false), verifier, audit: audit);
+
+        var first = await handler.Handle(new IssueServiceIdentityTokenCommand("mdm", "secret", tenantId, "TRUSTED_AUDIT_SOURCE_INGEST"), CancellationToken.None);
+        var second = await handler.Handle(new IssueServiceIdentityTokenCommand("mdm", "secret", tenantId, "TRUSTED_AUDIT_SOURCE_INGEST"), CancellationToken.None);
+        var wrong = await handler.Handle(new IssueServiceIdentityTokenCommand("mdm", "wrong-secret", tenantId, "TRUSTED_AUDIT_SOURCE_INGEST"), CancellationToken.None);
+
+        Assert.Equal(403, first.StatusCode);
+        Assert.Equal(403, second.StatusCode);
+        Assert.Equal(401, wrong.StatusCode);
+        Assert.Equal(2, audit.Rows.Count);
+        Assert.All(audit.Rows.Values, row => Assert.Equal(ServiceIdentityTokenAudit.DeniedEvent, row.EventName));
+        Assert.Contains(audit.Rows.Values, row => row.Metadata.Contains($"\"result\":\"{ServiceIdentityTokenAudit.Results.TenantGrantMissing}\"", StringComparison.Ordinal));
+        Assert.Contains(audit.Rows.Values, row => row.Metadata.Contains($"\"result\":\"{ServiceIdentityTokenAudit.Results.InvalidCredential}\"", StringComparison.Ordinal));
+        Assert.All(audit.Rows.Values, row => AssertCarriesNoSecret(row, "secret", "wrong-secret", verifier.Hash("secret")));
+    }
+
+    [Fact]
+    public async Task An_unknown_client_is_recorded_as_such()
+    {
+        var audit = new RecordingAudit();
+        var response = await Handler(null, new GrantRepository(true), new SpyVerifier(), audit: audit).Handle(
+            new IssueServiceIdentityTokenCommand("missing", "secret", Guid.NewGuid(), "TRUSTED_AUDIT_SOURCE_INGEST"), CancellationToken.None);
+
+        Assert.Equal(401, response.StatusCode);
+        var row = Assert.Single(audit.Rows.Values);
+        Assert.Contains($"\"result\":\"{ServiceIdentityTokenAudit.Results.UnknownClient}\"", row.Metadata, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Fifty_invented_client_codes_in_a_day_leave_one_row_and_none_of_the_codes()
+    {
+        var audit = new RecordingAudit();
+        var tenantId = Guid.NewGuid();
+        var handler = Handler(null, new GrantRepository(true), new SpyVerifier(), audit: audit);
+        var codes = Enumerable.Range(0, 50).Select(_ => "invented-" + Guid.NewGuid().ToString("N")).ToList();
+
+        foreach (var code in codes)
+            Assert.Equal(401, (await handler.Handle(
+                new IssueServiceIdentityTokenCommand(code, "secret", tenantId, "TRUSTED_AUDIT_SOURCE_INGEST"), CancellationToken.None)).StatusCode);
+
+        var row = Assert.Single(audit.Rows.Values);
+        Assert.Equal(50, audit.Attempts);
+        Assert.Contains($"\"clientCode\":\"{ServiceIdentityTokenAudit.UnknownClientCode}\"",
+            System.Text.RegularExpressions.Regex.Unescape(row.Metadata), StringComparison.Ordinal);
+        Assert.All(codes, code => Assert.DoesNotContain(code, row.Metadata, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task When_the_log_cannot_be_written_no_token_is_handed_out()
+    {
+        var verifier = new ServiceClientCredentialVerifier();
+        var response = await Handler(Identity(verifier, "Diten.MDM"), new GrantRepository(true), verifier, audit: new FailingAudit())
+            .Handle(new IssueServiceIdentityTokenCommand("mdm", "secret", Guid.NewGuid(), "TRUSTED_AUDIT_SOURCE_INGEST"), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Null(response.Data);
+        Assert.Equal(503, response.StatusCode);
+        Assert.Contains(response.ErrorCodes, error => error.Code == IssueServiceIdentityTokenHandler.AuditUnavailableCode);
+    }
+
+    [Fact]
+    public async Task When_the_log_cannot_be_written_a_refusal_keeps_its_answer()
+    {
+        var verifier = new ServiceClientCredentialVerifier();
+        var response = await Handler(Identity(verifier, "Diten.MDM"), new GrantRepository(false), verifier, audit: new FailingAudit())
+            .Handle(new IssueServiceIdentityTokenCommand("mdm", "secret", Guid.NewGuid(), "TRUSTED_AUDIT_SOURCE_INGEST"), CancellationToken.None);
+
+        Assert.Equal(403, response.StatusCode);
+    }
+
+    private static void AssertCarriesNoSecret(AuditRow row, params string[] secrets)
+    {
+        var all = string.Join("|", row.EventName, row.Metadata, row.TenantId, row.UserId, row.Id);
+        foreach (var secret in secrets.Where(value => !string.IsNullOrEmpty(value)))
+            Assert.DoesNotContain(secret, all, StringComparison.Ordinal);
+    }
+
+    private sealed record AuditRow(Guid Id, string EventName, Guid? UserId, Guid TenantId, string Metadata);
+
+    /// <summary>The create-if-absent contract of <see cref="IAuthAuditService.WriteOnceAsync"/>, in memory; the real
+    /// writer's honouring of it is proven against an owned mongod in the registry test project.</summary>
+    private sealed class RecordingAudit : IAuthAuditService
+    {
+        public Dictionary<Guid, AuditRow> Rows { get; } = [];
+        public int Attempts { get; private set; }
+        public Task WriteEmptyRoleLoginAsync(Guid userId, Guid tenantId, string email, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task WriteAsync(string eventName, Guid? userId, Guid tenantId, string metadata, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<bool> WriteOnceAsync(Guid auditId, string eventName, Guid? userId, Guid tenantId, string metadata, CancellationToken ct = default)
+        {
+            Attempts++;
+            return Task.FromResult(Rows.TryAdd(auditId, new AuditRow(auditId, eventName, userId, tenantId, metadata)));
+        }
+    }
+
+    private sealed class FailingAudit : IAuthAuditService
+    {
+        public Task WriteEmptyRoleLoginAsync(Guid userId, Guid tenantId, string email, CancellationToken ct = default) => throw new IOException("log down");
+        public Task WriteAsync(string eventName, Guid? userId, Guid tenantId, string metadata, CancellationToken ct = default) => throw new IOException("log down");
+        public Task<bool> WriteOnceAsync(Guid auditId, string eventName, Guid? userId, Guid tenantId, string metadata, CancellationToken ct = default) =>
+            throw new IOException("log down");
+    }
+
+    /// <summary>A token no row could contain by accident ("token" itself is in the event name).</summary>
+    private sealed class DistinctIssuer : IServiceIdentityTokenIssuer
+    {
+        public ServiceIdentityTokenIssue Issue(Guid clientId, string serviceName, Guid tenantId, string audience) =>
+            new("eyJ" + Guid.NewGuid().ToString("N"), DateTimeOffset.UtcNow.AddMinutes(5), 300);
+    }
+
+    private sealed class FixedClock(DateTimeOffset now) : TimeProvider
+    {
+        public DateTimeOffset Now { get; set; } = now;
+        public override DateTimeOffset GetUtcNow() => Now;
     }
 }
