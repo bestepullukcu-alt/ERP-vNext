@@ -20,3 +20,6 @@ tmp/
 .dotnet/
 scratch/
 execution/DASHBOARD.md
+# Q303: local Development settings hold the signing secret and internal keys; never commit them.
+# Copy appsettings.Development.example.json beside each one and fill the blank values locally.
+appsettings.Development.json
