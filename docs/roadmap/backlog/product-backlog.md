@@ -7805,6 +7805,41 @@ değil derleme artığı olduğu için CRM ekibine yalnız bilgi verilir. Gelece
 
 ---
 
+### BL-523
+
+**Global Ürün onayı: iptal kanıtı servis kimliğiyle okunamıyor; inmiş ama talep edeni dönmeyen geri çekme süresiz bekliyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 iş akışı motoru + MOD-0290 Global Ürün) · BULAN: WP-GP-1B-A-RESILIENCE-01 FIX3 ölçümü (2026-10-03) · KAYIT: 2026-10-03
+
+Geri çekmede Platform'a giden iptal inmiş olabilir ama cevabı kaybolmuşsa, MDM ürünü Taslak'a çevirmek için iptal kanıtı (günlük kimliği,
+sıra, sürümler) ister. Bu kanıtı bugün yalnız iptal ucu veriyor ve o da kullanıcı belirteci istiyor; servis kimliğiyle okunabilen
+`terminal-decision-evidence` iptal edilmiş örnekte 409 INCONSISTENT dönüyor (`GetTrustedWorkflowTerminalDecisionEvidenceHandler.cs:66-77,
+213-219`), `start-result` yalnız "Cancelled" diyor (`GetTrustedWorkflowStartResultHandler.cs:97`). Sonuç: talep eden aynı kimlikle hiç dönmezse
+kayıt süresiz `WithdrawalOutcomeUnknown`'da kalır. İş: (1) Platform'da servis kimliğiyle, idempotency anahtarına göre iptal kanıtı dönen uç;
+(2) MDM'de unutulan geri çekmenin izi + karar yoklaması 409 aldığında `start-result` "Cancelled" ise karantina yerine "motor iptal etti,
+talep edeni bekliyor" durumu (kanıt gelince Taslak); (3) GP canlıya çıkmadan önce keşif dizini: eski park edilmiş `AwaitingMakerReplay`
+satırları bir kez taşınır ya da yeni adla kısmi dizin kurulur (aynı adla anahtar değişirse depo kurucusu `IndexKeySpecsConflict` ile MDM'yi
+açtırmaz; dev'de bu koleksiyonda 0 belge, 2026-10-03 salt okunur sayım); (4) yükseltilmiş (Escalated / TimedOut) onay: GP şablonuna SLA
+kuralı kurulursa ön kontrol 404 → geri çekme "kapandı", karar yoklaması 409 → karantina (BL-502 ile birlikte). Gelecek regresyon riski: 🟡.
+
+---
+
+### BL-524
+
+**Platform modül kaydı ve abonelik: işlem dışında kalan iki yazım**
+
+DURUM: AÇIK · SAHİP: CT (Platform) · BULAN: WP-PLATFORM-AUDIT-INTX-01 FIX1 (ajan DUR önerisi + gözden geçirme, 2026-10-03) · KAYIT: 2026-10-03
+
+(1) **Sayfa / eylem yazımları katalog işleminden sonra:** modül kendini kaydederken katalog satırı ve denetim kaydı tek işlemde, ama sayfa ve
+eylem tanımları (`IModulePageDescriptorRepository`, `IModulePageActionDescriptorRepository`) işlemden sonra yazılıyor; bunlardan biri çift anahtar
+dışında bir hatayla düşerse denetim kaydı (Outcome=Succeeded) olmamış değişiklikleri anlatır. İş: oturumlu depo üyeleri + çakışmaları önceden
+eleyen plan (FIX1'deki `PlanSurfaceChangeAsync`'in genişletilmişi) + tek işlem; Auth izin eşitlemesi dış çağrı olduğu için işlemden sonra kalır.
+(2) **Abonelik tekil dizini:** `(TenantId, Status)` üzerinde, Current kümesine kısmi; Trialing ile Active'in yan yana durmasına izin veriyor.
+FIX1 + FIX2 işlem içi iki koruma koydu; dizinin "kiracı başına tek canlı abonelik" olarak yeniden kurulması canlıda düşür / yeniden kur demek
+— ayrı karar, canlıdaki veri önce sayılır. Gelecek regresyon riski: 🟡.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
