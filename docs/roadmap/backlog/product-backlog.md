@@ -7834,6 +7834,35 @@ Sahiplenmenin sınırsız beklemesi (A3) ve park edilen geri çekmenin alarmı (
 
 ---
 
+### BL-525
+
+**Görev yorumu görevin okunabilirliğini sormuyor: okuma anahtarı olan biri kiracıdaki herhangi bir göreve kimliğiyle yorum yazabiliyor**
+
+DURUM: AÇIK · SAHİP: CT (Görev Merkezi / görevler) · BULAN: WP-WCN-TASK-REQUEST-01 D1 FIX1 ölçümü (2026-10-03) · KAYIT: 2026-10-03
+
+`AddTaskComment` işleyicisi yorumu yazmadan önce çağıranın o görevi okuyup okuyamadığını sormuyor; görev kimliğini bilen ya da tahmin eden,
+okuma anahtarı olan herhangi bir kiracı kullanıcısı başka birimin, başka şirketin görevine yorum yazabiliyor (yorum o görevin etkinlik akışına
+ve bildirimlerine girer). Düzeltme: yorum, okuma kuralıyla (`TaskReadAccessPolicy`) aynı kapıdan geçer; okuyamayan 404 (varlık sızdırılmaz);
+görev talebindeki "sorulan kişi yanıtlamadan yorum yazamaz" kuralı korunur. HTTP testi: başka birimin görevine yorum → 404, yorum yok.
+Karşılaştırma: SAP / Oracle'da not ve yorum, nesnenin okuma yetkisine bağlıdır. Görev talebi paketinin bir sonraki turunda. Gelecek regresyon
+riski: 🟢 (yalnız daraltır).
+
+---
+
+### BL-526
+
+**Organizasyon: koltuğa ikinci bir tarih yazımı Mongo'da "cannot index parallel arrays" ile reddediliyor (doğrulanmalı)**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0288 organizasyon) · BULAN: WP-WCN-TASK-REQUEST-01 D1 FIX1 testi (2026-10-03) · KAYIT: 2026-10-03
+
+Görev talebi testinde koltuğu sona eren bir alıcı kurulmak istendi; koltuğu tarihle bitirmek için yapılan ikinci tarih yazımı Mongo'da
+"cannot index parallel arrays" hatası verdi (DateTimeOffset'in `[ticks, ofset]` dizisi olarak saklanması + aynı belgede dizinli ikinci dizi —
+BL-030 ailesi). Testte koltuk silinerek geçildi. Organizasyon deposunda gerçek bir hata olabilir: canlıda bir koltuğun bitiş tarihini yazmak
+düşüyor olabilir. İş: depoda ve şemadaki dizinlerde ölç; gerçekse koltuk bitişi için hangi alanın dizinli dizi oluşturduğunu bul, düzelt,
+gerçek Mongo testi. Gelecek regresyon riski: 🟡 (dizin değişikliği gerekebilir — yeni adla).
+
+---
+
 ### BL-524
 
 **Platform modül kaydı ve abonelik: işlem dışında kalan iki yazım**
