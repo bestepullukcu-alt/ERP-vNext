@@ -7870,6 +7870,23 @@ gerçek Mongo testi. Gelecek regresyon riski: 🟡 (dizin değişikliği gerekeb
 
 ---
 
+### BL-528
+
+**Ağ geçidinden geçen servis çağrıları (HCM, CRM) denetim kaydında asıl isteğin korelasyonunu taşımıyor — imzalı korelasyon kimliği**
+
+DURUM: AÇIK · SAHİP: CT (altyapı / ağ geçidi) · BULAN: WP-PLATFORM-AUDIT-INTX-01 FIX2 gözden geçirmesi + FIX3 ölçümü (2026-10-03) · KAYIT: 2026-10-03
+
+INTX FIX2 ağ geçidinde dışarıdan gelen korelasyona güveni kapattı (istemci başka bir isteğin korelasyonunu seçemesin diye); ağ geçidi kendi
+kimliğini üretiyor, istemcinin değerini `X-Client-Correlation-Id` ile iletiyor. HCM denetim eki (`GovernedHcmAuditAppendClient`), CRM denetimi
+(`HttpCrmAuditPublisher`), HCM iş akışı başlatma ve CRM ağ geçidi istemcileri Platform'a ağ geçidi üzerinden SON KULLANICININ belirteciyle gidiyor;
+Platform'da "doğrulanmış servis çağıranı" kavramı yok (Auth yalnız üç insan aktör türü veriyor, iç anahtar yolu ağ geçidinden geçmiyor). Sonuç: bu
+kayıtların korelasyon alanı ağ geçidinin yeni kimliği; asıl isteğin korelasyonu yalnız `Metadata.ClientCorrelation`'da (veri kaybı yok, gruplama o
+alandan yapılabilir). Önerilen çözüm: ağ geçidi ürettiği kimliği imzalar (HMAC, kimliğin içinde ya da ayrı başlıkta) ve gelen istekte yalnız KENDİ
+imzaladığı kimliği benimser; servisler kimliği olduğu gibi iletir. Gizli anahtar yönetimi gerektirir (dev betiği + canlı ayar; değer hiçbir yere
+yazılmaz). Gelecek regresyon riski: 🟡 (her servisin korelasyon akışına dokunur).
+
+---
+
 ### BL-527
 
 **MDM testleri dev Mongo'nun koştuğu sunucuda sabit adlı bir test veritabanını paylaşıyor: bir dalın koşusu başka dalların testlerini kırıyor**
