@@ -29,4 +29,13 @@
   <data name="Remove" xml:space="preserve"><value>Удалить</value></data>
   <data name="PermissionCountFormat" xml:space="preserve"><value>{0} разрешений</value></data>
   <data name="RolesShownFormat" xml:space="preserve"><value>Показано ролей: {0}</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Не удалось подтвердить ваш сеанс. Войдите снова и повторите попытку.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Эта роль больше не существует. Обновите страницу.</value>
+  </data>
+  <data name="ErrorUserRoleUserNotFound" xml:space="preserve">
+    <value>Этот пользователь больше не существует. Обновите страницу.</value>
+  </data>
 </root>

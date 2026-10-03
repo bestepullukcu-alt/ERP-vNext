@@ -94,4 +94,19 @@
   <data name="ActionVerb_Move" xml:space="preserve"><value>Taşı</value></data>
   <data name="ActionVerb_Start" xml:space="preserve"><value>Başlat</value></data>
   <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>Yönetici Zincirini Görüntüle</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Oturumunuz doğrulanamadı. Yeniden giriş yapıp tekrar deneyin.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Bu rol artık yok. Sayfayı yenileyin.</value>
+  </data>
+  <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
+    <value>Bu izin platform yönetimine ayrılmıştır; bir role verilemez.</value>
+  </data>
+  <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
+    <value>Bu izin rolle birlikte ya da aboneliğinizdeki bir modülle gelir; buradan kaldırılamaz.</value>
+  </data>
+  <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
+    <value>Rol bu izne zaten sahip. Sayfayı yenileyin.</value>
+  </data>
 </root>

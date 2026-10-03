@@ -15,6 +15,13 @@ form_field_count: 0
 screens:
   - module: Users
     data_mode: server
+  # WP-ROLES-CLOSE-01: rol kumesi tasarimda sinirli (kiraci basina tipik < 30; GetAllRolesQueryHandler tum kumeyi tek istekte doner).
+  # DIKKAT - `auth.roles.export` bu ekranda yalniz Islem MENUSUNU cizer; sunucuda koruduğu bir uc YOK. Dosya tarayicida,
+  # `auth.roles.read` ile zaten okunmus satirlardan uretilir: listeyi okuyabilen veriye sahiptir. Sunucu tarafinda zorlanan
+  # disa aktarma izni yalniz sunucu modlu listelerde vardir (Users: GET api/users/export, [HasPermission("auth.users.export")]).
+  - module: Roles
+    data_mode: client
+    data_mode_max_rows: 200
 dates:
   started: 2026-06-11
 ---
@@ -516,3 +523,30 @@ landed.
 **Independently startable after promotion** (each with separate authorization): **BE-A**, **BE-B**, **GW-A**, **BOOT-FE**,
 **FE-A-core**. Each V1 runtime group requires independent authorization; runtime stays fail-closed throughout; no runtime
 implementation begins from this pack until the relevant gate is met.
+
+---
+
+## WP-ROLES-CLOSE-01 — Dışa aktarma izinlerinin geriye dönük verilmesi (açılışta YETKİ YAZAN kod)
+
+`auth.users.export` ve `auth.roles.export` anahtarları eklenmeden önce dışa aktarma yalnız okuma izniyle yapılıyordu.
+Yükseltmede ESKİ kiracıların okuma izni tutan rolleri dışa aktarmayı bir kez alır (`ExportGrantBackfill` +
+`ExportGrantBackfillRunner`). Kurallar:
+
+- **Eski mi, doğuştan mı — saklı olgudan:** kiracının en eski rol belgesinin `CreatedAt`'i (silinmiş olanlar dahil),
+  dışa aktarma izninin katalog satırının `CreatedAt`'inden KESİN olarak önceyse kiracı eskidir. Eşitlik, sonrası ve
+  tarihin saklı olmadığı her durum "doğuştan"dır: izin verilmez. İznin tarihi o veritabanında anahtarın ilk yazıldığı
+  andır (ilk tohumlama ya da ilk katalog eşitlemesi); sonraki güncellemeler onu değiştirmez.
+- **Emin değilsem vermem:** her belirsizlik izin VERMEME yönünde çözülür. Yanlışlıkla verilmeyen izin yöneticinin
+  Rol İzinleri ekranında bir tıklamasıdır; yanlışlıkla verilen izin kimsenin kararı olmayan bir yetkidir.
+- **Bilinçli takas (CT kararı, 2026-10-02):** işlem (transaction) varsayılmaz — canlının Mongo topolojisi bu kodun
+  varsayabileceği bir şey değildir. Karar kaydı, belirlenimli kimlikli denetim satırıdır ve izinden ÖNCE yazılır;
+  satırı yazamayan (zaten yazılmış) koşu izni de YAZMAZ. Sonuç: yöneticinin geri aldığı izin hiçbir yeniden
+  başlatmada ve hiçbir üst üste binen örnekte geri gelmez. Bedeli: koşu bir rolün denetim satırı ile izni arasında
+  durursa o rol dışa aktarmasız kalır; sonraki açılış bunu Warning ile (kiracı, rol, anahtar) ve özet sayısıyla
+  bildirir, yönetici izni ekrandan verir. Bu durum için ayrı bir denetim satırı yazılmaz (veritabanı yarıda kalan
+  koşuyu yöneticinin geri almasından ayıramaz).
+- **İzin kaynağı:** şablonun kendisinin verdiği sistem rolünde (Admin) `System`; diğer her rolde (özel roller ve
+  Viewer) `Manual` — yönetici ekrandan alabilsin diye. Önceki sürümün `System` yazdıkları bir kez düzeltilir
+  (izin eklenmez, silinmez; her düzeltme denetim satırı bırakır).
+- **Açık:** geriye dönük vermenin denetim satırları yalnız Auth'un kendi günlüğündedir (`authAuditLogs`), merkezi
+  Denetim Günlüğü'ne iletilmez.

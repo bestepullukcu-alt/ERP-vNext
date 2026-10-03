@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Web.Models;
+using Diten.Web.Services.Governance;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -46,10 +47,10 @@ public sealed class UserRoleAssignmentsController : Controller
     public async Task<IActionResult> Assign([FromForm] Guid userId, [FromForm] Guid roleId)
     {
         if (userId == Guid.Empty || roleId == Guid.Empty)
-            return Json(new { success = false, errors = new[] { _sharedLocalizer["ValidationFailed"].Value } });
+            return Json(GatewayRefusal.Local(_sharedLocalizer["ValidationFailed"].Value));
 
         if (!AddAuthHeaders())
-            return Json(new { success = false, errors = new[] { _sharedLocalizer["Unauthorized"].Value } });
+            return Json(GatewayRefusal.Local(_sharedLocalizer["Unauthorized"].Value));
 
         try
         {
@@ -59,12 +60,11 @@ public sealed class UserRoleAssignmentsController : Controller
                 _jsonOptions);
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer, _logger));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "User-role assign failed for {UserId}/{RoleId}.", userId, roleId);
-            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+            return Json(GatewayRefusal.Failure(ex, _sharedLocalizer, _logger, "User-role assign"));
         }
     }
 
@@ -73,49 +73,22 @@ public sealed class UserRoleAssignmentsController : Controller
     public async Task<IActionResult> Revoke([FromForm] Guid userId, [FromForm] Guid roleId)
     {
         if (userId == Guid.Empty || roleId == Guid.Empty)
-            return Json(new { success = false, errors = new[] { _sharedLocalizer["ValidationFailed"].Value } });
+            return Json(GatewayRefusal.Local(_sharedLocalizer["ValidationFailed"].Value));
 
         if (!AddAuthHeaders())
-            return Json(new { success = false, errors = new[] { _sharedLocalizer["Unauthorized"].Value } });
+            return Json(GatewayRefusal.Local(_sharedLocalizer["Unauthorized"].Value));
 
         try
         {
             var response = await _httpClient.DeleteAsync($"{_gatewayUrl}/api/users/{userId}/roles/{roleId}");
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+                : Json(await GatewayRefusal.ReadAsync(response, _sharedLocalizer, _logger));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "User-role revoke failed for {UserId}/{RoleId}.", userId, roleId);
-            return Json(new { success = false, errors = BuildExceptionErrors(ex) });
+            return Json(GatewayRefusal.Failure(ex, _sharedLocalizer, _logger, "User-role revoke"));
         }
-    }
-
-    private List<string> BuildExceptionErrors(Exception ex)
-    {
-        var message = ex.GetBaseException().Message;
-        return [string.IsNullOrWhiteSpace(message) ? _sharedLocalizer["GatewayError"].Value : message];
-    }
-
-    private async Task<List<string>> ExtractGatewayErrorsAsync(HttpResponseMessage response)
-    {
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            return [_sharedLocalizer["Unauthorized"].Value];
-
-        try
-        {
-            using var stream = await response.Content.ReadAsStreamAsync();
-            using var doc = await JsonDocument.ParseAsync(stream);
-            if (doc.RootElement.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array)
-            {
-                var list = errors.EnumerateArray().Select(e => e.GetString()).Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s!).ToList();
-                if (list.Count > 0) return list;
-            }
-        }
-        catch { }
-
-        return [_sharedLocalizer["GatewayError"].Value];
     }
 
     private bool AddAuthHeaders()

@@ -94,4 +94,19 @@
   <data name="ActionVerb_Move" xml:space="preserve"><value>移动</value></data>
   <data name="ActionVerb_Start" xml:space="preserve"><value>启动</value></data>
   <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>查看管理链</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>无法验证您的会话。请重新登录后再试。</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>此角色已不存在。请刷新页面。</value>
+  </data>
+  <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
+    <value>此权限仅供平台管理使用，无法授予角色。</value>
+  </data>
+  <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
+    <value>此权限随角色或您订阅的模块提供，无法在此移除。</value>
+  </data>
+  <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
+    <value>该角色已拥有此权限。请刷新页面。</value>
+  </data>
 </root>

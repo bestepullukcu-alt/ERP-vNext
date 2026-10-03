@@ -1,4 +1,5 @@
 using Diten.AuthService.Application.Common;
+using Diten.AuthService.Application.Common.Exceptions;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Roles.Commands;
 using Diten.AuthService.Domain.Authorization;
@@ -14,7 +15,7 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
     private readonly IRolePermissionRepository _rolePermissionRepository;
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
-    private readonly IRbacAuditRecorder _rbacAudit;
+    private readonly IRoleAuditRecorder _rbacAudit;
     private readonly ICurrentUserAccessor _currentUser;
 
     public AssignPermissionCommandHandler(
@@ -23,7 +24,7 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
         IRolePermissionRepository rolePermissionRepository,
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
-        IRbacAuditRecorder rbacAudit,
+        IRoleAuditRecorder rbacAudit,
         ICurrentUserAccessor currentUser)
     {
         _roleRepository = roleRepository;
@@ -41,10 +42,10 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
         // same actor id the RBAC audit row carries (ICurrentUserAccessor, read once here). Without an actor nothing is
         // written — "System" is reserved for seed/provisioning/sync, which never reach this handler.
         if (_currentUser.UserId is not { } actorId)
-            return Response<NoContent>.Fail("An authenticated user is required to grant a permission.", 401);
+            return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.ActorRequired, "An authenticated user is required to grant a permission.", 401);
 
         var role = await _roleRepository.GetByIdAndTenantAsync(request.RoleId, _tenantContext.TenantId, ct);
-        if (role == null) return Response<NoContent>.Fail("Role not found.", 404);
+        if (role == null) return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.NotFound, "Role not found.", 404);
 
         // Permissions are global, so we use ID directly.
         var permission = await _permissionRepository.GetByIdAsync(request.PermissionId, ct);
@@ -57,19 +58,38 @@ public sealed class AssignPermissionCommandHandler : IRequestHandler<AssignPermi
         if (!_tenantContext.IsPlatformContext &&
             (permission is null || !DefaultRolePermissionTemplate.IsTenantAssignable(permission)))
         {
-            return Response<NoContent>.Fail("This permission cannot be assigned to a tenant role.", 403);
+            return RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.PermissionNotTenantAssignable, "This permission cannot be assigned to a tenant role.", 403);
         }
 
-        await _rolePermissionRepository.AssignAsync(
-            RolePermission.ManualGrant(request.RoleId, request.PermissionId, _tenantContext.TenantId, actorId.ToString()), ct);
+        // The role already holds it (from a person, the template or a module): say so instead of failing. The check
+        // answers the ordinary case; the catch answers the race — a double click, or two administrators at once, where
+        // both requests pass the check and the unique index refuses the second insert. Same answer either way, and
+        // nothing below runs: no version bump, no audit row for a grant that was not made.
+        var held = await _rolePermissionRepository.GetByRoleAsync(request.RoleId, _tenantContext.TenantId, ct);
+        if (held.Any(g => g.PermissionId == request.PermissionId))
+            return AlreadyGranted();
+
+        try
+        {
+            await _rolePermissionRepository.AssignAsync(
+                RolePermission.ManualGrant(request.RoleId, request.PermissionId, _tenantContext.TenantId, actorId.ToString()), ct);
+        }
+        catch (DuplicateRolePermissionException)
+        {
+            return AlreadyGranted();
+        }
 
         // FU13 — bump the tenant role-assignment version so every holder's cached snapshot is invalidated at once.
         await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
 
         // FEAT-AUDIT-RBAC — a permission was granted to a role (permissionKey resolved best-effort for readability).
-        await _rbacAudit.RecordAsync("role_permission_granted", _tenantContext.TenantId,
-            new { roleId = request.RoleId, roleName = role.Name, permissionId = request.PermissionId, permissionKey = permission?.Key }, ct);
+        // WP-ROLES-CLOSE-01 — the same local row, now also forwarded to Platform's central audit log.
+        await _rbacAudit.RecordAsync(RoleAuditEvents.PermissionGranted, _tenantContext.TenantId, request.RoleId,
+            new Dictionary<string, object?> { ["roleName"] = role.Name, ["permissionId"] = request.PermissionId, ["permissionKey"] = permission?.Key }, ct);
 
         return Response<NoContent>.Success(204);
     }
+
+    private static Response<NoContent> AlreadyGranted() =>
+        RoleErrorCodes.Refuse<NoContent>(RoleErrorCodes.PermissionAlreadyGranted, "The role already holds this permission.", 409);
 }

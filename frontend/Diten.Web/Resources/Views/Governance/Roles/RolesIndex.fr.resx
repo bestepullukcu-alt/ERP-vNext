@@ -31,4 +31,34 @@
   <data name="KpiSystemRoles" xml:space="preserve"><value>Rôles système</value></data>
   <data name="KpiCustomRoles" xml:space="preserve"><value>Rôles personnalisés</value></data>
   <data name="KpiAssignedUsers" xml:space="preserve"><value>Utilisateurs affectés</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Votre session n'a pas pu être vérifiée. Reconnectez-vous puis réessayez.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Ce rôle n'existe plus. Actualisez la page.</value>
+  </data>
+  <data name="ErrorRoleNameTaken" xml:space="preserve">
+    <value>Un rôle portant ce nom existe déjà. Choisissez un autre nom.</value>
+  </data>
+  <data name="ErrorRoleSystemNotDeletable" xml:space="preserve">
+    <value>Les rôles système ne peuvent pas être supprimés.</value>
+  </data>
+  <data name="ErrorRoleNameRequired" xml:space="preserve">
+    <value>Saisissez un nom de rôle.</value>
+  </data>
+  <data name="ErrorRoleNameTooLong" xml:space="preserve">
+    <value>Le nom du rôle ne peut pas dépasser 50 caractères.</value>
+  </data>
+  <data name="ErrorRoleDisplayNameRequired" xml:space="preserve">
+    <value>Saisissez un nom d'affichage.</value>
+  </data>
+  <data name="ErrorRoleDisplayNameTooLong" xml:space="preserve">
+    <value>Le nom d'affichage ne peut pas dépasser 100 caractères.</value>
+  </data>
+  <data name="ErrorRoleDescriptionTooLong" xml:space="preserve">
+    <value>La description ne peut pas dépasser 500 caractères.</value>
+  </data>
+  <data name="ErrorRoleSystemNotEditable" xml:space="preserve">
+    <value>Les rôles système ne peuvent pas être modifiés.</value>
+  </data>
 </root>

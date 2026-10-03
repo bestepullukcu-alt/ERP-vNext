@@ -31,4 +31,34 @@
   <data name="KpiSystemRoles" xml:space="preserve"><value>Системные роли</value></data>
   <data name="KpiCustomRoles" xml:space="preserve"><value>Пользовательские роли</value></data>
   <data name="KpiAssignedUsers" xml:space="preserve"><value>Назначенные пользователи</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Не удалось подтвердить ваш сеанс. Войдите снова и повторите попытку.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Эта роль больше не существует. Обновите страницу.</value>
+  </data>
+  <data name="ErrorRoleNameTaken" xml:space="preserve">
+    <value>Роль с таким именем уже существует. Выберите другое имя.</value>
+  </data>
+  <data name="ErrorRoleSystemNotDeletable" xml:space="preserve">
+    <value>Системные роли нельзя удалить.</value>
+  </data>
+  <data name="ErrorRoleNameRequired" xml:space="preserve">
+    <value>Введите имя роли.</value>
+  </data>
+  <data name="ErrorRoleNameTooLong" xml:space="preserve">
+    <value>Имя роли может содержать не более 50 символов.</value>
+  </data>
+  <data name="ErrorRoleDisplayNameRequired" xml:space="preserve">
+    <value>Введите отображаемое имя.</value>
+  </data>
+  <data name="ErrorRoleDisplayNameTooLong" xml:space="preserve">
+    <value>Отображаемое имя может содержать не более 100 символов.</value>
+  </data>
+  <data name="ErrorRoleDescriptionTooLong" xml:space="preserve">
+    <value>Описание может содержать не более 500 символов.</value>
+  </data>
+  <data name="ErrorRoleSystemNotEditable" xml:space="preserve">
+    <value>Системные роли нельзя изменить.</value>
+  </data>
 </root>

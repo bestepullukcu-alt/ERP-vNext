@@ -13,7 +13,7 @@ public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand
     private readonly IRoleRepository _roleRepository;
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
-    private readonly IRbacAuditRecorder _rbacAudit;
+    private readonly IRoleAuditRecorder _rbacAudit;
     private readonly ICurrentUserAccessor _currentUser;
     private readonly ILogger<CreateRoleCommandHandler> _logger;
 
@@ -21,7 +21,7 @@ public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand
         IRoleRepository roleRepository,
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
-        IRbacAuditRecorder rbacAudit,
+        IRoleAuditRecorder rbacAudit,
         ICurrentUserAccessor currentUser,
         ILogger<CreateRoleCommandHandler> logger)
     {
@@ -38,10 +38,10 @@ public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand
         // BL-412 — a role created through POST api/roles records the person who created it (same actor id as the
         // role_created audit row). System roles are created by UpsertSystemRoleAsync/DataSeeder, never here.
         if (_currentUser.UserId is not { } actorId)
-            return Response<RoleDto>.Fail("An authenticated user is required to create a role.", 401);
+            return RoleErrorCodes.Refuse<RoleDto>(RoleErrorCodes.ActorRequired, "An authenticated user is required to create a role.", 401);
 
         var existing = await _roleRepository.GetByNameAndTenantAsync(request.Name, _tenantContext.TenantId, ct);
-        if (existing != null) return Response<RoleDto>.Fail("Role name is already in use.", 409);
+        if (existing != null) return RoleErrorCodes.Refuse<RoleDto>(RoleErrorCodes.NameTaken, "Role name is already in use.", 409);
 
         var role = new Role(request.Name, request.DisplayName, request.Description, _tenantContext.TenantId)
         {
@@ -53,8 +53,9 @@ public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand
         await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
 
         // FEAT-AUDIT-RBAC — a new role was created.
-        await _rbacAudit.RecordAsync("role_created", _tenantContext.TenantId,
-            new { roleId = created.Id, roleName = created.Name, displayName = created.DisplayName, description = created.Description }, ct);
+        // WP-ROLES-CLOSE-01 — the same local row, now also forwarded to Platform's central audit log.
+        await _rbacAudit.RecordAsync(RoleAuditEvents.Created, _tenantContext.TenantId, created.Id,
+            new Dictionary<string, object?> { ["roleName"] = created.Name, ["displayName"] = created.DisplayName, ["description"] = created.Description }, ct);
 
         return Response<RoleDto>.Success(new RoleDto(created.Id, created.Name, created.DisplayName, created.Description, created.IsSystem, 0), 201);
     }

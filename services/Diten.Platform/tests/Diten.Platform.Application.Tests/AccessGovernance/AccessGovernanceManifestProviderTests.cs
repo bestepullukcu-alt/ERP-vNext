@@ -78,6 +78,7 @@ public sealed class AccessGovernanceManifestProviderTests
         ["ROLES"] = new(StringComparer.Ordinal)
         {
             ["CREATE"] = "auth.roles.create",
+            ["EXPORT"] = "auth.roles.export", // WP-ROLES-CLOSE-01 (BL-452): the file is a right of its own
             ["UPDATE"] = "auth.roles.update",
             ["DELETE"] = "auth.roles.delete"
         },

@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Tests.Testing;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Roles.Commands;
@@ -318,7 +319,7 @@ public sealed class RevokePermissionCommandHandlerTests
             version ?? new FakeRoleAssignmentVersionService(),
             tenantContext,
             new FakePermissionRepository(),
-            new NoOpRbacAuditRecorder());
+            RoleAuditForTests.Over(new NoOpRbacAuditRecorder()));
     }
 
     // FEAT-AUDIT-RBAC — permission lookup is best-effort (for the audit key); audit itself asserted in

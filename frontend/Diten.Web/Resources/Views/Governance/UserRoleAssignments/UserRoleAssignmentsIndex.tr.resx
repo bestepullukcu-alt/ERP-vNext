@@ -29,4 +29,13 @@
   <data name="Remove" xml:space="preserve"><value>Kaldır</value></data>
   <data name="PermissionCountFormat" xml:space="preserve"><value>{0} izin</value></data>
   <data name="RolesShownFormat" xml:space="preserve"><value>{0} rol gösteriliyor</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>Oturumunuz doğrulanamadı. Yeniden giriş yapıp tekrar deneyin.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>Bu rol artık yok. Sayfayı yenileyin.</value>
+  </data>
+  <data name="ErrorUserRoleUserNotFound" xml:space="preserve">
+    <value>Bu kullanıcı artık yok. Sayfayı yenileyin.</value>
+  </data>
 </root>

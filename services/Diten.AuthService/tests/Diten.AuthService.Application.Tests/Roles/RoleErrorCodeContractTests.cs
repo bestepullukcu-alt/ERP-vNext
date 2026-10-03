@@ -1,0 +1,281 @@
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using Diten.AuthService.Application.Features.Roles;
+using Diten.AuthService.Application.Features.Roles.Commands;
+using Diten.AuthService.Application.Features.Roles.Validators;
+
+namespace Diten.AuthService.Application.Tests.Roles;
+
+/// <summary>
+/// WP-ROLES-CLOSE-01 (A) — the role refusal-code bridge, in the shape of <c>UserLifecycleErrorCodeContractTests</c>:
+/// AuthService emits a stable code (<see cref="RoleErrorCodes"/>), each of the three screens maps the codes IT can meet
+/// to one of its own resx keys (index.js <c>ERROR_CODE_KEYS</c>), the key is published to the screen
+/// (<c>_IndexL10n.cshtml</c>) and exists in all seven languages. Everything is read from the production files; the
+/// code column is the Auth constant, so renaming a constant on the Auth side alone turns this red.
+/// </summary>
+public sealed class RoleErrorCodeContractTests
+{
+    private static readonly string[] Languages = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
+
+    private sealed record Screen(string Folder, string ResxClass, IReadOnlyDictionary<string, string> CodeToKey);
+
+    // screen ⇔ the codes its Auth endpoints can answer ⇔ the resx key of THAT screen
+    private static readonly Screen[] Screens =
+    [
+        new("Roles", "RolesIndex", new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [RoleErrorCodes.ActorRequired] = "ErrorRoleActorRequired",
+            [RoleErrorCodes.NotFound] = "ErrorRoleNotFound",
+            [RoleErrorCodes.NameTaken] = "ErrorRoleNameTaken",
+            [RoleErrorCodes.SystemNotDeletable] = "ErrorRoleSystemNotDeletable",
+            [RoleErrorCodes.NameRequired] = "ErrorRoleNameRequired",
+            [RoleErrorCodes.NameTooLong] = "ErrorRoleNameTooLong",
+            [RoleErrorCodes.DisplayNameRequired] = "ErrorRoleDisplayNameRequired",
+            [RoleErrorCodes.DisplayNameTooLong] = "ErrorRoleDisplayNameTooLong",
+            [RoleErrorCodes.DescriptionTooLong] = "ErrorRoleDescriptionTooLong",
+            [RoleErrorCodes.SystemNotEditable] = "ErrorRoleSystemNotEditable"
+        }),
+        new("RoleAssignments", "RoleAssignmentsIndex", new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [RoleErrorCodes.ActorRequired] = "ErrorRoleActorRequired",
+            [RoleErrorCodes.NotFound] = "ErrorRoleNotFound",
+            [RoleErrorCodes.PermissionNotTenantAssignable] = "ErrorRolePermissionNotTenantAssignable",
+            [RoleErrorCodes.PermissionAlreadyGranted] = "ErrorRolePermissionAlreadyGranted",
+            [RoleErrorCodes.PermissionGrantManaged] = "ErrorRolePermissionGrantManaged"
+        }),
+        new("UserRoleAssignments", "UserRoleAssignmentsIndex", new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [RoleErrorCodes.ActorRequired] = "ErrorRoleActorRequired",
+            [RoleErrorCodes.NotFound] = "ErrorRoleNotFound",
+            [RoleErrorCodes.UserRoleUserNotFound] = "ErrorUserRoleUserNotFound"
+        })
+    ];
+
+    private static IReadOnlySet<string> AllCodes => typeof(RoleErrorCodes)
+        .GetFields(BindingFlags.Public | BindingFlags.Static)
+        .Where(f => f.IsLiteral && f.FieldType == typeof(string))
+        .Select(f => (string)f.GetRawConstantValue()!)
+        .ToHashSet(StringComparer.Ordinal);
+
+    [Fact]
+    public void Every_code_constant_is_mapped_by_at_least_one_screen_and_no_screen_expects_a_code_that_does_not_exist()
+    {
+        var expected = Screens.SelectMany(s => s.CodeToKey.Keys).ToHashSet(StringComparer.Ordinal);
+
+        Assert.Equal(AllCodes.OrderBy(x => x), expected.OrderBy(x => x));
+        Assert.All(AllCodes, code => Assert.Matches("^(ROLE|ROLE_PERMISSION|USER_ROLE)_[A-Z_]+$", code));
+    }
+
+    [Fact]
+    public void Each_screen_maps_exactly_its_codes_to_its_keys()
+    {
+        foreach (var screen in Screens)
+        {
+            var js = File.ReadAllText(Web("wwwroot", "assets", "js", "Governance", screen.Folder, "index.js"));
+            var map = Regex.Match(js, @"const ERROR_CODE_KEYS = \{(?<body>[^}]*)\}");
+            Assert.True(map.Success, $"{screen.Folder}/index.js has no ERROR_CODE_KEYS.");
+            var declared = Regex.Matches(map.Groups["body"].Value, @"(?<code>[A-Z_]+): '(?<key>[A-Za-z]+)'")
+                .ToDictionary(m => m.Groups["code"].Value, m => m.Groups["key"].Value, StringComparer.Ordinal);
+
+            Assert.True(screen.CodeToKey.OrderBy(x => x.Key).SequenceEqual(declared.OrderBy(x => x.Key)),
+                $"{screen.Folder}/index.js ERROR_CODE_KEYS [{string.Join(", ", declared.Select(x => x.Key + "→" + x.Value))}] "
+                + $"differs from the contract [{string.Join(", ", screen.CodeToKey.Select(x => x.Key + "→" + x.Value))}]");
+            // The screen says the refusal through the shared helper — never the server's sentence.
+            Assert.Contains("window.DitenRefusal.message(json, ERROR_CODE_KEYS", js, StringComparison.Ordinal);
+            Assert.DoesNotContain("(json.errors || [])[0]", js, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void Every_key_is_published_to_its_screen_and_exists_in_all_seven_languages_with_its_own_text()
+    {
+        foreach (var screen in Screens)
+        {
+            var bridge = File.ReadAllText(Web("Views", "Governance", screen.Folder, "_IndexL10n.cshtml"));
+            var index = File.ReadAllText(Web("Views", "Governance", screen.Folder, "Index.cshtml"));
+            Assert.Contains("~/assets/js/shared/diten-refusal.js", index, StringComparison.Ordinal);
+
+            var english = ResxValues(screen, "en");
+            foreach (var key in screen.CodeToKey.Values)
+            {
+                Assert.True(bridge.Contains($"{key} = Localizer[\"{key}\"].Value", StringComparison.Ordinal),
+                    $"{screen.Folder}/_IndexL10n.cshtml does not publish {key} to the screen.");
+
+                foreach (var language in Languages)
+                {
+                    var values = ResxValues(screen, language);
+                    Assert.True(values.TryGetValue(key, out var text) && !string.IsNullOrWhiteSpace(text),
+                        $"{screen.ResxClass}.{language}.resx is missing key: {key}");
+                    // One sentence for the reader: no code, no id, no technical term.
+                    Assert.DoesNotMatch("ROLE_|USER_ROLE_|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}|errorCode|HTTP|\\b40[0-9]\\b", text!);
+                    if (language != "en")
+                    {
+                        Assert.True(text != english[key], $"{screen.ResxClass}.{language}.resx {key} is a copy of the English sentence.");
+                    }
+                }
+            }
+        }
+    }
+
+    [Fact]
+    public void The_seven_resx_files_of_each_screen_carry_the_same_keys()
+    {
+        foreach (var screen in Screens)
+        {
+            var english = ResxValues(screen, "en").Keys.OrderBy(k => k, StringComparer.Ordinal).ToList();
+            foreach (var language in Languages)
+            {
+                Assert.Equal(english, ResxValues(screen, language).Keys.OrderBy(k => k, StringComparer.Ordinal).ToList());
+            }
+        }
+    }
+
+    // The validator codes cannot be asserted over HTTP on this branch (their passage through ExceptionHandlingBehavior
+    // belongs to another work package), so they are proven where they are produced.
+    // CT 2b — one true value. AuthService's validator reads RoleFieldLimits; the Roles form (a project that cannot
+    // reference this one) restates the two numbers and the four codes in RoleEditViewModel, and its `maxlength` reads
+    // those constants. This holds the restatement equal and proves the form has no third, literal copy.
+    [Fact]
+    public void The_forms_limits_and_codes_are_AuthServices_and_the_markup_reads_them_instead_of_a_literal()
+    {
+        var model = File.ReadAllText(Web("Models", "Governance", "RoleViewModels.cs"));
+        Assert.Contains($"public const int NameMaxLength = {RoleFieldLimits.NameMaxLength};", model, StringComparison.Ordinal);
+        Assert.Contains($"public const int DisplayNameMaxLength = {RoleFieldLimits.DisplayNameMaxLength};", model, StringComparison.Ordinal);
+        Assert.Contains($"NameRequiredCode = \"{RoleErrorCodes.NameRequired}\";", model, StringComparison.Ordinal);
+        Assert.Contains($"NameTooLongCode = \"{RoleErrorCodes.NameTooLong}\";", model, StringComparison.Ordinal);
+        Assert.Contains($"DisplayNameRequiredCode = \"{RoleErrorCodes.DisplayNameRequired}\";", model, StringComparison.Ordinal);
+        Assert.Contains($"DisplayNameTooLongCode = \"{RoleErrorCodes.DisplayNameTooLong}\";", model, StringComparison.Ordinal);
+        Assert.Contains($"public const int DescriptionMaxLength = {RoleFieldLimits.DescriptionMaxLength};", model, StringComparison.Ordinal);
+        Assert.Contains($"DescriptionTooLongCode = \"{RoleErrorCodes.DescriptionTooLong}\";", model, StringComparison.Ordinal);
+
+        var form = File.ReadAllText(Web("Views", "Governance", "Roles", "_CreateEditOffcanvas.cshtml"));
+        Assert.Contains("maxlength=\"@Diten.Web.Models.Governance.RoleEditViewModel.NameMaxLength\"", form, StringComparison.Ordinal);
+        Assert.Contains("maxlength=\"@Diten.Web.Models.Governance.RoleEditViewModel.DisplayNameMaxLength\"", form, StringComparison.Ordinal);
+        Assert.Contains("maxlength=\"@Diten.Web.Models.Governance.RoleEditViewModel.DescriptionMaxLength\"", form, StringComparison.Ordinal);
+        Assert.DoesNotMatch("id=\"role(Name|DisplayName|Description)\"[^>]*maxlength=\"\\d", form); // no literal on the limited fields
+
+        // …and the validator refuses exactly beyond those limits.
+        var validator = new CreateRoleCommandValidator();
+        Assert.True(validator.Validate(new CreateRoleCommand(new string('n', RoleFieldLimits.NameMaxLength), new string('d', RoleFieldLimits.DisplayNameMaxLength), null)).IsValid);
+        Assert.Contains(validator.Validate(new CreateRoleCommand(new string('n', RoleFieldLimits.NameMaxLength + 1), "d", null)).Errors, e => e.ErrorCode == RoleErrorCodes.NameTooLong);
+        Assert.Contains(validator.Validate(new CreateRoleCommand("n", new string('d', RoleFieldLimits.DisplayNameMaxLength + 1), null)).Errors, e => e.ErrorCode == RoleErrorCodes.DisplayNameTooLong);
+    }
+
+    // FIX2 item 7 — the limit is also a NUMBER inside sentences: the three "too long" sentences of the Roles screen in
+    // seven languages (21 sentences) and the validators' own fallback sentences. Each must say the limit that is
+    // enforced, so a changed limit cannot leave a sentence behind.
+    [Fact]
+    public void Every_too_long_sentence_says_the_limit_that_is_enforced()
+    {
+        var limits = new Dictionary<string, int>(StringComparer.Ordinal)
+        {
+            ["ErrorRoleNameTooLong"] = RoleFieldLimits.NameMaxLength,
+            ["ErrorRoleDisplayNameTooLong"] = RoleFieldLimits.DisplayNameMaxLength,
+            ["ErrorRoleDescriptionTooLong"] = RoleFieldLimits.DescriptionMaxLength
+        };
+        var roles = Screens.Single(s => s.Folder == "Roles");
+        foreach (var language in Languages)
+        {
+            var values = ResxValues(roles, language);
+            foreach (var (key, limit) in limits)
+            {
+                var numbers = Regex.Matches(values[key], @"\d+").Select(m => int.Parse(m.Value)).ToList();
+                Assert.True(numbers.SequenceEqual([limit]),
+                    $"RolesIndex.{language}.resx {key} says [{string.Join(", ", numbers)}], the limit is {limit}: \"{values[key]}\"");
+            }
+        }
+
+        var create = new CreateRoleCommandValidator().Validate(new CreateRoleCommand(
+            new string('n', RoleFieldLimits.NameMaxLength + 1), new string('d', RoleFieldLimits.DisplayNameMaxLength + 1), new string('x', RoleFieldLimits.DescriptionMaxLength + 1)));
+        Assert.Contains(RoleFieldLimits.NameMaxLength.ToString(), create.Errors.Single(e => e.ErrorCode == RoleErrorCodes.NameTooLong).ErrorMessage);
+        Assert.Contains(RoleFieldLimits.DisplayNameMaxLength.ToString(), create.Errors.Single(e => e.ErrorCode == RoleErrorCodes.DisplayNameTooLong).ErrorMessage);
+        Assert.Contains(RoleFieldLimits.DescriptionMaxLength.ToString(), create.Errors.Single(e => e.ErrorCode == RoleErrorCodes.DescriptionTooLong).ErrorMessage);
+    }
+
+    // FIX2 item 6 — PUT api/roles/{id} had no validator at all.
+    [Theory]
+    [InlineData("", null, RoleErrorCodes.DisplayNameRequired)]
+    [InlineData("   ", null, RoleErrorCodes.DisplayNameRequired)]
+    public void The_update_validator_refuses_a_blank_display_name(string displayName, string? description, string code)
+    {
+        var result = new UpdateRoleCommandValidator().Validate(new UpdateRoleCommand(Guid.NewGuid(), displayName, description));
+
+        Assert.Contains(result.Errors, e => e.ErrorCode == code);
+    }
+
+    [Fact]
+    public void The_update_validator_enforces_the_same_limits_as_create()
+    {
+        var validator = new UpdateRoleCommandValidator();
+        var atLimit = new UpdateRoleCommand(Guid.NewGuid(), new string('d', RoleFieldLimits.DisplayNameMaxLength), new string('x', RoleFieldLimits.DescriptionMaxLength));
+        var over = new UpdateRoleCommand(Guid.NewGuid(), new string('d', RoleFieldLimits.DisplayNameMaxLength + 1), new string('x', RoleFieldLimits.DescriptionMaxLength + 1));
+
+        Assert.True(validator.Validate(atLimit).IsValid);
+        Assert.True(validator.Validate(new UpdateRoleCommand(Guid.NewGuid(), "QA", null)).IsValid); // a description is optional
+        Assert.Equal(
+            new[] { RoleErrorCodes.DescriptionTooLong, RoleErrorCodes.DisplayNameTooLong },
+            validator.Validate(over).Errors.Select(e => e.ErrorCode).OrderBy(c => c));
+    }
+
+    // The validators run in the MediatR pipeline only if they are registered: both are found by the assembly scan.
+    [Fact]
+    public void Both_role_validators_are_in_the_assembly_the_pipeline_scans()
+    {
+        var found = typeof(CreateRoleCommandValidator).Assembly.GetTypes()
+            .Where(t => !t.IsAbstract && t.BaseType is { IsGenericType: true } b && b.GetGenericTypeDefinition() == typeof(FluentValidation.AbstractValidator<>))
+            .Select(t => t.BaseType!.GetGenericArguments()[0])
+            .ToHashSet();
+
+        Assert.Contains(typeof(CreateRoleCommand), found);
+        Assert.Contains(typeof(UpdateRoleCommand), found);
+    }
+
+    [Fact]
+    public void A_description_over_the_limit_is_tagged_ROLE_DESCRIPTION_TOO_LONG_on_create()
+    {
+        var result = new CreateRoleCommandValidator().Validate(new CreateRoleCommand("reviewers", "Reviewers", new string('x', RoleFieldLimits.DescriptionMaxLength + 1)));
+
+        Assert.Contains(result.Errors, e => e.ErrorCode == RoleErrorCodes.DescriptionTooLong);
+    }
+
+    [Theory]
+    [InlineData("", "Reviewers", RoleErrorCodes.NameRequired)]
+    [InlineData("123456789012345678901234567890123456789012345678901", "Reviewers", RoleErrorCodes.NameTooLong)]
+    [InlineData("reviewers", "", RoleErrorCodes.DisplayNameRequired)]
+    public void The_create_validator_tags_each_failure_with_its_code(string name, string displayName, string code)
+    {
+        var result = new CreateRoleCommandValidator().Validate(new CreateRoleCommand(name, displayName, null));
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorCode == code);
+    }
+
+    [Fact]
+    public void A_display_name_over_100_characters_is_tagged_ROLE_DISPLAY_NAME_TOO_LONG()
+    {
+        var result = new CreateRoleCommandValidator().Validate(new CreateRoleCommand("reviewers", new string('x', 101), null));
+
+        Assert.Contains(result.Errors, e => e.ErrorCode == RoleErrorCodes.DisplayNameTooLong);
+    }
+
+    private static Dictionary<string, string> ResxValues(Screen screen, string language)
+        => XDocument.Load(Web("Resources", "Views", "Governance", screen.Folder, $"{screen.ResxClass}.{language}.resx")).Root!
+            .Elements("data")
+            .Where(d => d.Attribute("name") is not null)
+            .ToDictionary(d => (string)d.Attribute("name")!, d => d.Element("value")?.Value ?? string.Empty, StringComparer.Ordinal);
+
+    private static string Web(params string[] parts) => Path.Combine([RepoRoot(), "frontend", "Diten.Web", .. parts]);
+
+    private static string RepoRoot()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null)
+        {
+            if (Directory.Exists(Path.Combine(dir.FullName, "frontend", "Diten.Web", "Resources"))) return dir.FullName;
+            dir = dir.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate the repo root (frontend/Diten.Web/Resources) from the test output directory.");
+    }
+}

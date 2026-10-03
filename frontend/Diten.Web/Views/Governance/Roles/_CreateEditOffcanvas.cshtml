@@ -26,7 +26,7 @@
                        reason is the same one the hint below states: this string is the key, and it does not change. *@
                     <div class="diten-field">
                         <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
-                        <input type="text" id="roleName" name="Name" class="form-control" maxlength="64" placeholder="@Localizer["NamePlaceholder"]" required />
+                        <input type="text" id="roleName" name="Name" class="form-control" maxlength="@Diten.Web.Models.Governance.RoleEditViewModel.NameMaxLength" placeholder="@Localizer["NamePlaceholder"]" required />
                     </div>
                     @* KEPT. The golden reference has no counterpart for this hint, which is not a reason to drop it:
                        it is the only place the user is told the name cannot be changed later. *@
@@ -42,7 +42,7 @@
                        two adjacent "name" fields legible as two different things. *@
                     <div class="diten-field">
                         <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
-                        <input type="text" id="roleDisplayName" name="DisplayName" class="form-control" maxlength="128" placeholder="@Localizer["DisplayNamePlaceholder"]" required />
+                        <input type="text" id="roleDisplayName" name="DisplayName" class="form-control" maxlength="@Diten.Web.Models.Governance.RoleEditViewModel.DisplayNameMaxLength" placeholder="@Localizer["DisplayNamePlaceholder"]" required />
                     </div>
                     <div class="invalid-feedback"></div>
                 </div>
@@ -52,7 +52,7 @@
                     @* --top: a four-row textarea would otherwise wear its glyph beside line three, pointing at nothing. *@
                     <div class="diten-field">
                         <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
-                        <textarea id="roleDescription" name="Description" class="form-control" rows="4" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
+                        <textarea id="roleDescription" name="Description" class="form-control" rows="4" maxlength="@Diten.Web.Models.Governance.RoleEditViewModel.DescriptionMaxLength" placeholder="@SharedLocalizer["DescriptionPlaceholder"]"></textarea>
                     </div>
                 </div>
             </div>

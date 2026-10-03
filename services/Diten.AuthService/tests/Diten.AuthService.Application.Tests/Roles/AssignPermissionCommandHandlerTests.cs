@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Tests.Testing;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Roles.Commands;
@@ -12,6 +13,38 @@ namespace Diten.AuthService.Application.Tests.Roles;
 // the guard is assign-only (revoke stays unguarded, covered by RevokePermissionCommandHandlerTests).
 public sealed class AssignPermissionCommandHandlerTests
 {
+    // CT 4a — the race the check cannot see: the role did not hold the permission when the handler looked, and the
+    // unique index refused the insert a moment later. Same coded 409 as the ordinary "already granted", not a 500.
+    [Fact]
+    public async Task When_the_unique_index_refuses_the_insert_the_answer_is_ROLE_PERMISSION_ALREADY_GRANTED()
+    {
+        var rolePerms = new FakeRolePermissionRepository { IndexRefuses = true };
+        var version = new FakeRoleAssignmentVersionService();
+        var handler = CreateHandler(Role(), TenantPermission(), rolePerms, version, platformContext: false);
+
+        var result = await handler.Handle(new AssignPermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(Diten.AuthService.Application.Features.Roles.RoleErrorCodes.PermissionAlreadyGranted, Assert.Single(result.ErrorCodes).Code);
+        Assert.Equal(0, version.IncrementCount); // nothing was granted: no snapshot is invalidated
+    }
+
+    [Fact]
+    public async Task A_permission_the_role_already_holds_is_refused_before_any_write()
+    {
+        var rolePerms = new FakeRolePermissionRepository { AlreadyHeld = RolePermission.ManualGrant(RoleId, PermissionId, TenantId, "someone") };
+        var version = new FakeRoleAssignmentVersionService();
+        var handler = CreateHandler(Role(), TenantPermission(), rolePerms, version, platformContext: false);
+
+        var result = await handler.Handle(new AssignPermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(Diten.AuthService.Application.Features.Roles.RoleErrorCodes.PermissionAlreadyGranted, Assert.Single(result.ErrorCodes).Code);
+        Assert.Null(rolePerms.Assigned);
+        Assert.Equal(0, version.IncrementCount);
+    }
+
     private static readonly Guid TenantId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid RoleId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
     private static readonly Guid PermissionId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
@@ -169,7 +202,7 @@ public sealed class AssignPermissionCommandHandlerTests
             rolePerms,
             version,
             tenantContext,
-            new NoOpRbacAuditRecorder(),
+            RoleAuditForTests.Over(new NoOpRbacAuditRecorder()),
             new FakeCurrentUser(authenticated ? ActorId : null));
     }
 
@@ -204,14 +237,20 @@ public sealed class AssignPermissionCommandHandlerTests
         public (Guid roleId, Guid permissionId, Guid tenantId)? AssignedCall { get; private set; }
         public RolePermission? Assigned { get; private set; }
 
+        /// <summary>The unique (role, permission, tenant) index refuses the insert — what the real repository throws.</summary>
+        public bool IndexRefuses { get; init; }
+        public RolePermission? AlreadyHeld { get; init; }
+
         public Task AssignAsync(RolePermission rolePermission, CancellationToken ct)
         {
+            if (IndexRefuses)
+                throw new Diten.AuthService.Application.Common.Exceptions.DuplicateRolePermissionException(rolePermission.RoleId, rolePermission.PermissionId, new InvalidOperationException("E11000"));
             AssignedCall = (rolePermission.RoleId, rolePermission.PermissionId, rolePermission.TenantId);
             Assigned = rolePermission;
             return Task.CompletedTask;
         }
 
-        public Task<IReadOnlyList<RolePermission>> GetByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IReadOnlyList<RolePermission>> GetByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyList<RolePermission>>(AlreadyHeld is null ? [] : [AlreadyHeld]);
         public Task<IEnumerable<string>> GetPermissionsByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task<IEnumerable<string>> GetPermissionsByRolesAsync(List<Guid> roleIds, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task RevokeAsync(Guid roleId, Guid permissionId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();

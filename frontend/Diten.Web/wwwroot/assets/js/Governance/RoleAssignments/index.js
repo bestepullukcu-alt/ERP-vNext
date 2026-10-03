@@ -102,6 +102,9 @@ const RoleAssignments = (function () {
         els.alert.classList.remove('d-none');
     };
     const clearError = () => els.alert?.classList.add('d-none');
+    // WP-ROLES-CLOSE-01 — a refusal tagged with a stable code is said in the reader's language (shared/diten-refusal.js).
+    const ERROR_CODE_KEYS = { ROLE_ACTOR_REQUIRED: 'ErrorRoleActorRequired', ROLE_NOT_FOUND: 'ErrorRoleNotFound', ROLE_PERMISSION_NOT_TENANT_ASSIGNABLE: 'ErrorRolePermissionNotTenantAssignable', ROLE_PERMISSION_ALREADY_GRANTED: 'ErrorRolePermissionAlreadyGranted', ROLE_PERMISSION_GRANT_MANAGED: 'ErrorRolePermissionGrantManaged' };
+    const refusalText = (json) => window.DitenRefusal.message(json, ERROR_CODE_KEYS, L, 'RoleAssignments');
 
     const unwrap = (json) => {
         if (json?.data?.data !== undefined) return json.data.data;
@@ -625,7 +628,7 @@ const RoleAssignments = (function () {
         clearError();
         try {
             const json = await postForm('/RoleAssignments/assign', currentRoleId, perm.id);
-            if (!json.success) { showError((json.errors || [])[0]); return; }
+            if (!json.success) { showError(refusalText(json)); return; }
             window.showToast?.(L.RecordCreated, 'success');
             await loadRolePermissions(currentRoleId);
             renderList();
@@ -638,7 +641,7 @@ const RoleAssignments = (function () {
             clearError();
             try {
                 const json = await postForm('/RoleAssignments/revoke', currentRoleId, perm.id);
-                if (!json.success) { showError((json.errors || [])[0]); return; }
+                if (!json.success) { showError(refusalText(json)); return; }
                 window.showToast?.(L.RecordDeleted, 'success');
                 await loadRolePermissions(currentRoleId);
                 renderList();

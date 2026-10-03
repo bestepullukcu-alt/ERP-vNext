@@ -6,15 +6,49 @@ namespace Diten.Web.Models.Governance;
 // contract; backed by AuthService /api/roles via the gateway.
 public sealed class RoleEditViewModel
 {
+    // WP-ROLES-CLOSE-01 — AuthService's limits (RoleFieldLimits) and refusal codes (RoleErrorCodes), restated here
+    // because this project cannot reference that one; RoleErrorCodeContractTests (AuthService tests) reads this file
+    // and holds both equal. The form's `maxlength` reads these two constants — there is no third copy.
+    public const int NameMaxLength = 50;
+    public const int DisplayNameMaxLength = 100;
+    public const int DescriptionMaxLength = 500;
+
+    public const string NameRequiredCode = "ROLE_NAME_REQUIRED";
+    public const string NameTooLongCode = "ROLE_NAME_TOO_LONG";
+    public const string DisplayNameRequiredCode = "ROLE_DISPLAY_NAME_REQUIRED";
+    public const string DisplayNameTooLongCode = "ROLE_DISPLAY_NAME_TOO_LONG";
+    public const string DescriptionTooLongCode = "ROLE_DESCRIPTION_TOO_LONG";
+
     public Guid? Id { get; set; }
 
-    [Required]
-    public string Name { get; set; } = string.Empty;
+    // No [Required] here on purpose: a bare attribute answers with the framework's English sentence. The form's own
+    // rules are ValidationCodes() below — the same codes AuthService's validator uses, said in the reader's language.
+    public string? Name { get; set; }
 
-    [Required]
-    public string DisplayName { get; set; } = string.Empty;
+    public string? DisplayName { get; set; }
 
     public string? Description { get; set; }
+
+    /// <summary>
+    /// Every rule the posted form breaks, as the stable codes the screen already has a sentence for in seven
+    /// languages. All of them, not the first: a form with two mistakes says both.
+    /// </summary>
+    public IReadOnlyList<string> ValidationCodes()
+    {
+        var codes = new List<string>();
+        var name = Name?.Trim() ?? string.Empty;
+        var displayName = DisplayName?.Trim() ?? string.Empty;
+
+        if (name.Length == 0) codes.Add(NameRequiredCode);
+        else if (name.Length > NameMaxLength) codes.Add(NameTooLongCode);
+
+        if (displayName.Length == 0) codes.Add(DisplayNameRequiredCode);
+        else if (displayName.Length > DisplayNameMaxLength) codes.Add(DisplayNameTooLongCode);
+
+        if ((Description?.Length ?? 0) > DescriptionMaxLength) codes.Add(DescriptionTooLongCode);
+
+        return codes;
+    }
 }
 
 public sealed class RoleDetailViewModel

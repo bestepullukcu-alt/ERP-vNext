@@ -8,6 +8,7 @@
 auth.roles.assign-permission,0
 auth.roles.create,0
 auth.roles.delete,0
+auth.roles.export,0
 auth.roles.read,0
 auth.roles.update,0
 auth.users.assign-role,0

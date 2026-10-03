@@ -94,4 +94,19 @@
   <data name="ActionVerb_Move" xml:space="preserve"><value>نقل</value></data>
   <data name="ActionVerb_Start" xml:space="preserve"><value>بدء</value></data>
   <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>عرض سلسلة الإدارة</value></data>
+  <data name="ErrorRoleActorRequired" xml:space="preserve">
+    <value>تعذّر التحقق من جلستك. سجّل الدخول من جديد ثم أعد المحاولة.</value>
+  </data>
+  <data name="ErrorRoleNotFound" xml:space="preserve">
+    <value>هذا الدور لم يعد موجودًا. حدّث الصفحة.</value>
+  </data>
+  <data name="ErrorRolePermissionNotTenantAssignable" xml:space="preserve">
+    <value>هذا الإذن مخصّص لإدارة المنصة ولا يمكن منحه لدور.</value>
+  </data>
+  <data name="ErrorRolePermissionGrantManaged" xml:space="preserve">
+    <value>هذا الإذن يأتي مع الدور أو مع إحدى وحدات اشتراكك، ولذلك لا يمكن إزالته من هنا.</value>
+  </data>
+  <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
+    <value>الدور يملك هذا الإذن بالفعل. حدّث الصفحة.</value>
+  </data>
 </root>
