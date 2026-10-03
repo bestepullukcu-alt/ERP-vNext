@@ -273,6 +273,9 @@
   <data name="Details" xml:space="preserve">
     <value>Детали</value>
   </data>
+  <data name="Close" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
   <data name="BackToList" xml:space="preserve">
     <value>Назад к списку</value>
   </data>
@@ -799,4 +802,9 @@
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Типы совещаний</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>У вас нет доступа к разделу «{0}»</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Попросите администратора предоставить вам доступ к этой странице.</value></data>
+  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Исполнение цепочки поставок</value></data>
+  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Управление перевозчиками</value></data>
+  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Перевозчики</value></data>
+  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Отслеживание отгрузок и подтверждение доставки</value></data>
+  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Отгрузки</value></data>
 </root>

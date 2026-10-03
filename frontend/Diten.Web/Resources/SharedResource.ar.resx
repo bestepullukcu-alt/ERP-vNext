@@ -273,6 +273,9 @@
   <data name="Details" xml:space="preserve">
     <value>التفاصيل</value>
   </data>
+  <data name="Close" xml:space="preserve">
+    <value>إغلاق</value>
+  </data>
   <data name="BackToList" xml:space="preserve">
     <value>العودة إلى القائمة</value>
   </data>
@@ -799,4 +802,9 @@
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>أنواع الاجتماعات</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>ليس لديك حق الوصول إلى {0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>اطلب من المسؤول منحك صلاحية الوصول إلى هذه الصفحة.</value></data>
+  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>تنفيذ سلسلة الإمداد</value></data>
+  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>إدارة شركات النقل</value></data>
+  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>شركات النقل</value></data>
+  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>تتبع الشحنات وإثبات التسليم</value></data>
+  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>الشحنات</value></data>
 </root>

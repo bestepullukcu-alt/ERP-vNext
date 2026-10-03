@@ -273,6 +273,9 @@
   <data name="Details" xml:space="preserve">
     <value>Detalles</value>
   </data>
+  <data name="Close" xml:space="preserve">
+    <value>Cerrar</value>
+  </data>
   <data name="BackToList" xml:space="preserve">
     <value>Volver a la lista</value>
   </data>
@@ -800,4 +803,9 @@
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Tipos de reunión</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>No tienes acceso a {0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Solicita a tu administrador que te conceda acceso a esta página.</value></data>
+  <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Ejecución de la cadena de suministro</value></data>
+  <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestión de transportistas</value></data>
+  <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transportistas</value></data>
+  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Seguimiento de envíos y comprobante de entrega</value></data>
+  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Envíos</value></data>
 </root>
