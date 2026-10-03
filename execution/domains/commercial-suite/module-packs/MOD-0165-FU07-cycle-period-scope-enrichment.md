@@ -1052,8 +1052,8 @@ Actor type: tenant_user (platform_admin otomatik geçer)
 
 - Kanıt (2026-08-28, `gateway/Diten.ApiGateway/ocelot.json:2266-2300`): FU06'nın F-GATEWAY takibiyle
   eklenen route çifti **mevcuttur**:
-  - `/api/crm/cycle-periods` → `localhost:5061` (GET, POST, OPTIONS)
-  - `/api/crm/cycle-periods/{everything}` → `localhost:5061` (GET, POST, PUT, OPTIONS)
+  - `/api/crm/cycle-periods` → `localhost:5065` (GET, POST, OPTIONS)
+  - `/api/crm/cycle-periods/{everything}` → `localhost:5065` (GET, POST, PUT, OPTIONS)
 - FU07'nin **tek yeni ucu** (`/scope-options`) `{everything}` wildcard'ının **altındadır** ve **GET**'tir →
   mevcut route yeter.
 - FU07 `DELETE` veya `PATCH` **eklemediği** için mevcut method listesi de yeterlidir.
@@ -1147,7 +1147,7 @@ Actor type: tenant_user (platform_admin otomatik geçer)
     ve `_DetailsQuickView.cshtml` **SİLİNMİŞTİR** (dosya sisteminde yok).
 33. `py .antigravity/scripts/verify_datatable_page.py . --area CRM --module CyclePeriods --reference compact --api-profile proxy`
     çalıştırılır; sonuç **kaydedilir**; **beklenen N/A FAIL seti dışında** PASS (§17.1).
-34. Browser JS hiçbir yerde `5000`/`5061` portunu, Gateway URL'ini veya `Bearer` token'ı kurmaz.
+34. Browser JS hiçbir yerde `5000`/`5065` portunu, Gateway URL'ini veya `Bearer` token'ı kurmaz.
 35. Cascading seçici: `ScopeType` değişince diğer referans alanları **gizlenir ve temizlenir**;
     gizli-ama-dolu bir alan sunucuya **gönderilmez**.
 36. 7 dil RESX parite: `{ar,en,es,fr,ru,tr,zh}` aynı anahtar kümesine sahiptir; **yeni scope anahtarları

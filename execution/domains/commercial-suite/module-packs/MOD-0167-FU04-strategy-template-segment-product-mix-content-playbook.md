@@ -517,7 +517,7 @@ bu **MDM'in kararıdır**, burada değiştirilmez.
 
 ## 8. Runtime Constraints
 
-- **Servis:** `Diten.CrmService` (port **5061**), **yeni servis yaratılmaz** — bağların üçü (Segment, içerik,
+- **Servis:** `Diten.CrmService` (port **5065**), **yeni servis yaratılmaz** — bağların üçü (Segment, içerik,
   policy) zaten bu serviste; dördüncüsü (MDM) cross-service'tir.
 - **Gateway:** tüm çağrılar `:5000` üzerinden; browser JS **servis portuna gitmez** (same-origin MVC proxy).
 - **Soft delete:** `DELETE` ve `PATCH` **yoktur** — kaldırma = archive; archived kayıt update kabul etmez (**409**).
@@ -931,8 +931,8 @@ Bu, fail-closed'ın doğru davranışıdır ama **operatör aksiyonu gerektirir*
 Gerekli çiftler (`segments` bloğu birebir şablon; `OPTIONS` **dâhil**):
 
 ```text
-/api/crm/strategy-templates                 ↔ 5061   (GET, POST, OPTIONS)
-/api/crm/strategy-templates/{everything}    ↔ 5061   (GET, POST, PUT, OPTIONS)
+/api/crm/strategy-templates                 ↔ 5065   (GET, POST, OPTIONS)
+/api/crm/strategy-templates/{everything}    ↔ 5065   (GET, POST, PUT, OPTIONS)
 ```
 
 **MDM tarafı — RAPOR (F-GATEWAY-SKU): ek route GEREKMEZ.** Bu pack `ocelot.json`'ı okudu ve şu çiftlerin
@@ -951,7 +951,7 @@ Gerekli çiftler (`segments` bloğu birebir şablon; `OPTIONS` **dâhil**):
 
 - `ocelot.json` **protected path**'tir; **bu pack yazmaz** (§6). CRM çifti ayrı bir `integration-agent` task'ıdır
   → **§20/F-GATEWAY-STRATEGY**.
-- Frontend (5001) **doğrudan 5061'e gitmez**; `frontend/Diten.Web/Controllers/CRM/StrategyTemplatesController.cs`
+- Frontend (5001) **doğrudan 5065'e gitmez**; `frontend/Diten.Web/Controllers/CRM/StrategyTemplatesController.cs`
   same-origin proxy'dir. Proxy'nin forward'ı **204/205/304/1xx için gövdesiz** dönmelidir
   (`proxy-forward-204-content-length-crash`) — `archive`/`activate` 204 dönebilir.
 - **Kabul kapısı:** CRM route eklenmeden authenticated smoke (§17.3) çalıştırılmaz; 404 + `{}` görülürse

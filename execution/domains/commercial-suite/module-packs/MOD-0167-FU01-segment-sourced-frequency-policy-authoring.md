@@ -189,7 +189,7 @@ visit execution · GPS/check-in/check-out · visit report · digital detailing �
 implementation · Brand/Product master implementation · Account/Contact mutation · ContactAvailability mutation ·
 territory mutation · `ContactTerritoryAssignment` · patient data · workflow approval · ChangeRequest · MOD-0023
 entegrasyonu · evidence pack · import/export yeni scope · hard delete · Mongo hand-edit · RBAC seed/grant ·
-MOD-0048 publish · registry satırı yazımı · `TenantId` payload'da · doğrudan `5061` business API çağrısı.
+MOD-0048 publish · registry satırı yazımı · `TenantId` payload'da · doğrudan `5065` business API çağrısı.
 
 ---
 

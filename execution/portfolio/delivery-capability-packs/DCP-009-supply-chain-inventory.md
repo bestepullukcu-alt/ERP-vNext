@@ -100,3 +100,69 @@ External-integration adapter (DEC-INV-19) · special-stock/ownership (P2) · mat
 
 ## 20. Audit and reconciliation notes
 DCP-002 preflight: MOD-0173/0174/0178 exit 0 (proven). Registry rows added 2026-09-11 (identity-only). Reconciliation `reconciled` statüsünde doldurulacak. Contract'lar `docs/analysis/contracts/` — frozen-ready, owner+consumer review pending.
+
+## 21. Follow-up — Supply Chain module self-registration foundation
+
+Approved: `docs/records/decisions/2026-09/mvp6-self-registration-patches-signoff-owner-decision-01.md`
+
+**Authority:** `docs/records/decisions/2026-09/mvp6-self-registration-design-owner-decision-01.md` (D1–D5 = A; design for pack/DCP preparation only).
+**Design package:** [`mvp6-self-registration-prep-01`](../../../docs/roadmap/plans/mvp6-self-registration-prep-01/README.md) (MANIFESTS.md, NAV-L10N-KEYS.tsv, TEST-PLAN.md, OWNED-PATHS.md, EFFORT.md).
+**Standard:** `.antigravity/rules/module-self-registration-standard.md`. Answers compliance finding AG-01: `services/Diten.SupplyChainService` has no `ModuleManifestProvider`.
+
+This section is a **specification**. It authorizes no code, `Program.cs`, `.csproj`, appsettings, `SharedResource`, Platform or gateway change, no new permission key or ID, and no commit, push or stash. Code belongs to the single CT-appointed integration owner once an integrated target (Q14/Q15) exists.
+
+### 21.1 Identity (D3 = A)
+
+| Field | Value |
+|---|---|
+| Domain | `SupplyChainExecution` (new in the Platform catalog; `Nav.Domain.SUPPLYCHAINEXECUTION` becomes mandatory with the first provider) |
+| Service | `DitenSupplyChainService` |
+| ModuleCodes | `shipment-tracking-pod` (MOD-0183) · `carrier-management` (MOD-0184) · `routing-load-planning` (MOD-0185) · `reverse-logistics` (MOD-0186) · `claims-management` (MOD-0187) · `sop-workflow-signoffs` (MOD-0190) · `capacity-planning` (MOD-0192) |
+| Common manifest values | `ModuleVersion` `1.0.0`, `IsTenantAssignable` true, `IsBaseline` false; every RoutePath starts with `/SupplyChain/` → Tenant scope |
+| Excluded | None. MOD-0190 S&OP and MOD-0192 Capacity were excluded (no UI scope, no manifest) until their UI scope (pack §23) and self-registration (pack §24) were approved: `docs/records/decisions/2026-09/mvp6-sop-capacity-ui-pack-signoff-owner-decision-01.md` (SHA-256 `37f3ff0d08f52391e2f8e605917874c41146b1eba91e928f4b65b2fb18f80bea`). The design package `MANIFESTS.md` predates this and is not changed; for these two modules the pack §24 controls. |
+
+Each module's pages, actions, permission keys and nav keys are defined in that module pack's "Self-registration" section, not here.
+
+### 21.2 Shared foundation (one capability-level item, single integration owner)
+
+| Part | Path (repo-relative, proposed) | Specification |
+|---|---|---|
+| Manifest interface | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/IModuleManifestProvider.cs` | Returns one `ModuleManifestDocument` (from `Diten.BuildingBlocks.ModuleRegistration.Abstractions`) per module |
+| Options | `…/ModuleRegistration/PlatformRegistrationOptions.cs` | `SectionName = "PlatformRegistration"`; `BaseUrl`, `InternalApiKey`. No per-service credential fields (D2 = A) |
+| Registration hosted service | `…/ModuleRegistration/ModuleRegistrationHostedService.cs` | On start, POSTs every registered provider's manifest to Platform `/api/internal/module-catalog/register-manifest` with header `X-Internal-Api-Key` (existing legacy path, checked against `AuthService:InternalApiKey`; no Platform change). Fails closed (log, no request) when `BaseUrl` or key is empty; never blocks startup; 5xx / connection refused → retry with backoff through a testable delay seam; 4xx → stop; one provider's failure does not block the others. Pattern: MDM / DevEnablement services and the unapproved Carrier candidate |
+| Project reference (SPECIFICATION only) | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj` (preimage in the common checkout `538e96c6…`) | `<ProjectReference Include="../../../Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj" />` |
+| `Program.cs` lines (SPECIFICATION only) | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs` (common checkout `7fdb5ef0…` is an older baseline; the preimage is re-taken from the integrated target) | `builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));` · one `builder.Services.AddSingleton<IModuleManifestProvider, …ManifestProvider>();` per **shipped** module (§21.4) · `builder.Services.AddHostedService<ModuleRegistrationHostedService>();` — each line exactly once |
+| Settings (SPECIFICATION only) | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/appsettings.json` (`8bd8b168…`) | `"PlatformRegistration": { "BaseUrl": "", "InternalApiKey": "" }` — empty in the base file, local values only in a Development file, no secret committed |
+| Hosted-service tests | `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/ModuleRegistrationHostedServiceTests.cs` | F-01…F-06 below |
+
+### 21.3 Foundation tests (TEST-PLAN.md §1)
+
+| ID | Pass condition |
+|---|---|
+| F-01 | With N registered providers, exactly N POSTs to `/api/internal/module-catalog/register-manifest`, one per ModuleCode |
+| F-02 | Missing `BaseUrl` or key: no request, a warning is logged, startup is not blocked |
+| F-03 | Provider 1 gets 500×5 and provider 2 gets 200 → provider 2 is still registered |
+| F-04 | 5xx / connection refused → retry with backoff (fake delay); 4xx → stop without retry |
+| F-05 | `X-Internal-Api-Key` present; no credential headers (D2 = A) |
+| F-06 | The host resolves every provider and the hosted service; the `Program.cs` lines exist exactly once |
+
+Shared guards and reconcile-state tests that land with the first module (integration owner): W-01 view routes derived from `SupplyChain*Controller`, W-02 Razor `Perms.Has` keys = manifest keys (minus the allow-listed conjunction keys), W-03 existing `NavManifestL10nGuardTests` green without edits, W-04 cross-module uniqueness; R-01 Platform reconcile fixture (push A then B → pruned), R-02 runtime restart idempotence, R-03 409 `MODULE_MANAGED_BY_CODE`, R-04 nav smoke in 7 cultures. No module counts as closed without them.
+
+### 21.4 Ship rule (D4 = A) and sequencing
+
+- The foundation lands with the **first** module whose UI reaches the integrated target, together with `Nav.Domain.SUPPLYCHAINEXECUTION` in all seven languages.
+- Each provider, its `AddSingleton` line and its `Nav.Module.*` / `Nav.Page.*` keys ship **with that module's UI**, never ahead of it: `NavManifestL10nGuardTests` parses every `*ManifestProvider.cs` under `services/`, so a provider without its keys fails `dotnet test`, and a provider without its UI registers dead routes that reconcile would later prune.
+- MOD-0185 ships only after the Loads UI is approved and built.
+- Effort reference: 38 / 70 / 127 person-hours (O/M/P, D2 = A; EFFORT.md). Not yet in the CT effort ledger.
+
+### 21.5 Open gaps (carried, not solved)
+
+1. UI source is not in the common checkout (Shipment in the A12 successor archive; Carrier v2 source not archived; Loads HELD; Returns/Claims approved, not built).
+2. `ReturnPermissions.cs` and `ClaimPermissions.cs` exist only in the accepted isolated source.
+3. Returns target keys are MAP-ONLY (`ReturnPermissions.ForTarget`); D5 = A — tests reflect the mapping, no Returns backend change.
+4. The single-key action model cannot express the `supplychain.returns.transition` and `supplychain.shipments.read` (G-SHIPREAD) conjunctions; the backend and UI keep enforcing them.
+5. The Shipment RoutePath keeps the `:guid` constraint verbatim; the platform normalizer's handling is confirmed by R-01.
+6. Supply Chain is a new domain in the Platform catalog.
+7. Guard coupling: a provider merged without its seven-language keys fails `NavManifestL10nGuardTests`.
+8. Reference inconsistencies noted, not changed: `GoldenSlimManifestProvider` uses the uppercase ModuleCode `GOLDENSLIM`; `add-module.md` names `NavL10nContractTests`.
+9. Runtime tests R-02…R-04 need a native executor and the integrated target (Q14/Q15).

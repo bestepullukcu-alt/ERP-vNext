@@ -149,3 +149,43 @@ ikisi de **kod içindeydi** — bir Python kapısı ve bir CSS yorumu.
 
     # §4 — olu md bagi
     grep -rho '](\S*\.md)' docs --include='*.md' | sed 's/](//;s/)//' | sort -u
+
+
+## Candidate rule — exact legacy authority and immutable evidence
+
+This amendment has NO effect until an explicit owner decision is bound to the exact
+`docs/reference/architecture/docs-path-authority.json` payload and the implementation diff.
+The candidate manifest is UNAPPROVED; installing this candidate must remain red.
+
+The five-folder policy, code scan extensions, traversal and presence checks remain in force.
+No folder wildcard or blanket records exclusion is permitted. An approved disposition may
+classify an exact SHA-256-sealed input as active-tool, historical-data (.json), or historical-tool (.py).
+Historical tools are immutable completed-candidate/verifier scripts, not runnable current-canonical dependencies;
+they have no canonical targets and remain under records. Every disposition
+must identify a byte-verified provenance file and the exact line linking its path and hash.
+Active tools must resolve all registered canonical dependencies by exact path and SHA-256.
+Historical hashes describe the earlier snapshot, not today's canonical content; never rewrite them.
+Historical-tool seals require exact file SHA-256 and records provenance; they grant no execution or publication authority.
+
+The machine-readable authority record is schema-validated (unknown fields/duplicate keys rejected),
+read and scanned as part of the same inventory. Only its validated structured path fields may
+represent legacy paths. A decision must bind the exact canonicalTargets + sealedInputs payload,
+state APPROVED, and record the accountable owner and decision ID. This checks record integrity,
+not the authenticity of a human signature; CT must establish the human authorization separately.
+Synthetic decisions are accepted only by isolated test fixtures, never the repository entrypoint.
+
+Missing files, symlinks/reparse points, path traversal, wildcards, wrong hashes, unknown source
+files, changed evidence, stale dispositions and missing/invalid approval records fail closed.
+Any new path/content requires a newly reviewed disposition; an existing record is not a waiver
+for future changes. Existing immutable evidence/manifests/contracts remain byte-identical.
+
+## R2 exact recovery snapshot disposition (requires new owner approval)
+
+Only the following historical-data seals may remain outside records:
+- `docs/roadmap/plans/mod-0183-root-uptake-recovery-01/input-manifest.json`, SHA256 `a70f79d7892d83ddbe772653a06cb009ebfe7e2b72549d11dd956f72ab9f83fe`.
+- `docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json`, SHA256 `74e31359aaeb662645d224d9602cb801f8f81a433cc75cf09840d852fd2e878e`.
+
+These are exact immutable snapshots, not a roadmap prefix exemption. Existing
+records-only provenance, approved payload binding, source hash, empty historical
+targets, inventory consumption and every other fail-closed check still apply.
+Changing either path or byte content requires a new reviewed rule and payload.

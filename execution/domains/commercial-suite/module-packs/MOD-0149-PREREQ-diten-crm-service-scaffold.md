@@ -55,7 +55,7 @@ ve approved/ready-for-dev pack** olmadan açılmamasını gerektirir — bu pack
 | Soft delete convention | ✅ | `IsDeleted`/`DeletedAt` taban (entity gelince kullanılacak) |
 | DI registration / appsettings / Program.cs | ✅ | MdmService/HcmService pattern'i birebir |
 | Swagger / health endpoint | ✅ | Boot doğrulaması için |
-| Local dev port | ✅ | **Öneri: 5061** (§5) |
+| Local dev port | ✅ | **Öneri: 5065** (§5) |
 | Test project (`Diten.CrmService.*.Tests`) | ✅ | boots/DI/health/tenant-guard/build smoke; **account business test YOK** |
 | Frontend account pages | ❌ | MOD-0149 implementation task'ı |
 | Gateway `/api/crm/accounts*` route | ❌ | MOD-0149 + integration-agent |
@@ -84,16 +84,16 @@ ve approved/ready-for-dev pack** olmadan açılmamasını gerektirir — bu pack
 - **Test project naming:** repo standardına göre `Diten.CrmService.Application.Tests` (+ gerekiyorsa `.Api.Tests`).
 - **Solution:** yeni projeler mevcut `.sln`'e eklenir (MdmService/HcmService referans).
 - **launchSettings / appsettings / DI:** MdmService pattern'i; `Diten.Building.Blocks` + `Diten.Platform.Contracts` referansları.
-- **Local dev port — ÖNERİ: `5061`.** Mevcut: Gateway 5000, Web 5001, Auth 5056, Platform 5057, DevEnablement 5058,
-  **Mdm 5059, Hcm 5060** (launchSettings + ocelot downstream doğrulandı). **5061 boş** ve çakışmasız.
-- **Gateway registration:** downstream base (`localhost:5061`) gerekiyorsa **integration-agent** ekler; `/api/crm/accounts*`
+- **Local dev port — ÖNERİ: `5065`.** Mevcut: Gateway 5000, Web 5001, Auth 5056, Platform 5057, DevEnablement 5058,
+  **Mdm 5059, Hcm 5060** (launchSettings + ocelot downstream doğrulandı). **5065 boş** ve çakışmasız.
+- **Gateway registration:** downstream base (`localhost:5065`) gerekiyorsa **integration-agent** ekler; `/api/crm/accounts*`
   route'ları MOD-0149 implementation'a bırakılır. Bu pack `ocelot.json` **yazmaz**.
-- **Docker/compose:** varsa fleet script'ine (`watch-diten-bg.ps1`) 5061 eklenmesi implementation/integration task notu.
+- **Docker/compose:** varsa fleet script'ine (`watch-diten-bg.ps1`) 5065 eklenmesi implementation/integration task notu.
 
 ## 6. Future Implementation Golden Flow
 
 **Golden flow:**
-1. Geliştirici `Diten.CrmService`'i lokalde başlatır (port 5061).
+1. Geliştirici `Diten.CrmService`'i lokalde başlatır (port 5065).
 2. Servis **DI/config hatası olmadan boot eder**.
 3. Health/basic endpoint beklenen host üzerinden **success** döner.
 4. `dotnet build` (yeni servis + solution) **PASS**.
@@ -109,7 +109,7 @@ ve approved/ready-for-dev pack** olmadan açılmamasını gerektirir — bu pack
 
 - [ ] `services/Diten.CrmService/src/` altında 5 katman MdmService/HcmService ile birebir folder/naming.
 - [ ] `dotnet build` yeni servis + solution PASS.
-- [ ] Servis port **5061**'de boot eder; health/basic endpoint success.
+- [ ] Servis port **5065**'de boot eder; health/basic endpoint success.
 - [ ] MediatR + 4 pipeline behavior + `Response<T>` + `CustomBaseController` kayıtlı.
 - [ ] Tenant context accessor + Mongo registration + soft-delete taban mevcut; **entity/collection YOK**.
 - [ ] Scaffold smoke testleri (boots/DI/health/tenant-guard) PASS; **account business test YOK**.
@@ -139,5 +139,5 @@ ve approved/ready-for-dev pack** olmadan açılmamasını gerektirir — bu pack
 
 - **Açık kullanıcı/EA onayı** — yeni production service scaffold açmak için zorunlu (AGENTS.md §2 / DCP-003 deseni).
 - **Adjacent service kararı (EA-TBD)** — CPQ/O2C/Service/BizDev aynı serviste mi ayrı `Diten.CommercialService` mı; MOD-0149'u bloklamaz.
-- **integration-agent** — 5061 downstream gateway registration (route'lar MOD-0149'a ait).
-- **Fleet script** — `watch-diten-bg.ps1`'e 5061 eklenmesi (implementation/integration notu).
+- **integration-agent** — 5065 downstream gateway registration (route'lar MOD-0149'a ait).
+- **Fleet script** — `watch-diten-bg.ps1`'e 5065 eklenmesi (implementation/integration notu).

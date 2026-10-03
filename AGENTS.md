@@ -84,9 +84,10 @@ module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı v
 | MDM Service | 5059 | `services/Diten.MdmService/src/Diten.MdmService.Api` |
 | HCM Service | 5060 | `services/Diten.HcmService/src/Diten.HcmService.Api` |
 | SupplyChain Service | 5061 | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api` |
+| CRM Service | 5065 | `services/Diten.CrmService/src/Diten.CrmService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
-> **Not (2026-09-11):** Mikroservis bandı 5011–5060'tan **5061'e uzatıldı** — `SupplyChain Service` (DCP-009, supply-chain-execution domain, kullanıcı onaylı). Sonraki mikroservisler 5062+ kullanır.
+> **Not:** Mikroservis bandı `5065`'e kadar uzatılmıştır. `5061`, 2026-09-11 tarihli DCP-009 kararıyla `SupplyChain Service`'e; `5065`, ayrıca onaylanan CRM port disposition kararıyla `CRM Service`'e ayrılmıştır.
 
 **Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.
 
