@@ -186,7 +186,16 @@ public sealed class PhysicalEntitlementTransactionalArchitectureTests
         Assert.DoesNotContain("CountEnabledAsync(request.TenantId", quota, StringComparison.Ordinal);
 
         var repository = ReadRepoFile("src", "Diten.Platform.Infrastructure", "Persistence", "Repositories", "TenantModuleEntitlementRepository.cs");
-        Assert.Contains("Eq(x => x.TenantId, TenantContext.TenantId)", repository, StringComparison.Ordinal);
+        // BL-500 — this line used to pin `Eq(x => x.TenantId, TenantContext.TenantId)`: the very filter that matched no
+        // row for a platform administrator (TenantContext.TenantId is Guid.Empty in the platform context) and refused
+        // every suspend / enable / expiry change as a concurrency conflict. What is pinned now is the rule itself: the
+        // write filter keeps a tenant condition taken from the row, and a tenant-scoped caller is pinned to its own
+        // tenant in all three write members. Behaviour is measured in TenantModuleEntitlementTenantGuardMongoTests.
+        Assert.DoesNotContain("Eq(x => x.TenantId, TenantContext.TenantId)", repository, StringComparison.Ordinal);
+        Assert.Contains("Eq(x => x.TenantId, entitlement.TenantId)", repository, StringComparison.Ordinal);
+        Assert.Contains("if (!TenantContext.IsPlatformContext && entitlement.TenantId != TenantContext.TenantId)", repository, StringComparison.Ordinal);
+        Assert.Contains("if (!TenantContext.IsPlatformContext && tenantId != TenantContext.TenantId)", repository, StringComparison.Ordinal);
+        Assert.Contains("if (!TenantContext.IsPlatformContext && entity.TenantId != TenantContext.TenantId)", repository, StringComparison.Ordinal);
         Assert.Contains("PlatformMongoTransactionSession.Require(session, _dbContext)", repository, StringComparison.Ordinal);
 
         var executor = ReadRepoFile("src", "Diten.Platform.Infrastructure", "Persistence", "PlatformTransactionExecutor.cs");

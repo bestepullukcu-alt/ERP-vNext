@@ -146,6 +146,14 @@ public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantM
 
     public async Task SoftDeleteAsync(IPlatformTransactionSession session, Guid tenantId, Guid entitlementId, byte[]? expectedRowVersion, CancellationToken ct = default)
     {
+        // BL-500 — the same guard as CreateAsync and UpdateAsync: a tenant-scoped caller is pinned to its own tenant
+        // BEFORE any write is attempted; a platform actor works on the tenant its route names. Without it this member
+        // trusted whatever tenant id it was handed.
+        if (!TenantContext.IsPlatformContext && tenantId != TenantContext.TenantId)
+        {
+            throw new TenantModuleEntitlementConcurrencyException();
+        }
+
         var filters = new List<FilterDefinition<TenantModuleEntitlement>>
         {
             ExecutionFilter,
@@ -210,6 +218,15 @@ public sealed class TenantModuleEntitlementRepository : GlobalRepository<TenantM
 
     [Obsolete("Authoritative entitlement mutations require an explicit Platform transaction session.")]
     public Task SoftDeleteAsync(Guid tenantId, Guid entitlementId, byte[]? expectedRowVersion, CancellationToken ct = default) =>
+        throw new PlatformTransactionUnavailableException(
+            "Sessionless physical-entitlement mutation is disabled until the caller supplies the Platform transaction session.");
+
+    /// <summary>
+    /// BL-500 — the base repository's delete-by-id: no tenant, no version, no transaction. Nothing calls it (the
+    /// interface does not expose it), and it is closed for the same reason as the three members above: an
+    /// entitlement is removed through <see cref="SoftDeleteAsync(IPlatformTransactionSession, Guid, Guid, byte[], CancellationToken)"/> or not at all.
+    /// </summary>
+    public override Task DeleteAsync(Guid id, CancellationToken ct = default) =>
         throw new PlatformTransactionUnavailableException(
             "Sessionless physical-entitlement mutation is disabled until the caller supplies the Platform transaction session.");
 
