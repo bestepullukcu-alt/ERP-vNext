@@ -7765,6 +7765,19 @@ sunucuda okunur; liste süzülür, kimlikle erişimde kapsam dışı = bulunamad
 organizasyon birimi / şirket koduyla, Oracle'da veri erişim kümeleriyle sınırlanır. Önce sahibe: canlıda partner_admin hesabı var mı?
 Gelecek regresyon riski: 🟡 (yetki katmanına dokunur).
 
+**Ölçüm (2026-10-03, tam liste — WP-PLATFORM-TENANT-MODULES-01 FIX1 raporu):** kapılar `Infrastructure/DependencyInjection.cs:91-103`
+(PlatformActor), `API/Security/HasPermissionAttribute.cs:37-38` + `~:75`, `API/Security/ClaimsActorPermissionContext.cs:38-45,57`,
+`Platform.Common/Tenancy/TenantResolutionMiddleware.cs:113-130,347-351`, gateway `Middleware/TenantResolutionMiddleware.cs:151-165,426-430`,
+`WorkItemsController.cs:302-306`, `PlatformActorDashboardAuthorization.cs:25` (Hangfire panosu partner'a açık),
+`SelfAccessExplainService.cs:23,182-184`. Veri: `PlatformAdministrator.cs:14-15` (`PartnerId`, `AllowedTenantIds`) yalnız yönetici
+CRUD'unda yazılıyor; `PartnerId` süzgeci yalnız YÖNETİCİ listesinde (`GetPlatformAdministratorsHandler.cs:24-36`); belirteçte kapsam yok
+(`Auth TokenService.cs:107-113`, `RefreshTokenCommandHandler.cs:136-141,192-195`); `EntitlementDenyReason.PartnerScopeViolation` kullanılmıyor.
+Aileler: kiracı listesi / istatistik (`Admin/TenantsController.cs:14-56`, `TenantRegistryRepository.cs:92-123`), kiracı `{id}` yolları
+(`:65-212`: düzenle, marka, askıya al, sil, toplu sil, modüller, kullanıcılar, ayarlar), abonelik (`TenantCommercialSubscriptionsController.cs`),
+modüller (`TenantModuleEntitlementsController.cs`). Testler: `HasPermissionAttributeDualReadTests.cs:86-88` sınırsız geçişi SABİTLİYOR (bu iş onu
+değiştirir); kapalılığı doğrulayanlar `TenantModuleAuthorizationHandlerTests.cs:189`, `TenantFeatureAuthorizationHandlerTests.cs:189`.
+**Şart:** bir iş ortağına Platform yönetici hesabı açılmadan önce bitmeli (sahip 2026-10-03: canlıyı yalnız kendi ekibi kullanıyor).
+
 ---
 
 ### BL-393
