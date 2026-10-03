@@ -433,17 +433,33 @@ public sealed class ApprovalStepContextTests
             dto.Actions.Single(a => a.Code == "delegate").ExcludedTargetPrincipalIds);
     }
 
-    [Theory]
-    [InlineData(false)] // the instance recorded no starter
-    [InlineData(true)]  // the delegator IS the starter — named once
-    public void Delegate_excludes_only_the_delegator_when_there_is_no_other_starter(bool startedByMe)
+    [Fact] // the instance recorded no starter
+    public void Delegate_excludes_only_the_delegator_when_there_is_no_other_starter()
     {
         var instance = Instance(null);
-        instance.StartedByUserId = startedByMe ? Me : null;
+        instance.StartedByUserId = null;
 
         var dto = _projection.Project(Approval(instance), instance, Actor(), "workflow", "1.0")!;
 
         Assert.Equal([Me.ToString()], dto.Actions.Single(a => a.Code == "delegate").ExcludedTargetPrincipalIds);
+    }
+
+    /// <summary>D2 — the reader STARTED the workflow and still sits in its seat (an instance from before D2 dropped the
+    /// starter from the candidates). The gate refuses their delegation (409 SOD_VIOLATION), so the button is not
+    /// offered; rejecting their own request stays open. (Before D2 the delegate action was offered, excluding only
+    /// the reader — the case this test's former <c>startedByMe: true</c> row pinned.)</summary>
+    [Fact]
+    public void The_starter_sitting_in_the_seat_is_not_offered_delegate_but_may_still_reject()
+    {
+        var instance = Instance(null);
+        instance.StartedByUserId = Me;
+
+        var dto = _projection.Project(Approval(instance), instance, Actor(), "workflow", "1.0")!;
+
+        var delegation = dto.Actions.Single(a => a.Code == "delegate");
+        Assert.False(delegation.Enabled);
+        Assert.Null(delegation.RequiresTargetPerson);
+        Assert.True(dto.Actions.Single(a => a.Code == "reject").Enabled);
     }
 
     [Fact]

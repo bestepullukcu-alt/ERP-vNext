@@ -5,6 +5,8 @@ using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
 
@@ -22,6 +24,7 @@ public sealed class RunWorkflowEscalationsHandler
     private readonly TimeProvider _clock;
     private readonly IPositionRepository? _positionRepository;
     private readonly WorkflowTerminalTransitionWriter _terminal;
+    private readonly ILogger<RunWorkflowEscalationsHandler> _logger;
 
     public RunWorkflowEscalationsHandler(
         IApprovalTaskRepository tasks,
@@ -34,8 +37,10 @@ public sealed class RunWorkflowEscalationsHandler
         IPositionRepository? positionRepository = null,
         IPlatformTransactionExecutor? transactions = null,
         ITransactionalIntegrationEventWriter? events = null,
-        IWorkflowTemplateRepository? templates = null)
+        IWorkflowTemplateRepository? templates = null,
+        ILogger<RunWorkflowEscalationsHandler>? logger = null)
     {
+        _logger = logger ?? NullLogger<RunWorkflowEscalationsHandler>.Instance;
         _tasks = tasks;
         _instances = instances;
         _rules = rules;
@@ -193,6 +198,19 @@ public sealed class RunWorkflowEscalationsHandler
                 return Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired);
             }
 
+            // D2 — the starter is not an escalation candidate. Nobody left: the escalation is NOT written, the task
+            // stays where it is, and the run says so (a rule that escalates only to the starter needs a person).
+            resolvedEscalationCandidates = WorkflowTaskTransitionSupport.WithoutStarter(
+                resolvedEscalationCandidates, instance.StartedByUserId, instance.StartedBy);
+            if (resolvedEscalationCandidates.Count == 0)
+            {
+                _logger.LogWarning(
+                    "Escalation of workflow task {TaskId} (instance {InstanceId}) skipped: every escalation candidate "
+                    + "is the person who started the workflow. The task stays with its current approvers.",
+                    task.Id, instance.Id);
+                return Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowNoEligibleApprover);
+            }
+
             newAssignee = resolvedEscalationCandidates[0];
             if (_assignmentSnapshotRepository is not null)
             {
@@ -269,8 +287,8 @@ public sealed class RunWorkflowEscalationsHandler
                 task.Status.ToString(),
                 previousInstanceStatus.ToString(),
                 instance.Status.ToString(),
-                WorkflowReasonCodes.WorkflowTimeoutProcessed,
-                false,
+                terminal.Replayed ? WorkflowReasonCodes.WorkflowEscalationIdempotent : WorkflowReasonCodes.WorkflowTimeoutProcessed,
+                terminal.Replayed,
                 terminal.Log!.Id);
         }
 
@@ -312,8 +330,10 @@ public sealed class RunWorkflowEscalationsHandler
             task.Status.ToString(),
             previousInstanceStatus.ToString(),
             instance.Status.ToString(),
-            reasonCode,
-            false,
+            // D2 (C1) — two runs share the system actor and the deterministic key: the run that only FOUND the other's
+            // row after "unavailable" reports a replay, so the escalation is counted once.
+            escalated.Replayed ? WorkflowReasonCodes.WorkflowEscalationIdempotent : reasonCode,
+            escalated.Replayed,
             log.Id);
     }
 

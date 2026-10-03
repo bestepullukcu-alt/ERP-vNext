@@ -278,7 +278,10 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
                 requiresConfirmation: true, requiresReason: true, supportsBulk: true, riskLevel: "elevated"),
             BuildDecision("requestInfo", ActionRequestInfoKey, WorkflowPermissions.TasksRequestInfo, actor, mayDecide,
                 requiresConfirmation: false, requiresReason: true, supportsBulk: false, riskLevel: "normal"),
-            BuildDecision("delegate", ActionDelegateKey, WorkflowPermissions.TasksDelegate, actor, mayDecide,
+            // D2 — the gate refuses a delegation by the person who started the workflow (409): the same rule here, so
+            // a starter still sitting in the seat (an instance started before D2) is not offered the button.
+            BuildDecision("delegate", ActionDelegateKey, WorkflowPermissions.TasksDelegate, actor,
+                mayDecide && !WorkflowTaskTransitionSupport.IsStarter(instance, actor.UserId.ToString("D")),
                 // BL-491 — a delegation names its person (the dispatcher refuses one that does not), and may carry a
                 // note. The two arrive together: a note box on a window that could not name anybody invited text
                 // that could never be sent.

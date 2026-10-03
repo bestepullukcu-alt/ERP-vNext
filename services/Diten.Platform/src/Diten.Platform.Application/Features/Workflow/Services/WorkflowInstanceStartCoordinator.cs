@@ -111,25 +111,38 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         var candidateSource = firstStep.CandidatePrincipalIds.Count > 0
             ? firstStep.CandidatePrincipalIds
             : WorkflowCandidateResolver.Normalize(request.CandidatePrincipalIds);
-        var candidates = await WorkflowCandidateResolver.ResolveAsync(candidateSource, _positionAssignments, _positions, ct);
-        if (candidates.Count == 0)
-        {
-            return Fail("At least one assignment candidate is required.", WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired, correlationId);
-        }
-
         var existing = await _instances.GetByIdempotencyKeyAsync(idempotencyKey, ct);
+        var storedSnapshot = existing?.InitialAssignmentSnapshotId is { } storedSnapshotId
+            ? await _snapshots.GetByIdAsync(storedSnapshotId, ct)
+            : null;
 
-        // D1-FIX1 — A REPLAY IS COMPARED IN THE SPELLING THE START WAS STORED IN. The resolver now writes a user id in
-        // one spelling. An instance started before that, from a list in another spelling (upper case, braces, no
-        // dashes, the same person twice), stored THAT list — and its fingerprint and proofs were computed over it. The
-        // fingerprint's computation is untouched; when the stored snapshot names the SAME principals, the replay uses
-        // the stored list, so it reproduces the stored fingerprint and proofs instead of a conflict.
-        if (existing?.InitialAssignmentSnapshotId is { } storedSnapshotId
-            && await _snapshots.GetByIdAsync(storedSnapshotId, ct) is { } storedSnapshot
-            && NamesTheSamePrincipals(storedSnapshot.CandidatePrincipalIds, candidates))
+        // D2 — A REPLAY TRUSTS WHAT WAS STORED. Once the start's assignment snapshot exists, its candidate list is the
+        // fact; the seat is not resolved again. (Resolving again turned a seat change between the call and its retry
+        // into a 409 for the same request — and MDM quarantines a 409.) Only a start that has no snapshot yet resolves.
+        IReadOnlyList<string> candidates;
+        if (storedSnapshot is not null)
         {
             candidates = storedSnapshot.CandidatePrincipalIds;
         }
+        else
+        {
+            var resolved = await WorkflowCandidateResolver.ResolveAsync(candidateSource, _positionAssignments, _positions, ct);
+            if (resolved.Count == 0)
+            {
+                return Fail("At least one assignment candidate is required.", WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired, correlationId);
+            }
+
+            // D2 — the delegated maker (the person the consumer starts the workflow for) is not one of its approvers.
+            candidates = WorkflowTaskTransitionSupport.WithoutStarter(resolved, delegatedMakerUserId, null);
+            if (candidates.Count == 0)
+            {
+                return Fail(
+                    "Every candidate approver is the person starting the workflow; nobody else may approve it.",
+                    WorkflowReasonCodes.WorkflowNoEligibleApprover,
+                    correlationId);
+            }
+        }
+
         var now = DateTimeOffset.UtcNow;
         var dueAt = request.DueAt?.ToUniversalTime() ?? existing?.DueAt ??
             ResolveDueAtFromStep(firstStep, now) ??
@@ -138,20 +151,15 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             ? $"{objectType}|{objectId}"
             : request.ObjectRef.Trim();
         var reasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? null : request.ReasonCode.Trim();
-        var fingerprint = ComputeFingerprint(
-            _tenantContext.TenantId,
-            serviceClientId,
-            delegatedMakerUserId,
-            template.Id,
-            version.Id,
-            objectType,
-            objectId,
-            objectRef,
-            candidates,
-            reasonCode,
-            firstStep.CommentRequired || request.CommentRequired,
-            firstStep.EvidenceRequired || request.EvidenceRequired,
-            dueAt);
+        var commentRequired = firstStep.CommentRequired || request.CommentRequired;
+        var evidenceRequired = firstStep.EvidenceRequired || request.EvidenceRequired;
+        // D2 — the fingerprint names what the caller DECLARED (the step's or the request's candidate list), not who
+        // the seat resolves to today: the same request stays the same request when a seat changes hands.
+        var declared = DeclaredCandidates(candidateSource);
+        string Fingerprint(DateTimeOffset? due) => ComputeDeclaredFingerprint(
+            _tenantContext.TenantId, serviceClientId, delegatedMakerUserId, template.Id, version.Id,
+            objectType, objectId, objectRef, declared, reasonCode, commentRequired, evidenceRequired, due);
+        var fingerprint = Fingerprint(dueAt);
 
         var reservation = new WorkflowInstance
         {
@@ -175,6 +183,8 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             InitialAssignmentSnapshotId = Guid.NewGuid(),
             StartTransitionLogId = Guid.NewGuid(),
             StartedBy = delegatedMakerUserId.ToString(),
+            // D2 — the starter as a USER ID, so the gate's starter check (SoD) holds in any spelling of the id.
+            StartedByUserId = delegatedMakerUserId,
             StartedAt = now,
             DueAt = dueAt,
             LastTransitionAt = now
@@ -189,20 +199,19 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             // Concurrent callers can resolve a relative SLA a few ticks apart before one wins the unique
             // reservation. The persisted winner's due date is the canonical resolved fact for exact replay.
             dueAt = instance.DueAt;
-            fingerprint = ComputeFingerprint(
-                _tenantContext.TenantId,
-                serviceClientId,
-                delegatedMakerUserId,
-                template.Id,
-                version.Id,
-                objectType,
-                objectId,
-                objectRef,
-                candidates,
-                reasonCode,
-                firstStep.CommentRequired || request.CommentRequired,
-                firstStep.EvidenceRequired || request.EvidenceRequired,
-                dueAt);
+            fingerprint = Fingerprint(dueAt);
+        }
+
+        if (!reserved.Created
+            && !string.Equals(instance.StartRequestFingerprint, fingerprint, StringComparison.Ordinal)
+            && await LegacyFingerprintAsync(candidateSource, storedSnapshot, serviceClientId, delegatedMakerUserId,
+                template.Id, version.Id, objectType, objectId, objectRef, reasonCode, commentRequired, evidenceRequired,
+                dueAt, ct) is { } legacy
+            && string.Equals(instance.StartRequestFingerprint, legacy, StringComparison.Ordinal))
+        {
+            // A key reserved before D2 carries the first fingerprint (over the RESOLVED candidates). It is still in
+            // flight somewhere (a consumer's outbox, a retry): its replay is answered as before, by that formula.
+            fingerprint = legacy;
         }
 
         if (!MatchesReservation(
@@ -236,8 +245,8 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             reasonCode,
             idempotencyKey,
             dueAt,
-            firstStep.CommentRequired || request.CommentRequired,
-            firstStep.EvidenceRequired || request.EvidenceRequired);
+            commentRequired,
+            evidenceRequired);
         var snapshot = ExpectedSnapshot(instance, task.Id, candidates);
         var log = ExpectedStartLog(instance, task.Id, delegatedMakerUserId, reasonCode, idempotencyKey, correlationId);
 
@@ -540,7 +549,94 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         return Canonical(left).SetEquals(Canonical(right));
     }
 
-    /// <summary>internal for the byte-for-byte fingerprint test (D1-FIX1): the computation itself is unchanged.</summary>
+    /// <summary>
+    /// D2 — the candidate list as DECLARED, in one spelling: <c>user:</c> and <c>position:</c> entries keep their prefix
+    /// with the id in its one spelling, a bare user id in its one spelling, anything else as written; distinct, ordinal.
+    /// </summary>
+    internal static IReadOnlyList<string> DeclaredCandidates(IReadOnlyList<string> source)
+    {
+        static string Canonical(string entry)
+        {
+            foreach (var prefix in new[] { "user:", "position:" })
+            {
+                if (entry.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    return prefix + WorkflowTaskTransitionSupport.CanonicalPrincipal(entry[prefix.Length..].Trim());
+                }
+            }
+
+            return WorkflowTaskTransitionSupport.CanonicalPrincipal(entry);
+        }
+
+        return WorkflowCandidateResolver.Normalize(source)
+            .Select(Canonical)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(x => x, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    /// <summary>
+    /// D2 — FINGERPRINT VERSION 2: over the DECLARED candidates (<see cref="DeclaredCandidates"/>), tagged <c>v2</c> so it
+    /// can never equal a version-1 value. Every other fact is the version-1 set, in the same order.
+    /// </summary>
+    internal static string ComputeDeclaredFingerprint(
+        Guid tenantId,
+        Guid clientId,
+        Guid makerId,
+        Guid templateId,
+        Guid versionId,
+        string objectType,
+        string objectId,
+        string objectRef,
+        IReadOnlyList<string> declaredCandidates,
+        string? reasonCode,
+        bool commentRequired,
+        bool evidenceRequired,
+        DateTimeOffset? dueAt) =>
+        ComputeFingerprint(tenantId, clientId, makerId, templateId, versionId, objectType, objectId, objectRef,
+            declaredCandidates.Prepend(DeclaredFingerprintTag).ToList(), reasonCode, commentRequired, evidenceRequired,
+            dueAt);
+
+    private const string DeclaredFingerprintTag = "fingerprint:v2:declared";
+
+    /// <summary>
+    /// The version-1 fingerprint, EXACTLY as a start before D2 computed it: over the candidates resolved NOW (with
+    /// D1-FIX1's stored-spelling substitution). Accepted only for a key that already carries a version-1 value; a new
+    /// start never writes one. It is retired when no version-1 reservation can be replayed any more — see the D2 report
+    /// (the consumers' retry windows) — by deleting this method and its one call.
+    /// </summary>
+    private async Task<string?> LegacyFingerprintAsync(
+        IReadOnlyList<string> candidateSource,
+        RuntimeAssignmentSnapshot? storedSnapshot,
+        Guid serviceClientId,
+        Guid delegatedMakerUserId,
+        Guid templateId,
+        Guid versionId,
+        string objectType,
+        string objectId,
+        string objectRef,
+        string? reasonCode,
+        bool commentRequired,
+        bool evidenceRequired,
+        DateTimeOffset? dueAt,
+        CancellationToken ct)
+    {
+        IReadOnlyList<string> resolved = await WorkflowCandidateResolver.ResolveAsync(candidateSource, _positionAssignments, _positions, ct);
+        if (resolved.Count == 0)
+        {
+            return null;
+        }
+
+        if (storedSnapshot is not null && NamesTheSamePrincipals(storedSnapshot.CandidatePrincipalIds, resolved))
+        {
+            resolved = storedSnapshot.CandidatePrincipalIds;
+        }
+
+        return ComputeFingerprint(_tenantContext.TenantId, serviceClientId, delegatedMakerUserId, templateId, versionId,
+            objectType, objectId, objectRef, resolved, reasonCode, commentRequired, evidenceRequired, dueAt);
+    }
+
+    /// <summary>The version-1 computation (D1-FIX1 byte-for-byte test). D2 — version 2 feeds it the declared list.</summary>
     internal static string ComputeFingerprint(
         Guid tenantId,
         Guid clientId,

@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
@@ -48,6 +49,9 @@ public sealed class TrustedWorkflowCancellationCoordinator : ITrustedWorkflowCan
                 expectedObjectId)
             || instance!.Status != WorkflowInstanceStatus.Active
             || task!.Status is not (ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence)
+            // D2 — an approval that was ever escalated is not cancelled here, even after a delegation moved its status
+            // back to Waiting* (the escalation level stays). MDM gets the same answer as for an escalated task today.
+            || WorkflowTaskTransitionSupport.WasEscalated(task)
             || instance.Version <= 0
             || task.Version <= 0)
         {
@@ -110,6 +114,7 @@ public sealed class TrustedWorkflowCancellationCoordinator : ITrustedWorkflowCan
 
         if (instance.Status != WorkflowInstanceStatus.Active
             || task!.Status is not (ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence)
+            || WorkflowTaskTransitionSupport.WasEscalated(task)
             || instance.Version != request.ExpectedWorkflowInstanceVersion
             || task.Version != request.ExpectedApprovalTaskVersion)
         {
@@ -131,6 +136,7 @@ public sealed class TrustedWorkflowCancellationCoordinator : ITrustedWorkflowCan
                         request.ExpectedObjectId)
                     || currentInstance!.Status != WorkflowInstanceStatus.Active
                     || currentTask!.Status is not (ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence)
+                    || WorkflowTaskTransitionSupport.WasEscalated(currentTask)
                     || currentInstance.Version != request.ExpectedWorkflowInstanceVersion
                     || currentTask.Version != request.ExpectedApprovalTaskVersion)
                 {

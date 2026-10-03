@@ -58,6 +58,11 @@ public static class WorkflowReasonCodes
     // D1-FIX1 — a delegation names a USER: a user id (optionally "user:"-prefixed). Anything else — free text, a
     // position, an empty id — would leave the task with a principal no token ever matches.
     public const string WorkflowDelegateTargetInvalid = "WORKFLOW_DELEGATE_TARGET_INVALID";
+
+    /// <summary>D2 — every candidate the step resolved to is the person who started the workflow: nobody else may
+    /// approve it. A start is refused (400, nothing written); an intermediate approval is refused (409, the step does
+    /// not advance) — never a silent fall back to somebody else.</summary>
+    public const string WorkflowNoEligibleApprover = "WORKFLOW_NO_ELIGIBLE_APPROVER";
     public const string WorkflowNoInstance = "WORKFLOW_NO_INSTANCE";
     public const string WorkflowPendingApproval = "WORKFLOW_PENDING_APPROVAL";
     public const string WorkflowWaitingEvidence = "WORKFLOW_WAITING_EVIDENCE";
@@ -84,7 +89,9 @@ public static class WorkflowReasonCodes
     public const string WorkflowRejectCommentRequired = "WORKFLOW_REJECT_COMMENT_REQUIRED";
 
     /// <summary>WP-CL-BE-3 — the Platform transaction that carries a terminal transition and its completion event
-    /// could not run (e.g. a MongoDB deployment without transactions). Nothing was written.</summary>
+    /// could not run, or its outcome is unknown (e.g. a MongoDB deployment without transactions, or a commit whose
+    /// acknowledgement was lost). D2 — the outcome is NOT known to be "nothing written"; retrying with the same
+    /// idempotency key is safe.</summary>
     public const string WorkflowTransactionUnavailable = "WORKFLOW_TRANSACTION_UNAVAILABLE";
 
     /// <summary>WP-CL-BE-3 — batch status read asked for more object ids than the ceiling.</summary>

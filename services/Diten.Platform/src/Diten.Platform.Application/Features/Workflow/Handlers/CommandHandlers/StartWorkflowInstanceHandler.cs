@@ -135,8 +135,21 @@ public sealed class StartWorkflowInstanceHandler
                 request.CorrelationId);
         }
 
-        var now = DateTimeOffset.UtcNow;
         var actor = _currentUserContext.ActorName;
+        Guid? starterUserId = _currentUserContext.UserId == Guid.Empty ? null : _currentUserContext.UserId;
+        // D2 — the person starting the workflow is not one of its approvers. Nobody left: refused before anything is
+        // written (no instance, no log).
+        normalizedCandidates = WorkflowTaskTransitionSupport.WithoutStarter(normalizedCandidates, starterUserId, actor);
+        if (normalizedCandidates.Count == 0)
+        {
+            return Response<StartWorkflowInstanceResponse>.Fail(
+                "Every candidate approver is the person starting the workflow; nobody else may approve it.",
+                400,
+                WorkflowReasonCodes.WorkflowNoEligibleApprover,
+                request.CorrelationId);
+        }
+
+        var now = DateTimeOffset.UtcNow;
         var objectType = request.Request.ObjectType.Trim();
         var objectId = request.Request.ObjectId.Trim();
         var objectRef = string.IsNullOrWhiteSpace(request.Request.ObjectRef)
@@ -162,7 +175,7 @@ public sealed class StartWorkflowInstanceHandler
             CorrelationId = request.CorrelationId,
             IdempotencyKey = idempotencyKey,
             StartedBy = actor,
-            StartedByUserId = _currentUserContext.UserId == Guid.Empty ? null : _currentUserContext.UserId,
+            StartedByUserId = starterUserId,
             StartedAt = now,
             DueAt = dueAt,
             LastTransitionAt = now,
