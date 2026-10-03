@@ -15,7 +15,7 @@ public sealed class GetNotificationTemplateByIdHandler
     public async Task<Response<NotificationTemplateDto>> Handle(GetNotificationTemplateByIdQuery request, CancellationToken ct)
     {
         var template = await _repository.GetByIdAsync(request.Id, ct);
-        return template is null
+        return template is null || !NotificationTemplateScope.Matches(template, request.TenantId)
             ? Response<NotificationTemplateDto>.Fail("Notification template not found.", 404)
             : Response<NotificationTemplateDto>.Success(template.ToDto());
     }

@@ -104,11 +104,20 @@ public sealed class NotificationsController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // WP-PLATFORM-SCOPE-SMALL-01 — by id, a platform default only; a tenant's override is read under its tenant.
     [HttpGet("templates/by-id/{id:guid}")]
     [HasPermission("platform.notifications.templates.read")]
     public async Task<IActionResult> GetTemplateById(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetNotificationTemplateByIdQuery(id), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("tenant-settings/{tenantId:guid}/templates/by-id/{id:guid}")]
+    [HasPermission("platform.notifications.templates.read")]
+    public async Task<IActionResult> GetTenantTemplateById(Guid tenantId, Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetNotificationTemplateByIdQuery(id, tenantId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -191,11 +200,20 @@ public sealed class NotificationsController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // WP-PLATFORM-SCOPE-SMALL-01 — by id, a platform default only; a tenant's override is archived under its tenant.
     [HttpPost("templates/{id:guid}/archive")]
     [HasPermission("platform.notifications.templates.archive")]
     public async Task<IActionResult> ArchiveTemplate(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new ArchiveNotificationTemplateCommand(id), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPost("tenant-settings/{tenantId:guid}/templates/{id:guid}/archive")]
+    [HasPermission("platform.notifications.templates.archive")]
+    public async Task<IActionResult> ArchiveTenantTemplate(Guid tenantId, Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new ArchiveNotificationTemplateCommand(id, tenantId), ct);
         return CreateActionResultInstance(response);
     }
 

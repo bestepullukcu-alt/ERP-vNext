@@ -18,7 +18,9 @@ public sealed class UpdateNotificationTemplateHandler
     public async Task<Response<NotificationTemplateDto>> Handle(UpdateNotificationTemplateCommand request, CancellationToken ct)
     {
         var template = await _repository.GetByIdAsync(request.Id, ct);
-        if (template is null)
+        // The template must already be in the route's scope: a platform route never takes over a tenant's override,
+        // a tenant route never takes over another tenant's (or a platform default).
+        if (template is null || !NotificationTemplateScope.Matches(template, request.Request.IsPlatformDefault ? null : request.TenantId))
         {
             return Response<NotificationTemplateDto>.Fail("Notification template not found.", 404);
         }

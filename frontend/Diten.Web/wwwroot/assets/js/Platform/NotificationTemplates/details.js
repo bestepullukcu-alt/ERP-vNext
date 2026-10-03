@@ -11,6 +11,10 @@
 
     const templateId = root.dataset.templateId || '';
     const scopeTenantId = root.dataset.scopeTenantId || '';
+    // A tenant's override is addressed under its tenant; an id alone reaches platform defaults only.
+    const templateUrl = () => (scopeTenantId
+        ? `${apiBase}/tenant/${scopeTenantId}/templates/${templateId}`
+        : `${apiBase}/templates/${templateId}`);
     const L = () => window.L10n || {};
     let currentTemplate = null;
 
@@ -148,7 +152,7 @@
         if (!currentTemplate || currentTemplate.status === 'Archived') return;
         window.showConfirm?.(L().ArchiveConfirm, async () => {
             try {
-                const res = await fetch(`${apiBase}/templates/${templateId}/archive`, {
+                const res = await fetch(`${templateUrl()}/archive`, {
                     method: 'POST',
                     credentials: 'same-origin'
                 });
@@ -165,7 +169,7 @@
     const load = async () => {
         if (!templateId) return;
         try {
-            const res = await fetch(`${apiBase}/templates/${templateId}`, { credentials: 'same-origin' });
+            const res = await fetch(templateUrl(), { credentials: 'same-origin' });
             const body = await res.json();
             if (!res.ok) {
                 showError(errorsOf(body).join(' '));

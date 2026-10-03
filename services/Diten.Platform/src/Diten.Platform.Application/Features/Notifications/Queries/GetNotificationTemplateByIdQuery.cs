@@ -3,4 +3,5 @@ using MediatR;
 
 namespace Diten.Platform.Application.Features.Notifications.Queries;
 
-public sealed record GetNotificationTemplateByIdQuery(Guid Id) : IRequest<Response<NotificationTemplateDto>>;
+// TenantId: the route's tenant (null = a platform default). See NotificationTemplateScope.
+public sealed record GetNotificationTemplateByIdQuery(Guid Id, Guid? TenantId = null) : IRequest<Response<NotificationTemplateDto>>;

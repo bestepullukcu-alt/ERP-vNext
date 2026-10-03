@@ -56,6 +56,16 @@ public sealed class NotificationTemplatesController : Controller
     public Task<IActionResult> TemplateByIdProxy(Guid id) =>
         ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/notifications/templates/by-id/{id}");
 
+    // WP-PLATFORM-SCOPE-SMALL-01 — a tenant's override is read and archived under its tenant (the id-only routes reach
+    // platform defaults only).
+    [HttpGet("api/tenant/{tenantId:guid}/templates/{id:guid}")]
+    public Task<IActionResult> TenantTemplateByIdProxy(Guid tenantId, Guid id) =>
+        ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/platform/notifications/tenant-settings/{tenantId}/templates/by-id/{id}");
+
+    [HttpPost("api/tenant/{tenantId:guid}/templates/{id:guid}/archive")]
+    public Task<IActionResult> ArchiveTenantTemplateProxy(Guid tenantId, Guid id) =>
+        ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/notifications/tenant-settings/{tenantId}/templates/{id}/archive");
+
     [HttpPost("api/templates")]
     public Task<IActionResult> CreatePlatformTemplateProxy() =>
         ProxyGatewayAsync(HttpMethod.Post, $"{_gatewayUrl}/api/platform/notifications/templates", readBody: true);

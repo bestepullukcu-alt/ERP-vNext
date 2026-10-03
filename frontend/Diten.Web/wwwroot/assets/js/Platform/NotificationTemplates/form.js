@@ -189,7 +189,10 @@
     const loadTemplate = async () => {
         if (mode !== 'edit' || !templateId) return;
         try {
-            const res = await fetch(`${apiBase}/templates/${templateId}`, { credentials: 'same-origin' });
+            // A tenant's override is read under its tenant; an id alone reaches platform defaults only.
+            const res = await fetch(scopeTenantId
+                ? `${apiBase}/tenant/${scopeTenantId}/templates/${templateId}`
+                : `${apiBase}/templates/${templateId}`, { credentials: 'same-origin' });
             const body = await res.json();
             if (!res.ok) {
                 showSummary(errorsOf(body).join(' ') || L().ErrorOccurred);
