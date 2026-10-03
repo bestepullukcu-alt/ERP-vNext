@@ -140,17 +140,19 @@ public sealed class UsersExportGrantBackfillTests
         var lateRead = new RoleState(Guid.NewGuid(), "LateReaders", tenant, false, Before);
         var earlyRead = new RoleState(Guid.NewGuid(), "EarlyReaders", tenant, false, Before);
         var undatedRead = new RoleState(Guid.NewGuid(), "UndatedRead", tenant, false, Before);
-        var grants = new HashSet<(Guid, Guid)> { (lateRead.RoleId, Read), (earlyRead.RoleId, Read), (undatedRead.RoleId, Read) };
+        var defaultRead = new RoleState(Guid.NewGuid(), "DefaultRead", tenant, false, Before);
+        var grants = new HashSet<(Guid, Guid)> { (lateRead.RoleId, Read), (earlyRead.RoleId, Read), (undatedRead.RoleId, Read), (defaultRead.RoleId, Read) };
         var readDates = new Dictionary<(Guid, Guid), DateTimeOffset>
         {
             [(lateRead.RoleId, Read)] = After,
-            [(earlyRead.RoleId, Read)] = Before
+            [(earlyRead.RoleId, Read)] = Before,
+            [(defaultRead.RoleId, Read)] = default // a stored 0001-01-01 is no date either
             // undatedRead: no stored date → the role's own age decides
         };
 
-        var plan = Assert.Single(ExportGrantBackfill.Plan([lateRead, earlyRead, undatedRead], grants, Read, Export, KeyCreated, NoMarks, TemplateGrants, readDates));
+        var plan = Assert.Single(ExportGrantBackfill.Plan([lateRead, earlyRead, undatedRead, defaultRead], grants, Read, Export, KeyCreated, NoMarks, TemplateGrants, readDates));
 
-        Assert.Equal(new[] { earlyRead.RoleId, undatedRead.RoleId }.OrderBy(x => x), plan.Grants.Select(g => g.RoleId).OrderBy(x => x));
+        Assert.Equal(new[] { earlyRead.RoleId, undatedRead.RoleId, defaultRead.RoleId }.OrderBy(x => x), plan.Grants.Select(g => g.RoleId).OrderBy(x => x));
     }
 
     [Fact]

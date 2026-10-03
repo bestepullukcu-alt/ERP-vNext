@@ -78,8 +78,12 @@ public static class ExportGrantBackfillRunner
         IMongoDatabase database,
         ILogger logger,
         Func<Stage, ExportGrantBackfill.KeyPair, Guid, Task>? hook = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Func<IMongoCollection<RolePermission>, RolePermission, CancellationToken, Task<bool>>? grantWriter = null)
     {
+        // Test seam: how a grant document is inserted (a test makes it fail AFTER the write, the way a lost
+        // acknowledgement does). Production uses InsertOnceAsync.
+        grantWriter ??= InsertOnceAsync;
         var failed = new HashSet<Guid>();
         var permissions = await LoadPermissionsAsync(database, logger, ct);
         var pairs = ExportGrantBackfill.Keys
@@ -89,7 +93,10 @@ public static class ExportGrantBackfillRunner
 
         var markCol = database.GetCollection<PermissionReconciliationMark>(PermissionReconciliationMark.CollectionName);
         var exportKeys = pairs.Select(p => p.ExportKey).ToList();
-        var marks = await markCol.Find(m => exportKeys.Contains(m.Key)).ToListAsync(ct);
+        // Read raw, one by one: a mark that does not deserialize fails ITS tenant (left out of this run, logged), it
+        // does not stop the run — and its tenant is not treated as unmarked either.
+        var marks = await ReadDocumentsAsync<PermissionReconciliationMark>(database, PermissionReconciliationMark.CollectionName,
+            Builders<PermissionReconciliationMark>.Filter.In(m => m.Key, exportKeys), null, logger, failed, ct);
 
         var corrected = await CorrectLegacySourcesAsync(database, logger, pairs, permissions, marks, failed, hook, ct);
 
@@ -97,10 +104,10 @@ public static class ExportGrantBackfillRunner
         var settled = marks.GroupBy(m => m.TenantId)
             .Where(g => exportKeys.All(k => g.Any(m => m.Key == k)))
             .Select(g => g.Key)
+            .Concat(failed) // a tenant whose mark could not be read is left alone on this start
             .Append(Guid.Empty) // a role without a tenant is never processed and never marked
             .ToList();
-        var roleCol = database.GetCollection<Role>("roles");
-        var unsettled = await (await roleCol.DistinctAsync(r => r.TenantId, Builders<Role>.Filter.Nin(r => r.TenantId, settled), cancellationToken: ct)).ToListAsync(ct);
+        var unsettled = await UnsettledTenantsAsync(database, settled, logger, ct);
         if (unsettled.Count == 0) return Result.Nothing with { SourcesCorrected = corrected, FailedTenants = failed.ToList() };
 
 
@@ -117,13 +124,18 @@ public static class ExportGrantBackfillRunner
         var permissionIds = pairs.SelectMany(p => new[] { permissions[p.ReadKey].Id, permissions[p.ExportKey].Id }).ToList();
         var rpCol = database.GetCollection<RolePermission>("rolePermissions");
         // A revoked grant is a hard delete, so "live" is the only state a grant document has; IsDeleted is honoured anyway.
+        // A grant document that STORES no CreatedAt would read as "now" (the property's initializer): its date is
+        // "not stored", and the decision is left to the role's own age — never a date the database does not hold.
+        var undatedGrants = new HashSet<Guid>();
         var grantDocs = await ReadDocumentsAsync<RolePermission>(database, "rolePermissions",
             Builders<RolePermission>.Filter.In(rp => rp.TenantId, unsettled)
             & Builders<RolePermission>.Filter.In(rp => rp.PermissionId, permissionIds)
             & Builders<RolePermission>.Filter.Eq(rp => rp.IsDeleted, false),
-            ["RoleId", "PermissionId", "TenantId", "CreatedAt"], logger, failed, ct);
+            ["RoleId", "PermissionId", "TenantId", "CreatedAt"], logger, failed, ct,
+            (grant, raw) => { if (!raw.Contains("CreatedAt")) undatedGrants.Add(grant.Id); });
         var grants = grantDocs.Select(rp => (rp.RoleId, rp.PermissionId)).ToHashSet();
-        var grantCreatedAt = grantDocs.GroupBy(rp => (rp.RoleId, rp.PermissionId)).ToDictionary(g => g.Key, g => g.Min(rp => rp.CreatedAt));
+        var grantCreatedAt = grantDocs.Where(rp => !undatedGrants.Contains(rp.Id))
+            .GroupBy(rp => (rp.RoleId, rp.PermissionId)).ToDictionary(g => g.Key, g => g.Min(rp => rp.CreatedAt));
         // A tenant one of whose documents could not be read is not decided on a partial picture.
         roles = roles.Where(r => !failed.Contains(r.TenantId)).ToList();
 
@@ -161,7 +173,9 @@ public static class ExportGrantBackfillRunner
                         {
                             // An instance that started at the same time may have written the row AND the grant since
                             // this run read its picture: then nothing is missing, and nothing is reported.
-                            if (await HoldsAsync(rpCol, grant, ct))
+                            // The owner of the row writes its grant right after it: allow it that moment (a bounded re-read,
+                            // 3 × 100 ms) before calling a grant missing.
+                            if (await HoldsSoonAsync(rpCol, grant, ct))
                             {
                                 grants.Add((grant.RoleId, grant.PermissionId));
                                 continue;
@@ -182,16 +196,20 @@ public static class ExportGrantBackfillRunner
                             : RolePermission.ManualGrant(grant.RoleId, grant.PermissionId, grant.TenantId, SystemUser);
                         try
                         {
-                            if (await InsertOnceAsync(rpCol, row, ct)) written++;
+                            if (await grantWriter(rpCol, row, ct)) written++;
                         }
-                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        catch (MongoWriteException ex) when (ex.WriteError is not null)
                         {
-                            // The run KNOWS its audit row says "granted" and the grant is not there: withdraw it with a
-                            // row of its own (deterministic id — written once). The role stays without the grant (the
-                            // audit row is the decision record) and the tenant fails below, logged.
-                            await InsertOnceAsync(auditCol, NotAppliedAuditRow(pair, grant, ex), ct);
+                            // The SERVER refused the insert (a write error, not a lost acknowledgement): the outcome is
+                            // known. If the grant is indeed not there, withdraw the audit row's "granted" with a row of its
+                            // own (deterministic id — written once). The role stays without the grant (the audit row is the
+                            // decision record) and the tenant fails below, logged.
+                            if (!await HoldsAsync(rpCol, grant, ct)) await InsertOnceAsync(auditCol, NotAppliedAuditRow(pair, grant, ex), ct);
                             throw;
                         }
+                        // Every other exception — a write concern error, a network failure after the send — leaves the
+                        // outcome UNKNOWN: the grant may well be in. Nothing is withdrawn; the tenant fails and the next
+                        // start sees what is there.
 
                         grants.Add((grant.RoleId, grant.PermissionId));
                         if (hook is not null) await hook(Stage.GrantWritten, pair, grant.RoleId);
@@ -244,7 +262,6 @@ public static class ExportGrantBackfillRunner
         var legacy = marks.Where(m => m.Origin is null && m.TenantId != Guid.Empty).ToList();
         if (legacy.Count == 0) return 0;
 
-        var roleCol = database.GetCollection<Role>("roles");
         var rpCol = database.GetCollection<RolePermission>("rolePermissions");
         var auditCol = database.GetCollection<AuthAuditLog>("authAuditLogs");
         var markCol = database.GetCollection<PermissionReconciliationMark>(PermissionReconciliationMark.CollectionName);
@@ -258,13 +275,23 @@ public static class ExportGrantBackfillRunner
 
             try
             {
-                var tenantRoles = (await ReadRolesAsync(roleCol, [mark.TenantId], ct))
+                var unreadable = new HashSet<Guid>();
+                var tenantRoles = (await ReadDocumentsAsync<Role>(database, "roles",
+                        Builders<Role>.Filter.Eq(r => r.TenantId, mark.TenantId),
+                        ["Name", "TenantId", "IsSystem", "IsDeleted", "CreatedAt"], logger, unreadable, ct))
                     .Where(r => !r.IsDeleted)
                     .ToDictionary(r => r.Id, r => new ExportGrantBackfill.RoleState(r.Id, r.Name, r.TenantId, r.IsSystem, r.CreatedAt));
-                var exportGrants = await rpCol
-                    .Find(rp => rp.TenantId == mark.TenantId && rp.PermissionId == export.Id && rp.IsDeleted == false)
-                    .Project<RolePermission>(Builders<RolePermission>.Projection.Include(rp => rp.RoleId).Include(rp => rp.GrantSource))
-                    .ToListAsync(ct);
+                var exportGrants = await ReadDocumentsAsync<RolePermission>(database, "rolePermissions",
+                    Builders<RolePermission>.Filter.Eq(rp => rp.TenantId, mark.TenantId)
+                    & Builders<RolePermission>.Filter.Eq(rp => rp.PermissionId, export.Id)
+                    & Builders<RolePermission>.Filter.Eq(rp => rp.IsDeleted, false),
+                    ["RoleId", "GrantSource", "TenantId"], logger, unreadable, ct);
+                if (unreadable.Count > 0)
+                {
+                    // Already logged with the document id; the tenant keeps its legacy mark and is tried next start.
+                    failed.Add(mark.TenantId);
+                    continue;
+                }
 
                 foreach (var grant in exportGrants)
                 {
@@ -340,17 +367,21 @@ public static class ExportGrantBackfillRunner
     /// document id and the exception type — never its content.
     /// </summary>
     private static async Task<List<T>> ReadDocumentsAsync<T>(
-        IMongoDatabase database, string collection, FilterDefinition<T> filter, IReadOnlyList<string> fields,
-        ILogger logger, HashSet<Guid> failed, CancellationToken ct)
+        IMongoDatabase database, string collection, FilterDefinition<T> filter, IReadOnlyList<string>? fields,
+        ILogger logger, HashSet<Guid> failed, CancellationToken ct, Action<T, BsonDocument>? inspect = null)
     {
-        var projection = new BsonDocument(fields.Select(f => new BsonElement(f, 1)));
-        var docs = await database.GetCollection<BsonDocument>(collection).Find(Render(database, collection, filter)).Project(projection).ToListAsync(ct);
+        var find = database.GetCollection<BsonDocument>(collection).Find(Render(database, collection, filter));
+        var docs = fields is null
+            ? await find.ToListAsync(ct)
+            : await find.Project(new BsonDocument(fields.Select(f => new BsonElement(f, 1)))).ToListAsync(ct);
         var read = new List<T>(docs.Count);
         foreach (var doc in docs)
         {
             try
             {
-                read.Add(BsonSerializer.Deserialize<T>(doc));
+                var item = BsonSerializer.Deserialize<T>(doc);
+                inspect?.Invoke(item, doc);
+                read.Add(item);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -374,14 +405,23 @@ public static class ExportGrantBackfillRunner
     /// <summary>The document's id as a reader can search for it (a Guid when it is one), never its content.</summary>
     private static string IdOf(BsonDocument doc)
     {
+        // Only an identifier is printed: a Guid, an ObjectId or a string id. Any other _id (a document, an array …) could
+        // carry content, so only its type is named.
         var id = doc.GetValue("_id", BsonNull.Value);
         try
         {
-            return id.IsBsonBinaryData ? id.AsBsonBinaryData.ToGuid().ToString() : id.ToString() ?? "unknown";
+            return id.BsonType switch
+            {
+                BsonType.Binary when id.AsBsonBinaryData.SubType is BsonBinarySubType.UuidStandard or BsonBinarySubType.UuidLegacy
+                    => id.AsBsonBinaryData.ToGuid().ToString(),
+                BsonType.ObjectId => id.AsObjectId.ToString(),
+                BsonType.String => id.AsString,
+                _ => $"<{id.BsonType}>"
+            };
         }
         catch (Exception)
         {
-            return "unreadable";
+            return "<unreadable>";
         }
     }
 
@@ -398,6 +438,45 @@ public static class ExportGrantBackfillRunner
         }
     }
 
+    /// <summary>
+    /// The tenants with a role that are not settled — one RAW distinct over <c>TenantId</c>. A value that is not a Guid
+    /// (an empty or a text TenantId, which <c>$nin</c> also matches) belongs to no tenant: it is logged with the ids of
+    /// the role documents that carry it, and skipped — it never stops the run.
+    /// </summary>
+    private static async Task<List<Guid>> UnsettledTenantsAsync(IMongoDatabase database, IReadOnlyCollection<Guid> settled, ILogger logger, CancellationToken ct)
+    {
+        var raw = database.GetCollection<BsonDocument>("roles");
+        var filter = Render(database, "roles", Builders<Role>.Filter.Nin(r => r.TenantId, settled));
+        var values = await (await raw.DistinctAsync<BsonValue>("TenantId", filter, cancellationToken: ct)).ToListAsync(ct);
+        var tenants = new List<Guid>();
+        foreach (var value in values)
+        {
+            if (value.IsBsonBinaryData && value.AsBsonBinaryData.SubType is BsonBinarySubType.UuidStandard or BsonBinarySubType.UuidLegacy)
+            {
+                tenants.Add(value.AsBsonBinaryData.ToGuid());
+                continue;
+            }
+
+            var ids = await raw.Find(new BsonDocument("TenantId", value)).Project(new BsonDocument("_id", 1)).Limit(20).ToListAsync(ct);
+            logger.LogError(
+                "Export grant backfill skips role document(s) {DocumentIds} whose TenantId is not a tenant id ({BsonType}).",
+                string.Join(", ", ids.Select(IdOf)), value.BsonType);
+        }
+
+        return tenants;
+    }
+
+    private static async Task<bool> HoldsSoonAsync(IMongoCollection<RolePermission> rpCol, ExportGrantBackfill.PlannedGrant grant, CancellationToken ct)
+    {
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            if (await HoldsAsync(rpCol, grant, ct)) return true;
+            await Task.Delay(TimeSpan.FromMilliseconds(100), ct);
+        }
+
+        return await HoldsAsync(rpCol, grant, ct);
+    }
+
     private static async Task<bool> HoldsAsync(IMongoCollection<RolePermission> rpCol, ExportGrantBackfill.PlannedGrant grant, CancellationToken ct)
         => await rpCol.Find(rp => rp.RoleId == grant.RoleId && rp.PermissionId == grant.PermissionId && rp.TenantId == grant.TenantId && rp.IsDeleted == false)
             .Limit(1).AnyAsync(ct);
@@ -410,13 +489,6 @@ public static class ExportGrantBackfillRunner
         return docs.Select(d => d[keyField].AsString).ToHashSet(StringComparer.Ordinal);
     }
 
-    /// <summary>The roles of these tenants — live and deleted — with only the fields the decision reads.</summary>
-    private static Task<List<Role>> ReadRolesAsync(IMongoCollection<Role> roleCol, IReadOnlyCollection<Guid> tenants, CancellationToken ct)
-        => roleCol
-            .Find(r => tenants.Contains(r.TenantId))
-            .Project<Role>(Builders<Role>.Projection
-                .Include(r => r.Name).Include(r => r.TenantId).Include(r => r.IsSystem).Include(r => r.IsDeleted).Include(r => r.CreatedAt))
-            .ToListAsync(ct);
 
     private static AuthAuditLog GrantAuditRow(ExportGrantBackfill.KeyPair pair, ExportGrantBackfill.PlannedGrant grant)
         => new(ExportGrantBackfill.AuditEventName, Guid.Empty, grant.TenantId, JsonSerializer.Serialize(new Dictionary<string, object?>

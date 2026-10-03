@@ -280,7 +280,9 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         {
             { "_id", new BsonBinaryData(badId, GuidRepresentation.Standard) },
             { "TenantId", new BsonBinaryData(broken, GuidRepresentation.Standard) },
-            { "Name", new BsonDocument("not", "a string") }, // a role name that is a document: does not deserialize
+            { "Name", "SECRET-NAME-in-the-document" },
+            // A date that is not one: the serializer's exception quotes it — neither the document nor the exception's
+            // message may reach the log.
             { "CreatedAt", "SECRET-CONTENT-not-a-date" },
             { "IsDeleted", false }
         });
@@ -307,7 +309,8 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         var entry = Assert.Single(logs.Entries, e => e.Level == LogLevel.Error && e.Message.Contains(badId.ToString()));
         Assert.Contains(broken.ToString(), entry.Message);
         Assert.Contains("Exception", entry.Message);
-        Assert.DoesNotContain("SECRET-CONTENT", entry.Message);
+        Assert.DoesNotContain("SECRET", entry.Message);
+        Assert.All(logs.Entries, e => Assert.DoesNotContain("SECRET", e.Message));
 
         await RunAsync(); // the document is gone: the next start settles the tenant
         foreach (var pair in ExportGrantBackfill.Keys) Assert.True(await HoldsAsync(brokenReaders, pair));
@@ -342,6 +345,12 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         var granted = Assert.Single(await AuditRowsAsync(tenant, pair.AuditSource), r => r.EventName == ExportGrantBackfill.AuditEventName);
         var withdrawn = Assert.Single(await AuditRowsAsync(tenant, pair.AuditSource), r => r.EventName == ExportGrantBackfill.GrantNotAppliedEventName);
         Assert.Contains(granted.Id.ToString(), withdrawn.Metadata, StringComparison.OrdinalIgnoreCase); // it names what it withdraws
+        Assert.Equal(ExportGrantBackfill.NotAppliedAuditId(tenant, readers, pair.ExportKey), withdrawn.Id); // THE row: one id however often
+        using (var meta = JsonDocument.Parse(withdrawn.Metadata))
+        {
+            // The reason is the exception's TYPE — the server's message quotes the document it refused.
+            Assert.Equal(typeof(MongoWriteException).FullName, meta.RootElement.GetProperty("reason").GetString());
+        }
 
         var second = await RunAsync(); // the refusal is gone; option B: the decided role is not granted again
 
@@ -427,8 +436,14 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         var tenant = Guid.NewGuid();
         var readers = await OldRoleAsync(tenant, "Readers", pair.ReadKey);
 
-        await DataSeeder.SeedAsync(_host.Database, false, null, () => throw new InvalidOperationException("a seed step failed"));
+        var stepFailed = false;
+        await DataSeeder.SeedAsync(_host.Database, false, null, () =>
+        {
+            stepFailed = true;
+            throw new InvalidOperationException("a seed step failed");
+        });
 
+        Assert.True(stepFailed, "the seed steps did not run, so nothing failed before the backfill");
         Assert.True(await HoldsAsync(readers, pair));
     }
 
@@ -1156,6 +1171,189 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         Assert.Contains("TenantId", filter);
         Assert.Contains("PermissionId", filter);
         Assert.True(grantFind.Contains("projection"), "whole grant documents are read");
+    }
+
+    // ── FIX4 item 1: an UNKNOWN outcome withdraws nothing ────────────────────────────────────────────────
+
+    // The grant insert reached the server and was written, then the acknowledgement was lost (a timeout after the
+    // send). The run cannot know the outcome: it writes no "not applied" row; the next start sees the grant.
+    [Theory, MemberData(nameof(Keys))]
+    public async Task A_grant_written_whose_acknowledgement_was_lost_is_not_withdrawn(string key)
+    {
+        var pair = Pair(key);
+        var tenant = Guid.NewGuid();
+        var readers = await OldRoleAsync(tenant, "Readers", pair.ReadKey);
+
+        var first = await ExportGrantBackfillRunner.RunAsync(_host.Database, NullLogger.Instance, grantWriter: async (col, row, ct) =>
+        {
+            await col.InsertOneAsync(row, cancellationToken: ct);
+            if (row.TenantId == tenant) throw new TimeoutException("the acknowledgement was lost");
+            return true;
+        });
+
+        Assert.Contains(tenant, first.FailedTenants);
+        Assert.True(await HoldsAsync(readers, pair)); // it IS there
+        Assert.Empty((await AuditRowsAsync(tenant, pair.AuditSource)).Where(r => r.EventName == ExportGrantBackfill.GrantNotAppliedEventName));
+
+        var next = await RunAsync();
+        Assert.DoesNotContain(next.GrantsNotRepeated, x => x.TenantId == tenant); // nothing missing, nothing reported
+        Assert.Equal(1, await Marks.CountDocumentsAsync(m => m.TenantId == tenant && m.Key == pair.ExportKey));
+        Assert.Single(await AuditRowsAsync(tenant, pair.AuditSource));
+    }
+
+    // ── FIX4 item 2: a read grant that STORES no CreatedAt has no date ────────────────────────────────────
+
+    [Theory, MemberData(nameof(Keys))]
+    public async Task An_old_roles_read_grant_without_a_stored_CreatedAt_leaves_the_decision_to_the_roles_age(string key)
+    {
+        var pair = Pair(key);
+        var tenant = Guid.NewGuid();
+        var readers = await OldRoleAsync(tenant, "Readers", pair.ReadKey);
+        var read = await Permissions.Find(p => p.Key == pair.ReadKey).SingleAsync();
+        var rawGrants = _host.Database.GetCollection<BsonDocument>("rolePermissions");
+        var grantId = (await Grants.Find(g => g.RoleId == readers && g.PermissionId == read.Id).SingleAsync()).Id;
+        await rawGrants.UpdateOneAsync(Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(grantId, GuidRepresentation.Standard)),
+            new BsonDocument("$unset", new BsonDocument("CreatedAt", ""))); // the real shape: the field is ABSENT
+        Assert.Equal(1, await Grants.CountDocumentsAsync(Builders<RolePermission>.Filter.Eq(g => g.Id, grantId) & Builders<RolePermission>.Filter.Exists(g => g.CreatedAt, false)));
+
+        await RunAsync();
+
+        Assert.True(await HoldsAsync(readers, pair)); // the role predates the key; an undated read grant does not block it
+    }
+
+    // ── FIX4 item 4: a broken mark, and a role whose TenantId is not a tenant id ─────────────────────────
+
+    [Fact]
+    public async Task A_broken_mark_and_a_role_with_a_text_TenantId_affect_no_one_else()
+    {
+        var withBrokenMark = Guid.NewGuid();
+        var healthy = Guid.NewGuid();
+        var brokenMarkReaders = await OldRoleAsync(withBrokenMark, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey);
+        var healthyReaders = await OldRoleAsync(healthy, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey);
+        var badMarkId = Guid.NewGuid();
+        var textRoleId = Guid.NewGuid();
+        var rawMarks = _host.Database.GetCollection<BsonDocument>(PermissionReconciliationMark.CollectionName);
+        var rawRoles = _host.Database.GetCollection<BsonDocument>("roles");
+        await rawMarks.InsertOneAsync(new BsonDocument
+        {
+            { "_id", new BsonBinaryData(badMarkId, GuidRepresentation.Standard) },
+            { "TenantId", new BsonBinaryData(withBrokenMark, GuidRepresentation.Standard) },
+            { "Key", ExportGrantBackfill.Users.ExportKey },
+            { "ReconciledAtUtc", new BsonDocument("SECRET", "not a date") } // does not deserialize
+        });
+        await rawRoles.InsertOneAsync(new BsonDocument
+        {
+            { "_id", new BsonBinaryData(textRoleId, GuidRepresentation.Standard) },
+            { "TenantId", "SECRET-text-tenant" }, // not a tenant id — $nin matches it too
+            { "Name", "Orphan" },
+            { "IsDeleted", false }
+        });
+        var logs = new CapturingLoggerProvider();
+        ExportGrantBackfillRunner.Result result;
+        try
+        {
+            result = await RunAsync(logger: logs.CreateLogger<ExportGrantBackfillScenarioTests>());
+        }
+        finally
+        {
+            await rawMarks.DeleteOneAsync(new BsonDocument("_id", new BsonBinaryData(badMarkId, GuidRepresentation.Standard)));
+            await rawRoles.DeleteOneAsync(new BsonDocument("_id", new BsonBinaryData(textRoleId, GuidRepresentation.Standard)));
+        }
+
+        // The tenant with the unreadable mark is left alone (not treated as unmarked), logged with the mark's id …
+        Assert.Contains(withBrokenMark, result.FailedTenants);
+        Assert.False(await HoldsAsync(brokenMarkReaders, ExportGrantBackfill.Users));
+        Assert.Contains(logs.Entries, e => e.Level == LogLevel.Error && e.Message.Contains(badMarkId.ToString()) && e.Message.Contains(withBrokenMark.ToString()));
+        // … the role with a text TenantId is skipped and named by its id …
+        Assert.Contains(logs.Entries, e => e.Level == LogLevel.Error && e.Message.Contains(textRoleId.ToString()));
+        // … and everybody else, for both keys, went on.
+        Assert.DoesNotContain(healthy, result.FailedTenants);
+        foreach (var pair in ExportGrantBackfill.Keys) Assert.True(await HoldsAsync(healthyReaders, pair));
+        Assert.All(logs.Entries, e => Assert.DoesNotContain("SECRET", e.Message));
+    }
+
+    // ── FIX4 item 6: a document id that is not an identifier is never printed ────────────────────────────
+
+    [Fact]
+    public async Task A_broken_document_whose_id_is_not_an_identifier_is_named_by_type_only()
+    {
+        var tenant = Guid.NewGuid();
+        await OldRoleAsync(tenant, "Readers", ExportGrantBackfill.Users.ReadKey);
+        var rawRoles = _host.Database.GetCollection<BsonDocument>("roles");
+        var odd = new BsonDocument("SECRET-in-the-id", 42);
+        await rawRoles.InsertOneAsync(new BsonDocument
+        {
+            { "_id", odd },
+            { "TenantId", new BsonBinaryData(tenant, GuidRepresentation.Standard) },
+            { "Name", "Odd" },
+            { "IsDeleted", false }
+        });
+        var logs = new CapturingLoggerProvider();
+        try
+        {
+            await RunAsync(logger: logs.CreateLogger<ExportGrantBackfillScenarioTests>());
+        }
+        finally
+        {
+            await rawRoles.DeleteOneAsync(new BsonDocument("_id", odd));
+        }
+
+        var entry = Assert.Single(logs.Entries, e => e.Level == LogLevel.Error && e.Message.Contains(tenant.ToString()));
+        Assert.Contains("<Document>", entry.Message);
+        Assert.DoesNotContain("SECRET", entry.Message);
+    }
+
+    // ── FIX4 item 5: the seeder's own catch logs the type only ────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_seeders_catch_writes_the_exception_type_and_never_its_message()
+    {
+        var output = new StringWriter();
+        var original = Console.Out;
+        Console.SetOut(output);
+        try
+        {
+            await DataSeeder.SeedAsync(_host.Database, false, null,
+                () => throw new InvalidOperationException("SECRET-outer", new FormatException("SECRET-inner")));
+        }
+        finally
+        {
+            Console.SetOut(original);
+        }
+
+        var text = output.ToString();
+        Assert.Contains("Critical Seeding Error: " + typeof(InvalidOperationException).FullName, text);
+        Assert.Contains("Inner: " + typeof(FormatException).FullName, text);
+        Assert.DoesNotContain("SECRET", text);
+    }
+
+    // ── FIX4: a broken catalog row of one key ────────────────────────────────────────────────────────────
+
+    [Theory, MemberData(nameof(Keys))]
+    public async Task A_catalog_row_that_does_not_deserialize_skips_its_key_and_the_other_key_goes_on(string key)
+    {
+        var pair = Pair(key);
+        var other = Other(pair);
+        var tenant = Guid.NewGuid();
+        var readers = await OldRoleAsync(tenant, "Readers", pair.ReadKey, other.ReadKey);
+        var raw = _host.Database.GetCollection<BsonDocument>("permissions");
+        var stored = (await raw.Find(new BsonDocument("Key", pair.ExportKey)).SingleAsync())["DisplayName"];
+        await raw.UpdateOneAsync(new BsonDocument("Key", pair.ExportKey), new BsonDocument("$set", new BsonDocument("DisplayName", new BsonDocument("SECRET", 1))));
+        var logs = new CapturingLoggerProvider();
+        try
+        {
+            await RunAsync(logger: logs.CreateLogger<ExportGrantBackfillScenarioTests>());
+        }
+        finally
+        {
+            await raw.UpdateOneAsync(new BsonDocument("Key", pair.ExportKey), new BsonDocument("$set", new BsonDocument("DisplayName", stored)));
+        }
+
+        Assert.False(await HoldsAsync(readers, pair));
+        Assert.Equal(0, await Marks.CountDocumentsAsync(m => m.TenantId == tenant && m.Key == pair.ExportKey));
+        Assert.True(await HoldsAsync(readers, other));
+        Assert.Contains(logs.Entries, e => e.Level == LogLevel.Error && e.Message.Contains("catalog row"));
+        Assert.All(logs.Entries, e => Assert.DoesNotContain("SECRET", e.Message));
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────────────────────────────────

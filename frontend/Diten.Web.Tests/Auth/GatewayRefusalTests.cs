@@ -1,4 +1,10 @@
+using System.Net;
+using System.Text;
+using System.Text.Json;
+using Diten.Web;
 using Diten.Web.Services.Auth;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Diten.Web.Tests.Auth;
@@ -70,5 +76,98 @@ public sealed class GatewayRefusalTests
 
         Assert.Equal(1, refusal.FailureCount);
         Assert.False(refusal.HasUncoded);
+    }
+
+    // ── WP-ROLES-CLOSE-01 FIX4 item 7 — the governance proxies' answer, now in THIS class ─────────────────
+
+    [Fact]
+    public async Task A_coded_refusal_hands_over_every_code_and_the_proxys_own_sentence_never_the_service_s()
+    {
+        var logger = new LevelLogger();
+        var answer = Json(await GatewayRefusal.ReadAsync(Refused(HttpStatusCode.Conflict,
+            """{"isSuccessful":false,"errors":["Role name is already in use."],"errorCodes":[{"code":"ROLE_NAME_TAKEN"},{"code":"ROLE_NOT_FOUND"}]}"""), new KeyLocalizer(), logger));
+
+        Assert.False(answer.GetProperty("success").GetBoolean());
+        Assert.Equal("ROLE_NAME_TAKEN", answer.GetProperty("errorCode").GetString());
+        Assert.Equal(["ROLE_NAME_TAKEN", "ROLE_NOT_FOUND"], answer.GetProperty("errorCodes").EnumerateArray().Select(c => c.GetString()));
+        Assert.Equal("GatewayError", answer.GetProperty("errors")[0].GetString());
+        Assert.True(answer.GetProperty("local").GetBoolean());
+        Assert.DoesNotContain("already in use", answer.GetRawText());
+        Assert.Contains(logger.Lines, l => l.Contains("Role name is already in use.")); // it goes to the server log
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Conflict, """{"errors":["x"],"errorCodes":[{"code":"ROLE_NAME_TAKEN"}]}""", LogLevel.Information)] // a business refusal
+    [InlineData(HttpStatusCode.BadRequest, """{"errors":["raw"]}""", LogLevel.Warning)]                                           // no code
+    [InlineData(HttpStatusCode.InternalServerError, """{"errors":["x"],"errorCodes":[{"code":"ROLE_NAME_TAKEN"}]}""", LogLevel.Warning)] // a 5xx
+    public async Task A_coded_4xx_is_logged_as_Information_and_anything_else_as_Warning(HttpStatusCode status, string body, LogLevel expected)
+    {
+        var logger = new LevelLogger();
+
+        await GatewayRefusal.ReadAsync(Refused(status, body), new KeyLocalizer(), logger);
+
+        Assert.Equal([expected], logger.Levels);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized, "Unauthorized")]
+    [InlineData(HttpStatusCode.Forbidden, "AccessDenied")]
+    [InlineData(HttpStatusCode.BadGateway, "GatewayError")]
+    public async Task Without_a_code_the_answer_is_this_applications_sentence_for_the_status(HttpStatusCode status, string key)
+    {
+        var answer = Json(await GatewayRefusal.ReadAsync(Refused(status, "<html>upstream</html>"), new KeyLocalizer(), new LevelLogger()));
+
+        Assert.Equal(key, answer.GetProperty("errors")[0].GetString());
+        Assert.Empty(answer.GetProperty("errorCodes").EnumerateArray());
+        Assert.DoesNotContain("upstream", answer.GetRawText());
+    }
+
+    [Fact]
+    public void A_failed_call_logs_the_exception_and_answers_without_its_text()
+    {
+        var logger = new LevelLogger();
+
+        var answer = Json(GatewayRefusal.Failure(new HttpRequestException("Connection refused (gateway.internal:5000)"), new KeyLocalizer(), logger, "Roles create"));
+
+        Assert.Equal("GatewayError", answer.GetProperty("errors")[0].GetString());
+        Assert.DoesNotContain("gateway.internal", answer.GetRawText());
+        Assert.Equal([LogLevel.Error], logger.Levels);
+    }
+
+    [Fact]
+    public void A_form_refusal_carries_every_broken_rule()
+    {
+        var answer = Json(GatewayRefusal.Invalid(["ROLE_NAME_REQUIRED", "ROLE_DESCRIPTION_TOO_LONG"], new KeyLocalizer()));
+
+        Assert.Equal(["ROLE_NAME_REQUIRED", "ROLE_DESCRIPTION_TOO_LONG"], answer.GetProperty("errorCodes").EnumerateArray().Select(c => c.GetString()));
+        Assert.Equal("ValidationFailed", answer.GetProperty("errors")[0].GetString());
+    }
+
+    private static HttpResponseMessage Refused(HttpStatusCode status, string body) => new(status)
+    {
+        RequestMessage = new HttpRequestMessage(HttpMethod.Post, "http://gateway.test/api/roles"),
+        Content = new StringContent(body, Encoding.UTF8, "application/json")
+    };
+
+    private static JsonElement Json(object answer) => JsonDocument.Parse(JsonSerializer.Serialize(answer)).RootElement;
+
+    private sealed class KeyLocalizer : IStringLocalizer<SharedResource>
+    {
+        public LocalizedString this[string name] => new(name, name);
+        public LocalizedString this[string name, params object[] arguments] => new(name, name);
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
+    }
+
+    private sealed class LevelLogger : ILogger
+    {
+        public List<LogLevel> Levels { get; } = [];
+        public List<string> Lines { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            Levels.Add(logLevel);
+            Lines.Add(formatter(state, exception));
+        }
     }
 }

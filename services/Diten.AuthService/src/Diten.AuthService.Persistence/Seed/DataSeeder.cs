@@ -196,8 +196,10 @@ public static class DataSeeder
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Critical Seeding Error: {ex.Message}");
-            if (ex.InnerException != null) Console.WriteLine($"Inner: {ex.InnerException.Message}");
+            // The exception's TYPE only (and its inner exception's): a driver's or a serializer's message quotes values
+            // from the documents it was reading.
+            Console.WriteLine($"Critical Seeding Error: {ex.GetType().FullName}");
+            if (ex.InnerException != null) Console.WriteLine($"Inner: {ex.InnerException.GetType().FullName}");
         }
 
         // BL-452 / WP-ROLES-CLOSE-01 — the export backfill (an AUTHORITY WRITER) runs in its own step: a seed step that

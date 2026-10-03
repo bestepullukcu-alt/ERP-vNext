@@ -104,7 +104,6 @@ public static class ExportGrantBackfill
     public static bool IsOlderThanKey(DateTimeOffset createdAt, DateTimeOffset exportKeyCreatedAt)
     {
         if (createdAt == default || exportKeyCreatedAt == default) return false; // unknown → do not grant
-        if (exportKeyCreatedAt.UtcTicks <= ClockSkewAllowance.Ticks) return false;
         return createdAt.UtcTicks < exportKeyCreatedAt.UtcTicks - ClockSkewAllowance.Ticks;
     }
 
