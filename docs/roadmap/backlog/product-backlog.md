@@ -7836,9 +7836,16 @@ Sahiplenmenin sınırsız beklemesi (A3) ve park edilen geri çekmenin alarmı (
 
 ### BL-525
 
-**Görev yorumu görevin okunabilirliğini sormuyor: okuma anahtarı olan biri kiracıdaki herhangi bir göreve kimliğiyle yorum yazabiliyor**
+**Görevlerin yazma uçları görevin okunabilirliğini sormuyor: yorum, düzenleme, kontrol listesi, bağımlılık, alt görev, zaman girişi**
 
-DURUM: AÇIK · SAHİP: CT (Görev Merkezi / görevler) · BULAN: WP-WCN-TASK-REQUEST-01 D1 FIX1 ölçümü (2026-10-03) · KAYIT: 2026-10-03
+DURUM: AÇIK — düzeltme WP-WCN-TASK-REQUEST-01 D1 FIX2'de (`scratchpad/treq-fix2-prompt.md`) · SAHİP: CT (Görev Merkezi / görevler) · BULAN: WP-WCN-TASK-REQUEST-01 D1 FIX1 ölçümü + bağımsız gözden geçirme (2026-10-03) · KAYIT: 2026-10-03
+
+**Genişletme (gözden geçirme, CT doğruladı):** açık yalnız yorumda değil. `UpdateTaskItemHandler` görevi yalnız kimlikle buluyor
+(`TaskItemWriteHandlers.cs:54-102`, okuma kontrolü yok); kontrol listesi (`ChecklistHandlers.cs:40-52, 136-155`), bağımlılık
+(`TaskDependencyHandlers.cs:40-59`), alt görevde üst görev (`CreateTaskItemHandler.cs:334-360`) ve zaman girişi (`SaveTimeEntriesHandler.cs:144`)
+aynı. `tasks.update` taşıyan herhangi bir kiracı kullanıcısı, kimliğini bildiği HER görevi değiştirebiliyor; kimlikler `lookups/link-candidates`
+ile listelenebiliyor. Bu açık talep paketinden önce de vardı → canlıdaki Görev Merkezi'nde de olmalı. CT kararı: okuma kuralı her görev
+yazımının tabanı (okuyamayan 404), ilişki kuralları onun içinde daraltır.
 
 `AddTaskComment` işleyicisi yorumu yazmadan önce çağıranın o görevi okuyup okuyamadığını sormuyor; görev kimliğini bilen ya da tahmin eden,
 okuma anahtarı olan herhangi bir kiracı kullanıcısı başka birimin, başka şirketin görevine yorum yazabiliyor (yorum o görevin etkinlik akışına
