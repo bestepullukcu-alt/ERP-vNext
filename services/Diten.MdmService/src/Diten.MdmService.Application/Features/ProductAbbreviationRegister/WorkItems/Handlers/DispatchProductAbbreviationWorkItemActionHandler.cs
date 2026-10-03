@@ -56,7 +56,8 @@ public sealed class DispatchProductAbbreviationWorkItemActionHandler
                 ProductAbbreviationWorkItemContract.ProviderCode,
                 StringComparison.Ordinal)
             || !ProductAbbreviationWorkItemContract.ActionCodes.Contains(request.ActionCode)
-            || request.ExpectedVersion is null or < 0)
+            || request.ExpectedVersion is null or < 0
+            || !ValidIdempotencyKey(request.IdempotencyKey))
         {
             return Fail(400, "WORK_ITEM_ACTION_PAYLOAD_INVALID");
         }
@@ -113,16 +114,33 @@ public sealed class DispatchProductAbbreviationWorkItemActionHandler
             requestIdentity,
             request.ActionCode,
             request.ExpectedVersion.Value,
-            reason);
-        var former = workKind == WorkKind.Correction
+            reason,
+            request.IdempotencyKey);
+
+        // FIX1 B1(a): a decision is taken only on a request that is still waiting for one. A decided entry reaches
+        // its command again only as THIS command's own replay (its last decision carries this operation's key) —
+        // the way an interrupted decision is finished — never as a new decision on a cancelled or rejected request.
+        if (workKind != WorkKind.Retirement
+            && entry.LifecycleStatus != ProductAbbreviationLifecycleStatus.REQUESTED
+            && entry.LastDecisionIdempotencyKey != operationKey
+            && entry.LastDecisionIdempotencyKey != operationKey + ":replacement")
+        {
+            // The Task Center's own conflict code: it already has a sentence for it in every language.
+            return Fail(409, "CONCURRENCY_CONFLICT");
+        }
+
+        // Approving a correction needs the code it replaces to be active. Rejecting or cancelling it does not: an
+        // orphaned correction (its code already retired) must still be cleaned up from the Task Center (FIX1 B3c).
+        var former = workKind == WorkKind.Correction && request.ActionCode == "approve"
             ? await _register.GetByIdAsync(entry.ReplacesEntryId!.Value, cancellationToken)
             : null;
-        if (workKind == WorkKind.Correction
+        if (workKind == WorkKind.Correction && request.ActionCode == "approve"
+            && entry.LifecycleStatus == ProductAbbreviationLifecycleStatus.REQUESTED
             && (former is null
                 || former.GlobalProductId != entry.GlobalProductId
                 || former.LifecycleStatus != ProductAbbreviationLifecycleStatus.ACTIVE))
         {
-            return Fail(409, "CONCURRENCY_CONFLICT");
+            return Fail(409, "ABBREVIATION_CORRECTION_FORMER_NOT_ACTIVE");
         }
 
         Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto> response =
@@ -189,7 +207,8 @@ public sealed class DispatchProductAbbreviationWorkItemActionHandler
         string requestIdentity,
         string actionCode,
         int expectedVersion,
-        string? reason)
+        string? reason,
+        string? callerIdempotencyKey = null)
     {
         reason = NormalizeReason(reason);
         var canonicalReason = reason is null
@@ -205,6 +224,11 @@ public sealed class DispatchProductAbbreviationWorkItemActionHandler
             $"expectedVersion={expectedVersion.ToString(CultureInfo.InvariantCulture)}",
             $"reason={canonicalReason}",
             string.Empty);
+        if (!string.IsNullOrEmpty(callerIdempotencyKey))
+        {
+            // Appended only when the caller sent one, so every key minted before FIX1 is unchanged byte for byte.
+            canonicalPayload += $"idempotencyKey={Encoding.UTF8.GetByteCount(callerIdempotencyKey).ToString(CultureInfo.InvariantCulture)}:{callerIdempotencyKey}\n";
+        }
         var payloadHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonicalPayload)));
         return $"abb-wc:{itemId:N}:{workKind}:{actionCode}:v{expectedVersion.ToString(CultureInfo.InvariantCulture)}:{payloadHash}";
     }
@@ -217,6 +241,10 @@ public sealed class DispatchProductAbbreviationWorkItemActionHandler
             actionCode,
             expectedVersion,
             reason);
+
+    /// <summary>Printable ASCII, at most 200 characters — a key is an identifier, never free text.</summary>
+    private static bool ValidIdempotencyKey(string? key)
+        => key is null || key.Length is > 0 and <= 200 && key.All(character => character is > ' ' and <= '~');
 
     private static string? NormalizeReason(string? reason)
         => reason?.Replace("\r\n", "\n", StringComparison.Ordinal)
@@ -288,7 +316,7 @@ public sealed class DispatchProductAbbreviationWorkItemActionHandler
                 .Select(x => x.IdempotencyKey).Distinct(StringComparer.Ordinal).ToArray()
             : new[] { entry.Id.ToString("D") };
         var operationKeys = identities.Select(identity => BuildOperationKey(entry.Id, WorkKindCode(kind), identity,
-            request.ActionCode, request.ExpectedVersion!.Value, reason))
+            request.ActionCode, request.ExpectedVersion!.Value, reason, request.IdempotencyKey))
             .Where(candidate => key == candidate || kind == WorkKind.Correction && request.ActionCode == "approve"
                 && key == candidate + ":replacement").Take(2).ToArray();
         if (operationKeys.Length != 1) return false;

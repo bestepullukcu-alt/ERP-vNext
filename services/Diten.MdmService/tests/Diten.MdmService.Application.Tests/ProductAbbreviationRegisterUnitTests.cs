@@ -369,11 +369,9 @@ public sealed class ProductAbbreviationRegisterUnitTests
             TransitionCalls++;
             throw new InvalidOperationException("Transition must not be called for maker self-approval.");
         }
-        public Task<ProductAbbreviationRegisterWriteResult> RequestRetirementAsync(Guid id, int expectedVersion, string retirementRequestId, string makerSubjectId, string idempotencyKey, string? reason, DateTimeOffset requestedAtUtc, CancellationToken cancellationToken = default)
+        public Task<ProductAbbreviationRegisterWriteResult> RequestRetirementAsync(Guid id, int expectedVersion, string retirementRequestId, string makerSubjectId, string idempotencyKey, string? reason, DateTimeOffset requestedAtUtc, CancellationToken cancellationToken = default, Guid? observedPendingCorrection = null)
             => throw new NotSupportedException();
         public Task<ProductAbbreviationRegisterWriteResult> ClearRetirementRequestAsync(Guid id, int expectedVersion, string retirementRequestId, string checkerSubjectId, string idempotencyKey, string? reason, DateTimeOffset decidedAtUtc, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
-        public Task<ProductAbbreviationRegisterWriteResult> ReconcileCorrectionApprovalAsync(Guid formerEntryId, int expectedFormerVersion, Guid replacementEntryId, int expectedReplacementVersion, string checkerSubjectId, string idempotencyKey, string? reason, DateTimeOffset decidedAtUtc, CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
     }
 

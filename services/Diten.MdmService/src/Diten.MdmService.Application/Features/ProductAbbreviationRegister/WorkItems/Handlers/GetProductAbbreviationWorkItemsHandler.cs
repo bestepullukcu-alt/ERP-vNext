@@ -9,6 +9,8 @@ using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Diten.MdmService.Application.Features.ProductAbbreviationRegister.WorkItems.Handlers;
 
@@ -21,6 +23,16 @@ public sealed class GetProductAbbreviationWorkItemsHandler
     private readonly IProductAbbreviationActorContext _actor;
     private readonly ProductAbbreviationAuthorization _authorization;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
+    private readonly ILogger<GetProductAbbreviationWorkItemsHandler> _logger;
+
+    /// <summary>
+    /// FIX1 S8 — Platform's remote-provider contract has no paging (one GET, one list; measured in
+    /// RemoteWorkItemProviderOptions / HttpWorkItemProvider). So the pages are read HERE, in id order, until the
+    /// reader's visible items fill the answer — a tenant with more pending work than one page no longer fails
+    /// everybody's Task Center. The page budget bounds one call; reaching it is logged, never a failure.
+    /// </summary>
+    public const int PageSize = 100;
+    public const int MaximumPages = 20;
 
     public GetProductAbbreviationWorkItemsHandler(
         IProductAbbreviationRegisterRepository register,
@@ -29,8 +41,10 @@ public sealed class GetProductAbbreviationWorkItemsHandler
         IProductLegalEntityScopeRolloutStateRepository rolloutStates,
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILogger<GetProductAbbreviationWorkItemsHandler>? logger = null)
     {
+        _logger = logger ?? NullLogger<GetProductAbbreviationWorkItemsHandler>.Instance;
         _register = register;
         _globalProducts = globalProducts;
         _actor = actor;
@@ -50,48 +64,6 @@ public sealed class GetProductAbbreviationWorkItemsHandler
                 authorization.ErrorCode!);
         }
 
-        var pending = await _register.GetPendingWorkItemsAsync(
-            ProductAbbreviationWorkItemContract.OverflowSentinelLimit,
-            cancellationToken);
-        if (pending.Count > ProductAbbreviationWorkItemContract.MaximumItems)
-        {
-            return ProductAbbreviationWorkItemOperationResult<ProductAbbreviationWorkItemProjectionResponse>.Fail(
-                503,
-                "ABBREVIATION_WORK_ITEM_BOUND_EXCEEDED");
-        }
-
-        if (pending.Any(IsInconsistent))
-        {
-            return ProductAbbreviationWorkItemOperationResult<ProductAbbreviationWorkItemProjectionResponse>.Fail(
-                503,
-                "ABBREVIATION_WORK_ITEM_SOURCE_INCONSISTENT");
-        }
-
-        foreach (var correction in pending.Where(x => x.ReplacesEntryId.HasValue
-                     && x.LifecycleStatus == ProductAbbreviationLifecycleStatus.REQUESTED))
-        {
-            var former = await _register.GetByIdAsync(correction.ReplacesEntryId!.Value, cancellationToken);
-            if (former is null
-                || former.GlobalProductId != correction.GlobalProductId
-                || former.LifecycleStatus != ProductAbbreviationLifecycleStatus.ACTIVE)
-            {
-                return ProductAbbreviationWorkItemOperationResult<ProductAbbreviationWorkItemProjectionResponse>.Fail(
-                    503,
-                    "ABBREVIATION_WORK_ITEM_SOURCE_INCONSISTENT");
-            }
-        }
-
-        var productIds = pending.Select(x => x.GlobalProductId).Distinct().ToArray();
-        var products = await _globalProducts.GetByIdsAsync(productIds, cancellationToken);
-        var productsById = products.ToDictionary(x => x.Id);
-        if (productsById.Count != productIds.Length
-            || productIds.Any(id => !productsById.ContainsKey(id)))
-        {
-            return ProductAbbreviationWorkItemOperationResult<ProductAbbreviationWorkItemProjectionResponse>.Fail(
-                503,
-                "ABBREVIATION_WORK_ITEM_SOURCE_INCONSISTENT");
-        }
-
         var scope = await _scopeGuard.ResolveContextAsync(ProductAbbreviationPermissions.Read, cancellationToken);
         if (!scope.IsSuccessful)
         {
@@ -100,29 +72,125 @@ public sealed class GetProductAbbreviationWorkItemsHandler
                 scope.FailureCode!);
         }
 
-        var visibleProductIds = new HashSet<Guid>();
-        foreach (var productId in productIds)
+        var items = new List<ProductAbbreviationWorkItemProjection>();
+        Guid? after = null;
+        var pages = 0;
+        var exhausted = false;
+        while (items.Count < request.Limit && pages < MaximumPages)
         {
-            var decision = await _scopeGuard.EvaluateAsync(scope.Context!, productId, cancellationToken);
+            var page = await _register.GetPendingWorkItemsPageAsync(after, PageSize, cancellationToken);
+            pages++;
+            if (page.Count == 0)
+            {
+                exhausted = true;
+                break;
+            }
+
+            after = page[^1].Id;
+            await ProjectPageAsync(page, scope.Context!, request.Limit, items, cancellationToken);
+            if (page.Count < PageSize)
+            {
+                exhausted = true;
+                break;
+            }
+        }
+
+        if (!exhausted && items.Count < request.Limit)
+        {
+            _logger.LogWarning(
+                "ABB work-item projection stopped after {Pages} pages of {PageSize} for tenant {TenantId}; later pending items are not on this answer.",
+                pages,
+                PageSize,
+                _actor.TenantId);
+        }
+
+        return ProductAbbreviationWorkItemOperationResult<ProductAbbreviationWorkItemProjectionResponse>.Success(
+            new(ProductAbbreviationWorkItemContract.ContractVersion, items.ToArray()));
+    }
+
+    /// <summary>
+    /// FIX1 B3(b) — one bad row is ONE row: it is left out and logged (entry id and reason code only), and every other
+    /// row of the tenant is still projected. A correction whose code is no longer active is not bad, it is an
+    /// orphan: it is projected with reject / cancel only, so it can be cleaned up from the Task Center.
+    /// </summary>
+    private async Task ProjectPageAsync(
+        IReadOnlyList<ProductAbbreviationRegisterEntry> page,
+        ProductLegalEntityScopeConsumerContext scope,
+        int limit,
+        List<ProductAbbreviationWorkItemProjection> items,
+        CancellationToken cancellationToken)
+    {
+        var consistent = new List<ProductAbbreviationRegisterEntry>();
+        foreach (var entry in page)
+        {
+            if (IsInconsistent(entry))
+            {
+                Skip(entry, "ABBREVIATION_WORK_ITEM_SOURCE_INCONSISTENT");
+                continue;
+            }
+
+            consistent.Add(entry);
+        }
+
+        var orphans = new HashSet<Guid>();
+        foreach (var correction in consistent.Where(x => x.ReplacesEntryId.HasValue
+                     && x.LifecycleStatus == ProductAbbreviationLifecycleStatus.REQUESTED))
+        {
+            var former = await _register.GetByIdAsync(correction.ReplacesEntryId!.Value, cancellationToken);
+            if (former is null
+                || former.GlobalProductId != correction.GlobalProductId
+                || former.LifecycleStatus != ProductAbbreviationLifecycleStatus.ACTIVE)
+            {
+                orphans.Add(correction.Id);
+            }
+        }
+
+        var productIds = consistent.Select(x => x.GlobalProductId).Distinct().ToArray();
+        var products = productIds.Length == 0
+            ? []
+            : await _globalProducts.GetByIdsAsync(productIds, cancellationToken);
+        var productsById = products.ToDictionary(x => x.Id);
+        var visibleProductIds = new HashSet<Guid>();
+        foreach (var productId in productIds.Where(productsById.ContainsKey))
+        {
+            var decision = await _scopeGuard.EvaluateAsync(scope, productId, cancellationToken);
             if (decision.Allowed)
             {
                 visibleProductIds.Add(productId);
             }
         }
 
-        var items = pending
-            .Where(x => visibleProductIds.Contains(x.GlobalProductId))
-            .Take(request.Limit)
-            .Select(x => Project(x, productsById[x.GlobalProductId]))
-            .ToArray();
+        foreach (var entry in consistent)
+        {
+            if (items.Count >= limit)
+            {
+                return;
+            }
 
-        return ProductAbbreviationWorkItemOperationResult<ProductAbbreviationWorkItemProjectionResponse>.Success(
-            new(ProductAbbreviationWorkItemContract.ContractVersion, items));
+            if (!productsById.TryGetValue(entry.GlobalProductId, out var product))
+            {
+                Skip(entry, "ABBREVIATION_WORK_ITEM_PRODUCT_MISSING");
+                continue;
+            }
+
+            if (visibleProductIds.Contains(entry.GlobalProductId))
+            {
+                items.Add(Project(entry, product, orphans.Contains(entry.Id)));
+            }
+        }
     }
+
+    private void Skip(ProductAbbreviationRegisterEntry entry, string reasonCode)
+        => _logger.LogWarning(
+            "ABB work item {EntryId} of tenant {TenantId} left out of the projection: {ReasonCode}.",
+            entry.Id,
+            _actor.TenantId,
+            reasonCode);
 
     private ProductAbbreviationWorkItemProjection Project(
         ProductAbbreviationRegisterEntry entry,
-        GlobalProduct product)
+        GlobalProduct product,
+        bool orphan)
     {
         var isRetirement = entry.LifecycleStatus == ProductAbbreviationLifecycleStatus.ACTIVE;
         var isCorrection = entry.ReplacesEntryId.HasValue;
@@ -142,6 +210,12 @@ public sealed class GetProductAbbreviationWorkItemsHandler
                 Action("approve", "WorkAggregation_Action_Approve", requiresReason: false),
                 Action("reject", "WorkAggregation_Action_Reject", requiresReason: true)
             ];
+        if (orphan)
+        {
+            // The code this correction would replace is no longer active: approving it is impossible, closing it is not.
+            actions = actions.Where(action => action.Code != "approve").ToArray();
+        }
+
         actions = actions.Where(action => _actor.GrantedPermissions.Contains(action.Code switch
         {
             "approve" => ProductAbbreviationPermissions.Approve,

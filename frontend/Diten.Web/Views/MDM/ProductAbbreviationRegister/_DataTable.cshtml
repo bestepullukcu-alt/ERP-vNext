@@ -4,10 +4,11 @@
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
 <div class="card">
-    <div id="skeleton-loader" class="p-4" style="display: none;">
-        <div class="shimmer skeleton-row mb-4" style="width: 100%; height: 32px;"></div>
-        <div class="shimmer skeleton-row mb-3" style="width: 100%; height: 24px;"></div>
-        <div class="shimmer skeleton-row" style="width: 100%; height: 24px;"></div>
+    @* FIX1 #12 (FG-003): the golden skeleton's own classes instead of inline style. *@
+    <div id="skeleton-loader" class="p-4 backbone-skeleton">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
     </div>
     <div class="card-datatable table-responsive">
         <table id="dt-product-abbreviation-register" data-dt-standard="v2"

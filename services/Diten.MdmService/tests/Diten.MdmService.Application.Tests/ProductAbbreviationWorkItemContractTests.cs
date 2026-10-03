@@ -184,12 +184,194 @@ public sealed class ProductAbbreviationWorkItemContractTests
             new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
 
         Assert.False(request.HasUnmappedFields);
-        Assert.True((request with { Payload = request.Payload! with { IdempotencyKey = "caller-key" } }).HasUnmappedFields);
+        // FIX1 C1: the Task Center's own key is a mapped field (it was refused as "unknown" before, so no ABB decision
+        // could cross from the Task Center at all).
+        Assert.False((request with { Payload = request.Payload! with { IdempotencyKey = "caller-key" } }).HasUnmappedFields);
         Assert.True((request with { Payload = request.Payload! with { PlannedDate = DateTimeOffset.UtcNow } }).HasUnmappedFields);
 
         var unknown = JsonSerializer.Deserialize<ProductAbbreviationWorkItemActionRequest>(
             """{"providerCode":"mdm-product-abbreviations","unexpected":true,"payload":{"expectedVersion":0}}""",
             new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
         Assert.True(unknown.HasUnmappedFields);
+    }
+
+    // ── FIX1 C1 / C2 ────────────────────────────────────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("body-key", null, 200, "body-key")]
+    [InlineData(null, "header-key", 200, "header-key")]
+    [InlineData("same-key", "same-key", 200, "same-key")]
+    [InlineData("body-key", "other-key", 400, null)]
+    public async Task The_controller_binds_one_idempotency_key_and_refuses_two_that_disagree(
+        string? bodyKey, string? headerKey, int expectedStatus, string? boundKey)
+    {
+        var mediator = new CapturingMediator();
+        var controller = new ProductAbbreviationWorkItemsController(mediator);
+        var request = new ProductAbbreviationWorkItemActionRequest(
+            ProductAbbreviationWorkItemContract.ProviderCode,
+            new ProductAbbreviationWorkItemActionPayload(ExpectedVersion: 0, IdempotencyKey: bodyKey));
+
+        var result = (ObjectResult)await controller.DispatchAction(Guid.NewGuid(), "approve", request, headerKey);
+
+        Assert.Equal(expectedStatus, result.StatusCode);
+        if (expectedStatus == 400)
+        {
+            Assert.Null(mediator.Sent);
+            Assert.Contains("WORK_ITEM_IDEMPOTENCY_KEY_CONFLICT", JsonSerializer.Serialize(result.Value));
+        }
+        else
+        {
+            Assert.Equal(boundKey, mediator.Sent!.IdempotencyKey);
+        }
+    }
+
+    [Fact]
+    public void Platforms_development_provider_row_reaches_the_routes_and_actions_MDM_serves()
+    {
+        // FIX1 C3 — without this row no ABB item reaches the Task Center. Its two paths are not the contract's
+        // defaults, so they are compared with the routes on MDM's controller, and its actions with the contract's.
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "AGENTS.md")))
+            root = root.Parent;
+        Assert.NotNull(root);
+        using var settings = JsonDocument.Parse(File.ReadAllText(Path.Combine(root.FullName,
+            "services", "Diten.Platform", "src", "Diten.Platform.API", "appsettings.Development.json")),
+            new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip });
+        var row = Assert.Single(settings.RootElement.GetProperty("WorkAggregation").GetProperty("RemoteProviders")
+                .EnumerateArray(),
+            item => item.GetProperty("ProviderCode").GetString() == ProductAbbreviationWorkItemContract.ProviderCode);
+        var controller = typeof(ProductAbbreviationWorkItemsController);
+        var prefix = controller.GetCustomAttribute<RouteAttribute>()!.Template;
+        var projection = controller.GetMethod(nameof(ProductAbbreviationWorkItemsController.GetProjection))!
+            .GetCustomAttribute<HttpGetAttribute>()!.Template;
+        var action = controller.GetMethod(nameof(ProductAbbreviationWorkItemsController.DispatchAction))!
+            .GetCustomAttribute<HttpPostAttribute>()!.Template!.Replace("{itemId:guid}", "{itemId}", StringComparison.Ordinal);
+
+        Assert.Equal(ProductAbbreviationWorkItemContract.ContractVersion, row.GetProperty("ContractVersion").GetString());
+        Assert.Equal($"{prefix}/{projection}", row.GetProperty("ProjectionPath").GetString());
+        Assert.Equal($"{prefix}/{action}", row.GetProperty("ActionPathTemplate").GetString());
+        Assert.True(Uri.TryCreate(row.GetProperty("BaseUrl").GetString(), UriKind.Absolute, out _));
+        var actions = row.GetProperty("Actions").EnumerateObject().ToDictionary(x => x.Name, x => x.Value.GetString());
+        Assert.Equal(ProductAbbreviationWorkItemContract.ActionCodes.Order(), actions.Keys.Order());
+        Assert.Equal(ProductAbbreviationPermissions.Approve, actions["approve"]);
+        Assert.Equal(ProductAbbreviationPermissions.Reject, actions["reject"]);
+        Assert.Equal(ProductAbbreviationPermissions.Cancel, actions["cancel"]);
+    }
+
+    [Fact]
+    public async Task The_Task_Centers_real_body_crosses_Platform_and_binds_in_MDM()
+    {
+        // FIX1 C2 — the browser half (tests/abb-work-item-action-contract.test.js) pins this fixture to what
+        // app.js + work-items-api.js actually post. Here it goes through Platform's REAL HttpWorkItemActionDispatcher
+        // (Release build, as the projection test above) and the bytes Platform forwards are bound by MDM's own model.
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root is not null && !File.Exists(Path.Combine(root.FullName, "AGENTS.md")))
+            root = root.Parent;
+        Assert.NotNull(root);
+        using var fixture = JsonDocument.Parse(File.ReadAllText(Path.Combine(root.FullName,
+            "frontend", "Diten.Web", "tests", "fixtures", "abb-work-item-action-approve.wcn-body.json")));
+        var browserPayload = fixture.RootElement.GetProperty("payload");
+        var fixtureKey = browserPayload.GetProperty("idempotencyKey").GetString();
+        var web = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+
+        var platformBin = Path.Combine(root.FullName, "services", "Diten.Platform", "src",
+            "Diten.Platform.API", "bin", "Release", "net8.0");
+        var infrastructure = Assembly.LoadFrom(Path.Combine(platformBin, "Diten.Platform.Infrastructure.dll"));
+        var application = Assembly.LoadFrom(Path.Combine(platformBin, "Diten.Platform.Application.dll"));
+        var optionsType = infrastructure.GetType("Diten.Platform.Infrastructure.Settings.RemoteWorkItemProviderOptions", true)!;
+        var gatewayType = infrastructure.GetType("Diten.Platform.Infrastructure.Services.WorkAggregation.RemoteWorkItemGateway", true)!;
+        var dispatcherType = infrastructure.GetType("Diten.Platform.Infrastructure.Services.WorkAggregation.HttpWorkItemActionDispatcher", true)!;
+        var payloadType = application.GetType("Diten.Platform.Application.Features.WorkAggregation.Dispatch.WorkItemActionPayloadDto", true)!;
+        var requestType = application.GetType("Diten.Platform.Application.Features.WorkAggregation.Dispatch.WorkItemActionDispatchRequest", true)!;
+        var actorType = application.GetType("Diten.Platform.Application.Features.WorkAggregation.WorkItemActor", true)!;
+        var resilienceType = application.GetType("Diten.Platform.Application.Features.WorkAggregation.Services.WorkAggregationResilienceOptions", true)!;
+
+        var row = Activator.CreateInstance(optionsType)!;
+        optionsType.GetProperty("ProviderCode")!.SetValue(row, ProductAbbreviationWorkItemContract.ProviderCode);
+        optionsType.GetProperty("BaseUrl")!.SetValue(row, "https://abb-fixture.invalid");
+        optionsType.GetProperty("ProjectionPath")!.SetValue(row, "api/v1/work-items/product-abbreviations/projection");
+        optionsType.GetProperty("ActionPathTemplate")!.SetValue(row, "api/v1/work-items/product-abbreviations/{itemId}/actions/{actionCode}");
+        optionsType.GetProperty("Actions")!.SetValue(row, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["approve"] = ProductAbbreviationPermissions.Approve
+        });
+        var itemId = Guid.Parse("6b0f5d43-2c1e-4d8a-9a57-0c2f6f1e7a10");
+        var answer = JsonSerializer.Serialize(
+            ProductAbbreviationWorkItemEnvelope<ProductAbbreviationWorkItemActionResponse>.Success(
+                new(itemId.ToString("D"), ProductAbbreviationWorkItemContract.ProviderCode, "approve")),
+            web);
+        var tenantId = Guid.NewGuid();
+        using var handler = new CapturingHandler(answer);
+        using var client = new HttpClient(handler);
+        var http = new Microsoft.AspNetCore.Http.HttpContextAccessor { HttpContext = new Microsoft.AspNetCore.Http.DefaultHttpContext() };
+        http.HttpContext.Request.Headers.Authorization = "Bearer synthetic-human-fixture";
+        var tenantInterface = gatewayType.GetConstructors().Single().GetParameters()[2].ParameterType;
+        var tenant = DispatchProxy.Create(tenantInterface, typeof(ProjectionTenantProxy));
+        ((ProjectionTenantProxy)tenant).Tenant = tenantId;
+        var gateway = Activator.CreateInstance(gatewayType, new ProjectionClientFactory(client), http, tenant)!;
+        var resilience = typeof(Microsoft.Extensions.Options.Options).GetMethod("Create")!
+            .MakeGenericMethod(resilienceType).Invoke(null, [Activator.CreateInstance(resilienceType)])!;
+        var logger = Activator.CreateInstance(
+            typeof(Microsoft.Extensions.Logging.Abstractions.NullLogger<>).MakeGenericType(dispatcherType))!;
+        var dispatcher = Activator.CreateInstance(dispatcherType, row, gateway, resilience, logger)!;
+        var payload = JsonSerializer.Deserialize(browserPayload.GetRawText(), payloadType, web)!;
+        var actor = Activator.CreateInstance(actorType, Guid.NewGuid(), false, new HashSet<string>(StringComparer.Ordinal))!;
+        var dispatch = Activator.CreateInstance(requestType, itemId, "approve", payload, actor, "contract-correlation")!;
+
+        var task = (Task)dispatcherType.GetMethod("DispatchAsync")!.Invoke(dispatcher, [dispatch, CancellationToken.None])!;
+        await task;
+
+        Assert.Equal($"/api/v1/work-items/product-abbreviations/{itemId:D}/actions/approve", handler.Path);
+        var forwarded = JsonSerializer.Deserialize<ProductAbbreviationWorkItemActionRequest>(handler.Body!, web)!;
+        Assert.False(forwarded.HasUnmappedFields);
+        Assert.Equal(0, forwarded.Payload!.ExpectedVersion);
+        Assert.Equal(fixtureKey, forwarded.Payload.IdempotencyKey);
+
+        var mediator = new CapturingMediator();
+        var bound = (ObjectResult)await new ProductAbbreviationWorkItemsController(mediator)
+            .DispatchAction(itemId, "approve", forwarded);
+        Assert.Equal(200, bound.StatusCode);
+        Assert.Equal(fixtureKey, mediator.Sent!.IdempotencyKey);
+        Assert.Equal(0, mediator.Sent.ExpectedVersion);
+    }
+
+    private sealed class CapturingHandler(string answer) : HttpMessageHandler
+    {
+        public string? Body { get; private set; }
+        public string? Path { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            Path = request.RequestUri!.AbsolutePath;
+            Body = await request.Content!.ReadAsStringAsync(ct);
+            return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            { Content = new StringContent(answer, System.Text.Encoding.UTF8, "application/json") };
+        }
+    }
+
+    private sealed class CapturingMediator : IMediator
+    {
+        public Diten.MdmService.Application.Features.ProductAbbreviationRegister.WorkItems.Commands
+            .DispatchProductAbbreviationWorkItemActionCommand? Sent { get; private set; }
+
+        public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+        {
+            Sent = (Diten.MdmService.Application.Features.ProductAbbreviationRegister.WorkItems.Commands
+                .DispatchProductAbbreviationWorkItemActionCommand)(object)request;
+            object result = ProductAbbreviationWorkItemOperationResult<ProductAbbreviationWorkItemActionResponse>.Success(
+                new(Sent.ItemId.ToString("D"), ProductAbbreviationWorkItemContract.ProviderCode, Sent.ActionCode));
+            return Task.FromResult((TResponse)result);
+        }
+
+        public Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest
+            => throw new NotSupportedException();
+        public Task<object?> Send(object request, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+        public IAsyncEnumerable<object?> CreateStream(object request, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+        public Task Publish(object notification, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
+            where TNotification : INotification => throw new NotSupportedException();
     }
 }

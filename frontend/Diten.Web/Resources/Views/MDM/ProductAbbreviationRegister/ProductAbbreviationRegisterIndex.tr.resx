@@ -13,5 +13,22 @@
 <data name="RequestCorrection" xml:space="preserve"><value>Düzeltme talebi</value></data>
 <data name="ReplacementAbbreviation" xml:space="preserve"><value>Yeni ABB</value></data>
 <data name="Reason" xml:space="preserve"><value>Gerekçe</value></data>
-<data name="ErrorReconciliation" xml:space="preserve"><value>Kanıt uzlaştırması bekleniyor. Yeniden denemeden önce yükleyin.</value></data>
+<data name="ErrorReconciliation" xml:space="preserve"><value>Değişiklik henüz tam kaydedilmedi. Tamamlamak için aynı işlemi değiştirmeden tekrar edin.</value></data>
+<data name="ErrorAlreadyAllocated" xml:space="preserve"><value>Bu kısaltma zaten alınmış. Kodlar bir daha kullanılmaz; başka bir kısaltma seçin.</value></data>
+<data name="ErrorCorrectionUnchanged" xml:space="preserve"><value>Yeni kısaltma mevcut kısaltmayla aynı.</value></data>
+<data name="ErrorRequestClosed" xml:space="preserve"><value>Bu kod daha önce istendi ve istek kapandı. Bunun yerine yeni bir istek oluşturun.</value></data>
+<data name="ErrorProductHasEntry" xml:space="preserve"><value>Bu ürünün zaten etkin ya da onay bekleyen bir kısaltması var.</value></data>
+<data name="ErrorCorrectionPending" xml:space="preserve"><value>Bu kodun bir düzeltmesi zaten karar bekliyor.</value></data>
+<data name="ErrorRetirementPending" xml:space="preserve"><value>Bu kodun emekliye ayrılması zaten karar bekliyor.</value></data>
+<data name="ErrorNotPending" xml:space="preserve"><value>Bu istek hakkında zaten karar verilmiş. Durumunu görmek için sayfayı yenileyin.</value></data>
+<data name="ErrorFormerNotActive" xml:space="preserve"><value>Bu düzeltmenin yerini alacağı kod artık etkin değil. Düzeltme yalnızca reddedilebilir ya da iptal edilebilir.</value></data>
+<data name="ErrorKeyReused" xml:space="preserve"><value>Bu işlem başka bir kayıt için zaten kullanılmış. Sayfayı yenileyip tekrar deneyin.</value></data>
+<data name="ErrorProductNotFound" xml:space="preserve"><value>Seçilen Global Ürün bulunamadı.</value></data>
+<data name="ErrorCorrectionRequiresActive" xml:space="preserve"><value>Yalnızca etkin bir kod düzeltilebilir.</value></data>
+<data name="ErrorRetirementRequestNotFound" xml:space="preserve"><value>Bu emekliye ayırma isteği artık karar beklemiyor.</value></data>
+<data name="ErrorPersistenceUnavailable" xml:space="preserve"><value>Kayıt geçici olarak kullanılamıyor. Hiçbir şey değişmedi; aynı işlemi tekrar edin.</value></data>
+<data name="ErrorCancelNotOwner" xml:space="preserve"><value>İsteği yalnızca onu oluşturan kişi iptal edebilir.</value></data>
+<data name="ErrorMakerChecker" xml:space="preserve"><value>Bir isteği oluşturan kişi o istek hakkında karar veremez.</value></data>
+<data name="CancelRequest" xml:space="preserve"><value>İsteği iptal et</value></data>
+<data name="OpenInTaskCenter" xml:space="preserve"><value>Görev Merkezi'nde aç</value></data>
 </root>

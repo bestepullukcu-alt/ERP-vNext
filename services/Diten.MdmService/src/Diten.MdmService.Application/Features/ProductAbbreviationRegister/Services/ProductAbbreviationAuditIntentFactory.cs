@@ -52,6 +52,9 @@ public static class ProductAbbreviationAuditIntentFactory
                 "Unsupported product abbreviation audit event.")
         };
 
+        // FIX1 S1: the version the decision produced, as its history row recorded it — never the entry's version at
+        // whatever later moment the intent happens to be written.
+        var postVersion = history.PostVersion ?? entry.Version;
         var intentId = DeterministicGuid(
             $"{entry.TenantId:D}|{entry.Id:D}|{operation}|{history.IdempotencyKey}");
         return new LocalAuditIntent
@@ -60,8 +63,8 @@ public static class ProductAbbreviationAuditIntentFactory
             TenantId = entry.TenantId,
             AggregateType = AuditAggregateType.ProductAbbreviation,
             AggregateId = entry.Id,
-            PreVersion = entry.Version - 1,
-            PostVersion = entry.Version,
+            PreVersion = postVersion - 1,
+            PostVersion = postVersion,
             Operation = operation,
             ActorId = history.CanonicalHumanSubjectId,
             ContractVersion = "mod-0290.audit-intent.v1",
@@ -71,12 +74,12 @@ public static class ProductAbbreviationAuditIntentFactory
                     : DeterministicGuid(history.CorrelationId).ToString("D"),
             CausationId = history.IdempotencyKey,
             CommandId = history.IdempotencyKey,
-            Sequence = entry.Version,
+            Sequence = postVersion,
             TimestampUtc = history.OccurredAtUtc,
             TimestampUtcTicksV1 = history.OccurredAtUtc.UtcTicks,
             TemporalStorageVersion = AuditIntentTemporalStorage.CurrentVersion,
             EvidenceHash = Convert.ToHexString(SHA256.HashData(EncodeFacts(entry, history))),
-            SnapshotReference = $"ProductAbbreviation/{entry.Id:N}/{entry.Version}",
+            SnapshotReference = $"ProductAbbreviation/{entry.Id:N}/{postVersion}",
             DeliveryState = AuditIntentDeliveryState.Pending,
             IdempotencyKey = history.IdempotencyKey
         };

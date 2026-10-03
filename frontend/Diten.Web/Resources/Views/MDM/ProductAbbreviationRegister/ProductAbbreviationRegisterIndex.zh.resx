@@ -13,5 +13,22 @@
 <data name="RequestCorrection" xml:space="preserve"><value>申请更正</value></data>
 <data name="ReplacementAbbreviation" xml:space="preserve"><value>替代 ABB</value></data>
 <data name="Reason" xml:space="preserve"><value>原因</value></data>
-<data name="ErrorReconciliation" xml:space="preserve"><value>证据核对尚未完成。请重新加载后再试。</value></data>
+<data name="ErrorReconciliation" xml:space="preserve"><value>更改尚未完全记录。请原样重复相同操作以完成。</value></data>
+<data name="ErrorAlreadyAllocated" xml:space="preserve"><value>该缩写已被占用。代码永不重复使用，请选择其他缩写。</value></data>
+<data name="ErrorCorrectionUnchanged" xml:space="preserve"><value>新缩写与当前缩写相同。</value></data>
+<data name="ErrorRequestClosed" xml:space="preserve"><value>该代码已申请过且申请已关闭。请改为提交新申请。</value></data>
+<data name="ErrorProductHasEntry" xml:space="preserve"><value>该产品已有生效或待审批的缩写。</value></data>
+<data name="ErrorCorrectionPending" xml:space="preserve"><value>该代码已有一项更正正在等待决定。</value></data>
+<data name="ErrorRetirementPending" xml:space="preserve"><value>该代码已有一项停用申请正在等待决定。</value></data>
+<data name="ErrorNotPending" xml:space="preserve"><value>该申请已有决定。请刷新查看其状态。</value></data>
+<data name="ErrorFormerNotActive" xml:space="preserve"><value>此更正所替换的代码已不再生效。该更正只能被拒绝或撤销。</value></data>
+<data name="ErrorKeyReused" xml:space="preserve"><value>此操作已用于另一条记录。请刷新页面后重试。</value></data>
+<data name="ErrorProductNotFound" xml:space="preserve"><value>未找到所选的全球产品。</value></data>
+<data name="ErrorCorrectionRequiresActive" xml:space="preserve"><value>只有生效中的代码才能更正。</value></data>
+<data name="ErrorRetirementRequestNotFound" xml:space="preserve"><value>该停用申请已不再等待决定。</value></data>
+<data name="ErrorPersistenceUnavailable" xml:space="preserve"><value>登记册暂时不可用。未做任何更改，请重复相同操作。</value></data>
+<data name="ErrorCancelNotOwner" xml:space="preserve"><value>只有提交申请的人才能撤销该申请。</value></data>
+<data name="ErrorMakerChecker" xml:space="preserve"><value>提交申请的人不能对其作出决定。</value></data>
+<data name="CancelRequest" xml:space="preserve"><value>撤销申请</value></data>
+<data name="OpenInTaskCenter" xml:space="preserve"><value>在任务中心打开</value></data>
 </root>

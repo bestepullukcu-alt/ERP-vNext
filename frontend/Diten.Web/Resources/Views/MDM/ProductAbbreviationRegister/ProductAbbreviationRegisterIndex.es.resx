@@ -13,5 +13,22 @@
 <data name="RequestCorrection" xml:space="preserve"><value>Solicitar corrección</value></data>
 <data name="ReplacementAbbreviation" xml:space="preserve"><value>ABB de reemplazo</value></data>
 <data name="Reason" xml:space="preserve"><value>Motivo</value></data>
-<data name="ErrorReconciliation" xml:space="preserve"><value>La conciliación de evidencias está pendiente. Recargue antes de reintentar.</value></data>
+<data name="ErrorReconciliation" xml:space="preserve"><value>El cambio aún no está registrado por completo. Repita la misma acción, sin cambios, para completarlo.</value></data>
+<data name="ErrorAlreadyAllocated" xml:space="preserve"><value>Esta abreviatura ya está asignada. Los códigos nunca se reutilizan; elija otra.</value></data>
+<data name="ErrorCorrectionUnchanged" xml:space="preserve"><value>La nueva abreviatura es igual a la actual.</value></data>
+<data name="ErrorRequestClosed" xml:space="preserve"><value>Este código ya se solicitó y la solicitud está cerrada. Haga una nueva solicitud.</value></data>
+<data name="ErrorProductHasEntry" xml:space="preserve"><value>Este producto ya tiene una abreviatura activa o pendiente.</value></data>
+<data name="ErrorCorrectionPending" xml:space="preserve"><value>Ya hay una corrección de este código pendiente de decisión.</value></data>
+<data name="ErrorRetirementPending" xml:space="preserve"><value>Ya hay una retirada de este código pendiente de decisión.</value></data>
+<data name="ErrorNotPending" xml:space="preserve"><value>Esta solicitud ya fue resuelta. Recargue para ver su estado.</value></data>
+<data name="ErrorFormerNotActive" xml:space="preserve"><value>El código que esta corrección reemplaza ya no está activo. Solo puede rechazarse o cancelarse.</value></data>
+<data name="ErrorKeyReused" xml:space="preserve"><value>Esta operación ya se usó para otro registro. Recargue la página e inténtelo de nuevo.</value></data>
+<data name="ErrorProductNotFound" xml:space="preserve"><value>No se encontró el producto global seleccionado.</value></data>
+<data name="ErrorCorrectionRequiresActive" xml:space="preserve"><value>Solo se puede corregir un código activo.</value></data>
+<data name="ErrorRetirementRequestNotFound" xml:space="preserve"><value>Esta solicitud de retirada ya no espera una decisión.</value></data>
+<data name="ErrorPersistenceUnavailable" xml:space="preserve"><value>El registro no está disponible temporalmente. No se cambió nada; repita la misma acción.</value></data>
+<data name="ErrorCancelNotOwner" xml:space="preserve"><value>Solo quien hizo la solicitud puede cancelarla.</value></data>
+<data name="ErrorMakerChecker" xml:space="preserve"><value>Quien hizo una solicitud no puede resolverla.</value></data>
+<data name="CancelRequest" xml:space="preserve"><value>Cancelar solicitud</value></data>
+<data name="OpenInTaskCenter" xml:space="preserve"><value>Abrir en el Centro de tareas</value></data>
 </root>

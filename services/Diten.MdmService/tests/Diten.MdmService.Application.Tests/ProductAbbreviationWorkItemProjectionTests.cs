@@ -53,10 +53,10 @@ public sealed class ProductAbbreviationWorkItemProjectionTests
         };
         var entry = Entry(product.Id, requesterId);
         var batchCalls = 0;
-        var register = Stub<IProductAbbreviationRegisterRepository>((method, _) => method.Name switch
+        var register = Stub<IProductAbbreviationRegisterRepository>((method, args) => method.Name switch
         {
-            nameof(IProductAbbreviationRegisterRepository.GetPendingWorkItemsAsync)
-                => Task.FromResult<IReadOnlyList<ProductAbbreviationRegisterEntry>>([entry]),
+            nameof(IProductAbbreviationRegisterRepository.GetPendingWorkItemsPageAsync)
+                => Paged([entry], args),
             _ => throw new InvalidOperationException(method.Name)
         });
         var products = Stub<IGlobalProductRepository>((method, _) => method.Name switch
@@ -91,25 +91,38 @@ public sealed class ProductAbbreviationWorkItemProjectionTests
     }
 
     [Fact]
-    public async Task Overflow_fails_before_scope_resolution_or_product_join()
+    public async Task More_pending_work_than_one_page_is_projected_up_to_the_limit_instead_of_failing_everybody()
     {
+        // FIX1 S8 — 101 pending items used to be a 503 for the whole tenant. They are read page by page now.
         var tenantId = Guid.NewGuid();
-        var register = Stub<IProductAbbreviationRegisterRepository>((method, _) => method.Name switch
+        var product = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-1", GlobalProductName = "Product" };
+        var entries = Enumerable.Range(0, 150).Select(_ => Entry(product.Id, Guid.NewGuid().ToString("D"))).ToArray();
+        var pageCalls = 0;
+        var register = Stub<IProductAbbreviationRegisterRepository>((method, args) => method.Name switch
         {
-            nameof(IProductAbbreviationRegisterRepository.GetPendingWorkItemsAsync)
-                => Task.FromResult<IReadOnlyList<ProductAbbreviationRegisterEntry>>(
-                    Enumerable.Range(0, 101).Select(_ => Entry(Guid.NewGuid(), Guid.NewGuid().ToString("D"))).ToArray()),
+            nameof(IProductAbbreviationRegisterRepository.GetPendingWorkItemsPageAsync)
+                => Counted(Paged(entries, args)),
             _ => throw new InvalidOperationException(method.Name)
         });
-        var products = Stub<IGlobalProductRepository>((method, _) => throw new InvalidOperationException(method.Name));
+        Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> Counted(Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> page)
+        {
+            pageCalls++;
+            return page;
+        }
+        var products = Stub<IGlobalProductRepository>((method, _) => method.Name switch
+        {
+            nameof(IGlobalProductRepository.GetByIdsAsync) => Task.FromResult<IReadOnlyList<GlobalProduct>>([product]),
+            _ => throw new InvalidOperationException(method.Name)
+        });
 
         var result = await Handler(register, products, tenantId, Guid.NewGuid().ToString("D")).Handle(
             new GetProductAbbreviationWorkItemsQuery("self"),
             CancellationToken.None);
 
-        Assert.False(result.IsSuccessful);
-        Assert.Equal(503, result.StatusCode);
-        Assert.Equal("ABBREVIATION_WORK_ITEM_BOUND_EXCEEDED", result.ReasonCode);
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(ProductAbbreviationWorkItemContract.MaximumItems, result.Data!.Items.Count);
+        Assert.Equal(entries.Take(100).Select(x => x.Id.ToString("D")), result.Data.Items.Select(x => x.Id));
+        Assert.Equal(1, pageCalls);
     }
 
     [Theory]
@@ -132,8 +145,8 @@ public sealed class ProductAbbreviationWorkItemProjectionTests
         if (correctedRetiringProduct) retirement.ReplacesEntryId = Guid.NewGuid();
         var register = Stub<IProductAbbreviationRegisterRepository>((method, args) => method.Name switch
         {
-            nameof(IProductAbbreviationRegisterRepository.GetPendingWorkItemsAsync)
-                => Task.FromResult<IReadOnlyList<ProductAbbreviationRegisterEntry>>([correction, retirement]),
+            nameof(IProductAbbreviationRegisterRepository.GetPendingWorkItemsPageAsync)
+                => Paged([correction, retirement], args),
             nameof(IProductAbbreviationRegisterRepository.GetByIdAsync)
                 => Task.FromResult<ProductAbbreviationRegisterEntry?>((Guid)args![0]! == former.Id ? former : null),
             _ => throw new InvalidOperationException(method.Name)
@@ -155,6 +168,101 @@ public sealed class ProductAbbreviationWorkItemProjectionTests
         var retirementItem = Assert.Single(result.Data.Items, x => x.Source.ObjectType == ProductAbbreviationWorkItemContract.RetirementObjectType);
         Assert.Empty(retirementItem.Actions);
         Assert.Null(retirementItem.PrimaryActionCode);
+    }
+
+    [Fact]
+    public async Task A_visible_item_on_the_second_page_is_found_when_the_first_page_holds_none()
+    {
+        // FIX1 S8 — the pages are read until the reader's answer is filled or the work runs out.
+        var tenantId = Guid.NewGuid();
+        var product = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-1", GlobalProductName = "Product" };
+        var broken = Enumerable.Range(0, GetProductAbbreviationWorkItemsHandler.PageSize).Select(_ =>
+        {
+            var entry = Entry(product.Id, "maker");
+            entry.NormalizedAbbreviation = "";
+            return entry;
+        }).ToList();
+        var healthy = Entry(product.Id, "maker");
+        broken.Add(healthy);
+        var register = Stub<IProductAbbreviationRegisterRepository>((method, args) => method.Name switch
+        {
+            nameof(IProductAbbreviationRegisterRepository.GetPendingWorkItemsPageAsync) => Paged(broken, args),
+            _ => throw new InvalidOperationException(method.Name)
+        });
+        var products = Stub<IGlobalProductRepository>((method, _) => method.Name switch
+        {
+            nameof(IGlobalProductRepository.GetByIdsAsync) => Task.FromResult<IReadOnlyList<GlobalProduct>>([product]),
+            _ => throw new InvalidOperationException(method.Name)
+        });
+
+        var result = await Handler(register, products, tenantId, "checker").Handle(
+            new GetProductAbbreviationWorkItemsQuery("team"), CancellationToken.None);
+
+        Assert.Equal(healthy.Id.ToString("D"), Assert.Single(result.Data!.Items).Id);
+    }
+
+    [Fact]
+    public async Task An_orphaned_correction_is_offered_reject_but_never_approve()
+    {
+        // FIX1 B3(c) + Proj:76 — the code this correction would replace is RETIRED (same product): approving is
+        // impossible, rejecting is the cleanup. The answer still succeeds for the whole tenant.
+        var tenantId = Guid.NewGuid();
+        var product = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-1", GlobalProductName = "Product" };
+        var former = Entry(product.Id, "former-maker");
+        former.LifecycleStatus = ProductAbbreviationLifecycleStatus.RETIRED;
+        var orphan = Entry(product.Id, "correction-maker");
+        orphan.ReplacesEntryId = former.Id;
+        var healthy = Entry(product.Id, "other-maker");
+        var register = Stub<IProductAbbreviationRegisterRepository>((method, args) => method.Name switch
+        {
+            nameof(IProductAbbreviationRegisterRepository.GetPendingWorkItemsPageAsync) => Paged([orphan, healthy], args),
+            nameof(IProductAbbreviationRegisterRepository.GetByIdAsync)
+                => Task.FromResult<ProductAbbreviationRegisterEntry?>((Guid)args![0]! == former.Id ? former : null),
+            _ => throw new InvalidOperationException(method.Name)
+        });
+        var products = Stub<IGlobalProductRepository>((method, _) => method.Name switch
+        {
+            nameof(IGlobalProductRepository.GetByIdsAsync) => Task.FromResult<IReadOnlyList<GlobalProduct>>([product]),
+            _ => throw new InvalidOperationException(method.Name)
+        });
+
+        var result = await Handler(register, products, tenantId, "checker").Handle(
+            new GetProductAbbreviationWorkItemsQuery("team"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        var orphanItem = Assert.Single(result.Data!.Items, x => x.Id == orphan.Id.ToString("D"));
+        Assert.Equal(["reject"], orphanItem.Actions.Select(x => x.Code).ToArray());
+        var healthyItem = Assert.Single(result.Data.Items, x => x.Id == healthy.Id.ToString("D"));
+        Assert.Equal(["approve", "reject"], healthyItem.Actions.Select(x => x.Code).ToArray());
+    }
+
+    [Fact]
+    public async Task An_inconsistent_row_and_a_row_without_its_product_are_left_out_and_the_others_are_projected()
+    {
+        // FIX1 B3(b) — one bad row is one row: it used to be a 503 for every user of the tenant.
+        var tenantId = Guid.NewGuid();
+        var product = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-1", GlobalProductName = "Product" };
+        var broken = Entry(product.Id, "maker");
+        broken.NormalizedAbbreviation = "";
+        var productless = Entry(Guid.NewGuid(), "maker");
+        var healthy = Entry(product.Id, "maker");
+        var register = Stub<IProductAbbreviationRegisterRepository>((method, args) => method.Name switch
+        {
+            nameof(IProductAbbreviationRegisterRepository.GetPendingWorkItemsPageAsync)
+                => Paged([broken, productless, healthy], args),
+            _ => throw new InvalidOperationException(method.Name)
+        });
+        var products = Stub<IGlobalProductRepository>((method, _) => method.Name switch
+        {
+            nameof(IGlobalProductRepository.GetByIdsAsync) => Task.FromResult<IReadOnlyList<GlobalProduct>>([product]),
+            _ => throw new InvalidOperationException(method.Name)
+        });
+
+        var result = await Handler(register, products, tenantId, "checker").Handle(
+            new GetProductAbbreviationWorkItemsQuery("team"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(healthy.Id.ToString("D"), Assert.Single(result.Data!.Items).Id);
     }
 
     private static GetProductAbbreviationWorkItemsHandler Handler(
@@ -185,6 +293,17 @@ public sealed class ProductAbbreviationWorkItemProjectionTests
             Stub<IProductLegalEntityScopePolicyRepository>((method, _) => throw new InvalidOperationException(method.Name)),
             candidates,
             tenant);
+    }
+
+    /// <summary>The repository's paging contract over a list: the entries after <c>args[0]</c>, at most <c>args[1]</c>.</summary>
+    internal static Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> Paged(
+        IReadOnlyList<ProductAbbreviationRegisterEntry> entries,
+        object?[]? args)
+    {
+        var after = (Guid?)args![0];
+        var limit = (int)args[1]!;
+        var start = after is null ? 0 : entries.Select(x => x.Id).ToList().IndexOf(after.Value) + 1;
+        return Task.FromResult<IReadOnlyList<ProductAbbreviationRegisterEntry>>(entries.Skip(start).Take(limit).ToArray());
     }
 
     private static ProductAbbreviationRegisterEntry Entry(Guid productId, string requester)

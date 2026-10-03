@@ -11,12 +11,23 @@
         .ToHashSet(StringComparer.Ordinal);
 }
 
+@* UAS-001 / FIX1 S5 — signed in without read permission: the 403 surface INSIDE the shell and nothing else (the
+   controller sets the 403 status). No redirect. MDM's [HasPermission] stays authoritative. *@
+@if (!permissions.Contains("mdm.product-abbreviations.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["ProductAbbreviationRegisterTitle"].Value" />
+    return;
+}
+
 <div id="product-abbreviation-register"
      data-can-select-product="@permissions.Contains("mdm.global-products.read").ToString().ToLowerInvariant()"
      data-can-request="@permissions.Contains("mdm.product-abbreviations.request").ToString().ToLowerInvariant()"
      data-can-correct="@permissions.Contains("mdm.product-abbreviations.correct").ToString().ToLowerInvariant()"
      data-can-retire="@permissions.Contains("mdm.product-abbreviations.retire").ToString().ToLowerInvariant()"
-     data-can-audit="@permissions.Contains("mdm.product-abbreviations.audit").ToString().ToLowerInvariant()">
+     data-can-audit="@permissions.Contains("mdm.product-abbreviations.audit").ToString().ToLowerInvariant()"
+     data-can-cancel="@permissions.Contains("mdm.product-abbreviations.cancel").ToString().ToLowerInvariant()"
+     data-can-decide="@(permissions.Contains("mdm.product-abbreviations.approve") || permissions.Contains("mdm.product-abbreviations.reject")).ToString().ToLowerInvariant()"
+     data-task-center-url="@Url.Content("~/WorkCenterNext")">
     @Html.AntiForgeryToken()
     @* Golden contract marker: <partial name="_Filter" />; actual absolute include below. *@
     <partial name="~/Views/MDM/ProductAbbreviationRegister/_Filter.cshtml" />

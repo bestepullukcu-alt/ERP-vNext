@@ -70,6 +70,34 @@ açıp eskisini pasife almaktır, yani canlıda ilk yazımda dikkat gerekir.
 hazırlanabilir, yüklenemez"* diyor: 38 doküman DRAFT, 50 birim *Proposed*, beş kapının
 beşi de karşılanmamış. Kod canlıya çıkabilir; bu veri girişi o onayı bekler.
 
+### 3 · ABB (ürün kısaltması) kararları Görev Merkezi'ne bağlanır
+
+| | |
+|---|---|
+| **Modül** | MOD-0290-FU01 — ürün kısaltma kaydı (ABB) |
+| **Ne zaman** | ABB'nin canlıya çıktığı deploy'da |
+| **Yapılmazsa** | ABB istekleri kayıt sayfasında "onay bekliyor" görünür ama **hiçbir onaycının Görev Merkezi'ne düşmez**; kayıt sayfası kararı oraya yönlendirdiği için hiçbir istek karara bağlanamaz. |
+| **Kim** | Platform operatörü |
+
+Platform'un `WorkAggregation:RemoteProviders` listesine bir satır eklenir (geliştirmede
+`services/Diten.Platform/src/Diten.Platform.API/appsettings.Development.json`'da duruyor):
+
+| Alan | Değer |
+|---|---|
+| `ProviderCode` | `mdm-product-abbreviations` |
+| `ContractVersion` | `1.0` |
+| `BaseUrl` | canlı MDM servisinin adresi (şema + host + port, yol yok) |
+| `ProjectionPath` | `api/v1/work-items/product-abbreviations/projection` |
+| `ActionPathTemplate` | `api/v1/work-items/product-abbreviations/{itemId}/actions/{actionCode}` |
+| `Actions` | `approve` → `mdm.product-abbreviations.approve`, `reject` → `mdm.product-abbreviations.reject`, `cancel` → `mdm.product-abbreviations.cancel` |
+
+İki yol **açıkça yazılır**: ABB'nin rotaları sözleşmenin varsayılan yollarına uymaz, yazılmazsa
+Platform yanlış adrese gider ve kaynak "kullanılamıyor" görünür. Kimlik bilgisi gerekmez —
+Platform çağıranın taşıyıcı jetonunu ve kiracı başlığını iletir. Hatalı bir satır Platform'u
+açılışta durdurur (`RemoteWorkItemProviderOptions.Validate`).
+
+**Belirti:** onaycı "ABB isteği Görev Merkezi'nde yok" der; MDM'de istek `REQUESTED`'dır.
+
 ---
 
 ## Tamamlananlar

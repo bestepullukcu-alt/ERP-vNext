@@ -39,8 +39,9 @@ public sealed record ProductAbbreviationWorkItemActionPayload(
            || WaitingOnUserId.HasValue
            || !string.IsNullOrEmpty(Comment)
            || !string.IsNullOrEmpty(EvidenceRef)
-           || !string.IsNullOrEmpty(TargetPrincipalId)
-           || !string.IsNullOrEmpty(IdempotencyKey);
+           || !string.IsNullOrEmpty(TargetPrincipalId);
+    // FIX1 C1: IdempotencyKey is NOT an unmapped field — the Task Center sends it with every versioned item and the
+    // dispatcher binds it as the command's idempotency key.
 }
 
 public static class ProductAbbreviationWorkItemEnvelopeFactory

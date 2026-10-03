@@ -13,6 +13,12 @@ public sealed class ProductAbbreviationRegisterEntry : EntityBase, IAuditIntentA
     public string RequestedByCanonicalSubjectId { get; set; } = string.Empty;
     public DateTimeOffset RequestedAtUtc { get; set; }
     public Guid? ReplacesEntryId { get; set; }
+    /// <summary>
+    /// On an ACTIVE entry: the correction entry that claimed it (FIX1 B3). A second correction or a retirement
+    /// request is refused while the claimed entry is still REQUESTED; a claim whose entry is no longer REQUESTED
+    /// (approved, rejected, cancelled, never inserted) is stale and may be taken over. Not a version change.
+    /// </summary>
+    public Guid? PendingCorrectionEntryId { get; set; }
     public string? RetirementRequestId { get; set; }
     public string? RetirementRequestedByCanonicalSubjectId { get; set; }
     public DateTimeOffset? RetirementRequestedAtUtc { get; set; }

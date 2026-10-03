@@ -27,8 +27,51 @@ const ProductAbbreviationRegisterList = (function () {
         request: root?.dataset.canRequest === 'true',
         correct: root?.dataset.canCorrect === 'true',
         retire: root?.dataset.canRetire === 'true',
-        audit: root?.dataset.canAudit === 'true'
+        audit: root?.dataset.canAudit === 'true',
+        cancel: root?.dataset.canCancel === 'true',
+        decide: root?.dataset.canDecide === 'true'
     };
+    const taskCenterUrl = root?.dataset.taskCenterUrl || '/WorkCenterNext';
+    /*
+     * FIX1 S4 — EVERY code the register can answer, mapped to its own sentence (seven languages, key parity is
+     * tested). A refusal the reader cannot act on by reloading must not say "reload": the code taken, the value
+     * unchanged and the closed request each say what to do instead.
+     */
+    const ERROR_KEYS = Object.freeze({
+        ABBREVIATION_ACTOR_NOT_DIRECT_TENANT_HUMAN: 'ErrorForbidden',
+        ABBREVIATION_ACTOR_UNAUTHENTICATED: 'ErrorForbidden',
+        ABBREVIATION_TENANT_CONTEXT_UNTRUSTED: 'ErrorForbidden',
+        ABBREVIATION_PERMISSION_DENIED: 'ErrorForbidden',
+        ABBREVIATION_CANCEL_NOT_REQUEST_OWNER: 'ErrorCancelNotOwner',
+        ABBREVIATION_MAKER_CHECKER_VIOLATION: 'ErrorMakerChecker',
+        ABBREVIATION_GRAMMAR_INVALID: 'ErrorValidation',
+        ABBREVIATION_ALREADY_ALLOCATED: 'ErrorAlreadyAllocated',
+        ABBREVIATION_ALLOCATION_FAILED: 'ErrorAlreadyAllocated',
+        ABBREVIATION_CORRECTION_VALUE_UNCHANGED: 'ErrorCorrectionUnchanged',
+        ABBREVIATION_REQUEST_ALREADY_CLOSED: 'ErrorRequestClosed',
+        ABBREVIATION_PRODUCT_ALREADY_HAS_ENTRY: 'ErrorProductHasEntry',
+        ACTIVE_ABBREVIATION_CONFLICT: 'ErrorProductHasEntry',
+        ABBREVIATION_CORRECTION_PENDING: 'ErrorCorrectionPending',
+        ABBREVIATION_RETIREMENT_PENDING: 'ErrorRetirementPending',
+        ABBREVIATION_NOT_PENDING: 'ErrorNotPending',
+        ABBREVIATION_TRANSITION_FORBIDDEN: 'ErrorNotPending',
+        ABBREVIATION_CORRECTION_FORMER_NOT_ACTIVE: 'ErrorFormerNotActive',
+        ABBREVIATION_CORRECTION_REQUIRES_ACTIVE: 'ErrorCorrectionRequiresActive',
+        ABBREVIATION_RETIREMENT_REQUEST_NOT_FOUND: 'ErrorRetirementRequestNotFound',
+        ABBREVIATION_IDEMPOTENCY_KEY_REUSED: 'ErrorKeyReused',
+        ABBREVIATION_IDEMPOTENCY_CONFLICT: 'ErrorKeyReused',
+        ABBREVIATION_NOT_FOUND: 'ErrorNotFound',
+        GLOBAL_PRODUCT_NOT_FOUND: 'ErrorProductNotFound',
+        ABBREVIATION_PERSISTENCE_UNAVAILABLE: 'ErrorPersistenceUnavailable',
+        ABBREVIATION_EVIDENCE_RECONCILIATION_REQUIRED: 'ErrorReconciliation',
+        ABBREVIATION_REGISTER_RECONCILIATION_REQUIRED: 'ErrorReconciliation',
+        ABBREVIATION_REGISTER_CONFLICT: 'ErrorConflict',
+        ABBREVIATION_CORRECTION_CONFLICT: 'ErrorConflict',
+        ABBREVIATION_FORMER_EXPECTED_VERSION_REQUIRED: 'ErrorConflict',
+        ABBREVIATION_WRITE_FAILED: 'ErrorConflict',
+        ABBREVIATION_LEDGER_INVARIANT_VIOLATION: 'ErrorGateway',
+        CONCURRENCY_CONFLICT: 'ErrorConflict'
+    });
 
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -40,13 +83,19 @@ const ProductAbbreviationRegisterList = (function () {
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
     const antiForgeryToken = () => root?.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
     const canRequest = () => permissions.request && permissions.selectProduct;
-    const canActOnActive = (row, permission) => permission && (row.lifecycleStatus === 'ACTIVE' || row.lifecycleStatus === 1) && !row.retirementPending;
+    const isStatus = (row, name, number) => row.lifecycleStatus === name || row.lifecycleStatus === number;
+    // FIX1 B3 — one pending change per code: no correction or retirement offered while either one waits.
+    const canActOnActive = (row, permission) => permission && isStatus(row, 'ACTIVE', 1)
+        && !row.retirementPending && !row.correctionPending;
+    let productHasOpenEntry = false;
     const requireSuccess = async (response) => {
         if (response.status === 401) handleUnauthorized();
         if (!response.ok) throw new Error(await getErrorMessage(response));
         const payload = await response.json();
-        if (response.status === 202 || (payload?.isSuccessful ?? payload?.IsSuccessful) !== true)
-            throw new Error(response.status === 202 ? L.ErrorReconciliation : L.ErrorGateway);
+        if (response.status === 202 || (payload?.isSuccessful ?? payload?.IsSuccessful) !== true) {
+            const code = (payload?.errors ?? payload?.Errors ?? []).find?.(Boolean);
+            throw new Error(L[ERROR_KEYS[code]] || (response.status === 202 ? L.ErrorReconciliation : L.ErrorGateway));
+        }
         return payload;
     };
 
@@ -168,15 +217,8 @@ const ProductAbbreviationRegisterList = (function () {
         let payload = {};
         try { payload = await response.json(); } catch (error) { /* bounded status mapping below */ }
         const errors = payload?.errors ?? payload?.Errors ?? [];
-        const code = Array.isArray(errors) ? errors.find(Boolean) : '';
-        const stable = {
-            ABBREVIATION_GRAMMAR_INVALID: L.ErrorValidation,
-            ABBREVIATION_PERMISSION_DENIED: L.ErrorForbidden,
-            ABBREVIATION_CANCEL_NOT_REQUEST_OWNER: L.ErrorForbidden,
-            ABBREVIATION_MAKER_CHECKER_VIOLATION: L.ErrorForbidden,
-            CONCURRENCY_CONFLICT: L.ErrorConflict
-        };
-        return stable[code] || ({ 400: L.ErrorValidation, 403: L.ErrorForbidden, 404: L.ErrorNotFound, 409: L.ErrorConflict })[response.status] || L.ErrorGateway;
+        const code = payload?.errorCode ?? (Array.isArray(errors) ? errors.find(Boolean) : '');
+        return L[ERROR_KEYS[code]] || ({ 400: L.ErrorValidation, 403: L.ErrorForbidden, 404: L.ErrorNotFound, 409: L.ErrorConflict })[response.status] || L.ErrorGateway;
     };
     const handleUnauthorized = () => {
         window.DtDefaults?.handleUnauthorized?.();
@@ -336,8 +378,32 @@ const ProductAbbreviationRegisterList = (function () {
             confirmButtonText: L.Apply });
     };
 
+    const cancelRequest = (row) => {
+        if (!(permissions.cancel && row.requestedByCurrentUser && isStatus(row, 'REQUESTED', 0))) return;
+        window.showConfirm?.(L.CancelRequest, async () => {
+            try {
+                const response = await fetch(`${endpoint}/${encodeURIComponent(row.id)}/cancel`, {
+                    method: 'PATCH', credentials: 'same-origin',
+                    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json', RequestVerificationToken: antiForgeryToken() },
+                    body: JSON.stringify({ expectedVersion: row.version })
+                });
+                await requireSuccess(response);
+                window.DitenDataTable.reloadWithToast(dt, tableEl, 'RequestSuccess', null, bulkOptions);
+            } catch (error) { if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error'); }
+        }, { type: 'warning', entityName: row.abbreviation, confirmButtonText: L.Apply });
+    };
+
+    // FIX1 B2 — a decision is taken in the Task Center (Pack:922); the register page only leads there.
+    const waitsForDecisionBySomeoneElse = (row) => permissions.decide
+        && (isStatus(row, 'REQUESTED', 0) && !row.requestedByCurrentUser
+            || row.retirementPending && !row.retirementRequestedByCurrentUser);
+
     const renderActions = (row) => {
         const actions = [{ key: 'details', className: 'js-quick-view', text: L.ViewDetails, icon: 'bx bx-show', attrs: { 'data-id': row.id } }];
+        if (permissions.cancel && row.requestedByCurrentUser && isStatus(row, 'REQUESTED', 0))
+            actions.push({ key: 'cancel', className: 'js-cancel-request', text: L.CancelRequest, icon: 'bx bx-x-circle', attrs: { 'data-id': row.id } });
+        if (waitsForDecisionBySomeoneElse(row))
+            actions.push({ key: 'taskCenter', className: 'js-open-task-center', text: L.OpenInTaskCenter, icon: 'bx bx-task', attrs: { 'data-id': row.id } });
         if (canActOnActive(row, permissions.correct))
             actions.push({ key: 'correct', className: 'js-request-correction', text: L.RequestCorrection, icon: 'bx bx-revision', attrs: { 'data-id': row.id } });
         if (canActOnActive(row, permissions.retire))
@@ -386,24 +452,30 @@ const ProductAbbreviationRegisterList = (function () {
                     callback({ data: [] });
                     return;
                 }
-                fetch(`${endpoint}/by-global-product/${encodeURIComponent(selectedProductId)}`, { credentials: 'same-origin', headers: getAuthHeaders() })
+                // FIX1 B2 — EVERY entry of the product (requested, active, closed), not only the active one: the
+                // requester sees the pending request they just made, and can cancel it.
+                fetch(`${endpoint}/by-global-product/${encodeURIComponent(selectedProductId)}/entries`, { credentials: 'same-origin', headers: getAuthHeaders() })
                     .then((response) => {
                         if (response.status === 401) handleUnauthorized();
-                        if (response.status === 404) return null;
                         if (!response.ok) return getErrorMessage(response).then((message) => Promise.reject(new Error(message)));
                         return response.json();
                     })
                     .then((payload) => {
-                        const entry = payload ? unwrapData(payload) : null;
-                        callback({ data: entry ? [{
+                        const entries = unwrapData(payload) || [];
+                        const rows = entries.map((entry) => ({
                             id: entry.id ?? entry.Id,
                             globalProductId: entry.globalProductId ?? entry.GlobalProductId,
                             globalProductDisplay: selectedProductText,
                             abbreviation: entry.abbreviation ?? entry.Abbreviation,
                             lifecycleStatus: entry.lifecycleStatus ?? entry.LifecycleStatus,
                             version: entry.version ?? entry.Version,
-                            retirementPending: entry.retirementPending ?? entry.RetirementPending
-                        }] : [] });
+                            retirementPending: entry.retirementPending ?? entry.RetirementPending,
+                            correctionPending: entry.correctionPending ?? entry.CorrectionPending,
+                            requestedByCurrentUser: entry.requestedByCurrentUser ?? entry.RequestedByCurrentUser,
+                            retirementRequestedByCurrentUser: entry.retirementRequestedByCurrentUser ?? entry.RetirementRequestedByCurrentUser
+                        }));
+                        productHasOpenEntry = rows.some((row) => isStatus(row, 'ACTIVE', 1) || isStatus(row, 'REQUESTED', 0));
+                        callback({ data: rows });
                     })
                     .catch((error) => {
                         if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
@@ -439,7 +511,11 @@ const ProductAbbreviationRegisterList = (function () {
                 });
                 setTimeout(() => { saveFilterArmed = true; }, 0);
             },
-            drawCallback: function () { window.DtDefaults.updateVisualState(this.api(), selectedProductId ? 1 : 0); }
+            drawCallback: function () {
+                window.DtDefaults.updateVisualState(this.api(), selectedProductId ? 1 : 0);
+                // FIX1 S2 — a product with an active or pending code is offered no new request.
+                document.querySelector('.add-new')?.classList.toggle('d-none', productHasOpenEntry);
+            }
         });
         dt = new DataTable(tableEl, config);
         window.DitenDataTable.bindBulkSelection(tableEl, dt, bulkOptions);
@@ -448,6 +524,8 @@ const ProductAbbreviationRegisterList = (function () {
             dt,
             onRowAction: {
                 details: ({ row }) => showDetails(row),
+                cancel: ({ row }) => cancelRequest(row),
+                taskCenter: () => { window.location.assign(taskCenterUrl); },
                 correct: ({ row }) => requestCorrection(row),
                 retire: ({ row }) => requestRetirement(row)
             }
@@ -469,6 +547,7 @@ const ProductAbbreviationRegisterList = (function () {
             event.preventDefault();
             selectedProductId = '';
             selectedProductText = '';
+            productHasOpenEntry = false;
             if (dt) reloadAppliedTableState(dt, getResetBaselineState());
             if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
         });
@@ -479,6 +558,10 @@ const ProductAbbreviationRegisterList = (function () {
             const productId = normalizeString($('#requestGlobalProduct').val());
             const productText = normalizeString($('#requestGlobalProduct option:selected').text());
             const abbreviation = normalizeString(document.getElementById('requestAbbreviation')?.value);
+            if (productId && productId === selectedProductId && productHasOpenEntry) {
+                window.showToast?.(L.ErrorProductHasEntry, 'error');
+                return;
+            }
             window.showConfirm?.(L.RequestConfirmation, async () => {
               try {
                 const body = new FormData(form);

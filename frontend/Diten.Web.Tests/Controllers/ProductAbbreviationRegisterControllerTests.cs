@@ -25,7 +25,7 @@ public sealed class ProductAbbreviationRegisterControllerTests
         var selector = await controller.GlobalProductSelector(default);
         var request = await controller.RequestAllocation(new() { GlobalProductId = Guid.NewGuid(), Abbreviation = "ABC" }, default);
         if (productRead) { Assert.IsType<ContentResult>(selector); Assert.IsType<ContentResult>(request); Assert.Equal(2, wire.Paths.Count); }
-        else { Assert.IsType<ForbidResult>(selector); Assert.IsType<ForbidResult>(request); Assert.Empty(wire.Paths); }
+        else { AssertDenied(selector); AssertDenied(request); Assert.Empty(wire.Paths); }
     }
 
     [Fact]
@@ -36,8 +36,8 @@ public sealed class ProductAbbreviationRegisterControllerTests
         Assert.IsType<ViewResult>(controller.Index());
         Assert.IsType<ContentResult>(await controller.GetByGlobalProduct(Guid.NewGuid(), default));
         Assert.IsType<ContentResult>(await controller.GetEvidence(Guid.NewGuid(), default));
-        Assert.IsType<ForbidResult>(await controller.GlobalProductSelector(default));
-        Assert.IsType<ForbidResult>(await controller.RequestAllocation(new(), default));
+        AssertDenied(await controller.GlobalProductSelector(default));
+        AssertDenied(await controller.RequestAllocation(new(), default));
         Assert.Equal(2, wire.Paths.Count);
         Assert.DoesNotContain(wire.Paths, path => path.Contains("selector"));
     }
@@ -49,7 +49,7 @@ public sealed class ProductAbbreviationRegisterControllerTests
     public async Task Nonexact_selector_permission_does_not_proxy(string permission)
     {
         using var wire = new Wire();
-        Assert.IsType<ForbidResult>(await Controller(wire, permission).GlobalProductSelector(default));
+        AssertDenied(await Controller(wire, permission).GlobalProductSelector(default));
         Assert.Empty(wire.Paths);
     }
 
@@ -103,6 +103,56 @@ public sealed class ProductAbbreviationRegisterControllerTests
         identity.AddClaim(new(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString("D")));
         Assert.IsType<UnauthorizedResult>(await controller.RequestRetirement(Guid.NewGuid(), new(4, "reason"), default));
         Assert.Empty(wire.Paths);
+    }
+
+    [Fact]
+    public void A_reader_without_permission_gets_a_403_page_inside_the_shell_not_a_redirect()
+    {
+        // FIX1 S5 (UAS-001) — Forbid() answered 302 to an AccessDeniedPath this app does not have (→ 404).
+        using var wire = new Wire();
+        var controller = Controller(wire, "mdm.global-products.read");
+
+        var result = controller.Index();
+
+        Assert.Equal("~/Views/MDM/ProductAbbreviationRegister/Index.cshtml", Assert.IsType<ViewResult>(result).ViewName);
+        Assert.Equal(StatusCodes.Status403Forbidden, controller.Response.StatusCode);
+        Assert.Empty(wire.Paths);
+    }
+
+    [Fact]
+    public async Task Every_proxy_refuses_a_missing_permission_with_a_coded_403_and_never_calls_the_gateway()
+    {
+        using var wire = new Wire();
+        var controller = Controller(wire, "unrelated");
+        var id = Guid.NewGuid();
+
+        AssertDenied(await controller.GetByGlobalProduct(id, default));
+        AssertDenied(await controller.ListByGlobalProduct(id, default));
+        AssertDenied(await controller.GetEvidence(id, default));
+        AssertDenied(await controller.Cancel(id, new(0), default));
+        AssertDenied(await controller.Approve(id, new(0), default));
+        AssertDenied(await controller.Reject(id, new(0, "r"), default));
+        AssertDenied(await controller.InitiateCorrection(id, new(0, "ABC", "r"), default));
+        AssertDenied(await controller.RequestRetirement(id, new(0, "r"), default));
+        Assert.Empty(wire.Paths);
+    }
+
+    [Fact]
+    public async Task The_page_list_reads_every_entry_of_the_product_through_the_gateway()
+    {
+        using var wire = new Wire();
+        var id = Guid.NewGuid();
+
+        Assert.IsType<ContentResult>(await Controller(wire, "mdm.product-abbreviations.read").ListByGlobalProduct(id, default));
+
+        Assert.Equal($"/api/product-abbreviations/by-global-product/{id:D}/entries", Assert.Single(wire.Paths));
+    }
+
+    private static void AssertDenied(IActionResult result)
+    {
+        var denied = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(StatusCodes.Status403Forbidden, denied.StatusCode);
+        Assert.Contains("ABBREVIATION_PERMISSION_DENIED", System.Text.Json.JsonSerializer.Serialize(denied.Value));
     }
 
     private static ProductAbbreviationRegisterController Controller(Wire wire, params string[] permissions)

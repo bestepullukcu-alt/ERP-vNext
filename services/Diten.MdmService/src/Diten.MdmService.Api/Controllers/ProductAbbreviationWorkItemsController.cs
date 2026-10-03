@@ -43,6 +43,7 @@ public sealed class ProductAbbreviationWorkItemsController : ControllerBase
         Guid itemId,
         string actionCode,
         [FromBody] ProductAbbreviationWorkItemActionRequest? request,
+        [FromHeader(Name = "Idempotency-Key")] string? headerIdempotencyKey = null,
         CancellationToken cancellationToken = default)
     {
         if (request is null
@@ -62,6 +63,16 @@ public sealed class ProductAbbreviationWorkItemsController : ControllerBase
                 "WORK_ITEM_ACTION_PAYLOAD_INVALID");
         }
 
+        // FIX1 C1: one key per command. The body's key (what Platform forwards from the Task Center) and a header key
+        // may both be present only when they are the same key.
+        var payloadKey = string.IsNullOrEmpty(request.Payload.IdempotencyKey) ? null : request.Payload.IdempotencyKey;
+        var headerKey = string.IsNullOrEmpty(headerIdempotencyKey) ? null : headerIdempotencyKey;
+        if (payloadKey is not null && headerKey is not null
+            && !string.Equals(payloadKey, headerKey, StringComparison.Ordinal))
+        {
+            return Failure<ProductAbbreviationWorkItemActionResponse>(400, "WORK_ITEM_IDEMPOTENCY_KEY_CONFLICT");
+        }
+
         var result = await _mediator.Send(
             new DispatchProductAbbreviationWorkItemActionCommand(
                 itemId,
@@ -70,7 +81,8 @@ public sealed class ProductAbbreviationWorkItemsController : ControllerBase
                 request.Payload.ExpectedVersion,
                 request.Payload.Reason,
                 request.Payload.Note,
-                request.HasUnmappedFields),
+                request.HasUnmappedFields,
+                payloadKey ?? headerKey),
             cancellationToken);
         return Result(result);
     }

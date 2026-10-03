@@ -43,6 +43,42 @@ public sealed class GetProductAbbreviationByGlobalProductHandler
     }
 }
 
+public sealed class ListProductAbbreviationEntriesHandler
+    : IRequestHandler<ListProductAbbreviationEntriesQuery,
+        Response<IReadOnlyList<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterListItemDto>>>
+{
+    private readonly ProductAbbreviationWorkflow _workflow;
+    private readonly ProductAbbreviationScopeGuard _scopeGuard;
+
+    public ListProductAbbreviationEntriesHandler(
+        ProductAbbreviationWorkflow workflow,
+        IProductAbbreviationRegisterRepository register,
+        IGlobalProductRepository globalProducts,
+        IProductLegalEntityScopeRolloutStateRepository rolloutStates,
+        IProductLegalEntityScopePolicyRepository policies,
+        ProductLegalEntityScopeCandidateFacade candidates,
+        ITenantContext tenantContext)
+    {
+        _workflow = workflow;
+        _scopeGuard = new(register, globalProducts, rolloutStates, policies, candidates, tenantContext);
+    }
+
+    public async Task<Response<IReadOnlyList<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterListItemDto>>> Handle(
+        ListProductAbbreviationEntriesQuery request,
+        CancellationToken cancellationToken)
+    {
+        var scope = await _scopeGuard.EvaluateGlobalProductAsync(
+            request.GlobalProductId,
+            "mdm.product-abbreviations.read",
+            cancellationToken);
+        return scope.IsSuccessful
+            ? await _workflow.ListByGlobalProductAsync(request.GlobalProductId, cancellationToken)
+            : Response<IReadOnlyList<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterListItemDto>>.Fail(
+                scope.FailureCode!,
+                scope.StatusCode);
+    }
+}
+
 public sealed class ProductAbbreviationScopeGuard
 {
     private readonly IProductAbbreviationRegisterRepository _register;

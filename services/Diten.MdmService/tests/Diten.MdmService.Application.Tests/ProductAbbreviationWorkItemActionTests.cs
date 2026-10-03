@@ -4,6 +4,7 @@ using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Contracts.Authorization;
 using Diten.MdmService.Application.Features.ProductAbbreviationRegister;
 using Diten.MdmService.Application.Features.ProductAbbreviationRegister.Commands;
+using Diten.MdmService.Application.Features.ProductAbbreviationRegister.WorkItems;
 using Diten.MdmService.Application.Features.ProductAbbreviationRegister.WorkItems.Commands;
 using Diten.MdmService.Application.Features.ProductAbbreviationRegister.WorkItems.Handlers;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
@@ -190,7 +191,11 @@ public sealed class ProductAbbreviationWorkItemActionTests
             NormalizedAbbreviation = "ABC",
             RequestedByCanonicalSubjectId = Guid.NewGuid().ToString("D"),
             LifecycleStatus = terminalStatus,
-            Version = 1
+            Version = 1,
+            // FIX1 B1(a): a decided entry reaches its command again only as that command's own replay — the decision
+            // it carries was written under this operation's key (which is what the workflow stores).
+            LastDecisionIdempotencyKey = DispatchProductAbbreviationWorkItemActionHandler.BuildOperationKey(
+                itemId, actionCode, 0, actionCode == "reject" ? "required" : null)
         };
         object? dispatched = null;
         var mediator = Stub<IMediator>((method, args) =>
@@ -245,6 +250,139 @@ public sealed class ProductAbbreviationWorkItemActionTests
         Assert.Equal(202, result.StatusCode);
         Assert.Equal("ABBREVIATION_EVIDENCE_RECONCILIATION_REQUIRED", result.ReasonCode);
     }
+
+    // ── FIX1 ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData(ProductAbbreviationLifecycleStatus.CANCELLED)]
+    [InlineData(ProductAbbreviationLifecycleStatus.REJECTED)]
+    [InlineData(ProductAbbreviationLifecycleStatus.ACTIVE)]
+    public async Task Approve_on_a_correction_that_is_no_longer_requested_is_refused_without_dispatch(
+        ProductAbbreviationLifecycleStatus status)
+    {
+        // FIX1 B1(a) — before, a decided correction still resolved to "Correction" and went to approval.
+        var tenantId = Guid.NewGuid();
+        var former = Requested(Guid.NewGuid(), ProductAbbreviationLifecycleStatus.ACTIVE);
+        var correction = Requested(former.GlobalProductId, status);
+        correction.ReplacesEntryId = former.Id;
+        correction.Version = 1;
+        correction.LastDecisionIdempotencyKey = "somebody-elses-decision";
+        correction.LastDecisionByCanonicalSubjectId = Guid.NewGuid().ToString("D");
+        var handler = Handler(NoDispatch(), tenantId, former, correction);
+
+        var result = await handler.Handle(Command(correction.Id, "approve", 1), CancellationToken.None);
+
+        Assert.Equal(409, result.StatusCode);
+        // The Task Center's own conflict code: it maps it to a sentence in every language (a new code would not).
+        Assert.Equal("CONCURRENCY_CONFLICT", result.ReasonCode);
+    }
+
+    [Fact]
+    public async Task Approve_on_an_orphaned_correction_is_refused_but_reject_is_dispatched()
+    {
+        var tenantId = Guid.NewGuid();
+        var former = Requested(Guid.NewGuid(), ProductAbbreviationLifecycleStatus.RETIRED);
+        var orphan = Requested(former.GlobalProductId, ProductAbbreviationLifecycleStatus.REQUESTED);
+        orphan.ReplacesEntryId = former.Id;
+        object? dispatched = null;
+        var mediator = Stub<IMediator>((method, args) =>
+        {
+            dispatched = args![0];
+            return Task.FromResult(Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>.Success(
+                new(orphan.Id, orphan.GlobalProductId, "ABC", ProductAbbreviationLifecycleStatus.REJECTED, 1, former.Id, false)));
+        });
+
+        var approve = await Handler(mediator, tenantId, former, orphan)
+            .Handle(Command(orphan.Id, "approve", 0), CancellationToken.None);
+        Assert.Null(dispatched);
+        var reject = await Handler(mediator, tenantId, former, orphan)
+            .Handle(Command(orphan.Id, "reject", 0, reason: "orphan"), CancellationToken.None);
+
+        Assert.Equal("ABBREVIATION_CORRECTION_FORMER_NOT_ACTIVE", approve.ReasonCode);
+        Assert.True(reject.IsSuccessful);
+        Assert.IsType<RejectProductAbbreviationAllocationCommand>(dispatched);
+    }
+
+    [Fact]
+    public async Task Cancel_on_a_retirement_item_is_refused()
+    {
+        var tenantId = Guid.NewGuid();
+        var entry = Requested(Guid.NewGuid(), ProductAbbreviationLifecycleStatus.ACTIVE);
+        entry.RetirementRequestId = "retirement";
+        entry.RetirementRequestedByCanonicalSubjectId = Guid.NewGuid().ToString("D");
+        entry.RetirementRequestedAtUtc = DateTimeOffset.UtcNow;
+
+        var result = await Handler(NoDispatch(), tenantId, entry)
+            .Handle(Command(entry.Id, "cancel", 0), CancellationToken.None);
+
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal("CONCURRENCY_CONFLICT", result.ReasonCode);
+    }
+
+    [Fact]
+    public async Task The_Task_Centers_key_is_bound_into_the_command_so_another_key_is_another_command()
+    {
+        // FIX1 C1 — the caller's key reaches the command; the same key is the same command.
+        var tenantId = Guid.NewGuid();
+        var entry = Requested(Guid.NewGuid(), ProductAbbreviationLifecycleStatus.REQUESTED);
+        var keys = new List<string>();
+        var mediator = Stub<IMediator>((_, args) =>
+        {
+            keys.Add(((ApproveProductAbbreviationAllocationCommand)args![0]!).IdempotencyKey);
+            return Task.FromResult(Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>.Success(
+                new(entry.Id, entry.GlobalProductId, "ABC", ProductAbbreviationLifecycleStatus.ACTIVE, 1, null, false)));
+        });
+
+        foreach (var key in new[] { "wcn-action-v1:a", "wcn-action-v1:a", "wcn-action-v1:b", null })
+        {
+            Assert.True((await Handler(mediator, tenantId, entry)
+                .Handle(Command(entry.Id, "approve", 0, idempotencyKey: key), CancellationToken.None)).IsSuccessful);
+        }
+
+        Assert.Equal(keys[0], keys[1]);
+        Assert.NotEqual(keys[0], keys[2]);
+        Assert.Equal(
+            DispatchProductAbbreviationWorkItemActionHandler.BuildOperationKey(
+                entry.Id, "allocation", entry.Id.ToString("D"), "approve", 0, null, "wcn-action-v1:a"),
+            keys[0]);
+        Assert.Equal(DispatchProductAbbreviationWorkItemActionHandler.BuildOperationKey(entry.Id, "approve", 0, null), keys[3]);
+    }
+
+    [Theory]
+    [InlineData("has space")]
+    [InlineData("tab\tkey")]
+    [InlineData("")]
+    public async Task A_caller_key_that_is_not_an_identifier_is_refused(string key)
+    {
+        var tenantId = Guid.NewGuid();
+        var entry = Requested(Guid.NewGuid(), ProductAbbreviationLifecycleStatus.REQUESTED);
+
+        var result = await Handler(NoDispatch(), tenantId, entry)
+            .Handle(Command(entry.Id, "approve", 0, idempotencyKey: key), CancellationToken.None);
+        var tooLong = await Handler(NoDispatch(), tenantId, entry)
+            .Handle(Command(entry.Id, "approve", 0, idempotencyKey: new string('k', 201)), CancellationToken.None);
+
+        Assert.Equal("WORK_ITEM_ACTION_PAYLOAD_INVALID", result.ReasonCode);
+        Assert.Equal("WORK_ITEM_ACTION_PAYLOAD_INVALID", tooLong.ReasonCode);
+    }
+
+    private static DispatchProductAbbreviationWorkItemActionCommand Command(
+        Guid itemId, string action, int version, string? reason = null, string? idempotencyKey = null)
+        => new(itemId, action, ProductAbbreviationWorkItemContract.ProviderCode, version, reason, null, false, idempotencyKey);
+
+    private static ProductAbbreviationRegisterEntry Requested(Guid productId, ProductAbbreviationLifecycleStatus status)
+        => new()
+        {
+            Id = Guid.NewGuid(),
+            GlobalProductId = productId,
+            NormalizedAbbreviation = "ABC",
+            RequestedByCanonicalSubjectId = Guid.NewGuid().ToString("D"),
+            LifecycleStatus = status,
+            Version = 0
+        };
+
+    private static IMediator NoDispatch()
+        => Stub<IMediator>((method, _) => throw new InvalidOperationException("Nothing may be dispatched: " + method.Name));
 
     private static DispatchProductAbbreviationWorkItemActionHandler Handler(
         IMediator mediator,

@@ -13,5 +13,22 @@
 <data name="RequestCorrection" xml:space="preserve"><value>Request correction</value></data>
 <data name="ReplacementAbbreviation" xml:space="preserve"><value>Replacement ABB</value></data>
 <data name="Reason" xml:space="preserve"><value>Reason</value></data>
-<data name="ErrorReconciliation" xml:space="preserve"><value>Evidence reconciliation is pending. Reload before retrying.</value></data>
+<data name="ErrorReconciliation" xml:space="preserve"><value>The change is not fully recorded yet. Repeat the same action, unchanged, to complete it.</value></data>
+<data name="ErrorAlreadyAllocated" xml:space="preserve"><value>This abbreviation is already taken. Codes are never reused; choose another.</value></data>
+<data name="ErrorCorrectionUnchanged" xml:space="preserve"><value>The new abbreviation is the same as the current one.</value></data>
+<data name="ErrorRequestClosed" xml:space="preserve"><value>This code was already requested and the request is closed. Make a new request instead.</value></data>
+<data name="ErrorProductHasEntry" xml:space="preserve"><value>This product already has an active or pending abbreviation.</value></data>
+<data name="ErrorCorrectionPending" xml:space="preserve"><value>A correction of this code is already waiting for a decision.</value></data>
+<data name="ErrorRetirementPending" xml:space="preserve"><value>A retirement of this code is already waiting for a decision.</value></data>
+<data name="ErrorNotPending" xml:space="preserve"><value>This request has already been decided. Reload to see its status.</value></data>
+<data name="ErrorFormerNotActive" xml:space="preserve"><value>The code this correction replaces is no longer active. The correction can only be rejected or cancelled.</value></data>
+<data name="ErrorKeyReused" xml:space="preserve"><value>This operation was already used for another record. Reload the page and try again.</value></data>
+<data name="ErrorProductNotFound" xml:space="preserve"><value>The selected Global Product was not found.</value></data>
+<data name="ErrorCorrectionRequiresActive" xml:space="preserve"><value>Only an active code can be corrected.</value></data>
+<data name="ErrorRetirementRequestNotFound" xml:space="preserve"><value>This retirement request is no longer waiting for a decision.</value></data>
+<data name="ErrorPersistenceUnavailable" xml:space="preserve"><value>The register is temporarily unavailable. Nothing was changed; repeat the same action.</value></data>
+<data name="ErrorCancelNotOwner" xml:space="preserve"><value>Only the person who made the request can cancel it.</value></data>
+<data name="ErrorMakerChecker" xml:space="preserve"><value>The person who made a request cannot decide it.</value></data>
+<data name="CancelRequest" xml:space="preserve"><value>Cancel request</value></data>
+<data name="OpenInTaskCenter" xml:space="preserve"><value>Open in Task Center</value></data>
 </root>

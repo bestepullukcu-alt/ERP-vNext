@@ -33,9 +33,21 @@ public sealed class ProductAbbreviationRegisterController : Controller
         _logger = logger;
     }
 
+    /// <summary>
+    /// UAS-001 / FIX1 S5 — a signed-in reader without the permission gets a 403 INSIDE the shell (the view draws
+    /// only the _AccessDenied partial). <c>Forbid()</c> redirected to an AccessDeniedPath this app does not configure
+    /// (302 → 404); the trap is written down in ShellAccessFilter.
+    /// </summary>
     [HttpGet("")]
-    public IActionResult Index() => Has("mdm.product-abbreviations.read")
-        ? View("~/Views/MDM/ProductAbbreviationRegister/Index.cshtml") : Forbid();
+    public IActionResult Index()
+    {
+        if (!Has("mdm.product-abbreviations.read"))
+        {
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+        }
+
+        return View("~/Views/MDM/ProductAbbreviationRegister/Index.cshtml");
+    }
 
     [HttpGet("api/global-products/selector")]
     public Task<IActionResult> GlobalProductSelector(CancellationToken cancellationToken)
@@ -44,7 +56,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
             $"{_gatewayUrl}/api/global-products/selector{Request.QueryString}",
             content: null,
             mutation: false,
-            cancellationToken) : Task.FromResult<IActionResult>(Forbid());
+            cancellationToken) : Task.FromResult(Denied());
 
     [HttpGet("api/by-global-product/{globalProductId:guid}")]
     public Task<IActionResult> GetByGlobalProduct(Guid globalProductId, CancellationToken cancellationToken)
@@ -53,7 +65,17 @@ public sealed class ProductAbbreviationRegisterController : Controller
             $"{_gatewayUrl}{ServicePath}/by-global-product/{globalProductId:D}",
             content: null,
             mutation: false,
-            cancellationToken) : Task.FromResult<IActionResult>(Forbid());
+            cancellationToken) : Task.FromResult(Denied());
+
+    /// <summary>FIX1 B2 — every entry of the product (requested, active, closed), for the register page.</summary>
+    [HttpGet("api/by-global-product/{globalProductId:guid}/entries")]
+    public Task<IActionResult> ListByGlobalProduct(Guid globalProductId, CancellationToken cancellationToken)
+        => Has("mdm.product-abbreviations.read") ? ProxyAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}{ServicePath}/by-global-product/{globalProductId:D}/entries",
+            content: null,
+            mutation: false,
+            cancellationToken) : Task.FromResult(Denied());
 
     [HttpGet("api/{registerEntryId:guid}/evidence")]
     public Task<IActionResult> GetEvidence(Guid registerEntryId, CancellationToken cancellationToken)
@@ -62,7 +84,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
             $"{_gatewayUrl}{ServicePath}/{registerEntryId:D}/evidence",
             content: null,
             mutation: false,
-            cancellationToken) : Task.FromResult<IActionResult>(Forbid());
+            cancellationToken) : Task.FromResult(Denied());
 
     [HttpPost("api/requests")]
     [ValidateAntiForgeryToken]
@@ -71,7 +93,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
         CancellationToken cancellationToken)
     {
         if (!Has("mdm.product-abbreviations.request") || !Has("mdm.global-products.read"))
-            return Task.FromResult<IActionResult>(Forbid());
+            return Task.FromResult(Denied());
         model.Abbreviation = model.Abbreviation?.Trim() ?? string.Empty;
         if (!ModelState.IsValid)
         {
@@ -96,7 +118,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
         Guid registerEntryId,
         [FromBody] ProductAbbreviationDecisionViewModel model,
         CancellationToken cancellationToken)
-        => Has("mdm.product-abbreviations.cancel") ? ProxyMutationAsync(HttpMethod.Patch, $"{ServicePath}/{registerEntryId:D}/cancel", model, cancellationToken) : Task.FromResult<IActionResult>(Forbid());
+        => Has("mdm.product-abbreviations.cancel") ? ProxyMutationAsync(HttpMethod.Patch, $"{ServicePath}/{registerEntryId:D}/cancel", model, cancellationToken) : Task.FromResult(Denied());
 
     [HttpPatch("api/{registerEntryId:guid}/approve")]
     [ValidateAntiForgeryToken]
@@ -104,7 +126,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
         Guid registerEntryId,
         [FromBody] ProductAbbreviationDecisionViewModel model,
         CancellationToken cancellationToken)
-        => Has("mdm.product-abbreviations.approve") ? ProxyMutationAsync(HttpMethod.Patch, $"{ServicePath}/{registerEntryId:D}/approve", model, cancellationToken) : Task.FromResult<IActionResult>(Forbid());
+        => Has("mdm.product-abbreviations.approve") ? ProxyMutationAsync(HttpMethod.Patch, $"{ServicePath}/{registerEntryId:D}/approve", model, cancellationToken) : Task.FromResult(Denied());
 
     [HttpPatch("api/{registerEntryId:guid}/reject")]
     [ValidateAntiForgeryToken]
@@ -112,7 +134,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
         Guid registerEntryId,
         [FromBody] ProductAbbreviationDecisionViewModel model,
         CancellationToken cancellationToken)
-        => Has("mdm.product-abbreviations.reject") ? ProxyMutationAsync(HttpMethod.Patch, $"{ServicePath}/{registerEntryId:D}/reject", model, cancellationToken) : Task.FromResult<IActionResult>(Forbid());
+        => Has("mdm.product-abbreviations.reject") ? ProxyMutationAsync(HttpMethod.Patch, $"{ServicePath}/{registerEntryId:D}/reject", model, cancellationToken) : Task.FromResult(Denied());
 
     [HttpPost("api/{registerEntryId:guid}/corrections")]
     [ValidateAntiForgeryToken]
@@ -120,7 +142,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
         Guid registerEntryId,
         [FromBody] ProductAbbreviationCorrectionViewModel model,
         CancellationToken cancellationToken)
-        => Has("mdm.product-abbreviations.correct") ? ProxyMutationAsync(HttpMethod.Post, $"{ServicePath}/{registerEntryId:D}/corrections", model, cancellationToken) : Task.FromResult<IActionResult>(Forbid());
+        => Has("mdm.product-abbreviations.correct") ? ProxyMutationAsync(HttpMethod.Post, $"{ServicePath}/{registerEntryId:D}/corrections", model, cancellationToken) : Task.FromResult(Denied());
 
     [HttpPost("api/{registerEntryId:guid}/retirement-requests")]
     [ValidateAntiForgeryToken]
@@ -128,7 +150,7 @@ public sealed class ProductAbbreviationRegisterController : Controller
         Guid registerEntryId,
         [FromBody] ProductAbbreviationRetirementViewModel model,
         CancellationToken cancellationToken)
-        => Has("mdm.product-abbreviations.retire") ? ProxyMutationAsync(HttpMethod.Post, $"{ServicePath}/{registerEntryId:D}/retirement-requests", model, cancellationToken) : Task.FromResult<IActionResult>(Forbid());
+        => Has("mdm.product-abbreviations.retire") ? ProxyMutationAsync(HttpMethod.Post, $"{ServicePath}/{registerEntryId:D}/retirement-requests", model, cancellationToken) : Task.FromResult(Denied());
 
     private Task<IActionResult> ProxyMutationAsync<T>(
         HttpMethod method,
@@ -219,6 +241,14 @@ public sealed class ProductAbbreviationRegisterController : Controller
         request.Headers.Add("X-Correlation-Id", HttpContext.TraceIdentifier);
         return true;
     }
+
+    /// <summary>FIX1 S5 — a coded 403 answer for the page's own calls; never a redirect.</summary>
+    private IActionResult Denied() => StatusCode(StatusCodes.Status403Forbidden, new
+    {
+        success = false,
+        errors = new[] { _sharedLocalizer["AccessDenied"].Value },
+        errorCode = "ABBREVIATION_PERMISSION_DENIED"
+    });
 
     private bool Has(string permission) => User.Identity?.IsAuthenticated == true && User.Claims
         .Where(claim => claim.Type is "permission" or "permissions")

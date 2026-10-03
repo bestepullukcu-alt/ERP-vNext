@@ -259,10 +259,10 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
         var replacement = await CreateRequestedAsync(
             scope, scope.TenantA, productId, "NEW", "replacement", former.Id);
 
-        var result = await repository.ReconcileCorrectionApprovalAsync(
-            former.Id, 1, replacement.Id, 0, "checker-2", "approve-correction", "reason", DateTimeOffset.UtcNow);
-        var replay = await repository.ReconcileCorrectionApprovalAsync(
-            former.Id, 1, replacement.Id, 0, "checker-2", "approve-correction", "reason", DateTimeOffset.UtcNow);
+        var result = await repository.ApproveCorrectionAsync(
+            ProductAbbreviationFix1MongoTests.Approval(former.Id, 1, replacement.Id, 0, "approve-correction"));
+        var replay = await repository.ApproveCorrectionAsync(
+            ProductAbbreviationFix1MongoTests.Approval(former.Id, 1, replacement.Id, 0, "approve-correction"));
 
         Assert.True(result.Succeeded);
         Assert.True(replay.Succeeded);
@@ -492,7 +492,7 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
 
         public async ValueTask DisposeAsync()
         {
-            foreach (var name in new[] { "mdm_product_abbreviation_register", "mdm_product_abbreviation_history", "mdm_product_abbreviation_allocation_ledger" })
+            foreach (var name in new[] { "mdm_product_abbreviation_register", "mdm_product_abbreviation_history", "mdm_product_abbreviation_allocation_ledger", "mdm_product_abbreviation_command_keys" })
                 await Database.GetCollection<MongoDB.Bson.BsonDocument>(name).DeleteManyAsync(
                     MongoDB.Driver.Builders<MongoDB.Bson.BsonDocument>.Filter.In("TenantId", new[] { TenantA, TenantB }));
         }

@@ -13,5 +13,22 @@
 <data name="RequestCorrection" xml:space="preserve"><value>Запросить исправление</value></data>
 <data name="ReplacementAbbreviation" xml:space="preserve"><value>Новая ABB</value></data>
 <data name="Reason" xml:space="preserve"><value>Причина</value></data>
-<data name="ErrorReconciliation" xml:space="preserve"><value>Сверка подтверждений ожидается. Обновите данные перед повторной попыткой.</value></data>
+<data name="ErrorReconciliation" xml:space="preserve"><value>Изменение ещё не записано полностью. Повторите то же действие без изменений, чтобы завершить его.</value></data>
+<data name="ErrorAlreadyAllocated" xml:space="preserve"><value>Это сокращение уже занято. Коды никогда не используются повторно; выберите другое.</value></data>
+<data name="ErrorCorrectionUnchanged" xml:space="preserve"><value>Новое сокращение совпадает с текущим.</value></data>
+<data name="ErrorRequestClosed" xml:space="preserve"><value>Этот код уже запрашивался, и запрос закрыт. Создайте новый запрос.</value></data>
+<data name="ErrorProductHasEntry" xml:space="preserve"><value>У этого продукта уже есть действующее или ожидающее сокращение.</value></data>
+<data name="ErrorCorrectionPending" xml:space="preserve"><value>Исправление этого кода уже ожидает решения.</value></data>
+<data name="ErrorRetirementPending" xml:space="preserve"><value>Вывод этого кода из обращения уже ожидает решения.</value></data>
+<data name="ErrorNotPending" xml:space="preserve"><value>По этому запросу уже принято решение. Обновите страницу, чтобы увидеть его статус.</value></data>
+<data name="ErrorFormerNotActive" xml:space="preserve"><value>Код, который заменяет это исправление, больше не действует. Исправление можно только отклонить или отменить.</value></data>
+<data name="ErrorKeyReused" xml:space="preserve"><value>Эта операция уже использовалась для другой записи. Обновите страницу и повторите попытку.</value></data>
+<data name="ErrorProductNotFound" xml:space="preserve"><value>Выбранный глобальный продукт не найден.</value></data>
+<data name="ErrorCorrectionRequiresActive" xml:space="preserve"><value>Исправить можно только действующий код.</value></data>
+<data name="ErrorRetirementRequestNotFound" xml:space="preserve"><value>Этот запрос на вывод из обращения больше не ожидает решения.</value></data>
+<data name="ErrorPersistenceUnavailable" xml:space="preserve"><value>Реестр временно недоступен. Ничего не изменено; повторите то же действие.</value></data>
+<data name="ErrorCancelNotOwner" xml:space="preserve"><value>Отменить запрос может только тот, кто его создал.</value></data>
+<data name="ErrorMakerChecker" xml:space="preserve"><value>Автор запроса не может принимать по нему решение.</value></data>
+<data name="CancelRequest" xml:space="preserve"><value>Отменить запрос</value></data>
+<data name="OpenInTaskCenter" xml:space="preserve"><value>Открыть в Центре задач</value></data>
 </root>

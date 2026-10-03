@@ -64,6 +64,24 @@ describe('ABB executed browser contract', () => {
         expect(h.sut.renderActions({ id:'x', lifecycleStatus:'ACTIVE' }).map(x=>x.key)).toEqual(['details','correct']);
         expect(h.sut.renderActions({ id:'x', lifecycleStatus:'ACTIVE', retirementPending:true }).map(x=>x.key)).toEqual(['details']);
     });
+    // FIX1 B2/B3 — what each reader is offered on the register page.
+    it('offers cancel to the requester of a pending entry and the Task Center to anyone who decides', () => {
+        const requester = harness({ canCancel:'true', canDecide:'true' });
+        expect(requester.sut.renderActions({ id:'x', lifecycleStatus:'REQUESTED', requestedByCurrentUser:true }).map(x=>x.key))
+            .toEqual(['details','cancel']);
+        expect(requester.sut.renderActions({ id:'x', lifecycleStatus:'REQUESTED', requestedByCurrentUser:false }).map(x=>x.key))
+            .toEqual(['details','taskCenter']);
+        expect(requester.sut.renderActions({ id:'x', lifecycleStatus:'ACTIVE', retirementPending:true }).map(x=>x.key))
+            .toEqual(['details','taskCenter']);
+        const reader = harness({});
+        expect(reader.sut.renderActions({ id:'x', lifecycleStatus:'REQUESTED', requestedByCurrentUser:true }).map(x=>x.key))
+            .toEqual(['details']);
+    });
+    it('offers no correction or retirement while a correction of the code waits', () => {
+        const h = harness({ canCorrect:'true', canRetire:'true' });
+        expect(h.sut.renderActions({ id:'x', lifecycleStatus:'ACTIVE', correctionPending:true }).map(x=>x.key)).toEqual(['details']);
+        expect(h.sut.renderActions({ id:'x', lifecycleStatus:'ACTIVE' }).map(x=>x.key)).toEqual(['details','correct','retire']);
+    });
     it.each([202,403,404,409])('never reloads a retirement or reports success for failure %s', async status => {
         const h = harness({canRetire:'true'});
         h.fetch.mockResolvedValue({ status, ok:status===202, json:async()=>({isSuccessful:false,errors:[]}) });
@@ -87,12 +105,13 @@ describe('ABB executed browser contract', () => {
         const h=harness({canAudit:'true'});
         const id='11111111-1111-1111-1111-111111111111';
         h.win.location.search='?globalProductId='+id;
-        h.fetch.mockResolvedValue({status:200,ok:true,json:async()=>({data:{id:'entry',version:8,lifecycleStatus:'ACTIVE'}})});
+        // FIX1 B2: the page reads every entry of the product (a list), not only the active one.
+        h.fetch.mockResolvedValue({status:200,ok:true,json:async()=>({data:[{id:'entry',version:8,lifecycleStatus:'ACTIVE'}]})});
         await h.sut.initDataTable();
         const callback=vi.fn();
         h.config().ajax({},callback);
         await new Promise(resolve=>setTimeout(resolve,0));
-        expect(h.fetch.mock.calls[0][0]).toBe('/MDM/ProductAbbreviationRegister/api/by-global-product/'+id);
+        expect(h.fetch.mock.calls[0][0]).toBe('/MDM/ProductAbbreviationRegister/api/by-global-product/'+id+'/entries');
         expect(callback.mock.calls[0][0].data[0].version).toBe(8);
         expect(h.win.DtDefaults.exportButtons.mock.calls[0][0]).toBeNull();
         expect(h.selects).toHaveLength(0);
@@ -139,10 +158,11 @@ describe('MOD-0290-FU01 Product Abbreviation Register', () => {
         expect(source).not.toMatch(/hardcodedProducts|new Option\([^,]+,\s*['"][0-9a-f-]{36}/i);
     });
 
-    it('loads an exact-product zero-or-one row and read-only evidence', () => {
+    it('loads every entry of the exact product and read-only evidence', () => {
         const source = script();
 
-        expect(source).toContain('`${endpoint}/by-global-product/${encodeURIComponent(selectedProductId)}`');
+        // FIX1 B2: the requester must see the pending request they just made, so the page lists every entry.
+        expect(source).toContain('`${endpoint}/by-global-product/${encodeURIComponent(selectedProductId)}/entries`');
         expect(source).toContain('`${endpoint}/${encodeURIComponent(entryId)}/evidence`');
         expect(source).toContain('item.canonicalHumanSubjectId ?? item.CanonicalHumanSubjectId');
         expect(source).toContain('item.correlationId ?? item.CorrelationId');

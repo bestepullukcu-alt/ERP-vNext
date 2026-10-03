@@ -13,6 +13,22 @@ public static class ProductAbbreviationRegisterModels
         Guid? ReplacesEntryId,
         bool RetirementPending);
 
+    /// <summary>
+    /// FIX1 B2 — one row of a product's register page, whatever its status. The two "by current user" flags let the
+    /// page offer the requester "cancel" and everyone else "open in the Task Center" without seeing subject ids.
+    /// </summary>
+    public sealed record ProductAbbreviationRegisterListItemDto(
+        Guid Id,
+        Guid GlobalProductId,
+        string Abbreviation,
+        ProductAbbreviationLifecycleStatus LifecycleStatus,
+        int Version,
+        Guid? ReplacesEntryId,
+        bool RetirementPending,
+        bool CorrectionPending,
+        bool RequestedByCurrentUser,
+        bool RetirementRequestedByCurrentUser);
+
     public sealed record ProductAbbreviationAllocationResultDto(
         ProductAbbreviationRegisterEntryDto Entry,
         bool IsReplay,

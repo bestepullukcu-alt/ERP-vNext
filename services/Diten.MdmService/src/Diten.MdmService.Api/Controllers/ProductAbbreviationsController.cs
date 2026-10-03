@@ -27,6 +27,15 @@ public sealed class ProductAbbreviationsController : CustomBaseController
             new GetProductAbbreviationByGlobalProductQuery(globalProductId),
             cancellationToken));
 
+    [HttpGet("by-global-product/{globalProductId:guid}/entries")]
+    [HasPermission(ProductAbbreviationPermissions.Read)]
+    public async Task<IActionResult> ListByGlobalProduct(
+        Guid globalProductId,
+        CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new ListProductAbbreviationEntriesQuery(globalProductId),
+            cancellationToken));
+
     [HttpGet("resolve/{abbreviation}")]
     [HasPermission(ProductAbbreviationPermissions.Read)]
     public async Task<IActionResult> Resolve(string abbreviation, CancellationToken cancellationToken)

@@ -13,5 +13,22 @@
 <data name="RequestCorrection" xml:space="preserve"><value>Demander une correction</value></data>
 <data name="ReplacementAbbreviation" xml:space="preserve"><value>ABB de remplacement</value></data>
 <data name="Reason" xml:space="preserve"><value>Motif</value></data>
-<data name="ErrorReconciliation" xml:space="preserve"><value>Le rapprochement des preuves est en attente. Rechargez avant de réessayer.</value></data>
+<data name="ErrorReconciliation" xml:space="preserve"><value>La modification n'est pas encore entièrement enregistrée. Répétez la même action, sans la modifier, pour la terminer.</value></data>
+<data name="ErrorAlreadyAllocated" xml:space="preserve"><value>Cette abréviation est déjà attribuée. Les codes ne sont jamais réutilisés ; choisissez-en une autre.</value></data>
+<data name="ErrorCorrectionUnchanged" xml:space="preserve"><value>La nouvelle abréviation est identique à l'actuelle.</value></data>
+<data name="ErrorRequestClosed" xml:space="preserve"><value>Ce code a déjà été demandé et la demande est close. Faites plutôt une nouvelle demande.</value></data>
+<data name="ErrorProductHasEntry" xml:space="preserve"><value>Ce produit a déjà une abréviation active ou en attente.</value></data>
+<data name="ErrorCorrectionPending" xml:space="preserve"><value>Une correction de ce code attend déjà une décision.</value></data>
+<data name="ErrorRetirementPending" xml:space="preserve"><value>Un retrait de ce code attend déjà une décision.</value></data>
+<data name="ErrorNotPending" xml:space="preserve"><value>Cette demande a déjà été tranchée. Rechargez pour voir son statut.</value></data>
+<data name="ErrorFormerNotActive" xml:space="preserve"><value>Le code que cette correction remplace n'est plus actif. La correction ne peut qu'être rejetée ou annulée.</value></data>
+<data name="ErrorKeyReused" xml:space="preserve"><value>Cette opération a déjà été utilisée pour un autre enregistrement. Rechargez la page et réessayez.</value></data>
+<data name="ErrorProductNotFound" xml:space="preserve"><value>Le produit global sélectionné est introuvable.</value></data>
+<data name="ErrorCorrectionRequiresActive" xml:space="preserve"><value>Seul un code actif peut être corrigé.</value></data>
+<data name="ErrorRetirementRequestNotFound" xml:space="preserve"><value>Cette demande de retrait n'attend plus de décision.</value></data>
+<data name="ErrorPersistenceUnavailable" xml:space="preserve"><value>Le registre est temporairement indisponible. Rien n'a été modifié ; répétez la même action.</value></data>
+<data name="ErrorCancelNotOwner" xml:space="preserve"><value>Seule la personne qui a fait la demande peut l'annuler.</value></data>
+<data name="ErrorMakerChecker" xml:space="preserve"><value>La personne qui a fait une demande ne peut pas la trancher.</value></data>
+<data name="CancelRequest" xml:space="preserve"><value>Annuler la demande</value></data>
+<data name="OpenInTaskCenter" xml:space="preserve"><value>Ouvrir dans le Centre de tâches</value></data>
 </root>
