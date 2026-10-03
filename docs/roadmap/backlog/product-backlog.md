@@ -7780,6 +7780,20 @@ değiştirir); kapalılığı doğrulayanlar `TenantModuleAuthorizationHandlerTe
 
 ---
 
+### BL-522
+
+**Ana dalda CRM'in derleme çıktıları izleniyor: 324 dosya, 301 MB**
+
+DURUM: AÇIK · SAHİP: CT (depo düzeni) · BULAN: kalem kaydı (P1) tasarım ölçümü, CT doğruladı (2026-10-03) · KAYIT: 2026-10-03
+
+`origin/main`'de `services/Diten.CrmService/src/Diten.CrmService.Api/.tmp-*/Debug/…` altında 324 dosya (toplam 301,0 MB) izleniyor;
+2026-08-28 tarihli bir ara kayıt commit'iyle (`0f71a237c`) girmiş, o günden beri her dalda ve her klonda var. `.gitignore` yalnız `tmp/` ve
+`.tmp/` içeriyor, `.tmp-*` kalıbını yakalamıyor. Düzeltme: dosyalar ayrı bir dalda `git rm -r --cached` ile izlemeden çıkarılır, `.gitignore`'a
+`.tmp-*/` eklenir, PR ile main'e. Geçmişteki 301 MB yerinde kalır (geçmişi yeniden yazmak bütün dalları kırar; yapılmaz). CRM'in dosyası
+değil derleme artığı olduğu için CRM ekibine yalnız bilgi verilir. Gelecek regresyon riski: 🟢.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**

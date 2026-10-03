@@ -57,7 +57,7 @@ imza yok (§7).
 | # | Paket | İçerik | Büyüklük | Önce ne bitmeli | Regresyon riski |
 |---|---|---|---|---|---|
 | P0 | **Kabul** | Yazılmış parçaların kabulü, bu sırayla (sahip kararı 2026-10-03): Global Ürün → GSKU → LSKU → Kısaltma Kaydı (ABB) → Şirket Kapsamı → Marka → Bitmiş Ürün; her birinin denetim izi (BL-503). Farmakovijilans bu yedisinden sonra | sürüyor | — | — |
-| P1 | **Kalem / malzeme kaydı** | Hammadde, ambalaj malzemesi ve diğer stoklanabilir kalemler: kod, ad, tür, durum, temel ölçü birimi, lot / son kullanma izlenir mi, saklama koşulu; Bitmiş Ürün ile ortak "stoklanabilir kalem" okuma sözleşmesi | büyük (2 paket) | stok ekibinin cevabı (§6) | 🟡 |
+| P1 | **Kalem / malzeme kaydı** | Hammadde, ambalaj malzemesi ve diğer stoklanabilir kalemler: kod, ad, tür, durum, temel ölçü birimi, lot / son kullanma izlenir mi, saklama koşulu; Bitmiş Ürün ile ortak "stoklanabilir kalem" okuma sözleşmesi. Ölçüm ve tasarım hazır (2026-10-03): [kalem kaydı tasarımı](mdm-item-master-p1-design-2026-10-03.md) — sahibin altı kararı bekleniyor | büyük (2 paket) | stok ekibinin cevabı (§6) + sahibin altı kararı | 🟡 |
 | P2 | **Ölçü birimi eşlemesi** | Kalem başına birim çevrimleri (kg ↔ g, kutu ↔ adet); referans listesi MOD-0048'de kalır | küçük–orta (1) | P1 tasarımı | 🟢 |
 | P3 | **Ürün tanımı alanları** | Sürüme farmasötik form, veriliş yolu, güç (tek etkin maddeli) | orta (1) | P0'da GSKU kabulü | 🟢 |
 | P4 | **İkinci sürüm kuralı** | REV-002 açma, hangi sürüm geçerli, eski sürümdeki kutular | orta (1) | P3 | 🟡 |
