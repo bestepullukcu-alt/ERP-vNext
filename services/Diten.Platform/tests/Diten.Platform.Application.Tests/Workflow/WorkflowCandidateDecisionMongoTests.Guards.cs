@@ -72,7 +72,11 @@ public sealed partial class WorkflowCandidateDecisionMongoTests
     [Fact]
     public async Task After_an_intermediate_step_the_week_rule_reads_the_NEW_step_task_not_the_decided_one()
     {
-        var seeded = await _store.SeedAsync([D(First), D(Second)], twoSteps: true);
+        // CreatedAt is stored as a [ticks, offsetMinutes] array (no DateTimeOffsetSerializer, BL-030): a DESCENDING sort
+        // reads the ticks, an ascending one reads the offset (0 for both tasks) and leaves the order to the Id tie-break.
+        // The decided task gets the largest Id, so an oldest-first sort puts it first every time instead of half the time.
+        var seeded = await _store.SeedAsync([D(First), D(Second)], twoSteps: true,
+            firstTaskId: Guid.Parse("ffffffff-ffff-ffff-" + Guid.NewGuid().ToString("D")[19..]));
         Assert.True((await _store.ApproveAsync(seeded.Task.Id, D(First), "step-a-first")).IsSuccessful);
         var tasks = await _store.Tasks.ListByInstanceIdsAsync([seeded.Instance.Id]);
         Assert.Equal(2, tasks.Count);

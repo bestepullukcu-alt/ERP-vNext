@@ -420,7 +420,8 @@ public sealed partial class WorkflowCandidateDecisionMongoTests(AuditOutboxTempo
             IReadOnlyList<string>? escalatedTo = null,
             Guid? startedBy = null,
             WorkflowStartCheckpoint? trustedCheckpoint = null,
-            DateTimeOffset? dueAt = null)
+            DateTimeOffset? dueAt = null,
+            Guid? firstTaskId = null)
         {
             var tenantId = TenantContext.TenantId;
             var template = await Templates.CreateAsync(new WorkflowTemplate
@@ -473,6 +474,7 @@ public sealed partial class WorkflowCandidateDecisionMongoTests(AuditOutboxTempo
             var acting = escalatedTo ?? candidates;
             var task = new ApprovalTask
             {
+                Id = firstTaskId ?? Guid.NewGuid(),
                 TenantId = tenantId,
                 WorkflowInstanceId = instance.Id,
                 StageCode = "stage-1",
