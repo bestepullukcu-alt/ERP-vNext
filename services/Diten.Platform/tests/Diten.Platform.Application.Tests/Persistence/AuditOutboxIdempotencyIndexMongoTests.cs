@@ -68,5 +68,48 @@ public sealed class AuditOutboxIdempotencyIndexMongoTests
         Assert.Contains("\"IXSCAN\"", plan);
         Assert.Contains("ix_audit_events_outbox_idempotency_key", plan);
         Assert.DoesNotContain("COLLSCAN", plan);
+
+        // FIX3 — the index is SPARSE: records written before the outbox carried the key take no room in it.
+        var index = (await (await database.GetCollection<AuditEvent>(AuditCollectionNames.AuditEvents).Indexes.ListAsync()).ToListAsync())
+            .Single(i => i["name"] == "ix_audit_events_outbox_idempotency_key");
+        Assert.True(index.GetValue("sparse", false).ToBoolean());
     }
+
+    [Fact]
+    public async Task The_duplicate_check_sees_only_its_own_tenants_live_records()
+    {
+        // FIX3 — a delivery is "already done" only by a record of the SAME tenant that is not deleted: another tenant's
+        // record with the same key, or a deleted one, must not make the outbox drop a delivery.
+        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var database = mongo.CreateDatabase();
+        var other = Guid.NewGuid();
+        await database.GetCollection<AuditEvent>(AuditCollectionNames.AuditEvents).InsertManyAsync(
+        [
+            Event(other, "shared-key", deleted: false),
+            Event(Tenant, "deleted-key", deleted: true),
+            Event(Tenant, "live-key", deleted: false)
+        ]);
+        var tenantContext = new TenantContext();
+        var repository = new AuditEventRepository(database, tenantContext);
+
+        using (TenantScope.Begin(tenantContext, Tenant))
+        {
+            Assert.False(await repository.ExistsByOutboxIdempotencyKeyAsync("shared-key"));
+            Assert.False(await repository.ExistsByOutboxIdempotencyKeyAsync("deleted-key"));
+            Assert.True(await repository.ExistsByOutboxIdempotencyKeyAsync("live-key"));
+        }
+    }
+
+    private static AuditEvent Event(Guid tenant, string key, bool deleted) => new()
+    {
+        TenantId = tenant,
+        CorrelationId = Guid.NewGuid(),
+        Category = AuditCategory.Security,
+        EntityType = "TestEntity",
+        Operation = AuditOperation.Update,
+        Outcome = AuditOutcome.Succeeded,
+        SourceService = "Diten.Platform",
+        IsDeleted = deleted,
+        Metadata = new Dictionary<string, object?> { [AuditOutboxPayloadMapper.OutboxIdempotencyMetadataKey] = key }
+    };
 }

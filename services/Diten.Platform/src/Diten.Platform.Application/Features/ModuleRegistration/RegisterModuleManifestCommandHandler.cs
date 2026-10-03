@@ -69,7 +69,8 @@ public sealed class RegisterModuleManifestCommandHandler
 
     public async Task<Response<ModuleManifestReconcileResult>> Handle(RegisterModuleManifestCommand request, CancellationToken ct)
     {
-        var manifest = request.Manifest;
+        // INTX FIX3 — one rule for a code listed twice, for the plan AND the writes (see CollapseRepeats).
+        var manifest = CollapseRepeats(request.Manifest);
         var moduleCode = ModuleCatalogCodeNormalizer.Normalize(manifest.ModuleCode);
         if (string.IsNullOrWhiteSpace(moduleCode))
         {
@@ -370,7 +371,8 @@ public sealed class RegisterModuleManifestCommandHandler
             ["PagesRemoved"] = surface.PagesRemoved.ToArray(),
             ["ActionsAdded"] = surface.ActionsAdded.ToArray(),
             ["ActionsRemoved"] = surface.ActionsRemoved.ToArray(),
-            ["PermissionsChanged"] = surface.PermissionsChanged.ToArray()
+            ["PermissionsChanged"] = surface.PermissionsChanged.ToArray(),
+            ["ScopesChanged"] = surface.ScopesChanged.ToArray()
         };
         if (!string.IsNullOrWhiteSpace(authenticatedProducer))
         {
@@ -389,10 +391,32 @@ public sealed class RegisterModuleManifestCommandHandler
         IReadOnlyList<string> PagesRemoved,
         IReadOnlyList<string> ActionsAdded,
         IReadOnlyList<string> ActionsRemoved,
-        IReadOnlyList<string> PermissionsChanged)
+        IReadOnlyList<string> PermissionsChanged,
+        IReadOnlyList<string> ScopesChanged)
     {
         public bool IsEmpty => PagesAdded.Count == 0 && PagesRemoved.Count == 0 && ActionsAdded.Count == 0
-                               && ActionsRemoved.Count == 0 && PermissionsChanged.Count == 0;
+                               && ActionsRemoved.Count == 0 && PermissionsChanged.Count == 0 && ScopesChanged.Count == 0;
+    }
+
+    /// <summary>
+    /// INTX FIX3 — ONE rule for a code a manifest lists twice, used by the plan and by the writes alike: the LATER
+    /// listing wins, at its own position. A page listed twice is one page with the later listing's values; an action
+    /// listed twice on a page likewise. (The plan used to take the first listing while the writes kept the last.)
+    /// </summary>
+    internal static ModuleManifestDocument CollapseRepeats(ModuleManifestDocument manifest)
+    {
+        static List<T> LaterWins<T>(IReadOnlyList<T>? items, Func<T, string> code)
+        {
+            var list = items?.ToList() ?? [];
+            var last = new Dictionary<string, int>(StringComparer.Ordinal);
+            for (var i = 0; i < list.Count; i++) last[code(list[i])] = i;
+            return list.Where((item, i) => last[code(item)] == i).ToList();
+        }
+
+        var pages = LaterWins(manifest.Pages, p => ModulePageDescriptorNormalizer.NormalizePageCode(p.PageCode))
+            .Select(p => p with { Actions = LaterWins(p.Actions, a => ModulePageDescriptorNormalizer.NormalizePageCode(a.ActionCode)) })
+            .ToList();
+        return manifest with { Pages = pages };
     }
 
     /// <summary>One manifest page as the reconcile will treat it: skipped (and why), created, or updated in place.</summary>
@@ -421,6 +445,7 @@ public sealed class RegisterModuleManifestCommandHandler
         var actionsAdded = new List<string>();
         var actionsRemoved = new List<string>();
         var permissionsChanged = new List<string>();
+        var scopesChanged = new List<string>();
 
         var manifestPageCodes = manifest.Pages
             .Select(p => ModulePageDescriptorNormalizer.NormalizePageCode(p.PageCode))
@@ -454,12 +479,12 @@ public sealed class RegisterModuleManifestCommandHandler
             routes[pageCode] = routePath;
             if (!planned.Add(pageCode))
             {
-                continue; // the same page again: an update of the page this push already planned
+                continue; // the same page again (CollapseRepeats has already merged repeats; kept as a guard)
             }
 
             var manifestActions = manifestPage.Actions
                 .GroupBy(a => ModulePageDescriptorNormalizer.NormalizePageCode(a.ActionCode), StringComparer.Ordinal)
-                .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+                .ToDictionary(g => g.Key, g => g.Last(), StringComparer.Ordinal);
             var existing = kept.FirstOrDefault(p => string.Equals(p.PageCode, pageCode, StringComparison.Ordinal));
             if (existing is null)
             {
@@ -468,10 +493,22 @@ public sealed class RegisterModuleManifestCommandHandler
                 continue;
             }
 
-            var newPagePermission = ModulePageDescriptorNormalizer.NormalizeOptionalPermission(manifestPage.RequiredPermission);
-            if (!string.Equals(existing.RequiredPermission, newPagePermission, StringComparison.Ordinal))
+            // INTX FIX3 — both sides normalized: a stored null and a pushed "" (or a key differing only in case and
+            // spacing) are the same key, not a "(none)→(none)" change.
+            var storedPagePermission = PermissionKeyOf(existing.RequiredPermission);
+            var newPagePermission = PermissionKeyOf(manifestPage.RequiredPermission);
+            if (!string.Equals(storedPagePermission, newPagePermission, StringComparison.Ordinal))
             {
-                permissionsChanged.Add($"{pageCode}: {Shown(existing.RequiredPermission)}→{Shown(newPagePermission)}");
+                permissionsChanged.Add($"{pageCode}: {Shown(storedPagePermission)}→{Shown(newPagePermission)}");
+            }
+
+            // INTX FIX3 — a route that crosses /Platform moves the page's permissions to another scope (AuthService
+            // raises an existing key to PlatformAdmin, never lowers it): that is a change of authority, recorded.
+            var storedScope = ModulePageDescriptorNormalizer.ScopeFromRoute(existing.RoutePath);
+            var newScope = ModulePageDescriptorNormalizer.ScopeFromRoute(routePath);
+            if (!string.Equals(storedScope, newScope, StringComparison.Ordinal))
+            {
+                scopesChanged.Add($"{pageCode}: {storedScope}→{newScope}");
             }
 
             var existingActions = (await _actionRepository.GetByPageAsync(existing.Id, ct))
@@ -486,18 +523,21 @@ public sealed class RegisterModuleManifestCommandHandler
                     continue;
                 }
 
-                var newKey = ModulePageDescriptorNormalizer.NormalizePermission(manifestAction.PermissionKey);
-                if (!string.Equals(existingAction.PermissionKey, newKey, StringComparison.Ordinal))
+                var storedKey = PermissionKeyOf(existingAction.PermissionKey);
+                var newKey = PermissionKeyOf(manifestAction.PermissionKey);
+                if (!string.Equals(storedKey, newKey, StringComparison.Ordinal))
                 {
-                    permissionsChanged.Add($"{pageCode}/{code}: {Shown(existingAction.PermissionKey)}→{Shown(newKey)}");
+                    permissionsChanged.Add($"{pageCode}/{code}: {Shown(storedKey)}→{Shown(newKey)}");
                 }
             }
         }
 
-        static string Shown(string? key) => string.IsNullOrWhiteSpace(key) ? "(none)" : key;
+        static string PermissionKeyOf(string? key) => ModulePageDescriptorNormalizer.NormalizeOptionalPermission(key) ?? string.Empty;
+        static string Shown(string key) => key.Length == 0 ? "(none)" : key;
         static IReadOnlyList<string> Sorted(IEnumerable<string> codes) => codes.Distinct(StringComparer.Ordinal).OrderBy(c => c, StringComparer.Ordinal).ToList();
         return new ManifestReconcilePlan(orphans, kept, pages,
-            new ManifestSurfaceChange(Sorted(pagesAdded), Sorted(pagesRemoved), Sorted(actionsAdded), Sorted(actionsRemoved), Sorted(permissionsChanged)));
+            new ManifestSurfaceChange(Sorted(pagesAdded), Sorted(pagesRemoved), Sorted(actionsAdded), Sorted(actionsRemoved), Sorted(permissionsChanged),
+                Sorted(scopesChanged)));
     }
 
     private static Guid DeterministicEntityId(string moduleCode)

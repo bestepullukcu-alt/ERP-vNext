@@ -465,6 +465,56 @@ public sealed class RegisterModuleManifestCommandHandlerTests
         Assert.False(Assert.Single(recorder.Calls).Effective);
     }
 
+    // ── INTX FIX3 ────────────────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task A_page_and_an_action_listed_twice_are_planned_and_written_with_the_later_listing()
+    {
+        // FIX3 A4 — the plan used to take the first listing and the writes the last: the record named a key the
+        // catalogue never got.
+        var (handler, recorder, pages) = BuildRecordingWithPages();
+        await handler.Handle(new RegisterModuleManifestCommand(Manifest(Page("A", "/a", "p.a.read", Action("X", "p.a.x")))), CancellationToken.None);
+        recorder.Calls.Clear();
+
+        await handler.Handle(new RegisterModuleManifestCommand(Manifest(
+            Page("A", "/a", "p.a.first", Action("X", "p.a.x-first"), Action("X", "p.a.x-second")),
+            Page("A", "/a", "p.a.second", Action("X", "p.a.x-second")))), CancellationToken.None);
+
+        Assert.Equal("p.a.second", Assert.Single(pages.Items, p => p.PageCode == "A" && !p.IsDeleted).RequiredPermission);
+        Assert.Equal(new[] { "A/X: p.a.x→p.a.x-second", "A: p.a.read→p.a.second" },
+            (string[])Assert.Single(recorder.Calls).Descriptor.AuditMetadata!["PermissionsChanged"]!);
+    }
+
+    [Fact]
+    public async Task A_key_that_differs_only_in_its_spelling_or_an_empty_one_stored_another_way_is_no_change()
+    {
+        // FIX3 — compared normalized on both sides: no "(none)→(none)", no change for case or spacing.
+        var (handler, recorder, pages) = BuildRecordingWithPages();
+        await handler.Handle(new RegisterModuleManifestCommand(Manifest(Page("A", "/a", null, Action("X", "p.a.x")))), CancellationToken.None);
+        pages.Items.Single(p => p.PageCode == "A").RequiredPermission = ""; // stored "" (older data), pushed null below
+        recorder.Calls.Clear();
+
+        await handler.Handle(new RegisterModuleManifestCommand(Manifest(Page("A", "/a", "  ", Action("X", "  P.A.X  ")))), CancellationToken.None);
+
+        var call = Assert.Single(recorder.Calls);
+        Assert.False(call.Effective, string.Join("; ", (string[])call.Descriptor.AuditMetadata!["PermissionsChanged"]!));
+    }
+
+    [Fact]
+    public async Task A_page_that_moves_under_Platform_records_the_scope_its_permissions_move_to()
+    {
+        // FIX3 A5 — AuthService raises an existing key to PlatformAdmin when a route under /Platform syncs it.
+        var (handler, recorder) = BuildRecording();
+        await handler.Handle(new RegisterModuleManifestCommand(Manifest(Page("A", "/a", "p.a.read"))), CancellationToken.None);
+        recorder.Calls.Clear();
+
+        await handler.Handle(new RegisterModuleManifestCommand(Manifest(Page("A", "/Platform/a", "p.a.read"))), CancellationToken.None);
+
+        var call = Assert.Single(recorder.Calls);
+        Assert.True(call.Effective);
+        Assert.Equal(new[] { "A: Tenant→PlatformAdmin" }, (string[])call.Descriptor.AuditMetadata!["ScopesChanged"]!);
+    }
+
     private static (RegisterModuleManifestCommandHandler handler, RecordingCoordinator recorder, FakePageRepository pages) BuildRecordingWithPages()
     {
         var domains = new FakeDomainRepository();

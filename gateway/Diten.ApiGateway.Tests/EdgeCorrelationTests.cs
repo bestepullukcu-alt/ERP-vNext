@@ -73,7 +73,9 @@ public sealed class EdgeCorrelationTests
     [Fact]
     public async Task The_gateway_forwards_its_own_correlation_and_the_client_value_apart_and_drops_what_the_caller_put_on_the_client_header()
     {
-        var http = new DefaultHttpContext { TraceIdentifier = "server-minted" };
+        // TraceIdentifier is what Ocelot overwrites with a caller's RequestId: it must not be what travels.
+        var http = new DefaultHttpContext { TraceIdentifier = "overwritten-by-ocelot" };
+        http.Items[CorrelationIdMiddleware.CorrelationItemKey] = "server-minted";
         http.Items[CorrelationIdMiddleware.ClientCorrelationItemKey] = "client-said";
         var sink = new Sink();
         var handler = new CorrelationPropagationDelegatingHandler(new HttpContextAccessor { HttpContext = http },
@@ -86,6 +88,22 @@ public sealed class EdgeCorrelationTests
 
         Assert.Equal(["server-minted"], sink.Request!.Headers.GetValues("X-Correlation-Id"));
         Assert.Equal(["client-said"], sink.Request.Headers.GetValues("X-Client-Correlation-Id"));
+    }
+
+    [Fact]
+    public async Task A_correlation_header_the_caller_sent_is_removed_even_when_no_correlation_was_minted()
+    {
+        // FIX3 A3 — it used to be replaced only when one was there to replace it with.
+        var http = new DefaultHttpContext { TraceIdentifier = "" };
+        var sink = new Sink();
+        var handler = new CorrelationPropagationDelegatingHandler(new HttpContextAccessor { HttpContext = http },
+            Options.Create(new ObservabilityOptions())) { InnerHandler = sink };
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://platform.test/x");
+        request.Headers.TryAddWithoutValidation("X-Correlation-Id", "chosen-by-the-caller");
+
+        await new HttpMessageInvoker(handler).SendAsync(request, CancellationToken.None);
+
+        Assert.False(sink.Request!.Headers.Contains("X-Correlation-Id"));
     }
 
     [Fact]

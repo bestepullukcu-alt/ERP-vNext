@@ -19,10 +19,11 @@ public sealed class CorrelationPropagationDelegatingHandler : DelegatingHandler
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var correlationId = _httpContextAccessor.HttpContext?.TraceIdentifier;
-        if (!string.IsNullOrWhiteSpace(correlationId))
+        // INTX FIX3 — what a caller put on X-Correlation-Id never travels on, whatever else holds; the value forwarded is
+        // the one CorrelationIdMiddleware minted — not TraceIdentifier, which Ocelot overwrites with a caller's RequestId.
+        request.Headers.Remove(_options.HeaderName);
+        if (EdgeCorrelation.CorrelationIdOf(_httpContextAccessor.HttpContext) is { } correlationId)
         {
-            request.Headers.Remove(_options.HeaderName);
             request.Headers.TryAddWithoutValidation(_options.HeaderName, correlationId);
         }
 

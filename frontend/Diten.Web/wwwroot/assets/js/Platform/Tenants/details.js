@@ -1291,6 +1291,7 @@ const TenantDetails = (function () {
         ENTITLEMENT_EXPIRY_IN_PAST: 'EntitlementExpiryInPast',
         // INTX FIX2 — the change could not be recorded (no one to name, or the record store is down): not made.
         AUDIT_RECORD_UNAVAILABLE: 'AuditRecordUnavailable',
+        AUDIT_INTENT_INVALID: 'AuditIntentInvalid',
         QUOTA_LIMIT_EXCEEDED: 'QuotaLimitExceeded',
         QUOTA_DUPLICATE_OPERATION: 'QuotaDuplicateOperation',
         QUOTA_SUBSCRIPTION_INACTIVE: 'QuotaSubscriptionInactive',
@@ -1324,7 +1325,8 @@ const TenantDetails = (function () {
     const SUBSCRIPTION_REFUSAL_KEYS = {
         SUBSCRIPTION_ALREADY_CURRENT: 'SubscriptionAlreadyCurrent',
         SUBSCRIPTION_STALE: 'SubscriptionStale',
-        AUDIT_RECORD_UNAVAILABLE: 'AuditRecordUnavailable'
+        AUDIT_RECORD_UNAVAILABLE: 'AuditRecordUnavailable',
+        AUDIT_INTENT_INVALID: 'AuditIntentInvalid'
     };
 
     const subscriptionRefusalText = (error, labels) => {

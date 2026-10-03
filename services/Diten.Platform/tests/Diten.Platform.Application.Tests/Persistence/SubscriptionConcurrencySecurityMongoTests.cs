@@ -269,6 +269,7 @@ public sealed class SubscriptionConcurrencySecurityMongoTests
         public Task<TenantSubscription> CreateAsync(IPlatformTransactionSession s, TenantSubscription x, CancellationToken ct = default) => inner.CreateAsync(s, x, ct);
         public Task<TenantSubscription> CreateAsync(TenantSubscription x, CancellationToken ct = default) => inner.CreateAsync(x, ct);
         public Task<TenantSubscription?> GetByIdAsync(Guid id, CancellationToken ct = default) => inner.GetByIdAsync(id, ct);
+        public Task<TenantSubscription?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default) => inner.GetByIdAsync(session, id, ct);
         public async Task<TenantSubscription?> GetByTenantIdAsync(Guid t, Guid id, CancellationToken ct = default)
         { var value = await inner.GetByTenantIdAsync(t, id, ct); if (gateGet) await gate.MeetAsync(); return value; }
         public Task<TenantSubscription?> GetCurrentByTenantIdAsync(Guid t, CancellationToken ct = default) => inner.GetCurrentByTenantIdAsync(t, ct);

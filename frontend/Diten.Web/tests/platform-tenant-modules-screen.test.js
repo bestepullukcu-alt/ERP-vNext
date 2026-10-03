@@ -567,13 +567,17 @@ describe("INTX FIX2 — the Platform's new refusal codes are said on the screen"
     return match[1];
   };
   const audit = constant(platform("Diten.Platform.API", "Middleware", "GlobalExceptionHandler.cs"), "AuditRecordUnavailableCode");
+  const intentInvalid = constant(platform("Diten.Platform.API", "Middleware", "GlobalExceptionHandler.cs"), "AuditIntentInvalidCode");
   const writer = platform("Diten.Platform.Application", "Features", "Tenants", "Commercial", "Subscriptions", "TenantSubscriptionTransactionWriter.cs");
   const alreadyCurrent = constant(writer, "AlreadyCurrent");
   const stale = constant(writer, "Stale");
 
   test("the codes the server defines are the codes the screen maps", () => {
-    expect(Object.keys(rules.SUBSCRIPTION_REFUSAL_KEYS).sort()).toEqual([alreadyCurrent, stale, audit].sort());
+    expect(Object.keys(rules.SUBSCRIPTION_REFUSAL_KEYS).sort()).toEqual([alreadyCurrent, stale, audit, intentInvalid].sort());
     expect(rules.ENTITLEMENT_REFUSAL_KEYS[audit]).toBe("AuditRecordUnavailable");
+    // INTX FIX3 — the 500 for an audit record the platform could not prepare is said too, on both tabs
+    expect(rules.SUBSCRIPTION_REFUSAL_KEYS[intentInvalid]).toBe("AuditIntentInvalid");
+    expect(rules.ENTITLEMENT_REFUSAL_KEYS[intentInvalid]).toBe("AuditIntentInvalid");
   });
 
   test.each(LANGS)("[%s] each has its own sentence in the resx and is handed to the page", (lang) => {
@@ -584,7 +588,7 @@ describe("INTX FIX2 — the Platform's new refusal codes are said on the screen"
       expect(labels[key], `${lang} ${key}`).toBeTruthy();
       expect(l10n).toMatch(new RegExp(`\\b${key} = Localizer\\["${key}"\\]`));
     });
-    [alreadyCurrent, stale, audit].forEach((code) => {
+    [alreadyCurrent, stale, audit, intentInvalid].forEach((code) => {
       const text = rules.subscriptionRefusalText({ code, message: "English server sentence." }, labels);
       expect(text).toBe(labels[rules.SUBSCRIPTION_REFUSAL_KEYS[code]]);
       expect(text).not.toContain("English server sentence");
@@ -598,6 +602,9 @@ describe("INTX FIX2 — the Platform's new refusal codes are said on the screen"
     expect(rules.subscriptionRefusalReloads({ code: stale })).toBe(true);
     expect(rules.subscriptionRefusalReloads({ code: alreadyCurrent })).toBe(false);
     expect(rules.subscriptionRefusalReloads({ code: audit })).toBe(false);
+    // … and the screen acts on it: the stale branch of the subscription section's error path reloads the section
+    const handler = slice("const showSubscriptionActionError", "const submitSubscriptionAction");
+    expect(handler).toMatch(/if \(subscriptionRefusalReloads\(error\)\) \{\s*loadCommercialSubscription\(\)/);
   });
 
   test("an unmapped refusal keeps the sentence the screen showed before; a 403 has its own", () => {

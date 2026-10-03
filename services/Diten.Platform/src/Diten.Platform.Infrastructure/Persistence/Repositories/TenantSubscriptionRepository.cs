@@ -71,6 +71,11 @@ public sealed class TenantSubscriptionRepository : GlobalRepository<TenantSubscr
     public Task<bool> HasCurrentAsync(Guid tenantId, Guid? excludeSubscriptionId = null, CancellationToken ct = default) =>
         HasCurrentCoreAsync(null, tenantId, excludeSubscriptionId, ct);
 
+    public async Task<TenantSubscription?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default) =>
+        await Collection.Find(PlatformMongoTransactionSession.Require(session, _dbContext),
+                Builders<TenantSubscription>.Filter.And(ExecutionFilter, Builders<TenantSubscription>.Filter.Eq(x => x.Id, id)))
+            .FirstOrDefaultAsync(ct);
+
     public Task<bool> HasCurrentAsync(IPlatformTransactionSession session, Guid tenantId, Guid? excludeSubscriptionId = null, CancellationToken ct = default) =>
         HasCurrentCoreAsync(PlatformMongoTransactionSession.Require(session, _dbContext), tenantId, excludeSubscriptionId, ct);
 

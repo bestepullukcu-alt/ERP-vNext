@@ -484,6 +484,50 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
     }
 
     [Fact]
+    public async Task A_ClientCorrelation_written_into_the_body_is_never_kept_only_the_header_one_is()
+    {
+        // FIX3 item 5 — a caller of the central door could name its own "ClientCorrelation" in the body.
+        await using var world = await World.StartAsync();
+        var tenant = Guid.NewGuid();
+        AuditAppendRequest Request() => new()
+        {
+            CorrelationId = Guid.NewGuid(), RequestType = "UpdateTenantCommand", ActorType = AuditActorType.PlatformAdministrator,
+            Category = AuditCategory.TenantAdministration, EntityType = "Tenant", EntityId = tenant, Operation = AuditOperation.Update,
+            TargetTenantId = tenant,
+            Metadata = new Dictionary<string, object?> { [AuditCorrelation.ClientCorrelationMetadataKey] = "forged-in-the-body", ["Kept"] = "yes" }
+        };
+
+        Assert.True((await world.CentralDoor(Person("platform_admin"), new FixedCorrelation(Guid.NewGuid().ToString("N"))).AppendAsync(Request())).IsEnqueued);
+        Assert.True((await world.CentralDoor(Person("platform_admin"), new FixedCorrelation(Guid.NewGuid().ToString("N"), client: "from-the-header")).AppendAsync(Request())).IsEnqueued);
+
+        Assert.Equal(2, await world.ProcessAsync());
+        var records = await world.AuditEventsAsync();
+        Assert.All(records, r => Assert.Equal("yes", r.Metadata["Kept"]));
+        Assert.Single(records, r => !r.Metadata.ContainsKey(AuditCorrelation.ClientCorrelationMetadataKey));
+        Assert.Single(records, r => Equals(r.Metadata.GetValueOrDefault(AuditCorrelation.ClientCorrelationMetadataKey), "from-the-header"));
+        Assert.DoesNotContain(records, r => Equals(r.Metadata.GetValueOrDefault(AuditCorrelation.ClientCorrelationMetadataKey), "forged-in-the-body"));
+    }
+
+    [Fact]
+    public async Task An_update_reads_its_before_state_and_its_plan_inside_its_transaction()
+    {
+        // FIX3 A6 — both reads go through the transaction's session; a read beside it is refused here.
+        await using var world = await World.StartAsync();
+        var (_, subscription, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Active,
+            wrapSubscriptions: inner => new SessionOnlyReads(inner));
+        var writer = world.WriterFor(subscription.TenantId, planId, Person("platform_admin"),
+            wrapSubscriptions: inner => new SessionOnlyReads(inner), plans: new SessionOnlyPlans(planId));
+        subscription.Status = TenantSubscriptionStatus.Suspended;
+
+        var result = await writer.UpdateAsync(subscription, subscription.RowVersion, planId, "Active", "SuspendTenantSubscriptionCommand",
+            AuditOperation.Suspend, false, null, CancellationToken.None);
+
+        Assert.True(result.IsSuccessful, string.Join(";", result.Errors ?? []));
+        Assert.Equal(1, await world.ProcessAsync());
+        Assert.Equal("Active", (await world.AuditEventsAsync()).Single().BeforeState!["Status"]);
+    }
+
+    [Fact]
     public async Task A_participant_refusal_keeps_its_code_on_both_writer_paths()
     {
         // FIX2 rules :76 / :101 — a quota participant's coded refusal reaches the caller with its code.
@@ -593,6 +637,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
         public Task<TenantSubscription> CreateAsync(IPlatformTransactionSession session, TenantSubscription subscription, CancellationToken ct = default) => inner.CreateAsync(session, subscription, ct);
         public Task<TenantSubscription> CreateAsync(TenantSubscription subscription, CancellationToken ct = default) => inner.CreateAsync(subscription, ct);
         public Task<TenantSubscription?> GetByIdAsync(Guid id, CancellationToken ct = default) => inner.GetByIdAsync(id, ct);
+        public Task<TenantSubscription?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default) => inner.GetByIdAsync(session, id, ct);
         public Task<TenantSubscription?> GetByTenantIdAsync(Guid tenantId, Guid subscriptionId, CancellationToken ct = default) => inner.GetByTenantIdAsync(tenantId, subscriptionId, ct);
         public Task<TenantSubscription?> GetCurrentByTenantIdAsync(Guid tenantId, CancellationToken ct = default) => inner.GetCurrentByTenantIdAsync(tenantId, ct);
         public Task<IReadOnlyList<TenantSubscription>> GetHistoryByTenantIdAsync(Guid tenantId, CancellationToken ct = default) => inner.GetHistoryByTenantIdAsync(tenantId, ct);
@@ -615,10 +660,50 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
         public Task<TenantSubscription> CreateAsync(IPlatformTransactionSession session, TenantSubscription subscription, CancellationToken ct = default) => inner.CreateAsync(session, subscription, ct);
         public Task<TenantSubscription> CreateAsync(TenantSubscription subscription, CancellationToken ct = default) => inner.CreateAsync(subscription, ct);
         public Task<TenantSubscription?> GetByIdAsync(Guid id, CancellationToken ct = default) => inner.GetByIdAsync(id, ct);
+        public Task<TenantSubscription?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default) => inner.GetByIdAsync(session, id, ct);
         public Task<TenantSubscription?> GetByTenantIdAsync(Guid tenantId, Guid subscriptionId, CancellationToken ct = default) => inner.GetByTenantIdAsync(tenantId, subscriptionId, ct);
         public Task<TenantSubscription?> GetCurrentByTenantIdAsync(Guid tenantId, CancellationToken ct = default) => inner.GetCurrentByTenantIdAsync(tenantId, ct);
         public Task<IReadOnlyList<TenantSubscription>> GetHistoryByTenantIdAsync(Guid tenantId, CancellationToken ct = default) => inner.GetHistoryByTenantIdAsync(tenantId, ct);
         public Task UpdateAsync(TenantSubscription subscription, byte[]? expectedRowVersion, CancellationToken ct = default) => inner.UpdateAsync(subscription, expectedRowVersion, ct);
+    }
+
+    /// <summary>FIX3 A6 — a subscription repository that answers a by-id read only inside a transaction.</summary>
+    private sealed class SessionOnlyReads(ITenantSubscriptionRepository inner) : ITenantSubscriptionRepository
+    {
+        public Task<TenantSubscription?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
+            throw new InvalidOperationException("read outside the transaction");
+        public Task<TenantSubscription?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default) => inner.GetByIdAsync(session, id, ct);
+        public Task<bool> HasCurrentAsync(IPlatformTransactionSession session, Guid tenantId, Guid? excludeSubscriptionId = null, CancellationToken ct = default) => inner.HasCurrentAsync(session, tenantId, excludeSubscriptionId, ct);
+        public Task<bool> HasCurrentAsync(Guid tenantId, Guid? excludeSubscriptionId = null, CancellationToken ct = default) => inner.HasCurrentAsync(tenantId, excludeSubscriptionId, ct);
+        public Task<TenantSubscription> CreateAsync(IPlatformTransactionSession session, TenantSubscription subscription, CancellationToken ct = default) => inner.CreateAsync(session, subscription, ct);
+        public Task<TenantSubscription> CreateAsync(TenantSubscription subscription, CancellationToken ct = default) => inner.CreateAsync(subscription, ct);
+        public Task<TenantSubscription?> GetByTenantIdAsync(Guid tenantId, Guid subscriptionId, CancellationToken ct = default) => inner.GetByTenantIdAsync(tenantId, subscriptionId, ct);
+        public Task<TenantSubscription?> GetCurrentByTenantIdAsync(Guid tenantId, CancellationToken ct = default) => inner.GetCurrentByTenantIdAsync(tenantId, ct);
+        public Task<IReadOnlyList<TenantSubscription>> GetHistoryByTenantIdAsync(Guid tenantId, CancellationToken ct = default) => inner.GetHistoryByTenantIdAsync(tenantId, ct);
+        public Task UpdateAsync(TenantSubscription subscription, byte[]? expectedRowVersion, CancellationToken ct = default) => inner.UpdateAsync(subscription, expectedRowVersion, ct);
+        public Task UpdateAsync(IPlatformTransactionSession session, TenantSubscription subscription, byte[]? expectedRowVersion, CancellationToken ct = default) => inner.UpdateAsync(session, subscription, expectedRowVersion, ct);
+    }
+
+    /// <summary>FIX3 A6 — a plan repository that answers the plan only inside a transaction.</summary>
+    private sealed class SessionOnlyPlans(Guid planId) : ITransactionalSubscriptionPlanRepository
+    {
+        public Task<SubscriptionPlan?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default) =>
+            Task.FromResult<SubscriptionPlan?>(id == planId ? new SubscriptionPlan { Id = planId, Code = "PRO", Name = "Pro", IsActive = true } : null);
+        public Task<SubscriptionPlan?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new InvalidOperationException("read outside the transaction");
+        public Task<SubscriptionPlan> CreateAsync(IPlatformTransactionSession session, SubscriptionPlan plan, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<SubscriptionPlan?> GetByCodeAsync(IPlatformTransactionSession session, string code, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<bool> ExistsByCodeAsync(IPlatformTransactionSession session, string code, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<SubscriptionPlan?> GetActiveDefaultAsync(IPlatformTransactionSession session, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task UpdateAsync(IPlatformTransactionSession session, SubscriptionPlan plan, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<SubscriptionPlan> CreateAsync(SubscriptionPlan plan, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<SubscriptionPlan?> GetByCodeAsync(string code, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<SubscriptionPlan?> GetActiveDefaultAsync(Guid? excludeId = null, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task UpdateAsync(SubscriptionPlan plan, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<(IReadOnlyList<SubscriptionPlan> Items, long TotalCount)> QueryAsync(SubscriptionPlansQuery query, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<SubscriptionPlan>> GetActiveAsync(CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<IReadOnlyList<SubscriptionPlan>> GetByIncludedModuleKeyAsync(string moduleKey, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<SubscriptionPlanSummary> GetSummaryAsync(CancellationToken ct = default) => throw new NotSupportedException();
     }
 
     private static decimal Number(object? value) =>
@@ -708,16 +793,24 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
                 new EntitlementStateVersionRepository(_context), new MongoIntentWriter(_context), ProductionDoor(who, correlation), correlation);
 
         /// <summary>A second writer over the SAME world (another request on the same tenant): the same tenant, plan and store.</summary>
-        public TenantSubscriptionTransactionWriter WriterFor(Guid tenantId, Guid planId, (ITenantAuthorizationContext Principal, ICurrentUserContext User) who)
+        public TenantSubscriptionTransactionWriter WriterFor(Guid tenantId, Guid planId, (ITenantAuthorizationContext Principal, ICurrentUserContext User) who,
+            Func<ITenantSubscriptionRepository, ITenantSubscriptionRepository>? wrapSubscriptions = null, ISubscriptionPlanRepository? plans = null)
         {
             var tenantContext = new TenantContext();
             tenantContext.SetTenant(tenantId);
-            var plans = new Mock<ISubscriptionPlanRepository>();
-            plans.Setup(x => x.GetByIdAsync(planId, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new SubscriptionPlan { Id = planId, Code = "PRO", Name = "Pro", IsActive = true });
+            if (plans is null)
+            {
+                var mock = new Mock<ISubscriptionPlanRepository>();
+                mock.Setup(x => x.GetByIdAsync(planId, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new SubscriptionPlan { Id = planId, Code = "PRO", Name = "Pro", IsActive = true });
+                plans = Diten.Platform.Application.Tests.Tenants.Commercial.Subscriptions.SessionlessPlanReads.Over(mock.Object);
+            }
+
+            ITenantSubscriptionRepository subscriptions = new TenantSubscriptionRepository(_context, tenantContext);
+            if (wrapSubscriptions is not null) subscriptions = wrapSubscriptions(subscriptions);
             return new TenantSubscriptionTransactionWriter(new PlatformTransactionExecutor(_context),
-                new TenantSubscriptionRepository(_context, tenantContext), new TenantRegistryRepository(_context, tenantContext),
-                plans.Object, new EntitlementStateVersionRepository(_context), new MongoIntentWriter(_context), Door(who), who.User);
+                subscriptions, new TenantRegistryRepository(_context, tenantContext),
+                plans, new EntitlementStateVersionRepository(_context), new MongoIntentWriter(_context), Door(who), who.User);
         }
 
         public async Task<(TenantSubscriptionTransactionWriter Writer, TenantSubscription Subscription, Guid PlanId)> SubscriptionAsync(
@@ -736,7 +829,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
             if (wrapSubscriptions is not null) subscriptions = wrapSubscriptions(subscriptions);
             var writer = new TenantSubscriptionTransactionWriter(new PlatformTransactionExecutor(_context),
                 subscriptions, new TenantRegistryRepository(_context, tenantContext),
-                plans.Object, new EntitlementStateVersionRepository(_context), new MongoIntentWriter(_context), ProductionDoor(who, correlation), who.User, correlation);
+                Diten.Platform.Application.Tests.Tenants.Commercial.Subscriptions.SessionlessPlanReads.Over(plans.Object), new EntitlementStateVersionRepository(_context), new MongoIntentWriter(_context), ProductionDoor(who, correlation), who.User, correlation);
 
             await Database.GetCollection<Tenant>("tenants").InsertOneAsync(new Tenant
             {
