@@ -48,12 +48,12 @@ public sealed class AdminResetPasswordCommandHandler : IRequestHandler<AdminRese
     public async Task<Response<InviteLinkResult>> Handle(AdminResetPasswordCommand request, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.UserId, _tenantContext.TenantId, ct);
-        if (user is null) return Response<InviteLinkResult>.Fail("User not found.", 404);
+        if (user is null) return UserErrorCodes.NotFoundRefusal<InviteLinkResult>();
 
         // Inverted guard: a still-pending invite should be re-sent, not "reset".
         if (user.MustChangePassword)
         {
-            return Response<InviteLinkResult>.Fail("User invitation is still pending — use Resend instead.", 409);
+            return Response<InviteLinkResult>.Fail("User invitation is still pending — use Resend instead.", [new ResponseError(UserErrorCodes.PasswordSetupPending)], 409);
         }
 
         var setupToken = _tokenService.GenerateRefreshToken();

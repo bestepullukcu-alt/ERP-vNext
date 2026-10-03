@@ -198,7 +198,7 @@ public sealed class UsersController : CustomBaseController
         // refuses a supplied kind without it (403 PERM_DENIED); an omitted kind never needs it.
         var callerCanManageAccountKind = User.HasClaim("permission", ExplicitGrantOnlyPermissions.UsersAccountKindManage);
         var command = new CreateUserCommand(
-            request.Email, request.Password, request.FirstName, request.LastName,
+            request.Email ?? string.Empty, request.Password, request.FirstName ?? string.Empty, request.LastName ?? string.Empty,
             request.AccountKind, callerCanManageAccountKind);
         var result = await _mediator.Send(command, ct);
         return CreateActionResultInstance(result);
@@ -258,7 +258,7 @@ public sealed class UsersController : CustomBaseController
         // reads it, never from the body; the handler refuses a kind CHANGE without it (403 PERM_DENIED).
         var callerCanManageAccountKind = User.HasClaim("permission", ExplicitGrantOnlyPermissions.UsersAccountKindManage);
         var command = new UpdateUserCommand(
-            id, request.FirstName, request.LastName, request.IsActive,
+            id, request.FirstName ?? string.Empty, request.LastName ?? string.Empty, request.IsActive,
             request.AccountKind, callerCanManageAccountKind, HttpContext.TraceIdentifier);
         var result = await _mediator.Send(command, ct);
         return CreateActionResultInstance(result);

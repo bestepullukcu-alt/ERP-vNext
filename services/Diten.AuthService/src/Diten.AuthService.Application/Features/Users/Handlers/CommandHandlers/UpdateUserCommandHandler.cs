@@ -45,7 +45,10 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
     public async Task<Response<UserDto>> Handle(UpdateUserCommand request, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
-        if (user == null) return Response<UserDto>.Fail("User not found.", 404);
+        if (user == null) return UserErrorCodes.NotFoundRefusal<UserDto>();
+
+        // An update that does not say isActive leaves the account as it is — never "missing means switch off".
+        var isActive = request.IsActive ?? user.IsActive;
 
         // WP-AUTH-USER-KIND-UPDATE-01 — the kind rides on the edit form's "Update" under create's rule: classifying is
         // a SEPARATE right from editing. A supplied kind that CHANGES the account, from a caller without
@@ -56,7 +59,7 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         var newKind = user.AccountKind;
         if (hasKind && !AccountKindWriter.TryParse(request.AccountKind, out newKind))
         {
-            return Response<UserDto>.Fail("AccountKind must be one of: Unknown, Human, Service.", 400);
+            return Response<UserDto>.Fail("AccountKind must be one of: Unknown, Human, Service.", [new ResponseError(UserErrorCodes.AccountKindInvalid)], 400);
         }
 
         if (hasKind && newKind != user.AccountKind && !request.CallerCanManageAccountKind)
@@ -70,7 +73,7 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         // Finding 33 (owner, 2026-09-24), the SECOND door: the edit form's Active switch. The kebab's disable refuses to
         // switch off the signed-in account (SetUserActiveStatusCommandHandler); the form must answer exactly the same,
         // with the same code, before anything is written — otherwise the rule is a screen, not a rule.
-        if (!request.IsActive && user.IsActive && _currentUser.UserId == user.Id)
+        if (!isActive && user.IsActive && _currentUser.UserId == user.Id)
         {
             return Response<UserDto>.Fail(
                 "You cannot deactivate the account you are signed in with.",
@@ -80,14 +83,14 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
 
         // WP-AUTH-INVITED-LIFECYCLE-01 — the edit form is the second administrator door to activation; it answers
         // exactly like the kebab's enable (UserLifecycle), before anything is written.
-        if (UserLifecycle.RefusesActivation(user, request.IsActive))
+        if (UserLifecycle.RefusesActivation(user, isActive))
         {
             return UserLifecycle.InvitationPendingRefusal<UserDto>();
         }
 
         // BL-459 F1 — the edit form is the second door to switching an Inactive account back on; same seat question as
         // the kebab's enable, before anything is written.
-        if (request.IsActive && !user.IsActive)
+        if (isActive && !user.IsActive)
         {
             var seat = await _quota.TryConsumeUserSeatAsync(_tenantContext.TenantId, $"user-activate:{user.Id:D}", ct);
             if (seat.Outcome == UserQuotaOutcome.LimitExceeded)
@@ -101,15 +104,15 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         if (!string.Equals(user.FirstName, request.FirstName, StringComparison.Ordinal)) changedFields.Add("firstName");
         if (!string.Equals(user.LastName, request.LastName, StringComparison.Ordinal)) changedFields.Add("lastName");
         var wasActive = user.IsActive;
-        if (wasActive != request.IsActive) changedFields.Add("isActive");
+        if (wasActive != isActive) changedFields.Add("isActive");
 
         user.UpdateProfile(request.FirstName, request.LastName);
-        if (request.IsActive) user.Activate(); else user.Deactivate();
+        if (isActive) user.Activate(); else user.Deactivate();
         var kindChange = hasKind ? _kindWriter.Apply(user, newKind) : null;
 
         // One tenant-scoped replace for the profile AND the kind; the audit row follows the persisted change.
         await _userRepository.UpdateForTenantAsync(user, _tenantContext.TenantId, ct);
-        if (wasActive && !request.IsActive)
+        if (wasActive && !isActive)
         {
             // Deactivation through the form ends the sessions too — the kebab's disable already did; a deactivated user
             // who could keep working until the token expired was a hole the form left open.

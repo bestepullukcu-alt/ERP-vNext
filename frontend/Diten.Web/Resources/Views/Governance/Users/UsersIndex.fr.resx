@@ -57,4 +57,20 @@
   <data name="ErrorUserQuotaExceeded" xml:space="preserve"><value>La limite d'utilisateurs de votre abonnement est atteinte ; aucun utilisateur n'a été ajouté. Supprimez un utilisateur ou passez à une offre supérieure.</value></data>
   <data name="ErrorUserQuotaUsage" xml:space="preserve"><value>Utilisés : {current} sur {max} utilisateurs.</value></data>
   <data name="DeleteUserConfirmText" xml:space="preserve"><value>L'utilisateur est supprimé et ses rôles sont retirés ; le compte ne peut pas être restauré. Un nouveau compte peut être ouvert avec la même adresse e-mail.</value></data>
+  <data name="ErrorUserDeleteSelf" xml:space="preserve"><value>Vous ne pouvez pas supprimer votre propre compte.</value></data>
+  <data name="ErrorUserDeleteLastSteward" xml:space="preserve"><value>Ce compte est le dernier à pouvoir ajouter des utilisateurs ; il ne peut donc pas être supprimé. Accordez d'abord ce droit à un autre utilisateur.</value></data>
+  <data name="ErrorUserDeactivateSelf" xml:space="preserve"><value>Vous ne pouvez pas désactiver votre propre compte.</value></data>
+  <data name="ErrorUserNotFound" xml:space="preserve"><value>Cet utilisateur est introuvable ; il a peut-être été supprimé. Actualisez la liste et réessayez.</value></data>
+  <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>Le type de compte sélectionné n'est pas valide. Choisissez-en un dans la liste.</value></data>
+  <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>Cet utilisateur a déjà défini son mot de passe ; il n'y a aucune invitation à renvoyer. Pour lui donner un nouveau mot de passe, utilisez Réinitialiser le mot de passe.</value></data>
+  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>Cet utilisateur a encore une étape de définition du mot de passe en attente ; le mot de passe ne peut pas être réinitialisé. Renvoyez plutôt l'invitation.</value></data>
+  <data name="ErrorUserAccountKindPermissionDenied" xml:space="preserve"><value>Vous n'êtes pas autorisé à modifier le type de compte ; l'utilisateur n'a pas été enregistré.</value></data>
+  <data name="ErrorUserEmailRequired" xml:space="preserve"><value>Saisissez une adresse e-mail.</value></data>
+  <data name="ErrorUserEmailInvalid" xml:space="preserve"><value>Saisissez une adresse e-mail valide.</value></data>
+  <data name="ErrorUserFirstNameRequired" xml:space="preserve"><value>Saisissez un prénom.</value></data>
+  <data name="ErrorUserFirstNameTooLong" xml:space="preserve"><value>Le prénom est trop long. Raccourcissez-le et réessayez.</value></data>
+  <data name="ErrorUserLastNameRequired" xml:space="preserve"><value>Saisissez un nom.</value></data>
+  <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>Le nom est trop long. Raccourcissez-le et réessayez.</value></data>
+  <data name="ErrorUserEmailTooLong" xml:space="preserve"><value>L'adresse e-mail est trop longue. Raccourcissez-la et réessayez.</value></data>
+  <data name="ErrorUserOneMoreProblem" xml:space="preserve"><value>Il y a un autre problème ; vérifiez votre saisie et réessayez.</value></data>
 </root>

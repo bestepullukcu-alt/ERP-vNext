@@ -26,7 +26,7 @@
                     @* bx-envelope — the address the invitation is actually sent to, which is what this field IS. *@
                     <div class="diten-field">
                         <i class="bx bx-envelope diten-field-icon" aria-hidden="true"></i>
-                        <input type="email" id="userEmail" name="Email" class="form-control" maxlength="256" placeholder="@Localizer["EmailPlaceholder"]" required />
+                        <input type="email" id="userEmail" name="Email" class="form-control" maxlength="@Diten.Web.Models.Governance.UserEditViewModel.EmailMaxLength" placeholder="@Localizer["EmailPlaceholder"]" required />
                     </div>
                     <div class="form-text d-none" id="userEmailHelp">@Localizer["EmailImmutableHint"]</div>
                     <div class="invalid-feedback"></div>
@@ -42,7 +42,7 @@
                        distinction that is not there. *@
                     <div class="diten-field">
                         <i class="bx bx-user diten-field-icon" aria-hidden="true"></i>
-                        <input type="text" id="userFirstName" name="FirstName" class="form-control" maxlength="128" placeholder="@Localizer["FirstNamePlaceholder"]" required />
+                        <input type="text" id="userFirstName" name="FirstName" class="form-control" maxlength="@Diten.Web.Models.Governance.UserEditViewModel.NameMaxLength" placeholder="@Localizer["FirstNamePlaceholder"]" required />
                     </div>
                     <div class="invalid-feedback"></div>
                 </div>
@@ -53,7 +53,7 @@
                     </label>
                     <div class="diten-field">
                         <i class="bx bx-user diten-field-icon" aria-hidden="true"></i>
-                        <input type="text" id="userLastName" name="LastName" class="form-control" maxlength="128" placeholder="@Localizer["LastNamePlaceholder"]" required />
+                        <input type="text" id="userLastName" name="LastName" class="form-control" maxlength="@Diten.Web.Models.Governance.UserEditViewModel.NameMaxLength" placeholder="@Localizer["LastNamePlaceholder"]" required />
                     </div>
                     <div class="invalid-feedback"></div>
                 </div>

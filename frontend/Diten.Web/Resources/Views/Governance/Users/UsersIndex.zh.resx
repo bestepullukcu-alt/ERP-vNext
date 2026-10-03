@@ -57,4 +57,20 @@
   <data name="ErrorUserQuotaExceeded" xml:space="preserve"><value>已达到订阅计划的用户上限，未添加用户。请删除一个用户或升级计划。</value></data>
   <data name="ErrorUserQuotaUsage" xml:space="preserve"><value>已使用：{current} / {max} 个用户。</value></data>
   <data name="DeleteUserConfirmText" xml:space="preserve"><value>该用户将被删除，其角色将被移除；账户无法恢复。可以使用同一电子邮件地址开设新账户。</value></data>
+  <data name="ErrorUserDeleteSelf" xml:space="preserve"><value>您不能删除自己的账户。</value></data>
+  <data name="ErrorUserDeleteLastSteward" xml:space="preserve"><value>这是最后一个可以添加用户的账户，因此无法删除。请先将该权限授予其他用户。</value></data>
+  <data name="ErrorUserDeactivateSelf" xml:space="preserve"><value>您不能停用自己的账户。</value></data>
+  <data name="ErrorUserNotFound" xml:space="preserve"><value>找不到该用户，可能已被删除。请刷新列表后重试。</value></data>
+  <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>所选的账户类型无效。请从列表中选择一种类型。</value></data>
+  <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>该用户已设置密码，没有可重新发送的邀请。如需为其设置新密码，请使用“重置密码”。</value></data>
+  <data name="ErrorUserPasswordSetupPending" xml:space="preserve"><value>该用户仍有一个待完成的密码设置步骤，因此无法重置密码。请改为重新发送邀请。</value></data>
+  <data name="ErrorUserAccountKindPermissionDenied" xml:space="preserve"><value>您无权更改账户类型，用户未保存。</value></data>
+  <data name="ErrorUserEmailRequired" xml:space="preserve"><value>请输入电子邮件地址。</value></data>
+  <data name="ErrorUserEmailInvalid" xml:space="preserve"><value>请输入有效的电子邮件地址。</value></data>
+  <data name="ErrorUserFirstNameRequired" xml:space="preserve"><value>请输入名字。</value></data>
+  <data name="ErrorUserFirstNameTooLong" xml:space="preserve"><value>名字过长，请缩短后重试。</value></data>
+  <data name="ErrorUserLastNameRequired" xml:space="preserve"><value>请输入姓氏。</value></data>
+  <data name="ErrorUserLastNameTooLong" xml:space="preserve"><value>姓氏过长，请缩短后重试。</value></data>
+  <data name="ErrorUserEmailTooLong" xml:space="preserve"><value>电子邮件地址过长，请缩短后重试。</value></data>
+  <data name="ErrorUserOneMoreProblem" xml:space="preserve"><value>还有一个问题；请检查您输入的内容后重试。</value></data>
 </root>

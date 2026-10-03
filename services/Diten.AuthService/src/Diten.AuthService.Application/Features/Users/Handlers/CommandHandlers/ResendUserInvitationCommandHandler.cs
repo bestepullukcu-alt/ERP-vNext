@@ -47,13 +47,13 @@ public sealed class ResendUserInvitationCommandHandler : IRequestHandler<ResendU
     public async Task<Response<InviteLinkResult>> Handle(ResendUserInvitationCommand request, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.UserId, _tenantContext.TenantId, ct);
-        if (user is null) return Response<InviteLinkResult>.Fail("User not found.", 404);
+        if (user is null) return UserErrorCodes.NotFoundRefusal<InviteLinkResult>();
 
         // Resend only applies to a pending invitation. Once the user has set their password
         // (active + no change requirement) there is nothing to resend.
         if (!user.MustChangePassword)
         {
-            return Response<InviteLinkResult>.Fail("User has already completed setup.", 409);
+            return Response<InviteLinkResult>.Fail("User has already completed setup.", [new ResponseError(UserErrorCodes.SetupAlreadyCompleted)], 409);
         }
 
         var setupToken = _tokenService.GenerateRefreshToken();
