@@ -7896,6 +7896,22 @@ saklanan tarihlerde yapıyor — çakışma kontrolünün doğruluğu ayrı öl�
 
 ---
 
+### BL-530
+
+**Ürün kimliği onayında "elle uzlaştırma" çıkışı yalnız gönderende: gönderen ayrılırsa GSKU taslağı donuk kalır**
+
+DURUM: AÇIK (D2'den sonra) · SAHİP: CT (MDM ürün modülleri devralma) · BULAN: WP-MDM-GSKU-ACCEPT-01 FIX2 DUR'u · KAYIT: 2026-10-04
+
+GSKU FIX2'de son olmayan her işlem durumuna bir çıkış konuyor. `ManualReconciliationRequired`'da (motor başlamış olabilir, sonuç bilinmiyor)
+insan çıkışı gönderenin aynı gönderimi yeniden oynatması (var olan `mdm.gskus.submit`): motor yeniden okunur, kanıt varsa karar uygulanır,
+motorda bir şey yoksa taslak açılır. Açık: gönderen şirketten ayrıldıysa ya da yetkisi alındıysa kimse çıkaramaz. Global Ürün'ün uzlaştırma
+işleyicisi D1'de göndericisiz olduğu için silinmişti (a248dc1ef), örnek uç yok. Düzeltme: `POST /api/gskus/{id}/identity-reconciliation`
++ yeni anahtar `mdm.gskus.reconcile-identity` (önerilen sahipler ProductIdentityApprover, Retirement Steward / Lead); yeni MediatR yazma komutu
+denetim D2 (MDM niyet izinin teslimi) kapanmadan mimari listesini 18 → 19 yapacağı için D2'den sonra. Aynı ihtiyaç Global Ürün ve LSKU için de
+geçerli. Gelecek regresyon riski: 🟢 (ekleme).
+
+---
+
 ### BL-529
 
 **Yöneticinin "Parolayı Sıfırla"sı eski parolayı geçersiz kılmıyor, açık oturumları da düşürmüyor**
