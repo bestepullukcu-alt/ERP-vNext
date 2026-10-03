@@ -7431,6 +7431,17 @@ Listeye eklenenler: (4) **Yürütücü beklemesi:** işlem yürütücüsü üç 
 iş. (5) **Yükseltilmiş durumun devirle silinmesi:** devir ve bilgi isteme görevi yeniden bekleme durumuna alıyor; ondan sonra iptal yeniden
 kabul ediliyor. Görevde "yükseltildi" olgusu kalıcı tutulmuyor; ölçüm ve öneri D1 düzeltme turunun raporunda.
 
+**Ek 2 (2026-10-03, D1 düzeltme turu gözden geçirmesi):** (6) **Onay listesi bütün gönderilmiş haftaları okuyor:** zaman çizelgesi onay
+listesi kiracının gönderilmiş bütün haftalarını okuyup aday kontrolünü bellekte yapıyor. Şimdilik kalır; çözüm yönü motor tarafında "adayı X
+olan açık görev" sorgusu + çok anahtarlı dizin (kopya liste yok). Kullanılmayan `ix_time_entry_weeks_tenant_status_approver` dizini o işe kadar
+silinmez. (7) **Süresi geçen görev taraması tıkanabilir (doğrulanmalı):** `ListOverdueTasksAsync` (`WorkflowRepositories.cs:521-541`)
+Escalated ve TimedOut görevleri de alıyor, en eski `DueAt`'ten sıralayıp `Limit(maxItems)` uyguluyor ve hiçbir şey `DueAt`'i ileri almıyor;
+100'den fazla böyle görev birikirse yeni süresi geçenlere hiç sıra gelmeyebilir. (8) **Commit aşamasında etiketsiz Mongo istisnası 500:**
+`UnknownTransactionCommitResult` etiketi olmayan bir commit hatası yürütücüden sarılmadan çıkıyor (`PlatformTransactionExecutor.cs:79-91`) →
+500. (9) **Bildirim alıcıları eski:** zaman çizelgesi bildirimleri `week.ApproverCandidateUserIds`'e gidiyor (`TimeEntryNotifier.cs:107,121`);
+devir ya da yükseltmeden sonra eski kişiler (erişim için kullanılmıyor). (10) Yükseltilmiş haftanın satırında karar verilecek görev kimliği yok
+(`ApprovalWeekFacts` `ActiveStatuses` kullanıyor, Escalated dışarıda) — D5 ile.
+
 ---
 
 ### BL-503
