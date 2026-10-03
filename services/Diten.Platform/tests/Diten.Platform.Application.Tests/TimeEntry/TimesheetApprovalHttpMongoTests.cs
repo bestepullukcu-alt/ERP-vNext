@@ -602,6 +602,89 @@ public sealed class TimesheetApprovalHttpMongoTests : TimeEntryScenario
         Assert.Equal(HttpStatusCode.OK, (await DecideAsync(GrandManager, weekId, approve: true)).Status);
     }
 
+    // ── D1 test round (P-2026-10-02-09-D1-TESTS) — the read rule's edges ───────────────────────────────────────
+
+    /// <summary>E3 — an approval that is waiting for information, or has been escalated, is still an OPEN task the
+    /// candidate may decide: its week stays in their list and on the week page.</summary>
+    [Theory]
+    [InlineData("requestInfo")]
+    [InlineData("escalated")]
+    public async Task A_week_whose_approval_waits_for_information_or_is_escalated_stays_visible_to_who_may_decide(string state)
+    {
+        var weekId = await SubmittedWeekAsync();
+        var week = await StoredWeekAsync(weekId);
+        var task = await Collection<ApprovalTask>(PlatformCollections.ApprovalTasks)
+            .Find(t => t.WorkflowInstanceId == week.WorkflowInstanceId!.Value).SingleAsync();
+        if (state == "requestInfo")
+        {
+            var asked = await Host.PostAsync($"/api/v1/workflow/tasks/{task.Id}/request-info",
+                Host.Token(Manager, Tenant, WorkflowPermissions.TasksRequestInfo),
+                new { actorId = Manager.ToString(), targetPrincipalId = (string?)null, reasonCode = "INFO",
+                      idempotencyKey = Guid.NewGuid().ToString("N"), comment = "which project?", evidenceRef = (string?)null });
+            Assert.Equal(HttpStatusCode.OK, asked.Status);
+        }
+        else
+        {
+            // Staged as the SLA runner leaves it (status only; the candidate list is MOD-0023's own, untouched).
+            await RawSetAsync(PlatformCollections.ApprovalTasks, task.Id, ("Status", (int)ApprovalTaskStatus.Escalated));
+        }
+
+        var stored = await Collection<ApprovalTask>(PlatformCollections.ApprovalTasks).Find(t => t.Id == task.Id).SingleAsync();
+        Assert.Equal(state == "requestInfo" ? ApprovalTaskStatus.WaitingEvidence : ApprovalTaskStatus.Escalated, stored.Status);
+        Assert.Equal(1, (await Host.GetAsync("/api/v1/time-entry/approvals", ApproverToken(Manager))).Data.GetProperty("total").GetInt32());
+        Assert.Equal(HttpStatusCode.OK, (await Host.GetAsync($"/api/v1/time-entry/approvals/{weekId}", ApproverToken(Manager))).Status);
+    }
+
+    /// <summary>E5 — a submitted week from before MOD-0023 (no instance) is not in anybody's queue and does not break it.</summary>
+    [Fact]
+    public async Task A_submitted_week_without_a_MOD_0023_instance_is_skipped_and_the_queue_still_lists_the_others()
+    {
+        var weekId = await SubmittedWeekAsync();
+        var legacyId = Guid.NewGuid();
+        await Collection<TimesheetWeek>(PlatformCollections.TimeEntryTimesheetWeeks).InsertOneAsync(new TimesheetWeek
+        {
+            Id = legacyId,
+            TenantId = Tenant,
+            UserId = SecondPerson,
+            WeekKey = CurrentWeek,
+            WeekStartDate = Monday,
+            TimeZoneId = Zone,
+            RevisionNumber = 1,
+            Status = TimesheetWeekStatus.Submitted,
+            AssignedApproverUserId = Manager,
+            SubmissionCount = 1,
+            SubmittedAtUtc = Wednesday,
+            SubmittedAtUtcTicks = Wednesday.UtcTicks,
+            TotalMinutes = 60
+        });
+
+        var list = await Host.GetAsync("/api/v1/time-entry/approvals", ApproverToken(Manager));
+
+        Assert.Equal(HttpStatusCode.OK, list.Status);
+        var ids = list.Data.GetProperty("items").EnumerateArray().Select(r => r.GetProperty("weekId").GetGuid()).ToList();
+        Assert.Equal([weekId], ids);
+    }
+
+    /// <summary>E6 — the week's owner never finds their own week in their approvals list, not even when MOD-0023's
+    /// list would let them decide it (a legacy instance whose task was delegated to them).</summary>
+    [Fact]
+    public async Task The_weeks_owner_never_sees_their_own_week_in_the_approvals_list_even_as_a_candidate()
+    {
+        var weekId = await SubmittedWeekAsync();
+        var instanceId = (await StoredWeekAsync(weekId)).WorkflowInstanceId!.Value;
+        await RawUnsetAsync(PlatformCollections.WorkflowInstances, instanceId, "StartedByUserId");
+        Assert.Equal(HttpStatusCode.OK, (await DelegateAsync(Manager, weekId, Person)).Status);
+
+        var list = await Host.GetAsync("/api/v1/time-entry/approvals", ApproverToken(Person));
+
+        Assert.Equal(HttpStatusCode.OK, list.Status);
+        Assert.Equal(0, list.Data.GetProperty("total").GetInt32());
+        // Non-vacuity: the person IS the task's only candidate now.
+        var task = await Collection<ApprovalTask>(PlatformCollections.ApprovalTasks)
+            .Find(t => t.WorkflowInstanceId == instanceId).SingleAsync();
+        Assert.Equal(Person.ToString(), task.AssigneeRef);
+    }
+
     // ── D1 (WP-WF-ENGINE-CANDIDATES-01) — ANY holder of the manager seat decides, and the week names who did ──
 
     [Fact]
