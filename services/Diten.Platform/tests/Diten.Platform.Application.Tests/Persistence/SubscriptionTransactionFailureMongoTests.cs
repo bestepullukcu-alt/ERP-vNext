@@ -226,6 +226,7 @@ public sealed class SubscriptionTransactionFailureMongoTests
         public Task<TenantSubscription?> GetCurrentByTenantIdAsync(Guid t, CancellationToken ct = default) => inner.GetCurrentByTenantIdAsync(t, ct);
         public Task<IReadOnlyList<TenantSubscription>> GetHistoryByTenantIdAsync(Guid t, CancellationToken ct = default) => inner.GetHistoryByTenantIdAsync(t, ct);
         public Task<bool> HasCurrentAsync(Guid t, Guid? x = null, CancellationToken ct = default) => inner.HasCurrentAsync(t, x, ct);
+        public Task<bool> HasCurrentAsync(IPlatformTransactionSession s, Guid t, Guid? x = null, CancellationToken ct = default) => inner.HasCurrentAsync(s, t, x, ct);
         public Task UpdateAsync(TenantSubscription x, byte[]? row, CancellationToken ct = default) => inner.UpdateAsync(x, row, ct);
         public Task UpdateAsync(IPlatformTransactionSession s, TenantSubscription x, byte[]? row, CancellationToken ct = default) => inner.UpdateAsync(s, x, row, ct);
     }

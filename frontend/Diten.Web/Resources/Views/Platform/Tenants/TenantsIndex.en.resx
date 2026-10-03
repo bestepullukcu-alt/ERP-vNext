@@ -311,4 +311,7 @@
   <data name="EntitlementOutcomeUnknown" xml:space="preserve"><value>The request was sent, but the list could not be reloaded, so its result could not be checked. Refresh the page to see the current state.</value></data>
   <data name="PermissionDenied" xml:space="preserve"><value>You do not have permission for this action.</value></data>
   <data name="ExpiryDateUtcEndOfDay" xml:space="preserve"><value>Expiry date (access ends at 23:59 UTC on that day)</value></data>
+  <data name="AuditRecordUnavailable" xml:space="preserve"><value>The change could not be recorded in the audit trail right now, so it was not made. Please try again in a moment.</value></data>
+  <data name="SubscriptionAlreadyCurrent" xml:space="preserve"><value>This tenant already has a live subscription. Change or end it instead of assigning another.</value></data>
+  <data name="SubscriptionStale" xml:space="preserve"><value>The subscription was changed by someone else while this page was open. It has been reloaded; please try again.</value></data>
 </root>

@@ -41,7 +41,7 @@ const resxValue = (lang, key) => {
 };
 
 // eslint-disable-next-line no-new-func
-const rules = new Function(rulesBlock + "; return { ENTITLEMENT_ROW_ACTIONS, ENTITLEMENT_REFUSAL_KEYS, moduleEntitlementActionsFor, entitlementRefusalCode, entitlementRefusalText, entitlementChangeOutcome };")();
+const rules = new Function(rulesBlock + "; return { ENTITLEMENT_ROW_ACTIONS, ENTITLEMENT_REFUSAL_KEYS, moduleEntitlementActionsFor, entitlementRefusalCode, entitlementRefusalText, entitlementChangeOutcome, SUBSCRIPTION_REFUSAL_KEYS, subscriptionRefusalText, subscriptionRefusalReloads };")();
 
 const labelsFor = (lang) => {
   const labels = { ErrorOccurred: lang === "tr" ? "Bir hata oluştu." : "An error occurred." };
@@ -557,6 +557,61 @@ describe("FIX2 — the row actions as they ship", () => {
     expect(resxValue("en", "ExpiryDateUtcEndOfDay")).toMatch(/UTC/);
     expect(resxValue("tr", "ExpiryDateUtcEndOfDay")).toMatch(/UTC/);
   };
+});
+
+describe("INTX FIX2 — the Platform's new refusal codes are said on the screen", () => {
+  const platform = (...p) => fs.readFileSync(path.join(repoRoot, "services", "Diten.Platform", "src", ...p), "utf8");
+  const constant = (source, name) => {
+    const match = source.match(new RegExp(`const string ${name} = "([^"]+)";`));
+    expect(match, name).toBeTruthy();
+    return match[1];
+  };
+  const audit = constant(platform("Diten.Platform.API", "Middleware", "GlobalExceptionHandler.cs"), "AuditRecordUnavailableCode");
+  const writer = platform("Diten.Platform.Application", "Features", "Tenants", "Commercial", "Subscriptions", "TenantSubscriptionTransactionWriter.cs");
+  const alreadyCurrent = constant(writer, "AlreadyCurrent");
+  const stale = constant(writer, "Stale");
+
+  test("the codes the server defines are the codes the screen maps", () => {
+    expect(Object.keys(rules.SUBSCRIPTION_REFUSAL_KEYS).sort()).toEqual([alreadyCurrent, stale, audit].sort());
+    expect(rules.ENTITLEMENT_REFUSAL_KEYS[audit]).toBe("AuditRecordUnavailable");
+  });
+
+  test.each(LANGS)("[%s] each has its own sentence in the resx and is handed to the page", (lang) => {
+    const l10n = read("Views", "Platform", "Tenants", "_IndexL10n.cshtml");
+    const labels = { ErrorOccurred: "general" };
+    Object.values(rules.SUBSCRIPTION_REFUSAL_KEYS).forEach((key) => {
+      labels[key] = resxValue(lang, key);
+      expect(labels[key], `${lang} ${key}`).toBeTruthy();
+      expect(l10n).toMatch(new RegExp(`\\b${key} = Localizer\\["${key}"\\]`));
+    });
+    [alreadyCurrent, stale, audit].forEach((code) => {
+      const text = rules.subscriptionRefusalText({ code, message: "English server sentence." }, labels);
+      expect(text).toBe(labels[rules.SUBSCRIPTION_REFUSAL_KEYS[code]]);
+      expect(text).not.toContain("English server sentence");
+    });
+    // the modules tab says the audit refusal too
+    expect(rules.entitlementRefusalText({ code: audit }, { ...labels, ErrorOccurred: "general" })).toBe(labels.AuditRecordUnavailable);
+    expect(resxValue("tr", "SubscriptionStale")).not.toBe(resxValue("en", "SubscriptionStale"));
+  });
+
+  test("a stale subscription reloads the section; the other refusals do not", () => {
+    expect(rules.subscriptionRefusalReloads({ code: stale })).toBe(true);
+    expect(rules.subscriptionRefusalReloads({ code: alreadyCurrent })).toBe(false);
+    expect(rules.subscriptionRefusalReloads({ code: audit })).toBe(false);
+  });
+
+  test("an unmapped refusal keeps the sentence the screen showed before; a 403 has its own", () => {
+    const labels = { ErrorOccurred: "general", PermissionDenied: resxValue("tr", "PermissionDenied") };
+    expect(rules.subscriptionRefusalText({ code: "SOMETHING_ELSE", message: "As before." }, labels)).toBe("As before.");
+    expect(rules.subscriptionRefusalText({ status: 403 }, labels)).toBe(labels.PermissionDenied);
+  });
+
+  test("the subscription section reports through the bridge, not the raw message", () => {
+    const sub = slice("const showSubscriptionActionError", "const loadUsers");
+    expect(sub).toMatch(/subscriptionRefusalText\(error, L\)/);
+    expect(source).toMatch(/submitSubscriptionAction\(\)\.catch\(showSubscriptionActionError\)/);
+    expect(slice("const confirmReactivateSubscription", "const showSubscriptionActionError")).toMatch(/showSubscriptionActionError\(error\)/);
+  });
 });
 
 describe("page standard", () => {

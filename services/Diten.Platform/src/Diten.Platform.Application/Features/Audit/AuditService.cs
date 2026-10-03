@@ -77,6 +77,14 @@ public sealed class AuditService : IAuditService
 
         // The record carries the REQUEST's correlation (AuditCorrelation); the idempotency key above keeps the caller's.
         var recordCorrelation = AuditCorrelation.Resolve(_correlation?.CorrelationId, request.CorrelationId);
+        // INTX FIX2 — what the CLIENT gave as its correlation travels as metadata only.
+        if (AuditCorrelation.ClientValue(_correlation?.ClientCorrelationId) is { } clientCorrelation)
+        {
+            request = request with
+            {
+                Metadata = new Dictionary<string, object?>(request.Metadata) { [AuditCorrelation.ClientCorrelationMetadataKey] = clientCorrelation }
+            };
+        }
         var writeRequest = new AuditOutboxWriteRequest
         {
             TenantId = tenantResolution.TenantId,

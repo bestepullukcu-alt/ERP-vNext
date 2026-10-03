@@ -94,6 +94,8 @@ if (!builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(gatewaySec
 }
 
 builder.Services.AddDitenObservability(builder.Configuration, builder.Environment);
+// INTX FIX2 — the edge does not adopt a caller's X-Correlation-Id (EdgeCorrelation).
+builder.Services.AddEdgeCorrelation();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<CorrelationPropagationDelegatingHandler>();
 

@@ -18,6 +18,22 @@ namespace Diten.Platform.Application.Contracts.Audit;
 /// </summary>
 public static class AuditCorrelation
 {
+    /// <summary>INTX FIX2 — the metadata key of the value the CLIENT sent as its correlation (never the record's own).</summary>
+    public const string ClientCorrelationMetadataKey = "ClientCorrelation";
+
+    private const int MaxClientCorrelationLength = 128;
+
+    /// <summary>The client's correlation value as a record may carry it: safe characters, bounded length, else nothing.</summary>
+    public static string? ClientValue(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length > MaxClientCorrelationLength)
+        {
+            return null;
+        }
+
+        return value.All(static c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_' or '.') ? value : null;
+    }
+
     public static Guid Resolve(string? requestCorrelation, Guid fallback)
     {
         if (!string.IsNullOrWhiteSpace(requestCorrelation))

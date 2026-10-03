@@ -7,7 +7,14 @@ using Diten.Platform.Domain.Repositories;
 namespace Diten.Platform.Application.Features.Audit;
 
 /// <summary>An in-transaction audit record could not be written truthfully; the transaction must not commit.</summary>
-public sealed class TransactionOwnedAuditRefusedException(string message) : InvalidOperationException(message);
+/// <summary>The change cannot be recorded right now (nobody to name): refused, nothing written. HTTP 503.</summary>
+public class TransactionOwnedAuditRefusedException(string message) : InvalidOperationException(message);
+
+/// <summary>
+/// INTX FIX2 — the intent itself is wrong (no intent, no category, an empty target tenant): a programming error that no
+/// retry can cure. Still a refusal (nothing is written), but answered as a server error (HTTP 500), not "try later".
+/// </summary>
+public sealed class TransactionOwnedAuditIntentInvalidException(string message) : TransactionOwnedAuditRefusedException(message);
 
 /// <summary>
 /// WP-PLATFORM-AUDIT-INTX-01 — THE ENTRY of the in-transaction audit door (K2: record and business data commit
@@ -61,16 +68,16 @@ public sealed class CanonicalTransactionalAuditOutboxWriter : ITransactionalAudi
         ArgumentNullException.ThrowIfNull(request);
 
         var intent = request.Intent
-            ?? throw new TransactionOwnedAuditRefusedException(
+            ?? throw new TransactionOwnedAuditIntentInvalidException(
                 $"In-transaction audit for {request.RequestType} carries no intent; a hand-written payload is not accepted on this door.");
         if (intent.Category == AuditCategory.Unknown)
         {
-            throw new TransactionOwnedAuditRefusedException($"In-transaction audit for {request.RequestType} names no category.");
+            throw new TransactionOwnedAuditIntentInvalidException($"In-transaction audit for {request.RequestType} names no category.");
         }
 
         if (intent.TargetTenantId == Guid.Empty)
         {
-            throw new TransactionOwnedAuditRefusedException($"In-transaction audit for {request.RequestType} names an empty target tenant.");
+            throw new TransactionOwnedAuditIntentInvalidException($"In-transaction audit for {request.RequestType} names an empty target tenant.");
         }
 
         var actor = ResolveActor(request.RequestType, intent);
@@ -83,6 +90,12 @@ public sealed class CanonicalTransactionalAuditOutboxWriter : ITransactionalAudi
         if (actor.SystemActor is not null)
         {
             metadata[SystemActorMetadataKey] = actor.SystemActor;
+        }
+
+        // INTX FIX2 — what the CLIENT gave as its correlation, kept only as that: the record's own correlation is the server's.
+        if (AuditCorrelation.ClientValue(_correlation?.ClientCorrelationId) is { } clientCorrelation)
+        {
+            metadata[AuditCorrelation.ClientCorrelationMetadataKey] = clientCorrelation;
         }
 
         // FIX1 (field 9) — the REQUEST's correlation, so every record one request writes is found together; the

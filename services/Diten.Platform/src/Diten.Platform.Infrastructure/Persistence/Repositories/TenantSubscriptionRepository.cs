@@ -68,7 +68,13 @@ public sealed class TenantSubscriptionRepository : GlobalRepository<TenantSubscr
             .ToListAsync(ct);
     }
 
-    public async Task<bool> HasCurrentAsync(Guid tenantId, Guid? excludeSubscriptionId = null, CancellationToken ct = default)
+    public Task<bool> HasCurrentAsync(Guid tenantId, Guid? excludeSubscriptionId = null, CancellationToken ct = default) =>
+        HasCurrentCoreAsync(null, tenantId, excludeSubscriptionId, ct);
+
+    public Task<bool> HasCurrentAsync(IPlatformTransactionSession session, Guid tenantId, Guid? excludeSubscriptionId = null, CancellationToken ct = default) =>
+        HasCurrentCoreAsync(PlatformMongoTransactionSession.Require(session, _dbContext), tenantId, excludeSubscriptionId, ct);
+
+    private async Task<bool> HasCurrentCoreAsync(IClientSessionHandle? session, Guid tenantId, Guid? excludeSubscriptionId, CancellationToken ct)
     {
         var filters = new List<FilterDefinition<TenantSubscription>>
         {
@@ -82,7 +88,10 @@ public sealed class TenantSubscriptionRepository : GlobalRepository<TenantSubscr
             filters.Add(Builders<TenantSubscription>.Filter.Ne(x => x.Id, excludeSubscriptionId.Value));
         }
 
-        return await Collection.Find(Builders<TenantSubscription>.Filter.And(filters)).AnyAsync(ct);
+        var filter = Builders<TenantSubscription>.Filter.And(filters);
+        return session is null
+            ? await Collection.Find(filter).AnyAsync(ct)
+            : await Collection.Find(session, filter).AnyAsync(ct);
     }
 
     public async Task UpdateAsync(TenantSubscription subscription, byte[]? expectedRowVersion, CancellationToken ct = default)

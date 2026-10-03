@@ -5,6 +5,9 @@ namespace Diten.Platform.Domain.Repositories;
 public interface ITenantRegistryRepository
 {
     Task<Tenant?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    /// <summary>INTX FIX2 — the tenant as this transaction sees it (never a copy read before the transaction began).</summary>
+    Task<Tenant?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default) =>
+        throw new PlatformTransactionUnavailableException("The tenant repository does not implement transaction-bound reads.");
     Task<Tenant?> GetByCodeAsync(string code, CancellationToken ct = default);
     Task<Tenant?> GetBySlugAsync(string slug, CancellationToken ct = default);
     Task<Tenant?> GetByDomainAsync(string domain, CancellationToken ct = default);

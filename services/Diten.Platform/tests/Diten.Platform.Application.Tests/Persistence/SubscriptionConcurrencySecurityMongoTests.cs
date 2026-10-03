@@ -275,6 +275,8 @@ public sealed class SubscriptionConcurrencySecurityMongoTests
         public Task<IReadOnlyList<TenantSubscription>> GetHistoryByTenantIdAsync(Guid t, CancellationToken ct = default) => inner.GetHistoryByTenantIdAsync(t, ct);
         public async Task<bool> HasCurrentAsync(Guid t, Guid? exclude = null, CancellationToken ct = default)
         { var value = await inner.HasCurrentAsync(t, exclude, ct); if (gateHasCurrent) await gate.MeetAsync(); return value; }
+        public async Task<bool> HasCurrentAsync(IPlatformTransactionSession s, Guid t, Guid? exclude = null, CancellationToken ct = default)
+        { var value = await inner.HasCurrentAsync(s, t, exclude, ct); if (gateHasCurrent) await gate.MeetAsync(); return value; }
         public Task UpdateAsync(TenantSubscription x, byte[]? row, CancellationToken ct = default) => inner.UpdateAsync(x, row, ct);
         public Task UpdateAsync(IPlatformTransactionSession s, TenantSubscription x, byte[]? row, CancellationToken ct = default) => inner.UpdateAsync(s, x, row, ct);
     }

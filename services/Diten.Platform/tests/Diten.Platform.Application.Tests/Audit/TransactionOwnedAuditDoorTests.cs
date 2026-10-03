@@ -207,7 +207,7 @@ public sealed class TransactionOwnedAuditDoorTests
             Payload = new Dictionary<string, object?> { ["ModuleCode"] = "CRM", ["Outcome"] = "Succeeded" } // the pre-fix shape
         };
 
-        await Assert.ThrowsAsync<TransactionOwnedAuditRefusedException>(() =>
+        await Assert.ThrowsAsync<TransactionOwnedAuditIntentInvalidException>(() =>
             Writer(store, Person("platform_admin", Administrator)).TryEnqueueAsync(Session(), handWritten, CancellationToken.None));
 
         Assert.Empty(store.Requests);
@@ -218,7 +218,7 @@ public sealed class TransactionOwnedAuditDoorTests
     {
         var store = new CapturingStore();
 
-        await Assert.ThrowsAsync<TransactionOwnedAuditRefusedException>(() =>
+        await Assert.ThrowsAsync<TransactionOwnedAuditIntentInvalidException>(() =>
             Writer(store, Person("platform_admin", Administrator))
                 .TryEnqueueAsync(Session(), Request(Intent() with { Category = AuditCategory.Unknown }), CancellationToken.None));
 

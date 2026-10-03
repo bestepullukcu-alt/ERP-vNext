@@ -48,11 +48,13 @@ public sealed class GlobalApplicabilityTransactionCoordinator : IGlobalApplicabi
     private readonly IEntitlementStateVersionRepository _versions;
     private readonly ITransactionalIntegrationEventWriter _events;
     private readonly ITransactionalAuditOutboxWriter _audit;
+    private readonly Diten.Platform.Common.Observability.ICorrelationContext? _correlation;
 
     public GlobalApplicabilityTransactionCoordinator(IPlatformTransactionExecutor transactions,
         IEntitlementStateVersionRepository versions, ITransactionalIntegrationEventWriter events,
-        ITransactionalAuditOutboxWriter audit)
+        ITransactionalAuditOutboxWriter audit, Diten.Platform.Common.Observability.ICorrelationContext? correlation = null)
     {
+        _correlation = correlation;
         _transactions = transactions;
         _versions = versions;
         _events = events;
@@ -138,7 +140,8 @@ public sealed class GlobalApplicabilityTransactionCoordinator : IGlobalApplicabi
             var version = await _versions.IncrementGlobalApplicabilityVersionAsync(session, transactionCt);
             await writeProjectionAsync(session, version, transactionCt);
             var eventId = Guid.NewGuid();
-            var correlationId = Guid.NewGuid();
+            // INTX FIX2 — one correlation for the event and the audit record (the request's, else one fresh id for both).
+            var correlationId = AuditCorrelation.Resolve(_correlation?.CorrelationId, Guid.NewGuid());
             var occurredAtUtc = DateTimeOffset.UtcNow;
             await _events.EnqueueAsync(session,
                 new GlobalApplicabilityChangedV1(eventId, occurredAtUtc, correlationId,

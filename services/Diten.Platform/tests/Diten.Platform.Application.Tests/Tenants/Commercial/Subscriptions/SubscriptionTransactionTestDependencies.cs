@@ -4,6 +4,7 @@ using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Contracts.Eventing;
 using Diten.Platform.Application.Features.Tenants.Commercial.Subscriptions;
 using Diten.Platform.Domain.Repositories;
+using Moq;
 
 namespace Diten.Platform.Application.Tests.Tenants.Commercial.Subscriptions;
 
@@ -12,6 +13,13 @@ internal sealed class SubscriptionTransactionTestDependencies
     public SubscriptionTransactionTestDependencies(ITenantSubscriptionRepository subscriptions,
         ITenantRegistryRepository tenants, ISubscriptionPlanRepository plans, ICurrentUserContext currentUser)
     {
+        // INTX FIX2 item 2 — the writer now reads the live check and the tenant WITH its session. These unit tests have
+        // no real session, so a mock's session overload answers what its plain overload was set up to answer.
+        Mock.Get(subscriptions).Setup(x => x.HasCurrentAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<Guid>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+            .Returns((IPlatformTransactionSession _, Guid tenantId, Guid? exclude, CancellationToken ct) => subscriptions.HasCurrentAsync(tenantId, exclude, ct));
+        Mock.Get(tenants).Setup(x => x.GetByIdAsync(It.IsAny<IPlatformTransactionSession>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Returns((IPlatformTransactionSession _, Guid id, CancellationToken ct) => tenants.GetByIdAsync(id, ct));
+
         Events = new CapturingEventWriter();
         Writer = new TenantSubscriptionTransactionWriter(new InlineExecutor(), subscriptions, tenants, plans,
             new VersionRepository(), Events, new AuditWriter(), currentUser);

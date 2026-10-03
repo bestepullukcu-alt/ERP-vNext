@@ -30,13 +30,16 @@ public sealed class TenantSubscriptionTransactionWriter
     private readonly ITransactionalIntegrationEventWriter _events;
     private readonly ITransactionalAuditOutboxWriter _audit;
     private readonly ICurrentUserContext _currentUser;
+    private readonly Diten.Platform.Common.Observability.ICorrelationContext? _correlation;
 
     public TenantSubscriptionTransactionWriter(IPlatformTransactionExecutor transactions,
         ITenantSubscriptionRepository subscriptions, ITenantRegistryRepository tenants,
         ISubscriptionPlanRepository plans, IEntitlementStateVersionRepository versions,
         ITransactionalIntegrationEventWriter events, ITransactionalAuditOutboxWriter audit,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        Diten.Platform.Common.Observability.ICorrelationContext? correlation = null)
     {
+        _correlation = correlation;
         _transactions = transactions;
         _subscriptions = subscriptions;
         _tenants = tenants;
@@ -61,15 +64,19 @@ public sealed class TenantSubscriptionTransactionWriter
              *   - the tenant document: both requests write it, so of two that overlap exactly one commits — the other
              *     meets a write conflict and is answered as stale (WriteTenantAsync), never as a server error.
              */
-            if (await _subscriptions.HasCurrentAsync(subscription.TenantId, null, transactionCt))
+            if (await _subscriptions.HasCurrentAsync(session, subscription.TenantId, null, transactionCt))
             {
                 throw new SubscriptionMutationRejectedException(
                     ["Tenant already has a current subscription."], 409, TenantSubscriptionRefusalCodes.AlreadyCurrent);
             }
 
             await _subscriptions.CreateAsync(session, subscription, transactionCt);
-            ApplyTenantSnapshot(tenant, subscription, plan, false, mutation, DateTimeOffset.UtcNow);
-            await WriteTenantAsync(session, tenant, transactionCt);
+            // INTX FIX2 — the tenant as THIS transaction sees it; the copy the request read before the transaction
+            // began could carry another request's state from before its commit and write it back.
+            var current = await _tenants.GetByIdAsync(session, tenant.Id, transactionCt)
+                ?? throw new SubscriptionMutationRejectedException(["Tenant not found."], 404);
+            ApplyTenantSnapshot(current, subscription, plan, false, mutation, DateTimeOffset.UtcNow);
+            await WriteTenantAsync(session, current, transactionCt);
             if (participant is not null)
             {
                 var response = await participant(session, subscription, plan, transactionCt);
@@ -89,7 +96,7 @@ public sealed class TenantSubscriptionTransactionWriter
             var stored = await _subscriptions.GetByIdAsync(subscription.Id, transactionCt);
             var auditBefore = stored is null || ReferenceEquals(stored, subscription) ? null : StateOf(stored);
             await _subscriptions.UpdateAsync(session, subscription, expectedRowVersion, transactionCt);
-            var tenant = await _tenants.GetByIdAsync(subscription.TenantId, transactionCt)
+            var tenant = await _tenants.GetByIdAsync(session, subscription.TenantId, transactionCt)
                 ?? throw new SubscriptionMutationRejectedException(["Tenant not found."], 404);
             var plan = await _plans.GetByIdAsync(subscription.PlanId, transactionCt);
             if (plan is null) throw new SubscriptionMutationRejectedException(["Subscription plan not found."], 404);
@@ -135,7 +142,9 @@ public sealed class TenantSubscriptionTransactionWriter
     {
         await _versions.IncrementSubscriptionSelectionVersionAsync(session, subscription.TenantId, ct);
         var eventId = Guid.NewGuid();
-        var correlationId = Guid.NewGuid();
+        // INTX FIX2 — the integration event and the audit record carry ONE correlation: the request's (the canonical
+        // audit writer resolves the same value), or one fresh id for both when no request is in scope.
+        var correlationId = AuditCorrelation.Resolve(_correlation?.CorrelationId, Guid.NewGuid());
         var now = DateTimeOffset.UtcNow;
         await _events.EnqueueAsync(session, new TenantSubscriptionChangedV1(eventId, now,
                 subscription.TenantId, correlationId,

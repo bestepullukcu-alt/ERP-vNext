@@ -1289,6 +1289,8 @@ const TenantDetails = (function () {
         ENTITLEMENT_SOURCE_INVALID: 'EntitlementSourceInvalid',
         ENTITLEMENT_EXPIRY_REQUIRED: 'EntitlementExpiryRequired',
         ENTITLEMENT_EXPIRY_IN_PAST: 'EntitlementExpiryInPast',
+        // INTX FIX2 — the change could not be recorded (no one to name, or the record store is down): not made.
+        AUDIT_RECORD_UNAVAILABLE: 'AuditRecordUnavailable',
         QUOTA_LIMIT_EXCEEDED: 'QuotaLimitExceeded',
         QUOTA_DUPLICATE_OPERATION: 'QuotaDuplicateOperation',
         QUOTA_SUBSCRIPTION_INACTIVE: 'QuotaSubscriptionInactive',
@@ -1316,6 +1318,23 @@ const TenantDetails = (function () {
         }
         return (labels || {}).ErrorOccurred || '';
     };
+
+    // INTX FIX2 — the subscription section's refusals, said from their codes (TenantSubscriptionRefusalCodes and the
+    // Platform's audit refusal). A refusal this table does not know keeps the sentence the screen showed before.
+    const SUBSCRIPTION_REFUSAL_KEYS = {
+        SUBSCRIPTION_ALREADY_CURRENT: 'SubscriptionAlreadyCurrent',
+        SUBSCRIPTION_STALE: 'SubscriptionStale',
+        AUDIT_RECORD_UNAVAILABLE: 'AuditRecordUnavailable'
+    };
+
+    const subscriptionRefusalText = (error, labels) => {
+        if (error?.status === 403 && (labels || {}).PermissionDenied) return labels.PermissionDenied;
+        const code = typeof error?.code === 'string' ? error.code.trim() : '';
+        return (labels || {})[SUBSCRIPTION_REFUSAL_KEYS[code]] || error?.message || (labels || {}).ErrorOccurred || '';
+    };
+
+    // Somebody else changed the subscription: the section is reloaded so the next attempt starts from what is there.
+    const subscriptionRefusalReloads = (error) => error?.code === 'SUBSCRIPTION_STALE';
 
     // Did the request change anything? Read off the reloaded list rather than assumed from a 204: a stored row that
     // still carries the version it had was not written (every write mints a new one), and a plan line whose access
@@ -1947,7 +1966,7 @@ const TenantDetails = (function () {
                 await loadCommercialSubscription();
                 await loadOverview();
             } catch (error) {
-                window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error');
+                showSubscriptionActionError(error);
             }
         };
 
@@ -1961,6 +1980,14 @@ const TenantDetails = (function () {
         }
 
         run();
+    };
+
+    const showSubscriptionActionError = (error) => {
+        if (error?.authHandled) return;
+        window.showToast?.(subscriptionRefusalText(error, L), 'error');
+        if (subscriptionRefusalReloads(error)) {
+            loadCommercialSubscription().catch(() => {});
+        }
     };
 
     const submitSubscriptionAction = async () => {
@@ -2679,7 +2706,7 @@ const TenantDetails = (function () {
         document.getElementById('btnReactivateSubscription')?.addEventListener('click', () => confirmReactivateSubscription());
         document.getElementById('subscriptionActionForm')?.addEventListener('submit', (event) => {
             event.preventDefault();
-            submitSubscriptionAction().catch((error) => window.showToast?.(error.message || L.ErrorOccurred || 'ErrorOccurred', 'error'));
+            submitSubscriptionAction().catch(showSubscriptionActionError);
         });
 
         document.getElementById('subscriptionPlanSelect')?.addEventListener('change', (event) => {

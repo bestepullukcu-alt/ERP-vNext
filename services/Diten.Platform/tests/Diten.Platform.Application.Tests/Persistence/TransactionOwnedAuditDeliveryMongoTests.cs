@@ -319,7 +319,8 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
         await using var world = await World.StartAsync();
         var door = world.ProductionDoor(Person("platform_admin"), correlation: null);
 
-        await Assert.ThrowsAsync<TransactionOwnedAuditRefusedException>(() => new PlatformTransactionExecutor(world.Context).ExecuteAsync(
+        // FIX2 item 7 — an invalid intent is its own (sub)type of refusal: a programming error, answered 500 not 503.
+        await Assert.ThrowsAsync<TransactionOwnedAuditIntentInvalidException>(() => new PlatformTransactionExecutor(world.Context).ExecuteAsync(
             (session, ct) => door.TryEnqueueAsync(session, new AuditOutboxWriteRequest
             {
                 TenantId = Guid.NewGuid(), CorrelationId = Guid.NewGuid(), IdempotencyKey = "empty-target", RequestType = "SuspendTenantSubscriptionCommand",
@@ -397,16 +398,241 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
         Assert.Equal(masked, AuditOutboxPayload.MaskIpAddress(address));
     }
 
+    // ── INTX FIX2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Two_assignments_racing_on_one_tenant_leave_one_live_subscription_and_the_late_one_is_stale()
+    {
+        // FIX2 A2 — built deterministically: B reads "no live subscription" INSIDE its transaction, then — before B
+        // writes anything — A assigns and commits. B must not commit a second live subscription. The live-check read
+        // pins B's snapshot, so B's write of the tenant meets A's committed change and B is answered as stale.
+        await using var world = await World.StartAsync();
+        var paused = new TaskCompletionSource();
+        var resume = new TaskCompletionSource();
+        var (writerB, existing, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Cancelled,
+            wrapSubscriptions: inner => new PauseAfterLiveCheck(inner, paused, resume));
+        var tenantId = existing.TenantId;
+        var plan = new SubscriptionPlan { Id = planId, Code = "PRO", Name = "Pro", IsActive = true };
+        Tenant Fresh() => world.Database.GetCollection<Tenant>("tenants").Find(x => x.Id == tenantId).Single();
+
+        var b = Task.Run(() => writerB.CreateAsync(NewSubscription(tenantId, planId, TenantSubscriptionStatus.Trialing), Fresh(), plan,
+            "AssignPlanToTenantCommand", AuditOperation.Assign, null, CancellationToken.None));
+        await paused.Task.WaitAsync(TimeSpan.FromSeconds(20));
+        var a = await world.WriterFor(tenantId, planId, Person("platform_admin")).CreateAsync(NewSubscription(tenantId, planId, TenantSubscriptionStatus.Active),
+            Fresh(), plan, "AssignPlanToTenantCommand", AuditOperation.Assign, null, CancellationToken.None);
+        resume.SetResult();
+        var late = await b.WaitAsync(TimeSpan.FromSeconds(30));
+
+        Assert.True(a.IsSuccessful, string.Join(";", a.Errors ?? []));
+        Assert.False(late.IsSuccessful);
+        Assert.Equal(409, late.StatusCode);
+        Assert.Equal(TenantSubscriptionRefusalCodes.Stale, late.ReasonCode);
+        var live = (await world.Database.GetCollection<TenantSubscription>("tenant_subscriptions").Find(x => x.TenantId == tenantId).ToListAsync())
+            .Count(x => TenantSubscriptionStatuses.Current.Contains(x.Status));
+        Assert.Equal(1, live);
+        Assert.Equal(TenantSubscriptionStatus.Active, Fresh().SubscriptionStatus);
+    }
+
+    [Fact]
+    public async Task An_assignment_writes_the_tenant_as_its_transaction_reads_it_not_the_copy_the_request_read_earlier()
+    {
+        // FIX2 A2 — the request read the tenant before its transaction began; a change committed in between must not be
+        // written back over by that older copy.
+        await using var world = await World.StartAsync();
+        var (writer, cancelled, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Cancelled);
+        var tenantId = cancelled.TenantId;
+        var readEarlier = await world.Database.GetCollection<Tenant>("tenants").Find(x => x.Id == tenantId).SingleAsync();
+        await world.Database.GetCollection<Tenant>("tenants").UpdateOneAsync(x => x.Id == tenantId,
+            Builders<Tenant>.Update.Set(x => x.DisplayName, "renamed after the request read it"));
+
+        var result = await writer.CreateAsync(NewSubscription(tenantId, planId, TenantSubscriptionStatus.Active), readEarlier,
+            new SubscriptionPlan { Id = planId, Code = "PRO", Name = "Pro", IsActive = true }, "AssignPlanToTenantCommand", AuditOperation.Assign, null, CancellationToken.None);
+
+        Assert.True(result.IsSuccessful, string.Join(";", result.Errors ?? []));
+        var stored = await world.Database.GetCollection<Tenant>("tenants").Find(x => x.Id == tenantId).SingleAsync();
+        Assert.Equal("renamed after the request read it", stored.DisplayName);
+        Assert.Equal(planId, stored.PlanId);
+    }
+
+    [Fact]
+    public async Task A_subscription_update_whose_tenant_another_write_changed_meanwhile_is_answered_stale_with_its_code()
+    {
+        // FIX2 rule :225 — the update path's stale answer. B's transaction has begun (its subscription write pins the
+        // snapshot); the tenant document is then changed and committed elsewhere; B's tenant write meets that change.
+        await using var world = await World.StartAsync();
+        var paused = new TaskCompletionSource();
+        var resume = new TaskCompletionSource();
+        var (writer, existing, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Trialing,
+            wrapSubscriptions: inner => new PauseAfterSessionUpdate(inner, paused, resume));
+        var before = await world.Database.GetCollection<TenantSubscription>("tenant_subscriptions").Find(x => x.Id == existing.Id).SingleAsync();
+        existing.Status = TenantSubscriptionStatus.Active;
+
+        var b = Task.Run(() => writer.UpdateAsync(existing, existing.RowVersion, planId, "Trialing", "ActivateTenantSubscriptionCommand",
+            AuditOperation.Activate, true, null, CancellationToken.None));
+        await paused.Task.WaitAsync(TimeSpan.FromSeconds(20));
+        await world.Database.GetCollection<Tenant>("tenants").UpdateOneAsync(x => x.Id == existing.TenantId,
+            Builders<Tenant>.Update.Set(x => x.DisplayName, "changed meanwhile"));
+        resume.SetResult();
+        var late = await b.WaitAsync(TimeSpan.FromSeconds(30));
+
+        Assert.False(late.IsSuccessful);
+        Assert.Equal(409, late.StatusCode);
+        Assert.Equal(TenantSubscriptionRefusalCodes.Stale, late.ReasonCode);
+        var stored = await world.Database.GetCollection<TenantSubscription>("tenant_subscriptions").Find(x => x.Id == existing.Id).SingleAsync();
+        Assert.Equal(before.Status, stored.Status);
+        Assert.Equal(0, await world.CountAsync("audit_outbox"));
+    }
+
+    [Fact]
+    public async Task A_participant_refusal_keeps_its_code_on_both_writer_paths()
+    {
+        // FIX2 rules :76 / :101 — a quota participant's coded refusal reaches the caller with its code.
+        await using var world = await World.StartAsync();
+        var (writer, existing, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Trialing);
+        Task<Response<NoContent>> Refuse(IPlatformTransactionSession _, TenantSubscription __, SubscriptionPlan ___, CancellationToken ____) =>
+            Task.FromResult(Response<NoContent>.Fail("limit", 409, "QUOTA_LIMIT_EXCEEDED"));
+        var tenant = await world.Database.GetCollection<Tenant>("tenants").Find(x => x.Id == existing.TenantId).SingleAsync();
+        var plan = new SubscriptionPlan { Id = planId, Code = "PRO", Name = "Pro", IsActive = true };
+
+        // an empty tenant for the create path (the seeded one already has a live subscription)
+        var (createWriter, cancelled, createPlan) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Cancelled);
+        var createTenant = await world.Database.GetCollection<Tenant>("tenants").Find(x => x.Id == cancelled.TenantId).SingleAsync();
+        var created = await createWriter.CreateAsync(NewSubscription(cancelled.TenantId, createPlan, TenantSubscriptionStatus.Active), createTenant,
+            new SubscriptionPlan { Id = createPlan, Code = "PRO", Name = "Pro", IsActive = true }, "AssignPlanToTenantCommand", AuditOperation.Assign, Refuse, CancellationToken.None);
+        existing.Status = TenantSubscriptionStatus.Active;
+        var updated = await writer.UpdateAsync(existing, existing.RowVersion, planId, "Trialing", "ActivateTenantSubscriptionCommand", AuditOperation.Activate, true, Refuse, CancellationToken.None);
+
+        Assert.Equal("QUOTA_LIMIT_EXCEEDED", created.ReasonCode);
+        Assert.Equal("QUOTA_LIMIT_EXCEEDED", updated.ReasonCode);
+        Assert.Equal(0, await world.CountAsync("audit_outbox"));
+    }
+
+    [Fact]
+    public async Task The_integration_event_and_the_audit_record_carry_one_correlation()
+    {
+        // FIX2 A6 — measured on both callers: the subscription writer and the global coordinator.
+        await using var world = await World.StartAsync();
+        var request = Guid.NewGuid();
+        var correlation = new FixedCorrelation(request.ToString("D"));
+        var (writer, subscription, planId) = await world.SubscriptionAsync(Person("platform_admin"), TenantSubscriptionStatus.Active, correlation: correlation);
+        subscription.Status = TenantSubscriptionStatus.Suspended;
+        Assert.True((await writer.UpdateAsync(subscription, subscription.RowVersion, planId, "Active", "SuspendTenantSubscriptionCommand",
+            AuditOperation.Suspend, false, null, CancellationToken.None)).IsSuccessful);
+        await world.Coordinator(Person("platform_admin"), correlation).ExecuteAsync(
+            new GlobalApplicabilityMutationDescriptor("CreateSubscriptionPlanCommand", AuditOperation.Create, "SubscriptionPlan", Guid.NewGuid()),
+            (_, _) => Task.FromResult(new GlobalApplicabilityMutation<bool>(true, true, (_, _, _) => Task.CompletedTask)));
+        // and with no request in scope: still ONE id for both
+        await world.Coordinator(Person("platform_admin"), correlation: null).ExecuteAsync(
+            new GlobalApplicabilityMutationDescriptor("CreateSubscriptionPlanCommand", AuditOperation.Create, "SubscriptionPlan", Guid.NewGuid()),
+            (_, _) => Task.FromResult(new GlobalApplicabilityMutation<bool>(true, true, (_, _, _) => Task.CompletedTask)));
+
+        Assert.Equal(3, await world.ProcessAsync());
+        var audits = (await world.AuditEventsAsync()).Select(a => a.CorrelationId.ToString()).OrderBy(x => x).ToList();
+        var events = (await world.Database.GetCollection<BsonDocument>("outbox_events").Find(FilterDefinition<BsonDocument>.Empty).ToListAsync())
+            .Select(e => Guid.Parse(e["CorrelationId"].AsString).ToString()).OrderBy(x => x).ToList();
+        Assert.Equal(audits, events);
+        Assert.Equal(2, audits.Count(x => x == request.ToString()));
+    }
+
+    [Fact]
+    public async Task A_client_chosen_correlation_never_becomes_the_records_correlation_and_is_kept_as_what_the_client_said()
+    {
+        // FIX2 A3 — two requests with the SAME client header: two record correlations (the server's), both records
+        // carrying the client's value as metadata only, through both doors.
+        await using var world = await World.StartAsync();
+        var first = new FixedCorrelation(Guid.NewGuid().ToString("N"), client: "same-client-header");
+        var second = new FixedCorrelation(Guid.NewGuid().ToString("N"), client: "same-client-header");
+        var tenant = Guid.NewGuid();
+
+        foreach (var correlation in new[] { first, second })
+        {
+            Assert.True((await world.CentralDoor(Person("platform_admin"), correlation).AppendAsync(new AuditAppendRequest
+            {
+                CorrelationId = Guid.NewGuid(), RequestType = "UpdateTenantCommand", ActorType = AuditActorType.PlatformAdministrator,
+                Category = AuditCategory.TenantAdministration, EntityType = "Tenant", EntityId = tenant, Operation = AuditOperation.Update, TargetTenantId = tenant
+            })).IsEnqueued);
+            await world.Coordinator(Person("platform_admin"), correlation).ExecuteAsync(
+                new GlobalApplicabilityMutationDescriptor("CreateSubscriptionPlanCommand", AuditOperation.Create, "SubscriptionPlan", Guid.NewGuid()),
+                (_, _) => Task.FromResult(new GlobalApplicabilityMutation<bool>(true, true, (_, _, _) => Task.CompletedTask)));
+        }
+
+        Assert.Equal(4, await world.ProcessAsync());
+        var records = await world.AuditEventsAsync();
+        Assert.Equal(2, records.Select(r => r.CorrelationId).Distinct().Count());
+        Assert.All(records, r => Assert.Equal("same-client-header", r.Metadata[AuditCorrelation.ClientCorrelationMetadataKey]));
+        Assert.DoesNotContain(records, r => r.CorrelationId == AuditCorrelation.Resolve("same-client-header", Guid.Empty));
+        // an unsafe client value is not carried at all
+        Assert.Null(AuditCorrelation.ClientValue("bad value<script>"));
+        Assert.Null(AuditCorrelation.ClientValue(new string('a', 129)));
+    }
+
+    private static TenantSubscription NewSubscription(Guid tenantId, Guid planId, TenantSubscriptionStatus status) => new()
+    {
+        Id = Guid.NewGuid(), TenantId = tenantId, PlanId = planId, Status = status, UpdatedBy = "platform.admin@di10.test"
+    };
+
+    /// <summary>Holds the transaction right after its live-subscription check until the test lets it go.</summary>
+    private sealed class PauseAfterLiveCheck(ITenantSubscriptionRepository inner, TaskCompletionSource paused, TaskCompletionSource resume) : ITenantSubscriptionRepository
+    {
+        public async Task<bool> HasCurrentAsync(IPlatformTransactionSession session, Guid tenantId, Guid? excludeSubscriptionId = null, CancellationToken ct = default)
+        {
+            var answer = await inner.HasCurrentAsync(session, tenantId, excludeSubscriptionId, ct);
+            paused.TrySetResult();
+            await resume.Task;
+            return answer;
+        }
+
+        public async Task<bool> HasCurrentAsync(Guid tenantId, Guid? excludeSubscriptionId = null, CancellationToken ct = default)
+        {
+            var answer = await inner.HasCurrentAsync(tenantId, excludeSubscriptionId, ct);
+            paused.TrySetResult();
+            await resume.Task;
+            return answer;
+        }
+
+        public Task<TenantSubscription> CreateAsync(IPlatformTransactionSession session, TenantSubscription subscription, CancellationToken ct = default) => inner.CreateAsync(session, subscription, ct);
+        public Task<TenantSubscription> CreateAsync(TenantSubscription subscription, CancellationToken ct = default) => inner.CreateAsync(subscription, ct);
+        public Task<TenantSubscription?> GetByIdAsync(Guid id, CancellationToken ct = default) => inner.GetByIdAsync(id, ct);
+        public Task<TenantSubscription?> GetByTenantIdAsync(Guid tenantId, Guid subscriptionId, CancellationToken ct = default) => inner.GetByTenantIdAsync(tenantId, subscriptionId, ct);
+        public Task<TenantSubscription?> GetCurrentByTenantIdAsync(Guid tenantId, CancellationToken ct = default) => inner.GetCurrentByTenantIdAsync(tenantId, ct);
+        public Task<IReadOnlyList<TenantSubscription>> GetHistoryByTenantIdAsync(Guid tenantId, CancellationToken ct = default) => inner.GetHistoryByTenantIdAsync(tenantId, ct);
+        public Task UpdateAsync(TenantSubscription subscription, byte[]? expectedRowVersion, CancellationToken ct = default) => inner.UpdateAsync(subscription, expectedRowVersion, ct);
+        public Task UpdateAsync(IPlatformTransactionSession session, TenantSubscription subscription, byte[]? expectedRowVersion, CancellationToken ct = default) => inner.UpdateAsync(session, subscription, expectedRowVersion, ct);
+    }
+
+    /// <summary>Holds the transaction right after its subscription write until the test lets it go.</summary>
+    private sealed class PauseAfterSessionUpdate(ITenantSubscriptionRepository inner, TaskCompletionSource paused, TaskCompletionSource resume) : ITenantSubscriptionRepository
+    {
+        public async Task UpdateAsync(IPlatformTransactionSession session, TenantSubscription subscription, byte[]? expectedRowVersion, CancellationToken ct = default)
+        {
+            await inner.UpdateAsync(session, subscription, expectedRowVersion, ct);
+            paused.TrySetResult();
+            await resume.Task;
+        }
+
+        public Task<bool> HasCurrentAsync(IPlatformTransactionSession session, Guid tenantId, Guid? excludeSubscriptionId = null, CancellationToken ct = default) => inner.HasCurrentAsync(session, tenantId, excludeSubscriptionId, ct);
+        public Task<bool> HasCurrentAsync(Guid tenantId, Guid? excludeSubscriptionId = null, CancellationToken ct = default) => inner.HasCurrentAsync(tenantId, excludeSubscriptionId, ct);
+        public Task<TenantSubscription> CreateAsync(IPlatformTransactionSession session, TenantSubscription subscription, CancellationToken ct = default) => inner.CreateAsync(session, subscription, ct);
+        public Task<TenantSubscription> CreateAsync(TenantSubscription subscription, CancellationToken ct = default) => inner.CreateAsync(subscription, ct);
+        public Task<TenantSubscription?> GetByIdAsync(Guid id, CancellationToken ct = default) => inner.GetByIdAsync(id, ct);
+        public Task<TenantSubscription?> GetByTenantIdAsync(Guid tenantId, Guid subscriptionId, CancellationToken ct = default) => inner.GetByTenantIdAsync(tenantId, subscriptionId, ct);
+        public Task<TenantSubscription?> GetCurrentByTenantIdAsync(Guid tenantId, CancellationToken ct = default) => inner.GetCurrentByTenantIdAsync(tenantId, ct);
+        public Task<IReadOnlyList<TenantSubscription>> GetHistoryByTenantIdAsync(Guid tenantId, CancellationToken ct = default) => inner.GetHistoryByTenantIdAsync(tenantId, ct);
+        public Task UpdateAsync(TenantSubscription subscription, byte[]? expectedRowVersion, CancellationToken ct = default) => inner.UpdateAsync(subscription, expectedRowVersion, ct);
+    }
+
     private static decimal Number(object? value) =>
         decimal.Parse(Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture)!, System.Globalization.CultureInfo.InvariantCulture);
 
     private static string[] Strings(object? value) =>
         ((System.Collections.IEnumerable)value!).Cast<object?>().Select(item => Convert.ToString(item)!).ToArray();
 
-    private sealed class FixedCorrelation(string? id) : Diten.Platform.Common.Observability.ICorrelationContext
+    private sealed class FixedCorrelation(string? id, string? client = null) : Diten.Platform.Common.Observability.ICorrelationContext
     {
         public string? CorrelationId => id;
+        public string? ClientCorrelationId => client;
         public void SetCorrelationId(string correlationId) { }
+        public void SetClientCorrelationId(string clientCorrelationId) { }
     }
 
     // ── harness ─────────────────────────────────────────────────────────────────────────────────────────
@@ -479,10 +705,25 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
         public IGlobalApplicabilityTransactionCoordinator Coordinator((ITenantAuthorizationContext, ICurrentUserContext) who,
             Diten.Platform.Common.Observability.ICorrelationContext? correlation = null) =>
             new GlobalApplicabilityTransactionCoordinator(new PlatformTransactionExecutor(_context),
-                new EntitlementStateVersionRepository(_context), new MongoIntentWriter(_context), ProductionDoor(who, correlation));
+                new EntitlementStateVersionRepository(_context), new MongoIntentWriter(_context), ProductionDoor(who, correlation), correlation);
+
+        /// <summary>A second writer over the SAME world (another request on the same tenant): the same tenant, plan and store.</summary>
+        public TenantSubscriptionTransactionWriter WriterFor(Guid tenantId, Guid planId, (ITenantAuthorizationContext Principal, ICurrentUserContext User) who)
+        {
+            var tenantContext = new TenantContext();
+            tenantContext.SetTenant(tenantId);
+            var plans = new Mock<ISubscriptionPlanRepository>();
+            plans.Setup(x => x.GetByIdAsync(planId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new SubscriptionPlan { Id = planId, Code = "PRO", Name = "Pro", IsActive = true });
+            return new TenantSubscriptionTransactionWriter(new PlatformTransactionExecutor(_context),
+                new TenantSubscriptionRepository(_context, tenantContext), new TenantRegistryRepository(_context, tenantContext),
+                plans.Object, new EntitlementStateVersionRepository(_context), new MongoIntentWriter(_context), Door(who), who.User);
+        }
 
         public async Task<(TenantSubscriptionTransactionWriter Writer, TenantSubscription Subscription, Guid PlanId)> SubscriptionAsync(
-            (ITenantAuthorizationContext Principal, ICurrentUserContext User) who, TenantSubscriptionStatus status, DateTimeOffset? periodEnd = null)
+            (ITenantAuthorizationContext Principal, ICurrentUserContext User) who, TenantSubscriptionStatus status, DateTimeOffset? periodEnd = null,
+            Diten.Platform.Common.Observability.ICorrelationContext? correlation = null,
+            Func<ITenantSubscriptionRepository, ITenantSubscriptionRepository>? wrapSubscriptions = null)
         {
             var tenantId = Guid.NewGuid();
             var planId = Guid.NewGuid();
@@ -491,9 +732,11 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
             var plans = new Mock<ISubscriptionPlanRepository>();
             plans.Setup(x => x.GetByIdAsync(planId, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new SubscriptionPlan { Id = planId, Code = "PRO", Name = "Pro", IsActive = true });
+            ITenantSubscriptionRepository subscriptions = new TenantSubscriptionRepository(_context, tenantContext);
+            if (wrapSubscriptions is not null) subscriptions = wrapSubscriptions(subscriptions);
             var writer = new TenantSubscriptionTransactionWriter(new PlatformTransactionExecutor(_context),
-                new TenantSubscriptionRepository(_context, tenantContext), new TenantRegistryRepository(_context, tenantContext),
-                plans.Object, new EntitlementStateVersionRepository(_context), new MongoIntentWriter(_context), Door(who), who.User);
+                subscriptions, new TenantRegistryRepository(_context, tenantContext),
+                plans.Object, new EntitlementStateVersionRepository(_context), new MongoIntentWriter(_context), ProductionDoor(who, correlation), who.User, correlation);
 
             await Database.GetCollection<Tenant>("tenants").InsertOneAsync(new Tenant
             {
@@ -539,7 +782,7 @@ public sealed class TransactionOwnedAuditDeliveryMongoTests
                 options.CorrelationId!.Value, null, options.TenantId, options.Producer!, options.OccurredAtUtc!.Value);
             await context.Database.GetCollection<BsonDocument>("outbox_events").InsertOneAsync(
                 PlatformMongoTransactionSession.Require(session, context),
-                new BsonDocument { ["EventId"] = metadata.EventId.ToString() }, cancellationToken: cancellationToken);
+                new BsonDocument { ["EventId"] = metadata.EventId.ToString(), ["CorrelationId"] = metadata.CorrelationId.ToString() }, cancellationToken: cancellationToken);
             return new EventEnvelope<TEvent>(metadata, @event);
         }
     }

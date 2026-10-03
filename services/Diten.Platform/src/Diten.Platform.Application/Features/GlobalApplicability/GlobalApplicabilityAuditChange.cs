@@ -18,9 +18,12 @@ public sealed record GlobalApplicabilityAuditChange(
     IReadOnlyDictionary<string, object?> Before,
     IReadOnlyDictionary<string, object?> After)
 {
-    /// <summary>Fields whose words are free text: their change is named, their content never copied.</summary>
+    /// <summary>
+    /// Fields whose words are free text an operator types: their change is named, their content never copied.
+    /// INTX FIX2 — ModuleName and Icon are operator-typed too (the catalogue form), so they are named only.
+    /// </summary>
     public static IReadOnlySet<string> TextFields { get; } =
-        new HashSet<string>(StringComparer.Ordinal) { "Name", "DisplayName", "Description" };
+        new HashSet<string>(StringComparer.Ordinal) { "Name", "DisplayName", "Description", "ModuleName", "Icon" };
 
     /// <summary>The change between two snapshots taken with <see cref="StateOf(SubscriptionPlan)"/> or <see cref="StateOf(ModuleCatalogItem)"/>.</summary>
     public static GlobalApplicabilityAuditChange Between(

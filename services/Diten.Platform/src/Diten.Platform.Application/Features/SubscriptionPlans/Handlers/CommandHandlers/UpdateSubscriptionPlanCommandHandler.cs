@@ -51,8 +51,10 @@ public sealed class UpdateSubscriptionPlanCommandHandler : IRequestHandler<Updat
                     && plan.IsTrialPlan == request.Request.IsTrialPlan
                     && plan.TrialDurationDays == (request.Request.IsTrialPlan ? request.Request.TrialDurationDays : null)
                     && DictionaryEqual(plan.DefaultQuotas, request.Request.DefaultQuotas)
-                    && plan.IncludedFeatures.SequenceEqual(includedFeatures, StringComparer.OrdinalIgnoreCase)
-                    && plan.IncludedModuleKeys.SequenceEqual(includedModules, StringComparer.OrdinalIgnoreCase);
+                    // INTX FIX2 — code lists are SETS: the same codes in another order change nothing (they used to make an
+                    // "update" with no changed field and a global version bump).
+                    && plan.IncludedFeatures.ToHashSet(StringComparer.OrdinalIgnoreCase).SetEquals(includedFeatures)
+                    && plan.IncludedModuleKeys.ToHashSet(StringComparer.OrdinalIgnoreCase).SetEquals(includedModules);
                 if (noOp) return new(Response<NoContent>.Success(204), false);
                 var auditBefore = GlobalApplicabilityAuditChange.StateOf(plan);
 

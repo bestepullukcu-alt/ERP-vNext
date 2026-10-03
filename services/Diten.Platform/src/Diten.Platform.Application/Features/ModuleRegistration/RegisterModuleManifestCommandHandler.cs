@@ -88,7 +88,8 @@ public sealed class RegisterModuleManifestCommandHandler
         // WP-PLATFORM-AUDIT-INTX-01 FIX1 — the permission surface this push will add and take away, read BEFORE anything
         // is written so it can travel in the catalogue's audit record (the page/action writes below are not in that
         // transaction: their repositories take no session — see the FIX1 report).
-        var surface = await PlanSurfaceChangeAsync(manifest, moduleCode, ct);
+        var plan = await BuildReconcilePlanAsync(manifest, moduleCode, ct);
+        var surface = plan.Surface;
 
         var catalogAction = await ReconcileCatalogItemAsync(
             manifest,
@@ -106,19 +107,16 @@ public sealed class RegisterModuleManifestCommandHandler
         var actionsPruned = 0;
         var pagesSkipped = new List<string>();
 
-        // MC-6 — authoritative prune set: pages the manifest still declares (everything else in the module is orphan).
-        var manifestPageCodes = manifest.Pages
-            .Select(p => ModulePageDescriptorNormalizer.NormalizePageCode(p.PageCode))
-            .ToHashSet(StringComparer.Ordinal);
-
-        // Mutable so collisions between two manifest pages in the SAME push are detected (newly created pages occupy their route).
-        var existingPages = (await _pageRepository.GetByModuleAsync(moduleCode, ct)).ToList();
+        // INTX FIX2 — the reconcile carries out the PLAN (BuildReconcilePlanAsync): which pages are orphans, which manifest
+        // page is skipped for a route another page holds, which is created and which is updated. One set of decisions
+        // for the writes below and for the audit record above: two copies of the rule disagreed when a page moved.
+        var existingPages = plan.KeptPages.ToList();
 
         // MC-6 — authoritative prune FIRST: soft-delete this module's live pages (and their actions) that the manifest
         // no longer declares, BEFORE upserting. This frees the routes/codes of moved/renamed descriptors so the new
         // page upserts cleanly in the same push (a non-manifest orphan never blocks a manifest page). Module-scoped
         // (GetByModuleAsync is filtered by moduleCode), soft-delete only, idempotent (live query excludes the pruned).
-        foreach (var orphanPage in existingPages.Where(p => !manifestPageCodes.Contains(p.PageCode)).ToList())
+        foreach (var orphanPage in plan.OrphanPages)
         {
             foreach (var orphanAction in await _actionRepository.GetByPageAsync(orphanPage.Id, ct))
             {
@@ -133,22 +131,19 @@ public sealed class RegisterModuleManifestCommandHandler
                 moduleCode,
                 orphanPage.PageCode);
         }
-        existingPages.RemoveAll(p => !manifestPageCodes.Contains(p.PageCode));
 
-        foreach (var manifestPage in manifest.Pages)
+        foreach (var pagePlan in plan.Pages)
         {
-            var pageCode = ModulePageDescriptorNormalizer.NormalizePageCode(manifestPage.PageCode);
-            var routePath = ModulePageDescriptorNormalizer.NormalizeRoutePath(manifestPage.RoutePath);
+            var manifestPage = pagePlan.Manifest;
+            var pageCode = pagePlan.PageCode;
+            var routePath = pagePlan.RoutePath;
 
-            // Route collision: a DIFFERENT page in this module already holds this route (unique index on module+route).
-            var routeHolder = existingPages.FirstOrDefault(p =>
-                string.Equals(p.RoutePath, routePath, StringComparison.Ordinal)
-                && !string.Equals(p.PageCode, pageCode, StringComparison.Ordinal));
-            if (routeHolder is not null)
+            // Route collision: a DIFFERENT page in this module holds this route at this point of the push (unique index
+            // on module+route) — decided by the plan.
+            if (pagePlan.SkipReason is not null)
             {
-                var reason = $"{pageCode}: route {routePath} held by {routeHolder.PageCode}";
-                _logger.LogWarning("Skipping manifest page (route collision). ModuleCode={ModuleCode} Detail={Detail}", moduleCode, reason);
-                pagesSkipped.Add(reason);
+                _logger.LogWarning("Skipping manifest page (route collision). ModuleCode={ModuleCode} Detail={Detail}", moduleCode, pagePlan.SkipReason);
+                pagesSkipped.Add(pagePlan.SkipReason);
                 continue;
             }
 
@@ -374,7 +369,8 @@ public sealed class RegisterModuleManifestCommandHandler
             ["PagesAdded"] = surface.PagesAdded.ToArray(),
             ["PagesRemoved"] = surface.PagesRemoved.ToArray(),
             ["ActionsAdded"] = surface.ActionsAdded.ToArray(),
-            ["ActionsRemoved"] = surface.ActionsRemoved.ToArray()
+            ["ActionsRemoved"] = surface.ActionsRemoved.ToArray(),
+            ["PermissionsChanged"] = surface.PermissionsChanged.ToArray()
         };
         if (!string.IsNullOrWhiteSpace(authenticatedProducer))
         {
@@ -384,70 +380,124 @@ public sealed class RegisterModuleManifestCommandHandler
         return metadata;
     }
 
-    /// <summary>Page and action CODES a push adds and removes (actions as <c>PAGE/ACTION</c>), sorted.</summary>
+    /// <summary>
+    /// Page and action CODES a push adds and removes (actions as <c>PAGE/ACTION</c>), and the permission keys it
+    /// rewrites on pages and actions that stay (<c>PAGE[/ACTION]: old→new</c>), sorted.
+    /// </summary>
     internal sealed record ManifestSurfaceChange(
         IReadOnlyList<string> PagesAdded,
         IReadOnlyList<string> PagesRemoved,
         IReadOnlyList<string> ActionsAdded,
-        IReadOnlyList<string> ActionsRemoved)
+        IReadOnlyList<string> ActionsRemoved,
+        IReadOnlyList<string> PermissionsChanged)
     {
-        public bool IsEmpty => PagesAdded.Count == 0 && PagesRemoved.Count == 0 && ActionsAdded.Count == 0 && ActionsRemoved.Count == 0;
+        public bool IsEmpty => PagesAdded.Count == 0 && PagesRemoved.Count == 0 && ActionsAdded.Count == 0
+                               && ActionsRemoved.Count == 0 && PermissionsChanged.Count == 0;
     }
 
+    /// <summary>One manifest page as the reconcile will treat it: skipped (and why), created, or updated in place.</summary>
+    internal sealed record PagePlan(ModuleManifestPage Manifest, string PageCode, string RoutePath, string? SkipReason);
+
+    /// <summary>The reconcile's decisions, taken once, before anything is written.</summary>
+    internal sealed record ManifestReconcilePlan(
+        IReadOnlyList<ModulePageDescriptor> OrphanPages,
+        IReadOnlyList<ModulePageDescriptor> KeptPages,
+        IReadOnlyList<PagePlan> Pages,
+        ManifestSurfaceChange Surface);
+
     /// <summary>
-    /// What the reconcile below will do to this module's pages and actions, decided by the same rules it applies:
-    /// pages the manifest no longer declares are removed with their actions; a manifest page whose route another
-    /// remaining page holds is skipped; on a kept page, actions the manifest no longer declares are removed. A write
-    /// that later fails on a duplicate key is skipped at write time and is not known here (it is logged there).
+    /// INTX FIX2 — the reconcile's decisions, taken once and used both for the writes and for the audit record:
+    /// pages the manifest no longer declares are orphans (removed with their actions); manifest pages are walked IN
+    /// ORDER against the routes as they stand at that point of the push — a page that moves frees its old route for a
+    /// later page, a page whose route another page holds is skipped, a repeated page code is the same page; on a kept
+    /// page, actions the manifest no longer declares are removed. The permission key of every page and action that
+    /// stays is compared too: a push that only rewrites who may do something is a change to record.
+    /// A write that later fails on a duplicate key for a reason not visible here is skipped at write time and logged.
     /// </summary>
-    private async Task<ManifestSurfaceChange> PlanSurfaceChangeAsync(ModuleManifestDocument manifest, string moduleCode, CancellationToken ct)
+    private async Task<ManifestReconcilePlan> BuildReconcilePlanAsync(ModuleManifestDocument manifest, string moduleCode, CancellationToken ct)
     {
         var pagesAdded = new List<string>();
         var pagesRemoved = new List<string>();
         var actionsAdded = new List<string>();
         var actionsRemoved = new List<string>();
+        var permissionsChanged = new List<string>();
 
         var manifestPageCodes = manifest.Pages
             .Select(p => ModulePageDescriptorNormalizer.NormalizePageCode(p.PageCode))
             .ToHashSet(StringComparer.Ordinal);
         var existingPages = (await _pageRepository.GetByModuleAsync(moduleCode, ct)).ToList();
-        foreach (var orphan in existingPages.Where(p => !manifestPageCodes.Contains(p.PageCode)))
+        var orphans = existingPages.Where(p => !manifestPageCodes.Contains(p.PageCode)).ToList();
+        foreach (var orphan in orphans)
         {
             pagesRemoved.Add(orphan.PageCode);
             actionsRemoved.AddRange((await _actionRepository.GetByPageAsync(orphan.Id, ct)).Select(a => $"{orphan.PageCode}/{a.ActionCode}"));
         }
 
-        var occupied = existingPages.Where(p => manifestPageCodes.Contains(p.PageCode))
-            .Select(p => (p.PageCode, p.RoutePath)).ToList();
+        var kept = existingPages.Where(p => manifestPageCodes.Contains(p.PageCode)).ToList();
+        // The route each page holds at this point of the push, updated in the reconcile's own order.
+        var routes = kept.ToDictionary(p => p.PageCode, p => p.RoutePath, StringComparer.Ordinal);
+        var planned = new HashSet<string>(StringComparer.Ordinal);
+        var pages = new List<PagePlan>();
         foreach (var manifestPage in manifest.Pages)
         {
             var pageCode = ModulePageDescriptorNormalizer.NormalizePageCode(manifestPage.PageCode);
             var routePath = ModulePageDescriptorNormalizer.NormalizeRoutePath(manifestPage.RoutePath);
-            if (occupied.Any(o => string.Equals(o.RoutePath, routePath, StringComparison.Ordinal)
-                                  && !string.Equals(o.PageCode, pageCode, StringComparison.Ordinal)))
+            var holder = routes.FirstOrDefault(r => string.Equals(r.Value, routePath, StringComparison.Ordinal)
+                                                    && !string.Equals(r.Key, pageCode, StringComparison.Ordinal));
+            if (holder.Key is not null)
             {
-                continue; // skipped by the reconcile: the route is held by another page
-            }
-
-            var manifestActionCodes = manifestPage.Actions
-                .Select(a => ModulePageDescriptorNormalizer.NormalizePageCode(a.ActionCode))
-                .ToHashSet(StringComparer.Ordinal);
-            var existing = existingPages.FirstOrDefault(p => string.Equals(p.PageCode, pageCode, StringComparison.Ordinal));
-            if (existing is null)
-            {
-                pagesAdded.Add(pageCode);
-                occupied.Add((pageCode, routePath));
-                actionsAdded.AddRange(manifestActionCodes.Select(code => $"{pageCode}/{code}"));
+                pages.Add(new PagePlan(manifestPage, pageCode, routePath, $"{pageCode}: route {routePath} held by {holder.Key}"));
                 continue;
             }
 
-            var existingActionCodes = (await _actionRepository.GetByPageAsync(existing.Id, ct)).Select(a => a.ActionCode).ToHashSet(StringComparer.Ordinal);
-            actionsRemoved.AddRange(existingActionCodes.Where(code => !manifestActionCodes.Contains(code)).Select(code => $"{pageCode}/{code}"));
-            actionsAdded.AddRange(manifestActionCodes.Where(code => !existingActionCodes.Contains(code)).Select(code => $"{pageCode}/{code}"));
+            pages.Add(new PagePlan(manifestPage, pageCode, routePath, null));
+            routes[pageCode] = routePath;
+            if (!planned.Add(pageCode))
+            {
+                continue; // the same page again: an update of the page this push already planned
+            }
+
+            var manifestActions = manifestPage.Actions
+                .GroupBy(a => ModulePageDescriptorNormalizer.NormalizePageCode(a.ActionCode), StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+            var existing = kept.FirstOrDefault(p => string.Equals(p.PageCode, pageCode, StringComparison.Ordinal));
+            if (existing is null)
+            {
+                pagesAdded.Add(pageCode);
+                actionsAdded.AddRange(manifestActions.Keys.Select(code => $"{pageCode}/{code}"));
+                continue;
+            }
+
+            var newPagePermission = ModulePageDescriptorNormalizer.NormalizeOptionalPermission(manifestPage.RequiredPermission);
+            if (!string.Equals(existing.RequiredPermission, newPagePermission, StringComparison.Ordinal))
+            {
+                permissionsChanged.Add($"{pageCode}: {Shown(existing.RequiredPermission)}→{Shown(newPagePermission)}");
+            }
+
+            var existingActions = (await _actionRepository.GetByPageAsync(existing.Id, ct))
+                .GroupBy(a => a.ActionCode, StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+            actionsRemoved.AddRange(existingActions.Keys.Where(code => !manifestActions.ContainsKey(code)).Select(code => $"{pageCode}/{code}"));
+            foreach (var (code, manifestAction) in manifestActions)
+            {
+                if (!existingActions.TryGetValue(code, out var existingAction))
+                {
+                    actionsAdded.Add($"{pageCode}/{code}");
+                    continue;
+                }
+
+                var newKey = ModulePageDescriptorNormalizer.NormalizePermission(manifestAction.PermissionKey);
+                if (!string.Equals(existingAction.PermissionKey, newKey, StringComparison.Ordinal))
+                {
+                    permissionsChanged.Add($"{pageCode}/{code}: {Shown(existingAction.PermissionKey)}→{Shown(newKey)}");
+                }
+            }
         }
 
+        static string Shown(string? key) => string.IsNullOrWhiteSpace(key) ? "(none)" : key;
         static IReadOnlyList<string> Sorted(IEnumerable<string> codes) => codes.Distinct(StringComparer.Ordinal).OrderBy(c => c, StringComparer.Ordinal).ToList();
-        return new ManifestSurfaceChange(Sorted(pagesAdded), Sorted(pagesRemoved), Sorted(actionsAdded), Sorted(actionsRemoved));
+        return new ManifestReconcilePlan(orphans, kept, pages,
+            new ManifestSurfaceChange(Sorted(pagesAdded), Sorted(pagesRemoved), Sorted(actionsAdded), Sorted(actionsRemoved), Sorted(permissionsChanged)));
     }
 
     private static Guid DeterministicEntityId(string moduleCode)

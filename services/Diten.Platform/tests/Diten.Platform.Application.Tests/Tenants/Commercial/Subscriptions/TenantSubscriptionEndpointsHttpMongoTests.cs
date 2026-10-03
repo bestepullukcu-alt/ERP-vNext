@@ -103,6 +103,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
 
         Assert.Equal(0, await host.ProcessAuditOutboxAsync());
         Assert.Single(await host.AuditEventsAsync());
+        Assert.Equal(1, await host.EventsAsync());
     }
 
     /// <summary>
@@ -155,6 +156,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
         Assert.Null(audit.BeforeState);
         Assert.Equal(subscription.Status.ToString(), audit.AfterState!["Status"]);
         Assert.Equal(0, await host.DeadLettersAsync());
+        Assert.Equal(1, await host.EventsAsync());
     }
 
     [Fact]
@@ -174,6 +176,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
         Assert.Equal(before.PlanId, after.PlanId);
         Assert.Equal(before.SubscriptionStatus, after.SubscriptionStatus);
         Assert.Equal(0, await host.CountAsync("audit_outbox"));
+        Assert.Equal(0, await host.EventsAsync());
     }
 
     [Fact]
@@ -197,6 +200,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
         Assert.Equal(Host.Administrator, audit.ActorId);
         Assert.Equal("Trialing", audit.BeforeState!["Status"]);
         Assert.Equal("Active", audit.AfterState!["Status"]);
+        Assert.Equal(1, await host.EventsAsync());
     }
 
     [Fact]
@@ -228,6 +232,8 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
         Assert.Equal(HttpStatusCode.Conflict, answer.Status);
         Assert.Equal("SUBSCRIPTION_ALREADY_CURRENT", answer.Code);
         Assert.Single(await host.SubscriptionsAsync(Host.Tenant));
+        Assert.Equal(0, await host.CountAsync("audit_outbox"));
+        Assert.Equal(0, await host.EventsAsync());
     }
 
     [Theory]
@@ -404,8 +410,8 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
                     services.AddScoped<ITransactionalAuditOutboxStore>(sp => sp.GetRequiredService<AuditOutboxRepository>());
                     services.AddScoped<IAuditOutboxWriter>(sp => sp.GetRequiredService<AuditOutboxRepository>());
 
-                    // Not this file's subject.
-                    services.AddSingleton<ITransactionalIntegrationEventWriter, SilentEvents>();
+                    // INTX FIX2 item 9 — events are COUNTED, in the caller's transaction: a refusal must leave none behind.
+                    services.AddScoped<ITransactionalIntegrationEventWriter, CountingEvents>();
                     services.AddSingleton(Plans());
                     services.AddSingleton(Administrators());
                     // WP-PLATFORM-AUDIT-INTX-01 FIX1 item 7 — the REAL quota service over the real quota repositories:
@@ -483,7 +489,12 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
             Assert.Equal(seeded.Status, stored.Status);
             Assert.Equal(seeded.RowVersion, stored.RowVersion);
             Assert.Equal(0, await CountAsync("audit_outbox"));
+            Assert.Equal(0, await EventsAsync());
         }
+
+        public const string EventProbe = "test_integration_events";
+
+        public Task<long> EventsAsync() => CountAsync(EventProbe);
 
         public Task<long> CountAsync(string collection) =>
             Database.GetCollection<BsonDocument>(collection).CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty);
@@ -613,13 +624,20 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
             protected override bool IsController(System.Reflection.TypeInfo typeInfo) => typeInfo.AsType() == controller;
         }
 
-        private sealed class SilentEvents : ITransactionalIntegrationEventWriter
+        /// <summary>Writes each event into <see cref="EventProbe"/> with the caller's session, so it commits or rolls back
+        /// with the change it belongs to — what survives is what production would have published.</summary>
+        private sealed class CountingEvents(IPlatformDbContext context) : ITransactionalIntegrationEventWriter
         {
-            public Task<EventEnvelope<TEvent>> EnqueueAsync<TEvent>(IPlatformTransactionSession session, TEvent @event,
-                EventPublishOptions options, CancellationToken cancellationToken = default) where TEvent : IIntegrationEvent =>
-                Task.FromResult(new EventEnvelope<TEvent>(
-                    new EventMetadata(options.EventId!.Value, @event.EventName, @event.EventVersion, options.CorrelationId!.Value, null,
-                        options.TenantId, options.Producer!, options.OccurredAtUtc!.Value), @event));
+            public async Task<EventEnvelope<TEvent>> EnqueueAsync<TEvent>(IPlatformTransactionSession session, TEvent @event,
+                EventPublishOptions options, CancellationToken cancellationToken = default) where TEvent : IIntegrationEvent
+            {
+                var metadata = new EventMetadata(options.EventId!.Value, @event.EventName, @event.EventVersion, options.CorrelationId!.Value, null,
+                    options.TenantId, options.Producer!, options.OccurredAtUtc!.Value);
+                await context.Database.GetCollection<BsonDocument>(EventProbe).InsertOneAsync(
+                    PlatformMongoTransactionSession.Require(session, context),
+                    new BsonDocument { ["EventId"] = metadata.EventId.ToString(), ["EventName"] = metadata.EventName }, cancellationToken: cancellationToken);
+                return new EventEnvelope<TEvent>(metadata, @event);
+            }
         }
     }
 }
