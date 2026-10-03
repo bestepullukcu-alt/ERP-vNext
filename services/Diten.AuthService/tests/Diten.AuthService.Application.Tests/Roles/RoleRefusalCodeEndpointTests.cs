@@ -63,6 +63,17 @@ public sealed class RoleRefusalCodeEndpointTests : IClassFixture<AccountKindAcce
     }
 
     [Fact]
+    public async Task Changing_only_the_description_of_a_system_role_is_refused_too()
+    {
+        var system = await _world.NewRoleAsync("sys-desc", system: true);
+        using var client = _world.Client();
+
+        var response = await client.PutAsJsonAsync($"api/roles/{system.Id}", new { displayName = system.DisplayName, description = "only this changed" });
+
+        await AssertRefusedAsync(response, HttpStatusCode.Forbidden, RoleErrorCodes.SystemNotEditable);
+    }
+
+    [Fact]
     public async Task A_custom_role_is_still_editable()
     {
         var role = await _world.NewRoleAsync("custom-edit");

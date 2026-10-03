@@ -43,12 +43,24 @@ public sealed class UsersExportGrantBackfillTests
     public void The_same_instant_is_born()
         => Assert.Equal(ExportGrantBackfill.OriginBorn, ExportGrantBackfill.Classify(KeyCreated, KeyCreated));
 
+    // FIX3 item 2 — the clock-skew allowance: "older" means older than (key − allowance). Both sides of the boundary.
     [Fact]
-    public void One_tick_before_the_key_is_old_and_the_comparison_is_in_UTC_whatever_the_offset()
+    public void Older_than_the_key_by_more_than_the_allowance_is_old_and_the_comparison_is_in_UTC()
     {
-        Assert.Equal(ExportGrantBackfill.OriginBackfilled, ExportGrantBackfill.Classify(KeyCreated.AddTicks(-1), KeyCreated));
-        // The same instant written with another offset is still the same instant → born.
-        Assert.Equal(ExportGrantBackfill.OriginBorn, ExportGrantBackfill.Classify(KeyCreated.ToOffset(TimeSpan.FromHours(3)), KeyCreated));
+        var cutoff = KeyCreated - ExportGrantBackfill.ClockSkewAllowance;
+        Assert.Equal(ExportGrantBackfill.OriginBackfilled, ExportGrantBackfill.Classify(cutoff.AddTicks(-1), KeyCreated));
+        // The same instant written with another offset is still the same instant.
+        Assert.Equal(ExportGrantBackfill.OriginBackfilled, ExportGrantBackfill.Classify(cutoff.AddTicks(-1).ToOffset(TimeSpan.FromHours(3)), KeyCreated));
+    }
+
+    [Fact]
+    public void Inside_the_allowance_is_born()
+    {
+        var cutoff = KeyCreated - ExportGrantBackfill.ClockSkewAllowance;
+        Assert.Equal(ExportGrantBackfill.OriginBorn, ExportGrantBackfill.Classify(cutoff, KeyCreated));                 // exactly at the edge
+        Assert.Equal(ExportGrantBackfill.OriginBorn, ExportGrantBackfill.Classify(KeyCreated.AddMinutes(-4), KeyCreated)); // inside
+        Assert.Equal(ExportGrantBackfill.OriginBorn, ExportGrantBackfill.Classify(KeyCreated.AddTicks(-1), KeyCreated));   // a tick before the key
+        Assert.Equal(TimeSpan.FromMinutes(5), ExportGrantBackfill.ClockSkewAllowance);
     }
 
     [Fact]
@@ -95,13 +107,50 @@ public sealed class UsersExportGrantBackfillTests
     {
         var tenant = Guid.NewGuid();
         var deletedOld = new RoleState(Guid.NewGuid(), "Gone", tenant, false, Before, IsDeleted: true);
-        var liveNew = new RoleState(Guid.NewGuid(), "Readers", tenant, false, After);
-        var grants = new HashSet<(Guid, Guid)> { (deletedOld.RoleId, Read), (liveNew.RoleId, Read) };
+        var liveOld = new RoleState(Guid.NewGuid(), "Readers", tenant, false, Before);
+        var grants = new HashSet<(Guid, Guid)> { (deletedOld.RoleId, Read), (liveOld.RoleId, Read) };
 
-        var plan = Assert.Single(Plan([deletedOld, liveNew], grants));
+        var plan = Assert.Single(Plan([deletedOld, liveOld], grants));
 
-        Assert.Equal(ExportGrantBackfill.OriginBackfilled, plan.Origin); // the tenant was there before the key
-        Assert.Equal(liveNew.RoleId, Assert.Single(plan.Grants).RoleId);  // only the live reader is granted
+        Assert.Equal(ExportGrantBackfill.OriginBackfilled, plan.Origin);
+        Assert.Equal(liveOld.RoleId, Assert.Single(plan.Grants).RoleId); // only the live reader is granted
+    }
+
+    // FIX3 item 1 — the ROLE must predate the key too: in an old tenant, a role opened after the key is no candidate.
+    [Fact]
+    public void In_an_old_tenant_a_role_opened_after_the_key_is_no_candidate()
+    {
+        var tenant = Guid.NewGuid();
+        var oldRole = new RoleState(Guid.NewGuid(), "OldReaders", tenant, false, Before);
+        var newRole = new RoleState(Guid.NewGuid(), "NewReaders", tenant, false, After);
+        var undated = new RoleState(Guid.NewGuid(), "Undated", tenant, false);
+        var grants = new HashSet<(Guid, Guid)> { (oldRole.RoleId, Read), (newRole.RoleId, Read), (undated.RoleId, Read) };
+
+        var plan = Assert.Single(Plan([oldRole, newRole, undated], grants));
+
+        Assert.Equal(ExportGrantBackfill.OriginBackfilled, plan.Origin);
+        Assert.Equal(oldRole.RoleId, Assert.Single(plan.Grants).RoleId);
+    }
+
+    // … and so must its read grant, when its date is stored.
+    [Fact]
+    public void An_old_role_whose_read_grant_was_given_after_the_key_is_no_candidate()
+    {
+        var tenant = Guid.NewGuid();
+        var lateRead = new RoleState(Guid.NewGuid(), "LateReaders", tenant, false, Before);
+        var earlyRead = new RoleState(Guid.NewGuid(), "EarlyReaders", tenant, false, Before);
+        var undatedRead = new RoleState(Guid.NewGuid(), "UndatedRead", tenant, false, Before);
+        var grants = new HashSet<(Guid, Guid)> { (lateRead.RoleId, Read), (earlyRead.RoleId, Read), (undatedRead.RoleId, Read) };
+        var readDates = new Dictionary<(Guid, Guid), DateTimeOffset>
+        {
+            [(lateRead.RoleId, Read)] = After,
+            [(earlyRead.RoleId, Read)] = Before
+            // undatedRead: no stored date → the role's own age decides
+        };
+
+        var plan = Assert.Single(ExportGrantBackfill.Plan([lateRead, earlyRead, undatedRead], grants, Read, Export, KeyCreated, NoMarks, TemplateGrants, readDates));
+
+        Assert.Equal(new[] { earlyRead.RoleId, undatedRead.RoleId }.OrderBy(x => x), plan.Grants.Select(g => g.RoleId).OrderBy(x => x));
     }
 
     [Fact]
@@ -239,6 +288,8 @@ public sealed class UsersExportGrantBackfillTests
         Assert.NotEqual(ExportGrantBackfill.AuditId(tenant, role, "auth.roles.export"), ExportGrantBackfill.AuditId(tenant, Guid.NewGuid(), "auth.roles.export"));
         Assert.NotEqual(ExportGrantBackfill.AuditId(tenant, role, "auth.roles.export"), ExportGrantBackfill.AuditId(tenant, role, "auth.users.export"));
         Assert.NotEqual(ExportGrantBackfill.AuditId(tenant, role, "auth.roles.export"), ExportGrantBackfill.CorrectionAuditId(tenant, role, "auth.roles.export"));
+        Assert.NotEqual(ExportGrantBackfill.AuditId(tenant, role, "auth.roles.export"), ExportGrantBackfill.NotAppliedAuditId(tenant, role, "auth.roles.export"));
+        Assert.Equal(ExportGrantBackfill.NotAppliedAuditId(tenant, role, "auth.roles.export"), ExportGrantBackfill.NotAppliedAuditId(tenant, role, "auth.roles.export"));
     }
 
     [Fact]

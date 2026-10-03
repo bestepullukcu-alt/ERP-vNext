@@ -179,7 +179,10 @@ public sealed class UsersExportPermissionSeedTests : IClassFixture<AccountKindAc
         foreach (var key in keys)
         {
             var permission = await Permissions.Find(p => p.Key == key).SingleAsync();
-            await Grants.InsertOneAsync(RolePermission.ManualGrant(role.Id, permission.Id, tenant, "export-backfill-fixture"));
+            var grant = RolePermission.ManualGrant(role.Id, permission.Id, tenant, "export-backfill-fixture");
+            await Grants.InsertOneAsync(grant);
+            // As old as its role: an old tenant's read grant predates the key too.
+            await Grants.UpdateOneAsync(g => g.Id == grant.Id, Builders<RolePermission>.Update.Set(g => g.CreatedAt, role.CreatedAt));
         }
 
         return role.Id;

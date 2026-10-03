@@ -26,8 +26,15 @@ namespace Diten.AuthService.Domain.Authorization;
 /// </list>
 /// ⚠ Every doubt resolves to NOT GRANTING. A wrongly withheld export costs an administrator one click on the Role
 /// Permissions screen; a wrongly granted one is an authority nobody decided to give (<c>auth.users.export</c> is
-/// enforced on the server). The same instant (a tie) is therefore BORN, and so is a tenant provisioned within the clock
-/// skew of the instance that created the key.</para>
+/// enforced on the server). "Older" therefore means older than the key by more than <see cref="ClockSkewAllowance"/>:
+/// the key and the tenant may be written by two instances whose clocks disagree, and a tenant set up within that
+/// window is BORN. The same instant is born too.</para>
+///
+/// <para><b>And the ROLE must be old too.</b> An old tenant that stayed unmarked (a failed write, an interrupted run)
+/// can have roles its administrator opened AFTER the key existed — with read and, on purpose, without export — or a
+/// role whose export was given by hand and taken away again. Such a role was configured with the key in the catalog;
+/// it is not a candidate. A role receives the backfill only if it, and (when stored) its read grant, were created
+/// before the key by more than the same allowance; a role without a date is not a candidate.</para>
 ///
 /// <para><b>Each key decides for itself</b>: the two export permissions were created at different times, so a tenant
 /// can be born for one and old for the other.</para>
@@ -44,6 +51,21 @@ public static class ExportGrantBackfill
 
     /// <summary>The audit event of a grant whose SOURCE was corrected (nothing granted, nothing removed).</summary>
     public const string SourceCorrectedEventName = "role_permission_source_corrected";
+
+    /// <summary>
+    /// The audit event that withdraws a <see cref="AuditEventName"/> row the run KNOWS did not take effect: its audit
+    /// row was written, then the grant insert failed with an error the run saw (not a crash). Without it the audit log
+    /// would keep saying a permission was granted that no role holds.
+    /// </summary>
+    public const string GrantNotAppliedEventName = "role_permission_grant_not_applied";
+
+    /// <summary>
+    /// How much older than the key a tenant or a role must be to count as OLD. Two instances write the key and the
+    /// tenant; their clocks may disagree. Five minutes is well beyond what NTP-synchronised hosts drift (milliseconds to
+    /// seconds) and well below the age gap that matters here — an export key is a release, tenants and roles that predate
+    /// it are days to months older. A tenant inside the window is BORN: no grant.
+    /// </summary>
+    public static readonly TimeSpan ClockSkewAllowance = TimeSpan.FromMinutes(5);
 
     /// <summary>One read → export pair and what its audit rows name as their source.</summary>
     public sealed record KeyPair(string ReadKey, string ExportKey, string AuditSource)
@@ -72,9 +94,18 @@ public static class ExportGrantBackfill
     /// <c>CreatedAt</c> among ALL the tenant's role documents, deleted ones included.
     /// </summary>
     public static string Classify(DateTimeOffset oldestRoleCreatedAt, DateTimeOffset exportKeyCreatedAt)
+        => IsOlderThanKey(oldestRoleCreatedAt, exportKeyCreatedAt) ? OriginBackfilled : OriginBorn;
+
+    /// <summary>
+    /// True only when both dates are known and <paramref name="createdAt"/> lies STRICTLY before
+    /// <c><paramref name="exportKeyCreatedAt"/> − <see cref="ClockSkewAllowance"/></c>. Anything else — unknown, equal,
+    /// inside the window, after — is false: do not grant.
+    /// </summary>
+    public static bool IsOlderThanKey(DateTimeOffset createdAt, DateTimeOffset exportKeyCreatedAt)
     {
-        if (oldestRoleCreatedAt == default || exportKeyCreatedAt == default) return OriginBorn; // unknown → do not grant
-        return oldestRoleCreatedAt.UtcTicks < exportKeyCreatedAt.UtcTicks ? OriginBackfilled : OriginBorn;
+        if (createdAt == default || exportKeyCreatedAt == default) return false; // unknown → do not grant
+        if (exportKeyCreatedAt.UtcTicks <= ClockSkewAllowance.Ticks) return false;
+        return createdAt.UtcTicks < exportKeyCreatedAt.UtcTicks - ClockSkewAllowance.Ticks;
     }
 
     /// <summary>
@@ -84,6 +115,8 @@ public static class ExportGrantBackfill
     /// plans no grant; a deleted role plans none either.
     /// </summary>
     /// <param name="templateGrantsExport">True when the default role template itself gives export to this (system) role.</param>
+    /// <param name="readGrantCreatedAt">When each role's read grant was created, if stored. A read grant given after
+    /// the key makes its role no candidate; one without a stored date leaves the decision to the role's own age.</param>
     public static IReadOnlyList<TenantPlan> Plan(
         IEnumerable<RoleState> roles,
         ISet<(Guid RoleId, Guid PermissionId)> grants,
@@ -91,8 +124,15 @@ public static class ExportGrantBackfill
         Guid exportPermissionId,
         DateTimeOffset exportKeyCreatedAt,
         IReadOnlySet<Guid> markedTenants,
-        Func<RoleState, bool> templateGrantsExport)
+        Func<RoleState, bool> templateGrantsExport,
+        IReadOnlyDictionary<(Guid RoleId, Guid PermissionId), DateTimeOffset>? readGrantCreatedAt = null)
     {
+        bool ReadGrantIsOld(RoleState r) =>
+            readGrantCreatedAt is null
+            || !readGrantCreatedAt.TryGetValue((r.RoleId, readPermissionId), out var at)
+            || at == default
+            || IsOlderThanKey(at, exportKeyCreatedAt);
+
         return roles
             .Where(r => r.TenantId != Guid.Empty && !markedTenants.Contains(r.TenantId))
             .GroupBy(r => r.TenantId)
@@ -107,7 +147,9 @@ public static class ExportGrantBackfill
                     : tenant
                         .Where(r => !r.IsDeleted
                                     && grants.Contains((r.RoleId, readPermissionId))
-                                    && !grants.Contains((r.RoleId, exportPermissionId)))
+                                    && !grants.Contains((r.RoleId, exportPermissionId))
+                                    && IsOlderThanKey(r.CreatedAt, exportKeyCreatedAt) // the ROLE predates the key …
+                                    && ReadGrantIsOld(r))                             // … and so does its read grant
                         .OrderBy(r => r.RoleId)
                         .Select(r => new PlannedGrant(r.RoleId, r.Name, r.TenantId, exportPermissionId, SourceFor(r, templateGrantsExport)))
                         .ToList();
@@ -139,6 +181,9 @@ public static class ExportGrantBackfill
 
     /// <summary>The id of THE audit row of a backfilled grant: written once however often the run is repeated.</summary>
     public static Guid AuditId(Guid tenantId, Guid roleId, string exportKey) => Deterministic($"export-backfill-audit|{tenantId:N}|{roleId:N}|{exportKey}");
+
+    /// <summary>The id of THE audit row that withdraws a grant the run knows was not applied.</summary>
+    public static Guid NotAppliedAuditId(Guid tenantId, Guid roleId, string exportKey) => Deterministic($"export-backfill-not-applied|{tenantId:N}|{roleId:N}|{exportKey}");
 
     /// <summary>The id of THE audit row of a source correction.</summary>
     public static Guid CorrectionAuditId(Guid tenantId, Guid roleId, string exportKey) => Deterministic($"export-backfill-source-correction|{tenantId:N}|{roleId:N}|{exportKey}");

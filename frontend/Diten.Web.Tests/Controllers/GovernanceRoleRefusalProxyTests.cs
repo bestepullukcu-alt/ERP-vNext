@@ -275,6 +275,25 @@ public sealed class GovernanceRoleRefusalProxyTests
         Assert.Equal([LogLevel.Warning], serverError.Levels);
     }
 
+    // Exactly at the limit is accepted — on every limited field — and reaches the gateway.
+    [Fact]
+    public async Task Exactly_the_limit_is_accepted_on_every_field_and_sent()
+    {
+        var gateway = new FixedGateway(HttpStatusCode.OK, "{}");
+        var model = new RoleEditViewModel
+        {
+            Name = new string('n', RoleEditViewModel.NameMaxLength),
+            DisplayName = new string('d', RoleEditViewModel.DisplayNameMaxLength),
+            Description = new string('x', RoleEditViewModel.DescriptionMaxLength)
+        };
+
+        var json = Body(await Roles(gateway).Edit(RoleId, model));
+
+        Assert.True(json.GetProperty("success").GetBoolean(), json.GetRawText());
+        Assert.Equal(1, gateway.Calls);
+        Assert.Empty(model.ValidationCodes());
+    }
+
     [Fact]
     public void The_forms_rules_refuse_exactly_beyond_the_limits()
     {

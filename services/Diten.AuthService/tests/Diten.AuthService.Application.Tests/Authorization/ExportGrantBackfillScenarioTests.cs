@@ -179,28 +179,333 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         Assert.Equal(ExportGrantBackfill.OriginBorn, (await MarkAsync(tenant, pair)).Origin);
     }
 
-    // Each key decides for itself: old for one, born for the other.
+    // Each key decides for itself: old for one, born for the other. The two keys are seeded milliseconds apart, so the
+    // roles key's catalog date is moved a day later for the duration of the test (restored after).
     [Fact]
     public async Task A_tenant_older_than_one_key_and_newer_than_the_other_is_backfilled_for_the_first_only()
     {
-        var users = await Permissions.Find(p => p.Key == ExportGrantBackfill.Users.ExportKey).SingleAsync();
-        var roles = await Permissions.Find(p => p.Key == ExportGrantBackfill.Roles.ExportKey).SingleAsync();
-        var (older, newer) = users.CreatedAt <= roles.CreatedAt ? (ExportGrantBackfill.Users, ExportGrantBackfill.Roles) : (ExportGrantBackfill.Roles, ExportGrantBackfill.Users);
-        var olderAt = older == ExportGrantBackfill.Users ? users.CreatedAt : roles.CreatedAt;
-        var newerAt = newer == ExportGrantBackfill.Users ? users.CreatedAt : roles.CreatedAt;
-        // Both keys are seeded by the same seeder run; they must still be distinct instants for this to be measurable.
-        Assert.True(olderAt < newerAt, "the two export permissions carry the same CreatedAt; the scenario cannot be built");
+        var raw = _host.Database.GetCollection<BsonDocument>("permissions");
+        var stored = (await raw.Find(new BsonDocument("Key", ExportGrantBackfill.Roles.ExportKey)).SingleAsync())["CreatedAt"];
+        var usersAt = await KeyCreatedAtAsync(ExportGrantBackfill.Users);
+        await Permissions.UpdateOneAsync(p => p.Key == ExportGrantBackfill.Roles.ExportKey, Builders<Permission>.Update.Set(p => p.CreatedAt, usersAt.AddDays(1)));
+        try
+        {
+            var tenant = Guid.NewGuid();
+            var between = usersAt.AddHours(12); // after the users key, a day minus 12 h before the roles key
+            var readers = await RoleAtAsync(tenant, "Readers", between, system: false, GrantSource.Manual, ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey);
+
+            await RunAsync();
+
+            Assert.False(await HoldsAsync(readers, ExportGrantBackfill.Users)); // the tenant came after this key → born
+            Assert.True(await HoldsAsync(readers, ExportGrantBackfill.Roles));  // … and before this one → old
+            Assert.Equal(ExportGrantBackfill.OriginBorn, (await MarkAsync(tenant, ExportGrantBackfill.Users)).Origin);
+            Assert.Equal(ExportGrantBackfill.OriginBackfilled, (await MarkAsync(tenant, ExportGrantBackfill.Roles)).Origin);
+        }
+        finally
+        {
+            await raw.UpdateOneAsync(new BsonDocument("Key", ExportGrantBackfill.Roles.ExportKey), new BsonDocument("$set", new BsonDocument("CreatedAt", stored)));
+        }
+    }
+
+    // ── FIX3 item 1: the ROLE must predate the key too ───────────────────────────────────────────────────
+
+    [Theory, MemberData(nameof(Keys))]
+    public async Task In_an_unmarked_old_tenant_only_roles_that_predate_the_key_receive_it(string key)
+    {
+        var pair = Pair(key);
         var tenant = Guid.NewGuid();
-        var between = olderAt.AddTicks((newerAt - olderAt).Ticks / 2 == 0 ? 1 : (newerAt - olderAt).Ticks / 2);
-        Assert.True(between > olderAt && between < newerAt, "no instant lies strictly between the two keys");
-        var readers = await RoleAtAsync(tenant, "Readers", between, system: false, GrantSource.Manual, older.ReadKey, newer.ReadKey);
+        var oldReaders = await OldRoleAsync(tenant, "OldReaders", pair.ReadKey);
+        // Opened by the administrator AFTER the key existed, with read and on purpose without export. Its read grant's
+        // date is left unknown, so that only the ROLE's own age can keep it out (the read-grant rule is tested apart).
+        var keyAt = await KeyCreatedAtAsync(pair);
+        var newReaders = await RoleAtAsync(tenant, "NewReaders", keyAt.AddDays(1), system: false, GrantSource.Manual);
+        await GrantAsync(newReaders, tenant, GrantSource.Manual, pair.ReadKey, default(DateTimeOffset));
 
-        await DataSeeder.SeedAsync(_host.Database);
+        await RunAsync();
 
-        Assert.False(await HoldsAsync(readers, older)); // the tenant came after this key → born
-        Assert.True(await HoldsAsync(readers, newer));  // … and before this one → old
-        Assert.Equal(ExportGrantBackfill.OriginBorn, (await MarkAsync(tenant, older)).Origin);
-        Assert.Equal(ExportGrantBackfill.OriginBackfilled, (await MarkAsync(tenant, newer)).Origin);
+        Assert.True(await HoldsAsync(oldReaders, pair));
+        Assert.False(await HoldsAsync(newReaders, pair));
+        Assert.DoesNotContain(await AuditRowsAsync(tenant, pair.AuditSource), r => r.Metadata.Contains(newReaders.ToString(), StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Theory, MemberData(nameof(Keys))]
+    public async Task An_old_role_whose_read_grant_was_given_after_the_key_does_not_receive_it(string key)
+    {
+        var pair = Pair(key);
+        var tenant = Guid.NewGuid();
+        var keyAt = await KeyCreatedAtAsync(pair);
+        var anchor = await OldRoleAsync(tenant, "Anchor", "auth.roles.create"); // dates the tenant as old
+        var lateRead = await RoleAtAsync(tenant, "LateRead", keyAt.AddDays(-30), system: false, GrantSource.Manual);
+        await GrantAsync(lateRead, tenant, GrantSource.Manual, pair.ReadKey, keyAt.AddDays(1)); // read given after the key
+
+        await RunAsync();
+
+        Assert.False(await HoldsAsync(lateRead, pair));
+        Assert.False(await HoldsAsync(anchor, pair));
+        Assert.Equal(ExportGrantBackfill.OriginBackfilled, (await MarkAsync(tenant, pair)).Origin);
+    }
+
+    // ── FIX3 item 2: the clock-skew allowance, both sides of the boundary ────────────────────────────────
+
+    [Theory, MemberData(nameof(Keys))]
+    public async Task A_tenant_set_up_inside_the_clock_skew_allowance_is_born_and_one_just_outside_it_is_old(string key)
+    {
+        var pair = Pair(key);
+        var keyAt = await KeyCreatedAtAsync(pair);
+        var inside = Guid.NewGuid();
+        var outside = Guid.NewGuid();
+        var insideReaders = await RoleAtAsync(inside, "Readers", keyAt - ExportGrantBackfill.ClockSkewAllowance + TimeSpan.FromSeconds(1), system: false, GrantSource.Manual, pair.ReadKey);
+        var outsideReaders = await RoleAtAsync(outside, "Readers", keyAt - ExportGrantBackfill.ClockSkewAllowance - TimeSpan.FromSeconds(1), system: false, GrantSource.Manual, pair.ReadKey);
+
+        await RunAsync();
+
+        Assert.False(await HoldsAsync(insideReaders, pair));
+        Assert.Equal(ExportGrantBackfill.OriginBorn, (await MarkAsync(inside, pair)).Origin);
+        Assert.True(await HoldsAsync(outsideReaders, pair));
+        Assert.Equal(ExportGrantBackfill.OriginBackfilled, (await MarkAsync(outside, pair)).Origin);
+    }
+
+    // ── FIX3 item 3: one broken document fails its own tenant only ───────────────────────────────────────
+
+    [Fact]
+    public async Task A_role_document_that_does_not_deserialize_fails_only_its_tenant_for_both_keys()
+    {
+        var broken = Guid.NewGuid();
+        var healthy = Guid.NewGuid();
+        var brokenReaders = await OldRoleAsync(broken, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey);
+        var healthyReaders = await OldRoleAsync(healthy, "Readers", ExportGrantBackfill.Users.ReadKey, ExportGrantBackfill.Roles.ReadKey);
+        var badId = Guid.NewGuid();
+        var rawRoles = _host.Database.GetCollection<BsonDocument>("roles");
+        await rawRoles.InsertOneAsync(new BsonDocument
+        {
+            { "_id", new BsonBinaryData(badId, GuidRepresentation.Standard) },
+            { "TenantId", new BsonBinaryData(broken, GuidRepresentation.Standard) },
+            { "Name", new BsonDocument("not", "a string") }, // a role name that is a document: does not deserialize
+            { "CreatedAt", "SECRET-CONTENT-not-a-date" },
+            { "IsDeleted", false }
+        });
+        var logs = new CapturingLoggerProvider();
+        ExportGrantBackfillRunner.Result result;
+        try
+        {
+            result = await RunAsync(logger: logs.CreateLogger<ExportGrantBackfillScenarioTests>());
+        }
+        finally
+        {
+            await rawRoles.DeleteOneAsync(new BsonDocument("_id", new BsonBinaryData(badId, GuidRepresentation.Standard)));
+        }
+
+        Assert.Contains(broken, result.FailedTenants);
+        Assert.DoesNotContain(healthy, result.FailedTenants);
+        foreach (var pair in ExportGrantBackfill.Keys)
+        {
+            Assert.False(await HoldsAsync(brokenReaders, pair));
+            Assert.Equal(0, await Marks.CountDocumentsAsync(m => m.TenantId == broken && m.Key == pair.ExportKey)); // retried next start
+            Assert.True(await HoldsAsync(healthyReaders, pair)); // both keys went on for everybody else
+        }
+
+        var entry = Assert.Single(logs.Entries, e => e.Level == LogLevel.Error && e.Message.Contains(badId.ToString()));
+        Assert.Contains(broken.ToString(), entry.Message);
+        Assert.Contains("Exception", entry.Message);
+        Assert.DoesNotContain("SECRET-CONTENT", entry.Message);
+
+        await RunAsync(); // the document is gone: the next start settles the tenant
+        foreach (var pair in ExportGrantBackfill.Keys) Assert.True(await HoldsAsync(brokenReaders, pair));
+    }
+
+    // ── FIX3 item 5: an audit row the run KNOWS did not take effect is withdrawn ─────────────────────────
+
+    [Theory, MemberData(nameof(Keys))]
+    public async Task When_the_grant_insert_fails_after_its_audit_row_a_not_applied_row_withdraws_it_once(string key)
+    {
+        var pair = Pair(key);
+        var tenant = Guid.NewGuid();
+        var readers = await OldRoleAsync(tenant, "Readers", pair.ReadKey);
+        var export = await Permissions.Find(p => p.Key == pair.ExportKey).SingleAsync();
+        // The grants collection refuses this tenant's export grant (its read grant is already in).
+        var refuse = Builders<RolePermission>.Filter.Not(
+                Builders<RolePermission>.Filter.Eq(g => g.TenantId, tenant) & Builders<RolePermission>.Filter.Eq(g => g.PermissionId, export.Id))
+            .Render(Grants.DocumentSerializer, Grants.Settings.SerializerRegistry);
+        await _host.Database.RunCommandAsync<BsonDocument>(new BsonDocument { { "collMod", "rolePermissions" }, { "validator", refuse } });
+        ExportGrantBackfillRunner.Result first;
+        try
+        {
+            first = await RunAsync();
+        }
+        finally
+        {
+            await _host.Database.RunCommandAsync<BsonDocument>(new BsonDocument { { "collMod", "rolePermissions" }, { "validator", new BsonDocument() } });
+        }
+
+        Assert.Contains(tenant, first.FailedTenants);
+        Assert.False(await HoldsAsync(readers, pair));
+        var granted = Assert.Single(await AuditRowsAsync(tenant, pair.AuditSource), r => r.EventName == ExportGrantBackfill.AuditEventName);
+        var withdrawn = Assert.Single(await AuditRowsAsync(tenant, pair.AuditSource), r => r.EventName == ExportGrantBackfill.GrantNotAppliedEventName);
+        Assert.Contains(granted.Id.ToString(), withdrawn.Metadata, StringComparison.OrdinalIgnoreCase); // it names what it withdraws
+
+        var second = await RunAsync(); // the refusal is gone; option B: the decided role is not granted again
+
+        Assert.False(await HoldsAsync(readers, pair));
+        Assert.Contains((tenant, readers, pair.ExportKey), second.GrantsNotRepeated);
+        Assert.Single(await AuditRowsAsync(tenant, pair.AuditSource), r => r.EventName == ExportGrantBackfill.GrantNotAppliedEventName); // not twice
+        Assert.Equal(1, await Marks.CountDocumentsAsync(m => m.TenantId == tenant && m.Key == pair.ExportKey));
+    }
+
+    // A correction that did not happen (the grant was revoked between the read and the update) leaves no row.
+    [Theory, MemberData(nameof(Keys))]
+    public async Task A_source_correction_that_changes_nothing_writes_no_audit_row(string key)
+    {
+        var pair = Pair(key);
+        var tenant = Guid.NewGuid();
+        var viewer = await RoleAsync(tenant, "Viewer", old: true, system: true, GrantSource.System, pair.ReadKey, pair.ExportKey);
+        var readers = await RoleAsync(tenant, "Readers", old: true, system: false, GrantSource.System, pair.ReadKey, pair.ExportKey);
+        await Marks.InsertOneAsync(new PermissionReconciliationMark { TenantId = tenant, Key = pair.ExportKey, ReconciledAtUtc = DateTime.UtcNow, Origin = null });
+        var export = await Permissions.Find(p => p.Key == pair.ExportKey).SingleAsync();
+
+        await RunAsync(async (stage, p, roleId) =>
+        {
+            // An administrator revokes the custom role's grant between the correction's read and its update.
+            if (stage == ExportGrantBackfillRunner.Stage.SourceCorrectionRead && p == pair && roleId == readers)
+                await Grants.DeleteOneAsync(g => g.RoleId == readers && g.PermissionId == export.Id);
+        });
+
+        var rows = await AuditRowsAsync(tenant, pair.CorrectionAuditSource);
+        Assert.Single(rows, r => r.Metadata.Contains(viewer.ToString(), StringComparison.OrdinalIgnoreCase)); // a change that happened
+        Assert.DoesNotContain(rows, r => r.Metadata.Contains(readers.ToString(), StringComparison.OrdinalIgnoreCase)); // none that did not
+        Assert.False(await HoldsAsync(readers, pair));
+    }
+
+    // ── FIX3: rules that had no test ─────────────────────────────────────────────────────────────────────
+
+    [Theory, MemberData(nameof(Keys))]
+    public async Task A_soft_deleted_export_key_is_not_in_the_catalog_nothing_is_granted_or_marked(string key)
+    {
+        var pair = Pair(key);
+        var tenant = Guid.NewGuid();
+        var readers = await OldRoleAsync(tenant, "Readers", pair.ReadKey);
+        await Permissions.UpdateOneAsync(p => p.Key == pair.ExportKey, Builders<Permission>.Update.Set(p => p.IsDeleted, true));
+        try
+        {
+            await RunAsync();
+        }
+        finally
+        {
+            await Permissions.UpdateOneAsync(p => p.Key == pair.ExportKey, Builders<Permission>.Update.Set(p => p.IsDeleted, false));
+        }
+
+        Assert.False(await HoldsAsync(readers, pair));
+        Assert.Equal(0, await Marks.CountDocumentsAsync(m => m.TenantId == tenant && m.Key == pair.ExportKey));
+    }
+
+    [Theory, MemberData(nameof(Keys))]
+    public async Task A_missing_read_key_skips_its_pair_without_failing_the_run_and_the_other_pair_goes_on(string key)
+    {
+        var pair = Pair(key);
+        var other = Other(pair);
+        var tenant = Guid.NewGuid();
+        var readers = await OldRoleAsync(tenant, "Readers", pair.ReadKey, other.ReadKey);
+        await Permissions.UpdateOneAsync(p => p.Key == pair.ReadKey, Builders<Permission>.Update.Set(p => p.IsDeleted, true));
+        ExportGrantBackfillRunner.Result result;
+        try
+        {
+            result = await RunAsync();
+        }
+        finally
+        {
+            await Permissions.UpdateOneAsync(p => p.Key == pair.ReadKey, Builders<Permission>.Update.Set(p => p.IsDeleted, false));
+        }
+
+        Assert.DoesNotContain(tenant, result.FailedTenants);
+        Assert.False(await HoldsAsync(readers, pair));
+        Assert.True(await HoldsAsync(readers, other));
+    }
+
+    [Theory, MemberData(nameof(Keys))]
+    public async Task The_backfill_still_runs_when_an_earlier_seed_step_fails(string key)
+    {
+        var pair = Pair(key);
+        var tenant = Guid.NewGuid();
+        var readers = await OldRoleAsync(tenant, "Readers", pair.ReadKey);
+
+        await DataSeeder.SeedAsync(_host.Database, false, null, () => throw new InvalidOperationException("a seed step failed"));
+
+        Assert.True(await HoldsAsync(readers, pair));
+    }
+
+    [Fact]
+    public async Task A_role_without_a_tenant_does_not_make_the_run_read_role_documents()
+    {
+        await RunAsync();
+        var orphan = await OldRoleAsync(Guid.Empty, "Orphans-" + Guid.NewGuid().ToString("N")[..8], ExportGrantBackfill.Users.ReadKey);
+        try
+        {
+            var commands = new ConcurrentQueue<(string Name, string Collection)>();
+            var settings = _host.Database.Client.Settings.Clone();
+            settings.ClusterConfigurator = builder => builder.Subscribe<CommandStartedEvent>(e =>
+            {
+                if (e.Command.TryGetValue(e.CommandName, out var target) && target.IsString) commands.Enqueue((e.CommandName, target.AsString));
+            });
+            var observed = new MongoClient(settings).GetDatabase(_host.Database.DatabaseNamespace.DatabaseName);
+
+            await ExportGrantBackfillRunner.RunAsync(observed, NullLogger.Instance);
+
+            Assert.DoesNotContain(commands, c => c.Name == "find" && c.Collection == "roles");
+            Assert.DoesNotContain(commands, c => c.Collection == "rolePermissions");
+        }
+        finally
+        {
+            await Grants.DeleteManyAsync(g => g.RoleId == orphan);
+            await RoleCol.DeleteOneAsync(r => r.Id == orphan);
+        }
+    }
+
+    [Theory, MemberData(nameof(Keys))]
+    public async Task Corrections_are_counted_also_when_no_tenant_is_left_to_backfill(string key)
+    {
+        var pair = Pair(key);
+        var other = Other(pair);
+        var tenant = Guid.NewGuid();
+        await RoleAsync(tenant, "Readers", old: true, system: false, GrantSource.System, pair.ReadKey, pair.ExportKey);
+        await RunAsync(); // settle everything else first
+        await Marks.InsertOneAsync(new PermissionReconciliationMark { TenantId = tenant, Key = pair.ExportKey, ReconciledAtUtc = DateTime.UtcNow, Origin = null });
+        await Marks.InsertOneAsync(new PermissionReconciliationMark { TenantId = tenant, Key = other.ExportKey, ReconciledAtUtc = DateTime.UtcNow, Origin = ExportGrantBackfill.OriginBackfilled });
+
+        var result = await RunAsync(); // every tenant is settled: the run returns early — with the correction counted
+
+        Assert.Equal(1, result.SourcesCorrected);
+    }
+
+    [Theory, MemberData(nameof(Keys))]
+    public async Task Cancellation_stops_the_run_and_is_not_counted_as_a_tenant_failure(string key)
+    {
+        var pair = Pair(key);
+        var tenant = Guid.NewGuid();
+        await OldRoleAsync(tenant, "Readers", pair.ReadKey);
+        using var cts = new CancellationTokenSource();
+        var logs = new CapturingLoggerProvider();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => ExportGrantBackfillRunner.RunAsync(_host.Database, logs.CreateLogger<ExportGrantBackfillScenarioTests>(),
+            (stage, p, id) =>
+            {
+                if (p != pair || stage != ExportGrantBackfillRunner.Stage.TenantGrantsWritten || id != tenant) return Task.CompletedTask;
+                cts.Cancel();
+                throw new OperationCanceledException(cts.Token);
+            }, cts.Token));
+
+        Assert.DoesNotContain(logs.Entries, e => e.Level >= LogLevel.Error); // not logged as a tenant failure
+        Assert.Equal(0, await Marks.CountDocumentsAsync(m => m.TenantId == tenant && m.Key == pair.ExportKey));
+    }
+
+    [Fact]
+    public async Task The_seeders_summary_line_is_Information()
+    {
+        var tenant = Guid.NewGuid();
+        await OldRoleAsync(tenant, "Readers", ExportGrantBackfill.Users.ReadKey);
+        var logs = new CapturingLoggerProvider();
+
+        await DataSeeder.SeedAsync(_host.Database, false, logs.CreateLogger<ExportGrantBackfillScenarioTests>());
+
+        Assert.Contains(logs.Entries, e => e.Level == LogLevel.Information && e.Message.StartsWith("Export backfill:", StringComparison.Ordinal));
     }
 
     // FIX2 item 7 — ONE definition of a tenant's age: its oldest role DOCUMENT, deleted or not.
@@ -215,9 +520,10 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
 
         await DataSeeder.SeedAsync(_host.Database);
 
-        Assert.True(await HoldsAsync(readers, pair));  // the tenant predates the key
-        Assert.False(await HoldsAsync(gone, pair));    // a deleted role is not granted anything
+        // The deleted old role dates the tenant: it is OLD (marked backfilled, not born) …
         Assert.Equal(ExportGrantBackfill.OriginBackfilled, (await MarkAsync(tenant, pair)).Origin);
+        Assert.False(await HoldsAsync(gone, pair));    // … a deleted role is not granted anything …
+        Assert.False(await HoldsAsync(readers, pair)); // … and a role opened after the key is no candidate (FIX3 item 1).
     }
 
     [Theory, MemberData(nameof(Keys))]
@@ -347,10 +653,14 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         var roles = await ThreeOldReadersAsync(tenant, pair);
         await StopAtSecondRoleAsync(pair, tenant, roles, ExportGrantBackfillRunner.Stage.TenantGrantsWritten);
         var grantsBefore = await Grants.CountDocumentsAsync(g => g.TenantId == tenant);
+        var versions = new RoleAssignmentVersionRepository(_host.Database);
+        var versionBefore = await versions.GetAsync(tenant, CancellationToken.None);
 
         var next = await RunAsync();
 
         Assert.Equal(0, next.GrantsWritten);
+        // The interrupted run wrote the grants and never reached the version bump: this start bumps it, with no grant of its own.
+        Assert.True(await versions.GetAsync(tenant, CancellationToken.None) > versionBefore, "the tenant's cached authorization was not invalidated");
         Assert.Equal(grantsBefore, await Grants.CountDocumentsAsync(g => g.TenantId == tenant));
         foreach (var role in roles) Assert.True(await HoldsAsync(role, pair));
         await AssertOneAuditRowPerGrantAsync(tenant, pair, roles);
@@ -539,6 +849,8 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
 
         Assert.True(otherInstanceRan);
         Assert.DoesNotContain(tenant, a.FailedTenants); // a duplicate key is "already done", not a failure
+        // A met B's audit rows — and B's grants with them: nothing is missing, so nothing is reported (FIX3 item 4).
+        Assert.DoesNotContain(a.GrantsNotRepeated, x => x.TenantId == tenant);
         foreach (var role in roles) Assert.True(await HoldsAsync(role, pair));
         await AssertOneAuditRowPerGrantAsync(tenant, pair, roles);
         Assert.Equal(1, await Marks.CountDocumentsAsync(m => m.TenantId == tenant && m.Key == pair.ExportKey));
@@ -554,6 +866,7 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         var results = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => Task.Run(() => RunAsync())));
 
         Assert.All(results, r => Assert.DoesNotContain(tenant, r.FailedTenants));
+        Assert.All(results, r => Assert.DoesNotContain(r.GrantsNotRepeated, x => x.TenantId == tenant));
         foreach (var role in roles) Assert.True(await HoldsAsync(role, pair));
         await AssertOneAuditRowPerGrantAsync(tenant, pair, roles);
         Assert.Equal(1, await Marks.CountDocumentsAsync(m => m.TenantId == tenant && m.Key == pair.ExportKey));
@@ -907,20 +1220,26 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         var role = new Role(name, name, "export backfill fixture", tenant) { CreatedAt = createdAt };
         if (system) role.MarkAsSystem();
         await RoleCol.InsertOneAsync(role);
-        foreach (var key in keys) await GrantAsync(role.Id, tenant, source, key);
+        // The role's grants are as old as the role (an old tenant's read grant predates the key too).
+        foreach (var key in keys) await GrantAsync(role.Id, tenant, source, key, createdAt == default ? null : createdAt);
         return role.Id;
     }
 
-    private async Task GrantAsync(Guid roleId, Guid tenant, GrantSource source, string key)
+    private async Task GrantAsync(Guid roleId, Guid tenant, GrantSource source, string key, DateTimeOffset? createdAt = null)
     {
         var permission = await Permissions.Find(p => p.Key == key).SingleAsync();
-        await Grants.InsertOneAsync(source switch
+        var grant = source switch
         {
             GrantSource.System => RolePermission.SystemGrant(roleId, permission.Id, tenant, "system"),
             GrantSource.Module => RolePermission.ModuleGrant(roleId, permission.Id, tenant, "system", "access-governance"),
             _ => RolePermission.ManualGrant(roleId, permission.Id, tenant, "export-backfill-fixture")
-        });
+        };
+        await Grants.InsertOneAsync(grant);
+        if (createdAt is { } at) await Grants.UpdateOneAsync(g => g.Id == grant.Id, Builders<RolePermission>.Update.Set(g => g.CreatedAt, at));
     }
+
+    private async Task<DateTimeOffset> KeyCreatedAtAsync(ExportGrantBackfill.KeyPair pair)
+        => (await Permissions.Find(p => p.Key == pair.ExportKey).SingleAsync()).CreatedAt;
 
     private Task<bool> HoldsAsync(Guid roleId, ExportGrantBackfill.KeyPair pair) => HoldsKeyAsync(roleId, pair.ExportKey);
 

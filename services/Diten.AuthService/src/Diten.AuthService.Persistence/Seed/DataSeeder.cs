@@ -126,11 +126,18 @@ public static class DataSeeder
     /// </summary>
     public const string MockUsersOptInConfigurationKey = "DevSeeds:MockUsers";
 
-    public static async Task SeedAsync(IMongoDatabase database, bool seedMockUsers = false, ILogger? logger = null)
+    public static Task SeedAsync(IMongoDatabase database, bool seedMockUsers = false, ILogger? logger = null)
+        => SeedAsync(database, seedMockUsers, logger, beforeSeedSteps: null);
+
+    /// <param name="beforeSeedSteps">Test seam: runs where the seed steps begin; a test makes it throw to stand for a
+    /// seed step that failed, and measures that the export backfill still runs.</param>
+    public static async Task SeedAsync(IMongoDatabase database, bool seedMockUsers, ILogger? logger, Func<Task>? beforeSeedSteps)
     {
         logger ??= SeedConsoleLogger.Instance;
         try 
         {
+            if (beforeSeedSteps is not null) await beforeSeedSteps();
+
             Console.WriteLine("Seeding permissions...");
             await SeedPermissionsAsync(database);
             
