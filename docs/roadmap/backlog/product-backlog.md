@@ -7860,13 +7860,20 @@ riski: 🟢 (yalnız daraltır).
 
 **Organizasyon: koltuğa ikinci bir tarih yazımı Mongo'da "cannot index parallel arrays" ile reddediliyor (doğrulanmalı)**
 
-DURUM: AÇIK · SAHİP: CT (MOD-0288 organizasyon) · BULAN: WP-WCN-TASK-REQUEST-01 D1 FIX1 testi (2026-10-03) · KAYIT: 2026-10-03
+DURUM: KAPANDI — `a292033fb`, hat `2ca3d05ef` (2026-10-03; hata GERÇEKTİ: ekrandan koltuk bitirme ve iki tarihli koltuk oluşturma 500 veriyordu) · SAHİP: CT (MOD-0288 organizasyon) · BULAN: WP-WCN-TASK-REQUEST-01 D1 FIX1 testi (2026-10-03) · KAYIT: 2026-10-03
 
 Görev talebi testinde koltuğu sona eren bir alıcı kurulmak istendi; koltuğu tarihle bitirmek için yapılan ikinci tarih yazımı Mongo'da
 "cannot index parallel arrays" hatası verdi (DateTimeOffset'in `[ticks, ofset]` dizisi olarak saklanması + aynı belgede dizinli ikinci dizi —
 BL-030 ailesi). Testte koltuk silinerek geçildi. Organizasyon deposunda gerçek bir hata olabilir: canlıda bir koltuğun bitiş tarihini yazmak
 düşüyor olabilir. İş: depoda ve şemadaki dizinlerde ölç; gerçekse koltuk bitişi için hangi alanın dizinli dizi oluşturduğunu bul, düzelt,
 gerçek Mongo testi. Gelecek regresyon riski: 🟡 (dizin değişikliği gerekebilir — yeni adla).
+
+**Kapanış (2026-10-03):** kök neden `position_assignments` üzerindeki iki bileşik dizin (`…_position_interval`, `…_user_interval`) aynı
+belgede iki dizi alanını (`EffectiveFrom`, `EffectiveTo`) birlikte içeriyordu. Yeni dizinler `EffectiveTo` olmadan, yeni adla (`…_position_from`,
+`…_user_from`); eski iki ad servis açılışında şema bildiriminden önce düşürülüyor (mevcut emekli dizin deseni) — canlıda elle iş gerekmez;
+doğrulama: `getIndexes`'te `*_interval` yok, `*_from` var, ekrandan bir koltuk bitirilir. Koruma testi: şema bildirimindeki hiçbir dizin dizi
+olarak saklanan iki alan taşıyamaz (bugün yalnız bu ikisini yakaladı). Açık kalan (BL-030 ailesi): `HasOverlapAsync` `Lt`/`Gt`'yi dizi olarak
+saklanan tarihlerde yapıyor — çakışma kontrolünün doğruluğu ayrı ölçülmeli.
 
 ---
 
