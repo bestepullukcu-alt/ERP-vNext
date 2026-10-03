@@ -11,6 +11,7 @@ using Diten.Platform.Application.Features.WorkingCalendar.Services;
 using Diten.Platform.Application.Features.WorkingCalendarImport;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Application.Contracts.Eventing;
+using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Services;
 using Diten.Platform.Application.Services.Eventing;
 using Diten.Platform.Domain.Repositories;
@@ -155,6 +156,8 @@ public static class DependencyInjection
             configuration.GetSection(
                 Diten.Platform.Application.Features.WorkAggregation.Services.WorkAggregationResilienceOptions.SectionName));
         services.Configure<MdmServiceOptions>(configuration.GetSection(MdmServiceOptions.SectionName));
+        // Q366 (2026-10-03): restored with the two registrations below — see the comment there (Q362, Q363).
+        services.Configure<MdmServiceIdentityOptions>(configuration.GetSection(MdmServiceIdentityOptions.SectionName));
         services.Configure<FakeMessagingProviderOptions>(configuration.GetSection(FakeMessagingProviderOptions.SectionName));
         services.AddOptions<SmtpProviderOptions>()
             .Bind(configuration.GetSection(SmtpProviderOptions.SectionName))
@@ -200,6 +203,15 @@ public static class DependencyInjection
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+        // Q366 (2026-10-03): the legal-entity scope chain was written and never composed. Without these two lines
+        // InternalTenantLegalEntityScopeController cannot be constructed (it takes IInternalScopeResolutionContext
+        // in its constructor), so GET /api/internal/tenants/{t}/users/{u}/legal-entity-scope answered 400 for every
+        // user, no token carried legal_entity_id, and the Web adapter refused every Shipment call with 403 (Q362).
+        // MdmLegalEntityReferenceValidator takes both as OPTIONAL, which is why nothing failed loudly. They make the
+        // scope endpoint constructible and let Platform mint the service token MDM's reference check requires.
+        // Restored verbatim from the Q185 lane tree, where they existed and were measured working (Q362, Q363).
+        services.AddScoped<IInternalScopeResolutionContext, InternalScopeResolutionContext>();
+        services.AddSingleton<IMdmServiceIdentityTokenProvider, MdmServiceIdentityTokenProvider>();
         services.AddTenantAuthorizationContext();
         services.AddScoped<ITenantDefaultsProvider, TenantDefaultsProvider>();
         services.AddSingleton<EntitlementCacheService>();
