@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# CANDIDATE — NOT APPROVED. Step 3a: isolated, DB-010-compliant replica set for one lane.
+# Pattern reused from mvp6-mod0186-r01-rework-01/scripts/{start-mongo,init-mongo}.sh, with the
+# port guard, --nounixsocket (sandbox EPERM precedent) and fixed-suffix naming added.
+source "$(dirname "$0")/kit-lib.sh"
+E="${1:?evidence dir}"; require_workspace; require_mongo_port
+RS="rs${LANE_CAMEL:?}"                                 # e.g. rsCarrierRealAuthExec01 (precedent)
+[[ -z "$(listening_pids "$MONGO_PORT")" ]] || die "Mongo port $MONGO_PORT already in use"
+mkdir -p "$W/mongo/db" "$W/mongo/log"
+mongod --dbpath "$W/mongo/db" --port "$MONGO_PORT" --bind_ip 127.0.0.1 --nounixsocket \
+       --replSet "$RS" --logpath "$W/mongo/log/mongod.log" --fork --pidfilepath "$W/mongo/mongod.pid" >/dev/null
+echo "mongod	$(cat "$W/mongo/mongod.pid")	$MONGO_PORT" >> "$W/pids.tsv"
+mongosh --quiet --host 127.0.0.1 --port "$MONGO_PORT" --eval \
+  "try { rs.status() } catch (e) { rs.initiate({_id:'$RS',members:[{_id:0,host:'127.0.0.1:$MONGO_PORT'}]}) }" >/dev/null
+for _ in $(seq 1 30); do
+  mongosh --quiet --host 127.0.0.1 --port "$MONGO_PORT" --eval 'quit(db.hello().isWritablePrimary ? 0 : 1)' >/dev/null 2>&1 && break
+  sleep 1
+done
+mongosh --quiet --host 127.0.0.1 --port "$MONGO_PORT" --eval \
+  'const h=db.hello(); print(JSON.stringify({setName:h.setName,primary:h.isWritablePrimary,version:db.version(),dbs:db.adminCommand({listDatabases:1,nameOnly:true}).databases.map(d=>d.name)}))' \
+  > "$E/mongo-before-start.json"
+grep -q '"primary":true' "$E/mongo-before-start.json" || die "replica set not PRIMARY"
+# Fresh lane: only admin/config/local may exist before fixtures.
+python3 -c 'import json,sys;d=json.load(open(sys.argv[1]));x=set(d["dbs"])-{"admin","config","local"};sys.exit(1 if x else 0)' \
+  "$E/mongo-before-start.json" || die "replica set not empty before start"
+log "PASS mongo $RS on 127.0.0.1:$MONGO_PORT"

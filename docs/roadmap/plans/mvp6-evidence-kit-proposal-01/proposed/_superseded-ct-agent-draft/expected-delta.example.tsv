@@ -1,0 +1,7 @@
+case	collection	delta	state_changed
+A08-commit	sce_shipments	0	yes
+A08-commit	sce_shipment_history	1	yes
+A08-stale-422	sce_shipments	0	no
+A08-stale-422	sce_shipment_history	0	no
+A08-stale-422	sce_shipment_audit	0	no
+A08-stale-422	sce_shipment_outbox	0	no

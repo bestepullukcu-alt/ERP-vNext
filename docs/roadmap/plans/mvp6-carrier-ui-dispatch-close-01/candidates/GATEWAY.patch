@@ -1,0 +1,79 @@
+--- a/gateway/Diten.ApiGateway/ocelot.json
++++ b/gateway/Diten.ApiGateway/ocelot.json
+@@ -1,5 +1,38 @@
+ {
+   "Routes": [
++    {
++      "DownstreamPathTemplate": "/api/shipment-bundle/carriers",
++      "DownstreamScheme": "http",
++      "DownstreamHostAndPorts": [
++        {
++          "Host": "localhost",
++          "Port": 5061
++        }
++      ],
++      "UpstreamPathTemplate": "/api/shipment-bundle/carriers",
++      "UpstreamHttpMethod": [
++        "GET",
++        "POST",
++        "OPTIONS"
++      ],
++      "UpstreamScheme": "http"
++    },
++    {
++      "DownstreamPathTemplate": "/api/shipment-bundle/carriers/{carrierId}/status",
++      "DownstreamScheme": "http",
++      "DownstreamHostAndPorts": [
++        {
++          "Host": "localhost",
++          "Port": 5061
++        }
++      ],
++      "UpstreamPathTemplate": "/api/shipment-bundle/carriers/{carrierId}/status",
++      "UpstreamHttpMethod": [
++        "POST",
++        "OPTIONS"
++      ],
++      "UpstreamScheme": "http"
++    },
+     {
+       "DownstreamPathTemplate": "/api/v1/ppm",
+       "DownstreamScheme": "http",
+--- /dev/null
++++ b/gateway/Diten.ApiGateway.Tests/CarrierRouteCoverageTests.cs
+@@ -0,0 +1,35 @@
++using Ocelot.Configuration.File;
++using System.Text.Json;
++using Xunit;
++
++namespace Diten.ApiGateway.Tests;
++
++public sealed class CarrierRouteCoverageTests
++{
++    private static FileConfiguration Load() => JsonSerializer.Deserialize<FileConfiguration>(
++        File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "ocelot.json")),
++        new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
++
++    [Fact]
++    public void Carrier_routes_expose_only_the_three_published_operations()
++    {
++        var routes = Load().Routes
++            .Where(route => route.UpstreamPathTemplate.StartsWith("/api/shipment-bundle/carriers", StringComparison.Ordinal))
++            .ToArray();
++
++        Assert.Equal(2, routes.Length);
++        var collection = Assert.Single(routes, route => route.UpstreamPathTemplate == "/api/shipment-bundle/carriers");
++        Assert.Equal(["GET", "OPTIONS", "POST"], collection.UpstreamHttpMethod.OrderBy(value => value, StringComparer.Ordinal));
++        var status = Assert.Single(routes, route => route.UpstreamPathTemplate == "/api/shipment-bundle/carriers/{carrierId}/status");
++        Assert.Equal(["OPTIONS", "POST"], status.UpstreamHttpMethod.OrderBy(value => value, StringComparer.Ordinal));
++
++        Assert.All(routes, route =>
++        {
++            var host = Assert.Single(route.DownstreamHostAndPorts);
++            Assert.Equal("localhost", host.Host);
++            Assert.Equal(5061, host.Port);
++            Assert.DoesNotContain("{everything}", route.UpstreamPathTemplate, StringComparison.OrdinalIgnoreCase);
++            Assert.DoesNotContain(route.UpstreamHttpMethod, method => method is "DELETE" or "PATCH" or "PUT");
++        });
++    }
++}

@@ -1,0 +1,39 @@
+import sys, json, re, os
+sys.path.insert(0, os.path.expanduser("~/q26"))
+from guard_emulator import *
+root = os.getcwd()
+raw = open(AUTH, "rb").read(); text = raw.decode("utf-8")
+a = json.loads(text)
+dec = json.load(open(a["decision"]["path"]))
+p = payload(text)
+print("authority sha", sha(raw), "bytes", len(raw), "trailing-newline", raw.endswith(b"\n"))
+print("current payload sha", sha(p.encode()), "decision.payloadSha256", dec["payloadSha256"], "MATCH" if sha(p.encode()) == dec["payloadSha256"] else "MISMATCH")
+print("decision file sha", sha(open(a["decision"]["path"],"rb").read()), "pinned", a["decision"]["sha256"])
+bad = []
+for t in a["canonicalTargets"]:
+    h = sha(open(t["path"], "rb").read()); print("target", t["path"], "OK" if h == t["sha256"] else "MISMATCH " + h)
+targets = {t["path"] for t in a["canonicalTargets"]}; used = set(); paths = {AUTH}
+for s in a["sealedInputs"]:
+    paths.add(s["path"])
+    if sha(open(s["path"], "rb").read()) != s["sha256"]: bad.append("seal " + s["path"])
+    proof = open(s["provenancePath"], "rb").read()
+    if sha(proof) != s["provenanceSha256"]: bad.append("prov " + s["path"])
+    line = proof.decode("utf-8").replace("\r\n", "\n").split("\n")[s["provenanceLine"] - 1]
+    if not re.search("`" + re.escape(s["path"]) + r":\d+`; baseline SHA256 `" + s["sha256"] + "`", line): bad.append("provline " + s["path"])
+    if s["kind"] == "active-tool": used |= set(s["targets"])
+print("seals", len(a["sealedInputs"]), "problems", bad, "unused targets", targets - used)
+res, nested = scan(root)
+consumed = set(); offenders = []; honoured = 0
+for rel, hs in res.items():
+    for ln, x in hs:
+        if x in FIVE: honoured += 1; continue
+        if rel in paths: consumed.add(rel); continue
+        offenders.append(f"{rel}:{ln} -> docs/{x}")
+print("files scanned", len(res), "nested", sorted(nested), "honoured", honoured)
+print("unconsumed authority paths", sorted(paths - consumed))
+print("offenders", len(offenders)); [print("  ", o) for o in offenders[:40]]
+Y = "docs/analysis/contracts/shipment-bundle.openapi.yaml"
+print("current YAML hits:", res.get(Y))
+tgt = open("docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/artifacts/shipment-bundle-v3.1.0-final-proposed.openapi.yaml","rb").read()
+print("target YAML sha", sha(tgt), "hits:", file_hits(tgt, nested))
+import pickle; pickle.dump({"offenders": offenders, "consumed": sorted(consumed), "nested": sorted(nested)}, open(os.path.expanduser("~/q26/current.pkl"), "wb"))

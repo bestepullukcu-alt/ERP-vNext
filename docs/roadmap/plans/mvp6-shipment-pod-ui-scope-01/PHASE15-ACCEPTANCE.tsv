@@ -1,0 +1,21 @@
+item	status	evidence_or_requirement	remaining_gate
+canonical identity	PASS	DCP-002 command returned OK MOD-0183 / Shipment Tracking & POD	none
+operation parity	PASS design	YAML lines 32-211 and ShipmentsController lines 10-32 expose exactly five operations	none
+shell	PASS design	tenant module consumes _LayoutTenantShell.cshtml unchanged	owner approval and exact baseline
+golden reference	PASS design	13 create inputs including repeatable line inputs => Compact	owner approval
+screen topology	PASS design	Index/Create/Details plus transition and POD action surfaces	owner approval
+field/null parity	PASS design	CreateShipmentCommand/ShipmentLine exact schemas; no scope fields	implementation verification
+list/query parity	PASS design	status/sourceDocumentId/page/pageSize only	implementation verification
+detail/root parity	PASS design	POD and nullable lifecycleCorrelationId displayed; trace kept separate	implementation verification
+DataTables v2	PASS design	Index has _Filter/_DataTable/_IndexL10n and DtDefaults quality gate	implementation + verifier
+UAS-001	PASS design	read-denied list/detail render only access-denied surface	implementation + browser verifier
+action permissions	PASS design	read/create/dispatch/cancel/pod.capture independent	shared catalog binding + runtime evidence
+localization/RTL	PASS design	seven module resources; wire tokens stay invariant	translations + parity/RTL evidence
+responsive	PASS design	Compact create/detail and table must pass 390/768/desktop measurements	browser evidence
+replay/correlation	PASS design	stable per-intent key; exact payload retry; UUID trace/root distinction	implementation + composed runtime evidence
+gateway-only egress	GAP	no shipment-bundle route in inspected gateway hash b0121d...	single integration-owner exact route patch
+module registration/navigation	GAP	no Shipment manifest/catalog/nav registration found	exact provider/DI/test/resx paths from selected baseline
+source baseline	GAP	422 target is selected isolated evidence, not transfer authority	durable target checkout + transfer manifest/owner authorization
+pack delta	GAP	PROPOSED-PACK.patch unapplied	exact owner approval and target-hash application
+UI DEV/VER authority	GAP	backend ready-for-dev does not authorize UI	versioned dispatch after preceding gates
+

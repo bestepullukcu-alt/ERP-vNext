@@ -1,0 +1,7 @@
+subject	baseline	final	result
+branch	feature/mvp6-logistics	feature/mvp6-logistics	PASS
+HEAD	4a8d4d4b339528a88e6220fb8402e5a2c771136c	4a8d4d4b339528a88e6220fb8402e5a2c771136c	PASS
+owned output	absent/new successor	docs/roadmap/plans/mvp6-effort-update-08 only	PASS
+unchanged ledger rows	update-07 EFFORT.tsv 106 rows	102 rows byte-equal; 4 rows changed (0183-6-DELIVERED/REMAINING, 0185-2-DELIVERED/REMAINING)	PASS
+update-07 and all other existing files	pre-existing state	unchanged	PASS
+git operations	none requested	none performed	PASS

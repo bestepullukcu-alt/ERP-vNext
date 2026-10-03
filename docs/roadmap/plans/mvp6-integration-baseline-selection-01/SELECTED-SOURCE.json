@@ -1,0 +1,51 @@
+{
+  "workPackage": "MVP6-INTEGRATION-BASELINE-SELECTION-01",
+  "status": "HELD",
+  "baseHead": "4a8d4d4b339528a88e6220fb8402e5a2c771136c",
+  "selectionAlgorithm": "Start with every path/hash in mod0190Final379, add every path/hash in capacity43 (intersection must be empty), replace Program.cs with programTarget, then replace CapacityAtomicityTests.cs with capacityHostedTestTarget. Sort paths bytewise and serialize as UTF-8: path\\tsha256\\n with one header row.",
+  "mod0190Final379": {
+    "archive": "docs/records/audits/2026-09/mvp6-mod0190-test-oracle-rework-01/source.tar.gz",
+    "archiveSha256": "8fa00d40814a81472ec4221ad909321d058dea18a11f64dd2ac16ea800ecb745",
+    "manifest": "docs/records/audits/2026-09/mvp6-mod0190-test-oracle-rework-01/source-manifest.tsv",
+    "manifestSha256": "ae7ef59e0158113c22389ccd3eec84207418f3a859c40480e70b42ee888a9bef",
+    "entryCount": 379
+  },
+  "capacity43": {
+    "archive": "docs/records/audits/2026-09/mvp6-mod0192-x07-http-disposition-01/CAPACITY-43-SOURCE.tar.gz",
+    "archiveSha256": "753843251ea261473e308e5fb100de834b1e5ab88fa7576ff50ad22bf332274e",
+    "manifest": "docs/records/audits/2026-09/mvp6-mod0192-x07-http-disposition-01/CAPACITY-43-SOURCE-MANIFEST.tsv",
+    "manifestSha256": "36114191e1576b8b5654b9910f3347432d5d3bf36aac87339a4280cc85a852f8",
+    "entryCount": 43,
+    "intersectionWithMod0190Final379": 0
+  },
+  "programComposition": {
+    "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs",
+    "baselineSha256": "a2a216be15d07fa656f5fd7da43711aa989c4a8d52cd51c58e8ded48d5d735e5",
+    "patch": "docs/records/audits/2026-09/mvp6-mod0192-x07-http-disposition-01/PROGRAM-COMPOSITION.patch",
+    "patchSha256": "78cc0fa61dd37019f525c621c572d1dc2ef518eb0b4faf520a280f01909db82e",
+    "targetSha256": "50c48a2b895804162f36740703bca20d3f0c3f96f2511133e843d75fcf7830f0"
+  },
+  "capacityHostedTest": {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs",
+    "baselineSha256": "91999330faf2a50f5ff2cda3595506ecded50d5b87ffb7bf393dd655f71e51db",
+    "patch": "docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/X07-LATER-READ-EVIDENCE-TEST.patch",
+    "patchSha256": "b6744cddfd498536abeb4b350d8b8b2bd1c30c0824875757522026ed5f01df81",
+    "targetSha256": "2c133ac1b6b431db074b0054b0337bbc3957fce5869c7aca9291454a53681c43"
+  },
+  "mod0190AcceptedTestSuccessor": {
+    "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SandopPlans/SandopAtomicityTests.cs",
+    "selectedSha256": "eba2da6f47a4935b61857a95534b3d1697635910190e3838494d96d956af7f43",
+    "note": "Already present in mod0190Final379; do not replace it with the older hosted-422 value."
+  },
+  "derivedSelection": {
+    "entryCount": 422,
+    "serializedBytes": 74155,
+    "manifestSha256": "cdc6228aa3d215f34f2f2f9d5b784cf57ac20b6eb8f2c2f26bdcace9dcd4d76c"
+  },
+  "excludedSuccessor": {
+    "name": "MOD-0192 duplicate-name uptake",
+    "patch": "docs/records/audits/2026-09/mvp6-mod0192-duplicate-name-uptake-prep-01/PROPOSED-UPTAKE.patch",
+    "patchSha256": "f4fc82b44eb237d1dbc8bdd9c0d9633c948ca4e33cd2dcff91cd65f653780c8f",
+    "reason": "Successor contract publication and production uptake authority remain HELD."
+  }
+}

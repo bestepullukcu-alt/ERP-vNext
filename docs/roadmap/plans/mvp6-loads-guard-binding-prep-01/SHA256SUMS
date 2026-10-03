@@ -1,0 +1,16 @@
+aac7c2b51678fec0da97f1afe7f88356873be003a46ed881202247018796e4a0  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/ANALYSIS.md
+628b52a6ab0af4676c2fd109963fd560202f772e1cc760fdf9d0b9db907f535f  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/EMULATION-CURRENT.txt
+f75a3907bfe5da22b59cd2d48a4d5393bb4563acbc8acfdd8b0132a2af58b6fb  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/EMULATION-RESULTS.txt
+48e1e92fdf2ec0046f7cd068c0d5981a4931511a5df2af84dd4362861015b277  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/EXECUTION-ORDER.md
+8cd55b8200f648a114df51b4a44e1ea56f011f3c2de2d9f396d493707184990d  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/OWNER-DECISION-TEXT.md
+688530e22696d23c24e7609ab7d5186267e2646795a628584ffbbf9a7d992d9a  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/PAYLOAD-HASH.md
+84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/PROVENANCE.md.txt
+bac01022ecc779e6089a06fc99e44f4dbd1dcb8155c83894164342826e6d57ac  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/README.md
+000cf9a55cbf5b1a9fdc5479bbd58e309a3c1c8b80e78fd5c735b41ccf3c9f07  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/authority-candidate.diff.txt
+a77538b4784e1749b7ebe2e7d38d2e8400803c63ec8e6f49d3382929d7d611e0  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/authority-payload.txt
+caab83e740b3e04fe37512e65b26643322c8bb3016a4c2c6ed68f2fce1e0894f  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/build-candidate.py.txt
+36013649effa878319db150dca5a942bfac592fe012fc4c71526f0a3010ca825  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/docs-path-authority.candidate.json.txt
+a78cb7648b276294c2a54a7fca72d1f1c0090f0462d31be73f2dc406c0ba9a53  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/guard-emulator.py.txt
+825f0853d0f1ef50c6ba5bed732ee964cece6585327eff2c6277d13207b84e5e  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/owner-decision.candidate.json.txt
+ce96f7108b49ab9a1c4e18d028ca8a183fa0d75eaa4c8ed016306100afa519a3  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/run-candidate-emulation.py.txt
+2f07366f115c71c72dda5c54483292f361569d842a6963419b2f6dc8a94c49ff  docs/roadmap/plans/mvp6-loads-guard-binding-prep-01/run-current-emulation.py.txt

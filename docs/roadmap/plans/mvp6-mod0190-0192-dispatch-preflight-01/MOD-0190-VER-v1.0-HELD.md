@@ -1,0 +1,5 @@
+# HELD — MOD-0190 independent core VER v1.0
+
+Run only after the authorized MOD-0190 DEV writer is complete and CT binds its exact source/pack/published-contract hashes. A verifier who did not write the core takes an immutable disposable snapshot of DEV output and checks its 38-path allowlist and shared-file invariants against `MOD-0190-OWNED.tsv` and the handoff manifest.
+
+Rebuild independently. Check six final-contract operations, required/null/error/body/header/correlation, exact key/name preservation, fixture-only DEMAND scope, trusted JWT actor, Draft/InReview snapshot and InReview sign-off policy, role race, receipt precedence/replay, tenant/LE/soft-delete, transaction rollback/unknown commit, restart and audit/Pending outbox. Use a separate DB-010 replica set and test tenants. Report source→binary→process→HTTP/DB chain for checks actually run. If shared Program.cs composition is still held, core checks may pass but HTTP/JWT stays PENDING; never infer it from model tests. No live DEMAND, Workflow, publisher, E5/G5 or full-module claim. Fix nothing; issue exact rework findings and SOP §22 verdict. No canonical, pack, shared, peer feature or git mutation.

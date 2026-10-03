@@ -1,0 +1,46 @@
+kind	path	sha256	note
+governance	AGENTS.md	51d92c75b761e5c7195eda102d08f2b7f472b979d9940bdf21ae72cb7cab7fcb	Repository execution contract
+scope	docs/analysis/workpackages/WP-MVP6-logistics.md	28646bdeef8e2c13a2f0db1314c504522d54b062c46968a35e00b82ebf4c71c5	Nine-module MVP6 final scope and G5
+governance	docs/guides/operations/control-tower-sop.md	e85854bd1ecb4895406d8e5a1276adbc82a2af250dc304abad796a2ae7a4de36	CT process and handoff rules
+domain	execution/domains/supply-chain-execution/domain-config.md	c49ec37a45b492e22988fdf7225aaa90b68c7a09fa4d0491dea06fe7cd793fe3	Domain boundaries
+pack	execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md	32381634163a2acff440475f4582c05defc8261957386dfa43d5c8fc7eaf962e	Current shared pack
+pack	execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md	2df9363b7c870672fab13b68a87e7fb849ed7a3f213c5197e87f9c2147de817e	Current shared pack
+pack	execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md	4868669307a1cd37b88320f27d7c0c2e1c1ce8ed649f48c067cbedf20307536f	Current shared pack
+pack	execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md	07a8a0159b5ab02fecc7b1aa6314106d81b1584150169f457cb9a395614a04b7	Current shared draft; isolated accepted identity differs
+pack	execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md	a342054cddcd88a9fae67f21b51ca90eadcdf355e6119c77c9578bae744b1c1f	Current shared draft; isolated accepted identity differs
+pack	execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md	637690f32c1fa03e3039a4542bd53f7bb9b12f6b18d856a7d0e1f23d740c6877	Current shared draft; isolated accepted identity differs
+pack	execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md	edd550b84451af082b934b392cd34f7dc24dd6e462f7e1d9ee0e03c21b4469f7	Current shared draft; isolated accepted identity differs
+pack	execution/domains/supply-chain-execution/module-packs/MOD-0147-supplier-performance-risk.md	66dc6a653040ad2b185709ff1f842950812652bee320be32e5f2cc902ee25095	Current draft
+pack	execution/domains/supply-chain-execution/module-packs/MOD-0148-supplier-portal.md	095f77ffd6c1bd9861c185b740b6fb9322cf8cda216c3818525f88f9d6887c42	Current draft
+contract	docs/analysis/contracts/shipment-bundle.openapi.yaml	5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c	Published v3 wire v1
+annex	docs/analysis/contracts/shipment-root-semantics-v3.0.0.md	7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af	Published root semantics
+contract	docs/analysis/contracts/sandop-capacity.openapi.yaml	5213b5353267ad4c25d150975d6f38422bced72f678c02271b0cccf6e768adab	Published v3 wire v1
+annex	docs/analysis/contracts/sandop-capacity-semantics-v3.0.0.md	f9d9d5553d70e1c54af3e03924600f4c8f426de50355ae861a4d3d5cef21ee64	Published v3 semantics
+contract	docs/analysis/contracts/supplier.openapi.yaml	87a297edfb8eabf9ecc8beff7870955f46b38413a1490a05a36e3f255d77bb00	Frozen Supplier v1
+contract	docs/analysis/contracts/supplier-performance.openapi.yaml	9100d106527947a0a842bc5c4b580fbb2c3b6a288949798b8416a08d352e0088	Frozen Supplier Performance v1
+acceptance	docs/records/audits/2026-09/mvp6-root-r2-producer-ct-accept-01/README.md	4cca61682757ae1a3f615cfa40027fd8a4dc39fe38f6a2421a64c092b80c4102	MOD-0183 root bounded CT acceptance
+verification	docs/records/audits/2026-09/mvp6-root-r2-producer-ver-02/SOP-22-VER-REPORT.md	a593ab2e32a45dc91adce6b0621d9af920617146a1dfaba62c0ede52b977a0c8	MOD-0183 root independent VER
+acceptance	docs/records/audits/2026-09/mvp6-mod0184-ct-accept-02-2026-09-18/README.md	fe82d1702df77e7de67c5159ec54a1ccf6c03243728a2d5d516d6d343f789ba6	MOD-0184 bounded backend CT acceptance
+acceptance	docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-02/SOP-22.md	7c70d81ddb0256478bf580eedd3b4fd0dc9490748b70a5e7fb9dd0860dd5468e	MOD-0185 bounded CT acceptance
+verification	docs/records/audits/2026-09/mvp6-mod0185-fresh-evidence-ver-03/SOP-22.md	3b23c2de66bf27e5eb89eee7f341014aca0677c91d0b6e00bceb6b0986b6fe96	MOD-0185 fresh independent evidence
+acceptance	docs/records/audits/2026-09/mvp6-mod0186-wp-acceptance-01/SOP-22.md	3a61b6e5bb3ed039cee0c76e158a929160583212b286bbfaa35f1d42100d310e	MOD-0186 isolated WP acceptance
+acceptance	docs/records/audits/2026-09/mvp6-mod0187-ct-accept-01/SOP-22.md	30c9233e3d8ac170e53517531b75c616df427d9ceee76aa6bee7c4ea1bab7942	MOD-0187 isolated WP acceptance
+acceptance	docs/records/audits/2026-09/mvp6-mod0190-401-disposition-ct-02/SOP-22.md	91de3760119f95be388332799576c5f474629e7533ee764e5aadf3271fa391cb	MOD-0190 isolated WP acceptance
+acceptance	docs/records/audits/2026-09/mvp6-mod0192-hosted-acceptance-consolidate-01/SOP-22.md	08536c9b334708a802bc189639cf0fc0f9e30a1bebe20cdaa67372f3a903538a	MOD-0192 hosted narrow close
+publication	docs/records/audits/2026-09/mvp6-capacity-duplicate-publication-exec-01/SOP-22.md	47a47bade07301d93904c3229cd5ce3ec1a69f1618f6b9756252d1f745636ebe	Capacity v3 publication
+integration	docs/records/audits/2026-09/mvp6-three-scope-application-01/SOP-22.md	fd277c1ec18ece035b952ea9853dafc6e7f4f05069ea6153c8b2e3c191a84b28	B and C independent VER completion summary
+ui	docs/records/audits/2026-09/mvp6-carrier-ver-environment-close-01/FINAL-UI-SOURCE.tsv	3b7086f0cc839c33f0753076e732aa436b9a8e5cd186f1484f2b0225364d033c	Carrier final 21-path UI manifest
+auth	docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-dev-01/SOP-22-DEV-HANDOFF.md	feaf70886f883bc4f5deff1753b6ab6bcd732bd390e27b1088f7bd124f47460a	Writer complete; independent successor VER pending
+supplier	docs/roadmap/plans/mvp6-supplier-spec-split-01/SOP-22.md	b9f63223ddf10455037a5cf88c27c9f19f3a196a985f5d58a3648817dfabbd50	MOD-0147/0148 spec split
+supplier	docs/roadmap/plans/mvp6-supplier-concurrence-close-prep-01/SOP-22.md	3f906a0406e1cafde0a2bb10d472e93ca861b9d4b90d174b390d780d77770370	Five open owner concurrences
+r0	docs/roadmap/plans/mvp6-readiness-rebaseline-01/METHOD.md	54437a64a8687877a98eb1d45c1d2199968cd6c81c2a620dc4be8d0550ab0bf6	Controlling unchanged rubric
+r0	docs/roadmap/plans/mvp6-readiness-rebaseline-01/DELIVERABLES.tsv	c6b6151800091d26113e46e8a98f36fba714889f7176ba9d0fb385a00006d0d7	Historical 108-row preimage
+integration	docs/records/audits/2026-09/mvp6-three-scope-application-01/EXACT-INVENTORY.tsv	5fb64995229da3e477f9e3ae61c20a569d81a97e319d03a60b3ff25c23797a30	B/C exact manifest and archive hashes
+verification	docs/records/audits/2026-09/mvp6-three-scope-application-01/C-VER-EVIDENCE.tar.gz	a20f981ca0720c3c9078b6155aaeeccefea29d20122b8b9e2c4f32b0f45beeac	Historical Capacity C independent VER archive
+integration	docs/records/audits/2026-09/mvp6-bc-successor-exec-02/SOP-22-DEV-HANDOFF.md	7bdf4ff0b3225bde6c3277d78ec039212f7fe081dd264687d962726b3ae7a09d	Exact C-on-B writer handoff
+source	docs/records/audits/2026-09/mvp6-bc-successor-exec-02/BC-SOURCE.tar.gz	ebd5d80ca00541235868b94ed9917a53fb63be6e15aa78d0450fa90f33737064	Final 422-row successor source archive
+source	docs/records/audits/2026-09/mvp6-bc-successor-exec-02/SOURCE-MANIFEST.tsv	dec28b6aebd7552df82d380cf8b601aabc4d28c7d21349ff43807bd0747e4634	Final successor source manifest
+verification	docs/records/audits/2026-09/mvp6-bc-successor-independent-ver-01/SOP-22-VER.md	4e4cac58bcc4f8afc3ea990a92cfdeed0e294de485a6cf4a7db7cab982b00b03	Independent final BC successor PASS
+acceptance	docs/records/audits/2026-09/mvp6-bc-successor-ct-handoff-01/README.md	883efdae53cc3340b78bb8ae3ecb551bc4852e0834b9be926703ead37f692eac	Narrow bounded BC successor CT acceptance
+verification	docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-02/SOP-22-VER.md	81372008d538a19c6a5d5d1bd41b9dd5f7ee00e4f8f04d90f4c7eac84b2657e2	F-01 CLOSED; F-02 OPEN/REWORK
+verification	docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-02/FINDING-DISPOSITION.tsv	a12bf3dc69827b8700c8b0371165c53f16e908832d258ec8ef535034009ad5be	Auth finding-level disposition

@@ -1,0 +1,15 @@
+scope	category	delivered_optimistic	delivered_most_likely	delivered_pessimistic	remaining_optimistic	remaining_most_likely	remaining_pessimistic	most_likely_completion_percent
+0183	Pack/tasarım	12	16	20	4	8	16	66.7
+0183	Contract	12	16	20	3.6	6	9.6	72.7
+0183	Backend	48	64	80	9.6	16	25.6	80.0
+0183	Frontend	0	0	0	40	64	104	0.0
+0183	Entegrasyon	9	12	15	12	24	40	33.3
+0183	Test/VER	24	32	40	20	36	64	47.1
+0183	TOTAL	105	140	175	89.2	154	259.2	47.6
+portfolio	Pack/tasarım	117	156	195	46	78	140.8	66.7
+portfolio	Contract	114	152	190	58.8	98	182.4	60.8
+portfolio	Backend	420	560	700	141.6	236	441.6	70.4
+portfolio	Frontend	30	40	50	284.8	472	920	7.8
+portfolio	Entegrasyon	81	108	135	189.6	320	574.4	25.2
+portfolio	Test/VER	207	276	345	183.2	308	556.8	47.3
+portfolio	TOTAL	969	1292	1615	904	1512	2816	46.1

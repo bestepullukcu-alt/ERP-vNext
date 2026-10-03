@@ -1,0 +1,49 @@
+{
+  "fixtureId": "CAPACITY-EVAL-FIXTURE-192-01",
+  "fixtureVersion": "1",
+  "testOnly": true,
+  "authority": "proposed synthetic oracle; UNAPPROVED",
+  "scope": {
+    "tenantId": "19200000-0000-4000-8000-000000000001",
+    "legalEntityId": "19200000-0000-4000-8000-000000000002"
+  },
+  "constraint": {
+    "source": "SUPPLY-CONSTRAINTS",
+    "constraintId": "line-4-hours",
+    "sourceVersion": "8",
+    "resourceRef": "line-4",
+    "period": "2027-W03",
+    "uomId": "HOUR"
+  },
+  "scenarioAdjustment": {
+    "resourceRef": "line-4",
+    "period": "2027-W03",
+    "availableCapacityDelta": "80.000",
+    "uomId": "HOUR"
+  },
+  "evaluateResourceRefs": ["line-4"],
+  "outcomes": {
+    "Finite": {
+      "status": "Completed",
+      "bottlenecks": [
+        {
+          "resourceRef": "line-4",
+          "period": "2027-W03",
+          "requiredCapacity": "520.000",
+          "availableCapacity": "480.000",
+          "shortfall": "40.000",
+          "uomId": "HOUR"
+        }
+      ]
+    },
+    "Infinite": {
+      "status": "Completed",
+      "bottlenecks": []
+    }
+  },
+  "limits": [
+    "Literal test oracle only; no production arithmetic or general optimization is defined.",
+    "No independent DEMAND fixture or producer version contract is defined here.",
+    "Fixture values are not DEMAND facts and must not be stored as a foreign source of truth."
+  ]
+}

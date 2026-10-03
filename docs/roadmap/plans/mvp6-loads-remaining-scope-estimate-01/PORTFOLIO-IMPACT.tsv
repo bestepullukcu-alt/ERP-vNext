@@ -1,0 +1,15 @@
+metric	baseline_update06	counted_change	successor_estimated_scope	note
+delivered_optimistic_hours	1052.2	0	1052.2	No completed-work claim
+delivered_most_likely_hours	1432	0	1432	No completed-work claim
+delivered_pessimistic_hours	1859.8	0	1859.8	No completed-work claim
+remaining_optimistic_hours	822.8	16	838.8	Only non-overlapping transition frontend delivery
+remaining_most_likely_hours	1382	28	1410	Existing integration/VER/root-decision reserves retained
+remaining_pessimistic_hours	2580	48	2628	Root producer/detail/lookup/Shipment defect still unestimated
+total_optimistic_hours	1875	16	1891	Estimated scope only
+total_most_likely_hours	2814	28	2842	Estimated scope only
+total_pessimistic_hours	4439.8	48	4487.8	Estimated scope only
+loads_delivered_most_likely	136	0	136	Unchanged
+loads_remaining_most_likely	144	28	172	First-slice 144 retained plus transition frontend
+loads_total_most_likely	280	28	308	Still incomplete denominator
+loads_estimated_scope_index	48.6%	-4.4pp	44.2%	Not readiness or schedule
+portfolio_estimated_scope_index	50.9%	-0.5pp	50.4%	Rounding from 1432/2842; not full completion

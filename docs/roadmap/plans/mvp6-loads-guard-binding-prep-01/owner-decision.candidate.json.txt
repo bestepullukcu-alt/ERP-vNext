@@ -1,0 +1,7 @@
+{
+  "kind": "DOCS_PATH_OWNER_DECISION",
+  "status": "UNAPPROVED",
+  "decisionId": "MVP6-LOADS-PUBLICATION-GUARD-01",
+  "approvedBy": "PENDING-OWNER",
+  "payloadSha256": "a77538b4784e1749b7ebe2e7d38d2e8400803c63ec8e6f49d3382929d7d611e0"
+}

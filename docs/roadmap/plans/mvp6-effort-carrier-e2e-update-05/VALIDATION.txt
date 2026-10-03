@@ -1,0 +1,8 @@
+PASS: 103-row rubric and 2804h ML denominator preserved
+PASS: Carrier Frontend 12h and Integration 8h transferred to delivered
+PASS: Carrier Test/VER 16h remains; PNG OPEN and CT PENDING
+PASS: Shared Auth rows unchanged; no duplicate credit
+PASS: Shipment rework allocation byte-identical to Update-04 and still unapplied
+PASS: evidence allocations are numerically exclusive
+PASS: source hashes match
+PASS: no runtime tests or product changes performed

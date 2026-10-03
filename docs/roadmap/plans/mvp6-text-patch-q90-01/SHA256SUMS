@@ -1,0 +1,5 @@
+e7c5db55b727e4f2c4cc17aae5e139492effdc42b62c1f7baad020695c33c29d  README.md
+e54d976635952f90d80d3fad89cc8722e4fd869ef592e5058627483a8a30f377  SIGN-OFF.md
+13be62ce0bef2c717de8e1b2d8c3ab1ec342545147df181f743f718397e142d6  patches/01-R1-MOD-0192-s23.4-ids-in-address.patch
+5c65d9ed71e7783e79eb705a475a7bcdeb3a269fd330ccd70ecf6c0a9ed06859  patches/02-R2-MOD-0190-s24-stale-dcp-note.patch
+5fe167125148e15545f3336f26eacf3548ef27beef180c6de63c7348ceadfb88  patches/03-R3-MOD-0192-s24-stale-dcp-note.patch

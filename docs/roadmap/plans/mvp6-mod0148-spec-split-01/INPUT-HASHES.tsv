@@ -1,0 +1,11 @@
+artifact	sha256	role
+AGENTS.md	51d92c75b761e5c7195eda102d08f2b7f472b979d9940bdf21ae72cb7cab7fcb	repository execution authority
+execution/domains/supply-chain-execution/domain-config.md	c49ec37a45b492e22988fdf7225aaa90b68c7a09fa4d0491dea06fe7cd793fe3	domain boundary
+execution/domains/supply-chain-execution/module-packs/MOD-0148-supplier-portal.md	095f77ffd6c1bd9861c185b740b6fb9322cf8cda216c3818525f88f9d6887c42	draft module pack
+docs/roadmap/plans/mvp6-supplier-exact-policy-01/DECISION-PACK.md	ded979f7c411c7f7364eb9b31ed94960bfd1d091e5002dfc11e4bf05da64183b	selected SS-01..09 policy source
+docs/roadmap/plans/mvp6-supplier-exact-policy-01/ACCEPTANCE.md	5721cec64437c6af61962e652a501dcfb2a456e1762287dc7bc14b2b7b9f8e59	AC-01..27 source
+docs/roadmap/plans/mvp6-supplier-exact-policy-01/AUTHORITY-MATRIX.md	11299a8842233d72ec6896de3f7a39602f62d28fcbee2fcbfd6524a7c0a7e5b4	owner/concurrence boundary
+docs/analysis/contracts/supplier.openapi.yaml	87a297edfb8eabf9ecc8beff7870955f46b38413a1490a05a36e3f255d77bb00	frozen Supplier v1
+docs/analysis/contracts/supplier-performance.openapi.yaml	9100d106527947a0a842bc5c4b580fbb2c3b6a288949798b8416a08d352e0088	frozen joint consumer contract
+docs/roadmap/plans/mvp6-supplier-seam-readiness-01/CONSUMED-SEAM-MATRIX.md	adb40801812fa98c9bbe1a8ef0a34c7c4ba03234ce75b80fdf1364e1d0ddc8c7	prior seam inventory
+docs/roadmap/plans/mvp6-supplier-seam-readiness-01/NEXT-SPEC-BOUNDARIES.md	5fbb6e3706e9b1d6747453de48b8f23fd228142eefba242601658d2f805922e1	lane split boundary

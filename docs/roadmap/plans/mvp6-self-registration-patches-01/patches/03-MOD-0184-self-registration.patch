@@ -1,0 +1,75 @@
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md b/execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md
+index cf055b1..b4d1552 100644
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md
+@@ -408,3 +408,70 @@ This supersedes pending bounded-acceptance statements only. Full-module status i
+ gateway/shared permissions,UI,E5/G5 and existing external architecture failures remain outside
+ this acceptance. MOD0185 reference dependency may cite this decision; no downstream DEV grant.
+ Historical sections and test evidence remain intact.
++
++## 31. Self-registration (PATCH PROPOSAL — NOT APPROVED until owner sign-off)
++
++**Authority:** `docs/records/decisions/2026-09/mvp6-self-registration-design-owner-decision-01.md` (D1–D5 = A; pack preparation only). **Design:** [`mvp6-self-registration-prep-01`](../../../../docs/roadmap/plans/mvp6-self-registration-prep-01/MANIFESTS.md) (MANIFESTS.md, NAV-L10N-KEYS.tsv, TEST-PLAN.md).
++**Foundation:** DCP-009 §21 (interface, hosted service, options, `PlatformRegistration` settings via the existing `X-Internal-Api-Key`, project reference and `Program.cs` lines — single integration owner).
++This section specifies; it authorizes no code, `Program.cs`, `.csproj`, appsettings, `SharedResource`, Platform or gateway change, no new permission key or ID, and no commit, push or stash.
++
++### Identity (D3 = A)
++
++| Field | Value |
++|---|---|
++| ModuleCode / ModuleName / DisplayName | `carrier-management` / `CarrierManagement` / `Carrier Management` |
++| Domain / Service | `SupplyChainExecution` / `DitenSupplyChainService` |
++| ModuleVersion / IsTenantAssignable / IsBaseline | `1.0.0` / true / false |
++| SortOrder / Icon (SOFT, seed-once) | 400 / `bx-truck` |
++| Provider / tests (proposed paths) | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/CarrierManagementManifestProvider.cs` / `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/CarrierManagementManifestProviderTests.cs` |
++| Scope | every RoutePath starts with `/SupplyChain/`, none with `/Platform/` → Tenant |
++
++### Pages
++
++| PageCode | DisplayName | RoutePath | RequiredPermission | Parent | Nav | PageType | Sort |
++|---|---|---|---|---|---|---|---|
++| `CARRIERS` | Carriers | `/SupplyChain/Carriers` | `supplychain.carriers.read` | — | **true** | List | 10 |
++
++### Actions
++
++| Page | ActionCode | DisplayName | PermissionKey | Placement | Dangerous |
++|---|---|---|---|---|---|
++| `CARRIERS` | `CREATE` | Create | `supplychain.carriers.create` | Toolbar | no |
++| `CARRIERS` | `CHANGE_STATUS` | Change Status | `supplychain.carriers.status.change` | RowAction | no |
++
++All keys are existing constants in `Infrastructure/Features/Carriers/CarrierPermissions.cs`. Route per `mvp6-carrier-ui-scope-01/SCREEN-ROUTE-PERMISSION-MATRIX.tsv`. Identity choices match the unapproved candidate `docs/roadmap/plans/mvp6-carrier-ui-dispatch-close-01/candidates/MODULE-REGISTRATION.patch` (`18001827…`); that candidate and `NAVIGATION-L10N.patch` (`e752b46e…`) remain unapproved and are not adopted by this section.
++
++### Navigation keys (NAV-L10N-KEYS.tsv; 0/7 present today)
++
++| Key | Required languages | Ships with |
++|---|---|---|
++| `Nav.Domain.SUPPLYCHAINEXECUTION` | en, tr, fr, es, zh, ar, ru | first SupplyChain provider to ship (draft value in the unapproved candidate) |
++| `Nav.Module.CARRIERMANAGEMENT` | en, tr, fr, es, zh, ar, ru | this provider (draft value in the unapproved candidate) |
++| `Nav.Page.CARRIERS` | en, tr, fr, es, zh, ar, ru | this provider (draft value in the unapproved candidate) |
++
++Values are added to `frontend/Diten.Web/Resources/SharedResource.{lang}.resx` by the integration owner and reviewed by the l10n agent (no empty value, no English placeholder, no key echoing its own name). This pack does not supply or approve values.
++
++### Tests (TEST-PLAN.md §2; all required before the module counts as closed)
++
++| ID | Pass condition |
++|---|---|
++| M-01 | Identity exactly as above; `IsTenantAssignable` true |
++| M-02 | Every manifest `RequiredPermission` / `PermissionKey` is in the reflected `public const string` fields of `CarrierPermissions` |
++| M-03 | Every reflected key is in the manifest or on the API-only allow-list with a reason: none expected (every constant is modeled; any addition needs a reason) |
++| M-04 | Manifest RoutePaths = the frontend view-route set of the Carrier v2 controller, counts equal (cross-checked by W-01) |
++| M-05 | The action table above equals the manifest actions per page (code, key, placement, dangerous flag) |
++| M-06 | PageCodes, RoutePaths and ActionCodes (per page) unique, case-insensitive |
++| M-07 | Exactly one `IsNavigationVisible` page, with a null parent; every other page has a parent |
++| M-08 | No RoutePath starts with `/Platform/` |
++
++Shared guards W-01…W-04 and reconcile-state R-01…R-04 (DCP-009 §21.3) must also be green for this module.
++
++### Ship rule (D4 = A)
++
++The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navigation keys ship **together with this module's UI** in the integrated target (Q14/Q15), never ahead of it. If Carrier is the first SupplyChain module to ship, the DCP-009 §21 foundation and `Nav.Domain.SUPPLYCHAINEXECUTION` ship with it.
++
++### Open gaps (carried, not solved)
++
++1. The Carrier v2 UI source is not archived in the repository (VER `docs/records/audits/2026-09/mvp6-carrier-ui-ver-01/`, Index `da254157…`); the view-route set is proven only after integration.
++2. The candidate's both-direction completeness tests are not yet written (M-02/M-03).
++3. Runtime tests R-02…R-04 need a native executor and the integrated target.

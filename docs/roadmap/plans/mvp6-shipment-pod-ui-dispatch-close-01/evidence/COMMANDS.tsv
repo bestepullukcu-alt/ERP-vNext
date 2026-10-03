@@ -1,0 +1,5 @@
+check	exit_code	command
+supplychain-build	0	/Users/natig/.dotnet/dotnet build services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj -c Debug --no-restore -m:1 /nr:false
+frontend-build	0	/Users/natig/.dotnet/dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug --no-restore -m:1 /nr:false
+ocelot-json-parse	0	python json.load
+shared-resx-parse	0	python ElementTree.parse 7 shared resources

@@ -1,0 +1,14 @@
+--- a/execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md
++++ b/execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md
+@@ -117,9 +117,9 @@
+ |---|---|
+ | Domain | `SupplyChainExecution` (new in the Platform catalog; `Nav.Domain.SUPPLYCHAINEXECUTION` becomes mandatory with the first provider) |
+ | Service | `DitenSupplyChainService` |
+-| ModuleCodes | `shipment-tracking-pod` (MOD-0183) · `carrier-management` (MOD-0184) · `routing-load-planning` (MOD-0185) · `reverse-logistics` (MOD-0186) · `claims-management` (MOD-0187) |
++| ModuleCodes | `shipment-tracking-pod` (MOD-0183) · `carrier-management` (MOD-0184) · `routing-load-planning` (MOD-0185) · `reverse-logistics` (MOD-0186) · `claims-management` (MOD-0187) · `sop-workflow-signoffs` (MOD-0190) · `capacity-planning` (MOD-0192) |
+ | Common manifest values | `ModuleVersion` `1.0.0`, `IsTenantAssignable` true, `IsBaseline` false; every RoutePath starts with `/SupplyChain/` → Tenant scope |
+-| Excluded | MOD-0190 S&OP and MOD-0192 Capacity: no UI scope, no manifest |
++| Excluded | None. MOD-0190 S&OP and MOD-0192 Capacity were excluded (no UI scope, no manifest) until their UI scope (pack §23) and self-registration (pack §24) were approved: `docs/records/decisions/2026-09/mvp6-sop-capacity-ui-pack-signoff-owner-decision-01.md` (SHA-256 `37f3ff0d08f52391e2f8e605917874c41146b1eba91e928f4b65b2fb18f80bea`). The design package `MANIFESTS.md` predates this and is not changed; for these two modules the pack §24 controls. |
+ 
+ Each module's pages, actions, permission keys and nav keys are defined in that module pack's "Self-registration" section, not here.
+ 

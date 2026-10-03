@@ -1,0 +1,67 @@
+# PROPOSED ONLY — MVP6-PACK-ALIGNMENT-03-RETURNS. NOT APPROVED. Do not apply before the owner decision in SIGN-OFF-DECISION.md is recorded.
+# Preimage SHA-256 07a8a0159b5ab02fecc7b1aa6314106d81b1584150169f457cb9a395614a04b7  Target SHA-256 f4396e8a03f663e34526e3bdaa4c85a4f3c96683ae73bae608f2981e87b33b1f
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md b/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+index 2079277..b2864f9 100644
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+@@ -6,8 +6,8 @@ service: Diten.SupplyChainService
+ shell: none
+ golden_reference: none
+ entity_base: EntityBase
+-status: draft
+-status_note: "MVP6-MOD0186-PREP-02 v1.0: owner decision set D186-01..06 prepared; amendment and Phase1.5 OPEN; DEV/VER HELD."
++status: ready-for-dev
++status_note: "Owner-promoted isolated pack 1c80cca7… (PHASE15-CLOSE-01, 2026-09-21) bound to CT-accepted bounded work package MVP6-MOD0186-WP-ACCEPTANCE-01 on published SHIPMENT-BUNDLE 3.0.0 / wire v1 (§31). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open."
+ owner: supply-chain-execution / control-tower
+ branch: feature/mvp6-logistics
+ started: 2026-09-15
+@@ -63,6 +63,7 @@ Frozen contracts remain read-only. Future DEV requires explicit pack and shared-
+ - MOD-0183 Shipment/POD runtime paths and all other SupplyChain features.
+ - INVENTORY persistence/contracts and every other domain service.
+ - Central Warehouse and Supplier contracts; never define their schema locally.
++- `docs/analysis/contracts/shipment-bundle.openapi.yaml`, `docs/analysis/contracts/returns-semantics-v3.0.0.md` and `docs/analysis/contracts/shipment-root-semantics-v3.0.0.md` (published, frozen; read-only for this module).
+ 
+ ## 7. Dependencies
+ 
+@@ -480,6 +481,7 @@ Current frozen SHIPMENT-BUNDLE **info.version2.0.0**, wire **contractVersionv1**
+ SHA25693c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571.
+ Returns three operations and schemas in §22 remain unchanged by Loads publication. Carrier/Loads
+ annexes apply only to their own families. No inherited Returns error/replay/permission authority.
++Final-pack delta binding (candidate until CT disposition): published YAML SHA256 `5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c`; Returns annex SHA256 `00990a289069d25a62f7c883aac718e08b96b0386a572e7d1f93f0e447e98a11`; guard authority SHA256 `768757bb1fb9e39a324960e25c0e3943adb4bd6231d3dd50bf098915274406fb`. These exact bindings establish packaging parity only; they do not grant runtime uptake.
+ 
+ Settled sources: MOD0183 bounded CT acceptance (2026-09-16); MOD0184 bounded CT acceptance
+ `docs/records/audits/2026-09/mvp6-mod0184-ct-accept-02-2026-09-18/README.md`;
+@@ -556,3 +558,33 @@ pack promotion and dispatch NOT AUTHORIZED. Manual/opaque proposal approval woul
+ Versioned [DEV](../../../../docs/roadmap/plans/mod-0186-prep-02/dev-prompt-v1.0-HELD.md) and
+ [VER](../../../../docs/roadmap/plans/mod-0186-prep-02/ver-prompt-v1.0-HELD.md) remain **HELD**;
+ CT must issue new released versions after exact missing gates close; do not edit HELD into READY silently.
++
++## 30. PHASE15-CLOSE-01 — controlling isolated core dispatch
++
++Existing user conditionalruntime grant2026-09-20 and exact replacement grant2026-09-21 are verified in docs/records/audits/2026-09/mvp6-mod0186-phase15-close-01/authority.md. Phase1.5 designchecks and physicalentity/index/reference mappings are recorded there; allPASS orUI/lookupN/A. Published3.0.0/wirev1 YAML5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c and Returnsannex00990a289069d25a62f7c883aac718e08b96b0386a572e7d1f93f0e447e98a11 govern olderdraft/proposal labels.
++
++Effective46pathallowlist in that package explicitly excludes ReturnOutboxWorker.cs; no workerpublisherorstockwrites. Physicaldesign selects existing approved fivecollectiontransactions and firstentitlementsnapshotdrift policy; no newbusinessdefault. Sourcehistoricalsections remain provenance, not instructions to reopenD186. Ready-for-dev is limited to this isolatedcore; Program.cs/shared/config/schema/guard/Returnsotherlane files protected. NoClaims policyinheritance.
++
++R01–R11 are future runtime acceptance, not currentPASS. HTTP/JWT/liveproduceruptake and APIrestart await separatelyapprovedcomposition; corework canproceed. No migration/backfill/rollout/E5G5/fullmodule acceptance. Commonpack remains unchanged.
++
++## 31. Accepted bounded scope binding (PACK-ALIGNMENT-03 proposal — NOT APPROVED)
++
++This section records, without changing any business rule above, the Control Tower acceptance of the bounded Returns work package built under this pack. It is a proposal until the owner decision in `docs/roadmap/plans/mvp6-pack-alignment-03-returns/SIGN-OFF-DECISION.md` is recorded.
++
++| Binding | Exact value |
++|---|---|
++| Owner-promoted isolated pack (this pack before §31, apart from `status_note` and the §6 contract line) | SHA-256 `1c80cca70ef774d18f5d30174566e68c9b6332b61dd1f564d54de3429886482f` = shared pack `07a8a015…b7` + the approved replacement delta `docs/roadmap/plans/mvp6-mod0186-pack-patch-repair-01/proposed-pack-v2.patch` (SHA-256 `2a1843eb52b8fd0b61a553c06a75d07b32dda57bf020734d946c004b82893709`; its binding line is kept, its `status_note` is superseded) + `status: ready-for-dev` + §30 PHASE15-CLOSE-01. Byte-identical copies are archived in `docs/records/audits/2026-09/mvp6-mod0186-http-01/authority/`, `mvp6-mod0186-r01-rework-01/authority/` and `mvp6-mod0186-r01-independent-ver-01/authority/` |
++| Owner authority | Conditional pack/Phase 1.5/isolated-runtime grant, user message 2026-09-20T11:44:45Z: `docs/records/audits/2026-09/mvp6-mod0186-patch-disposition-02/authority-source.md` (SHA-256 `447fb83b5418104430ab0d5be59dd26443cf692719b1cba8b980d6d43ad6667d`). Exact replacement `2a1843eb…` → `745e9cc7…` grant, 2026-09-21: `docs/records/audits/2026-09/mvp6-mod0186-http-composition-01/authority-source.md` item 2 (SHA-256 `a57efad020a7070d3b83f0504489e4ebd8bcd5266ee38afe889318568005f979`) |
++| Phase 1.5 closure | Nine-row record, PASS for isolated core, rows 6/7 UI N/A: copy `docs/records/audits/2026-09/mvp6-mod0186-http-01/authority/PHASE15.md` SHA-256 `c921c423e6c354753b550e4520940479d260d8705b7f937210abc91f228ef0a7` (the hash the CT acceptance cites). The original `mvp6-mod0186-phase15-close-01/` package named in §30 is not in the common checkout |
++| Controlling CT acceptance | `docs/records/audits/2026-09/mvp6-mod0186-wp-acceptance-01/SOP-22.md` SHA-256 `3a61b6e5bb3ed039cee0c76e158a929160583212b286bbfaa35f1d42100d310e` — ACCEPTED, approved isolated bounded Returns work package only |
++| Row-level acceptance | `ACCEPTANCE-MATRIX.tsv` SHA-256 `55733e998d772a9bc6df34763ab5c4098586784bbfa832b6fe3d282004b5610f` — R01–R11 PASS_BOUNDED; pack §16 items 02–05 PASS_BOUNDED; item 01 superseded for the isolated scope |
++| Accepted source and evidence | R01 independent VER `docs/records/audits/2026-09/mvp6-mod0186-r01-independent-ver-01/`: 341-entry target manifest `manifests/source-final-341.tsv` `60ab3d68de8196d3a390a087884ca46c1e1530d64fa0a72e3074a15d62561052`; product patch `0bb36d02d3972f65d6644a5b12eaabc7a8820a1a50da13b17769ef7a5148e82c`; raw archive `1191b5d9c8e0f46a304ce65a131a462143e0c015e2e088de0576258fa8f85473`; Release API binary `daeefa6c9b4b2b7159cabcf397852b23c82c962a3b0e18262b4e8032004549b7`; 52/52 HTTP/DB, 4/4 restart, 78/78 Returns regression |
++| Published contracts at acceptance and today | SHIPMENT-BUNDLE YAML `5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c`; Returns annex `00990a289069d25a62f7c883aac718e08b96b0386a572e7d1f93f0e447e98a11`; root annex `7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af`; wire `contractVersion: v1` |
++
++**Precedence over stale wording:** SHIPMENT-BUNDLE 3.0.0 is published and bound. The §28 statements "status remains draft", the 2.0.0 `93c696e2…` pin and "D186 proposals, not approvals", the §29 "pack promotion and dispatch NOT AUTHORIZED" and HELD-prompt wording, and the "candidate until CT disposition" label on the §28 binding line are historical. §30 governs the isolated promotion, and this section records its accepted outcome. §30's "R01–R11 are future runtime acceptance, not current PASS" is superseded by the accepted matrix above. No business rule in §§21–30 is changed.
++
++**Accepted boundary:** R01–R11 are satisfied only at the evidence class stated per row in `ACCEPTANCE-MATRIX.tsv` (core + selected HTTP for R03/R07; core for zero/negative and long-scale R04; test-injected failpoints for R10). Received is a **manual assertion**, not warehouse-verified receipt; no Inventory/Warehouse HTTP, stock SoR, worker or publisher exists.
++
++**Owned paths:** the 46 effective paths listed in `docs/records/audits/2026-09/mvp6-mod0186-r01-independent-ver-01/authority/returns46.json` (SHA-256 `96f43bd7fa66256ee55e5aea2c4c412887238ea586fd96ceb05f8adb69485969`; 36 source + 10 test/probe paths). `Program.cs` and `ReturnOutboxWorker.cs` are not owned paths. Per the CT record, 43 Returns paths are absent from the common checkout.
++
++**Still open:** common-checkout source uptake and composition, gateway and shared permission registration, real producer authoritative-root uptake beyond the accepted seam, verified inbound receiving and Inventory reconciliation, publisher/Event Bus delivery, UI, migration/backfill, rollout, E5/G5 and full-module acceptance. This section is not `done` status and grants no new DEV scope.

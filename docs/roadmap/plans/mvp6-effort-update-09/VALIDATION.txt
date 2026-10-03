@@ -1,0 +1,10 @@
+PASS reproduce FORECAST-09.tsv
+PASS reproduce MODULE-FIGURES.tsv
+PASS reproduce BOARD-FIGURES.json
+PASS source hashes 40/40 match at validation time (ledgers are live; see A8)
+PASS board summary 1140 1464 1378 2842
+PASS module sums = summary (accepted 1140, delivered 1464, total 2842)
+PASS per module accepted <= delivered; delivered + remaining = total
+PASS credit lines 13 with evidence path + sha256, module, category; credited 0
+PASS forecast-09 rows 11 net M -2.0
+PASS forecast total 2952 (08: 2954); frozen 2842 unchanged; 08 folder untouched (SHA256SUMS 3928b36d)

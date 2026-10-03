@@ -1,0 +1,72 @@
+import sys, os, json, re
+sys.path.insert(0, os.path.expanduser("~/q26"))
+from guard_emulator import *
+OUT = os.path.expanduser("~/q26/out"); m = json.load(open(os.path.join(OUT, "meta.json")))
+Y = "docs/analysis/contracts/shipment-bundle.openapi.yaml"
+tgt = open("docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/artifacts/shipment-bundle-v3.1.0-final-proposed.openapi.yaml","rb").read()
+annex = open("docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/artifacts/loads-semantics-v3.1.0.md","rb").read()
+cand = open(os.path.join(OUT, "docs-path-authority.candidate.json.txt"), encoding="utf-8", newline="").read()
+prov = open(os.path.join(OUT, "PROVENANCE.md.txt"), "rb").read()
+def activate(auth_text, pl_sha):
+    dec = ('{\n  "kind": "DOCS_PATH_OWNER_DECISION",\n  "status": "APPROVED",\n'
+           f'  "decisionId": "{m["dec_id"]}",\n  "approvedBy": "EMULATION-ONLY-NOT-OWNER",\n  "payloadSha256": "{pl_sha}"\n}}\n').encode()
+    a = auth_text.replace('"status": "UNAPPROVED",\n  "decision": null,',
+        f'"status": "APPROVED",\n  "decision": {{\n    "path": "{m["dec_path"]}",\n    "sha256": "{sha(dec)}"\n  }},')
+    return a, dec
+def read(ov, p): return ov[p] if p in ov else open(p, "rb").read()
+def verify(ov, label):
+    errs = []
+    try:
+        text = read(ov, AUTH).decode(); a = json.loads(text)
+        assert a["status"] == "APPROVED" and a["decision"]["path"].startswith("docs/records/")
+        db = read(ov, a["decision"]["path"])
+        if sha(db) != a["decision"]["sha256"]: errs.append("decision sha")
+        d = json.loads(db)
+        if d["kind"] != "DOCS_PATH_OWNER_DECISION" or d["status"] != "APPROVED": errs.append("decision kind/status")
+        if sha(payload(text).encode()) != d["payloadSha256"]: errs.append("payload")
+        targets = set(); used = set(); paths = {AUTH}
+        for t in a["canonicalTargets"]:
+            if t["path"] in targets: errs.append("dup target")
+            targets.add(t["path"])
+            if sha(read(ov, t["path"])) != t["sha256"]: errs.append("target hash " + t["path"])
+        for s in a["sealedInputs"]:
+            if s["path"] in paths: errs.append("dup seal")
+            paths.add(s["path"])
+            if not s["path"].startswith("docs/records/") and s["path"] not in ("docs/roadmap/plans/mod-0183-root-uptake-recovery-01/input-manifest.json","docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json"): errs.append("records " + s["path"])
+            if sha(read(ov, s["path"])) != s["sha256"]: errs.append("seal hash " + s["path"])
+            pr = read(ov, s["provenancePath"])
+            if sha(pr) != s["provenanceSha256"]: errs.append("prov hash")
+            lines = pr.decode().replace("\r\n", "\n").split("\n")
+            if not (1 <= s["provenanceLine"] <= len(lines)) or not re.search("`" + re.escape(s["path"]) + r":\d+`; baseline SHA256 `" + s["sha256"] + "`", lines[s["provenanceLine"] - 1]): errs.append("prov line " + s["path"])
+            if s["kind"] in ("historical-data", "historical-tool"):
+                if not s["path"].endswith(".json" if s["kind"] == "historical-data" else ".py") or s["targets"]: errs.append("hist shape " + s["path"])
+            elif s["kind"] == "active-tool":
+                used |= set(s["targets"]); errs += ["tool target " + x for x in s["targets"] if x not in targets]
+            else: errs.append("kind")
+        if targets != used: errs.append("unused canonical target " + str(targets - used))
+        res, nested = scan(os.getcwd(), ov)
+        consumed = set(); off = []; hon = 0
+        for rel, hs in res.items():
+            for ln, x in hs:
+                if x in FIVE: hon += 1
+                elif rel in paths: consumed.add(rel)
+                else: off.append(f"{rel}:{ln}")
+        if paths != consumed: errs.append("unconsumed " + str(sorted(paths - consumed)))
+        if off: errs.append(f"{len(off)} offenders")
+        print(f"{label}: seals={len(a['sealedInputs'])} targets={len(targets)} honoured={hon} -> {'PASS' if not errs else 'FAIL ' + '; '.join(errs)}")
+    except Exception as e:
+        print(f"{label}: FAIL exception {e!r}")
+base = {Y: tgt, "docs/analysis/contracts/loads-semantics-v3.1.0.md": annex, m["prov_path"]: prov}
+# 1 positive: candidate activated after publication
+a, d = activate(cand, m["payload_sha"]); verify({**base, AUTH: a.encode(), m["dec_path"]: d}, "POSITIVE candidate+publication")
+# 2 negative: publication with current authority unchanged
+verify({Y: tgt, "docs/analysis/contracts/loads-semantics-v3.1.0.md": annex}, "NEG current authority after publication")
+# 3 negative: re-pin only (no 8 seals)
+cur = open(AUTH, encoding="utf-8", newline="").read().replace("5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c", "6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2")
+cur = cur.replace(m["cur_head"], '"status": "UNAPPROVED",\n  "decision": null,')
+a3, d3 = activate(cur, sha(payload(cur).encode())); verify({Y: tgt, AUTH: a3.encode(), m["dec_path"]: d3}, "NEG re-pin only")
+# 4 negative: candidate + new annex added as canonical target
+c4 = cand.replace('  "canonicalTargets": [\n', '  "canonicalTargets": [\n    {\n      "path": "docs/analysis/contracts/loads-semantics-v3.1.0.md",\n      "sha256": "' + sha(annex) + '"\n    },\n', 1)
+a4, d4 = activate(c4, sha(payload(c4).encode())); verify({**base, AUTH: a4.encode(), m["dec_path"]: d4}, "NEG annex as target")
+# 5 negative: candidate activated but YAML NOT published (preimage on disk)
+verify({m["prov_path"]: prov, AUTH: a.encode(), m["dec_path"]: d}, "NEG binding without publication")

@@ -1,0 +1,4 @@
+label	email	tenant_id	expected_legal_entity_id	note
+actor-a	john.doe.t97@diten.com	97c59330-dbc4-4665-b29c-0c26dbb5cc93	30000000-0000-0000-0000-0000000000a1	EXAMPLE (a08 lane: T1/LE-A); lane must confirm the seeded position/LE assignment
+actor-b	<seeded-email-2>	97c59330-dbc4-4665-b29c-0c26dbb5cc93	30000000-0000-0000-0000-0000000000a1	EXAMPLE placeholder; a08 used a second T1/LE-A actor but did not archive which
+actor-le-b	<seeded-email-3>	97c59330-dbc4-4665-b29c-0c26dbb5cc93	<LE-B id>	EXAMPLE placeholder; a08 used a T1/LE-B actor but did not archive which

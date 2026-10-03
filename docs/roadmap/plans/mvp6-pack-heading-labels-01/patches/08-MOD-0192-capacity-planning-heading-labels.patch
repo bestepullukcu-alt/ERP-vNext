@@ -1,0 +1,25 @@
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md b/execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md
+@@ -246,7 +246,9 @@ Status is `ready-for-dev` for the exact isolated 43-path DEV/independent VER sco
+ - Define a separate tenant UI follow-up if product journeys require one.
+ - Complete G5 E5 integration across capacity, S&OP, logistics and source reconciliation.
+ 
+-## 21. Published 2.0.0 binding and bounded executor acceptance (proposed draft delta)
++## 21. Published 2.0.0 binding and bounded executor acceptance
++
++Approved: `docs/records/decisions/2026-09/mvp6-capacity-pack-promotion-owner-decision-q28-01.md`
+ 
+ Canonical `docs/analysis/contracts/sandop-capacity.openapi.yaml` SHA-256 `9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3`; annex `docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md` SHA-256 `eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda`. Metadata 2.0.0 does not change wire `contractVersion: v1`. The six operation IDs are `createCapacityPlan`, `getCapacityPlan`, `createCapacityScenario`, `getCapacityScenario`, `evaluateCapacityScenario`, `getCapacityEvaluation`; no other endpoint is owned. The annex's common matrix controls 401→403→400→404→receipt→409/422→commit, original response status/body on replay, current valid response correlation, and scoped receipt recovery on uncertain POST commit. Exact codes and shape are the published YAML/annex, not local guesses.
+ 
+@@ -254,7 +256,9 @@ This slice has Draft plans and scenarios only; evaluation is Accepted→Running
+ 
+ The 43 exact prospective source/test paths are in `mvp6-mod0190-0192-dispatch-preflight-01/MOD-0192-OWNED.tsv`. No `Program.cs`, shared permission, gateway, producer, MOD-0190, publisher, Event Bus worker, optimizer or stock path is included. UI/DataTable/lookup are N/A (`shell:none`). This promoted pack is bound to the 2026-09-22 exact owner decision for isolated core/executor DEV and independent VER only.
+ 
+-## 22. Accepted bounded scope binding (PACK-ALIGNMENT-01 proposal — NOT APPROVED)
++## 22. Accepted bounded scope binding
++
++Approved: `docs/records/decisions/2026-09/mvp6-capacity-pack-promotion-owner-decision-q28-01.md`
+ 
+ This section records, without changing any business rule above, the Control Tower acceptance of the owner-promoted isolated pack and its later owner-approved successors. It is a proposal until the owner decision in `docs/roadmap/plans/mvp6-pack-alignment-01/mod-0192-capacity/PROMOTION-DECISION.md` is recorded.
+ 

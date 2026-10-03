@@ -1,0 +1,10 @@
+kind	path	sha256	use
+baseline_manifest	docs/roadmap/plans/mvp6-effort-carrier-e2e-update-05/ARTIFACTS.sha256	c2d08b1a363213bc7fabbacbdfc4e0f265ce19b73e8659c77c273a743d5e1e99	predecessor package integrity
+baseline_effort	docs/roadmap/plans/mvp6-effort-carrier-e2e-update-05/EFFORT.tsv	756d1c714504a7cb53b3413cc99f04fd9a8d65df26e28cfffa66c18923da70b4	103-row baseline and weights
+shipment_writer_report	docs/records/audits/2026-09/mvp6-shipment-integration-rework-exec-01/SOP-22.md	f70945344d0c79fd91e88151d8630163d56b2d46426cf3558d10a2da85363e6b	writer application/build/route result
+shipment_writer_manifest	docs/records/audits/2026-09/mvp6-shipment-integration-rework-exec-01/ARTIFACTS.sha256	3842230d59a650f5842e344abad4a34711b28390a740fd07539e847f2fb1d183	writer package integrity
+shipment_independent_ver	docs/records/audits/2026-09/mvp6-shipment-integration-rework-independent-ver-01/SOP-22.md	1d6df9659489e9b25592e80776c79cda7ff8166b047754f0b1ea530e072dcf0b	independent source/build/route closure and open Auth/browser boundary
+shipment_ver_manifest	docs/records/audits/2026-09/mvp6-shipment-integration-rework-independent-ver-01/ARTIFACTS.sha256	da7542389c324bbf61caa57df4ef5f8a5ba7a9615297d1b64741d2600489ebb9	independent package integrity
+carrier_ct_report	docs/records/audits/2026-09/mvp6-carrier-real-auth-ct-review-01/SOP-22.md	5fd212a331573be927b5320fd61d090d0fc0a8fa9145ebb84cac452849028e52	PARTIAL readiness and mandatory PNG OPEN
+carrier_ct_manifest	docs/records/audits/2026-09/mvp6-carrier-real-auth-ct-review-01/ARTIFACTS.sha256	240751da639dc2e4c987aea1d30aabc73064d68e4a548aa73ff0d54cbc7faa06	CT package integrity
+loads_effort	docs/roadmap/plans/mvp6-loads-ui-scope-01/EFFORT.md	9946b3d42f29bfe2e0dd4388e93549afe0726285fbc0e222064e8b55af160b4e	48/84/144 replacement mapping and scope boundary

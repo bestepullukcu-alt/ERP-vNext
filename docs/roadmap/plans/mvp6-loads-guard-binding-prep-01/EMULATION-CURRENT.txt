@@ -1,0 +1,30 @@
+authority sha 6d3865f80707ff0e9ca7c9cf2e2343f34d2961be2916a3eceb37168d1b0a8167 bytes 17837 trailing-newline True
+current payload sha 3bd20e2608ec62cd5c2da1fc60bc4419b6aefa594e0efc45f32b35df17ad8dfb decision.payloadSha256 3bd20e2608ec62cd5c2da1fc60bc4419b6aefa594e0efc45f32b35df17ad8dfb MATCH
+decision file sha 877c3878d9b38446fc437a384d5e61630ccbec601dc5dd025a536ea21aa20ae2 pinned 877c3878d9b38446fc437a384d5e61630ccbec601dc5dd025a536ea21aa20ae2
+target docs/analysis/contracts/shipment-bundle.openapi.yaml OK
+target docs/analysis/contracts/carrier-semantics-v1.1.0.md OK
+seals 35 problems [] unused targets set()
+files scanned 10413 nested ['Diten.AuthService', 'Diten.Platform', 'publication'] honoured 1468
+unconsumed authority paths []
+offenders 19
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/verify_release_prep.py:58 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/verify_release_prep.py:59 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/verify_release_prep.py:75 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/verify_candidate.py:58 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/verify_candidate.py:59 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/verify_candidate.py:71 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/verify_rever.py:28 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/verify_rever.py:29 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/verify_rever.py:60 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/raw/results.json:4 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-rever-01/raw/results.json:10 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/raw/raw-results.json:5 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/raw/raw-results.json:11 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/raw/verifier.stdout.json:5 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/raw/verifier.stdout.json:11 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/raw/validation-results.json:5 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/raw/validation-results.json:11 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/raw/validator.stdout.json:5 -> docs/analysis
+   docs/records/audits/2026-09/mvp6-loads-root-amendment-release-prep-01/raw/validator.stdout.json:11 -> docs/analysis
+current YAML hits: []
+target YAML sha 6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2 hits: []

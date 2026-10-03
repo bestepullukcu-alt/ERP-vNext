@@ -1,0 +1,10 @@
+PASS source hashes 18/18
+PASS frozen ledger rows 106
+PASS unchanged predecessor rows exact 102/102
+PASS changed rows are pure transfers (row-pair totals unchanged)
+PASS frozen portfolio O/M/P: delivered + remaining = 1891/2842/4487.8
+PASS forecast delivered + remaining = 2954 M
+PASS per-module delivered + remaining = total (frozen and forecast)
+PASS CT-accepted 1140 <= delivered (frozen 1464, forecast 1469)
+PASS every ROW-CHANGES row cites a CT record
+PASS unestimated scope listed 11 items

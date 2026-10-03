@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# CANDIDATE — NOT APPROVED. Step 9: cleanup and cleanup verification.
+# Stops ONLY recorded lane PIDs (never `lsof -ti :5000,... | xargs kill -9` from dev-runbook: that would hit
+# operational processes). A PID is signalled only if its start time still matches the recorded one (PID reuse).
+# Precondition: 06-redact.py scan already PASSED (it needs the secrets file this step deletes).
+source "$(dirname "$0")/kit-lib.sh"
+E="${1:?evidence dir}"; require_workspace
+[[ -f "$E/SECRET-SCAN.txt" ]] && head -1 "$E/SECRET-SCAN.txt" | grep -qx PASS || die "secret scan must PASS before cleanup"
+# 1. application processes, reverse start order, graceful first
+awk '{a[NR]=$0} END{for(i=NR;i>0;i--)print a[i]}' "$W/pids.tsv" | while IFS=$'\t' read -r svc pid port lstart; do
+  [[ "$svc" == mongod ]] && continue
+  now="$(ps -o lstart= -p "$pid" 2>/dev/null | sed 's/  */ /g')"
+  [[ -n "$now" && "$now" == "$lstart" ]] || { log "$svc pid $pid already gone or reused; not signalled"; continue; }
+  kill -TERM "$pid"; for _ in $(seq 1 20); do kill -0 "$pid" 2>/dev/null || break; sleep 1; done
+  kill -0 "$pid" 2>/dev/null && { log "$svc pid $pid SIGKILL after 20s"; kill -KILL "$pid"; }
+done
+# 2. lane mongod: clean shutdown on the lane port only
+mongosh --quiet --host 127.0.0.1 --port "$MONGO_PORT" --eval 'db.getSiblingDB("admin").shutdownServer({force:true})' >/dev/null 2>&1 || true
+sleep 2
+# 3. verification (written before the workspace disappears)
+{
+  echo -e "check\ttarget\tresult"
+  for row in "${KIT_SERVICES[@]}"; do IFS='|' read -r n c _ _ <<< "$row"; p="$(lane_port "$c")"
+    [[ -z "$(listening_pids "$p")" ]] && r=PASS || r=FAIL; echo -e "listener\t$n:$p\t$r"; done
+  for p in "$(sentinel_port)" "$MONGO_PORT"; do [[ -z "$(listening_pids "$p")" ]] && r=PASS || r=FAIL; echo -e "listener\t$p\t$r"; done
+  n="$(lsof -nP 2>/dev/null | awk -v w="$W" 'index($0,w)>0' | wc -l | tr -d ' ')"; echo -e "open-files-under-workspace\t<W>\t$([[ $n == 0 ]] && echo PASS || echo FAIL)"
+} > "$E/CLEANUP.tsv"
+grep -q $'\tFAIL$' "$E/CLEANUP.tsv" && die "cleanup verification failed; workspace kept for inspection"
+# 4. remove secrets, Mongo data, sources, runtime copies — the whole disposable workspace
+rm -rf -- "$W"
+{ [[ ! -e "$W" ]] && echo -e "workspace-removed\t<W>\tPASS" || echo -e "workspace-removed\t<W>\tFAIL"
+  [[ ! -e "$W/secrets/lane.env" ]] && echo -e "secrets-file-removed\t<W>/secrets/lane.env\tPASS" || echo -e "secrets-file-removed\t-\tFAIL"
+} >> "$E/CLEANUP.tsv"
+# 5. repository no-change: only the lane's own evidence directory may be new
+git -C "${REPO:?}" status --porcelain=v1 --untracked-files=all | sort > "$E/repo-status-after.txt.tmp"
+comm -13 "$E/repo-status-before.txt" "$E/repo-status-after.txt.tmp" | grep -v "${EVIDENCE_DIR:?}" > "$E/NO-CHANGE-DIFF.txt" || true
+mv "$E/repo-status-after.txt.tmp" "$E/repo-status-after.txt"
+[[ ! -s "$E/NO-CHANGE-DIFF.txt" ]] && echo -e "repo-no-change\tstatus-diff\tPASS" >> "$E/CLEANUP.tsv" || { echo -e "repo-no-change\tstatus-diff\tFAIL" >> "$E/CLEANUP.tsv"; exit 1; }
+echo "PASS"

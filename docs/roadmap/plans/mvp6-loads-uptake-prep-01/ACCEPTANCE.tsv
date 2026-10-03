@@ -1,0 +1,16 @@
+id	criterion	HTTP expectation	DB expectation	contract/test expectation	evidence type
+LU-01	Fresh create then list	POST 201; GET /api/shipment-bundle/loads 200; the created item has lifecycleCorrelationId = the create request X-Correlation-Id (UUID value equality)	loads.CorrelationRoot equals the same value; no document changed by GET	LoadRootQueryTests + runtime_probe.py	E3 test + E4 runtime
+LU-02	Item shape	Each item has exactly carrierId, lifecycleCorrelationId, loadId, loadNumber, shipmentIds, status; top level unchanged (contractVersion, items, total)	—	LoadContractTests (updated) vs YAML LoadSummary 3189–3197	E3
+LU-03	Stored valid UUID (legacy seeded)	200; value emitted as stored	unchanged	LoadRootQueryTests	E3
+LU-04	Stored nil UUID string	200; "00000000-0000-0000-0000-000000000000" emitted (present value, not coerced)	unchanged	LoadRootStorageTests + LoadRootQueryTests	E3
+LU-05	Field missing in document	200; lifecycleCorrelationId null; not nil	document not modified (no backfill)	both new test files	E3
+LU-06	Field explicit BSON null	200; null	not modified	both	E3
+LU-07	Malformed string / wrong BSON type	200; null; list not failed; other rows unaffected	not modified	both (ASSUMPTION A3)	E3
+LU-08	No derivation	Emitted value never equals the GET X-Correlation-Id unless stored so; Shipment roots not used	—	LoadRootQueryTests negative case	E3
+LU-09	Scope and permission	Cross-tenant/LE rows absent; missing supplychain.loads.read → 403 as today	—	LoadIsolationTests (existing) + new case	E3
+LU-10	Transition unchanged	All existing transition/replay/lifecycle/atomicity/concurrency tests pass unchanged	unchanged	existing Loads suites	E3
+LU-11	No new route / no write on read	Unknown routes 404/405 as today	GET leaves loads, receipts, audit, outbox counts unchanged	LoadContractTests:362 + snapshot compare	E3
+LU-12	Restart	After API restart, list returns the same values	unchanged	restart_probe.py	E4 runtime
+LU-13	Contract pins	verify_evidence.py passes with YAML 6dc1dd48… and annex 9d8a3706…	—	evidence verifier	E4
+LU-14	Build and suites	dotnet build 0 errors; full SupplyChain test project: Loads suites green; pre-existing failures listed by name, not new	—	TRX in writer folder	E3
+LU-15	Independent VER	A different Mac session re-runs LU-01…LU-14 on the frozen source	—	SOP-22-VER	E4

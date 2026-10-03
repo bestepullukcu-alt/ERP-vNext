@@ -1,0 +1,5 @@
+POSITIVE candidate+publication: seals=43 targets=2 honoured=1484 -> PASS
+NEG current authority after publication: seals=35 targets=2 honoured=1468 -> FAIL target hash docs/analysis/contracts/shipment-bundle.openapi.yaml; 19 offenders
+NEG re-pin only: seals=35 targets=2 honoured=1468 -> FAIL 19 offenders
+NEG annex as target: seals=43 targets=3 honoured=1484 -> FAIL unused canonical target {'docs/analysis/contracts/loads-semantics-v3.1.0.md'}
+NEG binding without publication: seals=43 targets=2 honoured=1484 -> FAIL target hash docs/analysis/contracts/shipment-bundle.openapi.yaml

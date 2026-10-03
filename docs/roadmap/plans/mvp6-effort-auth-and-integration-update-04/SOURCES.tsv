@@ -1,0 +1,8 @@
+kind	path	sha256	use
+baseline_manifest	docs/roadmap/plans/mvp6-effort-progress-update-03/ARTIFACTS.sha256	89bf5738c2463458476323871ba773defa6f7946f1d798364b01634c6e61c4c1	predecessor integrity
+baseline_effort	docs/roadmap/plans/mvp6-effort-progress-update-03/EFFORT.tsv	913c300ec88c752578ca431bc18ae7ba96c2496cffc8edde5758ae49618122f7	103-row fixed rubric and denominator
+auth_chain_report	docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/SOP-22-VER.md	4c78d15daa03892e8c07139e9ba637daa2a6c516a0281715d4f5290cb4fbd917	fresh Auth-chain PASS and evidence boundary
+auth_chain_manifest	docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/ARTIFACTS.sha256	c9d7be2713e46b1ce2322d568aad80ec5487a00b2469236cca8b3a5da7dc5a47	Auth package integrity
+auth_chain_acceptance	docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/ACCEPTANCE.tsv	3366f372607f9107b87a98a6a219b86bdff3fcb4761d61d29a6cebb91c18eb3e	fresh and inherited row separation
+shipment_rework_report	docs/records/audits/2026-09/mvp6-shipment-integration-rework-prep-01/SOP-22.md	0920188d47f156ef01cf0b7e7b30d10b72823838fd146d4973ed059295dc37a0	disposable preparation and application boundary
+shipment_rework_manifest	docs/records/audits/2026-09/mvp6-shipment-integration-rework-prep-01/ARTIFACTS.sha256	c85f0fecb1520ae398d0286e84796344e8feeca88c78a86f82fda00be2119d55	rework package integrity

@@ -1,0 +1,21 @@
+id	module	category	deliverable	state	optimistic_hours	most_likely_hours	pessimistic_hours	source	boundary
+FC-0186-1	0186	Pack/tasarım	UI pack revision, Phase 1.5, dispatch closure (delta vs 0186-1-REMAINING)	REMAINING	0.4	2	6.4	docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/EFFORT.md	4/8/16 replaces 3.6/6/9.6; pack revision applied (Q46) but no split from Phase 1.5/dispatch closure, so no credit
+FC-0186-4	0186	Frontend	List/create/transition UI, 7 languages, module tests (delta vs 0186-4-REMAINING)	REMAINING	3.2	4	-8	docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/EFFORT.md	32/52/88 replaces 28.8/48/96
+FC-0186-5	0186	Entegrasyon	Shared UI integration 8/16/28 + backend uptake 6/10/16 (delta vs 0186-5-REMAINING)	REMAINING	2	6	12	docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/EFFORT.md	14/26/44 replaces 12/20/32
+FC-0186-6	0186	Test/VER	Independent UI VER 14/24/40 + module E2E 6/10/16 (delta vs 0186-6-REMAINING)	REMAINING	8	14	24	docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/EFFORT.md	20/34/56 replaces 12/20/32
+FC-0187-1	0187	Pack/tasarım	UI pack revision, Phase 1.5, dispatch closure (delta vs 0187-1-REMAINING)	REMAINING	0.4	2	6.4	docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/EFFORT.md	4/8/16 replaces 3.6/6/9.6; pack revision applied (Q38) but no split, so no credit
+FC-0187-4	0187	Frontend	List/create/transition UI with exact amounts (delta vs 0187-4-REMAINING)	REMAINING	-3.6	-6	-28	docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/EFFORT.md	30/50/84 replaces 33.6/56/112
+FC-0187-5	0187	Entegrasyon	Shared UI integration 8/16/28 + backend uptake 6/10/16 (delta vs 0187-5-REMAINING)	REMAINING	2	6	12	docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/EFFORT.md	14/26/44 replaces 12/20/32
+FC-0187-6	0187	Test/VER	Independent UI VER 14/24/40 + module E2E 6/10/16 (delta vs 0187-6-REMAINING)	REMAINING	8	14	24	docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/EFFORT.md	20/34/56 replaces 12/20/32
+FC-SR-PACK	SHARED	Pack/tasarım	Self-registration pack/DCP sections (DCP-009 §21; 0183–0187)	DELIVERED	3	5	8	docs/roadmap/plans/mvp6-self-registration-prep-01/EFFORT.md; docs/records/audits/2026-09/mvp6-ct-disposition-q46-q47-q49-2026-09-26.md; docs/records/audits/2026-09/mvp6-ct-disposition-q53-q54-2026-09-26.md	Applied with independent VER PASS (Q47/Q49, Q53/Q54); CT records give NO product credit, so not in CT-accepted
+FC-SR-FOUND	SHARED	Backend	Self-registration foundation + F-01…F-06	REMAINING	4	8	14	docs/roadmap/plans/mvp6-self-registration-prep-01/EFFORT.md	Overlay per SR-D4; applied at final integration
+FC-SR-0183	0183	Backend	ShipmentTrackingPod provider + M-01…M-08	REMAINING	4	6	10	docs/roadmap/plans/mvp6-self-registration-prep-01/EFFORT.md	Ships with the module UI (D4) as overlay
+FC-SR-0184	0184	Backend	CarrierManagement provider + both-direction tests	REMAINING	2	4	7	docs/roadmap/plans/mvp6-self-registration-prep-01/EFFORT.md	Adapts the unapproved candidate
+FC-SR-0185	0185	Backend	RoutingLoadPlanning provider + tests	REMAINING	2	3	6	docs/roadmap/plans/mvp6-self-registration-prep-01/EFFORT.md	Only after the Loads UI exists
+FC-SR-0186	0186	Backend	ReverseLogistics provider + tests (D5 ForTarget)	REMAINING	3	5	9	docs/roadmap/plans/mvp6-self-registration-prep-01/EFFORT.md	Ships with the Returns UI
+FC-SR-0187	0187	Backend	ClaimsManagement provider + tests	REMAINING	3	5	9	docs/roadmap/plans/mvp6-self-registration-prep-01/EFFORT.md	Ships with the Claims UI
+FC-SR-GUARDS	SHARED	Test/VER	Frontend guards W-01, W-02, W-04	REMAINING	4	8	14	docs/roadmap/plans/mvp6-self-registration-prep-01/EFFORT.md	Source-parsing guards
+FC-SR-NAV	SHARED	Entegrasyon	Nav keys 11 × 7 languages + l10n review	REMAINING	2	4	8	docs/roadmap/plans/mvp6-self-registration-prep-01/EFFORT.md	Possible overlap with Q33 shared-integration rows (nav) — not netted; see ASSUMPTIONS A7
+FC-SR-R01	SHARED	Test/VER	Reconcile-state R-01 Platform fixture test	REMAINING	3	6	12	docs/roadmap/plans/mvp6-self-registration-prep-01/EFFORT.md	
+FC-SR-R0204	SHARED	Test/VER	Runtime R-02…R-04	REMAINING	4	8	16	docs/roadmap/plans/mvp6-self-registration-prep-01/EFFORT.md	Native executor
+FC-SR-VER	SHARED	Test/VER	Self-registration independent VER	REMAINING	4	8	14	docs/roadmap/plans/mvp6-self-registration-prep-01/EFFORT.md	

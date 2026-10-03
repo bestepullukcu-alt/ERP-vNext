@@ -1,0 +1,12 @@
+item	state_at_run	module	hours_at_stake_omp	what_releases_it	mac_dependent
+Q86 text patches P1-P5 (Q83)	applied; no Q87 report at start (REPORT.md PASS 9/9 appeared ~19:50, CT disposition open)	0187/0190/0192/SHARED	0 (pack text)	Q87 PASS + CT disposition	no
+Q64b Claims UI draft build+test+runtime	READY (local Mac)	0187	Frontend 30/50/84; Backend 3/5/9	writer complete, then UI VER	yes
+Q77b Loads uptake + F-1 build+test+runtime	READY (local Mac)	0185	Backend 3.5/6/11; Test/VER 4/7/11	writer complete	yes
+Q84b S&OP UI draft build+test+runtime	READY (local Mac)	0190	Frontend 28/44/72	writer complete	yes
+Q88c then Q88b Capacity UI revision + build	Q88c HELD (after Q93); Q88b READY	0192	Frontend 32/52/88	Q93 -> Q88c -> Q88b	yes
+Q61 Shipment isolated final VER (A01-A07, A15; PNG)	READY (local Mac)	0183	0183-6-REMAINING 12/20/36	independent VER + CT	yes
+Q62 Carrier UI source archive	READY (local Mac)	0184	0 (SH-CARRIER-SRC unestimated)	archive + CT	yes
+Q64 / Q65 Claims / Returns UI DEV (isolated)	READY (local Mac)	0187/0186	Frontend rows	writer complete	yes
+Q24b evidence kit validation	READY (local Mac)	SHARED	0 (SH-KIT unestimated)	validation + CT	yes
+Q91 Returns UI draft overlay	IN-PROGRESS (parallel lane)	0186	0 while a draft	CT verdict, then Mac build	later
+Q92 / Q93 text patches R1-R3 (Q90)	DECISION-REQUIRED / HELD	0190/0192	0 (pack text)	owner sign-off, apply, VER	no

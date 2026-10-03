@@ -1,0 +1,15 @@
+artifact	sha256
+docs/roadmap/plans/mvp6-supplier-spec-split-01/DECISION-BINDING.md	1cda9f581959b83c2c83f8cff9eb8bc5b2a029c7127ddbd40c424f1a2867646b
+docs/roadmap/plans/mvp6-supplier-spec-split-01/COMMON-SEAM-GAPS.md	148883b439062245a19167e6489f0dc4ccb259e7d52a542b3ca53340a93daa84
+docs/roadmap/plans/mvp6-supplier-spec-split-01/CONCURRENCE-MATRIX.md	af53ab5366a88ce287e8f56af30fd0010121643b692d81ece4318774aa0102f4
+docs/roadmap/plans/mvp6-mod0147-spec-split-01/SPEC-DELTA.md	68732d5ae31740e0954b712229ccf17b2fbccb1bba31b4e95c84e699d5dd4ced
+docs/roadmap/plans/mvp6-mod0147-spec-split-01/ACCEPTANCE-TEST-MAP.tsv	4b6a967a1c2cbec0499068a3fbf8249bf32073cdb59977acb563c0d8ad5becf0
+docs/roadmap/plans/mvp6-mod0147-spec-split-01/CONCURRENCE-OPEN.md	49df3cb3f008c639fe15385513e6cbff7f339a61e9a477d4f54841abf84dcd78
+docs/roadmap/plans/mvp6-mod0148-spec-split-01/SPEC-DELTA.md	6dce93fde8c4069a2524193f6a593ee5b64300ba000f199af77655fd66cb0076
+docs/roadmap/plans/mvp6-mod0148-spec-split-01/ACCEPTANCE-TEST-MAP.tsv	883f31f19ee7feff1cc88d5333934fb9439f9f3579906fc865cccf9c0423816e
+docs/roadmap/plans/mvp6-mod0148-spec-split-01/CONCURRENCE-OPEN.md	073e56a894cf6e250711e1a2a7de300987560dc8b2308aa08084d64f751fb71c
+docs/analysis/contracts/supplier.openapi.yaml	87a297edfb8eabf9ecc8beff7870955f46b38413a1490a05a36e3f255d77bb00
+docs/analysis/contracts/supplier-performance.openapi.yaml	9100d106527947a0a842bc5c4b580fbb2c3b6a288949798b8416a08d352e0088
+execution/domains/supply-chain-execution/domain-config.md	c49ec37a45b492e22988fdf7225aaa90b68c7a09fa4d0491dea06fe7cd793fe3
+execution/domains/supply-chain-execution/module-packs/MOD-0147-supplier-performance-risk.md	66dc6a653040ad2b185709ff1f842950812652bee320be32e5f2cc902ee25095
+execution/domains/supply-chain-execution/module-packs/MOD-0148-supplier-portal.md	095f77ffd6c1bd9861c185b740b6fb9322cf8cda216c3818525f88f9d6887c42

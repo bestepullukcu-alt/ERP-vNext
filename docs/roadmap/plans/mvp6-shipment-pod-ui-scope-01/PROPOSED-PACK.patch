@@ -1,0 +1,86 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md
+@@ -3,16 +3,16 @@
+ name: Shipment Tracking & POD
+ domain: supply-chain-execution
+ service: Diten.SupplyChainService
+-shell: none
+-golden_reference: none
++shell: tenant
++golden_reference: compact
+ entity_base: EntityBase
+ status: ready-for-dev
+-status_note: "Phase A spec approved by owner on 2026-09-15; first executable slice is backend/contract only. WAREHOUSE-OUTBOUND v1 is present; adapter compatibility and integrated acceptance remain separately gated."
++status_note: "Bounded backend acceptance remains ready-for-dev; proposed tenant Shipment/POD UI delta is unapproved and UI DEV/VER remain HELD; see section 22."
+ owner: supply-chain-execution / control-tower
+ branch: feature/mvp6-logistics
+ started: 2026-09-15
+ target: 2026-09-30
+-form_field_count: 0
++form_field_count: 13
+ ---
+ 
+ # MOD-0183 — Shipment Tracking & POD
+@@ -314,7 +314,62 @@
+ are internal/read-model responsibilities, not authorization to invent endpoints. Carrier/load assignment commands
+ listed conceptually in §3 are not implemented without an approved frozen assignment surface. `loadId`/`carrierId`
+ remain nullable read-model references. Shipment event production is in scope; the bundle webhook documents consumer
+ intake and does not authorize a new public Shipment event-ingest endpoint.
+ 
+ **Status:** core planning/approval recorded; automatic Warehouse intake NOT READY; runtime acceptance NOT READY.
+ All §16 implementation acceptance boxes remain open. MOD-0184 remains draft and sequence-gated.
++
++## 22. Proposed tenant Shipment/POD UI delta — MVP6-SHIPMENT-POD-UI-SCOPE-PREP-01 (unapproved)
++
++This section is a proposed UI expansion. It does not reopen or broaden bounded backend/root acceptance and does not
++turn the pack's existing backend `ready-for-dev` state into UI authority. UI dispatch remains HELD until the exact
++pack target, UI Phase 1.5, immutable source transfer and shared integration patch are separately approved.
++
++### 22.1 Contract-faithful screen surface
++
++The first tenant UI owns only the published operations `queryShipments`, `createShipment`, `getShipment`,
++`transitionShipment` and `captureProofOfDelivery`. It must not add edit/delete/bulk/assignment, standalone lifecycle
++or POD queries, reconciliation, file upload, worker, stock mutation, producer intake or any new backend operation.
++Browser traffic is same-origin to MVC adapters; their only downstream is Gateway port 5000.
++
++The create form has 13 user-entered fields: seven top-level values (`sourceModule`, `sourceType`,
++`sourceDocumentId`, `warehouseReferenceId`, `shipToReference`, `plannedShipAt`, optional `plannedDeliverAt`) and
++six repeatable line values (`lineNumber`, `itemId`, `skuId`, `quantity`, `uomId`, optional
++`inventoryReferenceId`). Therefore `shell: tenant`, `golden_reference: compact`, `form_field_count: 13`.
++There is a separate Create and read-only Details route; no Edit route exists because no edit command is published.
++Transition and POD are bounded action surfaces and do not change the create field count.
++
++### 22.2 Permissions, security and presentation
++
++- Nav/list/detail: `supplychain.shipments.read`; create: `.create`; non-cancel transition: `.dispatch`;
++  Cancelled target: `.cancel`; POD: `.pod.capture`. `reconcile` has no UI action.
++- Missing read renders only UAS-001 access denial. Missing mutation grants remove only the corresponding action;
++  direct MVC/backend invocation remains server-authorized.
++- Tenant and legal entity never appear in UI query/body/form fields. Cross-tenant/cross-LE/deleted/unknown records
++  share the safe 404 presentation.
++- Tenant UI ships en/tr/fr/es/zh/ar/ru, including Arabic RTL and measured responsive states. Wire enum/error tokens
++  are not translated. DataTables v2 and Premium SweetAlert2/shared wrappers are mandatory.
++
++### 22.3 Lifecycle, replay, error and correlation
++
++The UI offers only the frozen lifecycle arrows; the server remains authoritative under races. POD is offered only
++from Dispatched or InTransit and sends evidence reference strings, never binary upload. One logical create,
++transition or POD intent owns one stable idempotency key. Unknown-result retry uses the exact key and payload;
++changed payload is a new intent. Replay is accepted only from the response and is followed by a current-state reload.
++
++Published status/code/body behavior is preserved, including validation, safe 404, 409
++`IDEMPOTENCY_KEY_REUSED`, 409 `POD_ALREADY_CAPTURED`, 422 `INVALID_SHIPMENT_TRANSITION` and dependency failure.
++The request/error correlation UUID is a support trace. Detail `lifecycleCorrelationId` is a nullable authoritative
++persisted business root; missing/null is displayed unavailable and never derived from trace or identity.
++
++### 22.4 Ownership and gates
++
++The 28 paths in `docs/roadmap/plans/mvp6-shipment-pod-ui-scope-01/OWNED-PATHS.txt` are the complete prospective
++UI allowlist. Gateway, shared shell, module/permission registration, navigation resources, Program.cs, backend,
++canonical and guard files remain outside it. A single integration owner must bind those shared changes to exact
++preimage/patch/target hashes on an authorized immutable target.
++
++UI Phase 1.5 design is recorded in `PHASE15-ACCEPTANCE.tsv`. Remaining gates are: owner approval and exact
++application of this pack delta; durable source/transfer authority; exact shared integration decision; Phase 1.5
++evidence closure; versioned UI DEV dispatch; writer-complete; and independent browser VER. Until then:
++**UI DEV HELD; UI VER HELD; no UI/shared/gateway write authority.**

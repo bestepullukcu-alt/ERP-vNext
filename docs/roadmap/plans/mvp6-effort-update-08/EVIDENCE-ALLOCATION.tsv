@@ -1,0 +1,10 @@
+delivery_or_finding	controlling_state	gross_omp	existing_reserve	successor_numeric_treatment	rationale
+0183-R2-04 Root real-Auth browser regression	CT_ACCEPTED (A12 VER-02)	2/4/8	0183-6-REMAINING 14/24/44	Transfer 2/4/8 remaining to delivered	Existing CT row mapping; retention conditions (browser lane, PNG) now met for this row
+UI183-A12 safe-404 + A08/A09 regression	CT_ACCEPTED_RUNTIME	N/A	0183-6-REMAINING	No additional numeric credit	No controlling O/M/P split beyond R2-04
+Shipment rows A01, A02, A04–A07, A10, A13, A14, A15	OPEN / RERUN REQUIRED	Unsplit	0183-6-REMAINING 12/20/36	Retain	Final isolated VER (Q61) and decisions DN-01/DN-02/PC pending
+Loads root seam disposition/candidate/publication	CT_ACCEPTED	4/8/16 (estimate); reserve 4.8/8/12.8	0185-2-REMAINING	Transfer full reserve 4.8/8/12.8	Estimate maps M 8 onto this reserve; P excess 3.2 unallocated
+Loads producer uptake (decision C, option A)	GRANTED / NOT STARTED	UNESTIMATED	possibly 0185-3-REMAINING 9.6/16/25.6	No credit; no estimate	Preflight of the uptake WP must give O/M/P
+Claims/Returns pack applies	APPLIED_VER_PASS	N/A	0186-1 / 0187-1 REMAINING	No credit	Pack text; CT: no product credit
+Self-registration pack/DCP sections	APPLIED_VER_PASS	3/5/8	forecast only	Forecast delivered; not CT-credited	Outside frozen denominator
+Durable PNG method	OWNER_DECIDED	N/A	module Test/VER reserves	No credit	Method only; captures per module
+Carrier PNG / final UI VER	OPEN	Unsplit	0184-6-REMAINING 9.6/16/25.6	Retain	No new evidence

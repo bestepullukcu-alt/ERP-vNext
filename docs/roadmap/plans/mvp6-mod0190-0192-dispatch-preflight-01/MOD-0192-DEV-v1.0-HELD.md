@@ -1,0 +1,15 @@
+# HELD — MOD-0192 core DEV v1.0
+
+**Do not dispatch until SOP-22 gate table is closed and a new CT release marks this prompt active.** This file grants no runtime authority.
+
+WP: MVP6-MOD0192-CORE-DEV-01 · Lane: isolated CapacityPlans writer · Profile: bounded backend core/executor · Required evidence: E4 where runnable.
+
+Repository `/Users/natig/Projects/ERP-vNext-recovery`, branch `feature/mvp6-logistics`, prepared HEAD `4a8d4d4b339528a88e6220fb8402e5a2c771136c`. Actual dispatch HEAD/worktree and dirty baseline **must be freshly recorded**. Use a registered isolated worktree under GIT-002. Read AGENTS.md, relevant Antigravity orchestrator/security/repository/Mongo rules, **then promoted** MOD-0192 pack, this preflight SOP-22, `MOD-0192-OWNED.tsv`, `MOD-0192-INPUTS.tsv`/archive, published exact SANDOP-CAPACITY YAML+annex, approved C192/executor decisions and Phase 1.5. Verify archive hashes and pin published contract separately; do not mistake the proposed final bytes inside the archive for publication. Stop for draft pack, unexplained drift, missing runtime owner authority or contract mismatch.
+
+**NE:** Implement only the six-operation CapacityPlans core in the 43 prospective feature/test paths, subject to a separately approved exact path adjustment. DEMAND and constraint references use tenant/LE-scoped exact **test fixtures**, not invented live endpoints. Terminal results come from the approved literal fixture oracle, not a general optimizer. Persist Accepted/active slot/receipt/audit atomically; feature-local executor may progress Accepted→Running→Completed/Failed using approved claim/attempt, Mongo server-time 30s lease, 10s scan/renewal, version/fence, three-claim and single terminal-effect policy. Treat those intervals as settings, not deadlines or exactly-once computation. Atomic terminal write includes result, slot release, audit and one Pending outbox event. No Event Bus publisher.
+
+**YAPMA:** Write Program.cs, common hosted-service registration/DI/project/pipeline, shared permissions, gateway, peer SandopPlans, canonical/guard, DEMAND or constraint producers, UI, optimizer/publisher, commit/push/stash. Feature-local executor type alone is not startup composition; hand off exact required shared change to one integration owner.
+
+**DOĞRULA:** Build, contract/schema tests, then separately authorized composed HTTP/JWT and DB-010 replica-set E4. Prove scoped fixture rejection, exact replay/changed payload, tenant/LE/RBAC/soft-delete, active-slot concurrency, persisted attempt/fence/renewal, stale terminal 0 write, X01–X10 process/restart/unknown-commit scenarios, single durable terminal effect and Pending event. The prior standalone Mongo `$$NOW` smoke is syntax evidence only. Deliver changed-file/source→binary→process manifest, command/exit/raw archive, exact gaps and SOP §22 writer-complete. Independent VER uses another snapshot.
+
+**Reservation only:** API 56192, Mongo 57192, fixed `DitenSupplyChain_Mod0192_Test`; recheck ports, use separate replica/data/evidence. Program.cs registration remains one CT-assigned integration-agent lane after feature types compile.

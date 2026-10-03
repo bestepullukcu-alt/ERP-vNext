@@ -1,0 +1,98 @@
+# Python emulation of tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
+# (ReadAuthority payload/pin checks + VerifyRoot scan). Evidence aid only; the .NET test is authoritative.
+import hashlib, json, os, re, sys
+
+NAME = r"A-Za-z0-9_.-"
+SLASHED = re.compile(rf"(?<![{NAME}])docs[/\\]+(?P<x>[{NAME}]+)[/\\]")
+COMBINED = re.compile(rf'"docs"\s*,\s*@?"(?P<x>[{NAME}]+)"\s*,')
+SLASHED_PARENT = re.compile(rf"(?P<p>[{NAME}]+)[/\\]+$")
+COMBINED_PARENT = re.compile(r'"(?P<p>[^"]+)"\s*,\s*$')
+FIVE = {"vendor", "records", "roadmap", "guides", "reference"}
+EXT = {".cs", ".cshtml", ".js", ".py", ".sh", ".ps1", ".json", ".csproj", ".css", ".html", ".yaml", ".yml", ".xml", ".resx"}
+PRUNED_NAMES = {"obj", "bin", "node_modules", ".git", ".git-backups", ".claude", ".logs", ".vscode"}
+PRUNED_PATHS = ["frontend/Diten.Web/wwwroot/assets/vendor", "frontend/_Reference"]
+AUTH = "docs/reference/architecture/docs-path-authority.json"
+
+sha = lambda b: hashlib.sha256(b).hexdigest()
+
+def raw_value_span(text, key):
+    """Exact source text of a top-level property's value (JsonElement.GetRawText equivalent)."""
+    depth, i, n = 0, 0, len(text)
+    while i < n:
+        c = text[i]
+        if c == '"':
+            j = i + 1
+            while text[j] != '"':
+                j += 2 if text[j] == '\\' else 1
+            s = text[i + 1:j]
+            i = j + 1
+            if depth == 1 and s == key:
+                while text[i] in ' \t\r\n': i += 1
+                assert text[i] == ':'; i += 1
+                while text[i] in ' \t\r\n': i += 1
+                start, d, k = i, 0, i
+                while True:
+                    ch = text[k]
+                    if ch == '"':
+                        k += 1
+                        while text[k] != '"':
+                            k += 2 if text[k] == '\\' else 1
+                    elif ch in '[{': d += 1
+                    elif ch in ']}':
+                        d -= 1
+                        if d == 0: return text[start:k + 1]
+                    k += 1
+            continue
+        if c in '[{': depth += 1
+        elif c in ']}': depth -= 1
+        i += 1
+    raise KeyError(key)
+
+def payload(text):
+    return raw_value_span(text, "canonicalTargets") + "\n" + raw_value_span(text, "sealedInputs")
+
+def directories(root):
+    stack = [root]
+    while stack:
+        cur = stack.pop()
+        for e in os.scandir(cur):
+            if not e.is_dir(follow_symlinks=False): continue
+            if e.name in PRUNED_NAMES: continue
+            rel = os.path.relpath(e.path, root).replace('\\', '/')
+            if any(rel == p or rel.startswith(p + "/") for p in PRUNED_PATHS): continue
+            yield e.path; stack.append(e.path)
+
+def hits(line, nested):
+    for m in SLASHED.finditer(line):
+        p = SLASHED_PARENT.search(line[:m.start()])
+        if p and p.group("p") in nested: continue
+        yield m.group("x")
+    for m in COMBINED.finditer(line):
+        p = COMBINED_PARENT.search(line[:m.start()])
+        if p and p.group("p") in nested: continue
+        yield m.group("x")
+
+def file_hits(data, nested):
+    text = data.decode("utf-8-sig", errors="replace")
+    out = []
+    for i, line in enumerate(re.split(r"\r\n|\r|\n", text)):
+        for x in hits(line, nested): out.append((i + 1, x))
+    return out
+
+def scan(root, overrides=None):
+    overrides = overrides or {}
+    dirs = list(directories(root))
+    nested = {os.path.basename(os.path.dirname(d)) for d in dirs if os.path.basename(d) == "docs" and os.path.dirname(d) != root}
+    result = {}
+    for d in [root] + dirs:
+        for e in os.scandir(d):
+            if e.is_file() and os.path.splitext(e.name)[1].lower() in EXT:
+                rel = os.path.relpath(e.path, root).replace('\\', '/')
+                data = overrides.get(rel)
+                if data is None:
+                    with open(e.path, "rb") as f: data = f.read()
+                result[rel] = file_hits(data, nested)
+    for rel, data in overrides.items():  # files that only exist virtually
+        if rel not in result and os.path.splitext(rel)[1].lower() in EXT:
+            result[rel] = file_hits(data, nested)
+    return result, nested

@@ -1,0 +1,4 @@
+alias	email	tenant_id	legal_entity_id	profile
+actor-a	<fixture-email-a>	<tenant-guid>	<le-a-guid>	browser-profile-1
+actor-b	<fixture-email-b>	<tenant-guid>	<le-a-guid>	browser-profile-2
+actor-le-b	<fixture-email-c>	<tenant-guid>	<le-b-guid>	browser-profile-3

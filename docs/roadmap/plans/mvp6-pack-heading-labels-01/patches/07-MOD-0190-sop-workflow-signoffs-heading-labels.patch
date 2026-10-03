@@ -1,0 +1,14 @@
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md b/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
+@@ -246,7 +246,9 @@ Status is `ready-for-dev` for the exact isolated core scope. Shared composition
+ 
+ The owner-approved pack binds the six operations to published YAML `9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3` and annex `eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda`. D190-01…03 bounded fixture/JWT/Pending scope and D190-04/05 candidate design were later followed by exact consumer consent/publication. The separate 2026-09-22 owner decision approved draft target SHA-256 `04f2e36f89cae0a21300217b63756b0cd3104c33af145d985b9fc101a83b38a2`, its Phase 1.5 design and isolated core DEV/VER within the 38-path allowlist. The promotion status diff has its own hash; this promoted pack is not the draft target hash. Shared Program.cs composition, live integrations and broader acceptance remain excluded.
+ 
+-## 22. Accepted bounded scope binding (PACK-ALIGNMENT-01 proposal — NOT APPROVED)
++## 22. Accepted bounded scope binding
++
++Approved: `docs/records/decisions/2026-09/mvp6-sop-pack-promotion-owner-decision-q27-01.md`
+ 
+ This section records, without changing any business rule above, the Control Tower acceptance that the owner-promoted isolated pack produced. It is a proposal until the owner decision in `docs/roadmap/plans/mvp6-pack-alignment-01/mod-0190-sop/PROMOTION-DECISION.md` is recorded.
+ 

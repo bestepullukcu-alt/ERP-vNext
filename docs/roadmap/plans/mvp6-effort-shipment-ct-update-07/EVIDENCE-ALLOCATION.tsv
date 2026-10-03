@@ -1,0 +1,13 @@
+delivery_or_finding	controlling_state	gross_omp	existing_reserve	successor_numeric_treatment	rationale
+0183-R2-02 Root mutation application	CT_ACCEPTED	4/8/16	0183-3-REMAINING 9.6/16/25.6	Transfer 4/8/16 remaining to delivered	Exact CT row mapping authorizes closure; total estimate unchanged
+0183-R2-03 Independent runtime VER	CT_ACCEPTED	6/12/20	0183-6-REMAINING 20/36/64	Transfer 6/12/20 remaining to delivered	Exact CT row mapping authorizes closure; total estimate unchanged
+0183-R2-04 Root browser regression	FUNCTIONAL_FLOW_EVIDENCED_BUT_PARTIAL	2/4/8	0183-6-REMAINING after transfer	Retain full 2/4/8 within remaining	UI CT explicitly retains reserve because PNG and broader browser acceptance remain; no approved split
+SHIP-UI-B01 implementation	CT_ACCEPTED_FUNCTIONAL	N/A	0183 Frontend already fully delivered; narrow defect closure within Test/VER	No additional numeric credit	A new estimate would double-count already credited UI implementation or invent an allocation
+SHIP-UI-B01 independent VER	CT_ACCEPTED_FUNCTIONAL	N/A	0183-6-REMAINING	No additional numeric credit	Same verification reserve; no controlling O/M/P split
+SHIP-UI-B02 implementation	CT_ACCEPTED_FUNCTIONAL	N/A	0183 Frontend already fully delivered; narrow defect closure within Test/VER	No additional numeric credit	A new estimate would double-count already credited UI implementation or invent an allocation
+SHIP-UI-B02 independent VER	CT_ACCEPTED_FUNCTIONAL	N/A	0183-6-REMAINING	No additional numeric credit	Same verification reserve; no controlling O/M/P split
+Persistent PNG	OPEN	Unsplit	0183-6-REMAINING	Retain remaining reserve	Mandatory evidence absent; no waiver
+Loads transition UI	REMAINING_ESTIMATED	16/28/48	Latest composite baseline	Preserve; do not add again	Already included by Loads remaining-scope estimate
+Loads root producer implementation	OPEN_UNESTIMATED	UNESTIMATED	Potential overlap unknown until exact runtime scope	No numeric credit or estimate	Final version/publication/runtime uptake unresolved
+Loads detail and lookup	OPEN_SCOPE_UNESTIMATED	UNESTIMATED	None approved	No numeric credit or estimate	Owner scope decisions absent
+
