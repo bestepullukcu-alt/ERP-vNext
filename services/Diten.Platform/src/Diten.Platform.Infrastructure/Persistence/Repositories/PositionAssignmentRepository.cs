@@ -62,7 +62,7 @@ public sealed class PositionAssignmentRepository : TenantRepository<PositionAssi
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
 
-    // WP-CL-BE-3 — the assignments of these positions only, over ix_position_assignments_position_interval
+    // WP-CL-BE-3 — the assignments of these positions only, over ix_position_assignments_position_from
     // (tenant + non-deleted come from the base execution filter). Replaces the workflow resolver's whole-table read.
     public async Task<IReadOnlyList<PositionAssignment>> GetByPositionIdsAsync(
         IReadOnlyCollection<Guid> positionIds,

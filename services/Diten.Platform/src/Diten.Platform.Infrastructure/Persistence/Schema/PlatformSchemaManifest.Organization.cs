@@ -150,22 +150,25 @@ public static partial class PlatformSchemaManifest
             PlatformCollections.PositionAssignments,
             () => new CreateIndexModel<PositionAssignment>[]
             {
+                    // BL-526 — EffectiveFrom only, not EffectiveTo. Both dates are stored as [ticks, offset] arrays
+                    // (BL-030), and Mongo refuses to index a document in which two fields of one index are arrays:
+                    // the *_interval indexes these replace made every seat with an end date unwritable. The end date
+                    // is a residual filter on the rows the prefix finds. The retired names are dropped at startup
+                    // (PlatformSchemaMigrations.RetiredPositionAssignmentIndexes).
                     new CreateIndexModel<PositionAssignment>(
                         Builders<PositionAssignment>.IndexKeys
                             .Ascending(x => x.TenantId)
                             .Ascending(x => x.PositionId)
                             .Ascending(x => x.EffectiveFrom)
-                            .Ascending(x => x.EffectiveTo)
                             .Ascending(x => x.IsDeleted),
-                        new CreateIndexOptions { Name = "ix_position_assignments_position_interval" }),
+                        new CreateIndexOptions { Name = "ix_position_assignments_position_from" }),
                     new CreateIndexModel<PositionAssignment>(
                         Builders<PositionAssignment>.IndexKeys
                             .Ascending(x => x.TenantId)
                             .Ascending(x => x.UserId)
                             .Ascending(x => x.EffectiveFrom)
-                            .Ascending(x => x.EffectiveTo)
                             .Ascending(x => x.IsDeleted),
-                        new CreateIndexOptions { Name = "ix_position_assignments_user_interval" })
+                        new CreateIndexOptions { Name = "ix_position_assignments_user_from" })
 
             }),
         Collection<PersonReference>(

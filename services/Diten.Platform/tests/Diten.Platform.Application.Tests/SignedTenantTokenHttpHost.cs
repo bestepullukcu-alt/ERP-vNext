@@ -112,6 +112,14 @@ internal sealed class SignedTenantTokenHttpHost : IDisposable
         return await client.PostAsync(path, new StringContent(json, Encoding.UTF8, "application/json"));
     }
 
+    /// <summary>PUTs the JSON exactly as written (BL-526: the organization screens save a seat with PUT).</summary>
+    public async Task<HttpResponseMessage> PutJsonAsync(string path, string bearerToken, string json)
+    {
+        var client = _server.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+        return await client.PutAsync(path, new StringContent(json, Encoding.UTF8, "application/json"));
+    }
+
     /// <summary>
     /// GETs <paramref name="path"/>; no <c>Authorization</c> header when <paramref name="bearerToken"/> is null, and an
     /// <c>X-Tenant-Id</c> header only when <paramref name="tenantHeader"/> is given (WP-BRD-TENANT-CRM-SETS).

@@ -119,7 +119,25 @@ public static class PlatformSchemaMigrations
         await DropIndexIfExistsAsync(
             database.GetCollection<Domain.Entities.TimeEntry.TimeEntry>(PlatformCollections.TimeEntryEntries).Indexes,
             RetiredTimeEntryEntriesIndex);
+
+        // BL-526 — the two seat indexes held BOTH dates, each stored as an array (BL-030): Mongo refused every seat
+        // with an end date ("cannot index parallel arrays"). Their EffectiveFrom-only successors have NEW names, so
+        // the old ones are dropped here, before the manifest builds the new ones. Until this drop has run on a
+        // database, ending a seat there still fails.
+        var positionAssignments = database.GetCollection<Domain.Entities.Organization.PositionAssignment>(
+            PlatformCollections.PositionAssignments);
+        foreach (var retired in RetiredPositionAssignmentIndexes)
+        {
+            await DropIndexIfExistsAsync(positionAssignments.Indexes, retired);
+        }
     }
+
+    /// <summary>BL-526 — the seat indexes over both dates, retired; named so a test can pin the retirement.</summary>
+    public static IReadOnlyList<string> RetiredPositionAssignmentIndexes { get; } =
+    [
+        "ix_position_assignments_position_interval",
+        "ix_position_assignments_user_interval"
+    ];
 
     /// <summary>The T1a entries index (no SourceRef) that v2 F8 retired — named so a test can pin the retirement.</summary>
     public const string RetiredTimeEntryEntriesIndex = "ux_time_entry_entries_tenant_week_date_target_source";
