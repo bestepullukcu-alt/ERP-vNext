@@ -12,14 +12,14 @@
   Optional:
       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
 
-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health.
+  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health.
   Nothing is hard-deleted: every record this script creates is closed with the ARCHIVE endpoint.
 #>
 [CmdletBinding()]
 param(
     [string]$BaseUrl   = "http://localhost:5000",
     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
-    [string]$CrmDirect = "http://localhost:5061"
+    [string]$CrmDirect = "http://localhost:5065"
 )
 
 $ErrorActionPreference = "Stop"
@@ -57,7 +57,7 @@ $atIso         = (Get-Date).ToUniversalTime().AddHours(1).ToString("yyyy-MM-ddTH
 Write-Host "== MOD-0164-FU02 authenticated consent/preference smoke ($run) ==" -ForegroundColor Cyan
 
 # ---------------- 1. Fleet health / preflight ----------------
-foreach ($p in @(5000,5001,5056,5057,5061)) {
+foreach ($p in @(5000,5001,5056,5057,5065)) {
     $code = Status "http://localhost:$p/"
     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
 }
