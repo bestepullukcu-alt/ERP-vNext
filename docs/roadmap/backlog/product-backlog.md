@@ -7630,6 +7630,17 @@ istekte döndürüyor (`GetTaskAssignmentPersonLookupHandler.cs:80-81`); BL-057 
 kapattığı kapının yan penceresi. Görev talebi için yazılan arama ucu (en az 3 harf, en çok 10 sonuç, hız sınırı, yalnız ad + şirket +
 pozisyon) bu ucun da yerini almalı. Hukuk kararları belgesine girer (şirketler arası ad görünürlüğü). Gelecek regresyon riski: 🟡.
 
+**Ek 2026-10-04 — yalnız sunucu değişikliği iki akışı kırar; paket ayrıldı.** WP-PLATFORM-SCOPE-SMALL-01 madde B olarak gönderildi;
+yürütme sohbeti kod yazmadan durdu, CT kodda doğruladı (lookup-scope @605f37d68). Ucu açılışta tüm listeyle dolduran iki çağıran var:
+(1) görev formu `Tasks/form-page.js:844-848`: gözden geçiren ve onay yöneticisi seçicileri tüm listeyle çiziliyor, düzenlemede kayıtlı
+kimlik var olan seçenek seçilerek gösteriliyor. Arama ucunda açılışta seçenek olmaz: kayıtlı onaycı boş görünür, düzenleme kaydı onu
+silebilir. (2) Görev Merkezi devretme penceresi `WorkCenterNext/app.js:10215-10240`: liste boşsa eylem `DelegateNoEligiblePeople` ile
+reddediliyor; aramasız istek boş dönerse onay devretme tamamen kırılır. Paket birlikte gitmeli: (a) sunucu `?search=` (en az 2–3 harf,
+en çok 10–20, yalnız ad + pozisyon + birim) + kayıtlı kimlikleri ada çeviren `?ids=` çözme ucu, (b) form seçicileri select2 ajax arama
+(aynı formdaki `resolveStoredRecords` kalıbı), (c) devret penceresinde arama kutusu; "boş liste → reddet" kuralı "aramada kimse yok"
+mesajına döner. Hız sınırı: Platform'da istek başına sınırlayıcı ölçülmedi, paketin ilk ölçümü. Ayrı paket olarak açılacak
+(WP-PLATFORM-DECISION-MAKERS-SEARCH-01), dokunulan dizgiler 7 dil (kiracı ekranı).
+
 ---
 
 ### BL-513
