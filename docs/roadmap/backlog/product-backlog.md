@@ -5614,6 +5614,14 @@ DURUM: KISMEN KAPANDI — Auth'un 3 kırmızısı `d9d7b90e` (2026-09-15): izin 
 
 `run_phase1_gates.sh` tam Platform/Auth paketlerini ve vitest'i koşmuyor. Temiz main'de kırmızılar: Platform 68 (İş Referans Verisi Mongo 53 — çoğu yerel replica set/harness gerektiriyor; Doküman Yönetimi 15 — DM kulvarının birleşmemiş dalında düzeltilmiş), Auth 3 (`PermissionScopePreservationTests.Baseline…`, `UserLookupValidationContractTests` ×2), vitest 25 test / 13 dosya (CRM campaign/consent, dialog-one-implementation, diten-tags, global-confirm-input-type, objectives, planning-cycles ×2, pvg-case-intake, strategy ×3, wcn-dialog-one-language). Karşılaştırma listeleri: CT scratchpad. **2026-09-15 (BL-395 ajanı):** İş Referans Verisi'nin 49 Mongo testi tek süreçte de kırmızı; sebep ölçüldü: yerel mongod bir replica set (`rs0`) ve `RunCommandAsync<object>("{ ping: 1 }")` cevaptaki Timestamp türünü `ObjectSerializer` ile okuyamıyor (GSKU `:363`, TenantAssignment `:28`, PublishOperation `:29`); ardından dispose "database is currently being dropped" ile düşüyor. İş Referans Verisi kulvarının işi. Öneri: sahipli kulvarlara dağıtmak; yeşillenen paketleri kapıya eklemek.
 
+**Ek 2026-10-04 (WP-MDM-GSKU-ACCEPT-01 FIX1 ve WP-EMAIL-SHELL-01 FIX1 raporları):** (1) kapı MDM çözümünü yalnız DERLİYOR, MDM testlerinin
+hiçbirini koşmuyor (Application.Tests ve yeni `Diten.MdmService.Api.Tests` dahil); koşturmak runner'da mongod ister (BL-527'nin geçici mongod
+düzeniyle birlikte çözülür). (2) `Diten.BuildingBlocks.Email.Tests` `Diten.Platform.sln`'e girdi, kapıda derleniyor ama koşmuyor (86 test,
+20 ms: kapıya eklemek ucuz). (3) Auth Application'da 59 test macOS'ta hiç koşamıyor: 48'i `OperationalMongoFixture`'daki Windows'a sabit
+`C:\Program Files\MongoDB\…\mongod.exe` yolu, 9'u Windows API (6 adlı semafor, 2 kernel32, 1 boru), 2'si açık test URI'si istiyor. Bu kırmızılar
+her teslimde "ortam kaynaklı" diye geçiyor ve gerçek bir kırmızıyı gizleyebilir. Düzeltme: mongod yolu `DITEN_TEST_MONGOD` / PATH'ten,
+Windows'a bağlı testler `[SkippableFact]` + işletim sistemi koşulu.
+
 ---
 
 ### BL-406
@@ -7885,6 +7893,24 @@ belgede iki dizi alanını (`EffectiveFrom`, `EffectiveTo`) birlikte içeriyordu
 doğrulama: `getIndexes`'te `*_interval` yok, `*_from` var, ekrandan bir koltuk bitirilir. Koruma testi: şema bildirimindeki hiçbir dizin dizi
 olarak saklanan iki alan taşıyamaz (bugün yalnız bu ikisini yakaladı). Açık kalan (BL-030 ailesi): `HasOverlapAsync` `Lt`/`Gt`'yi dizi olarak
 saklanan tarihlerde yapıyor — çakışma kontrolünün doğruluğu ayrı ölçülmeli.
+
+---
+
+### BL-529
+
+**Yöneticinin "Parolayı Sıfırla"sı eski parolayı geçersiz kılmıyor, açık oturumları da düşürmüyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: WP-EMAIL-SHELL-01 FIX1 bağımsız gözden geçirmesi, CT kodda doğruladı · KAYIT: 2026-10-04
+
+`AdminResetPasswordCommandHandler` yalnız sıfırlama belirteci yazıp `RequirePasswordChange` diyor; parola özetine dokunmuyor, yenileme
+belirteçlerini iptal etmiyor (dosyada `Revoke` yok). `LoginCommandHandler.cs:90` eski parolayı kabul ediyor; giriş "parolayı değiştir"
+adımına düşüyor ve eski parolayı bilen kişi yeni parolayı kendisi belirliyor. Senaryo: yönetici hesap ele geçirildi diye sıfırlar, kullanıcı
+hiçbir şey yapmaz, saldırgan eski parolayla girip hesabı kendine alır. Ek: e-posta FIX1 sıfırlama metnine "eski parolanız artık geçerli
+değil" yazmıştı (7 dil); doğru olmadığı için FIX2'de kalkıyor, bu kayıt kapanınca geri gelebilir. Düzeltme: sıfırlama anında parola özeti
+rastgele bir değere çevrilir (davetteki gibi) ve kullanıcının bütün yenileme belirteçleri iptal edilir; denetim kaydı ve güvenlik olayı
+yazılır. Karşılaştırma: SAP'de (SU01 "parola sıfırla") ve Oracle'da yönetici sıfırlaması eski parolayı anında geçersiz kılar, kullanıcı ilk
+girişte yeni parola belirler. Dikkat: dev'de "Parolayı Sıfırla" parola dağıtma yolu olarak kullanılıyor; düzeltmeden sonra kullanıcı bağlantıyı
+kullanana kadar giremez (istenen davranış). Gelecek regresyon riski: 🟡 (giriş akışına dokunur).
 
 ---
 
