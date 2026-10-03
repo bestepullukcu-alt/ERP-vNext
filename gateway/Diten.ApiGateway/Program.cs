@@ -134,7 +134,8 @@ app.UseSerilogRequestLogging(options =>
     {
         diagnosticContext.Set("ServiceName", observabilityOptions.ServiceName);
         diagnosticContext.Set("Environment", observabilityOptions.Environment);
-        diagnosticContext.Set("CorrelationId", httpContext.TraceIdentifier);
+        // INTX FIX3 — the minted id; TraceIdentifier may by now hold a caller's RequestId header (Ocelot).
+        diagnosticContext.Set("CorrelationId", EdgeCorrelation.CorrelationIdOf(httpContext) ?? string.Empty);
         diagnosticContext.Set("RequestPath", httpContext.Request.Path.Value ?? string.Empty);
         diagnosticContext.Set("StatusCode", httpContext.Response.StatusCode);
         diagnosticContext.Set("TraceId", System.Diagnostics.Activity.Current?.TraceId.ToString());

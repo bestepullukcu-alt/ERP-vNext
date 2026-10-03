@@ -93,6 +93,8 @@ public sealed class CanonicalTransactionalAuditOutboxWriter : ITransactionalAudi
         }
 
         // INTX FIX2 — what the CLIENT gave as its correlation, kept only as that: the record's own correlation is the server's.
+        // FIX3 — and only from the header, never from what the intent's metadata carries under that name.
+        metadata.Remove(AuditCorrelation.ClientCorrelationMetadataKey);
         if (AuditCorrelation.ClientValue(_correlation?.ClientCorrelationId) is { } clientCorrelation)
         {
             metadata[AuditCorrelation.ClientCorrelationMetadataKey] = clientCorrelation;

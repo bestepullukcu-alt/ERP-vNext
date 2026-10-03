@@ -19,10 +19,16 @@ public sealed class CorrelationIdMiddleware
     /// <summary>Where the client's own correlation value is kept for the rest of the request (the gateway forwards it).</summary>
     public const string ClientCorrelationItemKey = "Diten.ClientCorrelationId";
 
+    /// <summary>INTX FIX3 — where THIS middleware's correlation id is kept for the rest of the request.
+    /// <see cref="HttpContext.TraceIdentifier"/> is not that place: later middleware may overwrite it (Ocelot's
+    /// RequestId handling writes a caller's header value there).</summary>
+    public const string CorrelationItemKey = "Diten.CorrelationId";
+
     public async Task InvokeAsync(HttpContext context, ICorrelationContext correlationContext)
     {
         var correlationId = ResolveCorrelationId(context);
         correlationContext.SetCorrelationId(correlationId);
+        context.Items[CorrelationItemKey] = correlationId;
         var clientCorrelation = ResolveClientCorrelationId(context);
         if (clientCorrelation is not null)
         {

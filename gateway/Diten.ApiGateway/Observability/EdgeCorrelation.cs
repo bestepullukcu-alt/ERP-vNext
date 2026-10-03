@@ -1,4 +1,5 @@
 using Diten.Platform.Common.Observability;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Diten.ApiGateway.Observability;
@@ -14,4 +15,12 @@ public static class EdgeCorrelation
 {
     public static IServiceCollection AddEdgeCorrelation(this IServiceCollection services) =>
         services.PostConfigure<ObservabilityOptions>(options => options.Correlation.TrustInboundCorrelation = false);
+
+    /// <summary>
+    /// INTX FIX3 — the request's correlation as CorrelationIdMiddleware minted it, or null before it ran. Never
+    /// <see cref="HttpContext.TraceIdentifier"/>: Ocelot's RequestId middleware writes a caller's <c>RequestId</c> header
+    /// there, unchecked. Forwarded downstream and written to the request log from here.
+    /// </summary>
+    public static string? CorrelationIdOf(HttpContext? context) =>
+        context?.Items[CorrelationIdMiddleware.CorrelationItemKey] as string is { Length: > 0 } value ? value : null;
 }

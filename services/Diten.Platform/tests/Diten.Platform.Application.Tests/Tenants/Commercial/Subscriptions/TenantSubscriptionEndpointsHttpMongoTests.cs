@@ -412,7 +412,7 @@ public sealed class TenantSubscriptionEndpointsHttpMongoTests
 
                     // INTX FIX2 item 9 — events are COUNTED, in the caller's transaction: a refusal must leave none behind.
                     services.AddScoped<ITransactionalIntegrationEventWriter, CountingEvents>();
-                    services.AddSingleton(Plans());
+                    services.AddSingleton(SessionlessPlanReads.Over(Plans())); // FIX3 — the writer reads the plan in its transaction
                     services.AddSingleton(Administrators());
                     // WP-PLATFORM-AUDIT-INTX-01 FIX1 item 7 — the REAL quota service over the real quota repositories:
                     // assign and activate initialize quotas inside the same transaction, and that is what is measured.

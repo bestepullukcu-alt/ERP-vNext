@@ -92,13 +92,14 @@ public sealed class TenantSubscriptionTransactionWriter
         Func<IPlatformTransactionSession, TenantSubscription, SubscriptionPlan, CancellationToken, Task<Response<NoContent>>>? participant,
         CancellationToken ct) => ExecuteAsync(async (session, transactionCt) =>
         {
-            // What is stored BEFORE this write — the audit record's before-state (statuses and dates).
-            var stored = await _subscriptions.GetByIdAsync(subscription.Id, transactionCt);
+            // What is stored BEFORE this write — the audit record's before-state (statuses and dates). FIX3 — read in the
+            // transaction: the before-state is the one this write replaces, not one read beside it.
+            var stored = await _subscriptions.GetByIdAsync(session, subscription.Id, transactionCt);
             var auditBefore = stored is null || ReferenceEquals(stored, subscription) ? null : StateOf(stored);
             await _subscriptions.UpdateAsync(session, subscription, expectedRowVersion, transactionCt);
             var tenant = await _tenants.GetByIdAsync(session, subscription.TenantId, transactionCt)
                 ?? throw new SubscriptionMutationRejectedException(["Tenant not found."], 404);
-            var plan = await _plans.GetByIdAsync(subscription.PlanId, transactionCt);
+            var plan = await PlanInTransactionAsync(session, subscription.PlanId, transactionCt);
             if (plan is null) throw new SubscriptionMutationRejectedException(["Subscription plan not found."], 404);
             ApplyTenantSnapshot(tenant, subscription, plan, markTenantActive, mutation, DateTimeOffset.UtcNow);
             await WriteTenantAsync(session, tenant, transactionCt);
@@ -110,6 +111,13 @@ public sealed class TenantSubscriptionTransactionWriter
             await WriteIntentsAsync(session, subscription, (previousPlanId, previousStatus), auditBefore, mutation, operation, transactionCt);
             return Response<NoContent>.Success(204);
         }, ct);
+
+    /// <summary>INTX FIX3 — the plan as THIS transaction sees it. A plan repository that cannot read in a transaction
+    /// refuses (fail closed), the way the session members of the other repositories do.</summary>
+    private Task<SubscriptionPlan?> PlanInTransactionAsync(IPlatformTransactionSession session, Guid planId, CancellationToken ct) =>
+        _plans is ITransactionalSubscriptionPlanRepository transactional
+            ? transactional.GetByIdAsync(session, planId, ct)
+            : throw new PlatformTransactionUnavailableException("The subscription plan repository does not implement transaction-bound reads.");
 
     /// <summary>
     /// The tenant document is the one record every subscription write of a tenant touches. A write conflict on it is

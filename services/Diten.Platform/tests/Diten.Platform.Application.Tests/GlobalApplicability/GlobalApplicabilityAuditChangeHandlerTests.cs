@@ -122,11 +122,24 @@ public sealed class GlobalApplicabilityAuditChangeHandlerTests
         Assert.Empty(recorder.Changes);
     }
 
-    private static Task Update(SubscriptionPlan plan, RecordingCoordinator recorder, IReadOnlyList<string> modules) =>
+    [Fact]
+    public async Task The_same_features_in_another_order_are_no_change_no_record_and_no_version()
+    {
+        // INTX FIX3 — the feature list is a set too, like the module list.
+        var plan = new SubscriptionPlan { Code = "PRO", Name = "Pro", IsActive = true, IncludedFeatures = ["export", "api"], IncludedModuleKeys = ["CRM"] };
+        var recorder = new RecordingCoordinator();
+
+        await Update(plan, recorder, ["CRM"], features: ["api", "export"]);
+
+        Assert.Equal([false], recorder.Effective);
+        Assert.Empty(recorder.Changes);
+    }
+
+    private static Task Update(SubscriptionPlan plan, RecordingCoordinator recorder, IReadOnlyList<string> modules, IReadOnlyList<string>? features = null) =>
         new UpdateSubscriptionPlanCommandHandler(PlanRepository(plan).Object, NullLogger<UpdateSubscriptionPlanCommandHandler>.Instance, recorder, NoState())
             .Handle(new UpdateSubscriptionPlanCommand(plan.Id, new UpdateSubscriptionPlanRequest(
                 plan.Code, plan.Name, plan.Description, plan.IsActive, plan.IsDefault, plan.SortOrder, plan.PriceMonthly, plan.PriceYearly,
-                plan.Currency, plan.IsTrialPlan, plan.TrialDurationDays, plan.DefaultQuotas, plan.IncludedFeatures, modules)), CancellationToken.None);
+                plan.Currency, plan.IsTrialPlan, plan.TrialDurationDays, plan.DefaultQuotas, features ?? plan.IncludedFeatures, modules)), CancellationToken.None);
 
     private static Mock<ITransactionalSubscriptionPlanRepository> PlanRepository(SubscriptionPlan plan)
     {
