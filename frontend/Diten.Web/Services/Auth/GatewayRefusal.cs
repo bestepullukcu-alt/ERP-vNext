@@ -1,4 +1,6 @@
+using System.Net;
 using System.Text.Json;
+using Microsoft.Extensions.Localization;
 
 namespace Diten.Web.Services.Auth;
 
@@ -83,5 +85,85 @@ public sealed record GatewayRefusal(IReadOnlyList<GatewayErrorCode> Codes, int F
         }
 
         return root.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array ? errors.GetArrayLength() : 0;
+    }
+
+    // ── The governance proxies' answer (Roles, Role Permissions, User Roles) ─────────────────────────────────
+    //
+    // WP-ROLES-CLOSE-01 — what a governance proxy hands the screen when an operation is refused:
+    // { success:false, errors, errorCode, errorCodes, local:true }. errorCodes = every stable code of the refusal
+    // (read by Read above — the ONE reader of a refused hop); errors = ONE sentence of this application's own, already
+    // localized. ⚠ NOTHING FROM UPSTREAM REACHES THE BROWSER: AuthService's sentence and an exception's message (which
+    // names internal hosts) go to the server log. A coded 4xx is a business refusal (Information); anything else —
+    // no code, or a 5xx — is not expected (Warning).
+
+    /// <summary>The gateway answered with a failure.</summary>
+    public static async Task<object> ReadAsync(HttpResponseMessage response, IStringLocalizer<SharedResource> localizer, ILogger logger)
+    {
+        var raw = await response.Content.ReadAsStringAsync();
+        var refusal = Read(raw);
+        var codes = refusal.Codes.Select(c => c.Code).Distinct(StringComparer.Ordinal).ToList();
+        var status = (int)response.StatusCode;
+        var level = codes.Count > 0 && status is >= 400 and < 500 ? LogLevel.Information : LogLevel.Warning;
+        logger.Log(level,
+            "Gateway refused {Method} {Path} with {StatusCode}. Codes=[{Codes}] Uncoded={Uncoded} Upstream=[{Upstream}]",
+            response.RequestMessage?.Method.Method,
+            response.RequestMessage?.RequestUri?.AbsolutePath,
+            status,
+            string.Join(", ", codes),
+            refusal.HasUncoded,
+            string.Join(" | ", UpstreamSentences(raw)));
+
+        var own = response.StatusCode switch
+        {
+            HttpStatusCode.Unauthorized => localizer["Unauthorized"].Value,
+            HttpStatusCode.Forbidden => localizer["AccessDenied"].Value,
+            _ => localizer["GatewayError"].Value
+        };
+        return Answer(own, codes);
+    }
+
+    /// <summary>The call itself failed (gateway unreachable, timeout, a body that could not be read).</summary>
+    public static object Failure(Exception exception, IStringLocalizer<SharedResource> localizer, ILogger logger, string operation)
+    {
+        logger.LogError(exception, "Governance proxy call failed: {Operation}.", operation);
+        return Answer(localizer["GatewayError"].Value, []);
+    }
+
+    /// <summary>The posted form breaks rules this application checks itself; one stable code per broken rule.</summary>
+    public static object Invalid(IReadOnlyList<string> codes, IStringLocalizer<SharedResource> localizer)
+        => Answer(localizer["ValidationFailed"].Value, codes);
+
+    /// <summary>A sentence this application produced itself (already in the reader's language).</summary>
+    public static object Local(string sentence) => Answer(sentence, []);
+
+    private static object Answer(string ownSentence, IReadOnlyList<string> codes)
+        => new
+        {
+            success = false,
+            errors = new List<string> { ownSentence },
+            errorCode = codes.Count > 0 ? codes[0] : null,
+            errorCodes = codes,
+            local = true
+        };
+
+    /// <summary>The service's own sentences, for the server log only.</summary>
+    private static IReadOnlyList<string> UpstreamSentences(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return [];
+        try
+        {
+            using var doc = JsonDocument.Parse(raw);
+            if (doc.RootElement.ValueKind != JsonValueKind.Object) return [];
+            if (doc.RootElement.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array)
+            {
+                return errors.EnumerateArray().Where(e => e.ValueKind == JsonValueKind.String).Select(e => e.GetString()!).ToList();
+            }
+
+            return doc.RootElement.TryGetProperty("detail", out var detail) && detail.ValueKind == JsonValueKind.String ? [detail.GetString()!] : [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
     }
 }

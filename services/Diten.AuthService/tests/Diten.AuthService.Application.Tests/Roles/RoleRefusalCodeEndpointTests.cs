@@ -73,6 +73,39 @@ public sealed class RoleRefusalCodeEndpointTests : IClassFixture<AccountKindAcce
         await AssertRefusedAsync(response, HttpStatusCode.Forbidden, RoleErrorCodes.SystemNotEditable);
     }
 
+    // FIX4 item 8 — the validators' codes reach a direct API caller: ROLE_ is an allowed envelope prefix.
+    [Fact]
+    public async Task A_create_refused_by_the_validator_carries_every_ROLE_code_over_http()
+    {
+        using var client = _world.Client();
+
+        var response = await client.PostAsJsonAsync("api/roles", new { name = "", displayName = "   ", description = new string('x', RoleFieldLimits.DescriptionMaxLength + 1) });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(
+            new[] { RoleErrorCodes.DescriptionTooLong, RoleErrorCodes.DisplayNameRequired, RoleErrorCodes.NameRequired },
+            await CodesAsync(response));
+    }
+
+    [Fact]
+    public async Task An_update_refused_by_the_validator_carries_every_ROLE_code_over_http()
+    {
+        var role = await _world.NewRoleAsync("codes-edit");
+        using var client = _world.Client();
+
+        var response = await client.PutAsJsonAsync($"api/roles/{role.Id}", new { displayName = new string('d', RoleFieldLimits.DisplayNameMaxLength + 1), description = new string('x', RoleFieldLimits.DescriptionMaxLength + 1) });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(new[] { RoleErrorCodes.DescriptionTooLong, RoleErrorCodes.DisplayNameTooLong }, await CodesAsync(response));
+    }
+
+    private static async Task<string[]> CodesAsync(HttpResponseMessage response)
+    {
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.True(doc.RootElement.TryGetProperty("errorCodes", out var codes), "the refusal carries no errorCodes");
+        return codes.EnumerateArray().Select(c => c.GetProperty("code").GetString()!).OrderBy(c => c, StringComparer.Ordinal).ToArray();
+    }
+
     [Fact]
     public async Task A_custom_role_is_still_editable()
     {

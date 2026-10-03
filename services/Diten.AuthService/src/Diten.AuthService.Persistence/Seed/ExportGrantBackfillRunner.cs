@@ -40,7 +40,9 @@ namespace Diten.AuthService.Persistence.Seed;
 /// the grant. It says so (a Warning with the tenant, the role and the key, and a count in the run's summary) and an
 /// administrator gives the permission on the Role Permissions screen. No "missing" audit row is written for it: the
 /// database cannot tell an interrupted run from an administrator's revoke, and the second must not be recorded as a
-/// system event. In return no start, and no overlapping instance, ever hands back what was taken away.</para>
+/// system event. In return no start, and no overlapping instance, ever hands back what was taken away.
+/// (FIX5) A row younger than <see cref="OwnerGrace"/> is not yet such a case: its writer may only be slow. Then the run
+/// says nothing, reports nothing and leaves the tenant unmarked; a later start decides.</para>
 ///
 /// <para>Grants are unique per (role, permission, tenant) and marks have a deterministic id: a duplicate key there
 /// means "already done" and never fails the tenant. The role-assignment version is bumped as soon as the tenant's
@@ -78,8 +80,12 @@ public static class ExportGrantBackfillRunner
         IMongoDatabase database,
         ILogger logger,
         Func<Stage, ExportGrantBackfill.KeyPair, Guid, Task>? hook = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Func<IMongoCollection<RolePermission>, RolePermission, CancellationToken, Task<bool>>? grantWriter = null)
     {
+        // Test seam: how a grant document is inserted (a test makes it fail AFTER the write, the way a lost
+        // acknowledgement does). Production uses InsertOnceAsync.
+        grantWriter ??= InsertOnceAsync;
         var failed = new HashSet<Guid>();
         var permissions = await LoadPermissionsAsync(database, logger, ct);
         var pairs = ExportGrantBackfill.Keys
@@ -89,7 +95,28 @@ public static class ExportGrantBackfillRunner
 
         var markCol = database.GetCollection<PermissionReconciliationMark>(PermissionReconciliationMark.CollectionName);
         var exportKeys = pairs.Select(p => p.ExportKey).ToList();
-        var marks = await markCol.Find(m => exportKeys.Contains(m.Key)).ToListAsync(ct);
+        // FIX5 — a document of a key whose TENANT cannot be read: nobody decides that key on this start (for no tenant).
+        var blocked = new HashSet<string>(StringComparer.Ordinal);
+        void Block(IEnumerable<string> keys, string collection)
+        {
+            foreach (var key in keys.Where(blocked.Add))
+            {
+                logger.LogError(
+                    "Export grant backfill decides nothing for key {ExportKey} on this start: a {Collection} document's tenant cannot be read.",
+                    key, collection);
+            }
+        }
+
+        // Read raw, one by one: a mark that does not deserialize fails ITS tenant (left out of this run, logged), it
+        // does not stop the run — and its tenant is not treated as unmarked either.
+        var marks = await ReadDocumentsAsync<PermissionReconciliationMark>(database, PermissionReconciliationMark.CollectionName,
+            Builders<PermissionReconciliationMark>.Filter.In(m => m.Key, exportKeys), null, logger, failed, ct,
+            doc => Block(doc.GetValue("Key", BsonNull.Value) is { IsString: true } key && exportKeys.Contains(key.AsString)
+                ? [key.AsString] : exportKeys, PermissionReconciliationMark.CollectionName));
+        pairs = pairs.Where(p => !blocked.Contains(p.ExportKey)).ToList();
+        if (pairs.Count == 0) return Result.Nothing with { FailedTenants = failed.ToList() };
+        exportKeys = pairs.Select(p => p.ExportKey).ToList();
+        marks = marks.Where(m => exportKeys.Contains(m.Key)).ToList();
 
         var corrected = await CorrectLegacySourcesAsync(database, logger, pairs, permissions, marks, failed, hook, ct);
 
@@ -97,10 +124,10 @@ public static class ExportGrantBackfillRunner
         var settled = marks.GroupBy(m => m.TenantId)
             .Where(g => exportKeys.All(k => g.Any(m => m.Key == k)))
             .Select(g => g.Key)
+            .Concat(failed) // a tenant whose mark could not be read is left alone on this start
             .Append(Guid.Empty) // a role without a tenant is never processed and never marked
             .ToList();
-        var roleCol = database.GetCollection<Role>("roles");
-        var unsettled = await (await roleCol.DistinctAsync(r => r.TenantId, Builders<Role>.Filter.Nin(r => r.TenantId, settled), cancellationToken: ct)).ToListAsync(ct);
+        var unsettled = await UnsettledTenantsAsync(database, settled, logger, ct);
         if (unsettled.Count == 0) return Result.Nothing with { SourcesCorrected = corrected, FailedTenants = failed.ToList() };
 
 
@@ -110,20 +137,27 @@ public static class ExportGrantBackfillRunner
         // its own tenant only.
         var roleDocs = await ReadDocumentsAsync<Role>(database, "roles",
             Builders<Role>.Filter.In(r => r.TenantId, unsettled),
-            ["Name", "TenantId", "IsSystem", "IsDeleted", "CreatedAt"], logger, failed, ct);
+            ["Name", "TenantId", "IsSystem", "IsDeleted", "CreatedAt"], logger, failed, ct,
+            _ => Block(exportKeys, "roles")); // a role serves every key
         var roles = roleDocs
             .Select(r => new ExportGrantBackfill.RoleState(r.Id, r.Name, r.TenantId, r.IsSystem, r.CreatedAt, r.IsDeleted))
             .ToList();
         var permissionIds = pairs.SelectMany(p => new[] { permissions[p.ReadKey].Id, permissions[p.ExportKey].Id }).ToList();
         var rpCol = database.GetCollection<RolePermission>("rolePermissions");
         // A revoked grant is a hard delete, so "live" is the only state a grant document has; IsDeleted is honoured anyway.
+        // A grant document that STORES no CreatedAt would read as "now" (the property's initializer): its date is
+        // "not stored", and the decision is left to the role's own age — never a date the database does not hold.
+        var undatedGrants = new HashSet<Guid>();
         var grantDocs = await ReadDocumentsAsync<RolePermission>(database, "rolePermissions",
             Builders<RolePermission>.Filter.In(rp => rp.TenantId, unsettled)
             & Builders<RolePermission>.Filter.In(rp => rp.PermissionId, permissionIds)
             & Builders<RolePermission>.Filter.Eq(rp => rp.IsDeleted, false),
-            ["RoleId", "PermissionId", "TenantId", "CreatedAt"], logger, failed, ct);
+            ["RoleId", "PermissionId", "TenantId", "CreatedAt"], logger, failed, ct,
+            doc => Block(KeysOfGrant(doc, pairs, permissions), "rolePermissions"),
+            (grant, raw) => { if (!raw.Contains("CreatedAt")) undatedGrants.Add(grant.Id); });
         var grants = grantDocs.Select(rp => (rp.RoleId, rp.PermissionId)).ToHashSet();
-        var grantCreatedAt = grantDocs.GroupBy(rp => (rp.RoleId, rp.PermissionId)).ToDictionary(g => g.Key, g => g.Min(rp => rp.CreatedAt));
+        var grantCreatedAt = grantDocs.Where(rp => !undatedGrants.Contains(rp.Id))
+            .GroupBy(rp => (rp.RoleId, rp.PermissionId)).ToDictionary(g => g.Key, g => g.Min(rp => rp.CreatedAt));
         // A tenant one of whose documents could not be read is not decided on a partial picture.
         roles = roles.Where(r => !failed.Contains(r.TenantId)).ToList();
 
@@ -133,7 +167,7 @@ public static class ExportGrantBackfillRunner
         int written = 0, born = 0, backfilled = 0;
         var notRepeated = new List<(Guid TenantId, Guid RoleId, string ExportKey)>();
 
-        foreach (var pair in pairs)
+        foreach (var pair in pairs.Where(p => !blocked.Contains(p.ExportKey)))
         {
             var export = permissions[pair.ExportKey];
             var marked = marks.Where(m => m.Key == pair.ExportKey).Select(m => m.TenantId).ToHashSet();
@@ -154,6 +188,7 @@ public static class ExportGrantBackfillRunner
                         continue;
                     }
 
+                    var unverified = false;
                     foreach (var grant in tenant.Grants)
                     {
                         // The decision record. Not ours to write → not ours to grant (see the type's remarks).
@@ -161,9 +196,25 @@ public static class ExportGrantBackfillRunner
                         {
                             // An instance that started at the same time may have written the row AND the grant since
                             // this run read its picture: then nothing is missing, and nothing is reported.
-                            if (await HoldsAsync(rpCol, grant, ct))
+                            // The owner of the row writes its grant right after it: allow it that moment (a bounded re-read,
+                            // 3 × 100 ms) before calling a grant missing.
+                            if (await HoldsSoonAsync(rpCol, grant, ct))
                             {
                                 grants.Add((grant.RoleId, grant.PermissionId));
+                                continue;
+                            }
+
+                            // FIX5 — a row written moments ago belongs to a run that may still be on its way to the grant
+                            // (a pause longer than the re-read is not a death). Nothing can be concluded: no warning, no
+                            // report, and the tenant is NOT marked — the next start looks again. Only a row older than
+                            // OwnerGrace is an interrupted run or a revoke, and only that is reported and settled.
+                            if (await WrittenRecentlyAsync(auditCol, ExportGrantBackfill.AuditId(grant.TenantId, grant.RoleId, pair.ExportKey), ct))
+                            {
+                                unverified = true;
+                                logger.LogInformation(
+                                    "Export grant of tenant {TenantId}, role {RoleId}, key {ExportKey} could not be verified: another run wrote its audit row moments ago and has not written the grant yet. "
+                                    + "The tenant is left unmarked and looked at again on the next start.",
+                                    grant.TenantId, grant.RoleId, pair.ExportKey);
                                 continue;
                             }
 
@@ -182,16 +233,20 @@ public static class ExportGrantBackfillRunner
                             : RolePermission.ManualGrant(grant.RoleId, grant.PermissionId, grant.TenantId, SystemUser);
                         try
                         {
-                            if (await InsertOnceAsync(rpCol, row, ct)) written++;
+                            if (await grantWriter(rpCol, row, ct)) written++;
                         }
-                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        catch (MongoWriteException ex) when (ex.WriteError is not null)
                         {
-                            // The run KNOWS its audit row says "granted" and the grant is not there: withdraw it with a
-                            // row of its own (deterministic id — written once). The role stays without the grant (the
-                            // audit row is the decision record) and the tenant fails below, logged.
-                            await InsertOnceAsync(auditCol, NotAppliedAuditRow(pair, grant, ex), ct);
+                            // The SERVER refused the insert (a write error, not a lost acknowledgement): the outcome is
+                            // known. If the grant is indeed not there, withdraw the audit row's "granted" with a row of its
+                            // own (deterministic id — written once). The role stays without the grant (the audit row is the
+                            // decision record) and the tenant fails below, logged.
+                            if (!await HoldsAsync(rpCol, grant, ct)) await InsertOnceAsync(auditCol, NotAppliedAuditRow(pair, grant, ex), ct);
                             throw;
                         }
+                        // Every other exception — a write concern error, a network failure after the send — leaves the
+                        // outcome UNKNOWN: the grant may well be in. Nothing is withdrawn; the tenant fails and the next
+                        // start sees what is there.
 
                         grants.Add((grant.RoleId, grant.PermissionId));
                         if (hook is not null) await hook(Stage.GrantWritten, pair, grant.RoleId);
@@ -204,7 +259,9 @@ public static class ExportGrantBackfillRunner
                     // this run wrote none: an earlier, interrupted run may have written them and never got here.
                     await versions.IncrementAsync(tenant.TenantId, ct);
 
-                    // Marked last: a tenant that failed above stays unmarked and the next start finishes it.
+                    // Marked last: a tenant that failed above stays unmarked and the next start finishes it — and so does
+                    // one with a grant this run could not verify.
+                    if (unverified) continue;
                     await WriteMarkAsync(markCol, tenant.TenantId, pair.ExportKey, ExportGrantBackfill.OriginBackfilled, ct);
                     backfilled++;
                 }
@@ -244,7 +301,6 @@ public static class ExportGrantBackfillRunner
         var legacy = marks.Where(m => m.Origin is null && m.TenantId != Guid.Empty).ToList();
         if (legacy.Count == 0) return 0;
 
-        var roleCol = database.GetCollection<Role>("roles");
         var rpCol = database.GetCollection<RolePermission>("rolePermissions");
         var auditCol = database.GetCollection<AuthAuditLog>("authAuditLogs");
         var markCol = database.GetCollection<PermissionReconciliationMark>(PermissionReconciliationMark.CollectionName);
@@ -258,13 +314,23 @@ public static class ExportGrantBackfillRunner
 
             try
             {
-                var tenantRoles = (await ReadRolesAsync(roleCol, [mark.TenantId], ct))
+                var unreadable = new HashSet<Guid>();
+                var tenantRoles = (await ReadDocumentsAsync<Role>(database, "roles",
+                        Builders<Role>.Filter.Eq(r => r.TenantId, mark.TenantId),
+                        ["Name", "TenantId", "IsSystem", "IsDeleted", "CreatedAt"], logger, unreadable, ct, _ => unreadable.Add(mark.TenantId)))
                     .Where(r => !r.IsDeleted)
                     .ToDictionary(r => r.Id, r => new ExportGrantBackfill.RoleState(r.Id, r.Name, r.TenantId, r.IsSystem, r.CreatedAt));
-                var exportGrants = await rpCol
-                    .Find(rp => rp.TenantId == mark.TenantId && rp.PermissionId == export.Id && rp.IsDeleted == false)
-                    .Project<RolePermission>(Builders<RolePermission>.Projection.Include(rp => rp.RoleId).Include(rp => rp.GrantSource))
-                    .ToListAsync(ct);
+                var exportGrants = await ReadDocumentsAsync<RolePermission>(database, "rolePermissions",
+                    Builders<RolePermission>.Filter.Eq(rp => rp.TenantId, mark.TenantId)
+                    & Builders<RolePermission>.Filter.Eq(rp => rp.PermissionId, export.Id)
+                    & Builders<RolePermission>.Filter.Eq(rp => rp.IsDeleted, false),
+                    ["RoleId", "GrantSource", "TenantId"], logger, unreadable, ct, _ => unreadable.Add(mark.TenantId));
+                if (unreadable.Count > 0)
+                {
+                    // Already logged with the document id; the tenant keeps its legacy mark and is tried next start.
+                    failed.Add(mark.TenantId);
+                    continue;
+                }
 
                 foreach (var grant in exportGrants)
                 {
@@ -338,19 +404,39 @@ public static class ExportGrantBackfillRunner
     /// Reads the matching documents RAW (only <paramref name="fields"/>) and deserializes each on its own. A document
     /// that does not deserialize adds its tenant to <paramref name="failed"/> and is logged with the tenant id, the
     /// document id and the exception type — never its content.
+    ///
+    /// <para>⚠ FIX5 — A DOCUMENT WHOSE TENANT CANNOT BE READ belongs to no tenant this code can fail, so failing "its
+    /// tenant" is impossible — and leaving it out would make the real tenant look unmarked, or look as if it held less
+    /// than it does, and be decided on that. Its tenant id is checked BEFORE it is deserialized (a text id would
+    /// deserialize into a Guid) and the document goes to <paramref name="tenantUnknown"/>, which takes the decision of
+    /// every key it may touch away from this start. Logged with the document id and the TenantId's BSON type.</para>
     /// </summary>
     private static async Task<List<T>> ReadDocumentsAsync<T>(
-        IMongoDatabase database, string collection, FilterDefinition<T> filter, IReadOnlyList<string> fields,
-        ILogger logger, HashSet<Guid> failed, CancellationToken ct)
+        IMongoDatabase database, string collection, FilterDefinition<T> filter, IReadOnlyList<string>? fields,
+        ILogger logger, HashSet<Guid> failed, CancellationToken ct, Action<BsonDocument> tenantUnknown,
+        Action<T, BsonDocument>? inspect = null)
     {
-        var projection = new BsonDocument(fields.Select(f => new BsonElement(f, 1)));
-        var docs = await database.GetCollection<BsonDocument>(collection).Find(Render(database, collection, filter)).Project(projection).ToListAsync(ct);
+        var find = database.GetCollection<BsonDocument>(collection).Find(Render(database, collection, filter));
+        var docs = fields is null
+            ? await find.ToListAsync(ct)
+            : await find.Project(new BsonDocument(fields.Select(f => new BsonElement(f, 1)))).ToListAsync(ct);
         var read = new List<T>(docs.Count);
         foreach (var doc in docs)
         {
+            if (TenantOf(doc) is null)
+            {
+                logger.LogError(
+                    "Export grant backfill cannot read the tenant of {Collection} document {DocumentId} (TenantId is {BsonType}).",
+                    collection, IdOf(doc), doc.GetValue("TenantId", BsonNull.Value).BsonType);
+                tenantUnknown(doc);
+                continue;
+            }
+
             try
             {
-                read.Add(BsonSerializer.Deserialize<T>(doc));
+                var item = BsonSerializer.Deserialize<T>(doc);
+                inspect?.Invoke(item, doc);
+                read.Add(item);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
@@ -374,15 +460,36 @@ public static class ExportGrantBackfillRunner
     /// <summary>The document's id as a reader can search for it (a Guid when it is one), never its content.</summary>
     private static string IdOf(BsonDocument doc)
     {
+        // Only an identifier is printed: a Guid, an ObjectId or a string id. Any other _id (a document, an array …) could
+        // carry content, so only its type is named.
         var id = doc.GetValue("_id", BsonNull.Value);
         try
         {
-            return id.IsBsonBinaryData ? id.AsBsonBinaryData.ToGuid().ToString() : id.ToString() ?? "unknown";
+            return id.BsonType switch
+            {
+                BsonType.Binary when id.AsBsonBinaryData.SubType is BsonBinarySubType.UuidStandard or BsonBinarySubType.UuidLegacy
+                    => id.AsBsonBinaryData.ToGuid().ToString(),
+                BsonType.ObjectId => id.AsObjectId.ToString(),
+                BsonType.String => Printable(id.AsString),
+                _ => $"<{id.BsonType}>"
+            };
         }
         catch (Exception)
         {
-            return "unreadable";
+            return "<unreadable>";
         }
+    }
+
+    /// <summary>FIX5 — a text id is printed bounded (64 characters) and with every control character as <c>?</c>: a line
+    /// break in an id must not start a forged line in the console log.</summary>
+    internal static string Printable(string value)
+    {
+        const int max = 64;
+        var bounded = value.Length > max ? value[..max] : value;
+        return string.Create(bounded.Length, bounded, static (span, source) =>
+        {
+            for (var i = 0; i < source.Length; i++) span[i] = char.IsControl(source[i]) ? '?' : source[i];
+        });
     }
 
     private static Guid? TenantOf(BsonDocument doc)
@@ -390,11 +497,89 @@ public static class ExportGrantBackfillRunner
         try
         {
             var value = doc.GetValue("TenantId", BsonNull.Value);
-            return value.IsBsonBinaryData ? value.AsBsonBinaryData.ToGuid() : null;
+            return IsTenantId(value) ? value.AsBsonBinaryData.ToGuid() : null;
         }
         catch (Exception)
         {
             return null;
+        }
+    }
+
+    /// <summary>
+    /// The tenants with a role that are not settled — one RAW distinct over <c>TenantId</c>. A value that is not a Guid
+    /// (an empty or a text TenantId, which <c>$nin</c> also matches) belongs to no tenant: it is logged with the ids of
+    /// the role documents that carry it, and skipped — it never stops the run.
+    /// </summary>
+    private static async Task<List<Guid>> UnsettledTenantsAsync(IMongoDatabase database, IReadOnlyCollection<Guid> settled, ILogger logger, CancellationToken ct)
+    {
+        var raw = database.GetCollection<BsonDocument>("roles");
+        var filter = Render(database, "roles", Builders<Role>.Filter.Nin(r => r.TenantId, settled));
+        var values = await (await raw.DistinctAsync<BsonValue>("TenantId", filter, cancellationToken: ct)).ToListAsync(ct);
+        var tenants = new List<Guid>();
+        foreach (var value in values)
+        {
+            if (IsTenantId(value))
+            {
+                tenants.Add(value.AsBsonBinaryData.ToGuid());
+                continue;
+            }
+
+            var ids = await raw.Find(new BsonDocument("TenantId", value)).Project(new BsonDocument("_id", 1)).Limit(20).ToListAsync(ct);
+            logger.LogError(
+                "Export grant backfill skips role document(s) {DocumentIds} whose TenantId is not a tenant id ({BsonType}).",
+                string.Join(", ", ids.Select(IdOf)), value.BsonType);
+        }
+
+        return tenants;
+    }
+
+    /// <summary>The keys a grant document may concern: the pair whose read or export permission it names, or — when its
+    /// permission cannot be read either — every key.</summary>
+    private static IEnumerable<string> KeysOfGrant(BsonDocument doc, IReadOnlyList<ExportGrantBackfill.KeyPair> pairs, IReadOnlyDictionary<string, Permission> permissions)
+    {
+        var value = doc.GetValue("PermissionId", BsonNull.Value);
+        if (IsTenantId(value)) // a UUID, like a tenant id
+        {
+            var permissionId = value.AsBsonBinaryData.ToGuid();
+            var named = pairs.Where(p => permissions[p.ReadKey].Id == permissionId || permissions[p.ExportKey].Id == permissionId).ToList();
+            if (named.Count > 0) return named.Select(p => p.ExportKey);
+        }
+
+        return pairs.Select(p => p.ExportKey);
+    }
+
+    /// <summary>A stored tenant id: a UUID (standard or legacy). Any other binary — <c>ToGuid()</c> would throw — a text,
+    /// a null, is not one.</summary>
+    private static bool IsTenantId(BsonValue value)
+        => value.IsBsonBinaryData && value.AsBsonBinaryData.SubType is BsonBinarySubType.UuidStandard or BsonBinarySubType.UuidLegacy;
+
+    private static async Task<bool> HoldsSoonAsync(IMongoCollection<RolePermission> rpCol, ExportGrantBackfill.PlannedGrant grant, CancellationToken ct)
+    {
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            if (await HoldsAsync(rpCol, grant, ct)) return true;
+            await Task.Delay(TimeSpan.FromMilliseconds(100), ct);
+        }
+
+        return await HoldsAsync(rpCol, grant, ct);
+    }
+
+    /// <summary>How long after its audit row the run that wrote it may still be on its way to the grant. A row older than
+    /// this belongs to a run that is gone (or to a grant an administrator took away since).</summary>
+    public static readonly TimeSpan OwnerGrace = TimeSpan.FromMinutes(10);
+
+    /// <summary>The audit row was written less than <see cref="OwnerGrace"/> ago — or its time cannot be read, which is
+    /// no evidence that its writer is gone.</summary>
+    private static async Task<bool> WrittenRecentlyAsync(IMongoCollection<AuthAuditLog> auditCol, Guid auditId, CancellationToken ct)
+    {
+        try
+        {
+            var row = await auditCol.Find(a => a.Id == auditId).Limit(1).FirstOrDefaultAsync(ct);
+            return row is null || row.OccurredAt > DateTimeOffset.UtcNow - OwnerGrace;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return true;
         }
     }
 
@@ -410,13 +595,6 @@ public static class ExportGrantBackfillRunner
         return docs.Select(d => d[keyField].AsString).ToHashSet(StringComparer.Ordinal);
     }
 
-    /// <summary>The roles of these tenants — live and deleted — with only the fields the decision reads.</summary>
-    private static Task<List<Role>> ReadRolesAsync(IMongoCollection<Role> roleCol, IReadOnlyCollection<Guid> tenants, CancellationToken ct)
-        => roleCol
-            .Find(r => tenants.Contains(r.TenantId))
-            .Project<Role>(Builders<Role>.Projection
-                .Include(r => r.Name).Include(r => r.TenantId).Include(r => r.IsSystem).Include(r => r.IsDeleted).Include(r => r.CreatedAt))
-            .ToListAsync(ct);
 
     private static AuthAuditLog GrantAuditRow(ExportGrantBackfill.KeyPair pair, ExportGrantBackfill.PlannedGrant grant)
         => new(ExportGrantBackfill.AuditEventName, Guid.Empty, grant.TenantId, JsonSerializer.Serialize(new Dictionary<string, object?>
