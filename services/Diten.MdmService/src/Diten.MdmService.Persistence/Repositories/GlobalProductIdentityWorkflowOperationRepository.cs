@@ -334,6 +334,7 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         if (mutation.WithdrawalTaskStatus is not null) update = update.Set(item => item.WithdrawalTaskStatus, mutation.WithdrawalTaskStatus);
         if (mutation.WithdrawalInstanceStatus is not null) update = update.Set(item => item.WithdrawalInstanceStatus, mutation.WithdrawalInstanceStatus);
         if (mutation.WithdrawalObjectRef is not null) update = update.Set(item => item.WithdrawalObjectRef, mutation.WithdrawalObjectRef);
+        if (mutation.WithdrawalRefusalCode is not null) update = update.Set(item => item.WithdrawalRefusalCode, mutation.WithdrawalRefusalCode);
         if (mutation.ServiceFaultCount.HasValue)
         {
             update = update
@@ -358,7 +359,8 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
                 .Set(item => item.WithdrawalResultApprovalTaskVersion, null)
                 .Set(item => item.WithdrawalTaskStatus, null)
                 .Set(item => item.WithdrawalInstanceStatus, null)
-                .Set(item => item.WithdrawalObjectRef, null);
+                .Set(item => item.WithdrawalObjectRef, null)
+                .Set(item => item.WithdrawalRefusalCode, null);
         }
         if (mutation.ReleaseLease)
         {

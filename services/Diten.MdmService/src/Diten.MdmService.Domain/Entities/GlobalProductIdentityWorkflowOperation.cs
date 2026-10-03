@@ -60,6 +60,7 @@ public sealed class GlobalProductIdentityWorkflowOperation : EntityBase
     public string? WithdrawalTaskStatus { get; set; }
     public string? WithdrawalInstanceStatus { get; set; }
     public string? WithdrawalObjectRef { get; set; }
+    public string? WithdrawalRefusalCode { get; set; }
     public long? NextAttemptAtUtcTicksV1 { get; set; }
     public string? LastFailureCode { get; set; }
     // Consecutive faults of the SERVICE chain (credential, token, setting, reachability) while this operation

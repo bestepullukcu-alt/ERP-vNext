@@ -606,23 +606,38 @@ withdraw path.
   in flight — the request, the versions read, the unknown outcome, and the lease given back when a step is cut off —
   keeps the worker away until `max(what the worker had scheduled, now + max(RetryDelaySeconds, 30 s))`. The floor
   is fixed (Platform works on a cancellation inside a two-second budget; MDM's answer "unknown" comes after its own
-  client time-out on top) and is not a setting. A withdrawal therefore never brings the worker's next attempt
-  forward, and a cycle between the requester's two steps does not drop it.
+  client time-out on top) and is not a setting; its upper end is the retry delay's own limit, one hour. A
+  withdrawal therefore never brings the worker's next attempt forward, and a cycle between the requester's two
+  steps does not drop it. The window is for a cancellation that MAY HAVE LANDED only: a withdrawal refused before
+  it was processed, or one that found the approval closed, puts `NextAttemptAtUtcTicksV1` back to what the request
+  found (fix round 3).
+- *A refused repeat does not undo an earlier attempt (fix round 3).* A cancellation refused before it was processed
+  forgets the withdrawal only when it is known to be the first one — its versions were read in the same request.
+  Otherwise an earlier cancellation may have landed: the operation stays (or becomes) `WithdrawalOutcomeUnknown`
+  and the worker's read of the approval decides.
 - *"Conflict" on a cancellation (fix round 2).* Platform answers it both for an approval that was decided or closed
   and for one that is still open and merely moved on. MDM asks the approval: still open → the withdrawal is
-  forgotten and asked again with fresh versions inside the same request; not open → nothing to withdraw, the
-  request stays on the operation and a repeat gets the same answer; no answer → `WithdrawalOutcomeUnknown`.
+  forgotten and asked again with fresh versions inside the same request — ONCE; a second conflict answers
+  409 `PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING` and leaves a clean `AwaitingDecision` (fix round 3); not open →
+  nothing to withdraw, the request stays on the operation and a repeat gets the same answer, read from the
+  withdrawal's own field `WithdrawalRefusalCode` (new, nullable, no migration: rows without it answer
+  `PRODUCT_IDENTITY_WORKFLOW_DECISION_PENDING`) because every decision poll rewrites `LastFailureCode`; the code is
+  bounded like every stored code; no answer → `WithdrawalOutcomeUnknown`. A withdrawal that was applied answers
+  success however many steps it took.
 - *Counting.* `ServiceFaultCount` counts the WORKER's consecutive failed attempts only; `ServiceFaultSinceUtcTicksV1`
   is the first fault of the streak of consecutive faults. Both are cleared by the first real answer the chain gives
-  for the operation (a refusal that is the user's own is an answer; reading the versions before a cancellation is
-  not — the cancellation's answer is). Faults further apart than two ceilings are not one streak. A user's attempts
-  neither count nor move `NextAttemptAtUtcTicksV1`. The duration rule (Error once the streak spans the ceiling)
+  for the operation (a refusal that is the user's own is an answer; "nothing arrived" is one on the maker's path as
+  on the worker's; reading the versions before a cancellation is not — the cancellation's answer is). Faults
+  further apart than two ceilings are not one streak. A user's attempts never count. A user's SUBMIT never moves
+  `NextAttemptAtUtcTicksV1`; a user's WITHDRAWAL moves it only later, never earlier, and only while a cancellation
+  may have landed (the settle window above). The duration rule (Error once the streak spans the ceiling)
   measures first fault to latest fault of one streak. Ceiling, error threshold, lease and retry delay come from
   `ProductIdentityWorkflowWorker` and are validated when the host starts.
 - *A success that breaks the contract* (`PRODUCT_WORKFLOW_RESPONSE_INVALID`) waits and is logged as an error on
   every attempt; the strict parsing is unchanged.
 - *The lease* is given back when a step is refused, when the caller goes away and when the store fails mid-step. An
-  interactive claim ignores the worker's retry schedule and never a held lease.
+  interactive claim ignores the worker's retry schedule and never a held lease. The claim itself is not cancellable
+  (fix round 3): a claim cut off by the caller could be written with nobody left to release it.
 - *The cycle breaker.* A refused credential stops the recovery cycle for every tenant; an Auth 403 for one tenant
   skips the rest of that tenant only.
 - *Codes added to tell cases apart* (no request mapping, envelope rule or trust check changed):

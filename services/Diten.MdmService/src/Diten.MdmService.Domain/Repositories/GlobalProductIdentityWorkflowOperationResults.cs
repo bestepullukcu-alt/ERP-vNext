@@ -77,7 +77,10 @@ public sealed record GlobalProductIdentityWorkflowCheckpointMutation(
     int? ServiceFaultCount = null,
     long? ServiceFaultSinceUtcTicksV1 = null,
     // Forgets a withdrawal that did not happen (every Withdrawal* field), so the requester can ask again.
-    bool ClearWithdrawal = false);
+    bool ClearWithdrawal = false,
+    // Why a withdrawal was refused for good (the approval was decided or closed first): the answer a repeat of the
+    // same withdrawal reads. Its own field — LastFailureCode is rewritten by every decision poll.
+    string? WithdrawalRefusalCode = null);
 
 public sealed record GlobalProductIdentityWorkflowTenantPartitionPage(
     IReadOnlyList<Guid> TenantIds,

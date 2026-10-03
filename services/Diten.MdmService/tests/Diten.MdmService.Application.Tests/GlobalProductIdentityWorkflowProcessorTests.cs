@@ -712,6 +712,10 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
         public GlobalProductIdentityWorkflowCheckpoint? RefuseNextAdvanceTo { get; set; }
         // The store fails when a lease is being given back (the write that only releases).
         public bool ThrowWhenALeaseIsGivenBack { get; set; }
+        // The store acknowledges this many advances without moving anything (a write that was rolled back).
+        public int AcknowledgeWithoutMoving { get; set; }
+        // Runs while a claim is being written — and the claim then honours its token, as the real driver does.
+        public Action? WhileClaiming { get; set; }
 
         public Task<GlobalProductIdentityWorkflowReserveResult> ReserveAsync(
             GlobalProductIdentityWorkflowOperation operation, CancellationToken cancellationToken = default)
@@ -751,6 +755,8 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
             Current.LeaseOwner = request.LeaseOwner;
             Current.LeaseUntilUtcTicksV1 = request.LeaseUntilUtcTicks;
             Current.UpdatedAtUtcTicksV1 = request.NowUtcTicks;
+            WhileClaiming?.Invoke();
+            cancellationToken.ThrowIfCancellationRequested(); // the lease is written; the answer never arrives
             return Task.FromResult<GlobalProductIdentityWorkflowClaim?>(new(
                 Current.TenantId, Current.OperationId, Current.OperationFingerprint,
                 request.LeaseOwner, Current.LeaseGeneration, Current.Checkpoint, request.LeaseUntilUtcTicks));
@@ -777,6 +783,11 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
                 || Current.Checkpoint != claim.Checkpoint)
             {
                 return Task.FromResult(false);
+            }
+            if (AcknowledgeWithoutMoving > 0)
+            {
+                AcknowledgeWithoutMoving--;
+                return Task.FromResult(true);
             }
             if (RefuseNextAdvanceTo == mutation.NextCheckpoint)
             {
@@ -832,6 +843,7 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
             Current.WithdrawalTaskStatus = mutation.WithdrawalTaskStatus ?? Current.WithdrawalTaskStatus;
             Current.WithdrawalInstanceStatus = mutation.WithdrawalInstanceStatus ?? Current.WithdrawalInstanceStatus;
             Current.WithdrawalObjectRef = mutation.WithdrawalObjectRef ?? Current.WithdrawalObjectRef;
+            Current.WithdrawalRefusalCode = mutation.WithdrawalRefusalCode ?? Current.WithdrawalRefusalCode;
             if (mutation.ServiceFaultCount.HasValue)
             {
                 Current.ServiceFaultCount = mutation.ServiceFaultCount.Value;
@@ -855,6 +867,7 @@ public sealed partial class GlobalProductIdentityWorkflowProcessorTests
                 Current.WithdrawalTaskStatus = null;
                 Current.WithdrawalInstanceStatus = null;
                 Current.WithdrawalObjectRef = null;
+                Current.WithdrawalRefusalCode = null;
             }
             if (mutation.ReleaseLease)
             {

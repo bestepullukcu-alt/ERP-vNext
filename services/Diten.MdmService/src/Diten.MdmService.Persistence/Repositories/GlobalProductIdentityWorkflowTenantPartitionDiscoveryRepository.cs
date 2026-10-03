@@ -28,7 +28,9 @@ public sealed class GlobalProductIdentityWorkflowTenantPartitionDiscoveryReposit
         var terminal = new[]
         {
             GlobalProductIdentityWorkflowCheckpoint.Completed,
-            GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired
+            GlobalProductIdentityWorkflowCheckpoint.ManualReconciliationRequired,
+            GlobalProductIdentityWorkflowCheckpoint.AbandonedBeforeWorkflowStart,
+            GlobalProductIdentityWorkflowCheckpoint.Superseded
         };
         var filter = Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.IsDeleted, false)
                      & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(

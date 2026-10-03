@@ -69,6 +69,12 @@ public static class ProductIdentityWorkflowMakerCodes
     /// <summary>The start never reached the approval engine and nobody but the maker can repeat it.</summary>
     public const string MakerReplayRequired = "PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED";
 
+    /// <summary>The approval kept changing while it was being withdrawn (still open): ask again in a moment.</summary>
+    public const string ApprovalChanging = "PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING";
+
+    /// <summary>The approval was decided or closed before the withdrawal reached it, and the engine named no reason.</summary>
+    public const string ApprovalClosed = "PRODUCT_IDENTITY_WITHDRAWAL_APPROVAL_CLOSED";
+
     public static int StatusFor(string? code) => code switch
     {
         SessionExpired => 401,
@@ -78,7 +84,8 @@ public static class ProductIdentityWorkflowMakerCodes
     };
 
     public static bool IsMakerCode(string? code) => code is SessionExpired or StartPermissionRequired
-        or ApproverNotAssigned or DefinitionNotReady or ServiceUnavailableResubmit or MakerReplayRequired;
+        or ApproverNotAssigned or DefinitionNotReady or ServiceUnavailableResubmit or MakerReplayRequired
+        or ApprovalChanging;
 }
 
 /// <summary>

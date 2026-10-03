@@ -200,6 +200,7 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
 
         // A fault met AFTER that answer starts a new streak at its own moment — not at the old one.
         _clock.Advance(TimeSpan.FromMinutes(20));
+        _transport.StartResult = (_, _) => (Outcome.Retryable, "PRODUCT_WORKFLOW_UNAVAILABLE");
         Assert.Equal(503, (await SubmitAsync(services, operation)).StatusCode);
         stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
         Assert.Equal(_clock.GetUtcNow().UtcTicks, stored.ServiceFaultSinceUtcTicksV1);
@@ -318,13 +319,13 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
         Assert.Null(stored.WithdrawalCommandId);
         Assert.Null(stored.WithdrawalFingerprint);
         Assert.Null(stored.WithdrawalExpectedWorkflowInstanceVersion);
-        // The withdrawal did not bring the worker's read forward: it is kept away for the settle window.
-        Assert.Equal(_clock.GetUtcNow().Add(Retry).UtcTicks, stored.NextAttemptAtUtcTicksV1);
+        // Refused before it was processed: nothing can land, so the worker's schedule is what it was (none) — a
+        // refused withdrawal does not keep the decision poll waiting.
+        Assert.Null(stored.NextAttemptAtUtcTicksV1);
 
-        // The requester gives up. The approver approves at the engine. The worker's next cycle after the settle
-        // window — the real runner, the real discovery — finds the operation and applies the decision.
+        // The requester gives up. The approver approves at the engine. The worker's very next cycle — the real
+        // runner, the real discovery — finds the operation and applies the decision.
         _transport.Terminal = (_, _) => Approved(stored);
-        _clock.Advance(Retry);
         var cycle = await Runner(services).RunCycleAsync();
 
         stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
@@ -405,14 +406,8 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
         var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision, withPendingProduct: true);
         var repository = Repository(_tenantA);
         var commandId = Guid.NewGuid();
-        var landed = false;
-        _transport.Preflight = (_, request) => landed
-            ? (Outcome.NotFound, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND")
-            : PreflightOpen(request);
-        _transport.Cancel = (_, _) => (Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
-        _transport.Terminal = (_, _) => landed
-            ? (Outcome.Conflict, "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT")
-            : (Outcome.NonTerminal, "WORKFLOW_DECISION_NOT_TERMINAL");
+        var engine = UseEngine();
+        engine.HoldCancellations = true; // received, answered by nobody, processed later
         using var services = Services();
         Assert.Equal(503, (await WithdrawAsync(services, operation, commandId)).StatusCode);
 
@@ -425,7 +420,7 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
 
         // The cancellation lands. After the settle window the worker reads: closed, no decision — it keeps the
         // withdrawal and quarantines nothing.
-        landed = true;
+        engine.LandHeldCancellation();
         _clock.Advance(Retry);
         await Runner(services).RunCycleAsync();
         stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
@@ -433,13 +428,239 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
         Assert.Equal(commandId, stored.WithdrawalCommandId);
         Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, stored.RecoveryDisposition);
 
-        // The requester repeats the same command: the engine replays the cancellation, the product is a draft.
-        _transport.Cancel = (_, request) => Cancelled((ProductIdentityWorkflowCancellationRequest)request);
+        // The requester repeats the same command. The engine replays a cancellation only for the same key AND the
+        // same versions (anything else is a conflict): the repeat carries exactly what the first request carried.
+        var repeated = await WithdrawAsync(services, operation, commandId);
+
+        Assert.True(repeated.Succeeded, repeated.ErrorCode);
+        Assert.Equal(2, engine.CancelCalls);
+        Assert.Equal(Checkpoint.Completed, (await repository.GetByOperationIdAsync(operation.OperationId))!.Checkpoint);
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, (await ProductAsync(operation)).LifecycleStatus);
+    }
+
+    // Fix round 3, item 1: the cancellation LANDED, its answer was lost — and the requester's repeat is refused
+    // before it is processed (their session ran out, or the service identity is refused). That refusal says nothing
+    // about the cancellation that landed: the withdrawal must not be forgotten.
+    [Theory]
+    [InlineData(Outcome.AuthenticationRejected, "WORKFLOW_DELEGATED_USER_UNAUTHENTICATED", 401)]
+    [InlineData(Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED", 503)]
+    public async Task AWithdrawalThatLanded_ThenRepeatedAndRefusedBeforeProcessing_IsNotForgotten_NotQuarantined_AndCompletes(
+        Outcome refusal, string code, int status)
+    {
+        var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision, withPendingProduct: true);
+        var repository = Repository(_tenantA);
+        var commandId = Guid.NewGuid();
+        var engine = UseEngine();
+        engine.LoseTheAnswer = true; // processed at once; the answer never arrives
+        using var services = Services();
+        Assert.Equal(503, (await WithdrawAsync(services, operation, commandId)).StatusCode);
+        var scheduled = (await repository.GetByOperationIdAsync(operation.OperationId))!.NextAttemptAtUtcTicksV1;
+
+        engine.Refuse = (refusal, code);
+        _clock.Advance(TimeSpan.FromSeconds(5));
+        var refused = await WithdrawAsync(services, operation, commandId);
+
+        var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(status, refused.StatusCode);
+        Assert.Equal(Checkpoint.WithdrawalOutcomeUnknown, stored.Checkpoint);
+        Assert.Equal(commandId, stored.WithdrawalCommandId);
+        Assert.Equal(scheduled, stored.NextAttemptAtUtcTicksV1); // the refusal did not push the worker's read out
+
+        // The worker reads the approval: cancelled at the engine, no decision. Not a quarantine.
+        _clock.Advance(Retry);
+        await Runner(services).RunCycleAsync();
+        stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(Checkpoint.WithdrawalOutcomeUnknown, stored.Checkpoint);
+        Assert.NotEqual(ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired, stored.RecoveryDisposition);
+        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, (await ProductAsync(operation)).LifecycleStatus);
+
+        // Signed in again, the requester repeats: the withdrawal completes.
+        engine.Refuse = null;
         var repeated = await WithdrawAsync(services, operation, commandId);
 
         Assert.True(repeated.Succeeded, repeated.ErrorCode);
         Assert.Equal(Checkpoint.Completed, (await repository.GetByOperationIdAsync(operation.OperationId))!.Checkpoint);
         Assert.Equal(ProductIdentityLifecycleStatus.Draft, (await ProductAsync(operation)).LifecycleStatus);
+    }
+
+    // Fix round 3, item 6: the settle window is max(retry delay, floor) counted from NOW — measured with a retry
+    // delay above the floor, and with a plan of the worker's that is already in the past (the ordinary case).
+    [Fact]
+    public async Task TheSettleWindow_IsTheRetryDelayWhenThatIsLonger_AndCountsFromNow_NotFromAPlanInThePast()
+    {
+        var longer = TimeSpan.FromSeconds(45);
+        var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision, withPendingProduct: true);
+        var past = await SeedAsync(_tenantB, Checkpoint.AwaitingDecision, withPendingProduct: true);
+        await ScheduleAsync(Repository(_tenantB), past, _clock.GetUtcNow().AddMinutes(-10));
+        UseEngine().LoseTheAnswer = true;
+        using var services = Services();
+
+        await WithdrawAsync(services, operation, Guid.NewGuid(), longer);
+        UseEngine().LoseTheAnswer = true; // a second approval: its own engine state
+        await WithdrawAsync(services, past, Guid.NewGuid());
+
+        Assert.Equal(_clock.GetUtcNow().Add(longer).UtcTicks,
+            (await Repository(_tenantA).GetByOperationIdAsync(operation.OperationId))!.NextAttemptAtUtcTicksV1);
+        Assert.Equal(_clock.GetUtcNow().Add(Retry).UtcTicks,
+            (await Repository(_tenantB).GetByOperationIdAsync(past.OperationId))!.NextAttemptAtUtcTicksV1);
+    }
+
+    // Item 6: the write that stores the versions settles too — it is what stands on the record WHILE the
+    // cancellation is at the engine (a process that dies there writes nothing afterwards).
+    [Fact]
+    public async Task WhileTheCancellationIsAtTheEngine_TheRecordAlreadyKeepsTheWorkerAway()
+    {
+        var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision, withPendingProduct: true);
+        var repository = Repository(_tenantA);
+        var commandId = Guid.NewGuid();
+        _transport.Preflight = (_, _) => throw new InvalidOperationException("the wire broke");
+        using var services = Services();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => WithdrawAsync(services, operation, commandId));
+
+        // Five minutes later the requester repeats; what stands on the record during the cancellation call?
+        _clock.Advance(TimeSpan.FromMinutes(5));
+        long? during = null;
+        Checkpoint? at = null;
+        _transport.Preflight = (_, request) => PreflightOpen(request);
+        _transport.Cancel = (_, _) =>
+        {
+            var row = repository.GetByOperationIdAsync(operation.OperationId).GetAwaiter().GetResult()!;
+            (during, at) = (row.NextAttemptAtUtcTicksV1, row.Checkpoint);
+            return (Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
+        };
+        await WithdrawAsync(services, operation, commandId);
+
+        Assert.Equal(Checkpoint.WithdrawalPreflightObserved, at);
+        Assert.Equal(_clock.GetUtcNow().Add(Retry).UtcTicks, during);
+    }
+
+    // Item 6: two faults are one streak up to two ceilings apart (2 x 15 min), and not beyond.
+    [Theory]
+    [InlineData(0, 2, LogLevel.Error)]   // exactly two ceilings: still the same outage — and by now an error
+    [InlineData(1, 1, LogLevel.Warning)] // a second more: a new streak
+    public async Task TwoFaults_AreOneStreak_UpToTwoCeilingsApart(int secondsBeyond, int count, LogLevel level)
+    {
+        var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision);
+        var repository = Repository(_tenantA);
+        _transport.Terminal = (_, _) => (Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
+        using var services = Services();
+        await Runner(services).RunCycleAsync();
+        var first = _clock.GetUtcNow().UtcTicks;
+
+        _clock.Advance(TimeSpan.FromMinutes(30) + TimeSpan.FromSeconds(secondsBeyond));
+        _log.Entries.Clear();
+        await Runner(services).RunCycleAsync();
+
+        var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(count, stored.ServiceFaultCount);
+        Assert.Equal(count == 2 ? first : _clock.GetUtcNow().UtcTicks, stored.ServiceFaultSinceUtcTicksV1);
+        Assert.Equal(level, Assert.Single(_log.Entries,
+            entry => entry.Message.Contains("met a service fault", StringComparison.Ordinal)).Level);
+    }
+
+    // Item 6: a streak that spans EXACTLY the ceiling is an error (not only one that is longer).
+    [Fact]
+    public async Task AStreakThatSpansExactlyTheCeiling_IsAnError()
+    {
+        var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision);
+        _transport.Terminal = (_, _) => (Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
+        using var services = Services();
+        await Runner(services).RunCycleAsync();
+
+        _clock.Advance(TimeSpan.FromMinutes(15));
+        _log.Entries.Clear();
+        await Runner(services).RunCycleAsync();
+
+        Assert.Equal(2, (await Repository(_tenantA).GetByOperationIdAsync(operation.OperationId))!.ServiceFaultCount);
+        Assert.Equal(LogLevel.Error, Assert.Single(_log.Entries,
+            entry => entry.Message.Contains("met a service fault", StringComparison.Ordinal)).Level);
+    }
+
+    // Item 6: a write that only passes by must not make an old streak look as if it were going on.
+    [Fact]
+    public async Task AWithdrawalLongAfterAnOldFault_DoesNotReviveTheOldStreak()
+    {
+        var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision, withPendingProduct: true);
+        var repository = Repository(_tenantA);
+        _transport.Terminal = (_, _) => (Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
+        using var services = Services();
+        await Runner(services).RunCycleAsync();
+        Assert.Equal(1, (await repository.GetByOperationIdAsync(operation.OperationId))!.ServiceFaultCount);
+
+        _clock.Advance(TimeSpan.FromHours(3)); // the worker was off
+        _log.Entries.Clear();
+        UseEngine().LoseTheAnswer = true;
+        await WithdrawAsync(services, operation, Guid.NewGuid());
+
+        var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(Checkpoint.WithdrawalOutcomeUnknown, stored.Checkpoint);
+        Assert.Equal(0, stored.ServiceFaultCount);
+        Assert.Equal(_clock.GetUtcNow().UtcTicks, stored.ServiceFaultSinceUtcTicksV1);
+        Assert.Equal(LogLevel.Warning, Assert.Single(_log.Entries,
+            entry => entry.Message.Contains("met a service fault", StringComparison.Ordinal)).Level);
+    }
+
+    [Fact]
+    public async Task ALeaseGivenBackLongAfterAnOldFault_DoesNotReviveTheOldStreak()
+    {
+        var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingMakerReplay, withDraftProduct: true);
+        var repository = Repository(_tenantA);
+        _transport.Start = (_, _) => (Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED");
+        using var services = Services();
+        Assert.Equal(503, (await SubmitAsync(services, operation)).StatusCode);
+        var old = (await repository.GetByOperationIdAsync(operation.OperationId))!.ServiceFaultSinceUtcTicksV1;
+        Assert.Equal(_clock.GetUtcNow().UtcTicks, old);
+
+        _clock.Advance(TimeSpan.FromHours(3));
+        _transport.Start = (_, _) => throw new InvalidOperationException("the wire broke"); // only gives the lease back
+        await Assert.ThrowsAsync<InvalidOperationException>(() => SubmitAsync(services, operation));
+        _clock.Advance(TimeSpan.FromMinutes(1));
+        _transport.Start = (_, _) => (Outcome.AuthenticationRejected, "PRODUCT_WORKFLOW_IDENTITY_REJECTED");
+        await SubmitAsync(services, operation);
+
+        Assert.Equal(_clock.GetUtcNow().UtcTicks,
+            (await repository.GetByOperationIdAsync(operation.OperationId))!.ServiceFaultSinceUtcTicksV1);
+    }
+
+    // The two discovery filters, each on its own: the operation list inside a tenant that HAS other due
+    // operations, and the tenant list for tenants whose only operations are at rest for good.
+    [Fact]
+    public async Task InATenantWithDueOperations_AnOrdinaryAwaitingMakerReplayOperation_IsNotListedForTheWorker()
+    {
+        var due = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision);
+        var ordinary = await SeedAsync(_tenantA, Checkpoint.AwaitingMakerReplay);
+        var parked = await SeedAsync(_tenantA, Checkpoint.AwaitingMakerReplay);
+        await _database.GetCollection<GlobalProductIdentityWorkflowOperation>(
+                GlobalProductIdentityWorkflowOperationRepository.CollectionName)
+            .UpdateOneAsync(item => item.TenantId == _tenantA && item.OperationId == parked.OperationId,
+                Builders<GlobalProductIdentityWorkflowOperation>.Update.Set(item => item.WithdrawalCommandId, Guid.NewGuid()));
+
+        var listed = (await Repository(_tenantA).DiscoverRecoverableAsync(_clock.GetUtcNow().UtcTicks, 10))
+            .Operations.Select(item => item.OperationId).ToList();
+
+        Assert.Contains(due.OperationId, listed);
+        Assert.Contains(parked.OperationId, listed);
+        Assert.DoesNotContain(ordinary.OperationId, listed);
+    }
+
+    [Theory]
+    [InlineData(Checkpoint.AbandonedBeforeWorkflowStart)]
+    [InlineData(Checkpoint.Superseded)]
+    [InlineData(Checkpoint.Completed)]
+    public async Task ATenantWhoseOnlyOperationIsAtRestForGood_IsNotDiscovered(Checkpoint atRest)
+    {
+        var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision);
+        await SeedAsync(_tenantB, Checkpoint.AwaitingDecision);
+        await _database.GetCollection<GlobalProductIdentityWorkflowOperation>(
+                GlobalProductIdentityWorkflowOperationRepository.CollectionName)
+            .UpdateOneAsync(item => item.TenantId == _tenantA && item.OperationId == operation.OperationId,
+                Builders<GlobalProductIdentityWorkflowOperation>.Update.Set(item => item.Checkpoint, atRest));
+
+        var discovered = (await new GlobalProductIdentityWorkflowTenantPartitionDiscoveryRepository(_database)
+            .DiscoverAsync(null, _clock.GetUtcNow().UtcTicks, 10)).TenantIds;
+
+        Assert.DoesNotContain(_tenantA, discovered);
+        Assert.Contains(_tenantB, discovered);
     }
 
     // Items 1 and 5 (NEW-6): a cycle that falls between the requester's two steps must not drop the withdrawal,
@@ -502,18 +723,65 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
     {
         var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision, withPendingProduct: true);
         var repository = Repository(_tenantA);
-        var cancels = 0;
-        _transport.Preflight = (_, request) => PreflightOpen(request);
-        _transport.Cancel = (_, request) => ++cancels == 1
-            ? (Outcome.Conflict, "WORKFLOW_TRUSTED_CANCEL_CONFLICT")
-            : Cancelled((ProductIdentityWorkflowCancellationRequest)request);
+        var engine = UseEngine();
+        // The approval moves on between the read of its versions and the cancellation — once.
+        var moved = false;
+        _transport.Cancel = (_, request) =>
+        {
+            if (!moved)
+            {
+                moved = true;
+                engine.InstanceVersion++;
+                engine.TaskVersion++;
+            }
+            return engine.Cancel(request);
+        };
         using var services = Services();
 
         var result = await WithdrawAsync(services, operation, Guid.NewGuid());
 
+        var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
         Assert.True(result.Succeeded, result.ErrorCode);
-        Assert.Equal(2, cancels);
-        Assert.Equal(Checkpoint.Completed, (await repository.GetByOperationIdAsync(operation.OperationId))!.Checkpoint);
+        Assert.Equal(2, engine.CancelCalls);
+        Assert.Equal(Checkpoint.Completed, stored.Checkpoint);
+        // What went through carried the versions read after the conflict (the engine accepts no others).
+        Assert.Equal((4, 6), (stored.WithdrawalExpectedWorkflowInstanceVersion, stored.WithdrawalExpectedApprovalTaskVersion));
+        Assert.Equal(ProductIdentityLifecycleStatus.Draft, (await ProductAsync(operation)).LifecycleStatus);
+    }
+
+    [Fact]
+    public async Task AnApprovalThatKeepsMoving_IsAnsweredAfterOneRetry_AndTheRecordCanBeWithdrawnLater()
+    {
+        var operation = await SeedAsync(_tenantA, Checkpoint.AwaitingDecision, withPendingProduct: true);
+        var repository = Repository(_tenantA);
+        var engine = UseEngine();
+        var moving = true;
+        _transport.Cancel = (_, request) =>
+        {
+            if (moving)
+            {
+                engine.InstanceVersion++;
+                engine.TaskVersion++;
+            }
+            return engine.Cancel(request);
+        };
+        using var services = Services();
+        var commandId = Guid.NewGuid();
+
+        var result = await WithdrawAsync(services, operation, commandId);
+
+        var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal((409, ProductIdentityWorkflowMakerCodes.ApprovalChanging), (result.StatusCode, result.ErrorCode));
+        Assert.Equal(2, engine.CancelCalls);
+        Assert.Equal(Checkpoint.AwaitingDecision, stored.Checkpoint);
+        Assert.Null(stored.WithdrawalCommandId);
+        Assert.Null(stored.LeaseOwner);
+        Assert.Null(stored.NextAttemptAtUtcTicksV1); // the decision poll is not kept waiting
+
+        moving = false;
+        var repeated = await WithdrawAsync(services, operation, commandId);
+
+        Assert.True(repeated.Succeeded, repeated.ErrorCode);
         Assert.Equal(ProductIdentityLifecycleStatus.Draft, (await ProductAsync(operation)).LifecycleStatus);
     }
 
@@ -531,9 +799,16 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
         using var services = Services();
 
         var first = await WithdrawAsync(services, operation, commandId);
+        // The worker polls the decision in between (not decided yet) and rewrites LastFailureCode; the repeat still
+        // reads the withdrawal's own answer.
+        _transport.Terminal = (_, _) => (Outcome.NonTerminal, "WORKFLOW_DECISION_NOT_TERMINAL");
+        await Runner(services).RunCycleAsync();
+        Assert.Equal("WORKFLOW_DECISION_NOT_TERMINAL",
+            (await repository.GetByOperationIdAsync(operation.OperationId))!.LastFailureCode);
         var again = await WithdrawAsync(services, operation, commandId);
 
         var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal("WORKFLOW_TRUSTED_CANCEL_CONFLICT", stored.WithdrawalRefusalCode);
         Assert.Equal((409, "WORKFLOW_TRUSTED_CANCEL_CONFLICT"), (first.StatusCode, first.ErrorCode));
         Assert.Equal((409, "WORKFLOW_TRUSTED_CANCEL_CONFLICT"), (again.StatusCode, again.ErrorCode));
         Assert.Equal(Checkpoint.AwaitingDecision, stored.Checkpoint);
@@ -686,7 +961,8 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
                 .Set(item => item.WithdrawalResultApprovalTaskVersion, 6)
                 .Set(item => item.WithdrawalTaskStatus, "Cancelled")
                 .Set(item => item.WithdrawalInstanceStatus, "Cancelled")
-                .Set(item => item.WithdrawalObjectRef, "GP-REF"));
+                .Set(item => item.WithdrawalObjectRef, "GP-REF")
+                .Set(item => item.WithdrawalRefusalCode, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND"));
         var now = _clock.GetUtcNow().UtcTicks;
         var claim = await repository.TryClaimAsync(new(operation.OperationId, operation.OperationFingerprint,
             [Checkpoint.WithdrawalOutcomeUnknown], "worker", now, now + Lease.Ticks));
@@ -698,7 +974,7 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
         var stored = (await repository.GetByOperationIdAsync(operation.OperationId))!;
         var withdrawalFields = typeof(GlobalProductIdentityWorkflowOperation).GetProperties()
             .Where(property => property.Name.StartsWith("Withdrawal", StringComparison.Ordinal)).ToList();
-        Assert.Equal(16, withdrawalFields.Count); // a seventeenth field has to be cleared too — and listed above
+        Assert.Equal(17, withdrawalFields.Count); // an eighteenth field has to be cleared too — and listed above
         Assert.All(withdrawalFields, property => Assert.True(property.GetValue(stored) is null, property.Name));
         Assert.Equal(Checkpoint.AwaitingDecision, stored.Checkpoint);
     }
@@ -891,13 +1167,67 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
     }
 
     private async Task<GlobalProductIdentityWorkflowProcessingResult> WithdrawAsync(
-        ServiceProvider services, GlobalProductIdentityWorkflowOperation operation, Guid commandId)
+        ServiceProvider services, GlobalProductIdentityWorkflowOperation operation, Guid commandId,
+        TimeSpan? retry = null)
     {
         await using var scope = services.CreateAsyncScope();
         scope.ServiceProvider.GetRequiredService<ITenantContext>().SetTenant(operation.TenantId);
         return await scope.ServiceProvider.GetRequiredService<GlobalProductIdentityWorkflowProcessor>()
             .WithdrawInteractiveAsync(operation.TenantId, operation.GlobalProductId, 1, commandId, _makerId,
-                "REQUESTER_WITHDRAWAL", null, "maker-token", Lease, Retry);
+                "REQUESTER_WITHDRAWAL", null, "maker-token", Lease, retry ?? Retry);
+    }
+
+    // The part of Platform's cancellation contract these tests depend on (TrustedWorkflowCancellationCoordinator):
+    // a cancellation is accepted for the CURRENT versions only; once it is recorded, the same key is replayed only
+    // with the same versions and anything else is a conflict; a cancelled approval is not open, and holds no decision.
+    private Engine UseEngine()
+    {
+        var engine = new Engine(Cancelled);
+        _transport.Preflight = (_, request) => engine.Preflight(request);
+        _transport.Cancel = (_, request) => engine.Cancel(request);
+        _transport.Terminal = (_, _) => engine.Terminal();
+        return engine;
+    }
+
+    private sealed class Engine(Func<ProductIdentityWorkflowCancellationRequest, object> evidence)
+    {
+        private (string Key, int Instance, int Task)? _recorded;
+        private (string Key, int Instance, int Task)? _held;
+        public int InstanceVersion { get; set; } = 3;
+        public int TaskVersion { get; set; } = 5;
+        public bool HoldCancellations { get; set; }
+        public bool LoseTheAnswer { get; set; }
+        public (Outcome Outcome, string Code)? Refuse { get; set; }
+        public int CancelCalls { get; private set; }
+
+        public void LandHeldCancellation() => (_recorded, _held) = (_held, null);
+
+        public object Preflight(object request) => _recorded is null
+            ? PreflightOpen(request, InstanceVersion, TaskVersion)
+            : (Outcome.NotFound, "WORKFLOW_TRUSTED_CANCEL_NOT_FOUND");
+
+        public object Terminal() => _recorded is null
+            ? (Outcome.NonTerminal, "WORKFLOW_DECISION_NOT_TERMINAL")
+            : (Outcome.Conflict, "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT");
+
+        public object Cancel(object request)
+        {
+            CancelCalls++;
+            if (Refuse is { } refused) return refused; // refused before anything is looked at
+            var asked = (ProductIdentityWorkflowCancellationRequest)request;
+            var facts = (asked.IdempotencyKey, asked.ExpectedWorkflowInstanceVersion, asked.ExpectedApprovalTaskVersion);
+            if (_recorded is { } recorded)
+                return recorded == facts ? evidence(asked) : (Outcome.Conflict, "WORKFLOW_TRUSTED_CANCEL_CONFLICT");
+            if (asked.ExpectedWorkflowInstanceVersion != InstanceVersion || asked.ExpectedApprovalTaskVersion != TaskVersion)
+                return (Outcome.Conflict, "WORKFLOW_TRUSTED_CANCEL_CONFLICT");
+            if (HoldCancellations)
+            {
+                _held = facts;
+                return (Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT");
+            }
+            _recorded = facts;
+            return LoseTheAnswer ? (Outcome.Timeout, "PRODUCT_WORKFLOW_TIMEOUT") : evidence(asked);
+        }
     }
 
     private async Task RecoverAsync(ServiceProvider services, GlobalProductIdentityWorkflowOperation operation)
@@ -912,11 +1242,12 @@ public sealed class GlobalProductIdentityWorkflowResilienceMongoTests : IAsyncLi
         await _database.GetCollection<GlobalProduct>("mdm_global_products")
             .Find(item => item.TenantId == operation.TenantId && item.Id == operation.GlobalProductId).SingleAsync();
 
-    private static ProductIdentityWorkflowCancellationPreflight PreflightOpen(object request)
+    private static ProductIdentityWorkflowCancellationPreflight PreflightOpen(
+        object request, int instanceVersion = 3, int taskVersion = 5)
     {
         var asked = (ProductIdentityWorkflowCancellationPreflightRequest)request;
         return new(asked.WorkflowInstanceId, asked.ApprovalTaskId, asked.ExpectedObjectType, asked.ExpectedObjectId,
-            "GP-REF", 3, 5, "Active", "WaitingApproval");
+            "GP-REF", instanceVersion, taskVersion, "Active", "WaitingApproval");
     }
 
     private ProductIdentityWorkflowTerminalEvidence Approved(GlobalProductIdentityWorkflowOperation operation) => new(
