@@ -664,7 +664,10 @@ const ReferenceDataList = (function () {
                 type: 'GET',
                 data: buildAjaxData,
                 dataSrc: unwrapSets,
-                headers: getAuthHeaders()
+                headers: getAuthHeaders(),
+                // BL-515: the failure itself is shown by the list component, in the table, in the reader's language.
+                // This page only takes its own "loading" notice down, then hands the failure over (`false`).
+                error: () => { show(loadingEl, false); return false; }
             },
             actions: { onRowAction: rowActionHandlers },
             config: {
@@ -778,18 +781,6 @@ const ReferenceDataList = (function () {
             }
         });
 
-        dt.on('xhr.dt', function (_event, _settings, json, xhr) {
-            show(loadingEl, false);
-            if (xhr?.status && xhr.status >= 400) {
-                show(errorEl, true);
-                if (errorEl) errorEl.textContent = L.ErrorState || '';
-            }
-        });
-        dt.on('error.dt', function () {
-            show(loadingEl, false);
-            show(errorEl, true);
-            if (errorEl) errorEl.textContent = L.ErrorState || '';
-        });
         dt.on('column-visibility.dt column-reorder.dt columns-reordered.dt', function () {
             window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
             if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));

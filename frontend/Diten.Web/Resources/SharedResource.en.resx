@@ -1096,4 +1096,16 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Accept Anyway</value>
   </data>
+  <data name="DtLoadFailed" xml:space="preserve">
+    <value>The list could not be loaded.</value>
+  </data>
+  <data name="DtLoadForbidden" xml:space="preserve">
+    <value>You do not have permission to see this list.</value>
+  </data>
+  <data name="DtRetry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="ShellSearchPlaceholder" xml:space="preserve">
+    <value>Search ({0})</value>
+  </data>
 </root>

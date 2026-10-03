@@ -1036,4 +1036,16 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>القبول على أي حال</value>
   </data>
+  <data name="DtLoadFailed" xml:space="preserve">
+    <value>تعذّر تحميل القائمة.</value>
+  </data>
+  <data name="DtLoadForbidden" xml:space="preserve">
+    <value>ليس لديك صلاحية لعرض هذه القائمة.</value>
+  </data>
+  <data name="DtRetry" xml:space="preserve">
+    <value>إعادة المحاولة</value>
+  </data>
+  <data name="ShellSearchPlaceholder" xml:space="preserve">
+    <value>بحث ({0})</value>
+  </data>
 </root>

@@ -152,6 +152,101 @@ window.DtDefaults = (function () {
         return _authRefreshInFlight;
     }
 
+    /*
+     * ══ BL-515 — A LIST THAT COULD NOT BE LOADED SAYS SO, INSIDE THE TABLE, IN THE READER'S LANGUAGE ══════════════
+     *
+     * MEASURED in the vendored DataTables (_fnBuildAjax): when the `ajax` option is an object carrying `error`, that
+     * function REPLACES the library's own — no `xhr` event, no `_fnLog`, and the processing indicator stays on. Every
+     * list built through create() gets such an `error` below, so those lists never showed the vendor's alert box: they
+     * showed an English toast (the HTTP status, or a fixed permission sentence) over an empty table. A list
+     * whose `ajax` is a URL STRING (or one built without create()) goes through the library's own handler instead,
+     * and that one ends in `errMode`, whose default is a browser alert: "DataTables warning: table id=… - Ajax error".
+     *
+     * Now both paths end here. 401 keeps today's rule (refresh the session, then retry or go to the login page);
+     * 403 says the reader may not see this list; anything else says the list could not be loaded and offers a retry.
+     * The words come from the shared DataTable payload (_DataTableL10n.cshtml → SharedResource), English only as the
+     * last fallback. The table's own body carries the message, so it sits where the rows would have been.
+     *
+     * ⚠ No `global.` and no bare `document` here: the cell is built from the table's own ownerDocument, which is the
+     * browser's document in a page and the sandbox's in a test (tests/dt-defaults-vm-sandbox.test.js).
+     */
+    var LOAD_ERROR_FALLBACK = {
+        DtLoadFailed: 'The list could not be loaded.',
+        DtLoadForbidden: 'You do not have permission to see this list.',
+        DtRetry: 'Retry'
+    };
+    // Each key read by name, so the payload's key list and what this file reads stay provably equal
+    // (tests/datatable-language-one-delivery-path.test.js).
+    var loadErrorText = function (key) {
+        var own = key === 'DtLoadFailed' ? dtText('DtLoadFailed')
+            : key === 'DtLoadForbidden' ? dtText('DtLoadForbidden')
+                : dtText('DtRetry');
+        return own || LOAD_ERROR_FALLBACK[key];
+    };
+    // The library as the rest of this file reaches it (the free `DataTable`), `window.DataTable` as the fallback.
+    var dataTableLibrary = function () {
+        return (typeof DataTable !== 'undefined' && DataTable) || window.DataTable || null;
+    };
+
+    function renderLoadError(settings, status) {
+        var library = dataTableLibrary();
+        if (!settings || !library || typeof library.Api !== 'function') { return false; }
+        var api;
+        try { api = new library.Api(settings); } catch (e) { return false; }
+        try { api.processing(false); } catch (e) { }
+        var body = api.table().body();
+        if (!body || !body.ownerDocument) { return false; }
+
+        var forbidden = status === 403;
+        var columns = 1;
+        try { columns = Math.max(1, api.columns(':visible').count()); } catch (e) { }
+        var doc = body.ownerDocument;
+        var row = doc.createElement('tr');
+        var cell = doc.createElement('td');
+        cell.colSpan = columns;
+        cell.className = 'dt-empty';
+        var box = doc.createElement('div');
+        box.className = 'd-flex flex-column align-items-center gap-2 py-4 text-center';
+        box.setAttribute('role', 'alert');
+        box.setAttribute('data-dt-load-error', forbidden ? 'forbidden' : 'failed');
+        var text = doc.createElement('span');
+        text.className = 'text-body-secondary';
+        text.textContent = loadErrorText(forbidden ? 'DtLoadForbidden' : 'DtLoadFailed');
+        box.appendChild(text);
+        if (!forbidden) {
+            var retry = doc.createElement('button');
+            retry.type = 'button';
+            retry.className = 'btn btn-sm btn-label-primary';
+            retry.setAttribute('data-dt-retry', 'true');
+            retry.textContent = loadErrorText('DtRetry');
+            retry.addEventListener('click', function () { api.ajax.reload(null, false); });
+            box.appendChild(retry);
+        }
+        cell.appendChild(box);
+        row.appendChild(cell);
+        while (body.firstChild) { body.removeChild(body.firstChild); }
+        body.appendChild(row);
+        return true;
+    }
+
+    // The library's warning channel: written to the console, never an alert box. An ajax or JSON failure that reached
+    // it (a list whose `ajax` was a URL string, or a table built without create()) is shown in the table like any other.
+    function logInsteadOfAlert(settings, techNote, message) {
+        // eslint-disable-next-line no-console
+        console.error('[DtDefaults] DataTables warning', { techNote: techNote, message: message });
+        if (techNote !== 1 && techNote !== 7) { return; }
+        var status = settings && settings.jqXHR && settings.jqXHR.status ? settings.jqXHR.status : 0;
+        if (status === 401) { refreshTokenAndReload(null); return; }
+        renderLoadError(settings, status);
+    }
+
+    function installErrMode() {
+        var library = dataTableLibrary();
+        var ext = (library && library.ext)
+            || (window.jQuery && window.jQuery.fn && window.jQuery.fn.dataTable && window.jQuery.fn.dataTable.ext);
+        if (ext) { ext.errMode = logInsteadOfAlert; }
+    }
+
     function retryAjax(settings) {
         if (!settings) return;
         if (settings._retried) return;
@@ -499,8 +594,14 @@ window.DtDefaults = (function () {
      * Merge user config with base defaults.
      */
     function create(userConfig) {
+        installErrMode();
         var merged = $.extend(true, {}, baseConfig, userConfig);
         var l = L();
+        // A URL string is the same request as `{ url }`; as an object it gets the error handling below (BL-515).
+        if (typeof merged.ajax === 'string') { merged.ajax = { url: merged.ajax }; }
+        // The table this config is building, captured on its first draw (which DataTables performs before the ajax
+        // answer arrives): the ajax error callback's `this` is jQuery's request settings, not the table's.
+        var tableSettings = null;
 
         /*
          * ── ONE LOADING LANGUAGE AT A TIME (owner report, 2026-09-21) ────────────────────────────────────
@@ -590,17 +691,12 @@ window.DtDefaults = (function () {
             // A page that brings its own handler keeps it — but the placeholder is removed on failure regardless,
             // or that page would show a placeholder forever when its service is down.
             var pageAjaxError = typeof merged.ajax.error === 'function' ? merged.ajax.error : null;
-            merged.ajax.error = pageAjaxError
-                ? function (xhr, textStatus, errorThrown) { revealTable(); return pageAjaxError.call(this, xhr, textStatus, errorThrown); }
-                : function (xhr, textStatus, errorThrown) {
-                revealTable();
-
+            var defaultAjaxError = function (xhr, textStatus, errorThrown) {
                 var status = xhr && xhr.status ? xhr.status : 0;
                 var url = merged.ajax && merged.ajax.url ? merged.ajax.url : '(unknown url)';
-                var responseText = xhr && xhr.responseText ? xhr.responseText : '';
 
                 // eslint-disable-next-line no-console
-                console.error('[DtDefaults] Ajax error', { status: status, url: url, textStatus: textStatus, errorThrown: errorThrown, responseText: responseText });
+                console.error('[DtDefaults] Ajax error', { status: status, url: url, textStatus: textStatus, errorThrown: errorThrown });
 
                 if (status === 401) {
                     if (this._retried) {
@@ -610,23 +706,26 @@ window.DtDefaults = (function () {
                     return;
                 }
 
-                if (status === 403) {
-                    if (window.showToast) {
-                        window.showToast('Permission denied.', 'error');
-                    }
-                    return;
-                }
-
-                if (window.showToast) {
-                    var msg = 'DataTables Ajax error (HTTP ' + status + ')';
-                    window.showToast(msg, 'error');
-                }
+                renderLoadError(tableSettings, status);
             };
+            // A page's own handler still decides first. Returning `false` hands the failure back to the component —
+            // the way a page keeps only what is its own (a controlled-failure sentence) and gives up the rest (BL-515).
+            merged.ajax.error = pageAjaxError
+                ? function (xhr, textStatus, errorThrown) {
+                    revealTable();
+                    var handled = pageAjaxError.call(this, xhr, textStatus, errorThrown);
+                    return handled === false ? defaultAjaxError.call(this, xhr, textStatus, errorThrown) : handled;
+                }
+                : function (xhr, textStatus, errorThrown) {
+                    revealTable();
+                    return defaultAjaxError.call(this, xhr, textStatus, errorThrown);
+                };
         }
 
         // Auto-hide skeleton + apply class fixes
         var originalInitComplete = merged.initComplete;
         merged.initComplete = function (settings, json) {
+            tableSettings = settings || tableSettings;
             /*
              * ⚠ REMOVED, NOT HIDDEN. The CSS keeps the table out of the page for as long as this element is its
              * sibling, so taking the element away IS what reveals the table — one act, no second class to get
@@ -653,6 +752,7 @@ window.DtDefaults = (function () {
         // Redraw durumunda class fixleri tazele
         var originalDrawCallback = merged.drawCallback;
         merged.drawCallback = function (settings) {
+            tableSettings = settings || tableSettings;
             /*
              * ⚠ NOT A REVEAL EXIT. DataTables draws the table ONCE, EMPTY, before the ajax request is answered
              * (measured on 2.1.8: first drawCallback fires with the response still pending). Revealing here took
@@ -1278,8 +1378,13 @@ window.DtDefaults = (function () {
 
     bindResponsiveModalTitleFix();
 
+    // Tables built without create() (a page calling `new DataTable` directly) are covered from the moment this file
+    // loads; create() installs it again in case the library arrived after this file.
+    installErrMode();
+
     return {
         create: create,
+        renderLoadError: renderLoadError,
         exportButtons: exportButtons,
         controlledCopy: {
             build: buildControlledCopy,

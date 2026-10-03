@@ -54,7 +54,9 @@
 
 <html lang="@currentCulture" class="layout-navbar-fixed layout-menu-fixed layout-compact" dir="@layoutDirection"
     data-skin="default" data-assets-path="/assets/" data-template="vertical-menu-template" data-bs-theme="light"
-    data-semidark-menu="false" data-shell="platform-admin">
+    data-semidark-menu="false" data-shell="platform-admin"
+    @* BL-520 — the top-bar search box's label in the request's language (main.js fills the shortcut into {0}). *@
+    data-search-placeholder="@SharedLocalizer["ShellSearchPlaceholder"]">
 
 <head>
     <meta charset="utf-8" />

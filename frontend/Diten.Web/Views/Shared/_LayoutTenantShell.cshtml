@@ -36,7 +36,10 @@
     @* BL-294/nav — main.js is a STATIC asset with no access to the resx, so the Ctrl+K palette's
        "could not load" text is handed to it here, already localized in the request's culture. *@
     data-nav-load-failed="@SharedLocalizer["NavigationLoadFailed"]"
-    data-nav-load-failed-hint="@SharedLocalizer["NavigationLoadFailedHint"]">
+    data-nav-load-failed-hint="@SharedLocalizer["NavigationLoadFailedHint"]"
+    @* BL-520 — the top-bar search box's label, localized here for the same reason; main.js puts the platform's own
+       shortcut name (⌘K on macOS, Ctrl+K elsewhere) into its {0}. *@
+    data-search-placeholder="@SharedLocalizer["ShellSearchPlaceholder"]">
 
 <head>
     <meta charset="utf-8" />
