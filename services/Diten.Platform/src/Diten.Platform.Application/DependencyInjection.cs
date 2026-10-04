@@ -81,6 +81,9 @@ public static class DependencyInjection
         // assigned to. ONE rule, asked by every read-side endpoint that resolves a single task by id.
         services.AddScoped<Features.Tasks.Services.ITaskReadAccessPolicy,
             Features.Tasks.Services.TaskReadAccessPolicy>();
+        // WP-WCN-TASK-REQUEST-01 FIX2 — and the base of every WRITE on one task: who cannot read it reaches no write.
+        services.AddScoped<Features.Tasks.Services.ITaskWriteGate,
+            Features.Tasks.Services.TaskWriteGate>();
         // BL-023 — turns that resolver's DESCENT into "my team". Walks nothing of its own.
         services.AddScoped<Features.Tasks.Services.ITaskTeamResolver,
             Features.Tasks.Services.TaskTeamResolver>();

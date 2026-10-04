@@ -4,6 +4,7 @@ using Diten.Platform.Application.Features.TimeEntry;
 using Diten.Platform.Common.Authorization;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Entities.Tasks;
+using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Infrastructure.Persistence.Schema;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
@@ -90,6 +91,59 @@ public sealed class TimeEntryTaskGateHttpMongoTests : TimeEntryScenario
     }
 
     /// <summary>A task nobody relates the person to by data: held and created by someone else, no watcher, no parent.</summary>
+    // ── WP-WCN-TASK-REQUEST-01 FIX2 — new time on a task is a write on it ──────────────────────────────────────────
+
+    /// <summary>The person a request waits on READS it (to answer it) but puts no time on it before answering; once
+    /// they hold it, they do.</summary>
+    [Fact]
+    public async Task The_person_a_request_waits_on_cannot_put_time_on_it_before_answering()
+    {
+        var task = Guid.NewGuid();
+        await SeedTaskAsync(Tenant, task, creator: Stranger, lifecycle: TaskLifecycle.Open);
+        await Collection<TaskItem>(PlatformCollections.TaskItems).UpdateOneAsync(t => t.Id == task,
+            Builders<TaskItem>.Update
+                .Set(t => t.AssignmentTarget, TaskAssignmentTarget.Offered)
+                .Set(t => t.AssigneeUserId, null)
+                .Set(t => t.OfferedToUserId, Person)
+                .Set(t => t.IsRequest, true)
+                .Set(t => t.RequestOriginUnitId, Unit));
+
+        var pending = await SaveFreshAsync(CurrentWeek, Row(Monday, 60, task));
+        Assert.Equal(HttpStatusCode.BadRequest, pending.Status);
+        Assert.Equal(TimeEntryReasonCodes.TargetInvalid, pending.ReasonCode);
+
+        // Accepted: the holder records their time.
+        await Collection<TaskItem>(PlatformCollections.TaskItems).UpdateOneAsync(t => t.Id == task,
+            Builders<TaskItem>.Update
+                .Set(t => t.AssignmentTarget, TaskAssignmentTarget.Person)
+                .Set(t => t.AssigneeUserId, Person)
+                .Set(t => t.OfferedToUserId, null)
+                .Set(t => t.Lifecycle, TaskLifecycle.InProgress));
+        var held = await SaveFreshAsync(CurrentWeek, Row(Monday, 60, task));
+        Assert.True(held.Status == HttpStatusCode.OK, held.ToString());
+    }
+
+    /// <summary>The sender of an accepted request reads its holder's work (they watch it) but logs no time on it.</summary>
+    [Fact]
+    public async Task The_sender_of_an_accepted_request_cannot_put_time_on_its_holders_task()
+    {
+        var task = Guid.NewGuid();
+        await SeedTaskAsync(Tenant, task, assignee: Stranger, creator: Person);
+        await Collection<TaskItem>(PlatformCollections.TaskItems).UpdateOneAsync(t => t.Id == task,
+            Builders<TaskItem>.Update.Set(t => t.IsRequest, true).Set(t => t.RequestOriginUnitId, Unit));
+
+        var saved = await SaveFreshAsync(CurrentWeek, Row(Monday, 60, task));
+
+        Assert.Equal(HttpStatusCode.BadRequest, saved.Status);
+        Assert.Equal(TimeEntryReasonCodes.TargetInvalid, saved.ReasonCode);
+
+        // Non-vacuity: the same task as an ORDINARY one created by the person (they are its requester) takes their time.
+        await Collection<TaskItem>(PlatformCollections.TaskItems).UpdateOneAsync(t => t.Id == task,
+            Builders<TaskItem>.Update.Set(t => t.IsRequest, false));
+        var ordinary = await SaveFreshAsync(CurrentWeek, Row(Monday, 60, task));
+        Assert.True(ordinary.Status == HttpStatusCode.OK, ordinary.ToString());
+    }
+
     private async Task<Guid> ForeignTaskAsync(Guid? unit = null)
     {
         var task = Guid.NewGuid();

@@ -352,6 +352,32 @@ public sealed class MeetingTaskBridgeCommandHandlerTests
         Assert.Equal("Özel Başlık", mediator.LastCreateMeetingRequest!.Title);
     }
 
+    /// <summary>WP-WCN-TASK-REQUEST-01 FIX2 — the review meeting is linked onto the task and gates its completion: the
+    /// sender of an ACCEPTED request (the requester, so the old holder-or-requester rule admitted them) does not
+    /// direct its holder's review — the task's write gate, the production one.</summary>
+    [Fact]
+    public async Task The_sender_of_an_accepted_request_cannot_schedule_its_review_meeting()
+    {
+        var mediator = new BridgeMediator
+        {
+            CreateMeetingResult = Response<MeetingDto>.Success(MakeMeetingDto(Guid.NewGuid()), 201, CorrelationId)
+        };
+        var task = MakeTask(TaskId, holder: TaskTestData.Rival, requester: TaskTestData.Me);
+        task.IsRequest = true;
+        var (handler, links) = BuildScheduleHandler(mediator, Tasks.TaskWriteGateDoubles.ReadableTo(new FakeCurrentUserContext(TaskTestData.Me)), task);
+
+        var result = await handler.Handle(
+            new ScheduleReviewMeetingForTaskCommand(
+                TaskId,
+                new ScheduleReviewMeetingForTaskRequest(TypeId, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1), null, "key-sender"),
+                CorrelationId),
+            CancellationToken.None);
+
+        Assert.Equal((403, TaskReasonCodes.RequestSenderCannotDirect), (result.StatusCode, result.ReasonCode));
+        Assert.Empty(links.Items);
+        Assert.Null(mediator.LastCreateMeetingRequest);
+    }
+
     [Fact]
     public async Task Neither_holder_nor_requester_gets_404_not_403_no_existence_leak()
     {
@@ -469,13 +495,18 @@ public sealed class MeetingTaskBridgeCommandHandlerTests
 
     private static (ScheduleReviewMeetingForTaskHandler Handler, FakeRecordLinkRepository Links)
         BuildScheduleHandler(BridgeMediator mediator, params TaskItem[] tasks)
+        => BuildScheduleHandler(mediator, Tasks.TaskWriteGateDoubles.Open, tasks);
+
+    private static (ScheduleReviewMeetingForTaskHandler Handler, FakeRecordLinkRepository Links)
+        BuildScheduleHandler(BridgeMediator mediator, Diten.Platform.Application.Features.Tasks.Services.ITaskWriteGate gate,
+            params TaskItem[] tasks)
     {
         var taskRepo = new FakeTaskItemRepository(tasks);
         var linksRepo = new FakeRecordLinkRepository();
         var linkService = new RecordLinkService(linksRepo, new FakeTenantContext(TaskTestData.Tenant), new FakeCurrentUserContext(TaskTestData.Me));
         var idempotency = new MeetingIdempotencyKeyResolver();
         var handler = new ScheduleReviewMeetingForTaskHandler(
-            taskRepo, linkService, idempotency, new FakeCurrentUserContext(TaskTestData.Me), mediator);
+            taskRepo, linkService, idempotency, new FakeCurrentUserContext(TaskTestData.Me), mediator, writeGate: gate);
         return (handler, linksRepo);
     }
 

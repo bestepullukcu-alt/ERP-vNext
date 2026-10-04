@@ -164,33 +164,33 @@ public sealed class TaskRequestRulesTests
 
         var answers = new List<string?>
         {
-            Code(await new SetChecklistItemStateHandler(tasks, runs, new TaskChecklistService(), me, new FakeTaskAttachmentRepository())
+            Code(await new SetChecklistItemStateHandler(tasks, runs, new TaskChecklistService(), me, new FakeTaskAttachmentRepository(), writeGate: TaskWriteGateDoubles.ReadableTo(me))
                 .Handle(new SetChecklistItemStateCommand(task.Id, new SetChecklistItemStateRequest("S1", true, run.Version), "c"), CancellationToken.None)),
-            Code(await new UpdateChecklistItemHandler(tasks, runs, new TaskChecklistService(), me)
+            Code(await new UpdateChecklistItemHandler(tasks, runs, new TaskChecklistService(), me, writeGate: TaskWriteGateDoubles.ReadableTo(me))
                 .Handle(new UpdateChecklistItemCommand(task.Id, "S1", new UpdateChecklistItemRequest("Yeni", Diten.Platform.Domain.Enums.Tasks.ChecklistItemRequirement.Blocking, false, run.Version), "c"), CancellationToken.None)),
-            Code(await new RemoveChecklistItemHandler(tasks, runs, new TaskChecklistService(), me)
+            Code(await new RemoveChecklistItemHandler(tasks, runs, new TaskChecklistService(), me, writeGate: TaskWriteGateDoubles.ReadableTo(me))
                 .Handle(new RemoveChecklistItemCommand(task.Id, "S1", new RemoveChecklistItemRequest(run.Version), "c"), CancellationToken.None)),
-            Code(await new ReorderChecklistHandler(tasks, runs, me)
+            Code(await new ReorderChecklistHandler(tasks, runs, me, writeGate: TaskWriteGateDoubles.ReadableTo(me))
                 .Handle(new ReorderChecklistCommand(task.Id, new ReorderChecklistRequest(["S1"], run.Version), "c"), CancellationToken.None)),
-            Code(await new RemoveTaskDependencyHandler(new FakeTaskDependencyRepository(), tasks, me)
+            Code(await new RemoveTaskDependencyHandler(new FakeTaskDependencyRepository(), tasks, me, writeGate: TaskWriteGateDoubles.ReadableTo(me))
                 .Handle(new RemoveTaskDependencyCommand(task.Id, Guid.NewGuid(), "c"), CancellationToken.None)),
-            Code(await new RemoveTaskAttachmentHandler(tasks, new FakeTaskAttachmentRepository(), me)
+            Code(await new RemoveTaskAttachmentHandler(tasks, new FakeTaskAttachmentRepository(), me, writeGate: TaskWriteGateDoubles.ReadableTo(me))
                 .Handle(new RemoveTaskAttachmentCommand(task.Id, Guid.NewGuid(), "c"), CancellationToken.None))
         };
 
         // Adding a file: the shared attachment authorization every write goes through.
         var (_, addRefused) = await TaskAttachmentAuthorization.ResolveAsync<NoContentPlaceholder>(
-            tasks, task.Id, Sender, "c", CancellationToken.None, requireOpen: true);
+            tasks, task.Id, Sender, "c", CancellationToken.None, requireOpen: true, TaskWriteGateDoubles.ReadableTo(me));
         answers.Add(addRefused?.ReasonCode);
 
         Assert.All(answers, code => Assert.Equal(TaskReasonCodes.RequestSenderCannotDirect, code));
 
         // Reading the files stays open to the sender, and the holder writes through the same gate.
         var (_, readRefused) = await TaskAttachmentAuthorization.ResolveAsync<NoContentPlaceholder>(
-            tasks, task.Id, Sender, "c", CancellationToken.None, requireOpen: false);
+            tasks, task.Id, Sender, "c", CancellationToken.None, requireOpen: false, TaskWriteGateDoubles.ReadableTo(me));
         Assert.Null(readRefused);
         var (_, holderRefused) = await TaskAttachmentAuthorization.ResolveAsync<NoContentPlaceholder>(
-            tasks, task.Id, Asked, "c", CancellationToken.None, requireOpen: true);
+            tasks, task.Id, Asked, "c", CancellationToken.None, requireOpen: true, TaskWriteGateDoubles.ReadableTo(new FakeCurrentUserContext(Asked)));
         Assert.Null(holderRefused);
     }
 

@@ -308,7 +308,7 @@ public sealed class TaskLifecycleAuthorityHttpTests
                 new FakeTaskNotificationService(),
                 new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                 new FakeTaskAttachmentRepository(),
-                NullLogger<TransitionTaskItemHandler>.Instance);
+                NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open);
 
             var submitReviewHandler = new SubmitTaskForReviewHandler(
                 Tasks,
@@ -316,10 +316,10 @@ public sealed class TaskLifecycleAuthorityHttpTests
                 me,
                 new FakeTaskReviewService(),
                 new FakeTaskApprovalService(),
-                NullLogger<SubmitTaskForReviewHandler>.Instance);
+                NullLogger<SubmitTaskForReviewHandler>.Instance, writeGate: TaskWriteGateDoubles.Open);
 
             var planHandler = new PlanTaskItemHandler(
-                Tasks, new TaskLifecycleService(), me, new FakeWorkingHoursProvider(), new FakeCalendarMeetingReader());
+                Tasks, new TaskLifecycleService(), me, new FakeWorkingHoursProvider(), new FakeCalendarMeetingReader(), writeGate: TaskWriteGateDoubles.Open);
 
             return new RoutingMediator(transitionHandler, submitReviewHandler, planHandler);
         }

@@ -21,9 +21,16 @@ internal static class TaskAttachmentAuthorization
 {
     public static async Task<(TaskItem? Task, Response<T>? Failure)> ResolveAsync<T>(
         ITaskItemRepository tasks, Guid taskItemId, Guid actorId, string correlationId,
-        CancellationToken ct, bool requireOpen)
+        CancellationToken ct, bool requireOpen, ITaskWriteGate writeGate)
     {
+        // FIX2 — the task's write gate FIRST: whoever cannot read the task gets the same 404 as for no task at all,
+        // never the 403 below that would confirm it exists (and the sender / addressee rules of a request).
         var task = await tasks.GetByIdAsync(taskItemId, ct);
+        if (await writeGate.CheckAsync(task, requireOpen ? TaskWriteKind.Change : TaskWriteKind.Personal, ct) is { } refused)
+        {
+            return (null, refused.ToResponse<T>(correlationId));
+        }
+
         if (task is null)
         {
             return (null, Response<T>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, correlationId));
@@ -68,7 +75,8 @@ public sealed class AddTaskAttachmentHandler(
     ITaskAttachmentRepository attachments,
     DocumentRepositoryService documentRepository,
     ITenantContext tenantContext,
-    ICurrentUserContext currentUser)
+    ICurrentUserContext currentUser,
+    ITaskWriteGate writeGate)
     : IRequestHandler<AddTaskAttachmentCommand, Response<TaskAttachmentDto>>
 {
     private const int NoteMaxLength = 500;
@@ -79,7 +87,7 @@ public sealed class AddTaskAttachmentHandler(
         var actorId = currentUser.UserId;
 
         var (task, failure) = await TaskAttachmentAuthorization.ResolveAsync<TaskAttachmentDto>(
-            tasks, request.TaskItemId, actorId, request.CorrelationId, ct, requireOpen: true);
+            tasks, request.TaskItemId, actorId, request.CorrelationId, ct, requireOpen: true, writeGate);
         if (failure is not null) { return failure; }
 
         if (request.Note is { Length: > NoteMaxLength })
@@ -168,14 +176,15 @@ public sealed class AddTaskAttachmentHandler(
 public sealed class RemoveTaskAttachmentHandler(
     ITaskItemRepository tasks,
     ITaskAttachmentRepository attachments,
-    ICurrentUserContext currentUser)
+    ICurrentUserContext currentUser,
+    ITaskWriteGate writeGate)
     : IRequestHandler<RemoveTaskAttachmentCommand, Response<NoContent>>
 {
     public async Task<Response<NoContent>> Handle(RemoveTaskAttachmentCommand request, CancellationToken ct)
     {
         var actorId = currentUser.UserId;
         var (_, failure) = await TaskAttachmentAuthorization.ResolveAsync<NoContent>(
-            tasks, request.TaskItemId, actorId, request.CorrelationId, ct, requireOpen: true);
+            tasks, request.TaskItemId, actorId, request.CorrelationId, ct, requireOpen: true, writeGate);
         if (failure is not null) { return failure; }
 
         var attachment = await attachments.GetByIdAsync(request.AttachmentId, ct);

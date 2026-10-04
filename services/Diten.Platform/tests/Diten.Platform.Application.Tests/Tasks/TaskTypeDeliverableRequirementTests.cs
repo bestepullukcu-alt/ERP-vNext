@@ -144,7 +144,7 @@ public sealed class TaskTypeDeliverableRequirementTests
             new FakeChecklistRunRepository(), new TaskChecklistService(), new FakeWorkflowTransitionGate(),
             new FakeTaskDependencyRepository(), types, new FakeTaskNotificationService(),
             new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
-            attachments, NullLogger<TransitionTaskItemHandler>.Instance);
+            attachments, NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open);
 
     private static Task<Response<NoContent>> Complete(
         TaskItem task, FakeTaskTypeRepository types, FakeTaskAttachmentRepository attachments)

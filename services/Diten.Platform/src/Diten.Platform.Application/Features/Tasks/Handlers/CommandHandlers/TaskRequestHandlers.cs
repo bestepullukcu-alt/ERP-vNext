@@ -53,23 +53,6 @@ public sealed class DeclineTaskOfferHandler : IRequestHandler<DeclineTaskOfferCo
 
     public async Task<Response<NoContent>> Handle(DeclineTaskOfferCommand command, CancellationToken ct)
     {
-        // The same rule, and the same code, a return carries: the sender is being told why.
-        var reason = command.Request.Reason?.Trim();
-        if (string.IsNullOrWhiteSpace(reason))
-        {
-            return Response<NoContent>.Fail(
-                "Say why the request is being declined.",
-                400, TaskReasonCodes.HandoverReasonRequired, command.CorrelationId);
-        }
-
-        // It is stored on the task and shown to the sender; the same ceiling a task's own description has.
-        if (reason.Length > TaskFieldLimits.MaxDescriptionLength)
-        {
-            return Response<NoContent>.Fail(
-                $"The reason may be at most {TaskFieldLimits.MaxDescriptionLength} characters.",
-                400, TaskReasonCodes.RequestDeclineReasonTooLong, command.CorrelationId);
-        }
-
         var me = _currentUser.UserId;
         var task = await _tasks.GetByIdAsync(command.Id, ct);
         if (task is null || !await _readAccess.CanReadAsync(task, me, ct))
@@ -91,6 +74,35 @@ public sealed class DeclineTaskOfferHandler : IRequestHandler<DeclineTaskOfferCo
                 409, TaskReasonCodes.RequestNotPending, command.CorrelationId);
         }
 
+        // FIX2 (A5) — THE DECISION AND THE WRITE ARE ABOUT THE SAME DOCUMENT. The answer is decided on the task read
+        // above; the write used to be conditioned on the CLIENT's version only, so a client one version ahead of that
+        // read (a withdraw sent after the accept it raced with) replaced the newer document wholesale — the accept
+        // silently gone. The read version must be the client's, and the write is conditioned on it.
+        if (task.Version != command.Request.ExpectedVersion)
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        // FIX2 — validation LAST: read (404) → addressee (403) → pending (409) → version (409) → the reason (400).
+        // The same rule, and the same code, a return carries: the sender is being told why.
+        var reason = command.Request.Reason?.Trim();
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            return Response<NoContent>.Fail(
+                "Say why the request is being declined.",
+                400, TaskReasonCodes.HandoverReasonRequired, command.CorrelationId);
+        }
+
+        // It is stored on the task and shown to the sender; the same ceiling a task's own description has.
+        if (reason.Length > TaskFieldLimits.MaxDescriptionLength)
+        {
+            return Response<NoContent>.Fail(
+                $"The reason may be at most {TaskFieldLimits.MaxDescriptionLength} characters.",
+                400, TaskReasonCodes.RequestDeclineReasonTooLong, command.CorrelationId);
+        }
+
         task.OfferedToUserId = null;
         task.OfferDeclineReason = reason;
         task.UpdatedBy = _currentUser.ActorName;
@@ -103,6 +115,9 @@ public sealed class DeclineTaskOfferHandler : IRequestHandler<DeclineTaskOfferCo
                 409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
         }
 
+        // FIX2 note — both companies from ONE read of the seats, positions and units (it was two full reads).
+        var entities = await _requests.LegalEntitiesOfAsync(
+            task.CreatedByUserId is { } from ? [me, from] : [me], ct);
         await _assignments.CreateAsync(new TaskAssignment
         {
             TenantId = _tenantContext.TenantId,
@@ -110,10 +125,8 @@ public sealed class DeclineTaskOfferHandler : IRequestHandler<DeclineTaskOfferCo
             EventType = TaskAssignmentEventType.Declined,
             UserId = me,
             ActorUserId = me,
-            ActorLegalEntityId = await _requests.LegalEntityOfAsync(me, ct),
-            TargetLegalEntityId = task.CreatedByUserId is { } sender
-                ? await _requests.LegalEntityOfAsync(sender, ct)
-                : null,
+            ActorLegalEntityId = entities.GetValueOrDefault(me),
+            TargetLegalEntityId = task.CreatedByUserId is { } sender ? entities.GetValueOrDefault(sender) : null,
             Note = reason,
             CreatedBy = _currentUser.ActorName
         }, ct);
@@ -174,6 +187,17 @@ public sealed class WithdrawTaskOfferHandler : IRequestHandler<WithdrawTaskOffer
                 409, TaskReasonCodes.RequestNotPending, command.CorrelationId);
         }
 
+        // FIX2 (A5) — THE DECISION AND THE WRITE ARE ABOUT THE SAME DOCUMENT. The answer is decided on the task read
+        // above; the write used to be conditioned on the CLIENT's version only, so a client one version ahead of that
+        // read (a withdraw sent after the accept it raced with) replaced the newer document wholesale — the accept
+        // silently gone. The read version must be the client's, and the write is conditioned on it.
+        if (task.Version != command.Request.ExpectedVersion)
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
         var askedOf = task.OfferedToUserId;
         var note = string.IsNullOrWhiteSpace(command.Request.Note) ? null : command.Request.Note.Trim();
 
@@ -189,6 +213,8 @@ public sealed class WithdrawTaskOfferHandler : IRequestHandler<WithdrawTaskOffer
                 409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
         }
 
+        // FIX2 note — both companies from ONE read of the seats, positions and units (it was two full reads).
+        var entities = await _requests.LegalEntitiesOfAsync(askedOf is { } to ? [me, to] : [me], ct);
         await _assignments.CreateAsync(new TaskAssignment
         {
             TenantId = _tenantContext.TenantId,
@@ -196,8 +222,8 @@ public sealed class WithdrawTaskOfferHandler : IRequestHandler<WithdrawTaskOffer
             EventType = TaskAssignmentEventType.Withdrawn,
             UserId = askedOf,
             ActorUserId = me,
-            ActorLegalEntityId = await _requests.LegalEntityOfAsync(me, ct),
-            TargetLegalEntityId = askedOf is { } target ? await _requests.LegalEntityOfAsync(target, ct) : null,
+            ActorLegalEntityId = entities.GetValueOrDefault(me),
+            TargetLegalEntityId = askedOf is { } target ? entities.GetValueOrDefault(target) : null,
             Note = note,
             CreatedBy = _currentUser.ActorName
         }, ct);

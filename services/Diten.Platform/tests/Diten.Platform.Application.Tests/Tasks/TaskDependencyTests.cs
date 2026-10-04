@@ -133,7 +133,8 @@ public sealed class TaskDependencyTests
         await handler.Handle(Add(a.Id, b.Id), CancellationToken.None);
         var edge = Assert.Single(edges.Edges);
 
-        var remover = new RemoveTaskDependencyHandler(edges, new FakeTaskItemRepository(), new FakeCurrentUserContext(TaskTestData.Me));
+        // FIX2 — the handler now reads the task through its write gate first, so the store holds the tasks.
+        var remover = new RemoveTaskDependencyHandler(edges, new FakeTaskItemRepository(a, b, c), new FakeCurrentUserContext(TaskTestData.Me), writeGate: TaskWriteGateDoubles.Open);
         var refused = await remover.Handle(
             new RemoveTaskDependencyCommand(c.Id, edge.Id, "corr"), CancellationToken.None);
 
@@ -365,7 +366,7 @@ public sealed class TaskDependencyTests
     {
         var repository = new FakeTaskItemRepository(tasks);
         var edges = new FakeTaskDependencyRepository();
-        return (new AddTaskDependencyHandler(repository, edges, new FakeTenantContext(TaskTestData.Tenant), new FakeCurrentUserContext(TaskTestData.Me)), repository, edges);
+        return (new AddTaskDependencyHandler(repository, edges, new FakeTenantContext(TaskTestData.Tenant), new FakeCurrentUserContext(TaskTestData.Me), writeGate: TaskWriteGateDoubles.Open), repository, edges);
     }
 
     /// <summary>Projects <paramref name="dependent"/> with one edge onto <paramref name="predecessor"/>.</summary>

@@ -48,6 +48,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
     private readonly TaskDocumentReferenceFreezer _documentFreezer;
     // BL-057 at the write — who the work may go to. The same rule the pickers ask.
     private readonly ITaskAssignmentGuard _assignmentGuard;
+    private readonly ITaskWriteGate _writeGate;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<CreateTaskItemHandler> _logger;
 
@@ -87,6 +88,8 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
          * missing registration fails at STARTUP (ValidateOnBuild) instead of admitting everybody.
          */
         ITaskAssignmentGuard assignmentGuard,
+        // FIX2 — the parent of a subtask is written to (its completion is held by the subtask): the write gate.
+        ITaskWriteGate writeGate,
         /*
          * BL-023 — OPTIONAL on purpose, and NOT the same case. A caller that supplies neither gets exactly
          * the behaviour that shipped before this change (every assignment is a plain order), which is what
@@ -117,6 +120,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         _tenantContext = tenantContext;
         _documentFreezer = documentFreezer;
         _assignmentGuard = assignmentGuard;
+        _writeGate = writeGate;
         _logger = logger;
     }
 
@@ -219,6 +223,14 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             if (request.ApprovalRequired || request.ReviewRequired)
             {
                 return Fail("A request cannot carry an approval or a review.",
+                    TaskReasonCodes.RequestOptionNotSupported, command.CorrelationId);
+            }
+
+            // FIX2 note — a request is filed under its SENDER's unit (CT decision 4); naming a unit would file it in
+            // another company's before anybody said yes. The same rule the edit enforces (TASK_REQUEST_UNIT_FIXED).
+            if (request.OrganizationUnitId is not null)
+            {
+                return Fail("A request is filed under its sender's unit; it cannot name one.",
                     TaskReasonCodes.RequestOptionNotSupported, command.CorrelationId);
             }
 
@@ -335,8 +347,13 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         {
             // The tenant-scoped repository makes this a cross-tenant check too: another tenant's parent simply
             // does not resolve.
+            //
+            // FIX2 — a parent the caller cannot READ is the same answer as no parent at all (its existence does not
+            // leak); a readable one goes through its write gate below (sender of an accepted request 403, the
+            // person a request waits on 409).
             var parent = await _tasks.GetByIdAsync(parentId, ct);
-            if (parent is null)
+            var parentGate = await _writeGate.CheckAsync(parent, TaskWriteKind.Change, ct);
+            if (parent is null || parentGate?.StatusCode == 404)
             {
                 return Fail("The parent task could not be found.",
                     TaskReasonCodes.ParentTaskNotFound, command.CorrelationId);
@@ -351,11 +368,11 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             }
 
             // BL-509 (decision 3) — an open subtask holds its parent's completion (BL-035), so hanging one under a
-            // request somebody else accepted is directing their work.
-            if (TaskRequestPolicy.RefuseSenderOfAcceptedRequest(parent, actorId) is { } senderRefused)
+            // request somebody else accepted is directing their work (403); the person a request waits on answers
+            // it first (409).
+            if (parentGate is not null)
             {
-                return Response<Guid>.Fail(
-                    senderRefused.Message, senderRefused.StatusCode, senderRefused.ReasonCode, command.CorrelationId);
+                return parentGate.ToResponse<Guid>(command.CorrelationId);
             }
         }
 

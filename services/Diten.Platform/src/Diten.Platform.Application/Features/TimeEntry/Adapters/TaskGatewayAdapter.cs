@@ -28,6 +28,24 @@ public sealed class TaskGatewayAdapter : ITimeEntryTaskGateway
         Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
         => (await ReadableTaskSummariesAsync(userId, taskIds, ct)).Keys.ToHashSet();
 
+    public async Task<IReadOnlySet<Guid>> TimeWritableTaskIdsAsync(
+        Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
+    {
+        if (taskIds.Count == 0)
+        {
+            return new HashSet<Guid>();
+        }
+
+        var tasks = await _tasks.ListByIdsAsync(taskIds.Distinct().ToList(), ct);
+        var admitted = await _readAccess.ReadableTaskIdsAsync(tasks, userId, ct);
+        return tasks
+            .Where(task => admitted.Contains(task.Id))
+            .Where(task => !TaskRequestPolicy.IsOfferedTo(task, userId)
+                           && TaskRequestPolicy.RefuseSenderOfAcceptedRequest(task, userId) is null)
+            .Select(task => task.Id)
+            .ToHashSet();
+    }
+
     public async Task<IReadOnlyDictionary<Guid, TimeEntryTaskSummary>> ReadableTaskSummariesAsync(
         Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
     {

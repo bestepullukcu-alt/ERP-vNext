@@ -31,14 +31,18 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
     // builds this handler for a plain assignment; an Offered task is then answered as one that does not exist.
     private readonly ITaskReadAccessPolicy? _readAccess;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public AcceptTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext,
+        ITaskWriteGate writeGate,
         ITaskRequestService? requests = null,
         ITaskReadAccessPolicy? readAccess = null)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _assignments = assignments;
         _currentUser = currentUser;
@@ -53,6 +57,13 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         if (task.AssignmentTarget == TaskAssignmentTarget.Offered)
@@ -169,6 +180,17 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
                 409, TaskReasonCodes.RequestRecipientUnavailable, command.CorrelationId);
         }
 
+        // FIX2 (A5) — THE DECISION AND THE WRITE ARE ABOUT THE SAME DOCUMENT. The answer is decided on the task read
+        // above; the write used to be conditioned on the CLIENT's version only, so a client one version ahead of that
+        // read (an accept sent after the withdraw it raced with) replaced the newer document wholesale — the accept
+        // silently gone. The read version must be the client's, and the write is conditioned on it.
+        if (task.Version != command.Request.ExpectedVersion)
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
         var sender = task.CreatedByUserId;
 
         task.AssigneeUserId = me;
@@ -227,12 +249,16 @@ public sealed class ReleaseTaskItemHandler : IRequestHandler<ReleaseTaskItemComm
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public ReleaseTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _assignments = assignments;
         _currentUser = currentUser;
@@ -245,6 +271,13 @@ public sealed class ReleaseTaskItemHandler : IRequestHandler<ReleaseTaskItemComm
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         if (task.AssignmentTarget != TaskAssignmentTarget.PositionPool || task.AssigneeUserId is null)
@@ -341,6 +374,8 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     /// </summary>
     private readonly IReviewMeetingGateReader? _reviewMeetingGate;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public TransitionTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
@@ -354,8 +389,10 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         ITaskFieldDefinitionService fieldDefinitions,
         ITaskAttachmentRepository attachments,
         ILogger<TransitionTaskItemHandler> logger,
+        ITaskWriteGate writeGate,
         IReviewMeetingGateReader? reviewMeetingGate = null)
     {
+        _writeGate = writeGate;
         _logger = logger;
         _notifications = notifications;
         _dependencies = dependencies;
@@ -389,6 +426,44 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
         }
 
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
+        }
+
+        // FIX2 note — the cancel AUTHORITY (403) is asked before the task's STATE (409): who may not call this work off
+        // learns nothing about its lifecycle from the answer.
+        /*
+         * Cancelling is the REQUESTER's right, and this is where it is ENFORCED — the projection stops offering
+         * the button, but a caller can post straight here, and a hidden control is presentation while the refusal
+         * is the rule. Same shape as the workflow gate below: the projection explains, the handler refuses.
+         *
+         * 403, not 409: this is a refusal of AUTHORITY (you may not cancel someone else's work), not a state
+         * conflict (the task is in the wrong lifecycle). Conflating them would tell the caller to reload and
+         * retry, which would never help.
+         */
+        // BL-509 (decision 3) — once a request was accepted the work is its holder's: the sender no longer calls
+        // it off (before acceptance they withdraw, or cancel their own unanswered request). Administrative
+        // authority over any task is untouched.
+        if (command.Target == TaskLifecycle.Cancelled
+            && !command.ActorMayCancelAnyTask
+            && TaskRequestPolicy.RefuseSenderOfAcceptedRequest(task, _currentUser.UserId) is { } senderRefused)
+        {
+            return Response<NoContent>.Fail(
+                senderRefused.Message, senderRefused.StatusCode, senderRefused.ReasonCode, command.CorrelationId);
+        }
+
+        if (command.Target == TaskLifecycle.Cancelled
+            && task.CreatedByUserId != _currentUser.UserId
+            && !command.ActorMayCancelAnyTask)
+        {
+            return Response<NoContent>.Fail(
+                "Only the requester can cancel this task.",
+                403, TaskReasonCodes.CancelNotRequester, command.CorrelationId);
+        }
+
         if (!_lifecycle.CanTransition(task, command.Target, out var reasonCode))
         {
             return Response<NoContent>.Fail(
@@ -404,7 +479,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
          * permission execute a colleague's task end to end, most visibly through Ekibim's (?scope=team) own
          * working "Tamamla" button on a subordinate's row — measured and recorded (BL-361/BL-362).
          *
-         * Cancel's own actor check, three lines above this comment's target, is left untouched: it asks a
+         * Cancel's own actor check (now asked before CanTransition, FIX2) is left untouched: it asks a
          * DIFFERENT question (the REQUESTER's right to call work off) and stays scoped to `Cancelled` only. This
          * is the sibling question for the two verbs that speak for the WORKER, never the requester.
          *
@@ -464,34 +539,6 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             }
         }
 
-        /*
-         * Cancelling is the REQUESTER's right, and this is where it is ENFORCED — the projection stops offering
-         * the button, but a caller can post straight here, and a hidden control is presentation while the refusal
-         * is the rule. Same shape as the workflow gate below: the projection explains, the handler refuses.
-         *
-         * 403, not 409: this is a refusal of AUTHORITY (you may not cancel someone else's work), not a state
-         * conflict (the task is in the wrong lifecycle). Conflating them would tell the caller to reload and
-         * retry, which would never help.
-         */
-        // BL-509 (decision 3) — once a request was accepted the work is its holder's: the sender no longer calls
-        // it off (before acceptance they withdraw, or cancel their own unanswered request). Administrative
-        // authority over any task is untouched.
-        if (command.Target == TaskLifecycle.Cancelled
-            && !command.ActorMayCancelAnyTask
-            && TaskRequestPolicy.RefuseSenderOfAcceptedRequest(task, _currentUser.UserId) is { } senderRefused)
-        {
-            return Response<NoContent>.Fail(
-                senderRefused.Message, senderRefused.StatusCode, senderRefused.ReasonCode, command.CorrelationId);
-        }
-
-        if (command.Target == TaskLifecycle.Cancelled
-            && task.CreatedByUserId != _currentUser.UserId
-            && !command.ActorMayCancelAnyTask)
-        {
-            return Response<NoContent>.Fail(
-                "Only the requester can cancel this task.",
-                403, TaskReasonCodes.CancelNotRequester, command.CorrelationId);
-        }
 
         // ── Workflow gate (pack §12 K2, charter Binding A) ────────────────────
         // Asked ONLY for approval-gated tasks, and only for the two transitions that mean "this work proceeds".
@@ -987,6 +1034,8 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
     private readonly ITaskTypeRepository? _types;
     private readonly IReviewMeetingGateReader? _reviewMeetingGate;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public SubmitTaskForReviewHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
@@ -994,9 +1043,11 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
         ITaskReviewService reviews,
         ITaskApprovalService reviewStates,
         ILogger<SubmitTaskForReviewHandler> logger,
+        ITaskWriteGate writeGate,
         ITaskTypeRepository? types = null,
         IReviewMeetingGateReader? reviewMeetingGate = null)
     {
+        _writeGate = writeGate;
         _reviewStates = reviewStates;
         _tasks = tasks;
         _lifecycle = lifecycle;
@@ -1013,6 +1064,13 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         /*
@@ -1160,13 +1218,17 @@ public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, R
     private readonly IWorkingHoursProvider _workingHours;
     private readonly ICalendarMeetingReader _meetings;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public PlanTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
         ICurrentUserContext currentUser,
         IWorkingHoursProvider workingHours,
-        ICalendarMeetingReader meetings)
+        ICalendarMeetingReader meetings,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
@@ -1203,6 +1265,13 @@ public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, R
         {
             return Response<PlanTaskItemResultDto>.Fail(
                 "Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<PlanTaskItemResultDto>(command.CorrelationId);
         }
 
         /*
@@ -1359,11 +1428,15 @@ public sealed class UnplanTaskItemHandler : IRequestHandler<UnplanTaskItemComman
     private readonly ITaskLifecycleService _lifecycle;
     private readonly ICurrentUserContext _currentUser;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public UnplanTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
@@ -1375,6 +1448,13 @@ public sealed class UnplanTaskItemHandler : IRequestHandler<UnplanTaskItemComman
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         if (task.AssigneeUserId is null || task.AssigneeUserId != _currentUser.UserId)
@@ -1432,6 +1512,8 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
     private readonly ITaskNotificationService _notifications;
     private readonly ILogger<InquireTaskItemHandler> _logger;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public InquireTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
@@ -1440,8 +1522,10 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
         IPositionRepository positions,
         IOrganizationUnitRepository organizationUnits,
         ITaskNotificationService notifications,
-        ILogger<InquireTaskItemHandler> logger)
+        ILogger<InquireTaskItemHandler> logger,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
@@ -1468,6 +1552,13 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         // Only the holder can declare a wait: it is a statement about their own work.
@@ -1581,6 +1672,8 @@ public sealed class AnswerInquiryHandler : IRequestHandler<AnswerInquiryCommand,
     private readonly ITaskNotificationService _notifications;
     private readonly ILogger<AnswerInquiryHandler> _logger;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public AnswerInquiryHandler(
         ITaskItemRepository tasks,
         ITaskTransitionRepository transitions,
@@ -1589,8 +1682,10 @@ public sealed class AnswerInquiryHandler : IRequestHandler<AnswerInquiryCommand,
         IWorkflowTransitionGate workflowGate,
         ITaskDependencyRepository dependencies,
         ITaskNotificationService notifications,
-        ILogger<AnswerInquiryHandler> logger)
+        ILogger<AnswerInquiryHandler> logger,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _transitions = transitions;
         _lifecycle = lifecycle;
@@ -1623,6 +1718,13 @@ public sealed class AnswerInquiryHandler : IRequestHandler<AnswerInquiryCommand,
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         /*
@@ -1747,13 +1849,17 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
     // BL-509 — the sender's home seat, asked only for a request sent before its origin unit was recorded.
     private readonly ITaskRequestService? _requests;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public ReturnTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext,
+        ITaskWriteGate writeGate,
         ITaskRequestService? requests = null)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _assignments = assignments;
         _currentUser = currentUser;
@@ -1775,6 +1881,13 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         if (task.AssigneeUserId != _currentUser.UserId)
@@ -1806,7 +1919,13 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
         // stay filed — and counted, and readable through the unit scope — in another company.
         if (task.IsRequest)
         {
-            var origin = task.RequestOriginUnitId
+            // FIX2 note — the unit it was sent from, while that unit still takes work; a unit archived since then
+            // would file the sender's own task where nobody can reach it: their current unit instead.
+            var recorded = task.RequestOriginUnitId is { } sentFrom
+                           && (_requests is null || await _requests.IsLiveUnitAsync(sentFrom, ct))
+                ? sentFrom
+                : (Guid?)null;
+            var origin = recorded
                          ?? (_requests is not null && task.CreatedByUserId is { } sender
                              ? (await _requests.HomeOfAsync(sender, ct))?.OrganizationUnitId
                              : null);
@@ -1879,13 +1998,17 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
 
+    private readonly ITaskWriteGate _writeGate;
+
     public ReassignTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ITaskAssignmentGuard assignmentGuard,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _assignments = assignments;
         _assignmentGuard = assignmentGuard;
@@ -1907,6 +2030,13 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
+        // verb's own 403 / 409 (which would confirm the task exists).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        {
+            return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }
 
         if (task.AssignmentTarget == TaskAssignmentTarget.PositionPool)

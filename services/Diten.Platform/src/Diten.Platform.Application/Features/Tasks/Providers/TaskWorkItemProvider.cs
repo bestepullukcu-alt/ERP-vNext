@@ -988,8 +988,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // BL-509 — WHO declined a request, and their words, are the sender's alone — before and after somebody
             // else accepts. Every other reader's feed has no such entry (not an anonymised one: the person who
             // declined is in another company, and "somebody declined" is already more than BL-057 allows).
+            // FIX2 (A3) — and so are the offered and withdrawn rows: from those two an outsider could infer the decline.
             (transitions ?? [])
-                .Where(t => t.Kind != TaskTransitionKind.Declined || TaskRequestPolicy.MaySeeDecline(task, actor.UserId))
+                .Where(t => TaskRequestPolicy.MaySeeRequestRow(task, t.Kind, actor.UserId))
                 .ToList(),
             displayNames, actor.UserId, fieldDefinitions, _permissions,
             resolvedType);

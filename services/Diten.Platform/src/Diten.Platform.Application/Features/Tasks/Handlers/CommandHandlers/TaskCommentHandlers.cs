@@ -34,6 +34,7 @@ public sealed class AddTaskCommentHandler : IRequestHandler<AddTaskCommentComman
     private readonly ITaskWatcherRepository _watchers;
     private readonly ITaskNotificationService _notifications;
     private readonly ITaskReadAccessPolicy _readAccess;
+    private readonly ITaskWriteGate _writeGate;
     private readonly ILogger<AddTaskCommentHandler> _logger;
 
     public AddTaskCommentHandler(
@@ -45,8 +46,10 @@ public sealed class AddTaskCommentHandler : IRequestHandler<AddTaskCommentComman
         ITaskWatcherRepository watchers,
         ITaskNotificationService notifications,
         ITaskReadAccessPolicy readAccess,
-        ILogger<AddTaskCommentHandler> logger)
+        ILogger<AddTaskCommentHandler> logger,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _comments = comments;
         _currentUser = currentUser;
@@ -60,6 +63,25 @@ public sealed class AddTaskCommentHandler : IRequestHandler<AddTaskCommentComman
 
     public async Task<Response<Guid>> Handle(AddTaskCommentCommand command, CancellationToken ct)
     {
+        var task = await _tasks.GetByIdAsync(command.TaskItemId, ct);
+
+        // FIX2 — read (404) first: whoever cannot read the task learns nothing from a state or validation answer.
+        // Then BL-509: the person a request waits on reads it in order to answer it, and that is all (409) — a
+        // comment would put their name in a feed the sender's colleagues read before anybody said yes.
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Comment, ct) is { } refused)
+        {
+            return refused.ToResponse<Guid>(command.CorrelationId);
+        }
+
+        // 409, not 403: this is about the task's STATE, not about who is asking. Everyone who can see a closed
+        // task is equally unable to comment on it.
+        if (task!.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
+        {
+            return Response<Guid>.Fail(
+                "This task is closed, so it can no longer be commented on.",
+                409, TaskReasonCodes.CommentTaskClosed, command.CorrelationId);
+        }
+
         var text = command.Request.Text?.Trim();
         if (string.IsNullOrWhiteSpace(text) || text.Length > TaskCommentLimits.MaxTextLength)
         {
@@ -68,30 +90,6 @@ public sealed class AddTaskCommentHandler : IRequestHandler<AddTaskCommentComman
             return Response<Guid>.Fail(
                 $"A comment must be between 1 and {TaskCommentLimits.MaxTextLength} characters.",
                 400, TaskReasonCodes.CommentTextInvalid, command.CorrelationId);
-        }
-
-        var task = await _tasks.GetByIdAsync(command.TaskItemId, ct);
-        if (task is null)
-        {
-            return Response<Guid>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
-        }
-
-        // 409, not 403: this is about the task's STATE, not about who is asking. Everyone who can see a closed
-        // task is equally unable to comment on it.
-        if (task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
-        {
-            return Response<Guid>.Fail(
-                "This task is closed, so it can no longer be commented on.",
-                409, TaskReasonCodes.CommentTaskClosed, command.CorrelationId);
-        }
-
-        // BL-509 — the person a request waits on reads it in order to answer it, and that is all. A comment would
-        // put their name in a feed the sender's colleagues read before anybody said yes; they accept or decline.
-        if (TaskRequestPolicy.IsOfferedTo(task, _currentUser.UserId))
-        {
-            return Response<Guid>.Fail(
-                "Answer the request first: accept it, or decline it with a reason.",
-                409, TaskReasonCodes.RequestNotAccepted, command.CorrelationId);
         }
 
         var mentionValidation = await TaskMentionValidation.ValidateAsync(
@@ -205,6 +203,7 @@ public sealed class UpdateTaskCommentHandler : IRequestHandler<UpdateTaskComment
     private readonly ICurrentUserContext _currentUser;
     private readonly ITaskReadAccessPolicy _readAccess;
     private readonly ITaskNotificationService _notifications;
+    private readonly ITaskWriteGate _writeGate;
     private readonly ILogger<UpdateTaskCommentHandler> _logger;
 
     public UpdateTaskCommentHandler(
@@ -213,8 +212,10 @@ public sealed class UpdateTaskCommentHandler : IRequestHandler<UpdateTaskComment
         ICurrentUserContext currentUser,
         ITaskReadAccessPolicy readAccess,
         ITaskNotificationService notifications,
-        ILogger<UpdateTaskCommentHandler> logger)
+        ILogger<UpdateTaskCommentHandler> logger,
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _comments = comments;
         _currentUser = currentUser;
@@ -225,12 +226,11 @@ public sealed class UpdateTaskCommentHandler : IRequestHandler<UpdateTaskComment
 
     public async Task<Response<NoContent>> Handle(UpdateTaskCommentCommand command, CancellationToken ct)
     {
-        var text = command.Request.Text?.Trim();
-        if (string.IsNullOrWhiteSpace(text) || text.Length > TaskCommentLimits.MaxTextLength)
+        // FIX2 — the task's read base first (404), then the comment's own author rule, then the text.
+        var task = await _tasks.GetByIdAsync(command.TaskItemId, ct);
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Comment, ct) is { } refused)
         {
-            return Response<NoContent>.Fail(
-                $"A comment must be between 1 and {TaskCommentLimits.MaxTextLength} characters.",
-                400, TaskReasonCodes.CommentTextInvalid, command.CorrelationId);
+            return refused.ToResponse<NoContent>(command.CorrelationId);
         }
 
         var comment = await TaskCommentAuthority.LoadOwnAsync(
@@ -241,10 +241,12 @@ public sealed class UpdateTaskCommentHandler : IRequestHandler<UpdateTaskComment
                 refusal.Message, refusal.Status, refusal.ReasonCode, command.CorrelationId);
         }
 
-        var task = await _tasks.GetByIdAsync(command.TaskItemId, ct);
-        if (task is null)
+        var text = command.Request.Text?.Trim();
+        if (string.IsNullOrWhiteSpace(text) || text.Length > TaskCommentLimits.MaxTextLength)
         {
-            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return Response<NoContent>.Fail(
+                $"A comment must be between 1 and {TaskCommentLimits.MaxTextLength} characters.",
+                400, TaskReasonCodes.CommentTextInvalid, command.CorrelationId);
         }
 
         var mentionValidation = await TaskMentionValidation.ValidateAsync(
@@ -287,15 +289,28 @@ public sealed class WithdrawTaskCommentHandler : IRequestHandler<WithdrawTaskCom
 {
     private readonly ITaskCommentRepository _comments;
     private readonly ICurrentUserContext _currentUser;
+    private readonly ITaskItemRepository _tasks;
+    private readonly ITaskWriteGate _writeGate;
 
-    public WithdrawTaskCommentHandler(ITaskCommentRepository comments, ICurrentUserContext currentUser)
+    public WithdrawTaskCommentHandler(
+        ITaskCommentRepository comments, ICurrentUserContext currentUser, ITaskItemRepository tasks, ITaskWriteGate writeGate)
     {
         _comments = comments;
         _currentUser = currentUser;
+        _tasks = tasks;
+        _writeGate = writeGate;
     }
 
     public async Task<Response<NoContent>> Handle(WithdrawTaskCommentCommand command, CancellationToken ct)
     {
+        // FIX2 — the task's read base first (404). Withdrawing one's own words is a Personal write: even the
+        // person a request waits on, or the sender of an accepted request, may take back what they said.
+        if (await _writeGate.CheckAsync(await _tasks.GetByIdAsync(command.TaskItemId, ct), TaskWriteKind.Personal, ct)
+            is { } refused)
+        {
+            return refused.ToResponse<NoContent>(command.CorrelationId);
+        }
+
         var comment = await TaskCommentAuthority.LoadOwnAsync(
             _comments, _currentUser, command.TaskItemId, command.CommentId, ct);
         if (comment.Refusal is { } refusal)

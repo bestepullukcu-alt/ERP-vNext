@@ -44,11 +44,30 @@ public static class TaskRequestPolicy
         => userId != Guid.Empty && (task.CreatedByUserId == userId || IsOfferedTo(task, userId));
 
     /// <summary>
-    /// A DECLINE — who said no, and why — is the sender's alone, before and after somebody else accepts. The person
-    /// who declined no longer reads the task at all.
+    /// A DECLINE — who said no, and why — is the sender's alone, before and after somebody else accepts, and (FIX2 A4)
+    /// after the work is handed back or reassigned too: the sender keeps their own request's history. The person who
+    /// declined no longer reads the task at all; nobody else ever sees it.
     /// </summary>
     public static bool MaySeeDecline(TaskItem task, Guid userId)
-        => task.IsRequest && userId != Guid.Empty && task.CreatedByUserId == userId;
+        => WasRequest(task) && userId != Guid.Empty && task.CreatedByUserId == userId;
+
+    /// <summary>
+    /// FIX2 (A4) — WAS this task ever a request? <see cref="TaskItem.IsRequest"/> is cleared when the work is handed
+    /// back or reassigned (the task is its sender's own again, and the sender may direct it); the unit it was sent
+    /// from is recorded once, at creation, on every request and never cleared — the persistent fact.
+    /// </summary>
+    public static bool WasRequest(TaskItem task)
+        => task.IsRequest || task.RequestOriginUnitId is not null;
+
+    /// <summary>
+    /// FIX2 (A3) — the rows of WHO WAS ASKED (offered), WHO SAID NO (declined) and WHO WAS TAKEN BACK (withdrawn) are the
+    /// sender's alone in the activity feed. Anybody else reading the task — the sender's colleagues, a manager once it
+    /// is accepted — sees the work from the acceptance on; "unaddressed, and no withdrawal row" would otherwise tell
+    /// them that somebody declined.
+    /// </summary>
+    public static bool MaySeeRequestRow(TaskItem task, TaskTransitionKind kind, Guid userId)
+        => kind is not (TaskTransitionKind.Offered or TaskTransitionKind.Declined or TaskTransitionKind.Withdrawn)
+           || MaySeeDecline(task, userId);
 
     /// <summary>
     /// Decision 3 at EVERY write gate (edit, reassign, cancel, checklist, subtasks, attachments, dependencies): the
@@ -135,6 +154,12 @@ public interface ITaskRequestService
 
     /// <summary>The legal entity of a person's home seat, or null when they hold none.</summary>
     Task<Guid?> LegalEntityOfAsync(Guid userId, CancellationToken ct);
+
+    /// <summary>FIX2 — the legal entities of several people's home seats, the seats, positions and units read ONCE.</summary>
+    Task<IReadOnlyDictionary<Guid, Guid?>> LegalEntitiesOfAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct);
+
+    /// <summary>FIX2 — can work still be filed in this unit (it exists and is not archived)?</summary>
+    Task<bool> IsLiveUnitAsync(Guid organizationUnitId, CancellationToken ct);
 }
 
 /// <inheritdoc cref="ITaskRequestService"/>
@@ -231,6 +256,30 @@ public sealed class TaskRequestService : ITaskRequestService
     public async Task<Guid?> LegalEntityOfAsync(Guid userId, CancellationToken ct)
         => (await ResolveHomeUnitAsync(userId, ct))?.LegalEntityId;
 
+    public async Task<IReadOnlyDictionary<Guid, Guid?>> LegalEntitiesOfAsync(
+        IReadOnlyCollection<Guid> userIds, CancellationToken ct)
+    {
+        var result = new Dictionary<Guid, Guid?>();
+        var distinct = userIds.Where(id => id != Guid.Empty).Distinct().ToList();
+        if (distinct.Count == 0)
+        {
+            return result;
+        }
+
+        // The whole position and unit tables once for everybody, not once per person.
+        var positionById = (await _positions.GetAllAsync(ct)).ToDictionary(position => position.Id);
+        var unitById = (await _organizationUnits.GetAllAsync(ct)).ToDictionary(unit => unit.Id);
+        foreach (var userId in distinct)
+        {
+            result[userId] = (await HomeUnitAsync(userId, positionById, unitById, ct))?.LegalEntityId;
+        }
+
+        return result;
+    }
+
+    public async Task<bool> IsLiveUnitAsync(Guid organizationUnitId, CancellationToken ct)
+        => await _organizationUnits.GetByIdAsync(organizationUnitId, ct) is { IsArchived: false };
+
     /// <summary>
     /// The unit of the person's best usable seat, PRIMARY first — the eligibility half of the shared rule, with
     /// no scope (see the class summary).
@@ -246,7 +295,22 @@ public sealed class TaskRequestService : ITaskRequestService
 
         var positionById = (await _positions.GetAllAsync(ct)).ToDictionary(position => position.Id);
         var unitById = (await _organizationUnits.GetAllAsync(ct)).ToDictionary(unit => unit.Id);
+        return Judge(seats, positionById, unitById);
+    }
 
+    private async Task<Domain.Entities.Organization.OrganizationUnit?> HomeUnitAsync(
+        Guid userId,
+        Dictionary<Guid, Domain.Entities.Organization.Position> positionById,
+        Dictionary<Guid, Domain.Entities.Organization.OrganizationUnit> unitById,
+        CancellationToken ct)
+        => Judge((await _seats.ActiveForUserAsync(userId, ct)).OrderBy(seat => seat.AssignmentType).ToList(),
+            positionById, unitById);
+
+    private static Domain.Entities.Organization.OrganizationUnit? Judge(
+        IReadOnlyList<Domain.Entities.Organization.PositionAssignment> seats,
+        Dictionary<Guid, Domain.Entities.Organization.Position> positionById,
+        Dictionary<Guid, Domain.Entities.Organization.OrganizationUnit> unitById)
+    {
         foreach (var seat in seats)
         {
             if (TaskAssigneeEligibility.Judge(

@@ -175,7 +175,7 @@ public sealed class TaskApprovalToggleTests
             approvals,
             new FakeTaskReviewService(),
             NullLogger<UpdateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), writeGate: TaskWriteGateDoubles.Open);
         return (handler, tasks, approvals);
     }
 

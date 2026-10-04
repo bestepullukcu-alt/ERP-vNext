@@ -286,14 +286,17 @@ public sealed class ScheduleReviewMeetingForTaskHandler
     private readonly IMeetingIdempotencyKeyResolver _idempotency;
     private readonly ICurrentUserContext _currentUser;
     private readonly IMediator _mediator;
+    private readonly Tasks.Services.ITaskWriteGate _writeGate;
 
     public ScheduleReviewMeetingForTaskHandler(
         ITaskItemRepository tasks,
         IRecordLinkService links,
         IMeetingIdempotencyKeyResolver idempotency,
         ICurrentUserContext currentUser,
-        IMediator mediator)
+        IMediator mediator,
+        Tasks.Services.ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _links = links;
         _idempotency = idempotency;
@@ -310,6 +313,15 @@ public sealed class ScheduleReviewMeetingForTaskHandler
         {
             return Response<ScheduleReviewMeetingForTaskResultDto>.Fail(
                 "This task could not be found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // WP-WCN-TASK-REQUEST-01 FIX2 — the review meeting is linked ONTO the task and gates its completion: a write on
+        // the task, through its write gate (read 404; the sender of an accepted request may not direct its holder's
+        // review, 403). The holder-or-requester rule below narrows it further.
+        if (await _writeGate.CheckAsync(task, Tasks.Services.TaskWriteKind.Change, ct) is { } refused)
+        {
+            return Response<ScheduleReviewMeetingForTaskResultDto>.Fail(
+                refused.Message, refused.StatusCode, refused.ReasonCode, command.CorrelationId);
         }
 
         // "the task must be one the actor can read" (pack §7 NE, K9-adjacent) — holder or requester, never a

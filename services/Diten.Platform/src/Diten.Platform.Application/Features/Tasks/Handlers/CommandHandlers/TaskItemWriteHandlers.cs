@@ -22,6 +22,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
     private readonly ITaskApprovalService _approvals;
     private readonly ITaskReviewService _reviews;
     private readonly TaskDocumentReferenceFreezer _documentFreezer;
+    private readonly ITaskWriteGate _writeGate;
     private readonly ILogger<UpdateTaskItemHandler> _logger;
 
     public UpdateTaskItemHandler(
@@ -39,8 +40,12 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         // a test that grepped DependencyInjection.cs for a string — a discipline problem patched with a
         // discipline check. Required turns it into an architectural one: forget the registration and the
         // container refuses to build the handler, which ValidateOnBuild surfaces at STARTUP.
-        TaskDocumentReferenceFreezer documentFreezer)
+        TaskDocumentReferenceFreezer documentFreezer,
+        // WP-WCN-TASK-REQUEST-01 FIX2 — required for the reason documentFreezer is: a gate that defaults to "allow"
+        // cannot be caught by review.
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _organizationUnits = organizationUnits;
         _fieldDefinitions = fieldDefinitions;
@@ -55,26 +60,19 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
     {
         var request = command.Request;
         var task = await _tasks.GetByIdAsync(command.Id, ct);
-        if (task is null)
+
+        // FIX2 — read (404) → person (403: the sender of an ACCEPTED request watches and comments, BL-509 decision 3;
+        // 409: the person a request waits on answers it first) → state → validation. One gate for every write.
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Change, ct) is { } refused)
         {
-            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return refused.ToResponse<NoContent>(command.CorrelationId);
         }
 
         // A closed task is read-only — a terminal item exposes no state-changing action.
-        if (task.CompletedAt is not null || task.CancelledAt is not null)
+        if (task!.CompletedAt is not null || task.CancelledAt is not null)
         {
             return Response<NoContent>.Fail(
                 "A closed task cannot be edited.", 409, TaskReasonCodes.InvalidState, command.CorrelationId);
-        }
-
-        // BL-509 (owner decision 3) — the sender of an ACCEPTED request watches and comments; the task, due date
-        // included, is its holder's to change. Before acceptance it is still the sender's own request to edit.
-        if (!TaskRequestPolicy.SenderMayEditAfterAcceptance
-            && TaskRequestPolicy.IsSenderOfAcceptedRequest(task, _currentUser.UserId))
-        {
-            return Response<NoContent>.Fail(
-                "This task was accepted as a request; it is its holder's to edit.",
-                403, TaskReasonCodes.RequestSenderCannotDirect, command.CorrelationId);
         }
 
         /*
@@ -366,18 +364,21 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
 public sealed class DeleteTaskItemHandler : IRequestHandler<DeleteTaskItemCommand, Response<NoContent>>
 {
     private readonly ITaskItemRepository _tasks;
+    private readonly ITaskWriteGate _writeGate;
 
-    public DeleteTaskItemHandler(ITaskItemRepository tasks)
+    public DeleteTaskItemHandler(ITaskItemRepository tasks, ITaskWriteGate writeGate)
     {
         _tasks = tasks;
+        _writeGate = writeGate;
     }
 
     public async Task<Response<NoContent>> Handle(DeleteTaskItemCommand command, CancellationToken ct)
     {
+        // FIX2 — the delete key is a manager's; it still reaches only tasks its holder can read.
         var task = await _tasks.GetByIdAsync(command.Id, ct);
-        if (task is null)
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } refused)
         {
-            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return refused.ToResponse<NoContent>(command.CorrelationId);
         }
 
         // Soft delete (repository base sets IsDeleted); no hard delete anywhere.
@@ -389,19 +390,22 @@ public sealed class DeleteTaskItemHandler : IRequestHandler<DeleteTaskItemComman
 public sealed class BulkDeleteTaskItemHandler : IRequestHandler<BulkDeleteTaskItemCommand, Response<NoContent>>
 {
     private readonly ITaskItemRepository _tasks;
+    private readonly ITaskWriteGate _writeGate;
 
-    public BulkDeleteTaskItemHandler(ITaskItemRepository tasks)
+    public BulkDeleteTaskItemHandler(ITaskItemRepository tasks, ITaskWriteGate writeGate)
     {
         _tasks = tasks;
+        _writeGate = writeGate;
     }
 
     public async Task<Response<NoContent>> Handle(BulkDeleteTaskItemCommand command, CancellationToken ct)
     {
         foreach (var id in command.Request.Ids.Distinct())
         {
-            // Each delete re-reads through the tenant filter, so an id from another tenant is simply skipped.
+            // Each delete re-reads through the tenant filter, so an id from another tenant is simply skipped — and
+            // (FIX2) so is a task the caller cannot read: skipped, not refused, so the answer names no task.
             var task = await _tasks.GetByIdAsync(id, ct);
-            if (task is not null)
+            if (task is not null && await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is null)
             {
                 await _tasks.DeleteAsync(id, ct);
             }

@@ -71,7 +71,7 @@ namespace Diten.Platform.Application.Tests.Tasks;
 ///
 /// <para>Shared test database, isolation by fresh tenants per test; never the dev database, never DefaultTenant.</para>
 /// </summary>
-public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
+public sealed partial class TaskRequestHttpMongoTests : IAsyncLifetime
 {
     private static readonly Guid Deniz = Guid.Parse("50900000-0000-4000-8000-0000000000a1");   // TR — the sender
     private static readonly Guid Burak = Guid.Parse("50900000-0000-4000-8000-0000000000a2");   // TR — same company
@@ -139,6 +139,7 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
         await DeleteAsync<TaskItem>(PlatformCollections.TaskItems, tenants);
         await DeleteAsync<TaskTransition>(PlatformCollections.TaskTransitions, tenants);
         await DeleteAsync<TaskAssignment>(PlatformCollections.TaskAssignments, tenants);
+        await DeleteAsync<ChecklistRun>(PlatformCollections.ChecklistRuns, tenants);
         await DeleteAsync<OrganizationUnit>(PlatformCollections.OrganizationUnits, tenants);
         await DeleteAsync<Position>(PlatformCollections.Positions, tenants);
         await DeleteAsync<PositionAssignment>(PlatformCollections.PositionAssignments, tenants);
@@ -470,13 +471,19 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
             {
                 var answer = await _host.PostAsync($"/api/v1/tasks/{id}/{verb}", token,
                     new { expectedVersion = await VersionAsync(id) });
-                Assert.True(answer.Status is HttpStatusCode.Forbidden or HttpStatusCode.Conflict,
+                // FIX2 — the bystander (Piotr) cannot READ the request: 404 before any rule of the verb is asked.
+                Assert.True(who == Piotr
+                        ? answer.Status == HttpStatusCode.NotFound
+                        : answer.Status is HttpStatusCode.Forbidden or HttpStatusCode.Conflict,
                     $"{verb} by {who}: {answer.Status} {answer.Body}");
             }
 
             var plan = await _host.PostAsync($"/api/v1/tasks/{id}/plan", token,
                 new { expectedVersion = await VersionAsync(id), plannedDate = DateTimeOffset.UtcNow.AddDays(1) });
-            Assert.True(plan.Status is HttpStatusCode.Forbidden or HttpStatusCode.Conflict, $"plan by {who}: {plan.Body}");
+            Assert.True(who == Piotr
+                    ? plan.Status == HttpStatusCode.NotFound
+                    : plan.Status is HttpStatusCode.Forbidden or HttpStatusCode.Conflict,
+                $"plan by {who}: {plan.Body}");
         }
 
         var stored = await StoredAsync(id);
@@ -1425,9 +1432,11 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
                     // The REAL stores, on the real database, in the request's tenant — tasks AND the org chart.
                     services.AddScoped<ITaskTransitionRepository>(sp =>
                         new TaskTransitionRepository(harness.DbContext, sp.GetRequiredService<ITenantContext>()));
-                    services.AddScoped<ITaskItemRepository>(sp => new TaskItemRepository(
+                    // FIX2 — the real store behind a seam a test can pause a write at (TaskRepositoryHooks); unhooked it
+                    // forwards every call unchanged.
+                    services.AddScoped<ITaskItemRepository>(sp => HookedTaskRepository.Wrap(new TaskItemRepository(
                         harness.DbContext, sp.GetRequiredService<ITenantContext>(),
-                        sp.GetRequiredService<ITaskTransitionRepository>()));
+                        sp.GetRequiredService<ITaskTransitionRepository>()), Hooks));
                     services.AddScoped<ITaskAssignmentRepository>(sp =>
                         new TaskAssignmentRepository(harness.DbContext, sp.GetRequiredService<ITenantContext>()));
                     services.AddScoped<IOrganizationUnitRepository>(sp =>
@@ -1480,6 +1489,25 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
                             new FakeTaskTypeRepository(),
                             teamResolver: sp.GetRequiredService<ITaskTeamResolver>())
                     });
+                    // FIX2 — the write gate is the PRODUCTION one over the read rule above, and every handler the router
+                    // does not build by hand is built by the container from these registrations (DispatchThroughContainer).
+                    services.AddScoped<ITaskWriteGate, TaskWriteGate>();
+                    services.AddLogging();
+                    // The REAL checklist store, in the request's tenant (the in-memory double answers only its fixed test
+                    // tenant, so a run written here would never be found again).
+                    services.AddScoped<IChecklistRunRepository>(sp =>
+                        new ChecklistRunRepository(harness.DbContext, sp.GetRequiredService<ITenantContext>()));
+                    services.AddSingleton<ITaskDependencyRepository>(Dependencies);
+                    services.AddSingleton<ITaskCommentRepository>(Comments);
+                    services.AddSingleton<ITaskPersonalOverlayRepository>(Overlays);
+                    services.AddSingleton<ITaskAttachmentRepository>(Attachments);
+                    services.AddSingleton<ITaskNotificationService>(Notifications);
+                    services.AddSingleton<ITaskWatcherRepository>(new FakeTaskWatcherRepository());
+                    services.AddScoped<ITaskChecklistService, TaskChecklistService>();
+                    services.AddScoped<ITaskLifecycleService, TaskLifecycleService>();
+                    services.AddScoped<ITaskApprovalService>(_ => new FakeTaskApprovalService());
+                    services.AddScoped<ITaskReviewService>(_ => new FakeTaskReviewService());
+                    services.AddScoped<Diten.Platform.Application.Contracts.IWorkflowTransitionGate>(_ => new FakeWorkflowTransitionGate());
                     services.AddScoped<IMediator>(sp => new Router(sp, Notifications, Checklists, Dependencies));
                     services.AddScoped<IEnumerable<IWorkItemActionDispatcher>>(sp =>
                         new IWorkItemActionDispatcher[] { new TaskWorkItemActionDispatcher(sp.GetRequiredService<IMediator>()) });
@@ -1503,6 +1531,15 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
         public FakeChecklistRunRepository Checklists { get; } = new();
 
         public FakeTaskDependencyRepository Dependencies { get; } = new();
+
+        public FakeTaskCommentRepository Comments { get; } = new();
+
+        public FakeTaskPersonalOverlayRepository Overlays { get; } = new();
+
+        public FakeTaskAttachmentRepository Attachments { get; } = new();
+
+        /// <summary>FIX2 (A5) — a write a test pauses, to put another write in between deterministically.</summary>
+        public TaskRepositoryHooks Hooks { get; } = new();
 
         public string Token(Guid user, Guid tenant, params string[] keys)
         {
@@ -1533,6 +1570,9 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
 
         public Task<(HttpStatusCode Status, string Body)> PutAsync(string path, string bearer, object body)
             => SendAsync(HttpMethod.Put, path, bearer, body);
+
+        public Task<(HttpStatusCode Status, string Body)> DeleteAsync(string path, string bearer, object? body = null)
+            => SendAsync(HttpMethod.Delete, path, bearer, body);
 
         private async Task<(HttpStatusCode Status, string Body)> SendAsync(
             HttpMethod method, string path, string bearer, object? body)
@@ -1609,10 +1649,10 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
                         NullLogger<CreateTaskItemHandler>.Instance,
                         TaskDocumentFreezerDoubles.OverAnEmptyRegister(),
                         guard,
-                        requests: requests).Handle(command, ct), ct),
+                        requests: requests, writeGate: TaskWriteGateDoubles.Real(readAccess, currentUser)).Handle(command, ct), ct),
 
                 AcceptTaskItemCommand command => await new AcceptTaskItemHandler(
-                    tasks, events, currentUser, tenant, requests, readAccess).Handle(command, ct),
+                    tasks, events, currentUser, tenant, TaskWriteGateDoubles.Real(readAccess, currentUser), requests, readAccess).Handle(command, ct),
                 DeclineTaskOfferCommand command => await new DeclineTaskOfferHandler(
                     tasks, events, requests, readAccess, currentUser, tenant).Handle(command, ct),
                 WithdrawTaskOfferCommand command => await new WithdrawTaskOfferHandler(
@@ -1620,11 +1660,11 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
                 OfferTaskItemCommand command => await new OfferTaskItemHandler(
                     tasks, events, requests, readAccess, currentUser, tenant).Handle(command, ct),
                 ReturnTaskItemCommand command => await new ReturnTaskItemHandler(
-                    tasks, events, currentUser, tenant, requests).Handle(command, ct),
+                    tasks, events, currentUser, tenant, TaskWriteGateDoubles.Real(readAccess, currentUser), requests).Handle(command, ct),
                 AddChecklistItemCommand command => await new AddChecklistItemHandler(
-                    tasks, Checklists, new TaskChecklistService(), currentUser, tenant).Handle(command, ct),
+                    tasks, services.GetRequiredService<IChecklistRunRepository>(), new TaskChecklistService(), currentUser, tenant, writeGate: TaskWriteGateDoubles.Real(readAccess, currentUser)).Handle(command, ct),
                 AddTaskDependencyCommand command => await new AddTaskDependencyHandler(
-                    tasks, Dependencies, tenant, currentUser).Handle(command, ct),
+                    tasks, Dependencies, tenant, currentUser, writeGate: TaskWriteGateDoubles.Real(readAccess, currentUser)).Handle(command, ct),
                 GetTaskMentionCandidatesQuery query => await new GetTaskMentionCandidatesHandler(
                     tasks, readAccess, services.GetRequiredService<IUserDisplayNameResolver>(), currentUser)
                     .Handle(query, ct),
@@ -1633,24 +1673,38 @@ public sealed class TaskRequestHttpMongoTests : IAsyncLifetime
                     new FakeTaskApprovalService(), new FakeTaskFieldDefinitionRepository(),
                     services.GetRequiredService<IActorPermissionContext>(), readAccess, currentUser).Handle(query, ct),
                 ReassignTaskItemCommand command => await new ReassignTaskItemHandler(
-                    tasks, events, guard, currentUser, tenant).Handle(command, ct),
+                    tasks, events, guard, currentUser, tenant, writeGate: TaskWriteGateDoubles.Real(readAccess, currentUser)).Handle(command, ct),
                 UpdateTaskItemCommand command => await new UpdateTaskItemHandler(
                     tasks, units, fields, currentUser, new FakeTaskApprovalService(), new FakeTaskReviewService(),
                     NullLogger<UpdateTaskItemHandler>.Instance,
-                    TaskDocumentFreezerDoubles.OverAnEmptyRegister()).Handle(command, ct),
+                    TaskDocumentFreezerDoubles.OverAnEmptyRegister(), writeGate: TaskWriteGateDoubles.Real(readAccess, currentUser)).Handle(command, ct),
                 TransitionTaskItemCommand command => await new TransitionTaskItemHandler(
                     tasks, new TaskLifecycleService(), currentUser,
                     new FakeChecklistRunRepository(), new TaskChecklistService(),
                     new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository(),
                     new FakeTaskTypeRepository(), notifications, fields,
                     new FakeTaskAttachmentRepository(),
-                    NullLogger<TransitionTaskItemHandler>.Instance).Handle(command, ct),
+                    NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Real(readAccess, currentUser)).Handle(command, ct),
                 PlanTaskItemCommand command => await new PlanTaskItemHandler(
                     tasks, new TaskLifecycleService(), currentUser,
-                    new FakeWorkingHoursProvider(), new FakeCalendarMeetingReader()).Handle(command, ct),
-                _ => throw new InvalidOperationException($"Unexpected request {request.GetType().Name}.")
+                    new FakeWorkingHoursProvider(), new FakeCalendarMeetingReader(), writeGate: TaskWriteGateDoubles.Real(readAccess, currentUser)).Handle(command, ct),
+                _ => await DispatchThroughContainerAsync(request, ct)
             };
             return (TResponse)response;
+        }
+
+        /// <summary>
+        /// FIX2 — every other task command goes to its PRODUCTION handler, constructed by the container from this host's
+        /// registrations (the real write gate among them) — no hand-built argument list to drift from production.
+        /// </summary>
+        private async Task<object> DispatchThroughContainerAsync<TResponse>(IRequest<TResponse> request, CancellationToken ct)
+        {
+            var contract = typeof(IRequestHandler<,>).MakeGenericType(request.GetType(), typeof(TResponse));
+            var implementation = typeof(TaskWriteGate).Assembly.GetTypes()
+                .Single(type => type is { IsClass: true, IsAbstract: false } && contract.IsAssignableFrom(type));
+            var handler = ActivatorUtilities.CreateInstance(services, implementation);
+            var pending = (Task<TResponse>)contract.GetMethod("Handle")!.Invoke(handler, [request, ct])!;
+            return (await pending)!;
         }
 
         public Task<object?> Send(object request, CancellationToken ct = default) => throw new NotSupportedException();

@@ -331,7 +331,7 @@ public sealed class TaskReviewerRequiredHttpTests
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeTenantContext(TaskTestData.Tenant),
                 NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll(), writeGate: TaskWriteGateDoubles.Open);
 
             var update = new UpdateTaskItemHandler(
                 Tasks,
@@ -348,7 +348,7 @@ public sealed class TaskReviewerRequiredHttpTests
                 new FakeTaskApprovalService(),
                 Reviews,
                 NullLogger<UpdateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), writeGate: TaskWriteGateDoubles.Open);
 
             var submit = new SubmitTaskForReviewHandler(
                 Tasks,
@@ -356,7 +356,7 @@ public sealed class TaskReviewerRequiredHttpTests
                 new FakeCurrentUserContext(TaskTestData.Me),
                 Reviews,
                 new FakeTaskApprovalService(),
-                NullLogger<SubmitTaskForReviewHandler>.Instance);
+                NullLogger<SubmitTaskForReviewHandler>.Instance, writeGate: TaskWriteGateDoubles.Open);
 
             var transition = new TransitionTaskItemHandler(
                 Tasks,
@@ -367,7 +367,7 @@ public sealed class TaskReviewerRequiredHttpTests
                 // Permits everything, so any refusal below is MOD-0024's own rule.
                 new PassingWorkflowGate(),
                 new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
-                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance);
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open);
 
             var correlation = new CorrelationContext();
             correlation.SetCorrelationId("corr");

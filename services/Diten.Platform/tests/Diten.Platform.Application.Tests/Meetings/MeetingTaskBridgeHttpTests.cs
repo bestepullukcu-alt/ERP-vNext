@@ -228,7 +228,7 @@ public sealed class MeetingTaskBridgeHttpTests
                     ScheduleReviewMeetingForTaskCommand cmd => new ScheduleReviewMeetingForTaskHandler(
                         host._tasks,
                         new RecordLinkService(host._links, new FakeTenantContext(TaskTestData.Tenant), new FakeCurrentUserContext(Actor)),
-                        new MeetingIdempotencyKeyResolver(), new FakeCurrentUserContext(Actor), this).Handle(cmd, ct),
+                        new MeetingIdempotencyKeyResolver(), new FakeCurrentUserContext(Actor), this, writeGate: Tasks.TaskWriteGateDoubles.Open).Handle(cmd, ct),
                     // The two bridge handlers above delegate to MOD-0024/MOD-0357's OWN ordinary create commands
                     // (K2 — no second create path). Canned here, the same isolation the handler-level
                     // MeetingTaskBridgeCommandHandlerTests already takes: this suite's OWN concern is the HTTP
