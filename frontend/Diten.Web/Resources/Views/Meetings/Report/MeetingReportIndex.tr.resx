@@ -102,10 +102,5 @@
   <data name="ScopeTenant" xml:space="preserve"><value>Tüm kiracı</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>Kendi toplantılarım</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Bu rapora erişiminiz yok.</value></data>
-  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Aramak için en az 2 karakter yazın.</value></data>
-  <data name="PeopleSearchNoResults" xml:space="preserve"><value>Bu aramada kimse bulunamadı.</value></data>
-  <data name="PeopleSearching" xml:space="preserve"><value>Aranıyor…</value></data>
   <data name="UnknownUser" xml:space="preserve"><value>Bilinmeyen kullanıcı</value></data>
-  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Kısa sürede çok fazla arama yapıldı. Biraz bekleyip yeniden deneyin.</value></data>
-  <data name="SearchFailed" xml:space="preserve"><value>Arama yapılamadı. Biraz sonra yeniden deneyin.</value></data>
 </root>

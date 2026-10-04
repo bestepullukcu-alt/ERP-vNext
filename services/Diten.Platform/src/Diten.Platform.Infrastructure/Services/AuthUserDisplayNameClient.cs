@@ -20,7 +20,7 @@ namespace Diten.Platform.Infrastructure.Services;
 /// from a caller-supplied value, and AuthService scopes the lookup by it again. Cache keys include the tenant so
 /// one tenant's names can never be served to another.</para>
 /// </summary>
-public sealed class AuthUserDisplayNameClient : IUserDisplayNameResolver
+public sealed class AuthUserDisplayNameClient : IUserDisplayNameResolver, IUserDisplayNameChecker
 {
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
 
@@ -53,11 +53,17 @@ public sealed class AuthUserDisplayNameClient : IUserDisplayNameResolver
     public async Task<IReadOnlyDictionary<Guid, string>> ResolveAsync(
         IReadOnlyCollection<Guid> userIds,
         CancellationToken ct = default)
+        => (await ResolveCheckedAsync(userIds, ct)).Names;
+
+    /// <summary>ATT-FIX1 E1 — the same resolution, saying whether every chunk was answered.</summary>
+    public async Task<DisplayNameResolution> ResolveCheckedAsync(
+        IReadOnlyCollection<Guid> userIds,
+        CancellationToken ct = default)
     {
         var resolved = new Dictionary<Guid, string>();
         if (userIds is null || userIds.Count == 0)
         {
-            return resolved;
+            return new DisplayNameResolution(resolved, Complete: true);
         }
 
         var tenantId = _tenantContext.TenantId;
@@ -79,7 +85,7 @@ public sealed class AuthUserDisplayNameClient : IUserDisplayNameResolver
 
         if (missing.Count == 0)
         {
-            return resolved;
+            return new DisplayNameResolution(resolved, Complete: true);
         }
 
         if (string.IsNullOrWhiteSpace(_authServiceOptions.BaseUrl) ||
@@ -87,13 +93,15 @@ public sealed class AuthUserDisplayNameClient : IUserDisplayNameResolver
         {
             _logger.LogWarning(
                 "Cannot resolve user display names; AuthService BaseUrl/InternalApiKey not configured. Names will be omitted.");
-            return resolved;
+            return new DisplayNameResolution(resolved, Complete: false);
         }
 
+        var complete = true;
         for (var offset = 0; offset < missing.Count; offset += ChunkSize)
         {
             var chunk = missing.Skip(offset).Take(ChunkSize).ToList();
-            var fetched = await FetchChunkAsync(tenantId, chunk, ct);
+            var (fetched, answered) = await FetchChunkAsync(tenantId, chunk, ct);
+            complete &= answered;
 
             foreach (var entry in fetched)
             {
@@ -102,10 +110,10 @@ public sealed class AuthUserDisplayNameClient : IUserDisplayNameResolver
             }
         }
 
-        return resolved;
+        return new DisplayNameResolution(resolved, complete);
     }
 
-    private async Task<IReadOnlyDictionary<Guid, string>> FetchChunkAsync(
+    private async Task<(IReadOnlyDictionary<Guid, string> Names, bool Answered)> FetchChunkAsync(
         Guid tenantId,
         IReadOnlyCollection<Guid> chunk,
         CancellationToken ct)
@@ -125,25 +133,25 @@ public sealed class AuthUserDisplayNameClient : IUserDisplayNameResolver
                 _logger.LogWarning(
                     "AuthService display-name request failed. StatusCode={StatusCode} Count={Count}",
                     (int)response.StatusCode, chunk.Count);
-                return new Dictionary<Guid, string>();
+                return (new Dictionary<Guid, string>(), false);
             }
 
             var payload = await response.Content
                 .ReadFromJsonAsync<List<AuthUserDisplayName>>(cancellationToken: ct);
 
             return payload is null
-                ? new Dictionary<Guid, string>()
-                : payload
+                ? (new Dictionary<Guid, string>(), false)
+                : (payload
                     .Where(entry => entry.Id != Guid.Empty && !string.IsNullOrWhiteSpace(entry.DisplayName))
                     .GroupBy(entry => entry.Id)
-                    .ToDictionary(group => group.Key, group => group.First().DisplayName);
+                    .ToDictionary(group => group.Key, group => group.First().DisplayName), true);
         }
         catch (Exception ex)
         {
             // Best effort by contract: the assignee list and the work-item projection must still render, with
             // names simply absent, when AuthService is down.
             _logger.LogWarning(ex, "AuthService display-name request threw; names will be omitted for this batch.");
-            return new Dictionary<Guid, string>();
+            return (new Dictionary<Guid, string>(), false);
         }
     }
 

@@ -45,6 +45,12 @@ public sealed class MeetingLookupHandlerTests
         Assert.Null(response.Data);
     }
 
+    private sealed class EveryNameAnswered : Diten.Platform.Application.Contracts.IUserDisplayNameChecker
+    {
+        public Task<Diten.Platform.Application.Contracts.DisplayNameResolution> ResolveCheckedAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
+            => Task.FromResult(new Diten.Platform.Application.Contracts.DisplayNameResolution(new Dictionary<Guid, string>(), Complete: true));
+    }
+
     private sealed class NamedEligibility(FakeEligibilityMediator inner) : MediatR.IMediator
     {
         public async Task<TResponse> Send<TResponse>(MediatR.IRequest<TResponse> request, CancellationToken ct = default)
@@ -82,7 +88,8 @@ public sealed class MeetingLookupHandlerTests
                 var handler = new Diten.Platform.Application.Features.Tasks.GetTaskDecisionMakerLookupHandler(
                     new NamedEligibility(Eligibility),
                     new Diten.Platform.Application.Features.Tasks.DecisionMakerDirectoryCache(TimeProvider.System),
-                    new Diten.Platform.Application.Tests.Tasks.FakeTenantContext(Tenant));
+                    new Diten.Platform.Application.Tests.Tasks.FakeTenantContext(Tenant),
+                    new EveryNameAnswered());
                 return (TResponse)(object)await handler.Handle(query, ct);
             }
 

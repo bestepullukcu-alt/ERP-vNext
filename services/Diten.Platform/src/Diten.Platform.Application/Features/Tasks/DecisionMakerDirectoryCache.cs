@@ -16,9 +16,13 @@ namespace Diten.Platform.Application.Features.Tasks;
 public sealed class DecisionMakerDirectoryCache
 {
     public static readonly TimeSpan Lifetime = TimeSpan.FromSeconds(60);
+    /// <summary>ATT-FIX1 E3 — how long "the names cannot be read" is remembered, so an outage does not rebuild the
+    /// whole directory (and wait on AuthService) on every keystroke. Short: AuthService coming back is seen fast.</summary>
+    public static readonly TimeSpan UnavailableLifetime = TimeSpan.FromSeconds(10);
     public const int MaximumTenants = 256;
 
     private readonly ConcurrentDictionary<Guid, Entry> _entries = new();
+    private readonly ConcurrentDictionary<Guid, DateTimeOffset> _unavailable = new();
     private readonly TimeProvider _clock;
 
     public DecisionMakerDirectoryCache(TimeProvider clock) => _clock = clock;
@@ -60,6 +64,28 @@ public sealed class DecisionMakerDirectoryCache
     }
 
     public int Count => _entries.Count;
+
+    /// <summary>ATT-FIX1 E3 — this tenant's names could not be read just now (bounded like the directory itself).</summary>
+    public void MarkUnavailable(Guid tenantId)
+    {
+        if (tenantId == Guid.Empty) { return; }
+        var now = _clock.GetUtcNow();
+        if (_unavailable.Count >= MaximumTenants)
+        {
+            foreach (var stale in _unavailable.Where(e => now - e.Value >= UnavailableLifetime).ToList()) { _unavailable.TryRemove(stale); }
+            if (_unavailable.Count >= MaximumTenants) { return; }
+        }
+
+        _unavailable[tenantId] = now;
+    }
+
+    public bool IsUnavailable(Guid tenantId)
+    {
+        if (tenantId == Guid.Empty || !_unavailable.TryGetValue(tenantId, out var at)) { return false; }
+        if (_clock.GetUtcNow() - at < UnavailableLifetime) { return true; }
+        _unavailable.TryRemove(new KeyValuePair<Guid, DateTimeOffset>(tenantId, at));
+        return false;
+    }
 
     private sealed record Entry(DateTimeOffset At, IReadOnlyList<AssignablePersonDto> Rows);
 }

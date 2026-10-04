@@ -32,7 +32,6 @@
   <data name="LocationPlaceholder" xml:space="preserve"><value>Room, building or a video call link</value></data>
   <data name="FollowUpOfMeeting" xml:space="preserve"><value>Follow-up Of</value></data>
   <data name="Attendees" xml:space="preserve"><value>Attendees</value></data>
-  <data name="AttendeesPlaceholder" xml:space="preserve"><value>Search people to invite</value></data>
   <data name="AddAgendaItem" xml:space="preserve"><value>Add</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>Agenda item</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>Remove attendee</value></data>
@@ -115,6 +114,7 @@
   <data name="PeopleSearching" xml:space="preserve"><value>Searching…</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Too many searches in a short time. Wait a moment and try again.</value></data>
   <data name="SearchFailed" xml:space="preserve"><value>The search could not be done. Please try again shortly.</value></data>
+  <data name="NewOrganizerRequired" xml:space="preserve"><value>Choose the new organizer.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>The Meetings service is unavailable right now.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Please fill in every required field.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Meeting Types</value></data>

@@ -273,9 +273,15 @@ describe("BL-512 FIX1 — the lookup's refusals each have their own sentence, in
   it("every one of those keys (and the two new picker sentences) is in all seven languages and on the bridge", () => {
     const bridge = fs.readFileSync(path.resolve(__dirname, "..", "Views", "Tasks", "_IndexL10n.cshtml"), "utf8");
     const keys = [...Object.values(CODES), "searchFailed", "decisionMakerLoadFailed"].map((k) => k[0].toUpperCase() + k.slice(1));
+    const valueOf = (xml, key) => (new RegExp(`<data name="${key}"[^>]*>\\s*<value>([^<]+)</value>`).exec(xml) || [])[1];
+    const english = fs.readFileSync(path.resolve(__dirname, "..", "Resources", "Views", "Tasks", "TasksIndex.en.resx"), "utf8");
     LOCALES.forEach((locale) => {
       const xml = fs.readFileSync(path.resolve(__dirname, "..", "Resources", "Views", "Tasks", `TasksIndex.${locale}.resx`), "utf8");
-      keys.forEach((key) => expect(xml, `${key} missing in ${locale}`).toMatch(new RegExp(`<data name="${key}"[^>]*>\\s*<value>[^<]+</value>`)));
+      keys.forEach((key) => {
+        expect(valueOf(xml, key), `${key} missing in ${locale}`).toBeTruthy();
+        // ATT-FIX1 E6 — a copy of the English is not a translation.
+        if (locale !== "en") { expect(valueOf(xml, key), `${key} in ${locale} is the English sentence`).not.toBe(valueOf(english, key)); }
+      });
     });
     keys.forEach((key) => expect(bridge, `${key} is not on the bridge`).toContain(`Localizer["${key}"]`));
   });

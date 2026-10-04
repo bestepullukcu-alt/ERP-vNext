@@ -17,7 +17,7 @@ namespace Diten.Platform.API.Security;
 public static class PeopleSearchRateLimit
 {
     public const string PolicyName = "people-search";
-    public const int PermitsPerMinute = 30;
+    public const int PermitsPerMinute = 60;   // ATT-FIX1 (CT decision): 30 was tight for setting up an 8-person meeting
 
     /// <summary>The code a refusal by any OTHER policy carries — never the people-search one.</summary>
     public const string GenericRateLimited = "RATE_LIMITED";

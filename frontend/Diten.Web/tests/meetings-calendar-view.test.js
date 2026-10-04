@@ -642,13 +642,15 @@ describe("CT: the list reads more than 25, and the page can say an answer failed
    * reached Platform, so the table stopped at the default 25 while the calendar (listQuery) read everything — two
    * different sets on one page, and the organizer filter built from the table's rows missed the rest.
    */
-  it("the table and the create form ask for their page size through the proxy's query parameter", () => {
+  // ATT-FIX1 — a list page is at most 200 rows on the server; the table and the create form PAGE through every
+  // meeting (MeetingsApi.listAll, measured in meetings-attendee-search.test.js) instead of asking for 1000 at once.
+  it("the table and the create form page through the list instead of asking for 1000 rows", () => {
     const index = read("wwwroot", "assets", "js", "Meetings", "index.js");
     const form = read("wwwroot", "assets", "js", "Meetings", "form.js");
-    expect(index).toContain("'/Meetings/api/list?query=' + encodeURIComponent('pageSize=1000')");
-    expect(index).not.toMatch(/\/Meetings\/api\/list\?pageSize=/);
-    expect(form).toContain("window.MeetingsApi.listQuery({ pageSize: 1000 })");
-    expect(form).not.toContain("MeetingsApi.list('pageSize=1000')");
+    expect(index).toContain("window.MeetingsApi.listAll()");
+    expect(index).not.toMatch(/pageSize=1000/);
+    expect(form).toContain("window.MeetingsApi.listAll({ includeNames: false })");
+    expect(form).not.toMatch(/pageSize: 1000/);
   });
 
   /* calendar.js reports answer errors through DitenModal, which the tenant shell does not load. */

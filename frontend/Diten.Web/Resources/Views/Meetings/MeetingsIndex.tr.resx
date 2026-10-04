@@ -32,7 +32,6 @@
   <data name="LocationPlaceholder" xml:space="preserve"><value>Oda, bina veya görüntülü görüşme bağlantısı</value></data>
   <data name="FollowUpOfMeeting" xml:space="preserve"><value>Devamı Olduğu Toplantı</value></data>
   <data name="Attendees" xml:space="preserve"><value>Katılımcılar</value></data>
-  <data name="AttendeesPlaceholder" xml:space="preserve"><value>Davet edilecek kişileri arayın</value></data>
   <data name="AddAgendaItem" xml:space="preserve"><value>Ekle</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>Gündem maddesi</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>Katılımcıyı kaldır</value></data>
@@ -115,6 +114,7 @@
   <data name="PeopleSearching" xml:space="preserve"><value>Aranıyor…</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Kısa sürede çok fazla arama yapıldı. Biraz bekleyip yeniden deneyin.</value></data>
   <data name="SearchFailed" xml:space="preserve"><value>Arama yapılamadı. Biraz sonra yeniden deneyin.</value></data>
+  <data name="NewOrganizerRequired" xml:space="preserve"><value>Yeni düzenleyiciyi seçin.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Toplantılar servisi şu anda kullanılamıyor.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Lütfen zorunlu tüm alanları doldurun.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Toplantı Türleri</value></data>

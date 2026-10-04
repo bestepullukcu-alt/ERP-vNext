@@ -259,12 +259,9 @@
 
         currentMeeting = meetingResult.data;
         eligiblePeopleById = {};
-        // BL-531 — the people this editor names are THIS meeting's own (organizer + attendees), and their names come
-        // with the meeting read itself; the people directory is never asked for. BL-390's rule stands: a name that
-        // did not resolve reads "unknown user", never the raw id.
-        if (currentMeeting.organizerUserId) {
-            eligiblePeopleById[currentMeeting.organizerUserId] = currentMeeting.organizerDisplayName || tShared('unknownUser');
-        }
+        // BL-531 — the people this editor names are THIS meeting's attendees (attendance rows, "decided by"), and
+        // their names come with the meeting read itself; the people directory is never asked for. BL-390's rule
+        // stands: a name that did not resolve reads "unknown user", never the raw id.
         (currentMeeting.attendees || []).forEach((a) => { eligiblePeopleById[a.userId] = a.displayName || tShared('unknownUser'); });
         versions = minutesResult.data?.versions || [];
 

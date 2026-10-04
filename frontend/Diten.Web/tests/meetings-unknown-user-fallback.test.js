@@ -57,7 +57,6 @@ describe("BL-390: an unresolved organizer/attendee never renders as a raw GUID",
     expect(source).toContain("eligiblePeopleById[userId] || tShared('unknownUser')");
     // BL-531 — the names are this meeting's own, from the meeting read; never the directory.
     expect(source).toContain("eligiblePeopleById[a.userId] = a.displayName || tShared('unknownUser')");
-    expect(source).toContain("currentMeeting.organizerDisplayName || tShared('unknownUser')");
     expect(source).toContain("v.publishedByDisplayName || tShared('unknownUser')");
     expect(source).not.toContain("eligiblePeopleById[userId] || userId");
     expect(source).not.toContain("v.publishedByDisplayName || v.publishedByUserId");

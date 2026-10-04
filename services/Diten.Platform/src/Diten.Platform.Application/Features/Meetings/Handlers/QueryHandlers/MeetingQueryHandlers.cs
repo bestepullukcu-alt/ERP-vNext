@@ -127,10 +127,6 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
 
         var types = await _types.ListAsync(ct);
         var typeNameById = types.ToDictionary(t => t.Id, t => t.Name);
-        // MOD-0357 S7 — `all` already holds every meeting in the tenant; titles for FollowUpOfMeetingId are
-        // resolved from THAT same in-memory list, never a second query per row.
-        var titleById = all.ToDictionary(m => m.Id, m => m.Title);
-
         var hasReadAll = _permissions.IsPlatformActor || _permissions.Has(MeetingPermissions.ReadAll);
         var callerId = _currentUser.UserId;
 
@@ -139,7 +135,12 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
         {
             var attendeeIds = attendeesByMeeting.GetValueOrDefault(m.Id, []);
             return MeetingEligibility.CanView(m, callerId, hasReadAll, attendeeIds);
-        });
+        }).ToList();
+
+        // MOD-0357 S7 — titles for FollowUpOfMeetingId come from the same in-memory list, never a query per row.
+        // ATT-FIX1 — but only from meetings THIS reader may see: the title of a meeting they cannot open is not
+        // theirs to read; the id stays, the title is null and the screen shows its own placeholder.
+        var titleById = visible.ToDictionary(m => m.Id, m => m.Title);
 
         var filtered = visible
             .Where(m => filter.FromUtc is null || m.StartAt >= filter.FromUtc)
@@ -153,14 +154,19 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
 
         var totalCount = filtered.Count;
         var page = Math.Max(filter.Page, 1);
-        var pageSize = Math.Max(filter.PageSize, 1);
+        // ATT-FIX1 — one page is bounded on the SERVER: a client asking for 1000 (or a million) gets at most
+        // MeetingListLimits.MaxPageSize rows and pages on with `page` (MeetingsApi.listAll does).
+        var pageSize = Math.Clamp(filter.PageSize, 1, MeetingListLimits.MaxPageSize);
 
         var pageRows = filtered
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToList();
-        // BL-531 — the page's organizers named in ONE batched call (never per row).
-        var organizerNames = await MeetingPersonNames.ResolveAsync(_displayNames, pageRows.Select(m => m.OrganizerUserId), ct);
+        // BL-531 — the page's organizers named in ONE batched call (never per row). ATT-FIX1 — and only when the
+        // caller shows them: a reader that wants titles only (the create form's follow-up list) asks includeNames=false.
+        var organizerNames = filter.IncludeNames
+            ? await MeetingPersonNames.ResolveAsync(_displayNames, pageRows.Select(m => m.OrganizerUserId), ct)
+            : new Dictionary<Guid, string>();
 
         var items = pageRows
             .Select(m => new MeetingListItemDto(
@@ -384,13 +390,11 @@ public sealed class GetMeetingSeriesListHandler
 {
     private readonly IMeetingSeriesRepository _series;
     private readonly IMeetingTypeRepository _types;
-    private readonly IUserDisplayNameResolver _displayNames;
 
-    public GetMeetingSeriesListHandler(IMeetingSeriesRepository series, IMeetingTypeRepository types, IUserDisplayNameResolver displayNames)
+    public GetMeetingSeriesListHandler(IMeetingSeriesRepository series, IMeetingTypeRepository types)
     {
         _series = series;
         _types = types;
-        _displayNames = displayNames;
     }
 
     public async Task<Response<IReadOnlyList<MeetingSeriesDto>>> Handle(
@@ -400,11 +404,10 @@ public sealed class GetMeetingSeriesListHandler
         var types = await _types.ListAsync(ct);
         var typeNameById = types.ToDictionary(t => t.Id, t => t.Name);
 
-        // BL-531 — every series' organizer and attendees named in ONE batched call.
-        var names = await MeetingPersonNames.ResolveAsync(
-            _displayNames, all.SelectMany(s => s.AttendeeUserIds.Append(s.OrganizerUserId)), ct);
+        // ATT-FIX1 — the series LIST shows no people (name, type, cadence, state), so it resolves no names; the
+        // one series read (GetMeetingSeriesByIdHandler) does, for the edit form.
         IReadOnlyList<MeetingSeriesDto> dtos = all
-            .Select(s => MeetingSeriesMapping.WithNames(MeetingSeriesMapping.ToDto(s, typeNameById.GetValueOrDefault(s.MeetingTypeId)), names))
+            .Select(s => MeetingSeriesMapping.ToDto(s, typeNameById.GetValueOrDefault(s.MeetingTypeId)))
             .ToList();
         return Response<IReadOnlyList<MeetingSeriesDto>>.Success(dtos, 200, query.CorrelationId);
     }

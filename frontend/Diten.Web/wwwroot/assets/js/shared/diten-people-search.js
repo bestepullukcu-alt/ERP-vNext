@@ -78,13 +78,22 @@
             .map((id) => String(id || '').toLowerCase());
         let failure = '';
 
+        /*
+         * ATT-FIX1 — select2 counts the RAW input against minimumInputLength, the request is made with the TRIMMED
+         * term: " a" passed select2's check, reached the server as "a", got a 400 and spent a permit of the shared
+         * bucket. A trimmed term shorter than the minimum is therefore answered here — no request, and the words
+         * are "type at least two characters".
+         */
+        const TOO_SHORT = { ok: false, status: 0, tooShort: true };
+        const searchTrimmed = (term) => (term.length < MIN_LENGTH ? TOO_SHORT : search(term));
+
         return {
             minimumInputLength: MIN_LENGTH,
             ajax: {
                 delay: DELAY_MS,
                 transport: transport({
-                    search,
-                    onFailure: (res) => { failure = failureSentence(res, words); },
+                    search: searchTrimmed,
+                    onFailure: (res) => { failure = res && res.tooShort ? (words.minimumLength || '') : failureSentence(res, words); },
                     toResults: (rows) => {
                         failure = '';
                         const excluded = excludedNow();

@@ -104,7 +104,7 @@ describe("WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-r
   });
 
   it("every Meetings people picker searches through the ONE shared transport (BL-531)", () => {
-    ["Meetings/form.js", "Meetings/series/form.js", "Meetings/Report/index.js"].forEach((file) => {
+    ["Meetings/form.js", "Meetings/series/form.js"].forEach((file) => {
       const source = code(read(web("wwwroot", "assets", "js", ...file.split("/"))));
       expect(source, `${file} does not use the shared people search`).toMatch(/DitenPeopleSearch\??\.options\??\.?\(/);
       expect(source, `${file} grew its own select2 transport`).not.toMatch(/transport\s*:/);

@@ -203,7 +203,15 @@ public sealed record GetMeetingListFilter(
     bool? IAmAttendeeOnly,
     bool? HasLinkedTasksOnly,
     int Page = 1,
-    int PageSize = 25);
+    int PageSize = 25,
+    /// <summary>ATT-FIX1 — false: the organizer names are not resolved (a caller that shows titles only).</summary>
+    bool IncludeNames = true);
+
+/// <summary>ATT-FIX1 — the most rows one list page answers, whatever the caller asks.</summary>
+public static class MeetingListLimits
+{
+    public const int MaxPageSize = 200;
+}
 
 public sealed record MeetingListResultDto(IReadOnlyList<MeetingListItemDto> Items, int TotalCount);
 

@@ -46,6 +46,12 @@ const MeetingsList = (function () {
         { text: L.StatusCompleted, cls: 'bg-label-success' }
     ][lifecycle] || { text: lifecycle, cls: 'bg-label-primary' });
 
+    // ATT-FIX1 (security) — every text a person typed (a title, a name) goes into DataTables' HTML ESCAPED: a meeting
+    // titled `<img src=x onerror=…>` must read as text for everyone who opens the list, never run.
+    const esc = (value) => String(value ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
     const boolBadge = (value) => value
         ? `<span class="badge bg-label-success">${L.Yes}</span>`
         : `<span class="badge bg-label-secondary">${L.No}</span>`;
@@ -196,12 +202,13 @@ const MeetingsList = (function () {
         // window.DtDefaults.create(...)
         dt = window.DitenDataTable.createCrudTable({
             tableEl: dtTableEl,
-            ajax: {
-                // The proxy forwards ONE `query` parameter (MeetingsController.ApiList); a bare ?pageSize never
-                // reached Platform and the list stopped at its default 25 (CT acceptance, calendar 2c review).
-                url: '/Meetings/api/list?query=' + encodeURIComponent('pageSize=1000'),
-                type: 'GET',
-                xhrFields: { withCredentials: true }
+            // ATT-FIX1 — the server answers at most 200 rows a page, so the list pages through EVERY meeting the
+            // reader may see (MeetingsApi.listAll) instead of asking for 1000 in one call; filtering stays local.
+            ajax: (data, callback) => {
+                window.MeetingsApi.listAll().then((res) => {
+                    if (!res.ok) { window.showToast?.(L.ErrorOccurred, 'error'); }
+                    callback({ data: res.data || [] });
+                });
             },
             actions: { onRowAction: rowActionHandlers },
             config: {
@@ -220,17 +227,17 @@ const MeetingsList = (function () {
                 ],
                 columnDefs: [
                     { targets: 0, className: 'control', searchable: false, orderable: false, render: () => '' },
-                    { targets: 1, render: (data) => `<span class="fw-medium text-heading">${data ?? ''}</span>` },
+                    { targets: 1, render: (data) => `<span class="fw-medium text-heading">${esc(data)}</span>` },
                     {
                         targets: 2,
                         render: (data) => {
                             const type = types.find((t) => t.id === data);
-                            return type ? type.name : '-';
+                            return type ? esc(type.name) : '-';
                         }
                     },
                     { targets: 3, render: (data) => formatDateTime(data) },
                     { targets: 4, render: (data) => formatDateTime(data) },
-                    { targets: 5, render: (data, type, full) => full?.organizerDisplayName || organizerNamesById[data] || L.UnknownUser },
+                    { targets: 5, render: (data, type, full) => esc(full?.organizerDisplayName || organizerNamesById[data] || L.UnknownUser) },
                     { targets: 6, render: (data) => boolBadge(data) },
                     {
                         targets: 7,
@@ -281,6 +288,7 @@ const MeetingsList = (function () {
             initDataTable();
         },
         matchesFilters,
+        populateFilterOptions,
         getAppliedFilters: () => appliedFilters,
         applyFilters,
         mountInlineFilter,

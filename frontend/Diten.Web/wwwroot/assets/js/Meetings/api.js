@@ -7,6 +7,8 @@
  */
 (function (global) {
     const BASE = '/Meetings/api';
+    const LIST_PAGE_SIZE = 200;   // = MeetingListLimits.MaxPageSize on the server
+    const LIST_MAX_PAGES = 50;
 
     const request = async (method, path, body) => {
         let response;
@@ -125,6 +127,24 @@
          * above loses its pageSize the same way.
          */
         listQuery: (params) => request('GET', `/list?query=${encodeURIComponent(new URLSearchParams(params).toString())}`),
+        /*
+         * ATT-FIX1 — every meeting the reader may see, page by page: the server answers at most LIST_PAGE_SIZE rows
+         * per call (MeetingListLimits.MaxPageSize), so a caller that wants the whole set pages through it here rather
+         * than asking for 1000 at once. `data` is the plain array of rows; a failed page fails the whole read.
+         */
+        listAll: async (params = {}) => {
+            const rows = [];
+            for (let page = 1; page <= LIST_MAX_PAGES; page += 1) {
+                const query = new URLSearchParams(Object.assign({}, params, { page, pageSize: LIST_PAGE_SIZE })).toString();
+                const res = await request('GET', `/list?query=${encodeURIComponent(query)}`);
+                if (!res.ok || !res.data) { return Object.assign({}, res, { data: rows }); }
+                const items = Array.isArray(res.data.items) ? res.data.items : [];
+                rows.push(...items);
+                const total = Number(res.data.totalCount ?? rows.length);
+                if (rows.length >= total || items.length === 0) { break; }
+            }
+            return { ok: true, status: 200, reasonCode: null, data: rows };
+        },
         get: (id) => request('GET', `/${id}`),
         create: (payload) => request('POST', '', payload),
         update: (id, payload) => request('PUT', `/${id}`, payload),

@@ -102,10 +102,5 @@
   <data name="ScopeTenant" xml:space="preserve"><value>Весь тенант</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>Мои совещания</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>У вас нет доступа к этому отчёту.</value></data>
-  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Введите не менее 2 символов для поиска.</value></data>
-  <data name="PeopleSearchNoResults" xml:space="preserve"><value>По этому запросу никого не найдено.</value></data>
-  <data name="PeopleSearching" xml:space="preserve"><value>Поиск…</value></data>
   <data name="UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
-  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Слишком много поисков за короткое время. Подождите немного и повторите попытку.</value></data>
-  <data name="SearchFailed" xml:space="preserve"><value>Не удалось выполнить поиск. Повторите попытку чуть позже.</value></data>
 </root>

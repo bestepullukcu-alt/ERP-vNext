@@ -26,6 +26,12 @@ const MeetingTypesList = (function () {
         };
     };
 
+    // ATT-FIX1 (security) — every text a person typed (a title, a name) goes into DataTables' HTML ESCAPED: a meeting
+    // titled `<img src=x onerror=…>` must read as text for everyone who opens the list, never run.
+    const esc = (value) => String(value ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
     const boolBadge = (value) => value
         ? `<span class="badge bg-label-success">${L.Yes}</span>`
         : `<span class="badge bg-label-secondary">${L.No}</span>`;
@@ -138,7 +144,7 @@ const MeetingTypesList = (function () {
                 ],
                 columnDefs: [
                     { targets: 0, className: 'control', searchable: false, orderable: false, render: () => '' },
-                    { targets: 1, render: (data) => `<span class="fw-medium text-heading">${data ?? ''}</span>` },
+                    { targets: 1, render: (data) => `<span class="fw-medium text-heading">${esc(data)}</span>` },
                     { targets: 2, render: (data) => boolBadge(data) },
                     { targets: 3, render: (data) => boolBadge(data) },
                     { targets: 4, render: (data) => boolBadge(data) },

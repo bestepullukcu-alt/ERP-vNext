@@ -32,7 +32,6 @@
   <data name="LocationPlaceholder" xml:space="preserve"><value>Salle, bâtiment ou lien de visioconférence</value></data>
   <data name="FollowUpOfMeeting" xml:space="preserve"><value>Suite de la réunion</value></data>
   <data name="Attendees" xml:space="preserve"><value>Participants</value></data>
-  <data name="AttendeesPlaceholder" xml:space="preserve"><value>Rechercher des personnes à inviter</value></data>
   <data name="AddAgendaItem" xml:space="preserve"><value>Ajouter</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>Point de l'ordre du jour</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>Retirer le participant</value></data>
@@ -115,6 +114,7 @@
   <data name="PeopleSearching" xml:space="preserve"><value>Recherche…</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Trop de recherches en peu de temps. Patientez un instant et réessayez.</value></data>
   <data name="SearchFailed" xml:space="preserve"><value>La recherche n'a pas pu être effectuée. Réessayez dans un instant.</value></data>
+  <data name="NewOrganizerRequired" xml:space="preserve"><value>Choisissez le nouvel organisateur.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Le service Réunions est actuellement indisponible.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Veuillez remplir tous les champs obligatoires.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Types de réunion</value></data>

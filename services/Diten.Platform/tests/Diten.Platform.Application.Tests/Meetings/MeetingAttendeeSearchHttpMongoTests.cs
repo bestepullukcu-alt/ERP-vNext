@@ -88,17 +88,19 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
     }
 
     [Fact]
-    public async Task The_task_and_meeting_searches_share_ONE_bucket_the_thirty_first_is_429_and_another_user_is_not_affected()
+    public async Task The_task_and_meeting_searches_share_ONE_bucket_the_sixty_first_is_429_and_another_user_is_not_affected()
     {
         await using var host = await Host.StartAsync();
         var me = Guid.NewGuid();
 
-        for (var i = 0; i < 20; i++)
+        // ATT-FIX1 — 60 a minute (CT decision): 40 task searches + 20 meeting searches, then the 61st is refused.
+        Assert.Equal(60, PeopleSearchRateLimit.PermitsPerMinute);
+        for (var i = 0; i < 40; i++)
         {
             Assert.Equal(HttpStatusCode.OK, (await host.GetAsync("/api/v1/tasks/lookups/decision-makers?search=pl", me)).Status);
         }
 
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < 20; i++)
         {
             Assert.Equal(HttpStatusCode.OK, (await host.GetAsync("/api/v1/meetings/lookups/attendees?search=pl", me)).Status);
         }
@@ -153,6 +155,116 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
         Assert.True(report.Status == HttpStatusCode.OK, report.Body);
         var reportRow = JsonDocument.Parse(report.Body).RootElement.GetProperty("data").GetProperty("meetings").EnumerateArray().Single();
         Assert.Equal("Organizatör Kişi", reportRow.GetProperty("organizerDisplayName").GetString());
+    }
+
+    // ATT-FIX1 (2) — an AuthService that accepts and hangs costs a read at most the name timeout, never 30–100 s.
+    [Fact]
+    public async Task A_hanging_AuthService_costs_the_meeting_read_at_most_the_name_timeout_and_the_read_still_answers()
+    {
+        await using var host = await Host.StartAsync();
+        host.AuthHangs = true;
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+
+        var (status, _, body) = await host.GetAsync($"/api/v1/meetings/{host.MeetingId}");
+
+        clock.Stop();
+        Assert.True(status == HttpStatusCode.OK, body);
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(4), $"the read took {clock.Elapsed}");
+        var data = JsonDocument.Parse(body).RootElement.GetProperty("data");
+        Assert.Equal(JsonValueKind.Null, data.GetProperty("organizerDisplayName").ValueKind);
+    }
+
+    // ATT-FIX1 (7) — a read whose caller shows no names resolves none; one list page is bounded on the server.
+    [Fact]
+    public async Task A_list_asked_without_names_and_the_series_list_ask_AuthService_nothing()
+    {
+        await using var host = await Host.StartAsync();
+        host.AuthCalls.Clear();
+
+        var list = await host.GetAsync("/api/v1/meetings?pageSize=50&includeNames=false");
+        var series = await host.GetAsync("/api/v1/meetings/series");
+
+        Assert.Equal(HttpStatusCode.OK, list.Status);
+        Assert.Equal(HttpStatusCode.OK, series.Status);
+        Assert.Empty(host.AuthCalls);
+        var row = JsonDocument.Parse(list.Body).RootElement.GetProperty("data").GetProperty("items").EnumerateArray().Single();
+        Assert.Equal(JsonValueKind.Null, row.GetProperty("organizerDisplayName").ValueKind);
+    }
+
+    [Fact]
+    public async Task One_list_page_answers_at_most_two_hundred_rows_whatever_is_asked()
+    {
+        await using var host = await Host.StartAsync();
+        var typeId = Guid.NewGuid();
+        await host.Database.GetCollection<Meeting>(PlatformCollections.MeetingMeetings).InsertManyAsync(Enumerable.Range(0, 230)
+            .Select(i => new Meeting
+            {
+                TenantId = Host.TenantA, Title = $"Toplu {i}", MeetingTypeId = typeId,
+                StartAt = DateTimeOffset.UtcNow.AddDays(3), EndAt = DateTimeOffset.UtcNow.AddDays(3).AddHours(1),
+                OrganizerUserId = Host.Organizer, IdempotencyKey = Guid.NewGuid().ToString("N")
+            }));
+
+        var (status, _, body) = await host.GetAsync("/api/v1/meetings?pageSize=1000&includeNames=false");
+
+        Assert.Equal(HttpStatusCode.OK, status);
+        var data = JsonDocument.Parse(body).RootElement.GetProperty("data");
+        Assert.Equal(MeetingListLimits.MaxPageSize, data.GetProperty("items").GetArrayLength());
+        Assert.Equal(231, data.GetProperty("totalCount").GetInt32());
+    }
+
+    // ATT-FIX1 (8a) — a reader never learns the title of a meeting they cannot open through a follow-up link.
+    [Fact]
+    public async Task A_follow_up_shows_the_source_title_only_to_a_reader_who_may_see_the_source()
+    {
+        await using var host = await Host.StartAsync();
+        var reader = Guid.NewGuid();
+        var meetings = host.Database.GetCollection<Meeting>(PlatformCollections.MeetingMeetings);
+        var secretId = Guid.NewGuid();
+        await meetings.InsertManyAsync(
+        [
+            new Meeting
+            {
+                Id = secretId, TenantId = Host.TenantA, Title = "Gizli kurul", MeetingTypeId = Guid.NewGuid(),
+                StartAt = DateTimeOffset.UtcNow.AddDays(-7), EndAt = DateTimeOffset.UtcNow.AddDays(-7).AddHours(1),
+                OrganizerUserId = Host.Organizer, IdempotencyKey = Guid.NewGuid().ToString("N")
+            },
+            new Meeting
+            {
+                TenantId = Host.TenantA, Title = "Okurun toplantısı", MeetingTypeId = Guid.NewGuid(), FollowUpOfMeetingId = secretId,
+                StartAt = DateTimeOffset.UtcNow.AddDays(5), EndAt = DateTimeOffset.UtcNow.AddDays(5).AddHours(1),
+                OrganizerUserId = reader, IdempotencyKey = Guid.NewGuid().ToString("N")
+            }
+        ]);
+
+        var asReader = await host.GetAsync("/api/v1/meetings?pageSize=50&includeNames=false", reader, readAll: false);
+        var asReadAll = await host.GetAsync("/api/v1/meetings?pageSize=50&includeNames=false");
+
+        Assert.Equal(HttpStatusCode.OK, asReader.Status);
+        Assert.DoesNotContain("Gizli kurul", asReader.Body);
+        var mine = JsonDocument.Parse(asReader.Body).RootElement.GetProperty("data").GetProperty("items").EnumerateArray().Single();
+        Assert.Equal(secretId, mine.GetProperty("followUpOfMeetingId").GetGuid());
+        Assert.Equal(JsonValueKind.Null, mine.GetProperty("followUpOfMeetingTitle").ValueKind);
+        Assert.Contains("Gizli kurul", asReadAll.Body);
+    }
+
+    // ATT-FIX1 — only the rows of the PAGE answered are named, never every meeting the list filtered.
+    [Fact]
+    public async Task Only_the_organizers_of_the_answered_page_are_named()
+    {
+        await using var host = await Host.StartAsync();
+        await host.Database.GetCollection<Meeting>(PlatformCollections.MeetingMeetings).InsertOneAsync(new Meeting
+        {
+            TenantId = Host.TenantA, Title = "Sonraki", MeetingTypeId = Guid.NewGuid(),
+            StartAt = DateTimeOffset.UtcNow.AddDays(9), EndAt = DateTimeOffset.UtcNow.AddDays(9).AddHours(1),
+            OrganizerUserId = Host.Attendee, IdempotencyKey = Guid.NewGuid().ToString("N")
+        });
+        host.AuthCalls.Clear();
+
+        var (status, _, _) = await host.GetAsync("/api/v1/meetings?pageSize=1");
+
+        Assert.Equal(HttpStatusCode.OK, status);
+        var call = Assert.Single(host.AuthCalls);
+        Assert.Equal([Host.Attendee], call.Ids.Split(',').Select(Guid.Parse));
     }
 
     // ── host ────────────────────────────────────────────────────────────────────────────────────────────
@@ -241,7 +353,9 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
                     {
                         BaseUrl = "http://auth.bl531.test", InternalApiKey = "bl531-test-key-not-a-secret"
                     }));
-                    services.AddScoped<IUserDisplayNameResolver, AuthUserDisplayNameClient>();
+                    services.AddScoped<AuthUserDisplayNameClient>();
+                    services.AddScoped<IUserDisplayNameResolver>(sp => sp.GetRequiredService<AuthUserDisplayNameClient>());
+                    services.AddScoped<IUserDisplayNameChecker>(sp => sp.GetRequiredService<AuthUserDisplayNameClient>());
                     services.AddSingleton<Diten.Platform.Application.Contracts.Audit.IAuditOutboxWriter>(new Diten.Platform.Application.Tests.Audit.InMemoryAuditOutbox());
 
                     services.AddControllers().ConfigureApplicationPartManager(manager =>
@@ -326,13 +440,16 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
                 StartsAt = DateTimeOffset.UtcNow.AddDays(2), OrganizerUserId = Organizer, AttendeeUserIds = [Attendee, OtherTenantPerson]
             });
 
-            return new Host(mongo, database, auth) { MeetingId = meetingId, SeriesId = seriesId };
+            return new Host(mongo, database, auth) { MeetingId = meetingId, SeriesId = seriesId, Database = database };
         }
 
-        public async Task<(HttpStatusCode Status, string? Code, string Body)> GetAsync(string path, Guid? userId = null)
+        public bool AuthHangs { get => _auth.Hang; set => _auth.Hang = value; }
+        public IMongoDatabase Database { get; private init; } = null!;
+
+        public async Task<(HttpStatusCode Status, string? Code, string Body)> GetAsync(string path, Guid? userId = null, bool readAll = true)
         {
             var client = _server.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token(userId ?? Organizer));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token(userId ?? Organizer, readAll));
             var response = await client.GetAsync(path);
             var body = await response.Content.ReadAsStringAsync();
             string? code = null;
@@ -355,19 +472,19 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
         public static IReadOnlyList<JsonElement> People(string body) =>
             JsonDocument.Parse(body).RootElement.GetProperty("data").GetProperty("people").EnumerateArray().Select(p => p.Clone()).ToList();
 
-        private static string Token(Guid userId) =>
+        private static string Token(Guid userId, bool readAll) =>
             new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
                 Issuer, Audience,
-                [
+                new[]
+                {
                     new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
                     new Claim("actor_type", "tenant_user"),
                     new Claim("tenant_id", TenantA.ToString()),
                     new Claim("permission", TaskPermissions.Create),
                     new Claim("permission", MeetingPermissions.Create),
                     new Claim("permission", MeetingPermissions.Read),
-                    new Claim("permission", MeetingPermissions.ReadAll),
                     new Claim("permission", MeetingPermissions.SeriesManage)
-                ],
+                }.Concat(readAll ? [new Claim("permission", MeetingPermissions.ReadAll)] : Array.Empty<Claim>()),
                 DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow.AddMinutes(30),
                 new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secret)), SecurityAlgorithms.HmacSha256)));
 
@@ -384,6 +501,8 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
             private readonly Dictionary<(Guid Tenant, Guid User), string> _names = new();
 
             public List<(Guid Tenant, string Ids)> Calls { get; } = [];
+            /// <summary>AuthService accepts the connection and never answers (the "started before mongod" state).</summary>
+            public bool Hang { get; set; }
 
             public void Add(Guid tenant, Guid user, string name)
             {
@@ -392,8 +511,9 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
 
             public HttpClient CreateClient(string name) => new(this, disposeHandler: false);
 
-            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
             {
+                if (Hang) { await Task.Delay(Timeout.Infinite, ct); }
                 var query = System.Web.HttpUtility.ParseQueryString(request.RequestUri!.Query);
                 var tenant = Guid.Parse(query["tenantId"]!);
                 var ids = query["ids"] ?? string.Empty;
@@ -408,10 +528,10 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
                         .ToList();
                 }
 
-                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                return new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent(JsonSerializer.Serialize(rows), Encoding.UTF8, "application/json")
-                });
+                };
             }
         }
 

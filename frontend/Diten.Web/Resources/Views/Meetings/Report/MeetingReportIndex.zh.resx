@@ -102,10 +102,5 @@
   <data name="ScopeTenant" xml:space="preserve"><value>整个租户</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>我的会议</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>您无权访问此报告。</value></data>
-  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>请至少输入 2 个字符进行搜索。</value></data>
-  <data name="PeopleSearchNoResults" xml:space="preserve"><value>没有找到符合此搜索的人员。</value></data>
-  <data name="PeopleSearching" xml:space="preserve"><value>正在搜索…</value></data>
   <data name="UnknownUser" xml:space="preserve"><value>未知用户</value></data>
-  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>短时间内搜索次数过多。请稍候再试。</value></data>
-  <data name="SearchFailed" xml:space="preserve"><value>无法完成搜索，请稍后重试。</value></data>
 </root>

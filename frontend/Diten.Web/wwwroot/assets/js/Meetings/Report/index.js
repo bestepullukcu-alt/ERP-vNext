@@ -16,7 +16,13 @@
  * event.
  */
 (function (global) {
-    const t = (key) => global.MeetingReportL10n?.t?.(key) ?? key;
+    /*
+     * ATT-FIX1 (8c) — the payload's keys are camelCase (MVC's Json.Serialize), but this file names them PascalCase,
+     * as the resx does; every PascalCase call fell back to the raw key on screen. The one translation point now
+     * takes either spelling.
+     */
+    const camel = (key) => (key ? key.charAt(0).toLowerCase() + key.slice(1) : key);
+    const t = (key) => global.MeetingReportL10n?.t?.(camel(key)) ?? key;
 
     const byId = (id) => document.getElementById(id);
     const esc = (value) => String(value ?? '')
@@ -186,6 +192,7 @@
         setStatus('');
         renderTiles(data.totals);
         renderMeetings(data.meetings);
+        rememberOrganizers(data.meetings);
         renderDecisions(data.decisions);
         renderActions(data.actions);
         renderScope(data.scopeApplied);
@@ -252,21 +259,33 @@
         const jq = global.jQuery;
         if (jq?.fn?.select2) {
             jq('#mrMeetingType').select2({ width: '100%' });
-            // BL-531 — the organizer filter SEARCHES the people directory (≥ 2 characters, the attendee lookup's
-            // search-only contract); no people list is read when the report opens.
-            jq('#mrOrganizer').select2(Object.assign({ width: '100%', allowClear: true },
-                global.DitenPeopleSearch?.options?.({
-                    search: (term) => global.MeetingsApi.lookupAttendees({ search: term }),
-                    text: {
-                        minimumLength: t('peopleSearchMinimumLength'),
-                        noResults: t('peopleSearchNoResults'),
-                        searching: t('peopleSearching'),
-                        unknown: t('unknownUser'),
-                        rateLimited: t('errorPeopleSearchRateLimited'),
-                        failed: t('searchFailed')
-                    }
-                }) || {}));
+            // ATT-FIX1 (3) — the organizer filter is filled from the organizers the REPORT ITSELF has shown
+            // (rememberOrganizers), like the meetings list's own filter: picking a filter value is not picking a
+            // person, so it never asks the people directory (which needs meetings.create, not the report's
+            // meetings.read). "Show all" stays reachable: the empty option and allowClear.
+            jq('#mrOrganizer').select2({ width: '100%', allowClear: true });
         }
+    };
+
+    /** id → name of every organizer a loaded report has shown; the filter's options, kept across reloads. */
+    const knownOrganizers = new Map();
+
+    const rememberOrganizers = (meetings) => {
+        (meetings || []).forEach((m) => {
+            if (!m || !m.organizerUserId) { return; }
+            const name = m.organizerDisplayName || knownOrganizers.get(m.organizerUserId) || t('unknownUser');
+            knownOrganizers.set(m.organizerUserId, name);
+        });
+        const select = byId('mrOrganizer');
+        if (!select) { return; }
+        const chosen = select.value;
+        Array.from(select.options).filter((option) => option.value).forEach((option) => option.remove());
+        Array.from(knownOrganizers.entries())
+            .sort((a, b) => a[1].localeCompare(b[1], global.CurrentLanguage || undefined))
+            // new Option sets text, never markup: a name is shown as typed.
+            .forEach(([id, name]) => select.appendChild(new Option(name, id, false, id === chosen)));
+        select.value = chosen && knownOrganizers.has(chosen) ? chosen : '';
+        global.jQuery?.('#mrOrganizer').trigger('change.select2');
     };
 
 
@@ -304,7 +323,7 @@
 
     const screen = {
         boot, loadReport, downloadExport, renderTiles, renderMeetings, renderDecisions, renderActions,
-        renderScope, showNoAccess, hideNoAccess, buildQuery, lifecycleLabel,
+        renderScope, showNoAccess, hideNoAccess, buildQuery, lifecycleLabel, initPickers, rememberOrganizers,
         get lastReport() { return lastReport; }
     };
 

@@ -146,9 +146,74 @@ public sealed class DecisionMakerSearchHttpMongoTests
         Assert.DoesNotContain("Kalite", body);
 
         host.NameSource.Unavailable = false;
+        host.Clock.Advance(DecisionMakerDirectoryCache.UnavailableLifetime);   // the brief "unavailable" memory (E3) passes
         var again = await host.GetAsync("?search=il");
         Assert.Equal(HttpStatusCode.OK, again.Status);
         Assert.Contains(Host.People(again.Body), p => p.GetProperty("userId").GetGuid() == Host.Ilker);
+    }
+
+    // ATT-FIX1 E1 — a PARTIAL outage (some names left in AuthService's own cache, a chunk failed) is served but not
+    // kept: the next search after AuthService is back answers with every name, not a minute of "person not found".
+    [Fact]
+    public async Task A_directory_with_unanswered_names_is_served_but_not_kept()
+    {
+        await using var host = await Host.StartAsync();
+        host.NameSource.AnswerOnly = [Host.Ilker, Host.Gokce];
+
+        var partial = await host.GetAsync("?search=pl");
+        Assert.Equal(HttpStatusCode.OK, partial.Status);
+        Assert.All(Host.People(partial.Body), p => Assert.Equal(JsonValueKind.Null, p.GetProperty("displayName").ValueKind));
+
+        host.NameSource.AnswerOnly = null;
+        var whole = await host.GetAsync("?search=pl");
+        Assert.Equal(HttpStatusCode.OK, whole.Status);
+        Assert.All(Host.People(whole.Body), p => Assert.StartsWith("Planner", p.GetProperty("displayName").GetString()));
+        Assert.Equal(2, host.NameSource.Calls);   // rebuilt, because the first one was not kept
+    }
+
+    // ATT-FIX1 E2 — the 503 is for "nobody's name could be read", nothing else.
+    [Fact]
+    public async Task A_person_AuthService_answers_has_no_name_for_is_listed_and_the_directory_is_kept()
+    {
+        await using var host = await Host.StartAsync();
+        host.NameSource.Absent = [Host.Gokce];
+
+        var (status, _, body) = await host.GetAsync("?search=cagri");
+
+        Assert.Equal(HttpStatusCode.OK, status);
+        var row = Assert.Single(Host.People(body));
+        Assert.Equal(Host.Gokce, row.GetProperty("userId").GetGuid());
+        Assert.Equal(JsonValueKind.Null, row.GetProperty("displayName").ValueKind);
+        Assert.Equal(HttpStatusCode.OK, (await host.GetAsync("?search=il")).Status);
+        Assert.Equal(1, host.NameSource.Calls);   // complete → kept
+    }
+
+    [Fact]
+    public async Task A_tenant_with_nobody_answers_an_empty_list_not_a_503()
+    {
+        await using var host = await Host.StartAsync();
+
+        var (status, _, body) = await host.GetAsync("?search=il", tenant: Guid.NewGuid());
+
+        Assert.Equal(HttpStatusCode.OK, status);
+        Assert.Empty(Host.People(body));
+    }
+
+    // ATT-FIX1 E3 — during an outage a keystroke does not rebuild the directory and wait on AuthService again.
+    [Fact]
+    public async Task An_outage_is_remembered_briefly_and_not_rebuilt_per_keystroke()
+    {
+        await using var host = await Host.StartAsync();
+        host.NameSource.Unavailable = true;
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, (await host.GetAsync("?search=il")).Status);
+        var builds = host.NameSource.Calls;
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, (await host.GetAsync("?search=ilk")).Status);
+        Assert.Equal(builds, host.NameSource.Calls);
+
+        host.NameSource.Unavailable = false;
+        host.Clock.Advance(DecisionMakerDirectoryCache.UnavailableLifetime);
+        Assert.Equal(HttpStatusCode.OK, (await host.GetAsync("?search=ilk")).Status);
     }
 
     [Fact]
@@ -176,11 +241,11 @@ public sealed class DecisionMakerSearchHttpMongoTests
     }
 
     [Fact]
-    public async Task The_thirty_first_search_in_a_minute_is_429_and_another_user_is_not_affected()
+    public async Task The_sixty_first_search_in_a_minute_is_429_and_another_user_is_not_affected()
     {
         await using var host = await Host.StartAsync();
         var me = Guid.NewGuid();
-        Assert.Equal(30, PeopleSearchRateLimit.PermitsPerMinute); // the prompt's number, pinned: the loop below reads the constant
+        Assert.Equal(60, PeopleSearchRateLimit.PermitsPerMinute); // the prompt's number, pinned: the loop below reads the constant
 
         for (var i = 0; i < PeopleSearchRateLimit.PermitsPerMinute; i++)
         {
@@ -209,6 +274,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
         public static readonly Guid Gokce = Guid.Parse("51251251-0000-4000-8000-00000000c004");
 
         public FixedNames NameSource { get; } = new();
+        public ManualClock Clock { get; } = new();
 
         private readonly DisposableMongoReplicaSet _mongo;
         private readonly TestServer _server;
@@ -262,6 +328,9 @@ public sealed class DecisionMakerSearchHttpMongoTests
                     services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
                     // AuthService is not running here: the names are the test's own.
                     services.AddSingleton<IUserDisplayNameResolver>(NameSource);
+                    services.AddSingleton<IUserDisplayNameChecker>(NameSource);
+                    // The production cache, on a clock the test can move (registered after AddApplication: this one wins).
+                    services.AddSingleton(new DecisionMakerDirectoryCache(Clock));
                     services.AddSingleton<Diten.Platform.Application.Contracts.Audit.IAuditOutboxWriter>(new Diten.Platform.Application.Tests.Audit.InMemoryAuditOutbox());
 
                     services.AddControllers().ConfigureApplicationPartManager(manager =>
@@ -329,10 +398,10 @@ public sealed class DecisionMakerSearchHttpMongoTests
             return new Host(mongo, database);
         }
 
-        public async Task<(HttpStatusCode Status, string? Code, string Body)> GetAsync(string query, Guid? userId = null)
+        public async Task<(HttpStatusCode Status, string? Code, string Body)> GetAsync(string query, Guid? userId = null, Guid? tenant = null)
         {
             var client = _server.CreateClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token(userId ?? Guid.NewGuid()));
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token(userId ?? Guid.NewGuid(), tenant ?? TenantA));
             var response = await client.GetAsync("/api/v1/tasks/lookups/decision-makers" + query);
             var body = await response.Content.ReadAsStringAsync();
             string? code = null;
@@ -355,13 +424,13 @@ public sealed class DecisionMakerSearchHttpMongoTests
         public static IReadOnlyList<JsonElement> People(string body) =>
             JsonDocument.Parse(body).RootElement.GetProperty("data").GetProperty("people").EnumerateArray().Select(p => p.Clone()).ToList();
 
-        private static string Token(Guid userId) =>
+        private static string Token(Guid userId, Guid tenant) =>
             new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
                 Issuer, Audience,
                 [
                     new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
                     new Claim("actor_type", "tenant_user"),
-                    new Claim("tenant_id", TenantA.ToString()),
+                    new Claim("tenant_id", tenant.ToString()),
                     new Claim("permission", TaskPermissions.Create)
                 ],
                 DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow.AddMinutes(30),
@@ -375,22 +444,44 @@ public sealed class DecisionMakerSearchHttpMongoTests
 
         /// <summary>AuthService's names, counted; <see cref="Unavailable"/> answers nothing, as the real client does
         /// when AuthService cannot be reached.</summary>
-        public sealed class FixedNames : IUserDisplayNameResolver
+        public sealed class FixedNames : IUserDisplayNameResolver, IUserDisplayNameChecker
         {
             private int _calls;
+            /// <summary>Directory builds (ResolveAsync); the completeness question is not counted.</summary>
             public int Calls => _calls;
+            /// <summary>AuthService down: nothing is answered.</summary>
             public bool Unavailable { get; set; }
+            /// <summary>Partly down: only these are answered (the rest went unanswered).</summary>
+            public HashSet<Guid>? AnswerOnly { get; set; }
+            /// <summary>Answered, but AuthService has no name for these.</summary>
+            public HashSet<Guid> Absent { get; set; } = [];
 
             public Task<IReadOnlyDictionary<Guid, string>> ResolveAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
             {
                 Interlocked.Increment(ref _calls);
-                if (Unavailable) { return Task.FromResult<IReadOnlyDictionary<Guid, string>>(new Dictionary<Guid, string>()); }
+                return Task.FromResult(Answer(userIds));
+            }
+
+            public Task<DisplayNameResolution> ResolveCheckedAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
+                => Task.FromResult(new DisplayNameResolution(Answer(userIds), Complete: !Unavailable && AnswerOnly is null));
+
+            private IReadOnlyDictionary<Guid, string> Answer(IReadOnlyCollection<Guid> userIds)
+            {
+                if (Unavailable) { return new Dictionary<Guid, string>(); }
                 lock (Names)
                 {
-                    IReadOnlyDictionary<Guid, string> found = userIds.Where(Names.ContainsKey).ToDictionary(id => id, id => Names[id]);
-                    return Task.FromResult(found);
+                    return userIds
+                        .Where(id => Names.ContainsKey(id) && !Absent.Contains(id) && (AnswerOnly is null || AnswerOnly.Contains(id)))
+                        .ToDictionary(id => id, id => Names[id]);
                 }
             }
+        }
+
+        public sealed class ManualClock : TimeProvider
+        {
+            private DateTimeOffset _now = DateTimeOffset.UtcNow;
+            public void Advance(TimeSpan by) => _now += by;
+            public override DateTimeOffset GetUtcNow() => _now;
         }
 
         private sealed class OnlyController(Type controller) : ControllerFeatureProvider

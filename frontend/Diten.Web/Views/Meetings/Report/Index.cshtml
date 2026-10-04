@@ -137,9 +137,8 @@
 
 @section Scripts {
     <script src="~/assets/js/Meetings/Report/index.l10n.js" asp-append-version="true"></script>
-    @* BL-531 — the organizer filter searches through MeetingsApi; this page never loaded it, so its type and organizer
-       lists were silently empty (loadLookups returned early on a missing MeetingsApi). *@
+    @* BL-531 — the type filter reads MeetingsApi; this page never loaded it, so the list was silently empty. ATT-FIX1 —
+       the organizer filter no longer searches people (it is filled from the report's own rows), so no search script. *@
     <script src="~/assets/js/Meetings/api.js" asp-append-version="true"></script>
-    <script src="~/assets/js/shared/diten-people-search.js" asp-append-version="true"></script>
     <script src="~/assets/js/Meetings/Report/index.js" asp-append-version="true"></script>
 }

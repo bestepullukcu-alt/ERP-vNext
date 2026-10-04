@@ -62,6 +62,7 @@ const stubApi = (overrides = {}) => {
     lookupAttendees: async (args) => { calls.push(["lookupAttendees", args]); return { ok: true, status: 200, data: [AYSE] }; },
     lookupTypes: async () => ({ ok: true, data: [] }),
     listQuery: async () => ({ ok: true, data: { items: [] } }),
+    listAll: async () => ({ ok: true, data: [] }),
     linkedTasks: async () => ({ ok: true, data: [] }),
     failureMessage: (res) => (res?.status === 429 ? "errorPeopleSearchRateLimited" : "errorOccurred")
   }, overrides);
@@ -90,8 +91,9 @@ describe("BL-531 — shared/diten-people-search.js", () => {
 
   it("asks at two characters, labels name — position — unit, and drops the excluded ids whatever their case", async () => {
     const settings = global.DitenPeopleSearch.options({
-      search: async () => ({ ok: true, data: [AYSE, { userId: ORGANIZER, displayName: "Org" }] }),
-      text: words, exclude: () => [ORGANIZER.toUpperCase()]
+      // An id WITH letters, stored lower-case, excluded in upper case: the comparison must ignore case.
+      search: async () => ({ ok: true, data: [AYSE, { userId: "abcdef01-aaaa-bbbb-cccc-ddddeeeeffff", displayName: "Org" }] }),
+      text: words, exclude: () => ["ABCDEF01-AAAA-BBBB-CCCC-DDDDEEEEFFFF"]
     });
     expect(settings.minimumInputLength).toBe(2);
     expect(settings.ajax.delay).toBe(300);
@@ -106,6 +108,42 @@ describe("BL-531 — shared/diten-people-search.js", () => {
     expect(settings.language.errorLoading()).toBe("too many");
     expect(settings.language.errorLoading()).not.toBe(settings.language.noResults());
     expect(settings.language.inputTooShort()).toBe("min");
+  });
+
+  // ATT-FIX1 E5 — the stale guard holds on the FAILURE path too: a late error for "Ka" never overwrites "Kal".
+  it("a late failure for an older term changes nothing about the newer answer", async () => {
+    let failOld;
+    const answers = [new Promise((_, reject) => { failOld = reject; }), Promise.resolve({ ok: true, data: [AYSE] })];
+    const settings = global.DitenPeopleSearch.options({ search: () => answers.shift(), text: words });
+    const seen = [];
+    settings.ajax.transport({ data: { term: "Ka" } }, (a) => seen.push(["Ka ok", a]), () => seen.push(["Ka fail"]));
+    settings.ajax.transport({ data: { term: "Kal" } }, (a) => seen.push(["Kal ok", a]), () => seen.push(["Kal fail"]));
+    await flush();
+    failOld(new Error("429"));
+    await flush();
+    expect(seen.map(([which]) => which)).toEqual(["Kal ok"]);
+    expect(settings.language.errorLoading()).toBe("failed");   // no failure was recorded: the default sentence
+  });
+
+  // ATT-FIX1 E5 — the rate-limit CODE alone (whatever the status) is the rate-limit sentence.
+  it("PEOPLE_SEARCH_RATE_LIMITED without a 429 status still reads 'too many searches'", async () => {
+    const settings = global.DitenPeopleSearch.options({
+      search: async () => ({ ok: false, status: 400, reasonCode: "PEOPLE_SEARCH_RATE_LIMITED" }), text: words });
+    await searchWith(settings, "ay");
+    expect(settings.language.errorLoading()).toBe("too many");
+  });
+
+  // ATT-FIX1 — select2 aborts the request in flight when the reader types again; the aborted answer is never shown.
+  it("an aborted request delivers nothing, success or failure", async () => {
+    let release;
+    const settings = global.DitenPeopleSearch.options({ search: () => new Promise((r) => { release = r; }), text: words });
+    const seen = [];
+    const request = settings.ajax.transport({ data: { term: "ay" } }, (a) => seen.push(["ok", a]), (e) => seen.push(["fail", e]));
+    expect(typeof request.abort).toBe("function");
+    request.abort();
+    release({ ok: true, data: [AYSE] });
+    await flush();
+    expect(seen).toEqual([]);
   });
 
   it("an answer that arrives after a newer search is dropped", async () => {
@@ -196,7 +234,6 @@ describe("BL-531 — Meetings/form.js create: the attendee picker searches", () 
     expect(calls, "the people directory was read on open").toEqual([]);
     const settings = select2Settings.fieldAttendeeUserIds;
     expect(settings.minimumInputLength).toBe(2);
-    expect(settings.placeholder).toBe("peopleSearchHint");
     const { results } = await searchWith(settings, "ay");
     expect(calls).toEqual([["lookupAttendees", { search: "ay" }]]);
     expect(results.map((r) => r.id)).toEqual([AYSE.userId]);
@@ -376,7 +413,7 @@ describe("BL-531 — screens that only NAME a meeting's own people never ask the
     expect(index).toMatch(/rows\.forEach\(\(r\) => \{ if \(r\.organizerDisplayName\)/);
   });
 
-  it("report: organizer filter searches; each row shows the organizer's name or 'unknown user', never the id", async () => {
+  it("report: each row shows the organizer's name or 'unknown user', never the id", async () => {
     document.body.innerHTML = `
       <div id="mrTiles"></div><select id="mrMeetingType"></select><select id="mrOrganizer"><option value=""></option></select>
       <input id="mrFrom" /><input id="mrTo" />
@@ -396,13 +433,11 @@ describe("BL-531 — screens that only NAME a meeting's own people never ask the
     expect(body).not.toContain(GONE);
   });
 
-  it("report page loads MeetingsApi and the shared search before its own script", () => {
+  it("report page loads MeetingsApi before its own script (its type filter reads it)", () => {
     const view = read("Views", "Meetings", "Report", "Index.cshtml");
     const at = (needle) => view.indexOf(needle);
     expect(at("Meetings/api.js")).toBeGreaterThan(-1);
-    expect(at("shared/diten-people-search.js")).toBeGreaterThan(-1);
     expect(at("Meetings/api.js")).toBeLessThan(at("Meetings/Report/index.js"));
-    expect(at("shared/diten-people-search.js")).toBeLessThan(at("Meetings/Report/index.js"));
   });
 
   it("every page whose picker searches loads the shared transport before its script", () => {
@@ -441,9 +476,10 @@ describe("BL-531 — the search sentences exist in all seven languages", () => {
   };
   const SETS = [
     ["Meetings/MeetingsIndex", "Views/Meetings/_IndexL10n.cshtml",
-      ["PeopleSearchHint", "PeopleSearchMinimumLength", "PeopleSearchNoResults", "PeopleSearching", "ErrorPeopleSearchRateLimited"]],
-    ["Meetings/Report/MeetingReportIndex", "Views/Meetings/Report/_IndexL10n.cshtml",
-      ["PeopleSearchMinimumLength", "PeopleSearchNoResults", "PeopleSearching", "UnknownUser", "ErrorPeopleSearchRateLimited"]]
+      ["PeopleSearchHint", "PeopleSearchMinimumLength", "PeopleSearchNoResults", "PeopleSearching", "ErrorPeopleSearchRateLimited",
+        "SearchFailed", "NewOrganizerRequired"]],
+    // ATT-FIX1 — the report no longer searches people; it keeps only the "unknown user" word for its rows.
+    ["Meetings/Report/MeetingReportIndex", "Views/Meetings/Report/_IndexL10n.cshtml", ["UnknownUser"]]
   ];
 
   it.each(SETS)("%s: every key in every language, none a copy of the English, all on the bridge", (resx, bridge, keys) => {

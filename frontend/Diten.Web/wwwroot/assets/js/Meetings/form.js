@@ -74,7 +74,8 @@
 
         const [typesResult, listResult] = await Promise.all([
             window.MeetingsApi.lookupTypes(),
-            isEdit ? Promise.resolve({ ok: true, data: { items: [] } }) : window.MeetingsApi.listQuery({ pageSize: 1000 })
+            // ATT-FIX1 — every meeting, paged (≤ 200 a call), titles only: this list names no one.
+            isEdit ? Promise.resolve({ ok: true, data: [] }) : window.MeetingsApi.listAll({ includeNames: false })
         ]);
 
         const types = typesResult.ok ? (typesResult.data || []) : [];
@@ -86,12 +87,11 @@
         } else {
             // BL-531 — the attendees are SEARCHED (≥ 2 characters); no people list is read when the form opens. The
             // create form is the only place attendees are chosen in a batch; editing a meeting never posts them.
-            initSelect2('#fieldAttendeeUserIds', Object.assign({
-                placeholder: t('peopleSearchHint'),
-                closeOnSelect: false
-            }, peopleSearchSettings()));
+            // ATT-FIX1 (5) — the placeholder has ONE source, the markup's data-placeholder (PeopleSearchHint):
+            // select2 4.0.13 lets a data-* attribute win over the same JS option, so a JS one was never seen.
+            initSelect2('#fieldAttendeeUserIds', Object.assign({ closeOnSelect: false }, peopleSearchSettings()));
 
-            const meetings = listResult.ok ? (listResult.data?.items || []) : [];
+            const meetings = listResult.ok ? (listResult.data || []) : [];
             populateOptions('#fieldFollowUpOfMeetingId', meetings, 'id', 'title');
             initSelect2('#fieldFollowUpOfMeetingId', { placeholder: t('showAll'), allowClear: true });
         }
@@ -226,9 +226,8 @@
         document.getElementById('dStartAt').textContent = new Date(meeting.startAt).toLocaleString(window.CurrentLanguage || undefined);
         document.getElementById('dEndAt').textContent = new Date(meeting.endAt).toLocaleString(window.CurrentLanguage || undefined);
         document.getElementById('dLocation').textContent = meeting.location || '-';
-        // BL-390 — an organizer id the eligible-people lookup does not resolve (deleted/test identity) must
-        // never render as the raw GUID on screen.
-        // BL-531 — the name comes with the meeting read itself.
+        // BL-390 / BL-531 — the name comes with the meeting read itself; an organizer it cannot name reads
+        // "unknown user", never the raw GUID.
         document.getElementById('dOrganizer').textContent = meeting.organizerDisplayName || t('unknownUser');
         document.getElementById('dDescription').textContent = meeting.description || '-';
         document.getElementById('dStatus').innerHTML =
@@ -422,7 +421,7 @@
 
         // BL-531 — the names on this page come WITH the meeting (organizerDisplayName, attendees[].displayName); the
         // "add attendee" picker SEARCHES and never offers the organizer or someone already invited.
-        initSelect2('#newAttendeeUserId', Object.assign({ placeholder: t('peopleSearchHint') }, peopleSearchSettings(() => [
+        initSelect2('#newAttendeeUserId', Object.assign({}, peopleSearchSettings(() => [
             currentMeeting?.organizerUserId,
             ...(currentMeeting?.attendees || []).map((a) => a.userId)
         ])));
@@ -513,6 +512,9 @@
                 // BL-531 — no directory behind this select: it SEARCHES once open (the delegate window's pattern), and
                 // the current organizer is never offered as their own replacement.
                 inputOptions: { '': t('peopleSearchHint') },
+                // ATT-FIX1 (6) — confirming with nobody chosen says so (it used to close silently).
+                inputRequired: true,
+                inputValidationMessage: t('newOrganizerRequired'),
                 didOpen: (popup) => {
                     const box = (window.Swal && typeof window.Swal.getInput === 'function' && window.Swal.getInput())
                         || popup.querySelector('.swal2-select');

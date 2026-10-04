@@ -83,8 +83,9 @@
                 failed: st('searchFailed')
             }
         });
-        initSelect2('#fieldOrganizerUserId', Object.assign({ placeholder: st('peopleSearchHint') }, peopleSearchSettings()));
-        initSelect2('#fieldAttendeeUserIds', Object.assign({ placeholder: st('peopleSearchHint'), closeOnSelect: false }, peopleSearchSettings()));
+        // ATT-FIX1 (5) — the placeholder's one source is the markup's data-placeholder (PeopleSearchHint).
+        initSelect2('#fieldOrganizerUserId', peopleSearchSettings());
+        initSelect2('#fieldAttendeeUserIds', Object.assign({ closeOnSelect: false }, peopleSearchSettings()));
 
         if (isEdit && seriesId) {
             const result = await window.MeetingsApi.seriesGet(seriesId);

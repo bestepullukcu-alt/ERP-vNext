@@ -102,10 +102,5 @@
   <data name="ScopeTenant" xml:space="preserve"><value>كل المستأجر</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>اجتماعاتي</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>ليس لديك صلاحية الوصول إلى هذا التقرير.</value></data>
-  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>اكتب حرفين على الأقل للبحث.</value></data>
-  <data name="PeopleSearchNoResults" xml:space="preserve"><value>لم يتم العثور على أحد لهذا البحث.</value></data>
-  <data name="PeopleSearching" xml:space="preserve"><value>جارٍ البحث…</value></data>
   <data name="UnknownUser" xml:space="preserve"><value>مستخدم غير معروف</value></data>
-  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>عمليات بحث كثيرة في وقت قصير. انتظر قليلًا ثم حاول مرة أخرى.</value></data>
-  <data name="SearchFailed" xml:space="preserve"><value>تعذّر إجراء البحث. يُرجى المحاولة مرة أخرى بعد قليل.</value></data>
 </root>

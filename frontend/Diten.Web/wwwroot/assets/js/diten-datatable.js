@@ -254,8 +254,10 @@ window.DitenDataTable = (function () {
         if (!window.DtDefaults) throw new Error('DtDefaults is required before DitenDataTable.createCrudTable.');
 
         var ajax = options.ajax || {};
+        // ATT-FIX1 — a page that pages through its own source hands a FUNCTION (DataTables' own ajax form); it is
+        // passed through as is. Object form: unchanged for every existing caller.
         var config = Object.assign({}, options.config || {}, {
-            ajax: Object.assign({}, ajax, {
+            ajax: typeof ajax === 'function' ? ajax : Object.assign({}, ajax, {
                 dataSrc: ajax.dataSrc || unwrapResponseData,
                 headers: Object.assign({}, getAuthHeaders(), ajax.headers || {})
             })

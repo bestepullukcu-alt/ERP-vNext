@@ -83,13 +83,16 @@ public sealed class GetTaskDecisionMakerLookupHandler : IRequestHandler<GetTaskD
     private readonly IMediator _mediator;
     private readonly DecisionMakerDirectoryCache _directory;
     private readonly Diten.Platform.Common.Tenancy.ITenantContext _tenant;
+    private readonly Diten.Platform.Application.Contracts.IUserDisplayNameChecker _names;
 
     public GetTaskDecisionMakerLookupHandler(
-        IMediator mediator, DecisionMakerDirectoryCache directory, Diten.Platform.Common.Tenancy.ITenantContext tenant)
+        IMediator mediator, DecisionMakerDirectoryCache directory, Diten.Platform.Common.Tenancy.ITenantContext tenant,
+        Diten.Platform.Application.Contracts.IUserDisplayNameChecker names)
     {
         _mediator = mediator;
         _directory = directory;
         _tenant = tenant;
+        _names = names;
     }
 
     public async Task<Response<DecisionMakerLookupDto>> Handle(GetTaskDecisionMakerLookupQuery request, CancellationToken ct)
@@ -133,6 +136,12 @@ public sealed class GetTaskDecisionMakerLookupHandler : IRequestHandler<GetTaskD
         // The eligibility rule itself is the existing one (tenant, live position, company-scope exempt) — one source —
         // and its answer is kept per tenant for a minute (DecisionMakerDirectoryCache), not rebuilt on every pause.
         var tenantId = _tenant.IsResolved && !_tenant.IsPlatformContext ? _tenant.TenantId : Guid.Empty;
+        // ATT-FIX1 E3 — an outage seen moments ago is answered at once, not rebuilt and re-awaited per keystroke.
+        if (_directory.IsUnavailable(tenantId))
+        {
+            return Unavailable(request);
+        }
+
         if (!_directory.TryGet(tenantId, out var directory))
         {
             var all = await _mediator.Send(new GetTaskAssignmentPersonLookupQuery(request.CorrelationId, TaskPersonLookupPurpose.Decision), ct);
@@ -142,20 +151,27 @@ public sealed class GetTaskDecisionMakerLookupHandler : IRequestHandler<GetTaskD
             }
 
             /*
-             * The names come from AuthService through a best-effort resolver that answers NOTHING when AuthService
-             * cannot be reached. A directory of live people none of whom has a name is that case — not a tenant of
-             * nameless people — and searching it would match positions only and list everyone as "person not found".
-             * So it is a 503 the screen can say, and it is not kept.
+             * The names come from AuthService through a best-effort resolver: a missing name is EITHER "this person
+             * has no name there" OR "AuthService did not answer" (down, a chunk failed, a few names left in its own
+             * cache). Which one is asked explicitly (ATT-FIX1 E1), for the nameless rows only:
+             *  - every nameless row is answered (they truly have no name) → the directory is complete and kept;
+             *  - some went unanswered → the directory is served but NOT kept, so the next search after AuthService
+             *    comes back is whole again (never a minute of "person not found" rows);
+             *  - unanswered and NOBODY has a name → 503 the screen can say, remembered briefly (E3).
              */
-            if (all.Data.People.Count > 0 && all.Data.People.All(p => string.IsNullOrWhiteSpace(p.DisplayName)))
+            var nameless = all.Data.People.Where(p => string.IsNullOrWhiteSpace(p.DisplayName)).Select(p => p.UserId).ToList();
+            var complete = nameless.Count == 0 || (await _names.ResolveCheckedAsync(nameless, ct)).Complete;
+            if (!complete && nameless.Count == all.Data.People.Count)
             {
-                return Response<DecisionMakerLookupDto>.Fail(
-                    "The people directory cannot be read right now.", 503,
-                    DecisionMakerLookup.ReasonCodes.DirectoryUnavailable, request.CorrelationId);
+                _directory.MarkUnavailable(tenantId);
+                return Unavailable(request);
             }
 
             directory = all.Data.People;
-            _directory.Set(tenantId, directory);
+            if (complete)
+            {
+                _directory.Set(tenantId, directory);
+            }
         }
 
         IEnumerable<AssignablePersonDto> rows = directory;
@@ -177,6 +193,11 @@ public sealed class GetTaskDecisionMakerLookupHandler : IRequestHandler<GetTaskD
             .ToList();
         return Response<DecisionMakerLookupDto>.Success(new DecisionMakerLookupDto(people), correlationId: request.CorrelationId);
     }
+
+    private static Response<DecisionMakerLookupDto> Unavailable(GetTaskDecisionMakerLookupQuery request) =>
+        Response<DecisionMakerLookupDto>.Fail(
+            "The people directory cannot be read right now.", 503,
+            DecisionMakerLookup.ReasonCodes.DirectoryUnavailable, request.CorrelationId);
 
     private static Response<DecisionMakerLookupDto> Fail(string error, string reasonCode, GetTaskDecisionMakerLookupQuery request) =>
         Response<DecisionMakerLookupDto>.Fail(error, 400, reasonCode, request.CorrelationId);
