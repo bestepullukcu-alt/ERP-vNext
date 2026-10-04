@@ -399,7 +399,7 @@ public sealed partial class WorkflowCandidateDecisionMongoTests
             ? await new TaskApprovalService(mediator, _store.Templates, _store.Instances, _store.Tasks, _store.TenantContext,
                     new CurrentUser(Outsider), Options.Create(new TaskApprovalOptions()), NullLogger<TaskApprovalService>.Instance)
                 .CancelApprovalAsync(TaskFor(seeded.Instance.Id), default)
-            : await new TaskReviewService(mediator, _store.Templates, _store.Tasks, _store.TenantContext,
+            : await new TaskReviewService(mediator, _store.Templates, _store.Instances, _store.Tasks, _store.TenantContext,
                     new CurrentUser(Outsider), Options.Create(new TaskReviewOptions()), NullLogger<TaskReviewService>.Instance)
                 .CancelReviewAsync(ReviewTaskFor(seeded.Instance.Id), default);
 
@@ -534,6 +534,7 @@ public sealed partial class WorkflowCandidateDecisionMongoTests
                     new PlatformTransactionExecutor(Context), new MongoIntentWriter(Context), Templates),
                 beforeCancel),
             Templates,
+            Instances,
             Tasks,
             TenantContext,
             new CurrentUser(Outsider),

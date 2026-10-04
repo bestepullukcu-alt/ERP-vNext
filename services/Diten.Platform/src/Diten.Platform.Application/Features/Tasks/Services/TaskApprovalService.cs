@@ -35,6 +35,8 @@ public interface ITaskApprovalService
     /// Cancel a task's approval — used when the requirement is switched back off. True when nothing is left open
     /// (cancelled now, or nothing was open); false when an open approval task could NOT be cancelled — the caller then
     /// keeps the instance link, or the approval would stay decidable with nothing reading it (D2-FIX1 A1).
+    /// D2-FIX3 item 8 — a task with NO link is looked up by its object reference (a start whose link write fell over);
+    /// an instance found that way is set as the task's link before it is withdrawn.
     /// </summary>
     Task<bool> CancelApprovalAsync(TaskItem task, CancellationToken ct);
 
@@ -67,10 +69,21 @@ public static class TaskApprovalView
         ArgumentNullException.ThrowIfNull(task);
         ArgumentNullException.ThrowIfNull(states);
 
-        // No approval asked for, or the task is already closed: nobody is owed anything.
-        if (!task.ApprovalRequired || task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
+        // No approval asked for and no link held, or the task is already closed: nobody is owed anything.
+        // D2-FIX3 item 3 — "asked for" is the gate's own rule (TaskWorkflowLinkGate): the requirement OR a held link. Read
+        // on the flag alone, a task whose withdraw failed showed `start` enabled and the server refused it as pending.
+        if (!TaskWorkflowLinkGate.AsksApproval(task) || task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
         {
             return (false, false);
+        }
+
+        if (!task.ApprovalRequired)
+        {
+            // The requirement is withdrawn but the link is held: the instance holds the task until MOD-0023 reports it
+            // closed — exactly when the transition gate stops holding it. A refusal no longer kills work nobody requires
+            // approval for, so it is never read as Rejected here.
+            states.TryGetValue(task.WorkflowInstanceId!.Value, out var held);
+            return (Outstanding: TaskWorkflowLinkGate.Holds(held, required: false), Rejected: false);
         }
 
         if (task.WorkflowInstanceId is not { } instanceId || !states.TryGetValue(instanceId, out var state))
@@ -85,8 +98,11 @@ public static class TaskApprovalView
 /// <summary>
 /// The approval outcome as MOD-0024 needs to read it. Deliberately NOT stored on the task — it is a view of
 /// MOD-0023's state at read time.
+/// <para><paramref name="IsCancelled"/> — D2-FIX3: MOD-0023 reports the instance CANCELLED (withdrawn). Closed like a
+/// refusal for a task whose requirement is withdrawn (<see cref="TaskWorkflowLinkGate.Holds(TaskApprovalState?, bool)"/>);
+/// for a review it means nobody is reviewing the work any more (<see cref="TaskReviewView"/>).</para>
 /// </summary>
-public sealed record TaskApprovalState(bool IsPending, bool IsApproved, bool IsRejected);
+public sealed record TaskApprovalState(bool IsPending, bool IsApproved, bool IsRejected, bool IsCancelled = false);
 
 /// <summary>Operator-overridable settings for the approval handoff.</summary>
 public sealed class TaskApprovalOptions
@@ -193,21 +209,38 @@ public sealed class TaskApprovalService : ITaskApprovalService
     public async Task<bool> CancelApprovalAsync(TaskItem task, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(task);
-        if (task.WorkflowInstanceId is null)
-        {
-            return true;
-        }
 
         try
         {
+            /*
+             * D2-FIX3 item 8 — NO LINK IS NOT "NOTHING RUNNING". A start whose link write fell over (UpdateTaskItemHandler
+             * logs it and moves on) leaves a live instance the task does not point at; asked with no link, this used to
+             * answer "nothing open" and the approver kept a decision nobody reads. The instance is found the way the gate
+             * finds it — the LATEST one under the task's own object reference.
+             */
+            var instanceId = task.WorkflowInstanceId
+                ?? (await _instances.GetLatestByObjectRefAsync(
+                    BuildObjectRef(task.Id), ApprovalObjectType, task.Id.ToString(), ct))?.Id;
+            if (instanceId is null)
+            {
+                return true;
+            }
+
             // Cancel through MOD-0023's OWN command so its audit trail and state machine stay authoritative;
             // MOD-0024 never edits workflow state directly.
             // D2-FIX1 A1 — every task still waiting on somebody, ESCALATED included: an escalated approval is just as
             // open as a waiting one (the timesheet withdraw's rule, F8).
-            var pending = (await _approvalTasks.ListByInstanceIdAsync(task.WorkflowInstanceId.Value, ct))
+            var pending = (await _approvalTasks.ListByInstanceIdAsync(instanceId.Value, ct))
                 .Where(t => t.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence
                     or ApprovalTaskStatus.Escalated)
                 .ToList();
+
+            // One found that way and still OPEN is ADOPTED as the task's link: a withdraw that fails leaves a link a retry
+            // can follow (the caller decides whether to store it). One already closed is not — nothing needs withdrawing.
+            if (task.WorkflowInstanceId is null && pending.Count > 0)
+            {
+                task.WorkflowInstanceId = instanceId;
+            }
 
             foreach (var approvalTask in pending)
             {
@@ -275,7 +308,8 @@ public sealed class TaskApprovalService : ITaskApprovalService
                         or WorkflowInstanceStatus.TimedOut,
                     // B1 — MOD-0023 closes an approved instance as Completed; Approved alone missed every real one.
                     IsApproved: WorkflowInstanceOutcome.IsApproved(instance.Status),
-                    IsRejected: WorkflowInstanceOutcome.IsRejected(instance.Status)));
+                    IsRejected: WorkflowInstanceOutcome.IsRejected(instance.Status),
+                    IsCancelled: instance.Status == WorkflowInstanceStatus.Cancelled));
     }
 
     /// <summary>MOD-0024's object reference in the workflow engine's vocabulary.</summary>

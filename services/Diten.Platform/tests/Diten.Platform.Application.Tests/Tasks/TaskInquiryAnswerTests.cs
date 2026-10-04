@@ -354,6 +354,26 @@ public sealed class TaskInquiryAnswerTests
         Assert.Contains(f.Gate.Calls, call => call.RequestedTransition == "start");
     }
 
+    [Theory]
+    [InlineData(false, TaskLifecycle.InProgress)]
+    [InlineData(true, TaskLifecycle.Open)]
+    public async Task An_answer_into_running_work_whose_held_approval_the_engine_refused_follows_the_requirement(
+        bool approvalRequired, TaskLifecycle expected)
+    {
+        // D2-FIX3 item 8 — TransH:1704's Holds(gate, ApprovalRequired) had no test of its own. A held link to an instance
+        // MOD-0023 reports CLOSED holds nothing once the requirement is withdrawn; with it on, the same answer holds.
+        var f = new Fixture(TaskLifecycle.InProgress);
+        await f.InquireAsync(Question, Asked);
+        f.Task.ApprovalRequired = approvalRequired;
+        f.Task.WorkflowInstanceId = Guid.NewGuid();
+        f.Gate.RejectedObjectTypes.Add(TaskApprovalService.ApprovalObjectType);
+
+        await f.AnswerAsync(Asked, Answer);
+
+        Assert.Equal(expected, f.Task.Lifecycle);
+        Assert.Contains(f.Gate.Calls, call => call.RequestedTransition == "start"); // non-vacuity: the gate was asked
+    }
+
     [Fact]
     public async Task An_answer_into_running_work_with_an_open_predecessor_lands_in_Open()
     {

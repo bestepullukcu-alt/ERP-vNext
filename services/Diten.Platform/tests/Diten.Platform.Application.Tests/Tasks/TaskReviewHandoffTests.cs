@@ -181,6 +181,7 @@ public sealed class TaskReviewHandoffTests
             Service = new TaskReviewService(
                 Mediator,
                 Templates,
+                new UnreadWorkflowInstanceRepository(),
                 new UnreadApprovalTaskRepository(),
                 Tenant,
                 new FakeCurrentUserContext(TaskTestData.Me),

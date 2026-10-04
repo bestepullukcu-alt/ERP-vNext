@@ -17,6 +17,10 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
     /// <summary>D2-FIX2 item 6(b) — who withdrew a start task left waiting under a closed reservation.</summary>
     internal const string StartRecoveryActor = "system:workflow-start-recovery";
 
+    /// <summary>D2-FIX2 item 3 / D2-FIX3 item 7 — the one answer to an empty approving seat, first call and replay alike.</summary>
+    private const string EmptySeatMessage =
+        "Nobody holds the approving seat right now; the start is kept and a retry with the same idempotency key completes it once someone does.";
+
     private readonly IWorkflowTemplateRepository _templates;
     private readonly IWorkflowTemplateVersionRepository _versions;
     private readonly IWorkflowInstanceRepository _instances;
@@ -148,7 +152,17 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
                 : candidates.Count == 0 ? WorkflowReasonCodes.WorkflowNoEligibleApprover : null;
             if (noCandidateReason is not null && existing is null)
             {
-                return NoCandidate(noCandidateReason, correlationId);
+                /*
+                 * D2-FIX3 item 7 — AN EMPTY SEAT IS TRANSIENT ON THE FIRST CALL TOO. The replay of a reserved key answers
+                 * it 503 (below, D2-FIX2 item 3); the first call answered the same condition 400 — and MDM files a 400 as
+                 * Invalid and QUARANTINES the operation, while a 503 is Retryable (its start-result lookup then finds no
+                 * reservation and waits for the maker's replay). Same condition, same answer: 503 with the same contract
+                 * code and the same sentence the replay gives. Nothing is reserved, so the retry is a fresh first call.
+                 * Only "nobody but the starter" stays a 400: that one is a verdict, not a wait.
+                 */
+                return noCandidateReason == WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired
+                    ? Unavailable(EmptySeatMessage, noCandidateReason, correlationId)
+                    : NoCandidate(noCandidateReason, correlationId);
             }
         }
 
@@ -253,7 +267,7 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             // the same answer, and it is never brought back to life by a later checkpoint.
             // D2-FIX2 item 3 — the answer is the reason the reservation was closed WITH, stored on it.
             // D2-FIX2 item 6(b) — and a task a racing first call wrote under it is withdrawn, never left waiting.
-            await WithdrawStrayStartTaskAsync(instance, ct);
+            await WithdrawStrayStartTaskAsync(instance, correlationId, ct);
             return NoCandidate(ClosedReason(instance), correlationId);
         }
 
@@ -292,9 +306,7 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
                  * reservation stays open and the answer is transient (503); the replay after someone takes the seat
                  * completes the start. Only "nobody but the starter" (below) closes it.
                  */
-                return Unavailable(
-                    "Nobody holds the approving seat right now; the start is kept and a retry with the same idempotency key completes it once someone does.",
-                    noCandidateReason, correlationId);
+                return Unavailable(EmptySeatMessage, noCandidateReason, correlationId);
             }
             else if (noCandidateReason is not null)
             {
@@ -354,7 +366,7 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
                 if (advanced.Instance is { Status: WorkflowInstanceStatus.Cancelled } closedMeanwhile
                     && closedMeanwhile.StartCheckpoint < WorkflowStartCheckpoint.TaskPersisted)
                 {
-                    await WithdrawStrayStartTaskAsync(closedMeanwhile, ct);
+                    await WithdrawStrayStartTaskAsync(closedMeanwhile, correlationId, ct);
                     return NoCandidate(ClosedReason(closedMeanwhile), correlationId);
                 }
 
@@ -793,8 +805,13 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
     /// D2-FIX2 item 6(b) — the start task of a CLOSED reservation, if one was written and is still waiting, is withdrawn
     /// (Cancelled, actioned by the start recovery, with the close's reason). Best effort: a task anything else has moved
     /// meanwhile is no longer waiting on this reservation's word, so a lost version check is left as it is.
+    ///
+    /// <para>D2-FIX3 item 8 — the write's RESULT is read, and only the write that landed records the act: a Cancel line in
+    /// the instance's transition log (who: the start recovery; why: the close's reason; keyed per task, so a twin replay
+    /// that also got here writes it once). Before, the result was dropped and the withdraw left no trace in the log every
+    /// other MOD-0023 transition writes to. A write that lost its race writes nothing — whoever moved the task did.</para>
     /// </summary>
-    private async Task WithdrawStrayStartTaskAsync(WorkflowInstance closed, CancellationToken ct)
+    private async Task WithdrawStrayStartTaskAsync(WorkflowInstance closed, string correlationId, CancellationToken ct)
     {
         if (closed.InitialApprovalTaskId is not { } taskId
             || await _tasks.GetByIdAsync(taskId, ct) is not { } stray
@@ -804,11 +821,52 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         }
 
         var now = DateTimeOffset.UtcNow;
+        var waitingAs = stray.Status;
+        var reason = ClosedReason(closed);
         stray.Status = ApprovalTaskStatus.Cancelled;
         stray.CompletedAt = now;
         stray.ActionedBy = StartRecoveryActor;
-        stray.ActionReasonCode = ClosedReason(closed);
-        await _tasks.UpdateAsync(stray, stray.Version, ct);
+        stray.ActionReasonCode = reason;
+        if (!await _tasks.UpdateAsync(stray, stray.Version, ct))
+        {
+            return;
+        }
+
+        var idempotencyKey = $"workflow-start-recovery-withdraw:{stray.Id:N}";
+        if (await _logs.FindByIdempotencyAsync(stray.Id, WorkflowTransitionAction.Cancel, idempotencyKey, ct) is not null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _logs.AppendAsync(new WorkflowTransitionLog
+            {
+                TenantId = closed.TenantId,
+                WorkflowInstanceId = closed.Id,
+                ApprovalTaskId = stray.Id,
+                Action = WorkflowTransitionAction.Cancel,
+                FromState = waitingAs.ToString(),
+                ToState = ApprovalTaskStatus.Cancelled.ToString(),
+                FromStatus = closed.Status.ToString(),
+                ToStatus = closed.Status.ToString(),
+                ActorId = StartRecoveryActor,
+                ActorRef = StartRecoveryActor,
+                ReasonCode = reason,
+                IdempotencyKey = idempotencyKey,
+                CorrelationId = correlationId,
+                SequenceNo = await _logs.GetLatestSequenceNoAsync(closed.Id, ct) + 1
+            }, ct);
+        }
+        catch (Exception failure) when (failure is not OperationCanceledException)
+        {
+            // A twin replay wrote the same line first (the key is unique per task): it is recorded once, which is the
+            // point. Anything else is a store failure and is not hidden.
+            if (await _logs.FindByIdempotencyAsync(stray.Id, WorkflowTransitionAction.Cancel, idempotencyKey, ct) is null)
+            {
+                throw;
+            }
+        }
     }
 
     private static Response<TrustedWorkflowStartResult> NoCandidate(string reason, string correlationId) =>

@@ -129,7 +129,10 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
 
         // D2-FIX1 A1 — a link still held while the requirement is already off is a cancel that failed before: an edit
         // that keeps the requirement off retries it.
-        var cancelReview = !request.ReviewRequired && task.ReviewWorkflowInstanceId is not null;
+        // D2-FIX3 item 8 — switching the requirement OFF withdraws even with no link: a submission whose link write lost
+        // its race left a live review the task does not point at (the service finds it by its object reference).
+        var cancelReview = !request.ReviewRequired && (task.ReviewWorkflowInstanceId is not null || task.ReviewRequired);
+        var heldReviewLink = task.ReviewWorkflowInstanceId is not null;
         task.ReviewRequired = request.ReviewRequired;
         task.ReviewerCandidateUserId = request.ReviewerCandidateUserId;
         task.EmailNotificationsEnabled = request.EmailNotificationsEnabled;
@@ -201,8 +204,10 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             else
             {
                 // ApprovalRequired goes false now; WorkflowInstanceId is kept until the cancel below has used it.
+                // D2-FIX3 item 8 — withdrawn with NO link too: a start whose link write fell over (below) left a live
+                // instance the task does not point at; the service finds it by the task's object reference.
                 task.ApprovalRequired = false;
-                cancelApproval = task.WorkflowInstanceId is not null;
+                cancelApproval = true;
             }
         }
         else if (request.ApprovalManagerUserId is { } reassigned
@@ -322,6 +327,13 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 // D2-FIX1 A1 — the review is still open: the link stays, or the reviewer could decide a review that
                 // nothing reads any more. The requirement change is saved; the next edit retries the cancel.
                 // D2-FIX2 item 2 — and the refusal says at which version the edit landed (see landedVersion).
+                // D2-FIX3 item 8 — a review the task did not point at (found by its object reference) was adopted as
+                // the link: it is STORED here, or the retry this refusal asks for would have no link to follow.
+                if (!heldReviewLink && task.ReviewWorkflowInstanceId is not null && await _tasks.UpdateAsync(task, task.Version, ct))
+                {
+                    landedVersion = task.Version;
+                }
+
                 return Response<TaskItemEditResultDto>.FailWithData(
                     "The edit is saved, but the running review could not be withdrawn; try again.",
                     409, TaskReasonCodes.ReviewCancelFailed, new TaskItemEditResultDto(landedVersion),
@@ -330,32 +342,47 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
 
             task.ReviewWorkflowInstanceId = null;
             // A task left in PendingReview with no review would be waiting on nobody, with no action to clear it.
+            var rewound = false;
             if (task.Lifecycle == TaskLifecycle.PendingReview)
             {
                 task.Lifecycle = TaskLifecycle.InProgress;
                 // WC-1. Its own kind rather than Resumed: the holder did not pick this back up, the requirement
                 // was withdrawn from under them, and reading "resumed" would name the wrong person's decision.
                 task.Declare(TaskTransitionKind.ReviewCancelled, _currentUser.UserId);
+                rewound = true;
             }
 
-            if (await _tasks.UpdateAsync(task, task.Version, ct))
+            // Written only when something stored changes: a review found by its object reference and withdrawn was never
+            // the stored link, so clearing it changes nothing on disk.
+            if (heldReviewLink || rewound)
             {
-                landedVersion = task.Version;
-            }
-            else
-            {
-                _logger.LogWarning(
-                    "Review was switched off for task {TaskId} and cancelled, but clearing the instance link failed.",
-                    task.Id);
+                if (await _tasks.UpdateAsync(task, task.Version, ct))
+                {
+                    landedVersion = task.Version;
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "Review was switched off for task {TaskId} and cancelled, but clearing the instance link failed.",
+                        task.Id);
+                }
             }
         }
 
         if (cancelApproval)
         {
+            var heldApprovalLink = task.WorkflowInstanceId is not null;
             if (!await _approvals.CancelApprovalAsync(task, ct))
             {
                 // D2-FIX1 A1 — the approval is still open: the link stays (see the review's cancel above).
                 // D2-FIX2 item 2 — the version the edit landed at travels with the refusal.
+                // D2-FIX3 item 8 — an approval found by its object reference was adopted as the link: stored, so the
+                // retry follows it (the requirement is already off, so only a held link makes the next edit retry).
+                if (!heldApprovalLink && task.WorkflowInstanceId is not null && await _tasks.UpdateAsync(task, task.Version, ct))
+                {
+                    landedVersion = task.Version;
+                }
+
                 return Response<TaskItemEditResultDto>.FailWithData(
                     "The edit is saved, but the running approval could not be withdrawn; try again.",
                     409, TaskReasonCodes.ApprovalCancelFailed, new TaskItemEditResultDto(landedVersion),
@@ -363,7 +390,8 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             }
 
             task.WorkflowInstanceId = null;
-            if (!await _tasks.UpdateAsync(task, task.Version, ct))
+            // A link found by the object reference and withdrawn was never stored: nothing on disk to clear.
+            if (heldApprovalLink && !await _tasks.UpdateAsync(task, task.Version, ct))
             {
                 _logger.LogWarning(
                     "Approval was switched off for task {TaskId} and cancelled, but clearing the instance link failed.",
@@ -375,13 +403,33 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
     }
 }
 
+/// <summary>
+/// Soft-delete one task.
+///
+/// <para><b>D2-FIX3 item 1 — a deleted task takes what it started in MOD-0023 with it.</b> Deleting used to leave the
+/// approval or review running: the approver kept a decision that escalated, timed out and was read by nobody. Now the
+/// delete withdraws them first, exactly as a cancel does (<see cref="TaskWorkflowLinkGate.WithdrawAsync"/>), and a withdraw
+/// that does not happen REFUSES the delete — 409 with the existing withdraw code — so nothing is deleted around a
+/// decision that is still open.</para>
+///
+/// <para>The withdraw services are OPTIONAL for the reason they are on <see cref="TransitionTaskItemHandler"/>: tests that
+/// predate this construct the handler directly; production wires both. Without them a task holding a link is NOT deleted
+/// (fail-closed); a task holding none never asks.</para>
+/// </summary>
 public sealed class DeleteTaskItemHandler : IRequestHandler<DeleteTaskItemCommand, Response<NoContent>>
 {
     private readonly ITaskItemRepository _tasks;
+    private readonly ITaskApprovalService? _approvals;
+    private readonly ITaskReviewService? _reviews;
 
-    public DeleteTaskItemHandler(ITaskItemRepository tasks)
+    public DeleteTaskItemHandler(
+        ITaskItemRepository tasks,
+        ITaskApprovalService? approvals = null,
+        ITaskReviewService? reviews = null)
     {
         _tasks = tasks;
+        _approvals = approvals;
+        _reviews = reviews;
     }
 
     public async Task<Response<NoContent>> Handle(DeleteTaskItemCommand command, CancellationToken ct)
@@ -392,19 +440,43 @@ public sealed class DeleteTaskItemHandler : IRequestHandler<DeleteTaskItemComman
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
         }
 
+        if (await TaskWorkflowLinkGate.WithdrawAsync(task, _approvals, _reviews, ct) is { } refusedCode)
+        {
+            return Response<NoContent>.Fail(
+                refusedCode == TaskReasonCodes.ReviewCancelFailed
+                    ? "The task was not deleted: its running review could not be withdrawn; try again."
+                    : "The task was not deleted: its running approval could not be withdrawn; try again.",
+                409, refusedCode, command.CorrelationId);
+        }
+
         // Soft delete (repository base sets IsDeleted); no hard delete anywhere.
         await _tasks.DeleteAsync(command.Id, ct);
         return Response<NoContent>.Success(204, command.CorrelationId);
     }
 }
 
+/// <summary>
+/// Soft-delete several tasks. D2-FIX3 item 1 — each one withdraws what it started first, like the single delete; a task
+/// whose withdraw does not happen is SKIPPED (left as it is), and the answer is the same 204 either way, exactly as for an
+/// id of another tenant: the response says nothing about which ids were deleted, so it leaks nothing about which exist.
+/// </summary>
 public sealed class BulkDeleteTaskItemHandler : IRequestHandler<BulkDeleteTaskItemCommand, Response<NoContent>>
 {
     private readonly ITaskItemRepository _tasks;
+    private readonly ITaskApprovalService? _approvals;
+    private readonly ITaskReviewService? _reviews;
+    private readonly ILogger<BulkDeleteTaskItemHandler>? _logger;
 
-    public BulkDeleteTaskItemHandler(ITaskItemRepository tasks)
+    public BulkDeleteTaskItemHandler(
+        ITaskItemRepository tasks,
+        ITaskApprovalService? approvals = null,
+        ITaskReviewService? reviews = null,
+        ILogger<BulkDeleteTaskItemHandler>? logger = null)
     {
         _tasks = tasks;
+        _approvals = approvals;
+        _reviews = reviews;
+        _logger = logger;
     }
 
     public async Task<Response<NoContent>> Handle(BulkDeleteTaskItemCommand command, CancellationToken ct)
@@ -413,10 +485,20 @@ public sealed class BulkDeleteTaskItemHandler : IRequestHandler<BulkDeleteTaskIt
         {
             // Each delete re-reads through the tenant filter, so an id from another tenant is simply skipped.
             var task = await _tasks.GetByIdAsync(id, ct);
-            if (task is not null)
+            if (task is null)
             {
-                await _tasks.DeleteAsync(id, ct);
+                continue;
             }
+
+            if (await TaskWorkflowLinkGate.WithdrawAsync(task, _approvals, _reviews, ct) is { } refusedCode)
+            {
+                _logger?.LogWarning(
+                    "Task {TaskId} was left out of a bulk delete: its running approval or review could not be withdrawn ({ReasonCode}).",
+                    task.Id, refusedCode);
+                continue;
+            }
+
+            await _tasks.DeleteAsync(id, ct);
         }
 
         return Response<NoContent>.Success(204, command.CorrelationId);

@@ -32,7 +32,7 @@ namespace Diten.Platform.Application.Tests.Tasks;
 /// over in-memory MOD-0023 stores. Only MOD-0023's own cancel command is answered here — "unavailable" (503) or done —
 /// because what is under test is what Tasks does with that answer.</para>
 /// </summary>
-public sealed class TaskWorkflowLinkGateTests
+public sealed partial class TaskWorkflowLinkGateTests
 {
     private static readonly Guid Unit = Guid.Parse("0f0f0f0f-0f0f-0f0f-0f0f-0f0f0f0f0f0f");
 
@@ -219,7 +219,7 @@ public sealed class TaskWorkflowLinkGateTests
 
     // ── fixture ───────────────────────────────────────────────────────────────────────────────────────────────
 
-    private sealed class Fixture
+    private sealed partial class Fixture
     {
         private readonly FakeTaskItemRepository _tasks;
         private readonly UpdateTaskItemHandler _edit;
@@ -235,9 +235,12 @@ public sealed class TaskWorkflowLinkGateTests
             WorkflowInstanceStatus? approval = null,
             WorkflowInstanceStatus? review = null,
             bool? approvalRequired = null,
-            bool withWithdrawServices = true)
+            bool withWithdrawServices = true,
+            bool? reviewRequired = null,
+            Guid? createdBy = null)
         {
             var tenant = new FakeTenantContext(TaskTestData.Tenant);
+            Tenant = tenant;
             Engine = new Engine(tenant);
             Task = new TaskItem
             {
@@ -246,7 +249,7 @@ public sealed class TaskWorkflowLinkGateTests
                 Lifecycle = lifecycle,
                 AssignmentTarget = TaskAssignmentTarget.SelfAssigned,
                 AssigneeUserId = TaskTestData.Me,
-                CreatedByUserId = TaskTestData.Me,
+                CreatedByUserId = createdBy ?? TaskTestData.Me,
                 OrganizationUnitId = Unit,
                 Version = 3
             };
@@ -264,19 +267,24 @@ public sealed class TaskWorkflowLinkGateTests
             {
                 ReviewInstance = Engine.Seed(TaskReviewService.ReviewObjectType,
                     TaskReviewService.BuildObjectRef(Task.Id), Task.Id, reviewStatus);
-                Task.ReviewRequired = true;
+                Task.ReviewRequired = reviewRequired ?? true;
                 Task.ReviewerCandidateUserId = TaskTestData.Rival;
                 Task.ReviewWorkflowInstanceId = ReviewInstance.Id;
             }
 
             _tasks = new FakeTaskItemRepository(Task);
             var currentUser = new FakeCurrentUserContext(TaskTestData.Me);
+            CurrentUser = currentUser;
+            WithdrawServices = withWithdrawServices;
             var approvals = new TaskApprovalService(Engine, new NoTemplates(), Engine.Instances, Engine.Tasks, tenant,
                 currentUser, Options.Create(new TaskApprovalOptions()), NullLogger<TaskApprovalService>.Instance);
-            var reviews = new TaskReviewService(Engine, new NoTemplates(), Engine.Tasks, tenant, currentUser,
+            var reviews = new TaskReviewService(Engine, new NoTemplates(), Engine.Instances, Engine.Tasks, tenant, currentUser,
                 Options.Create(new TaskReviewOptions()), NullLogger<TaskReviewService>.Instance);
             var fields = new TaskFieldDefinitionService(
                 new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll());
+            Approvals = approvals;
+            Reviews = reviews;
+            Fields = fields;
 
             _edit = new UpdateTaskItemHandler(
                 _tasks,
@@ -366,6 +374,9 @@ public sealed class TaskWorkflowLinkGateTests
         public InstanceStore Instances { get; }
         public ApprovalTaskStore Tasks { get; }
         public bool Down { get; set; }
+
+        /// <summary>D2-FIX3 — instances whose withdraw answers "unavailable" while the others go through.</summary>
+        public HashSet<Guid> FailFor { get; } = [];
         public List<CancelWorkflowTaskCommand> CancelCalls { get; } = [];
 
         public WorkflowInstance Seed(string objectType, string objectRef, Guid taskId, WorkflowInstanceStatus status)
@@ -408,14 +419,14 @@ public sealed class TaskWorkflowLinkGateTests
                     return (TResponse)(object)await _evaluate.Handle(query, ct);
                 case CancelWorkflowTaskCommand cancel:
                     CancelCalls.Add(cancel);
-                    if (Down)
+                    var task = Tasks.Items.Single(t => t.Id == cancel.TaskId);
+                    if (Down || FailFor.Contains(task.WorkflowInstanceId))
                     {
                         return (TResponse)(object)Response<WorkflowTaskTransitionResponse>.Fail(
                             "The workflow transaction is unavailable.", 503,
                             WorkflowReasonCodes.WorkflowTransactionUnavailable, cancel.CorrelationId);
                     }
 
-                    var task = Tasks.Items.Single(t => t.Id == cancel.TaskId);
                     var instance = Instances.Items.Single(i => i.Id == task.WorkflowInstanceId);
                     task.Status = ApprovalTaskStatus.Cancelled;
                     instance.Status = WorkflowInstanceStatus.Cancelled;

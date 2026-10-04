@@ -148,6 +148,9 @@ public static class DependencyInjection
         // own section so a tenant can point review and approval at different flows.
         services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions.SectionName));
+        // WP-WF-ENGINE-CANDIDATES-01 D2-FIX3 item 4 — how long the SLA sweep rests a task nothing will change (Workflow:Escalation).
+        services.Configure<Diten.Platform.Application.Features.Workflow.WorkflowEscalationOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.Workflow.WorkflowEscalationOptions.SectionName));
         // BL-023 Part B — the upward work-request template code, on the same terms as the two above.
         services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskUpwardRequestOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskUpwardRequestOptions.SectionName));

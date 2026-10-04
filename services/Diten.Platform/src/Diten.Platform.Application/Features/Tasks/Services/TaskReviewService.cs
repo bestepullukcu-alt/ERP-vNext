@@ -29,6 +29,8 @@ public interface ITaskReviewService
     /// <summary>
     /// Cancel a task's review — used when the requirement is switched back off. Same contract as the approval's:
     /// false means an open review task could NOT be cancelled and the caller keeps the link (D2-FIX1 A1).
+    /// D2-FIX3 item 8 — a task with NO link is looked up by its review object reference (a submission whose link write
+    /// lost its race after the engine started the review); an instance found that way becomes the task's link.
     /// </summary>
     Task<bool> CancelReviewAsync(TaskItem task, CancellationToken ct);
 }
@@ -56,10 +58,20 @@ public static class TaskReviewView
         ArgumentNullException.ThrowIfNull(task);
         ArgumentNullException.ThrowIfNull(states);
 
-        // No review asked for, or the task is already closed: nobody is owed anything.
-        if (!task.ReviewRequired || task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
+        // No review asked for and no link held, or the task is already closed: nobody is owed anything.
+        // D2-FIX3 item 3 — the gate's own rule (TaskWorkflowLinkGate): the requirement OR a held link.
+        if (!TaskWorkflowLinkGate.AsksReview(task) || task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
         {
             return (false, false);
+        }
+
+        if (!task.ReviewRequired)
+        {
+            // Requirement withdrawn, link held (a withdraw that failed): the review holds completion until MOD-0023
+            // reports it closed, as the transition gate does. Nobody can resubmit work that needs no review, so a
+            // refusal is never read as "sent back" here.
+            states.TryGetValue(task.ReviewWorkflowInstanceId!.Value, out var held);
+            return (Outstanding: TaskWorkflowLinkGate.Holds(held, required: false), Rejected: false);
         }
 
         /*
@@ -78,8 +90,26 @@ public static class TaskReviewView
             return (true, false);
         }
 
-        return (Outstanding: !state.IsApproved && !state.IsRejected, Rejected: state.IsRejected);
+        /*
+         * D2-FIX3 item 2 — a review MOD-0023 reports CANCELLED was WITHDRAWN (a hand-over or a half-finished cancel took it
+         * back): nobody is reviewing the work, and it is the holder's to submit again — exactly what a refusal means here.
+         * Read as outstanding (as before), it showed "waiting for the reviewer" with nobody to wait on and offered no way on.
+         */
+        var sentBack = state.IsRejected || state.IsCancelled;
+        return (Outstanding: !state.IsApproved && !sentBack, Rejected: sentBack);
     }
+
+    /// <summary>
+    /// D2-FIX3 — the linked review was withdrawn rather than refused (both read as <c>Rejected</c> in
+    /// <see cref="Resolve"/>). Only the review gate's chip tells the two apart: a withdrawn review is "required" again,
+    /// never "rejected" — nobody refused anything.
+    /// </summary>
+    public static bool Withdrawn(TaskItem task, IReadOnlyDictionary<Guid, TaskApprovalState> states) =>
+        task.ReviewRequired
+        && task.Lifecycle is not (TaskLifecycle.Done or TaskLifecycle.Cancelled)
+        && task.ReviewWorkflowInstanceId is { } instanceId
+        && states.TryGetValue(instanceId, out var state)
+        && state.IsCancelled && !state.IsRejected && !state.IsApproved;
 }
 
 /// <summary>Operator-overridable settings for the review handoff.</summary>
@@ -139,6 +169,7 @@ public sealed class TaskReviewService : ITaskReviewService
 
     private readonly IMediator _mediator;
     private readonly IWorkflowTemplateRepository _templates;
+    private readonly IWorkflowInstanceRepository _instances;
     private readonly IApprovalTaskRepository _approvalTasks;
     private readonly ITenantContext _tenantContext;
     private readonly Contracts.ICurrentUserContext _currentUser;
@@ -148,6 +179,9 @@ public sealed class TaskReviewService : ITaskReviewService
     public TaskReviewService(
         IMediator mediator,
         IWorkflowTemplateRepository templates,
+        // D2-FIX3 item 8 — REQUIRED, in the approval service's place: a review whose link was never stored is found by its
+        // object reference (CancelReviewAsync). Optional would compile without it and quietly find nothing.
+        IWorkflowInstanceRepository instances,
         IApprovalTaskRepository approvalTasks,
         ITenantContext tenantContext,
         Contracts.ICurrentUserContext currentUser,
@@ -156,6 +190,7 @@ public sealed class TaskReviewService : ITaskReviewService
     {
         _mediator = mediator;
         _templates = templates;
+        _instances = instances;
         _approvalTasks = approvalTasks;
         _tenantContext = tenantContext;
         _currentUser = currentUser;
@@ -234,19 +269,33 @@ public sealed class TaskReviewService : ITaskReviewService
     public async Task<bool> CancelReviewAsync(TaskItem task, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(task);
-        if (task.ReviewWorkflowInstanceId is null)
-        {
-            return true;
-        }
 
         try
         {
+            // D2-FIX3 item 8 — no link is not "no review": a submission that lost its race after the engine started the
+            // review never stored one. Found the way the gate finds it (the LATEST instance under the review reference).
+            var instanceId = task.ReviewWorkflowInstanceId
+                ?? (await _instances.GetLatestByObjectRefAsync(
+                    BuildObjectRef(task.Id), ReviewObjectType, task.Id.ToString(), ct))?.Id;
+            if (instanceId is null)
+            {
+                return true;
+            }
+
             // Through MOD-0023's OWN command so its audit trail and state machine stay authoritative;
             // MOD-0024 never edits workflow state directly. D2-FIX1 A1 — escalated review tasks are open too.
-            var pending = (await _approvalTasks.ListByInstanceIdAsync(task.ReviewWorkflowInstanceId.Value, ct))
+            var pending = (await _approvalTasks.ListByInstanceIdAsync(instanceId.Value, ct))
                 .Where(t => t.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence
                     or ApprovalTaskStatus.Escalated)
                 .ToList();
+
+            // A review found that way and still OPEN is adopted as the task's link: a withdraw that fails leaves a link a
+            // retry can follow, and the next round's key names it. One already closed is not adopted — it was never this
+            // task's live review, and nothing about it needs withdrawing.
+            if (task.ReviewWorkflowInstanceId is null && pending.Count > 0)
+            {
+                task.ReviewWorkflowInstanceId = instanceId;
+            }
 
             foreach (var reviewTask in pending)
             {

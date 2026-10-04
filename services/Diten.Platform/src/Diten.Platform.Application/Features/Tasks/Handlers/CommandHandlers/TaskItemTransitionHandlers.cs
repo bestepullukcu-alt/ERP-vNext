@@ -115,6 +115,47 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
     }
 }
 
+/// <summary>
+/// D2-FIX3 item 2 — the one rule the three hand-overs (release, return, reassign) share: the work leaves its holder
+/// WITHOUT the review that holder's submission opened.
+///
+/// <para>Each of them rewinds the lifecycle to Open, PendingReview included, and before this the review stayed open
+/// under it: the next holder accepted, submitted again, and the second submission opened a SECOND instance (its key names
+/// the round it replaces) and wrote over the link — the first review was left decidable and read by nobody. So the
+/// review is withdrawn first, through MOD-0023's own cancel (MOD-0024 decides nothing), and a withdraw that does not
+/// happen refuses the hand-over (409 TASK_REVIEW_CANCEL_FAILED, the existing code) with the task untouched.</para>
+///
+/// <para>The link is KEPT, pointing at the withdrawn review: the next holder's submission reads it (closed → a new round
+/// under a new key; still open → refused) rather than replaying the first round's key. The version is checked before
+/// anything is withdrawn — a hand-over that is going to lose its race touches nothing in MOD-0023 (the cancel's rule).
+/// The service is OPTIONAL like every other seam on these handlers' siblings: without it a held link refuses
+/// (fail-closed) and a task holding none never asks.</para>
+/// </summary>
+internal static class TaskHandoverReviewRule
+{
+    public static async Task<Response<NoContent>?> RefuseUnlessReviewWithdrawnAsync(
+        TaskItem task, int expectedVersion, ITaskReviewService? reviews, string correlationId, CancellationToken ct)
+    {
+        if (!TaskWorkflowLinkGate.MayHoldReview(task, reviews))
+        {
+            return null;
+        }
+
+        if (task.Version != expectedVersion)
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, correlationId);
+        }
+
+        return await TaskWorkflowLinkGate.WithdrawReviewAsync(task, reviews, ct)
+            ? null
+            : Response<NoContent>.Fail(
+                "The task was not handed over: its running review could not be withdrawn; try again.",
+                409, TaskReasonCodes.ReviewCancelFailed, correlationId);
+    }
+}
+
 /// <summary>Return a claimed pool task to its pool: ownership → unowned, admission → pendingClaim.</summary>
 public sealed class ReleaseTaskItemHandler : IRequestHandler<ReleaseTaskItemCommand, Response<NoContent>>
 {
@@ -122,17 +163,20 @@ public sealed class ReleaseTaskItemHandler : IRequestHandler<ReleaseTaskItemComm
     private readonly ITaskAssignmentRepository _assignments;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
+    private readonly ITaskReviewService? _reviews;
 
     public ReleaseTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ITaskReviewService? reviews = null)
     {
         _tasks = tasks;
         _assignments = assignments;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
+        _reviews = reviews;
     }
 
     public async Task<Response<NoContent>> Handle(ReleaseTaskItemCommand command, CancellationToken ct)
@@ -155,6 +199,13 @@ public sealed class ReleaseTaskItemHandler : IRequestHandler<ReleaseTaskItemComm
             return Response<NoContent>.Fail(
                 "Only the current holder can release this task.",
                 403, TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        // D2-FIX3 item 2 — the pool does not inherit a review the releasing holder's submission opened.
+        if (await TaskHandoverReviewRule.RefuseUnlessReviewWithdrawnAsync(
+                task, command.Request.ExpectedVersion, _reviews, command.CorrelationId, ct) is { } refused)
+        {
+            return refused;
         }
 
         var previousHolder = task.AssigneeUserId;
@@ -644,9 +695,13 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
          * edit's rule — MOD-0023 is not touched for a write that cannot land). A withdraw that succeeded and then lost a
          * race in the narrow window after this check leaves a cancelled instance under a still-open task; the retry finds
          * nothing open to withdraw and goes through.
+         *
+         * D2-FIX3 item 8 — asked also with NO link while a requirement is on (and a withdraw service is there): a start or
+         * submission whose link write fell over left a live instance the task does not point at, found by its object
+         * reference. Item 6 — the review goes first, the approval last (TaskWorkflowLinkGate.WithdrawAsync).
          */
         if (command.Target == TaskLifecycle.Cancelled
-            && (task.WorkflowInstanceId is not null || task.ReviewWorkflowInstanceId is not null))
+            && (TaskWorkflowLinkGate.MayHoldApproval(task, _approvals) || TaskWorkflowLinkGate.MayHoldReview(task, _reviews)))
         {
             if (task.Version != command.Request.ExpectedVersion)
             {
@@ -762,32 +817,23 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     /// D2-FIX2 item 1 — withdraws the task's running approval and review; the refusal to answer with when one of them
     /// could not be withdrawn, or null when nothing is left open. The withdraw itself is MOD-0023's own cancel command,
     /// reached through the same services an edit uses — MOD-0024 never edits workflow state.
+    ///
+    /// <para>D2-FIX3 item 6 — REVIEW FIRST, approval last (see <see cref="TaskWorkflowLinkGate.WithdrawAsync"/>), and the
+    /// code says how far it got: REVIEW_CANCEL_FAILED — nothing was withdrawn; APPROVAL_CANCEL_FAILED — the review was,
+    /// the approval was not. The task is not written either way: the open one keeps it gated, the withdrawn review keeps its
+    /// link for the next submission. Fail-closed: a held link with no withdraw service is a withdraw that did not happen.</para>
     /// </summary>
-    private async Task<Response<NoContent>?> RefuseUnlessWithdrawnAsync(TaskItem task, string correlationId, CancellationToken ct)
-    {
-        if (task.WorkflowInstanceId is not null && !await ApprovalWithdrawnAsync(task, ct))
+    private async Task<Response<NoContent>?> RefuseUnlessWithdrawnAsync(TaskItem task, string correlationId, CancellationToken ct) =>
+        await TaskWorkflowLinkGate.WithdrawAsync(task, _approvals, _reviews, ct) switch
         {
-            return Response<NoContent>.Fail(
-                "The task was not cancelled: its running approval could not be withdrawn; try again.",
-                409, TaskReasonCodes.ApprovalCancelFailed, correlationId);
-        }
-
-        if (task.ReviewWorkflowInstanceId is not null && !await ReviewWithdrawnAsync(task, ct))
-        {
-            return Response<NoContent>.Fail(
+            null => null,
+            TaskReasonCodes.ReviewCancelFailed => Response<NoContent>.Fail(
                 "The task was not cancelled: its running review could not be withdrawn; try again.",
-                409, TaskReasonCodes.ReviewCancelFailed, correlationId);
-        }
-
-        return null;
-    }
-
-    // Fail-closed: no withdraw service, no proof of a withdraw (see _approvals).
-    private async Task<bool> ApprovalWithdrawnAsync(TaskItem task, CancellationToken ct) =>
-        _approvals is not null && await _approvals.CancelApprovalAsync(task, ct);
-
-    private async Task<bool> ReviewWithdrawnAsync(TaskItem task, CancellationToken ct) =>
-        _reviews is not null && await _reviews.CancelReviewAsync(task, ct);
+                409, TaskReasonCodes.ReviewCancelFailed, correlationId),
+            var code => Response<NoContent>.Fail(
+                "The task was not cancelled: its running approval could not be withdrawn; try again.",
+                409, code, correlationId)
+        };
 
     /// <summary>
     /// WC-1 — which ACT this generic transition is, in the event log's vocabulary.
@@ -841,8 +887,8 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
              * refuse it; that child stays OPEN (its holder still sees it, its approval still answers) and is named in the
              * log, rather than closed with an orphan running under it. Same best-effort contract as the race below.
              */
-            if ((child.WorkflowInstanceId is not null && !await ApprovalWithdrawnAsync(child, ct))
-                || (child.ReviewWorkflowInstanceId is not null && !await ReviewWithdrawnAsync(child, ct)))
+            // D2-FIX3 — the same withdraw as the parent's own (review first, approval last).
+            if (await TaskWorkflowLinkGate.WithdrawAsync(child, _approvals, _reviews, ct) is not null)
             {
                 _logger.LogWarning(
                     "Subtask {ChildId} of cancelled task {ParentId} was left open: its running approval or review could "
@@ -1040,11 +1086,30 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
          * never assumed from the lifecycle: a task still waiting on its reviewer takes the ordinary path below and
          * is refused, because resubmitting work someone is holding right now would silently replace their review.
          */
+        /*
+         * D2-FIX3 item 2 — THE HELD LINK IS READ WHATEVER THE LIFECYCLE. This used to be asked only in PendingReview, so a
+         * task whose review was still open but whose lifecycle had been rewound (a hand-over before D2-FIX3, or data left
+         * that way) took the ordinary path: a new round started under a new key, the link was overwritten and the first
+         * review stayed decidable with nobody reading it. Now a held review MOD-0023 has not closed refuses the submission
+         * in every lifecycle — in PendingReview through the lifecycle answer below, as before; elsewhere with
+         * REVIEW_PENDING. A closed one (refused, withdrawn, approved) lets a new round begin; the resubmission self-loop
+         * (PendingReview → PendingReview) still exists only in PendingReview — the lifecycle matrix is not touched.
+         */
         var resubmitting = false;
-        if (task.Lifecycle == TaskLifecycle.PendingReview && task.ReviewWorkflowInstanceId is { } openInstance)
+        if (task.ReviewWorkflowInstanceId is { } heldInstance)
         {
-            var states = await _reviewStates.GetStatesAsync([openInstance], ct);
-            resubmitting = TaskReviewView.Resolve(task, states).Rejected;
+            var states = await _reviewStates.GetStatesAsync([heldInstance], ct);
+            var (stillOpen, sentBack) = TaskReviewView.Resolve(task, states);
+            if (task.Lifecycle == TaskLifecycle.PendingReview)
+            {
+                resubmitting = sentBack;
+            }
+            else if (stillOpen)
+            {
+                return Response<NoContent>.Fail(
+                    "This task's review is still open; it cannot be submitted again until that review is closed.",
+                    409, TaskReasonCodes.ReviewPending, command.CorrelationId);
+            }
         }
 
         if (!resubmitting && !_lifecycle.CanTransition(task, TaskLifecycle.PendingReview, out var reasonCode))
@@ -1733,17 +1798,20 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
     private readonly ITaskAssignmentRepository _assignments;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
+    private readonly ITaskReviewService? _reviews;
 
     public ReturnTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ITaskReviewService? reviews = null)
     {
         _tasks = tasks;
         _assignments = assignments;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
+        _reviews = reviews;
     }
 
     public async Task<Response<NoContent>> Handle(ReturnTaskItemCommand command, CancellationToken ct)
@@ -1776,6 +1844,13 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
             return Response<NoContent>.Fail(
                 "This task has no separate requester to return it to.",
                 409, TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        // D2-FIX3 item 2 — the requester does not inherit the review the returning holder's submission opened.
+        if (await TaskHandoverReviewRule.RefuseUnlessReviewWithdrawnAsync(
+                task, command.Request.ExpectedVersion, _reviews, command.CorrelationId, ct) is { } refused)
+        {
+            return refused;
         }
 
         var returnedBy = task.AssigneeUserId;
@@ -1846,19 +1921,22 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
     private readonly ITaskAssignmentGuard _assignmentGuard;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
+    private readonly ITaskReviewService? _reviews;
 
     public ReassignTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
         ITaskAssignmentGuard assignmentGuard,
         ICurrentUserContext currentUser,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ITaskReviewService? reviews = null)
     {
         _tasks = tasks;
         _assignments = assignments;
         _assignmentGuard = assignmentGuard;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
+        _reviews = reviews;
     }
 
     public async Task<Response<NoContent>> Handle(ReassignTaskItemCommand command, CancellationToken ct)
@@ -1944,6 +2022,13 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
         {
             return Response<NoContent>.Fail(
                 refused.Message, refused.StatusCode, refused.ReasonCode, command.CorrelationId);
+        }
+
+        // D2-FIX3 item 2 — the new holder does not inherit the review the previous holder's submission opened.
+        if (await TaskHandoverReviewRule.RefuseUnlessReviewWithdrawnAsync(
+                task, command.Request.ExpectedVersion, _reviews, command.CorrelationId, ct) is { } reviewStillOpen)
+        {
+            return reviewStillOpen;
         }
 
         /*

@@ -719,11 +719,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // Review joins the SAME read rather than getting one of its own: GetStatesAsync keys off the INSTANCE id
         // and never asks what the instance decides, so it serves both decisions unchanged. Two calls would be two
         // round-trips for one page, and a per-item read would be an N+1 across every gated row on the surface.
+        //
+        // D2-FIX3 item 3 — every HELD link is read, requirement on or off: the gates ask a held link (TaskWorkflowLinkGate),
+        // so the projection must know its state too, or a task whose withdraw failed shows `start` enabled and 409s.
         var instanceIds = tasks
-            .Where(t => t.ApprovalRequired && t.WorkflowInstanceId is not null)
+            .Where(t => t.WorkflowInstanceId is not null)
             .Select(t => t.WorkflowInstanceId!.Value)
             .Concat(tasks
-                .Where(t => t.ReviewRequired && t.ReviewWorkflowInstanceId is not null)
+                .Where(t => t.ReviewWorkflowInstanceId is not null)
                 .Select(t => t.ReviewWorkflowInstanceId!.Value))
             .Distinct()
             .ToList();
@@ -871,7 +874,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     reviewMeetingUnlockedByTask.GetValueOrDefault(t.Id),
                     spentByTask.GetValueOrDefault(t.Id, TaskSpentTime.None),
                     readerTime,
-                    timerEnabled);
+                    timerEnabled,
+                    TaskReviewView.Withdrawn(t, approvalStates));
             })
             .ToList();
     }
@@ -925,7 +929,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // MOD-0280-FU01 §19.2 — THIS reader's running timer and own draft minutes (only read with time tracking on).
         TaskReaderTime? readerTime = null,
         // MOD-0280-FU01 T2b — the reader's timer is switched on for their legal entity (read once per page).
-        bool timerEnabled = false)
+        bool timerEnabled = false,
+        // D2-FIX3 — the linked review was WITHDRAWN (reviewRejected is true for it too): its chip reads "required".
+        bool reviewWithdrawn = false)
     {
         spent ??= TaskSpentTime.None;
         var spentHours = spent.ApprovedHours;
@@ -1201,7 +1207,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             Attachments: attachmentsBlock,
             ParentTaskItemId: task.ParentTaskItemId?.ToString(),
             Gates: BuildGates(
-                task, actor, displayNames, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected),
+                task, actor, displayNames, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected,
+                reviewWithdrawn),
             // The engine's own spelling, straight through — the contract's PRIORITIES are that enum (BL-032).
             Priority: task.Priority.ToString(),
             Dependencies: dependencyList,
@@ -1646,7 +1653,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         bool approvalOutstanding,
         bool approvalRejected,
         bool reviewOutstanding,
-        bool reviewRejected)
+        bool reviewRejected,
+        bool reviewWithdrawn = false)
     {
         var approvalStatus = !task.ApprovalRequired ? GateNotRequired
             : approvalRejected ? GateRejected
@@ -1655,6 +1663,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             : GateApproved;
 
         var reviewStatus = !task.ReviewRequired ? GateNotRequired
+            // D2-FIX3 — a WITHDRAWN review (a hand-over took it back) sends the work back like a refusal does, but nobody
+            // refused anything: it is required again, never "rejected".
+            : reviewWithdrawn ? GateRequired
             : reviewRejected ? GateRejected
             // Sitting with a reviewer right now — an instance exists and MOD-0023 has not answered it.
             : reviewOutstanding && task.ReviewWorkflowInstanceId is not null ? GatePending
@@ -2679,7 +2690,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                  *
                  * Approval is still checked FIRST: it is the gate the user cannot clear themselves.
                  */
-                if (task.ReviewRequired && task.ReviewWorkflowInstanceId is null)
+                // D2-FIX3 item 2 — also when the linked review came back without passing (refused, or withdrawn by a
+                // hand-over): the work has to be submitted again, and `complete` would only be refused by the review gate.
+                if (task.ReviewRequired && (task.ReviewWorkflowInstanceId is null || reviewRejected))
                 {
                     // Precedence, same rule everywhere in this method: approval first, then the review-meeting
                     // gate, then the checklist — each is its own reason, and only the first unmet one is shown.
@@ -2705,10 +2718,17 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     // cannot clear themselves, so pointing them at something else they COULD clear without
                     // unblocking anything would be a lie. The server refuses Done in every case (409), so this is
                     // a hint about a real refusal, never the enforcement.
+                    //
+                    // D2-FIX3 item 3 — then a review still holding the work: a held link the gate asks whatever the
+                    // requirement says (TaskWorkflowLinkGate), so `complete` here would be refused with REVIEW_PENDING.
                     actions.Add(approvalOutstanding
                         ? Disabled("complete", ActionCompleteKey,
                             TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey,
                             targetStatus: TaskLifecycleService.Done)
+                        : reviewOutstanding
+                            ? Disabled("complete", ActionCompleteKey,
+                                TaskReasonCodes.ReviewPending, DisabledReviewCompleteKey,
+                                targetStatus: TaskLifecycleService.Done)
                         : reviewMeetingBlocked
                             ? Disabled("complete", ActionCompleteKey,
                                 TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey,
