@@ -7911,6 +7911,20 @@ saklanan tarihlerde yapıyor — çakışma kontrolünün doğruluğu ayrı öl�
 
 ---
 
+### BL-540
+
+**Yetim onay / inceleme / yukarı yön talebi örnekleri: düzeltmelerden önce oluşanlar hiç taranmıyor; yukarı yön talebi bağı hiçbir yolda geri çekilmiyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 · MOD-0024) · BULAN: WP-WF-ENGINE-CANDIDATES-01 D2-FIX3 bağımsız gözden geçirmesi · KAYIT: 2026-10-04
+
+D2-FIX2 / FIX3 / FIX4 (dal `feature/platform/wf-engine-candidates`) görevi kapatan / silen / devreden yolların bağlı onay ve incelemeyi önce geri çekmesini sağladı. İki açık kalıyor:
+(1) bu düzeltmelerden ÖNCE silinmiş görevlerin ve devirlerde üzerine yazılmış 1. tur incelemelerin örnekleri canlı ve karar verilebilir duruyor (yükseltiliyor, kimse okumuyor): bir kerelik
+salt okunur sayım + kontrollü süpürme (motorun kendi iptal komutuyla, kayıtlı); (2) yukarı yön talebinin bağı (`RequestWorkflowInstanceId`, BL-023, `CreateTaskItemHandler.cs:393-397`) için kapı ve geri
+çekme yok: görev iptal / silme / devirde yöneticinin "task-request" kararı açık kalıyor. BL-513 (yukarı yön talebinin görev talebi düzenine taşınması) ile birlikte çözülmesi doğal.
+Gelecek regresyon riski: 🟢 (süpürme kuru koşuyla).
+
+---
+
 ### BL-539
 
 **Onay motoru tamamlanmamış güvenilir başlatmayı kendisi bitirmiyor ya da temizlemiyor: tüketici başlatmayı terk ederse motorda karar verilemeyen bir görev kalıyor**
