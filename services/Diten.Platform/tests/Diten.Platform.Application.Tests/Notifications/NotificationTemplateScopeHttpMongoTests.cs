@@ -12,11 +12,13 @@ using Diten.Platform.Application.Tests.Tasks;
 using Diten.Platform.Common.Authorization;
 using Diten.Platform.Common.Observability;
 using Diten.Platform.Common.Tenancy;
+using Diten.Platform.Domain.Entities.Audit;
 using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Authorization;
 using Diten.Platform.Infrastructure.Persistence;
+using Diten.Platform.Infrastructure.Persistence.Models;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Infrastructure.Services;
@@ -84,6 +86,35 @@ public sealed class NotificationTemplateScopeHttpMongoTests
         Assert.Equal(NotificationTemplateStatus.Archived, (await host.TemplateAsync(Host.TemplateA)).Status);
         var record = Assert.Single(await host.AuditOutboxAsync(), json => json.Contains("notifications.template.archived", StringComparison.Ordinal));
         Assert.Contains(Host.TenantA.ToString("D"), record, StringComparison.OrdinalIgnoreCase);
+        // CT — filed UNDER tenant A, not merely mentioning it: a platform-global record would still carry A as its target.
+        var message = Assert.Single(await host.AuditMessagesAsync(), m => m.EntityId == Host.TemplateA);
+        Assert.Equal(Host.TenantA, message.TenantId);
+    }
+
+    [Fact]
+    public async Task A_platform_default_is_archived_by_id_and_its_record_is_platform_global()
+    {
+        await using var host = await Host.StartAsync();
+
+        Assert.Equal(HttpStatusCode.NoContent, await host.StatusAsync("POST", $"templates/{Host.PlatformTemplate:D}/archive"));
+
+        Assert.Equal(NotificationTemplateStatus.Archived, (await host.TemplateAsync(Host.PlatformTemplate)).Status);
+        var message = Assert.Single(await host.AuditMessagesAsync(), m => m.EntityId == Host.PlatformTemplate);
+        Assert.Equal(AuditTenantIds.PlatformSystemTenantId, message.TenantId);
+    }
+
+    [Fact]
+    public async Task A_platform_default_is_updated_by_id_and_stays_a_platform_default()
+    {
+        await using var host = await Host.StartAsync();
+
+        Assert.Equal(HttpStatusCode.OK, await host.StatusAsync("PUT", $"templates/{Host.PlatformTemplate:D}",
+            UpdateBody.Replace("\"isPlatformDefault\":false", "\"isPlatformDefault\":true", StringComparison.Ordinal)));
+
+        var stored = await host.TemplateAsync(Host.PlatformTemplate);
+        Assert.Equal("Changed", stored.SubjectTemplate);
+        Assert.Null(stored.TenantId);
+        Assert.True(stored.IsPlatformDefault);
     }
 
     [Fact]
@@ -248,6 +279,9 @@ public sealed class NotificationTemplateScopeHttpMongoTests
         public async Task<IReadOnlyList<string>> AuditOutboxAsync() =>
             (await Database.GetCollection<BsonDocument>("audit_outbox").Find(FilterDefinition<BsonDocument>.Empty).ToListAsync())
                 .Select(d => d.ToJson()).ToList();
+
+        public async Task<IReadOnlyList<AuditOutboxMessage>> AuditMessagesAsync() =>
+            await Database.GetCollection<AuditOutboxMessage>(AuditCollectionNames.AuditOutbox).Find(FilterDefinition<AuditOutboxMessage>.Empty).ToListAsync();
 
         private static string Token() =>
             new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
