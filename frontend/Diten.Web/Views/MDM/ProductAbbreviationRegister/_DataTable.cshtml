@@ -1,30 +1,33 @@
 @using Diten.Web.Views.MDM.ProductAbbreviationRegister
+@using Diten.Web.Models.DataTable
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<ProductAbbreviationRegisterIndex> Localizer
-@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // WP-MDM-ABB-LIST-01 (BL-440) — the table card is the shared component: the page describes it, _ListShell renders
+    // it with the shared shaped skeleton. Every header is localized HERE; the shell produces no text.
+    //
+    // SERVER data: the list pages, searches and sorts on the server (the MVC proxy over MDM's one-product entry list;
+    // orderBy whitelist: abbreviation, lifecycleStatus, version, retirementPending — anything else is 400). index.js
+    // declares the same mode.
+    //
+    // NO SELECTION COLUMN, deliberately: an abbreviation is never bulk-deleted or bulk-changed (GxP — every change is its
+    // own maker-checker request), so a checkbox would select into nothing.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-product-abbreviation-register",
+        DataMode = "server",
+        Slug = "product-abbreviation-register",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["GlobalProduct"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Abbreviation"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["LifecycleStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Version"].Value },
+            new DataTableColumnViewModel { Header = Localizer["RetirementPending"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
 
-<div class="card">
-    @* FIX1 #12 (FG-003): the golden skeleton's own classes instead of inline style. *@
-    <div id="skeleton-loader" class="p-4 backbone-skeleton">
-        <div class="shimmer skeleton-row skeleton-row-lg"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row skeleton-row-last"></div>
-    </div>
-    <div class="card-datatable table-responsive">
-        <table id="dt-product-abbreviation-register" data-dt-standard="v2"
-               class="datatables-product-abbreviation-register table border-top">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input" aria-label="@Localizer["SelectAll"]" /></th>
-                    <th>@Localizer["GlobalProduct"]</th>
-                    <th>@Localizer["Abbreviation"]</th>
-                    <th>@Localizer["LifecycleStatus"]</th>
-                    <th>@Localizer["Version"]</th>
-                    <th>@Localizer["RetirementPending"]</th>
-                    <th class="cell-fit text-end">@Localizer["Actions"]</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

@@ -1,26 +1,22 @@
 'use strict';
 
 const ProductAbbreviationRegisterList = (function () {
-    let dt;
-    let selectedProductId = '';
-    let selectedProductText = '';
-    let defaultViewRecord = null;
-    let defaultViewState = null;
-    let saveFilterArmed = false;
+    /*
+     * WP-MDM-ABB-LIST-01 (BL-440) — the register stands on the list component (DitenDataTable.createList, SERVER mode):
+     * the factory owns the table, the inline filter, Save View (same moduleKey/pageKey as before, so saved views still
+     * load), the toolbar and the server wire (start/length/search/orderBy/orderDir/globalProductId → the MVC proxy →
+     * MDM). This file keeps only the register's own business: the product picker, renderers, the action menu, quick view
+     * with its audit evidence, and the request / correction / retirement / cancel flows with their FIX1–FIX4 sentences.
+     * No selection column and no bulk action: an abbreviation is never changed in bulk (GxP, HasSelection = false).
+     */
+    let list = null;
+    let productHasOpenEntry = false;
     const endpoint = '/MDM/ProductAbbreviationRegister/api';
     const root = document.getElementById('product-abbreviation-register');
     const tableEl = document.getElementById('dt-product-abbreviation-register');
-    const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'MasterDataManagement', pageKey: 'ProductAbbreviationRegister' };
-    const dataColumnIndexes = [2, 3, 4, 5, 6];
-    const totalColumnCount = 8;
-    const baseOrder = [[3, 'asc']];
-    const bulkOptions = {
-        bulkBarSelector: '#bulkActionBar',
-        selectedCountSelector: '#bulkSelectedCount',
-        clearSelectionSelector: '#btnClearSelection',
-        checkboxSelector: '.dt-checkboxes'
-    };
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5];
+    const baseOrder = [[2, 'asc']];
     const L = window.L10n || {};
     const permissions = {
         selectProduct: root?.dataset.canSelectProduct === 'true',
@@ -84,8 +80,6 @@ const ProductAbbreviationRegisterList = (function () {
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[character]));
     const normalizeString = (value) => typeof value === 'string' ? value.trim() : '';
-    const emptyFilters = () => ({ globalProductId: '', globalProductText: '' });
-    const defaultColVis = () => dataColumnIndexes.map(() => true);
     const unwrapData = (payload) => payload?.data ?? payload?.Data ?? null;
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
     const antiForgeryToken = () => root?.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
@@ -94,7 +88,6 @@ const ProductAbbreviationRegisterList = (function () {
     // FIX1 B3 — one pending change per code: no correction or retirement offered while either one waits.
     const canActOnActive = (row, permission) => permission && isStatus(row, 'ACTIVE', 1)
         && !row.retirementPending && !row.correctionPending;
-    let productHasOpenEntry = false;
     const requireSuccess = async (response) => {
         if (response.status === 401) handleUnauthorized();
         if (!response.ok) throw new Error(await getErrorMessage(response));
@@ -106,118 +99,42 @@ const ProductAbbreviationRegisterList = (function () {
         return payload;
     };
 
-    const normalizeView = (view) => ({
-        filters: {
-            globalProductId: normalizeString(view?.filters?.globalProductId),
-            globalProductText: normalizeString(view?.filters?.globalProductText)
-        },
-        search: normalizeString(view?.search),
-        colVis: Array.isArray(view?.colVis) ? view.colVis.map(Boolean) : defaultColVis(),
-        columnOrder: Array.isArray(view?.columnOrder) && view.columnOrder.length === totalColumnCount
-            ? view.columnOrder.map(Number)
-            : Array.from({ length: totalColumnCount }, (_, index) => index),
-        order: Array.isArray(view?.order) ? view.order : baseOrder
-    });
-    const getSavedDefinition = (record) => {
-        const value = record?.viewDefinition ?? record?.ViewDefinition ?? {};
-        if (typeof value === 'object') return value;
-        try { return JSON.parse(value); } catch (error) { return {}; }
-    };
-    const getSavedId = (record) => record?.id ?? record?.Id ?? '';
-    const getSavedName = (record) => normalizeString(record?.viewName ?? record?.ViewName);
-    const loadDefaultView = async () => {
-        if (!personalizationClient?.getViews) return null;
-        try {
-            const response = await personalizationClient.getViews(personalizationContext.moduleKey, personalizationContext.pageKey);
-            const views = response?.data ?? response?.Data ?? response ?? [];
-            defaultViewRecord = views.find((view) => (view.isDefault ?? view.IsDefault) === true) || views[0] || null;
-            defaultViewState = defaultViewRecord ? normalizeView(getSavedDefinition(defaultViewRecord)) : null;
-            return defaultViewState;
-        } catch (error) {
-            if (!error?.authHandled) console.error('[ProductAbbreviationRegister SaveView] Load failed.', error);
-            return null;
-        }
-    };
-    const saveDefaultView = async (view) => {
-        if (!personalizationClient?.saveView) return null;
-        const normalized = normalizeView(view);
-        const payload = {
-            moduleKey: personalizationContext.moduleKey,
-            pageKey: personalizationContext.pageKey,
-            viewName: (getSavedName(defaultViewRecord) || L.SaveView || 'Default').trim(),
-            viewDefinition: normalized,
-            isDefault: true,
-            visibility: 'private'
-        };
-        const id = getSavedId(defaultViewRecord);
-        const response = id
-            ? await personalizationClient.updateView(id, payload)
-            : await personalizationClient.saveView(payload);
-        defaultViewRecord = response?.data ?? response?.Data ?? response ?? payload;
-        defaultViewState = normalized;
-        return normalized;
-    };
-    const captureColumnVisibility = (api) => dataColumnIndexes.map((index) => !!api.column(index).visible());
-    const captureColumnOrder = (api) => {
-        try { return api.colReorder.order(); } catch (error) { return Array.from({ length: totalColumnCount }, (_, index) => index); }
-    };
-    const captureSearch = (api) => normalizeString(
-        api.table().container().querySelector('.dt-search input')?.value ?? api.search()
-    );
-    const getCurrentView = (api) => normalizeView({
-        filters: { globalProductId: selectedProductId, globalProductText: selectedProductText },
-        search: captureSearch(api),
-        colVis: captureColumnVisibility(api),
-        columnOrder: captureColumnOrder(api),
-        order: api.order()
-    });
-    const serializeView = (view) => JSON.stringify(normalizeView(view));
-    const getResetBaselineState = () => normalizeView({
-        filters: emptyFilters(),
-        search: '',
-        colVis: defaultColVis(),
-        columnOrder: Array.from({ length: totalColumnCount }, (_, index) => index),
-        order: baseOrder
-    });
-    const isDirtyComparedToDefault = (api) => serializeView(getCurrentView(api)) !== serializeView(defaultViewState || getResetBaselineState());
-    const setSaveFilterVisible = (visible) => {
-        document.querySelector('.dt-save-filter-btn')?.classList.toggle('d-none', !visible);
-        window.DtDefaults?.refreshButtonGroupRadii?.();
-    };
+    // ── The product filter: a paged MDM picker that writes the list component's two filter fields ─────────────
+    const productIdField = () => document.getElementById('filterGlobalProductId');
+    const productTextField = () => document.getElementById('filterGlobalProductText');
+    const appliedProductId = () => normalizeString(list?.appliedFilters?.globalProductId);
+    const appliedProductText = () => normalizeString(list?.appliedFilters?.globalProductText) || appliedProductId();
     const syncProductSelect = (selector, productId, text) => {
         const select = document.querySelector(selector);
         if (!select) return;
         if (productId && !Array.from(select.options).some((option) => option.value === productId))
-            select.add(new Option(text, productId, true, true));
+            select.add(new Option(text || productId, productId, true, true));
         $(select).val(productId || null).trigger('change.select2');
     };
-    const syncSearch = (api, value) => {
-        const search = normalizeString(value);
-        api.search(search);
-        const input = api.table().container().querySelector('.dt-search input');
-        if (input) input.value = search;
+    // The picker → the staged filter (Apply makes it the applied one); the factory writing a saved / reset filter →
+    // the picker's display. Each direction writes the other side without re-entering it.
+    const bindProductFilterFields = () => {
+        $('#filterGlobalProduct').on('change', function () {
+            const idField = productIdField();
+            const textField = productTextField();
+            if (idField) idField.value = normalizeString($(this).val());
+            if (textField) textField.value = idField?.value ? normalizeString($(this).find('option:selected').text()) : '';
+        });
+        // The factory writes a filter back with jQuery (.val().trigger('change')): a jQuery handler hears it.
+        $(productIdField()).on('change', () => {
+            syncProductSelect('#filterGlobalProduct', normalizeString(productIdField()?.value), normalizeString(productTextField()?.value));
+        });
     };
-    const applySavedTableState = (api, state) => {
-        const normalized = normalizeView(state || {});
-        selectedProductId = normalized.filters.globalProductId;
-        selectedProductText = normalized.filters.globalProductText;
-        syncProductSelect('#filterGlobalProduct', selectedProductId, selectedProductText);
-        syncSearch(api, normalized.search);
-        dataColumnIndexes.forEach((index, position) => api.column(index).visible(normalized.colVis[position], false));
-        if (typeof api.colReorder?.order === 'function') api.colReorder.order(normalized.columnOrder, true);
-        api.order(normalized.order);
-        return normalized;
-    };
-    const redrawAppliedTableState = (api, state) => {
-        const normalized = applySavedTableState(api, state);
-        api.draw(false);
-        syncSearch(api, normalized.search);
-        return normalized;
-    };
-    const reloadAppliedTableState = (api, state) => {
-        const normalized = applySavedTableState(api, state);
-        api.ajax.reload(() => syncSearch(api, normalized.search), false);
-        return normalized;
+    // A product chosen outside the filter bar (a deep link, a request just made): staged, then applied by the bar's
+    // own Apply — one path for every applied filter.
+    const applyProductFilter = (productId, productText) => {
+        const idField = productIdField();
+        const textField = productTextField();
+        if (!idField || !textField) return;
+        textField.value = productText || productId;
+        idField.value = productId;
+        syncProductSelect('#filterGlobalProduct', productId, textField.value);
+        document.getElementById('btnFilterApply')?.click();
     };
 
     const getErrorMessage = async (response) => {
@@ -334,13 +251,12 @@ const ProductAbbreviationRegisterList = (function () {
     };
     const showDetails = (row) => {
         document.getElementById('oc-subtitle').textContent = row.abbreviation;
-        document.getElementById('oc-global-product').textContent = row.globalProductDisplay;
+        document.getElementById('oc-global-product').textContent = appliedProductText();
         document.getElementById('oc-abbreviation').textContent = row.abbreviation;
         document.getElementById('oc-version').textContent = String(row.version);
         document.getElementById('oc-retirement-pending').textContent = row.retirementPending ? L.Yes : L.No;
         const status = document.getElementById('oc-status');
         if (status) status.outerHTML = renderLifecycle(row.lifecycleStatus).replace('<span ', '<span id="oc-status" ');
-        bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasDetailsPreview')).show();
         loadEvidence(row.id);
     };
 
@@ -354,7 +270,7 @@ const ProductAbbreviationRegisterList = (function () {
                 body: JSON.stringify({ expectedVersion: row.version, reason })
             });
             await requireSuccess(response);
-            window.DitenDataTable.reloadWithToast(dt, tableEl, 'RequestSuccess', null, bulkOptions);
+            list?.reload('RequestSuccess');
           } catch (error) { if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error'); }
         }, { type: 'warning', showInput: true, inputRequired: true, inputLabel: L.Reason, inputValidationMessage: L.ErrorValidation,
             inputValidator: (value) => !normalizeString(value) || value.length > 512 ? L.ErrorValidation : null,
@@ -373,7 +289,7 @@ const ProductAbbreviationRegisterList = (function () {
                         body: JSON.stringify({ expectedVersion: row.version, replacementAbbreviation, reason })
                     });
                     await requireSuccess(response);
-                    window.DitenDataTable.reloadWithToast(dt, tableEl, 'RequestSuccess', null, bulkOptions);
+                    list?.reload('RequestSuccess');
                 } catch (error) { if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error'); }
             }, { type: 'warning', entityName: replacementAbbreviation, showInput: true, inputRequired: true,
                 inputLabel: L.Reason, inputValidationMessage: L.ErrorValidation,
@@ -395,7 +311,7 @@ const ProductAbbreviationRegisterList = (function () {
                     body: JSON.stringify({ expectedVersion: row.version })
                 });
                 await requireSuccess(response);
-                window.DitenDataTable.reloadWithToast(dt, tableEl, 'RequestSuccess', null, bulkOptions);
+                list?.reload('RequestSuccess');
             } catch (error) { if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error'); }
         }, { type: 'warning', entityName: row.abbreviation, confirmButtonText: L.Apply });
     };
@@ -406,7 +322,7 @@ const ProductAbbreviationRegisterList = (function () {
             || row.retirementPending && !row.retirementRequestedByCurrentUser);
 
     const renderActions = (row) => {
-        const actions = [{ key: 'details', className: 'js-quick-view', text: L.ViewDetails, icon: 'bx bx-show', attrs: { 'data-id': row.id } }];
+        const actions = [{ key: 'quickView', className: 'js-quick-view', text: L.ViewDetails, icon: 'bx bx-show', attrs: { 'data-id': row.id } }];
         if (permissions.cancel && row.requestedByCurrentUser && isStatus(row, 'REQUESTED', 0))
             actions.push({ key: 'cancel', className: 'js-cancel-request', text: L.CancelRequest, icon: 'bx bx-x-circle', attrs: { 'data-id': row.id } });
         if (waitsForDecisionBySomeoneElse(row))
@@ -418,146 +334,98 @@ const ProductAbbreviationRegisterList = (function () {
         return window.DitenDataTable.renderActions(actions);
     };
 
-    const initDataTable = async () => {
-        if (!tableEl || !window.DtDefaults) return;
-        let saved = await loadDefaultView();
-        const linkedProduct = new URLSearchParams(window.location.search).get('globalProductId');
-        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(linkedProduct || ''))
-            saved = normalizeView({ ...(saved || {}), filters: { globalProductId: linkedProduct, globalProductText: linkedProduct } });
-        if (saved) {
-            selectedProductId = saved.filters.globalProductId;
-            selectedProductText = saved.filters.globalProductText;
-        }
-        const filterBtn = {
-            text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
-            className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
-            attr: { title: L.Filter, 'aria-label': L.Filter, 'aria-controls': 'inlineFilterCollapse', 'aria-expanded': 'false' },
-            action: () => bootstrap.Collapse.getOrCreateInstance(document.getElementById('inlineFilterCollapse'), { toggle: false }).toggle()
-        };
-        const saveFilterBtn = {
-            text: `<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">${escapeHtml(L.SaveView)}</span>`,
-            className: 'btn btn-label-primary dt-save-filter-btn d-none',
-            attr: { title: L.SaveView, 'aria-label': L.SaveView },
-            action: async (event, api) => {
-                try {
-                    await saveDefaultView(getCurrentView(api || dt));
-                    setSaveFilterVisible(false);
-                } catch (error) {
-                    setSaveFilterVisible(true);
-                    window.showToast?.(L.ErrorOccurred || 'ErrorOccurred', 'error');
-                }
-            }
-        };
-        const config = window.DtDefaults.create({
-            processing: true,
-            serverSide: false,
-            stateSave: false,
-            order: saved?.order || baseOrder,
-            colReorder: { columns: ':gt(1):not(:last-child)' },
-            ajax: (request, callback) => {
-                if (!selectedProductId) {
-                    callback({ data: [] });
-                    return;
-                }
-                // FIX1 B2 — EVERY entry of the product (requested, active, closed), not only the active one: the
-                // requester sees the pending request they just made, and can cancel it.
-                fetch(`${endpoint}/by-global-product/${encodeURIComponent(selectedProductId)}/entries`, { credentials: 'same-origin', headers: getAuthHeaders() })
-                    .then((response) => {
-                        if (response.status === 401) handleUnauthorized();
-                        if (!response.ok) return getErrorMessage(response).then((message) => Promise.reject(new Error(message)));
-                        return response.json();
-                    })
-                    .then((payload) => {
-                        const entries = unwrapData(payload) || [];
-                        const rows = entries.map((entry) => ({
-                            id: entry.id ?? entry.Id,
-                            globalProductId: entry.globalProductId ?? entry.GlobalProductId,
-                            globalProductDisplay: selectedProductText,
-                            abbreviation: entry.abbreviation ?? entry.Abbreviation,
-                            lifecycleStatus: entry.lifecycleStatus ?? entry.LifecycleStatus,
-                            version: entry.version ?? entry.Version,
-                            retirementPending: entry.retirementPending ?? entry.RetirementPending,
-                            correctionPending: entry.correctionPending ?? entry.CorrectionPending,
-                            requestedByCurrentUser: entry.requestedByCurrentUser ?? entry.RequestedByCurrentUser,
-                            retirementRequestedByCurrentUser: entry.retirementRequestedByCurrentUser ?? entry.RetirementRequestedByCurrentUser
-                        }));
-                        productHasOpenEntry = rows.some((row) => isStatus(row, 'ACTIVE', 1) || isStatus(row, 'REQUESTED', 0));
-                        callback({ data: rows });
-                    })
-                    .catch((error) => {
-                        if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
-                        callback({ data: [] });
-                    });
-            },
-            columns: [
-                { data: 'id', name: 'control' }, { data: 'id', name: 'checkbox' },
-                { data: 'globalProductDisplay', name: 'globalProduct' }, { data: 'abbreviation', name: 'abbreviation' },
-                { data: 'lifecycleStatus', name: 'lifecycleStatus' }, { data: 'version', name: 'version' },
-                { data: 'retirementPending', name: 'retirementPending' }, { data: null, name: 'action' }
-            ],
-            columnDefs: [
-                { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
-                { targets: 1, className: 'dt-checkboxes-cell cell-fit', searchable: false, orderable: false, responsivePriority: 3, render: (data) => `<input type="checkbox" class="dt-checkboxes form-check-input" value="${escapeHtml(data)}">` },
-                { targets: 4, render: renderLifecycle },
-                { targets: 6, render: (value) => value ? L.Yes : L.No },
-                { targets: -1, searchable: false, orderable: false, className: 'cell-fit all text-end pe-3', render: (data, type, row) => renderActions(row) }
-            ],
-            buttons: window.DtDefaults.exportButtons(canRequest() ? L.AddNew : null, {}, { filterBtn, saveFilterBtn }, { exportColumns: dataColumnIndexes, colvisColumns: dataColumnIndexes }),
-            initComplete: function () {
-                const toolbar = document.querySelector('.dt-filter-btn')?.closest('.dt-layout-row') || document.querySelector('.dt-filter-btn')?.closest('.row');
-                const host = document.getElementById('inlineFilterHost');
-                if (toolbar && host) { toolbar.insertAdjacentElement('afterend', host); host.classList.add('px-3'); }
-                initSelector('#filterGlobalProduct', document.body);
-                initSelector('#requestGlobalProduct', document.getElementById('offcanvasCreateEdit'));
-                redrawAppliedTableState(this.api(), saved || getResetBaselineState());
-                document.querySelector('.add-new')?.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    if (!canRequest()) return;
-                    document.getElementById('formProductAbbreviationRequest')?.reset();
-                    bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).show();
-                });
-                setTimeout(() => { saveFilterArmed = true; }, 0);
-            },
-            drawCallback: function () {
-                window.DtDefaults.updateVisualState(this.api(), selectedProductId ? 1 : 0);
-                // FIX1 S2 — a product with an active or pending code is offered no new request.
-                document.querySelector('.add-new')?.classList.toggle('d-none', productHasOpenEntry);
-            }
-        });
-        dt = new DataTable(tableEl, config);
-        window.DitenDataTable.bindBulkSelection(tableEl, dt, bulkOptions);
-        window.DitenDataTable.bindActionDispatcher({
-            tableEl,
-            dt,
+    // The createList options of the register — one place, so the wire and the saved-view keys are measurable.
+    const buildListOptions = () => ({
+        tableEl,
+        dataMode: 'server',
+        ajax: { url: `${endpoint}/list`, type: 'GET', headers: getAuthHeaders() },
+        // FIX1 S2 — a product with an active or pending code is offered no new request: read from every answer.
+        onResponse: (json) => {
+            const items = unwrapData(json)?.items ?? [];
+            productHasOpenEntry = items.some((row) => isStatus(row, 'ACTIVE', 1) || isStatus(row, 'REQUESTED', 0));
+        },
+        quickView: { offcanvasId: 'offcanvasDetailsPreview', populate: showDetails, actionKey: 'quickView' },
+        actions: {
             onRowAction: {
-                details: ({ row }) => showDetails(row),
                 cancel: ({ row }) => cancelRequest(row),
                 taskCenter: () => { window.location.assign(taskCenterUrl); },
                 correct: ({ row }) => requestCorrection(row),
                 retire: ({ row }) => requestRetirement(row)
             }
-        });
-        $(tableEl).on('column-reorder.dt columns-reordered.dt search.dt order.dt column-visibility.dt', () => {
-            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
-        });
+        },
+        toolbar: {
+            addNewText: canRequest() ? L.AddNew : '',
+            onAddNew: () => {
+                if (!canRequest()) return;
+                document.getElementById('formProductAbbreviationRequest')?.reset();
+                bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).show();
+            },
+            exportColumns: saveViewColumnIndexes,
+            colvisColumns: saveViewColumnIndexes
+        },
+        filters: {
+            hostId: 'inlineFilterHost',
+            collapseId: 'inlineFilterCollapse',
+            applyBtn: 'btnFilterApply',
+            resetBtn: 'btnFilterReset',
+            // The text before the id: when the factory writes a saved filter back, the id's change finds its name.
+            fields: [
+                { id: 'filterGlobalProductText', key: 'globalProductText', kind: 'text' },
+                { id: 'filterGlobalProductId', key: 'globalProductId', kind: 'text' }
+            ],
+            loadOptions: async () => {
+                initSelector('#filterGlobalProduct', document.body);
+                bindProductFilterFields();
+            }
+        },
+        // Same keys as before the migration: every saved register view still loads.
+        savedView: {
+            moduleKey: personalizationContext.moduleKey,
+            pageKey: personalizationContext.pageKey,
+            saveViewColumnIndexes,
+            defaultVisibleColumnIndexes: saveViewColumnIndexes,
+            baseOrder
+        },
+        config: {
+            colReorder: { columns: ':gt(0):not(:last-child)' },
+            // `data` names are the proxy's orderBy whitelist (abbreviation, lifecycleStatus, version, retirementPending).
+            // The Global Product is the filter itself (one product per list): not sortable, never sent as a sort key.
+            columns: [
+                { data: 'id', name: 'control' },
+                { data: 'globalProductId', name: 'globalProduct' },
+                { data: 'abbreviation', name: 'abbreviation' },
+                { data: 'lifecycleStatus', name: 'lifecycleStatus' },
+                { data: 'version', name: 'version' },
+                { data: 'retirementPending', name: 'retirementPending' },
+                { data: null, name: 'action' }
+            ],
+            columnDefs: [
+                { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
+                { targets: 1, orderable: false, render: () => escapeHtml(appliedProductText()) },
+                { targets: 2, render: (data) => `<span class="fw-medium text-heading">${escapeHtml(data)}</span>` },
+                { targets: 3, render: renderLifecycle },
+                { targets: 5, render: (value) => value ? L.Yes : L.No },
+                { targets: -1, searchable: false, orderable: false, className: 'cell-fit all text-end pe-3', render: (data, type, row) => renderActions(row) }
+            ],
+            initComplete: function () {
+                initSelector('#requestGlobalProduct', document.getElementById('offcanvasCreateEdit'));
+            },
+            drawCallback: function () {
+                document.querySelector('.add-new')?.classList.toggle('d-none', productHasOpenEntry);
+            }
+        }
+    });
+
+    const initDataTable = async () => {
+        if (!tableEl || !window.DitenDataTable?.createList) return;
+        list = await window.DitenDataTable.createList(buildListOptions());
+        // A link from another page names the product: it becomes the applied filter, as if chosen in the bar.
+        const linkedProduct = new URLSearchParams(window.location.search).get('globalProductId');
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(linkedProduct || ''))
+            applyProductFilter(linkedProduct, linkedProduct);
     };
 
     const bindEvents = () => {
-        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
-            selectedProductId = normalizeString($('#filterGlobalProduct').val());
-            selectedProductText = normalizeString($('#filterGlobalProduct option:selected').text());
-            dt?.ajax.reload();
-            bootstrap.Collapse.getOrCreateInstance(document.getElementById('inlineFilterCollapse'), { toggle: false }).hide();
-            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
-        });
-        document.getElementById('btnFilterReset')?.addEventListener('click', (event) => {
-            event.preventDefault();
-            selectedProductId = '';
-            selectedProductText = '';
-            productHasOpenEntry = false;
-            if (dt) reloadAppliedTableState(dt, getResetBaselineState());
-            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
-        });
         document.getElementById('btnRequestAbbreviation')?.addEventListener('click', () => {
             if (!canRequest()) return;
             const form = document.getElementById('formProductAbbreviationRequest');
@@ -565,7 +433,7 @@ const ProductAbbreviationRegisterList = (function () {
             const productId = normalizeString($('#requestGlobalProduct').val());
             const productText = normalizeString($('#requestGlobalProduct option:selected').text());
             const abbreviation = normalizeString(document.getElementById('requestAbbreviation')?.value);
-            if (productId && productId === selectedProductId && productHasOpenEntry) {
+            if (productId && productId === appliedProductId() && productHasOpenEntry) {
                 window.showToast?.(L.ErrorProductHasEntry, 'error');
                 return;
             }
@@ -579,17 +447,20 @@ const ProductAbbreviationRegisterList = (function () {
                     headers: { ...getAuthHeaders(), RequestVerificationToken: antiForgeryToken() }, body
                 });
                 await requireSuccess(response);
-                selectedProductId = productId;
-                selectedProductText = productText;
-                syncProductSelect('#filterGlobalProduct', productId, productText);
                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).hide();
-                window.DitenDataTable.reloadWithToast(dt, tableEl, 'RequestSuccess', null, bulkOptions);
+                window.showToast?.(L.RequestSuccess, 'success');
+                // The list follows the product the request was made for: its own filter, applied.
+                applyProductFilter(productId, productText);
               } catch (error) { if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error'); }
             }, { entityName: abbreviation, type: 'primary', confirmButtonText: L.Apply });
         });
     };
 
-    return { init: async () => { bindEvents(); await initDataTable(); } };
+    return {
+        init: async () => { bindEvents(); await initDataTable(); },
+        // The options handed to the list component — read by the page's own tests.
+        buildListOptions
+    };
 })();
 
 document.addEventListener('DOMContentLoaded', () => ProductAbbreviationRegisterList.init());

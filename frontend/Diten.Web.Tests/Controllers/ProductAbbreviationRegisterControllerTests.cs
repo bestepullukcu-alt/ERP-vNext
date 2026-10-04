@@ -148,6 +148,133 @@ public sealed class ProductAbbreviationRegisterControllerTests
         Assert.Equal($"/api/product-abbreviations/by-global-product/{id:D}/entries", Assert.Single(wire.Paths));
     }
 
+    // ── WP-MDM-ABB-LIST-01: the register list in the list component's server protocol ───────────────────────────
+
+    /// <summary>MDM's one-product entry list as it answers it (PascalCase here: the proxy reads names case-insensitively).</summary>
+    private static string Entries(Guid product, params (string Code, string Status, int Version, bool Retiring)[] rows)
+        => System.Text.Json.JsonSerializer.Serialize(new
+        {
+            isSuccessful = true,
+            data = rows.Select((row, i) => new Dictionary<string, object?>
+            {
+                ["Id"] = Guid.Parse($"00000000-0000-0000-0000-{i + 1:D12}"),
+                ["GlobalProductId"] = product,
+                ["Abbreviation"] = row.Code,
+                ["LifecycleStatus"] = row.Status,
+                ["Version"] = row.Version,
+                ["RetirementPending"] = row.Retiring,
+                ["CorrectionPending"] = false,
+                ["RequestedByCurrentUser"] = false,
+                ["RetirementRequestedByCurrentUser"] = false
+            })
+        });
+
+    private static System.Text.Json.JsonElement Page(IActionResult result)
+    {
+        var ok = Assert.IsType<OkObjectResult>(result);
+        return System.Text.Json.JsonSerializer.SerializeToElement(ok.Value,
+            new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web)).GetProperty("data");
+    }
+
+    [Fact]
+    public async Task The_list_pages_searches_and_sorts_one_products_entries_on_the_server()
+    {
+        var product = Guid.NewGuid();
+        using var wire = new Wire
+        {
+            Body = Entries(product,
+                ("CCC", "ACTIVE", 1, false), ("ABA", "REQUESTED", 0, false), ("BBA", "RETIRED", 3, true),
+                ("ABB", "REJECTED", 1, false), ("XYZ", "CANCELLED", 2, false))
+        };
+        var controller = Controller(wire, "mdm.product-abbreviations.read");
+
+        var page = Page(await controller.List(start: 1, length: 2, search: "b", orderBy: "abbreviation", orderDir: "desc",
+            globalProductId: product));
+
+        Assert.Equal($"/api/product-abbreviations/by-global-product/{product:D}/entries", Assert.Single(wire.Paths));
+        Assert.Equal(5, page.GetProperty("total").GetInt32());
+        Assert.Equal(3, page.GetProperty("filteredTotal").GetInt32());
+        // b-matches by abbreviation: BBA, ABB, ABA — descending, page two of size two starts at the second.
+        Assert.Equal(["ABB", "ABA"], page.GetProperty("items").EnumerateArray()
+            .Select(item => item.GetProperty("abbreviation").GetString()).ToArray());
+    }
+
+    [Fact]
+    public async Task The_list_sorts_by_the_lifecycle_in_MDMs_own_order()
+    {
+        var product = Guid.NewGuid();
+        using var wire = new Wire
+        {
+            Body = Entries(product, ("AAA", "RETIRED", 1, false), ("BBB", "REQUESTED", 0, false), ("CCC", "ACTIVE", 1, false))
+        };
+
+        var page = Page(await Controller(wire, "mdm.product-abbreviations.read").List(
+            start: 0, length: 10, orderBy: "lifecycleStatus", orderDir: "asc", globalProductId: product));
+
+        Assert.Equal(["BBB", "CCC", "AAA"], page.GetProperty("items").EnumerateArray()
+            .Select(item => item.GetProperty("abbreviation").GetString()).ToArray());
+    }
+
+    [Theory]
+    [InlineData("globalProductId", "asc")]
+    [InlineData("id", "asc")]
+    [InlineData("Abbreviation", "asc")]
+    [InlineData("abbreviation", "sideways")]
+    public async Task A_sort_outside_the_whitelist_is_refused_with_400_and_never_reaches_the_gateway(string orderBy, string orderDir)
+    {
+        using var wire = new Wire();
+
+        var refused = Assert.IsType<ObjectResult>(await Controller(wire, "mdm.product-abbreviations.read").List(
+            start: 0, length: 10, orderBy: orderBy, orderDir: orderDir, globalProductId: Guid.NewGuid()));
+
+        Assert.Equal(StatusCodes.Status400BadRequest, refused.StatusCode);
+        Assert.Contains("ABBREVIATION_LIST_ORDER_INVALID", System.Text.Json.JsonSerializer.Serialize(refused.Value));
+        Assert.Empty(wire.Paths);
+    }
+
+    [Theory]
+    [InlineData(-1, 10)]
+    [InlineData(0, 0)]
+    [InlineData(0, 101)]
+    public async Task A_page_outside_its_bounds_is_refused_with_400(int start, int length)
+    {
+        using var wire = new Wire();
+
+        var refused = Assert.IsType<ObjectResult>(await Controller(wire, "mdm.product-abbreviations.read").List(
+            start: start, length: length, globalProductId: Guid.NewGuid()));
+
+        Assert.Equal(StatusCodes.Status400BadRequest, refused.StatusCode);
+        Assert.Contains("ABBREVIATION_LIST_PAGE_INVALID", System.Text.Json.JsonSerializer.Serialize(refused.Value));
+        Assert.Empty(wire.Paths);
+    }
+
+    [Fact]
+    public async Task Without_a_product_the_list_is_an_empty_page_and_no_gateway_call()
+    {
+        using var wire = new Wire();
+
+        var page = Page(await Controller(wire, "mdm.product-abbreviations.read").List(start: 0, length: 10));
+
+        Assert.Equal(0, page.GetProperty("total").GetInt32());
+        Assert.Equal(0, page.GetProperty("filteredTotal").GetInt32());
+        Assert.Empty(page.GetProperty("items").EnumerateArray());
+        Assert.Empty(wire.Paths);
+    }
+
+    [Fact]
+    public async Task The_list_needs_read_permission_and_passes_MDMs_own_refusal_on()
+    {
+        using var denied = new Wire();
+        AssertDenied(await Controller(denied, "unrelated").List(globalProductId: Guid.NewGuid()));
+        Assert.Empty(denied.Paths);
+
+        using var refusing = new Wire { Status = 503, Body = "{\"isSuccessful\":false,\"errors\":[\"ABBREVIATION_PERSISTENCE_UNAVAILABLE\"]}" };
+        var passed = Assert.IsType<ContentResult>(await Controller(refusing, "mdm.product-abbreviations.read")
+            .List(globalProductId: Guid.NewGuid()));
+        Assert.Equal(503, passed.StatusCode);
+        Assert.Contains("ABBREVIATION_PERSISTENCE_UNAVAILABLE", passed.Content);
+    }
+
     private static void AssertDenied(IActionResult result)
     {
         var denied = Assert.IsType<ObjectResult>(result);
@@ -173,6 +300,8 @@ public sealed class ProductAbbreviationRegisterControllerTests
         public List<string> Paths { get; } = [];
         public List<string> Keys { get; } = [];
         public int Status { get; init; } = 200;
+        /// <summary>The gateway's answer body; null = the default success / failure envelope.</summary>
+        public string? Body { get; init; }
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
@@ -181,7 +310,7 @@ public sealed class ProductAbbreviationRegisterControllerTests
             Assert.Equal("Bearer", request.Headers.Authorization?.Scheme);
             Assert.Single(request.Headers.GetValues("X-Tenant-Id"));
             return Task.FromResult(new HttpResponseMessage((HttpStatusCode)Status) {
-                Content = new StringContent(Status == 200 ? "{\"isSuccessful\":true,\"data\":{}}" : "{\"isSuccessful\":false,\"errors\":[\"fixture-failure\"]}")
+                Content = new StringContent(Body ?? (Status == 200 ? "{\"isSuccessful\":true,\"data\":{}}" : "{\"isSuccessful\":false,\"errors\":[\"fixture-failure\"]}"))
             });
         }
     }

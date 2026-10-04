@@ -10,10 +10,12 @@ public static class ProductAbbreviationDecisionRules
     /// FIX4 item 4 — an approver's decision (approved or rejected) already stands on this request and it is someone
     /// else's. The stored state says so whatever key the late caller sent: two approvers in the Task Center send
     /// different keys as soon as their reasons differ, and the late one must still hear "another approver decided".
-    /// A cancellation is the requester withdrawing, not an approver deciding, so it is not this answer.
+    /// A cancellation is the requester withdrawing, not an approver deciding, so it is not this answer. Nor is an
+    /// active code whose RETIREMENT waits: what waits there is a decision nobody has taken yet (WP-MDM-ABB-LIST-01 EK 9).
     /// </summary>
     public static bool DecidedByAnotherApprover(ProductAbbreviationRegisterEntry entry, string actor)
-        => entry.LifecycleStatus is ProductAbbreviationLifecycleStatus.ACTIVE or ProductAbbreviationLifecycleStatus.REJECTED
+        => (entry.LifecycleStatus == ProductAbbreviationLifecycleStatus.REJECTED
+            || entry.LifecycleStatus == ProductAbbreviationLifecycleStatus.ACTIVE && entry.RetirementRequestId is null)
            && !string.IsNullOrEmpty(entry.LastDecisionByCanonicalSubjectId)
            && !string.Equals(entry.LastDecisionByCanonicalSubjectId, actor, StringComparison.Ordinal);
 }

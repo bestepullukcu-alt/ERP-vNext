@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Diten.Web.Models.ProductAbbreviationRegister;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -66,6 +67,85 @@ public sealed class ProductAbbreviationRegisterController : Controller
             content: null,
             mutation: false,
             cancellationToken) : Task.FromResult(Denied());
+
+    /// <summary>
+    /// WP-MDM-ABB-LIST-01 — the register list in the list component's SERVER protocol: start, length, search, orderBy,
+    /// orderDir and the applied product filter in; <c>{ data: { items, total, filteredTotal } }</c> out. A list shows ONE
+    /// product's entries (MDM answers them in one bounded read, at most 500); this proxy searches (abbreviation),
+    /// sorts (whitelist below; anything else is 400, never a silent default) and pages them. MDM is not changed.
+    /// No product chosen = an empty page, without a gateway call.
+    /// </summary>
+    [HttpGet("api/list")]
+    public async Task<IActionResult> List(
+        [FromQuery] int start = 0,
+        [FromQuery] int length = 10,
+        [FromQuery] string? search = null,
+        [FromQuery] string? orderBy = null,
+        [FromQuery] string? orderDir = null,
+        [FromQuery] Guid? globalProductId = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Has("mdm.product-abbreviations.read")) return Denied();
+        if (start < 0 || length is < 1 or > MaxListPageLength)
+            return ListRefused("ABBREVIATION_LIST_PAGE_INVALID");
+        if (orderBy is not null && !SortableListColumns.Contains(orderBy)
+            || orderDir is not null && orderDir is not ("asc" or "desc"))
+            return ListRefused("ABBREVIATION_LIST_ORDER_INVALID");
+        if (globalProductId is null || globalProductId == Guid.Empty)
+            return Ok(new { isSuccessful = true, data = new { items = Array.Empty<ProductAbbreviationListRow>(), total = 0, filteredTotal = 0 } });
+
+        var targetUrl = $"{_gatewayUrl}{ServicePath}/by-global-product/{globalProductId.Value:D}/entries";
+        if (!TryCreateGatewayRequest(HttpMethod.Get, targetUrl, null, mutation: false, out var request))
+            return Unauthorized(new { errors = new[] { _sharedLocalizer["Unauthorized"].Value } });
+
+        string body;
+        int status;
+        try
+        {
+            using (request)
+            using (var response = await _httpClient.SendAsync(request, cancellationToken))
+            {
+                body = await response.Content.ReadAsStringAsync(cancellationToken);
+                status = (int)response.StatusCode;
+            }
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogError(exception, "ABB Register list proxy failed for {TargetUrl}.", targetUrl);
+            return StatusCode(StatusCodes.Status502BadGateway, new { errors = new[] { _sharedLocalizer["GatewayError"].Value } });
+        }
+
+        // MDM's own refusal (403, 404, 503 …) is passed on as it came: the page reads its code.
+        if (status is < 200 or > 299)
+            return new ContentResult { StatusCode = status, ContentType = "application/json", Content = body };
+
+        if (!ProductAbbreviationListRow.TryReadEntries(body, out var rows))
+            return StatusCode(StatusCodes.Status502BadGateway, new { errors = new[] { _sharedLocalizer["GatewayError"].Value } });
+
+        var term = search?.Trim();
+        var filtered = string.IsNullOrEmpty(term)
+            ? rows
+            : rows.Where(row => row.Abbreviation.Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
+        var ordered = ProductAbbreviationListRow.Order(filtered, orderBy ?? "abbreviation", orderDir == "desc");
+        return Ok(new
+        {
+            isSuccessful = true,
+            data = new { items = ordered.Skip(start).Take(length).ToList(), total = rows.Count, filteredTotal = filtered.Count }
+        });
+    }
+
+    private const int MaxListPageLength = 100;
+
+    /// <summary>The register list's sortable columns (the page's column <c>data</c> names); the rest is 400.</summary>
+    internal static readonly IReadOnlySet<string> SortableListColumns =
+        new HashSet<string>(StringComparer.Ordinal) { "abbreviation", "lifecycleStatus", "version", "retirementPending" };
+
+    private IActionResult ListRefused(string code) => StatusCode(StatusCodes.Status400BadRequest, new
+    {
+        success = false,
+        errors = new[] { code },
+        errorCode = code
+    });
 
     /// <summary>FIX1 B2 — every entry of the product (requested, active, closed), for the register page.</summary>
     [HttpGet("api/by-global-product/{globalProductId:guid}/entries")]

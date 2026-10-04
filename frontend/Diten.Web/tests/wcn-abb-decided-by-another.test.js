@@ -5,9 +5,11 @@ const { bootSurface, app } = require("./wcn-boot");
 /*
  * ══ ABB FIX3 item 12 — "ANOTHER APPROVER DECIDED THIS FIRST", SAID ON THE PAGE WHERE THE RACE HAPPENS ════════════
  *
- * Two approvers on one ABB item send the SAME idempotency key (the key carries no person), so the second one is
- * refused by MDM with ABBREVIATION_ALREADY_DECIDED_BY_ANOTHER — and that refusal lands HERE, in the Task Center, not
- * on the register page that already had its sentence. Before, it read as the generic failure text.
+ * Two approvers decide one ABB item and the later one is refused by MDM with ABBREVIATION_ALREADY_DECIDED_BY_ANOTHER —
+ * from the stored decision, whatever key each sent (FIX4 item 4: the Task Center's key carries the reason, so two
+ * approvers with different reasons send different keys). That refusal lands HERE, in the Task Center, not on the
+ * register page that already had its sentence. Before, it read as the generic failure text. The lookup is an own-key
+ * one (Object.prototype.hasOwnProperty.call): a code named like a built-in property is not a sentence of its own.
  *
  * Everything is real but the network seam and the host page's dialog / toast globals.
  */

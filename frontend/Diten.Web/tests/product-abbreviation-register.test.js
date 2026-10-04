@@ -1,47 +1,53 @@
 const fs = require('fs');
 const path = require('path');
 
+/*
+ * WP-MDM-ABB-LIST-01 — the executed contract, now against the list component: the page hands its options to
+ * DitenDataTable.createList (server mode) and reloads through the list handle. Every rule of the old contract is kept;
+ * only the instruments moved (the 'details' action is the factory's 'quickView', a reload is list.reload).
+ */
 describe('ABB executed browser contract', () => {
     const vm = require('vm');
     const source = fs.readFileSync(path.join(__dirname, '..', 'wwwroot/assets/js/MDM/ProductAbbreviationRegister/index.js'), 'utf8');
     function harness(dataset = {}) {
-        const disabled = [];
         const selects = [];
-        const reload = vi.fn();
-        const api = {
-            ajax: { reload }, search: vi.fn(() => ''),
-            table: () => ({ container: () => ({ querySelector: () => null }) }),
-            column: () => ({ visible: vi.fn() }), order: vi.fn(), draw: vi.fn(),
-            colReorder: { order: vi.fn() }
-        };
+        const list = { reload: vi.fn(), appliedFilters: {} };
+        const createList = vi.fn(async () => list);
         const root = { dataset, querySelector: () => ({ value: 'synthetic-csrf-fixture' }) };
-        const document = {
-            getElementById: (id) => id === 'product-abbreviation-register' ? root : id === 'dt-product-abbreviation-register' ? {} : null,
-            querySelector: () => null, addEventListener: vi.fn(), body: {}
+        const addNew = { classList: { toggle: vi.fn() } };
+        const fields = {
+            filterGlobalProductId: { value: '' },
+            filterGlobalProductText: { value: '' },
+            btnFilterApply: { click: vi.fn() }
         };
-        let config;
+        const document = {
+            getElementById: (id) => id === 'product-abbreviation-register' ? root
+                : id === 'dt-product-abbreviation-register' ? {} : fields[id] ?? null,
+            querySelector: (selector) => selector === '.add-new' ? addNew : null, addEventListener: vi.fn(), body: {}
+        };
         const win = {
-            location: { search: '' }, L10n: { AddNew: 'Request', ErrorForbidden: 'denied', ErrorConflict: 'conflict',
-                ErrorGateway: 'unavailable', ErrorReconciliation: 'pending', ErrorValidation: 'invalid' },
-            DitenDataTable: { renderActions: (actions) => actions, bindBulkSelection: vi.fn(), bindActionDispatcher: vi.fn(), reloadWithToast: (dt) => dt.ajax.reload(null,false) },
-            DtDefaults: { create: (c) => { config = c; return c; }, exportButtons: vi.fn((title) => title), handleUnauthorized: vi.fn() },
-            showToast: vi.fn(), showConfirm: vi.fn(), personalizationClient: { getViews: vi.fn(async () => []), saveView: vi.fn(async x => x) }
+            location: { search: '', assign: vi.fn() }, L10n: { AddNew: 'Request', ErrorForbidden: 'denied', ErrorConflict: 'conflict',
+                ErrorGateway: 'unavailable', ErrorReconciliation: 'pending', ErrorValidation: 'invalid', ErrorNotFound: 'missing' },
+            DitenDataTable: { renderActions: (actions) => actions, createList },
+            DtDefaults: { handleUnauthorized: vi.fn() },
+            showToast: vi.fn(), showConfirm: vi.fn()
         };
         const fetch = vi.fn();
-        const context = { window: win, document, fetch, URLSearchParams, FormData, Option: function(){},
-            bootstrap: { Collapse: { getOrCreateInstance: () => ({ hide: vi.fn() }) } }, console, setTimeout,
-            DataTable: function() { return api; },
-            $: (selector) => ({ length: 1, hasClass: () => false, prop: (key, value) => disabled.push([selector,key,value]),
-                select2: x => selects.push(x), on: vi.fn(), val: () => ({ trigger: vi.fn() }), data: () => '' })
+        const context = { window: win, document, fetch, URLSearchParams, FormData, Option: function(){}, console, setTimeout,
+            bootstrap: { Offcanvas: { getOrCreateInstance: () => ({ show: vi.fn(), hide: vi.fn() }) } },
+            $: () => ({ length: 1, hasClass: () => false, prop: vi.fn(), select2: x => selects.push(x), on: vi.fn(),
+                val: () => ({ trigger: vi.fn() }), data: () => '', find: () => ({ text: () => '' }) })
         };
-        const instrumented = source.replace('return { init: async () => { bindEvents(); await initDataTable(); } };',
-            'return { canRequest, initSelector, renderActions, requireSuccess, requestRetirement, requestCorrection, initDataTable, normalizeView, reloadAppliedTableState, loadEvidence, saveDefaultView, getCurrentView, setDt: value => { dt = value; } };')
+        const anchor = '        buildListOptions\n    };';
+        expect(source.split(anchor)).toHaveLength(2);
+        const instrumented = source.replace(anchor,
+            '        buildListOptions, canRequest, initSelector, renderActions, requestRetirement, requestCorrection, initDataTable\n    };')
             .replace("document.addEventListener('DOMContentLoaded', () => ProductAbbreviationRegisterList.init());", '');
         vm.createContext(context);
         vm.runInContext(instrumented + '\nglobalThis.testSubject = ProductAbbreviationRegisterList;', context);
-        context.testSubject.setDt(api);
-        return { sut: context.testSubject, win, fetch, reload, disabled, selects, api, config: () => config };
+        return { sut: context.testSubject, win, fetch, list, createList, fields, selects, addNew };
     }
+    const keys = (h, row) => h.sut.renderActions(row).map(x => x.key);
 
     it.each([
         [{ canRequest:'true' }, false],
@@ -52,46 +58,51 @@ describe('ABB executed browser contract', () => {
         expect(h.sut.canRequest()).toBe(allowed);
         h.sut.initSelector('#filterGlobalProduct');
         expect(h.selects.length).toBe(allowed ? 1 : 0);
+        expect(h.sut.buildListOptions().toolbar.addNewText).toBe(allowed ? 'Request' : '');
         expect(h.fetch).not.toHaveBeenCalled();
     });
 
     it.each(['REQUESTED','REJECTED','CANCELLED','RETIRED'])('offers no active-state mutation in %s', status => {
         const h = harness({ canCorrect:'true',canRetire:'true' });
-        expect(h.sut.renderActions({ id:'x', lifecycleStatus:status }).map(x=>x.key)).toEqual(['details']);
+        expect(keys(h, { id:'x', lifecycleStatus:status })).toEqual(['quickView']);
     });
     it('shows only exact granted actions and excludes a pending retirement', () => {
         const h = harness({ canCorrect:'true' });
-        expect(h.sut.renderActions({ id:'x', lifecycleStatus:'ACTIVE' }).map(x=>x.key)).toEqual(['details','correct']);
-        expect(h.sut.renderActions({ id:'x', lifecycleStatus:'ACTIVE', retirementPending:true }).map(x=>x.key)).toEqual(['details']);
+        expect(keys(h, { id:'x', lifecycleStatus:'ACTIVE' })).toEqual(['quickView','correct']);
+        expect(keys(h, { id:'x', lifecycleStatus:'ACTIVE', retirementPending:true })).toEqual(['quickView']);
     });
     // FIX1 B2/B3 — what each reader is offered on the register page.
     it('offers cancel to the requester of a pending entry and the Task Center to anyone who decides', () => {
         const requester = harness({ canCancel:'true', canDecide:'true' });
-        expect(requester.sut.renderActions({ id:'x', lifecycleStatus:'REQUESTED', requestedByCurrentUser:true }).map(x=>x.key))
-            .toEqual(['details','cancel']);
-        expect(requester.sut.renderActions({ id:'x', lifecycleStatus:'REQUESTED', requestedByCurrentUser:false }).map(x=>x.key))
-            .toEqual(['details','taskCenter']);
-        expect(requester.sut.renderActions({ id:'x', lifecycleStatus:'ACTIVE', retirementPending:true }).map(x=>x.key))
-            .toEqual(['details','taskCenter']);
+        expect(keys(requester, { id:'x', lifecycleStatus:'REQUESTED', requestedByCurrentUser:true })).toEqual(['quickView','cancel']);
+        expect(keys(requester, { id:'x', lifecycleStatus:'REQUESTED', requestedByCurrentUser:false })).toEqual(['quickView','taskCenter']);
+        expect(keys(requester, { id:'x', lifecycleStatus:'ACTIVE', retirementPending:true })).toEqual(['quickView','taskCenter']);
         const reader = harness({});
-        expect(reader.sut.renderActions({ id:'x', lifecycleStatus:'REQUESTED', requestedByCurrentUser:true }).map(x=>x.key))
-            .toEqual(['details']);
+        expect(keys(reader, { id:'x', lifecycleStatus:'REQUESTED', requestedByCurrentUser:true })).toEqual(['quickView']);
     });
     it('offers no correction or retirement while a correction of the code waits', () => {
         const h = harness({ canCorrect:'true', canRetire:'true' });
-        expect(h.sut.renderActions({ id:'x', lifecycleStatus:'ACTIVE', correctionPending:true }).map(x=>x.key)).toEqual(['details']);
-        expect(h.sut.renderActions({ id:'x', lifecycleStatus:'ACTIVE' }).map(x=>x.key)).toEqual(['details','correct','retire']);
+        expect(keys(h, { id:'x', lifecycleStatus:'ACTIVE', correctionPending:true })).toEqual(['quickView']);
+        expect(keys(h, { id:'x', lifecycleStatus:'ACTIVE' })).toEqual(['quickView','correct','retire']);
+    });
+    it('wires every offered row action to its flow and the details to the quick view', () => {
+        const options = harness({}).sut.buildListOptions();
+        expect(Object.keys(options.actions.onRowAction).sort()).toEqual(['cancel','correct','retire','taskCenter']);
+        expect(options.quickView.actionKey).toBe('quickView');
     });
     it.each([202,403,404,409])('never reloads a retirement or reports success for failure %s', async status => {
         const h = harness({canRetire:'true'});
+        await h.sut.initDataTable();
         h.fetch.mockResolvedValue({ status, ok:status===202, json:async()=>({isSuccessful:false,errors:[]}) });
         h.sut.requestRetirement({id:'entry',version:4,lifecycleStatus:'ACTIVE'});
         await h.win.showConfirm.mock.calls[0][1]('fixture reason');
-        expect(h.reload).not.toHaveBeenCalled();
+        expect(h.list.reload).not.toHaveBeenCalled();
         expect(h.win.showToast).toHaveBeenCalledWith(expect.any(String),'error');
+        expect(h.win.showToast).not.toHaveBeenCalledWith(expect.anything(),'success');
     });
     it('correction posts expected version with replacement and reason then reloads authoritative state', async () => {
         const h=harness({canCorrect:'true'});
+        await h.sut.initDataTable();
         h.fetch.mockResolvedValue({status:200,ok:true,json:async()=>({isSuccessful:true,data:{}})});
         h.sut.requestCorrection({id:'entry',version:7,lifecycleStatus:'ACTIVE'});
         h.win.showConfirm.mock.calls[0][1]('ABC');
@@ -99,31 +110,50 @@ describe('ABB executed browser contract', () => {
         expect(h.fetch.mock.calls[0][0]).toBe('/MDM/ProductAbbreviationRegister/api/entry/corrections');
         expect(JSON.parse(h.fetch.mock.calls[0][1].body)).toEqual({expectedVersion:7,replacementAbbreviation:'ABC',reason:'reason'});
         expect(h.fetch.mock.calls[0][1].headers.RequestVerificationToken).toBe('synthetic-csrf-fixture');
-        expect(h.reload).toHaveBeenCalledWith(null,false);
+        expect(h.list.reload).toHaveBeenCalledWith('RequestSuccess');
     });
     it('auditor deeplink loads exact product without the selector or request button', async () => {
         const h=harness({canAudit:'true'});
         const id='11111111-1111-1111-1111-111111111111';
         h.win.location.search='?globalProductId='+id;
-        // FIX1 B2: the page reads every entry of the product (a list), not only the active one.
-        h.fetch.mockResolvedValue({status:200,ok:true,json:async()=>({data:[{id:'entry',version:8,lifecycleStatus:'ACTIVE'}]})});
         await h.sut.initDataTable();
-        const callback=vi.fn();
-        h.config().ajax({},callback);
-        await new Promise(resolve=>setTimeout(resolve,0));
-        expect(h.fetch.mock.calls[0][0]).toBe('/MDM/ProductAbbreviationRegister/api/by-global-product/'+id+'/entries');
-        expect(callback.mock.calls[0][0].data[0].version).toBe(8);
-        expect(h.win.DtDefaults.exportButtons.mock.calls[0][0]).toBeNull();
+        const options=h.createList.mock.calls[0][0];
+        // FIX1 B2 + LIST: every entry of the product, read through the server-mode list proxy.
+        expect(options.dataMode).toBe('server');
+        expect(options.ajax.url).toBe('/MDM/ProductAbbreviationRegister/api/list');
+        expect(h.fields.filterGlobalProductId.value).toBe(id);
+        expect(h.fields.btnFilterApply.click).toHaveBeenCalledTimes(1);
+        await options.filters.loadOptions();
         expect(h.selects).toHaveLength(0);
+        expect(options.toolbar.addNewText).toBe('');
+        expect(h.fetch).not.toHaveBeenCalled();
     });
-    it('preserves saved filter/search/column/order state and reloads on reset', async () => {
-        const h=harness();
-        const state={filters:{globalProductId:'product',globalProductText:'Product'},search:'term',colVis:[true,false,true,true,true],columnOrder:[0,1,2,3,4,5,6,7],order:[[3,'desc']]};
-        await h.sut.saveDefaultView(state);
-        expect(h.win.personalizationClient.saveView.mock.calls[0][0].viewDefinition).toEqual(state);
-        h.sut.reloadAppliedTableState(h.api,state);
-        expect(h.reload).toHaveBeenCalledWith(expect.any(Function),false);
-        expect(h.api.search).toHaveBeenCalledWith('term');
+    it('ignores a deeplink that is not a product id', async () => {
+        const h=harness({canAudit:'true'});
+        h.win.location.search='?globalProductId=not-a-guid';
+        await h.sut.initDataTable();
+        expect(h.fields.filterGlobalProductId.value).toBe('');
+        expect(h.fields.btnFilterApply.click).not.toHaveBeenCalled();
+    });
+    it('hides the request button for a product that already has an active or pending code', () => {
+        const h=harness({canRequest:'true',canSelectProduct:'true'});
+        const options=h.sut.buildListOptions();
+        options.onResponse({data:{items:[{id:'x',lifecycleStatus:'REJECTED'}]}});
+        options.config.drawCallback();
+        expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', false);
+        options.onResponse({data:{items:[{id:'x',lifecycleStatus:'REQUESTED'}]}});
+        options.config.drawCallback();
+        expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', true);
+        options.onResponse({data:{items:[{id:'x',lifecycleStatus:1}]}});
+        options.config.drawCallback();
+        expect(h.addNew.classList.toggle).toHaveBeenLastCalledWith('d-none', true);
+    });
+    it('preserves saved filter/search/column/order state under the old view keys', () => {
+        const options=harness().sut.buildListOptions();
+        expect(options.savedView).toMatchObject({ moduleKey:'MasterDataManagement', pageKey:'ProductAbbreviationRegister',
+            saveViewColumnIndexes:[1,2,3,4,5], baseOrder:[[2,'asc']] });
+        expect(options.filters.fields.map(f=>f.key)).toEqual(['globalProductText','globalProductId']);
+        expect(options.filters.resetBtn).toBe('btnFilterReset');
     });
 });
 
@@ -161,8 +191,10 @@ describe('MOD-0290-FU01 Product Abbreviation Register', () => {
     it('loads every entry of the exact product and read-only evidence', () => {
         const source = script();
 
-        // FIX1 B2: the requester must see the pending request they just made, so the page lists every entry.
-        expect(source).toContain('`${endpoint}/by-global-product/${encodeURIComponent(selectedProductId)}/entries`');
+        // FIX1 B2: the requester must see the pending request they just made, so the list reads every entry —
+        // LIST: through the server-mode proxy, which reads MDM's every-entry call for the one product.
+        expect(source).toContain('`${endpoint}/list`');
+        expect(controller()).toContain('/by-global-product/{globalProductId.Value:D}/entries');
         expect(source).toContain('`${endpoint}/${encodeURIComponent(entryId)}/evidence`');
         expect(source).toContain('item.canonicalHumanSubjectId ?? item.CanonicalHumanSubjectId');
         expect(source).toContain('item.correlationId ?? item.CorrelationId');
@@ -178,25 +210,22 @@ describe('MOD-0290-FU01 Product Abbreviation Register', () => {
 
         expect(index).toContain('Layout = "_LayoutTenantShell"');
         expect(index).toContain('<partial name="~/Views/MDM/ProductAbbreviationRegister/_CreateEditOffcanvas.cshtml" />');
-        expect(table).toContain('data-dt-standard="v2"');
-        expect(table).toContain('id="skeleton-loader"');
-        expect(source).toContain('window.DtDefaults.create({');
-        expect(source).toContain("stateSave: false");
-        expect(source).toContain("colReorder: { columns: ':gt(1):not(:last-child)' }");
+        // LIST: the shared shell (v2 table + shaped skeleton) and the shared factory, not a page-local copy.
+        expect(table).toContain('<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />');
+        expect(table).toContain('DataMode = "server"');
+        expect(table).toContain('HasSelection = false');
+        expect(source).toContain('window.DitenDataTable.createList(buildListOptions())');
+        expect(source).not.toContain('DtDefaults.create(');
+        expect(source).toContain("colReorder: { columns: ':gt(0):not(:last-child)' }");
     });
 
     it('persists, restores, and resets the complete saved-view state without leaking browser credentials', () => {
         const source = script();
 
         expect(source).toContain("const personalizationContext = { moduleKey: 'MasterDataManagement', pageKey: 'ProductAbbreviationRegister' }");
-        expect(source).toContain("api.table().container().querySelector('.dt-search input')?.value ?? api.search()");
-        expect(source).toContain('const syncSearch = (api, value) =>');
-        expect(source).toContain("api.table().container().querySelector('.dt-search input')");
-        expect(source).toContain('syncSearch(api, normalized.search);');
-        expect(source).toContain('redrawAppliedTableState(this.api(), saved || getResetBaselineState());');
-        expect(source).toContain('api.ajax.reload(() => syncSearch(api, normalized.search), false);');
-        expect(source).toContain('if (dt) reloadAppliedTableState(dt, getResetBaselineState());');
-        expect(source).toContain('setSaveFilterVisible(isDirtyComparedToDefault(dt));');
+        // LIST: save / restore / reset belong to the list component; the page hands it the same view keys.
+        expect(source).toContain('moduleKey: personalizationContext.moduleKey');
+        expect(source).toContain('pageKey: personalizationContext.pageKey');
         expect(source).not.toMatch(/document\.cookie|access_token|Authorization\s*:\s*['"`']Bearer|X-Tenant-Id/);
     });
 

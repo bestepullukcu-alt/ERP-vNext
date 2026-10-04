@@ -22,6 +22,9 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
     private readonly Guid _tenantId;
     private readonly ILogger<ProductAbbreviationRegisterRepository> _logger;
 
+    /// <summary>WP-MDM-ABB-LIST-01 EK 7 — the databases whose retired FIX2 index this process has already dealt with.</summary>
+    private static readonly ConcurrentDictionary<string, byte> RetiredIndexChecked = new(StringComparer.Ordinal);
+
     /// <summary>FIX4 item 9 — the tenants (per database) whose pending rows this process has already given an order.</summary>
     private static readonly ConcurrentDictionary<string, byte> BackfilledTenants = new(StringComparer.Ordinal);
 
@@ -179,47 +182,78 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
 
     private async Task BackfillPendingSinceAsync(CancellationToken cancellationToken)
     {
-        static BsonDocument IsTimestamp(string field) => new("$and", new BsonArray
+        // A stored time is [clock ticks, offset minutes]. Anything else — not an array, not two items, an item that is
+        // not a number or does not fit a long — is left WITHOUT an order ($$REMOVE): never a failed update for every other
+        // row, and never a guessed time (WP-MDM-ABB-LIST-01 EK 5).
+        static BsonDocument AsLong(BsonValue input) => new("$convert", new BsonDocument
         {
-            new BsonDocument("$isArray", field),
-            new BsonDocument("$eq", new BsonArray { new BsonDocument("$size", new BsonDocument("$cond", new BsonArray
-            {
-                new BsonDocument("$isArray", field), field, new BsonArray()
-            })), 2 })
+            ["input"] = input,
+            ["to"] = "long",
+            ["onError"] = BsonNull.Value,
+            ["onNull"] = BsonNull.Value
         });
 
-        static BsonDocument UtcTicks(string field) => new("$subtract", new BsonArray
+        static BsonDocument UtcTicksOrNothing(string field) => new("$cond", new BsonArray
         {
-            new BsonDocument("$toLong", new BsonDocument("$arrayElemAt", new BsonArray { field, 0 })),
-            new BsonDocument("$multiply", new BsonArray
+            new BsonDocument("$and", new BsonArray
             {
-                new BsonDocument("$toLong", new BsonDocument("$arrayElemAt", new BsonArray { field, 1 })),
-                TimeSpan.TicksPerMinute
-            })
+                new BsonDocument("$isArray", field),
+                new BsonDocument("$eq", new BsonArray
+                {
+                    new BsonDocument("$size", new BsonDocument("$cond", new BsonArray
+                    {
+                        new BsonDocument("$isArray", field), field, new BsonArray()
+                    })),
+                    2
+                })
+            }),
+            new BsonDocument("$let", new BsonDocument
+            {
+                ["vars"] = new BsonDocument
+                {
+                    ["ticks"] = AsLong(new BsonDocument("$arrayElemAt", new BsonArray { field, 0 })),
+                    ["offset"] = AsLong(new BsonDocument("$arrayElemAt", new BsonArray { field, 1 }))
+                },
+                ["in"] = new BsonDocument("$cond", new BsonArray
+                {
+                    new BsonDocument("$and", new BsonArray
+                    {
+                        new BsonDocument("$isNumber", "$$ticks"),
+                        new BsonDocument("$isNumber", "$$offset")
+                    }),
+                    new BsonDocument("$subtract", new BsonArray
+                    {
+                        "$$ticks",
+                        new BsonDocument("$multiply", new BsonArray { "$$offset", TimeSpan.TicksPerMinute })
+                    }),
+                    "$$REMOVE"
+                })
+            }),
+            "$$REMOVE"
         });
 
         const string retirementAt = "$" + nameof(ProductAbbreviationRegisterEntry.RetirementRequestedAtUtc);
         const string requestedAt = "$" + nameof(ProductAbbreviationRegisterEntry.RequestedAtUtc);
+        const string status = "$" + nameof(ProductAbbreviationRegisterEntry.LifecycleStatus);
         var missing = new BsonDocument(nameof(ProductAbbreviationRegisterEntry.PendingSinceUtcTicks), BsonNull.Value);
-        var waitingRetirement = new BsonDocument("$and", new BsonArray
-        {
-            new BsonDocument("$eq", new BsonArray
-            {
-                "$" + nameof(ProductAbbreviationRegisterEntry.LifecycleStatus),
-                (int)ProductAbbreviationLifecycleStatus.ACTIVE
-            }),
-            IsTimestamp(retirementAt)
-        });
-        // $switch: the retirement's time, else the request's time, else leave the field out ($$REMOVE) — a row whose
-        // stored time is not [ticks, offset] is not stamped and does not fail the update for every other row.
+        // By what the row waits for: a waiting retirement by the retirement's time ONLY (an unreadable one stays without
+        // an order — never stamped with the far older request time), a request by the request's time.
         var stamp = new BsonDocument("$set", new BsonDocument(
             nameof(ProductAbbreviationRegisterEntry.PendingSinceUtcTicks),
             new BsonDocument("$switch", new BsonDocument
             {
                 ["branches"] = new BsonArray
                 {
-                    new BsonDocument { ["case"] = waitingRetirement, ["then"] = UtcTicks(retirementAt) },
-                    new BsonDocument { ["case"] = IsTimestamp(requestedAt), ["then"] = UtcTicks(requestedAt) }
+                    new BsonDocument
+                    {
+                        ["case"] = new BsonDocument("$eq", new BsonArray { status, (int)ProductAbbreviationLifecycleStatus.ACTIVE }),
+                        ["then"] = UtcTicksOrNothing(retirementAt)
+                    },
+                    new BsonDocument
+                    {
+                        ["case"] = new BsonDocument("$eq", new BsonArray { status, (int)ProductAbbreviationLifecycleStatus.REQUESTED }),
+                        ["then"] = UtcTicksOrNothing(requestedAt)
+                    }
                 },
                 ["default"] = "$$REMOVE"
             })));
@@ -1297,9 +1331,23 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
 
     /// <summary>
     /// FIX4 item 5 — FIX2's pending-order index held every row of every tenant; the two partial indexes replaced it.
-    /// Dropped where it still exists, by its exact name only (no other index is touched); idempotent.
+    /// Dropped where it still exists, by its exact name only (no other index is touched); idempotent. Once per process
+    /// per database (EK 7): marked after the check completed, so a failed check is tried again by the next repository.
     /// </summary>
     private void DropRetiredIndex()
+    {
+        // EK 7: the repository is built once per request; the index list is read once per process per database.
+        var marker = _database.DatabaseNamespace.DatabaseName;
+        if (RetiredIndexChecked.ContainsKey(marker))
+        {
+            return;
+        }
+
+        DropRetiredIndexNow();
+        RetiredIndexChecked.TryAdd(marker, 0);
+    }
+
+    private void DropRetiredIndexNow()
     {
         var present = _collection.Indexes.List().ToList()
             .Any(index => index.TryGetValue("name", out var name) && name == RetiredPendingOrderIndexName);

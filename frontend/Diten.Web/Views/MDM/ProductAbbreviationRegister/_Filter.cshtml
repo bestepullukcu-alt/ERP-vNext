@@ -12,6 +12,11 @@
                         <select id="filterGlobalProduct" class="form-select form-select-sm select2"
                                 data-placeholder="@Localizer["SelectGlobalProduct"]"
                                 aria-label="@Localizer["SelectGlobalProduct"]"></select>
+                        @* WP-MDM-ABB-LIST-01 — the list component's filter fields: the product picker (a paged MDM
+                           search) writes the chosen product's id and its display text here, so the applied filter and
+                           the saved view carry both and a saved product is shown by name, not by id. *@
+                        <input type="hidden" id="filterGlobalProductText" />
+                        <input type="hidden" id="filterGlobalProductId" />
                     </div>
                     <div class="ms-auto d-flex gap-3">
                         <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>

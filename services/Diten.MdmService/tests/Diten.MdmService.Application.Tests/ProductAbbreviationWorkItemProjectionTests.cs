@@ -438,6 +438,74 @@ public sealed class ProductAbbreviationWorkItemProjectionTests
             reader, policies).Handle(new GetProductAbbreviationWorkItemsQuery("team"), CancellationToken.None));
     }
 
+    // ── WP-MDM-ABB-LIST-01 EK 6: which failures hide ONE product and which go up ──────────────────────────────────
+
+    public static TheoryData<string> DataFailures() => new() { "bson", "invalid-operation", "format" };
+
+    private static Exception DataFailure(string kind) => kind switch
+    {
+        "bson" => new MongoDB.Bson.BsonSerializationException("bad policy document"),
+        "invalid-operation" => new InvalidOperationException("bad policy content"),
+        _ => new FormatException("bad policy document")
+    };
+
+    [Theory]
+    [MemberData(nameof(DataFailures))]
+    public async Task A_policy_that_cannot_be_read_as_data_hides_only_its_own_product(string kind)
+    {
+        // EK 6 — every data failure the projection recognises (the BSON serializer's, by name; invalid content; a format
+        // error), raised by the batch read AND by the one product's own read: that product is hidden, the other shown.
+        var (tenant, reader) = (new TenantContext(), Guid.NewGuid());
+        tenant.SetTenant(Guid.NewGuid());
+        var readable = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-OK", GlobalProductName = "Readable" };
+        var broken = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-BAD", GlobalProductName = "Broken" };
+        var policies = Stub<IProductLegalEntityScopePolicyRepository>((method, args) => method.Name switch
+        {
+            nameof(IProductLegalEntityScopePolicyRepository.GetByGlobalProductIdsAsync)
+                => Task.FromException<IReadOnlyList<ProductLegalEntityScopePolicy>>(DataFailure(kind)),
+            nameof(IProductLegalEntityScopePolicyRepository.GetByGlobalProductIdAsync) when (Guid)args![0]! == broken.Id
+                => Task.FromException<ProductLegalEntityScopePolicy?>(DataFailure(kind)),
+            nameof(IProductLegalEntityScopePolicyRepository.GetByGlobalProductIdAsync)
+                => Task.FromResult<ProductLegalEntityScopePolicy?>(Policy(tenant.TenantId, readable.Id, reader)),
+            _ => throw new InvalidOperationException(method.Name)
+        });
+        var entries = new[] { Entry(broken.Id, "maker"), Entry(readable.Id, "maker") };
+
+        var result = await EnforcedHandler(entries, [readable, broken], tenant, reader, policies).Handle(
+            new GetProductAbbreviationWorkItemsQuery("team"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful, result.ReasonCode);
+        Assert.Equal(entries[1].Id.ToString("D"), Assert.Single(result.Data!.Items).Id);
+    }
+
+    public static TheoryData<string> InfrastructureFailures() => new() { "mongo", "disposed" };
+
+    [Theory]
+    [MemberData(nameof(InfrastructureFailures))]
+    public async Task The_driver_failing_or_going_away_on_the_policy_read_goes_up(string kind)
+    {
+        // EK 6 — a MongoException is the database; an ObjectDisposedException (it derives from InvalidOperationException)
+        // is the driver or host going away. Neither is one product's bad policy: no product is hidden for them.
+        var (tenant, reader) = (new TenantContext(), Guid.NewGuid());
+        tenant.SetTenant(Guid.NewGuid());
+        var product = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-GONE", GlobalProductName = "Gone" };
+        Exception failure = kind == "mongo"
+            ? new MongoDB.Driver.MongoClientException("the cluster is gone")
+            : new ObjectDisposedException("MongoClient");
+        var policies = Stub<IProductLegalEntityScopePolicyRepository>((method, _) => method.Name switch
+        {
+            nameof(IProductLegalEntityScopePolicyRepository.GetByGlobalProductIdsAsync)
+                => Task.FromException<IReadOnlyList<ProductLegalEntityScopePolicy>>(failure),
+            _ => Task.FromException<ProductLegalEntityScopePolicy?>(failure)
+        });
+
+        var thrown = await Record.ExceptionAsync(() => EnforcedHandler([Entry(product.Id, "maker")], [product], tenant,
+            reader, policies).Handle(new GetProductAbbreviationWorkItemsQuery("team"), CancellationToken.None));
+
+        Assert.NotNull(thrown);
+        Assert.Same(failure, thrown);
+    }
+
     private static ProductLegalEntityScopePolicy Policy(Guid tenantId, Guid productId, Guid legalEntityId)
         => ProductLegalEntityScopePolicy.Create(tenantId, productId, Guid.NewGuid(), ProductLegalEntityScopeMode.Scoped,
             [legalEntityId], Guid.NewGuid(), DateTimeOffset.UtcNow.AddMinutes(-1));

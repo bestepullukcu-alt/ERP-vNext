@@ -7,6 +7,14 @@
     @Json.Serialize(new
     {
         Actions = Localizer["Actions"].Value,
+        // WP-MDM-ABB-LIST-01 — the list vocabulary every v2 list carries (shared keys, all seven languages). The quick
+        // view is the register's "view details", as on the GSKU register.
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Edit = SharedLocalizer["Edit"].Value,
+        QuickView = SharedLocalizer["ViewDetails"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Status = SharedLocalizer["Status"].Value,
         AddNew = Localizer["AddNewProductAbbreviation"].Value,
         Apply = SharedLocalizer["Apply"].Value,
         AreYouSure = SharedLocalizer["AreYouSure"].Value,

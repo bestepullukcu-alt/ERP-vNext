@@ -279,6 +279,13 @@ public sealed class GetProductAbbreviationWorkItemsHandler
     /// </summary>
     private static bool IsUnreadablePolicy(Exception exception)
     {
+        // WP-MDM-ABB-LIST-01 EK 6: ObjectDisposedException derives from InvalidOperationException, but a disposed driver
+        // or host is the infrastructure going away, not one product's policy — it goes up.
+        if (exception is ObjectDisposedException)
+        {
+            return false;
+        }
+
         if (exception is FormatException or InvalidOperationException)
         {
             return true;

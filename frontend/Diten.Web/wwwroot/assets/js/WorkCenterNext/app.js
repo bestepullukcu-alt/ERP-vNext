@@ -8283,7 +8283,8 @@
          * the stored decision, whatever key each approver sent — their reasons make the keys differ) — and the board
          * is re-read, since the item has left it.
          */
-        if (typeof result.reasonCode === 'string' && Object.hasOwn(PROVIDER_REASON_KEYS, result.reasonCode)) {
+        if (typeof result.reasonCode === 'string'
+            && Object.prototype.hasOwnProperty.call(PROVIDER_REASON_KEYS, result.reasonCode)) {
             await loadWorkItems();
             render();
             toast(t(PROVIDER_REASON_KEYS[result.reasonCode]), 'error');
