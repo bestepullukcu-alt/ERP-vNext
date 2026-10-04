@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
 using Diten.Platform.Application.Features.Workflow.Queries;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
@@ -72,9 +73,27 @@ public sealed class GetTrustedWorkflowTerminalDecisionEvidenceHandler
         };
         if (expectedAction is null)
         {
-            return IsCoherentNonTerminal(instance.Status, tasks, decisionLogs)
-                ? NotTerminal(request.CorrelationId)
-                : Inconsistent("Workflow non-terminal facts are contradictory.", request.CorrelationId);
+            if (IsCoherentNonTerminal(instance.Status, tasks, decisionLogs))
+            {
+                return NotTerminal(request.CorrelationId);
+            }
+
+            /*
+             * BL-547 — AN APPROVAL THAT ENDED WITH NOBODY DECIDING HAS ITS OWN CODE. Cancelled (the maker or the owning
+             * module called it off) and TimedOut (the SLA ran out) used to be answered "inconsistent", the code that means
+             * "the engine's own facts contradict each other" — a consumer could not tell a closed approval from a corrupt
+             * one, and quarantined both. The answer is the closed-without-decision code only when the facts HOLD TOGETHER
+             * (see IsCoherentClosedWithoutDecision): a consumer that hears it may stop waiting and take its request back,
+             * so it must be true that no decision can still come. Facts that do not hold together stay "inconsistent".
+             */
+            if (instance.Status is WorkflowInstanceStatus.Cancelled or WorkflowInstanceStatus.TimedOut)
+            {
+                return IsCoherentClosedWithoutDecision(instance, tasks, logs, decisionLogs)
+                    ? ClosedWithoutDecision(instance.Status, request.CorrelationId)
+                    : Inconsistent("Workflow closed-without-decision facts are contradictory.", request.CorrelationId);
+            }
+
+            return Inconsistent("Workflow non-terminal facts are contradictory.", request.CorrelationId);
         }
 
         if (decisionLogs.Count == 0)
@@ -147,6 +166,22 @@ public sealed class GetTrustedWorkflowTerminalDecisionEvidenceHandler
             WorkflowReasonCodes.WorkflowDecisionNotTerminal,
             correlationId);
 
+    /// <summary>
+    /// BL-547. The reason is told in the message only: the answer travels in the envelope the consumers already read, and
+    /// that envelope is closed (MDM's client accepts exactly six keys and files anything else as an unreadable response),
+    /// so a machine-readable sub-reason is a contract change for the consumers to take, not something to add here.
+    /// </summary>
+    private static Response<TrustedWorkflowTerminalDecisionEvidence> ClosedWithoutDecision(
+        WorkflowInstanceStatus status,
+        string correlationId) =>
+        Response<TrustedWorkflowTerminalDecisionEvidence>.Fail(
+            status == WorkflowInstanceStatus.TimedOut
+                ? "Workflow instance timed out without a terminal decision."
+                : "Workflow instance was cancelled without a terminal decision.",
+            409,
+            WorkflowReasonCodes.WorkflowInstanceClosedWithoutDecision,
+            correlationId);
+
     private static bool HasStrictMonotonicSequence(IReadOnlyList<WorkflowTransitionLog> logs)
     {
         long previous = 0;
@@ -213,10 +248,71 @@ public sealed class GetTrustedWorkflowTerminalDecisionEvidenceHandler
         return instanceStatus switch
         {
             WorkflowInstanceStatus.Pending => decisionLogs.Count == 0 && tasks.Count == 0,
-            WorkflowInstanceStatus.Active => tasks.Count(x => x.Status is
-                ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence) == 1,
+            // BL-547 — an SLA escalation moves the TASK and the INSTANCE to Escalated, and both stay open: nobody has
+            // decided, the approval only moved to somebody else, and the decision gates still take their decision. So an
+            // Escalated instance is as open as an Active one, and an Active instance may carry an escalated task as well
+            // as a waiting one (what "open" means is IsOpenTask's).
+            WorkflowInstanceStatus.Active or WorkflowInstanceStatus.Escalated => tasks.Count(IsOpenTask) == 1,
             _ => false
         };
+    }
+
+    /// <summary>
+    /// BL-547 — somebody can still decide this task: WaitingApproval, WaitingEvidence or Escalated. It is the decision
+    /// gates' own rule (<see cref="WorkflowTaskTransitionSupport.IsDecidable"/>), asked here rather than copied, so what
+    /// this endpoint calls "open" is what approve, reject, delegate and request-info accept.
+    /// </summary>
+    private static bool IsOpenTask(ApprovalTask task) => WorkflowTaskTransitionSupport.IsDecidable(task);
+
+    /// <summary>
+    /// BL-547 — the facts of an approval that was cancelled or timed out, and that nobody decided. They hold together
+    /// only when NOTHING CAN STILL BE DECIDED, because a consumer that hears "closed without a decision" gives its
+    /// request back and stops reading: a decision that could still land afterwards would be an approval nobody applies.
+    /// <list type="bullet">
+    /// <item>Every decision log is an earlier step's approval (<see cref="IsCoherentPriorApproval"/>, unchanged): a
+    /// reject, or an approve that finished the instance, contradicts a cancelled or timed-out one.</item>
+    /// <item>Every task is closed — an earlier step's approval, or the cancelled / timed-out one. A task still waiting,
+    /// escalated or rejected under a closed instance can still be decided (the gates look at the task) or is a contradiction.</item>
+    /// <item>The instance's last transition is the one that closed it (Cancel for Cancelled, Timeout for TimedOut), on a
+    /// task that carries the same ending, and says the instance's own status.</item>
+    /// </list>
+    /// </summary>
+    private static bool IsCoherentClosedWithoutDecision(
+        WorkflowInstance instance,
+        IReadOnlyList<ApprovalTask> tasks,
+        IReadOnlyList<WorkflowTransitionLog> logs,
+        IReadOnlyList<WorkflowTransitionLog> decisionLogs)
+    {
+        WorkflowTransitionAction closingAction;
+        ApprovalTaskStatus closingTaskStatus;
+        switch (instance.Status)
+        {
+            case WorkflowInstanceStatus.Cancelled:
+                closingAction = WorkflowTransitionAction.Cancel;
+                closingTaskStatus = ApprovalTaskStatus.Cancelled;
+                break;
+            case WorkflowInstanceStatus.TimedOut:
+                closingAction = WorkflowTransitionAction.Timeout;
+                closingTaskStatus = ApprovalTaskStatus.TimedOut;
+                break;
+            default:
+                return false;
+        }
+
+        if (!decisionLogs.All(x => IsCoherentPriorApproval(x, tasks))
+            || tasks.Any(x => x.Status is not (ApprovalTaskStatus.Approved
+                or ApprovalTaskStatus.Cancelled or ApprovalTaskStatus.TimedOut)))
+        {
+            return false;
+        }
+
+        var closing = logs.MaxBy(x => x.SequenceNo);
+        var closingTask = closing is null ? null : FindSingleTask(tasks, closing.ApprovalTaskId);
+        return closing is not null
+               && closing.Action == closingAction
+               && string.Equals(closing.ToStatus, instance.Status.ToString(), StringComparison.Ordinal)
+               && closingTask is not null
+               && closingTask.Status == closingTaskStatus;
     }
 
     private static bool IsCoherentPriorApproval(

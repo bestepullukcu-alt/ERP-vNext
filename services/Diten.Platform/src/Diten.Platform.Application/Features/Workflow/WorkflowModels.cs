@@ -44,6 +44,14 @@ public static class WorkflowReasonCodes
     public const string WorkflowStartNotCompleted = "WORKFLOW_START_NOT_COMPLETED";
     public const string WorkflowTerminalEvidenceInconsistent = "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT";
     public const string WorkflowDecisionNotTerminal = "WORKFLOW_DECISION_NOT_TERMINAL";
+
+    /// <summary>BL-547 — the trusted terminal-decision evidence of an approval that was CANCELLED (the maker, or the owning
+    /// module's withdraw) or TIMED OUT (the SLA ran out) and that nobody decided, with every fact of it holding together:
+    /// nothing is left open that could still be decided. 409. Apart from <see cref="WorkflowDecisionNotTerminal"/> (still
+    /// open — an escalated approval included: wait) and from <see cref="WorkflowTerminalEvidenceInconsistent"/> (the
+    /// engine's own facts contradict each other — a person has to look). Which of the two endings it was is in the
+    /// message only: the envelope the consumers read is closed.</summary>
+    public const string WorkflowInstanceClosedWithoutDecision = "WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION";
     public const string WorkflowAssignmentCandidatesRequired = "WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED";
     public const string WorkflowTaskNotFound = "WORKFLOW_TASK_NOT_FOUND";
     public const string WorkflowInstanceNotFound = "WORKFLOW_INSTANCE_NOT_FOUND";

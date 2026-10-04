@@ -813,8 +813,10 @@ internal sealed class WorkflowTaskTransitionSupport
     /// one of them: nobody decided, it only moved to the escalation candidates. Before this, escalation left a task
     /// that no gate accepted — only a timeout or its owner's withdraw could end it (BL-478). Cancel keeps its own,
     /// narrower rule (<see cref="IsOpen"/>): an escalated task is still not cancellable from the public endpoint.
+    /// BL-547 — also the trusted terminal-decision evidence's "still open" (GetTrustedWorkflowTerminalDecisionEvidenceHandler):
+    /// the endpoint asks this rule instead of keeping a copy, so an approval it calls open is one the gates accept.
     /// </summary>
-    private static bool IsDecidable(ApprovalTask task) =>
+    internal static bool IsDecidable(ApprovalTask task) =>
         IsOpen(task) || task.Status == ApprovalTaskStatus.Escalated;
 
     /// <summary>
