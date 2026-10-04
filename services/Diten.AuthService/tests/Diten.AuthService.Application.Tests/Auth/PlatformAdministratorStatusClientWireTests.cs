@@ -125,6 +125,56 @@ public sealed class PlatformAdministratorStatusClientWireTests
         Assert.Equal(PlatformAdministratorRecordVerdict.Refused, answer.Verdict);
     }
 
+    // ── BL-521 FIX5 item 2: the answer must be about the address that was asked ───────────────────────
+
+    /// <summary>
+    /// The answer carries the record's roles and actor type, so an answer about ANOTHER administrator (a mixed-up route, a cache,
+    /// a wrong base address) would mint this account a token with someone else's authority. A record whose own address is not the
+    /// one asked about — or that has none — is no answer: Unavailable (503 at the doors; nothing minted, nothing revoked). The
+    /// password-reset doors, which ask the same question, fail closed on it too.
+    /// </summary>
+    [Theory]
+    [InlineData("someone.else@bl521.test")]
+    [InlineData("")]
+    public async Task An_answer_about_another_address_is_unavailable_never_confirmed(string answeredAddress)
+    {
+        var body = $$"""{"data":{"id":"{{Guid.NewGuid()}}","email":"{{answeredAddress}}","status":"Active","isDeleted":false,"isActive":true,"actorType":"PlatformAdmin","roles":["SuperAdmin"]},"statusCode":200,"isSuccessful":true,"errors":[]}""";
+
+        var answer = await ClientFor(Ok(body)).GetActiveActorTypeAsync(Email, CancellationToken.None);
+
+        Assert.Equal(PlatformAdministratorRecordVerdict.Unavailable, answer.Verdict);
+        Assert.Null(answer.ActorType);
+        Assert.Null(answer.Roles);
+        Assert.False(await ClientFor(Ok(body)).IsActiveAsync(Email, CancellationToken.None));
+    }
+
+    /// <summary>The comparison is on the normalized address: another letter case or surrounding spaces is the same address.</summary>
+    [Fact]
+    public async Task The_same_address_in_another_letter_case_or_with_spaces_is_the_same_address()
+    {
+        var body = $$"""{"data":{"id":"{{Guid.NewGuid()}}","email":"  WIRE.PROBE@bl521.TEST ","status":"Active","isDeleted":false,"isActive":true,"actorType":"PartnerAdmin","roles":["ReadOnly"]},"statusCode":200,"isSuccessful":true,"errors":[]}""";
+
+        var answer = await ClientFor(Ok(body)).GetActiveActorTypeAsync(Email, CancellationToken.None);
+
+        Assert.Equal(PlatformAdministratorRecordVerdict.Confirmed, answer.Verdict);
+        Assert.Equal("partner_admin", answer.ActorType);
+    }
+
+    /// <summary>A mismatch is logged without either address (the log is for the operator, not a place for two people's addresses).</summary>
+    [Fact]
+    public async Task A_mismatched_answer_is_logged_without_either_address()
+    {
+        var logger = new ListLogger();
+        var body = $$"""{"data":{"id":"{{Guid.NewGuid()}}","email":"someone.else@bl521.test","status":"Active","isDeleted":false,"isActive":true,"actorType":"PlatformAdmin"},"statusCode":200,"isSuccessful":true,"errors":[]}""";
+
+        await Client(new StubHandler((_, _) => Task.FromResult(Ok(body)(null!))), logger: logger).GetActiveActorTypeAsync(Email, CancellationToken.None);
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Warning, entry.Level);
+        Assert.DoesNotContain("someone.else", entry.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("wire.probe", entry.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
     // ── unavailable: no answer is not a "no" ──────────────────────────────────────────────────────────
 
     public static TheoryData<string, HttpStatusCode, string> NoAnswerReplies() => new()

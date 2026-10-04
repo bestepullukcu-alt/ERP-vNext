@@ -2,6 +2,7 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 
@@ -57,6 +58,13 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
             challenge = await _mfaChallengeService.VerifyAsync(request.ChallengeId, request.Code, ct);
         }
         catch
+        {
+            return Response<AuthResponse>.Fail("Invalid verification code.", 401);
+        }
+
+        // BL-521 FIX5 item 13 — no tenant token is minted for the platform system tenant (see LoginCommandHandler): a
+        // challenge of that tenant (one created before the tenant door was closed) is answered like a wrong code.
+        if (PlatformSystemTenant.Is(challenge.TenantId))
         {
             return Response<AuthResponse>.Fail("Invalid verification code.", 401);
         }

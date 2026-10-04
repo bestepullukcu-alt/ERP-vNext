@@ -76,12 +76,17 @@ public static class DependencyInjection
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
         });
+        // BL-521 FIX5 item 1 — this client carries the internal API key in a CUSTOM header (X-Internal-Api-Key), which
+        // HttpClient keeps across a redirect (it drops only Authorization): a 302 would hand the key to whatever host the
+        // answer named, and the answer now decides the roles a token is minted with. A redirect is an answer like any other
+        // non-success — no answer (503), never followed. The timeout bounds a Platform that never answers (1–30 s).
         services.AddHttpClient<IPlatformAdministratorStatusClient, PlatformAdministratorStatusClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
-        });
+        })
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
         services.AddHttpClient<ITenantEntitlementClient, PlatformTenantEntitlementClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;

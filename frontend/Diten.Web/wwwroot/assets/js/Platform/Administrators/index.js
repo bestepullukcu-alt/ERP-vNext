@@ -761,6 +761,10 @@ const AdministratorsList = (function () {
         if (/At least one active Super Admin must remain in the system/i.test(text)) return L.AdminLastSuperAdminDenied || text;
         if (/The system seed administrator cannot be deleted/i.test(text)) return L.AdminSeedDeleteDenied || text;
         if (/The system seed administrator cannot be suspended/i.test(text)) return L.AdminSeedSuspendDenied || text;
+        // BL-521 FIX5 item 7 — the two bulk-delete answers: a repeated id (400, nothing deleted) and a refusal that came
+        // after some targets were already deleted (the list is reloaded so it shows what remains).
+        if (/The same administrator is listed more than once/i.test(text)) return L.AdminBulkDuplicateIds || text;
+        if (/Some administrators were deleted, but the request stopped/i.test(text)) return L.AdminBulkDeletePartial || text;
 
         return text;
     };

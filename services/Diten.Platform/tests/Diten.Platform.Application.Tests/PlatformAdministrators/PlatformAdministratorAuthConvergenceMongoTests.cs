@@ -1,3 +1,4 @@
+using System.Net;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.PlatformAdministrators;
@@ -164,6 +165,65 @@ public sealed class PlatformAdministratorAuthConvergenceMongoTests
         Assert.Equal("Suspended", world.Auth.StatusOf(target.Email));
     }
 
+    // ── BL-521 FIX5 item 10 — no second call to an Auth that did not answer ─────────────────────────────
+
+    public static TheoryData<string> NoAnswers() => new() { "5xx", "connection", "timeout" };
+
+    private static Exception NoAnswer(string kind) => kind switch
+    {
+        "5xx" => new PlatformAdministratorAuthCallException(HttpStatusCode.ServiceUnavailable),
+        "connection" => new HttpRequestException("connection refused"),
+        _ => new TaskCanceledException("the client's timeout", new TimeoutException())
+    };
+
+    /// <summary>
+    /// Auth gives no answer to the FIRST sync (a 5xx, a refused connection, the client's timeout — which may have applied it in
+    /// part). The convergence call that followed went to the same Auth: another full timeout for the caller to wait through, with
+    /// nothing more to say to it. Now the record is marked pending at once, the one call is the only call, and the original
+    /// failure is what surfaces. The record itself was never written.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(NoAnswers))]
+    public async Task When_auth_does_not_answer_the_first_sync_there_is_no_second_call_and_the_record_is_marked_pending(string kind)
+    {
+        await using var world = await World.StartAsync();
+        var actor = await world.SeedAsync([AdministratorRole.SuperAdmin]);
+        var target = await world.SeedAsync([AdministratorRole.SupportAdmin]);
+        var log = new CapturingLogger();
+        var auth = world.Client(before: _ => throw NoAnswer(kind));
+
+        var thrown = await Assert.ThrowsAnyAsync<Exception>(() =>
+            world.UpdateAsync(target, actingAs: actor, auth, r => r with { Roles = ["BillingAdmin"] }, logger: log));
+
+        Assert.Equal(NoAnswer(kind).GetType(), thrown.GetType());
+        Assert.Single(auth.Calls); // never a second call to the Auth that did not answer
+        var stored = await world.ReadAsync(target.Id);
+        Assert.NotNull(stored.AuthSyncPendingSinceUtc);
+        Assert.Equal([AdministratorRole.SupportAdmin], stored.Roles); // the record was not written
+        Assert.Equal(target.Version, stored.Version);
+        var error = Assert.Single(log.Entries, e => e.Level == LogLevel.Error);
+        Assert.Contains(target.Id.ToString(), error.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(target.Email, error.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>The contrast: Auth ANSWERED and refused (a 409). Whatever it applied before refusing is corrected: the record
+    /// is read again and Auth is converged to it — a second call, as before.</summary>
+    [Fact]
+    public async Task When_auth_answers_and_refuses_the_first_sync_it_is_still_converged_to_the_record()
+    {
+        await using var world = await World.StartAsync();
+        var actor = await world.SeedAsync([AdministratorRole.SuperAdmin]);
+        var target = await world.SeedAsync([AdministratorRole.SupportAdmin]);
+        var auth = world.Client(before: call => call == 0 ? throw new PlatformAdministratorAuthCallException(HttpStatusCode.Conflict) : Task.CompletedTask);
+
+        await Assert.ThrowsAsync<PlatformAdministratorAuthCallException>(() =>
+            world.UpdateAsync(target, actingAs: actor, auth, r => r with { Roles = ["BillingAdmin"] }));
+
+        Assert.Equal(2, auth.Calls.Count);
+        Assert.Equal(["SupportAdmin"], auth.Calls[1].Roles.ToList());
+        Assert.Null((await world.ReadAsync(target.Id)).AuthSyncPendingSinceUtc);
+    }
+
     private static TaskCompletionSource Signal() => new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     // ── world ───────────────────────────────────────────────────────────────────────────────────────────
@@ -308,10 +368,10 @@ public sealed class PlatformAdministratorAuthConvergenceMongoTests
     /// <summary>The production repository, except that the record write times out (after Auth was synced).</summary>
     private sealed class ThrowingWrites(IPlatformAdministratorRepository inner) : IPlatformAdministratorRepository
     {
-        public Task<bool> UpdateAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default) =>
+        public Task<bool> UpdateAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default, AuthSyncPendingEffect authSyncPending = AuthSyncPendingEffect.Keep) =>
             throw new TimeoutException("the database did not answer the write");
 
-        public Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default) =>
+        public Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default, AuthSyncPendingEffect authSyncPending = AuthSyncPendingEffect.Keep) =>
             throw new TimeoutException("the database did not answer the write");
 
         public Task<PlatformAdministrator> CreateAsync(PlatformAdministrator administrator, CancellationToken ct = default) => inner.CreateAsync(administrator, ct);
@@ -325,6 +385,7 @@ public sealed class PlatformAdministratorAuthConvergenceMongoTests
         public Task<long> CountActiveSuperAdminsAsync(Guid? excludeId = null, CancellationToken ct = default) => inner.CountActiveSuperAdminsAsync(excludeId, ct);
         public Task<SuperAdminGuardedWriteResult> SoftDeleteGuardedAsync(Guid id, int expectedVersion, string actorName, CancellationToken ct = default) => inner.SoftDeleteGuardedAsync(id, expectedVersion, actorName, ct);
         public Task MarkAuthSyncPendingAsync(Guid id, bool pending, CancellationToken ct = default) => inner.MarkAuthSyncPendingAsync(id, pending, ct);
+        public Task<bool> RecordLoginAcceptedAsync(Guid id, DateTimeOffset acceptedAtUtc, CancellationToken ct = default) => inner.RecordLoginAcceptedAsync(id, acceptedAtUtc, ct);
     }
 
     private sealed class Actor(string email) : ICurrentUserContext

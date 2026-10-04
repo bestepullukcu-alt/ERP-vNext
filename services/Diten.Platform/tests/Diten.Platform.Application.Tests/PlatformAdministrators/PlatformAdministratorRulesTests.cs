@@ -209,7 +209,7 @@ public sealed class PlatformAdministratorRulesTests
         public Task<bool> ExistsByUserNameAsync(string normalizedUserName, Guid? excludeId = null, CancellationToken ct = default) =>
             Task.FromResult(_items.Any(x => x.NormalizedUserName == normalizedUserName && !x.IsDeleted && (!excludeId.HasValue || x.Id != excludeId.Value)));
 
-        public Task<bool> UpdateAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default)
+        public Task<bool> UpdateAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default, AuthSyncPendingEffect authSyncPending = AuthSyncPendingEffect.Keep)
         {
             if (administrator.Version != expectedVersion + 1)
             {
@@ -264,7 +264,7 @@ public sealed class PlatformAdministratorRulesTests
                 (!excludeId.HasValue || x.Id != excludeId.Value)));
 
         // BL-521 FIX3 item 3 — no transaction in memory: count, then write (these tests never run two writes at once).
-        public async Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default) =>
+        public async Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default, AuthSyncPendingEffect authSyncPending = AuthSyncPendingEffect.Keep) =>
             await CountActiveSuperAdminsAsync(administrator.Id, ct) == 0 ? SuperAdminGuardedWriteResult.LastActiveSuperAdmin
             : await UpdateAsync(administrator, expectedVersion, ct) ? SuperAdminGuardedWriteResult.Written : SuperAdminGuardedWriteResult.VersionConflict;
 
@@ -273,6 +273,18 @@ public sealed class PlatformAdministratorRulesTests
             : await SoftDeleteAsync(id, expectedVersion, actorName, ct) ? SuperAdminGuardedWriteResult.Written : SuperAdminGuardedWriteResult.VersionConflict;
 
         // BL-521 FIX4 item 2 — the convergence mark (no version move).
+        public Task<bool> RecordLoginAcceptedAsync(Guid id, DateTimeOffset acceptedAtUtc, CancellationToken ct = default)
+        {
+            var item = _items.FirstOrDefault(x => x.Id == id && !x.IsDeleted && x.Status == AdministratorStatus.Active);
+            if (item is not null)
+            {
+                item.LastLoginAtUtc = acceptedAtUtc;
+                item.InvitationStatus = AdministratorInvitationStatus.Accepted;
+            }
+
+            return Task.FromResult(item is not null);
+        }
+
         public Task MarkAuthSyncPendingAsync(Guid id, bool pending, CancellationToken ct = default)
         {
             var item = _items.FirstOrDefault(x => x.Id == id);

@@ -2,8 +2,10 @@ using Diten.AuthService.Api.Models;
 using Diten.AuthService.Api.Controllers.Common;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -15,7 +17,7 @@ namespace Diten.AuthService.Api.Controllers;
 [Route("api/platform-auth")]
 public sealed class PlatformAuthController : CustomBaseController
 {
-    private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    private static readonly Guid PlatformTenantId = PlatformSystemTenant.Id;
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
 
     /// <summary>BL-521 FIX3 item 4 — 403: the forced change door takes only a platform actor's token (platform or partner
@@ -135,8 +137,16 @@ public sealed class PlatformAuthController : CustomBaseController
         else
         {
             user.UpdateProfile(firstName, lastName);
-            user.Activate();
-            user.ConfirmEmail();
+
+            // BL-521 FIX5 item 11 — AN EXISTING ACCOUNT FOLLOWS THE SYNC'S RULE, not "provision means switch on and confirm".
+            // The resend-invite reaches this door, and it used to activate an account Auth had disabled and mark its address
+            // confirmed. Now the account is switched on only for an Active record (the status travels with the call; none —
+            // an older Platform — leaves the account's state alone), and an existing account's address is never confirmed
+            // here: only accepting the invitation confirms it (reset-password).
+            if (string.Equals(request.Status, PlatformActiveStatus, StringComparison.OrdinalIgnoreCase))
+            {
+                user.Activate();
+            }
         }
 
         user.SetPlatformActorType(NormalizeActorType(request.ActorType));
@@ -152,7 +162,7 @@ public sealed class PlatformAuthController : CustomBaseController
             await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);
         }
 
-        await PlatformAdministratorRoleConvergence.ConvergeAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, request.Roles, ct);
+        await PlatformAdministratorRoleConvergence.ConvergeProvisionedAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, request.Roles, ct);
         await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, PlatformTenantId, ct);
         var setupDelivery = await SendSetupLinkAsync(user.Email, setupToken, ct);
 
@@ -214,7 +224,7 @@ public sealed class PlatformAuthController : CustomBaseController
 
         // FIX4 item 4 — ROLES FIRST, THE ACCOUNT LAST: if the account write then fails, the roles the record took away are
         // already gone and the account was not switched back on — never an account re-enabled with roles it is losing.
-        await PlatformAdministratorRoleConvergence.ConvergeAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, request.Roles, ct);
+        await PlatformAdministratorRoleConvergence.ConvergeProvisionedAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, request.Roles, ct);
 
         await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);
 
@@ -284,13 +294,17 @@ public sealed class PlatformAuthController : CustomBaseController
             return CreateActionResultInstance(Response<AuthResponse>.Fail("Current password is incorrect.", 401));
         }
 
-        // BL-521 FIX4 item 2 — as login and refresh: the roles the token will be minted with follow the record first.
+        // BL-521 FIX5 item 12 — the new password is checked FIRST: a change the policy refuses must not have rewritten the
+        // account's roles on its way out (the convergence is a write; it belongs to the change that is actually made).
+        await _passwordPolicyService.ValidateTenantPasswordAsync(PlatformTenantId, user.Id, request.NewPassword, "platform_forced_change", ct);
+
+        // BL-521 FIX4 item 2 — as login and refresh: the roles the token will be minted with follow the record first (an
+        // older Platform that sends no roles converges nothing). FIX5 item 3 — no provisioning default at mint.
         if (record.Roles is not null)
         {
-            await PlatformAdministratorRoleConvergence.ConvergeAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, record.Roles, ct);
+            await PlatformAdministratorRoleConvergence.ConvergeAtMintAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, record.Roles, ct);
         }
 
-        await _passwordPolicyService.ValidateTenantPasswordAsync(PlatformTenantId, user.Id, request.NewPassword, "platform_forced_change", ct);
         user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
         user.ClearPasswordChangeRequirement();
         await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);

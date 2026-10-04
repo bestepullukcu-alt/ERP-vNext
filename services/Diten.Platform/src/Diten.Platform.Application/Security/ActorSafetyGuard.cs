@@ -1,5 +1,7 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.PlatformAdministrators.Handlers.CommandHandlers;
+using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
 
 namespace Diten.Platform.Application.Security;
@@ -70,6 +72,33 @@ public sealed class ActorSafetyGuard : IActorSafetyGuard
             || target.Status != Domain.Enums.AdministratorStatus.Active
             || target.ActorType != Domain.Enums.ActorType.PlatformAdmin
             || !target.Roles.Contains(Domain.Enums.AdministratorRole.SuperAdmin))
+        {
+            return null;
+        }
+
+        return Response<NoContent>.Fail(
+            AdminSafetyMessages.LastActiveSuperAdmin,
+            409,
+            AdminSafetyReasonCodes.LastActiveSuperAdmin);
+    }
+
+    public async Task<Response<NoContent>?> EnsureNotLastActiveSuperAdminsAsync(
+        IReadOnlyCollection<PlatformAdministrator> targets,
+        AdminSafetyAction action,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(targets);
+
+        // Only live, active PLATFORM administrators holding SuperAdmin are in the count; taking none of them out changes
+        // nothing there is to protect.
+        var leaving = targets.Where(PlatformAdministratorMutationSupport.IsActivePlatformSuperAdmin).Select(target => target.Id).Distinct().Count();
+        if (leaving == 0)
+        {
+            return null;
+        }
+
+        var activeNow = await _administrators.CountActiveSuperAdminsAsync(excludeId: null, ct);
+        if (activeNow - leaving > 0)
         {
             return null;
         }

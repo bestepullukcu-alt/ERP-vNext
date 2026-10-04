@@ -10,7 +10,13 @@ public interface IPlatformAdministratorRepository
     Task<PlatformAdministrator?> GetByNormalizedEmailAsync(string normalizedEmail, CancellationToken ct = default);
     Task<bool> ExistsByEmailAsync(string normalizedEmail, Guid? excludeId = null, CancellationToken ct = default);
     Task<bool> ExistsByUserNameAsync(string normalizedUserName, Guid? excludeId = null, CancellationToken ct = default);
-    Task<bool> UpdateAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default);
+    /// <summary>
+    /// Replaces the record, conditional on <paramref name="expectedVersion"/> (written as version + 1). BL-521 FIX5 item 8 —
+    /// the stored <see cref="PlatformAdministrator.AuthSyncPendingSinceUtc"/> mark is KEPT whatever value the loaded
+    /// <paramref name="administrator"/> carries (a mark set after the record was read must survive this write);
+    /// <see cref="AuthSyncPendingEffect.Clear"/> is how the update says "Auth was just given exactly this record".
+    /// </summary>
+    Task<bool> UpdateAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default, AuthSyncPendingEffect authSyncPending = AuthSyncPendingEffect.Keep);
     Task<bool> SoftDeleteAsync(Guid id, int expectedVersion, string actorName, CancellationToken ct = default);
     Task<(IReadOnlyList<PlatformAdministrator> Items, long TotalCount)> QueryAsync(PlatformAdministratorQuery query, CancellationToken ct = default);
     Task<PlatformAdministratorStatsSnapshot> GetStatsAsync(CancellationToken ct = default);
@@ -32,7 +38,7 @@ public interface IPlatformAdministratorRepository
     /// Conditional on <paramref name="expectedVersion"/>, like <see cref="UpdateAsync"/>. FIX4 item 4 — a commit whose
     /// result never came back is decided by reading the record again.
     /// </summary>
-    Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default);
+    Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default, AuthSyncPendingEffect authSyncPending = AuthSyncPendingEffect.Keep);
 
     /// <summary>The soft delete counterpart of <see cref="UpdateGuardedAsync"/>.</summary>
     Task<SuperAdminGuardedWriteResult> SoftDeleteGuardedAsync(Guid id, int expectedVersion, string actorName, CancellationToken ct = default);
@@ -42,6 +48,28 @@ public interface IPlatformAdministratorRepository
     /// <see cref="PlatformAdministrator.AuthSyncPendingSinceUtc"/>. Does not move the record's version.
     /// </summary>
     Task MarkAuthSyncPendingAsync(Guid id, bool pending, CancellationToken ct = default);
+
+    /// <summary>
+    /// BL-521 FIX5 item 9 — Auth reports a platform sign-in or refresh: a TARGETED write of the sign-in moment and the
+    /// accepted invitation state on an active, live record. The record's version, its <c>UpdatedBy</c> and its
+    /// <see cref="PlatformAdministrator.AuthSyncPendingSinceUtc"/> mark do not change, so it neither refuses an
+    /// administrator's concurrent edit nor is refused by one. Returns whether an active record was found.
+    /// </summary>
+    Task<bool> RecordLoginAcceptedAsync(Guid id, DateTimeOffset acceptedAtUtc, CancellationToken ct = default);
+}
+
+/// <summary>
+/// BL-521 FIX5 item 8 — what a whole-record write does with the "Auth sync pending" mark. Every write keeps the mark that is
+/// STORED (not the one the writer loaded, which may be older); only the update, whose sync has just brought Auth to exactly
+/// what it writes, clears it.
+/// </summary>
+public enum AuthSyncPendingEffect
+{
+    /// <summary>The stored mark stays as it is (the default of every write).</summary>
+    Keep = 0,
+
+    /// <summary>The mark is cleared by this write.</summary>
+    Clear = 1
 }
 
 /// <summary>BL-521 FIX3 item 3 — the outcome of a write under the super-admin guard. Every outcome but

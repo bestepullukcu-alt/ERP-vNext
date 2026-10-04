@@ -20,7 +20,8 @@
         'ResendInviteSuccess', 'SetupLinkTitle', 'SetupLinkIntro',
         'SetupLinkEmailFailedIntro',
         'ProtectedAccount', 'AdminSelfActionDenied', 'AdminSelfRoleDowngradeDenied',
-        'AdminLastSuperAdminDenied', 'AdminSeedDeleteDenied', 'AdminSeedSuspendDenied'
+        'AdminLastSuperAdminDenied', 'AdminSeedDeleteDenied', 'AdminSeedSuspendDenied',
+        'AdminBulkDuplicateIds', 'AdminBulkDeletePartial'
     ];
 
     const logMissingKeys = (dictionary) => {

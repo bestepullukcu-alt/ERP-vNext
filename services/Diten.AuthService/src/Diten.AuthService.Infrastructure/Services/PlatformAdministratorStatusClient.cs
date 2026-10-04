@@ -148,6 +148,17 @@ public sealed class PlatformAdministratorStatusClient : IPlatformAdministratorSt
                 return (PlatformAdministratorRecordAnswer.Unavailable, null);
             }
 
+            // BL-521 FIX5 item 2 — THE ANSWER MUST BE ABOUT THE ADDRESS THAT WAS ASKED. The answer carries the record's roles
+            // now, so an answer about another administrator (a mixed-up route, a cache, a wrong base address) would mint this
+            // account a token with someone else's roles and actor type. The record's own address (normalized the way this
+            // call normalizes the one it asked about) must equal it; anything else is no answer — 503, nothing minted,
+            // nothing revoked. (Neither address is logged.)
+            if (!string.Equals(NormalizeAddress(envelope.Data.Email), normalizedEmail, StringComparison.Ordinal))
+            {
+                _logger.LogWarning("Platform administrator status answered for another address than the one asked about; it is no answer about this administrator.");
+                return (PlatformAdministratorRecordAnswer.Unavailable, null);
+            }
+
             return (null, envelope.Data);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -196,6 +207,8 @@ public sealed class PlatformAdministratorStatusClient : IPlatformAdministratorSt
                 normalizedEmail);
         }
     }
+
+    private static string NormalizeAddress(string? address) => (address ?? string.Empty).Trim().ToLowerInvariant();
 
     private string ResolveCorrelationId()
     {

@@ -54,8 +54,11 @@ public sealed class AdministratorEmailImmutableTests
         }
     }
 
+    /// <summary>BL-521 FIX5 item 14 — the "read-only in edit mode" half is measured as BEHAVIOUR (the real page script run in
+    /// jsdom: <c>tests/platform-administrators-email-readonly.test.js</c>); what stays here is only that the way to unlock the
+    /// field is gone and the reason is on the form.</summary>
     [Fact]
-    public void The_edit_form_has_no_way_to_unlock_the_email_and_makes_it_read_only_in_edit_mode()
+    public void The_edit_form_has_no_way_to_unlock_the_email_and_names_the_reason()
     {
         var form = File.ReadAllText(RepoPath("frontend", "Diten.Web", "Views", "Platform", "Administrators", "_CreateEditOffcanvas.cshtml"));
         var script = File.ReadAllText(RepoPath("frontend", "Diten.Web", "wwwroot", "assets", "js", "Platform", "Administrators", "index.js"));
@@ -63,8 +66,6 @@ public sealed class AdministratorEmailImmutableTests
         Assert.DoesNotContain("btnUnlockEmail", form, StringComparison.Ordinal);
         Assert.DoesNotContain("btnUnlockEmail", script, StringComparison.Ordinal);
         Assert.Contains("SharedLocalizer[\"AdminEmailImmutable\"]", form, StringComparison.Ordinal);
-        Assert.Contains("emailInput.readOnly = true", script, StringComparison.Ordinal);
-        Assert.Contains("emailInput.readOnly = false", script, StringComparison.Ordinal);
     }
 
     private static AdministratorsController Controller(IStringLocalizer<SharedResource> localizer)

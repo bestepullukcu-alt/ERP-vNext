@@ -1,6 +1,8 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Application.DTOs;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -9,7 +11,7 @@ namespace Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
 
 public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginCommand, Response<AuthResponse>>
 {
-    private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+    private static readonly Guid PlatformTenantId = PlatformSystemTenant.Id;
 
     private readonly IUserRepository _userRepository;
     private readonly IUserRoleRepository _userRoleRepository;
@@ -90,9 +92,12 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         // BL-521 FIX4 item 2 — the roles this token is minted with follow the RECORD: Auth's copy is converged to the roles
         // Platform's answer names before it is read below (a sync that was lost — a refused write, a failed convergence —
         // no longer outlives the next sign-in). An older Platform that sends no roles converges nothing.
+        // FIX5 item 3 — AT MINT NO PROVISIONING DEFAULT: an empty or unrecognised list means the record grants no platform
+        // role, so none is granted (and the account's platform roles are revoked) and the 403 below answers, as it always
+        // did for an account without one. FIX4 turned that into a ReadOnly sign-in.
         if (record.Roles is not null)
         {
-            await PlatformAdministratorRoleConvergence.ConvergeAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, record.Roles, ct);
+            await PlatformAdministratorRoleConvergence.ConvergeAtMintAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, record.Roles, ct);
         }
 
         var roles = (await _userRoleRepository.GetRolesByUserAsync(user.Id, PlatformTenantId, ct))

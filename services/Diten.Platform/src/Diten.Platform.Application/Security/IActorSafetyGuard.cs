@@ -28,6 +28,16 @@ public interface IActorSafetyGuard
         CancellationToken ct = default);
 
     /// <summary>
+    /// BL-521 FIX5 item 7 — Rule 2 for a SET of targets taken out together (bulk delete): refuses when removing ALL of them
+    /// would leave the system with zero active platform super administrators, although each of them alone could be removed.
+    /// Decided on the records as loaded. Returns <c>null</c> when the set is permitted.
+    /// </summary>
+    Task<Response<NoContent>?> EnsureNotLastActiveSuperAdminsAsync(
+        IReadOnlyCollection<Diten.Platform.Domain.Entities.PlatformAdministrator> targets,
+        AdminSafetyAction action,
+        CancellationToken ct = default);
+
+    /// <summary>
     /// The current user's own administrator record is the target (resolved the way <see cref="EnsureNotSelfAsync"/>
     /// resolves it). BL-521 FIX2 item 5 — for the update path, which refuses only SOME self changes.
     /// </summary>
@@ -66,6 +76,13 @@ public static class AdminSafetyReasonCodes
     /// <summary>409 — FIX4 item 1: an administrator's e-mail never changes (Platform and Auth find the administrator by it);
     /// a new address is invited as a new administrator and the old one removed.</summary>
     public const string EmailImmutable = "PLATFORM_ADMINISTRATOR_EMAIL_IMMUTABLE";
+
+    /// <summary>400 — FIX5 item 7: the same administrator is listed more than once in a bulk delete; nothing was deleted.</summary>
+    public const string BulkDuplicateIds = "PLATFORM_ADMINISTRATOR_BULK_DUPLICATE_IDS";
+
+    /// <summary>409 / 503 — FIX5 item 7: a bulk delete was refused AFTER some of its targets had been deleted (another request
+    /// changed a later target in between). The answer lists the deleted ids and the refused one.</summary>
+    public const string BulkDeletePartial = "PLATFORM_ADMINISTRATOR_BULK_DELETE_PARTIAL";
 }
 
 /// <summary>
@@ -90,4 +107,10 @@ public static class AdminSafetyMessages
     /// <summary>FIX4 item 1 — new; the edit form says it from the CODE (<see cref="AdminSafetyReasonCodes.EmailImmutable"/>),
     /// en + tr: SharedResource AdminEmailImmutable.</summary>
     public const string EmailImmutable = "An administrator's e-mail cannot be changed. Invite the new address as a new administrator and remove the old one.";
+
+    /// <summary>FIX5 item 7 — new; the screen's en + tr text: SharedResource AdminBulkDuplicateIds.</summary>
+    public const string BulkDuplicateIds = "The same administrator is listed more than once. Nothing was deleted.";
+
+    /// <summary>FIX5 item 7 — new; the screen's en + tr text: SharedResource AdminBulkDeletePartial.</summary>
+    public const string BulkDeletePartial = "Some administrators were deleted, but the request stopped at one that could not be deleted. Reload the list to see what remains.";
 }

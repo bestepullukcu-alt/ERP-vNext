@@ -5,6 +5,7 @@ using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace Diten.Platform.Infrastructure.Persistence.Repositories;
@@ -91,13 +92,49 @@ public sealed class PlatformAdministratorRepository
         return await Collection.Find(Builders<PlatformAdministrator>.Filter.And(filters)).AnyAsync(ct);
     }
 
-    public async Task<bool> UpdateAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default)
+    public async Task<bool> UpdateAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default, AuthSyncPendingEffect authSyncPending = AuthSyncPendingEffect.Keep)
     {
         administrator.UpdatedAt = DateTimeOffset.UtcNow;
         administrator.Version = expectedVersion + 1;
 
-        var result = await Collection.ReplaceOneAsync(VersionFilter(administrator.Id, expectedVersion), administrator, cancellationToken: ct);
+        var result = await Collection.UpdateOneAsync(VersionFilter(administrator.Id, expectedVersion), ReplacementOf(administrator, authSyncPending), cancellationToken: ct);
         return result.ModifiedCount == 1;
+    }
+
+    /// <summary>
+    /// BL-521 FIX5 item 8 — THE REPLACEMENT OF A RECORD THAT KEEPS THE STORED "AUTH SYNC PENDING" MARK. The mark is set
+    /// without moving the version, but every other write replaced the whole document with the value it had LOADED, so a mark
+    /// set between a request's read and its write was erased by it (and so was the flag for the drift it reports). The same
+    /// replacement is now an update PIPELINE: the new document is the one this writer built, except that the mark is merged
+    /// back in from the document as it is stored at the moment of the write (<see cref="AuthSyncPendingEffect.Keep"/>); only
+    /// <see cref="AuthSyncPendingEffect.Clear"/> writes it as empty. No schema or index change — the stored shape is the
+    /// same document either way. (The new document is wrapped in <c>$literal</c>: a string value that begins with a dollar
+    /// sign is data here, never a field path.)
+    /// </summary>
+    private UpdateDefinition<PlatformAdministrator> ReplacementOf(PlatformAdministrator administrator, AuthSyncPendingEffect authSyncPending)
+    {
+        var markElement = BsonClassMap.LookupClassMap(typeof(PlatformAdministrator))
+            .GetMemberMap(nameof(PlatformAdministrator.AuthSyncPendingSinceUtc)).ElementName;
+        var replacement = administrator.ToBsonDocument(Collection.DocumentSerializer);
+
+        BsonDocument newRoot;
+        if (authSyncPending == AuthSyncPendingEffect.Clear)
+        {
+            replacement[markElement] = BsonNull.Value;
+            newRoot = new BsonDocument("$literal", replacement);
+        }
+        else
+        {
+            replacement.Remove(markElement);
+            newRoot = new BsonDocument("$mergeObjects", new BsonArray
+            {
+                new BsonDocument("$literal", replacement),
+                new BsonDocument(markElement, "$" + markElement)
+            });
+        }
+
+        var pipeline = PipelineDefinition<PlatformAdministrator, PlatformAdministrator>.Create(new[] { new BsonDocument("$replaceWith", newRoot) });
+        return Builders<PlatformAdministrator>.Update.Pipeline(pipeline);
     }
 
     public async Task<bool> SoftDeleteAsync(Guid id, int expectedVersion, string actorName, CancellationToken ct = default)
@@ -120,24 +157,18 @@ public sealed class PlatformAdministratorRepository
     }
 
     /// <inheritdoc />
-    public Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default) =>
+    public Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default, AuthSyncPendingEffect authSyncPending = AuthSyncPendingEffect.Keep) =>
         WriteUnderSuperAdminGuardAsync(
             administrator.Id,
             async session =>
             {
                 administrator.UpdatedAt = DateTimeOffset.UtcNow;
                 administrator.Version = expectedVersion + 1;
-                var result = await Collection.ReplaceOneAsync(session, VersionFilter(administrator.Id, expectedVersion), administrator, cancellationToken: ct);
+                var result = await Collection.UpdateOneAsync(session, VersionFilter(administrator.Id, expectedVersion), ReplacementOf(administrator, authSyncPending), cancellationToken: ct);
                 return result.ModifiedCount == 1;
             },
             // FIX4 item 4 — written iff the record now sits at exactly the version this write produced, holding what it wrote.
-            async token =>
-            {
-                var stored = await ReadIncludingDeletedAsync(administrator.Id, token);
-                return stored is { IsDeleted: false }
-                       && stored.Version == expectedVersion + 1
-                       && HoldsTheSameAdministrator(stored, administrator);
-            },
+            async token => UpdateLanded(await ReadIncludingDeletedAsync(administrator.Id, token), expectedVersion, administrator),
             ct);
 
     /// <inheritdoc />
@@ -149,14 +180,42 @@ public sealed class PlatformAdministratorRepository
                 var result = await Collection.UpdateOneAsync(session, VersionFilter(id, expectedVersion), SoftDelete(actorName), cancellationToken: ct);
                 return result.ModifiedCount == 1;
             },
-            async token =>
-            {
-                var stored = await ReadIncludingDeletedAsync(id, token);
-                return stored is { IsDeleted: true }
-                       && stored.Version == expectedVersion + 1
-                       && string.Equals(stored.UpdatedBy, actorName, StringComparison.Ordinal);
-            },
+            async token => SoftDeleteLanded(await ReadIncludingDeletedAsync(id, token), expectedVersion, actorName),
             ct);
+
+    /// <summary>
+    /// BL-521 FIX4 item 4 / FIX5 item 14 — whether an update whose commit answer never came back WROTE: the record read again
+    /// sits at exactly the version that write produced AND holds what it wrote. ANOTHER writer's version + 1 (the lost commit
+    /// never reached the database and a second request then wrote the same next version) holds other content and is not ours.
+    /// </summary>
+    internal static bool UpdateLanded(PlatformAdministrator? stored, int expectedVersion, PlatformAdministrator written) =>
+        stored is { IsDeleted: false }
+        && stored.Version == expectedVersion + 1
+        && HoldsTheSameAdministrator(stored, written);
+
+    /// <summary>The soft delete's counterpart: deleted, at the next version, by THIS actor (another request's delete at the
+    /// same next version names another actor and is not ours).</summary>
+    internal static bool SoftDeleteLanded(PlatformAdministrator? stored, int expectedVersion, string actorName) =>
+        stored is { IsDeleted: true }
+        && stored.Version == expectedVersion + 1
+        && string.Equals(stored.UpdatedBy, actorName, StringComparison.Ordinal);
+
+    /// <inheritdoc />
+    public async Task<bool> RecordLoginAcceptedAsync(Guid id, DateTimeOffset acceptedAtUtc, CancellationToken ct = default)
+    {
+        // A TARGETED write (FIX5 item 9): only the sign-in moment and the accepted invitation. Never the version, never
+        // UpdatedBy, never the pending mark — and it is not conditional on a version, so it cannot be refused by (or
+        // refuse) an administrator's concurrent edit.
+        var filter = Builders<PlatformAdministrator>.Filter.And(
+            ExecutionFilter,
+            Builders<PlatformAdministrator>.Filter.Eq(x => x.Id, id),
+            Builders<PlatformAdministrator>.Filter.Eq(x => x.Status, AdministratorStatus.Active));
+        var update = Builders<PlatformAdministrator>.Update
+            .Set(x => x.LastLoginAtUtc, acceptedAtUtc)
+            .Set(x => x.InvitationStatus, AdministratorInvitationStatus.Accepted);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.MatchedCount == 1;
+    }
 
     private Task<PlatformAdministrator?> ReadIncludingDeletedAsync(Guid id, CancellationToken ct) =>
         Collection.Find(Builders<PlatformAdministrator>.Filter.Eq(x => x.Id, id)).FirstOrDefaultAsync(ct)!;

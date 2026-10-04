@@ -76,7 +76,7 @@ public sealed class PlatformAdministratorProvisioningSyncWireTests
     {
         var service = Service(_ => Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(reply) }));
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => service.SyncAsync(new PlatformAdministratorProvisioningSyncRequest(
+        await Assert.ThrowsAsync<PlatformAdministratorAuthCallException>(() => service.SyncAsync(new PlatformAdministratorProvisioningSyncRequest(
             "the.address@bl521.test", "probe", "Probe", "PlatformAdmin", ["SupportAdmin"], "Active"), CancellationToken.None));
     }
 

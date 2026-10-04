@@ -12,13 +12,17 @@ public sealed record PlatformForcedChangePasswordRequest(string CurrentPassword,
 public sealed record TenantForcedChangePasswordRequest(string CurrentPassword, string NewPassword, bool RememberMe = false);
 public sealed record PlatformForgotPasswordRequest(string Email);
 public sealed record PlatformResetPasswordRequest(string Email, string Token, string NewPassword);
+// BL-521 FIX5 item 11 — Status: the Platform record's status. An EXISTING account is switched on only for "Active" (the
+// sync's rule) and its address is never confirmed here; none (an older Platform) leaves the account's state alone. A new
+// account is created active and confirmed, as before.
 public sealed record PlatformAdminProvisioningRequest(
     string Email,
     string UserName,
     string DisplayName,
     string ActorType,
     IReadOnlyList<string> Roles,
-    bool RequirePasswordChange = true);
+    bool RequirePasswordChange = true,
+    string? Status = null);
 // BL-521 FIX4 item 1 — Email only FINDS the account: a platform administrator's e-mail never changes, so the sync never
 // moves an account (FIX3's PreviousEmail is gone; a body that still carries it is not read).
 // Item 5 — Status: the Platform record's status; the account is switched on only for "Active". Optional: an older Platform

@@ -1,7 +1,9 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -12,6 +14,10 @@ namespace Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
 
 public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, Response<AuthResponse>>
 {
+    /// <summary>BL-521 FIX5 item 12 — every platform administrator account lives in the platform system tenant: the
+    /// convergence names it, never the tenant a (possibly foreign) token row carries.</summary>
+    private static readonly Guid PlatformTenantId = PlatformSystemTenant.Id;
+
     private readonly IUserRepository _userRepository;
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRoleRepository _roleRepository;
@@ -97,6 +103,15 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             return Response<AuthResponse>.Fail("Access token actor mismatch.", 401);
         }
 
+        // BL-521 FIX5 item 13 — a TENANT session of the platform system tenant is not refreshed (see LoginCommandHandler): the
+        // tenant door no longer mints one, and one minted before it was closed ends here. A platform actor's refresh of that
+        // same tenant (platform_admin / partner_admin) is the platform door's own session and is untouched. Nothing is
+        // revoked: the platform sessions of the same account share this user and tenant.
+        if (PlatformSystemTenant.Is(existingToken.TenantId) && !IsPlatformActor(actorType))
+        {
+            return Response<AuthResponse>.Fail("Invalid refresh token.", 401);
+        }
+
         if (_tenantContext.IsResolved && _tenantContext.TenantId != existingToken.TenantId)
         {
             return Response<AuthResponse>.Fail("Request tenant mismatch.", 401);
@@ -150,9 +165,10 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
 
             // BL-521 FIX4 item 2 — the refreshed token's roles follow the RECORD: Auth's copy is converged to the roles
             // Platform's answer names before the token is minted from it. An older Platform that sends none converges nothing.
+            // FIX5 item 3 — no provisioning default at mint; item 12 — the platform tenant, by constant.
             if (record.Roles is not null)
             {
-                await PlatformAdministratorRoleConvergence.ConvergeAsync(_userRoleRepository, _roleRepository, user.Id, existingToken.TenantId, record.Roles, ct);
+                await PlatformAdministratorRoleConvergence.ConvergeAtMintAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, record.Roles, ct);
             }
 
             await _platformAdministratorStatusClient.MarkLoginAcceptedAsync(user.Email, ct);

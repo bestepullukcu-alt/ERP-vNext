@@ -222,6 +222,40 @@ public sealed class PlatformForcedPasswordChangeActorTypeTests : IClassFixture<P
         Assert.Equal(["ReadOnly"], await PlatformRolesAsync(seeded.UserId));
     }
 
+    /// <summary>FIX5 item 4 — an older Platform's answer carries no roles: the forced change converges nothing either (as
+    /// sign-in and refresh), and still works.</summary>
+    [Fact]
+    public async Task Without_roles_in_the_answer_the_forced_change_converges_nothing()
+    {
+        var seeded = await SeedAsync("platform_admin", PlatformAdministratorRecordAnswer.ConfirmedAs("platform_admin"),
+            temporaryPasswordExpiresAt: DateTime.UtcNow.AddHours(1), roles: ["SuperAdmin"]);
+        using var client = _host.Client(seeded.AccessToken, PlatformTenantId);
+
+        var response = await ChangeAsync(client);
+
+        Assert.True(response.StatusCode == HttpStatusCode.OK, $"{(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+        Assert.Equal(["SuperAdmin"], await PlatformRolesAsync(seeded.UserId));
+    }
+
+    /// <summary>
+    /// FIX5 item 12 — THE NEW PASSWORD IS CHECKED BEFORE THE ROLES ARE CONVERGED. The convergence is a write; a change the
+    /// password policy refuses must not have rewritten the account's roles on its way out.
+    /// </summary>
+    [Fact]
+    public async Task A_new_password_the_policy_refuses_leaves_the_roles_untouched()
+    {
+        var seeded = await SeedAsync("platform_admin", PlatformAdministratorRecordAnswer.ConfirmedAs("platform_admin", ["ReadOnly"]),
+            temporaryPasswordExpiresAt: DateTime.UtcNow.AddHours(1), roles: ["SuperAdmin"]);
+        using var client = _host.Client(seeded.AccessToken, PlatformTenantId);
+
+        var response = await client.PostAsJsonAsync("api/platform-auth/change-password/forced",
+            new { currentPassword = CurrentPassword, newPassword = "short", rememberMe = false });
+
+        Assert.False(response.IsSuccessStatusCode, $"{(int)response.StatusCode}: the policy accepted the password");
+        Assert.Equal(["SuperAdmin"], await PlatformRolesAsync(seeded.UserId)); // not converged to the record's ReadOnly
+        Assert.True(await PasswordIsStillAsync(seeded.UserId, CurrentPassword));
+    }
+
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────
 
     private async Task<string[]> PlatformRolesAsync(Guid userId)

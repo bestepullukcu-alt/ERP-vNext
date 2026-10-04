@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Platform.API.Controllers.Internal;
 using Diten.Platform.Application.Tests.Persistence;
@@ -100,6 +101,46 @@ public sealed class InternalPlatformAdministratorStatusEndpointTests
         Assert.Equal(HttpStatusCode.Unauthorized, status);
     }
 
+    // ── BL-521 FIX5 item 9 — the login acceptance is a TARGETED write ───────────────────────────────────
+
+    /// <summary>
+    /// Auth reports every platform sign-in and refresh here. It used to replace the whole record at the loaded version: the
+    /// version moved on every sign-in (an administrator's open edit form was then refused as "changed by another user"),
+    /// UpdatedBy became "auth-service", and the pending-sync mark was erased. Now only the sign-in moment and the accepted
+    /// invitation are written.
+    /// </summary>
+    [Fact]
+    public async Task A_login_acceptance_writes_only_the_sign_in_fields_and_leaves_version_updated_by_and_the_mark_alone()
+    {
+        await using var host = await Host.StartAsync();
+        var seeded = await host.SeedInvitedAsync();
+
+        var status = await host.AcceptLoginAsync(seeded.Email);
+
+        Assert.Equal(HttpStatusCode.NoContent, status);
+        var after = await host.ReadAsync(seeded.Id);
+        Assert.Equal(AdministratorInvitationStatus.Accepted, after.InvitationStatus);
+        Assert.NotNull(after.LastLoginAtUtc);
+        Assert.Equal((seeded.Version, "the.editor@bl521.test"), (after.Version, after.UpdatedBy));
+        Assert.NotNull(after.AuthSyncPendingSinceUtc);
+        Assert.Equal(seeded.AuthSyncPendingSinceUtc, after.AuthSyncPendingSinceUtc);
+    }
+
+    [Theory]
+    [InlineData(AdministratorStatus.Suspended)]
+    [InlineData(AdministratorStatus.Disabled)]
+    public async Task A_login_acceptance_for_a_record_that_is_not_active_is_404_and_writes_nothing(AdministratorStatus state)
+    {
+        await using var host = await Host.StartAsync();
+        var seeded = await host.SeedInvitedAsync(state);
+
+        var status = await host.AcceptLoginAsync(seeded.Email);
+
+        Assert.Equal(HttpStatusCode.NotFound, status);
+        var after = await host.ReadAsync(seeded.Id);
+        Assert.Equal((AdministratorInvitationStatus.Invited, (DateTimeOffset?)null), (after.InvitationStatus, after.LastLoginAtUtc));
+    }
+
     private sealed class Host : IAsyncDisposable
     {
         private readonly DisposableMongoReplicaSet _mongo;
@@ -176,6 +217,36 @@ public sealed class InternalPlatformAdministratorStatusEndpointTests
             using var response = await client.SendAsync(request);
             var body = await response.Content.ReadAsStringAsync();
             return (response.StatusCode, string.IsNullOrWhiteSpace(body) ? default : JsonDocument.Parse(body).RootElement.Clone());
+        }
+
+        /// <summary>An invited administrator that has never signed in: version 5, last edited by a person, with a pending mark.</summary>
+        public async Task<PlatformAdministrator> SeedInvitedAsync(AdministratorStatus status = AdministratorStatus.Active)
+        {
+            var email = $"accept.{Guid.NewGuid():N}@bl521.test";
+            var administrator = new PlatformAdministrator
+            {
+                Email = email, NormalizedEmail = email, UserName = email, NormalizedUserName = email, DisplayName = "Accept Probe",
+                ActorType = ActorType.PlatformAdmin, AllowedTenantIds = [], Roles = [AdministratorRole.SupportAdmin], Status = status,
+                InvitationStatus = AdministratorInvitationStatus.Invited, Version = 5, UpdatedBy = "the.editor@bl521.test",
+                AuthSyncPendingSinceUtc = DateTimeOffset.UtcNow.AddMinutes(-3)
+            };
+            await _database.GetCollection<PlatformAdministrator>(PlatformCollections.PlatformAdministrators).InsertOneAsync(administrator);
+            return administrator;
+        }
+
+        public async Task<PlatformAdministrator> ReadAsync(Guid id) =>
+            await _database.GetCollection<PlatformAdministrator>(PlatformCollections.PlatformAdministrators).Find(x => x.Id == id).SingleAsync();
+
+        public async Task<HttpStatusCode> AcceptLoginAsync(string email)
+        {
+            using var client = _server.CreateClient();
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/internal/platform-administrators/accept-login")
+            {
+                Content = JsonContent.Create(new { email })
+            };
+            request.Headers.Add("X-Internal-Api-Key", TestOnlyInternalKey);
+            using var response = await client.SendAsync(request);
+            return response.StatusCode;
         }
 
         public ValueTask DisposeAsync()

@@ -58,6 +58,34 @@ günlüğü yazılır (yalnız yönetici kimliği). Bekleyenleri bulmak (salt ok
 `db.platform_administrators.find({AuthSyncPendingSinceUtc: {$ne: null}}, {_id: 1, AuthSyncPendingSinceUtc: 1})`.
 Kaydın bir sonraki başarılı güncellemesi işareti temizler; giriş ve yenileme rolleri zaten kayıttan alır.
 
+**Son tur (FIX5) — işletim etkisi.**
+
+- **Yönlendirme izlenmez (madde 1).** Auth'un Platform durum istemcisi 3xx cevabını **izlemez**
+  (`AllowAutoRedirect = false`): iç anahtar özel bir başlıkta gider ve yönlendirmede başka hedefe
+  taşınırdı. 3xx = **cevap yok** (503, oturum iptali yok). Zaman aşımı `PlatformService:TimeoutSeconds`
+  (1–30 sn, varsayılan 5). Platform ← Auth yönündeki çağrının (provision / sync) yönlendirmesiz
+  istemciye taşınması e-posta dalındadır; o dal birleşirken CT uzlaştırır, bu dalda o satıra dokunulmadı.
+- **Cevap istenen adresin cevabı olmalı (madde 2).** Durum cevabındaki `email` istenenle (normalize)
+  aynı değilse ya da yoksa Auth cevabı **cevap yok** sayar (503). Yeni Platform `email`'i zaten
+  gönderir; karışık sürümde `email` göndermeyen eski bir Platform da 503 alır (kesinti, oturum silme değil).
+- **Girişte boş rol listesi (madde 3).** Durum cevabında `roles` **boş ya da yalnız tanınmayan adlardan**
+  oluşuyorsa Auth giriş / yenileme / zorunlu değişimde hiçbir platform rolü vermez (ve hesabın
+  platform rollerini geri alır); giriş eskisi gibi 403 olur. Davet / senkron (provision / sync)
+  yolunun "rol yoksa `ReadOnly`" kuralı değişmedi.
+- **Provision gövdesinde `status` (madde 11).** Yeni Auth var olan hesabı yalnız `status = Active`
+  ise etkinleştirir ve var olan hesabın e-postasını **onaylamaz**. `status` göndermeyen eski Platform
+  ile yeni Auth: var olan hesap etkinleştirilmez (güvenli yön). Eski Auth `status`'u tanımaz ve
+  eskisi gibi etkinleştirip onaylar. Sıra önemsiz; yine önce Platform, sonra Auth önerilir.
+- **Auth cevap vermiyorsa ikinci çağrı yok (madde 10).** Güncellemede ilk senkron zaman aşımı /
+  bağlantı hatası / 5xx ile düşerse Platform aynı Auth'a ikinci (yakınsatma) çağrısı yapmaz;
+  kayıtta `AuthSyncPendingSinceUtc` doldurulur ve ilk hata yüzeye çıkar. **Açık:** Platform → Auth
+  çağrısının kendi zaman aşımı bu dalda ayarlanmadı (istemci satırı e-posta dalında).
+- **Günlük (madde 6).** Platform'un Auth çağrısı hatasında günlüğe yalnız yönetici kimliği, durum
+  kodu ve neden kodu yazılır; Auth'un cevap gövdesi ve e-posta yazılmaz.
+- **İşaret korunur (madde 8, 9).** `AuthSyncPendingSinceUtc`'yi yalnız güncelleme ve başarılı
+  yakınsatma temizler; öteki kayıt yazımları saklı işareti korur. Auth'un giriş bildirimi
+  (`accept-login`) artık yalnız son giriş zamanını ve davet durumunu yazar: sürüm, `UpdatedBy` ve işaret değişmez.
+
 **İç anahtar reddi (FIX3 madde 7).** Platform durum çağrısına 401 / 403 dönerse (iç anahtar iki
 serviste aynı değil) Auth bunu **Error** düzeyinde günlükler (anahtar ya da değeri yazılmaz) ve
 her platform girişine 503 verir. Düzeltme: Auth'taki `PlatformService:InternalApiKey` ile
