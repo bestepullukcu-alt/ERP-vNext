@@ -7908,6 +7908,36 @@ saklanan tarihlerde yapıyor — çakışma kontrolünün doğruluğu ayrı öl�
 
 ---
 
+### BL-533
+
+**Sürümsüz bütün belge değiştirme: toplantı, tutanak, zaman çizelgesi, iş akışı ve görev yorumu depoları eski okumayla yeni belgenin üzerine yazabiliyor**
+
+DURUM: AÇIK · SAHİP: CT (Toplantılar · Zaman Çizelgesi · MOD-0023 · MOD-0024) · BULAN: WP-WCN-TASK-REQUEST-01 FIX3 bağımsız gözden geçirmesi · KAYIT: 2026-10-04
+
+Görev deposunda (ve altı sürümlü görev deposunda) FIX3 merkezi denetimi kurdu: yazım yalnız okunan sürüme iner (`TaskStoreVersioning.IsTheDocumentRead`).
+Aynı kusur sınıfı başka depolarda duruyor: `MeetingRepositories.cs:169, 370, 407, 485, 545` (toplantı, gündem, toplantı türü, tutanak, seri),
+`TimeEntryRepositories.cs:68…`, `WorkflowRepositories.cs:35, 250, 375`, görev yorum deposu (`TaskRepositories.cs:477-485`; FIX4'te). Tutanak
+yayımlama GxP açısından önemli: iki eşzamanlı yazımdan biri sessizce kaybolur. Ayrıca bir görev kararı başka belgelere yazımı (kontrol listesi koşusu,
+ek, bağımlılık, kayıt bağı) görev sürümüne bağlamıyor. Düzeltme: her depoda "okunan duruma koşullu yazım" (sürüm alanı yoksa önce alan), depo başına
+yarış testi. Karşılaştırma: SAP'de belge kilidi (enqueue), Oracle'da satır sürümü (OBJECT_VERSION_NUMBER) her yazımda zorunlu. Gelecek regresyon riski: 🟡.
+
+---
+
+### BL-532
+
+**Parola sıfırlama / rütbe düşürme sonrası açık erişim belirteci süresi dolana kadar çalışıyor (kiracıda 1440 dakikaya kadar); ağ geçidi `pwd_change_required`'ı uygulamıyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: BL-529 ve BL-521 gözden geçirmeleri · KAYIT: 2026-10-04
+
+BL-529 sıfırlamada parola özetini değiştirip yenileme belirteçlerini iptal ediyor; BL-521 iş ortaklığını kayıttan belirliyor. İkisi de daha önce basılmış
+ERİŞİM belirtecini durduramıyor: kiracıda `SessionTimeoutMinutes` (varsayılan 60, en çok 1440), platformda 15 dakika. Ağ geçidi `pwd_change_required`'ı
+uygulamıyor (yalnız Web `Program.cs:491-507`): ele geçirilmiş bir yöneticinin belirteci bu pencerede arka kapı kullanıcı açabilir. Düzeltme: kullanıcı
+başına güvenlik damgası (parola / rol / tür değişiminde artar), belirteçte taşınır, Auth / ağ geçidi / servisler kısa önbellekle doğrular; ağ geçidi
+`pwd_change_required` taşıyan belirteçle yalnız parola değişim uçlarına izin verir. Karşılaştırma: ASP.NET Identity `SecurityStamp`, Oracle IDCS
+oturum iptali. Gelecek regresyon riski: 🟡 (her istekte doğrulama).
+
+---
+
 ### BL-531
 
 **Toplantı katılımcı seçicisi kiracıdaki herkesi döküyor: `meetings/lookups/attendees` aramasız ve sınırsız (BL-512'nin kardeşi)**
