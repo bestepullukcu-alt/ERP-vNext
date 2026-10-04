@@ -7654,7 +7654,9 @@ mesajına döner. Hız sınırı: Platform'da istek başına sınırlayıcı öl
 (dakikada 60). Rehber 60 sn, eksik rehber 10 sn önbellekte; ad çözümü sınırlı çağrılardan ve adlı, zaman aşımlı istemciden geçiyor. Form
 seçicileri ve devret penceresi ortak `shared/diten-people-search.js` select2 taşıyıcısını kullanıyor; kayıtlı onaycı `?ids=` ile adına
 çevriliyor. Aynı dalda BL-531 (toplantı katılımcıları) kapandı. Üç tur bağımsız gözden geçirme; CT sabotajı 3/3 adı yazılı testle kırmızı.
-Kalan: canlıda arama ve devret penceresi (sahip girişi gerekiyor).
+Canlı (dev, 2026-10-04, sahip oturumu, şerit `7d9d8009d` yapısı): aramasız / tek harf → 400 `PEOPLE_SEARCH_TOO_SHORT`; "ad" → 2 kişi,
+yalnız userId + ad + pozisyon + birim; toplantı katılımcı ucu aynı kural; görev formundaki onay yöneticisi seçicisi "en az 2 karakter" diyor, "ad"
+yazınca iki aday. Bulunan veri açığı → BL-542 (silinmiş kullanıcı pozisyonda "Bulunamayan kişi" olarak). Kalan: Görev Merkezi devret penceresi.
 
 ---
 
