@@ -7908,6 +7908,20 @@ saklanan tarihlerde yapıyor — çakışma kontrolünün doğruluğu ayrı öl�
 
 ---
 
+### BL-531
+
+**Toplantı katılımcı seçicisi kiracıdaki herkesi döküyor: `meetings/lookups/attendees` aramasız ve sınırsız (BL-512'nin kardeşi)**
+
+DURUM: AÇIK — düzeltme yazılıyor (WP-MEETINGS-ATTENDEE-SEARCH-01, dal `fix/platform/decision-makers-search` ikinci parça) · SAHİP: CT (Toplantılar)
+· BULAN: WP-PLATFORM-DECISION-MAKERS-SEARCH-01 ölçümü · KAYIT: 2026-10-04
+
+`MeetingsController.cs:254-260` (izin `meetings.create`) `GetMeetingAttendeeLookupHandler` ile görevlerin karar listesini
+(`GetTaskAssignmentPersonLookupQuery(Decision)`) TAM döndürüyor: toplantı açabilen her kullanıcı öbür şirketlerin çalışan listesini alabiliyor.
+Altı ön yüz çağıranı (oluşturma, düzenleme, seri, tutanak editörü, liste ve rapor süzgeçleri). Düzeltme: BL-512 ile aynı arama sözleşmesi ve
+aynı hız sınırı kovası; rehber gerekmeyen çağıran toplantının kendi katılımcılarını kullanır. Gelecek regresyon riski: 🟡 (toplantı formları).
+
+---
+
 ### BL-530
 
 **Ürün kimliği onayında "elle uzlaştırma" çıkışı yalnız gönderende: gönderen ayrılırsa GSKU taslağı donuk kalır**
