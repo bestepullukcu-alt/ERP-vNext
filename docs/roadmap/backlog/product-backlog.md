@@ -7908,6 +7908,38 @@ saklanan tarihlerde yapıyor — çakışma kontrolünün doğruluğu ayrı öl�
 
 ---
 
+### BL-535
+
+**Platform'un üretim başlangıcını (Program.cs ara katman sırası) koşturan bir test altyapısı yok: `WebApplicationFactory<Program>` bu projede çalışmıyor**
+
+DURUM: AÇIK · SAHİP: CT (test altyapısı) · BULAN: BL-512 FIX1 DUR'u · KAYIT: 2026-10-04
+
+`PlatformContainerValidationTests` özetinde ölçülmüş üç neden: minimal hosting'de fabrikanın yapılandırması `Build()` sırasında uygulanıyor ama
+`AddInfrastructure` yapılandırmayı daha önce okuyor; `AddInfrastructure` süreç geneli BSON serileştirici kaydı yapıyor (Application.Tests
+`[ModuleInitializer]`'da zaten yaptığı için ikinci kayıt atıyor); göçler ve tohumlar satır içi, `AllowStartupWithoutDatabase` dışında koşuyor.
+Sonuç: ara katman sırası (kimlik doğrulama → kiracı → yetki → hız sınırı) yalnız elle kurulan test hatlarıyla ölçülüyor; BL-512 FIX1 dörtlüyü tek
+uzantıya taşıdı (`UsePlatformAccessPipeline`), uzantı çağrısının Program.cs'ten silinmesi yine metin denetimiyle yakalanıyor. Düzeltme: başlangıcı
+yapılandırılabilir yapan (serileştirici kaydı idempotent, tohumlar bayrakla) ve WAF'ı çalıştıran tek bir test düzeneği. Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-534
+
+**`admin@diten.com` tohumu her ortamda (canlı dahil) her açılışta çalışıyor: kaynak kodda sabit parola özeti, kalıcı düşürülemez, e-postası değişirse Platform açılmıyor**
+
+DURUM: AÇIK — SAHİP KARARI BEKLİYOR · SAHİP: CT (Auth / Platform) · BULAN: BL-521 FIX2 ölçümü (2026-10-04) · KAYIT: 2026-10-04
+
+Platform `PlatformAdministratorSeed` (`DependencyInjection.cs:549` ortam koşulsuz) her açılışta bu kaydı PlatformAdmin + Active + yalnız SuperAdmin +
+silinmemiş yapıyor: hesap kalıcı olarak düşürülemiyor / askıya alınamıyor. Auth `DataSeeder.SeedUsersAsync` her açılışta: kullanıcı yoksa ya da aynı
+e-postayla başka Id'li bir kullanıcı varsa onu ve rollerini fiziksel olarak SİLİP kaynak koddaki sabit bir parola özetiyle yeniden yaratıyor
+(`DataSeeder.cs:1055-1062`); Id'si sabit kullanıcı varsa parolasına dokunmuyor. Kayıt e-postası değiştirilirse sonraki açılışta aynı sabit Id ile ekleme
+DuplicateKey alıyor ve Platform açılmıyor (ölçüldü). Risk: canlıda bu hesap silinir / yeniden yaratılırsa kaynak koda erişen herkesin bildiği parolayla
+SuperAdmin doğar. Öneri: tohum yalnız Development'ta; canlı ilk kurulum tek seferlik bir komutla rastgele parola + zorunlu değişim; e-posta değişikliği
+bu kayıtta yasak; tohum açılışı asla çökertmez. Karşılaştırma: SAP ve Oracle'da ilk yönetici kurulum sırasında, rastgele / kurulumcunun verdiği parolayla
+bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: 🟡 (canlı ilk kurulum yolu).
+
+---
+
 ### BL-533
 
 **Sürümsüz bütün belge değiştirme: toplantı, tutanak, zaman çizelgesi, iş akışı ve görev yorumu depoları eski okumayla yeni belgenin üzerine yazabiliyor**
