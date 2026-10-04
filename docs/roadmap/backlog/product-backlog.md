@@ -6302,6 +6302,13 @@ sütunlar (dt-defaults, sunucu modunda yalnız sayfa — tam dışa aktarma sunu
 **Kanca:** ana checkout'un dalında yok (integration main'e girene kadar oradan açılan sohbetlerde koşmaz); kök artık düzenlenen dosyanın
 worktree'sinden (a5af7f7bb).
 
+**Ek 2026-10-04 — ürün listeleri (sahip yakaladı; sahip onayı "evet hepsi").** Global Ürün kabul edildi ama liste ekranı ortak kabuğa / fabrikaya
+taşınmadı (dokunma protokolü GP turlarında koşmadı). Ölçüm (`verify_datatable_page.py --data-mode server --api-profile proxy --format gaps`): GSKU 1
+(yalnız BL-452; FIX3 taşıdı) · Global Ürün 11 · ABB kayıt 18 · LSKU 18 · Tüzel Kişi Kapsamı 17 · FG 17 — beşi de kabuk / fabrika dışında. Toplu silme
+sapmaları GxP ana veride `_ListShell` `HasSelection=false` ile düşer. Plan: WP-MDM-GP-LIST-01 (MDM sohbeti, GSKU-FIX4'ten sonra) · WP-MDM-ABB-LIST-01
+(Roller, ABB-FIX4 kabulünden sonra) · LSKU FIX2 / Kapsam FIX1 / FG FIX1'de zorunlu madde. Kural: bir modülün kabul turu listelerinin `--format gaps`
+çıktısını ister.
+
 ---
 ### BL-441
 
