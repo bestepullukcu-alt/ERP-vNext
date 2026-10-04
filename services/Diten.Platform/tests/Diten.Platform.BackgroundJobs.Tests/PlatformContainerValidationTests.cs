@@ -153,6 +153,31 @@ public sealed class PlatformContainerValidationTests
     }
 
     [Fact]
+    public async Task A_transition_command_sent_through_the_production_mediator_is_validated_before_its_handler()
+    {
+        // BL-454 — the sweep and the retry job send their commands through THIS mediator: every behaviour AddApplication
+        // registers and every validator AddValidatorsFromAssembly finds. Round 4's close was refused here in production
+        // while its tests, which skipped validation, were green.
+        await using var provider = Composition.Value.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<MediatR.IMediator>();
+        var tenant = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<FluentValidation.ValidationException>(() => mediator.Send(
+            new Diten.Platform.Application.Features.Notifications.Commands.MarkNotificationDispatchFailedCommand(
+                tenant, Guid.NewGuid(), "RetryWindowExpired", "The retry window passed before the message could be sent.",
+                IsPermanentFailure: true)));
+
+        // The sweep's own message passes validation and reaches the handler, which answers for an unknown dispatch.
+        var response = await mediator.Send(
+            new Diten.Platform.Application.Features.Notifications.Commands.MarkNotificationDispatchFailedCommand(
+                tenant, Guid.NewGuid(), "RetryWindowExpired",
+                Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchSweepJob.ClosingMessage(null),
+                IsPermanentFailure: true));
+        Assert.Equal(404, response.StatusCode);
+    }
+
+    [Fact]
     public async Task The_retry_window_is_read_from_configuration()
     {
         await using var provider = Composition.Value.BuildServiceProvider();

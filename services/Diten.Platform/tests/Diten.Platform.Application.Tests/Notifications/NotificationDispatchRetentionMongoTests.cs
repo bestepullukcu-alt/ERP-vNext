@@ -91,12 +91,13 @@ public sealed class NotificationDispatchRetentionMongoTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task The_window_query_is_answered_from_its_index_not_by_reading_the_collection()
+    public async Task The_window_query_reads_neither_sent_rows_nor_the_history_of_permanent_failures()
     {
         var now = DateTimeOffset.UtcNow;
-        for (var i = 0; i < 40; i++)
+        for (var i = 0; i < 20; i++)
         {
             await AddAsync(NotificationDispatchStatus.Sent, now.AddHours(-30));
+            await AddAsync(NotificationDispatchStatus.Failed, now.AddHours(-30), permanent: true); // closed long ago
         }
 
         await AddAsync(NotificationDispatchStatus.Failed, now.AddHours(-30));
@@ -104,21 +105,59 @@ public sealed class NotificationDispatchRetentionMongoTests : IAsyncLifetime
         var filter = NotificationDispatchRepository.RetryWindowExpiredFilter(now.AddHours(-24))
             .Render(collection.DocumentSerializer, MongoDB.Bson.Serialization.BsonSerializer.SerializerRegistry);
 
-        var explain = await _harness.Database.RunCommandAsync<MongoDB.Bson.BsonDocument>(new MongoDB.Bson.BsonDocument
+        var explain = await _harness.Database.RunCommandAsync<BsonDocument>(new BsonDocument
         {
-            ["explain"] = new MongoDB.Bson.BsonDocument
+            ["explain"] = new BsonDocument
             {
                 ["find"] = PlatformCollections.NotificationDispatches,
                 ["filter"] = filter,
-                ["sort"] = new MongoDB.Bson.BsonDocument("QueuedAt", 1)
+                ["sort"] = new BsonDocument("QueuedAt", 1)
             },
             ["verbosity"] = "executionStats"
         });
 
         var plan = explain["queryPlanner"]["winningPlan"].ToJson();
-        Assert.Contains("ix_notification_dispatches_retry_window", plan);
-        // Only the one waiting row is read, not the forty sent ones.
-        Assert.True(explain["executionStats"]["totalDocsExamined"].ToInt32() <= 1, explain["executionStats"].ToJson());
+        Assert.Contains("ix_notification_dispatches_retry_window_waiting", plan);
+        var stats = explain["executionStats"];
+        // The one waiting row is the only document read; the twenty closed ones are outside the index bounds.
+        Assert.True(stats["totalDocsExamined"].ToInt32() <= 1, stats.ToJson());
+        // DateTimeOffset is stored as [ticks, offset], so each indexed row has two QueuedAt keys: one row, a few keys.
+        // Without the partial filter the forty noise rows add their keys (and the twenty Failed ones their documents).
+        Assert.True(stats["totalKeysExamined"].ToInt32() <= 4, stats.ToJson());
+    }
+
+    [Fact]
+    public async Task A_conditional_close_raises_the_version_exactly_once()
+    {
+        var row = await AddAsync(NotificationDispatchStatus.Failed, DateTimeOffset.UtcNow.AddHours(-30));
+        var read = (await _dispatches.GetByIdForTenantAsync(_harness.TenantId, row.Id))!;
+        var readVersion = read.Version;
+        var handler = new Diten.Platform.Application.Features.Notifications.Handlers.CommandHandlers.MarkNotificationDispatchFailedHandler(
+            _dispatches, new NotificationsSmtpIntegrationTests.RecordingEventBus());
+
+        var response = await handler.Handle(new Diten.Platform.Application.Features.Notifications.Commands.MarkNotificationDispatchFailedCommand(
+            _harness.TenantId, row.Id, "RetryWindowExpired", "RetryWindowExpired:None",
+            IsPermanentFailure: true, ExpectedVersion: readVersion, ExpectedStatus: NotificationDispatchStatus.Failed), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(readVersion + 1, (await _dispatches.GetByIdForTenantAsync(_harness.TenantId, row.Id))!.Version);
+    }
+
+    [Fact]
+    public async Task A_conditional_write_never_writes_the_same_id_in_another_tenant()
+    {
+        var row = await AddAsync(NotificationDispatchStatus.Failed, DateTimeOffset.UtcNow.AddHours(-30));
+        var read = (await _dispatches.GetByIdForTenantAsync(_harness.TenantId, row.Id))!;
+        var readVersion = read.Version;
+        read.TryMarkFailed("RetryWindowExpired", "RetryWindowExpired:None", DateTimeOffset.UtcNow, isPermanent: true);
+        read.TenantId = Guid.NewGuid(); // the same id, claimed by another tenant
+
+        var written = await _dispatches.TryUpdateAsync(read, readVersion, NotificationDispatchStatus.Failed);
+
+        Assert.False(written);
+        var stored = (await _dispatches.GetByIdForTenantAsync(_harness.TenantId, row.Id))!;
+        Assert.Null(stored.PermanentlyFailedNotifiedAt);
+        Assert.Equal("{\"TaskTitle\":\"x\"}", stored.VariablesJson);
     }
 
     private async Task<NotificationDispatch> AddAsync(NotificationDispatchStatus status, DateTimeOffset queuedAt, bool permanent = false)

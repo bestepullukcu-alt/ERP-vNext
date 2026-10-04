@@ -96,17 +96,20 @@ public sealed partial class EmailShellDispatchTests
     {
         var rig = new Rig();
         var meetings = new MeetingDoubles();
-        var ancient = MeetingRow(rig, meetings, hoursAgo: 24 * EmailDispatchSweepJob.SilentWindowMultiple + 5);
-        var recent = MeetingRow(rig, meetings, hoursAgo: 30);
-        var before = Counter(MeetingKey, meeting: true);
+        // A template key of this test's own: the ops counter is process-wide, and parallel tests count too.
+        var key = UniqueKey("platform.meetings");
+        var ancient = MeetingRow(rig, meetings, hoursAgo: 24 * EmailDispatchSweepJob.SilentWindowMultiple + 5, key);
+        var recent = MeetingRow(rig, meetings, hoursAgo: 30, key);
+        var before = Counter(key, meeting: true);
 
         await Sweep(rig, new ValidatingMediator(rig.Dispatches, meetings))
             .HandleAsync(new EmailDispatchSweepJobArgs(), new BackgroundJobContext(), CancellationToken.None);
 
         Assert.NotNull(ancient.PermanentlyFailedNotifiedAt);
         Assert.NotNull(recent.PermanentlyFailedNotifiedAt);
-        Assert.Equal(before + 2, Counter(MeetingKey, meeting: true));
+        Assert.Equal(before + 2, Counter(key, meeting: true));
         Assert.Equal([recent.MeetingAttendeeUserId!.Value], meetings.Undelivered);
+        Assert.Equal(NotificationDispatch.ReleasedVariablesJson, ancient.VariablesJson); // silent still releases
         Assert.Single(meetings.OrganizerNotices);
     }
 
@@ -121,18 +124,24 @@ public sealed partial class EmailShellDispatchTests
             JobOptions = new BackgroundJobSchedulerOptions(),
             PermanentFailure = meetings.Effects()
         };
-        rig.AddTemplate("en", "<p>{{MeetingTitle}}</p>", "{{MeetingTitle}}");
+        var key = UniqueKey("platform.tasks");
+        rig.Templates.CreateAsync(new NotificationTemplate
+        {
+            IsPlatformDefault = true, TemplateKey = key, Channel = NotificationChannelCode.Email, Locale = "en",
+            SubjectTemplate = "Subject", BodyHtmlTemplate = "<p>{{MeetingTitle}}</p>", BodyTextTemplate = "{{MeetingTitle}}",
+            Status = NotificationTemplateStatus.Active, SemanticVersion = "1.0.0"
+        }).GetAwaiter().GetResult();
         rig.Transport.SendThrow = new InvalidOperationException("smtp down");
         var attendee = Guid.NewGuid();
-        var before = Counter(TemplateKey, meeting: false);
+        var before = Counter(key, meeting: false);
 
         await rig.Handler().Handle(new QueueEmailNotificationCommand(
             rig.TenantId,
-            new QueueEmailNotificationRequest(TemplateKey, "en", new Dictionary<string, object?> { ["MeetingTitle"] = "Review" },
+            new QueueEmailNotificationRequest(key, "en", new Dictionary<string, object?> { ["MeetingTitle"] = "Review" },
                 [new EmailRecipientDto("attendee@example.test", "Attendee")], CausationId: meetings.MeetingId, MeetingAttendeeUserId: attendee),
             "corr"), CancellationToken.None);
 
-        Assert.Equal(before + 1, Counter(TemplateKey, meeting: false));
+        Assert.Equal(before + 1, Counter(key, meeting: false));
         var dispatch = Assert.Single(rig.Dispatches.Items);
         Assert.NotNull(dispatch.PermanentlyFailedNotifiedAt);
     }
@@ -203,7 +212,7 @@ public sealed partial class EmailShellDispatchTests
     [InlineData("EmployeeCode")] [InlineData("CustomerCode")] [InlineData("SupplierCode")] [InlineData("VendorCode")]
     [InlineData("WarehouseCode")] [InlineData("CompanyCode")] [InlineData("BranchCode")] [InlineData("LegalEntityCode")]
     [InlineData("AccountCode")] [InlineData("SiteCode")] [InlineData("PlantCode")] [InlineData("LocationCode")]
-    [InlineData("OrderCode")] [InlineData("ItemCode")] [InlineData("ProjectKey")] [InlineData("DocumentCode")]
+    [InlineData("OrderCode")] [InlineData("ItemCode")] [InlineData("GroupKey")] [InlineData("DocumentCode")]
     [InlineData("CodeType")] [InlineData("KeyStatus")]
     public void An_erp_master_data_identifier_is_not_masked(string name) =>
         Assert.False(NotificationSecrets.IsSecretName(name), name);
@@ -248,6 +257,7 @@ public sealed partial class EmailShellDispatchTests
     }
 
     // ---------------------------------------------------------------- 12. rules that had no test
+    // (The internal-key and key-literal guards moved to round 5, which widened what they cover.)
 
     [Theory]
     [InlineData(true, true, true)]
@@ -289,56 +299,6 @@ public sealed partial class EmailShellDispatchTests
             mediator.Closed.Select(c => c.TenantId).OrderBy(x => x));
     }
 
-    [Fact]
-    public void Every_platform_class_that_sends_the_internal_key_to_AuthService_uses_the_internal_client()
-    {
-        var root = RepositoryRoot();
-        var services = Path.Combine(root, "services/Diten.Platform/src/Diten.Platform.Infrastructure");
-        var helper = File.ReadAllText(Path.Combine(services, "Services/InternalHttpClients.cs"));
-        var senders = Directory.GetFiles(services, "*.cs", SearchOption.AllDirectories)
-            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"))
-            .Where(path => !path.EndsWith("InternalHttpClients.cs", StringComparison.Ordinal))
-            .Select(path => (Path: path, Text: File.ReadAllText(path)))
-            .Where(file => file.Text.Contains("X-Internal-Api-Key", StringComparison.Ordinal)
-                && file.Text.Contains("AuthServiceOptions", StringComparison.Ordinal))
-            .ToList();
-
-        Assert.True(senders.Count >= 9, $"found {senders.Count} senders: the guard would prove nothing");
-        foreach (var (path, text) in senders)
-        {
-            var name = Path.GetFileNameWithoutExtension(path);
-            var calls = System.Text.RegularExpressions.Regex.Matches(text, @"CreateClient\(([^)]*)\)");
-            foreach (System.Text.RegularExpressions.Match call in calls)
-            {
-                Assert.True(
-                    call.Groups[1].Value is "InternalHttpClients.AuthInternal" or "AuthInternalClientName",
-                    $"{name} asks the factory for '{call.Groups[1].Value}', not the internal client.");
-            }
-
-            if (calls.Count == 0)
-            {
-                Assert.Contains($", {name}>", helper);
-            }
-        }
-    }
-
-    [Fact]
-    public void No_notification_test_carries_a_literal_shaped_like_a_real_key()
-    {
-        // Item 11 — secret scanners and push protection read source, not the compiled string: every key-shaped test
-        // value is written in pieces. The patterns are themselves built from pieces, so this file passes its own check.
-        var shapes = new System.Text.RegularExpressions.Regex(
-            "sk_" + "live_|sk_" + "test_|gh" + "p_[A-Za-z0-9]{8}|xo" + "xb-|AK" + "IA[0-9A-Z]{16}|ey" + "J[A-Za-z0-9_-]{8,}\\.ey" + "J|sk-" + "live-");
-        var folder = Path.Combine(RepositoryRoot(), "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Notifications");
-        var offenders = Directory.GetFiles(folder, "*.cs")
-            .Where(path => shapes.IsMatch(File.ReadAllText(path)))
-            .Select(Path.GetFileName)
-            .ToList();
-
-        Assert.True(Directory.GetFiles(folder, "*.cs").Length > 10);
-        Assert.Empty(offenders);
-    }
-
     private static string RepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -359,10 +319,13 @@ public sealed partial class EmailShellDispatchTests
         mediator,
         Options.Create(new EmailDispatchRetentionOptions { RetryWindowHours = 24 }));
 
-    private static NotificationDispatch MeetingRow(Rig rig, MeetingDoubles meetings, int hoursAgo)
+    /// <summary>A template key no other test uses: the counter it is read from is shared by the whole test process.</summary>
+    private static string UniqueKey(string prefix) => prefix + ".t" + Guid.NewGuid().ToString("N");
+
+    private static NotificationDispatch MeetingRow(Rig rig, MeetingDoubles meetings, int hoursAgo, string templateKey = MeetingKey)
     {
         var row = Waiting(rig, NotificationDispatchStatus.Failed, hoursAgo);
-        row.TemplateKey = MeetingKey;
+        row.TemplateKey = templateKey;
         row.CausationId = meetings.MeetingId;
         row.MeetingAttendeeUserId = Guid.NewGuid();
         return row;

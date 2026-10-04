@@ -167,9 +167,9 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
     }
 
     /// <summary>
-    /// BL-454 — the window query, served by <c>ix_notification_dispatches_retry_window</c> (Status, QueuedAt; partial on
-    /// IsDeleted=false): the IsDeleted equality matches the partial filter, Status and QueuedAt are the index bounds,
-    /// and only PermanentlyFailedNotifiedAt is read from the documents the index already narrowed.
+    /// BL-454 — the window query, served by <c>ix_notification_dispatches_retry_window_waiting</c> (Status, QueuedAt;
+    /// partial on IsDeleted=false AND PermanentlyFailedNotifiedAt=null): both equalities match the partial filter, Status
+    /// and QueuedAt are the bounds, and a row already closed as permanent is not in the index at all.
     /// </summary>
     internal static FilterDefinition<NotificationDispatch> RetryWindowExpiredFilter(DateTimeOffset queuedBefore) =>
         Builders<NotificationDispatch>.Filter.And(

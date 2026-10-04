@@ -26,25 +26,36 @@ public static partial class NotificationSecrets
         "password", "passwd", "passcode", "passphrase", "secret", "token", "credential", "apikey", "connectionstring"
     ];
 
-    /// <summary>Short words that are secrets on their own as a word of the name: no neutral neighbour can excuse them.</summary>
-    public static IReadOnlyList<string> SecretNameWords { get; } = ["pwd", "jwt", "sig", "signature"];
-
     /// <summary>
-    /// Short words that are secrets as a word of the name UNLESS a neutral word stands right BEFORE them
-    /// (<see cref="NeutralNameWords"/>) or one of the few neutral words stands right AFTER them
-    /// (<see cref="NeutralFollowingWords"/>): <c>InviteCode</c> is a secret, <c>CountryCode</c> and <c>KeyResult</c> are
-    /// not, <c>VerificationCodeMessage</c> is.
+    /// Short words that are secrets as a word of the name, ALWAYS: no neighbour excuses them. <c>EmployeePin</c>,
+    /// <c>CustomerOtp</c>, <c>AccountSession</c>, <c>SitePass</c> and <c>SessionTitle</c> are all masked.
     /// </summary>
-    public static IReadOnlyList<string> AmbiguousSecretNameWords { get; } =
+    public static IReadOnlyList<string> SecretNameWords { get; } =
     [
-        "code", "codes", "key", "keys", "pass", "pin", "pins", "otp", "nonce", "session"
+        "pwd", "jwt", "sig", "signature", "pass", "pin", "pins", "otp", "nonce", "session"
     ];
 
     /// <summary>
-    /// Words that, standing right BEFORE an ambiguous word (<see cref="AmbiguousSecretNameWords"/>), make it ordinary
-    /// data: the master-data identifiers of an ERP (<c>EmployeeCode</c>, <c>WarehouseCode</c>, <c>LegalEntityCode</c>)
-    /// and other catalogue codes. The one list: add a word here, nowhere else. ("title" is deliberately absent:
-    /// <c>SessionTitle</c> stays masked.)
+    /// <c>code</c>: a secret as a word of the name UNLESS a neutral word stands right BEFORE it
+    /// (<see cref="NeutralNameWords"/>: <c>EmployeeCode</c>, <c>CountryCode</c>) or result / type / status right AFTER it
+    /// (<see cref="NeutralFollowingWords"/>). <c>InviteCode</c> and <c>VerificationCodeMessage</c> are secrets.
+    /// </summary>
+    public static IReadOnlyList<string> CodeWords { get; } = ["code", "codes"];
+
+    /// <summary>
+    /// <c>key</c>: a secret as a word of the name — <c>AccountKey</c> is a storage account's key — except right after one
+    /// of the few words that make it a data key (<see cref="KeyNeutralWords"/>: <c>SortKey</c>, <c>PrimaryKey</c>) or
+    /// before result / type / status (<c>KeyResult</c>).
+    /// </summary>
+    public static IReadOnlyList<string> KeyWords { get; } = ["key", "keys"];
+
+    /// <summary>The only words that, standing right BEFORE <c>key</c>, make it a data key rather than a secret.</summary>
+    public static IReadOnlyList<string> KeyNeutralWords { get; } = ["sort", "group", "lookup", "primary", "foreign"];
+
+    /// <summary>
+    /// Words that, standing right BEFORE <c>code</c> (<see cref="CodeWords"/>), make it ordinary data: the master-data
+    /// identifiers of an ERP (<c>EmployeeCode</c>, <c>WarehouseCode</c>, <c>LegalEntityCode</c>) and other catalogue
+    /// codes. The one list: add a word here, nowhere else.
     /// </summary>
     public static IReadOnlyList<string> NeutralNameWords { get; } =
     [
@@ -57,7 +68,7 @@ public static partial class NotificationSecrets
         "warehouse", "location", "order"
     ];
 
-    /// <summary>The only words that, standing right AFTER an ambiguous word, make it ordinary data (<c>KeyResult</c>).</summary>
+    /// <summary>The only words that, standing right AFTER <c>code</c> or <c>key</c>, make it ordinary data (<c>KeyResult</c>).</summary>
     public static IReadOnlyList<string> NeutralFollowingWords { get; } = ["result", "type", "status"];
 
     /// <summary>
@@ -86,7 +97,11 @@ public static partial class NotificationSecrets
             return true;
         }
 
-        var words = Words(name);
+        if (!TryWords(name, out var words))
+        {
+            return true; // a name that cannot be read in time is not stored (fails closed)
+        }
+
         for (var i = 0; i < words.Count; i++)
         {
             if (SecretNameWords.Contains(words[i], StringComparer.Ordinal))
@@ -94,8 +109,15 @@ public static partial class NotificationSecrets
                 return true;
             }
 
-            if (AmbiguousSecretNameWords.Contains(words[i], StringComparer.Ordinal)
+            if (CodeWords.Contains(words[i], StringComparer.Ordinal)
                 && !IsNeutral(words, i - 1, NeutralNameWords)
+                && !IsNeutral(words, i + 1, NeutralFollowingWords))
+            {
+                return true;
+            }
+
+            if (KeyWords.Contains(words[i], StringComparer.Ordinal)
+                && !IsNeutral(words, i - 1, KeyNeutralWords)
                 && !IsNeutral(words, i + 1, NeutralFollowingWords))
             {
                 return true;
@@ -151,6 +173,12 @@ public static partial class NotificationSecrets
             return false;
         }
 
+        // A value no template draws as text (64 KB and more) is not stored at all; it never reaches a regular expression.
+        if (text.Length > MaxJudgedLength)
+        {
+            return true;
+        }
+
         if (HasSecretShape(text))
         {
             return true;
@@ -193,7 +221,9 @@ public static partial class NotificationSecrets
         {
             var equals = parameter.IndexOf('=');
             var name = Unescape(equals < 0 ? parameter : parameter[..equals]);
-            if (IsSecretName(name) || Words(name).Any(word => SecretQueryWords.Contains(word, StringComparer.Ordinal)))
+            if (IsSecretName(name)
+                || !TryWords(name, out var nameWords)
+                || nameWords.Any(word => SecretQueryWords.Contains(word, StringComparer.Ordinal)))
             {
                 return true;
             }
@@ -259,6 +289,23 @@ public static partial class NotificationSecrets
             ? string.Empty
             : new string(name.Where(char.IsAsciiLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
 
+    /// <summary>Above this length a value is a secret without being searched.</summary>
+    public const int MaxJudgedLength = 64 * 1024;
+
+    private static bool TryWords(string? name, out IReadOnlyList<string> words)
+    {
+        try
+        {
+            words = name is { Length: > MaxJudgedLength } ? [] : Words(name);
+            return name is not { Length: > MaxJudgedLength };
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            words = [];
+            return false;
+        }
+    }
+
     /// <summary>Lower-case words of a name: separators, PascalCase and letter/digit boundaries split it.</summary>
     public static IReadOnlyList<string> Words(string? name)
     {
@@ -275,9 +322,11 @@ public static partial class NotificationSecrets
 
     // A secret's own shape, found anywhere in a text but never in the middle of a word: provider keys by their published
     // prefixes, and a three-part JWT.
-    // Every quantifier is bounded and the search has a time limit (HasSecretShape fails closed on a timeout).
+    // Every quantifier is bounded and the search has a time limit (HasSecretShape fails closed on a timeout). A JWT is
+    // recognised by its header and the start of its payload, so no length of payload escapes; a header longer than the
+    // bound is itself the shape of a secret.
     [GeneratedRegex(
-        @"(?<![A-Za-z0-9_])(?:sk-[A-Za-z0-9_-]{9,512}|sk_(?:live|test)_[A-Za-z0-9]{8,512}|SG\.[A-Za-z0-9_.-]{9,512}|gh[pousr]_[A-Za-z0-9]{20,255}|xox[abprs]-[A-Za-z0-9-]{8,512}|AKIA[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]{1,4096}\.[A-Za-z0-9_-]{1,8192}\.[A-Za-z0-9_-]{0,4096})",
+        @"(?<![A-Za-z0-9_])(?:sk-[A-Za-z0-9_-]{9,512}|sk_(?:live|test)_[A-Za-z0-9]{8,512}|SG\.[A-Za-z0-9_.-]{9,512}|gh[pousr]_[A-Za-z0-9]{20,255}|xox[abprs]-[A-Za-z0-9-]{8,512}|AKIA[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]{1,4095}\.[A-Za-z0-9_-]|eyJ[A-Za-z0-9_-]{4096})",
         RegexOptions.CultureInvariant,
         matchTimeoutMilliseconds: ShapeSearchTimeoutMilliseconds)]
     private static partial Regex SecretShape();
@@ -285,7 +334,7 @@ public static partial class NotificationSecrets
     /// <summary>How long one search for a secret shape may take before the text is treated as a secret.</summary>
     public const int ShapeSearchTimeoutMilliseconds = 250;
 
-    [GeneratedRegex(@"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=[0-9])|(?<=[0-9])(?=[A-Za-z])|[^A-Za-z0-9]+", RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=[0-9])|(?<=[0-9])(?=[A-Za-z])|[^A-Za-z0-9]+", RegexOptions.CultureInvariant, matchTimeoutMilliseconds: ShapeSearchTimeoutMilliseconds)]
     private static partial Regex WordBoundary();
 }
 

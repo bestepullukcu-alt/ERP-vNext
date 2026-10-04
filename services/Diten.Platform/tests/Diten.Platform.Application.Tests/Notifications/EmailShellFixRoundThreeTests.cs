@@ -115,7 +115,7 @@ public sealed partial class EmailShellDispatchTests
             rig.Dispatches,
             new RecordingScheduler(),
             NullLogger<EmailDispatchSweepJob>.Instance,
-            new RoutingMediator(rig.Dispatches),
+            new ValidatingMediator(rig.Dispatches),
             Options.Create(new EmailDispatchRetentionOptions { RetryWindowHours = 24 }));
 
         await sweep.HandleAsync(new EmailDispatchSweepJobArgs(), new BackgroundJobContext(), CancellationToken.None);
@@ -170,7 +170,7 @@ public sealed partial class EmailShellDispatchTests
 
     [Theory]
     [InlineData("TenantCode")] [InlineData("PostalCode")] [InlineData("CountryCode")] [InlineData("CurrencyCode")]
-    [InlineData("ProductCode")] [InlineData("WeekKey")] [InlineData("ResultCode")] [InlineData("TypeCode")]
+    [InlineData("ProductCode")] [InlineData("PrimaryKey")] [InlineData("ResultCode")] [InlineData("TypeCode")]
     [InlineData("StatusCode")] [InlineData("LanguageCode")] [InlineData("ColorCode")] [InlineData("KeyResult")]
     [InlineData("Shipping")] [InlineData("Pinned")] [InlineData("Keynote")] [InlineData("Barcode")] [InlineData("Compass")]
     [InlineData("Passenger")] [InlineData("LotCode")] [InlineData("module_code")]
@@ -375,7 +375,7 @@ public sealed partial class EmailShellDispatchTests
             rig.Dispatches,
             new TenantMessagingSettingsResolver(rig.Settings),
             new NotificationsSmtpIntegrationTests.TestProviderResolver(rig.Provider),
-            new RoutingMediator(rig.Dispatches),
+            new ValidatingMediator(rig.Dispatches),
             logger,
             rig.Templates,
             new EmailTemplateRenderer(),
@@ -400,7 +400,7 @@ public sealed partial class EmailShellDispatchTests
 
         await new EmailDispatchJob(
                 rig.Dispatches, new TenantMessagingSettingsResolver(rig.Settings),
-                new NotificationsSmtpIntegrationTests.TestProviderResolver(rig.Provider), new RoutingMediator(rig.Dispatches),
+                new NotificationsSmtpIntegrationTests.TestProviderResolver(rig.Provider), new ValidatingMediator(rig.Dispatches),
                 NullLogger<EmailDispatchJob>.Instance, rig.Templates, new EmailTemplateRenderer(), rig.Composer)
             .HandleAsync(new EmailDispatchJobArgs(rig.TenantId, dispatch.Id), new BackgroundJobContext(), CancellationToken.None);
 

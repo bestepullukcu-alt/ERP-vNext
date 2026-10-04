@@ -15,9 +15,14 @@ public sealed class QueueEmailNotificationValidator : AbstractValidator<QueueEma
             .WithMessage("TemplateKey must use lowercase dotted format.");
         RuleFor(x => x.Request.Locale).NotEmpty().MaximumLength(32);
         RuleFor(x => x.Request.Variables).NotNull();
+        // BL-454 — no recipient at all is as permanent a refusal as a bad one: the same code, so an in-process caller
+        // (IsRecipientRefusal) lets the event go instead of redelivering it forever.
         RuleFor(x => x.Request.To)
             .NotNull()
-            .Must(x => x.Count > 0)
+            .WithErrorCode(Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid)
+            .WithMessage("At least one To recipient is required.")
+            .Must(x => x is { Count: > 0 })
+            .WithErrorCode(Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid)
             .WithMessage("At least one To recipient is required.");
         RuleForEach(x => x.Request.To).SetValidator(new EmailRecipientDtoValidator());
         RuleForEach(x => x.Request.Cc!)
@@ -64,7 +69,10 @@ public sealed class EmailRecipientDtoValidator : AbstractValidator<EmailRecipien
             .Must(email => Diten.BuildingBlocks.Email.EmailAddressText.IsSingleAddress(email?.Trim()))
             .WithErrorCode(RecipientInvalid)
             .WithMessage("A recipient address is not a single valid address.");
-        RuleFor(x => x.DisplayName).MaximumLength(160);
+        RuleFor(x => x.DisplayName)
+            .MaximumLength(160)
+            .WithErrorCode(RecipientInvalid)
+            .WithMessage("A recipient name is longer than 160 characters.");
     }
 }
 

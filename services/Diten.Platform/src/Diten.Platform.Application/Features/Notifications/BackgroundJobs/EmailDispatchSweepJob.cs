@@ -1,5 +1,7 @@
 using Diten.BuildingBlocks.BackgroundJobs;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Notifications.Commands;
+using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -37,14 +39,20 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
     // has them. A sweep built the old 3-argument way (existing tests) retries as before and closes nothing.
     private readonly IMediator? _mediator;
     private readonly EmailDispatchRetentionOptions _retention;
+    // BL-454 — the job runs outside any request: no tenant is resolved. Each closed row's command runs inside ITS
+    // tenant (TenantScope, the MeetingSeriesSweepJob pattern), so the meeting stores the permanent-failure path writes
+    // to (attendee badge, organizer notification) read the right tenant instead of throwing. Registered in DI.
+    private readonly ITenantContext? _tenantContext;
 
     public EmailDispatchSweepJob(
         INotificationDispatchRepository dispatchRepository,
         IBackgroundJobScheduler scheduler,
         ILogger<EmailDispatchSweepJob> logger,
         IMediator? mediator = null,
-        IOptions<EmailDispatchRetentionOptions>? retention = null)
+        IOptions<EmailDispatchRetentionOptions>? retention = null,
+        ITenantContext? tenantContext = null)
     {
+        _tenantContext = tenantContext;
         _dispatchRepository = dispatchRepository;
         _scheduler = scheduler;
         _logger = logger;
@@ -184,30 +192,22 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
             var isSilent = handle.QueuedAt < silentBefore;
             try
             {
-                // The command passes QueueEmailNotificationValidator's MarkNotificationDispatchFailedValidator (no space,
-                // no '='), and keeps the row's last real error: RetryWindowExpired:SMTP_TIMEOUT.
-                var response = await _mediator.Send(
-                    new MarkNotificationDispatchFailedCommand(
-                        handle.TenantId,
-                        handle.DispatchId,
-                        RetryWindowExpiredCode,
-                        ClosingMessage(handle.ErrorCode),
-                        IsPermanentFailure: true,
-                        ExpectedVersion: handle.Version,
-                        ExpectedStatus: handle.Status,
-                        Silent: isSilent),
-                    ct);
-                if (response?.IsSuccessful == true)
+                // KS4 — the tenant boundary: everything the close writes happens inside the row's own tenant.
+                using (TenantScopeFor(handle.TenantId))
                 {
-                    closed++;
-                    if (isSilent)
+                    var response = await CloseAsync(handle, ClosingMessage(handle.ErrorCode), isSilent, ct);
+                    if (response?.IsSuccessful == true)
                     {
-                        silent++;
+                        closed++;
+                        if (isSilent)
+                        {
+                            silent++;
+                        }
                     }
-                }
-                else
-                {
-                    lost++;
+                    else
+                    {
+                        lost++;
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -238,6 +238,46 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
         }
     }
 
+    private IDisposable? TenantScopeFor(Guid tenantId) =>
+        _tenantContext is null ? null : TenantScope.Begin(_tenantContext, tenantId);
+
+    /// <summary>
+    /// The close, through the real pipeline. A refusal by the validator (a stored code it will not accept) is answered
+    /// ONCE with the plain closing message, and the refused properties are logged — a row the validator keeps refusing
+    /// would otherwise stay first in line every minute and starve the rows behind it.
+    /// </summary>
+    private async Task<Diten.Platform.Application.Common.Response<NotificationDispatchDto>?> CloseAsync(
+        NotificationDispatchExpiryHandle handle, string message, bool isSilent, CancellationToken ct)
+    {
+        try
+        {
+            return await _mediator!.Send(Command(handle, message, isSilent), ct);
+        }
+        catch (FluentValidation.ValidationException refusal)
+        {
+            _logger.LogWarning(
+                "email.dispatch.sweep.expiry_refused DispatchId={DispatchId} TenantId={TenantId} Properties={Properties}",
+                handle.DispatchId,
+                handle.TenantId,
+                string.Join(",", refusal.Errors.Select(error => error.PropertyName).Distinct()));
+            return await _mediator!.Send(Command(handle, ClosingMessage(null), isSilent), ct);
+        }
+    }
+
+    private static MarkNotificationDispatchFailedCommand Command(NotificationDispatchExpiryHandle handle, string message, bool isSilent) =>
+        new(
+            handle.TenantId,
+            handle.DispatchId,
+            RetryWindowExpiredCode,
+            message,
+            IsPermanentFailure: true,
+            ExpectedVersion: handle.Version,
+            ExpectedStatus: handle.Status,
+            Silent: isSilent);
+
+    /// <summary>How much of the row's last error code the closing message keeps.</summary>
+    public const int MaxKeptErrorCodeLength = 64;
+
     /// <summary>A row this many windows old is closed SILENTLY: counted and logged, no organizer told, no badge.</summary>
     public const int SilentWindowMultiple = 3;
 
@@ -252,7 +292,9 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
             ? "None"
             : NotificationParsing.LooksLikeRawSecret(lastErrorCode) || lastErrorCode.Contains(':')
                 ? "Redacted"
-                : lastErrorCode.Trim();
+                : lastErrorCode.Trim().Length <= MaxKeptErrorCodeLength
+                    ? lastErrorCode.Trim()
+                    : lastErrorCode.Trim()[..MaxKeptErrorCodeLength];
         return RetryWindowExpiredCode + ":" + code;
     }
 }

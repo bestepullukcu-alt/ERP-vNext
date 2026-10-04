@@ -463,10 +463,12 @@ public sealed partial class EmailShellDispatchTests
         Assert.Equal(
             ["password", "passwd", "passcode", "passphrase", "secret", "token", "credential", "apikey", "connectionstring"],
             NotificationSecrets.SecretNameParts);
-        Assert.Equal(["pwd", "jwt", "sig", "signature"], NotificationSecrets.SecretNameWords);
         Assert.Equal(
-            ["code", "codes", "key", "keys", "pass", "pin", "pins", "otp", "nonce", "session"],
-            NotificationSecrets.AmbiguousSecretNameWords);
+            ["pwd", "jwt", "sig", "signature", "pass", "pin", "pins", "otp", "nonce", "session"],
+            NotificationSecrets.SecretNameWords);
+        Assert.Equal(["code", "codes"], NotificationSecrets.CodeWords);
+        Assert.Equal(["key", "keys"], NotificationSecrets.KeyWords);
+        Assert.Equal(["sort", "group", "lookup", "primary", "foreign"], NotificationSecrets.KeyNeutralWords);
         Assert.Equal(["auth", "p", "rlkey", "ticket", "hash", "invite", "accesstoken"], NotificationSecrets.SecretQueryWords);
         Assert.True(NotificationParsing.IsSensitiveVariableName("TemporaryPassword"));
         Assert.True(NotificationParsing.IsSensitiveVariableName("ResetToken"));
@@ -711,7 +713,7 @@ public sealed partial class EmailShellDispatchTests
     }
 
     [Theory]
-    [InlineData("Shipping")] [InlineData("TenantCode")] [InlineData("ModuleCode")] [InlineData("WeekKey")] [InlineData("TaskTitle")]
+    [InlineData("Shipping")] [InlineData("TenantCode")] [InlineData("ModuleCode")] [InlineData("SortKey")] [InlineData("TaskTitle")]
     [InlineData("Opinion")] [InlineData("Signatory")] [InlineData("PostalCode")] [InlineData("KeyResult")]
     public void A_name_that_only_contains_a_secret_word_as_letters_is_not_masked(string name)
     {

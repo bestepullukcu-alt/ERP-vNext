@@ -30,6 +30,9 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
     private readonly IEmailTemplateRenderer? _renderer;
     // BL-454 — same shape, same reason: registered in DI, absent from older test doubles.
     private readonly IEmailShellComposer? _shellComposer;
+    // BL-454 — a job runs outside any request: the transition commands below run inside the dispatch's own tenant
+    // (TenantScope), so the permanent-failure path's meeting stores read that tenant. Registered in DI.
+    private readonly Diten.Platform.Common.Tenancy.ITenantContext? _tenantContext;
 
     public EmailDispatchJob(
         INotificationDispatchRepository dispatchRepository,
@@ -39,8 +42,10 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         ILogger<EmailDispatchJob> logger,
         INotificationTemplateRepository? templateRepository = null,
         IEmailTemplateRenderer? renderer = null,
-        IEmailShellComposer? shellComposer = null)
+        IEmailShellComposer? shellComposer = null,
+        Diten.Platform.Common.Tenancy.ITenantContext? tenantContext = null)
     {
+        _tenantContext = tenantContext;
         _shellComposer = shellComposer;
         _dispatchRepository = dispatchRepository;
         _settingsResolver = settingsResolver;
@@ -107,9 +112,13 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         {
             // BL-454 — a retry that could only send the stored preview is marked as such on the dispatch itself, so the
             // monitoring screen says it, not only a log line.
-            await _mediator.Send(
-                new MarkNotificationDispatchSentCommand(dispatch.TenantId, dispatch.Id, result.ProviderMessageId, degradedReason),
-                cancellationToken);
+            using (TenantScopeFor(dispatch.TenantId))
+            {
+                await _mediator.Send(
+                    new MarkNotificationDispatchSentCommand(dispatch.TenantId, dispatch.Id, result.ProviderMessageId, degradedReason),
+                    cancellationToken);
+            }
+
             return;
         }
 
@@ -121,19 +130,42 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         // will never surface this dispatch again — so this is the one and only transition where "no further
         // retry is coming" becomes true, never re-entered on a later sweep pass over the same terminal row.
         var isPermanentFailure = newRetryCount >= args.MaxRetryCount;
-        await _mediator.Send(
-            new MarkNotificationDispatchFailedCommand(
-                dispatch.TenantId,
-                dispatch.Id,
-                Redact(result.ErrorCode) ?? "ProviderRejected",
-                // BL-454 — the fallback is a CODE: MarkNotificationDispatchFailedValidator refuses a message with a space
-                // (a possible raw secret), and a refused command left the row Failed and due forever.
-                Redact(result.ErrorMessage) ?? ProviderRejectedMessage,
-                RetryCount: newRetryCount,
-                NextRetryAt: nextRetryAt,
-                IsPermanentFailure: isPermanentFailure),
-            cancellationToken);
+        // KS4 — the tenant boundary: the last failure's permanent path writes to tenant-scoped meeting stores.
+        using (TenantScopeFor(dispatch.TenantId))
+        {
+            await _mediator.Send(
+                new MarkNotificationDispatchFailedCommand(
+                    dispatch.TenantId,
+                    dispatch.Id,
+                    Code(Redact(result.ErrorCode), "ProviderRejected", MaxErrorCodeLength),
+                    // BL-454 — the fallback is a CODE: MarkNotificationDispatchFailedValidator refuses a message with a
+                    // space (a possible raw secret) or none at all, and a refused command left the row Failed and due.
+                    Code(Redact(result.ErrorMessage), ProviderRejectedMessage, MaxErrorMessageLength),
+                    RetryCount: newRetryCount,
+                    NextRetryAt: nextRetryAt,
+                    IsPermanentFailure: isPermanentFailure),
+                cancellationToken);
+        }
     }
+
+    // The failed-command validator's own limits (MarkNotificationDispatchFailedValidator).
+    private const int MaxErrorCodeLength = 128;
+    private const int MaxErrorMessageLength = 2000;
+
+    /// <summary>An empty or blank value becomes the fallback code; a long one is cut to what the validator accepts.</summary>
+    private static string Code(string? value, string fallback, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        var trimmed = value.Trim();
+        return trimmed.Length <= maxLength ? trimmed : trimmed[..maxLength];
+    }
+
+    private IDisposable? TenantScopeFor(Guid tenantId) =>
+        _tenantContext is null ? null : Diten.Platform.Application.Contracts.TenantScope.Begin(_tenantContext, tenantId);
 
     private async Task<(MessagingProviderResult Result, string? DegradedReason)> AttemptSendAsync(NotificationDispatch dispatch, BackgroundJobContext context, CancellationToken cancellationToken)
     {
