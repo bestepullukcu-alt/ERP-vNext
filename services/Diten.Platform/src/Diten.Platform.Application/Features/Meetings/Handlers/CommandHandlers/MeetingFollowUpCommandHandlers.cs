@@ -3,6 +3,8 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Meetings.Commands;
 using Diten.Platform.Application.Features.Meetings.RecordLinks;
 using Diten.Platform.Application.Features.Meetings.Services;
+using Diten.Platform.Application.Features.Tasks;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Meetings;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -27,6 +29,7 @@ public sealed class ScheduleFollowUpMeetingHandler
     private readonly IMeetingIdempotencyKeyResolver _idempotency;
     private readonly ICurrentUserContext _currentUser;
     private readonly IMediator _mediator;
+    private readonly ITaskReadAccessPolicy _readAccess;
 
     public ScheduleFollowUpMeetingHandler(
         IMeetingRepository meetings,
@@ -36,8 +39,11 @@ public sealed class ScheduleFollowUpMeetingHandler
         ITenantContext tenantContext,
         IMeetingIdempotencyKeyResolver idempotency,
         ICurrentUserContext currentUser,
-        IMediator mediator)
+        IMediator mediator,
+        // WP-WCN-TASK-REQUEST-01 FIX3 (item 4) — required: whose titles may be copied onto the new agenda.
+        ITaskReadAccessPolicy readAccess)
     {
+        _readAccess = readAccess;
         _meetings = meetings;
         _agendaItems = agendaItems;
         _tasks = tasks;
@@ -117,7 +123,13 @@ public sealed class ScheduleFollowUpMeetingHandler
             idempotencyKey,
             ct: ct);
 
-        var carried = await CarryForwardOpenAgendaTasksAsync(source, newMeetingId, ct);
+        // FIX3 (item 4) — whose read decides which titles are copied: the person scheduling the follow-up; for one the
+        // series sweep chains (no person — GenerateDueMeetingSeriesHandler runs as the system), the new meeting's
+        // organizer, through the data legs the read rule answers for somebody who is not the caller.
+        var reader = _currentUser.UserId != Guid.Empty
+            ? _currentUser.UserId
+            : request.OrganizerUserId ?? source.OrganizerUserId;
+        var carried = await CarryForwardOpenAgendaTasksAsync(source, newMeetingId, reader, ct);
 
         return Response<ScheduleFollowUpMeetingResultDto>.Success(
             new ScheduleFollowUpMeetingResultDto(newMeetingId, carried),
@@ -169,7 +181,8 @@ public sealed class ScheduleFollowUpMeetingHandler
     /// (Done/Cancelled) task is dropped; a dangling link (task deleted/cross-tenant) is silently dropped too,
     /// the same rule <c>GetLinkedTasksHandler</c> already applies for a far end that cannot be read.
     /// </summary>
-    private async Task<int> CarryForwardOpenAgendaTasksAsync(Meeting source, Guid newMeetingId, CancellationToken ct)
+    private async Task<int> CarryForwardOpenAgendaTasksAsync(
+        Meeting source, Guid newMeetingId, Guid reader, CancellationToken ct)
     {
         var sourceAgenda = (await _agendaItems.ListByMeetingIdAsync(source.Id, ct))
             .Where(a => a.RecordLinkId is not null)
@@ -217,6 +230,16 @@ public sealed class ScheduleFollowUpMeetingHandler
             .Select(c => c.TaskId)
             .ToList();
 
+        /*
+         * FIX3 (item 4) — THE AGENDA LINE IS A COPY OF THE TITLE, and every reader of the new meeting sees it. Copied only
+         * when the reader (the person scheduling the follow-up, or — for the series sweep — its organizer)
+         * may READ the task (MOD-0024's read rule, batched); otherwise the line carries TaskLinks.InaccessibleTitleCode. The task still carries forward — it is the source meeting's open
+         * action, not the scheduler's — and its title reaches each reader of the new meeting only through the linked-task
+         * list, which asks the same rule for THEM.
+         */
+        var readable = await _readAccess.ReadableTaskIdsAsync(
+            openTaskIds.Select(id => tasksById[id]).ToList(), reader, ct);
+
         var sortOrder = 0;
         foreach (var taskId in openTaskIds)
         {
@@ -231,7 +254,7 @@ public sealed class ScheduleFollowUpMeetingHandler
             {
                 TenantId = _tenantContext.TenantId,
                 MeetingId = newMeetingId,
-                Text = task.Title,
+                Text = readable.Contains(taskId) ? task.Title : TaskLinks.InaccessibleTitleCode,
                 SortOrder = sortOrder++,
                 RecordLinkId = newLink.Id,
                 CarriedFromMeetingId = source.Id,

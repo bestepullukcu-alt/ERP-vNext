@@ -35,6 +35,11 @@ namespace Diten.Platform.Application.Features.Tasks.Services;
 /// per-arbitrary-user variant of any of them in this codebase today. A consumer (e.g. the @mention check) that calls
 /// this policy for somebody OTHER than the caller gets a true answer only from the data legs above; that is a real,
 /// documented narrowing, not a silent gap.</para>
+///
+/// <para><b>Why, not only whether</b> (WP-WCN-TASK-REQUEST-01 FIX3, item 8). <see cref="ReadGroundAsync"/> names the
+/// kind of leg that admits a reader — a watcher and the person a waiting task asks are OBSERVERS — for the write gate,
+/// which refuses observers every change. The legs, their order and the yes/no answer are the same ones
+/// <see cref="CanReadAsync"/> gives; <c>TaskReadGroundTests</c> holds the two to one answer, task by task and batched.</para>
 /// </summary>
 public interface ITaskReadAccessPolicy
 {
@@ -75,6 +80,52 @@ public interface ITaskReadAccessPolicy
 
         return readable;
     }
+
+    /// <summary>
+    /// WP-WCN-TASK-REQUEST-01 FIX3 (item 8) — WHY <paramref name="actorUserId"/> may read the task, as far as a write
+    /// needs to know it: <see cref="TaskReadGround.None"/> exactly when <see cref="CanReadAsync"/> says no;
+    /// <see cref="TaskReadGround.Observer"/> when the ONLY legs that admit them are watching it or being the person a
+    /// waiting task is asking (BL-439); <see cref="TaskReadGround.Full"/> for every other leg. The same legs in the same
+    /// order — the rule decides nothing new, it names the leg it already used.
+    /// <para>The default (a test double that answers only <see cref="CanReadAsync"/>) never says Observer.</para>
+    /// </summary>
+    async Task<TaskReadGround> ReadGroundAsync(TaskItem task, Guid actorUserId, CancellationToken ct)
+        => await CanReadAsync(task, actorUserId, ct) ? TaskReadGround.Full : TaskReadGround.None;
+
+    /// <summary>
+    /// FIX3 — <see cref="ReadGroundAsync"/> for MANY tasks at once, batched like <see cref="ReadableTaskIdsAsync"/>
+    /// (a timesheet save asks it). A task absent from the answer is <see cref="TaskReadGround.None"/>.
+    /// </summary>
+    async Task<IReadOnlyDictionary<Guid, TaskReadGround>> ReadGroundsAsync(
+        IReadOnlyCollection<TaskItem> tasks, Guid actorUserId, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(tasks);
+        var grounds = new Dictionary<Guid, TaskReadGround>();
+        foreach (var task in tasks.DistinctBy(t => t.Id))
+        {
+            grounds[task.Id] = await ReadGroundAsync(task, actorUserId, ct);
+        }
+
+        return grounds;
+    }
+}
+
+/// <summary>
+/// WP-WCN-TASK-REQUEST-01 FIX3 (item 8) — which kind of leg admits a reader, as the write gate needs it. A watcher is
+/// there to see the work ("visibility only, never action rights", pack §12 K3 / OD-4), and the person a waiting task
+/// asks reads it in order to answer (BL-439); neither becomes somebody who changes or administers the task merely
+/// because a write endpoint's own permission is in their token.
+/// </summary>
+public enum TaskReadGround
+{
+    /// <summary>Cannot read it — to every write, the task does not exist.</summary>
+    None = 0,
+
+    /// <summary>Reads it ONLY as a watcher and/or as the person a waiting task is asking.</summary>
+    Observer = 1,
+
+    /// <summary>Reads it through any other leg (holder, pool, creator, parent, scope, team, read-all, a request's addressee).</summary>
+    Full = 2
 }
 
 /// <inheritdoc cref="ITaskReadAccessPolicy"/>
@@ -110,33 +161,63 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
     }
 
     public async Task<bool> CanReadAsync(TaskItem task, Guid actorUserId, CancellationToken ct)
+        => await GroundAsync(task, actorUserId, stopAtFirstLeg: true, ct) != TaskReadGround.None;
+
+    public Task<TaskReadGround> ReadGroundAsync(TaskItem task, Guid actorUserId, CancellationToken ct)
+        => GroundAsync(task, actorUserId, stopAtFirstLeg: false, ct);
+
+    /// <summary>
+    /// One task, the legs in ONE order: the request's addressee, the data legs, scope, team, ReadAll.
+    ///
+    /// <para><paramref name="stopAtFirstLeg"/> is <see cref="CanReadAsync"/>: the first leg that admits ends the walk —
+    /// its reads, its order and its answer exactly as before FIX3. Without it (<see cref="ReadGroundAsync"/>) an
+    /// observer leg does not end the walk, because a FULL leg further on (scope, team, ReadAll) may still answer, and
+    /// a watcher who is also in scope is no mere observer. Either way the task is readable exactly when some leg
+    /// admits, so the two cannot disagree about WHETHER — only the second says WHY.</para>
+    /// </summary>
+    private async Task<TaskReadGround> GroundAsync(
+        TaskItem task, Guid actorUserId, bool stopAtFirstLeg, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(task);
 
         if (AddresseeReads(task, actorUserId))
         {
-            return true;
+            return TaskReadGround.Full;
         }
 
-        if ((await ResolveDataLegCandidatesAsync(task, ct)).Contains(actorUserId))
+        var watchers = await _watchers.ListByTaskIdAsync(task.Id, ct);
+        var parent = task.ParentTaskItemId is { } parentId ? await _tasks.GetByIdAsync(parentId, ct) : null;
+        var legs = await DataLegsAsync(task, watchers, parent, ct);
+        if (legs.Full.Contains(actorUserId))
         {
-            return true;
+            return TaskReadGround.Full;
+        }
+
+        var observer = legs.Observers.Contains(actorUserId);
+        if (observer && stopAtFirstLeg)
+        {
+            return TaskReadGround.Observer;
         }
 
         if (await ActorScopeCoversUnitAsync(task.OrganizationUnitId, actorUserId, ct))
         {
-            return true;
+            return TaskReadGround.Full;
         }
 
         if (await ActorTeamHoldsTaskAsync(task, actorUserId, ct))
         {
-            return true;
+            return TaskReadGround.Full;
         }
 
         // ReadAll is a permission grant on the CALLER, not a fact about actorUserId — see the "scope, team and
         // read-all" note on the interface. An arbitrary-actor call (actorUserId != caller) never gets a true
         // answer from this leg.
-        return actorUserId == _currentUser.UserId && _permissions.Has(TaskPermissions.ReadAll);
+        if (actorUserId == _currentUser.UserId && _permissions.Has(TaskPermissions.ReadAll))
+        {
+            return TaskReadGround.Full;
+        }
+
+        return observer ? TaskReadGround.Observer : TaskReadGround.None;
     }
 
     public async Task<IReadOnlySet<Guid>> ResolveDataLegCandidatesAsync(TaskItem task, CancellationToken ct)
@@ -145,19 +226,35 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
 
         var watchers = await _watchers.ListByTaskIdAsync(task.Id, ct);
         var parent = task.ParentTaskItemId is { } parentId ? await _tasks.GetByIdAsync(parentId, ct) : null;
-        return await DataLegCandidatesAsync(task, watchers, parent, ct);
+        return (await DataLegsAsync(task, watchers, parent, ct)).All;
     }
 
     public async Task<IReadOnlySet<Guid>> ReadableTaskIdsAsync(
         IReadOnlyCollection<TaskItem> tasks, Guid actorUserId, CancellationToken ct)
+        => (await GroundsAsync(tasks, actorUserId, stopAtFirstLeg: true, ct))
+            .Where(ground => ground.Value != TaskReadGround.None)
+            .Select(ground => ground.Key)
+            .ToHashSet();
+
+    public async Task<IReadOnlyDictionary<Guid, TaskReadGround>> ReadGroundsAsync(
+        IReadOnlyCollection<TaskItem> tasks, Guid actorUserId, CancellationToken ct)
+        => await GroundsAsync(tasks, actorUserId, stopAtFirstLeg: false, ct);
+
+    /// <summary>
+    /// <see cref="GroundAsync"/> for many tasks: the same legs in the same order, task by task; what is shared is only
+    /// the reading — the watchers and the parents of all the tasks in one read each, and the caller's scope, team and
+    /// ReadAll resolved once instead of once per task (BL-484).
+    /// </summary>
+    private async Task<Dictionary<Guid, TaskReadGround>> GroundsAsync(
+        IReadOnlyCollection<TaskItem> tasks, Guid actorUserId, bool stopAtFirstLeg, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(tasks);
 
-        var readable = new HashSet<Guid>();
+        var grounds = new Dictionary<Guid, TaskReadGround>();
         var distinct = tasks.DistinctBy(t => t.Id).ToList();          // a repeated id: the first row is the one judged
         if (distinct.Count == 0)
         {
-            return readable;
+            return grounds;
         }
 
         // The data legs — the SAME candidates ResolveDataLegCandidatesAsync names — with the watchers and the parents of
@@ -172,12 +269,23 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
         foreach (var task in distinct)
         {
             var parent = task.ParentTaskItemId is { } parentId && parents.TryGetValue(parentId, out var found) ? found : null;
-            if (AddresseeReads(task, actorUserId)
-                || (await DataLegCandidatesAsync(task, watchers[task.Id], parent, ct)).Contains(actorUserId))
+            if (AddresseeReads(task, actorUserId))
             {
-                readable.Add(task.Id);
+                grounds[task.Id] = TaskReadGround.Full;
+                continue;
             }
-            else
+
+            var legs = await DataLegsAsync(task, watchers[task.Id], parent, ct);
+            if (legs.Full.Contains(actorUserId))
+            {
+                grounds[task.Id] = TaskReadGround.Full;
+                continue;
+            }
+
+            // What the data legs say, unless a caller-only leg below says Full.
+            var observer = legs.Observers.Contains(actorUserId);
+            grounds[task.Id] = observer ? TaskReadGround.Observer : TaskReadGround.None;
+            if (!(observer && stopAtFirstLeg))
             {
                 undecided.Add(task);
             }
@@ -187,7 +295,7 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
         // were the whole answer, exactly as in CanReadAsync.
         if (undecided.Count == 0 || actorUserId != _currentUser.UserId)
         {
-            return readable;
+            return grounds;
         }
 
         // Then, task by task and in CanReadAsync's order: scope, team, ReadAll — each caller-wide fact resolved once, on
@@ -209,7 +317,7 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
                 scope ??= await _scopes.ResolveAsync(ct);
                 if (TaskAssigneeEligibility.AllowsUnit(unit.Id, unit.LegalEntityId, scope))
                 {
-                    readable.Add(task.Id);
+                    grounds[task.Id] = TaskReadGround.Full;
                     continue;
                 }
             }
@@ -217,46 +325,52 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
             team ??= await _team.ResolveTeamAsync(ct);
             if (team.Covers(task) || TaskRequestPolicy.TeamSeesPendingOffer(task, team))
             {
-                readable.Add(task.Id);
+                grounds[task.Id] = TaskReadGround.Full;
                 continue;
             }
 
             readAll ??= _permissions.Has(TaskPermissions.ReadAll);
             if (readAll.Value)
             {
-                readable.Add(task.Id);
+                grounds[task.Id] = TaskReadGround.Full;
             }
         }
 
-        return readable;
+        return grounds;
     }
 
-    /// <summary>The data legs from the task's watchers and parent, however they were read (one task, or a batch).</summary>
-    private async Task<IReadOnlySet<Guid>> DataLegCandidatesAsync(
+    /// <summary>
+    /// The data legs from the task's watchers and parent, however they were read (one task, or a batch) — split by
+    /// KIND (FIX3, item 8): <see cref="DataLegs.Observers"/> are the watchers and the person a waiting task is asking;
+    /// everything else is <see cref="DataLegs.Full"/>. Who is a candidate at all is unchanged (<see cref="DataLegs.All"/>).
+    /// </summary>
+    private async Task<DataLegs> DataLegsAsync(
         TaskItem task, IEnumerable<TaskWatcher> watchers, TaskItem? parent, CancellationToken ct)
     {
-        var candidates = new HashSet<Guid>();
+        var full = new HashSet<Guid>();
+        var observers = new HashSet<Guid>();
 
         if (task.AssigneeUserId is { } assignee && assignee != Guid.Empty)
         {
-            candidates.Add(assignee);
+            full.Add(assignee);
         }
 
         if (task.CreatedByUserId is { } creator && creator != Guid.Empty)
         {
-            candidates.Add(creator);
+            full.Add(creator);
         }
 
         foreach (var holder in await _notifications.ResolvePoolHoldersAsync(task, ct))
         {
-            candidates.Add(holder);
+            full.Add(holder);
         }
 
+        // Watchers/consultants: visibility only, never action rights (pack §12 K3, OD-4) — an OBSERVER leg.
         foreach (var watcher in watchers)
         {
             if (watcher.UserId != Guid.Empty)
             {
-                candidates.Add(watcher.UserId);
+                observers.Add(watcher.UserId);
             }
         }
 
@@ -268,12 +382,12 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
          * THIS task only — deliberately absent from the parent leg below: being asked about a subtask admits the
          * addressee to that subtask, never to its parent or its siblings.
          *
-         * Reading is ALL it grants. Every write keeps asking its own holder/requester question, which the
-         * addressee does not pass; the one write they can reach is the answer itself.
+         * Reading is ALL it grants — an OBSERVER leg (FIX3): the write gate lets them comment and answer, and refuses
+         * every change and every administrative verb they would otherwise reach through a key in their token.
          */
         if (task.WaitingOnUserId is { } asked && TaskInquiryRules.IsAskedOf(task, asked))
         {
-            candidates.Add(asked);
+            observers.Add(asked);
         }
 
         // BL-509 — the person a request waits on is deliberately NOT a data leg: these candidates are enumerated
@@ -287,16 +401,22 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
         {
             if (parent.AssigneeUserId is { } parentAssignee && parentAssignee != Guid.Empty)
             {
-                candidates.Add(parentAssignee);
+                full.Add(parentAssignee);
             }
 
             foreach (var holder in await _notifications.ResolvePoolHoldersAsync(parent, ct))
             {
-                candidates.Add(holder);
+                full.Add(holder);
             }
         }
 
-        return candidates;
+        return new DataLegs(full, observers);
+    }
+
+    /// <summary>The data-leg candidates by kind; <see cref="All"/> is the candidate set the @mention picker enumerates.</summary>
+    private sealed record DataLegs(HashSet<Guid> Full, HashSet<Guid> Observers)
+    {
+        public IReadOnlySet<Guid> All => Full.Union(Observers).ToHashSet();
     }
 
     /// <summary>

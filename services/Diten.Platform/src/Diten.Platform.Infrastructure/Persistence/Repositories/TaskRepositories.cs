@@ -14,6 +14,18 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 // GetByIdAsync / DeleteAsync (soft) are inherited: the base stamps TenantId from context on create and ANDs the
 // tenant + IsDeleted execution filter into every read. Collections use the Platform snake_case plural convention.
 
+/// <summary>
+/// WP-WCN-TASK-REQUEST-01 FIX3 (blocker 1) — the one condition every versioned task store asks before its conditional
+/// replace: the entity handed in must be the document the caller READ at the version it names. Each of these stores
+/// replaces the WHOLE document, so the database filter (<c>Version == expectedVersion</c>) alone let a caller whose
+/// expected version ran one ahead of its read overwrite the newer document with a decision taken on the older one.
+/// </summary>
+internal static class TaskStoreVersioning
+{
+    /// <summary>True when the entity was read at <paramref name="expectedVersion"/>; otherwise nothing may be written.</summary>
+    public static bool IsTheDocumentRead(int readVersion, int expectedVersion) => readVersion == expectedVersion;
+}
+
 public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRepository
 {
     private readonly ITaskTransitionRepository _transitions;
@@ -191,9 +203,23 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
      * A handler that forgets to declare still gets its transition recorded, as Unknown. Refusing to record what
      * could not be named would restore the silent hole this log exists to close; the coverage test is what makes
      * Unknown loud.
+     *
+     * WP-WCN-TASK-REQUEST-01 FIX3 (blocker 1) — THE WRITE IS ABOUT THE DOCUMENT THE DECISION WAS MADE ON. A handler
+     * reads the task at version N, decides on it (the write gate, the request's state, the lifecycle) and then writes
+     * the WHOLE document back. The filter alone used to be the client's version, so a client one version AHEAD of the
+     * read (N+1) met a document that had meanwhile become N+1 through somebody else's write — and replaced it with a
+     * decision taken on N: an accept silently wiped by the sender's edit, a claim stolen by a second claimer. The
+     * entity carries the version it was read at; when that is not the version the caller names, nothing is written.
+     * One place, so no caller can forget it — and the same rule every versioned task store in this file asks
+     * (TaskStoreVersioning).
      */
     public async Task<bool> UpdateAsync(TaskItem task, int expectedVersion, CancellationToken ct = default)
     {
+        if (!TaskStoreVersioning.IsTheDocumentRead(task.Version, expectedVersion))
+        {
+            return false;
+        }
+
         task.Version = expectedVersion + 1;
         task.UpdatedAt = DateTimeOffset.UtcNow;
         var filter = Builders<TaskItem>.Filter.And(
@@ -546,6 +572,12 @@ public sealed class TaskFieldDefinitionRepository
     public async Task<bool> UpdateAsync(
         TaskFieldDefinition definition, int expectedVersion, CancellationToken ct = default)
     {
+        // FIX3 — the document the caller read, or nothing (TaskStoreVersioning).
+        if (!TaskStoreVersioning.IsTheDocumentRead(definition.Version, expectedVersion))
+        {
+            return false;
+        }
+
         definition.Version = expectedVersion + 1;
         definition.UpdatedAt = DateTimeOffset.UtcNow;
         var filter = Builders<TaskFieldDefinition>.Filter.And(
@@ -591,6 +623,12 @@ public sealed class TaskTypeRepository : TenantRepository<TaskType>, ITaskTypeRe
 
     public async Task<bool> UpdateAsync(TaskType type, int expectedVersion, CancellationToken ct = default)
     {
+        // FIX3 — the document the caller read, or nothing (TaskStoreVersioning).
+        if (!TaskStoreVersioning.IsTheDocumentRead(type.Version, expectedVersion))
+        {
+            return false;
+        }
+
         type.Version = expectedVersion + 1;
         type.UpdatedAt = DateTimeOffset.UtcNow;
         var filter = Builders<TaskType>.Filter.And(
@@ -641,6 +679,12 @@ public sealed class ChecklistTemplateRepository : TenantRepository<ChecklistTemp
     public async Task<bool> UpdateAsync(
         ChecklistTemplate template, int expectedVersion, CancellationToken ct = default)
     {
+        // FIX3 — the document the caller read, or nothing (TaskStoreVersioning).
+        if (!TaskStoreVersioning.IsTheDocumentRead(template.Version, expectedVersion))
+        {
+            return false;
+        }
+
         template.Version = expectedVersion + 1;
         template.UpdatedAt = DateTimeOffset.UtcNow;
         var filter = Builders<ChecklistTemplate>.Filter.And(
@@ -684,6 +728,12 @@ public sealed class ChecklistRunRepository : TenantRepository<ChecklistRun>, ICh
 
     public async Task<bool> UpdateAsync(ChecklistRun run, int expectedVersion, CancellationToken ct = default)
     {
+        // FIX3 — the document the caller read, or nothing (TaskStoreVersioning).
+        if (!TaskStoreVersioning.IsTheDocumentRead(run.Version, expectedVersion))
+        {
+            return false;
+        }
+
         run.Version = expectedVersion + 1;
         run.UpdatedAt = DateTimeOffset.UtcNow;
         var filter = Builders<ChecklistRun>.Filter.And(
@@ -725,6 +775,12 @@ public sealed class TaskTemplateRepository : TenantRepository<TaskTemplate>, ITa
 
     public async Task<bool> UpdateAsync(TaskTemplate template, int expectedVersion, CancellationToken ct = default)
     {
+        // FIX3 — the document the caller read, or nothing (TaskStoreVersioning).
+        if (!TaskStoreVersioning.IsTheDocumentRead(template.Version, expectedVersion))
+        {
+            return false;
+        }
+
         template.Version = expectedVersion + 1;
         template.UpdatedAt = DateTimeOffset.UtcNow;
         var filter = Builders<TaskTemplate>.Filter.And(
@@ -769,6 +825,12 @@ public sealed class TaskRecurrenceRuleRepository
 
     public async Task<bool> UpdateAsync(TaskRecurrenceRule rule, int expectedVersion, CancellationToken ct = default)
     {
+        // FIX3 — the document the caller read, or nothing (TaskStoreVersioning).
+        if (!TaskStoreVersioning.IsTheDocumentRead(rule.Version, expectedVersion))
+        {
+            return false;
+        }
+
         rule.Version = expectedVersion + 1;
         rule.UpdatedAt = DateTimeOffset.UtcNow;
         var filter = Builders<TaskRecurrenceRule>.Filter.And(

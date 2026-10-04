@@ -24,7 +24,10 @@ internal static class TaskAttachmentAuthorization
         CancellationToken ct, bool requireOpen, ITaskWriteGate writeGate)
     {
         // FIX2 — the task's write gate FIRST: whoever cannot read the task gets the same 404 as for no task at all,
-        // never the 403 below that would confirm it exists (and the sender / addressee rules of a request).
+        // never the 403 below that would confirm it exists. A write (add, remove) is a CHANGE: the gate also refuses
+        // the person a request waits on (409), a reader by watching or by being asked (403) and — BL-509 decision 3 —
+        // the sender of an accepted request (403; reading the files stays open to them). FIX3 removed the second copy
+        // of that last rule that stood below; the gate is its only home.
         var task = await tasks.GetByIdAsync(taskItemId, ct);
         if (await writeGate.CheckAsync(task, requireOpen ? TaskWriteKind.Change : TaskWriteKind.Personal, ct) is { } refused)
         {
@@ -44,14 +47,6 @@ internal static class TaskAttachmentAuthorization
             return (null, Response<T>.Fail(
                 "Only the task's holder or requester may manage its attachments.",
                 403, TaskReasonCodes.AttachmentNotAuthorized, correlationId));
-        }
-
-        // BL-509 (decision 3) — a write (add, remove) by the sender of an accepted request is directing the
-        // holder's work. Reading the files stays open to them.
-        if (requireOpen && TaskRequestPolicy.RefuseSenderOfAcceptedRequest(task, actorId) is { } senderRefused)
-        {
-            return (null, Response<T>.Fail(
-                senderRefused.Message, senderRefused.StatusCode, senderRefused.ReasonCode, correlationId));
         }
 
         if (requireOpen && task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)

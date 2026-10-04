@@ -489,7 +489,8 @@ public sealed class MeetingTaskBridgeCommandHandlerTests
         var taskRepo = new FakeTaskItemRepository(tasks);
         var linksRepo = new FakeRecordLinkRepository();
         var linkService = new RecordLinkService(linksRepo, new FakeTenantContext(TaskTestData.Tenant), new FakeCurrentUserContext(TaskTestData.Me));
-        var handler = new LinkExistingTaskHandler(meetings, agendaItems, taskRepo, linkService);
+        var handler = new LinkExistingTaskHandler(
+            meetings, agendaItems, taskRepo, linkService, new AlwaysAdmitReadAccessPolicy(), new FakeCurrentUserContext(TaskTestData.Me));
         return (handler, linksRepo, agendaItems, meetings);
     }
 

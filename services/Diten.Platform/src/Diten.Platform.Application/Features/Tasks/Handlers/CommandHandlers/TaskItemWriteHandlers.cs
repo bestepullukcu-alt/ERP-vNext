@@ -374,7 +374,10 @@ public sealed class DeleteTaskItemHandler : IRequestHandler<DeleteTaskItemComman
 
     public async Task<Response<NoContent>> Handle(DeleteTaskItemCommand command, CancellationToken ct)
     {
-        // FIX2 — the delete key is a manager's; it still reaches only tasks its holder can read.
+        // FIX2 — the delete key is a manager's; it still reaches only tasks its holder can read. FIX3 (CT decision) —
+        // and never an unanswered request its holder is the person asked (409: they read it to answer it, and a delete
+        // would make it vanish with no decline and no reason), nor a task they read only as a watcher or as the person
+        // a waiting task asks (403).
         var task = await _tasks.GetByIdAsync(command.Id, ct);
         if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } refused)
         {
@@ -403,7 +406,9 @@ public sealed class BulkDeleteTaskItemHandler : IRequestHandler<BulkDeleteTaskIt
         foreach (var id in command.Request.Ids.Distinct())
         {
             // Each delete re-reads through the tenant filter, so an id from another tenant is simply skipped — and
-            // (FIX2) so is a task the caller cannot read: skipped, not refused, so the answer names no task.
+            // (FIX2) so is a task the caller cannot read: skipped, not refused, so the answer names no task. FIX3 — the
+            // same single gate decides, so whatever the one-task delete refuses (the person an unanswered request waits
+            // on, a reader by watching or by being asked) is skipped here too.
             var task = await _tasks.GetByIdAsync(id, ct);
             if (task is not null && await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is null)
             {

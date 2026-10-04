@@ -430,6 +430,13 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
             return Task.FromResult(false);
         }
 
+        // FIX3 — the real repository writes nothing when the entity was not read at the version the caller names
+        // (TaskStoreVersioning); the double keeps in step, so a handler test cannot pass a write production refuses.
+        if (task.Version != expectedVersion)
+        {
+            return Task.FromResult(false);
+        }
+
         // The real repository stamps the passed entity BEFORE its conditional write (TaskRepositories.cs:79), so a
         // handler that writes twice in one request (persist the edit, then store the workflow instance id) can pass
         // task.Version the second time. The double must stamp it too, or that second write always misses.

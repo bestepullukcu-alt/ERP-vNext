@@ -8,7 +8,9 @@ namespace Diten.Platform.Application.Tests.Tasks;
 /// WP-WCN-TASK-REQUEST-01 FIX2 — the write gate for hand-built handlers.
 /// <para><see cref="Open"/> is for unit tests about something else (a lifecycle rule, a checklist verb): it passes every
 /// task that exists, exactly like the handlers before the gate. The gate itself is tested over the production
-/// <see cref="TaskWriteGate"/> (<see cref="Real"/>) — in the request HTTP suite and its own tests.</para>
+/// <see cref="TaskWriteGate"/> (<see cref="Real"/>) — in the request HTTP suite and its own tests; FIX3 (item 9) adds the
+/// LEGITIMATE flows over the real gate and the real read rule too (TaskRequestHttpMongoTests.Fix3), so a gate that
+/// refused the ordinary work would not hide behind <see cref="Open"/>.</para>
 /// </summary>
 public static class TaskWriteGateDoubles
 {
@@ -33,5 +35,9 @@ public static class TaskWriteGateDoubles
     {
         public Task<TaskAssignmentRefusal?> CheckAsync(TaskItem? task, TaskWriteKind kind, CancellationToken ct)
             => Task.FromResult(task is null ? TaskWriteGate.NotFound : null);
+
+        public Task<IReadOnlySet<Guid>> AllowedTaskIdsAsync(
+            IReadOnlyCollection<TaskItem> tasks, Guid actorUserId, TaskWriteKind kind, CancellationToken ct)
+            => Task.FromResult<IReadOnlySet<Guid>>(tasks.Select(task => task.Id).ToHashSet());
     }
 }

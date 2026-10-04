@@ -233,11 +233,16 @@ public sealed class TaskRequestService : ITaskRequestService
             return null;
         }
 
-        var home = await ResolveHomeUnitAsync(userId, ct);
-        if (home is null && TaskRequestPolicy.RecipientNeedsActiveSeat)
-        {
-            return null;
-        }
+        /*
+         * FIX3 (A6, CT decision) — EVERY "NO" DOES THE SAME WORK. This used to stop at the first no: a person with no
+         * seat cost one query, a person with a seat and a switched-off account cost the seat, position and unit reads
+         * plus a call to AuthService — and the difference in time told the sender whether somebody holds an active
+         * seat in this tenant. So the seats, the positions, the units and the account are read for EVERYBODY, and the
+         * answers are combined only after all four are in. No artificial delay: the same calls, not the same clock.
+         */
+        var seats = (await _seats.ActiveForUserAsync(userId, ct)).OrderBy(seat => seat.AssignmentType).ToList();
+        var positionById = (await _positions.GetAllAsync(ct)).ToDictionary(position => position.Id);
+        var unitById = (await _organizationUnits.GetAllAsync(ct)).ToDictionary(unit => unit.Id);
 
         /*
          * The account itself. AuthService's contact read is tenant-first and omits a deactivated user, so "not in
@@ -245,6 +250,13 @@ public sealed class TaskRequestService : ITaskRequestService
          * contract: AuthService being unreachable answers nobody, and a request is then REFUSED — the safe side.
          */
         var reachable = await _accounts.ResolveAsync([userId], ct);
+
+        var home = Judge(seats, positionById, unitById);
+        if (home is null && TaskRequestPolicy.RecipientNeedsActiveSeat)
+        {
+            return null;
+        }
+
         if (reachable.All(account => account.UserId != userId))
         {
             return null;

@@ -501,10 +501,14 @@ public sealed partial class TaskRequestHttpMongoTests : IAsyncLifetime
         var ewa = Token(Ewa, UserKeys);
         var id = await SendRequestAsync(deniz, Ewa);
 
-        // Only the sender withdraws.
+        // Only the sender withdraws. FIX3 (CT decision) — and the person asked, who may do nothing but answer, is told
+        // so with the code every other write of theirs gets (409 answer first), not the bystander's 403.
         var notMine = await _host.PostAsync($"/api/v1/tasks/{id}/withdraw", ewa, new { expectedVersion = await VersionAsync(id) });
-        Assert.Equal(HttpStatusCode.Forbidden, notMine.Status);
-        Assert.Equal(TaskReasonCodes.RequestNotSender, ReasonCode(notMine.Body));
+        Assert.Equal(HttpStatusCode.Conflict, notMine.Status);
+        Assert.Equal(TaskReasonCodes.RequestNotAccepted, ReasonCode(notMine.Body));
+        var notMineEither = await _host.PostAsync($"/api/v1/tasks/{id}/withdraw", Token(Burak, UserKeys),
+            new { expectedVersion = await VersionAsync(id) });
+        Assert.Equal((HttpStatusCode.Forbidden, TaskReasonCodes.RequestNotSender), (notMineEither.Status, ReasonCode(notMineEither.Body)));
 
         // A pending request is not assigned out from under the person asked; it is withdrawn first.
         var assignWhilePending = await _host.PostAsync($"/api/v1/tasks/{id}/reassign", deniz,
@@ -1458,7 +1462,8 @@ public sealed partial class TaskRequestHttpMongoTests : IAsyncLifetime
                     services.AddSingleton<IUserDisplayNameResolver>(names);
                     services.AddScoped<ITaskReadAccessPolicy>(sp => new TaskReadAccessPolicy(
                         sp.GetRequiredService<ITaskItemRepository>(),
-                        new FakeTaskWatcherRepository(),
+                        // FIX3 — the host's ONE watcher list, so a test can make somebody a watcher (item 8).
+                        Watchers,
                         new FakeTaskNotificationService(),
                         sp.GetRequiredService<IOrganizationUnitRepository>(),
                         sp.GetRequiredService<ITaskAssignmentScopeResolver>(),
@@ -1502,7 +1507,7 @@ public sealed partial class TaskRequestHttpMongoTests : IAsyncLifetime
                     services.AddSingleton<ITaskPersonalOverlayRepository>(Overlays);
                     services.AddSingleton<ITaskAttachmentRepository>(Attachments);
                     services.AddSingleton<ITaskNotificationService>(Notifications);
-                    services.AddSingleton<ITaskWatcherRepository>(new FakeTaskWatcherRepository());
+                    services.AddSingleton<ITaskWatcherRepository>(Watchers);
                     services.AddScoped<ITaskChecklistService, TaskChecklistService>();
                     services.AddScoped<ITaskLifecycleService, TaskLifecycleService>();
                     services.AddScoped<ITaskApprovalService>(_ => new FakeTaskApprovalService());
@@ -1537,6 +1542,9 @@ public sealed partial class TaskRequestHttpMongoTests : IAsyncLifetime
         public FakeTaskPersonalOverlayRepository Overlays { get; } = new();
 
         public FakeTaskAttachmentRepository Attachments { get; } = new();
+
+        /// <summary>FIX3 (item 8) — who watches which task, as the read rule reads it.</summary>
+        public FakeTaskWatcherRepository Watchers { get; } = new();
 
         /// <summary>FIX2 (A5) — a write a test pauses, to put another write in between deterministically.</summary>
         public TaskRepositoryHooks Hooks { get; } = new();

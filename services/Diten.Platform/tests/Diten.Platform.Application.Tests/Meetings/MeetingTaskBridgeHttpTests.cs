@@ -223,7 +223,8 @@ public sealed class MeetingTaskBridgeHttpTests
                         new MeetingIdempotencyKeyResolver(), new FakeCurrentUserContext(Actor), this).Handle(cmd, ct),
                     LinkExistingTaskCommand cmd => new LinkExistingTaskHandler(
                         host._meetings, host._agenda, host._tasks,
-                        new RecordLinkService(host._links, new FakeTenantContext(TaskTestData.Tenant), new FakeCurrentUserContext(Actor)))
+                        new RecordLinkService(host._links, new FakeTenantContext(TaskTestData.Tenant), new FakeCurrentUserContext(Actor)),
+                        new Tasks.AlwaysAdmitReadAccessPolicy(), new FakeCurrentUserContext(Actor))
                         .Handle(cmd, ct),
                     ScheduleReviewMeetingForTaskCommand cmd => new ScheduleReviewMeetingForTaskHandler(
                         host._tasks,

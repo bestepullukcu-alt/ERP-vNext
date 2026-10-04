@@ -19,7 +19,8 @@ namespace Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 //
 // THE ORDER OF THE QUESTIONS IS PART OF THE RULE (CT, D1 fix round 1). Each handler asks, in this order:
 //   1. may the caller READ the task at all?     → 404, exactly what a task that does not exist answers;
-//   2. is the caller the one this act belongs to → 403 (the person asked / the sender);
+//   2. is the caller the one this act belongs to → 403 (the person asked / the sender) — except that the person a
+//      request waits on, asked to do anything but answer it, is told 409 "answer first" (FIX3, the write gate's code);
 //   3. is the request in a state that allows it → 409.
 // Asked the other way round, a caller who cannot even see the task would learn from a 409 that it is a request
 // waiting for somebody's answer. And when an act names a NEW person (offer), whether that person can be reached is
@@ -171,6 +172,13 @@ public sealed class WithdrawTaskOfferHandler : IRequestHandler<WithdrawTaskOffer
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
         }
 
+        // FIX3 (CT decision) — the person the request waits on answers it (accept / decline) and writes nothing else:
+        // the same 409 the write gate gives every other write of theirs.
+        if (TaskRequestPolicy.IsOfferedTo(task, me))
+        {
+            return TaskWriteGate.AnswerFirst.ToResponse<NoContent>(command.CorrelationId);
+        }
+
         if (task.CreatedByUserId is null || task.CreatedByUserId != me)
         {
             return Response<NoContent>.Fail(
@@ -266,6 +274,12 @@ public sealed class OfferTaskItemHandler : IRequestHandler<OfferTaskItemCommand,
         if (task is null || !await _readAccess.CanReadAsync(task, me, ct))
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // FIX3 (CT decision) — as in WithdrawTaskOfferHandler: the person asked answers, nothing else (409).
+        if (TaskRequestPolicy.IsOfferedTo(task, me))
+        {
+            return TaskWriteGate.AnswerFirst.ToResponse<NoContent>(command.CorrelationId);
         }
 
         if (task.CreatedByUserId is null || task.CreatedByUserId != me)

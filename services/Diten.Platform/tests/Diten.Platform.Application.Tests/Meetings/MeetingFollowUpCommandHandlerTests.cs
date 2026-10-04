@@ -261,6 +261,45 @@ public sealed class MeetingFollowUpCommandHandlerTests
 
     // ── builders ─────────────────────────────────────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// WP-WCN-TASK-REQUEST-01 FIX3 (item 4) — MUTATION TARGET (the follow-up's title copy asks the read rule). Both open
+    /// actions carry forward — they are the source meeting's — but only the one the person scheduling it may READ lends
+    /// its title to the new agenda; the other line carries the code in its place. The production read rule decides.
+    /// </summary>
+    [Fact]
+    public async Task Only_a_task_the_scheduler_may_read_lends_its_title_to_the_new_agenda()
+    {
+        var mine = Guid.NewGuid();
+        var notMine = Guid.NewGuid();
+        var newMeetingId = Guid.NewGuid();
+        var hidden = MakeTask(notMine, "Başkasının gizli işi", TaskLifecycle.Open);
+        hidden.AssigneeUserId = TaskTestData.Rival;
+        hidden.CreatedByUserId = TaskTestData.Other;
+        var tasks = new FakeTaskItemRepository(MakeTask(mine, "Benim işim", TaskLifecycle.Open), hidden);
+        var (handler, meetings, agendaItems, links, _) = Build(
+            newMeetingId, tasks, RealTaskReadRule.Over(tasks, TaskTestData.Me), TaskTestData.Me);
+        SeedSourceMeeting(meetings);
+        await SeedAgendaItem(agendaItems, (await SeedAgendaLink(links, mine)).Id, sortOrder: 0);
+        await SeedAgendaItem(agendaItems, (await SeedAgendaLink(links, notMine)).Id, sortOrder: 1);
+
+        var result = await handler.Handle(
+            new ScheduleFollowUpMeetingCommand(
+                SourceMeetingId,
+                new ScheduleFollowUpMeetingRequest(
+                    DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1), null, null, null, null, null, null, "key-read"),
+                CorrelationId),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(2, result.Data!.CarriedAgendaItemCount);
+        var carried = (await agendaItems.ListByMeetingIdAsync(newMeetingId, CancellationToken.None))
+            .Where(a => a.CarriedFromMeetingId == SourceMeetingId)
+            .OrderBy(a => a.SortOrder)
+            .Select(a => a.Text)
+            .ToList();
+        Assert.Equal(["Benim işim", "TASK_NOT_ACCESSIBLE"], carried);
+    }
+
     private static void SeedSourceMeeting(FakeMeetingRepository meetings, Guid? id = null, Guid? followUpOf = null)
         => meetings.Seed(new Meeting
         {
@@ -360,6 +399,11 @@ public sealed class MeetingFollowUpCommandHandlerTests
 
     private static (ScheduleFollowUpMeetingHandler Handler, FakeMeetingRepository Meetings, FakeAgendaItemRepository AgendaItems, FakeRecordLinkRepository Links, FollowUpMediator Mediator)
         Build(Guid newMeetingId, FakeTaskItemRepository tasks)
+        => Build(newMeetingId, tasks, new AlwaysAdmitReadAccessPolicy(), TaskTestData.Me);
+
+    private static (ScheduleFollowUpMeetingHandler Handler, FakeMeetingRepository Meetings, FakeAgendaItemRepository AgendaItems, FakeRecordLinkRepository Links, FollowUpMediator Mediator)
+        Build(Guid newMeetingId, FakeTaskItemRepository tasks,
+            Diten.Platform.Application.Features.Tasks.Services.ITaskReadAccessPolicy readAccess, Guid caller)
     {
         var meetings = new FakeMeetingRepository { Tenant = TaskTestData.Tenant };
         var agendaItems = new FakeAgendaItemRepository { Tenant = TaskTestData.Tenant };
@@ -372,7 +416,7 @@ public sealed class MeetingFollowUpCommandHandlerTests
         };
         var handler = new ScheduleFollowUpMeetingHandler(
             meetings, agendaItems, tasks, linkService, new FakeTenantContext(TaskTestData.Tenant),
-            new MeetingIdempotencyKeyResolver(), new FakeCurrentUserContext(TaskTestData.Me), mediator);
+            new MeetingIdempotencyKeyResolver(), new FakeCurrentUserContext(caller), mediator, readAccess);
         return (handler, meetings, agendaItems, linksRepo, mediator);
     }
 

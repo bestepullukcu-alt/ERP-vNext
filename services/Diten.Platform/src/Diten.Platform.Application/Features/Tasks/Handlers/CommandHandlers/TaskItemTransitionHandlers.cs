@@ -59,16 +59,23 @@ public sealed class AcceptTaskItemHandler : IRequestHandler<AcceptTaskItemComman
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
         }
 
+        /*
+         * FIX3 — A REQUEST IS ANSWERED THROUGH ITS OWN RULE, asked in the same order decline and withdraw ask it
+         * (TaskRequestHandlers.cs): read (404) → the person it is addressed to (403) → still waiting (409) → the version
+         * read (409). Accepting is one of the two answers the person asked is there to give; the write gate's "answer
+         * first" (CT decision, blocker 2) would refuse the very answer it asks for, so it is asked of an ordinary
+         * acceptance only.
+         */
+        if (task.AssignmentTarget == TaskAssignmentTarget.Offered)
+        {
+            return await AcceptOfferAsync(task, command, ct);
+        }
+
         // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
         // verb's own 403 / 409 (which would confirm the task exists).
         if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
         {
             return unreadable.ToResponse<NoContent>(command.CorrelationId);
-        }
-
-        if (task.AssignmentTarget == TaskAssignmentTarget.Offered)
-        {
-            return await AcceptOfferAsync(task, command, ct);
         }
 
         if (task.AssignmentTarget != TaskAssignmentTarget.Person || task.AssigneeUserId != _currentUser.UserId)
@@ -445,8 +452,10 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
          * retry, which would never help.
          */
         // BL-509 (decision 3) — once a request was accepted the work is its holder's: the sender no longer calls
-        // it off (before acceptance they withdraw, or cancel their own unanswered request). Administrative
-        // authority over any task is untouched.
+        // it off (before acceptance they withdraw, or cancel their own unanswered request). The delete key
+        // (ActorMayCancelAnyTask) still cancels an accepted request — but only for a holder of that key who passed
+        // the write gate above: who can read the task, is not the person an unanswered request waits on (409), and
+        // does not read it merely as a watcher or as the person a waiting task asks (403) — FIX3.
         if (command.Target == TaskLifecycle.Cancelled
             && !command.ActorMayCancelAnyTask
             && TaskRequestPolicy.RefuseSenderOfAcceptedRequest(task, _currentUser.UserId) is { } senderRefused)
@@ -1657,9 +1666,10 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
 /// the task's history as <see cref="TaskTransitionKind.InquiryAnswered"/>, in their own words; the waiting story
 /// is cleared; the task returns to the lifecycle it had BEFORE it was parked; and the holder is told.</para>
 ///
-/// <para><b>The addressee gains nothing else.</b> This handler is the ONLY write they can reach: start, complete,
-/// cancel, reassign and return all keep asking their own holder/requester questions, which the addressee does
-/// not pass. The answer is not an act on the work — it is information handed back to the person doing it.</para>
+/// <para><b>The addressee gains nothing else.</b> This handler and a comment are the ONLY writes they can reach: the
+/// write gate refuses every change and every administrative verb to a reader by being asked (FIX3, item 8), and
+/// start, complete, cancel, reassign and return keep asking their own holder/requester questions besides. The answer
+/// is not an act on the work — it is information handed back to the person doing it.</para>
 /// </summary>
 public sealed class AnswerInquiryHandler : IRequestHandler<AnswerInquiryCommand, Response<NoContent>>
 {
@@ -1722,7 +1732,10 @@ public sealed class AnswerInquiryHandler : IRequestHandler<AnswerInquiryCommand,
 
         // FIX2 — the read base of every write on a task: who cannot read it gets the 404 above, never this
         // verb's own 403 / 409 (which would confirm the task exists).
-        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } unreadable)
+        // FIX3 (item 8) — a COMMENT-kind write: the answer is information handed back, and the person asked usually
+        // reads the task only because it is asking them (an observer leg the gate refuses every change to). The person
+        // an unanswered request waits on still answers that request first (409).
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Comment, ct) is { } unreadable)
         {
             return unreadable.ToResponse<NoContent>(command.CorrelationId);
         }

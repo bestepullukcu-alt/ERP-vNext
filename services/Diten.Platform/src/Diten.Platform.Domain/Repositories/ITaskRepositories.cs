@@ -83,6 +83,9 @@ public interface ITaskItemRepository
     /// <summary>
     /// Optimistic-concurrency update. Returns false when the expected version no longer matches — the caller
     /// turns that into a controlled 409 rather than silently overwriting (pack §13).
+    /// <para>WP-WCN-TASK-REQUEST-01 FIX3 — and false, writing nothing, when <paramref name="task"/> was not READ at
+    /// <paramref name="expectedVersion"/>: the whole document is replaced, so a decision taken on an older read must
+    /// never land on a newer document that happens to carry the version the client named.</para>
     /// </summary>
     Task<bool> UpdateAsync(TaskItem task, int expectedVersion, CancellationToken ct = default);
 
