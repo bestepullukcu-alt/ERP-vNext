@@ -18,7 +18,7 @@ public sealed class ArchiveNotificationTemplateHandler
     public async Task<Response<NoContent>> Handle(ArchiveNotificationTemplateCommand request, CancellationToken ct)
     {
         var template = await _repository.GetByIdAsync(request.Id, ct);
-        if (template is null)
+        if (template is null || !NotificationTemplateScope.Matches(template, request.TenantId))
         {
             return Response<NoContent>.Fail("Notification template not found.", 404);
         }
