@@ -8019,6 +8019,23 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-541
+
+**Toplantı raporu ve dışa aktarımı, toplantıdan doğan görevlerin başlığını, sorumlusunu ve bitiş tarihini görev okuma kuralına sormadan gösteriyor; ters yönde görev okuru toplantı başlığını görüyor**
+
+DURUM: AÇIK · SAHİP: CT (Toplantılar · MOD-0024 Görev Merkezi) · BULAN: WP-WCN-TASK-REQUEST-01 FIX3/FIX4 bağımsız gözden geçirmeleri · KAYIT: 2026-10-04
+
+Görev talebi dalı (FIX3–FIX5) toplantı yüzeylerinde görev başlığını okuma kuralına bağladı: bağlı görev listesi (`TaskRelatedRecordResolver`), taşınan
+gündem satırı (okuma anında kod). Aksiyon kaydı ise dışarıda kaldı: `MeetingReportQueryHandlers.cs:~149` toplantıyı görebilen herkese o toplantıdan
+doğan görevlerin `Title`, `AssigneeUserId`, `DueAt` ve yaşam döngüsünü veriyor; rapor ekranı ve dışa aktarım aynı satırları kullanıyor.
+`ITaskReadAccessPolicy` hiç sorulmuyor. Ters yönde `MeetingRelatedRecordResolver` görev okuruna bağlı toplantının başlığını, toplantı görünürlüğüne
+bakmadan veriyor olabilir (ölçülmedi). Düzeltme: aksiyon satırları okuyanın okuma kuralından toplu geçer (`ReadableTaskIdsAsync`); okunamayan satır kalır
+(karar var) ama başlık / sorumlu / tarih gitmez, ekranda 7 dilde yer tutucu; dışa aktarım aynı kuralla. Ters yön: toplantı görünürlük kuralıyla aynı
+desen. Karşılaştırma: SAP'de rapor satırı yetki nesnesiyle süzülür (S_TCODE + nesne yetkisi), Oracle'da veri güvenliği (data security policy)
+raporlara da uygulanır. Gelecek regresyon riski: 🟢 (okuma süzgeci ekleme; yazım yok).
+
+---
+
 ### BL-533
 
 **Sürümsüz bütün belge değiştirme: toplantı, tutanak, zaman çizelgesi, iş akışı ve görev yorumu depoları eski okumayla yeni belgenin üzerine yazabiliyor**
