@@ -7808,6 +7808,18 @@ modüller (`TenantModuleEntitlementsController.cs`). Testler: `HasPermissionAttr
 değiştirir); kapalılığı doğrulayanlar `TenantModuleAuthorizationHandlerTests.cs:189`, `TenantFeatureAuthorizationHandlerTests.cs:189`.
 **Şart:** bir iş ortağına Platform yönetici hesabı açılmadan önce bitmeli (sahip 2026-10-03: canlıyı yalnız kendi ekibi kullanıyor).
 
+**İlerleme 2026-10-04 (dal `fix/platform/partner-admin-scope`, henüz hatta değil):** d12add3d5 (kapsam, varsayılan kapalı) → c857e0b12 FIX1
+(iş ortaklığı kayıttan; yenileme türü kayıttan; anahtarsız eylem kapalı; tür / askıdan çıkarma / ticari / kota yazmaları yalnız platform
+yöneticisi; sistem kiracısı kapsama girmez) → FIX2 yazılıyor: giriş ve zorunlu parola değişimi türü hâlâ Auth'un kopyasından basıyor ve
+`NormalizeActorType` `partner_admin`'ı `platform_admin` yapıyor (iş ortağı kendine platform_admin belirteci bastırabilir; Platform kayda
+baktığı için güvende, MDM ve Hangfire panosu değil), tel sözleşmesi testsiz, geçici hata oturumları iptal ediyor, son platform yöneticisi
+korumasız. CT sabotajı d12add3d5'te P1–P3 yeşil kalmıştı (FIX1 testleri kapattı). Dağıtım sırası: Platform Auth'tan önce.
+**Sahip kararı bekleyen (iş ortağı hesabı açılmadan önce):** (1) iş ortağı kendi kiracılarında ticari işlem yapsın mı (plan ata, modül aç,
+iptal; varsayılan HAYIR yazıldı) · (2) var olan kullanıcının e-postasıyla yönetici daveti o kullanıcının parolasını sıfırlayıp Admin veriyor:
+iş ortağına açık kalsın mı · (3) iş ortağının yazdığı alan adı platformun davet e-postası bağlantısına giriyor (oltalama yolu) · (4) giriş
+ayarlarıyla MFA kapatma / IP kilidi / denetim saklama süresini kısaltma iş ortağına açık mı · (5) askıya alma açık, askıdan çıkarma kapalı:
+böyle kalsın mı · (6) admin@diten.com tohum hesabı her açılışta PlatformAdmin + etkin yapılıyor (kalıcı düşürülemez); canlıda da mı (FIX2 ölçüyor).
+
 ---
 
 ### BL-522
