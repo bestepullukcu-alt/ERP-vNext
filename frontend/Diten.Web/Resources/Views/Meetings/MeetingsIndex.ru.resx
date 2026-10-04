@@ -72,6 +72,8 @@
   <data name="PreviousMeetingLabel" xml:space="preserve"><value>Предыдущая встреча</value></data>
   <data name="FollowUpMeetingLabel" xml:space="preserve"><value>Повторная встреча</value></data>
   <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>Из предыдущей встречи</value></data>
+  <data name="CarriedOpenActionLine" xml:space="preserve"><value>Открытое действие с предыдущей встречи</value></data>
+  <data name="LinkedTaskNotAccessible" xml:space="preserve"><value>Задача, к которой у вас нет доступа</value></data>
   <data name="Yes" xml:space="preserve"><value>Да</value></data>
   <data name="No" xml:space="preserve"><value>Нет</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Сведения о совещании</value></data>

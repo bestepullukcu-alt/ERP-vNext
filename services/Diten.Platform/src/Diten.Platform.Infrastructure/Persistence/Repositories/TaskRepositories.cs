@@ -474,14 +474,24 @@ public sealed class TaskCommentRepository : TenantRepository<TaskComment>, ITask
         return Order(await Collection.Find(filter).ToListAsync(ct));
     }
 
-    public async Task UpdateAsync(TaskComment comment, CancellationToken ct = default)
+    public async Task<bool> UpdateAsync(TaskComment comment, int expectedVersion, CancellationToken ct = default)
     {
-        comment.UpdatedAt = DateTimeOffset.UtcNow;
+        // FIX4 (item 5) — written only over the version that was read; the next one is stamped on the row.
+        var versionMatches = expectedVersion == 1
+            // A row stored without the field deserialises as 1 (BaseEntity's default): it is version 1.
+            ? Builders<TaskComment>.Filter.Or(
+                Builders<TaskComment>.Filter.Eq(x => x.Version, 1),
+                Builders<TaskComment>.Filter.Exists(x => x.Version, false))
+            : Builders<TaskComment>.Filter.Eq(x => x.Version, expectedVersion);
         // The tenant filter still applies: another tenant's comment matches nothing and is not overwritten.
         var filter = Builders<TaskComment>.Filter.And(
             ExecutionFilter,
-            Builders<TaskComment>.Filter.Eq(x => x.Id, comment.Id));
-        await Collection.ReplaceOneAsync(filter, comment, new ReplaceOptions(), ct);
+            Builders<TaskComment>.Filter.Eq(x => x.Id, comment.Id),
+            versionMatches);
+        comment.UpdatedAt = DateTimeOffset.UtcNow;
+        comment.Version = expectedVersion + 1;
+        var result = await Collection.ReplaceOneAsync(filter, comment, new ReplaceOptions(), ct);
+        return result.IsAcknowledged && result.MatchedCount == 1;
     }
 
     /*

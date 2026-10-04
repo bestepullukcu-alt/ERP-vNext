@@ -63,9 +63,10 @@ public sealed class MeetingFollowUpCommandHandlerTests
             .OrderBy(a => a.SortOrder)
             .ToList();
         Assert.Equal(2, carried.Count);
-        Assert.Equal("Açık A", carried[0].Text);
+        // FIX4 (item 1) — the line holds the neutral code; WHICH task it is travels on its RecordLink.
+        Assert.All(carried, a => Assert.Equal(MeetingAgendaCodes.CarriedOpenAction, a.Text));
+        Assert.Equal([openTaskA, openTaskB], carried.Select(a => TargetOf(links, a)).ToList());
         Assert.Equal(0, carried[0].SortOrder);
-        Assert.Equal("Açık B", carried[1].Text);
         Assert.Equal(1, carried[1].SortOrder);
     }
 
@@ -267,38 +268,48 @@ public sealed class MeetingFollowUpCommandHandlerTests
     /// its title to the new agenda; the other line carries the code in its place. The production read rule decides.
     /// </summary>
     [Fact]
-    public async Task Only_a_task_the_scheduler_may_read_lends_its_title_to_the_new_agenda()
+    public async Task A_carried_line_never_holds_a_title_whoever_schedules_the_follow_up()
     {
+        // FIX4 (item 1) — FIX3 copied the title when the SCHEDULER could read the task, and every reader of the new
+        // meeting then saw it. Now no title is written at all: a scheduler who reads both tasks (the organizer here),
+        // one who is not the source meeting's organizer, and the series sweep (no person) leave the same lines.
         var mine = Guid.NewGuid();
         var notMine = Guid.NewGuid();
-        var newMeetingId = Guid.NewGuid();
         var hidden = MakeTask(notMine, "Başkasının gizli işi", TaskLifecycle.Open);
         hidden.AssigneeUserId = TaskTestData.Rival;
         hidden.CreatedByUserId = TaskTestData.Other;
-        var tasks = new FakeTaskItemRepository(MakeTask(mine, "Benim işim", TaskLifecycle.Open), hidden);
-        var (handler, meetings, agendaItems, links, _) = Build(
-            newMeetingId, tasks, RealTaskReadRule.Over(tasks, TaskTestData.Me), TaskTestData.Me);
-        SeedSourceMeeting(meetings);
-        await SeedAgendaItem(agendaItems, (await SeedAgendaLink(links, mine)).Id, sortOrder: 0);
-        await SeedAgendaItem(agendaItems, (await SeedAgendaLink(links, notMine)).Id, sortOrder: 1);
+        foreach (var scheduler in new[] { TaskTestData.Me, TaskTestData.Other, Guid.Empty })
+        {
+            var newMeetingId = Guid.NewGuid();
+            var tasks = new FakeTaskItemRepository(MakeTask(mine, "Benim işim", TaskLifecycle.Open), hidden);
+            var (handler, meetings, agendaItems, links, _) = Build(newMeetingId, tasks, scheduler);
+            SeedSourceMeeting(meetings);
+            await SeedAgendaItem(agendaItems, (await SeedAgendaLink(links, mine)).Id, sortOrder: 0);
+            await SeedAgendaItem(agendaItems, (await SeedAgendaLink(links, notMine)).Id, sortOrder: 1);
 
-        var result = await handler.Handle(
-            new ScheduleFollowUpMeetingCommand(
-                SourceMeetingId,
-                new ScheduleFollowUpMeetingRequest(
-                    DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1), null, null, null, null, null, null, "key-read"),
-                CorrelationId),
-            CancellationToken.None);
+            var result = await handler.Handle(
+                new ScheduleFollowUpMeetingCommand(
+                    SourceMeetingId,
+                    new ScheduleFollowUpMeetingRequest(
+                        DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1), null, null, null, null, null, null,
+                        "key-read-" + scheduler),
+                    CorrelationId),
+                CancellationToken.None);
 
-        Assert.True(result.IsSuccessful);
-        Assert.Equal(2, result.Data!.CarriedAgendaItemCount);
-        var carried = (await agendaItems.ListByMeetingIdAsync(newMeetingId, CancellationToken.None))
-            .Where(a => a.CarriedFromMeetingId == SourceMeetingId)
-            .OrderBy(a => a.SortOrder)
-            .Select(a => a.Text)
-            .ToList();
-        Assert.Equal(["Benim işim", "TASK_NOT_ACCESSIBLE"], carried);
+            Assert.True(result.IsSuccessful);
+            var carried = (await agendaItems.ListByMeetingIdAsync(newMeetingId, CancellationToken.None))
+                .Where(a => a.CarriedFromMeetingId == SourceMeetingId)
+                .OrderBy(a => a.SortOrder)
+                .ToList();
+            Assert.Equal(2, carried.Count);
+            Assert.All(carried, a => Assert.Equal(MeetingAgendaCodes.CarriedOpenAction, a.Text));
+            Assert.DoesNotContain(carried, a => a.Text.Contains("işi", StringComparison.Ordinal) || a.Text.Contains("işim", StringComparison.Ordinal));
+            Assert.Equal([mine, notMine], carried.Select(a => TargetOf(links, a)).ToList());
+        }
     }
+
+    private static Guid TargetOf(FakeRecordLinkRepository links, AgendaItem line) =>
+        links.Items.Single(l => l.Id == line.RecordLinkId).TargetRecordId;
 
     private static void SeedSourceMeeting(FakeMeetingRepository meetings, Guid? id = null, Guid? followUpOf = null)
         => meetings.Seed(new Meeting
@@ -345,9 +356,9 @@ public sealed class MeetingFollowUpCommandHandlerTests
         Assert.Equal(2, result.Data!.CarriedAgendaItemCount);
         var carried = (await agendaItems.ListByMeetingIdAsync(newMeetingId))
             .OrderBy(a => a.SortOrder)
-            .Select(a => a.Text)
             .ToList();
-        Assert.Equal(["Gundemdeki acik is", "Karardan dogan acik is"], carried);
+        Assert.All(carried, a => Assert.Equal(MeetingAgendaCodes.CarriedOpenAction, a.Text));
+        Assert.Equal([anchored, decisionBorn], carried.Select(a => TargetOf(links, a)).ToList());
     }
 
     private static Task<RecordLink> SeedAgendaLink(FakeRecordLinkRepository links, Guid taskId)
@@ -399,11 +410,10 @@ public sealed class MeetingFollowUpCommandHandlerTests
 
     private static (ScheduleFollowUpMeetingHandler Handler, FakeMeetingRepository Meetings, FakeAgendaItemRepository AgendaItems, FakeRecordLinkRepository Links, FollowUpMediator Mediator)
         Build(Guid newMeetingId, FakeTaskItemRepository tasks)
-        => Build(newMeetingId, tasks, new AlwaysAdmitReadAccessPolicy(), TaskTestData.Me);
+        => Build(newMeetingId, tasks, TaskTestData.Me);
 
     private static (ScheduleFollowUpMeetingHandler Handler, FakeMeetingRepository Meetings, FakeAgendaItemRepository AgendaItems, FakeRecordLinkRepository Links, FollowUpMediator Mediator)
-        Build(Guid newMeetingId, FakeTaskItemRepository tasks,
-            Diten.Platform.Application.Features.Tasks.Services.ITaskReadAccessPolicy readAccess, Guid caller)
+        Build(Guid newMeetingId, FakeTaskItemRepository tasks, Guid caller)
     {
         var meetings = new FakeMeetingRepository { Tenant = TaskTestData.Tenant };
         var agendaItems = new FakeAgendaItemRepository { Tenant = TaskTestData.Tenant };
@@ -416,7 +426,7 @@ public sealed class MeetingFollowUpCommandHandlerTests
         };
         var handler = new ScheduleFollowUpMeetingHandler(
             meetings, agendaItems, tasks, linkService, new FakeTenantContext(TaskTestData.Tenant),
-            new MeetingIdempotencyKeyResolver(), new FakeCurrentUserContext(caller), mediator, readAccess);
+            new MeetingIdempotencyKeyResolver(), new FakeCurrentUserContext(caller), mediator);
         return (handler, meetings, agendaItems, linksRepo, mediator);
     }
 

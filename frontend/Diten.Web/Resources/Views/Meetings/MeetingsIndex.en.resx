@@ -72,6 +72,8 @@
   <data name="PreviousMeetingLabel" xml:space="preserve"><value>Previous meeting</value></data>
   <data name="FollowUpMeetingLabel" xml:space="preserve"><value>Follow-up meeting</value></data>
   <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>From previous meeting</value></data>
+  <data name="CarriedOpenActionLine" xml:space="preserve"><value>Open action from the previous meeting</value></data>
+  <data name="LinkedTaskNotAccessible" xml:space="preserve"><value>A task you do not have access to</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Meeting Details</value></data>

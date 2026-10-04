@@ -265,6 +265,9 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
             ? new Dictionary<Guid, TaskItem>()
             : (await _tasks.ListByIdsAsync(parentIds, ct)).ToDictionary(p => p.Id);
 
+        // FIX4 (item 3) — the pool holders of every task and every parent in ONE seat read (it was one per pool task).
+        var poolHolders = await _notifications.ResolvePoolHoldersAsync(distinct.Concat(parents.Values).ToList(), ct);
+
         var undecided = new List<TaskItem>();
         foreach (var task in distinct)
         {
@@ -275,7 +278,7 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
                 continue;
             }
 
-            var legs = await DataLegsAsync(task, watchers[task.Id], parent, ct);
+            var legs = await DataLegsAsync(task, watchers[task.Id], parent, ct, poolHolders);
             if (legs.Full.Contains(actorUserId))
             {
                 grounds[task.Id] = TaskReadGround.Full;
@@ -345,8 +348,15 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
     /// everything else is <see cref="DataLegs.Full"/>. Who is a candidate at all is unchanged (<see cref="DataLegs.All"/>).
     /// </summary>
     private async Task<DataLegs> DataLegsAsync(
-        TaskItem task, IEnumerable<TaskWatcher> watchers, TaskItem? parent, CancellationToken ct)
+        TaskItem task, IEnumerable<TaskWatcher> watchers, TaskItem? parent, CancellationToken ct,
+        IReadOnlyDictionary<Guid, IReadOnlyList<Guid>>? poolHolders = null)
     {
+        // FIX4 (item 3) — a batch hands its pool holders in, read once; a single task asks for its own.
+        async Task<IReadOnlyList<Guid>> PoolOf(TaskItem pooled) =>
+            poolHolders is not null && poolHolders.TryGetValue(pooled.Id, out var known)
+                ? known
+                : await _notifications.ResolvePoolHoldersAsync(pooled, ct);
+
         var full = new HashSet<Guid>();
         var observers = new HashSet<Guid>();
 
@@ -360,7 +370,7 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
             full.Add(creator);
         }
 
-        foreach (var holder in await _notifications.ResolvePoolHoldersAsync(task, ct))
+        foreach (var holder in await PoolOf(task))
         {
             full.Add(holder);
         }
@@ -404,7 +414,7 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
                 full.Add(parentAssignee);
             }
 
-            foreach (var holder in await _notifications.ResolvePoolHoldersAsync(parent, ct))
+            foreach (var holder in await PoolOf(parent))
             {
                 full.Add(holder);
             }

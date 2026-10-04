@@ -218,7 +218,7 @@ public sealed class MeetingSeriesSweepEndToEndMongoTests : IAsyncLifetime
                     host._meetings, host._agenda, new FakeTaskItemRepository(),
                     new RecordLinkService(host._links, host._harness.TenantContext, new FakeCurrentUserContext(Guid.Empty)),
                     host._harness.TenantContext, new MeetingIdempotencyKeyResolver(), new FakeCurrentUserContext(Guid.Empty),
-                    this, new Tasks.AlwaysAdmitReadAccessPolicy()).Handle(cmd, ct),
+                    this).Handle(cmd, ct),
                 GetTaskAssignmentPersonLookupQuery query => host._eligibility.Send(query, ct),
                 _ => throw new NotSupportedException($"SweepMediator does not route {request.GetType().Name}.")
             };

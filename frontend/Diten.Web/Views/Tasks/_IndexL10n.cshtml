@@ -242,6 +242,14 @@
         // WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — approval / review routed back to the person starting it.
         ErrorApprovalManagerIsSelf = Localizer["ErrorApprovalManagerIsSelf"].Value,
         ErrorReviewerIsSubmitter = Localizer["ErrorReviewerIsSubmitter"].Value,
+        // WP-WCN-TASK-REQUEST-01 FIX4 (item 6) — nobody eligible to review; nobody but the caller to decide the next step.
+        ErrorNoEligibleReviewer = Localizer["ErrorNoEligibleReviewer"].Value,
+        ErrorNoEligibleApprover = Localizer["ErrorNoEligibleApprover"].Value,
+        // FIX4 (item 7) — a linked approval / review that could not be withdrawn: on an edit, and on a cancel.
+        ErrorApprovalCancelFailed = Localizer["ErrorApprovalCancelFailed"].Value,
+        ErrorReviewCancelFailed = Localizer["ErrorReviewCancelFailed"].Value,
+        ErrorWorkflowWithdrawFailedOnAct = Localizer["ErrorWorkflowWithdrawFailedOnAct"].Value,
+        ErrorReviewAlreadyOpen = Localizer["ErrorReviewAlreadyOpen"].Value,
         ErrorWaitingReasonRequired = Localizer["ErrorWaitingReasonRequired"].Value,
         // BL-439 — the answer to a waiting task's question: empty, too long, or no longer the reader's to give.
         ErrorInquiryAnswerRequired = Localizer["ErrorInquiryAnswerRequired"].Value,

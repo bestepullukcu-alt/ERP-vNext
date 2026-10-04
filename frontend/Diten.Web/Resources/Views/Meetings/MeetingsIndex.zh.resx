@@ -72,6 +72,8 @@
   <data name="PreviousMeetingLabel" xml:space="preserve"><value>上一次会议</value></data>
   <data name="FollowUpMeetingLabel" xml:space="preserve"><value>后续会议</value></data>
   <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>来自上一次会议</value></data>
+  <data name="CarriedOpenActionLine" xml:space="preserve"><value>上次会议的未完成行动项</value></data>
+  <data name="LinkedTaskNotAccessible" xml:space="preserve"><value>您无权访问的任务</value></data>
   <data name="Yes" xml:space="preserve"><value>是</value></data>
   <data name="No" xml:space="preserve"><value>否</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>会议信息</value></data>

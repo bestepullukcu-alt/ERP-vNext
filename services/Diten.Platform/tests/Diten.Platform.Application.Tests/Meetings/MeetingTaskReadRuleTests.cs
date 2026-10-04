@@ -149,10 +149,63 @@ public sealed class MeetingTaskReadRuleTests
         Assert.Equal(mine.Id, Assert.Single(offered.Data!).Id);
     }
 
+    // ── FIX4 ───────────────────────────────────────────────────────────────────────────────────────────────────
+
+    /// <summary>FIX4 (item 4, G2) — MUTATION TARGET (LinkExistingTaskHandler — WHOSE read). The meeting's organizer reads
+    /// the task; the caller, who is not the organizer, does not: the caller's read decides, so nothing is linked.</summary>
+    [Fact]
+    public async Task Linking_is_decided_by_the_callers_read_not_the_organizers()
+    {
+        var organizersTask = NewTask(holder: TaskTestData.Me, creator: TaskTestData.Me);     // Me organizes the meeting
+        var tasks = new FakeTaskItemRepository(organizersTask);
+        var meetings = new FakeMeetingRepository { Tenant = TaskTestData.Tenant };
+        meetings.Seed(NewMeeting());
+        var linkService = Links(out var links);
+        var handler = new LinkExistingTaskHandler(
+            meetings, new FakeAgendaItemRepository { Tenant = TaskTestData.Tenant }, tasks, linkService,
+            RealTaskReadRule.Over(tasks, TaskTestData.Other), new FakeCurrentUserContext(TaskTestData.Other));
+
+        var answer = await handler.Handle(
+            new LinkExistingTaskCommand(MeetingId, new LinkExistingTaskRequest(organizersTask.Id, null), Corr),
+            CancellationToken.None);
+
+        Assert.Equal(404, answer.StatusCode);
+        Assert.Equal(TaskReasonCodes.NotFound, answer.ReasonCode);
+        Assert.Empty(links.Items);
+    }
+
+    /// <summary>FIX4 (item 3) — MUTATION TARGET (GetTaskLinkCandidatesHandler — the bound). Only the newest
+    /// <see cref="GetTaskLinkCandidatesHandler.MaxMatchesJudged"/> matches are put to the read rule: older readable tasks
+    /// behind a full page of newer unreadable ones are not offered, and the rule is never asked about the whole tenant.</summary>
+    [Fact]
+    public async Task The_link_picker_judges_only_the_newest_matches()
+    {
+        var start = DateTimeOffset.UtcNow.AddDays(-30);
+        var olderReadable = Enumerable.Range(0, 10)
+            .Select(i => NewTask(holder: TaskTestData.Me, creator: TaskTestData.Me, title: $"B okunur {i:00}", createdAt: start.AddMinutes(i)))
+            .ToArray();
+        var newerHidden = Enumerable.Range(0, GetTaskLinkCandidatesHandler.MaxMatchesJudged)
+            .Select(i => NewTask(holder: TaskTestData.Other, creator: TaskTestData.Other, title: $"A gizli {i:000}",
+                createdAt: start.AddDays(1).AddMinutes(i)))
+            .ToArray();
+        var tasks = new FakeTaskItemRepository([.. olderReadable, .. newerHidden]);
+        var handler = new GetTaskLinkCandidatesHandler(
+            tasks, RealTaskReadRule.Over(tasks, TaskTestData.Me), new FakeCurrentUserContext(TaskTestData.Me));
+
+        Assert.Empty((await handler.Handle(new GetTaskLinkCandidatesQuery(null, 20, Corr), CancellationToken.None)).Data!);
+
+        // Non-vacuity: one more readable task, NEWER than the hidden page, is offered.
+        await tasks.CreateAsync(NewTask(holder: TaskTestData.Me, creator: TaskTestData.Me, title: "C yeni",
+            createdAt: start.AddDays(2)));
+        Assert.Equal("C yeni", Assert.Single(
+            (await handler.Handle(new GetTaskLinkCandidatesQuery(null, 20, Corr), CancellationToken.None)).Data!).Title);
+    }
+
     // ── helpers ────────────────────────────────────────────────────────────────────────────────────────────────
 
-    private static TaskItem NewTask(Guid holder, Guid creator, string title = "Bir görev") => new()
+    private static TaskItem NewTask(Guid holder, Guid creator, string title = "Bir görev", DateTimeOffset? createdAt = null) => new()
     {
+        CreatedAt = createdAt ?? DateTimeOffset.UtcNow,
         Id = Guid.NewGuid(),
         TenantId = TaskTestData.Tenant,
         Title = title,

@@ -32,6 +32,13 @@ public sealed class GetTaskLinkCandidatesHandler
         _currentUser = currentUser;
     }
 
+    /// <summary>
+    /// WP-WCN-TASK-REQUEST-01 FIX4 (item 3) — how many matches are put to the read rule at most: the NEWEST ones. Before
+    /// this, an empty term put every task of the tenant to the rule, so the answer's time grew with tasks the caller
+    /// cannot see. A typeahead that finds nothing readable among the newest narrows by typing.
+    /// </summary>
+    internal const int MaxMatchesJudged = 200;
+
     public async Task<Response<IReadOnlyList<TaskLinkCandidateDto>>> Handle(
         GetTaskLinkCandidatesQuery query, CancellationToken ct)
     {
@@ -43,6 +50,9 @@ public sealed class GetTaskLinkCandidatesHandler
             .Where(task => task.Lifecycle != TaskLifecycle.Cancelled)
             .Where(task => string.IsNullOrWhiteSpace(term)
                            || task.Title.Contains(term, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(task => task.CreatedAt)
+            .ThenBy(task => task.Id)
+            .Take(MaxMatchesJudged)
             .ToList();
         var readable = await _readAccess.ReadableTaskIdsAsync(matches, _currentUser.UserId, ct);
 

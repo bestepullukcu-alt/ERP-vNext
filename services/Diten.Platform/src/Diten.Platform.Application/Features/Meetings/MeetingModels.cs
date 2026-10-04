@@ -29,6 +29,16 @@ public static class MeetingPermissions
     public const string SeriesManage = "platform.meetings.series-manage";
 }
 
+/// <summary>
+/// WP-WCN-TASK-REQUEST-01 FIX4 (item 1) — what a carried-forward agenda line holds as its text: a CODE, never a task's
+/// title (the line is one stored row every reader of the meeting sees). The screen renders it in the reader's own
+/// language and names the task from the linked-task list, which the read rule answers per reader.
+/// </summary>
+public static class MeetingAgendaCodes
+{
+    public const string CarriedOpenAction = "MEETING_CARRIED_OPEN_ACTION";
+}
+
 public static class MeetingReasonCodes
 {
     public const string NotFound = "MEETING_NOT_FOUND";

@@ -816,11 +816,14 @@ internal sealed class FakeTaskCommentRepository : ITaskCommentRepository
      * because a hand-copied clone silently drops every field added after it was written. Two doubles in this
      * suite have already hidden a defect exactly that way.
      */
-    public Task UpdateAsync(TaskComment comment, CancellationToken ct = default)
+    public Task<bool> UpdateAsync(TaskComment comment, int expectedVersion, CancellationToken ct = default)
     {
+        // FIX4 (item 5) — the same condition as the real repository: only over the version that was read.
         var index = _comments.FindIndex(c => c.Id == comment.Id);
-        if (index >= 0) { _comments[index] = Clone(comment); }
-        return Task.CompletedTask;
+        if (index < 0 || _comments[index].Version != expectedVersion) { return Task.FromResult(false); }
+        comment.Version = expectedVersion + 1;
+        _comments[index] = Clone(comment);
+        return Task.FromResult(true);
     }
 
     private static TaskComment Clone(TaskComment comment)

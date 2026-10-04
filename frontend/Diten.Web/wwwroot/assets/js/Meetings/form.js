@@ -310,7 +310,7 @@
             const carriedBadge = item.carriedFromMeetingId
                 ? `<span class="badge bg-label-info ms-2">${esc(t('carriedFromPreviousMeetingBadge'))}</span>`
                 : '';
-            li.innerHTML = `<span>${esc(item.text)}${carriedBadge}</span>`;
+            li.innerHTML = `<span>${esc(agendaLineText(item))}${carriedBadge}</span>`;
             if (editable) {
                 const rowActions = document.createElement('div');
                 rowActions.className = 'd-flex gap-1';
@@ -361,11 +361,31 @@
      * task, so a badge would repeat the same word on every line): `resolveTypeLabel` is omitted, and the row
      * prints without one.
      */
+    /*
+     * WP-WCN-TASK-REQUEST-01 FIX4 — a linked task this reader may not read arrives with the CODE in place of its title
+     * (the server never sends a title its read rule refuses); it is shown as a sentence, never as the code.
+     */
+    const TASK_NOT_ACCESSIBLE = 'TASK_NOT_ACCESSIBLE';
+    const linkedTaskTitle = (title) => (title === TASK_NOT_ACCESSIBLE ? t('linkedTaskNotAccessible') : title);
+
+    /*
+     * FIX4 (item 1) — a carried-forward agenda line is STORED as a neutral code (one row every reader sees) and names
+     * its task only through its RecordLink: the title comes from THIS reader's linked-task list, which the server has
+     * already passed through the task read rule. Lines written before FIX4 hold text and are shown as written.
+     */
+    const CARRIED_OPEN_ACTION = 'MEETING_CARRIED_OPEN_ACTION';
+    let linkedTaskTitleByRecordLinkId = {};
+    const agendaLineText = (item) => {
+        if (item.text !== CARRIED_OPEN_ACTION) { return item.text; }
+        const title = item.recordLinkId ? linkedTaskTitleByRecordLinkId[item.recordLinkId] : null;
+        return title ? `${t('carriedOpenActionLine')}: ${linkedTaskTitle(title)}` : t('carriedOpenActionLine');
+    };
+
     const renderLinkedTasks = (tasks) => {
         const list = document.getElementById('linkedTasksList');
         document.getElementById('noLinkedTasksHint')?.classList.toggle('d-none', tasks.length > 0);
         list.innerHTML = window.DitenRelatedRecords.renderRelatedRows(
-            tasks.map((task) => ({ id: '', title: task.title, link: task.link })),
+            tasks.map((task) => ({ id: '', title: linkedTaskTitle(task.title), link: task.link })),
             { esc, showId: false });
     };
 
@@ -382,8 +402,10 @@
         }
         document.getElementById('meetingNotFound')?.classList.add('d-none');
         document.getElementById('meetingDetailsBody')?.classList.remove('d-none');
+        const linkedTasks = tasksResult.ok ? (tasksResult.data || []) : [];
+        linkedTaskTitleByRecordLinkId = Object.fromEntries(linkedTasks.map((task) => [task.recordLinkId, task.title]));
         renderMeeting(meetingResult.data);
-        renderLinkedTasks(tasksResult.ok ? (tasksResult.data || []) : []);
+        renderLinkedTasks(linkedTasks);
     };
 
     /*

@@ -72,6 +72,8 @@
   <data name="PreviousMeetingLabel" xml:space="preserve"><value>Önceki toplantı</value></data>
   <data name="FollowUpMeetingLabel" xml:space="preserve"><value>Devam toplantısı</value></data>
   <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>Önceki toplantıdan</value></data>
+  <data name="CarriedOpenActionLine" xml:space="preserve"><value>Önceki toplantıdan açık aksiyon</value></data>
+  <data name="LinkedTaskNotAccessible" xml:space="preserve"><value>Erişiminiz olmayan bir görev</value></data>
   <data name="Yes" xml:space="preserve"><value>Evet</value></data>
   <data name="No" xml:space="preserve"><value>Hayır</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Toplantı Bilgileri</value></data>

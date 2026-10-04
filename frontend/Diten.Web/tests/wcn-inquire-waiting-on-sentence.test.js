@@ -27,9 +27,12 @@ const submitRealTransition = () => {
 };
 
 describe("BL-351: submitRealTransition asks for the waiting-on sentence when the action is inquire", () => {
-  it("derives the override from the action code, and only for inquire", () => {
-    expect(submitRealTransition()).toMatch(
-      /const overrides = action\.code === 'inquire' \? global\.TasksApi\.INQUIRE_REASON_CODE_OVERRIDES : undefined;/);
+  it("derives the override from the action code through the one rule, which gives inquire its own", () => {
+    // WP-WCN-TASK-REQUEST-01 FIX4 (item 7) — the rule moved into TasksApi.reasonOverridesFor (inquire's map, the
+    // withdrawing acts' map, otherwise none); the dispatcher asks it with the action's code.
+    expect(submitRealTransition()).toMatch(/const overrides = global\.TasksApi\.reasonOverridesFor\(action\.code\);/);
+    const API = fs.readFileSync(path.join(__dirname, "..", "wwwroot", "assets", "js", "Tasks", "api.js"), "utf8");
+    expect(API).toMatch(/actionCode === 'inquire'\s*\?\s*INQUIRE_REASON_CODE_OVERRIDES/);
   });
 
   it("passes the override to EVERY failureMessage call in the function — none is left on the base map alone", () => {

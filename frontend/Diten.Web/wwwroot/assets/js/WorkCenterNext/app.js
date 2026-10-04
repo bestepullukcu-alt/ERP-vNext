@@ -4851,7 +4851,12 @@
     const renderRelated = (item) => {
         if (!hasCap(item, 'relatedRecords') || !(item.relatedRecords || []).length) { return ''; }
         const typeKeys = { parent: 'RelatedTypeParent', child: 'RelatedTypeChild', transaction: 'RelatedTypeTransaction', document: 'RelatedTypeDocument' };
-        const rows = global.DitenRelatedRecords.renderRelatedRows(item.relatedRecords, {
+        // WP-WCN-TASK-REQUEST-01 FIX4 — a related task this reader may not read arrives with TASK_NOT_ACCESSIBLE where its
+        // title would be (the server never sends a refused title); it is shown as a sentence, never as the code.
+        const records = item.relatedRecords.map((record) => (record.title === 'TASK_NOT_ACCESSIBLE'
+            ? { ...record, title: t('RelatedTaskNotAccessible') }
+            : record));
+        const rows = global.DitenRelatedRecords.renderRelatedRows(records, {
             esc,
             resolveTypeLabel: (record) => t(typeKeys[record.type] || 'RelatedTypeDocument')
         });
@@ -6157,7 +6162,8 @@
         if (expectedVersion === null) { return; }
 
         const result = await global.TasksApi.transition(subtaskId, 'cancel', { expectedVersion });
-        if (!result.ok) { toast(global.TasksApi.failureMessage(result), 'error'); return; }
+        // FIX4 (item 7) — a cancel's own sentence for a workflow that could not be withdrawn.
+        if (!result.ok) { toast(global.TasksApi.failureMessage(result, global.TasksApi.reasonOverridesFor('cancel')), 'error'); return; }
         toast(tf('ToastSubtaskCancelled', title));
         await loadWorkItems();
         render();
@@ -8226,7 +8232,9 @@
          * answers with the assignment sentence, because every other action IS an assignment; inquire is the one
          * action that must ask for the other sentence, and it asks here, at its only call site.
          */
-        const overrides = action.code === 'inquire' ? global.TasksApi.INQUIRE_REASON_CODE_OVERRIDES : undefined;
+        // FIX4 (item 7) — and an act that withdraws the task's linked workflow (cancel, return, reassign, release,
+        // delete) asks for its own sentence: the one rule lives in TasksApi.reasonOverridesFor.
+        const overrides = global.TasksApi.reasonOverridesFor(action.code);
 
         // A 409 means two very different things, and they must not share a message. A CONCURRENCY conflict is
         // "someone changed it first, here is the fresh screen"; a workflow BLOCK is "the approver has not released

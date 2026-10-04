@@ -261,6 +261,7 @@ public sealed class UpdateTaskCommentHandler : IRequestHandler<UpdateTaskComment
         // above), and re-notifying everybody already named would turn a correction into a second round of the
         // same email — the one thing an edit must not do (see the immutability-replaced-by-a-trail note below).
         var previouslyMentioned = comment.Value!.MentionedUserIds.ToHashSet();
+        var readVersion = comment.Value.Version;
         var newlyMentioned = mentionValidation.Value.Where(id => !previouslyMentioned.Contains(id)).ToList();
 
         comment.Value.Text = text;
@@ -268,7 +269,14 @@ public sealed class UpdateTaskCommentHandler : IRequestHandler<UpdateTaskComment
         // The INSTANT, not a flag: "edited" alone cannot answer "before or after I read it?", which is the only
         // question the mark exists to settle.
         comment.Value.EditedAt = DateTimeOffset.UtcNow;
-        await _comments.UpdateAsync(comment.Value, ct);
+        if (!await _comments.UpdateAsync(comment.Value, readVersion, ct))
+        {
+            // FIX4 (item 5) — changed since it was read (withdrawn in another tab, edited twice): nothing written, and
+            // nobody is told about a mention that was not saved.
+            return Response<NoContent>.Fail(
+                "The comment changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
 
         // No notification for the EDIT itself, deliberately — see the block above. A newly-added mention is a
         // different event (K3): the person is being addressed for the first time, which earns exactly the
@@ -324,9 +332,16 @@ public sealed class WithdrawTaskCommentHandler : IRequestHandler<WithdrawTaskCom
          * database is one query away from being read back, and "I deleted that" has to be true at rest as well as
          * on screen. What remains is the row, its author and its instant — which is the marker.
          */
-        comment.Value!.Text = null;
+        var readVersion = comment.Value!.Version;
+        comment.Value.Text = null;
         comment.Value.WithdrawnAt = DateTimeOffset.UtcNow;
-        await _comments.UpdateAsync(comment.Value, ct);
+        if (!await _comments.UpdateAsync(comment.Value, readVersion, ct))
+        {
+            // FIX4 (item 5) — changed since it was read: refused, never written over.
+            return Response<NoContent>.Fail(
+                "The comment changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
 
         return Response<NoContent>.Success(204, command.CorrelationId);
     }

@@ -1358,6 +1358,7 @@
   <data name="RelatedTypeChild" xml:space="preserve"><value>Secundario</value></data>
   <data name="RelatedTypeTransaction" xml:space="preserve"><value>Transacción</value></data>
   <data name="RelatedTypeDocument" xml:space="preserve"><value>Documento</value></data>
+  <data name="RelatedTaskNotAccessible" xml:space="preserve"><value>Una tarea a la que no tiene acceso</value></data>
   <data name="ComplianceTitle" xml:space="preserve"><value>Cumplimiento y controles</value></data>
   <data name="CompliancePolicy" xml:space="preserve"><value>Política</value></data>
   <data name="ComplianceLimit" xml:space="preserve"><value>Límite de aprobación</value></data>

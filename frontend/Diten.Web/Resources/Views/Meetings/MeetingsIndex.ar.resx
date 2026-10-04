@@ -72,6 +72,8 @@
   <data name="PreviousMeetingLabel" xml:space="preserve"><value>الاجتماع السابق</value></data>
   <data name="FollowUpMeetingLabel" xml:space="preserve"><value>اجتماع المتابعة</value></data>
   <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>من الاجتماع السابق</value></data>
+  <data name="CarriedOpenActionLine" xml:space="preserve"><value>إجراء مفتوح من الاجتماع السابق</value></data>
+  <data name="LinkedTaskNotAccessible" xml:space="preserve"><value>مهمة ليس لديك صلاحية الوصول إليها</value></data>
   <data name="Yes" xml:space="preserve"><value>نعم</value></data>
   <data name="No" xml:space="preserve"><value>لا</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>معلومات الاجتماع</value></data>
