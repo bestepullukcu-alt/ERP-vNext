@@ -37,6 +37,10 @@ namespace Diten.Platform.Application.Tests.Notifications;
 /// </summary>
 public sealed class EmailShellDispatchTests
 {
+    private readonly Xunit.Abstractions.ITestOutputHelper _output;
+
+    public EmailShellDispatchTests(Xunit.Abstractions.ITestOutputHelper output) => _output = output;
+
     private const string TemplateKey = "platform.tasks.assigned";
 
     [Fact]
@@ -454,28 +458,17 @@ public sealed class EmailShellDispatchTests
     }
 
     [Fact]
-    public void The_sensitive_variable_names_are_one_pinned_list()
+    public void The_secret_name_words_are_one_pinned_list()
     {
-        Assert.Equal(["secret", "token", "password", "apikey", "api_key"], NotificationParsing.SensitiveVariableNameParts);
+        Assert.Equal(
+            ["secret", "secrets", "token", "tokens", "password", "passwords", "passwd", "pwd", "passcode", "otp", "pin",
+             "credential", "credentials", "jwt", "signature", "sig", "apikey"],
+            NotificationSecrets.SecretNameWords);
         Assert.True(NotificationParsing.IsSensitiveVariableName("TemporaryPassword"));
         Assert.True(NotificationParsing.IsSensitiveVariableName("ResetToken"));
         Assert.True(NotificationParsing.IsSensitiveVariableName("ApiKey"));
         Assert.False(NotificationParsing.IsSensitiveVariableName("TaskTitle"));
         Assert.False(NotificationParsing.IsSensitiveVariableName("LoginUrl"));
-    }
-
-    [Theory]
-    [InlineData("LoginUrl", "https://di10.example/set?token=abc", true)]
-    [InlineData("SetupLink", "https://di10.example/reset?email=a%40b.test&Code=123", true)]
-    [InlineData("Download", "https://files.example/f.pdf?X-Amz-Signature=deadbeef", true)]
-    [InlineData("TaskUrl", "https://di10.example/WorkCenterNext/Details/123", false)]
-    [InlineData("ListUrl", "https://di10.example/a?page=2", false)]
-    [InlineData("TaskTitle", "Parti kaydı incelemesi, LOT 24-118", false)]
-    [InlineData("Formula", "a = b + c", false)]
-    [InlineData("TemporaryPassword", "anything", true)]
-    public void Only_a_secret_name_or_a_credential_bearing_link_is_masked(string name, string value, bool masked)
-    {
-        Assert.Equal(masked, NotificationParsing.IsSensitiveVariable(name, value));
     }
 
     [Fact]
@@ -698,6 +691,288 @@ public sealed class EmailShellDispatchTests
         return value.ToString().Trim();
     }
 
+    // ── BL-454 fix round 2 ────────────────────────────────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("ResetCode")] [InlineData("Pwd")] [InlineData("Passcode")] [InlineData("Otp")] [InlineData("AccessKey")]
+    [InlineData("SigningKey")] [InlineData("ClientCredentials")] [InlineData("Jwt")] [InlineData("ApiKey")] [InlineData("api_key")]
+    [InlineData("TemporaryPassword")] [InlineData("PinCode")] [InlineData("VerificationCode")]
+    public void A_name_that_says_secret_by_word_is_masked(string name)
+    {
+        Assert.True(NotificationSecrets.IsSecretName(name));
+    }
+
+    [Theory]
+    [InlineData("Shipping")] [InlineData("TenantCode")] [InlineData("ModuleCode")] [InlineData("WeekKey")] [InlineData("TaskTitle")]
+    [InlineData("Opinion")] [InlineData("Tokenizer")] [InlineData("Signatory")] [InlineData("PostalCode")] [InlineData("KeyResult")]
+    public void A_name_that_only_contains_a_secret_word_as_letters_is_not_masked(string name)
+    {
+        Assert.False(NotificationSecrets.IsSecretName(name));
+    }
+
+    [Theory]
+    [InlineData("https://app.example/#/reset?token=abc123")]
+    [InlineData("/account/set-password?email=a%40b.test&token=abc123")]
+    [InlineData("https://app.example/set?email=a%40b.test;token=abc123")]
+    [InlineData("https://zoom.example/j/123?pwd=abc123")]
+    [InlineData("https://app.example/verify?otp=123456")]
+    [InlineData("https://app.example/x?passcode=1234")]
+    [InlineData("https://app.example/x?auth=abc")]
+    [InlineData("https://app.example/x?jwt=abc")]
+    [InlineData("https://app.example/x?credential=abc")]
+    [InlineData("https://cdn.example/f.pdf?sig=abc")]
+    [InlineData("https://cdn.example/f.pdf?X-Amz-Signature=abc")]
+    [InlineData("https://app.example/x?%74oken=abc")]
+    [InlineData("https://maps.example/api?key=abc")]
+    [InlineData("Rejected — please use https://app.example/set-password?token=abc123 instead.")]
+    [InlineData("sk-live-0123456789abcdef")]
+    [InlineData("SG.abcdefghij.klmnopqrstuv")]
+    [InlineData("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2lnbmF0dXJl")]
+    public void A_value_that_is_or_carries_a_credential_is_masked_whatever_its_name(string value)
+    {
+        Assert.True(NotificationParsing.IsSensitiveVariable("Reason", value));
+    }
+
+    [Theory]
+    [InlineData("https://di10.example/WorkCenterNext/Details/123")]
+    [InlineData("https://di10.example/a?page=2")]
+    [InlineData("https://di10.example/TimeEntry?week=2026-W40")]
+    [InlineData("Parti kaydı incelemesi, LOT 24-118")]
+    [InlineData("a = b + c")]
+    [InlineData("What? token=abc is not a link")]
+    [InlineData("sk-short")]
+    public void An_ordinary_value_is_not_masked(string value)
+    {
+        Assert.False(NotificationParsing.IsSensitiveVariable("Reason", value));
+    }
+
+    [Fact]
+    public void A_structured_value_is_never_stored()
+    {
+        using var json = System.Text.Json.JsonDocument.Parse("{\"note\":\"x\"}");
+        Assert.True(NotificationParsing.IsSensitiveVariable("Payload", json.RootElement.Clone()));
+        Assert.True(NotificationParsing.IsSensitiveVariable("Payload", new Dictionary<string, string> { ["a"] = "b" }));
+    }
+
+    [Fact]
+    public void No_variable_of_a_seeded_template_is_masked_except_by_its_own_secret_name()
+    {
+        // Every variable name the seeded templates use — declared or as a {{token}} in subject, bodies and shell parts —
+        // plus the names their producers add. The new rules may mask only the ones that are secrets.
+        var tokens = new System.Text.RegularExpressions.Regex(@"\{\{\s*([A-Za-z][A-Za-z0-9_.]*)\s*\}\}");
+        var names = new SortedSet<string>(StringComparer.Ordinal);
+        foreach (var template in SeededTemplates())
+        {
+            foreach (var variable in template.Variables) names.Add(variable.Name);
+            var shell = template.Shell;
+            var texts = new[] { template.SubjectTemplate, template.BodyHtmlTemplate, template.BodyTextTemplate, shell?.HeadingTemplate, shell?.FootnoteTemplate }
+                .Concat(shell?.InfoRows.Select(row => row.ValueTemplate) ?? []);
+            foreach (var text in texts.Where(t => t is not null))
+                foreach (System.Text.RegularExpressions.Match match in tokens.Matches(text!)) names.Add(match.Groups[1].Value);
+            if (shell?.ActionUrlVariable is { } action) names.Add(action);
+        }
+
+        // Producers' own additions beside the template (AdminUserInvitationService, task e-mails).
+        foreach (var extra in new[] { "TemporaryPassword", "LoginUrl", "RecipientName", "Email", "TaskUrl", "Priority", "AssignerName" }) names.Add(extra);
+
+        var masked = names.Where(NotificationSecrets.IsSecretName).ToList();
+        _output.WriteLine("ALL: " + string.Join(", ", names));
+        _output.WriteLine("MASKED: " + string.Join(", ", masked));
+        Assert.Equal(["TemporaryPassword"], masked);
+    }
+
+    [Fact]
+    public async Task A_secret_in_the_subject_is_not_kept_and_the_first_send_still_carries_the_real_subject()
+    {
+        var rig = new Rig();
+        rig.AddTemplate("en", "<p>x</p>", "x", subject: "Your code: {{TemporaryPassword}}");
+
+        await rig.QueueAsync("en", new() { ["TemporaryPassword"] = "Tmp-Pass-123" });
+
+        Assert.DoesNotContain("Tmp-Pass-123", Assert.Single(rig.Dispatches.Items).Subject);
+        Assert.Contains("Tmp-Pass-123", rig.Sent.Subject);
+    }
+
+    [Fact]
+    public async Task A_secret_cut_by_the_2000th_character_leaves_nothing_of_itself_in_the_preview()
+    {
+        var rig = new Rig();
+        rig.AddTemplate("en", "<p>{{Filler}}{{TemporaryPassword}}</p>", "{{Filler}}{{TemporaryPassword}}");
+        const string secret = "QWERTYUIOPASDFGHJKLZ";
+        // "<p>" is 3 characters: the secret starts at 1995 and the 2000-character cut lands inside it.
+        var filler = new string('a', 1992);
+
+        await rig.QueueAsync("en", new() { ["Filler"] = filler, ["TemporaryPassword"] = secret });
+
+        var dispatch = Assert.Single(rig.Dispatches.Items);
+        Assert.DoesNotContain("QWERT", dispatch.BodyHtmlPreview);
+        Assert.DoesNotContain("QWERT", dispatch.BodyTextPreview);
+        Assert.True(dispatch.BodyHtmlPreview!.Length <= 2000);
+    }
+
+    public static TheoryData<string, Dictionary<string, object?>> TypedTenantMails => new()
+    {
+        { "tenant.suspended.email", new() { ["Reason"] = "Unpaid invoice", ["SuspendedAtUtc"] = new DateTimeOffset(2026, 10, 4, 1, 33, 33, TimeSpan.Zero) } },
+        { "tenant.reactivated.email", new() { ["ReactivatedAtUtc"] = new DateTimeOffset(2026, 10, 4, 1, 33, 33, TimeSpan.Zero) } },
+        { "tenant.invite.email", new() { ["TenantId"] = Guid.Parse("11111111-2222-3333-4444-555555555555"), ["TenantDisplayName"] = "Diten Pharma" } }
+    };
+
+    [Theory]
+    [MemberData(nameof(TypedTenantMails))]
+    public async Task A_retry_of_a_tenant_lifecycle_mail_with_typed_values_is_byte_for_byte_the_first_attempt(
+        string seededKey, Dictionary<string, object?> variables)
+    {
+        var rig = new Rig();
+        rig.AddSeeded(SeededTemplates().Single(t => t.TemplateKey == seededKey && t.Locale == "en"));
+
+        rig.Transport.SendThrow = new InvalidOperationException("Mailbox unavailable");
+        await rig.QueueAsync("en", variables);
+        var first = rig.Sent;
+        var (firstHtml, firstText) = (first.HtmlBody, first.TextBody);
+
+        rig.Transport.SendThrow = null;
+        var dispatch = Assert.Single(rig.Dispatches.Items);
+        await rig.Job().HandleAsync(new EmailDispatchJobArgs(rig.TenantId, dispatch.Id), new BackgroundJobContext());
+
+        Assert.Equal(firstHtml, rig.Sent.HtmlBody);
+        Assert.Equal(firstText, rig.Sent.TextBody);
+    }
+
+    [Fact]
+    public async Task A_caller_whose_dictionary_ignores_case_gets_the_same_shell_on_the_first_send_and_on_the_retry()
+    {
+        var rig = new Rig();
+        rig.AddTemplate("en", "<p>{{TaskTitle}}</p>", "{{TaskTitle}}", shell: TaskShell());
+        var variables = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["tasktitle"] = "Review", ["taskurl"] = "https://di10.example/t/1"
+        };
+
+        rig.Transport.SendThrow = new InvalidOperationException("Mailbox unavailable");
+        await rig.QueueAsync("en", variables);
+        var firstHtml = rig.Sent.HtmlBody;
+        Assert.Contains("<a href=\"https://di10.example/t/1\"", firstHtml);
+        Assert.Contains(">Review</td>", firstHtml);
+
+        rig.Transport.SendThrow = null;
+        await rig.Job().HandleAsync(new EmailDispatchJobArgs(rig.TenantId, Assert.Single(rig.Dispatches.Items).Id), new BackgroundJobContext());
+
+        Assert.Equal(firstHtml, rig.Sent.HtmlBody);
+    }
+
+    [Theory]
+    [InlineData("to")] [InlineData("cc")] [InlineData("bcc")]
+    public async Task Through_the_pipeline_a_recipient_that_is_not_one_address_is_refused_with_its_code_and_nothing_is_queued(string field)
+    {
+        var rig = new Rig();
+        rig.AddTemplate("en", "<p>x</p>", "x");
+        const string bad = "user@example.com\r\nBcc: victim@evil.test";
+        EmailRecipientDto good = new("user@example.com", "User");
+        var request = new QueueEmailNotificationRequest(
+            TemplateKey, "en", new Dictionary<string, object?>(),
+            field == "to" ? [new EmailRecipientDto(bad, "x")] : [good],
+            Cc: field == "cc" ? [new EmailRecipientDto(bad, "x")] : null,
+            Bcc: field == "bcc" ? [new EmailRecipientDto(bad, "x")] : null);
+        var command = new QueueEmailNotificationCommand(rig.TenantId, request, "corr");
+
+        // The production validator inside the production ValidationBehavior, then the handler — what MediatR runs.
+        var behavior = new Diten.Platform.Application.Contracts.Behaviors.ValidationBehavior<QueueEmailNotificationCommand, Diten.Platform.Application.Common.Response<NotificationDispatchDto>>(
+            [new Diten.Platform.Application.Features.Notifications.Validators.QueueEmailNotificationValidator()]);
+        var refusal = await Assert.ThrowsAsync<FluentValidation.ValidationException>(
+            () => behavior.Handle(command, () => rig.Handler().Handle(command, CancellationToken.None), CancellationToken.None));
+
+        // The code an HTTP caller receives as reason_code (GlobalExceptionHandler → ValidationReasonCode).
+        var failure = Assert.Single(refusal.Errors);
+        Assert.Equal(QueueEmailNotificationHandler.ReasonRecipientInvalid,
+            Diten.Platform.Application.Contracts.ValidationReasonCode.From(failure));
+        Assert.Empty(rig.Dispatches.Items);
+        Assert.Null(rig.Transport.LastSentMessage);
+    }
+
+    [Fact]
+    public async Task A_refused_reply_address_is_logged_by_the_provider_without_the_address()
+    {
+        var logger = new LinesLogger<SmtpMessagingProvider>();
+        var rig = new Rig { ProviderLogger = logger };
+        rig.Settings.CreateAsync(Rig.SettingsRow(rig.TenantId, null, replyTo: "ik@ditenpharma.test, other@evil.test")).GetAwaiter().GetResult();
+        rig.AddTemplate("en", "<p>x</p>", "x");
+
+        await rig.QueueAsync("en", new());
+
+        var line = Assert.Single(logger.Lines, l => l.Contains("reply_to_refused", StringComparison.Ordinal));
+        Assert.DoesNotContain("ditenpharma", line);
+        Assert.DoesNotContain("evil.test", line);
+    }
+
+    [Fact]
+    public async Task The_identity_never_offers_a_reply_address_that_is_not_one_address()
+    {
+        var rig = new Rig();
+        rig.Settings.CreateAsync(Rig.SettingsRow(rig.TenantId, null, replyTo: "ik@ditenpharma.test;other@evil.test")).GetAwaiter().GetResult();
+
+        var identity = await new TenantEmailIdentityResolver(rig.Tenants, rig.Settings, new FakeNotificationLocaleResolver("en")).ResolveAsync(rig.TenantId);
+
+        Assert.Null(identity!.ReplyToEmail);
+    }
+
+    [Fact]
+    public void A_whole_document_without_a_text_body_gets_a_text_part_derived_from_it()
+    {
+        var composed = new Rig().Composer.Compose(TenantEmailIdentity.Platform, null, "en", "S",
+            "<!doctype html><html><body><p>Open <a href=\"https://di10.example/x\">this</a></p></body></html>", null, null);
+
+        Assert.False(composed.Framed);
+        Assert.Equal("Open this (https://di10.example/x)", composed.BodyText);
+    }
+
+    [Fact]
+    public void A_body_with_neither_html_nor_text_is_not_framed()
+    {
+        var composed = new Rig().Composer.Compose(TenantEmailIdentity.Platform, null, "en", "S", null, null, null);
+
+        Assert.False(composed.Framed);
+        Assert.Null(composed.BodyHtml);
+        Assert.Null(composed.BodyText);
+    }
+
+    [Theory]
+    [InlineData("not json")]
+    [InlineData("[1,2,3]")]
+    [InlineData("{\"TaskTitle\":")]
+    public void A_monitoring_answer_never_hands_back_what_it_could_not_read(string stored)
+    {
+        Assert.Equal("{}", NotificationParsing.MaskVariableValues(stored));
+    }
+
+    [Fact]
+    public async Task A_retry_whose_stored_variables_carry_a_masked_value_falls_back_to_the_stored_preview_and_says_why()
+    {
+        // The re-render is refused BEFORE it runs: a masked value rendered back into a mail would be a quiet lie.
+        var rig = new Rig();
+        var template = rig.AddTemplate("en", "<p>Code: {{TemporaryPassword}}</p>", "Code: {{TemporaryPassword}}");
+        var dispatch = rig.AddFailedDispatch("{\"TemporaryPassword\":\"[REDACTED]\"}", templateId: template.Id);
+        var logger = new LinesLogger<EmailDispatchJob>();
+
+        await rig.Job(logger).HandleAsync(new EmailDispatchJobArgs(rig.TenantId, dispatch.Id), new BackgroundJobContext());
+
+        Assert.Contains(logger.Lines, line => line.Contains("retry_degraded", StringComparison.Ordinal) && line.Contains("VariablesRedacted", StringComparison.Ordinal));
+        Assert.Contains("<p>stored preview</p>", rig.Sent.HtmlBody);
+    }
+
+    internal sealed class LinesLogger<T> : Microsoft.Extensions.Logging.ILogger<T>
+    {
+        public List<string> Lines { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+            Lines.Add(formatter(state, exception));
+    }
+
+    private static IReadOnlyList<NotificationTemplate> SeededTemplates() =>
+        (IReadOnlyList<NotificationTemplate>)typeof(Diten.Platform.Infrastructure.Persistence.Configurations.NotificationTemplateSeed)
+            .GetMethod("CreatePlatformDefaults", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
+            .Invoke(null, null)!;
+
     private static NotificationTemplateShell TaskShell() => new()
     {
         HeadingTemplate = "A task was assigned to you",
@@ -736,6 +1011,7 @@ public sealed class EmailShellDispatchTests
         public Guid TenantId { get; init; } = Guid.NewGuid();
         public string TenantLocale { get; init; } = "en";
         public bool WithShell { get; init; } = true;
+        public Microsoft.Extensions.Logging.ILogger<SmtpMessagingProvider>? ProviderLogger { get; init; }
 
         public Doubles.InMemoryTenantMessagingSettingsRepository Settings { get; } = new();
         public Doubles.InMemoryNotificationTemplateRepository Templates { get; } = new();
@@ -772,7 +1048,25 @@ public sealed class EmailShellDispatchTests
             new SmtpDoubles.RecordingSmtpClientFactory(Transport),
             new SecretReferenceResolver(new SmtpDoubles.InMemorySecretsProvider("not-a-real-secret")),
             new SmtpDoubles.TestHostEnvironment("Development"),
-            NullLogger<SmtpMessagingProvider>.Instance);
+            ProviderLogger ?? NullLogger<SmtpMessagingProvider>.Instance);
+
+        public QueueEmailNotificationHandler Handler() => new(
+            new TenantMessagingSettingsResolver(Settings),
+            Templates,
+            new EmailTemplateRenderer(),
+            Dispatches,
+            new Doubles.TestProviderResolver(Provider),
+            new Doubles.RecordingEventBus(),
+            NullLogger<QueueEmailNotificationHandler>.Instance,
+            WithShell ? Composer : null,
+            WithShell ? new FakeNotificationLocaleResolver(TenantLocale) : null);
+
+        public NotificationTemplate AddSeeded(NotificationTemplate seeded)
+        {
+            seeded.TemplateKey = TemplateKey;
+            Templates.CreateAsync(seeded).GetAwaiter().GetResult();
+            return seeded;
+        }
 
         public Task<Diten.Platform.Application.Common.Response<NotificationDispatchDto>> QueueAsync(
             string locale, Dictionary<string, object?> variables, string recipient = "user@example.com")
@@ -796,12 +1090,12 @@ public sealed class EmailShellDispatchTests
                 CancellationToken.None);
         }
 
-        public EmailDispatchJob Job() => new(
+        public EmailDispatchJob Job(Microsoft.Extensions.Logging.ILogger<EmailDispatchJob>? logger = null) => new(
             Dispatches,
             new TenantMessagingSettingsResolver(Settings),
             new Doubles.TestProviderResolver(Provider),
             new SilentMediator(),
-            NullLogger<EmailDispatchJob>.Instance,
+            logger ?? NullLogger<EmailDispatchJob>.Instance,
             Templates,
             new EmailTemplateRenderer(),
             Composer);

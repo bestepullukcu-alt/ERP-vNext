@@ -120,7 +120,10 @@ public sealed class EmailShellComposer : IEmailShellComposer
             return new ComposedEmail(cleanSubject, null, null, senderName, identity.ReplyToEmail, Framed: false);
         }
 
-        var values = variables ?? NoVariables;
+        // Case-insensitive on every path: a caller's own dictionary may be either, a retry's never was.
+        var values = variables is null
+            ? NoVariables
+            : new Dictionary<string, object?>(variables, StringComparer.OrdinalIgnoreCase);
         var shell = template?.Shell;
         var heading = string.IsNullOrWhiteSpace(shell?.HeadingTemplate)
             ? cleanSubject

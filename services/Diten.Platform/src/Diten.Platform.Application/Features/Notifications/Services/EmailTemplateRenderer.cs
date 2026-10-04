@@ -6,7 +6,7 @@ namespace Diten.Platform.Application.Features.Notifications.Services;
 
 public sealed class EmailTemplateRenderer : IEmailTemplateRenderer
 {
-    private const int PreviewMaxLength = 2000;
+    public const int PreviewMaxLength = 2000;
 
     public Response<RenderedEmailTemplateDto> Render(
         NotificationTemplate template,

@@ -116,7 +116,13 @@ public static class EmailHeaderText
             or >= (char)0x2066 and <= (char)0x2069
             or (char)0x200B
             or (char)0x2060
-            or (char)0xFEFF;
+            or (char)0xFEFF
+            // Fix round 2: the soft hyphen, the Mongolian vowel separator, the invisible math operators (function
+            // application, invisible times / separator / plus) and the deprecated format characters U+206A–U+206F.
+            or (char)0x00AD
+            or (char)0x180E
+            or >= (char)0x2061 and <= (char)0x2064
+            or >= (char)0x206A and <= (char)0x206F;
 
     public static string CleanSubject(string? value) => Clean(value, MaxSubjectLength);
 }

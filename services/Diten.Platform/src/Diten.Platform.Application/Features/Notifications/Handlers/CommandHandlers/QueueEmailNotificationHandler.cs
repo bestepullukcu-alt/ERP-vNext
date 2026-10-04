@@ -121,7 +121,16 @@ public sealed class QueueEmailNotificationHandler
                 "Notification template not found.", 404, ReasonTemplateNotFound);
         }
 
-        var renderResponse = _renderer.Render(template, request.Request.Variables);
+        // BL-454 — the variables as the template sees them, fixed ONCE: the first send and any retry render the same
+        // strings (a DateTimeOffset, a bool, an enum no longer render differently from stored JSON), and lookup
+        // ignores case on both paths. Which of them are secrets is decided on the ORIGINAL values (a JSON object is
+        // a secret by kind, and normalising would turn it into text first).
+        var variables = NotificationVariables.Normalize(request.Request.Variables);
+        var secretNames = request.Request.Variables
+            .Where(pair => NotificationParsing.IsSensitiveVariable(pair.Key, pair.Value))
+            .Select(pair => pair.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var renderResponse = _renderer.Render(template, variables);
         if (!renderResponse.IsSuccessful || renderResponse.Data is null)
         {
             return Response<NotificationDispatchDto>.Fail(
@@ -135,7 +144,7 @@ public sealed class QueueEmailNotificationHandler
             ? null
             : await _shellComposer.ComposeAsync(
                 request.TenantId, template, template.Locale, subject,
-                renderResponse.Data.BodyHtml, renderResponse.Data.BodyText, request.Request.Variables, ct);
+                renderResponse.Data.BodyHtml, renderResponse.Data.BodyText, variables, ct);
 
         var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
             ? Guid.NewGuid().ToString("N")
@@ -153,14 +162,17 @@ public sealed class QueueEmailNotificationHandler
             To = MapRecipients(request.Request.To),
             Cc = MapRecipients(request.Request.Cc ?? []),
             Bcc = MapRecipients(request.Request.Bcc ?? []),
-            Subject = subject,
+            // BL-454 — the STORED subject is masked like the body: a secret a template puts in the subject is not kept.
+            // The first send below still carries the real subject.
+            Subject = MaskSensitiveValues(subject, variables, secretNames)!,
             // The full rendered body (renderResponse.Data.BodyHtml) is sent to the provider below; the
             // truncated preview is the only body form PERSISTED on the dispatch, so mask any sensitive
             // variable values (e.g. temporary passwords) out of it to avoid leaking them into the record
             // and the read-only dispatch monitoring UI.
-            BodyHtmlPreview = MaskSensitiveValues(renderResponse.Data.BodyHtmlPreview, request.Request.Variables),
-            BodyTextPreview = MaskSensitiveValues(renderResponse.Data.BodyTextPreview, request.Request.Variables),
-            VariablesJson = JsonSerializer.Serialize(SanitizeVariables(request.Request.Variables)),
+            // BL-454 — masked FIRST, cut SECOND: a secret straddling the cut can no longer leave its beginning behind.
+            BodyHtmlPreview = Truncate(MaskSensitiveValues(renderResponse.Data.BodyHtml, variables, secretNames)),
+            BodyTextPreview = Truncate(MaskSensitiveValues(renderResponse.Data.BodyText, variables, secretNames)),
+            VariablesJson = JsonSerializer.Serialize(SanitizeVariables(variables, secretNames)),
             // BL-374 — lets a retry decide whether re-rendering from TemplateId + VariablesJson would still
             // reproduce this exact send, or whether the template has since moved on.
             TemplateSemanticVersion = template.SemanticVersion,
@@ -203,7 +215,7 @@ public sealed class QueueEmailNotificationHandler
                 dispatch.Id,
                 dispatch.TenantId,
                 correlationId,
-                dispatch.Subject,
+                subject, // the real subject; the stored one is masked
                 dispatch.To.Select(ToProviderRecipient).ToArray(),
                 dispatch.Cc.Select(ToProviderRecipient).ToArray(),
                 dispatch.Bcc.Select(ToProviderRecipient).ToArray(),
@@ -348,33 +360,40 @@ public sealed class QueueEmailNotificationHandler
             .ToList();
     }
 
-    private static IReadOnlyDictionary<string, object?> SanitizeVariables(IReadOnlyDictionary<string, object?> variables) =>
+    private static IReadOnlyDictionary<string, object?> SanitizeVariables(
+        IReadOnlyDictionary<string, object?> variables, IReadOnlySet<string> secretNames) =>
         variables.ToDictionary(
             pair => pair.Key,
-            pair => NotificationParsing.IsSensitiveVariable(pair.Key, pair.Value) ? RedactedToken : pair.Value,
+            pair => secretNames.Contains(pair.Key) ? RedactedToken : pair.Value,
             StringComparer.OrdinalIgnoreCase);
+
+    private static string? Truncate(string? value) =>
+        value is null || value.Length <= EmailTemplateRenderer.PreviewMaxLength
+            ? value
+            : value[..EmailTemplateRenderer.PreviewMaxLength];
 
     // Replaces the concrete values of sensitive variables inside the persisted body preview, so a rendered
     // secret (temporary password, token, API key) never lands in the dispatch record. The full body sent to
     // the provider is untouched. Masking keys off sensitive variable NAMES only (not the raw-secret value
     // heuristic, which flags ordinary spaced/`=` text like tenant names and login URLs). Both the raw and
     // HTML-encoded forms are masked because the renderer may HTML-encode substituted values.
-    private static string? MaskSensitiveValues(string? preview, IReadOnlyDictionary<string, object?> variables)
+    private static string? MaskSensitiveValues(
+        string? text, IReadOnlyDictionary<string, object?> variables, IReadOnlySet<string> secretNames)
     {
-        if (string.IsNullOrEmpty(preview))
+        if (string.IsNullOrEmpty(text))
         {
-            return preview;
+            return text;
         }
 
-        var masked = preview;
+        var masked = text;
         foreach (var pair in variables)
         {
-            if (!NotificationParsing.IsSensitiveVariable(pair.Key, pair.Value))
+            if (!secretNames.Contains(pair.Key))
             {
                 continue;
             }
 
-            var value = Convert.ToString(pair.Value);
+            var value = Convert.ToString(pair.Value, System.Globalization.CultureInfo.InvariantCulture);
             if (string.IsNullOrEmpty(value))
             {
                 continue;
@@ -394,5 +413,4 @@ public sealed class QueueEmailNotificationHandler
     private static string? Redact(string? value) =>
         NotificationParsing.LooksLikeRawSecret(value) ? "[REDACTED]" : value;
 
-    private static bool IsSensitiveKey(string key) => NotificationParsing.IsSensitiveVariableName(key);
 }

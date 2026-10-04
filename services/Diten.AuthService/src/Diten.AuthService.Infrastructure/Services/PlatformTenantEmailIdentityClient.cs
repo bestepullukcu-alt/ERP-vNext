@@ -131,7 +131,7 @@ public sealed class PlatformTenantEmailIdentityClient : ITenantEmailIdentityClie
     /// custom header, and a redirect would hand that key to whatever host the answer names (HttpClient drops the
     /// Authorization header on a redirect, never a custom one). A 3xx is simply "no answer" here.
     /// </summary>
-    public static HttpMessageHandler CreatePrimaryHandler() => new SocketsHttpHandler { AllowAutoRedirect = false };
+    public static HttpMessageHandler CreatePrimaryHandler() => InternalHttpClients.CreatePrimaryHandler();
 
     /// <summary>The one registration, used by AddInfrastructure and by the tests that prove it.</summary>
     public static IHttpClientBuilder Register(IServiceCollection services)
@@ -143,7 +143,7 @@ public sealed class PlatformTenantEmailIdentityClient : ITenantEmailIdentityClie
                 client.BaseAddress = new Uri(options.BaseUrl);
                 client.Timeout = Timeout;
             })
-            .ConfigurePrimaryHttpMessageHandler(CreatePrimaryHandler);
+            .WithoutRedirects();
     }
 
     private sealed record PlatformEnvelope(IdentityPayload? Data);

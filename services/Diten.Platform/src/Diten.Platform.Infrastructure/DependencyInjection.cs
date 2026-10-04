@@ -210,6 +210,9 @@ public static class DependencyInjection
         services.AddScoped<IAuthoritativeEntitlementDecisionSource, MongoAuthoritativeEntitlementDecisionSource>();
         services.AddScoped<IPlatformEntitlementDecisionProvider, PlatformEntitlementDecisionProvider>();
         services.AddScoped<IAdminUserInvitationService, AdminUserInvitationService>();
+        // BL-454 — carries the internal API key to AuthService: never follows a redirect.
+        services.AddHttpClient(AdminUserInvitationService.AuthInternalClientName)
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
         services.AddScoped<ITenantActivationNotifier, AuthServiceTenantActivationNotifier>();
         services.AddScoped<ICatalogPermissionSyncService, CatalogPermissionSyncService>();
         services.AddScoped<IAuthPermissionModulesClient, AuthPermissionModulesClient>();

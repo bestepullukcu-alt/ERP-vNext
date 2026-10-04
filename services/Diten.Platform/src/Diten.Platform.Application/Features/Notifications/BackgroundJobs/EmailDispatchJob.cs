@@ -235,7 +235,8 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
             return (null, null, null, null);
         }
 
-        var variables = JsonSerializer.Deserialize<Dictionary<string, object?>>(dispatch.VariablesJson) ?? [];
+        // BL-454 — the same strings the first send rendered (see NotificationVariables), looked up without regard to case.
+        var variables = NotificationVariables.FromJson(dispatch.VariablesJson);
         var rendered = _renderer.Render(template, variables);
         if (!rendered.IsSuccessful || rendered.Data is null)
         {

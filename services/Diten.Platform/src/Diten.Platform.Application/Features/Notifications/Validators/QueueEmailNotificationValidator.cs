@@ -33,11 +33,17 @@ public sealed class EmailRecipientDtoValidator : AbstractValidator<EmailRecipien
 {
     public EmailRecipientDtoValidator()
     {
+        // BL-454 — ONE rule for an address (EmailAddressText.IsSingleAddress), refused with the curated code
+        // RECIPIENT_INVALID: GlobalExceptionHandler carries a curated ErrorCode through verbatim as reason_code. The
+        // FluentValidation EmailAddress() this replaces accepted a value with a line break, and refused others with a
+        // code-less failure. The handler checks again for a caller that does not go through the pipeline.
         RuleFor(x => x.Email)
             .Cascade(CascadeMode.Stop)
             .NotEmpty()
-            .EmailAddress()
-            .MaximumLength(256);
+            .MaximumLength(256)
+            .Must(email => Diten.BuildingBlocks.Email.EmailAddressText.IsSingleAddress(email?.Trim()))
+            .WithErrorCode(Diten.Platform.Application.Features.Notifications.Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid)
+            .WithMessage("A recipient address is not a single valid address.");
         RuleFor(x => x.DisplayName).MaximumLength(160);
     }
 }

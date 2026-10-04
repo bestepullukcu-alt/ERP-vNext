@@ -47,11 +47,17 @@ public sealed class TenantUserInvitationEmailService : ITenantUserInvitationEmai
         _logger = logger;
     }
 
-    public async Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct)
+    public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct) =>
+        SendAsync(email, setupToken, isPasswordReset: false, ct);
+
+    public Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct) =>
+        SendAsync(email, setupToken, isPasswordReset: true, ct);
+
+    private async Task SendAsync(string email, string setupToken, bool isPasswordReset, CancellationToken ct)
     {
         ValidateSmtpConfiguration();
 
-        using var message = await BuildMessageAsync(email, setupToken, ct);
+        using var message = await BuildMessageAsync(email, setupToken, ct, isPasswordReset);
 
         using var client = new SmtpClient(_smtpOptions.Host, _smtpOptions.Port)
         {
@@ -64,7 +70,9 @@ public sealed class TenantUserInvitationEmailService : ITenantUserInvitationEmai
     }
 
     /// <summary>The whole message, short of sending it — what a test reads to see what would leave.</summary>
-    public async Task<MailMessage> BuildMessageAsync(string email, string setupToken, CancellationToken ct)
+    /// <param name="isPasswordReset">What the CALLER is sending: an administrator's reset (true) or an invitation.
+    /// Never inferred from the user record — a record that cannot be read must not change the words.</param>
+    public async Task<MailMessage> BuildMessageAsync(string email, string setupToken, CancellationToken ct, bool isPasswordReset = false)
     {
         var tenantId = ResolveTenantId();
         var identity = tenantId == Guid.Empty ? null : await _identity.GetAsync(tenantId, ct);
@@ -77,11 +85,6 @@ public sealed class TenantUserInvitationEmailService : ITenantUserInvitationEmai
 
         var user = await ResolveUserAsync(email!, tenantId, ct);
         var firstName = string.IsNullOrWhiteSpace(user?.FirstName) ? null : user.FirstName.Trim();
-        // An account already IN USE whose password an administrator reset is not an invitation: same link, own words.
-        // In use = its e-mail was confirmed (redeeming a set-password link confirms it) or it has signed in. A new or
-        // re-sent invitation is neither; AdminResetPasswordCommandHandler refuses a still-pending invitation and
-        // changes neither fact, so the record the request just wrote answers it and the callers stay as they are.
-        var isPasswordReset = user is not null && (user.EmailConfirmed || user.LastLoginAt is not null);
         var replyTo = EmailAddressText.IsSingleAddress(identity?.ReplyToEmail?.Trim()) ? identity!.ReplyToEmail!.Trim() : null;
         if (replyTo is null && !string.IsNullOrWhiteSpace(identity?.ReplyToEmail))
         {

@@ -110,6 +110,24 @@ public sealed class PlatformContainerValidationTests
             + "startup, so the service will not start either.\n\n" + failure);
     }
 
+    [Fact]
+    public async Task The_client_that_carries_the_internal_key_to_AuthService_never_follows_a_redirect()
+    {
+        // BL-454 — measured on the PRODUCTION composition (AddInfrastructure), not on a copy of its registration: if the
+        // line in DependencyInjection.cs changes, this goes red. A redirect would hand X-Internal-Api-Key to another host.
+        await using var provider = Composition.Value.BuildServiceProvider();
+        var factory = provider.GetRequiredService<System.Net.Http.IHttpMessageHandlerFactory>();
+
+        HttpMessageHandler handler = factory.CreateHandler(Diten.Platform.Infrastructure.Services.AdminUserInvitationService.AuthInternalClientName);
+        while (handler is DelegatingHandler delegating && delegating.InnerHandler is not null)
+        {
+            handler = delegating.InnerHandler;
+        }
+
+        var primary = Assert.IsType<SocketsHttpHandler>(handler);
+        Assert.False(primary.AllowAutoRedirect);
+    }
+
     /// <summary>
     /// Composed once per process — see the BSON note in the class summary. Building several providers from
     /// one collection is fine; calling <c>AddInfrastructure</c> more than once in a process is not.

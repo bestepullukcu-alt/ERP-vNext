@@ -103,6 +103,11 @@ public static class TenantUserInvitationEmailTemplate
     /// BL-454 — an administrator's "Reset password" for an account that is already in use. Same link, same token,
     /// same lifetime as the invitation; different words, because nobody was invited. Turkish says "parola", as the
     /// Users screen does.
+    ///
+    /// <para>⚠ It says NOTHING about the old password. A reset today issues a set-password link and does not touch the
+    /// password hash or the sessions (AdminResetPasswordCommandHandler; LoginCommandHandler still accepts the old
+    /// password). An e-mail promising "your old password no longer works" would make an administrator who reset a
+    /// compromised account believe it is closed while it is not. Invalidating the old password is BL-529.</para>
     /// </summary>
     private static readonly IReadOnlyDictionary<string, TenantUserInvitationEmailTexts> ResetTexts =
         new Dictionary<string, TenantUserInvitationEmailTexts>(StringComparer.Ordinal)
@@ -115,7 +120,7 @@ public static class TenantUserInvitationEmailTemplate
                 "An administrator of {0} has reset the password of your account. Use the button below to set a new one.",
                 "An administrator has reset the password of your account. Use the button below to set a new one.",
                 "Set a new password",
-                "The link is valid for 7 days and can be used only once. Your old password no longer works.",
+                "The link is valid for 7 days and can be used only once.",
                 "If you did not expect this, contact your administrator."),
             ["tr"] = new(
                 "{0} parolanızı yenileyin",
@@ -125,7 +130,7 @@ public static class TenantUserInvitationEmailTemplate
                 "{0} yöneticiniz hesabınızın parolasını sıfırladı. Aşağıdaki düğmeyle yeni bir parola belirleyin.",
                 "Yöneticiniz hesabınızın parolasını sıfırladı. Aşağıdaki düğmeyle yeni bir parola belirleyin.",
                 "Yeni parola belirle",
-                "Bağlantı 7 gün geçerlidir ve yalnız bir kez kullanılabilir. Eski parolanız artık geçerli değil.",
+                "Bağlantı 7 gün geçerlidir ve yalnız bir kez kullanılabilir.",
                 "Bunu beklemiyorsanız yöneticinize başvurun."),
             ["fr"] = new(
                 "Réinitialisez votre mot de passe {0}",
@@ -135,7 +140,7 @@ public static class TenantUserInvitationEmailTemplate
                 "Un administrateur de {0} a réinitialisé le mot de passe de votre compte. Utilisez le bouton ci-dessous pour en définir un nouveau.",
                 "Un administrateur a réinitialisé le mot de passe de votre compte. Utilisez le bouton ci-dessous pour en définir un nouveau.",
                 "Définir un nouveau mot de passe",
-                "Le lien est valable 7 jours et ne peut être utilisé qu'une seule fois. Votre ancien mot de passe ne fonctionne plus.",
+                "Le lien est valable 7 jours et ne peut être utilisé qu'une seule fois.",
                 "Si vous ne vous y attendiez pas, contactez votre administrateur."),
             ["es"] = new(
                 "Restablezca su contraseña de {0}",
@@ -145,7 +150,7 @@ public static class TenantUserInvitationEmailTemplate
                 "Un administrador de {0} ha restablecido la contraseña de su cuenta. Use el botón siguiente para establecer una nueva.",
                 "Un administrador ha restablecido la contraseña de su cuenta. Use el botón siguiente para establecer una nueva.",
                 "Establecer nueva contraseña",
-                "El enlace es válido durante 7 días y solo puede usarse una vez. Su contraseña anterior ya no funciona.",
+                "El enlace es válido durante 7 días y solo puede usarse una vez.",
                 "Si no esperaba esto, póngase en contacto con su administrador."),
             ["zh"] = new(
                 "重置您的 {0} 密码",
@@ -155,7 +160,7 @@ public static class TenantUserInvitationEmailTemplate
                 "{0} 的管理员已重置您账户的密码。请点击下方按钮设置新密码。",
                 "管理员已重置您账户的密码。请点击下方按钮设置新密码。",
                 "设置新密码",
-                "链接 7 天内有效，且只能使用一次。您的旧密码已失效。",
+                "链接 7 天内有效，且只能使用一次。",
                 "如果这不是您预期的操作，请联系您的管理员。"),
             ["ar"] = new(
                 "أعد تعيين كلمة مرورك في {0}",
@@ -165,7 +170,7 @@ public static class TenantUserInvitationEmailTemplate
                 "أعاد مسؤول {0} تعيين كلمة مرور حسابك. استخدم الزر أدناه لتعيين كلمة مرور جديدة.",
                 "أعاد المسؤول تعيين كلمة مرور حسابك. استخدم الزر أدناه لتعيين كلمة مرور جديدة.",
                 "تعيين كلمة مرور جديدة",
-                "الرابط صالح لمدة 7 أيام ويمكن استخدامه مرة واحدة فقط. لم تعد كلمة مرورك القديمة صالحة.",
+                "الرابط صالح لمدة 7 أيام ويمكن استخدامه مرة واحدة فقط.",
                 "إذا لم تكن تتوقع ذلك، فتواصل مع المسؤول."),
             ["ru"] = new(
                 "Сброс пароля {0}",
@@ -175,7 +180,7 @@ public static class TenantUserInvitationEmailTemplate
                 "Администратор {0} сбросил пароль вашей учётной записи. Нажмите кнопку ниже, чтобы задать новый.",
                 "Администратор сбросил пароль вашей учётной записи. Нажмите кнопку ниже, чтобы задать новый.",
                 "Задать новый пароль",
-                "Ссылка действует 7 дней и может быть использована только один раз. Старый пароль больше не действует.",
+                "Ссылка действует 7 дней и может быть использована только один раз.",
                 "Если вы этого не ожидали, обратитесь к администратору.")
         };
 

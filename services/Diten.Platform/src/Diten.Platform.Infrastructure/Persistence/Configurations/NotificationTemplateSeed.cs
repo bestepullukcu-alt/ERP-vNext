@@ -97,16 +97,7 @@ public static class NotificationTemplateSeed
                 continue;
             }
 
-            var unchangedSinceRead = filters.And(
-                scope,
-                filters.Eq(x => x.Id, row.Id),
-                // Exactly as read: the seed's own earlier stamp, or none. An operator's save in between moves it.
-                filters.Eq(x => x.UpdatedAt, row.UpdatedAt),
-                filters.Eq(x => x.UpdatedBy, row.UpdatedBy),
-                filters.Eq(x => x.SubjectTemplate, previous.SubjectTemplate),
-                filters.Eq(x => x.BodyHtmlTemplate, previous.BodyHtmlTemplate),
-                filters.Eq(x => x.BodyTextTemplate, previous.BodyTextTemplate),
-                filters.Eq(x => x.SemanticVersion, previous.SemanticVersion));
+            var unchangedSinceRead = UpgradeWriteFilter(scope, row, previous);
 
             var update = Builders<NotificationTemplate>.Update
                 .Set(x => x.SubjectTemplate, current.SubjectTemplate)
@@ -126,6 +117,26 @@ public static class NotificationTemplateSeed
         }
 
         return (upgraded, keptModified);
+    }
+
+    /// <summary>
+    /// The conditional write of one upgrade: the row exactly as it was read — its own stamp (or none), the previous
+    /// seed's content and version. Anything an operator or a second instance did in between moves one of these and the
+    /// write matches nothing. Internal so its matching can be measured against a real collection.
+    /// </summary>
+    internal static FilterDefinition<NotificationTemplate> UpgradeWriteFilter(
+        FilterDefinition<NotificationTemplate> scope, NotificationTemplate row, NotificationTemplate previous)
+    {
+        var filters = Builders<NotificationTemplate>.Filter;
+        return filters.And(
+            scope,
+            filters.Eq(x => x.Id, row.Id),
+            filters.Eq(x => x.UpdatedAt, row.UpdatedAt),
+            filters.Eq(x => x.UpdatedBy, row.UpdatedBy),
+            filters.Eq(x => x.SubjectTemplate, previous.SubjectTemplate),
+            filters.Eq(x => x.BodyHtmlTemplate, previous.BodyHtmlTemplate),
+            filters.Eq(x => x.BodyTextTemplate, previous.BodyTextTemplate),
+            filters.Eq(x => x.SemanticVersion, previous.SemanticVersion));
     }
 
     /// <summary>

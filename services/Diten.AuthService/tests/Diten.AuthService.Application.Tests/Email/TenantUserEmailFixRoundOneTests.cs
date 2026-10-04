@@ -35,7 +35,7 @@ public sealed class TenantUserEmailFixRoundOneTests
         user.RequirePasswordChange(null);
         var service = Service(new TenantEmailIdentity("Diten Pharma", "tr", null, null), [user]);
 
-        using var message = await service.BuildMessageAsync(Recipient, "token-1", CancellationToken.None);
+        using var message = await service.BuildMessageAsync(Recipient, "token-1", CancellationToken.None, isPasswordReset: true);
 
         Assert.Equal("Diten Pharma parolanızı yenileyin", message.Subject);
         var html = Html(message);
@@ -50,18 +50,6 @@ public sealed class TenantUserEmailFixRoundOneTests
     }
 
     [Fact]
-    public async Task A_reset_of_an_account_that_has_signed_in_but_never_confirmed_is_still_a_reset()
-    {
-        var user = new User(Recipient, "hash", "Ayşe", "Kaya", Tenant);
-        user.RecordLoginSuccess();
-        var service = Service(new TenantEmailIdentity("Diten Pharma", "en", null, null), [user]);
-
-        using var message = await service.BuildMessageAsync(Recipient, "t", CancellationToken.None);
-
-        Assert.Equal("Reset your Diten Pharma password", message.Subject);
-    }
-
-    [Fact]
     public async Task A_pending_invitation_still_reads_as_an_invitation()
     {
         var user = new User(Recipient, "hash", "Ayşe", "Kaya", Tenant);
@@ -72,6 +60,74 @@ public sealed class TenantUserEmailFixRoundOneTests
 
         Assert.Equal("Diten Pharma hesabınız hazır", message.Subject);
         Assert.Contains("hesap açtı", Html(message));
+    }
+
+    [Fact]
+    public async Task The_caller_decides_reset_or_invitation_and_the_user_record_changes_nothing()
+    {
+        // A CONFIRMED account (what Platform provisions for a tenant administrator) re-sent its invitation: still the
+        // invitation. And a reset still reads as a reset when the user record cannot be read at all.
+        var confirmed = new User(Recipient, "hash", "Ayşe", "Kaya", Tenant);
+        confirmed.ConfirmEmail();
+        confirmed.RecordLoginSuccess();
+        var invitation = Service(new TenantEmailIdentity("Diten Pharma", "tr", null, null), [confirmed]);
+        using var invited = await invitation.BuildMessageAsync(Recipient, "t", CancellationToken.None, isPasswordReset: false);
+        Assert.Equal("Diten Pharma hesabınız hazır", invited.Subject);
+        Assert.Contains("Hesabınız hazır, parolanızı belirleyin</h1>", Html(invited));
+
+        var unreadable = new TenantUserInvitationEmailService(
+            Options.Create(new SmtpOptions { Host = "smtp.invalid", Port = 25, FromEmail = "no-reply@di10.test" }),
+            Options.Create(new PlatformServiceOptions { FrontendBaseUrl = "https://app.di10.test/" }),
+            new Context { TenantId = Tenant },
+            BrokenUsers(),
+            new FixedIdentity(new TenantEmailIdentity("Diten Pharma", "tr", null, null)),
+            NullLogger<TenantUserInvitationEmailService>.Instance);
+        using var reset = await unreadable.BuildMessageAsync(Recipient, "t", CancellationToken.None, isPasswordReset: true);
+        Assert.Equal("Diten Pharma parolanızı yenileyin", reset.Subject);
+        // The whole message follows the caller, not only its subject line.
+        Assert.Contains("Yeni parolanızı belirleyin</h1>", Html(reset));
+        Assert.Contains("parolasını sıfırladı", reset.Body);
+    }
+
+    [Theory]
+    [InlineData("en", "no longer")]
+    [InlineData("tr", "artık geçerli değil")]
+    [InlineData("fr", "ne fonctionne plus")]
+    [InlineData("es", "ya no funciona")]
+    [InlineData("zh", "已失效")]
+    [InlineData("ar", "لم تعد")]
+    [InlineData("ru", "больше не действует")]
+    public async Task A_reset_never_claims_the_old_password_stopped_working(string language, string claim)
+    {
+        var texts = TenantUserInvitationEmailTemplate.ResetTextsFor(language);
+        var every = string.Join(" ", typeof(TenantUserInvitationEmailTexts).GetProperties()
+            .Where(p => p.PropertyType == typeof(string)).Select(p => (string?)p.GetValue(texts)));
+        Assert.DoesNotContain(claim, every, StringComparison.OrdinalIgnoreCase);
+
+        var service = Service(new TenantEmailIdentity("Diten Pharma", language, null, null));
+        using var message = await service.BuildMessageAsync(Recipient, "t", CancellationToken.None, isPasswordReset: true);
+        Assert.DoesNotContain(claim, Html(message), StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(claim, message.Body, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("7", message.Body);
+    }
+
+    [Fact]
+    public async Task A_refused_reply_address_is_logged_without_the_address()
+    {
+        var logger = new LinesLogger();
+        var service = new TenantUserInvitationEmailService(
+            Options.Create(new SmtpOptions { Host = "smtp.invalid", Port = 25, FromEmail = "no-reply@di10.test" }),
+            Options.Create(new PlatformServiceOptions { FrontendBaseUrl = "https://app.di10.test/" }),
+            new Context { TenantId = Tenant },
+            new InMemoryUserRepository([new User(Recipient, "hash", "Ayşe", "Kaya", Tenant)]),
+            new FixedIdentity(new TenantEmailIdentity("Diten Pharma", "en", null, "ik@ditenpharma.test, other@evil.test")),
+            logger);
+
+        using var message = await service.BuildMessageAsync(Recipient, "t", CancellationToken.None);
+
+        var line = Assert.Single(logger.Lines, l => l.Contains("reply_to_refused", StringComparison.Ordinal));
+        Assert.DoesNotContain("ditenpharma", line);
+        Assert.DoesNotContain("evil.test", line);
     }
 
     [Fact]
@@ -209,6 +265,24 @@ public sealed class TenantUserEmailFixRoundOneTests
         }
 
         return value.ToString().Trim();
+    }
+
+    /// <summary>A user store that cannot be reached: every member throws, whatever the interface grows to.</summary>
+    public class BrokenUsersProxy : System.Reflection.DispatchProxy
+    {
+        protected override object? Invoke(System.Reflection.MethodInfo? targetMethod, object?[]? args) =>
+            throw new InvalidOperationException("user store unreachable");
+    }
+
+    private static IUserRepository BrokenUsers() => System.Reflection.DispatchProxy.Create<IUserRepository, BrokenUsersProxy>();
+
+    internal sealed class LinesLogger : Microsoft.Extensions.Logging.ILogger<TenantUserInvitationEmailService>
+    {
+        public List<string> Lines { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+            Lines.Add(formatter(state, exception));
     }
 
     private sealed class FixedIdentity(TenantEmailIdentity? answer) : ITenantEmailIdentityClient

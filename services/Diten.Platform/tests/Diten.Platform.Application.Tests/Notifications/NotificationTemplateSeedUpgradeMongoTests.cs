@@ -207,6 +207,50 @@ public sealed class NotificationTemplateSeedUpgradeMongoTests : IAsyncLifetime
         Assert.Equal("1.0.0", (await AssignedRowsAsync()).Single(r => r.Locale == "es").SemanticVersion);
     }
 
+    [Fact]
+    public async Task A_row_an_operator_saved_with_identical_content_is_theirs_and_is_not_carried_forward()
+    {
+        await InsertPreviousSeedAsync();
+        var french = (await AssignedRowsAsync()).Single(r => r.Locale == "fr");
+
+        // The operator's save through the real handler: same content, but now signed by the operator.
+        var handler = new Diten.Platform.Application.Features.Notifications.Handlers.CommandHandlers.UpdateNotificationTemplateHandler(
+            new Diten.Platform.Infrastructure.Persistence.Repositories.NotificationTemplateRepository(_harness.DbContext));
+        var saved = await handler.Handle(new Diten.Platform.Application.Features.Notifications.Commands.UpdateNotificationTemplateCommand(
+            french.Id,
+            null,
+            new Diten.Platform.Application.Features.Notifications.NotificationTemplateUpsertRequest(
+                true, french.TemplateKey, "Email", french.Locale, french.SubjectTemplate, french.BodyHtmlTemplate,
+                french.BodyTextTemplate,
+                french.Variables.Select(v => new Diten.Platform.Application.Features.Notifications.TemplateVariableDefinitionDto(v.Name, v.Type.ToString(), v.IsRequired)).ToList(),
+                "Active", french.SemanticVersion)), CancellationToken.None);
+        Assert.True(saved.IsSuccessful, string.Join(" | ", saved.Errors));
+
+        var result = await NotificationTemplateSeed.EnsureSeededAsync(_harness.Database, log: _ => { });
+
+        Assert.Equal(6, result.Upgraded);
+        Assert.Equal(1, result.KeptModified);
+        var kept = (await AssignedRowsAsync()).Single(r => r.Locale == "fr");
+        Assert.Equal("1.0.0", kept.SemanticVersion);
+        Assert.Equal("operator", kept.UpdatedBy);
+    }
+
+    [Fact]
+    public async Task The_upgrade_write_matches_nothing_once_the_row_was_signed_by_someone_else()
+    {
+        await InsertPreviousSeedAsync();
+        var row = (await AssignedRowsAsync()).Single(r => r.Locale == "ru");
+        var previous = NotificationTemplateSeed.TaskAssignedV1("ru");
+        var scope = Builders<NotificationTemplate>.Filter.Eq(x => x.Id, row.Id);
+
+        Assert.Equal(1, await _templates.CountDocumentsAsync(NotificationTemplateSeed.UpgradeWriteFilter(scope, row, previous)));
+
+        // Signed in between the read and the write — same time stamp, different signature.
+        await _templates.UpdateOneAsync(x => x.Id == row.Id, Builders<NotificationTemplate>.Update.Set(x => x.UpdatedBy, "operator"));
+
+        Assert.Equal(0, await _templates.CountDocumentsAsync(NotificationTemplateSeed.UpgradeWriteFilter(scope, row, previous)));
+    }
+
     private Task InsertPreviousSeedAsync() =>
         _templates.InsertManyAsync(NotificationTemplateSeed.TenantLocales.Select(NotificationTemplateSeed.TaskAssignedV1));
 

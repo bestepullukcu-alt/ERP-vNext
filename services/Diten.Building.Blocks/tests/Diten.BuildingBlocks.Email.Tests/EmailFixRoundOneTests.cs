@@ -124,3 +124,51 @@ public sealed class EmailTestsAreBuiltTests
         Assert.Contains("Diten.BuildingBlocks.Email.Tests.csproj", solution);
     }
 }
+
+/// <summary>BL-454 fix round 2 — the rest of the invisible characters; what an address may not contain.</summary>
+public sealed class EmailFixRoundTwoTests
+{
+    [Theory]
+    [InlineData(0x00AD)] [InlineData(0x180E)]
+    [InlineData(0x2061)] [InlineData(0x2062)] [InlineData(0x2063)] [InlineData(0x2064)]
+    [InlineData(0x206A)] [InlineData(0x206B)] [InlineData(0x206C)] [InlineData(0x206D)] [InlineData(0x206E)] [InlineData(0x206F)]
+    public void The_remaining_invisible_characters_never_reach_a_header(int codePoint)
+    {
+        var hidden = ((char)codePoint).ToString();
+
+        Assert.Equal("Invoice 1024", EmailHeaderText.CleanSubject("Inv" + hidden + "oice 1024"));
+        Assert.True(EmailHeaderText.IsHidden((char)codePoint));
+    }
+
+    [Theory]
+    [InlineData(0x200C)] [InlineData(0x200D)] [InlineData(0x200E)] [InlineData(0x200F)]
+    public void Joiners_and_direction_marks_are_still_not_hidden(int codePoint)
+    {
+        Assert.False(EmailHeaderText.IsHidden((char)codePoint));
+    }
+
+    [Theory]
+    [InlineData("ayse kaya@ditenpharma.test")]
+    [InlineData("ayse\tkaya@ditenpharma.test")]
+    [InlineData("ayse@ditenpharma.test ")]
+    public void An_address_with_whitespace_is_not_an_address(string value)
+    {
+        Assert.False(EmailAddressText.IsSingleAddress(value));
+    }
+
+    [Fact]
+    public void An_address_with_an_invisible_character_is_not_an_address()
+    {
+        Assert.False(EmailAddressText.IsSingleAddress("ay" + (char)0x200B + "se@ditenpharma.test"));
+        Assert.False(EmailAddressText.IsSingleAddress("ayse@ditenpharma.test" + (char)0x202E));
+    }
+
+    [Theory]
+    [InlineData("ayse,kaya@ditenpharma.test")]
+    [InlineData("ayse;kaya@ditenpharma.test")]
+    [InlineData("ayse@ditenpharma.test,")]
+    public void An_address_with_a_list_separator_is_not_one_address(string value)
+    {
+        Assert.False(EmailAddressText.IsSingleAddress(value));
+    }
+}
