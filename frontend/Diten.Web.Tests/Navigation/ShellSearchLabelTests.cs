@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Text.Encodings.Web;
 using Diten.Web.Services.Navigation;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Localization;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,13 +54,36 @@ public sealed class ShellSearchLabelTests : IClassFixture<WebApplicationFactory<
 
             var label = ShellSearchLabel.Template(localizer);
 
-            Assert.NotNull(label);
-            Assert.Equal(expected, label!.Value);
+            Assert.Equal(expected, label?.ToString());
         }
         finally
         {
             CultureInfo.CurrentUICulture = previous;
         }
+    }
+
+    /// <summary>CT 2026-10-04: the label went out as a <see cref="LocalizedHtmlString"/>, which formats its value when Razor
+    /// writes it; the <c>{0}</c> left for main.js then threw and no signed-in page rendered. Written into the page the way
+    /// Razor writes any value, the label must come out as it stands, placeholder included.</summary>
+    [Fact]
+    public void The_label_writes_into_the_page_with_its_placeholder_left_for_main_js()
+    {
+        var dictionary = new Localizer(name => new LocalizedHtmlString(name, "Ara ({0})", isResourceNotFound: false));
+        object? label = ShellSearchLabel.Template(dictionary);
+
+        var page = new HtmlContentBuilder();
+        if (label is IHtmlContent html)
+        {
+            page.AppendHtml(html);
+        }
+        else
+        {
+            page.Append((string?)label);
+        }
+
+        using var written = new StringWriter();
+        page.WriteTo(written, HtmlEncoder.Default);
+        Assert.Equal("Ara ({0})", written.ToString());
     }
 
     private sealed class Localizer(Func<string, LocalizedHtmlString> answer) : IHtmlLocalizer
