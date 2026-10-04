@@ -8089,6 +8089,13 @@ kararsız kapanışı kendi koduyla döndürür (Cancelled / TimedOut / Withdraw
 (WP-WF-ENGINE-CANDIDATES-01 D2 kabulünden sonra). Karşılaştırma: SAP Flexible Workflow ve Oracle BPM iş akışı sonucu "onaylandı / reddedildi / geri
 çekildi / süresi doldu" olarak ayrı döndürür. Gelecek regresyon riski: 🟢 (yeni kod; eski kod karantinayı korur).
 
+**İlerleme 2026-10-05 — Platform tarafı yapıldı (dal `feature/platform/wf-engine-candidates`, e2e9dc0eb + FIX1 82ed16c0d).** Yükseltilmiş açık onay →
+`WORKFLOW_DECISION_NOT_TERMINAL`; kanıtı tutarlı iptal / zaman aşımı → yeni `WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION`; çelişkili kanıt `INCONSISTENT`;
+çalışan örnek okunurken karar işlenirse bir kez yeniden okuma; günlüğü olmayan onaylı görev `INCONSISTENT`. MDM tüketici daraltması GSKU-FIX5'te.
+Kalan küçük sertleştirmeler: (a) yeniden okuma kararını "tutarsız" sezgisi yerine örnek sürümünün iki okuma arasında değişip değişmediğine bağlamak
+(iki ardışık milisaniyelik pencere bugün INCONSISTENT verebilir); (b) "onaylı görev sayısı = onay günlüğü sayısı" kuralını görev başına birebir
+eşleşmeye çevirmek (yalnız bozuk veride fark eder).
+
 ---
 
 ### BL-546
