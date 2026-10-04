@@ -57,10 +57,12 @@
   <data name="ErrorUserQuotaExceeded" xml:space="preserve"><value>已达到订阅计划的用户上限，未添加用户。请删除一个用户或升级计划。</value></data>
   <data name="ErrorUserQuotaUsage" xml:space="preserve"><value>已使用：{current} / {max} 个用户。</value></data>
   <data name="DeleteUserConfirmText" xml:space="preserve"><value>该用户将被删除，其角色将被移除；账户无法恢复。可以使用同一电子邮件地址开设新账户。</value></data>
-  <data name="ResetPasswordConfirmText" xml:space="preserve"><value>该用户的当前密码立即失效，其所有已打开的会话都将被注销。用户通过发送给其的链接设置新密码。</value></data>
+  <data name="ResetPasswordConfirmText" xml:space="preserve"><value>该用户的当前密码立即失效。其已打开的会话最迟在会话时限到期时结束。用户通过发送给其的链接设置新密码。</value></data>
   <data name="ErrorUserDeleteSelf" xml:space="preserve"><value>您不能删除自己的账户。</value></data>
   <data name="ErrorUserDeleteLastSteward" xml:space="preserve"><value>这是最后一个可以添加用户的账户，因此无法删除。请先将该权限授予其他用户。</value></data>
   <data name="ErrorUserDeactivateSelf" xml:space="preserve"><value>您不能停用自己的账户。</value></data>
+  <data name="ErrorUserResetSelf" xml:space="preserve"><value>您不能在此重置自己的密码。请使用“修改密码”。</value></data>
+  <data name="ErrorUserResetConflict" xml:space="preserve"><value>重置密码期间该账户发生了变更。未覆盖任何内容；请重新重置。</value></data>
   <data name="ErrorUserNotFound" xml:space="preserve"><value>找不到该用户，可能已被删除。请刷新列表后重试。</value></data>
   <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>所选的账户类型无效。请从列表中选择一种类型。</value></data>
   <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>该用户已设置密码，没有可重新发送的邀请。如需为其设置新密码，请使用“重置密码”。</value></data>

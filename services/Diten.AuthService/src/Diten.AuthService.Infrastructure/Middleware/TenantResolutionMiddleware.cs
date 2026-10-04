@@ -9,6 +9,25 @@ namespace Diten.AuthService.Infrastructure.Middleware;
 public sealed class TenantResolutionMiddleware
 {
     private const string TenantHeader = "X-Tenant-Id";
+
+    /// <summary>The platform tenant — the tenant every platform administrator account lives in.</summary>
+    public static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+
+    /// <summary>
+    /// BL-529 — the platform-auth endpoints that are called WITHOUT a tenant (no header, no tenant JWT) and always act on
+    /// the platform tenant: Platform's server-to-server provision / sync of an administrator account (internal key), and
+    /// the anonymous "forgot password" / set-password-link redemption of a platform administrator. Outside Development
+    /// (where the bypass hid it) each of them was refused 400 "Missing Tenant" — so a re-invited administrator could not
+    /// be provisioned, nor redeem the link. The list is EXACT paths, never a prefix: anything else under
+    /// /api/platform-auth still needs its tenant, and the endpoints keep their own checks (the internal key → 401).
+    /// </summary>
+    public static readonly IReadOnlyList<string> PlatformTenantPaths =
+    [
+        "/api/platform-auth/platform-admins/provision",
+        "/api/platform-auth/platform-admins/sync",
+        "/api/platform-auth/forgot-password",
+        "/api/platform-auth/reset-password"
+    ];
     private readonly RequestDelegate _next;
     private readonly ILogger<TenantResolutionMiddleware> _logger;
     private readonly IConfiguration _configuration;
@@ -71,6 +90,11 @@ public sealed class TenantResolutionMiddleware
                 bypassTenant);
         }
 
+        if (resolvedTenant is null && IsPlatformTenantPath(context.Request.Path))
+        {
+            resolvedTenant = PlatformTenantId;
+        }
+
         if (resolvedTenant is null)
         {
             if (IsPublicAuthPath(context.Request.Path))
@@ -114,6 +138,9 @@ public sealed class TenantResolutionMiddleware
                || path.StartsWithSegments("/internal", StringComparison.OrdinalIgnoreCase)
                || path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase);
     }
+
+    private static bool IsPlatformTenantPath(PathString path)
+        => PlatformTenantPaths.Any(p => path.Equals(new PathString(p), StringComparison.OrdinalIgnoreCase));
 
     private static bool IsPublicAuthPath(PathString path)
     {

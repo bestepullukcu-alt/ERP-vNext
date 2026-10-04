@@ -123,6 +123,21 @@ public sealed class User : EntityBase
         LockoutEnd = null;
     }
 
+    /// <summary>BL-529 — a password set through a link starts clean: no failed-attempt count, no lockout.</summary>
+    public void ClearLockout()
+    {
+        FailedLoginAttempts = 0;
+        LockoutEnd = null;
+    }
+
+    /// <summary>BL-529 — an outstanding set-password / reset link stops working (a deactivated account keeps none).</summary>
+    public void ClearPasswordResetToken()
+    {
+        PasswordResetTokenHash = null;
+        PasswordResetTokenExpiresAt = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
     public void RecordLoginFailure()
     {
         RecordLoginFailure(5, 15);

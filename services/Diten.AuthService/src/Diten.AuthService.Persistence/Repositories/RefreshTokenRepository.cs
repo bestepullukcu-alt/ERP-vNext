@@ -61,4 +61,20 @@ public sealed class RefreshTokenRepository : RepositoryBase<RefreshToken>, IRefr
         var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
         return result.IsModifiedCountAvailable ? result.ModifiedCount : 0;
     }
+
+    public async Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct)
+    {
+        var now = DateTime.UtcNow;
+        var filter = Builders<RefreshToken>.Filter.And(
+            Builders<RefreshToken>.Filter.Eq(t => t.UserId, userId),
+            Builders<RefreshToken>.Filter.Eq(t => t.TenantId, tenantId),
+            Builders<RefreshToken>.Filter.Eq(t => t.RevokedAt, null),
+            Builders<RefreshToken>.Filter.Gt(t => t.ExpiresAt, now));
+
+        var update = Builders<RefreshToken>.Update
+            .Set(t => t.RevokedAt, now)
+            .Set(t => t.RevokedReason, reason);
+        var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
+        return result.IsModifiedCountAvailable ? result.ModifiedCount : 0;
+    }
 }

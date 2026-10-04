@@ -53,6 +53,19 @@ public static class UserErrorCodes
     public const string PasswordSetupPending = "USER_PASSWORD_SETUP_PENDING";
 
     /// <summary>
+    /// BL-529 — the caller tried to reset the password of the account they are signed in with. The reset ends the old
+    /// password and every session at once: from that seat there would be no way back in until the e-mail arrives. One's
+    /// own password is changed with "Change password", never reset.
+    /// </summary>
+    public const string ResetSelf = "USER_RESET_SELF";
+
+    /// <summary>
+    /// BL-529 — the account's password kept changing while the reset was being written (the user's own change, another
+    /// administrator's reset); nothing stale was written. Asking again resets it.
+    /// </summary>
+    public const string ResetConflict = "USER_RESET_CONFLICT";
+
+    /// <summary>
     /// The caller supplied an account kind without <c>auth.users.account-kind.manage</c>. The value predates this list
     /// (WP-INFRA-AUTH-ACCOUNT-KIND-01) and has consumers, so it keeps its name instead of the <c>USER_</c> shape.
     /// </summary>

@@ -195,6 +195,7 @@ public sealed class RevokeRoleCommandHandlerTests
         public (Guid userId, Guid tenantId)? RevokeAllCall { get; private set; }
         public CancellationToken RevokeAllToken { get; private set; }
 
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
         public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
         {
             if (ThrowOnRevokeAll)

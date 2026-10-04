@@ -57,10 +57,12 @@
   <data name="ErrorUserQuotaExceeded" xml:space="preserve"><value>Abonelik planınızın kullanıcı sınırına ulaşıldı; kullanıcı eklenmedi. Bir kullanıcıyı kaldırın ya da planı yükseltin.</value></data>
   <data name="ErrorUserQuotaUsage" xml:space="preserve"><value>Kullanımda: {current} / {max} kullanıcı.</value></data>
   <data name="DeleteUserConfirmText" xml:space="preserve"><value>Kullanıcı silinir, rolleri kaldırılır; hesap geri getirilemez. Aynı e-posta ile yeni bir hesap açılabilir.</value></data>
-  <data name="ResetPasswordConfirmText" xml:space="preserve"><value>Kullanıcının mevcut parolası hemen geçersiz olur ve açık oturumlarının tümü kapanır. Yeni parolayı kendisine gönderilen bağlantıyla belirler.</value></data>
+  <data name="ResetPasswordConfirmText" xml:space="preserve"><value>Kullanıcının mevcut parolası hemen geçersiz olur. Açık oturumları en geç oturum süresi dolduğunda kapanır. Yeni parolayı kendisine gönderilen bağlantıyla belirler.</value></data>
   <data name="ErrorUserDeleteSelf" xml:space="preserve"><value>Kendi hesabınızı silemezsiniz.</value></data>
   <data name="ErrorUserDeleteLastSteward" xml:space="preserve"><value>Bu, kullanıcı ekleyebilen son hesap olduğu için silinemez. Önce bu yetkiyi başka bir kullanıcıya verin.</value></data>
   <data name="ErrorUserDeactivateSelf" xml:space="preserve"><value>Kendi hesabınızı pasife alamazsınız.</value></data>
+  <data name="ErrorUserResetSelf" xml:space="preserve"><value>Kendi parolanızı buradan sıfırlayamazsınız. Parola Değiştir'i kullanın.</value></data>
+  <data name="ErrorUserResetConflict" xml:space="preserve"><value>Parola sıfırlanırken hesap değişti. Hiçbir şeyin üzerine yazılmadı; yeniden sıfırlayın.</value></data>
   <data name="ErrorUserNotFound" xml:space="preserve"><value>Bu kullanıcı bulunamadı; silinmiş olabilir. Listeyi yenileyip yeniden deneyin.</value></data>
   <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>Seçilen hesap türü geçerli değil. Listeden bir tür seçin.</value></data>
   <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>Bu kullanıcı parolasını zaten belirlemiş; yeniden gönderilecek bir davet yok. Yeni parola vermek için Parolayı Sıfırla'yı kullanın.</value></data>

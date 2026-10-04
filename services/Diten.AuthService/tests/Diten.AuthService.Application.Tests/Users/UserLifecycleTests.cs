@@ -323,6 +323,8 @@ public sealed class UserLifecycleTests
         public Task<User> UpdateAsync(User user, CancellationToken ct) { Writes++; return _inner.UpdateAsync(user, ct); }
         public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) { Writes++; return _inner.UpdateForTenantAsync(user, tenantId, ct); }
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => _inner.SoftDeleteAsync(id, tenantId, ct);
+        public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => _inner.RecordLoginOutcomeAsync(user, tenantId, ct);
+        public Task<bool> TryUpdateForTenantIfPasswordHashAsync(User user, Guid tenantId, string expectedPasswordHash, CancellationToken ct) => _inner.TryUpdateForTenantIfPasswordHashAsync(user, tenantId, expectedPasswordHash, ct);
     }
 
     private sealed class NoRefreshTokens : IRefreshTokenRepository
@@ -331,6 +333,7 @@ public sealed class UserLifecycleTests
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
         public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
         public Task RevokeAsync(string token, CancellationToken ct) => throw new NotSupportedException();
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
         public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.FromResult(0L);
     }
 
@@ -535,6 +538,7 @@ public sealed class UserLifecycleTests
     private sealed class CountingRevokes : IRefreshTokenRepository
     {
         public int RevokeAllCount { get; private set; }
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
         public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) { RevokeAllCount++; return Task.FromResult(0L); }
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();

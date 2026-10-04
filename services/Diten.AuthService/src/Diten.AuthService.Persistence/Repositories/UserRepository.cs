@@ -151,6 +151,32 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         return user;
     }
 
+    public async Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct)
+    {
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.Id, user.Id),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        var update = Builders<User>.Update
+            .Set(u => u.FailedLoginAttempts, user.FailedLoginAttempts)
+            .Set(u => u.LockoutEnd, user.LockoutEnd)
+            .Set(u => u.LastLoginAt, user.LastLoginAt);
+
+        await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+    }
+
+    public async Task<bool> TryUpdateForTenantIfPasswordHashAsync(User user, Guid tenantId, string expectedPasswordHash, CancellationToken ct)
+    {
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.Id, user.Id),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false),
+            Builders<User>.Filter.Eq(u => u.PasswordHash, expectedPasswordHash));
+
+        var result = await Collection.ReplaceOneAsync(filter, user, cancellationToken: ct);
+        return result.MatchedCount == 1;
+    }
+
     public async Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
     {
         var filter = Builders<User>.Filter.And(

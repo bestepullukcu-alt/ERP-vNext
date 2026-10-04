@@ -2,6 +2,7 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
+using Diten.AuthService.Application.Features.Auth.Services;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 
@@ -68,9 +69,6 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
             return Response<AuthResponse>.Fail("Invalid verification code.", 401);
         }
 
-        user.RecordLoginSuccess();
-        await _userRepository.UpdateAsync(user, ct);
-
         var roles = (await _userRoleRepository.GetRolesByUserAsync(user.Id, challenge.TenantId, ct))
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -98,6 +96,16 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
             TenantActorType,
             request.UserAgent);
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
+
+        // BL-529 — the same rule as the password sign-in: a reset that landed meanwhile revokes the token just written,
+        // and only the sign-in's own fields are written (never the whole account, which could undo that reset).
+        if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, challenge.TenantId, user.PasswordHash, refreshTokenStr, ct))
+        {
+            return Response<AuthResponse>.Fail("Invalid verification code.", 401);
+        }
+
+        user.RecordLoginSuccess();
+        await _userRepository.RecordLoginOutcomeAsync(user, challenge.TenantId, ct);
         await _authAuditService.WriteAsync("tenant_login_mfa_challenge_consumed", user.Id, challenge.TenantId, "{\"channel\":\"email\"}", ct);
         await _authAuditService.WriteAsync("tenant_login_success", user.Id, challenge.TenantId, "{\"mfa\":true}", ct);
 

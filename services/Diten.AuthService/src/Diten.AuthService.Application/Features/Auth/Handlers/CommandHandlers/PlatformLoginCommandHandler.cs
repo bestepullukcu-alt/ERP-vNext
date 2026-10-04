@@ -2,6 +2,7 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
+using Diten.AuthService.Application.Features.Auth.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -126,8 +127,17 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             request.UserAgent);
 
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
+
+        // BL-529 — a reset between this sign-in's read and now ended every session; the token just written must not
+        // outlive it (the answer is the wrong-password one: the password checked is no longer the account's).
+        if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, PlatformTenantId, user.PasswordHash, refreshTokenStr, ct))
+        {
+            return Response<AuthResponse>.Fail("Invalid credentials.", 401);
+        }
+
+        // BL-529 — only the sign-in's own fields: a whole-account write here could undo a reset that landed meanwhile.
         user.RecordLoginSuccess();
-        await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);
+        await _userRepository.RecordLoginOutcomeAsync(user, PlatformTenantId, ct);
         await _platformAdministratorStatusClient.MarkLoginAcceptedAsync(user.Email, ct);
 
         return Response<AuthResponse>.Success(new AuthResponse(

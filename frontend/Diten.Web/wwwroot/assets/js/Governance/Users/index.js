@@ -242,7 +242,8 @@ const UsersList = (function () {
         USER_NOT_FOUND: 'ErrorUserNotFound', USER_ACCOUNT_KIND_INVALID: 'ErrorUserAccountKindInvalid', USER_SETUP_ALREADY_COMPLETED: 'ErrorUserSetupAlreadyCompleted',
         USER_PASSWORD_SETUP_PENDING: 'ErrorUserPasswordSetupPending', PERM_DENIED: 'ErrorUserAccountKindPermissionDenied', USER_EMAIL_REQUIRED: 'ErrorUserEmailRequired',
         USER_EMAIL_INVALID: 'ErrorUserEmailInvalid', USER_EMAIL_TOO_LONG: 'ErrorUserEmailTooLong', USER_FIRST_NAME_REQUIRED: 'ErrorUserFirstNameRequired', USER_FIRST_NAME_TOO_LONG: 'ErrorUserFirstNameTooLong',
-        USER_LAST_NAME_REQUIRED: 'ErrorUserLastNameRequired', USER_LAST_NAME_TOO_LONG: 'ErrorUserLastNameTooLong'
+        USER_LAST_NAME_REQUIRED: 'ErrorUserLastNameRequired', USER_LAST_NAME_TOO_LONG: 'ErrorUserLastNameTooLong',
+        USER_RESET_SELF: 'ErrorUserResetSelf', USER_RESET_CONFLICT: 'ErrorUserResetConflict'
     };
     // BL-459 — a code with numbered params adds a second sentence; without the numbers it is left out (no raw "{max}").
     const ERROR_PARAM_KEYS = { USER_QUOTA_EXCEEDED: { key: 'ErrorUserQuotaUsage', params: ['current', 'max'] } };
@@ -381,10 +382,12 @@ const UsersList = (function () {
         // activates itself when the person redeems the link.
         if (canUpdate() && !full.isActive && userStatusOf(full) !== 'Invited') actions.push(adminAction('enable', full, rowJson));
         // For an invited account resend is the ONLY way forward; the tooltip says why reset and activate are absent.
-        if (canCreate() && full.mustChangePassword) {
+        // BL-529 — nor reset yourself: a reset (and a resend to an account that is not a pending invitation, which IS a
+        // reset) ends your own password and sessions; AuthService refuses it (USER_RESET_SELF). Your own row offers neither.
+        if (canCreate() && full.mustChangePassword && !isCurrentUser(full)) {
             actions.push(adminAction('resend', full, rowJson, userStatusOf(full) === 'Invited' ? { title: L().InvitationPendingHint || '' } : null));
         }
-        if (canUpdate() && full.isActive && !full.mustChangePassword) actions.push(adminAction('reset', full, rowJson));
+        if (canUpdate() && full.isActive && !full.mustChangePassword && !isCurrentUser(full)) actions.push(adminAction('reset', full, rowJson));
         // Your own row offers no Delete (owner, 2026-09-24): the server refuses it anyway (BL-450), and a menu item that
         // only ever fails is not an action. The last-steward rule stays server-side — the list cannot know it.
         if (canDelete() && !isCurrentUser(full)) actions.push({ key: 'delete', className: 'delete-record text-danger', icon: 'bx bx-trash', text: L().Delete, attrs: { 'data-json': rowJson } });

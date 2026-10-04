@@ -270,6 +270,8 @@ public sealed class InternalUsersControllerTests
         public Task<User> UpdateAsync(User user, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
         public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
+        public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
+        public Task<bool> TryUpdateForTenantIfPasswordHashAsync(User user, Guid tenantId, string expectedPasswordHash, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
     }
 
     private sealed class FakeInternalEventAuthService(string? expectedKey) : IInternalEventAuthService

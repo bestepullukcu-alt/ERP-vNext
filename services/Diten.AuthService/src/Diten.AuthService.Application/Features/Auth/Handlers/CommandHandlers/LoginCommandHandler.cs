@@ -2,6 +2,7 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
+using Diten.AuthService.Application.Features.Auth.Services;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -118,7 +119,10 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
                 challenge.ExpiresAtUtc));
         }
 
-        return Response<AuthResponse>.Success(await HandleLoginSuccess(user, request, settings, ct));
+        var success = await HandleLoginSuccess(user, request, settings, ct);
+        return success is null
+            ? Response<AuthResponse>.Fail("Invalid email or password.", 401)
+            : Response<AuthResponse>.Success(success);
     }
 
     private async Task<Response<AuthResponse>?> CheckLockout(User user, CancellationToken ct)
@@ -135,7 +139,9 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
     private async Task HandleLoginFailure(User user, TenantLoginSettingsSnapshot settings, CancellationToken ct)
     {
         user.RecordLoginFailure(settings.MaxFailedLoginAttempts, settings.LockoutDurationMinutes);
-        await _userRepository.UpdateAsync(user, ct);
+        // BL-529 — only the failure count and the lockout: a whole-account write could undo a reset that landed between
+        // this attempt's read and now (old hash, link and forced change back).
+        await _userRepository.RecordLoginOutcomeAsync(user, _tenantContext.TenantId, ct);
         await _authAuditService.WriteAsync("tenant_login_password_failed", user.Id, _tenantContext.TenantId, "{}", ct);
         if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow)
         {
@@ -143,11 +149,10 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         }
     }
 
-    private async Task<AuthResponse> HandleLoginSuccess(User user, LoginCommand request, TenantLoginSettingsSnapshot settings, CancellationToken ct)
+    // BL-529 — null when the account's password changed while this sign-in ran (an administrator's reset): the token it
+    // wrote is revoked again and the caller answers exactly as for a wrong password.
+    private async Task<AuthResponse?> HandleLoginSuccess(User user, LoginCommand request, TenantLoginSettingsSnapshot settings, CancellationToken ct)
     {
-        user.RecordLoginSuccess();
-        await _userRepository.UpdateAsync(user, ct);
-
         var roleValues = await _userRoleRepository.GetRolesByUserAsync(user.Id, _tenantContext.TenantId, ct);
         var roles = roleValues?
             .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -192,6 +197,16 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
             TenantActorType,
             request.UserAgent);
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
+
+        if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, _tenantContext.TenantId, user.PasswordHash, refreshTokenStr, ct))
+        {
+            await _authAuditService.WriteAsync("tenant_login_session_revoked_by_reset", user.Id, _tenantContext.TenantId, "{}", ct);
+            return null;
+        }
+
+        // BL-529 — only the sign-in's own fields (last sign-in, failure count, lockout), never the whole account.
+        user.RecordLoginSuccess();
+        await _userRepository.RecordLoginOutcomeAsync(user, _tenantContext.TenantId, ct);
         await _authAuditService.WriteAsync("tenant_login_success", user.Id, _tenantContext.TenantId, "{\"mfa\":false}", ct);
 
         return new AuthResponse(

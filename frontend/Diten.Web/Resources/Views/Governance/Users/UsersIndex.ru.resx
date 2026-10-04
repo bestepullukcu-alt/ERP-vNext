@@ -57,10 +57,12 @@
   <data name="ErrorUserQuotaExceeded" xml:space="preserve"><value>Достигнут лимит пользователей вашего тарифного плана, поэтому пользователь не добавлен. Удалите пользователя или смените тариф.</value></data>
   <data name="ErrorUserQuotaUsage" xml:space="preserve"><value>Используется: {current} из {max} пользователей.</value></data>
   <data name="DeleteUserConfirmText" xml:space="preserve"><value>Пользователь удаляется, его роли снимаются; учётную запись нельзя восстановить. С тем же адресом электронной почты можно открыть новую учётную запись.</value></data>
-  <data name="ResetPasswordConfirmText" xml:space="preserve"><value>Текущий пароль пользователя сразу перестаёт действовать, а все его открытые сеансы завершаются. Новый пароль он задаёт по отправленной ему ссылке.</value></data>
+  <data name="ResetPasswordConfirmText" xml:space="preserve"><value>Текущий пароль пользователя сразу перестаёт действовать. Его открытые сеансы завершатся не позднее истечения времени сеанса. Новый пароль пользователь задаёт по отправленной ему ссылке.</value></data>
   <data name="ErrorUserDeleteSelf" xml:space="preserve"><value>Вы не можете удалить собственную учётную запись.</value></data>
   <data name="ErrorUserDeleteLastSteward" xml:space="preserve"><value>Это последняя учётная запись, которая может добавлять пользователей, поэтому её нельзя удалить. Сначала предоставьте это право другому пользователю.</value></data>
   <data name="ErrorUserDeactivateSelf" xml:space="preserve"><value>Вы не можете деактивировать собственную учётную запись.</value></data>
+  <data name="ErrorUserResetSelf" xml:space="preserve"><value>Здесь нельзя сбросить собственный пароль. Используйте «Сменить пароль».</value></data>
+  <data name="ErrorUserResetConflict" xml:space="preserve"><value>Учётная запись изменилась во время сброса пароля. Ничего не перезаписано; выполните сброс ещё раз.</value></data>
   <data name="ErrorUserNotFound" xml:space="preserve"><value>Пользователь не найден; возможно, он был удалён. Обновите список и повторите попытку.</value></data>
   <data name="ErrorUserAccountKindInvalid" xml:space="preserve"><value>Выбранный тип учётной записи недопустим. Выберите тип из списка.</value></data>
   <data name="ErrorUserSetupAlreadyCompleted" xml:space="preserve"><value>Этот пользователь уже задал пароль; приглашения для повторной отправки нет. Чтобы выдать новый пароль, используйте «Сбросить пароль».</value></data>

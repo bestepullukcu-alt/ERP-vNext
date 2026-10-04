@@ -32,6 +32,7 @@ public sealed class PlatformAuthController : CustomBaseController
     private readonly IInternalEventAuthService _internalEventAuthService;
     private readonly IPlatformAuthEmailService _emailService;
     private readonly IPlatformAdministratorStatusClient _platformAdministratorStatusClient;
+    private readonly IUserAuditRecorder _audit;
     private readonly IWebHostEnvironment _environment;
 
     public PlatformAuthController(
@@ -48,8 +49,10 @@ public sealed class PlatformAuthController : CustomBaseController
         IInternalEventAuthService internalEventAuthService,
         IPlatformAuthEmailService emailService,
         IPlatformAdministratorStatusClient platformAdministratorStatusClient,
-        IWebHostEnvironment environment)
+        IWebHostEnvironment environment,
+        IUserAuditRecorder audit)
     {
+        _audit = audit;
         _mediator = mediator;
         _userRepository = userRepository;
         _roleRepository = roleRepository;
@@ -128,27 +131,54 @@ public sealed class PlatformAuthController : CustomBaseController
         }
 
         user.SetPlatformActorType(NormalizeActorType(request.ActorType));
+        var setupToken = _tokenService.GenerateRefreshToken();
 
-        // BL-529 — an EXISTING platform account sent a new set-password link (Platform's "Resend invite") is reset: the
-        // old password stops working and every session ends, the same rule as a tenant administrator's reset.
         if (existingUser is not null)
         {
-            await AdminPasswordReset.InvalidateAsync(
-                user, PlatformTenantId, AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService), _refreshTokenRepository, ct);
+            // BL-529 — an EXISTING platform account sent a new set-password link (Platform's "Resend invite") is reset: the
+            // old password stops working and every session ends, the same rule (and audit row) as every administrator reset.
+            (string? SetupUrl, bool EmailSent) delivery = (null, false);
+            var outcome = await AdminPasswordReset.ResetAsync(
+                user,
+                PlatformTenantId,
+                AdminResetVia.PlatformAdministratorReinvite,
+                _ => AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService),
+                u =>
+                {
+                    u.SetUserName(request.UserName);
+                    u.UpdateProfile(firstName, lastName);
+                    u.Activate();
+                    u.ConfirmEmail();
+                    u.SetPlatformActorType(NormalizeActorType(request.ActorType));
+                    u.SetPasswordResetToken(_refreshTokenHasher.Hash(setupToken), DateTime.UtcNow.AddHours(24));
+                },
+                c => _userRepository.GetByEmailAndTenantAsync(normalizedEmail, PlatformTenantId, c),
+                async (u, c) =>
+                {
+                    await SyncPlatformRolesAsync(u.Id, request.Roles, c);
+                    delivery = await SendSetupLinkAsync(u.Email, setupToken, c);
+                    return delivery.EmailSent;
+                },
+                _userRepository,
+                _refreshTokenRepository,
+                _audit,
+                ct);
+            if (!outcome.Succeeded)
+            {
+                return Conflict(new { message = "the account changed while it was being re-invited; try again" });
+            }
+
+            return Ok(new
+            {
+                userProvisioned,
+                message = "processed",
+                setupUrl = delivery.SetupUrl,
+                emailSent = delivery.EmailSent
+            });
         }
 
-        var setupToken = _tokenService.GenerateRefreshToken();
         user.SetPasswordResetToken(_refreshTokenHasher.Hash(setupToken), DateTime.UtcNow.AddHours(24));
-
-        if (existingUser is null)
-        {
-            await _userRepository.CreateAsync(user, ct);
-        }
-        else
-        {
-            await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);
-        }
-
+        await _userRepository.CreateAsync(user, ct);
         await SyncPlatformRolesAsync(user.Id, request.Roles, ct);
         var setupDelivery = await SendSetupLinkAsync(user.Email, setupToken, ct);
 
@@ -159,6 +189,90 @@ public sealed class PlatformAuthController : CustomBaseController
             setupUrl = setupDelivery.SetupUrl,
             emailSent = setupDelivery.EmailSent
         });
+    }
+
+    /// <summary>
+    /// BL-529 — A PLATFORM ADMINISTRATOR RESETS ANOTHER PLATFORM ADMINISTRATOR'S PASSWORD. The administrator's reset, not
+    /// the self-service "forgot password" (which stays as it is: it proves nothing about the caller, so it must not end
+    /// anyone's password): the old password stops working, every session ends, a 24-hour set-password link is e-mailed,
+    /// the audit row is written (<see cref="AdminPasswordReset"/>). A platform actor with
+    /// <c>platform.administrators.update</c> only; one's own account is refused (409 <c>USER_RESET_SELF</c>).
+    /// </summary>
+    [HttpPost("platform-admins/reset-password")]
+    [Authorize]
+    public async Task<IActionResult> ResetPlatformAdministratorPassword([FromBody] PlatformAdministratorResetRequest request, CancellationToken ct)
+    {
+        if (!IsPlatformActorWith(PlatformAdministratorsUpdatePermission))
+        {
+            return CreateActionResultInstance(Response<NoContent>.Fail("Platform administrator privileges are required.", 403));
+        }
+
+        var normalizedEmail = NormalizeEmail(request.Email);
+        var target = string.IsNullOrWhiteSpace(normalizedEmail)
+            ? null
+            : await _userRepository.GetByEmailAndTenantAsync(normalizedEmail, PlatformTenantId, ct);
+        if (target is null)
+        {
+            return CreateActionResultInstance(UserErrorCodes.NotFoundRefusal<NoContent>());
+        }
+
+        var callerId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+        if (Guid.TryParse(callerId, out var caller) && caller == target.Id)
+        {
+            return CreateActionResultInstance(Response<NoContent>.Fail(
+                "You cannot reset the password of the account you are signed in with — use Change password.",
+                [new ResponseError(UserErrorCodes.ResetSelf)],
+                409));
+        }
+
+        var setupToken = _tokenService.GenerateRefreshToken();
+        (string? SetupUrl, bool EmailSent) delivery = (null, false);
+        var outcome = await AdminPasswordReset.ResetAsync(
+            target,
+            PlatformTenantId,
+            AdminResetVia.PlatformAdministratorReset,
+            _ => AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService),
+            u => u.SetPasswordResetToken(_refreshTokenHasher.Hash(setupToken), DateTime.UtcNow.AddHours(24)),
+            c => _userRepository.GetByEmailAndTenantAsync(normalizedEmail, PlatformTenantId, c),
+            async (u, c) =>
+            {
+                delivery = await SendSetupLinkAsync(u.Email, setupToken, c);
+                return delivery.EmailSent;
+            },
+            _userRepository,
+            _refreshTokenRepository,
+            _audit,
+            ct);
+
+        if (outcome.Conflict)
+        {
+            return CreateActionResultInstance(Response<NoContent>.Fail(
+                "The account changed while it was being reset; nothing stale was written. Reset it again.",
+                [new ResponseError(UserErrorCodes.ResetConflict)],
+                409));
+        }
+
+        if (!outcome.Succeeded)
+        {
+            return CreateActionResultInstance(UserErrorCodes.NotFoundRefusal<NoContent>());
+        }
+
+        return Ok(new { message = "processed", setupUrl = delivery.SetupUrl, emailSent = delivery.EmailSent });
+    }
+
+    private const string PlatformAdministratorsUpdatePermission = "platform.administrators.update";
+
+    // The caller is a platform actor of the platform tenant holding the permission. Case-insensitive like Platform's own
+    // check: the legacy alias (Platform.Administrators.Update) differs from the canonical key only by case.
+    private bool IsPlatformActorWith(string permission)
+    {
+        var actorType = User.FindFirst("actor_type")?.Value;
+        var isPlatformActor = string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
+                              || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
+        var tenantClaim = User.FindFirst("tenant_id")?.Value;
+        return isPlatformActor
+               && Guid.TryParse(tenantClaim, out var tenantId) && tenantId == PlatformTenantId
+               && User.FindAll("permission").Any(c => string.Equals(c.Value, permission, StringComparison.OrdinalIgnoreCase));
     }
 
     [HttpPost("platform-admins/sync")]

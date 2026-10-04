@@ -29,6 +29,7 @@ public sealed class InternalEventsController : ControllerBase
     private readonly ITenantLoginSettingsClient _tenantLoginSettingsClient;
     private readonly IPasswordPolicyService _passwordPolicyService;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IUserAuditRecorder _audit;
     private readonly ILogger<InternalEventsController> _logger;
 
     public InternalEventsController(
@@ -45,9 +46,11 @@ public sealed class InternalEventsController : ControllerBase
         ITenantLoginSettingsClient tenantLoginSettingsClient,
         IPasswordPolicyService passwordPolicyService,
         ILogger<InternalEventsController> logger,
-        IRefreshTokenRepository refreshTokenRepository)
+        IRefreshTokenRepository refreshTokenRepository,
+        IUserAuditRecorder audit)
     {
         _refreshTokenRepository = refreshTokenRepository;
+        _audit = audit;
         _internalEventAuthService = internalEventAuthService;
         _roleProvisioningService = roleProvisioningService;
         _tenantEntitlementClient = tenantEntitlementClient;
@@ -134,14 +137,33 @@ public sealed class InternalEventsController : ControllerBase
         else
         {
             // BL-529 — an EXISTING account re-invited as tenant administrator is reset: the new temporary password
-            // replaces the old one and every session of the account in this tenant ends (AdminPasswordReset).
-            await AdminPasswordReset.InvalidateAsync(user, request.TenantId, passwordHash, _refreshTokenRepository, ct);
-            user.Activate();
-            user.ConfirmEmail();
-            // FIX-TENANT-ADMIN-INVITE-ACTIVATION (Part A) — same on the re-provision (reset) path; set AFTER
-            // UpdatePassword so the temp password re-arms the forced change.
-            user.RequirePasswordChange(null);
-            await _userRepository.UpdateForTenantAsync(user, request.TenantId, ct);
+            // replaces the old one and every session of the account in this tenant ends (AdminPasswordReset; audited).
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+            var outcome = await AdminPasswordReset.ResetAsync(
+                user,
+                request.TenantId,
+                AdminResetVia.TenantAdministratorReinvite,
+                _ => passwordHash,
+                u =>
+                {
+                    u.Activate();
+                    u.ConfirmEmail();
+                    // FIX-TENANT-ADMIN-INVITE-ACTIVATION (Part A) — same on the re-provision (reset) path; set AFTER
+                    // UpdatePassword so the temp password re-arms the forced change.
+                    u.RequirePasswordChange(null);
+                },
+                c => _userRepository.GetByEmailAndTenantAsync(normalizedEmail, request.TenantId, c),
+                afterWrite: null,
+                _userRepository,
+                _refreshTokenRepository,
+                _audit,
+                ct);
+            if (!outcome.Succeeded)
+            {
+                return Conflict(new { message = "the account changed while it was being re-invited; try again" });
+            }
+
+            user = outcome.User!;
         }
 
         var memberships = await _tenantUserMembershipRepository.GetByUserIdAsync(user.Id, ct);

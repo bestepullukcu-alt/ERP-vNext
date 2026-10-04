@@ -102,6 +102,7 @@ public sealed class SetUserActiveStatusGuardTests
     private sealed class CountingRefreshTokens : IRefreshTokenRepository
     {
         public int RevokeAllCount { get; private set; }
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
         public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) { RevokeAllCount++; return Task.FromResult(0L); }
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();

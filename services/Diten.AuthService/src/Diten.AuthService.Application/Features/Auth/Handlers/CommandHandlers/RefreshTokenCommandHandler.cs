@@ -2,6 +2,7 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
+using Diten.AuthService.Application.Features.Auth.Services;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -122,10 +123,15 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             await _platformAdministratorStatusClient.MarkLoginAcceptedAsync(user.Email, ct);
         }
 
-        return Response<AuthResponse>.Success(await GenerateNewTokens(user, existingToken, actorType, request, ct));
+        var renewed = await GenerateNewTokens(user, existingToken, actorType, request, ct);
+        return renewed is null
+            ? Response<AuthResponse>.Fail("The session was ended. Please sign in again.", 401)
+            : Response<AuthResponse>.Success(renewed);
     }
 
-    private async Task<AuthResponse> GenerateNewTokens(User user, RefreshToken oldToken, string? actorType, RefreshTokenCommand request, CancellationToken ct)
+    // BL-529 — null when the account's password changed while this refresh ran (an administrator's reset ended every
+    // session between the read above and the write below): the token just written is revoked again (IssuedSessionGuard).
+    private async Task<AuthResponse?> GenerateNewTokens(User user, RefreshToken oldToken, string? actorType, RefreshTokenCommand request, CancellationToken ct)
     {
         var tokenTenantId = oldToken.TenantId;
         var roles = await _userRoleRepository.GetRolesByUserAsync(user.Id, tokenTenantId, ct);
@@ -170,6 +176,12 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             oldToken.SessionId,
             oldToken.DeviceId);
         await _refreshTokenRepository.CreateAsync(newRefreshToken, ct);
+
+        if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, tokenTenantId, user.PasswordHash, newRefreshTokenStr, ct))
+        {
+            _logger.LogWarning("Refresh refused: the password changed while it ran. UserId={UserId}", user.Id);
+            return null;
+        }
 
         return new AuthResponse(
             accessToken,

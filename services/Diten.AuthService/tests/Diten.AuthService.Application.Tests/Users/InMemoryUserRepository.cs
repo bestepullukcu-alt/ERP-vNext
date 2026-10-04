@@ -83,6 +83,35 @@ internal sealed class InMemoryUserRepository : IUserRepository
 
     public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) => Task.FromResult(user);
 
+    /// <summary>BL-529 — how many conditional writes to refuse first (a password changed between the read and the write).</summary>
+    public int PasswordChangedConflicts { get; set; }
+
+    public int ConditionalWrites { get; private set; }
+
+    public int LoginOutcomeWrites { get; private set; }
+
+    public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct)
+    {
+        LoginOutcomeWrites++;
+        return Task.CompletedTask;
+    }
+
+    /// <summary>BL-529 — the account write itself fails (the store is down) after the sessions were ended.</summary>
+    public bool ThrowOnConditionalWrite { get; set; }
+
+    public Task<bool> TryUpdateForTenantIfPasswordHashAsync(User user, Guid tenantId, string expectedPasswordHash, CancellationToken ct)
+    {
+        ConditionalWrites++;
+        if (ThrowOnConditionalWrite) throw new InvalidOperationException("user write failed");
+        if (PasswordChangedConflicts > 0)
+        {
+            PasswordChangedConflicts--;
+            return Task.FromResult(false);
+        }
+
+        return Task.FromResult(true);
+    }
+
     public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
     {
         var user = _users.FirstOrDefault(u => u.Id == id && u.TenantId == tenantId);

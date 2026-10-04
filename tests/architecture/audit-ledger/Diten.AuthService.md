@@ -9,13 +9,13 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 
 | iz | yol | tür | belirteç |
 |---|---|---|---|
-| auth-kullanici-iletimi | b | yazıcı | IUserAuditRecorder.RecordAsync |
+| auth-kullanici-iletimi | b | yazıcı | IUserAuditRecorder.RecordAsync/AdminPasswordReset.ResetAsync |
 | auth-gunlugu | aday | yazıcı | IAuthAuditService.WriteAsync/IAuthAuditService.WriteEmptyRoleLoginAsync |
 | auth-rbac-gunlugu | aday | yazıcı | IRbacAuditRecorder.RecordAsync |
 
 Ölçüm notları (2026-10-02; `yol = aday` kabul edilmemiş demektir ve o ize giden komut borçta kalır):
 
-> **auth-kullanici-iletimi** — `authAuditLogs` + `IPlatformAuditForwarder` ile merkezi günlüğe. En iyi çaba: iletim hatası yutulur.
+> **auth-kullanici-iletimi** — `authAuditLogs` + `IPlatformAuditForwarder` ile merkezi günlüğe. En iyi çaba: iletim hatası yutulur. BL-529 (2026-10-04): yönetici parola sıfırlaması aynı yazıcıyı `AdminPasswordReset.ResetAsync` içinden çağırır (kayıt `finally`'de, her sıfırlama yolu bu yardımcıdan geçer) — belirteç o çağrıdır.
 > **auth-gunlugu** — `authAuditLogs`: yazılıyor, güncelleme/silme yok — ama okuyan uç YOK; eşdeğer iz kabul koşulu (kural §5.c-3) sağlanmıyor.
 > **auth-rbac-gunlugu** — `authAuditLogs` (rol/izin değişiklikleri): aynı gerekçe — okuyan uç yok.
 

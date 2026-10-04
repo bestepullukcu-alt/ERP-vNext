@@ -310,7 +310,15 @@ public sealed class TenantUserInvitationTests
             email,
             new FakeHostEnvironment(isDevelopment: true),
             UserAuditForTests.None(),
-            NullLogger<ResendUserInvitationCommandHandler>.Instance);
+            NullLogger<ResendUserInvitationCommandHandler>.Instance,
+            new FakePasswordHasher(),
+            new FakeRefreshTokenRepository(),
+            new NobodySignedIn());
+    }
+
+    private sealed class NobodySignedIn : ICurrentUserAccessor
+    {
+        public Guid? UserId => null;
     }
 
     private static TestTenantContext TenantContextFor(Guid tenantId)
@@ -374,6 +382,7 @@ public sealed class TenantUserInvitationTests
     private sealed class FakeRefreshTokenRepository : IRefreshTokenRepository
     {
         public (Guid userId, Guid tenantId)? RevokeAllCall { get; private set; }
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
         public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
         {
             RevokeAllCall = (userId, tenantId);
