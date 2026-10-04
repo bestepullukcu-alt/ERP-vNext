@@ -163,6 +163,9 @@ public static class DependencyInjection
         services.Configure<EventBusOptions>(configuration.GetSection(EventBusOptions.SectionName));
         services.Configure<RabbitMqEventingOptions>(configuration.GetSection(RabbitMqEventingOptions.SectionName));
         services.Configure<BackgroundJobSchedulerOptions>(configuration.GetSection(BackgroundJobSchedulerOptions.SectionName));
+        // BL-454 — how long a waiting e-mail dispatch keeps its variables before the sweep closes it.
+        services.Configure<Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchRetentionOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchRetentionOptions.SectionName));
         services.AddOptions<WorkingCalendarImportOptions>()
             .Bind(configuration.GetSection(WorkingCalendarImportOptions.SectionName))
             .ValidateOnStart();
@@ -210,9 +213,8 @@ public static class DependencyInjection
         services.AddScoped<IAuthoritativeEntitlementDecisionSource, MongoAuthoritativeEntitlementDecisionSource>();
         services.AddScoped<IPlatformEntitlementDecisionProvider, PlatformEntitlementDecisionProvider>();
         services.AddScoped<IAdminUserInvitationService, AdminUserInvitationService>();
-        // BL-454 — carries the internal API key to AuthService: never follows a redirect.
-        services.AddHttpClient(AdminUserInvitationService.AuthInternalClientName)
-            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
+        // BL-454 — every client that carries a credential to AuthService: never follows a redirect (one helper).
+        services.AddAuthInternalHttpClients();
         services.AddScoped<ITenantActivationNotifier, AuthServiceTenantActivationNotifier>();
         services.AddScoped<ICatalogPermissionSyncService, CatalogPermissionSyncService>();
         services.AddScoped<IAuthPermissionModulesClient, AuthPermissionModulesClient>();
@@ -252,10 +254,8 @@ public static class DependencyInjection
                 ? sp.GetRequiredService<NagerDateHolidayProvider>()
                 : sp.GetRequiredService<OfflineHolidayProvider>();
         });
-        services.AddHttpClient<IUserReferenceValidator, Diten.Platform.Infrastructure.Services.Auth.AuthServiceUserReferenceValidator>();
-        services.AddHttpClient<
-            Diten.Platform.Application.Features.DocumentManagementApproval.Services.IApprovalRoleDirectory,
-            Diten.Platform.Infrastructure.Services.Auth.AuthServiceApprovalRoleDirectory>();
+        // IUserReferenceValidator and IApprovalRoleDirectory (AuthService, a credential on every call) are registered
+        // by AddAuthInternalHttpClients above, without redirects.
 
         /*
          * WC-D1 (DCP-004 §2 D1) — THE GENERAL BRIDGE to modules that live in their own service.

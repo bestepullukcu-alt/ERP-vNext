@@ -167,6 +167,9 @@ public sealed class UserAdminActionsTests
         public List<(string email, string token)> Sends { get; } = [];
         public string BuildTenantSetPasswordUrl(string email, string setupToken) =>
             $"http://localhost:5001/account/set-password?email={email}&token={setupToken}";
+        // BL-454 — no default on the interface any more: this double records a reset exactly like an invitation.
+        public Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct) =>
+            SendTenantUserInvitationAsync(email, setupToken, ct);
         public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct)
         {
             Sends.Add((email, setupToken));
@@ -259,6 +262,9 @@ public sealed class UserAdminActionsTests
     private sealed class ThrowingInvitationEmail : ITenantUserInvitationEmailService
     {
         public string BuildTenantSetPasswordUrl(string email, string setupToken) => "http://localhost/set-password";
+        // BL-454 — no default on the interface any more: this double fails a reset exactly like an invitation.
+        public Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct) =>
+            SendTenantUserInvitationAsync(email, setupToken, ct);
         public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct) => throw new InvalidOperationException("SMTP down");
     }
 }

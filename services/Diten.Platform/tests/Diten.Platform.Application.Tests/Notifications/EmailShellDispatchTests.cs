@@ -35,7 +35,7 @@ namespace Diten.Platform.Application.Tests.Notifications;
 /// Doubled: the SMTP transport (it records the message instead of opening a socket — nothing is sent anywhere), the
 /// repositories (in memory), the tenant registry and the secrets provider.</para>
 /// </summary>
-public sealed class EmailShellDispatchTests
+public sealed partial class EmailShellDispatchTests
 {
     private readonly Xunit.Abstractions.ITestOutputHelper _output;
 
@@ -461,9 +461,13 @@ public sealed class EmailShellDispatchTests
     public void The_secret_name_words_are_one_pinned_list()
     {
         Assert.Equal(
-            ["secret", "secrets", "token", "tokens", "password", "passwords", "passwd", "pwd", "passcode", "otp", "pin",
-             "credential", "credentials", "jwt", "signature", "sig", "apikey"],
-            NotificationSecrets.SecretNameWords);
+            ["password", "passwd", "passcode", "passphrase", "secret", "token", "credential", "apikey", "connectionstring"],
+            NotificationSecrets.SecretNameParts);
+        Assert.Equal(["pwd", "jwt", "sig", "signature"], NotificationSecrets.SecretNameWords);
+        Assert.Equal(
+            ["code", "codes", "key", "keys", "pass", "pin", "pins", "otp", "nonce", "session"],
+            NotificationSecrets.AmbiguousSecretNameWords);
+        Assert.Equal(["auth", "p", "rlkey", "ticket", "hash", "invite", "accesstoken"], NotificationSecrets.SecretQueryWords);
         Assert.True(NotificationParsing.IsSensitiveVariableName("TemporaryPassword"));
         Assert.True(NotificationParsing.IsSensitiveVariableName("ResetToken"));
         Assert.True(NotificationParsing.IsSensitiveVariableName("ApiKey"));
@@ -622,13 +626,17 @@ public sealed class EmailShellDispatchTests
     [InlineData("not-an-address")]
     public async Task A_recipient_that_is_not_one_address_is_refused_with_a_code_and_nothing_is_queued_for_retry(string recipient)
     {
+        // BL-454 FIX3 — the rule lives in the validator alone, so it is measured where MediatR applies it.
         var rig = new Rig();
         rig.AddTemplate("en", "<p>x</p>", "x");
+        var command = new QueueEmailNotificationCommand(
+            rig.TenantId,
+            new QueueEmailNotificationRequest(TemplateKey, "en", new Dictionary<string, object?>(), [new EmailRecipientDto(recipient, "User")]),
+            "corr");
 
-        var response = await rig.QueueAsync("en", new(), recipient);
+        var refusal = await Assert.ThrowsAsync<FluentValidation.ValidationException>(() => Pipeline(rig, command));
 
-        Assert.False(response.IsSuccessful);
-        Assert.Equal(QueueEmailNotificationHandler.ReasonRecipientInvalid, response.ReasonCode);
+        Assert.True(Diten.Platform.Application.Features.Notifications.Validators.QueueEmailNotificationValidator.IsRecipientRefusal(refusal));
         Assert.Empty(rig.Dispatches.Items);
         Assert.Null(rig.Transport.LastSentMessage);
     }
@@ -704,7 +712,7 @@ public sealed class EmailShellDispatchTests
 
     [Theory]
     [InlineData("Shipping")] [InlineData("TenantCode")] [InlineData("ModuleCode")] [InlineData("WeekKey")] [InlineData("TaskTitle")]
-    [InlineData("Opinion")] [InlineData("Tokenizer")] [InlineData("Signatory")] [InlineData("PostalCode")] [InlineData("KeyResult")]
+    [InlineData("Opinion")] [InlineData("Signatory")] [InlineData("PostalCode")] [InlineData("KeyResult")]
     public void A_name_that_only_contains_a_secret_word_as_letters_is_not_masked(string name)
     {
         Assert.False(NotificationSecrets.IsSecretName(name));
@@ -962,10 +970,15 @@ public sealed class EmailShellDispatchTests
     internal sealed class LinesLogger<T> : Microsoft.Extensions.Logging.ILogger<T>
     {
         public List<string> Lines { get; } = [];
+        public List<(Microsoft.Extensions.Logging.LogLevel Level, string Line)> Entries { get; } = [];
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
         public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
-        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
-            Lines.Add(formatter(state, exception));
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            var line = formatter(state, exception);
+            Lines.Add(line);
+            Entries.Add((logLevel, line));
+        }
     }
 
     private static IReadOnlyList<NotificationTemplate> SeededTemplates() =>
@@ -1012,6 +1025,9 @@ public sealed class EmailShellDispatchTests
         public string TenantLocale { get; init; } = "en";
         public bool WithShell { get; init; } = true;
         public Microsoft.Extensions.Logging.ILogger<SmtpMessagingProvider>? ProviderLogger { get; init; }
+        /// <summary>BL-454 FIX3 — the server's background-job settings; null = a handler built the old way (retry assumed).</summary>
+        public BackgroundJobSchedulerOptions? JobOptions { get; init; }
+        public Microsoft.Extensions.Logging.ILogger<QueueEmailNotificationHandler>? HandlerLogger { get; init; }
 
         public Doubles.InMemoryTenantMessagingSettingsRepository Settings { get; } = new();
         public Doubles.InMemoryNotificationTemplateRepository Templates { get; } = new();
@@ -1057,9 +1073,10 @@ public sealed class EmailShellDispatchTests
             Dispatches,
             new Doubles.TestProviderResolver(Provider),
             new Doubles.RecordingEventBus(),
-            NullLogger<QueueEmailNotificationHandler>.Instance,
+            HandlerLogger ?? NullLogger<QueueEmailNotificationHandler>.Instance,
             WithShell ? Composer : null,
-            WithShell ? new FakeNotificationLocaleResolver(TenantLocale) : null);
+            WithShell ? new FakeNotificationLocaleResolver(TenantLocale) : null,
+            JobOptions is null ? null : Microsoft.Extensions.Options.Options.Create(JobOptions));
 
         public NotificationTemplate AddSeeded(NotificationTemplate seeded)
         {
@@ -1071,16 +1088,7 @@ public sealed class EmailShellDispatchTests
         public Task<Diten.Platform.Application.Common.Response<NotificationDispatchDto>> QueueAsync(
             string locale, Dictionary<string, object?> variables, string recipient = "user@example.com")
         {
-            var handler = new QueueEmailNotificationHandler(
-                new TenantMessagingSettingsResolver(Settings),
-                Templates,
-                new EmailTemplateRenderer(),
-                Dispatches,
-                new Doubles.TestProviderResolver(Provider),
-                new Doubles.RecordingEventBus(),
-                NullLogger<QueueEmailNotificationHandler>.Instance,
-                WithShell ? Composer : null,
-                WithShell ? new FakeNotificationLocaleResolver(TenantLocale) : null);
+            var handler = Handler();
 
             return handler.Handle(
                 new QueueEmailNotificationCommand(

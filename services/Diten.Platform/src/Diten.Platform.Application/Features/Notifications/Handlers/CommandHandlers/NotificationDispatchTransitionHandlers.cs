@@ -26,6 +26,13 @@ public sealed class MarkNotificationDispatchSentHandler
         var dispatch = await _repository.GetByIdForTenantAsync(request.TenantId, request.DispatchId, ct);
         if (dispatch is null) return Response<NotificationDispatchDto>.Fail("Notification dispatch not found.", 404);
         if (!dispatch.TryMarkSent(request.ProviderMessageId, DateTimeOffset.UtcNow)) return Response<NotificationDispatchDto>.Fail("Invalid dispatch status transition.", 409);
+        if (!string.IsNullOrWhiteSpace(request.DegradedReason))
+        {
+            // BL-454 — no new field: a SENT row's error fields say how it was sent when it was not sent in full.
+            dispatch.ErrorCode = NotificationDispatch.RetryDegradedErrorCode;
+            dispatch.ErrorMessage = $"Sent by a retry from the stored preview ({request.DegradedReason}).";
+        }
+
         await _repository.UpdateAsync(dispatch, ct);
         await _eventBus.PublishAsync(
             new NotificationDispatchSentV1(

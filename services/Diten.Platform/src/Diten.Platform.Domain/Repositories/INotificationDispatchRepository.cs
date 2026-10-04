@@ -31,6 +31,17 @@ public interface INotificationDispatchRepository
         int maxRetryCount,
         int take,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// BL-454 — cross-tenant scan for dispatches still WAITING (<see cref="Diten.Platform.Domain.Enums.NotificationDispatchStatus.Queued"/>
+    /// or <see cref="Diten.Platform.Domain.Enums.NotificationDispatchStatus.Failed"/>, never yet a permanent failure)
+    /// that were queued before <paramref name="queuedBefore"/>: their retry window has passed and the sweep closes them,
+    /// releasing their variables. Same minimal handles as <see cref="FindDueRetriesAsync"/>.
+    /// </summary>
+    Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindRetryWindowExpiredAsync(
+        DateTimeOffset queuedBefore,
+        int take,
+        CancellationToken ct = default);
 }
 
 public sealed record NotificationDispatchRetryHandle(Guid TenantId, Guid DispatchId);

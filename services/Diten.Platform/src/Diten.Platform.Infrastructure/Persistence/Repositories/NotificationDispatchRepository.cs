@@ -101,7 +101,10 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
             Builders<NotificationDispatch>.Filter.Eq(x => x.Status, NotificationDispatchStatus.Failed),
             Builders<NotificationDispatch>.Filter.Lt(x => x.RetryCount, maxRetryCount),
             Builders<NotificationDispatch>.Filter.Ne<DateTimeOffset?>(x => x.NextRetryAt, null),
-            Builders<NotificationDispatch>.Filter.Lte(x => x.NextRetryAt, asOfUtc));
+            Builders<NotificationDispatch>.Filter.Lte(x => x.NextRetryAt, asOfUtc),
+            // BL-454 — a permanent failure is never retried, whatever its count and NextRetryAt still say (the retry
+            // window closes a row without touching either).
+            Builders<NotificationDispatch>.Filter.Eq<DateTimeOffset?>(x => x.PermanentlyFailedNotifiedAt, null));
 
         var projection = Builders<NotificationDispatch>.Projection
             .Include(x => x.Id)
@@ -112,6 +115,37 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
             .Project<NotificationDispatch>(projection)
             .SortBy(x => x.NextRetryAt)
             .Limit(boundedTake)
+            .ToListAsync(ct);
+
+        return rows.Select(x => new NotificationDispatchRetryHandle(x.TenantId, x.Id)).ToArray();
+    }
+
+    public async Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindRetryWindowExpiredAsync(
+        DateTimeOffset queuedBefore,
+        int take,
+        CancellationToken ct = default)
+    {
+        if (take <= 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<NotificationDispatch>.Filter.And(
+            ActiveFilter,
+            Builders<NotificationDispatch>.Filter.In(
+                x => x.Status, [NotificationDispatchStatus.Queued, NotificationDispatchStatus.Failed]),
+            Builders<NotificationDispatch>.Filter.Eq<DateTimeOffset?>(x => x.PermanentlyFailedNotifiedAt, null),
+            Builders<NotificationDispatch>.Filter.Lt(x => x.QueuedAt, queuedBefore));
+
+        var projection = Builders<NotificationDispatch>.Projection
+            .Include(x => x.Id)
+            .Include(x => x.TenantId);
+
+        var rows = await _collection
+            .Find(filter)
+            .Project<NotificationDispatch>(projection)
+            .SortBy(x => x.QueuedAt)
+            .Limit(Math.Min(take, MaxSweepBatchSize))
             .ToListAsync(ct);
 
         return rows.Select(x => new NotificationDispatchRetryHandle(x.TenantId, x.Id)).ToArray();

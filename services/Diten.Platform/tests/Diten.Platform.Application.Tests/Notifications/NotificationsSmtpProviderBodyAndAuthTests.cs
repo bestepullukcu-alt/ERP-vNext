@@ -441,6 +441,9 @@ public sealed class NotificationsSmtpProviderBodyAndAuthTests
 
         public Task UpdateAsync(NotificationDispatch dispatch, CancellationToken ct = default) => Task.CompletedTask;
 
+        public Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindRetryWindowExpiredAsync(DateTimeOffset queuedBefore, int take, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<NotificationDispatchRetryHandle>>([]);
+
         public Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindDueRetriesAsync(DateTimeOffset asOfUtc, int maxRetryCount, int take, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<NotificationDispatchRetryHandle>>([]);
     }

@@ -110,15 +110,20 @@ public sealed class PlatformContainerValidationTests
             + "startup, so the service will not start either.\n\n" + failure);
     }
 
-    [Fact]
-    public async Task The_client_that_carries_the_internal_key_to_AuthService_never_follows_a_redirect()
+    [Theory]
+    [InlineData(Diten.Platform.Infrastructure.Services.InternalHttpClients.AuthInternal)]
+    [InlineData("IUserReferenceValidator")]
+    [InlineData("IApprovalRoleDirectory")]
+    public async Task The_client_that_carries_the_internal_key_to_AuthService_never_follows_a_redirect(string clientName)
     {
         // BL-454 — measured on the PRODUCTION composition (AddInfrastructure), not on a copy of its registration: if the
-        // line in DependencyInjection.cs changes, this goes red. A redirect would hand X-Internal-Api-Key to another host.
+        // line in DependencyInjection.cs changes, this goes red. A redirect would hand X-Internal-Api-Key (or the
+        // caller's bearer) to another host. The named client serves every factory-built AuthService caller; the two
+        // typed clients are registered under their interface names.
         await using var provider = Composition.Value.BuildServiceProvider();
         var factory = provider.GetRequiredService<System.Net.Http.IHttpMessageHandlerFactory>();
 
-        HttpMessageHandler handler = factory.CreateHandler(Diten.Platform.Infrastructure.Services.AdminUserInvitationService.AuthInternalClientName);
+        HttpMessageHandler handler = factory.CreateHandler(clientName);
         while (handler is DelegatingHandler delegating && delegating.InnerHandler is not null)
         {
             handler = delegating.InnerHandler;

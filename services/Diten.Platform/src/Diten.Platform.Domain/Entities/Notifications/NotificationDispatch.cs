@@ -119,5 +119,11 @@ public sealed class NotificationDispatch : BaseEntity
     /// </summary>
     public const string ReleasedVariablesJson = "{}";
 
+    /// <summary>
+    /// BL-454 — the error code a SENT dispatch carries when a retry could only send the stored, masked preview (a subject
+    /// or a link may read <c>[REDACTED]</c>). The monitoring screen shows it next to the status; no field is added.
+    /// </summary>
+    public const string RetryDegradedErrorCode = "RetryDegraded";
+
     private void ReleaseVariables() => VariablesJson = ReleasedVariablesJson;
 }

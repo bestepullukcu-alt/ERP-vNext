@@ -27,6 +27,16 @@ public sealed class QueueEmailNotificationValidator : AbstractValidator<QueueEma
             .SetValidator(new EmailRecipientDtoValidator())
             .When(x => x.Request.Bcc is not null);
     }
+
+    /// <summary>
+    /// BL-454 — is this the refusal of a recipient that is not ONE plain address? A caller INSIDE the process (an
+    /// event consumer, the event-code adapter) gets the pipeline's <see cref="ValidationException"/>, not a response
+    /// with a reason code; this is how it recognises the one refusal no retry can ever fix.
+    /// </summary>
+    public static bool IsRecipientRefusal(Exception exception) =>
+        exception is ValidationException validation
+        && validation.Errors.Any(error => error.ErrorCode
+            == Diten.Platform.Application.Features.Notifications.Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid);
 }
 
 public sealed class EmailRecipientDtoValidator : AbstractValidator<EmailRecipientDto>
@@ -36,7 +46,8 @@ public sealed class EmailRecipientDtoValidator : AbstractValidator<EmailRecipien
         // BL-454 — ONE rule for an address (EmailAddressText.IsSingleAddress), refused with the curated code
         // RECIPIENT_INVALID: GlobalExceptionHandler carries a curated ErrorCode through verbatim as reason_code. The
         // FluentValidation EmailAddress() this replaces accepted a value with a line break, and refused others with a
-        // code-less failure. The handler checks again for a caller that does not go through the pipeline.
+        // code-less failure. This is the ONE place the rule is applied: every caller reaches the handler through the
+        // MediatR pipeline, and in-process callers recognise the refusal by IsRecipientRefusal.
         RuleFor(x => x.Email)
             .Cascade(CascadeMode.Stop)
             .NotEmpty()

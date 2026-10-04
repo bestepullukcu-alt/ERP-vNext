@@ -251,6 +251,36 @@ public sealed class NotificationTemplateSeedUpgradeMongoTests : IAsyncLifetime
         Assert.Equal(0, await _templates.CountDocumentsAsync(NotificationTemplateSeed.UpgradeWriteFilter(scope, row, previous)));
     }
 
+    [Fact]
+    public async Task An_editor_still_holding_the_row_the_seed_carried_forward_is_refused_and_overwrites_nothing()
+    {
+        await InsertPreviousSeedAsync();
+        var turkish = (await AssignedRowsAsync()).Single(r => r.Locale == "tr");
+        var openedVersion = Diten.Platform.Application.Features.Notifications.NotificationMappings.RowVersionOf(turkish.Version);
+
+        // The seed moves the row on while the editor is open.
+        var result = await NotificationTemplateSeed.EnsureSeededAsync(_harness.Database, log: _ => { });
+        Assert.Equal(7, result.Upgraded);
+
+        var handler = new Diten.Platform.Application.Features.Notifications.Handlers.CommandHandlers.UpdateNotificationTemplateHandler(
+            new Diten.Platform.Infrastructure.Persistence.Repositories.NotificationTemplateRepository(_harness.DbContext));
+        var stale = await handler.Handle(new Diten.Platform.Application.Features.Notifications.Commands.UpdateNotificationTemplateCommand(
+            turkish.Id,
+            null,
+            new Diten.Platform.Application.Features.Notifications.NotificationTemplateUpsertRequest(
+                true, turkish.TemplateKey, "Email", turkish.Locale, turkish.SubjectTemplate, turkish.BodyHtmlTemplate,
+                turkish.BodyTextTemplate,
+                turkish.Variables.Select(v => new Diten.Platform.Application.Features.Notifications.TemplateVariableDefinitionDto(v.Name, v.Type.ToString(), v.IsRequired)).ToList(),
+                "Active", turkish.SemanticVersion, openedVersion)), CancellationToken.None);
+
+        Assert.False(stale.IsSuccessful);
+        Assert.Equal(409, stale.StatusCode);
+        var after = (await AssignedRowsAsync()).Single(r => r.Id == turkish.Id);
+        Assert.Equal("1.1.0", after.SemanticVersion);
+        Assert.Equal("system.seed", after.UpdatedBy);
+        Assert.Equal(turkish.Version + 1, after.Version);
+    }
+
     private Task InsertPreviousSeedAsync() =>
         _templates.InsertManyAsync(NotificationTemplateSeed.TenantLocales.Select(NotificationTemplateSeed.TaskAssignedV1));
 

@@ -118,7 +118,7 @@ public sealed class AuthUserDisplayNameClient : IUserDisplayNameResolver
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add(InternalApiKeyHeader, _authServiceOptions.InternalApiKey);
 
-            var client = _httpClientFactory.CreateClient();
+            var client = _httpClientFactory.CreateClient(InternalHttpClients.AuthInternal);
             using var response = await client.SendAsync(request, ct);
             if (!response.IsSuccessStatusCode)
             {

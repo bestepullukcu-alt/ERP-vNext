@@ -661,6 +661,9 @@ public sealed class NotificationsBatch1ATests
                 && (queuedTo is null || x.QueuedAt <= queuedTo)
                 && (templateKey is null || x.TemplateKey == templateKey)).Skip(skip).Take(take).ToArray() as IReadOnlyList<NotificationDispatch>);
         public Task UpdateAsync(NotificationDispatch dispatch, CancellationToken ct = default) => Task.CompletedTask;
+        public Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindRetryWindowExpiredAsync(DateTimeOffset queuedBefore, int take, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<NotificationDispatchRetryHandle>>([]);
+
         public Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindDueRetriesAsync(DateTimeOffset asOfUtc, int maxRetryCount, int take, CancellationToken ct = default) =>
             Task.FromResult(Items
                 .Where(x => !x.IsDeleted

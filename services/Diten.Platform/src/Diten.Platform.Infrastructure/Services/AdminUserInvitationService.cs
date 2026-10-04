@@ -16,10 +16,10 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
 
     /// <summary>
-    /// BL-454 — the client that carries the internal API key to AuthService. Registered (DependencyInjection) with a
-    /// primary handler that never follows a redirect: the key must not travel to whatever host a 3xx names.
+    /// BL-454 — the client that carries the internal API key to AuthService: <see cref="InternalHttpClients.AuthInternal"/>,
+    /// which never follows a redirect — the key must not travel to whatever host a 3xx names.
     /// </summary>
-    public const string AuthInternalClientName = "auth-internal";
+    public const string AuthInternalClientName = InternalHttpClients.AuthInternal;
 
     // MOD-0027-FU04C — the invite is dispatched by canonical eventCode (FU04A tenant.user.invited, bound to the
     // tenant.invite.email template) through the FU04B EventCode Dispatch Adapter, not by a raw templateKey.

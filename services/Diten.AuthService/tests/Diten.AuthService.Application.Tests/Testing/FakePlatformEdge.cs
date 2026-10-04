@@ -104,6 +104,9 @@ public sealed class RecordingInvitationEmails : ITenantUserInvitationEmailServic
 
     public string BuildTenantSetPasswordUrl(string email, string setupToken) => "http://localhost/set-password?test";
 
+    // BL-454 — no default on the interface any more: this double records a reset exactly like an invitation.
+    public Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct) =>
+        SendTenantUserInvitationAsync(email, setupToken, ct);
     public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct)
     {
         _sent.Enqueue(email);

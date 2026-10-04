@@ -67,7 +67,9 @@ public sealed record NotificationTemplateDto(
     string Status,
     string? SemanticVersion,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    /// <summary>BL-454 — the template's version as the editor must send it back: a save made from an older read is refused.</summary>
+    byte[]? RowVersion = null);
 
 public sealed record NotificationTemplateUpsertRequest(
     bool IsPlatformDefault,

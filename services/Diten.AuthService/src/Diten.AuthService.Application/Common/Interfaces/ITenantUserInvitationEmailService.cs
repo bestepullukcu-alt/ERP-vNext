@@ -9,9 +9,8 @@ public interface ITenantUserInvitationEmailService
 
     /// <summary>
     /// BL-454 — the same set-password link, sent as an administrator's PASSWORD RESET rather than an invitation. The
-    /// caller states which it is; nothing is inferred from the user record. Default: an implementation that predates
-    /// the distinction (test doubles) keeps sending what it always sent.
+    /// caller states which it is; nothing is inferred from the user record. No default body: an implementation that
+    /// silently sent the invitation here would put the invitation's words in a reset mail.
     /// </summary>
-    Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct) =>
-        SendTenantUserInvitationAsync(email, setupToken, ct);
+    Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct);
 }

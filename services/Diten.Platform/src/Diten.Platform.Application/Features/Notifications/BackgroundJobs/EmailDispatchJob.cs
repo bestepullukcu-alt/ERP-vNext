@@ -66,7 +66,10 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
             return;
         }
 
-        if (dispatch.Status is NotificationDispatchStatus.Sent or NotificationDispatchStatus.Cancelled)
+        // BL-454 — a permanent failure (the last retry, or the sweep's retry window) is never tried again: its variables
+        // are already released, and a retry rendered from nothing would send blanks.
+        if (dispatch.Status is NotificationDispatchStatus.Sent or NotificationDispatchStatus.Cancelled
+            || dispatch.PermanentlyFailedNotifiedAt is not null)
         {
             _logger.LogInformation(
                 "email.dispatch.job.skipped DispatchId={DispatchId} TenantId={TenantId} Status={Status} CorrelationId={CorrelationId}",
@@ -78,9 +81,10 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         }
 
         MessagingProviderResult result;
+        string? degradedReason = null;
         try
         {
-            result = await AttemptSendAsync(dispatch, context, cancellationToken);
+            (result, degradedReason) = await AttemptSendAsync(dispatch, context, cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -99,8 +103,10 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
 
         if (result.Accepted)
         {
+            // BL-454 — a retry that could only send the stored preview is marked as such on the dispatch itself, so the
+            // monitoring screen says it, not only a log line.
             await _mediator.Send(
-                new MarkNotificationDispatchSentCommand(dispatch.TenantId, dispatch.Id, result.ProviderMessageId),
+                new MarkNotificationDispatchSentCommand(dispatch.TenantId, dispatch.Id, result.ProviderMessageId, degradedReason),
                 cancellationToken);
             return;
         }
@@ -125,30 +131,30 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
             cancellationToken);
     }
 
-    private async Task<MessagingProviderResult> AttemptSendAsync(NotificationDispatch dispatch, BackgroundJobContext context, CancellationToken cancellationToken)
+    private async Task<(MessagingProviderResult Result, string? DegradedReason)> AttemptSendAsync(NotificationDispatch dispatch, BackgroundJobContext context, CancellationToken cancellationToken)
     {
         var settings = await _settingsResolver.ResolveAsync(dispatch.TenantId, cancellationToken);
         if (!settings.IsSuccessful || settings.Data is null)
         {
-            return MessagingProviderResult.Fail("SettingsUnresolved", "Tenant messaging settings could not be resolved.");
+            return (MessagingProviderResult.Fail("SettingsUnresolved", "Tenant messaging settings could not be resolved."), null);
         }
 
         if (!Enum.TryParse<MessagingProviderCode>(settings.Data.ProviderCode, ignoreCase: true, out var providerCode))
         {
-            return MessagingProviderResult.Fail("ProviderInvalid", "Resolved provider code is invalid.");
+            return (MessagingProviderResult.Fail("ProviderInvalid", "Resolved provider code is invalid."), null);
         }
 
         var providerResponse = _providerResolver.Resolve(providerCode);
         if (!providerResponse.IsSuccessful || providerResponse.Data is null)
         {
-            return MessagingProviderResult.Fail("ProviderUnavailable", "Messaging provider is unavailable.");
+            return (MessagingProviderResult.Fail("ProviderUnavailable", "Messaging provider is unavailable."), null);
         }
 
         var correlationId = string.IsNullOrWhiteSpace(dispatch.CorrelationId)
             ? context.EffectiveCorrelationId.ToString("N")
             : dispatch.CorrelationId;
 
-        var (bodyHtml, bodyText, template, variables) = await ResolveRetryBodyAsync(dispatch, context, cancellationToken);
+        var (bodyHtml, bodyText, template, variables, degradedReason) = await ResolveRetryBodyAsync(dispatch, context, cancellationToken);
         var subject = EmailHeaderText.CleanSubject(dispatch.Subject);
         string? senderName = null;
         if (_shellComposer is not null)
@@ -176,7 +182,7 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
             ? null
             : dispatch.Attachments.Select(ToProviderAttachment).ToArray();
 
-        return await providerResponse.Data.SendEmailAsync(
+        var sent = await providerResponse.Data.SendEmailAsync(
             new MessagingProviderEmailRequest(
                 dispatch.Id,
                 dispatch.TenantId,
@@ -192,6 +198,7 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
                 attachments,
                 senderName),
             cancellationToken);
+        return (sent, degradedReason);
     }
 
     /// <summary>
@@ -200,39 +207,39 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
     /// masking deliberately removed, and only when the template itself has not moved since. Every other
     /// outcome falls back to today's pre-BL-374 behaviour (the preview alone) and says why — never silently.
     /// </summary>
-    private async Task<(string? BodyHtml, string? BodyText, NotificationTemplate? Template, IReadOnlyDictionary<string, object?>? Variables)> ResolveRetryBodyAsync(
+    private async Task<(string? BodyHtml, string? BodyText, NotificationTemplate? Template, IReadOnlyDictionary<string, object?>? Variables, string? DegradedReason)> ResolveRetryBodyAsync(
         NotificationDispatch dispatch, BackgroundJobContext context, CancellationToken ct)
     {
         if (_templateRepository is null || _renderer is null)
         {
             // No renderer/template repository wired in (older test doubles) — not a BL-374 refusal, just the
             // feature not being present at all. Behaves exactly as it did before this WP.
-            return (null, null, null, null);
+            return (null, null, null, null, null);
         }
 
         if (dispatch.VariablesJson.Contains(QueueEmailNotificationHandler.RedactedToken, StringComparison.Ordinal))
         {
             LogRetryDegraded(dispatch, context, "VariablesRedacted");
-            return (null, null, null, null);
+            return (null, null, null, null, "VariablesRedacted");
         }
 
         if (dispatch.TemplateId is not { } templateId)
         {
             LogRetryDegraded(dispatch, context, "TemplateIdMissing");
-            return (null, null, null, null);
+            return (null, null, null, null, "TemplateIdMissing");
         }
 
         var template = await _templateRepository.GetByIdAsync(templateId, ct);
         if (template is null)
         {
             LogRetryDegraded(dispatch, context, "TemplateNotFound");
-            return (null, null, null, null);
+            return (null, null, null, null, "TemplateNotFound");
         }
 
         if (!string.Equals(template.SemanticVersion, dispatch.TemplateSemanticVersion, StringComparison.Ordinal))
         {
             LogRetryDegraded(dispatch, context, "TemplateVersionChanged");
-            return (null, null, null, null);
+            return (null, null, null, null, "TemplateVersionChanged");
         }
 
         // BL-454 — the same strings the first send rendered (see NotificationVariables), looked up without regard to case.
@@ -241,14 +248,15 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
         if (!rendered.IsSuccessful || rendered.Data is null)
         {
             LogRetryDegraded(dispatch, context, "RenderFailed");
-            return (null, null, null, null);
+            return (null, null, null, null, "RenderFailed");
         }
 
-        return (rendered.Data.BodyHtml, rendered.Data.BodyText, template, variables);
+        return (rendered.Data.BodyHtml, rendered.Data.BodyText, template, variables, null);
     }
 
+    // BL-454 — a Warning: a degraded retry sends the stored, masked preview (a subject or a link may read [REDACTED]).
     private void LogRetryDegraded(NotificationDispatch dispatch, BackgroundJobContext context, string reasonCode) =>
-        _logger.LogInformation(
+        _logger.LogWarning(
             "email.dispatch.retry_degraded DispatchId={DispatchId} TenantId={TenantId} ReasonCode={ReasonCode} CorrelationId={CorrelationId}",
             dispatch.Id,
             dispatch.TenantId,

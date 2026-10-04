@@ -191,6 +191,9 @@
         }
     };
 
+    // BL-454 — the version this editor read; sent back on save so a save made from an older read is refused (409).
+    let rowVersion = null;
+
     const loadTemplate = async () => {
         if (mode !== 'edit' || !templateId) return;
         try {
@@ -202,6 +205,7 @@
             }
             const dto = unwrap(body);
             if (!dto) return;
+            rowVersion = dto.rowVersion || null;
             document.getElementById('templateKey').value = dto.templateKey || '';
             document.getElementById('templateLocale').value = dto.locale || '';
             document.getElementById('templateChannel').value = dto.channel || '';
@@ -244,7 +248,8 @@
             bodyTextTemplate: document.getElementById('bodyTextTemplate')?.value || null,
             variables: collectVariables(),
             status: document.getElementById('templateStatus')?.value || '',
-            semanticVersion: document.getElementById('semanticVersion')?.value?.trim() || null
+            semanticVersion: document.getElementById('semanticVersion')?.value?.trim() || null,
+            rowVersion: mode === 'edit' ? rowVersion : null
         };
         const { url, method } = buildSaveUrl();
         const saveButton = document.getElementById('btnSaveTemplate');
@@ -260,6 +265,10 @@
             if (res.ok) {
                 window.showToast?.(L().RecordSaved || '', 'success');
                 window.location.href = '/Platform/NotificationTemplates';
+                return;
+            }
+            if (res.status === 409 && (body?.reasonCode || body?.ReasonCode) === 'TEMPLATE_CHANGED') {
+                showSummary(L().TemplateChangedReload || L().ErrorOccurred);
                 return;
             }
             if (res.status === 409) {

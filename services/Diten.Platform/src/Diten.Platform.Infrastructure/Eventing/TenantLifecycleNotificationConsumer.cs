@@ -135,9 +135,23 @@ public sealed class TenantLifecycleNotificationConsumer : IConsumer<EventTranspo
         }
 
         var tenantId = ResolveTenantId(envelope);
-        var response = await _mediator.Send(
-            new QueueEmailNotificationCommand(tenantId, request, envelope.CorrelationId.ToString("N")),
-            cancellationToken);
+        Diten.Platform.Application.Common.Response<NotificationDispatchDto> response;
+        try
+        {
+            response = await _mediator.Send(
+                new QueueEmailNotificationCommand(tenantId, request, envelope.CorrelationId.ToString("N")),
+                cancellationToken);
+        }
+        catch (Exception ex) when (Application.Features.Notifications.Validators.QueueEmailNotificationValidator.IsRecipientRefusal(ex))
+        {
+            // BL-454 — an address that is not ONE plain address (admin@localhost, a second mailbox) never becomes
+            // valid on redelivery: logged and let go, like every other non-retryable refusal below. No address logged.
+            _logger.LogWarning(
+                "Tenant lifecycle notification skipped (non-retryable). EventName={EventName} ReasonCode={ReasonCode}",
+                envelope.EventName,
+                Application.Features.Notifications.Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid);
+            return;
+        }
 
         if (!response.IsSuccessful)
         {

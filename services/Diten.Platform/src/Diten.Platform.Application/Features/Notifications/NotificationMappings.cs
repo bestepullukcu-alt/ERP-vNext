@@ -54,7 +54,19 @@ public static class NotificationMappings
             template.Status.ToString(),
             template.SemanticVersion,
             template.CreatedAt,
-            template.UpdatedAt);
+            template.UpdatedAt,
+            RowVersionOf(template.Version));
+
+    /// <summary>
+    /// BL-454 — a template's <c>Version</c> as the opaque <c>RowVersion</c> an editor reads and sends back (four bytes,
+    /// big-endian). The operator's save and the seed's upgrade both raise <c>Version</c>.
+    /// </summary>
+    public static byte[] RowVersionOf(int version)
+    {
+        var bytes = new byte[4];
+        System.Buffers.Binary.BinaryPrimitives.WriteInt32BigEndian(bytes, version);
+        return bytes;
+    }
 
     public static NotificationDispatchDto ToDto(this NotificationDispatch dispatch) =>
         new(

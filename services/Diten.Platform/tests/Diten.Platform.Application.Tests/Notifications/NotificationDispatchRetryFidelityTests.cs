@@ -180,8 +180,9 @@ public sealed class NotificationDispatchRetryFidelityTests
         var request = Assert.Single(provider.Requests);
         Assert.Null(request.BodyHtml);
         Assert.Null(request.BodyText);
+        // BL-454 FIX3 — a Warning now: a degraded retry sends the stored, masked preview.
         Assert.Contains(logger.Entries, e =>
-            e.LogLevel == LogLevel.Information
+            e.LogLevel == LogLevel.Warning
             && e.Message.Contains("email.dispatch.retry_degraded")
             && e.Message.Contains("VariablesRedacted"));
     }
@@ -363,6 +364,9 @@ public sealed class NotificationDispatchRetryFidelityTests
             Task.FromResult(Items.Where(x => !x.IsDeleted && x.TenantId == tenantId).ToArray() as IReadOnlyList<NotificationDispatch>);
 
         public Task UpdateAsync(NotificationDispatch dispatch, CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindRetryWindowExpiredAsync(DateTimeOffset queuedBefore, int take, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<NotificationDispatchRetryHandle>>([]);
 
         public Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindDueRetriesAsync(
             DateTimeOffset asOfUtc, int maxRetryCount, int take, CancellationToken ct = default) =>

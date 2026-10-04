@@ -15,6 +15,9 @@ public sealed class UpdateNotificationTemplateHandler
     /// <summary>What an operator's save writes into <c>UpdatedBy</c> when no signed-in actor is known.</summary>
     public const string OperatorActor = "operator";
 
+    /// <summary>The reason code of a save refused because the template changed after the editor read it.</summary>
+    public const string ReasonTemplateChanged = "TEMPLATE_CHANGED";
+
     public UpdateNotificationTemplateHandler(
         INotificationTemplateRepository repository,
         Diten.Platform.Application.Contracts.ICurrentUserContext? currentUser = null)
@@ -29,6 +32,15 @@ public sealed class UpdateNotificationTemplateHandler
         if (template is null)
         {
             return Response<NotificationTemplateDto>.Fail("Notification template not found.", 404);
+        }
+
+        // BL-454 — a save made from an OLDER read is refused, never written over what changed since (another operator, or
+        // the seed carrying the template forward to a new version). An editor that sends no RowVersion is not checked.
+        if (request.Request.RowVersion is { Length: > 0 } expected
+            && !expected.AsSpan().SequenceEqual(NotificationMappings.RowVersionOf(template.Version)))
+        {
+            return Response<NotificationTemplateDto>.Fail(
+                "The template was changed after it was opened. Reload it and save again.", 409, ReasonTemplateChanged);
         }
 
         var parse = CreateNotificationTemplateHandler.ParseRequest(request.Request);

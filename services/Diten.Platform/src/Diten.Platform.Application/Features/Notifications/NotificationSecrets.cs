@@ -11,45 +11,83 @@ namespace Diten.Platform.Application.Features.Notifications;
 /// guess (a space or an '=' in the value) called every task title with a space a secret, and every retry of such a mail
 /// lost its table and its button.
 ///
-/// <para><b>Names are matched by WORD, not by substring.</b> A name is split into its words (PascalCase, digits,
-/// separators): <c>TemporaryPassword</c> → temporary, password. A substring match would read <c>pin</c> into
-/// "Shipping" and <c>code</c> into "TenantCode" / "ModuleCode"; whole words do not.</para>
+/// <para><b>A name is a secret in two ways.</b> A long word that means one thing (<c>password</c>, <c>token</c>,
+/// <c>secret</c> …) counts wherever it appears, glued or not: <c>RESETTOKEN</c>, <c>temppassword</c>,
+/// <c>SetpasswordUrl</c>. A short word that means many things (<c>code</c>, <c>key</c>, <c>pass</c>, <c>pin</c> …)
+/// counts only as a WORD of the name, and not when a known neutral word stands next to it: <c>ActivationCode</c>,
+/// <c>LicenseKey</c>, <c>SessionId</c> are secrets; <c>TenantCode</c>, <c>PostalCode</c>, <c>WeekKey</c>,
+/// <c>KeyResult</c> are not, and "Shipping" never contains the word <c>pin</c>.</para>
 /// </summary>
 public static partial class NotificationSecrets
 {
-    /// <summary>A variable whose name contains one of these WORDS carries a secret.</summary>
-    public static IReadOnlyList<string> SecretNameWords { get; } =
+    /// <summary>Long words that mean one thing: a name that CONTAINS one of them, glued or not, carries a secret.</summary>
+    public static IReadOnlyList<string> SecretNameParts { get; } =
     [
-        "secret", "secrets", "token", "tokens", "password", "passwords", "passwd", "pwd", "passcode", "otp", "pin",
-        "credential", "credentials", "jwt", "signature", "sig", "apikey"
+        "password", "passwd", "passcode", "passphrase", "secret", "token", "credential", "apikey", "connectionstring"
     ];
 
-    /// <summary>Two-word names that are secrets although neither word alone is (<c>AccessKey</c>, <c>ResetCode</c>).</summary>
-    public static IReadOnlyList<(string First, string Second)> SecretNamePairs { get; } =
+    /// <summary>Short words that are secrets on their own as a word of the name: no neutral neighbour can excuse them.</summary>
+    public static IReadOnlyList<string> SecretNameWords { get; } = ["pwd", "jwt", "sig", "signature"];
+
+    /// <summary>
+    /// Short words that are secrets as a word of the name UNLESS a neutral word stands right before or right after
+    /// them (<see cref="NeutralNameWords"/>): <c>InviteCode</c> is a secret, <c>CountryCode</c> is not.
+    /// </summary>
+    public static IReadOnlyList<string> AmbiguousSecretNameWords { get; } =
     [
-        ("access", "key"), ("api", "key"), ("secret", "key"), ("private", "key"), ("signing", "key"), ("session", "key"),
-        ("client", "key"), ("auth", "key"),
-        ("reset", "code"), ("verification", "code"), ("verify", "code"), ("auth", "code"), ("access", "code"),
-        ("security", "code"), ("confirmation", "code"), ("otp", "code"), ("login", "code")
+        "code", "codes", "key", "keys", "pass", "pin", "pins", "otp", "nonce", "session"
     ];
 
     /// <summary>
-    /// In a link's QUERY a parameter is short and means one thing: <c>code=</c> (an OAuth or reset code), <c>key=</c>,
-    /// <c>auth=</c> carry credentials there although "TenantCode" as a variable name does not.
+    /// Words that turn an ambiguous word (<see cref="AmbiguousSecretNameWords"/>) next to them into ordinary data.
+    /// The one list: add a word here, nowhere else.
     /// </summary>
-    public static IReadOnlyList<string> SecretQueryWords { get; } = [.. SecretNameWords, "code", "key", "keys", "auth"];
+    public static IReadOnlyList<string> NeutralNameWords { get; } =
+    [
+        "tenant", "module", "postal", "post", "zip", "country", "currency", "product", "week", "result", "type", "status",
+        "language", "lang", "locale", "color", "colour", "region", "area", "city", "state", "item", "project", "task",
+        "department", "cost", "center", "centre", "category", "event", "template", "error", "reason", "unit", "sort",
+        "primary", "foreign", "lookup", "cache", "partition", "resource", "translation", "message", "menu", "page",
+        "field", "group", "role", "idempotency", "bar", "qr", "material", "lot", "batch", "document", "doc"
+    ];
+
+    /// <summary>
+    /// A link's QUERY parameter is a secret when its name is a secret NAME (<see cref="IsSecretName"/>: <c>token=</c>,
+    /// <c>code=</c>, <c>key=</c>, <c>pass=</c>, <c>session=</c>, <c>nonce=</c> …) or one of these words, which carry
+    /// credentials only in a query: <c>p=</c> (a meeting join passcode), <c>rlkey=</c>, <c>ticket=</c>, <c>auth=</c> …
+    /// </summary>
+    public static IReadOnlyList<string> SecretQueryWords { get; } =
+    [
+        "auth", "p", "rlkey", "ticket", "hash", "invite", "accesstoken"
+    ];
+
+    /// <summary>How deep a link inside a link's query value is followed (<c>?next=%2Freset%3Ftoken%3D…</c>).</summary>
+    public const int MaxLinkDepth = 3;
 
     public static bool IsSecretName(string? name)
     {
-        var words = Words(name);
-        if (words.Any(word => SecretNameWords.Contains(word, StringComparer.Ordinal)))
+        var compact = Compact(name);
+        if (compact.Length == 0)
+        {
+            return false;
+        }
+
+        if (SecretNameParts.Any(part => compact.Contains(part, StringComparison.Ordinal)))
         {
             return true;
         }
 
-        for (var i = 0; i + 1 < words.Count; i++)
+        var words = Words(name);
+        for (var i = 0; i < words.Count; i++)
         {
-            if (SecretNamePairs.Contains((words[i], words[i + 1])))
+            if (SecretNameWords.Contains(words[i], StringComparer.Ordinal))
+            {
+                return true;
+            }
+
+            if (AmbiguousSecretNameWords.Contains(words[i], StringComparer.Ordinal)
+                && !IsNeutral(words, i - 1)
+                && !IsNeutral(words, i + 1))
             {
                 return true;
             }
@@ -87,21 +125,32 @@ public static partial class NotificationSecrets
 
     /// <summary>
     /// A text is a secret when any whitespace-separated piece of it is a credential-bearing link (absolute, relative,
-    /// a query inside a fragment, parameters split by <c>&amp;</c> or <c>;</c>, names percent-encoded or not) or has
-    /// the shape of a secret: a <c>sk-</c> / <c>SG.</c> key, or a three-part JWT. A sentence with a space or an '='
-    /// in it is NOT a secret.
+    /// host-only, a query inside a fragment, parameters split by <c>&amp;</c> or <c>;</c>, names percent-encoded or not,
+    /// a link encoded inside another link's query value) or carries the shape of a secret: a <c>sk-</c> /
+    /// <c>sk_live_</c> / <c>SG.</c> / <c>ghp_</c> / <c>xoxb-</c> / <c>AKIA</c> key, or a three-part JWT — alone or with
+    /// something stuck to it (<c>token:eyJ…</c>, <c>eyJ…;</c>, inside JSON). A sentence with a space or an '=' in it is
+    /// NOT a secret.
     /// </summary>
-    public static bool IsSecretText(string? text)
+    public static bool IsSecretText(string? text) => IsSecretText(text, depth: 0);
+
+    public static bool IsCredentialBearingLink(string? piece) => IsCredentialBearingLink(piece, depth: 0);
+
+    private static bool IsSecretText(string? text, int depth)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
             return false;
         }
 
+        if (SecretShape().IsMatch(text))
+        {
+            return true;
+        }
+
         foreach (var raw in text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))
         {
             var piece = raw.Trim('"', '\'', '(', ')', '<', '>', '[', ']', ',', '.');
-            if (IsSecretShaped(piece) || IsCredentialBearingLink(piece))
+            if (IsCredentialBearingLink(piece, depth))
             {
                 return true;
             }
@@ -110,7 +159,7 @@ public static partial class NotificationSecrets
         return false;
     }
 
-    public static bool IsCredentialBearingLink(string? piece)
+    private static bool IsCredentialBearingLink(string? piece, int depth)
     {
         if (string.IsNullOrEmpty(piece))
         {
@@ -123,9 +172,9 @@ public static partial class NotificationSecrets
             return false;
         }
 
-        // A link, not a sentence: something before the query that looks like a path or a scheme.
+        // A link, not a sentence: something before the query that looks like a path, a scheme or a host.
         var head = piece[..start];
-        if (head.Length > 0 && !head.Contains('/') && !head.Contains(':'))
+        if (head.Length > 0 && !head.Contains('/') && !head.Contains(':') && !head.Contains('.'))
         {
             return false;
         }
@@ -134,7 +183,13 @@ public static partial class NotificationSecrets
         {
             var equals = parameter.IndexOf('=');
             var name = Unescape(equals < 0 ? parameter : parameter[..equals]);
-            if (Words(name).Any(word => SecretQueryWords.Contains(word, StringComparer.Ordinal)))
+            if (IsSecretName(name) || Words(name).Any(word => SecretQueryWords.Contains(word, StringComparer.Ordinal)))
+            {
+                return true;
+            }
+
+            // A link carried inside a value (?next=%2Freset%3Ftoken%3D…, redirect_uri=…, a mailto body) is read too.
+            if (equals >= 0 && depth < MaxLinkDepth && IsSecretText(Unescape(parameter[(equals + 1)..]), depth + 1))
             {
                 return true;
             }
@@ -143,10 +198,8 @@ public static partial class NotificationSecrets
         return false;
     }
 
-    private static bool IsSecretShaped(string piece) =>
-        (piece.StartsWith("sk-", StringComparison.Ordinal) && piece.Length >= 12)
-        || (piece.StartsWith("SG.", StringComparison.Ordinal) && piece.Length >= 12)
-        || Jwt().IsMatch(piece);
+    private static bool IsNeutral(IReadOnlyList<string> words, int index) =>
+        index >= 0 && index < words.Count && NeutralNameWords.Contains(words[index], StringComparer.Ordinal);
 
     private static string Unescape(string value)
     {
@@ -159,6 +212,11 @@ public static partial class NotificationSecrets
             return value;
         }
     }
+
+    private static string Compact(string? name) =>
+        string.IsNullOrWhiteSpace(name)
+            ? string.Empty
+            : new string(name.Where(char.IsAsciiLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
 
     /// <summary>Lower-case words of a name: separators, PascalCase and letter/digit boundaries split it.</summary>
     public static IReadOnlyList<string> Words(string? name)
@@ -174,8 +232,12 @@ public static partial class NotificationSecrets
             .ToList();
     }
 
-    [GeneratedRegex(@"^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*$", RegexOptions.CultureInvariant)]
-    private static partial Regex Jwt();
+    // A secret's own shape, found anywhere in a text but never in the middle of a word: provider keys by their published
+    // prefixes, and a three-part JWT.
+    [GeneratedRegex(
+        @"(?<![A-Za-z0-9_])(?:sk-[A-Za-z0-9_-]{9,}|sk_(?:live|test)_[A-Za-z0-9]{8,}|SG\.[A-Za-z0-9_.-]{9,}|gh[pousr]_[A-Za-z0-9]{20,}|xox[abprs]-[A-Za-z0-9-]{8,}|AKIA[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*)",
+        RegexOptions.CultureInvariant)]
+    private static partial Regex SecretShape();
 
     [GeneratedRegex(@"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=[0-9])|(?<=[0-9])(?=[A-Za-z])|[^A-Za-z0-9]+", RegexOptions.CultureInvariant)]
     private static partial Regex WordBoundary();
@@ -200,7 +262,7 @@ public static class NotificationVariables
         return normalized;
     }
 
-    /// <summary>Read back what <see cref="Normalize"/> stored (and any older row, whose values may be JSON numbers).</summary>
+    /// <summary>Read back what <see cref="Normalize"/> stored (and any older row, whose values may be JSON numbers or bools).</summary>
     public static Dictionary<string, object?> FromJson(string? json)
     {
         var values = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
@@ -223,6 +285,9 @@ public static class NotificationVariables
         string text => text,
         JsonElement { ValueKind: JsonValueKind.String } element => element.GetString(),
         JsonElement { ValueKind: JsonValueKind.Null or JsonValueKind.Undefined } => null,
+        // A bool is drawn the way the first render drew a CLR bool ("True"), not as JSON spells it ("true").
+        JsonElement { ValueKind: JsonValueKind.True } => bool.TrueString,
+        JsonElement { ValueKind: JsonValueKind.False } => bool.FalseString,
         JsonElement element => element.GetRawText(),
         _ => Convert.ToString(value, CultureInfo.InvariantCulture)
     };

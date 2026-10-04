@@ -107,7 +107,9 @@ public static class NotificationTemplateSeed
                 .Set(x => x.Shell, current.Shell)
                 .Set(x => x.SemanticVersion, current.SemanticVersion)
                 .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
-                .Set(x => x.UpdatedBy, SeedActor);
+                .Set(x => x.UpdatedBy, SeedActor)
+                // BL-454 — a carried-forward row is a new version: an editor still holding the old one is refused.
+                .Inc(x => x.Version, 1);
 
             var written = await collection.UpdateOneAsync(unchangedSinceRead, update, cancellationToken: ct);
             if (written.ModifiedCount == 1)
