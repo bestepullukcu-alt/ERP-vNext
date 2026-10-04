@@ -828,9 +828,17 @@
                 return;
             }
 
+            /*
+             * ATT-FIX2 — a RECORD field's options are only the first PAGE of a server-searched source, not the source:
+             * an empty first page does not mean there is nothing to find, and hiding the field hid a REQUIRED one the
+             * user then could never fill. It is drawn, with an empty picker that searches and says "no records".
+             * A source that could not be RESOLVED at all (no array) is still refused, as for every kind; a select /
+             * person field's options ARE its whole source, so an empty one is still not drawn either.
+             */
             const needsOptions = kind === 'select' || kind === 'person' || kind === 'record';
             const resolved = options[definition.code];
-            if (needsOptions && (!Array.isArray(resolved) || resolved.length === 0)) {
+            const emptyAllowed = kind === 'record';
+            if (needsOptions && (!Array.isArray(resolved) || (resolved.length === 0 && !emptyAllowed))) {
                 global.console?.warn?.(
                     `[TaskForm] field "${definition.code}" is option-driven but its source `
                     + `(${definition.optionsSourceKind}/${definition.optionsSourceKey || '—'}) resolved to no `
@@ -1062,30 +1070,29 @@
     const isServerSearched = (node) => !!node && node.getAttribute('data-custom-field-record') === '1';
 
     /*
-     * The transport select2 uses for a server-searched control.
-     *
-     * Guarded by a sequence number, because a slow answer for "Kal" must not overwrite the answer for "Kalite"
-     * that arrived first — an ordinary failure of search-as-you-type, and invisible until the picker shows
-     * results for something the user already finished typing. select2's `delay` covers the debounce.
+     * BL-512 — the approver / reviewer pickers are server-searched too, but by a different source: the people search
+     * (TasksApi.decisionMakers), which answers only a term of at least two characters and never the whole list.
      */
-    const recordSearchTransport = (node, code, searchRecords) => {
-        let sequence = 0;
-        return (params, success, failure) => {
-            const mine = ++sequence;
-            const term = (params && params.data && params.data.term) || '';
-            Promise.resolve(searchRecords(code, term))
-                .then((rows) => {
-                    if (mine !== sequence) { return; }   // stale: the user has typed since.
-                    success({
-                        results: (rows || []).map((row) => ({ id: row.value, text: optionText(row) }))
-                    });
-                })
-                .catch((error) => {
-                    if (mine !== sequence) { return; }
-                    if (typeof failure === 'function') { failure(error); }
-                });
-        };
-    };
+    const isPeopleSearched = (node) => !!node && node.getAttribute('data-people-search') === '1';
+
+    /** The one "Name — Position — Unit" label (shared/diten-people-search.js), also used for a stored approver. */
+    const peopleSearchLabel = (row, unavailable) => global.DitenPeopleSearch.label(row, unavailable || '');
+
+    /*
+     * BL-512 FIX1 — both server-searched kinds ride the ONE shared transport (shared/diten-people-search.js), which
+     * honours select2's own contract: it RETURNS the request object select2 inspects on failure (`'status' in
+     * request`). The two transports that lived here returned nothing, so a failed search threw inside select2 and the
+     * picker sat on "searching…" for ever. The stale-answer guard (a slow answer for "Kal" must not overwrite the
+     * one for "Kalite") lives in that transport too.
+     *
+     * A record source may still hand back a bare array; a result envelope ({ ok, status, data }) is how it reports a
+     * failed read, which then reads as "the search could not be done", never as "no results".
+     */
+    const recordSearchTransport = (node, code, searchRecords, text, state) => global.DitenPeopleSearch.transport({
+        search: (term) => searchRecords(code, term),
+        onFailure: (res) => { state.failure = global.DitenPeopleSearch.failureSentence(res, text); },
+        toResults: (rows) => rows.map((row) => ({ id: row.value, text: optionText(row) }))
+    });
 
     const enhanceSelects = (root, options) => {
         const scope = root || global.document;
@@ -1114,12 +1121,24 @@
                 settings.templateSelection = pickerRowTemplate(rowKind, labels, 'selection');
             }
 
-            if (isServerSearched(node) && typeof searchRecords === 'function') {
+            if (isPeopleSearched(node) && options && typeof options.searchPeople === 'function') {
+                const text = options.peopleSearchText || {};
+                Object.assign(settings, global.DitenPeopleSearch.options({ search: options.searchPeople, text }));
+                settings.ajax.delay = RECORD_SEARCH_DELAY_MS;
+            } else if (isServerSearched(node) && typeof searchRecords === 'function') {
                 const code = node.getAttribute('data-custom-field');
+                const text = (options && options.recordSearchText) || {};
+                const state = { failure: '' };
                 settings.ajax = {
                     delay: RECORD_SEARCH_DELAY_MS,
-                    transport: recordSearchTransport(node, code, searchRecords)
+                    transport: recordSearchTransport(node, code, searchRecords, text, state)
                 };
+                if (text.failed || text.noResults) {
+                    settings.language = {
+                        errorLoading: () => state.failure || text.failed || '',
+                        noResults: () => text.noResults || ''
+                    };
+                }
             }
 
             $node.select2(settings);
@@ -1308,6 +1327,7 @@
         visibleFieldsFor,
         formatPositionLabel,
         formatPersonLabel,
+        peopleSearchLabel,
         buildCreatePayload,
         buildUpdatePayload,
         validateDraft,

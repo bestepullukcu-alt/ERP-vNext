@@ -32,8 +32,6 @@
   <data name="LocationPlaceholder" xml:space="preserve"><value>Sala, edificio o enlace de videollamada</value></data>
   <data name="FollowUpOfMeeting" xml:space="preserve"><value>Continuación de la reunión</value></data>
   <data name="Attendees" xml:space="preserve"><value>Asistentes</value></data>
-  <data name="AttendeesPlaceholder" xml:space="preserve"><value>Buscar personas para invitar</value></data>
-  <data name="NoEligibleAttendees" xml:space="preserve"><value>No se encontraron personas elegibles. Solo se puede invitar a usuarios activos del tenant que ocupen un puesto.</value></data>
   <data name="AddAgendaItem" xml:space="preserve"><value>Agregar</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>Punto del orden del día</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>Quitar asistente</value></data>
@@ -110,6 +108,15 @@
   <data name="ErrorReportInvalidPeriod" xml:space="preserve"><value>El período del informe debe terminar después de que comience.</value></data>
   <data name="ErrorReportExportTooLarge" xml:space="preserve"><value>Este informe tiene demasiadas filas para exportar. Reduzca el período o los filtros.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>No tiene acceso a esta acción.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>Escriba un nombre o un puesto…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Escriba al menos 2 caracteres para buscar.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>No se encontró a nadie con esta búsqueda.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>Buscando…</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Demasiadas búsquedas en poco tiempo. Espere un momento e inténtelo de nuevo.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>No se pudo realizar la búsqueda. Inténtelo de nuevo en unos instantes.</value></data>
+  <data name="NewOrganizerRequired" xml:space="preserve"><value>Elija el nuevo organizador.</value></data>
+  <data name="MeetingNotAccessible" xml:space="preserve"><value>Una reunión a la que no tiene acceso</value></data>
+  <data name="MeetingsListTruncated" xml:space="preserve"><value>La lista muestra como máximo 10 000 reuniones; use la vista de calendario para el resto.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>El servicio de Reuniones no está disponible en este momento.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Complete todos los campos obligatorios.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Tipos de reunión</value></data>

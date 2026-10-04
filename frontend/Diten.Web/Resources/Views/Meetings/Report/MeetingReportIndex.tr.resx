@@ -102,4 +102,5 @@
   <data name="ScopeTenant" xml:space="preserve"><value>Tüm kiracı</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>Kendi toplantılarım</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Bu rapora erişiminiz yok.</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Bilinmeyen kullanıcı</value></data>
 </root>

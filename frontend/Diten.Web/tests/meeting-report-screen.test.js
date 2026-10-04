@@ -87,7 +87,10 @@ const boot = () => {
   delete global.jQuery;
   delete global.flatpickr;
   delete global.MeetingsApi;
-  global.MeetingReportL10n = { t: (key) => L10N[key] ?? key };
+  // ATT-FIX1 (8c) — the LIVE payload's keys are camelCase (MVC's Json.Serialize); the stub answers the same way,
+  // so a screen that asks with the resx's PascalCase spelling is caught instead of being flattered.
+  const camelL10n = Object.fromEntries(Object.entries(L10N).map(([k, v]) => [k.charAt(0).toLowerCase() + k.slice(1), v]));
+  global.MeetingReportL10n = { t: (key) => camelL10n[key] ?? key };
   global.URL.createObjectURL = global.URL.createObjectURL || (() => "blob:mock");
   global.URL.revokeObjectURL = global.URL.revokeObjectURL || (() => {});
 

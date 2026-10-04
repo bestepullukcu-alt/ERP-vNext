@@ -89,6 +89,19 @@
   <data name="ToastClaimed" xml:space="preserve"><value>أصبحت المهمة لك.</value></data>
   <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>تولّى شخص آخر هذه المهمة قبلك.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>ليس لديك إذن للقيام بذلك.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>اكتب اسمًا أو منصبًا…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>اكتب حرفين على الأقل للبحث.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>لم يتم العثور على أحد لهذا البحث.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>جارٍ البحث…</value></data>
+  <data name="DecisionMakerUnavailable" xml:space="preserve"><value>شخص غير موجود</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>عمليات بحث كثيرة في وقت قصير. انتظر قليلًا ثم حاول مرة أخرى.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>تعذّر إجراء البحث. يُرجى المحاولة مرة أخرى بعد قليل.</value></data>
+  <data name="RecordSearchNoResults" xml:space="preserve"><value>لم يتم العثور على سجلات.</value></data>
+  <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>تعذّر تحميل بيانات الشخص حاليًا</value></data>
+  <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>ابحث بالاسم أو بالأشخاص المحفوظين، وليس بالاثنين معًا.</value></data>
+  <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>تم طلب عدد كبير جدًا من الأشخاص دفعة واحدة.</value></data>
+  <data name="ErrorPeopleLookupIdsInvalid" xml:space="preserve"><value>أحد مراجع الأشخاص المحفوظة غير صالح.</value></data>
+  <data name="ErrorPeopleDirectoryUnavailable" xml:space="preserve"><value>دليل الأشخاص غير متاح حاليًا. يُرجى المحاولة مرة أخرى بعد قليل.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>تعذّر الوصول إلى خدمة المهام. حاول مرة أخرى.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>لا مهام بعد</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>أنشئ مهمتك الأولى لتظهر هنا وفي مركز المهام.</value></data>

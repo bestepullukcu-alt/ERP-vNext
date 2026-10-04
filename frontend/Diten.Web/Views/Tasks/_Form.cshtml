@@ -487,7 +487,9 @@
                             </label>
                             <div class="diten-field">
                                 <i class="bx bx-user-voice diten-field-icon" aria-hidden="true"></i>
-                                <select class="select2 form-select" id="taskReviewer" name="reviewerCandidateUserId"></select>
+                                @* BL-512 — searched on the server as the reader types (≥ 2 characters); nothing is listed until then. *@
+                                <select class="select2 form-select" id="taskReviewer" name="reviewerCandidateUserId"
+                                        data-people-search="1" data-placeholder="@Localizer["PeopleSearchHint"]"><option value=""></option></select>
                             </div>
                         </div>
 
@@ -550,8 +552,10 @@
                         </label>
                         <div class="diten-field">
                             <i class="bx bx-user diten-field-icon" aria-hidden="true"></i>
+                            @* BL-512 — searched on the server as the reader types (≥ 2 characters). *@
                             <select class="select2 form-select" id="taskApprovalManager"
-                                    name="approvalManagerUserId"></select>
+                                    name="approvalManagerUserId"
+                                    data-people-search="1" data-placeholder="@Localizer["PeopleSearchHint"]"><option value=""></option></select>
                         </div>
                         <div class="form-text">@Localizer["ApprovalHint"]</div>
                     </div>

@@ -32,8 +32,6 @@
   <data name="LocationPlaceholder" xml:space="preserve"><value>Кабинет, здание или ссылка на видеозвонок</value></data>
   <data name="FollowUpOfMeeting" xml:space="preserve"><value>Продолжение совещания</value></data>
   <data name="Attendees" xml:space="preserve"><value>Участники</value></data>
-  <data name="AttendeesPlaceholder" xml:space="preserve"><value>Поиск людей для приглашения</value></data>
-  <data name="NoEligibleAttendees" xml:space="preserve"><value>Подходящие люди не найдены. Пригласить можно только активных пользователей арендатора, занимающих должность.</value></data>
   <data name="AddAgendaItem" xml:space="preserve"><value>Добавить</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>Пункт повестки</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>Удалить участника</value></data>
@@ -110,6 +108,15 @@
   <data name="ErrorReportInvalidPeriod" xml:space="preserve"><value>Период отчёта должен заканчиваться позже, чем начинается.</value></data>
   <data name="ErrorReportExportTooLarge" xml:space="preserve"><value>В этом отчёте слишком много строк для экспорта. Сузьте период или фильтры.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>У вас нет доступа к этому действию.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>Введите имя или должность…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Введите не менее 2 символов для поиска.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>По этому запросу никого не найдено.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>Поиск…</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Слишком много поисков за короткое время. Подождите немного и повторите попытку.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>Не удалось выполнить поиск. Повторите попытку чуть позже.</value></data>
+  <data name="NewOrganizerRequired" xml:space="preserve"><value>Выберите нового организатора.</value></data>
+  <data name="MeetingNotAccessible" xml:space="preserve"><value>Совещание, к которому у вас нет доступа</value></data>
+  <data name="MeetingsListTruncated" xml:space="preserve"><value>Список показывает не более 10 000 совещаний; остальные смотрите в виде календаря.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Сервис совещаний сейчас недоступен.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Пожалуйста, заполните все обязательные поля.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Типы совещаний</value></data>

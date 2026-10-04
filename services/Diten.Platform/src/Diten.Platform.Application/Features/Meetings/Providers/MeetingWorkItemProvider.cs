@@ -90,7 +90,8 @@ public sealed class MeetingWorkItemProvider : IWorkItemProvider
         var typeNameById = (await _types.ListAsync(ct)).ToDictionary(t => t.Id, t => t.Name);
 
         var organizerIds = candidates.Select(a => meetingsById[a.MeetingId].OrganizerUserId).Distinct().ToList();
-        var organizerNames = await _displayNames.ResolveAsync(organizerIds, ct);
+        // ATT-FIX2 — bounded: a hanging AuthService must not hold the Task Center's meeting rows.
+        var organizerNames = await MeetingPersonNames.ResolveAsync(_displayNames, organizerIds, ct);
 
         var relatedRecordsByMeeting = await ResolveRelatedRecordsAsync(
             candidates.Select(a => a.MeetingId).Distinct().ToList(), ct);

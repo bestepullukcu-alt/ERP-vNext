@@ -111,7 +111,7 @@
                     </div>
                     <ul class="list-group mb-3" id="attendeesList"></ul>
                     <div class="d-flex gap-2 meeting-attendee-add d-none" id="attendeeAddRow">
-                        <select id="newAttendeeUserId" class="select2 form-select" data-placeholder="@Localizer["AttendeesPlaceholder"]"></select>
+                        <select id="newAttendeeUserId" class="select2 form-select" data-placeholder="@Localizer["PeopleSearchHint"]"></select>
                         <button type="button" class="btn btn-label-primary text-nowrap" id="btnAddAttendee">@Localizer["AddAttendee"]</button>
                     </div>
                 </section>
@@ -133,8 +133,6 @@
        same one WorkCenterNext uses; Meetings and Tasks share no assembly, so this is the same-origin proxy,
        not a service-to-service call. *@
     <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
-    @* WP-WC-SHARED-UI-01, E2 — the add-attendee picker and dropdown-search adapter now delegate here. *@
-    <script src="~/assets/js/shared/diten-person-picker.js" asp-append-version="true"></script>
     @* WP-WC-SHARED-UI-01, E3 — the linked-tasks row markup now delegates here. *@
     <script src="~/assets/js/shared/diten-related-records.js" asp-append-version="true"></script>
     @* WP-WC-SHARED-UI-01, M2 — the reassign-organizer dialog's select2 is bound through here. *@
@@ -143,5 +141,6 @@
     <script src="~/assets/js/Meetings/task-from-meeting-dialog.js" asp-append-version="true"></script>
     @* MOD-0357 S7 — the "schedule follow-up" dialog body. *@
     <script src="~/assets/js/Meetings/follow-up-dialog.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-people-search.js" asp-append-version="true"></script>
     <script src="~/assets/js/Meetings/form.js" asp-append-version="true"></script>
 }

@@ -97,6 +97,14 @@
          */
         TASK_CLOSURE_FIELD_REQUIRED: 'errorClosureFieldRequired',
         // Commenting on a closed task, and a comment that is empty or over the length limit.
+        // BL-512 — the approver / reviewer search's own refusals (a person picker is search-only and bounded).
+        PEOPLE_SEARCH_TOO_SHORT: 'peopleSearchMinimumLength',
+        PEOPLE_SEARCH_RATE_LIMITED: 'errorPeopleSearchRateLimited',
+        // BL-512 FIX1 — the lookup's other refusals, each with its own sentence (7 languages).
+        PEOPLE_LOOKUP_SEARCH_AND_IDS: 'errorPeopleLookupSearchAndIds',
+        PEOPLE_LOOKUP_TOO_MANY_IDS: 'errorPeopleLookupTooManyIds',
+        PEOPLE_LOOKUP_IDS_INVALID: 'errorPeopleLookupIdsInvalid',
+        PEOPLE_DIRECTORY_UNAVAILABLE: 'errorPeopleDirectoryUnavailable',
         TASK_COMMENT_TASK_CLOSED: 'errorCommentTaskClosed',
         TASK_COMMENT_TEXT_INVALID: 'errorCommentTextInvalid',
         // Somebody else's comment, and a comment already withdrawn. Mapped the moment the codes were written:
@@ -486,8 +494,22 @@
          * had one caller that opened it by hand; a second caller (the Task Center's delegate window) is exactly
          * how the envelope gets opened wrongly somewhere. `data` is the array here too.
          */
-        decisionMakers: async () => {
-            const res = await request('GET', '/decision-makers');
+        /*
+         * BL-512 — SEARCH-ONLY. The server never hands out the whole list any more: a search of at least two
+         * characters (at most 20 rows), or a handful of ids to turn back into names. Each row is
+         * { userId, displayName, positionName, organizationUnitName } and nothing else.
+         */
+        decisionMakers: async ({ search } = {}) => {
+            const res = await request('GET', `/decision-makers?search=${encodeURIComponent(search ?? '')}`);
+            return Object.assign({}, res, {
+                data: Array.isArray(res.data?.people) ? res.data.people : []
+            });
+        },
+        /** BL-512 — stored ids → the same four-field rows (at most 10; an id that no longer resolves simply drops). */
+        resolveDecisionMakers: async (ids) => {
+            const wanted = [...new Set((ids || []).filter(Boolean).map(String))];
+            if (!wanted.length) { return { ok: true, status: 200, reasonCode: null, data: [] }; }
+            const res = await request('GET', `/decision-makers?ids=${encodeURIComponent(wanted.join(','))}`);
             return Object.assign({}, res, {
                 data: Array.isArray(res.data?.people) ? res.data.people : []
             });

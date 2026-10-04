@@ -199,9 +199,11 @@ public sealed class MeetingsController : Controller
     public Task<IActionResult> ApiScheduleReviewMeetingForTask(Guid taskId)
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/tasks/{taskId}/schedule-review-meeting", readBody: true);
 
+    /// <summary>BL-531 — forwards ONLY `search` and `ids`, URL-encoded, through the task approver picker's own
+    /// query builder (BL-512) — one implementation of the people-search query string.</summary>
     [HttpGet("api/lookups/attendees")]
-    public Task<IActionResult> ApiLookupAttendees()
-        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/lookups/attendees", readBody: false);
+    public Task<IActionResult> ApiLookupAttendees([FromQuery] string? search, [FromQuery] string? ids)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/lookups/attendees{TasksController.DecisionMakersQuery(search, ids)}", readBody: false);
 
     [HttpGet("api/lookups/types")]
     public Task<IActionResult> ApiLookupTypes()

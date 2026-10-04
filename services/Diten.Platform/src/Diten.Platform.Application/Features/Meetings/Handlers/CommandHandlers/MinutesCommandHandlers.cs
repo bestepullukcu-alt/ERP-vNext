@@ -54,16 +54,25 @@ internal static class MinutesEligibility
 
     public static async Task<MeetingMinutesVersionDto> ToDtoAsync(
         MeetingMinutesVersion version, IUserDisplayNameResolver displayNames, CancellationToken ct)
-    {
-        var ids = version.Attendance.Select(a => a.AttendeeUserId)
-            .Concat(version.Decisions.Where(d => d.DecidedByUserId.HasValue).Select(d => d.DecidedByUserId!.Value))
-            .Concat(version.PublishedByUserId.HasValue ? [version.PublishedByUserId.Value] : [])
-            .Distinct()
-            .ToList();
-        var names = ids.Count == 0
-            ? new Dictionary<Guid, string>()
-            : (await displayNames.ResolveAsync(ids, ct)).ToDictionary(kv => kv.Key, kv => kv.Value);
+        => (await ToDtosAsync([version], displayNames, ct))[0];
 
+    /// <summary>ATT-FIX2 — every version's people named in ONE bounded call (never one per version, never unbounded:
+    /// a hanging AuthService costs the minutes read — and a minutes WRITE, after it is stored — at most the bound).</summary>
+    public static async Task<IReadOnlyList<MeetingMinutesVersionDto>> ToDtosAsync(
+        IReadOnlyList<MeetingMinutesVersion> versions, IUserDisplayNameResolver displayNames, CancellationToken ct)
+    {
+        var ids = versions.SelectMany(PeopleOf).ToList();
+        var names = await MeetingPersonNames.ResolveAsync(displayNames, ids, ct);
+        return versions.Select(version => ToDto(version, names)).ToList();
+    }
+
+    private static IEnumerable<Guid> PeopleOf(MeetingMinutesVersion version) =>
+        version.Attendance.Select(a => a.AttendeeUserId)
+            .Concat(version.Decisions.Where(d => d.DecidedByUserId.HasValue).Select(d => d.DecidedByUserId!.Value))
+            .Concat(version.PublishedByUserId.HasValue ? [version.PublishedByUserId.Value] : []);
+
+    private static MeetingMinutesVersionDto ToDto(MeetingMinutesVersion version, IReadOnlyDictionary<Guid, string> names)
+    {
         return new MeetingMinutesVersionDto(
             Id: version.Id,
             VersionNumber: version.VersionNumber,

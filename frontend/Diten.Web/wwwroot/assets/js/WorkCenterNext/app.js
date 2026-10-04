@@ -8039,7 +8039,8 @@
                 ? await global.TasksApi.fieldRecords(definition.code)
                 : await global.TasksApi.fieldOptions(definition.code);
 
-            if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+            // ATT-FIX2 — the task form's rule: a record source with an empty first page is still resolved.
+            if (result.ok && Array.isArray(result.data) && (result.data.length > 0 || kind === 'record')) {
                 byCode[definition.code] = result.data;
                 return;
             }
@@ -8058,7 +8059,7 @@
         global.console?.warn?.(
             `[WorkCenterNext] searching records for closure field "${code}" failed `
             + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
-        return [];
+        return result;   // BL-512 FIX1 — the picker says "the search could not be done", never "no results"
     };
 
     /** One outcome's words: a system outcome through the resource table, a tenant outcome as typed. */
@@ -9326,6 +9327,35 @@
      * pinned class names (`wcn-dialog-select`/`wcn-dialog-select-dropdown`, styled in backbone-custom.css)
      * by passing them as options — a shared component does not reach into a module's own CSS hook.
      */
+    /*
+     * BL-512 — the approval-delegate picker SEARCHES the server (TasksApi.decisionMakers): at least two characters,
+     * typed with a pause (~300 ms), at most 20 people per answer. The people the action cannot be handed to
+     * (`excludedTargetIds`) are still never offered. Three answers are told apart, each in words: "type at least two
+     * characters", "nobody found for this search", and a READ that failed — a 403 or a dropped connection is never
+     * shown as "nobody" (BL-491). The sentences live in the Tasks resx this page already carries.
+     */
+    const peopleText = (key) => global.TasksL10n?.t?.(key) ?? key;
+    const bindPeopleSearch = (element, popup, excludedTargetIds) => (global.DitenDialog && global.DitenPeopleSearch
+        // BL-512 FIX1 — the ONE shared transport (shared/diten-people-search.js): it returns the request object
+        // select2 inspects on failure, so a 429 / 403 / dropped connection is SAID in the window instead of the
+        // picker sitting on "searching…" for ever.
+        ? global.DitenDialog.bindDialogSelect2(element, popup, Object.assign({
+            containerCssClass: 'wcn-dialog-select',
+            dropdownCssClass: 'wcn-dialog-select-dropdown'
+        }, global.DitenPeopleSearch.options({
+            search: (term) => global.TasksApi.decisionMakers({ search: term }),
+            exclude: excludedTargetIds,
+            text: {
+                minimumLength: peopleText('peopleSearchMinimumLength'),
+                noResults: peopleText('peopleSearchNoResults'),
+                searching: peopleText('peopleSearching'),
+                unknown: peopleText('decisionMakerUnavailable'),
+                rateLimited: peopleText('errorPeopleSearchRateLimited'),
+                failed: peopleText('searchFailed')
+            }
+        })))
+        : false);
+
     const bindDialogSelect2 = (element, popup) => (global.DitenDialog
         ? global.DitenDialog.bindDialogSelect2(element, popup, {
             containerCssClass: 'wcn-dialog-select',
@@ -10213,16 +10243,10 @@
                  * list would silently leave out every approver outside the reader's own company.
                  */
                 const res = asksTarget
-                    ? await global.TasksApi.decisionMakers()
+                    ? { ok: true, data: [] }   // BL-512: searched as the reader types (bindPeopleSearch)
                     : await global.TasksApi.assignablePeople();
-                /*
-                 * A read that FAILED is not an empty list. "Nobody this can be delegated to" printed over a 403 or
-                 * a dropped connection is a false sentence; the failure says what it was, and no window opens.
-                 */
-                if (!res.ok && asksTarget) {
-                    toast(global.TasksApi.failureMessage(res), 'error');
-                    return { outcome: 'refused' };
-                }
+                // BL-512 FIX1 — the approval delegate reads nothing here (its picker searches), so its old "a read
+                // that failed" refusal could no longer be reached; a failed SEARCH is said inside the window.
                 // `data` IS the array for both lists — unwrapped once in TasksApi (BL-113). This line was wrong for
                 // three rounds while each caller unwrapped the envelope in its own hand-written expression.
                 people = res.ok ? res.data : [];
@@ -10232,9 +10256,9 @@
                     people = people.filter((person) =>
                         !action.excludedTargetIds.includes(String(personUserId(person) || '').toLowerCase()));
                 }
-                if (!people.length && needsAssignee) {
-                    // Refusing beats opening a dialog that cannot be confirmed.
-                    toast(t(asksTarget ? 'DelegateNoEligiblePeople' : 'ReassignNoAssignableUsers'), 'error');
+                // Refusing beats opening a dialog that cannot be confirmed (not the BL-512 search: it says "nobody").
+                if (!people.length && needsAssignee && !asksTarget) {
+                    toast(t('ReassignNoAssignableUsers'), 'error');
                     return { outcome: 'refused' };
                 }
             }
@@ -10250,7 +10274,8 @@
             const assigneeField = needsAssignee
                 ? `<label class="form-label d-block text-start" for="wcnReassignAssignee">${esc(t(asksTarget ? 'DelegateTargetLabel' : 'ReassignAssigneeLabel'))}</label>`
                   + `<select id="wcnReassignAssignee" class="form-select">`
-                  + `<option value="">${esc(t('ReassignAssigneePlaceholder'))}</option>${options}</select>`
+                  // BL-512 — the approval delegate's first line invites a search; it has no other options until one runs.
+                  + `<option value="">${esc(asksTarget ? peopleText('peopleSearchHint') : t('ReassignAssigneePlaceholder'))}</option>${options}</select>`
                 : '';
             /*
              * The optional picker. Its empty option is not a placeholder to be replaced — it is a REAL CHOICE
@@ -10324,7 +10349,11 @@
                 cancelButtonText: t('DialogDismiss'),
                 // Both pickers become select2, through the same binder, parented into this popup.
                 didOpen: (popup) => {
-                    bindDialogSelect2(document.getElementById('wcnReassignAssignee'), popup);
+                    if (asksTarget) {
+                        bindPeopleSearch(document.getElementById('wcnReassignAssignee'), popup, action.excludedTargetIds);
+                    } else {
+                        bindDialogSelect2(document.getElementById('wcnReassignAssignee'), popup);
+                    }
                     bindDialogSelect2(document.getElementById('wcnWaitingOn'), popup);
                 },
                 preConfirm: () => {
@@ -10505,7 +10534,10 @@
                             // one case needing a translator, and it is WCN's own strings it would ever name.
                             translate: t
                         });
-                        global.TaskForm.enhanceSelects?.(fieldsRow, { searchRecords: searchClosureFieldRecords });
+                        global.TaskForm.enhanceSelects?.(fieldsRow, {
+                            searchRecords: searchClosureFieldRecords,
+                            recordSearchText: { rateLimited: peopleText('errorPeopleSearchRateLimited'), failed: peopleText('searchFailed'), noResults: peopleText('recordSearchNoResults') }
+                        });
                     }
                 },
                 preConfirm: () => {

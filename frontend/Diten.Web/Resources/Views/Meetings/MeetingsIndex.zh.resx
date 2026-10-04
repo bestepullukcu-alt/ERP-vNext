@@ -32,8 +32,6 @@
   <data name="LocationPlaceholder" xml:space="preserve"><value>会议室、大楼或视频会议链接</value></data>
   <data name="FollowUpOfMeeting" xml:space="preserve"><value>延续自会议</value></data>
   <data name="Attendees" xml:space="preserve"><value>参会人员</value></data>
-  <data name="AttendeesPlaceholder" xml:space="preserve"><value>搜索要邀请的人员</value></data>
-  <data name="NoEligibleAttendees" xml:space="preserve"><value>未找到符合条件的人员。只有担任职位的在职租户用户才能被邀请。</value></data>
   <data name="AddAgendaItem" xml:space="preserve"><value>添加</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>议程项</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>移除参会人员</value></data>
@@ -110,6 +108,15 @@
   <data name="ErrorReportInvalidPeriod" xml:space="preserve"><value>报告期间的结束日期必须晚于开始日期。</value></data>
   <data name="ErrorReportExportTooLarge" xml:space="preserve"><value>此报告行数过多，无法导出。请缩小期间或筛选范围。</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>输入姓名或职位…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>请至少输入 2 个字符进行搜索。</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>没有找到符合此搜索的人员。</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>正在搜索…</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>短时间内搜索次数过多。请稍候再试。</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>无法完成搜索，请稍后重试。</value></data>
+  <data name="NewOrganizerRequired" xml:space="preserve"><value>请选择新的组织者。</value></data>
+  <data name="MeetingNotAccessible" xml:space="preserve"><value>您无权访问的会议</value></data>
+  <data name="MeetingsListTruncated" xml:space="preserve"><value>列表最多显示 10,000 个会议；其余会议请使用日历视图。</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>会议服务当前不可用。</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>请填写所有必填字段。</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>会议类型</value></data>

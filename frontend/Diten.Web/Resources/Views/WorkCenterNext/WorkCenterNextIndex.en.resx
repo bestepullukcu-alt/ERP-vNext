@@ -2511,7 +2511,4 @@
   <data name="DelegateTargetRequired" xml:space="preserve">
     <value>Choose who this approval is being delegated to.</value>
   </data>
-  <data name="DelegateNoEligiblePeople" xml:space="preserve">
-    <value>There is nobody this approval can be delegated to.</value>
-  </data>
 </root>

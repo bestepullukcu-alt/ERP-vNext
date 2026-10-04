@@ -71,6 +71,9 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
     {
         return await Collection
             .Find(u => u.TenantId == tenantId && u.IsDeleted == false)
+            // ATT-FIX1 — Skip/Limit needs an order to be a paging: without one, a sweep past 500 users can repeat a
+            // user and miss another (natural order is not guaranteed across reads).
+            .SortBy(u => u.Id)
             .Skip((page - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync(ct);

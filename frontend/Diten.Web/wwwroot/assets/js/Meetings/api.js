@@ -7,6 +7,8 @@
  */
 (function (global) {
     const BASE = '/Meetings/api';
+    const LIST_PAGE_SIZE = 200;   // = MeetingListLimits.MaxPageSize on the server
+    const LIST_MAX_PAGES = 50;
 
     const request = async (method, path, body) => {
         let response;
@@ -89,8 +91,19 @@
     const isConcurrencyConflict = (result) =>
         result?.status === 409 && (!result.reasonCode || result.reasonCode === 'MEETING_CONCURRENCY_CONFLICT');
 
+    /*
+     * BL-531 — the attendee search shares the task approver picker's people-search contract (BL-512); its two codes
+     * are not MeetingReasonCodes, so they live in their own map (the bridge guard above stays exact).
+     */
+    const PEOPLE_SEARCH_MESSAGE_KEYS = {
+        PEOPLE_SEARCH_TOO_SHORT: 'peopleSearchMinimumLength',
+        PEOPLE_SEARCH_RATE_LIMITED: 'errorPeopleSearchRateLimited'
+    };
+
     const failureMessage = (result) => {
         const t = (key) => global.MeetingsL10n?.t?.(key) ?? key;
+        const byPeopleSearch = PEOPLE_SEARCH_MESSAGE_KEYS[result?.reasonCode];
+        if (byPeopleSearch) { return t(byPeopleSearch); }
         const byReason = REASON_CODE_MESSAGE_KEYS[result?.reasonCode];
         if (byReason) { return t(byReason); }
         if (result?.reasonCode) {
@@ -114,6 +127,33 @@
          * above loses its pageSize the same way.
          */
         listQuery: (params) => request('GET', `/list?query=${encodeURIComponent(new URLSearchParams(params).toString())}`),
+        /*
+         * ATT-FIX1 — every meeting the reader may see, page by page: the server answers at most LIST_PAGE_SIZE rows
+         * per call (MeetingListLimits.MaxPageSize), so a caller that wants the whole set pages through it here rather
+         * than asking for 1000 at once. `data` is the plain array of rows.
+         * ATT-FIX2 — a failed page fails the whole read (no half list shown as if whole; the status travels, so a 401
+         * can renew the session); a row met twice (a meeting moved between pages) is kept once; and a set larger
+         * than LIST_MAX_PAGES pages is never cut SILENTLY — `truncated: true` lets the screen say so.
+         */
+        listAll: async (params = {}) => {
+            const rows = [];
+            const seen = new Set();
+            let total = 0;
+            for (let page = 1; page <= LIST_MAX_PAGES; page += 1) {
+                const query = new URLSearchParams(Object.assign({}, params, { page, pageSize: LIST_PAGE_SIZE })).toString();
+                const res = await request('GET', `/list?query=${encodeURIComponent(query)}`);
+                if (!res.ok || !res.data) { return Object.assign({}, res, { ok: false, data: [], truncated: false }); }
+                const items = Array.isArray(res.data.items) ? res.data.items : [];
+                items.forEach((row) => {
+                    if (row && !seen.has(row.id)) { seen.add(row.id); rows.push(row); }
+                });
+                total = Number(res.data.totalCount ?? rows.length);
+                if (page * LIST_PAGE_SIZE >= total || items.length === 0) {
+                    return { ok: true, status: 200, reasonCode: null, data: rows, truncated: false };
+                }
+            }
+            return { ok: true, status: 200, reasonCode: null, data: rows, truncated: rows.length < total };
+        },
         get: (id) => request('GET', `/${id}`),
         create: (payload) => request('POST', '', payload),
         update: (id, payload) => request('PUT', `/${id}`, payload),
@@ -145,7 +185,12 @@
         // ── S7 — continuation scheduling ─────────────────────────────────────
         scheduleFollowUp: (id, payload) => request('POST', `/${id}/follow-up`, payload),
 
-        lookupAttendees: () => request('GET', '/lookups/attendees'),
+        // BL-531 — SEARCH-ONLY (≥ 2 characters, ≤ 20 rows of four fields); the whole directory is never asked for.
+        // `data` is the plain array of rows, unwrapped HERE once, the way TasksApi.decisionMakers does it.
+        lookupAttendees: async ({ search } = {}) => {
+            const res = await request('GET', `/lookups/attendees?search=${encodeURIComponent(search ?? '')}`);
+            return Object.assign({}, res, { data: Array.isArray(res.data?.people) ? res.data.people : [] });
+        },
         lookupTypes: () => request('GET', '/lookups/types'),
 
         // ── S8 — Meeting Types (types-manage) ───────────────────────────────

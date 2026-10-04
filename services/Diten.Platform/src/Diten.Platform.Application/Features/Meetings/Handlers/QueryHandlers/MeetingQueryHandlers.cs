@@ -19,6 +19,7 @@ public sealed class GetMeetingByIdHandler : IRequestHandler<GetMeetingByIdQuery,
     private readonly IAgendaItemRepository _agendaItems;
     private readonly ICurrentUserContext _currentUser;
     private readonly IActorPermissionContext _permissions;
+    private readonly IUserDisplayNameResolver _displayNames;
 
     public GetMeetingByIdHandler(
         IMeetingRepository meetings,
@@ -26,7 +27,8 @@ public sealed class GetMeetingByIdHandler : IRequestHandler<GetMeetingByIdQuery,
         IMeetingAttendeeRepository attendees,
         IAgendaItemRepository agendaItems,
         ICurrentUserContext currentUser,
-        IActorPermissionContext permissions)
+        IActorPermissionContext permissions,
+        IUserDisplayNameResolver displayNames)
     {
         _meetings = meetings;
         _types = types;
@@ -34,6 +36,7 @@ public sealed class GetMeetingByIdHandler : IRequestHandler<GetMeetingByIdQuery,
         _agendaItems = agendaItems;
         _currentUser = currentUser;
         _permissions = permissions;
+        _displayNames = displayNames;
     }
 
     public async Task<Response<MeetingDto>> Handle(GetMeetingByIdQuery query, CancellationToken ct)
@@ -63,9 +66,30 @@ public sealed class GetMeetingByIdHandler : IRequestHandler<GetMeetingByIdQuery,
             : null;
         var followedBy = await _meetings.FindByFollowUpOfMeetingIdAsync(query.Id, ct);
 
-        return Response<MeetingDto>.Success(
-            MeetingEligibility.ToDto(meeting, type?.Name ?? string.Empty, attendees, agendaItems, followUpOfMeetingTitle: followUpOf?.Title, followedByMeeting: followedBy),
-            200, query.CorrelationId);
+        // ATT-FIX2 — the list's rule here too: a linked meeting's TITLE is shown only to a reader who may open that
+        // meeting. Its id stays (the link exists); the title is null and the screen says "a meeting you cannot open".
+        async Task<string?> VisibleTitleAsync(Meeting? linked)
+        {
+            if (linked is null) { return null; }
+            var linkedAttendees = (await _attendees.ListByMeetingIdAsync(linked.Id, ct)).Select(a => a.UserId).ToHashSet();
+            return MeetingEligibility.CanView(linked, _currentUser.UserId, hasReadAll, linkedAttendees) ? linked.Title : null;
+        }
+
+        var followUpOfTitle = await VisibleTitleAsync(followUpOf);
+        var followedByTitle = await VisibleTitleAsync(followedBy);
+
+        // BL-531 — the organizer and every attendee named in ONE batched call; the screen no longer needs the directory.
+        var names = await MeetingPersonNames.ResolveAsync(
+            _displayNames, attendees.Select(a => a.UserId).Append(meeting.OrganizerUserId), ct);
+        var dto = MeetingEligibility.ToDto(meeting, type?.Name ?? string.Empty, attendees, agendaItems, followUpOfMeetingTitle: followUpOfTitle, followedByMeeting: followedBy);
+        dto = dto with
+        {
+            FollowedByMeetingTitle = followedByTitle,
+            Attendees = dto.Attendees.Select(a => a with { DisplayName = MeetingPersonNames.NameOf(names, a.UserId) }).ToList(),
+            OrganizerDisplayName = MeetingPersonNames.NameOf(names, meeting.OrganizerUserId)
+        };
+
+        return Response<MeetingDto>.Success(dto, 200, query.CorrelationId);
     }
 }
 
@@ -77,6 +101,7 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
     private readonly IRecordLinkService _recordLinks;
     private readonly ICurrentUserContext _currentUser;
     private readonly IActorPermissionContext _permissions;
+    private readonly IUserDisplayNameResolver _displayNames;
 
     public GetMeetingListHandler(
         IMeetingRepository meetings,
@@ -84,7 +109,8 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
         IMeetingAttendeeRepository attendees,
         IRecordLinkService recordLinks,
         ICurrentUserContext currentUser,
-        IActorPermissionContext permissions)
+        IActorPermissionContext permissions,
+        IUserDisplayNameResolver displayNames)
     {
         _meetings = meetings;
         _types = types;
@@ -92,6 +118,7 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
         _recordLinks = recordLinks;
         _currentUser = currentUser;
         _permissions = permissions;
+        _displayNames = displayNames;
     }
 
     public async Task<Response<MeetingListResultDto>> Handle(GetMeetingListQuery query, CancellationToken ct)
@@ -105,27 +132,36 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
             .GroupBy(a => a.MeetingId)
             .ToDictionary(g => g.Key, g => g.Select(a => a.UserId).ToHashSet());
 
-        var linkedSource = await _recordLinks.ListBySourceAsync(meetingIds, ct);
-        var linkedTarget = await _recordLinks.ListByTargetAsync(meetingIds, ct);
-        var hasLinkedTasks = linkedSource.Select(l => l.SourceRecordId)
-            .Concat(linkedTarget.Select(l => l.TargetRecordId))
-            .ToHashSet();
+        var filter = query.Filter;
+        // ATT-FIX2 — a titles-only reader (the create form's follow-up list) needs visibility and titles, nothing
+        // else: no linked-task reads (unless it filters by them), no type names, no person names.
+        var titlesOnly = filter.TitlesOnly;
+        var hasLinkedTasks = new HashSet<Guid>();
+        if (!titlesOnly || filter.HasLinkedTasksOnly == true)
+        {
+            var linkedSource = await _recordLinks.ListBySourceAsync(meetingIds, ct);
+            var linkedTarget = await _recordLinks.ListByTargetAsync(meetingIds, ct);
+            hasLinkedTasks = linkedSource.Select(l => l.SourceRecordId)
+                .Concat(linkedTarget.Select(l => l.TargetRecordId))
+                .ToHashSet();
+        }
 
-        var types = await _types.ListAsync(ct);
-        var typeNameById = types.ToDictionary(t => t.Id, t => t.Name);
-        // MOD-0357 S7 — `all` already holds every meeting in the tenant; titles for FollowUpOfMeetingId are
-        // resolved from THAT same in-memory list, never a second query per row.
-        var titleById = all.ToDictionary(m => m.Id, m => m.Title);
-
+        var typeNameById = titlesOnly
+            ? new Dictionary<Guid, string>()
+            : (await _types.ListAsync(ct)).ToDictionary(t => t.Id, t => t.Name);
         var hasReadAll = _permissions.IsPlatformActor || _permissions.Has(MeetingPermissions.ReadAll);
         var callerId = _currentUser.UserId;
 
-        var filter = query.Filter;
         var visible = all.Where(m =>
         {
             var attendeeIds = attendeesByMeeting.GetValueOrDefault(m.Id, []);
             return MeetingEligibility.CanView(m, callerId, hasReadAll, attendeeIds);
-        });
+        }).ToList();
+
+        // MOD-0357 S7 — titles for FollowUpOfMeetingId come from the same in-memory list, never a query per row.
+        // ATT-FIX1 — but only from meetings THIS reader may see: the title of a meeting they cannot open is not
+        // theirs to read; the id stays, the title is null and the screen shows its own placeholder.
+        var titleById = visible.ToDictionary(m => m.Id, m => m.Title);
 
         var filtered = visible
             .Where(m => filter.FromUtc is null || m.StartAt >= filter.FromUtc)
@@ -135,22 +171,36 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
             .Where(m => filter.IAmAttendeeOnly != true || attendeesByMeeting.GetValueOrDefault(m.Id, []).Contains(callerId))
             .Where(m => filter.HasLinkedTasksOnly != true || hasLinkedTasks.Contains(m.Id))
             .OrderByDescending(m => m.StartAt)
+            // ATT-FIX2 — a tie-break, so two meetings at the same moment never swap between pages (a reader paging
+            // through would otherwise see one twice and the other never).
+            .ThenBy(m => m.Id)
             .ToList();
 
         var totalCount = filtered.Count;
         var page = Math.Max(filter.Page, 1);
-        var pageSize = Math.Max(filter.PageSize, 1);
+        // ATT-FIX1 — one page is bounded on the SERVER: a client asking for 1000 (or a million) gets at most
+        // MeetingListLimits.MaxPageSize rows and pages on with `page` (MeetingsApi.listAll does).
+        var pageSize = Math.Clamp(filter.PageSize, 1, MeetingListLimits.MaxPageSize);
 
-        var items = filtered
+        var pageRows = filtered
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .ToList();
+        // BL-531 — the page's organizers named in ONE batched call (never per row). ATT-FIX1 — and only when the
+        // caller shows them: a reader that wants titles only (the create form's follow-up list) asks includeNames=false.
+        var organizerNames = filter.IncludeNames && !titlesOnly
+            ? await MeetingPersonNames.ResolveAsync(_displayNames, pageRows.Select(m => m.OrganizerUserId), ct)
+            : new Dictionary<Guid, string>();
+
+        var items = pageRows
             .Select(m => new MeetingListItemDto(
                 m.Id, m.Title, m.MeetingTypeId, typeNameById.GetValueOrDefault(m.MeetingTypeId, string.Empty),
                 m.StartAt, m.EndAt, m.OrganizerUserId, m.Lifecycle,
                 attendeesByMeeting.GetValueOrDefault(m.Id, []).Contains(callerId),
                 hasLinkedTasks.Contains(m.Id),
                 m.FollowUpOfMeetingId,
-                m.FollowUpOfMeetingId is { } sourceId ? titleById.GetValueOrDefault(sourceId) : null))
+                m.FollowUpOfMeetingId is { } sourceId ? titleById.GetValueOrDefault(sourceId) : null,
+                MeetingPersonNames.NameOf(organizerNames, m.OrganizerUserId)))
             .ToList();
 
         return Response<MeetingListResultDto>.Success(new MeetingListResultDto(items, totalCount), 200, query.CorrelationId);
@@ -266,15 +316,18 @@ public sealed class GetMeetingTypeByIdHandler : IRequestHandler<GetMeetingTypeBy
 
 /// <summary>S3 — the attendee picker's own data source. Forwards to MOD-0024's own person-lookup query
 /// (<c>Purpose: Decision</c>, scope-exempt per D2) rather than resolving eligible users a second way.</summary>
+/// <para>BL-531 — and since BL-512 that seam is SEARCH-ONLY: this forwards to the task approver picker's own
+/// search (<see cref="GetTaskDecisionMakerLookupQuery"/>) — one rule, one fold, one limit; the whole directory is
+/// never returned.</para>
 public sealed class GetMeetingAttendeeLookupHandler
-    : IRequestHandler<GetMeetingAttendeeLookupQuery, Response<AssignablePersonLookupDto>>
+    : IRequestHandler<GetMeetingAttendeeLookupQuery, Response<DecisionMakerLookupDto>>
 {
     private readonly IMediator _mediator;
 
     public GetMeetingAttendeeLookupHandler(IMediator mediator) => _mediator = mediator;
 
-    public Task<Response<AssignablePersonLookupDto>> Handle(GetMeetingAttendeeLookupQuery query, CancellationToken ct)
-        => _mediator.Send(new GetTaskAssignmentPersonLookupQuery(query.CorrelationId, TaskPersonLookupPurpose.Decision), ct);
+    public Task<Response<DecisionMakerLookupDto>> Handle(GetMeetingAttendeeLookupQuery query, CancellationToken ct)
+        => _mediator.Send(new GetTaskDecisionMakerLookupQuery(query.CorrelationId, query.Search, query.Ids), ct);
 }
 
 /// <summary>S6 — every minutes version for this meeting, newest first. Same D3 visibility gate every other
@@ -323,11 +376,8 @@ public sealed class GetMeetingMinutesHandler : IRequestHandler<GetMeetingMinutes
         }
 
         var versions = await _minutes.ListByMeetingIdAsync(query.MeetingId, ct);
-        var dtos = new List<MeetingMinutesVersionDto>(versions.Count);
-        foreach (var version in versions)
-        {
-            dtos.Add(await MinutesEligibility.ToDtoAsync(version, _displayNames, ct));
-        }
+        // ATT-FIX2 — one bounded name call for every version (it was one unbounded call PER version).
+        var dtos = await MinutesEligibility.ToDtosAsync(versions, _displayNames, ct);
 
         return Response<MeetingMinutesDto>.Success(new MeetingMinutesDto(dtos), 200, query.CorrelationId);
     }
@@ -375,6 +425,8 @@ public sealed class GetMeetingSeriesListHandler
         var types = await _types.ListAsync(ct);
         var typeNameById = types.ToDictionary(t => t.Id, t => t.Name);
 
+        // ATT-FIX1 — the series LIST shows no people (name, type, cadence, state), so it resolves no names; the
+        // one series read (GetMeetingSeriesByIdHandler) does, for the edit form.
         IReadOnlyList<MeetingSeriesDto> dtos = all
             .Select(s => MeetingSeriesMapping.ToDto(s, typeNameById.GetValueOrDefault(s.MeetingTypeId)))
             .ToList();
@@ -386,11 +438,13 @@ public sealed class GetMeetingSeriesByIdHandler : IRequestHandler<GetMeetingSeri
 {
     private readonly IMeetingSeriesRepository _series;
     private readonly IMeetingTypeRepository _types;
+    private readonly IUserDisplayNameResolver _displayNames;
 
-    public GetMeetingSeriesByIdHandler(IMeetingSeriesRepository series, IMeetingTypeRepository types)
+    public GetMeetingSeriesByIdHandler(IMeetingSeriesRepository series, IMeetingTypeRepository types, IUserDisplayNameResolver displayNames)
     {
         _series = series;
         _types = types;
+        _displayNames = displayNames;
     }
 
     public async Task<Response<MeetingSeriesDto>> Handle(GetMeetingSeriesByIdQuery query, CancellationToken ct)
@@ -402,6 +456,9 @@ public sealed class GetMeetingSeriesByIdHandler : IRequestHandler<GetMeetingSeri
         }
 
         var type = await _types.GetByIdAsync(series.MeetingTypeId, ct);
-        return Response<MeetingSeriesDto>.Success(MeetingSeriesMapping.ToDto(series, type?.Name), 200, query.CorrelationId);
+        // BL-531 — the stored organizer and attendees come back named, so the edit form never resolves ids itself.
+        var names = await MeetingPersonNames.ResolveAsync(_displayNames, series.AttendeeUserIds.Append(series.OrganizerUserId), ct);
+        return Response<MeetingSeriesDto>.Success(
+            MeetingSeriesMapping.WithNames(MeetingSeriesMapping.ToDto(series, type?.Name), names), 200, query.CorrelationId);
     }
 }

@@ -575,12 +575,15 @@ const TaskFieldDefinitionList = (function () {
                 columnDefs: [
                     { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
                     { targets: 1, orderable: false, searchable: false, responsivePriority: 3, className: 'dt-checkboxes-cell cell-fit', render: (data) => `<input type="checkbox" class="dt-checkboxes form-check-input" value="${data}">` },
-                    { targets: 2, render: (data) => `<span class="fw-medium text-heading">${data ?? ''}</span>` },
+                    // ATT-FIX2 (security) — a tenant administrator types the code and the section; both are TEXT here.
+                    { targets: 2, render: (data) => `<span class="fw-medium text-heading">${escapeHtml(data)}</span>` },
                     { targets: 3, render: (data, type, full) => renderLabel(full) },
                     {
                         targets: 4,
-                        render: (data) => data ? `<span class="badge bg-label-info">${L['ValueType' + data] || data}</span>` : ''
+                        render: (data) => data ? `<span class="badge bg-label-info">${escapeHtml(L['ValueType' + data] || data)}</span>` : ''
                     },
+                    // The section had no renderer at all, so DataTables inserted the administrator's text as HTML.
+                    { targets: 5, render: (data) => escapeHtml(data) },
                     {
                         targets: 6,
                         render: (data) => data

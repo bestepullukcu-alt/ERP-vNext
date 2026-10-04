@@ -2511,7 +2511,4 @@
   <data name="DelegateTargetRequired" xml:space="preserve">
     <value>请选择此审批的受托人。</value>
   </data>
-  <data name="DelegateNoEligiblePeople" xml:space="preserve">
-    <value>没有可以委托此审批的人员。</value>
-  </data>
 </root>

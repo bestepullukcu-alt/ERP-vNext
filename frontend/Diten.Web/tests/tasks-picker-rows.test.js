@@ -312,13 +312,15 @@ describe("the same row on every picker — five on the form, two in the offcanva
     expect(option.ditenRow.displayName).toBe("Agent Sub");
   });
 
-  test("the form page fills all five person/position pickers through these renderers", () => {
+  test("the form page fills its listed person/position pickers through these renderers", () => {
     const source = read("wwwroot", "assets", "js", "Tasks", "form-page.js");
-    ["taskAssignee", "taskWatchers", "taskReviewer", "taskApprovalManager"].forEach((id) => {
+    ["taskAssignee", "taskWatchers"].forEach((id) => {
       const call = new RegExp(`renderPersonOptions\\(el\\('${id}'\\)`);
       expect(source, `${id} is not filled by renderPersonOptions`).toMatch(call);
     });
     expect(source).toMatch(/renderPositionOptions\(el\('taskPoolPosition'\)/);
+    // BL-512 — reviewer and approver are SEARCHED, never listed; their one row label is TaskForm.peopleSearchLabel.
+    expect(source).toContain("global.TaskForm.peopleSearchLabel(row, unavailable)");
   });
 
   test("the quick-create offcanvas uses the SAME two renderers — one draft, one vocabulary", () => {

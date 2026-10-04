@@ -24,6 +24,7 @@ const MeetingsList = (function () {
             ShowAll: t('showAll'), MeetingType: t('meetingType'), Organizer: t('organizer'),
             StatusScheduled: t('statusScheduled'), StatusCancelled: t('statusCancelled'), StatusCompleted: t('statusCompleted'),
             ErrorOccurred: t('errorOccurred'),
+            ListTruncated: t('meetingsListTruncated'),
             // BL-390 — an organizer id this tenant's eligible-people list does not resolve (deleted/test
             // identity) must never render as the raw GUID; the same label everywhere it could otherwise leak.
             UnknownUser: t('unknownUser')
@@ -45,6 +46,12 @@ const MeetingsList = (function () {
         { text: L.StatusCancelled, cls: 'bg-label-secondary' },
         { text: L.StatusCompleted, cls: 'bg-label-success' }
     ][lifecycle] || { text: lifecycle, cls: 'bg-label-primary' });
+
+    // ATT-FIX1 (security) — every text a person typed (a title, a name) goes into DataTables' HTML ESCAPED: a meeting
+    // titled `<img src=x onerror=…>` must read as text for everyone who opens the list, never run.
+    const esc = (value) => String(value ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
     const boolBadge = (value) => value
         ? `<span class="badge bg-label-success">${L.Yes}</span>`
@@ -108,6 +115,8 @@ const MeetingsList = (function () {
         types.forEach((t) => $type.append(new Option(t.name, t.id)));
 
         const organizerIds = Array.from(new Set(rows.map((r) => r.organizerUserId)));
+        organizerNamesById = {};
+        rows.forEach((r) => { if (r.organizerDisplayName) { organizerNamesById[r.organizerUserId] = r.organizerDisplayName; } });
         const $organizer = $('#filterOrganizer');
         $organizer.empty();
         organizerIds.forEach((id) => $organizer.append(new Option(organizerNamesById[id] || L.UnknownUser, id)));
@@ -175,17 +184,13 @@ const MeetingsList = (function () {
         edit: ({ id }) => { if (id) { window.location.href = `/Meetings/${id}/Edit`; } }
     };
 
+    /*
+     * BL-531 — the organizer's name comes WITH each list row (organizerDisplayName, resolved by the list read
+     * itself); this page no longer downloads the people directory to put a name on an id.
+     */
     const loadLookupsThenInit = async () => {
-        const [typesResult, attendeesResult] = await Promise.all([
-            window.MeetingsApi.lookupTypes(),
-            window.MeetingsApi.lookupAttendees()
-        ]);
-        const types = typesResult.ok ? (typesResult.data || []) : [];
-        organizerNamesById = {};
-        if (attendeesResult.ok) {
-            (attendeesResult.data?.people || []).forEach((p) => { organizerNamesById[p.userId] = p.displayName || L.UnknownUser; });
-        }
-        return types;
+        const typesResult = await window.MeetingsApi.lookupTypes();
+        return typesResult.ok ? (typesResult.data || []) : [];
     };
 
     const initDataTable = async () => {
@@ -198,12 +203,27 @@ const MeetingsList = (function () {
         // window.DtDefaults.create(...)
         dt = window.DitenDataTable.createCrudTable({
             tableEl: dtTableEl,
-            ajax: {
-                // The proxy forwards ONE `query` parameter (MeetingsController.ApiList); a bare ?pageSize never
-                // reached Platform and the list stopped at its default 25 (CT acceptance, calendar 2c review).
-                url: '/Meetings/api/list?query=' + encodeURIComponent('pageSize=1000'),
-                type: 'GET',
-                xhrFields: { withCredentials: true }
+            // ATT-FIX1 — the server answers at most 200 rows a page, so the list pages through EVERY meeting the
+            // reader may see (MeetingsApi.listAll) instead of asking for 1000 in one call; filtering stays local.
+            // ATT-FIX2 — the function source keeps what the object one had: a 401 renews the session (the shared
+            // DtDefaults helper; on failure it goes to login), any other failure is said and the table still draws
+            // (empty), a truncated set is said, and a throw never leaves the skeleton up.
+            ajax: (data, callback) => {
+                window.MeetingsApi.listAll()
+                    .then((res) => {
+                        if (res.status === 401) {
+                            window.DtDefaults?.handleUnauthorized?.();
+                        } else if (!res.ok) {
+                            window.showToast?.(L.ErrorOccurred, 'error');
+                        } else if (res.truncated) {
+                            window.showToast?.(L.ListTruncated, 'warning');
+                        }
+                        callback({ data: res.ok ? (res.data || []) : [] });
+                    })
+                    .catch(() => {
+                        window.showToast?.(L.ErrorOccurred, 'error');
+                        callback({ data: [] });
+                    });
             },
             actions: { onRowAction: rowActionHandlers },
             config: {
@@ -222,17 +242,17 @@ const MeetingsList = (function () {
                 ],
                 columnDefs: [
                     { targets: 0, className: 'control', searchable: false, orderable: false, render: () => '' },
-                    { targets: 1, render: (data) => `<span class="fw-medium text-heading">${data ?? ''}</span>` },
+                    { targets: 1, render: (data) => `<span class="fw-medium text-heading">${esc(data)}</span>` },
                     {
                         targets: 2,
                         render: (data) => {
                             const type = types.find((t) => t.id === data);
-                            return type ? type.name : '-';
+                            return type ? esc(type.name) : '-';
                         }
                     },
                     { targets: 3, render: (data) => formatDateTime(data) },
                     { targets: 4, render: (data) => formatDateTime(data) },
-                    { targets: 5, render: (data) => organizerNamesById[data] || L.UnknownUser },
+                    { targets: 5, render: (data, type, full) => esc(full?.organizerDisplayName || organizerNamesById[data] || L.UnknownUser) },
                     { targets: 6, render: (data) => boolBadge(data) },
                     {
                         targets: 7,
@@ -283,6 +303,7 @@ const MeetingsList = (function () {
             initDataTable();
         },
         matchesFilters,
+        populateFilterOptions,
         getAppliedFilters: () => appliedFilters,
         applyFilters,
         mountInlineFilter,

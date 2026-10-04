@@ -243,10 +243,9 @@
     };
 
     const reload = async () => {
-        const [meetingResult, minutesResult, peopleResult] = await Promise.all([
+        const [meetingResult, minutesResult] = await Promise.all([
             window.MeetingsApi.get(meetingId),
-            window.MeetingsApi.getMinutes(meetingId),
-            window.MeetingsApi.lookupAttendees()
+            window.MeetingsApi.getMinutes(meetingId)
         ]);
 
         if (!meetingResult.ok || !minutesResult.ok) {
@@ -260,9 +259,10 @@
 
         currentMeeting = meetingResult.data;
         eligiblePeopleById = {};
-        // BL-390 — same posture as Meetings/form.js: an eligible-people entry missing its own displayName does
-        // not get backfilled with the raw id (personName()/publishedBy above are what read this dictionary).
-        (peopleResult.ok ? peopleResult.data?.people || [] : []).forEach((p) => { eligiblePeopleById[p.userId] = p.displayName || tShared('unknownUser'); });
+        // BL-531 — the people this editor names are THIS meeting's attendees (attendance rows, "decided by"), and
+        // their names come with the meeting read itself; the people directory is never asked for. BL-390's rule
+        // stands: a name that did not resolve reads "unknown user", never the raw id.
+        (currentMeeting.attendees || []).forEach((a) => { eligiblePeopleById[a.userId] = a.displayName || tShared('unknownUser'); });
         versions = minutesResult.data?.versions || [];
 
         await loadLinkedTasks();

@@ -102,4 +102,5 @@
   <data name="ScopeTenant" xml:space="preserve"><value>Весь тенант</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>Мои совещания</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>У вас нет доступа к этому отчёту.</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
 </root>

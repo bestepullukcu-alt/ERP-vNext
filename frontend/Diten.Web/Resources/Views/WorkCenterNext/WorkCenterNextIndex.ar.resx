@@ -2511,7 +2511,4 @@
   <data name="DelegateTargetRequired" xml:space="preserve">
     <value>اختر الشخص الذي تُفوَّض إليه هذه الموافقة.</value>
   </data>
-  <data name="DelegateNoEligiblePeople" xml:space="preserve">
-    <value>لا يوجد أحد يمكن تفويض هذه الموافقة إليه.</value>
-  </data>
 </root>
