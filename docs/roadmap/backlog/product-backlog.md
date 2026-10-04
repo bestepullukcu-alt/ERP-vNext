@@ -8021,6 +8021,20 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-548
+
+**Test dosyalarında sır biçimli sabitler (`password=hunter2`, `user:…@` bağlantı dizgileri, AKIA / ghp_ biçimleri): dış gizli tarayıcılar ve GitHub push koruması tetiklenebilir**
+
+DURUM: AÇIK · SAHİP: CT (altyapı) · BULAN: WP-WF-ENGINE-CANDIDATES-01 D2-FIX4 ve WP-EMAIL-SHELL-01 FIX3 gözden geçirmeleri · KAYIT: 2026-10-04
+
+`Eventing.Tests/TenantLifecycleEventContractTests.cs:133, 138` (`password=hunter2`) ve en az altı başka test dosyasında benzer dizgiler var; depo içi
+tarayıcı yalnız `appsettings.json` okuyor. E-posta FIX4 kendi dosyalarını çalışma anında birleştirmeye çeviriyor; motor D2-FIX4 kendi bağlantı dizgisini
+`TEST-ONLY-NOT-A-SECRET@example.invalid` yaptı. Düzeltme: depo çapında tarama (gitleaks varsayılan kuralları), bulunan test sabitleri çalışma anında
+birleştirilir ya da açıkça sahte biçime çevrilir; tarayıcı `tests/**`'ı da okur (sahte biçim izin listesi ile). Karşılaştırma: GitHub push protection ve
+gitleaks CI adımı bu sınıfı commit anında durdurur. Gelecek regresyon riski: 🟢.
+
+---
+
 ### BL-547
 
 **Onay motorunun güvenilir kanıt ucu kararsız kapanışı (Cancelled / TimedOut) ayırt etmiyor: MDM her kararsız kapanışı karantinaya alıyor**
