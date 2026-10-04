@@ -8019,6 +8019,63 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-545
+
+**E-posta yeniden deneme kapıları süreçler arasında ayrışabilir; değişkenleri yalnız tarama siler**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0027 Bildirimler) · BULAN: WP-EMAIL-SHELL-01 FIX3 bağımsız gözden geçirmesi · KAYIT: 2026-10-04
+
+FIX3'te sıraya alma, kayıtçının üç kapısını (zamanlayıcı açık, standart işler kayıtlı, işin kendi bayrağı) okuyor; tek süreçte ikisi aynı seçenekten
+okuduğu için ayrışmıyor. Ayrışma birden çok kopyada olur: API kopyalarında işler kapalı, bir işçi kopyasında açıksa her hata kalıcı işaretlenir ve
+işçinin taraması hiç yeniden denemez. İş bayrağı sıraya alındıktan SONRA kapatılırsa ya da tarama hiç koşmazsa o satırların `VariablesJson`'ı süresiz
+kalır. Düzeltme: işletim notu (bütün kopyalarda aynı `BackgroundJobs` yapılandırması; bkz. BL-536) + bayrak kapanınca bekleyen satırları kapatan tek
+seferlik adım. Karşılaştırma: SAP'de arka plan işi sunucu grubuna bağlanır (SM36 hedef sunucu), Oracle ESS'te iş tanımı tek merkezden çalışır.
+Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-544
+
+**Bildirim şablonu kaydında sürüm denetimi okuma-sonra-yazma: milisaniyelik pencerede son yazan kazanır**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0027 Bildirimler) · BULAN: WP-EMAIL-SHELL-01 FIX3 sapması (CT kabul etti) · KAYIT: 2026-10-04
+
+FIX3 şablon kaydına `RowVersion` ekledi; eski okumadan yapılan kayıt 409 TEMPLATE_CHANGED alıyor. Denetim işleyicide taze okumaya karşı yapılıyor;
+okuma ile `ReplaceOne` arasındaki milisaniyelik pencerede iki kayıt hâlâ son-yazan-kazanır. Paket şablon deposuna dokunamadığı için atomik yazım
+yapılmadı. Düzeltme: depoda `ReplaceOne` süzgecine sürüm (BL-533 deseni, `ReadVersionWrites`). Karşılaştırma: SAP'de belge kilidi (enqueue), Oracle'da
+OBJECT_VERSION_NUMBER. Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-543
+
+**ABB okuma yolundaki `PendingSinceUtcTicks` doldurması geçicidir; kaldırılmalı**
+
+DURUM: AÇIK (ABB kabulünden sonra) · SAHİP: CT (MDM ürün modülleri devralma) · BULAN: WP-MDM-ABB-ACCEPT-01 FIX3 madde 9 kararı · KAYIT: 2026-10-04
+
+ABB bekleyen işleri sıralamak için `PendingSinceUtcTicks` alanını kullanıyor; FIX3 öncesi satırlarda alan yok. CT kararıyla (FIX4) ilk sayfa okunmadan
+önce kiracı sınırı içinde, süreç başına kiracı başına bir kez, hata okumayı düşürmeyecek biçimde dolduruluyor. ABB hiç yayınlanmadı; eski satırlar
+yalnız dev verisinde. Kaldırma: dev verisi bir kez dolduktan (ya da sıfırlandıktan) sonra doldurma kodu ve testleri silinir; okuma yolunda yazım kalmaz.
+Karşılaştırma: SAP ve Oracle bu tür alan doldurmayı sürüm geçiş programında (XPRA / upgrade script) bir kez yapar, okuma yolunda yapmaz.
+Gelecek regresyon riski: 🟢 (silme).
+
+---
+
+### BL-542
+
+**Auth'ta silinmiş kullanıcı Platform'da pozisyonunu tutmaya devam ediyor; onaycı seçicisinde adsız aday olarak görünüyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0024 Görev Merkezi · Organizasyon) · BULAN: BL-512 canlı denetimi (dev, 2026-10-04) · KAYIT: 2026-10-04
+
+Dev'de "Development Team Lead" pozisyonunun sahibi Auth'ta `IsDeleted=true`; Platform'daki pozisyon ataması açık kaldı. Kişi araması bu sahibi aday
+olarak döndürüyor, Auth adı vermediği için ad boş; adıyla aranamıyor, pozisyon adıyla ("lead") bulunuyor. Silinmiş kişi onay veremez: seçilirse onay
+sahipsiz kalır. Düzeltme: (a) rehber, Auth'un tam cevabında adı olmayan (silinmiş / yok) kişiyi aday saymaz (Auth erişilemiyorsa bugünkü "eksik
+rehber" kuralı geçerli); (b) kullanıcı silinince / devre dışı kalınca pozisyon atamaları biter (işten ayrılış akışı, HCM ile birlikte). Karşılaştırma:
+SAP HCM'de ayrılış eylemi pozisyon atamasını sonlandırır (PA40), Oracle HCM'de sonlandırma atamayı kapatır ve onay hiyerarşisinden düşürür.
+Gelecek regresyon riski: 🟡 (onay zinciri çözümü).
+
+---
+
 ### BL-541
 
 **Toplantı raporu ve dışa aktarımı, toplantıdan doğan görevlerin başlığını, sorumlusunu ve bitiş tarihini görev okuma kuralına sormadan gösteriyor; ters yönde görev okuru toplantı başlığını görüyor**
