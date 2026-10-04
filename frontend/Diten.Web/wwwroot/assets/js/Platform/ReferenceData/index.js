@@ -666,8 +666,9 @@ const ReferenceDataList = (function () {
                 dataSrc: unwrapSets,
                 headers: getAuthHeaders(),
                 // BL-515: the failure itself is shown by the list component, in the table, in the reader's language.
-                // This page only takes its own "loading" notice down, then hands the failure over (`false`).
-                error: () => { show(loadingEl, false); return false; }
+                // This page only takes its own "loading" and "empty" notices down, then hands the failure over (`false`):
+                // "no records" beside "could not be loaded" would contradict it.
+                error: () => { show(loadingEl, false); show(emptyEl, false); return false; }
             },
             actions: { onRowAction: rowActionHandlers },
             config: {
@@ -770,7 +771,9 @@ const ReferenceDataList = (function () {
                     const tableApi = this.api();
                     const count = tableApi.rows({ filter: 'applied' }).count();
                     show(loadingEl, false);
-                    show(emptyEl, count === 0);
+                    // A list that failed to load is not an empty list: while the component shows the failure in the
+                    // table, every redraw (sort, search, column) keeps the empty notice down (CT-SHELL-FIX1, item 8).
+                    show(emptyEl, count === 0 && !window.DtDefaults.hasLoadError?.(tableApi));
                     window.DtDefaults.updateVisualState(tableApi, getAppliedFilterCount());
                 },
                 preDrawCallback: function () {

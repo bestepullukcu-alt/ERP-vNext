@@ -1103,7 +1103,7 @@
     <value>Bu listeyi görme yetkiniz yok.</value>
   </data>
   <data name="DtRetry" xml:space="preserve">
-    <value>Yeniden dene</value>
+    <value>Yeniden Dene</value>
   </data>
   <data name="ShellSearchPlaceholder" xml:space="preserve">
     <value>Ara ({0})</value>

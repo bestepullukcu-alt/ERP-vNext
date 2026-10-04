@@ -38,8 +38,8 @@
     data-nav-load-failed="@SharedLocalizer["NavigationLoadFailed"]"
     data-nav-load-failed-hint="@SharedLocalizer["NavigationLoadFailedHint"]"
     @* BL-520 — the top-bar search box's label, localized here for the same reason; main.js puts the platform's own
-       shortcut name (⌘K on macOS, Ctrl+K elsewhere) into its {0}. *@
-    data-search-placeholder="@SharedLocalizer["ShellSearchPlaceholder"]">
+       shortcut name (⌘K on macOS, Ctrl+K elsewhere) into its {0}. A missing resource omits the attribute (never the key). *@
+    data-search-placeholder="@Diten.Web.Services.Navigation.ShellSearchLabel.Template(SharedLocalizer)">
 
 <head>
     <meta charset="utf-8" />

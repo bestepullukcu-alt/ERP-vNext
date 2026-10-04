@@ -17,8 +17,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// BL-517 — incoming-request and outgoing-client log lines keep their path and lose their query string (person searches
-// put name fragments there). Levels are unchanged; see QueryStringRedactingLoggerFactory.
+// BL-517 — every log line (message, structured values, scopes; every category) keeps a URL's path and loses its query
+// string (person searches put name fragments there). Levels are unchanged; see QueryStringRedactingLoggerFactory.
 Diten.Web.Services.Http.QueryStringRedactingLoggerFactory.AddQueryStringRedaction(builder.Services);
 
 /*
