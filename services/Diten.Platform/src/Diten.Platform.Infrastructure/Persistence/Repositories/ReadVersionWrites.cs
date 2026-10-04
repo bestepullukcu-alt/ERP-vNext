@@ -10,8 +10,14 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 /// meanwhile with its stale N copy (a published minutes row put back to Draft, say), and the filter happily matches.
 /// <para>
 /// Two conditions, both required: the document in hand is the one expected (<see cref="IsTheDocumentRead{T}"/>),
-/// and the stored document is still at that version (the filter). A refusal leaves the entity exactly as it was
-/// handed in, so a caller that goes on using it never carries a version nobody stored.
+/// and the stored document is still at that version — inside the repository's own scope (tenant, not deleted). A
+/// refusal leaves the entity exactly as it was handed in, so a caller that goes on using it never carries a version
+/// nobody stored.
+/// </para>
+/// <para>
+/// The session overloads write inside the caller's Platform transaction. A write that succeeds there moves the entity
+/// to the next version before anything is committed; when the transaction is aborted and run again, the caller first
+/// puts back the versions it read (<c>ReadVersionSnapshot</c>).
 /// </para>
 /// </summary>
 internal static class ReadVersionWrites
@@ -20,8 +26,40 @@ internal static class ReadVersionWrites
     public static bool IsTheDocumentRead<T>(T entity, int expectedVersion) where T : BaseEntity
         => entity.Version == expectedVersion;
 
-    public static async Task<bool> ReplaceAsync<T>(
+    public static Task<bool> ReplaceAsync<T>(
         IMongoCollection<T> collection,
+        FilterDefinition<T> scope,
+        T entity,
+        int expectedVersion,
+        CancellationToken ct) where T : BaseEntity
+        => ReplaceCoreAsync(collection, null, scope, entity, expectedVersion, ct);
+
+    public static Task<bool> ReplaceAsync<T>(
+        IMongoCollection<T> collection,
+        IClientSessionHandle session,
+        FilterDefinition<T> scope,
+        T entity,
+        int expectedVersion,
+        CancellationToken ct) where T : BaseEntity
+        => ReplaceCoreAsync(collection, session, scope, entity, expectedVersion, ct);
+
+    /// <summary>An insert inside the caller's transaction, under the base repository's own rule for every insert: the
+    /// tenant comes from the server context, never from the entity handed in.</summary>
+    public static async Task<T> InsertAsync<T>(
+        IMongoCollection<T> collection,
+        IClientSessionHandle session,
+        T entity,
+        Guid tenantId,
+        CancellationToken ct) where T : TenantScopedEntity
+    {
+        typeof(T).GetProperty(nameof(TenantScopedEntity.TenantId))!.SetValue(entity, tenantId);
+        await collection.InsertOneAsync(session, entity, cancellationToken: ct);
+        return entity;
+    }
+
+    private static async Task<bool> ReplaceCoreAsync<T>(
+        IMongoCollection<T> collection,
+        IClientSessionHandle? session,
         FilterDefinition<T> scope,
         T entity,
         int expectedVersion,
@@ -39,15 +77,14 @@ internal static class ReadVersionWrites
             scope,
             Builders<T>.Filter.Eq(x => x.Id, entity.Id),
             Builders<T>.Filter.Eq(x => x.Version, expectedVersion));
+        var options = new FindOneAndReplaceOptions<T> { ReturnDocument = ReturnDocument.Before };
 
         T? previous;
         try
         {
-            previous = await collection.FindOneAndReplaceAsync(
-                filter,
-                entity,
-                new FindOneAndReplaceOptions<T> { ReturnDocument = ReturnDocument.Before },
-                ct);
+            previous = session is null
+                ? await collection.FindOneAndReplaceAsync(filter, entity, options, ct)
+                : await collection.FindOneAndReplaceAsync(session, filter, entity, options, ct);
         }
         catch
         {

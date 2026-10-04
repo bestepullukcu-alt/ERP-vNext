@@ -49,10 +49,12 @@ namespace Diten.Platform.Application.Tests.TimeEntry;
 /// ONE disposable mongod for every MOD-0280-FU01 HTTP test — started on a free port, thrown away at the end. Nothing
 /// touches the shared dev instance on 27017. A FIXED database name (DB-010): isolation is by TenantId inside it, and only
 /// the profiles the module actually reads are built (never the whole schema).
+/// <para>BL-533 — a single-node REPLICA SET, not a standalone mongod: the weekly save and the minutes publish write in
+/// one Platform transaction, exactly as production does (and a standalone mongod has no transactions).</para>
 /// </summary>
 public sealed class TimeEntryMongoFixture : IAsyncLifetime
 {
-    private DisposableStandaloneMongo? _mongo;
+    private DisposableMongoReplicaSet? _mongo;
 
     public IPlatformDbContext DbContext { get; private set; } = null!;
     public IMongoDatabase Database { get; private set; } = null!;
@@ -60,7 +62,7 @@ public sealed class TimeEntryMongoFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         PlatformTestSerializers.Register();
-        _mongo = await DisposableStandaloneMongo.StartAsync();
+        _mongo = await DisposableMongoReplicaSet.StartAsync();
 
         var client = new MongoClient(ClientSettings());
         Database = client.GetDatabase(DatabaseName);
@@ -77,7 +79,7 @@ public sealed class TimeEntryMongoFixture : IAsyncLifetime
 
     private MongoClientSettings ClientSettings()
     {
-        var settings = MongoClientSettings.FromConnectionString($"mongodb://127.0.0.1:{_mongo!.Port}/?directConnection=true");
+        var settings = MongoClientSettings.FromConnectionString(_mongo!.ConnectionString);
 #pragma warning disable CS0618
         settings.GuidRepresentation = MongoDB.Bson.GuidRepresentation.Standard;
 #pragma warning restore CS0618
@@ -454,6 +456,9 @@ public sealed class TimeEntryHost : IDisposable
                 services.AddSingleton<IUserDisplayNameResolver>(Names);
                 services.AddSingleton<IWorkingCalendarProvider>(Calendar);
                 services.AddSingleton(db);
+                // BL-533 — the Platform transaction the weekly save and the minutes publish write in, as production
+                // registers it (over the same client as the stores below).
+                services.AddScoped<IPlatformTransactionExecutor, PlatformTransactionExecutor>();
 
                 // ── The REAL stores, in the request's tenant ────────────────────────────────────────────────────
                 services.AddScoped<ITimesheetWeekRepository, TimesheetWeekRepository>();

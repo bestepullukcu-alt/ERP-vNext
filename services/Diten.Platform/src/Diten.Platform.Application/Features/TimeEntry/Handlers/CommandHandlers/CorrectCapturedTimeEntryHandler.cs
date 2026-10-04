@@ -48,7 +48,14 @@ public sealed class CorrectCapturedTimeEntryHandler : IRequestHandler<CorrectCap
 
         row.Note = request.Note;
         row.UpdatedBy = row.UserId.ToString();
-        if (!await _entries.UpdateAsync(row, row.Version, ct))
+
+        // BL-533 — written only on the version the SAVE read, not on this handler's own later read: a write that moved the
+        // row in between (a timer close making the 60 the person was correcting 75) refuses the correction, instead of
+        // recording a captured value the person never saw. Inside the save's transaction.
+        var written = request.Session is { } session
+            ? await _entries.UpdateAsync(session, row, request.ExpectedVersion, ct)
+            : await _entries.UpdateAsync(row, request.ExpectedVersion, ct);
+        if (!written)
         {
             return Response<Guid>.Fail(
                 "The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request.CorrelationId);
