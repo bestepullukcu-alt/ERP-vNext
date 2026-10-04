@@ -7,7 +7,6 @@ using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Prometheus;
 
 namespace Diten.Platform.Application.Features.Notifications.Handlers.CommandHandlers;
 
@@ -54,16 +53,8 @@ public sealed class MarkNotificationDispatchSentHandler
 public sealed class MarkNotificationDispatchFailedHandler
     : IRequestHandler<MarkNotificationDispatchFailedCommand, Response<NotificationDispatchDto>>
 {
-    // BL-406 — ops-only counter. Meeting-related permanent failures ALSO get the organizer notification + attendee
-    // badge below; every producer (meeting or not) gets this. Static/self-registered, same shape as
-    // Diten.Platform.API.Observability.BackgroundJobExecutionLogMetricsDecorator's own counters — no DI needed.
-    private static readonly Counter PermanentlyFailedCounter = Metrics.CreateCounter(
-        "notification_dispatch_permanently_failed",
-        "Notification dispatches whose final retry attempt was exhausted with no further retry due.",
-        new CounterConfiguration { LabelNames = new[] { "template_key", "is_meeting_related" } });
-
-    private const string MeetingTemplateKeyPrefix = "platform.meetings.";
-    private const string MeetingUndeliveredEventCode = "platform.meetings.invite-undelivered";
+    /// <summary>BL-454 — a conditional close lost to a write that happened after the caller read the row.</summary>
+    public const string ReasonDispatchChanged = "DISPATCH_CHANGED";
 
     private readonly INotificationDispatchRepository _repository;
     private readonly IEventBus _eventBus;
@@ -71,6 +62,7 @@ public sealed class MarkNotificationDispatchFailedHandler
     private readonly IMeetingRepository? _meetings;
     private readonly IMeetingAttendeeRepository? _meetingAttendees;
     private readonly IUserNotificationRepository? _userNotifications;
+    private readonly Services.NotificationPermanentFailureEffects _effects;
 
     public MarkNotificationDispatchFailedHandler(
         INotificationDispatchRepository repository,
@@ -86,12 +78,23 @@ public sealed class MarkNotificationDispatchFailedHandler
         _meetings = meetings;
         _meetingAttendees = meetingAttendees;
         _userNotifications = userNotifications;
+        _effects = new Services.NotificationPermanentFailureEffects(logger, meetings, meetingAttendees, userNotifications);
     }
 
     public async Task<Response<NotificationDispatchDto>> Handle(MarkNotificationDispatchFailedCommand request, CancellationToken ct)
     {
         var dispatch = await _repository.GetByIdForTenantAsync(request.TenantId, request.DispatchId, ct);
         if (dispatch is null) return Response<NotificationDispatchDto>.Fail("Notification dispatch not found.", 404);
+        // BL-454 — a CONDITIONAL close (the sweep's retry window): only over the exact row the caller read. A send that
+        // landed in between has moved Status/Version on, and then this command writes nothing.
+        var readVersion = dispatch.Version;
+        var readStatus = dispatch.Status;
+        if (request.ExpectedVersion is { } expectedVersion
+            && (expectedVersion != readVersion || request.ExpectedStatus != readStatus))
+        {
+            return Response<NotificationDispatchDto>.Fail("The dispatch changed after it was read.", 409, ReasonDispatchChanged);
+        }
+
         if (request.RetryCount is { } retryCount)
         {
             dispatch.RetryCount = Math.Max(0, retryCount);
@@ -112,7 +115,18 @@ public sealed class MarkNotificationDispatchFailedHandler
             dispatch.PermanentlyFailedNotifiedAt = DateTimeOffset.UtcNow;
         }
 
-        await _repository.UpdateAsync(dispatch, ct);
+        if (request.ExpectedVersion is not null)
+        {
+            if (!await _repository.TryUpdateAsync(dispatch, readVersion, readStatus, ct))
+            {
+                return Response<NotificationDispatchDto>.Fail("The dispatch changed after it was read.", 409, ReasonDispatchChanged);
+            }
+        }
+        else
+        {
+            await _repository.UpdateAsync(dispatch, ct);
+        }
+
         await _eventBus.PublishAsync(
             new NotificationDispatchFailedV1(
                 dispatch.Id,
@@ -130,100 +144,12 @@ public sealed class MarkNotificationDispatchFailedHandler
 
         if (isFirstPermanentFailure)
         {
-            await HandlePermanentFailureAsync(dispatch, ct);
+            await _effects.ApplyAsync(dispatch, request.Silent, ct);
         }
 
         return Response<NotificationDispatchDto>.Success(dispatch.ToDto());
     }
 
-    /// <summary>
-    /// BL-406 — everything that happens ONCE, at the moment a dispatch's failure becomes permanent. Ops
-    /// log line + counter fire for EVERY permanently-failed dispatch (rule 3); the organizer notification + the
-    /// attendee "mail undelivered" badge fire ONLY for meeting-related mail (rule 1/2). Never allowed to fail the
-    /// primary transition above — this runs strictly after that transition and its own event has already
-    /// published.
-    /// </summary>
-    private async Task HandlePermanentFailureAsync(NotificationDispatch dispatch, CancellationToken ct)
-    {
-        var isMeetingRelated = dispatch.TemplateKey.StartsWith(MeetingTemplateKeyPrefix, StringComparison.OrdinalIgnoreCase);
-
-        PermanentlyFailedCounter.WithLabels(dispatch.TemplateKey, isMeetingRelated ? "true" : "false").Inc();
-        _logger?.LogWarning(
-            "email.dispatch.permanently_failed DispatchId={DispatchId} TenantId={TenantId} TemplateKey={TemplateKey} "
-            + "IsMeetingRelated={IsMeetingRelated} RetryCount={RetryCount} ErrorCode={ErrorCode} CorrelationId={CorrelationId}",
-            dispatch.Id, dispatch.TenantId, dispatch.TemplateKey, isMeetingRelated, dispatch.RetryCount, dispatch.ErrorCode, dispatch.CorrelationId);
-
-        if (!isMeetingRelated)
-        {
-            return;
-        }
-
-        if (dispatch.CausationId is not { } meetingId || dispatch.MeetingAttendeeUserId is not { } attendeeUserId)
-        {
-            // Meeting-templated mail with no (meetingId, attendeeUserId) attribution — cannot happen from
-            // MeetingInviteMailer's own 1:1 dispatch path, but a future producer reusing the same template key
-            // without setting both fields must not throw here; the ops log/counter above already fired.
-            _logger?.LogWarning(
-                "email.dispatch.permanently_failed.meeting_attribution_missing DispatchId={DispatchId} TenantId={TenantId}",
-                dispatch.Id, dispatch.TenantId);
-            return;
-        }
-
-        // K12's own posture, one level down: an organizer notification failing to write must never surface as
-        // this command failing (the dispatch's own Failed transition has already been committed and published
-        // above).
-        try
-        {
-            if (_meetingAttendees is not null)
-            {
-                await _meetingAttendees.MarkMailUndeliveredAsync(meetingId, attendeeUserId, DateTimeOffset.UtcNow, ct);
-            }
-
-            if (_meetings is null || _userNotifications is null)
-            {
-                return;
-            }
-
-            var meeting = await _meetings.GetByIdAsync(meetingId, ct);
-            if (meeting is null)
-            {
-                return;
-            }
-
-            // The dispatch is 1:1 (BL-406's own MeetingInviteMailer change) — its single `To` entry IS the
-            // attendee this failure is about. DisplayName falls back to the email so the organizer's notification
-            // never reads as blank.
-            var recipient = dispatch.To.Count > 0 ? dispatch.To[0] : null;
-            var personLabel = recipient?.DisplayName ?? recipient?.Email ?? attendeeUserId.ToString();
-
-            await _userNotifications.CreateAsync(
-                new UserNotification
-                {
-                    TenantId = dispatch.TenantId,
-                    UserId = meeting.OrganizerUserId,
-                    EventCode = MeetingUndeliveredEventCode,
-                    // Data the tenant typed (the meeting's own title) — no sentence composed here; a surface
-                    // resolves its label from EventCode + these two pieces of data, same posture as
-                    // TaskNotificationService.WriteInAppNotificationsAsync's own doc comment.
-                    Title = meeting.Title,
-                    Body = personLabel,
-                    TargetUrl = $"/Meetings/{meeting.Id}",
-                    Severity = UserNotificationSeverity.Warning
-                },
-                ct);
-        }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger?.LogWarning(
-                ex,
-                "email.dispatch.permanently_failed.organizer_notification_write_failed DispatchId={DispatchId} MeetingId={MeetingId}",
-                dispatch.Id, meetingId);
-        }
-    }
 }
 
 public sealed class CancelNotificationDispatchHandler

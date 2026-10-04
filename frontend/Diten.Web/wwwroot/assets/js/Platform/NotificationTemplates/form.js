@@ -267,7 +267,8 @@
                 window.location.href = '/Platform/NotificationTemplates';
                 return;
             }
-            if (res.status === 409 && (body?.reasonCode || body?.ReasonCode) === 'TEMPLATE_CHANGED') {
+            // BL-454 — Response<T> serialises its reason as `reason_code` (JsonPropertyName), not `reasonCode`.
+            if (res.status === 409 && (body?.reason_code ?? body?.reasonCode ?? body?.ReasonCode) === 'TEMPLATE_CHANGED') {
                 showSummary(L().TemplateChangedReload || L().ErrorOccurred);
                 return;
             }

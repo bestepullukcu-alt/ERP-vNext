@@ -14,6 +14,8 @@ namespace Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 
 public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArgs>
 {
+    /// <summary>What a failed attempt records when the provider gave no message of its own.</summary>
+    public const string ProviderRejectedMessage = "ProviderRejected";
 
     private readonly INotificationDispatchRepository _dispatchRepository;
     private readonly ITenantMessagingSettingsResolver _settingsResolver;
@@ -124,7 +126,9 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
                 dispatch.TenantId,
                 dispatch.Id,
                 Redact(result.ErrorCode) ?? "ProviderRejected",
-                Redact(result.ErrorMessage) ?? "Provider rejected the message.",
+                // BL-454 — the fallback is a CODE: MarkNotificationDispatchFailedValidator refuses a message with a space
+                // (a possible raw secret), and a refused command left the row Failed and due forever.
+                Redact(result.ErrorMessage) ?? ProviderRejectedMessage,
                 RetryCount: newRetryCount,
                 NextRetryAt: nextRetryAt,
                 IsPermanentFailure: isPermanentFailure),

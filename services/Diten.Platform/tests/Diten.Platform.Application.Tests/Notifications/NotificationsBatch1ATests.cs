@@ -477,7 +477,7 @@ public sealed class NotificationsBatch1ATests
             dispatches,
             new TestProviderResolver(provider),
             new NoOpEventBus(),
-            NullLogger<QueueEmailNotificationHandler>.Instance);
+            NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: NotificationTestJobs.RetriesOn());
     }
 
     private sealed class NoOpEventBus : IEventBus
@@ -661,8 +661,11 @@ public sealed class NotificationsBatch1ATests
                 && (queuedTo is null || x.QueuedAt <= queuedTo)
                 && (templateKey is null || x.TemplateKey == templateKey)).Skip(skip).Take(take).ToArray() as IReadOnlyList<NotificationDispatch>);
         public Task UpdateAsync(NotificationDispatch dispatch, CancellationToken ct = default) => Task.CompletedTask;
-        public Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindRetryWindowExpiredAsync(DateTimeOffset queuedBefore, int take, CancellationToken ct = default) =>
-            Task.FromResult<IReadOnlyList<NotificationDispatchRetryHandle>>([]);
+        public Task<bool> TryUpdateAsync(NotificationDispatch dispatch, int expectedVersion, NotificationDispatchStatus expectedStatus, CancellationToken ct = default) =>
+            Task.FromResult(true);
+
+        public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindRetryWindowExpiredAsync(DateTimeOffset queuedBefore, int take, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<NotificationDispatchExpiryHandle>>([]);
 
         public Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindDueRetriesAsync(DateTimeOffset asOfUtc, int maxRetryCount, int take, CancellationToken ct = default) =>
             Task.FromResult(Items

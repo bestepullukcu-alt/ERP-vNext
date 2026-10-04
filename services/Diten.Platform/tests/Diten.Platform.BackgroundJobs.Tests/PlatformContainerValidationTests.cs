@@ -133,6 +133,38 @@ public sealed class PlatformContainerValidationTests
         Assert.False(primary.AllowAutoRedirect);
     }
 
+    [Fact]
+    public async Task The_queue_handler_is_composed_with_the_servers_job_settings_and_the_shared_permanent_failure_path()
+    {
+        // BL-454 — the handler fails closed without the settings (no retry, no variables kept), so it must be measured
+        // that production actually hands them over, and the counter / organizer path with them.
+        await using var provider = Composition.Value.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var handler = scope.ServiceProvider.GetRequiredService<MediatR.IRequestHandler<
+            Diten.Platform.Application.Features.Notifications.Commands.QueueEmailNotificationCommand,
+            Diten.Platform.Application.Common.Response<Diten.Platform.Application.Features.Notifications.NotificationDispatchDto>>>();
+        var type = handler.GetType();
+
+        var jobOptions = type.GetField("_jobOptions", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(handler);
+        var effects = type.GetField("_permanentFailure", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(handler);
+
+        Assert.Same(scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Diten.BuildingBlocks.BackgroundJobs.BackgroundJobSchedulerOptions>>(), jobOptions);
+        Assert.NotNull(effects);
+    }
+
+    [Fact]
+    public async Task The_retry_window_is_read_from_configuration()
+    {
+        await using var provider = Composition.Value.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        var options = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<
+            Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchRetentionOptions>>().Value;
+
+        Assert.Equal(48, options.RetryWindowHours);
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchSweepJob>());
+    }
+
     /// <summary>
     /// Composed once per process — see the BSON note in the class summary. Building several providers from
     /// one collection is fine; calling <c>AddInfrastructure</c> more than once in a process is not.
@@ -189,6 +221,8 @@ public sealed class PlatformContainerValidationTests
                 ["MongoDbSettings:ConnectionString"] = "mongodb://localhost:27017",
                 ["MongoDbSettings:DatabaseName"] = "diten_platform_itest_container_validation",
                 ["MongoDbSettings:AllowStartupWithoutDatabase"] = "true",
+                // BL-454 — a value the defaults never produce, to prove the window is read from configuration.
+                ["Notifications:EmailDispatch:RetryWindowHours"] = "48",
 
                 // Secrets the infrastructure layer refuses to compose without. Local-only literals: nothing
                 // is signed or authenticated with them, because nothing is started.

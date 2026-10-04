@@ -151,10 +151,15 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
             return;
         }
 
-        var cutoff = asOfUtc - TimeSpan.FromHours(Math.Max(1, _retention.RetryWindowHours));
-        IReadOnlyList<NotificationDispatchRetryHandle> expired;
+        int windowHours;
+        DateTimeOffset cutoff;
+        DateTimeOffset silentBefore;
+        IReadOnlyList<NotificationDispatchExpiryHandle> expired;
         try
         {
+            windowHours = EmailDispatchRetentionOptions.EffectiveWindowHours(_retention.RetryWindowHours);
+            cutoff = asOfUtc - TimeSpan.FromHours(windowHours);
+            silentBefore = asOfUtc - TimeSpan.FromHours(windowHours * SilentWindowMultiple);
             expired = await _dispatchRepository.FindRetryWindowExpiredAsync(cutoff, batchSize, ct);
         }
         catch (OperationCanceledException)
@@ -171,22 +176,38 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
         }
 
         var closed = 0;
+        var silent = 0;
+        var lost = 0;
         foreach (var handle in expired)
         {
             ct.ThrowIfCancellationRequested();
+            var isSilent = handle.QueuedAt < silentBefore;
             try
             {
+                // The command passes QueueEmailNotificationValidator's MarkNotificationDispatchFailedValidator (no space,
+                // no '='), and keeps the row's last real error: RetryWindowExpired:SMTP_TIMEOUT.
                 var response = await _mediator.Send(
                     new MarkNotificationDispatchFailedCommand(
                         handle.TenantId,
                         handle.DispatchId,
                         RetryWindowExpiredCode,
-                        "The retry window passed before the message could be sent.",
-                        IsPermanentFailure: true),
+                        ClosingMessage(handle.ErrorCode),
+                        IsPermanentFailure: true,
+                        ExpectedVersion: handle.Version,
+                        ExpectedStatus: handle.Status,
+                        Silent: isSilent),
                     ct);
                 if (response?.IsSuccessful == true)
                 {
                     closed++;
+                    if (isSilent)
+                    {
+                        silent++;
+                    }
+                }
+                else
+                {
+                    lost++;
                 }
             }
             catch (OperationCanceledException)
@@ -195,6 +216,7 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
             }
             catch (Exception ex)
             {
+                lost++;
                 _logger.LogWarning(
                     "email.dispatch.sweep.expiry_failed DispatchId={DispatchId} TenantId={TenantId} ExceptionType={ExceptionType}",
                     handle.DispatchId,
@@ -206,12 +228,32 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
         if (expired.Count > 0)
         {
             _logger.LogInformation(
-                "email.dispatch.sweep.expired Found={Found} Closed={Closed} RetryWindowHours={RetryWindowHours} CorrelationId={CorrelationId}",
+                "email.dispatch.sweep.expired Found={Found} Closed={Closed} Silent={Silent} NotClosed={NotClosed} RetryWindowHours={RetryWindowHours} CorrelationId={CorrelationId}",
                 expired.Count,
                 closed,
-                _retention.RetryWindowHours,
+                silent,
+                lost,
+                windowHours,
                 context.EffectiveCorrelationId);
         }
+    }
+
+    /// <summary>A row this many windows old is closed SILENTLY: counted and logged, no organizer told, no badge.</summary>
+    public const int SilentWindowMultiple = 3;
+
+    /// <summary>
+    /// BL-454 — the closing message: the window's code and the row's last real error, joined without a space, so the
+    /// failed-command validator (which refuses spaces as a possible raw secret) lets it through. An error code that
+    /// itself looks like a raw secret is not repeated.
+    /// </summary>
+    public static string ClosingMessage(string? lastErrorCode)
+    {
+        var code = string.IsNullOrWhiteSpace(lastErrorCode)
+            ? "None"
+            : NotificationParsing.LooksLikeRawSecret(lastErrorCode) || lastErrorCode.Contains(':')
+                ? "Redacted"
+                : lastErrorCode.Trim();
+        return RetryWindowExpiredCode + ":" + code;
     }
 }
 
@@ -224,5 +266,12 @@ public sealed class EmailDispatchRetentionOptions
 {
     public const string SectionName = "Notifications:EmailDispatch";
 
+    public const int MinimumWindowHours = 1;
+    public const int MaximumWindowHours = 720;
+
     public int RetryWindowHours { get; set; } = 24;
+
+    /// <summary>The configured window held to 1..720 hours (30 days): a zero, negative or absurd value never empties or
+    /// freezes the queue.</summary>
+    public static int EffectiveWindowHours(int configured) => Math.Clamp(configured, MinimumWindowHours, MaximumWindowHours);
 }

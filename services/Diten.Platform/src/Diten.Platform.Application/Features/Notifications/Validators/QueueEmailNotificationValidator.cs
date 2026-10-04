@@ -41,6 +41,9 @@ public sealed class QueueEmailNotificationValidator : AbstractValidator<QueueEma
 
 public sealed class EmailRecipientDtoValidator : AbstractValidator<EmailRecipientDto>
 {
+    private const string RecipientInvalid =
+        Diten.Platform.Application.Features.Notifications.Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid;
+
     public EmailRecipientDtoValidator()
     {
         // BL-454 — ONE rule for an address (EmailAddressText.IsSingleAddress), refused with the curated code
@@ -48,12 +51,18 @@ public sealed class EmailRecipientDtoValidator : AbstractValidator<EmailRecipien
         // FluentValidation EmailAddress() this replaces accepted a value with a line break, and refused others with a
         // code-less failure. This is the ONE place the rule is applied: every caller reaches the handler through the
         // MediatR pipeline, and in-process callers recognise the refusal by IsRecipientRefusal.
+        // Every rule on the address carries the SAME code: an empty or over-long address is as permanently invalid as a
+        // second mailbox, and an in-process caller must recognise all three (IsRecipientRefusal) or it redelivers forever.
         RuleFor(x => x.Email)
             .Cascade(CascadeMode.Stop)
             .NotEmpty()
+            .WithErrorCode(RecipientInvalid)
+            .WithMessage("A recipient address is not a single valid address.")
             .MaximumLength(256)
+            .WithErrorCode(RecipientInvalid)
+            .WithMessage("A recipient address is not a single valid address.")
             .Must(email => Diten.BuildingBlocks.Email.EmailAddressText.IsSingleAddress(email?.Trim()))
-            .WithErrorCode(Diten.Platform.Application.Features.Notifications.Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid)
+            .WithErrorCode(RecipientInvalid)
             .WithMessage("A recipient address is not a single valid address.");
         RuleFor(x => x.DisplayName).MaximumLength(160);
     }

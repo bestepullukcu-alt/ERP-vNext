@@ -138,6 +138,18 @@ public static partial class PlatformSchemaManifest
                                 Builders<NotificationDispatch>.Filter.Eq(x => x.IsDeleted, false),
                                 Builders<NotificationDispatch>.Filter.Eq(x => x.Status, Domain.Enums.NotificationDispatchStatus.Failed),
                                 Builders<NotificationDispatch>.Filter.Exists(x => x.NextRetryAt, true))
+                        }),
+                    // BL-454 — the retry sweep's window close (NotificationDispatchRepository.RetryWindowExpiredFilter):
+                    // cross-tenant like the retry index above, run every minute; without it each run read the whole
+                    // collection. Status + QueuedAt are the bounds; the partial filter is the query's IsDeleted=false.
+                    new CreateIndexModel<NotificationDispatch>(
+                        Builders<NotificationDispatch>.IndexKeys
+                            .Ascending(x => x.Status)
+                            .Ascending(x => x.QueuedAt),
+                        new CreateIndexOptions<NotificationDispatch>
+                        {
+                            Name = "ix_notification_dispatches_retry_window",
+                            PartialFilterExpression = Builders<NotificationDispatch>.Filter.Eq(x => x.IsDeleted, false)
                         })
 
             }),

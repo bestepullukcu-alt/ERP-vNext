@@ -271,7 +271,7 @@ public sealed class NotificationDispatchMongoTests : IAsyncLifetime
                 new FakeMessagingProvider(Options.Create(new FakeMessagingProviderOptions()), new FakeHostEnvironment()),
                 new StubSmtpProvider()]),
             new NoOpEventBus(),
-            NullLogger<QueueEmailNotificationHandler>.Instance);
+            NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: Diten.Platform.Application.Tests.Notifications.NotificationTestJobs.RetriesOn());
 
         return await handler.Handle(
             new QueueEmailNotificationCommand(

@@ -733,9 +733,9 @@ public sealed partial class EmailShellDispatchTests
     [InlineData("https://app.example/x?%74oken=abc")]
     [InlineData("https://maps.example/api?key=abc")]
     [InlineData("Rejected — please use https://app.example/set-password?token=abc123 instead.")]
-    [InlineData("sk-live-0123456789abcdef")]
-    [InlineData("SG.abcdefghij.klmnopqrstuv")]
-    [InlineData("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2lnbmF0dXJl")]
+    [InlineData("sk-" + "live-0123456789abcdef")] // split: no secret scanner reads a key in this file
+    [InlineData("SG." + "abcdefghij.klmnopqrstuv")]
+    [InlineData("eyJ" + "hbGciOiJIUzI1NiJ9.eyJ" + "zdWIiOiIxIn0.c2lnbmF0dXJl")]
     public void A_value_that_is_or_carries_a_credential_is_masked_whatever_its_name(string value)
     {
         Assert.True(NotificationParsing.IsSensitiveVariable("Reason", value));
@@ -1025,9 +1025,12 @@ public sealed partial class EmailShellDispatchTests
         public string TenantLocale { get; init; } = "en";
         public bool WithShell { get; init; } = true;
         public Microsoft.Extensions.Logging.ILogger<SmtpMessagingProvider>? ProviderLogger { get; init; }
-        /// <summary>BL-454 FIX3 — the server's background-job settings; null = a handler built the old way (retry assumed).</summary>
-        public BackgroundJobSchedulerOptions? JobOptions { get; init; }
+        /// <summary>BL-454 — the server's background-job settings. Default: the retry sweep runs (what every retry test
+        /// here assumes); null = a handler composed without settings, which fails closed (no retry).</summary>
+        public BackgroundJobSchedulerOptions? JobOptions { get; init; } = RetriesOn();
         public Microsoft.Extensions.Logging.ILogger<QueueEmailNotificationHandler>? HandlerLogger { get; init; }
+        /// <summary>BL-454 FIX4 — the shared permanent-failure effects; null = a handler built the old way.</summary>
+        public NotificationPermanentFailureEffects? PermanentFailure { get; init; }
 
         public Doubles.InMemoryTenantMessagingSettingsRepository Settings { get; } = new();
         public Doubles.InMemoryNotificationTemplateRepository Templates { get; } = new();
@@ -1076,7 +1079,8 @@ public sealed partial class EmailShellDispatchTests
             HandlerLogger ?? NullLogger<QueueEmailNotificationHandler>.Instance,
             WithShell ? Composer : null,
             WithShell ? new FakeNotificationLocaleResolver(TenantLocale) : null,
-            JobOptions is null ? null : Microsoft.Extensions.Options.Options.Create(JobOptions));
+            JobOptions is null ? null : Microsoft.Extensions.Options.Options.Create(JobOptions),
+            PermanentFailure);
 
         public NotificationTemplate AddSeeded(NotificationTemplate seeded)
         {

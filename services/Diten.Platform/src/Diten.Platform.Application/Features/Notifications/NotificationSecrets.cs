@@ -30,8 +30,10 @@ public static partial class NotificationSecrets
     public static IReadOnlyList<string> SecretNameWords { get; } = ["pwd", "jwt", "sig", "signature"];
 
     /// <summary>
-    /// Short words that are secrets as a word of the name UNLESS a neutral word stands right before or right after
-    /// them (<see cref="NeutralNameWords"/>): <c>InviteCode</c> is a secret, <c>CountryCode</c> is not.
+    /// Short words that are secrets as a word of the name UNLESS a neutral word stands right BEFORE them
+    /// (<see cref="NeutralNameWords"/>) or one of the few neutral words stands right AFTER them
+    /// (<see cref="NeutralFollowingWords"/>): <c>InviteCode</c> is a secret, <c>CountryCode</c> and <c>KeyResult</c> are
+    /// not, <c>VerificationCodeMessage</c> is.
     /// </summary>
     public static IReadOnlyList<string> AmbiguousSecretNameWords { get; } =
     [
@@ -39,8 +41,10 @@ public static partial class NotificationSecrets
     ];
 
     /// <summary>
-    /// Words that turn an ambiguous word (<see cref="AmbiguousSecretNameWords"/>) next to them into ordinary data.
-    /// The one list: add a word here, nowhere else.
+    /// Words that, standing right BEFORE an ambiguous word (<see cref="AmbiguousSecretNameWords"/>), make it ordinary
+    /// data: the master-data identifiers of an ERP (<c>EmployeeCode</c>, <c>WarehouseCode</c>, <c>LegalEntityCode</c>)
+    /// and other catalogue codes. The one list: add a word here, nowhere else. ("title" is deliberately absent:
+    /// <c>SessionTitle</c> stays masked.)
     /// </summary>
     public static IReadOnlyList<string> NeutralNameWords { get; } =
     [
@@ -48,8 +52,13 @@ public static partial class NotificationSecrets
         "language", "lang", "locale", "color", "colour", "region", "area", "city", "state", "item", "project", "task",
         "department", "cost", "center", "centre", "category", "event", "template", "error", "reason", "unit", "sort",
         "primary", "foreign", "lookup", "cache", "partition", "resource", "translation", "message", "menu", "page",
-        "field", "group", "role", "idempotency", "bar", "qr", "material", "lot", "batch", "document", "doc"
+        "field", "group", "role", "idempotency", "bar", "qr", "material", "lot", "batch", "document", "doc",
+        "employee", "customer", "supplier", "vendor", "company", "branch", "site", "plant", "account", "entity",
+        "warehouse", "location", "order"
     ];
+
+    /// <summary>The only words that, standing right AFTER an ambiguous word, make it ordinary data (<c>KeyResult</c>).</summary>
+    public static IReadOnlyList<string> NeutralFollowingWords { get; } = ["result", "type", "status"];
 
     /// <summary>
     /// A link's QUERY parameter is a secret when its name is a secret NAME (<see cref="IsSecretName"/>: <c>token=</c>,
@@ -86,8 +95,8 @@ public static partial class NotificationSecrets
             }
 
             if (AmbiguousSecretNameWords.Contains(words[i], StringComparer.Ordinal)
-                && !IsNeutral(words, i - 1)
-                && !IsNeutral(words, i + 1))
+                && !IsNeutral(words, i - 1, NeutralNameWords)
+                && !IsNeutral(words, i + 1, NeutralFollowingWords))
             {
                 return true;
             }
@@ -142,7 +151,7 @@ public static partial class NotificationSecrets
             return false;
         }
 
-        if (SecretShape().IsMatch(text))
+        if (HasSecretShape(text))
         {
             return true;
         }
@@ -150,7 +159,7 @@ public static partial class NotificationSecrets
         foreach (var raw in text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))
         {
             var piece = raw.Trim('"', '\'', '(', ')', '<', '>', '[', ']', ',', '.');
-            if (IsCredentialBearingLink(piece, depth))
+            if (HasUserInfo(piece) || IsCredentialBearingLink(piece, depth))
             {
                 return true;
             }
@@ -172,9 +181,10 @@ public static partial class NotificationSecrets
             return false;
         }
 
-        // A link, not a sentence: something before the query that looks like a path, a scheme or a host.
+        // A link, not a sentence: something before the query that looks like a path, a scheme or a host. A bare
+        // "#code" or "?code" in plain text (a hashtag, a question) has nothing before it and is not a link.
         var head = piece[..start];
-        if (head.Length > 0 && !head.Contains('/') && !head.Contains(':') && !head.Contains('.'))
+        if (head.Length == 0 || (!head.Contains('/') && !head.Contains(':') && !head.Contains('.')))
         {
             return false;
         }
@@ -198,8 +208,39 @@ public static partial class NotificationSecrets
         return false;
     }
 
-    private static bool IsNeutral(IReadOnlyList<string> words, int index) =>
-        index >= 0 && index < words.Count && NeutralNameWords.Contains(words[index], StringComparer.Ordinal);
+    private static bool IsNeutral(IReadOnlyList<string> words, int index, IReadOnlyList<string> neutral) =>
+        index >= 0 && index < words.Count && neutral.Contains(words[index], StringComparer.Ordinal);
+
+    /// <summary>
+    /// BL-454 — the provider-key and JWT shapes, searched with a time limit. A text that takes longer than the limit to
+    /// search (a hostile megabyte of almost-tokens) is treated as a secret: masked, never stored — failing closed.
+    /// </summary>
+    private static bool HasSecretShape(string text)
+    {
+        try
+        {
+            return SecretShape().IsMatch(text);
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return true;
+        }
+    }
+
+    /// <summary>A URL that carries a user (and usually a password) before its host: <c>https://user:pw@host/…</c>.</summary>
+    private static bool HasUserInfo(string piece)
+    {
+        var scheme = piece.IndexOf("://", StringComparison.Ordinal);
+        if (scheme <= 0)
+        {
+            return false;
+        }
+
+        var rest = piece[(scheme + 3)..];
+        var end = rest.IndexOfAny(['/', '?', '#']);
+        var authority = end < 0 ? rest : rest[..end];
+        return authority.IndexOf('@') > 0;
+    }
 
     private static string Unescape(string value)
     {
@@ -234,10 +275,15 @@ public static partial class NotificationSecrets
 
     // A secret's own shape, found anywhere in a text but never in the middle of a word: provider keys by their published
     // prefixes, and a three-part JWT.
+    // Every quantifier is bounded and the search has a time limit (HasSecretShape fails closed on a timeout).
     [GeneratedRegex(
-        @"(?<![A-Za-z0-9_])(?:sk-[A-Za-z0-9_-]{9,}|sk_(?:live|test)_[A-Za-z0-9]{8,}|SG\.[A-Za-z0-9_.-]{9,}|gh[pousr]_[A-Za-z0-9]{20,}|xox[abprs]-[A-Za-z0-9-]{8,}|AKIA[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*)",
-        RegexOptions.CultureInvariant)]
+        @"(?<![A-Za-z0-9_])(?:sk-[A-Za-z0-9_-]{9,512}|sk_(?:live|test)_[A-Za-z0-9]{8,512}|SG\.[A-Za-z0-9_.-]{9,512}|gh[pousr]_[A-Za-z0-9]{20,255}|xox[abprs]-[A-Za-z0-9-]{8,512}|AKIA[0-9A-Z]{16}|eyJ[A-Za-z0-9_-]{1,4096}\.[A-Za-z0-9_-]{1,8192}\.[A-Za-z0-9_-]{0,4096})",
+        RegexOptions.CultureInvariant,
+        matchTimeoutMilliseconds: ShapeSearchTimeoutMilliseconds)]
     private static partial Regex SecretShape();
+
+    /// <summary>How long one search for a secret shape may take before the text is treated as a secret.</summary>
+    public const int ShapeSearchTimeoutMilliseconds = 250;
 
     [GeneratedRegex(@"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|(?<=[A-Za-z])(?=[0-9])|(?<=[0-9])(?=[A-Za-z])|[^A-Za-z0-9]+", RegexOptions.CultureInvariant)]
     private static partial Regex WordBoundary();

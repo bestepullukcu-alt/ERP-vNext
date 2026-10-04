@@ -39,7 +39,7 @@ public sealed class NotificationsSmtpIntegrationTests
             dispatches,
             resolver,
             new RecordingEventBus(),
-            NullLogger<QueueEmailNotificationHandler>.Instance);
+            NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: NotificationTestJobs.RetriesOn());
 
         var request = new QueueEmailNotificationRequest(
             TemplateKey: "tenant.invite.email",
@@ -87,7 +87,7 @@ public sealed class NotificationsSmtpIntegrationTests
             dispatches,
             resolver,
             new RecordingEventBus(),
-            NullLogger<QueueEmailNotificationHandler>.Instance);
+            NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: NotificationTestJobs.RetriesOn());
 
         var request = new QueueEmailNotificationRequest(
             TemplateKey: "tenant.invite.email",
@@ -372,15 +372,20 @@ public sealed class NotificationsSmtpIntegrationTests
         public Task UpdateAsync(NotificationDispatch dispatch, CancellationToken ct = default) => Task.CompletedTask;
 
         // BL-454 FIX3 — the Mongo filter's meaning: still waiting (Queued/Failed), never yet permanent, queued before the cutoff.
-        public Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindRetryWindowExpiredAsync(DateTimeOffset queuedBefore, int take, CancellationToken ct = default) =>
-            Task.FromResult<IReadOnlyList<NotificationDispatchRetryHandle>>(Items
+        // BL-454 FIX4 — the rows here are the very objects the code changed, so the version the caller read is the one
+        // it holds; the conditional write's own semantics are measured against Mongo (NotificationDispatchRetentionMongoTests).
+        public Task<bool> TryUpdateAsync(NotificationDispatch dispatch, int expectedVersion, NotificationDispatchStatus expectedStatus, CancellationToken ct = default) =>
+            Task.FromResult(true);
+
+        public Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindRetryWindowExpiredAsync(DateTimeOffset queuedBefore, int take, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<NotificationDispatchExpiryHandle>>(Items
                 .Where(x => !x.IsDeleted
                     && x.Status is NotificationDispatchStatus.Queued or NotificationDispatchStatus.Failed
                     && x.PermanentlyFailedNotifiedAt is null
                     && x.QueuedAt < queuedBefore)
                 .OrderBy(x => x.QueuedAt)
                 .Take(take)
-                .Select(x => new NotificationDispatchRetryHandle(x.TenantId, x.Id))
+                .Select(x => new NotificationDispatchExpiryHandle(x.TenantId, x.Id, x.Status, x.Version, x.ErrorCode, x.QueuedAt))
                 .ToArray());
 
         public Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindDueRetriesAsync(DateTimeOffset asOfUtc, int maxRetryCount, int take, CancellationToken ct = default) =>

@@ -91,7 +91,7 @@ public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifet
         //    already documents.
         var queueResult = await new QueueEmailNotificationHandler(
                 new FixedSettingsResolver(), templates, new EmailTemplateRenderer(), dispatches,
-                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance)
+                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: NotificationTestJobs.RetriesOn())
             .Handle(
                 new QueueEmailNotificationCommand(
                     tenantId,
@@ -169,7 +169,7 @@ public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifet
 
         var queueResult = await new QueueEmailNotificationHandler(
                 new FixedSettingsResolver(), templates, new EmailTemplateRenderer(), dispatches,
-                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance)
+                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: NotificationTestJobs.RetriesOn())
             .Handle(
                 new QueueEmailNotificationCommand(
                     tenantId,
@@ -207,7 +207,7 @@ public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifet
 
         var queueResult = await new QueueEmailNotificationHandler(
                 new FixedSettingsResolver(), templates, new EmailTemplateRenderer(), dispatches,
-                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance)
+                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: NotificationTestJobs.RetriesOn())
             .Handle(
                 new QueueEmailNotificationCommand(
                     tenantId,
@@ -391,7 +391,7 @@ public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifet
 
         var queueResult = await new QueueEmailNotificationHandler(
                 new FixedSettingsResolver(), templates, new EmailTemplateRenderer(), dispatches,
-                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance)
+                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: NotificationTestJobs.RetriesOn())
             .Handle(
                 new QueueEmailNotificationCommand(
                     tenantId,

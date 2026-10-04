@@ -63,9 +63,14 @@ public sealed class QueueEmailNotificationHandler
     private readonly INotificationLocaleResolver? _localeResolver;
     // BL-454 — can a failed first send be tried again on this server? Read from the SAME gates the job registrar and
     // the scheduler apply (EmailDispatchSweepJob.IsScheduled). When it cannot, the variables are never stored and the
-    // first failure is the permanent one. Production always injects the options; a handler built without them (older
-    // test doubles) behaves as before: a retry is assumed.
+    // first failure is the permanent one. Production always injects the options; a handler built WITHOUT them fails
+    // closed: no retry is assumed, so nothing is kept for one.
     private readonly bool _retriesScheduled;
+    // BL-454 — the permanent-failure effects every path shares (ops counter, meeting organizer + attendee badge).
+    // Registered in DI; a handler built without it (older test doubles) only logs.
+    private readonly NotificationPermanentFailureEffects? _permanentFailure;
+    // Kept so the composition can be checked: production DI hands this handler the server's real job settings.
+    private readonly Microsoft.Extensions.Options.IOptions<Diten.BuildingBlocks.BackgroundJobs.BackgroundJobSchedulerOptions>? _jobOptions;
 
     public QueueEmailNotificationHandler(
         ITenantMessagingSettingsResolver settingsResolver,
@@ -77,9 +82,12 @@ public sealed class QueueEmailNotificationHandler
         ILogger<QueueEmailNotificationHandler> logger,
         IEmailShellComposer? shellComposer = null,
         INotificationLocaleResolver? localeResolver = null,
-        Microsoft.Extensions.Options.IOptions<Diten.BuildingBlocks.BackgroundJobs.BackgroundJobSchedulerOptions>? jobOptions = null)
+        Microsoft.Extensions.Options.IOptions<Diten.BuildingBlocks.BackgroundJobs.BackgroundJobSchedulerOptions>? jobOptions = null,
+        NotificationPermanentFailureEffects? permanentFailure = null)
     {
-        _retriesScheduled = jobOptions is null || Features.Notifications.BackgroundJobs.EmailDispatchSweepJob.IsScheduled(jobOptions.Value);
+        _retriesScheduled = jobOptions is not null && Features.Notifications.BackgroundJobs.EmailDispatchSweepJob.IsScheduled(jobOptions.Value);
+        _permanentFailure = permanentFailure;
+        _jobOptions = jobOptions;
         _shellComposer = shellComposer;
         _localeResolver = localeResolver;
         _settingsResolver = settingsResolver;
@@ -90,6 +98,9 @@ public sealed class QueueEmailNotificationHandler
         _eventBus = eventBus;
         _logger = logger;
     }
+
+    /// <summary>BL-454 — whether this handler will keep variables for a retry (what production DI composed it with).</summary>
+    internal bool RetriesScheduled => _retriesScheduled;
 
     public async Task<Response<NotificationDispatchDto>> Handle(QueueEmailNotificationCommand request, CancellationToken ct)
     {
@@ -274,12 +285,8 @@ public sealed class QueueEmailNotificationHandler
         }
         else
         {
-            // BL-454 — no retry can run on this server: this failure IS the permanent one, said once and in the open.
+            // BL-454 — no retry can run on this server: this failure IS the permanent one, marked once.
             dispatch.PermanentlyFailedNotifiedAt = failedAt;
-            _logger.LogWarning(
-                "email.dispatch.permanently_failed DispatchId={DispatchId} TenantId={TenantId} TemplateKey={TemplateKey} "
-                + "Reason=RetryUnavailable ErrorCode={ErrorCode} CorrelationId={CorrelationId}",
-                dispatch.Id, dispatch.TenantId, dispatch.TemplateKey, dispatch.ErrorCode, dispatch.CorrelationId);
         }
 
         await _dispatchRepository.UpdateAsync(dispatch, ct);
@@ -298,6 +305,21 @@ public sealed class QueueEmailNotificationHandler
             new EventPublishOptions { TenantId = dispatch.TenantId, CausationId = dispatch.CausationId },
             ct);
         _logger.LogWarning("Notification dispatch failed. DispatchId={DispatchId} TenantId={TenantId} Status={Status} CorrelationId={CorrelationId} ErrorCode={ErrorCode}", dispatch.Id, dispatch.TenantId, dispatch.Status, dispatch.CorrelationId, dispatch.ErrorCode);
+        if (!_retriesScheduled)
+        {
+            // The same permanent-failure path a last failed retry takes: counter, log line, and for meeting mail the
+            // organizer's notification and the attendee's "not delivered" badge.
+            if (_permanentFailure is not null)
+            {
+                await _permanentFailure.ApplyAsync(dispatch, silent: false, ct);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "email.dispatch.permanently_failed DispatchId={DispatchId} TenantId={TenantId} TemplateKey={TemplateKey} Reason=RetryUnavailable",
+                    dispatch.Id, dispatch.TenantId, dispatch.TemplateKey);
+            }
+        }
         return Response<NotificationDispatchDto>.Fail(
             "Messaging provider rejected the message.", 400, ReasonProviderRejected);
     }

@@ -77,9 +77,9 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
         const string owner = "MOD-0027";
         const string cron = "* * * * *";
 
-        var enabled = _options.RegisterStandardJobs
-                      && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
-                      && configuredEnabled;
+        // BL-454 — the very rule QueueEmailNotificationHandler reads to decide whether a failed first send can ever be
+        // retried: the registrar and the handler cannot give two answers.
+        var enabled = EmailDispatchSweepJob.IsScheduled(_options);
 
         var descriptor = new BackgroundJobDescriptor(
             Id: id,
