@@ -96,12 +96,19 @@ describe("WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-r
       .toEqual(["shared/diten-person-picker.js"]);
   });
 
-  it("Meetings/form.js, Meetings/series/form.js and Governance/RoleAssignments/index.js call the shared adapter rather than redeclaring it", () => {
-    // MOD-0357 S11 — the series create/edit form needs the SAME organizer/attendee searchable pickers Meetings'
-    // own Details page uses; it calls the shared adapter too, rather than becoming a third local copy.
+  it("Governance/RoleAssignments/index.js calls the shared adapter rather than redeclaring it", () => {
+    // BL-531 — Meetings/form.js and Meetings/series/form.js no longer list people at all (their pickers SEARCH
+    // through shared/diten-people-search.js), so they dropped the adapter; nobody grew a local copy instead.
     const { delegating } = declarations("buildSearchableDropdownAdapter");
-    expect(delegating).toEqual(
-      ["Governance/RoleAssignments/index.js", "Meetings/form.js", "Meetings/series/form.js"].sort());
+    expect(delegating).toEqual(["Governance/RoleAssignments/index.js"]);
+  });
+
+  it("every Meetings people picker searches through the ONE shared transport (BL-531)", () => {
+    ["Meetings/form.js", "Meetings/series/form.js", "Meetings/Report/index.js"].forEach((file) => {
+      const source = code(read(web("wwwroot", "assets", "js", ...file.split("/"))));
+      expect(source, `${file} does not use the shared people search`).toMatch(/DitenPeopleSearch\??\.options\??\.?\(/);
+      expect(source, `${file} grew its own select2 transport`).not.toMatch(/transport\s*:/);
+    });
   });
 
   it("relatedRecordRow / renderRelatedRows are real declarations only in shared/diten-related-records.js", () => {

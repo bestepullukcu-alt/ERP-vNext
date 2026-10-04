@@ -50,10 +50,10 @@ const stubGlobals = ({ minutesVersions }) => {
   global.MeetingsApi = {
     get: async () => ({
       ok: true,
-      data: { id: MEETING_ID, title: "Aylık Yönetim Gözden Geçirmesi", attendees: [{ userId: ATTENDEE_ID, invitationResponse: 1 }] }
+      // BL-531 — the attendee's name comes WITH the meeting read; the editor never asks the people directory.
+      data: { id: MEETING_ID, title: "Aylık Yönetim Gözden Geçirmesi", attendees: [{ userId: ATTENDEE_ID, displayName: "Ayşe Yılmaz", invitationResponse: 1 }] }
     }),
     getMinutes: async () => ({ ok: true, data: { versions: minutesVersions } }),
-    lookupAttendees: async () => ({ ok: true, data: { people: [{ userId: ATTENDEE_ID, displayName: "Ayşe Yılmaz" }] } }),
     linkedTasks: async () => ({ ok: true, data: [] }),
     failureMessage: () => "error"
   };

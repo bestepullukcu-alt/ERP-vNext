@@ -391,7 +391,8 @@ public sealed class MeetingReportMongoTests : IAsyncLifetime
     private GetMeetingReportHandler Handler(Guid callerId, bool hasReadAll = false) => new(
         _meetings, _types, _attendees, _minutesVersions, _recordLinks, _tasks,
         new FakeCurrentUserContext(callerId),
-        new FakeActorPermissionContext(hasReadAll ? [MeetingPermissions.ReadAll] : []));
+        new FakeActorPermissionContext(hasReadAll ? [MeetingPermissions.ReadAll] : []),
+        new Diten.Platform.Application.Tests.Tasks.FakeUserDisplayNameResolver());
 
     private async Task<MeetingReportDto> ReportAsync(
         Guid callerId, bool hasReadAll = false, DateTimeOffset? from = null, DateTimeOffset? to = null)

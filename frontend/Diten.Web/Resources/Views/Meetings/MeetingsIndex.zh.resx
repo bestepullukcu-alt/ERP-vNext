@@ -110,6 +110,11 @@
   <data name="ErrorReportInvalidPeriod" xml:space="preserve"><value>报告期间的结束日期必须晚于开始日期。</value></data>
   <data name="ErrorReportExportTooLarge" xml:space="preserve"><value>此报告行数过多，无法导出。请缩小期间或筛选范围。</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>输入姓名或职位…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>请至少输入 2 个字符进行搜索。</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>没有找到符合此搜索的人员。</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>正在搜索…</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>短时间内搜索次数过多。请稍候再试。</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>会议服务当前不可用。</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>请填写所有必填字段。</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>会议类型</value></data>

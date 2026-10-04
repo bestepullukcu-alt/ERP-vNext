@@ -102,4 +102,9 @@
   <data name="ScopeTenant" xml:space="preserve"><value>Whole tenant</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>Your meetings</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>You do not have access to this report.</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Type at least 2 characters to search.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>No one found for this search.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>Searching…</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Unknown user</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Too many searches in a short time. Wait a moment and try again.</value></data>
 </root>

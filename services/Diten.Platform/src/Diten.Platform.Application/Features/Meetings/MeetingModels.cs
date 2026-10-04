@@ -168,7 +168,9 @@ public sealed record MeetingDto(
     /// <summary>K6's reverse read — the continuation THIS meeting was followed up by, if any (a derived query,
     /// never a stored field; see <c>IMeetingRepository.FindByFollowUpOfMeetingIdAsync</c>).</summary>
     Guid? FollowedByMeetingId = null,
-    string? FollowedByMeetingTitle = null);
+    string? FollowedByMeetingTitle = null,
+    /// <summary>BL-531 — the organizer's name, resolved in this read (null = not resolved; never the id).</summary>
+    string? OrganizerDisplayName = null);
 
 /// <summary>K12 — a failed dispatch is reported, never silently absorbed into a 201. <paramref name="Sent"/> and
 /// <paramref name="Failed"/> are deliberately NOT each other's negation: no attendee to tell (organizer-only
@@ -189,7 +191,9 @@ public sealed record MeetingListItemDto(
     /// <summary>MOD-0357 S7 — resolved from the SAME in-tenant meeting list this handler already loaded (no
     /// extra query); null when this meeting is not a continuation of another.</summary>
     Guid? FollowUpOfMeetingId = null,
-    string? FollowUpOfMeetingTitle = null);
+    string? FollowUpOfMeetingTitle = null,
+    /// <summary>BL-531 — the organizer's name, resolved once for the whole page (null = not resolved).</summary>
+    string? OrganizerDisplayName = null);
 
 public sealed record GetMeetingListFilter(
     DateTimeOffset? FromUtc,
@@ -482,7 +486,11 @@ public sealed record MeetingSeriesDto(
     Guid? LastGeneratedMeetingId,
     DateTimeOffset? LastGeneratedAt,
     bool IsActive,
-    int Version);
+    int Version,
+    /// <summary>BL-531 — the organizer's and the attendees' names, resolved in this read, so the series form
+    /// shows who is already chosen without asking the directory (null name = not resolved).</summary>
+    string? OrganizerDisplayName = null,
+    IReadOnlyList<MeetingPersonNameDto>? Attendees = null);
 
 /// <summary>What one sweep pass did for one tenant — same shape <c>GenerateDueRecurringTasksResponse</c>
 /// already takes for MOD-0024's own recurrence sweep.</summary>

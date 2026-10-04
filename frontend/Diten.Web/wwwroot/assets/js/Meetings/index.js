@@ -108,6 +108,8 @@ const MeetingsList = (function () {
         types.forEach((t) => $type.append(new Option(t.name, t.id)));
 
         const organizerIds = Array.from(new Set(rows.map((r) => r.organizerUserId)));
+        organizerNamesById = {};
+        rows.forEach((r) => { if (r.organizerDisplayName) { organizerNamesById[r.organizerUserId] = r.organizerDisplayName; } });
         const $organizer = $('#filterOrganizer');
         $organizer.empty();
         organizerIds.forEach((id) => $organizer.append(new Option(organizerNamesById[id] || L.UnknownUser, id)));
@@ -175,17 +177,13 @@ const MeetingsList = (function () {
         edit: ({ id }) => { if (id) { window.location.href = `/Meetings/${id}/Edit`; } }
     };
 
+    /*
+     * BL-531 — the organizer's name comes WITH each list row (organizerDisplayName, resolved by the list read
+     * itself); this page no longer downloads the people directory to put a name on an id.
+     */
     const loadLookupsThenInit = async () => {
-        const [typesResult, attendeesResult] = await Promise.all([
-            window.MeetingsApi.lookupTypes(),
-            window.MeetingsApi.lookupAttendees()
-        ]);
-        const types = typesResult.ok ? (typesResult.data || []) : [];
-        organizerNamesById = {};
-        if (attendeesResult.ok) {
-            (attendeesResult.data?.people || []).forEach((p) => { organizerNamesById[p.userId] = p.displayName || L.UnknownUser; });
-        }
-        return types;
+        const typesResult = await window.MeetingsApi.lookupTypes();
+        return typesResult.ok ? (typesResult.data || []) : [];
     };
 
     const initDataTable = async () => {
@@ -232,7 +230,7 @@ const MeetingsList = (function () {
                     },
                     { targets: 3, render: (data) => formatDateTime(data) },
                     { targets: 4, render: (data) => formatDateTime(data) },
-                    { targets: 5, render: (data) => organizerNamesById[data] || L.UnknownUser },
+                    { targets: 5, render: (data, type, full) => full?.organizerDisplayName || organizerNamesById[data] || L.UnknownUser },
                     { targets: 6, render: (data) => boolBadge(data) },
                     {
                         targets: 7,

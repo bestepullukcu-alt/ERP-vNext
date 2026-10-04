@@ -23,8 +23,6 @@
         return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     };
 
-    const buildSearchableDropdownAdapter = () => window.DitenPersonPicker.buildSearchableDropdownAdapter();
-
     const initSelect2 = (selector, options) => {
         if (!window.jQuery || !$.fn.select2) { return; }
         const $s = $(selector);
@@ -53,37 +51,40 @@
         el.classList.remove('d-none');
     };
 
+    const addStoredPerson = (selectId, userId, displayName) => {
+        const select = document.getElementById(selectId);
+        if (!select || !userId) { return; }
+        if (Array.from(select.options).some((option) => option.value === String(userId))) { return; }
+        select.appendChild(new Option(displayName || st('unknownUser'), String(userId)));
+    };
+
     const initFormPage = async () => {
         const form = document.getElementById('meetingSeriesForm');
         const mode = form.dataset.formMode;
         const isEdit = mode === 'edit';
         const seriesId = document.getElementById('meetingSeriesId')?.value || '';
 
-        const [typesResult, attendeesResult] = await Promise.all([
-            window.MeetingsApi.lookupTypes(),
-            window.MeetingsApi.lookupAttendees()
-        ]);
+        const typesResult = await window.MeetingsApi.lookupTypes();
 
         const types = typesResult.ok ? (typesResult.data || []) : [];
         populateOptions('#fieldMeetingTypeId', types, 'id', 'name');
         initSelect2('#fieldMeetingTypeId', { placeholder: st('selectPlaceholder') });
 
-        const people = attendeesResult.ok ? (attendeesResult.data?.people || []) : [];
-        // AssignablePersonDto rows, straight from the same lookup Meetings' own attendee picker uses — the
-        // shared picker renders the avatar+name(+unit) row and its own "nobody eligible" state (E2).
-        window.DitenPersonPicker.renderPersonOptions(
-            document.getElementById('fieldOrganizerUserId'), people,
-            { placeholder: st('attendeesPlaceholder'), empty: st('noEligibleAttendees') });
-        initSelect2('#fieldOrganizerUserId', {
-            placeholder: st('attendeesPlaceholder'), dropdownAdapter: buildSearchableDropdownAdapter()
+        // BL-531 — organizer and attendees are SEARCHED (≥ 2 characters, the task approver picker's contract); no
+        // people list is read when the form opens. On edit the stored people come back NAMED with the series itself.
+        const peopleSearchSettings = () => window.DitenPeopleSearch.options({
+            search: (term) => window.MeetingsApi.lookupAttendees({ search: term }),
+            text: {
+                minimumLength: st('peopleSearchMinimumLength'),
+                noResults: st('peopleSearchNoResults'),
+                searching: st('peopleSearching'),
+                unknown: st('unknownUser'),
+                error: st('errorOccurred'),
+                failure: (res) => window.MeetingsApi.failureMessage(res)
+            }
         });
-
-        window.DitenPersonPicker.renderPersonOptions(
-            document.getElementById('fieldAttendeeUserIds'), people,
-            { placeholder: st('attendeesPlaceholder'), empty: st('noEligibleAttendees') }, { multiple: true });
-        initSelect2('#fieldAttendeeUserIds', {
-            placeholder: st('attendeesPlaceholder'), dropdownAdapter: buildSearchableDropdownAdapter(), closeOnSelect: false
-        });
+        initSelect2('#fieldOrganizerUserId', Object.assign({ placeholder: st('peopleSearchHint') }, peopleSearchSettings()));
+        initSelect2('#fieldAttendeeUserIds', Object.assign({ placeholder: st('peopleSearchHint'), closeOnSelect: false }, peopleSearchSettings()));
 
         if (isEdit && seriesId) {
             const result = await window.MeetingsApi.seriesGet(seriesId);
@@ -102,6 +103,11 @@
             document.getElementById('fieldStartsAt').value = toFlatpickrValue(series.startsAt);
             document.getElementById('fieldEndsAt').value = toFlatpickrValue(series.endsAt);
             document.getElementById('fieldLeadTimeDays').value = String(series.leadTimeDays);
+            // BL-531 — the stored people become options FIRST (named by the series read; "unknown user" when the
+            // directory cannot name one — never the id), so an untouched save posts them back unchanged.
+            addStoredPerson('fieldOrganizerUserId', series.organizerUserId, series.organizerDisplayName);
+            const named = new Map((series.attendees || []).map((a) => [String(a.userId), a.displayName]));
+            (series.attendeeUserIds || []).forEach((id) => addStoredPerson('fieldAttendeeUserIds', id, named.get(String(id))));
             $('#fieldOrganizerUserId').val(series.organizerUserId).trigger('change');
             $('#fieldAttendeeUserIds').val(series.attendeeUserIds || []).trigger('change');
             document.getElementById('fieldChainAsFollowUp').checked = !!series.chainAsFollowUp;

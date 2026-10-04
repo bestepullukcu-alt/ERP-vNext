@@ -110,6 +110,11 @@
   <data name="ErrorReportInvalidPeriod" xml:space="preserve"><value>El período del informe debe terminar después de que comience.</value></data>
   <data name="ErrorReportExportTooLarge" xml:space="preserve"><value>Este informe tiene demasiadas filas para exportar. Reduzca el período o los filtros.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>No tiene acceso a esta acción.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>Escriba un nombre o un puesto…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Escriba al menos 2 caracteres para buscar.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>No se encontró a nadie con esta búsqueda.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>Buscando…</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Demasiadas búsquedas en poco tiempo. Espere un momento e inténtelo de nuevo.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>El servicio de Reuniones no está disponible en este momento.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Complete todos los campos obligatorios.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Tipos de reunión</value></data>

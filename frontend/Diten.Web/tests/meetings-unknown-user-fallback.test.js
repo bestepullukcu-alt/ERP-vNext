@@ -30,8 +30,8 @@ describe("BL-390: an unresolved organizer/attendee never renders as a raw GUID",
   test("index.js: the organizer filter option AND the DataTable column both fall back to L.UnknownUser", () => {
     const source = read(INDEX_JS);
     expect(source).toContain("organizerNamesById[id] || L.UnknownUser");
-    expect(source).toContain("organizerNamesById[data] || L.UnknownUser");
-    expect(source).toContain("p.displayName || L.UnknownUser");
+    // BL-531 — the column reads the name the list row itself carries; the directory lookup (`p.displayName`) is gone.
+    expect(source).toContain("full?.organizerDisplayName || organizerNamesById[data] || L.UnknownUser");
     // The exact shape BL-390's dev repro measured — must be gone, not just supplemented.
     expect(source).not.toContain("organizerNamesById[id] || id");
     expect(source).not.toContain("organizerNamesById[data] || data");
@@ -45,17 +45,19 @@ describe("BL-390: an unresolved organizer/attendee never renders as a raw GUID",
 
   test("form.js (Details page): the organizer field and the attendee list both fall back to t('unknownUser')", () => {
     const source = read(FORM_JS);
-    expect(source).toContain("eligiblePeopleById[meeting.organizerUserId] || t('unknownUser')");
-    expect(source).toContain("eligiblePeopleById[a.userId] || t('unknownUser')");
-    expect(source).toContain("eligiblePeopleById[p.userId] = p.displayName || t('unknownUser')");
-    expect(source).not.toContain("eligiblePeopleById[meeting.organizerUserId] || meeting.organizerUserId");
-    expect(source).not.toContain("eligiblePeopleById[a.userId] || a.userId");
+    // BL-531 — both names come WITH the meeting read (organizerDisplayName, attendees[].displayName).
+    expect(source).toContain("meeting.organizerDisplayName || t('unknownUser')");
+    expect(source).toContain("esc(a.displayName || t('unknownUser'))");
+    expect(source).not.toContain("meeting.organizerDisplayName || meeting.organizerUserId");
+    expect(source).not.toContain("a.displayName || a.userId");
   });
 
   test("minutes-editor.js (tutanak katılım listesi): attendance names and the publish byline both fall back to the shared label", () => {
     const source = read(MINUTES_JS);
     expect(source).toContain("eligiblePeopleById[userId] || tShared('unknownUser')");
-    expect(source).toContain("eligiblePeopleById[p.userId] = p.displayName || tShared('unknownUser')");
+    // BL-531 — the names are this meeting's own, from the meeting read; never the directory.
+    expect(source).toContain("eligiblePeopleById[a.userId] = a.displayName || tShared('unknownUser')");
+    expect(source).toContain("currentMeeting.organizerDisplayName || tShared('unknownUser')");
     expect(source).toContain("v.publishedByDisplayName || tShared('unknownUser')");
     expect(source).not.toContain("eligiblePeopleById[userId] || userId");
     expect(source).not.toContain("v.publishedByDisplayName || v.publishedByUserId");

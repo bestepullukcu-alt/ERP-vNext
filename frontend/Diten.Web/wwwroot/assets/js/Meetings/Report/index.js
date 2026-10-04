@@ -82,7 +82,7 @@
             <td>${esc(m.title)}</td>
             <td>${esc(m.meetingTypeName)}</td>
             <td>${esc(new Date(m.startAt).toLocaleString(global.CurrentLanguage || undefined))}</td>
-            <td>${esc(m.organizerUserId)}</td>
+            <td>${esc(m.organizerDisplayName || t('unknownUser'))}</td>
             <td>${m.attendanceRatePercent === null || m.attendanceRatePercent === undefined ? '–' : esc(m.attendanceRatePercent) + '%'}
                 <span class="text-muted small">(${esc(m.respondedCount)}/${esc(m.attendeeCount)})</span></td>
         </tr>`).join('');
@@ -251,26 +251,40 @@
 
         const jq = global.jQuery;
         if (jq?.fn?.select2) {
-            jq('#mrMeetingType, #mrOrganizer').select2({ width: '100%' });
+            jq('#mrMeetingType').select2({ width: '100%' });
+            // BL-531 — the organizer filter SEARCHES the people directory (≥ 2 characters, the attendee lookup's
+            // search-only contract); no people list is read when the report opens.
+            jq('#mrOrganizer').select2(Object.assign({ width: '100%', allowClear: true },
+                global.DitenPeopleSearch?.options?.({
+                    search: (term) => global.MeetingsApi.lookupAttendees({ search: term }),
+                    text: {
+                        minimumLength: t('peopleSearchMinimumLength'),
+                        noResults: t('peopleSearchNoResults'),
+                        searching: t('peopleSearching'),
+                        unknown: t('unknownUser'),
+                        error: t('errorOccurred'),
+                        failure: reportPeopleFailure
+                    }
+                }) || {}));
         }
+    };
+
+    /** The report page carries its own sentences (it does not load the Meetings bridge). */
+    const reportPeopleFailure = (res) => {
+        if (res?.reasonCode === 'PEOPLE_SEARCH_RATE_LIMITED' || res?.status === 429) { return t('errorPeopleSearchRateLimited'); }
+        if (res?.status === 403) { return t('errorNoAccess'); }
+        return t('errorOccurred');
     };
 
     const loadLookups = async () => {
         if (!global.MeetingsApi) { return; }
-        const [typesResult, attendeesResult] = await Promise.all([
-            global.MeetingsApi.lookupTypes(), global.MeetingsApi.lookupAttendees()
-        ]);
+        const typesResult = await global.MeetingsApi.lookupTypes();
         if (typesResult.ok) {
             (typesResult.data || []).forEach((type) => {
                 byId('mrMeetingType').append(new Option(type.name, type.id));
             });
         }
-        if (attendeesResult.ok) {
-            (attendeesResult.data?.people || []).forEach((p) => {
-                byId('mrOrganizer').append(new Option(p.displayName || p.userId, p.userId));
-            });
-        }
-        global.jQuery?.('#mrMeetingType, #mrOrganizer').trigger('change.select2');
+        global.jQuery?.('#mrMeetingType').trigger('change.select2');
     };
 
     const bindEvents = () => {

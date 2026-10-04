@@ -89,8 +89,19 @@
     const isConcurrencyConflict = (result) =>
         result?.status === 409 && (!result.reasonCode || result.reasonCode === 'MEETING_CONCURRENCY_CONFLICT');
 
+    /*
+     * BL-531 — the attendee search shares the task approver picker's people-search contract (BL-512); its two codes
+     * are not MeetingReasonCodes, so they live in their own map (the bridge guard above stays exact).
+     */
+    const PEOPLE_SEARCH_MESSAGE_KEYS = {
+        PEOPLE_SEARCH_TOO_SHORT: 'peopleSearchMinimumLength',
+        PEOPLE_SEARCH_RATE_LIMITED: 'errorPeopleSearchRateLimited'
+    };
+
     const failureMessage = (result) => {
         const t = (key) => global.MeetingsL10n?.t?.(key) ?? key;
+        const byPeopleSearch = PEOPLE_SEARCH_MESSAGE_KEYS[result?.reasonCode];
+        if (byPeopleSearch) { return t(byPeopleSearch); }
         const byReason = REASON_CODE_MESSAGE_KEYS[result?.reasonCode];
         if (byReason) { return t(byReason); }
         if (result?.reasonCode) {
@@ -145,7 +156,12 @@
         // ── S7 — continuation scheduling ─────────────────────────────────────
         scheduleFollowUp: (id, payload) => request('POST', `/${id}/follow-up`, payload),
 
-        lookupAttendees: () => request('GET', '/lookups/attendees'),
+        // BL-531 — SEARCH-ONLY (≥ 2 characters, ≤ 20 rows of four fields); the whole directory is never asked for.
+        // `data` is the plain array of rows, unwrapped HERE once, the way TasksApi.decisionMakers does it.
+        lookupAttendees: async ({ search } = {}) => {
+            const res = await request('GET', `/lookups/attendees?search=${encodeURIComponent(search ?? '')}`);
+            return Object.assign({}, res, { data: Array.isArray(res.data?.people) ? res.data.people : [] });
+        },
         lookupTypes: () => request('GET', '/lookups/types'),
 
         // ── S8 — Meeting Types (types-manage) ───────────────────────────────

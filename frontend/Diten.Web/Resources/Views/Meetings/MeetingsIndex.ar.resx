@@ -110,6 +110,11 @@
   <data name="ErrorReportInvalidPeriod" xml:space="preserve"><value>يجب أن تنتهي فترة التقرير بعد بدايتها.</value></data>
   <data name="ErrorReportExportTooLarge" xml:space="preserve"><value>يحتوي هذا التقرير على عدد كبير جدًا من الصفوف للتصدير. ضيّق الفترة أو عوامل التصفية.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>ليست لديك صلاحية لتنفيذ هذا الإجراء.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>اكتب اسمًا أو منصبًا…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>اكتب حرفين على الأقل للبحث.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>لم يتم العثور على أحد لهذا البحث.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>جارٍ البحث…</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>عمليات بحث كثيرة في وقت قصير. انتظر قليلًا ثم حاول مرة أخرى.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>خدمة الاجتماعات غير متاحة حاليًا.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>يرجى تعبئة جميع الحقول المطلوبة.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>أنواع الاجتماعات</value></data>

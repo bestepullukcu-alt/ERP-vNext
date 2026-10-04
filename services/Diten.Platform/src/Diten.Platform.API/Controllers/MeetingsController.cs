@@ -250,12 +250,14 @@ public sealed class MeetingsController : CustomBaseController
     // ── S3 lookups — "lookups" never matches {id:guid}, same disambiguation MeetingTypesController's own
     // "types" sub-route already relies on. ──────────────────────────────────────────────────────────────────
 
-    /// <summary>The attendee picker (D2, scope-exempt) — Create needs it to invite anyone at all.</summary>
+    /// <summary>The attendee picker (D2, scope-exempt) — Create needs it to invite anyone at all. BL-531: search-only,
+    /// the task approver picker's own contract, counted in the SAME per-user people-search bucket.</summary>
     [HttpGet("lookups/attendees")]
     [HasPermission(MeetingPermissions.Create)]
-    public async Task<IActionResult> LookupAttendees(CancellationToken ct)
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting(Diten.Platform.API.Security.PeopleSearchRateLimit.PolicyName)]
+    public async Task<IActionResult> LookupAttendees([FromQuery] string? search, [FromQuery] string? ids, CancellationToken ct)
     {
-        var response = await _mediator.Send(new GetMeetingAttendeeLookupQuery(CorrelationId), ct);
+        var response = await _mediator.Send(new GetMeetingAttendeeLookupQuery(CorrelationId, search, ids), ct);
         return CreateActionResultInstance(response);
     }
 

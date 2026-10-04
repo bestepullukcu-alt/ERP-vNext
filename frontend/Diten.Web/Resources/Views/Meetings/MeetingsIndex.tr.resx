@@ -110,6 +110,11 @@
   <data name="ErrorReportInvalidPeriod" xml:space="preserve"><value>Rapor dönemi başlangıcından sonra bitmelidir.</value></data>
   <data name="ErrorReportExportTooLarge" xml:space="preserve"><value>Bu rapor dışa aktarım için çok fazla satır içeriyor. Dönemi ya da filtreleri daraltın.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>Ad ya da pozisyon yazın…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Aramak için en az 2 karakter yazın.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>Bu aramada kimse bulunamadı.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>Aranıyor…</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Kısa sürede çok fazla arama yapıldı. Biraz bekleyip yeniden deneyin.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Toplantılar servisi şu anda kullanılamıyor.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Lütfen zorunlu tüm alanları doldurun.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Toplantı Türleri</value></data>

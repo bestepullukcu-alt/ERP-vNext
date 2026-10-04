@@ -173,6 +173,7 @@ public sealed class GetMeetingReportHandler : IRequestHandler<GetMeetingReportQu
     private readonly ITaskItemRepository _tasks;
     private readonly ICurrentUserContext _currentUser;
     private readonly IActorPermissionContext _permissions;
+    private readonly IUserDisplayNameResolver _displayNames;
 
     public GetMeetingReportHandler(
         IMeetingRepository meetings,
@@ -182,8 +183,10 @@ public sealed class GetMeetingReportHandler : IRequestHandler<GetMeetingReportQu
         IRecordLinkService recordLinks,
         ITaskItemRepository tasks,
         ICurrentUserContext currentUser,
-        IActorPermissionContext permissions)
+        IActorPermissionContext permissions,
+        IUserDisplayNameResolver displayNames)
     {
+        _displayNames = displayNames;
         _meetings = meetings;
         _types = types;
         _attendees = attendees;
@@ -205,6 +208,13 @@ public sealed class GetMeetingReportHandler : IRequestHandler<GetMeetingReportQu
         var dto = await MeetingReportCore.BuildAsync(
             query.From, query.To, query.MeetingTypeId, query.OrganizerUserId,
             _meetings, _types, _attendees, _minutesVersions, _recordLinks, _tasks, _currentUser, _permissions, ct);
+
+        // BL-531 — the screen's organizer column gets a name (ONE batched call); the export keeps its own columns.
+        var names = await MeetingPersonNames.ResolveAsync(_displayNames, dto.Meetings.Select(m => m.OrganizerUserId), ct);
+        dto = dto with
+        {
+            Meetings = dto.Meetings.Select(m => m with { OrganizerDisplayName = MeetingPersonNames.NameOf(names, m.OrganizerUserId) }).ToList()
+        };
 
         return Response<MeetingReportDto>.Success(dto, 200, query.CorrelationId);
     }

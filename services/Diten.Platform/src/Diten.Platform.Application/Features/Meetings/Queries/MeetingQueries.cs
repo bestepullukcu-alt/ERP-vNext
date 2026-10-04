@@ -26,8 +26,10 @@ public sealed record GetMeetingTypeByIdQuery(Guid Id, string CorrelationId) : IR
 
 /// <summary>D2 — the SAME seam MOD-0024's own assignee picker uses (<c>GetTaskAssignmentPersonLookupQuery</c>,
 /// <c>Purpose: Decision</c>, scope-EXEMPT); this query only forwards to it, never a second resolution path.</summary>
-public sealed record GetMeetingAttendeeLookupQuery(string CorrelationId)
-    : IRequest<Response<Diten.Platform.Application.Features.Tasks.AssignablePersonLookupDto>>;
+/// <para>BL-531 — SEARCH-ONLY, the very contract the task approver picker has (BL-512): <paramref name="Search"/>
+/// (at least two characters, at most 20 rows) OR <paramref name="Ids"/> (at most 10), four fields per row.</para>
+public sealed record GetMeetingAttendeeLookupQuery(string CorrelationId, string? Search = null, string? Ids = null)
+    : IRequest<Response<Diten.Platform.Application.Features.Tasks.DecisionMakerLookupDto>>;
 
 public sealed record GetMeetingTypeLookupQuery(string CorrelationId)
     : IRequest<Response<IReadOnlyList<MeetingTypeLookupItemDto>>>;
