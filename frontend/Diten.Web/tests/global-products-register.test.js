@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const vm = require("node:vm");
 
 describe("MOD-0290 Global Product Register", () => {
     const read = (relativePath) => fs.readFileSync(path.join(__dirname, "..", relativePath), "utf8");
@@ -33,7 +34,7 @@ describe("MOD-0290 Global Product Register", () => {
         expect(view).toContain('data-can-create="@canCreate.ToString().ToLowerInvariant()"');
         expect(source).toContain("const permissionHost = document.querySelector('[data-can-create]')");
         expect(source).toContain("const canCreate = permissionHost?.getAttribute('data-can-create') === 'true'");
-        expect(source).toContain('canCreate ? L.AddNew : null');
+        expect(source).toContain("addNewText: canCreate ? L.AddNew : ''");
         expect(l10nScript()).toContain('normalized[toPascalCase(key)] = raw[key]');
     });
 
@@ -45,18 +46,16 @@ describe("MOD-0290 Global Product Register", () => {
         expect(source).not.toMatch(/document\.cookie|access_token|Authorization\s*:\s*['\"`]Bearer/);
     });
 
+    // WP-MDM-GP-LIST-01: the prefetch is kept on the list component. It is started before the component loads the saved
+    // view, and the component's first request is answered from it only when that request is the very same page.
     it("overlaps the first page with saved-view loading without bypassing saved-view correctness", () => {
         const source = indexScript();
         const prefetchIndex = source.indexOf('initialPagePrefetch = startInitialPagePrefetch()');
-        const savedViewIndex = source.indexOf('const savedState = await loadDefaultView()');
-        const dataTableIndex = source.indexOf('dt = new DataTable(tableEl, config)');
+        const listIndex = source.indexOf('list = await window.DitenDataTable.createList(buildListOptions())');
 
         expect(prefetchIndex).toBeGreaterThan(-1);
-        expect(savedViewIndex).toBeGreaterThan(prefetchIndex);
-        expect(dataTableIndex).toBeGreaterThan(savedViewIndex);
-        expect(source).toContain('if (prefetched?.query === query)');
-        expect(source).toContain('prefetched?.controller.abort()');
-        expect(source).toContain('consumePage(buildQuery(data))');
+        expect(listIndex).toBeGreaterThan(prefetchIndex);
+        expect(source).toContain("xhr: listRequest");
         expect(source).toContain('pageLength: initialPageSize');
         expect(source).toContain('deferRender: true');
     });
@@ -72,27 +71,22 @@ describe("MOD-0290 Global Product Register", () => {
         expect(source).not.toMatch(/body\.(?:set|append)\(['\"](?:TenantId|CanonicalCode|ReservationId|IdempotencyKey)/);
     });
 
-    it("keeps the lifecycle filter single-valued while matching the Golden clear-chip contract", () => {
+    // WP-MDM-GP-LIST-01: the inline filter (select2 single chip, Apply / Reset, the saved view's filter) is the list
+    // component's; the register declares the field and its key, which the component sends as a query parameter.
+    it("keeps the lifecycle filter single-valued and hands it to the list component", () => {
         const view = read("Views/MasterDataManagement/GlobalProducts/_Filter.cshtml");
         const source = indexScript();
         const styles = backboneCss();
 
         expect(view).toContain('id="filterLifecycleStatus"');
         expect(view).not.toContain('id="filterLifecycleStatus" multiple');
-        expect(source).toContain("containerCssClass: 'dt-inline-filter-single'");
-        expect(source).toContain("selectionCssClass: 'form-select form-select-sm'");
-        expect(source).toContain("placeholder: $filter.data('placeholder') || ''");
-        expect(source).toContain('minimumResultsForSearch: Infinity');
-        expect(source).toContain('allowClear: true');
-        expect(source).toContain(".toggleClass('text-body fw-semibold', hasValue)");
-        expect(source).toContain(".toggleClass('text-secondary', !hasValue)");
-        expect(source).toContain("change.globalProductsFilterState', () => syncSingleFilterState($filter)");
-        expect(source).toContain('requestAnimationFrame(() => syncSingleFilterState($filter))');
+        expect(view).toContain('id="btnFilterApply"');
+        expect(view).toContain('id="btnFilterReset"');
+        expect(source).toContain("fields: [{ id: 'filterLifecycleStatus', key: 'lifecycleStatus', kind: 'single' }]");
+        expect(source).not.toMatch(/\$filter\.select2\(|appliedFilters|mountInlineFilter/);
         expect(styles).not.toContain('.dt-inline-filter-single--is-empty .select2-selection__rendered');
         expect(styles).not.toContain('.dt-inline-filter-single--has-value .select2-selection__rendered');
-        expect(source).toContain("appliedFilters = normalizeFilters({ lifecycleStatus: $('#filterLifecycleStatus').val() })");
-        expect(source).toContain("query.set('lifecycleStatus', appliedFilters.lifecycleStatus)");
-        expect(source).toContain('dt?.ajax.reload()');
+        expect(source).toContain('dt?.ajax.reload(null, false)');
     });
 
     it("omits the forbidden fake import while preserving the real shared Action exports", () => {
@@ -100,11 +94,11 @@ describe("MOD-0290 Global Product Register", () => {
         const defaults = dataTableDefaults();
 
         expect(source).not.toMatch(/importBtn|bx-import|L\.ComingSoon/);
-        expect(source).toContain('const buttons = window.DtDefaults.exportButtons(');
+        // The export menu is the list component's (DtDefaults.exportButtons); server export is BL-452 (open).
+        expect(source).not.toContain('window.DtDefaults.exportButtons(');
+        expect(source).toContain('exportColumns: saveViewColumnIndexes');
         ['print', 'csv', 'excel', 'pdf', 'copy']
             .forEach((format) => expect(defaults).toContain(`extend: '${format}'`));
-        expect(source).toContain('L.CurrentPageOnly');
-        expect(source).toContain('button.titleAttr = L.CurrentPageOnly');
     });
 
     it("orchestrates reservation and draft creation on the MVC server", () => {
@@ -263,10 +257,12 @@ describe("MOD-0290 Global Product Register", () => {
         expect(indexScript()).toContain('lifecycleRequests.delete(requestKey)');
     });
 
+    // WP-MDM-GP-LIST-01: Save View is the list component's (same moduleKey / pageKey as before); the page has no
+    // personalization client of its own, and stays console-free.
     it("keeps optional personalization fallback console-free", () => {
         const source = indexScript();
         expect(source).not.toMatch(/console\.(?:error|warn)\(/);
-        expect(source).toContain("catch (error) {\n            return null;");
+        expect(source).not.toMatch(/personalizationClient|loadDefaultView|saveDefaultView/);
     });
 
     it("fails closed unless lifecycle actor claims resolve to one canonical human subject", () => {
@@ -335,5 +331,99 @@ describe("MOD-0290 Global Product Register", () => {
         expect(view).toContain('@Localizer["RecordVersion"]');
         expect(view).not.toContain('@Localizer["Id"]');
         expect(view).not.toContain('@Localizer["Version"]');
+    });
+});
+
+// WP-MDM-GP-LIST-01: the register on the list component, executed in an isolated DOM with a fake HTTP layer.
+describe("Global Product register on the list component (executed)", () => {
+    const source = fs.readFileSync(path.join(__dirname, "../wwwroot/assets/js/MasterDataManagement/GlobalProducts/index.js"), "utf8");
+    const page = (items = []) => JSON.stringify({ success: true, data: { items, total: items.length, filteredTotal: items.length } });
+
+    function harness({ fetchAnswer = { status: 200, text: page() } } = {}) {
+        document.body.innerHTML = '<table class="datatables-globalproducts" id="dt-globalproducts"></table>' +
+            '<div id="offcanvasDetailsPreview"></div>';
+        const aborted = [];
+        const fetch = vi.fn((url, init) => {
+            init?.signal?.addEventListener("abort", () => aborted.push(url));
+            return Promise.resolve({
+                status: fetchAnswer.status, statusText: "OK",
+                headers: { get: () => "application/json; charset=utf-8" },
+                text: async () => fetchAnswer.text
+            });
+        });
+        const realRequests = [];
+        function FakeXhr() { realRequests.push(this); }
+        const fakeWindow = {
+            L10n: new Proxy({}, { get: (_, key) => String(key) }),
+            showToast: vi.fn(),
+            XMLHttpRequest: FakeXhr,
+            location: { origin: "https://register.test" }
+        };
+        // Test-only access to existing closure functions; shipped JS has no test hook.
+        const exposed = source.replace("init: async () => {", `test: {
+            buildListOptions, startInitialPagePrefetch, listRequest,
+            prefetch: () => { initialPagePrefetch = startInitialPagePrefetch(); }
+        }, init: async () => {`);
+        const api = vm.runInNewContext(exposed + "\nGlobalProductsList.test;", {
+            window: fakeWindow, document, fetch, URL, URLSearchParams, AbortController, Promise,
+            setTimeout, clearTimeout, console
+        });
+        return { api, fetch, aborted, realRequests };
+    }
+    const defaultFirstRequest = "/MasterDataManagement/GlobalProducts/api?start=0&length=10&orderBy=globalProductName&orderDir=asc&draw=1&_=1700000000000";
+
+    it("hands the list component the saved-view keys, the lifecycle filter and only MDM's sortable data names", () => {
+        const options = harness().api.buildListOptions();
+
+        expect(options.dataMode).toBe("server");
+        expect(options.ajax.url).toBe("/MasterDataManagement/GlobalProducts/api");
+        expect(options.savedView).toMatchObject({
+            moduleKey: "MasterDataManagement", pageKey: "GlobalProducts", saveViewColumnIndexes: [1, 2, 3], baseOrder: [[2, "asc"]]
+        });
+        expect(options.filters.fields).toEqual([{ id: "filterLifecycleStatus", key: "lifecycleStatus", kind: "single" }]);
+        expect(options.quickView.offcanvasId).toBe("offcanvasDetailsPreview");
+        expect(options.export).toBeUndefined();
+        const sortable = options.config.columns
+            .filter((column, index) => !options.config.columnDefs.some((def) =>
+                (def.targets === index || (def.targets === -1 && index === options.config.columns.length - 1)) && def.orderable === false))
+            .map((column) => column.data);
+        expect(sortable).toEqual(["canonicalCode", "globalProductName", "lifecycleStatus"]);
+        expect(Object.keys(options.actions.onRowAction).sort()).toEqual(
+            ["editDraft", "quickView", "requestCorrection", "requestRetirement", "submitIdentity", "withdrawApproval"]);
+        expect(options.config.pageLength).toBe(10);
+    });
+
+    it("answers the component's first request from the prefetch when it is the same page", async () => {
+        const h = harness({ fetchAnswer: { status: 200, text: page([{ id: "1", canonicalCode: "GP-1" }]) } });
+        h.api.prefetch();
+        expect(h.fetch).toHaveBeenCalledTimes(1);
+        expect(h.fetch.mock.calls[0][0]).toBe("/MasterDataManagement/GlobalProducts/api?start=0&length=10&orderBy=globalProductName&orderDir=asc");
+
+        const request = h.api.listRequest.call({ url: defaultFirstRequest });
+        const loaded = new Promise((resolve) => { request.onload = resolve; });
+        request.open("GET", defaultFirstRequest, true);
+        request.send(null);
+        await loaded;
+
+        expect(h.realRequests).toHaveLength(0);
+        expect(h.fetch).toHaveBeenCalledTimes(1);
+        expect(request.status).toBe(200);
+        expect(JSON.parse(request.responseText).data.items[0].canonicalCode).toBe("GP-1");
+        expect(request.getAllResponseHeaders()).toContain("content-type: application/json");
+        // Used once: the next request is the component's own.
+        h.api.listRequest.call({ url: defaultFirstRequest });
+        expect(h.realRequests).toHaveLength(1);
+    });
+
+    it("aborts the prefetch and lets the component ask for its own page when the saved view differs", () => {
+        const h = harness();
+        h.api.prefetch();
+
+        const request = h.api.listRequest.call({
+            url: "/MasterDataManagement/GlobalProducts/api?start=0&length=10&orderBy=globalProductName&orderDir=asc&draw=1&lifecycleStatus=Draft"
+        });
+
+        expect(h.realRequests).toEqual([request]);
+        expect(h.aborted).toHaveLength(1);
     });
 });

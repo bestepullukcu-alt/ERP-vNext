@@ -9,6 +9,19 @@
     var canCreate = Permissions.Has("mdm.global-products.create");
 }
 
+@*
+    UAS-001 (WP-MDM-GP-LIST-01, the GSKU register's B17 rule) — nothing of the register is drawn without
+    mdm.global-products.read: no filter bar, no heading, no skeleton, no empty table. GlobalProductsController.Index
+    answers 403 with this surface instead of redirecting.
+
+    ⚠ Display only. MDM's [HasPermission("mdm.global-products.read")] and the proxy's own check remain the authority.
+*@
+@if (!Permissions.Has("mdm.global-products.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["GlobalProductsTitle"].Value" />
+    return;
+}
+
 @* Contract marker: <partial name="_Filter" /> *@
 <partial name="~/Views/MasterDataManagement/GlobalProducts/_Filter.cshtml" />
 

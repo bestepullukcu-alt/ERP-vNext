@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Buffers.Binary;
+using System.Globalization;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -19,6 +20,7 @@ namespace Diten.Web.Controllers;
 [Route("MasterDataManagement/GlobalProducts")]
 public sealed class GlobalProductsController : Controller
 {
+    private const string ReadPermission = "mdm.global-products.read";
     private const string SubmitPermission = "mdm.global-products.submit";
     private const string UpdatePermission = "mdm.global-products.update";
     private const string WithdrawPermission = "mdm.global-products.withdraw";
@@ -50,11 +52,117 @@ public sealed class GlobalProductsController : Controller
     }
 
     [HttpGet("")]
-    public IActionResult Index() => View("~/Views/MasterDataManagement/GlobalProducts/Index.cshtml");
+    public IActionResult Index()
+    {
+        // UAS-001 (WP-MDM-GP-LIST-01, the GSKU register's B17 rule): no redirect for a signed-in reader without
+        // mdm.global-products.read. The status says 403 and the view draws the access-denied surface inside the shell —
+        // and nothing of the list (Index.cshtml checks first).
+        if (!PermissionClaims.HasPermission(User, ReadPermission))
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+        return View("~/Views/MasterDataManagement/GlobalProducts/Index.cshtml");
+    }
 
+    // WP-MDM-GP-LIST-01: the list component's server request (start, length, search, orderBy, orderDir, lifecycleStatus)
+    // becomes MDM's page query, and MDM's page becomes the component's envelope { data: { items, total, filteredTotal } }.
+    // MDM returns one count (the rows matching search + filter), so total and filteredTotal are both that count.
     [HttpGet("api")]
-    public Task<IActionResult> List(CancellationToken cancellationToken) =>
-        ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/global-products{Request.QueryString}", null, cancellationToken);
+    public Task<IActionResult> List(CancellationToken cancellationToken)
+    {
+        if (!PermissionClaims.HasPermission(User, ReadPermission))
+            return Task.FromResult(LifecycleFailure(StatusCodes.Status403Forbidden));
+
+        return ProxyListAsync($"{_gatewayUrl}/api/global-products?{BuildListQuery(Request.Query)}", cancellationToken);
+    }
+
+    internal const int MaxListPageSize = 100;
+    private const int DefaultListPageSize = 20;
+    // MDM's own bound (GetGlobalProductsValidator); a page beyond is refused there (400), never an overflow here.
+    private const int MaxListPageNumber = 1_000_000;
+
+    internal static string BuildListQuery(IQueryCollection query)
+    {
+        var length = int.TryParse(query["length"].ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedLength)
+            && parsedLength > 0
+                ? Math.Min(parsedLength, MaxListPageSize)
+                : DefaultListPageSize;
+        var start = long.TryParse(query["start"].ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedStart)
+            && parsedStart > 0
+                ? parsedStart
+                : 0;
+        // Capped BEFORE the +1, so the largest start never wraps to a negative page.
+        var pageNumber = (int)(Math.Min(start / length, MaxListPageNumber) + 1);
+        var parts = new List<string>
+        {
+            $"pageNumber={pageNumber.ToString(CultureInfo.InvariantCulture)}",
+            $"pageSize={length.ToString(CultureInfo.InvariantCulture)}"
+        };
+        // Passed as typed; MDM's validator is the one judge (unknown sort key or direction = 400, never a silent default).
+        foreach (var key in new[] { "search", "orderBy", "orderDir", "lifecycleStatus" })
+        {
+            var value = query[key].ToString().Trim();
+            if (value.Length > 0)
+                parts.Add($"{key}={Uri.EscapeDataString(value)}");
+        }
+        return string.Join("&", parts);
+    }
+
+    private async Task<IActionResult> ProxyListAsync(string targetUrl, CancellationToken cancellationToken)
+    {
+        if (!TryCreateRequest(HttpMethod.Get, targetUrl, null, out var request))
+            return LifecycleFailure(StatusCodes.Status401Unauthorized);
+
+        try
+        {
+            using (request)
+            using (var response = await _httpClient.SendAsync(request, cancellationToken))
+            {
+                if (!response.IsSuccessStatusCode)
+                    return LifecycleFailure((int)response.StatusCode);
+
+                using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cancellationToken));
+                var root = document.RootElement;
+                if (root.ValueKind != JsonValueKind.Object
+                    || !(root.TryGetProperty("data", out var page) || root.TryGetProperty("Data", out page))
+                    || page.ValueKind != JsonValueKind.Object
+                    || !(page.TryGetProperty("items", out var items) || page.TryGetProperty("Items", out items))
+                    || items.ValueKind != JsonValueKind.Array
+                    || !(page.TryGetProperty("totalCount", out var count) || page.TryGetProperty("TotalCount", out count))
+                    || !count.TryGetInt64(out var total)
+                    || total < 0)
+                {
+                    _logger.LogWarning("Global Product list proxy: MDM answered a page without items or totalCount.");
+                    return LifecycleFailure(StatusCodes.Status502BadGateway);
+                }
+
+                return new ContentResult
+                {
+                    StatusCode = StatusCodes.Status200OK,
+                    ContentType = "application/json",
+                    Content = JsonSerializer.Serialize(new
+                    {
+                        success = true,
+                        data = new { items = items.Clone(), total, filteredTotal = total }
+                    }, _jsonOptions)
+                };
+            }
+        }
+        catch (JsonException exception)
+        {
+            _logger.LogWarning(exception, "Global Product list proxy: MDM answered an unreadable page.");
+            return LifecycleFailure(StatusCodes.Status502BadGateway);
+        }
+        catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            // The list URL carries the search term — it is not logged.
+            _logger.LogWarning(exception, "Global Product list proxy timed out.");
+            return LifecycleFailure(StatusCodes.Status504GatewayTimeout);
+        }
+        catch (HttpRequestException exception)
+        {
+            _logger.LogError(exception, "Global Product list proxy failed.");
+            return LifecycleFailure(StatusCodes.Status503ServiceUnavailable);
+        }
+    }
 
     [HttpGet("api/{id:guid}")]
     public Task<IActionResult> Detail(Guid id, CancellationToken cancellationToken) =>

@@ -52,6 +52,29 @@ public interface IGlobalProductRepository
         DateTimeOffset serverNowUtc,
         CancellationToken cancellationToken = default) =>
         throw new NotSupportedException("Enforced product Legal Entity scope paging is not implemented by this repository.");
+    // WP-MDM-GP-LIST-01: the register sorted by a whitelisted stored field (default = the overloads above).
+    Task<GlobalProductPage> GetPageAsync(
+        int pageNumber,
+        int pageSize,
+        string? normalizedSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GlobalProductListSort sort,
+        CancellationToken cancellationToken = default) => sort == GlobalProductListSort.Default
+            ? GetPageAsync(pageNumber, pageSize, normalizedSearch, lifecycleStatus, cancellationToken)
+            : throw new NotSupportedException("GLOBAL_PRODUCT_LIST_SORT_NOT_IMPLEMENTED");
+    Task<GlobalProductPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? normalizedSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        bool referenceableOnly,
+        GlobalProductListSort sort,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default) => sort == GlobalProductListSort.Default
+            ? GetEnforcedLegalEntityScopePageAsync(pageNumber, pageSize, normalizedSearch, lifecycleStatus,
+                referenceableOnly, effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken)
+            : throw new NotSupportedException("GLOBAL_PRODUCT_LIST_SORT_NOT_IMPLEMENTED");
     Task<GlobalProductCreateResult> CreateDraftAsync(GlobalProduct globalProduct, CancellationToken cancellationToken = default);
     Task<GlobalProductLifecycleWriteResult> UpdateDraftAsync(
         Guid id,

@@ -5,20 +5,24 @@
 'use strict';
 
 const GlobalProductsList = (function () {
+    /*
+     * WP-MDM-GP-LIST-01 (BL-440) — the register stands on the list component (DitenDataTable.createList, server mode),
+     * as the GSKU register does since FIX3 B17: the factory owns the table, the inline filter, Save View (same
+     * moduleKey/pageKey as before, so saved views still load), the toolbar and the server wire
+     * (start/length/search/orderBy/orderDir/lifecycleStatus → the MVC proxy → MDM). This file keeps only the register's
+     * own business: renderers, the server-owned action menu, quick view, the first-page prefetch, and the
+     * create / edit / submit / withdraw / correction / retirement flows.
+     */
+    let list = null;
     let dt;
-    let defaultViewRecord = null;
-    let defaultViewState = null;
-    let saveFilterArmed = false;
-    let appliedFilters = { lifecycleStatus: '' };
     let initialPagePrefetch = null;
 
     const endpoint = '/MasterDataManagement/GlobalProducts/api';
     const tableEl = document.querySelector('.datatables-globalproducts');
-    const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'MasterDataManagement', pageKey: 'GlobalProducts' };
     const saveViewColumnIndexes = [1, 2, 3];
-    const totalColumnCount = 5;
-    const baseOrder = [[1, 'asc']];
+    // The register's order before server sorting existed: MDM sorted by name (the code column's arrow was a label only).
+    const baseOrder = [[2, 'asc']];
     const initialPageSize = 10;
     const L = window.L10n || {};
     const permissionHost = document.querySelector('[data-can-create]');
@@ -30,216 +34,11 @@ const GlobalProductsList = (function () {
     let editorId = '';
     let editorVersion = null;
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
-    const emptyFilters = () => ({ lifecycleStatus: '' });
 
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[character]));
     const normalizeString = (value) => typeof value === 'string' ? value.trim() : '';
-    const normalizeFilters = (filters) => ({ lifecycleStatus: normalizeString(filters?.lifecycleStatus) });
-    const syncSingleFilterState = ($filter) => {
-        const hasValue = Boolean(normalizeString($filter.val()));
-        $filter.next('.select2-container').find('.select2-selection__rendered')
-            .toggleClass('text-body fw-semibold', hasValue)
-            .toggleClass('text-secondary', !hasValue);
-    };
-    const normalizeColOrder = (order) => {
-        if (!Array.isArray(order) || order.length !== totalColumnCount) return null;
-        const result = order.map(Number).filter((index) => Number.isInteger(index) && index >= 0 && index < totalColumnCount);
-        return result.length === totalColumnCount && new Set(result).size === totalColumnCount ? result : null;
-    };
-    const normalizeColVis = (colVis) => {
-        if (!colVis) return null;
-        const result = {};
-        saveViewColumnIndexes.forEach((index, position) => {
-            const value = Array.isArray(colVis) ? (colVis[index] ?? colVis[position]) : colVis[index];
-            if (typeof value === 'boolean') result[index] = value;
-        });
-        return Object.keys(result).length ? result : null;
-    };
-    const defaultColVis = () => saveViewColumnIndexes.reduce((result, index) => {
-        result[index] = true;
-        return result;
-    }, {});
-    const captureColVis = (api) => saveViewColumnIndexes.reduce((result, index) => {
-        try { result[index] = !!api.column(index).visible(); } catch (error) { result[index] = true; }
-        return result;
-    }, {});
-    const captureColOrder = (api) => {
-        try { return normalizeColOrder(api?.colReorder?.order?.()); } catch (error) { return null; }
-    };
-    const getSearchValue = (api) => {
-        try { return api.table().container().querySelector('.dt-search input')?.value || api.search() || ''; }
-        catch (error) { return ''; }
-    };
-    const getCurrentView = (api) => ({
-        filters: normalizeFilters(appliedFilters),
-        search: normalizeString(getSearchValue(api)),
-        colVis: captureColVis(api),
-        columnOrder: captureColOrder(api),
-        order: api.order()
-    });
-    const normalizeView = (view) => ({
-        filters: normalizeFilters(view?.filters),
-        search: normalizeString(view?.search),
-        colVis: normalizeColVis(view?.colVis) || defaultColVis(),
-        columnOrder: normalizeColOrder(view?.columnOrder) || Array.from({ length: totalColumnCount }, (_, index) => index),
-        order: Array.isArray(view?.order) ? view.order : baseOrder
-    });
-    const serializeView = (view) => JSON.stringify(normalizeView(view));
-    const getSavedViewId = (view) => view?.id || view?.Id || view?._id || null;
-    const getSavedViewName = (view) => view?.viewName || view?.ViewName || '';
-    const getSavedViewDefinition = (view) => {
-        const definition = view?.viewDefinition ?? view?.ViewDefinition ?? {};
-        if (typeof definition !== 'string') return definition;
-        try { return JSON.parse(definition); } catch (error) { return {}; }
-    };
-    const isSavedViewDefault = (view) => view?.isDefault === true || view?.IsDefault === true;
-
-    const loadDefaultView = async () => {
-        defaultViewRecord = null;
-        defaultViewState = null;
-        if (!personalizationClient?.getViews) return null;
-        try {
-            const response = await personalizationClient.getViews(personalizationContext.moduleKey, personalizationContext.pageKey);
-            const items = Array.isArray(response) ? response : (response?.data || response?.Data || []);
-            defaultViewRecord = items.find(isSavedViewDefault) || items[0] || null;
-            defaultViewState = defaultViewRecord ? normalizeView(getSavedViewDefinition(defaultViewRecord)) : null;
-            return defaultViewState;
-        } catch (error) {
-            return null;
-        }
-    };
-
-    const saveDefaultView = async (view) => {
-        if (!personalizationClient?.saveView) return null;
-        const normalized = normalizeView(view);
-        const payload = {
-            moduleKey: personalizationContext.moduleKey,
-            pageKey: personalizationContext.pageKey,
-            viewName: (getSavedViewName(defaultViewRecord) || L.SaveView || 'Default').trim(),
-            viewDefinition: normalized,
-            isDefault: true,
-            visibility: 'private'
-        };
-        const id = getSavedViewId(defaultViewRecord);
-        const response = id
-            ? await personalizationClient.updateView(id, payload)
-            : await personalizationClient.saveView(payload);
-        defaultViewRecord = response?.data || response?.Data || response || payload;
-        defaultViewState = normalized;
-        return normalized;
-    };
-
-    const setSaveFilterVisible = (visible) => {
-        document.querySelector('.dt-save-filter-btn')?.classList.toggle('d-none', !visible);
-        window.DtDefaults?.refreshButtonGroupRadii?.();
-    };
-    const isDirtyComparedToDefault = (api) => serializeView(getCurrentView(api)) !== serializeView(defaultViewState || {
-        filters: { lifecycleStatus: '' }, search: '', colVis: defaultColVis(),
-        columnOrder: Array.from({ length: totalColumnCount }, (_, index) => index), order: baseOrder
-    });
-    const applyColumnState = (api, state) => {
-        const columnOrder = normalizeColOrder(state?.columnOrder);
-        if (columnOrder && typeof api?.colReorder?.order === 'function') api.colReorder.order(columnOrder, true);
-        const colVis = normalizeColVis(state?.colVis);
-        if (colVis) saveViewColumnIndexes.forEach((index) => api.column(index).visible(colVis[index], false));
-    };
-    const applySavedTableState = (api, state) => {
-        const normalized = normalizeView(state || {});
-        appliedFilters = normalized.filters;
-        const $filter = $('#filterLifecycleStatus');
-        $filter.val(appliedFilters.lifecycleStatus).trigger('change.select2');
-        syncSingleFilterState($filter);
-        applyColumnState(api, normalized);
-        api.search(normalized.search);
-        api.order(normalized.order);
-    };
-    const getResetBaselineState = () => normalizeView({
-        filters: emptyFilters(),
-        search: '',
-        colVis: defaultColVis(),
-        columnOrder: Array.from({ length: totalColumnCount }, (_, index) => index),
-        order: baseOrder
-    });
-
-    const mountInlineFilter = () => {
-        const host = document.getElementById('inlineFilterHost');
-        const filterButton = document.querySelector('.dt-filter-btn');
-        const toolbar = filterButton?.closest('.dt-layout-row') || filterButton?.closest('.row');
-        if (host && toolbar) {
-            toolbar.insertAdjacentElement('afterend', host);
-            host.classList.add('px-3');
-        }
-    };
-    const initFilter = () => {
-        if (!window.jQuery || !$.fn.select2) return;
-        const $filter = $('#filterLifecycleStatus');
-        if ($filter.length) {
-            if ($filter.hasClass('select2-hidden-accessible')) $filter.select2('destroy');
-
-            const clampDropdown = () => {
-                requestAnimationFrame(() => {
-                    const dropdown = document.querySelector('.select2-dropdown.dt-inline-filter-dropdown');
-                    if (!dropdown) return;
-                    const rect = dropdown.getBoundingClientRect();
-                    const padding = 8;
-                    let deltaX = 0;
-                    let deltaY = 0;
-                    if (rect.right > window.innerWidth - padding) deltaX -= rect.right - (window.innerWidth - padding);
-                    if (rect.left < padding) deltaX += padding - rect.left;
-                    if (rect.bottom > window.innerHeight - padding) deltaY -= rect.bottom - (window.innerHeight - padding);
-                    if (rect.top < padding) deltaY += padding - rect.top;
-                    if (!deltaX && !deltaY) return;
-                    const computedStyle = window.getComputedStyle(dropdown);
-                    const baseLeft = parseFloat(computedStyle.left) || rect.left + window.scrollX;
-                    const baseTop = parseFloat(computedStyle.top) || rect.top + window.scrollY;
-                    if (deltaX) dropdown.style.left = `${baseLeft + deltaX}px`;
-                    if (deltaY) dropdown.style.top = `${baseTop + deltaY}px`;
-                    dropdown.style.transform = 'none';
-                });
-            };
-
-            $filter.select2({
-                dropdownParent: $(document.body),
-                dropdownCssClass: 'dt-inline-filter-dropdown',
-                containerCssClass: 'dt-inline-filter-single',
-                selectionCssClass: 'form-select form-select-sm',
-                placeholder: $filter.data('placeholder') || '',
-                minimumResultsForSearch: Infinity,
-                width: 'element',
-                allowClear: true
-            });
-            $filter.on('select2:open', clampDropdown);
-            $filter.off('change.globalProductsFilterState')
-                .on('change.globalProductsFilterState', () => syncSingleFilterState($filter));
-            requestAnimationFrame(() => syncSingleFilterState($filter));
-        }
-    };
-    const getAppliedFilterCount = () => appliedFilters.lifecycleStatus ? 1 : 0;
-    const toggleInlineFilter = () => {
-        const element = document.getElementById('inlineFilterCollapse');
-        if (element) bootstrap.Collapse.getOrCreateInstance(element, { toggle: false }).toggle();
-    };
-    const bindFilterEvents = () => {
-        const collapse = document.getElementById('inlineFilterCollapse');
-        collapse?.addEventListener('shown.bs.collapse', () => document.querySelector('.dt-filter-btn')?.setAttribute('aria-expanded', 'true'));
-        collapse?.addEventListener('hidden.bs.collapse', () => document.querySelector('.dt-filter-btn')?.setAttribute('aria-expanded', 'false'));
-        document.getElementById('btnFilterApply')?.addEventListener('click', () => {
-            appliedFilters = normalizeFilters({ lifecycleStatus: $('#filterLifecycleStatus').val() });
-            dt?.ajax.reload();
-            bootstrap.Collapse.getOrCreateInstance(collapse, { toggle: false }).hide();
-            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
-        });
-        document.getElementById('btnFilterReset')?.addEventListener('click', (event) => {
-            event.preventDefault();
-            if (dt) {
-                applySavedTableState(dt, getResetBaselineState());
-                dt.ajax.reload();
-                setSaveFilterVisible(isDirtyComparedToDefault(dt));
-            }
-        });
-    };
 
     const lifecycleMap = () => ({
         Draft: { title: L.LifecycleDraft, class: 'bg-label-secondary' },
@@ -289,57 +88,87 @@ const GlobalProductsList = (function () {
         throw error;
     };
 
-    const buildQuery = (data) => {
-        const pageSize = Math.max(10, Math.min(Number(data.length) || 20, 100));
-        const pageNumber = Math.floor((Number(data.start) || 0) / pageSize) + 1;
-        const query = new URLSearchParams({ pageNumber: String(pageNumber), pageSize: String(pageSize) });
-        const search = normalizeString(data.search?.value);
-        if (search) query.set('search', search);
-        if (appliedFilters.lifecycleStatus) query.set('lifecycleStatus', appliedFilters.lifecycleStatus);
-        return query.toString();
+    // A failed page read says a sentence in the reader's language (the proxy answers one); 401 is the shared refresh.
+    const onListError = function (xhr) {
+        const status = Number(xhr?.status) || 0;
+        if (status === 401) {
+            if (!this?._retried) window.DtDefaults?.handleUnauthorized?.(this);
+            return;
+        }
+        if (xhr?.statusText === 'abort') return;
+        let payload = null;
+        try { payload = xhr?.responseJSON ?? JSON.parse(xhr?.responseText || 'null'); } catch (error) { payload = null; }
+        const errors = payload?.errors || payload?.Errors || [];
+        const sentence = Array.isArray(errors) ? errors.find((value) => typeof value === 'string' && value) : '';
+        window.showToast?.(sentence || L.ErrorGateway, 'error');
     };
 
-    const fetchPage = async (query, signal) => {
-        const response = await fetch(`${endpoint}?${query}`, {
-            credentials: 'same-origin',
-            headers: getAuthHeaders(),
-            signal
-        });
-        if (response.status === 401) handleUnauthorized();
-        if (!response.ok) throw new Error(await getErrorMessage(response));
-        return unwrapData(await response.json());
+    /*
+     * The first-page prefetch (kept from the hand-written list): the default first page is asked for while the saved
+     * view is still loading, and handed to the list component's FIRST request only when that request is exactly the
+     * same query (no saved search, filter or order) — otherwise it is aborted and the component asks for its own page.
+     * The component sends its requests through jQuery; jQuery asks `settings.xhr()` for the request object, so this
+     * page answers that one request from the prefetch. The factory and the shared files are not changed.
+     */
+    const defaultFirstPageQuery = () => new URLSearchParams({
+        start: '0',
+        length: String(initialPageSize),
+        orderBy: 'globalProductName',
+        orderDir: 'asc'
+    });
+    // The component adds `draw` (and jQuery may add a cache buster `_`): neither changes which rows are asked for.
+    const comparableQuery = (url) => {
+        const parsed = new URL(url, window.location.origin);
+        parsed.searchParams.delete('draw');
+        parsed.searchParams.delete('_');
+        const pairs = Array.from(parsed.searchParams.entries()).sort(([a, x], [b, y]) => a === b ? (x < y ? -1 : 1) : (a < b ? -1 : 1));
+        return `${parsed.pathname}?${new URLSearchParams(pairs).toString()}`;
     };
-    const settlePageRequest = (request) => request.then(
-        (page) => ({ page, error: null }),
-        (error) => ({ page: null, error })
-    );
     const startInitialPagePrefetch = () => {
-        const query = new URLSearchParams({
-            pageNumber: '1',
-            pageSize: String(initialPageSize)
-        }).toString();
+        const url = `${endpoint}?${defaultFirstPageQuery().toString()}`;
         const controller = new AbortController();
-        return {
-            query,
-            controller,
-            result: settlePageRequest(fetchPage(query, controller.signal))
-        };
+        const result = fetch(url, { credentials: 'same-origin', headers: getAuthHeaders(), signal: controller.signal })
+            .then(async (response) => ({
+                status: response.status,
+                statusText: response.statusText,
+                contentType: response.headers.get('content-type') || 'application/json',
+                text: await response.text()
+            }))
+            .catch(() => null);
+        return { query: comparableQuery(url), controller, result };
     };
-    const consumePage = async (query) => {
+    // A request object jQuery can drive (open, setRequestHeader, send, abort, the on* handlers) answered from the prefetch.
+    const prefetchedRequest = (prefetched) => {
+        const request = {
+            readyState: 0, status: 0, statusText: '', responseText: '', response: '', responseType: '',
+            onload: null, onerror: null, onabort: null, ontimeout: null, onreadystatechange: null,
+            headers: '',
+            open() { request.readyState = 1; },
+            setRequestHeader() { },
+            getAllResponseHeaders() { return request.headers; },
+            abort() { prefetched.controller.abort(); request.onabort?.(); },
+            send() {
+                prefetched.result.then((answer) => {
+                    if (!answer) { request.onerror?.(); return; }
+                    request.readyState = 4;
+                    request.status = answer.status;
+                    request.statusText = answer.statusText;
+                    request.responseText = answer.text;
+                    request.response = answer.text;
+                    request.headers = `content-type: ${answer.contentType}\r\n`;
+                    request.onload?.();
+                });
+            }
+        };
+        return request;
+    };
+    function listRequest() {
         const prefetched = initialPagePrefetch;
         initialPagePrefetch = null;
-
-        let result;
-        if (prefetched?.query === query) {
-            result = await prefetched.result;
-        } else {
-            prefetched?.controller.abort();
-            result = await settlePageRequest(fetchPage(query));
-        }
-
-        if (result.error) throw result.error;
-        return result.page;
-    };
+        if (prefetched && comparableQuery(this.url) === prefetched.query) return prefetchedRequest(prefetched);
+        prefetched?.controller.abort();
+        return new window.XMLHttpRequest();
+    }
 
     const fetchDetail = async (id) => {
         const response = await fetch(`${endpoint}/${encodeURIComponent(id)}`, {
@@ -387,7 +216,6 @@ const GlobalProductsList = (function () {
         const statusElement = document.getElementById('oc-status');
         if (!statusElement) throw new Error(L.ErrorGateway);
         statusElement.outerHTML = renderLifecycle(status).replace('<span ', '<span id="oc-status" ');
-        bootstrap.Offcanvas.getOrCreateInstance(offcanvas).show();
         return detailState;
     };
     const lifecycleToken = () => document.querySelector(
@@ -582,20 +410,51 @@ const GlobalProductsList = (function () {
         return `<div class="dropdown"><button type="button" class="btn btn-icon dropdown-toggle hide-arrow js-global-product-actions-toggle" data-id="${escapeHtml(id)}" aria-expanded="false" title="${escapeHtml(L.Actions)}" aria-label="${escapeHtml(L.Actions)}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><div class="dropdown-menu dropdown-menu-end m-0 js-global-product-actions-menu"></div></div>`;
     };
 
+    /*
+     * Each server action is a menu item the list component dispatches (`data-row-action` → actions.onRowAction): the
+     * same delegation inside the table and inside the responsive row modal. Only actions MDM returned for this row,
+     * read fresh when the menu opens, are ever drawn.
+     */
     const actionPresentation = {
-        DETAILS: ['js-quick-view', 'bx bx-show', () => L.ViewDetails],
-        EDIT: ['js-edit-draft', 'bx bx-edit', () => L.EditDraft],
-        SUBMIT: ['js-lifecycle-action', 'bx bx-send', () => L.SubmitIdentity],
-        WITHDRAW_APPROVAL: ['js-lifecycle-action', 'bx bx-undo', () => L.WithdrawApproval],
-        REQUEST_CORRECTION: ['js-lifecycle-action', 'bx bx-edit-alt', () => L.RequestCorrection],
-        REQUEST_RETIREMENT: ['js-lifecycle-action', 'bx bx-archive', () => L.RequestRetirement]
+        DETAILS: { key: 'quickView', className: 'js-quick-view', icon: 'bx bx-show', label: () => L.ViewDetails },
+        EDIT: { key: 'editDraft', className: 'js-edit-draft', icon: 'bx bx-edit', label: () => L.EditDraft },
+        SUBMIT: { key: 'submitIdentity', className: 'js-lifecycle-action', icon: 'bx bx-send', label: () => L.SubmitIdentity },
+        WITHDRAW_APPROVAL: { key: 'withdrawApproval', className: 'js-lifecycle-action', icon: 'bx bx-undo', label: () => L.WithdrawApproval },
+        REQUEST_CORRECTION: { key: 'requestCorrection', className: 'js-lifecycle-action', icon: 'bx bx-edit-alt', label: () => L.RequestCorrection },
+        REQUEST_RETIREMENT: { key: 'requestRetirement', className: 'js-lifecycle-action', icon: 'bx bx-archive', label: () => L.RequestRetirement }
     };
     const renderFreshActionMenu = (menu, id, actions) => {
         menu.innerHTML = actions.map((code) => {
-            const [className, icon, label] = actionPresentation[code];
-            return `<a href="javascript:void(0);" class="dropdown-item dt-action-item ${className}" data-id="${escapeHtml(id)}" data-action="${code}"><i class="${icon} dt-action-icon"></i>${escapeHtml(label())}</a>`;
+            const { key, className, icon, label } = actionPresentation[code];
+            return `<a href="javascript:void(0);" class="dropdown-item dt-action-item ${className}" data-row-action="${key}" data-id="${escapeHtml(id)}" data-action="${code}"><i class="${icon} dt-action-icon"></i>${escapeHtml(label())}</a>`;
         }).join('');
     };
+    // The quick view shows the detail read fresh when the menu opened; the list component opens and closes it.
+    const showDetails = (id, trigger) => {
+        const detail = detailById.get(String(id).toLowerCase());
+        if (!detail) {
+            window.showToast?.(L.LifecycleStateChanged, 'warning');
+            return;
+        }
+        try {
+            list?.showQuickView({ id, detail }, trigger);
+        } catch (error) {
+            window.showToast?.(error.message || L.ErrorGateway, 'error');
+        }
+    };
+    // The register's row-action handlers, by the keys above. A busy item (disabled) is never run twice.
+    const rowAction = (run) => ({ id, trigger }) => {
+        if (!id || trigger?.classList.contains('disabled')) return;
+        run(String(id), trigger);
+    };
+    const rowActionHandlers = () => ({
+        quickView: rowAction((id, trigger) => showDetails(id, trigger)),
+        editDraft: rowAction((id, trigger) => openEdit(id, trigger)),
+        submitIdentity: rowAction((id, trigger) => requestLifecycle(id, 'SUBMIT', trigger)),
+        withdrawApproval: rowAction((id, trigger) => requestLifecycle(id, 'WITHDRAW_APPROVAL', trigger)),
+        requestCorrection: rowAction((id, trigger) => requestLifecycle(id, 'REQUEST_CORRECTION', trigger)),
+        requestRetirement: rowAction((id, trigger) => requestLifecycle(id, 'REQUEST_RETIREMENT', trigger))
+    });
     const loadActionMenu = async (toggle) => {
         const id = toggle?.dataset.id;
         const menu = toggle?.parentElement?.querySelector('.js-global-product-actions-menu');
@@ -608,6 +467,7 @@ const GlobalProductsList = (function () {
             renderFreshActionMenu(menu, id, actions);
             bootstrap.Dropdown.getOrCreateInstance(toggle).show();
         } catch (error) {
+            menu.replaceChildren();
             if (!error?.authHandled) window.showToast?.(error.message || L.ErrorOccurred, 'error');
         } finally {
             toggle.classList.remove('disabled');
@@ -691,64 +551,43 @@ const GlobalProductsList = (function () {
         }, { entityName: name, type: 'primary', confirmButtonText: L.Save });
     };
 
-    const initDataTable = async () => {
-        if (!tableEl || !window.DtDefaults) return;
-        // Keep saved-view restoration authoritative, but overlap its Gateway trip with the
-        // first default page. The prefetched payload is consumed only when the final query
-        // is identical; a saved search/filter always performs its own exact request.
-        initialPagePrefetch = startInitialPagePrefetch();
-        const savedState = await loadDefaultView();
-        if (savedState) appliedFilters = savedState.filters;
-
-        const extraButtons = {
-            filterBtn: { text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>', className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative', attr: { title: L.Filter, 'aria-label': L.Filter, 'aria-controls': 'inlineFilterCollapse', 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' }, action: toggleInlineFilter },
-            saveFilterBtn: {
-                text: `<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">${escapeHtml(L.SaveView)}</span>`,
-                className: 'btn btn-label-primary dt-save-filter-btn d-none',
-                attr: { title: L.SaveView, 'aria-label': L.SaveView, 'data-bs-toggle': 'tooltip' },
-                action: async (event, api) => {
-                    try {
-                        await saveDefaultView(getCurrentView(api || dt));
-                        setSaveFilterVisible(false);
-                        window.showToast?.(L.RecordSaved, 'success');
-                    } catch (error) {
-                        if (!error?.authHandled) window.showToast?.(L.ErrorOccurred, 'error');
-                    }
-                }
-            }
-        };
-
-        const buttons = window.DtDefaults.exportButtons(
-            canCreate ? L.AddNew : null,
-            {},
-            extraButtons,
-            { exportColumns: saveViewColumnIndexes, colvisColumns: saveViewColumnIndexes });
-        const exportCollection = buttons.find((button) => button?.extend === 'collection');
-        exportCollection?.buttons?.forEach((button) => {
-            if (!['print', 'csv', 'excel', 'pdf', 'copy'].includes(button?.extend)) return;
-            button.text = `${button.text}<small class="d-block text-muted">${escapeHtml(L.CurrentPageOnly)}</small>`;
-            button.titleAttr = L.CurrentPageOnly;
-        });
-
-        const config = window.DtDefaults.create({
-            processing: true,
-            serverSide: true,
-            deferRender: true,
-            stateSave: false,
+    // The createList options of the register — one place, so the wire and the saved-view keys are measurable.
+    const buildListOptions = () => ({
+        tableEl,
+        dataMode: 'server',
+        ajax: { url: endpoint, type: 'GET', headers: getAuthHeaders(), error: onListError, xhr: listRequest },
+        // The action menu and every row action stay the register's own (fresh server-owned actions per row).
+        actions: { onRowAction: rowActionHandlers() },
+        quickView: {
+            offcanvasId: 'offcanvasDetailsPreview',
+            populate: (row) => renderDetail(row.detail, row.id)
+        },
+        toolbar: {
+            addNewText: canCreate ? L.AddNew : '',
+            onAddNew: () => openCreate(),
+            exportColumns: saveViewColumnIndexes,
+            colvisColumns: saveViewColumnIndexes
+        },
+        filters: {
+            hostId: 'inlineFilterHost',
+            collapseId: 'inlineFilterCollapse',
+            applyBtn: 'btnFilterApply',
+            resetBtn: 'btnFilterReset',
+            fields: [{ id: 'filterLifecycleStatus', key: 'lifecycleStatus', kind: 'single' }]
+        },
+        // Same keys as before the migration: every saved Global Product view still loads.
+        savedView: {
+            moduleKey: personalizationContext.moduleKey,
+            pageKey: personalizationContext.pageKey,
+            saveViewColumnIndexes,
+            defaultVisibleColumnIndexes: saveViewColumnIndexes,
+            baseOrder
+        },
+        config: {
             pageLength: initialPageSize,
-            order: savedState?.order || baseOrder,
-            search: { search: savedState?.search || '' },
+            deferRender: true,
             colReorder: { columns: ':gt(0):not(:last-child)' },
-            ajax: (data, callback) => {
-                consumePage(buildQuery(data))
-                    .then((page) => {
-                        callback({ data: page.items || page.Items || [], recordsTotal: page.totalCount || page.TotalCount || 0, recordsFiltered: page.totalCount || page.TotalCount || 0 });
-                    })
-                    .catch((error) => {
-                        if (!error?.authHandled) window.showToast?.(error.message || L.ErrorOccurred, 'error');
-                        callback({ data: [], recordsTotal: 0, recordsFiltered: 0 });
-                    });
-            },
+            // `data` names are MDM's orderBy whitelist (globalProductName, canonicalCode, lifecycleStatus).
             columns: [
                 { data: 'id', name: 'control' },
                 { data: 'canonicalCode', name: 'canonicalCode' },
@@ -765,24 +604,17 @@ const GlobalProductsList = (function () {
                     targets: -1, title: L.Actions, searchable: false, orderable: false, className: 'cell-fit all text-end pe-3',
                     render: (data, type, row) => renderActions(row)
                 }
-            ],
-            buttons,
-            initComplete: function () {
-                const api = this.api();
-                mountInlineFilter();
-                initFilter();
-                applySavedTableState(api, savedState || { filters: appliedFilters });
-                document.querySelector('.add-new')?.addEventListener('click', (event) => { event.preventDefault(); openCreate(); });
-                setTimeout(() => { saveFilterArmed = true; }, 0);
-            },
-            drawCallback: function () { window.DtDefaults.updateVisualState(this.api(), getAppliedFilterCount()); }
-        });
+            ]
+        }
+    });
 
-        dt = new DataTable(tableEl, config);
-        $(tableEl).on('column-reorder.dt columns-reordered.dt search.dt order.dt column-visibility.dt', () => {
-            window.DtDefaults.updateVisualState(dt, getAppliedFilterCount());
-            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
-        });
+    const initDataTable = async () => {
+        if (!tableEl || !window.DitenDataTable?.createList) return;
+        // The default first page is asked for now, while the component loads the saved view (it is used only if the
+        // component's first request is that very page).
+        initialPagePrefetch = startInitialPagePrefetch();
+        list = await window.DitenDataTable.createList(buildListOptions());
+        dt = list.dt;
     };
 
     const installSelectorInfrastructure = () => {
@@ -798,27 +630,14 @@ const GlobalProductsList = (function () {
     };
 
     const bindEvents = () => {
-        bindFilterEvents();
         document.getElementById('btnSaveGlobalProduct')?.addEventListener('click', submitEditor);
+        // The menu itself is read fresh from MDM when it opens; its items are dispatched by the list component.
         document.addEventListener('click', (event) => {
             const toggle = event.target.closest('.js-global-product-actions-toggle');
-            if (toggle?.closest('.datatables-globalproducts')) {
-                event.preventDefault(); event.stopPropagation();
-                loadActionMenu(toggle);
-                return;
-            }
-            const quickViewAction = event.target.closest('.js-quick-view');
-            const action = quickViewAction || event.target.closest('.js-edit-draft, .js-lifecycle-action');
-            if (!action || !action.closest('.datatables-globalproducts') || action.classList.contains('disabled')) return;
+            if (!toggle || !(toggle.closest('.datatables-globalproducts') || toggle.closest('.modal.dtr-bs-modal'))) return;
             event.preventDefault();
-            const id = action.dataset.id;
-            const code = action.dataset.action;
-            if (code === 'DETAILS') {
-                const detail = detailById.get(String(id).toLowerCase());
-                if (detail) renderDetail(detail, id);
-                else window.showToast?.(L.LifecycleStateChanged, 'warning');
-            } else if (code === 'EDIT') openEdit(id, action);
-            else requestLifecycle(id, code, action);
+            event.stopPropagation();
+            loadActionMenu(toggle);
         });
     };
 

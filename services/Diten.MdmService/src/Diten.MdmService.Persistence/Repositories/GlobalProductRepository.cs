@@ -77,13 +77,24 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
                 & Builders<GlobalProduct>.Filter.Ne(x => x.Id, excludedProductId))
             .AnyAsync(cancellationToken);
 
+    public Task<GlobalProductPage> GetPageAsync(
+        int pageNumber,
+        int pageSize,
+        string? normalizedSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        CancellationToken cancellationToken = default) =>
+        GetPageAsync(pageNumber, pageSize, normalizedSearch, lifecycleStatus, GlobalProductListSort.Default, cancellationToken);
+
+    // WP-MDM-GP-LIST-01: the register sorted by a whitelisted stored field (ListSortDocument), id as the stable tiebreak.
     public async Task<GlobalProductPage> GetPageAsync(
         int pageNumber,
         int pageSize,
         string? normalizedSearch,
         ProductIdentityLifecycleStatus? lifecycleStatus,
+        GlobalProductListSort sort,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(sort);
         var filter = ActiveTenantFilter;
         if (!string.IsNullOrWhiteSpace(normalizedSearch))
         {
@@ -104,14 +115,31 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
 
         var totalCount = await _globalProducts.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
         var items = await _globalProducts.Find(filter)
-            .SortBy(x => x.GlobalProductNameNormalized)
-            .ThenBy(x => x.CanonicalCode)
-            .ThenBy(x => x.Id)
+            .Sort(new BsonDocumentSortDefinition<GlobalProduct>(ListSortDocument(sort)))
             .Skip((pageNumber - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync(cancellationToken);
 
         return new GlobalProductPage(items, totalCount);
+    }
+
+    // The sort key first (in the reader's direction), then the remaining name / code keys and the id ascending: the
+    // same row never lands on two pages. Default = name, code, id ascending — the order before sorting existed.
+    private static BsonDocument ListSortDocument(GlobalProductListSort sort)
+    {
+        var primary = sort.Field switch
+        {
+            GlobalProductListSortField.CanonicalCode => nameof(GlobalProduct.CanonicalCode),
+            GlobalProductListSortField.LifecycleStatus => nameof(GlobalProduct.LifecycleStatus),
+            _ => nameof(GlobalProduct.GlobalProductNameNormalized)
+        };
+        var document = new BsonDocument(primary, sort.Descending ? -1 : 1);
+        foreach (var key in new[] { nameof(GlobalProduct.GlobalProductNameNormalized), nameof(GlobalProduct.CanonicalCode), "_id" })
+        {
+            if (!document.Contains(key))
+                document[key] = 1;
+        }
+        return document;
     }
 
     public async Task<GlobalProductPage> GetReferenceablePageAsync(
@@ -146,7 +174,7 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         return new(items, totalCount);
     }
 
-    public async Task<GlobalProductPage> GetEnforcedLegalEntityScopePageAsync(
+    public Task<GlobalProductPage> GetEnforcedLegalEntityScopePageAsync(
         int pageNumber,
         int pageSize,
         string? normalizedSearch,
@@ -154,8 +182,22 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         bool referenceableOnly,
         IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
         DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default) =>
+        GetEnforcedLegalEntityScopePageAsync(pageNumber, pageSize, normalizedSearch, lifecycleStatus, referenceableOnly,
+            GlobalProductListSort.Default, effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken);
+
+    public async Task<GlobalProductPage> GetEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string? normalizedSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        bool referenceableOnly,
+        GlobalProductListSort sort,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(sort);
         ArgumentNullException.ThrowIfNull(effectiveCandidateLegalEntityIds);
         cancellationToken.ThrowIfCancellationRequested();
         if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
@@ -221,12 +263,7 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             "$_id",
             requireGlobalProductLookup: false));
         pipeline.Add(ProductLegalEntityScopeAggregation.CleanupStage());
-        pipeline.Add(new BsonDocument("$sort", new BsonDocument
-        {
-            { nameof(GlobalProduct.GlobalProductNameNormalized), 1 },
-            { nameof(GlobalProduct.CanonicalCode), 1 },
-            { "_id", 1 }
-        }));
+        pipeline.Add(new BsonDocument("$sort", ListSortDocument(sort)));
         pipeline.Add(new BsonDocument("$facet", new BsonDocument
         {
             { "items", new BsonArray
@@ -242,7 +279,9 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             }
         }));
 
-        var result = await _globalProductDocuments.Aggregate<BsonDocument>(pipeline)
+        // A sorted aggregation may spill to disk (the GSKU register's FIX4 item 9 rule).
+        var result = await _globalProductDocuments.Aggregate<BsonDocument>(pipeline,
+                new AggregateOptions { AllowDiskUse = true })
             .FirstOrDefaultAsync(cancellationToken);
         var items = result?["items"].AsBsonArray
             .Select(item => BsonSerializer.Deserialize<GlobalProduct>(item.AsBsonDocument))

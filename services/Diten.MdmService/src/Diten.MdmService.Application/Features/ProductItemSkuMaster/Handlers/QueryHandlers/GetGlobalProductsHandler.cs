@@ -45,6 +45,7 @@ public sealed class GetGlobalProductsHandler : IRequestHandler<GetGlobalProducts
                 .Fail(scope.FailureCode!, scope.StatusCode);
         }
 
+        var sort = request.ResolveSort();
         var page = scope.Context!.RolloutMode switch
         {
             ProductLegalEntityScopeRolloutMode.Preparation => await _repository.GetPageAsync(
@@ -52,6 +53,7 @@ public sealed class GetGlobalProductsHandler : IRequestHandler<GetGlobalProducts
                 request.PageSize,
                 search,
                 request.LifecycleStatus,
+                sort,
                 cancellationToken),
             ProductLegalEntityScopeRolloutMode.Enforced => await _repository.GetEnforcedLegalEntityScopePageAsync(
                 request.PageNumber,
@@ -59,6 +61,7 @@ public sealed class GetGlobalProductsHandler : IRequestHandler<GetGlobalProducts
                 search,
                 request.LifecycleStatus,
                 referenceableOnly: false,
+                sort,
                 scope.Context.EffectiveCandidateLegalEntityIds,
                 scope.Context.ServerNowUtc,
                 cancellationToken),
