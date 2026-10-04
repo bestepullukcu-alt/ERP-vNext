@@ -7832,6 +7832,15 @@ böyle kalsın mı · (6) admin@diten.com tohum hesabı her açılışta Platfor
 rolleri Platform içinde fiilen SuperAdmin; roller yalnız belirteçle diğer servislere gidince anlam kazanıyor. Platform yöneticileri yalnız rollerinin izinlerini
 alsın mı? (Canlıdaki platform yöneticilerinin davranışını değiştirir; önce rol / izin eşlemesinin tam olduğu ölçülmeli.) FIX3 kendi rolünü değiştirmeyi kapatıyor.
 
+**Ek 2026-10-04 — kiracı giriş kapısı platform kiracısına açık (FIX5 ölçümü, CT kodda doğruladı; main ve origin/main'de de aynı).** `POST
+api/tenant-auth/login` + `X-Tenant-Id` = platform sistem kiracısı + bir platform yöneticisinin parolası → 200, `actor_type=tenant_user`, 274 izin
+talebi (175'i `platform.*`, ayrıca `auth.users.read` / `update`). Bu belirteçle başka bir platform yöneticisinin Auth hesabına `disable`, `enable`,
+`reset-password`, rol atama açılıyor; `LoginCommandHandler` platform kiracısını ayırmıyor, `PermissionAuthorizationHandler` yalnız `permission` talebine
+bakıyor, Platform yönetici kaydına (askı, iş ortağı, silinme) hiç sorulmuyor. Platform tarafı `actor_type` ilkeleriyle kapalı. CT kararı A + D (FIX5):
+kiracı kapısı platform kiracısına belirteç basmaz (genel 401) + Auth platform kiracısının `tenant_user` belirtecini platform dışı yollarda 403 ile keser.
+Verilmiş belirteçler `SessionTimeoutMinutes` (vars. 60) dolana kadar geçerli. Canlıda da açık olabilir (canlı ölçülmedi; giriş ayarları platform kiracısı
+için döner — kod okuması). Gelecek regresyon riski: 🟢 (kapı kapatma; platform kapısı değişmez).
+
 ---
 
 ### BL-522
