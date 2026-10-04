@@ -89,6 +89,12 @@
   <data name="ToastClaimed" xml:space="preserve"><value>The task is yours.</value></data>
   <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>Someone else took this task first.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>You do not have permission to do this.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>Type a name or position…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Type at least 2 characters to search.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>No one found for this search.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>Searching…</value></data>
+  <data name="DecisionMakerUnavailable" xml:space="preserve"><value>Person not found</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Too many searches in a short time. Wait a moment and try again.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>The task service could not be reached. Try again.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>No tasks yet</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>Create your first task to see it here and in the Task Center.</value></data>

@@ -61,6 +61,11 @@
         // option even when it is a real choice, not a prompt (measured against WCN's own waiting-on picker).
         if (declared) { config.placeholder = declared; }
         if (opts.dropdownAdapter) { config.dropdownAdapter = opts.dropdownAdapter; }
+        // BL-512 — a SERVER-searched picker (the approver search): the caller hands its transport, the shortest
+        // term worth asking and its own sentences. Absent, the picker is the local one it always was.
+        if (opts.ajax) { config.ajax = opts.ajax; }
+        if (opts.minimumInputLength) { config.minimumInputLength = opts.minimumInputLength; }
+        if (opts.language) { config.language = opts.language; }
         $s.select2(config);
         return true;
     };

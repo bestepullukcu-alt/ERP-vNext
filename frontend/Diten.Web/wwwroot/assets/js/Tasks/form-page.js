@@ -608,6 +608,39 @@
      * cannot render its own value — the control keeps the old one and the save posts a different record than the
      * screen showed. Yesterday's round caught this exact shape on date fields.
      */
+    /*
+     * BL-512 — a stored reviewer / approver back into a NAME (the ids route of the people search, one call for both).
+     * Each picker gets its own stored person as an option. An id that no longer resolves (no live position any more,
+     * or not readable) keeps its value — losing it would make a plain save clear the approver — and reads as
+     * "person not found", never as a GUID (BL-049).
+     */
+    const DECISION_MAKER_FIELDS = [
+        ['taskReviewer', 'reviewerCandidateUserId'],
+        ['taskApprovalManager', 'approvalManagerUserId']
+    ];
+    const hydrateDecisionMakers = async (source) => {
+        const wanted = DECISION_MAKER_FIELDS
+            .map(([, field]) => source && source[field])
+            .filter(Boolean)
+            .map(String);
+        if (wanted.length === 0) { return; }
+        const resolved = await global.TasksApi.resolveDecisionMakers(wanted);
+        const rows = resolved.ok ? resolved.data : [];
+        const unavailable = t('decisionMakerUnavailable');
+        DECISION_MAKER_FIELDS.forEach(([controlId, field]) => {
+            const select = el(controlId);
+            const userId = source && source[field] ? String(source[field]) : '';
+            if (!select || !userId) { return; }
+            const known = Array.from(select.options).some((option) => option.value.toLowerCase() === userId.toLowerCase());
+            if (known) { return; }
+            const row = rows.find((candidate) => String(candidate.userId).toLowerCase() === userId.toLowerCase());
+            const option = global.document.createElement('option');
+            option.value = userId;
+            option.textContent = row ? global.TaskForm.peopleSearchLabel(row, unavailable) : unavailable;
+            select.appendChild(option);
+        });
+    };
+
     const resolveStoredRecords = async (definitions, values) => {
         const byCode = {};
         const wanted = (definitions || []).filter(
@@ -816,7 +849,7 @@
          * proper — because approval authority belongs to the PROCESS, not to the requester.
          *
          *   assignableRows → who may RECEIVE the work   → company-scoped   → assignee, watchers
-         *   decisionRows   → who may DECIDE about it    → scope-EXEMPT     → reviewer, approval manager
+         *   decision search → who may DECIDE about it   → scope-EXEMPT     → reviewer, approval manager (BL-512: searched, never listed)
          *
          * Watchers ride the scoped list deliberately: watching is not deciding, it is seeing — and letting
          * another company's employee watch a task is a data-access decision (Poland is inside the EU/GDPR,
@@ -841,11 +874,11 @@
          * contents went straight to a Guid parameter, which meant the only correct way to fill them was to type
          * a GUID.
          */
-        const decisions = await global.TasksApi.decisionMakers();
-        // `data` IS the array — unwrapped once in TasksApi, as `assignablePeople` is.
-        const decisionRows = decisions.ok ? decisions.data : [];
-        global.TaskForm.renderPersonOptions(el('taskReviewer'), decisionRows, personLabels);
-        global.TaskForm.renderPersonOptions(el('taskApprovalManager'), decisionRows, personLabels);
+        /*
+         * BL-512 — the reviewer and approval-manager pickers are NOT filled here any more: the people search hands
+         * out no whole list, so they search the server as the reader types (enhanceSelects, `data-people-search`).
+         * A stored reviewer / approver is turned back into a name by hydrateDecisionMakers before writeForm.
+         */
 
         // Before any hydration: the controls have to EXIST before stored values can be written into them.
         // Person-typed configurable fields follow the ASSIGNMENT rule: they name someone who does the work.
@@ -855,12 +888,16 @@
             // Continue the quick-create draft if one was handed over.
             const draft = global.TaskForm.readDraft();
             if (draft) {
+                await hydrateDecisionMakers(draft);
                 writeForm(draft);
                 global.TaskForm.clearDraft();
             }
         } else if (taskId) {
             const existing = await global.TasksApi.get(taskId);
             if (existing.ok && existing.data) {
+                // BL-512 — the stored reviewer / approver become options FIRST, so writeForm can select them and an
+                // untouched save posts them back unchanged (never an empty approver).
+                await hydrateDecisionMakers(existing.data);
                 writeForm(existing.data);
                 // ⚠ BY VALUE, from what the task froze — never re-read from the register. See document-references.js.
                 global.TaskDocumentReferences?.hydrate(existing.data.documentReferences);
@@ -904,7 +941,19 @@
          * enhance the two markup selects and leave everything built afterwards bare — the partial fix that looks
          * finished because the static half of the form is correct.
          */
-        global.TaskForm.enhanceSelects(form, { searchRecords, rowLabels: personLabels });
+        global.TaskForm.enhanceSelects(form, {
+            searchRecords,
+            rowLabels: personLabels,
+            // BL-512 — the reviewer / approval-manager pickers' server search and its sentences.
+            searchPeople: (term) => global.TasksApi.decisionMakers({ search: term }),
+            peopleSearchText: {
+                minimumLength: t('peopleSearchMinimumLength'),
+                noResults: t('peopleSearchNoResults'),
+                searching: t('peopleSearching'),
+                unavailable: t('decisionMakerUnavailable'),
+                failure: (res) => global.TasksApi.failureMessage(res)
+            }
+        });
         // flatpickr after hydration too, for the same reason: it reads the input's value when it initialises, so
         // a picker built before the stored date was written in would open on today instead of the task's date.
         global.TaskForm.enhanceDates(form);

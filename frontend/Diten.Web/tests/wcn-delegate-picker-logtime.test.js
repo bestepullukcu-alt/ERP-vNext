@@ -33,7 +33,6 @@ const STRINGS = {
   ActionDisabledWithName: "{0}: {1}",
   ApprovalNoteLabel: "Not (isteğe bağlı)",
   ApprovalNotePlaceholder: "Kayda geçecek bir not ekleyin…",
-  DelegateNoEligiblePeople: "Bu onayın devredilebileceği kimse yok.",
   DelegateTargetLabel: "Devredilecek kişi",
   DelegateTargetRequired: "Onayın kime devredileceğini seçin.",
   ReasonLabel: "Gerekçe",
@@ -133,11 +132,14 @@ const stubDispatch = (answer) => {
  * company) and `assignablePeople` (who may RECEIVE a task). Both answer the bare array (TasksApi opens the envelope,
  * nobody else does). The doubles answer DIFFERENT people, so a caller that reads the wrong list is seen.
  */
+let searches;
 const stubPeople = (people, failure) => {
   peopleCalls = 0;
   assignmentListCalls = 0;
-  global.TasksApi.decisionMakers = () => {
+  searches = [];
+  global.TasksApi.decisionMakers = (query) => {
     peopleCalls += 1;
+    searches.push(query);
     return Promise.resolve(failure || { ok: true, status: 200, data: people });
   };
   global.TasksApi.assignablePeople = () => {
@@ -156,10 +158,47 @@ const press = async (actionCode) => {
   await settle();
 };
 
+/*
+ * BL-512 — the approval delegate's picker SEARCHES: its select2 is bound with a server transport. The real shared
+ * binder is wrapped so the options it was handed (transport, minimum length, sentences) can be exercised here without
+ * jQuery — exactly what select2 would call.
+ */
+let bound;
+const captureBinder = () => {
+  bound = [];
+  const real = global.DitenDialog;
+  global.DitenDialog = Object.assign({}, real, {
+    bindDialogSelect2: (element, popup, options) => { bound.push({ element, options: options || {} }); return true; }
+  });
+};
+
 const boot = async (item, people = EVERYBODY, rootAttrs = "") => {
   await bootSurface({ rootAttrs, items: [item], wcn: translator });
   stubDispatch();
   stubPeople(people);
+  captureBinder();
+};
+
+// What select2 does when the reader picks a search result: the chosen person becomes the select's option and value.
+const choose = (host, userId) => {
+  const select = host.querySelector("#wcnReassignAssignee");
+  const option = document.createElement("option");
+  option.value = userId;
+  option.textContent = userId;
+  select.appendChild(option);
+  select.value = userId;
+};
+
+// Runs the delegate picker's bound transport for one typed term; resolves with the results or the failure.
+const search = async (term) => {
+  fired[0].didOpen(document.getElementById("wcnTestWindow") || mountWindow());
+  const picker = bound.find((entry) => entry.element && entry.element.id === "wcnReassignAssignee");
+  expect(picker, "the delegate picker was not bound").toBeTruthy();
+  return new Promise((resolve) => {
+    picker.options.ajax.transport({ data: { term } },
+      (answer) => resolve({ results: answer.results, picker }),
+      (error) => resolve({ failed: error, picker }));
+  });
 };
 
 // The window's own markup, put on the page the way SweetAlert would, so `preConfirm` reads real fields.
@@ -213,7 +252,7 @@ describe("A — Devret asks who, and sends the person", () => {
     await boot(approval());
     await press("delegate");
     const host = mountWindow();
-    host.querySelector("#wcnReassignAssignee").value = AYSE;
+    choose(host, AYSE);
 
     expect(fired[0].preConfirm()).toEqual({ reason: "", assigneeUserId: AYSE });
   });
@@ -245,7 +284,7 @@ describe("A — Devret asks who, and sends the person", () => {
     const host = mountWindow();
 
     expect(host.querySelector('label[for="wcnReasonText"]').textContent).toBe("Not (isteğe bağlı)");
-    host.querySelector("#wcnReassignAssignee").value = AYSE;
+    choose(host, AYSE);
     expect(fired[0].preConfirm()).not.toBe(false);
   });
 
@@ -258,61 +297,73 @@ describe("A — Devret asks who, and sends the person", () => {
     expect(host.querySelector("#wcnReasonText")).toBeNull();
   });
 
+  // BL-512 — nothing is read when the window opens: the picker searches as the reader types.
+  it("reads no list when the window opens and offers nobody until a search runs", async () => {
+    await boot(approval());
+    await press("delegate");
+
+    expect(peopleCalls, "the decision-makers list was read on open").toBe(0);
+    expect(offeredIds(mountWindow())).toEqual([]);
+  });
+
+  it("searches the people who may DECIDE with the typed term, never the task-assignment list", async () => {
+    await boot(approval());
+    await press("delegate");
+    const { results, picker } = await search("ay");
+
+    expect(searches).toEqual([{ search: "ay" }]);
+    expect(assignmentListCalls, "the delegation read the company-scoped assignment list").toBe(0);
+    expect(results.map((r) => r.id)).toContain(AYSE);
+    expect(picker.options.minimumInputLength).toBe(2);
+    expect(picker.options.ajax.delay).toBe(300);
+  });
+
   it("never offers the reader or the person who started the workflow", async () => {
     await boot(approval());
     await press("delegate");
+    const { results } = await search("an");
 
-    expect(peopleCalls, "the decision-makers list was not read exactly once").toBe(1);
-    expect(offeredIds(mountWindow())).toEqual([AYSE, MEHMET]);
-  });
-
-  // CT acceptance — approval authority belongs to the process, not to the reader's company (BL-057).
-  it("offers the people who may DECIDE, never the task-assignment list", async () => {
-    await boot(approval());
-    await press("delegate");
-
-    expect(assignmentListCalls, "the delegation read the company-scoped assignment list").toBe(0);
-    // The assignment double offers Mehmet alone; Ayşe is on the page only if the decision list was read.
-    expect(offeredIds(mountWindow())).toContain(AYSE);
-  });
-
-  // CT acceptance — a read that failed is not an empty list.
-  it.each([
-    [403, "errorNoAccess"],
-    [0, "errorUnavailable"],
-    [500, "errorOccurred"]
-  ])("a people read that failed (%i) says what failed — not that there is nobody — and opens nothing", async (status, key) => {
-    await bootSurface({ rootAttrs: "", items: [approval()], wcn: translator });
-    stubDispatch();
-    stubPeople([], { ok: false, status, reasonCode: null, data: null });
-    // TasksApi's own rule for a failed call (Tasks/api.js failureMessage), so the sentence asserted is the product's.
-    global.TasksApi.failureMessage = (result) =>
-      (result?.status === 403 ? "errorNoAccess" : result?.status === 0 ? "errorUnavailable" : "errorOccurred");
-    await press("delegate");
-
-    expect(fired, "a window with an empty picker was opened over a failed read").toHaveLength(0);
-    expect(dispatched).toHaveLength(0);
-    expect(toasts).toHaveLength(1);
-    expect(toasts[0].type).toBe("error");
-    expect(toasts[0].message).not.toBe("Bu onayın devredilebileceği kimse yok.");
-    expect(toasts[0].message).toBe(key);
+    expect(results.map((r) => r.id)).toEqual([AYSE, MEHMET]);
   });
 
   it("matches the excluded ids whatever their letter case", async () => {
     await boot(approval({ actions: [delegate({ excludedTargetPrincipalIds: [ME.toUpperCase(), STARTER.toUpperCase()] })] }));
     await press("delegate");
+    const { results } = await search("an");
 
-    expect(offeredIds(mountWindow())).toEqual([AYSE, MEHMET]);
+    expect(results.map((r) => r.id)).toEqual([AYSE, MEHMET]);
   });
 
-  it("does not open when nobody is left to offer, and says so", async () => {
+  // BL-512 — "nobody" is the search's answer, said inside the window; the window is never refused for it.
+  it("opens even when the search finds nobody, and says so inside the window", async () => {
     await boot(approval(), [person(ME, "Ben"), person(STARTER, "Başlatan Kişi")]);
     await press("delegate");
+    const { results, picker } = await search("be");
 
-    expect(fired, "a window that cannot be confirmed was opened").toHaveLength(0);
-    expect(confirms).toHaveLength(0);
+    expect(fired).toHaveLength(1);
+    expect(toasts).toHaveLength(0);
+    expect(results).toEqual([]);
+    expect(picker.options.language.noResults()).toBe("peopleSearchNoResults");
+    expect(picker.options.language.inputTooShort()).toBe("peopleSearchMinimumLength");
+  });
+
+  // CT acceptance — a read that failed is not an empty list (kept from BL-491, now inside the search).
+  it.each([
+    [403, "errorNoAccess"],
+    [0, "errorUnavailable"],
+    [500, "errorOccurred"]
+  ])("a search that failed (%i) says what failed — not that there is nobody", async (status, key) => {
+    await boot(approval());
+    stubPeople([], { ok: false, status, reasonCode: null, data: null });
+    global.TasksApi.failureMessage = (result) =>
+      (result?.status === 403 ? "errorNoAccess" : result?.status === 0 ? "errorUnavailable" : "errorOccurred");
+    await press("delegate");
+    const { failed, picker } = await search("ay");
+
+    expect(failed, "a failed read reached the picker as results").toBeTruthy();
+    expect(picker.options.language.errorLoading()).toBe(key);
+    expect(picker.options.language.errorLoading()).not.toBe(picker.options.language.noResults());
     expect(dispatched).toHaveLength(0);
-    expect(toasts).toEqual([{ message: "Bu onayın devredilebileceği kimse yok.", type: "error" }]);
   });
 
   it("uses the SAME picker the reassign window uses — one select, one binder", () => {
@@ -328,7 +379,7 @@ function pressAndConfirm({ person: chosen, note }) {
     global.Swal.fire = (config) => {
       fired.push(config);
       const host = mountWindow();
-      host.querySelector("#wcnReassignAssignee").value = chosen;
+      choose(host, chosen);
       const box = host.querySelector("#wcnReasonText");
       if (box) { box.value = note; }
       const value = config.preConfirm();
@@ -360,7 +411,8 @@ describe("A — the person window follows the server's flag, never the action co
 
     expect(confirms).toHaveLength(0);
     expect(fired).toHaveLength(1);
-    expect(offeredIds(mountWindow()), "no exclusions were sent, so nobody is dropped").toEqual([ME, STARTER, AYSE, MEHMET]);
+    const { results } = await search("an");
+    expect(results.map((r) => r.id), "no exclusions were sent, so nobody is dropped").toEqual([ME, STARTER, AYSE, MEHMET]);
   });
 
   it("an action that names nobody sends a body without targetPrincipalId", async () => {
@@ -456,7 +508,7 @@ describe("A — the executable contract and the presentation mapper", () => {
 });
 
 describe("A — the three new sentences exist in all seven tenant languages", () => {
-  it.each(["DelegateTargetLabel", "DelegateTargetRequired", "DelegateNoEligiblePeople"])("%s", (key) => {
+  it.each(["DelegateTargetLabel", "DelegateTargetRequired"])("%s", (key) => {
     expect(code(APP), `${key} is not used`).toContain(`'${key}'`);
     LANGS.forEach((lang) => {
       const xml = resx(lang);
@@ -468,7 +520,7 @@ describe("A — the three new sentences exist in all seven tenant languages", ()
   });
 
   it("no language repeats the English sentence (a copy is not a translation)", () => {
-    ["DelegateTargetRequired", "DelegateNoEligiblePeople"].forEach((key) => {
+    ["DelegateTargetRequired"].forEach((key) => {
       const value = (lang) => {
         const xml = resx(lang);
         const at = xml.indexOf(`name="${key}"`);
@@ -477,6 +529,13 @@ describe("A — the three new sentences exist in all seven tenant languages", ()
       LANGS.filter((lang) => lang !== "en").forEach((lang) =>
         expect(value(lang), `${lang}/${key} is the English text`).not.toBe(value("en")));
     });
+  });
+});
+
+describe("A — BL-512 retired the 'nobody to delegate to' refusal", () => {
+  it("its sentence left the code and all seven languages", () => {
+    expect(code(APP)).not.toContain("DelegateNoEligiblePeople");
+    LANGS.forEach((lang) => expect(resx(lang), `${lang} still carries the retired key`).not.toContain('name="DelegateNoEligiblePeople"'));
   });
 });
 

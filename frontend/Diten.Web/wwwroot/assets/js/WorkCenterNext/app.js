@@ -9326,6 +9326,63 @@
      * pinned class names (`wcn-dialog-select`/`wcn-dialog-select-dropdown`, styled in backbone-custom.css)
      * by passing them as options — a shared component does not reach into a module's own CSS hook.
      */
+    /*
+     * BL-512 — the approval-delegate picker SEARCHES the server (TasksApi.decisionMakers): at least two characters,
+     * typed with a pause (~300 ms), at most 20 people per answer. The people the action cannot be handed to
+     * (`excludedTargetIds`) are still never offered. Three answers are told apart, each in words: "type at least two
+     * characters", "nobody found for this search", and a READ that failed — a 403 or a dropped connection is never
+     * shown as "nobody" (BL-491). The sentences live in the Tasks resx this page already carries.
+     */
+    const peopleText = (key) => global.TasksL10n?.t?.(key) ?? key;
+    const bindPeopleSearch = (element, popup, excludedTargetIds) => {
+        const excluded = (excludedTargetIds || []).map((id) => String(id || '').toLowerCase());
+        let sequence = 0;
+        let lastFailure = '';
+        return global.DitenDialog
+            ? global.DitenDialog.bindDialogSelect2(element, popup, {
+                containerCssClass: 'wcn-dialog-select',
+                dropdownCssClass: 'wcn-dialog-select-dropdown',
+                minimumInputLength: 2,
+                ajax: {
+                    delay: 300,
+                    transport: (params, success, failure) => {
+                        const mine = ++sequence;
+                        const term = String(params?.data?.term || '').trim();
+                        Promise.resolve(global.TasksApi.decisionMakers({ search: term }))
+                            .then((res) => {
+                                if (mine !== sequence) { return; }   // stale: the reader has typed since
+                                if (!res.ok) {
+                                    lastFailure = global.TasksApi.failureMessage(res);
+                                    failure(res);
+                                    return;
+                                }
+                                success({
+                                    results: res.data
+                                        .filter((person) => !excluded.includes(String(personUserId(person) || '').toLowerCase()))
+                                        .map((person) => ({
+                                            id: personUserId(person),
+                                            text: [person.displayName || peopleText('decisionMakerUnavailable'), person.positionName, person.organizationUnitName]
+                                                .filter((part) => part && String(part).trim()).join(' — ')
+                                        }))
+                                });
+                            })
+                            .catch((error) => {
+                                if (mine !== sequence) { return; }
+                                lastFailure = global.TasksApi.failureMessage({ ok: false, status: 0 });
+                                failure(error);
+                            });
+                    }
+                },
+                language: {
+                    inputTooShort: () => peopleText('peopleSearchMinimumLength'),
+                    noResults: () => peopleText('peopleSearchNoResults'),
+                    errorLoading: () => lastFailure || peopleText('errorOccurred'),
+                    searching: () => peopleText('peopleSearching')
+                }
+            })
+            : false;
+    };
+
     const bindDialogSelect2 = (element, popup) => (global.DitenDialog
         ? global.DitenDialog.bindDialogSelect2(element, popup, {
             containerCssClass: 'wcn-dialog-select',
@@ -10213,7 +10270,7 @@
                  * list would silently leave out every approver outside the reader's own company.
                  */
                 const res = asksTarget
-                    ? await global.TasksApi.decisionMakers()
+                    ? { ok: true, data: [] }   // BL-512: searched as the reader types (bindPeopleSearch)
                     : await global.TasksApi.assignablePeople();
                 /*
                  * A read that FAILED is not an empty list. "Nobody this can be delegated to" printed over a 403 or
@@ -10232,9 +10289,9 @@
                     people = people.filter((person) =>
                         !action.excludedTargetIds.includes(String(personUserId(person) || '').toLowerCase()));
                 }
-                if (!people.length && needsAssignee) {
-                    // Refusing beats opening a dialog that cannot be confirmed.
-                    toast(t(asksTarget ? 'DelegateNoEligiblePeople' : 'ReassignNoAssignableUsers'), 'error');
+                // Refusing beats opening a dialog that cannot be confirmed (not the BL-512 search: it says "nobody").
+                if (!people.length && needsAssignee && !asksTarget) {
+                    toast(t('ReassignNoAssignableUsers'), 'error');
                     return { outcome: 'refused' };
                 }
             }
@@ -10250,7 +10307,8 @@
             const assigneeField = needsAssignee
                 ? `<label class="form-label d-block text-start" for="wcnReassignAssignee">${esc(t(asksTarget ? 'DelegateTargetLabel' : 'ReassignAssigneeLabel'))}</label>`
                   + `<select id="wcnReassignAssignee" class="form-select">`
-                  + `<option value="">${esc(t('ReassignAssigneePlaceholder'))}</option>${options}</select>`
+                  // BL-512 — the approval delegate's first line invites a search; it has no other options until one runs.
+                  + `<option value="">${esc(asksTarget ? peopleText('peopleSearchHint') : t('ReassignAssigneePlaceholder'))}</option>${options}</select>`
                 : '';
             /*
              * The optional picker. Its empty option is not a placeholder to be replaced — it is a REAL CHOICE
@@ -10324,7 +10382,11 @@
                 cancelButtonText: t('DialogDismiss'),
                 // Both pickers become select2, through the same binder, parented into this popup.
                 didOpen: (popup) => {
-                    bindDialogSelect2(document.getElementById('wcnReassignAssignee'), popup);
+                    if (asksTarget) {
+                        bindPeopleSearch(document.getElementById('wcnReassignAssignee'), popup, action.excludedTargetIds);
+                    } else {
+                        bindDialogSelect2(document.getElementById('wcnReassignAssignee'), popup);
+                    }
                     bindDialogSelect2(document.getElementById('wcnWaitingOn'), popup);
                 },
                 preConfirm: () => {

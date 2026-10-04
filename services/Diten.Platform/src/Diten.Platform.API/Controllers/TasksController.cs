@@ -1200,12 +1200,17 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// BL-512 — the approver / reviewer picker, SEARCH-ONLY: <c>?search=</c> (≥ 2 characters, ≤ 20 rows) or
+    /// <c>?ids=</c> (≤ 10, to turn stored ids back into names). Never the whole list; four fields per person; bounded
+    /// per user by the <c>people-search</c> rate limit. See <see cref="DecisionMakerLookup"/>.
+    /// </summary>
     [HttpGet("lookups/decision-makers")]
     [HasPermission(TaskPermissions.Create)]
-    public async Task<IActionResult> GetDecisionMakers(CancellationToken ct)
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting(PeopleSearchRateLimit.PolicyName)]
+    public async Task<IActionResult> GetDecisionMakers([FromQuery] string? search, [FromQuery] string? ids, CancellationToken ct)
     {
-        var response = await _mediator.Send(
-            new GetTaskAssignmentPersonLookupQuery(CorrelationId, TaskPersonLookupPurpose.Decision), ct);
+        var response = await _mediator.Send(new GetTaskDecisionMakerLookupQuery(CorrelationId, search, ids), ct);
         return CreateActionResultInstance(response);
     }
 

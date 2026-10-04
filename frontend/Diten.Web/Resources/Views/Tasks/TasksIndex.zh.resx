@@ -89,6 +89,12 @@
   <data name="ToastClaimed" xml:space="preserve"><value>任务已归你所有。</value></data>
   <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>其他人已先领取该任务。</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>您没有执行此操作的权限。</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>输入姓名或职位…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>请至少输入 2 个字符进行搜索。</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>没有找到符合此搜索的人员。</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>正在搜索…</value></data>
+  <data name="DecisionMakerUnavailable" xml:space="preserve"><value>未找到此人</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>短时间内搜索次数过多。请稍候再试。</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>无法连接任务服务，请重试。</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>暂无任务</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>创建第一个任务后，它将显示在此处和任务中心。</value></data>

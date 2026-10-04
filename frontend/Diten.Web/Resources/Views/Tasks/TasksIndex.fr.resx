@@ -89,6 +89,12 @@
   <data name="ToastClaimed" xml:space="preserve"><value>La tâche vous est attribuée.</value></data>
   <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>Quelqu'un d'autre a pris cette tâche avant vous.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Vous n'avez pas l'autorisation d'effectuer cette action.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>Saisissez un nom ou un poste…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Saisissez au moins 2 caractères pour rechercher.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>Aucune personne trouvée pour cette recherche.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>Recherche…</value></data>
+  <data name="DecisionMakerUnavailable" xml:space="preserve"><value>Personne introuvable</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Trop de recherches en peu de temps. Patientez un instant et réessayez.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Le service des tâches est injoignable. Réessayez.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Aucune tâche</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>Créez votre première tâche pour la voir ici et dans le Centre des tâches.</value></data>

@@ -89,6 +89,12 @@
   <data name="ToastClaimed" xml:space="preserve"><value>Задача закреплена за вами.</value></data>
   <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>Задачу раньше вас взял другой сотрудник.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>Введите имя или должность…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Введите не менее 2 символов для поиска.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>По этому запросу никого не найдено.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>Поиск…</value></data>
+  <data name="DecisionMakerUnavailable" xml:space="preserve"><value>Человек не найден</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Слишком много поисков за короткое время. Подождите немного и повторите попытку.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Служба задач недоступна. Повторите попытку.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Задач пока нет</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>Создайте первую задачу — она появится здесь и в Центре задач.</value></data>

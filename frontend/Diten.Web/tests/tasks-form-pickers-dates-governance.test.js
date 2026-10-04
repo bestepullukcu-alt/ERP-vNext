@@ -76,13 +76,15 @@ describe("the person fields are pickers, not GUID boxes", () => {
     expect(watchers.slice(0, 200), "the watcher picker is not multiple").toContain("multiple");
   });
 
-  test("all three are filled from the SAME people lookup the assignee uses", () => {
+  test("watchers are filled from the people lookup; reviewer and approver are SEARCHED (BL-512)", () => {
     const source = FORM_PAGE_JS();
     // One source of people, one renderer — a second vocabulary for the same concept is how the two lists drift.
     expect(source).toContain("assignablePeople()");
-    for (const id of ["taskReviewer", "taskApprovalManager", "taskWatchers"]) {
-      expect(source, `${id} is never populated from the people lookup`)
-        .toMatch(new RegExp(`renderPersonOptions\\([^)]*${id}`));
+    expect(source, "taskWatchers is never populated from the people lookup")
+      .toMatch(/renderPersonOptions\([^)]*taskWatchers/);
+    // BL-512 — the decision pickers are never filled from a list; they search (tasks-decision-maker-search.test.js).
+    for (const id of ["taskReviewer", "taskApprovalManager"]) {
+      expect(source, `${id} is filled from a list again`).not.toMatch(new RegExp(`renderPersonOptions\\([^)]*${id}`));
     }
   });
 

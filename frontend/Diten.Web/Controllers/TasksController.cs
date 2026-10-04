@@ -607,9 +607,21 @@ public sealed class TasksController : Controller
         => ProxyAsync(HttpMethod.Get,
             $"{_gatewayUrl}/api/v1/tasks/lookups/assignment-direction/{userId}", readBody: false);
 
+    /// <summary>
+    /// BL-512 — the picker is search-only: <c>search</c> OR <c>ids</c>, and ONLY those two travel upstream (each value
+    /// URL-encoded); nothing else on the query string is forwarded.
+    /// </summary>
     [HttpGet("api/decision-makers")]
-    public Task<IActionResult> ApiDecisionMakers()
-        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/decision-makers", readBody: false);
+    public Task<IActionResult> ApiDecisionMakers([FromQuery] string? search, [FromQuery] string? ids)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/decision-makers{DecisionMakersQuery(search, ids)}", readBody: false);
+
+    public static string DecisionMakersQuery(string? search, string? ids)
+    {
+        var parts = new List<string>(2);
+        if (search is not null) parts.Add("search=" + Uri.EscapeDataString(search));
+        if (ids is not null) parts.Add("ids=" + Uri.EscapeDataString(ids));
+        return parts.Count == 0 ? string.Empty : "?" + string.Join("&", parts);
+    }
 
     /// <summary>MOD-0357 S4 — the "link an existing task" dialog's own search box (term, limit).</summary>
     [HttpGet("api/link-candidates")]

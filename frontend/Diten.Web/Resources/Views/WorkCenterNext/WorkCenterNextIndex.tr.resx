@@ -2511,7 +2511,4 @@
   <data name="DelegateTargetRequired" xml:space="preserve">
     <value>Onayın kime devredileceğini seçin.</value>
   </data>
-  <data name="DelegateNoEligiblePeople" xml:space="preserve">
-    <value>Bu onayın devredilebileceği kimse yok.</value>
-  </data>
 </root>

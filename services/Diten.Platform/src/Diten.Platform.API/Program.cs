@@ -96,6 +96,7 @@ builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
  * Answering the question anywhere else would mean a second, slightly-different matcher, and field authorization
  * would then disagree with the endpoint guarding the same controller.
  */
+builder.Services.AddPeopleSearchRateLimit(); // BL-512 — one named limiter policy, used only by the people search
 builder.Services.AddScoped<Diten.Platform.Application.Contracts.IActorPermissionContext,
     Diten.Platform.API.Security.ClaimsActorPermissionContext>();
 builder.Services.AddDitenObservability(
@@ -277,6 +278,7 @@ if (observabilityOptions.Metrics.Enabled)
 app.UseAuthentication();
 app.UseTenantResolution();
 app.UseAuthorization();
+app.UseRateLimiter(); // BL-512 — after authentication: the people-search policy partitions by the signed-in user
 app.UsePlatformHangfireDashboard(app.Configuration);
 
 app.MapHealthChecks(observabilityOptions.Health.LivePath, new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

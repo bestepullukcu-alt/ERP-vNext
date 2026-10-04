@@ -31,17 +31,28 @@ describe("TasksApi: the two people lists have one shape", () => {
 
   afterEach(() => { delete global.fetch; });
 
+  // BL-512 — the decision-makers list is SEARCH-ONLY: the call carries the typed term (and nothing else) upstream.
   it.each([
-    ["decisionMakers", "/Tasks/api/decision-makers"],
-    ["assignablePeople", "/Tasks/api/assignable-people"]
-  ])("%s hands its caller the array, from its own endpoint", async (call, url) => {
+    ["decisionMakers", "/Tasks/api/decision-makers?search=ka", { search: "ka" }],
+    ["assignablePeople", "/Tasks/api/assignable-people", undefined]
+  ])("%s hands its caller the array, from its own endpoint", async (call, url, args) => {
     answer({ people: [AYSE], excluded: { total: 0 } });
 
-    const result = await window.TasksApi[call]();
+    const result = await window.TasksApi[call](args);
 
     expect(asked).toEqual([url]);
     expect(result.ok).toBe(true);
     expect(result.data, `${call} still hands out the { people, excluded } envelope`).toEqual([AYSE]);
+  });
+
+  it("resolveDecisionMakers asks the ids route, de-duplicated, and asks nothing for no ids", async () => {
+    answer({ people: [AYSE] });
+
+    expect((await window.TasksApi.resolveDecisionMakers([])).data).toEqual([]);
+    expect(asked).toEqual([]);
+    const result = await window.TasksApi.resolveDecisionMakers(["a", "b", "a", null]);
+    expect(asked).toEqual(["/Tasks/api/decision-makers?ids=a%2Cb"]);
+    expect(result.data).toEqual([AYSE]);
   });
 
   it.each([["decisionMakers"], ["assignablePeople"]])(

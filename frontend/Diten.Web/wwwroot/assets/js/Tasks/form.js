@@ -1062,6 +1062,41 @@
     const isServerSearched = (node) => !!node && node.getAttribute('data-custom-field-record') === '1';
 
     /*
+     * BL-512 — the approver / reviewer pickers are server-searched too, but by a different source: the people search
+     * (TasksApi.decisionMakers), which answers only a term of at least two characters and never the whole list.
+     */
+    const isPeopleSearched = (node) => !!node && node.getAttribute('data-people-search') === '1';
+    const PEOPLE_SEARCH_MIN_LENGTH = 2;
+
+    const peopleSearchLabel = (row, unavailable) =>
+        [row.displayName || unavailable || '', row.positionName, row.organizationUnitName]
+            .filter((part) => part && String(part).trim().length > 0).join(' — ');
+
+    /* Same stale-answer guard as recordSearchTransport; a failed READ keeps its own sentence (never "nobody found"). */
+    const peopleSearchTransport = (searchPeople, text, state) => {
+        let sequence = 0;
+        return (params, success, failure) => {
+            const mine = ++sequence;
+            const term = String((params && params.data && params.data.term) || '').trim();
+            Promise.resolve(searchPeople(term))
+                .then((res) => {
+                    if (mine !== sequence) { return; }
+                    if (!res || !res.ok) {
+                        state.failure = text.failure ? text.failure(res) : '';
+                        if (typeof failure === 'function') { failure(res); }
+                        return;
+                    }
+                    success({ results: (res.data || []).map((row) => ({ id: row.userId, text: peopleSearchLabel(row, text.unavailable) })) });
+                })
+                .catch((error) => {
+                    if (mine !== sequence) { return; }
+                    state.failure = text.failure ? text.failure({ ok: false, status: 0 }) : '';
+                    if (typeof failure === 'function') { failure(error); }
+                });
+        };
+    };
+
+    /*
      * The transport select2 uses for a server-searched control.
      *
      * Guarded by a sequence number, because a slow answer for "Kal" must not overwrite the answer for "Kalite"
@@ -1114,7 +1149,18 @@
                 settings.templateSelection = pickerRowTemplate(rowKind, labels, 'selection');
             }
 
-            if (isServerSearched(node) && typeof searchRecords === 'function') {
+            if (isPeopleSearched(node) && options && typeof options.searchPeople === 'function') {
+                const text = options.peopleSearchText || {};
+                const state = { failure: '' };
+                settings.minimumInputLength = PEOPLE_SEARCH_MIN_LENGTH;
+                settings.ajax = { delay: RECORD_SEARCH_DELAY_MS, transport: peopleSearchTransport(options.searchPeople, text, state) };
+                settings.language = {
+                    inputTooShort: () => text.minimumLength || '',
+                    noResults: () => text.noResults || '',
+                    errorLoading: () => state.failure || text.error || '',
+                    searching: () => text.searching || ''
+                };
+            } else if (isServerSearched(node) && typeof searchRecords === 'function') {
                 const code = node.getAttribute('data-custom-field');
                 settings.ajax = {
                     delay: RECORD_SEARCH_DELAY_MS,
@@ -1308,6 +1354,7 @@
         visibleFieldsFor,
         formatPositionLabel,
         formatPersonLabel,
+        peopleSearchLabel,
         buildCreatePayload,
         buildUpdatePayload,
         validateDraft,
