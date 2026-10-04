@@ -66,7 +66,10 @@ public static class DependencyInjection
         services.AddSingleton<IMongoDatabase>(database);
 
         // Repositories
-        services.AddScoped<IUserRepository, UserRepository>();
+        // BL-521 FIX6 item 13 (D') — the user repository every handler gets hides platform accounts from a tenant actor
+        // (see PlatformAccountScopedUserRepository); the Mongo implementation underneath is unchanged.
+        services.AddScoped<UserRepository>();
+        services.AddScoped<IUserRepository, PlatformAccountScopedUserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();

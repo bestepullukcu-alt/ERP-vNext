@@ -103,15 +103,6 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             return Response<AuthResponse>.Fail("Access token actor mismatch.", 401);
         }
 
-        // BL-521 FIX5 item 13 — a TENANT session of the platform system tenant is not refreshed (see LoginCommandHandler): the
-        // tenant door no longer mints one, and one minted before it was closed ends here. A platform actor's refresh of that
-        // same tenant (platform_admin / partner_admin) is the platform door's own session and is untouched. Nothing is
-        // revoked: the platform sessions of the same account share this user and tenant.
-        if (PlatformSystemTenant.Is(existingToken.TenantId) && !IsPlatformActor(actorType))
-        {
-            return Response<AuthResponse>.Fail("Invalid refresh token.", 401);
-        }
-
         if (_tenantContext.IsResolved && _tenantContext.TenantId != existingToken.TenantId)
         {
             return Response<AuthResponse>.Fail("Request tenant mismatch.", 401);
@@ -120,6 +111,15 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         var user = await _userRepository.GetByIdAndTenantAsync(existingToken.UserId, existingToken.TenantId, ct);
         if (user == null || !user.IsActive)
             return Response<AuthResponse>.Fail("User was not found or is inactive.", 401);
+
+        // BL-521 FIX6 item 13 (A') — a TENANT session of a platform account is not refreshed (see LoginCommandHandler): the
+        // tenant door no longer mints one, and one minted before it refused such accounts ends here with the generic answer of
+        // an invalid refresh token. The account's PLATFORM session (platform_admin / partner_admin) is the platform door's
+        // own and is untouched. Nothing is revoked: the platform sessions of the same account share this user and tenant.
+        if (user.IsPlatformAccount && !IsPlatformActor(actorType))
+        {
+            return Response<AuthResponse>.Fail("Invalid refresh token.", 401);
+        }
 
         var isPlatformActor = IsPlatformActor(actorType);
         if (isPlatformActor)

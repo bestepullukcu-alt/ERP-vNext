@@ -2,7 +2,6 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
-using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -62,19 +61,6 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
 
     public async Task<Response<AuthResponse>> Handle(LoginCommand request, CancellationToken ct)
     {
-        // BL-521 FIX5 item 13 — THE TENANT DOOR IS CLOSED FOR THE PLATFORM SYSTEM TENANT. A platform administrator's account
-        // lives in that tenant; asked with its id in X-Tenant-Id, this door used to verify the password and mint a
-        // tenant_user token carrying the account's platform roles' whole permission set (auth.users.* included — measured: it
-        // opened the user list and let the token disable, reset the password of and assign roles to ANOTHER administrator),
-        // and it never asked Platform's administrator record, which the platform door asks every time (a suspended or
-        // partner administrator got in here). Platform accounts sign in only through the platform door. The answer is the
-        // door's own generic 401 for a wrong password — it names no account, reads none, writes no audit row and does not
-        // even ask Platform for the tenant's login settings, so it reveals nothing about who exists there.
-        if (PlatformSystemTenant.Is(_tenantContext.TenantId))
-        {
-            return Response<AuthResponse>.Fail("Invalid email or password.", 401);
-        }
-
         TenantLoginSettingsSnapshot settings;
         try
         {
@@ -93,7 +79,16 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         }
 
         var user = await _userRepository.GetByEmailAndTenantAsync(request.Email, _tenantContext.TenantId, ct);
-        if (user == null) return Response<AuthResponse>.Fail("Invalid email or password.", 401);
+
+        // BL-521 FIX6 item 13 (A') — A PLATFORM ACCOUNT NEVER SIGNS IN AT THE TENANT DOOR. A platform administrator's account
+        // sits in the platform system tenant, which is also a business tenant; asked at this door it used to verify the
+        // password and mint a tenant_user token carrying the account's platform roles' whole permission set (measured on
+        // FIX5: it opened the user list and let the token disable, reset the password of and assign roles to ANOTHER
+        // administrator) — without ever asking Platform's administrator record, which the platform door asks every time. The
+        // answer is this door's own generic 401, given BEFORE the password is looked at: an account of that kind and a
+        // stranger's address are the same answer, no failed-attempt count, no audit row, nothing to tell them apart. The
+        // ordinary users of the same tenant are untouched.
+        if (user == null || user.IsPlatformAccount) return Response<AuthResponse>.Fail("Invalid email or password.", 401);
 
         var lockoutFailure = await CheckLockout(user, ct);
         if (lockoutFailure is not null)

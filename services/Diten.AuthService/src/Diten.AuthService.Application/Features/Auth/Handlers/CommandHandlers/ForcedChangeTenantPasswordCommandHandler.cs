@@ -68,7 +68,10 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
     public async Task<Response<AuthResponse>> Handle(ForcedChangeTenantPasswordCommand request, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.UserId, request.TenantId, ct);
-        if (user is null || !user.IsActive)
+
+        // BL-521 FIX6 item 13 (A') — this door mints a tenant token and a refresh row, so it refuses a platform account like the
+        // sign-in door does, with its own generic 401: no password is checked, nothing is changed, nothing is minted.
+        if (user is null || !user.IsActive || user.IsPlatformAccount)
         {
             return Response<AuthResponse>.Fail("Unauthorized.", 401);
         }

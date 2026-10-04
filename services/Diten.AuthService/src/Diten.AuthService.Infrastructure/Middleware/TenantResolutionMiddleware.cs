@@ -1,5 +1,4 @@
 using Diten.AuthService.Application.Common;
-using Diten.AuthService.Domain.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -10,7 +9,6 @@ namespace Diten.AuthService.Infrastructure.Middleware;
 public sealed class TenantResolutionMiddleware
 {
     private const string TenantHeader = "X-Tenant-Id";
-    private const string TenantUserActorType = "tenant_user";
     private readonly RequestDelegate _next;
     private readonly ILogger<TenantResolutionMiddleware> _logger;
     private readonly IConfiguration _configuration;
@@ -38,29 +36,6 @@ public sealed class TenantResolutionMiddleware
 
         var jwtTenant = ReadJwtTenant(context);
         var headerTenant = ReadHeaderTenant(context);
-
-        // BL-521 FIX5 item 13 (defense in depth) — A TENANT TOKEN OF THE PLATFORM SYSTEM TENANT IS NOT ACCEPTED ON ANY
-        // NON-PLATFORM ROUTE. The tenant door no longer mints one, but a token already issued (it lives for the tenant's
-        // SessionTimeoutMinutes) and any other path that mints a tenant_user token for that tenant would open Auth's user,
-        // role and permission administration over the platform administrators' own accounts — with permission claims taken
-        // from Auth's copy of the roles, never from Platform's administrator record. Refused 403 here, before any
-        // authorization decision. Platform-door tokens (platform_admin / partner_admin) are not this actor type and pass
-        // untouched; /api/platform-auth routes keep their own answers.
-        if (jwtTenant.HasValue
-            && PlatformSystemTenant.Is(jwtTenant.Value)
-            && string.Equals(context.User.FindFirst("actor_type")?.Value, TenantUserActorType, StringComparison.OrdinalIgnoreCase)
-            && !context.Request.Path.StartsWithSegments("/api/platform-auth", StringComparison.OrdinalIgnoreCase))
-        {
-            _logger.LogWarning(
-                "A tenant token of the platform system tenant was refused. Path={Path}",
-                context.Request.Path);
-            await WriteProblemDetails(
-                context,
-                StatusCodes.Status403Forbidden,
-                "Forbidden",
-                "This token is not accepted here.");
-            return;
-        }
 
         // BL-324 case 1 — the header and the token NAME DIFFERENT TENANTS. That is a malformed request, not an
         // access decision, so it is refused 400 and nothing is concealed: the caller wrote both values.

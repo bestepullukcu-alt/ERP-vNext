@@ -86,6 +86,25 @@ Kaydın bir sonraki başarılı güncellemesi işareti temizler; giriş ve yenil
   yakınsatma temizler; öteki kayıt yazımları saklı işareti korur. Auth'un giriş bildirimi
   (`accept-login`) artık yalnız son giriş zamanını ve davet durumunu yazar: sürüm, `UpdatedBy` ve işaret değişmez.
 
+**Kiracı kapısı ve platform hesapları (FIX6 madde 13; FIX5'in "bütün kiracı" yasağının yerine).** Platform sistem
+kiracısı (`00000000-0000-0000-0000-000000000001`) aynı zamanda varsayılan **iş kiracısıdır**: sıradan kullanıcıları orada
+yaşar. Bu yüzden kural kiracıya değil **hesaba** bağlıdır: Auth kaydında `PlatformActorType` taşıyan hesap, "platform hesabı".
+- **Kiracı belirteci basılan her yerde platform hesabı reddedilir** (kiracı girişi, MFA doğrulaması, kiracı yenilemesi, kiracı
+  zorunlu parola değişimi): kapının kendi genel cevabıyla (yanlış parola / yanlış kod / geçersiz yenileme belirteci), parola
+  bakılmadan, belirteç, yenileme satırı ve denetim satırı yazılmadan. Sıradan kullanıcılar eskisi gibi girer. Platform kapısı
+  (`/api/platform-auth/login`, yenileme) etkilenmez. Kayıt (register) yalnız YARATTIĞI hesaba belirteç basar; platform
+  hesabının adresi her zamanki "kullanımda" 409'u alır.
+- **Kiracı aktörü (`actor_type=tenant_user`) platform hesabını görmez ve ona dokunamaz:** liste / arama / arama kutusu /
+  dışa aktarım ve üst sayaçlar onu içermez; kullanıcı yönetimi uçları (oku, doğrula, onay, etiket, tür, güncelle, sil, askıya
+  al, etkinleştir, parola sıfırla, davet yeniden gönder, rol ata / kaldır) ona **404** verir, olmayan bir kimliğin cevabıyla
+  aynı. Kural tek yerde (`PlatformAccountScopedUserRepository` + `UserListReader`). Platform kapısı aktörleri ve iç servis
+  çağrıları etkilenmez.
+- **Dev etkisi:** `admin@diten.com` (tohum, `PlatformActorType=platform_admin`) artık kiracı kapısından (`/account/login`)
+  giremez; aynı kiracının öteki kullanıcıları girer.
+- **Açık:** bu kural gelmeden basılmış kiracı belirteçleri iptal edilmedi; `SessionTimeoutMinutes` (varsayılan 60) kadar
+  geçerli kalır. Platform hesabının eski kiracı belirteci artık yönetim uçlarında hesabı göremez ama kendi belirteciyle
+  başka işlemlerde (kendi izin talepleriyle) geçerli olabilir.
+
 **İç anahtar reddi (FIX3 madde 7).** Platform durum çağrısına 401 / 403 dönerse (iç anahtar iki
 serviste aynı değil) Auth bunu **Error** düzeyinde günlükler (anahtar ya da değeri yazılmaz) ve
 her platform girişine 503 verir. Düzeltme: Auth'taki `PlatformService:InternalApiKey` ile

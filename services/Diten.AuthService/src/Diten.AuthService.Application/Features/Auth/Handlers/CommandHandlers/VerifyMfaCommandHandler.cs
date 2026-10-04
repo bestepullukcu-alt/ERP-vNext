@@ -2,7 +2,6 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
-using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 
@@ -62,16 +61,11 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
             return Response<AuthResponse>.Fail("Invalid verification code.", 401);
         }
 
-        // BL-521 FIX5 item 13 — no tenant token is minted for the platform system tenant (see LoginCommandHandler): a
-        // challenge of that tenant (one created before the tenant door was closed) is answered like a wrong code.
-        if (PlatformSystemTenant.Is(challenge.TenantId))
-        {
-            return Response<AuthResponse>.Fail("Invalid verification code.", 401);
-        }
-
         var settings = await _tenantLoginSettingsClient.GetAsync(challenge.TenantId, ct);
         var user = await _userRepository.GetByIdAndTenantAsync(challenge.UserId, challenge.TenantId, ct);
-        if (user is null || !user.IsActive)
+        // BL-521 FIX6 item 13 (A') — a platform account is not given a tenant token here either (see LoginCommandHandler): a
+        // challenge of one — created before the tenant door refused such accounts — is answered like a wrong code.
+        if (user is null || !user.IsActive || user.IsPlatformAccount)
         {
             return Response<AuthResponse>.Fail("Invalid verification code.", 401);
         }

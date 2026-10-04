@@ -42,6 +42,14 @@ public sealed class User : EntityBase
     public string? PlatformActorType { get; private set; }
 
     /// <summary>
+    /// BL-521 FIX6 item 13 — A PLATFORM ACCOUNT: an account whose Auth record carries a platform actor type (set when Platform
+    /// provisions or syncs an administrator, and by the seed). The platform system tenant is ALSO a business tenant (its
+    /// ordinary users are ordinary users), so "platform" is a property of the ACCOUNT, never of the tenant: the tenant
+    /// sign-in doors refuse such an account and a tenant actor never sees or acts on one. Computed, not stored.
+    /// </summary>
+    public bool IsPlatformAccount => !string.IsNullOrWhiteSpace(PlatformActorType);
+
+    /// <summary>
     /// WP-INFRA-AUTH-ACCOUNT-KIND-01 — the account-kind FACT (Unknown/Human/Service). Stored as its number; missing
     /// on older documents → <see cref="AccountKind.Unknown"/>. Mutated only through <see cref="SetAccountKind"/>.
     /// </summary>
