@@ -1066,61 +1066,25 @@
      * (TasksApi.decisionMakers), which answers only a term of at least two characters and never the whole list.
      */
     const isPeopleSearched = (node) => !!node && node.getAttribute('data-people-search') === '1';
-    const PEOPLE_SEARCH_MIN_LENGTH = 2;
 
-    const peopleSearchLabel = (row, unavailable) =>
-        [row.displayName || unavailable || '', row.positionName, row.organizationUnitName]
-            .filter((part) => part && String(part).trim().length > 0).join(' — ');
-
-    /* Same stale-answer guard as recordSearchTransport; a failed READ keeps its own sentence (never "nobody found"). */
-    const peopleSearchTransport = (searchPeople, text, state) => {
-        let sequence = 0;
-        return (params, success, failure) => {
-            const mine = ++sequence;
-            const term = String((params && params.data && params.data.term) || '').trim();
-            Promise.resolve(searchPeople(term))
-                .then((res) => {
-                    if (mine !== sequence) { return; }
-                    if (!res || !res.ok) {
-                        state.failure = text.failure ? text.failure(res) : '';
-                        if (typeof failure === 'function') { failure(res); }
-                        return;
-                    }
-                    success({ results: (res.data || []).map((row) => ({ id: row.userId, text: peopleSearchLabel(row, text.unavailable) })) });
-                })
-                .catch((error) => {
-                    if (mine !== sequence) { return; }
-                    state.failure = text.failure ? text.failure({ ok: false, status: 0 }) : '';
-                    if (typeof failure === 'function') { failure(error); }
-                });
-        };
-    };
+    /** The one "Name — Position — Unit" label (shared/diten-people-search.js), also used for a stored approver. */
+    const peopleSearchLabel = (row, unavailable) => global.DitenPeopleSearch.label(row, unavailable || '');
 
     /*
-     * The transport select2 uses for a server-searched control.
+     * BL-512 FIX1 — both server-searched kinds ride the ONE shared transport (shared/diten-people-search.js), which
+     * honours select2's own contract: it RETURNS the request object select2 inspects on failure (`'status' in
+     * request`). The two transports that lived here returned nothing, so a failed search threw inside select2 and the
+     * picker sat on "searching…" for ever. The stale-answer guard (a slow answer for "Kal" must not overwrite the
+     * one for "Kalite") lives in that transport too.
      *
-     * Guarded by a sequence number, because a slow answer for "Kal" must not overwrite the answer for "Kalite"
-     * that arrived first — an ordinary failure of search-as-you-type, and invisible until the picker shows
-     * results for something the user already finished typing. select2's `delay` covers the debounce.
+     * A record source may still hand back a bare array; a result envelope ({ ok, status, data }) is how it reports a
+     * failed read, which then reads as "the search could not be done", never as "no results".
      */
-    const recordSearchTransport = (node, code, searchRecords) => {
-        let sequence = 0;
-        return (params, success, failure) => {
-            const mine = ++sequence;
-            const term = (params && params.data && params.data.term) || '';
-            Promise.resolve(searchRecords(code, term))
-                .then((rows) => {
-                    if (mine !== sequence) { return; }   // stale: the user has typed since.
-                    success({
-                        results: (rows || []).map((row) => ({ id: row.value, text: optionText(row) }))
-                    });
-                })
-                .catch((error) => {
-                    if (mine !== sequence) { return; }
-                    if (typeof failure === 'function') { failure(error); }
-                });
-        };
-    };
+    const recordSearchTransport = (node, code, searchRecords, text, state) => global.DitenPeopleSearch.transport({
+        search: (term) => searchRecords(code, term),
+        onFailure: (res) => { state.failure = global.DitenPeopleSearch.failureSentence(res, text); },
+        toResults: (rows) => rows.map((row) => ({ id: row.value, text: optionText(row) }))
+    });
 
     const enhanceSelects = (root, options) => {
         const scope = root || global.document;
@@ -1151,21 +1115,19 @@
 
             if (isPeopleSearched(node) && options && typeof options.searchPeople === 'function') {
                 const text = options.peopleSearchText || {};
-                const state = { failure: '' };
-                settings.minimumInputLength = PEOPLE_SEARCH_MIN_LENGTH;
-                settings.ajax = { delay: RECORD_SEARCH_DELAY_MS, transport: peopleSearchTransport(options.searchPeople, text, state) };
-                settings.language = {
-                    inputTooShort: () => text.minimumLength || '',
-                    noResults: () => text.noResults || '',
-                    errorLoading: () => state.failure || text.error || '',
-                    searching: () => text.searching || ''
-                };
+                Object.assign(settings, global.DitenPeopleSearch.options({ search: options.searchPeople, text }));
+                settings.ajax.delay = RECORD_SEARCH_DELAY_MS;
             } else if (isServerSearched(node) && typeof searchRecords === 'function') {
                 const code = node.getAttribute('data-custom-field');
+                const text = (options && options.recordSearchText) || {};
+                const state = { failure: '' };
                 settings.ajax = {
                     delay: RECORD_SEARCH_DELAY_MS,
-                    transport: recordSearchTransport(node, code, searchRecords)
+                    transport: recordSearchTransport(node, code, searchRecords, text, state)
                 };
+                if (text.failed) {
+                    settings.language = { errorLoading: () => state.failure || text.failed };
+                }
             }
 
             $node.select2(settings);

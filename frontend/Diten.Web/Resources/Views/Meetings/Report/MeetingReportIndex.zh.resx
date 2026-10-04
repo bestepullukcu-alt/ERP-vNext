@@ -107,4 +107,5 @@
   <data name="PeopleSearching" xml:space="preserve"><value>正在搜索…</value></data>
   <data name="UnknownUser" xml:space="preserve"><value>未知用户</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>短时间内搜索次数过多。请稍候再试。</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>无法完成搜索，请稍后重试。</value></data>
 </root>

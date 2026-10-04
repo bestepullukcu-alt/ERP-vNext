@@ -255,10 +255,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
                 {
                     app.UseExceptionHandler();
                     app.UseRouting();
-                    app.UseAuthentication();
-                    app.UseTenantResolution();
-                    app.UseAuthorization();
-                    app.UseRateLimiter();
+                    app.UsePlatformAccessPipeline();   // THE production order (Program.cs calls the same method)
                     app.UseEndpoints(endpoints => endpoints.MapControllers());
                 });
 

@@ -101,6 +101,56 @@ public sealed class DecisionMakerSearchHttpMongoTests
         Assert.Equal(Host.Ilker, Assert.Single(Host.People(body)).GetProperty("userId").GetGuid());
     }
 
+    // BL-512 FIX1 — Ğ, Ö and Ç (and Ü) folded both ways, in a name and in a position name.
+    [Theory]
+    [InlineData("GOKCE OGUTCU")]
+    [InlineData("gökçe öğütçü")]
+    [InlineData("GÖKÇE ÖĞÜTÇÜ")]
+    [InlineData("cagri merkezi")]
+    [InlineData("ÇAĞRI MERKEZİ")]
+    public async Task G_O_and_C_with_their_marks_are_folded_too(string search)
+    {
+        await using var host = await Host.StartAsync();
+
+        var (status, _, body) = await host.GetAsync($"?search={Uri.EscapeDataString(search)}");
+
+        Assert.True(status == HttpStatusCode.OK, body);
+        Assert.Equal(Host.Gokce, Assert.Single(Host.People(body)).GetProperty("userId").GetGuid());
+    }
+
+    // BL-512 FIX1 — typing "Ka… Kal…" does not rebuild the directory (and ask AuthService for every name) per pause.
+    [Fact]
+    public async Task Two_searches_in_a_row_build_the_directory_once()
+    {
+        await using var host = await Host.StartAsync();
+
+        Assert.Equal(HttpStatusCode.OK, (await host.GetAsync("?search=il")).Status);
+        Assert.Equal(HttpStatusCode.OK, (await host.GetAsync("?search=pl")).Status);
+        Assert.Equal(HttpStatusCode.OK, (await host.GetAsync($"?ids={Host.Ilker}")).Status);
+
+        Assert.Equal(1, host.NameSource.Calls);
+    }
+
+    // BL-512 FIX1 — names that cannot be read are a 503 the screen can say, never "person not found" rows; and that
+    // state is not kept, so the next search after AuthService is back answers normally.
+    [Fact]
+    public async Task When_the_names_cannot_be_read_the_search_is_503_and_nothing_is_kept()
+    {
+        await using var host = await Host.StartAsync();
+        host.NameSource.Unavailable = true;
+
+        var (status, code, body) = await host.GetAsync("?search=il");
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, status);
+        Assert.Equal(DecisionMakerLookup.ReasonCodes.DirectoryUnavailable, code);
+        Assert.DoesNotContain("Kalite", body);
+
+        host.NameSource.Unavailable = false;
+        var again = await host.GetAsync("?search=il");
+        Assert.Equal(HttpStatusCode.OK, again.Status);
+        Assert.Contains(Host.People(again.Body), p => p.GetProperty("userId").GetGuid() == Host.Ilker);
+    }
+
     [Fact]
     public async Task Ids_answer_only_live_people_of_this_tenant_and_another_company_is_still_found()
     {
@@ -156,6 +206,9 @@ public sealed class DecisionMakerSearchHttpMongoTests
         public static readonly Guid Ilker = Guid.Parse("51251251-0000-4000-8000-00000000c001");
         public static readonly Guid EndedPerson = Guid.Parse("51251251-0000-4000-8000-00000000c002");
         public static readonly Guid OtherTenantPerson = Guid.Parse("51251251-0000-4000-8000-00000000c003");
+        public static readonly Guid Gokce = Guid.Parse("51251251-0000-4000-8000-00000000c004");
+
+        public FixedNames NameSource { get; } = new();
 
         private readonly DisposableMongoReplicaSet _mongo;
         private readonly TestServer _server;
@@ -208,7 +261,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
                     services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
                     services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
                     // AuthService is not running here: the names are the test's own.
-                    services.AddSingleton<IUserDisplayNameResolver>(new FixedNames());
+                    services.AddSingleton<IUserDisplayNameResolver>(NameSource);
                     services.AddSingleton<Diten.Platform.Application.Contracts.Audit.IAuditOutboxWriter>(new Diten.Platform.Application.Tests.Audit.InMemoryAuditOutbox());
 
                     services.AddControllers().ConfigureApplicationPartManager(manager =>
@@ -222,10 +275,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
                 {
                     app.UseExceptionHandler();
                     app.UseRouting();
-                    app.UseAuthentication();
-                    app.UseTenantResolution();
-                    app.UseAuthorization();
-                    app.UseRateLimiter();
+                    app.UsePlatformAccessPipeline();   // THE production order (Program.cs calls the same method)
                     app.UseEndpoints(endpoints => endpoints.MapControllers());
                 });
 
@@ -268,6 +318,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
                 new OrganizationUnit { Id = tenantBUnit, TenantId = TenantB, Code = "B", Name = "Başka", LegalEntityId = Guid.NewGuid() }
             ]);
             await PersonAsync(TenantA, otherCompany, Ilker, "İlker Şahin", "Kalite Müdürü");
+            await PersonAsync(TenantA, home, Gokce, "Gökçe Öğütçü", "Çağrı Merkezi Uzmanı");
             for (var i = 0; i < 21; i++)
             {
                 await PersonAsync(TenantA, home, Guid.NewGuid(), $"Planner {i:00}", "Planlama Uzmanı");
@@ -322,10 +373,18 @@ public sealed class DecisionMakerSearchHttpMongoTests
             return _mongo.DisposeAsync();
         }
 
-        private sealed class FixedNames : IUserDisplayNameResolver
+        /// <summary>AuthService's names, counted; <see cref="Unavailable"/> answers nothing, as the real client does
+        /// when AuthService cannot be reached.</summary>
+        public sealed class FixedNames : IUserDisplayNameResolver
         {
+            private int _calls;
+            public int Calls => _calls;
+            public bool Unavailable { get; set; }
+
             public Task<IReadOnlyDictionary<Guid, string>> ResolveAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
             {
+                Interlocked.Increment(ref _calls);
+                if (Unavailable) { return Task.FromResult<IReadOnlyDictionary<Guid, string>>(new Dictionary<Guid, string>()); }
                 lock (Names)
                 {
                     IReadOnlyDictionary<Guid, string> found = userIds.Where(Names.ContainsKey).ToDictionary(id => id, id => Names[id]);

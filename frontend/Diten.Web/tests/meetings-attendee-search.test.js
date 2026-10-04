@@ -86,7 +86,7 @@ beforeEach(() => {
 // ── the shared transport ─────────────────────────────────────────────────────────────────────────────────────
 
 describe("BL-531 — shared/diten-people-search.js", () => {
-  const words = { minimumLength: "min", noResults: "none", searching: "busy", unknown: "unknown", error: "err", failure: () => "failed" };
+  const words = { minimumLength: "min", noResults: "none", searching: "busy", unknown: "unknown", rateLimited: "too many", failed: "failed" };
 
   it("asks at two characters, labels name — position — unit, and drops the excluded ids whatever their case", async () => {
     const settings = global.DitenPeopleSearch.options({
@@ -103,7 +103,7 @@ describe("BL-531 — shared/diten-people-search.js", () => {
     const settings = global.DitenPeopleSearch.options({ search: async () => ({ ok: false, status: 429 }), text: words });
     const { failed } = await searchWith(settings, "ay");
     expect(failed).toBeTruthy();
-    expect(settings.language.errorLoading()).toBe("failed");
+    expect(settings.language.errorLoading()).toBe("too many");
     expect(settings.language.errorLoading()).not.toBe(settings.language.noResults());
     expect(settings.language.inputTooShort()).toBe("min");
   });
@@ -128,8 +128,9 @@ describe("BL-531 — on the REAL select2 4.0.13: what the dropdown says after a 
    * RETURNED before it shows `errorLoading`; a transport that returns nothing throws there and the list sits on
    * "searching…". Measured on the vendored bundle the pages load, not on a double of it.
    */
-  const words = { minimumLength: "min", noResults: "nobody found", searching: "searching", unknown: "unknown", error: "err",
-    failure: (res) => (res?.status === 429 ? "too many searches" : res?.status === 403 ? "no access" : "unavailable") };
+  // BL-512 FIX1 — the one rule: 429 has its own sentence, anything else is "the search could not be done".
+  const words = { minimumLength: "min", noResults: "nobody found", searching: "searching", unknown: "unknown",
+    rateLimited: "too many searches", failed: "could not search" };
 
   const typeInto = async (answer) => {
     document.body.innerHTML = '<select id="picker"><option value=""></option></select>';
@@ -163,7 +164,7 @@ describe("BL-531 — on the REAL select2 4.0.13: what the dropdown says after a 
     expect(shown.message).toBe("nobody found");
   });
 
-  it.each([[429, "too many searches"], [403, "no access"], [0, "unavailable"]])(
+  it.each([[429, "too many searches"], [403, "could not search"], [503, "could not search"], [0, "could not search"]])(
     "a failed search (%i) says what failed — never 'searching…' forever, never 'nobody'", async (status, sentence) => {
       const shown = await typeInto(async () => ({ ok: false, status }));
       expect(shown.message).toBe(sentence);
@@ -171,7 +172,7 @@ describe("BL-531 — on the REAL select2 4.0.13: what the dropdown says after a 
 
   it("a search that throws says the read failed", async () => {
     const shown = await typeInto(async () => { throw new Error("network"); });
-    expect(shown.message).toBe("unavailable");
+    expect(shown.message).toBe("could not search");
   });
 });
 

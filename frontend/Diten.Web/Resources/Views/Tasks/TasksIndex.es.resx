@@ -95,6 +95,12 @@
   <data name="PeopleSearching" xml:space="preserve"><value>Buscando…</value></data>
   <data name="DecisionMakerUnavailable" xml:space="preserve"><value>Persona no encontrada</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Demasiadas búsquedas en poco tiempo. Espere un momento e inténtelo de nuevo.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>No se pudo realizar la búsqueda. Inténtelo de nuevo en unos instantes.</value></data>
+  <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>No se pudieron cargar los datos de la persona en este momento</value></data>
+  <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>Busque por nombre o por personas guardadas, no por ambos a la vez.</value></data>
+  <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>Se solicitaron demasiadas personas a la vez.</value></data>
+  <data name="ErrorPeopleLookupIdsInvalid" xml:space="preserve"><value>Una referencia de persona guardada no es válida.</value></data>
+  <data name="ErrorPeopleDirectoryUnavailable" xml:space="preserve"><value>El directorio de personas no está disponible en este momento. Inténtelo de nuevo en unos instantes.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>No se pudo contactar con el servicio de tareas. Inténtelo de nuevo.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Aún no hay tareas</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>Cree su primera tarea para verla aquí y en el Centro de tareas.</value></data>

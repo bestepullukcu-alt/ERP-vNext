@@ -107,4 +107,5 @@
   <data name="PeopleSearching" xml:space="preserve"><value>Recherche…</value></data>
   <data name="UnknownUser" xml:space="preserve"><value>Utilisateur inconnu</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Trop de recherches en peu de temps. Patientez un instant et réessayez.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>La recherche n'a pas pu être effectuée. Réessayez dans un instant.</value></data>
 </root>

@@ -95,6 +95,12 @@
   <data name="PeopleSearching" xml:space="preserve"><value>Searching…</value></data>
   <data name="DecisionMakerUnavailable" xml:space="preserve"><value>Person not found</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Too many searches in a short time. Wait a moment and try again.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>The search could not be done. Please try again shortly.</value></data>
+  <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>Person details could not be loaded right now</value></data>
+  <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>Search by name or by stored people, not both at once.</value></data>
+  <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>Too many people were requested at once.</value></data>
+  <data name="ErrorPeopleLookupIdsInvalid" xml:space="preserve"><value>A stored person reference is not valid.</value></data>
+  <data name="ErrorPeopleDirectoryUnavailable" xml:space="preserve"><value>The people directory is unavailable right now. Please try again shortly.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>The task service could not be reached. Try again.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>No tasks yet</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>Create your first task to see it here and in the Task Center.</value></data>

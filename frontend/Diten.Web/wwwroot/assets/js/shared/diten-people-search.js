@@ -1,88 +1,107 @@
 'use strict';
 
 /*
- * BL-531 (WP-MEETINGS-ATTENDEE-SEARCH-01) — one select2 "search the people directory" setup for every Meetings
- * picker (create, details "add attendee", "change organizer" window, series, report filter).
+ * BL-531 / BL-512 FIX1 — the ONE select2 "ask the server as the reader types" transport, for every server-searched
+ * picker: the people searches (task approver / reviewer, Task Center delegate window, every Meetings picker) and the
+ * task form's record-backed custom fields.
  *
- * The server side is BL-512's search-only contract: at least two characters, at most 20 rows of four fields
- * (userId, displayName, positionName, organizationUnitName), and a 429 once a person searches too fast. So:
- *  - nothing is fetched when a picker opens — select2 asks only after two typed characters (and a short pause);
- *  - an answer that arrives after the reader has typed again is dropped (it would overwrite the newer one);
- *  - three answers are told apart in words: "type at least two characters", "nobody found", and a READ that failed
- *    (403, 429, dropped connection) — a failure is never shown as "nobody" (BL-491's rule);
- *  - ids the caller passes in `exclude` are never offered (compared case-insensitively); `exclude` may be a
- *    function, read at each search, for a picker whose excluded people change while the page is open.
+ * ⚠ select2 4.0.13's own contract (AjaxAdapter.query), and the reason this file exists rather than three copies of
+ * it: the transport RETURNS the request object, and on failure select2 evaluates `'status' in request` before it
+ * shows `errorLoading`. A transport that returns nothing makes that line throw; the dropdown then sits on
+ * "searching…" forever and the failure is said nowhere (the BL-512 review finding, present in all three earlier
+ * transports). So `transport` returns a request object: it has no `status` (a failure is never mistaken for an
+ * abort), and its `abort()` — which select2 calls when the reader types again — silences the late answer.
  *
- * `options({ search, text, exclude })` returns the select2 settings to merge in:
- *   search(term)  → Promise<{ ok, status, reasonCode, data: rows[] }>
- *   text          → { hint?, minimumLength, noResults, searching, unknown, failure(res) → sentence }
+ * What a picker says, told apart in words:
+ *  - fewer than two characters → "type at least two characters" (people searches only);
+ *  - an empty answer → "nobody found";
+ *  - a READ that failed → 429 has its own sentence ("too many searches"), anything else (403, 503, a dropped
+ *    connection) is "the search could not be done" — never "nobody found" (BL-491's rule).
+ *
+ * `options({ search, text, exclude })` — the people searches. search(term) → Promise<{ ok, status, reasonCode, data: rows[] }>;
+ *   text → { minimumLength, noResults, searching, unknown, rateLimited, failed }; exclude → ids (or a function
+ *   returning them, read at each search) that are never offered.
+ * `transport({ search, toResults, onFailure })` — the bare transport, for a source with its own rows.
  */
 (function (global) {
     const MIN_LENGTH = 2;
     const DELAY_MS = 300;
+    const RATE_LIMITED = 'PEOPLE_SEARCH_RATE_LIMITED';
 
     /** "Name — Position — Unit"; a row without a name reads as `unknown`, never as its id. */
     const label = (row, unknown) => [row?.displayName || unknown, row?.positionName, row?.organizationUnitName]
         .filter((part) => part && String(part).trim())
         .join(' — ');
 
+    /** The one rule for a failed read's sentence: 429 is "too many searches", anything else "could not search". */
+    const failureSentence = (res, words) => {
+        const text = words || {};
+        const rateLimited = res && (res.status === 429 || res.reasonCode === RATE_LIMITED);
+        return (rateLimited ? text.rateLimited : text.failed) || text.failed || '';
+    };
+
+    /*
+     * search(term) → Promise<{ ok, status, reasonCode, data }> (a bare array is read as a successful answer);
+     * toResults(rows) → select2 results; onFailure(res) runs before select2 is told, so `errorLoading` can read it.
+     */
+    const transport = ({ search, toResults, onFailure }) => {
+        let sequence = 0;
+        return (params, success, fail) => {
+            const mine = ++sequence;
+            const request = { aborted: false, abort() { request.aborted = true; } };
+            const live = () => !request.aborted && mine === sequence;   // stale: the reader has typed since
+            const term = String(params?.data?.term || '').trim();
+            const failed = (res, error) => {
+                if (!live()) { return; }
+                if (typeof onFailure === 'function') { onFailure(res); }
+                fail(error ?? res);
+            };
+            // Asked NOW (not on a later tick), so a newer keystroke's request is the one in flight; a search that
+            // throws instead of rejecting is still a failed read.
+            let asked;
+            try { asked = Promise.resolve(search(term)); } catch (error) { asked = Promise.reject(error); }
+            asked
+                .then((answer) => {
+                    const res = Array.isArray(answer) ? { ok: true, status: 200, data: answer } : answer;
+                    if (!res || !res.ok) { failed(res || { ok: false, status: 0 }); return; }
+                    if (!live()) { return; }
+                    success({ results: toResults(Array.isArray(res.data) ? res.data : []) });
+                })
+                .catch((error) => failed({ ok: false, status: 0 }, error));
+            return request;
+        };
+    };
+
     const options = ({ search, text, exclude } = {}) => {
         const words = text || {};
         const excludedNow = () => (typeof exclude === 'function' ? exclude() : exclude || [])
             .map((id) => String(id || '').toLowerCase());
-        let sequence = 0;
         let failure = '';
 
         return {
             minimumInputLength: MIN_LENGTH,
             ajax: {
                 delay: DELAY_MS,
-                /*
-                 * ⚠ select2 4.0.13's own contract (AjaxAdapter.query): the transport RETURNS the request object, and on
-                 * failure select2 reads `'status' in request` before it shows `errorLoading`. A transport that returns
-                 * nothing makes that line throw, and the dropdown then sits on "searching…" forever — a failed read
-                 * that says nothing (the BL-512 review finding). So a request object is returned: it has no `status`
-                 * (a failure is never mistaken for an abort), and its `abort()` — which select2 calls when the reader
-                 * types again — silences the late answer.
-                 */
-                transport: (params, success, fail) => {
-                    const mine = ++sequence;
-                    const request = { aborted: false, abort() { request.aborted = true; } };
-                    const live = () => !request.aborted && mine === sequence;
-                    const term = String(params?.data?.term || '').trim();
-                    Promise.resolve()
-                        .then(() => search(term))
-                        .then((res) => {
-                            if (!live()) { return; }   // stale: the reader has typed since
-                            if (!res || !res.ok) {
-                                failure = typeof words.failure === 'function' ? words.failure(res || { ok: false, status: 0 }) : '';
-                                fail(res);
-                                return;
-                            }
-                            failure = '';
-                            const excluded = excludedNow();
-                            success({
-                                results: (Array.isArray(res.data) ? res.data : [])
-                                    .filter((row) => !excluded.includes(String(row.userId || '').toLowerCase()))
-                                    .map((row) => ({ id: row.userId, text: label(row, words.unknown) }))
-                            });
-                        })
-                        .catch((error) => {
-                            if (!live()) { return; }
-                            failure = typeof words.failure === 'function' ? words.failure({ ok: false, status: 0 }) : '';
-                            fail(error);
-                        });
-                    return request;
-                }
+                transport: transport({
+                    search,
+                    onFailure: (res) => { failure = failureSentence(res, words); },
+                    toResults: (rows) => {
+                        failure = '';
+                        const excluded = excludedNow();
+                        return rows
+                            .filter((row) => !excluded.includes(String(row.userId || '').toLowerCase()))
+                            .map((row) => ({ id: row.userId, text: label(row, words.unknown) }));
+                    }
+                })
             },
             language: {
                 inputTooShort: () => words.minimumLength || '',
                 noResults: () => words.noResults || '',
-                errorLoading: () => failure || words.error || '',
+                errorLoading: () => failure || words.failed || '',
                 searching: () => words.searching || ''
             }
         };
     };
 
-    global.DitenPeopleSearch = { MIN_LENGTH, DELAY_MS, label, options };
+    global.DitenPeopleSearch = { MIN_LENGTH, DELAY_MS, label, failureSentence, transport, options };
 })(typeof window !== 'undefined' ? window : globalThis);

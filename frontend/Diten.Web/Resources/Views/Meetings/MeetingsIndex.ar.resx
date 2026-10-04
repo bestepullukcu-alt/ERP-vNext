@@ -33,7 +33,6 @@
   <data name="FollowUpOfMeeting" xml:space="preserve"><value>متابعة للاجتماع</value></data>
   <data name="Attendees" xml:space="preserve"><value>الحضور</value></data>
   <data name="AttendeesPlaceholder" xml:space="preserve"><value>ابحث عن أشخاص لدعوتهم</value></data>
-  <data name="NoEligibleAttendees" xml:space="preserve"><value>لم يتم العثور على أشخاص مؤهلين. يمكن دعوة مستخدمي المستأجر النشطين الذين يشغلون منصبًا فقط.</value></data>
   <data name="AddAgendaItem" xml:space="preserve"><value>إضافة</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>بند جدول الأعمال</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>إزالة الحاضر</value></data>
@@ -115,6 +114,7 @@
   <data name="PeopleSearchNoResults" xml:space="preserve"><value>لم يتم العثور على أحد لهذا البحث.</value></data>
   <data name="PeopleSearching" xml:space="preserve"><value>جارٍ البحث…</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>عمليات بحث كثيرة في وقت قصير. انتظر قليلًا ثم حاول مرة أخرى.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>تعذّر إجراء البحث. يُرجى المحاولة مرة أخرى بعد قليل.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>خدمة الاجتماعات غير متاحة حاليًا.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>يرجى تعبئة جميع الحقول المطلوبة.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>أنواع الاجتماعات</value></data>

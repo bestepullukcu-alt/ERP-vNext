@@ -37,6 +37,9 @@ public static class DecisionMakerLookup
         public const string TooManyIds = "PEOPLE_LOOKUP_TOO_MANY_IDS";
         public const string IdsInvalid = "PEOPLE_LOOKUP_IDS_INVALID";
         public const string RateLimited = "PEOPLE_SEARCH_RATE_LIMITED";
+        /// <summary>BL-512 FIX1 — the names behind the directory (AuthService) could not be read: 503, never rows
+        /// that all read "person not found" and match on position names only.</summary>
+        public const string DirectoryUnavailable = "PEOPLE_DIRECTORY_UNAVAILABLE";
     }
 
     /// <summary>
@@ -78,8 +81,16 @@ public sealed record GetTaskDecisionMakerLookupQuery(string CorrelationId, strin
 public sealed class GetTaskDecisionMakerLookupHandler : IRequestHandler<GetTaskDecisionMakerLookupQuery, Response<DecisionMakerLookupDto>>
 {
     private readonly IMediator _mediator;
+    private readonly DecisionMakerDirectoryCache _directory;
+    private readonly Diten.Platform.Common.Tenancy.ITenantContext _tenant;
 
-    public GetTaskDecisionMakerLookupHandler(IMediator mediator) => _mediator = mediator;
+    public GetTaskDecisionMakerLookupHandler(
+        IMediator mediator, DecisionMakerDirectoryCache directory, Diten.Platform.Common.Tenancy.ITenantContext tenant)
+    {
+        _mediator = mediator;
+        _directory = directory;
+        _tenant = tenant;
+    }
 
     public async Task<Response<DecisionMakerLookupDto>> Handle(GetTaskDecisionMakerLookupQuery request, CancellationToken ct)
     {
@@ -119,14 +130,35 @@ public sealed class GetTaskDecisionMakerLookupHandler : IRequestHandler<GetTaskD
             return Fail($"Type at least {DecisionMakerLookup.MinimumSearchLength} characters to search.", DecisionMakerLookup.ReasonCodes.SearchTooShort, request);
         }
 
-        // The eligibility rule itself is the existing one (tenant, live position, company-scope exempt) — one source.
-        var all = await _mediator.Send(new GetTaskAssignmentPersonLookupQuery(request.CorrelationId, TaskPersonLookupPurpose.Decision), ct);
-        if (!all.IsSuccessful || all.Data is null)
+        // The eligibility rule itself is the existing one (tenant, live position, company-scope exempt) — one source —
+        // and its answer is kept per tenant for a minute (DecisionMakerDirectoryCache), not rebuilt on every pause.
+        var tenantId = _tenant.IsResolved && !_tenant.IsPlatformContext ? _tenant.TenantId : Guid.Empty;
+        if (!_directory.TryGet(tenantId, out var directory))
         {
-            return Response<DecisionMakerLookupDto>.Fail(all.Errors ?? [], all.StatusCode, all.ReasonCode, request.CorrelationId);
+            var all = await _mediator.Send(new GetTaskAssignmentPersonLookupQuery(request.CorrelationId, TaskPersonLookupPurpose.Decision), ct);
+            if (!all.IsSuccessful || all.Data is null)
+            {
+                return Response<DecisionMakerLookupDto>.Fail(all.Errors ?? [], all.StatusCode, all.ReasonCode, request.CorrelationId);
+            }
+
+            /*
+             * The names come from AuthService through a best-effort resolver that answers NOTHING when AuthService
+             * cannot be reached. A directory of live people none of whom has a name is that case — not a tenant of
+             * nameless people — and searching it would match positions only and list everyone as "person not found".
+             * So it is a 503 the screen can say, and it is not kept.
+             */
+            if (all.Data.People.Count > 0 && all.Data.People.All(p => string.IsNullOrWhiteSpace(p.DisplayName)))
+            {
+                return Response<DecisionMakerLookupDto>.Fail(
+                    "The people directory cannot be read right now.", 503,
+                    DecisionMakerLookup.ReasonCodes.DirectoryUnavailable, request.CorrelationId);
+            }
+
+            directory = all.Data.People;
+            _directory.Set(tenantId, directory);
         }
 
-        IEnumerable<AssignablePersonDto> rows = all.Data.People;
+        IEnumerable<AssignablePersonDto> rows = directory;
         if (ids is not null)
         {
             rows = rows.Where(row => ids.Contains(row.UserId));

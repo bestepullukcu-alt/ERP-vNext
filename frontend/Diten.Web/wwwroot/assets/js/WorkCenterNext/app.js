@@ -8058,7 +8058,7 @@
         global.console?.warn?.(
             `[WorkCenterNext] searching records for closure field "${code}" failed `
             + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
-        return [];
+        return result;   // BL-512 FIX1 — the picker says "the search could not be done", never "no results"
     };
 
     /** One outcome's words: a system outcome through the resource table, a tenant outcome as typed. */
@@ -9334,54 +9334,26 @@
      * shown as "nobody" (BL-491). The sentences live in the Tasks resx this page already carries.
      */
     const peopleText = (key) => global.TasksL10n?.t?.(key) ?? key;
-    const bindPeopleSearch = (element, popup, excludedTargetIds) => {
-        const excluded = (excludedTargetIds || []).map((id) => String(id || '').toLowerCase());
-        let sequence = 0;
-        let lastFailure = '';
-        return global.DitenDialog
-            ? global.DitenDialog.bindDialogSelect2(element, popup, {
-                containerCssClass: 'wcn-dialog-select',
-                dropdownCssClass: 'wcn-dialog-select-dropdown',
-                minimumInputLength: 2,
-                ajax: {
-                    delay: 300,
-                    transport: (params, success, failure) => {
-                        const mine = ++sequence;
-                        const term = String(params?.data?.term || '').trim();
-                        Promise.resolve(global.TasksApi.decisionMakers({ search: term }))
-                            .then((res) => {
-                                if (mine !== sequence) { return; }   // stale: the reader has typed since
-                                if (!res.ok) {
-                                    lastFailure = global.TasksApi.failureMessage(res);
-                                    failure(res);
-                                    return;
-                                }
-                                success({
-                                    results: res.data
-                                        .filter((person) => !excluded.includes(String(personUserId(person) || '').toLowerCase()))
-                                        .map((person) => ({
-                                            id: personUserId(person),
-                                            text: [person.displayName || peopleText('decisionMakerUnavailable'), person.positionName, person.organizationUnitName]
-                                                .filter((part) => part && String(part).trim()).join(' — ')
-                                        }))
-                                });
-                            })
-                            .catch((error) => {
-                                if (mine !== sequence) { return; }
-                                lastFailure = global.TasksApi.failureMessage({ ok: false, status: 0 });
-                                failure(error);
-                            });
-                    }
-                },
-                language: {
-                    inputTooShort: () => peopleText('peopleSearchMinimumLength'),
-                    noResults: () => peopleText('peopleSearchNoResults'),
-                    errorLoading: () => lastFailure || peopleText('errorOccurred'),
-                    searching: () => peopleText('peopleSearching')
-                }
-            })
-            : false;
-    };
+    const bindPeopleSearch = (element, popup, excludedTargetIds) => (global.DitenDialog && global.DitenPeopleSearch
+        // BL-512 FIX1 — the ONE shared transport (shared/diten-people-search.js): it returns the request object
+        // select2 inspects on failure, so a 429 / 403 / dropped connection is SAID in the window instead of the
+        // picker sitting on "searching…" for ever.
+        ? global.DitenDialog.bindDialogSelect2(element, popup, Object.assign({
+            containerCssClass: 'wcn-dialog-select',
+            dropdownCssClass: 'wcn-dialog-select-dropdown'
+        }, global.DitenPeopleSearch.options({
+            search: (term) => global.TasksApi.decisionMakers({ search: term }),
+            exclude: excludedTargetIds,
+            text: {
+                minimumLength: peopleText('peopleSearchMinimumLength'),
+                noResults: peopleText('peopleSearchNoResults'),
+                searching: peopleText('peopleSearching'),
+                unknown: peopleText('decisionMakerUnavailable'),
+                rateLimited: peopleText('errorPeopleSearchRateLimited'),
+                failed: peopleText('searchFailed')
+            }
+        })))
+        : false);
 
     const bindDialogSelect2 = (element, popup) => (global.DitenDialog
         ? global.DitenDialog.bindDialogSelect2(element, popup, {
@@ -10272,14 +10244,8 @@
                 const res = asksTarget
                     ? { ok: true, data: [] }   // BL-512: searched as the reader types (bindPeopleSearch)
                     : await global.TasksApi.assignablePeople();
-                /*
-                 * A read that FAILED is not an empty list. "Nobody this can be delegated to" printed over a 403 or
-                 * a dropped connection is a false sentence; the failure says what it was, and no window opens.
-                 */
-                if (!res.ok && asksTarget) {
-                    toast(global.TasksApi.failureMessage(res), 'error');
-                    return { outcome: 'refused' };
-                }
+                // BL-512 FIX1 — the approval delegate reads nothing here (its picker searches), so its old "a read
+                // that failed" refusal could no longer be reached; a failed SEARCH is said inside the window.
                 // `data` IS the array for both lists — unwrapped once in TasksApi (BL-113). This line was wrong for
                 // three rounds while each caller unwrapped the envelope in its own hand-written expression.
                 people = res.ok ? res.data : [];
@@ -10567,7 +10533,10 @@
                             // one case needing a translator, and it is WCN's own strings it would ever name.
                             translate: t
                         });
-                        global.TaskForm.enhanceSelects?.(fieldsRow, { searchRecords: searchClosureFieldRecords });
+                        global.TaskForm.enhanceSelects?.(fieldsRow, {
+                            searchRecords: searchClosureFieldRecords,
+                            recordSearchText: { rateLimited: peopleText('errorPeopleSearchRateLimited'), failed: peopleText('searchFailed') }
+                        });
                     }
                 },
                 preConfirm: () => {

@@ -100,6 +100,11 @@
         // BL-512 — the approver / reviewer search's own refusals (a person picker is search-only and bounded).
         PEOPLE_SEARCH_TOO_SHORT: 'peopleSearchMinimumLength',
         PEOPLE_SEARCH_RATE_LIMITED: 'errorPeopleSearchRateLimited',
+        // BL-512 FIX1 — the lookup's other refusals, each with its own sentence (7 languages).
+        PEOPLE_LOOKUP_SEARCH_AND_IDS: 'errorPeopleLookupSearchAndIds',
+        PEOPLE_LOOKUP_TOO_MANY_IDS: 'errorPeopleLookupTooManyIds',
+        PEOPLE_LOOKUP_IDS_INVALID: 'errorPeopleLookupIdsInvalid',
+        PEOPLE_DIRECTORY_UNAVAILABLE: 'errorPeopleDirectoryUnavailable',
         TASK_COMMENT_TASK_CLOSED: 'errorCommentTaskClosed',
         TASK_COMMENT_TEXT_INVALID: 'errorCommentTextInvalid',
         // Somebody else's comment, and a comment already withdrawn. Mapped the moment the codes were written:

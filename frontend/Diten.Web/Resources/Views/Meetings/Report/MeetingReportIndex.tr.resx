@@ -107,4 +107,5 @@
   <data name="PeopleSearching" xml:space="preserve"><value>Aranıyor…</value></data>
   <data name="UnknownUser" xml:space="preserve"><value>Bilinmeyen kullanıcı</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Kısa sürede çok fazla arama yapıldı. Biraz bekleyip yeniden deneyin.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>Arama yapılamadı. Biraz sonra yeniden deneyin.</value></data>
 </root>

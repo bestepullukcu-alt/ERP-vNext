@@ -45,18 +45,45 @@ public sealed class MeetingLookupHandlerTests
         Assert.Null(response.Data);
     }
 
-    /// <summary>Runs the REAL BL-512 search handler over <see cref="FakeEligibilityMediator"/>.</summary>
+    private sealed class NamedEligibility(FakeEligibilityMediator inner) : MediatR.IMediator
+    {
+        public async Task<TResponse> Send<TResponse>(MediatR.IRequest<TResponse> request, CancellationToken ct = default)
+        {
+            var answer = await inner.Send(request, ct);
+            if (answer is Diten.Platform.Application.Common.Response<Diten.Platform.Application.Features.Tasks.AssignablePersonLookupDto> { Data: { } data } response)
+            {
+                var named = data with { People = data.People.Select(p => p with { DisplayName = "Kişi " + p.UserId.ToString("N")[..4] }).ToList() };
+                return (TResponse)(object)Diten.Platform.Application.Common.Response<Diten.Platform.Application.Features.Tasks.AssignablePersonLookupDto>.Success(named, correlationId: response.CorrelationId);
+            }
+
+            return answer;
+        }
+
+        public Task<object?> Send(object request, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task Send<TRequest>(TRequest request, CancellationToken ct = default) where TRequest : MediatR.IRequest => throw new NotSupportedException();
+        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(MediatR.IStreamRequest<TResponse> request, CancellationToken ct = default) => throw new NotSupportedException();
+        public IAsyncEnumerable<object?> CreateStream(object request, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task Publish(object notification, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task Publish<TNotification>(TNotification notification, CancellationToken ct = default) where TNotification : MediatR.INotification => throw new NotSupportedException();
+    }
+
+    /// <summary>Runs the REAL BL-512 search handler over <see cref="FakeEligibilityMediator"/>'s people, each
+    /// given a name (a directory nobody in which has a name is the "AuthService unreachable" 503 — BL-512 FIX1).</summary>
     private sealed class DecisionChainMediator : MediatR.IMediator
     {
         public FakeEligibilityMediator Eligibility { get; } = new();
         public List<object> Forwarded { get; } = [];
 
-        public Task<TResponse> Send<TResponse>(MediatR.IRequest<TResponse> request, CancellationToken ct = default)
+        public async Task<TResponse> Send<TResponse>(MediatR.IRequest<TResponse> request, CancellationToken ct = default)
         {
             Forwarded.Add(request);
             if (request is Diten.Platform.Application.Features.Tasks.GetTaskDecisionMakerLookupQuery query)
             {
-                return (Task<TResponse>)(object)new Diten.Platform.Application.Features.Tasks.GetTaskDecisionMakerLookupHandler(Eligibility).Handle(query, ct);
+                var handler = new Diten.Platform.Application.Features.Tasks.GetTaskDecisionMakerLookupHandler(
+                    new NamedEligibility(Eligibility),
+                    new Diten.Platform.Application.Features.Tasks.DecisionMakerDirectoryCache(TimeProvider.System),
+                    new Diten.Platform.Application.Tests.Tasks.FakeTenantContext(Tenant));
+                return (TResponse)(object)await handler.Handle(query, ct);
             }
 
             throw new NotSupportedException(request.GetType().Name);

@@ -174,6 +174,7 @@ const captureBinder = () => {
 
 const boot = async (item, people = EVERYBODY, rootAttrs = "") => {
   await bootSurface({ rootAttrs, items: [item], wcn: translator });
+  loadScript("wwwroot/assets/js/shared/diten-people-search.js");   // the page loads it before app.js (BL-512 FIX1)
   stubDispatch();
   stubPeople(people);
   captureBinder();
@@ -348,10 +349,13 @@ describe("A — Devret asks who, and sends the person", () => {
   });
 
   // CT acceptance — a read that failed is not an empty list (kept from BL-491, now inside the search).
+  // BL-512 FIX1 — the one rule (shared/diten-people-search.js): 429 its own sentence, anything else "could not search".
   it.each([
-    [403, "errorNoAccess"],
-    [0, "errorUnavailable"],
-    [500, "errorOccurred"]
+    [429, "errorPeopleSearchRateLimited"],
+    [403, "searchFailed"],
+    [0, "searchFailed"],
+    [500, "searchFailed"],
+    [503, "searchFailed"]
   ])("a search that failed (%i) says what failed — not that there is nobody", async (status, key) => {
     await boot(approval());
     stubPeople([], { ok: false, status, reasonCode: null, data: null });
@@ -388,6 +392,61 @@ function pressAndConfirm({ person: chosen, note }) {
     press("delegate").then(settle).then(settle).then(resolve, reject);
   });
 }
+
+// BL-512 FIX1 — the delegate window on the REAL shared binder (shared/diten-dialog.js) and the REAL select2 4.0.13: the
+// binder must hand select2 the transport, the two-character minimum and the sentences, and a failed search must be
+// SAID in the window (select2 inspects what the transport returns). No double between app.js and select2.
+describe("A — the delegate window on the real dialog binder and the real select2", () => {
+  const typeInWindow = async (text) => {
+    const box = document.querySelector(".select2-search__field");
+    expect(box, "the picker's search box is not open").toBeTruthy();
+    box.value = text;
+    global.jQuery(box).trigger("input");
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    await settle();
+    const message = document.querySelector(".select2-results__message");
+    return {
+      message: message ? message.textContent : null,
+      offered: Array.from(document.querySelectorAll(".select2-results__option:not(.select2-results__message)")).map((o) => o.textContent)
+    };
+  };
+
+  const openRealPicker = async (failure) => {
+    await bootSurface({ rootAttrs: "", items: [approval()], wcn: translator });
+    loadScript("wwwroot/assets/js/shared/diten-people-search.js");
+    stubDispatch();
+    stubPeople(EVERYBODY, failure);
+    delete global.$;
+    delete global.jQuery;
+    loadScript("wwwroot/assets/vendor/libs/jquery/jquery.js");
+    loadScript("wwwroot/assets/vendor/libs/select2/select2.js");
+    await press("delegate");
+    const host = mountWindow();
+    fired[0].didOpen(host);
+    global.jQuery("#wcnReassignAssignee").select2("open");
+  };
+
+  it("one character asks nobody and says 'type at least two characters'", async () => {
+    await openRealPicker();
+    const shown = await typeInWindow("a");
+    expect(searches).toEqual([]);
+    expect(shown.message).toBe("peopleSearchMinimumLength");
+  });
+
+  it("two characters search, and the excluded people are not offered", async () => {
+    await openRealPicker();
+    const shown = await typeInWindow("ay");
+    expect(searches).toEqual([{ search: "ay" }]);
+    expect(shown.offered).toEqual(["Ayşe Kaya — Uzman", "Mehmet Öz — Uzman"]);
+  });
+
+  it.each([[429, "errorPeopleSearchRateLimited"], [403, "searchFailed"], [0, "searchFailed"]])(
+    "a failed search (%i) is said in the window — never 'searching…' for ever", async (status, sentence) => {
+      await openRealPicker({ ok: false, status, reasonCode: null, data: null });
+      const shown = await typeInWindow("ay");
+      expect(shown.message).toBe(sentence);
+    });
+});
 
 describe("A — the person window follows the server's flag, never the action code", () => {
   it("a delegate the server did not flag keeps the plain confirm and sends no person", async () => {

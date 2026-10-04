@@ -95,6 +95,12 @@
   <data name="PeopleSearching" xml:space="preserve"><value>Recherche…</value></data>
   <data name="DecisionMakerUnavailable" xml:space="preserve"><value>Personne introuvable</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Trop de recherches en peu de temps. Patientez un instant et réessayez.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>La recherche n'a pas pu être effectuée. Réessayez dans un instant.</value></data>
+  <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>Les informations de la personne n'ont pas pu être chargées pour le moment</value></data>
+  <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>Recherchez par nom ou par personnes enregistrées, pas les deux à la fois.</value></data>
+  <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>Trop de personnes ont été demandées en une seule fois.</value></data>
+  <data name="ErrorPeopleLookupIdsInvalid" xml:space="preserve"><value>Une référence de personne enregistrée n'est pas valide.</value></data>
+  <data name="ErrorPeopleDirectoryUnavailable" xml:space="preserve"><value>L'annuaire des personnes est indisponible pour le moment. Réessayez dans un instant.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Le service des tâches est injoignable. Réessayez.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Aucune tâche</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>Créez votre première tâche pour la voir ici et dans le Centre des tâches.</value></data>

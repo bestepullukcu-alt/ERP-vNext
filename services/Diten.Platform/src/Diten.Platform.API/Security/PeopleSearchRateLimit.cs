@@ -19,6 +19,9 @@ public static class PeopleSearchRateLimit
     public const string PolicyName = "people-search";
     public const int PermitsPerMinute = 30;
 
+    /// <summary>The code a refusal by any OTHER policy carries — never the people-search one.</summary>
+    public const string GenericRateLimited = "RATE_LIMITED";
+
     public static IServiceCollection AddPeopleSearchRateLimit(this IServiceCollection services) =>
         services.AddRateLimiter(options =>
         {
@@ -32,13 +35,17 @@ public static class PeopleSearchRateLimit
                     QueueLimit = 0,
                     AutoReplenishment = true
                 }));
+            // OnRejected is ONE hook for every policy this limiter will ever hold, so the code is chosen from the
+            // policy that refused (BL-512 FIX1): a second policy added later must not answer "too many searches".
             options.OnRejected = async (rejected, ct) =>
             {
                 rejected.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                var refusing = rejected.HttpContext.GetEndpoint()?.Metadata.GetMetadata<EnableRateLimitingAttribute>()?.PolicyName;
+                var (message, code) = refusing == PolicyName
+                    ? ("Too many searches; wait a moment and try again.", DecisionMakerLookup.ReasonCodes.RateLimited)
+                    : ("Too many requests; wait a moment and try again.", GenericRateLimited);
                 await rejected.HttpContext.Response.WriteAsJsonAsync(
-                    Response<NoContent>.Fail("Too many searches; wait a moment and try again.", StatusCodes.Status429TooManyRequests,
-                        DecisionMakerLookup.ReasonCodes.RateLimited),
-                    ct);
+                    Response<NoContent>.Fail(message, StatusCodes.Status429TooManyRequests, code), ct);
             };
         });
 

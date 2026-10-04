@@ -36,6 +36,9 @@ public static class DependencyInjection
     {
         var assembly = typeof(DependencyInjection).Assembly;
 
+        // BL-512 FIX1 — the decision-makers directory, kept per tenant for a minute (bounded, in process).
+        services.AddSingleton(_ => new Diten.Platform.Application.Features.Tasks.DecisionMakerDirectoryCache(TimeProvider.System));
+
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(assembly);

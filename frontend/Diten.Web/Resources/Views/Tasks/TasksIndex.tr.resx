@@ -95,6 +95,12 @@
   <data name="PeopleSearching" xml:space="preserve"><value>Aranıyor…</value></data>
   <data name="DecisionMakerUnavailable" xml:space="preserve"><value>Bulunamayan kişi</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Kısa sürede çok fazla arama yapıldı. Biraz bekleyip yeniden deneyin.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>Arama yapılamadı. Biraz sonra yeniden deneyin.</value></data>
+  <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>Kişi bilgisi şu an yüklenemedi</value></data>
+  <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>Adla ya da kayıtlı kişilerle arayın; ikisi birden olmaz.</value></data>
+  <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>Tek seferde çok fazla kişi istendi.</value></data>
+  <data name="ErrorPeopleLookupIdsInvalid" xml:space="preserve"><value>Kayıtlı bir kişi bağlantısı geçerli değil.</value></data>
+  <data name="ErrorPeopleDirectoryUnavailable" xml:space="preserve"><value>Kişi rehberine şu an ulaşılamıyor. Biraz sonra yeniden deneyin.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Görev servisine ulaşılamadı. Tekrar deneyin.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Henüz görev yok</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>İlk görevinizi oluşturun; burada ve Görev Merkezi'nde görünecek.</value></data>

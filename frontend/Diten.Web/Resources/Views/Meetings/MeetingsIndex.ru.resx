@@ -33,7 +33,6 @@
   <data name="FollowUpOfMeeting" xml:space="preserve"><value>Продолжение совещания</value></data>
   <data name="Attendees" xml:space="preserve"><value>Участники</value></data>
   <data name="AttendeesPlaceholder" xml:space="preserve"><value>Поиск людей для приглашения</value></data>
-  <data name="NoEligibleAttendees" xml:space="preserve"><value>Подходящие люди не найдены. Пригласить можно только активных пользователей арендатора, занимающих должность.</value></data>
   <data name="AddAgendaItem" xml:space="preserve"><value>Добавить</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>Пункт повестки</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>Удалить участника</value></data>
@@ -115,6 +114,7 @@
   <data name="PeopleSearchNoResults" xml:space="preserve"><value>По этому запросу никого не найдено.</value></data>
   <data name="PeopleSearching" xml:space="preserve"><value>Поиск…</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Слишком много поисков за короткое время. Подождите немного и повторите попытку.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>Не удалось выполнить поиск. Повторите попытку чуть позже.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Сервис совещаний сейчас недоступен.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Пожалуйста, заполните все обязательные поля.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Типы совещаний</value></data>

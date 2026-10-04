@@ -79,8 +79,8 @@
                 noResults: st('peopleSearchNoResults'),
                 searching: st('peopleSearching'),
                 unknown: st('unknownUser'),
-                error: st('errorOccurred'),
-                failure: (res) => window.MeetingsApi.failureMessage(res)
+                rateLimited: st('errorPeopleSearchRateLimited'),
+                failed: st('searchFailed')
             }
         });
         initSelect2('#fieldOrganizerUserId', Object.assign({ placeholder: st('peopleSearchHint') }, peopleSearchSettings()));

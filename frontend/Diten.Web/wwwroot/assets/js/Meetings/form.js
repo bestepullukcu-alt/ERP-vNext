@@ -44,8 +44,8 @@
             noResults: t('peopleSearchNoResults'),
             searching: t('peopleSearching'),
             unknown: t('unknownUser'),
-            error: t('errorOccurred'),
-            failure: (res) => window.MeetingsApi.failureMessage(res)
+            rateLimited: t('errorPeopleSearchRateLimited'),
+            failed: t('searchFailed')
         },
         exclude
     });

@@ -262,19 +262,13 @@
                         noResults: t('peopleSearchNoResults'),
                         searching: t('peopleSearching'),
                         unknown: t('unknownUser'),
-                        error: t('errorOccurred'),
-                        failure: reportPeopleFailure
+                        rateLimited: t('errorPeopleSearchRateLimited'),
+                        failed: t('searchFailed')
                     }
                 }) || {}));
         }
     };
 
-    /** The report page carries its own sentences (it does not load the Meetings bridge). */
-    const reportPeopleFailure = (res) => {
-        if (res?.reasonCode === 'PEOPLE_SEARCH_RATE_LIMITED' || res?.status === 429) { return t('errorPeopleSearchRateLimited'); }
-        if (res?.status === 403) { return t('errorNoAccess'); }
-        return t('errorOccurred');
-    };
 
     const loadLookups = async () => {
         if (!global.MeetingsApi) { return; }

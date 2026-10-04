@@ -275,10 +275,7 @@ if (observabilityOptions.Metrics.Enabled)
     app.UseHttpMetrics();
 }
 
-app.UseAuthentication();
-app.UseTenantResolution();
-app.UseAuthorization();
-app.UseRateLimiter(); // BL-512 — after authentication: the people-search policy partitions by the signed-in user
+app.UsePlatformAccessPipeline(); // BL-512 FIX1 — authentication → tenant → authorization → rate limiter, in that order (Security/PlatformAccessPipeline.cs)
 app.UsePlatformHangfireDashboard(app.Configuration);
 
 app.MapHealthChecks(observabilityOptions.Health.LivePath, new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

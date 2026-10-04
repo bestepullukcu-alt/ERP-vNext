@@ -594,11 +594,12 @@
         const result = await global.TasksApi.fieldRecords(code, { term });
         if (result.ok) { return result.data || []; }
 
-        // Not silent: an unreachable source reads as "no results" in the picker, and this says why.
+        // BL-512 FIX1 — not silent, and no longer "no results": the failed READ goes back to the picker, which says
+        // "the search could not be done" (TaskForm.enhanceSelects); the console keeps the detail.
         global.console?.warn?.(
             `[Tasks] searching records for field "${code}" failed `
             + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
-        return [];
+        return result;
     };
 
     /*
@@ -626,7 +627,9 @@
         if (wanted.length === 0) { return; }
         const resolved = await global.TasksApi.resolveDecisionMakers(wanted);
         const rows = resolved.ok ? resolved.data : [];
-        const unavailable = t('decisionMakerUnavailable');
+        // BL-512 FIX1 — a READ that failed (429 / 403 / 5xx / no connection) is not "this person no longer exists":
+        // the stored value is kept either way, but the words say which of the two it is.
+        const unavailable = resolved.ok ? t('decisionMakerUnavailable') : t('decisionMakerLoadFailed');
         DECISION_MAKER_FIELDS.forEach(([controlId, field]) => {
             const select = el(controlId);
             const userId = source && source[field] ? String(source[field]) : '';
@@ -946,13 +949,16 @@
             rowLabels: personLabels,
             // BL-512 — the reviewer / approval-manager pickers' server search and its sentences.
             searchPeople: (term) => global.TasksApi.decisionMakers({ search: term }),
+            // BL-512 FIX1 — a failed search is said: 429 its own sentence, anything else "the search could not be done".
             peopleSearchText: {
                 minimumLength: t('peopleSearchMinimumLength'),
                 noResults: t('peopleSearchNoResults'),
                 searching: t('peopleSearching'),
-                unavailable: t('decisionMakerUnavailable'),
-                failure: (res) => global.TasksApi.failureMessage(res)
-            }
+                unknown: t('decisionMakerUnavailable'),
+                rateLimited: t('errorPeopleSearchRateLimited'),
+                failed: t('searchFailed')
+            },
+            recordSearchText: { rateLimited: t('errorPeopleSearchRateLimited'), failed: t('searchFailed') }
         });
         // flatpickr after hydration too, for the same reason: it reads the input's value when it initialises, so
         // a picker built before the stored date was written in would open on today instead of the task's date.
