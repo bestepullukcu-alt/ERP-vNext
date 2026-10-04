@@ -1,0 +1,6 @@
+run	build	SupplyChain state	request	adapter call (browser resource timing, ms)	alert/message at (s since navigation or click)	timeout that fired	evidence
+fixed	Q394 Program.cs	SIGSTOP	GET list	15055	15.3	ShipmentBundleTimeoutHandler 15 s read deadline (Web log: "Shipment-bundle call exceeded its 15 s deadline") -> adapter 503	fix2-web-log-fixed.txt, fix2-gateway-log-fixed.txt (Ocelot RequestCanceled)
+fixed	Q394 Program.cs	SIGSTOP	POST create (Save)	30088	30.1	ShipmentBundleTimeoutHandler 30 s write deadline -> "The request outcome is unavailable. Retry the same intent."	fix2-write-after-resume-db.txt (0 committed; service finished the frozen POST 499 on resume; same-key retry -> 201, 1 shipment)
+sabotage	HEAD Program.cs	SIGSTOP	GET list	90095	~90.7	Ocelot RequestTimedOutError at 90 s -> empty 503 -> adapter Q371 envelope	fix2-gateway-log-sabotage.txt, fix2-web-log-sabotage.txt
+restored	Q394 Program.cs	SIGSTOP	GET list	15060	15.6	ShipmentBundleTimeoutHandler 15 s read deadline	this table
+Q362 (reference)	HEAD at bf1ef28f9	SIGSTOP	GET list	-	90	Ocelot default	mvp6-q362-runtime-closure-01 D-2

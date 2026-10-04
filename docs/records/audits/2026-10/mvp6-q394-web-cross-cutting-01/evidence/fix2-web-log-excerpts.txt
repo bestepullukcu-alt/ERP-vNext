@@ -1,0 +1,7 @@
+/Users/natig/mvp6-env/q394-20261004-1647/results/fix2-web-log-sabotage.txt-49-warn: Diten.Web.Controllers.SupplyChainShipmentsController[0]
+/Users/natig/mvp6-env/q394-20261004-1647/results/fix2-web-log-sabotage.txt:50:      Shipment Gateway answered 503 without a contract error for http://localhost:5000/api/shipment-bundle/shipments?page=1&pageSize=10; correlation f79d48fa-942e-42ec-a84f-d6448265be84.
+/Users/natig/mvp6-env/q394-20261004-1647/results/fix2-web-log-fixed.txt-29-warn: Diten.Web.Controllers.SupplyChainShipmentsController[0]
+/Users/natig/mvp6-env/q394-20261004-1647/results/fix2-web-log-fixed.txt:30:      Shipment Gateway request timed out for http://localhost:5000/api/shipment-bundle/shipments?page=1&pageSize=10; correlation 4a64fc50-d5af-407b-a7b9-1a9ccdcb1e24.
+/Users/natig/mvp6-env/q394-20261004-1647/results/fix2-web-log-fixed.txt-31-      System.Threading.Tasks.TaskCanceledException: Shipment-bundle call exceeded its 15 s deadline.
+/Users/natig/mvp6-env/q394-20261004-1647/results/fix2-web-log-fixed.txt-32-       ---> System.TimeoutException: The operation was canceled.
+/Users/natig/mvp6-env/q394-20261004-1647/results/fix2-web-log-fixed.txt-33-       ---> System.Threading.Tasks.TaskCanceledException: The operation was canceled.

@@ -1,0 +1,15 @@
+{
+  Admin: [
+    'authorize(1:reverse-logistics)',
+    'cancel(1:reverse-logistics)',
+    'close(1:reverse-logistics)',
+    'create(1:reverse-logistics)',
+    'disposition(1:reverse-logistics)',
+    'read(1:reverse-logistics)',
+    'receive(1:reverse-logistics)',
+    'transit(1:reverse-logistics)'
+  ],
+  Viewer: [
+    'read(0:null)'
+  ]
+}

@@ -1,0 +1,149 @@
+=== G1 after create + reload 2026-10-04T16:09:56Z
+{
+  returns: [
+    {
+      id: '6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c',
+      rma: 'RMA-6CD3B7EF20A44A98AB7DD1052DC9295C',
+      status: 'Requested',
+      version: 1,
+      tenant: '29fb1c14-ae02-4728-bce3-c65b297f91ce',
+      le: '634e06e0-b568-4568-bb1b-2d4a97eb9005',
+      root: null,
+      shipment: 'e3872318-2ad8-4d85-9204-f7debf115a76'
+    }
+  ],
+  audit: 1,
+  outbox: 1,
+  outboxEvents: [
+    undefined
+  ],
+  receipts: 1,
+  entitlements: 1
+}
+=== G1 after create + reload (re-read) 2026-10-04T16:10:07Z
+{
+  returns: [
+    {
+      id: '6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c',
+      rma: 'RMA-6CD3B7EF20A44A98AB7DD1052DC9295C',
+      status: 'Requested',
+      version: 1,
+      tenant: '29fb1c14-ae02-4728-bce3-c65b297f91ce',
+      le: '634e06e0-b568-4568-bb1b-2d4a97eb9005',
+      root: '66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d',
+      disposition: null,
+      invRef: null,
+      shipment: 'e3872318-2ad8-4d85-9204-f7debf115a76'
+    }
+  ],
+  audit: 1,
+  outbox: 1,
+  outboxStatus: [
+    'Pending'
+  ],
+  auditTrail: [
+    '->Requested@ root=66b8e14d'
+  ],
+  receipts: 1,
+  entitlements: 1
+}
+=== G2 after Authorize + reload 2026-10-04T16:10:39Z
+=== G2 after Authorize + reload 2026-10-04T16:10:47Z
+{
+  returns: [
+    {
+      id: '6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c',
+      rma: 'RMA-6CD3B7EF20A44A98AB7DD1052DC9295C',
+      status: 'Authorized',
+      version: 2,
+      tenant: '29fb1c14-ae02-4728-bce3-c65b297f91ce',
+      le: '634e06e0-b568-4568-bb1b-2d4a97eb9005',
+      root: '66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d',
+      disposition: null,
+      invRef: null,
+      shipment: 'e3872318-2ad8-4d85-9204-f7debf115a76'
+    }
+  ],
+  audit: 2,
+  outbox: 2,
+  outboxStatus: [
+    'Pending',
+    'Pending'
+  ],
+  auditTrail: [
+    '->Requested@null root=66b8e14d',
+    'Requested>Authorized@2026-10-04T16:10:00.000Z root=66b8e14d'
+  ],
+  receipts: 2,
+  entitlements: 1
+}
+=== G3+G4 after In Transit (reloaded) and Receive 2026-10-04T16:11:30Z
+{
+  returns: [
+    {
+      id: '6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c',
+      rma: 'RMA-6CD3B7EF20A44A98AB7DD1052DC9295C',
+      status: 'Received',
+      version: 4,
+      tenant: '29fb1c14-ae02-4728-bce3-c65b297f91ce',
+      le: '634e06e0-b568-4568-bb1b-2d4a97eb9005',
+      root: '66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d',
+      disposition: null,
+      invRef: 'INV-R2-RCV-1',
+      shipment: 'e3872318-2ad8-4d85-9204-f7debf115a76'
+    }
+  ],
+  audit: 4,
+  outbox: 4,
+  outboxStatus: [
+    'Pending',
+    'Pending',
+    'Pending',
+    'Pending'
+  ],
+  auditTrail: [
+    '->Requested@null root=66b8e14d',
+    'Requested>Authorized@2026-10-04T16:10:00.000Z root=66b8e14d',
+    'Authorized>InTransit@2026-10-04T16:10:00.000Z root=66b8e14d',
+    'InTransit>Received@2026-10-04T16:11:00.000Z root=66b8e14d'
+  ],
+  receipts: 4,
+  entitlements: 1
+}
+=== G5+G6 after Disposition (reloaded) and Close + reload 2026-10-04T16:11:59Z
+{
+  returns: [
+    {
+      id: '6cd3b7ef-20a4-4a98-ab7d-d1052dc9295c',
+      rma: 'RMA-6CD3B7EF20A44A98AB7DD1052DC9295C',
+      status: 'Closed',
+      version: 6,
+      tenant: '29fb1c14-ae02-4728-bce3-c65b297f91ce',
+      le: '634e06e0-b568-4568-bb1b-2d4a97eb9005',
+      root: '66b8e14d-9f63-4cfe-9a20-c1e3c1a5993d',
+      disposition: 'RESTOCK',
+      invRef: null,
+      shipment: 'e3872318-2ad8-4d85-9204-f7debf115a76'
+    }
+  ],
+  audit: 6,
+  outbox: 6,
+  outboxStatus: [
+    'Pending',
+    'Pending',
+    'Pending',
+    'Pending',
+    'Pending',
+    'Pending'
+  ],
+  auditTrail: [
+    '->Requested@null root=66b8e14d',
+    'Requested>Authorized@2026-10-04T16:10:00.000Z root=66b8e14d',
+    'Authorized>InTransit@2026-10-04T16:10:00.000Z root=66b8e14d',
+    'InTransit>Received@2026-10-04T16:11:00.000Z root=66b8e14d',
+    'Received>Dispositioned@2026-10-04T16:11:00.000Z root=66b8e14d',
+    'Dispositioned>Closed@2026-10-04T16:11:00.000Z root=66b8e14d'
+  ],
+  receipts: 6,
+  entitlements: 1
+}

@@ -1,0 +1,7 @@
+# verify from: repository root
+04925ba82d8c1f6908ce6a9184634e19de49b46afc27246cfaba242113627e08  docs/roadmap/plans/mvp6-process-pilot-01/MODULE-RECIPE.md
+c0fdd8fefc8498a596aa696cd55559cc6b54d38bea3afdb6c9e9b0b065afd186  services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/EnforcedPermissionDeclarationGuardTests.cs
+79129f5ec7d31f35d3d94462e8409af7b800260b4ded334e273c94cf16238430  docs/records/audits/2026-10/mvp6-r3-recipe-amend-guard-01/REPORT.md
+a75172771fa7b661cde454f704be26f06a9e1ef66e1d0990f5e9c80ba8fe9681  docs/records/audits/2026-10/mvp6-r3-recipe-amend-guard-01/evidence/counts.txt
+7d1218323c92277c37f57b6f387876cf4b628d25fd8c8e7856714d6b1458d0ef  docs/records/audits/2026-10/mvp6-r3-recipe-amend-guard-01/evidence/guard-sabotage.txt
+abad36908025d8dcb0b5ba36e8760f0dbc0268e810caf69389e1a9d671c93432  docs/records/audits/2026-10/mvp6-r3-recipe-amend-guard-01/evidence/sc-suite.txt

@@ -1,0 +1,749 @@
+--- draft-v2/frontend/Diten.Web.Tests/Controllers/SupplyChainReturnsControllerTests.cs
++++ final/frontend/Diten.Web.Tests/Controllers/SupplyChainReturnsControllerTests.cs
+@@ -15,7 +15,7 @@
+ namespace Diten.Web.Tests.Controllers;
+ 
+ // MOD-0186 Returns — same-origin adapter contract (pack §32.4/§32.8; RU-01, RU-02, RU-06…RU-08, RU-11, RU-12, RU-15,
+-// RU-21; §33 M-04/W-01 frontend half). DRAFT overlay — not built, not run.
++// RU-21; §33 M-04/W-01 frontend half). Built and run by R-2 (2026-10-04).
+ public sealed class SupplyChainReturnsControllerTests
+ {
+     private static readonly Guid Tenant = Guid.Parse("11111111-1111-4111-8111-111111111111");
+--- draft-v2/frontend/Diten.Web.Tests/Forms/ReturnFormContractTests.cs
++++ final/frontend/Diten.Web.Tests/Forms/ReturnFormContractTests.cs
+@@ -7,7 +7,7 @@
+ namespace Diten.Web.Tests.Forms;
+ 
+ // MOD-0186 Returns — view-model/validator mapping and form/view contract (pack §32.2, §32.5–§32.7, §32.9;
+-// RU-04, RU-05, RU-08, RU-09, RU-18…RU-20, RU-22). DRAFT overlay — not built, not run.
++// RU-04, RU-05, RU-08, RU-09, RU-18…RU-20, RU-22). Built and run by R-2 (2026-10-04).
+ public sealed class ReturnFormContractTests
+ {
+     private const string ViewDir = "frontend/Diten.Web/Views/SupplyChain/Returns";
+--- draft-v2/frontend/Diten.Web.Tests/JavaScript/ReturnIndexBehaviorTests.cs
++++ final/frontend/Diten.Web.Tests/JavaScript/ReturnIndexBehaviorTests.cs
+@@ -5,7 +5,7 @@
+ 
+ // MOD-0186 Returns — static behaviour contract of index.js / index.l10n.js (pack §32.3–§32.9; RU-01…RU-03, RU-08…RU-10,
+ // RU-16…RU-21, RU-24, RU-29, RU-SCR-01…05). Runtime behaviour is covered by the Playwright scenarios for the Mac lane
+-// (Q65b). DRAFT overlay — not built, not run.
++// (Q65b). Built and run by R-2 (2026-10-04).
+ public sealed class ReturnIndexBehaviorTests
+ {
+     private readonly string _script = Read("frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.js");
+@@ -116,8 +116,12 @@
+     [Fact]
+     public void Intent_keeps_key_and_body_for_retry_and_blocks_after_key_reuse_or_root_mismatch()
+     {
+-        Assert.Contains("createIntent.bodyText !== bodyText", _script);
+-        Assert.Contains("transitionIntent.bodyText !== bodyText", _script);
++        // R-2 (MODULE-RECIPE 3.1): one key per opened form. The draft pinned a key re-minted per payload, which is the
++        // defect Q371 measured (an edited retry after an unknown commit created a second record).
++        Assert.Contains("createIntent = { key: uuid(), bodyText: null, blocked: false, blockedFailure: null };", _script);
++        Assert.Contains("transitionIntent = { returnId, key: uuid(), bodyText: null, blocked: false, blockedFailure: null };", _script);
++        Assert.DoesNotContain("createIntent.bodyText !== bodyText", _script);
++        Assert.DoesNotContain("transitionIntent.bodyText !== bodyText", _script);
+         Assert.Contains("'Idempotency-Key': key", _script);
+         Assert.Contains("failure.code === 'IDEMPOTENCY_KEY_REUSED' || failure.code === 'CORRELATION_ROOT_MISMATCH'", _script);
+         Assert.Contains("intent.blocked = true;", _script);
+@@ -149,7 +153,11 @@
+         Assert.Contains("InTransit: ['Received'],", _script);
+         Assert.Contains("Authorized: ['InTransit', 'Cancelled'],", _script);
+         Assert.Contains("const ELIGIBLE_SHIPMENT_STATUSES = new Set(['Delivered', 'Closed']);", _script);
+-        Assert.Contains("nowWithOffset", _script);
++        // R-2 (MODULE-RECIPE 3.4): local wall clock in a datetime-local field, UTC on the wire, non-existent times rejected.
++        Assert.Contains("const parseLocalInput = (raw) =>", _script);
++        Assert.Contains("occurredAt: when ? when.toISOString() : ''", _script);
++        Assert.Contains("t('OccurredAtInvalid')", _script);
++        Assert.DoesNotContain("nowWithOffset", _script);
+     }
+ 
+     [Fact]
+@@ -225,7 +233,7 @@
+     public void Create_surface_keeps_keyboard_focus_after_a_rejected_submit()
+     {
+         // UI-PM-10 (D5, Q122-D5, CU-25): after a rejected submit focus fell to BODY and Escape did nothing.
+-        var restore = Slice(_script, "const restoreCreateFocus", "// Local \"now\"");
++        var restore = Slice(_script, "const restoreCreateFocus", "// R-2 (MODULE-RECIPE 3.4");
+         Assert.Contains("surface.classList.contains('show')", restore);
+         Assert.Contains("surface.classList.contains('hiding')", restore);
+         Assert.Contains("if (surface.contains(document.activeElement)) return;", restore);
+--- draft-v2/frontend/Diten.Web/Controllers/SupplyChainReturnsController.cs
++++ final/frontend/Diten.Web/Controllers/SupplyChainReturnsController.cs
+@@ -8,8 +8,8 @@
+ 
+ namespace Diten.Web.Controllers;
+ 
+-// MOD-0186 Reverse Logistics — Returns same-origin MVC adapter (pack §32.3/§32.4/§32.8). DRAFT overlay — not built,
+-// not writer-complete.
++// MOD-0186 Reverse Logistics — Returns same-origin MVC adapter (pack §32.3/§32.4/§32.8). Built from the Q160 draft
++// overlay v2 by R-2 (2026-10-04) against MODULE-RECIPE.md.
+ //
+ // Browser → this controller → Gateway (GatewayUrl) → SupplyChain 5061. The browser never calls the Gateway or holds a token.
+ // Bound operations only: queryReturns, createReturn, transitionReturn, and Shipment-owned getShipment read-only.
+@@ -28,8 +28,8 @@
+ //   (README FINDING F8, CT verdict Q64a F8 precedent). The adapter log line binds trace ↔ root.
+ // Adapter-originated failures use published Returns codes only (shipment-bundle.openapi.yaml /returns operations;
+ // annex "Auth401/context403/schema400/media415 use INVALID_REQUEST").
+-// Depends on Diten.Web.Security.JsonAdapterEndpointAttribute and the JSON challenge branch in frontend Program.cs,
+-// which exist in the A12 360 overlay (7b6a0d1a…314d), not in the common checkout (README FINDING F3).
++// Depends on Diten.Web.Security.JsonAdapterEndpointAttribute and the JSON challenge branch in frontend Program.cs
++// (restored by Q394), and on Q394's 15 s read / 30 s write deadline for /api/shipment-bundle/, which covers this path.
+ [Authorize]
+ [Route("SupplyChain/Returns")]
+ public sealed class SupplyChainReturnsController : Controller
+@@ -95,6 +95,9 @@
+         {
+             using var response = await _httpClient.SendAsync(request, cancellationToken);
+             Response.Headers[CorrelationHeader] = scope.Trace.ToString("D");
++            // R-2 (MODULE-RECIPE 2.3): every gateway answer is logged with the id the Gateway and the service log too.
++            _logger.LogInformation("Returns gateway answered {StatusCode} for GET {TargetUrl}. Trace {Trace}.",
++                (int)response.StatusCode, target, scope.Trace);
+             return (int)response.StatusCode >= 400
+                 ? await ReenvelopeFailureAsync(response, scope.Trace, cancellationToken)
+                 : await PassThroughAsync(response, cancellationToken);
+@@ -231,6 +234,8 @@
+         {
+             using var response = await _httpClient.SendAsync(request, cancellationToken);
+             Response.Headers[CorrelationHeader] = scope.Trace.ToString("D");
++            _logger.LogInformation("Returns gateway answered {StatusCode} for POST {TargetUrl}. Trace {Trace} Root {Root}.",
++                (int)response.StatusCode, targetUrl, scope.Trace, root.Root);
+             return (int)response.StatusCode >= 400
+                 ? await ReenvelopeFailureAsync(response, scope.Trace, cancellationToken)
+                 : await PassThroughAsync(response, cancellationToken);
+@@ -265,6 +270,7 @@
+             using var response = await _httpClient.SendAsync(request, cancellationToken);
+             var status = (int)response.StatusCode;
+             var text = await response.Content.ReadAsStringAsync(cancellationToken);
++            _logger.LogInformation("Shipment lookup for a return answered {StatusCode}. Trace {Trace}.", status, scope.Trace);
+             if (status == StatusCodes.Status200OK)
+             {
+                 try
+--- draft-v2/frontend/Diten.Web/Models/SupplyChain/Returns/ReturnViewModels.cs
++++ final/frontend/Diten.Web/Models/SupplyChain/Returns/ReturnViewModels.cs
+@@ -2,7 +2,7 @@
+ 
+ namespace Diten.Web.Models.SupplyChain.Returns;
+ 
+-// MOD-0186 Reverse Logistics — Returns tenant UI (pack §32). DRAFT overlay — not built, not writer-complete.
++// MOD-0186 Reverse Logistics — Returns tenant UI (pack §32). Built by R-2 (2026-10-04) from the Q160 draft overlay v2.
+ //
+ // These types carry NO business rule of their own. They exist so that the same-origin MVC adapter can
+ //   (1) read the one routing value it needs from the browser's body without rewriting that body (create: shipmentId,
+--- draft-v2/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.ar.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.ar.resx
+@@ -75,7 +75,10 @@
+   <data name="TargetReceivedLabel" xml:space="preserve"><value>مُستلم (إقرار يدوي)</value></data>
+   <data name="ReceivedManualNote" xml:space="preserve"><value>الاستلام مجرد إقرار يدوي. ليس استلامًا مستودعيًا ولا يسجّل أي حركة مخزون.</value></data>
+   <data name="OccurredAt" xml:space="preserve"><value>وقت الحدوث</value></data>
+-  <data name="OccurredAtHelp" xml:space="preserve"><value>التاريخ والوقت مع فرق التوقيت، مثل 2026-09-26T14:30:00+03:00.</value></data>
++  <data name="OccurredAtHelp" xml:space="preserve"><value>التاريخ والوقت المحليان لديك. يُرسلان بتوقيت UTC.</value></data>
++  <data name="OccurredAtInvalid" xml:space="preserve">
++    <value>أدخل تاريخًا ووقتًا صالحين موجودين في منطقتك الزمنية.</value>
++  </data>
+   <data name="DispositionCode" xml:space="preserve"><value>رمز التصرف</value></data>
+   <data name="DispositionCodeHelp" xml:space="preserve"><value>مطلوب لهذه الحالة. يُرسل كما كُتب تمامًا.</value></data>
+   <data name="InventoryTransactionReferenceId" xml:space="preserve"><value>مرجع حركة المخزون</value></data>
+--- draft-v2/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.en.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.en.resx
+@@ -75,7 +75,10 @@
+   <data name="TargetReceivedLabel" xml:space="preserve"><value>Received (manual assertion)</value></data>
+   <data name="ReceivedManualNote" xml:space="preserve"><value>Receiving is a manual assertion only. It is not a warehouse receipt and posts no stock movement.</value></data>
+   <data name="OccurredAt" xml:space="preserve"><value>Occurred At</value></data>
+-  <data name="OccurredAtHelp" xml:space="preserve"><value>Date and time with offset, for example 2026-09-26T14:30:00+03:00.</value></data>
++  <data name="OccurredAtHelp" xml:space="preserve"><value>Your local date and time. It is sent in UTC.</value></data>
++  <data name="OccurredAtInvalid" xml:space="preserve">
++    <value>Enter a valid date and time that exists in your time zone.</value>
++  </data>
+   <data name="DispositionCode" xml:space="preserve"><value>Disposition Code</value></data>
+   <data name="DispositionCodeHelp" xml:space="preserve"><value>Required for this status. Sent exactly as typed.</value></data>
+   <data name="InventoryTransactionReferenceId" xml:space="preserve"><value>Inventory Transaction Reference</value></data>
+--- draft-v2/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.es.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.es.resx
+@@ -75,7 +75,10 @@
+   <data name="TargetReceivedLabel" xml:space="preserve"><value>Recibida (declaración manual)</value></data>
+   <data name="ReceivedManualNote" xml:space="preserve"><value>La recepción es solo una declaración manual. No es una recepción de almacén y no registra ningún movimiento de stock.</value></data>
+   <data name="OccurredAt" xml:space="preserve"><value>Ocurrido el</value></data>
+-  <data name="OccurredAtHelp" xml:space="preserve"><value>Fecha y hora con desfase, por ejemplo 2026-09-26T14:30:00+03:00.</value></data>
++  <data name="OccurredAtHelp" xml:space="preserve"><value>Su fecha y hora locales. Se envían en UTC.</value></data>
++  <data name="OccurredAtInvalid" xml:space="preserve">
++    <value>Introduzca una fecha y hora válidas que existan en su zona horaria.</value>
++  </data>
+   <data name="DispositionCode" xml:space="preserve"><value>Código de disposición</value></data>
+   <data name="DispositionCodeHelp" xml:space="preserve"><value>Obligatorio para este estado. Se envía tal como se escribe.</value></data>
+   <data name="InventoryTransactionReferenceId" xml:space="preserve"><value>Referencia de transacción de inventario</value></data>
+--- draft-v2/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.fr.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.fr.resx
+@@ -75,7 +75,10 @@
+   <data name="TargetReceivedLabel" xml:space="preserve"><value>Reçu (déclaration manuelle)</value></data>
+   <data name="ReceivedManualNote" xml:space="preserve"><value>La réception n’est qu’une déclaration manuelle. Ce n’est pas une réception d’entrepôt et aucun mouvement de stock n’est comptabilisé.</value></data>
+   <data name="OccurredAt" xml:space="preserve"><value>Survenu le</value></data>
+-  <data name="OccurredAtHelp" xml:space="preserve"><value>Date et heure avec décalage, par exemple 2026-09-26T14:30:00+03:00.</value></data>
++  <data name="OccurredAtHelp" xml:space="preserve"><value>Votre date et heure locales. Elles sont envoyées en UTC.</value></data>
++  <data name="OccurredAtInvalid" xml:space="preserve">
++    <value>Saisissez une date et une heure valides qui existent dans votre fuseau horaire.</value>
++  </data>
+   <data name="DispositionCode" xml:space="preserve"><value>Code de décision</value></data>
+   <data name="DispositionCodeHelp" xml:space="preserve"><value>Obligatoire pour ce statut. Envoyé tel que saisi.</value></data>
+   <data name="InventoryTransactionReferenceId" xml:space="preserve"><value>Référence de transaction de stock</value></data>
+--- draft-v2/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.ru.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.ru.resx
+@@ -75,7 +75,10 @@
+   <data name="TargetReceivedLabel" xml:space="preserve"><value>Получен (ручное подтверждение)</value></data>
+   <data name="ReceivedManualNote" xml:space="preserve"><value>Приёмка — только ручное подтверждение. Это не складское поступление, движение запасов не проводится.</value></data>
+   <data name="OccurredAt" xml:space="preserve"><value>Время события</value></data>
+-  <data name="OccurredAtHelp" xml:space="preserve"><value>Дата и время со смещением, например 2026-09-26T14:30:00+03:00.</value></data>
++  <data name="OccurredAtHelp" xml:space="preserve"><value>Ваши местные дата и время. Они отправляются в UTC.</value></data>
++  <data name="OccurredAtInvalid" xml:space="preserve">
++    <value>Введите действительные дату и время, существующие в вашем часовом поясе.</value>
++  </data>
+   <data name="DispositionCode" xml:space="preserve"><value>Код решения</value></data>
+   <data name="DispositionCodeHelp" xml:space="preserve"><value>Обязателен для этого статуса. Отправляется как введено.</value></data>
+   <data name="InventoryTransactionReferenceId" xml:space="preserve"><value>Ссылка на складскую операцию</value></data>
+--- draft-v2/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.tr.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.tr.resx
+@@ -75,7 +75,10 @@
+   <data name="TargetReceivedLabel" xml:space="preserve"><value>Teslim Alındı (manuel beyan)</value></data>
+   <data name="ReceivedManualNote" xml:space="preserve"><value>Teslim alma yalnızca manuel bir beyandır. Depo girişi değildir ve stok hareketi oluşturmaz.</value></data>
+   <data name="OccurredAt" xml:space="preserve"><value>Gerçekleşme Zamanı</value></data>
+-  <data name="OccurredAtHelp" xml:space="preserve"><value>Saat farkıyla tarih ve saat, örneğin 2026-09-26T14:30:00+03:00.</value></data>
++  <data name="OccurredAtHelp" xml:space="preserve"><value>Yerel tarih ve saatiniz. UTC olarak gönderilir.</value></data>
++  <data name="OccurredAtInvalid" xml:space="preserve">
++    <value>Saat diliminizde var olan geçerli bir tarih ve saat girin.</value>
++  </data>
+   <data name="DispositionCode" xml:space="preserve"><value>Karar Kodu</value></data>
+   <data name="DispositionCodeHelp" xml:space="preserve"><value>Bu durum için zorunludur. Yazıldığı gibi gönderilir.</value></data>
+   <data name="InventoryTransactionReferenceId" xml:space="preserve"><value>Stok İşlem Referansı</value></data>
+--- draft-v2/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.zh.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Returns/ReturnsIndex.zh.resx
+@@ -75,7 +75,10 @@
+   <data name="TargetReceivedLabel" xml:space="preserve"><value>已收货（人工确认）</value></data>
+   <data name="ReceivedManualNote" xml:space="preserve"><value>收货仅为人工确认，不是仓库收货，也不会记录库存移动。</value></data>
+   <data name="OccurredAt" xml:space="preserve"><value>发生时间</value></data>
+-  <data name="OccurredAtHelp" xml:space="preserve"><value>带时区偏移的日期和时间，例如 2026-09-26T14:30:00+03:00。</value></data>
++  <data name="OccurredAtHelp" xml:space="preserve"><value>您的本地日期和时间，将以 UTC 发送。</value></data>
++  <data name="OccurredAtInvalid" xml:space="preserve">
++    <value>请输入您所在时区中存在的有效日期和时间。</value>
++  </data>
+   <data name="DispositionCode" xml:space="preserve"><value>处置代码</value></data>
+   <data name="DispositionCodeHelp" xml:space="preserve"><value>此状态必填，按输入原样发送。</value></data>
+   <data name="InventoryTransactionReferenceId" xml:space="preserve"><value>库存事务引用</value></data>
+--- draft-v2/frontend/Diten.Web/Views/SupplyChain/Returns/Index.cshtml
++++ final/frontend/Diten.Web/Views/SupplyChain/Returns/Index.cshtml
+@@ -5,7 +5,7 @@
+ @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+ @inject Diten.Web.Services.IPermissionSnapshot Perms
+ @{
+-    // MOD-0186 Returns tenant list (pack §32). DRAFT overlay — not built, not writer-complete.
++    // MOD-0186 Returns tenant list (pack §32). Built by R-2 (2026-10-04) from the Q160 draft overlay v2.
+     ViewData["Title"] = Localizer["ReturnsTitle"].Value;
+     Layout = "_LayoutTenantShell";
+ }
+@@ -74,9 +74,10 @@
+                         <label for="transitionOccurredAt" class="form-label fw-medium">@Localizer["OccurredAt"] <span class="text-danger">*</span></label>
+                         <div class="diten-field">
+                             <i class="bx bx-time-five diten-field-icon" aria-hidden="true"></i>
+-                            <input type="text" id="transitionOccurredAt" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" aria-describedby="transitionOccurredAtHelp" />
++                            <input type="datetime-local" id="transitionOccurredAt" class="form-control" dir="ltr" autocomplete="off" aria-describedby="transitionOccurredAtHelp transitionOccurredAtZone" />
+                         </div>
+                         <div id="transitionOccurredAtHelp" class="form-text">@Localizer["OccurredAtHelp"]</div>
++                        <div id="transitionOccurredAtZone" class="form-text" dir="ltr"></div>
+                     </div>
+                     <div class="col-12 d-none" id="transitionDispositionGroup">
+                         <label for="transitionDispositionCode" class="form-label fw-medium">@Localizer["DispositionCode"] <span class="text-danger">*</span></label>
+--- draft-v2/frontend/Diten.Web/Views/SupplyChain/Returns/_IndexL10n.cshtml
++++ final/frontend/Diten.Web/Views/SupplyChain/Returns/_IndexL10n.cshtml
+@@ -7,128 +7,131 @@
+ }
+ 
+ @* JSON bridge (pack §32.9): shared toolbar vocabulary from SharedResource, module text from ReturnsIndex.{lang}.resx.
+-   index.l10n.js normalizes the names to PascalCase into window.L10n. No hard-coded fallback text anywhere. *@
++   index.l10n.js normalizes the names to PascalCase into window.L10n. No hard-coded fallback text anywhere.
++   R-2 (MODULE-RECIPE 5.3): a Dictionary, not an anonymous object — Json.Serialize camel-cases an anonymous object's
++   property names (Q371), and these keys must reach the page exactly as the resx names them. *@
+ <script id="returns-l10n" type="application/json">
+-    @Json.Serialize(new
++    @Json.Serialize(new Dictionary<string, string>
+     {
+-        Status = SharedLocalizer["Status"].Value,
+-        ShowAll = SharedLocalizer["ShowAll"].Value,
+-        Apply = SharedLocalizer["Apply"].Value,
+-        Reset = SharedLocalizer["Reset"].Value,
+-        Cancel = SharedLocalizer["Cancel"].Value,
+-        Close = SharedLocalizer["Close"].Value,
+-        Copy = SharedLocalizer["Copy"].Value,
+-        Filter = SharedLocalizer["Filter"].Value,
+-        SaveView = SharedLocalizer["SaveView"].Value,
+-        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+-        Search = SharedLocalizer["Search"].Value,
+-        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+-        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+-        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+-        ReturnsTitle = Localizer["ReturnsTitle"].Value,
+-        PageDescription = Localizer["PageDescription"].Value,
+-        AddNewReturns = Localizer["AddNewReturns"].Value,
+-        ActionsHeader = Localizer["ActionsHeader"].Value,
+-        RmaNumber = Localizer["RmaNumber"].Value,
+-        ReturnId = Localizer["ReturnId"].Value,
+-        ShipmentId = Localizer["ShipmentId"].Value,
+-        ShipmentIdHelp = Localizer["ShipmentIdHelp"].Value,
+-        ReturnSummary = Localizer["ReturnSummary"].Value,
+-        QuickView = Localizer["QuickView"].Value,
+-        QuickViewNote = Localizer["QuickViewNote"].Value,
+-        EmptyState = Localizer["EmptyState"].Value,
+-        ListErrorState = Localizer["ListErrorState"].Value,
+-        Retry = Localizer["Retry"].Value,
+-        NotProvided = Localizer["NotProvided"].Value,
+-        SupportReference = Localizer["SupportReference"].Value,
+-        CopyDone = Localizer["CopyDone"].Value,
+-        TotalLabel = Localizer["TotalLabel"].Value,
+-        StatusRequested = Localizer["StatusRequested"].Value,
+-        StatusAuthorized = Localizer["StatusAuthorized"].Value,
+-        StatusRejected = Localizer["StatusRejected"].Value,
+-        StatusInTransit = Localizer["StatusInTransit"].Value,
+-        StatusReceived = Localizer["StatusReceived"].Value,
+-        StatusDispositioned = Localizer["StatusDispositioned"].Value,
+-        StatusClosed = Localizer["StatusClosed"].Value,
+-        StatusCancelled = Localizer["StatusCancelled"].Value,
+-        ShipmentStatusDraft = Localizer["ShipmentStatusDraft"].Value,
+-        ShipmentStatusPlanned = Localizer["ShipmentStatusPlanned"].Value,
+-        ShipmentStatusDispatched = Localizer["ShipmentStatusDispatched"].Value,
+-        ShipmentStatusInTransit = Localizer["ShipmentStatusInTransit"].Value,
+-        ShipmentStatusDelivered = Localizer["ShipmentStatusDelivered"].Value,
+-        ShipmentStatusException = Localizer["ShipmentStatusException"].Value,
+-        ShipmentStatusClosed = Localizer["ShipmentStatusClosed"].Value,
+-        ShipmentStatusCancelled = Localizer["ShipmentStatusCancelled"].Value,
+-        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+-        Resolve = Localizer["Resolve"].Value,
+-        ResolveFirst = Localizer["ResolveFirst"].Value,
+-        ShipmentNumber = Localizer["ShipmentNumber"].Value,
+-        ShipmentStatus = Localizer["ShipmentStatus"].Value,
+-        EligibilityNote = Localizer["EligibilityNote"].Value,
+-        ShipmentIneligible = Localizer["ShipmentIneligible"].Value,
+-        ReturnLines = Localizer["ReturnLines"].Value,
+-        ReturnLinesHelp = Localizer["ReturnLinesHelp"].Value,
+-        SelectLine = Localizer["SelectLine"].Value,
+-        LineNumber = Localizer["LineNumber"].Value,
+-        ShippedQuantity = Localizer["ShippedQuantity"].Value,
+-        ReturnQuantity = Localizer["ReturnQuantity"].Value,
+-        ReturnQuantityHelp = Localizer["ReturnQuantityHelp"].Value,
+-        UomId = Localizer["UomId"].Value,
+-        NoShipmentLines = Localizer["NoShipmentLines"].Value,
+-        ReasonCode = Localizer["ReasonCode"].Value,
+-        EvidenceReferenceIds = Localizer["EvidenceReferenceIds"].Value,
+-        EvidenceReference = Localizer["EvidenceReference"].Value,
+-        AddEvidenceReference = Localizer["AddEvidenceReference"].Value,
+-        RemoveEvidenceReference = Localizer["RemoveEvidenceReference"].Value,
+-        EvidenceHelp = Localizer["EvidenceHelp"].Value,
+-        CreateReturn = Localizer["CreateReturn"].Value,
+-        ReturnCreated = Localizer["ReturnCreated"].Value,
+-        ReturnCreateReplayed = Localizer["ReturnCreateReplayed"].Value,
+-        TransitionTitle = Localizer["TransitionTitle"].Value,
+-        TransitionTarget = Localizer["TransitionTarget"].Value,
+-        ActionAuthorize = Localizer["ActionAuthorize"].Value,
+-        ActionReject = Localizer["ActionReject"].Value,
+-        ActionMarkInTransit = Localizer["ActionMarkInTransit"].Value,
+-        ActionCancelReturn = Localizer["ActionCancelReturn"].Value,
+-        ActionReceive = Localizer["ActionReceive"].Value,
+-        ActionDisposition = Localizer["ActionDisposition"].Value,
+-        ActionClose = Localizer["ActionClose"].Value,
+-        TargetReceivedLabel = Localizer["TargetReceivedLabel"].Value,
+-        ReceivedManualNote = Localizer["ReceivedManualNote"].Value,
+-        OccurredAt = Localizer["OccurredAt"].Value,
+-        OccurredAtHelp = Localizer["OccurredAtHelp"].Value,
+-        DispositionCode = Localizer["DispositionCode"].Value,
+-        DispositionCodeHelp = Localizer["DispositionCodeHelp"].Value,
+-        InventoryTransactionReferenceId = Localizer["InventoryTransactionReferenceId"].Value,
+-        InventoryReferenceHelp = Localizer["InventoryReferenceHelp"].Value,
+-        SubmitTransition = Localizer["SubmitTransition"].Value,
+-        ConfirmTransition = Localizer["ConfirmTransition"].Value,
+-        TransitionCompleted = Localizer["TransitionCompleted"].Value,
+-        TransitionReplayed = Localizer["TransitionReplayed"].Value,
+-        RequestPending = Localizer["RequestPending"].Value,
+-        NoticeSessionEnded = Localizer["NoticeSessionEnded"].Value,
+-        NoticeForbidden = Localizer["NoticeForbidden"].Value,
+-        NoticeUnsupportedMedia = Localizer["NoticeUnsupportedMedia"].Value,
+-        ErrInvalidRequest = Localizer["ErrInvalidRequest"].Value,
+-        ErrReturnNotFound = Localizer["ErrReturnNotFound"].Value,
+-        ErrShipmentNotFound = Localizer["ErrShipmentNotFound"].Value,
+-        ErrShipmentLineNotFound = Localizer["ErrShipmentLineNotFound"].Value,
+-        ErrInvalidReturnTransition = Localizer["ErrInvalidReturnTransition"].Value,
+-        ErrDispositionRequired = Localizer["ErrDispositionRequired"].Value,
+-        ErrInvalidReturnQuantity = Localizer["ErrInvalidReturnQuantity"].Value,
+-        ErrReturnQuantityExceeded = Localizer["ErrReturnQuantityExceeded"].Value,
+-        ErrReturnUomMismatch = Localizer["ErrReturnUomMismatch"].Value,
+-        ErrDuplicateReturnLine = Localizer["ErrDuplicateReturnLine"].Value,
+-        ErrShipmentNotReturnable = Localizer["ErrShipmentNotReturnable"].Value,
+-        ErrCorrelationRootMismatch = Localizer["ErrCorrelationRootMismatch"].Value,
+-        ErrIdempotencyKeyReused = Localizer["ErrIdempotencyKeyReused"].Value,
+-        ErrReturnSourceChanged = Localizer["ErrReturnSourceChanged"].Value,
+-        ErrReturnShipmentRootInvalid = Localizer["ErrReturnShipmentRootInvalid"].Value,
+-        ErrDependencyResponseInvalid = Localizer["ErrDependencyResponseInvalid"].Value,
+-        ErrReturnShipmentRootUnavailable = Localizer["ErrReturnShipmentRootUnavailable"].Value,
+-        ErrReferenceStateUnavailable = Localizer["ErrReferenceStateUnavailable"].Value,
+-        ErrDependencyUnavailable = Localizer["ErrDependencyUnavailable"].Value,
+-        ErrPersistenceUnavailable = Localizer["ErrPersistenceUnavailable"].Value,
+-        ErrInternalError = Localizer["ErrInternalError"].Value
++        ["Status"] = SharedLocalizer["Status"].Value,
++        ["ShowAll"] = SharedLocalizer["ShowAll"].Value,
++        ["Apply"] = SharedLocalizer["Apply"].Value,
++        ["Reset"] = SharedLocalizer["Reset"].Value,
++        ["Cancel"] = SharedLocalizer["Cancel"].Value,
++        ["Close"] = SharedLocalizer["Close"].Value,
++        ["Copy"] = SharedLocalizer["Copy"].Value,
++        ["Filter"] = SharedLocalizer["Filter"].Value,
++        ["SaveView"] = SharedLocalizer["SaveView"].Value,
++        ["ColumnVisibility"] = SharedLocalizer["ColumnVisibility"].Value,
++        ["Search"] = SharedLocalizer["Search"].Value,
++        ["ErrorOccurred"] = SharedLocalizer["ErrorOccurred"].Value,
++        ["RecordSaved"] = SharedLocalizer["RecordSaved"].Value,
++        ["AreYouSure"] = SharedLocalizer["AreYouSure"].Value,
++        ["ReturnsTitle"] = Localizer["ReturnsTitle"].Value,
++        ["PageDescription"] = Localizer["PageDescription"].Value,
++        ["AddNewReturns"] = Localizer["AddNewReturns"].Value,
++        ["ActionsHeader"] = Localizer["ActionsHeader"].Value,
++        ["RmaNumber"] = Localizer["RmaNumber"].Value,
++        ["ReturnId"] = Localizer["ReturnId"].Value,
++        ["ShipmentId"] = Localizer["ShipmentId"].Value,
++        ["ShipmentIdHelp"] = Localizer["ShipmentIdHelp"].Value,
++        ["ReturnSummary"] = Localizer["ReturnSummary"].Value,
++        ["QuickView"] = Localizer["QuickView"].Value,
++        ["QuickViewNote"] = Localizer["QuickViewNote"].Value,
++        ["EmptyState"] = Localizer["EmptyState"].Value,
++        ["ListErrorState"] = Localizer["ListErrorState"].Value,
++        ["Retry"] = Localizer["Retry"].Value,
++        ["NotProvided"] = Localizer["NotProvided"].Value,
++        ["SupportReference"] = Localizer["SupportReference"].Value,
++        ["CopyDone"] = Localizer["CopyDone"].Value,
++        ["TotalLabel"] = Localizer["TotalLabel"].Value,
++        ["StatusRequested"] = Localizer["StatusRequested"].Value,
++        ["StatusAuthorized"] = Localizer["StatusAuthorized"].Value,
++        ["StatusRejected"] = Localizer["StatusRejected"].Value,
++        ["StatusInTransit"] = Localizer["StatusInTransit"].Value,
++        ["StatusReceived"] = Localizer["StatusReceived"].Value,
++        ["StatusDispositioned"] = Localizer["StatusDispositioned"].Value,
++        ["StatusClosed"] = Localizer["StatusClosed"].Value,
++        ["StatusCancelled"] = Localizer["StatusCancelled"].Value,
++        ["ShipmentStatusDraft"] = Localizer["ShipmentStatusDraft"].Value,
++        ["ShipmentStatusPlanned"] = Localizer["ShipmentStatusPlanned"].Value,
++        ["ShipmentStatusDispatched"] = Localizer["ShipmentStatusDispatched"].Value,
++        ["ShipmentStatusInTransit"] = Localizer["ShipmentStatusInTransit"].Value,
++        ["ShipmentStatusDelivered"] = Localizer["ShipmentStatusDelivered"].Value,
++        ["ShipmentStatusException"] = Localizer["ShipmentStatusException"].Value,
++        ["ShipmentStatusClosed"] = Localizer["ShipmentStatusClosed"].Value,
++        ["ShipmentStatusCancelled"] = Localizer["ShipmentStatusCancelled"].Value,
++        ["FormTitleCreate"] = Localizer["FormTitleCreate"].Value,
++        ["Resolve"] = Localizer["Resolve"].Value,
++        ["ResolveFirst"] = Localizer["ResolveFirst"].Value,
++        ["ShipmentNumber"] = Localizer["ShipmentNumber"].Value,
++        ["ShipmentStatus"] = Localizer["ShipmentStatus"].Value,
++        ["EligibilityNote"] = Localizer["EligibilityNote"].Value,
++        ["ShipmentIneligible"] = Localizer["ShipmentIneligible"].Value,
++        ["ReturnLines"] = Localizer["ReturnLines"].Value,
++        ["ReturnLinesHelp"] = Localizer["ReturnLinesHelp"].Value,
++        ["SelectLine"] = Localizer["SelectLine"].Value,
++        ["LineNumber"] = Localizer["LineNumber"].Value,
++        ["ShippedQuantity"] = Localizer["ShippedQuantity"].Value,
++        ["ReturnQuantity"] = Localizer["ReturnQuantity"].Value,
++        ["ReturnQuantityHelp"] = Localizer["ReturnQuantityHelp"].Value,
++        ["UomId"] = Localizer["UomId"].Value,
++        ["NoShipmentLines"] = Localizer["NoShipmentLines"].Value,
++        ["ReasonCode"] = Localizer["ReasonCode"].Value,
++        ["EvidenceReferenceIds"] = Localizer["EvidenceReferenceIds"].Value,
++        ["EvidenceReference"] = Localizer["EvidenceReference"].Value,
++        ["AddEvidenceReference"] = Localizer["AddEvidenceReference"].Value,
++        ["RemoveEvidenceReference"] = Localizer["RemoveEvidenceReference"].Value,
++        ["EvidenceHelp"] = Localizer["EvidenceHelp"].Value,
++        ["CreateReturn"] = Localizer["CreateReturn"].Value,
++        ["ReturnCreated"] = Localizer["ReturnCreated"].Value,
++        ["ReturnCreateReplayed"] = Localizer["ReturnCreateReplayed"].Value,
++        ["TransitionTitle"] = Localizer["TransitionTitle"].Value,
++        ["TransitionTarget"] = Localizer["TransitionTarget"].Value,
++        ["ActionAuthorize"] = Localizer["ActionAuthorize"].Value,
++        ["ActionReject"] = Localizer["ActionReject"].Value,
++        ["ActionMarkInTransit"] = Localizer["ActionMarkInTransit"].Value,
++        ["ActionCancelReturn"] = Localizer["ActionCancelReturn"].Value,
++        ["ActionReceive"] = Localizer["ActionReceive"].Value,
++        ["ActionDisposition"] = Localizer["ActionDisposition"].Value,
++        ["ActionClose"] = Localizer["ActionClose"].Value,
++        ["TargetReceivedLabel"] = Localizer["TargetReceivedLabel"].Value,
++        ["ReceivedManualNote"] = Localizer["ReceivedManualNote"].Value,
++        ["OccurredAt"] = Localizer["OccurredAt"].Value,
++        ["OccurredAtHelp"] = Localizer["OccurredAtHelp"].Value,
++        ["OccurredAtInvalid"] = Localizer["OccurredAtInvalid"].Value,
++        ["DispositionCode"] = Localizer["DispositionCode"].Value,
++        ["DispositionCodeHelp"] = Localizer["DispositionCodeHelp"].Value,
++        ["InventoryTransactionReferenceId"] = Localizer["InventoryTransactionReferenceId"].Value,
++        ["InventoryReferenceHelp"] = Localizer["InventoryReferenceHelp"].Value,
++        ["SubmitTransition"] = Localizer["SubmitTransition"].Value,
++        ["ConfirmTransition"] = Localizer["ConfirmTransition"].Value,
++        ["TransitionCompleted"] = Localizer["TransitionCompleted"].Value,
++        ["TransitionReplayed"] = Localizer["TransitionReplayed"].Value,
++        ["RequestPending"] = Localizer["RequestPending"].Value,
++        ["NoticeSessionEnded"] = Localizer["NoticeSessionEnded"].Value,
++        ["NoticeForbidden"] = Localizer["NoticeForbidden"].Value,
++        ["NoticeUnsupportedMedia"] = Localizer["NoticeUnsupportedMedia"].Value,
++        ["ErrInvalidRequest"] = Localizer["ErrInvalidRequest"].Value,
++        ["ErrReturnNotFound"] = Localizer["ErrReturnNotFound"].Value,
++        ["ErrShipmentNotFound"] = Localizer["ErrShipmentNotFound"].Value,
++        ["ErrShipmentLineNotFound"] = Localizer["ErrShipmentLineNotFound"].Value,
++        ["ErrInvalidReturnTransition"] = Localizer["ErrInvalidReturnTransition"].Value,
++        ["ErrDispositionRequired"] = Localizer["ErrDispositionRequired"].Value,
++        ["ErrInvalidReturnQuantity"] = Localizer["ErrInvalidReturnQuantity"].Value,
++        ["ErrReturnQuantityExceeded"] = Localizer["ErrReturnQuantityExceeded"].Value,
++        ["ErrReturnUomMismatch"] = Localizer["ErrReturnUomMismatch"].Value,
++        ["ErrDuplicateReturnLine"] = Localizer["ErrDuplicateReturnLine"].Value,
++        ["ErrShipmentNotReturnable"] = Localizer["ErrShipmentNotReturnable"].Value,
++        ["ErrCorrelationRootMismatch"] = Localizer["ErrCorrelationRootMismatch"].Value,
++        ["ErrIdempotencyKeyReused"] = Localizer["ErrIdempotencyKeyReused"].Value,
++        ["ErrReturnSourceChanged"] = Localizer["ErrReturnSourceChanged"].Value,
++        ["ErrReturnShipmentRootInvalid"] = Localizer["ErrReturnShipmentRootInvalid"].Value,
++        ["ErrDependencyResponseInvalid"] = Localizer["ErrDependencyResponseInvalid"].Value,
++        ["ErrReturnShipmentRootUnavailable"] = Localizer["ErrReturnShipmentRootUnavailable"].Value,
++        ["ErrReferenceStateUnavailable"] = Localizer["ErrReferenceStateUnavailable"].Value,
++        ["ErrDependencyUnavailable"] = Localizer["ErrDependencyUnavailable"].Value,
++        ["ErrPersistenceUnavailable"] = Localizer["ErrPersistenceUnavailable"].Value,
++        ["ErrInternalError"] = Localizer["ErrInternalError"].Value
+     })
+ </script>
+--- draft-v2/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.js
++++ final/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.js
+@@ -2,7 +2,7 @@
+ 
+ /**
+  * MOD-0186 Returns — tenant list page (pack §32, golden-reference slim, bounded DataTables v2 profile).
+- * DRAFT overlay — not built, not runtime-verified, not writer-complete.
++ * Built by R-2 (2026-10-04) from the Q160 draft overlay v2 and measured live end to end (record mvp6-r2-returns-ui-01).
+  *
+  * Bound operations only (pack §32.3): queryReturns (list/filter/reload), createReturn (create offcanvas),
+  * transitionReturn (row action) and the Shipment resolve projection. Every request goes to the same-origin adapter
+@@ -194,15 +194,22 @@
+         target?.focus({ preventScroll: true });
+     };
+ 
+-    // Local "now" with explicit offset, e.g. 2026-09-26T16:40:12+03:00 (G-DATETIME: plain text input; README F7).
+-    const nowWithOffset = () => {
+-        const d = new Date();
+-        const pad = (n) => String(n).padStart(2, '0');
+-        const offset = -d.getTimezoneOffset();
+-        const sign = offset >= 0 ? '+' : '-';
+-        const abs = Math.abs(offset);
+-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:`
+-            + `${pad(d.getMinutes())}:${pad(d.getSeconds())}${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
++    // R-2 (MODULE-RECIPE 3.4, Q374): the datetime-local field holds the user's LOCAL wall clock and the wire is UTC. The
++    // field is filled and read as local time and converted once, at the body, so field, request and stored value are one
++    // instant. A wall-clock time that does not exist (out-of-range parts, a skipped daylight-saving hour) is rejected,
++    // not shifted. Same functions as Shipments details.js (Q374/Q382), kept module-local: that file is not shared.
++    const pad = (n) => String(n).padStart(2, '0');
++    const localInputValue = (when) => `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}T${pad(when.getHours())}:${pad(when.getMinutes())}`;
++    const zoneLabel = (when) => { const offset = -when.getTimezoneOffset(); const sign = offset < 0 ? '-' : '+';
++        return `${Intl.DateTimeFormat().resolvedOptions().timeZone || ''} (UTC${sign}${pad(Math.floor(Math.abs(offset) / 60))}:${pad(Math.abs(offset) % 60)})`.trim(); };
++    const parseLocalInput = (raw) => {
++        const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(raw);
++        if (!match) return null;
++        const [, year, month, day, hour, minute, second] = match.map(Number);
++        const value = new Date(year, month - 1, day, hour, minute, second || 0);
++        const exact = value.getFullYear() === year && value.getMonth() === month - 1 && value.getDate() === day
++            && value.getHours() === hour && value.getMinutes() === minute;
++        return exact ? value : null;
+     };
+ 
+     // ─── Failure envelope → localized message + support reference ────────────
+@@ -483,7 +490,9 @@
+         if (list) list.replaceChildren();
+         hideAlert('formReturnAlert');
+         clearResolvedShipment();
+-        createIntent = null;
++        // R-2 (MODULE-RECIPE 3.1, Q371): one Idempotency-Key per opened form, kept across edits and failures. A key re-minted
++        // per payload let an edited retry after an unknown commit create a second record; under one key it gets 409.
++        createIntent = { key: uuid(), bodyText: null, blocked: false, blockedFailure: null };
+         createOpener = document.activeElement instanceof HTMLElement && document.activeElement !== document.body
+             ? document.activeElement : document.querySelector('.add-new');
+         offcanvas('offcanvasCreateEdit')?.show();
+@@ -582,12 +591,13 @@
+         if (!ELIGIBLE_SHIPMENT_STATUSES.has(resolvedShipment.status)) return;
+         hideAlert('formReturnAlert');
+         const bodyText = buildCreateBody();
+-        if (!createIntent || createIntent.bodyText !== bodyText) {
+-            createIntent = { key: uuid(), bodyText, blocked: false, blockedFailure: null };
+-        } else if (createIntent.blocked) {
++        if (!createIntent) createIntent = { key: uuid(), bodyText: null, blocked: false, blockedFailure: null };
++        if (createIntent.blocked) {
++            // 409 IDEMPOTENCY_KEY_REUSED / CORRELATION_ROOT_MISMATCH: this form's intent is spent; a new form is a new one.
+             showAlert('formReturnAlert', createIntent.blockedFailure);
+             return;
+         }
++        createIntent.bodyText = bodyText;
+         const intent = createIntent;
+         const save = document.getElementById('btnSaveReturn');
+         createPending = true;
+@@ -645,7 +655,7 @@
+         const targets = allowedTargets(row);
+         if (!targets.includes(target)) return;
+         transitionContext = { returnId, shipmentId: row.shipmentId, rmaNumber: row.rmaNumber, fromStatus: row.status };
+-        transitionIntent = null;
++        transitionIntent = { returnId, key: uuid(), bodyText: null, blocked: false, blockedFailure: null }; // one key per opened panel
+         hideAlert('formReturnTransitionAlert');
+         const number = document.getElementById('transitionRmaNumber');
+         if (number) number.textContent = isText(row.rmaNumber) ? row.rmaNumber : t('NotProvided');
+@@ -660,7 +670,10 @@
+             }));
+         }
+         const occurredAt = document.getElementById('transitionOccurredAt');
+-        if (occurredAt) occurredAt.value = nowWithOffset(); // default now; the exact text is kept for retries
++        const now = new Date();
++        if (occurredAt) occurredAt.value = localInputValue(now); // default now, local wall clock
++        const zone = document.getElementById('transitionOccurredAtZone');
++        if (zone) zone.textContent = zoneLabel(now);
+         ['transitionDispositionCode', 'transitionInventoryReference'].forEach((id) => {
+             const el = document.getElementById(id);
+             if (el) el.value = '';
+@@ -684,7 +697,8 @@
+     // (README A9). Optional fields not listed for a target are omitted (pack §32.7).
+     const buildTransitionBody = () => {
+         const target = document.getElementById('transitionTarget')?.value || '';
+-        const body = { targetStatus: target, occurredAt: document.getElementById('transitionOccurredAt')?.value ?? '' };
++        const when = parseLocalInput(document.getElementById('transitionOccurredAt')?.value ?? '');
++        const body = { targetStatus: target, occurredAt: when ? when.toISOString() : '' };
+         if (INVENTORY_REFERENCE_TARGETS.has(target)) {
+             const reference = document.getElementById('transitionInventoryReference')?.value ?? '';
+             if (reference !== '') body.inventoryTransactionReferenceId = reference;
+@@ -702,6 +716,16 @@
+         if (!transitionContext) return;
+         if (transitionPending) { window.showToast?.(t('RequestPending'), 'warning'); return; }
+         const { target } = buildTransitionBody();
++        const occurredField = document.getElementById('transitionOccurredAt');
++        const occurredValid = parseLocalInput(occurredField?.value ?? '') !== null;
++        occurredField?.classList.toggle('is-invalid', !occurredValid);
++        occurredField?.setAttribute('aria-invalid', String(!occurredValid));
++        if (!occurredValid) {
++            showAlert('formReturnTransitionAlert', t('OccurredAtInvalid'));
++            occurredField?.focus({ preventScroll: true });
++            return;
++        }
++        hideAlert('formReturnTransitionAlert'); // a corrected time must not leave the previous rejection on screen
+         // Mirror of the annex rule only: Dispositioned needs dispositionCode length ≥ 1 (no trim; whitespace accepted).
+         if (target === 'Dispositioned' && (document.getElementById('transitionDispositionCode')?.value ?? '') === '') {
+             showAlert('formReturnTransitionAlert', t('ErrDispositionRequired'));
+@@ -722,12 +746,14 @@
+         if (!context || transitionPending) return;
+         hideAlert('formReturnTransitionAlert');
+         const { bodyText } = buildTransitionBody();
+-        if (!transitionIntent || transitionIntent.returnId !== context.returnId || transitionIntent.bodyText !== bodyText) {
+-            transitionIntent = { returnId: context.returnId, key: uuid(), bodyText, blocked: false, blockedFailure: null };
+-        } else if (transitionIntent.blocked) {
++        if (!transitionIntent || transitionIntent.returnId !== context.returnId) {
++            transitionIntent = { returnId: context.returnId, key: uuid(), bodyText: null, blocked: false, blockedFailure: null };
++        }
++        if (transitionIntent.blocked) {
+             showAlert('formReturnTransitionAlert', transitionIntent.blockedFailure);
+             return;
+         }
++        transitionIntent.bodyText = bodyText;
+         const intent = transitionIntent;
+         const submit = document.getElementById('btnSubmitTransition');
+         transitionPending = true;
+--- draft-v2/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.l10n.js
++++ final/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.l10n.js
+@@ -1,6 +1,6 @@
+ 'use strict';
+ 
+-// MOD-0186 Returns — L10n bridge normalizer (golden-reference slim pattern). DRAFT overlay — not built.
++// MOD-0186 Returns — L10n bridge normalizer (golden-reference slim pattern). Built by R-2 (2026-10-04).
+ // Reads #returns-l10n, normalizes names to PascalCase into window.L10n and warns (never substitutes text) when a key is
+ // missing, so a missing resource is visible in the console instead of rendering an English fallback (pack §32.9).
+ (function () {
+@@ -92,6 +92,7 @@
+         'ReceivedManualNote',
+         'OccurredAt',
+         'OccurredAtHelp',
++        'OccurredAtInvalid',
+         'DispositionCode',
+         'DispositionCodeHelp',
+         'InventoryTransactionReferenceId',
+--- draft-v2/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ReverseLogisticsManifestProvider.cs
++++ final/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ReverseLogisticsManifestProvider.cs
+@@ -4,14 +4,17 @@
+ namespace Diten.SupplyChainService.Api.ModuleRegistration;
+ 
+ /// <summary>
+-/// MOD-0186 Reverse Logistics self-registration manifest (pack §33; DCP-009 §21). DRAFT overlay — not built.
++/// MOD-0186 Reverse Logistics self-registration manifest (pack §33; DCP-009 §21). Built by R-2 (2026-10-04) from the Q160
++/// draft overlay v2.
+ /// Mirrors the Returns tenant UI (pack §32): one List page at /SupplyChain/Returns gated by supplychain.returns.read, with
+ /// the create toolbar action and the seven transition row actions. Permission keys are the existing ReturnPermissions
+ /// constants and the values of ReturnPermissions.ForTarget (D5 = A; ReturnPermissions.cs, accepted source
+-/// normal-source.tar.gz edb759a0…5a21); no new key, page or ID. The conjunctions supplychain.returns.transition (every
+-/// row action) and supplychain.shipments.read (create and every row action, G-SHIPREAD) cannot be expressed in the
+-/// single-key action model (pack §33 open gap 3); the declared key is the target key, and the adapter and backend keep
+-/// enforcing the conjunctions.
++/// normal-source.tar.gz edb759a0…5a21); no new key, page or ID. supplychain.shipments.read (G-SHIPREAD) stays a
++/// conjunction the adapter and backend enforce; it is Shipments' key and reaches Auth through Shipments' manifest.
++/// R-2 (owner decision 2026-10-04): supplychain.returns.transition is declared as the CHANGE_STATUS row action. Pack §33 M-03
++/// had it API-only, but the Platform→Auth sync carries only keys a manifest declares, so it never reached Auth's catalogue
++/// (measured: 8 of 9 Returns keys present) and no role could hold it, while ReturnsController.cs:20 requires it on every
++/// transition — every transition was 403 for every user.
+ /// Ships with the Returns UI only (DCP-009 §21.4): the AddSingleton line and the Nav.Module/Nav.Page keys are applied by
+ /// the integration owner from _shared-integration/ in the same change.
+ /// </summary>
+@@ -41,6 +44,7 @@
+                     Actions:
+                     [
+                         new ModuleManifestAction("CREATE", "Create Return", ReturnPermissions.Create, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
++                        new ModuleManifestAction("CHANGE_STATUS", "Change Return Status", ReturnPermissions.Transition, "RowAction", 15, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                         new ModuleManifestAction("AUTHORIZE", "Authorize", ReturnPermissions.ForTarget("Authorized")!, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                         new ModuleManifestAction("REJECT", "Reject", ReturnPermissions.ForTarget("Rejected")!, "RowAction", 30, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
+                         new ModuleManifestAction("MARK_IN_TRANSIT", "Mark In Transit", ReturnPermissions.ForTarget("InTransit")!, "RowAction", 40, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+--- draft-v2/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/ReverseLogisticsManifestProviderTests.cs
++++ final/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/ReverseLogisticsManifestProviderTests.cs
+@@ -25,11 +25,10 @@
+         .Concat(Enum.GetNames<ReturnStatus>().Select(ReturnPermissions.ForTarget).OfType<string>())
+         .ToHashSet(StringComparer.Ordinal);
+ 
+-    // Keys enforced by the API but deliberately not modeled as a single action key, each with a reason (pack §33 M-03).
+-    private static readonly IReadOnlyDictionary<string, string> ApiOnlyAllowList = new Dictionary<string, string>(StringComparer.Ordinal)
+-    {
+-        ["supplychain.returns.transition"] = "Conjunction key: every row action also needs it; enforced by backend and UI, not representable as a single action key."
+-    };
++    // Keys enforced by the API but deliberately not modeled, each with a reason (pack §33 M-03). Empty since R-2: the one
++    // entry, supplychain.returns.transition, never reached Auth (the sync carries only declared keys), so no role could hold
++    // a key every transition requires. It is now the CHANGE_STATUS action.
++    private static readonly IReadOnlyDictionary<string, string> ApiOnlyAllowList = new Dictionary<string, string>(StringComparer.Ordinal);
+ 
+     // Frontend view-routes of SupplyChainReturnsController (pack §32.4): the list page only. The api/* adapter routes are
+     // JSON endpoints, not pages; there is no Create/Details/Edit page (QuickView and offcanvas only).
+@@ -38,6 +37,7 @@
+     private static readonly (string Code, string Key, string Placement, bool Dangerous, string Name)[] ExpectedActions =
+     [
+         ("CREATE", "supplychain.returns.create", "Toolbar", false, "Create Return"),
++        ("CHANGE_STATUS", "supplychain.returns.transition", "RowAction", false, "Change Return Status"),
+         ("AUTHORIZE", "supplychain.returns.authorize", "RowAction", false, "Authorize"),
+         ("REJECT", "supplychain.returns.authorize", "RowAction", true, "Reject"),
+         ("MARK_IN_TRANSIT", "supplychain.returns.transit", "RowAction", false, "Mark In Transit"),
+@@ -86,7 +86,7 @@
+         }
+ 
+         Assert.All(ApiOnlyAllowList, entry => Assert.False(string.IsNullOrWhiteSpace(entry.Value)));
+-        Assert.Equal(new[] { "supplychain.returns.transition" }, ApiOnlyAllowList.Keys.ToArray());
++        Assert.Empty(ApiOnlyAllowList);
+     }
+ 
+     [Fact] // M-04
+@@ -150,7 +150,17 @@
+         });
+     }
+ 
++    // R-2: Platform syncs to Auth only the keys a manifest declares (Q353 §A; R-2 measured supplychain.returns.transition
++    // absent from Auth while every transition required it). An enforced key that is not declared can never be granted.
+     [Fact]
++    public void Every_enforced_key_is_declared_so_the_permission_sync_can_carry_it()
++    {
++        var page = Assert.Single(new ReverseLogisticsManifestProvider().GetManifest().Pages);
++        var declared = page.Actions.Select(a => a.PermissionKey).Append(page.RequiredPermission).ToHashSet(StringComparer.Ordinal);
++        Assert.All(EnforcedPermissions, key => Assert.True(declared.Contains(key), $"'{key}' is enforced but never declared, so no role can hold it."));
++    }
++
++    [Fact]
+     public void Key_grammar_is_lowercase_with_at_least_three_segments()
+     {
+         Assert.All(EnforcedPermissions, key =>

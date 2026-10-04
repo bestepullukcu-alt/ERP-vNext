@@ -391,7 +391,14 @@ No native dialog, manual `Swal.fire` or inline handler.
 | `INVALID_DEMAND_REFERENCE`, `INVALID_SNAPSHOT_REFERENCE` (422) | Specific localized message; inputs kept |
 | `DEPENDENCY_UNAVAILABLE`, `COMMIT_RESULT_UNRESOLVED` (503) | Temporarily unavailable; same-key retry; unknown commit never shown as rolled back |
 
-Per intent: one pending request; the same key and **identical body text** on network/503 retry; an edited payload is a new intent.
+Per intent: one pending request; the same key and **identical body text** on network/503 retry.
+**An intent is one opened create form or command panel (snapshot capture, sign-off), not one payload** (amended 2026-10-04, Q403). The UI mints the `Idempotency-Key` when that form or panel
+opens and keeps it unchanged across edits, failures and network/503 retries until it closes; only a newly opened form or panel is a new
+intent with a new key. A user who edits while the outcome is unknown resends under the same key, so a committed first attempt answers
+409 `IDEMPOTENCY_KEY_REUSED` instead of creating a second record. On that 409 the UI stops, keeps the inputs, tells the user the
+request was already received with different values and that a different request needs a new form, and never mints a key to get past it.
+Measured on Returns (MOD-0186), whose create and command surfaces have this shape, by R-2 (`docs/records/audits/2026-10/mvp6-r2-returns-ui-01/evidence/traps-browser.md` §T2): a key re-minted per payload created **two Returns from one intent**; one key per opened form gave 409 and **one** Return.
+Acceptance row SU-14 below still reads "edited payload new intent"; its replacement is proposed to the owner in `docs/records/audits/2026-10/mvp6-q403-intent-definition-01/REPORT.md`.
 A replayed 201 is shown as completed, then the workspace reloads; a replay body is never shown as current state. The response
 `X-Correlation-Id` is a copyable support reference.
 

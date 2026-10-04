@@ -1,0 +1,2 @@
+[16:52:17 INF] Request finished HTTP/1.1 POST http://localhost:5061/api/shipment-bundle/shipments - 499 null null 77.6887ms CorrelationId=62e548d6-e34f-4e01-bda5-1fa4eb162e74 TenantId= LegalEntityId=
+[16:52:31 INF] Request finished HTTP/1.1 POST http://localhost:5061/api/shipment-bundle/shipments - 201 null application/json; charset=utf-8 151.2334ms CorrelationId=c1c81dcd-1aee-4fc3-be96-2055fbc51a
