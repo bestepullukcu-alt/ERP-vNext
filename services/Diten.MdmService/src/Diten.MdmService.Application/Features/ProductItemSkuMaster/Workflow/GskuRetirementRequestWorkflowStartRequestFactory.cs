@@ -66,7 +66,10 @@ public sealed class GskuRetirementRequestWorkflowStartRequestFactory(
         x.DueAtUtcTicksV1.HasValue ? new(x.DueAtUtcTicksV1.Value, TimeSpan.Zero) : null);
 
     public bool MatchesConfiguration(GskuRetirementRequestOperation x) =>
-        x.WorkflowTemplateId == configuration.TemplateId && x.WorkflowTemplateCode == configuration.TemplateCode
+        // FIX4 item 1 (b): a started request carries the template id the engine resolved from the code; a
+        // configuration that names only the code must still recognise its requester's repeat.
+        (configuration.TemplateId is null || x.WorkflowTemplateId == configuration.TemplateId)
+        && x.WorkflowTemplateCode == configuration.TemplateCode
         && x.CandidatePrincipalIds.Order().SequenceEqual(configuration.CandidatePrincipalIds.Order())
         && x.ReasonCode == configuration.ReasonCode && x.CommentRequired == configuration.CommentRequired
         && x.EvidenceRequired == configuration.EvidenceRequired;

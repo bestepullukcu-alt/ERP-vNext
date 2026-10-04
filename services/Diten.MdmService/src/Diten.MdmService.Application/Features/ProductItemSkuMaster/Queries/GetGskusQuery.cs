@@ -8,6 +8,9 @@ namespace Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
 public sealed record GetGskusQuery
     : IRequest<Response<ProductItemSkuMasterModels.PagedResult<ProductItemSkuMasterModels.GskuListItemDto>>>
 {
+    // FIX4 item 9: the highest page a register read may ask for (100 000 × 100 rows).
+    public const int MaxPageNumber = 100_000;
+
     public int PageNumber { get; init; } = 1;
     public int PageSize { get; init; } = 20;
     public string? Search { get; init; }

@@ -109,48 +109,86 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
         // reservations and writes the draft in one transaction too, so the two cannot both commit: either the edit
         // sees this submit (and is refused), or the submit finds the draft moved (and is refused) — never an approval
         // started on facts the record no longer has.
-        try
+        for (var attempt = 1; ; attempt++)
         {
-            using var session = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
-            session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
             try
             {
-                await _operations.InsertOneAsync(session, operation, cancellationToken: cancellationToken);
-                var touched = await _gskus.UpdateOneAsync(session,
-                    ActiveGskuFilter(operation.GskuId)
-                    & Builders<Gsku>.Filter.Eq(item => item.Version, operation.ExpectedGskuVersion)
-                    & Builders<Gsku>.Filter.Eq(item => item.LifecycleStatus, ProductIdentityLifecycleStatus.Draft),
-                    Builders<Gsku>.Update.Inc(item => item.IdentitySubmitReservations, 1),
-                    cancellationToken: cancellationToken);
-                if (touched.MatchedCount != 1
-                    && await _gskus.Find(session, ActiveGskuFilter(operation.GskuId)).AnyAsync(cancellationToken))
+                using var session = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+                session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+                try
                 {
-                    // The draft moved (an edit, a submit) since it was read: this submit is of facts no longer there.
-                    await session.AbortTransactionAsync(cancellationToken);
-                    return new(false, false, null, "FIRST_GSKU_IDENTITY_WORKFLOW_DRAFT_CHANGED");
+                    await _operations.InsertOneAsync(session, operation, cancellationToken: cancellationToken);
+                    var touched = await _gskus.UpdateOneAsync(session,
+                        ActiveGskuFilter(operation.GskuId)
+                        & Builders<Gsku>.Filter.Eq(item => item.Version, operation.ExpectedGskuVersion)
+                        & Builders<Gsku>.Filter.Eq(item => item.LifecycleStatus, ProductIdentityLifecycleStatus.Draft),
+                        Builders<Gsku>.Update.Inc(item => item.IdentitySubmitReservations, 1),
+                        cancellationToken: cancellationToken);
+                    if (touched.MatchedCount != 1
+                        && await _gskus.Find(session, ActiveGskuFilter(operation.GskuId)).AnyAsync(cancellationToken))
+                    {
+                        // The draft moved (an edit, a submit) since it was read: this submit is of facts no longer there.
+                        await session.AbortTransactionAsync(cancellationToken);
+                        return new(false, false, null, "FIRST_GSKU_IDENTITY_WORKFLOW_DRAFT_CHANGED");
+                    }
+                    await session.CommitTransactionAsync(cancellationToken);
                 }
-                await session.CommitTransactionAsync(cancellationToken);
+                catch
+                {
+                    if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+                    throw;
+                }
+                return new(true, false, operation, null);
             }
-            catch
+            catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError")
+                                                   && exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
             {
-                if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
-                throw;
+                // FIX3 S5: a transient abort is a write conflict with an edit that committed first — or the store itself
+                // (a primary stepping down). Read again to say which: a draft that moved is "changed", one that did not is
+                // a store that did not answer.
+                // FIX4 item 7: — or the SAME submit sent twice, the other one committing first: that one is this one's
+                // answer (a replay), not a 503.
+                var competing = await CompetingReservationAsync(operation, cancellationToken);
+                if (competing is not null)
+                    return IsExactReplay(competing, operation)
+                        ? new(true, true, competing, null)
+                        : new(false, false, null, "FIRST_GSKU_IDENTITY_WORKFLOW_IDEMPOTENCY_CONFLICT");
+                if (await DraftMovedAsync(operation, cancellationToken)) return new(false, false, null, "FIRST_GSKU_IDENTITY_WORKFLOW_DRAFT_CHANGED");
+                // The other one may not have committed yet (a write conflict is raised before it does): try again, briefly.
+                // Once it commits this attempt meets its insert (the replay above); if it aborted, this one goes through.
+                if (attempt >= ReserveAttempts) return new(false, false, null, ProductIdentityStore.Unavailable);
+                await Task.Delay(TimeSpan.FromMilliseconds(50 << attempt), cancellationToken);
             }
-            return new(true, false, operation, null);
+            catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+            {
+                var existing = await CompetingReservationAsync(operation, cancellationToken);
+                return existing is not null && IsExactReplay(existing, operation)
+                    ? new(true, true, existing, null)
+                    : new(false, false, null, "FIRST_GSKU_IDENTITY_WORKFLOW_IDEMPOTENCY_CONFLICT");
+            }
+            catch (MongoException exception) when (exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
+            {
+                // FIX3 S5: no transaction at all (a standalone mongod) or a store that is away — coded, not an uncoded 500.
+                return new(false, false, null, ProductIdentityStore.Unavailable);
+            }
+            catch (NotSupportedException)
+            {
+                // FIX3 S5: the driver refuses a transaction before the server is asked (a standalone mongod).
+                return new(false, false, null, ProductIdentityStore.Unavailable);
+            }
         }
-        catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError")
-                                               && exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
+    }
+
+    // FIX4 item 7: how often a reservation that met a write conflict with no visible winner tries again (~1.5 s).
+    private const int ReserveAttempts = 5;
+
+    // The reservation this one collided with: same operation, same start key, or the same submit of the same pair.
+    private async Task<FirstGskuIdentityWorkflowOperation?> CompetingReservationAsync(
+        FirstGskuIdentityWorkflowOperation operation, CancellationToken cancellationToken)
+    {
+        try
         {
-            // FIX3 S5: a transient abort is a write conflict with an edit that committed first — or the store itself
-            // (a primary stepping down). Read again to say which: a draft that moved is "changed", one that did not is
-            // a store that did not answer.
-            return new(false, false, null, await DraftMovedAsync(operation, cancellationToken)
-                ? "FIRST_GSKU_IDENTITY_WORKFLOW_DRAFT_CHANGED"
-                : ProductIdentityStore.Unavailable);
-        }
-        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
-        {
-            var existing = await _operations.Find(ActiveTenantFilter & Builders<FirstGskuIdentityWorkflowOperation>
+            return await _operations.Find(ActiveTenantFilter & Builders<FirstGskuIdentityWorkflowOperation>
                     .Filter.Or(
                         Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(item => item.OperationId, operation.OperationId),
                         Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
@@ -165,19 +203,10 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
                             Builders<FirstGskuIdentityWorkflowOperation>.Filter.Eq(
                                 item => item.ExpectedGskuVersion, operation.ExpectedGskuVersion))))
                 .FirstOrDefaultAsync(cancellationToken);
-            return existing is not null && IsExactReplay(existing, operation)
-                ? new(true, true, existing, null)
-                : new(false, false, null, "FIRST_GSKU_IDENTITY_WORKFLOW_IDEMPOTENCY_CONFLICT");
         }
-        catch (MongoException exception) when (exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
+        catch (MongoException)
         {
-            // FIX3 S5: no transaction at all (a standalone mongod) or a store that is away — coded, not an uncoded 500.
-            return new(false, false, null, ProductIdentityStore.Unavailable);
-        }
-        catch (NotSupportedException)
-        {
-            // FIX3 S5: the driver refuses a transaction before the server is asked (a standalone mongod).
-            return new(false, false, null, ProductIdentityStore.Unavailable);
+            return null;
         }
     }
 
@@ -1035,7 +1064,12 @@ public sealed class FirstGskuIdentityWorkflowOperationRepository
             // the requester's repeat of the same withdrawal reads the engine's cancellation again.
             (FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired,
                 FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision
-                or FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown) => true,
+                or FirstGskuIdentityWorkflowCheckpoint.WithdrawalOutcomeUnknown
+                // FIX4 item 5: a decision on record goes back to the gate the pair is at.
+                or FirstGskuIdentityWorkflowCheckpoint.RevisionApproved
+                or FirstGskuIdentityWorkflowCheckpoint.PairApproved
+                or FirstGskuIdentityWorkflowCheckpoint.GskuDraftRestored
+                or FirstGskuIdentityWorkflowCheckpoint.PairDraftRestored) => true,
             _ => false
         };
 

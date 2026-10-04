@@ -387,22 +387,31 @@ disabled; a different hash does **not** replace the stored one.
 | `ProductIdentityWorkflowWorker:ServiceFaultMaxRetryDelaySeconds` (900), `:ServiceFaultErrorAfterAttempts` (5) | how far a waiting operation backs off, and from which attempt its waiting is logged as an error — alert on that line |
 | `FirstGskuIdentityWorkflow`, `GskuCorrectionWorkflow`, `GskuRetirementRequestWorkflow` — `:Enabled`, `:TemplateCode`, `:CandidatePrincipalIds[]` (identity also `:ReasonCode`) | the three GSKU flows (Development step 8); each needs its own published definition and its Platform entry (§4) |
 | `FirstGskuIdentityWorkflowWorker:Enabled`, `:LeaseOwner`; `GskuCorrectionWorkflowWorker:Enabled`; `GskuRetirementRequestWorkflowWorker:Enabled` | the three GSKU workers — without them a decision is never applied |
-| `GskuCorrectionWorkflowWorker:QuarantineAfterFailedAttempts` (30), `:MaxRetryDelaySeconds` (900); the same two under `GskuRetirementRequestWorkflowWorker` | a correction or retirement request that fails this many attempts in a row (each retry waits twice as long, never longer than the ceiling) goes to manual reconciliation with `*_RETRY_LIMIT_REACHED` and an error line; 0 = never |
+| `GskuCorrectionWorkflowWorker:QuarantineAfterFailedAttempts` (30), `:MaxRetryDelaySeconds` (900), `:RetryDelaySeconds`, `:StartSettleSeconds` (120); the same under `GskuRetirementRequestWorkflowWorker` | each retry waits twice as long, never longer than the ceiling (a ceiling below `RetryDelaySeconds` is raised to it and logged once as a Warning). After this many worker attempts in a row (0 = never) an operation is marked `*_RETRY_LIMIT_REACHED` with one Error line: if the cause is transient (engine / Platform unreachable, timeout, 5xx) it is **never** quarantined — it keeps retrying at the ceiling and heals by itself when the engine is back; any other cause goes to manual reconciliation, whose way out is the requester's same request (the Web offers it as *Repeat request*). Only the worker's attempts count — the requester's repeats neither count nor jump the wait. `StartSettleSeconds`: how long after a start whose answer was lost the worker trusts "the engine has no such instance" and ends the request |
 
 Restart MDM last. Then create and publish the definition (Development step 4) and assign the roles (step 5).
 
-### 5a. What to watch (WP-MDM-GSKU-ACCEPT-01 FIX3, B13)
+### 5a. What to watch (WP-MDM-GSKU-ACCEPT-01 FIX3 B13, FIX4)
 
 - Every recovery cycle of the GSKU flows writes ONE line: `{Flow} recovery cycle: tenants …, operations …, claimed …,
-  advanced …, quarantined …, waiting …, failed …, in manual reconciliation …` (Information; Warning when something was
-  quarantined or failed). Flows: `FIRST_GSKU_IDENTITY`, `GSKU_CORRECTION`, `GSKU_RETIREMENT_REQUEST`, and
-  `GSKU_PAIR_RETIREMENT` (the pair retirement has no worker of its own — it runs inside the retirement request's apply
-  step, and its count is reported by that cycle). Counts only: no tenant data, no secret.
-- An operation that ends a cycle in manual reconciliation is logged on its own (Error) with its tenant, operation id
-  and reason code.
+  advanced …, quarantined …, waiting …, failed …, in manual reconciliation …` (Information; Warning when something got
+  stuck or failed; **Debug** when the cycle found nothing to do and nothing is stuck). Flows: `FIRST_GSKU_IDENTITY`,
+  `GSKU_CORRECTION`, `GSKU_RETIREMENT_REQUEST`, and `GSKU_PAIR_RETIREMENT` (the pair retirement has no worker of its
+  own — it runs inside the retirement request's apply step, and its count is reported by that cycle). Counts only: no
+  tenant data, no secret.
+- **Stuck** = the operation holds the GSKU (manual reconciliation with the lock held) or is past
+  `QuarantineAfterFailedAttempts` (`*_RETRY_LIMIT_REACHED`). Only stuck operations are logged on their own (Error, with
+  tenant, operation id and reason code) and counted in "in manual reconciliation" and the gauge.
+- **Ended** = the request is over and the GSKU is free (`*_SELF_APPROVAL_IGNORED`, `*_DEFINITION_NOT_READY`,
+  `*_START_NOT_RECEIVED`, `*_NOT_APPLICABLE`, `*_CLOSED_WITHOUT_DECISION`, `*_EVIDENCE_CONFLICT`, …). Logged as
+  Information, not counted — nothing to do.
 - The gauge `mdm.product_identity.recovery.manual_reconciliation` (meter `Diten.MdmService.ProductIdentityRecovery`,
   tag `flow`) carries the same "in manual reconciliation" number. MDM has no metrics exporter of its own today: read
-  it with `dotnet-counters` or wire an OpenTelemetry exporter. Alert when it rises.
+  it with `dotnet-counters` or wire an OpenTelemetry exporter. Alert when it rises; a `*_RETRY_LIMIT_REACHED` that
+  falls back to 0 by itself was an outage that healed.
+- A correction or retirement request stuck in manual reconciliation is settled by its requester repeating the same
+  request (same GSKU version, same facts): a decision on record is applied, an approval that cannot be applied or never
+  started ends the request and frees the GSKU, an open approval keeps waiting. Another user, or another version, cannot.
 
 ### 6. Not covered here — open before a live bring-up
 

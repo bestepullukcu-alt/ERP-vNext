@@ -45,4 +45,11 @@
   <data name="ProductPickerLoadingMore" xml:space="preserve"><value>Загрузка других глобальных продуктов…</value></data>
   <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>Утверждение закрыто без решения (отменено или истекло). Черновик можно изменить и отправить снова.</value></data>
   <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>Единица, используемая этим GSKU, была выведена из использования после утверждения. Утверждение остаётся в силе: оно применено со значениями, проверенными при отправке; выведенную единицу нельзя выбрать для новых записей.</value></data>
+  <data name="RepeatRequest" xml:space="preserve"><value>Отправить запрос снова</value></data>
+  <data name="RepeatRequestConfirmation" xml:space="preserve"><value>Отправить тот же запрос снова? Служба утверждения будет прочитана заново, и запрос продолжится с текущего места.</value></data>
+  <data name="RepeatRequestWaiting" xml:space="preserve"><value>Утверждение всё ещё открыто в Центре задач; запрос ожидает решения.</value></data>
+  <data name="RepeatRequestSettled" xml:space="preserve"><value>Запрос прочитан заново и урегулирован.</value></data>
+  <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>Ваш запрос по этому GSKU ожидает сверки и держит его заблокированным. Отправьте его снова: служба утверждения будет прочитана заново; если это не поможет, обратитесь к администратору.</value></data>
+  <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>Запрос по этому GSKU ожидает сверки и держит его заблокированным. Отправить его снова может только автор; иначе сверку должен выполнить администратор.</value></data>
+  <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>Эта отправка ожидает сверки. Отправить её снова может только отправитель; иначе сверку должен выполнить администратор.</value></data>
 </root>

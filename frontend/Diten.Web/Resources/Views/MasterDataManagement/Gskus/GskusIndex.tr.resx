@@ -45,4 +45,11 @@
   <data name="ProductPickerLoadingMore" xml:space="preserve"><value>Daha fazla Global Ürün yükleniyor…</value></data>
   <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>Onay, karar verilmeden kapatıldı (iptal edildi ya da süresi doldu). Taslak düzenlenip yeniden gönderilebilir.</value></data>
   <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>Bu GSKU'nun kullandığı bir birim onaydan sonra kullanımdan kaldırıldı. Onay geçerlidir: gönderim anında doğrulanan değerlerle uygulandı; kaldırılan birim yeni kayıtlarda seçilemez.</value></data>
+  <data name="RepeatRequest" xml:space="preserve"><value>İsteği yeniden gönder</value></data>
+  <data name="RepeatRequestConfirmation" xml:space="preserve"><value>Aynı istek yeniden gönderilsin mi? Onay servisi yeniden okunur ve istek kaldığı yerden sürer.</value></data>
+  <data name="RepeatRequestWaiting" xml:space="preserve"><value>Onay Görev Merkezi'nde hâlâ açık; istek kararını bekliyor.</value></data>
+  <data name="RepeatRequestSettled" xml:space="preserve"><value>İstek yeniden okundu ve sonuçlandırıldı.</value></data>
+  <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>Bu GSKU üzerindeki isteğiniz uzlaştırma bekliyor ve GSKU'yu kilitli tutuyor. İsteği yeniden gönderin: onay servisi yeniden okunur; bu çözmezse yöneticinize başvurun.</value></data>
+  <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>Bu GSKU üzerindeki bir istek uzlaştırma bekliyor ve GSKU'yu kilitli tutuyor. Yalnız isteği yapan kişi yeniden gönderebilir; aksi halde bir yöneticinin uzlaştırması gerekir.</value></data>
+  <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>Bu gönderim uzlaştırma bekliyor. Yalnız gönderen kişi yeniden gönderebilir; aksi halde bir yöneticinin uzlaştırması gerekir.</value></data>
 </root>

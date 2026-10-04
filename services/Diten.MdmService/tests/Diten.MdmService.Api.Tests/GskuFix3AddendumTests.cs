@@ -90,14 +90,20 @@ public sealed partial class GskuLifecycleHttpTests
         var edit = await new GskuRepository(standalone, Tenant()).UpdateDraftAsync(draft, version);
         var reserve = await new FirstGskuIdentityWorkflowOperationRepository(standalone, Tenant())
             .ReserveAsync(ReservableOperation(stored, revision, version));
-        var productEdit = await EditProductAsync(new GlobalProductRepository(standalone, Tenant()), product, 0, "Standalone");
+        // FIX4 item 6: a product with no identity operation is edited with the single write it always was — a plain
+        // mongod runs it; one that HAS an operation needs the transaction, and there it is said with a code.
+        var plainEdit = await EditProductAsync(new GlobalProductRepository(standalone, Tenant()), product, 0, "Standalone");
         var productReserve = await new GlobalProductIdentityWorkflowOperationRepository(standalone, Tenant())
-            .ReserveAsync(ProductOperation(product, 0, GlobalProductIdentityWorkflowCheckpoint.Prepared, null));
+            .ReserveAsync(ProductOperation(product, 1, GlobalProductIdentityWorkflowCheckpoint.Prepared, null));
+        await standalone.GetCollection<GlobalProductIdentityWorkflowOperation>(GlobalProductIdentityWorkflowOperationRepository.CollectionName)
+            .InsertOneAsync(ProductOperation(product, 0, GlobalProductIdentityWorkflowCheckpoint.Completed, Guid.NewGuid()));
+        var editWithAnOperation = await EditProductAsync(new GlobalProductRepository(standalone, Tenant()), product, 1, "Standalone again");
 
         Assert.Equal(ProductIdentityStore.Unavailable, edit.ErrorCode);
         Assert.Equal(ProductIdentityStore.Unavailable, reserve.ErrorCode);
-        Assert.Equal(ProductIdentityStore.Unavailable, productEdit.ErrorCode);
+        Assert.True(plainEdit.Succeeded, plainEdit.ErrorCode);
         Assert.Equal(ProductIdentityStore.Unavailable, productReserve.ErrorCode);
+        Assert.Equal(ProductIdentityStore.Unavailable, editWithAnOperation.ErrorCode);
     }
 
     // A transient abort of the reservation that is NOT an edit of the draft (here: another write to the same
@@ -107,9 +113,20 @@ public sealed partial class GskuLifecycleHttpTests
     {
         var (gsku, version) = await CreateAsync(await SeedProductAsync(ProductIdentityLifecycleStatus.IdentityApproved));
         var plain = host.Database;
-        var hooked = Hooked("update", "mdm_gskus", () =>
-            plain.GetCollection<Gsku>("mdm_gskus").UpdateOne(x => x.Id == gsku,
-                Builders<Gsku>.Update.Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)));
+        // FIX4 item 7: a reservation that meets a write conflict with no visible winner tries again (one abort is
+        // simply retried); here every attempt is aborted, so it ends as the store — never as "draft changed".
+        var aborts = 0;
+        var settings = host.Database.Client.Settings.Clone();
+        settings.ClusterConfigurator = builder => builder.Subscribe<MongoDB.Driver.Core.Events.CommandStartedEvent>(started =>
+        {
+            if (started.CommandName == "update" && started.Command.GetValue("update", "").AsString == "mdm_gskus")
+            {
+                Interlocked.Increment(ref aborts);
+                plain.GetCollection<Gsku>("mdm_gskus").UpdateOne(x => x.Id == gsku,
+                    Builders<Gsku>.Update.Set(x => x.UpdatedAt, DateTimeOffset.UtcNow));
+            }
+        });
+        var hooked = new MongoClient(settings).GetDatabase(MdmHttpHost.DatabaseName);
         var stored = await plain.GetCollection<Gsku>("mdm_gskus").Find(x => x.Id == gsku).SingleAsync();
         var revision = await plain.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions")
             .Find(x => x.Id == stored.ProductDefinitionRevisionId).SingleAsync();
@@ -119,6 +136,7 @@ public sealed partial class GskuLifecycleHttpTests
 
         Assert.False(reserved.Succeeded);
         Assert.Equal(ProductIdentityStore.Unavailable, reserved.ErrorCode);
+        Assert.True(aborts > 1, $"tried {aborts} time(s)");
     }
 
     // ── S6 ───────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -280,14 +298,14 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.Equal("AUDIT_INTENT_CAPACITY_REACHED", operation.LastFailureCode);
     }
 
-    // IDR's not-applicable write on the real store: at capacity it waits too (here reached through E1).
+    // IDR's not-applicable write on the real store: at capacity it waits too (reached through a self-approval).
     [Fact]
     public async Task S9_The_not_applicable_write_at_audit_capacity_waits_on_the_real_store()
     {
         var (gsku, version) = await CreateAsync(await SeedProductAsync(ProductIdentityLifecycleStatus.IdentityApproved));
         Assert.Equal(HttpStatusCode.Accepted, (await SubmitAsync(gsku, version)).StatusCode);
         await FillAuditIntentsAsync("mdm_gskus", gsku);
-        host.Engine.CloseWithoutDecision(host.Engine.Open("gsku", gsku.ToString("D")));
+        host.Engine.Approve(host.Engine.Open("gsku", gsku.ToString("D")), _maker);
 
         var operation = await IdentityOperationOf(gsku);
         for (var cycle = 0; cycle < 10 && operation.LastFailureCode != "AUDIT_INTENT_CAPACITY_REACHED"; cycle++)

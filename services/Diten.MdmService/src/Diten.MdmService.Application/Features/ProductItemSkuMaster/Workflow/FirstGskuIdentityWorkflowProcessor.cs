@@ -1145,10 +1145,25 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         }
         var revision = await revisions.GetByIdAsync(operation.ProductDefinitionRevisionId, cancellationToken);
         var gsku = await gskus.GetByIdAsync(operation.GskuId, cancellationToken);
+        // FIX4 item 5: a decision on record goes back to the gate the pair itself is at — not to the first one, where a
+        // unit retired after the approval would be quarantined again; from the third gate CT decision 1 applies.
         FirstGskuIdentityWorkflowCheckpoint? reentry =
-            operation.DecisionKind.HasValue
-                ? (outcome.Outcome == ProductIdentityWorkflowTransportOutcome.Success
-                    ? FirstGskuIdentityWorkflowCheckpoint.DecisionObserved : null)
+            operation.DecisionKind == ProductIdentityDecisionKind.Approved
+                ? ExactApprovedRevision(revision, operation) && ExactApprovedGsku(gsku, operation)
+                    ? FirstGskuIdentityWorkflowCheckpoint.PairApproved
+                : ExactApprovedRevision(revision, operation) && ExactPendingGsku(gsku, operation)
+                    ? FirstGskuIdentityWorkflowCheckpoint.RevisionApproved
+                : ExactPendingRevision(revision, operation) && ExactPendingGsku(gsku, operation)
+                    ? FirstGskuIdentityWorkflowCheckpoint.DecisionObserved
+                : null
+            : operation.DecisionKind == ProductIdentityDecisionKind.Rejected
+                ? ExactRejectedRevision(revision, operation) && ExactRejectedGsku(gsku, operation)
+                    ? FirstGskuIdentityWorkflowCheckpoint.PairDraftRestored
+                : ExactPendingRevision(revision, operation) && ExactRejectedGsku(gsku, operation)
+                    ? FirstGskuIdentityWorkflowCheckpoint.GskuDraftRestored
+                : ExactPendingRevision(revision, operation) && ExactPendingGsku(gsku, operation)
+                    ? FirstGskuIdentityWorkflowCheckpoint.DecisionObserved
+                : null
             : ExactPendingRevision(revision, operation) && ExactPendingGsku(gsku, operation)
                 ? FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision
             : ExactInitialGsku(gsku, operation)
@@ -1427,6 +1442,13 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
                 claim, "FIRST_GSKU_IDENTITY_WORKFLOW_EVIDENCE_CONFLICT", now, cancellationToken);
         }
         var approval = await RevalidateApprovalAsync(operation, cancellationToken);
+        // FIX4 item 5: a repeat of this gate after the revision WAS approved (cut off before the step was recorded) meets
+        // a unit retired since: that is "after the approval" — applied with the submit-time proof (CT decision 1), not
+        // "not applicable" (the not-applicable write needs a pending revision and would quarantine the pair).
+        if (!approval.Succeeded && approval.ErrorCode == VerifiedGskuReferenceResolveResult.NotSelectable
+            && ExactApprovedRevision(await revisions.GetByIdAsync(operation.ProductDefinitionRevisionId, cancellationToken),
+                operation))
+            approval = WithSubmitProof(operation, approval);
         if (!approval.Succeeded)
         {
             // FIX3 E2: at the second gate nothing of the pair is approved yet (both still pending): a reference the

@@ -28,6 +28,8 @@ public sealed record FirstGskuIdentitySubmitState(FirstGskuIdentitySubmitStateKi
     public int? SubmittedAtVersion { get; init; }
     // FIX3 E2: the submit is in a withdrawal: its way out is the requester's repeat of that withdrawal, not a submit.
     public bool InWithdrawal { get; init; }
+    // FIX4 item 11: who submitted — only their repeat reconciles, so only they are offered it.
+    public Guid? SubmitterSubjectId { get; init; }
 
     /// <summary>
     /// The one rule (WP-MDM-GSKU-ACCEPT-01 FIX2 item 1 — "no state without a way out"). FIX1 counted every non-final
@@ -56,7 +58,8 @@ public sealed record FirstGskuIdentitySubmitState(FirstGskuIdentitySubmitStateKi
             : new((FirstGskuIdentitySubmitStateKind)(int)shared.Kind, shared.Code)
             {
                 SubmittedAtVersion = latest.ExpectedGskuVersion,
-                InWithdrawal = latest.WithdrawalCommandId is not null
+                InWithdrawal = latest.WithdrawalCommandId is not null,
+                SubmitterSubjectId = latest.MakerSubjectId
             };
     }
 }

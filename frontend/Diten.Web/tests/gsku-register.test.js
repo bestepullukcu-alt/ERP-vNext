@@ -139,7 +139,7 @@ describe('GSKU executed browser contracts (isolated DOM and HTTP fixtures)', () 
             .map((column) => column.data);
         expect(sortable).toEqual(['canonicalCode', 'packQuantity', 'lifecycleStatus']);
         expect(Object.keys(options.actions.onRowAction).sort()).toEqual(
-            ['editDraft', 'quickView', 'requestCorrection', 'requestRetirement', 'submitIdentity', 'withdrawApproval']);
+            ['editDraft', 'quickView', 'repeatRequest', 'requestCorrection', 'requestRetirement', 'submitIdentity', 'withdrawApproval']);
     });
 
     describe('Global Product picker (select2 ajax transport, BL-531 contract)', () => {
@@ -376,8 +376,9 @@ describe('MOD-0290 GSKU Register exposure', () => {
         const models = read('Models/Gskus/GskuViewModels.cs');
 
         expect(models).toContain('IReadOnlyList<string> AvailableActions');
-        expect(browser).toContain("const actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT']");
-        expect(browser).toContain("const supportedActions = new Set(['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT'])");
+        expect(browser).toContain("const actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST']");
+        expect(browser).toContain("const supportedActions = new Set(['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST'])");
+        expect(browser).toContain("REPEAT_REQUEST: { key: 'repeatRequest', className: 'js-repeat-request', icon: 'bx bx-refresh'");
         expect(browser).toContain('const readAvailableActions = (detail) =>');
         expect(browser).toContain("actions[0] !== 'DETAILS'");
         expect(browser).toContain('const actions = readAvailableActions(await fetchDetail(id))');
@@ -626,9 +627,19 @@ describe('MOD-0290 GSKU Register exposure', () => {
         // FIX2 item 1: every draft state is said, with what happens next.
         expect(source).toContain("valueOf(detail, 'identitySubmitState', 'IdentitySubmitState')");
         [['SUBMIT_IN_FLIGHT', 'IdentityStateInFlight'], ['RESUBMIT_REQUIRED', 'IdentityStateResubmitRequired'],
-            ['RECONCILIATION_REQUIRED', 'IdentityStateReconciliationRequired'], ['SUBMISSION_ENDED', 'IdentityStateSubmissionEnded']]
+            ['SUBMISSION_ENDED', 'IdentityStateSubmissionEnded']]
             .forEach(([state, key]) => {
                 expect(source).toContain(`${state}: L.${key}`);
+                expect(l10n).toContain(`${key} = Localizer["${key}"].Value`);
+            });
+        // FIX4 item 11: a submit in reconciliation is the submitter's to repeat; anyone else is told so.
+        expect(source).toContain("RECONCILIATION_REQUIRED: readAvailableActions(detail).includes('SUBMIT')\n                ? L.IdentityStateReconciliationRequired : L.IdentityStateReconciliationOtherUser");
+        // FIX4 item 1 (b): a stuck correction / retirement request — its requester's repeat, or why another cannot.
+        ['IdentityStateReconciliationRequired', 'IdentityStateReconciliationOtherUser', 'RepeatRequest',
+            'RepeatRequestConfirmation', 'RepeatRequestWaiting', 'RepeatRequestSettled',
+            'LifecycleRequestStuckRequester', 'LifecycleRequestStuckOther']
+            .forEach((key) => {
+                expect(source).toContain(`L.${key}`);
                 expect(l10n).toContain(`${key} = Localizer["${key}"].Value`);
             });
         expect(source).toContain("notApplied === 'FIRST_GSKU_IDENTITY_SELF_APPROVAL_IGNORED' ? L.IdentityNotAppliedSelfApproval");

@@ -130,7 +130,7 @@ public sealed class GskuRepository : IGskuRepository
             {
                 { "items", new BsonArray
                     {
-                        new BsonDocument("$skip", (pageNumber - 1) * pageSize),
+                        new BsonDocument("$skip", (long)(pageNumber - 1) * pageSize),
                         new BsonDocument("$limit", pageSize)
                     }
                 },
@@ -264,7 +264,7 @@ public sealed class GskuRepository : IGskuRepository
         {
             { "items", new BsonArray
                 {
-                    new BsonDocument("$skip", (pageNumber - 1) * pageSize),
+                    new BsonDocument("$skip", (long)(pageNumber - 1) * pageSize),
                     new BsonDocument("$limit", pageSize)
                 }
             },
@@ -347,14 +347,16 @@ public sealed class GskuRepository : IGskuRepository
         {
             { "items", new BsonArray
                 {
-                    new BsonDocument("$skip", (pageNumber - 1) * pageSize),
+                    new BsonDocument("$skip", (long)(pageNumber - 1) * pageSize),
                     new BsonDocument("$limit", pageSize)
                 }
             },
             { "summary", new BsonArray { new BsonDocument("$count", "total") } }
         }));
 
-        var result = await _documents.Aggregate<BsonDocument>(pipeline).FirstOrDefaultAsync(cancellationToken);
+        // FIX4 item 9: a sort over a large register may exceed the in-memory sort limit — it may spill to disk.
+        var result = await _documents.Aggregate<BsonDocument>(pipeline, new AggregateOptions { AllowDiskUse = true })
+            .FirstOrDefaultAsync(cancellationToken);
         var items = result?["items"].AsBsonArray
             .Select(item => BsonSerializer.Deserialize<Gsku>(item.AsBsonDocument))
             .ToArray() ?? [];

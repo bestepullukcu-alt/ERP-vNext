@@ -65,15 +65,23 @@ public sealed class GskuCorrectionRecoveryRunner(IServiceScopeFactory scopes,
                                 $"gsku-correction-worker-{Environment.ProcessId}",
                                 new GskuCorrectionExecutionConfiguration(TimeSpan.FromSeconds(settings.LeaseSeconds),
                                     TimeSpan.FromSeconds(settings.RetryDelaySeconds), settings.QuarantineAfterFailedAttempts,
-                                    TimeSpan.FromSeconds(settings.MaxRetryDelaySeconds),
+                                    TimeSpan.FromSeconds(settings.EffectiveMaxRetryDelaySeconds),
                                     TimeSpan.FromSeconds(settings.StartSettleSeconds)), ct);
                             if (result.Succeeded) completed++; else if (result.StatusCode is 409 or 503) deferred++; else failed++;
                             var after = result.Operation?.Checkpoint;
-                            var quarantined = after == GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired;
-                            cycle.Count(!ProductIdentityRecoveryCycle.WasNotClaimed(result.ErrorCode), quarantined,
-                                result.Succeeded || (after.HasValue && after != operation.Checkpoint));
-                            if (quarantined)
-                                logger.LogError("{Flow} operation {OperationId} of tenant {TenantId} is in manual reconciliation ({ResultCode}).",
+                            // FIX4 item 4: only what is STUCK (handed to a person with the lock held, or past the retry
+                            // limit) is counted and said as an error; a request that ended (lock given back) is information.
+                            var ended = after == GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired
+                                        && result.Operation?.RecoveryDisposition != ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired;
+                            var stuck = !ended && (after == GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired
+                                        || result.Operation?.LastFailureCode?.EndsWith("_RETRY_LIMIT_REACHED", StringComparison.Ordinal) == true);
+                            cycle.Count(!ProductIdentityRecoveryCycle.WasNotClaimed(result.ErrorCode), stuck,
+                                result.Succeeded || ended || (after.HasValue && after != operation.Checkpoint));
+                            if (stuck)
+                                logger.LogError("{Flow} operation {OperationId} of tenant {TenantId} is stuck ({ResultCode}).",
+                                    Flow, operation.OperationId, tenantId, result.Operation?.LastFailureCode ?? result.ErrorCode);
+                            else if (ended)
+                                logger.LogInformation("{Flow} operation {OperationId} of tenant {TenantId} ended ({ResultCode}).",
                                     Flow, operation.OperationId, tenantId, result.Operation?.LastFailureCode ?? result.ErrorCode);
                         }
                         catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }

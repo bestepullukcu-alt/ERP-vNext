@@ -375,6 +375,109 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
         Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Gsku.LifecycleStatus);
     }
 
+    // FIX4 item 5: quarantined at the THIRD gate (the revision approved, the GSKU still pending); by the submitter's
+    // repeat the unit has been retired. The repeat goes back to the gate the pair is at — not to the first one, where a
+    // retired unit would be "not applicable" and the approved revision would make that write fail — and CT decision 1
+    // applies: the pair is completed with the submit-time proof, and the note says so.
+    [Fact]
+    public async Task E2_A_repeat_after_a_third_gate_quarantine_resumes_there_and_applies_with_the_submit_time_proof()
+    {
+        var harness = new Harness();
+        harness.References.Results.Enqueue(ReferenceResolver.Success(version: 2));
+        harness.References.Results.Enqueue(ReferenceResolver.Success(version: 2));
+        harness.References.Results.Enqueue(ReferenceResolver.Success(version: 3));
+        var submitted = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        await harness.Processor.RecoverAsync(
+            submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired, harness.Operations.Current!.Checkpoint);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Revision.LifecycleStatus);
+        harness.References.Result = ReferenceResolver.Success(version: 2, retiredUnit: true);
+
+        var repeat = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.True(repeat.Succeeded, repeat.ErrorCode);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.Completed, harness.Operations.Current!.Checkpoint);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Gsku.LifecycleStatus);
+        Assert.Equal(FirstGskuIdentityWorkflowProcessor.RetiredAfterApproval, harness.Operations.Current.ApprovalAppliedNote);
+    }
+
+    // FIX4 item 5 / 12: quarantined at the FOURTH gate (both approved); the repeat resumes at the verification.
+    [Fact]
+    public async Task E2_A_repeat_after_a_fourth_gate_quarantine_resumes_at_the_verification()
+    {
+        var harness = new Harness();
+        harness.References.Results.Enqueue(ReferenceResolver.Success(version: 2));
+        harness.References.Results.Enqueue(ReferenceResolver.Success(version: 2));
+        harness.References.Results.Enqueue(ReferenceResolver.Success(version: 2));
+        harness.References.Results.Enqueue(ReferenceResolver.Success(version: 3));
+        var submitted = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        await harness.Processor.RecoverAsync(
+            submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired, harness.Operations.Current!.Checkpoint);
+        harness.References.Result = ReferenceResolver.Success(version: 2);
+
+        var repeat = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.True(repeat.Succeeded, repeat.ErrorCode);
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.Completed, harness.Operations.Current!.Checkpoint);
+    }
+
+    // FIX4 item 12: quarantined at the FIRST gate with the decision on record (a reference contract fault), the pair
+    // still pending; the repeat resumes at the decision (DecisionObserved) and applies it.
+    [Fact]
+    public async Task E2_A_repeat_after_a_first_gate_quarantine_resumes_at_the_decision()
+    {
+        var harness = new Harness();
+        harness.References.Results.Enqueue(VerifiedGskuReferenceResolveResult.Fail(409, "REFERENCE_RESOLUTION_CONTRACT_INVALID"));
+        var submitted = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        await harness.Processor.RecoverAsync(
+            submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired, harness.Operations.Current!.Checkpoint);
+        Assert.NotNull(harness.Operations.Current.DecisionKind);
+        Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, harness.Revision.LifecycleStatus);
+
+        var repeat = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.True(repeat.Succeeded, repeat.ErrorCode);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Gsku.LifecycleStatus);
+    }
+
+    // FIX4 item 5: the SECOND gate repeated after the revision WAS approved (the step cut off before it was recorded)
+    // meets a unit retired since — "after the approval": applied with the submit-time proof, not "not applicable".
+    [Fact]
+    public async Task A_second_gate_repeat_after_the_revision_was_approved_applies_with_the_submit_time_proof()
+    {
+        var harness = new Harness();
+        harness.Operations.FailNextAdvanceTo = FirstGskuIdentityWorkflowCheckpoint.RevisionApproved;
+        harness.References.Results.Enqueue(ReferenceResolver.Success(version: 2));
+        harness.References.Results.Enqueue(ReferenceResolver.Success(version: 2));
+        var submitted = await harness.Processor.StartInteractiveAsync(
+            TenantId, GskuId, 0, OperationId, MakerId, "maker-token",
+            TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        await harness.Processor.RecoverAsync(
+            submitted.Operation!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+        harness.References.Result = ReferenceResolver.Success(version: 2, retiredUnit: true);
+
+        var recovered = await harness.Processor.RecoverAsync(
+            harness.Operations.Current!, "worker-1", TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(5));
+
+        Assert.True(recovered.Succeeded, recovered.ErrorCode);
+        Assert.Equal(ProductIdentityLifecycleStatus.IdentityApproved, harness.Gsku.LifecycleStatus);
+        Assert.Equal(FirstGskuIdentityWorkflowProcessor.RetiredAfterApproval, harness.Operations.Current!.ApprovalAppliedNote);
+    }
+
     [Fact]
     public async Task WithdrawInteractive_VerifiedCancellation_RestoresPairToDraftAndReplaysExactly()
     {
@@ -1059,6 +1162,7 @@ public sealed class FirstGskuIdentityWorkflowProcessorTests
             Current.ApprovalPackUomSelection = mutation.ApprovalPackUomSelection ?? Current.ApprovalPackUomSelection;
             Current.ReferencesValidatedAtUtcTicksV1 = mutation.ReferencesValidatedAtUtcTicksV1 ?? Current.ReferencesValidatedAtUtcTicksV1;
             Current.ApprovalReferenceProofFingerprint = mutation.ApprovalReferenceProofFingerprint ?? Current.ApprovalReferenceProofFingerprint;
+            Current.ApprovalAppliedNote = mutation.ApprovalAppliedNote ?? Current.ApprovalAppliedNote;
             Current.WithdrawalCommandId = mutation.WithdrawalCommandId ?? Current.WithdrawalCommandId;
             Current.WithdrawalFingerprint = mutation.WithdrawalFingerprint ?? Current.WithdrawalFingerprint;
             Current.WithdrawalRequesterSubjectId = mutation.WithdrawalRequesterSubjectId ?? Current.WithdrawalRequesterSubjectId;

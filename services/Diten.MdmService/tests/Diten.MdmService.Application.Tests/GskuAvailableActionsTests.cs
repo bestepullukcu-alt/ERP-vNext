@@ -93,7 +93,7 @@ public sealed class GskuAvailableActionsTests
         var actor = new Actor(Guid.NewGuid(), FirstGskuIdentityLifecyclePermissions.Update);
         IReadOnlyList<string> Pair() => (IReadOnlyList<string>)typeof(GetGskuByIdHandler)
             .GetMethod("BuildPairAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, [gsku, revision, actor, FirstGskuIdentitySubmitStateKind.None, false])!;
+            .Invoke(null, [gsku, revision, actor, FirstGskuIdentitySubmitStateKind.None, false, null])!;
         Assert.Equal(["DETAILS", "EDIT"], Pair());
         revision.LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval;
         Assert.Equal(["DETAILS"], Pair());
@@ -119,21 +119,39 @@ public sealed class GskuAvailableActionsTests
         FirstGskuIdentitySubmitStateKind submit, bool edit, bool resubmit)
     {
         var gsku = new Gsku { Id = Guid.NewGuid(), LifecycleStatus = ProductIdentityLifecycleStatus.Draft };
-        var actor = new Actor(Guid.NewGuid(), "mdm.gskus.update", "mdm.gskus.submit");
+        var submitter = Guid.NewGuid();
+        var actor = new Actor(submitter, "mdm.gskus.update", "mdm.gskus.submit");
 
         var actions = Assert.IsAssignableFrom<IReadOnlyList<string>>(typeof(GetGskuByIdHandler)
             .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
-            .Invoke(null, [gsku, actor, submit]));
+            .Invoke(null, [gsku, actor, submit, submitter]));
 
         Assert.Equal(edit, actions.Contains("EDIT"));
         Assert.Equal(resubmit, actions.Contains("SUBMIT"));
+    }
+
+    // FIX4 item 11: only the submitter's repeat reconciles a submit — anyone else with the submit permission is not
+    // offered a SUBMIT that would only be refused (the screen tells them who can).
+    [Fact]
+    public void A_submit_in_reconciliation_is_offered_to_its_submitter_only()
+    {
+        var gsku = new Gsku { Id = Guid.NewGuid(), LifecycleStatus = ProductIdentityLifecycleStatus.Draft };
+        var submitter = Guid.NewGuid();
+
+        IReadOnlyList<string> For(Guid actorId) => Assert.IsAssignableFrom<IReadOnlyList<string>>(typeof(GetGskuByIdHandler)
+            .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
+            .Invoke(null, [gsku, new Actor(actorId, "mdm.gskus.update", "mdm.gskus.submit"),
+                FirstGskuIdentitySubmitStateKind.ReconciliationRequired, submitter]));
+
+        Assert.Contains("SUBMIT", For(submitter));
+        Assert.DoesNotContain("SUBMIT", For(Guid.NewGuid()));
     }
 
     private static IReadOnlyList<string> Actions(Gsku gsku, IProductIdentityLifecycleActorContext actor) =>
         Assert.IsAssignableFrom<IReadOnlyList<string>>(
             typeof(GetGskuByIdHandler)
                 .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
-                .Invoke(null, [gsku, actor, FirstGskuIdentitySubmitStateKind.None]));
+                .Invoke(null, [gsku, actor, FirstGskuIdentitySubmitStateKind.None, null]));
 
     private sealed class Actor(Guid? subjectId, params string[] permissions)
         : IProductIdentityLifecycleActorContext

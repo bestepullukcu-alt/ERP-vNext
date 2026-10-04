@@ -45,4 +45,11 @@
   <data name="ProductPickerLoadingMore" xml:space="preserve"><value>جارٍ تحميل المزيد من المنتجات العالمية…</value></data>
   <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>أُغلقت الموافقة دون قرار (أُلغيت أو انتهت مدتها). يمكن تعديل المسودة وتقديمها مرة أخرى.</value></data>
   <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>أُوقف استخدام وحدة يستخدمها هذا الـ GSKU بعد الموافقة. تظل الموافقة سارية: طُبّقت بالقيم التي تم التحقق منها عند التقديم؛ ولا يمكن اختيار الوحدة الموقوفة في سجلات جديدة.</value></data>
+  <data name="RepeatRequest" xml:space="preserve"><value>إعادة إرسال الطلب</value></data>
+  <data name="RepeatRequestConfirmation" xml:space="preserve"><value>هل تريد إرسال الطلب نفسه مرة أخرى؟ تُقرأ خدمة الموافقات من جديد ويتابع الطلب من حيث هو.</value></data>
+  <data name="RepeatRequestWaiting" xml:space="preserve"><value>لا تزال الموافقة مفتوحة في مركز المهام؛ ينتظر الطلب قرارها.</value></data>
+  <data name="RepeatRequestSettled" xml:space="preserve"><value>أُعيدت قراءة الطلب وتمت تسويته.</value></data>
+  <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>ينتظر طلبك على هذا الـ GSKU التسوية ويُبقيه مقفلًا. أعد إرساله: تُقرأ خدمة الموافقات من جديد؛ وإن لم يحلّ ذلك المشكلة فاتصل بالمسؤول.</value></data>
+  <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>ينتظر طلب على هذا الـ GSKU التسوية ويُبقيه مقفلًا. لا يستطيع إعادة إرساله إلا من قدّمه؛ وإلا فيجب أن يتولى مسؤول تسويته.</value></data>
+  <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>ينتظر هذا التقديم التسوية. لا يستطيع إعادة تقديمه إلا من قدّمه؛ وإلا فيجب أن يتولى مسؤول تسويته.</value></data>
 </root>

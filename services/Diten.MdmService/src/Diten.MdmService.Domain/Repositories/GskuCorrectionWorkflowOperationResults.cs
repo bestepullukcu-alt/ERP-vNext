@@ -31,8 +31,8 @@ public sealed record GskuCorrectionWorkflowMutation(
     string? DecisionTaskStatus = null,
     string? DecisionInstanceStatus = null,
     bool ReleaseLease = false,
-    // FIX3 item 1: the streak this write records; null = the attempt did not end in a retry (the streak is over).
-    int? FailedAttemptCount = null,
+    // FIX4 item 3: how this write changes the retry streak (atomically, in the store).
+    RecoveryStreakWrite Streak = RecoveryStreakWrite.Reset,
     long? LastStartSentAtUtcTicksV1 = null);
 
 public sealed record GskuCorrectionWorkflowRecoverablePage(

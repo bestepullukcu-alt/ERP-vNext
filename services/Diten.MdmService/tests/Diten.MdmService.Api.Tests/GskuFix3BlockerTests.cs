@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Diten.MdmService.Application.Contracts.Workflow;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Persistence.Repositories;
@@ -17,29 +18,17 @@ namespace Diten.MdmService.Api.Tests;
 /// </summary>
 public sealed partial class GskuLifecycleHttpTests
 {
+    // FIX4 (CT decision 3 corrected), the IDENTITY flow: Platform answers an approval closed without a decision with
+    // the general "inconsistent" conflict (BL-547). The identity flow keeps FIX3's rule: quarantined, the pair kept
+    // pending, and the submitter's repeat says truthfully that a person has to reconcile it.
     [Fact]
-    public async Task E1_An_identity_approval_closed_without_a_decision_sends_the_pair_back_to_draft()
+    public async Task E1_A_closed_identity_approval_is_quarantined_and_the_repeat_says_a_person_has_to_reconcile()
     {
         var (gsku, version) = await CreateAsync(await SeedProductAsync(ProductIdentityLifecycleStatus.IdentityApproved));
-        Assert.Equal(HttpStatusCode.Accepted, (await SubmitAsync(gsku, version)).StatusCode);
+        var key = Guid.NewGuid();
+        Assert.Equal(HttpStatusCode.Accepted, (await SendAsync(HttpMethod.Post, $"/api/gskus/{gsku:D}/submit",
+            new { expectedVersion = version }, MakerToken(), key)).StatusCode);
         host.Engine.CloseWithoutDecision(host.Engine.Open("gsku", gsku.ToString("D")));
-
-        var draft = await IdentityCyclesUntilAsync(gsku, ProductIdentityLifecycleStatus.Draft);
-
-        Assert.Equal("FIRST_GSKU_IDENTITY_CLOSED_WITHOUT_DECISION", draft.NotAppliedReason);
-        Assert.Contains("EDIT", draft.Actions);
-        Assert.Contains("SUBMIT", draft.Actions);
-        Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.DecisionNotApplicable, (await IdentityOperationOf(gsku)).Checkpoint);
-    }
-
-    // E1 narrowed (CT decision 3): a conflict that is NOT the engine's "closed without a decision" (contradictory facts
-    // at the engine) is quarantined, the pair kept pending — never sent back to draft on a guess.
-    [Fact]
-    public async Task E1_Another_conflict_is_quarantined_and_the_pair_kept()
-    {
-        var (gsku, version) = await CreateAsync(await SeedProductAsync(ProductIdentityLifecycleStatus.IdentityApproved));
-        Assert.Equal(HttpStatusCode.Accepted, (await SubmitAsync(gsku, version)).StatusCode);
-        host.Engine.Open("gsku", gsku.ToString("D")).EvidenceInconsistent = true;
 
         for (var cycle = 0; cycle < 10 && (await IdentityOperationOf(gsku)).Checkpoint
                  != FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired; cycle++)
@@ -48,31 +37,49 @@ public sealed partial class GskuLifecycleHttpTests
                 runner => runner.RunCycleAsync());
             await Task.Delay(1100);
         }
-
         Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.ManualReconciliationRequired, (await IdentityOperationOf(gsku)).Checkpoint);
         Assert.Equal(ProductIdentityLifecycleStatus.PendingIdentityApproval, (await DetailAsync(gsku)).Status);
+
+        var repeat = await SendAsync(HttpMethod.Post, $"/api/gskus/{gsku:D}/submit", new { expectedVersion = version },
+            MakerToken(), key);
+
+        Assert.Equal(HttpStatusCode.Conflict, repeat.StatusCode);
+        Assert.Equal(FirstGskuIdentityWorkflowProcessor.ManualReconciliationNeeded, Envelope.FirstError(await Envelope.ReadAsync(repeat)));
     }
 
-    // The same narrowing on a correction (COR): another conflict keeps the GSKU locked and quarantines the request.
-    [Fact]
-    public async Task E1_Another_conflict_on_a_correction_is_quarantined_with_the_lock_kept()
+    // The dormant branch the identity flow keeps for BL-547: only the engine's own "closed without a decision" code
+    // would send a pair back to draft — the rule itself, without a fake that answers a code Platform does not have.
+    [Theory]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION", true)]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT", false)]
+    [InlineData(ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION", false)]
+    public void E1_Only_the_engines_own_closed_code_counts_as_closed_without_a_decision(
+        ProductIdentityWorkflowTransportOutcome outcome, string code, bool closed)
+    {
+        Assert.Equal(closed, Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.ProductIdentityWorkflowFaultPolicy
+            .IsClosedWithoutDecision(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(outcome, code)));
+    }
+
+    // FIX4 (CT decision 3 corrected), a CORRECTION: terminal evidence this service cannot apply (a cancellation in the
+    // Task Center, contradictory facts — Platform says both the same way) ends the request and frees the GSKU (FIX2) —
+    // FIX3 quarantined it and every such cancellation locked the GSKU for good.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CT3_A_correction_whose_evidence_cannot_be_applied_ends_and_frees_the_gsku(bool cancelledInTheTaskCenter)
     {
         var approved = await ApprovedGskuAsync();
         Assert.True((await RequestCorrectionAsync(approved.Id, approved.Version, 5m)).IsSuccessStatusCode);
-        host.Engine.Latest("GskuCorrection").EvidenceInconsistent = true;
+        var instance = host.Engine.Latest("GskuCorrection");
+        if (cancelledInTheTaskCenter) host.Engine.CloseWithoutDecision(instance);
+        else instance.EvidenceInconsistent = true;
 
-        for (var cycle = 0; cycle < 10 && (await CorrectionOf(approved.Id)).Checkpoint
-                 != GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired; cycle++)
-        {
-            await host.RunAsync<Diten.MdmService.Api.Services.ProductItemSkuMaster.GskuCorrectionRecoveryRunner>(
-                runner => runner.RunCycleAsync());
-            await Task.Delay(1100);
-        }
+        var freed = await CorrectionCyclesUntilAsync(approved.Id, detail => detail.Actions.Contains("REQUEST_CORRECTION"));
 
-        var quarantined = await CorrectionOf(approved.Id);
-        Assert.Equal(GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired, quarantined.Checkpoint);
-        Assert.Equal("GSKU_CORRECTION_EVIDENCE_CONFLICT", quarantined.LastFailureCode);
-        Assert.DoesNotContain("REQUEST_CORRECTION", (await DetailAsync(approved.Id)).Actions);
+        var ended = await CorrectionOf(approved.Id);
+        Assert.Equal("GSKU_CORRECTION_CLOSED_WITHOUT_DECISION", ended.LastFailureCode);
+        Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.None, ended.RecoveryDisposition); // ended, not stuck
+        Assert.Equal(1m, freed.Quantity);
     }
 
     // E2, decided: the approval was granted while the operation sat in manual reconciliation; the repeat applies it.
@@ -107,22 +114,6 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.Equal(FirstGskuIdentityWorkflowCheckpoint.AwaitingDecision, (await IdentityOperationOf(gsku)).Checkpoint);
         host.Engine.Approve(host.Engine.Open("gsku", gsku.ToString("D")), host.Approver);
         await IdentityCyclesUntilAsync(gsku, ProductIdentityLifecycleStatus.IdentityApproved);
-    }
-
-    // E2, closed without a decision: the repeat reads it now and the pair goes back to draft (E1) in the same request.
-    [Fact]
-    public async Task E2_The_repeat_sends_the_pair_back_to_draft_when_the_approval_was_closed_without_a_decision()
-    {
-        var (gsku, key) = await QuarantinedPendingAsync("FIRST_GSKU_IDENTITY_WORKFLOW_DECISION_INCONSISTENT");
-        host.Engine.CloseWithoutDecision(host.Engine.Open("gsku", gsku.ToString("D")));
-        var submittedAt = (await IdentityOperationOf(gsku)).ExpectedGskuVersion;
-
-        var repeat = await SendAsync(HttpMethod.Post, $"/api/gskus/{gsku:D}/submit", new { expectedVersion = submittedAt },
-            MakerToken(), key);
-
-        Assert.Equal(HttpStatusCode.Conflict, repeat.StatusCode);
-        Assert.Equal("FIRST_GSKU_IDENTITY_CLOSED_WITHOUT_DECISION", Envelope.FirstError(await Envelope.ReadAsync(repeat)));
-        Assert.Equal(ProductIdentityLifecycleStatus.Draft, (await DetailAsync(gsku)).Status);
     }
 
     // E2, not settleable: the engine does not know the approval — the repeat changes nothing and says a person has to

@@ -98,46 +98,82 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
         // submits are one transaction; the draft edit reads the latest submit and writes in one transaction too, so the
         // two cannot both commit — either the edit sees this submit (and is refused), or this submit finds the draft
         // moved (and is refused) before any approval is started on facts the product no longer has.
-        try
+        for (var attempt = 1; ; attempt++)
         {
-            using var session = await _client.StartSessionAsync(cancellationToken: cancellationToken);
-            session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
             try
             {
-                await _operations.InsertOneAsync(session, operation, cancellationToken: cancellationToken);
-                var product = Builders<GlobalProduct>.Filter.Eq(item => item.TenantId, _tenantId)
-                              & Builders<GlobalProduct>.Filter.Eq(item => item.IsDeleted, false)
-                              & Builders<GlobalProduct>.Filter.Eq(item => item.Id, operation.GlobalProductId);
-                var touched = await _products.UpdateOneAsync(session,
-                    product
-                    & Builders<GlobalProduct>.Filter.Eq(item => item.Version, operation.ExpectedProductVersion)
-                    & Builders<GlobalProduct>.Filter.Eq(item => item.LifecycleStatus, ProductIdentityLifecycleStatus.Draft),
-                    Builders<GlobalProduct>.Update.Inc(item => item.IdentitySubmitReservations, 1),
-                    cancellationToken: cancellationToken);
-                if (touched.MatchedCount != 1 && await _products.Find(session, product).AnyAsync(cancellationToken))
+                using var session = await _client.StartSessionAsync(cancellationToken: cancellationToken);
+                session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary, WriteConcern.WMajority));
+                try
                 {
-                    await session.AbortTransactionAsync(cancellationToken);
-                    return new(false, false, null, DraftChanged);
+                    await _operations.InsertOneAsync(session, operation, cancellationToken: cancellationToken);
+                    var product = Builders<GlobalProduct>.Filter.Eq(item => item.TenantId, _tenantId)
+                                  & Builders<GlobalProduct>.Filter.Eq(item => item.IsDeleted, false)
+                                  & Builders<GlobalProduct>.Filter.Eq(item => item.Id, operation.GlobalProductId);
+                    var touched = await _products.UpdateOneAsync(session,
+                        product
+                        & Builders<GlobalProduct>.Filter.Eq(item => item.Version, operation.ExpectedProductVersion)
+                        & Builders<GlobalProduct>.Filter.Eq(item => item.LifecycleStatus, ProductIdentityLifecycleStatus.Draft),
+                        Builders<GlobalProduct>.Update.Inc(item => item.IdentitySubmitReservations, 1),
+                        cancellationToken: cancellationToken);
+                    if (touched.MatchedCount != 1 && await _products.Find(session, product).AnyAsync(cancellationToken))
+                    {
+                        await session.AbortTransactionAsync(cancellationToken);
+                        return new(false, false, null, DraftChanged);
+                    }
+                    await session.CommitTransactionAsync(cancellationToken);
                 }
-                await session.CommitTransactionAsync(cancellationToken);
+                catch
+                {
+                    if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+                    throw;
+                }
+                return new(true, false, operation, null);
             }
-            catch
+            catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError")
+                                                   && exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
             {
-                if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
-                throw;
+                // A write conflict with an edit that committed first — or the store itself (S5): read again to say which.
+                // FIX4 item 7: — or the SAME submit sent twice, the other committing first: its answer is this one's.
+                var competing = await CompetingReservationAsync(operation, cancellationToken);
+                if (competing is not null)
+                    return IsExactReplay(competing, operation)
+                        ? new(true, true, competing, null)
+                        : new(false, false, null, "PRODUCT_IDENTITY_WORKFLOW_IDEMPOTENCY_CONFLICT");
+                if (await ProductMovedAsync(operation, cancellationToken)) return new(false, false, null, DraftChanged);
+                // The other one may not have committed yet: try again, briefly (the identity reservation's rule).
+                if (attempt >= ReserveAttempts) return new(false, false, null, ProductIdentityStore.Unavailable);
+                await Task.Delay(TimeSpan.FromMilliseconds(50 << attempt), cancellationToken);
             }
-            return new(true, false, operation, null);
+            catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+            {
+                var existing = await CompetingReservationAsync(operation, cancellationToken);
+                return existing is not null && IsExactReplay(existing, operation)
+                    ? new(true, true, existing, null)
+                    : new(false, false, null, "PRODUCT_IDENTITY_WORKFLOW_IDEMPOTENCY_CONFLICT");
+            }
+            catch (MongoException exception) when (exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
+            {
+                // FIX3 S5: no transaction at all (a standalone mongod) or a store that is away.
+                return new(false, false, null, ProductIdentityStore.Unavailable);
+            }
+            catch (NotSupportedException)
+            {
+                // FIX3 S5: the driver refuses a transaction before the server is asked (a standalone mongod).
+                return new(false, false, null, ProductIdentityStore.Unavailable);
+            }
         }
-        catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError")
-                                               && exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
+    }
+
+    // FIX4 item 7: how often a reservation that met a write conflict with no visible winner tries again (~1.5 s).
+    private const int ReserveAttempts = 5;
+
+    private async Task<GlobalProductIdentityWorkflowOperation?> CompetingReservationAsync(
+        GlobalProductIdentityWorkflowOperation operation, CancellationToken cancellationToken)
+    {
+        try
         {
-            // A write conflict with an edit that committed first — or the store itself (S5): read again to say which.
-            return new(false, false, null, await ProductMovedAsync(operation, cancellationToken)
-                ? DraftChanged : ProductIdentityStore.Unavailable);
-        }
-        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
-        {
-            var existing = await _operations.Find(ActiveTenantFilter & Builders<GlobalProductIdentityWorkflowOperation>
+            return await _operations.Find(ActiveTenantFilter & Builders<GlobalProductIdentityWorkflowOperation>
                     .Filter.Or(
                         Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(item => item.OperationId, operation.OperationId),
                         Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(
@@ -148,19 +184,10 @@ public sealed class GlobalProductIdentityWorkflowOperationRepository
                             Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(
                                 item => item.ExpectedProductVersion, operation.ExpectedProductVersion))))
                 .FirstOrDefaultAsync(cancellationToken);
-            return existing is not null && IsExactReplay(existing, operation)
-                ? new(true, true, existing, null)
-                : new(false, false, null, "PRODUCT_IDENTITY_WORKFLOW_IDEMPOTENCY_CONFLICT");
         }
-        catch (MongoException exception) when (exception is not MongoWriteException { WriteError.Category: ServerErrorCategory.DuplicateKey })
+        catch (MongoException)
         {
-            // FIX3 S5: no transaction at all (a standalone mongod) or a store that is away.
-            return new(false, false, null, ProductIdentityStore.Unavailable);
-        }
-        catch (NotSupportedException)
-        {
-            // FIX3 S5: the driver refuses a transaction before the server is asked (a standalone mongod).
-            return new(false, false, null, ProductIdentityStore.Unavailable);
+            return null;
         }
     }
 

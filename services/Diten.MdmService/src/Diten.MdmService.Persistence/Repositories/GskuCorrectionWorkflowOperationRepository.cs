@@ -123,7 +123,12 @@ public sealed class GskuCorrectionWorkflowOperationRepository(IMongoDatabase dat
         if (mutation.DecisionTransitionSequence.HasValue) update = update.Set(x => x.DecisionTransitionSequence, mutation.DecisionTransitionSequence);
         if (mutation.DecisionTaskStatus is not null) update = update.Set(x => x.DecisionTaskStatus, mutation.DecisionTaskStatus);
         if (mutation.DecisionInstanceStatus is not null) update = update.Set(x => x.DecisionInstanceStatus, mutation.DecisionInstanceStatus);
-        update = update.Set(x => x.FailedAttemptCount, mutation.FailedAttemptCount ?? 0);
+        update = mutation.Streak switch
+        {
+            RecoveryStreakWrite.Increment => update.Inc(x => x.FailedAttemptCount, 1),
+            RecoveryStreakWrite.Keep => update,
+            _ => update.Set(x => x.FailedAttemptCount, 0)
+        };
         if (mutation.LastStartSentAtUtcTicksV1.HasValue)
             update = update.Set(x => x.LastStartSentAtUtcTicksV1, mutation.LastStartSentAtUtcTicksV1);
         if (mutation.ReleaseLease) update = update.Set(x => x.LeaseOwner, null).Set(x => x.LeaseUntilUtcTicksV1, null);
@@ -131,8 +136,14 @@ public sealed class GskuCorrectionWorkflowOperationRepository(IMongoDatabase dat
     }
 
     // FIX3 item 1 (B13): this tenant's operations waiting for a person.
+    // FIX4 item 4: only what is STUCK — handed to manual reconciliation with the GSKU's lock held, or past the retry
+    // limit and still retrying. A request that ended (its lock given back) is not counted.
     public Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) =>
-        rows.CountDocumentsAsync(Active & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.Checkpoint, GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired),
+        rows.CountDocumentsAsync(Active & (
+            (Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.Checkpoint, GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired)
+             & Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired))
+            | (Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.RecoveryDisposition, ProductIdentityWorkflowRecoveryDisposition.Retryable)
+               & Builders<GskuCorrectionWorkflowOperation>.Filter.Regex(x => x.LastFailureCode, new MongoDB.Bson.BsonRegularExpression("_RETRY_LIMIT_REACHED$")))),
             cancellationToken: cancellationToken);
 
     public async Task<GskuCorrectionWorkflowRecoverablePage> DiscoverRecoverableAsync(long nowUtcTicks, int limit,
@@ -140,8 +151,9 @@ public sealed class GskuCorrectionWorkflowOperationRepository(IMongoDatabase dat
     {
         if (limit is < 1 or > 100 || nowUtcTicks <= 0) throw new ArgumentOutOfRangeException(nameof(limit));
         var filter = Active & Builders<GskuCorrectionWorkflowOperation>.Filter.Nin(x => x.Checkpoint,
-            new[] { GskuCorrectionWorkflowCheckpoint.Completed, GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired,
-                GskuCorrectionWorkflowCheckpoint.AwaitingMakerReplay })
+            new[] { GskuCorrectionWorkflowCheckpoint.Completed, GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired })
+            // FIX4 item 10: AwaitingMakerReplay is no longer skipped — FIX2 parked operations there HOLDING the GSKU's
+            // lock; the worker settles them (did the start arrive? then started, else the lock is given back).
             & Builders<GskuCorrectionWorkflowOperation>.Filter.Or(
                 Builders<GskuCorrectionWorkflowOperation>.Filter.Eq(x => x.NextAttemptAtUtcTicksV1, null),
                 Builders<GskuCorrectionWorkflowOperation>.Filter.Lte(x => x.NextAttemptAtUtcTicksV1, nowUtcTicks))
@@ -196,6 +208,8 @@ public sealed class GskuCorrectionWorkflowOperationRepository(IMongoDatabase dat
         (GskuCorrectionWorkflowCheckpoint.AwaitingDecision, GskuCorrectionWorkflowCheckpoint.DecisionObserved or GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired) => true,
         (GskuCorrectionWorkflowCheckpoint.DecisionObserved, GskuCorrectionWorkflowCheckpoint.DecisionApplied or GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired) => true,
         (GskuCorrectionWorkflowCheckpoint.DecisionApplied, GskuCorrectionWorkflowCheckpoint.Completed or GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired) => true,
+        // FIX4 item 1 (b): the requester's same command reads the engine again and puts a stuck request back.
+        (GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired, GskuCorrectionWorkflowCheckpoint.WorkflowStarted or GskuCorrectionWorkflowCheckpoint.AwaitingDecision or GskuCorrectionWorkflowCheckpoint.DecisionObserved) => true,
         _ => false
     };
     private async Task EnsureIndexesAsync(CancellationToken ct)

@@ -45,4 +45,11 @@
   <data name="ProductPickerLoadingMore" xml:space="preserve"><value>Chargement d'autres produits globaux…</value></data>
   <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>L'approbation a été clôturée sans décision (annulée ou expirée). Le brouillon peut être modifié et soumis à nouveau.</value></data>
   <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>Une unité utilisée par ce GSKU a été retirée après l'approbation. L'approbation reste valable : elle a été appliquée avec les valeurs validées lors de la soumission ; l'unité retirée ne peut pas être choisie pour de nouveaux enregistrements.</value></data>
+  <data name="RepeatRequest" xml:space="preserve"><value>Renvoyer la demande</value></data>
+  <data name="RepeatRequestConfirmation" xml:space="preserve"><value>Renvoyer la même demande ? Le service d'approbation est relu et la demande reprend là où elle en est.</value></data>
+  <data name="RepeatRequestWaiting" xml:space="preserve"><value>L'approbation est toujours ouverte dans le centre de tâches ; la demande attend sa décision.</value></data>
+  <data name="RepeatRequestSettled" xml:space="preserve"><value>La demande a été relue et réglée.</value></data>
+  <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>Votre demande sur ce GSKU attend un rapprochement et le garde verrouillé. Renvoyez-la : le service d'approbation est relu ; si cela ne suffit pas, contactez votre administrateur.</value></data>
+  <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>Une demande sur ce GSKU attend un rapprochement et le garde verrouillé. Seule la personne qui l'a faite peut la renvoyer ; sinon, un administrateur doit la rapprocher.</value></data>
+  <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>Cette soumission attend un rapprochement. Seule la personne qui l'a soumise peut la soumettre à nouveau ; sinon, un administrateur doit la rapprocher.</value></data>
 </root>

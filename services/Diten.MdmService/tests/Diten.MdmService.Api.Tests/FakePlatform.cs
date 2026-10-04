@@ -50,6 +50,9 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
     /// <summary>FIX3 S3: the next start throws before it reaches the engine (a request cut off half-way).</summary>
     public bool NextStartThrows { get; set; }
 
+    /// <summary>FIX4 item 12: the next terminal-evidence read throws (a connection broken half-way).</summary>
+    public bool NextTerminalEvidenceThrows { get; set; }
+
     /// <summary>The next start answers this (once) — after creating the instance first when <c>Created</c>, the way an
     /// engine answers when the answer is lost or unreadable but the work was done.</summary>
     public (ProductIdentityWorkflowTransportOutcome Outcome, string Code, bool Created)? NextStartFailure { get; set; }
@@ -149,25 +152,28 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
                         && instance.ObjectId == request.ExpectedObjectId
             ? ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Success(StartResult(instance, true))
             : ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowStartResult>.Fail(
-                ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_START_NOT_FOUND"));
+                ProductIdentityWorkflowTransportOutcome.NotFound, "NOT_FOUND_NON_LEAKAGE"));
 
     public Task<ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>> GetTerminalEvidenceAsync(
         Guid tenantId, ProductIdentityWorkflowTerminalEvidenceRequest request, CancellationToken cancellationToken = default)
     {
+        if (NextTerminalEvidenceThrows)
+        {
+            NextTerminalEvidenceThrows = false;
+            throw new IOException("the engine connection broke half-way");
+        }
         if (!_byId.TryGetValue(request.WorkflowInstanceId, out var instance))
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
                 ProductIdentityWorkflowTransportOutcome.NotFound, "WORKFLOW_INSTANCE_NOT_FOUND"));
-        // FIX3 E1: the engine names an approval closed without a decision with its own reason (the answer MDM now
-        // requires before sending a request back); contradictory facts keep the general "inconsistent" conflict.
-        if (instance.ClosedWithoutDecision)
-            return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
-                ProductIdentityWorkflowTransportOutcome.Conflict, ProductIdentityWorkflowFaultPolicy.ClosedWithoutDecision));
-        if (instance.EvidenceInconsistent)
+        // FIX4 (CT decision 3 corrected): what Platform answers TODAY for an approval closed without a decision — the
+        // same "inconsistent" conflict as for contradictory facts (BL-547 will give it its own reason). Every code this
+        // fake answers is one Platform's own source defines (FakePlatformCodeGuardTests).
+        if (instance.ClosedWithoutDecision || instance.EvidenceInconsistent)
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
                 ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT"));
         if (instance.ApprovedBy is not { } approver)
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
-                ProductIdentityWorkflowTransportOutcome.NonTerminal, "WORKFLOW_INSTANCE_NOT_TERMINAL"));
+                ProductIdentityWorkflowTransportOutcome.NonTerminal, "WORKFLOW_DECISION_NOT_TERMINAL"));
         return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Success(new(
             instance.Id, instance.TaskId, instance.TemplateId, instance.TemplateVersionId, instance.ObjectType,
             instance.ObjectId, instance.ObjectRef, "Approve", approver.ToString("D"), "APPROVED",
@@ -205,7 +211,7 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
             || !instance.Cancelled && (request.ExpectedWorkflowInstanceVersion != instance.InstanceVersion
                                        || request.ExpectedApprovalTaskVersion != instance.TaskVersion))
             return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowCancellationEvidence>.Fail(
-                ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_VERSION_CONFLICT"));
+                ProductIdentityWorkflowTransportOutcome.Conflict, "WORKFLOW_TRUSTED_CANCEL_CONFLICT"));
         var replay = instance.Cancelled;
         if (!replay)
         {

@@ -7,7 +7,8 @@ public sealed class GetGskusValidator : AbstractValidator<GetGskusQuery>
 {
     public GetGskusValidator()
     {
-        RuleFor(x => x.PageNumber).GreaterThan(0);
+        // FIX4 item 9: bounded — an unbounded page number overflowed the skip into a negative one (a 500).
+        RuleFor(x => x.PageNumber).GreaterThan(0).LessThanOrEqualTo(GetGskusQuery.MaxPageNumber);
         RuleFor(x => x.PageSize).InclusiveBetween(1, 100);
         RuleFor(x => x.Search).MaximumLength(100);
         RuleFor(x => x.LifecycleStatus).IsInEnum().When(x => x.LifecycleStatus.HasValue);

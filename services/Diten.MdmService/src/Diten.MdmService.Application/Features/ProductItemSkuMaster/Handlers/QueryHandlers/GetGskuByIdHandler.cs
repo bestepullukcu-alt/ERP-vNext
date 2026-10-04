@@ -6,6 +6,7 @@ using Diten.MdmService.Application.Features.ProductItemSkuMaster.Queries;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.ValueObjects;
 using Diten.Shared.Core;
 using MediatR;
 
@@ -20,6 +21,8 @@ public sealed class GetGskuByIdHandler
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
     private readonly IProductIdentityLifecycleActorContext _actorContext;
     private readonly IFirstGskuIdentityWorkflowOperationRepository? _identityOperations;
+    private readonly IGskuCorrectionWorkflowOperationRepository? _corrections;
+    private readonly IGskuRetirementRequestOperationRepository? _retirementRequests;
 
     public GetGskuByIdHandler(
         IGskuRepository gskus,
@@ -30,9 +33,13 @@ public sealed class GetGskuByIdHandler
         ProductLegalEntityScopeCandidateFacade candidates,
         ITenantContext tenantContext,
         IProductIdentityLifecycleActorContext? actorContext = null,
-        IFirstGskuIdentityWorkflowOperationRepository? identityOperations = null)
+        IFirstGskuIdentityWorkflowOperationRepository? identityOperations = null,
+        IGskuCorrectionWorkflowOperationRepository? corrections = null,
+        IGskuRetirementRequestOperationRepository? retirementRequests = null)
     {
         _identityOperations = identityOperations;
+        _corrections = corrections;
+        _retirementRequests = retirementRequests;
         _gskus = gskus;
         _revisions = revisions;
         _globalProducts = globalProducts;
@@ -83,6 +90,10 @@ public sealed class GetGskuByIdHandler
         if (gsku.LifecycleStatus == ProductIdentityLifecycleStatus.PendingIdentityApproval
             && submit.Kind != FirstGskuIdentitySubmitStateKind.ReconciliationRequired)
             submit = FirstGskuIdentitySubmitState.None;
+        var stuckRequest = await StuckLifecycleRequestAsync(gsku, cancellationToken);
+        var actions = BuildPairAvailableActions(gsku, revision, _actorContext, submit.Kind, submit.InWithdrawal,
+            submit.SubmitterSubjectId);
+        if (stuckRequest is { Requester: true }) actions = [.. actions, "REPEAT_REQUEST"];
         return Response<ProductItemSkuMasterModels.GskuDetailDto>.Success(new(
             gsku.Id,
             gsku.CanonicalCode,
@@ -98,7 +109,7 @@ public sealed class GetGskuByIdHandler
             gsku.Version,
             gsku.CreatedAt,
             gsku.UpdatedAt,
-            BuildPairAvailableActions(gsku, revision, _actorContext, submit.Kind, submit.InWithdrawal),
+            actions,
             gsku.LifecycleStatus == ProductIdentityLifecycleStatus.Draft && _identityOperations is not null
                 ? await _identityOperations.LatestNotApplicableReasonAsync(gsku.Id, cancellationToken)
                 : null,
@@ -106,7 +117,36 @@ public sealed class GetGskuByIdHandler
             submit.Kind == FirstGskuIdentitySubmitStateKind.ReconciliationRequired ? submit.SubmittedAtVersion : null,
             gsku.LifecycleStatus == ProductIdentityLifecycleStatus.IdentityApproved && _identityOperations is not null
                 ? await _identityOperations.LatestApprovalNoteAsync(gsku.Id, cancellationToken)
-                : null));
+                : null,
+            stuckRequest is null ? null : "STUCK",
+            stuckRequest is { Requester: true } ? stuckRequest.Request : null));
+    }
+
+    /*
+     * FIX4 item 1 (b): a correction or retirement request STUCK in manual reconciliation holds the GSKU's lock. Everyone
+     * sees that (LifecycleRequestState STUCK); its requester is offered REPEAT_REQUEST — the same command again (same
+     * version and facts, so the same operation), which reads the engine and settles it.
+     */
+    private sealed record StuckRequest(bool Requester, ProductItemSkuMasterModels.GskuPendingLifecycleRequestDto Request);
+
+    private async Task<StuckRequest?> StuckLifecycleRequestAsync(Gsku gsku, CancellationToken cancellationToken)
+    {
+        if (gsku.ActiveLifecycleOperation is not { } held) return null;
+        _actorContext.TryResolveCanonicalHumanSubject(out var subject);
+        if (held.Kind == GskuLifecycleOperationKind.Correction && _corrections is not null
+            && await _corrections.GetByOperationIdAsync(held.OperationId, cancellationToken) is { } correction
+            && correction.Checkpoint == GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired
+            && correction.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+            return new(subject == correction.MakerSubjectId && _actorContext.HasPermission(GskuCorrectionPermissions.Request),
+                new("CORRECTION", correction.BaseGskuVersion, correction.ProposedPackQuantity,
+                    correction.ProposedPackUomCode, null));
+        if (held.Kind == GskuLifecycleOperationKind.Retirement && _retirementRequests is not null
+            && await _retirementRequests.GetByOperationIdAsync(held.OperationId, cancellationToken) is { } retirement
+            && retirement.Checkpoint == GskuRetirementRequestCheckpoint.ManualReconciliationRequired
+            && retirement.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+            return new(subject == retirement.MakerSubjectId && _actorContext.HasPermission(GskuRetirementRequestPermissions.Request),
+                new("RETIREMENT", retirement.BaseGskuVersion, null, null, retirement.RequestReason));
+        return null;
     }
 
     internal static string? SubmitStateName(FirstGskuIdentitySubmitStateKind kind) => kind switch
@@ -120,18 +160,20 @@ public sealed class GetGskuByIdHandler
 
     internal static IReadOnlyList<string> BuildPairAvailableActions(
         Gsku gsku, ProductDefinitionRevision revision, IProductIdentityLifecycleActorContext actorContext,
-        FirstGskuIdentitySubmitStateKind submit = FirstGskuIdentitySubmitStateKind.None, bool inWithdrawal = false)
+        FirstGskuIdentitySubmitStateKind submit = FirstGskuIdentitySubmitStateKind.None, bool inWithdrawal = false,
+        Guid? submitter = null)
     {
         // FIX3 E2: a submit in manual reconciliation may have left the pair half-written (the revision pending, the
         // GSKU not yet): the pair looks inconsistent, and the reconciling repeat is exactly its way out.
         if (submit == FirstGskuIdentitySubmitStateKind.ReconciliationRequired && !inWithdrawal
             && !gsku.IsDeleted && gsku.ActiveLifecycleOperation is null && !gsku.RetirementOperationId.HasValue
             && gsku.LifecycleStatus is ProductIdentityLifecycleStatus.Draft or ProductIdentityLifecycleStatus.PendingIdentityApproval
-            && actorContext.TryResolveCanonicalHumanSubject(out _)
+            && actorContext.TryResolveCanonicalHumanSubject(out var subject)
             && actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Submit))
         {
-            var actions = BuildAvailableActions(gsku, actorContext, submit).ToList();
-            if (!actions.Contains("SUBMIT")) actions.Add("SUBMIT");
+            var actions = BuildAvailableActions(gsku, actorContext, submit, submitter).ToList();
+            // FIX4 item 11: only the submitter's repeat reconciles (the engine reads it with their token).
+            if (subject == submitter && !actions.Contains("SUBMIT")) actions.Add("SUBMIT");
             return actions;
         }
         if (gsku.ProductDefinitionRevisionId != revision.Id || gsku.TenantId != revision.TenantId
@@ -146,7 +188,8 @@ public sealed class GetGskuByIdHandler
     internal static IReadOnlyList<string> BuildAvailableActions(
         Gsku gsku,
         IProductIdentityLifecycleActorContext actorContext,
-        FirstGskuIdentitySubmitStateKind submit = FirstGskuIdentitySubmitStateKind.None)
+        FirstGskuIdentitySubmitStateKind submit = FirstGskuIdentitySubmitStateKind.None,
+        Guid? submitter = null)
     {
         var actions = new List<string> { "DETAILS" };
         if (gsku.IsDeleted || gsku.ActiveLifecycleOperation is not null || gsku.RetirementOperationId.HasValue
@@ -162,8 +205,11 @@ public sealed class GetGskuByIdHandler
             if (submit is FirstGskuIdentitySubmitStateKind.None or FirstGskuIdentitySubmitStateKind.ResubmitRequired
                     or FirstGskuIdentitySubmitStateKind.Ended
                 && actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Update)) actions.Add("EDIT");
-            if (submit is FirstGskuIdentitySubmitStateKind.None or FirstGskuIdentitySubmitStateKind.ResubmitRequired
-                    or FirstGskuIdentitySubmitStateKind.ReconciliationRequired
+            // FIX4 item 11: a submit in reconciliation is offered to its submitter only (only their repeat settles it);
+            // others see the state and a sentence saying who can.
+            if ((submit is FirstGskuIdentitySubmitStateKind.None or FirstGskuIdentitySubmitStateKind.ResubmitRequired
+                 || submit == FirstGskuIdentitySubmitStateKind.ReconciliationRequired
+                    && actorContext.TryResolveCanonicalHumanSubject(out var submitterSubject) && submitterSubject == submitter)
                 && actorContext.HasPermission(FirstGskuIdentityLifecyclePermissions.Submit)) actions.Add("SUBMIT");
         }
 

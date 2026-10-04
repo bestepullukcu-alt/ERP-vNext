@@ -116,7 +116,6 @@ public static class GskuRefusalSentences
         ["GSKU_CORRECTION_FAILED"] = "RefusalRequestEnded",
         ["GSKU_CORRECTION_GSKU_DRIFT"] = "RefusalReconciliation",
         ["GSKU_CORRECTION_IDEMPOTENCY_CONFLICT"] = "RefusalRepeatDiffers",
-        ["GSKU_CORRECTION_MAKER_REPLAY_REQUIRED"] = "RefusalResubmit",
         ["GSKU_CORRECTION_NOT_APPLICABLE"] = "RefusalRequestEnded",
         ["GSKU_CORRECTION_NOT_IMPLEMENTED"] = "RefusalSetupIncomplete",
         ["GSKU_CORRECTION_OPERATION_CONFLICT"] = "RefusalChangedElsewhere",
@@ -164,7 +163,6 @@ public static class GskuRefusalSentences
         ["GSKU_RETIREMENT_REQUEST_GSKU_DRIFT"] = "RefusalReconciliation",
         ["GSKU_RETIREMENT_REQUEST_IDEMPOTENCY_CONFLICT"] = "RefusalRepeatDiffers",
         ["GSKU_RETIREMENT_REQUEST_INVALID"] = "RefusalInvalidRequest",
-        ["GSKU_RETIREMENT_REQUEST_MAKER_REPLAY_REQUIRED"] = "RefusalResubmit",
         ["GSKU_RETIREMENT_REQUEST_MANUAL_AUDIT_NOT_PERSISTED"] = "RefusalReconciliation",
         ["GSKU_RETIREMENT_REQUEST_NOT_IMPLEMENTED"] = "RefusalSetupIncomplete",
         ["GSKU_RETIREMENT_REQUEST_OPERATION_CONFLICT"] = "RefusalChangedElsewhere",
@@ -240,5 +238,7 @@ public static class GskuRefusalSentences
         ["GSKU_RETIREMENT_REQUEST_START_SETTLING"] = "RefusalBusy",
         ["GSKU_CORRECTION_START_LOOKUP_FAILED"] = "RefusalServiceUnavailable",
         ["GSKU_RETIREMENT_REQUEST_START_LOOKUP_FAILED"] = "RefusalServiceUnavailable",
+        ["GSKU_CORRECTION_MANUAL_RECONCILIATION_NEEDED"] = "RefusalManualReconciliation",
+        ["GSKU_RETIREMENT_REQUEST_MANUAL_RECONCILIATION_NEEDED"] = "RefusalManualReconciliation",
     };
 }

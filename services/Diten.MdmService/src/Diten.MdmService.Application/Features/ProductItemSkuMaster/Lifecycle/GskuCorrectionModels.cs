@@ -16,4 +16,7 @@ public sealed record GskuCorrectionExecutionConfiguration(TimeSpan LeaseDuration
     TimeSpan? StartSettleWindow = null)
 {
     public TimeSpan SettleWindow => StartSettleWindow is { } window && window > TimeSpan.Zero ? window : TimeSpan.FromMinutes(2);
+
+    // FIX4 item 2: set by the processor for a maker's request — its retries do not count in the worker's streak.
+    public bool Interactive { get; init; }
 }

@@ -45,4 +45,11 @@
   <data name="ProductPickerLoadingMore" xml:space="preserve"><value>正在加载更多全球产品…</value></data>
   <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>该审批未作决定即已关闭（已取消或已过期）。草稿可以编辑并重新提交。</value></data>
   <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>此 GSKU 使用的某个单位在审批之后被停用。审批依然有效：它按提交时验证的值应用；被停用的单位不能用于新记录。</value></data>
+  <data name="RepeatRequest" xml:space="preserve"><value>重新发送请求</value></data>
+  <data name="RepeatRequestConfirmation" xml:space="preserve"><value>要再次发送相同的请求吗？将重新读取审批服务，请求从当前位置继续。</value></data>
+  <data name="RepeatRequestWaiting" xml:space="preserve"><value>审批在任务中心中仍处于打开状态；请求正在等待其决定。</value></data>
+  <data name="RepeatRequestSettled" xml:space="preserve"><value>请求已重新读取并处理完毕。</value></data>
+  <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>您对此 GSKU 的请求正在等待核对，并使其保持锁定。请重新发送：将重新读取审批服务；如果仍无法解决，请联系您的管理员。</value></data>
+  <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>此 GSKU 上的一个请求正在等待核对，并使其保持锁定。只有提出该请求的人可以重新发送；否则需由管理员进行核对。</value></data>
+  <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>此提交正在等待核对。只有提交人可以再次提交；否则需由管理员进行核对。</value></data>
 </root>

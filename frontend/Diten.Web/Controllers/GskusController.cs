@@ -293,6 +293,7 @@ public sealed class GskusController : Controller
 
     internal const int MaxListPageSize = 100;
     private const int DefaultListPageSize = 20;
+    private const int MaxListPageNumber = 100_000;
 
     internal static string BuildListQuery(IQueryCollection query)
     {
@@ -304,7 +305,8 @@ public sealed class GskusController : Controller
             && parsedStart > 0
                 ? parsedStart
                 : 0;
-        var pageNumber = (int)Math.Min(start / length + 1, int.MaxValue);
+        // FIX4 item 9: bounded as MDM bounds it (a page beyond is refused by MDM's validator, 400 — never an overflow).
+        var pageNumber = (int)Math.Min(start / length + 1, MaxListPageNumber + 1L);
         var parts = new List<string>
         {
             $"pageNumber={pageNumber.ToString(CultureInfo.InvariantCulture)}",
@@ -319,6 +321,9 @@ public sealed class GskusController : Controller
         }
         return string.Join("&", parts);
     }
+
+    private static string PathOf(string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri) ? uri.AbsolutePath : "(unreadable url)";
 
     private async Task<IActionResult> ProxyListAsync(string targetUrl, CancellationToken cancellationToken)
     {
@@ -368,12 +373,13 @@ public sealed class GskusController : Controller
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
-            _logger.LogWarning(exception, "GSKU gateway proxy timed out for {TargetUrl}.", targetUrl);
+            // FIX4 item 8: the list URL carries the search term — it is not logged.
+            _logger.LogWarning(exception, "GSKU list proxy timed out.");
             return SafeFailure(HttpStatusCode.GatewayTimeout);
         }
         catch (HttpRequestException exception)
         {
-            _logger.LogError(exception, "GSKU gateway proxy failed for {TargetUrl}.", targetUrl);
+            _logger.LogError(exception, "GSKU list proxy failed.");
             return SafeFailure(HttpStatusCode.ServiceUnavailable);
         }
     }
@@ -759,12 +765,13 @@ public sealed class GskusController : Controller
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
         {
-            _logger.LogWarning(exception, "GSKU gateway proxy timed out for {TargetUrl}.", targetUrl);
+            // FIX4 item 8: the path only — a query may carry what the reader typed.
+            _logger.LogWarning(exception, "GSKU gateway proxy timed out for {TargetPath}.", PathOf(targetUrl));
             return SafeFailure(HttpStatusCode.GatewayTimeout);
         }
         catch (HttpRequestException exception)
         {
-            _logger.LogError(exception, "GSKU gateway proxy failed for {TargetUrl}.", targetUrl);
+            _logger.LogError(exception, "GSKU gateway proxy failed for {TargetPath}.", PathOf(targetUrl));
             return SafeFailure(HttpStatusCode.ServiceUnavailable);
         }
     }

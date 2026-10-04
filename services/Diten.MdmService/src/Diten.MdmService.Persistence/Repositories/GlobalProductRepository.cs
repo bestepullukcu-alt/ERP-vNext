@@ -399,6 +399,30 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
             // approver was left deciding facts the product no longer had). A submit the engine never received is set
             // aside by the edit. A submit in manual reconciliation does NOT lock the draft: that is Global Product's
             // accepted rule (the maker edits and submits anew) and it is kept.
+            //
+            // FIX4 item 6: only a product that HAS an identity operation needs the transaction. Any other edit is the
+            // single write it always was (a plain mongod runs it) — conditioned on the reservation count read here, so a
+            // submit that reserves in between makes it match nothing and the edit goes the transactional way.
+            var draftNow = await _globalProducts.Find(filter).FirstOrDefaultAsync(cancellationToken);
+            var hasIdentityOperation = await _identityOperations.Find(
+                    Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(x => x.TenantId, _tenantId)
+                    & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(x => x.IsDeleted, false)
+                    & Builders<GlobalProductIdentityWorkflowOperation>.Filter.Eq(x => x.GlobalProductId, id))
+                .AnyAsync(cancellationToken);
+            if (draftNow is not null && !hasIdentityOperation)
+            {
+                var single = await _globalProducts.FindOneAndUpdateAsync(
+                    filter & Builders<GlobalProduct>.Filter.Eq(x => x.IdentitySubmitReservations, draftNow.IdentitySubmitReservations),
+                    update,
+                    new FindOneAndUpdateOptions<GlobalProduct> { ReturnDocument = ReturnDocument.After },
+                    cancellationToken);
+                if (single is not null)
+                    return new(true, single);
+            }
+            else if (draftNow is null)
+            {
+                return await ClassifyDraftUpdateFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
+            }
             for (var attempt = 0; ; attempt++)
             {
                 using var session = await _client.StartSessionAsync(cancellationToken: cancellationToken);

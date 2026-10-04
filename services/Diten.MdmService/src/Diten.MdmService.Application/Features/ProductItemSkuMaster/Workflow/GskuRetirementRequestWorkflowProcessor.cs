@@ -71,17 +71,32 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
         string? token, string leaseOwner, GskuRetirementRequestExecutionConfiguration execution,
         bool stopAtPending, CancellationToken ct)
     {
+        execution = execution with { Interactive = token is not null };
+        var reconciling = false;
         for (var step = 0; step < 10; step++)
         {
             ct.ThrowIfCancellationRequested();
             if (operation.Checkpoint == GskuRetirementRequestCheckpoint.Completed) return Success(operation, true);
+            var reconcile = false;
             if (operation.Checkpoint == GskuRetirementRequestCheckpoint.ManualReconciliationRequired)
-                return Fail(operation, operation.LastFailureCode ?? "GSKU_RETIREMENT_REQUEST_RECONCILIATION_REQUIRED", 409);
-            if (operation.Checkpoint == GskuRetirementRequestCheckpoint.AwaitingMakerReplay && token is null)
-                return Fail(operation, "GSKU_RETIREMENT_REQUEST_MAKER_REPLAY_REQUIRED", 409);
-            if (stopAtPending && operation.Checkpoint == GskuRetirementRequestCheckpoint.AwaitingDecision)
+            {
+                // FIX4 item 1 (b), as the correction: a STUCK request's way out is its requester's same command.
+                if (token is null || step > 0
+                    || operation.RecoveryDisposition != ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired)
+                    return Fail(operation, reconciling && operation.RecoveryDisposition
+                            == ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired
+                        ? ManualReconciliationNeeded
+                        : operation.LastFailureCode ?? "GSKU_RETIREMENT_REQUEST_RECONCILIATION_REQUIRED", 409);
+                reconcile = reconciling = true;
+            }
+            if (stopAtPending && !reconciling && operation.Checkpoint == GskuRetirementRequestCheckpoint.AwaitingDecision)
                 return Success(operation, false);
             var now = clock.GetUtcNow();
+            // FIX4 item 2: a requester's repeat before the worker's next attempt is due is answered without a claim.
+            if (token is not null && !reconcile
+                && operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.Retryable
+                && operation.NextAttemptAtUtcTicksV1 > now.UtcTicks)
+                return Fail(operation, operation.LastFailureCode ?? "GSKU_RETIREMENT_REQUEST_RETRY_SCHEDULED", 503);
             var leaseUntil = now.Add(execution.LeaseDuration).UtcTicks;
             // FIX2 item 9: the shared bounded claim (lease/2, give back a claim the store may have written, 503).
             var (claim, storeSilent) = await ProductIdentityWorkflowClaims.ClaimAsync(
@@ -99,6 +114,11 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             advanced = operation.Checkpoint switch
             {
                 GskuRetirementRequestCheckpoint.Prepared => await PrepareAsync(operation, claim, token, now, execution, ct),
+                GskuRetirementRequestCheckpoint.ManualReconciliationRequired when reconcile
+                    => await ReconcileAsync(operation, claim, now, execution, ct),
+                // FIX4 item 10: FIX2's parked requests (lock held) are settled by the worker like a Prepared one.
+                GskuRetirementRequestCheckpoint.AwaitingMakerReplay when token is null
+                    => await PreparedWithoutMakerAsync(operation, claim, now, execution, ct),
                 GskuRetirementRequestCheckpoint.StartOutcomeUnknown or GskuRetirementRequestCheckpoint.AwaitingMakerReplay
                     => await RecoverStartAsync(operation, claim, token, now, execution, ct),
                 GskuRetirementRequestCheckpoint.WorkflowStarted => await Advance(claim,
@@ -123,6 +143,12 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             }
             operation = await operations.GetByOperationIdAsync(operation.OperationId, ct)
                 ?? throw new InvalidOperationException("GSKU_RETIREMENT_REQUEST_OPERATION_LOST");
+            // (An open approval is looked at again later without a fault — disposition None, a next look set — whatever
+            // code the engine gave for "not yet", e.g. WORKFLOW_DECISION_NOT_TERMINAL.)
+            if (reconciling && operation.Checkpoint == GskuRetirementRequestCheckpoint.AwaitingDecision
+                && operation.RecoveryDisposition == ProductIdentityWorkflowRecoveryDisposition.None
+                && operation.NextAttemptAtUtcTicksV1 > clock.GetUtcNow().UtcTicks)
+                return Success(operation, false);
             if (operation.NextAttemptAtUtcTicksV1 > clock.GetUtcNow().UtcTicks)
                 return Fail(operation, operation.LastFailureCode ?? "GSKU_RETIREMENT_REQUEST_RETRY_SCHEDULED", 503);
         }
@@ -132,13 +158,13 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
     private async Task<bool> PrepareAsync(GskuRetirementRequestOperation op, GskuRetirementRequestWorkflowClaim claim,
         string? token, DateTimeOffset now, GskuRetirementRequestExecutionConfiguration execution, CancellationToken ct)
     {
-        var gsku = await gskus.GetByIdAsync(op.GskuId, ct);
-        if (gsku is null) return await Manual(claim, "GSKU_NOT_FOUND", now, ct);
         if (token is null)
             // FIX3 S3 (as the correction): the worker never starts a request, nor parks it holding the lock.
-            return await PreparedWithoutMakerAsync(op, gsku, claim, now, execution, ct);
+            return await PreparedWithoutMakerAsync(op, claim, now, execution, ct);
+        var gsku = await gskus.GetByIdAsync(op.GskuId, ct);
+        if (gsku is null) return await Ended(claim, "GSKU_NOT_FOUND", now, ct);
         var admitted = await AcquireAsync(op, gsku, now, ct);
-        if (!admitted.Succeeded) return await Manual(claim, admitted.ErrorCode, now, ct);
+        if (!admitted.Succeeded) return await Ended(claim, admitted.ErrorCode, now, ct);
         return await RecordStart(op, claim, await workflow.StartAsync(op.TenantId, factory.Rehydrate(op), token, ct),
             fromStart: true, now, execution, ct);
     }
@@ -149,25 +175,52 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             GskuRetirementRequestAuditIntentFactory.Create(gsku, op.BaseGskuVersion, op.OperationId,
                 op.MakerSubjectId, ProductAuditOperation.GskuRetirementRequested, op.RequestReason, now), ct);
 
-    private async Task<bool> PreparedWithoutMakerAsync(GskuRetirementRequestOperation op, Gsku gsku,
+    private async Task<bool> PreparedWithoutMakerAsync(GskuRetirementRequestOperation op,
         GskuRetirementRequestWorkflowClaim claim, DateTimeOffset now,
         GskuRetirementRequestExecutionConfiguration execution, CancellationToken ct)
     {
+        var gsku = await gskus.GetByIdAsync(op.GskuId, ct);
+        if (gsku is null) return await Ended(claim, "GSKU_NOT_FOUND", now, ct);
         var found = await workflow.GetStartResultAsync(op.TenantId,
             new(op.ObjectType, op.ObjectId, op.MakerSubjectId, op.StartIdempotencyKey), ct);
         if (found.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
         {
             var admitted = await AcquireAsync(op, gsku, now, ct);
-            if (!admitted.Succeeded) return await Manual(claim, admitted.ErrorCode, now, ct);
+            if (!admitted.Succeeded) return await Stuck(claim, admitted.ErrorCode, now, ct);
             return await RecordStart(op, claim, found, fromStart: false, now, execution, ct);
         }
         if (found.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound)
             return Settling(op, now, execution)
-                ? await RetryAsync(op, claim, op.Checkpoint, StartSettling, now, execution, ct)
+                ? await RetryAsync(op, claim, op.Checkpoint, StartSettling, now, execution, ct, transient: true)
                 : await EndAndReleaseAsync(op, claim, "GSKU_RETIREMENT_REQUEST_START_NOT_RECEIVED", now, execution, ct);
         return await RetryAsync(op, claim, op.Checkpoint,
-            found.ErrorCode ?? "GSKU_RETIREMENT_REQUEST_START_LOOKUP_FAILED", now, execution, ct);
+            found.ErrorCode ?? "GSKU_RETIREMENT_REQUEST_START_LOOKUP_FAILED", now, execution, ct,
+            transient: IsTransient(found.Outcome));
     }
+
+    // FIX4 item 1 (b): the requester's same command on a STUCK request (see the correction's ReconcileAsync).
+    private async Task<bool> ReconcileAsync(GskuRetirementRequestOperation op, GskuRetirementRequestWorkflowClaim claim,
+        DateTimeOffset now, GskuRetirementRequestExecutionConfiguration execution, CancellationToken ct)
+    {
+        if (op.DecisionKind.HasValue && op.DecisionActorSubjectId.HasValue)
+            return await Advance(claim, GskuRetirementRequestCheckpoint.DecisionObserved, now, ct);
+        if (op.WorkflowInstanceId.HasValue)
+            return await Advance(claim, GskuRetirementRequestCheckpoint.AwaitingDecision, now, ct);
+        var found = await workflow.GetStartResultAsync(op.TenantId,
+            new(op.ObjectType, op.ObjectId, op.MakerSubjectId, op.StartIdempotencyKey), ct);
+        if (found.Outcome == ProductIdentityWorkflowTransportOutcome.Success)
+            return await RecordStart(op, claim, found, fromStart: false, now, execution, ct);
+        if (found.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound)
+            return await EndAndReleaseAsync(op, claim, "GSKU_RETIREMENT_REQUEST_START_NOT_RECEIVED", now, execution, ct);
+        return await operations.AdvanceAsync(claim, new(op.Checkpoint, op.RecoveryDisposition, now.UtcTicks,
+            LastFailureCode: op.LastFailureCode, ReleaseLease: true, Streak: RecoveryStreakWrite.Keep), ct);
+    }
+
+    public const string ManualReconciliationNeeded = "GSKU_RETIREMENT_REQUEST_MANUAL_RECONCILIATION_NEEDED";
+
+    private static bool IsTransient(ProductIdentityWorkflowTransportOutcome outcome) =>
+        outcome is ProductIdentityWorkflowTransportOutcome.Timeout or ProductIdentityWorkflowTransportOutcome.Retryable
+            or ProductIdentityWorkflowTransportOutcome.Incomplete;
 
     // FIX3 S8: a start sent less than the settle window ago may still be in the engine's hands.
     private static bool Settling(GskuRetirementRequestOperation op, DateTimeOffset now,
@@ -209,7 +262,7 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
         if (result.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound && !fromStart && Settling(op, now, execution))
             // FIX3 S8: the engine may still be on a start that timed out — the lock stays until the window has passed.
             return await RetryAsync(op, claim, GskuRetirementRequestCheckpoint.StartOutcomeUnknown, StartSettling,
-                now, execution, ct);
+                now, execution, ct, transient: true);
         if (result.Outcome == ProductIdentityWorkflowTransportOutcome.NotFound)
             // From the start itself: no such definition — nothing was started (the set-up is missing). From the
             // lookup: the engine has nothing under this request's key — nothing arrived. Either way the GSKU is free.
@@ -222,7 +275,7 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             // the GSKU keeps its lock and the worker asks the engine again.
             return await StartUnknownAsync(op, claim, result.ErrorCode
                 ?? (result.Outcome == ProductIdentityWorkflowTransportOutcome.Success ? "GSKU_RETIREMENT_REQUEST_START_EVIDENCE_INVALID" : null),
-                now, execution, ct, fromStart);
+                now, execution, ct, fromStart, transient: IsTransient(result.Outcome));
         var fault = ProductIdentityWorkflowFaultPolicy.Classify(
             ProductIdentityWorkflowCall.Start, result.Outcome, result.ErrorCode);
         if (!fault.StartedNothing)
@@ -235,13 +288,13 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
 
     private Task<bool> StartUnknownAsync(GskuRetirementRequestOperation op, GskuRetirementRequestWorkflowClaim claim,
         string? code, DateTimeOffset now, GskuRetirementRequestExecutionConfiguration execution, CancellationToken ct,
-        bool startSent = false)
+        bool startSent = false, bool transient = false)
     {
         if (code is not null && code.EndsWith("_INVALID", StringComparison.Ordinal))
             log.LogError("GSKU retirement request {OperationId} of tenant {TenantId}: the engine's start answer cannot be used ({ResultCode}); the lock is kept and the start is looked up again.",
                 op.OperationId, op.TenantId, code);
         return RetryAsync(op, claim, GskuRetirementRequestCheckpoint.StartOutcomeUnknown, code, now, execution, ct,
-            startSentAt: startSent ? now.UtcTicks : null);
+            transient, startSentAt: startSent ? now.UtcTicks : null);
     }
 
     // B3: the request ends without its decision applied; the GSKU's lock goes in the same write as the intent that
@@ -259,17 +312,17 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             var released = await gskus.ReleaseLifecycleOperationAsync(gsku.Id, checked(op.BaseGskuVersion + 1),
                 Binding(op), audit, ct);
             if (!released.Succeeded)
-                return await RetryAsync(op, claim, op.Checkpoint, released.ErrorCode, now, execution, ct);
+                return await RetryAsync(op, claim, op.Checkpoint, released.ErrorCode, now, execution, ct, transient: true);
         }
-        log.LogWarning("GSKU retirement request {OperationId} of tenant {TenantId} ended without its decision applied ({ResultCode}); the GSKU is free again.",
+        log.LogInformation("GSKU retirement request {OperationId} of tenant {TenantId} ended without its decision applied ({ResultCode}); the GSKU is free again.",
             op.OperationId, op.TenantId, reason);
-        return await Manual(claim, reason, now, ct);
+        return await Ended(claim, reason, now, ct);
     }
 
     private async Task<bool> ObserveAsync(GskuRetirementRequestOperation op, GskuRetirementRequestWorkflowClaim claim,
         DateTimeOffset now, GskuRetirementRequestExecutionConfiguration execution, CancellationToken ct)
     {
-        if (!op.WorkflowInstanceId.HasValue) return await Manual(claim, "GSKU_RETIREMENT_REQUEST_START_EVIDENCE_INVALID", now, ct);
+        if (!op.WorkflowInstanceId.HasValue) return await Stuck(claim, "GSKU_RETIREMENT_REQUEST_START_EVIDENCE_INVALID", now, ct);
         var result = await workflow.GetTerminalEvidenceAsync(op.TenantId,
             new(op.WorkflowInstanceId.Value, op.ObjectType, op.ObjectId), ct);
         // An approval still open is not a failure: the streak is over (FIX3 item 1).
@@ -281,11 +334,12 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             or ProductIdentityWorkflowTransportOutcome.Incomplete or ProductIdentityWorkflowTransportOutcome.Retryable
             or ProductIdentityWorkflowTransportOutcome.Timeout)
             return await RetryAsync(op, claim, op.Checkpoint,
-                result.ErrorCode ?? "GSKU_RETIREMENT_REQUEST_DECISION_PENDING", now, execution, ct);
+                result.ErrorCode ?? "GSKU_RETIREMENT_REQUEST_DECISION_PENDING", now, execution, ct,
+                transient: IsTransient(result.Outcome));
         if (result.Outcome != ProductIdentityWorkflowTransportOutcome.Success
             && ProductIdentityWorkflowFaultPolicy.Classify(ProductIdentityWorkflowCall.TerminalEvidence, result.Outcome,
                 result.ErrorCode).Kind == ProductIdentityWorkflowFaultKind.ServiceWait)
-            return await RetryAsync(op, claim, op.Checkpoint, result.ErrorCode, now, execution, ct);
+            return await RetryAsync(op, claim, op.Checkpoint, result.ErrorCode, now, execution, ct, transient: true);
         var e = result.Value;
         if (e is not null && Guid.TryParse(e.ActorUserId, out var self) && self == op.MakerSubjectId)
         {
@@ -307,17 +361,14 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             // FIX2 item 5 (a): closed without a decision this service can apply (cancelled by an administrator,
             // evidence that contradicts the request): nothing more can come of it — the GSKU is given back. An answer
             // that is not evidence at all is the engine's fault and is asked again (the lock stays).
-            // FIX3 E1 (CT decision 3): only the engine's own "closed without a decision" ends the request and frees
-            // the GSKU; another conflict (a version, contradictory facts) is quarantined, the lock kept; an answer that
-            // is not evidence at all is asked again.
-            return ProductIdentityWorkflowFaultPolicy.IsClosedWithoutDecision(result)
-                ? await EndAndReleaseAsync(op, claim, "GSKU_RETIREMENT_REQUEST_CLOSED_WITHOUT_DECISION", now, execution, ct)
-                : e is null && result.Outcome == ProductIdentityWorkflowTransportOutcome.Conflict
-                    ? await Manual(claim, "GSKU_RETIREMENT_REQUEST_EVIDENCE_CONFLICT", now, ct)
-                : e is null
-                    ? await RetryAsync(op, claim, op.Checkpoint,
-                        result.ErrorCode ?? "GSKU_RETIREMENT_REQUEST_EVIDENCE_UNREADABLE", now, execution, ct)
-                    : await EndAndReleaseAsync(op, claim, "GSKU_RETIREMENT_REQUEST_EVIDENCE_CONFLICT", now, execution, ct);
+            // FIX4 (CT decision 3 corrected; see the correction): until Platform names "closed without a decision"
+            // (BL-547), any terminal evidence this service cannot apply ends the request and frees the GSKU.
+            return e is null && result.Outcome != ProductIdentityWorkflowTransportOutcome.Conflict
+                ? await RetryAsync(op, claim, op.Checkpoint,
+                    result.ErrorCode ?? "GSKU_RETIREMENT_REQUEST_EVIDENCE_UNREADABLE", now, execution, ct)
+                : await EndAndReleaseAsync(op, claim, e is null
+                    ? "GSKU_RETIREMENT_REQUEST_CLOSED_WITHOUT_DECISION" : "GSKU_RETIREMENT_REQUEST_EVIDENCE_CONFLICT",
+                    now, execution, ct);
         return await operations.AdvanceAsync(claim, new(GskuRetirementRequestCheckpoint.DecisionObserved,
             ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
             DecisionKind: approved ? ProductIdentityDecisionKind.Approved : ProductIdentityDecisionKind.Rejected,
@@ -329,7 +380,7 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
     private async Task<bool> ApplyAsync(GskuRetirementRequestOperation op, GskuRetirementRequestWorkflowClaim claim,
         DateTimeOffset now, GskuRetirementRequestExecutionConfiguration execution, CancellationToken ct)
     {
-        if (!op.DecisionActorSubjectId.HasValue) return await Manual(claim, "GSKU_RETIREMENT_REQUEST_GSKU_DRIFT", now, ct);
+        if (!op.DecisionActorSubjectId.HasValue) return await Stuck(claim, "GSKU_RETIREMENT_REQUEST_GSKU_DRIFT", now, ct);
         if (op.DecisionKind == ProductIdentityDecisionKind.Approved)
         {
             var pair = await pairRetirement.StartAsync(op.GskuId, checked(op.BaseGskuVersion + 1), op.OperationId,
@@ -338,7 +389,7 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
             if (!pair.Succeeded)
             {
                 if (pair.Operation?.Checkpoint != FirstGskuIdentityRetirementCheckpoint.ManualReconciliationRequired)
-                    return await Retry(op, claim, pair.ErrorCode, now, execution, ct);
+                    return await Retry(op, claim, pair.ErrorCode, now, execution, ct, transient: true);
                 // The pair retirement did not take the GSKU (a dependant was found before its fence): the request
                 // ends "not applicable", the requester sees why, and the GSKU is given back (B3 / B4).
                 var current = await gskus.GetByIdAsync(op.GskuId, ct);
@@ -347,7 +398,7 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
                         ?? FirstGskuIdentityRetirementProcessor.DependentIdentitiesExist, now, execution, ct);
                 var gsku = current;
                 if (gsku is null) return await Retry(op, claim,
-                    "GSKU_RETIREMENT_REQUEST_MANUAL_AUDIT_NOT_PERSISTED", now, execution, ct);
+                    "GSKU_RETIREMENT_REQUEST_MANUAL_AUDIT_NOT_PERSISTED", now, execution, ct, transient: true);
                 var conflictAudit = GskuRetirementRequestAuditIntentFactory.Create(gsku, gsku.Version,
                     op.OperationId, op.DecisionActorSubjectId.Value,
                     ProductAuditOperation.GskuRetirementManualReconciliationRequired,
@@ -355,46 +406,59 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
                 var auditResult = await gskus.RecordRetirementRequestConflictAsync(gsku.Id, gsku.Version,
                     Binding(op), conflictAudit, ct);
                 return auditResult.Succeeded
-                    ? await Manual(claim, pair.ErrorCode, now, ct)
+                    ? await Stuck(claim, pair.ErrorCode, now, ct)
                     : await Retry(op, claim, "GSKU_RETIREMENT_REQUEST_MANUAL_AUDIT_NOT_PERSISTED",
-                        now, execution, ct);
+                        now, execution, ct, transient: true);
             }
         }
         else
         {
             var gsku = await gskus.GetByIdAsync(op.GskuId, ct);
-            if (gsku is null) return await Manual(claim, "GSKU_NOT_FOUND", now, ct);
+            if (gsku is null) return await Stuck(claim, "GSKU_NOT_FOUND", now, ct);
             var audit = GskuRetirementRequestAuditIntentFactory.Create(gsku, checked(op.BaseGskuVersion + 1),
                 op.OperationId, op.DecisionActorSubjectId.Value, ProductAuditOperation.GskuRetirementRejected,
                 op.RequestReason, op.DecisionAtUtcTicksV1.HasValue
                     ? new(op.DecisionAtUtcTicksV1.Value, TimeSpan.Zero) : now);
             var rejected = await gskus.RejectRetirementRequestAsync(gsku.Id, checked(op.BaseGskuVersion + 1),
                 Binding(op), audit, ct);
-            if (!rejected.Succeeded) return await Manual(claim, rejected.ErrorCode, now, ct);
+            if (!rejected.Succeeded) return await Stuck(claim, rejected.ErrorCode, now, ct);
         }
         return await Advance(claim, GskuRetirementRequestCheckpoint.DecisionApplied, now, ct);
     }
 
     private Task<bool> Retry(GskuRetirementRequestOperation op, GskuRetirementRequestWorkflowClaim claim, string? code,
-        DateTimeOffset now, GskuRetirementRequestExecutionConfiguration execution, CancellationToken ct) =>
-        RetryAsync(op, claim, claim.Checkpoint, code, now, execution, ct);
+        DateTimeOffset now, GskuRetirementRequestExecutionConfiguration execution, CancellationToken ct,
+        bool transient = false) =>
+        RetryAsync(op, claim, claim.Checkpoint, code, now, execution, ct, transient);
 
-    // FIX3 item 1 (B13): every retry goes through here — counted, backed off, and after the configured number of
-    // retries in a row handed to manual reconciliation (the GSKU keeps its lock: whether an approval exists is unknown).
+    // FIX3 item 1 + FIX4 items 1 (a), 2, 3 — the rule of the correction's RetryAsync: only the worker's attempts count
+    // ($inc); past the limit a transient cause keeps retrying at the ceiling (said, never quarantined); any other is
+    // handed to manual reconciliation with the lock held (its requester's same command is the way out).
     private async Task<bool> RetryAsync(GskuRetirementRequestOperation op, GskuRetirementRequestWorkflowClaim claim,
         GskuRetirementRequestCheckpoint checkpoint, string? code, DateTimeOffset now,
-        GskuRetirementRequestExecutionConfiguration execution, CancellationToken ct, long? startSentAt = null)
+        GskuRetirementRequestExecutionConfiguration execution, CancellationToken ct, bool transient = false,
+        long? startSentAt = null)
     {
-        var (exhausted, attempts, next) = ProductIdentityRecoveryStreak.Next(op.FailedAttemptCount, now,
+        var counted = !execution.Interactive;
+        var (exhausted, attempts, next) = ProductIdentityRecoveryStreak.Next(
+            counted ? op.FailedAttemptCount : Math.Max(op.FailedAttemptCount - 1, 0), now,
             execution.RetryDelay, execution.QuarantineAfterFailedAttempts, execution.MaxRetryDelay);
-        if (exhausted)
+        if (counted && exhausted && !transient)
         {
-            log.LogError("GSKU retirement request {OperationId} of tenant {TenantId} failed {Attempts} attempts in a row (last {ResultCode}); it is handed to manual reconciliation.",
+            log.LogError("GSKU retirement request {OperationId} of tenant {TenantId} failed {Attempts} attempts in a row (last {ResultCode}); it is handed to manual reconciliation, the GSKU's lock kept.",
                 op.OperationId, op.TenantId, attempts, code);
-            return await Manual(claim, RetryLimitReached, now, ct);
+            return await Stuck(claim, RetryLimitReached, now, ct);
+        }
+        if (counted && exhausted)
+        {
+            if (attempts == execution.QuarantineAfterFailedAttempts)
+                log.LogError("GSKU retirement request {OperationId} of tenant {TenantId} failed {Attempts} attempts in a row (last {ResultCode}); a service it needs does not answer — it keeps retrying at the ceiling.",
+                    op.OperationId, op.TenantId, attempts, code);
+            code = RetryLimitReached;
         }
         return await operations.AdvanceAsync(claim, new(checkpoint, ProductIdentityWorkflowRecoveryDisposition.Retryable,
-            now.UtcTicks, next, code, ReleaseLease: true, FailedAttemptCount: attempts,
+            now.UtcTicks, next, code, ReleaseLease: true,
+            Streak: counted ? RecoveryStreakWrite.Increment : RecoveryStreakWrite.Keep,
             LastStartSentAtUtcTicksV1: startSentAt), ct);
     }
 
@@ -414,10 +478,16 @@ public sealed class GskuRetirementRequestWorkflowProcessor(
     private Task<bool> Advance(GskuRetirementRequestWorkflowClaim claim, GskuRetirementRequestCheckpoint next,
         DateTimeOffset now, CancellationToken ct) => operations.AdvanceAsync(claim, new(next,
             ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks, ReleaseLease: true), ct);
-    private Task<bool> Manual(GskuRetirementRequestWorkflowClaim claim, string? code, DateTimeOffset now,
+    // FIX4 item 4: STUCK (lock held, counted, the requester's same command is the way out) vs ENDED (nothing held).
+    private Task<bool> Stuck(GskuRetirementRequestWorkflowClaim claim, string? code, DateTimeOffset now,
         CancellationToken ct) => operations.AdvanceAsync(claim, new(
             GskuRetirementRequestCheckpoint.ManualReconciliationRequired,
             ProductIdentityWorkflowRecoveryDisposition.ManualReconciliationRequired, now.UtcTicks,
+            LastFailureCode: code ?? "GSKU_RETIREMENT_REQUEST_RECONCILIATION_REQUIRED", ReleaseLease: true), ct);
+    private Task<bool> Ended(GskuRetirementRequestWorkflowClaim claim, string? code, DateTimeOffset now,
+        CancellationToken ct) => operations.AdvanceAsync(claim, new(
+            GskuRetirementRequestCheckpoint.ManualReconciliationRequired,
+            ProductIdentityWorkflowRecoveryDisposition.None, now.UtcTicks,
             LastFailureCode: code ?? "GSKU_RETIREMENT_REQUEST_RECONCILIATION_REQUIRED", ReleaseLease: true), ct);
     private static GskuActiveLifecycleOperationBinding Binding(GskuRetirementRequestOperation op) =>
         new(GskuLifecycleOperationKind.Retirement, op.OperationId, op.BaseGskuVersion);

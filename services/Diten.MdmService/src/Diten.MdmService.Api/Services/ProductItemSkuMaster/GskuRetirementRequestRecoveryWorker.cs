@@ -12,6 +12,9 @@ public sealed class GskuRetirementRequestRecoveryWorker(GskuRetirementRequestRec
         var settings = options.Value;
         if (!settings.Enabled) return;
         if (!settings.IsValid()) throw new InvalidOperationException("GSKU_RETIREMENT_REQUEST_WORKER_CONFIGURATION_INVALID");
+        if (settings.MaxRetryDelaySeconds < settings.RetryDelaySeconds)
+            logger.LogWarning("GSKU retirement request worker: MaxRetryDelaySeconds ({Ceiling}) is below RetryDelaySeconds ({Delay}); the ceiling is raised to the delay.",
+                settings.MaxRetryDelaySeconds, settings.RetryDelaySeconds);
         while (!stoppingToken.IsCancellationRequested)
         {
             try { await runner.RunCycleAsync(stoppingToken); }

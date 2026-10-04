@@ -28,6 +28,7 @@ public sealed class GskuRefusalBridgeTests
     private static readonly HashSet<string> NotRefusals = new(StringComparer.Ordinal)
     {
         "GSKU_CORRECTION", "GSKU_RETIREMENT_REQUEST", "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "WITHDRAW_APPROVAL",
+        "REPEAT_REQUEST",
         "RESUBMIT_REQUIRED", "SUBMIT_IN_FLIGHT", "SUBMISSION_ENDED", "RECONCILIATION_REQUIRED",
         "SCALAR_QUANTITY_APPLIES", "VERIFIED_GSKU_RESOLVE",
         // The recovery workers' flow names, their start-up and command-line refusals, and the log's placeholder for an

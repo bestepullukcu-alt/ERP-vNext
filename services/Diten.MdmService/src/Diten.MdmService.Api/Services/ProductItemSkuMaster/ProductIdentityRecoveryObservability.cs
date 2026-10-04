@@ -47,7 +47,9 @@ public sealed class ProductIdentityRecoveryCycle
     /// <summary>One line per cycle: counts only — no tenant data, no secret.</summary>
     public void Log(ILogger logger, string flow)
     {
-        logger.Log(Quarantined > 0 || Failed > 0 ? LogLevel.Warning : LogLevel.Information,
+        // FIX4 item 8: a cycle that found nothing to do and nothing stuck is Debug (every few seconds otherwise).
+        logger.Log(Quarantined > 0 || Failed > 0 ? LogLevel.Warning
+            : Seen == 0 && InManualReconciliation == 0 ? LogLevel.Debug : LogLevel.Information,
             "{Flow} recovery cycle: tenants {Tenants}, operations {Seen}, claimed {Claimed}, advanced {Advanced}, quarantined {Quarantined}, waiting {Waiting}, failed {Failed}, in manual reconciliation {InManualReconciliation}.",
             flow, Tenants, Seen, Claimed, Advanced, Quarantined, Waiting, Failed, InManualReconciliation);
     }

@@ -14,9 +14,12 @@ public sealed class GskuCorrectionWorkflowWorkerOptions
     public int MaxRetryDelaySeconds { get; set; } = 900;
     // FIX3 S8: how long after a start the engine's "nothing arrived" is not trusted; longer than the start's timeout.
     public int StartSettleSeconds { get; set; } = 120;
+    // FIX4 item 8: a ceiling below the retry delay (a configuration valid before FIX3) is raised to the delay — said
+    // once by the worker, never a failure of every cycle.
+    public int EffectiveMaxRetryDelaySeconds => Math.Max(MaxRetryDelaySeconds, RetryDelaySeconds);
     public bool IsValid() => LeaseSeconds is >= 10 and <= 900 && RetryDelaySeconds is >= 1 and <= 3600
         && PollIntervalSeconds is >= 1 and <= 3600 && BatchSize is >= 1 and <= 100
         && QuarantineAfterFailedAttempts is >= 0 and <= 1000
-        && MaxRetryDelaySeconds >= RetryDelaySeconds && MaxRetryDelaySeconds <= 86_400
+        && MaxRetryDelaySeconds is >= 1 and <= 86_400
         && StartSettleSeconds is >= 1 and <= 3600;
 }

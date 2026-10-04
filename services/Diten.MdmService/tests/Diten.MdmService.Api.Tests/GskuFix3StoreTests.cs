@@ -27,42 +27,47 @@ public sealed partial class GskuLifecycleHttpTests
 
     // ── Item 1 (B13): the streak ────────────────────────────────────────────────────────────────────────────────
 
-    // A correction whose start answer is lost and whose lookup keeps failing is retried, each retry counted; at the
-    // configured number of retries in a row it is handed to manual reconciliation (FIX2 retried it for ever, silently).
+    // FIX4 item 1 (a) (replaces FIX3's "quarantined after the limit"): an engine that does not answer is a TRANSIENT
+    // cause — 30+ worker attempts in a row are said (RETRY_LIMIT_REACHED, the gauge) but never quarantined, and when the
+    // engine is back the correction heals by itself. The streak is counted in the store ($inc, FIX4 item 3).
     [Fact]
-    public async Task B13_A_correction_that_keeps_failing_is_quarantined_after_the_configured_retries()
+    public async Task B13_A_transient_outage_is_never_quarantined_and_heals_when_the_engine_is_back()
     {
         var approved = await ApprovedGskuAsync();
-        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "WORKFLOW_TIMEOUT", false);
+        host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "WORKFLOW_TIMEOUT", true);
         host.Engine.LookupFailure = ProductIdentityWorkflowTransportOutcome.Timeout;
+        var operations = new GskuCorrectionWorkflowOperationRepository(host.Database, Tenant());
+        GskuCorrectionWorkflowOperation operation;
         try
         {
             Assert.False((await RequestCorrectionAsync(approved.Id, approved.Version, 5m)).IsSuccessStatusCode);
-            var operations = new GskuCorrectionWorkflowOperationRepository(host.Database, Tenant());
-            var operation = await CorrectionOf(approved.Id);
-            Assert.Equal(1, operation.FailedAttemptCount);
+            operation = await CorrectionOf(approved.Id);
+            Assert.Equal(0, operation.FailedAttemptCount); // the maker's attempt does not count (FIX4 item 2)
             var processor = CorrectionProcessor(new VersionedReferences(), crashAfterApply: false);
-            var execution = new GskuCorrectionExecutionConfiguration(TimeSpan.FromSeconds(10),
-                TimeSpan.FromMilliseconds(100), QuarantineAfterFailedAttempts: 3, MaxRetryDelay: TimeSpan.FromMilliseconds(200));
-            var seen = new List<int> { operation.FailedAttemptCount };
-            for (var attempt = 0; attempt < 30 && operation.Checkpoint != GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired; attempt++)
+            var execution = new GskuCorrectionExecutionConfiguration(TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
+            for (var attempt = 0; attempt < 32; attempt++)
             {
-                await Task.Delay(1100);
                 await processor.RecoverAsync(operation, "b13", execution, default);
                 operation = (await operations.GetByOperationIdAsync(operation.OperationId))!;
-                seen.Add(operation.FailedAttemptCount);
+                Assert.NotEqual(GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired, operation.Checkpoint);
             }
 
-            Assert.Equal(GskuCorrectionWorkflowCheckpoint.ManualReconciliationRequired, operation.Checkpoint);
+            Assert.Equal(32, operation.FailedAttemptCount);
+            Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, operation.RecoveryDisposition);
             Assert.Equal(GskuCorrectionWorkflowProcessor.RetryLimitReached, operation.LastFailureCode);
-            Assert.Contains(2, seen);
-            // Whether an approval exists is unknown: the GSKU keeps its lock.
-            Assert.DoesNotContain("REQUEST_CORRECTION", (await DetailAsync(approved.Id)).Actions);
+            Assert.True(await operations.CountManualReconciliationAsync() >= 1); // the gauge sees it
         }
         finally
         {
             host.Engine.LookupFailure = null;
         }
+
+        await CorrectionProcessor(new VersionedReferences(), crashAfterApply: false).RecoverAsync(operation, "b13",
+            new GskuCorrectionExecutionConfiguration(TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)), default);
+
+        var healed = (await operations.GetByOperationIdAsync(operation.OperationId))!;
+        Assert.Equal(GskuCorrectionWorkflowCheckpoint.AwaitingDecision, healed.Checkpoint);
+        Assert.Equal(0, healed.FailedAttemptCount);
     }
 
     // The streak ends with the first answer the engine gives: the count goes back to 0 and the correction carries on.
@@ -75,7 +80,7 @@ public sealed partial class GskuLifecycleHttpTests
         Assert.False((await RequestCorrectionAsync(approved.Id, approved.Version, 6m)).IsSuccessStatusCode);
         await Task.Delay(1100);
         await host.RunAsync<GskuCorrectionRecoveryRunner>(runner => runner.RunCycleAsync());
-        Assert.Equal(2, (await CorrectionOf(approved.Id)).FailedAttemptCount);
+        Assert.Equal(1, (await CorrectionOf(approved.Id)).FailedAttemptCount); // the worker's attempt only (FIX4 item 2)
 
         host.Engine.LookupFailure = null;
         await CorrectionCyclesUntilAsync(approved.Id, _ => CorrectionOf(approved.Id).Result.Checkpoint
@@ -106,9 +111,10 @@ public sealed partial class GskuLifecycleHttpTests
             host.Factory.Services.GetRequiredService<ProductIdentityRecoveryMetrics>().Current(GskuCorrectionRecoveryRunner.Flow));
     }
 
-    // The same rule on the retirement request, through its worker (this host's limit: 4 retries in a row).
+    // FIX4 item 1 (a) on the retirement request, through its worker (this host's limit: 4 in a row): an engine that
+    // does not answer is said (RETRY_LIMIT_REACHED) and keeps being retried — never quarantined.
     [Fact]
-    public async Task B13_A_retirement_request_that_keeps_failing_is_quarantined_by_its_worker()
+    public async Task B13_A_retirement_request_past_the_limit_on_a_transient_cause_keeps_retrying()
     {
         var approved = await ApprovedGskuAsync();
         host.Engine.NextStartFailure = (ProductIdentityWorkflowTransportOutcome.Timeout, "WORKFLOW_TIMEOUT", false);
@@ -123,13 +129,14 @@ public sealed partial class GskuLifecycleHttpTests
             for (var cycle = 0; cycle < 20; cycle++)
             {
                 operation = await rows.Find(x => x.GskuId == approved.Id).SortByDescending(x => x.CreatedAtUtcTicksV1).FirstAsync();
-                if (operation.Checkpoint == GskuRetirementRequestCheckpoint.ManualReconciliationRequired) break;
+                if (operation.LastFailureCode == GskuRetirementRequestWorkflowProcessor.RetryLimitReached) break;
                 await Task.Delay(1100);
                 await host.RunAsync<GskuRetirementRequestRecoveryRunner>(runner => runner.RunCycleAsync());
             }
 
-            Assert.Equal(GskuRetirementRequestCheckpoint.ManualReconciliationRequired, operation.Checkpoint);
             Assert.Equal(GskuRetirementRequestWorkflowProcessor.RetryLimitReached, operation.LastFailureCode);
+            Assert.Equal(ProductIdentityWorkflowRecoveryDisposition.Retryable, operation.RecoveryDisposition);
+            Assert.NotEqual(GskuRetirementRequestCheckpoint.ManualReconciliationRequired, operation.Checkpoint);
         }
         finally
         {

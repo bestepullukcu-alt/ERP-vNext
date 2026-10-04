@@ -45,4 +45,11 @@
   <data name="ProductPickerLoadingMore" xml:space="preserve"><value>Cargando más productos globales…</value></data>
   <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>La aprobación se cerró sin una decisión (cancelada o vencida). El borrador puede editarse y enviarse de nuevo.</value></data>
   <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>Una unidad que usa este GSKU se retiró después de la aprobación. La aprobación sigue vigente: se aplicó con los valores validados al enviarla; la unidad retirada no puede elegirse para registros nuevos.</value></data>
+  <data name="RepeatRequest" xml:space="preserve"><value>Volver a enviar la solicitud</value></data>
+  <data name="RepeatRequestConfirmation" xml:space="preserve"><value>¿Volver a enviar la misma solicitud? Se vuelve a leer el servicio de aprobación y la solicitud continúa desde donde está.</value></data>
+  <data name="RepeatRequestWaiting" xml:space="preserve"><value>La aprobación sigue abierta en el Centro de tareas; la solicitud espera su decisión.</value></data>
+  <data name="RepeatRequestSettled" xml:space="preserve"><value>La solicitud se volvió a leer y quedó resuelta.</value></data>
+  <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>Su solicitud sobre este GSKU espera una conciliación y lo mantiene bloqueado. Vuelva a enviarla: se vuelve a leer el servicio de aprobación; si eso no lo resuelve, contacte con su administrador.</value></data>
+  <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>Una solicitud sobre este GSKU espera una conciliación y lo mantiene bloqueado. Solo quien la hizo puede volver a enviarla; de lo contrario, debe conciliarla un administrador.</value></data>
+  <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>Este envío espera una conciliación. Solo quien lo envió puede volver a enviarlo; de lo contrario, debe conciliarlo un administrador.</value></data>
 </root>

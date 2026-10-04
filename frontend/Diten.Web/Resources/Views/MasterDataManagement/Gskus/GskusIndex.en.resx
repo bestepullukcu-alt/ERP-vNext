@@ -44,4 +44,11 @@
   <data name="ProductPickerLoadingMore" xml:space="preserve"><value>Loading more Global Products…</value></data>
   <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>The approval was closed without a decision (cancelled or expired). The draft can be edited and submitted again.</value></data>
   <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>A unit used by this GSKU was retired after the approval. The approval stands: it was applied with the values validated when it was submitted; the retired unit cannot be chosen for new records.</value></data>
+  <data name="RepeatRequest" xml:space="preserve"><value>Send the request again</value></data>
+  <data name="RepeatRequestConfirmation" xml:space="preserve"><value>Send the same request again? The approval service is read again and the request continues from where it stands.</value></data>
+  <data name="RepeatRequestWaiting" xml:space="preserve"><value>The approval is still open in the Task Center; the request waits for its decision.</value></data>
+  <data name="RepeatRequestSettled" xml:space="preserve"><value>The request was read again and has been settled.</value></data>
+  <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>Your request on this GSKU is waiting for reconciliation and keeps it locked. Send it again: the approval service is read again; if that does not settle it, contact your administrator.</value></data>
+  <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>A request on this GSKU is waiting for reconciliation and keeps it locked. Only the person who made it can send it again; otherwise an administrator has to reconcile it.</value></data>
+  <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>This submission is waiting for reconciliation. Only the person who submitted it can submit it again; otherwise an administrator has to reconcile it.</value></data>
 </root>

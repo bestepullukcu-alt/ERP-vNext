@@ -198,7 +198,18 @@ public static class ProductItemSkuMasterModels
         int? IdentitySubmitVersion = null,
         // FIX3 (CT decision 1): set when the pair was completed with the submit-time proof because a reference was
         // retired after the approval — the screen says so as information.
-        string? IdentityApprovalNote = null);
+        string? IdentityApprovalNote = null,
+        // FIX4 item 1 (b): STUCK when a correction or retirement request holds the GSKU in manual reconciliation; the
+        // request itself only for its requester (REPEAT_REQUEST sends it again, as it was).
+        string? LifecycleRequestState = null,
+        GskuPendingLifecycleRequestDto? PendingLifecycleRequest = null);
+
+    public sealed record GskuPendingLifecycleRequestDto(
+        string Kind,
+        int ExpectedGskuVersion,
+        decimal? PackQuantity,
+        string? PackUomCode,
+        string? RequestReason);
 
     public sealed record GskuCreateGlobalProductOptionDto(
         Guid Id,

@@ -32,8 +32,8 @@ const GskusList = (function () {
     const L = window.L10n || {};
     const permissionHost = document.querySelector('[data-can-create]');
     const canCreate = permissionHost?.getAttribute('data-can-create') === 'true';
-    const actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT'];
-    const supportedActions = new Set(['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT']);
+    const actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST'];
+    const supportedActions = new Set(['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'REQUEST_CORRECTION', 'REQUEST_RETIREMENT', 'REPEAT_REQUEST']);
     const getAuthHeaders = () => ({ 'X-Requested-With': 'XMLHttpRequest' });
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -175,7 +175,9 @@ const GskusList = (function () {
         const submitStateText = {
             SUBMIT_IN_FLIGHT: L.IdentityStateInFlight,
             RESUBMIT_REQUIRED: L.IdentityStateResubmitRequired,
-            RECONCILIATION_REQUIRED: L.IdentityStateReconciliationRequired,
+            // FIX4 item 11: only the submitter's repeat settles it — anyone else is told so.
+            RECONCILIATION_REQUIRED: readAvailableActions(detail).includes('SUBMIT')
+                ? L.IdentityStateReconciliationRequired : L.IdentityStateReconciliationOtherUser,
             SUBMISSION_ENDED: L.IdentityStateSubmissionEnded
         }[submitState] || '';
         const notAppliedText = submitStateText || (!notApplied ? ''
@@ -188,7 +190,12 @@ const GskusList = (function () {
             : L.IdentityNotAppliedGeneric)
             // FIX3 (CT decision 1): approved, and a unit retired afterwards — said as information.
             || (valueOf(detail, 'identityApprovalNote', 'IdentityApprovalNote')
-                === 'FIRST_GSKU_IDENTITY_REFERENCE_RETIRED_AFTER_APPROVAL' ? L.IdentityApprovalNoteRetiredAfterApproval : '');
+                === 'FIRST_GSKU_IDENTITY_REFERENCE_RETIRED_AFTER_APPROVAL' ? L.IdentityApprovalNoteRetiredAfterApproval : '')
+            // FIX4 item 1 (b): a correction / retirement request stuck in manual reconciliation — its requester can send
+            // it again; everyone else is told who can.
+            || (valueOf(detail, 'lifecycleRequestState', 'LifecycleRequestState') === 'STUCK'
+                ? (readAvailableActions(detail).includes('REPEAT_REQUEST') ? L.LifecycleRequestStuckRequester
+                    : L.LifecycleRequestStuckOther) : '');
         setText('oc-identity-not-applied', notAppliedText);
         document.getElementById('oc-identity-not-applied-row')?.classList.toggle('d-none', !notAppliedText);
         const statusElement = document.getElementById('oc-status');
@@ -235,7 +242,9 @@ const GskusList = (function () {
         SUBMIT: { key: 'submitIdentity', className: 'js-lifecycle-action', icon: 'bx bx-send', label: () => L.SubmitIdentity },
         WITHDRAW_APPROVAL: { key: 'withdrawApproval', className: 'js-lifecycle-action', icon: 'bx bx-undo', label: () => L.WithdrawApproval },
         REQUEST_CORRECTION: { key: 'requestCorrection', className: 'js-request-correction', icon: 'bx bx-revision', label: () => L.RequestCorrection },
-        REQUEST_RETIREMENT: { key: 'requestRetirement', className: 'js-request-retirement', icon: 'bx bx-archive', label: () => L.RequestRetirement }
+        REQUEST_RETIREMENT: { key: 'requestRetirement', className: 'js-request-retirement', icon: 'bx bx-archive', label: () => L.RequestRetirement },
+        // FIX4 item 1 (b): the requester's same request again, for a request stuck in manual reconciliation.
+        REPEAT_REQUEST: { key: 'repeatRequest', className: 'js-repeat-request', icon: 'bx bx-refresh', label: () => L.RepeatRequest }
     };
     const renderFreshActionMenu = (menu, id, actions) => {
         menu.innerHTML = actions.filter((action) => supportedActions.has(action)).map((action) => {
@@ -254,7 +263,8 @@ const GskusList = (function () {
         submitIdentity: rowAction((id, trigger) => requestLifecycle(id, 'SUBMIT', trigger)),
         withdrawApproval: rowAction((id, trigger) => requestLifecycle(id, 'WITHDRAW_APPROVAL', trigger)),
         requestCorrection: rowAction((id, trigger) => openCorrection(id, trigger)),
-        requestRetirement: rowAction((id, trigger) => requestRetirement(id, trigger))
+        requestRetirement: rowAction((id, trigger) => requestRetirement(id, trigger)),
+        repeatRequest: rowAction((id, trigger) => repeatLifecycleRequest(id, trigger))
     });
     const loadActionMenu = async (toggle) => {
         const id = toggle?.dataset.id;
@@ -722,6 +732,60 @@ const GskusList = (function () {
                 setBusy(actionButton, false);
             }
         }, { type: 'warning', confirmButtonText });
+    };
+
+    /*
+     * FIX4 item 1 (b): a correction or retirement request stuck in manual reconciliation holds the GSKU. Its requester
+     * sends the SAME request again — the version and facts MDM keeps for it (so the proxy derives the same operation) —
+     * and MDM reads the engine again: decided → applied; closed or unusable → the request ends, the GSKU is free;
+     * still open → it waits. The answer is said in words; the register reloads either way.
+     */
+    const repeatLifecycleRequest = (id, actionButton) => {
+        if (!id) return;
+        window.showConfirm?.(L.RepeatRequestConfirmation, async () => {
+            const requestKey = `${id}:REPEAT_REQUEST`;
+            if (lifecycleRequests.has(requestKey)) return;
+            lifecycleRequests.add(requestKey);
+            setBusy(actionButton, true);
+            try {
+                const detail = await fetchDetail(id);
+                const pending = valueOf(detail, 'pendingLifecycleRequest', 'PendingLifecycleRequest');
+                const kind = valueOf(pending, 'kind', 'Kind');
+                const version = readVersion(pending, 'expectedGskuVersion', 'ExpectedGskuVersion');
+                if (!readAvailableActions(detail).includes('REPEAT_REQUEST') || !pending
+                    || !['CORRECTION', 'RETIREMENT'].includes(kind) || !Number.isInteger(version)) {
+                    throw new Error(L.LifecycleStateChanged);
+                }
+                const token = document.querySelector(
+                    '#gskuLifecycleToken input[name="__RequestVerificationToken"]')?.value || '';
+                const body = new FormData();
+                body.set('ExpectedGskuVersion', String(version));
+                if (kind === 'CORRECTION') {
+                    body.set('PackQuantity', String(valueOf(pending, 'packQuantity', 'PackQuantity')));
+                    body.set('PackUomCode', String(valueOf(pending, 'packUomCode', 'PackUomCode')));
+                } else {
+                    body.set('RequestReason', String(valueOf(pending, 'requestReason', 'RequestReason')));
+                }
+                body.set('__RequestVerificationToken', token);
+                const suffix = kind === 'CORRECTION' ? 'correction-requests' : 'retirement-requests';
+                const response = await fetch(`${endpoint}/${encodeURIComponent(id)}/${suffix}`, {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
+                    body
+                });
+                if (response.status === 401) handleUnauthorized();
+                if (response.status !== 200 && response.status !== 202) {
+                    throw new Error(await getErrorMessage(response));
+                }
+                window.showToast?.(response.status === 202 ? L.RepeatRequestWaiting : L.RepeatRequestSettled, 'success');
+            } catch (error) {
+                window.showToast?.(error?.message || L.ErrorGateway, 'error');
+            } finally {
+                lifecycleRequests.delete(requestKey);
+                setBusy(actionButton, false);
+                dt?.ajax.reload(null, false);
+            }
+        }, { entityName: L.RepeatRequest, type: 'primary', confirmButtonText: L.RepeatRequest });
     };
 
     const requestRetirement = (id, actionButton) => {
