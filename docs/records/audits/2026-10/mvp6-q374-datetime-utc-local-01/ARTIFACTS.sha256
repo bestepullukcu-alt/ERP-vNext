@@ -1,0 +1,14 @@
+ef5ce9502418bdf05a98d78b79eccf8db7157ca5810142b6b0baf5bbb95381b2  ./REPORT.md
+19da2459e39e85e5dccc8c84c0557c0835272761423dbc6b2a502c2da6609e7b  ./evidence/a-fixed-db.txt
+089251ffab7df25ea8a9bffe3641c4c1b1f6b049d7f16ea064b34db43c2fcd90  ./evidence/a-restored-db.txt
+dc18aa20c7a2b741608d0d9c2556ffebbcd8a98549cd539f26ad9153f85ea0cb  ./evidence/a-sabotage-db.txt
+4b3e7e7a7a50a824f0ece62857328edbe6eb7e6d5b6a13317ba27240034334bc  ./evidence/b-fixed-db.txt
+a3690fd9e0fa411618b589d9213b6d9a9bf3c2f3dbd71dfef7fbabc6eedf9a3b  ./evidence/b2-c-db.txt
+f512a384662965b128213e3e651002c8245b189c9419450ab0790c52d4680eb2  ./evidence/change.diff
+5f28287b8fa407101c7f5043dfa45c5bfadc129962af40fc42aee281cf8c7b92  ./evidence/convert-check-istanbul.txt
+b3edc987f29918b70171866d148ed8fab7c64a67dd9582b51fc609f91b7b6eaa  ./evidence/convert-check.js
+86ab6bb4260451b17ef1f79373576b781b73af722f7e44447c59a9332113663d  ./evidence/fixture-summary.json
+d3ebcff7daca32a7f0b9b55acf0ac645a1b6ef2d24123928efd884620b4c1683  ./evidence/post-edit-SHA256SUMS
+01b838227e07a975a0d949ab718507b46d838cbec748a7c8d5242bb156d02beb  ./evidence/pre-edit-SHA256SUMS
+c1327079b4cf6c9fa4aa235a52e09fb8bcb812c0d437cad563752388130ffe8b  ./evidence/sc-suite.txt
+a08f6dcc19c5c47cea251e311a50cdf89b3f407972cae36855bb407dd84aaf19  ./evidence/webtests-summary.txt

@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: runs in one of the two required zones, and the zone is really in effect
+ok 1 - runs in one of the two required zones, and the zone is really in effect
+  ---
+  duration_ms: 1.963666
+  type: 'test'
+  ...
+# Subtest: a Date prefills to the local wall clock
+ok 2 - a Date prefills to the local wall clock
+  ---
+  duration_ms: 0.176125
+  type: 'test'
+  ...
+# Subtest: the prefilled string parses back to the same instant
+ok 3 - the prefilled string parses back to the same instant
+  ---
+  duration_ms: 0.320958
+  type: 'test'
+  ...
+# Subtest: a typed local wall clock, seconds included, is read as local time
+ok 4 - a typed local wall clock, seconds included, is read as local time
+  ---
+  duration_ms: 0.103042
+  type: 'test'
+  ...
+# Subtest: out-of-range and malformed values are rejected, not shifted
+ok 5 - out-of-range and malformed values are rejected, not shifted
+  ---
+  duration_ms: 0.163292
+  type: 'test'
+  ...
+# Subtest: a daylight-saving gap hour is rejected where the zone has one
+ok 6 - a daylight-saving gap hour is rejected where the zone has one
+  ---
+  duration_ms: 0.398916
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 173.04525

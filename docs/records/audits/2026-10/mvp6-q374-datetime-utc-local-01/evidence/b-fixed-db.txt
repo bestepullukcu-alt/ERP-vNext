@@ -1,0 +1,5 @@
+{"Sequence":1,"ToStatus":"Draft","OccurredAt":"2026-10-03T20:37:41.898Z"}
+{"Sequence":2,"ToStatus":"Planned","OccurredAt":"2026-10-03T20:38:00.000Z"}
+{"Sequence":3,"ToStatus":"Dispatched","OccurredAt":"2026-10-03T20:38:00.000Z"}
+{"Sequence":4,"ToStatus":"Delivered","OccurredAt":"2026-10-03T20:38:00.000Z"}
+status=Delivered DispatchedAt=2026-10-03T20:38:00+00:00 Pod.ReceivedAt=2026-10-03T20:38:00+00:00 ActualDeliverAt=2026-10-03T20:38:00+00:00

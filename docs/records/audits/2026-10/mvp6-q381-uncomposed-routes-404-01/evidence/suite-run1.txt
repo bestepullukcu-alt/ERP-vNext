@@ -1,0 +1,1 @@
+Failed!  - Failed:     6, Passed:   429, Skipped:     0, Total:   435, Duration: 5 m 7 s - Diten.SupplyChainService.Tests.dll (net8.0)

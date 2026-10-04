@@ -1,0 +1,4 @@
+{"Sequence":1,"FromStatus":null,"ToStatus":"Draft","OccurredAt":"2026-10-03T20:37:41.898Z"}
+{"Sequence":2,"FromStatus":"Draft","ToStatus":"Planned","OccurredAt":"2026-10-03T20:38:00.000Z"}
+shipment status=Planned DispatchedAt=null
+host now 2026-10-03T20:38:40Z

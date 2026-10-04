@@ -1,0 +1,5 @@
+zone Europe/Istanbul offset 180 min
+real instant       2026-10-03T20:52:00.000Z
+fixed: field 2026-10-03T23:52 -> sent 2026-10-03T20:52:00.000Z  delta 0 min
+old:   field 2026-10-03T20:52 -> sent 2026-10-03T17:52:00.000Z  delta -180 min
+empty/garbage -> null / null

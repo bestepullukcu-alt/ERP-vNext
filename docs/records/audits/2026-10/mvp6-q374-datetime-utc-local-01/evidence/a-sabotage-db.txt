@@ -1,0 +1,2 @@
+{"Sequence":1,"ToStatus":"Draft","OccurredAt":"2026-10-03T20:39:22.511Z"}
+{"Sequence":2,"ToStatus":"Planned","OccurredAt":"2026-10-03T17:43:00.000Z"}
