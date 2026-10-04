@@ -2514,4 +2514,7 @@
   <data name="DelegateNoEligiblePeople" xml:space="preserve">
     <value>没有可以委托此审批的人员。</value>
   </data>
+  <data name="ErrorAbbreviationDecidedByAnother" xml:space="preserve">
+    <value>其他审批人已对此项作出决定。您的列表已刷新。</value>
+  </data>
 </root>

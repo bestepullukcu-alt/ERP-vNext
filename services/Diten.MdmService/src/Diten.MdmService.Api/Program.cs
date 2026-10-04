@@ -91,6 +91,7 @@ builder.Services.Configure<AuditIntentTemporalMigrationOptions>(
 builder.Services.Configure<AuditIntentDeliveryWorkerOptions>(
     builder.Configuration.GetSection(AuditIntentDeliveryWorkerOptions.SectionName));
 builder.Services.AddHostedService<AuditIntentDeliveryWorker>();
+builder.Services.AddHostedService<Diten.MdmService.Api.Services.ProductAbbreviationRegister.ProductAbbreviationTransactionSupportCheck>();
 builder.Services.Configure<ProductIdentityWorkflowOptions>(
     builder.Configuration.GetSection(ProductIdentityWorkflowOptions.SectionName));
 builder.Services.Configure<GlobalProductCorrectionWorkflowOptions>(

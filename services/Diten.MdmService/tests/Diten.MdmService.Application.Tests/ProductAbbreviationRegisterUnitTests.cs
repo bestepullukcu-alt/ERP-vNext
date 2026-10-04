@@ -171,7 +171,7 @@ public sealed class ProductAbbreviationRegisterUnitTests
 
         Assert.False(response.IsSuccessful);
         Assert.Equal("ABBREVIATION_CANCEL_NOT_REQUEST_OWNER", Assert.Single(response.Errors));
-        Assert.Equal(0, register.TransitionCalls);
+        Assert.Equal(0, register.WriteCalls);
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public sealed class ProductAbbreviationRegisterUnitTests
 
         Assert.False(response.IsSuccessful);
         Assert.Equal("ABBREVIATION_MAKER_CHECKER_VIOLATION", Assert.Single(response.Errors));
-        Assert.Equal(0, register.TransitionCalls);
+        Assert.Equal(0, register.WriteCalls);
     }
 
     [Fact]
@@ -253,7 +253,7 @@ public sealed class ProductAbbreviationRegisterUnitTests
 
         Assert.Equal(404, response.StatusCode);
         Assert.Contains("ABBREVIATION_NOT_FOUND", response.Errors);
-        Assert.Equal(0, register.TransitionCalls);
+        Assert.Equal(0, register.WriteCalls);
     }
 
     private static ProductAbbreviationWorkflow CreateWorkflow(
@@ -350,7 +350,8 @@ public sealed class ProductAbbreviationRegisterUnitTests
     private sealed class RegisterSpy : IProductAbbreviationRegisterRepository
     {
         public required ProductAbbreviationRegisterEntry Entry { get; init; }
-        public int TransitionCalls { get; private set; }
+        /// <summary>Every write the register offers (FIX3 item 8: the legacy non-transactional ones are gone).</summary>
+        public int WriteCalls { get; private set; }
 
         public Task<ProductAbbreviationRegisterEntry?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult<ProductAbbreviationRegisterEntry?>(id == Entry.Id ? Entry : null);
@@ -360,19 +361,20 @@ public sealed class ProductAbbreviationRegisterUnitTests
             => Task.FromResult<ProductAbbreviationRegisterEntry?>(null);
         public Task<ProductAbbreviationRegisterEntry?> ResolveActiveAsync(string normalizedAbbreviation, CancellationToken cancellationToken = default)
             => Task.FromResult<ProductAbbreviationRegisterEntry?>(null);
-        public Task<ProductAbbreviationRegisterWriteResult> InsertRequestedAsync(ProductAbbreviationRegisterEntry entry, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
         public Task<bool> AppendAuditIntentIfAbsentAsync(Guid id, LocalAuditIntent intent, CancellationToken cancellationToken = default)
             => Task.FromResult(true);
-        public Task<ProductAbbreviationRegisterWriteResult> TransitionAsync(Guid id, int expectedVersion, ProductAbbreviationLifecycleStatus expectedStatus, ProductAbbreviationLifecycleStatus targetStatus, string decisionActor, string idempotencyKey, string? reason, DateTimeOffset decidedAtUtc, CancellationToken cancellationToken = default)
+        public Task<ProductAbbreviationRegisterWriteResult> DecideAsync(ProductAbbreviationDecision decision, CancellationToken cancellationToken = default)
+            => Refuse();
+        public Task<ProductAbbreviationRegisterWriteResult> ApproveCorrectionAsync(ProductAbbreviationCorrectionApproval approval, CancellationToken cancellationToken = default)
+            => Refuse();
+        public Task<ProductAbbreviationRegisterWriteResult> RequestEntryAsync(ProductAbbreviationRequestWrite write, CancellationToken cancellationToken = default)
+            => Refuse();
+
+        private Task<ProductAbbreviationRegisterWriteResult> Refuse()
         {
-            TransitionCalls++;
-            throw new InvalidOperationException("Transition must not be called for maker self-approval.");
+            WriteCalls++;
+            throw new InvalidOperationException("No register write may happen for maker self-approval.");
         }
-        public Task<ProductAbbreviationRegisterWriteResult> RequestRetirementAsync(Guid id, int expectedVersion, string retirementRequestId, string makerSubjectId, string idempotencyKey, string? reason, DateTimeOffset requestedAtUtc, CancellationToken cancellationToken = default, Guid? observedPendingCorrection = null)
-            => throw new NotSupportedException();
-        public Task<ProductAbbreviationRegisterWriteResult> ClearRetirementRequestAsync(Guid id, int expectedVersion, string retirementRequestId, string checkerSubjectId, string idempotencyKey, string? reason, DateTimeOffset decidedAtUtc, CancellationToken cancellationToken = default)
-            => throw new NotSupportedException();
     }
 
     private sealed class TemporaryCulture : IDisposable

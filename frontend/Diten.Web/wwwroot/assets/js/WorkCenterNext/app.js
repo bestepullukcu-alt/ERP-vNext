@@ -8094,6 +8094,11 @@
      * running display), and a start that SWITCHED the timer away from another task offers "Undo" until the server's
      * own undo window closes (TimerSegmentDto.undoUntilUtc) — the undo itself is TimeEntry's endpoint.
      */
+    // ABB FIX3 item 12 — provider refusals this page says in its own words (see the decision path below).
+    const PROVIDER_REASON_KEYS = {
+        ABBREVIATION_ALREADY_DECIDED_BY_ANOTHER: 'ErrorAbbreviationDecidedByAnother'
+    };
+
     const TIMER_REASON_KEYS = {
         TIMER_DISABLED_FOR_LEGAL_ENTITY: 'TimerErrDisabled',
         TIMER_TASK_NOT_HELD: 'TimerErrNotHeld',
@@ -8271,6 +8276,18 @@
          * action that must ask for the other sentence, and it asks here, at its only call site.
          */
         const overrides = action.code === 'inquire' ? global.TasksApi.INQUIRE_REASON_CODE_OVERRIDES : undefined;
+
+        /*
+         * ABB FIX3 item 12 — a provider's own refusal that has its own sentence here. Two approvers on one item send
+         * the SAME key, so the race is lost on this page: "another approver decided this first" — and the board is
+         * re-read, since the item has left it.
+         */
+        if (PROVIDER_REASON_KEYS[result.reasonCode]) {
+            await loadWorkItems();
+            render();
+            toast(t(PROVIDER_REASON_KEYS[result.reasonCode]), 'error');
+            return { outcome: 'refused', reasonCode: result.reasonCode };
+        }
 
         // A 409 means two very different things, and they must not share a message. A CONCURRENCY conflict is
         // "someone changed it first, here is the fresh screen"; a workflow BLOCK is "the approver has not released

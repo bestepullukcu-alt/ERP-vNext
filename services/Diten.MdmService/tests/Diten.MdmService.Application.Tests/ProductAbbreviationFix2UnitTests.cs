@@ -22,22 +22,37 @@ public sealed class ProductAbbreviationFix2UnitTests
         new(new ServerId(new ClusterId(), new DnsEndPoint("localhost", 27017)));
 
     [Fact]
-    public void A_lost_transaction_race_is_a_conflict_and_an_outage_is_not()
+    public void A_server_that_cannot_run_transactions_is_recognised_whichever_way_it_says_so()
     {
-        // FIX2 A4 — the sibling repositories' classification: WriteConflict (112) and TransientTransactionError are a
-        // lost race (409, reload); anything else is a real outage (503).
+        // FIX3 item 6 — the driver refuses before sending (NotSupportedException) when it already knows the server is
+        // standalone; otherwise the server refuses the first statement (IllegalOperation, code 20). Neither is a write
+        // conflict or an outage. (FIX2's label-only race classification is gone: FIX3 item 5 lets the stored state
+        // decide, measured against Mongo in ProductAbbreviationFix1MongoTests.)
+        var refusedByServer = new MongoCommandException(Connection, "illegal", new BsonDocument("insert", 1),
+            new BsonDocument
+            {
+                ["ok"] = 0, ["code"] = 20, ["codeName"] = "IllegalOperation",
+                ["errmsg"] = "Transaction numbers are only allowed on a replica set member or mongos"
+            });
         var writeConflict = new MongoCommandException(Connection, "WriteConflict", new BsonDocument("commitTransaction", 1),
             new BsonDocument { ["ok"] = 0, ["code"] = 112, ["codeName"] = "WriteConflict" });
-        var transient = new MongoCommandException(Connection, "aborted", new BsonDocument("commitTransaction", 1),
-            new BsonDocument { ["ok"] = 0, ["code"] = 251, ["codeName"] = "NoSuchTransaction" });
-        transient.AddErrorLabel("TransientTransactionError");
-        var outage = new MongoCommandException(Connection, "down", new BsonDocument("commitTransaction", 1),
-            new BsonDocument { ["ok"] = 0, ["code"] = 91, ["codeName"] = "ShutdownInProgress" });
 
-        Assert.True(ProductAbbreviationRegisterRepository.IsLostRace(writeConflict));
-        Assert.True(ProductAbbreviationRegisterRepository.IsLostRace(transient));
-        Assert.False(ProductAbbreviationRegisterRepository.IsLostRace(outage));
+        Assert.True(ProductAbbreviationRegisterRepository.TransactionsAreUnsupported(
+            new NotSupportedException("Standalone servers do not support transactions.")));
+        Assert.True(ProductAbbreviationRegisterRepository.TransactionsAreUnsupported(refusedByServer));
+        Assert.False(ProductAbbreviationRegisterRepository.TransactionsAreUnsupported(writeConflict));
+        Assert.False(ProductAbbreviationRegisterRepository.TransactionsAreUnsupported(new TimeoutException()));
     }
+
+    [Theory]
+    [InlineData("""{ "setName": "rs0", "isWritablePrimary": true }""", true)]
+    [InlineData("""{ "msg": "isdbgrid" }""", true)]
+    [InlineData("""{ "isWritablePrimary": true }""", false)]
+    [InlineData("""{ "setName": "" }""", false)]
+    public void The_startup_check_reads_transaction_support_from_hello(string hello, bool supported)
+        => Assert.Equal(supported,
+            Diten.MdmService.Api.Services.ProductAbbreviationRegister.ProductAbbreviationTransactionSupportCheck
+                .SupportsTransactions(BsonDocument.Parse(hello)));
 
     [Theory]
     [InlineData("abı")]

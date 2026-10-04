@@ -65,7 +65,8 @@ public sealed class ProductAbbreviationWorkflow
         }
 
         // FIX1 S2: a product holds one code. While it has an active or a pending one, a new request is refused here
-        // — before the code is consumed in the ledger for good — instead of failing at approval much later.
+        // instead of failing at approval much later (decided for good inside the request's transaction, which also
+        // takes the code in the ledger — a refused request takes none, FIX3 item 3).
         if (await _register.HasOpenEntryForProductAsync(
                 command.GlobalProductId,
                 EntryIdFor(command.IdempotencyKey),
@@ -166,7 +167,8 @@ public sealed class ProductAbbreviationWorkflow
             former.Id,
             ProductAbbreviationHistoryEventType.CORRECTION_REQUESTED,
             command.Reason,
-            cancellationToken);
+            cancellationToken,
+            command.ExpectedVersion);
     }
 
     public async Task<Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>> CancelAsync(
@@ -617,7 +619,8 @@ public sealed class ProductAbbreviationWorkflow
             Guid? replacesEntryId,
             ProductAbbreviationHistoryEventType eventType,
             string? reason,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            int? expectedFormerVersion = null)
     {
         var now = DateTimeOffset.UtcNow;
         var entryId = EntryIdFor(idempotencyKey);
@@ -643,20 +646,12 @@ public sealed class ProductAbbreviationWorkflow
             AllocatedByCanonicalSubjectId = _actor.CanonicalHumanSubjectId,
             AllocatedAtUtc = now
         };
-        var ledgerResult = await _ledger.AllocateAsync(allocation, cancellationToken);
-        if (!ledgerResult.Succeeded || ledgerResult.Ledger is null)
-        {
-            return Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail(
-                ledgerResult.ErrorCode ?? "ABBREVIATION_ALLOCATION_FAILED",
-                409);
-        }
-
         var entry = new ProductAbbreviationRegisterEntry
         {
             Id = entryId,
             NormalizedAbbreviation = normalized,
             GlobalProductId = globalProductId,
-            AllocationLedgerId = ledgerResult.Ledger.Id,
+            AllocationLedgerId = ledgerId,
             AllocationIdempotencyKey = idempotencyKey,
             LifecycleStatus = ProductAbbreviationLifecycleStatus.REQUESTED,
             RequestedByCanonicalSubjectId = _actor.CanonicalHumanSubjectId,
@@ -665,9 +660,12 @@ public sealed class ProductAbbreviationWorkflow
         };
         // FIX2 A2 / item 6: the entry, its history row and its audit intent — and, for a correction, the claim on the code
         // it replaces — are written in ONE transaction; an allocation touches the product's slot in that transaction.
+        // FIX3 item 3: the code's ledger row is written in that same transaction (a refused request consumes no code);
+        // item 13: a correction only while the code it replaces is still at the version it was asked against.
         var registerResult = await _register.RequestEntryAsync(
             new ProductAbbreviationRequestWrite(
                 entry,
+                allocation,
                 stored =>
                 {
                     var history = BuildHistory(
@@ -675,7 +673,8 @@ public sealed class ProductAbbreviationWorkflow
                     return new ProductAbbreviationDecisionEvidence(
                         history,
                         ProductAbbreviationAuditIntentFactory.Create(stored, history));
-                }),
+                },
+                expectedFormerVersion),
             cancellationToken);
         if (!registerResult.Succeeded || registerResult.Entry is null)
         {
@@ -687,9 +686,10 @@ public sealed class ProductAbbreviationWorkflow
                     or "ABBREVIATION_REGISTER_CONFLICT" or "ABBREVIATION_PRODUCT_ALREADY_HAS_ENTRY"
                     or "ABBREVIATION_CORRECTION_PENDING" or "ABBREVIATION_RETIREMENT_PENDING"
                     or "ABBREVIATION_CORRECTION_REQUIRES_ACTIVE" or "ABBREVIATION_CORRECTION_CONFLICT"
-                    or "CONCURRENCY_CONFLICT"
+                    or "CONCURRENCY_CONFLICT" or "ABBREVIATION_ALREADY_ALLOCATED" or "ABBREVIATION_IDEMPOTENCY_KEY_REUSED"
                     => Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail(registerResult.ErrorCode, 409),
-                "ABBREVIATION_PERSISTENCE_UNAVAILABLE" => Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail(registerResult.ErrorCode, 503),
+                "ABBREVIATION_PERSISTENCE_UNAVAILABLE" or "PRODUCT_ABBREVIATION_TRANSACTIONS_UNAVAILABLE"
+                    => Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail(registerResult.ErrorCode, 503),
                 _ => Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail("ABBREVIATION_REGISTER_RECONCILIATION_REQUIRED", 202)
             };
         }
@@ -711,7 +711,7 @@ public sealed class ProductAbbreviationWorkflow
         return Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Success(
             new(
                 ToDto(registerResult.Entry),
-                ledgerResult.IsReplay || registerResult.IsReplay,
+                registerResult.IsReplay,
                 false),
             registerResult.IsReplay ? 200 : 201);
     }
@@ -919,7 +919,7 @@ public sealed class ProductAbbreviationWorkflow
             result.ErrorCode switch
             {
                 "ABBREVIATION_NOT_FOUND" => 404,
-                "ABBREVIATION_PERSISTENCE_UNAVAILABLE" => 503,
+                "ABBREVIATION_PERSISTENCE_UNAVAILABLE" or "PRODUCT_ABBREVIATION_TRANSACTIONS_UNAVAILABLE" => 503,
                 _ => 409
             });
 

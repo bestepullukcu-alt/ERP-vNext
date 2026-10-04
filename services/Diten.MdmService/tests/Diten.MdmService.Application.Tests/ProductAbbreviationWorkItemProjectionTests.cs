@@ -337,6 +337,96 @@ public sealed class ProductAbbreviationWorkItemProjectionTests
         Assert.Equal(healthy.Id.ToString("D"), Assert.Single(result.Data!.Items).Id);
     }
 
+    [Fact]
+    public async Task In_an_enforced_rollout_the_pages_policies_are_read_once_and_decide_who_sees_what()
+    {
+        // FIX3 item 7 — the enforced branch (PRJ: rollout Enforced → one batch read of the page's policies, evaluated by
+        // the unchanged guard): a product scoped to the reader's company is shown, one scoped elsewhere is not, and no
+        // policy is read product by product.
+        var (tenant, reader, elsewhere) = (new TenantContext(), Guid.NewGuid(), Guid.NewGuid());
+        tenant.SetTenant(Guid.NewGuid());
+        var shown = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-SHOWN", GlobalProductName = "Shown" };
+        var hidden = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-HIDDEN", GlobalProductName = "Hidden" };
+        var reads = new Dictionary<string, int>();
+        var policies = Stub<IProductLegalEntityScopePolicyRepository>((method, args) =>
+        {
+            reads[method.Name] = reads.GetValueOrDefault(method.Name) + 1;
+            return method.Name switch
+            {
+                nameof(IProductLegalEntityScopePolicyRepository.GetByGlobalProductIdsAsync)
+                    => Task.FromResult<IReadOnlyList<ProductLegalEntityScopePolicy>>(
+                        [Policy(tenant.TenantId, shown.Id, reader), Policy(tenant.TenantId, hidden.Id, elsewhere)]),
+                _ => throw new InvalidOperationException(method.Name)
+            };
+        });
+        var entries = new[] { Entry(shown.Id, "maker"), Entry(hidden.Id, "maker") };
+
+        var result = await EnforcedHandler(entries, [shown, hidden], tenant, reader, policies).Handle(
+            new GetProductAbbreviationWorkItemsQuery("team"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful, result.ReasonCode);
+        Assert.Equal(entries[0].Id.ToString("D"), Assert.Single(result.Data!.Items).Id);
+        Assert.Equal(1, reads[nameof(IProductLegalEntityScopePolicyRepository.GetByGlobalProductIdsAsync)]);
+        Assert.False(reads.ContainsKey(nameof(IProductLegalEntityScopePolicyRepository.GetByGlobalProductIdAsync)));
+    }
+
+    [Fact]
+    public async Task One_unreadable_policy_hides_its_own_product_and_the_rest_of_the_page_is_still_shown()
+    {
+        // FIX3 item 7 — before, the batch read sat outside the guard's per-product isolation: one policy document that
+        // could not be read failed the whole read, and the tenant's entire ABB work disappeared from the Task Center.
+        var (tenant, reader) = (new TenantContext(), Guid.NewGuid());
+        tenant.SetTenant(Guid.NewGuid());
+        var readable = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-OK", GlobalProductName = "Readable" };
+        var broken = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-BAD", GlobalProductName = "Broken" };
+        var policies = Stub<IProductLegalEntityScopePolicyRepository>((method, args) => method.Name switch
+        {
+            nameof(IProductLegalEntityScopePolicyRepository.GetByGlobalProductIdsAsync)
+                => Task.FromException<IReadOnlyList<ProductLegalEntityScopePolicy>>(new FormatException("bad policy document")),
+            nameof(IProductLegalEntityScopePolicyRepository.GetByGlobalProductIdAsync) when (Guid)args![0]! == broken.Id
+                => Task.FromException<ProductLegalEntityScopePolicy?>(new FormatException("bad policy document")),
+            nameof(IProductLegalEntityScopePolicyRepository.GetByGlobalProductIdAsync)
+                => Task.FromResult<ProductLegalEntityScopePolicy?>(Policy(tenant.TenantId, readable.Id, reader)),
+            _ => throw new InvalidOperationException(method.Name)
+        });
+        var entries = new[] { Entry(broken.Id, "maker"), Entry(readable.Id, "maker") };
+        var logger = new CapturingLogger();
+
+        var result = await EnforcedHandler(entries, [readable, broken], tenant, reader, policies, logger).Handle(
+            new GetProductAbbreviationWorkItemsQuery("team"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful, result.ReasonCode);
+        Assert.Equal(entries[1].Id.ToString("D"), Assert.Single(result.Data!.Items).Id);
+        Assert.Contains(logger.Lines, line => line.Contains("work_item_policy_unreadable") && line.Contains(broken.Id.ToString()));
+    }
+
+    private static ProductLegalEntityScopePolicy Policy(Guid tenantId, Guid productId, Guid legalEntityId)
+        => ProductLegalEntityScopePolicy.Create(tenantId, productId, Guid.NewGuid(), ProductLegalEntityScopeMode.Scoped,
+            [legalEntityId], Guid.NewGuid(), DateTimeOffset.UtcNow.AddMinutes(-1));
+
+    private static GetProductAbbreviationWorkItemsHandler EnforcedHandler(
+        IReadOnlyList<ProductAbbreviationRegisterEntry> entries,
+        IReadOnlyList<GlobalProduct> products,
+        TenantContext tenant,
+        Guid readerLegalEntity,
+        IProductLegalEntityScopePolicyRepository policies,
+        Microsoft.Extensions.Logging.ILogger<GetProductAbbreviationWorkItemsHandler>? logger = null)
+    {
+        var register = Stub<IProductAbbreviationRegisterRepository>((method, args) => method.Name switch
+        {
+            nameof(IProductAbbreviationRegisterRepository.GetPendingWorkItemsPageAsync) => Paged(entries, args),
+            _ => throw new InvalidOperationException(method.Name)
+        });
+        var productRepository = Stub<IGlobalProductRepository>((method, _) => method.Name switch
+        {
+            nameof(IGlobalProductRepository.GetByIdsAsync) => Task.FromResult(products),
+            _ => throw new InvalidOperationException(method.Name)
+        });
+        var access = ProductLegalEntityScopeTestFixture.Enforced(tenant, [readerLegalEntity], policies);
+        return new(register, productRepository, new Actor(tenant.TenantId, Guid.NewGuid().ToString("D")),
+            access.Rollouts, access.Policies, access.Candidates, tenant, logger);
+    }
+
     private static GetProductAbbreviationWorkItemsHandler Handler(
         IProductAbbreviationRegisterRepository register,
         IGlobalProductRepository products,

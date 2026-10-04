@@ -67,10 +67,15 @@ public sealed record ProductAbbreviationDecision(
 /// FIX2 A2 / item 6 — a new REQUESTED entry (an allocation or a correction), inserted with its history row and audit
 /// intent in ONE transaction. A correction claims the code it replaces in the same transaction; an allocation touches
 /// the product's slot, so two requests for one product cannot both pass the "nothing pending" check.
+/// FIX3 item 3 — the code's ledger row (<see cref="Allocation"/>) is written in that same transaction: a refused or lost
+/// request consumes no code. FIX3 item 13 — a correction is written only while the code it replaces is still at
+/// <see cref="ExpectedFormerVersion"/>.
 /// </summary>
 public sealed record ProductAbbreviationRequestWrite(
     ProductAbbreviationRegisterEntry Entry,
-    Func<ProductAbbreviationRegisterEntry, ProductAbbreviationDecisionEvidence> BuildEvidence);
+    ProductAbbreviationAllocationLedger Allocation,
+    Func<ProductAbbreviationRegisterEntry, ProductAbbreviationDecisionEvidence> BuildEvidence,
+    int? ExpectedFormerVersion = null);
 
 /// <summary>FIX2 A3 — where the previous page of pending work ended: its order value and id.</summary>
 public sealed record ProductAbbreviationPendingCursor(long PendingSinceUtcTicks, Guid Id);
@@ -113,50 +118,12 @@ public interface IProductAbbreviationRegisterRepository
         ProductAbbreviationCorrectionApproval approval,
         CancellationToken cancellationToken = default)
         => throw new NotSupportedException("Correction approval is not supported by this repository.");
-    Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> GetPendingWorkItemsAsync(
-        int limit,
-        CancellationToken cancellationToken = default)
-        => throw new NotSupportedException("Pending work-item projection is not supported by this repository.");
-    Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> GetInitialPendingWorkItemsAsync(
-        int limit,
-        CancellationToken cancellationToken = default)
-        => throw new NotSupportedException("Pending work-item projection is not supported by this repository.");
     Task<ProductAbbreviationRegisterEntry?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<ProductAbbreviationRegisterEntry?> GetByAllocationIdempotencyKeyAsync(string idempotencyKey, CancellationToken cancellationToken = default);
     Task<ProductAbbreviationRegisterEntry?> GetActiveByGlobalProductIdAsync(Guid globalProductId, CancellationToken cancellationToken = default);
     Task<ProductAbbreviationRegisterEntry?> ResolveActiveAsync(string normalizedAbbreviation, CancellationToken cancellationToken = default);
-    Task<ProductAbbreviationRegisterWriteResult> InsertRequestedAsync(ProductAbbreviationRegisterEntry entry, CancellationToken cancellationToken = default);
     Task<bool> AppendAuditIntentIfAbsentAsync(
         Guid id,
         LocalAuditIntent intent,
-        CancellationToken cancellationToken = default);
-    Task<ProductAbbreviationRegisterWriteResult> TransitionAsync(
-        Guid id,
-        int expectedVersion,
-        ProductAbbreviationLifecycleStatus expectedStatus,
-        ProductAbbreviationLifecycleStatus targetStatus,
-        string decisionActor,
-        string idempotencyKey,
-        string? reason,
-        DateTimeOffset decidedAtUtc,
-        CancellationToken cancellationToken = default);
-    Task<ProductAbbreviationRegisterWriteResult> RequestRetirementAsync(
-        Guid id,
-        int expectedVersion,
-        string retirementRequestId,
-        string makerSubjectId,
-        string idempotencyKey,
-        string? reason,
-        DateTimeOffset requestedAtUtc,
-        CancellationToken cancellationToken = default,
-        Guid? observedPendingCorrection = null);
-    Task<ProductAbbreviationRegisterWriteResult> ClearRetirementRequestAsync(
-        Guid id,
-        int expectedVersion,
-        string retirementRequestId,
-        string checkerSubjectId,
-        string idempotencyKey,
-        string? reason,
-        DateTimeOffset decidedAtUtc,
         CancellationToken cancellationToken = default);
 }

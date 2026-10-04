@@ -2514,4 +2514,7 @@
   <data name="DelegateNoEligiblePeople" xml:space="preserve">
     <value>لا يوجد أحد يمكن تفويض هذه الموافقة إليه.</value>
   </data>
+  <data name="ErrorAbbreviationDecidedByAnother" xml:space="preserve">
+    <value>اتّخذ مُعتمِد آخر قرارًا بشأن هذا العنصر بالفعل. تم تحديث قائمتك.</value>
+  </data>
 </root>

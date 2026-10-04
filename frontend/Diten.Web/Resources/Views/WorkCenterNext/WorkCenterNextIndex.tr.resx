@@ -2514,4 +2514,7 @@
   <data name="DelegateNoEligiblePeople" xml:space="preserve">
     <value>Bu onayın devredilebileceği kimse yok.</value>
   </data>
+  <data name="ErrorAbbreviationDecidedByAnother" xml:space="preserve">
+    <value>Bu iş başka bir onaycı tarafından zaten karara bağlandı. Listeniz yenilendi.</value>
+  </data>
 </root>

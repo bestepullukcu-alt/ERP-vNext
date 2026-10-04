@@ -2514,4 +2514,7 @@
   <data name="DelegateNoEligiblePeople" xml:space="preserve">
     <value>Это согласование некому делегировать.</value>
   </data>
+  <data name="ErrorAbbreviationDecidedByAnother" xml:space="preserve">
+    <value>Другой согласующий уже принял решение по этому элементу. Ваш список обновлён.</value>
+  </data>
 </root>

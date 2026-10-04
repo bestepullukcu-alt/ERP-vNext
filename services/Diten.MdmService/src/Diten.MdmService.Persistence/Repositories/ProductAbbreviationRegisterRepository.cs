@@ -14,11 +14,17 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
     private readonly IMongoCollection<ProductAbbreviationRegisterEntry> _collection;
     private readonly IMongoCollection<ProductAbbreviationHistoryEntry> _history;
     private readonly IMongoCollection<BsonDocument> _productSlots;
+    private readonly IMongoCollection<ProductAbbreviationAllocationLedger> _ledger;
     private readonly Guid _tenantId;
 
     public const string AlreadyDecidedByAnother = "ABBREVIATION_ALREADY_DECIDED_BY_ANOTHER";
+    /// <summary>FIX3 item 6 — the server cannot run a transaction (a standalone mongod): every ABB write needs one.</summary>
+    public const string TransactionsUnavailable = "PRODUCT_ABBREVIATION_TRANSACTIONS_UNAVAILABLE";
+    public const string PersistenceUnavailable = "ABBREVIATION_PERSISTENCE_UNAVAILABLE";
     private const string ActiveProductIndexName = "ux_mdm_product_abbreviation_register_tenant_active_product";
     private const string Reclassify = "__RECLASSIFY__";
+    public const string PendingRequestIndexName = "ix_mdm_product_abbreviation_register_tenant_pending_requests";
+    public const string PendingRetirementIndexName = "ix_mdm_product_abbreviation_register_tenant_pending_retirements";
 
     public ProductAbbreviationRegisterRepository(IMongoDatabase database, ITenantContext tenantContext)
     {
@@ -27,8 +33,13 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
         _history = database.GetCollection<ProductAbbreviationHistoryEntry>(
             ProductAbbreviationHistoryRepository.CollectionName);
         _productSlots = database.GetCollection<BsonDocument>("mdm_product_abbreviation_product_slots");
+        _ledger = database.GetCollection<ProductAbbreviationAllocationLedger>(
+            ProductAbbreviationAllocationLedgerRepository.CollectionName);
         _tenantId = tenantContext.TenantId;
         EnsureIndexes();
+        // FIX3 item 3: the ledger row is written by this repository's request transaction, so its uniqueness rules
+        // must exist even where the ledger repository itself was never built.
+        ProductAbbreviationAllocationLedgerRepository.EnsureIndexes(_ledger);
     }
 
     public async Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> GetPendingWorkItemsPageAsync(
@@ -41,16 +52,25 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
             throw new ArgumentOutOfRangeException(nameof(limit));
         }
 
+        // FIX3 item 9: pending work written before FIX2 has no stored order; it gets one (the moment it started waiting)
+        // before the first page is read, so a cursor never meets a row it cannot place.
+        if (after is null)
+        {
+            await BackfillPendingSinceAsync(cancellationToken);
+        }
+
         // FIX2 A3: the order work started waiting in (a stored integer), then the id as the tie-break — a stable,
         // meaningful order that a keyset cursor can resume exactly, with nothing skipped and nothing repeated.
-        var filter = TenantFilter & PendingWorkFilter;
-        if (after is not null)
-        {
-            filter &= Builders<ProductAbbreviationRegisterEntry>.Filter.Or(
+        // FIX3 item 10: each branch names its own partial index, so a page never walks the tenant's decided rows.
+        var position = after is null
+            ? Builders<ProductAbbreviationRegisterEntry>.Filter.Empty
+            : Builders<ProductAbbreviationRegisterEntry>.Filter.Or(
                 Builders<ProductAbbreviationRegisterEntry>.Filter.Gt(x => x.PendingSinceUtcTicks, after.PendingSinceUtcTicks),
                 Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.PendingSinceUtcTicks, after.PendingSinceUtcTicks)
                 & Builders<ProductAbbreviationRegisterEntry>.Filter.Gt(x => x.Id, after.Id));
-        }
+        var filter = Builders<ProductAbbreviationRegisterEntry>.Filter.Or(
+            TenantFilter & RequestedWork & position,
+            TenantFilter & RetirementWork & position);
 
         return await _collection.Find(filter)
             .SortBy(x => x.PendingSinceUtcTicks)
@@ -92,55 +112,63 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
             .Limit(1)
             .AnyAsync(cancellationToken);
 
-    public async Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> GetInitialPendingWorkItemsAsync(
-        int limit,
-        CancellationToken cancellationToken = default)
+    /// <summary>A request (an allocation or a correction) waiting for a decision.</summary>
+    private static FilterDefinition<ProductAbbreviationRegisterEntry> RequestedWork
+        => Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
+            x => x.LifecycleStatus,
+            ProductAbbreviationLifecycleStatus.REQUESTED);
+
+    /// <summary>An active code whose retirement waits for a decision (the id is a string while it waits, null after).</summary>
+    private static FilterDefinition<ProductAbbreviationRegisterEntry> RetirementWork
+        => Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
+               x => x.LifecycleStatus,
+               ProductAbbreviationLifecycleStatus.ACTIVE)
+           & Builders<ProductAbbreviationRegisterEntry>.Filter.Type(x => x.RetirementRequestId, BsonType.String);
+
+    /// <summary>
+    /// FIX3 item 9 — a pending row written before FIX2 has no PendingSinceUtcTicks. It is given the moment it started
+    /// waiting: the retirement request's time for a waiting retirement, otherwise the request's time. Both are stored
+    /// as [clock ticks, offset minutes] (BL-030), so UTC ticks = ticks − offset × ticks-per-minute. Idempotent: only rows
+    /// without the field are touched, and only this tenant's.
+    /// </summary>
+    private async Task BackfillPendingSinceAsync(CancellationToken cancellationToken)
     {
-        if (limit is < 1 or > 101)
+        static BsonDocument UtcTicks(string field) => new("$subtract", new BsonArray
         {
-            throw new ArgumentOutOfRangeException(nameof(limit));
-        }
+            new BsonDocument("$arrayElemAt", new BsonArray { field, 0 }),
+            new BsonDocument("$multiply", new BsonArray
+            {
+                new BsonDocument("$toLong", new BsonDocument("$arrayElemAt", new BsonArray { field, 1 })),
+                TimeSpan.TicksPerMinute
+            })
+        });
 
-        return await _collection
-            .Find(
-                TenantFilter
-                & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
-                    x => x.LifecycleStatus,
-                    ProductAbbreviationLifecycleStatus.REQUESTED)
-                & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.ReplacesEntryId, null))
-            // BL-030: DateTimeOffset is stored as a BSON array in this service. An ascending
-            // RequestedAtUtc sort can silently order by offset minutes instead of the instant.
-            .SortBy(x => x.Id)
-            .Limit(limit)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> GetPendingWorkItemsAsync(
-        int limit,
-        CancellationToken cancellationToken = default)
-    {
-        if (limit is < 1 or > 101)
+        var missing = new BsonDocument(nameof(ProductAbbreviationRegisterEntry.PendingSinceUtcTicks), BsonNull.Value);
+        var waitingRetirement = new BsonDocument("$isArray", "$" + nameof(ProductAbbreviationRegisterEntry.RetirementRequestedAtUtc));
+        var stamp = new BsonDocument("$set", new BsonDocument(
+            nameof(ProductAbbreviationRegisterEntry.PendingSinceUtcTicks),
+            new BsonDocument("$cond", new BsonArray
+            {
+                new BsonDocument("$and", new BsonArray
+                {
+                    new BsonDocument("$eq", new BsonArray
+                    {
+                        "$" + nameof(ProductAbbreviationRegisterEntry.LifecycleStatus),
+                        (int)ProductAbbreviationLifecycleStatus.ACTIVE
+                    }),
+                    waitingRetirement
+                }),
+                UtcTicks("$" + nameof(ProductAbbreviationRegisterEntry.RetirementRequestedAtUtc)),
+                UtcTicks("$" + nameof(ProductAbbreviationRegisterEntry.RequestedAtUtc))
+            })));
+        foreach (var work in new[] { RequestedWork, RetirementWork })
         {
-            throw new ArgumentOutOfRangeException(nameof(limit));
+            await _collection.UpdateManyAsync(
+                TenantFilter & work & missing,
+                PipelineDefinition<ProductAbbreviationRegisterEntry, ProductAbbreviationRegisterEntry>.Create(stamp),
+                cancellationToken: cancellationToken);
         }
-
-        return await _collection
-            .Find(TenantFilter & PendingWorkFilter)
-            .SortBy(x => x.Id)
-            .Limit(limit)
-            .ToListAsync(cancellationToken);
     }
-
-    private static FilterDefinition<ProductAbbreviationRegisterEntry> PendingWorkFilter
-        => Builders<ProductAbbreviationRegisterEntry>.Filter.Or(
-            Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
-                x => x.LifecycleStatus,
-                ProductAbbreviationLifecycleStatus.REQUESTED),
-            Builders<ProductAbbreviationRegisterEntry>.Filter.And(
-                Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
-                    x => x.LifecycleStatus,
-                    ProductAbbreviationLifecycleStatus.ACTIVE),
-                Builders<ProductAbbreviationRegisterEntry>.Filter.Ne(x => x.RetirementRequestId, null)));
 
     public async Task<ProductAbbreviationRegisterEntry?> GetByIdAsync(
         Guid id,
@@ -192,43 +220,6 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
                     ProductAbbreviationLifecycleStatus.ACTIVE))
             .FirstOrDefaultAsync(cancellationToken);
         return result;
-    }
-
-    public async Task<ProductAbbreviationRegisterWriteResult> InsertRequestedAsync(
-        ProductAbbreviationRegisterEntry entry,
-        CancellationToken cancellationToken = default)
-    {
-        var replay = await GetByAllocationIdempotencyKeyAsync(entry.AllocationIdempotencyKey, cancellationToken);
-        if (replay is not null)
-        {
-            return ReplayOf(replay, entry);
-        }
-
-        entry.TenantId = _tenantId;
-        entry.IsDeleted = false;
-        entry.DeletedAt = null;
-        entry.CreatedAt = entry.RequestedAtUtc;
-        entry.UpdatedAt = entry.RequestedAtUtc;
-        entry.Version = 0;
-        entry.LifecycleStatus = ProductAbbreviationLifecycleStatus.REQUESTED;
-        entry.PendingSinceUtcTicks = entry.RequestedAtUtc.UtcTicks;
-
-        try
-        {
-            await _collection.InsertOneAsync(entry, cancellationToken: cancellationToken);
-            return new(true, entry);
-        }
-        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
-        {
-            replay = await GetByAllocationIdempotencyKeyAsync(entry.AllocationIdempotencyKey, cancellationToken)
-                     ?? await GetByIdAsync(entry.Id, cancellationToken);
-            if (replay is not null && SameRequest(replay, entry))
-            {
-                return ReplayOf(replay, entry);
-            }
-
-            return new(false, replay, "ABBREVIATION_REGISTER_CONFLICT");
-        }
     }
 
     public async Task<bool> AppendAuditIntentIfAbsentAsync(
@@ -294,193 +285,6 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
                 intent.TenantId, intent.IntentId, intent.ContractVersion);
     }
 
-    public async Task<ProductAbbreviationRegisterWriteResult> TransitionAsync(
-        Guid id,
-        int expectedVersion,
-        ProductAbbreviationLifecycleStatus expectedStatus,
-        ProductAbbreviationLifecycleStatus targetStatus,
-        string decisionActor,
-        string idempotencyKey,
-        string? reason,
-        DateTimeOffset decidedAtUtc,
-        CancellationToken cancellationToken = default)
-    {
-        if (!IsAllowedTransition(expectedStatus, targetStatus))
-        {
-            return new(false, null, "ABBREVIATION_TRANSITION_FORBIDDEN");
-        }
-
-        var filter = TenantFilter
-                     & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.Id, id)
-                     & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.Version, expectedVersion)
-                     & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.LifecycleStatus, expectedStatus);
-        UpdateDefinition<ProductAbbreviationRegisterEntry> update = Builders<ProductAbbreviationRegisterEntry>.Update
-            .Set(x => x.LifecycleStatus, targetStatus)
-            .Set(x => x.LastDecisionByCanonicalSubjectId, decisionActor)
-            .Set(x => x.LastDecisionIdempotencyKey, idempotencyKey)
-            .Set(x => x.LastDecisionReason, reason)
-            .Set(x => x.LastDecisionAtUtc, decidedAtUtc)
-            .Set(x => x.UpdatedAt, decidedAtUtc)
-            .Inc(x => x.Version, 1);
-        if (targetStatus == ProductAbbreviationLifecycleStatus.RETIRED)
-        {
-            update = Builders<ProductAbbreviationRegisterEntry>.Update.Combine(
-                update,
-                Builders<ProductAbbreviationRegisterEntry>.Update.Set(x => x.RetirementRequestId, null),
-                Builders<ProductAbbreviationRegisterEntry>.Update.Set(
-                    x => x.RetirementRequestedByCanonicalSubjectId,
-                    null),
-                Builders<ProductAbbreviationRegisterEntry>.Update.Set(x => x.RetirementRequestedAtUtc, null));
-        }
-
-        try
-        {
-            var updated = await _collection.FindOneAndUpdateAsync(
-                filter,
-                update,
-                new FindOneAndUpdateOptions<ProductAbbreviationRegisterEntry>
-                {
-                    ReturnDocument = ReturnDocument.After
-                },
-                cancellationToken);
-            if (updated is not null)
-            {
-                return new(true, updated);
-            }
-        }
-        catch (MongoCommandException exception) when (exception.Code == 11000)
-        {
-            return new(false, null, "ACTIVE_ABBREVIATION_CONFLICT");
-        }
-        catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
-        {
-            return new(false, null, "ACTIVE_ABBREVIATION_CONFLICT");
-        }
-
-        var current = await GetByIdAsync(id, cancellationToken);
-        if (current is null)
-        {
-            return new(false, null, "ABBREVIATION_NOT_FOUND");
-        }
-
-        if (current.LifecycleStatus == targetStatus
-            && current.LastDecisionIdempotencyKey == idempotencyKey)
-        {
-            // FIX2 A1: the stored decision is a replay only for the person who made it.
-            return string.Equals(current.LastDecisionByCanonicalSubjectId, decisionActor, StringComparison.Ordinal)
-                ? new(true, current, IsReplay: true)
-                : new(false, current, AlreadyDecidedByAnother);
-        }
-
-        return new(false, current, "CONCURRENCY_CONFLICT");
-    }
-
-    public async Task<ProductAbbreviationRegisterWriteResult> RequestRetirementAsync(
-        Guid id,
-        int expectedVersion,
-        string retirementRequestId,
-        string makerSubjectId,
-        string idempotencyKey,
-        string? reason,
-        DateTimeOffset requestedAtUtc,
-        CancellationToken cancellationToken = default,
-        Guid? observedPendingCorrection = null)
-    {
-        // FIX1 B3: the claim the caller judged stale (or absent) must still be the claim — a correction that claimed
-        // the entry in between wins, and this request is refused instead of orphaning it.
-        var filter = TenantFilter
-                     & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.Id, id)
-                     & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.Version, expectedVersion)
-                     & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
-                         x => x.LifecycleStatus,
-                         ProductAbbreviationLifecycleStatus.ACTIVE)
-                     & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.RetirementRequestId, null)
-                     & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
-                         x => x.PendingCorrectionEntryId,
-                         observedPendingCorrection);
-        var update = Builders<ProductAbbreviationRegisterEntry>.Update
-            .Set(x => x.RetirementRequestId, retirementRequestId)
-            .Set(x => x.RetirementRequestedByCanonicalSubjectId, makerSubjectId)
-            .Set(x => x.RetirementRequestedAtUtc, requestedAtUtc)
-            .Set(x => x.LastDecisionIdempotencyKey, idempotencyKey)
-            .Set(x => x.LastDecisionReason, reason)
-            .Set(x => x.UpdatedAt, requestedAtUtc)
-            .Inc(x => x.Version, 1);
-        var updated = await _collection.FindOneAndUpdateAsync(
-            filter,
-            update,
-            new FindOneAndUpdateOptions<ProductAbbreviationRegisterEntry> { ReturnDocument = ReturnDocument.After },
-            cancellationToken);
-        if (updated is not null)
-        {
-            return new(true, updated);
-        }
-
-        var current = await GetByIdAsync(id, cancellationToken);
-        if (current is not null
-            && current.RetirementRequestId == retirementRequestId
-            && current.LastDecisionIdempotencyKey == idempotencyKey)
-        {
-            return new(true, current, IsReplay: true);
-        }
-
-        return current is null
-            ? new(false, null, "ABBREVIATION_NOT_FOUND")
-            : new(false, current, "CONCURRENCY_CONFLICT");
-    }
-
-    public async Task<ProductAbbreviationRegisterWriteResult> ClearRetirementRequestAsync(
-        Guid id,
-        int expectedVersion,
-        string retirementRequestId,
-        string checkerSubjectId,
-        string idempotencyKey,
-        string? reason,
-        DateTimeOffset decidedAtUtc,
-        CancellationToken cancellationToken = default)
-    {
-        var filter = TenantFilter
-                     & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.Id, id)
-                     & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.Version, expectedVersion)
-                     & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
-                         x => x.LifecycleStatus,
-                         ProductAbbreviationLifecycleStatus.ACTIVE)
-                     & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
-                         x => x.RetirementRequestId,
-                         retirementRequestId);
-        var update = Builders<ProductAbbreviationRegisterEntry>.Update
-            .Set(x => x.RetirementRequestId, null)
-            .Set(x => x.RetirementRequestedByCanonicalSubjectId, null)
-            .Set(x => x.RetirementRequestedAtUtc, null)
-            .Set(x => x.LastDecisionByCanonicalSubjectId, checkerSubjectId)
-            .Set(x => x.LastDecisionIdempotencyKey, idempotencyKey)
-            .Set(x => x.LastDecisionReason, reason)
-            .Set(x => x.LastDecisionAtUtc, decidedAtUtc)
-            .Set(x => x.UpdatedAt, decidedAtUtc)
-            .Inc(x => x.Version, 1);
-        var updated = await _collection.FindOneAndUpdateAsync(
-            filter,
-            update,
-            new FindOneAndUpdateOptions<ProductAbbreviationRegisterEntry> { ReturnDocument = ReturnDocument.After },
-            cancellationToken);
-        if (updated is not null)
-        {
-            return new(true, updated);
-        }
-
-        var current = await GetByIdAsync(id, cancellationToken);
-        if (current is not null
-            && current.RetirementRequestId is null
-            && current.LastDecisionIdempotencyKey == idempotencyKey)
-        {
-            return new(true, current, IsReplay: true);
-        }
-
-        return current is null
-            ? new(false, null, "ABBREVIATION_NOT_FOUND")
-            : new(false, current, "CONCURRENCY_CONFLICT");
-    }
-
     public async Task<ProductAbbreviationRegisterWriteResult> ApproveCorrectionAsync(
         ProductAbbreviationCorrectionApproval approval,
         CancellationToken cancellationToken = default)
@@ -525,14 +329,12 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
         var formerPost = Decided(former, ProductAbbreviationLifecycleStatus.RETIRED, approval, formerKey);
         var replacementPost = Decided(replacement, ProductAbbreviationLifecycleStatus.ACTIVE, approval, replacementKey);
         var evidence = approval.BuildEvidence(formerPost, replacementPost);
+        var histories = new[] { Stored(evidence.FormerHistory), Stored(evidence.ReplacementHistory) };
 
-        using var session = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
-        session.StartTransaction(new TransactionOptions(
-            ReadConcern.Snapshot,
-            ReadPreference.Primary,
-            WriteConcern.WMajority));
-        try
-        {
+        // FIX3 item 5: the same transaction helper as every other ABB write — one place that opens the session, aborts,
+        // and reads the stored state to say what happened.
+        var outcome = await InTransactionAsync(
+            async session =>
             {
                 var retired = await _collection.UpdateOneAsync(
                     session,
@@ -550,69 +352,40 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
                     cancellationToken: cancellationToken);
                 if (retired.ModifiedCount != 1)
                 {
-                    await session.AbortTransactionAsync(cancellationToken);
-                    return await AfterAbortAsync(approval, formerKey, replacementKey, cancellationToken);
+                    return new(false, replacement, Reclassify);
                 }
-            }
 
-            var activated = await _collection.UpdateOneAsync(
-                session,
-                ById(replacement.Id)
-                & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
-                    x => x.Version,
-                    approval.ExpectedReplacementVersion)
-                & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
-                    x => x.LifecycleStatus,
-                    ProductAbbreviationLifecycleStatus.REQUESTED),
-                DecisionUpdate(ProductAbbreviationLifecycleStatus.ACTIVE, approval, replacementKey)
-                    .Push(x => x.AuditIntents, evidence.ReplacementIntent),
-                cancellationToken: cancellationToken);
-            if (activated.ModifiedCount != 1)
-            {
-                await session.AbortTransactionAsync(cancellationToken);
-                return await AfterAbortAsync(approval, formerKey, replacementKey, cancellationToken);
-            }
+                var activated = await _collection.UpdateOneAsync(
+                    session,
+                    ById(replacement.Id)
+                    & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
+                        x => x.Version,
+                        approval.ExpectedReplacementVersion)
+                    & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
+                        x => x.LifecycleStatus,
+                        ProductAbbreviationLifecycleStatus.REQUESTED),
+                    DecisionUpdate(ProductAbbreviationLifecycleStatus.ACTIVE, approval, replacementKey)
+                        .Push(x => x.AuditIntents, evidence.ReplacementIntent),
+                    cancellationToken: cancellationToken);
+                if (activated.ModifiedCount != 1)
+                {
+                    return new(false, replacement, Reclassify);
+                }
 
-            var histories = new[] { evidence.FormerHistory, evidence.ReplacementHistory };
-            foreach (var history in histories)
-            {
-                history.TenantId = _tenantId;
-                history.IsDeleted = false;
-                history.CreatedAt = history.OccurredAtUtc;
-                history.UpdatedAt = history.OccurredAtUtc;
-                history.Version = 0;
-            }
-
-            await _history.InsertManyAsync(session, histories, cancellationToken: cancellationToken);
-            await session.CommitTransactionAsync(cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
-            throw;
-        }
-        catch (MongoException exception)
-        {
-            if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
-            var after = await AfterAbortAsync(approval, formerKey, replacementKey, cancellationToken);
-            if (after.Succeeded || after.ErrorCode != "CONCURRENCY_CONFLICT")
-            {
-                return after;
-            }
-
-            // FIX2 A4: a lost race (write conflict, transient transaction error) is a conflict the reader resolves by
-            // reloading — 409 — exactly as the sibling repositories classify it. 503 only for a real outage.
-            return IsDuplicateKey(exception)
-                ? new(false, after.Entry, "ABBREVIATION_CORRECTION_CONFLICT")
-                : IsLostRace(exception)
-                    ? after
-                    : new(false, after.Entry, "ABBREVIATION_PERSISTENCE_UNAVAILABLE");
-        }
-
-        return new(true, await GetByIdAsync(replacement.Id, cancellationToken) ?? replacementPost);
+                await _history.InsertManyAsync(session, histories, cancellationToken: cancellationToken);
+                return null;
+            },
+            () => AfterAbortAsync(approval, formerKey, replacementKey, cancellationToken),
+            "ABBREVIATION_CORRECTION_CONFLICT",
+            cancellationToken);
+        return outcome ?? new(true, await GetByIdAsync(replacement.Id, cancellationToken) ?? replacementPost);
     }
 
-    private async Task<ProductAbbreviationRegisterWriteResult> AfterAbortAsync(
+    /// <summary>
+    /// What the stored state says after a correction approval did not commit: applied under this key (by me or by
+    /// another approver), no longer pending, moved on (409) — or null when nothing changed.
+    /// </summary>
+    private async Task<ProductAbbreviationRegisterWriteResult?> AfterAbortAsync(
         ProductAbbreviationCorrectionApproval approval,
         string formerKey,
         string replacementKey,
@@ -630,7 +403,12 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
             return new(false, replacement, "ABBREVIATION_NOT_PENDING");
         }
 
-        return new(false, replacement, "CONCURRENCY_CONFLICT");
+        return former is null || replacement is null
+               || former.Version != approval.ExpectedFormerVersion
+               || replacement.Version != approval.ExpectedReplacementVersion
+               || former.LifecycleStatus != ProductAbbreviationLifecycleStatus.ACTIVE
+            ? new(false, replacement, "CONCURRENCY_CONFLICT")
+            : null;
     }
 
     private static bool Applied(
@@ -684,25 +462,12 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
     private FilterDefinition<ProductAbbreviationRegisterEntry> ById(Guid id)
         => TenantFilter & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.Id, id);
 
-    private static FilterDefinition<ProductAbbreviationRegisterEntry> NoIntent(Guid intentId)
-        => Builders<ProductAbbreviationRegisterEntry>.Filter.Not(
-            Builders<ProductAbbreviationRegisterEntry>.Filter.ElemMatch(
-                item => item.AuditIntents,
-                embedded => embedded.IntentId == intentId));
-
     private static ProductAbbreviationRegisterWriteResult MineOrAnother(
         ProductAbbreviationRegisterEntry entry,
         string actor)
         => string.Equals(entry.LastDecisionByCanonicalSubjectId, actor, StringComparison.Ordinal)
             ? new(true, entry, IsReplay: true)
             : new(false, entry, AlreadyDecidedByAnother);
-
-    /// <summary>FIX2 A4 — the sibling repositories' classification of a lost transaction race.</summary>
-    public static bool IsLostRace(MongoException exception) =>
-        exception.HasErrorLabel("TransientTransactionError")
-        || exception.HasErrorLabel("UnknownTransactionCommitResult")
-        || exception is MongoCommandException { Code: 112 }
-        || exception is MongoWriteException { WriteError.Code: 112 };
 
     private static bool IsActiveProductViolation(MongoException exception)
         => IsDuplicateKey(exception) && exception.Message.Contains(ActiveProductIndexName, StringComparison.Ordinal);
@@ -778,12 +543,21 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
                     return again;
                 }
 
-                return decision.Kind == ProductAbbreviationDecisionKind.RequestRetirement
-                       && after.PendingCorrectionEntryId is { } pending
-                       && IsPendingCorrectionOf(await GetByIdAsync(pending, cancellationToken), after.Id)
-                    ? new(false, after, "ABBREVIATION_CORRECTION_PENDING")
-                    : new(false, after, "CONCURRENCY_CONFLICT");
+                if (decision.Kind == ProductAbbreviationDecisionKind.RequestRetirement
+                    && after.PendingCorrectionEntryId is { } pending
+                    && IsPendingCorrectionOf(await GetByIdAsync(pending, cancellationToken), after.Id))
+                {
+                    return new(false, after, "ABBREVIATION_CORRECTION_PENDING");
+                }
+
+                return after.Version != current.Version
+                       || after.LifecycleStatus != current.LifecycleStatus
+                       || after.RetirementRequestId != current.RetirementRequestId
+                       || after.PendingCorrectionEntryId != current.PendingCorrectionEntryId
+                    ? new(false, after, "CONCURRENCY_CONFLICT")
+                    : null;
             },
+            "CONCURRENCY_CONFLICT",
             cancellationToken);
         return outcome ?? new(true, await GetByIdAsync(current.Id, cancellationToken) ?? post);
     }
@@ -949,6 +723,9 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
     {
         ArgumentNullException.ThrowIfNull(write);
         var entry = write.Entry;
+        var allocation = write.Allocation;
+        // The entry names its ledger row before anything compares it with a stored request (a replay included).
+        entry.AllocationLedgerId = allocation.Id;
         var replay = await GetByAllocationIdempotencyKeyAsync(entry.AllocationIdempotencyKey, cancellationToken);
         if (replay is not null)
         {
@@ -966,13 +743,44 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
         var evidence = write.BuildEvidence(entry);
         entry.AuditIntents = [evidence.Intent];
         var history = Stored(evidence.History);
+        allocation.TenantId = _tenantId;
+        allocation.IsDeleted = false;
+        allocation.DeletedAt = null;
+        allocation.CreatedAt = allocation.AllocatedAtUtc;
+        allocation.UpdatedAt = allocation.AllocatedAtUtc;
+        allocation.Version = 0;
+        ProductAbbreviationRegisterEntry? formerRead = null;
 
         var outcome = await InTransactionAsync(
             async session =>
             {
+                // FIX3 item 3: the code is taken in the ledger FIRST, inside this transaction — a request that is refused
+                // or loses a race afterwards (claim, product slot, entry) takes nothing: the abort takes the row back. A ledger row already written under this key (by a request before FIX3
+                // whose register write never landed) is reused only when it is the same request.
+                var held = await _ledger.Find(session, LedgerByKey(allocation.IdempotencyKey))
+                    .FirstOrDefaultAsync(cancellationToken);
+                if (held is not null)
+                {
+                    if (!ProductAbbreviationAllocationLedgerRepository.Matches(held, allocation))
+                    {
+                        return new(false, null, "ABBREVIATION_IDEMPOTENCY_CONFLICT");
+                    }
+                }
+                else
+                {
+                    if (await _ledger.Find(session, LedgerByAbbreviation(allocation.NormalizedAbbreviation))
+                            .Limit(1).AnyAsync(cancellationToken))
+                    {
+                        return new(false, null, "ABBREVIATION_ALREADY_ALLOCATED");
+                    }
+
+                    await _ledger.InsertOneAsync(session, allocation, cancellationToken: cancellationToken);
+                }
+
                 if (entry.ReplacesEntryId is { } formerId)
                 {
                     var former = await _collection.Find(session, ById(formerId)).FirstOrDefaultAsync(cancellationToken);
+                    formerRead = former;
                     if (former is null || former.GlobalProductId != entry.GlobalProductId)
                     {
                         return new(false, former, "ABBREVIATION_CORRECTION_CONFLICT");
@@ -997,17 +805,24 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
                     }
 
                     // The claim and the correction it names are written together: there is no moment in which the
-                    // claim points at an entry that does not exist yet (FIX2 A2).
+                    // claim points at an entry that does not exist yet (FIX2 A2). FIX3 item 13: and only while the code
+                    // is still the version the correction was asked against.
+                    var claim = ById(former.Id)
+                                & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
+                                    x => x.LifecycleStatus,
+                                    ProductAbbreviationLifecycleStatus.ACTIVE)
+                                & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.RetirementRequestId, null)
+                                & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
+                                    x => x.PendingCorrectionEntryId,
+                                    former.PendingCorrectionEntryId);
+                    if (write.ExpectedFormerVersion is { } expectedFormer)
+                    {
+                        claim &= Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.Version, expectedFormer);
+                    }
+
                     var marked = await _collection.UpdateOneAsync(
                         session,
-                        ById(former.Id)
-                        & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
-                            x => x.LifecycleStatus,
-                            ProductAbbreviationLifecycleStatus.ACTIVE)
-                        & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.RetirementRequestId, null)
-                        & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
-                            x => x.PendingCorrectionEntryId,
-                            former.PendingCorrectionEntryId),
+                        claim,
                         Builders<ProductAbbreviationRegisterEntry>.Update
                             .Set(x => x.PendingCorrectionEntryId, entry.Id)
                             .Set(x => x.UpdatedAt, entry.RequestedAtUtc),
@@ -1058,21 +873,57 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
                 }
 
                 if (entry.ReplacesEntryId is { } formerId
-                    && await GetByIdAsync(formerId, cancellationToken) is { } former
-                    && former.PendingCorrectionEntryId is { } pending && pending != entry.Id
-                    && IsPendingCorrectionOf(await GetByIdAsync(pending, cancellationToken), formerId))
+                    && await GetByIdAsync(formerId, cancellationToken) is { } former)
                 {
-                    return new(false, former, "ABBREVIATION_CORRECTION_PENDING");
+                    if (former.PendingCorrectionEntryId is { } pending && pending != entry.Id
+                        && IsPendingCorrectionOf(await GetByIdAsync(pending, cancellationToken), formerId))
+                    {
+                        return new(false, former, "ABBREVIATION_CORRECTION_PENDING");
+                    }
+
+                    if (former.RetirementRequestId is not null)
+                    {
+                        return new(false, former, "ABBREVIATION_RETIREMENT_PENDING");
+                    }
+
+                    if (former.LifecycleStatus != ProductAbbreviationLifecycleStatus.ACTIVE
+                        || write.ExpectedFormerVersion is { } expected && former.Version != expected
+                        || formerRead is not null
+                           && (former.Version != formerRead.Version
+                               || former.PendingCorrectionEntryId != formerRead.PendingCorrectionEntryId))
+                    {
+                        return new(false, former, "CONCURRENCY_CONFLICT");
+                    }
                 }
 
-                return entry.ReplacesEntryId is null
-                       && await _collection.Find(OpenEntryForProduct(entry.GlobalProductId, entry.Id)).AnyAsync(cancellationToken)
-                    ? new(false, null, "ABBREVIATION_PRODUCT_ALREADY_HAS_ENTRY")
-                    : new(false, null, "CONCURRENCY_CONFLICT");
+                if (entry.ReplacesEntryId is null
+                    && await _collection.Find(OpenEntryForProduct(entry.GlobalProductId, entry.Id)).AnyAsync(cancellationToken))
+                {
+                    return new(false, null, "ABBREVIATION_PRODUCT_ALREADY_HAS_ENTRY");
+                }
+
+                if (await _ledger.Find(LedgerByAbbreviation(allocation.NormalizedAbbreviation)
+                                       & Builders<ProductAbbreviationAllocationLedger>.Filter.Ne(
+                                           x => x.IdempotencyKey, allocation.IdempotencyKey))
+                        .Limit(1).AnyAsync(cancellationToken))
+                {
+                    return new(false, null, "ABBREVIATION_ALREADY_ALLOCATED");
+                }
+
+                return null;
             },
+            "CONCURRENCY_CONFLICT",
             cancellationToken);
         return outcome ?? new(true, await GetByIdAsync(entry.Id, cancellationToken) ?? entry);
     }
+
+    private FilterDefinition<ProductAbbreviationAllocationLedger> LedgerByKey(string idempotencyKey)
+        => Builders<ProductAbbreviationAllocationLedger>.Filter.Eq(x => x.TenantId, _tenantId)
+           & Builders<ProductAbbreviationAllocationLedger>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey);
+
+    private FilterDefinition<ProductAbbreviationAllocationLedger> LedgerByAbbreviation(string normalizedAbbreviation)
+        => Builders<ProductAbbreviationAllocationLedger>.Filter.Eq(x => x.TenantId, _tenantId)
+           & Builders<ProductAbbreviationAllocationLedger>.Filter.Eq(x => x.NormalizedAbbreviation, normalizedAbbreviation);
 
     /// <summary>
     /// A claim counts only while the entry it names is a REQUESTED correction OF THIS code (FIX2 A2): an entry that was
@@ -1103,27 +954,35 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
     }
 
     /// <summary>
-    /// Runs <paramref name="body"/> in one transaction. A non-null answer from the body aborts with that answer (or, for
-    /// the internal "reclassify" marker, with <paramref name="afterAbort"/>'s reading of the stored state). A lost race is
-    /// read the same way (409); only a real outage is ABBREVIATION_PERSISTENCE_UNAVAILABLE (FIX2 A4). Null = committed.
+    /// FIX3 item 5 — the ONE transaction every ABB write goes through. A non-null answer from <paramref name="body"/>
+    /// aborts with that answer (the internal "reclassify" marker asks the stored state instead). When the transaction
+    /// fails, the stored state decides, never the error label alone: <paramref name="afterAbort"/> re-reads it — if it
+    /// moved, that is the answer (mine / another person's / 409); if it did not, a write conflict or a duplicate key is
+    /// <paramref name="unchangedConflictCode"/> (409) and anything else — a network or primary failure even when the
+    /// driver labels it transient — is ABBREVIATION_PERSISTENCE_UNAVAILABLE (503). Opening the session is inside the
+    /// same guard. Null = committed.
     /// </summary>
     private async Task<ProductAbbreviationRegisterWriteResult?> InTransactionAsync(
         Func<IClientSessionHandle, Task<ProductAbbreviationRegisterWriteResult?>> body,
-        Func<Task<ProductAbbreviationRegisterWriteResult>> afterAbort,
+        Func<Task<ProductAbbreviationRegisterWriteResult?>> afterAbort,
+        string unchangedConflictCode,
         CancellationToken cancellationToken)
     {
-        using var session = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
-        session.StartTransaction(new TransactionOptions(
-            ReadConcern.Snapshot,
-            ReadPreference.Primary,
-            WriteConcern.WMajority));
+        IClientSessionHandle? session = null;
         try
         {
+            session = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+            session.StartTransaction(new TransactionOptions(
+                ReadConcern.Snapshot,
+                ReadPreference.Primary,
+                WriteConcern.WMajority));
             var refused = await body(session);
             if (refused is not null)
             {
                 await session.AbortTransactionAsync(cancellationToken);
-                return refused.ErrorCode == Reclassify ? await afterAbort() : refused;
+                return refused.ErrorCode == Reclassify
+                    ? await afterAbort() ?? new(false, refused.Entry, unchangedConflictCode)
+                    : refused;
             }
 
             await session.CommitTransactionAsync(cancellationToken);
@@ -1131,22 +990,80 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
         }
         catch (OperationCanceledException)
         {
-            if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
+            await AbortQuietlyAsync(session);
             throw;
         }
-        catch (MongoException exception)
+        catch (Exception exception) when (IsPersistenceFailure(exception))
         {
-            if (session.IsInTransaction) await session.AbortTransactionAsync(CancellationToken.None);
-            if (IsActiveProductViolation(exception))
+            await AbortQuietlyAsync(session);
+            if (TransactionsAreUnsupported(exception))
+            {
+                return new(false, null, TransactionsUnavailable);
+            }
+
+            if (exception is MongoException mongo && IsActiveProductViolation(mongo))
             {
                 return new(false, null, "ACTIVE_ABBREVIATION_CONFLICT");
             }
 
-            return IsLostRace(exception) || IsDuplicateKey(exception)
-                ? await afterAbort()
-                : new(false, null, "ABBREVIATION_PERSISTENCE_UNAVAILABLE");
+            ProductAbbreviationRegisterWriteResult? after;
+            try
+            {
+                after = await afterAbort();
+            }
+            catch (Exception readFailure) when (IsPersistenceFailure(readFailure))
+            {
+                return new(false, null, PersistenceUnavailable);
+            }
+
+            if (after is not null)
+            {
+                return after;
+            }
+
+            return exception is MongoException conflict && (IsDuplicateKey(conflict) || IsWriteConflict(conflict))
+                ? new(false, null, unchangedConflictCode)
+                : new(false, null, PersistenceUnavailable);
+        }
+        finally
+        {
+            session?.Dispose();
         }
     }
+
+    private static async Task AbortQuietlyAsync(IClientSessionHandle? session)
+    {
+        if (session is not { IsInTransaction: true })
+        {
+            return;
+        }
+
+        try
+        {
+            await session.AbortTransactionAsync(CancellationToken.None);
+        }
+        catch (Exception exception) when (IsPersistenceFailure(exception))
+        {
+            // The server ends an abandoned transaction itself; the answer is decided by the stored state.
+        }
+    }
+
+    /// <summary>A failure of the database or of the path to it — not a bug in this code.</summary>
+    private static bool IsPersistenceFailure(Exception exception)
+        => exception is MongoException or TimeoutException or NotSupportedException;
+
+    /// <summary>
+    /// FIX3 item 6 — a standalone mongod: the driver refuses to start the transaction (NotSupportedException), or, when
+    /// it could not tell yet, the server refuses the first statement (IllegalOperation, code 20).
+    /// </summary>
+    public static bool TransactionsAreUnsupported(Exception exception)
+        => exception is NotSupportedException
+           || exception is MongoCommandException { Code: 20 } command
+              && (command.ErrorMessage ?? command.Message).Contains("Transaction numbers", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Another transaction wrote the same document first (WriteConflict, 112).</summary>
+    private static bool IsWriteConflict(MongoException exception)
+        => exception is MongoCommandException { Code: 112 } or MongoWriteException { WriteError.Code: 112 };
 
     private static bool IsDuplicateKey(MongoException exception) => exception switch
     {
@@ -1164,6 +1081,16 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
         ProductAbbreviationRegisterEntry persisted,
         ProductAbbreviationRegisterEntry requested)
     {
+        // FIX3 item 11: a request is repeated only by the person who made it. Anyone else sending the same key is
+        // refused — never told "your request is pending", never sent into an evidence write that can never match.
+        if (!string.Equals(
+                persisted.RequestedByCanonicalSubjectId,
+                requested.RequestedByCanonicalSubjectId,
+                StringComparison.Ordinal))
+        {
+            return new(false, persisted, "ABBREVIATION_IDEMPOTENCY_KEY_REUSED");
+        }
+
         if (!SameRequest(persisted, requested))
         {
             return new(false, persisted, "ABBREVIATION_IDEMPOTENCY_CONFLICT");
@@ -1182,16 +1109,6 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
            && persisted.NormalizedAbbreviation == requested.NormalizedAbbreviation
            && persisted.AllocationLedgerId == requested.AllocationLedgerId
            && persisted.ReplacesEntryId == requested.ReplacesEntryId;
-
-    private static bool IsAllowedTransition(
-        ProductAbbreviationLifecycleStatus source,
-        ProductAbbreviationLifecycleStatus target)
-        => source == ProductAbbreviationLifecycleStatus.REQUESTED
-               && target is ProductAbbreviationLifecycleStatus.ACTIVE
-                   or ProductAbbreviationLifecycleStatus.REJECTED
-                   or ProductAbbreviationLifecycleStatus.CANCELLED
-           || source == ProductAbbreviationLifecycleStatus.ACTIVE
-               && target == ProductAbbreviationLifecycleStatus.RETIRED;
 
     private void EnsureIndexes()
     {
@@ -1226,13 +1143,34 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
                     .Ascending(x => x.NormalizedAbbreviation)
                     .Ascending(x => x.LifecycleStatus),
                 new CreateIndexOptions { Name = "ix_mdm_product_abbreviation_register_tenant_resolution" }),
-            // FIX2 A3: the Task Center reads pending work in the order it started waiting.
+            // FIX2 A3 / FIX3 item 10: the Task Center reads pending work in the order it started waiting — from two
+            // partial indexes that hold ONLY waiting rows, so a page never walks the tenant's decided ones.
             new CreateIndexModel<ProductAbbreviationRegisterEntry>(
                 Builders<ProductAbbreviationRegisterEntry>.IndexKeys
                     .Ascending(x => x.TenantId)
                     .Ascending(x => x.PendingSinceUtcTicks)
-                    .Ascending(x => x.Id),
-                new CreateIndexOptions { Name = "ix_mdm_product_abbreviation_register_tenant_pending_order" })
+                    .Ascending(x => x.Id)
+                    // A trailing field only to keep the key pattern distinct from the FIX2 index left on existing
+                    // databases (two indexes on one key pattern differing only by partiality need a newer server).
+                    .Ascending(x => x.LifecycleStatus),
+                new CreateIndexOptions<ProductAbbreviationRegisterEntry>
+                {
+                    Name = PendingRequestIndexName,
+                    PartialFilterExpression = RequestedWork
+                }),
+            new CreateIndexModel<ProductAbbreviationRegisterEntry>(
+                Builders<ProductAbbreviationRegisterEntry>.IndexKeys
+                    .Ascending(x => x.TenantId)
+                    .Ascending(x => x.PendingSinceUtcTicks)
+                    .Ascending(x => x.Id)
+                    .Ascending(x => x.RetirementRequestId),
+                new CreateIndexOptions<ProductAbbreviationRegisterEntry>
+                {
+                    Name = PendingRetirementIndexName,
+                    PartialFilterExpression = Builders<ProductAbbreviationRegisterEntry>.Filter.Type(
+                        x => x.RetirementRequestId,
+                        BsonType.String)
+                })
         ]);
         // Created up front: the first request of a product upserts its slot inside a transaction.
         _productSlots.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(

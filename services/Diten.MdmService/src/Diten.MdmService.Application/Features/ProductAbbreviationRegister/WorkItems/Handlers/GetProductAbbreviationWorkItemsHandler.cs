@@ -182,7 +182,7 @@ public sealed class GetProductAbbreviationWorkItemsHandler
         var guard = scope.RolloutMode == ProductLegalEntityScopeRolloutMode.Enforced && known.Length > 0
             ? new ProductLegalEntityScopeConsumerGuard(
                 _rolloutStates,
-                new PrefetchedPolicies(_policies, await _policies.GetByGlobalProductIdsAsync(known, cancellationToken)),
+                await PrefetchPoliciesAsync(known, cancellationToken),
                 _candidates,
                 _tenantContext)
             : _scopeGuard;
@@ -221,10 +221,59 @@ public sealed class GetProductAbbreviationWorkItemsHandler
         return consumed;
     }
 
+    /// <summary>
+    /// FIX3 item 7 — the page's policies in one read. When that read fails (one unreadable policy document fails the
+    /// whole query), each product is read on its own instead: a product whose policy cannot be read is hidden (the guard
+    /// answers "invalid scope evidence" for it), and every other product of the page is still evaluated and shown.
+    /// </summary>
+    private async Task<PrefetchedPolicies> PrefetchPoliciesAsync(
+        IReadOnlyCollection<Guid> productIds,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return new PrefetchedPolicies(
+                _policies,
+                await _policies.GetByGlobalProductIdsAsync(productIds, cancellationToken),
+                new HashSet<Guid>());
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            _logger.LogWarning(
+                "mdm.product_abbreviation.work_item_policy_batch_failed ProductCount={ProductCount} ExceptionType={ExceptionType}",
+                productIds.Count,
+                exception.GetType().Name);
+        }
+
+        var found = new List<ProductLegalEntityScopePolicy>();
+        var unreadable = new HashSet<Guid>();
+        foreach (var productId in productIds)
+        {
+            try
+            {
+                if (await _policies.GetByGlobalProductIdAsync(productId, cancellationToken) is { } policy)
+                {
+                    found.Add(policy);
+                }
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                unreadable.Add(productId);
+                _logger.LogWarning(
+                    "mdm.product_abbreviation.work_item_policy_unreadable GlobalProductId={GlobalProductId} ExceptionType={ExceptionType}",
+                    productId,
+                    exception.GetType().Name);
+            }
+        }
+
+        return new PrefetchedPolicies(_policies, found, unreadable);
+    }
+
     /// <summary>The page's policies, read once; every other member goes to the real repository.</summary>
     private sealed class PrefetchedPolicies(
         IProductLegalEntityScopePolicyRepository inner,
-        IReadOnlyList<ProductLegalEntityScopePolicy> policies) : IProductLegalEntityScopePolicyRepository
+        IReadOnlyList<ProductLegalEntityScopePolicy> policies,
+        IReadOnlySet<Guid> unreadable) : IProductLegalEntityScopePolicyRepository
     {
         private readonly Dictionary<Guid, ProductLegalEntityScopePolicy> _byProduct =
             policies.GroupBy(x => x.GlobalProductId).ToDictionary(x => x.Key, x => x.First());
@@ -232,7 +281,10 @@ public sealed class GetProductAbbreviationWorkItemsHandler
         public Task<ProductLegalEntityScopePolicy?> GetByGlobalProductIdAsync(
             Guid globalProductId,
             CancellationToken cancellationToken = default)
-            => Task.FromResult(_byProduct.GetValueOrDefault(globalProductId));
+            // An unreadable policy is reported the way the guard isolates a bad one: for that product only.
+            => unreadable.Contains(globalProductId)
+                ? throw new InvalidOperationException("The product's scope policy could not be read.")
+                : Task.FromResult(_byProduct.GetValueOrDefault(globalProductId));
 
         public Task<ProductLegalEntityScopePolicy?> GetByCreationCommandIdAsync(
             Guid creationCommandId,

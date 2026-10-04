@@ -15,6 +15,10 @@ namespace Diten.MdmService.Application.Tests;
 public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Application.Tests.Audit.AuditIntentTemporalMongoFixture mongo)
     : IClassFixture<Diten.MdmService.Application.Tests.Audit.AuditIntentTemporalMongoFixture>
 {
+    private static readonly string Maker = Guid.NewGuid().ToString("D");
+    private static readonly string Checker = Guid.NewGuid().ToString("D");
+    private static readonly string Checker2 = Guid.NewGuid().ToString("D");
+
     [Fact]
     public async Task Required_ledger_and_active_binding_indexes_exist_with_correct_partiality()
     {
@@ -45,13 +49,26 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
     }
 
     [Fact]
+    public async Task The_ledger_rules_exist_where_only_the_register_was_ever_built()
+    {
+        // FIX3 item 3 — the register writes the ledger row inside its own transaction; the uniqueness of a code must
+        // not depend on someone having built the ledger repository first.
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
+        await scope.Database.DropCollectionAsync("mdm_product_abbreviation_allocation_ledger");
+        _ = scope.Register(scope.TenantA);
+
+        var ledgerIndexes = await ReadIndexesAsync(
+            scope.Database.GetCollection<MongoDB.Bson.BsonDocument>("mdm_product_abbreviation_allocation_ledger"));
+        Assert.Contains(ledgerIndexes, item => item["name"] == "ux_mdm_product_abbreviation_ledger_tenant_abbreviation"
+                                               && item["unique"].AsBoolean);
+    }
+
+    [Fact]
     public async Task Tenant_isolation_allows_same_ABB_in_another_tenant_and_hides_cross_tenant_entry()
     {
         await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
-        var productA = Guid.NewGuid();
-        var productB = Guid.NewGuid();
-        var entryA = await CreateRequestedAsync(scope, scope.TenantA, productA, "ABC", "tenant-a");
-        var entryB = await CreateRequestedAsync(scope, scope.TenantB, productB, "ABC", "tenant-b");
+        var entryA = await CreateRequestedAsync(scope, scope.TenantA, Guid.NewGuid(), "ABC", "tenant-a");
+        var entryB = await CreateRequestedAsync(scope, scope.TenantB, Guid.NewGuid(), "ABC", "tenant-b");
 
         Assert.NotEqual(entryA.Id, entryB.Id);
         Assert.Null(await scope.Register(scope.TenantB).GetByIdAsync(entryA.Id));
@@ -59,30 +76,19 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
     }
 
     [Fact]
-    public async Task Concurrent_same_tenant_ABB_allocation_has_one_durable_winner()
+    public async Task Concurrent_same_tenant_ABB_requests_have_one_durable_winner()
     {
         await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
-        var repository = scope.Ledger(scope.TenantA);
         var results = await Task.WhenAll(Enumerable.Range(0, 12).Select(index =>
-        {
-            var entryId = Guid.NewGuid();
-            return repository.AllocateAsync(new ProductAbbreviationAllocationLedger
-            {
-                Id = Guid.NewGuid(),
-                NormalizedAbbreviation = "ONE",
-                GlobalProductId = Guid.NewGuid(),
-                RegisterEntryId = entryId,
-                IdempotencyKey = $"parallel-{index}",
-                PayloadHash = $"payload-{index}",
-                AllocatedByCanonicalSubjectId = "maker",
-                AllocatedAtUtc = DateTimeOffset.UtcNow
-            });
-        }));
+            ProductAbbreviationTestWrites.RequestAsync(
+                scope.Register(scope.TenantA), Guid.NewGuid(), "ONE", $"parallel-{index}-{Guid.NewGuid():N}", Maker)));
 
         Assert.Single(results, result => result.Succeeded);
-        Assert.All(
-            results.Where(result => !result.Succeeded),
-            result => Assert.Equal("ABBREVIATION_ALREADY_ALLOCATED", result.ErrorCode));
+        Assert.All(results.Where(result => !result.Succeeded), result =>
+            Assert.Contains(result.ErrorCode, new[] { "ABBREVIATION_ALREADY_ALLOCATED", "CONCURRENCY_CONFLICT" }));
+        Assert.Equal(1, await scope.Database
+            .GetCollection<ProductAbbreviationAllocationLedger>("mdm_product_abbreviation_allocation_ledger")
+            .CountDocumentsAsync(x => x.TenantId == scope.TenantA && x.NormalizedAbbreviation == "ONE"));
     }
 
     [Fact]
@@ -91,17 +97,16 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
         await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         var productId = Guid.NewGuid();
         var first = await CreateRequestedAsync(scope, scope.TenantA, productId, "AAA", "first");
-        var second = await CreateRequestedAsync(scope, scope.TenantA, productId, "BBB", "second");
         var repository = scope.Register(scope.TenantA);
+        Assert.True((await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.Approve, first.Id, 0, Checker, "approve-first")).Succeeded);
+        // A second REQUESTED entry of the same product cannot be made through the register any more (FIX1 S2): it is
+        // written straight to the collection, so the database's own last line of defence is what is measured.
+        var second = await InsertRawRequestedAsync(scope, scope.TenantA, productId, "BBB");
 
-        var firstApproval = await repository.TransitionAsync(
-            first.Id, 0, ProductAbbreviationLifecycleStatus.REQUESTED,
-            ProductAbbreviationLifecycleStatus.ACTIVE, "checker", "approve-first", null, DateTimeOffset.UtcNow);
-        var secondApproval = await repository.TransitionAsync(
-            second.Id, 0, ProductAbbreviationLifecycleStatus.REQUESTED,
-            ProductAbbreviationLifecycleStatus.ACTIVE, "checker", "approve-second", null, DateTimeOffset.UtcNow);
+        var secondApproval = await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.Approve, second.Id, 0, Checker, "approve-second");
 
-        Assert.True(firstApproval.Succeeded);
         Assert.False(secondApproval.Succeeded);
         Assert.Equal("ACTIVE_ABBREVIATION_CONFLICT", secondApproval.ErrorCode);
     }
@@ -110,15 +115,15 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
     public async Task Durable_ledger_tombstone_is_idempotent_and_never_reusable()
     {
         await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
-        var repository = scope.Ledger(scope.TenantA);
-        var original = Allocation("NVR", "no-reuse", Guid.NewGuid(), Guid.NewGuid());
-        var created = await repository.AllocateAsync(original);
-        var replay = await repository.AllocateAsync(Allocation(
-            "NVR", "no-reuse", original.GlobalProductId, original.RegisterEntryId, original.Id, original.PayloadHash));
-        var drift = await repository.AllocateAsync(Allocation(
-            "NVR", "no-reuse", Guid.NewGuid(), original.RegisterEntryId, original.Id, "different"));
-        var reuse = await repository.AllocateAsync(Allocation(
-            "NVR", "new-command", Guid.NewGuid(), Guid.NewGuid()));
+        var register = scope.Register(scope.TenantA);
+        var product = Guid.NewGuid();
+        var entryId = Guid.NewGuid();
+        var created = await ProductAbbreviationTestWrites.RequestAsync(register, product, "NVR", "no-reuse", Maker, entryId: entryId);
+        var replay = await ProductAbbreviationTestWrites.RequestAsync(register, product, "NVR", "no-reuse", Maker, entryId: entryId);
+        var drift = await ProductAbbreviationTestWrites.RequestAsync(register, Guid.NewGuid(), "NVR", "no-reuse", Maker, entryId: entryId);
+        Assert.True((await ProductAbbreviationTestWrites.DecideAsync(
+            register, ProductAbbreviationDecisionKind.Reject, entryId, 0, Checker, "reject-nvr")).Succeeded);
+        var reuse = await ProductAbbreviationTestWrites.RequestAsync(register, Guid.NewGuid(), "NVR", "new-command", Maker);
 
         Assert.True(created.Succeeded);
         Assert.True(replay.Succeeded);
@@ -147,42 +152,43 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
         Assert.Equal(ProductAbbreviationLifecycleStatus.CANCELLED, persisted!.LifecycleStatus);
         Assert.Equal(1, persisted.Version);
         Assert.NotNull(await scope.Ledger(scope.TenantA).GetByIdAsync(entry.AllocationLedgerId));
-        Assert.Single(await scope.History(scope.TenantA).GetForRegisterEntryAsync(entry.Id));
-        var intent = Assert.Single(persisted.AuditIntents);
+        var history = await scope.History(scope.TenantA).GetForRegisterEntryAsync(entry.Id);
+        Assert.Single(history, row => row.EventType == ProductAbbreviationHistoryEventType.ALLOCATION_CANCELLED);
+        var intent = Assert.Single(persisted.AuditIntents,
+            x => x.Operation == ProductAuditOperation.ProductAbbreviationAllocationCancelled);
         Assert.Equal(AuditAggregateType.ProductAbbreviation, intent.AggregateType);
-        Assert.Equal(ProductAuditOperation.ProductAbbreviationAllocationCancelled, intent.Operation);
         Assert.Equal(0, intent.PreVersion);
         Assert.Equal(1, intent.PostVersion);
         Assert.False(await scope.Register(scope.TenantB).AppendAuditIntentIfAbsentAsync(entry.Id, intent));
         Assert.True(await scope.Register(scope.TenantA).AppendAuditIntentIfAbsentAsync(entry.Id, intent));
-        Assert.Single((await scope.Register(scope.TenantA).GetByIdAsync(entry.Id))!.AuditIntents);
+        Assert.Single((await scope.Register(scope.TenantA).GetByIdAsync(entry.Id))!.AuditIntents,
+            x => x.IntentId == intent.IntentId);
 
         var delivery = new AuditIntentDeliveryRepository(
             scope.Database,
             scope.Context(scope.TenantA),
             TimeProvider.System);
-        var workItem = Assert.Single(
-            await delivery.DiscoverEligibleAsync(10),
-            item => item.Locator.IntentId == intent.IntentId);
-        Assert.Equal(AuditAggregateType.ProductAbbreviation, workItem.Locator.AggregateType);
-        var claim = Assert.IsType<AuditIntentClaim>(await delivery.TryClaimAsync(
-            workItem.Locator,
-            workItem.ClaimGeneration,
-            "abb-audit-worker",
-            TimeSpan.FromMinutes(1)));
-        var acceptedAt = DateTimeOffset.UtcNow;
-        const string contractVersion = "mod-0290.audit-intent.v1";
-        var acknowledgement = new AuditIntentAcknowledgement(
-            "abb-central-receipt",
-            AuditIntentContract.BuildCentralIdempotencyKey(tenantId: scope.TenantA, intentId: intent.IntentId,
-                contractVersion),
-            contractVersion,
-            acceptedAt);
-        Assert.True(await delivery.MarkDeliveredAsync(claim, acknowledgement));
-        Assert.True(await delivery.CompactDeliveredAsync(claim, "abb-compact-receipt"));
+        foreach (var workItem in (await delivery.DiscoverEligibleAsync(10)).Where(item => item.Locator.AggregateId == entry.Id))
+        {
+            var claim = Assert.IsType<AuditIntentClaim>(await delivery.TryClaimAsync(
+                workItem.Locator,
+                workItem.ClaimGeneration,
+                "abb-audit-worker",
+                TimeSpan.FromMinutes(1)));
+            const string contractVersion = "mod-0290.audit-intent.v1";
+            var acknowledgement = new AuditIntentAcknowledgement(
+                "abb-central-receipt",
+                AuditIntentContract.BuildCentralIdempotencyKey(tenantId: scope.TenantA, intentId: workItem.Locator.IntentId,
+                    contractVersion),
+                contractVersion,
+                DateTimeOffset.UtcNow);
+            Assert.True(await delivery.MarkDeliveredAsync(claim, acknowledgement));
+            Assert.True(await delivery.CompactDeliveredAsync(claim, "abb-compact-receipt"));
+        }
+
         var delivered = await scope.Register(scope.TenantA).GetByIdAsync(entry.Id);
         Assert.Empty(delivered!.AuditIntents);
-        Assert.Single(delivered.AuditIntentReceipts);
+        Assert.Contains(delivered.AuditIntentReceipts, x => x.IntentId == intent.IntentId);
         Assert.Equal(1, delivered.Version);
         Assert.Empty(await delivery.DiscoverEligibleAsync(10));
 
@@ -192,8 +198,8 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
         Assert.False(await scope.Register(scope.TenantA).AppendAuditIntentIfAbsentAsync(entry.Id, intent));
         Assert.Empty((await scope.Register(scope.TenantA).GetByIdAsync(entry.Id))!.AuditIntents);
 
-        var reuse = await scope.Ledger(scope.TenantA).AllocateAsync(
-            Allocation("OWN", "owner-cancel-reuse", Guid.NewGuid(), Guid.NewGuid()));
+        var reuse = await ProductAbbreviationTestWrites.RequestAsync(
+            scope.Register(scope.TenantA), Guid.NewGuid(), "OWN", "owner-cancel-reuse", Maker);
         Assert.False(reuse.Succeeded);
         Assert.Equal("ABBREVIATION_ALREADY_ALLOCATED", reuse.ErrorCode);
     }
@@ -219,7 +225,7 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
         Assert.Equal(ProductAbbreviationLifecycleStatus.REQUESTED, persisted!.LifecycleStatus);
         Assert.Equal(entry.Version, persisted.Version);
         Assert.Null(persisted.LastDecisionAtUtc);
-        Assert.Null(persisted.LastDecisionIdempotencyKey);
+        Assert.Equal(entry.LastDecisionIdempotencyKey, persisted.LastDecisionIdempotencyKey);
         var ledgerAfter = await scope.Ledger(scope.TenantA).GetByIdAsync(entry.AllocationLedgerId);
         Assert.Equal(ledgerBefore!.Id, ledgerAfter!.Id);
         Assert.Equal(ledgerBefore.AllocationState, ledgerAfter.AllocationState);
@@ -235,9 +241,8 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
         var entry = await CreateRequestedAsync(scope, scope.TenantA, Guid.NewGuid(), "CAS", "cas");
         var repository = scope.Register(scope.TenantA);
 
-        var stale = await repository.TransitionAsync(
-            entry.Id, 7, ProductAbbreviationLifecycleStatus.REQUESTED,
-            ProductAbbreviationLifecycleStatus.ACTIVE, "checker", "stale", null, DateTimeOffset.UtcNow);
+        var stale = await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.Approve, entry.Id, 7, Checker, "stale");
         var persisted = await repository.GetByIdAsync(entry.Id);
 
         Assert.False(stale.Succeeded);
@@ -253,9 +258,8 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
         var productId = Guid.NewGuid();
         var former = await CreateRequestedAsync(scope, scope.TenantA, productId, "OLD", "old");
         var repository = scope.Register(scope.TenantA);
-        Assert.True((await repository.TransitionAsync(
-            former.Id, 0, ProductAbbreviationLifecycleStatus.REQUESTED,
-            ProductAbbreviationLifecycleStatus.ACTIVE, "checker-1", "activate-old", null, DateTimeOffset.UtcNow)).Succeeded);
+        Assert.True((await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.Approve, former.Id, 0, Checker, "activate-old")).Succeeded);
         var replacement = await CreateRequestedAsync(
             scope, scope.TenantA, productId, "NEW", "replacement", former.Id);
 
@@ -268,10 +272,12 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
         Assert.True(replay.Succeeded);
         Assert.Equal(ProductAbbreviationLifecycleStatus.RETIRED, (await repository.GetByIdAsync(former.Id))!.LifecycleStatus);
         Assert.Equal(ProductAbbreviationLifecycleStatus.ACTIVE, (await repository.GetByIdAsync(replacement.Id))!.LifecycleStatus);
-        Assert.False((await scope.Ledger(scope.TenantA).AllocateAsync(
-            Allocation("OLD", "reuse-old", Guid.NewGuid(), Guid.NewGuid()))).Succeeded);
-        Assert.False((await scope.Ledger(scope.TenantA).AllocateAsync(
-            Allocation("NEW", "reuse-new", Guid.NewGuid(), Guid.NewGuid()))).Succeeded);
+        foreach (var abbreviation in new[] { "OLD", "NEW" })
+        {
+            var reuse = await ProductAbbreviationTestWrites.RequestAsync(
+                repository, Guid.NewGuid(), abbreviation, $"reuse-{abbreviation}", Maker);
+            Assert.Equal("ABBREVIATION_ALREADY_ALLOCATED", reuse.ErrorCode);
+        }
     }
 
     [Fact]
@@ -280,25 +286,75 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
         await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
         var entry = await CreateRequestedAsync(scope, scope.TenantA, Guid.NewGuid(), "RET", "ret");
         var repository = scope.Register(scope.TenantA);
-        Assert.True((await repository.TransitionAsync(
-            entry.Id, 0, ProductAbbreviationLifecycleStatus.REQUESTED,
-            ProductAbbreviationLifecycleStatus.ACTIVE, "checker", "activate", null, DateTimeOffset.UtcNow)).Succeeded);
+        Assert.True((await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.Approve, entry.Id, 0, Checker, "activate")).Succeeded);
 
-        var requested = await repository.RequestRetirementAsync(
-            entry.Id, 1, "retirement-1", "maker", "request-retirement-1", "reason", DateTimeOffset.UtcNow);
-        var rejected = await repository.ClearRetirementRequestAsync(
-            entry.Id, requested.Entry!.Version, "retirement-1", "checker", "reject-retirement", "reason", DateTimeOffset.UtcNow);
-        var requestedAgain = await repository.RequestRetirementAsync(
-            entry.Id, rejected.Entry!.Version, "retirement-2", "maker", "request-retirement-2", "reason", DateTimeOffset.UtcNow);
-        var approved = await repository.TransitionAsync(
-            entry.Id, requestedAgain.Entry!.Version, ProductAbbreviationLifecycleStatus.ACTIVE,
-            ProductAbbreviationLifecycleStatus.RETIRED, "different-checker", "approve-retirement", "reason", DateTimeOffset.UtcNow);
+        var requested = await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.RequestRetirement, entry.Id, 1, Maker, "retirement-1");
+        var rejected = await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.RejectRetirement, entry.Id, requested.Entry!.Version, Checker,
+            "reject-retirement", retirementRequestId: "retirement-1");
+        var requestedAgain = await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.RequestRetirement, entry.Id, rejected.Entry!.Version, Maker,
+            "retirement-2");
+        var approved = await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.ApproveRetirement, entry.Id, requestedAgain.Entry!.Version,
+            Checker2, "approve-retirement", retirementRequestId: "retirement-2");
 
         Assert.True(rejected.Succeeded);
         Assert.Equal(ProductAbbreviationLifecycleStatus.ACTIVE, rejected.Entry.LifecycleStatus);
         Assert.True(approved.Succeeded);
         Assert.Equal(ProductAbbreviationLifecycleStatus.RETIRED, approved.Entry!.LifecycleStatus);
         Assert.Null(approved.Entry.RetirementRequestId);
+    }
+
+    [Fact]
+    public async Task A_second_retirement_request_while_one_waits_is_refused_and_the_first_stays()
+    {
+        // FIX3 item 8 — REG RetirementStateHolds (no request already waiting) and RetirementFilter (its stored half),
+        // through the production decision path.
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
+        var entry = await CreateRequestedAsync(scope, scope.TenantA, Guid.NewGuid(), "SRQ", "srq");
+        var repository = scope.Register(scope.TenantA);
+        Assert.True((await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.Approve, entry.Id, 0, Checker, "activate-srq")).Succeeded);
+        var first = await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.RequestRetirement, entry.Id, 1, Maker, "retire-first");
+        Assert.True(first.Succeeded);
+
+        var sameVersion = await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.RequestRetirement, entry.Id, first.Entry!.Version, Checker,
+            "retire-second");
+
+        Assert.False(sameVersion.Succeeded);
+        Assert.Equal("CONCURRENCY_CONFLICT", sameVersion.ErrorCode);
+        var stored = (await repository.GetByIdAsync(entry.Id))!;
+        Assert.Equal("retire-first", stored.RetirementRequestId);
+        Assert.Equal(Maker, stored.RetirementRequestedByCanonicalSubjectId);
+    }
+
+    [Fact]
+    public async Task A_retirement_request_repeated_by_someone_else_with_its_key_is_refused_not_reported_as_theirs()
+    {
+        // FIX3 item 8 — the legacy RequestRetirementAsync accepted a repeat from anyone; the production path answers
+        // a repeat as a replay only for the person who asked (Recognise), everyone else is refused.
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
+        var entry = await CreateRequestedAsync(scope, scope.TenantA, Guid.NewGuid(), "RRK", "rrk");
+        var repository = scope.Register(scope.TenantA);
+        Assert.True((await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.Approve, entry.Id, 0, Checker, "activate-rrk")).Succeeded);
+        Assert.True((await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.RequestRetirement, entry.Id, 1, Maker, "retire-rrk")).Succeeded);
+
+        var mine = await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.RequestRetirement, entry.Id, 1, Maker, "retire-rrk");
+        var theirs = await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.RequestRetirement, entry.Id, 1, Checker, "retire-rrk");
+
+        Assert.True(mine.Succeeded);
+        Assert.True(mine.IsReplay);
+        Assert.False(theirs.Succeeded);
+        Assert.Equal(ProductAbbreviationRegisterRepository.AlreadyDecidedByAnother, theirs.ErrorCode);
     }
 
     [Fact]
@@ -311,18 +367,17 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
         var retired = await CreateRequestedAsync(scope, scope.TenantA, Guid.NewGuid(), "RTR", "retire-path");
         var deleted = await CreateRequestedAsync(scope, scope.TenantA, Guid.NewGuid(), "DEL", "delete-path");
 
-        Assert.True((await repository.TransitionAsync(
-            rejected.Id, 0, ProductAbbreviationLifecycleStatus.REQUESTED,
-            ProductAbbreviationLifecycleStatus.REJECTED, "checker", "reject", null, DateTimeOffset.UtcNow)).Succeeded);
-        Assert.True((await repository.TransitionAsync(
-            cancelled.Id, 0, ProductAbbreviationLifecycleStatus.REQUESTED,
-            ProductAbbreviationLifecycleStatus.CANCELLED, "maker", "cancel", null, DateTimeOffset.UtcNow)).Succeeded);
-        Assert.True((await repository.TransitionAsync(
-            retired.Id, 0, ProductAbbreviationLifecycleStatus.REQUESTED,
-            ProductAbbreviationLifecycleStatus.ACTIVE, "checker", "activate-retire", null, DateTimeOffset.UtcNow)).Succeeded);
-        Assert.True((await repository.TransitionAsync(
-            retired.Id, 1, ProductAbbreviationLifecycleStatus.ACTIVE,
-            ProductAbbreviationLifecycleStatus.RETIRED, "checker", "retire", null, DateTimeOffset.UtcNow)).Succeeded);
+        Assert.True((await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.Reject, rejected.Id, 0, Checker, "reject")).Succeeded);
+        Assert.True((await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.Cancel, cancelled.Id, 0, Maker, "cancel")).Succeeded);
+        Assert.True((await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.Approve, retired.Id, 0, Checker, "activate-retire")).Succeeded);
+        Assert.True((await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.RequestRetirement, retired.Id, 1, Maker, "retire-request")).Succeeded);
+        Assert.True((await ProductAbbreviationTestWrites.DecideAsync(
+            repository, ProductAbbreviationDecisionKind.ApproveRetirement, retired.Id, 2, Checker, "retire",
+            retirementRequestId: "retire-request")).Succeeded);
         await scope.Database.GetCollection<ProductAbbreviationRegisterEntry>("mdm_product_abbreviation_register")
             .UpdateOneAsync(
                 Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.Id, deleted.Id),
@@ -332,8 +387,8 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
 
         foreach (var abbreviation in new[] { "RJT", "CNL", "RTR", "DEL" })
         {
-            var reuse = await scope.Ledger(scope.TenantA).AllocateAsync(
-                Allocation(abbreviation, $"reuse-{abbreviation}", Guid.NewGuid(), Guid.NewGuid()));
+            var reuse = await ProductAbbreviationTestWrites.RequestAsync(
+                repository, Guid.NewGuid(), abbreviation, $"reuse-{abbreviation}", Maker);
             Assert.False(reuse.Succeeded);
             Assert.Equal("ABBREVIATION_ALREADY_ALLOCATED", reuse.ErrorCode);
         }
@@ -367,25 +422,6 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
         Assert.Single(await repository.GetForRegisterEntryAsync(entry.RegisterEntryId));
     }
 
-    private static ProductAbbreviationAllocationLedger Allocation(
-        string abbreviation,
-        string idempotencyKey,
-        Guid productId,
-        Guid entryId,
-        Guid? id = null,
-        string? payloadHash = null)
-        => new()
-        {
-            Id = id ?? Guid.NewGuid(),
-            NormalizedAbbreviation = abbreviation,
-            GlobalProductId = productId,
-            RegisterEntryId = entryId,
-            IdempotencyKey = idempotencyKey,
-            PayloadHash = payloadHash ?? $"{abbreviation}|{productId:N}|{entryId:N}",
-            AllocatedByCanonicalSubjectId = "maker",
-            AllocatedAtUtc = DateTimeOffset.UtcNow
-        };
-
     private static async Task<ProductAbbreviationRegisterEntry> CreateRequestedAsync(
         MongoScope scope,
         Guid tenantId,
@@ -393,26 +429,36 @@ public sealed class ProductAbbreviationRegisterMongoTests(Diten.MdmService.Appli
         string abbreviation,
         string idempotencyKey,
         Guid? replacesEntryId = null,
-        string requestedBy = "maker")
+        string? requestedBy = null)
     {
-        var entryId = Guid.NewGuid();
-        var allocation = Allocation(abbreviation, idempotencyKey, productId, entryId);
-        var ledger = await scope.Ledger(tenantId).AllocateAsync(allocation);
-        Assert.True(ledger.Succeeded);
+        var inserted = await ProductAbbreviationTestWrites.RequestAsync(
+            scope.Register(tenantId), productId, abbreviation, idempotencyKey, requestedBy ?? Maker, replacesEntryId);
+        Assert.True(inserted.Succeeded, inserted.ErrorCode);
+        return inserted.Entry!;
+    }
+
+    /// <summary>A REQUESTED row written straight to the collection — for a rule only the database itself enforces.</summary>
+    private static async Task<ProductAbbreviationRegisterEntry> InsertRawRequestedAsync(
+        MongoScope scope,
+        Guid tenantId,
+        Guid productId,
+        string abbreviation)
+    {
         var entry = new ProductAbbreviationRegisterEntry
         {
-            Id = entryId,
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
             GlobalProductId = productId,
             NormalizedAbbreviation = abbreviation,
-            AllocationLedgerId = ledger.Ledger!.Id,
-            AllocationIdempotencyKey = idempotencyKey,
-            RequestedByCanonicalSubjectId = requestedBy,
-            RequestedAtUtc = DateTimeOffset.UtcNow,
-            ReplacesEntryId = replacesEntryId
+            AllocationLedgerId = Guid.NewGuid(),
+            AllocationIdempotencyKey = "raw-" + Guid.NewGuid().ToString("N"),
+            LifecycleStatus = ProductAbbreviationLifecycleStatus.REQUESTED,
+            RequestedByCanonicalSubjectId = Maker,
+            RequestedAtUtc = DateTimeOffset.UtcNow
         };
-        var inserted = await scope.Register(tenantId).InsertRequestedAsync(entry);
-        Assert.True(inserted.Succeeded);
-        return inserted.Entry!;
+        await scope.Database.GetCollection<ProductAbbreviationRegisterEntry>("mdm_product_abbreviation_register")
+            .InsertOneAsync(entry);
+        return entry;
     }
 
     private static ProductAbbreviationWorkflow CreateWorkflow(MongoScope scope, string subject)

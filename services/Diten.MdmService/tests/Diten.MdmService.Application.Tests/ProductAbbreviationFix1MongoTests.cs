@@ -204,13 +204,17 @@ public sealed class ProductAbbreviationFix1MongoTests(Audit.AuditIntentTemporalM
         await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
         var (active, correction) = await ActiveWithCorrectionAsync(scope, "INA", "INB");
         var key = Key();
-        var retired = await scope.Register.TransitionAsync(
-            active.Id, active.Version, ProductAbbreviationLifecycleStatus.ACTIVE, ProductAbbreviationLifecycleStatus.RETIRED,
-            Checker, key + ":former", null, DateTimeOffset.UtcNow);
-        Assert.True(retired.Succeeded);
+        // The half-done state a pre-FIX2 crash could leave: the code retired under "<key>:former", its correction still
+        // requested. No production path writes it any more (FIX3 item 8), so it is written straight to the collection.
+        await scope.Database.GetCollection<ProductAbbreviationRegisterEntry>("mdm_product_abbreviation_register")
+            .UpdateOneAsync(x => x.Id == active.Id, Builders<ProductAbbreviationRegisterEntry>.Update
+                .Set(x => x.LifecycleStatus, ProductAbbreviationLifecycleStatus.RETIRED)
+                .Set(x => x.LastDecisionByCanonicalSubjectId, Checker)
+                .Set(x => x.LastDecisionIdempotencyKey, key + ":former")
+                .Inc(x => x.Version, 1));
 
         var finished = await scope.Workflow(Checker).ApproveAsync(new ApproveProductAbbreviationAllocationCommand(
-            correction.Id, correction.Version, key, ExpectedFormerVersion: retired.Entry!.Version), default);
+            correction.Id, correction.Version, key, ExpectedFormerVersion: active.Version + 1), default);
 
         Assert.Equal("ABBREVIATION_CORRECTION_FORMER_NOT_ACTIVE", Assert.Single(finished.Errors));
         Assert.Equal(ProductAbbreviationLifecycleStatus.REQUESTED, (await scope.Register.GetByIdAsync(correction.Id))!.LifecycleStatus);
@@ -617,16 +621,17 @@ public sealed class ProductAbbreviationFix1MongoTests(Audit.AuditIntentTemporalM
     {
         await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
         var active = await ApproveAsync(scope, await RequestAsync(scope, Maker, Guid.NewGuid(), "SRA"));
-        var first = await scope.Register.RequestRetirementAsync(
-            active.Id, active.Version, "retirement-1", Maker, "retire-1", "r", DateTimeOffset.UtcNow);
-        Assert.True(first.Succeeded);
+        var firstKey = Key();
+        var first = await scope.Workflow(Maker).RequestRetirementAsync(
+            new RequestProductAbbreviationRetirementCommand(active.Id, active.Version, firstKey, "r"), default);
+        Assert.True(first.IsSuccessful, string.Join(",", first.Errors));
 
-        var second = await scope.Register.RequestRetirementAsync(
-            active.Id, first.Entry!.Version, "retirement-2", Maker2, "retire-2", "r", DateTimeOffset.UtcNow);
+        var second = await scope.Workflow(Maker2).RequestRetirementAsync(
+            new RequestProductAbbreviationRetirementCommand(active.Id, first.Data!.Version, Key(), "r"), default);
 
-        Assert.False(second.Succeeded);
-        Assert.Equal("CONCURRENCY_CONFLICT", second.ErrorCode);
-        Assert.Equal("retirement-1", (await scope.Register.GetByIdAsync(active.Id))!.RetirementRequestId);
+        Assert.False(second.IsSuccessful);
+        Assert.Equal("CONCURRENCY_CONFLICT", Assert.Single(second.Errors));
+        Assert.Equal(firstKey, (await scope.Register.GetByIdAsync(active.Id))!.RetirementRequestId);
     }
 
     // ══ FIX2 ═══════════════════════════════════════════════════════════════════════════════════════════════════
@@ -885,42 +890,451 @@ public sealed class ProductAbbreviationFix1MongoTests(Audit.AuditIntentTemporalM
     [Fact]
     public async Task Pending_work_is_paged_in_the_order_it_started_waiting_without_gaps_or_repeats()
     {
-        // FIX2 A3 — 150 pending entries inserted out of order; read 60 at a time through the real repository.
+        // FIX2 A3 / FIX3 item 4 — the order is the one the PRODUCTION writes store: a request stamps when it was made, a
+        // retirement request stamps when the retirement was asked for (not when its code was first requested). The
+        // codes to retire are made first, so a retirement that kept its old stamp would jump to the front.
         await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
-        var start = new DateTimeOffset(2026, 10, 4, 8, 0, 0, TimeSpan.Zero);
-        var order = Enumerable.Range(0, 150).OrderBy(i => (i * 37) % 150).ToArray();
-        var ids = new Dictionary<int, Guid>();
-        foreach (var i in order)
+        var actives = new List<ProductAbbreviationRegisterEntry>();
+        for (var i = 0; i < 8; i++)
         {
-            var id = Guid.NewGuid();
-            ids[i] = id;
-            var key = Key();
-            var inserted = await scope.Register.InsertRequestedAsync(new ProductAbbreviationRegisterEntry
+            actives.Add(await ApproveAsync(scope, await RequestAsync(scope, Maker, Guid.NewGuid(), $"PA{(char)('A' + i)}")));
+        }
+
+        var waitingOrder = new List<Guid>();
+        for (var i = 0; i < 24; i++)
+        {
+            if (i % 3 == 1)
             {
-                Id = id,
-                GlobalProductId = Guid.NewGuid(),
-                NormalizedAbbreviation = "PGA",
-                AllocationLedgerId = Guid.NewGuid(),
-                AllocationIdempotencyKey = key,
-                RequestedByCanonicalSubjectId = Maker,
-                RequestedAtUtc = start.AddSeconds(i)
-            });
-            Assert.True(inserted.Succeeded);
+                var active = actives[i / 3];
+                var retire = await scope.Workflow(Maker2).RequestRetirementAsync(
+                    new RequestProductAbbreviationRetirementCommand(active.Id, active.Version, Key(), "r"), default);
+                Assert.True(retire.IsSuccessful, string.Join(",", retire.Errors));
+                waitingOrder.Add(active.Id);
+            }
+            else
+            {
+                waitingOrder.Add((await RequestAsync(scope, Maker, Guid.NewGuid(), $"PW{(char)('A' + i)}")).Id);
+            }
         }
 
         var seen = new List<Guid>();
         ProductAbbreviationPendingCursor? cursor = null;
-        // Bounded: a cursor that does not move forward must fail here, not loop (150 rows need 3 pages + 1 empty).
-        for (var pages = 0; pages < 6; pages++)
+        // Bounded: a cursor that does not move forward must fail here, not loop (24 rows need 5 pages + 1 empty).
+        for (var pages = 0; pages < 8; pages++)
         {
-            var page = await scope.Register.GetPendingWorkItemsPageAsync(cursor, 60);
+            var page = await scope.Register.GetPendingWorkItemsPageAsync(cursor, 5);
             if (page.Count == 0) break;
             Assert.DoesNotContain(page, x => seen.Contains(x.Id));
             seen.AddRange(page.Select(x => x.Id));
             cursor = new(page[^1].PendingSinceUtcTicks, page[^1].Id);
         }
 
-        Assert.Equal(Enumerable.Range(0, 150).Select(i => ids[i]), seen);
+        Assert.Equal(waitingOrder, seen);
+    }
+
+    // ══ FIX3 ═══════════════════════════════════════════════════════════════════════════════════════════════════
+
+    [Fact]
+    public async Task Two_requests_for_one_product_both_past_the_open_entry_check_leave_one_and_the_other_is_refused()
+    {
+        // FIX3 item 1 — A has passed the "nothing open for this product" check and written the product's slot inside its
+        // transaction; it is held there, uncommitted. B runs the same check (A's work is invisible to it) and must still
+        // lose: its own slot write conflicts with A's. Without the slot (or with a slot per entry) both would commit.
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var product = Guid.NewGuid();
+        var barrier = new MongoBarrier();
+        var held = scope.RegisterOn(MongoTaps.HoldFirst(scope.Database, "mdm_product_abbreviation_register",
+            nameof(IMongoCollection<ProductAbbreviationRegisterEntry>.InsertOneAsync), barrier));
+
+        var first = Task.Run(() => scope.Workflow(Maker, register: held).RequestAsync(
+            new RequestProductAbbreviationAllocationCommand(product, "SLA", Key()), default));
+        await barrier.Reached;
+        var second = await RequestResultAsync(scope, Maker2, product, "SLB");
+        barrier.Release();
+        var firstResult = await first;
+
+        Assert.True(firstResult.IsSuccessful, string.Join(",", firstResult.Errors));
+        Assert.Equal(409, second.StatusCode);
+        Assert.Single(await scope.Register.GetByGlobalProductIdAsync(product));
+    }
+
+    [Fact]
+    public async Task A_request_that_loses_the_product_race_takes_no_code_and_the_code_can_be_requested_again()
+    {
+        // FIX3 item 3 — B loses the product race above; before FIX3 its code was already in the ledger for good.
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var product = Guid.NewGuid();
+        var barrier = new MongoBarrier();
+        var held = scope.RegisterOn(MongoTaps.HoldFirst(scope.Database, "mdm_product_abbreviation_register",
+            nameof(IMongoCollection<ProductAbbreviationRegisterEntry>.InsertOneAsync), barrier));
+
+        var first = Task.Run(() => scope.Workflow(Maker, register: held).RequestAsync(
+            new RequestProductAbbreviationAllocationCommand(product, "LCA", Key()), default));
+        await barrier.Reached;
+        var loser = await RequestResultAsync(scope, Maker2, product, "LCB");
+        barrier.Release();
+        Assert.True((await first).IsSuccessful);
+        Assert.Equal(409, loser.StatusCode);
+
+        var again = await RequestResultAsync(scope, Maker2, Guid.NewGuid(), "LCB");
+
+        Assert.True(again.IsSuccessful, string.Join(",", again.Errors));
+        Assert.Equal(1, await scope.Database
+            .GetCollection<ProductAbbreviationAllocationLedger>("mdm_product_abbreviation_allocation_ledger")
+            .CountDocumentsAsync(x => x.TenantId == scope.Tenant && x.NormalizedAbbreviation == "LCB"));
+    }
+
+    [Fact]
+    public async Task Two_checkers_approving_one_correction_with_one_key_the_held_one_is_told_another_decided()
+    {
+        // FIX3 item 2 — both have passed every check; A is held right before its first write, B approves and commits.
+        // A then finds the correction applied under the same key by someone else: refused, never "approved" (GxP).
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var (active, correction) = await ActiveWithCorrectionAsync(scope, "CKA", "CKB");
+        var command = new ApproveProductAbbreviationAllocationCommand(
+            correction.Id, correction.Version, Key(), ExpectedFormerVersion: active.Version);
+        var barrier = new MongoBarrier();
+        var held = scope.RegisterOn(MongoTaps.HoldFirst(scope.Database, "mdm_product_abbreviation_register",
+            nameof(IMongoCollection<ProductAbbreviationRegisterEntry>.UpdateOneAsync), barrier));
+
+        var first = Task.Run(() => scope.Workflow(Checker, register: held).ApproveAsync(command, default));
+        await barrier.Reached;
+        var second = await scope.Workflow(Checker2).ApproveAsync(command, default);
+        barrier.Release();
+        var firstResult = await first;
+
+        Assert.True(second.IsSuccessful, string.Join(",", second.Errors));
+        Assert.False(firstResult.IsSuccessful);
+        Assert.Equal(409, firstResult.StatusCode);
+        Assert.Equal(ProductAbbreviationRegisterRepository.AlreadyDecidedByAnother, Assert.Single(firstResult.Errors));
+        Assert.Equal(Checker2, (await scope.Register.GetByIdAsync(correction.Id))!.LastDecisionByCanonicalSubjectId);
+        await AssertCorrectedOnceAsync(scope, active, correction);
+    }
+
+    [Fact]
+    public async Task A_transaction_error_after_another_checker_decided_is_answered_from_the_stored_decision()
+    {
+        // FIX3 item 5 (the lost-race mapping) — A's write fails with a TransientTransactionError while B's approval has
+        // committed. The answer comes from the stored state: B decided under this key, so A is told so (409).
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var (active, correction) = await ActiveWithCorrectionAsync(scope, "LRA", "LRB");
+        var command = new ApproveProductAbbreviationAllocationCommand(
+            correction.Id, correction.Version, Key(), ExpectedFormerVersion: active.Version);
+        var barrier = new MongoBarrier();
+        var held = scope.RegisterOn(MongoTaps.HoldFirst(scope.Database, "mdm_product_abbreviation_register",
+            nameof(IMongoCollection<ProductAbbreviationRegisterEntry>.UpdateOneAsync), barrier,
+            thenThrow: () => MongoTaps.Labelled(251, "NoSuchTransaction", "TransientTransactionError")));
+
+        var first = Task.Run(() => scope.Workflow(Checker, register: held).ApproveAsync(command, default));
+        await barrier.Reached;
+        Assert.True((await scope.Workflow(Checker2).ApproveAsync(command, default)).IsSuccessful);
+        barrier.Release();
+        var firstResult = await first;
+
+        Assert.Equal(409, firstResult.StatusCode);
+        Assert.Equal(ProductAbbreviationRegisterRepository.AlreadyDecidedByAnother, Assert.Single(firstResult.Errors));
+    }
+
+    [Fact]
+    public async Task A_transient_labelled_outage_that_changed_nothing_is_503_not_a_conflict()
+    {
+        // FIX3 item 5 — a network or primary failure carries the TransientTransactionError label too; with nothing
+        // stored differently it is an outage (503, retry later), not "someone changed it" (409, reload).
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var (active, correction) = await ActiveWithCorrectionAsync(scope, "OUA", "OUB");
+        var held = scope.RegisterOn(MongoTaps.HoldFirst(scope.Database, "mdm_product_abbreviation_register",
+            nameof(IMongoCollection<ProductAbbreviationRegisterEntry>.UpdateOneAsync), barrier: null,
+            thenThrow: () => MongoTaps.Labelled(91, "ShutdownInProgress", "TransientTransactionError")));
+
+        var approved = await scope.Workflow(Checker, register: held).ApproveAsync(new ApproveProductAbbreviationAllocationCommand(
+            correction.Id, correction.Version, Key(), ExpectedFormerVersion: active.Version), default);
+
+        Assert.Equal(503, approved.StatusCode);
+        Assert.Equal(ProductAbbreviationRegisterRepository.PersistenceUnavailable, Assert.Single(approved.Errors));
+        await AssertUntouchedAsync(scope, active);
+    }
+
+    [Fact]
+    public async Task A_decision_whose_commit_result_is_unknown_but_landed_is_reported_as_mine()
+    {
+        // FIX3 item 5 (UnknownTransactionCommitResult) — the commit reached the server and its answer was lost. The
+        // stored state shows my decision under my key: success, not 503 and not a conflict.
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var entry = await RequestAsync(scope, Maker, Guid.NewGuid(), "UKA");
+        var register = scope.RegisterOn(MongoTaps.CommitThenThrow(scope.Database,
+            () => MongoTaps.Labelled(50, "MaxTimeMSExpired", "UnknownTransactionCommitResult")));
+
+        var approved = await scope.Workflow(Checker, register: register).ApproveAsync(
+            new ApproveProductAbbreviationAllocationCommand(entry.Id, entry.Version, Key()), default);
+
+        Assert.True(approved.IsSuccessful, string.Join(",", approved.Errors));
+        await AssertDecidedByAsync(scope, entry.Id, ProductAbbreviationHistoryEventType.ALLOCATION_APPROVED, Checker);
+    }
+
+    [Fact]
+    public async Task A_session_that_cannot_be_opened_is_an_outage_answer_not_an_exception()
+    {
+        // FIX3 item 5 — opening the session is inside the guard (before, a TimeoutException there was a 500).
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var entry = await RequestAsync(scope, Maker, Guid.NewGuid(), "SOA");
+        var register = scope.RegisterOn(MongoTaps.SessionFails(scope.Database, () => new TimeoutException("no server")));
+
+        var approved = await scope.Workflow(Checker, register: register).ApproveAsync(
+            new ApproveProductAbbreviationAllocationCommand(entry.Id, entry.Version, Key()), default);
+
+        Assert.Equal(503, approved.StatusCode);
+        Assert.Equal(ProductAbbreviationRegisterRepository.PersistenceUnavailable, Assert.Single(approved.Errors));
+    }
+
+    [Fact]
+    public async Task On_a_standalone_server_every_abbreviation_write_answers_transactions_unavailable()
+    {
+        // FIX3 item 6 — before, NotSupportedException escaped every ABB write as a 500.
+        await using var scope = await Scope.CreateAsync(mongo.StandaloneConnectionString);
+        var product = Guid.NewGuid();
+
+        var request = await scope.Workflow(Maker).RequestAsync(
+            new RequestProductAbbreviationAllocationCommand(product, "SAA", Key()), default);
+
+        Assert.Equal(503, request.StatusCode);
+        Assert.Equal(ProductAbbreviationRegisterRepository.TransactionsUnavailable, Assert.Single(request.Errors));
+        Assert.Empty(await scope.Register.GetByGlobalProductIdAsync(product));
+    }
+
+    [Fact]
+    public async Task The_startup_check_warns_once_on_a_standalone_server_and_stays_silent_on_a_replica_set()
+    {
+        // FIX3 item 6 — one warning line, and the service still starts.
+        var standalone = await RunTransactionCheckAsync(mongo.StandaloneConnectionString);
+        var replica = await RunTransactionCheckAsync(mongo.ReplicaConnectionString);
+        var unreachable = await RunTransactionCheckAsync("mongodb://127.0.0.1:1/?serverSelectionTimeoutMS=300&connectTimeoutMS=300");
+
+        Assert.Single(standalone, line => line.Contains(
+            Diten.MdmService.Api.Services.ProductAbbreviationRegister.ProductAbbreviationTransactionSupportCheck.UnavailableEvent));
+        Assert.Empty(replica);
+        Assert.Single(unreachable, line => line.Contains(
+            Diten.MdmService.Api.Services.ProductAbbreviationRegister.ProductAbbreviationTransactionSupportCheck.UncheckedEvent));
+    }
+
+    [Fact]
+    public async Task Pending_work_written_before_its_order_was_stored_is_given_one_and_nothing_is_lost_after_page_one()
+    {
+        // FIX3 item 9 — rows from before FIX2 carry no PendingSinceUtcTicks. Before, they sorted first and the cursor of
+        // page one (order 0) could not place them: everything after the first page vanished from the Task Center.
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var collection = scope.Database.GetCollection<ProductAbbreviationRegisterEntry>("mdm_product_abbreviation_register");
+        var raw = scope.Database.GetCollection<MongoDB.Bson.BsonDocument>("mdm_product_abbreviation_register");
+        var start = new DateTimeOffset(2026, 9, 1, 9, 0, 0, TimeSpan.FromHours(3));
+        var expected = new List<(Guid Id, long Ticks)>();
+        for (var i = 0; i < 12; i++)
+        {
+            var at = start.AddMinutes(i * 7).ToOffset(TimeSpan.FromHours(i % 3 == 0 ? -5 : 3));
+            var retiring = i % 4 == 2;
+            var entry = new ProductAbbreviationRegisterEntry
+            {
+                Id = Guid.NewGuid(),
+                TenantId = scope.Tenant,
+                GlobalProductId = Guid.NewGuid(),
+                NormalizedAbbreviation = $"BF{(char)('A' + i)}",
+                AllocationLedgerId = Guid.NewGuid(),
+                AllocationIdempotencyKey = Key(),
+                LifecycleStatus = retiring ? ProductAbbreviationLifecycleStatus.ACTIVE : ProductAbbreviationLifecycleStatus.REQUESTED,
+                RequestedByCanonicalSubjectId = Maker,
+                // A retirement waits from when it was asked for, long after its code was first requested.
+                RequestedAtUtc = retiring ? at.AddDays(-30) : at,
+                RetirementRequestId = retiring ? Key() : null,
+                RetirementRequestedAtUtc = retiring ? at : null
+            };
+            await collection.InsertOneAsync(entry);
+            await raw.UpdateOneAsync(
+                Builders<MongoDB.Bson.BsonDocument>.Filter.Eq("_id", entry.Id),
+                Builders<MongoDB.Bson.BsonDocument>.Update.Unset(nameof(ProductAbbreviationRegisterEntry.PendingSinceUtcTicks)));
+            expected.Add((entry.Id, at.UtcTicks));
+        }
+
+        var seen = new List<Guid>();
+        ProductAbbreviationPendingCursor? cursor = null;
+        for (var pages = 0; pages < 8; pages++)
+        {
+            var page = await scope.Register.GetPendingWorkItemsPageAsync(cursor, 5);
+            if (page.Count == 0) break;
+            seen.AddRange(page.Select(x => x.Id));
+            cursor = new(page[^1].PendingSinceUtcTicks, page[^1].Id);
+        }
+
+        Assert.Equal(expected.OrderBy(x => x.Ticks).Select(x => x.Id), seen);
+        foreach (var (id, ticks) in expected)
+        {
+            Assert.Equal(ticks, (await scope.Register.GetByIdAsync(id))!.PendingSinceUtcTicks);
+        }
+    }
+
+    [Fact]
+    public async Task A_page_of_pending_work_reads_only_pending_rows_however_many_decided_rows_the_tenant_has()
+    {
+        // FIX3 item 10 — the pending order lives in partial indexes holding only waiting rows; measured on the server
+        // (the profiler's docsExamined for the page query), not by reading the index definition back.
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var collection = scope.Database.GetCollection<ProductAbbreviationRegisterEntry>("mdm_product_abbreviation_register");
+        _ = scope.Register;
+        var decided = Enumerable.Range(0, 60).Select(i => new ProductAbbreviationRegisterEntry
+        {
+            Id = Guid.NewGuid(), TenantId = scope.Tenant, GlobalProductId = Guid.NewGuid(),
+            NormalizedAbbreviation = $"D{i:D3}", AllocationLedgerId = Guid.NewGuid(), AllocationIdempotencyKey = Key(),
+            LifecycleStatus = i % 2 == 0 ? ProductAbbreviationLifecycleStatus.REJECTED : ProductAbbreviationLifecycleStatus.ACTIVE,
+            RequestedByCanonicalSubjectId = Maker, RequestedAtUtc = DateTimeOffset.UtcNow, PendingSinceUtcTicks = 1000 + i
+        });
+        await collection.InsertManyAsync(decided);
+        for (var i = 0; i < 3; i++)
+        {
+            await RequestAsync(scope, Maker, Guid.NewGuid(), $"PI{(char)('A' + i)}");
+        }
+
+        await scope.Database.RunCommandAsync<MongoDB.Bson.BsonDocument>(new MongoDB.Bson.BsonDocument("profile", 2));
+        try
+        {
+            var page = await scope.Register.GetPendingWorkItemsPageAsync(new(0, Guid.Empty), 50);
+            Assert.Equal(3, page.Count);
+        }
+        finally
+        {
+            await scope.Database.RunCommandAsync<MongoDB.Bson.BsonDocument>(new MongoDB.Bson.BsonDocument("profile", 0));
+        }
+
+        var profiled = await scope.Database.GetCollection<MongoDB.Bson.BsonDocument>("system.profile")
+            .Find(Builders<MongoDB.Bson.BsonDocument>.Filter.Eq("ns", "diten_mdm_abb_register_itest.mdm_product_abbreviation_register")
+                  & Builders<MongoDB.Bson.BsonDocument>.Filter.Eq("op", "query"))
+            .Sort(Builders<MongoDB.Bson.BsonDocument>.Sort.Descending("ts"))
+            .FirstAsync();
+        // Keys as well as documents: an index that holds every row can filter on its trailing status key and still fetch
+        // only 3 documents, but it walks the 60 decided rows' keys to do so.
+        Assert.True(profiled["docsExamined"].ToInt64() <= 3, profiled.ToString());
+        Assert.True(profiled["keysExamined"].ToInt64() <= 10, profiled.ToString());
+    }
+
+    [Fact]
+    public async Task Another_person_repeating_a_request_key_is_refused_and_the_request_stays_the_first_persons()
+    {
+        // FIX3 item 11 — before, B repeating A's key got "pending" (and an evidence write that could never match: 202
+        // forever). A repeat is a replay only for the person who asked.
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var request = new RequestProductAbbreviationAllocationCommand(Guid.NewGuid(), "RKA", Key());
+        var first = await scope.Workflow(Maker).RequestAsync(request, default);
+        Assert.True(first.IsSuccessful);
+        var historyBefore = await scope.History.GetForRegisterEntryAsync(first.Data!.Entry.Id);
+
+        var other = await scope.Workflow(Maker2).RequestAsync(request, default);
+        var mine = await scope.Workflow(Maker).RequestAsync(request, default);
+
+        Assert.Equal(409, other.StatusCode);
+        Assert.Equal("ABBREVIATION_IDEMPOTENCY_KEY_REUSED", Assert.Single(other.Errors));
+        Assert.True(mine.IsSuccessful);
+        Assert.True(mine.Data!.IsReplay);
+        Assert.Equal(Maker, (await scope.Register.GetByIdAsync(first.Data.Entry.Id))!.RequestedByCanonicalSubjectId);
+        Assert.Equal(historyBefore.Count, (await scope.History.GetForRegisterEntryAsync(first.Data.Entry.Id)).Count);
+    }
+
+    [Fact]
+    public async Task A_correction_asked_against_a_version_the_code_has_left_is_refused_inside_its_transaction()
+    {
+        // FIX3 item 13 — the workflow checked the version once, before; in between a retirement was asked and turned
+        // down (the code is ACTIVE again with no claim, only its version moved). The claim write now names the version.
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var active = await ApproveAsync(scope, await RequestAsync(scope, Maker, Guid.NewGuid(), "CVA"));
+        var real = scope.Register;
+        var moved = false;
+        var held = Decorate<IProductAbbreviationRegisterRepository>(real, (method, args) =>
+        {
+            if (method.Name != nameof(IProductAbbreviationRegisterRepository.RequestEntryAsync) || moved)
+            {
+                return null;
+            }
+
+            async Task<ProductAbbreviationRegisterWriteResult> AfterTheCodeMovedAsync()
+            {
+                moved = true;
+                var retireKey = Key();
+                var retire = await scope.Workflow(Maker2).RequestRetirementAsync(
+                    new RequestProductAbbreviationRetirementCommand(active.Id, active.Version, retireKey, "r"), default);
+                Assert.True(retire.IsSuccessful, string.Join(",", retire.Errors));
+                Assert.True((await scope.Workflow(Checker).RejectRetirementAsync(new RejectProductAbbreviationRetirementCommand(
+                    active.Id, retire.Data!.Version, retireKey, Key(), "no"), default)).IsSuccessful);
+                return await real.RequestEntryAsync((ProductAbbreviationRequestWrite)args![0]!, (CancellationToken)args[1]!);
+            }
+
+            return AfterTheCodeMovedAsync();
+        });
+
+        var correction = await scope.Workflow(Maker, register: held).InitiateCorrectionAsync(
+            new InitiateProductAbbreviationCorrectionCommand(active.Id, active.Version, "CVB", Key(), "fix"), default);
+
+        Assert.Equal(409, correction.StatusCode);
+        Assert.Equal("CONCURRENCY_CONFLICT", Assert.Single(correction.Errors));
+        var stored = (await scope.Register.GetByIdAsync(active.Id))!;
+        Assert.Null(stored.PendingCorrectionEntryId);
+        Assert.DoesNotContain(await scope.Register.GetByGlobalProductIdAsync(active.GlobalProductId),
+            x => x.LifecycleStatus == ProductAbbreviationLifecycleStatus.REQUESTED);
+    }
+
+    [Fact]
+    public async Task The_policy_batch_read_answers_only_this_tenants_policies()
+    {
+        // FIX3 item 7 — GetByGlobalProductIdsAsync (the projection's one read) is held to the tenant filter on Mongo.
+        await using var scope = await Scope.CreateAsync(mongo.ReplicaConnectionString);
+        var otherTenant = Guid.NewGuid();
+        var mine = Guid.NewGuid();
+        var theirs = Guid.NewGuid();
+        var policies = scope.Database.GetCollection<ProductLegalEntityScopePolicy>("mdm_product_legal_entity_scope_policies");
+        await policies.InsertManyAsync([
+            ProductLegalEntityScopePolicy.Create(scope.Tenant, mine, Guid.NewGuid(), ProductLegalEntityScopeMode.Scoped,
+                [Guid.NewGuid()], Guid.NewGuid(), DateTimeOffset.UtcNow),
+            ProductLegalEntityScopePolicy.Create(otherTenant, theirs, Guid.NewGuid(), ProductLegalEntityScopeMode.Scoped,
+                [Guid.NewGuid()], Guid.NewGuid(), DateTimeOffset.UtcNow)
+        ]);
+        try
+        {
+            var context = new TenantContext();
+            context.SetTenant(scope.Tenant);
+            var found = await new ProductLegalEntityScopePolicyRepository(scope.Database, context)
+                .GetByGlobalProductIdsAsync([mine, theirs]);
+
+            Assert.Equal([mine], found.Select(x => x.GlobalProductId).ToArray());
+        }
+        finally
+        {
+            await policies.DeleteManyAsync(x => x.TenantId == scope.Tenant || x.TenantId == otherTenant);
+        }
+    }
+
+    private static async Task<List<string>> RunTransactionCheckAsync(string connectionString)
+    {
+        var settings = MongoClientSettings.FromConnectionString(connectionString);
+        settings.ServerSelectionTimeout = TimeSpan.FromSeconds(2);
+#pragma warning disable CS0618
+        settings.GuidRepresentation = MongoDB.Bson.GuidRepresentation.Standard;
+#pragma warning restore CS0618
+        var database = new MongoClient(settings).GetDatabase("diten_mdm_abb_register_itest");
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        Microsoft.Extensions.DependencyInjection.ServiceCollectionServiceExtensions.AddScoped(services, _ => database);
+        await using var provider = Microsoft.Extensions.DependencyInjection.ServiceCollectionContainerBuilderExtensions
+            .BuildServiceProvider(services);
+        var logger = new LineLogger<Diten.MdmService.Api.Services.ProductAbbreviationRegister.ProductAbbreviationTransactionSupportCheck>();
+        var check = new Diten.MdmService.Api.Services.ProductAbbreviationRegister.ProductAbbreviationTransactionSupportCheck(
+            Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions
+                .GetRequiredService<Microsoft.Extensions.DependencyInjection.IServiceScopeFactory>(provider),
+            logger);
+        await check.StartAsync(CancellationToken.None);
+        return logger.Lines;
+    }
+
+    private sealed class LineLogger<T> : Microsoft.Extensions.Logging.ILogger<T>
+    {
+        public List<string> Lines { get; } = [];
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
+        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId,
+            TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            => Lines.Add(formatter(state, exception));
     }
 
     private static async Task AssertDecidedByAsync(
@@ -1041,37 +1455,27 @@ public sealed class ProductAbbreviationFix1MongoTests(Audit.AuditIntentTemporalM
         return (await scope.Register.GetByIdAsync(result.Data!.Entry.Id))!;
     }
 
-    /// <summary>A REQUESTED correction written straight to the register, bypassing FIX1's one-pending-change claim.</summary>
+    /// <summary>A REQUESTED correction written straight to the collection, bypassing FIX1's one-pending-change claim
+    /// (the state pre-FIX1 code could leave; no production path writes it).</summary>
     private static async Task<ProductAbbreviationRegisterEntry> InsertOrphanCandidateAsync(
         Scope scope, ProductAbbreviationRegisterEntry active, string abbreviation)
     {
-        var key = Key();
-        var entryId = Guid.NewGuid();
-        var ledger = await scope.Ledger.AllocateAsync(new ProductAbbreviationAllocationLedger
+        var entry = new ProductAbbreviationRegisterEntry
         {
             Id = Guid.NewGuid(),
-            NormalizedAbbreviation = abbreviation,
-            GlobalProductId = active.GlobalProductId,
-            RegisterEntryId = entryId,
-            IdempotencyKey = key,
-            PayloadHash = key,
-            AllocatedByCanonicalSubjectId = Maker2,
-            AllocatedAtUtc = DateTimeOffset.UtcNow
-        });
-        Assert.True(ledger.Succeeded);
-        var inserted = await scope.Register.InsertRequestedAsync(new ProductAbbreviationRegisterEntry
-        {
-            Id = entryId,
+            TenantId = scope.Tenant,
             GlobalProductId = active.GlobalProductId,
             NormalizedAbbreviation = abbreviation,
-            AllocationLedgerId = ledger.Ledger!.Id,
-            AllocationIdempotencyKey = key,
+            AllocationLedgerId = Guid.NewGuid(),
+            AllocationIdempotencyKey = Key(),
+            LifecycleStatus = ProductAbbreviationLifecycleStatus.REQUESTED,
             RequestedByCanonicalSubjectId = Maker2,
             RequestedAtUtc = DateTimeOffset.UtcNow,
             ReplacesEntryId = active.Id
-        });
-        Assert.True(inserted.Succeeded);
-        return inserted.Entry!;
+        };
+        await scope.Database.GetCollection<ProductAbbreviationRegisterEntry>("mdm_product_abbreviation_register")
+            .InsertOneAsync(entry);
+        return entry;
     }
 
     private static string Key() => "fix1-" + Guid.NewGuid().ToString("N");
@@ -1149,6 +1553,8 @@ public sealed class ProductAbbreviationFix1MongoTests(Audit.AuditIntentTemporalM
         public Guid Tenant { get; } = Guid.NewGuid();
         public IMongoDatabase Database { get; }
         public ProductAbbreviationRegisterRepository Register => new(Database, Context());
+        /// <summary>FIX3 — the same repository over a tapped database (see <see cref="MongoTaps"/>).</summary>
+        public ProductAbbreviationRegisterRepository RegisterOn(IMongoDatabase database) => new(database, Context());
         public ProductAbbreviationHistoryRepository History => new(Database, Context());
         public ProductAbbreviationAllocationLedgerRepository Ledger => new(Database, Context());
 
@@ -1195,7 +1601,8 @@ public sealed class ProductAbbreviationFix1MongoTests(Audit.AuditIntentTemporalM
             foreach (var name in new[]
                      {
                          "mdm_product_abbreviation_register", "mdm_product_abbreviation_history",
-                         "mdm_product_abbreviation_allocation_ledger", "mdm_product_abbreviation_command_keys"
+                         "mdm_product_abbreviation_allocation_ledger", "mdm_product_abbreviation_command_keys",
+                         "mdm_product_abbreviation_product_slots"
                      })
             {
                 await Database.GetCollection<MongoDB.Bson.BsonDocument>(name).DeleteManyAsync(

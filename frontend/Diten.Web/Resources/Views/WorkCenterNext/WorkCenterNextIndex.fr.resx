@@ -2514,4 +2514,7 @@
   <data name="DelegateNoEligiblePeople" xml:space="preserve">
     <value>Cette approbation ne peut être déléguée à personne.</value>
   </data>
+  <data name="ErrorAbbreviationDecidedByAnother" xml:space="preserve">
+    <value>Un autre approbateur a déjà pris une décision sur cet élément. Votre liste a été actualisée.</value>
+  </data>
 </root>
