@@ -18,6 +18,16 @@ public sealed class PlatformAuthController : CustomBaseController
     private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
 
+    /// <summary>BL-521 FIX3 item 4 — 403: the forced change door takes only a platform actor's token (platform or partner
+    /// administrator, platform tenant).</summary>
+    public const string ForcedChangeRequiresPlatformActorCode = "PLATFORM_FORCED_CHANGE_PLATFORM_ACTOR_REQUIRED";
+
+    /// <summary>BL-521 FIX3 item 4 — 409: no forced change is pending on the account; an ordinary change has its own door.</summary>
+    public const string ForcedChangeNotPendingCode = "PLATFORM_FORCED_CHANGE_NOT_PENDING";
+
+    /// <summary>BL-521 FIX3 item 4 — 401: the temporary password has expired; a password reset replaces it.</summary>
+    public const string TemporaryPasswordExpiredCode = "PLATFORM_TEMPORARY_PASSWORD_EXPIRED";
+
     private readonly IMediator _mediator;
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
@@ -168,7 +178,14 @@ public sealed class PlatformAuthController : CustomBaseController
             return BadRequest(new { message = "email and userName are required" });
         }
 
-        var user = await _userRepository.GetByEmailAndTenantAsync(normalizedEmail, PlatformTenantId, ct);
+        // BL-521 FIX3 item 2(a) — the account is found by the address the Platform record had BEFORE this change
+        // (PreviousEmail) and moved to the new one. Before, it was looked up by the NEW address only: changing another
+        // administrator's e-mail answered 404 here while Platform had already saved the record, so the account stayed on the
+        // old address and its next sign-in / refresh found no record — refused, every session revoked. A caller that sends
+        // no previous address (an older Platform) is looked up by its address, as before. An unknown previous address is
+        // NOT retried under the new one: whatever account already sits there is another account, never adopted.
+        var lookupEmail = string.IsNullOrWhiteSpace(request.PreviousEmail) ? normalizedEmail : NormalizeEmail(request.PreviousEmail);
+        var user = await _userRepository.GetByEmailAndTenantAsync(lookupEmail, PlatformTenantId, ct);
         if (user is null)
         {
             return NotFound(new { message = "platform user not found" });
@@ -180,6 +197,17 @@ public sealed class PlatformAuthController : CustomBaseController
             return Conflict(new { message = "username already exists" });
         }
 
+        if (!string.Equals(user.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase))
+        {
+            var emailOwner = await _userRepository.GetByEmailAndTenantAsync(normalizedEmail, PlatformTenantId, ct);
+            if (emailOwner is not null && emailOwner.Id != user.Id)
+            {
+                return Conflict(new { message = "email already exists" });
+            }
+
+            user.ChangeEmail(normalizedEmail);
+        }
+
         var (firstName, lastName) = SplitName(request.DisplayName, normalizedEmail);
         user.SetUserName(request.UserName);
         user.UpdateProfile(firstName, lastName);
@@ -187,9 +215,11 @@ public sealed class PlatformAuthController : CustomBaseController
         user.ConfirmEmail();
         user.SetPlatformActorType(NormalizeActorType(request.ActorType));
 
-        await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);
-
+        // Roles first, the account (with its new address) LAST: a failure part-way leaves the account where Platform's
+        // record still points, and Platform's retry or put-back finds it there.
         await SyncPlatformRolesAsync(user.Id, request.Roles, ct);
+
+        await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);
 
         return NoContent();
     }
@@ -198,10 +228,41 @@ public sealed class PlatformAuthController : CustomBaseController
     [Authorize]
     public async Task<IActionResult> ForcedChangePassword([FromBody] PlatformForcedChangePasswordRequest request, CancellationToken ct)
     {
+        // BL-521 FIX3 item 4 — this door MINTS a platform session, so it is never wider than login. Before, it accepted any
+        // valid JWT (a tenant_user token of a user in the platform tenant included) and looked at neither the account's own
+        // state nor whether a change was pending: an account disabled in Auth but with a live Platform record could mint
+        // itself a fresh platform session with every new token, indefinitely.
+        if (!IsPlatformActorToken(User))
+        {
+            return CreateActionResultInstance(Response<AuthResponse>.Fail(
+                "A platform administrator token is required.", [new ResponseError(ForcedChangeRequiresPlatformActorCode)], 403));
+        }
+
         var user = await ResolveCurrentPlatformUserAsync(ct);
         if (user is null)
         {
             return CreateActionResultInstance(Response<AuthResponse>.Fail("Unauthorized.", 401));
+        }
+
+        if (!user.IsActive)
+        {
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("User is inactive.", 401));
+        }
+
+        // Only a pending FORCED change opens this door (the flag login sets on the token); an ordinary change has its own.
+        if (!user.MustChangePassword)
+        {
+            return CreateActionResultInstance(Response<AuthResponse>.Fail(
+                "No password change is pending for this account. Use the regular password change.",
+                [new ResponseError(ForcedChangeNotPendingCode)], 409));
+        }
+
+        // The same rule (and sentence) as login: an expired temporary password is replaced through a reset, not here.
+        if (user.TemporaryPasswordExpiresAt is { } temporaryExpiry && temporaryExpiry <= DateTime.UtcNow)
+        {
+            return CreateActionResultInstance(Response<AuthResponse>.Fail(
+                "Temporary password has expired. Please reset your password.",
+                [new ResponseError(TemporaryPasswordExpiredCode)], 401));
         }
 
         // BL-521 FIX2 item 1 — this door MINTS a platform token, so the actor type comes from the administrator's Platform
@@ -286,6 +347,21 @@ public sealed class PlatformAuthController : CustomBaseController
         await _userRepository.UpdateForTenantAsync(user, PlatformTenantId, ct);
         await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, PlatformTenantId, ct);
         return CreateActionResultInstance(Response<NoContent>.Success(204));
+    }
+
+    /// <summary>
+    /// BL-521 FIX3 item 4 — the token is a platform actor's: <c>actor_type</c> platform_admin or partner_admin (the only two
+    /// a platform token is minted with) and the platform tenant. A tenant_user token — even of a user that lives in the
+    /// platform tenant — is not.
+    /// </summary>
+    private static bool IsPlatformActorToken(System.Security.Claims.ClaimsPrincipal principal)
+    {
+        var actorType = principal.FindFirst("actor_type")?.Value;
+        var isPlatformActor = string.Equals(actorType, PlatformAdministratorRecordAnswer.PlatformAdminActorType, StringComparison.Ordinal)
+                              || string.Equals(actorType, PlatformAdministratorRecordAnswer.PartnerAdminActorType, StringComparison.Ordinal);
+        return isPlatformActor
+               && Guid.TryParse(principal.FindFirst("tenant_id")?.Value, out var tenantId)
+               && tenantId == PlatformTenantId;
     }
 
     private async Task<User?> ResolveCurrentPlatformUserAsync(CancellationToken ct)

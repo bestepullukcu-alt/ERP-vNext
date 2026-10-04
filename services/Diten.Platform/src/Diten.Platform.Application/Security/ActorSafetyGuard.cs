@@ -75,7 +75,7 @@ public sealed class ActorSafetyGuard : IActorSafetyGuard
         }
 
         return Response<NoContent>.Fail(
-            "At least one active Super Admin must remain in the system.",
+            AdminSafetyMessages.LastActiveSuperAdmin,
             409,
             AdminSafetyReasonCodes.LastActiveSuperAdmin);
     }

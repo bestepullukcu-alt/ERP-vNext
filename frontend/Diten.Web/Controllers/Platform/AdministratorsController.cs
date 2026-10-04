@@ -433,6 +433,17 @@ public sealed class AdministratorsController : Controller
             return _sharedLocalizer["AdminSeedSuspendDenied"].Value;
         }
 
+        // BL-521 FIX3 — Platform's AdminSafetyMessages.SeedEmailCannotChange / SafetyCheckUnavailable.
+        if (normalized.Contains("The system seed administrator's e-mail cannot be changed", StringComparison.OrdinalIgnoreCase))
+        {
+            return _sharedLocalizer["AdminSeedEmailChangeDenied"].Value;
+        }
+
+        if (normalized.Contains("The administrator change could not be saved right now", StringComparison.OrdinalIgnoreCase))
+        {
+            return _sharedLocalizer["AdminChangeUnavailable"].Value;
+        }
+
         if (isTurkish)
         {
             // Remove "Password: " or similar prefix noise

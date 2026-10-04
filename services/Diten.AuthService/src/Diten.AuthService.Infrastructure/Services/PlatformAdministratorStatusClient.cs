@@ -52,9 +52,17 @@ public sealed class PlatformAdministratorStatusClient : IPlatformAdministratorSt
             return PlatformAdministratorRecordAnswer.Refused;
         }
 
-        // BL-521 FIX1 F1(b) — the record's enum name (PlatformAdmin / PartnerAdmin) as the token actor type. Anything
-        // else (an older Platform that does not send it, a new value) is no type a token can carry: refused (FIX2 item 3,
-        // "unknown type" is a definitive no — Platform ships before Auth, see the service trust chain runbook).
+        // BL-521 FIX1 F1(b) — the record's enum name (PlatformAdmin / PartnerAdmin) as the token actor type. A value that
+        // IS sent and is unknown is no type a token can carry: refused (FIX2 item 3, a definitive no).
+        // FIX3 item 5 — NO value at all is an older Platform that never sent the field: a version gap while a deployment
+        // rolls, not a statement about this administrator. No answer (503, nothing revoked) — as a definitive no it ended
+        // every platform session that refreshed through an old copy in a mixed fleet.
+        if (status.ActorType is null)
+        {
+            _logger.LogWarning("Platform administrator status answered without an actor type (an older Platform?). Email={Email}", email.Trim().ToLowerInvariant());
+            return PlatformAdministratorRecordAnswer.Unavailable;
+        }
+
         return status.ActorType switch
         {
             { } value when string.Equals(value, "PartnerAdmin", StringComparison.OrdinalIgnoreCase)
@@ -108,6 +116,17 @@ public sealed class PlatformAdministratorStatusClient : IPlatformAdministratorSt
                 }
 
                 _logger.LogWarning("Platform administrator status answered 404 without its envelope. Email={Email}", normalizedEmail);
+                return (PlatformAdministratorRecordAnswer.Unavailable, null);
+            }
+
+            if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+            {
+                // BL-521 FIX3 item 7 — Platform refused THIS service's internal key (wrong, or missing on one side): a
+                // configuration fault, not a passing outage. Every platform sign-in, refresh and forced change answers 503
+                // until it is fixed, so it is an error. The status only — never the key or its value.
+                _logger.LogError(
+                    "Platform refused this service's internal API key on the administrator status call. StatusCode={StatusCode} Every platform sign-in answers 503 until the key is configured the same on both services.",
+                    (int)response.StatusCode);
                 return (PlatformAdministratorRecordAnswer.Unavailable, null);
             }
 

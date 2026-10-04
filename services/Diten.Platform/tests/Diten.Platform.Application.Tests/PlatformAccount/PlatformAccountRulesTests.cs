@@ -214,6 +214,13 @@ public sealed class PlatformAccountRulesTests
                 x.Roles.Contains(AdministratorRole.SuperAdmin) &&
                 (!excludeId.HasValue || x.Id != excludeId.Value)));
 
+        // BL-521 FIX3 item 3 — not used by these tests (they edit an account's own profile only).
+        public Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default) =>
+            throw new NotSupportedException("The account settings tests never take a super administrator out of the set.");
+
+        public Task<SuperAdminGuardedWriteResult> SoftDeleteGuardedAsync(Guid id, int expectedVersion, string actorName, CancellationToken ct = default) =>
+            throw new NotSupportedException("The account settings tests never take a super administrator out of the set.");
+
         private static PlatformAdministrator? CloneOrNull(PlatformAdministrator? administrator) =>
             administrator is null ? null : Clone(administrator);
 

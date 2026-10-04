@@ -503,6 +503,9 @@ public sealed class PartnerAdminScopeHttpMongoTests
 
         public IMongoDatabase Database { get; }
 
+        /// <summary>The host's services — BL-521 FIX3 G2 checks it maps exceptions with the production handler.</summary>
+        public IServiceProvider Services => _server.Services;
+
         /// <summary>The quota service behind the quota controller: reads answer, writes are only counted.</summary>
         public Mock<IQuotaService> QuotaWrites { get; } = new();
 

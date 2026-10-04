@@ -262,6 +262,15 @@ public sealed class PlatformAdministratorRulesTests
                 x.Status == AdministratorStatus.Active &&
                 x.Roles.Contains(AdministratorRole.SuperAdmin) &&
                 (!excludeId.HasValue || x.Id != excludeId.Value)));
+
+        // BL-521 FIX3 item 3 — no transaction in memory: count, then write (these tests never run two writes at once).
+        public async Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default) =>
+            await CountActiveSuperAdminsAsync(administrator.Id, ct) == 0 ? SuperAdminGuardedWriteResult.LastActiveSuperAdmin
+            : await UpdateAsync(administrator, expectedVersion, ct) ? SuperAdminGuardedWriteResult.Written : SuperAdminGuardedWriteResult.VersionConflict;
+
+        public async Task<SuperAdminGuardedWriteResult> SoftDeleteGuardedAsync(Guid id, int expectedVersion, string actorName, CancellationToken ct = default) =>
+            await CountActiveSuperAdminsAsync(id, ct) == 0 ? SuperAdminGuardedWriteResult.LastActiveSuperAdmin
+            : await SoftDeleteAsync(id, expectedVersion, actorName, ct) ? SuperAdminGuardedWriteResult.Written : SuperAdminGuardedWriteResult.VersionConflict;
     }
 
     private sealed class TestPlatformAdministratorProvisioningService : IPlatformAdministratorProvisioningService

@@ -12,9 +12,34 @@ namespace Diten.Platform.Infrastructure.Persistence.Repositories;
 public sealed class PlatformAdministratorRepository
     : GlobalRepository<PlatformAdministrator>, IPlatformAdministratorRepository
 {
+    /// <summary>BL-521 FIX3 item 3 — the id of the one document every write under the super-admin guard claims.</summary>
+    internal const string SuperAdminGuardId = "active-platform-super-admins";
+
+    private const int MaximumCommitAttempts = 3;
+
+    private readonly IMongoClient _client;
+    private readonly IMongoCollection<BsonDocument> _guards;
+    private readonly Func<CancellationToken, Task>? _beforeGuardedCommit;
+
     public PlatformAdministratorRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : this(dbContext, tenantContext, beforeGuardedCommit: null)
+    {
+    }
+
+    /// <summary>
+    /// TEST SEAM (BL-521 FIX3 item 3): <paramref name="beforeGuardedCommit"/> runs inside a guarded write's transaction —
+    /// after its claim, its count and its own write, just before its commit — so a test can hold one write exactly where a
+    /// second one must be refused. Production goes through the public constructor (no seam; DI sees only that one).
+    /// </summary>
+    internal PlatformAdministratorRepository(
+        IPlatformDbContext dbContext,
+        ITenantContext tenantContext,
+        Func<CancellationToken, Task>? beforeGuardedCommit)
         : base(dbContext.Database, tenantContext, PlatformCollections.PlatformAdministrators)
     {
+        _client = dbContext.Client;
+        _guards = dbContext.Database.GetCollection<BsonDocument>(PlatformCollections.PlatformAdministratorSafetyGuards);
+        _beforeGuardedCommit = beforeGuardedCommit;
     }
 
     public async Task<bool> ExistsByEmailAsync(string normalizedEmail, Guid? excludeId = null, CancellationToken ct = default)
@@ -59,31 +84,198 @@ public sealed class PlatformAdministratorRepository
         administrator.UpdatedAt = DateTimeOffset.UtcNow;
         administrator.Version = expectedVersion + 1;
 
-        var filter = Builders<PlatformAdministrator>.Filter.And(
-            ExecutionFilter,
-            Builders<PlatformAdministrator>.Filter.Eq(x => x.Id, administrator.Id),
-            Builders<PlatformAdministrator>.Filter.Eq(x => x.Version, expectedVersion));
-
-        var result = await Collection.ReplaceOneAsync(filter, administrator, cancellationToken: ct);
+        var result = await Collection.ReplaceOneAsync(VersionFilter(administrator.Id, expectedVersion), administrator, cancellationToken: ct);
         return result.ModifiedCount == 1;
     }
 
     public async Task<bool> SoftDeleteAsync(Guid id, int expectedVersion, string actorName, CancellationToken ct = default)
     {
-        var filter = Builders<PlatformAdministrator>.Filter.And(
+        var result = await Collection.UpdateOneAsync(VersionFilter(id, expectedVersion), SoftDelete(actorName), cancellationToken: ct);
+        return result.ModifiedCount == 1;
+    }
+
+    /// <inheritdoc />
+    public Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default) =>
+        WriteUnderSuperAdminGuardAsync(administrator.Id, async session =>
+        {
+            administrator.UpdatedAt = DateTimeOffset.UtcNow;
+            administrator.Version = expectedVersion + 1;
+            var result = await Collection.ReplaceOneAsync(session, VersionFilter(administrator.Id, expectedVersion), administrator, cancellationToken: ct);
+            return result.ModifiedCount == 1;
+        }, ct);
+
+    /// <inheritdoc />
+    public Task<SuperAdminGuardedWriteResult> SoftDeleteGuardedAsync(Guid id, int expectedVersion, string actorName, CancellationToken ct = default) =>
+        WriteUnderSuperAdminGuardAsync(id, async session =>
+        {
+            var result = await Collection.UpdateOneAsync(session, VersionFilter(id, expectedVersion), SoftDelete(actorName), cancellationToken: ct);
+            return result.ModifiedCount == 1;
+        }, ct);
+
+    /// <summary>
+    /// BL-521 FIX3 item 3 — one transaction: (1) claim the guard document, (2) count the OTHER active platform super
+    /// administrators, (3) write. The claim is a real write to ONE shared document, so a second guarded write that starts
+    /// while this one is open conflicts on it (WriteConflict) and is refused; one that starts after this one committed claims
+    /// cleanly and its count sees this write. Snapshot isolation alone would not do it: A writes B's record and B writes
+    /// A's — two different documents — and both counts would pass (write skew); the shared claim turns that into a conflict.
+    /// </summary>
+    private async Task<SuperAdminGuardedWriteResult> WriteUnderSuperAdminGuardAsync(
+        Guid targetId,
+        Func<IClientSessionHandle, Task<bool>> write,
+        CancellationToken ct)
+    {
+        try
+        {
+            for (var attempt = 1; ; attempt++)
+            {
+                using var session = await _client.StartSessionAsync(cancellationToken: ct);
+                session.StartTransaction();
+                try
+                {
+                    if (!await ClaimSuperAdminGuardAsync(session, ct))
+                    {
+                        // The guard document does not exist yet (the first guarded write this database sees): create it
+                        // outside the transaction, once, and start over. It is never deleted.
+                        await AbortQuietlyAsync(session);
+                        if (attempt > 1)
+                        {
+                            return SuperAdminGuardedWriteResult.Unavailable;
+                        }
+
+                        await EnsureSuperAdminGuardAsync(ct);
+                        continue;
+                    }
+
+                    var remaining = await Collection.CountDocumentsAsync(session, ActiveSuperAdminsFilter(targetId), cancellationToken: ct);
+                    if (remaining == 0)
+                    {
+                        await AbortQuietlyAsync(session);
+                        return SuperAdminGuardedWriteResult.LastActiveSuperAdmin;
+                    }
+
+                    if (!await write(session))
+                    {
+                        await AbortQuietlyAsync(session);
+                        return SuperAdminGuardedWriteResult.VersionConflict;
+                    }
+
+                    if (_beforeGuardedCommit is not null)
+                    {
+                        await _beforeGuardedCommit(ct);
+                    }
+
+                    await CommitAsync(session, ct);
+                    return SuperAdminGuardedWriteResult.Written;
+                }
+                catch
+                {
+                    await AbortQuietlyAsync(session);
+                    throw;
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (MongoException exception) when (IsConcurrentGuardClaim(exception))
+        {
+            return SuperAdminGuardedWriteResult.ConcurrentChange;
+        }
+        catch (MongoException)
+        {
+            // No replica set (transactions refused), the database unreachable, a commit whose result stayed unknown: the
+            // write did not happen under the guard, so it is answered as not having happened.
+            return SuperAdminGuardedWriteResult.Unavailable;
+        }
+        catch (NotSupportedException)
+        {
+            return SuperAdminGuardedWriteResult.Unavailable;
+        }
+    }
+
+    private async Task<bool> ClaimSuperAdminGuardAsync(IClientSessionHandle session, CancellationToken ct)
+    {
+        var claim = await _guards.UpdateOneAsync(
+            session,
+            SuperAdminGuardFilter,
+            Builders<BsonDocument>.Update.Inc("Generation", 1L).Set("ClaimedAt", DateTime.UtcNow),
+            cancellationToken: ct);
+        return claim.MatchedCount == 1;
+    }
+
+    private async Task EnsureSuperAdminGuardAsync(CancellationToken ct)
+    {
+        try
+        {
+            await _guards.UpdateOneAsync(
+                SuperAdminGuardFilter,
+                Builders<BsonDocument>.Update.SetOnInsert("Generation", 0L),
+                new UpdateOptions { IsUpsert = true },
+                ct);
+        }
+        catch (MongoWriteException exception) when (exception.WriteError.Category == ServerErrorCategory.DuplicateKey)
+        {
+            // Another request created it at the same moment: it exists, which is all this needs.
+        }
+    }
+
+    private static async Task CommitAsync(IClientSessionHandle session, CancellationToken ct)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                await session.CommitTransactionAsync(ct);
+                return;
+            }
+            catch (MongoException exception) when (exception.HasErrorLabel("UnknownTransactionCommitResult") && attempt < MaximumCommitAttempts)
+            {
+                // Commit-only retry on the same session; the body is never replayed.
+            }
+        }
+    }
+
+    private static async Task AbortQuietlyAsync(IClientSessionHandle session)
+    {
+        if (!session.IsInTransaction)
+        {
+            return;
+        }
+
+        try
+        {
+            await session.AbortTransactionAsync(CancellationToken.None);
+        }
+        catch (MongoException)
+        {
+            // The server already ended it (a write conflict aborts the transaction): nothing left to abort.
+        }
+    }
+
+    /// <summary>Another guarded write holds the claim (or committed past this one's snapshot): a conflict, not an outage.
+    /// A connection failure is an outage, even when the driver labels it transient.</summary>
+    private static bool IsConcurrentGuardClaim(MongoException exception) =>
+        exception is not MongoConnectionException
+        && (exception is MongoCommandException { Code: 112 }
+            || exception is MongoWriteException { WriteError.Code: 112 }
+            || exception.HasErrorLabel("TransientTransactionError"));
+
+    private static FilterDefinition<BsonDocument> SuperAdminGuardFilter =>
+        Builders<BsonDocument>.Filter.Eq("_id", SuperAdminGuardId);
+
+    private FilterDefinition<PlatformAdministrator> VersionFilter(Guid id, int expectedVersion) =>
+        Builders<PlatformAdministrator>.Filter.And(
             ExecutionFilter,
             Builders<PlatformAdministrator>.Filter.Eq(x => x.Id, id),
             Builders<PlatformAdministrator>.Filter.Eq(x => x.Version, expectedVersion));
 
-        var update = Builders<PlatformAdministrator>.Update
+    private static UpdateDefinition<PlatformAdministrator> SoftDelete(string actorName) =>
+        Builders<PlatformAdministrator>.Update
             .Set(x => x.IsDeleted, true)
             .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
             .Set(x => x.UpdatedBy, actorName)
             .Inc(x => x.Version, 1);
-
-        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
-        return result.ModifiedCount == 1;
-    }
 
     public async Task<(IReadOnlyList<PlatformAdministrator> Items, long TotalCount)> QueryAsync(
         PlatformAdministratorQuery query,
@@ -186,7 +378,12 @@ public sealed class PlatformAdministratorRepository
     /// PartnerAdmin record carrying the SuperAdmin role is not a remaining super administrator: since FIX1 its record makes
     /// it a partner whatever its roles say, so counting it let the last real one be demoted, suspended or deleted.
     /// </summary>
-    public Task<long> CountActiveSuperAdminsAsync(Guid? excludeId = null, CancellationToken ct = default)
+    public Task<long> CountActiveSuperAdminsAsync(Guid? excludeId = null, CancellationToken ct = default) =>
+        Collection.CountDocumentsAsync(ActiveSuperAdminsFilter(excludeId), cancellationToken: ct);
+
+    /// <summary>The one definition of "an active platform super administrator" — the pre-check count and the count
+    /// inside the guarded write (FIX3 item 3) both use it.</summary>
+    private FilterDefinition<PlatformAdministrator> ActiveSuperAdminsFilter(Guid? excludeId)
     {
         var filters = new List<FilterDefinition<PlatformAdministrator>>
         {
@@ -201,9 +398,7 @@ public sealed class PlatformAdministratorRepository
             filters.Add(Builders<PlatformAdministrator>.Filter.Ne(x => x.Id, excludeId.Value));
         }
 
-        return Collection.CountDocumentsAsync(
-            Builders<PlatformAdministrator>.Filter.And(filters),
-            cancellationToken: ct);
+        return Builders<PlatformAdministrator>.Filter.And(filters);
     }
 
     private static SortDefinition<PlatformAdministrator> BuildSort(string? sort)

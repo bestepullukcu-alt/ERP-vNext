@@ -35,17 +35,20 @@ public sealed class AssignPlatformAdministratorRolesHandler : IRequestHandler<As
         }
 
         var newRoles = PlatformAdministratorParsing.ParseRoles(request.Request.Roles).ToList();
+
+        // BL-521 FIX3 item 1 — an administrator does not change its OWN roles, in either direction. Before, only removing
+        // its own SuperAdmin was refused here; adding it was allowed, and the update path let it through as well. (The
+        // permission filter lets every confirmed platform administrator past every key — the owner keeps that rule, BL-521
+        // — so this record rule is the one between a ReadOnly administrator and SuperAdmin.)
+        if (!newRoles.ToHashSet().SetEquals(administrator.Roles) && await _safetyGuard.IsSelfAsync(request.Id, ct))
+        {
+            return Response<NoContent>.Fail(UpdatePlatformAdministratorHandler.SelfChangeMessage, 403, AdminSafetyReasonCodes.SelfChangeForbidden);
+        }
+
         var willRemoveSuperAdmin =
             administrator.Roles.Contains(AdministratorRole.SuperAdmin)
             && !newRoles.Contains(AdministratorRole.SuperAdmin);
-
-        // §7.21 rule 3 — role self-downgrade. Only fires when the actor is the target
-        // AND the change actually strips their SuperAdmin role.
-        if (willRemoveSuperAdmin)
-        {
-            var selfGuard = await _safetyGuard.EnsureNotSelfAsync(request.Id, AdminSafetyAction.RemoveRole, ct);
-            if (selfGuard is not null) return selfGuard;
-        }
+        var leavesSuperAdminSet = willRemoveSuperAdmin && PlatformAdministratorMutationSupport.IsActivePlatformSuperAdmin(administrator);
 
         // §7.21 rule 2 — last SuperAdmin protection on role-remove path
         if (willRemoveSuperAdmin)
@@ -58,9 +61,14 @@ public sealed class AssignPlatformAdministratorRolesHandler : IRequestHandler<As
         administrator.Roles = newRoles;
         PlatformAdministratorMutationSupport.MarkUpdated(administrator, _currentUser);
 
-        var updated = await _repository.UpdateAsync(administrator, request.Request.Version, ct);
-        return updated
+        // FIX3 item 3 — taking an active platform super administrator out of the set is written under the guard.
+        var outcome = leavesSuperAdminSet
+            ? await _repository.UpdateGuardedAsync(administrator, request.Request.Version, ct)
+            : await _repository.UpdateAsync(administrator, request.Request.Version, ct)
+                ? SuperAdminGuardedWriteResult.Written
+                : SuperAdminGuardedWriteResult.VersionConflict;
+        return outcome == SuperAdminGuardedWriteResult.Written
             ? Response<NoContent>.Success(204)
-            : Response<NoContent>.Fail("The administrator was changed by another user. Reload and try again.", 409);
+            : PlatformAdministratorMutationSupport.RefusedWrite(outcome, AdminSafetyMessages.ChangedByAnotherUser);
     }
 }

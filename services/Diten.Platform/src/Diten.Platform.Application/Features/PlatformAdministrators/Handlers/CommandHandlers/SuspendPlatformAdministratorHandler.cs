@@ -38,9 +38,9 @@ public sealed class SuspendPlatformAdministratorHandler : IRequestHandler<Suspen
             return Response<NoContent>.Fail("Platform administrator not found.", 404);
         }
 
-        if (administrator.Email.Equals("admin@diten.com", StringComparison.OrdinalIgnoreCase))
+        if (PlatformAdministratorMutationSupport.IsSystemSeed(administrator))
         {
-            return Response<NoContent>.Fail("The system seed administrator cannot be suspended.", 409);
+            return Response<NoContent>.Fail(AdminSafetyMessages.SeedCannotBeSuspended, 409, AdminSafetyReasonCodes.SystemSeedProtected);
         }
 
         // §7.21 rule 2 — last SuperAdmin protection
@@ -48,13 +48,19 @@ public sealed class SuspendPlatformAdministratorHandler : IRequestHandler<Suspen
             request.Id, AdminSafetyAction.Suspend, ct);
         if (lastAdminGuard is not null) return lastAdminGuard;
 
+        var leavesSuperAdminSet = PlatformAdministratorMutationSupport.IsActivePlatformSuperAdmin(administrator);
         administrator.Status = AdministratorStatus.Suspended;
         administrator.LastStatusReason = request.Request.Reason?.Trim();
         PlatformAdministratorMutationSupport.MarkUpdated(administrator, _currentUser);
 
-        var updated = await _repository.UpdateAsync(administrator, request.Request.Version, ct);
-        return updated
+        // BL-521 FIX3 item 3 — suspending an active platform super administrator is written under the guard.
+        var outcome = leavesSuperAdminSet
+            ? await _repository.UpdateGuardedAsync(administrator, request.Request.Version, ct)
+            : await _repository.UpdateAsync(administrator, request.Request.Version, ct)
+                ? SuperAdminGuardedWriteResult.Written
+                : SuperAdminGuardedWriteResult.VersionConflict;
+        return outcome == SuperAdminGuardedWriteResult.Written
             ? Response<NoContent>.Success(204)
-            : Response<NoContent>.Fail("The administrator was changed by another user. Reload and try again.", 409);
+            : PlatformAdministratorMutationSupport.RefusedWrite(outcome, AdminSafetyMessages.ChangedByAnotherUser);
     }
 }

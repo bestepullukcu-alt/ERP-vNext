@@ -23,16 +23,29 @@ kararında kullanılmaz.
 |---|---|---|
 | 1 | Platform'un **bütün kopyaları** yeni sürüme çıkar | Durum cevabındaki `actorType` alanını yalnız yeni Platform gönderir. |
 | 2 | Platform'un her kopyasının durum ucuna `actorType` döndürdüğü doğrulanır | Yük dengeleyici arkasında tek bir eski kopya kalırsa Auth o kopyaya düşen her istekte türü okuyamaz. |
-| 3 | Auth yeni sürüme çıkar | Yeni Auth, türü bilinmeyen (ya da hiç gönderilmemiş) bir cevabı **kesin "hayır"** sayar: girişi ve yenilemeyi reddeder, yenilemede yöneticinin **bütün oturumlarını iptal eder**. |
+| 3 | Auth yeni sürüme çıkar | Yeni Auth, **gönderilmiş ama bilinmeyen** bir türü **kesin "hayır"** sayar (giriş ve yenileme reddedilir, yenilemede yöneticinin bütün oturumları iptal edilir). Türü **hiç gönderilmemiş** bir cevap ise (eski Platform) FIX3'ten beri **cevap yok** sayılır: 503, oturum iptali yok. |
 
 **Ters sıra ne yapar.** Auth önce çıkarsa, eski Platform'un `actorType` taşımayan her durum
-cevabı "bilinmeyen tür" sayılır: hiçbir platform yöneticisi giriş yapamaz, yenileme yapan her
-yöneticinin oturumları iptal edilir. Bu, bir kesinti değil, bir **oturum silme** olayıdır;
-Platform çıktıktan sonra kendiliğinden düzelmez, herkes yeniden giriş yapar.
+cevabı **cevap yok** sayılır (BL-521 FIX3 madde 5): hiçbir platform yöneticisi giriş ya da
+yenileme yapamaz, Platform çıkana kadar her deneme 503 alır — bir **kesinti**dir, oturum silme
+değil; Platform çıktığında kendiliğinden düzelir. (FIX2'de bu durum "bilinmeyen tür" sayılıyor
+ve yenileme yapan her yöneticinin oturumlarını iptal ediyordu.)
 
-**Geri alma.** Auth çıktıktan sonra **Platform geri alınmaz** (ya da Auth ondan önce geri
-alınır). Geri alınan Platform yine `actorType` göndermez ve yukarıdaki tablo tersinden
-işler. Geri alma gerekiyorsa sıra: önce Auth, sonra Platform.
+**Geri alma.** Auth çıktıktan sonra Platform geri alınırsa, geri alınan Platform `actorType`
+göndermez ve yukarıdaki kesinti yaşanır (oturumlar silinmez). Geri alma gerekiyorsa sıra yine:
+önce Auth, sonra Platform.
+
+**E-posta değişikliği (FIX3 madde 2).** Platform bir yöneticinin e-postasını değiştirirken önce
+Auth'u eşitler (`POST /api/platform-auth/platform-admins/sync`, gövdede `previousEmail` = kaydın
+eski adresi), kaydı ancak Auth kabul ederse yazar; kayıt yazılamazsa Auth'u eski değerlere geri
+çeker. Eski Auth `previousEmail`'i tanımaz, hesabı yeni adresle arar, bulamaz (404): Platform
+kaydı **yazmaz**, istek reddedilir. Yani Platform önce çıktığında Auth çıkana kadar yalnız
+e-posta değişikliği yapılamaz; kimse kilitlenmez.
+
+**İç anahtar reddi (FIX3 madde 7).** Platform durum çağrısına 401 / 403 dönerse (iç anahtar iki
+serviste aynı değil) Auth bunu **Error** düzeyinde günlükler (anahtar ya da değeri yazılmaz) ve
+her platform girişine 503 verir. Düzeltme: Auth'taki `PlatformService:InternalApiKey` ile
+Platform'daki `AuthService:InternalApiKey` aynı değeri taşımalı (değerler bu belgeye yazılmaz).
 
 **Geçici hata ile kesin "hayır" ayrımı (FIX2 madde 3).** Dağıtım sırasında Platform'un
 verdiği 5xx, ağ hatası, zaman aşımı ya da okunamayan cevap **"hayır" değildir**: Auth o isteği

@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Net;
+using System.Text;
 using Diten.Platform.API.Security;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Diten.Platform.Infrastructure.BackgroundJobs;
+using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Xunit;
 
@@ -62,6 +64,27 @@ public sealed class DashboardAuthorizationTests
         var context = new AspNetCoreDashboardContext(new Mock<JobStorage>().Object, BackgroundJobApplicationBuilderExtensions.CreateDashboardOptions(), http);
 
         Assert.Equal(expected, await new PlatformActorHangfireAuthorizationFilter().AuthorizeAsync(context));
+    }
+
+    /// <summary>
+    /// BL-521 FIX3 G4 — the filter's two TOKEN arms: a request that arrives with no principal yet (the dashboard is mapped
+    /// outside MVC) is authenticated by the filter itself — first through the JwtBearer scheme, and when that fails by
+    /// validating the bearer token against JwtSettings by hand — and EACH arm then asks the record. Before this, only the
+    /// first (already-authenticated) arm was measured: a token-only decision in either of the other two stayed green.
+    /// </summary>
+    [Theory]
+    [InlineData("scheme", "PlatformAdmin", true)]
+    [InlineData("scheme", "PartnerAdmin", false)] // demoted, still holding a valid platform_admin token
+    [InlineData("manual", "PlatformAdmin", true)]
+    [InlineData("manual", "PartnerAdmin", false)] // demoted, still holding a valid platform_admin token
+    public async Task Each_token_arm_of_the_dashboard_filter_admits_only_what_the_record_confirms(string arm, string recordType, bool expected)
+    {
+        using var request = TokenArmScope(recordType, schemeValidates: arm == "scheme");
+        var http = request.AnonymousWithBearer(PlatformAdminToken());
+        var context = new AspNetCoreDashboardContext(new Mock<JobStorage>().Object, BackgroundJobApplicationBuilderExtensions.CreateDashboardOptions(), http);
+
+        Assert.Equal(expected, await new PlatformActorHangfireAuthorizationFilter().AuthorizeAsync(context));
+        Assert.True(http.User.Identity?.IsAuthenticated == true, "the arm under test did not authenticate the token");
     }
 
     /// <summary>
@@ -162,6 +185,75 @@ public sealed class DashboardAuthorizationTests
         var services = new ServiceCollection().AddLogging().AddPlatformActorTenantScope().AddSingleton(administrators.Object);
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
         return new RequestFixture(services.BuildServiceProvider());
+    }
+
+    private const string TokenIssuer = "bl521-fix3-dashboard-issuer";
+    private const string TokenAudience = "bl521-fix3-dashboard-audience";
+    private const string TokenSecret = "BL-521 FIX3 dashboard token arms, test only signing key 0123456789";
+
+    private static string PlatformAdminToken() =>
+        new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
+            TokenIssuer, TokenAudience,
+            [new Claim(JwtRegisteredClaimNames.Sub, Guid.NewGuid().ToString()), new Claim(JwtRegisteredClaimNames.Email, Email), new Claim("actor_type", "platform_admin")],
+            DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow.AddMinutes(30),
+            new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TokenSecret)), SecurityAlgorithms.HmacSha256)));
+
+    /// <summary>
+    /// One ANONYMOUS request over the production scope registration and a repository answering the given record.
+    /// <paramref name="schemeValidates"/>: the JwtBearer scheme accepts the token (the AuthenticateAsync arm); otherwise
+    /// the scheme has no keys and fails, and the filter validates the token by hand from JwtSettings (the manual arm).
+    /// </summary>
+    private static TokenArmFixture TokenArmScope(string recordType, bool schemeValidates)
+    {
+        var administrators = new Mock<IPlatformAdministratorRepository>();
+        administrators.Setup(x => x.GetByNormalizedEmailAsync(Email, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PlatformAdministrator
+            {
+                Email = Email, NormalizedEmail = Email, ActorType = Enum.Parse<ActorType>(recordType),
+                AllowedTenantIds = [Guid.NewGuid()], Status = AdministratorStatus.Active
+            });
+
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["JwtSettings:Issuer"] = TokenIssuer,
+            ["JwtSettings:Audience"] = TokenAudience,
+            ["JwtSettings:Secret"] = TokenSecret
+        }).Build();
+
+        var services = new ServiceCollection().AddLogging().AddPlatformActorTenantScope().AddSingleton(administrators.Object);
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+        {
+            if (schemeValidates)
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidIssuer = TokenIssuer,
+                    ValidAudience = TokenAudience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(TokenSecret))
+                };
+            }
+        });
+        return new TokenArmFixture(services.BuildServiceProvider());
+    }
+
+    private sealed class TokenArmFixture(ServiceProvider root) : IDisposable
+    {
+        private readonly IServiceScope _scope = root.CreateScope();
+
+        public HttpContext AnonymousWithBearer(string token)
+        {
+            var http = new DefaultHttpContext { RequestServices = _scope.ServiceProvider };
+            http.Request.Headers.Authorization = "Bearer " + token;
+            _scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext = http;
+            return http;
+        }
+
+        public void Dispose()
+        {
+            _scope.Dispose();
+            root.Dispose();
+        }
     }
 
     private sealed class RequestFixture(ServiceProvider root) : IDisposable

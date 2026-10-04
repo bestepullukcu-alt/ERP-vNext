@@ -26,7 +26,9 @@ public sealed class PlatformAdministratorSeedMeasurementTests
     /// the next start makes it PlatformAdmin + Active + [SuperAdmin] + not deleted again: the account cannot be lastingly
     /// demoted, suspended or removed.
     /// </summary>
-    [Fact]
+    // BL-521 FIX3 item 8 — a measurement of two HARMFUL behaviours does not belong in the gate suite as a pass condition: the
+    // day the seed is fixed it would turn red as if that were a regression. Kept as evidence, not run, until the owner decides.
+    [Fact(Skip = "BL-534: 2026-10-04 ölçümü; sahip kararı bekliyor")]
     public async Task Measured_the_next_start_restores_the_seed_administrator_whatever_was_done_to_it()
     {
         await using var mongo = await DisposableMongoReplicaSet.StartAsync();
@@ -49,11 +51,12 @@ public sealed class PlatformAdministratorSeedMeasurementTests
     }
 
     /// <summary>
-    /// If the seed record's e-mail is changed (the update endpoint allows it for another administrator), the next start
+    /// If the seed record's e-mail is changed (the update endpoint allowed it for another administrator until FIX3 item 2(c);
+    /// a direct database edit still can), the next start
     /// finds no admin@diten.com record and inserts one with the SAME fixed id: the insert fails on the duplicate id and the
     /// exception escapes the seed — at the unguarded call in AddInfrastructure that stops the Platform from starting.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "BL-534: 2026-10-04 ölçümü; sahip kararı bekliyor")]
     public async Task Measured_after_the_seed_administrators_email_is_changed_the_next_start_fails_on_a_duplicate_id()
     {
         await using var mongo = await DisposableMongoReplicaSet.StartAsync();

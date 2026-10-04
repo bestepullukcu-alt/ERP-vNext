@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Domain.Entities;
 using Diten.Platform.Infrastructure.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,6 +11,7 @@ namespace Diten.Platform.Infrastructure.Services;
 public sealed class PlatformAdministratorProvisioningService : IPlatformAdministratorProvisioningService
 {
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
+    private const string TenantHeader = "X-Tenant-Id";
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AuthServiceOptions _authServiceOptions;
@@ -44,9 +46,20 @@ public sealed class PlatformAdministratorProvisioningService : IPlatformAdminist
             Content = JsonContent.Create(request)
         };
         message.Headers.Add(InternalApiKeyHeader, _authServiceOptions.InternalApiKey);
+        AddPlatformTenant(message);
 
         return await SendInternalRequestAsync(message, request.Email, ct);
     }
+
+    /// <summary>
+    /// BL-521 FIX3 — Auth's tenant resolution answers these two routes 400 "Missing Tenant" without a tenant (they are not
+    /// on its public or internal bypass lists); only the Development bypass ever supplied one. Every platform administrator
+    /// account lives in the platform system tenant, which is what both Auth handlers address, so it is named on the wire.
+    /// Since FIX3 the update syncs Auth BEFORE writing the record, so without this no update could be saved outside
+    /// Development.
+    /// </summary>
+    private static void AddPlatformTenant(HttpRequestMessage message) =>
+        message.Headers.Add(TenantHeader, SystemTenantRules.PlatformSystemTenantId.ToString("D"));
 
     public async Task SyncAsync(PlatformAdministratorProvisioningSyncRequest request, CancellationToken ct)
     {
@@ -67,6 +80,7 @@ public sealed class PlatformAdministratorProvisioningService : IPlatformAdminist
             Content = JsonContent.Create(request)
         };
         message.Headers.Add(InternalApiKeyHeader, _authServiceOptions.InternalApiKey);
+        AddPlatformTenant(message);
 
         await SendInternalRequestAsync(message, request.Email, ct);
     }

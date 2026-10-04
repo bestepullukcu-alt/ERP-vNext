@@ -21,6 +21,41 @@ public interface IPlatformAdministratorRepository
     /// (master-plan §7.21) to enforce the "last SuperAdmin" invariant.
     /// </summary>
     Task<long> CountActiveSuperAdminsAsync(Guid? excludeId = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// BL-521 FIX3 item 3 — THE write for a change that takes an active platform super administrator out of the set
+    /// (demote, drop SuperAdmin, suspend / disable, move to another e-mail). The count of the OTHER active platform super
+    /// administrators and the write happen in ONE transaction that first claims a single shared guard document, so two
+    /// such writes running at once cannot both pass on a count the other is about to invalidate (A demotes B while B demotes
+    /// A): the second one's claim conflicts and it is refused (<see cref="SuperAdminGuardedWriteResult.ConcurrentChange"/>),
+    /// or — when the first has already committed — its count sees the result
+    /// (<see cref="SuperAdminGuardedWriteResult.LastActiveSuperAdmin"/>). Conditional on <paramref name="expectedVersion"/>,
+    /// like <see cref="UpdateAsync"/>.
+    /// </summary>
+    Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default);
+
+    /// <summary>The soft delete counterpart of <see cref="UpdateGuardedAsync"/>.</summary>
+    Task<SuperAdminGuardedWriteResult> SoftDeleteGuardedAsync(Guid id, int expectedVersion, string actorName, CancellationToken ct = default);
+}
+
+/// <summary>BL-521 FIX3 item 3 — the outcome of a write under the super-admin guard. Every outcome but
+/// <see cref="Written"/> wrote nothing.</summary>
+public enum SuperAdminGuardedWriteResult
+{
+    /// <summary>Committed.</summary>
+    Written = 1,
+
+    /// <summary>The record is not at the expected version any more (or is gone).</summary>
+    VersionConflict = 2,
+
+    /// <summary>No other active platform super administrator would remain.</summary>
+    LastActiveSuperAdmin = 3,
+
+    /// <summary>Another write under the guard was in flight at the same moment; reload and retry.</summary>
+    ConcurrentChange = 4,
+
+    /// <summary>The transaction could not run (no replica set, the database unreachable, an unknown commit result).</summary>
+    Unavailable = 5
 }
 
 public sealed record PlatformAdministratorQuery(

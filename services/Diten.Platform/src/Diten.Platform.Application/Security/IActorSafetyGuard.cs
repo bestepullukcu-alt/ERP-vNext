@@ -46,9 +46,40 @@ public interface IActorSafetyGuard
 /// <summary>BL-521 FIX2 item 5 — the stable reason codes of the administrator safety refusals.</summary>
 public static class AdminSafetyReasonCodes
 {
-    /// <summary>403 — an administrator tried to change its own actor type, status or e-mail.</summary>
+    /// <summary>403 — an administrator tried to change its own actor type, status, e-mail or (FIX3 item 1) roles.</summary>
     public const string SelfChangeForbidden = "PLATFORM_ADMINISTRATOR_SELF_CHANGE_FORBIDDEN";
 
     /// <summary>409 — the change would leave no active platform administrator holding SuperAdmin.</summary>
     public const string LastActiveSuperAdmin = "PLATFORM_ADMINISTRATOR_LAST_ACTIVE_SUPER_ADMIN";
+
+    /// <summary>409 — FIX3 item 3: another change that could take a platform super administrator out of the set was being
+    /// written at the same moment; nothing was written, reload and retry.</summary>
+    public const string ConcurrentSuperAdminChange = "PLATFORM_ADMINISTRATOR_CONCURRENT_SUPER_ADMIN_CHANGE";
+
+    /// <summary>409 — FIX3 item 2(c): the system seed administrator is not suspended, deleted or moved to another e-mail.</summary>
+    public const string SystemSeedProtected = "PLATFORM_ADMINISTRATOR_SYSTEM_SEED_PROTECTED";
+
+    /// <summary>503 — FIX3 item 3: the guarded write could not run (no transaction support, the database unreachable);
+    /// nothing was written.</summary>
+    public const string SafetyCheckUnavailable = "PLATFORM_ADMINISTRATOR_SAFETY_CHECK_UNAVAILABLE";
+}
+
+/// <summary>
+/// The English source sentences of the administrator safety refusals. The administrators screen shows them in the user's
+/// language by matching the sentence (Web AdministratorsController.LocalizeErrorMessage for the edit form; index.js
+/// localizeServerError for the list actions — the two FIX3 sentences are mapped in the controller only), so a sentence
+/// here is changed only together with that mapping.
+/// </summary>
+public static class AdminSafetyMessages
+{
+    public const string LastActiveSuperAdmin = "At least one active Super Admin must remain in the system.";
+    public const string ChangedByAnotherUser = "The administrator was changed by another user. Reload and try again.";
+    public const string SeedCannotBeSuspended = "The system seed administrator cannot be suspended.";
+    public const string SeedCannotBeDeleted = "The system seed administrator cannot be deleted.";
+
+    /// <summary>FIX3 item 2(c) — new; the screen's en + tr text: SharedResource AdminSeedEmailChangeDenied.</summary>
+    public const string SeedEmailCannotChange = "The system seed administrator's e-mail cannot be changed.";
+
+    /// <summary>FIX3 item 3 — new; the screen's en + tr text: SharedResource AdminChangeUnavailable.</summary>
+    public const string SafetyCheckUnavailable = "The administrator change could not be saved right now. Nothing was written. Please try again.";
 }

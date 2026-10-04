@@ -3,7 +3,12 @@ using System.Text;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Infrastructure.Services;
 using Diten.AuthService.Infrastructure.Settings;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -19,7 +24,9 @@ namespace Diten.AuthService.Application.Tests.Auth;
 /// name) — the Platform side pins the same shape in <c>InternalPlatformAdministratorStatusEndpointTests</c>.</para>
 ///
 /// <para>Item 3 — Platform's definitive no (its 404 envelope, an inactive record, an unknown type) is Refused; NO answer
-/// (network error, timeout, 5xx, a bare 404, an unreadable or empty body, no internal key) is Unavailable.</para>
+/// (network error, timeout, 5xx, a bare 404, an unreadable or empty body, no internal key) is Unavailable. FIX3: a record
+/// with no type at all (an older Platform) and the framework's problem-details 404 are Unavailable too; a refused internal
+/// key is logged as an error.</para>
 /// </summary>
 public sealed class PlatformAdministratorStatusClientWireTests
 {
@@ -55,14 +62,32 @@ public sealed class PlatformAdministratorStatusClientWireTests
     [Theory]
     [InlineData("\"Auditor\"")]
     [InlineData("\"platform_admin\"")]
-    [InlineData("null")]
-    public async Task An_active_record_of_an_unknown_or_missing_type_is_refused_never_defaulted(string actorTypeJson)
+    [InlineData("\"\"")]
+    public async Task An_active_record_of_an_unknown_type_is_refused_never_defaulted(string actorTypeJson)
     {
         var body = $$"""{"data":{"id":"{{Guid.NewGuid()}}","email":"wire.probe@bl521.test","status":"Active","isDeleted":false,"isActive":true,"actorType":{{actorTypeJson}}},"statusCode":200,"isSuccessful":true,"errors":[]}""";
 
         var answer = await ClientFor(Ok(body)).GetActiveActorTypeAsync(Email, CancellationToken.None);
 
         Assert.Equal(PlatformAdministratorRecordVerdict.Refused, answer.Verdict);
+        Assert.Null(answer.ActorType);
+    }
+
+    /// <summary>
+    /// BL-521 FIX3 item 5 — an answer with NO type at all comes from an older Platform that never sent the field (a version
+    /// gap while a deployment rolls, not a statement about this administrator): no answer — 503, nothing revoked. Before,
+    /// it was Refused, and in a mixed fleet every platform session that refreshed through an old copy was revoked.
+    /// </summary>
+    [Theory]
+    [InlineData(""","actorType":null""")]
+    [InlineData("")]
+    public async Task An_active_record_without_any_type_is_an_older_platform_and_unavailable_not_a_no(string actorTypeMember)
+    {
+        var body = $$"""{"data":{"id":"{{Guid.NewGuid()}}","email":"wire.probe@bl521.test","status":"Active","isDeleted":false,"isActive":true{{actorTypeMember}}},"statusCode":200,"isSuccessful":true,"errors":[]}""";
+
+        var answer = await ClientFor(Ok(body)).GetActiveActorTypeAsync(Email, CancellationToken.None);
+
+        Assert.Equal(PlatformAdministratorRecordVerdict.Unavailable, answer.Verdict);
         Assert.Null(answer.ActorType);
     }
 
@@ -147,6 +172,67 @@ public sealed class PlatformAdministratorStatusClientWireTests
         Assert.Equal(0, calls);
     }
 
+    /// <summary>
+    /// BL-521 FIX3 G1 — a route Platform does not have answers 404 with an RFC 7807 problem body (Platform's pipeline:
+    /// AddProblemDetails + UseExceptionHandler + UseStatusCodePages). That is "no such route", not "no such administrator":
+    /// Unavailable, nothing revoked. Measured on a real ASP.NET Core pipeline configured the same way, so the body is the one
+    /// the framework writes, not a hand-written guess.
+    /// </summary>
+    [Fact]
+    public async Task A_missing_route_answered_with_the_frameworks_problem_details_404_is_unavailable_not_a_no()
+    {
+        using var server = new TestServer(new WebHostBuilder()
+            .ConfigureServices(services => services.AddProblemDetails())
+            .Configure(app =>
+            {
+                app.UseExceptionHandler();
+                app.UseStatusCodePages();
+            }));
+        using var http = server.CreateClient();
+
+        using (var raw = await http.GetAsync("/api/internal/platform-administrators/status?email=wire.probe%40bl521.test"))
+        {
+            // the reply really is the framework's problem-details 404 — the thing this test is about
+            Assert.Equal(HttpStatusCode.NotFound, raw.StatusCode);
+            Assert.Equal("application/problem+json", raw.Content.Headers.ContentType?.MediaType);
+            Assert.Contains("\"status\":404", await raw.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        }
+
+        var answer = await new PlatformAdministratorStatusClient(
+                http,
+                new HttpContextAccessor(),
+                Options.Create(new PlatformServiceOptions { InternalApiKey = TestOnlyInternalKey }),
+                NullLogger<PlatformAdministratorStatusClient>.Instance)
+            .GetActiveActorTypeAsync(Email, CancellationToken.None);
+
+        Assert.Equal(PlatformAdministratorRecordVerdict.Unavailable, answer.Verdict);
+    }
+
+    /// <summary>
+    /// BL-521 FIX3 item 7 — Platform refusing THIS service's internal key (401 / 403) is a configuration fault: every
+    /// platform sign-in answers 503 until it is fixed, so it is logged at Error, and never with the key or its value. A 5xx
+    /// stays a passing outage (Warning).
+    /// </summary>
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized, LogLevel.Error)]
+    [InlineData(HttpStatusCode.Forbidden, LogLevel.Error)]
+    [InlineData(HttpStatusCode.ServiceUnavailable, LogLevel.Warning)]
+    public async Task A_refused_internal_key_is_logged_as_an_error_without_the_key(HttpStatusCode status, LogLevel expected)
+    {
+        var logger = new ListLogger();
+        var client = Client(
+            new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent("") })),
+            logger: logger);
+
+        var answer = await client.GetActiveActorTypeAsync(Email, CancellationToken.None);
+
+        Assert.Equal(PlatformAdministratorRecordVerdict.Unavailable, answer.Verdict);
+        var entry = Assert.Single(logger.Entries);
+        Assert.True(entry.Level == expected, $"{status}: logged at {entry.Level}: {entry.Message}");
+        Assert.Contains(((int)status).ToString(System.Globalization.CultureInfo.InvariantCulture), entry.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(TestOnlyInternalKey, entry.Message, StringComparison.Ordinal);
+    }
+
     // ── the request itself ────────────────────────────────────────────────────────────────────────────
 
     [Fact]
@@ -191,7 +277,11 @@ public sealed class PlatformAdministratorStatusClientWireTests
     private static PlatformAdministratorStatusClient ClientFor(Func<HttpRequestMessage, HttpResponseMessage> reply) =>
         Client(new StubHandler((request, _) => Task.FromResult(reply(request))));
 
-    private static PlatformAdministratorStatusClient Client(HttpMessageHandler handler, string internalKey = TestOnlyInternalKey, TimeSpan? timeout = null)
+    private static PlatformAdministratorStatusClient Client(
+        HttpMessageHandler handler,
+        string internalKey = TestOnlyInternalKey,
+        TimeSpan? timeout = null,
+        ILogger<PlatformAdministratorStatusClient>? logger = null)
     {
         var http = new HttpClient(handler) { BaseAddress = new Uri("http://platform.bl521.test") };
         if (timeout is { } t)
@@ -203,7 +293,20 @@ public sealed class PlatformAdministratorStatusClientWireTests
             http,
             new HttpContextAccessor(),
             Options.Create(new PlatformServiceOptions { InternalApiKey = internalKey }),
-            NullLogger<PlatformAdministratorStatusClient>.Instance);
+            logger ?? NullLogger<PlatformAdministratorStatusClient>.Instance);
+    }
+
+    /// <summary>Every entry the client logged: level and the rendered message.</summary>
+    private sealed class ListLogger : ILogger<PlatformAdministratorStatusClient>
+    {
+        public List<(LogLevel Level, string Message)> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+            Entries.Add((logLevel, formatter(state, exception)));
     }
 
     private sealed class StubHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler

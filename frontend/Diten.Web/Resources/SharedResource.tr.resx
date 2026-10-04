@@ -511,6 +511,8 @@
   <data name="AdminLastSuperAdminDenied" xml:space="preserve"><value>Sistemde en az bir aktif Super Admin kalmalıdır.</value></data>
   <data name="AdminSeedDeleteDenied" xml:space="preserve"><value>Sistem seed yoneticisi silinemez.</value></data>
   <data name="AdminSeedSuspendDenied" xml:space="preserve"><value>Sistem seed yoneticisi askıya alınamaz.</value></data>
+  <data name="AdminSeedEmailChangeDenied" xml:space="preserve"><value>Sistem seed yöneticisinin e-posta adresi değiştirilemez.</value></data>
+  <data name="AdminChangeUnavailable" xml:space="preserve"><value>Yönetici değişikliği şu anda kaydedilemedi; hiçbir şey yazılmadı. Lütfen yeniden deneyin.</value></data>
   <data name="InvitationEmailSendFailed" xml:space="preserve"><value>Yonetici olusturuldu ancak davet e-postasi gonderilemedi. SMTP ayarlarini kontrol edip Daveti Yeniden Gonder islemini kullanin.</value></data>
   <data name="AccessGovernance" xml:space="preserve"><value>Erişim Yönetişimi</value></data>
   <data name="UsersMenu" xml:space="preserve"><value>Kullanıcılar</value></data>
