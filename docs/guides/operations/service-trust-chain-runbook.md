@@ -101,9 +101,31 @@ yaşar. Bu yüzden kural kiracıya değil **hesaba** bağlıdır: Auth kaydında
   çağrıları etkilenmez.
 - **Dev etkisi:** `admin@diten.com` (tohum, `PlatformActorType=platform_admin`) artık kiracı kapısından (`/account/login`)
   giremez; aynı kiracının öteki kullanıcıları girer.
-- **Açık:** bu kural gelmeden basılmış kiracı belirteçleri iptal edilmedi; `SessionTimeoutMinutes` (varsayılan 60) kadar
-  geçerli kalır. Platform hesabının eski kiracı belirteci artık yönetim uçlarında hesabı göremez ama kendi belirteciyle
-  başka işlemlerde (kendi izin talepleriyle) geçerli olabilir.
+- **İşaret platform kapısında onarılır (FIX7 madde 1).** Hesabı "platform hesabı" yapan şey Auth'un kullanıcı üzerindeki
+  kopyasıdır (`PlatformActorType`); platform kapısı ise yalnız Platform'un yönetici kaydına güvenir. Kopyası eksik ya da farklı
+  bir hesap (eski bir sağlama, kaybolmuş bir eşitleme) platform kapısında yönetici, kiracı kapısında sıradan kullanıcı
+  görünürdü. Artık **platform belirtecinin basıldığı her yerde** (platform girişi, platform yenilemesi, platform zorunlu parola
+  değişimi) kayıttaki tür (`platform_admin` / `partner_admin`) hesabın üstüne, eksik ya da farklıysa, yazılır: yalnız o alanı
+  değiştiren hedefli yazım, yalnız platform sistem kiracısındaki hesap için. Yazım başarısız olursa o basım da başarısız olur
+  (500, yeniden dene) — kiracı kapısının kabul edeceği bir hesap bırakılmaz. Sonuç: bir hesap platform kapısından **bir kez**
+  geçtikten sonra kiracı kapısı ve kiracı aktörleri için platform hesabıdır; hiç geçmemiş bir hesap kaydı olsa bile işaretsiz
+  kalır.
+- **Rol düzeyi (FIX7 madde 3).** Kiracı aktörünün rol işlemleri platform hesabına uzanmaz: bir rolden izin kaldırırken o rolü
+  tutan platform hesaplarının oturumları sonlandırılmaz; rol listesindeki kişi sayısı platform hesaplarını saymaz. Platform
+  kapısı aktörü ve iç çağrılar hepsini görür.
+- **Günlük (FIX7 madde 5).** Kiracı kapısının bir platform hesabını reddi tek bir uyarı satırı bırakır:
+  `AUTH_TENANT_DOOR_PLATFORM_ACCOUNT_REFUSED`, kapı (`sign-in` / `mfa-verify` / `refresh` / `forced-change`) ve kiracı kimliği;
+  e-posta ve kullanıcı kimliği yazılmaz, cevap değişmez. (Kiracı zorunlu parola değişimi HTTP'de bir kiracı belirteciyle çağrılır:
+  hesabı daha önce depo gizlediği için 401'i oradan alır ve bu satırı yazmaz; satır, hiçbir şeyin hesabı gizlemediği çağrıda
+  yazılır.) Platform hesabının işareti bir basımda düzeltilirse ayrıca `AUTH_PLATFORM_ACCOUNT_DISCRIMINATOR_HEALED` bilgi satırı
+  yazılır.
+- **Bilinen sınırlar (açıkça).**
+  (a) **Bir platform hesabının adresiyle kullanıcı oluşturmak yine 409 "kullanımda" verir.** Adres benzersiz olduğu sürece bu
+  yoldan bir hesabın VAR OLDUĞU yoklanabilir; kaçınılmazdır, gizlenmedi.
+  (b) **Bu kural gelmeden bir platform hesabına basılmış kiracı belirteci iptal edilmedi.** `SessionTimeoutMinutes` (kiracı
+  ayarı, varsayılan 60 dk) dolana kadar o belirteç **içine gömülü izinleriyle** sıradan kullanıcılar ve roller üzerinde işlem
+  yapabilir ve öteki servisler tarafından kabul edilir. Bu bir **penceredir**; "hiçbir şeyi yönetemez" değildir. Kapanması için
+  belirtecin süresinin dolması ya da o hesabın oturumlarının elle iptali gerekir.
 
 **İç anahtar reddi (FIX3 madde 7).** Platform durum çağrısına 401 / 403 dönerse (iç anahtar iki
 serviste aynı değil) Auth bunu **Error** düzeyinde günlükler (anahtar ya da değeri yazılmaz) ve

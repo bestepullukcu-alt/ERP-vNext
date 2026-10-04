@@ -118,6 +118,8 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         // own and is untouched. Nothing is revoked: the platform sessions of the same account share this user and tenant.
         if (user.IsPlatformAccount && !IsPlatformActor(actorType))
         {
+            // FIX7 item 5 - one warning (event code, door, tenant id - no e-mail, no user id); the answer is the same 401.
+            TenantDoorPlatformAccountRefusal.Log(_logger, TenantDoorPlatformAccountRefusal.RefreshDoor, existingToken.TenantId);
             return Response<AuthResponse>.Fail("Invalid refresh token.", 401);
         }
 
@@ -151,6 +153,9 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
             }
 
             var recordActorType = record.ActorType!;
+
+            // BL-521 FIX7 item 1 - Auth's copy of the actor type follows the record at every platform mint (see PlatformLoginCommandHandler).
+            await PlatformAccountDiscriminator.EnsureAsync(_userRepository, user, recordActorType, _logger, ct);
 
             if (!string.Equals(recordActorType, actorType, StringComparison.OrdinalIgnoreCase))
             {

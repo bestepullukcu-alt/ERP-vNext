@@ -512,6 +512,8 @@ public sealed class AccountKindTests
             return Task.FromResult(user);
         }
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => _inner.SoftDeleteAsync(id, tenantId, ct);
+        public Task SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => _inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
+        public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => _inner.VisibleUserIdsAsync(tenantId, userIds, ct);
     }
 
     private sealed class NoRolesRepository : IUserRoleRepository

@@ -323,6 +323,8 @@ public sealed class UserLifecycleTests
         public Task<User> UpdateAsync(User user, CancellationToken ct) { Writes++; return _inner.UpdateAsync(user, ct); }
         public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) { Writes++; return _inner.UpdateForTenantAsync(user, tenantId, ct); }
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => _inner.SoftDeleteAsync(id, tenantId, ct);
+        public Task SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => _inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
+        public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => _inner.VisibleUserIdsAsync(tenantId, userIds, ct);
     }
 
     private sealed class NoRefreshTokens : IRefreshTokenRepository

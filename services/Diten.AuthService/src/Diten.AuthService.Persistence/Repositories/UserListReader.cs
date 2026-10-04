@@ -25,13 +25,14 @@ public sealed class UserListReader : IUserListReader
     private readonly IMongoCollection<UserRole> _userRoles;
     private readonly IMongoCollection<Role> _roles;
 
-    // BL-521 FIX6 item 13 (D') — null (a reader built outside the host) shows everything; in the host the visibility says
-    // whether the caller is a tenant actor, for whom platform accounts are not part of the list, the export or the counters.
-    private readonly IPlatformAccountVisibility? _visibility;
+    // BL-521 FIX6 item 13 (D') — the visibility says whether the caller is a tenant actor, for whom platform accounts are not
+    // part of the list, the export or the counters. FIX7 item 4 — REQUIRED, no default: a reader built without it (or a container
+    // that does not register it) fails instead of showing every platform account to every tenant actor.
+    private readonly IPlatformAccountVisibility _visibility;
 
-    public UserListReader(IMongoDatabase database, IPlatformAccountVisibility? visibility = null)
+    public UserListReader(IMongoDatabase database, IPlatformAccountVisibility visibility)
     {
-        _visibility = visibility;
+        _visibility = visibility ?? throw new ArgumentNullException(nameof(visibility));
         _users = database.GetCollection<User>("users");
         _userRoles = database.GetCollection<UserRole>("userRoles");
         _roles = database.GetCollection<Role>("roles");
@@ -85,7 +86,7 @@ public sealed class UserListReader : IUserListReader
 
     public async Task<UserListPage> SearchAsync(Guid tenantId, UserListCriteria criteria, CancellationToken ct)
     {
-        var filter = BuildFilter(tenantId, criteria, _visibility?.HidesPlatformAccounts == true);
+        var filter = BuildFilter(tenantId, criteria, _visibility.HidesPlatformAccounts);
         var filteredTotal = await _users.CountDocumentsAsync(filter, cancellationToken: ct);
 
         // BL-452 export: the count already exceeds the cap → the caller refuses the file (413). Reading up to 50 000 full
@@ -242,7 +243,7 @@ public sealed class UserListReader : IUserListReader
         var summaryFilter = Builders<User>.Filter.And(
             Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
             Builders<User>.Filter.Eq(u => u.IsDeleted, false));
-        if (_visibility?.HidesPlatformAccounts == true)
+        if (_visibility.HidesPlatformAccounts)
         {
             summaryFilter = Builders<User>.Filter.And(summaryFilter, PlatformAccountsExcluded);
         }

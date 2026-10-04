@@ -7,6 +7,9 @@ internal sealed class InMemoryUserRepository : IUserRepository
 {
     private readonly List<User> _users;
 
+    /// <summary>FIX7 item 3 - plays a tenant actor for <see cref="VisibleUserIdsAsync"/>: the platform accounts are not among the visible ids.</summary>
+    public bool HidesPlatformAccounts { get; init; }
+
     public InMemoryUserRepository(IEnumerable<User> users)
     {
         _users = users.ToList();
@@ -82,6 +85,20 @@ internal sealed class InMemoryUserRepository : IUserRepository
     public Task<User> UpdateAsync(User user, CancellationToken ct) => Task.FromResult(user);
 
     public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) => Task.FromResult(user);
+
+    public Task SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct)
+    {
+        _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted)?.SetPlatformActorType(actorType);
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct)
+    {
+        IReadOnlyCollection<Guid> visible = HidesPlatformAccounts
+            ? userIds.Where(id => !_users.Any(u => u.Id == id && u.TenantId == tenantId && u.IsPlatformAccount)).ToList()
+            : userIds;
+        return Task.FromResult(visible);
+    }
 
     public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
     {

@@ -197,6 +197,8 @@ public sealed class RevokeRoleCommandHandlerTests
         public Task<User> UpdateAsync(User user, CancellationToken ct) => throw new NotSupportedException();
         public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => throw new NotSupportedException();
     }
 
     private sealed class FakeRoleRepository(Role? role) : IRoleRepository

@@ -11,6 +11,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.AuthService.Api.Controllers;
 
@@ -47,6 +48,7 @@ public sealed class PlatformAuthController : CustomBaseController
     private readonly IPlatformAuthEmailService _emailService;
     private readonly IPlatformAdministratorStatusClient _platformAdministratorStatusClient;
     private readonly IWebHostEnvironment _environment;
+    private readonly ILogger<PlatformAuthController> _logger;
 
     public PlatformAuthController(
         IMediator mediator,
@@ -62,7 +64,8 @@ public sealed class PlatformAuthController : CustomBaseController
         IInternalEventAuthService internalEventAuthService,
         IPlatformAuthEmailService emailService,
         IPlatformAdministratorStatusClient platformAdministratorStatusClient,
-        IWebHostEnvironment environment)
+        IWebHostEnvironment environment,
+        ILogger<PlatformAuthController> logger)
     {
         _mediator = mediator;
         _userRepository = userRepository;
@@ -78,6 +81,7 @@ public sealed class PlatformAuthController : CustomBaseController
         _emailService = emailService;
         _platformAdministratorStatusClient = platformAdministratorStatusClient;
         _environment = environment;
+        _logger = logger;
     }
 
     [HttpPost("login")]
@@ -304,6 +308,10 @@ public sealed class PlatformAuthController : CustomBaseController
         {
             await PlatformAdministratorRoleConvergence.ConvergeAtMintAsync(_userRoleRepository, _roleRepository, user.Id, PlatformTenantId, record.Roles, ct);
         }
+
+        // BL-521 FIX7 item 1 - Auth's copy of the actor type follows the record at every platform mint (see PlatformLoginCommandHandler);
+        // the in-memory user is healed too: the replace of the document below would otherwise write the old value back.
+        await PlatformAccountDiscriminator.EnsureAsync(_userRepository, user, record.ActorType!, _logger, ct);
 
         user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
         user.ClearPasswordChangeRequirement();

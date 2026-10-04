@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Domain.Entities;
@@ -88,7 +89,13 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         // answer is this door's own generic 401, given BEFORE the password is looked at: an account of that kind and a
         // stranger's address are the same answer, no failed-attempt count, no audit row, nothing to tell them apart. The
         // ordinary users of the same tenant are untouched.
-        if (user == null || user.IsPlatformAccount) return Response<AuthResponse>.Fail("Invalid email or password.", 401);
+        if (user == null) return Response<AuthResponse>.Fail("Invalid email or password.", 401);
+        if (user.IsPlatformAccount)
+        {
+            // FIX7 item 5 - one warning (event code, door, tenant id - no e-mail, no user id); the answer is the same 401.
+            TenantDoorPlatformAccountRefusal.Log(_logger, TenantDoorPlatformAccountRefusal.SignInDoor, _tenantContext.TenantId);
+            return Response<AuthResponse>.Fail("Invalid email or password.", 401);
+        }
 
         var lockoutFailure = await CheckLockout(user, ct);
         if (lockoutFailure is not null)

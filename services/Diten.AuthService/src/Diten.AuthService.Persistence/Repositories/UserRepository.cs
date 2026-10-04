@@ -67,20 +67,43 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         return await Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct)
+    public Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct)
+        => GetAllByTenantAsync(tenantId, page, pageSize, excludePlatformAccounts: false, ct);
+
+    // BL-521 FIX7 item 2 - the platform-account exclusion is part of the QUERY, so Skip/Limit count only the rows the caller
+    // may see (dropping them in memory afterwards returned too few rows).
+    public async Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, bool excludePlatformAccounts, CancellationToken ct)
     {
+        var filters = new List<FilterDefinition<User>>
+        {
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false)
+        };
+
+        if (excludePlatformAccounts)
+        {
+            filters.Add(NotAPlatformAccount);
+        }
+
         return await Collection
-            .Find(u => u.TenantId == tenantId && u.IsDeleted == false)
+            .Find(Builders<User>.Filter.And(filters))
             .Skip((page - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync(ct);
     }
 
+    /// <summary>An account that carries no platform actor type (missing or null): what a tenant actor is allowed to see.</summary>
+    private static readonly FilterDefinition<User> NotAPlatformAccount = Builders<User>.Filter.Eq(u => u.PlatformActorType, null);
+
     // WP-INFRA-AUTH-ACCOUNT-KIND-01 — see IUserRepository. The filter IS the contract: TenantId + IsDeleted=false +
     // IsActive=true, then each whitespace-separated token of the term must match the FIRST or the LAST name
     // (case-insensitive, regex-escaped substring), so "jane sm" finds Jane Smith. Email is deliberately not a
     // match field. Ordered by last name, first name; capped at `limit`.
-    public async Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct)
+    public Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct)
+        => SearchActiveAsync(tenantId, term, limit, excludePlatformAccounts: false, ct);
+
+    // BL-521 FIX7 item 2 - the exclusion is in the query: Limit(n) is n rows the caller may see, not n rows of which some are dropped.
+    public async Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, bool excludePlatformAccounts, CancellationToken ct)
     {
         var filters = new List<FilterDefinition<User>>
         {
@@ -88,6 +111,11 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
             Builders<User>.Filter.Eq(u => u.IsDeleted, false),
             Builders<User>.Filter.Eq(u => u.IsActive, true)
         };
+
+        if (excludePlatformAccounts)
+        {
+            filters.Add(NotAPlatformAccount);
+        }
 
         foreach (var token in (term ?? string.Empty).Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
@@ -163,5 +191,39 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
             .Set(u => u.UpdatedAt, DateTimeOffset.UtcNow);
 
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+    }
+
+    // BL-521 FIX7 item 1 - a targeted $set, never a replace (see IUserRepository).
+    public async Task SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct)
+    {
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.Id, userId),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        var update = Builders<User>.Update
+            .Set(u => u.PlatformActorType, actorType.Trim())
+            .Set(u => u.UpdatedAt, DateTimeOffset.UtcNow);
+
+        await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+    }
+
+    // BL-521 FIX7 item 3 - this repository applies no caller scope (see IUserRepository); the decorator does.
+    public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct)
+        => Task.FromResult(userIds);
+
+    /// <summary>The ids among <paramref name="userIds"/> (of this tenant) that belong to a platform account.</summary>
+    public async Task<IReadOnlyCollection<Guid>> PlatformAccountIdsAmongAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct)
+    {
+        if (userIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.In(u => u.Id, userIds),
+            Builders<User>.Filter.Ne(u => u.PlatformActorType, null));
+
+        return await Collection.Find(filter).Project(u => u.Id).ToListAsync(ct);
     }
 }

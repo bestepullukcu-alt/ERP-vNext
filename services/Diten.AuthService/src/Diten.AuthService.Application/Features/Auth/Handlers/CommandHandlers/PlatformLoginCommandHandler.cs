@@ -82,6 +82,12 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             return Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401);
         }
 
+        // BL-521 FIX7 item 1 - the record is the authority and it says this is a platform administrator: Auth's own copy of the
+        // actor type (what the tenant doors and the user repository tell platform accounts apart by) is made to say the same
+        // before anything is minted - a targeted write, and the in-memory user is healed too because the sign-in's own replace
+        // of the document (below) would otherwise write the old value back.
+        await PlatformAccountDiscriminator.EnsureAsync(_userRepository, user, record.ActorType!, _logger, ct);
+
         if (user.MustChangePassword &&
             user.TemporaryPasswordExpiresAt.HasValue &&
             user.TemporaryPasswordExpiresAt.Value <= DateTime.UtcNow)

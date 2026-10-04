@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Domain.Entities;
@@ -71,6 +72,12 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
 
         // BL-521 FIX6 item 13 (A') — this door mints a tenant token and a refresh row, so it refuses a platform account like the
         // sign-in door does, with its own generic 401: no password is checked, nothing is changed, nothing is minted.
+        if (user is { IsPlatformAccount: true })
+        {
+            // FIX7 item 5 - one warning (event code, door, tenant id - no e-mail, no user id); the answer is the same 401.
+            TenantDoorPlatformAccountRefusal.Log(_logger, TenantDoorPlatformAccountRefusal.ForcedChangeDoor, request.TenantId);
+        }
+
         if (user is null || !user.IsActive || user.IsPlatformAccount)
         {
             return Response<AuthResponse>.Fail("Unauthorized.", 401);
