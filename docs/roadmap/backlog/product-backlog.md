@@ -8021,6 +8021,37 @@ bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: �
 
 ---
 
+### BL-547
+
+**Onay motorunun güvenilir kanıt ucu kararsız kapanışı (Cancelled / TimedOut) ayırt etmiyor: MDM her kararsız kapanışı karantinaya alıyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0023 onay motoru) · BULAN: WP-MDM-GSKU-ACCEPT-01 FIX3 E1 DUR'u · KAYIT: 2026-10-04
+
+GSKU FIX3 (CT kararı 3) çifti yalnız motorun `WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION` kodunda taslağa döndürüyor; başka her çakışma karantina. Platform'un
+güvenilir kanıt ucu ise Cancelled / TimedOut için de `WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT` dönüyor ve ön uçuş yalnız Active'i tanıyor: bu kod
+yayılana kadar canlıda her kararsız kapanış karantinaya düşer (güvenli; ekran doğru söylüyor ama insan uzlaştırması gerekir). Düzeltme: kanıt ucu
+kararsız kapanışı kendi koduyla döndürür (Cancelled / TimedOut / Withdrawn ayrı alt nedenle), sözleşme testi + MDM tarafında uçtan uca. Motor şeridinde
+(WP-WF-ENGINE-CANDIDATES-01 D2 kabulünden sonra). Karşılaştırma: SAP Flexible Workflow ve Oracle BPM iş akışı sonucu "onaylandı / reddedildi / geri
+çekildi / süresi doldu" olarak ayrı döndürür. Gelecek regresyon riski: 🟢 (yeni kod; eski kod karantinayı korur).
+
+---
+
+### BL-546
+
+**Ürün çocuk kabulü (GP → GSKU, GSKU çocukları) denetim niyeti yazmıyor**
+
+DURUM: AÇIK (GSKU kabulünden sonra, denetim D2 ile) · SAHİP: CT (MDM ürün modülleri devralma · Denetim standardı) · BULAN: WP-MDM-GSKU-ACCEPT-01 FIX3
+madde 5 DUR'u · KAYIT: 2026-10-04
+
+Çocuk kabulü (`ChildCreationAdmissions` Acquire / Complete) yalnız kabul kaydını itiyor / çekiyor; denetim defterine niyet düşmüyor: GxP açısından
+"kim, neyi, ne zaman kabul etti" izi yok. Gerekenler: (a) `ProductAuditOperation.GskuChildAdmitted` (sona eklenir, 79) · (b) MDM
+`AuditIntentDeliveryRepository.IsSelectedOperationAllowed` kolu · (c) Platform `TrustedSourceAuditIntentOperationMap` satırı + sözleşme testi · (d)
+kabul `Version` artırmıyor → niyetin sıra / sürüm kararı (Version artışı emeklilik çitiyle yarışır). GP → GSKU kabulünde aynı boşluk; ikisi birlikte.
+Karşılaştırma: SAP'de ana veri değişiklik belgeleri (CDHDR / CDPOS) her kabulde yazılır; Oracle PIM'de onay geçmişi denetim tablosunda tutulur.
+Gelecek regresyon riski: 🟢 (ekleme).
+
+---
+
 ### BL-545
 
 **E-posta yeniden deneme kapıları süreçler arasında ayrışabilir; değişkenleri yalnız tarama siler**
