@@ -64,8 +64,9 @@ public interface ITimeEntryRepository
     /// input for recomputing <see cref="TaskTimeTotal"/>.</summary>
     Task<IReadOnlyList<TimeEntry>> ListByTaskIdsAsync(IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default);
 
-    /// <summary>Replaces a draft row's mutable fields (minutes, note). Tenant + id scoped.</summary>
-    Task UpdateAsync(TimeEntry entry, CancellationToken ct = default);
+    /// <summary>Replaces a draft row's mutable fields (minutes, note). Tenant + id scoped; written only when the row in
+    /// hand was read at <paramref name="expectedVersion"/> and is still stored at it (BL-533) — false otherwise.</summary>
+    Task<bool> UpdateAsync(TimeEntry entry, int expectedVersion, CancellationToken ct = default);
 
     /// <summary>Soft-deletes rows (IsDeleted, UpdatedAt). Nothing in this module is hard-deleted.</summary>
     Task SoftDeleteAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default);

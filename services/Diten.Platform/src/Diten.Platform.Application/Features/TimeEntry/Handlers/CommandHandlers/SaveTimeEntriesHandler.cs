@@ -322,7 +322,10 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
                     stored.Note = row.Note;
                     stored.Source = source;
                     stored.UpdatedBy = userId.ToString();
-                    await _entries.UpdateAsync(stored, ct);
+                    if (!await _entries.UpdateAsync(stored, stored.Version, ct))
+                    {
+                        return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
+                    }
                 }
 
                 continue;

@@ -166,22 +166,8 @@ public sealed class MeetingRepository : TenantRepository<Meeting>, IMeetingRepos
         }
     }
 
-    public async Task<bool> UpdateAsync(Meeting meeting, int expectedVersion, CancellationToken ct = default)
-    {
-        meeting.Version = expectedVersion + 1;
-        meeting.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<Meeting>.Filter.And(
-            ExecutionFilter,
-            Builders<Meeting>.Filter.Eq(x => x.Id, meeting.Id),
-            Builders<Meeting>.Filter.Eq(x => x.Version, expectedVersion));
-
-        var previous = await Collection.FindOneAndReplaceAsync(
-            filter,
-            meeting,
-            new FindOneAndReplaceOptions<Meeting> { ReturnDocument = ReturnDocument.Before },
-            ct);
-        return previous is not null;
-    }
+    public Task<bool> UpdateAsync(Meeting meeting, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, meeting, expectedVersion, ct);
 
     public async Task<IReadOnlyList<Meeting>> ListAsync(CancellationToken ct = default)
         => await Collection.Find(ExecutionFilter).ToListAsync(ct);
@@ -367,22 +353,8 @@ public sealed class AgendaItemRepository : TenantRepository<AgendaItem>, IAgenda
         return await Collection.Find(filter).SortBy(x => x.SortOrder).ToListAsync(ct);
     }
 
-    public async Task<bool> UpdateAsync(AgendaItem item, int expectedVersion, CancellationToken ct = default)
-    {
-        item.Version = expectedVersion + 1;
-        item.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<AgendaItem>.Filter.And(
-            ExecutionFilter,
-            Builders<AgendaItem>.Filter.Eq(x => x.Id, item.Id),
-            Builders<AgendaItem>.Filter.Eq(x => x.Version, expectedVersion));
-
-        var previous = await Collection.FindOneAndReplaceAsync(
-            filter,
-            item,
-            new FindOneAndReplaceOptions<AgendaItem> { ReturnDocument = ReturnDocument.Before },
-            ct);
-        return previous is not null;
-    }
+    public Task<bool> UpdateAsync(AgendaItem item, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, item, expectedVersion, ct);
 }
 
 /// <summary>Raw storage for <see cref="MeetingType"/>.</summary>
@@ -404,22 +376,8 @@ public sealed class MeetingTypeRepository : TenantRepository<MeetingType>, IMeet
         return Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<bool> UpdateAsync(MeetingType type, int expectedVersion, CancellationToken ct = default)
-    {
-        type.Version = expectedVersion + 1;
-        type.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<MeetingType>.Filter.And(
-            ExecutionFilter,
-            Builders<MeetingType>.Filter.Eq(x => x.Id, type.Id),
-            Builders<MeetingType>.Filter.Eq(x => x.Version, expectedVersion));
-
-        var previous = await Collection.FindOneAndReplaceAsync(
-            filter,
-            type,
-            new FindOneAndReplaceOptions<MeetingType> { ReturnDocument = ReturnDocument.Before },
-            ct);
-        return previous is not null;
-    }
+    public Task<bool> UpdateAsync(MeetingType type, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, type, expectedVersion, ct);
 }
 
 /// <summary>Raw storage for <see cref="MeetingMinutesVersion"/> — MOD-0357 S6. See the interface's own doc
@@ -482,22 +440,8 @@ public sealed class MeetingMinutesVersionRepository
         return await Collection.Find(filter).ToListAsync(ct);
     }
 
-    public async Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
-    {
-        version.Version = expectedVersion + 1;
-        version.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<MeetingMinutesVersion>.Filter.And(
-            ExecutionFilter,
-            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.Id, version.Id),
-            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.Version, expectedVersion));
-
-        var previous = await Collection.FindOneAndReplaceAsync(
-            filter,
-            version,
-            new FindOneAndReplaceOptions<MeetingMinutesVersion> { ReturnDocument = ReturnDocument.Before },
-            ct);
-        return previous is not null;
-    }
+    public Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, version, expectedVersion, ct);
 }
 
 /// <summary>Raw storage for <see cref="MeetingSeries"/> (MOD-0357 S11).</summary>
@@ -542,15 +486,6 @@ public sealed class MeetingSeriesRepository : TenantRepository<MeetingSeries>, I
         return Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<bool> UpdateAsync(MeetingSeries series, int expectedVersion, CancellationToken ct = default)
-    {
-        series.Version = expectedVersion + 1;
-        series.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<MeetingSeries>.Filter.And(
-            ExecutionFilter,
-            Builders<MeetingSeries>.Filter.Eq(x => x.Id, series.Id),
-            Builders<MeetingSeries>.Filter.Eq(x => x.Version, expectedVersion));
-        var result = await Collection.ReplaceOneAsync(filter, series, new ReplaceOptions(), ct);
-        return result.IsAcknowledged && result.ModifiedCount == 1;
-    }
+    public Task<bool> UpdateAsync(MeetingSeries series, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, series, expectedVersion, ct);
 }

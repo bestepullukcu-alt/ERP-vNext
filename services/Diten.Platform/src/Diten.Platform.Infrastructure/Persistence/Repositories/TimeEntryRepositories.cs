@@ -67,27 +67,15 @@ public sealed class TimesheetWeekRepository : TenantRepository<TimesheetWeek>, I
 
     public async Task<bool> UpdateAsync(TimesheetWeek week, int expectedVersion, CancellationToken ct = default)
     {
-        week.Version = expectedVersion + 1;
-        week.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<TimesheetWeek>.Filter.And(
-            ExecutionFilter,
-            Builders<TimesheetWeek>.Filter.Eq(x => x.Id, week.Id),
-            Builders<TimesheetWeek>.Filter.Eq(x => x.Version, expectedVersion));
-
         try
         {
-            var previous = await Collection.FindOneAndReplaceAsync(
-                filter,
-                week,
-                new FindOneAndReplaceOptions<TimesheetWeek> { ReturnDocument = ReturnDocument.Before },
-                ct);
-            return previous is not null;
+            return await ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, week, expectedVersion, ct);
         }
         catch (MongoCommandException exception) when (TimeEntryWrites.IsDuplicateKey(exception))
         {
             // A partial unique index (one in force / one open per week) refused the new state: a concurrent writer
-            // got there first. Same answer as a version mismatch — the caller reloads.
-            week.Version = expectedVersion;
+            // got there first. Same answer as a version mismatch — the caller reloads (the week is already back
+            // at the version it was read at).
             return false;
         }
     }
@@ -212,14 +200,8 @@ public sealed class TimeEntryRepository : TenantRepository<TimeEntry>, ITimeEntr
         return await Collection.Find(filter).ToListAsync(ct);
     }
 
-    public async Task UpdateAsync(TimeEntry entry, CancellationToken ct = default)
-    {
-        entry.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<TimeEntry>.Filter.And(
-            ExecutionFilter,
-            Builders<TimeEntry>.Filter.Eq(x => x.Id, entry.Id));
-        await Collection.ReplaceOneAsync(filter, entry, cancellationToken: ct);
-    }
+    public Task<bool> UpdateAsync(TimeEntry entry, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, entry, expectedVersion, ct);
 
     public async Task SoftDeleteAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
     {
@@ -270,17 +252,8 @@ public sealed class WorkCategoryRepository : TenantRepository<WorkCategory>, IWo
     public async Task<IReadOnlyList<WorkCategory>> ListAsync(CancellationToken ct = default)
         => await Collection.Find(ExecutionFilter).SortBy(x => x.SortOrder).ThenBy(x => x.Code).ToListAsync(ct);
 
-    public async Task<bool> UpdateAsync(WorkCategory category, int expectedVersion, CancellationToken ct = default)
-    {
-        category.Version = expectedVersion + 1;
-        category.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<WorkCategory>.Filter.And(
-            ExecutionFilter,
-            Builders<WorkCategory>.Filter.Eq(x => x.Id, category.Id),
-            Builders<WorkCategory>.Filter.Eq(x => x.Version, expectedVersion));
-        var result = await Collection.ReplaceOneAsync(filter, category, cancellationToken: ct);
-        return result.MatchedCount == 1;
-    }
+    public Task<bool> UpdateAsync(WorkCategory category, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, category, expectedVersion, ct);
 }
 
 /// <summary>Raw storage for <see cref="TimeEntrySettings"/>.</summary>
@@ -307,17 +280,8 @@ public sealed class TimeEntrySettingsRepository : TenantRepository<TimeEntrySett
         }
     }
 
-    public async Task<bool> UpdateAsync(TimeEntrySettings settings, int expectedVersion, CancellationToken ct = default)
-    {
-        settings.Version = expectedVersion + 1;
-        settings.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<TimeEntrySettings>.Filter.And(
-            ExecutionFilter,
-            Builders<TimeEntrySettings>.Filter.Eq(x => x.Id, settings.Id),
-            Builders<TimeEntrySettings>.Filter.Eq(x => x.Version, expectedVersion));
-        var result = await Collection.ReplaceOneAsync(filter, settings, cancellationToken: ct);
-        return result.MatchedCount == 1;
-    }
+    public Task<bool> UpdateAsync(TimeEntrySettings settings, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, settings, expectedVersion, ct);
 }
 
 /// <summary>Raw storage for <see cref="LegalEntityTimeSetting"/>.</summary>
@@ -360,17 +324,8 @@ public sealed class LegalEntityTimeSettingRepository : TenantRepository<LegalEnt
         }
     }
 
-    public async Task<bool> UpdateAsync(LegalEntityTimeSetting setting, int expectedVersion, CancellationToken ct = default)
-    {
-        setting.Version = expectedVersion + 1;
-        setting.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<LegalEntityTimeSetting>.Filter.And(
-            ExecutionFilter,
-            Builders<LegalEntityTimeSetting>.Filter.Eq(x => x.Id, setting.Id),
-            Builders<LegalEntityTimeSetting>.Filter.Eq(x => x.Version, expectedVersion));
-        var result = await Collection.ReplaceOneAsync(filter, setting, cancellationToken: ct);
-        return result.MatchedCount == 1;
-    }
+    public Task<bool> UpdateAsync(LegalEntityTimeSetting setting, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, setting, expectedVersion, ct);
 }
 
 /// <summary>Raw storage for <see cref="TaskTimeTotal"/>. The finalizer is its only caller.</summary>

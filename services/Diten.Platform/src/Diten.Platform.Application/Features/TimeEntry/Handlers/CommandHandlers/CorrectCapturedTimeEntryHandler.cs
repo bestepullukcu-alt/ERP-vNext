@@ -48,7 +48,12 @@ public sealed class CorrectCapturedTimeEntryHandler : IRequestHandler<CorrectCap
 
         row.Note = request.Note;
         row.UpdatedBy = row.UserId.ToString();
-        await _entries.UpdateAsync(row, ct);
+        if (!await _entries.UpdateAsync(row, row.Version, ct))
+        {
+            return Response<Guid>.Fail(
+                "The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request.CorrelationId);
+        }
+
         return Response<Guid>.Success(row.Id, correlationId: request.CorrelationId);
     }
 }
