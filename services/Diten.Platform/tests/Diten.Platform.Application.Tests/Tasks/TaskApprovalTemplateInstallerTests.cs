@@ -605,7 +605,11 @@ internal sealed class FakeWorkflowMediator(FakeWorkflowTemplateStore templates, 
         where TNotification : INotification => throw new NotSupportedException();
 }
 
-/// <summary>Installing a template must not read workflow instances; a read here is a failing test, not silence.</summary>
+/// <summary>
+/// Installing a template must not read workflow instances; a read here is a failing test, not silence. The ONE read a START makes
+/// is answered: the object's latest instance (D2-FIX5 item 3 — the start's key names the closed round it replaces), and for the
+/// installer's tasks there is none, so the first approval's key is the task's own.
+/// </summary>
 internal sealed class UnreadWorkflowInstanceRepository : IWorkflowInstanceRepository
 {
     public Task<WorkflowInstance> CreateAsync(WorkflowInstance instance, CancellationToken ct = default)
@@ -619,7 +623,7 @@ internal sealed class UnreadWorkflowInstanceRepository : IWorkflowInstanceReposi
 
     public Task<WorkflowInstance?> GetLatestByObjectRefAsync(
         string objectRef, string objectType, string objectId, CancellationToken ct = default)
-        => throw new NotSupportedException("The template installer must not read instances.");
+        => Task.FromResult<WorkflowInstance?>(null);
 
     public Task<IReadOnlyList<WorkflowInstance>> GetAllForTenantAsync(CancellationToken ct = default)
         => throw new NotSupportedException("The template installer must not read instances.");

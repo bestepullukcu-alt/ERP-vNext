@@ -276,9 +276,9 @@ public sealed partial class TaskWorkflowLinkGateTests
             var currentUser = new FakeCurrentUserContext(TaskTestData.Me);
             CurrentUser = currentUser;
             WithdrawServices = withWithdrawServices;
-            var approvals = new TaskApprovalService(Engine, new NoTemplates(), Engine.Instances, Engine.Tasks, tenant,
+            var approvals = new TaskApprovalService(Engine, new PublishedTemplates(), Engine.Instances, Engine.Tasks, tenant,
                 currentUser, Options.Create(new TaskApprovalOptions()), NullLogger<TaskApprovalService>.Instance);
-            var reviews = new TaskReviewService(Engine, new NoTemplates(), Engine.Instances, Engine.Tasks, tenant, currentUser,
+            var reviews = new TaskReviewService(Engine, new PublishedTemplates(), Engine.Instances, Engine.Tasks, tenant, currentUser,
                 Options.Create(new TaskReviewOptions()), NullLogger<TaskReviewService>.Instance);
             var fields = new TaskFieldDefinitionService(
                 new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll());
@@ -383,8 +383,22 @@ public sealed partial class TaskWorkflowLinkGateTests
         /// or the engine while the withdraw is under way (a start landing between the withdraw and a delete).</summary>
         public Action? WhileCancelling { get; set; }
 
+        /// <summary>D2-FIX5 — every start command the engine was sent (a start by the services under test).</summary>
+        public List<StartWorkflowInstanceCommand> StartCalls { get; } = [];
+
+        /// <summary>D2-FIX5 — the instances the engine OPENED for a start (a replayed key opens none).</summary>
+        public List<WorkflowInstance> Started { get; } = [];
+
+        /// <summary>D2-FIX5 — the status a NEW instance is opened with.</summary>
+        public WorkflowInstanceStatus StartStatus { get; set; } = WorkflowInstanceStatus.Active;
+
+        /// <summary>D2-FIX5 — runs right after the engine opened a new instance and before it answers: a rival writer saves the
+        /// task between MOD-0023's start and the caller's own task write.</summary>
+        public Action? AfterStart { get; set; }
+
         public WorkflowInstance Seed(
-            string objectType, string objectRef, Guid taskId, WorkflowInstanceStatus status, DateTimeOffset? startedAt = null)
+            string objectType, string objectRef, Guid taskId, WorkflowInstanceStatus status, DateTimeOffset? startedAt = null,
+            string? idempotencyKey = null)
         {
             var instance = new WorkflowInstance
             {
@@ -395,7 +409,8 @@ public sealed partial class TaskWorkflowLinkGateTests
                 ObjectId = taskId.ToString(),
                 ObjectRef = objectRef,
                 Status = status,
-                StartedAt = startedAt ?? DateTimeOffset.UtcNow
+                StartedAt = startedAt ?? DateTimeOffset.UtcNow,
+                IdempotencyKey = idempotencyKey
             };
             Instances.Items.Add(instance);
             Tasks.Items.Add(new ApprovalTask
@@ -422,6 +437,25 @@ public sealed partial class TaskWorkflowLinkGateTests
             {
                 case EvaluateWorkflowTransitionGateQuery query:
                     return (TResponse)(object)await _evaluate.Handle(query, ct);
+                case StartWorkflowInstanceCommand start:
+                    StartCalls.Add(start);
+                    // The engine's idempotent start: a key that already names an instance answers THAT instance, whatever its status.
+                    var key = start.Request.IdempotencyKey;
+                    var opened = key is null ? null : Instances.Items.FirstOrDefault(i => i.IdempotencyKey == key);
+                    var created = opened is null;
+                    opened ??= Seed(start.Request.ObjectType, start.Request.ObjectRef!, Guid.Parse(start.Request.ObjectId), StartStatus,
+                        startedAt: DateTimeOffset.UtcNow.AddMinutes(StartCalls.Count), idempotencyKey: key);
+                    if (created)
+                    {
+                        Started.Add(opened);
+                        AfterStart?.Invoke();
+                    }
+
+                    var firstTask = Tasks.Items.First(t => t.WorkflowInstanceId == opened.Id);
+                    return (TResponse)(object)Response<StartWorkflowInstanceResponse>.Success(
+                        new StartWorkflowInstanceResponse(opened.Id, opened.TemplateId, Guid.NewGuid(), firstTask.Id, Guid.NewGuid(),
+                            opened.ObjectRef, opened.Status.ToString(), "stage-1", "step-1", opened.StartedAt, null, start.CorrelationId),
+                        correlationId: start.CorrelationId);
                 case CancelWorkflowTaskCommand cancel:
                     CancelCalls.Add(cancel);
                     WhileCancelling?.Invoke();
@@ -525,12 +559,26 @@ public sealed partial class TaskWorkflowLinkGateTests
             throw new NotSupportedException();
     }
 
-    /// <summary>A withdraw never installs a template; a start through this fixture would be a mistake, loudly.</summary>
-    private sealed class NoTemplates : IWorkflowTemplateRepository
+    /// <summary>
+    /// D2-FIX5 — every template code resolves to ONE published template, so a start through the services under test reaches the
+    /// engine's start command (answered by <see cref="Engine"/>) instead of installing or publishing anything. A withdraw never
+    /// asks it; the tests that must not start assert the engine's <c>StartCalls</c> are empty.
+    /// </summary>
+    private sealed class PublishedTemplates : IWorkflowTemplateRepository
     {
+        private static readonly WorkflowTemplate Published = new()
+        {
+            TenantId = TaskTestData.Tenant,
+            TemplateCode = "published",
+            Name = "Published",
+            Status = WorkflowTemplateStatus.Published,
+            ActivePublishedVersionId = Guid.NewGuid()
+        };
+
         public Task<WorkflowTemplate> CreateAsync(WorkflowTemplate template, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<WorkflowTemplate?> GetByIdAsync(Guid id, CancellationToken ct = default) => throw new NotSupportedException();
-        public Task<WorkflowTemplate?> GetByTemplateCodeAsync(string templateCode, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<WorkflowTemplate?> GetByTemplateCodeAsync(string templateCode, CancellationToken ct = default) =>
+            System.Threading.Tasks.Task.FromResult<WorkflowTemplate?>(Published);
         public Task<IReadOnlyList<WorkflowTemplate>> GetAllForTenantAsync(CancellationToken ct = default) => throw new NotSupportedException();
         public Task<bool> UpdateAsync(WorkflowTemplate template, int expectedVersion, CancellationToken ct = default) => throw new NotSupportedException();
     }

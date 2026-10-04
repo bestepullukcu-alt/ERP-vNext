@@ -896,6 +896,14 @@ public sealed record TaskFieldValueDto(
 
 public sealed record BulkDeleteTaskItemRequest(IReadOnlyList<Guid> Ids);
 
+/// <summary>
+/// D2-FIX5 item 4 — the answer of a bulk delete that left something out: the ids of the tasks of this tenant that are still there
+/// (a withdraw MOD-0023 refused, or a task that kept changing after it was read). A bulk delete that left nothing out is still
+/// the body-less 204, so a caller that only reads the status keeps working; ids that do not exist (or belong to another tenant)
+/// are never named — they are answered like a delete.
+/// </summary>
+public sealed record BulkDeleteTaskItemResultDto(IReadOnlyList<Guid> SkippedIds);
+
 public sealed record ClaimTaskItemRequest(int ExpectedVersion);
 
 /// <param name="ClosureFieldValues">

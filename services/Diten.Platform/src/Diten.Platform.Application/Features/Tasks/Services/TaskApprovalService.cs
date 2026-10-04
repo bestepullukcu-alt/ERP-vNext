@@ -29,6 +29,9 @@ public interface ITaskApprovalService
     /// Start the approval for a task, installing the default template first if this tenant has none yet.
     /// Returns the instance id, or null when it could not be started — in which case the caller keeps the task and
     /// leaves <c>ApprovalRequired</c> true, so the fail-closed gate holds `start` shut until it is retried.
+    /// D2-FIX5 item 3 — a live approval under the task's object reference (with an open engine task) is adopted rather than
+    /// started again, a closed one is REPLACED by a new round whose key carries its id (the first approval keeps the task's own
+    /// key), and a start the engine answers with a closed instance is not linked: null.
     /// </summary>
     Task<Guid?> TryStartApprovalAsync(TaskItem task, CancellationToken ct);
 
@@ -174,6 +177,38 @@ public sealed class TaskApprovalService : ITaskApprovalService
 
         try
         {
+            /*
+             * D2-FIX5 item 3 — THE KEY NAMES THE ROUND BEING REPLACED, as a review's does. It used to be one key per task: every
+             * start replayed the FIRST instance the engine ever opened for the task, whatever became of it. A task whose
+             * approval was withdrawn (cancelled) or timed out and was then asked for again got that dead instance back and
+             * was "successfully" linked to it: Resolve reads a cancelled or timed-out approval as not yet decided, so the
+             * task waited for a decision nobody could make, for good.
+             *
+             * The latest instance under the task's object reference is the engine's record of the chain:
+             *   • none — the first approval: the key is the task's own, EXACTLY as it always was, so every instance already
+             *     stored (each was started under it) stays reachable and nothing is re-keyed;
+             *   • still OPEN — the approval the task already has (a start whose link was never stored): adopted, not started a
+             *     second time (one live approval per task) — but only when the engine holds an open task for it (see the
+             *     review's StartReviewAsync: an instance whose start never completed is neither adopted nor replaced);
+             *   • closed (cancelled, timed out, refused, approved) — the new round replaces IT: the key carries its id, so the
+             *     same round always produces the same key (a crash between the start and the link write still resolves to one
+             *     instance) and a later round produces a different one.
+             */
+            var latest = await _instances.GetLatestByObjectRefAsync(
+                BuildObjectRef(task.Id), ApprovalObjectType, task.Id.ToString(), ct);
+            if (latest is not null && IsOpen(latest.Status))
+            {
+                if ((await OpenTasksAsync(latest.Id, ct)).Count > 0)
+                {
+                    return latest.Id;
+                }
+
+                _logger.LogWarning(
+                    "The live approval {InstanceId} of task {TaskId} has no open task in the engine: its start was never completed, "
+                    + "so it is neither adopted nor replaced.", latest.Id, task.Id);
+                return null;
+            }
+
             var templateId = await EnsureTemplateAsync(ct);
             if (templateId is null)
             {
@@ -192,8 +227,9 @@ public sealed class TaskApprovalService : ITaskApprovalService
                     ? [manager.ToString()]
                     : [],
                 ReasonCode: null,
-                // Idempotency per task: a retried start must not open a second approval for the same work.
-                IdempotencyKey: $"task-approval:{_tenantContext.TenantId}:{task.Id}",
+                // Idempotent per ROUND (D2-FIX5 item 3): a retried start must not open a second approval for the same work, and
+                // a new round after a closed one must not replay it. The first round's key is the task's own, unchanged.
+                IdempotencyKey: $"task-approval:{_tenantContext.TenantId}:{task.Id}" + (latest is null ? string.Empty : $":{latest.Id}"),
                 CommentRequired: false,
                 EvidenceRequired: false,
                 DueAt: task.DueAt);
@@ -207,6 +243,20 @@ public sealed class TaskApprovalService : ITaskApprovalService
                     "Could not start task approval for {TaskId}: {ReasonCode} {Message}. The task is kept and "
                     + "`start` stays gated until the approval is retried.",
                     task.Id, response.ReasonCode, string.Join("; ", response.Errors));
+                return null;
+            }
+
+            /*
+             * D2-FIX5 item 3 — NEVER LINK A ROUND THE ENGINE HAS ALREADY CLOSED. A key that resolves to an existing instance
+             * answers with that instance whatever its status; an approval that just opened is Pending or Active (never
+             * Escalated, Rejected, TimedOut or Cancelled), so any other status is a replay of a dead round and the task would
+             * wait on it for ever. Not linked: the task is kept, `start` stays gated, and the edit can be repeated.
+             */
+            if (Enum.TryParse<WorkflowInstanceStatus>(response.Data.Status, out var opened) && !IsOpen(opened))
+            {
+                _logger.LogWarning(
+                    "Starting task approval for {TaskId} answered a {Status} instance {InstanceId}; it is not linked.",
+                    task.Id, response.Data.Status, response.Data.WorkflowInstanceId);
                 return null;
             }
 
@@ -311,6 +361,10 @@ public sealed class TaskApprovalService : ITaskApprovalService
             BuildObjectRef(task.Id), ApprovalObjectType, task.Id.ToString(), ct))?.Id;
         return latest is { } id && id != task.WorkflowInstanceId && (await OpenTasksAsync(id, ct)).Count > 0 ? id : null;
     }
+
+    /// <summary>An instance somebody can still decide: opening (Pending), running (Active) or escalated.</summary>
+    private static bool IsOpen(WorkflowInstanceStatus status) =>
+        status is WorkflowInstanceStatus.Pending or WorkflowInstanceStatus.Active or WorkflowInstanceStatus.Escalated;
 
     /// <summary>The approval tasks of an instance that are still waiting on somebody — what "open" means for a withdraw.</summary>
     private async Task<List<ApprovalTask>> OpenTasksAsync(Guid instanceId, CancellationToken ct) =>

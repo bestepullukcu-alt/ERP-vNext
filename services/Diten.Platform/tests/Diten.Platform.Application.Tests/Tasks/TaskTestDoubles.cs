@@ -174,6 +174,12 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
     /// not): what ONE write carried is readable here, which the stored result alone cannot tell.</summary>
     public List<TaskItem> WriteAttempts { get; } = [];
 
+    /// <summary>D2-FIX5 item 4 — task id → how many of ITS next versioned deletes lose their race (a task somebody keeps writing).</summary>
+    public Dictionary<Guid, int> DeleteConflicts { get; } = [];
+
+    /// <summary>D2-FIX5 item 4 — the id of every versioned delete the store was asked for, whether it landed or not.</summary>
+    public List<Guid> DeleteAttempts { get; } = [];
+
     /// <summary>
     /// WC-1 — the lifecycle event log this store writes to, exactly as the real repository does.
     ///
@@ -476,6 +482,14 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
     /// <summary>D2-FIX4 item 7 — the conditional soft delete: only while the stored task is still at the version the caller read.</summary>
     public Task<bool> DeleteAsync(Guid id, int expectedVersion, CancellationToken ct = default)
     {
+        DeleteAttempts.Add(id);
+        if (DeleteConflicts.TryGetValue(id, out var remaining) && remaining > 0)
+        {
+            // Another writer got there first: no exception, a FALSE, and the stored document untouched.
+            DeleteConflicts[id] = remaining - 1;
+            return Task.FromResult(false);
+        }
+
         var stored = _items.FirstOrDefault(x => x.Id == id && x.TenantId == TaskTestData.Tenant && !x.IsDeleted);
         if (stored is null || stored.Version != expectedVersion)
         {

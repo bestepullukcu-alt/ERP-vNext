@@ -1,6 +1,9 @@
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Workflow;
 using Diten.Platform.Domain.Entities.Tasks;
+using Diten.Platform.Domain.Enums.Tasks;
+using Diten.Platform.Domain.Repositories;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.Tasks.Services;
 
@@ -104,4 +107,138 @@ internal static class TaskWorkflowLinkGate
     /// </summary>
     public static async Task<bool> WithdrawReviewAsync(TaskItem task, ITaskReviewService? reviews, CancellationToken ct) =>
         !MayHoldReview(task, reviews) || (reviews is not null && await reviews.CancelReviewAsync(task, ct));
+
+    /// <summary>
+    /// D2-FIX5 item 1 — a start whose task write LOST its race is read again, and when nobody wants what it started any more
+    /// the instance is withdrawn.
+    ///
+    /// <para><b>The path.</b> A submission (review) or an edit that switches approval on starts the instance in MOD-0023 FIRST
+    /// and writes the task's link AFTER, and the write is conditional on the version read at the start. A rival writer in
+    /// between — an edit that switched the requirement off, a cancel, a delete — moves the version, the write loses, and the
+    /// engine is left with a live instance that no longer has anything to do with the task: the rival's withdraw ran BEFORE
+    /// the start, found nothing, and nothing looks again (the requirement is off, no link is held). The approver or the
+    /// reviewer kept a decision nobody reads.</para>
+    ///
+    /// <para><b>The rule.</b> The task is read again (this is only the lost-race branch, so the read is paid by the rare
+    /// path). Still wanted — the requirement is on and the task is open — the instance is KEPT: the lost write was somebody
+    /// else's unrelated save, and the retry adopts the running instance (one live round per task). Not wanted — the
+    /// requirement is off, the task is closed, or it is gone — the instance just started is withdrawn through MOD-0023's own
+    /// cancel (MOD-0024 decides nothing). A withdraw that does not happen is logged and the link is stored on the task as it
+    /// is now (a few bounded tries), so every later look finds it: an edit of a task with a held link retries the withdraw,
+    /// and a cancel or a delete asks for it. A deleted task has no document left to carry the link — the log is all there is.
+    /// </para>
+    ///
+    /// <para>Best effort and never throws (the caller answers its own 409 whatever happens here), except for cancellation.</para>
+    /// </summary>
+    public static async Task WithdrawUnwantedStartAsync(
+        TaskItem started,
+        bool review,
+        ITaskItemRepository tasks,
+        ITaskApprovalService? approvals,
+        ITaskReviewService? reviews,
+        ILogger logger,
+        CancellationToken ct)
+    {
+        var what = review ? "review" : "approval";
+        var instanceId = review ? started.ReviewWorkflowInstanceId : started.WorkflowInstanceId;
+
+        try
+        {
+            var fresh = await tasks.GetByIdAsync(started.Id, ct);
+            if (fresh is not null && (review ? fresh.ReviewRequired : fresh.ApprovalRequired) && !IsClosed(fresh))
+            {
+                return;
+            }
+
+            // A task that is gone is withdrawn through the copy the caller wrote from: it holds the instance as its link.
+            var subject = fresh ?? started;
+            var withdrawn = review
+                ? reviews is not null && await reviews.CancelReviewAsync(subject, ct)
+                : approvals is not null && await approvals.CancelApprovalAsync(subject, ct);
+            if (withdrawn)
+            {
+                logger.LogInformation(
+                    "Task {TaskId} lost its race after its {What} {InstanceId} was started and nobody wants it any more; it was withdrawn.",
+                    started.Id, what, instanceId);
+                return;
+            }
+
+            logger.LogWarning(
+                "Task {TaskId} lost its race after its {What} {InstanceId} was started and nobody wants it any more, but it could not "
+                + "be withdrawn; the task is made to carry its link so that the next look finds it.",
+                started.Id, what, instanceId);
+        }
+        catch (Exception failure) when (failure is not OperationCanceledException)
+        {
+            logger.LogError(failure,
+                "Task {TaskId} lost its race after its {What} {InstanceId} was started and nobody wants it any more, and looking at "
+                + "or withdrawing it threw; the task is made to carry its link so that the next look finds it.",
+                started.Id, what, instanceId);
+        }
+
+        if (instanceId is { } liveInstance)
+        {
+            await StoreLinkAsync(started.Id, liveInstance, review, tasks, logger, ct);
+        }
+    }
+
+    /// <summary>
+    /// D2-FIX5 item 1 — the link of an instance that could NOT be withdrawn is written onto the task as it is NOW (read again for
+    /// each try: the version is what keeps moving), so that the retry paths — an edit with the requirement off, a cancel, a
+    /// delete — have something to follow. Bounded; the last failure is logged, never thrown.
+    /// </summary>
+    private static async Task StoreLinkAsync(
+        Guid taskId, Guid instanceId, bool review, ITaskItemRepository tasks, ILogger logger, CancellationToken ct)
+    {
+        var what = review ? "review" : "approval";
+
+        try
+        {
+            for (var attempt = 1; attempt <= MaxLinkStoreAttempts; attempt++)
+            {
+                var current = await tasks.GetByIdAsync(taskId, ct);
+                if (current is null)
+                {
+                    logger.LogError(
+                        "The {What} {InstanceId} of deleted task {TaskId} is still open and could not be withdrawn; nothing is left to carry its link.",
+                        what, instanceId, taskId);
+                    return;
+                }
+
+                if (review)
+                {
+                    current.ReviewWorkflowInstanceId = instanceId;
+                }
+                else
+                {
+                    current.WorkflowInstanceId = instanceId;
+                }
+
+                if (await tasks.UpdateAsync(current, current.Version, ct))
+                {
+                    return;
+                }
+            }
+
+            logger.LogError(
+                "The {What} {InstanceId} of task {TaskId} is still open, could not be withdrawn, and its link could not be stored in "
+                + "{Attempts} tries; only the task's object reference leads to it.",
+                what, instanceId, taskId, MaxLinkStoreAttempts);
+        }
+        catch (Exception failure) when (failure is not OperationCanceledException)
+        {
+            logger.LogError(failure,
+                "The {What} {InstanceId} of task {TaskId} is still open, could not be withdrawn, and its link could not be stored.",
+                what, instanceId, taskId);
+        }
+    }
+
+    /// <summary>D2-FIX5 item 1 — how many times the link of an instance that could not be withdrawn is written while the task's
+    /// version keeps moving.</summary>
+    internal const int MaxLinkStoreAttempts = 3;
+
+    private static bool IsClosed(TaskItem task) =>
+        task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled
+        || task.CompletedAt is not null
+        || task.CancelledAt is not null;
 }

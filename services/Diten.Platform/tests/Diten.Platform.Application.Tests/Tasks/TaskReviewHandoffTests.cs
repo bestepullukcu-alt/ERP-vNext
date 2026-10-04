@@ -168,6 +168,7 @@ public sealed class TaskReviewHandoffTests
         var harness = new Handoff();
         var task = ReviewTask(reviewer: TaskTestData.Rival);
         var live = harness.Instances.Add(task, WorkflowInstanceStatus.Active);
+        harness.Tasks.Open(live);                            // D2-FIX5 item 2: adopted only with an open task in the engine
 
         var result = await harness.Service.StartReviewAsync(task, CancellationToken.None);
 
@@ -246,11 +247,12 @@ public sealed class TaskReviewHandoffTests
             Templates = new FakeWorkflowTemplateStore(Tenant);
             Mediator = new FakeWorkflowMediator(Templates, Tenant);
             Instances = new LatestInstanceStore();
+            Tasks = new OpenTaskStore();
             Service = new TaskReviewService(
                 Mediator,
                 Templates,
                 Instances,
-                new UnreadApprovalTaskRepository(),
+                Tasks,
                 Tenant,
                 new FakeCurrentUserContext(TaskTestData.Me),
                 Options.Create(new TaskReviewOptions()),
@@ -261,7 +263,41 @@ public sealed class TaskReviewHandoffTests
         public FakeWorkflowTemplateStore Templates { get; }
         public FakeWorkflowMediator Mediator { get; }
         public LatestInstanceStore Instances { get; }
+        public OpenTaskStore Tasks { get; }
         public TaskReviewService Service { get; }
+    }
+
+    /// <summary>
+    /// MOD-0023's approval tasks as far as a review START reads them (D2-FIX5 item 2): the tasks of one instance — a live round is
+    /// adopted only when one of them is still waiting on somebody. Nothing else is read here, so anything else throws.
+    /// </summary>
+    private sealed class OpenTaskStore : IApprovalTaskRepository
+    {
+        private readonly List<ApprovalTask> _items = [];
+
+        public void Open(WorkflowInstance instance) =>
+            _items.Add(new ApprovalTask
+            {
+                TenantId = TaskTestData.Tenant,
+                WorkflowInstanceId = instance.Id,
+                Status = ApprovalTaskStatus.WaitingApproval
+            });
+
+        public Task<IReadOnlyList<ApprovalTask>> ListByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<ApprovalTask>>(_items.Where(t => t.WorkflowInstanceId == workflowInstanceId).ToList());
+
+        public Task<ApprovalTask> CreateAsync(ApprovalTask task, CancellationToken ct = default) =>
+            throw new NotSupportedException("A review start must not write MOD-0023 approval tasks.");
+        public Task<ApprovalTask?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
+            throw new NotSupportedException("A review start reads the tasks of one instance only.");
+        public Task<ApprovalTask?> GetFirstByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default) =>
+            throw new NotSupportedException("A review start reads the tasks of one instance only.");
+        public Task<ApprovalTask?> GetActiveByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default) =>
+            throw new NotSupportedException("A review start reads the tasks of one instance only.");
+        public Task<IReadOnlyList<ApprovalTask>> GetAllForTenantAsync(CancellationToken ct = default) =>
+            throw new NotSupportedException("A review start reads the tasks of one instance only.");
+        public Task<bool> UpdateAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default) =>
+            throw new NotSupportedException("A review start must not write MOD-0023 approval tasks.");
     }
 
     /// <summary>

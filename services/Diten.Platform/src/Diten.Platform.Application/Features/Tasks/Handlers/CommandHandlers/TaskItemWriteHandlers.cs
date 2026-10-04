@@ -353,6 +353,18 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                     _logger.LogError(
                         "Approval instance {InstanceId} started for task {TaskId} but the link could not be stored; "
                         + "the task stays blocked until it is retried.", instanceId, task.Id);
+
+                    /*
+                     * D2-FIX5 item 1 — IF THE WRITER WHO WON DOES NOT WANT IT, IT IS WITHDRAWN. The link write lost because
+                     * somebody saved the task between the start and here. When that was an edit that switched the approval
+                     * requirement off again (or a cancel, or a delete), its own withdraw ran BEFORE this start and found
+                     * nothing: the approval just started would stay decidable for good, with the requirement off and no
+                     * link for anything to follow. The task is read again — still wanting approval and open, the approval
+                     * stays (the gate reads it by its object reference, and the log above says what is left); otherwise it is
+                     * withdrawn, or, if MOD-0023 refuses, the link is stored for the next edit's retry. Never throws.
+                     */
+                    await TaskWorkflowLinkGate.WithdrawUnwantedStartAsync(
+                        task, review: false, _tasks, _approvals, reviews: null, _logger, ct);
                 }
             }
             else
@@ -536,11 +548,27 @@ public sealed class DeleteTaskItemHandler : IRequestHandler<DeleteTaskItemComman
 
 /// <summary>
 /// Soft-delete several tasks. D2-FIX3 item 1 — each one withdraws what it started first, like the single delete; a task
-/// whose withdraw does not happen is SKIPPED (left as it is), and the answer is the same 204 either way, exactly as for an
-/// id of another tenant: the response says nothing about which ids were deleted, so it leaks nothing about which exist.
+/// whose withdraw does not happen is left as it is.
+///
+/// <para><b>D2-FIX5 item 4 — AND THE ANSWER SAYS WHAT WAS LEFT.</b> A task that moved after it was read (an edit that
+/// started something between the withdraw and the delete) was skipped with a log line and the same 204 as a delete, so a
+/// caller was told "deleted" for a task that was still there. Now, like the subtask cascade, a task whose conditional delete
+/// loses is read again and tried again (at most <see cref="MaxDeleteAttempts"/> times — the withdraw runs each time, so what
+/// started in between is withdrawn too); and whatever is STILL not deleted — a withdraw MOD-0023 refused, or a task that kept
+/// moving — is named: <b>200</b> with <see cref="BulkDeleteTaskItemResultDto.SkippedIds"/> instead of the body-less 204 (which
+/// stays the answer when nothing was left out). Only ids of tasks that exist in THIS tenant are ever named: an id that is
+/// unknown, deleted or another tenant's is answered like a delete, so the answer leaks nothing about which ids exist — the
+/// ids named are ones the caller already holds and can see.</para>
+///
+/// <para>The single delete is stricter by design — it refuses a task that moved (409) and lets the caller re-read it; a bulk
+/// delete has nobody to ask halfway through a list, so it retries on its own, a few times, and reports the rest. Nothing in
+/// the web tier calls this endpoint (no proxy, no script), so the new answer needs no screen text.</para>
 /// </summary>
-public sealed class BulkDeleteTaskItemHandler : IRequestHandler<BulkDeleteTaskItemCommand, Response<NoContent>>
+public sealed class BulkDeleteTaskItemHandler : IRequestHandler<BulkDeleteTaskItemCommand, Response<BulkDeleteTaskItemResultDto>>
 {
+    /// <summary>D2-FIX5 item 4 — how many times one task's delete is read and tried while its conditional write keeps losing.</summary>
+    internal const int MaxDeleteAttempts = 3;
+
     private readonly ITaskItemRepository _tasks;
     private readonly ITaskApprovalService? _approvals;
     private readonly ITaskReviewService? _reviews;
@@ -558,15 +586,33 @@ public sealed class BulkDeleteTaskItemHandler : IRequestHandler<BulkDeleteTaskIt
         _logger = logger;
     }
 
-    public async Task<Response<NoContent>> Handle(BulkDeleteTaskItemCommand command, CancellationToken ct)
+    public async Task<Response<BulkDeleteTaskItemResultDto>> Handle(BulkDeleteTaskItemCommand command, CancellationToken ct)
     {
+        var skipped = new List<Guid>();
         foreach (var id in command.Request.Ids.Distinct())
         {
-            // Each delete re-reads through the tenant filter, so an id from another tenant is simply skipped.
+            if (!await DeleteOneAsync(id, ct))
+            {
+                skipped.Add(id);
+            }
+        }
+
+        return skipped.Count == 0
+            ? Response<BulkDeleteTaskItemResultDto>.Success(204, command.CorrelationId)
+            : Response<BulkDeleteTaskItemResultDto>.Success(new BulkDeleteTaskItemResultDto(skipped), 200, command.CorrelationId);
+    }
+
+    /// <summary>False only for a task of this tenant that is still there and could not be deleted.</summary>
+    private async Task<bool> DeleteOneAsync(Guid id, CancellationToken ct)
+    {
+        for (var attempt = 1; attempt <= MaxDeleteAttempts; attempt++)
+        {
+            // Each delete re-reads through the tenant filter, so an id from another tenant — or one somebody deleted
+            // meanwhile — is simply not there: answered like a delete.
             var task = await _tasks.GetByIdAsync(id, ct);
             if (task is null)
             {
-                continue;
+                return true;
             }
 
             if (await TaskWorkflowLinkGate.WithdrawAsync(task, _approvals, _reviews, ct) is { } refusedCode)
@@ -574,18 +620,24 @@ public sealed class BulkDeleteTaskItemHandler : IRequestHandler<BulkDeleteTaskIt
                 _logger?.LogWarning(
                     "Task {TaskId} was left out of a bulk delete: its running approval or review could not be withdrawn ({ReasonCode}).",
                     task.Id, refusedCode);
-                continue;
+                return false;
             }
 
-            // D2-FIX4 item 7 — conditional on the version read above, like the single delete: a task that moved since (a
-            // start landed after its withdraw) is left out, not deleted around the new instance. Said nowhere in the answer.
-            if (!await _tasks.DeleteAsync(id, task.Version, ct))
+            // Conditional on the version read above, like the single delete: a task that moved since (a start landed after
+            // its withdraw) is not deleted around the new instance — it is read again, withdrawn again, and tried again.
+            if (await _tasks.DeleteAsync(id, task.Version, ct))
             {
-                _logger?.LogWarning(
-                    "Task {TaskId} was left out of a bulk delete: it changed after it was read.", task.Id);
+                return true;
             }
+
+            _logger?.LogWarning(
+                "Task {TaskId} changed after it was read for a bulk delete (try {Attempt} of {Attempts}).",
+                task.Id, attempt, MaxDeleteAttempts);
         }
 
-        return Response<NoContent>.Success(204, command.CorrelationId);
+        _logger?.LogWarning(
+            "Task {TaskId} was left out of a bulk delete: it kept changing after it was read ({Attempts} tries).",
+            id, MaxDeleteAttempts);
+        return false;
     }
 }

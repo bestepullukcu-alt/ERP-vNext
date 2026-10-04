@@ -17,6 +17,8 @@ public interface ITaskReviewService
     /// <summary>
     /// Start the review for a task. Returns the instance id, or null when it could not be started — in which case
     /// the caller keeps the task un-submitted, so nothing claims to be under review that is not.
+    /// D2-FIX5 item 2 — a live review is adopted only when the engine holds an open task for it; one whose start never
+    /// completed is neither adopted nor replaced (null, with the engine's start-conflict code as the reason).
     /// </summary>
     Task<Guid?> TryStartReviewAsync(TaskItem task, CancellationToken ct);
 
@@ -241,7 +243,25 @@ public sealed class TaskReviewService : ITaskReviewService
                 BuildObjectRef(task.Id), ReviewObjectType, task.Id.ToString(), ct);
             if (latest is not null && IsOpen(latest.Status))
             {
-                return new(latest.Id, null);
+                /*
+                 * D2-FIX5 item 2 — ADOPTED ONLY WHEN THE ENGINE HOLDS AN OPEN TASK FOR IT. The generic start writes the instance,
+                 * then its task, then the assignment snapshot — three separate writes. A crash after the first leaves an ACTIVE
+                 * instance that nobody has been asked to decide; adopting it on the instance's status alone moved the task to
+                 * PendingReview behind a review no reviewer would ever see. The same question the withdraw and the edit's
+                 * look-up ask of an instance before they take it (OpenTasksAsync): at least one task still waiting on somebody.
+                 * Without one the start is INCOMPLETE — the answer a replayed key gave before adoption existed (409, the
+                 * engine's own start-conflict code, which the submission maps to "could not be started, try again"): no round is
+                 * adopted and none is started beside it, and once the engine holds its task the same call adopts it.
+                 */
+                if ((await OpenTasksAsync(latest.Id, ct)).Count > 0)
+                {
+                    return new(latest.Id, null);
+                }
+
+                _logger.LogWarning(
+                    "The live review {InstanceId} of task {TaskId} has no open task in the engine: its start was never completed, "
+                    + "so it is neither adopted nor replaced.", latest.Id, task.Id);
+                return new(null, Workflow.WorkflowReasonCodes.WorkflowInstanceStartConflict);
             }
 
             var templateId = await EnsureTemplateAsync(ct);

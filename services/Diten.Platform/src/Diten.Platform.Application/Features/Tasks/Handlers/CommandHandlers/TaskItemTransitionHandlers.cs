@@ -1234,12 +1234,24 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
 
         if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
         {
-            // The review IS open; only the task's move lost the race. Cancelling it back out would be a second
-            // failure path on an already-failed write, so it is left running and named in the log — the retry
-            // finds it by the same idempotency key rather than opening a second one.
+            // The review IS open; only the task's move lost the race.
             _logger.LogWarning(
                 "Review instance {InstanceId} started for task {TaskId} but the task lost a concurrency race.",
                 instanceId, task.Id);
+
+            /*
+             * D2-FIX5 item 1 — WHO WON DECIDES WHAT HAPPENS TO THE ROUND. This used to leave it running unconditionally ("the
+             * retry finds it"), which is true only while somebody retries. The writer who made this write lose may have
+             * switched the review requirement off, cancelled the task or deleted it — each of them looked for a running
+             * review BEFORE this start opened one, found none, and finished; nobody will look again, and the reviewer kept a
+             * decision on work that no longer asks for one. So the task is read again: when it still wants a review and is
+             * open, the round stays (the retry adopts it, one live review per task); otherwise the round just started is
+             * withdrawn, and a withdraw that fails is logged with the link stored on the task for the next look to find.
+             * Never throws: the answer below is this submission's own, whatever happens to the round.
+             */
+            await TaskWorkflowLinkGate.WithdrawUnwantedStartAsync(
+                task, review: true, _tasks, approvals: null, _reviews, _logger, ct);
+
             return Response<NoContent>.Fail(
                 "The task changed meanwhile; reload and retry.",
                 409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);

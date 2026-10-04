@@ -408,21 +408,10 @@ public sealed class WorkflowEscalationRestTests
         Assert.Equal(Now.AddHours(6).UtcDateTime, w.LookAt(seeded.Task));
     }
 
-    [Fact]
-    public void AddInfrastructure_registers_the_escalation_options()
-    {
-        // The line inside AddInfrastructure is what production runs; the test above proves what that registration binds.
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "AGENTS.md")))
-        {
-            directory = directory.Parent;
-        }
-
-        Assert.NotNull(directory);
-        var infrastructure = File.ReadAllText(Path.Combine(
-            directory!.FullName, "services", "Diten.Platform", "src", "Diten.Platform.Infrastructure", "DependencyInjection.cs"));
-        Assert.Contains("services.AddWorkflowEscalationOptions(configuration);", infrastructure, StringComparison.Ordinal);
-    }
+    // D2-FIX5 item 5 — that the line inside AddInfrastructure is there is NOT read out of its source text any more: the real
+    // composition is built, and the option the sweep would be given is read from it, in
+    // Diten.Platform.BackgroundJobs.Tests (PlatformContainerValidationTests.AddInfrastructure_binds_the_escalation_options_from_configuration).
+    // It lives there because AddInfrastructure cannot be composed in this project (the process-global BSON registry, see that file).
 
     // ── world ───────────────────────────────────────────────────────────────────────────────────────────────────
 

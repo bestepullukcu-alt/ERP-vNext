@@ -253,20 +253,6 @@ public sealed partial class TaskWorkflowLinkGateTests
     }
 
     [Fact]
-    public async Task A_bulk_delete_leaves_out_a_task_that_moved_during_its_withdraw_and_answers_alike()
-    {
-        var f = new Fixture(TaskLifecycle.Open, approval: WorkflowInstanceStatus.Active);
-        var plain = f.AddPlainTask();
-        f.Engine.WhileCancelling = f.MoveUnderneath;
-
-        var response = await f.BulkDeleteAsync(f.Task.Id, plain.Id);
-
-        Assert.Equal(204, response.StatusCode);
-        Assert.False(f.IsDeleted());
-        Assert.True(f.IsDeleted(plain.Id));
-    }
-
-    [Fact]
     public async Task A_subtask_whose_cancel_write_loses_its_race_is_read_again_and_cancelled()
     {
         var f = new Fixture(TaskLifecycle.Open);

@@ -9,6 +9,7 @@ using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Enums.Workflow;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -60,7 +61,7 @@ public sealed partial class TaskWorkflowLinkGateTests
     }
 
     [Fact]
-    public async Task A_bulk_delete_leaves_out_a_task_whose_withdraw_failed_deletes_the_rest_and_answers_alike()
+    public async Task A_bulk_delete_leaves_out_a_task_whose_withdraw_failed_deletes_the_rest_and_names_only_what_it_left_out()
     {
         var f = new Fixture(TaskLifecycle.Open, approval: WorkflowInstanceStatus.Active);
         var plain = f.AddPlainTask();
@@ -68,7 +69,10 @@ public sealed partial class TaskWorkflowLinkGateTests
 
         var response = await f.BulkDeleteAsync(f.Task.Id, plain.Id, Guid.NewGuid());
 
-        Assert.Equal(204, response.StatusCode);              // the same answer whatever was left out — nothing leaks
+        // D2-FIX5 item 4 — it used to answer 204 here, the same as a delete: the caller was told "deleted" for a task that is
+        // still there. A task of this tenant that was left out is NAMED; the unknown id is answered like a delete (no leak).
+        Assert.Equal(200, response.StatusCode);
+        Assert.Equal([f.Task.Id], response.Data!.SkippedIds);
         Assert.False(f.IsDeleted());                          // its approval is still decidable: not deleted around it
         Assert.True(f.IsDeleted(plain.Id));
         Assert.Equal(ApprovalTaskStatus.WaitingApproval, f.Engine.TaskOf(f.ApprovalInstance!).Status);
@@ -407,7 +411,7 @@ public sealed partial class TaskWorkflowLinkGateTests
             new DeleteTaskItemHandler(_tasks, WithdrawApprovals, WithdrawReviews)
                 .Handle(new DeleteTaskItemCommand(Task.Id, "corr-delete"), CancellationToken.None);
 
-        public Task<Response<NoContent>> BulkDeleteAsync(params Guid[] ids) =>
+        public Task<Response<BulkDeleteTaskItemResultDto>> BulkDeleteAsync(params Guid[] ids) =>
             new BulkDeleteTaskItemHandler(_tasks, WithdrawApprovals, WithdrawReviews,
                     NullLogger<BulkDeleteTaskItemHandler>.Instance)
                 .Handle(new BulkDeleteTaskItemCommand(new BulkDeleteTaskItemRequest(ids), "corr-bulk"), CancellationToken.None);
@@ -441,9 +445,10 @@ public sealed partial class TaskWorkflowLinkGateTests
 
         /// <summary>Submit for review as <paramref name="user"/>: the held link is read through the REAL state read
         /// (MOD-0023's instance as stored), the new round is opened by <paramref name="starter"/>.</summary>
-        public Task<Response<NoContent>> SubmitAsAsync(Guid user, ITaskReviewService starter) =>
+        public Task<Response<NoContent>> SubmitAsAsync(
+            Guid user, ITaskReviewService starter, ILogger<SubmitTaskForReviewHandler>? logger = null) =>
             new SubmitTaskForReviewHandler(_tasks, new TaskLifecycleService(), new FakeCurrentUserContext(user), starter,
-                    Approvals, NullLogger<SubmitTaskForReviewHandler>.Instance)
+                    Approvals, logger ?? NullLogger<SubmitTaskForReviewHandler>.Instance)
                 .Handle(new SubmitTaskForReviewCommand(Task.Id, new TaskTransitionRequest(Stored().Version, null, null), "corr-submit"),
                     CancellationToken.None);
     }
