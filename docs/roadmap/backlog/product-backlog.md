@@ -6309,6 +6309,14 @@ sapmaları GxP ana veride `_ListShell` `HasSelection=false` ile düşer. Plan: W
 (Roller, ABB-FIX4 kabulünden sonra) · LSKU FIX2 / Kapsam FIX1 / FG FIX1'de zorunlu madde. Kural: bir modülün kabul turu listelerinin `--format gaps`
 çıktısını ister.
 
+**Ek 2026-10-05 — liste taşımalarının ortak tuzakları (ABB-LIST ve GP-LIST gözden geçirmeleri).** (1) **Sessiz kısmi dışa aktarma yok (GxP):**
+sunucu modundaki listede DataTables yalnız sayfayı tutar; Yazdır / CSV / Excel / PDF ya bütün satırları yazar (sunucu dışa aktarma, BL-452) ya da her
+öğe açıkça "yalnız bu sayfa" der — GP eski etiketini kaybetmişti, ABB eskiden ürünün bütün kayıtlarını yazıyordu. (2) **Kayıtlı görünüm sütun
+kayması:** seçim sütunu kalkınca dizinler kayar; eski görünüm ya taşınır ya sürümlenip bir kez bilgiyle sıfırlanır. (3) **Derin bağlantı yarışı:**
+fabrika tutamacı sunucu modunda `initComplete`'ten önce döner; sayfa süzgeci init'ten SONRA uygulanmalı. (4) Liste okuma hataları sayfanın kendi 7 dil
+cümlesine eşlenir (`onListError`). (5) Yetkisiz yüz testi sayfayı gerçek düzenle çizer (aksi halde "betik yok" ölçülmez). Kural: her liste taşıma
+promptuna bu beş madde konur.
+
 ---
 ### BL-441
 
