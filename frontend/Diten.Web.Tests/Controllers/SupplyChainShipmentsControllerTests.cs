@@ -31,6 +31,39 @@ public sealed class SupplyChainShipmentsControllerTests
         Assert.Equal(Correlation.ToString("D"), handler.Headers["X-Correlation-Id"]);
     }
 
+    // Q371: a Gateway 5xx with no contract body (service down) must reach the page as PERSISTENCE_UNAVAILABLE, not as an
+    // empty body the page reads as a validation error; a 5xx that carries the contract envelope passes through untouched.
+    [Theory]
+    [InlineData(HttpStatusCode.BadGateway, "")]
+    [InlineData(HttpStatusCode.ServiceUnavailable, "")]
+    [InlineData(HttpStatusCode.GatewayTimeout, "<html>gateway timeout</html>")]
+    public async Task UpstreamServerFailureWithoutContractBody_BecomesPersistenceUnavailable(HttpStatusCode upstream, string body)
+    {
+        var handler = new CaptureHandler(_ => Response(upstream, body));
+        var controller = CreateController(handler, ["supplychain.shipments.create"], true);
+        var result = await controller.Create(new CreateShipmentViewModel
+        {
+            SourceModule = "O2C", SourceType = "Order", SourceDocumentId = "SO-1", WarehouseReferenceId = "WH-1",
+            ShipToReference = "DEST-1", PlannedShipAt = DateTimeOffset.Parse("2026-09-25T08:00:00Z"),
+            Lines = [new() { LineNumber = "1", ItemId = Tenant, SkuId = LegalEntity, Quantity = "1", UomId = "EA" }]
+        }, CancellationToken.None);
+        var failure = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(StatusCodes.Status503ServiceUnavailable, failure.StatusCode);
+        Assert.Contains("PERSISTENCE_UNAVAILABLE", System.Text.Json.JsonSerializer.Serialize(failure.Value));
+        Assert.Contains(Correlation.ToString("D"), System.Text.Json.JsonSerializer.Serialize(failure.Value));
+    }
+
+    [Fact]
+    public async Task UpstreamServerFailureWithContractBody_PassesThroughUnchanged()
+    {
+        const string envelope = "{\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"x\",\"correlationId\":\"33333333-3333-4333-8333-333333333333\"},\"contractVersion\":\"v1\"}";
+        var handler = new CaptureHandler(_ => Response(HttpStatusCode.InternalServerError, envelope));
+        var controller = CreateController(handler, ["supplychain.shipments.read"]);
+        var result = Assert.IsType<ContentResult>(await controller.List(null, null, 1, 10, CancellationToken.None));
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        Assert.Equal(envelope, result.Content);
+    }
+
     [Fact]
     public async Task Create_PreservesExactWireFieldsQuantityAndStableIntentHeader()
     {

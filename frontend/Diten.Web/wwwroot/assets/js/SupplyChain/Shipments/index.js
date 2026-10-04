@@ -16,7 +16,9 @@ const ShipmentList = (function () {
     const badge = (status) => {
         const css = ({ Draft: 'secondary', Planned: 'info', Dispatched: 'primary', InTransit: 'warning',
             Delivered: 'success', Exception: 'danger', Closed: 'dark', Cancelled: 'secondary' })[status] || 'secondary';
-        return `<span class="badge bg-label-${css}">${escapeHtml(status || L.unknown)}</span>`;
+        // Q371: the wire value stays the contract's English name; only the label is localized (all seven languages).
+        const label = (L.statuses || {})[status] || status || L.unknown;
+        return `<span class="badge bg-label-${css}">${escapeHtml(label)}</span>`;
     };
     // UAS-001: a 403 from the list API replaces the whole list surface with the access-denied card, never an empty table.
     const showDenied = () => {

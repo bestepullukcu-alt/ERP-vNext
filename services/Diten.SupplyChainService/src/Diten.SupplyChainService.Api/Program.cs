@@ -26,7 +26,11 @@ using Diten.SupplyChainService.Persistence;
 using Diten.SupplyChainService.Infrastructure.Eventing;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.IdentityModel.Tokens;
+using MediatR;
+using System.Reflection;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -93,7 +97,11 @@ builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.Ge
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IModuleManifestProvider, ShipmentTrackingPodManifestProvider>();
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
-builder.Services.AddControllers().AddJsonOptions(o =>
+// Q381 (2026-10-04, owner decision §4): routes of uncomposed modules answer 404, not 500. The filter below reads
+// which modules exist from the registrations above; it keeps no list of its own (K6).
+builder.Services.AddControllers()
+    .ConfigureApplicationPartManager(m => m.FeatureProviders.Add(new ComposedFeatureControllerFilter(builder.Services)))
+    .AddJsonOptions(o =>
 {
     o.JsonSerializerOptions.PropertyNameCaseInsensitive = false;
     o.JsonSerializerOptions.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow;
@@ -128,3 +136,45 @@ app.MapGet("/health", () => Results.Ok(new { status = "up", module = "MOD-0183",
 app.MapControllers();
 app.Run();
 public partial class Program { }
+
+// Q381: drops the controllers of feature modules this composition does not serve, so MapControllers() never maps
+// them. A feature controller (namespace *.Features.<Module>) is kept only when MediatR registered a handler for at
+// least one request of that module and every Diten.* constructor parameter has a registration. Measured before
+// this filter: authenticated Capacity requests failed with 500 in the controller activator (CapacityRequestContext
+// unregistered) and S&OP requests with 500 in MediatR (handlers excluded by Application/DependencyInjection.cs).
+// Controllers outside Features (Shipments) are always kept.
+file sealed class ComposedFeatureControllerFilter(IServiceCollection services) : IApplicationFeatureProvider<ControllerFeature>
+{
+    public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
+    {
+        foreach (var controller in feature.Controllers.Where(c => !IsComposed(c)).ToArray())
+            feature.Controllers.Remove(controller);
+    }
+
+    private bool IsComposed(TypeInfo controller)
+    {
+        var module = ModuleOf(controller.Namespace);
+        if (module is null) return true;
+        var requests = typeof(RequestContext).Assembly.GetTypes()
+            .Where(t => t is { IsClass: true, IsAbstract: false } && typeof(IBaseRequest).IsAssignableFrom(t) && ModuleOf(t.Namespace) == module)
+            .ToHashSet();
+        var handled = requests.Count == 0 || services.Any(d => d.ServiceType.IsGenericType
+            && d.ServiceType.GetGenericTypeDefinition() is var definition
+            && (definition == typeof(IRequestHandler<,>) || definition == typeof(IRequestHandler<>))
+            && requests.Contains(d.ServiceType.GenericTypeArguments[0]));
+        var constructible = controller.GetConstructors().OrderByDescending(c => c.GetParameters().Length).First().GetParameters()
+            .Where(p => p.ParameterType.Namespace?.StartsWith("Diten.", StringComparison.Ordinal) == true)
+            .All(p => services.Any(d => d.ServiceType == p.ParameterType));
+        return handled && constructible;
+    }
+
+    private static string? ModuleOf(string? ns)
+    {
+        const string marker = ".Features.";
+        var start = ns?.IndexOf(marker, StringComparison.Ordinal) ?? -1;
+        if (start < 0) return null;
+        var rest = ns![(start + marker.Length)..];
+        var end = rest.IndexOf('.');
+        return end < 0 ? rest : rest[..end];
+    }
+}

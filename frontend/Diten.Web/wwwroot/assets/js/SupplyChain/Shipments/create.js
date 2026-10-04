@@ -2,7 +2,11 @@
 
 const ShipmentCreate = (function () {
     const L = window.L10n || {};
-    let intent = null;
+    // Q371: one Idempotency-Key per form instance — the contract's "intent". It used to be re-minted whenever the
+    // payload changed, so a retry after a 503 (unknown commit) with any edit created a second shipment instead of
+    // reaching 409 IDEMPOTENCY_KEY_REUSED. The contract keeps no receipt for failed requests, so the same key stays
+    // valid across corrected submits; a new Create page is a new intent.
+    const intentKey = crypto.randomUUID();
     const lineFields = ['lineNumber', 'itemId', 'skuId', 'quantity', 'uomId', 'inventoryReferenceId'];
     const uuid = () => crypto.randomUUID();
     const value = (id) => document.getElementById(id)?.value || '';
@@ -57,22 +61,19 @@ const ShipmentCreate = (function () {
         let body = null; try { body = await response.json(); } catch (_) { }
         const code = body?.error?.code || '';
         const message = ({ IDEMPOTENCY_KEY_REUSED: L.idempotencyKeyReused, PERSISTENCE_UNAVAILABLE: L.persistenceUnavailable,
-            INTERNAL_ERROR: L.internalError })[code] || L.validationError;
+            INTERNAL_ERROR: L.internalError })[code] || (response.status === 403 ? L.accessDenied : L.validationError);
         const correlation = body?.error?.correlationId || response.headers.get('X-Correlation-Id');
         showError(`${message}${correlation ? ` ${L.supportReference}: ${correlation}` : ''}`);
-        if (code === 'IDEMPOTENCY_KEY_REUSED') intent = null;
     };
     const submit = async (event) => {
         event.preventDefault();
         const body = payload();
         if (!validate(body)) { showError(L.validationError); return; }
-        const serialized = JSON.stringify(body);
-        if (!intent || intent.payload !== serialized) intent = { payload: serialized, key: uuid() };
         const button = document.getElementById('btnSaveShipment'); button.disabled = true;
         try {
             const response = await fetch('/SupplyChain/Shipments/api', {
                 method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json',
-                    'RequestVerificationToken': token(), 'Idempotency-Key': intent.key, 'X-Correlation-Id': uuid() }, body: intent.payload
+                    'RequestVerificationToken': token(), 'Idempotency-Key': intentKey, 'X-Correlation-Id': uuid() }, body: JSON.stringify(body)
             });
             if (!response.ok) { await failure(response); return; }
             const result = await response.json();

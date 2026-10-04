@@ -120,11 +120,21 @@ public sealed class SupplyChainShipmentsController : Controller
             using (var response = await _httpClient.SendAsync(request, cancellationToken))
             {
                 CopyCorrelationHeader(response);
+                var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                // Q371: when the Gateway cannot reach the service it answers 502/503/504 with no contract body. Passed
+                // through as-is, the page found no error code and fell back to its validation message, so a server outage
+                // read as "Check the entered values." (Q362, live). An upstream 5xx without the Error envelope is the same
+                // case as an unreachable Gateway, so it gets the same envelope the HttpRequestException branch sends.
+                if ((int)response.StatusCode >= 500 && !HasContractError(body))
+                {
+                    _logger.LogWarning("Shipment Gateway answered {StatusCode} without a contract error for {TargetUrl}.", (int)response.StatusCode, targetUrl);
+                    return ContractFailure(StatusCodes.Status503ServiceUnavailable);
+                }
                 return new ContentResult
                 {
                     StatusCode = (int)response.StatusCode,
                     ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json",
-                    Content = await response.Content.ReadAsStringAsync(cancellationToken)
+                    Content = body
                 };
             }
         }
@@ -217,6 +227,24 @@ public sealed class SupplyChainShipmentsController : Controller
             _ => ("INVALID_REQUEST", "Request schema validation failed.")
         };
         return StatusCode(statusCode, new { error = new { code, message, correlationId }, contractVersion = "v1" });
+    }
+
+    private static bool HasContractError(string body)
+    {
+        if (string.IsNullOrWhiteSpace(body)) return false;
+        try
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(body);
+            return document.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object
+                && document.RootElement.TryGetProperty("error", out var error)
+                && error.ValueKind == System.Text.Json.JsonValueKind.Object
+                && error.TryGetProperty("code", out var code)
+                && code.ValueKind == System.Text.Json.JsonValueKind.String;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return false;
+        }
     }
 
     private bool HasPermission(string permission) => PermissionClaims.HasPermission(User, permission);

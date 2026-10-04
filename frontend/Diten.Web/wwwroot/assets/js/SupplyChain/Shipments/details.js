@@ -12,6 +12,8 @@ const ShipmentDetails = (function () {
         Dispatched: ['InTransit', 'Delivered', 'Exception'], InTransit: ['Delivered', 'Exception'],
         Exception: ['InTransit', 'Cancelled'], Delivered: ['Closed'], Closed: [], Cancelled: [] };
     const uuid = () => crypto.randomUUID();
+    // Q371: status names are shown localized; the value sent and compared stays the contract's English name.
+    const statusLabel = (status) => (L.statuses || {})[status] || status;
     const authoritativeRoot = () => typeof shipment?.lifecycleCorrelationId === 'string'
         && uuidPattern.test(shipment.lifecycleCorrelationId) ? shipment.lifecycleCorrelationId : null;
     const token = (form) => form.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
@@ -20,6 +22,8 @@ const ShipmentDetails = (function () {
     const readPermissions = () => { try { permissions = Object.assign(permissions, JSON.parse(document.getElementById('shipment-permissions')?.textContent || '{}')); } catch (_) { } };
     const showError = (message, id = 'detailsAlert') => { const el = document.getElementById(id); el.textContent = message; el.classList.remove('d-none'); el.focus?.(); };
     let loadVersion = 0;
+    // Q371: the skeleton stands in for the cards until the first load ends, whatever its outcome.
+    const hideSkeleton = () => { const el = document.getElementById('shipmentDetailsSkeleton'); if (el) el.style.display = 'none'; };
     const setDetailSurfaceVisible = (visible) => {
         const elements = [
             document.querySelector('#shipment-details .row.g-6'),
@@ -54,8 +58,27 @@ const ShipmentDetails = (function () {
         showError(`${message}${correlation ? ` ${L.supportReference}: ${correlation}` : ''}`, alertId);
         return code;
     };
+    // Q374: a datetime-local field holds the user's LOCAL wall clock; the wire is UTC (pack §12). The field is filled and
+    // read as local time and converted only here, so the field, the request and the displayed value are one instant.
+    const pad = (n) => String(n).padStart(2, '0');
+    const localInputValue = (when) => `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}T${pad(when.getHours())}:${pad(when.getMinutes())}`;
+    const zoneLabel = (when) => { const offset = -when.getTimezoneOffset(); const sign = offset < 0 ? '-' : '+';
+        return `${Intl.DateTimeFormat().resolvedOptions().timeZone || ''} (UTC${sign}${pad(Math.floor(Math.abs(offset) / 60))}:${pad(Math.abs(offset) % 60)})`.trim(); };
+    const prefillNow = (id) => { const now = new Date(); document.getElementById(id).value = localInputValue(now);
+        const zone = document.getElementById(`${id}Zone`); if (zone) zone.textContent = zoneLabel(now); };
     // Client check before any request: an empty date used to throw inside the submit handler and show nothing.
-    const instant = (id) => { const value = new Date(document.getElementById(id).value); return Number.isNaN(value.getTime()) ? null : value; };
+    // Q382: the parse is pure and returned below so Node can run it at fixed zones; instant() is its only DOM caller.
+    const parseLocalInput = (raw) => {
+        const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(raw);
+        if (!match) return null;
+        const [, year, month, day, hour, minute, second] = match.map(Number);
+        const value = new Date(year, month - 1, day, hour, minute, second || 0);
+        // A wall-clock time that does not exist (out-of-range parts, or a skipped daylight-saving hour) is rejected, not shifted.
+        const exact = value.getFullYear() === year && value.getMonth() === month - 1 && value.getDate() === day
+            && value.getHours() === hour && value.getMinutes() === minute;
+        return exact ? value : null;
+    };
+    const instant = (id) => parseLocalInput(document.getElementById(id).value);
     const rejectInvalid = (form, checks, alertId) => {
         form.querySelectorAll('.is-invalid').forEach((field) => field.classList.remove('is-invalid'));
         document.getElementById(alertId)?.classList.add('d-none');
@@ -85,20 +108,20 @@ const ShipmentDetails = (function () {
         if (allowedTargets(shipment.status).length) {
             const button = document.createElement('button'); button.className = 'btn btn-primary'; button.textContent = L.transition;
             button.addEventListener('click', () => { const select = document.getElementById('targetStatus');
-                select.replaceChildren(...allowedTargets(shipment.status).map((target) => new Option(target, target)));
-                document.getElementById('occurredAt').value = new Date().toISOString().slice(0, 16);
+                select.replaceChildren(...allowedTargets(shipment.status).map((target) => new Option(statusLabel(target), target)));
+                prefillNow('occurredAt');
                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasTransition')).show(); }); actions.appendChild(button);
         }
         if (permissions.canCapturePod && ['Dispatched', 'InTransit'].includes(shipment.status)) {
             const button = document.createElement('button'); button.className = 'btn btn-success'; button.textContent = L.capturePod;
-            button.addEventListener('click', () => { document.getElementById('receivedAt').value = new Date().toISOString().slice(0, 16);
+            button.addEventListener('click', () => { prefillNow('receivedAt');
                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasPod')).show(); }); actions.appendChild(button);
         }
     };
     const render = (data) => {
-        setDetailSurfaceVisible(true);
+        hideSkeleton(); setDetailSurfaceVisible(true);
         document.getElementById('detailsAlert')?.classList.add('d-none');
-        shipment = data; text('shipmentNumber', data.shipmentNumber); text('detailStatus', data.status);
+        shipment = data; text('shipmentNumber', data.shipmentNumber); text('detailStatus', statusLabel(data.status));
         text('detailSource', data.sourceDocumentId); text('detailWarehouse', data.warehouseReferenceId); text('detailShipTo', data.shipToReference);
         text('detailRoot', data.lifecycleCorrelationId); text('detailPlannedShip', date(data.plannedShipAt)); text('detailPlannedDeliver', date(data.plannedDeliverAt));
         text('detailCarrier', data.carrierId); text('detailLoad', data.loadId); renderLines(data.lines); renderPod(data.pod); renderActions();
@@ -108,6 +131,7 @@ const ShipmentDetails = (function () {
         try { const response = await fetch(`/SupplyChain/Shipments/api/${shipmentId}`, { credentials: 'same-origin', headers: { 'X-Correlation-Id': uuid() } });
             if (version !== loadVersion) return;
             if (!response.ok) {
+                hideSkeleton();
                 let body = null; try { body = await response.clone().json(); } catch (_) { }
                 const code = body?.error?.code || '';
                 if (response.status === 404 || code === 'SHIPMENT_NOT_FOUND') {
@@ -115,10 +139,10 @@ const ShipmentDetails = (function () {
                     renderSafeNotFound(`${L.notFound}${correlation ? ` ${L.supportReference}: ${correlation}` : ''}`);
                     return;
                 }
-                await error(response); return;
+                text('shipmentNumber', L.unavailable); await error(response); return;
             }
             render(await response.json()); }
-        catch (_) { showError(L.persistenceUnavailable); }
+        catch (_) { hideSkeleton(); text('shipmentNumber', L.unavailable); showError(L.persistenceUnavailable); }
     };
     const send = async (kind, payload, form, alertId) => {
         const correlationId = authoritativeRoot();
@@ -152,8 +176,15 @@ const ShipmentDetails = (function () {
             send('pod', { recipientName, receivedAt: receivedAt.toISOString(), evidenceReferenceIds,
                 note: document.getElementById('podNoteInput').value || null }, event.currentTarget, 'podAlert'); });
         ['formTransition', 'formPod'].forEach((id) => document.getElementById(id)?.addEventListener('input', (event) => event.target.classList.remove('is-invalid')));
+        // Q371 (C-08): the note is capped at 1000 by maxlength, which used to cut longer text silently; the counter makes the cap visible.
+        document.querySelectorAll('[data-note-counter]').forEach((field) => {
+            const counter = document.getElementById(field.dataset.noteCounter);
+            const update = () => { if (!counter) return; counter.textContent = `${field.value.length} / ${field.maxLength}`; counter.classList.toggle('text-danger', field.value.length >= field.maxLength); };
+            field.addEventListener('input', update); update();
+        });
         load();
     };
     document.addEventListener('DOMContentLoaded', init);
-    return { init, allowedTargets };
+    // localInputValue and parseLocalInput touch no DOM; they are returned for the Node date tests (Q382), nothing else uses them.
+    return { init, allowedTargets, localInputValue, parseLocalInput };
 })();

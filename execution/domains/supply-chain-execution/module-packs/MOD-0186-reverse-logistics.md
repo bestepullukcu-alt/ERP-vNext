@@ -7,7 +7,7 @@ shell: tenant
 golden_reference: slim
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "Owner-promoted isolated pack 1c80cca7… (PHASE15-CLOSE-01, 2026-09-21) bound to CT-accepted bounded work package MVP6-MOD0186-WP-ACCEPTANCE-01 on published SHIPMENT-BUNDLE 3.0.0 / wire v1 (§31). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open."
+status_note: "Owner-promoted isolated pack 1c80cca7… (PHASE15-CLOSE-01, 2026-09-21) bound to CT-accepted bounded work package MVP6-MOD0186-WP-ACCEPTANCE-01, accepted on published SHIPMENT-BUNDLE 3.0.0 and re-pinned to 3.1.0 / wire v1 (§31, Q380). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open."
 owner: supply-chain-execution / control-tower
 branch: feature/mvp6-logistics
 started: 2026-09-15
@@ -581,9 +581,10 @@ This section records, without changing any business rule above, the Control Towe
 | Controlling CT acceptance | `docs/records/audits/2026-09/mvp6-mod0186-wp-acceptance-01/SOP-22.md` SHA-256 `3a61b6e5bb3ed039cee0c76e158a929160583212b286bbfaa35f1d42100d310e` — ACCEPTED, approved isolated bounded Returns work package only |
 | Row-level acceptance | `ACCEPTANCE-MATRIX.tsv` SHA-256 `55733e998d772a9bc6df34763ab5c4098586784bbfa832b6fe3d282004b5610f` — R01–R11 PASS_BOUNDED; pack §16 items 02–05 PASS_BOUNDED; item 01 superseded for the isolated scope |
 | Accepted source and evidence | R01 independent VER `docs/records/audits/2026-09/mvp6-mod0186-r01-independent-ver-01/`: 341-entry target manifest `manifests/source-final-341.tsv` `60ab3d68de8196d3a390a087884ca46c1e1530d64fa0a72e3074a15d62561052`; product patch `0bb36d02d3972f65d6644a5b12eaabc7a8820a1a50da13b17769ef7a5148e82c`; raw archive `1191b5d9c8e0f46a304ce65a131a462143e0c015e2e088de0576258fa8f85473`; Release API binary `daeefa6c9b4b2b7159cabcf397852b23c82c962a3b0e18262b4e8032004549b7`; 52/52 HTTP/DB, 4/4 restart, 78/78 Returns regression |
-| Published contracts at acceptance and today | SHIPMENT-BUNDLE YAML `5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c`; Returns annex `00990a289069d25a62f7c883aac718e08b96b0386a572e7d1f93f0e447e98a11`; root annex `7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af`; wire `contractVersion: v1` |
+| Published contracts at acceptance | SHIPMENT-BUNDLE 3.0.0 YAML `5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c`; Returns annex `00990a289069d25a62f7c883aac718e08b96b0386a572e7d1f93f0e447e98a11`; root annex `7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af`; wire `contractVersion: v1` |
+| Published contracts today (Q380) | SHIPMENT-BUNDLE 3.1.0 YAML `6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2`; Returns annex and root annex unchanged (same hashes as above); wire `contractVersion: v1`. re (`docs/records/audits/2026-10/mvp6-q218-contract-pin-01/VERSION-DELTA.md`, re-measured in `docs/records/audits/2026-10/mvp6-q380-contract-repin-01/`) |
 
-**Precedence over stale wording:** SHIPMENT-BUNDLE 3.0.0 is published and bound. The §28 statements "status remains draft", the 2.0.0 `93c696e2…` pin and "D186 proposals, not approvals", the §29 "pack promotion and dispatch NOT AUTHORIZED" and HELD-prompt wording, and the "candidate until CT disposition" label on the §28 binding line are historical. §30 governs the isolated promotion, and this section records its accepted outcome. §30's "R01–R11 are future runtime acceptance, not current PASS" is superseded by the accepted matrix above. No business rule in §§21–30 is changed.
+**Precedence over stale wording:** SHIPMENT-BUNDLE 3.0.0 was published and bound at acceptance; this pack is now bound to the canonical 3.1.0 (`6dc1dd48…96aa2`), re-pinned by Q380 because every Returns operation and the `getShipment` read are identical in both versions (Q218). The §28 statements "status remains draft", the 2.0.0 `93c696e2…` pin and "D186 proposals, not approvals", the §29 "pack promotion and dispatch NOT AUTHORIZED" and HELD-prompt wording, and the "candidate until CT disposition" label on the §28 binding line are historical. §30 governs the isolated promotion, and this section records its accepted outcome. §30's "R01–R11 are future runtime acceptance, not current PASS" is superseded by the accepted matrix above. No business rule in §§21–30 is changed.
 
 **Accepted boundary:** R01–R11 are satisfied only at the evidence class stated per row in `ACCEPTANCE-MATRIX.tsv` (core + selected HTTP for R03/R07; core for zero/negative and long-scale R04; test-injected failpoints for R10). Received is a **manual assertion**, not warehouse-verified receipt; no Inventory/Warehouse HTTP, stock SoR, worker or publisher exists.
 
@@ -616,7 +617,7 @@ Observed 2026-09-26: `OK`, exit 0.
 
 ### 32.3 Bound operations (nothing else)
 
-Published SHIPMENT-BUNDLE 3.0.0 / wire v1 (`5dfe7c1b…d21c`) and Returns annex (`00990a28…8a11`) only:
+Published SHIPMENT-BUNDLE 3.1.0 / wire v1 (`6dc1dd48…96aa2`; accepted on 3.0.0, see §31) and Returns annex (`00990a28…8a11`) only:
 `queryReturns` (list/filter/reload), `createReturn` (create offcanvas), `transitionReturn` (row action), and Shipment-owned
 `getShipment` consumed read-only (number, status, lines, and the lifecycle root resolved **server-side**). No Return by-ID GET, detail page,
 edit, delete, bulk, import/export, server paging/search/sort, reason/disposition catalogue, remaining-entitlement display, Inventory or Warehouse call.
@@ -783,7 +784,7 @@ profiles; `grep` scans for native dialogs, inline handlers and "Permission denie
 - **Line picker in Slim offcanvas:** the repeatable line table inside the offcanvas must pass the 390/768 layout gate; if it does not, a Compact switch would need a scope decision (not silently changed).
 - **422 code set:** the Returns annex names `INVALID_RETURN_TRANSITION` but not every quantity/UoM/eligibility code; the exact set is bound from the accepted backend at Phase 1.5.
 - **Verifier tension:** module-pack standard §15 expects DataTable verifier PASS; the approved OUT rows make the generic verifier record-only until a scope-aware profile (DN-02 / PRES-183-03) exists.
-- G-TARGET integrated target; Returns backend absent from the common checkout; DN-01 retry policy; producer root uptake; PNG; nav/personalization codes; Loads 3.1.0 forward drift of the `5dfe7c1b…` pin; `module-implementation-status.md` update is a separate path.
+- G-TARGET integrated target; Returns backend absent from the common checkout; DN-01 retry policy; producer root uptake; PNG; nav/personalization codes; Loads 3.1.0 forward drift of the SHIPMENT-BUNDLE pin (closed by the Q380 re-pin to 3.1.0); `module-implementation-status.md` update is a separate path.
 
 ### 32.14 Effort and authorization boundary
 

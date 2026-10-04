@@ -7,7 +7,7 @@ shell: tenant
 golden_reference: slim
 entity_base: EntityBase
 status: ready-for-dev
-status_note: "Owner-promoted isolated pack d035d420… (PACK-ACTIVATE-01, 2026-09-20) bound to CT-accepted bounded work package MVP6-MOD0187-CT-ACCEPT-01 on published SHIPMENT-BUNDLE 3.0.0 / wire v1 (§31). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open."
+status_note: "Owner-promoted isolated pack d035d420… (PACK-ACTIVATE-01, 2026-09-20) bound to CT-accepted bounded work package MVP6-MOD0187-CT-ACCEPT-01, accepted on published SHIPMENT-BUNDLE 3.0.0 and re-pinned to 3.1.0 / wire v1 (§31, Q380). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open."
 owner: supply-chain-execution / control-tower
 branch: feature/mvp6-logistics
 started: 2026-09-15
@@ -530,9 +530,10 @@ This section records, without changing any business rule above, the Control Towe
 | Row-level acceptance | `R01-R30.tsv` SHA-256 `e8e0856fc28b335846710510d7567fd46e185353893d2edcecc3b50b80b1216f`; controlling requirement file `runtime-acceptance-R01-R30.md` SHA-256 `75f3f178b9f4b0169f459de3a43c76fe5568db9b14d83c444b473d6e44a4661b` |
 | Accepted source | 341-entry manifest `92879d2098e5c50fb4c2862ee52060cbe8ba1aab2e038e77f513f49680e80f80`; archive `edb759a07475184e11ae7ef94698f6300572b72aaeb2a39c7e2be13b74795a21` |
 | Accepted composition (`Program.cs`, integration-owner surface) | `11c586e04e12c7ecc9c543907414bf77a6c8fe3b23643ae5f42666c580c7b0f1` (R14 patch `3423940b958c8a66c8300f71ecd5d3b9525103ab645662545fca8811905259f0`) |
-| Published contracts at acceptance and today | SHIPMENT-BUNDLE YAML `5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c`; Claims annex `16e65c26faeb53887607dd16de0de34bad61dcc89d3beb7f6b8adca0ec4eeb63`; root annex `7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af`; wire `contractVersion: v1` |
+| Published contracts at acceptance | SHIPMENT-BUNDLE 3.0.0 YAML `5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c`; Claims annex `16e65c26faeb53887607dd16de0de34bad61dcc89d3beb7f6b8adca0ec4eeb63`; root annex `7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af`; wire `contractVersion: v1` |
+| Published contracts today (Q380) | SHIPMENT-BUNDLE 3.1.0 YAML `6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2`; Claims annex and root annex unchanged (same hashes as above); wire `contractVersion: v1`. re (`docs/records/audits/2026-10/mvp6-q218-contract-pin-01/VERSION-DELTA.md`, re-measured in `docs/records/audits/2026-10/mvp6-q380-contract-repin-01/`) |
 
-**Precedence over stale wording:** SHIPMENT-BUNDLE 3.0.0 is published. The sentence in §29 that the current canonical "remains 2.0.0 / `93c696e2…`" and the §5 note that this lane "does not apply this pack change" are historical. §30's "R01–R30 … UNEXECUTED at activation" is superseded by the accepted matrix above. No business rule in §§21–30 is changed.
+**Precedence over stale wording:** SHIPMENT-BUNDLE 3.0.0 was published at acceptance; this pack is now bound to the canonical 3.1.0 (`6dc1dd48…96aa2`), re-pinned by Q380 because every Claims operation and the `getShipment` and `queryCarriers` reads are identical in both versions (Q218). The sentence in §29 that the current canonical "remains 2.0.0 / `93c696e2…`" and the §5 note that this lane "does not apply this pack change" are historical. §30's "R01–R30 … UNEXECUTED at activation" is superseded by the accepted matrix above. No business rule in §§21–30 is changed.
 
 **Accepted boundary:** R01–R30 are satisfied only at the evidence class stated per row in `R01-R30.tsv`. R22/R25 are accepted only at the separately authorised `ClaimsEvidence` E4 boundary; normal composition keeps `NoOpClaimCommitProbe`. The historical broad `~Shipment` 51-test run with 12 serializer failures stays recorded and is not relabelled PASS.
 
@@ -566,7 +567,7 @@ Observed 2026-09-26: `OK`, exit 0.
 
 ### 32.3 Bound operations (nothing else)
 
-Published SHIPMENT-BUNDLE 3.0.0 / wire v1 (`5dfe7c1b…d21c`) and Claims annex (`16e65c26…4eb63`) only:
+Published SHIPMENT-BUNDLE 3.1.0 / wire v1 (`6dc1dd48…96aa2`; accepted on 3.0.0, see §31) and Claims annex (`16e65c26…4eb63`) only:
 `queryClaims` (list/filter/reload), `createClaim` (create offcanvas), `transitionClaim` (row action), and Shipment-owned
 `getShipment` consumed read-only (status, `carrierId`, and the lifecycle root resolved **server-side**). No Claim by-ID GET, detail page,
 edit, delete, bulk, import/export, server paging/search/sort, carrier lookup, evidence upload/verification, currency catalogue or finance call.
@@ -732,7 +733,7 @@ profiles; `grep` scans for native dialogs, inline handlers and "Permission denie
 - **G-ICONMAP:** FORM template requires an icon per field registered in shared `diten-field-icons.test.js`; that edit belongs to the integration owner.
 - **G-DATETIME:** `occurredAt` needs date-time with offset; the shared date field is date-oriented; component choice is a Phase 1.5 item.
 - **Verifier tension:** module-pack standard §15 expects DataTable verifier PASS; the approved OUT rows make the generic verifier record-only until a scope-aware profile (DN-02 / PRES-183-03) exists.
-- G-TARGET integrated target; Claims backend absent from the common checkout; DN-01 retry policy; producer root uptake; PNG; nav/personalization codes; Loads 3.1.0 forward drift of the `5dfe7c1b…` pin; `module-implementation-status.md` update is a separate path.
+- G-TARGET integrated target; Claims backend absent from the common checkout; DN-01 retry policy; producer root uptake; PNG; nav/personalization codes; Loads 3.1.0 forward drift of the SHIPMENT-BUNDLE pin (closed by the Q380 re-pin to 3.1.0); `module-implementation-status.md` update is a separate path.
 
 ### 32.14 Effort and authorization boundary
 

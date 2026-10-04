@@ -189,3 +189,23 @@ These are exact immutable snapshots, not a roadmap prefix exemption. Existing
 records-only provenance, approved payload binding, source hash, empty historical
 targets, inventory consumption and every other fail-closed check still apply.
 Changing either path or byte content requires a new reviewed rule and payload.
+
+## K5 · Manifest hangi dizinden doğrulanır, manifestin içinde yazar
+
+`ARTIFACTS.sha256` yazan her kayıt, dosyanın **ilk satırına** doğrulama dizinini bir yorum
+olarak koyar:
+
+```
+# verify from: repository root
+```
+ya da
+```
+# verify from: this folder
+```
+
+**Neden.** Lane'ler iki konvansiyonu da kullanıyor — Q339 ve Q366 kök-göreli yol yazdı,
+Q374 `./`-göreli. CT her ikisini de yanlış dizinden doğrulayıp önce 24, sonra 15 "hata"
+raporladı; iki durumda da dosyalar el değmemişti.
+
+Belirtilmemiş bir çalışma dizinine bağlı doğrulama, **gerçek bir negatifi kurcalanmış bir
+dosyadan ayırt edilemez kılar** — manifestin var olma sebebinin tam tersi. Ledger: Q377.
