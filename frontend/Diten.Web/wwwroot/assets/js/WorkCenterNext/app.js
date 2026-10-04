@@ -8278,11 +8278,12 @@
         const overrides = action.code === 'inquire' ? global.TasksApi.INQUIRE_REASON_CODE_OVERRIDES : undefined;
 
         /*
-         * ABB FIX3 item 12 — a provider's own refusal that has its own sentence here. Two approvers on one item send
-         * the SAME key, so the race is lost on this page: "another approver decided this first" — and the board is
-         * re-read, since the item has left it.
+         * ABB FIX3 item 12 — a provider's own refusal that has its own sentence here. Two approvers decide one item
+         * and the later one loses on this page: "another approver decided this first" (FIX4 item 4: MDM says so from
+         * the stored decision, whatever key each approver sent — their reasons make the keys differ) — and the board
+         * is re-read, since the item has left it.
          */
-        if (PROVIDER_REASON_KEYS[result.reasonCode]) {
+        if (typeof result.reasonCode === 'string' && Object.hasOwn(PROVIDER_REASON_KEYS, result.reasonCode)) {
             await loadWorkItems();
             render();
             toast(t(PROVIDER_REASON_KEYS[result.reasonCode]), 'error');

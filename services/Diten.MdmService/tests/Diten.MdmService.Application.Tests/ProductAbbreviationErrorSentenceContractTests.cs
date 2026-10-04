@@ -35,7 +35,7 @@ public sealed class ProductAbbreviationErrorSentenceContractTests
             .Select(File.ReadAllText);
         var emitted = sources
             .SelectMany(text => Regex.Matches(text,
-                "\"((?:ABBREVIATION|ACTIVE_ABBREVIATION)_[A-Z_]+|GLOBAL_PRODUCT_NOT_FOUND|CONCURRENCY_CONFLICT)\""))
+                "\"((?:ABBREVIATION|ACTIVE_ABBREVIATION|PRODUCT_ABBREVIATION)_[A-Z_]+|GLOBAL_PRODUCT_NOT_FOUND|CONCURRENCY_CONFLICT)\""))
             .Select(match => match.Groups[1].Value)
             .Where(code => !ProjectionOnly.Contains(code))
             .ToHashSet(StringComparer.Ordinal);

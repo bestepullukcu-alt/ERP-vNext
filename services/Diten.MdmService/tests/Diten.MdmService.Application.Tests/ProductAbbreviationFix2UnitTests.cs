@@ -42,6 +42,9 @@ public sealed class ProductAbbreviationFix2UnitTests
         Assert.True(ProductAbbreviationRegisterRepository.TransactionsAreUnsupported(refusedByServer));
         Assert.False(ProductAbbreviationRegisterRepository.TransactionsAreUnsupported(writeConflict));
         Assert.False(ProductAbbreviationRegisterRepository.TransactionsAreUnsupported(new TimeoutException()));
+        // FIX4 item 7 — only the driver's own standalone refusal; any other NotSupportedException is a bug, not an outage.
+        Assert.False(ProductAbbreviationRegisterRepository.TransactionsAreUnsupported(
+            new NotSupportedException("Decisions are not supported by this repository.")));
     }
 
     [Theory]

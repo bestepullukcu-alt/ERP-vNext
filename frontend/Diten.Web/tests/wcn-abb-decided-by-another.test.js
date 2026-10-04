@@ -120,6 +120,15 @@ describe("ABB FIX3 item 12 — an ABB decision lost to another approver", () => 
     expect(toasts.some((entry) => entry.type === "error")).toBe(true);
   });
 
+  it("does not take a code named like a built-in object property for one of its own", async () => {
+    // FIX4 item 7 — the lookup is an own-key lookup: "constructor" is not a provider sentence.
+    await decideAndLose("constructor");
+
+    expect(toasts.length).toBeGreaterThan(0);
+    expect(toasts.every((entry) => typeof entry.message === "string")).toBe(true);
+    expect(toasts.map((entry) => entry.message)).not.toContain(SENTENCE);
+  });
+
   it("has the sentence in all seven Task Center languages", () => {
     for (const language of ["en", "tr", "fr", "es", "zh", "ar", "ru"]) {
       const resx = fs.readFileSync(path.resolve(__dirname, "..", "Resources", "Views", "WorkCenterNext",

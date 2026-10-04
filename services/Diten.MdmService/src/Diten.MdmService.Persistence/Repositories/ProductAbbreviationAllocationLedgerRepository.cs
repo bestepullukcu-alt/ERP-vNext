@@ -49,7 +49,12 @@ public sealed class ProductAbbreviationAllocationLedgerRepository
         => persisted.PayloadHash == requested.PayloadHash
            && persisted.NormalizedAbbreviation == requested.NormalizedAbbreviation
            && persisted.GlobalProductId == requested.GlobalProductId
-           && persisted.RegisterEntryId == requested.RegisterEntryId;
+           && persisted.RegisterEntryId == requested.RegisterEntryId
+           // FIX4 item 3: a row left by an earlier attempt is reused only by the person who took it.
+           && string.Equals(
+               persisted.AllocatedByCanonicalSubjectId,
+               requested.AllocatedByCanonicalSubjectId,
+               StringComparison.Ordinal);
 
     public static void EnsureIndexes(IMongoCollection<ProductAbbreviationAllocationLedger> collection)
     {

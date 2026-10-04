@@ -125,8 +125,13 @@ public sealed class DispatchProductAbbreviationWorkItemActionHandler
             && entry.LastDecisionIdempotencyKey != operationKey
             && entry.LastDecisionIdempotencyKey != operationKey + ":replacement")
         {
-            // The Task Center's own conflict code: it already has a sentence for it in every language.
-            return Fail(409, "CONCURRENCY_CONFLICT");
+            // FIX4 item 4: another approver's decision standing is said as such — whatever key this one came with (the
+            // key carries the reason, so two approvers with different reasons send different keys).
+            return request.ActionCode is "approve" or "reject"
+                   && ProductAbbreviationDecisionRules.DecidedByAnotherApprover(entry, _actor.CanonicalHumanSubjectId)
+                ? Fail(409, "ABBREVIATION_ALREADY_DECIDED_BY_ANOTHER")
+                // The Task Center's own conflict code: it already has a sentence for it in every language.
+                : Fail(409, "CONCURRENCY_CONFLICT");
         }
 
         // Approving a correction needs the code it replaces to be active. Rejecting or cancelling it does not: an

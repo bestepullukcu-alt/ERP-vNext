@@ -374,6 +374,53 @@ public sealed class ApiStartupExecutionModeMongoTests(AuditIntentTemporalMongoFi
     }
 
     [Fact]
+    public async Task Actual_api_host_says_once_at_start_that_a_standalone_server_cannot_run_abbreviation_transactions()
+    {
+        // ABB FIX4 item 1 — measured on the real Release host, not by calling the check directly: Program.cs registers
+        // it, it runs at start, and on a standalone server it writes its warning exactly once — and the host still serves.
+        var databaseName = $"diten_mdm_api_host_abb_{Guid.NewGuid():N}";
+        var port = ReserveLoopbackPort();
+        var apiDirectory = Path.Combine(FindRepoRoot(), "services", "Diten.MdmService", "src", "Diten.MdmService.Api");
+        var apiAssembly = Path.Combine(apiDirectory, "bin", "Release", "net8.0", "Diten.MdmService.Api.dll");
+        Assert.True(File.Exists(apiAssembly), $"MDM API Release assembly was not found: {apiAssembly}");
+        var client = new MongoClient(mongo.StandaloneConnectionString);
+        using var process = CreateApiProcess(apiAssembly, apiDirectory, databaseName, port);
+        var output = new StringBuilder();
+        process.OutputDataReceived += (_, eventArgs) => AppendLine(output, eventArgs.Data);
+        process.ErrorDataReceived += (_, eventArgs) => AppendLine(output, eventArgs.Data);
+
+        try
+        {
+            Assert.True(process.Start(), "MDM API child host did not start.");
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            Assert.True(await WaitForHealthyAsync(process, port, TimeSpan.FromSeconds(20)),
+                $"MDM API child host did not become healthy.{Environment.NewLine}{output}");
+            string text;
+            lock (output)
+            {
+                text = output.ToString();
+            }
+
+            var warnings = text.Split('\n').Count(line => line.Contains(
+                Diten.MdmService.Api.Services.ProductAbbreviationRegister.ProductAbbreviationTransactionSupportCheck.UnavailableEvent,
+                StringComparison.Ordinal));
+            Assert.True(warnings == 1, $"expected one transactions_unavailable line, saw {warnings}.{Environment.NewLine}{text}");
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+                await process.WaitForExitAsync();
+            }
+
+            await client.DropDatabaseAsync(databaseName);
+        }
+    }
+
+    [Fact]
     public async Task Api_serving_mode_does_not_run_legal_entity_startup_migration()
     {
         var databaseName = $"diten_mdm_api_startup_mode_{Guid.NewGuid():N}";

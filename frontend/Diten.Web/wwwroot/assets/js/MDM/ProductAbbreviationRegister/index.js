@@ -63,6 +63,9 @@ const ProductAbbreviationRegisterList = (function () {
         ABBREVIATION_NOT_FOUND: 'ErrorNotFound',
         GLOBAL_PRODUCT_NOT_FOUND: 'ErrorProductNotFound',
         ABBREVIATION_PERSISTENCE_UNAVAILABLE: 'ErrorPersistenceUnavailable',
+        // FIX4 item 6 — the server cannot run the transaction every register write needs: the same "try again later",
+        // not a gateway failure.
+        PRODUCT_ABBREVIATION_TRANSACTIONS_UNAVAILABLE: 'ErrorPersistenceUnavailable',
         ABBREVIATION_EVIDENCE_RECONCILIATION_REQUIRED: 'ErrorReconciliation',
         ABBREVIATION_REGISTER_RECONCILIATION_REQUIRED: 'ErrorReconciliation',
         ABBREVIATION_REGISTER_CONFLICT: 'ErrorConflict',

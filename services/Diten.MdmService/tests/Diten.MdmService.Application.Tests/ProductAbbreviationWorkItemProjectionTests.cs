@@ -400,6 +400,44 @@ public sealed class ProductAbbreviationWorkItemProjectionTests
         Assert.Contains(logger.Lines, line => line.Contains("work_item_policy_unreadable") && line.Contains(broken.Id.ToString()));
     }
 
+    [Fact]
+    public async Task A_database_failure_on_the_batch_policy_read_goes_up_instead_of_an_empty_board()
+    {
+        // FIX4 item 2 — the policy collection being down is not "every product's policy is unreadable": hiding every
+        // product would answer a successful EMPTY board. It goes up, and the Task Center says the source did not answer.
+        var (tenant, reader) = (new TenantContext(), Guid.NewGuid());
+        tenant.SetTenant(Guid.NewGuid());
+        var product = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-DOWN", GlobalProductName = "Down" };
+        var policies = Stub<IProductLegalEntityScopePolicyRepository>((method, _) => method.Name switch
+        {
+            nameof(IProductLegalEntityScopePolicyRepository.GetByGlobalProductIdsAsync)
+                => Task.FromException<IReadOnlyList<ProductLegalEntityScopePolicy>>(new TimeoutException("policies down")),
+            _ => Task.FromResult<ProductLegalEntityScopePolicy?>(Policy(tenant.TenantId, product.Id, reader))
+        });
+
+        await Assert.ThrowsAsync<TimeoutException>(() => EnforcedHandler([Entry(product.Id, "maker")], [product], tenant,
+            reader, policies).Handle(new GetProductAbbreviationWorkItemsQuery("team"), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task A_database_failure_on_one_products_policy_read_goes_up_and_is_not_hidden_as_bad_data()
+    {
+        // FIX4 item 2 — the product-by-product fallback (after a DATA failure of the batch) hides a product only for its
+        // own unreadable document; the database failing while it reads goes up as well.
+        var (tenant, reader) = (new TenantContext(), Guid.NewGuid());
+        tenant.SetTenant(Guid.NewGuid());
+        var product = new GlobalProduct { Id = Guid.NewGuid(), CanonicalCode = "GP-ONE", GlobalProductName = "One" };
+        var policies = Stub<IProductLegalEntityScopePolicyRepository>((method, _) => method.Name switch
+        {
+            nameof(IProductLegalEntityScopePolicyRepository.GetByGlobalProductIdsAsync)
+                => Task.FromException<IReadOnlyList<ProductLegalEntityScopePolicy>>(new FormatException("bad policy document")),
+            _ => Task.FromException<ProductLegalEntityScopePolicy?>(new TimeoutException("policies down"))
+        });
+
+        await Assert.ThrowsAsync<TimeoutException>(() => EnforcedHandler([Entry(product.Id, "maker")], [product], tenant,
+            reader, policies).Handle(new GetProductAbbreviationWorkItemsQuery("team"), CancellationToken.None));
+    }
+
     private static ProductLegalEntityScopePolicy Policy(Guid tenantId, Guid productId, Guid legalEntityId)
         => ProductLegalEntityScopePolicy.Create(tenantId, productId, Guid.NewGuid(), ProductLegalEntityScopeMode.Scoped,
             [legalEntityId], Guid.NewGuid(), DateTimeOffset.UtcNow.AddMinutes(-1));

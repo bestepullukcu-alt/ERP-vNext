@@ -273,8 +273,14 @@ public sealed class ProductAbbreviationWorkItemActionTests
         var result = await handler.Handle(Command(correction.Id, "approve", 1), CancellationToken.None);
 
         Assert.Equal(409, result.StatusCode);
-        // The Task Center's own conflict code: it maps it to a sentence in every language (a new code would not).
-        Assert.Equal("CONCURRENCY_CONFLICT", result.ReasonCode);
+        // FIX4 item 4 — another approver's decision standing (approved, rejected) is said as such; the Task Center has
+        // that sentence in every language since FIX3 item 12. A cancellation is the requester's, not an approver's:
+        // the Task Center's own conflict code.
+        Assert.Equal(
+            status == ProductAbbreviationLifecycleStatus.CANCELLED
+                ? "CONCURRENCY_CONFLICT"
+                : "ABBREVIATION_ALREADY_DECIDED_BY_ANOTHER",
+            result.ReasonCode);
     }
 
     [Fact]

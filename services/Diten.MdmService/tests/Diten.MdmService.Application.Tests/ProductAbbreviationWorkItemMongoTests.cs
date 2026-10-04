@@ -150,6 +150,28 @@ public sealed class ProductAbbreviationWorkItemMongoTests(Diten.MdmService.Appli
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => repository.GetPendingWorkItemsPageAsync(null, 501));
     }
 
+    [Fact]
+    public async Task Two_approvers_rejecting_with_different_reasons_the_late_one_hears_another_decided()
+    {
+        // FIX4 item 4 — in the Task Center the operation key carries the reason, so two approvers with different
+        // reasons send different keys. The late one is still told "another approver decided" from the stored decision,
+        // not CONCURRENCY_CONFLICT.
+        await using var scope = await MongoScope.CreateAsync(mongo.ReplicaConnectionString);
+        var register = scope.Repository(scope.TenantA);
+        var history = scope.History(scope.TenantA);
+        var entry = await InsertAsync(register, Guid.NewGuid(), DateTimeOffset.UtcNow, "TWO-REASONS");
+        DispatchProductAbbreviationWorkItemActionCommand Reject(string reason) => new(
+            entry.Id, "reject", "mdm-product-abbreviations", 0, reason, null, false);
+
+        var first = await Handler(scope, register, history, Guid.NewGuid().ToString("D")).Handle(Reject("first reason"), CancellationToken.None);
+        var late = await Handler(scope, register, history, Guid.NewGuid().ToString("D")).Handle(Reject("another reason"), CancellationToken.None);
+
+        Assert.True(first.IsSuccessful, first.ReasonCode);
+        Assert.False(late.IsSuccessful);
+        Assert.Equal(409, late.StatusCode);
+        Assert.Equal(ProductAbbreviationRegisterRepository.AlreadyDecidedByAnother, late.ReasonCode);
+    }
+
     [Theory]
     [InlineData(false, "approve")]
     [InlineData(false, "reject")]

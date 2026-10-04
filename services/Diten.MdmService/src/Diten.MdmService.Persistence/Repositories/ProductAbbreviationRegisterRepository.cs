@@ -1,10 +1,14 @@
+using System.Collections.Concurrent;
 using Diten.MdmService.Application.Common;
+using Diten.MdmService.Application.Features.ProductAbbreviationRegister.Services;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Diten.MdmService.Persistence.Repositories;
 
@@ -16,6 +20,10 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
     private readonly IMongoCollection<BsonDocument> _productSlots;
     private readonly IMongoCollection<ProductAbbreviationAllocationLedger> _ledger;
     private readonly Guid _tenantId;
+    private readonly ILogger<ProductAbbreviationRegisterRepository> _logger;
+
+    /// <summary>FIX4 item 9 — the tenants (per database) whose pending rows this process has already given an order.</summary>
+    private static readonly ConcurrentDictionary<string, byte> BackfilledTenants = new(StringComparer.Ordinal);
 
     public const string AlreadyDecidedByAnother = "ABBREVIATION_ALREADY_DECIDED_BY_ANOTHER";
     /// <summary>FIX3 item 6 — the server cannot run a transaction (a standalone mongod): every ABB write needs one.</summary>
@@ -25,10 +33,16 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
     private const string Reclassify = "__RECLASSIFY__";
     public const string PendingRequestIndexName = "ix_mdm_product_abbreviation_register_tenant_pending_requests";
     public const string PendingRetirementIndexName = "ix_mdm_product_abbreviation_register_tenant_pending_retirements";
+    /// <summary>FIX2's pending-order index over every row; FIX3 replaced it with the two partial ones (FIX4 item 5).</summary>
+    public const string RetiredPendingOrderIndexName = "ix_mdm_product_abbreviation_register_tenant_pending_order";
 
-    public ProductAbbreviationRegisterRepository(IMongoDatabase database, ITenantContext tenantContext)
+    public ProductAbbreviationRegisterRepository(
+        IMongoDatabase database,
+        ITenantContext tenantContext,
+        ILogger<ProductAbbreviationRegisterRepository>? logger = null)
     {
         _database = database;
+        _logger = logger ?? NullLogger<ProductAbbreviationRegisterRepository>.Instance;
         _collection = database.GetCollection<ProductAbbreviationRegisterEntry>("mdm_product_abbreviation_register");
         _history = database.GetCollection<ProductAbbreviationHistoryEntry>(
             ProductAbbreviationHistoryRepository.CollectionName);
@@ -56,7 +70,7 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
         // before the first page is read, so a cursor never meets a row it cannot place.
         if (after is null)
         {
-            await BackfillPendingSinceAsync(cancellationToken);
+            await BackfillPendingSinceOnceAsync(cancellationToken);
         }
 
         // FIX2 A3: the order work started waiting in (a stored integer), then the id as the tie-break — a stable,
@@ -126,16 +140,57 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
            & Builders<ProductAbbreviationRegisterEntry>.Filter.Type(x => x.RetirementRequestId, BsonType.String);
 
     /// <summary>
-    /// FIX3 item 9 — a pending row written before FIX2 has no PendingSinceUtcTicks. It is given the moment it started
-    /// waiting: the retirement request's time for a waiting retirement, otherwise the request's time. Both are stored
-    /// as [clock ticks, offset minutes] (BL-030), so UTC ticks = ticks − offset × ticks-per-minute. Idempotent: only rows
-    /// without the field are touched, and only this tenant's.
+    /// FIX3 item 9 / FIX4 (CT decision) — a pending row written before FIX2 has no PendingSinceUtcTicks. It is given the
+    /// moment it started waiting: the retirement request's time for a waiting retirement, otherwise the request's time.
+    /// Both are stored as [clock ticks, offset minutes] (BL-030), so UTC ticks = ticks − offset × ticks-per-minute.
+    /// <list type="bullet">
+    /// <item>Once per process per tenant (and database): marked only after a run that succeeded.</item>
+    /// <item>Never the reason a read fails: a failure is logged and the page is read as it is.</item>
+    /// <item>A row whose time is not in that shape is left as it is — one bad row is one row (FIX1 B3(b)), it never
+    /// stops the others from getting their order.</item>
+    /// <item>Only this tenant's rows, and only rows without the field.</item>
+    /// </list>
     /// </summary>
+    private async Task BackfillPendingSinceOnceAsync(CancellationToken cancellationToken)
+    {
+        var marker = $"{_database.DatabaseNamespace.DatabaseName}|{_tenantId:N}";
+        if (BackfilledTenants.ContainsKey(marker))
+        {
+            return;
+        }
+
+        try
+        {
+            await BackfillPendingSinceAsync(cancellationToken);
+            BackfilledTenants.TryAdd(marker, 0);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(
+                "mdm.product_abbreviation.pending_order_backfill_failed TenantId={TenantId} ExceptionType={ExceptionType}",
+                _tenantId,
+                exception.GetType().Name);
+        }
+    }
+
     private async Task BackfillPendingSinceAsync(CancellationToken cancellationToken)
     {
+        static BsonDocument IsTimestamp(string field) => new("$and", new BsonArray
+        {
+            new BsonDocument("$isArray", field),
+            new BsonDocument("$eq", new BsonArray { new BsonDocument("$size", new BsonDocument("$cond", new BsonArray
+            {
+                new BsonDocument("$isArray", field), field, new BsonArray()
+            })), 2 })
+        });
+
         static BsonDocument UtcTicks(string field) => new("$subtract", new BsonArray
         {
-            new BsonDocument("$arrayElemAt", new BsonArray { field, 0 }),
+            new BsonDocument("$toLong", new BsonDocument("$arrayElemAt", new BsonArray { field, 0 })),
             new BsonDocument("$multiply", new BsonArray
             {
                 new BsonDocument("$toLong", new BsonDocument("$arrayElemAt", new BsonArray { field, 1 })),
@@ -143,23 +198,30 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
             })
         });
 
+        const string retirementAt = "$" + nameof(ProductAbbreviationRegisterEntry.RetirementRequestedAtUtc);
+        const string requestedAt = "$" + nameof(ProductAbbreviationRegisterEntry.RequestedAtUtc);
         var missing = new BsonDocument(nameof(ProductAbbreviationRegisterEntry.PendingSinceUtcTicks), BsonNull.Value);
-        var waitingRetirement = new BsonDocument("$isArray", "$" + nameof(ProductAbbreviationRegisterEntry.RetirementRequestedAtUtc));
+        var waitingRetirement = new BsonDocument("$and", new BsonArray
+        {
+            new BsonDocument("$eq", new BsonArray
+            {
+                "$" + nameof(ProductAbbreviationRegisterEntry.LifecycleStatus),
+                (int)ProductAbbreviationLifecycleStatus.ACTIVE
+            }),
+            IsTimestamp(retirementAt)
+        });
+        // $switch: the retirement's time, else the request's time, else leave the field out ($$REMOVE) — a row whose
+        // stored time is not [ticks, offset] is not stamped and does not fail the update for every other row.
         var stamp = new BsonDocument("$set", new BsonDocument(
             nameof(ProductAbbreviationRegisterEntry.PendingSinceUtcTicks),
-            new BsonDocument("$cond", new BsonArray
+            new BsonDocument("$switch", new BsonDocument
             {
-                new BsonDocument("$and", new BsonArray
+                ["branches"] = new BsonArray
                 {
-                    new BsonDocument("$eq", new BsonArray
-                    {
-                        "$" + nameof(ProductAbbreviationRegisterEntry.LifecycleStatus),
-                        (int)ProductAbbreviationLifecycleStatus.ACTIVE
-                    }),
-                    waitingRetirement
-                }),
-                UtcTicks("$" + nameof(ProductAbbreviationRegisterEntry.RetirementRequestedAtUtc)),
-                UtcTicks("$" + nameof(ProductAbbreviationRegisterEntry.RequestedAtUtc))
+                    new BsonDocument { ["case"] = waitingRetirement, ["then"] = UtcTicks(retirementAt) },
+                    new BsonDocument { ["case"] = IsTimestamp(requestedAt), ["then"] = UtcTicks(requestedAt) }
+                },
+                ["default"] = "$$REMOVE"
             })));
         foreach (var work in new[] { RequestedWork, RetirementWork })
         {
@@ -306,10 +368,11 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
         }
 
         // Only a correction that is STILL requested is approved: a cancelled, rejected or already active one never
-        // retires the code it was meant to replace.
+        // retires the code it was meant to replace. FIX4 item 4: when another approver's decision stands, that is the
+        // answer, whatever key this approval came with.
         if (replacement.LifecycleStatus != ProductAbbreviationLifecycleStatus.REQUESTED)
         {
-            return new(false, replacement, "ABBREVIATION_NOT_PENDING");
+            return NotPendingFor(replacement, approval.CheckerSubjectId);
         }
 
         // FIX2 A5: the code being replaced must be ACTIVE. The FIX1 path that "finished" a former entry recognised only
@@ -378,7 +441,7 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
             () => AfterAbortAsync(approval, formerKey, replacementKey, cancellationToken),
             "ABBREVIATION_CORRECTION_CONFLICT",
             cancellationToken);
-        return outcome ?? new(true, await GetByIdAsync(replacement.Id, cancellationToken) ?? replacementPost);
+        return outcome ?? new(true, await ReadBackAsync(replacement.Id, replacementPost, cancellationToken));
     }
 
     /// <summary>
@@ -400,7 +463,7 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
 
         if (replacement is not null && replacement.LifecycleStatus != ProductAbbreviationLifecycleStatus.REQUESTED)
         {
-            return new(false, replacement, "ABBREVIATION_NOT_PENDING");
+            return NotPendingFor(replacement, approval.CheckerSubjectId);
         }
 
         return former is null || replacement is null
@@ -462,6 +525,18 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
     private FilterDefinition<ProductAbbreviationRegisterEntry> ById(Guid id)
         => TenantFilter & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.Id, id);
 
+    /// <summary>FIX4 item 4 — a request no longer waiting: another approver's decision, or simply not pending.</summary>
+    private static ProductAbbreviationRegisterWriteResult NotPendingFor(ProductAbbreviationRegisterEntry entry, string actor)
+        => ProductAbbreviationDecisionRules.DecidedByAnotherApprover(entry, actor)
+            ? new(false, entry, AlreadyDecidedByAnother)
+            : new(false, entry, "ABBREVIATION_NOT_PENDING");
+
+    /// <summary>FIX4 item 4 — an approve or reject that finds another approver's decision standing, whatever its key.</summary>
+    private static bool AnotherApproverDecided(ProductAbbreviationRegisterEntry entry, ProductAbbreviationDecision decision)
+        => decision.Kind is ProductAbbreviationDecisionKind.Approve or ProductAbbreviationDecisionKind.Reject
+           && entry.LifecycleStatus != ProductAbbreviationLifecycleStatus.REQUESTED
+           && ProductAbbreviationDecisionRules.DecidedByAnotherApprover(entry, decision.ActorSubjectId);
+
     private static ProductAbbreviationRegisterWriteResult MineOrAnother(
         ProductAbbreviationRegisterEntry entry,
         string actor)
@@ -489,6 +564,11 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
         if (recognised is not null)
         {
             return recognised;
+        }
+
+        if (AnotherApproverDecided(current, decision))
+        {
+            return new(false, current, AlreadyDecidedByAnother);
         }
 
         if (current.Version != decision.ExpectedVersion
@@ -543,6 +623,11 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
                     return again;
                 }
 
+                if (AnotherApproverDecided(after, decision))
+                {
+                    return new(false, after, AlreadyDecidedByAnother);
+                }
+
                 if (decision.Kind == ProductAbbreviationDecisionKind.RequestRetirement
                     && after.PendingCorrectionEntryId is { } pending
                     && IsPendingCorrectionOf(await GetByIdAsync(pending, cancellationToken), after.Id))
@@ -559,7 +644,7 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
             },
             "CONCURRENCY_CONFLICT",
             cancellationToken);
-        return outcome ?? new(true, await GetByIdAsync(current.Id, cancellationToken) ?? post);
+        return outcome ?? new(true, await ReadBackAsync(current.Id, post, cancellationToken));
     }
 
     /// <summary>
@@ -914,7 +999,7 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
             },
             "CONCURRENCY_CONFLICT",
             cancellationToken);
-        return outcome ?? new(true, await GetByIdAsync(entry.Id, cancellationToken) ?? entry);
+        return outcome ?? new(true, await ReadBackAsync(entry.Id, entry, cancellationToken));
     }
 
     private FilterDefinition<ProductAbbreviationAllocationLedger> LedgerByKey(string idempotencyKey)
@@ -1031,6 +1116,29 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
         }
     }
 
+    /// <summary>
+    /// FIX4 item 7 — the entry as stored after a COMMITTED write. The write has happened: a failing read-back must not
+    /// turn it into a 500 the caller would retry; the entry as written is answered instead, and the failure is logged.
+    /// </summary>
+    private async Task<ProductAbbreviationRegisterEntry> ReadBackAsync(
+        Guid id,
+        ProductAbbreviationRegisterEntry written,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await GetByIdAsync(id, cancellationToken) ?? written;
+        }
+        catch (Exception exception) when (IsPersistenceFailure(exception))
+        {
+            _logger.LogWarning(
+                "mdm.product_abbreviation.read_back_failed EntryId={EntryId} ExceptionType={ExceptionType}",
+                id,
+                exception.GetType().Name);
+            return written;
+        }
+    }
+
     private static async Task AbortQuietlyAsync(IClientSessionHandle? session)
     {
         if (session is not { IsInTransaction: true })
@@ -1050,14 +1158,22 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
 
     /// <summary>A failure of the database or of the path to it — not a bug in this code.</summary>
     private static bool IsPersistenceFailure(Exception exception)
-        => exception is MongoException or TimeoutException or NotSupportedException;
+        => exception is MongoException or TimeoutException || IsStandaloneRefusal(exception);
+
+    /// <summary>
+    /// FIX4 item 7 — the driver's own refusal to start a transaction on a standalone server; any other
+    /// NotSupportedException is a bug in this code and is not dressed up as an outage.
+    /// </summary>
+    private static bool IsStandaloneRefusal(Exception exception)
+        => exception is NotSupportedException
+           && exception.Message.Contains("do not support transactions", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// FIX3 item 6 — a standalone mongod: the driver refuses to start the transaction (NotSupportedException), or, when
     /// it could not tell yet, the server refuses the first statement (IllegalOperation, code 20).
     /// </summary>
     public static bool TransactionsAreUnsupported(Exception exception)
-        => exception is NotSupportedException
+        => IsStandaloneRefusal(exception)
            || exception is MongoCommandException { Code: 20 } command
               && (command.ErrorMessage ?? command.Message).Contains("Transaction numbers", StringComparison.OrdinalIgnoreCase);
 
@@ -1112,6 +1228,7 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
 
     private void EnsureIndexes()
     {
+        DropRetiredIndex();
         var activeFilter = Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.IsDeleted, false)
                            & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
                                x => x.LifecycleStatus,
@@ -1176,6 +1293,29 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
         _productSlots.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(
             Builders<BsonDocument>.IndexKeys.Ascending("TenantId").Ascending("GlobalProductId"),
             new CreateIndexOptions { Name = "ix_mdm_product_abbreviation_product_slots_tenant_product" }));
+    }
+
+    /// <summary>
+    /// FIX4 item 5 — FIX2's pending-order index held every row of every tenant; the two partial indexes replaced it.
+    /// Dropped where it still exists, by its exact name only (no other index is touched); idempotent.
+    /// </summary>
+    private void DropRetiredIndex()
+    {
+        var present = _collection.Indexes.List().ToList()
+            .Any(index => index.TryGetValue("name", out var name) && name == RetiredPendingOrderIndexName);
+        if (!present)
+        {
+            return;
+        }
+
+        try
+        {
+            _collection.Indexes.DropOne(RetiredPendingOrderIndexName);
+        }
+        catch (MongoCommandException exception) when (exception.Code == 27)
+        {
+            // IndexNotFound: another instance dropped it first.
+        }
     }
 
     private FilterDefinition<ProductAbbreviationRegisterEntry> TenantFilter

@@ -222,9 +222,12 @@ public sealed class GetProductAbbreviationWorkItemsHandler
     }
 
     /// <summary>
-    /// FIX3 item 7 — the page's policies in one read. When that read fails (one unreadable policy document fails the
-    /// whole query), each product is read on its own instead: a product whose policy cannot be read is hidden (the guard
-    /// answers "invalid scope evidence" for it), and every other product of the page is still evaluated and shown.
+    /// FIX3 item 7 — the page's policies in one read. When that read fails because a policy document cannot be read
+    /// (one unreadable document fails the whole query), each product is read on its own instead: a product whose policy
+    /// cannot be read is hidden (the guard answers "invalid scope evidence" for it), every other product is still shown.
+    /// FIX4 item 2: only a DATA failure hides a product. The database or the path to it failing is not "this product's
+    /// policy is unreadable" — it goes up, so the Task Center says the source did not answer instead of drawing an
+    /// empty board as if there were no work.
     /// </summary>
     private async Task<PrefetchedPolicies> PrefetchPoliciesAsync(
         IReadOnlyCollection<Guid> productIds,
@@ -237,7 +240,7 @@ public sealed class GetProductAbbreviationWorkItemsHandler
                 await _policies.GetByGlobalProductIdsAsync(productIds, cancellationToken),
                 new HashSet<Guid>());
         }
-        catch (Exception exception) when (exception is not OperationCanceledException)
+        catch (Exception exception) when (IsUnreadablePolicy(exception))
         {
             _logger.LogWarning(
                 "mdm.product_abbreviation.work_item_policy_batch_failed ProductCount={ProductCount} ExceptionType={ExceptionType}",
@@ -256,7 +259,7 @@ public sealed class GetProductAbbreviationWorkItemsHandler
                     found.Add(policy);
                 }
             }
-            catch (Exception exception) when (exception is not OperationCanceledException)
+            catch (Exception exception) when (IsUnreadablePolicy(exception))
             {
                 unreadable.Add(productId);
                 _logger.LogWarning(
@@ -267,6 +270,29 @@ public sealed class GetProductAbbreviationWorkItemsHandler
         }
 
         return new PrefetchedPolicies(_policies, found, unreadable);
+    }
+
+    /// <summary>
+    /// A policy document that cannot be read as a policy: it does not deserialize (FormatException, or the BSON
+    /// serializer's own exception — named, since this layer does not reference the driver) or its content is invalid
+    /// (InvalidOperationException). Anything else — the database, the network, a timeout — is not about one product.
+    /// </summary>
+    private static bool IsUnreadablePolicy(Exception exception)
+    {
+        if (exception is FormatException or InvalidOperationException)
+        {
+            return true;
+        }
+
+        for (var type = exception.GetType(); type is not null; type = type.BaseType)
+        {
+            if (type.FullName == "MongoDB.Bson.BsonSerializationException")
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>The page's policies, read once; every other member goes to the real repository.</summary>
