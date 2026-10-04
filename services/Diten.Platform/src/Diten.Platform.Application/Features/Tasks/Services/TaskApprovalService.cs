@@ -31,8 +31,12 @@ public interface ITaskApprovalService
     /// </summary>
     Task<Guid?> TryStartApprovalAsync(TaskItem task, CancellationToken ct);
 
-    /// <summary>Cancel a task's approval — used when the requirement is switched back off.</summary>
-    Task CancelApprovalAsync(TaskItem task, CancellationToken ct);
+    /// <summary>
+    /// Cancel a task's approval — used when the requirement is switched back off. True when nothing is left open
+    /// (cancelled now, or nothing was open); false when an open approval task could NOT be cancelled — the caller then
+    /// keeps the instance link, or the approval would stay decidable with nothing reading it (D2-FIX1 A1).
+    /// </summary>
+    Task<bool> CancelApprovalAsync(TaskItem task, CancellationToken ct);
 
     /// <summary>
     /// Approval state for MANY tasks in ONE read. Per-task reads would be an N+1 over a projected page, and the
@@ -186,25 +190,28 @@ public sealed class TaskApprovalService : ITaskApprovalService
         }
     }
 
-    public async Task CancelApprovalAsync(TaskItem task, CancellationToken ct)
+    public async Task<bool> CancelApprovalAsync(TaskItem task, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(task);
         if (task.WorkflowInstanceId is null)
         {
-            return;
+            return true;
         }
 
         try
         {
             // Cancel through MOD-0023's OWN command so its audit trail and state machine stay authoritative;
             // MOD-0024 never edits workflow state directly.
+            // D2-FIX1 A1 — every task still waiting on somebody, ESCALATED included: an escalated approval is just as
+            // open as a waiting one (the timesheet withdraw's rule, F8).
             var pending = (await _approvalTasks.ListByInstanceIdAsync(task.WorkflowInstanceId.Value, ct))
-                .Where(t => t.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence)
+                .Where(t => t.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence
+                    or ApprovalTaskStatus.Escalated)
                 .ToList();
 
             foreach (var approvalTask in pending)
             {
-                await _mediator.Send(new CancelWorkflowTaskCommand(
+                var result = await _mediator.Send(new CancelWorkflowTaskCommand(
                     approvalTask.Id,
                     new Workflow.CancelWorkflowTaskRequest(
                         ActorId: _currentUser.UserId.ToString(),
@@ -212,14 +219,26 @@ public sealed class TaskApprovalService : ITaskApprovalService
                         // Idempotent per approval task: a retried cancel must not double-cancel.
                         IdempotencyKey: $"task-approval-cancel:{approvalTask.Id}",
                         Comment: null),
-                    CorrelationId()), ct);
+                    CorrelationId(),
+                    // D2-FIX1 A1 — Tasks OWNS the object (as the timesheet does): its own withdraw may call off an
+                    // approval that was ever escalated. The public cancel endpoint never sets this.
+                    AllowEscalated: true), ct);
+
+                if (!result.IsSuccessful)
+                {
+                    _logger.LogWarning(
+                        "Could not cancel approval task {ApprovalTaskId} for task {TaskId} ({ReasonCode}); the link is kept.",
+                        approvalTask.Id, task.Id, result.ReasonCode);
+                    return false;
+                }
             }
+
+            return true;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // Best effort: the requirement has already been switched off on the task, and leaving a stale
-            // approval open is a lesser evil than failing the user's edit.
-            _logger.LogWarning(ex, "Could not cancel the approval for task {TaskId}; it may remain open.", task.Id);
+            _logger.LogWarning(ex, "Could not cancel the approval for task {TaskId}; the link is kept.", task.Id);
+            return false;
         }
     }
 

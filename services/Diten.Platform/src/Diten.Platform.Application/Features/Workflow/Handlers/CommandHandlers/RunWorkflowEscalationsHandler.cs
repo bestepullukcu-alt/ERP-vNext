@@ -177,6 +177,7 @@ public sealed class RunWorkflowEscalationsHandler
             task.TimedOutAt = now;
             task.CompletedAt = now;
             task.LastEscalationReasonCode = WorkflowReasonCodes.WorkflowTimeoutProcessed;
+            task.EscalationParkedAtUtc = null;
             instance.Status = WorkflowInstanceStatus.TimedOut;
             instance.CompletedAt = now;
         }
@@ -204,10 +205,23 @@ public sealed class RunWorkflowEscalationsHandler
                 resolvedEscalationCandidates, instance.StartedByUserId, instance.StartedBy);
             if (resolvedEscalationCandidates.Count == 0)
             {
-                _logger.LogWarning(
-                    "Escalation of workflow task {TaskId} (instance {InstanceId}) skipped: every escalation candidate "
-                    + "is the person who started the workflow. The task stays with its current approvers.",
-                    task.Id, instance.Id);
+                // D2-FIX1 A4 — PARKED, once. The first sweep that finds nobody warns and marks the task; later sweeps see
+                // the mark and stay quiet (the reason has not changed), and the overdue read puts it last.
+                if (!string.Equals(task.LastEscalationReasonCode, WorkflowReasonCodes.WorkflowNoEligibleApprover, StringComparison.Ordinal))
+                {
+                    _logger.LogWarning(
+                        "Escalation of workflow task {TaskId} (instance {InstanceId}) skipped: every escalation candidate "
+                        + "is the person who started the workflow. The task stays with its current approvers.",
+                        task.Id, instance.Id);
+                    task.LastEscalationReasonCode = WorkflowReasonCodes.WorkflowNoEligibleApprover;
+                    task.EscalationParkedAtUtc = now.UtcDateTime;
+                    if (!await _tasks.UpdateEscalationAsync(task, task.Version, ct))
+                    {
+                        // Lost to a concurrent change (a decision, another run): nothing to park; the next sweep re-reads.
+                        _logger.LogInformation("Parking workflow task {TaskId} lost a concurrent update.", task.Id);
+                    }
+                }
+
                 return Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowNoEligibleApprover);
             }
 
@@ -236,6 +250,7 @@ public sealed class RunWorkflowEscalationsHandler
             task.EscalatedAt = now;
             task.EscalationLevel++;
             task.LastEscalationReasonCode = WorkflowReasonCodes.WorkflowEscalationProcessed;
+            task.EscalationParkedAtUtc = null;
             if (newAssignee is not null)
             {
                 task.AssigneeRef = newAssignee;

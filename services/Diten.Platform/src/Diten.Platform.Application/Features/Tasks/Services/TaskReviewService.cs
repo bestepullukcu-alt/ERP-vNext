@@ -19,9 +19,22 @@ public interface ITaskReviewService
     /// </summary>
     Task<Guid?> TryStartReviewAsync(TaskItem task, CancellationToken ct);
 
-    /// <summary>Cancel a task's review — used when the requirement is switched back off.</summary>
-    Task CancelReviewAsync(TaskItem task, CancellationToken ct);
+    /// <summary>
+    /// D2-FIX1 — the same start, and when it was refused, the ENGINE's reason (e.g. nobody but the submitter could
+    /// review it). The submit path uses this so "no eligible reviewer" is not shown as "try again".
+    /// </summary>
+    async Task<TaskReviewStartResult> StartReviewAsync(TaskItem task, CancellationToken ct) =>
+        new(await TryStartReviewAsync(task, ct), null);
+
+    /// <summary>
+    /// Cancel a task's review — used when the requirement is switched back off. Same contract as the approval's:
+    /// false means an open review task could NOT be cancelled and the caller keeps the link (D2-FIX1 A1).
+    /// </summary>
+    Task<bool> CancelReviewAsync(TaskItem task, CancellationToken ct);
 }
+
+/// <summary>D2-FIX1 — a review start: the instance, or why MOD-0023 refused it (null when the reason is unknown).</summary>
+public sealed record TaskReviewStartResult(Guid? InstanceId, string? RefusalReasonCode);
 
 /// <summary>
 /// Turns MOD-0023's reported state into the two flags MOD-0024 renders a REVIEW from — the exact counterpart of
@@ -150,7 +163,10 @@ public sealed class TaskReviewService : ITaskReviewService
         _logger = logger;
     }
 
-    public async Task<Guid?> TryStartReviewAsync(TaskItem task, CancellationToken ct)
+    public async Task<Guid?> TryStartReviewAsync(TaskItem task, CancellationToken ct) =>
+        (await StartReviewAsync(task, ct)).InstanceId;
+
+    public async Task<TaskReviewStartResult> StartReviewAsync(TaskItem task, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(task);
 
@@ -159,7 +175,7 @@ public sealed class TaskReviewService : ITaskReviewService
             var templateId = await EnsureTemplateAsync(ct);
             if (templateId is null)
             {
-                return null;
+                return new(null, null);
             }
 
             var request = new Workflow.StartWorkflowInstanceRequest(
@@ -203,37 +219,38 @@ public sealed class TaskReviewService : ITaskReviewService
                     "Could not start task review for {TaskId}: {ReasonCode} {Message}. The task stays in progress "
                     + "rather than claiming to be under a review that was never opened.",
                     task.Id, response.ReasonCode, string.Join("; ", response.Errors));
-                return null;
+                return new(null, response.ReasonCode);
             }
 
-            return response.Data.WorkflowInstanceId;
+            return new(response.Data.WorkflowInstanceId, null);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Starting task review for {TaskId} threw; the task stays in progress.", task.Id);
-            return null;
+            return new(null, null);
         }
     }
 
-    public async Task CancelReviewAsync(TaskItem task, CancellationToken ct)
+    public async Task<bool> CancelReviewAsync(TaskItem task, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(task);
         if (task.ReviewWorkflowInstanceId is null)
         {
-            return;
+            return true;
         }
 
         try
         {
             // Through MOD-0023's OWN command so its audit trail and state machine stay authoritative;
-            // MOD-0024 never edits workflow state directly.
+            // MOD-0024 never edits workflow state directly. D2-FIX1 A1 — escalated review tasks are open too.
             var pending = (await _approvalTasks.ListByInstanceIdAsync(task.ReviewWorkflowInstanceId.Value, ct))
-                .Where(t => t.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence)
+                .Where(t => t.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence
+                    or ApprovalTaskStatus.Escalated)
                 .ToList();
 
             foreach (var reviewTask in pending)
             {
-                await _mediator.Send(new CancelWorkflowTaskCommand(
+                var result = await _mediator.Send(new CancelWorkflowTaskCommand(
                     reviewTask.Id,
                     new Workflow.CancelWorkflowTaskRequest(
                         ActorId: _currentUser.UserId.ToString(),
@@ -241,14 +258,25 @@ public sealed class TaskReviewService : ITaskReviewService
                         // Idempotent per review task: a retried cancel must not double-cancel.
                         IdempotencyKey: $"task-review-cancel:{reviewTask.Id}",
                         Comment: null),
-                    CorrelationId()), ct);
+                    CorrelationId(),
+                    // D2-FIX1 A1 — the owner's own withdraw (see the approval's cancel).
+                    AllowEscalated: true), ct);
+
+                if (!result.IsSuccessful)
+                {
+                    _logger.LogWarning(
+                        "Could not cancel review task {ReviewTaskId} for task {TaskId} ({ReasonCode}); the link is kept.",
+                        reviewTask.Id, task.Id, result.ReasonCode);
+                    return false;
+                }
             }
+
+            return true;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // Best effort, for the same reason approval's cancel is: the requirement is already off on the task,
-            // and a stale open review is a lesser evil than failing the user's edit.
-            _logger.LogWarning(ex, "Could not cancel the review for task {TaskId}; it may remain open.", task.Id);
+            _logger.LogWarning(ex, "Could not cancel the review for task {TaskId}; the link is kept.", task.Id);
+            return false;
         }
     }
 

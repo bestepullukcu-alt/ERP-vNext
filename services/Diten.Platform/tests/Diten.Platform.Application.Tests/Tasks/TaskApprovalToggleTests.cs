@@ -153,13 +153,80 @@ public sealed class TaskApprovalToggleTests
         Assert.Empty(approvals.Cancelled);
     }
 
+    // ── D2-FIX1 A1 · a withdraw that did not happen keeps the link, and says so ─────────────────────────────
+
+    [Fact]
+    public async Task When_the_approval_cannot_be_withdrawn_the_link_is_kept_and_the_answer_is_coded()
+    {
+        var task = ApprovalTask();
+        var (handler, tasks, approvals, _) = HandlerWithReview(task);
+        approvals.CannotCancel = true;
+
+        var response = await handler.Handle(Update(task, approvalRequired: false), CancellationToken.None);
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(TaskReasonCodes.ApprovalCancelFailed, response.ReasonCode);
+        var stored = await tasks.GetByIdAsync(task.Id, CancellationToken.None);
+        // The requirement change is saved; the link is NOT cleared, so the still-open approval is not orphaned.
+        Assert.False(stored!.ApprovalRequired);
+        Assert.Equal(RunningInstance, stored.WorkflowInstanceId);
+    }
+
+    [Fact]
+    public async Task A_later_edit_retries_an_approval_withdraw_that_failed()
+    {
+        var task = ApprovalTask();
+        var (handler, tasks, approvals, _) = HandlerWithReview(task);
+        approvals.CannotCancel = true;
+        await handler.Handle(Update(task, approvalRequired: false), CancellationToken.None);
+        approvals.CannotCancel = false;
+        var stored = (await tasks.GetByIdAsync(task.Id, CancellationToken.None))!;
+
+        var retry = await handler.Handle(Update(stored, approvalRequired: false), CancellationToken.None);
+
+        Assert.Equal(204, retry.StatusCode);
+        Assert.Equal(2, approvals.Cancelled.Count);
+        Assert.Null((await tasks.GetByIdAsync(task.Id, CancellationToken.None))!.WorkflowInstanceId);
+    }
+
+    [Fact]
+    public async Task When_the_review_cannot_be_withdrawn_the_link_is_kept_and_the_answer_is_coded()
+    {
+        var task = PlainTask();
+        task.ReviewRequired = true;
+        task.ReviewerCandidateUserId = Manager;
+        task.ReviewWorkflowInstanceId = RunningInstance;
+        var (handler, tasks, _, reviews) = HandlerWithReview(task);
+        reviews.CannotCancel = true;
+
+        var response = await handler.Handle(Update(task, approvalRequired: null), CancellationToken.None);
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(TaskReasonCodes.ReviewCancelFailed, response.ReasonCode);
+        Assert.Equal(RunningInstance, (await tasks.GetByIdAsync(task.Id, CancellationToken.None))!.ReviewWorkflowInstanceId);
+
+        reviews.CannotCancel = false;
+        var retry = await handler.Handle(
+            Update((await tasks.GetByIdAsync(task.Id, CancellationToken.None))!, approvalRequired: null), CancellationToken.None);
+        Assert.Equal(204, retry.StatusCode);
+        Assert.Null((await tasks.GetByIdAsync(task.Id, CancellationToken.None))!.ReviewWorkflowInstanceId);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static (UpdateTaskItemHandler Handler, FakeTaskItemRepository Tasks, FakeTaskApprovalService Approvals)
         Handler(TaskItem task)
     {
+        var (handler, tasks, approvals, _) = HandlerWithReview(task);
+        return (handler, tasks, approvals);
+    }
+
+    private static (UpdateTaskItemHandler Handler, FakeTaskItemRepository Tasks, FakeTaskApprovalService Approvals,
+        FakeTaskReviewService Reviews) HandlerWithReview(TaskItem task)
+    {
         var tasks = new FakeTaskItemRepository(task);
         var approvals = new FakeTaskApprovalService();
+        var reviews = new FakeTaskReviewService();
         var handler = new UpdateTaskItemHandler(
             tasks,
             new FakeOrganizationUnitRepository(new OrganizationUnit
@@ -173,10 +240,10 @@ public sealed class TaskApprovalToggleTests
             new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
             new FakeCurrentUserContext(TaskTestData.Me),
             approvals,
-            new FakeTaskReviewService(),
+            reviews,
             NullLogger<UpdateTaskItemHandler>.Instance,
                 TaskDocumentFreezerDoubles.OverAnEmptyRegister());
-        return (handler, tasks, approvals);
+        return (handler, tasks, approvals, reviews);
     }
 
     private static UpdateTaskItemCommand Update(

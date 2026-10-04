@@ -26,6 +26,15 @@ public sealed class ApprovalTask : TenantScopedEntity
     public DateTimeOffset? EscalatedAt { get; set; }
     public int EscalationLevel { get; set; }
     public string? LastEscalationReasonCode { get; set; }
+
+    /// <summary>
+    /// D2-FIX1 A4 — when the SLA sweep last found nobody eligible to escalate this task to (its
+    /// <see cref="LastEscalationReasonCode"/> then says why). A parked task is not warned about again for the same reason,
+    /// and it is read AFTER every unparked overdue task so it cannot crowd them out. Cleared by an escalation or a timeout.
+    /// A UTC <see cref="DateTime"/>, deliberately: stored as a BSON date (a scalar), not as the [ticks, offset] array a
+    /// DateTimeOffset becomes (BL-030), so it adds nothing to the reviewed DateTimeOffset inventory.
+    /// </summary>
+    public DateTime? EscalationParkedAtUtc { get; set; }
     public DateTimeOffset? TimedOutAt { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }
     public string? ActionedBy { get; set; }

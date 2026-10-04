@@ -982,12 +982,22 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
          * PendingReview with no instance is a task waiting on a reviewer who was never asked, and `complete` would
          * then refuse forever with no way to clear it.
          */
-        var instanceId = await _reviews.TryStartReviewAsync(task, ct);
+        var started = await _reviews.StartReviewAsync(task, ct);
+        var instanceId = started.InstanceId;
         if (instanceId is null)
         {
             _logger.LogWarning(
                 "Review could not be started for task {TaskId}; it stays in progress rather than waiting on nobody.",
                 task.Id);
+            if (started.RefusalReasonCode == Workflow.WorkflowReasonCodes.WorkflowNoEligibleApprover)
+            {
+                // D2-FIX1 — not "try again": nobody but the submitter could review it, and a retry changes nothing until
+                // the reviewer does. The engine's own code is passed through.
+                return Response<NoContent>.Fail(
+                    "Nobody other than you can review this task; choose another reviewer.",
+                    409, Workflow.WorkflowReasonCodes.WorkflowNoEligibleApprover, command.CorrelationId);
+            }
+
             /*
              * REVIEW_START_FAILED, not REVIEW_PENDING. Nothing is waiting: the handoff was refused, so there is
              * no reviewer to wait on and the caller can simply retry. Reporting it as "pending" pointed the user

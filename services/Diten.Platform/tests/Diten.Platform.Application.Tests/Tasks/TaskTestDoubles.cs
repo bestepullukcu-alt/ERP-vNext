@@ -1548,16 +1548,26 @@ internal sealed class FakeTaskReviewService : Diten.Platform.Application.Feature
     /// <summary>What the NEXT start returns. A second round after a refusal hands back a different id.</summary>
     public Guid InstanceId { get; set; } = Guid.Parse("beefbeef-beef-beef-beef-beefbeefbeef");
 
+    /// <summary>D2-FIX1 — with <see cref="CannotStart"/>, the engine's reason the start was refused.</summary>
+    public string? RefusalReasonCode { get; set; }
+
     public Task<Guid?> TryStartReviewAsync(TaskItem task, CancellationToken ct)
     {
         Started.Add(task.Id);
         return Task.FromResult<Guid?>(CannotStart ? null : InstanceId);
     }
 
-    public Task CancelReviewAsync(TaskItem task, CancellationToken ct)
+    public async Task<Diten.Platform.Application.Features.Tasks.Services.TaskReviewStartResult> StartReviewAsync(
+        TaskItem task, CancellationToken ct) =>
+        new(await TryStartReviewAsync(task, ct), CannotStart ? RefusalReasonCode : null);
+
+    /// <summary>D2-FIX1 A1 — set to make the next cancel report that the review could not be withdrawn.</summary>
+    public bool CannotCancel { get; set; }
+
+    public Task<bool> CancelReviewAsync(TaskItem task, CancellationToken ct)
     {
         Cancelled.Add(task.Id);
-        return Task.CompletedTask;
+        return Task.FromResult(!CannotCancel);
     }
 }
 
@@ -1580,10 +1590,13 @@ internal sealed class FakeTaskApprovalService : Diten.Platform.Application.Featu
         return Task.FromResult<Guid?>(CannotStart ? null : InstanceId);
     }
 
-    public Task CancelApprovalAsync(TaskItem task, CancellationToken ct)
+    /// <summary>D2-FIX1 A1 — set to make the next cancel report that the approval could not be withdrawn.</summary>
+    public bool CannotCancel { get; set; }
+
+    public Task<bool> CancelApprovalAsync(TaskItem task, CancellationToken ct)
     {
         Cancelled.Add(task.Id);
-        return Task.CompletedTask;
+        return Task.FromResult(!CannotCancel);
     }
 
     public Task<IReadOnlyDictionary<Guid, Diten.Platform.Application.Features.Tasks.Services.TaskApprovalState>>

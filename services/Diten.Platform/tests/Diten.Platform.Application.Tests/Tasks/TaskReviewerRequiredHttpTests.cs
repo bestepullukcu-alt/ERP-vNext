@@ -186,6 +186,24 @@ public sealed class TaskReviewerRequiredHttpTests
     }
 
     [Fact]
+    public async Task A_review_nobody_but_the_submitter_could_take_says_so_instead_of_try_again()
+    {
+        // D2-FIX1 — MOD-0023 refused the start with WORKFLOW_NO_ELIGIBLE_APPROVER; "try again" would change nothing.
+        var harness = new Harness();
+        harness.Reviews.CannotStart = true;
+        harness.Reviews.RefusalReasonCode = Diten.Platform.Application.Features.Workflow.WorkflowReasonCodes.WorkflowNoEligibleApprover;
+        await harness.CreateAsync(reviewRequired: true, reviewer: TaskTestData.Rival);
+        var stored = harness.Tasks.Items.Single();
+        stored.Lifecycle = TaskLifecycle.InProgress;
+
+        var response = await harness.SubmitReviewAsync(stored.Id, stored.Version);
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(Diten.Platform.Application.Features.Workflow.WorkflowReasonCodes.WorkflowNoEligibleApprover, response.ReasonCode);
+        Assert.Equal(TaskLifecycle.InProgress, harness.Tasks.Items.Single().Lifecycle);
+    }
+
+    [Fact]
     public void The_three_review_reason_codes_are_distinct()
     {
         // Non-vacuity for the test above and for the completion gate: collapsing any two of them would make the

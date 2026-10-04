@@ -280,6 +280,16 @@ public static class TaskReasonCodes
     /// </summary>
     public const string ReviewPending = "REVIEW_PENDING";
 
+    /// <summary>
+    /// D2-FIX1 A1 — approval was switched off but the running MOD-0023 approval could not be withdrawn (it was decided
+    /// meanwhile, or the engine refused). The edit is saved and the task keeps its link, so nothing is left decidable
+    /// with nobody reading it; the next edit retries the withdraw.
+    /// </summary>
+    public const string ApprovalCancelFailed = "TASK_APPROVAL_CANCEL_FAILED";
+
+    /// <summary>D2-FIX1 A1 — the review's counterpart of <see cref="ApprovalCancelFailed"/>.</summary>
+    public const string ReviewCancelFailed = "TASK_REVIEW_CANCEL_FAILED";
+
     /// <summary>Review was submitted on a task that never asked for one.</summary>
     public const string ReviewNotRequired = "REVIEW_NOT_REQUIRED";
 

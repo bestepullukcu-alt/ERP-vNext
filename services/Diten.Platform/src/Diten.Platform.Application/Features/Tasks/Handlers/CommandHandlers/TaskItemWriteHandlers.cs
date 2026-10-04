@@ -127,9 +127,9 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 400, TaskReasonCodes.ReviewerRequired, command.CorrelationId);
         }
 
-        var cancelReview = task.ReviewRequired
-            && !request.ReviewRequired
-            && task.ReviewWorkflowInstanceId is not null;
+        // D2-FIX1 A1 — a link still held while the requirement is already off is a cancel that failed before: an edit
+        // that keeps the requirement off retries it.
+        var cancelReview = !request.ReviewRequired && task.ReviewWorkflowInstanceId is not null;
         task.ReviewRequired = request.ReviewRequired;
         task.ReviewerCandidateUserId = request.ReviewerCandidateUserId;
         task.EmailNotificationsEnabled = request.EmailNotificationsEnabled;
@@ -167,7 +167,13 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         // lost a concurrency race.
         var startApproval = false;
         var cancelApproval = false;
-        if (request.ApprovalRequired is { } wantsApproval && wantsApproval != task.ApprovalRequired)
+        if (request.ApprovalRequired == false && !task.ApprovalRequired && task.WorkflowInstanceId is not null)
+        {
+            // D2-FIX1 A1 — the requirement is already off but the link is still held: a cancel that failed before.
+            // This edit retries it.
+            cancelApproval = true;
+        }
+        else if (request.ApprovalRequired is { } wantsApproval && wantsApproval != task.ApprovalRequired)
         {
             if (wantsApproval)
             {
@@ -294,7 +300,15 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         }
         if (cancelReview)
         {
-            await _reviews.CancelReviewAsync(task, ct);
+            if (!await _reviews.CancelReviewAsync(task, ct))
+            {
+                // D2-FIX1 A1 — the review is still open: the link stays, or the reviewer could decide a review that
+                // nothing reads any more. The requirement change is saved; the next edit retries the cancel.
+                return Response<NoContent>.Fail(
+                    "The edit is saved, but the running review could not be withdrawn; try again.",
+                    409, TaskReasonCodes.ReviewCancelFailed, command.CorrelationId);
+            }
+
             task.ReviewWorkflowInstanceId = null;
             // A task left in PendingReview with no review would be waiting on nobody, with no action to clear it.
             if (task.Lifecycle == TaskLifecycle.PendingReview)
@@ -315,7 +329,14 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
 
         if (cancelApproval)
         {
-            await _approvals.CancelApprovalAsync(task, ct);
+            if (!await _approvals.CancelApprovalAsync(task, ct))
+            {
+                // D2-FIX1 A1 — the approval is still open: the link stays (see the review's cancel above).
+                return Response<NoContent>.Fail(
+                    "The edit is saved, but the running approval could not be withdrawn; try again.",
+                    409, TaskReasonCodes.ApprovalCancelFailed, command.CorrelationId);
+            }
+
             task.WorkflowInstanceId = null;
             if (!await _tasks.UpdateAsync(task, task.Version, ct))
             {

@@ -120,26 +120,32 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         // fact; the seat is not resolved again. (Resolving again turned a seat change between the call and its retry
         // into a 409 for the same request — and MDM quarantines a 409.) Only a start that has no snapshot yet resolves.
         IReadOnlyList<string> candidates;
+        // D2-FIX1 A3 — why a fresh resolution found nobody. A NEW start fails here at once (nothing was written); a key
+        // that is already reserved first looks at what its first call persisted, below, and fails only if nothing was.
+        string? noCandidateReason = null;
         if (storedSnapshot is not null)
         {
+            if (storedSnapshot.CandidatePrincipalIds.Count == 0)
+            {
+                // D2-FIX1 — a stored proof with nobody in it cannot be replayed (and candidates[0] would throw).
+                return Conflict("Trusted workflow assignment proof names no candidate.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+            }
+
             candidates = storedSnapshot.CandidatePrincipalIds;
         }
         else
         {
             var resolved = await WorkflowCandidateResolver.ResolveAsync(candidateSource, _positionAssignments, _positions, ct);
-            if (resolved.Count == 0)
-            {
-                return Fail("At least one assignment candidate is required.", WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired, correlationId);
-            }
-
             // D2 — the delegated maker (the person the consumer starts the workflow for) is not one of its approvers.
-            candidates = WorkflowTaskTransitionSupport.WithoutStarter(resolved, delegatedMakerUserId, null);
-            if (candidates.Count == 0)
+            candidates = resolved.Count == 0
+                ? []
+                : WorkflowTaskTransitionSupport.WithoutStarter(resolved, delegatedMakerUserId, null);
+            noCandidateReason = resolved.Count == 0
+                ? WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired
+                : candidates.Count == 0 ? WorkflowReasonCodes.WorkflowNoEligibleApprover : null;
+            if (noCandidateReason is not null && existing is null)
             {
-                return Fail(
-                    "Every candidate approver is the person starting the workflow; nobody else may approve it.",
-                    WorkflowReasonCodes.WorkflowNoEligibleApprover,
-                    correlationId);
+                return NoCandidate(noCandidateReason, correlationId);
             }
         }
 
@@ -236,6 +242,56 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             instance.StartTransitionLogId is null)
         {
             return Conflict("Trusted workflow reservation is incomplete.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+        }
+
+        if (instance.Status == WorkflowInstanceStatus.Cancelled && instance.StartCheckpoint < WorkflowStartCheckpoint.TaskPersisted)
+        {
+            // D2-FIX1 A3 — a reservation closed because nobody could approve it (below): every replay of the key gets
+            // the same answer, and it is never brought back to life by a later checkpoint.
+            return NoCandidate(WorkflowReasonCodes.WorkflowNoEligibleApprover, correlationId);
+        }
+
+        if (!reserved.Created && storedSnapshot is null)
+        {
+            /*
+             * D2-FIX1 A3 — A RESERVED KEY WITHOUT ITS SNAPSHOT: the first call crashed after the reservation (or the task)
+             * and before the snapshot, or two first calls raced and this one lost. What the first call PERSISTED is the
+             * fact, not who the seat resolves to now: a seat change in between used to rebuild a different task and
+             * answer 409 RECOVERY_CONFLICT (MDM quarantines it), or 400 with the reservation left Pending forever.
+             */
+            var persistedSnapshot = await _snapshots.GetByIdAsync(instance.InitialAssignmentSnapshotId.Value, ct);
+            var persistedTask = persistedSnapshot is null
+                ? await _tasks.GetByIdAsync(instance.InitialApprovalTaskId.Value, ct)
+                : null;
+            if (persistedSnapshot is { CandidatePrincipalIds.Count: > 0 })
+            {
+                candidates = persistedSnapshot.CandidatePrincipalIds;
+                noCandidateReason = null;
+            }
+            else if (persistedTask is not null && !string.IsNullOrWhiteSpace(persistedTask.AssigneeRef))
+            {
+                // The task names who it went to; the snapshot still to be written lists that person first.
+                candidates = [persistedTask.AssigneeRef, .. candidates.Where(c => !SamePrincipal(c, persistedTask.AssigneeRef))];
+                noCandidateReason = null;
+            }
+            else if (noCandidateReason is not null)
+            {
+                // Nothing was persisted past the reservation, and nobody may approve it now: the reservation is CLOSED
+                // (cancelled), never left Pending — the same request is answered the same way on every replay.
+                if (instance.Status == WorkflowInstanceStatus.Pending && instance.StartCheckpoint == WorkflowStartCheckpoint.Reserved)
+                {
+                    var closedAt = DateTimeOffset.UtcNow;
+                    instance.Status = WorkflowInstanceStatus.Cancelled;
+                    instance.CompletedAt = closedAt;
+                    instance.LastTransitionAt = closedAt;
+                    if (!await _instances.UpdateAsync(instance, instance.Version, ct))
+                    {
+                        return Conflict("Trusted workflow reservation changed meanwhile.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+                    }
+                }
+
+                return NoCandidate(noCandidateReason, correlationId);
+            }
         }
 
         var task = ExpectedTask(
@@ -621,15 +677,21 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         DateTimeOffset? dueAt,
         CancellationToken ct)
     {
-        IReadOnlyList<string> resolved = await WorkflowCandidateResolver.ResolveAsync(candidateSource, _positionAssignments, _positions, ct);
-        if (resolved.Count == 0)
-        {
-            return null;
-        }
-
-        if (storedSnapshot is not null && NamesTheSamePrincipals(storedSnapshot.CandidatePrincipalIds, resolved))
+        // D2-FIX1 A2 — a stored snapshot IS the list the version-1 fingerprint was computed over (D1-FIX1 stored the
+        // resolved list it hashed). Resolving the seat again here turned a seat change into a 409 on the replay — and
+        // MDM quarantines a 409. Only a start with no snapshot yet resolves.
+        IReadOnlyList<string> resolved;
+        if (storedSnapshot is not null)
         {
             resolved = storedSnapshot.CandidatePrincipalIds;
+        }
+        else
+        {
+            resolved = await WorkflowCandidateResolver.ResolveAsync(candidateSource, _positionAssignments, _positions, ct);
+            if (resolved.Count == 0)
+            {
+                return null;
+            }
         }
 
         return ComputeFingerprint(_tenantContext.TenantId, serviceClientId, delegatedMakerUserId, templateId, versionId,
@@ -678,6 +740,11 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             utc.Ticks - (utc.Ticks % TimeSpan.TicksPerMillisecond),
             DateTimeKind.Utc);
     }
+
+    private static Response<TrustedWorkflowStartResult> NoCandidate(string reason, string correlationId) =>
+        reason == WorkflowReasonCodes.WorkflowNoEligibleApprover
+            ? Fail("Every candidate approver is the person starting the workflow; nobody else may approve it.", reason, correlationId)
+            : Fail("At least one assignment candidate is required.", reason, correlationId);
 
     private static Response<TrustedWorkflowStartResult> Fail(string message, string reason, string correlationId) =>
         Response<TrustedWorkflowStartResult>.Fail(message, 400, reason, correlationId);

@@ -523,22 +523,44 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
         int maxItems,
         CancellationToken ct = default)
     {
-        var filter = Builders<ApprovalTask>.Filter.And(
+        /*
+         * D2-FIX1 A4 — what the sweep reads.
+         *   • TimedOut is NOT read (BL-502 item 7): it is terminal; a sweep can only skip it, and it held a place.
+         *   • A task PARKED for "nobody eligible" is read only after every unparked one (a second, separate read), so a
+         *     standing parked backlog cannot starve newly overdue tasks out of the first page.
+         *   • Oldest first, deterministically. DueAt is stored as [ticks, offsetMinutes] (BL-030), and an ASCENDING sort
+         *     on an array uses its SMALLEST element — the offset — so every task tied and the order was arbitrary. The
+         *     sort reads the ticks element itself (DueAt.0), then the id.
+         */
+        var limit = Math.Max(1, maxItems);
+        var parked = Builders<ApprovalTask>.Filter.Eq(
+            x => x.LastEscalationReasonCode, Application.Features.Workflow.WorkflowReasonCodes.WorkflowNoEligibleApprover);
+        var overdue = Builders<ApprovalTask>.Filter.And(
             ExecutionFilter,
             Builders<ApprovalTask>.Filter.In(
                 x => x.Status,
                 [
                     ApprovalTaskStatus.WaitingApproval,
                     ApprovalTaskStatus.WaitingEvidence,
-                    ApprovalTaskStatus.Escalated,
-                    ApprovalTaskStatus.TimedOut
+                    ApprovalTaskStatus.Escalated
                 ]),
             Builders<ApprovalTask>.Filter.Ne(x => x.DueAt, null),
             Builders<ApprovalTask>.Filter.Lte(x => x.DueAt, nowUtc));
-        return await Collection.Find(filter)
-            .SortBy(x => x.DueAt)
-            .Limit(Math.Max(1, maxItems))
+        var oldestFirst = Builders<ApprovalTask>.Sort.Ascending(DueAtTicksPath).Ascending(x => x.Id);
+
+        var tasks = await Collection.Find(Builders<ApprovalTask>.Filter.And(overdue, Builders<ApprovalTask>.Filter.Not(parked)))
+            .Sort(oldestFirst)
+            .Limit(limit)
             .ToListAsync(ct);
+        if (tasks.Count < limit)
+        {
+            tasks.AddRange(await Collection.Find(Builders<ApprovalTask>.Filter.And(overdue, parked))
+                .Sort(oldestFirst)
+                .Limit(limit - tasks.Count)
+                .ToListAsync(ct));
+        }
+
+        return tasks;
     }
 
     public async Task<bool> UpdateAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default)
@@ -555,6 +577,9 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
 
     public Task<bool> UpdateEscalationAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default) =>
         UpdateAsync(task, expectedVersion, ct);
+
+    /// <summary>The ticks element of the stored [ticks, offsetMinutes] array (BL-030) — see ListOverdueTasksAsync.</summary>
+    internal const string DueAtTicksPath = "DueAt.0";
 }
 
 public sealed class RuntimeAssignmentSnapshotRepository

@@ -285,7 +285,8 @@ internal sealed class WorkflowTaskTransitionSupport
                 previousInstanceStatus.ToString(),
                 instance.Status.ToString(),
                 action.ToString(),
-                false,
+                // D2-FIX1 — a twin call's commit found after "unavailable" is a replay, and says so.
+                step.Replayed,
                 createdLog.Id,
                 correlationId),
             correlationId: correlationId);
@@ -787,7 +788,8 @@ internal sealed class WorkflowTaskTransitionSupport
                 previousInstanceStatus.ToString(),
                 instance.Status.ToString(),
                 action.ToString(),
-                false,
+                // D2-FIX1 — the same for every terminal transition: Replayed means this call found the twin's commit.
+                result.Replayed,
                 result.Log!.Id,
                 correlationId),
             correlationId: correlationId),
