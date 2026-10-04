@@ -82,6 +82,45 @@ describe("ATT-FIX1 E4 — the task form's record field says a failed search", ()
     });
 });
 
+describe("ATT-FIX2 (7) — a record field whose source has no first page is drawn and says 'no records'", () => {
+  it("draws the field, and a search with nothing found reads 'no records'", async () => {
+    global.fetch = async (url) => {
+      const ok = (data) => ({ ok: true, status: 200, json: async () => ({ data }) });
+      if (url.startsWith("/Tasks/api/field-definitions/delivery.department/records")) { return ok([]); }
+      if (url === "/Tasks/api/field-definitions") { return ok([RECORD_FIELD]); }
+      if (url === "/Tasks/api/assignable-positions") { return ok([]); }
+      if (url === "/Tasks/api/assignable-people") { return ok({ people: [], excluded: null }); }
+      return ok(null);
+    };
+    document.body.innerHTML = `
+      <form id="taskForm" data-task-mode="create" data-task-id="">
+        <input id="taskTitle" /><select id="taskAssignmentTarget"><option value="SelfAssigned" selected>self</option></select>
+        <select id="taskAssignee"></select><select id="taskPoolPosition"></select><input id="taskDueAt" type="date" />
+        <input type="checkbox" id="taskReviewRequired" /><input type="checkbox" id="taskApprovalRequired" />
+        <input type="checkbox" id="taskEmailNotifications" checked /><input type="checkbox" id="taskDelegationAllowed" />
+        <div class="d-none" id="taskCustomFields"><div id="taskCustomFieldsRow"></div></div>
+      </form>`;
+    realSelect2();
+    global.TasksL10n = { t: (key) => key };
+    global.DitenModal = { success: async () => {}, error: () => {}, warning: () => {} };
+    global.location = { href: "" };
+    window.HTMLElement.prototype.scrollIntoView = function scrollIntoView() {};
+    delete global.TaskForm;
+    delete global.TasksApi;
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
+    loadScript("wwwroot/assets/js/shared/diten-people-search.js");
+    loadScript("wwwroot/assets/js/Tasks/form.js");
+    loadScript("wwwroot/assets/js/Tasks/api.js");
+    loadScript("wwwroot/assets/js/Tasks/form-page.js");
+    for (let i = 0; i < 10; i += 1) { await new Promise((resolve) => setTimeout(resolve, 0)); }
+
+    const control = document.querySelector('[data-custom-field="delivery.department"]');
+    expect(control, "an empty first page hid the field").toBeTruthy();
+    expect(await typeInto(control, "ka")).toBe("recordSearchNoResults");
+    delete global.fetch;
+  });
+});
+
 describe("ATT-FIX1 E4 — the Task Center's closure record field says a failed search", () => {
   const TASK_ID = "6c1b8e2a-6a7f-4b7a-9a7a-1d9b7a2f6e11";
   const item = {

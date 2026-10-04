@@ -115,6 +115,8 @@
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Too many searches in a short time. Wait a moment and try again.</value></data>
   <data name="SearchFailed" xml:space="preserve"><value>The search could not be done. Please try again shortly.</value></data>
   <data name="NewOrganizerRequired" xml:space="preserve"><value>Choose the new organizer.</value></data>
+  <data name="MeetingNotAccessible" xml:space="preserve"><value>A meeting you do not have access to</value></data>
+  <data name="MeetingsListTruncated" xml:space="preserve"><value>The list shows at most 10,000 meetings; use the calendar view for the rest.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>The Meetings service is unavailable right now.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Please fill in every required field.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Meeting Types</value></data>

@@ -115,6 +115,8 @@
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>短时间内搜索次数过多。请稍候再试。</value></data>
   <data name="SearchFailed" xml:space="preserve"><value>无法完成搜索，请稍后重试。</value></data>
   <data name="NewOrganizerRequired" xml:space="preserve"><value>请选择新的组织者。</value></data>
+  <data name="MeetingNotAccessible" xml:space="preserve"><value>您无权访问的会议</value></data>
+  <data name="MeetingsListTruncated" xml:space="preserve"><value>列表最多显示 10,000 个会议；其余会议请使用日历视图。</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>会议服务当前不可用。</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>请填写所有必填字段。</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>会议类型</value></data>

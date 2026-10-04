@@ -1,5 +1,6 @@
 using System.Text;
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.Tasks.Queries;
 using MediatR;
 
@@ -144,31 +145,34 @@ public sealed class GetTaskDecisionMakerLookupHandler : IRequestHandler<GetTaskD
 
         if (!_directory.TryGet(tenantId, out var directory))
         {
-            var all = await _mediator.Send(new GetTaskAssignmentPersonLookupQuery(request.CorrelationId, TaskPersonLookupPurpose.Decision), ct);
+            // The rows come UNNAMED (ResolveNames: false): naming them is ONE call here that also says whether it
+            // was complete (ATT-FIX2 — a second call afterwards could see AuthService recover, report "complete"
+            // and leave the first call's gaps in a kept directory).
+            var all = await _mediator.Send(new GetTaskAssignmentPersonLookupQuery(
+                request.CorrelationId, TaskPersonLookupPurpose.Decision, ResolveNames: false), ct);
             if (!all.IsSuccessful || all.Data is null)
             {
                 return Response<DecisionMakerLookupDto>.Fail(all.Errors ?? [], all.StatusCode, all.ReasonCode, request.CorrelationId);
             }
 
             /*
-             * The names come from AuthService through a best-effort resolver: a missing name is EITHER "this person
-             * has no name there" OR "AuthService did not answer" (down, a chunk failed, a few names left in its own
-             * cache). Which one is asked explicitly (ATT-FIX1 E1), for the nameless rows only:
-             *  - every nameless row is answered (they truly have no name) → the directory is complete and kept;
-             *  - some went unanswered → the directory is served but NOT kept, so the next search after AuthService
-             *    comes back is whole again (never a minute of "person not found" rows);
-             *  - unanswered and NOBODY has a name → 503 the screen can say, remembered briefly (E3).
+             * A missing name is EITHER "this person has no name there" OR "AuthService did not answer" (down, a chunk
+             * failed, a few names left in its own cache, the bound ran out). The checked, bounded call says which:
+             *  - complete → the directory is kept (a nameless row then truly has no name);
+             *  - incomplete but someone is named → served, NOT kept: the next search after AuthService is back is whole;
+             *  - incomplete and nobody named → 503 the screen can say, remembered briefly (E3).
              */
-            var nameless = all.Data.People.Where(p => string.IsNullOrWhiteSpace(p.DisplayName)).Select(p => p.UserId).ToList();
-            var complete = nameless.Count == 0 || (await _names.ResolveCheckedAsync(nameless, ct)).Complete;
-            if (!complete && nameless.Count == all.Data.People.Count)
+            var resolution = await BoundedDisplayNames.ResolveCheckedAsync(_names, all.Data.People.Select(p => p.UserId), ct);
+            var named = GetTaskAssignmentPersonLookupHandler.NameAndOrder(all.Data.People, resolution.Names);
+            var anyNamed = named.Any(p => !string.IsNullOrWhiteSpace(p.DisplayName));
+            if (!resolution.Complete && named.Count > 0 && !anyNamed)
             {
                 _directory.MarkUnavailable(tenantId);
                 return Unavailable(request);
             }
 
-            directory = all.Data.People;
-            if (complete)
+            directory = named;
+            if (resolution.Complete)
             {
                 _directory.Set(tenantId, directory);
             }

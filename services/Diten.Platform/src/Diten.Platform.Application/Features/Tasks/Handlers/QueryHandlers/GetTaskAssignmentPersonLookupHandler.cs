@@ -54,6 +54,19 @@ public sealed class GetTaskAssignmentPersonLookupHandler
         _scopes = scopes;
     }
 
+    /// <summary>The picker's order, in one place: named people first and alphabetically; the unresolved tail stays
+    /// grouped by unit / position. Used again by the decision-makers search after it names the rows itself.</summary>
+    internal static IReadOnlyList<AssignablePersonDto> NameAndOrder(
+        IEnumerable<AssignablePersonDto> rows, IReadOnlyDictionary<Guid, string> names) => rows
+        .Select(row => names.TryGetValue(row.UserId, out var name) && !string.IsNullOrWhiteSpace(name)
+            ? row with { DisplayName = name }
+            : row)
+        .OrderBy(row => row.DisplayName is null)
+        .ThenBy(row => row.DisplayName, StringComparer.OrdinalIgnoreCase)
+        .ThenBy(row => row.OrganizationUnitName, StringComparer.OrdinalIgnoreCase)
+        .ThenBy(row => row.PositionName, StringComparer.OrdinalIgnoreCase)
+        .ToList();
+
     /// <summary>Why a candidate did not make the list. Ordered most-severe-last so a person holding several
     /// positions is reported by their BEST outcome — "out of scope" beats "no active position", because the
     /// former means they were otherwise eligible.</summary>
@@ -155,19 +168,13 @@ public sealed class GetTaskAssignmentPersonLookupHandler
             }
         }
 
-        // ONE call for every id, not one per row.
-        var names = await _displayNames.ResolveAsync(rows.Select(r => r.UserId).ToList(), ct);
+        // ONE call for every id, not one per row — and bounded (ATT-FIX2): a hanging AuthService costs this list at
+        // most the shared bound, then the rows come unnamed. A caller that names the rows itself asks for none.
+        var names = request.ResolveNames
+            ? await BoundedDisplayNames.ResolveAsync(_displayNames, rows.Select(r => r.UserId), ct)
+            : new Dictionary<Guid, string>();
 
-        IReadOnlyList<AssignablePersonDto> ordered = rows
-            .Select(row => names.TryGetValue(row.UserId, out var name) && !string.IsNullOrWhiteSpace(name)
-                ? row with { DisplayName = name }
-                : row)
-            // Named people first and alphabetically; the unresolved tail stays grouped by unit/position.
-            .OrderBy(row => row.DisplayName is null)
-            .ThenBy(row => row.DisplayName, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(row => row.OrganizationUnitName, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(row => row.PositionName, StringComparer.OrdinalIgnoreCase)
-            .ToList();
+        IReadOnlyList<AssignablePersonDto> ordered = NameAndOrder(rows, names);
 
         var excluded = new ExcludedCandidateSummary(
             Total: skipped.Count,

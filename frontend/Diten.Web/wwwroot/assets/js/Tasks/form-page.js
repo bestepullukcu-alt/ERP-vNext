@@ -566,7 +566,9 @@
                 ? await global.TasksApi.fieldRecords(definition.code)
                 : await global.TasksApi.fieldOptions(definition.code);
 
-            if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+            // ATT-FIX2 — a RECORD source that answered with an empty first page is still a resolved source (its
+            // picker searches the rest and says "no records"); only an unresolvable one is dropped.
+            if (result.ok && Array.isArray(result.data) && (result.data.length > 0 || kind === 'record')) {
                 byCode[definition.code] = result.data;
                 return;
             }
@@ -958,7 +960,7 @@
                 rateLimited: t('errorPeopleSearchRateLimited'),
                 failed: t('searchFailed')
             },
-            recordSearchText: { rateLimited: t('errorPeopleSearchRateLimited'), failed: t('searchFailed') }
+            recordSearchText: { rateLimited: t('errorPeopleSearchRateLimited'), failed: t('searchFailed'), noResults: t('recordSearchNoResults') }
         });
         // flatpickr after hydration too, for the same reason: it reads the input's value when it initialises, so
         // a picker built before the stored date was written in would open on today instead of the task's date.

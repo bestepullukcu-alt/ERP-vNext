@@ -66,12 +66,25 @@ public sealed class GetMeetingByIdHandler : IRequestHandler<GetMeetingByIdQuery,
             : null;
         var followedBy = await _meetings.FindByFollowUpOfMeetingIdAsync(query.Id, ct);
 
+        // ATT-FIX2 — the list's rule here too: a linked meeting's TITLE is shown only to a reader who may open that
+        // meeting. Its id stays (the link exists); the title is null and the screen says "a meeting you cannot open".
+        async Task<string?> VisibleTitleAsync(Meeting? linked)
+        {
+            if (linked is null) { return null; }
+            var linkedAttendees = (await _attendees.ListByMeetingIdAsync(linked.Id, ct)).Select(a => a.UserId).ToHashSet();
+            return MeetingEligibility.CanView(linked, _currentUser.UserId, hasReadAll, linkedAttendees) ? linked.Title : null;
+        }
+
+        var followUpOfTitle = await VisibleTitleAsync(followUpOf);
+        var followedByTitle = await VisibleTitleAsync(followedBy);
+
         // BL-531 — the organizer and every attendee named in ONE batched call; the screen no longer needs the directory.
         var names = await MeetingPersonNames.ResolveAsync(
             _displayNames, attendees.Select(a => a.UserId).Append(meeting.OrganizerUserId), ct);
-        var dto = MeetingEligibility.ToDto(meeting, type?.Name ?? string.Empty, attendees, agendaItems, followUpOfMeetingTitle: followUpOf?.Title, followedByMeeting: followedBy);
+        var dto = MeetingEligibility.ToDto(meeting, type?.Name ?? string.Empty, attendees, agendaItems, followUpOfMeetingTitle: followUpOfTitle, followedByMeeting: followedBy);
         dto = dto with
         {
+            FollowedByMeetingTitle = followedByTitle,
             Attendees = dto.Attendees.Select(a => a with { DisplayName = MeetingPersonNames.NameOf(names, a.UserId) }).ToList(),
             OrganizerDisplayName = MeetingPersonNames.NameOf(names, meeting.OrganizerUserId)
         };
@@ -119,18 +132,26 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
             .GroupBy(a => a.MeetingId)
             .ToDictionary(g => g.Key, g => g.Select(a => a.UserId).ToHashSet());
 
-        var linkedSource = await _recordLinks.ListBySourceAsync(meetingIds, ct);
-        var linkedTarget = await _recordLinks.ListByTargetAsync(meetingIds, ct);
-        var hasLinkedTasks = linkedSource.Select(l => l.SourceRecordId)
-            .Concat(linkedTarget.Select(l => l.TargetRecordId))
-            .ToHashSet();
+        var filter = query.Filter;
+        // ATT-FIX2 — a titles-only reader (the create form's follow-up list) needs visibility and titles, nothing
+        // else: no linked-task reads (unless it filters by them), no type names, no person names.
+        var titlesOnly = filter.TitlesOnly;
+        var hasLinkedTasks = new HashSet<Guid>();
+        if (!titlesOnly || filter.HasLinkedTasksOnly == true)
+        {
+            var linkedSource = await _recordLinks.ListBySourceAsync(meetingIds, ct);
+            var linkedTarget = await _recordLinks.ListByTargetAsync(meetingIds, ct);
+            hasLinkedTasks = linkedSource.Select(l => l.SourceRecordId)
+                .Concat(linkedTarget.Select(l => l.TargetRecordId))
+                .ToHashSet();
+        }
 
-        var types = await _types.ListAsync(ct);
-        var typeNameById = types.ToDictionary(t => t.Id, t => t.Name);
+        var typeNameById = titlesOnly
+            ? new Dictionary<Guid, string>()
+            : (await _types.ListAsync(ct)).ToDictionary(t => t.Id, t => t.Name);
         var hasReadAll = _permissions.IsPlatformActor || _permissions.Has(MeetingPermissions.ReadAll);
         var callerId = _currentUser.UserId;
 
-        var filter = query.Filter;
         var visible = all.Where(m =>
         {
             var attendeeIds = attendeesByMeeting.GetValueOrDefault(m.Id, []);
@@ -150,6 +171,9 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
             .Where(m => filter.IAmAttendeeOnly != true || attendeesByMeeting.GetValueOrDefault(m.Id, []).Contains(callerId))
             .Where(m => filter.HasLinkedTasksOnly != true || hasLinkedTasks.Contains(m.Id))
             .OrderByDescending(m => m.StartAt)
+            // ATT-FIX2 — a tie-break, so two meetings at the same moment never swap between pages (a reader paging
+            // through would otherwise see one twice and the other never).
+            .ThenBy(m => m.Id)
             .ToList();
 
         var totalCount = filtered.Count;
@@ -164,7 +188,7 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
             .ToList();
         // BL-531 — the page's organizers named in ONE batched call (never per row). ATT-FIX1 — and only when the
         // caller shows them: a reader that wants titles only (the create form's follow-up list) asks includeNames=false.
-        var organizerNames = filter.IncludeNames
+        var organizerNames = filter.IncludeNames && !titlesOnly
             ? await MeetingPersonNames.ResolveAsync(_displayNames, pageRows.Select(m => m.OrganizerUserId), ct)
             : new Dictionary<Guid, string>();
 
@@ -352,11 +376,8 @@ public sealed class GetMeetingMinutesHandler : IRequestHandler<GetMeetingMinutes
         }
 
         var versions = await _minutes.ListByMeetingIdAsync(query.MeetingId, ct);
-        var dtos = new List<MeetingMinutesVersionDto>(versions.Count);
-        foreach (var version in versions)
-        {
-            dtos.Add(await MinutesEligibility.ToDtoAsync(version, _displayNames, ct));
-        }
+        // ATT-FIX2 — one bounded name call for every version (it was one unbounded call PER version).
+        var dtos = await MinutesEligibility.ToDtosAsync(versions, _displayNames, ct);
 
         return Response<MeetingMinutesDto>.Success(new MeetingMinutesDto(dtos), 200, query.CorrelationId);
     }

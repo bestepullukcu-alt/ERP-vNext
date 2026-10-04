@@ -205,7 +205,9 @@ public sealed record GetMeetingListFilter(
     int Page = 1,
     int PageSize = 25,
     /// <summary>ATT-FIX1 — false: the organizer names are not resolved (a caller that shows titles only).</summary>
-    bool IncludeNames = true);
+    bool IncludeNames = true,
+    /// <summary>ATT-FIX2 — true: only id, title and visibility are worked out (no linked tasks, type or person names).</summary>
+    bool TitlesOnly = false);
 
 /// <summary>ATT-FIX1 — the most rows one list page answers, whatever the caller asks.</summary>
 public static class MeetingListLimits

@@ -24,6 +24,7 @@ const MeetingsList = (function () {
             ShowAll: t('showAll'), MeetingType: t('meetingType'), Organizer: t('organizer'),
             StatusScheduled: t('statusScheduled'), StatusCancelled: t('statusCancelled'), StatusCompleted: t('statusCompleted'),
             ErrorOccurred: t('errorOccurred'),
+            ListTruncated: t('meetingsListTruncated'),
             // BL-390 — an organizer id this tenant's eligible-people list does not resolve (deleted/test
             // identity) must never render as the raw GUID; the same label everywhere it could otherwise leak.
             UnknownUser: t('unknownUser')
@@ -204,11 +205,25 @@ const MeetingsList = (function () {
             tableEl: dtTableEl,
             // ATT-FIX1 — the server answers at most 200 rows a page, so the list pages through EVERY meeting the
             // reader may see (MeetingsApi.listAll) instead of asking for 1000 in one call; filtering stays local.
+            // ATT-FIX2 — the function source keeps what the object one had: a 401 renews the session (the shared
+            // DtDefaults helper; on failure it goes to login), any other failure is said and the table still draws
+            // (empty), a truncated set is said, and a throw never leaves the skeleton up.
             ajax: (data, callback) => {
-                window.MeetingsApi.listAll().then((res) => {
-                    if (!res.ok) { window.showToast?.(L.ErrorOccurred, 'error'); }
-                    callback({ data: res.data || [] });
-                });
+                window.MeetingsApi.listAll()
+                    .then((res) => {
+                        if (res.status === 401) {
+                            window.DtDefaults?.handleUnauthorized?.();
+                        } else if (!res.ok) {
+                            window.showToast?.(L.ErrorOccurred, 'error');
+                        } else if (res.truncated) {
+                            window.showToast?.(L.ListTruncated, 'warning');
+                        }
+                        callback({ data: res.ok ? (res.data || []) : [] });
+                    })
+                    .catch(() => {
+                        window.showToast?.(L.ErrorOccurred, 'error');
+                        callback({ data: [] });
+                    });
             },
             actions: { onRowAction: rowActionHandlers },
             config: {

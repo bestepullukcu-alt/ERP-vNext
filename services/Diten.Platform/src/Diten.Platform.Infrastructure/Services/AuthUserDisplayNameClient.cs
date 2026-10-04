@@ -3,6 +3,7 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Infrastructure.Settings;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -23,6 +24,18 @@ namespace Diten.Platform.Infrastructure.Services;
 public sealed class AuthUserDisplayNameClient : IUserDisplayNameResolver, IUserDisplayNameChecker
 {
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
+
+    /// <summary>ATT-FIX2 — the client's OWN named HttpClient, never the default one (100 s): a name request that is
+    /// not answered in <see cref="RequestTimeout"/> is a failed chunk (incomplete), not a held read.</summary>
+    public const string HttpClientName = "auth-display-names";
+    public static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(5);
+
+    /// <summary>Registers the named client with its timeout; AddInfrastructure calls this.</summary>
+    public static IServiceCollection AddAuthDisplayNameHttpClient(IServiceCollection services)
+    {
+        services.AddHttpClient(HttpClientName, client => client.Timeout = RequestTimeout);
+        return services;
+    }
 
     /// <summary>Ids per request. Keeps the query string bounded while staying far from one-call-per-user.</summary>
     private const int ChunkSize = 100;
@@ -126,7 +139,7 @@ public sealed class AuthUserDisplayNameClient : IUserDisplayNameResolver, IUserD
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add(InternalApiKeyHeader, _authServiceOptions.InternalApiKey);
 
-            var client = _httpClientFactory.CreateClient();
+            var client = _httpClientFactory.CreateClient(HttpClientName);
             using var response = await client.SendAsync(request, ct);
             if (!response.IsSuccessStatusCode)
             {

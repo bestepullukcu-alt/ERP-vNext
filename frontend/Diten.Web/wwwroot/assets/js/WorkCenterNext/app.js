@@ -8039,7 +8039,8 @@
                 ? await global.TasksApi.fieldRecords(definition.code)
                 : await global.TasksApi.fieldOptions(definition.code);
 
-            if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+            // ATT-FIX2 — the task form's rule: a record source with an empty first page is still resolved.
+            if (result.ok && Array.isArray(result.data) && (result.data.length > 0 || kind === 'record')) {
                 byCode[definition.code] = result.data;
                 return;
             }
@@ -10535,7 +10536,7 @@
                         });
                         global.TaskForm.enhanceSelects?.(fieldsRow, {
                             searchRecords: searchClosureFieldRecords,
-                            recordSearchText: { rateLimited: peopleText('errorPeopleSearchRateLimited'), failed: peopleText('searchFailed') }
+                            recordSearchText: { rateLimited: peopleText('errorPeopleSearchRateLimited'), failed: peopleText('searchFailed'), noResults: peopleText('recordSearchNoResults') }
                         });
                     }
                 },

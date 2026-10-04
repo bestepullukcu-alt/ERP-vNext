@@ -236,6 +236,8 @@ describe("the calendar draws the LIST's set, narrowed to the visible range", () 
     expect(last.fromUtc).toBe("2026-09-26T21:00:00.000Z");
     expect(last.toUtc).toBe("2026-11-08T21:00:00.000Z");
     expect(Number(last.pageSize)).toBeGreaterThan(25);
+    // ATT-FIX1/2 — the calendar draws no organizer names, so it asks for none.
+    expect(last.includeNames).toBe("false");
   });
 
   it("accepted and pending are drawn; declined, cancelled and out-of-range are not", async () => {
@@ -649,7 +651,7 @@ describe("CT: the list reads more than 25, and the page can say an answer failed
     const form = read("wwwroot", "assets", "js", "Meetings", "form.js");
     expect(index).toContain("window.MeetingsApi.listAll()");
     expect(index).not.toMatch(/pageSize=1000/);
-    expect(form).toContain("window.MeetingsApi.listAll({ includeNames: false })");
+    expect(form).toContain("window.MeetingsApi.listAll({ titlesOnly: true })");   // ATT-FIX2 — the light read
     expect(form).not.toMatch(/pageSize: 1000/);
   });
 

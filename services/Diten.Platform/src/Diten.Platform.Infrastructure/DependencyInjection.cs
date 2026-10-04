@@ -217,6 +217,7 @@ public static class DependencyInjection
         services.AddScoped<ICatalogPermissionSyncService, CatalogPermissionSyncService>();
         services.AddScoped<IAuthPermissionModulesClient, AuthPermissionModulesClient>();
         // MOD-0024 §K6.4 — display-name resolution for task assignees/requesters (best-effort S2S).
+        AuthUserDisplayNameClient.AddAuthDisplayNameHttpClient(services);   // ATT-FIX2 — named client, 5 s timeout
         services.AddScoped<AuthUserDisplayNameClient>();
         services.AddScoped<IUserDisplayNameResolver>(sp => sp.GetRequiredService<AuthUserDisplayNameClient>());
         // ATT-FIX1 E1 — the same client, asked "were all names answered?" (the decision-makers cache needs to know).

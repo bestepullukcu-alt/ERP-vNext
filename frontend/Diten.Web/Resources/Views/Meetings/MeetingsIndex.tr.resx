@@ -115,6 +115,8 @@
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Kısa sürede çok fazla arama yapıldı. Biraz bekleyip yeniden deneyin.</value></data>
   <data name="SearchFailed" xml:space="preserve"><value>Arama yapılamadı. Biraz sonra yeniden deneyin.</value></data>
   <data name="NewOrganizerRequired" xml:space="preserve"><value>Yeni düzenleyiciyi seçin.</value></data>
+  <data name="MeetingNotAccessible" xml:space="preserve"><value>Erişiminiz olmayan toplantı</value></data>
+  <data name="MeetingsListTruncated" xml:space="preserve"><value>Liste en fazla 10.000 toplantı gösterir; geri kalanı için takvim görünümünü kullanın.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Toplantılar servisi şu anda kullanılamıyor.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Lütfen zorunlu tüm alanları doldurun.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Toplantı Türleri</value></data>

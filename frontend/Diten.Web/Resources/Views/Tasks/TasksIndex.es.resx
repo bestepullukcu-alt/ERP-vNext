@@ -96,6 +96,7 @@
   <data name="DecisionMakerUnavailable" xml:space="preserve"><value>Persona no encontrada</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Demasiadas búsquedas en poco tiempo. Espere un momento e inténtelo de nuevo.</value></data>
   <data name="SearchFailed" xml:space="preserve"><value>No se pudo realizar la búsqueda. Inténtelo de nuevo en unos instantes.</value></data>
+  <data name="RecordSearchNoResults" xml:space="preserve"><value>No se encontraron registros.</value></data>
   <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>No se pudieron cargar los datos de la persona en este momento</value></data>
   <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>Busque por nombre o por personas guardadas, no por ambos a la vez.</value></data>
   <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>Se solicitaron demasiadas personas a la vez.</value></data>

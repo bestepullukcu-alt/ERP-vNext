@@ -130,20 +130,29 @@
         /*
          * ATT-FIX1 — every meeting the reader may see, page by page: the server answers at most LIST_PAGE_SIZE rows
          * per call (MeetingListLimits.MaxPageSize), so a caller that wants the whole set pages through it here rather
-         * than asking for 1000 at once. `data` is the plain array of rows; a failed page fails the whole read.
+         * than asking for 1000 at once. `data` is the plain array of rows.
+         * ATT-FIX2 — a failed page fails the whole read (no half list shown as if whole; the status travels, so a 401
+         * can renew the session); a row met twice (a meeting moved between pages) is kept once; and a set larger
+         * than LIST_MAX_PAGES pages is never cut SILENTLY — `truncated: true` lets the screen say so.
          */
         listAll: async (params = {}) => {
             const rows = [];
+            const seen = new Set();
+            let total = 0;
             for (let page = 1; page <= LIST_MAX_PAGES; page += 1) {
                 const query = new URLSearchParams(Object.assign({}, params, { page, pageSize: LIST_PAGE_SIZE })).toString();
                 const res = await request('GET', `/list?query=${encodeURIComponent(query)}`);
-                if (!res.ok || !res.data) { return Object.assign({}, res, { data: rows }); }
+                if (!res.ok || !res.data) { return Object.assign({}, res, { ok: false, data: [], truncated: false }); }
                 const items = Array.isArray(res.data.items) ? res.data.items : [];
-                rows.push(...items);
-                const total = Number(res.data.totalCount ?? rows.length);
-                if (rows.length >= total || items.length === 0) { break; }
+                items.forEach((row) => {
+                    if (row && !seen.has(row.id)) { seen.add(row.id); rows.push(row); }
+                });
+                total = Number(res.data.totalCount ?? rows.length);
+                if (page * LIST_PAGE_SIZE >= total || items.length === 0) {
+                    return { ok: true, status: 200, reasonCode: null, data: rows, truncated: false };
+                }
             }
-            return { ok: true, status: 200, reasonCode: null, data: rows };
+            return { ok: true, status: 200, reasonCode: null, data: rows, truncated: rows.length < total };
         },
         get: (id) => request('GET', `/${id}`),
         create: (payload) => request('POST', '', payload),

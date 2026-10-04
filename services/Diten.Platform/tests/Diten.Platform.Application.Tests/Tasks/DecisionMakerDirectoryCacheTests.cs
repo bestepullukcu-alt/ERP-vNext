@@ -51,6 +51,34 @@ public sealed class DecisionMakerDirectoryCacheTests
         Assert.False(cache.TryGet(Guid.Empty, out _));
     }
 
+    // ATT-FIX2 — the "names unavailable" memory: per tenant, 10 seconds, bounded.
+    [Fact]
+    public void An_outage_is_remembered_for_its_tenant_only_and_for_ten_seconds()
+    {
+        var clock = new ManualClock();
+        var cache = new DecisionMakerDirectoryCache(clock);
+        var a = Guid.NewGuid();
+        cache.MarkUnavailable(a);
+
+        Assert.True(cache.IsUnavailable(a));
+        Assert.False(cache.IsUnavailable(Guid.NewGuid()));
+        clock.Advance(TimeSpan.FromSeconds(9));
+        Assert.True(cache.IsUnavailable(a));
+        clock.Advance(TimeSpan.FromSeconds(1));
+        Assert.False(cache.IsUnavailable(a));
+        Assert.Equal(TimeSpan.FromSeconds(10), DecisionMakerDirectoryCache.UnavailableLifetime);
+    }
+
+    [Fact]
+    public void The_outage_memory_never_holds_more_than_its_bound()
+    {
+        var cache = new DecisionMakerDirectoryCache(new ManualClock());
+        var tenants = Enumerable.Range(0, DecisionMakerDirectoryCache.MaximumTenants + 20).Select(_ => Guid.NewGuid()).ToList();
+        tenants.ForEach(cache.MarkUnavailable);
+
+        Assert.Equal(DecisionMakerDirectoryCache.MaximumTenants, tenants.Count(cache.IsUnavailable));
+    }
+
     private sealed class ManualClock : TimeProvider
     {
         private DateTimeOffset _now = new(2026, 10, 4, 12, 0, 0, TimeSpan.Zero);

@@ -171,6 +171,50 @@ public sealed class DecisionMakerSearchHttpMongoTests
         Assert.Equal(2, host.NameSource.Calls);   // rebuilt, because the first one was not kept
     }
 
+    // ATT-FIX2 (1) — measured on the PRODUCTION name client: AuthService goes down while a few names are still in
+    // the client's own cache. The search answers (those few named, the rest unnamed) in ONE AuthService request, and
+    // the gap is NOT kept: the first search after AuthService is back is whole.
+    [Fact]
+    public async Task On_the_production_client_a_partial_outage_is_served_in_one_request_and_not_kept()
+    {
+        await using var host = await Host.StartAsync(realNames: true);
+        host.Auth.AnswerOnly = [Host.Ilker, Host.Gokce];               // their names land in the client's cache
+        Assert.Equal(HttpStatusCode.OK, (await host.GetAsync("?search=il")).Status);
+        host.Clock.Advance(DecisionMakerDirectoryCache.Lifetime);      // that (complete) directory expires
+
+        host.Auth.AnswerOnly = null;
+        host.Auth.Down = true;
+        var before = host.Auth.Calls;
+        var partial = await host.GetAsync("?search=an");   // Gökçe (named, from the client's cache) + planners (unnamed)
+        Assert.Equal(HttpStatusCode.OK, partial.Status);
+        Assert.Equal(1, host.Auth.Calls - before);                     // one request, not two
+        var rows = Host.People(partial.Body);
+        Assert.Contains(rows, p => p.GetProperty("displayName").ValueKind == JsonValueKind.String);
+        Assert.Contains(rows, p => p.GetProperty("displayName").ValueKind == JsonValueKind.Null);
+
+        host.Auth.Down = false;
+        var whole = await host.GetAsync("?search=planner");
+        Assert.Equal(HttpStatusCode.OK, whole.Status);
+        Assert.NotEmpty(Host.People(whole.Body));
+        Assert.All(Host.People(whole.Body), p => Assert.StartsWith("Planner", p.GetProperty("displayName").GetString()));
+    }
+
+    // ATT-FIX2 (2) — a hanging AuthService costs the search at most the shared bound, then a 503 (nothing was named).
+    [Fact]
+    public async Task A_hanging_name_source_costs_the_search_at_most_the_bound()
+    {
+        await using var host = await Host.StartAsync();
+        host.NameSource.Hang = true;
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+
+        var (status, code, _) = await host.GetAsync("?search=il");
+
+        clock.Stop();
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(4), $"took {clock.Elapsed}");
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, status);
+        Assert.Equal(DecisionMakerLookup.ReasonCodes.DirectoryUnavailable, code);
+    }
+
     // ATT-FIX1 E2 — the 503 is for "nobody's name could be read", nothing else.
     [Fact]
     public async Task A_person_AuthService_answers_has_no_name_for_is_listed_and_the_directory_is_kept()
@@ -280,7 +324,11 @@ public sealed class DecisionMakerSearchHttpMongoTests
         private readonly TestServer _server;
         private static readonly Dictionary<Guid, string> Names = new();
 
-        private Host(DisposableMongoReplicaSet mongo, IMongoDatabase database)
+        /// <summary>AuthService's display-name endpoint for the PRODUCTION client (realNames mode): answers by tenant
+        /// and id; <see cref="RealAuth.Down"/> = 503; counts every HTTP request.</summary>
+        public RealAuth Auth { get; } = new();
+
+        private Host(DisposableMongoReplicaSet mongo, IMongoDatabase database, bool realNames)
         {
             _mongo = mongo;
             var dbContext = new PlatformDbContext(mongo.Client, database);
@@ -291,6 +339,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
                 {
                     services.AddRouting();
                     services.AddLogging();
+                    services.AddMemoryCache();
                     services.AddProblemDetails();
                     services.AddExceptionHandler<Diten.Platform.API.Middleware.GlobalExceptionHandler>();
                     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -327,8 +376,25 @@ public sealed class DecisionMakerSearchHttpMongoTests
                     services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
                     services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
                     // AuthService is not running here: the names are the test's own.
-                    services.AddSingleton<IUserDisplayNameResolver>(NameSource);
-                    services.AddSingleton<IUserDisplayNameChecker>(NameSource);
+                    if (realNames)
+                    {
+                        // ATT-FIX2 — the PRODUCTION name client (its own cache, chunks, completeness), behind a fake
+                        // AuthService that answers like the real one.
+                        services.AddSingleton<IHttpClientFactory>(Auth);
+                        services.AddSingleton<Microsoft.Extensions.Options.IOptions<Diten.Platform.Infrastructure.Settings.AuthServiceOptions>>(
+                            Microsoft.Extensions.Options.Options.Create(new Diten.Platform.Infrastructure.Settings.AuthServiceOptions
+                            {
+                                BaseUrl = "http://auth.bl512.test", InternalApiKey = "bl512-test-key-not-a-secret"
+                            }));
+                        services.AddScoped<AuthUserDisplayNameClient>();
+                        services.AddScoped<IUserDisplayNameResolver>(sp => sp.GetRequiredService<AuthUserDisplayNameClient>());
+                        services.AddScoped<IUserDisplayNameChecker>(sp => sp.GetRequiredService<AuthUserDisplayNameClient>());
+                    }
+                    else
+                    {
+                        services.AddSingleton<IUserDisplayNameResolver>(NameSource);
+                        services.AddSingleton<IUserDisplayNameChecker>(NameSource);
+                    }
                     // The production cache, on a clock the test can move (registered after AddApplication: this one wins).
                     services.AddSingleton(new DecisionMakerDirectoryCache(Clock));
                     services.AddSingleton<Diten.Platform.Application.Contracts.Audit.IAuditOutboxWriter>(new Diten.Platform.Application.Tests.Audit.InMemoryAuditOutbox());
@@ -351,7 +417,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
             _server = new TestServer(builder);
         }
 
-        public static async Task<Host> StartAsync()
+        public static async Task<Host> StartAsync(bool realNames = false)
         {
             var mongo = await DisposableMongoReplicaSet.StartAsync();
             var database = mongo.CreateDatabase();
@@ -395,7 +461,7 @@ public sealed class DecisionMakerSearchHttpMongoTests
 
             await PersonAsync(TenantA, home, EndedPerson, "Eski Çalışan", "Planlama Uzmanı", ended: true);
             await PersonAsync(TenantB, tenantBUnit, OtherTenantPerson, "İlker Başka", "Kalite Müdürü");
-            return new Host(mongo, database);
+            return new Host(mongo, database, realNames);
         }
 
         public async Task<(HttpStatusCode Status, string? Code, string Body)> GetAsync(string query, Guid? userId = null, Guid? tenant = null)
@@ -462,8 +528,15 @@ public sealed class DecisionMakerSearchHttpMongoTests
                 return Task.FromResult(Answer(userIds));
             }
 
-            public Task<DisplayNameResolution> ResolveCheckedAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
-                => Task.FromResult(new DisplayNameResolution(Answer(userIds), Complete: !Unavailable && AnswerOnly is null));
+            /// <summary>Accepts and never answers, ignoring its token (the "started before mongod" AuthService).</summary>
+            public bool Hang { get; set; }
+
+            public async Task<DisplayNameResolution> ResolveCheckedAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
+            {
+                Interlocked.Increment(ref _calls);
+                if (Hang) { await Task.Delay(TimeSpan.FromMinutes(5), CancellationToken.None); }
+                return new DisplayNameResolution(Answer(userIds), Complete: !Unavailable && AnswerOnly is null);
+            }
 
             private IReadOnlyDictionary<Guid, string> Answer(IReadOnlyCollection<Guid> userIds)
             {
@@ -474,6 +547,38 @@ public sealed class DecisionMakerSearchHttpMongoTests
                         .Where(id => Names.ContainsKey(id) && !Absent.Contains(id) && (AnswerOnly is null || AnswerOnly.Contains(id)))
                         .ToDictionary(id => id, id => Names[id]);
                 }
+            }
+        }
+
+        public sealed class RealAuth : HttpMessageHandler, IHttpClientFactory
+        {
+            private int _calls;
+            public int Calls => _calls;
+            public bool Down { get; set; }
+            /// <summary>When set, only these are answered (the others absent from a 200 answer: "no name there").</summary>
+            public HashSet<Guid>? AnswerOnly { get; set; }
+
+            public HttpClient CreateClient(string name) => new(this, disposeHandler: false);
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+            {
+                Interlocked.Increment(ref _calls);
+                if (Down) { return Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)); }
+                var query = System.Web.HttpUtility.ParseQueryString(request.RequestUri!.Query);
+                var tenant = Guid.Parse(query["tenantId"]!);
+                List<object> rows;
+                lock (Names)
+                {
+                    rows = (query["ids"] ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries).Select(Guid.Parse)
+                        .Where(id => tenant == TenantA && Names.ContainsKey(id) && (AnswerOnly is null || AnswerOnly.Contains(id)))
+                        .Select(id => (object)new { id, displayName = Names[id] })
+                        .ToList();
+                }
+
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(JsonSerializer.Serialize(rows), Encoding.UTF8, "application/json")
+                });
             }
         }
 

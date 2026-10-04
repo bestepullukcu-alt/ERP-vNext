@@ -16,6 +16,7 @@ using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Meetings;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Enums;
+using Diten.Platform.Domain.Enums.Meetings;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Authorization;
 using Diten.Platform.Infrastructure.Persistence;
@@ -267,6 +268,123 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
         Assert.Equal([Host.Attendee], call.Ids.Split(',').Select(Guid.Parse));
     }
 
+    // ATT-FIX2 (2) — the minutes read names every version's people in ONE bounded call: a hanging AuthService
+    // costs it the bound, not 100 s per chunk per version.
+    [Fact]
+    public async Task A_hanging_AuthService_costs_the_minutes_read_at_most_the_bound()
+    {
+        await using var host = await Host.StartAsync();
+        var minutes = host.Database.GetCollection<MeetingMinutesVersion>(PlatformCollections.MeetingMinutesVersions);
+        foreach (var number in new[] { 1, 2, 3 })
+        {
+            await minutes.InsertOneAsync(new MeetingMinutesVersion
+            {
+                TenantId = Host.TenantA, MeetingId = host.MeetingId, VersionNumber = number,
+                Attendance = [new MinutesAttendanceRecord { AttendeeUserId = Host.Attendee, Status = AttendanceStatus.Present }],
+                PublishedByUserId = Host.Organizer
+            });
+        }
+
+        host.AuthHangs = true;
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        var (status, _, body) = await host.GetAsync($"/api/v1/meetings/{host.MeetingId}/minutes");
+        clock.Stop();
+
+        Assert.True(status == HttpStatusCode.OK, body);
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(4), $"the minutes read took {clock.Elapsed}");
+        Assert.Equal(3, JsonDocument.Parse(body).RootElement.GetProperty("data").GetProperty("versions").GetArrayLength());
+    }
+
+    [Fact]
+    public async Task A_hanging_AuthService_costs_the_assignment_list_at_most_the_bound()
+    {
+        await using var host = await Host.StartAsync();
+        host.AuthHangs = true;
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+
+        var (status, _, body) = await host.GetAsync("/api/v1/tasks/lookups/assignable-people");
+
+        clock.Stop();
+        Assert.True(status == HttpStatusCode.OK, body);
+        Assert.True(clock.Elapsed < TimeSpan.FromSeconds(4), $"the assignment list took {clock.Elapsed}");
+        // Not vacuous: the list HAD people to name (so the hanging name request was really made).
+        Assert.NotEmpty(JsonDocument.Parse(body).RootElement.GetProperty("data").GetProperty("people").EnumerateArray());
+    }
+
+    // ATT-FIX2 (3) — the DETAIL read applies the list's rule: a linked meeting's title only for a reader who may open it.
+    [Fact]
+    public async Task The_detail_names_a_linked_meeting_only_for_a_reader_who_may_open_it()
+    {
+        await using var host = await Host.StartAsync();
+        var reader = Guid.NewGuid();
+        var meetings = host.Database.GetCollection<Meeting>(PlatformCollections.MeetingMeetings);
+        var secretBefore = Guid.NewGuid();
+        var mine = Guid.NewGuid();
+        await meetings.InsertManyAsync(
+        [
+            new Meeting
+            {
+                Id = secretBefore, TenantId = Host.TenantA, Title = "Gizli önceki", MeetingTypeId = Guid.NewGuid(),
+                StartAt = DateTimeOffset.UtcNow.AddDays(-7), EndAt = DateTimeOffset.UtcNow.AddDays(-7).AddHours(1),
+                OrganizerUserId = Host.Organizer, IdempotencyKey = Guid.NewGuid().ToString("N")
+            },
+            new Meeting
+            {
+                Id = mine, TenantId = Host.TenantA, Title = "Okurun", MeetingTypeId = Guid.NewGuid(), FollowUpOfMeetingId = secretBefore,
+                StartAt = DateTimeOffset.UtcNow.AddDays(5), EndAt = DateTimeOffset.UtcNow.AddDays(5).AddHours(1),
+                OrganizerUserId = reader, IdempotencyKey = Guid.NewGuid().ToString("N")
+            },
+            new Meeting
+            {
+                TenantId = Host.TenantA, Title = "Gizli sonraki", MeetingTypeId = Guid.NewGuid(), FollowUpOfMeetingId = mine,
+                StartAt = DateTimeOffset.UtcNow.AddDays(12), EndAt = DateTimeOffset.UtcNow.AddDays(12).AddHours(1),
+                OrganizerUserId = Host.Organizer, IdempotencyKey = Guid.NewGuid().ToString("N")
+            }
+        ]);
+
+        var asReader = await host.GetAsync($"/api/v1/meetings/{mine}", reader, readAll: false);
+        var asReadAll = await host.GetAsync($"/api/v1/meetings/{mine}");
+
+        Assert.True(asReader.Status == HttpStatusCode.OK, asReader.Body);
+        var data = JsonDocument.Parse(asReader.Body).RootElement.GetProperty("data");
+        Assert.Equal(secretBefore, data.GetProperty("followUpOfMeetingId").GetGuid());
+        Assert.Equal(JsonValueKind.Null, data.GetProperty("followUpOfMeetingTitle").ValueKind);
+        Assert.Equal(JsonValueKind.Null, data.GetProperty("followedByMeetingTitle").ValueKind);
+        Assert.DoesNotContain("Gizli", asReader.Body);
+        Assert.Contains("Gizli önceki", asReadAll.Body);
+        Assert.Contains("Gizli sonraki", asReadAll.Body);
+    }
+
+    // ATT-FIX2 (4) — same-moment meetings keep one order across pages; a titles-only read names and types nobody.
+    [Fact]
+    public async Task Same_moment_meetings_never_swap_between_pages_and_a_titles_only_read_is_light()
+    {
+        await using var host = await Host.StartAsync();
+        var at = DateTimeOffset.UtcNow.AddDays(30);
+        var ids = Enumerable.Range(0, 5).Select(_ => Guid.NewGuid()).ToList();
+        await host.Database.GetCollection<Meeting>(PlatformCollections.MeetingMeetings).InsertManyAsync(ids.Select(id => new Meeting
+        {
+            Id = id, TenantId = Host.TenantA, Title = "Aynı an", MeetingTypeId = Guid.NewGuid(),
+            StartAt = at, EndAt = at.AddHours(1), OrganizerUserId = Host.Organizer, IdempotencyKey = Guid.NewGuid().ToString("N")
+        }));
+
+        var paged = new List<Guid>();
+        for (var page = 1; page <= 5; page++)
+        {
+            var (_, _, body) = await host.GetAsync($"/api/v1/meetings?pageSize=1&page={page}&includeNames=false");
+            paged.Add(JsonDocument.Parse(body).RootElement.GetProperty("data").GetProperty("items")[0].GetProperty("id").GetGuid());
+        }
+
+        Assert.Equal(ids.OrderBy(id => id).ToList(), paged);
+
+        host.AuthCalls.Clear();
+        var light = await host.GetAsync("/api/v1/meetings?pageSize=50&titlesOnly=true");
+        Assert.Equal(HttpStatusCode.OK, light.Status);
+        Assert.Empty(host.AuthCalls);
+        Assert.All(JsonDocument.Parse(light.Body).RootElement.GetProperty("data").GetProperty("items").EnumerateArray(),
+            row => Assert.Equal(string.Empty, row.GetProperty("meetingTypeName").GetString()));
+    }
+
     // ── host ────────────────────────────────────────────────────────────────────────────────────────────
 
     private sealed class Host : IAsyncDisposable
@@ -280,6 +398,8 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
         public static readonly Guid Organizer = Guid.Parse("53153153-0000-4000-8000-00000000c001");
         public static readonly Guid Attendee = Guid.Parse("53153153-0000-4000-8000-00000000c002");
         public static readonly Guid OtherTenantPerson = Guid.Parse("53153153-0000-4000-8000-00000000c003");
+        /// <summary>The home unit, granted as the caller's data scope so the ASSIGNMENT list has people to name.</summary>
+        public static readonly Guid HomeUnit = Guid.Parse("53153153-0000-4000-8000-0000000000e1");
 
         private readonly DisposableMongoReplicaSet _mongo;
         private readonly TestServer _server;
@@ -326,7 +446,9 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
                     services.AddPeopleSearchRateLimit();
 
                     services.AddApplication();
-                    services.AddScoped<IDataScopeResolver>(_ => new Diten.Platform.Application.Tests.Tasks.FakeDataScopeResolver());
+                    services.AddScoped<IDataScopeResolver>(_ => new Diten.Platform.Application.Tests.Tasks.FakeDataScopeResolver(
+                        new Diten.Platform.Common.Authorization.EntitlementDataScope(
+                            Diten.Platform.Common.Authorization.EntitlementDataScopeKind.OrgUnit, HomeUnit, "HOME")));
                     services.AddScoped<ITenantAuthorizationContext, JwtTenantAuthorizationContext>();
                     services.AddScoped<ICurrentUserContext, CurrentUserContext>();
                     services.AddScoped<ITenantContext, TenantContext>();
@@ -400,7 +522,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
                 auth.Add(tenant, userId, name);
             }
 
-            var home = Guid.NewGuid();
+            var home = HomeUnit;
             var tenantBUnit = Guid.NewGuid();
             await units.InsertManyAsync(
             [
@@ -481,6 +603,7 @@ public sealed class MeetingAttendeeSearchHttpMongoTests
                     new Claim("actor_type", "tenant_user"),
                     new Claim("tenant_id", TenantA.ToString()),
                     new Claim("permission", TaskPermissions.Create),
+                    new Claim("permission", TaskPermissions.Assign),
                     new Claim("permission", MeetingPermissions.Create),
                     new Claim("permission", MeetingPermissions.Read),
                     new Claim("permission", MeetingPermissions.SeriesManage)

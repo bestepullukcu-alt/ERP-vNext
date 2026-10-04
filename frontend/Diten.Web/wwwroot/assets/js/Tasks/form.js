@@ -828,9 +828,17 @@
                 return;
             }
 
+            /*
+             * ATT-FIX2 — a RECORD field's options are only the first PAGE of a server-searched source, not the source:
+             * an empty first page does not mean there is nothing to find, and hiding the field hid a REQUIRED one the
+             * user then could never fill. It is drawn, with an empty picker that searches and says "no records".
+             * A source that could not be RESOLVED at all (no array) is still refused, as for every kind; a select /
+             * person field's options ARE its whole source, so an empty one is still not drawn either.
+             */
             const needsOptions = kind === 'select' || kind === 'person' || kind === 'record';
             const resolved = options[definition.code];
-            if (needsOptions && (!Array.isArray(resolved) || resolved.length === 0)) {
+            const emptyAllowed = kind === 'record';
+            if (needsOptions && (!Array.isArray(resolved) || (resolved.length === 0 && !emptyAllowed))) {
                 global.console?.warn?.(
                     `[TaskForm] field "${definition.code}" is option-driven but its source `
                     + `(${definition.optionsSourceKind}/${definition.optionsSourceKey || '—'}) resolved to no `
@@ -1125,8 +1133,11 @@
                     delay: RECORD_SEARCH_DELAY_MS,
                     transport: recordSearchTransport(node, code, searchRecords, text, state)
                 };
-                if (text.failed) {
-                    settings.language = { errorLoading: () => state.failure || text.failed };
+                if (text.failed || text.noResults) {
+                    settings.language = {
+                        errorLoading: () => state.failure || text.failed || '',
+                        noResults: () => text.noResults || ''
+                    };
                 }
             }
 

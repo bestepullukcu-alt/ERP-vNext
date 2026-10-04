@@ -115,6 +115,8 @@
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Demasiadas búsquedas en poco tiempo. Espere un momento e inténtelo de nuevo.</value></data>
   <data name="SearchFailed" xml:space="preserve"><value>No se pudo realizar la búsqueda. Inténtelo de nuevo en unos instantes.</value></data>
   <data name="NewOrganizerRequired" xml:space="preserve"><value>Elija el nuevo organizador.</value></data>
+  <data name="MeetingNotAccessible" xml:space="preserve"><value>Una reunión a la que no tiene acceso</value></data>
+  <data name="MeetingsListTruncated" xml:space="preserve"><value>La lista muestra como máximo 10 000 reuniones; use la vista de calendario para el resto.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>El servicio de Reuniones no está disponible en este momento.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Complete todos los campos obligatorios.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Tipos de reunión</value></data>

@@ -96,6 +96,7 @@
   <data name="DecisionMakerUnavailable" xml:space="preserve"><value>شخص غير موجود</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>عمليات بحث كثيرة في وقت قصير. انتظر قليلًا ثم حاول مرة أخرى.</value></data>
   <data name="SearchFailed" xml:space="preserve"><value>تعذّر إجراء البحث. يُرجى المحاولة مرة أخرى بعد قليل.</value></data>
+  <data name="RecordSearchNoResults" xml:space="preserve"><value>لم يتم العثور على سجلات.</value></data>
   <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>تعذّر تحميل بيانات الشخص حاليًا</value></data>
   <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>ابحث بالاسم أو بالأشخاص المحفوظين، وليس بالاثنين معًا.</value></data>
   <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>تم طلب عدد كبير جدًا من الأشخاص دفعة واحدة.</value></data>

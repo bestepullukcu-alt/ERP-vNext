@@ -96,6 +96,7 @@
   <data name="DecisionMakerUnavailable" xml:space="preserve"><value>未找到此人</value></data>
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>短时间内搜索次数过多。请稍候再试。</value></data>
   <data name="SearchFailed" xml:space="preserve"><value>无法完成搜索，请稍后重试。</value></data>
+  <data name="RecordSearchNoResults" xml:space="preserve"><value>未找到记录。</value></data>
   <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>暂时无法加载人员信息</value></data>
   <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>请按姓名或按已保存的人员查找，不能同时使用两者。</value></data>
   <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>一次请求的人员过多。</value></data>

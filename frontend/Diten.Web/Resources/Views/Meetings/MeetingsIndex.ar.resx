@@ -115,6 +115,8 @@
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>عمليات بحث كثيرة في وقت قصير. انتظر قليلًا ثم حاول مرة أخرى.</value></data>
   <data name="SearchFailed" xml:space="preserve"><value>تعذّر إجراء البحث. يُرجى المحاولة مرة أخرى بعد قليل.</value></data>
   <data name="NewOrganizerRequired" xml:space="preserve"><value>اختر المنظّم الجديد.</value></data>
+  <data name="MeetingNotAccessible" xml:space="preserve"><value>اجتماع ليس لديك صلاحية الوصول إليه</value></data>
+  <data name="MeetingsListTruncated" xml:space="preserve"><value>تعرض القائمة 10,000 اجتماع كحد أقصى؛ استخدم عرض التقويم للباقي.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>خدمة الاجتماعات غير متاحة حاليًا.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>يرجى تعبئة جميع الحقول المطلوبة.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>أنواع الاجتماعات</value></data>

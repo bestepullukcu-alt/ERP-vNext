@@ -75,7 +75,8 @@
         const [typesResult, listResult] = await Promise.all([
             window.MeetingsApi.lookupTypes(),
             // ATT-FIX1 — every meeting, paged (≤ 200 a call), titles only: this list names no one.
-            isEdit ? Promise.resolve({ ok: true, data: [] }) : window.MeetingsApi.listAll({ includeNames: false })
+            // ATT-FIX2 — the light read: titles and visibility only (no linked tasks, types or names).
+            isEdit ? Promise.resolve({ ok: true, data: [] }) : window.MeetingsApi.listAll({ titlesOnly: true })
         ]);
 
         const types = typesResult.ok ? (typesResult.data || []) : [];
@@ -92,6 +93,7 @@
             initSelect2('#fieldAttendeeUserIds', Object.assign({ closeOnSelect: false }, peopleSearchSettings()));
 
             const meetings = listResult.ok ? (listResult.data || []) : [];
+            if (listResult.truncated) { window.showToast?.(t('meetingsListTruncated'), 'warning'); }
             populateOptions('#fieldFollowUpOfMeetingId', meetings, 'id', 'title');
             initSelect2('#fieldFollowUpOfMeetingId', { placeholder: t('showAll'), allowClear: true });
         }
@@ -244,14 +246,16 @@
         followUpOfRow?.classList.toggle('d-none', !meeting.followUpOfMeetingId);
         if (meeting.followUpOfMeetingId) {
             const link = document.getElementById('dFollowUpOfLink');
-            link.textContent = meeting.followUpOfMeetingTitle || meeting.followUpOfMeetingId;
+            // ATT-FIX2 — the server names a linked meeting only for a reader who may open it; otherwise the words say
+            // so. Never the raw id.
+            link.textContent = meeting.followUpOfMeetingTitle || t('meetingNotAccessible');
             link.href = `/Meetings/${meeting.followUpOfMeetingId}`;
         }
         const followedByRow = document.getElementById('dFollowedByRow');
         followedByRow?.classList.toggle('d-none', !meeting.followedByMeetingId);
         if (meeting.followedByMeetingId) {
             const link = document.getElementById('dFollowedByLink');
-            link.textContent = meeting.followedByMeetingTitle || meeting.followedByMeetingId;
+            link.textContent = meeting.followedByMeetingTitle || t('meetingNotAccessible');
             link.href = `/Meetings/${meeting.followedByMeetingId}`;
         }
 

@@ -115,6 +115,8 @@
   <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Слишком много поисков за короткое время. Подождите немного и повторите попытку.</value></data>
   <data name="SearchFailed" xml:space="preserve"><value>Не удалось выполнить поиск. Повторите попытку чуть позже.</value></data>
   <data name="NewOrganizerRequired" xml:space="preserve"><value>Выберите нового организатора.</value></data>
+  <data name="MeetingNotAccessible" xml:space="preserve"><value>Совещание, к которому у вас нет доступа</value></data>
+  <data name="MeetingsListTruncated" xml:space="preserve"><value>Список показывает не более 10 000 совещаний; остальные смотрите в виде календаря.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Сервис совещаний сейчас недоступен.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Пожалуйста, заполните все обязательные поля.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Типы совещаний</value></data>

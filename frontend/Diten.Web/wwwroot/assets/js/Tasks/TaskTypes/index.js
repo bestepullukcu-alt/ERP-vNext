@@ -588,7 +588,8 @@ const TaskFieldDefinitionList = (function () {
                 columnDefs: [
                     { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
                     { targets: 1, orderable: false, searchable: false, responsivePriority: 3, className: 'dt-checkboxes-cell cell-fit', render: (data) => `<input type="checkbox" class="dt-checkboxes form-check-input" value="${data}">` },
-                    { targets: 2, render: (data) => `<span class="fw-medium text-heading">${data ?? ''}</span>` },
+                    // ATT-FIX2 (security) — the code is typed by a tenant administrator: TEXT, never markup.
+                    { targets: 2, render: (data) => `<span class="fw-medium text-heading">${escapeHtml(data)}</span>` },
                     { targets: 3, render: (data) => escapeHtml(data ?? '') },
                     {
                         /*
@@ -599,7 +600,7 @@ const TaskFieldDefinitionList = (function () {
                          */
                         targets: 4,
                         render: (data) => data
-                            ? `<span class="badge bg-label-${data === 'GXP_QUALITY_RECORD' ? 'danger' : (data === 'OPERATIONAL_RECORD' ? 'info' : 'secondary')}">${L['RecordClass' + data] || data}</span>`
+                            ? `<span class="badge bg-label-${data === 'GXP_QUALITY_RECORD' ? 'danger' : (data === 'OPERATIONAL_RECORD' ? 'info' : 'secondary')}">${escapeHtml(L['RecordClass' + data] || data)}</span>`
                             : ''
                     },
                     {
