@@ -155,6 +155,40 @@ public sealed class TaskWorkflowLinkReadModelTests
         Assert.Equal("required", item.Gates.Review.Status);
     }
 
+    // ── D2-FIX4 item 2 · the linked review TIMED OUT: closed without a verdict, the work is the holder's again ─────
+
+    [Theory]
+    [InlineData(TaskLifecycle.InProgress)]
+    [InlineData(TaskLifecycle.PendingReview)]
+    public async Task Work_whose_review_timed_out_offers_submitReview_again_and_its_gate_reads_required_not_rejected(
+        TaskLifecycle lifecycle)
+    {
+        var task = new TaskItem
+        {
+            TenantId = TaskTestData.Tenant,
+            Title = "Its review timed out",
+            Lifecycle = lifecycle,
+            AssignmentTarget = TaskAssignmentTarget.SelfAssigned,
+            AssigneeUserId = TaskTestData.Me,
+            OrganizationUnitId = Guid.NewGuid(),
+            ReviewRequired = true,
+            ReviewerCandidateUserId = TaskTestData.Rival,
+            ReviewWorkflowInstanceId = Held,
+            Version = 4
+        };
+        var states = new FakeTaskApprovalService();
+        // What the engine's state read reports for a timed-out instance: not a decision, still "pending" in the old sense.
+        states.States[Held] = new TaskApprovalState(
+            IsPending: true, IsApproved: false, IsRejected: false, IsCancelled: false, IsTimedOut: true);
+
+        var item = await ProjectAsync(task, states);
+
+        // Before D2-FIX4 only a disabled `complete` was offered — for good: nobody was reviewing, nothing to press.
+        Assert.True(Assert.Single(item.Actions, a => a.Code == "submitReview").Enabled);
+        Assert.DoesNotContain(item.Actions, a => a.Code == "complete");
+        Assert.Equal("required", item.Gates.Review.Status);
+    }
+
     // ── helpers ──────────────────────────────────────────────────────────────────────────────────────────────────
 
     /// <summary>MOD-0023's answer for <see cref="Held"/>: still pending, or withdrawn (cancelled).</summary>

@@ -238,6 +238,19 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
         return await Collection.Find(filter).ToListAsync(ct);
     }
 
+    // D2-FIX4 item 3 — over ix_workflow_instances_tenant_template ({TenantId, WorkflowTemplateId}); the id only. Every
+    // creator of an instance writes TemplateId and WorkflowTemplateId alike, and the second is the indexed one.
+    public async Task<IReadOnlyList<Guid>> ListOpenIdsByTemplateAsync(Guid templateId, CancellationToken ct = default)
+    {
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.Eq(x => x.WorkflowTemplateId, templateId),
+            Builders<WorkflowInstance>.Filter.In(
+                x => x.Status,
+                [WorkflowInstanceStatus.Pending, WorkflowInstanceStatus.Active, WorkflowInstanceStatus.Escalated]));
+        return await Collection.Find(filter).Project(x => x.Id).ToListAsync(ct);
+    }
+
     public Task<WorkflowInstance?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
     {
         var filter = Builders<WorkflowInstance>.Filter.And(
@@ -589,6 +602,32 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
 
         var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
         return result.IsAcknowledged && result.MatchedCount == 1;
+    }
+
+    // D2-FIX4 item 3 — targeted, tenant-filtered: only the look time, only tasks still waiting on somebody that HAVE one,
+    // in chunks of ids (served by ix_approval_tasks_tenant_instance_status), and no version.
+    public async Task<int> ResetEscalationLooksAsync(IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)
+    {
+        var reset = 0;
+        foreach (var chunk in workflowInstanceIds.Distinct().Chunk(500))
+        {
+            var filter = Builders<ApprovalTask>.Filter.And(
+                ExecutionFilter,
+                Builders<ApprovalTask>.Filter.In(x => x.WorkflowInstanceId, chunk),
+                Builders<ApprovalTask>.Filter.In(
+                    x => x.Status,
+                    [
+                        ApprovalTaskStatus.WaitingApproval,
+                        ApprovalTaskStatus.WaitingEvidence,
+                        ApprovalTaskStatus.Escalated
+                    ]),
+                Builders<ApprovalTask>.Filter.Ne(x => x.EscalationNextLookAtUtc, null));
+            var update = Builders<ApprovalTask>.Update.Set(x => x.EscalationNextLookAtUtc, (DateTime?)null);
+            var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
+            reset += (int)result.ModifiedCount;
+        }
+
+        return reset;
     }
 
     public async Task<bool> UpdateAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default)

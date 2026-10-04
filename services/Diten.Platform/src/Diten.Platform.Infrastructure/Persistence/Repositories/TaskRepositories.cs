@@ -164,6 +164,24 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
         return created;
     }
 
+    /// <summary>
+    /// D2-FIX4 item 7 — the soft delete the base class does, but one conditional write: only while the task is still at
+    /// <paramref name="expectedVersion"/> (and still the tenant's, still not deleted). False when it moved or is gone.
+    /// </summary>
+    public async Task<bool> DeleteAsync(Guid id, int expectedVersion, CancellationToken ct = default)
+    {
+        var filter = Builders<TaskItem>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskItem>.Filter.Eq(x => x.Id, id),
+            Builders<TaskItem>.Filter.Eq(x => x.Version, expectedVersion));
+        var update = Builders<TaskItem>.Update
+            .Set(x => x.IsDeleted, true)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow);
+
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.IsAcknowledged && result.MatchedCount == 1;
+    }
+
     /*
      * The conditional write, and the ONLY place a lifecycle event is decided.
      *

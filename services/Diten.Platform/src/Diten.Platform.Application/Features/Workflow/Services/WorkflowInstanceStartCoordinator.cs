@@ -838,36 +838,57 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             return;
         }
 
-        try
+        /*
+         * D2-FIX4 item 7 — AN IDEMPOTENT APPEND. The line takes the instance's NEXT sequence number, and that number is
+         * unique per instance: another transition of the same instance (an escalation, a decision) that read the same latest
+         * number and wrote first made this append fail — AFTER the task above was already cancelled, so the withdraw threw and
+         * left no line in the log every other transition writes to (the replay finds the task cancelled and writes nothing).
+         * A failed append is therefore told apart by what it collided with:
+         *   • a line with this task's key exists — a twin replay wrote it first: recorded once, which is the point;
+         *   • otherwise the sequence number was taken: read the latest again and append at the next one (bounded);
+         *   • still failing after that — a store failure, and not hidden.
+         */
+        for (var attempt = 1; ; attempt++)
         {
-            await _logs.AppendAsync(new WorkflowTransitionLog
+            try
             {
-                TenantId = closed.TenantId,
-                WorkflowInstanceId = closed.Id,
-                ApprovalTaskId = stray.Id,
-                Action = WorkflowTransitionAction.Cancel,
-                FromState = waitingAs.ToString(),
-                ToState = ApprovalTaskStatus.Cancelled.ToString(),
-                FromStatus = closed.Status.ToString(),
-                ToStatus = closed.Status.ToString(),
-                ActorId = StartRecoveryActor,
-                ActorRef = StartRecoveryActor,
-                ReasonCode = reason,
-                IdempotencyKey = idempotencyKey,
-                CorrelationId = correlationId,
-                SequenceNo = await _logs.GetLatestSequenceNoAsync(closed.Id, ct) + 1
-            }, ct);
-        }
-        catch (Exception failure) when (failure is not OperationCanceledException)
-        {
-            // A twin replay wrote the same line first (the key is unique per task): it is recorded once, which is the
-            // point. Anything else is a store failure and is not hidden.
-            if (await _logs.FindByIdempotencyAsync(stray.Id, WorkflowTransitionAction.Cancel, idempotencyKey, ct) is null)
+                await _logs.AppendAsync(new WorkflowTransitionLog
+                {
+                    TenantId = closed.TenantId,
+                    WorkflowInstanceId = closed.Id,
+                    ApprovalTaskId = stray.Id,
+                    Action = WorkflowTransitionAction.Cancel,
+                    FromState = waitingAs.ToString(),
+                    ToState = ApprovalTaskStatus.Cancelled.ToString(),
+                    FromStatus = closed.Status.ToString(),
+                    ToStatus = closed.Status.ToString(),
+                    ActorId = StartRecoveryActor,
+                    ActorRef = StartRecoveryActor,
+                    ReasonCode = reason,
+                    IdempotencyKey = idempotencyKey,
+                    CorrelationId = correlationId,
+                    SequenceNo = await _logs.GetLatestSequenceNoAsync(closed.Id, ct) + 1
+                }, ct);
+                return;
+            }
+            catch (Exception failure) when (failure is not OperationCanceledException)
             {
-                throw;
+                if (await _logs.FindByIdempotencyAsync(stray.Id, WorkflowTransitionAction.Cancel, idempotencyKey, ct) is not null)
+                {
+                    return;
+                }
+
+                if (attempt >= MaxStrayLogAttempts)
+                {
+                    throw;
+                }
             }
         }
     }
+
+    /// <summary>D2-FIX4 item 7 — how many times the stray-task withdraw's log line is appended while its sequence number keeps
+    /// being taken by another transition of the instance.</summary>
+    internal const int MaxStrayLogAttempts = 5;
 
     private static Response<TrustedWorkflowStartResult> NoCandidate(string reason, string correlationId) =>
         reason == WorkflowReasonCodes.WorkflowNoEligibleApprover

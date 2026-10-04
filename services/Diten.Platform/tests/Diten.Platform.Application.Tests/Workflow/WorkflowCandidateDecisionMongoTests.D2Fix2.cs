@@ -426,8 +426,9 @@ public sealed partial class WorkflowCandidateDecisionMongoTests
         public WorkflowInstanceStartCoordinator CoordinatorWith(
             IWorkflowInstanceRepository? instances = null,
             IApprovalTaskRepository? tasks = null,
-            IRuntimeAssignmentSnapshotRepository? snapshots = null) =>
-            new(Templates, Versions, instances ?? Instances, tasks ?? Tasks, snapshots ?? Snapshots, Logs, TenantContext,
+            IRuntimeAssignmentSnapshotRepository? snapshots = null,
+            IWorkflowTransitionLogRepository? logs = null) =>
+            new(Templates, Versions, instances ?? Instances, tasks ?? Tasks, snapshots ?? Snapshots, logs ?? Logs, TenantContext,
                 new PositionAssignmentRepository(Context, TenantContext), null, new PositionRepository(Context, TenantContext));
 
         /// <summary>The holder leaves and nobody takes the seat.</summary>

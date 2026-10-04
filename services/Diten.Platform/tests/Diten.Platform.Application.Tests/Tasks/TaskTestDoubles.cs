@@ -166,6 +166,14 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
     /// </summary>
     public int ForcedUpdateConflicts { get; set; }
 
+    /// <summary>D2-FIX4 — how many writes pass BEFORE <see cref="ForcedUpdateConflicts"/> start losing: "the first write lands,
+    /// the next one loses" (a parent's own cancel, then its subtask's).</summary>
+    public int WritesBeforeForcedConflicts { get; set; }
+
+    /// <summary>D2-FIX4 — every write the store was asked for, as the document looked when it was asked (whether it landed or
+    /// not): what ONE write carried is readable here, which the stored result alone cannot tell.</summary>
+    public List<TaskItem> WriteAttempts { get; } = [];
+
     /// <summary>
     /// WC-1 — the lifecycle event log this store writes to, exactly as the real repository does.
     ///
@@ -410,12 +418,20 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
 
     public Task<bool> UpdateAsync(TaskItem task, int expectedVersion, CancellationToken ct = default)
     {
+        WriteAttempts.Add(Detach(task));
         if (ForcedUpdateConflicts > 0)
         {
-            // Exactly what Mongo's conditional write does when another writer got there first: no exception, a
-            // FALSE, and the stored document untouched.
-            ForcedUpdateConflicts--;
-            return Task.FromResult(false);
+            if (WritesBeforeForcedConflicts > 0)
+            {
+                WritesBeforeForcedConflicts--;
+            }
+            else
+            {
+                // Exactly what Mongo's conditional write does when another writer got there first: no exception, a
+                // FALSE, and the stored document untouched.
+                ForcedUpdateConflicts--;
+                return Task.FromResult(false);
+            }
         }
 
         // The real repository stamps the passed entity BEFORE its conditional write (TaskRepositories.cs:79), so a
@@ -455,6 +471,19 @@ internal sealed class FakeTaskItemRepository : ITaskItemRepository
         }
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>D2-FIX4 item 7 — the conditional soft delete: only while the stored task is still at the version the caller read.</summary>
+    public Task<bool> DeleteAsync(Guid id, int expectedVersion, CancellationToken ct = default)
+    {
+        var stored = _items.FirstOrDefault(x => x.Id == id && x.TenantId == TaskTestData.Tenant && !x.IsDeleted);
+        if (stored is null || stored.Version != expectedVersion)
+        {
+            return Task.FromResult(false);
+        }
+
+        stored.IsDeleted = true;
+        return Task.FromResult(true);
     }
 }
 

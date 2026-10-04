@@ -874,60 +874,93 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     private async Task CancelOpenSubtasksAsync(TaskItem parent, TransitionTaskItemCommand command, CancellationToken ct)
     {
         var children = await _tasks.ListByParentAsync(parent.Id, ct);
-        foreach (var child in children)
+        foreach (var listed in children)
         {
-            if (child.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
-            {
-                continue;
-            }
+            var child = listed;
 
             /*
-             * D2-FIX2 item 1 — the parent's rule for its children: a child is not closed around an approval or review that
-             * is still decidable. The parent's own cancel has already committed, so a child whose withdraw fails cannot
-             * refuse it; that child stays OPEN (its holder still sees it, its approval still answers) and is named in the
-             * log, rather than closed with an orphan running under it. Same best-effort contract as the race below.
+             * D2-FIX4 item 7 — a child whose write LOSES after its approval or review was withdrawn is read again and tried
+             * again (a bounded number of times). The withdraw lands before the write, so one lost race used to leave the
+             * child OPEN with its approval already cancelled — its holder carrying work nobody can approve, the parent called
+             * off. The re-read decides: a child somebody else closed meanwhile is left as it is; one still open is withdrawn
+             * again (nothing left to cancel, or a NEW instance that started in between) and cancelled at its fresh version.
              */
-            // D2-FIX3 — the same withdraw as the parent's own (review first, approval last).
-            if (await TaskWorkflowLinkGate.WithdrawAsync(child, _approvals, _reviews, ct) is not null)
+            for (var attempt = 1; attempt <= MaxChildCancelAttempts; attempt++)
             {
-                _logger.LogWarning(
-                    "Subtask {ChildId} of cancelled task {ParentId} was left open: its running approval or review could "
-                    + "not be withdrawn.", child.Id, parent.Id);
-                continue;
+                if (child.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
+                {
+                    break;
+                }
+
+                /*
+                 * D2-FIX2 item 1 — the parent's rule for its children: a child is not closed around an approval or review that
+                 * is still decidable. The parent's own cancel has already committed, so a child whose withdraw fails cannot
+                 * refuse it; that child stays OPEN (its holder still sees it, its approval still answers) and is named in the
+                 * log, rather than closed with an orphan running under it. Same best-effort contract as the race below.
+                 */
+                // D2-FIX3 — the same withdraw as the parent's own (review first, approval last).
+                if (await TaskWorkflowLinkGate.WithdrawAsync(child, _approvals, _reviews, ct) is not null)
+                {
+                    _logger.LogWarning(
+                        "Subtask {ChildId} of cancelled task {ParentId} was left open: its running approval or review could "
+                        + "not be withdrawn.", child.Id, parent.Id);
+                    break;
+                }
+
+                // BL-439 — a cancelled child keeps no waiting story, the same rule the parent's own exit follows.
+                child.ClearWaiting();
+                child.Lifecycle = TaskLifecycle.Cancelled;
+                child.CancelledAt = DateTimeOffset.UtcNow;
+                /*
+                 * ⚠ THE PARENT'S OUTCOME IS **NOT** COPIED ONTO THE CHILD — changed with the closure dictionary.
+                 *
+                 * This line read `child.ClosureReasonCode = command.Request.ReasonCode`. It was harmless only because
+                 * the value was ALWAYS null: the browser hard-coded `reasonCode: null`, so the copy never carried
+                 * anything. The moment a real outcome flows, the copy becomes a defect — the code comes from the
+                 * PARENT's type dictionary, and a subtask may be a different type, or no type at all. The child would
+                 * then store a code its own type does not offer, resolve to no label, and print a raw
+                 * `COMPLETED_PARTIALLY` on a task nobody classified that way.
+                 *
+                 * It is also not what happened. The child was not called off for the parent's reason; it was called
+                 * off BECAUSE ITS PARENT WAS, and that fact is already recorded — as its own Cancelled transition,
+                 * below, in the child's own feed. An outcome invented for it here would be this module answering a
+                 * question that belongs to the child's type.
+                 */
+                child.UpdatedBy = _currentUser.ActorName;
+                // The child's own history records the cancellation as its own event, actored by whoever called off the
+                // parent. Its holder learns from the child's feed why work they were carrying stopped.
+                child.Declare(
+                    TaskTransitionKind.Cancelled,
+                    _currentUser.UserId,
+                    reason: null,
+                    // Same reasoning as the closure code above: the parent's classification is not the child's.
+                    reasonCode: null);
+
+                if (await _tasks.UpdateAsync(child, child.Version, ct))
+                {
+                    break;
+                }
+
+                // The write lost its race: what the store holds now is the child to decide about.
+                var fresh = await _tasks.GetByIdAsync(child.Id, ct);
+                if (fresh is null)
+                {
+                    break;
+                }
+
+                child = fresh;
+                if (attempt == MaxChildCancelAttempts)
+                {
+                    _logger.LogWarning(
+                        "Subtask {ChildId} of cancelled task {ParentId} lost its cancel write {Attempts} times and was left open; "
+                        + "its approval or review was withdrawn.", child.Id, parent.Id, MaxChildCancelAttempts);
+                }
             }
-
-            // BL-439 — a cancelled child keeps no waiting story, the same rule the parent's own exit follows.
-            child.ClearWaiting();
-            child.Lifecycle = TaskLifecycle.Cancelled;
-            child.CancelledAt = DateTimeOffset.UtcNow;
-            /*
-             * ⚠ THE PARENT'S OUTCOME IS **NOT** COPIED ONTO THE CHILD — changed with the closure dictionary.
-             *
-             * This line read `child.ClosureReasonCode = command.Request.ReasonCode`. It was harmless only because
-             * the value was ALWAYS null: the browser hard-coded `reasonCode: null`, so the copy never carried
-             * anything. The moment a real outcome flows, the copy becomes a defect — the code comes from the
-             * PARENT's type dictionary, and a subtask may be a different type, or no type at all. The child would
-             * then store a code its own type does not offer, resolve to no label, and print a raw
-             * `COMPLETED_PARTIALLY` on a task nobody classified that way.
-             *
-             * It is also not what happened. The child was not called off for the parent's reason; it was called
-             * off BECAUSE ITS PARENT WAS, and that fact is already recorded — as its own Cancelled transition,
-             * below, in the child's own feed. An outcome invented for it here would be this module answering a
-             * question that belongs to the child's type.
-             */
-            child.UpdatedBy = _currentUser.ActorName;
-            // The child's own history records the cancellation as its own event, actored by whoever called off the
-            // parent. Its holder learns from the child's feed why work they were carrying stopped.
-            child.Declare(
-                TaskTransitionKind.Cancelled,
-                _currentUser.UserId,
-                reason: null,
-                // Same reasoning as the closure code above: the parent's classification is not the child's.
-                reasonCode: null);
-
-            await _tasks.UpdateAsync(child, child.Version, ct);
         }
     }
+
+    /// <summary>D2-FIX4 item 7 — how many times a subtask's cancel is tried while its write keeps losing its race.</summary>
+    internal const int MaxChildCancelAttempts = 3;
 
     /// <summary>
     /// The first predecessor that has not reached the state its edge waits for, or null when nothing is in the
@@ -1098,7 +1131,33 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
         var resubmitting = false;
         if (task.ReviewWorkflowInstanceId is { } heldInstance)
         {
-            var states = await _reviewStates.GetStatesAsync([heldInstance], ct);
+            /*
+             * D2-FIX4 item 2 — A STATE THAT CANNOT BE READ IS NOT "STILL OPEN". Read as outstanding (Resolve's fail-closed
+             * answer for the projection) it refused this submission REVIEW_PENDING — a permanent 409 for what may be a moment's
+             * outage. Opening a new round on a guess would be the orphan this round exists to stop (the held review might
+             * still be running), so the answer is a TRANSIENT one: 503, the task untouched, the same call safe to repeat. The
+             * existing REVIEW_START_FAILED code ("the review could not be started, the task is unchanged, try again") is the
+             * one that says exactly that — no new sentence.
+             */
+            IReadOnlyDictionary<Guid, TaskApprovalState> states;
+            try
+            {
+                states = await _reviewStates.GetStatesAsync([heldInstance], ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, "The review {InstanceId} of task {TaskId} could not be read; the submission is refused as transient.",
+                    heldInstance, task.Id);
+                return ReviewStateUnreadable(command.CorrelationId);
+            }
+
+            if (!states.ContainsKey(heldInstance))
+            {
+                _logger.LogWarning("The review {InstanceId} of task {TaskId} is not listed by the engine; the submission is refused as transient.",
+                    heldInstance, task.Id);
+                return ReviewStateUnreadable(command.CorrelationId);
+            }
+
             var (stillOpen, sentBack) = TaskReviewView.Resolve(task, states);
             if (task.Lifecycle == TaskLifecycle.PendingReview)
             {
@@ -1188,6 +1247,11 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
 
         return Response<NoContent>.Success(204, command.CorrelationId);
     }
+
+    private static Response<NoContent> ReviewStateUnreadable(string correlationId) =>
+        Response<NoContent>.Fail(
+            "The review could not be read right now. The task is unchanged; try again.",
+            503, TaskReasonCodes.ReviewStartFailed, correlationId);
 }
 
 /// <summary>

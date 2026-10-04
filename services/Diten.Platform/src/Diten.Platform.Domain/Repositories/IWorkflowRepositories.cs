@@ -99,6 +99,20 @@ public interface IWorkflowInstanceRepository
         IReadOnlyCollection<Guid> ids,
         CancellationToken ct = default) =>
         (await GetAllForTenantAsync(ct)).Where(x => ids.Contains(x.Id)).ToList();
+
+    /// <summary>
+    /// D2-FIX4 item 3 — the ids of this tenant's instances of ONE template that are still open (Pending, Active or
+    /// Escalated): who an SLA rule change can still affect. The store reads them over the
+    /// <c>{TenantId, WorkflowTemplateId}</c> index and projects the id only. Default = in-memory filter for test doubles.
+    /// </summary>
+    async Task<IReadOnlyList<Guid>> ListOpenIdsByTemplateAsync(Guid templateId, CancellationToken ct = default) =>
+        (await GetAllForTenantAsync(ct))
+            .Where(x => (x.WorkflowTemplateId == templateId || x.TemplateId == templateId)
+                && x.Status is Domain.Enums.Workflow.WorkflowInstanceStatus.Pending
+                    or Domain.Enums.Workflow.WorkflowInstanceStatus.Active
+                    or Domain.Enums.Workflow.WorkflowInstanceStatus.Escalated)
+            .Select(x => x.Id)
+            .ToList();
 }
 
 public interface IApprovalTaskRepository
@@ -200,6 +214,39 @@ public interface IApprovalTaskRepository
         }
 
         return await UpdateAsync(task, task.Version, ct);
+    }
+
+    /// <summary>
+    /// D2-FIX4 item 3 — forgets the look time of every task still waiting on somebody under these instances, so the next sweep
+    /// reads them again. A task rests until its look time (a day for what nothing will change), and a task that rested
+    /// because it had NO SLA rule keeps resting after a rule is added — or tightened — for the template. Targeted: only the look
+    /// time, only open tasks that have one, only this tenant's, no version (a person deciding the task meanwhile is never
+    /// told "changed meanwhile" because a rule was edited). Returns how many were reset. The store overrides this with one
+    /// targeted write per chunk of ids; the default (in-memory doubles) reads and writes each task.
+    /// </summary>
+    async Task<int> ResetEscalationLooksAsync(IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)
+    {
+        if (workflowInstanceIds.Count == 0)
+        {
+            return 0;
+        }
+
+        var reset = 0;
+        foreach (var task in (await GetAllForTenantAsync(ct)).Where(t =>
+                     workflowInstanceIds.Contains(t.WorkflowInstanceId)
+                     && t.EscalationNextLookAtUtc is not null
+                     && (t.Status is Domain.Enums.Workflow.ApprovalTaskStatus.WaitingApproval
+                         or Domain.Enums.Workflow.ApprovalTaskStatus.WaitingEvidence
+                         or Domain.Enums.Workflow.ApprovalTaskStatus.Escalated)))
+        {
+            task.EscalationNextLookAtUtc = null;
+            if (await UpdateAsync(task, task.Version, ct))
+            {
+                reset++;
+            }
+        }
+
+        return reset;
     }
 
     // WP-CL-BE-3 — terminal transition write inside the Platform transaction (see IWorkflowInstanceRepository).

@@ -128,11 +128,25 @@ public sealed class StartWorkflowInstanceHandler
             ct);
         if (normalizedCandidates.Count == 0)
         {
-            return Response<StartWorkflowInstanceResponse>.Fail(
-                "At least one assignment candidate is required.",
-                400,
-                WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired,
-                request.CorrelationId);
+            /*
+             * D2-FIX4 item 7 — AN EMPTY SEAT IS TRANSIENT HERE TOO. The trusted start answers "somebody was declared but the
+             * seat resolves to nobody right now" 503 (D2-FIX3 item 7); this start still answered 400 for the same condition,
+             * and a caller files a 400 as an invalid request and gives up, while a 503 is the one it knows to retry.
+             * Nothing is written either way, so the retry is a fresh first call. Only a request that DECLARED nobody at all
+             * (no candidates of its own and none in the template's step) stays a 400: that one is a malformed request, not a
+             * wait. The contract code is the same in both.
+             */
+            return candidateSource.Count == 0
+                ? Response<StartWorkflowInstanceResponse>.Fail(
+                    "At least one assignment candidate is required.",
+                    400,
+                    WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired,
+                    request.CorrelationId)
+                : Response<StartWorkflowInstanceResponse>.Fail(
+                    "Nobody holds the approving seat right now; nothing was started. Try again once someone does.",
+                    503,
+                    WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired,
+                    request.CorrelationId);
         }
 
         var actor = _currentUserContext.ActorName;

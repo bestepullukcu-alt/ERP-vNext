@@ -77,6 +77,24 @@ public interface ITaskItemRepository
     Task<bool> UpdateAsync(TaskItem task, int expectedVersion, CancellationToken ct = default);
 
     Task DeleteAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>
+    /// D2-FIX4 item 7 — the soft delete, but ONLY while the task is still at <paramref name="expectedVersion"/>: false when it
+    /// moved since the caller read it (or is gone). A delete that withdraws a running approval or review first must not
+    /// then delete around a NEW instance that a start opened in between. The store overrides this with one conditional
+    /// write; the default (in-memory doubles) reads, compares and deletes.
+    /// </summary>
+    async Task<bool> DeleteAsync(Guid id, int expectedVersion, CancellationToken ct = default)
+    {
+        var current = await GetByIdAsync(id, ct);
+        if (current is null || current.Version != expectedVersion)
+        {
+            return false;
+        }
+
+        await DeleteAsync(id, ct);
+        return true;
+    }
 }
 
 /// <summary>

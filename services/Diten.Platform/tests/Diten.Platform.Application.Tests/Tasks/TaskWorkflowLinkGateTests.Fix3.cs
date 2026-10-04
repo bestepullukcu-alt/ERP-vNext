@@ -441,7 +441,7 @@ public sealed partial class TaskWorkflowLinkGateTests
 
         /// <summary>Submit for review as <paramref name="user"/>: the held link is read through the REAL state read
         /// (MOD-0023's instance as stored), the new round is opened by <paramref name="starter"/>.</summary>
-        public Task<Response<NoContent>> SubmitAsAsync(Guid user, FakeTaskReviewService starter) =>
+        public Task<Response<NoContent>> SubmitAsAsync(Guid user, ITaskReviewService starter) =>
             new SubmitTaskForReviewHandler(_tasks, new TaskLifecycleService(), new FakeCurrentUserContext(user), starter,
                     Approvals, NullLogger<SubmitTaskForReviewHandler>.Instance)
                 .Handle(new SubmitTaskForReviewCommand(Task.Id, new TaskTransitionRequest(Stored().Version, null, null), "corr-submit"),

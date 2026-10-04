@@ -270,6 +270,48 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             task.DocumentReferences = frozen.References;
         }
 
+        /*
+         * D2-FIX4 items 1 and 4 — THE LIVE INSTANCE A WITHDRAW WILL HAVE TO FIND IS ADOPTED BEFORE THIS WRITE, so the link is
+         * STORED BY THE SAME CONDITIONAL WRITE THAT SWITCHES THE REQUIREMENT OFF.
+         *
+         * Before, an approval or review the task did not point at (its link write had fallen over, or the link was stale and
+         * a later round was the live one) was found only AFTER this write, adopted in memory, and stored by a SECOND write
+         * whose result nobody read. The flag was already off by then, so a second write that lost its race left a live
+         * instance with no link and no requirement — nothing would ever look for it again, and the approver kept a decision
+         * nobody reads. Read first (read-only, nothing in MOD-0023 is touched), the link rides in the one write: if that
+         * write loses, the edit is the 409 it always was and MOD-0023 has not been touched; if it lands, a withdraw that
+         * fails after it has a link to follow on the retry.
+         *
+         * An engine that cannot be READ here refuses the edit the same way (409, nothing written): writing the flag off on a
+         * guess is the very loss this guards against.
+         */
+        if (cancelReview || cancelApproval)
+        {
+            try
+            {
+                if (cancelReview && await _reviews.FindUnlinkedOpenInstanceAsync(task, ct) is { } liveReview)
+                {
+                    task.ReviewWorkflowInstanceId = liveReview;
+                }
+
+                if (cancelApproval && await _approvals.FindUnlinkedOpenInstanceAsync(task, ct) is { } liveApproval)
+                {
+                    task.WorkflowInstanceId = liveApproval;
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex,
+                    "Task {TaskId} was not edited: its running approval or review could not be looked up, and the requirement "
+                    + "is not switched off on a guess.", task.Id);
+                return Response<TaskItemEditResultDto>.Fail(
+                    "The task changed meanwhile; reload and retry.",
+                    409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+            }
+
+            heldReviewLink = task.ReviewWorkflowInstanceId is not null;
+        }
+
         task.Declare(TaskTransitionKind.Edited, _currentUser.UserId);
 
         if (!await _tasks.UpdateAsync(task, request.ExpectedVersion, ct))
@@ -329,8 +371,21 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 // D2-FIX2 item 2 — and the refusal says at which version the edit landed (see landedVersion).
                 // D2-FIX3 item 8 — a review the task did not point at (found by its object reference) was adopted as
                 // the link: it is STORED here, or the retry this refusal asks for would have no link to follow.
-                if (!heldReviewLink && task.ReviewWorkflowInstanceId is not null && await _tasks.UpdateAsync(task, task.Version, ct))
+                // D2-FIX4 item 4 — normally it was adopted BEFORE the write and rides in it (above); only a review that
+                // started between that read and now is adopted here, and a write that cannot store it is NEVER dropped
+                // silently: the flag is already off, so a link that is not stored is an instance nothing looks for again.
+                if (!heldReviewLink && task.ReviewWorkflowInstanceId is not null)
                 {
+                    if (!await _tasks.UpdateAsync(task, task.Version, ct))
+                    {
+                        _logger.LogError(
+                            "Review {InstanceId} of task {TaskId} could not be withdrawn and its link could not be stored.",
+                            task.ReviewWorkflowInstanceId, task.Id);
+                        return Response<TaskItemEditResultDto>.Fail(
+                            "The task changed meanwhile; reload and retry.",
+                            409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+                    }
+
                     landedVersion = task.Version;
                 }
 
@@ -378,8 +433,20 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 // D2-FIX2 item 2 — the version the edit landed at travels with the refusal.
                 // D2-FIX3 item 8 — an approval found by its object reference was adopted as the link: stored, so the
                 // retry follows it (the requirement is already off, so only a held link makes the next edit retry).
-                if (!heldApprovalLink && task.WorkflowInstanceId is not null && await _tasks.UpdateAsync(task, task.Version, ct))
+                // D2-FIX4 item 4 — normally stored by the edit's own write (above); a write that cannot store a late
+                // adoption is refused loudly, never dropped.
+                if (!heldApprovalLink && task.WorkflowInstanceId is not null)
                 {
+                    if (!await _tasks.UpdateAsync(task, task.Version, ct))
+                    {
+                        _logger.LogError(
+                            "Approval {InstanceId} of task {TaskId} could not be withdrawn and its link could not be stored.",
+                            task.WorkflowInstanceId, task.Id);
+                        return Response<TaskItemEditResultDto>.Fail(
+                            "The task changed meanwhile; reload and retry.",
+                            409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+                    }
+
                     landedVersion = task.Version;
                 }
 
@@ -449,8 +516,20 @@ public sealed class DeleteTaskItemHandler : IRequestHandler<DeleteTaskItemComman
                 409, refusedCode, command.CorrelationId);
         }
 
+        /*
+         * D2-FIX4 item 7 — THE DELETE IS CONDITIONAL ON THE VERSION READ ABOVE. Between the withdraw and an unconditional
+         * soft delete, a start (an edit switching approval or review on) could land and open a NEW instance: the task was
+         * deleted around a live decision again. Now a task that moved since it was read is not deleted — 409, and the retry
+         * reads it afresh and withdraws what started in between.
+         */
         // Soft delete (repository base sets IsDeleted); no hard delete anywhere.
-        await _tasks.DeleteAsync(command.Id, ct);
+        if (!await _tasks.DeleteAsync(command.Id, task.Version, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
         return Response<NoContent>.Success(204, command.CorrelationId);
     }
 }
@@ -498,7 +577,13 @@ public sealed class BulkDeleteTaskItemHandler : IRequestHandler<BulkDeleteTaskIt
                 continue;
             }
 
-            await _tasks.DeleteAsync(id, ct);
+            // D2-FIX4 item 7 — conditional on the version read above, like the single delete: a task that moved since (a
+            // start landed after its withdraw) is left out, not deleted around the new instance. Said nowhere in the answer.
+            if (!await _tasks.DeleteAsync(id, task.Version, ct))
+            {
+                _logger?.LogWarning(
+                    "Task {TaskId} was left out of a bulk delete: it changed after it was read.", task.Id);
+            }
         }
 
         return Response<NoContent>.Success(204, command.CorrelationId);

@@ -1,3 +1,4 @@
+using System.Net;
 using System.Reflection;
 using Diten.Platform.Application.Features.Workflow;
 using Diten.Platform.Application.Features.Workflow.Commands;
@@ -5,8 +6,14 @@ using Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
+using MongoDB.Driver.Core.Clusters;
+using MongoDB.Driver.Core.Connections;
+using MongoDB.Driver.Core.Servers;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Workflow;
@@ -261,9 +268,171 @@ public sealed class WorkflowEscalationRestTests
         Assert.DoesNotContain(RuleStore.Secret, error, StringComparison.Ordinal); // no exception text in the log
     }
 
+    // ── D2-FIX4 item 6 · a store that cannot be reached stops the tenant's sweep; a task's own trouble does not ────
+
+    [Fact]
+    public async Task Three_tasks_in_a_row_that_cannot_reach_the_store_stop_the_tenants_sweep_and_rest_nothing()
+    {
+        var w = new World();
+        // Oldest due date first: the sweep reads them in this order.
+        var seeded = Enumerable.Range(0, 6).Select(i => w.Seed(Now.AddHours(-6 + i))).ToList();
+        w.Rules.Failure = _ => new TimeoutException("A timeout occurred after 30000ms selecting a server: " + RuleStore.Secret);
+
+        var run = await w.SweepAsync();
+
+        Assert.Equal(WorkflowEscalationRestTestsLimits.StopAfter, w.Rules.Reads);          // three tasks paid the timeout — not six
+        Assert.Equal(WorkflowEscalationRestTestsLimits.StopAfter, run.EvaluatedCount);
+        Assert.Equal(WorkflowEscalationRestTestsLimits.StopAfter, run.Results.Count);
+        // Not rested either: the rest is a write against the very store that just timed out (the second timeout per task).
+        Assert.All(seeded, s => Assert.Null(w.LookAt(s.Task)));
+        Assert.Contains(w.Logger.Errors, e => e.Contains("stopped after 3 consecutive", StringComparison.Ordinal));
+        Assert.DoesNotContain(w.Logger.Errors, e => e.Contains(RuleStore.Secret, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Infrastructure_failures_that_are_not_in_a_row_do_not_stop_the_sweep()
+    {
+        var w = new World();
+        var seeded = Enumerable.Range(0, 6).Select(i => w.Seed(Now.AddHours(-6 + i))).ToList();
+        var unreachable = new[] { 0, 2, 4 }.Select(i => seeded[i].Instance.TemplateId).ToHashSet();
+        foreach (var healthy in new[] { 1, 3, 5 })
+        {
+            w.Rule(seeded[healthy].Instance, escalateAfterMinutes: 30, timeoutAfterMinutes: null, Escalator);
+        }
+
+        w.Rules.Failure = templateId => unreachable.Contains(templateId) ? new TimeoutException("no server") : null;
+
+        var run = await w.SweepAsync();
+
+        Assert.Equal(6, run.EvaluatedCount);                // a task that gets an answer resets the count
+        Assert.Equal(3, run.EscalatedCount);
+        Assert.DoesNotContain(w.Logger.Errors, e => e.Contains("stopped after", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task A_failure_of_the_task_itself_never_counts_towards_the_stop()
+    {
+        var w = new World();
+        var seeded = Enumerable.Range(0, 5).Select(i => w.Seed(Now.AddHours(-6 + i))).ToList();
+        w.Rules.Failure = _ => new InvalidOperationException("this task's rule is unreadable");
+
+        var run = await w.SweepAsync();
+
+        Assert.Equal(5, w.Rules.Reads);                     // every task was evaluated, none stopped the run
+        Assert.Equal(5, run.EvaluatedCount);
+        Assert.All(seeded, s => Assert.Equal((Now + Short).UtcDateTime, w.LookAt(s.Task)));   // and each one rested
+        Assert.DoesNotContain(w.Logger.Errors, e => e.Contains("stopped after", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task A_task_that_fails_for_its_own_reasons_proves_the_store_is_up_and_resets_the_count()
+    {
+        // infrastructure, infrastructure, ITS OWN, infrastructure, healthy: three infrastructure failures in all, never three
+        // in a row — the task that answered with a failure of its own had reached the store, so the count starts again.
+        var w = new World();
+        var seeded = Enumerable.Range(0, 5).Select(i => w.Seed(Now.AddHours(-6 + i))).ToList();
+        var unreachable = new[] { 0, 1, 3 }.Select(i => seeded[i].Instance.TemplateId).ToHashSet();
+        var itsOwn = seeded[2].Instance.TemplateId;
+        w.Rules.Failure = templateId => unreachable.Contains(templateId)
+            ? new TimeoutException("no server")
+            : templateId == itsOwn ? new InvalidOperationException("this task's rule is unreadable") : null;
+
+        var run = await w.SweepAsync();
+
+        Assert.Equal(5, w.Rules.Reads);                      // the fifth task was reached: the sweep was not stopped
+        Assert.Equal(5, run.EvaluatedCount);
+        Assert.DoesNotContain(w.Logger.Errors, e => e.Contains("stopped after", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task A_cancelled_sweep_is_not_swallowed_as_a_task_failure()
+    {
+        // Esc:113 — `when (failure is not OperationCanceledException)`: a shutdown must end the run, not rest the task.
+        var w = new World();
+        var seeded = w.Seed(Now.AddHours(-3));
+        w.Rules.Failure = _ => new OperationCanceledException();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => w.SweepRawAsync());
+
+        Assert.Null(w.LookAt(seeded.Task));
+        Assert.Empty(w.Logger.Errors);
+    }
+
+    [Fact]
+    public void The_store_is_told_from_the_task_by_what_was_thrown_however_deep_it_is_wrapped()
+    {
+        var connection = new ConnectionId(new ServerId(new ClusterId(1), new DnsEndPoint("localhost", 27017)));
+
+        Assert.True(RunWorkflowEscalationsHandler.IsInfrastructureFailure(new TimeoutException("selecting a server")));
+        Assert.True(RunWorkflowEscalationsHandler.IsInfrastructureFailure(new MongoConnectionException(connection, "closed")));
+        Assert.True(RunWorkflowEscalationsHandler.IsInfrastructureFailure(new MongoExecutionTimeoutException(connection, "too slow")));
+        Assert.True(RunWorkflowEscalationsHandler.IsInfrastructureFailure(
+            new InvalidOperationException("wrapped", new TimeoutException("selecting a server"))));
+        Assert.True(RunWorkflowEscalationsHandler.IsInfrastructureFailure(new AggregateException(new TimeoutException("x"))));
+        Assert.False(RunWorkflowEscalationsHandler.IsInfrastructureFailure(new InvalidOperationException("the task's own")));
+        Assert.False(RunWorkflowEscalationsHandler.IsInfrastructureFailure(new ArgumentException("the task's own")));
+        Assert.False(RunWorkflowEscalationsHandler.IsInfrastructureFailure(null));
+    }
+
+    // ── D2-FIX4 item 7 · the operator's rest is held between the short recheck and a week, and it binds ────────────
+
+    [Theory]
+    [InlineData(5, 15)]                       // asked for five minutes: raised to the short recheck (it used to become 24 hours)
+    [InlineData(0, 15)]
+    [InlineData(60 * 24 * 30, 60 * 24 * 7)]   // asked for thirty days: lowered to a week
+    [InlineData(60 * 6, 60 * 6)]              // inside the range: as asked
+    public async Task The_standing_rest_is_held_between_the_short_recheck_and_a_week(int askedMinutes, int expectedMinutes)
+    {
+        var w = new World(standingRest: TimeSpan.FromMinutes(askedMinutes));
+        var seeded = w.Seed(Now.AddDays(-2));        // no rule: it rests for the standing rest
+
+        await w.SweepAsync();
+
+        Assert.Equal(Now.AddMinutes(expectedMinutes).UtcDateTime, w.LookAt(seeded.Task));
+    }
+
+    [Fact]
+    public async Task The_standing_rest_binds_from_configuration_through_the_registration_production_runs()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["Workflow:Escalation:StandingRest"] = "06:00:00" })
+            .Build();
+        var services = new ServiceCollection();
+        Diten.Platform.Infrastructure.DependencyInjection.AddWorkflowEscalationOptions(services, configuration);
+        using var provider = services.BuildServiceProvider();
+        var w = new World(bound: provider.GetRequiredService<IOptions<WorkflowEscalationOptions>>());
+        var seeded = w.Seed(Now.AddDays(-2));
+
+        await w.SweepAsync();
+
+        Assert.Equal(Now.AddHours(6).UtcDateTime, w.LookAt(seeded.Task));
+    }
+
+    [Fact]
+    public void AddInfrastructure_registers_the_escalation_options()
+    {
+        // The line inside AddInfrastructure is what production runs; the test above proves what that registration binds.
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "AGENTS.md")))
+        {
+            directory = directory.Parent;
+        }
+
+        Assert.NotNull(directory);
+        var infrastructure = File.ReadAllText(Path.Combine(
+            directory!.FullName, "services", "Diten.Platform", "src", "Diten.Platform.Infrastructure", "DependencyInjection.cs"));
+        Assert.Contains("services.AddWorkflowEscalationOptions(configuration);", infrastructure, StringComparison.Ordinal);
+    }
+
     // ── world ───────────────────────────────────────────────────────────────────────────────────────────────────
 
-    private sealed class World(TimeSpan? standingRest = null)
+    /// <summary>The number of infrastructure failures in a row the tenant's sweep stops after (the handler's own constant).</summary>
+    private static class WorkflowEscalationRestTestsLimits
+    {
+        public const int StopAfter = RunWorkflowEscalationsHandler.MaxConsecutiveInfrastructureFailures;
+    }
+
+    private sealed class World(TimeSpan? standingRest = null, IOptions<WorkflowEscalationOptions>? bound = null)
     {
         public TaskStore Tasks { get; } = new();
         public InstanceStore Instances { get; } = new();
@@ -339,14 +508,17 @@ public sealed class WorkflowEscalationRestTests
 
         public async Task<RunWorkflowEscalationsResponse> SweepAsync()
         {
-            var response = await new RunWorkflowEscalationsHandler(
-                    Tasks, Instances, Rules, Logs, new FixedClock(Now),
-                    logger: Logger,
-                    options: Options.Create(new WorkflowEscalationOptions { StandingRest = standingRest ?? Standing }))
-                .Handle(new RunWorkflowEscalationsCommand(new RunWorkflowEscalationsRequest(null, 100, null), "corr-rest"), default);
+            var response = await SweepRawAsync();
             Assert.True(response.IsSuccessful, response.ReasonCode);
             return response.Data!;
         }
+
+        public Task<Diten.Platform.Application.Common.Response<RunWorkflowEscalationsResponse>> SweepRawAsync() =>
+            new RunWorkflowEscalationsHandler(
+                    Tasks, Instances, Rules, Logs, new FixedClock(Now),
+                    logger: Logger,
+                    options: bound ?? Options.Create(new WorkflowEscalationOptions { StandingRest = standingRest ?? Standing }))
+                .Handle(new RunWorkflowEscalationsCommand(new RunWorkflowEscalationsRequest(null, 100, null), "corr-rest"), default);
 
         public WorkflowEscalationResultDto Result(RunWorkflowEscalationsResponse run, ApprovalTask task) =>
             Assert.Single(run.Results, r => r.ApprovalTaskId == task.Id);
@@ -482,11 +654,18 @@ public sealed class WorkflowEscalationRestTests
 
     private sealed class RuleStore : ISlaEscalationRuleRepository
     {
-        /// <summary>Planted in the exception text: the error log must not carry it.</summary>
-        public const string Secret = "mongodb://sweep:hunter2@db.internal/diten";
+        /// <summary>Planted in the exception text: the error log must not carry it. An openly fake value, so that no secret
+        /// scanner mistakes this file for one that holds a credential.</summary>
+        public const string Secret = "mongodb://user:TEST-ONLY-NOT-A-SECRET@example.invalid/db";
 
         public List<SlaEscalationRule> Items { get; } = [];
         public Guid? ThrowFor { get; set; }
+
+        /// <summary>D2-FIX4 — the exception the read of a template's rule throws (null = it answers).</summary>
+        public Func<Guid, Exception?>? Failure { get; set; }
+
+        /// <summary>How many rule reads were made: one per task that got as far as its rule.</summary>
+        public int Reads { get; private set; }
 
         public Task<SlaEscalationRule> CreateAsync(SlaEscalationRule rule, CancellationToken ct = default)
         {
@@ -505,9 +684,15 @@ public sealed class WorkflowEscalationRestTests
 
         public Task<SlaEscalationRule?> FindForStepAsync(Guid templateId, string stageCode, string stepCode, CancellationToken ct = default)
         {
+            Reads++;
             if (ThrowFor == templateId)
             {
                 throw new InvalidOperationException("The rule store could not be read: " + Secret);
+            }
+
+            if (Failure?.Invoke(templateId) is { } failure)
+            {
+                throw failure;
             }
 
             return Task.FromResult(Items.FirstOrDefault(r =>

@@ -379,7 +379,12 @@ public sealed partial class TaskWorkflowLinkGateTests
         public HashSet<Guid> FailFor { get; } = [];
         public List<CancelWorkflowTaskCommand> CancelCalls { get; } = [];
 
-        public WorkflowInstance Seed(string objectType, string objectRef, Guid taskId, WorkflowInstanceStatus status)
+        /// <summary>D2-FIX4 — runs when MOD-0023's cancel command arrives, before it is answered: somebody else touches the task
+        /// or the engine while the withdraw is under way (a start landing between the withdraw and a delete).</summary>
+        public Action? WhileCancelling { get; set; }
+
+        public WorkflowInstance Seed(
+            string objectType, string objectRef, Guid taskId, WorkflowInstanceStatus status, DateTimeOffset? startedAt = null)
         {
             var instance = new WorkflowInstance
             {
@@ -390,7 +395,7 @@ public sealed partial class TaskWorkflowLinkGateTests
                 ObjectId = taskId.ToString(),
                 ObjectRef = objectRef,
                 Status = status,
-                StartedAt = DateTimeOffset.UtcNow
+                StartedAt = startedAt ?? DateTimeOffset.UtcNow
             };
             Instances.Items.Add(instance);
             Tasks.Items.Add(new ApprovalTask
@@ -419,6 +424,7 @@ public sealed partial class TaskWorkflowLinkGateTests
                     return (TResponse)(object)await _evaluate.Handle(query, ct);
                 case CancelWorkflowTaskCommand cancel:
                     CancelCalls.Add(cancel);
+                    WhileCancelling?.Invoke();
                     var task = Tasks.Items.Single(t => t.Id == cancel.TaskId);
                     if (Down || FailFor.Contains(task.WorkflowInstanceId))
                     {
@@ -452,18 +458,47 @@ public sealed partial class TaskWorkflowLinkGateTests
     {
         public List<WorkflowInstance> Items { get; } = [];
 
+        /// <summary>D2-FIX4 — the engine's instance store cannot be read for the object-reference lookup.</summary>
+        public bool ThrowOnLatest { get; set; }
+
+        /// <summary>D2-FIX4 — the engine's instance store cannot be read for the state read (the batched read).</summary>
+        public bool ThrowOnList { get; set; }
+
+        /// <summary>D2-FIX4 — how many object-reference lookups were made: whether a withdraw was ASKED is readable here.</summary>
+        public int LatestReads { get; private set; }
+
+        /// <summary>D2-FIX4 — runs once, right after the FIRST object-reference lookup answered: something starts in the engine
+        /// between that read and the next one.</summary>
+        public Action? AfterFirstLatest { get; set; }
+
         public Task<WorkflowInstance> CreateAsync(WorkflowInstance instance, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<WorkflowInstance?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
             System.Threading.Tasks.Task.FromResult(Items.FirstOrDefault(x => x.Id == id && x.TenantId == tenant.TenantId));
         public Task<WorkflowInstance?> GetByIdempotencyKeyAsync(string key, CancellationToken ct = default) =>
             System.Threading.Tasks.Task.FromResult<WorkflowInstance?>(null);
-        public Task<WorkflowInstance?> GetLatestByObjectRefAsync(string objectRef, string objectType, string objectId, CancellationToken ct = default) =>
-            System.Threading.Tasks.Task.FromResult(Items
+        public Task<WorkflowInstance?> GetLatestByObjectRefAsync(string objectRef, string objectType, string objectId, CancellationToken ct = default)
+        {
+            LatestReads++;
+            if (ThrowOnLatest)
+            {
+                throw new TimeoutException("The instance store could not be read.");
+            }
+
+            var latest = Items
                 .Where(x => x.ObjectRef == objectRef && x.ObjectType == objectType && x.ObjectId == objectId && x.TenantId == tenant.TenantId)
                 .OrderByDescending(x => x.StartedAt)
-                .FirstOrDefault());
+                .FirstOrDefault();
+            if (LatestReads == 1)
+            {
+                AfterFirstLatest?.Invoke();
+            }
+
+            return System.Threading.Tasks.Task.FromResult(latest);
+        }
         public Task<IReadOnlyList<WorkflowInstance>> GetAllForTenantAsync(CancellationToken ct = default) =>
-            System.Threading.Tasks.Task.FromResult<IReadOnlyList<WorkflowInstance>>(Items.Where(x => x.TenantId == tenant.TenantId).ToList());
+            ThrowOnList
+                ? throw new TimeoutException("The instance store could not be read.")
+                : System.Threading.Tasks.Task.FromResult<IReadOnlyList<WorkflowInstance>>(Items.Where(x => x.TenantId == tenant.TenantId).ToList());
         public Task<bool> UpdateAsync(WorkflowInstance instance, int expectedVersion, CancellationToken ct = default) =>
             throw new NotSupportedException();
     }

@@ -418,6 +418,10 @@ internal sealed class FakeWorkflowMediator(FakeWorkflowTemplateStore templates, 
     /// <summary>The workflow module is unreachable — every command throws.</summary>
     public bool Throws { get; set; }
 
+    /// <summary>D2-FIX4 item 5 — the status the engine reports for the instance a start answers with (a replayed key can
+    /// answer a round that is long closed).</summary>
+    public WorkflowInstanceStatus StartedAs { get; set; } = WorkflowInstanceStatus.Active;
+
     public Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken ct = default)
     {
         if (Throws)
@@ -574,7 +578,7 @@ internal sealed class FakeWorkflowMediator(FakeWorkflowTemplateStore templates, 
                 ApprovalTaskId: Guid.NewGuid(),
                 AssignmentSnapshotId: Guid.NewGuid(),
                 ObjectRef: command.Request.ObjectRef ?? string.Empty,
-                Status: nameof(WorkflowInstanceStatus.Active),
+                Status: StartedAs.ToString(),
                 CurrentStage: "approve",
                 CurrentStep: "approve",
                 StartedAt: DateTimeOffset.UtcNow,

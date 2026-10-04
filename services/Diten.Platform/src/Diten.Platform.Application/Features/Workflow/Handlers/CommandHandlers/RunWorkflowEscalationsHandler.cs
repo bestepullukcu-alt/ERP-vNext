@@ -8,6 +8,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
 namespace Diten.Platform.Application.Features.Workflow.Handlers.CommandHandlers;
 
@@ -27,6 +28,14 @@ public sealed class RunWorkflowEscalationsHandler
     /// — the quarter-hour return of THAT backlog is what pushed real escalations back.</para>
     /// </summary>
     internal static readonly TimeSpan InconclusiveRecheckInterval = TimeSpan.FromMinutes(15);
+
+    /// <summary>
+    /// D2-FIX4 item 6 — how many tasks IN A ROW may fail because the store itself is unreachable before the tenant's sweep
+    /// stops. One task's trouble is the task's (it rests and the sweep goes on, D2-FIX3 item 5); a database that is down is
+    /// every task's trouble, and each one used to pay the driver's whole server-selection timeout twice — once to evaluate,
+    /// once to write its rest — so a few hundred overdue tasks held the sweep (and its job) for hours.
+    /// </summary>
+    internal const int MaxConsecutiveInfrastructureFailures = 3;
 
     private readonly TimeSpan _standingRest;
     private readonly IApprovalTaskRepository _tasks;
@@ -95,6 +104,7 @@ public sealed class RunWorkflowEscalationsHandler
         var escalated = 0;
         var timedOut = 0;
         var skipped = 0;
+        var infrastructureFailures = 0;
 
         foreach (var task in overdueTasks)
         {
@@ -103,15 +113,35 @@ public sealed class RunWorkflowEscalationsHandler
              * was never rested, and (never looked at, so first in the read) it was read first again five minutes later and
              * threw again — the tenant's sweep was dead. Now it is logged, rested for a quarter of an hour, and the run
              * goes on to the next task.
+             *
+             * D2-FIX4 item 6 — BUT ONLY FOR WHAT BELONGS TO THE TASK. A failure of the store itself (a timeout, a lost
+             * connection) is not the task's: caught per task it let every remaining task pay the server-selection timeout
+             * again — twice, since the rest write runs against the same dead store. Such a failure is counted, never rested
+             * (the write would only fail the same way), and after MaxConsecutiveInfrastructureFailures in a row the
+             * tenant's sweep stops: logged once, and the next sweep reads the rest. Any task that gets an answer from the
+             * store (a result, or a failure of its own) resets the count — "in a row" is what says the store is down.
              */
             var statusBefore = task.Status;
             WorkflowEscalationResultDto result;
+            var stop = false;
             try
             {
                 result = await EvaluateTaskAsync(task, now, request.Request.IdempotencyKey, request.CorrelationId, ct);
+                infrastructureFailures = 0;
+            }
+            catch (Exception failure) when (failure is not OperationCanceledException && IsInfrastructureFailure(failure))
+            {
+                infrastructureFailures++;
+                _logger.LogError(
+                    "The SLA sweep could not reach the store for workflow task {TaskId} (instance {InstanceId}): "
+                    + "{ExceptionType}; {Failures} in a row.",
+                    task.Id, task.WorkflowInstanceId, failure.GetType().Name, infrastructureFailures);
+                result = FailureResult(task, statusBefore);
+                stop = infrastructureFailures >= MaxConsecutiveInfrastructureFailures;
             }
             catch (Exception failure) when (failure is not OperationCanceledException)
             {
+                infrastructureFailures = 0;
                 result = await RestAfterFailureAsync(task, statusBefore, now, failure, ct);
             }
 
@@ -130,11 +160,20 @@ public sealed class RunWorkflowEscalationsHandler
             {
                 skipped++;
             }
+
+            if (stop)
+            {
+                _logger.LogError(
+                    "The SLA sweep of tenant {TenantId} stopped after {Failures} consecutive infrastructure failures; "
+                    + "{Remaining} overdue task(s) were not looked at and are read again by the next sweep.",
+                    task.TenantId, infrastructureFailures, overdueTasks.Count - results.Count);
+                break;
+            }
         }
 
         return Response<RunWorkflowEscalationsResponse>.Success(
             new RunWorkflowEscalationsResponse(
-                overdueTasks.Count,
+                results.Count,
                 escalated,
                 timedOut,
                 skipped,
@@ -487,7 +526,13 @@ public sealed class RunWorkflowEscalationsHandler
                 task.Id, restFailure.GetType().Name);
         }
 
-        return new WorkflowEscalationResultDto(
+        return FailureResult(task, statusBefore);
+    }
+
+    /// <summary>The run's answer for a task whose evaluation failed: nothing was done to it, and the store was unavailable
+    /// for it (the code the run reports for a transition that could not be written).</summary>
+    private static WorkflowEscalationResultDto FailureResult(ApprovalTask task, ApprovalTaskStatus statusBefore) =>
+        new(
             task.WorkflowInstanceId,
             task.Id,
             WorkflowTransitionAction.Escalate.ToString(),
@@ -498,7 +543,19 @@ public sealed class RunWorkflowEscalationsHandler
             WorkflowReasonCodes.WorkflowTransactionUnavailable,
             false,
             null);
-    }
+
+    /// <summary>
+    /// D2-FIX4 item 6 — a failure of the store rather than of a task: the driver's server-selection timeout
+    /// (<see cref="TimeoutException"/>), a lost or refused connection (<see cref="MongoConnectionException"/>, which its
+    /// not-primary and similar cases derive from) or a server-side execution timeout, however deep it is wrapped.
+    /// </summary>
+    internal static bool IsInfrastructureFailure(Exception? failure) => failure switch
+    {
+        null => false,
+        TimeoutException or MongoConnectionException or MongoExecutionTimeoutException => true,
+        AggregateException aggregate => aggregate.InnerExceptions.Any(IsInfrastructureFailure),
+        _ => IsInfrastructureFailure(failure.InnerException)
+    };
 
     private static WorkflowEscalationResultDto Skipped(
         ApprovalTask task,
