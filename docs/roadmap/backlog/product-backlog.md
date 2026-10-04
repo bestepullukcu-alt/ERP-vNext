@@ -7630,7 +7630,7 @@ sunucu durumudur. Gelecek regresyon riski: 🟡 (beş yüzey aynı kuralı okuya
 
 **Onaycı seçicisi kiracıdaki herkesi döküyor: `lookups/decision-makers` aramasız ve sınırsız**
 
-DURUM: AÇIK · SAHİP: CT (MOD-0024 Görev Merkezi) · BULAN: WP-WCN-TASK-REQUEST-01 Aşama 1 ölçümü · KAYIT: 2026-10-02
+DURUM: KAPANDI (şeritte; canlı denetim sahip girişiyle) · SAHİP: CT (MOD-0024 Görev Merkezi) · BULAN: WP-WCN-TASK-REQUEST-01 Aşama 1 ölçümü · KAYIT: 2026-10-02
 
 `TasksController.cs:1203-1209` (izin `platform.tasks.create`) pozisyonu olan herkesi ad + pozisyon + birim + tüzel kişi kimliğiyle tek
 istekte döndürüyor (`GetTaskAssignmentPersonLookupHandler.cs:80-81`); BL-057 atama kapsamını daraltırken bu ucu bilerek muaf tutmuştu
@@ -7648,6 +7648,13 @@ en çok 10–20, yalnız ad + pozisyon + birim) + kayıtlı kimlikleri ada çevi
 (aynı formdaki `resolveStoredRecords` kalıbı), (c) devret penceresinde arama kutusu; "boş liste → reddet" kuralı "aramada kimse yok"
 mesajına döner. Hız sınırı: Platform'da istek başına sınırlayıcı ölçülmedi, paketin ilk ölçümü. Ayrı paket olarak açılacak
 (WP-PLATFORM-DECISION-MAKERS-SEARCH-01), dokunulan dizgiler 7 dil (kiracı ekranı).
+
+**Kapanış 2026-10-04 — dal `fix/platform/decision-makers-search` @37b05a216, şeritte 0f1f30cdd.** Uç yalnız `?search=` (en az 2 harf, en çok
+20 sonuç, ad ve pozisyon adında aksan duyarsız) ya da `?ids=` (en çok 10) cevaplıyor; kullanıcı başına "people-search" hız sınırı
+(dakikada 60). Rehber 60 sn, eksik rehber 10 sn önbellekte; ad çözümü sınırlı çağrılardan ve adlı, zaman aşımlı istemciden geçiyor. Form
+seçicileri ve devret penceresi ortak `shared/diten-people-search.js` select2 taşıyıcısını kullanıyor; kayıtlı onaycı `?ids=` ile adına
+çevriliyor. Aynı dalda BL-531 (toplantı katılımcıları) kapandı. Üç tur bağımsız gözden geçirme; CT sabotajı 3/3 adı yazılı testle kırmızı.
+Kalan: canlıda arama ve devret penceresi (sahip girişi gerekiyor).
 
 ---
 
@@ -8046,7 +8053,7 @@ oturum iptali. Gelecek regresyon riski: 🟡 (her istekte doğrulama).
 
 **Toplantı katılımcı seçicisi kiracıdaki herkesi döküyor: `meetings/lookups/attendees` aramasız ve sınırsız (BL-512'nin kardeşi)**
 
-DURUM: AÇIK — düzeltme yazılıyor (WP-MEETINGS-ATTENDEE-SEARCH-01, dal `fix/platform/decision-makers-search` ikinci parça) · SAHİP: CT (Toplantılar)
+DURUM: KAPANDI 2026-10-04 (WP-MEETINGS-ATTENDEE-SEARCH-01, dal `fix/platform/decision-makers-search` @37b05a216, şeritte 0f1f30cdd; ayrıntı BL-512 kapanış notunda; canlı denetim sahip girişiyle) · SAHİP: CT (Toplantılar)
 · BULAN: WP-PLATFORM-DECISION-MAKERS-SEARCH-01 ölçümü · KAYIT: 2026-10-04
 
 `MeetingsController.cs:254-260` (izin `meetings.create`) `GetMeetingAttendeeLookupHandler` ile görevlerin karar listesini
