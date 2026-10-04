@@ -220,7 +220,8 @@ public sealed class UserLifecycleTests
         const string redeem = "SetTenantPasswordCommandHandler.cs";
         var handlers = Directory.EnumerateFiles(Path.Combine(SrcRoot(), "Diten.AuthService.Application", "Features", "Users", "Handlers"), "*.cs", SearchOption.AllDirectories)
             .Select(f => (Name: Path.GetFileName(f), Body: WithoutComments(File.ReadAllText(f))))
-            .Where(f => Regex.IsMatch(f.Body, @"\.Activate\s*\(\s*\)"))
+            // BL-529 FIX2 — an administrator's activation is spelled ActivateByAdministrator(); both spellings switch an account on.
+            .Where(f => Regex.IsMatch(f.Body, @"\.Activate(ByAdministrator)?\s*\(\s*\)"))
             .ToArray();
 
         Assert.Contains(handlers, h => h.Name == "SetUserActiveStatusCommandHandler.cs");
@@ -325,6 +326,9 @@ public sealed class UserLifecycleTests
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => _inner.SoftDeleteAsync(id, tenantId, ct);
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => _inner.RecordLoginOutcomeAsync(user, tenantId, ct);
         public Task<bool> TryUpdateForTenantIfPasswordHashAsync(User user, Guid tenantId, string expectedPasswordHash, CancellationToken ct) => _inner.TryUpdateForTenantIfPasswordHashAsync(user, tenantId, expectedPasswordHash, ct);
+        public Task<bool> TryUpdateForTenantIfResetTokenAsync(User user, Guid tenantId, string expectedResetTokenHash, CancellationToken ct) => _inner.TryUpdateForTenantIfResetTokenAsync(user, tenantId, expectedResetTokenHash, ct);
+        public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct) => _inner.SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, ct);
+        public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct) => _inner.RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes, ct);
     }
 
     private sealed class NoRefreshTokens : IRefreshTokenRepository
@@ -334,6 +338,7 @@ public sealed class UserLifecycleTests
         public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
         public Task RevokeAsync(string token, CancellationToken ct) => throw new NotSupportedException();
         public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
+        public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => Task.FromResult(true);
         public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.FromResult(0L);
     }
 
@@ -539,6 +544,7 @@ public sealed class UserLifecycleTests
     {
         public int RevokeAllCount { get; private set; }
         public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
+        public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => Task.FromResult(true);
         public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) { RevokeAllCount++; return Task.FromResult(0L); }
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();

@@ -565,7 +565,9 @@ const AdministratorsList = (function () {
             if (pwdMgmt) {
                 pwdMgmt.classList.remove('d-none');
                 const wrapperResend = document.getElementById('wrapperResendInvite');
-                wrapperResend?.classList.remove('d-none');
+                // BL-529 FIX2 — a setup link to an existing account resets its password: never offered on one's own
+                // record (Platform refuses it too: PLATFORM_ADMINISTRATOR_SELF_RESET_FORBIDDEN).
+                wrapperResend?.classList.toggle('d-none', isOwnRecord(data));
             }
 
             triggerFormTrackerUpdate();
@@ -657,12 +659,20 @@ const AdministratorsList = (function () {
         document.getElementById('oc-btn-edit').dataset.editId = data.id || '';
     };
 
-    const isRowProtected = (row) => {
+    // BL-529 FIX2 — "is this my own record?": the signed-in id is the AuthService account's, the row id is Platform's
+    // record id, so they never matched; the e-mail is the shared key.
+    const isOwnRecord = (row) => {
         if (!row) return false;
         const id = row.id || row.Id;
-        const currentUserId = window.CurrentUser?.id;
+        const email = String(row.email || row.Email || '').trim().toLowerCase();
+        const mine = String(window.CurrentUser?.email || '').trim().toLowerCase();
+        return id === window.CurrentUser?.id || (!!mine && email === mine);
+    };
+
+    const isRowProtected = (row) => {
+        if (!row) return false;
         const emailLower = String(row.email || row.Email || '').toLowerCase();
-        return id === currentUserId || emailLower === 'admin@diten.com';
+        return isOwnRecord(row) || emailLower === 'admin@diten.com';
     };
 
     const updateBulkDeleteButtonVisibility = () => {
@@ -920,9 +930,7 @@ const AdministratorsList = (function () {
                     responsivePriority: 3,
                     className: 'dt-checkboxes-cell cell-fit',
                     render: (data, type, row) => {
-                        const currentUserId = window.CurrentUser?.id;
-                        const emailLower = String(row?.email || row?.Email || '').toLowerCase();
-                        const isProtected = (row?.id || row?.Id) === currentUserId || emailLower === 'admin@diten.com';
+                        const isProtected = isRowProtected(row);
                         return `<input type="checkbox" class="dt-checkboxes form-check-input" value="${escapeHtml(data)}" ${isProtected ? 'data-protected="true"' : ''}>`;
                     }
                 },
@@ -935,9 +943,7 @@ const AdministratorsList = (function () {
                     render: (data, type, row) => {
                         const id = row.id || row.Id;
                         const rowJson = JSON.stringify(row);
-                        const currentUserId = window.CurrentUser?.id;
-                        const emailLower = String(row.email || row.Email || '').toLowerCase();
-                        const isProtected = id === currentUserId || emailLower === 'admin@diten.com';
+                        const isProtected = isRowProtected(row);
 
                         const actions = [
                             { key: 'quickView', className: 'js-quick-view', text: L.QuickView, icon: 'bx bx-show', attrs: { 'data-id': id, 'data-json': rowJson } },

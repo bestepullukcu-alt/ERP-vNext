@@ -99,9 +99,12 @@ internal sealed class InMemoryUserRepository : IUserRepository
     /// <summary>BL-529 — the account write itself fails (the store is down) after the sessions were ended.</summary>
     public bool ThrowOnConditionalWrite { get; set; }
 
+    public Action? OnConditionalWrite { get; set; }
+
     public Task<bool> TryUpdateForTenantIfPasswordHashAsync(User user, Guid tenantId, string expectedPasswordHash, CancellationToken ct)
     {
         ConditionalWrites++;
+        OnConditionalWrite?.Invoke();
         if (ThrowOnConditionalWrite) throw new InvalidOperationException("user write failed");
         if (PasswordChangedConflicts > 0)
         {
@@ -110,6 +113,29 @@ internal sealed class InMemoryUserRepository : IUserRepository
         }
 
         return Task.FromResult(true);
+    }
+
+    public int ResetTokenWrites { get; private set; }
+
+    public Task<bool> TryUpdateForTenantIfResetTokenAsync(User user, Guid tenantId, string expectedResetTokenHash, CancellationToken ct)
+        => Task.FromResult(true);
+
+    public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct)
+    {
+        var user = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
+        if (user is null) return Task.FromResult(false);
+        user.SetPasswordResetToken(tokenHash, expiresAtUtc);
+        ResetTokenWrites++;
+        return Task.FromResult(true);
+    }
+
+    // Mirrors the store's $inc: the stored row counts, whatever copy the caller holds.
+    public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct)
+    {
+        var user = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
+        if (user is null) return Task.FromResult(new LoginFailureOutcome(0, null));
+        user.RecordLoginFailure(maxFailedAttempts, lockoutDurationMinutes);
+        return Task.FromResult(new LoginFailureOutcome(user.FailedLoginAttempts, user.LockoutEnd));
     }
 
     public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)

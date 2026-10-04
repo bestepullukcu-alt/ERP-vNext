@@ -81,9 +81,14 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
         // Enforce the tenant password policy (throws ValidationException → 400 via the pipeline, like the platform flow).
         await _passwordPolicyService.ValidateTenantPasswordAsync(request.TenantId, user.Id, request.NewPassword, "tenant_forced_change", ct);
 
+        var verifiedHash = user.PasswordHash;
         user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
         user.ClearPasswordChangeRequirement(); // MustChangePassword → false
-        await _userRepository.UpdateForTenantAsync(user, request.TenantId, ct);
+        // BL-529 FIX2 — only over the password just verified (never over a reset that landed meanwhile).
+        if (!await _userRepository.TryUpdateForTenantIfPasswordHashAsync(user, request.TenantId, verifiedHash, ct))
+        {
+            return ChangePasswordCommandHandler.PasswordChangedMeanwhile<AuthResponse>();
+        }
         await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, request.TenantId, ct);
         await _authAuditService.WriteAsync("tenant_forced_password_changed", user.Id, request.TenantId, "{}", ct);
 

@@ -62,6 +62,22 @@ public sealed class RefreshTokenRepository : RepositoryBase<RefreshToken>, IRefr
         return result.IsModifiedCountAvailable ? result.ModifiedCount : 0;
     }
 
+    public async Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct)
+    {
+        var filter = Builders<RefreshToken>.Filter.And(
+            Builders<RefreshToken>.Filter.Eq(t => t.Id, tokenId),
+            Builders<RefreshToken>.Filter.Eq(t => t.RevokedAt, null));
+        var update = Builders<RefreshToken>.Update
+            .Set(t => t.RevokedAt, DateTime.UtcNow)
+            .Set(t => t.ReplacedByTokenHash, replacedByTokenHash)
+            .Set(t => t.RevokedByIp, revokedByIp)
+            .Set(t => t.RevokedReason, "rotated")
+            .Set(t => t.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow);
+
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.ModifiedCount == 1;
+    }
+
     public async Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct)
     {
         var now = DateTime.UtcNow;

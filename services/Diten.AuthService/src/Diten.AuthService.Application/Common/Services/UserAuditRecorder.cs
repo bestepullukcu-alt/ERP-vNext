@@ -21,12 +21,21 @@ public sealed class UserAuditRecorder : IUserAuditRecorder
         _logger = logger;
     }
 
-    public async Task RecordAsync(
+    public Task RecordAsync(
         string eventName,
         Guid tenantId,
         Guid targetUserId,
         IReadOnlyDictionary<string, object?> metadata,
         CancellationToken ct = default)
+        => RecordAsync(eventName, tenantId, targetUserId, metadata, succeeded: true, ct);
+
+    public async Task RecordAsync(
+        string eventName,
+        Guid tenantId,
+        Guid targetUserId,
+        IReadOnlyDictionary<string, object?> metadata,
+        bool succeeded,
+        CancellationToken ct)
     {
         var local = new Dictionary<string, object?>(metadata, StringComparer.Ordinal) { ["targetUserId"] = targetUserId };
 
@@ -50,7 +59,7 @@ public sealed class UserAuditRecorder : IUserAuditRecorder
                     UserAuditEvents.EntityType,
                     targetUserId,
                     operation,
-                    UserAuditEvents.OutcomeSucceeded,
+                    succeeded ? UserAuditEvents.OutcomeSucceeded : UserAuditEvents.OutcomeFailed,
                     metadata),
                 ct);
         }

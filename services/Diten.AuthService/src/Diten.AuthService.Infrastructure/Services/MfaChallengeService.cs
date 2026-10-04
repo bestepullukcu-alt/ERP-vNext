@@ -54,6 +54,7 @@ public sealed class MfaChallengeService : IMfaChallengeService
             requestIp,
             userAgent);
 
+        challenge.BindToPassword(PasswordFingerprint(user));
         await _repository.CreateAsync(challenge, ct);
         await _deliveryService.SendEmailOtpAsync(user.Email, code, expiresAt, ct);
 
@@ -114,6 +115,13 @@ public sealed class MfaChallengeService : IMfaChallengeService
         await _repository.UpdateAsync(challenge, ct);
         return challenge;
     }
+
+    public bool IsBoundToCurrentPassword(MfaChallenge challenge, User user)
+        => !string.IsNullOrEmpty(challenge.PasswordFingerprint)
+           && FixedEquals(challenge.PasswordFingerprint, PasswordFingerprint(user));
+
+    // Keyed (HMAC with the MFA secret) so the stored value says nothing about the hash it was taken from.
+    private string PasswordFingerprint(User user) => ComputeHash("password:" + user.PasswordHash);
 
     private string ComputeHash(string value)
     {

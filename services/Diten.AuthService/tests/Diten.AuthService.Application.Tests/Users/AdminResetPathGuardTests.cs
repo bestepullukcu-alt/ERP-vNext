@@ -51,6 +51,7 @@ public sealed class AdminResetPathGuardTests
 
     private static readonly Regex UpdatePasswordCall = new(@"\.UpdatePassword\s*\(", RegexOptions.Compiled);
     private static readonly Regex SetResetTokenCall = new(@"\.SetPasswordResetToken\s*\(", RegexOptions.Compiled);
+    private static readonly Regex SetResetTokenAsyncCall = new(@"\.SetPasswordResetTokenAsync\s*\(", RegexOptions.Compiled);
     private static readonly Regex ResetAsyncCall = new(@"\bAdminPasswordReset\.ResetAsync\s*\(", RegexOptions.Compiled);
     private static readonly Regex MemberDeclaration = new(
         @"^[ \t]*(?:public|private|internal|protected)\b[^\r\n;=]*?\b(\w+)\s*(?:<[^>\r\n]*>)?\s*\(",
@@ -80,6 +81,15 @@ public sealed class AdminResetPathGuardTests
         Assert.True(offenders.Length == 0,
             "A set-password link is issued outside AdminPasswordReset.ResetAsync by a flow that is not on the non-reset list:\n"
             + string.Join("\n", offenders));
+    }
+
+    [Fact]
+    public void Only_forgot_password_writes_a_link_by_the_targeted_write()
+    {
+        // BL-529 FIX2 — the link-only write (never the hash) exists for the anonymous "forgot password"; a reset path that
+        // used it would issue a link and leave the old password alive.
+        var calls = Calls(SetResetTokenAsyncCall).Select(c => (c.File, c.Member)).Distinct().ToArray();
+        Assert.Equal([(PlatformAuth, "ForgotPassword")], calls);
     }
 
     [Theory]

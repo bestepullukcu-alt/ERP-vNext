@@ -38,6 +38,22 @@ public sealed class AdministratorsResetPasswordProxyTests
     }
 
     [Fact]
+    public async Task Reset_password_carries_the_signed_in_administrators_token()
+    {
+        // BL-529 FIX2 — AuthService authorizes the reset by the caller's platform token; without it the call is anonymous.
+        var token = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(
+            claims: [new System.Security.Claims.Claim("actor_type", "platform_admin")],
+            expires: DateTime.UtcNow.AddMinutes(10)));
+        var gateway = new RecordingGateway(HttpStatusCode.OK, """{"message":"processed"}""");
+        var controller = ControllerWith(gateway);
+        controller.ControllerContext.HttpContext.Request.Headers.Cookie = $"access_token={token}";
+
+        await controller.ResetPasswordProxy(Guid.NewGuid(), "target@platform.test");
+
+        Assert.Equal($"Bearer {token}", Assert.Single(gateway.Authorizations));
+    }
+
+    [Fact]
     public async Task A_refused_reset_is_not_reported_as_sent()
     {
         var gateway = new RecordingGateway(HttpStatusCode.Conflict, """{"errorCodes":[{"code":"USER_RESET_SELF"}]}""");
@@ -87,9 +103,11 @@ public sealed class AdministratorsResetPasswordProxyTests
     private sealed class RecordingGateway(HttpStatusCode status, string answer) : HttpMessageHandler
     {
         public List<(HttpMethod Method, string Path, JsonDocument Body)> Requests { get; } = [];
+        public List<string?> Authorizations { get; } = [];
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            Authorizations.Add(request.Headers.Authorization?.ToString());
             var raw = request.Content is null ? "{}" : await request.Content.ReadAsStringAsync(cancellationToken);
             Requests.Add((request.Method, request.RequestUri!.AbsolutePath, JsonDocument.Parse(raw)));
             return new HttpResponseMessage(status) { Content = new StringContent(answer, Encoding.UTF8, "application/json") };

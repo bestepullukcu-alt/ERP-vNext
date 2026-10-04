@@ -146,7 +146,7 @@ public sealed class InternalEventsController : ControllerBase
                 _ => passwordHash,
                 u =>
                 {
-                    u.Activate();
+                    u.ActivateByAdministrator(); // Platform's re-invitation is an administrator's activation
                     u.ConfirmEmail();
                     // FIX-TENANT-ADMIN-INVITE-ACTIVATION (Part A) — same on the re-provision (reset) path; set AFTER
                     // UpdatePassword so the temp password re-arms the forced change.

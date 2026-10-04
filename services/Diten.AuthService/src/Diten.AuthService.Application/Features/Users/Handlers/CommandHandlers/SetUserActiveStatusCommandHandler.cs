@@ -79,11 +79,11 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
 
         if (request.IsActive)
         {
-            user.Activate();
+            user.ActivateByAdministrator();
         }
         else
         {
-            user.Deactivate();
+            user.DeactivateByAdministrator();
             // BL-529 — a deactivated account keeps no outstanding reset link: redeeming it would set a password AND
             // re-activate the account (set-password activates), undoing the deactivation from outside. A pending
             // INVITATION keeps its link — the invitation flow is unchanged (that account was never active).

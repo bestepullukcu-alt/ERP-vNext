@@ -107,7 +107,8 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         if (wasActive != isActive) changedFields.Add("isActive");
 
         user.UpdateProfile(request.FirstName, request.LastName);
-        if (isActive) user.Activate(); else user.Deactivate();
+        // BL-529 FIX2 — an administrator's switch: the mark a set-password link respects goes with it.
+        if (isActive) user.ActivateByAdministrator(); else user.DeactivateByAdministrator();
         var kindChange = hasKind ? _kindWriter.Apply(user, newKind) : null;
 
         // One tenant-scoped replace for the profile AND the kind; the audit row follows the persisted change.

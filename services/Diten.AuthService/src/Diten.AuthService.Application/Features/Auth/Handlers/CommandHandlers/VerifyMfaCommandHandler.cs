@@ -69,6 +69,14 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
             return Response<AuthResponse>.Fail("Invalid verification code.", 401);
         }
 
+        // BL-529 FIX2 — the code proves the second factor, not the password: if the password changed since the password
+        // step (an administrator's reset), the sign-in that began with the old password ends here.
+        if (!_mfaChallengeService.IsBoundToCurrentPassword(challenge, user))
+        {
+            await _authAuditService.WriteAsync("tenant_login_mfa_password_changed", user.Id, challenge.TenantId, "{}", ct);
+            return Response<AuthResponse>.Fail("Invalid verification code.", 401);
+        }
+
         var roles = (await _userRoleRepository.GetRolesByUserAsync(user.Id, challenge.TenantId, ct))
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)

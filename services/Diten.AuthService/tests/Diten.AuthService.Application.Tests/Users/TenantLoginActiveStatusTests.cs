@@ -158,6 +158,7 @@ public sealed class TenantLoginActiveStatusTests
     private sealed class FakeRefreshTokenRepository : IRefreshTokenRepository
     {
         public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
+        public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => Task.FromResult(true);
         public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.FromResult(0L);
         public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => Task.FromResult<RefreshToken?>(null);
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => Task.CompletedTask;
@@ -167,6 +168,7 @@ public sealed class TenantLoginActiveStatusTests
 
     private sealed class FakeMfaChallengeService : IMfaChallengeService
     {
+        public bool IsBoundToCurrentPassword(MfaChallenge challenge, User user) => true;
         public Task<MfaChallengeCreated> CreateEmailChallengeAsync(User user, string requestIp, string? userAgent, CancellationToken ct) => throw new NotSupportedException();
         public Task<MfaChallengeCreated> ResendEmailChallengeAsync(string challengeId, string requestIp, string? userAgent, CancellationToken ct) => throw new NotSupportedException();
         public Task<MfaChallenge> VerifyAsync(string challengeId, string code, CancellationToken ct) => throw new NotSupportedException();

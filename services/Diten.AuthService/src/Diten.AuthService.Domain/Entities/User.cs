@@ -82,8 +82,30 @@ public sealed class User : EntityBase
     /// </summary>
     public bool IsInvitationPending() => MustChangePassword && !EmailConfirmed && LastLoginAt is null;
 
+    /// <summary>
+    /// BL-529 FIX2 — an administrator switched this account off (as opposed to an invitation that is simply not active
+    /// yet). A set-password link does not switch such an account back on; only an administrator's activation does.
+    /// </summary>
+    public bool DeactivatedByAdministrator { get; private set; }
+
     public void Activate() => IsActive = true;
     public void Deactivate() => IsActive = false;
+
+    /// <summary>BL-529 FIX2 — the administrator's deactivation: off, and marked so a link cannot undo it.</summary>
+    public void DeactivateByAdministrator()
+    {
+        IsActive = false;
+        DeactivatedByAdministrator = true;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    /// <summary>BL-529 FIX2 — the administrator's activation lifts the mark.</summary>
+    public void ActivateByAdministrator()
+    {
+        IsActive = true;
+        DeactivatedByAdministrator = false;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
     public void ConfirmEmail() => EmailConfirmed = true;
     public void SetPlatformActorType(string actorType)
     {

@@ -138,12 +138,13 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
 
     private async Task HandleLoginFailure(User user, TenantLoginSettingsSnapshot settings, CancellationToken ct)
     {
-        user.RecordLoginFailure(settings.MaxFailedLoginAttempts, settings.LockoutDurationMinutes);
-        // BL-529 — only the failure count and the lockout: a whole-account write could undo a reset that landed between
-        // this attempt's read and now (old hash, link and forced change back).
-        await _userRepository.RecordLoginOutcomeAsync(user, _tenantContext.TenantId, ct);
+        // BL-529 — only the failure count and the lockout, never the whole account (a whole write could undo a reset
+        // that landed between this attempt's read and now). FIX2 — and the count is INCREMENTED in the store: two wrong
+        // passwords in parallel are two failures, so the lockout threshold cannot be stepped around.
+        var failure = await _userRepository.RecordLoginFailureAsync(
+            user.Id, _tenantContext.TenantId, settings.MaxFailedLoginAttempts, settings.LockoutDurationMinutes, ct);
         await _authAuditService.WriteAsync("tenant_login_password_failed", user.Id, _tenantContext.TenantId, "{}", ct);
-        if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow)
+        if (failure.LockoutEnd.HasValue && failure.LockoutEnd > DateTime.UtcNow)
         {
             await _authAuditService.WriteAsync("tenant_login_lockout_started", user.Id, _tenantContext.TenantId, "{}", ct);
         }

@@ -35,4 +35,25 @@ public interface IUserRepository
     /// the caller read). False when the password changed in between (nothing is written): the caller reads again.
     /// </summary>
     Task<bool> TryUpdateForTenantIfPasswordHashAsync(User user, Guid tenantId, string expectedPasswordHash, CancellationToken ct);
+
+    /// <summary>
+    /// BL-529 — writes the account only while its set-password link is still <paramref name="expectedResetTokenHash"/>
+    /// (the one the caller redeemed). False when the link was replaced, used or cleared in between: nothing is written.
+    /// </summary>
+    Task<bool> TryUpdateForTenantIfResetTokenAsync(User user, Guid tenantId, string expectedResetTokenHash, CancellationToken ct);
+
+    /// <summary>
+    /// BL-529 — issues a set-password link by writing ONLY the link fields (hash, expiry, request time). Never the password
+    /// hash: a "forgot password" that read the account before an administrator's reset must not write the old hash back.
+    /// </summary>
+    Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct);
+
+    /// <summary>
+    /// BL-529 — one failed sign-in: the counter is INCREMENTED in the store (<c>$inc</c>), never set from the copy the
+    /// attempt read, so parallel wrong passwords each count; reaching <paramref name="maxFailedAttempts"/> starts the
+    /// lockout. Returns the stored count and lockout end after the attempt.
+    /// </summary>
+    Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct);
 }
+
+public sealed record LoginFailureOutcome(int FailedLoginAttempts, DateTime? LockoutEnd);

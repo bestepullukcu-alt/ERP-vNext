@@ -17,4 +17,11 @@ public interface IRefreshTokenRepository
     /// left alone (it refreshes nothing). Returns how many sessions were ended — the number the audit row reports.
     /// </summary>
     Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct);
+
+    /// <summary>
+    /// BL-529 — the refresh rotation: revokes the presented token ("rotated", replaced by <paramref name="replacedByTokenHash"/>)
+    /// ONLY while it is still live. False when it was revoked in between (an administrator's reset, a sign-out): the
+    /// rotation stops there, and the revocation that won — its time and its reason — stands.
+    /// </summary>
+    Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct);
 }

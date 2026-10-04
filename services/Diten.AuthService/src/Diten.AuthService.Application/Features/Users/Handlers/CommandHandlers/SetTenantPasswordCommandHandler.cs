@@ -53,6 +53,13 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
             return Response<NoContent>.Fail(InvalidTokenMessage, 400);
         }
 
+        // BL-529 FIX2 — an account an administrator deactivated is not switched back on by a link (an invitation's
+        // included: the link activates the account, the deactivation would be undone from outside).
+        if (user.DeactivatedByAdministrator)
+        {
+            return Response<NoContent>.Fail("This account has been deactivated by an administrator.", 409);
+        }
+
         await _passwordPolicyService.ValidateTenantPasswordAsync(user.TenantId, user.Id, request.NewPassword, "tenant_set_password", ct);
 
         user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
@@ -63,7 +70,12 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
         user.Activate();
         user.ConfirmEmail();
 
-        await _userRepository.UpdateForTenantAsync(user, user.TenantId, ct);
+        // BL-529 FIX2 — written only while this link is still the account's (not replaced by a newer reset, not used by a
+        // parallel redemption, not cleared by a deactivation).
+        if (!await _userRepository.TryUpdateForTenantIfResetTokenAsync(user, user.TenantId, tokenHash, ct))
+        {
+            return Response<NoContent>.Fail(InvalidTokenMessage, 400);
+        }
         await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, user.TenantId, ct);
 
         _logger.LogInformation("Tenant user set-password redeemed. Id={Id}", user.Id);

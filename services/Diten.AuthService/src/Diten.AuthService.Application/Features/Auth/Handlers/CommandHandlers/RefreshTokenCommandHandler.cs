@@ -160,8 +160,14 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         var newRefreshTokenStr = _tokenService.GenerateRefreshToken();
         var newRefreshTokenHash = _refreshTokenHasher.Hash(newRefreshTokenStr);
 
-        oldToken.Revoke(newRefreshTokenHash, request.RequestIp, "rotated");
-        await _refreshTokenRepository.UpdateAsync(oldToken, ct);
+        // BL-529 FIX2 — the rotation is conditional on the presented token still being live. A whole-document write here
+        // un-revoked a token an administrator's reset had just ended (and erased its "admin-reset" reason); a refresh that
+        // read the token before that sweep then lived on. If it was revoked meanwhile, nothing is issued.
+        if (!await _refreshTokenRepository.TryRotateAsync(oldToken.Id, newRefreshTokenHash, request.RequestIp, ct))
+        {
+            _logger.LogWarning("Refresh refused: the token was revoked while the refresh ran. UserId={UserId}", user.Id);
+            return null;
+        }
 
         var newRefreshToken = new RefreshToken(
             user.Id,

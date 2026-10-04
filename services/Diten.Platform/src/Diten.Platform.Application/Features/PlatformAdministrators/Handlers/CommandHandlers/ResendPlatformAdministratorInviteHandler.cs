@@ -1,6 +1,7 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.PlatformAdministrators.Commands;
+using Diten.Platform.Application.Security;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -13,14 +14,17 @@ public sealed class ResendPlatformAdministratorInviteHandler : IRequestHandler<R
     private readonly IPlatformAdministratorRepository _repository;
     private readonly IPlatformAdministratorProvisioningService _provisioningService;
     private readonly ICurrentUserContext _currentUser;
+    private readonly IActorSafetyGuard _safetyGuard;
     private readonly ILogger<ResendPlatformAdministratorInviteHandler> _logger;
 
     public ResendPlatformAdministratorInviteHandler(
         IPlatformAdministratorRepository repository,
         IPlatformAdministratorProvisioningService provisioningService,
         ICurrentUserContext currentUser,
+        IActorSafetyGuard safetyGuard,
         ILogger<ResendPlatformAdministratorInviteHandler> logger)
     {
+        _safetyGuard = safetyGuard;
         _repository = repository;
         _provisioningService = provisioningService;
         _currentUser = currentUser;
@@ -29,6 +33,14 @@ public sealed class ResendPlatformAdministratorInviteHandler : IRequestHandler<R
 
     public async Task<Response<PlatformAdministratorInviteResultDto>> Handle(ResendPlatformAdministratorInviteCommand request, CancellationToken ct)
     {
+        // BL-529 FIX2 — a setup link to an existing account is a reset (AuthService ends its password and sessions; it cannot
+        // tell who asked, a server-to-server call): one's own account is refused here, before AuthService is called.
+        var selfGuard = await _safetyGuard.EnsureNotSelfAsync(request.Id, AdminSafetyAction.ResendInvite, ct);
+        if (selfGuard is not null)
+        {
+            return Response<PlatformAdministratorInviteResultDto>.Fail(selfGuard.Errors, selfGuard.StatusCode, selfGuard.ReasonCode);
+        }
+
         var administrator = await _repository.GetByIdAsync(request.Id, ct);
         if (administrator is null)
         {

@@ -187,10 +187,13 @@ public sealed class UserAdminActionsTests
         public (Guid userId, Guid tenantId)? RevokeAllCall { get; private set; }
         public int RevokeAllCount { get; private set; }
         public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
+        public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => Task.FromResult(true);
         /// <summary>BL-529 — how many live sessions the revoke reports ending.</summary>
         public long Revoked { get; set; }
+        public Action? OnRevoke { get; set; }
         public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
         {
+            OnRevoke?.Invoke();
             RevokeAllCall = (userId, tenantId);
             RevokeAllCount++;
             return Task.FromResult(Revoked);
@@ -255,7 +258,7 @@ public sealed class UserAdminActionsTests
     }
 
     [Fact]
-    public async Task AdminReset_whose_account_write_fails_is_still_audited_with_the_sessions_it_ended()
+    public async Task AdminReset_whose_account_write_fails_is_still_audited_and_ends_no_session()
     {
         var user = new User("down@acme.test", "hash:x", "Do", "Wn", TenantA);
         var repo = new InMemoryUserRepository([user]) { ThrowOnConditionalWrite = true };
@@ -265,10 +268,13 @@ public sealed class UserAdminActionsTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => handler.Handle(new AdminResetPasswordCommand(user.Id), CancellationToken.None));
 
+        // FIX2 — the sessions are swept only after the password is stored: a failed write ends none, and says so.
         var row = Assert.Single(audit.Rows);
         Assert.Equal(UserAuditEvents.PasswordResetByAdmin, row.EventName);
-        Assert.Equal(2L, row.Metadata["sessionsRevoked"]);
+        Assert.Equal(0L, row.Metadata["sessionsRevoked"]);
         Assert.Equal("failed", row.Metadata["outcome"]);
+        Assert.Equal(0, refreshTokens.RevokeAllCount);
+        Assert.False(Assert.Single(audit.Succeeded));
     }
 
     [Fact]
@@ -304,10 +310,94 @@ public sealed class UserAdminActionsTests
     private sealed class RecordingUserAudit : IUserAuditRecorder
     {
         public List<(string EventName, IReadOnlyDictionary<string, object?> Metadata)> Rows { get; } = [];
+        public List<bool> Succeeded { get; } = [];
+        public List<bool> CancelledTokens { get; } = [];
 
         public Task RecordAsync(string eventName, Guid tenantId, Guid targetUserId, IReadOnlyDictionary<string, object?> metadata, CancellationToken ct = default)
+            => RecordAsync(eventName, tenantId, targetUserId, metadata, succeeded: true, ct);
+
+        public Task RecordAsync(string eventName, Guid tenantId, Guid targetUserId, IReadOnlyDictionary<string, object?> metadata, bool succeeded, CancellationToken ct)
         {
+            ct.ThrowIfCancellationRequested(); // a real store refuses a cancelled token
             Rows.Add((eventName, metadata));
+            Succeeded.Add(succeeded);
+            CancelledTokens.Add(ct.IsCancellationRequested);
+            return Task.CompletedTask;
+        }
+    }
+
+    // ── BL-529 FIX2 item 6: the audit row outlives a cancelled request; the central log gets the real outcome ──
+
+    [Fact]
+    public async Task AdminReset_cancelled_after_its_write_still_writes_the_audit_row()
+    {
+        var user = new User("cancel@acme.test", "hash:x", "Ca", "Ncel", TenantA);
+        var audit = new RecordingUserAudit();
+        using var cts = new CancellationTokenSource();
+        var handler = new AdminResetPasswordCommandHandler(new InMemoryUserRepository([user]), TenantContextFor(TenantA), new FakeTokenService(),
+            new FakeRefreshTokenHasher(), new CancellingInvitationEmail(cts), new FakeHostEnvironment(isDevelopment: false), audit,
+            NullLogger<AdminResetPasswordCommandHandler>.Instance, new ResetHasher(), new FakeRefreshTokenRepository { Revoked = 1 }, new SomeoneElse());
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => handler.Handle(new AdminResetPasswordCommand(user.Id), cts.Token));
+
+        var row = Assert.Single(audit.Rows);
+        Assert.Equal(1L, row.Metadata["sessionsRevoked"]);
+        Assert.False(Assert.Single(audit.CancelledTokens));
+    }
+
+    [Fact]
+    public async Task AdminReset_reports_a_conflict_as_failed_and_a_reset_as_succeeded()
+    {
+        var conflicted = new User("c@acme.test", "hash:x", "C", "C", TenantA);
+        var conflictAudit = new RecordingUserAudit();
+        await ResetHandlerWith(new InMemoryUserRepository([conflicted]) { PasswordChangedConflicts = AdminPasswordReset.MaxAttempts },
+            conflictAudit, new FakeRefreshTokenRepository(), new SomeoneElse()).Handle(new AdminResetPasswordCommand(conflicted.Id), CancellationToken.None);
+        Assert.False(Assert.Single(conflictAudit.Succeeded));
+
+        var reset = new User("r@acme.test", "hash:x", "R", "R", TenantA);
+        var resetAudit = new RecordingUserAudit();
+        await ResetHandlerWith(new InMemoryUserRepository([reset]), resetAudit, new FakeRefreshTokenRepository(), new SomeoneElse())
+            .Handle(new AdminResetPasswordCommand(reset.Id), CancellationToken.None);
+        Assert.True(Assert.Single(resetAudit.Succeeded));
+    }
+
+    [Fact]
+    public async Task The_user_audit_recorder_forwards_the_real_outcome()
+    {
+        var forwarder = new RecordingPlatformAuditForwarder();
+        var recorder = UserAuditForTests.Over(new NoRbac(), forwarder);
+
+        await recorder.RecordAsync(UserAuditEvents.PasswordResetByAdmin, TenantA, Guid.NewGuid(), new Dictionary<string, object?>(), succeeded: false, CancellationToken.None);
+        await recorder.RecordAsync(UserAuditEvents.PasswordResetByAdmin, TenantA, Guid.NewGuid(), new Dictionary<string, object?>(), CancellationToken.None);
+
+        Assert.Equal([UserAuditEvents.OutcomeFailed, UserAuditEvents.OutcomeSucceeded], forwarder.Events.Select(e => e.Outcome).ToArray());
+    }
+
+    [Fact]
+    public async Task The_reset_scans_the_sessions_only_after_its_write()
+    {
+        var user = new User("order@acme.test", "hash:x", "Or", "Der", TenantA);
+        var log = new List<string>();
+        var repo = new InMemoryUserRepository([user]) { OnConditionalWrite = () => log.Add("write") };
+        var refreshTokens = new FakeRefreshTokenRepository { OnRevoke = () => log.Add("scan") };
+
+        await ResetHandlerWith(repo, new RecordingUserAudit(), refreshTokens, new SomeoneElse()).Handle(new AdminResetPasswordCommand(user.Id), CancellationToken.None);
+
+        Assert.Equal(["write", "scan"], log);
+    }
+
+    private sealed class NoRbac : IRbacAuditRecorder
+    {
+        public Task RecordAsync(string eventName, Guid tenantId, object metadata, CancellationToken ct = default) => Task.CompletedTask;
+    }
+
+    private sealed class CancellingInvitationEmail(CancellationTokenSource cts) : ITenantUserInvitationEmailService
+    {
+        public string BuildTenantSetPasswordUrl(string email, string setupToken) => "http://link";
+        public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct)
+        {
+            cts.Cancel(); // the caller gives up after the reset was written
+            ct.ThrowIfCancellationRequested();
             return Task.CompletedTask;
         }
     }

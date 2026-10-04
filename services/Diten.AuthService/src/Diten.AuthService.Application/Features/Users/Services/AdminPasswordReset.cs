@@ -16,9 +16,12 @@ namespace Diten.AuthService.Application.Features.Users.Services;
 /// very person the reset was meant to lock out), and every open session went on refreshing. SAP (SU01) and Oracle both
 /// invalidate the old password the moment an administrator resets it.</para>
 ///
-/// <para><b>Order.</b> AuthService writes the user and the refresh tokens separately (no transaction). The sessions are
-/// ended FIRST: if the user write then fails, the password is unchanged and the reset is simply asked again; the other
-/// order would leave the account "reset" with its sessions alive.</para>
+/// <para><b>Order</b> (BL-529 FIX2). The replacement hash is computed FIRST (BCrypt takes a few hundred milliseconds), then
+/// the account is written — conditionally on the password hash the reset read — and only THEN are the sessions ended. The
+/// other order (end the sessions, compute, write) left a window: a sign-in that wrote its session after the sweep and
+/// read the account before the write saw the old hash, passed <c>IssuedSessionGuard</c> and lived on. In this order a
+/// session written before the sweep is ended by it, and one written after it is checked against the NEW hash by
+/// <c>IssuedSessionGuard</c> (which reads the account after writing its token) and revoked there — one sweep suffices.</para>
 ///
 /// <para><b>The write is conditional</b> on the password hash the reset read: a password changed in between (the user's own
 /// change, another reset) is never overwritten with a stale copy — the account is read again and the reset re-applied, at
@@ -85,12 +88,15 @@ public static class AdminPasswordReset
                 }
 
                 var readHash = current.PasswordHash;
-                sessionsRevoked += await refreshTokens.RevokeLiveSessionsAsync(current.Id, tenantId, RevokeReason, ct);
-                current.UpdatePassword(replacementHash(current));
+                var newHash = replacementHash(current); // first: the slow part happens before anything is written
+                current.UpdatePassword(newHash);
                 apply(current);
 
                 if (await users.TryUpdateForTenantIfPasswordHashAsync(current, tenantId, readHash, ct))
                 {
+                    // Only now, with the new hash stored: every session that exists ends here; any written later fails
+                    // IssuedSessionGuard against the new hash.
+                    sessionsRevoked += await refreshTokens.RevokeLiveSessionsAsync(current.Id, tenantId, RevokeReason, ct);
                     outcome = "reset";
                     if (afterWrite is not null)
                     {
@@ -108,6 +114,8 @@ public static class AdminPasswordReset
         }
         finally
         {
+            // CancellationToken.None: a caller that gave up after the write must not cost the row (the reset stands).
+            // The central log gets the real outcome — only a completed reset is "succeeded".
             await audit.RecordAsync(UserAuditEvents.PasswordResetByAdmin, tenantId, targetUserId,
                 new Dictionary<string, object?>
                 {
@@ -115,7 +123,7 @@ public static class AdminPasswordReset
                     ["outcome"] = outcome,
                     ["emailSent"] = emailSent,
                     ["sessionsRevoked"] = sessionsRevoked
-                }, ct);
+                }, succeeded: outcome == "reset", CancellationToken.None);
         }
     }
 }

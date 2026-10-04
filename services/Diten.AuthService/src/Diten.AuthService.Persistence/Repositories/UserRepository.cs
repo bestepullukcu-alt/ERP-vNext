@@ -177,6 +177,62 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         return result.MatchedCount == 1;
     }
 
+    public async Task<bool> TryUpdateForTenantIfResetTokenAsync(User user, Guid tenantId, string expectedResetTokenHash, CancellationToken ct)
+    {
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.Id, user.Id),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false),
+            Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, expectedResetTokenHash));
+
+        var result = await Collection.ReplaceOneAsync(filter, user, cancellationToken: ct);
+        return result.MatchedCount == 1;
+    }
+
+    public async Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct)
+    {
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.Id, userId),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        var update = Builders<User>.Update
+            .Set(u => u.PasswordResetTokenHash, tokenHash)
+            .Set(u => u.PasswordResetTokenExpiresAt, expiresAtUtc)
+            .Set(u => u.PasswordResetRequestedAt, DateTime.UtcNow)
+            .Set(u => u.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow);
+
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.MatchedCount == 1;
+    }
+
+    public async Task<LoginFailureOutcome> RecordLoginFailureAsync(
+        Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct)
+    {
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.Id, userId),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+
+        var counted = await Collection.FindOneAndUpdateAsync(
+            filter,
+            Builders<User>.Update.Inc(u => u.FailedLoginAttempts, 1),
+            new FindOneAndUpdateOptions<User> { ReturnDocument = ReturnDocument.After },
+            ct);
+        if (counted is null)
+        {
+            return new LoginFailureOutcome(0, null);
+        }
+
+        if (counted.FailedLoginAttempts < maxFailedAttempts)
+        {
+            return new LoginFailureOutcome(counted.FailedLoginAttempts, counted.LockoutEnd);
+        }
+
+        var lockoutEnd = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
+        await Collection.UpdateOneAsync(filter, Builders<User>.Update.Set(u => u.LockoutEnd, lockoutEnd), cancellationToken: ct);
+        return new LoginFailureOutcome(counted.FailedLoginAttempts, lockoutEnd);
+    }
+
     public async Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
     {
         var filter = Builders<User>.Filter.And(
@@ -186,7 +242,7 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         );
         var update = Builders<User>.Update
             .Set(u => u.IsDeleted, true)
-            .Set(u => u.UpdatedAt, DateTimeOffset.UtcNow);
+            .Set(u => u.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow);
 
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
