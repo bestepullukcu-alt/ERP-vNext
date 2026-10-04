@@ -218,6 +218,7 @@ public sealed class PublishMinutesHandler : IRequestHandler<PublishMinutesComman
     private readonly IMeetingMinutesVersionRepository _minutes;
     private readonly ICurrentUserContext _currentUser;
     private readonly IUserDisplayNameResolver _displayNames;
+    private readonly IPlatformTransactionExecutor _transactions;
     private readonly IMeetingAttendanceObserver? _attendanceObserver;
     private readonly ILogger<PublishMinutesHandler>? _logger;
 
@@ -227,6 +228,7 @@ public sealed class PublishMinutesHandler : IRequestHandler<PublishMinutesComman
         IMeetingMinutesVersionRepository minutes,
         ICurrentUserContext currentUser,
         IUserDisplayNameResolver displayNames,
+        IPlatformTransactionExecutor transactions,
         IMeetingAttendanceObserver? attendanceObserver = null,
         ILogger<PublishMinutesHandler>? logger = null)
     {
@@ -235,6 +237,7 @@ public sealed class PublishMinutesHandler : IRequestHandler<PublishMinutesComman
         _minutes = minutes;
         _currentUser = currentUser;
         _displayNames = displayNames;
+        _transactions = transactions;
         _attendanceObserver = attendanceObserver;
         _logger = logger;
     }
@@ -246,6 +249,14 @@ public sealed class PublishMinutesHandler : IRequestHandler<PublishMinutesComman
         {
             return Response<MeetingMinutesVersionDto>.Fail(
                 "The meeting does not exist.", 404, MeetingReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // BL-533 — a cancelled meeting gets no published minutes (publishing would also make it Completed). Checked here,
+        // and again inside the transaction against the meeting as it is when the publish is written.
+        if (meeting.Lifecycle == MeetingLifecycle.Cancelled)
+        {
+            return Response<MeetingMinutesVersionDto>.Fail(
+                "The meeting is cancelled.", 409, MeetingReasonCodes.Cancelled, command.CorrelationId);
         }
 
         var latest = await _minutes.GetLatestByMeetingIdAsync(command.MeetingId, ct);
@@ -264,45 +275,88 @@ public sealed class PublishMinutesHandler : IRequestHandler<PublishMinutesComman
         latest.Status = MinutesStatus.Published;
         latest.PublishedAtUtc = DateTimeOffset.UtcNow;
         latest.PublishedByUserId = _currentUser.UserId;
-        var updated = await _minutes.UpdateAsync(latest, command.Request.ExpectedVersion, ct);
-        if (!updated)
+
+        // BL-533 — the publish, the attendance it records and the meeting's Completed are ONE Platform transaction: a
+        // refusal of any of them leaves the minutes a Draft at the version they were read at, and the answer is 409.
+        var read = new ReadVersionSnapshot();
+        read.Remember(latest);
+        Meeting completed;
+        try
         {
-            return Response<MeetingMinutesVersionDto>.Fail(
-                "The record changed meanwhile; reload and retry.", 409, MeetingReasonCodes.MinutesConcurrencyConflict, command.CorrelationId);
+            completed = await _transactions.ExecuteAsync(async (session, tct) =>
+            {
+                read.Restore();
+                if (!await _minutes.UpdateAsync(session, latest, command.Request.ExpectedVersion, tct))
+                {
+                    throw new MinutesPublicationRefused(
+                        409, "The record changed meanwhile; reload and retry.", MeetingReasonCodes.MinutesConcurrencyConflict);
+                }
+
+                return await SyncAsync(_meetings, _attendees, session, meeting, latest, refuseCancelled: true, tct);
+            }, ct);
+        }
+        catch (MinutesPublicationRefused refused)
+        {
+            return refused.ToResponse<MeetingMinutesVersionDto>(command.CorrelationId);
         }
 
-        await SyncAsync(_meetings, _attendees, meeting, latest, ct);
         // MOD-0280-FU01 T3 (N5) — time entry hears who the minutes recorded; never throws into this publish.
-        await _attendanceObserver.NotifySafelyAsync(meeting, latest, _logger);
+        await _attendanceObserver.NotifySafelyAsync(completed, latest, _logger);
 
         return Response<MeetingMinutesVersionDto>.Success(
             await MinutesEligibility.ToDtoAsync(latest, _displayNames, ct), 200, command.CorrelationId);
     }
 
     /// <summary>
-    /// The two side effects a publish carries (pack §4 Entity Fields): <see cref="MeetingAttendee.AttendanceStatus"/>
-    /// is written ONE-WAY from the published version (never the reverse), and <see cref="Meeting.Lifecycle"/>
-    /// becomes <see cref="MeetingLifecycle.Completed"/> — but ONLY on the meeting's FIRST publish. Idempotent by
-    /// that guard, so <see cref="CorrectPublishedMinutesHandler"/> (whose publish-equivalent step happens on an
-    /// ALREADY-Completed meeting) can call this too, and only the attendance half of it does anything.
+    /// The two side effects a publish carries (pack §4 Entity Fields), written INSIDE the publish's own transaction:
+    /// <see cref="MeetingAttendee.AttendanceStatus"/> ONE-WAY from the published version (never the reverse), and
+    /// <see cref="Meeting.Lifecycle"/> → <see cref="MeetingLifecycle.Completed"/> on the meeting's FIRST publish (a
+    /// correction, <see cref="CorrectPublishedMinutesHandler"/>, finds it already Completed: only the attendance half runs).
+    /// <para>BL-533 — the meeting is read again in the transaction, so the Completed write lands on the meeting as it is
+    /// now (an edit made since <paramref name="meetingAsRead"/> was read stays); a write that lands after that is a
+    /// transaction write conflict, and the executor runs the whole publish again (bounded) from a fresh read. A refused
+    /// write, or — when <paramref name="refuseCancelled"/> — a meeting cancelled meanwhile, aborts the publish. A cancelled
+    /// meeting is never made Completed.</para>
     /// </summary>
-    internal static async Task SyncAsync(
-        IMeetingRepository meetings, IMeetingAttendeeRepository attendees,
-        Meeting meeting, MeetingMinutesVersion version, CancellationToken ct)
+    internal static async Task<Meeting> SyncAsync(
+        IMeetingRepository meetings, IMeetingAttendeeRepository attendees, IPlatformTransactionSession session,
+        Meeting meetingAsRead, MeetingMinutesVersion version, bool refuseCancelled, CancellationToken ct)
     {
-        foreach (var record in version.Attendance)
+        var meeting = await meetings.GetByIdAsync(session, meetingAsRead.Id, ct);
+        if (meeting is null)
         {
-            await attendees.UpdateAttendanceStatusAsync(meeting.Id, record.AttendeeUserId, record.Status, ct);
+            throw new MinutesPublicationRefused(404, "The meeting does not exist.", MeetingReasonCodes.NotFound);
         }
 
-        if (meeting.Lifecycle != MeetingLifecycle.Completed)
+        if (refuseCancelled && meeting.Lifecycle == MeetingLifecycle.Cancelled)
+        {
+            throw new MinutesPublicationRefused(409, "The meeting is cancelled.", MeetingReasonCodes.Cancelled);
+        }
+
+        foreach (var record in version.Attendance)
+        {
+            await attendees.UpdateAttendanceStatusAsync(session, meeting.Id, record.AttendeeUserId, record.Status, ct);
+        }
+
+        if (meeting.Lifecycle is not (MeetingLifecycle.Completed or MeetingLifecycle.Cancelled))
         {
             meeting.Lifecycle = MeetingLifecycle.Completed;
-            // Best-effort: a concurrent meeting edit racing this exact instant is rare, and the minutes row is
-            // already durably Published either way — a lost race here does not undo the publish.
-            await meetings.UpdateAsync(meeting, meeting.Version, ct);
+            if (!await meetings.UpdateAsync(session, meeting, meeting.Version, ct))
+            {
+                throw new MinutesPublicationRefused(
+                    409, "The meeting changed meanwhile; reload and retry.", MeetingReasonCodes.ConcurrencyConflict);
+            }
         }
+
+        return meeting;
     }
+}
+
+/// <summary>BL-533 — a write of a minutes publication (or correction) was refused: thrown out of the transaction body, so
+/// all of it is aborted, and the handler answers with this status and reason code.</summary>
+internal sealed class MinutesPublicationRefused(int statusCode, string message, string reasonCode) : Exception(message)
+{
+    public Response<T> ToResponse<T>(string correlationId) => Response<T>.Fail(Message, statusCode, reasonCode, correlationId);
 }
 
 /// <summary>
@@ -319,6 +373,7 @@ public sealed class CorrectPublishedMinutesHandler
     private readonly IMeetingMinutesVersionRepository _minutes;
     private readonly ICurrentUserContext _currentUser;
     private readonly IUserDisplayNameResolver _displayNames;
+    private readonly IPlatformTransactionExecutor _transactions;
     private readonly IMeetingAttendanceObserver? _attendanceObserver;
     private readonly ILogger<CorrectPublishedMinutesHandler>? _logger;
 
@@ -328,6 +383,7 @@ public sealed class CorrectPublishedMinutesHandler
         IMeetingMinutesVersionRepository minutes,
         ICurrentUserContext currentUser,
         IUserDisplayNameResolver displayNames,
+        IPlatformTransactionExecutor transactions,
         IMeetingAttendanceObserver? attendanceObserver = null,
         ILogger<CorrectPublishedMinutesHandler>? logger = null)
     {
@@ -336,6 +392,7 @@ public sealed class CorrectPublishedMinutesHandler
         _minutes = minutes;
         _currentUser = currentUser;
         _displayNames = displayNames;
+        _transactions = transactions;
         _attendanceObserver = attendanceObserver;
         _logger = logger;
     }
@@ -401,20 +458,34 @@ public sealed class CorrectPublishedMinutesHandler
             CreatedBy = _currentUser.ActorName
         };
 
-        var created = await _minutes.TryCreateAsync(next, ct);
-        if (created is null)
+        // BL-533 — the new row, the attendance it records and the meeting sync are ONE Platform transaction (the same shape
+        // a publish has): a refusal leaves no correction row behind a 409.
+        Meeting synced;
+        try
         {
-            return Response<MeetingMinutesVersionDto>.Fail(
-                "The record changed meanwhile; reload and retry.", 409, MeetingReasonCodes.MinutesConcurrencyConflict, command.CorrelationId);
+            synced = await _transactions.ExecuteAsync(async (session, tct) =>
+            {
+                if (await _minutes.TryCreateAsync(session, next, tct) is null)
+                {
+                    throw new MinutesPublicationRefused(
+                        409, "The record changed meanwhile; reload and retry.", MeetingReasonCodes.MinutesConcurrencyConflict);
+                }
+
+                // Meeting.Lifecycle is already Completed from the original publish — this call's Lifecycle half is a
+                // guarded no-op, and only the attendance sync runs (PublishMinutesHandler.SyncAsync's own doc comment).
+                return await PublishMinutesHandler.SyncAsync(
+                    _meetings, _attendees, session, meeting, next, refuseCancelled: false, tct);
+            }, ct);
+        }
+        catch (MinutesPublicationRefused refused)
+        {
+            return refused.ToResponse<MeetingMinutesVersionDto>(command.CorrelationId);
         }
 
-        // Meeting.Lifecycle is already Completed from the original publish — this call's Lifecycle half is a
-        // guarded no-op, and only the attendance sync runs (PublishMinutesHandler.SyncAsync's own doc comment).
-        await PublishMinutesHandler.SyncAsync(_meetings, _attendees, meeting, created, ct);
         // MOD-0280-FU01 T3 (N5) — the correction is heard too; never throws into it.
-        await _attendanceObserver.NotifySafelyAsync(meeting, created, _logger);
+        await _attendanceObserver.NotifySafelyAsync(synced, next, _logger);
 
         return Response<MeetingMinutesVersionDto>.Success(
-            await MinutesEligibility.ToDtoAsync(created, _displayNames, ct), 201, command.CorrelationId);
+            await MinutesEligibility.ToDtoAsync(next, _displayNames, ct), 201, command.CorrelationId);
     }
 }

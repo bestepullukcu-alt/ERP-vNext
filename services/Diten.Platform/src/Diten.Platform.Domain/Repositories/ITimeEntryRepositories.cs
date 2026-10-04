@@ -17,6 +17,10 @@ public interface ITimesheetWeekRepository
     /// revision number, or a second open revision, first).</summary>
     Task<bool> TryCreateAsync(TimesheetWeek week, CancellationToken ct = default);
 
+    /// <summary>BL-533 — <see cref="TryCreateAsync(TimesheetWeek, CancellationToken)"/> inside the caller's Platform
+    /// transaction (the weekly save's claim of a week that has no revision yet).</summary>
+    Task<bool> TryCreateAsync(IPlatformTransactionSession session, TimesheetWeek week, CancellationToken ct = default);
+
     Task<TimesheetWeek?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
     Task<IReadOnlyList<TimesheetWeek>> ListByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default);
@@ -27,6 +31,10 @@ public interface ITimesheetWeekRepository
     /// <summary>Optimistic-concurrency replace. <c>false</c> (never throws) when the stored version moved, or when a
     /// unique index refused the new state — the caller turns either into a 409.</summary>
     Task<bool> UpdateAsync(TimesheetWeek week, int expectedVersion, CancellationToken ct = default);
+
+    /// <summary>BL-533 — <see cref="UpdateAsync(TimesheetWeek, int, CancellationToken)"/> inside the caller's Platform
+    /// transaction (the weekly save's claim).</summary>
+    Task<bool> UpdateAsync(IPlatformTransactionSession session, TimesheetWeek week, int expectedVersion, CancellationToken ct = default);
 
     /// <summary>Submitted revisions MOD-0023 assigned to <paramref name="approverUserId"/>, oldest submission first.</summary>
     Task<IReadOnlyList<TimesheetWeek>> ListSubmittedForApproverAsync(Guid approverUserId, CancellationToken ct = default);
@@ -52,6 +60,9 @@ public interface ITimeEntryRepository
 {
     Task<TimeEntry> CreateAsync(TimeEntry entry, CancellationToken ct = default);
 
+    /// <summary>BL-533 — an insert inside the caller's Platform transaction (the weekly save's rows).</summary>
+    Task<TimeEntry> CreateAsync(IPlatformTransactionSession session, TimeEntry entry, CancellationToken ct = default);
+
     Task<IReadOnlyList<TimeEntry>> ListByWeekAsync(Guid timesheetWeekId, CancellationToken ct = default);
 
     /// <summary>BL-484 — <see cref="ListByWeekAsync"/> for several revisions in ONE read (the approvals page).</summary>
@@ -64,11 +75,20 @@ public interface ITimeEntryRepository
     /// input for recomputing <see cref="TaskTimeTotal"/>.</summary>
     Task<IReadOnlyList<TimeEntry>> ListByTaskIdsAsync(IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default);
 
-    /// <summary>Replaces a draft row's mutable fields (minutes, note). Tenant + id scoped.</summary>
-    Task UpdateAsync(TimeEntry entry, CancellationToken ct = default);
+    /// <summary>Replaces a draft row's mutable fields (minutes, note). Tenant + id scoped; written only when the row in
+    /// hand was read at <paramref name="expectedVersion"/> and is still stored at it (BL-533) — false otherwise.</summary>
+    Task<bool> UpdateAsync(TimeEntry entry, int expectedVersion, CancellationToken ct = default);
+
+    /// <summary>BL-533 — <see cref="UpdateAsync(TimeEntry, int, CancellationToken)"/> inside the caller's Platform
+    /// transaction (the weekly save's row changes and captured-row corrections).</summary>
+    Task<bool> UpdateAsync(IPlatformTransactionSession session, TimeEntry entry, int expectedVersion, CancellationToken ct = default);
 
     /// <summary>Soft-deletes rows (IsDeleted, UpdatedAt). Nothing in this module is hard-deleted.</summary>
     Task SoftDeleteAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default);
+
+    /// <summary>BL-533 — <see cref="SoftDeleteAsync(IReadOnlyCollection{Guid}, CancellationToken)"/> inside the caller's
+    /// Platform transaction (the rows a weekly save leaves out).</summary>
+    Task SoftDeleteAsync(IPlatformTransactionSession session, IReadOnlyCollection<Guid> ids, CancellationToken ct = default);
 }
 
 /// <summary>Raw storage for <see cref="WorkCategory"/>.</summary>

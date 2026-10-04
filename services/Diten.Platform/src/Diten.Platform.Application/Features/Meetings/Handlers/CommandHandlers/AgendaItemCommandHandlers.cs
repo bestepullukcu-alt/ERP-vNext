@@ -186,7 +186,14 @@ public sealed class ReorderAgendaHandler : IRequestHandler<ReorderAgendaCommand,
             }
 
             item.SortOrder = i;
-            await _agendaItems.UpdateAsync(item, item.Version, ct);
+            if (!await _agendaItems.UpdateAsync(item, item.Version, ct))
+            {
+                // BL-533 — a line moved under this reorder (an edit, another reorder): refused, never a 200 over an order
+                // that was only partly applied. The lines already placed keep their place; the caller reloads the agenda
+                // as it is and reorders again. No retry: another reorder's position would be overwritten line by line.
+                return Response<NoContent>.Fail(
+                    "The agenda item changed meanwhile; reload and retry.", 409, MeetingReasonCodes.ConcurrencyConflict, command.CorrelationId);
+            }
         }
 
         return Response<NoContent>.Success(200, command.CorrelationId);

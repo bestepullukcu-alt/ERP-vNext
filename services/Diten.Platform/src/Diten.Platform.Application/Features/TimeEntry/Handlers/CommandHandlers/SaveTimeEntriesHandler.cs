@@ -31,6 +31,10 @@ namespace Diten.Platform.Application.Features.TimeEntry.Handlers.CommandHandlers
 /// 500); then the captured rows are matched against the fresh draft, and the week row is claimed with a compare-and-set
 /// on its version: two saves of one week cannot both pass (§13 "Concurrency"). Nothing is written before the claim.</para>
 ///
+/// <para><b>One transaction</b> (BL-533): the claim, the corrections, the row changes, the new rows and the removals are
+/// written in ONE Platform transaction. A refusal anywhere aborts all of it — a 409 always means "nothing of this save was
+/// written", never "the week moved on and some of your rows are in".</para>
+///
 /// <para><b>Day limits (A3), on the days this save CHANGES</b> (v2 F1): above 960 minutes is refused, above 660 flagged. A
 /// day the save does not touch is never the reason a save fails — a forgotten 17-hour timer day blocks the SUBMIT (which
 /// checks the whole week) until the person corrects it, not every unrelated save.</para>
@@ -48,6 +52,7 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
     private readonly IMediator _mediator;
     private readonly ILogger<SaveTimeEntriesHandler> _logger;
     private readonly ITimesheetSubmissionProbe _probe;
+    private readonly IPlatformTransactionExecutor _transactions;
 
     public SaveTimeEntriesHandler(
         ITimesheetWeekReader reader,
@@ -60,8 +65,10 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
         ITenantContext tenantContext,
         IMediator mediator,
         ILogger<SaveTimeEntriesHandler> logger,
+        IPlatformTransactionExecutor transactions,
         ITimesheetSubmissionProbe? probe = null)
     {
+        _transactions = transactions;
         _mediator = mediator;
         _logger = logger;
         _probe = probe ?? new NoOpTimesheetProbe();
@@ -262,52 +269,19 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
             return Fail("More than 16 hours in one day is not plausible.", 400, TimeEntryReasonCodes.DayImplausible, request);
         }
 
-        // ── Claim the week (compare-and-set), then write the rows ────────────────────────────────────────────────
-        var week = open;
-        if (week is null)
+        // ── Claim the week (compare-and-set), then write the rows — ONE Platform transaction (BL-533) ──────────────
+        if (open is null ? request.Request.ExpectedVersion != 0 : request.Request.ExpectedVersion != open.Version)
         {
-            if (request.Request.ExpectedVersion != 0)
-            {
-                return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
-            }
-
-            week = TimesheetRules.NewRevision(context, _tenantContext.TenantId, 1);
-            week.TotalMinutes = dayTotals.Values.Sum();
-            week.FlaggedDates = TimesheetRules.FlaggedDates(dayTotals);
-            if (!await _weeks.TryCreateAsync(week, ct))
-            {
-                return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
-            }
-        }
-        else
-        {
-            if (request.Request.ExpectedVersion != week.Version)
-            {
-                return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
-            }
-
-            week.TotalMinutes = dayTotals.Values.Sum();
-            week.FlaggedDates = TimesheetRules.FlaggedDates(dayTotals);
-            if (!await _weeks.UpdateAsync(week, request.Request.ExpectedVersion, ct))
-            {
-                return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
-            }
+            return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
         }
 
-        // Captured rows: the person's correction, one audited command each (v3 G2 — before/after on the week's trail).
-        // The source stays; a changed duration marks the row as theirs and records the timer baseline (v3 G1).
-        foreach (var (row, stored) in capturedMatches)
-        {
-            var corrected = await _mediator.Send(new CorrectCapturedTimeEntryCommand(
-                week.Id, stored.Id, stored.Source.ToString(), stored.DurationMinutes, row.DurationMinutes,
-                NormalizeNote(stored.Note) != row.Note, row.Note, request.CorrelationId), ct);
-            if (!corrected.IsSuccessful)
-            {
-                return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
-            }
-        }
+        var week = open ?? TimesheetRules.NewRevision(context, _tenantContext.TenantId, 1);
+        week.TotalMinutes = dayTotals.Values.Sum();
+        week.FlaggedDates = TimesheetRules.FlaggedDates(dayTotals);
 
-        // The person's own rows: the whole set.
+        // The person's own rows, the whole set: what changes, what is new, what is left out.
+        var changedRows = new List<TimeEntryRow>();
+        var newRows = new List<TimeEntryRow>();
         var kept = new HashSet<Guid>();
         foreach (var row in typed)
         {
@@ -322,13 +296,13 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
                     stored.Note = row.Note;
                     stored.Source = source;
                     stored.UpdatedBy = userId.ToString();
-                    await _entries.UpdateAsync(stored, ct);
+                    changedRows.Add(stored);
                 }
 
                 continue;
             }
 
-            await _entries.CreateAsync(new TimeEntryRow
+            newRows.Add(new TimeEntryRow
             {
                 TenantId = _tenantContext.TenantId,
                 TimesheetWeekId = week.Id,
@@ -341,13 +315,74 @@ public sealed class SaveTimeEntriesHandler : IRequestHandler<SaveTimeEntriesComm
                 Source = source,
                 Note = row.Note,
                 CreatedBy = userId.ToString()
-            }, ct);
+            });
         }
 
-        await _entries.SoftDeleteAsync(personTyped.Values.Where(e => !kept.Contains(e.Id)).Select(e => e.Id).ToList(), ct);
+        var removed = personTyped.Values.Where(e => !kept.Contains(e.Id)).Select(e => e.Id).ToList();
+
+        // A refusal anywhere — the week moved, a row moved, a correction was refused — aborts the whole save: the week
+        // stays at the version the person read and no row of this save is written. The executor runs the body again
+        // after a transient write conflict; every attempt starts from the versions read here.
+        var read = new ReadVersionSnapshot();
+        read.Remember(week);
+        changedRows.ForEach(read.Remember);
+        try
+        {
+            await _transactions.ExecuteAsync(async (session, tct) =>
+            {
+                read.Restore();
+                var claimed = open is null
+                    ? await _weeks.TryCreateAsync(session, week, tct)
+                    : await _weeks.UpdateAsync(session, week, request.Request.ExpectedVersion, tct);
+                if (!claimed)
+                {
+                    throw new SaveRefusedException();
+                }
+
+                // Captured rows: the person's correction, one audited command each (v3 G2 — before/after on the week's
+                // trail). The source stays; a changed duration marks the row as theirs and records the timer baseline
+                // (v3 G1). Written inside this transaction, and only on the version THIS save read (BL-533).
+                foreach (var (row, stored) in capturedMatches)
+                {
+                    var corrected = await _mediator.Send(new CorrectCapturedTimeEntryCommand(
+                        week.Id, stored.Id, stored.Source.ToString(), stored.DurationMinutes, row.DurationMinutes,
+                        NormalizeNote(stored.Note) != row.Note, row.Note, stored.Version, request.CorrelationId)
+                    {
+                        Session = session
+                    }, tct);
+                    if (!corrected.IsSuccessful)
+                    {
+                        throw new SaveRefusedException();
+                    }
+                }
+
+                foreach (var stored in changedRows)
+                {
+                    if (!await _entries.UpdateAsync(session, stored, stored.Version, tct))
+                    {
+                        throw new SaveRefusedException();
+                    }
+                }
+
+                foreach (var created in newRows)
+                {
+                    await _entries.CreateAsync(session, created, tct);
+                }
+
+                await _entries.SoftDeleteAsync(session, removed, tct);
+                return true;
+            }, ct);
+        }
+        catch (SaveRefusedException)
+        {
+            return Fail("The week changed meanwhile; reload and retry.", 409, TimeEntryReasonCodes.ConcurrencyConflict, request);
+        }
 
         return Response<TimesheetWeekMutationDto>.Success(TimesheetRules.ToMutation(week), correlationId: request.CorrelationId);
     }
+
+    /// <summary>A write of this save was refused: thrown out of the transaction body, so the whole save is aborted.</summary>
+    private sealed class SaveRefusedException : Exception;
 
     /// <summary>A note as stored and compared: trimmed, and blank is no note (v3 G3: <c>""</c> = null).</summary>
     private static string? NormalizeNote(string? note) => string.IsNullOrWhiteSpace(note) ? null : note.Trim();
