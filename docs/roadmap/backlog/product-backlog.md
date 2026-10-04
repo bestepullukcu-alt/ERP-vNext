@@ -7911,6 +7911,49 @@ saklanan tarihlerde yapıyor — çakışma kontrolünün doğruluğu ayrı öl�
 
 ---
 
+### BL-538
+
+**Görev Merkezi'nden "aç" derin bağlantısı yalnız görevleri çözüyor: ABB (ve diğer sağlayıcıların) öğesi için `GET work-items/{id}` 404**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0024 Görev Merkezi) · BULAN: WP-MDM-ABB-ACCEPT-01 FIX2 DUR'u · KAYIT: 2026-10-04
+
+`WorkItemsController.GetById` → `GetTaskWorkItemByIdQuery`: yalnız Tasks sağlayıcısı. MDM'nin ABB onay öğesi (ve HttpWorkItemProvider üzerinden gelen diğer
+sağlayıcılar) için derin bağlantı 404; ABB ekranındaki düğme bugün kök sayfayı açıyor. Düzeltme: kimliğin önekinden sağlayıcıyı seçen tek çözümleyici
+(sağlayıcı sözleşmesine "tek öğe oku" eklenir). Aynı turda ABB emeklilik talebini geri çekme (yeni `ProductAuditOperation` + Platform
+`TrustedSourceAuditIntentOperationMap` satırı) ayrı iş olarak bekliyor. Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-537
+
+**MDM, CRM, DevEnablement ve Procurement'ın iç anahtarlı / kimlik başlıklı istemcileri yönlendirme izliyor**
+
+DURUM: AÇIK · SAHİP: CT (altyapı) · BULAN: WP-EMAIL-SHELL-01 FIX2 bağımsız gözden geçirmesi · KAYIT: 2026-10-04
+
+Bağlayıcı kural: kimlik bilgisi başka hedefe / yönlendirme üzerinden taşınmaz. Auth'un 7 istemcisi (FIX1–FIX2) ve Platform / Web istemcileri (FIX3) kapatılıyor.
+Kalanlar: MDM `PlatformAuditForwarder.cs:92`, `ModuleRegistrationHostedService.cs:108-111` (kimlik sırrı başlığı); CRM `AuthUserDisplayNameClient`; DevEnablement ve
+Procurement modül kayıt servisleri. Düzeltme: her serviste tek yardımcı (`AllowAutoRedirect = false`) + üretim kaydından test. MDM, devralma dalı kabul edilince.
+Gelecek regresyon riski: 🟢.
+
+---
+
+### BL-536
+
+**Üretim temel yapılandırmasında arka plan işleri tamamen kapalı ve olay taşıyıcı bellek içi: e-posta yeniden denemesi, yinelenen görevler, hatırlatmalar, yükseltme, toplantı serisi ve zaman çizelgesi işleri hiç koşmuyor**
+
+DURUM: AÇIK — SAHİP KONTROLÜ GEREKİYOR (canlı ortam değişkenleri) · SAHİP: CT (altyapı) · BULAN: WP-EMAIL-SHELL-01 FIX2 ölçümü + bağımsız gözden geçirme · KAYIT: 2026-10-04
+
+`Platform.API/appsettings.json:54` `BackgroundJobs.Enabled: false`, `:62` `EnabledJobs: {}`; `Infrastructure/DependencyInjection.cs:795-798` Hangfire'ı hiç kurmuyor;
+ayrıca her iş `EnabledJobs[id] == true` istiyor (yalnız `Enabled`'ı açmak yetmez). Depoda `appsettings.Production.json`, docker-compose, helm ya da `BackgroundJobs__`
+geçersiz kılması yok. Koşmayan işler: e-posta tarama (MOD-0027), iş akışı yükseltme (MOD-0023), görev yineleme ve yaklaşan bitiş (MOD-0024), toplantı serisi (MOD-0357),
+zaman çizelgesi karar taraması / gece yarısı kapatma / hatırlatma (MOD-0280), tatil çekme; yer tutucu abonelik / kota işleri. Hosted service'ler (denetim outbox işçisi,
+olay yayıncısı) koşuyor, ama temel yapılandırmada `Eventing` bölümü yok → taşıyıcı `InMemory`: olaylar servisler arasında geçmiyor (kiracı açılışının Auth'a gitmesi
+gibi). Canlı ortam değişkenleriyle açılmış olabilir: SAHİP canlıda `BackgroundJobs__Enabled`, `BackgroundJobs__EnabledJobs__*` ve `Eventing__Transport` değerlerini
+kontrol etmeli (1 Ekim'deki yinelenen kayıt görevinin "son üretim" sorusu buna bağlı). Düzeltme: canlı için açık bir `EnabledJobs` kümesi ve RabbitMQ yapılandırması
+(sahip kararı + dağıtım), açılış günlüğüne "kapalı işler" satırı. Gelecek regresyon riski: 🟡 (işleri açmak birikmiş işleri birden çalıştırır: önce kuru koşu).
+
+---
+
 ### BL-535
 
 **Platform'un üretim başlangıcını (Program.cs ara katman sırası) koşturan bir test altyapısı yok: `WebApplicationFactory<Program>` bu projede çalışmıyor**
