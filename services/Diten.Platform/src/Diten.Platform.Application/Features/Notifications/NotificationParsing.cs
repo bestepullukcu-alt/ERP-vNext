@@ -35,6 +35,42 @@ public static partial class NotificationParsing
     public static bool IsValidVariableName(string? value) =>
         !string.IsNullOrWhiteSpace(value) && VariableNameRegex().IsMatch(value.Trim());
 
+    /// <summary>BL-454 — see <see cref="NotificationSecrets"/>: the one place these rules live.</summary>
+    public static bool IsSensitiveVariableName(string? name) => NotificationSecrets.IsSecretName(name);
+
+    public static bool IsCredentialBearingLink(string? value) => NotificationSecrets.IsSecretText(value);
+
+    public static bool IsSensitiveVariable(string? name, object? value) => NotificationSecrets.IsSensitive(name, value);
+
+    /// <summary>
+    /// BL-454 — what the dispatch monitoring answer shows of the stored variables: their NAMES, every value replaced
+    /// with "•••". The values are another tenant's data; an operator diagnosing a send needs the names and the
+    /// preview, not the content.
+    /// </summary>
+    public static string MaskVariableValues(string? variablesJson)
+    {
+        if (string.IsNullOrWhiteSpace(variablesJson))
+        {
+            return "{}";
+        }
+
+        try
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(variablesJson);
+            if (document.RootElement.ValueKind != System.Text.Json.JsonValueKind.Object)
+            {
+                return "{}";
+            }
+
+            var names = document.RootElement.EnumerateObject().Select(p => p.Name).ToList();
+            return System.Text.Json.JsonSerializer.Serialize(names.ToDictionary(name => name, _ => "•••"));
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return "{}";
+        }
+    }
+
     public static bool LooksLikeRawSecret(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))

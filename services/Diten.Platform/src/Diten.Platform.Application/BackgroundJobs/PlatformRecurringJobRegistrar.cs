@@ -70,14 +70,16 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
 
     private RecurringJobRegistration CreateEmailDispatchSweepRegistration()
     {
-        const string id = "Diten.Platform.MOD-0027.EmailDispatchJob";
+        // BL-454 — the same id EmailDispatchSweepJob.IsScheduled reads: QueueEmailNotificationHandler decides from it
+        // whether a failed first send can ever be retried.
+        const string id = EmailDispatchSweepJob.JobId;
         const string jobName = "EmailDispatchSweepJob";
         const string owner = "MOD-0027";
         const string cron = "* * * * *";
 
-        var enabled = _options.RegisterStandardJobs
-                      && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
-                      && configuredEnabled;
+        // BL-454 — the very rule QueueEmailNotificationHandler reads to decide whether a failed first send can ever be
+        // retried: the registrar and the handler cannot give two answers.
+        var enabled = EmailDispatchSweepJob.IsScheduled(_options);
 
         var descriptor = new BackgroundJobDescriptor(
             Id: id,

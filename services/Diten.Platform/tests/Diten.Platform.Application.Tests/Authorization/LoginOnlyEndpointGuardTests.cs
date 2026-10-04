@@ -79,6 +79,9 @@ public sealed class LoginOnlyEndpointGuardTests
         "InternalQuotasController",
         "InternalTenantAdminActivationController",
         "InternalTenantBrandingController",
+        // BL-454 — the tenant's e-mail identity for AuthService's own mails: four presentation values behind the
+        // internal API key, checked before any lookup (InternalTenantEmailIdentityHttpTests).
+        "InternalTenantEmailIdentityController",
         "InternalTenantEntitlementsController",
         "InternalTenantLoginSettingsController",
         "InternalTenantResolveController",

@@ -83,7 +83,7 @@ public sealed class EmailDispatchRetrySweepMongoTests : IAsyncLifetime
         // 1. The first, synchronous send fails.
         var queued = await new QueueEmailNotificationHandler(
                 new FixedSettingsResolver(), templates, new EmailTemplateRenderer(), dispatches,
-                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance)
+                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: NotificationTestJobs.RetriesOn())
             .Handle(
                 new QueueEmailNotificationCommand(
                     tenantId,

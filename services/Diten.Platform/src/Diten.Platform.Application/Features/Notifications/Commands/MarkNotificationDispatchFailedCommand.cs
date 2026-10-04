@@ -18,7 +18,14 @@ public sealed record MarkNotificationDispatchFailedCommand(
     /// persisted on the dispatch), so it trusts the caller's own answer, the same way it already trusts the
     /// caller's RetryCount/NextRetryAt above. Defaults false so every existing caller (the admin
     /// NotificationsController retry-failed endpoint, and every pre-BL-406 test) is unaffected.</summary>
-    bool IsPermanentFailure = false)
+    bool IsPermanentFailure = false,
+    /// <summary>BL-454 — set by the retry sweep's window close: the write happens only if the row still has this
+    /// Version and <see cref="ExpectedStatus"/> (a send that landed in between wins). Null = unconditional, as before.</summary>
+    int? ExpectedVersion = null,
+    NotificationDispatchStatus? ExpectedStatus = null,
+    /// <summary>BL-454 — a permanent failure that counts and logs but tells no meeting organizer and badges no attendee
+    /// (a row far older than the retry window, closed the first time the jobs run).</summary>
+    bool Silent = false)
     : IRequest<Response<NotificationDispatchDto>>, IAuditableCommand, IAuditMetadataProvider
 {
     public AuditRequestMetadata GetAuditMetadata() => new(AuditCategory.PlatformConfiguration, AuditOperation.Update, "NotificationDispatch", DispatchId, SourceModule: "MOD-0027", TargetTenantId: TenantId, Metadata: new Dictionary<string, object?> { ["EventName"] = "notifications.dispatch.failed", ["ErrorCode"] = ErrorCode });

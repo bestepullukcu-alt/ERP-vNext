@@ -65,7 +65,8 @@ public sealed class AdminResetPasswordCommandHandler : IRequestHandler<AdminRese
         var emailSent = false;
         try
         {
-            await _invitationEmailService.SendTenantUserInvitationAsync(user.Email, setupToken, ct);
+            // BL-454 — a reset of an account in use: its own words, stated here rather than guessed from the record.
+            await _invitationEmailService.SendTenantUserPasswordResetAsync(user.Email, setupToken, ct);
             emailSent = true;
         }
         catch when (_environment.IsDevelopment())

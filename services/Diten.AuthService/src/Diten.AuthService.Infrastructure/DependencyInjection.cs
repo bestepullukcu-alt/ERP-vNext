@@ -75,26 +75,35 @@ public static class DependencyInjection
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
-        });
+        })
+            .WithoutRedirects(); // BL-454 — carries the internal API key: never follows a redirect.
+        // BL-454 — the tenant's e-mail identity (name, language, reply address) for the invitation mail. Its own
+        // short timeout, not PlatformService:TimeoutSeconds: an e-mail waits two seconds for Platform and then goes
+        // out under the product's name. The cache is a singleton; the typed client is not.
+        // It never follows a redirect: the internal API key must not travel to another host.
+        PlatformTenantEmailIdentityClient.Register(services);
         services.AddHttpClient<IPlatformAdministratorStatusClient, PlatformAdministratorStatusClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
-        });
+        })
+            .WithoutRedirects(); // BL-454 — carries the internal API key: never follows a redirect.
         services.AddHttpClient<ITenantEntitlementClient, PlatformTenantEntitlementClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
-        });
+        })
+            .WithoutRedirects(); // BL-454 — carries the internal API key: never follows a redirect.
         // FIX-TENANT-ADMIN-INVITE-ACTIVATION (Part B) — S2S callback posting invited-admin activation to Platform.
         services.AddHttpClient<ITenantAdminActivationClient, PlatformTenantAdminActivationClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
-        });
+        })
+            .WithoutRedirects(); // BL-454 — carries the internal API key: never follows a redirect.
 
         // BL-456 — user-lifecycle audit events forwarded to Platform's central audit log (best-effort, S2S).
         services.AddHttpClient<IPlatformAuditForwarder, PlatformAuditForwarder>((sp, client) =>
@@ -102,7 +111,8 @@ public static class DependencyInjection
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
-        });
+        })
+            .WithoutRedirects(); // BL-454 — carries the internal API key: never follows a redirect.
 
         // BL-459 — the plan's user limit (users.max) through Platform's internal quota contract.
         services.AddHttpClient<IUserQuotaClient, PlatformUserQuotaClient>((sp, client) =>
@@ -110,7 +120,8 @@ public static class DependencyInjection
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
-        });
+        })
+            .WithoutRedirects(); // BL-454 — carries the internal API key: never follows a redirect.
 
         // Tenant Context Registration
         services.AddScoped<TenantContext>();

@@ -167,6 +167,9 @@ public sealed class UserAdminActionsTests
         public List<(string email, string token)> Sends { get; } = [];
         public string BuildTenantSetPasswordUrl(string email, string setupToken) =>
             $"http://localhost:5001/account/set-password?email={email}&token={setupToken}";
+        // BL-454 — no default on the interface any more: this double records a reset exactly like an invitation.
+        public Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct) =>
+            SendTenantUserInvitationAsync(email, setupToken, ct);
         public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct)
         {
             Sends.Add((email, setupToken));
@@ -226,6 +229,30 @@ public sealed class UserAdminActionsTests
         Assert.Contains(UserAuditEvents.PasswordResetByAdmin, local.Names);
     }
 
+    [Fact]
+    public async Task An_admin_reset_asks_for_the_reset_mail_and_never_for_the_invitation()
+    {
+        // BL-454 — the purpose is stated by the caller: the e-mail service is not left to guess it from the record.
+        var user = new User("reset@acme.test", "hash:x", "Re", "Set", TenantA);
+        user.ConfirmEmail();
+        var mail = new PurposeRecordingEmail();
+        var handler = new AdminResetPasswordCommandHandler(new InMemoryUserRepository([user]), TenantContextFor(TenantA), new FakeTokenService(), new FakeRefreshTokenHasher(),
+            mail, new FakeHostEnvironment(isDevelopment: false), UserAuditForTests.Over(new EventNames()),
+            NullLogger<AdminResetPasswordCommandHandler>.Instance);
+
+        await handler.Handle(new AdminResetPasswordCommand(user.Id), CancellationToken.None);
+
+        Assert.Equal(["reset"], mail.Purposes);
+    }
+
+    private sealed class PurposeRecordingEmail : ITenantUserInvitationEmailService
+    {
+        public List<string> Purposes { get; } = [];
+        public string BuildTenantSetPasswordUrl(string email, string setupToken) => "http://localhost/set-password";
+        public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct) { Purposes.Add("invitation"); return Task.CompletedTask; }
+        public Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct) { Purposes.Add("reset"); return Task.CompletedTask; }
+    }
+
     private sealed class EventNames : IRbacAuditRecorder
     {
         public List<string> Names { get; } = [];
@@ -235,6 +262,9 @@ public sealed class UserAdminActionsTests
     private sealed class ThrowingInvitationEmail : ITenantUserInvitationEmailService
     {
         public string BuildTenantSetPasswordUrl(string email, string setupToken) => "http://localhost/set-password";
+        // BL-454 — no default on the interface any more: this double fails a reset exactly like an invitation.
+        public Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct) =>
+            SendTenantUserInvitationAsync(email, setupToken, ct);
         public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct) => throw new InvalidOperationException("SMTP down");
     }
 }

@@ -69,6 +69,7 @@ public sealed class NotificationDispatch : BaseEntity
         }
 
         Status = NotificationDispatchStatus.Sent;
+        ReleaseVariables();
         ProviderMessageId = providerMessageId;
         SentAt = now;
         UpdatedAt = now;
@@ -76,7 +77,7 @@ public sealed class NotificationDispatch : BaseEntity
         return true;
     }
 
-    public bool TryMarkFailed(string errorCode, string errorMessage, DateTimeOffset now)
+    public bool TryMarkFailed(string errorCode, string errorMessage, DateTimeOffset now, bool isPermanent = false)
     {
         if (Status is NotificationDispatchStatus.Sent or NotificationDispatchStatus.Cancelled)
         {
@@ -84,6 +85,11 @@ public sealed class NotificationDispatch : BaseEntity
         }
 
         Status = NotificationDispatchStatus.Failed;
+        if (isPermanent)
+        {
+            ReleaseVariables();
+        }
+
         ErrorCode = errorCode;
         ErrorMessage = errorMessage;
         FailedAt = now;
@@ -100,8 +106,24 @@ public sealed class NotificationDispatch : BaseEntity
         }
 
         Status = NotificationDispatchStatus.Cancelled;
+        ReleaseVariables();
         UpdatedAt = now;
         Version++;
         return true;
     }
+
+    /// <summary>
+    /// BL-454 — the variables are kept for one purpose: a retry that sends exactly what the first attempt sent. Once
+    /// no retry can follow (sent, permanently failed, cancelled) they are released, in the same transition; the
+    /// subject and the preview stay as the record of what was sent. A row still waiting for a retry keeps them.
+    /// </summary>
+    public const string ReleasedVariablesJson = "{}";
+
+    /// <summary>
+    /// BL-454 — the error code a SENT dispatch carries when a retry could only send the stored, masked preview (a subject
+    /// or a link may read <c>[REDACTED]</c>). The monitoring screen shows it next to the status; no field is added.
+    /// </summary>
+    public const string RetryDegradedErrorCode = "RetryDegraded";
+
+    private void ReleaseVariables() => VariablesJson = ReleasedVariablesJson;
 }

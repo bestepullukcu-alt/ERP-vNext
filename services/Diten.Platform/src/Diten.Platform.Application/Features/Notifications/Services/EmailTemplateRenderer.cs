@@ -1,13 +1,12 @@
 using System.Net;
-using System.Text.RegularExpressions;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Domain.Entities.Notifications;
 
 namespace Diten.Platform.Application.Features.Notifications.Services;
 
-public sealed partial class EmailTemplateRenderer : IEmailTemplateRenderer
+public sealed class EmailTemplateRenderer : IEmailTemplateRenderer
 {
-    private const int PreviewMaxLength = 2000;
+    public const int PreviewMaxLength = 2000;
 
     public Response<RenderedEmailTemplateDto> Render(
         NotificationTemplate template,
@@ -45,18 +44,8 @@ public sealed partial class EmailTemplateRenderer : IEmailTemplateRenderer
 
     private static string RenderText(
         string template, IReadOnlyDictionary<string, object?> variables, Func<string, string>? encode = null) =>
-        TemplateTokenRegex().Replace(template, match =>
-        {
-            var key = match.Groups["name"].Value.Trim();
-            var text = variables.TryGetValue(key, out var value)
-                ? Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty
-                : string.Empty;
-            return encode is null ? text : encode(text);
-        });
+        TemplateTokens.Render(template, variables, encode);
 
     private static string Truncate(string value) =>
         value.Length <= PreviewMaxLength ? value : value[..PreviewMaxLength];
-
-    [GeneratedRegex("\\{\\{\\s*(?<name>[A-Za-z][A-Za-z0-9_.]*)\\s*\\}\\}", RegexOptions.CultureInvariant)]
-    private static partial Regex TemplateTokenRegex();
 }

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Diten.BuildingBlocks.Email;
 using Diten.BuildingBlocks.Eventing;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Notifications.Commands;
@@ -34,6 +35,9 @@ public sealed class QueueEmailNotificationHandler
     public const string ReasonTemplateNotFound = "TEMPLATE_NOT_FOUND";
     public const string ReasonRenderFailed = "TEMPLATE_RENDER_FAILED";
     public const string ReasonProviderRejected = "PROVIDER_REJECTED";
+    // BL-454 — an address that is not ONE plain address (a line break, a second mailbox) never reaches a header.
+    // Refused before a dispatch row exists, so nothing schedules a retry of a send that can never succeed.
+    public const string ReasonRecipientInvalid = "RECIPIENT_INVALID";
 
     // BL-374 — the exact token SanitizeVariables/MaskSensitiveValues write in place of a sensitive value.
     // Internal (not private) so EmailDispatchJob can recognise it in a persisted VariablesJson before
@@ -52,6 +56,21 @@ public sealed class QueueEmailNotificationHandler
     private readonly IMessagingProviderResolver _providerResolver;
     private readonly IEventBus _eventBus;
     private readonly ILogger<QueueEmailNotificationHandler> _logger;
+    // BL-454 — trailing and OPTIONAL, the EmailDispatchJob precedent: both are registered in DI, so production
+    // always gets them. A handler built against the old 7-argument shape (every existing test) still compiles and
+    // behaves as it did: no frame, no language fallback beyond the template repository's own.
+    private readonly IEmailShellComposer? _shellComposer;
+    private readonly INotificationLocaleResolver? _localeResolver;
+    // BL-454 — can a failed first send be tried again on this server? Read from the SAME gates the job registrar and
+    // the scheduler apply (EmailDispatchSweepJob.IsScheduled). When it cannot, the variables are never stored and the
+    // first failure is the permanent one. Production always injects the options; a handler built WITHOUT them fails
+    // closed: no retry is assumed, so nothing is kept for one.
+    private readonly bool _retriesScheduled;
+    // BL-454 — the permanent-failure effects every path shares (ops counter, meeting organizer + attendee badge).
+    // Registered in DI; a handler built without it (older test doubles) only logs.
+    private readonly NotificationPermanentFailureEffects? _permanentFailure;
+    // Kept so the composition can be checked: production DI hands this handler the server's real job settings.
+    private readonly Microsoft.Extensions.Options.IOptions<Diten.BuildingBlocks.BackgroundJobs.BackgroundJobSchedulerOptions>? _jobOptions;
 
     public QueueEmailNotificationHandler(
         ITenantMessagingSettingsResolver settingsResolver,
@@ -60,8 +79,17 @@ public sealed class QueueEmailNotificationHandler
         INotificationDispatchRepository dispatchRepository,
         IMessagingProviderResolver providerResolver,
         IEventBus eventBus,
-        ILogger<QueueEmailNotificationHandler> logger)
+        ILogger<QueueEmailNotificationHandler> logger,
+        IEmailShellComposer? shellComposer = null,
+        INotificationLocaleResolver? localeResolver = null,
+        Microsoft.Extensions.Options.IOptions<Diten.BuildingBlocks.BackgroundJobs.BackgroundJobSchedulerOptions>? jobOptions = null,
+        NotificationPermanentFailureEffects? permanentFailure = null)
     {
+        _retriesScheduled = jobOptions is not null && Features.Notifications.BackgroundJobs.EmailDispatchSweepJob.IsScheduled(jobOptions.Value);
+        _permanentFailure = permanentFailure;
+        _jobOptions = jobOptions;
+        _shellComposer = shellComposer;
+        _localeResolver = localeResolver;
         _settingsResolver = settingsResolver;
         _templateRepository = templateRepository;
         _renderer = renderer;
@@ -71,8 +99,13 @@ public sealed class QueueEmailNotificationHandler
         _logger = logger;
     }
 
+    /// <summary>BL-454 — whether this handler will keep variables for a retry (what production DI composed it with).</summary>
+    internal bool RetriesScheduled => _retriesScheduled;
+
     public async Task<Response<NotificationDispatchDto>> Handle(QueueEmailNotificationCommand request, CancellationToken ct)
     {
+        // BL-454 — a recipient that is not ONE plain address is refused by QueueEmailNotificationValidator, the one
+        // place that rule lives: every caller reaches this handler through the MediatR pipeline, which validates first.
         var settingsResponse = await _settingsResolver.ResolveAsync(request.TenantId, ct);
         if (!settingsResponse.IsSuccessful || settingsResponse.Data is null)
         {
@@ -93,24 +126,39 @@ public sealed class QueueEmailNotificationHandler
                 providerResponse.Errors, providerResponse.StatusCode, ReasonProviderUnavailable);
         }
 
-        var template = await _templateRepository.GetBestActiveByKeyAsync(
-            request.TenantId,
-            NotificationParsing.NormalizeTemplateKey(request.Request.TemplateKey),
-            NotificationParsing.NormalizeLocale(request.Request.Locale),
-            NotificationChannelCode.Email,
-            ct);
+        var template = await FindTemplateAsync(request, ct);
         if (template is null)
         {
             return Response<NotificationDispatchDto>.Fail(
                 "Notification template not found.", 404, ReasonTemplateNotFound);
         }
 
-        var renderResponse = _renderer.Render(template, request.Request.Variables);
+        // BL-454 — the variables as the template sees them, fixed ONCE: the first send and any retry render the same
+        // strings (a DateTimeOffset, a bool, an enum no longer render differently from stored JSON), and lookup
+        // ignores case on both paths. Which of them are secrets is decided on the ORIGINAL values (a JSON object is
+        // a secret by kind, and normalising would turn it into text first).
+        var variables = NotificationVariables.Normalize(request.Request.Variables);
+        var secretNames = request.Request.Variables
+            .Where(pair => NotificationParsing.IsSensitiveVariable(pair.Key, pair.Value))
+            .Select(pair => pair.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var renderResponse = _renderer.Render(template, variables);
         if (!renderResponse.IsSuccessful || renderResponse.Data is null)
         {
             return Response<NotificationDispatchDto>.Fail(
                 renderResponse.Errors, renderResponse.StatusCode, ReasonRenderFailed);
         }
+
+        // BL-454 — a subject is a HEADER: a task or meeting title with a line break in it must not start one of its
+        // own. The STORED subject is masked BEFORE it is cleaned and cut, like the preview: a secret falling on the
+        // cut, or carrying a tab, a double space or a soft hyphen the cleaning would change, is still found whole.
+        var subject = EmailHeaderText.CleanSubject(renderResponse.Data.Subject);
+        var storedSubject = EmailHeaderText.CleanSubject(MaskSensitiveValues(renderResponse.Data.Subject, variables, secretNames));
+        var composed = _shellComposer is null
+            ? null
+            : await _shellComposer.ComposeAsync(
+                request.TenantId, template, template.Locale, subject,
+                renderResponse.Data.BodyHtml, renderResponse.Data.BodyText, variables, ct);
 
         var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
             ? Guid.NewGuid().ToString("N")
@@ -128,14 +176,21 @@ public sealed class QueueEmailNotificationHandler
             To = MapRecipients(request.Request.To),
             Cc = MapRecipients(request.Request.Cc ?? []),
             Bcc = MapRecipients(request.Request.Bcc ?? []),
-            Subject = renderResponse.Data.Subject,
+            // BL-454 — the STORED subject is masked like the body: a secret a template puts in the subject is not kept.
+            // The first send below still carries the real subject.
+            Subject = storedSubject,
             // The full rendered body (renderResponse.Data.BodyHtml) is sent to the provider below; the
             // truncated preview is the only body form PERSISTED on the dispatch, so mask any sensitive
             // variable values (e.g. temporary passwords) out of it to avoid leaking them into the record
             // and the read-only dispatch monitoring UI.
-            BodyHtmlPreview = MaskSensitiveValues(renderResponse.Data.BodyHtmlPreview, request.Request.Variables),
-            BodyTextPreview = MaskSensitiveValues(renderResponse.Data.BodyTextPreview, request.Request.Variables),
-            VariablesJson = JsonSerializer.Serialize(SanitizeVariables(request.Request.Variables)),
+            // BL-454 — masked FIRST, cut SECOND: a secret straddling the cut can no longer leave its beginning behind.
+            BodyHtmlPreview = Truncate(MaskSensitiveValues(renderResponse.Data.BodyHtml, variables, secretNames)),
+            BodyTextPreview = Truncate(MaskSensitiveValues(renderResponse.Data.BodyText, variables, secretNames)),
+            // BL-454 — kept for one purpose only, a retry that sends what this attempt sent. Where no retry can run,
+            // nothing is kept at all.
+            VariablesJson = _retriesScheduled
+                ? JsonSerializer.Serialize(SanitizeVariables(variables, secretNames))
+                : NotificationDispatch.ReleasedVariablesJson,
             // BL-374 — lets a retry decide whether re-rendering from TemplateId + VariablesJson would still
             // reproduce this exact send, or whether the template has since moved on.
             TemplateSemanticVersion = template.SemanticVersion,
@@ -178,19 +233,20 @@ public sealed class QueueEmailNotificationHandler
                 dispatch.Id,
                 dispatch.TenantId,
                 correlationId,
-                dispatch.Subject,
+                subject, // the real subject; the stored one is masked
                 dispatch.To.Select(ToProviderRecipient).ToArray(),
                 dispatch.Cc.Select(ToProviderRecipient).ToArray(),
                 dispatch.Bcc.Select(ToProviderRecipient).ToArray(),
                 dispatch.BodyHtmlPreview,
                 dispatch.BodyTextPreview,
-                renderResponse.Data.BodyHtml,
-                renderResponse.Data.BodyText,
+                composed?.BodyHtml ?? renderResponse.Data.BodyHtml,
+                composed?.BodyText ?? renderResponse.Data.BodyText,
                 // MOD-0357 S5b — carried straight from the caller's request into THIS SAME synchronous provider
                 // call; never assigned to `dispatch` above, so it is never persisted (NotificationDispatch has
                 // no attachment column, and none is added here — see MessagingProviderEmailRequest's own doc
                 // comment on why a later retry already cannot have one anyway).
-                request.Request.Attachments),
+                request.Request.Attachments,
+                composed?.SenderName),
             ct);
 
         if (providerResult.Accepted)
@@ -214,14 +270,25 @@ public sealed class QueueEmailNotificationHandler
             return Response<NotificationDispatchDto>.Success(dispatch.ToDto(), 201);
         }
 
+        var failedAt = DateTimeOffset.UtcNow;
         dispatch.TryMarkFailed(
             Redact(providerResult.ErrorCode) ?? "ProviderRejected",
             Redact(providerResult.ErrorMessage) ?? "Provider rejected the message.",
-            DateTimeOffset.UtcNow);
-        // S10B live pass (2026-09-13): the first failure must be DUE for the retry sweep, which only selects rows
-        // with a NextRetryAt. Without this line a mail whose first attempt failed was never tried again, and every
-        // retry-fidelity rule (BL-374) sat behind a retry that could not happen. RetryCount stays 0: no retry has run.
-        dispatch.NextRetryAt = EmailDispatchRetryPolicy.NextRetryAt(dispatch.RetryCount + 1, DateTimeOffset.UtcNow);
+            failedAt,
+            isPermanent: !_retriesScheduled);
+        if (_retriesScheduled)
+        {
+            // S10B live pass (2026-09-13): the first failure must be DUE for the retry sweep, which only selects rows
+            // with a NextRetryAt. Without this line a mail whose first attempt failed was never tried again, and every
+            // retry-fidelity rule (BL-374) sat behind a retry that could not happen. RetryCount stays 0: no retry has run.
+            dispatch.NextRetryAt = EmailDispatchRetryPolicy.NextRetryAt(dispatch.RetryCount + 1, failedAt);
+        }
+        else
+        {
+            // BL-454 — no retry can run on this server: this failure IS the permanent one, marked once.
+            dispatch.PermanentlyFailedNotifiedAt = failedAt;
+        }
+
         await _dispatchRepository.UpdateAsync(dispatch, ct);
         await _eventBus.PublishAsync(
             new NotificationDispatchFailedV1(
@@ -238,8 +305,65 @@ public sealed class QueueEmailNotificationHandler
             new EventPublishOptions { TenantId = dispatch.TenantId, CausationId = dispatch.CausationId },
             ct);
         _logger.LogWarning("Notification dispatch failed. DispatchId={DispatchId} TenantId={TenantId} Status={Status} CorrelationId={CorrelationId} ErrorCode={ErrorCode}", dispatch.Id, dispatch.TenantId, dispatch.Status, dispatch.CorrelationId, dispatch.ErrorCode);
+        if (!_retriesScheduled)
+        {
+            // The same permanent-failure path a last failed retry takes: counter, log line, and for meeting mail the
+            // organizer's notification and the attendee's "not delivered" badge.
+            if (_permanentFailure is not null)
+            {
+                await _permanentFailure.ApplyAsync(dispatch, silent: false, ct);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "email.dispatch.permanently_failed DispatchId={DispatchId} TenantId={TenantId} TemplateKey={TemplateKey} Reason=RetryUnavailable",
+                    dispatch.Id, dispatch.TenantId, dispatch.TemplateKey);
+            }
+        }
         return Response<NotificationDispatchDto>.Fail(
             "Messaging provider rejected the message.", 400, ReasonProviderRejected);
+    }
+
+    /// <summary>
+    /// BL-454 — the language chain of the template LOOKUP: the language asked for → the tenant's own language →
+    /// English. Before this, a language nobody seeded a template in answered 404 with no dispatch row at all: the
+    /// tenant lifecycle e-mails exist in en/tr only, so a tenant reading fr/es/zh/ar/ru never received them. An
+    /// e-mail in English is a worse e-mail; no e-mail is a missing one. The dispatch row records the language of
+    /// the template that was actually used (<c>template.Locale</c>), so the fallback is visible afterwards.
+    /// </summary>
+    private async Task<NotificationTemplate?> FindTemplateAsync(QueueEmailNotificationCommand request, CancellationToken ct)
+    {
+        var templateKey = NotificationParsing.NormalizeTemplateKey(request.Request.TemplateKey);
+        var requested = NotificationParsing.NormalizeLocale(request.Request.Locale);
+
+        var template = await _templateRepository.GetBestActiveByKeyAsync(
+            request.TenantId, templateKey, requested, NotificationChannelCode.Email, ct);
+        if (template is not null || _localeResolver is null)
+        {
+            return template;
+        }
+
+        var tried = new HashSet<string>(StringComparer.Ordinal) { requested };
+        var tenantLocale = await _localeResolver.ResolveAsync(request.TenantId, null, ct);
+        foreach (var candidate in new[] { tenantLocale, TenantNotificationLocaleResolver.PlatformDefaultLocale })
+        {
+            if (!tried.Add(candidate))
+            {
+                continue;
+            }
+
+            template = await _templateRepository.GetBestActiveByKeyAsync(
+                request.TenantId, templateKey, candidate, NotificationChannelCode.Email, ct);
+            if (template is not null)
+            {
+                _logger.LogInformation(
+                    "email.dispatch.locale_fallback TenantId={TenantId} TemplateKey={TemplateKey} Requested={Requested} Used={Used}",
+                    request.TenantId, templateKey, requested, candidate);
+                return template;
+            }
+        }
+
+        return null;
     }
 
     private static List<EmailRecipient> MapRecipients(IReadOnlyList<EmailRecipientDto> recipients) =>
@@ -280,38 +404,44 @@ public sealed class QueueEmailNotificationHandler
             .ToList();
     }
 
-    private static IReadOnlyDictionary<string, object?> SanitizeVariables(IReadOnlyDictionary<string, object?> variables) =>
+    private static IReadOnlyDictionary<string, object?> SanitizeVariables(
+        IReadOnlyDictionary<string, object?> variables, IReadOnlySet<string> secretNames) =>
         variables.ToDictionary(
             pair => pair.Key,
-            pair => IsSensitiveKey(pair.Key) || NotificationParsing.LooksLikeRawSecret(Convert.ToString(pair.Value)) ? "[REDACTED]" : pair.Value,
+            pair => secretNames.Contains(pair.Key) ? RedactedToken : pair.Value,
             StringComparer.OrdinalIgnoreCase);
+
+    private static string? Truncate(string? value) =>
+        value is null || value.Length <= EmailTemplateRenderer.PreviewMaxLength
+            ? value
+            : value[..EmailTemplateRenderer.PreviewMaxLength];
 
     // Replaces the concrete values of sensitive variables inside the persisted body preview, so a rendered
     // secret (temporary password, token, API key) never lands in the dispatch record. The full body sent to
     // the provider is untouched. Masking keys off sensitive variable NAMES only (not the raw-secret value
     // heuristic, which flags ordinary spaced/`=` text like tenant names and login URLs). Both the raw and
     // HTML-encoded forms are masked because the renderer may HTML-encode substituted values.
-    private static string? MaskSensitiveValues(string? preview, IReadOnlyDictionary<string, object?> variables)
+    private static string? MaskSensitiveValues(
+        string? text, IReadOnlyDictionary<string, object?> variables, IReadOnlySet<string> secretNames)
     {
-        if (string.IsNullOrEmpty(preview))
+        if (string.IsNullOrEmpty(text))
         {
-            return preview;
+            return text;
         }
 
-        var masked = preview;
-        foreach (var pair in variables)
+        // BL-454 — the LONGEST secret first: when a short secret is the beginning of a longer one, replacing the short
+        // one first would cut the long one in two and leave its tail behind.
+        var secrets = variables
+            .Where(pair => secretNames.Contains(pair.Key))
+            .Select(pair => Convert.ToString(pair.Value, System.Globalization.CultureInfo.InvariantCulture))
+            .Where(value => !string.IsNullOrEmpty(value))
+            .Select(value => value!)
+            .OrderByDescending(value => value.Length)
+            .ThenBy(value => value, StringComparer.Ordinal);
+
+        var masked = text;
+        foreach (var value in secrets)
         {
-            if (!IsSensitiveKey(pair.Key))
-            {
-                continue;
-            }
-
-            var value = Convert.ToString(pair.Value);
-            if (string.IsNullOrEmpty(value))
-            {
-                continue;
-            }
-
             masked = masked.Replace(value, RedactedToken, StringComparison.Ordinal);
             var encoded = WebUtility.HtmlEncode(value);
             if (!string.Equals(encoded, value, StringComparison.Ordinal))
@@ -326,10 +456,4 @@ public sealed class QueueEmailNotificationHandler
     private static string? Redact(string? value) =>
         NotificationParsing.LooksLikeRawSecret(value) ? "[REDACTED]" : value;
 
-    private static bool IsSensitiveKey(string key) =>
-        key.Contains("secret", StringComparison.OrdinalIgnoreCase)
-        || key.Contains("token", StringComparison.OrdinalIgnoreCase)
-        || key.Contains("password", StringComparison.OrdinalIgnoreCase)
-        || key.Contains("apiKey", StringComparison.OrdinalIgnoreCase)
-        || key.Contains("api_key", StringComparison.OrdinalIgnoreCase);
 }

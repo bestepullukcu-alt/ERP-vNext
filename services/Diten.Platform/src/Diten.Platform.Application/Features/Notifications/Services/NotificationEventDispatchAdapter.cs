@@ -148,7 +148,19 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
             MeetingAttendeeUserId: request.MeetingAttendeeUserId);
 
         var command = new QueueEmailNotificationCommand(request.TenantId, queueRequest, request.CorrelationId);
-        var response = await _mediator.Send(command, ct);
+        Response<NotificationDispatchDto> response;
+        try
+        {
+            response = await _mediator.Send(command, ct);
+        }
+        catch (Exception ex) when (Validators.QueueEmailNotificationValidator.IsRecipientRefusal(ex))
+        {
+            // BL-454 — the pipeline refused an address that is not ONE plain address. Said with its code, so a caller
+            // can tell it from a transient failure: no retry and no redelivery will ever make it valid.
+            response = Response<NotificationDispatchDto>.Fail(
+                "A recipient address is not a single valid address.", 400,
+                Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid);
+        }
 
         if (!response.IsSuccessful)
         {

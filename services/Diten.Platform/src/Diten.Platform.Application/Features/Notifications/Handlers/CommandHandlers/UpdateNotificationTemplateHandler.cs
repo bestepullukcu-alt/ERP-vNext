@@ -9,10 +9,21 @@ public sealed class UpdateNotificationTemplateHandler
     : IRequestHandler<UpdateNotificationTemplateCommand, Response<NotificationTemplateDto>>
 {
     private readonly INotificationTemplateRepository _repository;
+    // BL-454 — optional so the handler built the old way still compiles; registered in DI, so production has it.
+    private readonly Diten.Platform.Application.Contracts.ICurrentUserContext? _currentUser;
 
-    public UpdateNotificationTemplateHandler(INotificationTemplateRepository repository)
+    /// <summary>What an operator's save writes into <c>UpdatedBy</c> when no signed-in actor is known.</summary>
+    public const string OperatorActor = "operator";
+
+    /// <summary>The reason code of a save refused because the template changed after the editor read it.</summary>
+    public const string ReasonTemplateChanged = "TEMPLATE_CHANGED";
+
+    public UpdateNotificationTemplateHandler(
+        INotificationTemplateRepository repository,
+        Diten.Platform.Application.Contracts.ICurrentUserContext? currentUser = null)
     {
         _repository = repository;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<NotificationTemplateDto>> Handle(UpdateNotificationTemplateCommand request, CancellationToken ct)
@@ -23,6 +34,15 @@ public sealed class UpdateNotificationTemplateHandler
         if (template is null || !NotificationTemplateScope.Matches(template, request.Request.IsPlatformDefault ? null : request.TenantId))
         {
             return Response<NotificationTemplateDto>.Fail("Notification template not found.", 404);
+        }
+
+        // BL-454 — a save made from an OLDER read is refused, never written over what changed since (another operator, or
+        // the seed carrying the template forward to a new version). An editor that sends no RowVersion is not checked.
+        if (request.Request.RowVersion is { Length: > 0 } expected
+            && !expected.AsSpan().SequenceEqual(NotificationMappings.RowVersionOf(template.Version)))
+        {
+            return Response<NotificationTemplateDto>.Fail(
+                "The template was changed after it was opened. Reload it and save again.", 409, ReasonTemplateChanged);
         }
 
         var parse = CreateNotificationTemplateHandler.ParseRequest(request.Request);
@@ -58,6 +78,9 @@ public sealed class UpdateNotificationTemplateHandler
         template.Status = status;
         template.SemanticVersion = string.IsNullOrWhiteSpace(request.Request.SemanticVersion) ? null : request.Request.SemanticVersion.Trim();
         template.UpdatedAt = DateTimeOffset.UtcNow;
+        // BL-454 — an operator's save is signed. The seed carries a template forward only while UpdatedBy is its own
+        // stamp: a row an operator saved — even with identical content — is theirs from then on.
+        template.UpdatedBy = _currentUser is { UserId: var userId } && userId != Guid.Empty ? userId.ToString() : OperatorActor;
         template.Version++;
 
         await _repository.UpdateAsync(template, ct);

@@ -165,6 +165,8 @@ public sealed class TaskNotificationService : ITaskNotificationService
     private readonly IUserNotificationRepository _userNotifications;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<TaskNotificationService> _logger;
+    // BL-454 — trailing and optional: registered in DI; a service built the old way sends no button address.
+    private readonly ITaskWebLinks? _links;
 
     public TaskNotificationService(
         INotificationEventDispatchAdapter notifications,
@@ -173,8 +175,10 @@ public sealed class TaskNotificationService : ITaskNotificationService
         ITaskSeatDirectory seats,
         IUserNotificationRepository userNotifications,
         ITenantContext tenantContext,
-        ILogger<TaskNotificationService> logger)
+        ILogger<TaskNotificationService> logger,
+        ITaskWebLinks? links = null)
     {
+        _links = links;
         _notifications = notifications;
         _localeResolver = localeResolver;
         _recipients = recipients;
@@ -263,7 +267,7 @@ public sealed class TaskNotificationService : ITaskNotificationService
                     To: recipients
                         .Select(r => new EmailRecipientDto(r.Email, r.DisplayName))
                         .ToList(),
-                    Variables: BuildVariables(task),
+                    Variables: await BuildVariablesAsync(task, eventCode, actingUserId, ct),
                     /*
                      * Stated, not omitted. MOD-0024 does NOT know what language these recipients read: the
                      * resolver seam it added returns id, e-mail and display name, and the AuthService User entity
@@ -404,4 +408,45 @@ public sealed class TaskNotificationService : ITaskNotificationService
         ["TaskId"] = task.Id.ToString(),
         ["DueAt"] = task.DueAt?.ToString("yyyy-MM-dd") ?? string.Empty
     };
+
+    /// <summary>
+    /// BL-454 — the three above, plus what the e-mail shell shows: the task's address (the button), its priority in
+    /// the language the mail will be written in, and — for an assignment — who assigned it.
+    ///
+    /// <para><b>Only what the reader may already see.</b> The address is the Task Center page the read rule guards;
+    /// the priority is on that page. Of the assigner only the DISPLAY NAME travels — never the e-mail address, which
+    /// the contact lookup also returns and which a task's reader has no claim to.</para>
+    ///
+    /// <para>Each is optional in the template: an empty value drops its row, an empty address draws no button. So
+    /// nothing here may fail the dispatch — a lookup that throws leaves its variable empty.</para>
+    /// </summary>
+    private async Task<Dictionary<string, object?>> BuildVariablesAsync(
+        TaskItem task, string eventCode, Guid actingUserId, CancellationToken ct)
+    {
+        var variables = BuildVariables(task);
+        variables["TaskUrl"] = _links?.Detail(task.Id) ?? string.Empty;
+
+        var locale = await _localeResolver.ResolveAsync(_tenantContext.TenantId, null, ct);
+        variables["Priority"] = TaskEmailContent.PriorityLabel(task.Priority, locale);
+
+        variables["AssignerName"] = string.Empty;
+        if (eventCode == TaskNotificationEvents.Assigned && actingUserId != Guid.Empty)
+        {
+            try
+            {
+                var actor = (await _recipients.ResolveAsync([actingUserId], ct)).FirstOrDefault(r => r.UserId == actingUserId);
+                variables["AssignerName"] = actor?.DisplayName?.Trim() ?? string.Empty;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "task.notification.assigner_lookup_failed TaskId={TaskId}", task.Id);
+            }
+        }
+
+        return variables;
+    }
 }

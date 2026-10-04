@@ -166,6 +166,9 @@ public static class DependencyInjection
         services.Configure<EventBusOptions>(configuration.GetSection(EventBusOptions.SectionName));
         services.Configure<RabbitMqEventingOptions>(configuration.GetSection(RabbitMqEventingOptions.SectionName));
         services.Configure<BackgroundJobSchedulerOptions>(configuration.GetSection(BackgroundJobSchedulerOptions.SectionName));
+        // BL-454 — how long a waiting e-mail dispatch keeps its variables before the sweep closes it.
+        services.Configure<Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchRetentionOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchRetentionOptions.SectionName));
         services.AddOptions<WorkingCalendarImportOptions>()
             .Bind(configuration.GetSection(WorkingCalendarImportOptions.SectionName))
             .ValidateOnStart();
@@ -213,6 +216,8 @@ public static class DependencyInjection
         services.AddScoped<IAuthoritativeEntitlementDecisionSource, MongoAuthoritativeEntitlementDecisionSource>();
         services.AddScoped<IPlatformEntitlementDecisionProvider, PlatformEntitlementDecisionProvider>();
         services.AddScoped<IAdminUserInvitationService, AdminUserInvitationService>();
+        // BL-454 — every client that carries a credential to AuthService: never follows a redirect (one helper).
+        services.AddAuthInternalHttpClients();
         services.AddScoped<ITenantActivationNotifier, AuthServiceTenantActivationNotifier>();
         services.AddScoped<ICatalogPermissionSyncService, CatalogPermissionSyncService>();
         services.AddScoped<IAuthPermissionModulesClient, AuthPermissionModulesClient>();
@@ -256,10 +261,8 @@ public static class DependencyInjection
                 ? sp.GetRequiredService<NagerDateHolidayProvider>()
                 : sp.GetRequiredService<OfflineHolidayProvider>();
         });
-        services.AddHttpClient<IUserReferenceValidator, Diten.Platform.Infrastructure.Services.Auth.AuthServiceUserReferenceValidator>();
-        services.AddHttpClient<
-            Diten.Platform.Application.Features.DocumentManagementApproval.Services.IApprovalRoleDirectory,
-            Diten.Platform.Infrastructure.Services.Auth.AuthServiceApprovalRoleDirectory>();
+        // IUserReferenceValidator and IApprovalRoleDirectory (AuthService, a credential on every call) are registered
+        // by AddAuthInternalHttpClients above, without redirects.
 
         /*
          * WC-D1 (DCP-004 §2 D1) — THE GENERAL BRIDGE to modules that live in their own service.
@@ -401,6 +404,8 @@ public static class DependencyInjection
         // MOD-0280-FU01 T3 — the at-most-once notification marks, and the deep links its e-mails carry.
         services.AddScoped<ITimeEntryNotificationMarkRepository, TimeEntryNotificationMarkRepository>();
         services.AddScoped<Diten.Platform.Application.Features.TimeEntry.Services.ITimeEntryLinks, TimeEntryLinks>();
+        // BL-454 — the task e-mail's button address, on the same web origin setting.
+        services.AddScoped<Diten.Platform.Application.Features.Tasks.Services.ITaskWebLinks, TaskWebLinks>();
         // MOD-0357 S5 — needs AuthServiceOptions.FrontendBaseUrl for the "Toplantıyı aç" deep link, which is
         // why the implementation lives here rather than beside ITaskNotificationService in Application.
         services.AddScoped<Diten.Platform.Application.Features.Meetings.Services.IMeetingInviteMailer,

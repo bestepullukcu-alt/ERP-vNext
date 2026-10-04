@@ -110,6 +110,86 @@ public sealed class PlatformContainerValidationTests
             + "startup, so the service will not start either.\n\n" + failure);
     }
 
+    [Theory]
+    [InlineData(Diten.Platform.Infrastructure.Services.InternalHttpClients.AuthInternal)]
+    [InlineData("IUserReferenceValidator")]
+    [InlineData("IApprovalRoleDirectory")]
+    public async Task The_client_that_carries_the_internal_key_to_AuthService_never_follows_a_redirect(string clientName)
+    {
+        // BL-454 — measured on the PRODUCTION composition (AddInfrastructure), not on a copy of its registration: if the
+        // line in DependencyInjection.cs changes, this goes red. A redirect would hand X-Internal-Api-Key (or the
+        // caller's bearer) to another host. The named client serves every factory-built AuthService caller; the two
+        // typed clients are registered under their interface names.
+        await using var provider = Composition.Value.BuildServiceProvider();
+        var factory = provider.GetRequiredService<System.Net.Http.IHttpMessageHandlerFactory>();
+
+        HttpMessageHandler handler = factory.CreateHandler(clientName);
+        while (handler is DelegatingHandler delegating && delegating.InnerHandler is not null)
+        {
+            handler = delegating.InnerHandler;
+        }
+
+        var primary = Assert.IsType<SocketsHttpHandler>(handler);
+        Assert.False(primary.AllowAutoRedirect);
+    }
+
+    [Fact]
+    public async Task The_queue_handler_is_composed_with_the_servers_job_settings_and_the_shared_permanent_failure_path()
+    {
+        // BL-454 — the handler fails closed without the settings (no retry, no variables kept), so it must be measured
+        // that production actually hands them over, and the counter / organizer path with them.
+        await using var provider = Composition.Value.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var handler = scope.ServiceProvider.GetRequiredService<MediatR.IRequestHandler<
+            Diten.Platform.Application.Features.Notifications.Commands.QueueEmailNotificationCommand,
+            Diten.Platform.Application.Common.Response<Diten.Platform.Application.Features.Notifications.NotificationDispatchDto>>>();
+        var type = handler.GetType();
+
+        var jobOptions = type.GetField("_jobOptions", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(handler);
+        var effects = type.GetField("_permanentFailure", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(handler);
+
+        Assert.Same(scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<Diten.BuildingBlocks.BackgroundJobs.BackgroundJobSchedulerOptions>>(), jobOptions);
+        Assert.NotNull(effects);
+    }
+
+    [Fact]
+    public async Task A_transition_command_sent_through_the_production_mediator_is_validated_before_its_handler()
+    {
+        // BL-454 — the sweep and the retry job send their commands through THIS mediator: every behaviour AddApplication
+        // registers and every validator AddValidatorsFromAssembly finds. Round 4's close was refused here in production
+        // while its tests, which skipped validation, were green.
+        await using var provider = Composition.Value.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var mediator = scope.ServiceProvider.GetRequiredService<MediatR.IMediator>();
+        var tenant = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<FluentValidation.ValidationException>(() => mediator.Send(
+            new Diten.Platform.Application.Features.Notifications.Commands.MarkNotificationDispatchFailedCommand(
+                tenant, Guid.NewGuid(), "RetryWindowExpired", "The retry window passed before the message could be sent.",
+                IsPermanentFailure: true)));
+
+        // The sweep's own message passes validation and reaches the handler, which answers for an unknown dispatch.
+        var response = await mediator.Send(
+            new Diten.Platform.Application.Features.Notifications.Commands.MarkNotificationDispatchFailedCommand(
+                tenant, Guid.NewGuid(), "RetryWindowExpired",
+                Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchSweepJob.ClosingMessage(null),
+                IsPermanentFailure: true));
+        Assert.Equal(404, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task The_retry_window_is_read_from_configuration()
+    {
+        await using var provider = Composition.Value.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        var options = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<
+            Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchRetentionOptions>>().Value;
+
+        Assert.Equal(48, options.RetryWindowHours);
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<Diten.Platform.Application.Features.Notifications.BackgroundJobs.EmailDispatchSweepJob>());
+    }
+
     /// <summary>
     /// Composed once per process — see the BSON note in the class summary. Building several providers from
     /// one collection is fine; calling <c>AddInfrastructure</c> more than once in a process is not.
@@ -166,6 +246,8 @@ public sealed class PlatformContainerValidationTests
                 ["MongoDbSettings:ConnectionString"] = "mongodb://localhost:27017",
                 ["MongoDbSettings:DatabaseName"] = "diten_platform_itest_container_validation",
                 ["MongoDbSettings:AllowStartupWithoutDatabase"] = "true",
+                // BL-454 — a value the defaults never produce, to prove the window is read from configuration.
+                ["Notifications:EmailDispatch:RetryWindowHours"] = "48",
 
                 // Secrets the infrastructure layer refuses to compose without. Local-only literals: nothing
                 // is signed or authenticated with them, because nothing is started.

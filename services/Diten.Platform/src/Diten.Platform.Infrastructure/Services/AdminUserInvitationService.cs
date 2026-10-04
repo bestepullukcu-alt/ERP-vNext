@@ -15,6 +15,12 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
 {
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
 
+    /// <summary>
+    /// BL-454 — the client that carries the internal API key to AuthService: <see cref="InternalHttpClients.AuthInternal"/>,
+    /// which never follows a redirect — the key must not travel to whatever host a 3xx names.
+    /// </summary>
+    public const string AuthInternalClientName = InternalHttpClients.AuthInternal;
+
     // MOD-0027-FU04C — the invite is dispatched by canonical eventCode (FU04A tenant.user.invited, bound to the
     // tenant.invite.email template) through the FU04B EventCode Dispatch Adapter, not by a raw templateKey.
     private const string InvitationEventCode = "tenant.user.invited";
@@ -137,7 +143,7 @@ public sealed class AdminUserInvitationService : IAdminUserInvitationService
         };
         request.Headers.Add(InternalApiKeyHeader, _authServiceOptions.InternalApiKey);
 
-        var client = _httpClientFactory.CreateClient();
+        var client = _httpClientFactory.CreateClient(AuthInternalClientName);
         using var response = await client.SendAsync(request, cancellationToken);
         var payload = await response.Content.ReadFromJsonAsync<AdminProvisioningResponse>(cancellationToken: cancellationToken);
         if (!response.IsSuccessStatusCode || payload is null || string.IsNullOrWhiteSpace(payload.TemporaryPassword))

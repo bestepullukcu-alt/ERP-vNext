@@ -327,7 +327,15 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                         new ModuleManifestNotificationVariable("TaskTitle"),
                         new ModuleManifestNotificationVariable("TaskId")
                     ],
-                    OptionalVariables: [new ModuleManifestNotificationVariable("DueAt", "Date", false)],
+                    OptionalVariables:
+                    [
+                        new ModuleManifestNotificationVariable("DueAt", "Date", false),
+                        // BL-454 — what the e-mail shell shows beside the body: the button's address, the
+                        // priority in the mail's language, and the assigner's display name.
+                        new ModuleManifestNotificationVariable("TaskUrl", "Url", false),
+                        new ModuleManifestNotificationVariable("Priority", "String", false),
+                        new ModuleManifestNotificationVariable("AssignerName", "String", false)
+                    ],
                     TargetPageCode: PageTaskDetail,
                     RequiredPermissionKey: TaskPermissions.Read,
                     CanTenantOverride: true,

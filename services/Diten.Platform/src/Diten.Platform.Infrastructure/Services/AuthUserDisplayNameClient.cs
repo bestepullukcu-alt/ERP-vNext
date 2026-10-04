@@ -33,7 +33,7 @@ public sealed class AuthUserDisplayNameClient : IUserDisplayNameResolver, IUserD
     /// <summary>Registers the named client with its timeout; AddInfrastructure calls this.</summary>
     public static IServiceCollection AddAuthDisplayNameHttpClient(IServiceCollection services)
     {
-        services.AddHttpClient(HttpClientName, client => client.Timeout = RequestTimeout);
+        services.AddHttpClient(HttpClientName, client => client.Timeout = RequestTimeout).WithoutRedirects();
         return services;
     }
 
@@ -139,6 +139,8 @@ public sealed class AuthUserDisplayNameClient : IUserDisplayNameResolver, IUserD
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add(InternalApiKeyHeader, _authServiceOptions.InternalApiKey);
 
+            // Its OWN named client (5 s timeout, ATT-FIX2), registered without redirects like every client that carries the
+            // internal key (WP-EMAIL-SHELL-01 FIX3; see InternalHttpClients.AddAuthInternalHttpClients).
             var client = _httpClientFactory.CreateClient(HttpClientName);
             using var response = await client.SendAsync(request, ct);
             if (!response.IsSuccessStatusCode)

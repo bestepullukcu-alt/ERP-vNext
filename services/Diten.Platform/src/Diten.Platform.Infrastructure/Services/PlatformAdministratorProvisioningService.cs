@@ -73,7 +73,7 @@ public sealed class PlatformAdministratorProvisioningService : IPlatformAdminist
 
     private async Task<PlatformAdministratorProvisioningResult> SendInternalRequestAsync(HttpRequestMessage message, string email, CancellationToken ct)
     {
-        var client = _httpClientFactory.CreateClient();
+        var client = _httpClientFactory.CreateClient(InternalHttpClients.AuthInternal);
         using var response = await client.SendAsync(message, ct);
         if (response.IsSuccessStatusCode)
         {

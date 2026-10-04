@@ -67,7 +67,9 @@ public sealed record NotificationTemplateDto(
     string Status,
     string? SemanticVersion,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    /// <summary>BL-454 — the template's version as the editor must send it back: a save made from an older read is refused.</summary>
+    byte[]? RowVersion = null);
 
 public sealed record NotificationTemplateUpsertRequest(
     bool IsPlatformDefault,
@@ -93,7 +95,14 @@ public sealed record RenderedEmailTemplateDto(
     string? BodyHtmlPreview,
     string? BodyTextPreview,
     string? BodyHtml = null,
-    string? BodyText = null);
+    string? BodyText = null,
+    /// <summary>
+    /// BL-454 — ADDITIVE ONLY, set by the template editor's preview: <see cref="BodyHtml"/> as a reader will
+    /// actually receive it, inside the e-mail shell. Every field above is exactly what it was — the body the
+    /// author wrote, rendered. Null from the renderer itself, which knows nothing about the shell.
+    /// </summary>
+    string? BodyHtmlFramed = null,
+    string? BodyTextFramed = null);
 
 public sealed record EmailRecipientDto(
     string Email,
@@ -153,7 +162,13 @@ public sealed record RenderTemplatePreviewRequest(
     string? BodyHtmlTemplate,
     string? BodyTextTemplate,
     IReadOnlyList<TemplateVariableDefinitionDto> Variables,
-    IReadOnlyDictionary<string, object?> SampleVariables);
+    IReadOnlyDictionary<string, object?> SampleVariables,
+    /// <summary>
+    /// BL-454 — ADDITIVE ONLY. The saved template being edited, when there is one: its heading, table and action
+    /// (the shell parts the editor cannot edit yet) are drawn into the framed preview, so the operator sees what is
+    /// actually sent. Absent — a new template — the preview frames the body alone, as before.
+    /// </summary>
+    Guid? TemplateId = null);
 
 public sealed record NotificationDispatchListItemDto(
     Guid Id,

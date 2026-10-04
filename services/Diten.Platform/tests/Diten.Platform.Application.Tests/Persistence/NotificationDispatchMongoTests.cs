@@ -253,8 +253,7 @@ public sealed class NotificationDispatchMongoTests : IAsyncLifetime
         Port = 1025,
         Enabled = true,
         EnableSsl = false,
-        FromEmail = "no-reply@yourcompany.com",
-        FromName = "Diten PPM"
+        FromEmail = "no-reply@yourcompany.com"
     };
 
     private IMongoCollection<T> Collection<T>(string name) => _harness.Database.GetCollection<T>(name);
@@ -272,7 +271,7 @@ public sealed class NotificationDispatchMongoTests : IAsyncLifetime
                 new FakeMessagingProvider(Options.Create(new FakeMessagingProviderOptions()), new FakeHostEnvironment()),
                 new StubSmtpProvider()]),
             new NoOpEventBus(),
-            NullLogger<QueueEmailNotificationHandler>.Instance);
+            NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: Diten.Platform.Application.Tests.Notifications.NotificationTestJobs.RetriesOn());
 
         return await handler.Handle(
             new QueueEmailNotificationCommand(

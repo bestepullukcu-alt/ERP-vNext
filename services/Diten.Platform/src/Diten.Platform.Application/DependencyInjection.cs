@@ -290,6 +290,9 @@ public static class DependencyInjection
         services.AddScoped<ITenantMessagingSettingsResolver, TenantMessagingSettingsResolver>();
         services.AddScoped<Features.Notifications.Services.INotificationLocaleResolver, Features.Notifications.Services.TenantNotificationLocaleResolver>();
         services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
+        // BL-454 — every notification e-mail is framed by the one shell, and sent under the one sender-name rule.
+        services.AddScoped<ITenantEmailIdentityResolver, TenantEmailIdentityResolver>();
+        services.AddScoped<IEmailShellComposer, EmailShellComposer>();
         services.AddScoped<Features.Notifications.Services.INotificationEventManifestSyncService, Features.Notifications.Services.NotificationEventManifestSyncService>();
         // MOD-0027-FU04B — eventCode → dispatch adapter (resolves Active event + validates, delegates to the existing
         // QueueEmailNotificationCommand). Producers wiring it is a separate follow-up (FU04B-Tenant / FU04D).
@@ -317,6 +320,13 @@ public static class DependencyInjection
         services.AddScoped<SchedulerSmokeTestJob>();
         services.AddScoped<DeferredPlatformJobHandler>();
         services.AddScoped<EmailDispatchJob>();
+        // BL-454 — the one permanent-failure path (counter, organizer notification, attendee badge) shared by the last
+        // failed retry, the sweep's retry window and a first send on a server where no retry can run.
+        services.AddScoped(sp => new Features.Notifications.Services.NotificationPermanentFailureEffects(
+            sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Features.Notifications.Services.NotificationPermanentFailureEffects>>(),
+            sp.GetService<Diten.Platform.Domain.Repositories.IMeetingRepository>(),
+            sp.GetService<Diten.Platform.Domain.Repositories.IMeetingAttendeeRepository>(),
+            sp.GetService<Diten.Platform.Domain.Repositories.IUserNotificationRepository>()));
         services.AddScoped<EmailDispatchSweepJob>();
         services.AddScoped<Features.Workflow.BackgroundJobs.WorkflowEscalationSweepJob>();
         // WC-4 — the ONE place a task notification is sent from (opt-out, actor skip, real addresses,

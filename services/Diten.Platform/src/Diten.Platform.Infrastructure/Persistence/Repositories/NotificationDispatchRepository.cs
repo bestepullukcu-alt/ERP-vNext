@@ -84,6 +84,22 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
         await _collection.ReplaceOneAsync(filter, dispatch, cancellationToken: ct);
     }
 
+    public async Task<bool> TryUpdateAsync(
+        NotificationDispatch dispatch,
+        int expectedVersion,
+        NotificationDispatchStatus expectedStatus,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<NotificationDispatch>.Filter.And(
+            ActiveFilter,
+            Builders<NotificationDispatch>.Filter.Eq(x => x.TenantId, dispatch.TenantId),
+            Builders<NotificationDispatch>.Filter.Eq(x => x.Id, dispatch.Id),
+            Builders<NotificationDispatch>.Filter.Eq(x => x.Version, expectedVersion),
+            Builders<NotificationDispatch>.Filter.Eq(x => x.Status, expectedStatus));
+        var result = await _collection.ReplaceOneAsync(filter, dispatch, cancellationToken: ct);
+        return result.MatchedCount == 1;
+    }
+
     public async Task<IReadOnlyList<NotificationDispatchRetryHandle>> FindDueRetriesAsync(
         DateTimeOffset asOfUtc,
         int maxRetryCount,
@@ -101,7 +117,10 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
             Builders<NotificationDispatch>.Filter.Eq(x => x.Status, NotificationDispatchStatus.Failed),
             Builders<NotificationDispatch>.Filter.Lt(x => x.RetryCount, maxRetryCount),
             Builders<NotificationDispatch>.Filter.Ne<DateTimeOffset?>(x => x.NextRetryAt, null),
-            Builders<NotificationDispatch>.Filter.Lte(x => x.NextRetryAt, asOfUtc));
+            Builders<NotificationDispatch>.Filter.Lte(x => x.NextRetryAt, asOfUtc),
+            // BL-454 — a permanent failure is never retried, whatever its count and NextRetryAt still say (the retry
+            // window closes a row without touching either).
+            Builders<NotificationDispatch>.Filter.Eq<DateTimeOffset?>(x => x.PermanentlyFailedNotifiedAt, null));
 
         var projection = Builders<NotificationDispatch>.Projection
             .Include(x => x.Id)
@@ -116,6 +135,49 @@ public sealed class NotificationDispatchRepository : INotificationDispatchReposi
 
         return rows.Select(x => new NotificationDispatchRetryHandle(x.TenantId, x.Id)).ToArray();
     }
+
+    public async Task<IReadOnlyList<NotificationDispatchExpiryHandle>> FindRetryWindowExpiredAsync(
+        DateTimeOffset queuedBefore,
+        int take,
+        CancellationToken ct = default)
+    {
+        if (take <= 0)
+        {
+            return [];
+        }
+
+        var projection = Builders<NotificationDispatch>.Projection
+            .Include(x => x.Id)
+            .Include(x => x.TenantId)
+            .Include(x => x.Status)
+            .Include(x => x.Version)
+            .Include(x => x.ErrorCode)
+            .Include(x => x.QueuedAt);
+
+        var rows = await _collection
+            .Find(RetryWindowExpiredFilter(queuedBefore))
+            .Project<NotificationDispatch>(projection)
+            .SortBy(x => x.QueuedAt)
+            .Limit(Math.Min(take, MaxSweepBatchSize))
+            .ToListAsync(ct);
+
+        return rows
+            .Select(x => new NotificationDispatchExpiryHandle(x.TenantId, x.Id, x.Status, x.Version, x.ErrorCode, x.QueuedAt))
+            .ToArray();
+    }
+
+    /// <summary>
+    /// BL-454 — the window query, served by <c>ix_notification_dispatches_retry_window_waiting</c> (Status, QueuedAt;
+    /// partial on IsDeleted=false AND PermanentlyFailedNotifiedAt=null): both equalities match the partial filter, Status
+    /// and QueuedAt are the bounds, and a row already closed as permanent is not in the index at all.
+    /// </summary>
+    internal static FilterDefinition<NotificationDispatch> RetryWindowExpiredFilter(DateTimeOffset queuedBefore) =>
+        Builders<NotificationDispatch>.Filter.And(
+            ActiveFilter,
+            Builders<NotificationDispatch>.Filter.In(
+                x => x.Status, [NotificationDispatchStatus.Queued, NotificationDispatchStatus.Failed]),
+            Builders<NotificationDispatch>.Filter.Lt(x => x.QueuedAt, queuedBefore),
+            Builders<NotificationDispatch>.Filter.Eq<DateTimeOffset?>(x => x.PermanentlyFailedNotifiedAt, null));
 
     private static FilterDefinition<NotificationDispatch> ActiveFilter =>
         Builders<NotificationDispatch>.Filter.Eq(x => x.IsDeleted, false);
