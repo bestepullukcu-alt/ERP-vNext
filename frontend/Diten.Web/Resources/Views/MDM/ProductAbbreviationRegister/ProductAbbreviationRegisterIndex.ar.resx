@@ -31,4 +31,7 @@
 <data name="ErrorMakerChecker" xml:space="preserve"><value>لا يمكن لمن قدّم الطلب أن يبت فيه.</value></data>
 <data name="CancelRequest" xml:space="preserve"><value>إلغاء الطلب</value></data>
 <data name="OpenInTaskCenter" xml:space="preserve"><value>فتح في مركز المهام</value></data>
+<data name="ErrorDecidedByAnother" xml:space="preserve"><value>اتُّخذ هذا القرار من قِبل شخص آخر. تم تحديث القائمة.</value></data>
+<data name="ErrorKeyInvalid" xml:space="preserve"><value>تعذّر التعرّف على الطلب. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
+<data name="ErrorScopeUnavailable" xml:space="preserve"><value>تعذّر تحديد نطاق شركتك، لذا لا يمكن استخدام السجل الآن.</value></data>
 </root>

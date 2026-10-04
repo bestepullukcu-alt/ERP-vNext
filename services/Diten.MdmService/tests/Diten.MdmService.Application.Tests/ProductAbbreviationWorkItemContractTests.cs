@@ -335,6 +335,33 @@ public sealed class ProductAbbreviationWorkItemContractTests
         Assert.Equal(0, mediator.Sent.ExpectedVersion);
     }
 
+    [Theory]
+    [InlineData("client:key", 400)]
+    [InlineData("X:former", 400)]
+    [InlineData("plain-client-key", 0)]
+    public void A_client_idempotency_key_with_a_colon_is_refused_before_any_handler(string key, int expectedStatus)
+    {
+        // FIX2 A5 — the server derives keys with ':'-separated suffixes; a client may not name one.
+        var http = new Microsoft.AspNetCore.Http.DefaultHttpContext();
+        http.Request.Headers["Idempotency-Key"] = key;
+        var context = new Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext(
+            new Microsoft.AspNetCore.Mvc.ActionContext(http, new Microsoft.AspNetCore.Routing.RouteData(),
+                new Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor()),
+            [], new Dictionary<string, object?>(), controller: new object());
+
+        new Diten.MdmService.Api.Contracts.ProductAbbreviations.ClientIdempotencyKeyFilterAttribute().OnActionExecuting(context);
+
+        if (expectedStatus == 0)
+        {
+            Assert.Null(context.Result);
+            return;
+        }
+
+        var refused = Assert.IsType<ObjectResult>(context.Result);
+        Assert.Equal(expectedStatus, refused.StatusCode);
+        Assert.Contains("ABBREVIATION_IDEMPOTENCY_KEY_INVALID", JsonSerializer.Serialize(refused.Value));
+    }
+
     private sealed class CapturingHandler(string answer) : HttpMessageHandler
     {
         public string? Body { get; private set; }

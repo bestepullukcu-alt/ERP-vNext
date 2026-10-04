@@ -31,4 +31,7 @@
 <data name="ErrorMakerChecker" xml:space="preserve"><value>提交申请的人不能对其作出决定。</value></data>
 <data name="CancelRequest" xml:space="preserve"><value>撤销申请</value></data>
 <data name="OpenInTaskCenter" xml:space="preserve"><value>在任务中心打开</value></data>
+<data name="ErrorDecidedByAnother" xml:space="preserve"><value>此项已由其他人作出决定。列表已刷新。</value></data>
+<data name="ErrorKeyInvalid" xml:space="preserve"><value>无法识别该请求。请刷新页面后重试。</value></data>
+<data name="ErrorScopeUnavailable" xml:space="preserve"><value>无法确定您的公司范围，登记册暂时无法使用。</value></data>
 </root>

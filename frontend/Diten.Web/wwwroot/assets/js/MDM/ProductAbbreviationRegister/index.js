@@ -70,7 +70,11 @@ const ProductAbbreviationRegisterList = (function () {
         ABBREVIATION_FORMER_EXPECTED_VERSION_REQUIRED: 'ErrorConflict',
         ABBREVIATION_WRITE_FAILED: 'ErrorConflict',
         ABBREVIATION_LEDGER_INVARIANT_VIOLATION: 'ErrorGateway',
-        CONCURRENCY_CONFLICT: 'ErrorConflict'
+        CONCURRENCY_CONFLICT: 'ErrorConflict',
+        ABBREVIATION_ALREADY_DECIDED_BY_ANOTHER: 'ErrorDecidedByAnother',
+        ABBREVIATION_IDEMPOTENCY_KEY_INVALID: 'ErrorKeyInvalid',
+        TENANT_CONTEXT_REQUIRED: 'ErrorScopeUnavailable',
+        PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID: 'ErrorScopeUnavailable'
     });
 
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({

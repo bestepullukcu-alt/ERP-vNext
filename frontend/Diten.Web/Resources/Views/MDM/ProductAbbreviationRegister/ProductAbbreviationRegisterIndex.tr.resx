@@ -31,4 +31,7 @@
 <data name="ErrorMakerChecker" xml:space="preserve"><value>Bir isteği oluşturan kişi o istek hakkında karar veremez.</value></data>
 <data name="CancelRequest" xml:space="preserve"><value>İsteği iptal et</value></data>
 <data name="OpenInTaskCenter" xml:space="preserve"><value>Görev Merkezi'nde aç</value></data>
+<data name="ErrorDecidedByAnother" xml:space="preserve"><value>Bu karar başka biri tarafından verildi. Liste yenilendi.</value></data>
+<data name="ErrorKeyInvalid" xml:space="preserve"><value>İstek tanımlanamadı. Sayfayı yenileyip tekrar deneyin.</value></data>
+<data name="ErrorScopeUnavailable" xml:space="preserve"><value>Şirket kapsamınız belirlenemedi; kayıt şu anda kullanılamıyor.</value></data>
 </root>

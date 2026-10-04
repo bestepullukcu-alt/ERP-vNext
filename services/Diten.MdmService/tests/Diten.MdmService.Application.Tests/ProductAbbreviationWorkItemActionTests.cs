@@ -366,6 +366,33 @@ public sealed class ProductAbbreviationWorkItemActionTests
         Assert.Equal("WORK_ITEM_ACTION_PAYLOAD_INVALID", tooLong.ReasonCode);
     }
 
+    [Fact]
+    public async Task A_correction_approved_under_this_operations_key_reaches_its_command_again_to_finish()
+    {
+        // The dispatcher lets a decided correction through only as THIS operation's own replay — the replacement's
+        // stored key is the operation key plus ":replacement" (DSP: the ":replacement" condition).
+        var tenantId = Guid.NewGuid();
+        var former = Requested(Guid.NewGuid(), ProductAbbreviationLifecycleStatus.RETIRED);
+        var correction = Requested(former.GlobalProductId, ProductAbbreviationLifecycleStatus.ACTIVE);
+        correction.ReplacesEntryId = former.Id;
+        correction.Version = 1;
+        correction.LastDecisionIdempotencyKey = DispatchProductAbbreviationWorkItemActionHandler.BuildOperationKey(
+            correction.Id, "correction", correction.Id.ToString("D"), "approve", 0, null) + ":replacement";
+        object? dispatched = null;
+        var mediator = Stub<IMediator>((_, args) =>
+        {
+            dispatched = args![0];
+            return Task.FromResult(Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>.Success(
+                new(correction.Id, correction.GlobalProductId, "ABC", ProductAbbreviationLifecycleStatus.ACTIVE, 1, former.Id, false)));
+        });
+
+        var result = await Handler(mediator, tenantId, former, correction)
+            .Handle(Command(correction.Id, "approve", 0), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful, result.ReasonCode);
+        Assert.IsType<ApproveProductAbbreviationAllocationCommand>(dispatched);
+    }
+
     private static DispatchProductAbbreviationWorkItemActionCommand Command(
         Guid itemId, string action, int version, string? reason = null, string? idempotencyKey = null)
         => new(itemId, action, ProductAbbreviationWorkItemContract.ProviderCode, version, reason, null, false, idempotencyKey);

@@ -31,4 +31,7 @@
 <data name="ErrorMakerChecker" xml:space="preserve"><value>La personne qui a fait une demande ne peut pas la trancher.</value></data>
 <data name="CancelRequest" xml:space="preserve"><value>Annuler la demande</value></data>
 <data name="OpenInTaskCenter" xml:space="preserve"><value>Ouvrir dans le Centre de tâches</value></data>
+<data name="ErrorDecidedByAnother" xml:space="preserve"><value>Cette décision a déjà été prise par quelqu'un d'autre. La liste a été actualisée.</value></data>
+<data name="ErrorKeyInvalid" xml:space="preserve"><value>La demande n'a pas pu être identifiée. Rechargez la page et réessayez.</value></data>
+<data name="ErrorScopeUnavailable" xml:space="preserve"><value>Votre périmètre de société n'a pas pu être déterminé ; le registre ne peut pas être utilisé pour le moment.</value></data>
 </root>

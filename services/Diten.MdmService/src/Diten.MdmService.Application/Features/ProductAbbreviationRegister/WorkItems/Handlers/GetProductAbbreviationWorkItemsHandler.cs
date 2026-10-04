@@ -23,13 +23,18 @@ public sealed class GetProductAbbreviationWorkItemsHandler
     private readonly IProductAbbreviationActorContext _actor;
     private readonly ProductAbbreviationAuthorization _authorization;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
+    private readonly IProductLegalEntityScopeRolloutStateRepository _rolloutStates;
+    private readonly IProductLegalEntityScopePolicyRepository _policies;
+    private readonly ProductLegalEntityScopeCandidateFacade _candidates;
+    private readonly ITenantContext _tenantContext;
     private readonly ILogger<GetProductAbbreviationWorkItemsHandler> _logger;
 
     /// <summary>
-    /// FIX1 S8 — Platform's remote-provider contract has no paging (one GET, one list; measured in
-    /// RemoteWorkItemProviderOptions / HttpWorkItemProvider). So the pages are read HERE, in id order, until the
-    /// reader's visible items fill the answer — a tenant with more pending work than one page no longer fails
-    /// everybody's Task Center. The page budget bounds one call; reaching it is logged, never a failure.
+    /// FIX1 S8 / FIX2 A3 — Platform's remote-provider contract has no paging and no "more" flag (one GET, one list;
+    /// measured in RemoteWorkItemProviderOptions / HttpWorkItemProvider / the projection envelope). So the pages are
+    /// read HERE, in the order work started waiting (oldest first, a stored integer — never the SHA-derived id), until
+    /// the reader's visible items fill the answer. Stopping with more work left — at the item limit or the page
+    /// budget — is logged, never silent. Each page costs a fixed number of reads, whatever its size.
     /// </summary>
     public const int PageSize = 100;
     public const int MaximumPages = 20;
@@ -49,6 +54,10 @@ public sealed class GetProductAbbreviationWorkItemsHandler
         _globalProducts = globalProducts;
         _actor = actor;
         _authorization = new ProductAbbreviationAuthorization(actor);
+        _rolloutStates = rolloutStates;
+        _policies = policies;
+        _candidates = candidates;
+        _tenantContext = tenantContext;
         _scopeGuard = new ProductLegalEntityScopeConsumerGuard(rolloutStates, policies, candidates, tenantContext);
     }
 
@@ -73,35 +82,42 @@ public sealed class GetProductAbbreviationWorkItemsHandler
         }
 
         var items = new List<ProductAbbreviationWorkItemProjection>();
-        Guid? after = null;
+        ProductAbbreviationPendingCursor? after = null;
         var pages = 0;
-        var exhausted = false;
-        while (items.Count < request.Limit && pages < MaximumPages)
+        var moreLeft = false;
+        while (pages < MaximumPages)
         {
             var page = await _register.GetPendingWorkItemsPageAsync(after, PageSize, cancellationToken);
             pages++;
             if (page.Count == 0)
             {
-                exhausted = true;
                 break;
             }
 
-            after = page[^1].Id;
-            await ProjectPageAsync(page, scope.Context!, request.Limit, items, cancellationToken);
+            after = new ProductAbbreviationPendingCursor(page[^1].PendingSinceUtcTicks, page[^1].Id);
+            var consumed = await ProjectPageAsync(page, scope.Context!, request.Limit, items, cancellationToken);
+            if (items.Count >= request.Limit)
+            {
+                moreLeft = consumed < page.Count || page.Count == PageSize;
+                break;
+            }
+
             if (page.Count < PageSize)
             {
-                exhausted = true;
                 break;
             }
+
+            moreLeft = pages == MaximumPages;
         }
 
-        if (!exhausted && items.Count < request.Limit)
+        if (moreLeft)
         {
             _logger.LogWarning(
-                "ABB work-item projection stopped after {Pages} pages of {PageSize} for tenant {TenantId}; later pending items are not on this answer.",
-                pages,
-                PageSize,
-                _actor.TenantId);
+                "ABB work-item projection for tenant {TenantId} answered {Count} items (limit {Limit}, {Pages} pages read); older items are shown first and later pending items are not on this answer.",
+                _actor.TenantId,
+                items.Count,
+                request.Limit,
+                pages);
         }
 
         return ProductAbbreviationWorkItemOperationResult<ProductAbbreviationWorkItemProjectionResponse>.Success(
@@ -113,7 +129,8 @@ public sealed class GetProductAbbreviationWorkItemsHandler
     /// row of the tenant is still projected. A correction whose code is no longer active is not bad, it is an
     /// orphan: it is projected with reject / cancel only, so it can be cleaned up from the Task Center.
     /// </summary>
-    private async Task ProjectPageAsync(
+    /// <returns>How many entries of the page were looked at before the answer was full.</returns>
+    private async Task<int> ProjectPageAsync(
         IReadOnlyList<ProductAbbreviationRegisterEntry> page,
         ProductLegalEntityScopeConsumerContext scope,
         int limit,
@@ -132,11 +149,20 @@ public sealed class GetProductAbbreviationWorkItemsHandler
             consistent.Add(entry);
         }
 
+        // FIX2 A3: the codes the page's corrections replace, in ONE read — never one read per correction.
+        var corrections = consistent.Where(x => x.ReplacesEntryId.HasValue
+                                                && x.LifecycleStatus == ProductAbbreviationLifecycleStatus.REQUESTED)
+            .ToList();
+        var formers = corrections.Count == 0
+            ? new Dictionary<Guid, ProductAbbreviationRegisterEntry>()
+            : (await _register.GetByIdsAsync(
+                    corrections.Select(x => x.ReplacesEntryId!.Value).Distinct().ToArray(),
+                    cancellationToken))
+                .ToDictionary(x => x.Id);
         var orphans = new HashSet<Guid>();
-        foreach (var correction in consistent.Where(x => x.ReplacesEntryId.HasValue
-                     && x.LifecycleStatus == ProductAbbreviationLifecycleStatus.REQUESTED))
+        foreach (var correction in corrections)
         {
-            var former = await _register.GetByIdAsync(correction.ReplacesEntryId!.Value, cancellationToken);
+            var former = formers.GetValueOrDefault(correction.ReplacesEntryId!.Value);
             if (former is null
                 || former.GlobalProductId != correction.GlobalProductId
                 || former.LifecycleStatus != ProductAbbreviationLifecycleStatus.ACTIVE)
@@ -150,22 +176,35 @@ public sealed class GetProductAbbreviationWorkItemsHandler
             ? []
             : await _globalProducts.GetByIdsAsync(productIds, cancellationToken);
         var productsById = products.ToDictionary(x => x.Id);
+        var known = productIds.Where(productsById.ContainsKey).ToArray();
+        // FIX2 A3: in an enforced rollout the scope rule reads each product's policy; the page's policies are read in
+        // ONE query and the guard evaluates against them (the guard itself is unchanged: same rule, same answers).
+        var guard = scope.RolloutMode == ProductLegalEntityScopeRolloutMode.Enforced && known.Length > 0
+            ? new ProductLegalEntityScopeConsumerGuard(
+                _rolloutStates,
+                new PrefetchedPolicies(_policies, await _policies.GetByGlobalProductIdsAsync(known, cancellationToken)),
+                _candidates,
+                _tenantContext)
+            : _scopeGuard;
         var visibleProductIds = new HashSet<Guid>();
-        foreach (var productId in productIds.Where(productsById.ContainsKey))
+        foreach (var productId in known)
         {
-            var decision = await _scopeGuard.EvaluateAsync(scope, productId, cancellationToken);
+            var decision = await guard.EvaluateAsync(scope, productId, cancellationToken);
             if (decision.Allowed)
             {
                 visibleProductIds.Add(productId);
             }
         }
 
+        var consumed = page.Count - consistent.Count;
         foreach (var entry in consistent)
         {
             if (items.Count >= limit)
             {
-                return;
+                return consumed;
             }
+
+            consumed++;
 
             if (!productsById.TryGetValue(entry.GlobalProductId, out var product))
             {
@@ -178,6 +217,43 @@ public sealed class GetProductAbbreviationWorkItemsHandler
                 items.Add(Project(entry, product, orphans.Contains(entry.Id)));
             }
         }
+
+        return consumed;
+    }
+
+    /// <summary>The page's policies, read once; every other member goes to the real repository.</summary>
+    private sealed class PrefetchedPolicies(
+        IProductLegalEntityScopePolicyRepository inner,
+        IReadOnlyList<ProductLegalEntityScopePolicy> policies) : IProductLegalEntityScopePolicyRepository
+    {
+        private readonly Dictionary<Guid, ProductLegalEntityScopePolicy> _byProduct =
+            policies.GroupBy(x => x.GlobalProductId).ToDictionary(x => x.Key, x => x.First());
+
+        public Task<ProductLegalEntityScopePolicy?> GetByGlobalProductIdAsync(
+            Guid globalProductId,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(_byProduct.GetValueOrDefault(globalProductId));
+
+        public Task<ProductLegalEntityScopePolicy?> GetByCreationCommandIdAsync(
+            Guid creationCommandId,
+            CancellationToken cancellationToken = default)
+            => inner.GetByCreationCommandIdAsync(creationCommandId, cancellationToken);
+
+        public Task<ProductLegalEntityScopePolicyWriteResult> CreateAsync(
+            ProductLegalEntityScopePolicy policy,
+            CancellationToken cancellationToken = default)
+            => inner.CreateAsync(policy, cancellationToken);
+
+        public Task<ProductLegalEntityScopePolicyWriteResult> UpdateAsync(
+            ProductLegalEntityScopePolicy policy,
+            int expectedVersion,
+            CancellationToken cancellationToken = default)
+            => inner.UpdateAsync(policy, expectedVersion, cancellationToken);
+
+        public Task<IReadOnlyList<Guid>> GetConfiguredGlobalProductIdsAsync(
+            IReadOnlyCollection<Guid> globalProductIds,
+            CancellationToken cancellationToken = default)
+            => inner.GetConfiguredGlobalProductIdsAsync(globalProductIds, cancellationToken);
     }
 
     private void Skip(ProductAbbreviationRegisterEntry entry, string reasonCode)

@@ -11,6 +11,7 @@ namespace Diten.MdmService.Api.Controllers;
 
 [Authorize]
 [ApiController]
+[ClientIdempotencyKeyFilter]
 [Route("api/product-abbreviations")]
 public sealed class ProductAbbreviationsController : CustomBaseController
 {

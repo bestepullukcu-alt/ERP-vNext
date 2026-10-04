@@ -32,11 +32,68 @@ public sealed record ProductAbbreviationCorrectionEvidence(
     ProductAbbreviationHistoryEntry ReplacementHistory,
     LocalAuditIntent ReplacementIntent);
 
+/// <summary>FIX2 A1 — every decision on an entry, written with its history row and audit intent in ONE transaction.</summary>
+public enum ProductAbbreviationDecisionKind
+{
+    Approve,
+    Reject,
+    Cancel,
+    RequestRetirement,
+    ApproveRetirement,
+    RejectRetirement
+}
+
+public sealed record ProductAbbreviationDecisionEvidence(
+    ProductAbbreviationHistoryEntry History,
+    LocalAuditIntent Intent);
+
+/// <summary>
+/// One decision. <see cref="BuildEvidence"/> receives the entry as it will read after the decision. A decision already
+/// written under the same key is "mine" only when its stored decider is <see cref="ActorSubjectId"/>; otherwise the answer
+/// is ABBREVIATION_ALREADY_DECIDED_BY_ANOTHER, never a success.
+/// </summary>
+public sealed record ProductAbbreviationDecision(
+    ProductAbbreviationDecisionKind Kind,
+    Guid EntryId,
+    int ExpectedVersion,
+    string ActorSubjectId,
+    string IdempotencyKey,
+    string? Reason,
+    DateTimeOffset DecidedAtUtc,
+    string? RetirementRequestId,
+    Func<ProductAbbreviationRegisterEntry, ProductAbbreviationDecisionEvidence> BuildEvidence);
+
+/// <summary>
+/// FIX2 A2 / item 6 — a new REQUESTED entry (an allocation or a correction), inserted with its history row and audit
+/// intent in ONE transaction. A correction claims the code it replaces in the same transaction; an allocation touches
+/// the product's slot, so two requests for one product cannot both pass the "nothing pending" check.
+/// </summary>
+public sealed record ProductAbbreviationRequestWrite(
+    ProductAbbreviationRegisterEntry Entry,
+    Func<ProductAbbreviationRegisterEntry, ProductAbbreviationDecisionEvidence> BuildEvidence);
+
+/// <summary>FIX2 A3 — where the previous page of pending work ended: its order value and id.</summary>
+public sealed record ProductAbbreviationPendingCursor(long PendingSinceUtcTicks, Guid Id);
+
 public interface IProductAbbreviationRegisterRepository
 {
-    /// <summary>FIX1 S8 — one page of pending work, in id order, strictly after <paramref name="afterId"/>.</summary>
+    Task<ProductAbbreviationRegisterWriteResult> DecideAsync(
+        ProductAbbreviationDecision decision,
+        CancellationToken cancellationToken = default)
+        => throw new NotSupportedException("Decisions are not supported by this repository.");
+    Task<ProductAbbreviationRegisterWriteResult> RequestEntryAsync(
+        ProductAbbreviationRequestWrite write,
+        CancellationToken cancellationToken = default)
+        => throw new NotSupportedException("Requests are not supported by this repository.");
+    Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> GetByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default)
+        => throw new NotSupportedException("Batch reads are not supported by this repository.");
+    /// <summary>
+    /// One page of pending work in the order it started waiting (FIX2 A3), strictly after <paramref name="after"/>.
+    /// </summary>
     Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> GetPendingWorkItemsPageAsync(
-        Guid? afterId,
+        ProductAbbreviationPendingCursor? after,
         int limit,
         CancellationToken cancellationToken = default)
         => throw new NotSupportedException("Pending work-item paging is not supported by this repository.");
@@ -51,16 +108,6 @@ public interface IProductAbbreviationRegisterRepository
         Guid exceptEntryId,
         CancellationToken cancellationToken = default)
         => throw new NotSupportedException("Open-entry lookup is not supported by this repository.");
-    /// <summary>
-    /// FIX1 B3 — marks an ACTIVE entry as claimed by <paramref name="correctionEntryId"/>, only while it has no
-    /// retirement request and its claim is still <paramref name="observedClaim"/>. True when the claim is this one.
-    /// </summary>
-    Task<bool> ClaimPendingCorrectionAsync(
-        Guid formerEntryId,
-        Guid? observedClaim,
-        Guid correctionEntryId,
-        CancellationToken cancellationToken = default)
-        => throw new NotSupportedException("Correction claims are not supported by this repository.");
     /// <summary>FIX1 B1 — see <see cref="ProductAbbreviationCorrectionApproval"/>.</summary>
     Task<ProductAbbreviationRegisterWriteResult> ApproveCorrectionAsync(
         ProductAbbreviationCorrectionApproval approval,

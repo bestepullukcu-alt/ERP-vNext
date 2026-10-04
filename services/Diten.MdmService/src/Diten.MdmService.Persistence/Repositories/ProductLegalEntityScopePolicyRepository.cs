@@ -84,6 +84,29 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<ProductLegalEntityScopePolicy>> GetByGlobalProductIdsAsync(
+        IReadOnlyCollection<Guid> globalProductIds,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(globalProductIds);
+        foreach (var id in globalProductIds)
+        {
+            EnsureIdentity(id, nameof(globalProductIds));
+        }
+
+        if (globalProductIds.Count == 0)
+        {
+            return [];
+        }
+
+        var policies = await _policies.Find(
+                ActiveTenantFilter
+                & Builders<ProductLegalEntityScopePolicy>.Filter.In(policy => policy.GlobalProductId, globalProductIds))
+            .ToListAsync(cancellationToken);
+        // One per product, as the single read answers (its first match).
+        return policies.GroupBy(policy => policy.GlobalProductId).Select(group => group.First()).ToList();
+    }
+
     public async Task<ProductLegalEntityScopePolicy?> GetByCreationCommandIdAsync(
         Guid creationCommandId,
         CancellationToken cancellationToken = default)

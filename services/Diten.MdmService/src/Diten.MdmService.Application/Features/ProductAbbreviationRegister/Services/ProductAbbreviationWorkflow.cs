@@ -51,6 +51,12 @@ public sealed class ProductAbbreviationWorkflow
             return denied;
         }
 
+        if (KeyRefused<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>(command.IdempotencyKey)
+            is { } keyRefused)
+        {
+            return keyRefused;
+        }
+
         if (await _globalProducts.GetByIdAsync(command.GlobalProductId, cancellationToken) is null)
         {
             return Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail(
@@ -98,6 +104,12 @@ public sealed class ProductAbbreviationWorkflow
             return denied;
         }
 
+        if (KeyRefused<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>(command.IdempotencyKey)
+            is { } keyRefused)
+        {
+            return keyRefused;
+        }
+
         var former = await _register.GetByIdAsync(command.ActiveRegisterEntryId, cancellationToken);
         if (former is null)
         {
@@ -136,23 +148,14 @@ public sealed class ProductAbbreviationWorkflow
                 409);
         }
 
+        // Checked here so a refused correction consumes no code in the ledger; decided for good inside the request's
+        // transaction, where the claim on this code and the correction it names are written together (FIX2 A2).
         var correctionEntryId = EntryIdFor(command.IdempotencyKey);
         if (former.PendingCorrectionEntryId is { } claimed && claimed != correctionEntryId
-            && await IsPendingAsync(claimed, cancellationToken))
+            && await IsPendingCorrectionOfAsync(claimed, former.Id, cancellationToken))
         {
             return Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail(
                 "ABBREVIATION_CORRECTION_PENDING",
-                409);
-        }
-
-        if (!await _register.ClaimPendingCorrectionAsync(
-                former.Id,
-                former.PendingCorrectionEntryId,
-                correctionEntryId,
-                cancellationToken))
-        {
-            return Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail(
-                "CONCURRENCY_CONFLICT",
                 409);
         }
 
@@ -193,37 +196,18 @@ public sealed class ProductAbbreviationWorkflow
                 403);
         }
 
-        if (await ClaimKeyAsync<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>(
-                command.IdempotencyKey, entry.Id, cancellationToken) is { } cancelReused)
-        {
-            return cancelReused;
-        }
-
-        var result = await _register.TransitionAsync(
-            entry.Id,
+        return await DecideAsync(
+            ProductAbbreviationDecisionKind.Cancel,
+            entry,
             command.ExpectedVersion,
-            ProductAbbreviationLifecycleStatus.REQUESTED,
-            ProductAbbreviationLifecycleStatus.CANCELLED,
-            _actor.CanonicalHumanSubjectId,
             command.IdempotencyKey,
             command.Reason,
-            DateTimeOffset.UtcNow,
-            cancellationToken);
-        if (!result.Succeeded || result.Entry is null)
-        {
-            return WriteFailure(result);
-        }
-
-        var eventType = entry.ReplacesEntryId.HasValue
-            ? ProductAbbreviationHistoryEventType.CORRECTION_CANCELLED
-            : ProductAbbreviationHistoryEventType.ALLOCATION_CANCELLED;
-        return await CompleteTransitionAsync(
-            result.Entry,
-            eventType,
+            retirementRequestId: null,
+            entry.ReplacesEntryId.HasValue
+                ? ProductAbbreviationHistoryEventType.CORRECTION_CANCELLED
+                : ProductAbbreviationHistoryEventType.ALLOCATION_CANCELLED,
             ProductAbbreviationLifecycleStatus.REQUESTED,
             ProductAbbreviationLifecycleStatus.CANCELLED,
-            command.IdempotencyKey,
-            command.Reason,
             cancellationToken);
     }
 
@@ -251,14 +235,19 @@ public sealed class ProductAbbreviationWorkflow
                 403);
         }
 
-        if (await ClaimKeyAsync<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>(
-                command.IdempotencyKey, entry.Id, cancellationToken) is { } reused)
-        {
-            return reused;
-        }
-
         if (entry.ReplacesEntryId is { } formerId)
         {
+            if (KeyRefused<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>(command.IdempotencyKey) is { } keyRefused)
+            {
+                return keyRefused;
+            }
+
+            if (await ClaimKeyAsync<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>(
+                    command.IdempotencyKey, entry.Id, "correction-approve", cancellationToken) is { } reused)
+            {
+                return reused;
+            }
+
             if (!command.ExpectedFormerVersion.HasValue)
             {
                 return Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>.Fail(
@@ -309,28 +298,16 @@ public sealed class ProductAbbreviationWorkflow
                 : WriteFailure(correction);
         }
 
-        var result = await _register.TransitionAsync(
-            entry.Id,
+        return await DecideAsync(
+            ProductAbbreviationDecisionKind.Approve,
+            entry,
             command.ExpectedVersion,
-            ProductAbbreviationLifecycleStatus.REQUESTED,
-            ProductAbbreviationLifecycleStatus.ACTIVE,
-            _actor.CanonicalHumanSubjectId,
             command.IdempotencyKey,
             command.Reason,
-            DateTimeOffset.UtcNow,
-            cancellationToken);
-        if (!result.Succeeded || result.Entry is null)
-        {
-            return WriteFailure(result);
-        }
-
-        return await CompleteTransitionAsync(
-            result.Entry,
+            retirementRequestId: null,
             ProductAbbreviationHistoryEventType.ALLOCATION_APPROVED,
             ProductAbbreviationLifecycleStatus.REQUESTED,
             ProductAbbreviationLifecycleStatus.ACTIVE,
-            command.IdempotencyKey,
-            command.Reason,
             cancellationToken);
     }
 
@@ -358,36 +335,18 @@ public sealed class ProductAbbreviationWorkflow
                 403);
         }
 
-        if (await ClaimKeyAsync<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>(
-                command.IdempotencyKey, entry.Id, cancellationToken) is { } rejectReused)
-        {
-            return rejectReused;
-        }
-
-        var result = await _register.TransitionAsync(
-            entry.Id,
+        return await DecideAsync(
+            ProductAbbreviationDecisionKind.Reject,
+            entry,
             command.ExpectedVersion,
-            ProductAbbreviationLifecycleStatus.REQUESTED,
-            ProductAbbreviationLifecycleStatus.REJECTED,
-            _actor.CanonicalHumanSubjectId,
             command.IdempotencyKey,
             command.Reason,
-            DateTimeOffset.UtcNow,
-            cancellationToken);
-        if (!result.Succeeded || result.Entry is null)
-        {
-            return WriteFailure(result);
-        }
-
-        return await CompleteTransitionAsync(
-            result.Entry,
+            retirementRequestId: null,
             entry.ReplacesEntryId.HasValue
                 ? ProductAbbreviationHistoryEventType.CORRECTION_REJECTED
                 : ProductAbbreviationHistoryEventType.ALLOCATION_REJECTED,
             ProductAbbreviationLifecycleStatus.REQUESTED,
             ProductAbbreviationLifecycleStatus.REJECTED,
-            command.IdempotencyKey,
-            command.Reason,
             cancellationToken);
     }
 
@@ -410,41 +369,26 @@ public sealed class ProductAbbreviationWorkflow
         }
 
         // FIX1 B3: no retirement while a correction of this code waits (the reverse is refused in InitiateCorrection).
-        if (entry.PendingCorrectionEntryId is { } claimed && await IsPendingAsync(claimed, cancellationToken))
+        if (entry.PendingCorrectionEntryId is { } claimed
+            && await IsPendingCorrectionOfAsync(claimed, entry.Id, cancellationToken))
         {
             return Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>.Fail(
                 "ABBREVIATION_CORRECTION_PENDING",
                 409);
         }
 
-        if (await ClaimKeyAsync<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>(
-                command.IdempotencyKey, entry.Id, cancellationToken) is { } reused)
-        {
-            return reused;
-        }
-
-        var result = await _register.RequestRetirementAsync(
-            command.RegisterEntryId,
+        // The pending-correction check above keeps the common case cheap; the authoritative one runs inside the
+        // decision's transaction, against the claim it writes past (FIX2 A2).
+        return await DecideAsync(
+            ProductAbbreviationDecisionKind.RequestRetirement,
+            entry,
             command.ExpectedVersion,
             command.IdempotencyKey,
-            _actor.CanonicalHumanSubjectId,
-            command.IdempotencyKey,
             command.Reason,
-            DateTimeOffset.UtcNow,
-            cancellationToken,
-            observedPendingCorrection: entry.PendingCorrectionEntryId);
-        if (!result.Succeeded || result.Entry is null)
-        {
-            return WriteFailure(result);
-        }
-
-        return await CompleteTransitionAsync(
-            result.Entry,
+            retirementRequestId: null,
             ProductAbbreviationHistoryEventType.RETIREMENT_REQUESTED,
             ProductAbbreviationLifecycleStatus.ACTIVE,
             ProductAbbreviationLifecycleStatus.ACTIVE,
-            command.IdempotencyKey,
-            command.Reason,
             cancellationToken);
     }
 
@@ -480,34 +424,16 @@ public sealed class ProductAbbreviationWorkflow
                 403);
         }
 
-        if (await ClaimKeyAsync<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>(
-                command.IdempotencyKey, entry.Id, cancellationToken) is { } retireReused)
-        {
-            return retireReused;
-        }
-
-        var result = await _register.TransitionAsync(
-            entry.Id,
+        return await DecideAsync(
+            ProductAbbreviationDecisionKind.ApproveRetirement,
+            entry,
             command.ExpectedVersion,
-            ProductAbbreviationLifecycleStatus.ACTIVE,
-            ProductAbbreviationLifecycleStatus.RETIRED,
-            _actor.CanonicalHumanSubjectId,
             command.IdempotencyKey,
             command.Reason,
-            DateTimeOffset.UtcNow,
-            cancellationToken);
-        if (!result.Succeeded || result.Entry is null)
-        {
-            return WriteFailure(result);
-        }
-
-        return await CompleteTransitionAsync(
-            result.Entry,
+            command.RetirementRequestId,
             ProductAbbreviationHistoryEventType.RETIREMENT_APPROVED,
             ProductAbbreviationLifecycleStatus.ACTIVE,
             ProductAbbreviationLifecycleStatus.RETIRED,
-            command.IdempotencyKey,
-            command.Reason,
             cancellationToken);
     }
 
@@ -543,33 +469,16 @@ public sealed class ProductAbbreviationWorkflow
                 403);
         }
 
-        if (await ClaimKeyAsync<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>(
-                command.IdempotencyKey, entry.Id, cancellationToken) is { } keepReused)
-        {
-            return keepReused;
-        }
-
-        var result = await _register.ClearRetirementRequestAsync(
-            entry.Id,
+        return await DecideAsync(
+            ProductAbbreviationDecisionKind.RejectRetirement,
+            entry,
             command.ExpectedVersion,
-            command.RetirementRequestId,
-            _actor.CanonicalHumanSubjectId,
             command.IdempotencyKey,
             command.Reason,
-            DateTimeOffset.UtcNow,
-            cancellationToken);
-        if (!result.Succeeded || result.Entry is null)
-        {
-            return WriteFailure(result);
-        }
-
-        return await CompleteTransitionAsync(
-            result.Entry,
+            command.RetirementRequestId,
             ProductAbbreviationHistoryEventType.RETIREMENT_REJECTED,
             ProductAbbreviationLifecycleStatus.ACTIVE,
             ProductAbbreviationLifecycleStatus.ACTIVE,
-            command.IdempotencyKey,
-            command.Reason,
             cancellationToken);
     }
 
@@ -712,8 +621,10 @@ public sealed class ProductAbbreviationWorkflow
     {
         var now = DateTimeOffset.UtcNow;
         var entryId = EntryIdFor(idempotencyKey);
+        // The key is bound first, before anything else is written under it (FIX2 A2: key, then claim).
         if (await ClaimKeyAsync<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>(
-                idempotencyKey, entryId, cancellationToken) is { } reused)
+                idempotencyKey, entryId, replacesEntryId.HasValue ? "correction-request" : "request", cancellationToken)
+            is { } reused)
         {
             return reused;
         }
@@ -752,23 +663,40 @@ public sealed class ProductAbbreviationWorkflow
             RequestedAtUtc = now,
             ReplacesEntryId = replacesEntryId
         };
-        var registerResult = await _register.InsertRequestedAsync(entry, cancellationToken);
+        // FIX2 A2 / item 6: the entry, its history row and its audit intent — and, for a correction, the claim on the code
+        // it replaces — are written in ONE transaction; an allocation touches the product's slot in that transaction.
+        var registerResult = await _register.RequestEntryAsync(
+            new ProductAbbreviationRequestWrite(
+                entry,
+                stored =>
+                {
+                    var history = BuildHistory(
+                        stored, eventType, null, ProductAbbreviationLifecycleStatus.REQUESTED, idempotencyKey, reason, now);
+                    return new ProductAbbreviationDecisionEvidence(
+                        history,
+                        ProductAbbreviationAuditIntentFactory.Create(stored, history));
+                }),
+            cancellationToken);
         if (!registerResult.Succeeded || registerResult.Entry is null)
         {
-            // FIX1 S4: a refusal is a refusal (409, with its own sentence on the screen); only an outcome that is not
-            // known is "repeat the same request to finish it" (202).
-            return registerResult.ErrorCode is "ABBREVIATION_REQUEST_ALREADY_CLOSED"
-                or "ABBREVIATION_IDEMPOTENCY_CONFLICT"
-                or "ABBREVIATION_REGISTER_CONFLICT"
-                ? Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail(
-                    registerResult.ErrorCode,
-                    409)
-                : Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail(
-                    "ABBREVIATION_REGISTER_RECONCILIATION_REQUIRED",
-                    202);
+            // FIX1 S4: a refusal is a refusal (409, with its own sentence on the screen); a real outage is 503; only an
+            // outcome that is not known is "repeat the same request to finish it" (202).
+            return registerResult.ErrorCode switch
+            {
+                "ABBREVIATION_REQUEST_ALREADY_CLOSED" or "ABBREVIATION_IDEMPOTENCY_CONFLICT"
+                    or "ABBREVIATION_REGISTER_CONFLICT" or "ABBREVIATION_PRODUCT_ALREADY_HAS_ENTRY"
+                    or "ABBREVIATION_CORRECTION_PENDING" or "ABBREVIATION_RETIREMENT_PENDING"
+                    or "ABBREVIATION_CORRECTION_REQUIRES_ACTIVE" or "ABBREVIATION_CORRECTION_CONFLICT"
+                    or "CONCURRENCY_CONFLICT"
+                    => Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail(registerResult.ErrorCode, 409),
+                "ABBREVIATION_PERSISTENCE_UNAVAILABLE" => Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail(registerResult.ErrorCode, 503),
+                _ => Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail("ABBREVIATION_REGISTER_RECONCILIATION_REQUIRED", 202)
+            };
         }
 
-        if (!await AppendHistoryAsync(
+        // A replay of a request written before FIX2 (entry first, evidence after) finishes its evidence here; for a
+        // request written in one transaction this finds the row already there.
+        if (registerResult.IsReplay && !await AppendHistoryAsync(
                 registerResult.Entry,
                 eventType,
                 null,
@@ -777,9 +705,7 @@ public sealed class ProductAbbreviationWorkflow
                 reason,
                 cancellationToken))
         {
-            return Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail(
-                "ABBREVIATION_EVIDENCE_RECONCILIATION_REQUIRED",
-                202);
+            return Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Fail("ABBREVIATION_EVIDENCE_RECONCILIATION_REQUIRED", 202);
         }
 
         return Response<ProductAbbreviationRegisterModels.ProductAbbreviationAllocationResultDto>.Success(
@@ -870,16 +796,100 @@ public sealed class ProductAbbreviationWorkflow
     private async Task<Response<T>?> ClaimKeyAsync<T>(
         string idempotencyKey,
         Guid registerEntryId,
+        string commandKind,
         CancellationToken cancellationToken)
     {
-        var refused = await _history.ClaimCommandKeyAsync(idempotencyKey, registerEntryId, cancellationToken);
+        var refused = await _history.ClaimCommandKeyAsync(idempotencyKey, registerEntryId, commandKind, cancellationToken);
         return refused is null ? null : Response<T>.Fail(refused, 409);
     }
 
-    /// <summary>A pending-change claim counts only while the entry it names is still waiting for a decision.</summary>
-    private async Task<bool> IsPendingAsync(Guid entryId, CancellationToken cancellationToken)
-        => (await _register.GetByIdAsync(entryId, cancellationToken))?.LifecycleStatus
-           == ProductAbbreviationLifecycleStatus.REQUESTED;
+    /// <summary>
+    /// A claim counts only while the entry it names is a REQUESTED correction OF THIS code (FIX2 A2) — an entry decided,
+    /// never written, or replacing something else blocks nothing.
+    /// </summary>
+    private async Task<bool> IsPendingCorrectionOfAsync(Guid claimedEntryId, Guid formerEntryId, CancellationToken cancellationToken)
+        => await _register.GetByIdAsync(claimedEntryId, cancellationToken) is
+           { LifecycleStatus: ProductAbbreviationLifecycleStatus.REQUESTED } claimed
+           && claimed.ReplacesEntryId == formerEntryId;
+
+    /// <summary>
+    /// FIX2 A5 — keys ending in a suffix the server derives from a key (":former", ":replacement") are refused, so a
+    /// caller can never name a key the server itself would derive from another one.
+    /// </summary>
+    private static Response<TResult>? KeyRefused<TResult>(string idempotencyKey)
+        => idempotencyKey.EndsWith(":former", StringComparison.Ordinal)
+           || idempotencyKey.EndsWith(":replacement", StringComparison.Ordinal)
+            ? Response<TResult>.Fail("ABBREVIATION_IDEMPOTENCY_KEY_INVALID", 400)
+            : null;
+
+    /// <summary>
+    /// FIX2 A1 — one decision: the key is bound to this entry and this command, then the decision, its history row and
+    /// its audit intent are written in ONE transaction. A stored decision under the same key is "mine" only for the
+    /// person who made it.
+    /// </summary>
+    private async Task<Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>> DecideAsync(
+        ProductAbbreviationDecisionKind kind,
+        ProductAbbreviationRegisterEntry entry,
+        int expectedVersion,
+        string idempotencyKey,
+        string? reason,
+        string? retirementRequestId,
+        ProductAbbreviationHistoryEventType eventType,
+        ProductAbbreviationLifecycleStatus before,
+        ProductAbbreviationLifecycleStatus after,
+        CancellationToken cancellationToken)
+    {
+        if (KeyRefused<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>(idempotencyKey) is { } keyRefused)
+        {
+            return keyRefused;
+        }
+
+        if (await ClaimKeyAsync<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>(idempotencyKey, entry.Id, CommandKindOf(kind), cancellationToken)
+            is { } reused)
+        {
+            return reused;
+        }
+
+        var decidedAtUtc = DateTimeOffset.UtcNow;
+        var result = await _register.DecideAsync(
+            new ProductAbbreviationDecision(
+                kind,
+                entry.Id,
+                expectedVersion,
+                _actor.CanonicalHumanSubjectId,
+                idempotencyKey,
+                reason,
+                decidedAtUtc,
+                retirementRequestId,
+                post =>
+                {
+                    var history = BuildHistory(post, eventType, before, after, idempotencyKey, reason, decidedAtUtc);
+                    return new ProductAbbreviationDecisionEvidence(
+                        history,
+                        ProductAbbreviationAuditIntentFactory.Create(post, history));
+                }),
+            cancellationToken);
+        if (!result.Succeeded || result.Entry is null)
+        {
+            return WriteFailure(result);
+        }
+
+        // My own decision again: its evidence is already there when it was written in one transaction; a decision
+        // written before FIX2 (record first, evidence after) is finished here, under the same key, by the same person.
+        return result.IsReplay
+            ? await CompleteTransitionAsync(result.Entry, eventType, before, after, idempotencyKey, reason, cancellationToken)
+            : Response<ProductAbbreviationRegisterModels.ProductAbbreviationRegisterEntryDto>.Success(ToDto(result.Entry));
+    }
+
+    private static string CommandKindOf(ProductAbbreviationDecisionKind kind) => kind switch
+    {
+        ProductAbbreviationDecisionKind.Approve => "approve",
+        ProductAbbreviationDecisionKind.Reject => "reject",
+        ProductAbbreviationDecisionKind.Cancel => "cancel",
+        ProductAbbreviationDecisionKind.RequestRetirement => "retirement-request",
+        ProductAbbreviationDecisionKind.ApproveRetirement => "retirement-approve",
+        _ => "retirement-reject"
+    };
 
     private Guid EntryIdFor(string idempotencyKey)
         => DeterministicGuid($"{_actor.TenantId:N}|register|{idempotencyKey}");

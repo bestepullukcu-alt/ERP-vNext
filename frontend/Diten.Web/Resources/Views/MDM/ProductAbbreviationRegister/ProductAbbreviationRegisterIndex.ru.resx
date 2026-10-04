@@ -31,4 +31,7 @@
 <data name="ErrorMakerChecker" xml:space="preserve"><value>Автор запроса не может принимать по нему решение.</value></data>
 <data name="CancelRequest" xml:space="preserve"><value>Отменить запрос</value></data>
 <data name="OpenInTaskCenter" xml:space="preserve"><value>Открыть в Центре задач</value></data>
+<data name="ErrorDecidedByAnother" xml:space="preserve"><value>Это решение уже принято другим пользователем. Список обновлён.</value></data>
+<data name="ErrorKeyInvalid" xml:space="preserve"><value>Не удалось определить запрос. Обновите страницу и повторите попытку.</value></data>
+<data name="ErrorScopeUnavailable" xml:space="preserve"><value>Не удалось определить область вашей компании, поэтому реестр сейчас недоступен.</value></data>
 </root>

@@ -75,15 +75,18 @@ public sealed class ProductAbbreviationHistoryRepository : IProductAbbreviationH
     public async Task<string?> ClaimCommandKeyAsync(
         string idempotencyKey,
         Guid registerEntryId,
+        string commandKind,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(idempotencyKey);
+        ArgumentException.ThrowIfNullOrWhiteSpace(commandKind);
         var claim = new CommandKeyClaim
         {
             Id = ClaimId(_tenantId, idempotencyKey),
             TenantId = _tenantId,
             IdempotencyKey = idempotencyKey,
-            RegisterEntryId = registerEntryId
+            RegisterEntryId = registerEntryId,
+            CommandKind = commandKind
         };
         try
         {
@@ -99,6 +102,7 @@ public sealed class ProductAbbreviationHistoryRepository : IProductAbbreviationH
                    && existing.TenantId == _tenantId
                    && existing.IdempotencyKey == idempotencyKey
                    && existing.RegisterEntryId == registerEntryId
+                   && string.Equals(existing.CommandKind, commandKind, StringComparison.Ordinal)
                 ? null
                 : "ABBREVIATION_IDEMPOTENCY_KEY_REUSED";
         }
@@ -146,5 +150,7 @@ public sealed class ProductAbbreviationHistoryRepository : IProductAbbreviationH
         public Guid TenantId { get; set; }
         public string IdempotencyKey { get; set; } = string.Empty;
         public Guid RegisterEntryId { get; set; }
+        /// <summary>FIX2 item 6 — which command the key was first used for (approve, reject, cancel, …).</summary>
+        public string? CommandKind { get; set; }
     }
 }

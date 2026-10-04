@@ -33,6 +33,13 @@ describe("ABB register refusals", () => {
     }
   });
 
+  it("say who decided and when the company scope is missing (FIX2: codes MDM's ABB sources do not spell themselves)", () => {
+    const keyOf = Object.fromEntries(errorMap().map(({ code, key }) => [code, key]));
+    expect(keyOf.ABBREVIATION_ALREADY_DECIDED_BY_ANOTHER).toBe("ErrorDecidedByAnother");
+    expect(keyOf.TENANT_CONTEXT_REQUIRED).toBe("ErrorScopeUnavailable");
+    expect(keyOf.PRODUCT_LEGAL_ENTITY_SCOPE_ROLLOUT_INVALID).toBe("ErrorScopeUnavailable");
+  });
+
   it.each(LANGS)("have every page-local sentence in %s", (lang) => {
     const xml = resx(lang);
     const pageKeys = [...PARTIAL.matchAll(/= Localizer\["([A-Za-z]+)"\]\.Value/g)].map((m) => m[1]);

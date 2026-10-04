@@ -31,4 +31,7 @@
 <data name="ErrorMakerChecker" xml:space="preserve"><value>Quien hizo una solicitud no puede resolverla.</value></data>
 <data name="CancelRequest" xml:space="preserve"><value>Cancelar solicitud</value></data>
 <data name="OpenInTaskCenter" xml:space="preserve"><value>Abrir en el Centro de tareas</value></data>
+<data name="ErrorDecidedByAnother" xml:space="preserve"><value>Otra persona ya tomó esta decisión. La lista se ha actualizado.</value></data>
+<data name="ErrorKeyInvalid" xml:space="preserve"><value>No se pudo identificar la solicitud. Recargue la página e inténtelo de nuevo.</value></data>
+<data name="ErrorScopeUnavailable" xml:space="preserve"><value>No se pudo determinar el ámbito de su empresa; el registro no se puede usar en este momento.</value></data>
 </root>

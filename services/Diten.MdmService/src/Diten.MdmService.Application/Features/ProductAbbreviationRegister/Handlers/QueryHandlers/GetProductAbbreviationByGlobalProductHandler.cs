@@ -154,12 +154,10 @@ public sealed class ProductAbbreviationScopeGuard
             return ProductAbbreviationScopeResult.Fail(scope.StatusCode, scope.FailureCode!);
         }
         var context = scope.Context!;
-        var normalized = string.IsNullOrWhiteSpace(abbreviation)
-            ? string.Empty
-            : abbreviation.Trim().ToUpperInvariant();
-        var entry = normalized.Length == 0
-            ? null
-            : await _register.ResolveActiveAsync(normalized, cancellationToken);
+        // FIX2: the register's own grammar (three ASCII letters checked BEFORE upper-casing), never a second copy of it.
+        var entry = ProductAbbreviationNormalizer.TryNormalize(abbreviation, out var normalized)
+            ? await _register.ResolveActiveAsync(normalized, cancellationToken)
+            : null;
         var product = entry is null || context.RolloutMode != ProductLegalEntityScopeRolloutMode.Enforced
             ? null
             : await _globalProducts.GetByIdAsync(entry.GlobalProductId, cancellationToken);

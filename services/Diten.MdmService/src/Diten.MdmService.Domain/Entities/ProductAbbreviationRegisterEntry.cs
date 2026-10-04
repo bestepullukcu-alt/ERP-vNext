@@ -19,6 +19,12 @@ public sealed class ProductAbbreviationRegisterEntry : EntityBase, IAuditIntentA
     /// (approved, rejected, cancelled, never inserted) is stale and may be taken over. Not a version change.
     /// </summary>
     public Guid? PendingCorrectionEntryId { get; set; }
+    /// <summary>
+    /// FIX2 A3 — when this entry started waiting for a decision (request inserted, or retirement requested), as UTC ticks.
+    /// The Task Center lists pending work in this order. A plain integer on purpose: DateTimeOffset is stored as a BSON
+    /// array here (BL-030), and an ascending sort on it reads the offset, not the instant. 0 on entries written before.
+    /// </summary>
+    public long PendingSinceUtcTicks { get; set; }
     public string? RetirementRequestId { get; set; }
     public string? RetirementRequestedByCanonicalSubjectId { get; set; }
     public DateTimeOffset? RetirementRequestedAtUtc { get; set; }

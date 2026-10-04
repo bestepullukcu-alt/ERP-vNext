@@ -9,6 +9,26 @@ public interface IProductLegalEntityScopePolicyRepository
         Guid globalProductId,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// The policies of several products in one read (ABB FIX2 A3: the Task Center projection evaluates a page of items
+    /// without one read per product). Same rule as <see cref="GetByGlobalProductIdAsync"/>, product by product.
+    /// </summary>
+    async Task<IReadOnlyList<ProductLegalEntityScopePolicy>> GetByGlobalProductIdsAsync(
+        IReadOnlyCollection<Guid> globalProductIds,
+        CancellationToken cancellationToken = default)
+    {
+        var found = new List<ProductLegalEntityScopePolicy>();
+        foreach (var id in globalProductIds)
+        {
+            if (await GetByGlobalProductIdAsync(id, cancellationToken) is { } policy)
+            {
+                found.Add(policy);
+            }
+        }
+
+        return found;
+    }
+
     Task<ProductLegalEntityScopePolicy?> GetByCreationCommandIdAsync(
         Guid creationCommandId,
         CancellationToken cancellationToken = default);
