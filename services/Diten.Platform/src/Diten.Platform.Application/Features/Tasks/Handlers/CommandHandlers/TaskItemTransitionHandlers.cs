@@ -237,6 +237,16 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     /// </summary>
     private readonly IReviewMeetingGateReader? _reviewMeetingGate;
 
+    /// <summary>
+    /// D2-FIX2 item 1 — cancelling a task withdraws the approval / review it started in MOD-0023 (through MOD-0023's own
+    /// cancel command, the same withdraw an edit uses). OPTIONAL like <see cref="_reviewMeetingGate"/>, because every
+    /// test written before this constructs the handler directly; production wires both (they are registered for the edit
+    /// handler, which requires them). A null withdraw FAILS CLOSED: a task holding a link is not cancelled by a handler
+    /// that cannot prove the withdraw — a task without a link never asks.
+    /// </summary>
+    private readonly ITaskApprovalService? _approvals;
+    private readonly ITaskReviewService? _reviews;
+
     public TransitionTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
@@ -250,8 +260,12 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         ITaskFieldDefinitionService fieldDefinitions,
         ITaskAttachmentRepository attachments,
         ILogger<TransitionTaskItemHandler> logger,
-        IReviewMeetingGateReader? reviewMeetingGate = null)
+        IReviewMeetingGateReader? reviewMeetingGate = null,
+        ITaskApprovalService? approvals = null,
+        ITaskReviewService? reviews = null)
     {
+        _approvals = approvals;
+        _reviews = reviews;
         _logger = logger;
         _notifications = notifications;
         _dependencies = dependencies;
@@ -384,7 +398,11 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         //
         // FAIL-CLOSED by contract: a failed evaluation counts as blocked, so a workflow outage cannot let
         // unapproved work start. The commit below is skipped entirely when the gate says no.
-        if (task.ApprovalRequired &&
+        //
+        // D2-FIX2 item 1 — asked while the task HOLDS a link too, requirement on or off: a withdraw that failed leaves the
+        // flag off and the instance open, and the task waits until the engine reports that instance closed
+        // (TaskWorkflowLinkGate). A task with neither the flag nor a link still never asks.
+        if (TaskWorkflowLinkGate.AsksApproval(task) &&
             command.Target is TaskLifecycle.InProgress or TaskLifecycle.Done)
         {
             var gate = await _workflowGate.EvaluateAsync(new WorkflowGateRequest(
@@ -397,7 +415,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                 ReasonCode: command.Request.ReasonCode,
                 CorrelationId: command.CorrelationId), ct);
 
-            if (gate.IsBlocked)
+            if (TaskWorkflowLinkGate.Holds(gate, task.ApprovalRequired))
             {
                 return Response<NoContent>.Fail(
                     gate.BlockingMessage ?? "This transition is blocked pending approval.",
@@ -440,7 +458,9 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
          * FAIL-CLOSED like approval: an unevaluable gate counts as blocked, so a workflow outage cannot let
          * unreviewed work close.
          */
-        if (task.ReviewRequired && command.Target == TaskLifecycle.Done)
+        // D2-FIX2 item 1 — the same rule as approval: a held review link is asked even after the requirement was
+        // switched off, until the engine reports the review closed.
+        if (TaskWorkflowLinkGate.AsksReview(task) && command.Target == TaskLifecycle.Done)
         {
             /*
              * No instance means the work was never SUBMITTED for review, and the gate cannot speak for a decision
@@ -451,7 +471,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
              * is "this work has to go through review", never whether the review passed. The verdict is still read
              * from the instance, immediately below.
              */
-            if (task.ReviewWorkflowInstanceId is null)
+            if (task.ReviewRequired && task.ReviewWorkflowInstanceId is null)
             {
                 return Response<NoContent>.Fail(
                     "This task must be submitted for review before it can be completed.",
@@ -468,7 +488,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                 ReasonCode: command.Request.ReasonCode,
                 CorrelationId: command.CorrelationId), ct);
 
-            if (reviewGate.IsBlocked)
+            if (TaskWorkflowLinkGate.Holds(reviewGate, task.ReviewRequired))
             {
                 /*
                  * The engine's own reason code is NOT passed through here, unlike the approval branch above.
@@ -614,6 +634,33 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             closureFieldValues = closureFields.Values;
         }
 
+        /*
+         * D2-FIX2 item 1 — CANCELLING THE TASK WITHDRAWS WHAT IT STARTED IN MOD-0023, and a withdraw that did not happen
+         * REFUSES the cancel (409, the codes an edit's withdraw answers with). Before, a cancelled task left its approval
+         * or review running: decidable by the approver, read by nobody. Asked here, AFTER every gate and validation and
+         * BEFORE any write, so a refused cancel leaves the task byte-identical — and only for a task that holds a link.
+         *
+         * The version is checked FIRST: a cancel that is going to lose its race anyway must not withdraw anything (the
+         * edit's rule — MOD-0023 is not touched for a write that cannot land). A withdraw that succeeded and then lost a
+         * race in the narrow window after this check leaves a cancelled instance under a still-open task; the retry finds
+         * nothing open to withdraw and goes through.
+         */
+        if (command.Target == TaskLifecycle.Cancelled
+            && (task.WorkflowInstanceId is not null || task.ReviewWorkflowInstanceId is not null))
+        {
+            if (task.Version != command.Request.ExpectedVersion)
+            {
+                return Response<NoContent>.Fail(
+                    "The task changed meanwhile; reload and retry.",
+                    409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+            }
+
+            if (await RefuseUnlessWithdrawnAsync(task, command.CorrelationId, ct) is { } refused)
+            {
+                return refused;
+            }
+        }
+
         var previousLifecycle = task.Lifecycle;
         task.Lifecycle = command.Target;
         /*
@@ -712,6 +759,37 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     }
 
     /// <summary>
+    /// D2-FIX2 item 1 — withdraws the task's running approval and review; the refusal to answer with when one of them
+    /// could not be withdrawn, or null when nothing is left open. The withdraw itself is MOD-0023's own cancel command,
+    /// reached through the same services an edit uses — MOD-0024 never edits workflow state.
+    /// </summary>
+    private async Task<Response<NoContent>?> RefuseUnlessWithdrawnAsync(TaskItem task, string correlationId, CancellationToken ct)
+    {
+        if (task.WorkflowInstanceId is not null && !await ApprovalWithdrawnAsync(task, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task was not cancelled: its running approval could not be withdrawn; try again.",
+                409, TaskReasonCodes.ApprovalCancelFailed, correlationId);
+        }
+
+        if (task.ReviewWorkflowInstanceId is not null && !await ReviewWithdrawnAsync(task, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task was not cancelled: its running review could not be withdrawn; try again.",
+                409, TaskReasonCodes.ReviewCancelFailed, correlationId);
+        }
+
+        return null;
+    }
+
+    // Fail-closed: no withdraw service, no proof of a withdraw (see _approvals).
+    private async Task<bool> ApprovalWithdrawnAsync(TaskItem task, CancellationToken ct) =>
+        _approvals is not null && await _approvals.CancelApprovalAsync(task, ct);
+
+    private async Task<bool> ReviewWithdrawnAsync(TaskItem task, CancellationToken ct) =>
+        _reviews is not null && await _reviews.CancelReviewAsync(task, ct);
+
+    /// <summary>
     /// WC-1 — which ACT this generic transition is, in the event log's vocabulary.
     ///
     /// <para>The target alone does not answer it: reaching <c>InProgress</c> from <c>Waiting</c> is resuming work
@@ -754,6 +832,21 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         {
             if (child.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
             {
+                continue;
+            }
+
+            /*
+             * D2-FIX2 item 1 — the parent's rule for its children: a child is not closed around an approval or review that
+             * is still decidable. The parent's own cancel has already committed, so a child whose withdraw fails cannot
+             * refuse it; that child stays OPEN (its holder still sees it, its approval still answers) and is named in the
+             * log, rather than closed with an orphan running under it. Same best-effort contract as the race below.
+             */
+            if ((child.WorkflowInstanceId is not null && !await ApprovalWithdrawnAsync(child, ct))
+                || (child.ReviewWorkflowInstanceId is not null && !await ReviewWithdrawnAsync(child, ct)))
+            {
+                _logger.LogWarning(
+                    "Subtask {ChildId} of cancelled task {ParentId} was left open: its running approval or review could "
+                    + "not be withdrawn.", child.Id, parent.Id);
                 continue;
             }
 
@@ -992,10 +1085,11 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
             if (started.RefusalReasonCode == Workflow.WorkflowReasonCodes.WorkflowNoEligibleApprover)
             {
                 // D2-FIX1 — not "try again": nobody but the submitter could review it, and a retry changes nothing until
-                // the reviewer does. The engine's own code is passed through.
+                // the reviewer does. D2-FIX2 (CT item 7) — answered in MOD-0024's own code: the engine's
+                // WORKFLOW_NO_ELIGIBLE_APPROVER stays the engine's answer to its own callers; a review is not an approval.
                 return Response<NoContent>.Fail(
                     "Nobody other than you can review this task; choose another reviewer.",
-                    409, Workflow.WorkflowReasonCodes.WorkflowNoEligibleApprover, command.CorrelationId);
+                    409, TaskReasonCodes.ReviewNoEligibleReviewer, command.CorrelationId);
             }
 
             /*
@@ -1594,7 +1688,8 @@ public sealed class AnswerInquiryHandler : IRequestHandler<AnswerInquiryCommand,
     /// <summary>The two gates <see cref="TransitionTaskItemHandler"/> asks before → InProgress, asked the same way.</summary>
     private async Task<bool> ResumeIsBlockedAsync(TaskItem task, string correlationId, CancellationToken ct)
     {
-        if (task.ApprovalRequired)
+        // D2-FIX2 item 1 — asked the way TransitionTaskItemHandler asks it: a held link counts, requirement on or off.
+        if (TaskWorkflowLinkGate.AsksApproval(task))
         {
             var gate = await _workflowGate.EvaluateAsync(new WorkflowGateRequest(
                 ObjectType: TaskApprovalService.ApprovalObjectType,
@@ -1606,7 +1701,7 @@ public sealed class AnswerInquiryHandler : IRequestHandler<AnswerInquiryCommand,
                 ReasonCode: null,
                 CorrelationId: correlationId), ct);
 
-            if (gate.IsBlocked)
+            if (TaskWorkflowLinkGate.Holds(gate, task.ApprovalRequired))
             {
                 return true;
             }

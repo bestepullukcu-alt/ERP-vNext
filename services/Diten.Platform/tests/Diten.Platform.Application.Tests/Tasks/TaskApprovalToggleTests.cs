@@ -170,6 +170,38 @@ public sealed class TaskApprovalToggleTests
         // The requirement change is saved; the link is NOT cleared, so the still-open approval is not orphaned.
         Assert.False(stored!.ApprovalRequired);
         Assert.Equal(RunningInstance, stored.WorkflowInstanceId);
+        // D2-FIX2 item 2 — and the refusal says at which version the edit landed.
+        Assert.Equal(stored.Version, response.Data!.Version);
+    }
+
+    [Theory]
+    [InlineData("approval")]
+    [InlineData("review")]
+    public async Task Saving_again_with_the_version_the_refusal_carried_retries_the_withdraw(string which)
+    {
+        // D2-FIX2 item 2 — exactly what the form sends after the 409: the version in the refusal, not a fresh read.
+        var task = which == "approval" ? ApprovalTask() : PlainTask();
+        if (which == "review")
+        {
+            task.ReviewRequired = true;
+            task.ReviewerCandidateUserId = Manager;
+            task.ReviewWorkflowInstanceId = RunningInstance;
+        }
+
+        var (handler, tasks, approvals, reviews) = HandlerWithReview(task);
+        approvals.CannotCancel = reviews.CannotCancel = true;
+        var refused = await handler.Handle(
+            Update(task, approvalRequired: which == "approval" ? false : null), CancellationToken.None);
+        Assert.Equal(409, refused.StatusCode);
+        approvals.CannotCancel = reviews.CannotCancel = false;
+
+        var again = await handler.Handle(
+            Update(task, approvalRequired: which == "approval" ? false : null, expectedVersion: refused.Data!.Version),
+            CancellationToken.None);
+
+        Assert.Equal(204, again.StatusCode);
+        var stored = (await tasks.GetByIdAsync(task.Id, CancellationToken.None))!;
+        Assert.Null(which == "approval" ? stored.WorkflowInstanceId : stored.ReviewWorkflowInstanceId);
     }
 
     [Fact]
@@ -204,6 +236,7 @@ public sealed class TaskApprovalToggleTests
         Assert.Equal(409, response.StatusCode);
         Assert.Equal(TaskReasonCodes.ReviewCancelFailed, response.ReasonCode);
         Assert.Equal(RunningInstance, (await tasks.GetByIdAsync(task.Id, CancellationToken.None))!.ReviewWorkflowInstanceId);
+        Assert.Equal((await tasks.GetByIdAsync(task.Id, CancellationToken.None))!.Version, response.Data!.Version);
 
         reviews.CannotCancel = false;
         var retry = await handler.Handle(

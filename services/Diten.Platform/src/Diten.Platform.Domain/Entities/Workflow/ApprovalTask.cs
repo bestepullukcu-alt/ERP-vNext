@@ -28,13 +28,19 @@ public sealed class ApprovalTask : TenantScopedEntity
     public string? LastEscalationReasonCode { get; set; }
 
     /// <summary>
-    /// D2-FIX1 A4 — when the SLA sweep last found nobody eligible to escalate this task to (its
-    /// <see cref="LastEscalationReasonCode"/> then says why). A parked task is not warned about again for the same reason,
-    /// and it is read AFTER every unparked overdue task so it cannot crowd them out. Cleared by an escalation or a timeout.
-    /// A UTC <see cref="DateTime"/>, deliberately: stored as a BSON date (a scalar), not as the [ticks, offset] array a
-    /// DateTimeOffset becomes (BL-030), so it adds nothing to the reviewed DateTimeOffset inventory.
+    /// WP-WF-ENGINE-CANDIDATES-01 D2-FIX2 (item 4) — when the SLA sweep looks at this overdue task AGAIN. Set on every task a
+    /// sweep could not act on (no SLA rule, nobody eligible, candidates missing, already escalated with no timeout, an
+    /// instance that is not active, not yet at its threshold …): the task rests until then, and the sweep's read takes
+    /// tasks whose look time has come — never-looked ones first, then by this time — so a standing backlog it cannot act on
+    /// no longer fills every page. Null = never looked at. Cleared by an escalation or a timeout.
+    ///
+    /// <para>It replaces D2-FIX1's <c>EscalationParkedAtUtc</c>, which was written and never read (that field lived only
+    /// on this unaccepted branch, so nothing stored carries it). The "warn once" mark stays where it was:
+    /// <see cref="LastEscalationReasonCode"/>. A UTC <see cref="DateTime"/>, deliberately: a BSON date (a scalar), not the
+    /// [ticks, offset] array a DateTimeOffset becomes (BL-030) — so it can lead an index and a sort, and it adds nothing to
+    /// the reviewed DateTimeOffset inventory.</para>
     /// </summary>
-    public DateTime? EscalationParkedAtUtc { get; set; }
+    public DateTime? EscalationNextLookAtUtc { get; set; }
     public DateTimeOffset? TimedOutAt { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }
     public string? ActionedBy { get; set; }

@@ -172,6 +172,36 @@ public interface IApprovalTaskRepository
     Task<bool> UpdateEscalationAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default) =>
         UpdateAsync(task, expectedVersion, ct);
 
+    /// <summary>
+    /// D2-FIX2 item 4 — the SLA sweep's next look at a task it could not act on (and, the first time nobody was eligible,
+    /// the "parked" reason that keeps it from warning again). Touches only a task still waiting on somebody, changes
+    /// nothing else, and takes NO version: a person deciding the task meanwhile must never be told "changed meanwhile"
+    /// because a sweep rested it. False when no such task is there any more. The store overrides this with a targeted
+    /// write; the default (in-memory doubles) reads and writes the task.
+    /// </summary>
+    async Task<bool> ScheduleEscalationLookAsync(
+        Guid taskId,
+        DateTime nextLookAtUtc,
+        string? parkReasonCode,
+        CancellationToken ct = default)
+    {
+        var task = await GetByIdAsync(taskId, ct);
+        if (task is null || task.Status is not (Domain.Enums.Workflow.ApprovalTaskStatus.WaitingApproval
+                or Domain.Enums.Workflow.ApprovalTaskStatus.WaitingEvidence
+                or Domain.Enums.Workflow.ApprovalTaskStatus.Escalated))
+        {
+            return false;
+        }
+
+        task.EscalationNextLookAtUtc = nextLookAtUtc;
+        if (parkReasonCode is not null)
+        {
+            task.LastEscalationReasonCode = parkReasonCode;
+        }
+
+        return await UpdateAsync(task, task.Version, ct);
+    }
+
     // WP-CL-BE-3 — terminal transition write inside the Platform transaction (see IWorkflowInstanceRepository).
     Task<bool> UpdateAsync(IPlatformTransactionSession session, ApprovalTask task, int expectedVersion,
         CancellationToken ct = default) =>

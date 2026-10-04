@@ -38,8 +38,10 @@ public sealed record CreateTaskItemCommand(
     bool IsScheduledGeneration = false)
     : IRequest<Response<Guid>>;
 
+/// <summary>D2-FIX2 (item 2) — answers <see cref="TaskItemEditResultDto"/> so a refusal that comes AFTER the edit landed
+/// can say at which version it landed; a successful edit is still a body-less 204.</summary>
 public sealed record UpdateTaskItemCommand(Guid Id, UpdateTaskItemRequest Request, string CorrelationId)
-    : IRequest<Response<NoContent>>;
+    : IRequest<Response<TaskItemEditResultDto>>;
 
 public sealed record DeleteTaskItemCommand(Guid Id, string CorrelationId)
     : IRequest<Response<NoContent>>;

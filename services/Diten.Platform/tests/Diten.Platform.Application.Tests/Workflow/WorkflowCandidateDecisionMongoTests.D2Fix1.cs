@@ -173,14 +173,21 @@ public sealed partial class WorkflowCandidateDecisionMongoTests
         var logger = new CountingLogger();
 
         var first = await _store.SweepAsync(logger: logger);
+        var parkedAt = DateTime.UtcNow;
         var second = await _store.SweepAsync(logger: logger);
+        // D2-FIX2 item 4 — the second sweep does not read it at all (it rests until its look time); looked at again
+        // after that, it is still nobody's to take, and it is still not warned about twice.
+        var later = await _store.SweepAtAsync(RunWorkflowEscalationsHandler.InconclusiveRecheckInterval + TimeSpan.FromMinutes(1), logger: logger);
 
         Assert.Equal(WorkflowReasonCodes.WorkflowNoEligibleApprover, first.Results.Single(r => r.ApprovalTaskId == seeded.Task.Id).ReasonCode);
-        Assert.Equal(WorkflowReasonCodes.WorkflowNoEligibleApprover, second.Results.Single(r => r.ApprovalTaskId == seeded.Task.Id).ReasonCode);
+        Assert.DoesNotContain(second.Results, r => r.ApprovalTaskId == seeded.Task.Id);
+        Assert.Equal(WorkflowReasonCodes.WorkflowNoEligibleApprover, later.Results.Single(r => r.ApprovalTaskId == seeded.Task.Id).ReasonCode);
         Assert.Equal(1, logger.WarningsAbout(seeded.Task.Id));
         var task = (await _store.Tasks.GetByIdAsync(seeded.Task.Id))!;
         Assert.Equal(WorkflowReasonCodes.WorkflowNoEligibleApprover, task.LastEscalationReasonCode);
-        Assert.NotNull(task.EscalationParkedAtUtc);
+        // Parking gives it its next look: a quarter of an hour on (this rule has no timeout to come sooner).
+        Assert.NotNull(task.EscalationNextLookAtUtc);
+        Assert.True(task.EscalationNextLookAtUtc > parkedAt.AddMinutes(14), task.EscalationNextLookAtUtc?.ToString("O"));
         Assert.Equal(ApprovalTaskStatus.WaitingApproval, task.Status);
     }
 
@@ -459,7 +466,8 @@ public sealed partial class WorkflowCandidateDecisionMongoTests
                 Status = status,
                 DueAt = dueAt,
                 LastEscalationReasonCode = parked ? WorkflowReasonCodes.WorkflowNoEligibleApprover : null,
-                EscalationParkedAtUtc = parked ? dueAt.UtcDateTime : null
+                // D2-FIX2 — a parked task rests until its next look time.
+                EscalationNextLookAtUtc = parked ? DateTime.UtcNow.AddMinutes(10) : null
             }).ToList();
             await Context.Database.GetCollection<ApprovalTask>(PlatformCollections.ApprovalTasks).InsertManyAsync(tasks);
             return tasks.Select(t => t.Id).ToList();

@@ -13,7 +13,7 @@ namespace Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 /// MOD-0024 — edit a task's descriptive/planning fields. Assignment target, lifecycle and effort actuals are
 /// deliberately NOT editable here: they move through their own commands so each keeps its own guard rails.
 /// </summary>
-public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemCommand, Response<NoContent>>
+public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemCommand, Response<TaskItemEditResultDto>>
 {
     private readonly ITaskItemRepository _tasks;
     private readonly IOrganizationUnitRepository _organizationUnits;
@@ -51,19 +51,19 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         _logger = logger;
     }
 
-    public async Task<Response<NoContent>> Handle(UpdateTaskItemCommand command, CancellationToken ct)
+    public async Task<Response<TaskItemEditResultDto>> Handle(UpdateTaskItemCommand command, CancellationToken ct)
     {
         var request = command.Request;
         var task = await _tasks.GetByIdAsync(command.Id, ct);
         if (task is null)
         {
-            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return Response<TaskItemEditResultDto>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
         }
 
         // A closed task is read-only — a terminal item exposes no state-changing action.
         if (task.CompletedAt is not null || task.CancelledAt is not null)
         {
-            return Response<NoContent>.Fail(
+            return Response<TaskItemEditResultDto>.Fail(
                 "A closed task cannot be edited.", 409, TaskReasonCodes.InvalidState, command.CorrelationId);
         }
 
@@ -72,7 +72,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             var unit = await _organizationUnits.GetByIdAsync(unitId, ct);
             if (unit is null || unit.IsArchived)
             {
-                return Response<NoContent>.Fail(
+                return Response<TaskItemEditResultDto>.Fail(
                     "The organization unit could not be resolved.",
                     400, TaskReasonCodes.OrganizationUnitUnresolved, command.CorrelationId);
             }
@@ -96,7 +96,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             request.FieldValues, ct, enforceRequired: true, existing: task.FieldValues);
         if (!fields.IsValid)
         {
-            return Response<NoContent>.Fail(
+            return Response<TaskItemEditResultDto>.Fail(
                 fields.Message ?? "Invalid task field value.",
                 400, fields.ReasonCode ?? TaskReasonCodes.FieldValueInvalid, command.CorrelationId);
         }
@@ -122,7 +122,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
          */
         if (TaskReviewRules.ReviewerMissing(request.ReviewRequired, request.ReviewerCandidateUserId))
         {
-            return Response<NoContent>.Fail(
+            return Response<TaskItemEditResultDto>.Fail(
                 TaskReviewRules.ReviewerRequiredMessage,
                 400, TaskReasonCodes.ReviewerRequired, command.CorrelationId);
         }
@@ -181,7 +181,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 var manager = request.ApprovalManagerUserId ?? task.ApprovalManagerUserId;
                 if (manager is null || manager == Guid.Empty)
                 {
-                    return Response<NoContent>.Fail(
+                    return Response<TaskItemEditResultDto>.Fail(
                         "An approval manager is required when approval is requested.",
                         400, TaskReasonCodes.ValidationFailed, command.CorrelationId);
                 }
@@ -189,7 +189,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 // B2 follow-up — the editor switching approval on starts it, and a starter cannot decide it.
                 if (manager == _currentUser.UserId)
                 {
-                    return Response<NoContent>.Fail(
+                    return Response<TaskItemEditResultDto>.Fail(
                         "You cannot be the approver of an approval you request.",
                         400, TaskReasonCodes.ApprovalManagerIsSelf, command.CorrelationId);
                 }
@@ -213,7 +213,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             // B2 follow-up — the same rule for re-pointing: the editor cannot name themselves as the approver.
             if (reassigned == _currentUser.UserId)
             {
-                return Response<NoContent>.Fail(
+                return Response<TaskItemEditResultDto>.Fail(
                     "You cannot be the approver of an approval you request.",
                     400, TaskReasonCodes.ApprovalManagerIsSelf, command.CorrelationId);
             }
@@ -257,7 +257,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 task.DocumentReferences, request.DocumentUids, DateTimeOffset.UtcNow, ct);
             if (!frozen.Success)
             {
-                return Response<NoContent>.Fail(
+                return Response<TaskItemEditResultDto>.Fail(
                     $"The document '{frozen.OffendingUid}' cannot be cited.",
                     400, frozen.ReasonCode!, command.CorrelationId);
             }
@@ -269,10 +269,23 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
 
         if (!await _tasks.UpdateAsync(task, request.ExpectedVersion, ct))
         {
-            return Response<NoContent>.Fail(
+            return Response<TaskItemEditResultDto>.Fail(
                 "The task changed meanwhile; reload and retry.",
                 409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
         }
+
+        /*
+         * D2-FIX2 item 2 — THE VERSION THE STORE HOLDS NOW. The edit has landed (version + 1); a refusal from here on is
+         * about a follow-up, not the edit, so it carries this number and the form's "save again" is a retry instead of
+         * a collision with the very edit it retries. Moved only by a write that LANDED: UpdateAsync stamps the entity
+         * before its conditional write, so task.Version alone would also count a write that lost.
+         *
+         * Why the write is not made to wait for the withdraw (the other way to fix it): the sentence the reader is
+         * shown for these two codes, in seven languages, is "your changes are saved … save again to retry" — true only
+         * if the edit lands first — and acting on MOD-0023 only AFTER the edit is known to have landed is the rule this
+         * handler keeps for every handoff (no workflow touched for an edit that lost its race).
+         */
+        var landedVersion = task.Version;
 
         if (startApproval)
         {
@@ -282,7 +295,11 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             if (instanceId is not null)
             {
                 task.WorkflowInstanceId = instanceId;
-                if (!await _tasks.UpdateAsync(task, task.Version, ct))
+                if (await _tasks.UpdateAsync(task, task.Version, ct))
+                {
+                    landedVersion = task.Version;
+                }
+                else
                 {
                     // The approval IS running; only its link failed to persist. Never silent: without the id the
                     // projection cannot read the state, and fail-closed then keeps the task blocked.
@@ -304,9 +321,11 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             {
                 // D2-FIX1 A1 — the review is still open: the link stays, or the reviewer could decide a review that
                 // nothing reads any more. The requirement change is saved; the next edit retries the cancel.
-                return Response<NoContent>.Fail(
+                // D2-FIX2 item 2 — and the refusal says at which version the edit landed (see landedVersion).
+                return Response<TaskItemEditResultDto>.FailWithData(
                     "The edit is saved, but the running review could not be withdrawn; try again.",
-                    409, TaskReasonCodes.ReviewCancelFailed, command.CorrelationId);
+                    409, TaskReasonCodes.ReviewCancelFailed, new TaskItemEditResultDto(landedVersion),
+                    command.CorrelationId);
             }
 
             task.ReviewWorkflowInstanceId = null;
@@ -319,7 +338,11 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 task.Declare(TaskTransitionKind.ReviewCancelled, _currentUser.UserId);
             }
 
-            if (!await _tasks.UpdateAsync(task, task.Version, ct))
+            if (await _tasks.UpdateAsync(task, task.Version, ct))
+            {
+                landedVersion = task.Version;
+            }
+            else
             {
                 _logger.LogWarning(
                     "Review was switched off for task {TaskId} and cancelled, but clearing the instance link failed.",
@@ -332,9 +355,11 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             if (!await _approvals.CancelApprovalAsync(task, ct))
             {
                 // D2-FIX1 A1 — the approval is still open: the link stays (see the review's cancel above).
-                return Response<NoContent>.Fail(
+                // D2-FIX2 item 2 — the version the edit landed at travels with the refusal.
+                return Response<TaskItemEditResultDto>.FailWithData(
                     "The edit is saved, but the running approval could not be withdrawn; try again.",
-                    409, TaskReasonCodes.ApprovalCancelFailed, command.CorrelationId);
+                    409, TaskReasonCodes.ApprovalCancelFailed, new TaskItemEditResultDto(landedVersion),
+                    command.CorrelationId);
             }
 
             task.WorkflowInstanceId = null;
@@ -346,7 +371,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             }
         }
 
-        return Response<NoContent>.Success(204, command.CorrelationId);
+        return Response<TaskItemEditResultDto>.Success(204, command.CorrelationId);
     }
 }
 

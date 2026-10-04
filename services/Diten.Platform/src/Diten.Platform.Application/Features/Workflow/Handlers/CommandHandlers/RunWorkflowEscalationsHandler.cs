@@ -15,6 +15,14 @@ public sealed class RunWorkflowEscalationsHandler
 {
     private const string SystemActor = "system:workflow-escalation-runner";
 
+    /// <summary>
+    /// D2-FIX2 item 4 — how long an overdue task the sweep could not act on rests before it is looked at again (never later
+    /// than its next SLA threshold — see <see cref="NextLookAt"/>). Three sweeps at the five-minute cadence: a seat that
+    /// changes hands under a parked task is noticed within a quarter of an hour, and a backlog nothing can be done about
+    /// is read four times an hour instead of every five minutes, ahead of everything else.
+    /// </summary>
+    internal static readonly TimeSpan InconclusiveRecheckInterval = TimeSpan.FromMinutes(15);
+
     private readonly IApprovalTaskRepository _tasks;
     private readonly IWorkflowInstanceRepository _instances;
     private readonly ISlaEscalationRuleRepository _rules;
@@ -119,20 +127,39 @@ public sealed class RunWorkflowEscalationsHandler
         CancellationToken ct)
     {
         var previousTaskStatus = task.Status;
+
+        /*
+         * D2-FIX2 item 4 — EVERY WAY OUT OF HERE THAT ACTS ON NOTHING GIVES THE TASK ITS NEXT LOOK TIME. A task skipped
+         * without one was read again by the very next sweep, and enough of them (no SLA rule, nobody eligible, already
+         * escalated with no timeout …) filled every page while newly overdue tasks starved behind them. Rested, they
+         * are read again when their time comes — a parked task included, so a seat that changed hands is noticed.
+         */
+        SlaEscalationRule? rule = null;
+        async Task<WorkflowEscalationResultDto> RestAsync(WorkflowEscalationResultDto skipped, string? parkReasonCode = null)
+        {
+            if (!await _tasks.ScheduleEscalationLookAsync(task.Id, NextLookAt(now, rule, task), parkReasonCode, ct))
+            {
+                _logger.LogInformation(
+                    "Workflow task {TaskId} is no longer waiting on anybody; no next look was scheduled.", task.Id);
+            }
+
+            return skipped;
+        }
+
         var instance = await _instances.GetByIdAsync(task.WorkflowInstanceId, ct);
         if (instance is null)
         {
-            return Skipped(task, WorkflowTransitionAction.Escalate, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowTaskInvalidState);
+            return await RestAsync(Skipped(task, WorkflowTransitionAction.Escalate, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowTaskInvalidState));
         }
 
-        var rule = await _rules.FindForStepAsync(
+        rule = await _rules.FindForStepAsync(
             instance.TemplateId == Guid.Empty ? instance.WorkflowTemplateId : instance.TemplateId,
             task.StageCode,
             task.StepCode,
             ct);
         if (rule is null || task.DueAt is null)
         {
-            return Skipped(task, WorkflowTransitionAction.Escalate, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowSlaRuleNotFound);
+            return await RestAsync(Skipped(task, WorkflowTransitionAction.Escalate, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowSlaRuleNotFound));
         }
 
         var elapsedAfterDue = now - task.DueAt.Value.ToUniversalTime();
@@ -143,7 +170,8 @@ public sealed class RunWorkflowEscalationsHandler
         var existingLog = await _logs.FindByIdempotencyAsync(task.Id, action, idempotencyKey, ct);
         if (existingLog is not null)
         {
-            return new WorkflowEscalationResultDto(
+            // Already done under this key (an escalation whose rule has no timeout is found here on every sweep).
+            return await RestAsync(new WorkflowEscalationResultDto(
                 instance.Id,
                 task.Id,
                 action.ToString(),
@@ -153,18 +181,19 @@ public sealed class RunWorkflowEscalationsHandler
                 existingLog.ToStatus ?? instance.Status.ToString(),
                 WorkflowReasonCodes.WorkflowEscalationIdempotent,
                 true,
-                existingLog.Id);
+                existingLog.Id));
         }
 
         if (task.Status is not (ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence or ApprovalTaskStatus.Escalated) ||
             instance.Status is not (WorkflowInstanceStatus.Active or WorkflowInstanceStatus.Escalated))
         {
-            return Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowTaskInvalidState);
+            return await RestAsync(Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowTaskInvalidState));
         }
 
         if (!timeoutDue && elapsedAfterDue.TotalMinutes < rule.EscalateAfterMinutes - rule.DueInMinutes)
         {
-            return Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowNoOverdueTasks);
+            // Overdue, not yet at its threshold: looked at again AT the threshold (NextLookAt), not a sweep before.
+            return await RestAsync(Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowNoOverdueTasks));
         }
 
         var previousInstanceStatus = instance.Status;
@@ -177,7 +206,7 @@ public sealed class RunWorkflowEscalationsHandler
             task.TimedOutAt = now;
             task.CompletedAt = now;
             task.LastEscalationReasonCode = WorkflowReasonCodes.WorkflowTimeoutProcessed;
-            task.EscalationParkedAtUtc = null;
+            task.EscalationNextLookAtUtc = null;
             instance.Status = WorkflowInstanceStatus.TimedOut;
             instance.CompletedAt = now;
         }
@@ -185,7 +214,7 @@ public sealed class RunWorkflowEscalationsHandler
         {
             if (rule.EscalationPrincipalIds is null || rule.EscalationPrincipalIds.Count == 0)
             {
-                return Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired);
+                return await RestAsync(Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired));
             }
 
             var resolvedEscalationCandidates = await WorkflowCandidateResolver.ResolveAsync(
@@ -196,7 +225,7 @@ public sealed class RunWorkflowEscalationsHandler
 
             if (resolvedEscalationCandidates.Count == 0)
             {
-                return Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired);
+                return await RestAsync(Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired));
             }
 
             // D2 — the starter is not an escalation candidate. Nobody left: the escalation is NOT written, the task
@@ -205,24 +234,23 @@ public sealed class RunWorkflowEscalationsHandler
                 resolvedEscalationCandidates, instance.StartedByUserId, instance.StartedBy);
             if (resolvedEscalationCandidates.Count == 0)
             {
-                // D2-FIX1 A4 — PARKED, once. The first sweep that finds nobody warns and marks the task; later sweeps see
-                // the mark and stay quiet (the reason has not changed), and the overdue read puts it last.
-                if (!string.Equals(task.LastEscalationReasonCode, WorkflowReasonCodes.WorkflowNoEligibleApprover, StringComparison.Ordinal))
+                // D2-FIX1 A4 — PARKED, once: the first sweep that finds nobody warns and marks the reason; a later look sees
+                // the mark and stays quiet (the reason has not changed). D2-FIX2 item 4 — and the task RESTS until its look
+                // time like every other inconclusive one; when it is looked at again its candidates are resolved again, so
+                // a seat that changed hands meanwhile escalates it.
+                var firstPark = !string.Equals(
+                    task.LastEscalationReasonCode, WorkflowReasonCodes.WorkflowNoEligibleApprover, StringComparison.Ordinal);
+                if (firstPark)
                 {
                     _logger.LogWarning(
                         "Escalation of workflow task {TaskId} (instance {InstanceId}) skipped: every escalation candidate "
                         + "is the person who started the workflow. The task stays with its current approvers.",
                         task.Id, instance.Id);
-                    task.LastEscalationReasonCode = WorkflowReasonCodes.WorkflowNoEligibleApprover;
-                    task.EscalationParkedAtUtc = now.UtcDateTime;
-                    if (!await _tasks.UpdateEscalationAsync(task, task.Version, ct))
-                    {
-                        // Lost to a concurrent change (a decision, another run): nothing to park; the next sweep re-reads.
-                        _logger.LogInformation("Parking workflow task {TaskId} lost a concurrent update.", task.Id);
-                    }
                 }
 
-                return Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowNoEligibleApprover);
+                return await RestAsync(
+                    Skipped(task, action, previousTaskStatus, instance, WorkflowReasonCodes.WorkflowNoEligibleApprover),
+                    firstPark ? WorkflowReasonCodes.WorkflowNoEligibleApprover : null);
             }
 
             newAssignee = resolvedEscalationCandidates[0];
@@ -250,7 +278,7 @@ public sealed class RunWorkflowEscalationsHandler
             task.EscalatedAt = now;
             task.EscalationLevel++;
             task.LastEscalationReasonCode = WorkflowReasonCodes.WorkflowEscalationProcessed;
-            task.EscalationParkedAtUtc = null;
+            task.EscalationNextLookAtUtc = null;
             if (newAssignee is not null)
             {
                 task.AssigneeRef = newAssignee;
@@ -288,10 +316,11 @@ public sealed class RunWorkflowEscalationsHandler
                 correlationId, ct);
             if (terminal.Outcome != WorkflowTerminalWriteOutcome.Committed)
             {
-                return Skipped(task, action, previousTaskStatus, instance,
+                // The look time is written by a targeted update keyed on the id — never by this changed copy.
+                return await RestAsync(Skipped(task, action, previousTaskStatus, instance,
                     terminal.Outcome == WorkflowTerminalWriteOutcome.TransactionUnavailable
                         ? WorkflowReasonCodes.WorkflowTransactionUnavailable
-                        : WorkflowReasonCodes.WorkflowTransitionConflict);
+                        : WorkflowReasonCodes.WorkflowTransitionConflict));
             }
 
             return new WorkflowEscalationResultDto(
@@ -329,10 +358,10 @@ public sealed class RunWorkflowEscalationsHandler
             escalationLog, escalationSnapshot, escalationWrite: true, ct);
         if (escalated.Outcome != WorkflowTerminalWriteOutcome.Committed)
         {
-            return Skipped(task, action, previousTaskStatus, instance,
+            return await RestAsync(Skipped(task, action, previousTaskStatus, instance,
                 escalated.Outcome == WorkflowTerminalWriteOutcome.TransactionUnavailable
                     ? WorkflowReasonCodes.WorkflowTransactionUnavailable
-                    : WorkflowReasonCodes.WorkflowTransitionConflict);
+                    : WorkflowReasonCodes.WorkflowTransitionConflict));
         }
 
         var log = escalated.Log!;
@@ -350,6 +379,34 @@ public sealed class RunWorkflowEscalationsHandler
             escalated.Replayed ? WorkflowReasonCodes.WorkflowEscalationIdempotent : reasonCode,
             escalated.Replayed,
             log.Id);
+    }
+
+    /// <summary>
+    /// D2-FIX2 item 4 — when an overdue task the sweep could not act on is looked at again: after
+    /// <see cref="InconclusiveRecheckInterval"/>, or at its next SLA threshold (escalation, then timeout) when that comes
+    /// sooner — so resting never makes an escalation or a timeout later than the sweep would have found it.
+    /// </summary>
+    internal static DateTime NextLookAt(DateTimeOffset now, SlaEscalationRule? rule, ApprovalTask task)
+    {
+        var lookAt = now + InconclusiveRecheckInterval;
+        if (rule is not null && task.DueAt is { } dueAt)
+        {
+            foreach (var afterMinutes in new int?[] { rule.EscalateAfterMinutes, rule.TimeoutAfterMinutes })
+            {
+                if (afterMinutes is not { } minutes)
+                {
+                    continue;
+                }
+
+                var threshold = dueAt.ToUniversalTime().AddMinutes(minutes - rule.DueInMinutes);
+                if (threshold > now && threshold < lookAt)
+                {
+                    lookAt = threshold;
+                }
+            }
+        }
+
+        return lookAt.UtcDateTime;
     }
 
     private static WorkflowEscalationResultDto Skipped(

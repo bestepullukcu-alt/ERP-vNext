@@ -84,6 +84,9 @@ public sealed class TaskApprovalGateTests
         var task = ApprovalTask();
         task.ApprovalRequired = false;
         task.ApprovalManagerUserId = null;
+        // D2-FIX2 item 1 — and no LINK either. A task that still holds a link with the flag off is a withdraw that
+        // failed, and its gate IS asked until the instance closes (TaskWorkflowLinkGateTests); "no approval" is both.
+        task.WorkflowInstanceId = null;
         var tasks = new FakeTaskItemRepository(task);
         var gate = new FakeWorkflowTransitionGate { Blocked = true };
 
@@ -100,11 +103,14 @@ public sealed class TaskApprovalGateTests
         var task = ApprovalTask();
         var tasks = new FakeTaskItemRepository(task);
         var gate = new FakeWorkflowTransitionGate { Blocked = true };
+        var approvals = new FakeTaskApprovalService();
 
-        var result = await Transition(tasks, gate, task.Id, TaskLifecycle.Cancelled, task.Version);
+        var result = await Transition(tasks, gate, task.Id, TaskLifecycle.Cancelled, task.Version, approvals);
 
         Assert.True(result.IsSuccessful);
         Assert.Empty(gate.Calls);
+        // D2-FIX2 item 1 — not gated, but the running approval is WITHDRAWN with the task (MOD-0023's own cancel).
+        Assert.Equal(task.Id, Assert.Single(approvals.Cancelled));
     }
 
     [Fact]
@@ -245,12 +251,14 @@ public sealed class TaskApprovalGateTests
         FakeWorkflowTransitionGate gate,
         Guid id,
         TaskLifecycle target,
-        int expectedVersion)
+        int expectedVersion,
+        FakeTaskApprovalService? approvals = null)
         => new TransitionTaskItemHandler(
                 tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeChecklistRunRepository(), new TaskChecklistService(), gate,
                 new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
-                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance)
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance,
+                approvals: approvals)
             .Handle(
                 new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),
                 CancellationToken.None);

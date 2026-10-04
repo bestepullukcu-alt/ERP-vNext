@@ -14,6 +14,9 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
 {
     private const string ResolverSource = "trusted_runtime_candidates";
 
+    /// <summary>D2-FIX2 item 6(b) — who withdrew a start task left waiting under a closed reservation.</summary>
+    internal const string StartRecoveryActor = "system:workflow-start-recovery";
+
     private readonly IWorkflowTemplateRepository _templates;
     private readonly IWorkflowTemplateVersionRepository _versions;
     private readonly IWorkflowInstanceRepository _instances;
@@ -248,7 +251,10 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         {
             // D2-FIX1 A3 — a reservation closed because nobody could approve it (below): every replay of the key gets
             // the same answer, and it is never brought back to life by a later checkpoint.
-            return NoCandidate(WorkflowReasonCodes.WorkflowNoEligibleApprover, correlationId);
+            // D2-FIX2 item 3 — the answer is the reason the reservation was closed WITH, stored on it.
+            // D2-FIX2 item 6(b) — and a task a racing first call wrote under it is withdrawn, never left waiting.
+            await WithdrawStrayStartTaskAsync(instance, ct);
+            return NoCandidate(ClosedReason(instance), correlationId);
         }
 
         if (!reserved.Created && storedSnapshot is null)
@@ -258,14 +264,18 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
              * and before the snapshot, or two first calls raced and this one lost. What the first call PERSISTED is the
              * fact, not who the seat resolves to now: a seat change in between used to rebuild a different task and
              * answer 409 RECOVERY_CONFLICT (MDM quarantines it), or 400 with the reservation left Pending forever.
+             *
+             * D2-FIX2 — a late snapshot that names NOBODY is no fact to follow: the task is read as if there were no
+             * snapshot (skipping that read answered "no eligible approver" for a start that did write its task).
              */
             var persistedSnapshot = await _snapshots.GetByIdAsync(instance.InitialAssignmentSnapshotId.Value, ct);
-            var persistedTask = persistedSnapshot is null
-                ? await _tasks.GetByIdAsync(instance.InitialApprovalTaskId.Value, ct)
-                : null;
-            if (persistedSnapshot is { CandidatePrincipalIds.Count: > 0 })
+            var lateSnapshotNamesSomeone = persistedSnapshot is { CandidatePrincipalIds.Count: > 0 };
+            var persistedTask = lateSnapshotNamesSomeone
+                ? null
+                : await _tasks.GetByIdAsync(instance.InitialApprovalTaskId.Value, ct);
+            if (lateSnapshotNamesSomeone)
             {
-                candidates = persistedSnapshot.CandidatePrincipalIds;
+                candidates = persistedSnapshot!.CandidatePrincipalIds;
                 noCandidateReason = null;
             }
             else if (persistedTask is not null && !string.IsNullOrWhiteSpace(persistedTask.AssigneeRef))
@@ -274,16 +284,30 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
                 candidates = [persistedTask.AssigneeRef, .. candidates.Where(c => !SamePrincipal(c, persistedTask.AssigneeRef))];
                 noCandidateReason = null;
             }
+            else if (noCandidateReason == WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired)
+            {
+                /*
+                 * D2-FIX2 item 3 — NOBODY RESOLVED AT ALL (an empty seat) IS NOT A VERDICT. Closing here made the key dead:
+                 * once the seat was filled every replay got a DIFFERENT 400 (no-eligible) for the same request. The
+                 * reservation stays open and the answer is transient (503); the replay after someone takes the seat
+                 * completes the start. Only "nobody but the starter" (below) closes it.
+                 */
+                return Unavailable(
+                    "Nobody holds the approving seat right now; the start is kept and a retry with the same idempotency key completes it once someone does.",
+                    noCandidateReason, correlationId);
+            }
             else if (noCandidateReason is not null)
             {
                 // Nothing was persisted past the reservation, and nobody may approve it now: the reservation is CLOSED
                 // (cancelled), never left Pending — the same request is answered the same way on every replay.
+                // D2-FIX2 item 3 — the reason is stored WITH the close, and every replay answers it (ClosedReason).
                 if (instance.Status == WorkflowInstanceStatus.Pending && instance.StartCheckpoint == WorkflowStartCheckpoint.Reserved)
                 {
                     var closedAt = DateTimeOffset.UtcNow;
                     instance.Status = WorkflowInstanceStatus.Cancelled;
                     instance.CompletedAt = closedAt;
                     instance.LastTransitionAt = closedAt;
+                    instance.StartClosedReasonCode = noCandidateReason;
                     if (!await _instances.UpdateAsync(instance, instance.Version, ct))
                     {
                         return Conflict("Trusted workflow reservation changed meanwhile.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
@@ -317,6 +341,23 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             var advanced = await AdvanceAsync(instance, WorkflowStartCheckpoint.Reserved, WorkflowStartCheckpoint.TaskPersisted, ct);
             if (!advanced.Success)
             {
+                /*
+                 * D2-FIX2 item 6(b) — THE TASK STANDS ONLY IF ITS CHECKPOINT FENCE HOLDS. A twin call with the same key may
+                 * have CLOSED the reservation (nobody but the starter could approve when it looked) while this call was
+                 * writing its task: the fence then fails on the version the close moved, and the task just written sits
+                 * WaitingApproval under a Cancelled instance — decidable by nobody, read by nothing. It is withdrawn here,
+                 * and this call answers what every replay of the key answers. (The other way — making the close wait
+                 * for this write — needs a lease or a second state on the reservation; the fence is already the
+                 * arbiter, so the loser of it cleans up. A crash between the write and this line is healed by the next
+                 * replay, above.)
+                 */
+                if (advanced.Instance is { Status: WorkflowInstanceStatus.Cancelled } closedMeanwhile
+                    && closedMeanwhile.StartCheckpoint < WorkflowStartCheckpoint.TaskPersisted)
+                {
+                    await WithdrawStrayStartTaskAsync(closedMeanwhile, ct);
+                    return NoCandidate(ClosedReason(closedMeanwhile), correlationId);
+                }
+
                 return Conflict("Trusted workflow task checkpoint could not be fenced.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
             }
 
@@ -741,6 +782,35 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             DateTimeKind.Utc);
     }
 
+    /// <summary>D2-FIX2 item 3 — the reason a closed reservation was closed with; a reservation closed before the reason was
+    /// stored was closed for "no eligible approver" (the only close D2-FIX1 answered with).</summary>
+    private static string ClosedReason(WorkflowInstance closed) =>
+        string.IsNullOrWhiteSpace(closed.StartClosedReasonCode)
+            ? WorkflowReasonCodes.WorkflowNoEligibleApprover
+            : closed.StartClosedReasonCode;
+
+    /// <summary>
+    /// D2-FIX2 item 6(b) — the start task of a CLOSED reservation, if one was written and is still waiting, is withdrawn
+    /// (Cancelled, actioned by the start recovery, with the close's reason). Best effort: a task anything else has moved
+    /// meanwhile is no longer waiting on this reservation's word, so a lost version check is left as it is.
+    /// </summary>
+    private async Task WithdrawStrayStartTaskAsync(WorkflowInstance closed, CancellationToken ct)
+    {
+        if (closed.InitialApprovalTaskId is not { } taskId
+            || await _tasks.GetByIdAsync(taskId, ct) is not { } stray
+            || stray.Status is not (ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence))
+        {
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        stray.Status = ApprovalTaskStatus.Cancelled;
+        stray.CompletedAt = now;
+        stray.ActionedBy = StartRecoveryActor;
+        stray.ActionReasonCode = ClosedReason(closed);
+        await _tasks.UpdateAsync(stray, stray.Version, ct);
+    }
+
     private static Response<TrustedWorkflowStartResult> NoCandidate(string reason, string correlationId) =>
         reason == WorkflowReasonCodes.WorkflowNoEligibleApprover
             ? Fail("Every candidate approver is the person starting the workflow; nobody else may approve it.", reason, correlationId)
@@ -751,4 +821,8 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
 
     private static Response<TrustedWorkflowStartResult> Conflict(string message, string reason, string correlationId) =>
         Response<TrustedWorkflowStartResult>.Fail(message, 409, reason, correlationId);
+
+    // D2-FIX2 item 3 — transient: nothing is decided, the same key is safe to retry.
+    private static Response<TrustedWorkflowStartResult> Unavailable(string message, string reason, string correlationId) =>
+        Response<TrustedWorkflowStartResult>.Fail(message, 503, reason, correlationId);
 }

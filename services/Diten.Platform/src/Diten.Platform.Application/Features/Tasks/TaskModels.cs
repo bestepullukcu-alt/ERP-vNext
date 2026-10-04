@@ -423,6 +423,14 @@ public static class TaskReasonCodes
     /// </summary>
     public const string ReviewStartFailed = "REVIEW_START_FAILED";
 
+    /// <summary>
+    /// WP-WF-ENGINE-CANDIDATES-01 D2-FIX2 (CT item 7) — the review could not be OPENED because nobody but the submitter
+    /// could take it. MOD-0024's own word for MOD-0023's refusal: the engine keeps <c>WORKFLOW_NO_ELIGIBLE_APPROVER</c>
+    /// for its own callers (a start, an intermediate approval), while a REVIEW is not an approval and the client routes on
+    /// this code. A retry changes nothing until the reviewer does.
+    /// </summary>
+    public const string ReviewNoEligibleReviewer = "TASK_REVIEW_NO_ELIGIBLE_REVIEWER";
+
     /// <summary>A subtask may not itself have subtasks — one level only (pack §12 E2).</summary>
     public const string SubtaskDepthExceeded = "SUBTASK_DEPTH_EXCEEDED";
 
@@ -946,6 +954,14 @@ public sealed record PlanTaskItemResultDto(
     bool Truncated,
     IReadOnlyList<TaskPlanWarningDto> Warnings,
     TaskPlanConflictDto? Conflict = null);
+
+/// <summary>
+/// WP-WF-ENGINE-CANDIDATES-01 D2-FIX2 (item 2) — what an edit refusal carries when the edit itself LANDED and only a
+/// follow-up did not (withdrawing a running approval or review): the task's version after that write. Without it the
+/// form kept the version it loaded, and its "save again" lost to its own first save (TASK_CONCURRENCY_CONFLICT). A
+/// successful edit stays a body-less 204; only those refusals fill <c>data</c>.
+/// </summary>
+public sealed record TaskItemEditResultDto(int Version);
 
 /// <summary>Stable warning codes on a saved plan. Each has a sentence in the Task Center bridge (7 languages).</summary>
 public static class TaskPlanWarningCodes

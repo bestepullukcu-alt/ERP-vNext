@@ -156,7 +156,11 @@ public sealed class StartWorkflowInstanceHandler
             ? $"{objectType}|{objectId}"
             : request.Request.ObjectRef.Trim();
         var resolvedPrincipal = normalizedCandidates[0];
-        var dueAt = request.Request.DueAt ??
+        // D2-FIX2 item 6(a) — stored in UTC, as the trusted start already does. A due date with an offset (a task's own
+        // due date passes straight through) was stored as [local ticks, offset] (BL-030): the sweep's DueAt.0 order and its
+        // DueAt <= now filter both read the ticks, so such a task sorted and fell due hours off. Rows stored before this
+        // keep their offset (no migration); they are named in the D2-FIX2 report.
+        var dueAt = request.Request.DueAt?.ToUniversalTime() ??
             ResolveDueAtFromStep(firstStep, now) ??
             await ResolveDueAtAsync(template.Id, firstStep.StageCode, firstStep.StepCode, now, ct);
 

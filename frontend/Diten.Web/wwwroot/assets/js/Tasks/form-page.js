@@ -1042,6 +1042,14 @@
                  */
                 global.location.href = createContext().returnUrl || WORK_CENTER_URL;
             } else {
+                /*
+                 * WP-WF-ENGINE-CANDIDATES-01 D2-FIX2 — a refusal that comes AFTER the edit landed (the running approval or
+                 * review could not be withdrawn) carries the task's new version in `data`. Keep it: with the old one,
+                 * "save again" collided with this very edit (TASK_CONCURRENCY_CONFLICT) instead of retrying the withdraw.
+                 */
+                if (mode === 'edit' && Number.isInteger(result.data?.version)) {
+                    form.setAttribute('data-task-version', result.data.version);
+                }
                 // Reason-code driven, so "no organization unit" reads as itself rather than a generic failure.
                 global.DitenModal.error({
                     title: global.TasksApi.failureMessage(result),

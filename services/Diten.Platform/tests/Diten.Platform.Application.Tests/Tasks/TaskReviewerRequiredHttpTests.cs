@@ -189,6 +189,8 @@ public sealed class TaskReviewerRequiredHttpTests
     public async Task A_review_nobody_but_the_submitter_could_take_says_so_instead_of_try_again()
     {
         // D2-FIX1 — MOD-0023 refused the start with WORKFLOW_NO_ELIGIBLE_APPROVER; "try again" would change nothing.
+        // D2-FIX2 (CT item 7) — answered in MOD-0024's own code; the engine's code stays the engine's (see
+        // WorkflowCandidateDecisionMongoTests.An_intermediate_approval_whose_next_step_names_only_the_starter_…).
         var harness = new Harness();
         harness.Reviews.CannotStart = true;
         harness.Reviews.RefusalReasonCode = Diten.Platform.Application.Features.Workflow.WorkflowReasonCodes.WorkflowNoEligibleApprover;
@@ -199,7 +201,8 @@ public sealed class TaskReviewerRequiredHttpTests
         var response = await harness.SubmitReviewAsync(stored.Id, stored.Version);
 
         Assert.Equal(409, response.StatusCode);
-        Assert.Equal(Diten.Platform.Application.Features.Workflow.WorkflowReasonCodes.WorkflowNoEligibleApprover, response.ReasonCode);
+        Assert.Equal(TaskReasonCodes.ReviewNoEligibleReviewer, response.ReasonCode);
+        Assert.NotEqual(Diten.Platform.Application.Features.Workflow.WorkflowReasonCodes.WorkflowNoEligibleApprover, response.ReasonCode);
         Assert.Equal(TaskLifecycle.InProgress, harness.Tasks.Items.Single().Lifecycle);
     }
 
@@ -426,10 +429,10 @@ public sealed class TaskReviewerRequiredHttpTests
                     ReviewerCandidateUserId: reviewer),
                 CancellationToken.None));
 
-        public async Task<Response<NoContent>> UpdateAsync(
+        public async Task<Response<TaskItemEditResultDto>> UpdateAsync(
             Guid id, int expectedVersion, bool reviewRequired, Guid? reviewer,
             bool? approvalRequired = null, Guid? approvalManager = null)
-            => Unwrap<NoContent>(await _controller.Update(
+            => Unwrap<TaskItemEditResultDto>(await _controller.Update(
                 id,
                 new UpdateTaskItemRequest(
                     Title: "İncelenecek iş",

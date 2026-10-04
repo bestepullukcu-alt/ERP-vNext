@@ -338,6 +338,23 @@ public sealed class TaskInquiryAnswerTests
     }
 
     [Fact]
+    public async Task An_answer_into_running_work_whose_withdrawn_approval_is_still_open_lands_in_Open()
+    {
+        // D2-FIX2 item 1 — approval switched OFF while the task waited, but the withdraw failed: the link is held and the
+        // instance is still open. The answer asks the gate the way `resume` does — the link counts, the flag does not.
+        var f = new Fixture(TaskLifecycle.InProgress);
+        await f.InquireAsync(Question, Asked);
+        f.Task.ApprovalRequired = false;
+        f.Task.WorkflowInstanceId = Guid.NewGuid();
+        f.Gate.Blocked = true;
+
+        await f.AnswerAsync(Asked, Answer);
+
+        Assert.Equal(TaskLifecycle.Open, f.Task.Lifecycle);
+        Assert.Contains(f.Gate.Calls, call => call.RequestedTransition == "start");
+    }
+
+    [Fact]
     public async Task An_answer_into_running_work_with_an_open_predecessor_lands_in_Open()
     {
         var f = new Fixture(TaskLifecycle.InProgress);
