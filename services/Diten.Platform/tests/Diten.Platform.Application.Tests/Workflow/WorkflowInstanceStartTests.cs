@@ -270,6 +270,31 @@ public sealed class WorkflowInstanceStartTests
         Assert.Equal(Correlation, response.Data!.CorrelationId);
     }
 
+    [Fact]
+    public async Task A_due_date_sent_with_an_offset_is_stored_in_UTC_on_the_instance_and_its_task()
+    {
+        // WP-WF-ENGINE-CANDIDATES-01 D2-FIX2 item 6(a) — a task's own due date reaches the engine as the client sent it.
+        // Stored with its offset it becomes [local ticks, offset] (BL-030), and the sweep's DueAt.0 order and its
+        // DueAt <= now filter both read those ticks.
+        var fixture = Fixture(TenantA);
+        var (template, _) = await fixture.AddPublishedTemplateAsync("WF-DUE-UTC");
+        var local = new DateTimeOffset(2026, 10, 20, 17, 0, 0, TimeSpan.FromHours(3));
+
+        var response = await fixture.Handler.Handle(
+            new StartWorkflowInstanceCommand(new StartWorkflowInstanceRequest(
+                template.Id, null, "PurchaseOrder", "PO-UTC", "Purchasing|PurchaseOrder|PO-UTC", ["user-approver"],
+                "SUBMIT_FOR_APPROVAL", null, CommentRequired: false, EvidenceRequired: false, DueAt: local), Correlation),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccessful, response.ReasonCode);
+        var instance = Assert.Single(fixture.Instances.Items);
+        var task = Assert.Single(fixture.Tasks.Items);
+        Assert.Equal(TimeSpan.Zero, instance.DueAt!.Value.Offset);
+        Assert.Equal(TimeSpan.Zero, task.DueAt!.Value.Offset);
+        Assert.Equal(local.UtcDateTime, instance.DueAt.Value.UtcDateTime); // the same instant
+        Assert.Equal(local.UtcTicks, task.DueAt.Value.Ticks);              // and the ticks the store sorts on are UTC
+    }
+
     private static StartWorkflowInstanceCommand Start(
         Guid templateId,
         IReadOnlyList<string>? candidates = null,

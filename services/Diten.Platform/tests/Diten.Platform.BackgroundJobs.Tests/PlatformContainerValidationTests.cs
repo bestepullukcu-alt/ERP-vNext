@@ -5,6 +5,7 @@ using Diten.Platform.API.Configuration;
 using Diten.Platform.API.Security;
 using Diten.Platform.Application;
 using Diten.Platform.Application.Authorization;
+using Diten.Platform.Application.Features.Workflow;
 using Diten.Platform.Application.Features.Workflow.Services;
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
@@ -163,6 +165,44 @@ public sealed class PlatformContainerValidationTests
             Assert.Equal(ServiceLifetime.Scoped, services.Single(descriptor =>
                 descriptor.ServiceType == typeof(EmailDispatchSweepJob)).Lifetime);
         }
+    }
+
+    /// <summary>
+    /// D2-FIX5 item 5 — the REAL composition, read for what the SLA sweep would be given. Until now the only thing standing between
+    /// <c>Workflow:Escalation:StandingRest</c> and the sweep was a test that read <c>DependencyInjection.cs</c> as text and looked
+    /// for the registration's line: it passed with the line commented out of the method it names, or moved into a method nothing
+    /// calls. Here <c>AddInfrastructure</c> itself runs (without the startup maintenance — nothing is written), and the option the
+    /// sweep's handler is handed is resolved from the container it built: an operator's six hours arrive as six hours, and with
+    /// nothing configured the sweep keeps its day.
+    /// </summary>
+    [Fact]
+    public async Task AddInfrastructure_binds_the_escalation_options_from_configuration()
+    {
+        await using var mongo = await OwnedMongoProcess.StartAsync();
+
+        var configured = await ResolveEscalationOptionsAsync(
+            mongo, new Dictionary<string, string?> { ["Workflow:Escalation:StandingRest"] = "06:00:00" });
+        var unset = await ResolveEscalationOptionsAsync(mongo, new Dictionary<string, string?>());
+
+        Assert.Equal(TimeSpan.FromHours(6), configured.StandingRest);
+        Assert.Equal(WorkflowEscalationOptions.DefaultStandingRest, unset.StandingRest);
+    }
+
+    private static async Task<WorkflowEscalationOptions> ResolveEscalationOptionsAsync(
+        OwnedMongoProcess mongo, Dictionary<string, string?> overrides)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddConfiguration(TestConfiguration(mongo.ConnectionString, "diten_platform_itest_escalation_options", schedulerEnabled: false))
+            .AddInMemoryCollection(overrides)
+            .Build();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddApplication();
+        services.AddInfrastructure(configuration, new ContainerValidationHostEnvironment(), runStartupMaintenance: false);
+
+        await using var provider = services.BuildServiceProvider();
+        return provider.GetRequiredService<IOptions<WorkflowEscalationOptions>>().Value;
     }
 
     [Fact]

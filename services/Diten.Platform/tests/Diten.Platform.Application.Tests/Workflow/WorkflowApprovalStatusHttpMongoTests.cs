@@ -178,37 +178,55 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
     {
         var starter = Guid.NewGuid();
         var definitionId = await PlainDefinitionAsync(starter);
-        var instance = await StartInstanceAsync(definitionId, starter, starter, "task", Guid.NewGuid());
-        Assert.Equal(starter, (await InstanceAsync(instance.InstanceId)).StartedByUserId);
+        var objectId = Guid.NewGuid();
 
-        var approve = await DecideAsync(starter, instance.InstanceId, "approve");
+        // D2 — the refusal moved from the approve to the START: the starter is dropped from the candidates, nobody is
+        // left, and nothing is created (before D2 the instance was created with the starter as its only candidate and
+        // the approve was refused 409 SOD_VIOLATION — an approval nobody could ever give).
+        var started = await _host.PostAsync("/api/v1/workflow/instances", Designer(starter), new
+        {
+            templateId = definitionId, objectType = "task", objectId = objectId.ToString(),
+            candidatePrincipalIds = new[] { starter.ToString() }, idempotencyKey = Guid.NewGuid().ToString("N"),
+            commentRequired = false, evidenceRequired = false
+        });
 
-        Assert.Equal(HttpStatusCode.Conflict, approve.Status);
-        Assert.Equal(WorkflowReasonCodes.SodViolation, approve.ReasonCode);
-        Assert.Equal(WorkflowInstanceStatus.Active, (await InstanceAsync(instance.InstanceId)).Status);
+        Assert.Equal(HttpStatusCode.BadRequest, started.Status);
+        Assert.Equal(WorkflowReasonCodes.WorkflowNoEligibleApprover, started.ReasonCode);
+        Assert.Equal(0, await _fixture.Database.GetCollection<WorkflowInstance>(PlatformCollections.WorkflowInstances)
+            .CountDocumentsAsync(i => i.ObjectId == objectId.ToString()));
     }
 
     [Fact]
     public async Task A_task_approval_the_creator_routed_to_themselves_cannot_be_approved_by_them()
     {
         var task = await SeedApprovalTaskAsync(manager: _holder);
-        var instanceId = await StartTaskApprovalAsync(task, startedBy: _holder);
 
-        var approve = await DecideAsync(_holder, instanceId, "approve");
-
-        Assert.Equal(HttpStatusCode.Conflict, approve.Status);
-        Assert.Equal(WorkflowReasonCodes.SodViolation, approve.ReasonCode);
+        // D2 — no approval is opened at all (the creator is the only candidate: WORKFLOW_NO_ELIGIBLE_APPROVER). The
+        // task is KEPT with its start still gated (TaskApprovalService's fail-closed path), never closed unapproved.
+        Assert.Null(await TryStartTaskApprovalAsync(task, startedBy: _holder));
+        Assert.Equal(0, await _fixture.Database.GetCollection<WorkflowInstance>(PlatformCollections.WorkflowInstances)
+            .CountDocumentsAsync(i => i.ObjectId == task.Id.ToString()));
+        var kept = await _fixture.Database.GetCollection<TaskItem>(PlatformCollections.TaskItems)
+            .Find(t => t.Id == task.Id).SingleAsync();
+        Assert.Null(kept.WorkflowInstanceId);
+        Assert.Equal(task.Lifecycle, kept.Lifecycle);
     }
 
     [Fact]
     public async Task An_instance_from_before_the_field_keeps_the_old_comparison()
     {
         var starter = Guid.NewGuid();
+        var other = Guid.NewGuid();
         var definitionId = await PlainDefinitionAsync(starter);
-        var instance = await StartInstanceAsync(definitionId, starter, starter, "task", Guid.NewGuid());
+        // D2 — a start no longer lets the starter be a candidate, so the legacy shape is staged: the starter's own
+        // start (recording their actor NAME) lends its StartedBy to an instance on which the starter IS a candidate,
+        // and the user id field is removed, as on an instance from before it existed.
+        var own = await StartInstanceAsync(definitionId, starter, other, "task", Guid.NewGuid());
+        var starterName = (await InstanceAsync(own.InstanceId)).StartedBy;
+        var instance = await StartInstanceAsync(definitionId, other, starter, "task", Guid.NewGuid());
         await _fixture.Database.GetCollection<BsonDocument>(PlatformCollections.WorkflowInstances).UpdateOneAsync(
             Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(instance.InstanceId, GuidRepresentation.Standard)),
-            Builders<BsonDocument>.Update.Unset("StartedByUserId"));
+            Builders<BsonDocument>.Update.Unset("StartedByUserId").Set("StartedBy", starterName));
 
         // The legacy check compared the starter's NAME with the approver's id — it never matched, and still does not.
         Assert.Equal(HttpStatusCode.OK, (await DecideAsync(starter, instance.InstanceId, "approve")).Status);
@@ -319,6 +337,21 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
     }
 
     /// <summary>MOD-0024's own approval start, run as the given user (so MOD-0023 records who started it).</summary>
+    private async Task<Guid?> TryStartTaskApprovalAsync(TaskItem task, Guid startedBy)
+    {
+        await using var scope = _host.Services.CreateAsyncScope();
+        scope.ServiceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim(JwtRegisteredClaimNames.Sub, startedBy.ToString()), new Claim(JwtRegisteredClaimNames.Email, $"{startedBy:N}@x.example")],
+                "test"))
+        };
+        using (TenantScope.Begin(scope.ServiceProvider.GetRequiredService<ITenantContext>(), _tenant))
+        {
+            return await scope.ServiceProvider.GetRequiredService<ITaskApprovalService>().TryStartApprovalAsync(task, default);
+        }
+    }
+
     private async Task<Guid> StartTaskApprovalAsync(TaskItem task, Guid startedBy)
     {
         await using var scope = _host.Services.CreateAsyncScope();

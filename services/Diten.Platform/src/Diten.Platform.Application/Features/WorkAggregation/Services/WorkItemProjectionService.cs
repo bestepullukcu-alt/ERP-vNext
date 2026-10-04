@@ -278,7 +278,10 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
                 requiresConfirmation: true, requiresReason: true, supportsBulk: true, riskLevel: "elevated"),
             BuildDecision("requestInfo", ActionRequestInfoKey, WorkflowPermissions.TasksRequestInfo, actor, mayDecide,
                 requiresConfirmation: false, requiresReason: true, supportsBulk: false, riskLevel: "normal"),
-            BuildDecision("delegate", ActionDelegateKey, WorkflowPermissions.TasksDelegate, actor, mayDecide,
+            // D2 — the gate refuses a delegation by the person who started the workflow (409): the same rule here, so
+            // a starter still sitting in the seat (an instance started before D2) is not offered the button.
+            BuildDecision("delegate", ActionDelegateKey, WorkflowPermissions.TasksDelegate, actor,
+                mayDecide && !WorkflowTaskTransitionSupport.IsStarter(instance, actor.UserId.ToString("D")),
                 // BL-491 — a delegation names its person (the dispatcher refuses one that does not), and may carry a
                 // note. The two arrive together: a note box on a window that could not name anybody invited text
                 // that could never be sent.
@@ -296,9 +299,14 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
     private static IReadOnlyList<string> DelegationExcludedTargets(WorkflowInstance instance, WorkItemActor actor)
     {
         var excluded = new List<string> { actor.UserId.ToString() };
-        if (instance.StartedByUserId is { } starter && starter != Guid.Empty && starter != actor.UserId)
+        // D2-FIX1 — the starter in either record: the user id, or (an instance from before D2) StartedBy holding the
+        // starter's id as text. The gate's own IsStarter reads both; reading only the first offered a choice it refuses.
+        Guid? starter = instance.StartedByUserId is { } id && id != Guid.Empty
+            ? id
+            : Guid.TryParse(instance.StartedBy, out var legacy) && legacy != Guid.Empty ? legacy : null;
+        if (starter is { } person && person != actor.UserId)
         {
-            excluded.Add(starter.ToString());
+            excluded.Add(person.ToString());
         }
 
         return excluded;
@@ -320,8 +328,9 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         }
 
         // B2 — the reader STARTED this approval. MOD-0023 refuses a starter's approve, so the button says so up front
-        // instead of being offered and then refused. Only decidable when the instance recorded its starter's id.
-        if (instance.StartedByUserId is { } starter && starter != Guid.Empty && starter == actor.UserId)
+        // instead of being offered and then refused.
+        // D2-FIX1 — the gate's own question (IsStarter): an instance from before D2 records its starter only in StartedBy.
+        if (WorkflowTaskTransitionSupport.IsStarter(instance, actor.UserId.ToString("D")))
         {
             return Disabled("approve", ActionApproveKey, WorkAggregationReasonCodes.SelfApprovalNotAllowed,
                 DisabledSelfApprovalKey, requiresConfirmation: true, requiresReason: task.CommentRequired,

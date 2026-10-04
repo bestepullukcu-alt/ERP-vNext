@@ -128,22 +128,53 @@ public sealed class StartWorkflowInstanceHandler
             ct);
         if (normalizedCandidates.Count == 0)
         {
+            /*
+             * D2-FIX4 item 7 — AN EMPTY SEAT IS TRANSIENT HERE TOO. The trusted start answers "somebody was declared but the
+             * seat resolves to nobody right now" 503 (D2-FIX3 item 7); this start still answered 400 for the same condition,
+             * and a caller files a 400 as an invalid request and gives up, while a 503 is the one it knows to retry.
+             * Nothing is written either way, so the retry is a fresh first call. Only a request that DECLARED nobody at all
+             * (no candidates of its own and none in the template's step) stays a 400: that one is a malformed request, not a
+             * wait. The contract code is the same in both.
+             */
+            return candidateSource.Count == 0
+                ? Response<StartWorkflowInstanceResponse>.Fail(
+                    "At least one assignment candidate is required.",
+                    400,
+                    WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired,
+                    request.CorrelationId)
+                : Response<StartWorkflowInstanceResponse>.Fail(
+                    "Nobody holds the approving seat right now; nothing was started. Try again once someone does.",
+                    503,
+                    WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired,
+                    request.CorrelationId);
+        }
+
+        var actor = _currentUserContext.ActorName;
+        Guid? starterUserId = _currentUserContext.UserId == Guid.Empty ? null : _currentUserContext.UserId;
+        // D2 — the person starting the workflow is not one of its approvers. Nobody left: refused before anything is
+        // written (no instance, no log).
+        normalizedCandidates = WorkflowTaskTransitionSupport.WithoutStarter(normalizedCandidates, starterUserId, actor);
+        if (normalizedCandidates.Count == 0)
+        {
             return Response<StartWorkflowInstanceResponse>.Fail(
-                "At least one assignment candidate is required.",
+                "Every candidate approver is the person starting the workflow; nobody else may approve it.",
                 400,
-                WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired,
+                WorkflowReasonCodes.WorkflowNoEligibleApprover,
                 request.CorrelationId);
         }
 
         var now = DateTimeOffset.UtcNow;
-        var actor = _currentUserContext.ActorName;
         var objectType = request.Request.ObjectType.Trim();
         var objectId = request.Request.ObjectId.Trim();
         var objectRef = string.IsNullOrWhiteSpace(request.Request.ObjectRef)
             ? $"{objectType}|{objectId}"
             : request.Request.ObjectRef.Trim();
         var resolvedPrincipal = normalizedCandidates[0];
-        var dueAt = request.Request.DueAt ??
+        // D2-FIX2 item 6(a) — stored in UTC, as the trusted start already does. A due date with an offset (a task's own
+        // due date passes straight through) was stored as [local ticks, offset] (BL-030): the sweep's DueAt.0 order and its
+        // DueAt <= now filter both read the ticks, so such a task sorted and fell due hours off. Rows stored before this
+        // keep their offset (no migration); they are named in the D2-FIX2 report.
+        var dueAt = request.Request.DueAt?.ToUniversalTime() ??
             ResolveDueAtFromStep(firstStep, now) ??
             await ResolveDueAtAsync(template.Id, firstStep.StageCode, firstStep.StepCode, now, ct);
 
@@ -162,7 +193,7 @@ public sealed class StartWorkflowInstanceHandler
             CorrelationId = request.CorrelationId,
             IdempotencyKey = idempotencyKey,
             StartedBy = actor,
-            StartedByUserId = _currentUserContext.UserId == Guid.Empty ? null : _currentUserContext.UserId,
+            StartedByUserId = starterUserId,
             StartedAt = now,
             DueAt = dueAt,
             LastTransitionAt = now,

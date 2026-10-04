@@ -229,6 +229,13 @@
         // routing one back to its own starter is refused up front (400 on create/edit, 409 on submit for review).
         TASK_APPROVAL_MANAGER_IS_SELF: 'errorApprovalManagerIsSelf',
         TASK_REVIEWER_IS_SUBMITTER: 'errorReviewerIsSubmitter',
+        // WP-WF-ENGINE-CANDIDATES-01 D2-FIX1 — MOD-0023 found nobody but the person starting it who could decide
+        // (409 on submit for review): "try again" would change nothing until the reviewer does.
+        WORKFLOW_NO_ELIGIBLE_APPROVER: 'errorNoEligibleApprover',
+        // D2-FIX1 A1 — approval / review switched off, the edit saved, but the running workflow could not be withdrawn
+        // (409). The link is kept; saving again retries.
+        TASK_APPROVAL_CANCEL_FAILED: 'errorApprovalCancelFailed',
+        TASK_REVIEW_CANCEL_FAILED: 'errorReviewCancelFailed',
         TASK_WAITING_REASON_REQUIRED: 'errorWaitingReasonRequired',
         /*
          * BL-439 — AnswerInquiryHandler's three refusals. NOT_ADDRESSEE is the one a real reader meets: the
@@ -330,7 +337,11 @@
         'WorkflowGateEvaluationFailed',
         // WP-TASK-CALENDAR-ENGINE-01 — RULES about the holder's calendar and the task's state, not a race.
         'TASK_PLAN_CONFLICT',
-        'TASK_UNPLAN_NOT_ALLOWED'
+        'TASK_UNPLAN_NOT_ALLOWED',
+        // D2-FIX1 — RULES, not races: nobody eligible to review; a workflow that could not be withdrawn.
+        'WORKFLOW_NO_ELIGIBLE_APPROVER',
+        'TASK_APPROVAL_CANCEL_FAILED',
+        'TASK_REVIEW_CANCEL_FAILED'
     ]);
 
     /*

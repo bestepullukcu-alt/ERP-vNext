@@ -144,6 +144,16 @@ public static partial class PlatformSchemaManifest
                             .Ascending(x => x.Status)
                             .Ascending(x => x.DueAt),
                         new CreateIndexOptions { Name = "ix_approval_tasks_tenant_status_due" }),
+                    // WP-WF-ENGINE-CANDIDATES-01 D2-FIX2 item 4 — the SLA sweep's read: tasks whose look time has come,
+                    // by that time. Scalar fields only: DueAt is a [ticks, offset] array (BL-030), so the index above is
+                    // multikey and serves neither this filter nor the DueAt.0 order, and no second array field may join it.
+                    new CreateIndexModel<ApprovalTask>(
+                        Builders<ApprovalTask>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.Status)
+                            .Ascending(x => x.EscalationNextLookAtUtc)
+                            .Ascending(x => x.Id),
+                        new CreateIndexOptions { Name = "ix_approval_tasks_tenant_status_next_look" }),
                     new CreateIndexModel<ApprovalTask>(
                         Builders<ApprovalTask>.IndexKeys
                             .Ascending(x => x.TenantId)

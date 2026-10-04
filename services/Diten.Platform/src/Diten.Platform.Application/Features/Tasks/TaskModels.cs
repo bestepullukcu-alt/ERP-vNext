@@ -280,6 +280,16 @@ public static class TaskReasonCodes
     /// </summary>
     public const string ReviewPending = "REVIEW_PENDING";
 
+    /// <summary>
+    /// D2-FIX1 A1 — approval was switched off but the running MOD-0023 approval could not be withdrawn (it was decided
+    /// meanwhile, or the engine refused). The edit is saved and the task keeps its link, so nothing is left decidable
+    /// with nobody reading it; the next edit retries the withdraw.
+    /// </summary>
+    public const string ApprovalCancelFailed = "TASK_APPROVAL_CANCEL_FAILED";
+
+    /// <summary>D2-FIX1 A1 — the review's counterpart of <see cref="ApprovalCancelFailed"/>.</summary>
+    public const string ReviewCancelFailed = "TASK_REVIEW_CANCEL_FAILED";
+
     /// <summary>Review was submitted on a task that never asked for one.</summary>
     public const string ReviewNotRequired = "REVIEW_NOT_REQUIRED";
 
@@ -412,6 +422,14 @@ public static class TaskReasonCodes
     /// someone "waiting for the reviewer" when no reviewer was ever asked sends them to wait on nobody.
     /// </summary>
     public const string ReviewStartFailed = "REVIEW_START_FAILED";
+
+    /// <summary>
+    /// WP-WF-ENGINE-CANDIDATES-01 D2-FIX2 (CT item 7) — the review could not be OPENED because nobody but the submitter
+    /// could take it. MOD-0024's own word for MOD-0023's refusal: the engine keeps <c>WORKFLOW_NO_ELIGIBLE_APPROVER</c>
+    /// for its own callers (a start, an intermediate approval), while a REVIEW is not an approval and the client routes on
+    /// this code. A retry changes nothing until the reviewer does.
+    /// </summary>
+    public const string ReviewNoEligibleReviewer = "TASK_REVIEW_NO_ELIGIBLE_REVIEWER";
 
     /// <summary>A subtask may not itself have subtasks — one level only (pack §12 E2).</summary>
     public const string SubtaskDepthExceeded = "SUBTASK_DEPTH_EXCEEDED";
@@ -878,6 +896,14 @@ public sealed record TaskFieldValueDto(
 
 public sealed record BulkDeleteTaskItemRequest(IReadOnlyList<Guid> Ids);
 
+/// <summary>
+/// D2-FIX5 item 4 — the answer of a bulk delete that left something out: the ids of the tasks of this tenant that are still there
+/// (a withdraw MOD-0023 refused, or a task that kept changing after it was read). A bulk delete that left nothing out is still
+/// the body-less 204, so a caller that only reads the status keeps working; ids that do not exist (or belong to another tenant)
+/// are never named — they are answered like a delete.
+/// </summary>
+public sealed record BulkDeleteTaskItemResultDto(IReadOnlyList<Guid> SkippedIds);
+
 public sealed record ClaimTaskItemRequest(int ExpectedVersion);
 
 /// <param name="ClosureFieldValues">
@@ -936,6 +962,14 @@ public sealed record PlanTaskItemResultDto(
     bool Truncated,
     IReadOnlyList<TaskPlanWarningDto> Warnings,
     TaskPlanConflictDto? Conflict = null);
+
+/// <summary>
+/// WP-WF-ENGINE-CANDIDATES-01 D2-FIX2 (item 2) — what an edit refusal carries when the edit itself LANDED and only a
+/// follow-up did not (withdrawing a running approval or review): the task's version after that write. Without it the
+/// form kept the version it loaded, and its "save again" lost to its own first save (TASK_CONCURRENCY_CONFLICT). A
+/// successful edit stays a body-less 204; only those refusals fill <c>data</c>.
+/// </summary>
+public sealed record TaskItemEditResultDto(int Version);
 
 /// <summary>Stable warning codes on a saved plan. Each has a sentence in the Task Center bridge (7 languages).</summary>
 public static class TaskPlanWarningCodes

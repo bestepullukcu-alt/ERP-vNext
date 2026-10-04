@@ -38,14 +38,18 @@ public sealed record CreateTaskItemCommand(
     bool IsScheduledGeneration = false)
     : IRequest<Response<Guid>>;
 
+/// <summary>D2-FIX2 (item 2) — answers <see cref="TaskItemEditResultDto"/> so a refusal that comes AFTER the edit landed
+/// can say at which version it landed; a successful edit is still a body-less 204.</summary>
 public sealed record UpdateTaskItemCommand(Guid Id, UpdateTaskItemRequest Request, string CorrelationId)
-    : IRequest<Response<NoContent>>;
+    : IRequest<Response<TaskItemEditResultDto>>;
 
 public sealed record DeleteTaskItemCommand(Guid Id, string CorrelationId)
     : IRequest<Response<NoContent>>;
 
+/// <summary>D2-FIX5 item 4 — answers <see cref="BulkDeleteTaskItemResultDto"/> when it left tasks out (200, their ids); a bulk
+/// delete that left nothing out is still a body-less 204.</summary>
 public sealed record BulkDeleteTaskItemCommand(BulkDeleteTaskItemRequest Request, string CorrelationId)
-    : IRequest<Response<NoContent>>;
+    : IRequest<Response<BulkDeleteTaskItemResultDto>>;
 
 /// <summary>Accept a task that was assigned to me (the Inbox acceptance gate).</summary>
 public sealed record AcceptTaskItemCommand(Guid Id, TaskTransitionRequest Request, string CorrelationId)

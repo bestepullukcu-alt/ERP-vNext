@@ -238,6 +238,19 @@ public sealed class WorkflowInstanceRepository : TenantRepository<WorkflowInstan
         return await Collection.Find(filter).ToListAsync(ct);
     }
 
+    // D2-FIX4 item 3 — over ix_workflow_instances_tenant_template ({TenantId, WorkflowTemplateId}); the id only. Every
+    // creator of an instance writes TemplateId and WorkflowTemplateId alike, and the second is the indexed one.
+    public async Task<IReadOnlyList<Guid>> ListOpenIdsByTemplateAsync(Guid templateId, CancellationToken ct = default)
+    {
+        var filter = Builders<WorkflowInstance>.Filter.And(
+            ExecutionFilter,
+            Builders<WorkflowInstance>.Filter.Eq(x => x.WorkflowTemplateId, templateId),
+            Builders<WorkflowInstance>.Filter.In(
+                x => x.Status,
+                [WorkflowInstanceStatus.Pending, WorkflowInstanceStatus.Active, WorkflowInstanceStatus.Escalated]));
+        return await Collection.Find(filter).Project(x => x.Id).ToListAsync(ct);
+    }
+
     public Task<WorkflowInstance?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
     {
         var filter = Builders<WorkflowInstance>.Filter.And(
@@ -523,22 +536,98 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
         int maxItems,
         CancellationToken ct = default)
     {
-        var filter = Builders<ApprovalTask>.Filter.And(
+        /*
+         * What the sweep reads.
+         *   • TimedOut is NOT read (BL-502 item 7): it is terminal; a sweep can only skip it, and it held a place.
+         *   • D2-FIX2 item 4 — only tasks whose LOOK TIME has come: never looked at (null), or rested until now or earlier.
+         *     Every task a sweep cannot act on is given its next look time (RunWorkflowEscalationsHandler), so a standing
+         *     backlog it cannot act on — no SLA rule, nobody eligible, already escalated with no timeout — rests instead
+         *     of filling the first page forever, and a parked task is looked at again (a seat may have changed hands).
+         *     This replaces D2-FIX1's "parked tasks in a second read", which still starved them: the unparked skips were
+         *     never parked.
+         *   • Order: the look time first (never-looked — null — sorts first), then the oldest due date, then the id.
+         *     DueAt is stored as [ticks, offsetMinutes] (BL-030), and an ASCENDING sort on an array uses its SMALLEST
+         *     element — the offset — so the sort reads the ticks element itself (DueAt.0).
+         *   • Served by ix_approval_tasks_tenant_status_next_look: scalar fields only (TenantId, Status, the look time,
+         *     _id). The older ix_approval_tasks_tenant_status_due is multikey (DueAt is an array) and serves neither the
+         *     look-time filter nor DueAt.0; BL-030 forbids putting a second array field beside it anyway.
+         */
+        var limit = Math.Max(1, maxItems);
+        var due = Builders<ApprovalTask>.Filter.And(
             ExecutionFilter,
             Builders<ApprovalTask>.Filter.In(
                 x => x.Status,
                 [
                     ApprovalTaskStatus.WaitingApproval,
                     ApprovalTaskStatus.WaitingEvidence,
-                    ApprovalTaskStatus.Escalated,
-                    ApprovalTaskStatus.TimedOut
+                    ApprovalTaskStatus.Escalated
                 ]),
             Builders<ApprovalTask>.Filter.Ne(x => x.DueAt, null),
-            Builders<ApprovalTask>.Filter.Lte(x => x.DueAt, nowUtc));
-        return await Collection.Find(filter)
-            .SortBy(x => x.DueAt)
-            .Limit(Math.Max(1, maxItems))
-            .ToListAsync(ct);
+            Builders<ApprovalTask>.Filter.Lte(x => x.DueAt, nowUtc),
+            Builders<ApprovalTask>.Filter.Or(
+                Builders<ApprovalTask>.Filter.Eq(x => x.EscalationNextLookAtUtc, null),
+                Builders<ApprovalTask>.Filter.Lte(x => x.EscalationNextLookAtUtc, nowUtc.UtcDateTime)));
+        var order = Builders<ApprovalTask>.Sort
+            .Ascending(x => x.EscalationNextLookAtUtc)
+            .Ascending(DueAtTicksPath)
+            .Ascending(x => x.Id);
+
+        return await Collection.Find(due).Sort(order).Limit(limit).ToListAsync(ct);
+    }
+
+    // D2-FIX2 item 4 — targeted: only the look time (and the parked reason), only on a task still waiting on somebody,
+    // and no version — see IApprovalTaskRepository.ScheduleEscalationLookAsync.
+    public async Task<bool> ScheduleEscalationLookAsync(
+        Guid taskId,
+        DateTime nextLookAtUtc,
+        string? parkReasonCode,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<ApprovalTask>.Filter.And(
+            ExecutionFilter,
+            Builders<ApprovalTask>.Filter.Eq(x => x.Id, taskId),
+            Builders<ApprovalTask>.Filter.In(
+                x => x.Status,
+                [
+                    ApprovalTaskStatus.WaitingApproval,
+                    ApprovalTaskStatus.WaitingEvidence,
+                    ApprovalTaskStatus.Escalated
+                ]));
+        var update = Builders<ApprovalTask>.Update.Set(
+            x => x.EscalationNextLookAtUtc, DateTime.SpecifyKind(nextLookAtUtc, DateTimeKind.Utc));
+        if (parkReasonCode is not null)
+        {
+            update = update.Set(x => x.LastEscalationReasonCode, parkReasonCode);
+        }
+
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.IsAcknowledged && result.MatchedCount == 1;
+    }
+
+    // D2-FIX4 item 3 — targeted, tenant-filtered: only the look time, only tasks still waiting on somebody that HAVE one,
+    // in chunks of ids (served by ix_approval_tasks_tenant_instance_status), and no version.
+    public async Task<int> ResetEscalationLooksAsync(IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)
+    {
+        var reset = 0;
+        foreach (var chunk in workflowInstanceIds.Distinct().Chunk(500))
+        {
+            var filter = Builders<ApprovalTask>.Filter.And(
+                ExecutionFilter,
+                Builders<ApprovalTask>.Filter.In(x => x.WorkflowInstanceId, chunk),
+                Builders<ApprovalTask>.Filter.In(
+                    x => x.Status,
+                    [
+                        ApprovalTaskStatus.WaitingApproval,
+                        ApprovalTaskStatus.WaitingEvidence,
+                        ApprovalTaskStatus.Escalated
+                    ]),
+                Builders<ApprovalTask>.Filter.Ne(x => x.EscalationNextLookAtUtc, null));
+            var update = Builders<ApprovalTask>.Update.Set(x => x.EscalationNextLookAtUtc, (DateTime?)null);
+            var result = await Collection.UpdateManyAsync(filter, update, cancellationToken: ct);
+            reset += (int)result.ModifiedCount;
+        }
+
+        return reset;
     }
 
     public async Task<bool> UpdateAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default)
@@ -555,6 +644,9 @@ public sealed class ApprovalTaskRepository : TenantRepository<ApprovalTask>, IAp
 
     public Task<bool> UpdateEscalationAsync(ApprovalTask task, int expectedVersion, CancellationToken ct = default) =>
         UpdateAsync(task, expectedVersion, ct);
+
+    /// <summary>The ticks element of the stored [ticks, offsetMinutes] array (BL-030) — see ListOverdueTasksAsync.</summary>
+    internal const string DueAtTicksPath = "DueAt.0";
 }
 
 public sealed class RuntimeAssignmentSnapshotRepository

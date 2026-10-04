@@ -163,6 +163,19 @@ internal sealed class WorkflowTaskTransitionSupport
                     WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired,
                     correlationId);
             }
+
+            // D2 — the starter is not a candidate of the next step either. Nobody left: the approval is refused and
+            // the step does not advance (fail-closed; never a silent fall back to the escalation candidates).
+            nextCandidates = WithoutStarter(nextCandidates, instance.StartedByUserId, instance.StartedBy);
+            if (nextCandidates.Count == 0)
+            {
+                return Response<WorkflowTaskTransitionResponse>.Fail(
+                    "Every candidate of the next workflow step is the person who started the workflow; the approval "
+                    + "was not taken.",
+                    409,
+                    WorkflowReasonCodes.WorkflowNoEligibleApprover,
+                    correlationId);
+            }
         }
 
         instance.Status = action == WorkflowTransitionAction.Approve
@@ -272,7 +285,8 @@ internal sealed class WorkflowTaskTransitionSupport
                 previousInstanceStatus.ToString(),
                 instance.Status.ToString(),
                 action.ToString(),
-                false,
+                // D2-FIX1 — a twin call's commit found after "unavailable" is a replay, and says so.
+                step.Replayed,
                 createdLog.Id,
                 correlationId),
             correlationId: correlationId);
@@ -322,13 +336,26 @@ internal sealed class WorkflowTaskTransitionSupport
         CancellationToken ct)
     {
         actorId = actorId.Trim();
+        reasonCode = reasonCode.Trim();
+
+        // D2 (C4) — THE REPLAY IS READ FIRST. A delegation stored before the target rule (free text, a position) is
+        // answered with its stored response on retry; the target is validated only for a NEW delegation.
+        var existingLog = await _logRepository.GetByTaskActionIdempotencyKeyAsync(
+            taskId,
+            WorkflowTransitionAction.Delegate,
+            idempotencyKey,
+            ct);
+        if (existingLog is not null)
+        {
+            return await BuildActorBoundIdempotentResponseAsync(existingLog, actorId, correlationId, ct);
+        }
+
         // BL-491 — every later gate compares principals letter for letter, so a user id written in another spelling
         // (upper case, braces, no dashes) would pass the "not yourself" check below and then leave the task with a
         // principal nobody's token ever matches. A user id is kept in ONE spelling; any other principal is untouched.
         // D1-FIX1 — and a delegation names a USER. Any candidate may delegate now, so a free-text or `position:`
         // target would lock every other candidate out until the task times out.
         var targetIsUser = TryCanonicalUser(delegatePrincipalId, out var canonicalTarget);
-        reasonCode = reasonCode.Trim();
 
         // "Not to yourself" is asked first and in any spelling of the id (`user:` prefix, upper case, braces).
         if (PrincipalEquals(actorId, targetIsUser ? canonicalTarget : delegatePrincipalId))
@@ -350,16 +377,6 @@ internal sealed class WorkflowTaskTransitionSupport
         }
 
         delegatePrincipalId = canonicalTarget;
-
-        var existingLog = await _logRepository.GetByTaskActionIdempotencyKeyAsync(
-            taskId,
-            WorkflowTransitionAction.Delegate,
-            idempotencyKey,
-            ct);
-        if (existingLog is not null)
-        {
-            return await BuildActorBoundIdempotentResponseAsync(existingLog, actorId, correlationId, ct);
-        }
 
         var context = await LoadTransitionContextAsync(taskId, correlationId, requireAssignment: true, ct);
         if (!context.Response.IsSuccessful)
@@ -582,10 +599,23 @@ internal sealed class WorkflowTaskTransitionSupport
 
         var task = context.Task!;
         var instance = context.Instance!;
+        // D2 (C5) — a trusted start that has not finished: a cancel now would take sequence number 1, the start log's,
+        // and the start's own recovery would then fail on it (500). The decision gate's rule, the same helper.
+        if (StartIsIncomplete(instance))
+        {
+            return StartNotCompleted(correlationId);
+        }
+
         // B3 — an ESCALATED task is still open (nobody decided; it only moved to somebody else), but only the OWNING
         // module's in-process withdraw may call it off (allowEscalated). The public cancel endpoint never sets it, so
-        // an escalated approval cannot be cancelled by whoever holds the cancel permission.
-        if (!IsOpen(task) && !(allowEscalated && task.Status == ApprovalTaskStatus.Escalated))
+        // an escalated approval cannot be cancelled by whoever holds the cancel permission. D2 — "escalated" is
+        // WasEscalated (the level), so a delegation after the escalation no longer opens the public cancel again.
+        if (!IsOpen(task) && task.Status != ApprovalTaskStatus.Escalated)
+        {
+            return InvalidState(correlationId);
+        }
+
+        if (WasEscalated(task) && !allowEscalated)
         {
             return InvalidState(correlationId);
         }
@@ -758,12 +788,13 @@ internal sealed class WorkflowTaskTransitionSupport
                 previousInstanceStatus.ToString(),
                 instance.Status.ToString(),
                 action.ToString(),
-                false,
+                // D2-FIX1 — the same for every terminal transition: Replayed means this call found the twin's commit.
+                result.Replayed,
                 result.Log!.Id,
                 correlationId),
             correlationId: correlationId),
         WorkflowTerminalWriteOutcome.TransactionUnavailable => Response<WorkflowTaskTransitionResponse>.Fail(
-            "The workflow transition could not be committed. Nothing was written.",
+            "The outcome of the workflow transition is unknown: it may or may not have been committed. Retrying with the same idempotency key is safe.",
             503,
             WorkflowReasonCodes.WorkflowTransactionUnavailable,
             correlationId),
@@ -782,8 +813,10 @@ internal sealed class WorkflowTaskTransitionSupport
     /// one of them: nobody decided, it only moved to the escalation candidates. Before this, escalation left a task
     /// that no gate accepted — only a timeout or its owner's withdraw could end it (BL-478). Cancel keeps its own,
     /// narrower rule (<see cref="IsOpen"/>): an escalated task is still not cancellable from the public endpoint.
+    /// BL-547 — also the trusted terminal-decision evidence's "still open" (GetTrustedWorkflowTerminalDecisionEvidenceHandler):
+    /// the endpoint asks this rule instead of keeping a copy, so an approval it calls open is one the gates accept.
     /// </summary>
-    private static bool IsDecidable(ApprovalTask task) =>
+    internal static bool IsDecidable(ApprovalTask task) =>
         IsOpen(task) || task.Status == ApprovalTaskStatus.Escalated;
 
     /// <summary>
@@ -888,16 +921,38 @@ internal sealed class WorkflowTaskTransitionSupport
     /// B2 — did <paramref name="actorId"/> start this instance? Decided by the starter's USER ID when the instance has
     /// one (every instance started from now on); an older instance has only the actor name and keeps the old comparison.
     /// </summary>
-    internal static bool IsStarter(WorkflowInstance instance, string actorId)
+    internal static bool IsStarter(WorkflowInstance instance, string actorId) =>
+        IsStarter(instance.StartedByUserId, instance.StartedBy, actorId);
+
+    /// <summary>D2 — the same question before the instance exists (a start), on D1's one identity comparison: a user
+    /// id matches in any spelling; the legacy actor name letter for letter.</summary>
+    internal static bool IsStarter(Guid? startedByUserId, string? startedBy, string? principalId)
     {
-        if (instance.StartedByUserId is { } starter)
+        if (startedByUserId is { } starter && starter != Guid.Empty)
         {
-            return Guid.TryParse(actorId, out var actor) && actor == starter;
+            return PrincipalEquals(principalId, starter.ToString("D"));
         }
 
-        return !string.IsNullOrWhiteSpace(instance.StartedBy)
-               && string.Equals(instance.StartedBy, actorId, StringComparison.Ordinal);
+        return !string.IsNullOrWhiteSpace(startedBy) && PrincipalEquals(startedBy, principalId);
     }
+
+    /// <summary>
+    /// D2 — THE STARTER IS NOT A CANDIDATE. Dropped from a resolved list right after resolution, at every place a list
+    /// is resolved (start, trusted start, next step, escalation): the gate refused the starter's approval anyway, so a
+    /// list that names them only offered a seat that could never decide.
+    /// </summary>
+    internal static IReadOnlyList<string> WithoutStarter(
+        IReadOnlyList<string> candidates, Guid? startedByUserId, string? startedBy) =>
+        candidates.Where(candidate => !IsStarter(startedByUserId, startedBy, candidate)).ToList();
+
+    /// <summary>
+    /// D2 — WAS THIS TASK EVER ESCALATED. Read from the escalation level, not the status: a delegation or a request
+    /// for information on an escalated task moves its status back to Waiting*, but the escalation level stays — and
+    /// an escalated approval is not cancelled by whoever holds the cancel permission (B3). One rule for the public
+    /// cancel and the trusted cancel coordinator.
+    /// </summary>
+    internal static bool WasEscalated(ApprovalTask task) =>
+        task.Status == ApprovalTaskStatus.Escalated || task.EscalationLevel > 0;
 
     private static Response<WorkflowTaskTransitionResponse> InvalidState(string correlationId) =>
         Response<WorkflowTaskTransitionResponse>.Fail(

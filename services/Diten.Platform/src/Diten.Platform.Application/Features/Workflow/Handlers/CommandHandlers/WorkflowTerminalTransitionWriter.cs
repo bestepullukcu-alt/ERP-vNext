@@ -15,7 +15,11 @@ internal enum WorkflowTerminalWriteOutcome
     TransactionUnavailable
 }
 
-internal sealed record WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome Outcome, WorkflowTransitionLog? Log);
+/// <param name="Replayed">D2 (C1) — Committed, but by a TWIN of this call (same actor, key and payload, another log row),
+/// found when the writer looked again after "unavailable". This call wrote nothing: a caller that counts writes (the
+/// SLA runner) must not count it.</param>
+internal sealed record WorkflowTerminalWriteResult(
+    WorkflowTerminalWriteOutcome Outcome, WorkflowTransitionLog? Log, bool Replayed = false);
 
 /// <summary>
 /// WP-CL-BE-3 — the ONE place a workflow instance becomes terminal. The task update, the instance update, the
@@ -263,7 +267,7 @@ internal sealed class WorkflowTerminalTransitionWriter
         }
         catch (PlatformTransactionUnavailableException)
         {
-            return await AfterUnavailableAsync(task.Id, taskVersion, log, ct);
+            return await AfterUnavailableAsync(task.Id, taskVersion, log, ct, newSnapshot);
         }
     }
 
@@ -282,23 +286,24 @@ internal sealed class WorkflowTerminalTransitionWriter
     /// </list>
     /// </summary>
     private async Task<WorkflowTerminalWriteResult> AfterUnavailableAsync(
-        Guid taskId, int expectedVersion, WorkflowTransitionLog attempted, CancellationToken ct)
+        Guid taskId, int expectedVersion, WorkflowTransitionLog attempted, CancellationToken ct,
+        RuntimeAssignmentSnapshot? attemptedSnapshot = null)
     {
         try
         {
             for (var attempt = 1; attempt <= LostRaceReadAttempts; attempt++)
             {
-                if (await MyCommittedLogAsync(attempted, ct) is { } mine)
+                if (await MyCommittedLogAsync(attempted, attemptedSnapshot, ct) is { } mine)
                 {
-                    return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Committed, mine);
+                    return Mine(attempted, mine);
                 }
 
                 var current = await _tasks.GetByIdAsync(taskId, ct);
                 if (current is not null && current.Version != expectedVersion)
                 {
                     // The version moved between the two reads: once more, was it my own commit landing late?
-                    return await MyCommittedLogAsync(attempted, ct) is { } late
-                        ? new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Committed, late)
+                    return await MyCommittedLogAsync(attempted, attemptedSnapshot, ct) is { } late
+                        ? Mine(attempted, late)
                         : new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.Conflict, null);
                 }
 
@@ -316,7 +321,14 @@ internal sealed class WorkflowTerminalTransitionWriter
         return new WorkflowTerminalWriteResult(WorkflowTerminalWriteOutcome.TransactionUnavailable, null);
     }
 
-    private async Task<WorkflowTransitionLog?> MyCommittedLogAsync(WorkflowTransitionLog attempted, CancellationToken ct)
+    /// <summary>
+    /// The log row that answers "was the version-advancing write mine": same task, action and idempotency key (the
+    /// lookup), same actor — and, D2, the same PAYLOAD (target state, reason, comment, evidence, and for a re-assigning
+    /// transition the same new candidate list). Same key and actor but another payload is somebody else's request
+    /// under my key: not mine (409).
+    /// </summary>
+    private async Task<WorkflowTransitionLog?> MyCommittedLogAsync(
+        WorkflowTransitionLog attempted, RuntimeAssignmentSnapshot? attemptedSnapshot, CancellationToken ct)
     {
         if (attempted.ApprovalTaskId is not { } taskId || string.IsNullOrWhiteSpace(attempted.IdempotencyKey))
         {
@@ -324,8 +336,41 @@ internal sealed class WorkflowTerminalTransitionWriter
         }
 
         var found = await _logs.GetByTaskActionIdempotencyKeyAsync(taskId, attempted.Action, attempted.IdempotencyKey, ct);
-        return found is not null && string.Equals(found.ActorId, attempted.ActorId, StringComparison.Ordinal) ? found : null;
+        if (found is null
+            || !string.Equals(found.ActorId, attempted.ActorId, StringComparison.Ordinal)
+            || !SamePayload(found, attempted))
+        {
+            return null;
+        }
+
+        if (attemptedSnapshot is not null && _snapshots is not null)
+        {
+            // The task's CURRENT assignment (an escalation's snapshot id is new on every run; a delegation's is
+            // derived from its key): the transition that committed must have handed the task to the same people.
+            var current = await _tasks.GetByIdAsync(taskId, ct);
+            var stored = current?.AssignmentSnapshotId is { } currentSnapshotId
+                ? await _snapshots.GetByIdAsync(currentSnapshotId, ct)
+                : null;
+            if (stored is null
+                || !stored.CandidatePrincipalIds.SequenceEqual(attemptedSnapshot.CandidatePrincipalIds, StringComparer.Ordinal))
+            {
+                return null;
+            }
+        }
+
+        return found;
     }
+
+    private static bool SamePayload(WorkflowTransitionLog found, WorkflowTransitionLog attempted) =>
+        string.Equals(found.ToState, attempted.ToState, StringComparison.Ordinal)
+        && string.Equals(found.ToStatus, attempted.ToStatus, StringComparison.Ordinal)
+        && string.Equals(found.ReasonCode, attempted.ReasonCode, StringComparison.Ordinal)
+        && string.Equals(found.Comment, attempted.Comment, StringComparison.Ordinal)
+        && string.Equals(found.EvidenceRef, attempted.EvidenceRef, StringComparison.Ordinal);
+
+    /// <summary>D2 (C1) — my own row (this call's log id) is a write; a twin's row with the same payload is a replay.</summary>
+    private static WorkflowTerminalWriteResult Mine(WorkflowTransitionLog attempted, WorkflowTransitionLog found) =>
+        new(WorkflowTerminalWriteOutcome.Committed, found, Replayed: found.Id != attempted.Id);
 
     private const int LostRaceReadAttempts = 6;
     private static readonly TimeSpan LostRaceReadDelay = TimeSpan.FromMilliseconds(100);

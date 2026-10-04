@@ -240,7 +240,7 @@ public sealed partial class WorkflowCandidateDecisionMongoTests
     // ── 6 · a trusted start replays across the spelling change ─────────────────────────────────────────────────
 
     [Fact]
-    public async Task A_trusted_start_from_one_spelling_ids_keeps_its_fingerprint_byte_for_byte()
+    public async Task A_trusted_start_stores_the_version_2_fingerprint_over_the_declared_candidates_byte_for_byte()
     {
         var templateId = await _store.PublishedTemplateAsync();
         var request = TrustedRequest(templateId, "fingerprint-1", [D(Second), D(First)]);
@@ -249,10 +249,12 @@ public sealed partial class WorkflowCandidateDecisionMongoTests
 
         Assert.True(started.IsSuccessful, started.ReasonCode);
         var instance = (await _store.Instances.GetByIdAsync(started.Data!.WorkflowInstanceId))!;
-        // The formula as it stood before D1 (a frozen copy, not a call into production).
+        // D2 — the version-2 formula (a frozen copy, not a call into production): the version-1 facts, with the
+        // DECLARED candidates (one spelling, ordinal) behind the version tag. (Until D2 this test pinned version 1.)
         Assert.Equal(
             FrozenFingerprint(_store.TenantContext.TenantId, templateId, instance.TemplateVersionId!.Value,
-                "GlobalProduct", "GP-fingerprint-1", [D(First), D(Second)]),
+                "GlobalProduct", "GP-fingerprint-1",
+                ["fingerprint:v2:declared", .. new[] { D(First), D(Second) }.OrderBy(x => x, StringComparer.Ordinal)]),
             instance.StartRequestFingerprint);
         var replay = await _store.Coordinator().StartAsync(request, TrustedClient, TrustedMaker, "corr-fp-2");
         Assert.True(replay.IsSuccessful, replay.ReasonCode);
@@ -491,7 +493,8 @@ public sealed partial class WorkflowCandidateDecisionMongoTests
         new(templateId, null, "GlobalProduct", "GP-" + key, null, candidates, "SUBMIT", key, false, false, null);
 
     /// <summary>The trusted-start fingerprint EXACTLY as computed before D1 (WorkflowInstanceStartCoordinator at
-    /// 074c25cc5). A frozen copy on purpose: it is the contract in-flight idempotency keys were stored under.</summary>
+    /// 074c25cc5). A frozen copy on purpose: it is the contract in-flight idempotency keys were stored under. D2 —
+    /// version 2 is the same computation over the version tag and the declared list.</summary>
     private static string FrozenFingerprint(
         Guid tenantId, Guid templateId, Guid versionId, string objectType, string objectId, IReadOnlyList<string> candidates)
     {

@@ -14,6 +14,13 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
 {
     private const string ResolverSource = "trusted_runtime_candidates";
 
+    /// <summary>D2-FIX2 item 6(b) — who withdrew a start task left waiting under a closed reservation.</summary>
+    internal const string StartRecoveryActor = "system:workflow-start-recovery";
+
+    /// <summary>D2-FIX2 item 3 / D2-FIX3 item 7 — the one answer to an empty approving seat, first call and replay alike.</summary>
+    private const string EmptySeatMessage =
+        "Nobody holds the approving seat right now; the start is kept and a retry with the same idempotency key completes it once someone does.";
+
     private readonly IWorkflowTemplateRepository _templates;
     private readonly IWorkflowTemplateVersionRepository _versions;
     private readonly IWorkflowInstanceRepository _instances;
@@ -111,25 +118,54 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         var candidateSource = firstStep.CandidatePrincipalIds.Count > 0
             ? firstStep.CandidatePrincipalIds
             : WorkflowCandidateResolver.Normalize(request.CandidatePrincipalIds);
-        var candidates = await WorkflowCandidateResolver.ResolveAsync(candidateSource, _positionAssignments, _positions, ct);
-        if (candidates.Count == 0)
-        {
-            return Fail("At least one assignment candidate is required.", WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired, correlationId);
-        }
-
         var existing = await _instances.GetByIdempotencyKeyAsync(idempotencyKey, ct);
+        var storedSnapshot = existing?.InitialAssignmentSnapshotId is { } storedSnapshotId
+            ? await _snapshots.GetByIdAsync(storedSnapshotId, ct)
+            : null;
 
-        // D1-FIX1 — A REPLAY IS COMPARED IN THE SPELLING THE START WAS STORED IN. The resolver now writes a user id in
-        // one spelling. An instance started before that, from a list in another spelling (upper case, braces, no
-        // dashes, the same person twice), stored THAT list — and its fingerprint and proofs were computed over it. The
-        // fingerprint's computation is untouched; when the stored snapshot names the SAME principals, the replay uses
-        // the stored list, so it reproduces the stored fingerprint and proofs instead of a conflict.
-        if (existing?.InitialAssignmentSnapshotId is { } storedSnapshotId
-            && await _snapshots.GetByIdAsync(storedSnapshotId, ct) is { } storedSnapshot
-            && NamesTheSamePrincipals(storedSnapshot.CandidatePrincipalIds, candidates))
+        // D2 — A REPLAY TRUSTS WHAT WAS STORED. Once the start's assignment snapshot exists, its candidate list is the
+        // fact; the seat is not resolved again. (Resolving again turned a seat change between the call and its retry
+        // into a 409 for the same request — and MDM quarantines a 409.) Only a start that has no snapshot yet resolves.
+        IReadOnlyList<string> candidates;
+        // D2-FIX1 A3 — why a fresh resolution found nobody. A NEW start fails here at once (nothing was written); a key
+        // that is already reserved first looks at what its first call persisted, below, and fails only if nothing was.
+        string? noCandidateReason = null;
+        if (storedSnapshot is not null)
         {
+            if (storedSnapshot.CandidatePrincipalIds.Count == 0)
+            {
+                // D2-FIX1 — a stored proof with nobody in it cannot be replayed (and candidates[0] would throw).
+                return Conflict("Trusted workflow assignment proof names no candidate.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+            }
+
             candidates = storedSnapshot.CandidatePrincipalIds;
         }
+        else
+        {
+            var resolved = await WorkflowCandidateResolver.ResolveAsync(candidateSource, _positionAssignments, _positions, ct);
+            // D2 — the delegated maker (the person the consumer starts the workflow for) is not one of its approvers.
+            candidates = resolved.Count == 0
+                ? []
+                : WorkflowTaskTransitionSupport.WithoutStarter(resolved, delegatedMakerUserId, null);
+            noCandidateReason = resolved.Count == 0
+                ? WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired
+                : candidates.Count == 0 ? WorkflowReasonCodes.WorkflowNoEligibleApprover : null;
+            if (noCandidateReason is not null && existing is null)
+            {
+                /*
+                 * D2-FIX3 item 7 — AN EMPTY SEAT IS TRANSIENT ON THE FIRST CALL TOO. The replay of a reserved key answers
+                 * it 503 (below, D2-FIX2 item 3); the first call answered the same condition 400 — and MDM files a 400 as
+                 * Invalid and QUARANTINES the operation, while a 503 is Retryable (its start-result lookup then finds no
+                 * reservation and waits for the maker's replay). Same condition, same answer: 503 with the same contract
+                 * code and the same sentence the replay gives. Nothing is reserved, so the retry is a fresh first call.
+                 * Only "nobody but the starter" stays a 400: that one is a verdict, not a wait.
+                 */
+                return noCandidateReason == WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired
+                    ? Unavailable(EmptySeatMessage, noCandidateReason, correlationId)
+                    : NoCandidate(noCandidateReason, correlationId);
+            }
+        }
+
         var now = DateTimeOffset.UtcNow;
         var dueAt = request.DueAt?.ToUniversalTime() ?? existing?.DueAt ??
             ResolveDueAtFromStep(firstStep, now) ??
@@ -138,20 +174,15 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             ? $"{objectType}|{objectId}"
             : request.ObjectRef.Trim();
         var reasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? null : request.ReasonCode.Trim();
-        var fingerprint = ComputeFingerprint(
-            _tenantContext.TenantId,
-            serviceClientId,
-            delegatedMakerUserId,
-            template.Id,
-            version.Id,
-            objectType,
-            objectId,
-            objectRef,
-            candidates,
-            reasonCode,
-            firstStep.CommentRequired || request.CommentRequired,
-            firstStep.EvidenceRequired || request.EvidenceRequired,
-            dueAt);
+        var commentRequired = firstStep.CommentRequired || request.CommentRequired;
+        var evidenceRequired = firstStep.EvidenceRequired || request.EvidenceRequired;
+        // D2 — the fingerprint names what the caller DECLARED (the step's or the request's candidate list), not who
+        // the seat resolves to today: the same request stays the same request when a seat changes hands.
+        var declared = DeclaredCandidates(candidateSource);
+        string Fingerprint(DateTimeOffset? due) => ComputeDeclaredFingerprint(
+            _tenantContext.TenantId, serviceClientId, delegatedMakerUserId, template.Id, version.Id,
+            objectType, objectId, objectRef, declared, reasonCode, commentRequired, evidenceRequired, due);
+        var fingerprint = Fingerprint(dueAt);
 
         var reservation = new WorkflowInstance
         {
@@ -175,6 +206,8 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             InitialAssignmentSnapshotId = Guid.NewGuid(),
             StartTransitionLogId = Guid.NewGuid(),
             StartedBy = delegatedMakerUserId.ToString(),
+            // D2 — the starter as a USER ID, so the gate's starter check (SoD) holds in any spelling of the id.
+            StartedByUserId = delegatedMakerUserId,
             StartedAt = now,
             DueAt = dueAt,
             LastTransitionAt = now
@@ -189,20 +222,19 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             // Concurrent callers can resolve a relative SLA a few ticks apart before one wins the unique
             // reservation. The persisted winner's due date is the canonical resolved fact for exact replay.
             dueAt = instance.DueAt;
-            fingerprint = ComputeFingerprint(
-                _tenantContext.TenantId,
-                serviceClientId,
-                delegatedMakerUserId,
-                template.Id,
-                version.Id,
-                objectType,
-                objectId,
-                objectRef,
-                candidates,
-                reasonCode,
-                firstStep.CommentRequired || request.CommentRequired,
-                firstStep.EvidenceRequired || request.EvidenceRequired,
-                dueAt);
+            fingerprint = Fingerprint(dueAt);
+        }
+
+        if (!reserved.Created
+            && !string.Equals(instance.StartRequestFingerprint, fingerprint, StringComparison.Ordinal)
+            && await LegacyFingerprintAsync(candidateSource, storedSnapshot, serviceClientId, delegatedMakerUserId,
+                template.Id, version.Id, objectType, objectId, objectRef, reasonCode, commentRequired, evidenceRequired,
+                dueAt, ct) is { } legacy
+            && string.Equals(instance.StartRequestFingerprint, legacy, StringComparison.Ordinal))
+        {
+            // A key reserved before D2 carries the first fingerprint (over the RESOLVED candidates). It is still in
+            // flight somewhere (a consumer's outbox, a retry): its replay is answered as before, by that formula.
+            fingerprint = legacy;
         }
 
         if (!MatchesReservation(
@@ -229,6 +261,75 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             return Conflict("Trusted workflow reservation is incomplete.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
         }
 
+        if (instance.Status == WorkflowInstanceStatus.Cancelled && instance.StartCheckpoint < WorkflowStartCheckpoint.TaskPersisted)
+        {
+            // D2-FIX1 A3 — a reservation closed because nobody could approve it (below): every replay of the key gets
+            // the same answer, and it is never brought back to life by a later checkpoint.
+            // D2-FIX2 item 3 — the answer is the reason the reservation was closed WITH, stored on it.
+            // D2-FIX2 item 6(b) — and a task a racing first call wrote under it is withdrawn, never left waiting.
+            await WithdrawStrayStartTaskAsync(instance, correlationId, ct);
+            return NoCandidate(ClosedReason(instance), correlationId);
+        }
+
+        if (!reserved.Created && storedSnapshot is null)
+        {
+            /*
+             * D2-FIX1 A3 — A RESERVED KEY WITHOUT ITS SNAPSHOT: the first call crashed after the reservation (or the task)
+             * and before the snapshot, or two first calls raced and this one lost. What the first call PERSISTED is the
+             * fact, not who the seat resolves to now: a seat change in between used to rebuild a different task and
+             * answer 409 RECOVERY_CONFLICT (MDM quarantines it), or 400 with the reservation left Pending forever.
+             *
+             * D2-FIX2 — a late snapshot that names NOBODY is no fact to follow: the task is read as if there were no
+             * snapshot (skipping that read answered "no eligible approver" for a start that did write its task).
+             */
+            var persistedSnapshot = await _snapshots.GetByIdAsync(instance.InitialAssignmentSnapshotId.Value, ct);
+            var lateSnapshotNamesSomeone = persistedSnapshot is { CandidatePrincipalIds.Count: > 0 };
+            var persistedTask = lateSnapshotNamesSomeone
+                ? null
+                : await _tasks.GetByIdAsync(instance.InitialApprovalTaskId.Value, ct);
+            if (lateSnapshotNamesSomeone)
+            {
+                candidates = persistedSnapshot!.CandidatePrincipalIds;
+                noCandidateReason = null;
+            }
+            else if (persistedTask is not null && !string.IsNullOrWhiteSpace(persistedTask.AssigneeRef))
+            {
+                // The task names who it went to; the snapshot still to be written lists that person first.
+                candidates = [persistedTask.AssigneeRef, .. candidates.Where(c => !SamePrincipal(c, persistedTask.AssigneeRef))];
+                noCandidateReason = null;
+            }
+            else if (noCandidateReason == WorkflowReasonCodes.WorkflowAssignmentCandidatesRequired)
+            {
+                /*
+                 * D2-FIX2 item 3 — NOBODY RESOLVED AT ALL (an empty seat) IS NOT A VERDICT. Closing here made the key dead:
+                 * once the seat was filled every replay got a DIFFERENT 400 (no-eligible) for the same request. The
+                 * reservation stays open and the answer is transient (503); the replay after someone takes the seat
+                 * completes the start. Only "nobody but the starter" (below) closes it.
+                 */
+                return Unavailable(EmptySeatMessage, noCandidateReason, correlationId);
+            }
+            else if (noCandidateReason is not null)
+            {
+                // Nothing was persisted past the reservation, and nobody may approve it now: the reservation is CLOSED
+                // (cancelled), never left Pending — the same request is answered the same way on every replay.
+                // D2-FIX2 item 3 — the reason is stored WITH the close, and every replay answers it (ClosedReason).
+                if (instance.Status == WorkflowInstanceStatus.Pending && instance.StartCheckpoint == WorkflowStartCheckpoint.Reserved)
+                {
+                    var closedAt = DateTimeOffset.UtcNow;
+                    instance.Status = WorkflowInstanceStatus.Cancelled;
+                    instance.CompletedAt = closedAt;
+                    instance.LastTransitionAt = closedAt;
+                    instance.StartClosedReasonCode = noCandidateReason;
+                    if (!await _instances.UpdateAsync(instance, instance.Version, ct))
+                    {
+                        return Conflict("Trusted workflow reservation changed meanwhile.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
+                    }
+                }
+
+                return NoCandidate(noCandidateReason, correlationId);
+            }
+        }
+
         var task = ExpectedTask(
             instance,
             firstStep,
@@ -236,8 +337,8 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             reasonCode,
             idempotencyKey,
             dueAt,
-            firstStep.CommentRequired || request.CommentRequired,
-            firstStep.EvidenceRequired || request.EvidenceRequired);
+            commentRequired,
+            evidenceRequired);
         var snapshot = ExpectedSnapshot(instance, task.Id, candidates);
         var log = ExpectedStartLog(instance, task.Id, delegatedMakerUserId, reasonCode, idempotencyKey, correlationId);
 
@@ -252,6 +353,23 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             var advanced = await AdvanceAsync(instance, WorkflowStartCheckpoint.Reserved, WorkflowStartCheckpoint.TaskPersisted, ct);
             if (!advanced.Success)
             {
+                /*
+                 * D2-FIX2 item 6(b) — THE TASK STANDS ONLY IF ITS CHECKPOINT FENCE HOLDS. A twin call with the same key may
+                 * have CLOSED the reservation (nobody but the starter could approve when it looked) while this call was
+                 * writing its task: the fence then fails on the version the close moved, and the task just written sits
+                 * WaitingApproval under a Cancelled instance — decidable by nobody, read by nothing. It is withdrawn here,
+                 * and this call answers what every replay of the key answers. (The other way — making the close wait
+                 * for this write — needs a lease or a second state on the reservation; the fence is already the
+                 * arbiter, so the loser of it cleans up. A crash between the write and this line is healed by the next
+                 * replay, above.)
+                 */
+                if (advanced.Instance is { Status: WorkflowInstanceStatus.Cancelled } closedMeanwhile
+                    && closedMeanwhile.StartCheckpoint < WorkflowStartCheckpoint.TaskPersisted)
+                {
+                    await WithdrawStrayStartTaskAsync(closedMeanwhile, correlationId, ct);
+                    return NoCandidate(ClosedReason(closedMeanwhile), correlationId);
+                }
+
                 return Conflict("Trusted workflow task checkpoint could not be fenced.", WorkflowReasonCodes.WorkflowStartRecoveryConflict, correlationId);
             }
 
@@ -540,7 +658,100 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
         return Canonical(left).SetEquals(Canonical(right));
     }
 
-    /// <summary>internal for the byte-for-byte fingerprint test (D1-FIX1): the computation itself is unchanged.</summary>
+    /// <summary>
+    /// D2 — the candidate list as DECLARED, in one spelling: <c>user:</c> and <c>position:</c> entries keep their prefix
+    /// with the id in its one spelling, a bare user id in its one spelling, anything else as written; distinct, ordinal.
+    /// </summary>
+    internal static IReadOnlyList<string> DeclaredCandidates(IReadOnlyList<string> source)
+    {
+        static string Canonical(string entry)
+        {
+            foreach (var prefix in new[] { "user:", "position:" })
+            {
+                if (entry.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    return prefix + WorkflowTaskTransitionSupport.CanonicalPrincipal(entry[prefix.Length..].Trim());
+                }
+            }
+
+            return WorkflowTaskTransitionSupport.CanonicalPrincipal(entry);
+        }
+
+        return WorkflowCandidateResolver.Normalize(source)
+            .Select(Canonical)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(x => x, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    /// <summary>
+    /// D2 — FINGERPRINT VERSION 2: over the DECLARED candidates (<see cref="DeclaredCandidates"/>), tagged <c>v2</c> so it
+    /// can never equal a version-1 value. Every other fact is the version-1 set, in the same order.
+    /// </summary>
+    internal static string ComputeDeclaredFingerprint(
+        Guid tenantId,
+        Guid clientId,
+        Guid makerId,
+        Guid templateId,
+        Guid versionId,
+        string objectType,
+        string objectId,
+        string objectRef,
+        IReadOnlyList<string> declaredCandidates,
+        string? reasonCode,
+        bool commentRequired,
+        bool evidenceRequired,
+        DateTimeOffset? dueAt) =>
+        ComputeFingerprint(tenantId, clientId, makerId, templateId, versionId, objectType, objectId, objectRef,
+            declaredCandidates.Prepend(DeclaredFingerprintTag).ToList(), reasonCode, commentRequired, evidenceRequired,
+            dueAt);
+
+    private const string DeclaredFingerprintTag = "fingerprint:v2:declared";
+
+    /// <summary>
+    /// The version-1 fingerprint, EXACTLY as a start before D2 computed it: over the candidates resolved NOW (with
+    /// D1-FIX1's stored-spelling substitution). Accepted only for a key that already carries a version-1 value; a new
+    /// start never writes one. It is retired when no version-1 reservation can be replayed any more — see the D2 report
+    /// (the consumers' retry windows) — by deleting this method and its one call.
+    /// </summary>
+    private async Task<string?> LegacyFingerprintAsync(
+        IReadOnlyList<string> candidateSource,
+        RuntimeAssignmentSnapshot? storedSnapshot,
+        Guid serviceClientId,
+        Guid delegatedMakerUserId,
+        Guid templateId,
+        Guid versionId,
+        string objectType,
+        string objectId,
+        string objectRef,
+        string? reasonCode,
+        bool commentRequired,
+        bool evidenceRequired,
+        DateTimeOffset? dueAt,
+        CancellationToken ct)
+    {
+        // D2-FIX1 A2 — a stored snapshot IS the list the version-1 fingerprint was computed over (D1-FIX1 stored the
+        // resolved list it hashed). Resolving the seat again here turned a seat change into a 409 on the replay — and
+        // MDM quarantines a 409. Only a start with no snapshot yet resolves.
+        IReadOnlyList<string> resolved;
+        if (storedSnapshot is not null)
+        {
+            resolved = storedSnapshot.CandidatePrincipalIds;
+        }
+        else
+        {
+            resolved = await WorkflowCandidateResolver.ResolveAsync(candidateSource, _positionAssignments, _positions, ct);
+            if (resolved.Count == 0)
+            {
+                return null;
+            }
+        }
+
+        return ComputeFingerprint(_tenantContext.TenantId, serviceClientId, delegatedMakerUserId, templateId, versionId,
+            objectType, objectId, objectRef, resolved, reasonCode, commentRequired, evidenceRequired, dueAt);
+    }
+
+    /// <summary>The version-1 computation (D1-FIX1 byte-for-byte test). D2 — version 2 feeds it the declared list.</summary>
     internal static string ComputeFingerprint(
         Guid tenantId,
         Guid clientId,
@@ -583,9 +794,114 @@ public sealed class WorkflowInstanceStartCoordinator : IWorkflowInstanceStartCoo
             DateTimeKind.Utc);
     }
 
+    /// <summary>D2-FIX2 item 3 — the reason a closed reservation was closed with; a reservation closed before the reason was
+    /// stored was closed for "no eligible approver" (the only close D2-FIX1 answered with).</summary>
+    private static string ClosedReason(WorkflowInstance closed) =>
+        string.IsNullOrWhiteSpace(closed.StartClosedReasonCode)
+            ? WorkflowReasonCodes.WorkflowNoEligibleApprover
+            : closed.StartClosedReasonCode;
+
+    /// <summary>
+    /// D2-FIX2 item 6(b) — the start task of a CLOSED reservation, if one was written and is still waiting, is withdrawn
+    /// (Cancelled, actioned by the start recovery, with the close's reason). Best effort: a task anything else has moved
+    /// meanwhile is no longer waiting on this reservation's word, so a lost version check is left as it is.
+    ///
+    /// <para>D2-FIX3 item 8 — the write's RESULT is read, and only the write that landed records the act: a Cancel line in
+    /// the instance's transition log (who: the start recovery; why: the close's reason; keyed per task, so a twin replay
+    /// that also got here writes it once). Before, the result was dropped and the withdraw left no trace in the log every
+    /// other MOD-0023 transition writes to. A write that lost its race writes nothing — whoever moved the task did.</para>
+    /// </summary>
+    private async Task WithdrawStrayStartTaskAsync(WorkflowInstance closed, string correlationId, CancellationToken ct)
+    {
+        if (closed.InitialApprovalTaskId is not { } taskId
+            || await _tasks.GetByIdAsync(taskId, ct) is not { } stray
+            || stray.Status is not (ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence))
+        {
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var waitingAs = stray.Status;
+        var reason = ClosedReason(closed);
+        stray.Status = ApprovalTaskStatus.Cancelled;
+        stray.CompletedAt = now;
+        stray.ActionedBy = StartRecoveryActor;
+        stray.ActionReasonCode = reason;
+        if (!await _tasks.UpdateAsync(stray, stray.Version, ct))
+        {
+            return;
+        }
+
+        var idempotencyKey = $"workflow-start-recovery-withdraw:{stray.Id:N}";
+        if (await _logs.FindByIdempotencyAsync(stray.Id, WorkflowTransitionAction.Cancel, idempotencyKey, ct) is not null)
+        {
+            return;
+        }
+
+        /*
+         * D2-FIX4 item 7 — AN IDEMPOTENT APPEND. The line takes the instance's NEXT sequence number, and that number is
+         * unique per instance: another transition of the same instance (an escalation, a decision) that read the same latest
+         * number and wrote first made this append fail — AFTER the task above was already cancelled, so the withdraw threw and
+         * left no line in the log every other transition writes to (the replay finds the task cancelled and writes nothing).
+         * A failed append is therefore told apart by what it collided with:
+         *   • a line with this task's key exists — a twin replay wrote it first: recorded once, which is the point;
+         *   • otherwise the sequence number was taken: read the latest again and append at the next one (bounded);
+         *   • still failing after that — a store failure, and not hidden.
+         */
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                await _logs.AppendAsync(new WorkflowTransitionLog
+                {
+                    TenantId = closed.TenantId,
+                    WorkflowInstanceId = closed.Id,
+                    ApprovalTaskId = stray.Id,
+                    Action = WorkflowTransitionAction.Cancel,
+                    FromState = waitingAs.ToString(),
+                    ToState = ApprovalTaskStatus.Cancelled.ToString(),
+                    FromStatus = closed.Status.ToString(),
+                    ToStatus = closed.Status.ToString(),
+                    ActorId = StartRecoveryActor,
+                    ActorRef = StartRecoveryActor,
+                    ReasonCode = reason,
+                    IdempotencyKey = idempotencyKey,
+                    CorrelationId = correlationId,
+                    SequenceNo = await _logs.GetLatestSequenceNoAsync(closed.Id, ct) + 1
+                }, ct);
+                return;
+            }
+            catch (Exception failure) when (failure is not OperationCanceledException)
+            {
+                if (await _logs.FindByIdempotencyAsync(stray.Id, WorkflowTransitionAction.Cancel, idempotencyKey, ct) is not null)
+                {
+                    return;
+                }
+
+                if (attempt >= MaxStrayLogAttempts)
+                {
+                    throw;
+                }
+            }
+        }
+    }
+
+    /// <summary>D2-FIX4 item 7 — how many times the stray-task withdraw's log line is appended while its sequence number keeps
+    /// being taken by another transition of the instance.</summary>
+    internal const int MaxStrayLogAttempts = 5;
+
+    private static Response<TrustedWorkflowStartResult> NoCandidate(string reason, string correlationId) =>
+        reason == WorkflowReasonCodes.WorkflowNoEligibleApprover
+            ? Fail("Every candidate approver is the person starting the workflow; nobody else may approve it.", reason, correlationId)
+            : Fail("At least one assignment candidate is required.", reason, correlationId);
+
     private static Response<TrustedWorkflowStartResult> Fail(string message, string reason, string correlationId) =>
         Response<TrustedWorkflowStartResult>.Fail(message, 400, reason, correlationId);
 
     private static Response<TrustedWorkflowStartResult> Conflict(string message, string reason, string correlationId) =>
         Response<TrustedWorkflowStartResult>.Fail(message, 409, reason, correlationId);
+
+    // D2-FIX2 item 3 — transient: nothing is decided, the same key is safe to retry.
+    private static Response<TrustedWorkflowStartResult> Unavailable(string message, string reason, string correlationId) =>
+        Response<TrustedWorkflowStartResult>.Fail(message, 503, reason, correlationId);
 }

@@ -148,6 +148,8 @@ public static class DependencyInjection
         // own section so a tenant can point review and approval at different flows.
         services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskReviewOptions.SectionName));
+        // WP-WF-ENGINE-CANDIDATES-01 D2-FIX3 item 4 — how long the SLA sweep rests a task nothing will change (Workflow:Escalation).
+        services.AddWorkflowEscalationOptions(configuration);
         // BL-023 Part B — the upward work-request template code, on the same terms as the two above.
         services.Configure<Diten.Platform.Application.Features.Tasks.Services.TaskUpwardRequestOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.Tasks.Services.TaskUpwardRequestOptions.SectionName));
@@ -724,6 +726,15 @@ public static class DependencyInjection
         services.AddScoped<ITrustedSourceAuditIntentOutbox>(provider => provider.GetRequiredService<AuditOutboxRepository>());
         services.AddScoped<IAuditOutboxProcessingRepository>(provider => provider.GetRequiredService<AuditOutboxRepository>());
     }
+
+    /// <summary>
+    /// D2-FIX4 item 7 — binds <c>Workflow:Escalation</c> to <see cref="Diten.Platform.Application.Features.Workflow.WorkflowEscalationOptions"/>.
+    /// A method of its own so a test can bind a configuration through the registration production runs (and read what the
+    /// sweep's handler would be given), instead of trusting that the line inside <see cref="AddInfrastructure"/> is there.
+    /// </summary>
+    internal static IServiceCollection AddWorkflowEscalationOptions(this IServiceCollection services, IConfiguration configuration) =>
+        services.Configure<Diten.Platform.Application.Features.Workflow.WorkflowEscalationOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.Workflow.WorkflowEscalationOptions.SectionName));
 
     public static IServiceCollection AddTenantAuthorizationContext(this IServiceCollection services)
     {

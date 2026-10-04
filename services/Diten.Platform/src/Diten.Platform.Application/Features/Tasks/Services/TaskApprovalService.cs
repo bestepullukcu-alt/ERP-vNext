@@ -3,6 +3,7 @@ using Diten.Platform.Application.Features.Workflow;
 using Diten.Platform.Application.Features.Workflow.Commands;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
+using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
@@ -28,11 +29,30 @@ public interface ITaskApprovalService
     /// Start the approval for a task, installing the default template first if this tenant has none yet.
     /// Returns the instance id, or null when it could not be started — in which case the caller keeps the task and
     /// leaves <c>ApprovalRequired</c> true, so the fail-closed gate holds `start` shut until it is retried.
+    /// D2-FIX5 item 3 — a live approval under the task's object reference (with an open engine task) is adopted rather than
+    /// started again, a closed one is REPLACED by a new round whose key carries its id (the first approval keeps the task's own
+    /// key), and a start the engine answers with a closed instance is not linked: null.
     /// </summary>
     Task<Guid?> TryStartApprovalAsync(TaskItem task, CancellationToken ct);
 
-    /// <summary>Cancel a task's approval — used when the requirement is switched back off.</summary>
-    Task CancelApprovalAsync(TaskItem task, CancellationToken ct);
+    /// <summary>
+    /// Cancel a task's approval — used when the requirement is switched back off. True when nothing is left open
+    /// (cancelled now, or nothing was open); false when an open approval task could NOT be cancelled — the caller then
+    /// keeps the instance link, or the approval would stay decidable with nothing reading it (D2-FIX1 A1).
+    /// D2-FIX3 item 8 — a task with NO link is looked up by its object reference (a start whose link write fell over);
+    /// an instance found that way is set as the task's link before it is withdrawn.
+    /// </summary>
+    Task<bool> CancelApprovalAsync(TaskItem task, CancellationToken ct);
+
+    /// <summary>
+    /// D2-FIX4 items 1 and 4 — the live approval the task does NOT point at, read-only: the LATEST instance under the task's
+    /// object reference when it is still open and is not the task's link; null otherwise. A withdraw always looks at it
+    /// (<see cref="CancelApprovalAsync"/>); the edit that switches the requirement off asks for it BEFORE its write, so the
+    /// link is stored in the SAME conditional write as the flag change — never in a second write that can be lost after the
+    /// flag is already off (nothing would look for the instance again). Throws when the engine cannot be read: the caller
+    /// must not write on a guess. The default (in-memory doubles) finds nothing.
+    /// </summary>
+    Task<Guid?> FindUnlinkedOpenInstanceAsync(TaskItem task, CancellationToken ct) => Task.FromResult<Guid?>(null);
 
     /// <summary>
     /// Approval state for MANY tasks in ONE read. Per-task reads would be an N+1 over a projected page, and the
@@ -63,10 +83,21 @@ public static class TaskApprovalView
         ArgumentNullException.ThrowIfNull(task);
         ArgumentNullException.ThrowIfNull(states);
 
-        // No approval asked for, or the task is already closed: nobody is owed anything.
-        if (!task.ApprovalRequired || task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
+        // No approval asked for and no link held, or the task is already closed: nobody is owed anything.
+        // D2-FIX3 item 3 — "asked for" is the gate's own rule (TaskWorkflowLinkGate): the requirement OR a held link. Read
+        // on the flag alone, a task whose withdraw failed showed `start` enabled and the server refused it as pending.
+        if (!TaskWorkflowLinkGate.AsksApproval(task) || task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
         {
             return (false, false);
+        }
+
+        if (!task.ApprovalRequired)
+        {
+            // The requirement is withdrawn but the link is held: the instance holds the task until MOD-0023 reports it
+            // closed — exactly when the transition gate stops holding it. A refusal no longer kills work nobody requires
+            // approval for, so it is never read as Rejected here.
+            states.TryGetValue(task.WorkflowInstanceId!.Value, out var held);
+            return (Outstanding: TaskWorkflowLinkGate.Holds(held, required: false), Rejected: false);
         }
 
         if (task.WorkflowInstanceId is not { } instanceId || !states.TryGetValue(instanceId, out var state))
@@ -81,8 +112,15 @@ public static class TaskApprovalView
 /// <summary>
 /// The approval outcome as MOD-0024 needs to read it. Deliberately NOT stored on the task — it is a view of
 /// MOD-0023's state at read time.
+/// <para><paramref name="IsCancelled"/> — D2-FIX3: MOD-0023 reports the instance CANCELLED (withdrawn). Closed like a
+/// refusal for a task whose requirement is withdrawn (<see cref="TaskWorkflowLinkGate.Holds(TaskApprovalState?, bool)"/>);
+/// for a review it means nobody is reviewing the work any more (<see cref="TaskReviewView"/>).</para>
+/// <para><paramref name="IsTimedOut"/> — D2-FIX4 item 2: the SLA sweep timed the instance out. Terminal (nobody is deciding it
+/// any more), though <paramref name="IsPending"/> still reads true for it (it is not a decision, so it never releases a
+/// gate). For a review it is "closed without a verdict": the work goes back to its holder (<see cref="TaskReviewView"/>).</para>
 /// </summary>
-public sealed record TaskApprovalState(bool IsPending, bool IsApproved, bool IsRejected);
+public sealed record TaskApprovalState(
+    bool IsPending, bool IsApproved, bool IsRejected, bool IsCancelled = false, bool IsTimedOut = false);
 
 /// <summary>Operator-overridable settings for the approval handoff.</summary>
 public sealed class TaskApprovalOptions
@@ -139,6 +177,38 @@ public sealed class TaskApprovalService : ITaskApprovalService
 
         try
         {
+            /*
+             * D2-FIX5 item 3 — THE KEY NAMES THE ROUND BEING REPLACED, as a review's does. It used to be one key per task: every
+             * start replayed the FIRST instance the engine ever opened for the task, whatever became of it. A task whose
+             * approval was withdrawn (cancelled) or timed out and was then asked for again got that dead instance back and
+             * was "successfully" linked to it: Resolve reads a cancelled or timed-out approval as not yet decided, so the
+             * task waited for a decision nobody could make, for good.
+             *
+             * The latest instance under the task's object reference is the engine's record of the chain:
+             *   • none — the first approval: the key is the task's own, EXACTLY as it always was, so every instance already
+             *     stored (each was started under it) stays reachable and nothing is re-keyed;
+             *   • still OPEN — the approval the task already has (a start whose link was never stored): adopted, not started a
+             *     second time (one live approval per task) — but only when the engine holds an open task for it (see the
+             *     review's StartReviewAsync: an instance whose start never completed is neither adopted nor replaced);
+             *   • closed (cancelled, timed out, refused, approved) — the new round replaces IT: the key carries its id, so the
+             *     same round always produces the same key (a crash between the start and the link write still resolves to one
+             *     instance) and a later round produces a different one.
+             */
+            var latest = await _instances.GetLatestByObjectRefAsync(
+                BuildObjectRef(task.Id), ApprovalObjectType, task.Id.ToString(), ct);
+            if (latest is not null && IsOpen(latest.Status))
+            {
+                if ((await OpenTasksAsync(latest.Id, ct)).Count > 0)
+                {
+                    return latest.Id;
+                }
+
+                _logger.LogWarning(
+                    "The live approval {InstanceId} of task {TaskId} has no open task in the engine: its start was never completed, "
+                    + "so it is neither adopted nor replaced.", latest.Id, task.Id);
+                return null;
+            }
+
             var templateId = await EnsureTemplateAsync(ct);
             if (templateId is null)
             {
@@ -157,8 +227,9 @@ public sealed class TaskApprovalService : ITaskApprovalService
                     ? [manager.ToString()]
                     : [],
                 ReasonCode: null,
-                // Idempotency per task: a retried start must not open a second approval for the same work.
-                IdempotencyKey: $"task-approval:{_tenantContext.TenantId}:{task.Id}",
+                // Idempotent per ROUND (D2-FIX5 item 3): a retried start must not open a second approval for the same work, and
+                // a new round after a closed one must not replay it. The first round's key is the task's own, unchanged.
+                IdempotencyKey: $"task-approval:{_tenantContext.TenantId}:{task.Id}" + (latest is null ? string.Empty : $":{latest.Id}"),
                 CommentRequired: false,
                 EvidenceRequired: false,
                 DueAt: task.DueAt);
@@ -175,6 +246,20 @@ public sealed class TaskApprovalService : ITaskApprovalService
                 return null;
             }
 
+            /*
+             * D2-FIX5 item 3 — NEVER LINK A ROUND THE ENGINE HAS ALREADY CLOSED. A key that resolves to an existing instance
+             * answers with that instance whatever its status; an approval that just opened is Pending or Active (never
+             * Escalated, Rejected, TimedOut or Cancelled), so any other status is a replay of a dead round and the task would
+             * wait on it for ever. Not linked: the task is kept, `start` stays gated, and the edit can be repeated.
+             */
+            if (Enum.TryParse<WorkflowInstanceStatus>(response.Data.Status, out var opened) && !IsOpen(opened))
+            {
+                _logger.LogWarning(
+                    "Starting task approval for {TaskId} answered a {Status} instance {InstanceId}; it is not linked.",
+                    task.Id, response.Data.Status, response.Data.WorkflowInstanceId);
+                return null;
+            }
+
             return response.Data.WorkflowInstanceId;
         }
         catch (Exception ex)
@@ -186,42 +271,107 @@ public sealed class TaskApprovalService : ITaskApprovalService
         }
     }
 
-    public async Task CancelApprovalAsync(TaskItem task, CancellationToken ct)
+    public async Task<bool> CancelApprovalAsync(TaskItem task, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(task);
-        if (task.WorkflowInstanceId is null)
-        {
-            return;
-        }
 
         try
         {
-            // Cancel through MOD-0023's OWN command so its audit trail and state machine stay authoritative;
-            // MOD-0024 never edits workflow state directly.
-            var pending = (await _approvalTasks.ListByInstanceIdAsync(task.WorkflowInstanceId.Value, ct))
-                .Where(t => t.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence)
-                .ToList();
-
-            foreach (var approvalTask in pending)
+            /*
+             * D2-FIX3 item 8 — NO LINK IS NOT "NOTHING RUNNING". A start whose link write fell over (UpdateTaskItemHandler
+             * logs it and moves on) leaves a live instance the task does not point at; asked with no link, this used to
+             * answer "nothing open" and the approver kept a decision nobody reads. The instance is found the way the gate
+             * finds it — the LATEST one under the task's own object reference.
+             *
+             * D2-FIX4 item 1 — AND THE LATEST IS ASKED WHATEVER THE LINK SAYS. A link that is held can still be STALE: it
+             * names an earlier instance while a later one (the same object reference) is the live one the gate reads. The
+             * withdraw used to look only at the link, found it closed, and answered "nothing open" — the later instance
+             * stayed decidable with nobody reading it. Now the linked instance AND the latest under the reference are both
+             * looked at; a latest that differs from the link and is still open is withdrawn too, and the link moves to it.
+             */
+            var linked = task.WorkflowInstanceId;
+            var latest = (await _instances.GetLatestByObjectRefAsync(
+                BuildObjectRef(task.Id), ApprovalObjectType, task.Id.ToString(), ct))?.Id;
+            var instanceIds = new List<Guid>(2);
+            if (linked is { } linkedId)
             {
-                await _mediator.Send(new CancelWorkflowTaskCommand(
-                    approvalTask.Id,
-                    new Workflow.CancelWorkflowTaskRequest(
-                        ActorId: _currentUser.UserId.ToString(),
-                        ReasonCode: "APPROVAL_NO_LONGER_REQUIRED",
-                        // Idempotent per approval task: a retried cancel must not double-cancel.
-                        IdempotencyKey: $"task-approval-cancel:{approvalTask.Id}",
-                        Comment: null),
-                    CorrelationId()), ct);
+                instanceIds.Add(linkedId);
             }
+
+            if (latest is { } latestId && latestId != linked)
+            {
+                instanceIds.Add(latestId);
+            }
+
+            foreach (var instanceId in instanceIds)
+            {
+                // Cancel through MOD-0023's OWN command so its audit trail and state machine stay authoritative;
+                // MOD-0024 never edits workflow state directly.
+                // D2-FIX1 A1 — every task still waiting on somebody, ESCALATED included: an escalated approval is just as
+                // open as a waiting one (the timesheet withdraw's rule, F8).
+                var pending = await OpenTasksAsync(instanceId, ct);
+
+                // One that is not the task's link and is still OPEN is ADOPTED as the link, before its withdraw: a withdraw
+                // that fails leaves a link a retry can follow (the caller decides whether to store it). One already closed
+                // is not — nothing needs withdrawing, and it was never this task's live approval.
+                if (instanceId != task.WorkflowInstanceId && pending.Count > 0)
+                {
+                    task.WorkflowInstanceId = instanceId;
+                }
+
+                foreach (var approvalTask in pending)
+                {
+                    var result = await _mediator.Send(new CancelWorkflowTaskCommand(
+                        approvalTask.Id,
+                        new Workflow.CancelWorkflowTaskRequest(
+                            ActorId: _currentUser.UserId.ToString(),
+                            ReasonCode: "APPROVAL_NO_LONGER_REQUIRED",
+                            // Idempotent per approval task: a retried cancel must not double-cancel.
+                            IdempotencyKey: $"task-approval-cancel:{approvalTask.Id}",
+                            Comment: null),
+                        CorrelationId(),
+                        // D2-FIX1 A1 — Tasks OWNS the object (as the timesheet does): its own withdraw may call off an
+                        // approval that was ever escalated. The public cancel endpoint never sets this.
+                        AllowEscalated: true), ct);
+
+                    if (!result.IsSuccessful)
+                    {
+                        _logger.LogWarning(
+                            "Could not cancel approval task {ApprovalTaskId} for task {TaskId} ({ReasonCode}); the link is kept.",
+                            approvalTask.Id, task.Id, result.ReasonCode);
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // Best effort: the requirement has already been switched off on the task, and leaving a stale
-            // approval open is a lesser evil than failing the user's edit.
-            _logger.LogWarning(ex, "Could not cancel the approval for task {TaskId}; it may remain open.", task.Id);
+            _logger.LogWarning(ex, "Could not cancel the approval for task {TaskId}; the link is kept.", task.Id);
+            return false;
         }
     }
+
+    public async Task<Guid?> FindUnlinkedOpenInstanceAsync(TaskItem task, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+
+        var latest = (await _instances.GetLatestByObjectRefAsync(
+            BuildObjectRef(task.Id), ApprovalObjectType, task.Id.ToString(), ct))?.Id;
+        return latest is { } id && id != task.WorkflowInstanceId && (await OpenTasksAsync(id, ct)).Count > 0 ? id : null;
+    }
+
+    /// <summary>An instance somebody can still decide: opening (Pending), running (Active) or escalated.</summary>
+    private static bool IsOpen(WorkflowInstanceStatus status) =>
+        status is WorkflowInstanceStatus.Pending or WorkflowInstanceStatus.Active or WorkflowInstanceStatus.Escalated;
+
+    /// <summary>The approval tasks of an instance that are still waiting on somebody — what "open" means for a withdraw.</summary>
+    private async Task<List<ApprovalTask>> OpenTasksAsync(Guid instanceId, CancellationToken ct) =>
+        (await _approvalTasks.ListByInstanceIdAsync(instanceId, ct))
+            .Where(t => t.Status is ApprovalTaskStatus.WaitingApproval or ApprovalTaskStatus.WaitingEvidence
+                or ApprovalTaskStatus.Escalated)
+            .ToList();
 
     public async Task<IReadOnlyDictionary<Guid, TaskApprovalState>> GetStatesAsync(
         IReadOnlyCollection<Guid> workflowInstanceIds,
@@ -256,7 +406,9 @@ public sealed class TaskApprovalService : ITaskApprovalService
                         or WorkflowInstanceStatus.TimedOut,
                     // B1 — MOD-0023 closes an approved instance as Completed; Approved alone missed every real one.
                     IsApproved: WorkflowInstanceOutcome.IsApproved(instance.Status),
-                    IsRejected: WorkflowInstanceOutcome.IsRejected(instance.Status)));
+                    IsRejected: WorkflowInstanceOutcome.IsRejected(instance.Status),
+                    IsCancelled: instance.Status == WorkflowInstanceStatus.Cancelled,
+                    IsTimedOut: instance.Status == WorkflowInstanceStatus.TimedOut));
     }
 
     /// <summary>MOD-0024's object reference in the workflow engine's vocabulary.</summary>
